@@ -28,9 +28,11 @@ import {
   combinedMatchingTestCases,
   createMockMulticlusterRoleAssignment,
   createPlacementClusters,
+  createPlacementClustersWithNamespace,
   findRoleAssignmentsSortTestCases,
   getClustersDeduplicationTestCases,
   getClustersSortingTestCases,
+  namespaceFilteringTestCases,
 } from './multicluster-role-assignment-client.fixtures'
 
 const mockGetResource = jest.spyOn(req, 'getResource')
@@ -574,6 +576,112 @@ describe('multicluster-role-assignment-client', function () {
           expect(result.map((p) => p.metadata.name)).toEqual(expectedPlacementNames)
         }
       )
+    })
+
+    describe('namespace filtering', () => {
+      /**
+       * These test cases verify that only placements in the correct namespace
+       * (open-cluster-management-global-set) are returned. This prevents the bug
+       * where all clusters were being saved instead of only the selected clusters.
+       *
+       * Before the refactoring (ACM-28428), getPlacementsForRoleAssignment was returning
+       * placements from all namespaces, causing the wizard to save all clusters instead
+       * of just the selected ones.
+       */
+      it.each(namespaceFilteringTestCases)(
+        '$description',
+        ({ placementClusters, roleAssignment, expectedPlacementNames }) => {
+          const result = getPlacementsForRoleAssignment(roleAssignment, placementClusters)
+
+          expect(result).toHaveLength(expectedPlacementNames.length)
+          expect(result.map((p) => p.metadata.name)).toEqual(expectedPlacementNames)
+        }
+      )
+
+      it('should only consider placements from open-cluster-management-global-set namespace', () => {
+        // Arrange: Create placements in different namespaces with the same clusters
+        const placementClusters = [
+          createPlacementClustersWithNamespace('placement-global', MulticlusterRoleAssignmentNamespace, [
+            'selected-cluster',
+          ]),
+          createPlacementClustersWithNamespace('placement-default', 'default', ['selected-cluster']),
+          createPlacementClustersWithNamespace('placement-kube-system', 'kube-system', ['selected-cluster']),
+          createPlacementClustersWithNamespace('placement-custom', 'my-custom-namespace', ['selected-cluster']),
+        ]
+
+        const roleAssignment: RoleAssignmentToSave = {
+          clusterRole: 'admin',
+          clusterNames: ['selected-cluster'],
+          subject: { name: 'user1', kind: UserKind },
+        }
+
+        // Act
+        const result = getPlacementsForRoleAssignment(roleAssignment, placementClusters)
+
+        // Assert: Only the placement from the correct namespace should be returned
+        expect(result).toHaveLength(1)
+        expect(result[0].metadata.name).toBe('placement-global')
+        expect(result[0].metadata.namespace).toBe(MulticlusterRoleAssignmentNamespace)
+      })
+
+      it('should prevent returning all clusters when placements exist in multiple namespaces', () => {
+        // This test specifically verifies the bug fix from ACM-28428
+        // Before the fix, if a user selected specific clusters, but placements existed
+        // in other namespaces with more clusters, all clusters would be returned
+
+        // Arrange: Simulate the bug scenario
+        // - User wants to select only 'cluster-a'
+        // - There's a placement in the correct namespace with just 'cluster-a'
+        // - There's a placement in another namespace with ALL clusters
+        const placementClusters = [
+          createPlacementClustersWithNamespace('placement-selected', MulticlusterRoleAssignmentNamespace, [
+            'cluster-a',
+          ]),
+          createPlacementClustersWithNamespace('placement-all-clusters', 'other-namespace', [
+            'cluster-a',
+            'cluster-b',
+            'cluster-c',
+            'cluster-d',
+            'cluster-e',
+          ]),
+        ]
+
+        const roleAssignment: RoleAssignmentToSave = {
+          clusterRole: 'admin',
+          clusterNames: ['cluster-a'],
+          subject: { name: 'user1', kind: UserKind },
+        }
+
+        // Act
+        const result = getPlacementsForRoleAssignment(roleAssignment, placementClusters)
+
+        // Assert: Only the placement with the selected cluster should be returned
+        // NOT the placement with all clusters from the wrong namespace
+        expect(result).toHaveLength(1)
+        expect(result[0].metadata.name).toBe('placement-selected')
+        expect(result[0].metadata.namespace).toBe(MulticlusterRoleAssignmentNamespace)
+      })
+
+      it('should return empty array when matching placements only exist in wrong namespaces', () => {
+        // Arrange: All matching placements are in wrong namespaces
+        const placementClusters = [
+          createPlacementClustersWithNamespace('placement-ns1', 'namespace-1', ['cluster-a', 'cluster-b']),
+          createPlacementClustersWithNamespace('placement-ns2', 'namespace-2', ['cluster-a', 'cluster-b']),
+          createPlacementClustersWithNamespace('placement-ns3', 'namespace-3', ['cluster-a', 'cluster-b']),
+        ]
+
+        const roleAssignment: RoleAssignmentToSave = {
+          clusterRole: 'admin',
+          clusterNames: ['cluster-a', 'cluster-b'],
+          subject: { name: 'user1', kind: UserKind },
+        }
+
+        // Act
+        const result = getPlacementsForRoleAssignment(roleAssignment, placementClusters)
+
+        // Assert: No placements should be returned since none are in the correct namespace
+        expect(result).toHaveLength(0)
+      })
     })
   })
 

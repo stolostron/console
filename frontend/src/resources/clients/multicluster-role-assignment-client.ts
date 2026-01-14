@@ -504,15 +504,20 @@ export const getPlacementsForRoleAssignment = (
   roleAssignment: RoleAssignmentToSave,
   placementClusters: PlacementClusters[]
 ): Placement[] => {
-  const placementClustersForClusterNames = placementClusters.filter((placementCluster) =>
-    isPlacementClustersExactMatch(placementCluster.clusters, roleAssignment.clusterNames)
+  const relevantPlacementClusters = placementClusters.filter(
+    (placementCluster) => placementCluster.placement.metadata.namespace === MulticlusterRoleAssignmentNamespace
   )
 
-  const placementClustersForClusterSets = placementClusters.filter((placementCluster) =>
+  const placementClustersForClusters = roleAssignment.clusterNames
+    ? relevantPlacementClusters.filter((placementCluster) =>
+        isPlacementClustersExactMatch(placementCluster.clusters, roleAssignment.clusterNames)
+      )
+    : []
+  const placementClustersForClusterSets = relevantPlacementClusters.filter((placementCluster) =>
     isPlacementClusterSetsSubset(placementCluster.clusterSetNames, roleAssignment.clusterSetNames)
   )
 
-  return [...placementClustersForClusterNames, ...placementClustersForClusterSets].map(
+  return [...placementClustersForClusters, ...placementClustersForClusterSets].map(
     (placementCluster) => placementCluster.placement
   )
 }
