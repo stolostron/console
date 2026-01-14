@@ -27,6 +27,7 @@ USER 1001
 CMD ["node", "backend.mjs"]
 
 LABEL com.redhat.component="multicluster-engine-console-mce-container" \
+      cpe="cpe:/a:redhat:multicluster_engine:2.6::el9" \
       name="multicluster-engine/console-mce-rhel9" \
       summary="multicluster-engine-console-mce" \
       io.openshift.expose-services="" \
