@@ -1,24 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { ItemContext } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ItemContext'
 import { ProjectsList } from './ProjectsList'
-import { UserKind } from '../../resources'
 
-const mockFormData = {
-  subject: { kind: UserKind },
-  scope: {
-    kind: 'specific' as const,
-    clusterNames: [],
-    namespaces: [],
-  },
-  roles: [],
-  scopeType: 'Select clusters' as const,
-}
+const mockOnSelectedProjects = jest.fn()
 
-const renderWithContext = (component: React.ReactElement) => {
-  return render(<ItemContext.Provider value={mockFormData}>{component}</ItemContext.Provider>)
-}
+const renderComponent = (props: { selectedClusters?: any[]; onSelectedProjects?: (projects: string[]) => void } = {}) =>
+  render(
+    <ProjectsList
+      selectedClusters={props.selectedClusters ?? []}
+      onSelectedProjects={props.onSelectedProjects ?? mockOnSelectedProjects}
+    />
+  )
 
 jest.mock('../../components/ProjectsTable', () => ({
   ProjectsTable: ({ selectedClusters = [], onCreateClick, onSelectionChange }: any) => (
@@ -48,9 +41,13 @@ jest.mock('./CommonProjectCreate', () => ({
 }))
 
 describe('ProjectsList', () => {
+  beforeEach(() => {
+    mockOnSelectedProjects.mockClear()
+  })
+
   it('returns to table view when cancel is clicked', async () => {
     // Arrange
-    renderWithContext(<ProjectsList selectedClusters={[]} />)
+    renderComponent()
 
     // Act
     await userEvent.click(screen.getByText('Create common project'))
@@ -68,7 +65,7 @@ describe('ProjectsList', () => {
 
   it('returns to table view when project creation succeeds', async () => {
     // Arrange
-    renderWithContext(<ProjectsList selectedClusters={[]} />)
+    renderComponent()
 
     // Act
     await userEvent.click(screen.getByText('Create common project'))
@@ -84,7 +81,7 @@ describe('ProjectsList', () => {
 
   it('handles project selection changes', async () => {
     // Arrange
-    renderWithContext(<ProjectsList selectedClusters={[]} />)
+    renderComponent()
 
     // Act
     const selectButton = screen.getByText('Select Project')
@@ -92,5 +89,6 @@ describe('ProjectsList', () => {
 
     // Assert
     expect(screen.getByTestId('projects-table')).toBeInTheDocument()
+    expect(mockOnSelectedProjects).toHaveBeenCalledWith(['project-1'])
   })
 })

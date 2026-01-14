@@ -11,7 +11,7 @@ import { DOC_LINKS } from '../../lib/doc-util'
 import { isType } from '../../lib/is-type'
 import { GroupKind, UserKind } from '../../resources'
 import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
-import { ClusterGranularityStepContent } from './ClusterGranularityWizardStep'
+import { ClusterGranularityWizardStep } from './ClusterGranularityWizardStep'
 import { GranularityStepContent } from './GranularityStepContent'
 import { IdentitiesList } from './Identities/IdentitiesList'
 import { ReviewStepContent } from './ReviewStepContent'
@@ -130,6 +130,18 @@ export const RoleAssignmentWizardModal = ({
     }))
   }, [])
 
+  const handleScopeNamespacesChange = useCallback(
+    (projectNames: string[]) =>
+      setFormData((prev) => ({
+        ...prev,
+        scope: {
+          ...prev.scope,
+          namespaces: projectNames,
+        },
+      })),
+    []
+  )
+
   const handleClose = useCallback(() => {
     setIsDrawerExpanded(false)
     onClose()
@@ -242,9 +254,11 @@ export const RoleAssignmentWizardModal = ({
         formData.scopeType !== 'Select cluster sets' || formData.clusterSetAccessLevel !== 'Cluster role assignment'
       }
     >
-      <ClusterGranularityStepContent
+      <ClusterGranularityWizardStep
         description={t('Define cluster granularity options.')}
         selectedClusters={selectedClusters}
+        selectedClustersAccessLevel={formData.selectedClustersAccessLevel}
+        onSelectedProjects={handleScopeNamespacesChange}
       />
     </WizardStep>,
     <WizardStep
@@ -253,9 +267,11 @@ export const RoleAssignmentWizardModal = ({
       id="scope-cluster-granularity"
       isHidden={formData.scopeType !== 'Select clusters'}
     >
-      <ClusterGranularityStepContent
+      <ClusterGranularityWizardStep
         description={t('Define the level of access for the selected cluster(s).')}
         selectedClusters={selectedClusters}
+        selectedClustersAccessLevel={formData.selectedClustersAccessLevel}
+        onSelectedProjects={handleScopeNamespacesChange}
       />
     </WizardStep>,
   ]

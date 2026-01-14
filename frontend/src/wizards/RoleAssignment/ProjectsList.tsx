@@ -1,43 +1,34 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ProjectsTable, ProjectTableData } from '../../components/ProjectsTable'
 import { useTranslation } from '../../lib/acm-i18next'
 import type { Cluster } from '../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
 import { IAcmTableButtonAction } from '../../ui-components/AcmTable/AcmTableTypes'
 import { CommonProjectCreate } from './CommonProjectCreate'
-import { useItem } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ItemContext'
-import { RoleAssignmentWizardFormData } from './types'
 
 interface ProjectsListProps {
   selectedClusters: Cluster[]
+  onSelectedProjects: (projectNames: string[]) => void
 }
 
-export const ProjectsList = ({ selectedClusters }: ProjectsListProps) => {
+export const ProjectsList = ({ selectedClusters, onSelectedProjects }: ProjectsListProps) => {
   const { t } = useTranslation()
-  const formData = useItem() as RoleAssignmentWizardFormData
   const [isCreateCommonProject, setIsCreateCommonProject] = useState(false)
+  const [selectedProjects, setSelectedProjects] = useState<ProjectTableData[]>()
+  const [hasSelectedProjects, setHasSelectedProjects] = useState<boolean>()
 
-  const selectedProjects = useMemo(
-    () =>
-      formData.scope.namespaces?.map((ns: string) => ({
-        name: ns,
-        type: 'Namespace',
-        clusters: selectedClusters.map((c) => c.name),
-      })) ?? [],
-    [formData?.scope?.namespaces, selectedClusters]
+  useEffect(
+    () => setHasSelectedProjects(selectedProjects !== undefined && selectedProjects.length > 0),
+    [selectedProjects, selectedProjects?.length]
   )
 
-  const hasSelectedProjects = useMemo(() => selectedProjects.length > 0, [selectedProjects.length])
-
   const handleCreateClick = () => setIsCreateCommonProject(true)
-
   const handleModalClose = () => setIsCreateCommonProject(false)
-
   const handleCreateSuccess = () => setIsCreateCommonProject(false)
-
   const handleSelectionChange = (projects: ProjectTableData[]) => {
-    formData.scope = { ...formData.scope, namespaces: projects.map((p) => p.name) }
+    setSelectedProjects(projects)
+    onSelectedProjects(projects.map((e) => e.name))
   }
 
   const tableActionButtons = useMemo<IAcmTableButtonAction[]>(
