@@ -66,7 +66,8 @@ export const InputSelect = ({
   useEffect(() => {
     setInputValue(value)
     setFilterValue('')
-  }, [value])
+    // passing open as effect dependency to reset inputValue to the current value string if the dropdown closes.
+  }, [open, value])
 
   const createItemId = (value: string) => `select-typeahead-${value.replace(' ', '-')}`
 
