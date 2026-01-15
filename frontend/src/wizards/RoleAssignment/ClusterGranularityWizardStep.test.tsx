@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { DataContext } from '@patternfly-labs/react-form-wizard/lib/src/contexts/DataContext'
-import { ItemContext } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ItemContext'
 import { render } from '@testing-library/react'
 import { ClusterGranularityStepContent } from './ClusterGranularityWizardStep'
 
@@ -51,12 +50,8 @@ jest.mock('@patternfly-labs/react-form-wizard/lib/src/inputs/WizSelect', () => (
   },
 }))
 
-const renderWithContext = (component: React.ReactNode, itemValue: any = {}, updateFn: () => void = jest.fn()) => {
-  return render(
-    <ItemContext.Provider value={itemValue}>
-      <DataContext.Provider value={{ update: updateFn }}>{component}</DataContext.Provider>
-    </ItemContext.Provider>
-  )
+const renderWithContext = (component: React.ReactNode, updateFn: () => void = jest.fn()) => {
+  return render(<DataContext.Provider value={{ update: updateFn }}>{component}</DataContext.Provider>)
 }
 
 describe('ClusterGranularityStepContent', () => {
@@ -65,6 +60,7 @@ describe('ClusterGranularityStepContent', () => {
     description: 'Test description',
     selectedClusters: [{ name: 'cluster-1' }, { name: 'cluster-2' }],
     onNamespacesChange: mockOnNamespacesChange,
+    selectedClustersAccessLevel: undefined as 'Cluster role assignment' | 'Project role assignment' | undefined,
   }
 
   beforeEach(() => {
@@ -101,17 +97,17 @@ describe('ClusterGranularityStepContent', () => {
   })
 
   it('does not render ProjectsList when selectedClustersAccessLevel is not Project role assignment', () => {
-    renderWithContext(<ClusterGranularityStepContent {...defaultProps} />, {
-      selectedClustersAccessLevel: 'Cluster role assignment',
-    })
+    renderWithContext(
+      <ClusterGranularityStepContent {...defaultProps} selectedClustersAccessLevel="Cluster role assignment" />
+    )
 
     expect(mockProjectsList).not.toHaveBeenCalled()
   })
 
   it('renders ProjectsList when selectedClustersAccessLevel is Project role assignment', () => {
-    renderWithContext(<ClusterGranularityStepContent {...defaultProps} />, {
-      selectedClustersAccessLevel: 'Project role assignment',
-    })
+    renderWithContext(
+      <ClusterGranularityStepContent {...defaultProps} selectedClustersAccessLevel="Project role assignment" />
+    )
 
     expect(mockProjectsList).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -127,10 +123,8 @@ describe('ClusterGranularityStepContent', () => {
         description="Test"
         selectedClusters={clusters}
         onNamespacesChange={mockOnNamespacesChange}
-      />,
-      {
-        selectedClustersAccessLevel: 'Project role assignment',
-      }
+        selectedClustersAccessLevel="Project role assignment"
+      />
     )
 
     expect(mockProjectsList).toHaveBeenCalledWith(
@@ -146,10 +140,8 @@ describe('ClusterGranularityStepContent', () => {
         description="Test"
         selectedClusters={[]}
         onNamespacesChange={mockOnNamespacesChange}
-      />,
-      {
-        selectedClustersAccessLevel: 'Project role assignment',
-      }
+        selectedClustersAccessLevel="Project role assignment"
+      />
     )
 
     expect(mockProjectsList).toHaveBeenCalledWith(
@@ -159,8 +151,8 @@ describe('ClusterGranularityStepContent', () => {
     )
   })
 
-  it('does not render ProjectsList when item context is undefined', () => {
-    renderWithContext(<ClusterGranularityStepContent {...defaultProps} />, undefined)
+  it('does not render ProjectsList when selectedClustersAccessLevel is undefined', () => {
+    renderWithContext(<ClusterGranularityStepContent {...defaultProps} selectedClustersAccessLevel={undefined} />)
 
     expect(mockProjectsList).not.toHaveBeenCalled()
   })

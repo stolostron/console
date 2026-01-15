@@ -1,18 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useTranslation } from '../../lib/acm-i18next'
-import { Button } from '@patternfly/react-core'
 import { WizSelect } from '@patternfly-labs/react-form-wizard/lib/src/inputs/WizSelect'
-import { useItem } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ItemContext'
+import { Button } from '@patternfly/react-core'
+import { useTranslation } from '../../lib/acm-i18next'
+import { GranularityStepContent } from './GranularityStepContent'
 import { ClusterSetsList } from './Scope/ClusterSets/ClusterSetsList'
 import { ClusterList } from './Scope/Clusters/ClusterList'
 import { GlobalScopeSelection } from './Scope/GlobalScopeSelection'
-import { GranularityStepContent } from './GranularityStepContent'
+import { RoleAssignmentWizardFormData } from './types'
 
 interface ScopeSelectionStepContentProps {
   isDrawerExpanded: boolean
   setIsDrawerExpanded: (expanded: boolean) => void
   selectedClusterSets: any[]
   selectedClusters: any[]
+  selectedScope: RoleAssignmentWizardFormData['scopeType']
   onSelectClusterSets?: (clusterSets: any[]) => void
   onSelectClusters?: (clusters: any[]) => void
 }
@@ -24,10 +25,9 @@ export const ScopeSelectionStepContent = ({
   selectedClusters,
   onSelectClusterSets,
   onSelectClusters,
+  selectedScope,
 }: ScopeSelectionStepContentProps) => {
   const { t } = useTranslation()
-  const item = useItem()
-  const selectedScope = item?.scopeType
 
   return (
     <div>
