@@ -247,6 +247,11 @@ jest.mock('../../../ui-components', () => {
     AcmTable: ({ columns, items, filters, isLoading, emptyState, tableActions, tableActionButtons }: any) => {
       const [filteredItems, setFilteredItems] = React.useState(items)
 
+      // Update filteredItems when items change
+      React.useEffect(() => {
+        setFilteredItems(items)
+      }, [items])
+
       // Simulate Infrastructure pattern: Simple table with text-based interactions
       const handleBulkAction = (actionId: string) => {
         const action = tableActions?.find((a: any) => a.id === actionId)
@@ -370,19 +375,25 @@ jest.mock('../../../ui-components', () => {
           </button>
 
           {/* Table data - simplified */}
-          {filteredItems?.map((item: FlattenedRoleAssignment) => (
-            <div key={item.name}>
-              <div>
-                {item.subject.kind}: {item.subject.name}
+          {filteredItems?.map((item: FlattenedRoleAssignment) => {
+            // Find and render the action column cell
+            const actionColumn = columns?.find((col: any) => col.isActionCol)
+            return (
+              <div key={item.name}>
+                <div>
+                  {item.subject.kind}: {item.subject.name}
+                </div>
+                <div>{item.clusterRole}</div>
+                <div>{(item.clusterNames || []).join(', ') || 'No clusters'}</div>
+                <div>{item.targetNamespaces?.join(', ') || 'No namespaces'}</div>
+                <div>{`Status: ${item.status?.status ?? 'Unknown'}`}</div>
+                <div>{`CreatedAt: ${item.status?.createdAt}`}</div>
+                {/* Render action column cell to test canPatch/canDelete props */}
+                {actionColumn?.cell && <div data-testid={`action-cell-${item.name}`}>{actionColumn.cell(item)}</div>}
+                <button onClick={() => mockToastContext.addAlert({ title: 'Action', type: 'info' })}>Row Actions</button>
               </div>
-              <div>{item.clusterRole}</div>
-              <div>{(item.clusterNames || []).join(', ') || 'No clusters'}</div>
-              <div>{item.targetNamespaces?.join(', ') || 'No namespaces'}</div>
-              <div>{`Status: ${item.status?.status ?? 'Unknown'}`}</div>
-              <div>{`CreatedAt: ${item.status?.createdAt}`}</div>
-              <button onClick={() => mockToastContext.addAlert({ title: 'Action', type: 'info' })}>Row Actions</button>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )
     },
@@ -422,11 +433,21 @@ jest.mock('../../../components/BulkActionModal', () => ({
 
 // Simplified dropdown mock
 jest.mock('./RoleAssignmentActionDropdown', () => ({
-  RoleAssignmentActionDropdown: ({ roleAssignment, setModalProps, toastContext }: any) => (
-    <div>
+  RoleAssignmentActionDropdown: ({ roleAssignment, setModalProps, toastContext, canPatch, canDelete, onEdit }: any) => (
+    <div data-testid={`action-dropdown-${roleAssignment?.name}`}>
       <button
         onClick={() => {
-          if (setModalProps) setModalProps({ open: true })
+          if (canPatch && onEdit) onEdit(roleAssignment)
+        }}
+        disabled={!canPatch}
+        aria-disabled={!canPatch}
+        data-testid={`edit-action-${roleAssignment?.name}`}
+      >
+        Edit role assignment
+      </button>
+      <button
+        onClick={() => {
+          if (canDelete && setModalProps) setModalProps({ open: true })
           if (toastContext) {
             toastContext.addAlert({
               title: `Deleting ${roleAssignment?.metadata?.name}`,
@@ -435,9 +456,15 @@ jest.mock('./RoleAssignmentActionDropdown', () => ({
             })
           }
         }}
+        disabled={!canDelete}
+        aria-disabled={!canDelete}
+        data-testid={`delete-action-${roleAssignment?.name}`}
       >
         Delete role assignment
       </button>
+      {/* Expose canPatch value for testing */}
+      <span data-testid={`canPatch-${roleAssignment?.name}`}>{canPatch ? 'true' : 'false'}</span>
+      <span data-testid={`canDelete-${roleAssignment?.name}`}>{canDelete ? 'true' : 'false'}</span>
     </div>
   ),
 }))
@@ -859,6 +886,145 @@ describe('RoleAssignments', () => {
         const emptyStateButton = createButtons.find((btn) => btn.closest('button'))?.closest('button')
         expect(emptyStateButton).toBeTruthy()
         expect(emptyStateButton).toHaveAttribute('aria-disabled', 'true')
+      })
+    })
+
+    describe('Edit Permission Tests (canPatch passed to ActionCell)', () => {
+      it('calls useIsAnyNamespaceAuthorized for create, patch, and delete permissions', async () => {
+        mockUseIsAnyNamespaceAuthorized.mockReturnValue(true)
+        render(<Component />)
+        await waitForText('test-cluster-1')
+
+        // Verify useIsAnyNamespaceAuthorized was called 3 times: rbacCreate, rbacPatch, rbacDelete
+        // Note: rbacCreate, rbacPatch, rbacDelete return Promises, so we verify the hook was called 3 times
+        expect(mockUseIsAnyNamespaceAuthorized).toHaveBeenCalledTimes(3)
+      })
+
+      it('uses canPatchRoleAssignment for edit action enablement', async () => {
+        // When canPatch is true, edit should be enabled
+        mockUseIsAnyNamespaceAuthorized
+          .mockReturnValueOnce(true) // canCreate
+          .mockReturnValueOnce(true) // canPatchRoleAssignment
+          .mockReturnValueOnce(true) // canDelete
+        render(<Component />)
+        await waitForText('test-cluster-1')
+
+        // The action dropdown mock should receive canPatch=true
+        // We verify this by checking the edit button is rendered and enabled
+        const editButtons = screen.getAllByText('Edit role assignment')
+        expect(editButtons.length).toBeGreaterThan(0)
+        const editButton = editButtons[0].closest('button')
+        expect(editButton).not.toBeDisabled()
+      })
+
+      it('disables edit action when canPatchRoleAssignment is false', async () => {
+        // When canPatch is false, edit should be disabled
+        mockUseIsAnyNamespaceAuthorized
+          .mockReturnValueOnce(true) // canCreate
+          .mockReturnValueOnce(false) // canPatchRoleAssignment
+          .mockReturnValueOnce(true) // canDelete
+        render(<Component />)
+        await waitForText('test-cluster-1')
+
+        // The action dropdown mock should receive canPatch=false
+        const editButtons = screen.getAllByText('Edit role assignment')
+        expect(editButtons.length).toBeGreaterThan(0)
+        const editButton = editButtons[0].closest('button')
+        expect(editButton).toBeDisabled()
+      })
+
+      it('canDeleteRoleAssignment requires both delete and patch permissions', async () => {
+        // canDelete=true but canPatch=false should result in canDeleteRoleAssignment=false
+        mockUseIsAnyNamespaceAuthorized
+          .mockReturnValueOnce(true) // canCreate
+          .mockReturnValueOnce(false) // canPatchRoleAssignment
+          .mockReturnValueOnce(true) // canDelete
+        render(<Component />)
+        await waitForText('test-cluster-1')
+
+        // Delete button should be disabled because canDeleteRoleAssignment = canDelete && canPatch = true && false = false
+        const deleteButtons = screen.getAllByText('Delete role assignment')
+        expect(deleteButtons.length).toBeGreaterThan(0)
+        const deleteButton = deleteButtons[0].closest('button')
+        expect(deleteButton).toBeDisabled()
+      })
+
+      it('enables delete when both delete and patch permissions are granted', async () => {
+        mockUseIsAnyNamespaceAuthorized
+          .mockReturnValueOnce(true) // canCreate
+          .mockReturnValueOnce(true) // canPatchRoleAssignment
+          .mockReturnValueOnce(true) // canDelete
+        render(<Component />)
+        await waitForText('test-cluster-1')
+
+        // Delete button should be enabled because canDeleteRoleAssignment = canDelete && canPatch = true && true = true
+        const deleteButtons = screen.getAllByText('Delete role assignment')
+        expect(deleteButtons.length).toBeGreaterThan(0)
+        const deleteButton = deleteButtons[0].closest('button')
+        expect(deleteButton).not.toBeDisabled()
+      })
+
+      it('disables delete when only patch permission is missing', async () => {
+        mockUseIsAnyNamespaceAuthorized
+          .mockReturnValueOnce(true) // canCreate
+          .mockReturnValueOnce(false) // canPatchRoleAssignment - missing
+          .mockReturnValueOnce(true) // canDelete
+        render(<Component />)
+        await waitForText('test-cluster-1')
+
+        // Delete button should be disabled
+        const deleteButtons = screen.getAllByText('Delete role assignment')
+        expect(deleteButtons.length).toBeGreaterThan(0)
+        const deleteButton = deleteButtons[0].closest('button')
+        expect(deleteButton).toBeDisabled()
+      })
+
+      it('disables delete when only delete permission is missing', async () => {
+        mockUseIsAnyNamespaceAuthorized
+          .mockReturnValueOnce(true) // canCreate
+          .mockReturnValueOnce(true) // canPatchRoleAssignment
+          .mockReturnValueOnce(false) // canDelete - missing
+        render(<Component />)
+        await waitForText('test-cluster-1')
+
+        // Delete button should be disabled because canDeleteRoleAssignment = canDelete && canPatch = false && true = false
+        const deleteButtons = screen.getAllByText('Delete role assignment')
+        expect(deleteButtons.length).toBeGreaterThan(0)
+        const deleteButton = deleteButtons[0].closest('button')
+        expect(deleteButton).toBeDisabled()
+      })
+
+      it('both edit and delete are disabled when patch permission is missing', async () => {
+        mockUseIsAnyNamespaceAuthorized
+          .mockReturnValueOnce(true) // canCreate
+          .mockReturnValueOnce(false) // canPatchRoleAssignment - missing
+          .mockReturnValueOnce(true) // canDelete
+        render(<Component />)
+        await waitForText('test-cluster-1')
+
+        // Both buttons should be disabled
+        const editButtons = screen.getAllByText('Edit role assignment')
+        const deleteButtons = screen.getAllByText('Delete role assignment')
+
+        expect(editButtons[0].closest('button')).toBeDisabled()
+        expect(deleteButtons[0].closest('button')).toBeDisabled()
+      })
+
+      it('edit is enabled but delete is disabled when only delete permission is missing', async () => {
+        mockUseIsAnyNamespaceAuthorized
+          .mockReturnValueOnce(true) // canCreate
+          .mockReturnValueOnce(true) // canPatchRoleAssignment
+          .mockReturnValueOnce(false) // canDelete - missing
+        render(<Component />)
+        await waitForText('test-cluster-1')
+
+        // Edit should be enabled (only needs patch)
+        // Delete should be disabled (needs both delete and patch)
+        const editButtons = screen.getAllByText('Edit role assignment')
+        const deleteButtons = screen.getAllByText('Delete role assignment')
+
+        expect(editButtons[0].closest('button')).not.toBeDisabled()
+        expect(deleteButtons[0].closest('button')).toBeDisabled()
       })
     })
   })
