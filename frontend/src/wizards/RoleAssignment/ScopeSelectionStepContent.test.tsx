@@ -94,6 +94,8 @@ describe('ScopeSelectionStepContent', () => {
   const defaultProps = {
     isDrawerExpanded: false,
     setIsDrawerExpanded: jest.fn(),
+    selectedClusterSets: [],
+    selectedClusters: [],
     onSelectClusterSets: jest.fn(),
     onSelectClusters: jest.fn(),
   }
