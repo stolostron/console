@@ -56,13 +56,14 @@ const mockSetModalProps = jest.fn()
 const mockDeleteAction = jest.fn()
 const mockOnEdit = jest.fn()
 
-function Component({ canDelete = true }: { canDelete?: boolean }) {
+function Component({ canDelete = true, canPatch = true }: { canDelete?: boolean; canPatch?: boolean }) {
   return (
     <RoleAssignmentActionDropdown
       roleAssignment={mockRoleAssignment}
       setModalProps={mockSetModalProps}
       deleteAction={mockDeleteAction}
       canDelete={canDelete}
+      canPatch={canPatch}
       onEdit={mockOnEdit}
     />
   )
@@ -230,5 +231,79 @@ describe('RoleAssignmentActionDropdown', () => {
 
     // Verify onEdit was called with the role assignment
     expect(mockOnEdit).toHaveBeenCalledWith(mockRoleAssignment)
+  })
+
+  it('disables edit option when canPatch is false', () => {
+    render(<Component canPatch={false} />)
+
+    const toggleButton = screen.getByRole('button')
+    fireEvent.click(toggleButton)
+
+    const editButton = screen.getByText(/edit role assignment/i).closest('button')
+
+    expect(editButton).toHaveAttribute('aria-disabled', 'true')
+    expect(editButton).toBeInTheDocument()
+
+    fireEvent.click(editButton!)
+    expect(mockOnEdit).not.toHaveBeenCalled()
+  })
+
+  it('enables edit option when canPatch is true', () => {
+    render(<Component canPatch={true} />)
+
+    const toggleButton = screen.getByRole('button')
+    fireEvent.click(toggleButton)
+
+    const editButton = screen.getByText(/edit role assignment/i).closest('button')
+
+    expect(editButton).not.toHaveAttribute('aria-disabled', 'true')
+    expect(editButton).toBeInTheDocument()
+
+    fireEvent.click(editButton!)
+    expect(mockOnEdit).toHaveBeenCalledWith(mockRoleAssignment)
+  })
+
+  it('disables both edit and delete options when canPatch and canDelete are false', () => {
+    render(<Component canPatch={false} canDelete={false} />)
+
+    const toggleButton = screen.getByRole('button')
+    fireEvent.click(toggleButton)
+
+    const editButton = screen.getByText(/edit role assignment/i).closest('button')
+    const deleteButton = screen.getByText(/delete role assignment/i).closest('button')
+
+    expect(editButton).toHaveAttribute('aria-disabled', 'true')
+    expect(deleteButton).toHaveAttribute('aria-disabled', 'true')
+
+    fireEvent.click(editButton!)
+    fireEvent.click(deleteButton!)
+    expect(mockOnEdit).not.toHaveBeenCalled()
+    expect(mockSetModalProps).not.toHaveBeenCalled()
+  })
+
+  it('enables edit but disables delete when canPatch is true and canDelete is false', () => {
+    render(<Component canPatch={true} canDelete={false} />)
+
+    const toggleButton = screen.getByRole('button')
+    fireEvent.click(toggleButton)
+
+    const editButton = screen.getByText(/edit role assignment/i).closest('button')
+    const deleteButton = screen.getByText(/delete role assignment/i).closest('button')
+
+    expect(editButton).not.toHaveAttribute('aria-disabled', 'true')
+    expect(deleteButton).toHaveAttribute('aria-disabled', 'true')
+  })
+
+  it('disables edit but enables delete when canPatch is false and canDelete is true', () => {
+    render(<Component canPatch={false} canDelete={true} />)
+
+    const toggleButton = screen.getByRole('button')
+    fireEvent.click(toggleButton)
+
+    const editButton = screen.getByText(/edit role assignment/i).closest('button')
+    const deleteButton = screen.getByText(/delete role assignment/i).closest('button')
+
+    expect(editButton).toHaveAttribute('aria-disabled', 'true')
+    expect(deleteButton).not.toHaveAttribute('aria-disabled', 'true')
   })
 })

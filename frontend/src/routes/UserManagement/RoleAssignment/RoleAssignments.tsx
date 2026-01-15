@@ -92,12 +92,14 @@ const ActionCell = ({
   setModalProps,
   deleteAction,
   canDelete,
+  canPatch,
   onEdit,
 }: {
   roleAssignment: FlattenedRoleAssignment
   setModalProps: React.Dispatch<React.SetStateAction<BulkActionModalProps<FlattenedRoleAssignment> | { open: false }>>
   deleteAction: (roleAssignment: FlattenedRoleAssignment) => IRequestResult<unknown>
   canDelete: boolean
+  canPatch: boolean
   onEdit: (roleAssignment: FlattenedRoleAssignment) => void
 }) => (
   <RoleAssignmentActionDropdown
@@ -105,6 +107,7 @@ const ActionCell = ({
     setModalProps={setModalProps}
     deleteAction={deleteAction}
     canDelete={canDelete}
+    canPatch={canPatch}
     onEdit={onEdit}
   />
 )
@@ -130,13 +133,13 @@ const RoleAssignments = ({
   const unauthorizedMessage = t('rbac.unauthorized')
 
   const canCreate = useIsAnyNamespaceAuthorized(rbacCreate(MulticlusterRoleAssignmentDefinition))
-  const canPatch = useIsAnyNamespaceAuthorized(rbacPatch(MulticlusterRoleAssignmentDefinition))
+  const canPatchRoleAssignment = useIsAnyNamespaceAuthorized(rbacPatch(MulticlusterRoleAssignmentDefinition))
   const canDelete = useIsAnyNamespaceAuthorized(rbacDelete(MulticlusterRoleAssignmentDefinition))
 
   // User needs both create and patch to add role assignments
-  const canCreateRoleAssignment = canCreate && canPatch
+  const canCreateRoleAssignment = canCreate && canPatchRoleAssignment
   // User needs both delete and patch to remove role assignments
-  const canDeleteRoleAssignment = canDelete && canPatch
+  const canDeleteRoleAssignment = canDelete && canPatchRoleAssignment
 
   const keyFn = useCallback(
     (roleAssignment: FlattenedRoleAssignment) =>
@@ -330,6 +333,7 @@ const RoleAssignments = ({
       setModalProps={setDeleteModalProps}
       deleteAction={deleteRoleAssignment}
       canDelete={canDeleteRoleAssignment}
+      canPatch={canPatchRoleAssignment}
       onEdit={handleEdit}
     />
   )
