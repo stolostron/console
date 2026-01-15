@@ -4,6 +4,30 @@
     "required": 1,
     "schema": {
       "type": "object",
+      "definitions": {
+        "clusterDecisionResource": {
+          "type": "object",
+          "required": ["configMapRef", "labelSelector", "requeueAfterSeconds"],
+          "properties": {
+            "configMapRef": { "const": "acm-placement" },
+            "labelSelector": {
+              "type": "object",
+              "properties": {
+                "matchLabels": {
+                  "type": "object",
+                  "properties": {
+                    "cluster.open-cluster-management.io/placement": { "type": "string" }
+                  },
+                  "required": ["cluster.open-cluster-management.io/placement"]
+                }
+              },
+              "required": ["matchLabels"]
+            },
+            "requeueAfterSeconds": { "type": "number" }
+          }
+        }
+      },
+
       "properties": {
         "apiVersion": { "type": "string" },
         "kind": { "const": "ApplicationSet" },
@@ -24,32 +48,92 @@
               "type": "array",
               "items": {
                 "type": "object",
-                "properties": {
-                  "clusterDecisionResource": {
-                    "type": "object",
+                "anyOf": [
+                  {
                     "properties": {
-                      "configMapRef": { "const": "acm-placement" },
-                      "requeueAfterSeconds": { "type": "number" },
-                      "labelSelector": {
-                        "type": "object",
-                        "properties": {
-                          "matchLabels": {
-                            "type": "object",
-                            "properties": {
-                              "cluster.open-cluster-management.io/placement": {
-                                "type": "string"
-                              }
-                            },
-                            "required": ["cluster.open-cluster-management.io/placement"]
-                          }
-                        },
-                        "required": ["matchLabels"]
+                      "clusterDecisionResource": {
+                        "$ref": "#/definitions/clusterDecisionResource"
                       }
                     },
-                    "required": ["configMapRef", "labelSelector", "requeueAfterSeconds"]
+                    "required": ["clusterDecisionResource"]
+                  },
+                  {
+                    "properties": {
+                      "matrix": {
+                        "type": "object",
+                        "properties": {
+                          "generators": {
+                            "validateGenerator": true,
+                            "type": "array",
+                            "contains": {
+                              "type": "object",
+                              "anyOf": [
+                                {
+                                  "properties": {
+                                    "clusterDecisionResource": {
+                                      "$ref": "#/definitions/clusterDecisionResource"
+                                    }
+                                  },
+                                  "required": ["clusterDecisionResource"]
+                                },
+                                {
+                                  "properties": {
+                                    "git": { "type": "object" }
+                                  },
+                                  "required": ["git"]
+                                },
+                                {
+                                  "properties": {
+                                    "git": { "type": "object" }
+                                  },
+                                  "required": ["git"]
+                                },
+                                {
+                                  "properties": {
+                                    "git": { "type": "object" }
+                                  },
+                                  "required": ["git"]
+                                },
+                                {
+                                  "properties": {
+                                    "list": { "type": "object" }
+                                  },
+                                  "required": ["list"]
+                                },
+                                {
+                                  "properties": {
+                                    "merge": { "type": "object" }
+                                  },
+                                  "required": ["merge"]
+                                },
+                                {
+                                  "properties": {
+                                    "scmProvider": { "type": "object" }
+                                  },
+                                  "required": ["scmProvider"]
+                                },
+                                {
+                                  "properties": {
+                                    "pullRequest": { "type": "object" }
+                                  },
+                                  "required": ["pullRequest"]
+                                },
+                                {
+                                  "properties": {
+                                    "plugin": { "type": "object" }
+                                  },
+                                  "required": ["plugin"]
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        "required": ["generators"]
+                      }
+                    },
+                    "required": ["matrix"]
                   }
-                },
-                "required": ["clusterDecisionResource"]
+                ]
               }
             },
             "template": {
