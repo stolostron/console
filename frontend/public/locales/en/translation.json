@@ -3375,6 +3375,7 @@
   "upgrade.ansible.prehook.failure": "Upgrade prehook jobs have failed:",
   "upgrade.ansible.prehookjob.title": "Upgrade prehook",
   "upgrade.available": "Upgrade available",
+  "upgrade.channel.not.configured": "Update channel not configured",
   "upgrade.selectChannel.submit": "Save",
   "upgrade.selectChannel.submit.processing": "Saving",
   "upgrade.selecting.channel": "Selecting {{channel}}",

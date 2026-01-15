@@ -1,6 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { IResource, IResourceDefinition } from './resource'
 import { Metadata } from './metadata'
+
+// Extend the external HostedClusterK8sResource type to include the channel field used by ACM
+export interface HostedClusterK8sResourceWithChannel extends HostedClusterK8sResource {
+  spec: HostedClusterK8sResource['spec'] & {
+    channel?: string
+  }
+}
 
 export const HostedClusterApiVersion = 'hypershift.openshift.io/v1beta1'
 export type HostedClusterApiVersionType = 'hypershift.openshift.io/v1beta1'
