@@ -6,6 +6,7 @@ import {
   ManagedClusterDefinition,
   isAutomationTemplate,
 } from '../../../../../../resources'
+import { HostedClusterK8sResourceWithChannel } from '../../../../../../resources/hosted-cluster'
 import { ClusterStatus } from '../../../../../../resources/utils'
 import {
   AcmButton,
@@ -83,6 +84,18 @@ export function ClusterOverviewPageContent() {
   const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
   const [curatorSummaryModalIsOpen, setCuratorSummaryModalIsOpen] = useState<boolean>(false)
   const { projects } = useProjects()
+
+  // Channel selection conditions for showing the edit button next to the Channel row
+  // - isSelectingChannel: true when ClusterCurator is processing a channel change
+  // - isReadySelectChannels: true for standard OCP clusters that have available channels
+  // - hypershiftNeedsChannel: true for hypershift clusters that don't have a channel configured yet
+  // - canSelectChannel: combined condition to show/hide the channel edit button
+  const isSelectingChannel = cluster?.distribution?.upgradeInfo?.isSelectingChannel
+  const isReadySelectChannels = cluster?.distribution?.upgradeInfo?.isReadySelectChannels
+  const hypershiftNeedsChannel =
+    cluster?.isHypershift && hostedCluster && !(hostedCluster as HostedClusterK8sResourceWithChannel).spec?.channel
+  const canSelectChannel =
+    cluster?.isManaged && !isSelectingChannel && (isReadySelectChannels || hypershiftNeedsChannel)
 
   const clusterProperties: { [key: string]: { key: string; value?: React.ReactNode; keyAction?: React.ReactNode } } = {
     /*
@@ -169,7 +182,7 @@ export function ClusterOverviewPageContent() {
           </Popover>
         </span>
       ),
-      keyAction: cluster?.isManaged && cluster.distribution?.upgradeInfo?.isReadySelectChannels && (
+      keyAction: canSelectChannel && (
         <RbacButton
           onClick={() => {
             if (cluster) {
