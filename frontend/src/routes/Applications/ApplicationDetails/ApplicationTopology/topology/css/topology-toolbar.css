@@ -1,6 +1,16 @@
 .pf-v6-c-toolbar {
-  padding: 10px 0 7px 25px;
+  padding: 10px 0 7px 14px;
   min-height: 40px;
+}
+
+.pf-v5-c-toolbar__item {
+  margin-right: 14px;
+}
+
+.how-to-read-text-container {
+  margin-left: 14px;
+  font-weight: bold;
+  font-size: 14px;
 }
 
 .channel-controls-container {

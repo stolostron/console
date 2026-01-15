@@ -4,7 +4,7 @@ import { applicationCache, IUIData } from './applications'
 import { getApplicationClusters, getApplicationsHelper, getApplicationType, getClusters } from './utils'
 import { Cluster, IApplicationSet, IResource } from '../../resources/resource'
 import { getHubClusterName, getKubeResources } from '../events'
-import { getPushedAppSetMap, getAppSetRelatedResources } from './applicationsArgo'
+import { getPushedAppSetMap, getAppSetRelatedResources, getAppStatusByNameMap } from './applicationsArgo'
 import { inflateApps } from '../../lib/compression'
 
 export function requestAggregatedUIData(req: Http2ServerRequest, res: Http2ServerResponse): void {
@@ -45,6 +45,7 @@ export function requestAggregatedUIData(req: Http2ServerRequest, res: Http2Serve
           ? getAppSetRelatedResources(resource, argoAppSets as IApplicationSet[])
           : ['', []],
       appSetApps: getPushedAppSetMap()[resource.metadata.name] || [],
+      appStatusByNameMap: getAppStatusByNameMap()[`${resource.metadata.namespace}/${resource.metadata.name}`] || {},
     }
     res.setHeader('Content-Type', 'application/json')
     res.end(JSON.stringify(result))

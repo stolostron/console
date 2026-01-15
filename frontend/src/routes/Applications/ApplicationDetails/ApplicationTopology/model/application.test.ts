@@ -23013,196 +23013,6 @@ const appData3: TestAppData = {
         },
       },
     ],
-    multiclusterApplicationSetReports: [
-      {
-        apiVersion: 'apps.open-cluster-management.io/v1alpha1',
-        kind: 'MulticlusterApplicationSetReport',
-        metadata: {
-          creationTimestamp: '2023-08-02T18:01:15Z',
-          generation: 157,
-          labels: {
-            'apps.open-cluster-management.io/hosting-applicationset': 'openshift-gitops.feng-pm',
-          },
-          name: 'feng-pm',
-          namespace: 'openshift-gitops',
-          resourceVersion: '77825791',
-          uid: '3b72afe6-d371-4507-a93b-61b185271773',
-        },
-        statuses: {
-          clusterConditions: [
-            {
-              app: 'openshift-gitops/feng-pm-feng-managed1/feng-managed1/feng-pm-feng-managed1-d304b',
-              cluster: 'feng-managed1',
-              healthStatus: 'Healthy',
-              syncStatus: 'Synced',
-            },
-            {
-              app: 'openshift-gitops/feng-pm-feng-managed2/feng-managed2/feng-pm-feng-managed2-4346d',
-              cluster: 'feng-managed2',
-              healthStatus: 'Healthy',
-              syncStatus: 'Synced',
-            },
-          ],
-          resources: [
-            {
-              apiVersion: 'apps/v1',
-              kind: 'Deployment',
-              name: 'helloworld-app-deploy',
-              namespace: 'feng-pm',
-            },
-            {
-              apiVersion: 'route.openshift.io/v1',
-              kind: 'Route',
-              name: 'helloworld-app-route',
-              namespace: 'feng-pm',
-            },
-            {
-              apiVersion: '/v1',
-              kind: 'Service',
-              name: 'helloworld-app-svc',
-              namespace: 'feng-pm',
-            },
-          ],
-          summary: {
-            clusters: '2',
-            healthy: '2',
-            inProgress: '0',
-            notHealthy: '0',
-            notSynced: '0',
-            synced: '2',
-          },
-        },
-      },
-      {
-        apiVersion: 'apps.open-cluster-management.io/v1alpha1',
-        kind: 'MulticlusterApplicationSetReport',
-        metadata: {
-          creationTimestamp: '2023-08-09T20:24:14Z',
-          generation: 26,
-          labels: {
-            'apps.open-cluster-management.io/hosting-applicationset': 'openshift-gitops.feng-pm-local',
-          },
-          name: 'feng-pm-local',
-          namespace: 'openshift-gitops',
-          resourceVersion: '77847772',
-          uid: '753238ea-e75d-476e-ba6f-2533021646ba',
-        },
-        statuses: {
-          clusterConditions: [
-            {
-              app: 'openshift-gitops/feng-pm-local-feng-managed1/feng-managed1/feng-pm-local-feng-managed1-35ba1',
-              cluster: 'feng-managed1',
-              healthStatus: 'Healthy',
-              syncStatus: 'Synced',
-            },
-          ],
-          resources: [
-            {
-              apiVersion: 'route.openshift.io/v1',
-              kind: 'Route',
-              name: 'helloworld-app-route',
-              namespace: 'feng-pm-local',
-            },
-            {
-              apiVersion: 'apps/v1',
-              kind: 'Deployment',
-              name: 'helloworld-app-deploy',
-              namespace: 'feng-pm-local',
-            },
-            {
-              apiVersion: '/v1',
-              kind: 'Service',
-              name: 'helloworld-app-svc',
-              namespace: 'feng-pm-local',
-            },
-          ],
-          summary: {
-            clusters: '1',
-            healthy: '1',
-            inProgress: '0',
-            notHealthy: '0',
-            notSynced: '0',
-            synced: '1',
-          },
-        },
-      },
-      {
-        apiVersion: 'apps.open-cluster-management.io/v1alpha1',
-        kind: 'MulticlusterApplicationSetReport',
-        metadata: {
-          creationTimestamp: '2023-08-09T15:05:44Z',
-          generation: 2296,
-          labels: {
-            'apps.open-cluster-management.io/hosting-applicationset': 'openshift-gitops.mysql-test',
-          },
-          name: 'mysql-test',
-          namespace: 'openshift-gitops',
-          resourceVersion: '77854026',
-          uid: 'aca19c0a-650f-467e-8113-60133e0b22da',
-        },
-        statuses: {
-          clusterConditions: [
-            {
-              app: 'openshift-gitops/mysql-test-feng-managed1/feng-managed1/mysql-test-feng-managed1-19b7d',
-              cluster: 'feng-managed1',
-              healthStatus: 'Healthy',
-              syncStatus: 'Synced',
-            },
-            {
-              app: 'openshift-gitops/mysql-test-feng-managed2/feng-managed2/mysql-test-feng-managed2-2649c',
-              cluster: 'feng-managed2',
-              healthStatus: 'Healthy',
-              syncStatus: 'Synced',
-            },
-          ],
-          resources: [
-            {
-              apiVersion: 'apps/v1',
-              kind: 'Deployment',
-              name: 'mysql-test-feng-managed1',
-              namespace: 'gitops-httpd-application',
-            },
-            {
-              apiVersion: '/v1',
-              kind: 'PersistentVolumeClaim',
-              name: 'mysql-test-feng-managed1',
-              namespace: 'gitops-httpd-application',
-            },
-            {
-              apiVersion: '/v1',
-              kind: 'Secret',
-              name: 'mysql-test-feng-managed1',
-              namespace: 'gitops-httpd-application',
-            },
-            {
-              apiVersion: '/v1',
-              kind: 'Service',
-              name: 'mysql-test-feng-managed1',
-              namespace: 'gitops-httpd-application',
-            },
-            {
-              apiVersion: '/v1',
-              kind: 'ConfigMap',
-              name: 'mysql-test-feng-managed1-test',
-              namespace: 'gitops-httpd-application',
-            },
-            {
-              apiVersion: '/v1',
-              kind: 'PersistentVolume',
-              name: 'pvc-b8373fce-8225-4cd4-91c1-c11340aad868',
-            },
-          ],
-          summary: {
-            clusters: '2',
-            healthy: '2',
-            inProgress: '0',
-            notHealthy: '0',
-            notSynced: '0',
-            synced: '2',
-          },
-        },
-      },
-    ],
   },
   cluster: undefined,
   apiversion: 'applicationset.argoproj.io',
@@ -25836,7 +25646,7 @@ const appData3: TestAppData = {
     },
   ],
 }
-const result3: ApplicationModel = {
+const result3 = {
   name: 'feng-pm',
   namespace: 'openshift-gitops',
   app: {
@@ -26023,6 +25833,7 @@ const result3: ApplicationModel = {
       },
     },
   ],
+  appStatusByNameMap: undefined,
   appSetClusters: [
     {
       name: 'local-cluster',

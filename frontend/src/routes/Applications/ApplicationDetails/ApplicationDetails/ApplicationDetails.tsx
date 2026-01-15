@@ -195,7 +195,7 @@ export function ApplicationDetailsPageContent() {
       if (isArgoApp) {
         lastSyncedTimeStamp = applicationData?.application?.app?.status?.reconciledAt ?? ''
       } else if (isAppSet) {
-        applicationData.application.appSetApps.forEach((appSet: ApplicationSet) => {
+        applicationData.application.appSetApps?.forEach((appSet: ApplicationSet) => {
           if (!lastSyncedTimeStamp) {
             lastSyncedTimeStamp = (appSet as any)?.status?.reconciledAt ?? ''
           }
@@ -288,7 +288,7 @@ export function ApplicationDetailsPageContent() {
       subsList = allSubscriptions
 
       let lastSynced = ''
-      allSubscriptions.forEach((subs: Subscription) => {
+      allSubscriptions?.forEach((subs: Subscription) => {
         if (!lastSynced) {
           lastSynced = subs?.metadata?.annotations?.['apps.open-cluster-management.io/manual-refresh-time'] ?? ''
         }
@@ -472,7 +472,7 @@ function createStatusIcons(applicationData: ApplicationDataType, t: TFunction) {
   if (application && appData && topology) {
     elements = cloneDeep(getDiagramElements(cloneDeep(topology), statuses, canUpdateStatuses, t))
 
-    elements.nodes.forEach((node) => {
+    elements.nodes?.forEach((node) => {
       //get pulse for all objects generated from a deployable
       const pulse: 'green' = node?.specs?.pulse
 

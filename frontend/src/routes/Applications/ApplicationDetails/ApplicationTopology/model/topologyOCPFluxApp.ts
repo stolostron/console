@@ -3,12 +3,17 @@
 import { searchClient } from '../../../../Search/search-sdk/search-client'
 import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
 import { convertStringToQuery } from '../helpers/search-helper'
-import { createReplicaChild } from './topologySubscription'
-import { addClusters, getClusterName, processMultiples } from './topologyUtils'
+import {
+  addClusters,
+  getClusterName,
+  getResourceTypes,
+  processMultiples,
+  createReplicaChild,
+  addTopologyNode,
+} from './topologyUtils'
 import type {
   OCPFluxApplicationModel,
-  OCPFluxSearchResult,
-  OCPFluxTopologyResult,
+  TopologySearchResult,
   ProcessedOCPFluxResource,
   ResourceItem,
   TopologyNode,
@@ -16,7 +21,9 @@ import type {
   SearchQuery,
   ClusterInfo,
   OCPFluxClusterSummary,
+  ExtendedTopology,
 } from '../types'
+import { ToolbarControl } from '../topology/components/TopologyToolbar'
 
 /**
  * List of Kubernetes resource kinds that are excluded from topology visualization
@@ -36,11 +43,12 @@ const excludedKindList: string[] = ['Cluster', 'Pod', 'ReplicaSet', 'Replication
  * @returns Promise resolving to topology data with nodes, links, and raw search data
  */
 export async function getOCPFluxAppTopology(
+  toolbarControl: ToolbarControl,
   application: OCPFluxApplicationModel,
   hubClusterName: string
-): Promise<OCPFluxTopologyResult> {
+): Promise<ExtendedTopology> {
   // Initialize search results container
-  let searchResults: OCPFluxSearchResult = {}
+  let searchResults: TopologySearchResult = {}
 
   // Fetch resource data from search API based on application labels
   searchResults = await getResourcesWithAppLabel(application)
@@ -49,7 +57,189 @@ export async function getOCPFluxAppTopology(
   const resources: ResourceItem[] = processSearchResults(searchResults)
 
   // Generate the topology graph from processed resources
-  return generateTopology(application, resources, searchResults, hubClusterName)
+  return generateTopology(toolbarControl, application, resources, searchResults, hubClusterName)
+}
+
+/**
+ * Generates the complete topology data model from application and resource information
+ *
+ * This function creates the topology graph by:
+ * 1. Creating the root application node
+ * 2. Adding cluster nodes for deployment targets
+ * 3. Processing and adding resource nodes with proper relationships
+ * 4. Filtering out excluded resource types
+ *
+ * @param application - The application model with metadata
+ * @param resources - Array of processed resource items
+ * @param searchResults - Raw search results for reference
+ * @param hubClusterName - Hub cluster name for local deployment detection
+ * @returns Complete topology with nodes, links, and raw data
+ */
+export function generateTopology(
+  toolbarControl: ToolbarControl,
+  application: OCPFluxApplicationModel,
+  resources: ResourceItem[],
+  searchResults: TopologySearchResult,
+  hubClusterName: string
+): ExtendedTopology {
+  // Initialize topology containers
+  const links: TopologyLink[] = []
+  const nodes: TopologyNode[] = []
+  const { name, namespace } = application
+  const clusters: ClusterInfo[] = []
+  const clusterNames: string[] = []
+  toolbarControl.setAllApplications?.([name])
+  const { activeTypes } = toolbarControl
+
+  // Extract cluster information from application configuration
+  if (application.app.cluster) {
+    clusterNames.push(application.app.cluster.name)
+    toolbarControl.setAllClusters?.(clusterNames)
+    clusters.push({
+      metadata: {
+        name: application.app.cluster.name,
+        namespace: application.app.cluster.namespace || application.app.cluster.name,
+      },
+      status: application.app.cluster.status as ClusterInfo['status'],
+    })
+  }
+
+  // Create the root application node
+  const appId: string = `application--${name}`
+  const clusterSummary: OCPFluxClusterSummary = {
+    isLocal: clusterNames.includes(hubClusterName),
+    remoteCount: clusterNames.includes(hubClusterName) ? clusterNames.length - 1 : clusterNames.length,
+  }
+
+  nodes.push({
+    name,
+    namespace,
+    type: application.isOCPApp ? 'ocpapplication' : 'fluxapplication',
+    id: appId,
+    uid: appId,
+    specs: {
+      isDesign: true, // Indicates this is a design-time node (not a runtime resource)
+      resourceCount: 0, // Will be updated as resources are processed
+      raw: application.app, // Store raw application data for details view
+      allClusters: clusterSummary,
+      clusterNames,
+      pulse: 'green', // Default to healthy status
+    },
+  })
+
+  // Add cluster nodes and establish parent-child relationships
+  const clusterId: string = addClusters(appId, undefined, '', clusterNames, clusters, links, nodes, undefined)
+
+  // Filter out excluded resource types (Pods, ReplicaSets, etc.)
+  const filteredResources: ResourceItem[] = resources.filter((obj: ResourceItem) => {
+    const kind: string = (obj.kind ?? '') as string
+    return !excludedKindList.includes(kind)
+  })
+
+  // set toolbar filter types
+  toolbarControl.setAllTypes?.(getResourceTypes(filteredResources))
+
+  // Process resources with multiplicity handling and add to topology
+  processMultiples(filteredResources).forEach((resource: Record<string, unknown>) => {
+    // Cast the processed resource to our expected type with proper type assertion
+    const typedResource = resource as unknown as ProcessedOCPFluxResource
+    addOCPFluxResource(clusterId, clusterNames, typedResource, activeTypes, links, nodes, hubClusterName)
+  })
+
+  // Return complete topology with unique nodes and all links
+  return {
+    nodes: nodes.filter((node, index, array) => array.findIndex((n) => n.uid === node.uid) === index), // Remove duplicate nodes based on unique ID
+    links,
+    rawSearchData: searchResults, // Include raw data for debugging/details
+  }
+}
+
+/**
+ * Adds a single OCP/Flux resource node to the topology
+ *
+ * This function creates topology nodes for individual Kubernetes resources
+ * deployed by OCP or Flux applications. It handles API version construction,
+ * parent-child relationships, and replica child creation.
+ *
+ * @param clusterId - Parent cluster node ID
+ * @param clusterNames - Array of cluster names where resource is deployed
+ * @param resource - The processed resource to add
+ * @param links - Array to add new topology links
+ * @param nodes - Array to add new topology nodes
+ * @param hubClusterName - Hub cluster name for cluster identification
+ */
+const addOCPFluxResource = (
+  clusterId: string,
+  clusterNames: string[] | undefined,
+  resource: ProcessedOCPFluxResource,
+  activeTypes: string[] | undefined,
+  links: TopologyLink[],
+  nodes: TopologyNode[],
+  hubClusterName: string
+): void => {
+  // Extract resource metadata
+  const {
+    name: deployableName,
+    namespace: deployableNamespace,
+    kind,
+    apiversion,
+    apigroup,
+    resources,
+    resourceCount,
+  } = resource
+
+  // Convert kind to lowercase for consistent node typing
+  const type: string = kind.toLowerCase()
+
+  // Generate unique member ID for the resource node
+  const memberId: string = `member--member--deployable--member--clusters--${getClusterName(
+    clusterId,
+    hubClusterName
+  )}--${type}--${deployableNamespace}--${deployableName}`
+
+  // Construct basic resource metadata
+  const raw: Record<string, unknown> = {
+    metadata: {
+      name: deployableName,
+      namespace: deployableNamespace,
+    },
+  }
+
+  // Construct full API version if available
+  let apiVersion: string | null = null
+  if (apiversion) {
+    apiVersion = apigroup ? `${apigroup}/${apiversion}` : apiversion
+  }
+  if (apiVersion) {
+    raw.apiVersion = apiVersion
+  }
+
+  // Create the deployable resource node
+  let deployableObj: TopologyNode = {
+    name: deployableName,
+    namespace: deployableNamespace,
+    type,
+    id: memberId,
+    uid: memberId,
+    specs: {
+      isDesign: false, // This is a runtime resource, not a design element
+      raw,
+      clustersNames: clusterNames || [],
+      parent: {
+        clusterId, // Reference to parent cluster for navigation
+      },
+      resources, // Individual resource instances
+      resourceCount: resourceCount || clusterNames?.length || 0,
+    },
+  }
+
+  // Add node to topology
+  deployableObj = addTopologyNode(clusterId, deployableObj, activeTypes, links, nodes)
+
+  // Create replica children for deployment-type resources
+  // This handles ReplicaSets, ReplicationControllers, and their Pods
+  const template: Record<string, unknown> = { metadata: {} }
+  createReplicaChild(deployableObj, clusterNames || [], template, activeTypes, links, nodes)
 }
 
 /**
@@ -61,7 +251,7 @@ export async function getOCPFluxAppTopology(
  * @param application - The application model containing name, namespace, and type info
  * @returns Promise resolving to search results from GraphQL API
  */
-async function getResourcesWithAppLabel(application: OCPFluxApplicationModel): Promise<OCPFluxSearchResult> {
+async function getResourcesWithAppLabel(application: OCPFluxApplicationModel): Promise<TopologySearchResult> {
   const { name, namespace, app } = application
   const { cluster } = app
 
@@ -106,187 +296,6 @@ export const getQueryStringForLabel = (label: string, namespace: string, cluster
 }
 
 /**
- * Generates the complete topology data model from application and resource information
- *
- * This function creates the topology graph by:
- * 1. Creating the root application node
- * 2. Adding cluster nodes for deployment targets
- * 3. Processing and adding resource nodes with proper relationships
- * 4. Filtering out excluded resource types
- *
- * @param application - The application model with metadata
- * @param resources - Array of processed resource items
- * @param searchResults - Raw search results for reference
- * @param hubClusterName - Hub cluster name for local deployment detection
- * @returns Complete topology with nodes, links, and raw data
- */
-export function generateTopology(
-  application: OCPFluxApplicationModel,
-  resources: ResourceItem[],
-  searchResults: OCPFluxSearchResult,
-  hubClusterName: string
-): OCPFluxTopologyResult {
-  // Initialize topology containers
-  const links: TopologyLink[] = []
-  const nodes: TopologyNode[] = []
-  const { name, namespace } = application
-  const clusters: ClusterInfo[] = []
-  const clusterNames: string[] = []
-
-  // Extract cluster information from application configuration
-  if (application.app.cluster) {
-    clusterNames.push(application.app.cluster.name)
-    clusters.push({
-      metadata: {
-        name: application.app.cluster.name,
-        namespace: application.app.cluster.namespace || application.app.cluster.name,
-      },
-      status: application.app.cluster.status as ClusterInfo['status'],
-    })
-  }
-
-  // Create the root application node
-  const appId: string = `application--${name}`
-  const clusterSummary: OCPFluxClusterSummary = {
-    isLocal: clusterNames.includes(hubClusterName),
-    remoteCount: clusterNames.includes(hubClusterName) ? clusterNames.length - 1 : clusterNames.length,
-  }
-
-  nodes.push({
-    name,
-    namespace,
-    type: application.isOCPApp ? 'ocpapplication' : 'fluxapplication',
-    id: appId,
-    uid: appId,
-    specs: {
-      isDesign: true, // Indicates this is a design-time node (not a runtime resource)
-      resourceCount: 0, // Will be updated as resources are processed
-      raw: application.app, // Store raw application data for details view
-      allClusters: clusterSummary,
-      clusterNames,
-      pulse: 'green', // Default to healthy status
-    },
-  })
-
-  // Add cluster nodes and establish parent-child relationships
-  const clusterId: string = addClusters(appId, undefined, '', clusterNames, clusters, links, nodes, undefined)
-
-  // Filter out excluded resource types (Pods, ReplicaSets, etc.)
-  const filteredResources: ResourceItem[] = resources.filter((obj: ResourceItem) => {
-    const kind: string = (obj.kind ?? '') as string
-    return !excludedKindList.includes(kind)
-  })
-
-  // Process resources with multiplicity handling and add to topology
-  processMultiples(filteredResources).forEach((resource: Record<string, unknown>) => {
-    // Cast the processed resource to our expected type with proper type assertion
-    const typedResource = resource as unknown as ProcessedOCPFluxResource
-    addOCPFluxResource(clusterId, clusterNames, typedResource, links, nodes, hubClusterName)
-  })
-
-  // Return complete topology with unique nodes and all links
-  return {
-    nodes: nodes.filter((node, index, array) => array.findIndex((n) => n.uid === node.uid) === index), // Remove duplicate nodes based on unique ID
-    links,
-    rawSearchData: searchResults, // Include raw data for debugging/details
-  }
-}
-
-/**
- * Adds a single OCP/Flux resource node to the topology
- *
- * This function creates topology nodes for individual Kubernetes resources
- * deployed by OCP or Flux applications. It handles API version construction,
- * parent-child relationships, and replica child creation.
- *
- * @param clusterId - Parent cluster node ID
- * @param clusterNames - Array of cluster names where resource is deployed
- * @param resource - The processed resource to add
- * @param links - Array to add new topology links
- * @param nodes - Array to add new topology nodes
- * @param hubClusterName - Hub cluster name for cluster identification
- */
-const addOCPFluxResource = (
-  clusterId: string,
-  clusterNames: string[],
-  resource: ProcessedOCPFluxResource,
-  links: TopologyLink[],
-  nodes: TopologyNode[],
-  hubClusterName: string
-): void => {
-  // Extract resource metadata
-  const {
-    name: deployableName,
-    namespace: deployableNamespace,
-    kind,
-    apiversion,
-    apigroup,
-    resources,
-    resourceCount,
-  } = resource
-
-  // Convert kind to lowercase for consistent node typing
-  const type: string = kind.toLowerCase()
-
-  // Generate unique member ID for the resource node
-  const memberId: string = `member--member--deployable--member--clusters--${getClusterName(
-    clusterId,
-    hubClusterName
-  )}--${type}--${deployableNamespace}--${deployableName}`
-
-  // Construct basic resource metadata
-  const raw: Record<string, unknown> = {
-    metadata: {
-      name: deployableName,
-      namespace: deployableNamespace,
-    },
-  }
-
-  // Construct full API version if available
-  let apiVersion: string | null = null
-  if (apiversion) {
-    apiVersion = apigroup ? `${apigroup}/${apiversion}` : apiversion
-  }
-  if (apiVersion) {
-    raw.apiVersion = apiVersion
-  }
-
-  // Create the deployable resource node
-  const deployableObj: TopologyNode = {
-    name: deployableName,
-    namespace: deployableNamespace,
-    type,
-    id: memberId,
-    uid: memberId,
-    specs: {
-      isDesign: false, // This is a runtime resource, not a design element
-      raw,
-      clustersNames: clusterNames,
-      parent: {
-        clusterId, // Reference to parent cluster for navigation
-      },
-      resources, // Individual resource instances
-      resourceCount: resourceCount ? resourceCount : clusterNames.length,
-    },
-  }
-
-  // Add node to topology
-  nodes.push(deployableObj)
-
-  // Create link from cluster to resource
-  links.push({
-    from: { uid: clusterId },
-    to: { uid: memberId },
-    type: '', // Empty type for standard parent-child relationship
-  })
-
-  // Create replica children for deployment-type resources
-  // This handles ReplicaSets, ReplicationControllers, and their Pods
-  const template: Record<string, unknown> = { metadata: {} }
-  createReplicaChild(deployableObj, clusterNames, template, links, nodes)
-}
-
-/**
  * Processes raw search results to extract and combine resource items
  *
  * This function takes the GraphQL search response and flattens it into
@@ -296,7 +305,7 @@ const addOCPFluxResource = (
  * @param searchResults - Raw search results from GraphQL API
  * @returns Flattened array of all resource items
  */
-export function processSearchResults(searchResults: OCPFluxSearchResult): ResourceItem[] {
+export function processSearchResults(searchResults: TopologySearchResult): Array<Record<string, unknown>> {
   // Extract direct search result items with null safety
   const items: ResourceItem[] = searchResults?.data?.searchResult?.[0]?.items ?? []
 

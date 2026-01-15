@@ -2,13 +2,31 @@
 
 import { getArgoTopology } from './topologyArgo'
 import type { ArgoApplicationTopologyData, ArgoTopologyData, ManagedCluster, ArgoTopologyResult } from '../types'
+import type { ToolbarControl } from '../topology/components/TopologyToolbar'
+
+const mockToolbarControl: ToolbarControl = {
+  allClusters: undefined,
+  activeClusters: undefined,
+  setActiveClusters: () => {},
+  setAllClusters: () => {},
+  allApplications: undefined,
+  activeApplications: undefined,
+  setAllApplications: () => {},
+  setActiveApplications: () => {},
+  allTypes: undefined,
+  activeTypes: undefined,
+  setAllTypes: () => {},
+  setActiveTypes: () => {},
+}
 
 it('getArgoTopology success scenario', () => {
-  expect(getArgoTopology(application, argoData, managedClusters, 'local-cluster')).toEqual(result1)
+  expect(getArgoTopology(mockToolbarControl, application, argoData, managedClusters, 'local-cluster')).toEqual(result1)
 })
 
 it('getArgoTopology success scenario', () => {
-  expect(getArgoTopology(application2, argoData2, managedClusters, 'local-cluster')).toEqual(result2)
+  expect(getArgoTopology(mockToolbarControl, application2, argoData2, managedClusters, 'local-cluster')).toEqual(
+    result2
+  )
 })
 
 const result1: ArgoTopologyResult = {

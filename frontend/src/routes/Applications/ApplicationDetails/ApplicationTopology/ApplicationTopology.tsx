@@ -45,9 +45,10 @@ export function ApplicationTopologyPageContent() {
       statuses: undefined,
     },
     channelControl,
+    toolbarControl,
   } = useApplicationDetailsContext()
   const { t } = useTranslation()
-  const { refreshTime, application, appData, topology, statuses } = applicationData
+  const { refreshTime, topology, statuses } = applicationData
   let hubClusterName = ''
   if (topology) {
     hubClusterName = topology.hubClusterName
@@ -124,7 +125,7 @@ export function ApplicationTopologyPageContent() {
 
   const canUpdateStatuses = !!statuses
   useEffect(() => {
-    if (application && appData && topology) {
+    if (topology) {
       setElements(cloneDeep(getDiagramElements(cloneDeep(topology), statuses, canUpdateStatuses, t)))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -140,6 +141,7 @@ export function ApplicationTopologyPageContent() {
         argoAppDetailsContainerControl={argoAppDetailsContainerControl}
         clusterDetailsContainerControl={clusterDetailsContainerControl}
         channelControl={channelControl}
+        toolbarControl={toolbarControl}
         nodeDetailsProvider={nodeDetailsProvider}
         setDrawerContent={setDrawerContent}
         hubClusterName={hubClusterName}

@@ -70,8 +70,6 @@ import {
   ManagedClusterSetBindingApiVersion,
   ManagedClusterSetBindingKind,
   ManagedClusterSetKind,
-  MulticlusterApplicationSetReportApiVersion,
-  MulticlusterApplicationSetReportKind,
   MulticlusterRoleAssignmentApiVersion,
   MulticlusterRoleAssignmentKind,
   MultiClusterEngineApiVersion,
@@ -156,7 +154,6 @@ import {
   managedClusterSetBindingsState,
   managedClusterSetsState,
   managedClustersState,
-  multiclusterApplicationSetReportState,
   multiClusterEnginesState,
   multiclusterRoleAssignmentState,
   namespacesState,
@@ -229,7 +226,6 @@ export function LoadData(props: { children?: ReactNode }) {
   const setManagedClusterSetBindings = useSetRecoilState(managedClusterSetBindingsState)
   const setManagedClusterSets = useSetRecoilState(managedClusterSetsState)
   const setManagedClusters = useSetRecoilState(managedClustersState)
-  const setMulticlusterApplicationSetReportState = useSetRecoilState(multiclusterApplicationSetReportState)
   const setMultiClusterEngines = useSetRecoilState(multiClusterEnginesState)
   const setMulticlusterRoleAssignments = useSetRecoilState(multiclusterRoleAssignmentState)
   const setNamespaces = useSetRecoilState(namespacesState)
@@ -324,11 +320,6 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(ManagedClusterInfoApiVersion, ManagedClusterInfoKind, setManagedClusterInfos)
     addSetter(ManagedClusterSetApiVersion, ManagedClusterSetKind, setManagedClusterSets)
     addSetter(ManagedClusterSetBindingApiVersion, ManagedClusterSetBindingKind, setManagedClusterSetBindings)
-    addSetter(
-      MulticlusterApplicationSetReportApiVersion,
-      MulticlusterApplicationSetReportKind,
-      setMulticlusterApplicationSetReportState
-    )
     addSetter(MulticlusterRoleAssignmentApiVersion, MulticlusterRoleAssignmentKind, setMulticlusterRoleAssignments)
     addSetter(MultiClusterEngineApiVersion, MultiClusterEngineKind, setMultiClusterEngines)
     addSetter(NamespaceApiVersion, NamespaceKind, setNamespaces)
@@ -389,7 +380,6 @@ export function LoadData(props: { children?: ReactNode }) {
     setManagedClusterSetBindings,
     setManagedClusterSets,
     setManagedClusters,
-    setMulticlusterApplicationSetReportState,
     setMultiClusterEngines,
     setMulticlusterRoleAssignments,
     setNamespaces,

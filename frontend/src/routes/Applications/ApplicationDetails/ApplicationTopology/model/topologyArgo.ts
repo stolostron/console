@@ -1,12 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { getClusterName, addClusters, processMultiples } from './topologyUtils'
 import {
+  getClusterName,
+  addClusters,
+  processMultiples,
+  getResourceTypes,
   createReplicaChild,
   createControllerRevisionChild,
   createDataVolumeChild,
   createVirtualMachineInstance,
-} from './topologySubscription'
+  addTopologyNode,
+} from './topologyUtils'
 import type {
   ArgoApplicationTopologyData,
   ArgoTopologyData,
@@ -18,6 +22,7 @@ import type {
   TopologyLink,
   ArgoApplicationResource,
 } from '../types'
+import { ToolbarControl } from '../topology/components/TopologyToolbar'
 
 /**
  * Generates topology data for Argo CD applications
@@ -33,6 +38,7 @@ import type {
  * @returns Topology object containing nodes and links for visualization
  */
 export function getArgoTopology(
+  toolbarControl: ToolbarControl,
   application: ArgoApplicationTopologyData,
   argoData: ArgoTopologyData,
   managedClusters: ManagedCluster[],
@@ -44,6 +50,8 @@ export function getArgoTopology(
 
   // Extract application name and namespace
   const { name, namespace } = application
+  toolbarControl.setAllApplications?.([name])
+  const { activeTypes } = toolbarControl
 
   const clusters: ArgoClusterInfo[] = []
   let clusterNames: string[] = []
@@ -81,6 +89,7 @@ export function getArgoTopology(
 
   // Remove duplicate cluster names
   clusterNames = Array.from(new Set(clusterNames))
+  toolbarControl.setAllClusters?.(clusterNames)
 
   // Extract related applications from topology data if available
   const relatedApps = topology ? topology.nodes[0]?.specs?.relatedApps : undefined
@@ -132,6 +141,9 @@ export function getArgoTopology(
   // Get deployed resources from the Argo application status
   const resources = (application.app?.status?.resources ?? []) as ArgoApplicationResource[]
 
+  // set toolbar filter types
+  toolbarControl.setAllTypes?.(getResourceTypes(resources))
+
   // Process and create nodes for each deployed resource
   processMultiples(resources).forEach((deployable) => {
     const {
@@ -179,7 +191,7 @@ export function getArgoTopology(
     }
 
     // Create the deployable resource node
-    const deployableObj: TopologyNode = {
+    let deployableObj: TopologyNode = {
       name: deployableName,
       namespace: deployableNamespace,
       type,
@@ -193,32 +205,25 @@ export function getArgoTopology(
           clusterId,
         },
         resources: deployableResources,
-        resourceCount: resourceCount ? resourceCount : clusterNames.length,
+        resourceCount: resourceCount || clusterNames.length,
       },
     }
 
     // Add the deployable node and link it to the cluster
-    nodes.push(deployableObj)
-    links.push({
-      from: { uid: clusterId },
-      to: { uid: memberId },
-      type: '',
-    })
-
-    // Create child nodes for resources that typically have replicas or sub-resources
-    const template = { metadata: {} }
+    deployableObj = addTopologyNode(clusterId, deployableObj, activeTypes, links, nodes)
 
     // Create replica child nodes if this resource defines replicas
-    createReplicaChild(deployableObj, clusterNames, template, links, nodes)
+    const template = { metadata: {} }
+    createReplicaChild(deployableObj, clusterNames, template, activeTypes, links, nodes)
 
     // Create controller revision child nodes for resources like StatefulSets
-    createControllerRevisionChild(deployableObj, clusterNames, links, nodes)
+    createControllerRevisionChild(deployableObj, clusterNames, activeTypes, links, nodes)
 
     // Create data volume child nodes for virtualization resources
-    createDataVolumeChild(deployableObj, clusterNames, links, nodes)
+    createDataVolumeChild(deployableObj, clusterNames, activeTypes, links, nodes)
 
     // Create virtual machine instance child nodes
-    createVirtualMachineInstance(deployableObj, clusterNames, links, nodes)
+    createVirtualMachineInstance(deployableObj, clusterNames, activeTypes, links, nodes)
   })
 
   // Return the complete topology with unique nodes and all links

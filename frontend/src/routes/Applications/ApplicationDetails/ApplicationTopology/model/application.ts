@@ -64,9 +64,11 @@ export const getApplication = async (
       },
     }).promise) as Application
     if (app) {
+      // Recursively find any object with clusterDecisionResource within app.spec
+      const generatorWithCDR = findObjectWithKey(safeGet(app, 'spec', {}), 'clusterDecisionResource')
       placementName = safeGet(
-        app,
-        'spec.generators[0].clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]',
+        generatorWithCDR,
+        'clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]',
         ''
       )
 
@@ -162,6 +164,7 @@ export const getApplication = async (
     const appForFetch: any = { ...app }
     delete appForFetch.cluster
     delete appForFetch.status
+    delete appForFetch.spec?.generators
     delete appForFetch.metadata.managedFields
     const uidata: any = await fetchAggregate(SupportedAggregate.uidata, backendUrl, appForFetch as IResource)
     ;(model as any).clusterList = uidata?.clusterList
@@ -171,13 +174,9 @@ export const getApplication = async (
       return model
     }
 
-    if (isAppSet) {
-      if (isAppSetPullModel) {
-        return getAppSetApplicationPullModel(model, app, recoilStates, clusters ?? [])
-      }
-      // because these values require all argo apps to calculate
-      // we get the data from the backend
+    if (isAppSet && uidata) {
       ;(model as any).appSetApps = uidata.appSetApps
+      ;(model as any).appStatusByNameMap = uidata.appStatusByNameMap
       ;(model as any).appSetClusters = uidata.clusterList.reduce((list: any[], clusterName: string) => {
         const _cluster = (clusters ?? []).find((c) => c.name === clusterName)
         if (_cluster) {
@@ -196,79 +195,6 @@ export const getApplication = async (
 
     return await getSubscriptionApplication(model as any, app, selectedChannel, recoilStates)
   }
-  return model
-}
-
-/**
- * For pull-model ApplicationSets, build a synthetic view of argo apps and clusters
- * from the MultiClusterApplicationSetReport objects in state.
- */
-export const getAppSetApplicationPullModel = (
-  model: ApplicationModel,
-  app: Record<string, any>,
-  recoilStates: RecoilStates,
-  clusters: ManagedCluster[]
-): ApplicationModel => {
-  const { multiclusterApplicationSetReports } = recoilStates
-  const multiclusterApplicationSetReport = multiclusterApplicationSetReports?.find(
-    (report: any) => report.metadata.name === app.metadata.name && report.metadata.namespace === app.metadata.namespace
-  )
-  const argoApps = safeGet(multiclusterApplicationSetReport, 'statuses.clusterConditions', []) as any[]
-  const resources = safeGet(multiclusterApplicationSetReport, 'statuses.resources', [])
-  const appSetApps: any[] = []
-  const appSetClusters: any[] = []
-
-  argoApps.forEach((argoApp: any) => {
-    const appStr = safeGet(argoApp, 'app')
-    const appData = appStr ? (appStr as string).split('/') : []
-    const conditions = safeGet(argoApp, 'conditions', [])
-    appSetApps.push({
-      apiVersion: ArgoApplicationApiVersion,
-      kind: ArgoApplicationKind,
-      metadata: {
-        name: appData[1],
-        namespace: appData[0],
-      },
-      spec: {
-        destination: {
-          name: argoApp.cluster,
-        },
-      },
-      status: {
-        health: {
-          status: argoApp.healthStatus,
-        },
-        conditions,
-        sync: {
-          status: argoApp.syncStatus,
-        },
-        resources,
-      },
-    })
-
-    const cluster = findCluster(clusters, argoApp.cluster, false)
-    if (cluster) {
-      const url = cluster.kubeApiServer
-      let status: string | undefined
-      if (cluster.status === 'ready') {
-        status = 'ok'
-      } else if (cluster.status === 'unknown') {
-        status = 'offline'
-      } else {
-        status = cluster.status
-      }
-      appSetClusters.push({
-        name: cluster.name,
-        namespace: cluster.namespace,
-        url,
-        status,
-        created: cluster.creationTimestamp,
-      })
-    }
-  })
-  ;(model as any).appSetApps = appSetApps
-  ;(model as any).appSetClusters = appSetClusters
-
   return model
 }
 
@@ -318,6 +244,21 @@ const getRemoteArgoApp = async (
   if (response) {
     return response.result
   }
+}
+
+/**
+ * Recursively search an object for a property with the given key.
+ * Returns the first matching object that contains the key, or undefined.
+ */
+const findObjectWithKey = (obj: unknown, key: string): Record<string, unknown> | undefined => {
+  if (!obj || typeof obj !== 'object') return undefined
+  const record = obj as Record<string, unknown>
+  if (key in record) return record
+  for (const value of Object.values(record)) {
+    const found = findObjectWithKey(value, key)
+    if (found) return found
+  }
+  return undefined
 }
 
 export default getApplication

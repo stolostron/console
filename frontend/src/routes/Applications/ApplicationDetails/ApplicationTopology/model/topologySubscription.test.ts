@@ -2,13 +2,13 @@
 
 import { PlacementKind } from '../../../../../resources'
 import { PlacementApiVersion } from '../../../../../wizards/common/resources/IPlacement'
+import { getSubscriptionTopology } from './topologySubscription'
 import {
   createReplicaChild,
-  getSubscriptionTopology,
   createControllerRevisionChild,
   createDataVolumeChild,
   createVirtualMachineInstance,
-} from './topologySubscription'
+} from './topologyUtils'
 import { TopologyNode, Topology, SubscriptionApplicationModel, ManagedCluster, RelatedKindGroup } from '../types'
 
 // Extended types for test data that may have additional properties
@@ -37,27 +37,27 @@ const clustersNames: string[] = ['local-cluster']
 
 describe('createReplicaChild', () => {
   it('creates replicatset', () => {
-    expect(createReplicaChild(parentObject, clustersNames, template, [], [])).toEqual(result)
+    expect(createReplicaChild(parentObject, clustersNames, template, undefined, [], [])).toEqual(result)
   })
 
   it('creates ReplicaSet', () => {
-    expect(createReplicaChild(parentObject, clustersNames, template2, [], [])).toEqual(result2)
+    expect(createReplicaChild(parentObject, clustersNames, template2, undefined, [], [])).toEqual(result2)
   })
 
   it('creates replicationcontroller', () => {
-    expect(createReplicaChild(parentObjectRC, clustersNames, template3, [], [])).toEqual(result3)
+    expect(createReplicaChild(parentObjectRC, clustersNames, template3, undefined, [], [])).toEqual(result3)
   })
 
   it('creates replicationcontroller', () => {
-    expect(createReplicaChild(parentObjectRC, clustersNames, template4, [], [])).toEqual(result4)
+    expect(createReplicaChild(parentObjectRC, clustersNames, template4, undefined, [], [])).toEqual(result4)
   })
 
   it('creates replicationcontroller with Pod', () => {
-    expect(createReplicaChild(parentObjectRC, clustersNames, template5, [], [])).toEqual(result5)
+    expect(createReplicaChild(parentObjectRC, clustersNames, template5, undefined, [], [])).toEqual(result5)
   })
 
   it('creates replicationcontroller with pod', () => {
-    expect(createReplicaChild(parentObjectRC, clustersNames, template6, [], [])).toEqual(result6)
+    expect(createReplicaChild(parentObjectRC, clustersNames, template6, undefined, [], [])).toEqual(result6)
   })
 })
 
@@ -69,19 +69,19 @@ describe('getSubscriptionTopology', () => {
 
 describe('createControllerRevisionChild', () => {
   it('createControllerRevisionChild', () => {
-    expect(createControllerRevisionChild(node, ['local-cluster'], [], [])).toEqual(result8)
+    expect(createControllerRevisionChild(node, ['local-cluster'], undefined, [], [])).toEqual(result8)
   })
 })
 
 describe('createDataVolumeChild', () => {
   it('createDataVolumeChild', () => {
-    expect(createDataVolumeChild(node2, ['local-cluster'], [], [])).toEqual(result9)
+    expect(createDataVolumeChild(node2, ['local-cluster'], undefined, [], [])).toEqual(result9)
   })
 })
 
 describe('createVirtualMachineInstance', () => {
   it('createVirtualMachineInstance', () => {
-    expect(createVirtualMachineInstance(node3, ['local-cluster'], [], [])).toEqual(result10)
+    expect(createVirtualMachineInstance(node3, ['local-cluster'], undefined, [], [])).toEqual(result10)
   })
 })
 const template: { related: TestRelatedKindGroup[] } = {
@@ -8705,6 +8705,7 @@ const result7: TestTopology = {
       namespace: 'feng-cronjob',
       specs: {
         isDesign: true,
+        isPairedInLayoutWithParent: true,
         raw: {
           apiVersion: 'cluster.open-cluster-management.io/v1beta1',
           kind: 'PlacementDecision',
@@ -12594,54 +12595,63 @@ const result7: TestTopology = {
             kind: 'CronJob',
             name: 'hello',
             namespace: 'feng-cronjob',
+            template: undefined,
           },
           {
             apiVersion: 'batch/v1',
             kind: 'CronJob',
             name: 'hello2',
             namespace: 'feng-cronjob',
+            template: undefined,
           },
           {
             apiVersion: 'batch/v1',
             kind: 'CronJob',
             name: 'hello3',
             namespace: 'feng-cronjob',
+            template: undefined,
           },
           {
             apiVersion: 'batch/v1',
             kind: 'CronJob',
             name: 'hello5',
             namespace: 'feng-cronjob',
+            template: undefined,
           },
           {
             apiVersion: 'batch/v1',
             kind: 'CronJob',
             name: 'hello7',
             namespace: 'feng-cronjob',
+            template: undefined,
           },
           {
             apiVersion: 'batch/v1',
             kind: 'CronJob',
             name: 'hello8',
             namespace: 'feng-cronjob',
+            template: undefined,
           },
           {
             apiVersion: 'batch/v1',
             kind: 'CronJob',
             name: 'hello1',
             namespace: 'feng-cronjob',
+            template: undefined,
           },
           {
             apiVersion: 'batch/v1',
             kind: 'CronJob',
             name: 'hello4',
             namespace: 'feng-cronjob',
+            template: undefined,
           },
           {
             apiVersion: 'batch/v1',
             kind: 'CronJob',
             name: 'hello6',
             namespace: 'feng-cronjob',
+            template: undefined,
           },
         ],
         template: undefined,

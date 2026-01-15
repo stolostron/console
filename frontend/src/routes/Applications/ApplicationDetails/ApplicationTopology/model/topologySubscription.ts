@@ -1,6 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { createChildNode, addClusters, processMultiples } from './topologyUtils'
+import {
+  addClusters,
+  processMultiples,
+  createReplicaChild,
+  createControllerRevisionChild,
+  createIngressRouteChild,
+  createPodChild,
+} from './topologyUtils'
 import type {
   ManagedCluster,
   SubscriptionKind,
@@ -16,8 +23,6 @@ import type {
 } from '../types'
 import { deepClone } from '../utils'
 import { SubscriptionReport } from '../../../../../resources'
-// Resource types that typically have pods as children
-const typesWithPods = ['replicaset', 'replicationcontroller', 'statefulset', 'daemonset']
 
 /**
  * Generates topology data for subscription-based applications
@@ -268,7 +273,7 @@ const addSubscriptionRules = (
       type: 'placements',
       id: ruleId,
       uid: ruleId,
-      specs: { isDesign: true, raw: rule },
+      specs: { isDesign: true, raw: rule, isPairedInLayoutWithParent: true },
       isPlacement,
       placement,
     })
@@ -550,7 +555,7 @@ const addSubscriptionDeployedResource = (
       clustersNames,
       template,
       resources,
-      resourceCount: resourceCount ? resourceCount : clustersNames.length,
+      resourceCount: resourceCount || clustersNames.length,
     },
   }
 
@@ -564,188 +569,10 @@ const addSubscriptionDeployedResource = (
   })
 
   // Create child nodes based on resource type
-  createReplicaChild(node, clustersNames, template, links, nodes)
-  createControllerRevisionChild(node, clustersNames, links, nodes)
-  createIngressRouteChild(node, clustersNames, links, nodes)
-  createPodChild(node, clustersNames, links, nodes)
+  createReplicaChild(node, clustersNames, template, undefined, links, nodes)
+  createControllerRevisionChild(node, clustersNames, undefined, links, nodes)
+  createIngressRouteChild(node, clustersNames, undefined, links, nodes)
+  createPodChild(node, clustersNames, undefined, links, nodes)
 
   return node
-}
-
-/**
- * Creates replica child nodes for Deployment and DeploymentConfig resources
- *
- * This function handles the creation of ReplicaSet/ReplicationController child nodes
- * and their associated Pod children for deployment-type resources.
- *
- * @param parentObject - Parent deployment object
- * @param clustersNames - Array of cluster names
- * @param template - Resource template with related resource information
- * @param links - Array to add new links to
- * @param nodes - Array to add new nodes to
- * @returns The created pod node or undefined
- */
-export const createReplicaChild = (
-  parentObject: TopologyNode,
-  clustersNames: string[],
-  template: unknown,
-  links: TopologyLink[],
-  nodes: TopologyNode[]
-): TopologyNode | undefined => {
-  const parentType = parentObject?.type || ''
-
-  if (parentType === 'deploymentconfig' || parentType === 'deployment') {
-    const type = parentType === 'deploymentconfig' ? 'replicationcontroller' : 'replicaset'
-
-    if (template && (template as any).related) {
-      const relatedMap = Object.fromEntries(((template as any).related || []).map((item: any) => [item.kind, item]))
-
-      // Check for replica resources in related objects
-      if (
-        relatedMap['replicaset'] ||
-        relatedMap['ReplicaSet'] ||
-        relatedMap['replicationcontroller'] ||
-        relatedMap['ReplicationController']
-      ) {
-        const pNode = createChildNode(parentObject, clustersNames, type, links, nodes)
-        const replicaCount =
-          (
-            relatedMap['replicaset'] ||
-            relatedMap['ReplicaSet'] ||
-            relatedMap['replicationcontroller'] ||
-            relatedMap['ReplicationController']
-          )?.items?.[0]?.desired || 0
-        return createChildNode(pNode, clustersNames, 'pod', links, nodes, replicaCount)
-      } else if (relatedMap['pod'] || relatedMap['Pod']) {
-        // Direct pod relationship without replica controller
-        return createChildNode(parentObject, clustersNames, 'pod', links, nodes)
-      }
-    } else {
-      // Create replica child without template information
-      const pNode = createChildNode(parentObject, clustersNames, type, links, nodes)
-      if (typesWithPods.includes(type)) {
-        return createChildNode(pNode, clustersNames, 'pod', links, nodes)
-      }
-    }
-  }
-  return undefined
-}
-
-/**
- * Creates route child nodes for Ingress resources
- *
- * @param parentObject - Parent ingress object
- * @param clustersNames - Array of cluster names
- * @param links - Array to add new links to
- * @param nodes - Array to add new nodes to
- * @returns The created route node or undefined
- */
-const createIngressRouteChild = (
-  parentObject: TopologyNode,
-  clustersNames: string[],
-  links: TopologyLink[],
-  nodes: TopologyNode[]
-): TopologyNode | undefined => {
-  const parentType = parentObject?.type || ''
-  if (parentType === 'ingress') {
-    const type = 'route'
-    return createChildNode(parentObject, clustersNames, type, links, nodes)
-  }
-  return undefined
-}
-
-/**
- * Creates controller revision child nodes for DaemonSet, StatefulSet, and VirtualMachine resources
- *
- * @param parentObject - Parent object
- * @param clustersNames - Array of cluster names
- * @param links - Array to add new links to
- * @param nodes - Array to add new nodes to
- * @returns The created controller revision node or undefined
- */
-export const createControllerRevisionChild = (
-  parentObject: TopologyNode,
-  clustersNames: string[],
-  links: TopologyLink[],
-  nodes: TopologyNode[]
-): TopologyNode | undefined => {
-  const parentType = parentObject?.type || ''
-  if (parentType === 'daemonset' || parentType === 'statefulset' || parentType === 'virtualmachine') {
-    const pNode = createChildNode(parentObject, clustersNames, 'controllerrevision', links, nodes)
-
-    // Create pod children for non-virtual machine types
-    if (parentType !== 'virtualmachine') {
-      return createChildNode(pNode, clustersNames, 'pod', links, nodes)
-    }
-    return pNode
-  }
-  return undefined
-}
-
-/**
- * Creates data volume child nodes for VirtualMachine resources
- *
- * @param parentObject - Parent virtual machine object
- * @param clustersNames - Array of cluster names
- * @param links - Array to add new links to
- * @param nodes - Array to add new nodes to
- * @returns The created persistent volume claim node or parent object
- */
-export const createDataVolumeChild = (
-  parentObject: TopologyNode,
-  clustersNames: string[],
-  links: TopologyLink[],
-  nodes: TopologyNode[]
-): TopologyNode => {
-  const parentType = parentObject?.type || ''
-  if (parentType === 'virtualmachine') {
-    const pNode = createChildNode(parentObject, clustersNames, 'datavolume', links, nodes)
-    return createChildNode(pNode, clustersNames, 'persistentvolumeclaim', links, nodes)
-  }
-  return parentObject
-}
-
-/**
- * Creates virtual machine instance child nodes for VirtualMachine resources
- *
- * @param parentObject - Parent virtual machine object
- * @param clustersNames - Array of cluster names
- * @param links - Array to add new links to
- * @param nodes - Array to add new nodes to
- * @returns The created pod node or parent object
- */
-export const createVirtualMachineInstance = (
-  parentObject: TopologyNode,
-  clustersNames: string[],
-  links: TopologyLink[],
-  nodes: TopologyNode[]
-): TopologyNode => {
-  const parentType = parentObject?.type || ''
-  if (parentType === 'virtualmachine') {
-    const pNode = createChildNode(parentObject, clustersNames, 'virtualmachineinstance', links, nodes)
-    return createChildNode(pNode, clustersNames, 'pod', links, nodes)
-  }
-  return parentObject
-}
-
-/**
- * Creates pod child nodes for ReplicaSet and ReplicationController resources
- *
- * @param parentObject - Parent replica object
- * @param clustersNames - Array of cluster names
- * @param links - Array to add new links to
- * @param nodes - Array to add new nodes to
- * @returns The created pod node or undefined
- */
-const createPodChild = (
-  parentObject: TopologyNode,
-  clustersNames: string[],
-  links: TopologyLink[],
-  nodes: TopologyNode[]
-): TopologyNode | undefined => {
-  const parentType = parentObject?.type || ''
-  if (parentType === 'replicaset' || parentType === 'replicationcontroller') {
-    return createChildNode(parentObject, clustersNames, 'pod', links, nodes)
-  }
-  return undefined
 }

@@ -1,15 +1,71 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { nockSearch } from '../../../../../lib/nock-util'
-import { getAppSetTopology, openArgoCDEditor } from './topologyAppSet'
+import { getAppSetTopology, openArgoCDEditor, openRouteURL } from './topologyAppSet'
 import i18next, { TFunction } from 'i18next'
-import type { ApplicationModel, AppSetTopologyResult } from '../types'
+import type { ApplicationModel, ExtendedTopology } from '../types'
+import type { ToolbarControl } from '../topology/components/TopologyToolbar'
+import { searchClient } from '../../../../Search/search-sdk/search-client'
 
 const t: TFunction = i18next.t.bind(i18next)
 
-it('getAppSetTopology success scenario', () => {
-  expect(getAppSetTopology(application, 'local-cluster')).toEqual(result)
-})
+// Mock the search client
+jest.mock('../../../../Search/search-sdk/search-client', () => ({
+  searchClient: {
+    query: jest.fn(),
+  },
+}))
+
+// Mock resources/utils
+jest.mock('../../../../../resources/utils', () => ({
+  getResource: jest.fn(() => ({
+    promise: Promise.resolve({
+      spec: {
+        host: 'argocd.example.com',
+        tls: { termination: 'edge' },
+      },
+    }),
+  })),
+  listNamespacedResources: jest.fn(() => ({
+    promise: Promise.resolve([
+      {
+        metadata: {
+          name: 'argocd-server',
+          namespace: 'openshift-gitops',
+          labels: {
+            'app.kubernetes.io/part-of': 'argocd',
+            'app.kubernetes.io/name': 'argocd-server',
+          },
+        },
+        spec: {
+          host: 'argocd.example.com',
+          tls: { termination: 'edge' },
+        },
+      },
+    ]),
+  })),
+}))
+
+// Mock window.open
+const mockWindowOpen = jest.fn()
+Object.defineProperty(window, 'open', { value: mockWindowOpen, writable: true })
+
+const mockToolbarControl: ToolbarControl = {
+  allClusters: undefined,
+  activeClusters: undefined,
+  setActiveClusters: jest.fn(),
+  setAllClusters: jest.fn(),
+  allApplications: undefined,
+  activeApplications: undefined,
+  setAllApplications: jest.fn(),
+  setActiveApplications: jest.fn(),
+  allTypes: undefined,
+  activeTypes: undefined,
+  setAllTypes: jest.fn(),
+  setActiveTypes: jest.fn(),
+}
+
+const mockSearchClient = searchClient as jest.Mocked<typeof searchClient>
 
 describe('openArgoCDEditor remote cluster', () => {
   const mockSearchQuery = {
@@ -33,899 +89,631 @@ describe('openArgoCDEditor remote cluster', () => {
   }
   beforeEach(async () => {
     nockSearch(mockSearchQuery, { data: {} })
+    mockWindowOpen.mockClear()
   })
   it('can open link on remote cluster', () => {
     expect(openArgoCDEditor('cluster1', 'app1-ns', 'app1', () => {}, t, 'local-cluster')).toEqual(undefined)
   })
 })
 
-const application: ApplicationModel = {
-  name: 'feng-appset-hello',
-  namespace: 'openshift-gitops',
-  app: {
-    apiVersion: 'argoproj.io/v1alpha1',
-    kind: 'ApplicationSet',
-    metadata: {
-      creationTimestamp: '2023-01-23T16:50:12Z',
-      name: 'feng-appset-hello',
-      namespace: 'openshift-gitops',
-      resourceVersion: '1166741',
-      uid: 'b77de6bd-8a45-4069-a3d0-2119fa0e7f36',
-    },
-    spec: {
-      generators: [
-        {
-          clusterDecisionResource: {
-            configMapRef: 'acm-placement',
-            labelSelector: {
-              matchLabels: {
-                'cluster.open-cluster-management.io/placement': 'feng-appset-hello-placement',
+describe('openArgoCDEditor local cluster', () => {
+  beforeEach(() => {
+    mockWindowOpen.mockClear()
+  })
+
+  it('can open link on local hub cluster', () => {
+    const toggleLoading = jest.fn()
+    expect(
+      openArgoCDEditor('local-cluster', 'openshift-gitops', 'test-app', toggleLoading, t, 'local-cluster')
+    ).toEqual(undefined)
+    expect(toggleLoading).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('openRouteURL', () => {
+  beforeEach(() => {
+    mockWindowOpen.mockClear()
+  })
+
+  it('can open route URL on local hub cluster', () => {
+    const toggleLoading = jest.fn()
+    const routeObject = {
+      name: 'my-route',
+      namespace: 'my-namespace',
+      cluster: 'local-cluster',
+      kind: 'Route',
+      apigroup: 'route.openshift.io',
+      apiversion: 'v1',
+    }
+    openRouteURL(routeObject, toggleLoading, 'local-cluster')
+    expect(toggleLoading).toHaveBeenCalledTimes(1)
+  })
+
+  it('handles route with missing properties', () => {
+    const toggleLoading = jest.fn()
+    const routeObject = {}
+    openRouteURL(routeObject, toggleLoading, 'local-cluster')
+    expect(toggleLoading).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('getAppSetTopology', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockSearchClient.query.mockResolvedValue({
+      loading: false,
+      networkStatus: 7,
+      data: {
+        searchResult: [
+          {
+            items: [
+              {
+                _uid: 'local-cluster/app-uid-1',
+                name: 'test-appset-local-cluster',
+                namespace: 'openshift-gitops',
+                cluster: 'local-cluster',
+                kind: 'Application',
               },
-            },
-            requeueAfterSeconds: 180,
+            ],
+            related: [
+              {
+                kind: 'Deployment',
+                items: [
+                  {
+                    _uid: 'local-cluster/deployment-uid-1',
+                    _relatedUids: ['local-cluster/app-uid-1'],
+                    name: 'nginx-deployment',
+                    namespace: 'openshift-gitops',
+                    cluster: 'local-cluster',
+                    kind: 'Deployment',
+                    apiversion: 'v1',
+                    apigroup: 'apps',
+                  },
+                ],
+              },
+              {
+                kind: 'Service',
+                items: [
+                  {
+                    _uid: 'local-cluster/service-uid-1',
+                    _relatedUids: ['local-cluster/app-uid-1'],
+                    name: 'nginx-service',
+                    namespace: 'openshift-gitops',
+                    cluster: 'local-cluster',
+                    kind: 'Service',
+                    apiversion: 'v1',
+                  },
+                ],
+              },
+            ],
           },
-        },
-      ],
-      template: {
+        ],
+      },
+    })
+  })
+
+  it('should generate topology for ApplicationSet with placement', async () => {
+    const application: ApplicationModel = {
+      name: 'test-appset',
+      namespace: 'openshift-gitops',
+      app: {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'ApplicationSet',
         metadata: {
-          labels: {
-            'velero.io/exclude-from-backup': 'true',
-          },
-          name: 'feng-appset-hello-{{name}}',
+          name: 'test-appset',
+          namespace: 'openshift-gitops',
         },
         spec: {
-          destination: {
-            namespace: 'feng-appset-hello',
-            server: '{{server}}',
-          },
-          project: 'default',
-          source: {
-            path: 'helloworld',
-            repoURL: 'https://github.com/fxiang1/app-samples',
-            targetRevision: 'main',
-          },
-          syncPolicy: {
-            automated: {
-              prune: true,
-              selfHeal: true,
-            },
-            syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
-          },
-        },
-      },
-    },
-    status: {
-      conditions: [
-        {
-          lastTransitionTime: '2023-01-23T16:50:12Z',
-          message: 'Successfully generated parameters for all Applications',
-          reason: 'ApplicationSetUpToDate',
-          status: 'False',
-          type: 'ErrorOccurred',
-        },
-        {
-          lastTransitionTime: '2023-01-23T16:50:12Z',
-          message: 'Successfully generated parameters for all Applications',
-          reason: 'ParametersGenerated',
-          status: 'True',
-          type: 'ParametersGenerated',
-        },
-        {
-          lastTransitionTime: '2023-01-23T16:50:12Z',
-          message: 'ApplicationSet up to date',
-          reason: 'ApplicationSetUpToDate',
-          status: 'True',
-          type: 'ResourcesUpToDate',
-        },
-      ],
-    },
-  },
-  metadata: {
-    creationTimestamp: '2023-01-23T16:50:12Z',
-    generation: 1,
-    name: 'feng-appset-hello',
-    namespace: 'openshift-gitops',
-    resourceVersion: '1166741',
-    uid: 'b77de6bd-8a45-4069-a3d0-2119fa0e7f36',
-  },
-  placement: {
-    apiVersion: 'cluster.open-cluster-management.io/v1beta1',
-    kind: 'Placement',
-    metadata: {
-      creationTimestamp: '2023-01-23T16:50:12Z',
-      name: 'feng-appset-hello-placement',
-      namespace: 'openshift-gitops',
-      resourceVersion: '1166737',
-      uid: '62fdd3f9-a906-4735-80fd-814cb5db22e5',
-    },
-    spec: {
-      clusterSets: ['default'],
-    },
-    status: {
-      conditions: [
-        {
-          lastTransitionTime: '2023-01-23T16:50:12Z',
-          message: 'Placement configurations check pass',
-          reason: 'Succeedconfigured',
-          status: 'False',
-          type: 'PlacementMisconfigured',
-        },
-        {
-          lastTransitionTime: '2023-01-23T16:50:12Z',
-          message: 'All cluster decisions scheduled',
-          reason: 'AllDecisionsScheduled',
-          status: 'True',
-          type: 'PlacementSatisfied',
-        },
-      ],
-      numberOfSelectedClusters: 1,
-    },
-  },
-  isArgoApp: false,
-  isAppSet: true,
-  isOCPApp: false,
-  isFluxApp: false,
-  appSetApps: [
-    {
-      apiVersion: 'argoproj.io/v1alpha1',
-      kind: 'Application',
-      metadata: {
-        creationTimestamp: '2023-01-23T16:50:12Z',
-        finalizers: ['resources-finalizer.argocd.argoproj.io'],
-        generation: 14,
-        labels: {
-          'velero.io/exclude-from-backup': 'true',
-        },
-        name: 'feng-appset-hello-local-cluster',
-        namespace: 'openshift-gitops',
-        ownerReferences: [
-          {
-            apiVersion: 'argoproj.io/v1alpha1',
-            blockOwnerDeletion: true,
-            controller: true,
-            kind: 'ApplicationSet',
-            name: 'feng-appset-hello',
-            uid: 'b77de6bd-8a45-4069-a3d0-2119fa0e7f36',
-          },
-        ],
-        resourceVersion: '1175771',
-        uid: '142e2afb-5359-4b1a-b10b-ccab726b689d',
-      },
-      spec: {
-        destination: {
-          namespace: 'feng-appset-hello',
-          server: 'https://api.app-aws-411ga-hub-bwrqq.dev06.red-chesterfield.com:6443',
-        },
-        project: 'default',
-        source: {
-          path: 'helloworld',
-          repoURL: 'https://github.com/fxiang1/app-samples',
-          targetRevision: 'main',
-        },
-        syncPolicy: {
-          automated: {
-            prune: true,
-            selfHeal: true,
-          },
-          syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
-        },
-      },
-      status: {
-        health: {
-          status: 'Healthy',
-        },
-        history: [
-          {
-            deployStartedAt: '2023-01-23T16:50:13Z',
-            deployedAt: '2023-01-23T16:50:19Z',
-            id: 0,
-            revision: 'b8fee607fd58e3477e74d674c0b7f8b9250a63be',
-            source: {
-              path: 'helloworld',
-              repoURL: 'https://github.com/fxiang1/app-samples',
-              targetRevision: 'main',
-            },
-          },
-        ],
-        operationState: {
-          finishedAt: '2023-01-23T16:50:19Z',
-          message: 'successfully synced (all tasks run)',
-          operation: {
-            initiatedBy: {
-              automated: true,
-            },
-            retry: {
-              limit: 5,
-            },
-            sync: {
-              prune: true,
-              revision: 'b8fee607fd58e3477e74d674c0b7f8b9250a63be',
-              syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
-            },
-          },
-          phase: 'Succeeded',
-          startedAt: '2023-01-23T16:50:13Z',
-          syncResult: {
-            resources: [
-              {
-                group: '',
-                hookPhase: 'Succeeded',
-                kind: 'Namespace',
-                message: 'namespace/feng-appset-hello created',
-                name: 'feng-appset-hello',
-                namespace: '',
-                status: 'Synced',
-                syncPhase: 'PreSync',
-                version: 'v1',
-              },
-              {
-                group: '',
-                hookPhase: 'Running',
-                kind: 'Service',
-                message: 'service/helloworld-app-svc created',
-                name: 'helloworld-app-svc',
-                namespace: 'feng-appset-hello',
-                status: 'Synced',
-                syncPhase: 'Sync',
-                version: 'v1',
-              },
-              {
-                group: 'apps',
-                hookPhase: 'Running',
-                kind: 'Deployment',
-                message: 'deployment.apps/helloworld-app-deploy created',
-                name: 'helloworld-app-deploy',
-                namespace: 'feng-appset-hello',
-                status: 'Synced',
-                syncPhase: 'Sync',
-                version: 'v1',
-              },
-              {
-                group: 'route.openshift.io',
-                hookPhase: 'Running',
-                kind: 'Route',
-                message: 'route.route.openshift.io/helloworld-app-route created',
-                name: 'helloworld-app-route',
-                namespace: 'feng-appset-hello',
-                status: 'Synced',
-                syncPhase: 'Sync',
-                version: 'v1',
-              },
-            ],
-            revision: 'b8fee607fd58e3477e74d674c0b7f8b9250a63be',
-            source: {
-              path: 'helloworld',
-              repoURL: 'https://github.com/fxiang1/app-samples',
-              targetRevision: 'main',
-            },
-          },
-        },
-        reconciledAt: '2023-01-23T16:57:05Z',
-        resources: [
-          {
-            health: {
-              status: 'Healthy',
-            },
-            kind: 'Service',
-            name: 'helloworld-app-svc',
-            namespace: 'feng-appset-hello',
-            status: 'Synced',
-            version: 'v1',
-          },
-          {
-            group: 'apps',
-            health: {
-              status: 'Healthy',
-            },
-            kind: 'Deployment',
-            name: 'helloworld-app-deploy',
-            namespace: 'feng-appset-hello',
-            status: 'Synced',
-            version: 'v1',
-          },
-          {
-            group: 'route.openshift.io',
-            health: {
-              message: 'Route is healthy',
-              status: 'Healthy',
-            },
-            kind: 'Route',
-            name: 'helloworld-app-route',
-            namespace: 'feng-appset-hello',
-            status: 'Synced',
-            version: 'v1',
-          },
-        ],
-        sourceType: 'Directory',
-        summary: {
-          images: ['quay.io/fxiang1/helloworld:0.0.1'],
-        },
-        sync: {
-          status: 'Synced',
-        },
-      },
-    },
-  ],
-  appSetClusters: [
-    {
-      name: 'local-cluster',
-      namespace: 'local-cluster',
-      url: 'https://api.app-aws-411ga-hub-bwrqq.dev06.red-chesterfield.com:6443',
-      status: 'ok',
-      created: '2023-01-19T20:00:18Z',
-    },
-  ],
-  isAppSetPullModel: false,
-}
-const result: AppSetTopologyResult = {
-  links: [
-    {
-      from: {
-        uid: 'application--feng-appset-hello',
-      },
-      specs: {
-        isDesign: true,
-      },
-      to: {
-        uid: 'member--placements--openshift-gitops--feng-appset-hello',
-      },
-      type: '',
-    },
-    {
-      from: {
-        uid: 'member--placements--openshift-gitops--feng-appset-hello',
-      },
-      specs: {
-        isDesign: true,
-      },
-      to: {
-        uid: 'member--clusters--',
-      },
-      type: '',
-    },
-    {
-      from: {
-        uid: 'member--clusters--',
-      },
-      to: {
-        uid: 'member--member--deployable--member--clusters----service--feng-appset-hello--helloworld-app-svc',
-      },
-      type: '',
-    },
-    {
-      from: {
-        uid: 'member--clusters--',
-      },
-      to: {
-        uid: 'member--member--deployable--member--clusters----deployment--feng-appset-hello--helloworld-app-deploy',
-      },
-      type: '',
-    },
-    {
-      from: {
-        uid: 'member--member--deployable--member--clusters----deployment--feng-appset-hello--helloworld-app-deploy',
-      },
-      to: {
-        uid: 'member--member--deployable--member--clusters----deployment--feng-appset-hello--helloworld-app-deploy--replicaset--helloworld-app-deploy',
-      },
-      type: '',
-    },
-    {
-      from: {
-        uid: 'member--member--deployable--member--clusters----deployment--feng-appset-hello--helloworld-app-deploy--replicaset--helloworld-app-deploy',
-      },
-      to: {
-        uid: 'member--member--deployable--member--clusters----deployment--feng-appset-hello--helloworld-app-deploy--replicaset--helloworld-app-deploy--pod--helloworld-app-deploy',
-      },
-      type: '',
-    },
-    {
-      from: {
-        uid: 'member--clusters--',
-      },
-      to: {
-        uid: 'member--member--deployable--member--clusters----route--feng-appset-hello--helloworld-app-route',
-      },
-      type: '',
-    },
-  ],
-  nodes: [
-    {
-      id: 'application--feng-appset-hello',
-      isArgoCDPullModelTargetLocalCluster: false,
-      isPlacementFound: true,
-      name: 'feng-appset-hello',
-      namespace: 'openshift-gitops',
-      specs: {
-        allClusters: {
-          isLocal: true,
-          remoteCount: 0,
-        },
-        appSetApps: [
-          {
-            apiVersion: 'argoproj.io/v1alpha1',
-            kind: 'Application',
-            metadata: {
-              creationTimestamp: '2023-01-23T16:50:12Z',
-              finalizers: ['resources-finalizer.argocd.argoproj.io'],
-              generation: 14,
-              labels: {
-                'velero.io/exclude-from-backup': 'true',
-              },
-              name: 'feng-appset-hello-local-cluster',
-              namespace: 'openshift-gitops',
-              ownerReferences: [
-                {
-                  apiVersion: 'argoproj.io/v1alpha1',
-                  blockOwnerDeletion: true,
-                  controller: true,
-                  kind: 'ApplicationSet',
-                  name: 'feng-appset-hello',
-                  uid: 'b77de6bd-8a45-4069-a3d0-2119fa0e7f36',
+          generators: [
+            {
+              clusterDecisionResource: {
+                labelSelector: {
+                  matchLabels: {
+                    'cluster.open-cluster-management.io/placement': 'test-placement',
+                  },
                 },
-              ],
-              resourceVersion: '1175771',
-              uid: '142e2afb-5359-4b1a-b10b-ccab726b689d',
+              },
             },
+          ],
+          template: {
             spec: {
-              destination: {
-                namespace: 'feng-appset-hello',
-                server: 'https://api.app-aws-411ga-hub-bwrqq.dev06.red-chesterfield.com:6443',
-              },
-              project: 'default',
               source: {
-                path: 'helloworld',
-                repoURL: 'https://github.com/fxiang1/app-samples',
-                targetRevision: 'main',
-              },
-              syncPolicy: {
-                automated: {
-                  prune: true,
-                  selfHeal: true,
-                },
-                syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
+                path: 'apps/nginx',
               },
             },
-            status: {
-              health: {
-                status: 'Healthy',
-              },
-              history: [
-                {
-                  deployStartedAt: '2023-01-23T16:50:13Z',
-                  deployedAt: '2023-01-23T16:50:19Z',
-                  id: 0,
-                  revision: 'b8fee607fd58e3477e74d674c0b7f8b9250a63be',
-                  source: {
-                    path: 'helloworld',
-                    repoURL: 'https://github.com/fxiang1/app-samples',
-                    targetRevision: 'main',
-                  },
-                },
-              ],
-              operationState: {
-                finishedAt: '2023-01-23T16:50:19Z',
-                message: 'successfully synced (all tasks run)',
-                operation: {
-                  initiatedBy: {
-                    automated: true,
-                  },
-                  retry: {
-                    limit: 5,
-                  },
-                  sync: {
-                    prune: true,
-                    revision: 'b8fee607fd58e3477e74d674c0b7f8b9250a63be',
-                    syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
-                  },
-                },
-                phase: 'Succeeded',
-                startedAt: '2023-01-23T16:50:13Z',
-                syncResult: {
-                  resources: [
-                    {
-                      group: '',
-                      hookPhase: 'Succeeded',
-                      kind: 'Namespace',
-                      message: 'namespace/feng-appset-hello created',
-                      name: 'feng-appset-hello',
-                      namespace: '',
-                      status: 'Synced',
-                      syncPhase: 'PreSync',
-                      version: 'v1',
-                    },
-                    {
-                      group: '',
-                      hookPhase: 'Running',
-                      kind: 'Service',
-                      message: 'service/helloworld-app-svc created',
-                      name: 'helloworld-app-svc',
-                      namespace: 'feng-appset-hello',
-                      status: 'Synced',
-                      syncPhase: 'Sync',
-                      version: 'v1',
-                    },
-                    {
-                      group: 'apps',
-                      hookPhase: 'Running',
-                      kind: 'Deployment',
-                      message: 'deployment.apps/helloworld-app-deploy created',
-                      name: 'helloworld-app-deploy',
-                      namespace: 'feng-appset-hello',
-                      status: 'Synced',
-                      syncPhase: 'Sync',
-                      version: 'v1',
-                    },
-                    {
-                      group: 'route.openshift.io',
-                      hookPhase: 'Running',
-                      kind: 'Route',
-                      message: 'route.route.openshift.io/helloworld-app-route created',
-                      name: 'helloworld-app-route',
-                      namespace: 'feng-appset-hello',
-                      status: 'Synced',
-                      syncPhase: 'Sync',
-                      version: 'v1',
-                    },
-                  ],
-                  revision: 'b8fee607fd58e3477e74d674c0b7f8b9250a63be',
-                  source: {
-                    path: 'helloworld',
-                    repoURL: 'https://github.com/fxiang1/app-samples',
-                    targetRevision: 'main',
-                  },
-                },
-              },
-              reconciledAt: '2023-01-23T16:57:05Z',
-              resources: [
-                {
-                  health: {
-                    status: 'Healthy',
-                  },
-                  kind: 'Service',
-                  name: 'helloworld-app-svc',
-                  namespace: 'feng-appset-hello',
-                  status: 'Synced',
-                  version: 'v1',
-                },
-                {
-                  group: 'apps',
-                  health: {
-                    status: 'Healthy',
-                  },
-                  kind: 'Deployment',
-                  name: 'helloworld-app-deploy',
-                  namespace: 'feng-appset-hello',
-                  status: 'Synced',
-                  version: 'v1',
-                },
-                {
-                  group: 'route.openshift.io',
-                  health: {
-                    message: 'Route is healthy',
-                    status: 'Healthy',
-                  },
-                  kind: 'Route',
-                  name: 'helloworld-app-route',
-                  namespace: 'feng-appset-hello',
-                  status: 'Synced',
-                  version: 'v1',
-                },
-              ],
-              sourceType: 'Directory',
-              summary: {
-                images: ['quay.io/fxiang1/helloworld:0.0.1'],
-              },
-              sync: {
-                status: 'Synced',
-              },
-            },
-          },
-        ],
-        appSetClusters: [
-          {
-            created: '2023-01-19T20:00:18Z',
-            name: 'local-cluster',
-            namespace: 'local-cluster',
-            status: 'ok',
-            url: 'https://api.app-aws-411ga-hub-bwrqq.dev06.red-chesterfield.com:6443',
-          },
-        ],
-        clusterNames: ['local-cluster'],
-        isDesign: true,
-        raw: {
-          apiVersion: 'argoproj.io/v1alpha1',
-          kind: 'ApplicationSet',
-          metadata: {
-            creationTimestamp: '2023-01-23T16:50:12Z',
-            name: 'feng-appset-hello',
-            namespace: 'openshift-gitops',
-            resourceVersion: '1166741',
-            uid: 'b77de6bd-8a45-4069-a3d0-2119fa0e7f36',
-          },
-          spec: {
-            generators: [
-              {
-                clusterDecisionResource: {
-                  configMapRef: 'acm-placement',
-                  labelSelector: {
-                    matchLabels: {
-                      'cluster.open-cluster-management.io/placement': 'feng-appset-hello-placement',
-                    },
-                  },
-                  requeueAfterSeconds: 180,
-                },
-              },
-            ],
-            template: {
-              metadata: {
-                labels: {
-                  'velero.io/exclude-from-backup': 'true',
-                },
-                name: 'feng-appset-hello-{{name}}',
-              },
-              spec: {
-                destination: {
-                  namespace: 'feng-appset-hello',
-                  server: '{{server}}',
-                },
-                project: 'default',
-                source: {
-                  path: 'helloworld',
-                  repoURL: 'https://github.com/fxiang1/app-samples',
-                  targetRevision: 'main',
-                },
-                syncPolicy: {
-                  automated: {
-                    prune: true,
-                    selfHeal: true,
-                  },
-                  syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
-                },
-              },
-            },
-          },
-          status: {
-            conditions: [
-              {
-                lastTransitionTime: '2023-01-23T16:50:12Z',
-                message: 'Successfully generated parameters for all Applications',
-                reason: 'ApplicationSetUpToDate',
-                status: 'False',
-                type: 'ErrorOccurred',
-              },
-              {
-                lastTransitionTime: '2023-01-23T16:50:12Z',
-                message: 'Successfully generated parameters for all Applications',
-                reason: 'ParametersGenerated',
-                status: 'True',
-                type: 'ParametersGenerated',
-              },
-              {
-                lastTransitionTime: '2023-01-23T16:50:12Z',
-                message: 'ApplicationSet up to date',
-                reason: 'ApplicationSetUpToDate',
-                status: 'True',
-                type: 'ResourcesUpToDate',
-              },
-            ],
           },
         },
       },
-      type: 'applicationset',
-      uid: 'application--feng-appset-hello',
-    },
-    {
-      id: 'member--placements--openshift-gitops--feng-appset-hello',
-      name: 'feng-appset-hello-placement',
+      placement: {
+        metadata: {
+          name: 'test-placement',
+          namespace: 'openshift-gitops',
+        },
+        status: {
+          decisions: [{ clusterName: 'local-cluster' }],
+        },
+      } as any,
+      isArgoApp: false,
+      isAppSet: true,
+      isOCPApp: false,
+      isFluxApp: false,
+      isAppSetPullModel: false,
+      appSetClusters: [{ name: 'local-cluster' }],
+      appSetApps: [{ metadata: { name: 'test-appset-local-cluster' }, spec: {} }] as any,
+    }
+
+    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
+
+    expect(result.nodes).toBeDefined()
+    expect(result.links).toBeDefined()
+    expect(result.nodes.length).toBeGreaterThan(0)
+
+    // Verify ApplicationSet node exists
+    const appSetNode = result.nodes.find((n) => n.type === 'applicationset')
+    expect(appSetNode).toBeDefined()
+    expect(appSetNode?.name).toBe('test-appset')
+
+    // Verify Placement node exists
+    const placementNode = result.nodes.find((n) => n.type === 'placement')
+    expect(placementNode).toBeDefined()
+
+    // Verify cluster node exists
+    const clusterNode = result.nodes.find((n) => n.type === 'cluster')
+    expect(clusterNode).toBeDefined()
+
+    // Verify toolbar callbacks were called
+    expect(mockToolbarControl.setAllClusters).toHaveBeenCalledWith(['local-cluster'])
+    expect(mockToolbarControl.setAllApplications).toHaveBeenCalled()
+  })
+
+  it('should generate topology for ApplicationSet without placement', async () => {
+    const application: ApplicationModel = {
+      name: 'test-appset-no-placement',
       namespace: 'openshift-gitops',
-      specs: {
-        isDesign: true,
-        raw: {
-          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
-          kind: 'Placement',
-          metadata: {
-            creationTimestamp: '2023-01-23T16:50:12Z',
-            name: 'feng-appset-hello-placement',
-            namespace: 'openshift-gitops',
-            resourceVersion: '1166737',
-            uid: '62fdd3f9-a906-4735-80fd-814cb5db22e5',
+      app: {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'ApplicationSet',
+        metadata: {
+          name: 'test-appset-no-placement',
+          namespace: 'openshift-gitops',
+        },
+        spec: {
+          generators: [
+            {
+              list: {
+                elements: [{ cluster: 'local-cluster' }],
+              },
+            },
+          ],
+          template: {
+            spec: {
+              source: {
+                path: 'apps/nginx',
+              },
+            },
           },
-          spec: {
-            clusterSets: ['default'],
-          },
-          placement: undefined,
-          status: {
-            conditions: [
+        },
+      },
+      placement: undefined,
+      isArgoApp: false,
+      isAppSet: true,
+      isOCPApp: false,
+      isFluxApp: false,
+      isAppSetPullModel: false,
+      appSetClusters: [{ name: 'local-cluster' }],
+      appSetApps: [{ metadata: { name: 'test-appset-no-placement-local-cluster' }, spec: {} }] as any,
+    }
+
+    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
+
+    expect(result.nodes).toBeDefined()
+    expect(result.links).toBeDefined()
+
+    // Verify ApplicationSet node exists
+    const appSetNode = result.nodes.find((n) => n.type === 'applicationset')
+    expect(appSetNode).toBeDefined()
+
+    // Verify no Placement node when placement is undefined
+    const placementNode = result.nodes.find((n) => n.type === 'placement')
+    expect(placementNode).toBeUndefined()
+  })
+
+  it('should handle ApplicationSet with multiple clusters', async () => {
+    mockSearchClient.query.mockResolvedValue({
+      loading: false,
+      networkStatus: 7,
+      data: {
+        searchResult: [
+          {
+            items: [
               {
-                lastTransitionTime: '2023-01-23T16:50:12Z',
-                message: 'Placement configurations check pass',
-                reason: 'Succeedconfigured',
-                status: 'False',
-                type: 'PlacementMisconfigured',
+                _uid: 'local-cluster/app-uid-1',
+                name: 'test-appset-local-cluster',
+                namespace: 'openshift-gitops',
+                cluster: 'local-cluster',
+                kind: 'Application',
               },
               {
-                lastTransitionTime: '2023-01-23T16:50:12Z',
-                message: 'All cluster decisions scheduled',
-                reason: 'AllDecisionsScheduled',
-                status: 'True',
-                type: 'PlacementSatisfied',
+                _uid: 'managed-cluster-1/app-uid-2',
+                name: 'test-appset-managed-cluster-1',
+                namespace: 'openshift-gitops',
+                cluster: 'managed-cluster-1',
+                kind: 'Application',
               },
             ],
-            numberOfSelectedClusters: 1,
-          },
-        },
-      },
-      type: 'placement',
-      uid: 'member--placements--openshift-gitops--feng-appset-hello',
-    },
-    {
-      id: 'member--clusters--',
-      name: 'local-cluster',
-      namespace: '',
-      specs: {
-        appClusters: undefined,
-        clusters: [
-          {
-            created: '2023-01-19T20:00:18Z',
-            name: 'local-cluster',
-            namespace: 'local-cluster',
-            status: 'ok',
-            url: 'https://api.app-aws-411ga-hub-bwrqq.dev06.red-chesterfield.com:6443',
+            related: [],
           },
         ],
-        clustersNames: ['local-cluster'],
-        resourceCount: 1,
-        sortedClusterNames: ['local-cluster'],
-        subscription: undefined,
-        targetNamespaces: undefined,
-        title: 'helloworld',
       },
-      type: 'cluster',
-      uid: 'member--clusters--',
-    },
-    {
-      id: 'member--member--deployable--member--clusters----service--feng-appset-hello--helloworld-app-svc',
-      name: 'helloworld-app-svc',
-      namespace: 'feng-appset-hello',
-      specs: {
-        clustersNames: ['local-cluster'],
-        isDesign: false,
-        parent: {
-          clusterId: 'member--clusters--',
+    })
+
+    const application: ApplicationModel = {
+      name: 'test-appset-multi',
+      namespace: 'openshift-gitops',
+      app: {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'ApplicationSet',
+        metadata: {
+          name: 'test-appset-multi',
+          namespace: 'openshift-gitops',
         },
-        raw: {
-          apiVersion: 'v1',
-          health: {
-            status: 'Healthy',
+        spec: {
+          generators: [
+            {
+              clusterDecisionResource: {
+                labelSelector: {
+                  matchLabels: {
+                    'cluster.open-cluster-management.io/placement': 'multi-placement',
+                  },
+                },
+              },
+            },
+          ],
+          template: {
+            spec: {
+              source: {
+                path: 'apps/nginx',
+              },
+            },
           },
-          kind: 'Service',
-          metadata: {
-            name: 'helloworld-app-svc',
-            namespace: 'feng-appset-hello',
-          },
-          name: 'helloworld-app-svc',
-          namespace: 'feng-appset-hello',
-          status: 'Synced',
-          version: 'v1',
-          cluster: 'local-cluster',
         },
-        resourceCount: 1,
-        resources: undefined,
       },
-      type: 'service',
-      uid: 'member--member--deployable--member--clusters----service--feng-appset-hello--helloworld-app-svc',
-    },
-    {
-      id: 'member--member--deployable--member--clusters----deployment--feng-appset-hello--helloworld-app-deploy',
-      name: 'helloworld-app-deploy',
-      namespace: 'feng-appset-hello',
-      specs: {
-        clustersNames: ['local-cluster'],
-        isDesign: false,
-        parent: {
-          clusterId: 'member--clusters--',
+      placement: {
+        metadata: {
+          name: 'multi-placement',
+          namespace: 'openshift-gitops',
         },
-        raw: {
-          apiVersion: 'apps/v1',
-          group: 'apps',
-          health: {
-            status: 'Healthy',
-          },
-          kind: 'Deployment',
-          metadata: {
-            name: 'helloworld-app-deploy',
-            namespace: 'feng-appset-hello',
-          },
-          name: 'helloworld-app-deploy',
-          namespace: 'feng-appset-hello',
-          status: 'Synced',
-          version: 'v1',
-          cluster: 'local-cluster',
+        status: {
+          decisions: [{ clusterName: 'local-cluster' }, { clusterName: 'managed-cluster-1' }],
         },
-        resourceCount: 1,
-        resources: undefined,
+      } as any,
+      isArgoApp: false,
+      isAppSet: true,
+      isOCPApp: false,
+      isFluxApp: false,
+      isAppSetPullModel: false,
+      appSetClusters: [{ name: 'local-cluster' }, { name: 'managed-cluster-1' }],
+      appSetApps: [
+        { metadata: { name: 'test-appset-multi-local-cluster' }, spec: {} },
+        { metadata: { name: 'test-appset-multi-managed-cluster-1' }, spec: {} },
+      ] as any,
+    }
+
+    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
+
+    expect(result.nodes).toBeDefined()
+    expect(result.links).toBeDefined()
+
+    // Verify ApplicationSet node has correct cluster info
+    const appSetNode = result.nodes.find((n) => n.type === 'applicationset')
+    expect(appSetNode).toBeDefined()
+    expect(appSetNode?.specs?.clusterNames).toContain('local-cluster')
+    expect(appSetNode?.specs?.clusterNames).toContain('managed-cluster-1')
+    expect((appSetNode?.specs?.allClusters as any)?.remoteCount).toBe(1)
+    expect((appSetNode?.specs?.allClusters as any)?.isLocal).toBe(true)
+
+    // Verify setAllClusters was called with both clusters
+    expect(mockToolbarControl.setAllClusters).toHaveBeenCalledWith(['local-cluster', 'managed-cluster-1'])
+  })
+
+  it('should handle ApplicationSet with app status information', async () => {
+    const application: ApplicationModel = {
+      name: 'test-appset-status',
+      namespace: 'openshift-gitops',
+      app: {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'ApplicationSet',
+        metadata: {
+          name: 'test-appset-status',
+          namespace: 'openshift-gitops',
+        },
+        spec: {
+          generators: [
+            {
+              clusterDecisionResource: {
+                labelSelector: {
+                  matchLabels: {
+                    'cluster.open-cluster-management.io/placement': 'status-placement',
+                  },
+                },
+              },
+            },
+          ],
+        },
       },
-      type: 'deployment',
-      uid: 'member--member--deployable--member--clusters----deployment--feng-appset-hello--helloworld-app-deploy',
-    },
-    {
-      id: 'member--member--deployable--member--clusters----deployment--feng-appset-hello--helloworld-app-deploy--replicaset--helloworld-app-deploy',
-      name: 'helloworld-app-deploy',
-      namespace: 'feng-appset-hello',
-      specs: {
-        clustersNames: ['local-cluster'],
-        isDesign: false,
-        parent: {
-          parentId:
-            'member--member--deployable--member--clusters----deployment--feng-appset-hello--helloworld-app-deploy',
-          parentName: 'helloworld-app-deploy',
-          parentSpecs: undefined,
-          parentType: 'deployment',
-          resources: undefined,
+      placement: {
+        metadata: {
+          name: 'status-placement',
+          namespace: 'openshift-gitops',
         },
-        replicaCount: 1,
-        resourceCount: 1,
-        resources: undefined,
+        status: {
+          decisions: [{ clusterName: 'local-cluster' }],
+        },
+      } as any,
+      isArgoApp: false,
+      isAppSet: true,
+      isOCPApp: false,
+      isFluxApp: false,
+      isAppSetPullModel: false,
+      appSetClusters: [{ name: 'local-cluster' }],
+      appSetApps: [{ metadata: { name: 'test-appset-status-local-cluster' }, spec: {} }] as any,
+      appStatusByNameMap: {
+        'test-appset-status-local-cluster': {
+          health: { status: 'Degraded' },
+          sync: { status: 'OutOfSync' },
+        },
       },
-      type: 'replicaset',
-      uid: 'member--member--deployable--member--clusters----deployment--feng-appset-hello--helloworld-app-deploy--replicaset--helloworld-app-deploy',
-    },
-    {
-      id: 'member--member--deployable--member--clusters----deployment--feng-appset-hello--helloworld-app-deploy--replicaset--helloworld-app-deploy--pod--helloworld-app-deploy',
-      name: 'helloworld-app-deploy',
-      namespace: 'feng-appset-hello',
-      specs: {
-        clustersNames: ['local-cluster'],
-        isDesign: false,
-        parent: {
-          parentId:
-            'member--member--deployable--member--clusters----deployment--feng-appset-hello--helloworld-app-deploy--replicaset--helloworld-app-deploy',
-          parentName: 'helloworld-app-deploy',
-          parentSpecs: undefined,
-          parentType: 'replicaset',
-          resources: undefined,
-        },
-        replicaCount: 1,
-        resourceCount: 1,
-        resources: undefined,
+    }
+
+    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
+
+    // Verify ApplicationSet node contains status info
+    const appSetNode = result.nodes.find((n) => n.type === 'applicationset')
+    expect(appSetNode?.specs?.appStatusByNameMap).toBeDefined()
+  })
+
+  it('should handle empty search results gracefully', async () => {
+    mockSearchClient.query.mockResolvedValue({
+      loading: false,
+      networkStatus: 7,
+      data: {
+        searchResult: [],
       },
-      type: 'pod',
-      uid: 'member--member--deployable--member--clusters----deployment--feng-appset-hello--helloworld-app-deploy--replicaset--helloworld-app-deploy--pod--helloworld-app-deploy',
-    },
-    {
-      id: 'member--member--deployable--member--clusters----route--feng-appset-hello--helloworld-app-route',
-      name: 'helloworld-app-route',
-      namespace: 'feng-appset-hello',
-      specs: {
-        clustersNames: ['local-cluster'],
-        isDesign: false,
-        parent: {
-          clusterId: 'member--clusters--',
+    })
+
+    const application: ApplicationModel = {
+      name: 'test-appset-empty',
+      namespace: 'openshift-gitops',
+      app: {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'ApplicationSet',
+        metadata: {
+          name: 'test-appset-empty',
+          namespace: 'openshift-gitops',
         },
-        raw: {
-          apiVersion: 'route.openshift.io/v1',
-          group: 'route.openshift.io',
-          health: {
-            message: 'Route is healthy',
-            status: 'Healthy',
+        spec: {},
+      },
+      placement: undefined,
+      isArgoApp: false,
+      isAppSet: true,
+      isOCPApp: false,
+      isFluxApp: false,
+      isAppSetPullModel: false,
+      appSetClusters: [{ name: 'local-cluster' }],
+      appSetApps: [],
+    }
+
+    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
+
+    expect(result.nodes).toBeDefined()
+    expect(result.links).toBeDefined()
+
+    // Should still have ApplicationSet and cluster nodes
+    const appSetNode = result.nodes.find((n) => n.type === 'applicationset')
+    expect(appSetNode).toBeDefined()
+  })
+
+  it('should handle ArgoCD pull model targeting local cluster', async () => {
+    const application: ApplicationModel = {
+      name: 'test-appset-pullmodel',
+      namespace: 'openshift-gitops',
+      app: {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'ApplicationSet',
+        metadata: {
+          name: 'test-appset-pullmodel',
+          namespace: 'openshift-gitops',
+        },
+        spec: {
+          generators: [
+            {
+              clusterDecisionResource: {
+                labelSelector: {
+                  matchLabels: {
+                    'cluster.open-cluster-management.io/placement': 'pullmodel-placement',
+                  },
+                },
+              },
+            },
+          ],
+        },
+      },
+      placement: {
+        metadata: {
+          name: 'pullmodel-placement',
+          namespace: 'openshift-gitops',
+        },
+        status: {
+          decisions: [{ clusterName: 'local-cluster' }],
+        },
+      } as any,
+      isArgoApp: false,
+      isAppSet: true,
+      isOCPApp: false,
+      isFluxApp: false,
+      isAppSetPullModel: true,
+      appSetClusters: [{ name: 'local-cluster' }],
+      appSetApps: [{ metadata: { name: 'test-appset-pullmodel-local-cluster' }, spec: {} }] as any,
+    }
+
+    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
+
+    // Verify the pull model flag is set on the ApplicationSet node
+    const appSetNode = result.nodes.find((n) => n.type === 'applicationset') as any
+    expect(appSetNode).toBeDefined()
+    expect(appSetNode.isArgoCDPullModelTargetLocalCluster).toBe(true)
+  })
+
+  it('should filter by active clusters when provided', async () => {
+    const toolbarWithActiveClusters: ToolbarControl = {
+      ...mockToolbarControl,
+      activeClusters: ['local-cluster'],
+      setActiveClusters: jest.fn(),
+      setAllClusters: jest.fn(),
+      setAllApplications: jest.fn(),
+      setActiveApplications: jest.fn(),
+      setAllTypes: jest.fn(),
+      setActiveTypes: jest.fn(),
+    }
+
+    const application: ApplicationModel = {
+      name: 'test-appset-filtered',
+      namespace: 'openshift-gitops',
+      app: {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'ApplicationSet',
+        metadata: {
+          name: 'test-appset-filtered',
+          namespace: 'openshift-gitops',
+        },
+        spec: {},
+      },
+      placement: undefined,
+      isArgoApp: false,
+      isAppSet: true,
+      isOCPApp: false,
+      isFluxApp: false,
+      isAppSetPullModel: false,
+      appSetClusters: [{ name: 'local-cluster' }, { name: 'managed-cluster-1' }],
+      appSetApps: [{ metadata: { name: 'test-appset-filtered-local-cluster' }, spec: {} }] as any,
+    }
+
+    const result: ExtendedTopology = await getAppSetTopology(toolbarWithActiveClusters, application, 'local-cluster')
+
+    expect(result.nodes).toBeDefined()
+    expect(result.links).toBeDefined()
+  })
+
+  it('should filter by active resource types when provided', async () => {
+    const toolbarWithActiveTypes: ToolbarControl = {
+      ...mockToolbarControl,
+      activeTypes: ['deployment'],
+      setActiveClusters: jest.fn(),
+      setAllClusters: jest.fn(),
+      setAllApplications: jest.fn(),
+      setActiveApplications: jest.fn(),
+      setAllTypes: jest.fn(),
+      setActiveTypes: jest.fn(),
+    }
+
+    const application: ApplicationModel = {
+      name: 'test-appset-type-filtered',
+      namespace: 'openshift-gitops',
+      app: {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'ApplicationSet',
+        metadata: {
+          name: 'test-appset-type-filtered',
+          namespace: 'openshift-gitops',
+        },
+        spec: {},
+      },
+      placement: undefined,
+      isArgoApp: false,
+      isAppSet: true,
+      isOCPApp: false,
+      isFluxApp: false,
+      isAppSetPullModel: false,
+      appSetClusters: [{ name: 'local-cluster' }],
+      appSetApps: [{ metadata: { name: 'test-appset-type-filtered-local-cluster' }, spec: {} }] as any,
+    }
+
+    const result: ExtendedTopology = await getAppSetTopology(toolbarWithActiveTypes, application, 'local-cluster')
+
+    expect(result.nodes).toBeDefined()
+    expect(result.links).toBeDefined()
+    expect(toolbarWithActiveTypes.setAllTypes).toHaveBeenCalled()
+  })
+
+  it('should filter by active applications when provided', async () => {
+    mockSearchClient.query.mockResolvedValue({
+      loading: false,
+      networkStatus: 7,
+      data: {
+        searchResult: [
+          {
+            items: [
+              {
+                _uid: 'local-cluster/app-uid-1',
+                name: 'test-appset-app-filter-local-cluster-app1',
+                namespace: 'openshift-gitops',
+                cluster: 'local-cluster',
+                kind: 'Application',
+              },
+              {
+                _uid: 'local-cluster/app-uid-2',
+                name: 'test-appset-app-filter-local-cluster-app2',
+                namespace: 'openshift-gitops',
+                cluster: 'local-cluster',
+                kind: 'Application',
+              },
+            ],
+            related: [],
           },
-          kind: 'Route',
-          metadata: {
-            name: 'helloworld-app-route',
-            namespace: 'feng-appset-hello',
-          },
-          name: 'helloworld-app-route',
-          namespace: 'feng-appset-hello',
-          status: 'Synced',
-          version: 'v1',
-          cluster: 'local-cluster',
-        },
-        resourceCount: 1,
-        resources: undefined,
+        ],
       },
-      type: 'route',
-      uid: 'member--member--deployable--member--clusters----route--feng-appset-hello--helloworld-app-route',
-    },
-  ],
-}
+    })
+
+    const toolbarWithActiveApps: ToolbarControl = {
+      ...mockToolbarControl,
+      activeApplications: ['app1'],
+      setActiveClusters: jest.fn(),
+      setAllClusters: jest.fn(),
+      setAllApplications: jest.fn(),
+      setActiveApplications: jest.fn(),
+      setAllTypes: jest.fn(),
+      setActiveTypes: jest.fn(),
+    }
+
+    const application: ApplicationModel = {
+      name: 'test-appset-app-filter',
+      namespace: 'openshift-gitops',
+      app: {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'ApplicationSet',
+        metadata: {
+          name: 'test-appset-app-filter',
+          namespace: 'openshift-gitops',
+        },
+        spec: {},
+      },
+      placement: undefined,
+      isArgoApp: false,
+      isAppSet: true,
+      isOCPApp: false,
+      isFluxApp: false,
+      isAppSetPullModel: false,
+      appSetClusters: [{ name: 'local-cluster' }],
+      appSetApps: [
+        { metadata: { name: 'test-appset-app-filter-local-cluster-app1' }, spec: {} },
+        { metadata: { name: 'test-appset-app-filter-local-cluster-app2' }, spec: {} },
+      ] as any,
+    }
+
+    const result: ExtendedTopology = await getAppSetTopology(toolbarWithActiveApps, application, 'local-cluster')
+
+    expect(result.nodes).toBeDefined()
+    expect(result.links).toBeDefined()
+    expect(toolbarWithActiveApps.setAllApplications).toHaveBeenCalled()
+  })
+})

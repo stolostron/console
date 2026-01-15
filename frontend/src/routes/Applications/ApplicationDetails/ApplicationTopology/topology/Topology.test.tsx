@@ -1,99 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-// Mock @patternfly/react-topology to avoid ESM import issues in Jest
-jest.mock('@patternfly/react-topology', () => ({
-  TopologyView: ({
-    children,
-    controlBar,
-    contextToolbar,
-  }: {
-    children: React.ReactNode
-    controlBar?: React.ReactNode
-    contextToolbar?: React.ReactNode
-  }) => {
-    return (
-      <div data-testid="topology-view">
-        {contextToolbar}
-        {children}
-        {controlBar}
-      </div>
-    )
-  },
-  VisualizationSurface: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="visualization-surface">{children}</div>
-  ),
-  VisualizationProvider: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="visualization-provider">{children}</div>
-  ),
-  SELECTION_EVENT: 'selection',
-  SelectionEventListener: jest.fn(),
-  useEventListener: jest.fn(),
-  useVisualizationController: jest.fn().mockReturnValue({
-    getGraph: jest.fn().mockReturnValue({
-      scaleBy: jest.fn(),
-      fit: jest.fn(),
-      reset: jest.fn(),
-      layout: jest.fn(),
-    }),
-  }),
-  createTopologyControlButtons: jest.fn().mockReturnValue([]),
-  defaultControlButtonsOptions: {},
-  TopologyControlBar: ({ children }: { children?: React.ReactNode }) => (
-    <div data-testid="topology-control-bar">{children}</div>
-  ),
-  action: (fn: () => void) => fn,
-  Controller: class MockController {
-    fromModel = jest.fn()
-    getGraph = jest.fn().mockReturnValue({
-      getBounds: jest.fn().mockReturnValue({ x: 0, y: 0, width: 100, height: 100 }),
-      scaleBy: jest.fn(),
-      fit: jest.fn(),
-      reset: jest.fn(),
-    })
-    addEventListener = jest.fn()
-    removeEventListener = jest.fn()
-    hasGraph = jest.fn().mockReturnValue(true)
-  },
-  Visualization: class MockVisualization {
-    fromModel = jest.fn()
-    getGraph = jest.fn().mockReturnValue({
-      getBounds: jest.fn().mockReturnValue({ x: 0, y: 0, width: 100, height: 100 }),
-      scaleBy: jest.fn(),
-      fit: jest.fn(),
-      reset: jest.fn(),
-    })
-    addEventListener = jest.fn()
-    removeEventListener = jest.fn()
-    hasGraph = jest.fn().mockReturnValue(true)
-    registerLayoutFactory = jest.fn()
-    registerComponentFactory = jest.fn()
-    setFitToScreenOnLayout = jest.fn()
-  },
-  // ColaLayout is extended by TreeLayout, so we need a base class that can be extended
-  ColaLayout: class MockColaLayout {
-    protected graph: unknown
-    protected options: unknown
-    constructor(graph: unknown, options?: unknown) {
-      this.graph = graph
-      this.options = options
-    }
-    startLayout = jest.fn()
-  },
-  Graph: jest.fn(),
-  LayoutNode: jest.fn(),
-  NodeModel: jest.fn(),
-  isNode: jest.fn().mockReturnValue(true),
-  NodeStatus: {
-    success: 'success',
-    danger: 'danger',
-    warning: 'warning',
-    default: 'default',
-  },
-  // observer is a HOC used in StyledNode.tsx - mock it to pass through the component
-  observer: (component: unknown) => component,
-}))
-
-import React from 'react'
 import { render, screen, waitFor } from '@testing-library/react'
 //import { render, fireEvent, waitFor, screen } from '@testing-library/react'
 import { nockSearch } from '../../../../../lib/nock-util'
@@ -125,6 +31,12 @@ const mockGetallfilters = jest.fn()
 const mockGetavailablefilters = jest.fn()
 const mockGetsearchfilter = jest.fn()
 const mockSetdrawercontent = jest.fn()
+const mockSetActiveClusters = jest.fn()
+const mockSetAllClusters = jest.fn()
+const mockSetAllApplications = jest.fn()
+const mockSetActiveApplications = jest.fn()
+const mockSetAllTypes = jest.fn()
+const mockSetActiveTypes = jest.fn()
 
 describe('Topology tests', () => {
   beforeEach(() => {
@@ -138,12 +50,6 @@ describe('Topology tests', () => {
         width: 100,
         height: 50,
       }),
-    })
-
-    // Mock useQuery to return the expected structure
-    ;(useQuery as jest.Mock).mockReturnValue({
-      data: [],
-      startPolling: jest.fn(),
     })
 
     nockSearch(mockSearchQuerySearchDisabledManagedClusters, mockSearchResponseSearchDisabledManagedClusters)
@@ -200,6 +106,8 @@ describe('Topology tests', () => {
         <Topology {...propsWithSearchDisabledClusters} />
       </RecoilRoot>
     )
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    screen.logTestingPlaygroundURL()
 
     // Wait for the alert to appear
     await waitFor(() => {
@@ -215,21 +123,19 @@ describe('Topology tests', () => {
   })
 
   test('should not show search disabled alert when no clusters have search disabled', async () => {
-    // Mock useQuery to return empty data (no clusters with search disabled)
-    ;(useQuery as jest.Mock).mockReturnValue({
-      data: [
-        {
-          data: {
-            searchResult: [
-              {
-                items: [],
-              },
-            ],
+    // Mock empty response for search disabled clusters
+    const emptySearchResponse = {
+      data: {
+        searchResult: [
+          {
+            items: [],
           },
-        },
-      ],
-      startPolling: jest.fn(),
-    })
+        ],
+      },
+    }
+
+    // Override the nock for this test
+    nockSearch(mockSearchQuerySearchDisabledManagedClusters, emptySearchResponse)
 
     render(
       <RecoilRoot>
@@ -1380,4 +1286,18 @@ const props1: TopologyProps = {
     getSearchFilter: mockGetsearchfilter,
   },
   setDrawerContent: mockSetdrawercontent,
+  toolbarControl: {
+    allClusters: undefined,
+    activeClusters: undefined,
+    setActiveClusters: mockSetActiveClusters,
+    setAllClusters: mockSetAllClusters,
+    allApplications: undefined,
+    activeApplications: undefined,
+    setAllApplications: mockSetAllApplications,
+    setActiveApplications: mockSetActiveApplications,
+    allTypes: undefined,
+    activeTypes: undefined,
+    setAllTypes: mockSetAllTypes,
+    setActiveTypes: mockSetActiveTypes,
+  },
 }

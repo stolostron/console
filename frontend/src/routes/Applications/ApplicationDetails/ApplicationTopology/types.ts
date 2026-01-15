@@ -5,7 +5,6 @@ import {
   ArgoApplication,
   Channel,
   Metadata,
-  MulticlusterApplicationSetReport,
   Placement,
   PlacementDecision,
   PlacementRule,
@@ -132,8 +131,9 @@ export interface ApplicationModel {
   isAppSetPullModel: boolean
   relatedPlacement?: Placement
   clusterList?: string[]
-  appSetApps?: ArgoApplication[]
+  appSetApps?: AppSetApplication[]
   appSetClusters?: AppSetCluster[]
+  appStatusByNameMap?: Record<string, { health: { status: string }; sync: { status: string } }>
 }
 
 // Minimal channel kind used to associate subscriptions to channels
@@ -267,7 +267,6 @@ export interface RecoilStates {
   applications: Application[]
   placementDecisions?: PlacementDecision[]
   placements: Placement[]
-  multiclusterApplicationSetReports?: MulticlusterApplicationSetReport[]
   ansibleJob: AnsibleJob[]
   subscriptions?: Subscription[]
   channels?: Channel[]
@@ -1654,7 +1653,7 @@ export interface OCPFluxApplicationModel extends ApplicationModel {
 /**
  * Search result structure from GraphQL search queries
  */
-export interface OCPFluxSearchResult {
+export interface TopologySearchResult {
   /** GraphQL query response data */
   data?: {
     /** Array of search results */
@@ -1707,7 +1706,7 @@ export interface OCPFluxClusterSummary {
  */
 export interface OCPFluxTopologyResult extends ExtendedTopology {
   /** Raw search data from GraphQL queries */
-  rawSearchData?: OCPFluxSearchResult
+  rawSearchData?: TopologySearchResult
 }
 
 /**

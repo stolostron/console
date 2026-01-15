@@ -133,6 +133,19 @@ export const NodeIcons = () => (
         </g>
       </g>
     </symbol>
+    <symbol viewBox="0 0 32 32" id="nodeIcon_deployable">
+      <g id="Deployment" transform="translate(0)" fillRule="evenodd">
+        <g
+          id="Shape"
+          transform="matrix(1.7533 0 0 1.7533 10.619 7.4743)"
+          fillRule="nonzero"
+          stroke="none"
+          className="pf-topology__node__icon"
+        >
+          <path d="m3.7294 0-2.2376 2.2815 0.52584 0.53615 1.3388-1.3613v4.6276h0.74588v-4.6276l1.3388 1.3613 0.52584-0.53615zm-3.7294 5.3235h2.6106v0.7605h-2.6106zm0 1.521h5.967v0.7605h-5.967zm0 1.521h5.967v0.7605h-5.967z" />
+        </g>
+      </g>
+    </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_deploymentconfig">
       <g id="DeploymentConfig" transform="translate(0)" fill="none" fillRule="evenodd">
         <g transform="matrix(1.3031 0 0 1.3031 -4.7627 -4.5173)">
