@@ -541,6 +541,30 @@ describe('AcmTable', () => {
     expect(bulkDeleteAction.mock.calls[0][0]).toContain(defaultSortedItems[1])
   })
 
+  test('onSelectNone calls onSelect callback with empty array', async () => {
+    const onSelectMock = jest.fn()
+    const { getByLabelText, getByText, getAllByRole } = render(<Table useTableActions={true} onSelect={onSelectMock} />)
+
+    // First select some items
+    userEvent.click(getAllByRole('checkbox')[1])
+    userEvent.click(getAllByRole('checkbox')[2])
+    expect(getByText('2 selected')).toBeInTheDocument()
+    expect(onSelectMock).toHaveBeenLastCalledWith(
+      expect.arrayContaining([defaultSortedItems[0], defaultSortedItems[1]])
+    )
+
+    // Clear the mock to check the next call
+    onSelectMock.mockClear()
+
+    // Click "Select none" from dropdown
+    userEvent.click(getByLabelText('Select'))
+    await waitFor(() => expect(getByText(/Select none/i)).toBeInTheDocument())
+    userEvent.click(getByText(/Select none/i))
+
+    // Verify onSelect was called with an empty array
+    expect(onSelectMock).toHaveBeenCalledWith([])
+  })
+
   test('can support table button actions', () => {
     const { getByText } = render(<Table useTableActions={true} />)
     expect(getByText('Primary action')).toBeInTheDocument()

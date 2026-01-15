@@ -432,6 +432,9 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
               onSelectNone={() => {
                 const newSelected: { [uid: string]: boolean } = {}
                 setSelected(newSelected)
+                if (propsOnSelect && items) {
+                  propsOnSelect(items.filter((item) => newSelected[keyFn(item)]))
+                }
               }}
               onSelectPage={() => {
                 const newSelected: { [uid: string]: boolean } = {}

@@ -197,7 +197,6 @@ export const ProjectsTable = ({
         onSelect={handleSelect}
         filters={filters}
         searchPlaceholder={t('Search projects')}
-        autoHidePagination
         emptyState={onCreateClick ? <CommonProjectsEmptyState onCreateCommonProject={onCreateClick} /> : null}
       />
     </AcmTableStateProvider>
