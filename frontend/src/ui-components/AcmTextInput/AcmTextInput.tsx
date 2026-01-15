@@ -48,13 +48,16 @@ export function AcmTextInput(props: AcmTextInputProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ValidationContext.validate])
 
+  if (props.hidden) {
+    return null
+  }
+
   return (
     <FormGroup
       id={`${props.id}-label`}
       label={props.label}
       isRequired={props.isRequired}
       fieldId={props.id}
-      hidden={props.hidden}
       labelHelp={
         /* istanbul ignore next */
         props.labelHelp ? (
