@@ -70,23 +70,24 @@ describe('RolesList', () => {
   })
 
   it('renders the component with title and subtitle', () => {
-    render(<RolesList onRadioSelect={mockOnRadioSelect} />)
+    render(<RolesList onRadioSelect={mockOnRadioSelect} selectedRole="" />)
 
     expect(screen.getByText('Roles')).toBeInTheDocument()
     expect(screen.getByText('Choose a role to assign.')).toBeInTheDocument()
   })
 
   it('renders RolesTable with correct props', () => {
-    render(<RolesList onRadioSelect={mockOnRadioSelect} />)
+    render(<RolesList onRadioSelect={mockOnRadioSelect} selectedRole="" />)
 
     expect(mockRolesTable).toHaveBeenCalledWith({
-      onRadioSelect: expect.any(Function), // Now it's the internal handler
+      onRadioSelect: expect.any(Function),
+      initialSelectedRole: '',
       areLinksDisplayed: false,
     })
   })
 
   it('passes onRadioSelect callback to RolesTable', async () => {
-    render(<RolesList onRadioSelect={mockOnRadioSelect} />)
+    render(<RolesList onRadioSelect={mockOnRadioSelect} selectedRole="" />)
 
     const adminRadio = screen.getByLabelText('Select role admin')
     await userEvent.click(adminRadio)
@@ -95,7 +96,7 @@ describe('RolesList', () => {
   })
 
   it('passes onRadioSelect to RolesTable correctly', () => {
-    render(<RolesList onRadioSelect={mockOnRadioSelect} />)
+    render(<RolesList onRadioSelect={mockOnRadioSelect} selectedRole="" />)
 
     // Verify that the onRadioSelect prop is passed correctly to RolesTable
     expect(mockRolesTable).toHaveBeenCalledWith(
@@ -106,7 +107,7 @@ describe('RolesList', () => {
   })
 
   it('handles role selection through RolesTable', async () => {
-    render(<RolesList onRadioSelect={mockOnRadioSelect} />)
+    render(<RolesList onRadioSelect={mockOnRadioSelect} selectedRole="" />)
 
     // Simulate radio selection through the mock
     const viewerRadio = screen.getByLabelText('Select role viewer')
@@ -116,7 +117,7 @@ describe('RolesList', () => {
   })
 
   it('passes areLinksDisplayed=false to RolesTable', () => {
-    render(<RolesList onRadioSelect={mockOnRadioSelect} />)
+    render(<RolesList onRadioSelect={mockOnRadioSelect} selectedRole="" />)
 
     expect(mockRolesTable).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -126,12 +127,22 @@ describe('RolesList', () => {
   })
 
   it('renders with no selected role by default', () => {
-    render(<RolesList onRadioSelect={mockOnRadioSelect} />)
+    render(<RolesList onRadioSelect={mockOnRadioSelect} selectedRole="" />)
 
     const adminRadio = screen.getByLabelText('Select role admin')
     const viewerRadio = screen.getByLabelText('Select role viewer')
 
     expect(adminRadio).not.toBeChecked()
     expect(viewerRadio).not.toBeChecked()
+  })
+
+  it('passes selectedRole to RolesTable as initialSelectedRole', () => {
+    render(<RolesList onRadioSelect={mockOnRadioSelect} selectedRole="admin" />)
+
+    expect(mockRolesTable).toHaveBeenCalledWith(
+      expect.objectContaining({
+        initialSelectedRole: 'admin',
+      })
+    )
   })
 })

@@ -215,6 +215,7 @@ export const RoleAssignmentWizardModal = ({
         selectedClusters={selectedClusters}
         onSelectClusterSets={handleClusterSetsChange}
         onSelectClusters={handleClustersChange}
+        selectedScope={formData.scopeType}
       />
     </WizardStep>,
     <WizardStep
@@ -281,6 +282,7 @@ export const RoleAssignmentWizardModal = ({
         selectedClusters={selectedClusters}
         selectedNamespaces={formData.scope.namespaces}
         onNamespacesChange={handleNamespacesChange}
+        selectedClustersAccessLevel={formData.selectedClustersAccessLevel}
       />
     </WizardStep>,
     <WizardStep
@@ -294,6 +296,7 @@ export const RoleAssignmentWizardModal = ({
         selectedClusters={selectedClusters}
         selectedNamespaces={formData.scope.namespaces}
         onNamespacesChange={handleNamespacesChange}
+        selectedClustersAccessLevel={formData.selectedClustersAccessLevel}
       />
     </WizardStep>,
   ]
@@ -372,7 +375,7 @@ export const RoleAssignmentWizardModal = ({
                       isNextDisabled: !formData.roles || formData.roles.length === 0,
                     }}
                   >
-                    <RolesList onRadioSelect={handleRoleSelect} />
+                    <RolesList onRadioSelect={handleRoleSelect} selectedRole={formData.roles?.[0]} />
                   </WizardStep>
                 )}
 

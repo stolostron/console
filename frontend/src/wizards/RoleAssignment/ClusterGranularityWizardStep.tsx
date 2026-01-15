@@ -1,15 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useTranslation } from '../../lib/acm-i18next'
 import { WizSelect } from '@patternfly-labs/react-form-wizard/lib/src/inputs/WizSelect'
-import { useItem } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ItemContext'
+import { useTranslation } from '../../lib/acm-i18next'
 import { GranularityStepContent } from './GranularityStepContent'
 import { ProjectsList } from './ProjectsList'
+import { RoleAssignmentWizardFormData } from './types'
 
 interface ClusterGranularityStepContentProps {
   description: string
   selectedClusters: any[]
   selectedNamespaces?: string[]
   onNamespacesChange: (namespaces: string[]) => void
+  selectedClustersAccessLevel: RoleAssignmentWizardFormData['selectedClustersAccessLevel']
 }
 
 export const ClusterGranularityStepContent = ({
@@ -17,9 +18,9 @@ export const ClusterGranularityStepContent = ({
   selectedClusters,
   selectedNamespaces,
   onNamespacesChange,
+  selectedClustersAccessLevel,
 }: ClusterGranularityStepContentProps) => {
   const { t } = useTranslation()
-  const item = useItem()
 
   return (
     <>
@@ -44,7 +45,7 @@ export const ClusterGranularityStepContent = ({
           ]}
         />
       </div>
-      {item?.selectedClustersAccessLevel === 'Project role assignment' && (
+      {selectedClustersAccessLevel === 'Project role assignment' && (
         <div style={{ marginTop: '16px' }}>
           <ProjectsList
             selectedClusters={selectedClusters}
