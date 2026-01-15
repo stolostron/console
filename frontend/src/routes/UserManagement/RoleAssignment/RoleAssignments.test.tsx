@@ -390,7 +390,9 @@ jest.mock('../../../ui-components', () => {
                 <div>{`CreatedAt: ${item.status?.createdAt}`}</div>
                 {/* Render action column cell to test canPatch/canDelete props */}
                 {actionColumn?.cell && <div data-testid={`action-cell-${item.name}`}>{actionColumn.cell(item)}</div>}
-                <button onClick={() => mockToastContext.addAlert({ title: 'Action', type: 'info' })}>Row Actions</button>
+                <button onClick={() => mockToastContext.addAlert({ title: 'Action', type: 'info' })}>
+                  Row Actions
+                </button>
               </div>
             )
           })}
