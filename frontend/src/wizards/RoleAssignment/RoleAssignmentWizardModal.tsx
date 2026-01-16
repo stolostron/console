@@ -152,6 +152,16 @@ export const RoleAssignmentWizardModal = ({
     }))
   }, [])
 
+  const handleClustersAccessLevelChange = useCallback(
+    (clustersAccessLevel?: RoleAssignmentWizardFormData['selectedClustersAccessLevel']) => {
+      setFormData((prev) => ({
+        ...prev,
+        selectedClustersAccessLevel: clustersAccessLevel,
+      }))
+    },
+    []
+  )
+
   const handleClose = useCallback(() => {
     setIsDrawerExpanded(false)
     onClose()
@@ -288,6 +298,7 @@ export const RoleAssignmentWizardModal = ({
         selectedNamespaces={formData.scope.namespaces}
         onNamespacesChange={handleNamespacesChange}
         selectedClustersAccessLevel={formData.selectedClustersAccessLevel}
+        onClustersAccessLevelChange={handleClustersAccessLevelChange}
       />
     </WizardStep>,
     <WizardStep
@@ -302,6 +313,7 @@ export const RoleAssignmentWizardModal = ({
         selectedNamespaces={formData.scope.namespaces}
         onNamespacesChange={handleNamespacesChange}
         selectedClustersAccessLevel={formData.selectedClustersAccessLevel}
+        onClustersAccessLevelChange={handleClustersAccessLevelChange}
       />
     </WizardStep>,
   ]
