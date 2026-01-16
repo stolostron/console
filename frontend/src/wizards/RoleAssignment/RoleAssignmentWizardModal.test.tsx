@@ -28,42 +28,7 @@ const mockScopeSelectionStepContent = jest.fn()
 jest.mock('./ScopeSelectionStepContent', () => ({
   ScopeSelectionStepContent: (props: any) => {
     mockScopeSelectionStepContent(props)
-    return (
-      <div data-testid="scope-selection-step-content">
-        <button
-          data-testid="select-cluster-sets"
-          onClick={() => {
-            props.onSelectClusterSets?.([{ metadata: { name: 'test-cluster-set' } }])
-          }}
-        >
-          Select cluster sets
-        </button>
-        <button
-          data-testid="select-clusters"
-          onClick={() => {
-            props.onSelectClusters?.([{ metadata: { name: 'test-cluster' } }])
-          }}
-        >
-          Select clusters
-        </button>
-        <button
-          data-testid="clear-cluster-sets"
-          onClick={() => {
-            props.onSelectClusterSets?.([])
-          }}
-        >
-          Clear cluster sets
-        </button>
-        <button
-          data-testid="clear-clusters"
-          onClick={() => {
-            props.onSelectClusters?.([])
-          }}
-        >
-          Clear clusters
-        </button>
-      </div>
-    )
+    return <div data-testid="scope-selection-step-content">Scope Selection Step Content</div>
   },
 }))
 
@@ -755,6 +720,139 @@ describe('RoleAssignmentWizardModal - Wizard Step Validation', () => {
           onSelectClusters: expect.any(Function),
         })
       )
+    })
+
+    it('should pass onSelectScopeType callback', async () => {
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(mockScopeSelectionStepContent).toHaveBeenCalled()
+      })
+
+      expect(mockScopeSelectionStepContent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          onSelectScopeType: expect.any(Function),
+        })
+      )
+    })
+  })
+
+  describe('scopeType state management via onSelectScopeType', () => {
+    it('should update formData.scopeType when onSelectScopeType is called with "Global access"', async () => {
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(mockScopeSelectionStepContent).toHaveBeenCalled()
+      })
+
+      // Get the onSelectScopeType callback from the mock and invoke it
+      const scopeStepProps = mockScopeSelectionStepContent.mock.calls[0][0]
+      scopeStepProps.onSelectScopeType('Global access')
+
+      // Verify the mock was called again with updated selectedScope
+      await waitFor(() => {
+        const lastCall = mockScopeSelectionStepContent.mock.calls[mockScopeSelectionStepContent.mock.calls.length - 1]
+        expect(lastCall[0].selectedScope).toBe('Global access')
+      })
+    })
+
+    it('should update formData.scopeType when onSelectScopeType is called with "Select cluster sets"', async () => {
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(mockScopeSelectionStepContent).toHaveBeenCalled()
+      })
+
+      // Get the onSelectScopeType callback from the mock and invoke it
+      const scopeStepProps = mockScopeSelectionStepContent.mock.calls[0][0]
+      scopeStepProps.onSelectScopeType('Select cluster sets')
+
+      // Verify the mock was called again with updated selectedScope
+      await waitFor(() => {
+        const lastCall = mockScopeSelectionStepContent.mock.calls[mockScopeSelectionStepContent.mock.calls.length - 1]
+        expect(lastCall[0].selectedScope).toBe('Select cluster sets')
+      })
+    })
+
+    it('should update formData.scopeType when onSelectScopeType is called with "Select clusters"', async () => {
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(mockScopeSelectionStepContent).toHaveBeenCalled()
+      })
+
+      // Get the onSelectScopeType callback from the mock and invoke it
+      const scopeStepProps = mockScopeSelectionStepContent.mock.calls[0][0]
+      scopeStepProps.onSelectScopeType('Select clusters')
+
+      // Verify the mock was called again with updated selectedScope
+      await waitFor(() => {
+        const lastCall = mockScopeSelectionStepContent.mock.calls[mockScopeSelectionStepContent.mock.calls.length - 1]
+        expect(lastCall[0].selectedScope).toBe('Select clusters')
+      })
+    })
+
+    it('should update formData.scopeType to undefined when onSelectScopeType is called with undefined', async () => {
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(mockScopeSelectionStepContent).toHaveBeenCalled()
+      })
+
+      // First set a scope type
+      const scopeStepProps = mockScopeSelectionStepContent.mock.calls[0][0]
+      scopeStepProps.onSelectScopeType('Select clusters')
+
+      await waitFor(() => {
+        const call = mockScopeSelectionStepContent.mock.calls[mockScopeSelectionStepContent.mock.calls.length - 1]
+        expect(call[0].selectedScope).toBe('Select clusters')
+      })
+
+      // Then clear it by calling with undefined
+      const latestScopeStepProps =
+        mockScopeSelectionStepContent.mock.calls[mockScopeSelectionStepContent.mock.calls.length - 1][0]
+      latestScopeStepProps.onSelectScopeType(undefined)
+
+      // Verify the mock was called again with undefined selectedScope
+      await waitFor(() => {
+        const lastCall = mockScopeSelectionStepContent.mock.calls[mockScopeSelectionStepContent.mock.calls.length - 1]
+        expect(lastCall[0].selectedScope).toBeUndefined()
+      })
+    })
+
+    it('should maintain scopeType state across multiple changes', async () => {
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(mockScopeSelectionStepContent).toHaveBeenCalled()
+      })
+
+      // Change to 'Select cluster sets'
+      let scopeStepProps = mockScopeSelectionStepContent.mock.calls[0][0]
+      scopeStepProps.onSelectScopeType('Select cluster sets')
+
+      await waitFor(() => {
+        const call = mockScopeSelectionStepContent.mock.calls[mockScopeSelectionStepContent.mock.calls.length - 1]
+        expect(call[0].selectedScope).toBe('Select cluster sets')
+      })
+
+      // Change to 'Select clusters'
+      scopeStepProps = mockScopeSelectionStepContent.mock.calls[mockScopeSelectionStepContent.mock.calls.length - 1][0]
+      scopeStepProps.onSelectScopeType('Select clusters')
+
+      await waitFor(() => {
+        const call = mockScopeSelectionStepContent.mock.calls[mockScopeSelectionStepContent.mock.calls.length - 1]
+        expect(call[0].selectedScope).toBe('Select clusters')
+      })
+
+      // Change back to 'Global access'
+      scopeStepProps = mockScopeSelectionStepContent.mock.calls[mockScopeSelectionStepContent.mock.calls.length - 1][0]
+      scopeStepProps.onSelectScopeType('Global access')
+
+      await waitFor(() => {
+        const lastCall = mockScopeSelectionStepContent.mock.calls[mockScopeSelectionStepContent.mock.calls.length - 1]
+        expect(lastCall[0].selectedScope).toBe('Global access')
+      })
     })
   })
 

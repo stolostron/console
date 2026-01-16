@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { WizSelect } from '@patternfly-labs/react-form-wizard/lib/src/inputs/WizSelect'
-import { Button } from '@patternfly/react-core'
+import { Button, SelectOption } from '@patternfly/react-core'
 import { useTranslation } from '../../lib/acm-i18next'
+import { AcmSelect } from '../../ui-components'
 import { GranularityStepContent } from './GranularityStepContent'
 import { ClusterSetsList } from './Scope/ClusterSets/ClusterSetsList'
 import { ClusterList } from './Scope/Clusters/ClusterList'
@@ -16,6 +16,7 @@ interface ScopeSelectionStepContentProps {
   selectedScope: RoleAssignmentWizardFormData['scopeType']
   onSelectClusterSets?: (clusterSets: any[]) => void
   onSelectClusters?: (clusters: any[]) => void
+  onSelectScopeType?: (scopeType?: RoleAssignmentWizardFormData['scopeType']) => void
 }
 
 export const ScopeSelectionStepContent = ({
@@ -25,9 +26,13 @@ export const ScopeSelectionStepContent = ({
   selectedClusters,
   onSelectClusterSets,
   onSelectClusters,
+  onSelectScopeType,
   selectedScope,
 }: ScopeSelectionStepContentProps) => {
   const { t } = useTranslation()
+
+  const handleScopeTypeChange = (value?: string) =>
+    onSelectScopeType?.(value as RoleAssignmentWizardFormData['scopeType'])
 
   return (
     <div>
@@ -43,12 +48,8 @@ export const ScopeSelectionStepContent = ({
           </Button>
         }
       />
-      <WizSelect
-        pathValueToInputValue={(pathValue) => pathValue || 'Global access'}
-        path="scopeType"
-        label=""
-        required
-        options={[
+      <AcmSelect id="scope-type" value={selectedScope} onChange={handleScopeTypeChange} isRequired label="">
+        {[
           {
             label: t('Global access'),
             value: 'Global access',
@@ -66,8 +67,12 @@ export const ScopeSelectionStepContent = ({
             value: 'Select clusters',
             description: t('Grant access to 1 or more clusters. Optionally, narrow this access to projects'),
           },
-        ]}
-      />
+        ].map((option) => (
+          <SelectOption key={option.value} value={option.value} description={option.description}>
+            {option.label}
+          </SelectOption>
+        ))}
+      </AcmSelect>
 
       <div style={{ marginTop: '16px' }}>
         {(() => {

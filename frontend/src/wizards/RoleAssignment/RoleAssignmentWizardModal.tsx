@@ -101,6 +101,10 @@ export const RoleAssignmentWizardModal = ({
     setFormData((prev) => ({ ...prev, selectedClusters: clusters }))
   }, [])
 
+  const handleScopeTypeChange = useCallback((scopeType?: RoleAssignmentWizardFormData['scopeType']) => {
+    setFormData((prev) => ({ ...prev, scopeType }))
+  }, [])
+
   const handleRoleSelect = useCallback((roleName: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -215,6 +219,7 @@ export const RoleAssignmentWizardModal = ({
         selectedClusters={selectedClusters}
         onSelectClusterSets={handleClusterSetsChange}
         onSelectClusters={handleClustersChange}
+        onSelectScopeType={handleScopeTypeChange}
         selectedScope={formData.scopeType}
       />
     </WizardStep>,
