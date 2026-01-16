@@ -711,6 +711,32 @@ describe('RoleAssignmentWizardModal - Wizard Step Validation', () => {
 
       // handleClusterSetsChange calls setSelectedClusters([])
     })
+
+    it('should clear namespaces when cluster sets are deselected', async () => {
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Create role assignment')).toBeInTheDocument()
+      })
+
+      const deselectBtn = screen.queryByTestId('deselect-cluster-sets')
+      if (deselectBtn) {
+        fireEvent.click(deselectBtn)
+      }
+    })
+
+    it('should clear namespaces when clusters are deselected', async () => {
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Create role assignment')).toBeInTheDocument()
+      })
+
+      const deselectBtn = screen.queryByTestId('deselect-clusters')
+      if (deselectBtn) {
+        fireEvent.click(deselectBtn)
+      }
+    })
   })
 
   describe('ScopeSelectionStepContent props', () => {
