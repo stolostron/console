@@ -69,13 +69,21 @@ export const InputSelect = ({
       }
     }
     setOptions([...new Set([...newSelectOptions])], filterValue)
-  }, [filterValue, options, setOptions, isCreatable, open, setOpen]) // todo value is not necessary dep
+    // eslint-disable-next-line react-hooks/exhaustive-deps - don't want to trigger effect when open changes
+  }, [filterValue, options, setOptions, isCreatable])
 
   useEffect(() => {
     setInputValue(value)
     setFilterValue('')
-    // passing open as effect dependency to reset inputValue to the current value string if the dropdown closes.
-  }, [open, value])
+  }, [value])
+
+  useEffect(() => {
+    // Reset input and filter values when select list closes
+    if (!open) {
+      setInputValue(value)
+      setFilterValue('')
+    }
+  }, [open])
 
   const createItemId = (value: string) => `select-typeahead-${value.replace(' ', '-')}`
 
