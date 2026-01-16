@@ -110,12 +110,14 @@ describe('ClusterGranularityStepContent', () => {
 
   it('passes selectedClusters to ProjectsList', () => {
     const clusters = [{ name: 'cluster-a' }, { name: 'cluster-b' }, { name: 'cluster-c' }]
+
     renderWithContext(
       <ClusterGranularityStepContent
         description="Test"
         selectedClusters={clusters}
         onNamespacesChange={mockOnNamespacesChange}
         selectedClustersAccessLevel="Project role assignment"
+        onClustersAccessLevelChange={jest.fn()}
       />
     )
 
@@ -133,6 +135,7 @@ describe('ClusterGranularityStepContent', () => {
         selectedClusters={[]}
         onNamespacesChange={mockOnNamespacesChange}
         selectedClustersAccessLevel="Project role assignment"
+        onClustersAccessLevelChange={jest.fn()}
       />
     )
 
