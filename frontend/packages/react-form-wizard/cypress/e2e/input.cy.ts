@@ -43,6 +43,8 @@ describe('inputs wizard', () => {
     cy.get(`#Option\\ 1`).click()
     cy.get('#select-required').last().click()
     cy.get(`#Option\\ 2`).click()
+    cy.get('#select-create').last().click()
+    cy.get(`#Option\\ 2`).click()
 
     cy.contains('Next').click()
   })
