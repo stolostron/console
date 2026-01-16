@@ -69,7 +69,6 @@ export function WizMultiSelect(props: WizMultiSelectProps) {
         newValues.push(selectedString)
       }
       setValue(newValues)
-      setOpen(false)
     },
     [setValue, value]
   )

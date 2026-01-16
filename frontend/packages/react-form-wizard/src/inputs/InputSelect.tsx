@@ -64,13 +64,14 @@ export const InputSelect = ({
       isCreatable && newSelectOptions.push(filterValue)
 
       // Open the menu when the input value changes and the new value is not empty
-      if (!open) {
+      if (!open && value === '') {
         setOpen(true)
       }
     }
     setOptions([...new Set([...newSelectOptions])], filterValue)
-    // eslint-disable-next-line react-hooks/exhaustive-deps - don't want to trigger effect when open changes
-  }, [filterValue, options, setOptions, isCreatable])
+    // Don't want to trigger effect when open changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterValue, options, setOptions, isCreatable, value])
 
   useEffect(() => {
     setInputValue(value)
@@ -83,6 +84,7 @@ export const InputSelect = ({
       setInputValue(value)
       setFilterValue('')
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open])
 
   const createItemId = (value: string) => `select-typeahead-${value.replace(' ', '-')}`
