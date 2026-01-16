@@ -145,4 +145,32 @@ describe('AcmLabelsInput', () => {
       expect(queryByText(label)).toBeInstanceOf(HTMLSpanElement)
     })
   })
+
+  test('hides component when hidden prop is true', () => {
+    const HiddenLabelsInput = () => {
+      const [value, setValue] = useState<Record<string, string> | undefined>()
+      return <AcmKubernetesLabelsInput label="Label input" id="label-input" value={value} onChange={setValue} hidden />
+    }
+    const { queryByTestId, queryByText } = render(<HiddenLabelsInput />)
+    expect(queryByTestId('label-input-button')).toBeNull()
+    expect(queryByText('Label input')).toBeNull()
+  })
+
+  test('shows component when hidden prop is false', () => {
+    const VisibleLabelsInput = () => {
+      const [value, setValue] = useState<Record<string, string> | undefined>()
+      return (
+        <AcmKubernetesLabelsInput
+          label="Label input"
+          id="label-input"
+          value={value}
+          onChange={setValue}
+          hidden={false}
+        />
+      )
+    }
+    const { getByTestId, getByText } = render(<VisibleLabelsInput />)
+    expect(getByTestId('label-input-button')).toBeVisible()
+    expect(getByText('Label input')).toBeInTheDocument()
+  })
 })
