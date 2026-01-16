@@ -164,4 +164,36 @@ describe('AcmMultiSelect', () => {
     getByText('Submit').click()
     expect(mockFn).toHaveBeenCalled()
   })
+
+  test('hides component when hidden prop is true', () => {
+    const HiddenSelect = () => {
+      const [value, setValue] = useState<string[]>()
+      return (
+        <AcmMultiSelect id="acm-select" label="ACM select" value={value} onChange={setValue} hidden>
+          <SelectOption key="red" value="red">
+            Red
+          </SelectOption>
+        </AcmMultiSelect>
+      )
+    }
+    const { queryByTestId, queryByText } = render(<HiddenSelect />)
+    expect(queryByTestId('acm-select-label')).toBeNull()
+    expect(queryByText('ACM select')).toBeNull()
+  })
+
+  test('shows component when hidden prop is false', () => {
+    const VisibleSelect = () => {
+      const [value, setValue] = useState<string[]>()
+      return (
+        <AcmMultiSelect id="acm-select" label="ACM select" value={value} onChange={setValue} hidden={false}>
+          <SelectOption key="red" value="red">
+            Red
+          </SelectOption>
+        </AcmMultiSelect>
+      )
+    }
+    const { getByTestId, getByText } = render(<VisibleSelect />)
+    expect(getByTestId('acm-select-label')).toBeVisible()
+    expect(getByText('ACM select')).toBeInTheDocument()
+  })
 })

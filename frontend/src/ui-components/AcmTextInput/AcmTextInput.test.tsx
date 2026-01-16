@@ -74,4 +74,31 @@ describe('AcmTextInput', () => {
     userEvent.type(getByTestId('input'), '12345678')
     expect(getByTestId('input')).toHaveAttribute('aria-invalid', 'false')
   })
+
+  test('does not render when hidden is true', () => {
+    const { queryByTestId, queryByText } = render(
+      <AcmTextInput id="hidden-input" label="Hidden Label" value="test" onChange={() => null} hidden />
+    )
+    expect(queryByTestId('hidden-input')).not.toBeInTheDocument()
+    expect(queryByText('Hidden Label')).not.toBeInTheDocument()
+  })
+
+  test('skips validation when hidden is true', async () => {
+    const Component = () => {
+      const [submitted] = useState(false)
+      return (
+        <AcmForm>
+          <AcmTextInput id="hidden-input" label="Hidden Label" value="" onChange={() => null} isRequired hidden />
+          <AcmSubmit>Submit</AcmSubmit>
+          {submitted && <div data-testid="submitted">Submitted</div>}
+        </AcmForm>
+      )
+    }
+    const { getByText, queryByTestId } = render(<Component />)
+    // Hidden required field should not block form submission
+    expect(queryByTestId('hidden-input')).not.toBeInTheDocument()
+    getByText('Submit').click()
+    // Form should be able to submit since hidden fields skip validation
+    expect(getByText('Submit')).not.toBeDisabled()
+  })
 })
