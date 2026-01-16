@@ -23,12 +23,14 @@ type InputSelectProps = {
   options: string[]
   setOptions: (options: string[], inputValue: string) => void
   placeholder: string
+  isCreatable?: boolean
   value: string
   onSelect: (value: string | undefined) => void
   toggleRef: React.Ref<MenuToggleElement>
   open: boolean
   setOpen: (open: boolean) => void
   required?: boolean
+  isMultiSelect?: boolean | undefined
 }
 
 export const InputSelect = ({
@@ -38,14 +40,15 @@ export const InputSelect = ({
   options,
   setOptions,
   placeholder,
+  isCreatable,
   value,
   onSelect,
   toggleRef,
   open,
   setOpen,
+  isMultiSelect,
 }: InputSelectProps) => {
-  const { createOption } = useStringContext()
-  const [inputValue, setInputValue] = useState<string>('')
+  const [inputValue, setInputValue] = useState<string>(value ?? '')
   const [filterValue, setFilterValue] = useState<string>('')
   const [focusedItemIndex, setFocusedItemIndex] = useState<number | null>(null)
   const [activeItemId, setActiveItemId] = useState<string | null>(null)
@@ -58,10 +61,15 @@ export const InputSelect = ({
       newSelectOptions = newSelectOptions.filter((menuItem) =>
         menuItem.toLowerCase().includes(String(filterValue).toLowerCase())
       )
-      newSelectOptions.push(filterValue)
+      isCreatable && newSelectOptions.push(filterValue)
+
+      // Open the menu when the input value changes and the new value is not empty
+      if (!open) {
+        setOpen(true)
+      }
     }
     setOptions([...new Set([...newSelectOptions])], filterValue)
-  }, [filterValue, createOption, options, setOptions, value])
+  }, [filterValue, options, setOptions, isCreatable, open, setOpen]) // todo value is not necessary dep
 
   useEffect(() => {
     setInputValue(value)
@@ -188,7 +196,6 @@ export const InputSelect = ({
     <MenuToggle
       ref={toggleRef}
       variant="typeahead"
-      aria-label="Typeahead creatable menu toggle"
       onClick={onToggleClick}
       isExpanded={open}
       isFullWidth
@@ -202,7 +209,7 @@ export const InputSelect = ({
           aria-controls={placeholder}
           {...(activeItemId && { 'aria-activedescendant': activeItemId })}
           role="combobox"
-          value={inputValue}
+          value={isMultiSelect && filterValue === '' ? filterValue : inputValue}
           onClick={onInputClick}
           onChange={onTextInputChange}
           onKeyDown={onInputKeyDown}
@@ -214,7 +221,14 @@ export const InputSelect = ({
           {Array.isArray(value) && (
             <LabelGroup style={{ marginTop: -8, marginBottom: -8 }} numLabels={9999}>
               {value.map((selection) => (
-                <Label variant="outline" key={selection}>
+                <Label
+                  variant="outline"
+                  key={selection}
+                  onClose={(ev) => {
+                    ev.stopPropagation()
+                    onSelect(selection)
+                  }}
+                >
                   {selection}
                 </Label>
               ))}
@@ -222,12 +236,7 @@ export const InputSelect = ({
           )}
         </TextInputGroupMain>
         <TextInputGroupUtilities {...((!inputValue && !value) || required ? { style: { display: 'none' } } : {})}>
-          <Button
-            variant="plain"
-            onClick={onClearButtonClick}
-            aria-label="Clear input value"
-            icon={<TimesIcon aria-hidden />}
-          />
+          <Button variant="plain" onClick={onClearButtonClick} icon={<TimesIcon aria-hidden />} />
         </TextInputGroupUtilities>
       </TextInputGroup>
     </MenuToggle>

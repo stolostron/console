@@ -48,12 +48,16 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
   const handleSetOptions = useCallback(
     (o: string[]) => {
       if (o.length > 0) {
+        const isValueCustomOption = options?.filter((op) => op === value).length === 0
+        if (isValueCustomOption) {
+          o.unshift(value)
+        }
         setFilteredOptions(o)
       } else {
         setFilteredOptions([noResults])
       }
     },
-    [noResults]
+    [noResults, value, options]
   )
 
   const sync = useCallback(() => {
@@ -65,9 +69,8 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
           asyncCallback()
             .then((options) => {
               if (Array.isArray(options) && options.every((option) => typeof option === 'string')) {
-                const ops = isCreatable && value ? [...options, value] : options
-                setOptions(ops)
-                setFilteredOptions(ops)
+                setOptions(options)
+                setFilteredOptions(options)
               } else {
                 // eslint-disable-next-line no-console
                 console.warn('AsyncSelect: options is not an array of strings')
@@ -81,7 +84,7 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
         return false
       })
     }
-  }, [asyncCallback, displayMode, isCreatable, value])
+  }, [asyncCallback, displayMode])
 
   useEffect(() => sync(), [sync])
 
@@ -113,6 +116,7 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
                 placeholder={placeholder}
                 options={options}
                 setOptions={handleSetOptions}
+                isCreatable={isCreatable}
                 toggleRef={toggleRef}
                 value={value}
                 onSelect={onSelect}

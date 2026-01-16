@@ -177,6 +177,7 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
                   placeholder={placeholder}
                   options={inputSelectOptions}
                   setOptions={handleSetOptions}
+                  isCreatable={isCreatable}
                   toggleRef={toggleRef}
                   value={value}
                   onSelect={onSelect}

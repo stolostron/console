@@ -44,12 +44,24 @@ export function WizSingleSelect(props: WizSingleSelectProps) {
   const handleSetOptions = useCallback(
     (o: string[]) => {
       if (o.length > 0) {
-        setFilteredOptions(o)
+        const filtered =
+          options?.filter((option) => {
+            return o.includes(option)
+          }) ?? []
+        if (value !== '') {
+          const valueAsString = String(value)
+          // Check if value already exists in filtered to avoid duplicates
+          const valueExists = options?.some((op) => op === valueAsString)
+          if (!valueExists) {
+            filtered.unshift(value)
+          }
+        }
+        setFilteredOptions([...filtered, ...o])
       } else {
         setFilteredOptions([noResults])
       }
     },
-    [noResults]
+    [noResults, options, value]
   )
 
   if (hidden) return null
@@ -82,6 +94,7 @@ export function WizSingleSelect(props: WizSingleSelectProps) {
                   required={required}
                   options={options}
                   setOptions={handleSetOptions}
+                  isCreatable={isCreatable}
                   toggleRef={toggleRef}
                   value={value}
                   onSelect={onSelect}
