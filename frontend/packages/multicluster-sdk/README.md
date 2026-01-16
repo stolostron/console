@@ -982,9 +982,10 @@ if (!loaded) {
 if (error) {
   return <ErrorState error={error} />
 }
+```
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useIsFleetObservabilityInstalled.ts#L37)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useIsFleetObservabilityInstalled.ts#L38)
 
 
 ## :wrench: Constants
