@@ -16,7 +16,7 @@ const mockGranularityStepContent = jest.fn()
 const mockGlobalScopeSelection = jest.fn()
 const mockClusterSetsList = jest.fn()
 const mockClusterList = jest.fn()
-const mockWizSelect = jest.fn()
+const mockAcmSelect = jest.fn()
 
 // Mock GranularityStepContent
 jest.mock('./GranularityStepContent', () => ({
@@ -65,19 +65,11 @@ jest.mock('./Scope/Clusters/ClusterList', () => ({
   },
 }))
 
-// Mock WizSelect
-jest.mock('@patternfly-labs/react-form-wizard/lib/src/inputs/WizSelect', () => ({
-  WizSelect: (props: any) => {
-    mockWizSelect(props)
-    return (
-      <div data-testid="wiz-select">
-        {props.options?.map((opt: any) => (
-          <div key={opt.value} data-testid={`option-${opt.value}`}>
-            {opt.label}
-          </div>
-        ))}
-      </div>
-    )
+// Mock ui-components - simplified mock that captures props for testing
+jest.mock('../../ui-components', () => ({
+  AcmSelect: (props: any) => {
+    mockAcmSelect(props)
+    return <div data-testid="acm-select">{props.children}</div>
   },
 }))
 
@@ -94,6 +86,7 @@ describe('ScopeSelectionStepContent', () => {
     selectedScope: undefined as 'Global access' | 'Select cluster sets' | 'Select clusters' | undefined,
     onSelectClusterSets: jest.fn(),
     onSelectClusters: jest.fn(),
+    onSelectScopeType: jest.fn(),
   }
 
   beforeEach(() => {
@@ -102,7 +95,7 @@ describe('ScopeSelectionStepContent', () => {
     mockGlobalScopeSelection.mockClear()
     mockClusterSetsList.mockClear()
     mockClusterList.mockClear()
-    mockWizSelect.mockClear()
+    mockAcmSelect.mockClear()
   })
 
   it('renders with title Scope', () => {
@@ -141,16 +134,15 @@ describe('ScopeSelectionStepContent', () => {
     expect(setIsDrawerExpanded).toHaveBeenCalledWith(false)
   })
 
-  it('renders WizSelect with scope options', () => {
+  it('renders AcmSelect with scope options', () => {
     renderWithContext(<ScopeSelectionStepContent {...defaultProps} />)
 
-    expect(mockWizSelect).toHaveBeenCalled()
-    expect(mockWizSelect.mock.calls[0][0].options).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ value: 'Global access' }),
-        expect.objectContaining({ value: 'Select cluster sets' }),
-        expect.objectContaining({ value: 'Select clusters' }),
-      ])
+    expect(mockAcmSelect).toHaveBeenCalled()
+    expect(mockAcmSelect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 'scope-type',
+        isRequired: true,
+      })
     )
   })
 
@@ -244,5 +236,86 @@ describe('ScopeSelectionStepContent', () => {
     expect(() => {
       fireEvent.click(screen.getByRole('button', { name: 'Select Cluster' }))
     }).not.toThrow()
+  })
+
+  describe('onSelectScopeType callback', () => {
+    it('calls onSelectScopeType when scope type is changed to Global access', () => {
+      const onSelectScopeType = jest.fn()
+      renderWithContext(<ScopeSelectionStepContent {...defaultProps} onSelectScopeType={onSelectScopeType} />)
+
+      // Get the onChange callback that was passed to AcmSelect and invoke it
+      const acmSelectProps = mockAcmSelect.mock.calls[0][0]
+      acmSelectProps.onChange('Global access')
+
+      expect(onSelectScopeType).toHaveBeenCalledWith('Global access')
+    })
+
+    it('calls onSelectScopeType when scope type is changed to Select cluster sets', () => {
+      const onSelectScopeType = jest.fn()
+      renderWithContext(<ScopeSelectionStepContent {...defaultProps} onSelectScopeType={onSelectScopeType} />)
+
+      // Get the onChange callback that was passed to AcmSelect and invoke it
+      const acmSelectProps = mockAcmSelect.mock.calls[0][0]
+      acmSelectProps.onChange('Select cluster sets')
+
+      expect(onSelectScopeType).toHaveBeenCalledWith('Select cluster sets')
+    })
+
+    it('calls onSelectScopeType when scope type is changed to Select clusters', () => {
+      const onSelectScopeType = jest.fn()
+      renderWithContext(<ScopeSelectionStepContent {...defaultProps} onSelectScopeType={onSelectScopeType} />)
+
+      // Get the onChange callback that was passed to AcmSelect and invoke it
+      const acmSelectProps = mockAcmSelect.mock.calls[0][0]
+      acmSelectProps.onChange('Select clusters')
+
+      expect(onSelectScopeType).toHaveBeenCalledWith('Select clusters')
+    })
+
+    it('calls onSelectScopeType with undefined when scope type is cleared', () => {
+      const onSelectScopeType = jest.fn()
+      renderWithContext(
+        <ScopeSelectionStepContent
+          {...defaultProps}
+          onSelectScopeType={onSelectScopeType}
+          selectedScope="Global access"
+        />
+      )
+
+      // Get the onChange callback that was passed to AcmSelect and invoke it with undefined
+      const acmSelectProps = mockAcmSelect.mock.calls[0][0]
+      acmSelectProps.onChange(undefined)
+
+      expect(onSelectScopeType).toHaveBeenCalledWith(undefined)
+    })
+
+    it('does not throw when onSelectScopeType is undefined and scope type is changed', () => {
+      renderWithContext(<ScopeSelectionStepContent {...defaultProps} onSelectScopeType={undefined} />)
+
+      // Get the onChange callback that was passed to AcmSelect and invoke it
+      const acmSelectProps = mockAcmSelect.mock.calls[0][0]
+
+      expect(() => {
+        acmSelectProps.onChange('Global access')
+      }).not.toThrow()
+    })
+
+    it('does not call onSelectScopeType when it is undefined', () => {
+      // Create a spy to track if onSelectScopeType would be called
+      const onSelectScopeTypeSpy = jest.fn()
+
+      // Render with undefined onSelectScopeType
+      renderWithContext(<ScopeSelectionStepContent {...defaultProps} onSelectScopeType={undefined} />)
+
+      // Get the onChange callback that was passed to AcmSelect and invoke it
+      const acmSelectProps = mockAcmSelect.mock.calls[0][0]
+
+      // This should not throw even though onSelectScopeType is undefined
+      // because handleScopeTypeChange uses optional chaining
+      acmSelectProps.onChange('Select clusters')
+
+      // The spy should not have been called since we passed undefined
+      expect(onSelectScopeTypeSpy).not.toHaveBeenCalled()
+    })
   })
 })

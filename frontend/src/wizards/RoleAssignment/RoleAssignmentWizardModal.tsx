@@ -1,8 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { DataContext } from '@patternfly-labs/react-form-wizard/lib/src/contexts/DataContext'
 import { ItemContext } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ItemContext'
-import { WizSelect } from '@patternfly-labs/react-form-wizard/lib/src/inputs/WizSelect'
-import { Drawer, DrawerContent, Wizard, WizardHeader, WizardStep } from '@patternfly/react-core'
+import { Drawer, DrawerContent, SelectOption, Wizard, WizardHeader, WizardStep } from '@patternfly/react-core'
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom-v5-compat'
@@ -11,6 +10,7 @@ import { DOC_LINKS } from '../../lib/doc-util'
 import { isType } from '../../lib/is-type'
 import { GroupKind, UserKind } from '../../resources'
 import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
+import { AcmSelect } from '../../ui-components'
 import { ClusterGranularityStepContent } from './ClusterGranularityWizardStep'
 import { GranularityStepContent } from './GranularityStepContent'
 import { IdentitiesList } from './Identities/IdentitiesList'
@@ -64,6 +64,8 @@ const getInitialFormData = (): RoleAssignmentWizardFormData => ({
   },
   roles: [],
   scopeType: 'Global access',
+  clusterSetAccessLevel: 'Cluster set role assignment',
+  selectedClustersAccessLevel: 'Cluster role assignment',
 })
 
 export const RoleAssignmentWizardModal = ({
@@ -99,6 +101,10 @@ export const RoleAssignmentWizardModal = ({
   const handleClustersChange = useCallback((clusters: any[]) => {
     setSelectedClusters(clusters)
     setFormData((prev) => ({ ...prev, selectedClusters: clusters }))
+  }, [])
+
+  const handleScopeTypeChange = useCallback((scopeType?: RoleAssignmentWizardFormData['scopeType']) => {
+    setFormData((prev) => ({ ...prev, scopeType }))
   }, [])
 
   const handleRoleSelect = useCallback((roleName: string) => {
@@ -147,6 +153,26 @@ export const RoleAssignmentWizardModal = ({
       },
     }))
   }, [])
+
+  const handleClustersAccessLevelChange = useCallback(
+    (clustersAccessLevel?: RoleAssignmentWizardFormData['selectedClustersAccessLevel']) => {
+      setFormData((prev) => ({
+        ...prev,
+        selectedClustersAccessLevel: clustersAccessLevel,
+      }))
+    },
+    []
+  )
+
+  const handleClusterSetAccessLevelChange = useCallback(
+    (clusterSetAccessLevel?: RoleAssignmentWizardFormData['clusterSetAccessLevel']) => {
+      setFormData((prev) => ({
+        ...prev,
+        clusterSetAccessLevel: clusterSetAccessLevel,
+      }))
+    },
+    []
+  )
 
   const handleClose = useCallback(() => {
     setIsDrawerExpanded(false)
@@ -215,6 +241,7 @@ export const RoleAssignmentWizardModal = ({
         selectedClusters={selectedClusters}
         onSelectClusterSets={handleClusterSetsChange}
         onSelectClusters={handleClustersChange}
+        onSelectScopeType={handleScopeTypeChange}
         selectedScope={formData.scopeType}
       />
     </WizardStep>,
@@ -232,12 +259,16 @@ export const RoleAssignmentWizardModal = ({
         description={t('Define the level of access for the 1 selected cluster set.')}
       />
       <div style={{ margin: '16px 0' }}>
-        <WizSelect
-          pathValueToInputValue={(pathValue) => pathValue || 'Cluster set role assignment'}
-          path="clusterSetAccessLevel"
+        <AcmSelect
+          id="clusters-set-access-level"
+          value={formData.clusterSetAccessLevel}
+          onChange={(value) =>
+            handleClusterSetAccessLevelChange(value as RoleAssignmentWizardFormData['clusterSetAccessLevel'])
+          }
+          isRequired
           label="Access level"
-          required
-          options={[
+        >
+          {[
             {
               label: t('Cluster set role assignment'),
               value: 'Cluster set role assignment',
@@ -250,8 +281,12 @@ export const RoleAssignmentWizardModal = ({
                 'Grant access to specific clusters on the cluster set. Optionally, narrow this access to projects on the selected clusters'
               ),
             },
-          ]}
-        />
+          ].map((option) => (
+            <SelectOption key={option.value} value={option.value} description={option.description}>
+              {option.label}
+            </SelectOption>
+          ))}
+        </AcmSelect>
       </div>
       {formData.clusterSetAccessLevel === 'Cluster role assignment' && (
         <div style={{ marginTop: '16px' }}>
@@ -283,6 +318,7 @@ export const RoleAssignmentWizardModal = ({
         selectedNamespaces={formData.scope.namespaces}
         onNamespacesChange={handleNamespacesChange}
         selectedClustersAccessLevel={formData.selectedClustersAccessLevel}
+        onClustersAccessLevelChange={handleClustersAccessLevelChange}
       />
     </WizardStep>,
     <WizardStep
@@ -297,6 +333,7 @@ export const RoleAssignmentWizardModal = ({
         selectedNamespaces={formData.scope.namespaces}
         onNamespacesChange={handleNamespacesChange}
         selectedClustersAccessLevel={formData.selectedClustersAccessLevel}
+        onClustersAccessLevelChange={handleClustersAccessLevelChange}
       />
     </WizardStep>,
   ]
