@@ -88,15 +88,6 @@ export const ProjectsTable = ({
   const filters = useMemo<ITableFilter<ProjectTableData>[]>(() => {
     const allFilters: ITableFilter<ProjectTableData>[] = [
       {
-        id: 'name',
-        label: t('Name'),
-        tableFilterFn: (selectedValues, project) => selectedValues.includes(project.name),
-        options: projectsData.map((project) => ({
-          label: project.name,
-          value: project.name,
-        })),
-      },
-      {
         id: 'type',
         label: t('Type'),
         tableFilterFn: (selectedValues, project) => selectedValues.includes(project.type),
