@@ -1,13 +1,23 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { V1CustomResourceDefinitionCondition } from '@kubernetes/client-node'
 import {
   AgentK8sResource,
   AgentMachineK8sResource,
   HostedClusterK8sResource,
   NodePoolK8sResource,
 } from '@openshift-assisted/ui-lib/cim'
-import { ActionGroup, Button, ButtonVariant, Checkbox, SelectOption } from '@patternfly/react-core'
+import {
+  ActionGroup,
+  Button,
+  ButtonVariant,
+  Checkbox,
+  SelectOption,
+  FormHelperText,
+  Popover,
+} from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
+import { ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
 import _ from 'lodash'
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -34,6 +44,7 @@ import {
 } from '../../../../../ui-components'
 import { getNodepoolAgents } from '../utils/nodepool'
 import { ReleaseNotesLink } from './ReleaseNotesLink'
+import { isMinorOrMajorUpgrade } from './utils/version-utils'
 
 // Helper: Check if version is within supported range
 // Only check minor version if major versions are equal
@@ -65,6 +76,18 @@ function sortVersionsDescending(versions: string[]): string[] {
       }
     })
     .reverse()
+}
+
+// Helper: Check if a version should show an upgrade alert
+// Returns true if upgradeableCondition is False AND the version is a minor/major upgrade
+function hasUpgradeAlert(
+  upgradeableCondition: V1CustomResourceDefinitionCondition | undefined,
+  currentVersion: string | undefined,
+  targetVersion: string | undefined
+): boolean {
+  if (!targetVersion) return false
+  const isMinorMajor = isMinorOrMajorUpgrade(currentVersion, targetVersion)
+  return upgradeableCondition?.status === 'False' && isMinorMajor
 }
 
 export function HypershiftUpgradeModal(props: {
@@ -674,20 +697,36 @@ export function HypershiftUpgradeModal(props: {
     return <></>
   }
 
+  const upgradeableCondition = props.controlPlane.distribution?.upgradeInfo?.upgradeableCondition
+  const currentVersion = props.controlPlane.distribution?.ocp?.version
+  const showUpgradeAlert = hasUpgradeAlert(upgradeableCondition, currentVersion, controlPlaneNewVersion)
+
   return (
-    <AcmModal variant={ModalVariant.medium} title={t('Upgrade version')} isOpen={true} onClose={props.close}>
+    <AcmModal variant={ModalVariant.large} title={t('Upgrade version')} isOpen={true} onClose={props.close}>
       <AcmForm style={{ gap: 0 }}>
         {patchErrors.length === 0 ? (
           <Fragment>
+            {showUpgradeAlert && (
+              <AcmAlert
+                isInline
+                noClose
+                variant="warning"
+                title={t('Cluster version upgrade risks detected')}
+                message={t(
+                  'Clusters with warnings have version-specific risks that may cause upgrade failure. Resolve these risks or choose a different target version.'
+                )}
+                style={{ marginBottom: '16px' }}
+              />
+            )}
             {t(
               'Select the new versions for the cluster and node pools that you want to upgrade. This action is irreversible.'
             )}
             <Table aria-label={t('Hypershift upgrade table')} variant="compact" borders={false}>
               <Thead>
                 <Tr>
-                  <Th>{columnNamesTranslated.name}</Th>
-                  <Th>{columnNamesTranslated.currentVersion}</Th>
-                  <Th>{columnNamesTranslated.newVersion}</Th>
+                  <Th width={20}>{columnNamesTranslated.name}</Th>
+                  <Th width={15}>{columnNamesTranslated.currentVersion}</Th>
+                  <Th width={60}>{columnNamesTranslated.newVersion}</Th>
                 </Tr>
               </Thead>
               <Tbody>
@@ -728,46 +767,80 @@ export function HypershiftUpgradeModal(props: {
                     {props.controlPlane.distribution?.ocp?.version}
                   </Td>
                   <Td dataLabel={columnNames.newVersion}>
-                    {/* Single version dropdown that filters based on what's checked.
-                        All selected components upgrade to the same version per ClusterCurator API. */}
-                    {controlPlaneChecked || countTrue(nodepoolsChecked) > 0 ? (
-                      <>
-                        <AcmSelect
-                          id="controlplane-version-dropdown"
-                          onChange={(version) => {
-                            // Handle clearing the dropdown (undefined or empty string)
-                            if (!version) {
-                              setControlPlaneNewVersion(undefined)
-                              return
-                            }
+                    <AcmSelect
+                      id="controlplane-version-dropdown"
+                      onChange={(version) => {
+                        // Handle clearing the dropdown (undefined or empty string)
+                        if (!version) {
+                          setControlPlaneNewVersion(undefined)
+                          return
+                        }
 
-                            setControlPlaneNewVersion(version)
-                            checkNodepoolErrors(version)
-                            checkNodepoolsDisabled(version)
-                            props.nodepools?.forEach((np) => {
-                              if (isTwoVersionsGreater(version, np.status?.version)) {
-                                nodepoolsChecked[np.metadata.name || ''] = true
-                              }
-                            })
-                            setNodepoolsChecked({ ...nodepoolsChecked })
-                            if (countTrue(nodepoolsChecked) === props.nodepools?.length) {
-                              setNodepoolGroupChecked(true)
-                            }
+                        setControlPlaneNewVersion(version)
+                        checkNodepoolErrors(version)
+                        checkNodepoolsDisabled(version)
+                        props.nodepools?.forEach((np) => {
+                          if (isTwoVersionsGreater(version, np.status?.version)) {
+                            nodepoolsChecked[np.metadata.name || ''] = true
+                          }
+                        })
+                        setNodepoolsChecked({ ...nodepoolsChecked })
+                        if (countTrue(nodepoolsChecked) === props.nodepools?.length) {
+                          setNodepoolGroupChecked(true)
+                        }
+                      }}
+                      value={controlPlaneNewVersion || ''}
+                      label=""
+                      maxHeight={'10em'}
+                      isDisabled={!controlPlaneChecked}
+                    >
+                      {availableUpdateKeys.map((version) => {
+                        const hasWarning = hasUpgradeAlert(upgradeableCondition, currentVersion, version)
+                        return (
+                          <SelectOption key={`${version}`} value={version}>
+                            <div
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                width: '100%',
+                              }}
+                            >
+                              <span>{version}</span>
+                              {hasWarning && (
+                                <ExclamationTriangleIcon style={{ color: 'var(--pf-v5-global--warning-color--100)' }} />
+                              )}
+                            </div>
+                          </SelectOption>
+                        )
+                      })}
+                    </AcmSelect>
+                    {showUpgradeAlert ? (
+                      <FormHelperText>
+                        <ExclamationTriangleIcon
+                          style={{
+                            marginRight: '4px',
+                            verticalAlign: 'middle',
+                            color: 'var(--pf-v5-global--warning-color--100)',
                           }}
-                          value={controlPlaneNewVersion || ''}
-                          label=""
-                          maxHeight={'10em'}
+                        />
+                        {t('Cluster version upgrade risk detected for {{version}}', {
+                          version: controlPlaneNewVersion,
+                        })}{' '}
+                        -{' '}
+                        <Popover
+                          headerContent={t('Cluster version upgrade risk')}
+                          bodyContent={upgradeableCondition?.message}
                         >
-                          {availableUpdateKeys.map((version) => (
-                            <SelectOption key={`${version}`} value={version}>
-                              {version}
-                            </SelectOption>
-                          ))}
-                        </AcmSelect>
+                          <Button variant="link" isInline style={{ padding: 0, fontSize: 'inherit' }}>
+                            {t('View alert details')}
+                          </Button>
+                        </Popover>
+                        {' | '}
                         <ReleaseNotesLink version={controlPlaneNewVersion} />
-                      </>
+                      </FormHelperText>
                     ) : (
-                      <span>-</span>
+                      <ReleaseNotesLink version={controlPlaneNewVersion} />
                     )}
                   </Td>
                 </Tr>
