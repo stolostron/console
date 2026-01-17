@@ -435,6 +435,35 @@ const mockHypershiftClusterWithMCIChannels: Cluster = {
 describe('BatchChannelSelectModal - Hosted Clusters', () => {
   beforeEach(() => nockIgnoreApiPaths())
 
+  it('should show warning alert when cluster has no current channel configured', () => {
+    const { queryByText } = render(
+      <MemoryRouter>
+        <BatchChannelSelectModal
+          clusters={[mockHypershiftClusterNoChannel]}
+          open={true}
+          close={() => {}}
+          hostedClusters={{ 'hosted-cluster-test': mockHostedClusterNoChannel }}
+        />
+      </MemoryRouter>
+    )
+    // Should show the warning alert
+    expect(
+      queryByText('Update channel is not configured for one or more clusters. Select a channel to see update options.')
+    ).toBeTruthy()
+  })
+
+  it('should not show warning alert when all clusters have current channel configured', () => {
+    const { queryByText } = render(
+      <MemoryRouter>
+        <BatchChannelSelectModal clusters={[mockClusterReady1]} open={true} close={() => {}} />
+      </MemoryRouter>
+    )
+    // Should NOT show the warning alert
+    expect(
+      queryByText('Update channel is not configured for one or more clusters. Select a channel to see update options.')
+    ).toBeFalsy()
+  })
+
   it('should show hosted cluster without channel set using fallback fast-X.Y channel', () => {
     const { queryByText, getByText } = render(
       <MemoryRouter>

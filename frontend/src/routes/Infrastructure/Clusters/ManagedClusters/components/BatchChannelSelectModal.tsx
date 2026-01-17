@@ -15,9 +15,9 @@ import {
   ResourceError,
   ResourceErrorCode,
 } from '../../../../../resources/utils'
-import { AcmEmptyState, AcmSelect } from '../../../../../ui-components'
-import { Content, ContentVariants, SelectOption } from '@patternfly/react-core'
-import { useEffect, useState } from 'react'
+import { AcmAlert, AcmEmptyState, AcmSelect } from '../../../../../ui-components'
+import { AlertVariant, Content, ContentVariants, SelectOption } from '@patternfly/react-core'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { BulkActionModal } from '../../../../../components/BulkActionModal'
 import './style.css'
@@ -126,6 +126,11 @@ export function BatchChannelSelectModal(props: {
     setChannelSelectableClusters(newChannelSelectableClusters || [])
   }, [props.clusters, props.open, props.hostedClusters])
 
+  // Check if any cluster has no current channel configured
+  const hasClustersWithoutChannel = useMemo(() => {
+    return channelSelectableClusters.some((cluster) => !cluster.distribution?.upgradeInfo?.currentChannel)
+  }, [channelSelectableClusters])
+
   return (
     <BulkActionModal<Cluster>
       open={props.open}
@@ -144,6 +149,18 @@ export function BatchChannelSelectModal(props: {
         props.close()
       }}
       description={t('bulk.message.selectChannel')}
+      alert={
+        hasClustersWithoutChannel ? (
+          <div style={{ paddingTop: '16px' }}>
+            <AcmAlert
+              isInline
+              noClose
+              variant={AlertVariant.warning}
+              title={t('upgrade.selectChannel.alert.noChannel')}
+            />
+          </div>
+        ) : undefined
+      }
       columns={[
         {
           header: t('upgrade.table.name'),

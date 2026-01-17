@@ -125,7 +125,6 @@ export function DistributionField(props: {
         <Icon status="warning" size="sm">
           <ExclamationTriangleIcon />
         </Icon>{' '}
-        {t('upgrade.channel.not.configured')} -{' '}
         <RbacButton
           onClick={() => setShowChannelSelectModal(true)}
           variant={ButtonVariant.link}
