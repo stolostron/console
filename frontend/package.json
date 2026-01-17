@@ -173,7 +173,7 @@
     "jest-sonar-reporter": "2.0.0",
     "json-loader": "0.5.7",
     "merge-jsons-webpack-plugin": "2.0.1",
-    "mini-css-extract-plugin": "2.6.1",
+    "mini-css-extract-plugin": "2.10.0",
     "monaco-editor-webpack-plugin": "^7.1.0",
     "nock": "13.2.8",
     "node-util": "0.0.6",
