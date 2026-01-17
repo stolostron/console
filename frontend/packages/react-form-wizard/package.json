@@ -47,7 +47,7 @@
         "get-value": "3.0.1",
         "klona": "2.0.6",
         "set-value": "4.1.0",
-        "yaml": "1.10.2"
+        "yaml": "2.8.2"
     },
     "devDependencies": {
         "@babel/core": "^7.27.4",
