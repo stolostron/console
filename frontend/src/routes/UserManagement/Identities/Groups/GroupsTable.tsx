@@ -63,6 +63,7 @@ const GroupsTable = ({
         filters={filters}
         columns={columns}
         keyFn={keyFn}
+        items={groups}
         resultView={{
           page: 1,
           loading: false,

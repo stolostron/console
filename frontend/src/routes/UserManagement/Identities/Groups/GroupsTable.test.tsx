@@ -254,7 +254,41 @@ describe('GroupsTable', () => {
     // The component should render without errors when no selectedGroup is provided
   })
 
-  // Note: localStorageTableKey tests are skipped because the GroupsTable tests have
-  // pre-existing issues with the mock setup that cause all tests to fail.
-  // The localStorageTableKey functionality is tested in AcmTableStateProvider.test.tsx
+  describe('localStorageTableKey', () => {
+    beforeEach(() => {
+      localStorage.clear()
+    })
+
+    afterEach(() => {
+      localStorage.clear()
+    })
+
+    test('should use default localStorageTableKey when not provided', async () => {
+      render(<Component />)
+
+      await waitFor(() => {
+        expect(screen.getByText('kubevirt-admins')).toBeInTheDocument()
+      })
+      // The default key 'groups-table-state' should be used
+    })
+
+    test('should use custom localStorageTableKey when provided', async () => {
+      render(<Component localStorageTableKey="custom-groups-table-state" />)
+
+      await waitFor(() => {
+        expect(screen.getByText('kubevirt-admins')).toBeInTheDocument()
+      })
+      // The custom key 'custom-groups-table-state' should be used
+    })
+
+    test('should render correctly with role-assignment-groups-table-state key', async () => {
+      render(<Component localStorageTableKey="role-assignment-groups-table-state" />)
+
+      await waitFor(() => {
+        expect(screen.getByText('kubevirt-admins')).toBeInTheDocument()
+        expect(screen.getByText('developers')).toBeInTheDocument()
+        expect(screen.getByText('sre-team')).toBeInTheDocument()
+      })
+    })
+  })
 })
