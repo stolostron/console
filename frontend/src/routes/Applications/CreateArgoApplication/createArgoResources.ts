@@ -56,7 +56,7 @@ export async function createArgoResources({
     }
     submitForm()
     navigate({
-      pathname: generatePath(NavigationPath.applicationTopology, {
+      pathname: generatePath(NavigationPath.applicationDetails, {
         namespace: applicationSet?.metadata?.namespace ?? '',
         name: applicationSet?.metadata?.name ?? '',
       }),
