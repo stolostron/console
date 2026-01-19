@@ -106,6 +106,7 @@ export default function ManagedClusters() {
                   action={<AddCluster type="button" />}
                 />
               }
+              localStorageTableKey="managed-clusters-table-state"
             />
           </StackItem>
         </Stack>

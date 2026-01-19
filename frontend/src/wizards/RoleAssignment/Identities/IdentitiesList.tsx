@@ -93,7 +93,12 @@ export function IdentitiesList({ onUserSelect, onGroupSelect, initialSelectedIde
             {showCreatePreAuthorized ? (
               <CreatePreAuthorizedUser onClose={handleClosePreAuthorizedUser} />
             ) : (
-              <UsersTable areLinksDisplayed={false} selectedUser={selectedUser} setSelectedUser={handleOnUserSelect} />
+              <UsersTable
+                areLinksDisplayed={false}
+                selectedUser={selectedUser}
+                setSelectedUser={handleOnUserSelect}
+                localStorageTableKey="role-assignment-users-table-state"
+              />
             )}
           </div>
         </Tab>
@@ -104,6 +109,7 @@ export function IdentitiesList({ onUserSelect, onGroupSelect, initialSelectedIde
               areLinksDisplayed={false}
               selectedGroup={selectedGroup}
               setSelectedGroup={handleOnGroupSelect}
+              localStorageTableKey="role-assignment-groups-table-state"
             />
           </div>
         </Tab>

@@ -36,6 +36,7 @@ export const ClusterSetsList = ({ onSelectClusterSet, selectedClusterSets }: Clu
       initialSelectedClusterSets={selectedClusterSets}
       showExportButton={false}
       hiddenColumns={[t('table.cluster.statuses'), t('table.clusterSetBinding')]}
+      localStorageTableKey="role-assignment-cluster-sets-table-state"
     />
   )
 }

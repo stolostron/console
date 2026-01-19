@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmButton, AcmEmptyState, AcmLabels, AcmTable } from '../../ui-components'
+import { AcmButton, AcmEmptyState, AcmLabels, AcmTable, AcmTableStateProvider } from '../../ui-components'
 import { ButtonVariant } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import { Fragment, useEffect, useMemo, useState } from 'react'
@@ -35,6 +35,7 @@ interface ClusterSetsTableProps {
   hiddenColumns?: string[]
   showExportButton?: boolean
   initialSelectedClusterSets?: ManagedClusterSet[]
+  localStorageTableKey?: string
 }
 
 export const ClusterSetsTable = ({
@@ -45,6 +46,7 @@ export const ClusterSetsTable = ({
   hiddenColumns = [],
   showExportButton = true,
   initialSelectedClusterSets,
+  localStorageTableKey,
 }: ClusterSetsTableProps) => {
   const { t } = useTranslation()
   const [modalProps, setModalProps] = useState<BulkActionModalProps<ManagedClusterSet> | { open: false }>({
@@ -152,161 +154,164 @@ export const ClusterSetsTable = ({
     <Fragment>
       <CreateClusterSetModal isOpen={createClusterSetModalOpen} onClose={() => setCreateClusterSetModalOpen(false)} />
       <BulkActionModal {...modalProps} />
-      <AcmTable<ManagedClusterSet>
-        items={managedClusterSets}
-        disabledItems={disabledResources}
-        columns={[
-          {
-            header: t('table.name'),
-            sort: clusterSetSortFn,
-            search: 'metadata.name',
-            cell: (managedClusterSet: ManagedClusterSet) => (
-              <>
-                <span style={{ whiteSpace: 'nowrap' }}>
-                  {areLinksDisplayed ? (
-                    <Link
-                      to={generatePath(NavigationPath.clusterSetOverview, { id: managedClusterSet.metadata.name! })}
-                    >
-                      {managedClusterSet.metadata.name}
-                    </Link>
-                  ) : (
-                    managedClusterSet.metadata.name
-                  )}
-                </span>
-                {isGlobalClusterSet(managedClusterSet) && <GlobalClusterSetPopover />}
-              </>
-            ),
-            exportContent: (managedClusterSet: ManagedClusterSet) => managedClusterSet.metadata.name,
-          },
-          {
-            header: t('table.cluster.statuses'),
-            cell: (managedClusterSet: ManagedClusterSet) => <ClusterStatuses managedClusterSet={managedClusterSet} />,
-            exportContent: (managedClusterSet: ManagedClusterSet) => {
-              const status = getClusterStatusCount(managedClusterSetClusters[managedClusterSet.metadata.name!])
-              const clusterStatusAvailable =
-                status &&
-                Object.values(status).find((val) => {
-                  return typeof val === 'number' && val > 0
-                })
 
-              if (clusterStatusAvailable)
-                return (
-                  `${t('healthy')}: ${status?.healthy}, ${t('running')}: ${status?.running}, ` +
-                  `${t('warning')}: ${status?.warning}, ${t('progress')}: ${status?.progress}, ` +
-                  `${t('danger')}: ${status?.danger}, ${t('detached')}: ${status?.detached}, ` +
-                  `${t('pending')}: ${status?.pending}, ${t('sleep')}: ${status?.sleep}, ` +
-                  `${t('unknown')}: ${status?.unknown}`
+      <AcmTableStateProvider localStorageKey={localStorageTableKey ?? 'cluster-sets-table-state'}>
+        <AcmTable<ManagedClusterSet>
+          items={managedClusterSets}
+          disabledItems={disabledResources}
+          columns={[
+            {
+              header: t('table.name'),
+              sort: clusterSetSortFn,
+              search: 'metadata.name',
+              cell: (managedClusterSet: ManagedClusterSet) => (
+                <>
+                  <span style={{ whiteSpace: 'nowrap' }}>
+                    {areLinksDisplayed ? (
+                      <Link
+                        to={generatePath(NavigationPath.clusterSetOverview, { id: managedClusterSet.metadata.name! })}
+                      >
+                        {managedClusterSet.metadata.name}
+                      </Link>
+                    ) : (
+                      managedClusterSet.metadata.name
+                    )}
+                  </span>
+                  {isGlobalClusterSet(managedClusterSet) && <GlobalClusterSetPopover />}
+                </>
+              ),
+              exportContent: (managedClusterSet: ManagedClusterSet) => managedClusterSet.metadata.name,
+            },
+            {
+              header: t('table.cluster.statuses'),
+              cell: (managedClusterSet: ManagedClusterSet) => <ClusterStatuses managedClusterSet={managedClusterSet} />,
+              exportContent: (managedClusterSet: ManagedClusterSet) => {
+                const status = getClusterStatusCount(managedClusterSetClusters[managedClusterSet.metadata.name!])
+                const clusterStatusAvailable =
+                  status &&
+                  Object.values(status).find((val) => {
+                    return typeof val === 'number' && val > 0
+                  })
+
+                if (clusterStatusAvailable)
+                  return (
+                    `${t('healthy')}: ${status?.healthy}, ${t('running')}: ${status?.running}, ` +
+                    `${t('warning')}: ${status?.warning}, ${t('progress')}: ${status?.progress}, ` +
+                    `${t('danger')}: ${status?.danger}, ${t('detached')}: ${status?.detached}, ` +
+                    `${t('pending')}: ${status?.pending}, ${t('sleep')}: ${status?.sleep}, ` +
+                    `${t('unknown')}: ${status?.unknown}`
+                  )
+              },
+            },
+            {
+              header: t('table.clusterSetBinding'),
+              tooltip: t('clusterSetBinding.edit.message.noBold'),
+              cell: (managedClusterSet: ManagedClusterSet) => {
+                const namespaces = getNamespaceBindings(managedClusterSet)
+                return namespaces.length ? (
+                  <AcmLabels labels={namespaces} collapse={namespaces.filter((_ns, i) => i > 1)} />
+                ) : (
+                  '-'
                 )
+              },
+              exportContent: (managedClusterSet: ManagedClusterSet) => {
+                const namespaceBinding = getNamespaceBindings(managedClusterSet)
+                if (namespaceBinding) {
+                  return `${getNamespaceBindings(managedClusterSet).toString()}`
+                }
+              },
             },
-          },
-          {
-            header: t('table.clusterSetBinding'),
-            tooltip: t('clusterSetBinding.edit.message.noBold'),
-            cell: (managedClusterSet: ManagedClusterSet) => {
-              const namespaces = getNamespaceBindings(managedClusterSet)
-              return namespaces.length ? (
-                <AcmLabels labels={namespaces} collapse={namespaces.filter((_ns, i) => i > 1)} />
-              ) : (
-                '-'
-              )
+            {
+              header: t('table.clusters'),
+              cell: (managedClusterSet: ExtendedManagedClusterSet) => managedClusterSet.clusters?.length,
+              exportContent: (managedClusterSet: ExtendedManagedClusterSet) => managedClusterSet.clusters?.length,
             },
-            exportContent: (managedClusterSet: ManagedClusterSet) => {
-              const namespaceBinding = getNamespaceBindings(managedClusterSet)
-              if (namespaceBinding) {
-                return `${getNamespaceBindings(managedClusterSet).toString()}`
+            ...(hideTableActions
+              ? []
+              : [
+                  {
+                    header: '',
+                    isActionCol: true,
+                    cell: (managedClusterSet: ManagedClusterSet) => {
+                      return <ClusterSetActionDropdown managedClusterSet={managedClusterSet} isKebab={true} />
+                    },
+                    cellTransforms: [fitContent],
+                  },
+                ]),
+          ].filter((column) => !hiddenColumns.includes(column.header))}
+          keyFn={mckeyFn}
+          key="clusterSetsTable"
+          tableActions={
+            hideTableActions
+              ? []
+              : [
+                  {
+                    id: 'deleteClusterSets',
+                    title: t('bulk.delete.sets'),
+                    click: (managedClusterSets: ManagedClusterSet[]) => {
+                      setModalProps({
+                        open: true,
+                        title: t('bulk.title.deleteSet'),
+                        action: t('delete'),
+                        processing: t('deleting'),
+                        items: managedClusterSets,
+                        emptyState: undefined, // table action is only enabled when items are selected
+                        description: t('bulk.message.deleteSet'),
+                        columns: modalColumns,
+                        keyFn: (managedClusterSet) => managedClusterSet.metadata.name as string,
+                        actionFn: deleteResource,
+                        close: () => setModalProps({ open: false }),
+                        isDanger: true,
+                        icon: 'warning',
+                        confirmText: t('confirm'),
+                        isValidError: errorIsNot([ResourceErrorCode.NotFound]),
+                      })
+                    },
+                    variant: 'bulk-action' as const,
+                  },
+                ]
+          }
+          tableActionButtons={
+            hideTableActions
+              ? []
+              : [
+                  {
+                    id: 'createClusterSet',
+                    title: t('managed.createClusterSet'),
+                    click: () => setCreateClusterSetModalOpen(true),
+                    isDisabled: !canCreateClusterSet,
+                    tooltip: t('rbac.unauthorized'),
+                    variant: ButtonVariant.primary,
+                  },
+                ]
+          }
+          rowActions={[]}
+          emptyState={
+            <AcmEmptyState
+              key="mcEmptyState"
+              title={t("You don't have any cluster sets yet")}
+              message={t('To get started, create a cluster set.')}
+              action={
+                <div>
+                  <AcmButton
+                    role="link"
+                    onClick={() => setCreateClusterSetModalOpen(true)}
+                    isDisabled={!canCreateClusterSet}
+                    tooltip={t('rbac.unauthorized')}
+                  >
+                    {t('managed.createClusterSet')}
+                  </AcmButton>
+                  <ViewDocumentationLink doclink={DOC_LINKS.CLUSTER_SETS} />
+                </div>
               }
-            },
-          },
-          {
-            header: t('table.clusters'),
-            cell: (managedClusterSet: ExtendedManagedClusterSet) => managedClusterSet.clusters?.length,
-            exportContent: (managedClusterSet: ExtendedManagedClusterSet) => managedClusterSet.clusters?.length,
-          },
-          ...(hideTableActions
-            ? []
-            : [
-                {
-                  header: '',
-                  isActionCol: true,
-                  cell: (managedClusterSet: ManagedClusterSet) => {
-                    return <ClusterSetActionDropdown managedClusterSet={managedClusterSet} isKebab={true} />
-                  },
-                  cellTransforms: [fitContent],
-                },
-              ]),
-        ].filter((column) => !hiddenColumns.includes(column.header))}
-        keyFn={mckeyFn}
-        key="clusterSetsTable"
-        tableActions={
-          hideTableActions
-            ? []
-            : [
-                {
-                  id: 'deleteClusterSets',
-                  title: t('bulk.delete.sets'),
-                  click: (managedClusterSets: ManagedClusterSet[]) => {
-                    setModalProps({
-                      open: true,
-                      title: t('bulk.title.deleteSet'),
-                      action: t('delete'),
-                      processing: t('deleting'),
-                      items: managedClusterSets,
-                      emptyState: undefined, // table action is only enabled when items are selected
-                      description: t('bulk.message.deleteSet'),
-                      columns: modalColumns,
-                      keyFn: (managedClusterSet) => managedClusterSet.metadata.name as string,
-                      actionFn: deleteResource,
-                      close: () => setModalProps({ open: false }),
-                      isDanger: true,
-                      icon: 'warning',
-                      confirmText: t('confirm'),
-                      isValidError: errorIsNot([ResourceErrorCode.NotFound]),
-                    })
-                  },
-                  variant: 'bulk-action' as const,
-                },
-              ]
-        }
-        tableActionButtons={
-          hideTableActions
-            ? []
-            : [
-                {
-                  id: 'createClusterSet',
-                  title: t('managed.createClusterSet'),
-                  click: () => setCreateClusterSetModalOpen(true),
-                  isDisabled: !canCreateClusterSet,
-                  tooltip: t('rbac.unauthorized'),
-                  variant: ButtonVariant.primary,
-                },
-              ]
-        }
-        rowActions={[]}
-        emptyState={
-          <AcmEmptyState
-            key="mcEmptyState"
-            title={t("You don't have any cluster sets yet")}
-            message={t('To get started, create a cluster set.')}
-            action={
-              <div>
-                <AcmButton
-                  role="link"
-                  onClick={() => setCreateClusterSetModalOpen(true)}
-                  isDisabled={!canCreateClusterSet}
-                  tooltip={t('rbac.unauthorized')}
-                >
-                  {t('managed.createClusterSet')}
-                </AcmButton>
-                <ViewDocumentationLink doclink={DOC_LINKS.CLUSTER_SETS} />
-              </div>
-            }
-          />
-        }
-        showExportButton={showExportButton}
-        exportFilePrefix="clustersets"
-        onSelect={onSelectClusterSet}
-        initialSelectedItems={initialSelectedClusterSets}
-      />
+            />
+          }
+          showExportButton={showExportButton}
+          exportFilePrefix="clustersets"
+          onSelect={onSelectClusterSet}
+          initialSelectedItems={initialSelectedClusterSets}
+        />
+      </AcmTableStateProvider>
     </Fragment>
   )
 }

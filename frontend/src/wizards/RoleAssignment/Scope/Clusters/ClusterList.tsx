@@ -49,6 +49,7 @@ export const ClusterList = ({ onSelectCluster, namespaces, selectedClusters }: C
           action={<AddCluster type="button" />}
         />
       }
+      localStorageTableKey="role-assignment-clusters-table-state"
     />
   )
 }

@@ -5,7 +5,7 @@ import { HostedClusterK8sResourceWithChannel } from '../../resources/hosted-clus
 import { BulkActionModal, BulkActionModalProps } from '../BulkActionModal'
 import { Cluster } from '../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
-import { AcmTable, IAcmTableButtonAction } from '../../ui-components'
+import { AcmTable, AcmTableStateProvider, IAcmTableButtonAction } from '../../ui-components'
 import { BatchChannelSelectModal } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/BatchChannelSelectModal'
 import { BatchUpgradeModal } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/BatchUpgradeModal'
 import { RemoveAutomationModal } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/RemoveAutomationModal'
@@ -24,6 +24,7 @@ interface ClustersTableProps {
   onSelectCluster?: (clusterList: Cluster[]) => void
   tableKey: string
   initialSelectedClusters?: Cluster[]
+  localStorageTableKey?: string
 }
 
 export function ClustersTable({
@@ -37,6 +38,7 @@ export function ClustersTable({
   onSelectCluster,
   tableKey,
   initialSelectedClusters,
+  localStorageTableKey,
 }: ClustersTableProps) {
   useEffect(() => {
     sessionStorage.removeItem('DiscoveredClusterDisplayName')
@@ -132,24 +134,27 @@ export function ClustersTable({
         }}
         hostedClusters={hostedClustersMap}
       />
-      <AcmTable<Cluster>
-        items={clusters}
-        columns={columns}
-        keyFn={keyFn}
-        key={tableKey}
-        tableActionButtons={tableButtonActions}
-        tableActions={hideTableActions ? [] : tableActions}
-        rowActions={[]}
-        emptyState={emptyState}
-        filters={filters}
-        advancedFilters={advancedFilters}
-        id={tableKey}
-        showExportButton={showExportButton}
-        secondaryFilterIds={['label']}
-        exportFilePrefix={tableKey}
-        onSelect={onSelectCluster}
-        initialSelectedItems={initialSelectedClusters}
-      />
+
+      <AcmTableStateProvider localStorageKey={localStorageTableKey ?? 'clusters-table-state'}>
+        <AcmTable<Cluster>
+          items={clusters}
+          columns={columns}
+          keyFn={keyFn}
+          key={tableKey}
+          tableActionButtons={tableButtonActions}
+          tableActions={hideTableActions ? [] : tableActions}
+          rowActions={[]}
+          emptyState={emptyState}
+          filters={filters}
+          advancedFilters={advancedFilters}
+          id={tableKey}
+          showExportButton={showExportButton}
+          secondaryFilterIds={['label']}
+          exportFilePrefix={tableKey}
+          onSelect={onSelectCluster}
+          initialSelectedItems={initialSelectedClusters}
+        />
+      </AcmTableStateProvider>
     </Fragment>
   )
 }
