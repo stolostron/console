@@ -3,6 +3,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RoleAssignmentWizardModal } from './RoleAssignmentWizardModal'
+import React from 'react'
 
 // Mock the translation hook
 jest.mock('../../lib/acm-i18next', () => ({
@@ -697,19 +698,20 @@ describe('RoleAssignmentWizardModal - Wizard Step Validation', () => {
         expect(screen.getByText('Create role assignment')).toBeInTheDocument()
       })
 
-      // First select clusters
-      const selectClustersBtn = screen.queryByTestId('select-clusters')
-      if (selectClustersBtn) {
-        fireEvent.click(selectClustersBtn)
-      }
+      const scopeProps = mockScopeSelectionStepContent.mock.calls[0][0]
+      const onSelectClusterSets = scopeProps.onSelectClusterSets
+      const onSelectClusters = scopeProps.onSelectClusters
 
-      // Then select cluster sets - this should clear clusters
-      const selectClusterSetsBtn = screen.queryByTestId('select-cluster-sets')
-      if (selectClusterSetsBtn) {
-        fireEvent.click(selectClusterSetsBtn)
-      }
+      onSelectClusters([{ metadata: { name: 'test-cluster' } }])
 
-      // handleClusterSetsChange calls setSelectedClusters([])
+      onSelectClusterSets([{ metadata: { name: 'test-cluster-set' } }])
+
+      await waitFor(() => {
+        const calls = mockScopeSelectionStepContent.mock.calls
+        const lastCall = calls[calls.length - 1]
+        expect(lastCall[0].selectedClusters).toEqual([])
+        expect(lastCall[0].selectedClusterSets).toEqual([{ metadata: { name: 'test-cluster-set' } }])
+      })
     })
 
     it('should clear namespaces when cluster sets are deselected', async () => {
@@ -719,10 +721,24 @@ describe('RoleAssignmentWizardModal - Wizard Step Validation', () => {
         expect(screen.getByText('Create role assignment')).toBeInTheDocument()
       })
 
-      const deselectBtn = screen.queryByTestId('deselect-cluster-sets')
-      if (deselectBtn) {
-        fireEvent.click(deselectBtn)
-      }
+      const scopeProps = mockScopeSelectionStepContent.mock.calls[0][0]
+      const onSelectClusterSets = scopeProps.onSelectClusterSets
+
+      onSelectClusterSets([{ metadata: { name: 'test-cluster-set' } }])
+
+      await waitFor(() => {
+        const calls = mockScopeSelectionStepContent.mock.calls
+        const lastCall = calls[calls.length - 1]
+        expect(lastCall[0].selectedClusterSets).toEqual([{ metadata: { name: 'test-cluster-set' } }])
+      })
+
+      onSelectClusterSets([])
+
+      await waitFor(() => {
+        const calls = mockScopeSelectionStepContent.mock.calls
+        const lastCall = calls[calls.length - 1]
+        expect(lastCall[0].selectedClusterSets).toEqual([])
+      })
     })
 
     it('should clear namespaces when clusters are deselected', async () => {
@@ -732,10 +748,24 @@ describe('RoleAssignmentWizardModal - Wizard Step Validation', () => {
         expect(screen.getByText('Create role assignment')).toBeInTheDocument()
       })
 
-      const deselectBtn = screen.queryByTestId('deselect-clusters')
-      if (deselectBtn) {
-        fireEvent.click(deselectBtn)
-      }
+      const scopeProps = mockScopeSelectionStepContent.mock.calls[0][0]
+      const onSelectClusters = scopeProps.onSelectClusters
+
+      onSelectClusters([{ metadata: { name: 'test-cluster' } }])
+
+      await waitFor(() => {
+        const calls = mockScopeSelectionStepContent.mock.calls
+        const lastCall = calls[calls.length - 1]
+        expect(lastCall[0].selectedClusters).toEqual([{ metadata: { name: 'test-cluster' } }])
+      })
+
+      onSelectClusters([])
+
+      await waitFor(() => {
+        const calls = mockScopeSelectionStepContent.mock.calls
+        const lastCall = calls[calls.length - 1]
+        expect(lastCall[0].selectedClusters).toEqual([])
+      })
     })
   })
 
