@@ -286,8 +286,8 @@ async function listAndWatch(options: IWatchOptions) {
             break
         }
       } else if (err instanceof Error) {
-        if (err.message === 'Premature close') {
-          // Do nothing
+        if (err.message === 'Premature close' || err.message.startsWith('too old resource version')) {
+          // Retry list and watch/poll immediately
         } else {
           await new Promise((resolve) => setTimeout(resolve, 60 * 1000 + Math.ceil(Math.random() * 10 * 1000)).unref())
         }
@@ -557,7 +557,7 @@ export function createWatchEventProcessor(options: IWatchOptions, url: string, r
                 event: watchEvent,
               })
             }
-            break
+            throw new Error((watchEvent.object as unknown as { message?: string }).message)
         }
 
         // Don't push anything downstream - we're just processing events
