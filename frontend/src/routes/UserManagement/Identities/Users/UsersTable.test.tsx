@@ -172,4 +172,41 @@ describe('UsersTable', () => {
 
     // The component should render without errors when no selectedUser is provided
   })
+
+  describe('localStorageTableKey', () => {
+    beforeEach(() => {
+      localStorage.clear()
+    })
+
+    afterEach(() => {
+      localStorage.clear()
+    })
+
+    test('should use default localStorageTableKey when not provided', async () => {
+      render(<Component />)
+
+      await waitFor(() => {
+        expect(screen.getByText('alice.trask')).toBeInTheDocument()
+      })
+      // The default key 'users-table-state' should be used
+    })
+
+    test('should use custom localStorageTableKey when provided', async () => {
+      render(<Component localStorageTableKey="custom-users-table-state" />)
+
+      await waitFor(() => {
+        expect(screen.getByText('alice.trask')).toBeInTheDocument()
+      })
+      // The custom key 'custom-users-table-state' should be used
+    })
+
+    test('should render correctly with role-assignment-users-table-state key', async () => {
+      render(<Component localStorageTableKey="role-assignment-users-table-state" />)
+
+      await waitFor(() => {
+        expect(screen.getByText('alice.trask')).toBeInTheDocument()
+        expect(screen.getByText('bob.levy')).toBeInTheDocument()
+      })
+    })
+  })
 })

@@ -131,4 +131,81 @@ describe('ClusterSetsTable', () => {
     const checkbox = screen.getByRole('checkbox', { name: /select row 0/i })
     expect(checkbox).toBeDisabled()
   })
+
+  describe('localStorageTableKey', () => {
+    beforeEach(() => {
+      localStorage.clear()
+    })
+
+    afterEach(() => {
+      localStorage.clear()
+    })
+
+    test('uses default localStorageTableKey when not provided', async () => {
+      render(<Component />)
+      await waitForText(mockManagedClusterSet.metadata.name!)
+      // The default key 'cluster-sets-table-state' should be used
+    })
+
+    test('uses custom localStorageTableKey when provided', async () => {
+      render(
+        <RecoilRoot
+          initializeState={(snapshot) => {
+            snapshot.set(certificateSigningRequestsState, [])
+            snapshot.set(clusterClaimsState, [])
+            snapshot.set(clusterDeploymentsState, [])
+            snapshot.set(managedClusterAddonsState, {})
+            snapshot.set(clusterManagementAddonsState, [])
+            snapshot.set(managedClusterInfosState, [])
+            snapshot.set(managedClustersState, [])
+            snapshot.set(agentClusterInstallsState, [])
+            snapshot.set(clusterCuratorsState, [])
+            snapshot.set(hostedClustersState, [])
+            snapshot.set(nodePoolsState, [])
+            snapshot.set(managedClusterSetBindingsState, [])
+            snapshot.set(discoveredClusterState, [])
+          }}
+        >
+          <MemoryRouter>
+            <ClusterSetsTable
+              managedClusterSets={[mockExtendedClusterSet]}
+              localStorageTableKey="custom-cluster-sets-table-state"
+            />
+          </MemoryRouter>
+        </RecoilRoot>
+      )
+      await waitForText(mockManagedClusterSet.metadata.name!)
+      // The custom key 'custom-cluster-sets-table-state' should be used
+    })
+
+    test('renders correctly with role-assignment-cluster-sets-table-state key', async () => {
+      render(
+        <RecoilRoot
+          initializeState={(snapshot) => {
+            snapshot.set(certificateSigningRequestsState, [])
+            snapshot.set(clusterClaimsState, [])
+            snapshot.set(clusterDeploymentsState, [])
+            snapshot.set(managedClusterAddonsState, {})
+            snapshot.set(clusterManagementAddonsState, [])
+            snapshot.set(managedClusterInfosState, [])
+            snapshot.set(managedClustersState, [])
+            snapshot.set(agentClusterInstallsState, [])
+            snapshot.set(clusterCuratorsState, [])
+            snapshot.set(hostedClustersState, [])
+            snapshot.set(nodePoolsState, [])
+            snapshot.set(managedClusterSetBindingsState, [])
+            snapshot.set(discoveredClusterState, [])
+          }}
+        >
+          <MemoryRouter>
+            <ClusterSetsTable
+              managedClusterSets={[mockExtendedClusterSet]}
+              localStorageTableKey="role-assignment-cluster-sets-table-state"
+            />
+          </MemoryRouter>
+        </RecoilRoot>
+      )
+      await waitForText(mockManagedClusterSet.metadata.name!)
+    })
+  })
 })

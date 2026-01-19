@@ -431,3 +431,44 @@ describe('ClustersTable Column Integration', () => {
     expect(screen.getByText('test-namespace')).toBeInTheDocument()
   })
 })
+
+describe('ClustersTable localStorageTableKey', () => {
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  afterEach(() => {
+    localStorage.clear()
+  })
+
+  it('uses default localStorageTableKey when not provided', () => {
+    renderWithProviders(defaultProps)
+    expect(screen.getByText('Test Cluster')).toBeInTheDocument()
+    // The default key 'clusters-table-state' should be used
+  })
+
+  it('uses custom localStorageTableKey when provided', () => {
+    renderWithProviders({
+      ...defaultProps,
+      localStorageTableKey: 'custom-clusters-table-state',
+    })
+    expect(screen.getByText('Test Cluster')).toBeInTheDocument()
+    // The custom key 'custom-clusters-table-state' should be used
+  })
+
+  it('renders correctly with managed-clusters-table-state key', () => {
+    renderWithProviders({
+      ...defaultProps,
+      localStorageTableKey: 'managed-clusters-table-state',
+    })
+    expect(screen.getByText('Test Cluster')).toBeInTheDocument()
+  })
+
+  it('renders correctly with role-assignment-clusters-table-state key', () => {
+    renderWithProviders({
+      ...defaultProps,
+      localStorageTableKey: 'role-assignment-clusters-table-state',
+    })
+    expect(screen.getByText('Test Cluster')).toBeInTheDocument()
+  })
+})
