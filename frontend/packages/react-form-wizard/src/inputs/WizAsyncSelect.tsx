@@ -48,12 +48,16 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
   const handleSetOptions = useCallback(
     (o: string[]) => {
       if (o.length > 0) {
+        const isValueCustomOption = options?.filter((op) => op === value).length === 0
+        if (isValueCustomOption) {
+          o.unshift(value)
+        }
         setFilteredOptions(o)
       } else {
         setFilteredOptions([noResults])
       }
     },
-    [noResults]
+    [noResults, value, options]
   )
 
   const sync = useCallback(() => {
@@ -112,6 +116,7 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
                 placeholder={placeholder}
                 options={options}
                 setOptions={handleSetOptions}
+                isCreatable={isCreatable}
                 toggleRef={toggleRef}
                 value={value}
                 onSelect={onSelect}
@@ -126,7 +131,7 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
           >
             <SelectListOptions
               allOptions={options}
-              options={filteredOptions}
+              filteredOptions={filteredOptions}
               value={value}
               isCreatable={isCreatable}
               footer={footer}
