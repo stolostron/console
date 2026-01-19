@@ -500,7 +500,7 @@ describe('BatchChannelSelectModal - Hosted Clusters', () => {
     expect(queryAllByText('stable-4.14').length).toBeGreaterThanOrEqual(1)
   })
 
-  it('should patch HostedCluster.spec.channel for hosted clusters', async () => {
+  it('should use ClusterCurator to set channel for hosted clusters', async () => {
     let isClosed = false
     const { getByText, queryByText } = render(
       <MemoryRouter>
@@ -515,22 +515,33 @@ describe('BatchChannelSelectModal - Hosted Clusters', () => {
       </MemoryRouter>
     )
 
-    const hostedClusterResource = {
-      apiVersion: HostedClusterApiVersion,
-      kind: HostedClusterKind,
+    const clusterCurator = {
+      apiVersion: ClusterCuratorDefinition.apiVersion,
+      kind: ClusterCuratorDefinition.kind,
       metadata: {
-        name: mockHostedClusterNoChannel.metadata?.name,
-        namespace: mockHostedClusterNoChannel.metadata?.namespace,
+        name: mockHypershiftClusterNoChannel.name,
+        namespace: mockHypershiftClusterNoChannel.namespace,
       },
     }
-    const patchSpec = { spec: { channel: 'fast-4.14' } }
-    const mockNockPatchHostedCluster = nockPatch(hostedClusterResource, patchSpec)
+    const patchSpec = {
+      spec: {
+        desiredCuration: 'upgrade',
+        upgrade: {
+          channel: 'fast-4.14',
+          desiredUpdate: '',
+        },
+      },
+    }
+    // Mock patch returns 404, then create succeeds
+    const mockNockPatchCurator = nockPatch(clusterCurator, patchSpec, undefined, 404)
+    const mockNockCreateCurator = nockCreate({ ...clusterCurator, ...patchSpec })
 
     expect(getByText('Save')).toBeTruthy()
     userEvent.click(getByText('Save'))
 
     await act(async () => {
-      await waitFor(() => expect(mockNockPatchHostedCluster.isDone()).toBeTruthy())
+      await waitFor(() => expect(mockNockPatchCurator.isDone()).toBeTruthy())
+      await waitFor(() => expect(mockNockCreateCurator.isDone()).toBeTruthy())
       await waitFor(() => expect(queryByText('Saving')).toBeFalsy())
       await waitFor(() => expect(isClosed).toBe(true))
     })

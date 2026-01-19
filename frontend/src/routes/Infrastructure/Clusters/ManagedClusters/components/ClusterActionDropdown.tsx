@@ -41,6 +41,7 @@ import { deleteHypershiftCluster } from '../../../../../lib/delete-hypershift-cl
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { importHostedControlPlaneCluster } from './HypershiftImportCommand'
 import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { HostedClusterK8sResourceWithChannel } from '../../../../../resources/hosted-cluster'
 import { HypershiftUpgradeModal } from './HypershiftUpgradeModal'
 import { getNodepoolStatus } from './NodePoolsTable'
 import { useLocalHubName } from '../../../../../hooks/use-local-hub'
@@ -97,6 +98,23 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
 
     return updateAvailable
   }, [cluster?.distribution?.ocp?.version, cluster?.hypershift?.nodePools, hypershiftAvailableUpdates])
+
+  // Find the hosted cluster resource for this cluster to check if channel is set
+  const hostedCluster: HostedClusterK8sResourceWithChannel | undefined = useMemo(() => {
+    return hostedClusters.find(
+      (hc) => hc.metadata?.name === cluster.name && hc.metadata?.namespace === cluster.namespace
+    ) as HostedClusterK8sResourceWithChannel | undefined
+  }, [hostedClusters, cluster.name, cluster.namespace])
+
+  // Check if this hypershift cluster can select a channel
+  // Show unless channel selection is in progress (same pattern as standalone clusters)
+  const isHypershiftChannelSelectable: boolean = useMemo(() => {
+    if (!cluster.isHypershift) {
+      return false
+    }
+    // Allow channel selection unless it's already in progress
+    return !cluster.distribution?.upgradeInfo?.isSelectingChannel
+  }, [cluster.isHypershift, cluster.distribution?.upgradeInfo?.isSelectingChannel])
 
   const modalColumns = useMemo(
     () => [
@@ -461,7 +479,9 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
           isAriaDisabled: true,
           rbac: destroyRbac,
         },
-      ].filter((action) => clusterSupportsAction(cluster, action.id, isHypershiftUpdateAvailable)),
+      ].filter((action) =>
+        clusterSupportsAction(cluster, action.id, isHypershiftUpdateAvailable, isHypershiftChannelSelectable)
+      ),
     [
       t,
       cluster,
@@ -476,6 +496,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
       toastContext,
       isACMAvailable,
       isHypershiftUpdateAvailable,
+      isHypershiftChannelSelectable,
     ]
   )
 
@@ -510,6 +531,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         clusters={[cluster]}
         open={showChannelSelectModal}
         close={() => setShowChannelSelectModal(false)}
+        hostedClusters={hostedCluster ? { [cluster.name]: hostedCluster } : undefined}
       />
       <BulkActionModal<Cluster> {...modalProps} />
       {actions && actions.length > 0 && (
