@@ -245,7 +245,7 @@ export function startWatching(): void {
   }
 }
 // https://kubernetes.io/docs/reference/using-api/api-concepts/
-async function listAndWatch(options: IWatchOptions) {
+export async function listAndWatch(options: IWatchOptions) {
   const serviceAccountToken = getServiceAccountToken()
   while (!stopping) {
     try {

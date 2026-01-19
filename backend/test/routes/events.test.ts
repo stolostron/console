@@ -1,5 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { jest } from '@jest/globals'
+
+// Mock the serviceAccountToken module BEFORE any imports that use it
+const mockGetServiceAccountToken = jest.fn(() => 'mock-token')
+const mockGetCACertificate = jest.fn(() => undefined)
+
+jest.unstable_mockModule('../../src/lib/serviceAccountToken', () => ({
+  getServiceAccountToken: mockGetServiceAccountToken,
+  getCACertificate: mockGetCACertificate,
+  getNamespace: jest.fn(),
+  getServiceCACertificate: jest.fn(),
+}))
+
 import { Writable } from 'node:stream'
+import nock from 'nock'
 import { request } from '../mock-request'
 import {
   getKubeResources,
@@ -10,6 +24,8 @@ import {
   createSplitStream,
   errorToString,
   createWatchEventProcessor,
+  listAndWatch,
+  stopWatching,
 } from '../../src/routes/events'
 import { IArgoApplication, IResource } from '../../src/resources/resource'
 import { ServerSideEvents } from '../../src/lib/server-side-events'
@@ -983,6 +999,107 @@ describe('events Route', () => {
       const cache = getEventCache()
       expect(cache['/v1/configmaps']?.['uid-1']).toBeDefined()
       expect(cache['/v1/configmaps']?.['uid-2']).toBeDefined()
+    })
+  })
+
+  describe('listAndWatch', () => {
+    beforeEach(() => {
+      jest.clearAllMocks()
+      process.env.CLUSTER_API_URL = 'https://api.test-cluster.com:6443'
+      mockGetServiceAccountToken.mockReturnValue('mock-token')
+      mockGetCACertificate.mockReturnValue(undefined)
+    })
+
+    afterEach(() => {
+      stopWatching()
+      nock.cleanAll()
+      delete process.env.CLUSTER_API_URL
+    })
+
+    it('should retry immediately when receiving "too old resource version" error', async () => {
+      // This test verifies that line 289 in events.ts handles "too old resource version"
+      // errors by retrying immediately without the 60-second delay.
+
+      const options = { kind: 'ConfigMap', apiVersion: 'v1' }
+      let listCallCount = 0
+      let secondListTime = 0
+
+      // First list call - succeeds
+      nock('https://api.test-cluster.com:6443')
+        .get('/api/v1/configmaps')
+        .query(true)
+        .reply(200, {
+          kind: 'ConfigMapList',
+          apiVersion: 'v1',
+          metadata: { resourceVersion: '1000' },
+          items: [],
+        })
+
+      // Watch call - returns ERROR event with "too old resource version"
+      const errorEvent = JSON.stringify({
+        type: 'ERROR',
+        object: {
+          kind: 'Status',
+          apiVersion: 'v1',
+          metadata: {},
+          message: 'too old resource version: 1000 (5000)',
+          reason: 'Expired',
+        },
+      })
+
+      nock('https://api.test-cluster.com:6443')
+        .get('/api/v1/configmaps')
+        .query((query) => query.watch !== undefined)
+        .reply(200, errorEvent + '\n')
+
+      // Second list call - after immediate retry due to "too old resource version" error
+      nock('https://api.test-cluster.com:6443')
+        .get('/api/v1/configmaps')
+        .query((query) => query.watch === undefined && query.limit !== undefined)
+        .reply(200, () => {
+          listCallCount++
+          secondListTime = Date.now()
+          return {
+            kind: 'ConfigMapList',
+            apiVersion: 'v1',
+            metadata: { resourceVersion: '5000' },
+            items: [],
+          }
+        })
+
+      // Second watch - will hang until stopWatching is called
+      nock('https://api.test-cluster.com:6443')
+        .get('/api/v1/configmaps')
+        .query((query) => query.watch !== undefined)
+        .delay(60000) // Long delay - will be interrupted by stopWatching
+        .reply(200, '')
+
+      const startTime = Date.now()
+
+      // Start listAndWatch and schedule stopWatching after a brief delay
+      const listAndWatchPromise = listAndWatch(options)
+
+      // Wait for the second list to happen, then stop
+      await new Promise<void>((resolve) => {
+        const checkInterval = setInterval(() => {
+          if (listCallCount >= 1) {
+            clearInterval(checkInterval)
+            // Give a small buffer then stop
+            setTimeout(() => {
+              stopWatching()
+              resolve()
+            }, 100)
+          }
+        }, 50)
+      })
+
+      await listAndWatchPromise
+
+      // The second list should have happened quickly (< 5 seconds) because "too old resource version"
+      // triggers an immediate retry without the 60-second delay (line 289)
+      const retryTime = secondListTime - startTime
+      expect(retryTime).toBeLessThan(5000)
+      expect(listCallCount).toBe(1) // Only counting second list call
     })
   })
 })
