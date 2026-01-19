@@ -880,12 +880,19 @@ describe('events Route', () => {
         },
       }
 
+      let caughtError: Error | null = null
+      processor.on('error', (err) => {
+        caughtError = err
+      })
+
       processor.write(JSON.stringify(watchEvent))
       processor.end()
 
       await new Promise((resolve) => setTimeout(resolve, 50))
 
-      // Should not throw, just log warning
+      // Should throw an error so that listAndWatch will retry
+      expect(caughtError).not.toBeNull()
+      expect(caughtError?.message).toBe('too old resource version: 100 (12345)')
       expect(resourceVersionRef.value).toBe('100') // Should remain unchanged for ERROR
     })
 
@@ -905,12 +912,19 @@ describe('events Route', () => {
         },
       }
 
+      let caughtError: Error | null = null
+      processor.on('error', (err) => {
+        caughtError = err
+      })
+
       processor.write(JSON.stringify(watchEvent))
       processor.end()
 
       await new Promise((resolve) => setTimeout(resolve, 50))
 
-      // Should not throw, just log warning
+      // Should throw an error so that listAndWatch will retry
+      expect(caughtError).not.toBeNull()
+      expect(caughtError?.message).toBe('some other error')
       expect(resourceVersionRef.value).toBe('100')
     })
 
