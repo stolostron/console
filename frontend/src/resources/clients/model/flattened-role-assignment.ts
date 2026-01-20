@@ -7,4 +7,5 @@ export interface FlattenedRoleAssignment extends RoleAssignment {
   subject: Pick<Subject, 'name' | 'kind'>
   status?: RoleAssignmentStatus
   clusterNames: string[]
+  clusterSetNames: string[]
 }
