@@ -346,6 +346,121 @@ describe('multicluster-role-assignment-client', function () {
       // Assert
       expect(result.current).toHaveLength(0)
     })
+
+    it('should filter by cluster set name', () => {
+      // Arrange
+      const clusterSetName = 'test-cluster-set'
+
+      // Configure mock to return placement clusters with cluster set names
+      const mockPlacementClustersWithClusterSets: PlacementClusters[] = [
+        createPlacementClusters('placement-production', ['production-cluster'], ['test-cluster-set']),
+        createPlacementClusters('placement-staging', ['staging-cluster'], ['other-cluster-set']),
+      ]
+      ;(placementClient.useGetPlacementClusters as jest.Mock).mockReturnValue(mockPlacementClustersWithClusterSets)
+
+      // Act
+      const { result } = renderHook(() =>
+        useFindRoleAssignments({
+          clusterSetNames: [clusterSetName],
+        })
+      )
+
+      // Assert
+      expect(result.current.length).toBeGreaterThan(0)
+      expect(result.current.filter((e) => !e.clusterSetNames.includes(clusterSetName))).toHaveLength(0)
+
+      // Restore original mock
+      ;(placementClient.useGetPlacementClusters as jest.Mock).mockReturnValue(mockPlacementClustersArray)
+    })
+
+    it('should filter by multiple cluster set names', () => {
+      // Arrange
+      const clusterSetNames = ['cluster-set-1', 'cluster-set-2']
+
+      // Configure mock to return placement clusters with cluster set names
+      const mockPlacementClustersWithClusterSets: PlacementClusters[] = [
+        createPlacementClusters('placement-1', ['cluster-a'], ['cluster-set-1']),
+        createPlacementClusters('placement-2', ['cluster-b'], ['cluster-set-2']),
+        createPlacementClusters('placement-3', ['cluster-c'], ['cluster-set-3']),
+      ]
+      ;(placementClient.useGetPlacementClusters as jest.Mock).mockReturnValue(mockPlacementClustersWithClusterSets)
+
+      // Act
+      const { result } = renderHook(() =>
+        useFindRoleAssignments({
+          clusterSetNames,
+        })
+      )
+
+      // Assert
+      expect(result.current.length).toBeGreaterThan(0)
+      // All results should have at least one of the specified cluster set names
+      expect(
+        result.current.filter((e) => !e.clusterSetNames.some((csn) => clusterSetNames.includes(csn)))
+      ).toHaveLength(0)
+
+      // Restore original mock
+      ;(placementClient.useGetPlacementClusters as jest.Mock).mockReturnValue(mockPlacementClustersArray)
+    })
+
+    it('should filter by cluster set name combined with other criteria', () => {
+      // Arrange
+      const clusterSetName = 'combined-cluster-set'
+      const role = 'kubevirt.io:admin'
+
+      // Configure mock to return placement clusters with cluster set names
+      const mockPlacementClustersWithClusterSets: PlacementClusters[] = [
+        createPlacementClusters('placement-production', ['production-cluster'], ['combined-cluster-set']),
+        createPlacementClusters('placement-staging', ['staging-cluster'], ['combined-cluster-set']),
+        createPlacementClusters('placement-development', ['development-cluster'], ['other-cluster-set']),
+      ]
+      ;(placementClient.useGetPlacementClusters as jest.Mock).mockReturnValue(mockPlacementClustersWithClusterSets)
+
+      // Act
+      const { result } = renderHook(() =>
+        useFindRoleAssignments({
+          subjectKinds: [UserKind],
+          roles: [role],
+          clusterSetNames: [clusterSetName],
+        })
+      )
+
+      // Assert
+      expect(result.current.length).toBeGreaterThan(0)
+      expect(
+        result.current.filter(
+          (e) => e.subject.kind !== UserKind || e.clusterRole !== role || !e.clusterSetNames.includes(clusterSetName)
+        )
+      ).toHaveLength(0)
+
+      // Restore original mock
+      ;(placementClient.useGetPlacementClusters as jest.Mock).mockReturnValue(mockPlacementClustersArray)
+    })
+
+    it('should return empty array when cluster set name does not match', () => {
+      // Arrange
+      const nonExistentClusterSetName = 'non-existent-cluster-set'
+
+      // Configure mock to return placement clusters with different cluster set names
+      const mockPlacementClustersWithClusterSets: PlacementClusters[] = [
+        createPlacementClusters('placement-1', ['cluster-a'], ['existing-cluster-set-1']),
+        createPlacementClusters('placement-2', ['cluster-b'], ['existing-cluster-set-2']),
+      ]
+      ;(placementClient.useGetPlacementClusters as jest.Mock).mockReturnValue(mockPlacementClustersWithClusterSets)
+
+      // Act
+      const { result } = renderHook(() =>
+        useFindRoleAssignments({
+          clusterSetNames: [nonExistentClusterSetName],
+        })
+      )
+
+      // Assert
+      expect(result.current).toHaveLength(0)
+
+      // Restore original mock
+      ;(placementClient.useGetPlacementClusters as jest.Mock).mockReturnValue(mockPlacementClustersArray)
+    })
   })
 
   describe('deleteRoleAssignment', () => {
@@ -373,6 +488,7 @@ describe('multicluster-role-assignment-client', function () {
         clusterRole: multiClusterRoleAssignment.spec.roleAssignments[0].clusterRole,
         clusterSelection: multiClusterRoleAssignment.spec.roleAssignments[0].clusterSelection,
         clusterNames: ['production-cluster'],
+        clusterSetNames: [],
         subject: {
           kind: multiClusterRoleAssignment.spec.subject.kind,
           name: multiClusterRoleAssignment.spec.subject.name,
@@ -413,6 +529,7 @@ describe('multicluster-role-assignment-client', function () {
         clusterRole: multiClusterRoleAssignment.spec.roleAssignments[0].clusterRole,
         clusterSelection: multiClusterRoleAssignment.spec.roleAssignments[0].clusterSelection,
         clusterNames: ['development-cluster'],
+        clusterSetNames: [],
         subject: {
           kind: multiClusterRoleAssignment.spec.subject.kind,
           name: multiClusterRoleAssignment.spec.subject.name,
@@ -446,6 +563,7 @@ describe('multicluster-role-assignment-client', function () {
         clusterRole: multiClusterRoleAssignment.spec.roleAssignments[0].clusterRole,
         clusterSelection: multiClusterRoleAssignment.spec.roleAssignments[0].clusterSelection,
         clusterNames: ['production-cluster'],
+        clusterSetNames: [],
         subject: {
           kind: multiClusterRoleAssignment.spec.subject.kind,
           name: multiClusterRoleAssignment.spec.subject.name,
@@ -459,6 +577,7 @@ describe('multicluster-role-assignment-client', function () {
         clusterRole: multiClusterRoleAssignment.spec.roleAssignments[1].clusterRole,
         clusterSelection: multiClusterRoleAssignment.spec.roleAssignments[1].clusterSelection,
         clusterNames: ['development-cluster'],
+        clusterSetNames: [],
         subject: {
           kind: multiClusterRoleAssignment.spec.subject.kind,
           name: multiClusterRoleAssignment.spec.subject.name,
@@ -514,6 +633,7 @@ describe('multicluster-role-assignment-client', function () {
           placements: [{ name: 'placement-production', namespace: MulticlusterRoleAssignmentNamespace }],
         },
         clusterNames: ['production-cluster'],
+        clusterSetNames: [],
         subject: {
           kind: 'User',
           name: 'alice.trask',
@@ -1324,6 +1444,300 @@ describe('multicluster-role-assignment-client', function () {
 
         expect(result).toEqual([])
       })
+    })
+  })
+
+  describe('isClusterOrClustersetOrRoleMatch filtering', () => {
+    /**
+     * Tests the isClusterOrClustersetOrRoleMatch function through findRoleAssignments.
+     * This function filters FlattenedRoleAssignments by cluster names, cluster set names, and roles.
+     *
+     * Note: The flattenMulticlusterRoleAssignment function collects ALL cluster set names from
+     * ALL placement clusters passed to it, so each FlattenedRoleAssignment gets the same
+     * clusterSetNames array. The filtering happens based on whether any of the role assignment's
+     * clusterSetNames match the query.
+     */
+
+    it('should filter by cluster set names when query.clusterSetNames is provided', () => {
+      // Arrange - placement clusters with different cluster sets
+      // The flattenMulticlusterRoleAssignment collects ALL cluster set names from ALL placement clusters
+      // So we need to test the filtering at the query level
+      const placementClusters: PlacementClusters[] = [
+        createPlacementClusters('placement-1', ['cluster-a'], ['cluster-set-alpha']),
+        createPlacementClusters('placement-2', ['cluster-b'], ['cluster-set-beta']),
+      ]
+
+      const mra: MulticlusterRoleAssignment = {
+        apiVersion: 'rbac.open-cluster-management.io/v1beta1',
+        kind: 'MulticlusterRoleAssignment',
+        metadata: { name: 'test-mra', namespace: MulticlusterRoleAssignmentNamespace },
+        spec: {
+          subject: { name: 'test-user', kind: UserKind },
+          roleAssignments: [
+            {
+              name: 'role-1',
+              clusterRole: 'admin',
+              clusterSelection: {
+                type: 'placements',
+                placements: [{ name: 'placement-1', namespace: MulticlusterRoleAssignmentNamespace }],
+              },
+            },
+          ],
+        },
+        status: {},
+      }
+
+      // Act - filter by cluster-set-alpha
+      const result = findRoleAssignments({ clusterSetNames: ['cluster-set-alpha'] }, [mra], placementClusters)
+
+      // Assert - role assignment matches because its clusterSetNames (from all placements) contains cluster-set-alpha
+      expect(result).toHaveLength(1)
+      expect(result[0].clusterSetNames).toContain('cluster-set-alpha')
+      expect(result[0].clusterRole).toBe('admin')
+    })
+
+    it('should return role assignments when cluster set names match any of the provided values', () => {
+      // Arrange - placement clusters with different cluster sets
+      const placementClusters: PlacementClusters[] = [
+        createPlacementClusters('placement-1', ['cluster-a'], ['cluster-set-alpha']),
+        createPlacementClusters('placement-2', ['cluster-b'], ['cluster-set-beta']),
+      ]
+
+      const mra: MulticlusterRoleAssignment = {
+        apiVersion: 'rbac.open-cluster-management.io/v1beta1',
+        kind: 'MulticlusterRoleAssignment',
+        metadata: { name: 'test-mra', namespace: MulticlusterRoleAssignmentNamespace },
+        spec: {
+          subject: { name: 'test-user', kind: UserKind },
+          roleAssignments: [
+            {
+              name: 'role-1',
+              clusterRole: 'admin',
+              clusterSelection: {
+                type: 'placements',
+                placements: [{ name: 'placement-1', namespace: MulticlusterRoleAssignmentNamespace }],
+              },
+            },
+          ],
+        },
+        status: {},
+      }
+
+      // Act - filter by multiple cluster set names (both alpha and beta are in placementClusters)
+      const result = findRoleAssignments(
+        { clusterSetNames: ['cluster-set-alpha', 'cluster-set-beta'] },
+        [mra],
+        placementClusters
+      )
+
+      // Assert - role assignment matches because its clusterSetNames contains alpha and beta
+      expect(result).toHaveLength(1)
+      expect(result[0].clusterSetNames).toContain('cluster-set-alpha')
+      expect(result[0].clusterSetNames).toContain('cluster-set-beta')
+    })
+
+    it('should return empty array when no cluster set names match', () => {
+      // Arrange
+      const placementClusters: PlacementClusters[] = [
+        createPlacementClusters('placement-1', ['cluster-a'], ['cluster-set-alpha']),
+      ]
+
+      const mra: MulticlusterRoleAssignment = {
+        apiVersion: 'rbac.open-cluster-management.io/v1beta1',
+        kind: 'MulticlusterRoleAssignment',
+        metadata: { name: 'test-mra', namespace: MulticlusterRoleAssignmentNamespace },
+        spec: {
+          subject: { name: 'test-user', kind: UserKind },
+          roleAssignments: [
+            {
+              name: 'role-1',
+              clusterRole: 'admin',
+              clusterSelection: {
+                type: 'placements',
+                placements: [{ name: 'placement-1', namespace: MulticlusterRoleAssignmentNamespace }],
+              },
+            },
+          ],
+        },
+        status: {},
+      }
+
+      // Act - filter by non-existent cluster set name
+      const result = findRoleAssignments({ clusterSetNames: ['non-existent-cluster-set'] }, [mra], placementClusters)
+
+      // Assert
+      expect(result).toHaveLength(0)
+    })
+
+    it('should combine cluster set names filter with cluster names filter', () => {
+      // Arrange
+      const placementClusters: PlacementClusters[] = [
+        createPlacementClusters('placement-1', ['cluster-a', 'cluster-b'], ['cluster-set-alpha']),
+        createPlacementClusters('placement-2', ['cluster-c'], ['cluster-set-beta']),
+      ]
+
+      const mra: MulticlusterRoleAssignment = {
+        apiVersion: 'rbac.open-cluster-management.io/v1beta1',
+        kind: 'MulticlusterRoleAssignment',
+        metadata: { name: 'test-mra', namespace: MulticlusterRoleAssignmentNamespace },
+        spec: {
+          subject: { name: 'test-user', kind: UserKind },
+          roleAssignments: [
+            {
+              name: 'role-1',
+              clusterRole: 'admin',
+              clusterSelection: {
+                type: 'placements',
+                placements: [{ name: 'placement-1', namespace: MulticlusterRoleAssignmentNamespace }],
+              },
+            },
+            {
+              name: 'role-2',
+              clusterRole: 'viewer',
+              clusterSelection: {
+                type: 'placements',
+                placements: [{ name: 'placement-2', namespace: MulticlusterRoleAssignmentNamespace }],
+              },
+            },
+          ],
+        },
+        status: {},
+      }
+
+      // Act - filter by both cluster set name AND cluster name
+      const result = findRoleAssignments(
+        { clusterSetNames: ['cluster-set-alpha'], clusterNames: ['cluster-a'] },
+        [mra],
+        placementClusters
+      )
+
+      // Assert - only role-1 matches both criteria
+      expect(result).toHaveLength(1)
+      expect(result[0].clusterRole).toBe('admin')
+      expect(result[0].clusterSetNames).toContain('cluster-set-alpha')
+      expect(result[0].clusterNames).toContain('cluster-a')
+    })
+
+    it('should combine cluster set names filter with roles filter', () => {
+      // Arrange
+      const placementClusters: PlacementClusters[] = [
+        createPlacementClusters('placement-1', ['cluster-a'], ['cluster-set-alpha']),
+        createPlacementClusters('placement-2', ['cluster-b'], ['cluster-set-alpha']),
+      ]
+
+      const mra: MulticlusterRoleAssignment = {
+        apiVersion: 'rbac.open-cluster-management.io/v1beta1',
+        kind: 'MulticlusterRoleAssignment',
+        metadata: { name: 'test-mra', namespace: MulticlusterRoleAssignmentNamespace },
+        spec: {
+          subject: { name: 'test-user', kind: UserKind },
+          roleAssignments: [
+            {
+              name: 'role-1',
+              clusterRole: 'admin',
+              clusterSelection: {
+                type: 'placements',
+                placements: [{ name: 'placement-1', namespace: MulticlusterRoleAssignmentNamespace }],
+              },
+            },
+            {
+              name: 'role-2',
+              clusterRole: 'viewer',
+              clusterSelection: {
+                type: 'placements',
+                placements: [{ name: 'placement-2', namespace: MulticlusterRoleAssignmentNamespace }],
+              },
+            },
+          ],
+        },
+        status: {},
+      }
+
+      // Act - filter by cluster set name AND role
+      const result = findRoleAssignments(
+        { clusterSetNames: ['cluster-set-alpha'], roles: ['admin'] },
+        [mra],
+        placementClusters
+      )
+
+      // Assert - only role-1 matches both criteria
+      expect(result).toHaveLength(1)
+      expect(result[0].clusterRole).toBe('admin')
+    })
+
+    it('should return all results when no cluster set names filter is provided', () => {
+      // Arrange
+      const placementClusters: PlacementClusters[] = [
+        createPlacementClusters('placement-1', ['cluster-a'], ['cluster-set-alpha']),
+        createPlacementClusters('placement-2', ['cluster-b'], ['cluster-set-beta']),
+      ]
+
+      const mra: MulticlusterRoleAssignment = {
+        apiVersion: 'rbac.open-cluster-management.io/v1beta1',
+        kind: 'MulticlusterRoleAssignment',
+        metadata: { name: 'test-mra', namespace: MulticlusterRoleAssignmentNamespace },
+        spec: {
+          subject: { name: 'test-user', kind: UserKind },
+          roleAssignments: [
+            {
+              name: 'role-1',
+              clusterRole: 'admin',
+              clusterSelection: {
+                type: 'placements',
+                placements: [{ name: 'placement-1', namespace: MulticlusterRoleAssignmentNamespace }],
+              },
+            },
+            {
+              name: 'role-2',
+              clusterRole: 'viewer',
+              clusterSelection: {
+                type: 'placements',
+                placements: [{ name: 'placement-2', namespace: MulticlusterRoleAssignmentNamespace }],
+              },
+            },
+          ],
+        },
+        status: {},
+      }
+
+      // Act - no cluster set names filter
+      const result = findRoleAssignments({}, [mra], placementClusters)
+
+      // Assert - all role assignments returned
+      expect(result).toHaveLength(2)
+    })
+
+    it('should handle empty cluster set names array in query (returns all results)', () => {
+      // Arrange
+      const placementClusters: PlacementClusters[] = [
+        createPlacementClusters('placement-1', ['cluster-a'], ['cluster-set-alpha']),
+      ]
+
+      const mra: MulticlusterRoleAssignment = {
+        apiVersion: 'rbac.open-cluster-management.io/v1beta1',
+        kind: 'MulticlusterRoleAssignment',
+        metadata: { name: 'test-mra', namespace: MulticlusterRoleAssignmentNamespace },
+        spec: {
+          subject: { name: 'test-user', kind: UserKind },
+          roleAssignments: [
+            {
+              name: 'role-1',
+              clusterRole: 'admin',
+              clusterSelection: {
+                type: 'placements',
+                placements: [{ name: 'placement-1', namespace: MulticlusterRoleAssignmentNamespace }],
+              },
+            },
+          ],
+        },
+        status: {},
+      }
+
+      // Act - empty cluster set names array (should not filter)
+      const result = findRoleAssignments({ clusterSetNames: [] }, [mra], placementClusters)
+
+      // Assert - all role assignments returned (empty array doesn't filter)
+      expect(result).toHaveLength(1)
     })
   })
 
