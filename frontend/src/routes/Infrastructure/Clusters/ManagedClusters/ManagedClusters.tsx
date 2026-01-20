@@ -12,7 +12,13 @@ import { navigateToBackCancelLocation, NavigationPath } from '../../../../Naviga
 import { ManagedClusterDefinition } from '../../../../resources'
 import { addonPathKey, addonTextKey } from '../../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
-import { AcmAlertContext, AcmEmptyState, AcmLaunchLink, AcmPageContent, AcmTableStateProvider } from '../../../../ui-components'
+import {
+  AcmAlertContext,
+  AcmEmptyState,
+  AcmLaunchLink,
+  AcmPageContent,
+  AcmTableStateProvider,
+} from '../../../../ui-components'
 import { usePageContext } from '../ClustersPage'
 import { AddCluster } from './components/AddCluster'
 import { OnboardingModal } from './components/OnboardingModal'

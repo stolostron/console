@@ -10,10 +10,7 @@ import React from 'react'
 // Mock the ClusterSetsTable component
 jest.mock('../../../../components/ClusterSets/ClusterSetsTable', () => ({
   ClusterSetsTable: jest.fn((props: any) => (
-    <div
-      data-testid="mocked-cluster-sets-table"
-      data-hiddencolumns={JSON.stringify(props.hiddenColumns)}
-    >
+    <div data-testid="mocked-cluster-sets-table" data-hiddencolumns={JSON.stringify(props.hiddenColumns)}>
       Mocked ClusterSets Table
     </div>
   )),
