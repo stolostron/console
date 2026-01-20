@@ -312,7 +312,7 @@ const RoleAssignments = ({
       },
       {
         id: 'cluster-sets',
-        label: t('Clusters sets'),
+        label: t('clusterSets'),
         options: clusterSetOptions,
         tableFilterFn: (selectedValues, roleAssignment) =>
           selectedValues.some((selectedClusterSetName) =>
