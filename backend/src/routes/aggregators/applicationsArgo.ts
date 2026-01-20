@@ -143,7 +143,7 @@ export async function cacheArgoApplications(applicationCache: ApplicationCacheTy
   const clusters: Cluster[] = await getClusters()
   const localCluster = clusters.find((cls) => cls.name === hubClusterName)
   const remoteArgoApps = searchResult.items.filter((app) => app.cluster !== hubClusterName)
-  const argoStatusMap = createArgoStatusMap(searchResult)
+  const argoStatusMap = createArgoStatusMap(searchResult, clusters)
   // should be rarely used, argo apps are usually created by appsets
   if (applicationCache['localArgoApps']?.resourceUidMap) {
     try {
@@ -414,31 +414,48 @@ export function getAppSetRelatedResources(appSet: IResource, applicationSets: IA
   return [currentAppSetPlacement, appSetsSharingPlacement]
 }
 
-export function createArgoStatusMap(searchResult: SearchResult) {
+export function createArgoStatusMap(searchResult: SearchResult, clusters: Cluster[]) {
   const argoClusterStatusMap: ApplicationClusterStatusMap = {}
   const app2AppsetMap: Record<string, ApplicationStatuses> = {}
+  const sortedClusterNames = clusters.map((c) => c.name).sort((a, b) => b.length - a.length)
 
   // create an app map with syncs and health
   searchResult.items.forEach((app: ISearchResource) => {
     let appKey
+    let appName
+    let appCluster = app.cluster
+    let appSetName = ''
+    let appNamespace = app.namespace
     if (app._hostingResource) {
-      appKey = `appset/${app._hostingResource.split('/')[1]}/${app._hostingResource.split('/')[2]}`
+      ;[, appNamespace, appSetName] = app._hostingResource.split('/')
+      appName = `${appNamespace}/${appSetName}`
+      appKey = `appset/${appName}`
     } else if (app.applicationSet) {
       // don't count the placeholder app on the hub for this pulled appset
       if (!app.label.includes('apps.open-cluster-management.io/pull-to-ocm-managed-cluster=true')) {
-        appKey = `appset/${app.namespace}/${app.applicationSet}`
+        appName = `${app.namespace}/${app.applicationSet}`
+        appKey = `appset/${appName}`
+        const namePart = app.name.startsWith(app.applicationSet)
+          ? app.name.substring(app.applicationSet.length + 1)
+          : app.applicationSet
+        appCluster = sortedClusterNames.find(
+          (cluster: string) =>
+            namePart === cluster || namePart.includes(`-${cluster}`) || namePart.includes(`${cluster}-`)
+        )
+        appSetName = app.applicationSet
       }
     } else {
-      appKey = `argo/${app.namespace}/${app.name}`
+      appName = `${app.namespace}/${app.name}`
+      appKey = `argo/${appName}`
     }
     if (appKey) {
       let appStatusMap = argoClusterStatusMap[appKey]
       if (!appStatusMap) {
         appStatusMap = argoClusterStatusMap[appKey] = {}
       }
-      let appStatuses = appStatusMap[app.cluster]
+      let appStatuses = appStatusMap[appCluster]
       if (!appStatuses) {
-        appStatuses = appStatusMap[app.cluster] = {
+        appStatuses = appStatusMap[appCluster] = {
           health: [Array(ScoreColumnSize).fill(0) as number[], []],
           synced: [Array(ScoreColumnSize).fill(0) as number[], []],
           deployed: [Array(ScoreColumnSize).fill(0) as number[], []],
