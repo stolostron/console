@@ -376,6 +376,7 @@ describe('convertSearchItemToResource', () => {
         ipAddress: '192.168.1.100',
         memoryAllocatable: '8Gi',
         memoryCapacity: '16Gi',
+        architecture: 'amd64',
       }
 
       const result = convert(nodeItem)
@@ -383,6 +384,7 @@ describe('convertSearchItemToResource', () => {
       expect(result.status?.addresses).toEqual([{ type: 'InternalIP', address: '192.168.1.100' }])
       expect(result.status?.allocatable?.memory).toBe('8Gi')
       expect(result.status?.capacity?.memory).toBe('16Gi')
+      expect(result.status?.nodeInfo?.architecture).toBe('amd64')
     })
 
     it('should handle Node with conditions', () => {

@@ -134,6 +134,7 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
       })
       setIfDefined(resource, 'status.allocatable.memory', item.memoryAllocatable)
       setIfDefined(resource, 'status.capacity.memory', item.memoryCapacity)
+      setIfDefined(resource, 'status.nodeInfo.architecture', item.architecture)
       break
     }
 
