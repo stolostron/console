@@ -139,7 +139,7 @@ type RoleAssignmentsProps = {
   roleAssignments: FlattenedRoleAssignment[]
   isLoading?: boolean
   hiddenColumns?: ('subject' | 'role' | 'clusters' | 'clusterSets' | 'name')[]
-  hiddenFilters?: ('role' | 'identity' | 'clusters' | 'namespace' | 'status')[]
+  hiddenFilters?: ('role' | 'identity' | 'clusters' | 'clusterSets' | 'namespace' | 'status')[]
   // isCreateButtonHidden?: boolean
   preselected: RoleAssignmentPreselected
 }
@@ -311,7 +311,7 @@ const RoleAssignments = ({
         },
       },
       {
-        id: 'cluster-sets',
+        id: 'clusterSets',
         label: t('clusterSets'),
         options: clusterSetOptions,
         tableFilterFn: (selectedValues, roleAssignment) =>

@@ -6,6 +6,7 @@ import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { defaultPlugin, PluginContext } from '../../../lib/PluginContext'
 import { useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
 import { clickByText, waitForText } from '../../../lib/test-util'
+import { FlattenedRoleAssignment } from '../../../resources/clients/model/flattened-role-assignment'
 import { deleteRoleAssignment } from '../../../resources/clients/multicluster-role-assignment-client'
 import {
   MulticlusterRoleAssignment,
@@ -13,7 +14,6 @@ import {
 } from '../../../resources/multicluster-role-assignment'
 import { AcmToastContext } from '../../../ui-components'
 import { RoleAssignments } from './RoleAssignments'
-import { FlattenedRoleAssignment } from '../../../resources/clients/model/flattened-role-assignment'
 
 // Mock Apollo Client
 jest.mock('@apollo/client', () => ({
@@ -279,7 +279,7 @@ jest.mock('../../../ui-components', () => {
             switch (filterId) {
               case 'role':
                 return item.clusterRole === value
-              case 'cluster-sets': {
+              case 'clusterSets': {
                 const clusterSetNames = item.clusterSetNames || []
                 return clusterSetNames.includes(value)
               }
@@ -356,7 +356,7 @@ jest.mock('../../../ui-components', () => {
                   <button onClick={() => handleFilter(filter.id, 'developer')}>Filter developer</button>
                 </>
               )}
-              {filter.id === 'cluster-sets' && (
+              {filter.id === 'clusterSets' && (
                 <>
                   <button onClick={() => handleFilter(filter.id, 'cluster-set-alpha')}>Filter cluster-set-alpha</button>
                   <button onClick={() => handleFilter(filter.id, 'cluster-set-beta')}>Filter cluster-set-beta</button>
@@ -503,7 +503,7 @@ const Component = ({
   roleAssignments?: FlattenedRoleAssignment[]
   isLoading?: boolean
   hiddenColumns?: ('subject' | 'role' | 'clusters' | 'clusterSets' | 'name')[]
-  hiddenFilters?: ('role' | 'identity' | 'clusters' | 'namespace' | 'status' | 'cluster-sets')[]
+  hiddenFilters?: ('role' | 'identity' | 'clusters' | 'clusterSets' | 'namespace' | 'status')[]
 } = {}) => (
   <RecoilRoot>
     <MemoryRouter>
@@ -709,7 +709,7 @@ describe('RoleAssignments', () => {
     await waitForText('User: test.user3', true) // Allow multiple matches
 
     // Filter by 'cluster-set-alpha' cluster set
-    await clickByText('Clusters sets')
+    await clickByText('Cluster sets')
     await clickByText('Filter cluster-set-alpha')
 
     // Should still show only the flattened row with 'cluster-set-alpha' (test.user1's admin role)
@@ -734,7 +734,7 @@ describe('RoleAssignments', () => {
     await waitForText('User: test.user1', true)
 
     // Filter by 'cluster-set-beta' which is in both A1 and A2 (test.user1's roles)
-    await clickByText('Clusters sets')
+    await clickByText('Cluster sets')
     await clickByText('Filter cluster-set-beta')
 
     // Should show both rows that have 'cluster-set-beta'
