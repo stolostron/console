@@ -78,10 +78,10 @@ export function OnboardingModal(props: IOnboardingModalProps) {
             </span>
           </div>
           <div className="pf-v6-u-color-400" style={{ fontSize: '14px', paddingTop: '8px' }}>
-            <Content component="p">
+            <Content component="small" style={{ marginBlockEnd: '0px' }}>
               {t('Create and manage a fleet of clusters with ease using this all clusters view. ')}
             </Content>
-            <Content component="p">
+            <Content component="small">
               {t('To access a single cluster you can select it from the cluster list table.')}
             </Content>
           </div>
@@ -94,7 +94,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
         {cards.map((card) => (
           <GridItem key={card.id} span={4} style={card.style}>
             <Link key={card.id} to={card.link} style={{ color: 'inherit', textDecoration: 'none' }}>
-              <Card id={card.id} key={card.id} isSelectable>
+              <Card id={card.id} key={card.id}>
                 <CardBody style={{ minHeight: '160px' }}>
                   <div
                     className="pf-v6-u-color-100"
@@ -113,20 +113,16 @@ export function OnboardingModal(props: IOnboardingModalProps) {
             </Link>
           </GridItem>
         ))}
-        <GridItem
-          style={{
-            backgroundColor: 'var(--pf-t--global--background--color--200)',
-          }}
-        >
+        <GridItem>
           <div className="onboarding-modal-footer">
             <AcmExpandableSection
               label={t('Want to learn more?')}
               style={{
                 width: '100%',
                 height: '100%',
-                paddingLeft: '24px',
+                paddingLeft: '16px',
                 paddingTop: '10px',
-                paddingBottom: '10px',
+                paddingBottom: '1rem',
               }}
             >
               <ul style={{ padding: 0, listStyleType: 'none' }}>
