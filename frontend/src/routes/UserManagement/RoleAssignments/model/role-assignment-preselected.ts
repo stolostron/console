@@ -8,7 +8,7 @@ type RoleAssignmentPreselected = {
   clusterSetNames?: string[]
   namespaces?: string[]
   // Context indicates which page/view the wizard was opened from
-  context?: 'role' | 'cluster' | 'clusterSet' | 'identity'
+  context?: 'role' | 'cluster' | 'clusterSets' | 'identity'
 }
 
 export type { RoleAssignmentPreselected }

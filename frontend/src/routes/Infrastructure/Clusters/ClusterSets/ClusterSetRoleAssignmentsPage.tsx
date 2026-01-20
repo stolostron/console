@@ -3,7 +3,7 @@ import { PageSection } from '@patternfly/react-core'
 import { generatePath, Navigate, useParams } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../../NavigationPath'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
-import { ClusterRoleAssignments } from '../ClusterRoleAssignments'
+import { ClusterSetRoleAssignments } from './ClusterSetDetails/ClusterSetRoleAssignments/ClusterSetRoleAssignments'
 
 export default function ClusterSetRoleAssignmentsPage() {
   const { id = '' } = useParams()
@@ -12,7 +12,7 @@ export default function ClusterSetRoleAssignmentsPage() {
 
   return isFineGrainedRbacEnabled ? (
     <PageSection hasBodyWrapper={false}>
-      <ClusterRoleAssignments />
+      <ClusterSetRoleAssignments />
     </PageSection>
   ) : (
     <Navigate to={generatePath(NavigationPath.clusterSetDetails, { id })} replace />

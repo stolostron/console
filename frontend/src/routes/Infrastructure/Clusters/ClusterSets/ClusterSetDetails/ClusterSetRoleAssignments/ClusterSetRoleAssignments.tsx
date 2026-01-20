@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useParams } from 'react-router-dom-v5-compat'
-import { useFindRoleAssignments } from '../../../../resources/clients/multicluster-role-assignment-client'
-import { RoleAssignments } from '../../../UserManagement/RoleAssignment/RoleAssignments'
+import { useFindRoleAssignments } from '../../../../../../resources/clients/multicluster-role-assignment-client'
+import { RoleAssignments } from '../../../../../UserManagement/RoleAssignment/RoleAssignments'
 
 const ClusterSetRoleAssignments = () => {
-  const { name: clusterSetName } = useParams()
+  const { id: clusterSetName } = useParams()
   const clusterSetNames = clusterSetName ? [clusterSetName] : []
   const roleAssignments = useFindRoleAssignments({ clusterSetNames })
 
@@ -12,7 +12,7 @@ const ClusterSetRoleAssignments = () => {
     <RoleAssignments
       roleAssignments={roleAssignments}
       isLoading={false}
-      preselected={{ clusterSetNames, context: 'clusterSet' }}
+      preselected={{ clusterSetNames, context: 'clusterSets' }}
     />
   )
 }
