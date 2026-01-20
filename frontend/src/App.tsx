@@ -41,7 +41,7 @@ import { logout } from './logout'
 import { createRoutePathFunction, MatchType, NavigationPath } from './NavigationPath'
 import { isRequestAbortedError } from './resources/utils'
 import { setLightTheme, ThemeSwitcher } from './theme'
-import { AcmTableStateProvider, AcmToastGroup, AcmToastProvider } from './ui-components'
+import { AcmToastGroup, AcmToastProvider } from './ui-components'
 
 // HOME
 const WelcomePage = lazy(() => import('./routes/Home/Welcome/Welcome'))
@@ -283,14 +283,12 @@ export default function App() {
           <LoadPluginData>
             <AcmToastProvider>
               <AcmToastGroup />
-              <AcmTableStateProvider>
-                <Suspense fallback={<LoadingPage />}>
-                  <Routes>
-                    {mappedRoutes}
-                    <Route path="*" element={<Navigate to={NavigationPath.welcome} replace />} />
-                  </Routes>
-                </Suspense>
-              </AcmTableStateProvider>
+              <Suspense fallback={<LoadingPage />}>
+                <Routes>
+                  {mappedRoutes}
+                  <Route path="*" element={<Navigate to={NavigationPath.welcome} replace />} />
+                </Routes>
+              </Suspense>
             </AcmToastProvider>
           </LoadPluginData>
         </Page>
