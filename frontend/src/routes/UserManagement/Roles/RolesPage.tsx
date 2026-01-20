@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 import { useParams } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
-import { AcmPage, AcmPageContent, AcmPageHeader } from '../../../ui-components'
+import { AcmPage, AcmPageContent, AcmPageHeader, AcmTableStateProvider } from '../../../ui-components'
 import { RolesTable } from './RolesTable'
 
 export const useCurrentRole = () => {
@@ -34,7 +34,9 @@ const RolesPage = () => {
     >
       <AcmPageContent id="roles">
         <PageSection hasBodyWrapper={false}>
-          <RolesTable hiddenColumns={['radio']} />
+          <AcmTableStateProvider localStorageKey={'user-mgmt-roles-table-state'}>
+            <RolesTable hiddenColumns={['radio']} />
+          </AcmTableStateProvider>
         </PageSection>
       </AcmPageContent>
     </AcmPage>
