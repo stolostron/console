@@ -475,6 +475,12 @@ export function getAppNameFromLabel(label: string, defaultName?: string) {
 //////////////////////////////////////////////////////////////////
 
 export const systemAppNamespacePrefixes: string[] = []
+
+/** Clear system app namespace prefixes. Used for test isolation. */
+export function resetSystemAppNamespacePrefixes() {
+  systemAppNamespacePrefixes.length = 0
+}
+
 export async function discoverSystemAppNamespacePrefixes() {
   if (!systemAppNamespacePrefixes.length) {
     systemAppNamespacePrefixes.push('openshift')

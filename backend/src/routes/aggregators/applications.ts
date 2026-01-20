@@ -210,6 +210,11 @@ export function stopAggregatingApplications(): void {
   stopping = true
 }
 
+/** Reset aggregation stopping flag. Used for test isolation. */
+export function resetAggregatingApplications(): void {
+  stopping = false
+}
+
 export async function polledApplicationAggregation(
   options: IWatchOptions,
   items: IResource[],

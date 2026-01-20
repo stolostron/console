@@ -53,6 +53,11 @@ export function getHubClusterName() {
   return hubClusterName
 }
 
+/** Reset hub cluster name to default. Used for test isolation. */
+export function resetHubClusterName() {
+  hubClusterName = 'local-cluster'
+}
+
 let isHubSelfManaged: boolean = false
 export function getIsHubSelfManaged() {
   return isHubSelfManaged
@@ -145,12 +150,26 @@ export function getEventCache() {
   return resourceCache
 }
 
+/** Clear all cached resources. Used for test isolation. */
+export function resetResourceCache() {
+  for (const key in resourceCache) {
+    delete resourceCache[key]
+  }
+}
+
 const eventDict = createDictionary()
 export function getEventDict() {
   return eventDict
 }
 
 const accessCache: Record<string, Record<string, { time: number; promise: Promise<boolean> }>> = {}
+
+/** Clear all cached RBAC access checks. Used for test isolation. */
+export function resetAccessCache() {
+  for (const key in accessCache) {
+    delete accessCache[key]
+  }
+}
 
 const definitions: IWatchOptions[] = [
   { kind: 'ClusterManagementAddOn', apiVersion: 'addon.open-cluster-management.io/v1alpha1' },
