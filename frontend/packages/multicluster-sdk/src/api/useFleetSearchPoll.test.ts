@@ -21,7 +21,14 @@ describe('useFleetSearchPoll', () => {
     groupVersionKind: { group: '', version: 'v1', kind: 'Pod' },
     namespace: 'default',
     namespaced: true,
-    isList: false, // Changed to false so we can test undefined responses
+    isList: true,
+  }
+
+  const mockWatchOptionsSingle: WatchK8sResource = {
+    groupVersionKind: { group: '', version: 'v1', kind: 'Pod' },
+    namespace: 'default',
+    namespaced: true,
+    isList: false,
   }
 
   const mockSearchResultItem = {
@@ -48,7 +55,7 @@ describe('useFleetSearchPoll', () => {
   })
 
   describe('basic functionality', () => {
-    it('should return undefined data, false loaded, undefined error, and refetch function when loading', () => {
+    it('should return empty list data, false loaded, undefined error, and refetch function when loading and isList is true', () => {
       mockUseSearchResultItemsQuery.mockReturnValue({
         data: undefined,
         loading: true,
@@ -57,6 +64,23 @@ describe('useFleetSearchPoll', () => {
       } as any)
 
       const { result } = renderHook(() => useFleetSearchPoll(mockWatchOptions))
+
+      const [data, loaded, error, refetch] = result.current
+      expect(data).toEqual([])
+      expect(loaded).toBe(false)
+      expect(error).toBeUndefined()
+      expect(typeof refetch).toBe('function')
+    })
+
+    it('should return undefined data, false loaded, undefined error, and refetch function when loading and isList is false', () => {
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: undefined,
+        loading: true,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      const { result } = renderHook(() => useFleetSearchPoll(mockWatchOptionsSingle))
 
       const [data, loaded, error, refetch] = result.current
       expect(data).toBeUndefined()
@@ -96,7 +120,7 @@ describe('useFleetSearchPoll', () => {
       })
     })
 
-    it('should return undefined data, true loaded, error, and refetch function when error occurs', () => {
+    it('should return empty list data, true loaded, error, and refetch function when error occurs and isList is true', () => {
       const mockError = new Error('Search failed')
       const mockRefetch = jest.fn()
       mockUseSearchResultItemsQuery.mockReturnValue({
@@ -107,6 +131,25 @@ describe('useFleetSearchPoll', () => {
       } as any)
 
       const { result } = renderHook(() => useFleetSearchPoll(mockWatchOptions))
+
+      const [data, loaded, error, refetch] = result.current
+      expect(data).toEqual([])
+      expect(loaded).toBe(true)
+      expect(error).toBe(mockError)
+      expect(typeof refetch).toBe('function')
+    })
+
+    it('should return undefined data, true loaded, error, and refetch function when error occurs and isList is false', () => {
+      const mockError = new Error('Search failed')
+      const mockRefetch = jest.fn()
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: undefined,
+        loading: false,
+        error: mockError,
+        refetch: mockRefetch,
+      } as any)
+
+      const { result } = renderHook(() => useFleetSearchPoll(mockWatchOptionsSingle))
 
       const [data, loaded, error, refetch] = result.current
       expect(data).toBeUndefined()
