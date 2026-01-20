@@ -18,7 +18,8 @@ jest.mock('../../../../components/ClusterSets/ClusterSetsTable', () => ({
 
 // Mock AcmTableStateProvider and other ui-components
 jest.mock('../../../../ui-components', () => {
-  const React = require('react')
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const ReactModule = jest.requireActual<typeof import('react')>('react')
   return {
     AcmPageContent: jest.fn(({ children }: { children: React.ReactNode }) => (
       <div data-testid="acm-page-content">{children}</div>
@@ -27,7 +28,7 @@ jest.mock('../../../../ui-components', () => {
       <div data-testid="acm-expandable-card">{children}</div>
     )),
     AcmButton: jest.fn(({ children }: { children: React.ReactNode }) => <button>{children}</button>),
-    AcmAlertContext: React.createContext({ clearAlerts: jest.fn() }),
+    AcmAlertContext: ReactModule.createContext({ clearAlerts: jest.fn() }),
     AcmTableStateProvider: jest.fn(
       ({ children, localStorageKey }: { children: React.ReactNode; localStorageKey: string }) => (
         <div data-testid="acm-table-state-provider" data-localstorage-key={localStorageKey}>
