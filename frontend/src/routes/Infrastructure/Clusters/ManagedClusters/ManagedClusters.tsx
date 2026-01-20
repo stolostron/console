@@ -12,7 +12,7 @@ import { navigateToBackCancelLocation, NavigationPath } from '../../../../Naviga
 import { ManagedClusterDefinition } from '../../../../resources'
 import { addonPathKey, addonTextKey } from '../../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
-import { AcmAlertContext, AcmEmptyState, AcmLaunchLink, AcmPageContent } from '../../../../ui-components'
+import { AcmAlertContext, AcmEmptyState, AcmLaunchLink, AcmPageContent, AcmTableStateProvider } from '../../../../ui-components'
 import { usePageContext } from '../ClustersPage'
 import { AddCluster } from './components/AddCluster'
 import { OnboardingModal } from './components/OnboardingModal'
@@ -77,36 +77,38 @@ export default function ManagedClusters() {
             <div style={{ marginBottom: '1em' }}>
               <KubevirtProviderAlert variant="search" component="hint" hideAlertWhenNoVMsExists />
             </div>
-            <ClustersTable
-              clusters={clusters}
-              tableKey="managedClusters"
-              tableButtonActions={[
-                {
-                  id: 'createCluster',
-                  title: t('managed.createCluster'),
-                  click: () => navigateToBackCancelLocation(navigate, NavigationPath.createCluster),
-                  isDisabled: !canCreateCluster,
-                  tooltip: t('rbac.unauthorized'),
-                  variant: ButtonVariant.primary,
-                },
-                {
-                  id: 'importCluster',
-                  title: t('managed.importCluster'),
-                  click: () => navigateToBackCancelLocation(navigate, NavigationPath.importCluster),
-                  isDisabled: !canCreateCluster,
-                  tooltip: t('rbac.unauthorized'),
-                  variant: ButtonVariant.secondary,
-                },
-              ]}
-              emptyState={
-                <AcmEmptyState
-                  key="mcEmptyState"
-                  title={t("You don't have any clusters yet")}
-                  message={t('To get started, create a cluster or import an existing cluster.')}
-                  action={<AddCluster type="button" />}
-                />
-              }
-            />
+            <AcmTableStateProvider localStorageKey={'managed-clusters-table-state'}>
+              <ClustersTable
+                clusters={clusters}
+                tableKey="managedClusters"
+                tableButtonActions={[
+                  {
+                    id: 'createCluster',
+                    title: t('managed.createCluster'),
+                    click: () => navigateToBackCancelLocation(navigate, NavigationPath.createCluster),
+                    isDisabled: !canCreateCluster,
+                    tooltip: t('rbac.unauthorized'),
+                    variant: ButtonVariant.primary,
+                  },
+                  {
+                    id: 'importCluster',
+                    title: t('managed.importCluster'),
+                    click: () => navigateToBackCancelLocation(navigate, NavigationPath.importCluster),
+                    isDisabled: !canCreateCluster,
+                    tooltip: t('rbac.unauthorized'),
+                    variant: ButtonVariant.secondary,
+                  },
+                ]}
+                emptyState={
+                  <AcmEmptyState
+                    key="mcEmptyState"
+                    title={t("You don't have any clusters yet")}
+                    message={t('To get started, create a cluster or import an existing cluster.')}
+                    action={<AddCluster type="button" />}
+                  />
+                }
+              />
+            </AcmTableStateProvider>
           </StackItem>
         </Stack>
       </PageSection>
