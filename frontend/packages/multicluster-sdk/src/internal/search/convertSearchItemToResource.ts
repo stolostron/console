@@ -237,7 +237,12 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
     }
 
     case 'VirtualMachineInstanceMigration.kubevirt.io':
+      setIfDefined(resource, 'metadata.deletionTimestamp', item.deleted)
       setIfDefined(resource, 'status.migrationState.endTimestamp', item.endTime)
+      setIfDefined(resource, 'status.migrationState.migrationPolicyName', item.migrationPolicyName)
+      setIfDefined(resource, 'status.migrationState.sourceNode', item.sourceNode)
+      setIfDefined(resource, 'status.migrationState.sourcePod', item.sourcePod)
+      setIfDefined(resource, 'status.migrationState.targetNode', item.targetNode)
       setIfDefined(resource, 'status.phase', item.phase)
       setIfDefined(resource, 'spec.vmiName', item.vmiName)
       break

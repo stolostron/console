@@ -799,13 +799,25 @@ describe('convertSearchItemToResource', () => {
         phase: 'Succeeded',
         endTime: '2025-01-15T10:30:00Z',
         vmiName: 'test-vm-instance',
+        deleted: '2025-01-15T10:30:00Z',
+        migrationPolicyName: 'test-migration-policy',
+        sourceNode: 'test-source-node',
+        sourcePod: 'test-source-pod',
+        targetNode: 'test-target-node',
       }
 
       const result = convert(vmimItem)
 
+      expect(result.metadata.deletionTimestamp).toBe('2025-01-15T10:30:00Z')
       expect(result.status).toEqual({
         phase: 'Succeeded',
-        migrationState: { endTimestamp: '2025-01-15T10:30:00Z' },
+        migrationState: {
+          endTimestamp: '2025-01-15T10:30:00Z',
+          migrationPolicyName: 'test-migration-policy',
+          sourceNode: 'test-source-node',
+          sourcePod: 'test-source-pod',
+          targetNode: 'test-target-node',
+        },
       })
       expect(result.spec).toEqual({
         vmiName: 'test-vm-instance',
