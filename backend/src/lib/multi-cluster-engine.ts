@@ -16,6 +16,12 @@ interface MultiClusterEngineList {
 }
 
 let MultiClusterEngine: Promise<MultiClusterEngine | undefined>
+
+/** Clear MultiClusterEngine cache. Used for test isolation. */
+export function resetMultiClusterEngineCache(): void {
+  MultiClusterEngine = undefined
+}
+
 export async function getMultiClusterEngine(noCache?: boolean): Promise<MultiClusterEngine | undefined> {
   const serviceAccountToken = getServiceAccountToken()
   if (MultiClusterEngine === undefined || noCache) {
