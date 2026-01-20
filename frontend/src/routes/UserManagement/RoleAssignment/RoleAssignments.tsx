@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ButtonVariant } from '@patternfly/react-core'
 import { fitContent, nowrap } from '@patternfly/react-table'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -20,6 +20,7 @@ import { RoleAssignmentWizardModalWrapper } from '../RoleAssignments/RoleAssignm
 import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
 import { RoleAssignmentLabel } from './RoleAssignmentLabel'
 import { RoleAssignmentStatusComponent } from './RoleAssignmentStatusComponent'
+import { EmptyState, Spinner } from '@patternfly/react-core'
 
 // Component for rendering clickable role links
 const RoleLinkCell = ({ roleName }: { roleName: string }) => (
@@ -156,6 +157,18 @@ const RoleAssignments = ({
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [editingRoleAssignment, setEditingRoleAssignment] = useState<FlattenedRoleAssignment>()
+  const [isMutating, setIsMutating] = useState(false)
+  const editingKeyRef = useRef<string>()
+
+  useEffect(() => {
+    if (!isMutating || !editingKeyRef.current) return
+
+    const editedItemStillExists = roleAssignments.some((ra) => keyFn(ra) === editingKeyRef.current)
+    if (!editedItemStillExists) {
+      setIsMutating(false)
+      editingKeyRef.current = undefined
+    }
+  }, [roleAssignments, isMutating, keyFn])
 
   // Table actions for bulk operations
   const tableActions = useMemo<IAcmTableAction<FlattenedRoleAssignment>[]>(
@@ -424,36 +437,40 @@ const RoleAssignments = ({
         }}
         resultView={{
           page: 1,
-          loading: isLoading ?? false,
+          loading: (isLoading ?? false) || isMutating,
           refresh: () => {},
           items: [],
           emptyResult: false,
-          processedItemCount: 0,
+          processedItemCount: roleAssignments.length,
           isPreProcessed: false,
         }}
         emptyState={
-          <AcmEmptyState
-            key="roleAssignmentsEmptyState"
-            title={t('No role assignment created yet')}
-            message={t(
-              'No role assignments have been created for this entity yet. Create a role assignment to grant specific permissions.'
-            )}
-            action={
-              <div>
-                <AcmButton
-                  variant="primary"
-                  onClick={() => setIsCreateModalOpen(true)}
-                  isDisabled={!canCreateRoleAssignment}
-                  tooltip={canCreateRoleAssignment ? '' : unauthorizedMessage}
-                >
-                  {t('Create role assignment')}
-                </AcmButton>
-                {/* ) : null} */}
-                {/* TODO: add correct documentation link */}
-                <ViewDocumentationLink doclink={DOC_LINKS.CLUSTERS} />
-              </div>
-            }
-          />
+          isMutating ? (
+            <EmptyState titleText="Loading" icon={Spinner} headingLevel="h2" />
+          ) : (
+            <AcmEmptyState
+              key="roleAssignmentsEmptyState"
+              title={t('No role assignment created yet')}
+              message={t(
+                'No role assignments have been created for this entity yet. Create a role assignment to grant specific permissions.'
+              )}
+              action={
+                <div>
+                  <AcmButton
+                    variant="primary"
+                    onClick={() => setIsCreateModalOpen(true)}
+                    isDisabled={!canCreateRoleAssignment}
+                    tooltip={canCreateRoleAssignment ? '' : unauthorizedMessage}
+                  >
+                    {t('Create role assignment')}
+                  </AcmButton>
+                  {/* ) : null} */}
+                  {/* TODO: add correct documentation link */}
+                  <ViewDocumentationLink doclink={DOC_LINKS.CLUSTERS} />
+                </div>
+              }
+            />
+          )
         }
       />
       <RoleAssignmentWizardModalWrapper
@@ -463,6 +480,12 @@ const RoleAssignments = ({
         }}
         isOpen={isCreateModalOpen}
         editingRoleAssignment={editingRoleAssignment}
+        onMutationStart={() => {
+          if (editingRoleAssignment) {
+            editingKeyRef.current = keyFn(editingRoleAssignment)
+            setIsMutating(true)
+          }
+        }}
         preselected={
           editingRoleAssignment
             ? {

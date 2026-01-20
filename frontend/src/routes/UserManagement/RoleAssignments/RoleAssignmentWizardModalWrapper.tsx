@@ -17,6 +17,7 @@ type RoleAssignmentWizardModalWrapperProps = {
   isOpen: boolean
   preselected?: RoleAssignmentPreselected
   editingRoleAssignment?: FlattenedRoleAssignment
+  onMutationStart?: () => void
 }
 
 export const RoleAssignmentWizardModalWrapper = ({
@@ -24,6 +25,7 @@ export const RoleAssignmentWizardModalWrapper = ({
   isOpen,
   preselected,
   editingRoleAssignment,
+  onMutationStart,
 }: RoleAssignmentWizardModalWrapperProps) => {
   const { multiclusterRoleAssignmentState } = useSharedAtoms()
   const multiClusterRoleAssignments = useRecoilValue(multiclusterRoleAssignmentState)
@@ -36,6 +38,7 @@ export const RoleAssignmentWizardModalWrapper = ({
   const { t } = useTranslation()
 
   const saveFromWizard = async (data: RoleAssignmentWizardFormData) => {
+    onMutationStart?.()
     if (editingRoleAssignment) {
       try {
         await deleteRoleAssignment(editingRoleAssignment).promise
