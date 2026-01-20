@@ -905,8 +905,10 @@ describe('convertSearchItemToResource', () => {
         ready: 'True',
         restoreTime: '2025-01-15T12:00:00Z',
         complete: true,
+        targetApiGroup: 'kubevirt.io',
         targetKind: 'VirtualMachine',
         targetName: 'restored-vm',
+        virtualMachineSnapshotName: 'test-snapshot',
       }
 
       const result = convert(restoreItem)
@@ -914,8 +916,10 @@ describe('convertSearchItemToResource', () => {
       expect(result.status?.conditions).toEqual([{ type: 'Ready', status: 'True' }])
       expect(result.status?.restoreTime).toBe('2025-01-15T12:00:00Z')
       expect(result.status?.complete).toBe(true)
+      expect(result.spec?.target?.apiGroup).toBe('kubevirt.io')
       expect(result.spec?.target?.kind).toBe('VirtualMachine')
       expect(result.spec?.target?.name).toBe('restored-vm')
+      expect(result.spec?.virtualMachineSnapshotName).toBe('test-snapshot')
     })
 
     it('should handle VirtualMachineRestore in progress', () => {

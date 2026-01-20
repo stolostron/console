@@ -274,8 +274,10 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
       }
       setIfDefined(resource, 'status.restoreTime', item.restoreTime)
       setIfDefined(resource, 'status.complete', item.complete)
+      setIfDefined(resource, 'spec.target.apiGroup', item.targetApiGroup)
       setIfDefined(resource, 'spec.target.kind', item.targetKind)
       setIfDefined(resource, 'spec.target.name', item.targetName)
+      setIfDefined(resource, 'spec.virtualMachineSnapshotName', item.virtualMachineSnapshotName)
       break
     }
   }
