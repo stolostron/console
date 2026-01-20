@@ -54,6 +54,11 @@ export function getHubClusterName() {
   return hubClusterName
 }
 
+/** Reset hub cluster name to default. Used for test isolation. */
+export function resetHubClusterName() {
+  hubClusterName = 'local-cluster'
+}
+
 let isHubSelfManaged: boolean | undefined = undefined
 export function getIsHubSelfManaged() {
   return isHubSelfManaged
@@ -141,12 +146,26 @@ export function getEventCache() {
   return resourceCache
 }
 
+/** Clear all cached resources. Used for test isolation. */
+export function resetResourceCache() {
+  for (const key in resourceCache) {
+    delete resourceCache[key]
+  }
+}
+
 const eventDict = createDictionary()
 export function getEventDict() {
   return eventDict
 }
 
 const accessCache: Record<string, Record<string, { time: number; promise: Promise<boolean> }>> = {}
+
+/** Clear all cached RBAC access checks. Used for test isolation. */
+export function resetAccessCache() {
+  for (const key in accessCache) {
+    delete accessCache[key]
+  }
+}
 
 const definitions: IWatchOptions[] = [
   { kind: 'ClusterManagementAddOn', apiVersion: 'addon.open-cluster-management.io/v1alpha1' },
@@ -245,7 +264,7 @@ export function startWatching(): void {
   }
 }
 // https://kubernetes.io/docs/reference/using-api/api-concepts/
-async function listAndWatch(options: IWatchOptions) {
+export async function listAndWatch(options: IWatchOptions) {
   const serviceAccountToken = getServiceAccountToken()
   while (!stopping) {
     try {
@@ -276,8 +295,8 @@ async function listAndWatch(options: IWatchOptions) {
             break
         }
       } else if (err instanceof Error) {
-        if (err.message === 'Premature close') {
-          // Do nothing
+        if (err.message === 'Premature close' || err.message.startsWith('too old resource version')) {
+          // Retry list and watch/poll immediately
         } else {
           await new Promise((resolve) => setTimeout(resolve, 60 * 1000 + Math.ceil(Math.random() * 10 * 1000)).unref())
         }
@@ -547,7 +566,7 @@ export function createWatchEventProcessor(options: IWatchOptions, url: string, r
                 event: watchEvent,
               })
             }
-            break
+            throw new Error((watchEvent.object as unknown as { message?: string }).message)
         }
 
         // Don't push anything downstream - we're just processing events

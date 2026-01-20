@@ -76,6 +76,18 @@ const argoPageChunks: ApplicationPageChunk[] = []
 
 const oldResourceUidSets: Record<string, Set<string>> = {}
 
+/** Reset all Argo application module-level state. Used for test isolation. */
+export function resetArgoApplicationState() {
+  hubClusterName = undefined as unknown as string
+  clusters = undefined as unknown as Cluster[]
+  localCluster = undefined as unknown as Cluster
+  placementDecisions = undefined as unknown as IResource[]
+  argoPageChunks.length = 0
+  for (const key in oldResourceUidSets) {
+    delete oldResourceUidSets[key]
+  }
+}
+
 export function addArgoQueryInputs(applicationCache: ApplicationCacheType, query: IQuery) {
   argoPageChunk = getNextApplicationPageChunk(applicationCache, argoPageChunks, 'remoteArgoApps')
   const filters = [

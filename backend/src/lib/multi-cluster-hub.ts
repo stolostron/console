@@ -26,6 +26,12 @@ interface MultiClusterHubList {
 }
 
 let multiclusterhub: Promise<MultiClusterHub | undefined>
+
+/** Clear MultiClusterHub cache. Used for test isolation. */
+export function resetMultiClusterHubCache(): void {
+  multiclusterhub = undefined
+}
+
 export async function getMultiClusterHub(noCache?: boolean): Promise<MultiClusterHub | undefined> {
   const serviceAccountToken = getServiceAccountToken()
   if (multiclusterhub === undefined || noCache) {
