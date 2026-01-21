@@ -95,12 +95,27 @@ export const RoleAssignmentWizardModal = ({
   const handleClusterSetsChange = useCallback((clusterSets: any[]) => {
     setSelectedClusterSets(clusterSets)
     setSelectedClusters([])
-    setFormData((prev) => ({ ...prev, selectedClusterSets: clusterSets, selectedClusters: [] }))
+    setFormData((prev) => ({
+      ...prev,
+      selectedClusterSets: clusterSets,
+      selectedClusters: [],
+      scope: {
+        ...prev.scope,
+        namespaces: [],
+      },
+    }))
   }, [])
 
   const handleClustersChange = useCallback((clusters: any[]) => {
     setSelectedClusters(clusters)
-    setFormData((prev) => ({ ...prev, selectedClusters: clusters }))
+    setFormData((prev) => ({
+      ...prev,
+      selectedClusters: clusters,
+      scope: {
+        ...prev.scope,
+        namespaces: clusters.length === 0 ? [] : prev.scope.namespaces,
+      },
+    }))
   }, [])
 
   const handleScopeTypeChange = useCallback((scopeType?: RoleAssignmentWizardFormData['scopeType']) => {
