@@ -308,6 +308,53 @@ describe('convertSearchItemToResource', () => {
     })
   })
 
+  describe('DataSource.cdi.kubevirt.io', () => {
+    it('should handle DataSource resource transformation with PVC source', () => {
+      const dataSourceItem = {
+        ...baseSearchItem,
+        kind: 'DataSource',
+        apigroup: 'cdi.kubevirt.io',
+        pvcName: 'my-pvc',
+        pvcNamespace: 'my-namespace',
+      }
+
+      const result = convert(dataSourceItem)
+
+      expect(result.spec?.source?.pvc?.name).toBe('my-pvc')
+      expect(result.spec?.source?.pvc?.namespace).toBe('my-namespace')
+    })
+
+    it('should handle DataSource resource transformation with snapshot source', () => {
+      const dataSourceItem = {
+        ...baseSearchItem,
+        kind: 'DataSource',
+        apigroup: 'cdi.kubevirt.io',
+        snapshotName: 'my-snapshot',
+        snapshotNamespace: 'snapshot-namespace',
+      }
+
+      const result = convert(dataSourceItem)
+
+      expect(result.spec?.source?.snapshot?.name).toBe('my-snapshot')
+      expect(result.spec?.source?.snapshot?.namespace).toBe('snapshot-namespace')
+    })
+
+    it('should handle DataSource with partial fields', () => {
+      const dataSourceItem = {
+        ...baseSearchItem,
+        kind: 'DataSource',
+        apigroup: 'cdi.kubevirt.io',
+        pvcName: 'only-pvc-name',
+      }
+
+      const result = convert(dataSourceItem)
+
+      expect(result.spec?.source?.pvc?.name).toBe('only-pvc-name')
+      expect(result.spec?.source?.pvc?.namespace).toBeUndefined()
+      expect(result.spec?.source?.snapshot?.name).toBeUndefined()
+    })
+  })
+
   describe('DataVolume.cdi.kubevirt.io', () => {
     it('should handle DataVolume resource transformation', () => {
       const dataVolumeItem = {
