@@ -855,11 +855,12 @@ A React hook that provides fleet-wide search functionality using the ACM search 
 
 | Function | Type |
 | ---------- | ---------- |
-| `useFleetSearchPoll` | `<T extends K8sResourceCommon or K8sResourceCommon[]>(watchOptions: WatchK8sResource, advancedSearchFilters?: AdvancedSearchFilter or undefined, pollInterval?: number or ... 1 more ... or undefined) => [...]` |
+| `useFleetSearchPoll` | `<T extends K8sResourceCommon or K8sResourceCommon[]>(watchOptions: FleetWatchK8sResource, advancedSearchFilters?: AdvancedSearchFilter or undefined, pollInterval?: number or ... 1 more ... or undefined) => [...]` |
 
 Parameters:
 
 * `watchOptions`: - Configuration options for the resource watch
+* `watchOptions.cluster`: - The managed cluster on which the resource resides; unspecified to search all clusters
 * `watchOptions.groupVersionKind`: - The group, version, and kind of the resource to search for
 * `watchOptions.limit`: - Maximum number of results to return (defaults to -1 for no limit)
 * `watchOptions.namespace`: - Namespace to search in (only used if namespaced is true)
@@ -915,7 +916,7 @@ const [services, loaded, error] = useFleetSearchPoll({
 ```
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearchPoll.ts#L80)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearchPoll.ts#L81)
 
 ### :gear: useHubClusterName
 

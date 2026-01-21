@@ -2,7 +2,8 @@
 import { renderHook } from '@testing-library/react-hooks'
 import { useFleetSearchPoll } from './useFleetSearchPoll'
 import { useSearchResultItemsQuery } from '../internal/search/search-sdk'
-import { K8sResourceCommon, WatchK8sResource } from '@openshift-console/dynamic-plugin-sdk'
+import { K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk'
+import { FleetWatchK8sResource } from '../types'
 
 // Mock the search-sdk hook
 jest.mock('../internal/search/search-sdk', () => ({
@@ -17,14 +18,14 @@ jest.mock('../internal/search/search-client', () => ({
 const mockUseSearchResultItemsQuery = useSearchResultItemsQuery as jest.MockedFunction<typeof useSearchResultItemsQuery>
 
 describe('useFleetSearchPoll', () => {
-  const mockWatchOptions: WatchK8sResource = {
+  const mockWatchOptions: FleetWatchK8sResource = {
     groupVersionKind: { group: '', version: 'v1', kind: 'Pod' },
     namespace: 'default',
     namespaced: true,
     isList: true,
   }
 
-  const mockWatchOptionsSingle: WatchK8sResource = {
+  const mockWatchOptionsSingle: FleetWatchK8sResource = {
     groupVersionKind: { group: '', version: 'v1', kind: 'Pod' },
     namespace: 'default',
     namespaced: true,
@@ -351,6 +352,41 @@ describe('useFleetSearchPoll', () => {
         },
       })
     })
+
+    it('should include cluster filter when cluster is specified in watchOptions', () => {
+      const watchOptionsWithCluster = {
+        ...mockWatchOptions,
+        cluster: 'managed-cluster-1',
+      }
+
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: mockSearchResult,
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      renderHook(() => useFleetSearchPoll(watchOptionsWithCluster))
+
+      expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith({
+        client: 'mock-search-client',
+        skip: false,
+        pollInterval: 30000,
+        variables: {
+          input: [
+            {
+              filters: [
+                { property: 'cluster', values: ['managed-cluster-1'] },
+                { property: 'apiversion', values: ['v1'] },
+                { property: 'kind', values: ['Pod'] },
+                { property: 'namespace', values: ['default'] },
+              ],
+              limit: -1,
+            },
+          ],
+        },
+      })
+    })
   })
 
   describe('advanced search filters', () => {
@@ -415,6 +451,47 @@ describe('useFleetSearchPoll', () => {
               filters: [
                 { property: 'apiversion', values: ['v1'] },
                 { property: 'kind', values: ['Pod'] }, // From watch options, not advanced search
+                { property: 'namespace', values: ['default'] },
+                { property: 'label', values: ['app=test'] },
+              ],
+              limit: -1,
+            },
+          ],
+        },
+      })
+    })
+
+    it('should prioritize cluster from watchOptions over advanced search filters', () => {
+      const watchOptionsWithCluster = {
+        ...mockWatchOptions,
+        cluster: 'managed-cluster-1',
+      }
+
+      const advancedFilters = [
+        { property: 'cluster', values: ['different-cluster'] }, // This should be ignored
+        { property: 'label', values: ['app=test'] },
+      ]
+
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: mockSearchResult,
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      renderHook(() => useFleetSearchPoll(watchOptionsWithCluster, advancedFilters))
+
+      expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith({
+        client: 'mock-search-client',
+        skip: false,
+        pollInterval: 30000,
+        variables: {
+          input: [
+            {
+              filters: [
+                { property: 'cluster', values: ['managed-cluster-1'] }, // From watch options, not advanced search
+                { property: 'apiversion', values: ['v1'] },
+                { property: 'kind', values: ['Pod'] },
                 { property: 'namespace', values: ['default'] },
                 { property: 'label', values: ['app=test'] },
               ],

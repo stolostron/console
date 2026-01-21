@@ -4,7 +4,7 @@ import { useCallback, useMemo } from 'react'
 import { AdvancedSearchFilter, SearchResult } from '../types/search'
 import { searchClient } from '../internal/search/search-client'
 import { convertSearchItemToResource } from '../internal/search/convertSearchItemToResource'
-import { WatchK8sResource } from '@openshift-console/dynamic-plugin-sdk'
+import { FleetWatchK8sResource } from '../types'
 
 // Constants for polling interval configuration
 const DEFAULT_POLL_INTERVAL_SECONDS = 30
@@ -15,6 +15,7 @@ const DEFAULT_POLL_INTERVAL_SECONDS = 30
  * @template T - The type of Kubernetes resource(s) to search for, extending K8sResourceCommon
  *
  * @param watchOptions - Configuration options for the resource watch
+ * @param watchOptions.cluster - The managed cluster on which the resource resides; unspecified to search all clusters
  * @param watchOptions.groupVersionKind - The group, version, and kind of the resource to search for
  * @param watchOptions.limit - Maximum number of results to return (defaults to -1 for no limit)
  * @param watchOptions.namespace - Namespace to search in (only used if namespaced is true)
@@ -78,11 +79,11 @@ const DEFAULT_POLL_INTERVAL_SECONDS = 30
  * - Minimum polling interval is 30 seconds for performance reasons
  */
 export function useFleetSearchPoll<T extends K8sResourceCommon | K8sResourceCommon[]>(
-  watchOptions: WatchK8sResource,
+  watchOptions: FleetWatchK8sResource,
   advancedSearchFilters?: AdvancedSearchFilter,
   pollInterval?: number | false
 ): [SearchResult<T> | undefined, boolean, Error | undefined, () => void] {
-  const { groupVersionKind, limit, namespace, namespaced, name, isList } = watchOptions
+  const { cluster, groupVersionKind, limit, namespace, namespaced, name, isList } = watchOptions
 
   const { group, version, kind } = groupVersionKind ?? {}
 
@@ -107,6 +108,11 @@ export function useFleetSearchPoll<T extends K8sResourceCommon | K8sResourceComm
 
     // Add filters from watchOptions (these take precedence)
     const watchOptionsProperties = new Set<string>()
+
+    if (cluster) {
+      filters.push({ property: 'cluster', values: [cluster] })
+      watchOptionsProperties.add('cluster')
+    }
 
     if (group) {
       filters.push({ property: 'apigroup', values: [group] })
@@ -143,7 +149,7 @@ export function useFleetSearchPoll<T extends K8sResourceCommon | K8sResourceComm
       filters,
       limit: limit ?? -1,
     }
-  }, [group, version, kind, namespaced, namespace, name, advancedSearchFilters, limit])
+  }, [cluster, group, version, kind, namespaced, namespace, name, advancedSearchFilters, limit])
 
   const {
     data: result,
