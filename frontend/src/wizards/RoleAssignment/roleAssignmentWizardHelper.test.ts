@@ -44,7 +44,9 @@ describe('wizardDataToRoleAssignmentToSave', () => {
     const formData = createFormData({
       scope: { kind: 'specific', clusterNames: [] },
       scopeType: 'Select cluster sets',
-      selectedClusterSets: [{ name: 'cluster-set-1', metadata: { name: 'cluster-set-1' } }] as ManagedClusterSet[],
+      selectedClusterSets: [
+        { name: 'cluster-set-1', metadata: { name: 'cluster-set-1' } },
+      ] as any as ManagedClusterSet[],
     })
 
     // Act
