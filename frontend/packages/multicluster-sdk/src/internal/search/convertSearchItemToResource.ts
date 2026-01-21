@@ -243,6 +243,8 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
       break
 
     case 'VirtualMachine.kubevirt.io': {
+      setIfDefined(resource, 'spec.instancetype.name', item.instancetype)
+      setIfDefined(resource, 'spec.preference.name', item.preference)
       setIfDefined(resource, 'spec.runStrategy', item.runStrategy)
       setIfDefined(resource, 'spec.template.spec.architecture', item.architecture)
       setIfDefined(resource, 'spec.template.spec.domain.cpu.cores', item.cpu, Number(item.cpu))

@@ -808,11 +808,15 @@ describe('convertSearchItemToResource', () => {
         workload: 'server',
         runStrategy: 'Always',
         architecture: 'amd64',
+        instancetype: 'u1.medium',
+        preference: 'rhel.9',
       }
 
       const result = convert(vmItem)
 
       expect(result.spec).toEqual({
+        instancetype: { name: 'u1.medium' },
+        preference: { name: 'rhel.9' },
         runStrategy: 'Always',
         template: {
           spec: {
