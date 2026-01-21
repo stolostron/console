@@ -19,7 +19,7 @@ import {
 import { Button, Content, ContentVariants, Flex, FlexItem, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { get } from 'lodash'
+import { get, set } from 'lodash'
 import { Fragment, ReactNode, useMemo, useState } from 'react'
 import { CreateCredentialModal } from '../../components/CreateCredentialModal'
 import { GitOpsOperatorAlert } from '../../components/GitOpsOperatorAlert'
@@ -537,83 +537,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
         </Step>
         <Step id="sync-policy" label={t('Sync policy')}>
           <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
-            <Section
-              label={t('Sync policy')}
-              description={t(
-                'Settings used to configure application syncing when there are differences between the desired state and the live cluster state.'
-              )}
-            >
-              <WizCheckbox
-                label={t('Delete resources that are no longer defined in the source repository')}
-                path="spec.template.spec.syncPolicy.automated.prune"
-              />
-              <WizCheckbox
-                id="prune-last"
-                label={t(
-                  'Delete resources that are no longer defined in the source repository at the end of a sync operation'
-                )}
-                path="spec.template.spec.syncPolicy.syncOptions"
-                inputValueToPathValue={booleanToSyncOptions('PruneLast')}
-                pathValueToInputValue={syncOptionsToBoolean('PruneLast')}
-              />
-              <WizCheckbox
-                id="replace"
-                label={t('Replace resources instead of applying changes from the source repository')}
-                path="spec.template.spec.syncPolicy.syncOptions"
-                inputValueToPathValue={booleanToSyncOptions('Replace')}
-                pathValueToInputValue={syncOptionsToBoolean('Replace')}
-              />
-
-              <WizCheckbox
-                path="spec.template.spec.syncPolicy.automated.allowEmpty"
-                label={t('Allow applications to have empty resources')}
-              />
-              <WizCheckbox
-                id="apply-out-of-sync-only"
-                label={t('Only synchronize out-of-sync resources')}
-                path="spec.template.spec.syncPolicy.syncOptions"
-                inputValueToPathValue={booleanToSyncOptions('ApplyOutOfSyncOnly')}
-                pathValueToInputValue={syncOptionsToBoolean('ApplyOutOfSyncOnly')}
-              />
-              <WizCheckbox
-                path="spec.template.spec.syncPolicy.automated.selfHeal"
-                label={t('Automatically sync when cluster state changes')}
-              />
-              <WizCheckbox
-                id="create-namespace"
-                label={t('Automatically create namespace if it does not exist')}
-                path="spec.template.spec.syncPolicy.syncOptions"
-                inputValueToPathValue={booleanToSyncOptions('CreateNamespace')}
-                pathValueToInputValue={syncOptionsToBoolean('CreateNamespace')}
-              />
-              <WizCheckbox
-                id="validate"
-                label={t('Disable kubectl validation')}
-                path="spec.template.spec.syncPolicy.syncOptions"
-                inputValueToPathValue={booleanToSyncOptions('Validate')}
-                pathValueToInputValue={syncOptionsToBoolean('Validate')}
-              />
-              <WizCheckbox
-                id="propagation-policy"
-                label={t('Prune propagation policy')}
-                path="spec.template.spec.syncPolicy.syncOptions"
-                inputValueToPathValue={checkboxPrunePropagationPolicyToSyncOptions}
-                pathValueToInputValue={checkboxSyncOptionsToPrunePropagationPolicy}
-              >
-                <WizSelect
-                  label={t('Propagation policy')}
-                  options={[
-                    { label: t('foreground'), value: 'foreground' },
-                    { label: t('background'), value: 'background' },
-                    { label: t('orphan'), value: 'orphan' },
-                  ]}
-                  path="spec.template.spec.syncPolicy.syncOptions"
-                  inputValueToPathValue={prunePropagationPolicyToSyncOptions}
-                  pathValueToInputValue={syncOptionsToPrunePropagationPolicy}
-                  required
-                />
-              </WizCheckbox>
-            </Section>
+            <ArgoSyncPolicySection />
           </WizItemSelector>
         </Step>
         <Step id="placement" label={t('Placement')}>
@@ -773,6 +697,105 @@ function syncOptionsToPrunePropagationPolicy(array: unknown) {
   }
 
   return 'background'
+}
+
+function ArgoSyncPolicySection() {
+  const { t } = useTranslation()
+  const automated = useItem('spec.template.spec.syncPolicy.automated')
+
+  return (
+    <Section
+      label={t('Sync policy')}
+      description={t(
+        'Settings used to configure application syncing when there are differences between the desired state and the live cluster state.'
+      )}
+    >
+      <WizCheckbox
+        label={t('Delete resources that are no longer defined in the source repository')}
+        path="spec.template.spec.syncPolicy.automated.prune"
+        disabled={automated === null}
+        onValueChange={(value: unknown, item?: ApplicationSet) => {
+          if (value === true && item && get(item, 'spec.template.spec.syncPolicy.automated') !== null) {
+            set(item, 'spec.template.spec.syncPolicy.automated.prune', true)
+          }
+        }}
+      />
+      <WizCheckbox
+        id="prune-last"
+        label={t('Delete resources that are no longer defined in the source repository at the end of a sync operation')}
+        path="spec.template.spec.syncPolicy.syncOptions"
+        inputValueToPathValue={booleanToSyncOptions('PruneLast')}
+        pathValueToInputValue={syncOptionsToBoolean('PruneLast')}
+      />
+      <WizCheckbox
+        id="replace"
+        label={t('Replace resources instead of applying changes from the source repository')}
+        path="spec.template.spec.syncPolicy.syncOptions"
+        inputValueToPathValue={booleanToSyncOptions('Replace')}
+        pathValueToInputValue={syncOptionsToBoolean('Replace')}
+      />
+      <WizCheckbox
+        path="spec.template.spec.syncPolicy.automated.allowEmpty"
+        label={t('Allow applications to have empty resources')}
+        disabled={automated === null}
+      />
+      <WizCheckbox
+        id="apply-out-of-sync-only"
+        label={t('Only synchronize out-of-sync resources')}
+        path="spec.template.spec.syncPolicy.syncOptions"
+        inputValueToPathValue={booleanToSyncOptions('ApplyOutOfSyncOnly')}
+        pathValueToInputValue={syncOptionsToBoolean('ApplyOutOfSyncOnly')}
+      />
+      <WizCheckbox
+        path="spec.template.spec.syncPolicy.automated.selfHeal"
+        label={t('Automatically sync when cluster state changes')}
+        onValueChange={(value: unknown, item?: ApplicationSet) => {
+          if (value === false && item) {
+            set(item, 'spec.template.spec.syncPolicy.automated', null)
+          }
+          if (value === true && item) {
+            if (get(item, 'spec.template.spec.syncPolicy.automated') !== null) {
+              set(item, 'spec.template.spec.syncPolicy.automated.prune', true)
+            }
+          }
+        }}
+      />
+      <WizCheckbox
+        id="create-namespace"
+        label={t('Automatically create namespace if it does not exist')}
+        path="spec.template.spec.syncPolicy.syncOptions"
+        inputValueToPathValue={booleanToSyncOptions('CreateNamespace')}
+        pathValueToInputValue={syncOptionsToBoolean('CreateNamespace')}
+      />
+      <WizCheckbox
+        id="validate"
+        label={t('Disable kubectl validation')}
+        path="spec.template.spec.syncPolicy.syncOptions"
+        inputValueToPathValue={booleanToSyncOptions('Validate')}
+        pathValueToInputValue={syncOptionsToBoolean('Validate')}
+      />
+      <WizCheckbox
+        id="propagation-policy"
+        label={t('Prune propagation policy')}
+        path="spec.template.spec.syncPolicy.syncOptions"
+        inputValueToPathValue={checkboxPrunePropagationPolicyToSyncOptions}
+        pathValueToInputValue={checkboxSyncOptionsToPrunePropagationPolicy}
+      >
+        <WizSelect
+          label={t('Propagation policy')}
+          options={[
+            { label: t('foreground'), value: 'foreground' },
+            { label: t('background'), value: 'background' },
+            { label: t('orphan'), value: 'orphan' },
+          ]}
+          path="spec.template.spec.syncPolicy.syncOptions"
+          inputValueToPathValue={prunePropagationPolicyToSyncOptions}
+          pathValueToInputValue={syncOptionsToPrunePropagationPolicy}
+          required
+        />
+      </WizCheckbox>
+    </Section>
+  )
 }
 
 function ArgoWizardPlacementSection(props: {
