@@ -687,9 +687,7 @@ describe('roleAssignmentHelper', () => {
         clusterSelection: { type: 'placements', placements: [] },
       }
 
-      mockAddRoleAssignment
-        .mockResolvedValueOnce(savedRoleAssignment)
-        .mockRejectedValueOnce(new Error('Network error'))
+      mockAddRoleAssignment.mockResolvedValueOnce(savedRoleAssignment).mockRejectedValueOnce(new Error('Network error'))
 
       const roleAssignmentsToSave: RoleAssignmentToSave[] = [
         {
