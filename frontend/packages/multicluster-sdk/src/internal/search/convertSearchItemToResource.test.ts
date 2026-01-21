@@ -883,7 +883,7 @@ describe('convertSearchItemToResource', () => {
     })
   })
 
-  describe('VirtualMachineInstancetype.instancetype.kubevirt.io', () => {
+  describe('VirtualMachineInstancetype.instancetype.kubevirt.io and VirtualMachineClusterInstancetype.instancetype.kubevirt.io', () => {
     it('should handle VirtualMachineInstancetype resource transformation', () => {
       const instancetypeItem = {
         ...baseSearchItem,
@@ -911,6 +911,35 @@ describe('convertSearchItemToResource', () => {
 
       expect(result.spec?.cpu?.guest).toBe(2)
       expect(result.spec?.memory?.guest).toBeUndefined()
+    })
+
+    it('should handle VirtualMachineClusterInstancetype resource transformation', () => {
+      const clusterInstancetypeItem = {
+        ...baseSearchItem,
+        kind: 'VirtualMachineClusterInstancetype',
+        apigroup: 'instancetype.kubevirt.io',
+        cpuGuest: '8',
+        memoryGuest: '17179869184',
+      }
+
+      const result = convert(clusterInstancetypeItem)
+
+      expect(result.spec?.cpu?.guest).toBe(8)
+      expect(result.spec?.memory?.guest).toBe(17179869184)
+    })
+
+    it('should handle VirtualMachineClusterInstancetype with partial fields', () => {
+      const clusterInstancetypeItem = {
+        ...baseSearchItem,
+        kind: 'VirtualMachineClusterInstancetype',
+        apigroup: 'instancetype.kubevirt.io',
+        memoryGuest: '4294967296',
+      }
+
+      const result = convert(clusterInstancetypeItem)
+
+      expect(result.spec?.cpu?.guest).toBeUndefined()
+      expect(result.spec?.memory?.guest).toBe(4294967296)
     })
   })
 
