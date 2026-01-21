@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { RoleAssignment } from '../../../resources'
 import { FlattenedRoleAssignment } from '../../../resources/clients/model/flattened-role-assignment'
-import { RoleAssignmentToSave } from '../../../resources/clients/model/role-assignment-to-save'
 import { deleteRoleAssignment } from '../../../resources/clients/multicluster-role-assignment-client'
 import { useGetPlacementClusters } from '../../../resources/clients/placement-client'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
@@ -12,7 +12,6 @@ import { wizardDataToRoleAssignmentToSave } from '../../../wizards/RoleAssignmen
 import { RoleAssignmentWizardFormData } from '../../../wizards/RoleAssignment/types'
 import { RoleAssignmentPreselected } from './model/role-assignment-preselected'
 import { existingRoleAssignmentsBySubjectRole, saveAllRoleAssignments } from './roleAssignmentModalHelper'
-import { RoleAssignment } from '../../../resources'
 
 type RoleAssignmentWizardModalWrapperProps = {
   close: () => void
