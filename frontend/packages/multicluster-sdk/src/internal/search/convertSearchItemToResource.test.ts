@@ -95,7 +95,7 @@ describe('convertSearchItemToResource', () => {
       }
 
       const result = convert(itemWithUndefinedLabels)
-      expect(result.metadata?.labels).toEqual({})
+      expect(result.metadata?.labels).toBeUndefined()
     })
 
     it('should handle labels with spaces', () => {

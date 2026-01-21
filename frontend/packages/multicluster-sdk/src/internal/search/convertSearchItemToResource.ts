@@ -65,6 +65,41 @@ const parseConditionString = (conditionString: string): Array<{ type: string; st
 }
 
 /**
+ * Parses a map string from search results into an object.
+ * @param mapString - A semicolon-separated string of key-value pairs in "key=value" format
+ * @returns An object with the key-value pairs, or undefined if the input is nullish or not a string
+ */
+const parseMapString = (mapString: string): Record<string, string> | undefined => {
+  if (mapString === undefined || mapString === null || typeof mapString !== 'string') {
+    return undefined
+  }
+  return Object.fromEntries(mapString.split(';').map((pair: string) => pair.trimStart().split('=')))
+}
+
+/**
+ * Creates a resource object with the basic metadata available from search results.
+ * @param item - The search result item
+ * @returns A resource object with the appropriate nested fields
+ */
+const createResourceCommon = (item: any): any => {
+  const resource: any = {
+    cluster: item.cluster,
+    apiVersion: item.apigroup ? `${item.apigroup}/${item.apiversion}` : item.apiversion,
+    kind: item.kind,
+    metadata: {
+      annotations: parseMapString(item.annotation),
+      creationTimestamp: item.created,
+      name: item.name,
+      namespace: item.namespace,
+      labels: parseMapString(item.label),
+      uid: item._uid?.split('/').pop() || undefined, // _uid field holds '<cluster>/<uid>' but may be removed in the future
+    },
+  }
+  setIfDefined(resource, 'status.conditions', parseConditionString(item.condition as string))
+  return resource
+}
+
+/**
  * Converts a flattened search result item into a properly structured Kubernetes resource.
  *
  * This function reverses the flattening performed by the search-collector, reconstructing
@@ -78,28 +113,10 @@ const parseConditionString = (conditionString: string): Array<{ type: string; st
 export function convertSearchItemToResource<R extends K8sResourceCommon | K8sResourceCommon[]>(
   item: any
 ): R extends (infer T)[] ? Fleet<T> : Fleet<R> {
-  let label: Record<string, string> = {}
-  if (item?.label) {
-    label = Object.fromEntries(item.label.split(';').map((pair: string) => pair.trimStart().split('=')))
-  }
-  const resource: any = {
-    cluster: item.cluster,
-    apiVersion: item.apigroup ? `${item.apigroup}/${item.apiversion}` : item.apiversion,
-    kind: item.kind,
-    metadata: {
-      creationTimestamp: item.created,
-      name: item.name,
-      namespace: item.namespace,
-      labels: label,
-    },
-  }
-  // _uid field holds '<cluster>/<uid>' but may be removed in the future
-  const uid = item._uid?.split('/').pop() || undefined
-  setIfDefined(resource, 'metadata.uid', uid)
-  setIfDefined(resource, 'status.conditions', parseConditionString(item.condition as string))
-  const resourceKey = getResourceKey(item.kind as string, item.apigroup)
+  const resource = createResourceCommon(item)
 
   // Reverse the flattening of specific resources by the search-collector
+  const resourceKey = getResourceKey(item.kind as string, item.apigroup)
   // See https://github.com/stolostron/search-collector/blob/main/pkg/transforms/genericResourceConfig.go
   switch (resourceKey) {
     case 'ClusterServiceVersion.operators.coreos.com':
