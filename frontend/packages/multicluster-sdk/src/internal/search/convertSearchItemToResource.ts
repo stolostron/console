@@ -14,6 +14,26 @@ const setIfDefined = (obj: any, path: string, value: any, valueToSet?: any): voi
     set(obj, path, valueToSet ?? value)
   }
 }
+
+/**
+ * Sets conditions on an object if the object does not have any conditions. This covers older versions of search that did not have condition handling enabled for this resource type.
+ * @param obj - The object to modify
+ * @param conditions - An array of conditions to set
+ */
+const setFallbackConditions = (obj: any, conditions: { type: string; value?: string }[]): void => {
+  if (!obj.status?.conditions) {
+    const mappedConditions = conditions
+      .filter((condition) => condition.value !== undefined)
+      .map((condition) => ({
+        type: condition.type,
+        status: condition.value,
+      }))
+    if (mappedConditions.length) {
+      setIfDefined(obj, 'status.conditions', mappedConditions)
+    }
+  }
+}
+
 /**
  * Converts a value to a boolean from an ACM search result, where properties are always strings.
  * @param value - The value to convert to a boolean
@@ -140,28 +160,14 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
       setIfDefined(resource, 'status.phase', item.phase)
       break
 
-    case 'ClusterOperator.config.openshift.io': {
+    case 'ClusterOperator.config.openshift.io':
       setIfDefined(resource, 'status.versions[0]', item.version, { name: 'operator', version: item.version })
-      if (!resource.status?.conditions) {
-        const conditions: any = []
-        setIfDefined(conditions, `[${conditions.length}]`, item.available, {
-          type: 'Available',
-          status: item.available,
-        })
-        setIfDefined(conditions, `[${conditions.length}]`, item.progressing, {
-          type: 'Progressing',
-          status: item.progressing,
-        })
-        setIfDefined(conditions, `[${conditions.length}]`, item.degraded, {
-          type: 'Degraded',
-          status: item.degraded,
-        })
-        if (conditions.length) {
-          setIfDefined(resource, 'status.conditions', conditions)
-        }
-      }
+      setFallbackConditions(resource, [
+        { type: 'Available', value: item.available },
+        { type: 'Progressing', value: item.progressing },
+        { type: 'Degraded', value: item.degraded },
+      ])
       break
-    }
 
     case 'ConfigMap':
       setIfDefined(resource, 'data.spec.param.maxDesiredLatencyMilliseconds', item.configParamMaxDesiredLatency)
@@ -208,7 +214,7 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
       setIfDefined(resource, 'status.phase', item.status)
       break
 
-    case 'Node': {
+    case 'Node':
       setIfDefined(resource, 'status.addresses[0]', item.ipAddress, {
         type: 'InternalIP',
         address: item.ipAddress,
@@ -217,7 +223,6 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
       setIfDefined(resource, 'status.capacity.memory', item.memoryCapacity)
       setIfDefined(resource, 'status.nodeInfo.architecture', item.architecture)
       break
-    }
 
     case 'PersistentVolumeClaim':
       setIfDefined(resource, 'spec.resources.requests.storage', item.requestedStorage)
@@ -266,49 +271,27 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
             ]
           : undefined
       setIfDefined(resource, 'spec.template.spec.volumes', volumes)
-      if (!resource.status?.conditions) {
-        const conditions: any = []
-        setIfDefined(conditions, `[${conditions.length}]`, item.ready, { type: 'Ready', status: item.ready })
-        setIfDefined(conditions, `[${conditions.length}]`, item.agentConnected, {
-          type: 'AgentConnected',
-          status: item.agentConnected,
-        })
-        if (conditions.length) {
-          setIfDefined(resource, 'status.conditions', conditions)
-        }
-      }
       setIfDefined(resource, 'status.printableStatus', item.status)
+      setFallbackConditions(resource, [
+        { type: 'Ready', value: item.ready },
+        { type: 'AgentConnected', value: item.agentConnected },
+      ])
       break
     }
 
-    case 'VirtualMachineClone.clone.kubevirt.io': {
+    case 'VirtualMachineClone.clone.kubevirt.io':
       setIfDefined(resource, 'spec.source.name', item.sourceName)
       setIfDefined(resource, 'spec.source.kind', item.sourceKind)
       setIfDefined(resource, 'spec.target.name', item.targetName)
       setIfDefined(resource, 'spec.target.kind', item.targetKind)
       setIfDefined(resource, 'status.phase', item.phase)
       break
-    }
 
-    case 'VirtualMachineInstance.kubevirt.io': {
+    case 'VirtualMachineInstance.kubevirt.io':
       setIfDefined(resource, 'spec.domain.cpu.cores', item.cpu, Number(item.cpu))
       setIfDefined(resource, 'spec.domain.cpu.sockets', item.cpuSockets, Number(item.cpuSockets))
       setIfDefined(resource, 'spec.domain.cpu.threads', item.cpuThreads, Number(item.cpuThreads))
       setIfDefined(resource, 'spec.domain.memory.guest', item.memory)
-      if (!resource.status?.conditions) {
-        const conditions: any = []
-        setIfDefined(conditions, `[${conditions.length}]`, item.liveMigratable, {
-          type: 'LiveMigratable',
-          status: item.liveMigratable,
-        })
-        setIfDefined(conditions, `[${conditions.length}]`, item.ready, {
-          type: 'Ready',
-          status: item.ready,
-        })
-        if (conditions.length) {
-          setIfDefined(resource, 'status.conditions', conditions)
-        }
-      }
       setIfDefined(resource, 'status.interfaces[0]', item.ipaddress, {
         ipAddress: item.ipaddress,
         name: 'default',
@@ -316,8 +299,11 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
       setIfDefined(resource, 'status.nodeName', item.node)
       setIfDefined(resource, 'status.phase', item.phase)
       setIfDefined(resource, 'status.guestOSInfo.version', item.osVersion)
+      setFallbackConditions(resource, [
+        { type: 'LiveMigratable', value: item.liveMigratable },
+        { type: 'Ready', value: item.ready },
+      ])
       break
-    }
 
     case 'VirtualMachineInstanceMigration.kubevirt.io':
       setIfDefined(resource, 'metadata.deletionTimestamp', item.deleted)
@@ -336,39 +322,24 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
       setIfDefined(resource, 'spec.memory.guest', item.memoryGuest, Number(item.memoryGuest))
       break
 
-    case 'VirtualMachineSnapshot.snapshot.kubevirt.io': {
-      if (!resource.status?.conditions) {
-        setIfDefined(resource, 'status.conditions[0]', item.ready, {
-          type: 'Ready',
-          status: item.ready,
-        })
-      }
+    case 'VirtualMachineSnapshot.snapshot.kubevirt.io':
       setIfDefined(resource, 'status.phase', item.phase)
-      if (item.indications && typeof item.indications === 'string') {
-        const indicationsArray = parseListString(item.indications)
-        setIfDefined(resource, 'status.indications', indicationsArray)
-      }
+      setIfDefined(resource, 'status.indications', parseListString(item.indications))
       setIfDefined(resource, 'spec.source.kind', item.sourceKind)
       setIfDefined(resource, 'spec.source.name', item.sourceName)
       setIfDefined(resource, 'status.readyToUse', item.readyToUse, convertToBoolean(item.readyToUse))
+      setFallbackConditions(resource, [{ type: 'Ready', value: item.ready }])
       break
-    }
 
-    case 'VirtualMachineRestore.snapshot.kubevirt.io': {
-      if (!resource.status?.conditions) {
-        setIfDefined(resource, 'status.conditions[0]', item.ready, {
-          type: 'Ready',
-          status: item.ready,
-        })
-      }
+    case 'VirtualMachineRestore.snapshot.kubevirt.io':
       setIfDefined(resource, 'status.restoreTime', item.restoreTime)
       setIfDefined(resource, 'status.complete', item.complete)
       setIfDefined(resource, 'spec.target.apiGroup', item.targetApiGroup)
       setIfDefined(resource, 'spec.target.kind', item.targetKind)
       setIfDefined(resource, 'spec.target.name', item.targetName)
       setIfDefined(resource, 'spec.virtualMachineSnapshotName', item.virtualMachineSnapshotName)
+      setFallbackConditions(resource, [{ type: 'Ready', value: item.ready }])
       break
-    }
 
     case 'VolumeSnapshot.snapshot.storage.k8s.io':
       setIfDefined(resource, 'spec.volumeSnapshotClassName', item.volumeSnapshotClassName)
