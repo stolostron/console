@@ -163,6 +163,26 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
       break
     }
 
+    case 'ConfigMap':
+      setIfDefined(resource, 'data.spec.param.maxDesiredLatencyMilliseconds', item.configParamMaxDesiredLatency)
+      setIfDefined(resource, 'data.spec.param.networkAttachmentDefinitionNamespace', item.configParamNADNamespace)
+      setIfDefined(resource, 'data.spec.param.networkAttachmentDefinitionName', item.configParamNADName)
+      setIfDefined(resource, 'data.spec.param.targetNode', item.configParamTargetNode)
+      setIfDefined(resource, 'data.spec.param.sourceNode', item.configParamSourceNode)
+      setIfDefined(resource, 'data.spec.param.sampleDurationSeconds', item.configParamSampleDuration)
+      setIfDefined(resource, 'data.spec.timeout', item.configTimeout)
+      setIfDefined(resource, 'data.status.completionTimestamp', item.configCompletionTimestamp)
+      setIfDefined(resource, 'data.status.failureReason', item.configFailureReason)
+      setIfDefined(resource, 'data.status.startTimestamp', item.configStartTimestamp)
+      setIfDefined(resource, 'data.status.succeeded', item.configSucceeded)
+      setIfDefined(resource, 'data.status.result.avgLatencyNanoSec', item.configStatusAVGLatencyNano)
+      setIfDefined(resource, 'data.status.result.maxLatencyNanoSec', item.configStatusMaxLatencyNano)
+      setIfDefined(resource, 'data.status.result.minLatencyNanoSec', item.configStatusMinLatencyNano)
+      setIfDefined(resource, 'data.status.result.measurementDurationSec', item.configStatusMeasurementDuration)
+      setIfDefined(resource, 'data.status.result.targetNode', item.configStatusTargetNode)
+      setIfDefined(resource, 'data.status.result.sourceNode', item.configStatusSourceNode)
+      break
+
     case 'DataImportCron.cdi.kubevirt.io':
       setIfDefined(resource, 'spec.managedDataSource', item.managedDataSource)
       break

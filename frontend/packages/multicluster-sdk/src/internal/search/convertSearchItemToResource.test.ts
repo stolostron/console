@@ -357,6 +357,87 @@ describe('convertSearchItemToResource', () => {
     })
   })
 
+  describe('ConfigMap', () => {
+    it('should handle ConfigMap resource transformation with network latency test config', () => {
+      const configMapItem = {
+        ...baseSearchItem,
+        kind: 'ConfigMap',
+        apigroup: '',
+        configParamMaxDesiredLatency: '1000',
+        configParamNADNamespace: 'openshift-cnv',
+        configParamNADName: 'my-nad',
+        configParamTargetNode: 'worker-1',
+        configParamSourceNode: 'worker-2',
+        configParamSampleDuration: '30',
+        configTimeout: '60',
+        configCompletionTimestamp: '2025-01-15T12:00:00Z',
+        configStartTimestamp: '2025-01-15T11:59:00Z',
+        configSucceeded: 'true',
+        configStatusAVGLatencyNano: '500000',
+        configStatusMaxLatencyNano: '800000',
+        configStatusMinLatencyNano: '200000',
+        configStatusMeasurementDuration: '30',
+        configStatusTargetNode: 'worker-1',
+        configStatusSourceNode: 'worker-2',
+      }
+
+      const result = convert(configMapItem)
+
+      expect(result.data?.spec?.param?.maxDesiredLatencyMilliseconds).toBe('1000')
+      expect(result.data?.spec?.param?.networkAttachmentDefinitionNamespace).toBe('openshift-cnv')
+      expect(result.data?.spec?.param?.networkAttachmentDefinitionName).toBe('my-nad')
+      expect(result.data?.spec?.param?.targetNode).toBe('worker-1')
+      expect(result.data?.spec?.param?.sourceNode).toBe('worker-2')
+      expect(result.data?.spec?.param?.sampleDurationSeconds).toBe('30')
+      expect(result.data?.spec?.timeout).toBe('60')
+      expect(result.data?.status?.completionTimestamp).toBe('2025-01-15T12:00:00Z')
+      expect(result.data?.status?.startTimestamp).toBe('2025-01-15T11:59:00Z')
+      expect(result.data?.status?.succeeded).toBe('true')
+      expect(result.data?.status?.result?.avgLatencyNanoSec).toBe('500000')
+      expect(result.data?.status?.result?.maxLatencyNanoSec).toBe('800000')
+      expect(result.data?.status?.result?.minLatencyNanoSec).toBe('200000')
+      expect(result.data?.status?.result?.measurementDurationSec).toBe('30')
+      expect(result.data?.status?.result?.targetNode).toBe('worker-1')
+      expect(result.data?.status?.result?.sourceNode).toBe('worker-2')
+    })
+
+    it('should handle ConfigMap with failure reason', () => {
+      const configMapItem = {
+        ...baseSearchItem,
+        kind: 'ConfigMap',
+        apigroup: '',
+        configParamTargetNode: 'worker-1',
+        configParamSourceNode: 'worker-2',
+        configStartTimestamp: '2025-01-15T11:59:00Z',
+        configFailureReason: 'Connection timeout',
+        configSucceeded: 'false',
+      }
+
+      const result = convert(configMapItem)
+
+      expect(result.data?.spec?.param?.targetNode).toBe('worker-1')
+      expect(result.data?.spec?.param?.sourceNode).toBe('worker-2')
+      expect(result.data?.status?.startTimestamp).toBe('2025-01-15T11:59:00Z')
+      expect(result.data?.status?.failureReason).toBe('Connection timeout')
+      expect(result.data?.status?.succeeded).toBe('false')
+    })
+
+    it('should handle ConfigMap with partial fields', () => {
+      const configMapItem = {
+        ...baseSearchItem,
+        kind: 'ConfigMap',
+        apigroup: '',
+        configParamTargetNode: 'worker-1',
+      }
+
+      const result = convert(configMapItem)
+
+      expect(result.data?.spec?.param?.targetNode).toBe('worker-1')
+      expect(result.data?.spec?.param?.sourceNode).toBeUndefined()
+      expect(result.data?.status?.result).toBeUndefined()
+    })
+  })
+
   describe('DataImportCron.cdi.kubevirt.io', () => {
     it('should handle DataImportCron resource transformation', () => {
       const dataImportCronItem = {
