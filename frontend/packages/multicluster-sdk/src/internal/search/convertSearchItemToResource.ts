@@ -220,6 +220,15 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
       break
     }
 
+    case 'VirtualMachineClone.clone.kubevirt.io': {
+      setIfDefined(resource, 'spec.source.name', item.sourceName)
+      setIfDefined(resource, 'spec.source.kind', item.sourceKind)
+      setIfDefined(resource, 'spec.target.name', item.targetName)
+      setIfDefined(resource, 'spec.target.kind', item.targetKind)
+      setIfDefined(resource, 'status.phase', item.phase)
+      break
+    }
+
     case 'VirtualMachineInstance.kubevirt.io': {
       setIfDefined(resource, 'spec.domain.cpu.cores', item.cpu, Number(item.cpu))
       setIfDefined(resource, 'spec.domain.cpu.sockets', item.cpuSockets, Number(item.cpuSockets))

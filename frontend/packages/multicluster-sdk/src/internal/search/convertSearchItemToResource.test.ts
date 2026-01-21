@@ -711,6 +711,48 @@ describe('convertSearchItemToResource', () => {
     })
   })
 
+  describe('VirtualMachineClone.clone.kubevirt.io', () => {
+    it('should handle VirtualMachineClone resource transformation', () => {
+      const vmCloneItem = {
+        ...baseSearchItem,
+        kind: 'VirtualMachineClone',
+        apigroup: 'clone.kubevirt.io',
+        sourceKind: 'VirtualMachine',
+        sourceName: 'source-vm',
+        targetKind: 'VirtualMachine',
+        targetName: 'cloned-vm',
+        phase: 'Succeeded',
+      }
+
+      const result = convert(vmCloneItem)
+
+      expect(result.spec?.source?.kind).toBe('VirtualMachine')
+      expect(result.spec?.source?.name).toBe('source-vm')
+      expect(result.spec?.target?.kind).toBe('VirtualMachine')
+      expect(result.spec?.target?.name).toBe('cloned-vm')
+      expect(result.status?.phase).toBe('Succeeded')
+    })
+
+    it('should handle VirtualMachineClone with partial fields', () => {
+      const vmCloneItem = {
+        ...baseSearchItem,
+        kind: 'VirtualMachineClone',
+        apigroup: 'clone.kubevirt.io',
+        sourceKind: 'VirtualMachine',
+        sourceName: 'my-vm',
+        phase: 'Running',
+      }
+
+      const result = convert(vmCloneItem)
+
+      expect(result.spec?.source?.kind).toBe('VirtualMachine')
+      expect(result.spec?.source?.name).toBe('my-vm')
+      expect(result.spec?.target?.kind).toBeUndefined()
+      expect(result.spec?.target?.name).toBeUndefined()
+      expect(result.status?.phase).toBe('Running')
+    })
+  })
+
   describe('VirtualMachineInstance.kubevirt.io', () => {
     it('should handle VirtualMachineInstance resource transformation', () => {
       const vmiItem = {
