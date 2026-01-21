@@ -10,7 +10,7 @@ import {
   MulticlusterRoleAssignmentNamespace,
   RoleAssignment,
 } from '../multicluster-role-assignment'
-import { Placement } from '../placement'
+import { GlobalPlacementName, Placement } from '../placement'
 import { createResource, deleteResource, patchResource } from '../utils'
 import { getResource, IRequestResult, ResourceError, ResourceErrorCode } from '../utils/resource-request'
 import { createForClusterSets as createForClusterSetsBinding } from './managed-cluster-set-binding-client'
@@ -385,7 +385,7 @@ export const addRoleAssignment = async (
     throw new ResourceError(ResourceErrorCode.BadRequest, 'Duplicate role assignment detected.')
   }
 
-  if (roleAssignment.clusterNames?.length || roleAssignment.clusterSetNames?.length) {
+  if (roleAssignment.clusterNames?.length || roleAssignment.clusterSetNames?.length || roleAssignment.isGlobalScope) {
     const placements: Placement[] = await createAdditionalRoleAssignmentResources(roleAssignment, {
       existingManagedClusterSetBindings,
       existingPlacements,
@@ -504,19 +504,36 @@ export const getPlacementsForRoleAssignment = (
   roleAssignment: RoleAssignmentToSave,
   placementClusters: PlacementClusters[]
 ): Placement[] => {
-  const relevantPlacementClusters = placementClusters.filter(
-    (placementCluster) => placementCluster.placement.metadata.namespace === MulticlusterRoleAssignmentNamespace
-  )
-
-  const placementClustersForClusters = roleAssignment.clusterNames
-    ? relevantPlacementClusters.filter((placementCluster) =>
-        isPlacementClustersExactMatch(placementCluster.clusters, roleAssignment.clusterNames)
+  if (roleAssignment.isGlobalScope) {
+    const globalPlacement = placementClusters
+      .map((placementCluster) => placementCluster.placement)
+      .find(
+        (placement) =>
+          placement.metadata.namespace === MulticlusterRoleAssignmentNamespace &&
+          placement.metadata.name === GlobalPlacementName
       )
-    : []
-  const placementClustersForClusterSets = relevantPlacementClusters.filter((placementCluster) =>
-    isPlacementClusterSetsSubset(placementCluster.clusterSetNames, roleAssignment.clusterSetNames)
-  )
-  return [...placementClustersForClusters, ...placementClustersForClusterSets].map(
-    (placementCluster) => placementCluster.placement
-  )
+    if (globalPlacement === undefined) {
+      throw new ResourceError(
+        ResourceErrorCode.BadRequest,
+        `Global placement not found. Expected placement with name: ${GlobalPlacementName} and namespace: ${MulticlusterRoleAssignmentNamespace}.`
+      )
+    }
+    return [globalPlacement]
+  } else {
+    const relevantPlacementClusters = placementClusters.filter(
+      (placementCluster) => placementCluster.placement.metadata.namespace === MulticlusterRoleAssignmentNamespace
+    )
+
+    const placementClustersForClusters = roleAssignment.clusterNames
+      ? relevantPlacementClusters.filter((placementCluster) =>
+          isPlacementClustersExactMatch(placementCluster.clusters, roleAssignment.clusterNames)
+        )
+      : []
+    const placementClustersForClusterSets = relevantPlacementClusters.filter((placementCluster) =>
+      isPlacementClusterSetsSubset(placementCluster.clusterSetNames, roleAssignment.clusterSetNames)
+    )
+    return [...placementClustersForClusters, ...placementClustersForClusterSets].map(
+      (placementCluster) => placementCluster.placement
+    )
+  }
 }

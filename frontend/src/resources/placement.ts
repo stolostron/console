@@ -12,6 +12,8 @@ export type PlacementApiVersionBetaType = 'cluster.open-cluster-management.io/v1
 export const PlacementKind = 'Placement'
 export type PlacementKindType = 'Placement'
 
+export const GlobalPlacementName = 'global'
+
 export const PlacementDefinition: IResourceDefinition = {
   apiVersion: PlacementApiVersionAlpha,
   kind: PlacementKind,

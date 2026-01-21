@@ -5,6 +5,7 @@ import { RoleAssignment, RoleAssignmentStatus } from '../../multicluster-role-as
 export interface RoleAssignmentToSave extends Pick<RoleAssignment, 'clusterRole' | 'targetNamespaces'> {
   subject: Pick<Subject, 'name' | 'kind'>
   status?: RoleAssignmentStatus
+  isGlobalScope: boolean
   clusterNames?: string[]
   clusterSetNames?: string[]
 }
