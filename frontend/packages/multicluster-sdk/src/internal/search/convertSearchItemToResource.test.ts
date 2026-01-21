@@ -85,7 +85,7 @@ describe('convertSearchItemToResource', () => {
       }
 
       const result = convert(itemWithoutLabels)
-      expect(result.metadata?.labels).toEqual({})
+      expect(result.metadata?.labels).toBeUndefined()
     })
 
     it('should handle undefined labels', () => {
@@ -134,7 +134,7 @@ describe('convertSearchItemToResource', () => {
       }
 
       const result = convert(itemWithEmptyAnnotations)
-      expect(result.metadata?.annotations).toEqual({})
+      expect(result.metadata?.annotations).toBeUndefined()
     })
 
     it('should handle undefined annotations', () => {

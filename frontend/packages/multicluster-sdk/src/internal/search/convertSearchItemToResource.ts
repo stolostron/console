@@ -67,13 +67,28 @@ const parseConditionString = (conditionString: string): Array<{ type: string; st
 /**
  * Parses a map string from search results into an object.
  * @param mapString - A semicolon-separated string of key-value pairs in "key=value" format
- * @returns An object with the key-value pairs, or undefined if the input is nullish or not a string
+ * @returns An object with the key-value pairs, or undefined if the input falsy or not a string
  */
 const parseMapString = (mapString: string): Record<string, string> | undefined => {
-  if (mapString === undefined || mapString === null || typeof mapString !== 'string') {
+  if (!mapString || typeof mapString !== 'string') {
     return undefined
   }
   return Object.fromEntries(mapString.split(';').map((pair: string) => pair.trimStart().split('=')))
+}
+
+/**
+ * Parses a list string from search results into an array of strings.
+ * @param listString - A semicolon-separated string of values
+ * @returns An array with the values, or undefined if the input is falsy or not a string
+ */
+const parseListString = (listString: string): string[] | undefined => {
+  if (!listString || typeof listString !== 'string') {
+    return undefined
+  }
+  return listString
+    .split(';')
+    .map((value: string) => value.trim())
+    .filter(Boolean)
 }
 
 /**
@@ -215,29 +230,20 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
       setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/flavor"]', item.flavor)
       setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/os"]', item.osName)
       setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/workload"]', item.workload)
-      if (item.dataVolumeNames && typeof item.dataVolumeNames === 'string') {
-        const dataVolumeNamesList = item.dataVolumeNames.split(';').filter((name: string) => name.trim() !== '')
-        if (dataVolumeNamesList.length > 0) {
-          const volumes = dataVolumeNamesList.map((name: string) => ({
-            dataVolume: { name: name.trim() },
-          }))
-          setIfDefined(resource, 'spec.template.spec.volumes', volumes)
-        }
-      }
-
-      if (item.pvcClaimNames && typeof item.pvcClaimNames === 'string') {
-        const pvcClaimNamesList = item.pvcClaimNames.split(';').filter((name: string) => name.trim() !== '')
-        if (pvcClaimNamesList.length > 0) {
-          const pvcVolumes = pvcClaimNamesList.map((claimName: string) => ({
-            persistentVolumeClaim: { claimName: claimName.trim() },
-          }))
-          if (resource.spec?.template?.spec?.volumes) {
-            resource.spec.template.spec.volumes.push(...pvcVolumes)
-          } else {
-            setIfDefined(resource, 'spec.template.spec.volumes', pvcVolumes)
-          }
-        }
-      }
+      const dataVolumeNamesList = parseListString(item.dataVolumeNames)
+      const pvcClaimNamesList = parseListString(item.pvcClaimNames)
+      const volumes =
+        dataVolumeNamesList || pvcClaimNamesList
+          ? [
+              ...(dataVolumeNamesList || []).map((name: string) => ({
+                dataVolume: { name },
+              })),
+              ...(pvcClaimNamesList || []).map((claimName: string) => ({
+                persistentVolumeClaim: { claimName },
+              })),
+            ]
+          : undefined
+      setIfDefined(resource, 'spec.template.spec.volumes', volumes)
       if (!resource.status?.conditions) {
         const conditions: any = []
         setIfDefined(conditions, `[${conditions.length}]`, item.ready, { type: 'Ready', status: item.ready })
@@ -317,7 +323,7 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
       }
       setIfDefined(resource, 'status.phase', item.phase)
       if (item.indications && typeof item.indications === 'string') {
-        const indicationsArray = item.indications.split(';')
+        const indicationsArray = parseListString(item.indications)
         setIfDefined(resource, 'status.indications', indicationsArray)
       }
       setIfDefined(resource, 'spec.source.kind', item.sourceKind)
