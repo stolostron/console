@@ -41,11 +41,11 @@ export const RoleAssignmentWizardModalWrapper = ({
 
   useEffect(() => {
     if (savedRoleAssignments.length > 0 && multiClusterRoleAssignments) {
-      const allRoleAssignmentNames = multiClusterRoleAssignments.flatMap(
-        (mcra) => mcra.spec.roleAssignments?.map((ra) => ra.name) ?? []
+      const allRoleAssignmentNames = new Set(
+        multiClusterRoleAssignments.flatMap((mcra) => mcra.spec.roleAssignments?.map((ra) => ra.name) ?? [])
       )
       const allSaved = savedRoleAssignments.every((savedRoleAssignment) =>
-        allRoleAssignmentNames.includes(savedRoleAssignment.name)
+        allRoleAssignmentNames.has(savedRoleAssignment.name)
       )
       if (allSaved) {
         setSavedRoleAssignments([])
