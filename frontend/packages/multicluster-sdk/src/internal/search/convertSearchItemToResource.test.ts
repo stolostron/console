@@ -112,6 +112,55 @@ describe('convertSearchItemToResource', () => {
     })
   })
 
+  describe('annotation parsing', () => {
+    it('should parse annotations correctly', () => {
+      const itemWithAnnotations = {
+        ...baseSearchItem,
+        annotation: 'description=My resource;owner=team-a;priority=high',
+      }
+
+      const result = convert(itemWithAnnotations)
+      expect(result.metadata?.annotations).toEqual({
+        description: 'My resource',
+        owner: 'team-a',
+        priority: 'high',
+      })
+    })
+
+    it('should handle empty annotations', () => {
+      const itemWithEmptyAnnotations = {
+        ...baseSearchItem,
+        annotation: '',
+      }
+
+      const result = convert(itemWithEmptyAnnotations)
+      expect(result.metadata?.annotations).toEqual({})
+    })
+
+    it('should handle undefined annotations', () => {
+      const itemWithUndefinedAnnotations = {
+        ...baseSearchItem,
+        annotation: undefined,
+      }
+
+      const result = convert(itemWithUndefinedAnnotations)
+      expect(result.metadata?.annotations).toBeUndefined()
+    })
+
+    it('should handle annotations with spaces', () => {
+      const itemWithSpacedAnnotations = {
+        ...baseSearchItem,
+        annotation: ' description=Test annotation; owner=team-b',
+      }
+
+      const result = convert(itemWithSpacedAnnotations)
+      expect(result.metadata?.annotations).toEqual({
+        description: 'Test annotation',
+        owner: 'team-b',
+      })
+    })
+  })
+
   describe('_uid field handling', () => {
     it('should process _uid field in "<cluster>/<uid>" format correctly', () => {
       const itemWithClusterUid = {
