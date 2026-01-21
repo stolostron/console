@@ -321,6 +321,7 @@ const createFlattenedRoleAssignment = (
   clusterRole,
   clusterSelection: { type: 'placements', placements: [] },
   clusterNames: [],
+  clusterSetNames: [],
   targetNamespaces: [],
   relatedMulticlusterRoleAssignment: {} as MulticlusterRoleAssignment,
 })

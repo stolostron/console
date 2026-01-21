@@ -48,6 +48,7 @@ const mockRoleAssignment: FlattenedRoleAssignment = {
     ],
   },
   clusterNames: ['production', 'staging'],
+  clusterSetNames: [],
   targetNamespaces: ['default', 'kube-system', 'test-ns'],
   subject: { name: 'test-user', kind: 'User' },
 }
