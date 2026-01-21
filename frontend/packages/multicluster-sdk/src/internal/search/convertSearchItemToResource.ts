@@ -14,6 +14,19 @@ const setIfDefined = (obj: any, path: string, value: any, valueToSet?: any): voi
     set(obj, path, valueToSet ?? value)
   }
 }
+/**
+ * Converts a value to a boolean from an ACM search result, where properties are always strings.
+ * @param value - The value to convert to a boolean
+ * @returns The boolean value of the input value
+ */
+const convertToBoolean = (value: any) => {
+  if (typeof value === 'boolean') {
+    return value
+  } else if (typeof value === 'string') {
+    return value.toLowerCase() === 'true'
+  }
+  return false
+}
 
 /**
  * Generates a resource key from the kind and optional API group.
@@ -261,7 +274,7 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
       }
       setIfDefined(resource, 'spec.source.kind', item.sourceKind)
       setIfDefined(resource, 'spec.source.name', item.sourceName)
-      setIfDefined(resource, 'status.readyToUse', item.readyToUse)
+      setIfDefined(resource, 'status.readyToUse', item.readyToUse, convertToBoolean(item.readyToUse))
       break
     }
 

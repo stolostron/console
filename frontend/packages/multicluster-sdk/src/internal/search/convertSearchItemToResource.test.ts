@@ -878,6 +878,41 @@ describe('convertSearchItemToResource', () => {
       expect(result.status?.indications).toEqual(['Online'])
     })
 
+    it('should handle VirtualMachineSnapshot with partial fields', () => {
+      const snapshotItem = {
+        ...baseSearchItem,
+        kind: 'VirtualMachineSnapshot',
+        apigroup: 'snapshot.kubevirt.io',
+        phase: 'InProgress',
+        sourceKind: 'VirtualMachine',
+        sourceName: 'my-vm',
+      }
+
+      const result = convert(snapshotItem)
+
+      expect(result.status?.phase).toBe('InProgress')
+      expect(result.spec?.source?.kind).toBe('VirtualMachine')
+      expect(result.spec?.source?.name).toBe('my-vm')
+      expect(result.status?.conditions).toBeUndefined()
+      expect(result.status?.indications).toBeUndefined()
+      expect(result.status?.readyToUse).toBeUndefined()
+    })
+
+    it('should handle VirtualMachineSnapshot with readyToUse false', () => {
+      const snapshotItem = {
+        ...baseSearchItem,
+        kind: 'VirtualMachineSnapshot',
+        apigroup: 'snapshot.kubevirt.io',
+        ready: 'False',
+        readyToUse: 'false',
+      }
+
+      const result = convert(snapshotItem)
+
+      expect(result.status?.conditions).toEqual([{ type: 'Ready', status: 'False' }])
+      expect(result.status?.readyToUse).toBe(false)
+    })
+
     it('should use condition string over ready field if provided', () => {
       const snapshotItem = {
         ...baseSearchItem,
