@@ -455,7 +455,7 @@ export const RoleAssignmentWizardModal = ({
                     cancelButtonProps: { isDisabled: isLoading },
                   }}
                 >
-                  <ReviewStepContent formData={formData} preselected={preselected} />
+                  <ReviewStepContent formData={formData} preselected={preselected} isEditing={isEditing} />
                 </WizardStep>
               </Wizard>
             </DataContext.Provider>

@@ -17,9 +17,10 @@ import { ArrowRightIcon } from '@patternfly/react-icons'
 interface ReviewStepContentProps {
   formData: RoleAssignmentWizardFormData
   preselected?: RoleAssignmentWizardModalProps['preselected']
+  isEditing?: boolean
 }
 
-export const ReviewStepContent = ({ formData, preselected }: ReviewStepContentProps) => {
+export const ReviewStepContent = ({ formData, preselected, isEditing }: ReviewStepContentProps) => {
   const { t } = useTranslation()
 
   const namespacesDisplay = useMemo(() => {
@@ -31,7 +32,7 @@ export const ReviewStepContent = ({ formData, preselected }: ReviewStepContentPr
         hasCurrentNamespaces &&
         JSON.stringify(preselected?.namespaces?.sort()) !== JSON.stringify(formData.scope.namespaces?.sort()))
 
-    if (!namespacesChanged) {
+    if (!isEditing || !namespacesChanged) {
       return hasCurrentNamespaces ? formData.scope.namespaces!.join(', ') : t('Full access')
     }
 
@@ -42,7 +43,7 @@ export const ReviewStepContent = ({ formData, preselected }: ReviewStepContentPr
         <div>{hasCurrentNamespaces ? formData.scope.namespaces!.join(', ') : t('Full access')}</div>
       </div>
     )
-  }, [preselected?.namespaces, formData.scope.namespaces, t])
+  }, [preselected?.namespaces, formData.scope.namespaces, t, isEditing])
 
   const getClusterNames = ({
     selectedClusters,
@@ -84,7 +85,7 @@ export const ReviewStepContent = ({ formData, preselected }: ReviewStepContentPr
     const original = originalClusterNames || t('None selected')
     const current = currentClusterNames || t('None selected')
 
-    if (original === current) {
+    if (!isEditing || original === current) {
       return current
     }
     return (
@@ -94,13 +95,13 @@ export const ReviewStepContent = ({ formData, preselected }: ReviewStepContentPr
         <div>{current}</div>
       </div>
     )
-  }, [originalClusterNames, currentClusterNames, t])
+  }, [originalClusterNames, currentClusterNames, t, isEditing])
 
   const roleDisplay = useMemo(() => {
     const original = preselected?.roles?.[0] ?? t('No role selected')
     const current = formData.roles?.[0] ?? t('No role selected')
 
-    if (original === current) {
+    if (!isEditing || original === current) {
       return current
     }
     return (
@@ -110,7 +111,7 @@ export const ReviewStepContent = ({ formData, preselected }: ReviewStepContentPr
         <div>{current}</div>
       </div>
     )
-  }, [preselected?.roles, formData.roles, t])
+  }, [preselected?.roles, formData.roles, t, isEditing])
 
   return (
     <div>
