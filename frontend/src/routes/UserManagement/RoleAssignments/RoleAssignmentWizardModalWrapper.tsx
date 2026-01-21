@@ -1,16 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useContext } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { FlattenedRoleAssignment } from '../../../resources/clients/model/flattened-role-assignment'
+import { RoleAssignmentToSave } from '../../../resources/clients/model/role-assignment-to-save'
+import { deleteRoleAssignment } from '../../../resources/clients/multicluster-role-assignment-client'
+import { useGetPlacementClusters } from '../../../resources/clients/placement-client'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmToastContext } from '../../../ui-components'
-import { RoleAssignmentPreselected } from './model/role-assignment-preselected'
-import { useGetPlacementClusters } from '../../../resources/clients/placement-client'
-import { existingRoleAssignmentsBySubjectRole, saveAllRoleAssignments } from './roleAssignmentModalHelper'
 import { RoleAssignmentWizardModal } from '../../../wizards/RoleAssignment/RoleAssignmentWizardModal'
 import { wizardDataToRoleAssignmentToSave } from '../../../wizards/RoleAssignment/roleAssignmentWizardHelper'
 import { RoleAssignmentWizardFormData } from '../../../wizards/RoleAssignment/types'
-import { FlattenedRoleAssignment } from '../../../resources/clients/model/flattened-role-assignment'
-import { deleteRoleAssignment } from '../../../resources/clients/multicluster-role-assignment-client'
+import { RoleAssignmentPreselected } from './model/role-assignment-preselected'
+import { existingRoleAssignmentsBySubjectRole, saveAllRoleAssignments } from './roleAssignmentModalHelper'
+import { RoleAssignment } from '../../../resources'
 
 type RoleAssignmentWizardModalWrapperProps = {
   close: () => void
@@ -25,6 +27,9 @@ export const RoleAssignmentWizardModalWrapper = ({
   preselected,
   editingRoleAssignment,
 }: RoleAssignmentWizardModalWrapperProps) => {
+  const [savedRoleAssignments, setSavedRoleAssignments] = useState<RoleAssignment[]>([])
+  const [isSaving, setIsSaving] = useState<boolean>(false)
+
   const { multiclusterRoleAssignmentState } = useSharedAtoms()
   const multiClusterRoleAssignments = useRecoilValue(multiclusterRoleAssignmentState)
   const placementClusters = useGetPlacementClusters()
@@ -35,7 +40,24 @@ export const RoleAssignmentWizardModalWrapper = ({
   const toastContext = useContext(AcmToastContext)
   const { t } = useTranslation()
 
+  useEffect(() => {
+    if (savedRoleAssignments.length > 0 && multiClusterRoleAssignments) {
+      const allRoleAssignmentNames = multiClusterRoleAssignments.flatMap(
+        (mcra) => mcra.spec.roleAssignments?.map((ra) => ra.name) ?? []
+      )
+      const allSaved = savedRoleAssignments.every((savedRoleAssignment) =>
+        allRoleAssignmentNames.includes(savedRoleAssignment.name)
+      )
+      if (allSaved) {
+        setSavedRoleAssignments([])
+        setIsSaving(false)
+        close()
+      }
+    }
+  }, [savedRoleAssignments, multiClusterRoleAssignments, close])
+
   const saveFromWizard = async (data: RoleAssignmentWizardFormData) => {
+    setIsSaving(true)
     if (editingRoleAssignment) {
       try {
         await deleteRoleAssignment(editingRoleAssignment).promise
@@ -48,6 +70,7 @@ export const RoleAssignmentWizardModalWrapper = ({
           type: 'danger',
           autoClose: true,
         })
+        setIsSaving(false)
         close()
         return
       }
@@ -79,7 +102,7 @@ export const RoleAssignmentWizardModalWrapper = ({
       placementClusters
     )
 
-    await saveAllRoleAssignments(
+    saveAllRoleAssignments(
       roleAssignmentsToSave,
       existingBySubjectRole,
       managedClusterSetBindings,
@@ -88,7 +111,8 @@ export const RoleAssignmentWizardModalWrapper = ({
       t,
       !!editingRoleAssignment
     )
-    close()
+      .then((roleAssignments) => setSavedRoleAssignments(roleAssignments))
+      .catch(() => setIsSaving(false))
   }
 
   return (
@@ -98,6 +122,7 @@ export const RoleAssignmentWizardModalWrapper = ({
       onSubmit={saveFromWizard}
       isEditing={!!editingRoleAssignment}
       preselected={preselected}
+      isLoading={isSaving}
     />
   )
 }

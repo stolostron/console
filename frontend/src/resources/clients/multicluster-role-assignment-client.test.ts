@@ -1421,8 +1421,7 @@ describe('multicluster-role-assignment-client', function () {
           })
 
           expect(result).toBeDefined()
-          expect(result.promise).toBeDefined()
-          await expect(result.promise).resolves.toBeDefined()
+          expect(result.name).toBeDefined()
           expect(mockCreateResource).toHaveBeenCalled()
         }
       )
@@ -1443,7 +1442,8 @@ describe('multicluster-role-assignment-client', function () {
             existingPlacements,
           })
 
-          await expect(result.promise).resolves.toBeDefined()
+          expect(result).toBeDefined()
+          expect(result.name).toBeDefined()
           expect(mockPatchResourceForAdd).toHaveBeenCalled()
         }
       )
@@ -1529,7 +1529,8 @@ describe('multicluster-role-assignment-client', function () {
           existingPlacements: [],
         })
 
-        await expect(result.promise).resolves.toBeDefined()
+        expect(result).toBeDefined()
+        expect(result.name).toBeDefined()
         expect(mockPatchResourceForAdd).toHaveBeenCalled()
       })
     })

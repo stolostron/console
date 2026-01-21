@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RoleAssignmentWizardModal } from './RoleAssignmentWizardModal'
 import React from 'react'
@@ -1006,6 +1006,166 @@ describe('RoleAssignmentWizardModal - Wizard Step Validation', () => {
       // - clusterSetAccessLevel: 'Cluster set role assignment'
       // - selectedClustersAccessLevel: 'Cluster role assignment'
       // These are verified by the component's internal state management
+    })
+  })
+
+  describe('isLoading prop behavior', () => {
+    describe('WizardHeader close button', () => {
+      it('should hide close button when isLoading is true', async () => {
+        renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isLoading={true} />)
+
+        await waitFor(() => {
+          expect(screen.getByText('Create role assignment')).toBeInTheDocument()
+        })
+
+        // The WizardHeader has isCloseHidden={isLoading}, so close button should be hidden
+        expect(screen.queryByLabelText('Close wizard')).not.toBeInTheDocument()
+      })
+
+      it('should show close button when isLoading is false', async () => {
+        renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isLoading={false} />)
+
+        await waitFor(() => {
+          expect(screen.getByText('Create role assignment')).toBeInTheDocument()
+        })
+
+        // The WizardHeader has isCloseHidden={isLoading}, so close button should be visible
+        expect(screen.getByLabelText('Close wizard')).toBeInTheDocument()
+      })
+
+      it('should show close button when isLoading is undefined', async () => {
+        renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} />)
+
+        await waitFor(() => {
+          expect(screen.getByText('Create role assignment')).toBeInTheDocument()
+        })
+
+        // When isLoading is undefined, isCloseHidden should be falsy
+        expect(screen.getByLabelText('Close wizard')).toBeInTheDocument()
+      })
+    })
+
+    describe('Review step footer buttons', () => {
+      // Helper to navigate to Review step by clicking through the wizard
+      const navigateToReviewStep = async () => {
+        // Click Next from Scope step (default starting step)
+        let nextButton = screen.getByRole('button', { name: 'Next' })
+        fireEvent.click(nextButton)
+
+        // Wait for Roles step and select a role
+        await waitFor(() => {
+          expect(mockRolesList).toHaveBeenCalled()
+        })
+
+        // Select a role using the mock's callback
+        const rolesListProps = mockRolesList.mock.calls[mockRolesList.mock.calls.length - 1][0]
+        act(() => {
+          rolesListProps.onRadioSelect('admin')
+        })
+
+        // Wait for Next button to be enabled
+        await waitFor(() => {
+          nextButton = screen.getByRole('button', { name: 'Next' })
+          expect(nextButton).not.toBeDisabled()
+        })
+
+        // Click Next to go to Review step
+        fireEvent.click(nextButton)
+
+        // The review step content should now be visible
+        // Use document.querySelector directly since screen.getByTestId has issues with the wizard
+        const reviewContent = document.querySelector('[data-testid="review-step-content"]')
+        expect(reviewContent).toBeInTheDocument()
+      }
+
+      beforeEach(() => {
+        mockRolesList.mockClear()
+      })
+
+      it('should disable Back button when isLoading is true', async () => {
+        renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isLoading={true} />)
+
+        await waitFor(() => {
+          expect(screen.getByText('Create role assignment')).toBeInTheDocument()
+        })
+
+        await navigateToReviewStep()
+
+        const backButton = screen.getByRole('button', { name: 'Back' })
+        expect(backButton).toBeDisabled()
+      })
+
+      it('should enable Back button when isLoading is false', async () => {
+        renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isLoading={false} />)
+
+        await waitFor(() => {
+          expect(screen.getByText('Create role assignment')).toBeInTheDocument()
+        })
+
+        await navigateToReviewStep()
+
+        const backButton = screen.getByRole('button', { name: 'Back' })
+        expect(backButton).not.toBeDisabled()
+      })
+
+      it('should disable Cancel button when isLoading is true', async () => {
+        renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isLoading={true} />)
+
+        await waitFor(() => {
+          expect(screen.getByText('Create role assignment')).toBeInTheDocument()
+        })
+
+        await navigateToReviewStep()
+
+        const cancelButton = screen.getByRole('button', { name: 'Cancel' })
+        expect(cancelButton).toBeDisabled()
+      })
+
+      it('should enable Cancel button when isLoading is false', async () => {
+        renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isLoading={false} />)
+
+        await waitFor(() => {
+          expect(screen.getByText('Create role assignment')).toBeInTheDocument()
+        })
+
+        await navigateToReviewStep()
+
+        const cancelButton = screen.getByRole('button', { name: 'Cancel' })
+        expect(cancelButton).not.toBeDisabled()
+      })
+
+      it('should show loading spinner on Create button when isLoading is true', async () => {
+        renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isLoading={true} />)
+
+        await waitFor(() => {
+          expect(screen.getByText('Create role assignment')).toBeInTheDocument()
+        })
+
+        await navigateToReviewStep()
+
+        // Find the Create button - use getAllByRole and filter since the loading state may affect accessible name
+        const allButtons = screen.getAllByRole('button')
+        const createButton = allButtons.find((b) => b.textContent === 'Create')
+        expect(createButton).toBeInTheDocument()
+        // PatternFly adds pf-m-in-progress class when isLoading is true
+        expect(createButton).toHaveClass('pf-m-in-progress')
+      })
+
+      it('should not show loading spinner on Create button when isLoading is false', async () => {
+        renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isLoading={false} />)
+
+        await waitFor(() => {
+          expect(screen.getByText('Create role assignment')).toBeInTheDocument()
+        })
+
+        await navigateToReviewStep()
+
+        // Find the Create button - use getAllByRole and filter since the loading state may affect accessible name
+        const allButtons = screen.getAllByRole('button')
+        const createButton = allButtons.find((b) => b.textContent === 'Create')
+        expect(createButton).toBeInTheDocument()
+        expect(createButton).not.toHaveClass('pf-m-in-progress')
+      })
     })
   })
 

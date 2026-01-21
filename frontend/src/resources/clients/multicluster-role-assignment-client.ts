@@ -377,7 +377,7 @@ export const addRoleAssignment = async (
     existingManagedClusterSetBindings?: ManagedClusterSetBinding[]
     existingPlacements: Placement[]
   }
-): Promise<IRequestResult<MulticlusterRoleAssignment>> => {
+): Promise<RoleAssignment> => {
   const existingRoleAssignments = existingMulticlusterRoleAssignment?.spec.roleAssignments || []
   const isUnique = validateRoleAssignmentName(roleAssignment, existingRoleAssignments)
 
@@ -393,7 +393,7 @@ export const addRoleAssignment = async (
 
     const mappedRoleAssignment = mapRoleAssignmentBeforeSaving(roleAssignment, placements)
     if (existingMulticlusterRoleAssignment) {
-      return patchResource(existingMulticlusterRoleAssignment, {
+      patchResource(existingMulticlusterRoleAssignment, {
         spec: {
           ...existingMulticlusterRoleAssignment.spec,
           roleAssignments: [...existingMulticlusterRoleAssignment.spec.roleAssignments, mappedRoleAssignment],
@@ -414,8 +414,9 @@ export const addRoleAssignment = async (
         },
         status: {},
       }
-      return createResource<MulticlusterRoleAssignment>(newMultiClusterRoleAssignment)
+      createResource<MulticlusterRoleAssignment>(newMultiClusterRoleAssignment)
     }
+    return mappedRoleAssignment
   } else {
     throw new ResourceError(ResourceErrorCode.BadRequest, 'No cluster or cluster set selected.')
   }
