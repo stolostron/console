@@ -308,6 +308,33 @@ describe('convertSearchItemToResource', () => {
     })
   })
 
+  describe('DataImportCron.cdi.kubevirt.io', () => {
+    it('should handle DataImportCron resource transformation', () => {
+      const dataImportCronItem = {
+        ...baseSearchItem,
+        kind: 'DataImportCron',
+        apigroup: 'cdi.kubevirt.io',
+        managedDataSource: 'fedora-image',
+      }
+
+      const result = convert(dataImportCronItem)
+
+      expect(result.spec?.managedDataSource).toBe('fedora-image')
+    })
+
+    it('should handle DataImportCron with undefined managedDataSource', () => {
+      const dataImportCronItem = {
+        ...baseSearchItem,
+        kind: 'DataImportCron',
+        apigroup: 'cdi.kubevirt.io',
+      }
+
+      const result = convert(dataImportCronItem)
+
+      expect(result.spec?.managedDataSource).toBeUndefined()
+    })
+  })
+
   describe('DataSource.cdi.kubevirt.io', () => {
     it('should handle DataSource resource transformation with PVC source', () => {
       const dataSourceItem = {

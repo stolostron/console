@@ -131,6 +131,10 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
       break
     }
 
+    case 'DataImportCron.cdi.kubevirt.io':
+      setIfDefined(resource, 'spec.managedDataSource', item.managedDataSource)
+      break
+
     case 'DataSource.cdi.kubevirt.io':
       setIfDefined(resource, 'spec.source.pvc.name', item.pvcName)
       setIfDefined(resource, 'spec.source.pvc.namespace', item.pvcNamespace)
