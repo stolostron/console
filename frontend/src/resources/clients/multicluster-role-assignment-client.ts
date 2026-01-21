@@ -39,6 +39,8 @@ interface MulticlusterRoleAssignmentQuery {
   roles?: string[]
   /** Filter by cluster names (resolved from placements) */
   clusterNames?: string[]
+  /** Filter by cluster set names (resolved from placements) */
+  clusterSetNames?: string[]
 }
 
 /**
@@ -53,7 +55,8 @@ interface MulticlusterRoleAssignmentQuery {
 const roleAssignmentToFlattenedRoleAssignment = (
   multiClusterRoleAssignment: MulticlusterRoleAssignment,
   roleAssignment: RoleAssignment,
-  clusterNames: string[]
+  clusterNames: string[],
+  clusterSetNames: string[]
 ): FlattenedRoleAssignment => ({
   ...roleAssignment,
   subject: {
@@ -63,6 +66,7 @@ const roleAssignmentToFlattenedRoleAssignment = (
   relatedMulticlusterRoleAssignment: multiClusterRoleAssignment,
   status: multiClusterRoleAssignment?.status?.roleAssignments?.find((e) => e.name === roleAssignment.name),
   clusterNames,
+  clusterSetNames,
 })
 
 /**
@@ -106,10 +110,11 @@ const flattenMulticlusterRoleAssignment = (
       roleAssignmentToFlattenedRoleAssignment(
         multiclusterRoleAssignment,
         roleAssignment,
-        getClustersForRoleAssignment(roleAssignment, placementClusters)
+        getClustersForRoleAssignment(roleAssignment, placementClusters),
+        placementClusters.flatMap((placementCluster) => placementCluster.clusterSetNames ?? [])
       )
     )
-    .filter((flattenedRoleAssignment) => isClusterOrRoleMatch(flattenedRoleAssignment, query))
+    .filter((flattenedRoleAssignment) => isClusterOrClustersetOrRoleMatch(flattenedRoleAssignment, query))
 
 /**
  * Checks if a MulticlusterRoleAssignment's subject matches the query filters.
@@ -143,7 +148,7 @@ const isSubjectMatch = (
  * @param query - Query containing cluster and role filters
  * @returns True if the assignment matches all provided filters
  */
-const isClusterOrRoleMatch = (
+const isClusterOrClustersetOrRoleMatch = (
   roleAssignment: FlattenedRoleAssignment,
   query: MulticlusterRoleAssignmentQuery
 ): boolean => {
@@ -151,6 +156,10 @@ const isClusterOrRoleMatch = (
     // Filter by cluster names
     case query.clusterNames?.length &&
       !roleAssignment.clusterNames.some((clusterName) => query.clusterNames!.includes(clusterName)):
+      return false
+    // Filter by cluster set names
+    case query.clusterSetNames?.length &&
+      !roleAssignment.clusterSetNames.some((clusterSetName) => query.clusterSetNames!.includes(clusterSetName)):
       return false
     // Filter by roles
     case query.roles?.length && !query.roles.includes(roleAssignment.clusterRole):

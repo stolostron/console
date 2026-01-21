@@ -32,6 +32,7 @@ import { NodePoolsPageContent } from './ManagedClusters/ClusterDetails/ClusterNo
 import { MachinePoolsPageContent } from './ManagedClusters/ClusterDetails/ClusterMachinePools/ClusterMachinePools'
 import { ClustersSettingsPageContent } from './ManagedClusters/ClusterDetails/ClusterSettings/ClusterSettings'
 import RoleAssignmentsPage from './RoleAssignmentsPage'
+import ClusterSetRoleAssignmentsPage from './ClusterSets/ClusterSetRoleAssignmentsPage'
 
 const clustersChildPath = createRoutePathFunction(NavigationPath.clusters)
 
@@ -80,6 +81,10 @@ export default function Clusters() {
             element={<ClusterSetClusterPoolsPageContent />}
           />
           <Route path={clustersChildPath(NavigationPath.clusterSetAccess)} element={<ClusterSetAccessManagement />} />
+          <Route
+            path={clustersChildPath(NavigationPath.clusterSetRoleAssignments)}
+            element={<ClusterSetRoleAssignmentsPage />}
+          />
         </Route>
         <Route path={clustersChildPath(NavigationPath.clusterSetManage)} element={<ClusterSetManageResourcesPage />} />
         <Route
