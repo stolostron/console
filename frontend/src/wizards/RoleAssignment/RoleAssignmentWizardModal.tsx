@@ -3,7 +3,7 @@ import { DataContext } from '@patternfly-labs/react-form-wizard/lib/src/contexts
 import { ItemContext } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ItemContext'
 import { Drawer, DrawerContent, SelectOption, Wizard, WizardHeader, WizardStep } from '@patternfly/react-core'
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS } from '../../lib/doc-util'
@@ -246,6 +246,19 @@ export const RoleAssignmentWizardModal = ({
     (formData.scopeType === 'Select cluster sets' && hasNoClusterSets) ||
     (formData.scopeType === 'Select clusters' && hasNoClusters)
 
+  const hasChanges = useMemo(() => {
+    if (!isEditing) return true
+
+    const roleChanged = preselected?.roles?.[0] !== formData.roles?.[0]
+    const clustersChanged =
+      JSON.stringify(preselected?.clusterNames?.sort()) !==
+      JSON.stringify(formData.selectedClusters?.map((c) => c.metadata?.name || c.name || c).sort())
+    const namespacesChanged =
+      JSON.stringify(preselected?.namespaces?.sort()) !== JSON.stringify(formData.scope.namespaces?.sort())
+
+    return roleChanged || clustersChanged || namespacesChanged
+  }, [isEditing, preselected, formData])
+
   const scopeSubSteps = [
     <WizardStep
       key="scope-selection"
@@ -453,6 +466,7 @@ export const RoleAssignmentWizardModal = ({
                     nextButtonProps: { isLoading },
                     isBackDisabled: isLoading,
                     cancelButtonProps: { isDisabled: isLoading },
+                    isNextDisabled: isEditing && !hasChanges,
                   }}
                 >
                   <ReviewStepContent formData={formData} preselected={preselected} isEditing={isEditing} />
