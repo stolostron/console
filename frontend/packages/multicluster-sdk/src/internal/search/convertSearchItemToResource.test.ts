@@ -958,6 +958,40 @@ describe('convertSearchItemToResource', () => {
     })
   })
 
+  describe('VolumeSnapshot.snapshot.storage.k8s.io', () => {
+    it('should handle VolumeSnapshot resource transformation', () => {
+      const volumeSnapshotItem = {
+        ...baseSearchItem,
+        kind: 'VolumeSnapshot',
+        apigroup: 'snapshot.storage.k8s.io',
+        volumeSnapshotClassName: 'csi-hostpath-snapclass',
+        persistentVolumeClaimName: 'my-pvc',
+        restoreSize: '10Gi',
+      }
+
+      const result = convert(volumeSnapshotItem)
+
+      expect(result.spec?.volumeSnapshotClassName).toBe('csi-hostpath-snapclass')
+      expect(result.spec?.source?.persistentVolumeClaimName).toBe('my-pvc')
+      expect(result.status?.restoreSize).toBe('10Gi')
+    })
+
+    it('should handle VolumeSnapshot with partial fields', () => {
+      const volumeSnapshotItem = {
+        ...baseSearchItem,
+        kind: 'VolumeSnapshot',
+        apigroup: 'snapshot.storage.k8s.io',
+        volumeSnapshotClassName: 'csi-aws-vsc',
+      }
+
+      const result = convert(volumeSnapshotItem)
+
+      expect(result.spec?.volumeSnapshotClassName).toBe('csi-aws-vsc')
+      expect(result.spec?.source?.persistentVolumeClaimName).toBeUndefined()
+      expect(result.status?.restoreSize).toBeUndefined()
+    })
+  })
+
   describe('unknown resource types', () => {
     it('should handle unknown resource types with basic transformation', () => {
       const unknownItem = {

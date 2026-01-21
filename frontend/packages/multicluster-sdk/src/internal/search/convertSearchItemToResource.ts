@@ -280,6 +280,12 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
       setIfDefined(resource, 'spec.virtualMachineSnapshotName', item.virtualMachineSnapshotName)
       break
     }
+
+    case 'VolumeSnapshot.snapshot.storage.k8s.io':
+      setIfDefined(resource, 'spec.volumeSnapshotClassName', item.volumeSnapshotClassName)
+      setIfDefined(resource, 'spec.source.persistentVolumeClaimName', item.persistentVolumeClaimName)
+      setIfDefined(resource, 'status.restoreSize', item.restoreSize)
+      break
   }
   return resource
 }
