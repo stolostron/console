@@ -160,8 +160,13 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
       break
 
     case 'DataVolume.cdi.kubevirt.io':
+      setIfDefined(resource, 'spec.source.pvc.name', item.pvcName)
+      setIfDefined(resource, 'spec.source.pvc.namespace', item.pvcNamespace)
+      setIfDefined(resource, 'spec.source.snapshot.name', item.snapshotName)
+      setIfDefined(resource, 'spec.source.snapshot.namespace', item.snapshotNamespace)
       setIfDefined(resource, 'spec.storage.resources.requests.storage', item.size)
       setIfDefined(resource, 'spec.storage.storageClassName', item.storageClassName)
+      setIfDefined(resource, 'status.phase', item.phase)
       break
 
     case 'Namespace':

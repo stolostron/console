@@ -439,12 +439,48 @@ describe('convertSearchItemToResource', () => {
         apigroup: 'cdi.kubevirt.io',
         size: '10Gi',
         storageClassName: 'ssd-csi',
+        phase: 'Succeeded',
       }
 
       const result = convert(dataVolumeItem)
 
       expect(result.spec?.storage?.resources?.requests?.storage).toBe('10Gi')
       expect(result.spec?.storage?.storageClassName).toBe('ssd-csi')
+      expect(result.status?.phase).toBe('Succeeded')
+    })
+
+    it('should handle DataVolume with PVC source', () => {
+      const dataVolumeItem = {
+        ...baseSearchItem,
+        kind: 'DataVolume',
+        apigroup: 'cdi.kubevirt.io',
+        pvcName: 'source-pvc',
+        pvcNamespace: 'source-namespace',
+        size: '10Gi',
+      }
+
+      const result = convert(dataVolumeItem)
+
+      expect(result.spec?.source?.pvc?.name).toBe('source-pvc')
+      expect(result.spec?.source?.pvc?.namespace).toBe('source-namespace')
+      expect(result.spec?.storage?.resources?.requests?.storage).toBe('10Gi')
+    })
+
+    it('should handle DataVolume with snapshot source', () => {
+      const dataVolumeItem = {
+        ...baseSearchItem,
+        kind: 'DataVolume',
+        apigroup: 'cdi.kubevirt.io',
+        snapshotName: 'source-snapshot',
+        snapshotNamespace: 'snapshot-namespace',
+        size: '20Gi',
+      }
+
+      const result = convert(dataVolumeItem)
+
+      expect(result.spec?.source?.snapshot?.name).toBe('source-snapshot')
+      expect(result.spec?.source?.snapshot?.namespace).toBe('snapshot-namespace')
+      expect(result.spec?.storage?.resources?.requests?.storage).toBe('20Gi')
     })
 
     it('should handle DataVolume with partial fields', () => {
@@ -459,6 +495,9 @@ describe('convertSearchItemToResource', () => {
 
       expect(result.spec?.storage?.resources?.requests?.storage).toBe('20Gi')
       expect(result.spec?.storage?.storageClassName).toBeUndefined()
+      expect(result.spec?.source?.pvc?.name).toBeUndefined()
+      expect(result.spec?.source?.snapshot?.name).toBeUndefined()
+      expect(result.status?.phase).toBeUndefined()
     })
   })
 
