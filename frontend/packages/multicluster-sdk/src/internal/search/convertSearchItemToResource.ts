@@ -269,6 +269,11 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
       setIfDefined(resource, 'spec.vmiName', item.vmiName)
       break
 
+    case 'VirtualMachineInstancetype.instancetype.kubevirt.io':
+      setIfDefined(resource, 'spec.cpu.guest', item.cpuGuest, Number(item.cpuGuest))
+      setIfDefined(resource, 'spec.memory.guest', item.memoryGuest, Number(item.memoryGuest))
+      break
+
     case 'VirtualMachineSnapshot.snapshot.kubevirt.io': {
       if (!resource.status?.conditions) {
         setIfDefined(resource, 'status.conditions[0]', item.ready, {

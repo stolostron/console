@@ -883,6 +883,37 @@ describe('convertSearchItemToResource', () => {
     })
   })
 
+  describe('VirtualMachineInstancetype.instancetype.kubevirt.io', () => {
+    it('should handle VirtualMachineInstancetype resource transformation', () => {
+      const instancetypeItem = {
+        ...baseSearchItem,
+        kind: 'VirtualMachineInstancetype',
+        apigroup: 'instancetype.kubevirt.io',
+        cpuGuest: '4',
+        memoryGuest: '8589934592',
+      }
+
+      const result = convert(instancetypeItem)
+
+      expect(result.spec?.cpu?.guest).toBe(4)
+      expect(result.spec?.memory?.guest).toBe(8589934592)
+    })
+
+    it('should handle VirtualMachineInstancetype with partial fields', () => {
+      const instancetypeItem = {
+        ...baseSearchItem,
+        kind: 'VirtualMachineInstancetype',
+        apigroup: 'instancetype.kubevirt.io',
+        cpuGuest: '2',
+      }
+
+      const result = convert(instancetypeItem)
+
+      expect(result.spec?.cpu?.guest).toBe(2)
+      expect(result.spec?.memory?.guest).toBeUndefined()
+    })
+  })
+
   describe('VirtualMachineSnapshot.snapshot.kubevirt.io', () => {
     it('should handle VirtualMachineSnapshot resource transformation', () => {
       const snapshotItem = {
