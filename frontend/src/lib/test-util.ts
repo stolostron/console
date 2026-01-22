@@ -450,7 +450,7 @@ export const templateMaker = function (obj: unknown) {
 
 export const getMultipleMocks = (obj: unknown, repeat: number) => {
   const template = templateMaker(obj)
-  return Array.from(Array(repeat).keys()).map((inx) => {
+  return Array.from(new Array(repeat).keys()).map((inx) => {
     return template({ name: `cluster${inx + 1}` })
   })
 }

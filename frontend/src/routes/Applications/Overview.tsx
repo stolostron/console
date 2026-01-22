@@ -229,7 +229,7 @@ export function getAppNamespace(resource: IResource) {
 
 export const getApplicationStatuses = (resource: IResource, type: 'health' | 'synced' | 'deployed') => {
   const uidata = (resource as IUIResource).uidata
-  const allCounts = Array(ScoreColumnSize).fill(0) as number[]
+  const allCounts = new Array(ScoreColumnSize).fill(0) as number[]
   if (
     Array.isArray(uidata?.appClusterStatuses) &&
     uidata.appClusterStatuses.length > 0 &&
