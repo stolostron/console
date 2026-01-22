@@ -30,4 +30,5 @@ export interface RoleAssignmentWizardModalProps {
   onSubmit: (data: RoleAssignmentFormData) => void
   isEditing?: boolean
   preselected?: RoleAssignmentPreselected
+  isLoading?: boolean
 }

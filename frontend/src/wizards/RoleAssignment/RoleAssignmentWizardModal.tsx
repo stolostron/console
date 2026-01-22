@@ -76,6 +76,7 @@ export const RoleAssignmentWizardModal = ({
   onSubmit,
   isEditing,
   preselected,
+  isLoading,
 }: RoleAssignmentWizardModalProps) => {
   const { t } = useTranslation()
   const [isDrawerExpanded, setIsDrawerExpanded] = useState(false)
@@ -391,6 +392,7 @@ export const RoleAssignmentWizardModal = ({
                     }
                     descriptionId="role-assignment-wizard-description"
                     closeButtonAriaLabel={t('Close wizard')}
+                    isCloseHidden={isLoading}
                   />
                 }
               >
@@ -445,7 +447,13 @@ export const RoleAssignmentWizardModal = ({
                   key="review"
                   name={t('Review')}
                   id="review"
-                  footer={{ nextButtonText: isEditing ? t('Save') : t('Create'), onNext: handleSubmit }}
+                  footer={{
+                    nextButtonText: isEditing ? t('Save') : t('Create'),
+                    onNext: handleSubmit,
+                    nextButtonProps: { isLoading },
+                    isBackDisabled: isLoading,
+                    cancelButtonProps: { isDisabled: isLoading },
+                  }}
                 >
                   <ReviewStepContent formData={formData} preselected={preselected} />
                 </WizardStep>
