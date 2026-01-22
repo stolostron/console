@@ -11,6 +11,7 @@ import react from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import i18nJson from 'eslint-plugin-i18n-json'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -46,6 +47,7 @@ export default [
       'react-hooks': fixupPluginRules(reactHooks),
       prettier,
       'jsx-a11y': fixupPluginRules(jsxA11Y),
+      'i18n-json': fixupPluginRules(i18nJson),
     },
 
     languageOptions: {
