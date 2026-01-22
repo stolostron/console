@@ -390,8 +390,20 @@ describe('multicluster-role-assignment-client', function () {
 
       // Create mock MulticlusterRoleAssignments that reference the placements with cluster sets
       const mockMRAs: MulticlusterRoleAssignment[] = [
-        createMRAWithSingleRoleAndPlacement('mra-1', { name: 'user1', kind: UserKind }, 'role-1', 'admin', 'placement-1'),
-        createMRAWithSingleRoleAndPlacement('mra-2', { name: 'user2', kind: UserKind }, 'role-2', 'viewer', 'placement-2'),
+        createMRAWithSingleRoleAndPlacement(
+          'mra-1',
+          { name: 'user1', kind: UserKind },
+          'role-1',
+          'admin',
+          'placement-1'
+        ),
+        createMRAWithSingleRoleAndPlacement(
+          'mra-2',
+          { name: 'user2', kind: UserKind },
+          'role-2',
+          'viewer',
+          'placement-2'
+        ),
       ]
       useRecoilValueMock.mockReturnValue(mockMRAs)
 
