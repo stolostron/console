@@ -43,14 +43,17 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: useReviewS
   }
 
   const originalClusterNames = useMemo(
-    () => (oldData.clusterNames && oldData.clusterNames.length > 0 ? oldData.clusterNames.join(', ') : null),
+    () => (oldData.clusterNames && oldData.clusterNames.length > 0 ? oldData.clusterNames.sort().join(', ') : null),
     [oldData.clusterNames]
   )
 
   const currentClusterNames = useMemo(
     () =>
       newData.clusterNames && newData.clusterNames.length > 0
-        ? newData.clusterNames.map((c) => c.metadata?.name || c.name || c).join(', ')
+        ? newData.clusterNames
+            .map((c) => c.metadata?.name || c.name || c)
+            .sort()
+            .join(', ')
         : null,
     [newData.clusterNames]
   )
@@ -91,7 +94,7 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: useReviewS
 
   const clustersDisplay = useMemo(() => {
     const original = originalClusterNames || t('None selected')
-    const current = currentClusterNames || oldData.clusterNames?.join(', ') || t('None selected')
+    const current = currentClusterNames || t('None selected')
 
     return !isEditing || original === current ? (
       current
@@ -106,7 +109,7 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: useReviewS
         </div>
       </div>
     )
-  }, [originalClusterNames, currentClusterNames, oldData.clusterNames, t, isEditing])
+  }, [originalClusterNames, currentClusterNames, t, isEditing])
 
   const roleDisplay = useMemo(() => {
     const original = oldData.role ?? t('No role selected')
