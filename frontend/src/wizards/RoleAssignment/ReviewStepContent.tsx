@@ -83,7 +83,7 @@ export const ReviewStepContent = ({ formData, preselected, isEditing }: ReviewSt
 
   const clustersDisplay = useMemo(() => {
     const original = originalClusterNames || t('None selected')
-    const current = currentClusterNames || t('None selected')
+    const current = currentClusterNames || preselected?.clusterNames?.join(', ') || t('None selected')
 
     if (!isEditing || original === current) {
       return current
@@ -95,7 +95,7 @@ export const ReviewStepContent = ({ formData, preselected, isEditing }: ReviewSt
         <div>{current}</div>
       </div>
     )
-  }, [originalClusterNames, currentClusterNames, t, isEditing])
+  }, [originalClusterNames, currentClusterNames, preselected?.clusterNames, t, isEditing])
 
   const roleDisplay = useMemo(() => {
     const original = preselected?.roles?.[0] ?? t('No role selected')
