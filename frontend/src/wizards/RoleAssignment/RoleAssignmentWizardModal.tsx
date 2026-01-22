@@ -469,7 +469,12 @@ export const RoleAssignmentWizardModal = ({
                     isNextDisabled: isEditing && !hasChanges,
                   }}
                 >
-                  <ReviewStepContent formData={formData} preselected={preselected} isEditing={isEditing} />
+                  <ReviewStepContent
+                    formData={formData}
+                    preselected={preselected}
+                    isEditing={isEditing}
+                    hasChanges={hasChanges}
+                  />
                 </WizardStep>
               </Wizard>
             </DataContext.Provider>

@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
+  Alert,
   DescriptionList,
   DescriptionListDescription,
   DescriptionListGroup,
@@ -16,9 +17,10 @@ interface ReviewStepContentProps {
   formData: RoleAssignmentWizardFormData
   preselected?: RoleAssignmentWizardModalProps['preselected']
   isEditing?: boolean
+  hasChanges?: boolean
 }
 
-export const ReviewStepContent = ({ formData, preselected, isEditing }: ReviewStepContentProps) => {
+export const ReviewStepContent = ({ formData, preselected, isEditing, hasChanges }: ReviewStepContentProps) => {
   const { t } = useTranslation()
 
   const { clusterNames, clustersDisplay, namespacesDisplay, roleDisplay } = useReviewStepContent({
@@ -38,6 +40,14 @@ export const ReviewStepContent = ({ formData, preselected, isEditing }: ReviewSt
   return (
     <div>
       <GranularityStepContent title={t('Review')} titleSize="lg" description={''} />
+      {!hasChanges && isEditing && (
+        <Alert
+          variant="warning"
+          title={t('No changes have been made. Please modify or cancel to exit.')}
+          isInline
+          style={{ marginBottom: '16px' }}
+        />
+      )}
       {formData.subject && (
         <div style={{ marginBottom: '16px' }}>
           <DescriptionList>
