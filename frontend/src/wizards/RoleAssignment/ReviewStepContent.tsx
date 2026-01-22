@@ -7,12 +7,10 @@ import {
   Title,
 } from '@patternfly/react-core'
 import { useTranslation } from '../../lib/acm-i18next'
-import { GranularityStepContent } from './GranularityStepContent'
-import { RoleAssignmentWizardFormData, RoleAssignmentWizardModalProps } from './types'
-import { useMemo } from 'react'
-import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
 import { ManagedClusterSet } from '../../resources'
-import { ArrowRightIcon } from '@patternfly/react-icons'
+import { GranularityStepContent } from './GranularityStepContent'
+import { useReviewStepContent } from './ReviewStepContentHook'
+import { RoleAssignmentWizardFormData, RoleAssignmentWizardModalProps } from './types'
 
 interface ReviewStepContentProps {
   formData: RoleAssignmentWizardFormData
@@ -23,95 +21,19 @@ interface ReviewStepContentProps {
 export const ReviewStepContent = ({ formData, preselected, isEditing }: ReviewStepContentProps) => {
   const { t } = useTranslation()
 
-  const namespacesDisplay = useMemo(() => {
-    const hasOriginalNamespaces = preselected?.namespaces && preselected.namespaces.length > 0
-    const hasCurrentNamespaces = formData.scope.namespaces && formData.scope.namespaces.length > 0
-    const namespacesChanged =
-      hasOriginalNamespaces !== hasCurrentNamespaces ||
-      (hasOriginalNamespaces &&
-        hasCurrentNamespaces &&
-        JSON.stringify(preselected?.namespaces?.sort()) !== JSON.stringify(formData.scope.namespaces?.sort()))
-
-    if (!isEditing || !namespacesChanged) {
-      return hasCurrentNamespaces ? formData.scope.namespaces!.join(', ') : t('Full access')
-    }
-
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <div>{hasOriginalNamespaces ? preselected.namespaces!.join(', ') : t('Full access')}</div>
-        <ArrowRightIcon />
-        <div>{hasCurrentNamespaces ? formData.scope.namespaces!.join(', ') : t('Full access')}</div>
-      </div>
-    )
-  }, [preselected?.namespaces, formData.scope.namespaces, t, isEditing])
-
-  const getClusterNames = ({
-    selectedClusters,
-    clusterNames,
-  }: {
-    selectedClusters: RoleAssignmentWizardFormData['selectedClusters']
-    clusterNames: RoleAssignmentPreselected['clusterNames']
-  }): string | null => {
-    switch (true) {
-      case selectedClusters && selectedClusters.length > 0:
-        return selectedClusters.map((c) => c.metadata?.name || c.name || c).join(', ')
-      case clusterNames && clusterNames.length > 0:
-        return clusterNames.join(', ')
-      default:
-        return null
-    }
-  }
-
-  const originalClusterNames = useMemo(() => {
-    return preselected?.clusterNames && preselected.clusterNames.length > 0 ? preselected.clusterNames.join(', ') : null
-  }, [preselected?.clusterNames])
-
-  const currentClusterNames = useMemo(() => {
-    return formData.selectedClusters && formData.selectedClusters.length > 0
-      ? formData.selectedClusters.map((c) => c.metadata?.name || c.name || c).join(', ')
-      : null
-  }, [formData.selectedClusters])
-
-  const clusterNames = useMemo(
-    () =>
-      getClusterNames({
-        selectedClusters: formData.selectedClusters,
-        clusterNames: preselected?.clusterNames,
-      }),
-    [formData.selectedClusters, preselected?.clusterNames]
-  )
-
-  const clustersDisplay = useMemo(() => {
-    const original = originalClusterNames || t('None selected')
-    const current = currentClusterNames || preselected?.clusterNames?.join(', ') || t('None selected')
-
-    if (!isEditing || original === current) {
-      return current
-    }
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <div>{original}</div>
-        <ArrowRightIcon />
-        <div>{current}</div>
-      </div>
-    )
-  }, [originalClusterNames, currentClusterNames, preselected?.clusterNames, t, isEditing])
-
-  const roleDisplay = useMemo(() => {
-    const original = preselected?.roles?.[0] ?? t('No role selected')
-    const current = formData.roles?.[0] ?? t('No role selected')
-
-    if (!isEditing || original === current) {
-      return current
-    }
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <div>{original}</div>
-        <ArrowRightIcon />
-        <div>{current}</div>
-      </div>
-    )
-  }, [preselected?.roles, formData.roles, t, isEditing])
+  const { clusterNames, clustersDisplay, namespacesDisplay, roleDisplay } = useReviewStepContent({
+    oldData: {
+      clusterNames: preselected?.clusterNames,
+      namespaces: preselected?.namespaces,
+      role: preselected?.roles?.[0],
+    },
+    newData: {
+      clusterNames: formData.selectedClusters,
+      namespaces: formData.scope.namespaces,
+      role: formData.roles?.[0],
+    },
+    isEditing,
+  })
 
   return (
     <div>
@@ -207,9 +129,7 @@ export const ReviewStepContent = ({ formData, preselected, isEditing }: ReviewSt
               {t('Role')}
             </Title>
             <DescriptionListDescription>
-              <div style={{ margin: '0 16px' }}>
-                <strong>{roleDisplay}</strong>
-              </div>
+              <div style={{ margin: '0 16px' }}>{roleDisplay}</div>
             </DescriptionListDescription>
           </DescriptionListGroup>
         </DescriptionList>
