@@ -2,7 +2,12 @@
   "name": "@stolostron/eslint-config",
   "version": "0.0.0",
   "private": true,
-  "main": "index.js",
+  "type": "module",
+  "main": "index.mjs",
+  "exports": {
+    ".": "./index.mjs",
+    "./package.json": "./package.json"
+  },
   "license": "Apache-2.0",
   "devDependencies": {
     "@eslint/compat": "^2.0.0",
@@ -11,7 +16,7 @@
     "@typescript-eslint/eslint-plugin": "^8.53.1",
     "@typescript-eslint/parser": "^8.53.1",
     "eslint": "^9.39.2",
-    "eslint-config-prettier": "^9.1.0",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-jest": "^28.9.0",
     "eslint-plugin-jsx-a11y": "^6.8.0",

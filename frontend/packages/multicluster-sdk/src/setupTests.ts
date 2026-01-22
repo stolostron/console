@@ -1,14 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { configure } from '@testing-library/dom'
 import '@testing-library/jest-dom'
 import 'jest-axe/extend-expect'
 import JestFetchMock from 'jest-fetch-mock'
 import { TextEncoder } from 'util'
 import i18n from 'i18next'
-// eslint-disable-next-line @typescript-eslint/no-restricted-imports
+
 import { initReactI18next } from 'react-i18next'
 
 process.env.NODE_ENV = 'test'
