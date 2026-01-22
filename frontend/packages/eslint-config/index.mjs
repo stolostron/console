@@ -2,17 +2,13 @@
 import { fixupConfigRules, fixupPluginRules } from '@eslint/compat'
 import { FlatCompat } from '@eslint/eslintrc'
 import js from '@eslint/js'
-import typescriptEslint from '@typescript-eslint/eslint-plugin'
 import tsParser from '@typescript-eslint/parser'
-import jest from 'eslint-plugin-jest'
-import jsxA11Y from 'eslint-plugin-jsx-a11y'
+import i18nJson from 'eslint-plugin-i18n-json'
 import prettier from 'eslint-plugin-prettier'
 import react from 'eslint-plugin-react'
-import reactHooks from 'eslint-plugin-react-hooks'
+import unicorn from 'eslint-plugin-unicorn'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import i18nJson from 'eslint-plugin-i18n-json'
-import unicorn from 'eslint-plugin-unicorn'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -42,14 +38,12 @@ export default [
   ),
   {
     plugins: {
-      react,
-      '@typescript-eslint': fixupPluginRules(typescriptEslint),
-      jest: fixupPluginRules(jest),
-      'react-hooks': fixupPluginRules(reactHooks),
-      prettier,
-      'jsx-a11y': fixupPluginRules(jsxA11Y),
+      // Plugins already loaded by compat.extends: @typescript-eslint, jest, react-hooks, jsx-a11y
+      // Only define plugins not loaded via compat.extends
       'i18n-json': fixupPluginRules(i18nJson),
-      unicorn
+      prettier,
+      react,
+      unicorn,
     },
 
     languageOptions: {
