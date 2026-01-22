@@ -121,11 +121,6 @@ export default [
                 'Please use hooks from ./src/hooks/shared-react-query for ACM/MCE dynamic plugins common QueryClientProvider',
               name: '@tanstack/react-query',
             },
-            {
-              message: 'Truncate component is not available on OpenShift 4.10; use src/components/Trucate instead',
-              name: '@patternfly/react-core',
-              importNames: ['Truncate'],
-            },
           ],
 
           patterns: [
