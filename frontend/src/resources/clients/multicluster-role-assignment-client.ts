@@ -8,6 +8,7 @@ import {
   MulticlusterRoleAssignmentApiVersion,
   MulticlusterRoleAssignmentKind,
   MulticlusterRoleAssignmentNamespace,
+  PlacementRef,
   RoleAssignment,
 } from '../multicluster-role-assignment'
 import { Placement } from '../placement'
@@ -91,6 +92,9 @@ const getClustersForRoleAssignment = (
     ),
   ].sort((a, b) => a.localeCompare(b))
 
+const doesPlacementRefMatchesPlacement = (placementRef: PlacementRef, placementB: Placement) =>
+  placementRef.name === placementB.metadata.name && placementRef.namespace === placementB.metadata.namespace
+
 /**
  * Flattens a MulticlusterRoleAssignment into individual FlattenedRoleAssignment objects,
  * filtering by cluster or role match.
@@ -111,7 +115,15 @@ const flattenMulticlusterRoleAssignment = (
         multiclusterRoleAssignment,
         roleAssignment,
         getClustersForRoleAssignment(roleAssignment, placementClusters),
-        placementClusters.flatMap((placementCluster) => placementCluster.clusterSetNames ?? [])
+        placementClusters
+          .filter(
+            (placementCluster) =>
+              roleAssignment.clusterSelection.type === 'placements' &&
+              roleAssignment.clusterSelection.placements.some((roleAssignmentPlacement) =>
+                doesPlacementRefMatchesPlacement(roleAssignmentPlacement, placementCluster.placement)
+              )
+          )
+          .flatMap((placementCluster) => placementCluster.clusterSetNames ?? [])
       )
     )
     .filter((flattenedRoleAssignment) => isClusterOrClustersetOrRoleMatch(flattenedRoleAssignment, query))
