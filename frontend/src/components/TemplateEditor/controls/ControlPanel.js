@@ -653,7 +653,7 @@ class ControlPanel extends React.Component {
       const nname = controlData.find(({ id }) => id === 'name')
       if (nname) {
         if (control.active.length > 0) {
-          cname = control.updateNamePrefix + control.availableMap[control.active[0]].name.replace(/\W/g, '-')
+          cname = control.updateNamePrefix + control.availableMap[control.active[0]].name.replaceAll(/\W/g, '-')
         } else {
           cname = originalControlData.find(({ id }) => id === 'name').active
         }

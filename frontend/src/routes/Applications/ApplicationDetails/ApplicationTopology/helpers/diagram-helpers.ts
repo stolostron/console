@@ -54,19 +54,15 @@ export const getNodePropery = (
 ): DetailItem | undefined => {
   const dataObj = getNestedProperty(node, propPath)
 
-  let data = dataObj
-  if (data) {
-    data = JSON.stringify(data).replace(/:/g, '=')
-    data = data.replace(/{/g, '')
-    data = data.replace(/}/g, '')
-    data = data.replace(/"/g, '')
-    data = data.replace(/ /g, '')
-    data = data.replace(/\//g, ',')
-  } else {
-    if (defaultValue) {
-      data = defaultValue
-    }
-  }
+  const data = dataObj
+    ? JSON.stringify(dataObj)
+        .replaceAll(':', '=')
+        .replaceAll('{', '')
+        .replaceAll('}', '')
+        .replaceAll('"', '')
+        .replaceAll(' ', '')
+        .replaceAll('/', ',')
+    : defaultValue
 
   if (data !== undefined) {
     return {
@@ -207,7 +203,7 @@ export const createResourceSearchLink = (node: NodeLike, t: Translator): { type:
           id: (node as any).id,
           data: {
             action: 'show_search',
-            name: ((node as any).name && (node as any).name.replace(/ /g, '')) || clusterNameStr || 'undefined',
+            name: ((node as any).name && (node as any).name.replaceAll(' ', '')) || clusterNameStr || 'undefined',
             kind: 'cluster',
           },
           indent: true,

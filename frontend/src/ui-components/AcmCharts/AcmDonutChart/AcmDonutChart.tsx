@@ -120,7 +120,7 @@ export function AcmDonutChart(props: {
 
   if (props.loading) return loadingDonutChart(props.title, classes)
   return (
-    <Card className={classes.card} id={`${props.title.toLowerCase().replace(/\s+/g, '-')}-chart`}>
+    <Card className={classes.card} id={`${props.title.toLowerCase().replaceAll(/\s+/g, '-')}-chart`}>
       <CardTitle>
         {props.title} <Badge isRead>{badgeTotal}</Badge>
       </CardTitle>

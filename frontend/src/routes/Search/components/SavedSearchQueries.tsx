@@ -104,7 +104,7 @@ export default function SavedSearchQueries(props: {
         })
         .then((searchResults) => {
           generateSearchResultExport(
-            `${query.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
+            `${query.name.toLowerCase().replaceAll(/\s+/g, '-')}-${Date.now()}`,
             searchResults.data,
             searchDefinitions,
             toast,

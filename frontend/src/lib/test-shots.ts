@@ -72,7 +72,7 @@ const getSnapshot = (obj: any, unfiltered: boolean, customFilters?: string[] | u
       return value
     }
   }
-  const snapshot = JSON.stringify(obj, getReplacements(), '  ').replace(/"__FUNCTION__(.*)"/g, (_r, name) => {
+  const snapshot = JSON.stringify(obj, getReplacements(), '  ').replaceAll(/"__FUNCTION__(.*)"/g, (_r, name) => {
     return name === 'i18n' ? '(k)=>k' : `mock${name}`
   })
 

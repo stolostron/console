@@ -132,7 +132,7 @@ const addErrorDecorations = (monaco: Monaco, errors: any[], decorations: any[], 
       })
       squigglyTooltips.push({
         range,
-        message: startCase(message.replace(/\^*/g, '')).replace(/\n/g, '  '),
+        message: startCase(message.replaceAll(/\^*/g, '')).replaceAll(/\n/g, '  '),
       })
     }
     errors.push({ linePos, message })
