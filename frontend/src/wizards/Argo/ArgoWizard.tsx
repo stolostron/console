@@ -41,6 +41,8 @@ import { ClusterSetMonitor } from './ClusterSetMonitor'
 import { CreateArgoResources } from './CreateArgoResources'
 import { MultipleSourcesSelector } from './MultipleSourcesSelector'
 import { SourceSelector } from './SourceSelector'
+import { useYamlResources } from '../../routes/Applications/Applications'
+import { MultipleGeneratorSelector } from './MultipleGeneratorSelector'
 
 export interface Channel {
   metadata?: {
@@ -140,11 +142,11 @@ function onlyUnique(value: any, index: any, self: string | any[]) {
 
 export function ArgoWizard(props: ArgoWizardProps) {
   const { resources, isPullModel = false } = props
+  const { yamlResources } = useYamlResources()
   const applicationSet: any = resources?.find((resource) => resource.kind === ApplicationSetKind)
   const source = applicationSet?.spec.template.spec.source
   const sources = applicationSet?.spec.template.spec.sources
 
-  const requeueTimes = useMemo(() => [30, 60, 120, 180, 300], [])
   const { t } = useTranslation()
 
   const hubCluster = useMemo(
@@ -230,7 +232,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
   })
 
   let defaultData
-
+  console.log('yamlRkklesources', yamlResources)
   if (resources && resources.length > 0) {
     defaultData = resources
   } else {
@@ -500,20 +502,17 @@ export function ArgoWizard(props: ArgoWizardProps) {
                   }
                 }}
               />
-              <WizSelect
-                path="spec.generators.0.clusterDecisionResource.requeueAfterSeconds"
-                label={t('Requeue time')}
-                options={requeueTimes}
-                labelHelp={t('Cluster decision resource requeue time in seconds')}
-                required
-                disabled={disableForm}
-              />
             </Section>
           </WizItemSelector>
         </Step>
-        <Step id="template" label={t('Template')}>
+        <Step id="generators" label={t('Generators')}>
           <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
-            <Section label={t('Repository')}>
+            <MultipleGeneratorSelector resources={props.resources ?? []} disableForm={disableForm} />
+          </WizItemSelector>
+        </Step>
+        <Step id="repository" label={t('Repository')}>
+          <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
+            <Section label={t('Repository')} description={t('Repository of the applications to be created.')}>
               {source && !sources ? (
                 <SourceSelector gitChannels={gitChannels} channels={props.channels} helmChannels={helmChannels} />
               ) : (

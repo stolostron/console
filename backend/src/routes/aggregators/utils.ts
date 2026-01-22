@@ -214,6 +214,9 @@ export function computeAppSyncStatus(synced: ApplicationStatusEntry, app: ISearc
     case 'Synced':
       synced[StatusColumn.counts][ScoreColumn.healthy]++
       break
+    case 'OutOfSync':
+      synced[StatusColumn.counts][ScoreColumn.warning]++
+      break
     case 'Unknown':
       synced[StatusColumn.counts][ScoreColumn.unknown]++
       extractMessages(synced, app, app.syncStatus)
@@ -635,9 +638,9 @@ function getSubscriptionCluster(
         const placement = placementDecisions.find(
           (placementDecision) =>
             placementDecision.metadata.labels?.['cluster.open-cluster-management.io/placement'] ===
-              placementRef?.name ||
+            placementRef?.name ||
             placementDecision.metadata.labels?.['cluster.open-cluster-management.io/placementrule'] ===
-              placementRef?.name
+            placementRef?.name
         )
 
         const decisions = placement?.status?.decisions

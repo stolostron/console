@@ -1,0 +1,5 @@
+git:
+  repoURL: https://github.com/argoproj/argo-cd.git
+  revision: HEAD
+  directories:
+    - path: applicationset/examples/git-generator-directory/cluster-addons/*
