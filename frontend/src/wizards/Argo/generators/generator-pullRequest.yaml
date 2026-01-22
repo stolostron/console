@@ -1,12 +1,11 @@
 pullRequest:
   github:
-    owner: myorg
-    repo: myrepository
-    api: https://git.example.com/
+    owner:
+    repo:
+    api:
     tokenRef:
-      secretName: github-token
-      key: token
-    appSecretName: github-app-repo-creds
+      secretName:
+      key:
+    appSecretName:
     labels:
-      - preview
-  requeueAfterSeconds: 1800
+  requeueAfterSeconds: 300

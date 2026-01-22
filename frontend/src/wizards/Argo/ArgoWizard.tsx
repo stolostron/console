@@ -507,7 +507,13 @@ export function ArgoWizard(props: ArgoWizardProps) {
         </Step>
         <Step id="generators" label={t('Generators')}>
           <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
-            <MultipleGeneratorSelector resources={props.resources ?? []} disableForm={disableForm} />
+            <MultipleGeneratorSelector
+              resources={props.resources ?? []}
+              gitChannels={gitChannels}
+              channels={props.channels}
+              helmChannels={helmChannels}
+              disableForm={disableForm}
+            />
           </WizItemSelector>
         </Step>
         <Step id="repository" label={t('Repository')}>

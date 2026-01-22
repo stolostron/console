@@ -18,14 +18,29 @@ import {
   ItemContext,
   EditMode,
   WizArrayInput,
+  WizCheckbox,
   WizHidden,
+  WizKeyValue,
   WizSelect,
   Section,
   useData,
   WizTextInput,
+  WizMultiSelect,
 } from '@patternfly-labs/react-form-wizard'
 import { IResource } from '../common/resources/IResource'
 import { useTranslation } from '../../lib/acm-i18next'
+import { Channel } from './ArgoWizard'
+import { validateWebURL } from '../../lib/validation'
+import { GitRevisionSelect } from './common/GitRevisionSelect'
+
+export interface MultipleGeneratorSelectorProps {
+  resources: IResource[]
+  channels: Channel[] | undefined
+  gitChannels: string[]
+  helmChannels: string[]
+  disableForm: boolean
+
+}
 
 const fieldGroupBodyGapOverride = css`
   display: flex;
@@ -43,7 +58,7 @@ const hideLastChild = css`
   }
 `
 
-export function MultipleGeneratorSelector(props: { resources: IResource[], disableForm: boolean }) {
+export function MultipleGeneratorSelector(props: MultipleGeneratorSelectorProps) {
   const appSet = useContext(ItemContext) || ({} as IResource)
   const { update } = useData() // Wizard framework sets this context
   let generatorPath = 'spec.generators'
@@ -56,7 +71,7 @@ export function MultipleGeneratorSelector(props: { resources: IResource[], disab
 
   // if there are more than one generator and no matrix generator, add a matrix generator
   if (generators && generators.length > 1 && !matrixGenerator) {
-    set(appSet, 'spec.generators', [{matrix: {generators: generators}}], { preservePaths: false })
+    set(appSet, 'spec.generators', [{ matrix: { generators: generators } }], { preservePaths: false })
     update()
   }
   // if is one generator and a matrix generator, remove the matrix generator
@@ -72,7 +87,7 @@ export function MultipleGeneratorSelector(props: { resources: IResource[], disab
     <Section
       label={t('Generators')}
       description={t(
-        'Generators determine where applications are deployed by substituting values into a template from which applications are created. Up to two generators may be defined. '
+        'Generators determine where applications are deployed by substituting parameter values in a template from which applications are created. Up to two complementary generators may be defined. One might be used to define the clusters and the other the application names.'
       )}
     >
       <div className={`${fieldGroupBodyGapOverride} ${generators?.length >= 2 ? hideLastChild : ''}`}>
@@ -89,7 +104,7 @@ export function MultipleGeneratorSelector(props: { resources: IResource[], disab
           collapsedContent={<GeneratorCollapsedContent />}
           defaultCollapsed={editMode !== EditMode.Create}
         >
-          <GeneratorInputForm disableForm={props.disableForm} generatorPath={generatorPath} />
+          <GeneratorInputForm {...props} />
         </WizArrayInput>
       </div>
     </Section>
@@ -97,7 +112,7 @@ export function MultipleGeneratorSelector(props: { resources: IResource[], disab
 }
 
 function GeneratorCollapsedContent() {
- const generator = useContext(ItemContext)
+  const generator = useContext(ItemContext)
   const generatorType = getGeneratorType(generator)
   const { t } = useTranslation()
   return <div>
@@ -105,16 +120,19 @@ function GeneratorCollapsedContent() {
   </div>
 }
 
-function GeneratorInputForm(props: { disableForm: boolean, generatorPath: string }) {
+const directoryPaths: string[] = []
+function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
+  const { gitChannels, channels, disableForm } = props
   const generator = useContext(ItemContext)
   const generatorType = getGeneratorType(generator)
   const requeueTimes = useMemo(() => [30, 60, 120, 180, 300], [])
   const { t } = useTranslation()
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {/* Cluster Decision Resource generator - uses Placement to determine target clusters */}
       <WizHidden hidden={() => generatorType !== 'clusterDecisionResource'}>
         <HelperText>
-          <HelperTextItem >{t('Cluster names are defined in the Placement step')}</HelperTextItem>
+          <HelperTextItem >{t('The Placement step defines where applications are deployed.')}</HelperTextItem>
         </HelperText>
         <WizSelect
           path="clusterDecisionResource.requeueAfterSeconds"
@@ -122,27 +140,221 @@ function GeneratorInputForm(props: { disableForm: boolean, generatorPath: string
           options={requeueTimes}
           labelHelp={t('Cluster decision resource requeue time in seconds')}
           required
-          disabled={props.disableForm}
+          disabled={disableForm}
         />
       </WizHidden>
+      {/* Git generator - uses a Git repository to determine target clusters */}
       <WizHidden hidden={() => generatorType !== 'git'}>
         <HelperText>
           <HelperTextItem>{t('Cluster names are defined in the Placement step')}</HelperTextItem>
         </HelperText>
-        <WizTextInput
+        <WizSelect
           path="git.repoURL"
-          label={t('Repository URL')}
-          placeholder={t('Enter the repository URL')}
+          label={t('URL')}
+          labelHelp={t('The URL path for the Git repository.')}
+          placeholder={t('Enter or select a Git URL')}
+          options={gitChannels}
+          validation={validateWebURL}
           required
-          disabled={props.disableForm}
+          isCreatable
+          disabled={disableForm}
         />
-        
+        <GitRevisionSelect channels={channels ?? []} path="git.repoURL" target="git.revision" />
+        <WizMultiSelect
+          label="Directory paths"
+          placeholder="Select or enter a directory path"
+          path="git.directories"
+          required
+          options={['default', 'development', 'production']}
+          isCreatable
+          disabled={disableForm}
+          pathValueToInputValue={(value: unknown) => {
+            if (Array.isArray(value)) {
+              directoryPaths.splice(0, directoryPaths.length, ...value.map((v: { path: string }) => v.path))
+            }
+            return directoryPaths
+          }}
+          inputValueToPathValue={(value: unknown) => {
+            return Array.isArray(value) ? value.map((v: string) => ({ path: v })) : []
+          }}
+        />
       </WizHidden>
-
-      <WizHidden hidden={() => generatorType !== 'unknown'}>
-        <div>
-          <Title headingLevel="h6">Generator</Title>
-        </div>
+      {/* List generator - uses a list of clusters to determine target clusters */}
+      <WizHidden hidden={() => generatorType !== 'list'}>
+        <HelperText>
+          <HelperTextItem>{t('Cluster names are defined in the Placement step')}</HelperTextItem>
+        </HelperText>
+        <WizArrayInput
+          path="list.elements"
+          label={t('List elements')}
+          placeholder={t('Add element')}
+          collapsedContent="{cluster}"
+        >
+          <WizTextInput
+            path="cluster"
+            label={t('Cluster')}
+            placeholder={t('Enter the cluster name')}
+            required
+            disabled={disableForm}
+          />
+          <WizTextInput
+            path="url"
+            label={t('URL')}
+            placeholder={t('Enter the cluster URL')}
+            required
+            disabled={disableForm}
+          />
+        </WizArrayInput>
+      </WizHidden>
+      {/* Clusters generator - uses a list of clusters to determine target clusters */}
+      <WizHidden hidden={() => generatorType !== 'clusters'}>
+        <HelperText>
+          <HelperTextItem>{t('Cluster names are defined in the Placement step')}</HelperTextItem>
+        </HelperText>
+        <WizKeyValue
+          path="clusters.selector.matchLabels"
+          label={t('Match labels')}
+          labelHelp={t('Labels to match clusters by')}
+          placeholder={t('Add label')}
+          disabled={disableForm}
+        />
+      </WizHidden>
+      {/* SCM Provider generator - uses a SCM provider to determine target clusters */}
+      <WizHidden hidden={() => generatorType !== 'scmProvider'}>
+        <HelperText>
+          <HelperTextItem>{t('Cluster names are defined in the Placement step')}</HelperTextItem>
+        </HelperText>
+        <WizTextInput
+          path="scmProvider.github.organization"
+          label={t('Organization')}
+          placeholder={t('Enter the GitHub organization')}
+          required
+          disabled={disableForm}
+        />
+        <WizTextInput
+          path="scmProvider.github.api"
+          label={t('API URL')}
+          placeholder={t('Enter the GitHub API URL')}
+          disabled={disableForm}
+        />
+        <WizCheckbox
+          path="scmProvider.github.allBranches"
+          label={t('All branches')}
+          disabled={disableForm}
+        />
+        <WizTextInput
+          path="scmProvider.github.tokenRef.secretName"
+          label={t('Token secret name')}
+          placeholder={t('Enter the token secret name')}
+          disabled={disableForm}
+        />
+        <WizTextInput
+          path="scmProvider.github.tokenRef.key"
+          label={t('Token key')}
+          placeholder={t('Enter the token key')}
+          disabled={disableForm}
+        />
+        <WizTextInput
+          path="scmProvider.github.appSecretName"
+          label={t('App secret name')}
+          placeholder={t('Enter the app secret name')}
+          disabled={disableForm}
+        />
+      </WizHidden>
+      {/* Pull Request generator - uses a Pull Request to determine target clusters */}
+      <WizHidden hidden={() => generatorType !== 'pullRequest'}>
+        <HelperText>
+          <HelperTextItem>{t('Cluster names are defined in the Placement step')}</HelperTextItem>
+        </HelperText>
+        <WizTextInput
+          path="pullRequest.github.owner"
+          label={t('Owner')}
+          placeholder={t('Enter the GitHub owner')}
+          required
+          disabled={disableForm}
+        />
+        <WizTextInput
+          path="pullRequest.github.repo"
+          label={t('Repository')}
+          placeholder={t('Enter the repository name')}
+          required
+          disabled={disableForm}
+        />
+        <WizTextInput
+          path="pullRequest.github.api"
+          label={t('API URL')}
+          placeholder={t('Enter the GitHub API URL')}
+          disabled={disableForm}
+        />
+        <WizTextInput
+          path="pullRequest.github.tokenRef.secretName"
+          label={t('Token secret name')}
+          placeholder={t('Enter the token secret name')}
+          disabled={disableForm}
+        />
+        <WizTextInput
+          path="pullRequest.github.tokenRef.key"
+          label={t('Token key')}
+          placeholder={t('Enter the token key')}
+          disabled={disableForm}
+        />
+        <WizTextInput
+          path="pullRequest.github.appSecretName"
+          label={t('App secret name')}
+          placeholder={t('Enter the app secret name')}
+          disabled={disableForm}
+        />
+        <WizMultiSelect
+          path="pullRequest.github.labels"
+          label={t('Labels')}
+          placeholder={t('Enter labels')}
+          options={[]}
+          isCreatable
+          disabled={disableForm}
+        />
+        <WizSelect
+          path="pullRequest.requeueAfterSeconds"
+          label={t('Requeue time')}
+          options={requeueTimes}
+          labelHelp={t('Pull request requeue time in seconds')}
+          required
+          disabled={disableForm}
+        />
+      </WizHidden>
+      {/* Plugin generator - uses a Plugin to determine target clusters */}
+      <WizHidden hidden={() => generatorType !== 'plugin'}>
+        <HelperText>
+          <HelperTextItem>{t('Cluster names are defined in the Placement step')}</HelperTextItem>
+        </HelperText>
+        <WizTextInput
+          path="plugin.configMapRef.name"
+          label={t('ConfigMap name')}
+          placeholder={t('Enter the ConfigMap name')}
+          required
+          disabled={disableForm}
+        />
+        <WizKeyValue
+          path="plugin.input.parameters"
+          label={t('Input parameters')}
+          labelHelp={t('Key-value parameters to pass to the plugin')}
+          placeholder={t('Add input parameter')}
+          disabled={disableForm}
+        />
+        <WizKeyValue
+          path="plugin.values"
+          label={t('Values')}
+          labelHelp={t('Values to include in the generated parameters')}
+          placeholder={t('Add value')}
+          disabled={disableForm}
+        />
+        <WizSelect
+          path="plugin.requeueAfterSeconds"
+          label={t('Requeue time')}
+          options={requeueTimes}
+          labelHelp={t('Plugin requeue time in seconds')}
+          required
+          disabled={disableForm}
+        />
       </WizHidden>
     </div>
   )

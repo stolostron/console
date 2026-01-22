@@ -9,15 +9,17 @@ import { getGitChannelBranches } from '../../../resources'
 import { usePrevious } from '../../../components/usePrevious'
 
 type GitRevisionSelectProps = {
+  target?: string
+  path?: string
   channels: Channel[]
 }
 
 type WizardItem = Record<string, unknown>
 
-export const GitRevisionSelect = ({ channels }: GitRevisionSelectProps) => {
+export const GitRevisionSelect = ({ channels, path, target }: GitRevisionSelectProps) => {
   const { t } = useTranslation()
-  const repoURL = useItem('repoURL')
-  const targetRevision = useItem('targetRevision')
+  const repoURL = useItem(path ?? 'repoURL')
+  const targetRevision = useItem(target ?? 'targetRevision')
   const item = useContext(ItemContext)
   const { update } = useData()
 
@@ -43,13 +45,13 @@ export const GitRevisionSelect = ({ channels }: GitRevisionSelectProps) => {
     let needsUpdate = false
 
     if (targetRevision) {
-      set(item, 'targetRevision', undefined, { preservePaths: false })
+      set(item, target ?? 'targetRevision', undefined, { preservePaths: false })
       needsUpdate = true
     }
 
     const currentPath = (item as WizardItem).path
     if (currentPath) {
-      set(item, 'path', undefined, { preservePaths: false })
+      set(item, path ?? 'path', undefined, { preservePaths: false })
       needsUpdate = true
     }
 
@@ -60,7 +62,7 @@ export const GitRevisionSelect = ({ channels }: GitRevisionSelectProps) => {
 
   return (
     <WizAsyncSelect
-      path="targetRevision"
+      path={target ?? 'targetRevision'}
       label={t('Revision')}
       labelHelp={t('Refer to a single commit')}
       placeholder={t('Enter or select a tracking revision')}
