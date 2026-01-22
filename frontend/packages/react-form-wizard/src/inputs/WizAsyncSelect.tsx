@@ -72,8 +72,6 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
                 setOptions(options)
                 setFilteredOptions(options)
               } else {
-                // eslint-disable-next-line no-console
-                console.warn('AsyncSelect: options is not an array of strings')
                 setOptions([])
               }
             })
@@ -106,7 +104,9 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
         <InputGroupItem isFill>
           <PfSelect
             onOpenChange={(isOpen) => {
-              !isOpen && setOpen(false)
+              if (!isOpen) {
+                setOpen(false)
+              }
             }}
             isOpen={open}
             toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
@@ -125,7 +125,6 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
               />
             )}
             selected={value}
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             onSelect={(_event, value) => onSelect(value?.toString() ?? '')}
             shouldFocusFirstItemOnOpen={false}
           >

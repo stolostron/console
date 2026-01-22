@@ -61,7 +61,9 @@ export const InputSelect = ({
       newSelectOptions = newSelectOptions.filter((menuItem) =>
         menuItem.toLowerCase().includes(String(filterValue).toLowerCase())
       )
-      isCreatable && newSelectOptions.push(filterValue)
+      if (isCreatable) {
+        newSelectOptions.push(filterValue)
+      }
 
       // Open the menu when the input value changes and the new value is not empty
       if (!open && value === '') {
