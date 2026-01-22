@@ -74,11 +74,12 @@ describe('ClusterSetsList', () => {
     expect(screen.queryByText('Create cluster set')).not.toBeInTheDocument()
   })
 
-  test('hides cluster statuses and cluster set binding columns', async () => {
+  test('hides cluster set binding column', async () => {
     render(<Component />)
     await waitForText(mockManagedClusterSet.metadata.name!)
-    await waitForNotText('Cluster statuses')
     await waitForNotText('Namespace bindings')
+    // Cluster status column should be visible (not hidden)
+    await waitForText('Cluster status')
   })
 
   test('does not show export button', async () => {

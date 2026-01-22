@@ -94,11 +94,11 @@ describe('ClusterSetsPage', () => {
     expect(clusterSetsTable).toBeInTheDocument()
   })
 
-  test('should pass hiddenColumns prop to ClusterSetsTable', () => {
+  test('should not pass hiddenColumns prop to ClusterSetsTable', () => {
     const { container } = render(<Component />)
 
     const clusterSetsTable = container.querySelector('[data-testid="mocked-cluster-sets-table"]')
     expect(clusterSetsTable).toBeInTheDocument()
-    expect(clusterSetsTable).toHaveAttribute('data-hiddencolumns', '["table.clusters"]')
+    expect(clusterSetsTable).not.toHaveAttribute('data-hiddencolumns')
   })
 })
