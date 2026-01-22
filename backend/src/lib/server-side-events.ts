@@ -440,7 +440,7 @@ export class ServerSideEvents {
       }
     }
   }
-  private static intervalTimer: NodeJS.Timer | undefined = setInterval(() => {
+  private static intervalTimer: NodeJS.Timeout | undefined = setInterval(() => {
     ServerSideEvents.keepAlivePing()
   }, 10 * 1000)
 }

@@ -111,7 +111,7 @@ export async function cacheOCPApplications(
       }
 
       const labels = (ocpApp.label || '')
-        .replace(/\s/g, '')
+        .replaceAll(/\s/g, '')
         .split(';')
         .map((label: string) => {
           const [annotation, value] = label.split('=')
