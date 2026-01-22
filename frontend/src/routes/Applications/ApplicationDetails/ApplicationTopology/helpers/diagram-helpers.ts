@@ -203,7 +203,7 @@ export const createResourceSearchLink = (node: NodeLike, t: Translator): { type:
           id: (node as any).id,
           data: {
             action: 'show_search',
-            name: ((node as any).name && (node as any).name.replaceAll(' ', '')) || clusterNameStr || 'undefined',
+            name: (node as any).name?.replaceAll(' ', '') || clusterNameStr || 'undefined',
             kind: 'cluster',
           },
           indent: true,
