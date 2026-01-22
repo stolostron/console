@@ -12,6 +12,7 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import i18nJson from 'eslint-plugin-i18n-json'
+import unicorn from 'eslint-plugin-unicorn'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -48,6 +49,7 @@ export default [
       prettier,
       'jsx-a11y': fixupPluginRules(jsxA11Y),
       'i18n-json': fixupPluginRules(i18nJson),
+      unicorn
     },
 
     languageOptions: {
@@ -122,7 +124,6 @@ export default [
               name: '@tanstack/react-query',
             },
           ],
-
           patterns: [
             {
               message:
@@ -150,6 +151,7 @@ export default [
       'prettier/prettier': 'error',
       'react/jsx-key': 1,
       'react/react-in-jsx-scope': 'off',
+      'unicorn/new-for-builtins': 'error',
     },
   },
   {
