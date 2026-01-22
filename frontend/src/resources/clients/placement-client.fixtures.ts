@@ -528,3 +528,159 @@ export const doesPlacementContainsClusterSetTestCases: DoesPlacementContainsClus
     expected: false,
   },
 ]
+
+/**
+ * Test case fixture for producePlacementName length validation
+ */
+export interface ProducePlacementNameLengthTestCase {
+  description: string
+  clusterNames: string[]
+}
+
+/**
+ * Test cases for producePlacementName that should never exceed 63 characters
+ */
+export const producePlacementNameLengthTestCases: ProducePlacementNameLengthTestCase[] = [
+  { description: 'single very long cluster name', clusterNames: ['a'.repeat(100)] },
+  {
+    description: 'multiple medium cluster names',
+    clusterNames: [
+      'cluster-1',
+      'cluster-2',
+      'cluster-3',
+      'cluster-4',
+      'cluster-5',
+      'cluster-6',
+      'cluster-7',
+      'cluster-8',
+    ],
+  },
+  {
+    description: 'few long cluster names',
+    clusterNames: ['very-long-cluster-name-1', 'very-long-cluster-name-2', 'very-long-cluster-name-3'],
+  },
+  {
+    description: 'many short cluster names',
+    clusterNames: Array.from({ length: 50 }, (_, i) => `cluster-${i}`),
+  },
+]
+
+/**
+ * Test case fixture for producePlacementName valid name generation
+ */
+export interface ProducePlacementNameValidTestCase {
+  description: string
+  clusterNames: string[]
+}
+
+/**
+ * Test cases for producePlacementName that should produce valid names
+ */
+export const producePlacementNameValidTestCases: ProducePlacementNameValidTestCase[] = [
+  {
+    description: 'cluster-a and cluster-b',
+    clusterNames: ['cluster-a', 'cluster-b'],
+  },
+  {
+    description: 'cluster-b and cluster-a (same clusters, different order)',
+    clusterNames: ['cluster-b', 'cluster-a'],
+  },
+  {
+    description: 'cluster-a, cluster-b, and cluster-c (different set)',
+    clusterNames: ['cluster-a', 'cluster-b', 'cluster-c'],
+  },
+  {
+    description: 'cluster-x and cluster-y (completely different)',
+    clusterNames: ['cluster-x', 'cluster-y'],
+  },
+]
+
+/**
+ * Test case fixture for producePlacementName unique name generation
+ */
+export interface ProducePlacementNameUniqueTestCase {
+  description: string
+  clusterNames: string[]
+}
+
+/**
+ * Test cases for producePlacementName that should produce unique names
+ */
+export const producePlacementNameUniqueTestCases: ProducePlacementNameUniqueTestCase[] = [
+  { description: 'cluster-a and cluster-b', clusterNames: ['cluster-a', 'cluster-b'] },
+  {
+    description: 'cluster-b and cluster-a (same clusters, different order)',
+    clusterNames: ['cluster-b', 'cluster-a'],
+  },
+  {
+    description: 'cluster-a, cluster-b, and cluster-c (different set)',
+    clusterNames: ['cluster-a', 'cluster-b', 'cluster-c'],
+  },
+  { description: 'cluster-x and cluster-y (completely different)', clusterNames: ['cluster-x', 'cluster-y'] },
+]
+
+/**
+ * Test case fixture for producePlacementName hash generation when exceeding 63 characters
+ */
+export interface ProducePlacementNameHashTestCase {
+  description: string
+  clusterNames: string[]
+}
+
+/**
+ * Test cases for producePlacementName that should produce hash when exceeding 63 characters
+ */
+export const producePlacementNameHashTestCases: ProducePlacementNameHashTestCase[] = [
+  {
+    description: '20 short cluster names',
+    clusterNames: Array.from({ length: 20 }, (_, i) => `c${i}`),
+  },
+  {
+    description: '15 short cluster names',
+    clusterNames: Array.from({ length: 15 }, (_, i) => `cluster-${i}`),
+  },
+]
+
+/**
+ * Test case fixture for producePlacementName suggested name generation when not exceeding 63 characters
+ */
+export interface ProducePlacementNameSuggestedTestCase {
+  description: string
+  clusterNames: string[]
+}
+
+/**
+ * Test cases for producePlacementName that should produce suggestedName when not exceeding 63 characters
+ */
+export const producePlacementNameSuggestedTestCases: ProducePlacementNameSuggestedTestCase[] = [
+  {
+    description: '3 short cluster names',
+    clusterNames: ['a', 'b', 'c'],
+  },
+  {
+    description: '2 medium cluster names',
+    clusterNames: ['cluster-1', 'cluster-2'],
+  },
+]
+
+/**
+ * Test case fixture for producePlacementName hash-based name for long cluster name lists
+ */
+export interface ProducePlacementNameLongListTestCase {
+  description: string
+  clusterNames: string[]
+}
+
+/**
+ * Test cases for producePlacementName that should produce hash-based name for long cluster name lists
+ */
+export const producePlacementNameLongListTestCases: ProducePlacementNameLongListTestCase[] = [
+  {
+    description: 'a and b repeated 30 times',
+    clusterNames: ['a'.repeat(30), 'b'.repeat(30)],
+  },
+  {
+    description: 'c and d repeated 30 times',
+    clusterNames: ['c'.repeat(30), 'd'.repeat(30)],
+  },
+]
