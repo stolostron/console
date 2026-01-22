@@ -400,6 +400,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       name: 'test-assignment',
       clusterRole: 'admin',
       clusterNames: ['cluster1'],
+      clusterSetNames: [],
       clusterSelection: {
         type: 'placements',
         placements: [],

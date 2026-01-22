@@ -76,6 +76,7 @@ describe('roleAssignmentHelper', () => {
       clusterRole: 'admin',
       clusterSelection: { type: 'placements', placements: [{ name: 'test-placement', namespace: 'test-ns' }] },
       clusterNames: ['cluster-1'],
+      clusterSetNames: [],
       subject: { name: subjectName, kind: subjectKind },
       relatedMulticlusterRoleAssignment: multiclusterRoleAssignment,
     })

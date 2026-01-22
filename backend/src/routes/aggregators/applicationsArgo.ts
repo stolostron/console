@@ -444,7 +444,8 @@ export function createArgoStatusMap(searchResult: SearchResult, clusters: Cluste
           ? app.name.substring(app.applicationSet.length + 1)
           : app.applicationSet
         appCluster = sortedClusterNames.find(
-          (cluster: string) => namePart.includes(`-${cluster}`) || namePart.includes(`${cluster}-`)
+          (cluster: string) =>
+            namePart === cluster || namePart.includes(`-${cluster}`) || namePart.includes(`${cluster}-`)
         )
         appSetName = app.applicationSet
       }

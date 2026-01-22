@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { isType } from '../../lib/is-type'
-import { GroupKind, UserKind } from '../../resources'
+import { GroupKind, ManagedClusterSet, UserKind } from '../../resources'
 import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
 import { AcmSelect } from '../../ui-components'
 import { ClusterGranularityStepContent } from './ClusterGranularityWizardStep'
@@ -37,6 +37,8 @@ const getWizardTitle = (
       return t('Create role assignment for {{preselected}}', { preselected: preselected.roles[0] })
     case preselected?.clusterNames && preselected.clusterNames.length > 0:
       return t('Create role assignment for {{preselected}}', { preselected: preselected.clusterNames.join(', ') })
+    case preselected?.clusterSetNames && preselected.clusterSetNames.length > 0:
+      return t('Create role assignment for {{preselected}}', { preselected: preselected.clusterSetNames.join(', ') })
     default:
       return t('Create role assignment')
   }
@@ -93,7 +95,7 @@ export const RoleAssignmentWizardModal = ({
     })
   }, [])
 
-  const handleClusterSetsChange = useCallback((clusterSets: any[]) => {
+  const handleClusterSetsChange = useCallback((clusterSets: ManagedClusterSet[]) => {
     setSelectedClusterSets(clusterSets)
     setSelectedClusters([])
     setFormData((prev) => ({
@@ -209,6 +211,7 @@ export const RoleAssignmentWizardModal = ({
     isOpen,
     preselected,
     setFormData,
+    setSelectedClusterSets,
     setSelectedClusters,
   })
 
@@ -228,7 +231,10 @@ export const RoleAssignmentWizardModal = ({
 
   const showIdentitiesStep =
     preselected?.context !== 'identity' &&
-    (isEditing || (!isEditing && (preselected?.roles?.[0] || preselected?.clusterNames?.[0]) && !preselected?.subject))
+    (isEditing ||
+      (!isEditing &&
+        (preselected?.roles?.[0] || preselected?.clusterSetNames?.[0] || preselected?.clusterNames?.[0]) &&
+        !preselected?.subject))
 
   const hideRolesStep = preselected?.context === 'role'
 
@@ -245,7 +251,7 @@ export const RoleAssignmentWizardModal = ({
       key="scope-selection"
       name={t('Select scope')}
       id="scope-selection"
-      isHidden={preselected?.context === 'cluster'}
+      isHidden={(['cluster', 'clusterSets'] as RoleAssignmentPreselected['context'][]).includes(preselected?.context)}
       footer={{
         isNextDisabled: !isEditing && isScopeInvalid,
       }}
@@ -308,7 +314,11 @@ export const RoleAssignmentWizardModal = ({
         <div style={{ marginTop: '16px' }}>
           <ClusterList
             selectedClusters={selectedClusters}
-            namespaces={formData.selectedClusterSets?.map((cs) => cs.metadata?.name).filter(isType)}
+            namespaces={formData.selectedClusterSets
+              ?.map((cs) =>
+                (cs as ManagedClusterSet).metadata ? (cs as ManagedClusterSet).metadata.name : (cs as string)
+              )
+              .filter(isType)}
             onSelectCluster={(clusters) => {
               handleClustersChange(clusters)
             }}

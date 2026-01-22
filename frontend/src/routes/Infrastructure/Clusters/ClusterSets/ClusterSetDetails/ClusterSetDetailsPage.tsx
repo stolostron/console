@@ -6,6 +6,7 @@ import { useTranslation } from '../../../../../lib/acm-i18next'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { isGlobalClusterSet } from '../../../../../resources'
+import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../../../../ui-components'
 import { ClusterSetActionDropdown } from '../components/ClusterSetActionDropdown'
 import { useClusterSetDetailsContext } from './ClusterSetDetails'
@@ -16,6 +17,9 @@ export default function ClusterSetDetailsPage() {
   const { id = '' } = useParams()
   const { isSubmarinerAvailable } = useContext(PluginContext)
 
+  const { isFineGrainedRbacEnabledState } = useSharedAtoms()
+  const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
+
   const clusterSetDetailsContext = useClusterSetDetailsContext()
   const { clusterSet } = clusterSetDetailsContext
 
@@ -24,6 +28,7 @@ export default function ClusterSetDetailsPage() {
   const clustersPath = generatePath(NavigationPath.clusterSetClusters, { id })
   const poolsPath = generatePath(NavigationPath.clusterSetClusterPools, { id })
   const accessPath = generatePath(NavigationPath.clusterSetAccess, { id })
+  const roleAssignmentsPath = generatePath(NavigationPath.clusterSetRoleAssignments, { id })
 
   const navItems = useMemo(() => {
     const items = [
@@ -60,6 +65,7 @@ export default function ClusterSetDetailsPage() {
         }
       )
     }
+
     items.push({
       key: 'clustersets-details-user-management',
       title: t('tab.userManagement'),
@@ -67,15 +73,26 @@ export default function ClusterSetDetailsPage() {
       to: accessPath,
     })
 
+    if (isFineGrainedRbacEnabled) {
+      items.push({
+        key: 'clustersets-details-roleAssignments',
+        title: t('Role assignments'),
+        isActive: location.pathname === roleAssignmentsPath,
+        to: roleAssignmentsPath,
+      })
+    }
+
     return items
   }, [
     accessPath,
     clusterSet,
     clustersPath,
+    isFineGrainedRbacEnabled,
     isSubmarinerAvailable,
     location.pathname,
     overviewPath,
     poolsPath,
+    roleAssignmentsPath,
     submarinerPath,
     t,
   ])

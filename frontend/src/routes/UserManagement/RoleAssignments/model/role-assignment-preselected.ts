@@ -5,9 +5,10 @@ type RoleAssignmentPreselected = {
   subject?: { kind: UserKindType | GroupKindType | ServiceAccountKindType; value?: string }
   roles?: string[]
   clusterNames?: string[]
+  clusterSetNames?: string[]
   namespaces?: string[]
   // Context indicates which page/view the wizard was opened from
-  context?: 'role' | 'cluster' | 'identity'
+  context?: 'role' | 'cluster' | 'clusterSets' | 'identity'
 }
 
 export type { RoleAssignmentPreselected }

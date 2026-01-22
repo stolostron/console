@@ -317,7 +317,7 @@ async function getAppSetResources(name: string, namespace: string, appSetApps: a
 
     // Find matching cluster name in namePart bounded by '-' (sorted longest first for correct matching)
     const clusterName = sortedAllClusterNames.find(
-      (cluster: string) => namePart.includes(`-${cluster}`) || namePart.includes(`${cluster}-`)
+      (cluster: string) => namePart === cluster || namePart.includes(`-${cluster}`) || namePart.includes(`${cluster}-`)
     )
 
     // Extract application name by stripping cluster name from namePart
