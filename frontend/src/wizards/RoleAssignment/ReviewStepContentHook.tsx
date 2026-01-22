@@ -10,11 +10,13 @@ interface useReviewStepContentProps {
     namespaces?: RoleAssignmentPreselected['namespaces']
     clusterNames: RoleAssignmentPreselected['clusterNames']
     role?: string
+    subject?: RoleAssignmentPreselected['subject']
   }
   newData: {
     namespaces?: string[]
     clusterNames: RoleAssignmentWizardFormData['selectedClusters']
     role?: string
+    subject?: RoleAssignmentWizardFormData['subject']
   }
   preselected?: RoleAssignmentWizardModalProps['preselected']
   isEditing?: boolean
@@ -125,5 +127,32 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: useReviewS
     )
   }, [oldData.role, newData.role, t, isEditing])
 
-  return { clusterNames, clustersDisplay, namespacesDisplay, roleDisplay }
+  const identityDisplay = useMemo(() => {
+    const getIdentityValue = (subject?: { kind?: string; user?: string[]; group?: string[]; value?: string }) => {
+      if (!subject) return t('Not selected')
+      if (subject.value) return subject.value
+      if (subject.kind === 'User' && subject.user?.[0]) return subject.user[0]
+      if (subject.kind === 'Group' && subject.group?.[0]) return subject.group[0]
+      return t('Not selected')
+    }
+
+    const original = getIdentityValue(oldData.subject)
+    const current = getIdentityValue(newData.subject)
+
+    return !isEditing || original === current ? (
+      current
+    ) : (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div>
+          <s>{original}</s>
+        </div>
+        <ArrowRightIcon />
+        <div>
+          <strong>{current}</strong>
+        </div>
+      </div>
+    )
+  }, [oldData.subject, newData.subject, t, isEditing])
+
+  return { clusterNames, clustersDisplay, namespacesDisplay, roleDisplay, identityDisplay }
 }

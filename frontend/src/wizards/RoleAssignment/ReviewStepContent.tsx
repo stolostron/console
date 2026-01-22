@@ -23,16 +23,18 @@ interface ReviewStepContentProps {
 export const ReviewStepContent = ({ formData, preselected, isEditing, hasChanges }: ReviewStepContentProps) => {
   const { t } = useTranslation()
 
-  const { clusterNames, clustersDisplay, namespacesDisplay, roleDisplay } = useReviewStepContent({
+  const { clusterNames, clustersDisplay, namespacesDisplay, roleDisplay, identityDisplay } = useReviewStepContent({
     oldData: {
       clusterNames: preselected?.clusterNames,
       namespaces: preselected?.namespaces,
       role: preselected?.roles?.[0],
+      subject: preselected?.subject,
     },
     newData: {
       clusterNames: formData.selectedClusters,
       namespaces: formData.scope.namespaces,
       role: formData.roles?.[0],
+      subject: formData.subject,
     },
     isEditing,
   })
@@ -57,11 +59,7 @@ export const ReviewStepContent = ({ formData, preselected, isEditing, hasChanges
               </Title>
               <DescriptionListDescription>
                 <div style={{ margin: '0 16px' }}>
-                  <strong>
-                    {formData.subject.kind === 'User'
-                      ? formData.subject.user?.join(', ') || t('Not selected')
-                      : formData.subject.group?.join(', ') || t('Not selected')}
-                  </strong>
+                  <strong>{identityDisplay}</strong>
                 </div>
               </DescriptionListDescription>
             </DescriptionListGroup>

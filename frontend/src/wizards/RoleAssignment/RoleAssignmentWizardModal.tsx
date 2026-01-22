@@ -256,7 +256,19 @@ export const RoleAssignmentWizardModal = ({
     const namespacesChanged =
       JSON.stringify(preselected?.namespaces?.sort()) !== JSON.stringify(formData.scope.namespaces?.sort())
 
-    return roleChanged || clustersChanged || namespacesChanged
+    const identityKindChanged = preselected?.subject?.kind !== formData.subject?.kind
+    const identityValueChanged = (() => {
+      if (!preselected?.subject?.value) return false
+      if (formData.subject?.kind === 'User') {
+        return preselected.subject.value !== formData.subject.user?.[0]
+      }
+      if (formData.subject?.kind === 'Group') {
+        return preselected.subject.value !== formData.subject.group?.[0]
+      }
+      return false
+    })()
+
+    return roleChanged || clustersChanged || namespacesChanged || identityKindChanged || identityValueChanged
   }, [isEditing, preselected, formData])
 
   const scopeSubSteps = [
