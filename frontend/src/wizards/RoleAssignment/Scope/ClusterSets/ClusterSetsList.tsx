@@ -35,7 +35,7 @@ export const ClusterSetsList = ({ onSelectClusterSet, selectedClusterSets }: Clu
       onSelectClusterSet={onSelectClusterSet}
       initialSelectedClusterSets={selectedClusterSets}
       showExportButton={false}
-      hiddenColumns={[t('table.cluster.statuses'), t('table.clusterSetBinding')]}
+      hiddenColumns={[t('table.clusterSetBinding')]}
     />
   )
 }
