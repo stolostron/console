@@ -67,7 +67,7 @@ export const WithContrastComparison: Story = {
       <div>
         <h4 style={{ margin: '0 0 8px 0' }}>Without Background Color (Comparison)</h4>
         <div style={{ padding: '16px', border: '1px solid #d2d2d2' }}>
-          This role assignment will apply to all resources registered in Advanced Cluster Management.
+          This role assignment will apply to all current and future resources on the cluster set.
         </div>
       </div>
     </div>
