@@ -248,7 +248,9 @@ const producePlacementName = (clusterNames: string[]) => {
   const MAX_LENGTH = 63
   const PREFIX = 'clusters-'
   const clusterNamesString = clusterNames.join('-and-')
+
   const suggestedName = `${PREFIX}${clusterNamesString}`
+
   return suggestedName.length > MAX_LENGTH
     ? `${PREFIX}${sha256(clusterNamesString)}`.substring(0, MAX_LENGTH)
     : suggestedName
