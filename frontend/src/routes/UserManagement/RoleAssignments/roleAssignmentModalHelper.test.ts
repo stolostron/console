@@ -604,10 +604,18 @@ describe('roleAssignmentHelper', () => {
         onError: jest.fn(),
       }
 
-      await saveRoleAssignment(roleAssignment, new Map(), [], placementClusters, callbacks)
+      let errorThrown: Error | undefined
+      try {
+        await saveRoleAssignment(roleAssignment, new Map(), [], placementClusters, callbacks)
+      } catch (error) {
+        errorThrown = error as Error
+      }
+
+      expect(errorThrown).toBeDefined()
+      expect(errorThrown?.message).toContain('Global placement not found')
 
       expect(callbacks.onSuccess).not.toHaveBeenCalled()
-      expect(callbacks.onError).toHaveBeenCalledWith('admin', expect.any(Error), false)
+      expect(callbacks.onError).not.toHaveBeenCalled()
     })
   })
 
@@ -896,22 +904,19 @@ describe('roleAssignmentHelper', () => {
         },
       ]
 
-      await saveAllRoleAssignments(
-        roleAssignmentsToSave,
-        new Map(),
-        [],
-        placementClusters,
-        mockToastContext,
-        mockT as never
-      )
+      await expect(
+        saveAllRoleAssignments(
+          roleAssignmentsToSave,
+          new Map(),
+          [],
+          placementClusters,
+          mockToastContext,
+          mockT as never
+        )
+      ).rejects.toThrow('Global placement not found')
 
       expect(mockAddRoleAssignment).not.toHaveBeenCalled()
-      expect(mockToastContext.addAlert).toHaveBeenCalledWith({
-        title: 'Role assignment creation failed',
-        message: expect.stringContaining('Global placement not found'),
-        type: 'danger',
-        autoClose: true,
-      })
+      expect(mockToastContext.addAlert).not.toHaveBeenCalled()
     })
 
     it('should handle mixed isGlobalScope true and false role assignments', async () => {
