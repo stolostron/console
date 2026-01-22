@@ -81,7 +81,22 @@ export const ReviewStepContent = ({ formData, preselected }: ReviewStepContentPr
                 {(() => {
                   switch (formData.scopeType) {
                     case 'Global access':
-                      return <div>{t('All clusters')}</div>
+                      return (
+                        <div>
+                          <div style={{ marginTop: '8px' }}>
+                            <div>
+                              <strong>{t('Access level')}</strong>{' '}
+                            </div>
+                            <div>{t('All current and future clusters')}</div>
+                          </div>
+                          <div style={{ marginTop: '8px' }}>
+                            <div>
+                              <strong>{t('Projects')}</strong>{' '}
+                            </div>
+                            <div>{t('Full access')}</div>
+                          </div>
+                        </div>
+                      )
                     case 'Select cluster sets':
                       return (
                         <>
