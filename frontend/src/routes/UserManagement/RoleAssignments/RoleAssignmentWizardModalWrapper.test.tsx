@@ -816,6 +816,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
           roleAssignments: [{ name: 'test-assignment', clusterRole: 'admin' }],
         },
       } as MulticlusterRoleAssignment,
+      clusterSetNames: [],
     }
 
     it('should set isSaving back to false when deleteRoleAssignment fails', async () => {
