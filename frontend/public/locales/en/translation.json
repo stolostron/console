@@ -2930,7 +2930,6 @@
   "table.clusterName.helperText.hypershift": "The common Kubernetes resource name shared by multiple resources generated from hosted cluster creation; including the <bold>Namespace</bold>, <bold>ManagedCluster</bold>, or <bold>HostedCluster</bold>.",
   "table.clusterPool": "Cluster pool",
   "table.clusterRole": "Cluster role",
-  "table.clusters": "Clusters",
   "table.clusterSet": "Cluster set",
   "table.clusterSetBinding": "Namespace bindings",
   "table.consoleUrl": "Console URL",
