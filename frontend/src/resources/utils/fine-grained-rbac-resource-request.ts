@@ -6,7 +6,7 @@ import { fireManagedClusterView, ManagedClusterViewDefinition } from '../managed
 import { IResource } from '../resource'
 import { managedClusterProxyRequest } from './managed-cluster-proxy-request'
 
-function getMCAMethod(method: 'GET' | 'PUT' | 'POST' | 'PATCH' | 'DELETE'): ActionType {
+export function getMCAMethod(method: 'GET' | 'PUT' | 'POST' | 'PATCH' | 'DELETE'): ActionType {
   switch (method) {
     case 'DELETE':
       return 'Delete'

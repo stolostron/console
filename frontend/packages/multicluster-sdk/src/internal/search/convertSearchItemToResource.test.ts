@@ -3,6 +3,7 @@
 import { convertSearchItemToResource } from './convertSearchItemToResource'
 
 // Helper to convert search items with proper typing for test assertions
+
 const convert = (item: any): any => convertSearchItemToResource(item)
 
 describe('convertSearchItemToResource', () => {
