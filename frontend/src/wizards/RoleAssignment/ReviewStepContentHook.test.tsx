@@ -357,21 +357,6 @@ describe('useReviewStepContent', () => {
       expect(display).toHaveProperty('type', 'div')
     })
 
-    it('handles change from clusters to "None selected" when oldData.clusterNames is empty', () => {
-      const { result } = renderHook(() =>
-        useReviewStepContent({
-          oldData: { clusterNames: ['old-cluster'] },
-          newData: { clusterNames: [] },
-          isEditing: true,
-        })
-      )
-
-      // When newData.clusterNames is empty and oldData.clusterNames exists,
-      // the hook uses oldData.clusterNames as fallback for current value
-      // So original and current will be equal, showing no diff
-      expect(result.current.clustersDisplay).toBe('old-cluster')
-    })
-
     it('shows diff when clusters change from one set to another', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({

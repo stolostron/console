@@ -94,7 +94,7 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: useReviewS
 
   const clustersDisplay = useMemo(() => {
     const original = originalClusterNames || t('None selected')
-    const current = currentClusterNames || t('None selected')
+    const current = currentClusterNames || (!isEditing && originalClusterNames) || t('None selected')
 
     return !isEditing || original === current ? (
       current
