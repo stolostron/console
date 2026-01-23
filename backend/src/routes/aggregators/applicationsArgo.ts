@@ -105,6 +105,26 @@ export function getAppStatusByNameMap() {
   return appStatusByNameMap || {}
 }
 
+/** Reset all Argo application module-level state. Used for test isolation. */
+export function resetArgoApplicationState() {
+  pushedAppSetMap = {}
+  tempPushedAppSetMap = {}
+  pulledAppSetMap = {}
+  tempPulledAppSetMap = {}
+  for (const key in appStatusByNameMap) {
+    delete appStatusByNameMap[key]
+  }
+  hubClusterName = undefined as unknown as string
+  clusters = undefined as unknown as Cluster[]
+  localCluster = undefined as unknown as Cluster
+  placementDecisions = undefined as unknown as IResource[]
+  ocpArgoAppFilter.clear()
+  argoPageChunks.length = 0
+  for (const key in oldResourceUidSets) {
+    delete oldResourceUidSets[key]
+  }
+}
+
 // filter out ocp apps that are argo apps
 // each entry is a string of the form:
 // <argo app name>-<argo app namespace>-<argo app cluster>

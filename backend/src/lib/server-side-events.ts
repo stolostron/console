@@ -84,6 +84,21 @@ export class ServerSideEvents {
     return Promise.resolve()
   }
 
+  /** Reset all static state to initial values. Used for test isolation. */
+  public static reset(): void {
+    this.eventID = 2
+    this.lastLoadedID = 2
+    this.events = {
+      1: { id: '1', data: { type: 'START' } },
+      2: { id: '2', data: { type: 'LOADED' } },
+    }
+    this.clients = {}
+    // Re-initialize interval timer if it was disposed
+    this.intervalTimer ??= setInterval(() => {
+      ServerSideEvents.keepAlivePing()
+    }, 10 * 1000)
+  }
+
   public static async pushEvent(event: ServerSideEvent): Promise<number> {
     const eventID = ++this.eventID
     event.id = eventID.toString()
