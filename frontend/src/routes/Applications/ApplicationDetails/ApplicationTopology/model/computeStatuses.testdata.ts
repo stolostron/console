@@ -4317,7 +4317,7 @@ export const topologyNoChannel: Record<string, any> = {
           consoleURL: 'https://console-openshift-console.apps.fxiang.dev06.red-chesterfield.com',
           metadata: {
             creationTimestamp: '2019-08-13T18:17:34Z',
-            finalizers: Array(5),
+            finalizers: new Array(5),
             generation: 1,
             name: 'fxiang',
           },
@@ -4339,7 +4339,7 @@ export const topologyNoChannel: Record<string, any> = {
             consoleURL: 'https://console-openshift-console.apps.fxiang.dev06.red-chesterfield.com',
             metadata: {
               creationTimestamp: '2019-08-13T18:17:34Z',
-              finalizers: Array(5),
+              finalizers: new Array(5),
               generation: 1,
               name: 'fxiang',
             },
@@ -4706,7 +4706,7 @@ export const topology: Record<string, any> = {
           consoleURL: 'https://console-openshift-console.apps.fxiang.dev06.red-chesterfield.com',
           metadata: {
             creationTimestamp: '2019-08-13T18:17:34Z',
-            finalizers: Array(5),
+            finalizers: new Array(5),
             generation: 1,
             name: 'fxiang',
           },
@@ -4728,7 +4728,7 @@ export const topology: Record<string, any> = {
             consoleURL: 'https://console-openshift-console.apps.fxiang.dev06.red-chesterfield.com',
             metadata: {
               creationTimestamp: '2019-08-13T18:17:34Z',
-              finalizers: Array(5),
+              finalizers: new Array(5),
               generation: 1,
               name: 'fxiang',
             },

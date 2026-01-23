@@ -18,7 +18,6 @@ jest.mock('../../../../components/ClusterSets/ClusterSetsTable', () => ({
 
 // Mock AcmTableStateProvider and other ui-components
 jest.mock('../../../../ui-components', () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const ReactModule = jest.requireActual<typeof import('react')>('react')
   return {
     AcmPageContent: jest.fn(({ children }: { children: React.ReactNode }) => (

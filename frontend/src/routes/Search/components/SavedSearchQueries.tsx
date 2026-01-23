@@ -48,7 +48,6 @@ export default function SavedSearchQueries(props: {
   const [shareSearch, setShareSearch] = useState<SavedSearch | undefined>(undefined)
   const [deleteSearch, setDeleteSearch] = useState<SavedSearch | undefined>(undefined)
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   // combine suggested and saved search queries
   const input = useMemo(
     () => [

@@ -105,7 +105,7 @@ function updateSearchResults(resource: any, relatedResource: boolean, currentQue
                 {
                   __typename: 'SearchResult',
                   related: res.data.searchResult[0].related
-                    // eslint-disable-next-line array-callback-return
+
                     .map((item: any) => {
                       if (item.kind === resource.kind) {
                         if (item.count > 1) {

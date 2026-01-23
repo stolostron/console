@@ -437,11 +437,9 @@ export const getCSVDownloadLink = (createElementSpy: jest.SpyInstance<HTMLElemen
   )
 
 export const templateMaker = function (obj: unknown) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return function (context: { [x: string]: any }) {
     const replacer = function (_key: string, val: () => string | number) {
       if (typeof val === 'function') {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return context[val()]
       }
       return val
@@ -452,7 +450,7 @@ export const templateMaker = function (obj: unknown) {
 
 export const getMultipleMocks = (obj: unknown, repeat: number) => {
   const template = templateMaker(obj)
-  return Array.from(Array(repeat).keys()).map((inx) => {
+  return Array.from(new Array(repeat).keys()).map((inx) => {
     return template({ name: `cluster${inx + 1}` })
   })
 }

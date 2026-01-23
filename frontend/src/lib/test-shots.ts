@@ -279,7 +279,6 @@ window.getNockShot = (fetches: { url: any; method: any; reqBody?: any; resBody?:
     ))
 
     if (!url.endsWith('apiPaths')) {
-      // eslint-disable-next-line prefer-const
       ;({ prefix, inlineComment } = getShotNamePrefixAndComment(
         method,
         isLocalhost,

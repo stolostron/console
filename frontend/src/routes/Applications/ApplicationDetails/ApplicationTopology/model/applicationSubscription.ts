@@ -391,7 +391,6 @@ const getAllAppChannels = (
   allSubscriptions.forEach((subscription) => {
     const chnlData = (subscription?.spec?.channel ?? '').split('/')
     if (chnlData.length === 2) {
-      // eslint-disable-next-line prefer-destructuring
       channelsMap[chnlData[0]] = chnlData[1]
     }
   })
@@ -420,7 +419,6 @@ const getAppHooks = async (hooks: SubscriptionHooksMap, isPreHooks: boolean): Pr
           kind: 'AnsibleJob',
         }).promise
       } catch (err) {
-        // eslint-disable-next-line no-console
         console.error('Error listing resource:', err)
       }
 

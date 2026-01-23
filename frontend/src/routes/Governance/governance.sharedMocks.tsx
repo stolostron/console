@@ -521,7 +521,7 @@ const policyWithoutStatus: Policy = {
 const NONCOMPLIANT = [3, 10, 18, 23, 34, 46, 47, 48, 55, 60, 80, 93]
 const makePolicyWithLotsOfClusters = (n: number) => {
   const mockPolicy = JSON.parse(JSON.stringify(rootPolicy)) as Policy
-  Array.from(Array(n).keys()).forEach((inx) => {
+  Array.from(new Array(n).keys()).forEach((inx) => {
     let compliant = NONCOMPLIANT.indexOf(inx) !== -1 ? 'NonCompliant' : 'Compliant'
     if (inx == 20 || inx === 71) compliant = 'Pending'
     if (inx == 22 || inx === 98) compliant = 'Unknown'
