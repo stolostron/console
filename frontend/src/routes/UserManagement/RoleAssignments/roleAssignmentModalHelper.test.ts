@@ -22,8 +22,10 @@ import {
   saveRoleAssignment,
 } from './roleAssignmentModalHelper'
 
+import { RoleAssignment } from '../../../resources/multicluster-role-assignment'
+
 type SaveRoleAssignmentCallbacks = {
-  onSuccess: (role: string) => void
+  onSuccess: (roleAssignment: RoleAssignment) => void
   onError: (role: string, error: unknown, isDuplicateError: boolean) => void
 }
 
@@ -74,6 +76,7 @@ describe('roleAssignmentHelper', () => {
       clusterRole: 'admin',
       clusterSelection: { type: 'placements', placements: [{ name: 'test-placement', namespace: 'test-ns' }] },
       clusterNames: ['cluster-1'],
+      clusterSetNames: [],
       subject: { name: subjectName, kind: subjectKind },
       relatedMulticlusterRoleAssignment: multiclusterRoleAssignment,
     })
@@ -338,9 +341,15 @@ describe('roleAssignmentHelper', () => {
       const placementClusters = createPlacementClustersArray([{ name: 'placement-1', clusters: ['cluster-1'] }])
       const existingPlacements = [placementClusters[0].placement]
 
+      const savedRoleAssignment: RoleAssignment = {
+        name: 'saved-role-assignment',
+        clusterRole: 'admin',
+        clusterSelection: { type: 'placements', placements: [{ name: 'placement-1', namespace: 'test-ns' }] },
+      }
+
       mockFindManagedClusterSetBinding.mockReturnValue([mockMcsb])
       mockGetPlacementsForRoleAssignment.mockReturnValue(existingPlacements)
-      mockAddRoleAssignment.mockResolvedValue({} as never)
+      mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment)
 
       const roleAssignment: RoleAssignmentToSave = {
         clusterRole: 'admin',
@@ -356,7 +365,7 @@ describe('roleAssignmentHelper', () => {
 
       const managedClusterSetBindings = [mockMcsb]
 
-      await saveRoleAssignment(
+      const result = await saveRoleAssignment(
         roleAssignment,
         existingBySubjectRole,
         managedClusterSetBindings,
@@ -373,8 +382,9 @@ describe('roleAssignmentHelper', () => {
         existingManagedClusterSetBindings: [mockMcsb],
         existingPlacements,
       })
-      expect(callbacks.onSuccess).toHaveBeenCalledWith('admin')
+      expect(callbacks.onSuccess).toHaveBeenCalledWith(savedRoleAssignment)
       expect(callbacks.onError).not.toHaveBeenCalled()
+      expect(result).toBe(savedRoleAssignment)
     })
 
     it('should invoke onError callback when addRoleAssignment fails', async () => {
@@ -394,7 +404,7 @@ describe('roleAssignmentHelper', () => {
         onError: jest.fn(),
       }
 
-      await saveRoleAssignment(roleAssignment, new Map(), [], [], callbacks)
+      await expect(saveRoleAssignment(roleAssignment, new Map(), [], [], callbacks)).rejects.toThrow('Network error')
 
       expect(callbacks.onSuccess).not.toHaveBeenCalled()
       expect(callbacks.onError).toHaveBeenCalledWith('viewer', expect.any(Error), false)
@@ -417,15 +427,23 @@ describe('roleAssignmentHelper', () => {
         onError: jest.fn(),
       }
 
-      await saveRoleAssignment(roleAssignment, new Map(), [], [], callbacks)
+      await expect(saveRoleAssignment(roleAssignment, new Map(), [], [], callbacks)).rejects.toThrow(
+        'Duplicate role assignment detected'
+      )
 
       expect(callbacks.onError).toHaveBeenCalledWith('editor', expect.any(Error), true)
     })
 
     it('should pass undefined for existingMulticlusterRoleAssignment when not found in map', async () => {
+      const savedRoleAssignment: RoleAssignment = {
+        name: 'saved-role-assignment',
+        clusterRole: 'admin',
+        clusterSelection: { type: 'placements', placements: [] },
+      }
+
       mockFindManagedClusterSetBinding.mockReturnValue([])
       mockGetPlacementsForRoleAssignment.mockReturnValue([])
-      mockAddRoleAssignment.mockResolvedValue({} as never)
+      mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment)
 
       const roleAssignment: RoleAssignmentToSave = {
         clusterRole: 'admin',
@@ -439,13 +457,14 @@ describe('roleAssignmentHelper', () => {
         onError: jest.fn(),
       }
 
-      await saveRoleAssignment(roleAssignment, new Map(), [], [], callbacks)
+      const result = await saveRoleAssignment(roleAssignment, new Map(), [], [], callbacks)
 
       expect(mockAddRoleAssignment).toHaveBeenCalledWith(roleAssignment, {
         existingMulticlusterRoleAssignment: undefined,
         existingManagedClusterSetBindings: [],
         existingPlacements: [],
       })
+      expect(result).toBe(savedRoleAssignment)
     })
 
     it('should find placement matching exact cluster list', async () => {
@@ -454,10 +473,15 @@ describe('roleAssignmentHelper', () => {
         { name: 'placement-2', clusters: ['cluster-1', 'cluster-2'] },
       ])
       const existingPlacements = [placementClusters[0].placement]
+      const savedRoleAssignment: RoleAssignment = {
+        name: 'saved-role-assignment',
+        clusterRole: 'admin',
+        clusterSelection: { type: 'placements', placements: [{ name: 'placement-1', namespace: 'test-ns' }] },
+      }
 
       mockFindManagedClusterSetBinding.mockReturnValue([])
       mockGetPlacementsForRoleAssignment.mockReturnValue(existingPlacements)
-      mockAddRoleAssignment.mockResolvedValue({} as never)
+      mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment)
 
       const roleAssignment: RoleAssignmentToSave = {
         clusterRole: 'admin',
@@ -471,7 +495,7 @@ describe('roleAssignmentHelper', () => {
         onError: jest.fn(),
       }
 
-      await saveRoleAssignment(roleAssignment, new Map(), [], placementClusters, callbacks)
+      const result = await saveRoleAssignment(roleAssignment, new Map(), [], placementClusters, callbacks)
 
       // Should find placement-1 which exactly matches ['cluster-1']
       expect(mockAddRoleAssignment).toHaveBeenCalledWith(
@@ -480,6 +504,7 @@ describe('roleAssignmentHelper', () => {
           existingPlacements,
         })
       )
+      expect(result).toBe(savedRoleAssignment)
     })
 
     it('should handle group subjects correctly', async () => {
@@ -487,9 +512,15 @@ describe('roleAssignmentHelper', () => {
       const existingBySubjectRole = new Map<string, MulticlusterRoleAssignment>()
       existingBySubjectRole.set(`${GroupKind}|developers`, existingMcra)
 
+      const savedRoleAssignment: RoleAssignment = {
+        name: 'saved-role-assignment',
+        clusterRole: 'admin',
+        clusterSelection: { type: 'placements', placements: [] },
+      }
+
       mockFindManagedClusterSetBinding.mockReturnValue([])
       mockGetPlacementsForRoleAssignment.mockReturnValue([])
-      mockAddRoleAssignment.mockResolvedValue({} as never)
+      mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment)
 
       const roleAssignment: RoleAssignmentToSave = {
         clusterRole: 'admin',
@@ -503,7 +534,7 @@ describe('roleAssignmentHelper', () => {
         onError: jest.fn(),
       }
 
-      await saveRoleAssignment(roleAssignment, existingBySubjectRole, [], [], callbacks)
+      const result = await saveRoleAssignment(roleAssignment, existingBySubjectRole, [], [], callbacks)
 
       expect(mockAddRoleAssignment).toHaveBeenCalledWith(
         roleAssignment,
@@ -511,7 +542,8 @@ describe('roleAssignmentHelper', () => {
           existingMulticlusterRoleAssignment: existingMcra,
         })
       )
-      expect(callbacks.onSuccess).toHaveBeenCalledWith('admin')
+      expect(callbacks.onSuccess).toHaveBeenCalledWith(savedRoleAssignment)
+      expect(result).toBe(savedRoleAssignment)
     })
   })
 
@@ -547,7 +579,18 @@ describe('roleAssignmentHelper', () => {
     })
 
     it('should save all role assignments and show success toasts', async () => {
-      mockAddRoleAssignment.mockResolvedValue({} as never)
+      const savedRoleAssignment1: RoleAssignment = {
+        name: 'saved-role-assignment-1',
+        clusterRole: 'admin',
+        clusterSelection: { type: 'placements', placements: [] },
+      }
+      const savedRoleAssignment2: RoleAssignment = {
+        name: 'saved-role-assignment-2',
+        clusterRole: 'viewer',
+        clusterSelection: { type: 'placements', placements: [] },
+      }
+
+      mockAddRoleAssignment.mockResolvedValueOnce(savedRoleAssignment1).mockResolvedValueOnce(savedRoleAssignment2)
 
       const roleAssignmentsToSave: RoleAssignmentToSave[] = [
         {
@@ -564,7 +607,14 @@ describe('roleAssignmentHelper', () => {
         },
       ]
 
-      await saveAllRoleAssignments(roleAssignmentsToSave, new Map(), [], [], mockToastContext, mockT as never)
+      const result = await saveAllRoleAssignments(
+        roleAssignmentsToSave,
+        new Map(),
+        [],
+        [],
+        mockToastContext,
+        mockT as never
+      )
 
       expect(mockAddRoleAssignment).toHaveBeenCalledTimes(2)
       expect(mockToastContext.addAlert).toHaveBeenCalledTimes(2)
@@ -580,6 +630,7 @@ describe('roleAssignmentHelper', () => {
         type: 'success',
         autoClose: true,
       })
+      expect(result).toEqual([savedRoleAssignment1, savedRoleAssignment2])
     })
 
     it('should show error toast when role assignment fails', async () => {
@@ -594,7 +645,9 @@ describe('roleAssignmentHelper', () => {
         },
       ]
 
-      await saveAllRoleAssignments(roleAssignmentsToSave, new Map(), [], [], mockToastContext, mockT as never)
+      await expect(
+        saveAllRoleAssignments(roleAssignmentsToSave, new Map(), [], [], mockToastContext, mockT as never)
+      ).rejects.toThrow('Network error')
 
       expect(mockToastContext.addAlert).toHaveBeenCalledWith({
         title: 'Role assignment creation failed',
@@ -616,7 +669,9 @@ describe('roleAssignmentHelper', () => {
         },
       ]
 
-      await saveAllRoleAssignments(roleAssignmentsToSave, new Map(), [], [], mockToastContext, mockT as never)
+      await expect(
+        saveAllRoleAssignments(roleAssignmentsToSave, new Map(), [], [], mockToastContext, mockT as never)
+      ).rejects.toThrow('Duplicate role assignment detected')
 
       expect(mockToastContext.addAlert).toHaveBeenCalledWith({
         title: 'Role assignment creation failed',
@@ -627,7 +682,13 @@ describe('roleAssignmentHelper', () => {
     })
 
     it('should handle mixed success and failure scenarios', async () => {
-      mockAddRoleAssignment.mockResolvedValueOnce({} as never).mockRejectedValueOnce(new Error('Network error'))
+      const savedRoleAssignment: RoleAssignment = {
+        name: 'saved-role-assignment',
+        clusterRole: 'admin',
+        clusterSelection: { type: 'placements', placements: [] },
+      }
+
+      mockAddRoleAssignment.mockResolvedValueOnce(savedRoleAssignment).mockRejectedValueOnce(new Error('Network error'))
 
       const roleAssignmentsToSave: RoleAssignmentToSave[] = [
         {
@@ -644,7 +705,9 @@ describe('roleAssignmentHelper', () => {
         },
       ]
 
-      await saveAllRoleAssignments(roleAssignmentsToSave, new Map(), [], [], mockToastContext, mockT as never)
+      await expect(
+        saveAllRoleAssignments(roleAssignmentsToSave, new Map(), [], [], mockToastContext, mockT as never)
+      ).rejects.toThrow('Network error')
 
       expect(mockToastContext.addAlert).toHaveBeenCalledTimes(2)
       expect(mockToastContext.addAlert).toHaveBeenCalledWith(expect.objectContaining({ type: 'success' }))
@@ -652,10 +715,11 @@ describe('roleAssignmentHelper', () => {
     })
 
     it('should handle empty role assignments array', async () => {
-      await saveAllRoleAssignments([], new Map(), [], [], mockToastContext, mockT as never)
+      const result = await saveAllRoleAssignments([], new Map(), [], [], mockToastContext, mockT as never)
 
       expect(mockAddRoleAssignment).not.toHaveBeenCalled()
       expect(mockToastContext.addAlert).not.toHaveBeenCalled()
+      expect(result).toEqual([])
     })
 
     it('should pass existing role assignments to saveRoleAssignment', async () => {
@@ -672,7 +736,13 @@ describe('roleAssignmentHelper', () => {
       const existingBySubjectRole = new Map<string, MulticlusterRoleAssignment>()
       existingBySubjectRole.set(`${UserKind}|user1`, existingMcra)
 
-      mockAddRoleAssignment.mockResolvedValue({} as never)
+      const savedRoleAssignment: RoleAssignment = {
+        name: 'saved-role-assignment',
+        clusterRole: 'admin',
+        clusterSelection: { type: 'placements', placements: [] },
+      }
+
+      mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment)
 
       const roleAssignmentsToSave: RoleAssignmentToSave[] = [
         {
@@ -683,7 +753,7 @@ describe('roleAssignmentHelper', () => {
         },
       ]
 
-      await saveAllRoleAssignments(
+      const result = await saveAllRoleAssignments(
         roleAssignmentsToSave,
         existingBySubjectRole,
         [],
@@ -698,10 +768,17 @@ describe('roleAssignmentHelper', () => {
           existingMulticlusterRoleAssignment: existingMcra,
         })
       )
+      expect(result).toEqual([savedRoleAssignment])
     })
 
     it('should handle group subjects correctly', async () => {
-      mockAddRoleAssignment.mockResolvedValue({} as never)
+      const savedRoleAssignment: RoleAssignment = {
+        name: 'saved-role-assignment',
+        clusterRole: 'admin',
+        clusterSelection: { type: 'placements', placements: [] },
+      }
+
+      mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment)
 
       const roleAssignmentsToSave: RoleAssignmentToSave[] = [
         {
@@ -712,7 +789,14 @@ describe('roleAssignmentHelper', () => {
         },
       ]
 
-      await saveAllRoleAssignments(roleAssignmentsToSave, new Map(), [], [], mockToastContext, mockT as never)
+      const result = await saveAllRoleAssignments(
+        roleAssignmentsToSave,
+        new Map(),
+        [],
+        [],
+        mockToastContext,
+        mockT as never
+      )
 
       expect(mockAddRoleAssignment).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -721,6 +805,7 @@ describe('roleAssignmentHelper', () => {
         expect.anything()
       )
       expect(mockToastContext.addAlert).toHaveBeenCalledWith(expect.objectContaining({ type: 'success' }))
+      expect(result).toEqual([savedRoleAssignment])
     })
   })
 })

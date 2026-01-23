@@ -64,6 +64,21 @@ describe('RoleAssignmentStatusComponent', () => {
   })
 
   describe('tooltips', () => {
+    it('Active', () => {
+      // Arrange
+      render(
+        <RoleAssignmentStatusComponent
+          status={{ name: 'x', status: 'Active', reason: 'ACTIVE_REASON', message: 'active message' }}
+        />
+      )
+
+      // Act
+      userEvent.hover(screen.getByText('Active'))
+
+      // Assert
+      expect(screen.getByText('ACTIVE_REASON: active message')).toBeInTheDocument()
+    })
+
     it('Error', () => {
       // Arrange
       render(
@@ -81,13 +96,17 @@ describe('RoleAssignmentStatusComponent', () => {
 
     it('Pending', () => {
       // Arrange
-      render(<RoleAssignmentStatusComponent status={{ name: 'x', status: 'Pending', reason: 'whatever the reason' }} />)
+      render(
+        <RoleAssignmentStatusComponent
+          status={{ name: 'x', status: 'Pending', reason: 'PENDING_REASON', message: 'pending message' }}
+        />
+      )
 
       // Act
       userEvent.hover(screen.getByText('Pending'))
 
       // Assert
-      expect(screen.getByText('Role assignment is being applied')).toBeInTheDocument()
+      expect(screen.getByText('PENDING_REASON: pending message')).toBeInTheDocument()
     })
   })
 })

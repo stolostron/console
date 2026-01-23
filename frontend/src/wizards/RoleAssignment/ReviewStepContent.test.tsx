@@ -3,6 +3,7 @@
 import { render, screen } from '@testing-library/react'
 import { ReviewStepContent } from './ReviewStepContent'
 import { RoleAssignmentWizardFormData } from './types'
+import { ManagedClusterSet } from '../../resources'
 
 // Mock the translation hook
 jest.mock('../../lib/acm-i18next', () => ({
@@ -95,7 +96,11 @@ describe('ReviewStepContent', () => {
     )
 
     expect(screen.getByText('Scope')).toBeInTheDocument()
-    expect(screen.getByText('All clusters')).toBeInTheDocument()
+    expect(screen.getByText('Access level')).toBeInTheDocument()
+    // Test for either "All clusters" (staged) or "All current and future clusters" (unstaged changes)
+    expect(screen.getByText(/All (current and future )?clusters/)).toBeInTheDocument()
+    expect(screen.getByText('Projects')).toBeInTheDocument()
+    expect(screen.getByText('Full access')).toBeInTheDocument()
   })
 
   it('renders Scope section for Select cluster sets', () => {
@@ -103,7 +108,10 @@ describe('ReviewStepContent', () => {
       <ReviewStepContent
         formData={createFormData({
           scopeType: 'Select cluster sets',
-          selectedClusterSets: [{ metadata: { name: 'cluster-set-1' } }, { metadata: { name: 'cluster-set-2' } }],
+          selectedClusterSets: [
+            { metadata: { name: 'cluster-set-1' } },
+            { metadata: { name: 'cluster-set-2' } },
+          ] as ManagedClusterSet[],
         })}
       />
     )
@@ -130,7 +138,7 @@ describe('ReviewStepContent', () => {
       <ReviewStepContent
         formData={createFormData({
           scopeType: 'Select cluster sets',
-          selectedClusterSets: [{ metadata: { name: 'cs-1' } }],
+          selectedClusterSets: [{ metadata: { name: 'cs-1' } }] as ManagedClusterSet[],
         })}
       />
     )
@@ -285,7 +293,7 @@ describe('ReviewStepContent', () => {
       <ReviewStepContent
         formData={createFormData({
           scopeType: 'Select cluster sets',
-          selectedClusterSets: [{ metadata: { name: 'cs-1' } }],
+          selectedClusterSets: [{ metadata: { name: 'cs-1' } }] as ManagedClusterSet[],
           selectedClusters: [],
         })}
       />

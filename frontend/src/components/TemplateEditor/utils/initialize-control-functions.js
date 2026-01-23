@@ -181,10 +181,10 @@ export function setSourcePaths(yaml, otherYAMLTabs = [], controlData) {
     const { id: tabId, templateYAML } = tab
     const { parsed: tabParsed } = parseYAML(templateYAML)
     syncControlData(tabParsed, controlData, controlMap, tabId)
-    tab.templateYAML = templateYAML.replace(/\s*##.+$/gm, '') // remove source markers
+    tab.templateYAML = templateYAML.replaceAll(/\s*##.+$/gm, '') // remove source markers
   })
   syncControlData(parsed, controlData, controlMap, '<<main>>')
-  return yaml.replace(/\s*##.+$/gm, '') // remove source markers
+  return yaml.replaceAll(/\s*##.+$/gm, '') // remove source markers
 }
 
 //point control to what template value it changes

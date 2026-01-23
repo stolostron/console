@@ -404,8 +404,8 @@ export const stringify = (resources: any[]) => {
   resources.forEach((resource: any) => {
     if (!isEmpty(resource)) {
       let yaml = YAML.stringify(resource, { sortMapEntries })
-      yaml = yaml.replace(/'\d+':(\s|$)\s*/gm, '- ')
-      yaml = yaml.replace(/:\s*null$/gm, ':')
+      yaml = yaml.replaceAll(/'\d+':(\s|$)\s*/gm, '- ')
+      yaml = yaml.replaceAll(/:\s*null$/gm, ':')
       yamls.push(yaml)
     }
   })

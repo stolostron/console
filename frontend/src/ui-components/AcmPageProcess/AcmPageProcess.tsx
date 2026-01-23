@@ -50,7 +50,6 @@ export function AcmPageProcess(props: AcmPageProccessProps) {
     <div className={container}>
       <AcmPageCard>
         <EmptyState icon={TrashIcon}>
-          {/* eslint-disable-next-line jsx-a11y/alt-text */}
           <EmptyStateFooter>
             <div className={body}>
               <Title size="lg" headingLevel="h4">

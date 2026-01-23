@@ -79,7 +79,7 @@ class YamlInline {
         // remove comments
         pos = output.indexOf(' #')
         if (pos != -1) {
-          output = output.substr(0, pos).replace(/\s+$/g, '')
+          output = output.substr(0, pos).replaceAll(/\s+$/g, '')
         }
       } else if (matches) {
         output = matches[1]
@@ -299,7 +299,7 @@ class YamlInline {
   }
 
   isNumeric(input) {
-    return input - 0 == input && input.length > 0 && input.replace(/\s+/g, '') != ''
+    return input - 0 == input && input.length > 0 && input.replaceAll(/\s+/g, '') != ''
   }
 
   inArray(key, tab) {
@@ -324,13 +324,13 @@ class YamlInline {
   }
 
   octdec(input) {
-    return Number.parseInt((input + '').replace(/[^0-7]/gi, ''), 8)
+    return Number.parseInt((input + '').replaceAll(/[^0-7]/gi, ''), 8)
   }
 
   hexdec(input) {
     input = this.trim(input)
     if ((input + '').substr(0, 2) == '0x') input = (input + '').substring(2)
-    return Number.parseInt((input + '').replace(/[^a-f0-9]/gi, ''), 16)
+    return Number.parseInt((input + '').replaceAll(/[^a-f0-9]/gi, ''), 16)
   }
 
   strtotime(h, b) {
@@ -339,7 +339,7 @@ class YamlInline {
       g,
       k,
       d = ''
-    h = (h + '').replace(/\s{2,}|^\s|\s$/g, ' ').replace(/[\t\r\n]/g, '')
+    h = (h + '').replaceAll(/\s{2,}|^\s|\s$/g, ' ').replaceAll(/[\t\r\n]/g, '')
     if (h === 'now') {
       return b === null || Number.isNaN(b) ? new Date().getTime() || 0 : b || 0
     } else {
@@ -488,7 +488,7 @@ YamlInline.REGEX_QUOTED_STRING = "(?:\"(?:[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*)\"|'(?:
 
 class YamlUnescaper {
   unescapeSingleQuotedString(value) {
-    return value.replace(/''/g, "'")
+    return value.replaceAll("''", "'")
   }
 
   unescapeDoubleQuotedString(value) {
@@ -963,7 +963,7 @@ class YamlParser {
   }
 
   getCurrentLineIndentation() {
-    return this.currentLine.length - this.currentLine.replace(/^ +/g, '').length
+    return this.currentLine.length - this.currentLine.replaceAll(/^ +/g, '').length
   }
 
   getNextEmbedBlock(indentation) {
@@ -1157,7 +1157,7 @@ class YamlParser {
 
       return this.parseFoldedScalar(
         matches.separator,
-        modifiers.replace(/\d+/g, ''),
+        modifiers.replaceAll(/\d+/g, ''),
         Math.abs(Number.parseInt(modifiers, 10))
       )
     }
@@ -1242,17 +1242,17 @@ class YamlParser {
     }
 
     if (' ' == separator) {
-      text = text.replace(/ (\n*)$/g, '\n$1')
+      text = text.replaceAll(/ (\n*)$/g, '\n$1')
     }
 
     switch (indicator) {
       case '':
-        text = text.replace(/\n+$/g, '\n')
+        text = text.replaceAll(/\n+$/g, '\n')
         break
       case '+':
         break
       case '-':
-        text = text.replace(/\n+$/g, '')
+        text = text.replaceAll(/\n+$/g, '')
         break
     }
 
@@ -1290,7 +1290,7 @@ class YamlParser {
   }
 
   isCurrentLineComment() {
-    var ltrimmedLine = this.currentLine.replace(/^ +/g, '')
+    var ltrimmedLine = this.currentLine.replaceAll(/^ +/g, '')
     return ltrimmedLine.charAt(0) == '#'
   }
 
@@ -1330,7 +1330,7 @@ class YamlParser {
       value = trimmedValue
 
       // remove end of the document marker (...)
-      value = value.replace(/\.\.\.\s*$/g, '')
+      value = value.replaceAll(/\.\.\.\s*$/g, '')
     }
 
     return value

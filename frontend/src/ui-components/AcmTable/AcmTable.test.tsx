@@ -1106,7 +1106,7 @@ describe('AcmTable', () => {
           {
             label: 'Cluster',
             id: 'cluster',
-            options: Array.from(Array(300).keys()).map((inx) => {
+            options: Array.from(new Array(300).keys()).map((inx) => {
               return { label: `cluster${inx + 1}`, value: `cluster${inx + 1}` }
             }),
             tableFilterFn: (selectedValues: string[], item: IExampleData) => {

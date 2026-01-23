@@ -289,7 +289,6 @@ class ControlPanel extends React.Component {
             const groupType = card && Array.isArray(card.active) ? card.active.join() : 'general'
 
             return (
-              /* eslint-disable-next-line react/no-array-index-key */
               <React.Fragment key={`${controlData[0].id}Group${inx}`}>
                 <div className="creation-view-group-container" key={groupType}>
                   {prompts &&
@@ -654,7 +653,7 @@ class ControlPanel extends React.Component {
       const nname = controlData.find(({ id }) => id === 'name')
       if (nname) {
         if (control.active.length > 0) {
-          cname = control.updateNamePrefix + control.availableMap[control.active[0]].name.replace(/\W/g, '-')
+          cname = control.updateNamePrefix + control.availableMap[control.active[0]].name.replaceAll(/\W/g, '-')
         } else {
           cname = originalControlData.find(({ id }) => id === 'name').active
         }

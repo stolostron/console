@@ -17,7 +17,7 @@ jest.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: any) => {
       if (options) {
-        return key.replace(/{{(\w+)}}/g, (match, placeholder) => options[placeholder] || match)
+        return key.replaceAll(/{{(\w+)}}/g, (match, placeholder) => options[placeholder] || match)
       }
       return key.replace('public~', '')
     },

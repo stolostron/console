@@ -229,7 +229,7 @@ export function getAppNamespace(resource: IResource) {
 
 export const getApplicationStatuses = (resource: IResource, type: 'health' | 'synced' | 'deployed') => {
   const uidata = (resource as IUIResource).uidata
-  const allCounts = Array(ScoreColumnSize).fill(0) as number[]
+  const allCounts = new Array(ScoreColumnSize).fill(0) as number[]
   if (
     Array.isArray(uidata?.appClusterStatuses) &&
     uidata.appClusterStatuses.length > 0 &&
@@ -269,7 +269,7 @@ const renderPopoverContent = (
             // Remove leading underscore and "condition" from the key
             let cleanedKey = message.key.replace(/^_/, '').replace(/^condition/i, '')
             // Add space before each capitalized letter
-            cleanedKey = cleanedKey.replace(/([A-Z])/g, ' $1')
+            cleanedKey = cleanedKey.replaceAll(/([A-Z])/g, ' $1')
             // Capitalize the first letter and trim any leading space
             cleanedKey = cleanedKey.charAt(0).toUpperCase() + cleanedKey.slice(1)
             cleanedKey = cleanedKey.trim()

@@ -26,7 +26,6 @@ export function checkOCPVersion(switcherExists: (arg0: boolean) => void) {
       }
     })
     .catch((error) => {
-      // eslint-disable-next-line no-console
       console.error(error)
       switcherExists(false)
     })

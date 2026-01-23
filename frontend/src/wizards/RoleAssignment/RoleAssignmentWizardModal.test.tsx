@@ -1,8 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RoleAssignmentWizardModal } from './RoleAssignmentWizardModal'
+import React from 'react'
 
 // Mock the translation hook
 jest.mock('../../lib/acm-i18next', () => ({
@@ -107,19 +108,23 @@ jest.mock('./Scope/ExampleScope/ExampleScopesPanelContent', () => ({
   ExampleScopesPanelContent: () => <div data-testid="example-scopes-panel">Example Scopes</div>,
 }))
 
+const mockClusterList = jest.fn()
 jest.mock('./Scope/Clusters/ClusterList', () => ({
-  ClusterList: (props: any) => (
-    <div data-testid="cluster-list">
-      <button
-        data-testid="select-cluster-in-list"
-        onClick={() => {
-          props.onSelectCluster?.([{ metadata: { name: 'cluster-from-list' } }])
-        }}
-      >
-        Select cluster
-      </button>
-    </div>
-  ),
+  ClusterList: (props: any) => {
+    mockClusterList(props)
+    return (
+      <div data-testid="cluster-list">
+        <button
+          data-testid="select-cluster-in-list"
+          onClick={() => {
+            props.onSelectCluster?.([{ metadata: { name: 'cluster-from-list' } }])
+          }}
+        >
+          Select cluster
+        </button>
+      </div>
+    )
+  },
 }))
 
 jest.mock('./Scope/AccessLevel/ClusterSetAccessLevel', () => ({
@@ -148,6 +153,7 @@ describe('RoleAssignmentWizardModal - Wizard Step Validation', () => {
     jest.clearAllMocks()
     mockClusterGranularityStepContent.mockClear()
     mockAcmSelect.mockClear()
+    mockClusterList.mockClear()
   })
 
   describe('Scope Selection Step - isNextDisabled validation', () => {
@@ -553,6 +559,38 @@ describe('RoleAssignmentWizardModal - Wizard Step Validation', () => {
         expect(screen.getByText('Create role assignment for {{preselected}}')).toBeInTheDocument()
       })
     })
+
+    it('should show preselected cluster set in title', async () => {
+      renderWithRouter(
+        <RoleAssignmentWizardModal
+          {...defaultProps}
+          preselected={{
+            context: 'clusterSets',
+            clusterSetNames: ['my-cluster-set'],
+          }}
+        />
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText('Create role assignment for {{preselected}}')).toBeInTheDocument()
+      })
+    })
+
+    it('should show multiple preselected cluster sets joined in title', async () => {
+      renderWithRouter(
+        <RoleAssignmentWizardModal
+          {...defaultProps}
+          preselected={{
+            context: 'clusterSets',
+            clusterSetNames: ['cluster-set-1', 'cluster-set-2'],
+          }}
+        />
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText('Create role assignment for {{preselected}}')).toBeInTheDocument()
+      })
+    })
   })
 
   describe('Step visibility based on preselected context', () => {
@@ -594,7 +632,47 @@ describe('RoleAssignmentWizardModal - Wizard Step Validation', () => {
       })
 
       // showIdentitiesStep = preselected?.context !== 'identity' &&
-      //   (isEditing || (!isEditing && (preselected?.roles?.[0] || preselected?.clusterNames?.[0]) && !preselected?.subject))
+      //   (isEditing || (!isEditing && (preselected?.roles?.[0] || preselected?.clusterSetNames?.[0] || preselected?.clusterNames?.[0]) && !preselected?.subject))
+    })
+
+    it('should show identities step when preselected has clusterSetNames but no subject', async () => {
+      renderWithRouter(
+        <RoleAssignmentWizardModal
+          {...defaultProps}
+          preselected={{
+            context: 'clusterSets',
+            clusterSetNames: ['my-cluster-set'],
+          }}
+        />
+      )
+
+      await waitFor(() => {
+        // The IdentitiesList mock should be called
+        expect(mockIdentitiesList).toHaveBeenCalled()
+      })
+
+      // showIdentitiesStep includes preselected?.clusterSetNames?.[0] in the condition
+    })
+
+    it('should not show identities step when preselected has clusterSetNames and subject', async () => {
+      mockIdentitiesList.mockClear()
+      renderWithRouter(
+        <RoleAssignmentWizardModal
+          {...defaultProps}
+          preselected={{
+            context: 'clusterSets',
+            clusterSetNames: ['my-cluster-set'],
+            subject: { kind: 'User', value: 'test-user' },
+          }}
+        />
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText('Create role assignment for {{preselected}}')).toBeInTheDocument()
+      })
+
+      // showIdentitiesStep should be false because subject is provided
+      expect(mockIdentitiesList).not.toHaveBeenCalled()
     })
 
     it('should hide scope selection sub-step when preselected context is "cluster"', async () => {
@@ -612,7 +690,44 @@ describe('RoleAssignmentWizardModal - Wizard Step Validation', () => {
         expect(screen.getByText('Create role assignment for {{preselected}}')).toBeInTheDocument()
       })
 
-      // The scope-selection step has isHidden={preselected?.context === 'cluster'}
+      // The scope-selection step has isHidden={(['cluster', 'clusterSets']).includes(preselected?.context)}
+    })
+
+    it('should hide scope selection sub-step when preselected context is "clusterSets"', async () => {
+      renderWithRouter(
+        <RoleAssignmentWizardModal
+          {...defaultProps}
+          preselected={{
+            context: 'clusterSets',
+            clusterSetNames: ['my-cluster-set'],
+          }}
+        />
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText('Create role assignment for {{preselected}}')).toBeInTheDocument()
+      })
+
+      // The scope-selection step has isHidden={(['cluster', 'clusterSets']).includes(preselected?.context)}
+      // So scope selection should be hidden when context is 'clusterSets'
+    })
+
+    it('should show scope selection sub-step when preselected context is not "cluster" or "clusterSets"', async () => {
+      renderWithRouter(
+        <RoleAssignmentWizardModal
+          {...defaultProps}
+          preselected={{
+            context: 'role',
+            roles: ['admin'],
+          }}
+        />
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText('Create role assignment for {{preselected}}')).toBeInTheDocument()
+      })
+
+      // The scope-selection step should be visible when context is 'role'
     })
   })
 
@@ -660,19 +775,74 @@ describe('RoleAssignmentWizardModal - Wizard Step Validation', () => {
         expect(screen.getByText('Create role assignment')).toBeInTheDocument()
       })
 
-      // First select clusters
-      const selectClustersBtn = screen.queryByTestId('select-clusters')
-      if (selectClustersBtn) {
-        fireEvent.click(selectClustersBtn)
-      }
+      const scopeProps = mockScopeSelectionStepContent.mock.calls[0][0]
+      const onSelectClusterSets = scopeProps.onSelectClusterSets
+      const onSelectClusters = scopeProps.onSelectClusters
 
-      // Then select cluster sets - this should clear clusters
-      const selectClusterSetsBtn = screen.queryByTestId('select-cluster-sets')
-      if (selectClusterSetsBtn) {
-        fireEvent.click(selectClusterSetsBtn)
-      }
+      onSelectClusters([{ metadata: { name: 'test-cluster' } }])
 
-      // handleClusterSetsChange calls setSelectedClusters([])
+      onSelectClusterSets([{ metadata: { name: 'test-cluster-set' } }])
+
+      await waitFor(() => {
+        const calls = mockScopeSelectionStepContent.mock.calls
+        const lastCall = calls[calls.length - 1]
+        expect(lastCall[0].selectedClusters).toEqual([])
+        expect(lastCall[0].selectedClusterSets).toEqual([{ metadata: { name: 'test-cluster-set' } }])
+      })
+    })
+
+    it('should clear namespaces when cluster sets are deselected', async () => {
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Create role assignment')).toBeInTheDocument()
+      })
+
+      const scopeProps = mockScopeSelectionStepContent.mock.calls[0][0]
+      const onSelectClusterSets = scopeProps.onSelectClusterSets
+
+      onSelectClusterSets([{ metadata: { name: 'test-cluster-set' } }])
+
+      await waitFor(() => {
+        const calls = mockScopeSelectionStepContent.mock.calls
+        const lastCall = calls[calls.length - 1]
+        expect(lastCall[0].selectedClusterSets).toEqual([{ metadata: { name: 'test-cluster-set' } }])
+      })
+
+      onSelectClusterSets([])
+
+      await waitFor(() => {
+        const calls = mockScopeSelectionStepContent.mock.calls
+        const lastCall = calls[calls.length - 1]
+        expect(lastCall[0].selectedClusterSets).toEqual([])
+      })
+    })
+
+    it('should clear namespaces when clusters are deselected', async () => {
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Create role assignment')).toBeInTheDocument()
+      })
+
+      const scopeProps = mockScopeSelectionStepContent.mock.calls[0][0]
+      const onSelectClusters = scopeProps.onSelectClusters
+
+      onSelectClusters([{ metadata: { name: 'test-cluster' } }])
+
+      await waitFor(() => {
+        const calls = mockScopeSelectionStepContent.mock.calls
+        const lastCall = calls[calls.length - 1]
+        expect(lastCall[0].selectedClusters).toEqual([{ metadata: { name: 'test-cluster' } }])
+      })
+
+      onSelectClusters([])
+
+      await waitFor(() => {
+        const calls = mockScopeSelectionStepContent.mock.calls
+        const lastCall = calls[calls.length - 1]
+        expect(lastCall[0].selectedClusters).toEqual([])
+      })
     })
   })
 
@@ -953,6 +1123,166 @@ describe('RoleAssignmentWizardModal - Wizard Step Validation', () => {
     })
   })
 
+  describe('isLoading prop behavior', () => {
+    describe('WizardHeader close button', () => {
+      it('should hide close button when isLoading is true', async () => {
+        renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isLoading={true} />)
+
+        await waitFor(() => {
+          expect(screen.getByText('Create role assignment')).toBeInTheDocument()
+        })
+
+        // The WizardHeader has isCloseHidden={isLoading}, so close button should be hidden
+        expect(screen.queryByLabelText('Close wizard')).not.toBeInTheDocument()
+      })
+
+      it('should show close button when isLoading is false', async () => {
+        renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isLoading={false} />)
+
+        await waitFor(() => {
+          expect(screen.getByText('Create role assignment')).toBeInTheDocument()
+        })
+
+        // The WizardHeader has isCloseHidden={isLoading}, so close button should be visible
+        expect(screen.getByLabelText('Close wizard')).toBeInTheDocument()
+      })
+
+      it('should show close button when isLoading is undefined', async () => {
+        renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} />)
+
+        await waitFor(() => {
+          expect(screen.getByText('Create role assignment')).toBeInTheDocument()
+        })
+
+        // When isLoading is undefined, isCloseHidden should be falsy
+        expect(screen.getByLabelText('Close wizard')).toBeInTheDocument()
+      })
+    })
+
+    describe('Review step footer buttons', () => {
+      // Helper to navigate to Review step by clicking through the wizard
+      const navigateToReviewStep = async () => {
+        // Click Next from Scope step (default starting step)
+        let nextButton = screen.getByRole('button', { name: 'Next' })
+        fireEvent.click(nextButton)
+
+        // Wait for Roles step and select a role
+        await waitFor(() => {
+          expect(mockRolesList).toHaveBeenCalled()
+        })
+
+        // Select a role using the mock's callback
+        const rolesListProps = mockRolesList.mock.calls[mockRolesList.mock.calls.length - 1][0]
+        act(() => {
+          rolesListProps.onRadioSelect('admin')
+        })
+
+        // Wait for Next button to be enabled
+        await waitFor(() => {
+          nextButton = screen.getByRole('button', { name: 'Next' })
+          expect(nextButton).not.toBeDisabled()
+        })
+
+        // Click Next to go to Review step
+        fireEvent.click(nextButton)
+
+        // The review step content should now be visible
+        // Use document.querySelector directly since screen.getByTestId has issues with the wizard
+        const reviewContent = document.querySelector('[data-testid="review-step-content"]')
+        expect(reviewContent).toBeInTheDocument()
+      }
+
+      beforeEach(() => {
+        mockRolesList.mockClear()
+      })
+
+      it('should disable Back button when isLoading is true', async () => {
+        renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isLoading={true} />)
+
+        await waitFor(() => {
+          expect(screen.getByText('Create role assignment')).toBeInTheDocument()
+        })
+
+        await navigateToReviewStep()
+
+        const backButton = screen.getByRole('button', { name: 'Back' })
+        expect(backButton).toBeDisabled()
+      })
+
+      it('should enable Back button when isLoading is false', async () => {
+        renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isLoading={false} />)
+
+        await waitFor(() => {
+          expect(screen.getByText('Create role assignment')).toBeInTheDocument()
+        })
+
+        await navigateToReviewStep()
+
+        const backButton = screen.getByRole('button', { name: 'Back' })
+        expect(backButton).not.toBeDisabled()
+      })
+
+      it('should disable Cancel button when isLoading is true', async () => {
+        renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isLoading={true} />)
+
+        await waitFor(() => {
+          expect(screen.getByText('Create role assignment')).toBeInTheDocument()
+        })
+
+        await navigateToReviewStep()
+
+        const cancelButton = screen.getByRole('button', { name: 'Cancel' })
+        expect(cancelButton).toBeDisabled()
+      })
+
+      it('should enable Cancel button when isLoading is false', async () => {
+        renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isLoading={false} />)
+
+        await waitFor(() => {
+          expect(screen.getByText('Create role assignment')).toBeInTheDocument()
+        })
+
+        await navigateToReviewStep()
+
+        const cancelButton = screen.getByRole('button', { name: 'Cancel' })
+        expect(cancelButton).not.toBeDisabled()
+      })
+
+      it('should show loading spinner on Create button when isLoading is true', async () => {
+        renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isLoading={true} />)
+
+        await waitFor(() => {
+          expect(screen.getByText('Create role assignment')).toBeInTheDocument()
+        })
+
+        await navigateToReviewStep()
+
+        // Find the Create button - use getAllByRole and filter since the loading state may affect accessible name
+        const allButtons = screen.getAllByRole('button')
+        const createButton = allButtons.find((b) => b.textContent === 'Create')
+        expect(createButton).toBeInTheDocument()
+        // PatternFly adds pf-m-in-progress class when isLoading is true
+        expect(createButton).toHaveClass('pf-m-in-progress')
+      })
+
+      it('should not show loading spinner on Create button when isLoading is false', async () => {
+        renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isLoading={false} />)
+
+        await waitFor(() => {
+          expect(screen.getByText('Create role assignment')).toBeInTheDocument()
+        })
+
+        await navigateToReviewStep()
+
+        // Find the Create button - use getAllByRole and filter since the loading state may affect accessible name
+        const allButtons = screen.getAllByRole('button')
+        const createButton = allButtons.find((b) => b.textContent === 'Create')
+        expect(createButton).toBeInTheDocument()
+        expect(createButton).not.toHaveClass('pf-m-in-progress')
+      })
+    })
+  })
+
   describe('clusterSetAccessLevel state management via handleClusterSetAccessLevelChange', () => {
     // The handleClusterSetAccessLevelChange callback updates formData.clusterSetAccessLevel
     // It is used by the AcmSelect in the cluster set granularity step
@@ -1127,6 +1457,148 @@ describe('RoleAssignmentWizardModal - Wizard Step Validation', () => {
         const finalCalls = mockAcmSelect.mock.calls.filter((call: any) => call[0].id === 'clusters-set-access-level')
         const lastCall = finalCalls[finalCalls.length - 1]
         expect(lastCall[0].value).toBe('Cluster set role assignment')
+      })
+    })
+  })
+
+  describe('ClusterList namespaces prop handling', () => {
+    // ClusterList.namespaces receives either cs.metadata.name (for ManagedClusterSet objects)
+    // or just cs (for string values)
+
+    it('should pass cluster set names from ManagedClusterSet objects with metadata.name to ClusterList', async () => {
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(mockScopeSelectionStepContent).toHaveBeenCalled()
+      })
+
+      // Set up conditions for cluster set granularity step with ManagedClusterSet objects
+      const scopeStepProps = mockScopeSelectionStepContent.mock.calls[0][0]
+      scopeStepProps.onSelectScopeType('Select cluster sets')
+      scopeStepProps.onSelectClusterSets([
+        { metadata: { name: 'cluster-set-1' } },
+        { metadata: { name: 'cluster-set-2' } },
+      ])
+
+      await waitFor(() => {
+        const lastCall = mockScopeSelectionStepContent.mock.calls[mockScopeSelectionStepContent.mock.calls.length - 1]
+        expect(lastCall[0].selectedScope).toBe('Select cluster sets')
+      })
+
+      // Navigate to the cluster set granularity step
+      const nextButton = screen.getByRole('button', { name: 'Next' })
+      fireEvent.click(nextButton)
+
+      // Wait for AcmSelect to be rendered
+      await waitFor(() => {
+        const clusterSetAccessLevelCalls = mockAcmSelect.mock.calls.filter(
+          (call: any) => call[0].id === 'clusters-set-access-level'
+        )
+        expect(clusterSetAccessLevelCalls.length).toBeGreaterThan(0)
+      })
+
+      // Change to 'Cluster role assignment' to show ClusterList
+      const clusterSetAccessLevelCall = mockAcmSelect.mock.calls.find(
+        (call: any) => call[0].id === 'clusters-set-access-level'
+      )
+      clusterSetAccessLevelCall[0].onChange('Cluster role assignment')
+
+      // Wait for ClusterList to be rendered with the correct namespaces
+      await waitFor(() => {
+        expect(mockClusterList).toHaveBeenCalled()
+        const clusterListCalls = mockClusterList.mock.calls
+        const lastCall = clusterListCalls[clusterListCalls.length - 1]
+        expect(lastCall[0].namespaces).toEqual(['cluster-set-1', 'cluster-set-2'])
+      })
+    })
+
+    it('should pass cluster set names from string values to ClusterList', async () => {
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(mockScopeSelectionStepContent).toHaveBeenCalled()
+      })
+
+      // Set up conditions for cluster set granularity step with string values
+      const scopeStepProps = mockScopeSelectionStepContent.mock.calls[0][0]
+      scopeStepProps.onSelectScopeType('Select cluster sets')
+      // Simulate string values (no metadata property)
+      scopeStepProps.onSelectClusterSets(['cluster-set-a', 'cluster-set-b'])
+
+      await waitFor(() => {
+        const lastCall = mockScopeSelectionStepContent.mock.calls[mockScopeSelectionStepContent.mock.calls.length - 1]
+        expect(lastCall[0].selectedScope).toBe('Select cluster sets')
+      })
+
+      // Navigate to the cluster set granularity step
+      const nextButton = screen.getByRole('button', { name: 'Next' })
+      fireEvent.click(nextButton)
+
+      // Wait for AcmSelect to be rendered
+      await waitFor(() => {
+        const clusterSetAccessLevelCalls = mockAcmSelect.mock.calls.filter(
+          (call: any) => call[0].id === 'clusters-set-access-level'
+        )
+        expect(clusterSetAccessLevelCalls.length).toBeGreaterThan(0)
+      })
+
+      // Change to 'Cluster role assignment' to show ClusterList
+      const clusterSetAccessLevelCall = mockAcmSelect.mock.calls.find(
+        (call: any) => call[0].id === 'clusters-set-access-level'
+      )
+      clusterSetAccessLevelCall[0].onChange('Cluster role assignment')
+
+      // Wait for ClusterList to be rendered with the correct namespaces
+      await waitFor(() => {
+        expect(mockClusterList).toHaveBeenCalled()
+        const clusterListCalls = mockClusterList.mock.calls
+        const lastCall = clusterListCalls[clusterListCalls.length - 1]
+        expect(lastCall[0].namespaces).toEqual(['cluster-set-a', 'cluster-set-b'])
+      })
+    })
+
+    it('should handle mixed ManagedClusterSet objects and string values for ClusterList namespaces', async () => {
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(mockScopeSelectionStepContent).toHaveBeenCalled()
+      })
+
+      // Set up conditions for cluster set granularity step with mixed values
+      const scopeStepProps = mockScopeSelectionStepContent.mock.calls[0][0]
+      scopeStepProps.onSelectScopeType('Select cluster sets')
+      // Simulate mixed values (some with metadata, some as strings)
+      scopeStepProps.onSelectClusterSets([{ metadata: { name: 'cluster-set-with-metadata' } }, 'cluster-set-string'])
+
+      await waitFor(() => {
+        const lastCall = mockScopeSelectionStepContent.mock.calls[mockScopeSelectionStepContent.mock.calls.length - 1]
+        expect(lastCall[0].selectedScope).toBe('Select cluster sets')
+      })
+
+      // Navigate to the cluster set granularity step
+      const nextButton = screen.getByRole('button', { name: 'Next' })
+      fireEvent.click(nextButton)
+
+      // Wait for AcmSelect to be rendered
+      await waitFor(() => {
+        const clusterSetAccessLevelCalls = mockAcmSelect.mock.calls.filter(
+          (call: any) => call[0].id === 'clusters-set-access-level'
+        )
+        expect(clusterSetAccessLevelCalls.length).toBeGreaterThan(0)
+      })
+
+      // Change to 'Cluster role assignment' to show ClusterList
+      const clusterSetAccessLevelCall = mockAcmSelect.mock.calls.find(
+        (call: any) => call[0].id === 'clusters-set-access-level'
+      )
+      clusterSetAccessLevelCall[0].onChange('Cluster role assignment')
+
+      // Wait for ClusterList to be rendered with the correct namespaces
+      await waitFor(() => {
+        expect(mockClusterList).toHaveBeenCalled()
+        const clusterListCalls = mockClusterList.mock.calls
+        const lastCall = clusterListCalls[clusterListCalls.length - 1]
+        expect(lastCall[0].namespaces).toEqual(['cluster-set-with-metadata', 'cluster-set-string'])
       })
     })
   })

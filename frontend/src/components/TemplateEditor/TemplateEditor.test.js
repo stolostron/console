@@ -8,6 +8,7 @@ import TemplateEditor from './TemplateEditor'
 // loads mocked monaco from __mocks__
 import MonacoEditor from 'react-monaco-editor'
 
+// eslint-disable-next-line no-redeclare
 class ResizeObserver {
   observe() {
     // do nothing

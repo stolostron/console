@@ -20,7 +20,7 @@
     "test": "npm run jest --",
     "jest": "TZ=UTC jest",
     "jest:update-snapshot": "npm run jest -- --updateSnapshot",
-    "lint": "eslint src --ext .js,.jsx,.ts,.tsx --max-warnings=0",
+    "lint": "eslint src --max-warnings=0",
     "lint:all": "npm run lint --workspaces --include-workspace-root --if-present",
     "lint:fix": "npm run lint -- --fix",
     "lint:fix:all": "npm run lint:fix --workspaces --include-workspace-root --if-present",

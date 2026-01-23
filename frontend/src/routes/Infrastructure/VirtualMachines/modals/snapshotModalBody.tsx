@@ -37,7 +37,7 @@ enum deadlineUnits {
 }
 
 const generateSnapshotName = (vmName: string) => {
-  const date = new Date().toISOString().replace(/\D/g, '') // yyyyMMddkkmmss
+  const date = new Date().toISOString().replaceAll(/\D/g, '') // yyyyMMddkkmmss
   return `${vmName}-snapshot-${date}`
 }
 

@@ -27,6 +27,26 @@ const RoleLinkCell = ({ roleName }: { roleName: string }) => (
 )
 
 // Component for rendering clickable cluster links
+const ClusterSetLinksCell = ({ clusterSetNames }: { clusterSetNames: string[] }) =>
+  clusterSetNames.length ? (
+    <RoleAssignmentLabel
+      elements={clusterSetNames}
+      numLabel={3}
+      renderElement={(clusterSetName) => (
+        <Link
+          key={clusterSetName}
+          to={generatePath(NavigationPath.clusterSetOverview, {
+            id: clusterSetName,
+          })}
+        >
+          {clusterSetName}
+        </Link>
+      )}
+    />
+  ) : (
+    '-'
+  )
+// Component for rendering clickable cluster links
 const ClusterLinksCell = ({ clusterNames }: { clusterNames: string[] }) => (
   <RoleAssignmentLabel
     elements={clusterNames}
@@ -82,6 +102,9 @@ const renderNamespacesCell = (roleAssignment: FlattenedRoleAssignment) => (
 
 const renderStatusCell = (roleAssignment: FlattenedRoleAssignment) => <StatusCell status={roleAssignment.status} />
 
+const renderClusterSetsCell = (roleAssignment: FlattenedRoleAssignment) => (
+  <ClusterSetLinksCell clusterSetNames={roleAssignment.clusterSetNames} />
+)
 const renderClustersCell = (roleAssignment: FlattenedRoleAssignment) => (
   <ClusterLinksCell clusterNames={roleAssignment.clusterNames} />
 )
@@ -115,8 +138,8 @@ const ActionCell = ({
 type RoleAssignmentsProps = {
   roleAssignments: FlattenedRoleAssignment[]
   isLoading?: boolean
-  hiddenColumns?: ('subject' | 'role' | 'clusters' | 'name')[]
-  hiddenFilters?: ('role' | 'identity' | 'clusters' | 'namespace' | 'status')[]
+  hiddenColumns?: ('subject' | 'role' | 'clusters' | 'clusterSets' | 'name')[]
+  hiddenFilters?: ('role' | 'identity' | 'clusters' | 'clusterSets' | 'namespace' | 'status')[]
   // isCreateButtonHidden?: boolean
   preselected: RoleAssignmentPreselected
 }
@@ -208,6 +231,7 @@ const RoleAssignments = ({
   const filters = useMemo<ITableFilter<FlattenedRoleAssignment>[]>(() => {
     // Get all unique values for filter options
     const allRoles = new Set<string>()
+    const allClusterSets = new Set<string>()
     const allClusters = new Set<string>()
     const allNamespaces = new Set<string>()
     const allStatuses = new Set<string>()
@@ -231,6 +255,9 @@ const RoleAssignments = ({
       }
 
       // Add cluster names and target namespaces
+      for (const clusterSetName of roleAssignment.clusterSetNames) {
+        allClusterSets.add(clusterSetName)
+      }
       for (const clusterName of roleAssignment.clusterNames) {
         allClusters.add(clusterName)
       }
@@ -243,6 +270,9 @@ const RoleAssignments = ({
     const roleOptions = Array.from(allRoles)
       .sort((a, b) => a.localeCompare(b))
       .map((role) => ({ label: role, value: role }))
+    const clusterSetOptions = Array.from(allClusterSets)
+      .sort((a, b) => a.localeCompare(b))
+      .map((cluster) => ({ label: cluster, value: cluster }))
     const clusterOptions = Array.from(allClusters)
       .sort((a, b) => a.localeCompare(b))
       .map((cluster) => ({ label: cluster, value: cluster }))
@@ -279,6 +309,15 @@ const RoleAssignments = ({
           const identityValue = `${roleAssignment.subject.kind}:${roleAssignment.subject.name}`
           return selectedValues.includes(identityValue)
         },
+      },
+      {
+        id: 'clusterSets',
+        label: t('clusterSets'),
+        options: clusterSetOptions,
+        tableFilterFn: (selectedValues, roleAssignment) =>
+          selectedValues.some((selectedClusterSetName) =>
+            roleAssignment.clusterSetNames.includes(selectedClusterSetName)
+          ),
       },
       {
         id: 'clusters',
@@ -375,6 +414,12 @@ const RoleAssignments = ({
       },
       exportContent: (roleAssignment) => `${roleAssignment.subject.kind}: ${roleAssignment.subject.name}`,
       isHidden: hiddenColumns?.includes('subject'),
+    },
+    {
+      header: t('Cluster sets'),
+      cell: renderClusterSetsCell,
+      exportContent: (roleAssignment) => roleAssignment.clusterSetNames.join(', '),
+      isHidden: hiddenColumns?.includes('clusterSets'),
     },
     {
       header: t('Clusters'),
