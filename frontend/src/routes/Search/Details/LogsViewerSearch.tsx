@@ -84,7 +84,7 @@ export const LogViewerSearch: React.FunctionComponent<LogViewerSearchProps> = ({
   /* Updating searchedResults context state given changes in searched input */
   useEffect(() => {
     let foundKeywordIndexes: searchedKeyWordType[] = []
-    const adjustedSearchedInput = searchedInput.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')
+    const adjustedSearchedInput = searchedInput.replaceAll(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')
 
     if (adjustedSearchedInput !== '' && adjustedSearchedInput.length >= minSearchChars) {
       foundKeywordIndexes = searchForKeyword(adjustedSearchedInput, parsedData, itemCount || parsedData.length)

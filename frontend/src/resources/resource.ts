@@ -147,13 +147,13 @@ export async function getResourceApiPath(options: {
 
   if (options.plural) {
     path = join(path, options.plural)
-    return path.replace(/\\/g, '/')
+    return path.replaceAll('\\', '/')
   } else if (options.kind) {
     const pluralName = await getResourcePlural({ apiVersion: options.apiVersion, kind: options.kind })
     path = join(path, pluralName)
   }
 
-  return path.replace(/\\/g, '/')
+  return path.replaceAll('\\', '/')
 }
 
 export async function getResourceNameApiPath(options: {
@@ -169,7 +169,7 @@ export async function getResourceNameApiPath(options: {
     path = join(path, name)
   }
 
-  return path.replace(/\\/g, '/')
+  return path.replaceAll('\\', '/')
 }
 
 export function getResourceNameApiPathTestHelper(options: {
@@ -185,7 +185,7 @@ export function getResourceNameApiPathTestHelper(options: {
     path = join(path, name)
   }
 
-  return path.replace(/\\/g, '/')
+  return path.replaceAll('\\', '/')
 }
 
 export function getResourceApiPathTestHelper(options: {
@@ -210,11 +210,11 @@ export function getResourceApiPathTestHelper(options: {
 
   if (options.plural) {
     path = join(path, options.plural)
-    return path.replace(/\\/g, '/')
+    return path.replaceAll('\\', '/')
   } else if (options.kind) {
     const pluralName = fallbackPlural({ apiVersion: options.apiVersion, kind: options.kind })
     path = join(path, pluralName)
   }
 
-  return path.replace(/\\/g, '/')
+  return path.replaceAll('\\', '/')
 }

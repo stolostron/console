@@ -301,7 +301,7 @@ export const getSourcePath = (path) => {
 export const escapeYAML = (object) => {
   if (object) {
     if (typeof object === 'string') {
-      object = object.replace(/'/g, '')
+      object = object.replaceAll("'", '')
     } else if (Array.isArray(object)) {
       for (let i = 0; i < object.length; i++) {
         const o = object[i]

@@ -81,7 +81,7 @@ class ControlPanelAccordion extends React.Component {
     summary = summary.filter((s) => !!s)
     const label = title || subtitle
     let id = `${controlId}-${label || ''}`
-    id = id.replace(/\s+/g, '-').toLowerCase()
+    id = id.replaceAll(/\s+/g, '-').toLowerCase()
     return (
       <React.Fragment>
         {label || info ? (
