@@ -14,7 +14,7 @@ export function ClusterSetAccessLevel() {
     >
       <PanelMain>
         <PanelMainBody>
-          {t('This role assignment will apply to all current and future resources on the cluster set.')}
+          {t('This role assignment will apply to all current and future resources in all clusters.')}
         </PanelMainBody>
       </PanelMain>
     </Panel>
