@@ -46,15 +46,7 @@ const expectedManagedClusterAction: ManagedClusterAction = {
     namespace: clusterName,
   },
   spec: {
-    cluster: {
-      name: clusterName,
-    },
-    type: 'Action',
     actionType: 'Update',
-    scope: {
-      resourceType: 'configmap',
-      namespace: resourceNamespace,
-    },
     kube: {
       resource: 'configmap',
       name: resourceName,

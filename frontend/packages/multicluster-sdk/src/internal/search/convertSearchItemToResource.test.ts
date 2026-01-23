@@ -3,7 +3,6 @@
 import { convertSearchItemToResource } from './convertSearchItemToResource'
 
 // Helper to convert search items with proper typing for test assertions
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const convert = (item: any): any => convertSearchItemToResource(item)
 
 describe('convertSearchItemToResource', () => {
