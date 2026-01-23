@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { UseK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
 import { useFleetK8sWatchResource } from '@stolostron/multicluster-sdk'
-import '@testing-library/jest-dom/extend-expect'
 import { render, screen } from '@testing-library/react'
 import React from 'react'
 import AcmTimestamp from './AcmTimestamp'
