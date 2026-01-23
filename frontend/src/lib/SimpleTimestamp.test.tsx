@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
-import '@testing-library/jest-dom/extend-expect'
 import SimpleTimestamp from './SimpleTimestamp'
 
 describe('SimpleTimestamp', () => {
