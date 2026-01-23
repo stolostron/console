@@ -148,15 +148,7 @@ describe('fireManagedClusterAction', () => {
           namespace: clusterName,
         },
         spec: {
-          cluster: {
-            name: clusterName,
-          },
-          type: 'Action',
           actionType: 'Delete',
-          scope: {
-            resourceType: 'configmap',
-            namespace: resourceNamespace,
-          },
           kube: {
             resource: 'configmap',
             name: resourceName,
@@ -206,10 +198,6 @@ describe('fireManagedClusterAction', () => {
         ...expectedManagedClusterAction,
         spec: {
           ...expectedManagedClusterAction.spec,
-          scope: {
-            resourceType: 'configmap.v1.apps',
-            namespace: resourceNamespace,
-          },
           kube: {
             resource: 'configmap.v1.apps',
             name: resourceName,
