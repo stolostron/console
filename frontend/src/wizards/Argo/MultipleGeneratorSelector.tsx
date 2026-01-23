@@ -11,7 +11,7 @@ import generatorPlugin from './generators/generator-plugin.yaml'
 import { HelperText, HelperTextItem, Title } from '@patternfly/react-core'
 import get from 'get-value'
 import { klona } from 'klona/json'
-import { useContext, useMemo } from 'react'
+import { useCallback, useContext, useMemo, useState } from 'react'
 import set from 'set-value'
 import {
   useEditMode,
@@ -31,7 +31,6 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { Channel } from './ArgoWizard'
 import { validateWebURL } from '../../lib/validation'
 import { GitRevisionSelect } from './common/GitRevisionSelect'
-import { isEmpty } from 'lodash'
 
 export interface MultipleGeneratorSelectorProps {
   resources: IResource[]
@@ -43,52 +42,83 @@ export interface MultipleGeneratorSelectorProps {
 }
 
 export function MultipleGeneratorSelector(props: MultipleGeneratorSelectorProps) {
-  const appSet = useContext(ItemContext) || ({} as IResource)
+  const item = useContext(ItemContext)
   const { update } = useData() // Wizard framework sets this context
-  let generatorPath = 'spec.generators'
-  let generators = get(appSet, generatorPath)
-  const matrixGenerator = generators?.[0]?.matrix
-  if (matrixGenerator && matrixGenerator.generators) {
-    generatorPath = 'spec.generators.0.matrix.generators'
-    generators = matrixGenerator.generators
-  }
+  const [generatorPath, setGeneratorPath] = useState<string>(() =>
+    get(item, 'spec.generators.0.matrix') ? 'spec.generators.0.matrix.generators' : 'spec.generators'
+  )
 
-  // if there are more than one generator and no matrix generator, add a matrix generator
-  if (generators && generators.length > 1 && !matrixGenerator) {
-    set(appSet, 'spec.generators', [{ matrix: { generators: generators } }], { preservePaths: false })
-    update()
-  }
-  // if is one generator and a matrix generator, remove the matrix generator
-  if (generators && generators.length === 1 && matrixGenerator) {
-    set(appSet, 'spec.generators', generators, { preservePaths: false })
-    update()
-  }
+  // fixup yaml based on what generators are selected
+  const updateTemplate = useCallback(
+    (generators: IResource[]) => {
+      let shouldUpdate = false
+
+      function fix(path: string, value: unknown) {
+        set(item, path, value, { preservePaths: false })
+        shouldUpdate = true
+      }
+
+      const matrixGenerator = get(item, 'spec.generators.0.matrix') ? true : false
+      // if there are more than one generator and no matrix generator, add a matrix generator
+      if (generators && generators.length > 1 && !matrixGenerator) {
+        setGeneratorPath('spec.generators.0.matrix.generators')
+        fix('spec.generators', [{ matrix: { generators: generators } }])
+      }
+      // if is one generator and a matrix generator, remove the matrix generator
+      if (generators && generators.length === 1 && matrixGenerator) {
+        setGeneratorPath('spec.generators')
+        fix('spec.generators', generators)
+      }
+
+      // Check which generator types are present
+      const hasGitGen = generators.some((gen: unknown) => getGeneratorType(gen) === 'git')
+      // const hasListGen = generators?.some((gen) => getGeneratorType(gen) === 'list') ?? false
+      // const hasClustersGen = generators?.some((gen) => getGeneratorType(gen) === 'clusters') ?? false
+      // const hasClusterDecisionResourceGen = generators?.some((gen) => getGeneratorType(gen) === 'clusterDecisionResource') ?? false
+      // const hasScmProviderGen = generators?.some((gen) => getGeneratorType(gen) === 'scmProvider') ?? false
+      // const hasPullRequestGen = generators?.some((gen) => getGeneratorType(gen) === 'pullRequest') ?? false
+      // const hasPluginGen = generators?.some((gen) => getGeneratorType(gen) === 'plugin') ?? false
+
+      const basePath = '{{path.basename}}'
+      const templateNamePath = 'spec.template.metadata.name'
+      const destinationNamePath = 'spec.template.spec.destination.namespace'
+      const templateName = get(item, templateNamePath) ?? ''
+      if (hasGitGen && !templateName.toString().includes(`-${basePath}`)) {
+          fix(templateNamePath, `${templateName}-${basePath}`)
+          fix(destinationNamePath, `${basePath}`)
+      } else {
+        fix(templateNamePath, templateName.toString().replace(`-${basePath}`, ''))
+        fix(destinationNamePath, '')
+      }
+
+      if (shouldUpdate) {
+        update()
+      }
+    },
+    [item, update]
+  )
 
 
   const editMode = useEditMode()
+  const generators = get(item, generatorPath)
   const { t } = useTranslation()
   return (
-      <WizArrayInput
-        key="generators"
-        id="generators"
-        path={generatorPath}
-        placeholder={generators?.length >= 2 ? undefined : t('Add generator')}
-        validation={(value) => {
-          // standard required validation is not compatible with disallowEmpty
-          return !value || (Array.isArray(value) && (value.length === 0 || (value.length === 1 && isEmpty(value[0]))))
-            ? t('Required')
-            : undefined
-        }}
-        required
-        dropdownItems={Specifications.map((specification) => ({
-          label: specification.description,
-          action: () => createGeneratorFromSpecification(specification),
-        }))}
-          collapsedContent={<GeneratorCollapsedContent />}
-        defaultCollapsed={editMode !== EditMode.Create}
-      >
-        <GeneratorInputForm {...props} />
-      </WizArrayInput>
+    <WizArrayInput
+      key="generators"
+      id="generators"
+      path={generatorPath}
+      placeholder={generators?.length >= 2 ? undefined : t('Add generator')}
+      onValueChange={(value) => updateTemplate(value as IResource[])}
+      required
+      dropdownItems={Specifications.map((specification) => ({
+        label: specification.description,
+        action: () => createGeneratorFromSpecification(specification),
+      }))}
+      collapsedContent={<GeneratorCollapsedContent />}
+      defaultCollapsed={editMode !== EditMode.Create}
+    >
+      <GeneratorInputForm {...props} />
+    </WizArrayInput>
   )
 }
 
