@@ -43,7 +43,10 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: useReviewS
   }
 
   const originalClusterNames = useMemo(
-    () => (oldData.clusterNames && oldData.clusterNames.length > 0 ? oldData.clusterNames.sort().join(', ') : null),
+    () =>
+      oldData.clusterNames && oldData.clusterNames.length > 0
+        ? oldData.clusterNames.sort((a, b) => a.localeCompare(b)).join(', ')
+        : null,
     [oldData.clusterNames]
   )
 
@@ -52,7 +55,7 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: useReviewS
       newData.clusterNames && newData.clusterNames.length > 0
         ? newData.clusterNames
             .map((c) => c.metadata?.name || c.name || c)
-            .sort()
+            .sort((a, b) => a.localeCompare(b))
             .join(', ')
         : null,
     [newData.clusterNames]
@@ -74,7 +77,8 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: useReviewS
       hasOriginalNamespaces !== hasCurrentNamespaces ||
       (hasOriginalNamespaces &&
         hasCurrentNamespaces &&
-        JSON.stringify(oldData.namespaces?.sort()) !== JSON.stringify(newData.namespaces?.sort()))
+        JSON.stringify(oldData.namespaces?.sort((a, b) => a.localeCompare(b))) !==
+          JSON.stringify(newData.namespaces?.sort((a, b) => a.localeCompare(b))))
     if (!isEditing || !namespacesChanged) {
       return hasCurrentNamespaces ? newData.namespaces!.join(', ') : t('Full access')
     }
