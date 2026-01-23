@@ -7,10 +7,6 @@ plugin:
       key2: "value2"
       list: ["list", "of", "values"]
       boolean: true
-      map:
-        key1: "value1"
-        key2: "value2"
-        key3: "value3"
   values:
     value1: something
-  requeueAfterSeconds: 30
+  requeueAfterSeconds: 180

@@ -41,7 +41,6 @@ import { ClusterSetMonitor } from './ClusterSetMonitor'
 import { CreateArgoResources } from './CreateArgoResources'
 import { MultipleSourcesSelector } from './MultipleSourcesSelector'
 import { SourceSelector } from './SourceSelector'
-import { useYamlResources } from '../../routes/Applications/Applications'
 import { MultipleGeneratorSelector } from './MultipleGeneratorSelector'
 
 export interface Channel {
@@ -142,7 +141,6 @@ function onlyUnique(value: any, index: any, self: string | any[]) {
 
 export function ArgoWizard(props: ArgoWizardProps) {
   const { resources, isPullModel = false } = props
-  const { yamlResources } = useYamlResources()
   const applicationSet: any = resources?.find((resource) => resource.kind === ApplicationSetKind)
   const source = applicationSet?.spec.template.spec.source
   const sources = applicationSet?.spec.template.spec.sources
@@ -232,7 +230,6 @@ export function ArgoWizard(props: ArgoWizardProps) {
   })
 
   let defaultData
-  console.log('yamlRkklesources', yamlResources)
   if (resources && resources.length > 0) {
     defaultData = resources
   } else {
@@ -507,13 +504,20 @@ export function ArgoWizard(props: ArgoWizardProps) {
         </Step>
         <Step id="generators" label={t('Generators')}>
           <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
-            <MultipleGeneratorSelector
-              resources={props.resources ?? []}
-              gitChannels={gitChannels}
-              channels={props.channels}
-              helmChannels={helmChannels}
-              disableForm={disableForm}
-            />
+            <Section
+              label={t('Generators')}
+              description={t(
+                'Generators determine where applications are deployed by substituting parameter values in a template from which applications are created. Up to two complementary generators may be defined. One might be used to define the clusters and the other the application names.'
+              )}
+            >
+              <MultipleGeneratorSelector
+                resources={props.resources ?? []}
+                gitChannels={gitChannels}
+                channels={props.channels}
+                helmChannels={helmChannels}
+                disableForm={disableForm}
+              />
+            </Section>
           </WizItemSelector>
         </Step>
         <Step id="repository" label={t('Repository')}>

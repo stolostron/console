@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { css } from '@emotion/css'
+//import { css } from '@emotion/css'
 import YAML from 'yaml'
 import generatorClusterDecisionResource from './generators/generator-clusterDecisionResource.yaml'
 import generatorList from './generators/generator-list.yaml'
@@ -22,7 +22,6 @@ import {
   WizHidden,
   WizKeyValue,
   WizSelect,
-  Section,
   useData,
   WizTextInput,
   WizMultiSelect,
@@ -32,6 +31,7 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { Channel } from './ArgoWizard'
 import { validateWebURL } from '../../lib/validation'
 import { GitRevisionSelect } from './common/GitRevisionSelect'
+import { isEmpty } from 'lodash'
 
 export interface MultipleGeneratorSelectorProps {
   resources: IResource[]
@@ -41,22 +41,6 @@ export interface MultipleGeneratorSelectorProps {
   disableForm: boolean
 
 }
-
-const fieldGroupBodyGapOverride = css`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-
-  .pf-v6-c-form__field-group-body {
-    gap: 8px;
-  }
-`
-
-const hideLastChild = css`
-  > * > *:last-child {
-    display: none !important;
-  }
-`
 
 export function MultipleGeneratorSelector(props: MultipleGeneratorSelectorProps) {
   const appSet = useContext(ItemContext) || ({} as IResource)
@@ -84,30 +68,27 @@ export function MultipleGeneratorSelector(props: MultipleGeneratorSelectorProps)
   const editMode = useEditMode()
   const { t } = useTranslation()
   return (
-    <Section
-      label={t('Generators')}
-      description={t(
-        'Generators determine where applications are deployed by substituting parameter values in a template from which applications are created. Up to two complementary generators may be defined. One might be used to define the clusters and the other the application names.'
-      )}
-    >
-      <div className={`${fieldGroupBodyGapOverride} ${generators?.length >= 2 ? hideLastChild : ''}`}>
-        <WizArrayInput
-          key="generators"
-          id="generators"
-          path={generatorPath}
-          placeholder={t('Add generator')}
-          required
-          dropdownItems={Specifications.map((specification) => ({
-            label: specification.description,
-            action: () => createGeneratorFromSpecification(specification),
-          }))}
+      <WizArrayInput
+        key="generators"
+        id="generators"
+        path={generatorPath}
+        placeholder={generators?.length >= 2 ? undefined : t('Add generator')}
+        validation={(value) => {
+          // standard required validation is not compatible with disallowEmpty
+          return !value || (Array.isArray(value) && (value.length === 0 || (value.length === 1 && isEmpty(value[0]))))
+            ? t('Required')
+            : undefined
+        }}
+        required
+        dropdownItems={Specifications.map((specification) => ({
+          label: specification.description,
+          action: () => createGeneratorFromSpecification(specification),
+        }))}
           collapsedContent={<GeneratorCollapsedContent />}
-          defaultCollapsed={editMode !== EditMode.Create}
-        >
-          <GeneratorInputForm {...props} />
-        </WizArrayInput>
-      </div>
-    </Section>
+        defaultCollapsed={editMode !== EditMode.Create}
+      >
+        <GeneratorInputForm {...props} />
+      </WizArrayInput>
   )
 }
 
@@ -120,7 +101,11 @@ function GeneratorCollapsedContent() {
   </div>
 }
 
+// this is an array dependency in Wiz which doesn't compare by stringify
+// so if you change the array object, react thinks the value changed
+// which causes infinite loop 
 const directoryPaths: string[] = []
+
 function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
   const { gitChannels, channels, disableForm } = props
   const generator = useContext(ItemContext)
@@ -146,7 +131,7 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
       {/* Git generator - uses a Git repository to determine target clusters */}
       <WizHidden hidden={() => generatorType !== 'git'}>
         <HelperText>
-          <HelperTextItem>{t('Cluster names are defined in the Placement step')}</HelperTextItem>
+          <HelperTextItem>{t('Use the manifest files in a git repository directory to generate applications')}</HelperTextItem>
         </HelperText>
         <WizSelect
           path="git.repoURL"
@@ -178,11 +163,19 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
             return Array.isArray(value) ? value.map((v: string) => ({ path: v })) : []
           }}
         />
+        <WizSelect
+          path="git.requeueAfterSeconds"
+          label={t('Requeue time')}
+          options={requeueTimes}
+          labelHelp={t('Git requeue time in seconds')}
+          required
+          disabled={disableForm}
+        />
       </WizHidden>
       {/* List generator - uses a list of clusters to determine target clusters */}
       <WizHidden hidden={() => generatorType !== 'list'}>
         <HelperText>
-          <HelperTextItem>{t('Cluster names are defined in the Placement step')}</HelperTextItem>
+          <HelperTextItem>{t('Use the list of clusters to generate applications')}</HelperTextItem>
         </HelperText>
         <WizArrayInput
           path="list.elements"
@@ -206,10 +199,10 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
           />
         </WizArrayInput>
       </WizHidden>
-      {/* Clusters generator - uses a list of clusters to determine target clusters */}
+      {/* Clusters generator - uses a cluster selector to determine target cluster */}
       <WizHidden hidden={() => generatorType !== 'clusters'}>
         <HelperText>
-          <HelperTextItem>{t('Cluster names are defined in the Placement step')}</HelperTextItem>
+          <HelperTextItem>{t('Use a cluster selector to determine target clusters')}</HelperTextItem>
         </HelperText>
         <WizKeyValue
           path="clusters.selector.matchLabels"
@@ -219,10 +212,10 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
           disabled={disableForm}
         />
       </WizHidden>
-      {/* SCM Provider generator - uses a SCM provider to determine target clusters */}
+      {/* SCM Provider generator - uses an SCM provider to determine target clusters */}
       <WizHidden hidden={() => generatorType !== 'scmProvider'}>
         <HelperText>
-          <HelperTextItem>{t('Cluster names are defined in the Placement step')}</HelperTextItem>
+          <HelperTextItem>{t('Use an SCM provider to determine target clusters')}</HelperTextItem>
         </HelperText>
         <WizTextInput
           path="scmProvider.github.organization"
@@ -264,7 +257,7 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
       {/* Pull Request generator - uses a Pull Request to determine target clusters */}
       <WizHidden hidden={() => generatorType !== 'pullRequest'}>
         <HelperText>
-          <HelperTextItem>{t('Cluster names are defined in the Placement step')}</HelperTextItem>
+          <HelperTextItem>{t('Use a Pull Request to determine target clusters')}</HelperTextItem>
         </HelperText>
         <WizTextInput
           path="pullRequest.github.owner"
@@ -324,7 +317,7 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
       {/* Plugin generator - uses a Plugin to determine target clusters */}
       <WizHidden hidden={() => generatorType !== 'plugin'}>
         <HelperText>
-          <HelperTextItem>{t('Cluster names are defined in the Placement step')}</HelperTextItem>
+          <HelperTextItem>{t('Use a Plugin to determine target clusters')}</HelperTextItem>
         </HelperText>
         <WizTextInput
           path="plugin.configMapRef.name"
@@ -373,55 +366,8 @@ function getGeneratorType(generator: unknown): string {
   return 'unknown'
 }
 
-// function isExistingTemplateName(name: string, policies: IResource[]) {
-//   for (const policy of policies) {
-//     const existingTemplates = get(policy, 'spec.policy-templates')
-//     if (Array.isArray(existingTemplates)) {
-//       if (
-//         existingTemplates.find((existingTemplate) => {
-//           return get(existingTemplate, 'objectDefinition.metadata.name') === name
-//         })
-//       ) {
-//         return true
-//       }
-//     }
-//   }
-//   return false
-// }
-
 function createGeneratorFromSpecification(specification: (typeof Specifications)[number]) {
   return klona(specification.generatorTemplate)
-
-  // const generatorName = get(generator, 'metadata.name')
-  // if (policyName) {
-  //   newPolicyTemplates.forEach((t) => {
-  //     const name: string = get(t, 'objectDefinition.metadata.name')
-  //     if (name) {
-  //       set(t, 'objectDefinition.metadata.name', name.replace('{{name}}', policyName))
-  //     }
-  //   })
-  // }
-
-  // // make each policy template name unique in policy and globally
-  // if (policy) {
-  //   const existingTemplates = get(policy, 'spec.policy-templates')
-  //   for (const newPolicyTemplate of newPolicyTemplates) {
-  //     const name: string = get(newPolicyTemplate, 'objectDefinition.metadata.name')
-  //     if (!name) continue
-  //     let counter = 1
-  //     let newName = name
-  //     while (
-  //       (Array.isArray(existingTemplates) &&
-  //         existingTemplates.find((existingTemplate) => {
-  //           return get(existingTemplate, 'objectDefinition.metadata.name') === newName
-  //         })) ||
-  //       isExistingTemplateName(newName, props.resources)
-  //     ) {
-  //       newName = name + '-' + (counter++).toString()
-  //     }
-  //     set(newPolicyTemplate, 'objectDefinition.metadata.name', newName)
-  //   }
-  // }
 }
 
 export const Specifications: {

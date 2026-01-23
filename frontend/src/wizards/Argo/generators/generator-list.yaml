@@ -1,4 +1,4 @@
 list:
   elements:
-    - cluster: 
-      url:
+    - cluster: engineering-dev
+      url: https://kubernetes.default.svc

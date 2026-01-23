@@ -51,7 +51,7 @@ export function MultipleSourcesSelector(props: MultipleSourcesSelectorProps) {
 
           <WizHidden hidden={(data) => data.repositoryType !== 'git'}>
             <Label style={{ marginRight: 10 }} color="grey">
-              {t('Git')}
+              {t('Got')}
             </Label>
           </WizHidden>
           <WizHidden hidden={(data) => data.repositoryType !== 'helm'}>

@@ -24,7 +24,7 @@ import {
 import { listResources, reconcileResources } from '../../../resources/utils'
 import { AcmToastContext } from '../../../ui-components'
 import { argoAppSetQueryString } from './actions'
-import schema from './schema.json'
+import pushmodelschema from './pushmodelschema.json'
 import { GetGitOpsClusters } from './CreateApplicationArgo'
 import { get, set } from 'lodash'
 import { LostChangesContext } from '../../../components/LostChanges'
@@ -40,7 +40,7 @@ export function WizardSyncEditor() {
       editorTitle={t('Application set YAML')}
       variant="toolbar"
       resources={resources}
-      schema={schema}
+      schema={pushmodelschema}
       onEditorChange={(changes: { resources: any[] }): void => {
         update(changes?.resources)
       }}

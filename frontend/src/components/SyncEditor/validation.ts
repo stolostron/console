@@ -294,6 +294,7 @@ export function validateResource(
               errorMsg.message = `Generator must be one of: ${validGenerators.map((g) => `"${g}"`).join(', ')}`
               errorMsg.linePos.start.col = mapping.$gv.start.col
               errorMsg.linePos.end.col = mapping.$gv.end.col
+              errorMsg.errorType = ErrorType.warning
               break
             // value wrong enum
             case 'enum':
