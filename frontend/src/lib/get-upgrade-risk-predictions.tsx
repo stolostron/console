@@ -17,7 +17,6 @@ export function getUpgradeRiskPredictions(managedClusterIds: string[]) {
   })
     .then((res) => res.data)
     .catch((error) => {
-      // eslint-disable-next-line no-console
       console.error(error)
       return []
     })

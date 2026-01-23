@@ -237,7 +237,6 @@ const getRemoteArgoApp = async (
   try {
     response = await fireManagedClusterView(cluster, kind, apiVersion, name, namespace)
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.error('Error getting remote Argo app', err)
   }
 

@@ -340,9 +340,9 @@ export const onSaveNetworking = async (
     }
   } catch (e) {
     if (e instanceof Error) {
-      throw Error(`Failed to patch the AgentClusterInstall resource: ${e.message}`)
+      throw new Error(`Failed to patch the AgentClusterInstall resource: ${e.message}`)
     }
-    throw Error('Failed to patch the AgentClusterInstall resource')
+    throw new Error('Failed to patch the AgentClusterInstall resource')
   }
 }
 

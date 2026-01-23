@@ -84,7 +84,9 @@ export function WizSingleSelect(props: WizSingleSelectProps) {
             <PfSelect
               isOpen={open}
               onOpenChange={(isOpen) => {
-                !isOpen && setOpen(false)
+                if (!isOpen) {
+                  setOpen(false)
+                }
               }}
               toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
                 <InputSelect
@@ -103,7 +105,6 @@ export function WizSingleSelect(props: WizSingleSelectProps) {
                 />
               )}
               selected={value}
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-call
               onSelect={(_event, value) => onSelect(value?.toString() ?? '')}
             >
               <SelectListOptions

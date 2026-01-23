@@ -69,7 +69,6 @@ class ControlPanelMultiSelect extends React.Component {
     }
 
     this.options = available.map((item, inx) => {
-      /* eslint-disable-next-line react/no-array-index-key */
       return <SelectOption key={inx} value={item} />
     })
 

@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-/* eslint-disable react-hooks/exhaustive-deps */
+
 import { useState, useMemo } from 'react'
 import { PathParam, generatePath, useLocation, useNavigate, useParams } from 'react-router-dom-v5-compat'
 import {

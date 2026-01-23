@@ -11,8 +11,8 @@ export const highlightChanges = (editor, oldYAML, newYAML, highlightEncoded) => 
   const decorationList = []
 
   // determine what rows were modified or added
-  oldYAML = oldYAML.replace(/\./g, '_') // any periods will mess up the get later
-  newYAML = newYAML.replace(/\./g, '_')
+  oldYAML = oldYAML.replaceAll('.', '_') // any periods will mess up the get later
+  newYAML = newYAML.replaceAll('.', '_')
   const oldParse = parseYAML(oldYAML)
   const newParse = parseYAML(newYAML)
   const oldRaw = getInsideObject('$raw', oldParse.parsed)

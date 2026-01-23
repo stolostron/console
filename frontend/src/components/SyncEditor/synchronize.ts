@@ -61,7 +61,7 @@ export const getPathArray = (path: string[] | string) => {
   const pathArr: string[] = []
   if (path) {
     if (!Array.isArray(path)) {
-      path = path.replace(/\[/g, '.').replace(/\]./g, '.')
+      path = path.replaceAll('[', '.').replaceAll(/\]./g, '.')
       path = path.split('.')
     }
     path.forEach((seg: any, idx: number) => {

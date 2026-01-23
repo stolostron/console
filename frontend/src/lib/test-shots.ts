@@ -72,7 +72,7 @@ const getSnapshot = (obj: any, unfiltered: boolean, customFilters?: string[] | u
       return value
     }
   }
-  const snapshot = JSON.stringify(obj, getReplacements(), '  ').replace(/"__FUNCTION__(.*)"/g, (_r, name) => {
+  const snapshot = JSON.stringify(obj, getReplacements(), '  ').replaceAll(/"__FUNCTION__(.*)"/g, (_r, name) => {
     return name === 'i18n' ? '(k)=>k' : `mock${name}`
   })
 
@@ -279,7 +279,6 @@ window.getNockShot = (fetches: { url: any; method: any; reqBody?: any; resBody?:
     ))
 
     if (!url.endsWith('apiPaths')) {
-      // eslint-disable-next-line prefer-const
       ;({ prefix, inlineComment } = getShotNamePrefixAndComment(
         method,
         isLocalhost,

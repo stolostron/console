@@ -991,7 +991,7 @@ export function logApplicationCountChanges(applicationCache: ApplicationCacheTyp
   const memUsed = (cache: any) => {
     return `${Math.round(sizeOf(cache) / 1024)
       .toString()
-      .replace(/\B(?=(\d{3})+(?!\d))/g, ',')} KB`
+      .replaceAll(/\B(?=(\d{3})+(?!\d))/g, ',')} KB`
   }
   logger.info({
     msg: 'memory',

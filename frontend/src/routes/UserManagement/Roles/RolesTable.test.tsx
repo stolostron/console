@@ -21,13 +21,11 @@ jest.mock('../../../ui-components', () => ({
     if (resultView?.loading) {
       return (
         <div data-testid="acm-table-loading">
-          {Array(10)
-            .fill(null)
-            .map((_, index) => (
-              <div key={index} role="progressbar" data-testid={`skeleton-${index}`}>
-                Loading skeleton {index + 1}
-              </div>
-            ))}
+          {new Array(10).fill(null).map((_, index) => (
+            <div key={index} role="progressbar" data-testid={`skeleton-${index}`}>
+              Loading skeleton {index + 1}
+            </div>
+          ))}
         </div>
       )
     }
