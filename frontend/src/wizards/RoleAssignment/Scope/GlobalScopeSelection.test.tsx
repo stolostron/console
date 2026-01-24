@@ -8,7 +8,7 @@ describe('GlobalScopeSelection', () => {
     const { getByText } = render(<GlobalScopeSelection />)
 
     expect(
-      getByText('This role assignment will apply to all resources registered in Advanced Cluster Management.')
+      getByText('This role assignment will apply to all current and future resources in all clusters.')
     ).toBeInTheDocument()
   })
 
@@ -46,7 +46,7 @@ describe('GlobalScopeSelection', () => {
 
     // Verify that the translation function is called and message is displayed
     const messageElement = getByText(
-      'This role assignment will apply to all resources registered in Advanced Cluster Management.'
+      'This role assignment will apply to all current and future resources in all clusters.'
     )
     expect(messageElement).toBeInTheDocument()
   })
