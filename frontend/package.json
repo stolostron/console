@@ -155,7 +155,7 @@
     "concurrently": "9.2.1",
     "copy-webpack-plugin": "11.0.0",
     "css-loader": "^6.11.0",
-    "css-minimizer-webpack-plugin": "^4.2.2",
+    "css-minimizer-webpack-plugin": "^7.0.0",
     "file-loader": "6.2.0",
     "fork-ts-checker-webpack-plugin": "^6.5.3",
     "html-webpack-plugin": "^5.6.5",
