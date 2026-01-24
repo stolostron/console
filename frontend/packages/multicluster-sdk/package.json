@@ -43,9 +43,9 @@
   "devDependencies": {
     "@kubernetes/client-node": "^1.4.0",
     "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^12.1.5",
+    "@testing-library/react": "^16.0.0",
     "@testing-library/react-hooks": "^8.0.1",
-    "@testing-library/user-event": "^12.8.3",
+    "@testing-library/user-event": "^14.0.0",
     "@types/jest": "^29.5.14",
     "@types/jest-axe": "^3.5.4",
     "@types/react-virtualized": "^9.22.2",
