@@ -77,7 +77,7 @@ export default function ClusterSetsPage() {
           </AcmExpandableCard>
           <Stack>
             <AcmTableStateProvider localStorageKey={'cluster-sets-table-state'}>
-              <ClusterSetsTable managedClusterSets={managedClusterSets} hiddenColumns={[t('table.clusters')]} />
+              <ClusterSetsTable managedClusterSets={managedClusterSets} />
             </AcmTableStateProvider>
           </Stack>
         </Stack>
