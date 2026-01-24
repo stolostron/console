@@ -81,7 +81,7 @@
     "graphql": "16.9.0",
     "handlebars": "4.7.8",
     "highlight.js": "^11.11.1",
-    "i18next": "21.10.0",
+    "i18next": "25.8.0",
     "i18next-browser-languagedetector": "6.1.8",
     "i18next-http-backend": "1.4.5",
     "ip-cidr": "2.1.5",
