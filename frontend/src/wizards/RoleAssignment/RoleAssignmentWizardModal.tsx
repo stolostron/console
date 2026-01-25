@@ -259,13 +259,15 @@ export const RoleAssignmentWizardModal = ({
     const identityKindChanged = preselected?.subject?.kind !== formData.subject?.kind
     const identityValueChanged = (() => {
       if (!preselected?.subject?.value) return false
-      if (formData.subject?.kind === 'User') {
-        return preselected.subject.value !== formData.subject.user?.[0]
+
+      switch (true) {
+        case formData.subject?.kind === 'User':
+          return preselected.subject.value !== formData.subject.user?.[0]
+        case formData.subject?.kind === 'Group':
+          return preselected.subject.value !== formData.subject.group?.[0]
+        default:
+          return false
       }
-      if (formData.subject?.kind === 'Group') {
-        return preselected.subject.value !== formData.subject.group?.[0]
-      }
-      return false
     })()
 
     return roleChanged || clustersChanged || namespacesChanged || identityKindChanged || identityValueChanged

@@ -44,7 +44,7 @@ export const ReviewStepContent = ({ formData, preselected, isEditing, hasChanges
       <GranularityStepContent title={t('Review')} titleSize="lg" description={''} />
       {!hasChanges && isEditing && (
         <Alert
-          variant="warning"
+          variant="danger"
           title={t('No changes have been made. Please modify or cancel to exit.')}
           isInline
           style={{ marginBottom: '16px' }}

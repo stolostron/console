@@ -137,10 +137,17 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: useReviewS
   const identityDisplay = useMemo(() => {
     const getIdentityValue = (subject?: { kind?: string; user?: string[]; group?: string[]; value?: string }) => {
       if (!subject) return t('Not selected')
-      if (subject.value) return subject.value
-      if (subject.kind === 'User' && subject.user?.[0]) return subject.user[0]
-      if (subject.kind === 'Group' && subject.group?.[0]) return subject.group[0]
-      return t('Not selected')
+
+      switch (true) {
+        case !!subject.value:
+          return subject.value
+        case subject.kind === 'User' && !!subject.user?.[0]:
+          return subject.user[0]
+        case subject.kind === 'Group' && !!subject.group?.[0]:
+          return subject.group[0]
+        default:
+          return t('Not selected')
+      }
     }
 
     const original = getIdentityValue(oldData.subject)
