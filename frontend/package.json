@@ -112,7 +112,7 @@
     "@openshift-console/dynamic-plugin-sdk": "1.0.0",
     "@openshift-console/dynamic-plugin-sdk-webpack": "1.0.2",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.6.1",
-    "@sentry/browser": "6.19.7",
+    "@sentry/browser": "10.36.0",
     "@storybook/addon-a11y": "8.0.9",
     "@storybook/addon-actions": "8.0.9",
     "@storybook/addon-docs": "8.0.9",
