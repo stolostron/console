@@ -156,7 +156,7 @@
     "comment-json": "4.2.2",
     "compression-webpack-plugin": "10.0.0",
     "concurrently": "7.2.2",
-    "copy-webpack-plugin": "11.0.0",
+    "copy-webpack-plugin": "13.0.1",
     "css-loader": "^6.11.0",
     "css-minimizer-webpack-plugin": "4.0.0",
     "file-loader": "6.2.0",
