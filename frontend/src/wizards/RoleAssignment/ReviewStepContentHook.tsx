@@ -5,7 +5,7 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
 import { RoleAssignmentWizardFormData, RoleAssignmentWizardModalProps } from './types'
 
-interface useReviewStepContentProps {
+interface UseReviewStepContentProps {
   oldData: {
     namespaces?: RoleAssignmentPreselected['namespaces']
     clusterNames: RoleAssignmentPreselected['clusterNames']
@@ -22,7 +22,7 @@ interface useReviewStepContentProps {
   isEditing?: boolean
 }
 
-export const useReviewStepContent = ({ oldData, newData, isEditing }: useReviewStepContentProps) => {
+export const useReviewStepContent = ({ oldData, newData, isEditing }: UseReviewStepContentProps) => {
   const { t } = useTranslation()
 
   const getClusterNames = ({
@@ -45,7 +45,7 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: useReviewS
   const originalClusterNames = useMemo(
     () =>
       oldData.clusterNames && oldData.clusterNames.length > 0
-        ? oldData.clusterNames.sort((a, b) => a.localeCompare(b)).join(', ')
+        ? oldData.clusterNames.toSorted((a, b) => a.localeCompare(b)).join(', ')
         : null,
     [oldData.clusterNames]
   )
@@ -55,7 +55,7 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: useReviewS
       newData.clusterNames && newData.clusterNames.length > 0
         ? newData.clusterNames
             .map((c) => c.metadata?.name || c.name || c)
-            .sort((a, b) => a.localeCompare(b))
+            .toSorted((a, b) => a.localeCompare(b))
             .join(', ')
         : null,
     [newData.clusterNames]
@@ -77,8 +77,8 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: useReviewS
       hasOriginalNamespaces !== hasCurrentNamespaces ||
       (hasOriginalNamespaces &&
         hasCurrentNamespaces &&
-        JSON.stringify(oldData.namespaces?.sort((a, b) => a.localeCompare(b))) !==
-          JSON.stringify(newData.namespaces?.sort((a, b) => a.localeCompare(b))))
+        JSON.stringify(oldData.namespaces?.toSorted((a, b) => a.localeCompare(b))) !==
+          JSON.stringify(newData.namespaces?.toSorted((a, b) => a.localeCompare(b))))
     if (!isEditing || !namespacesChanged) {
       return hasCurrentNamespaces ? newData.namespaces!.join(', ') : t('Full access')
     }

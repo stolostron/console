@@ -251,10 +251,10 @@ export const RoleAssignmentWizardModal = ({
 
     const roleChanged = preselected?.roles?.[0] !== formData.roles?.[0]
     const clustersChanged =
-      JSON.stringify(preselected?.clusterNames?.sort()) !==
-      JSON.stringify(formData.selectedClusters?.map((c) => c.metadata?.name || c.name || c).sort())
+      JSON.stringify(preselected?.clusterNames?.toSorted()) !==
+      JSON.stringify(formData.selectedClusters?.map((c) => c.metadata?.name || c.name || c).toSorted())
     const namespacesChanged =
-      JSON.stringify(preselected?.namespaces?.sort()) !== JSON.stringify(formData.scope.namespaces?.sort())
+      JSON.stringify(preselected?.namespaces?.toSorted()) !== JSON.stringify(formData.scope.namespaces?.toSorted())
 
     const identityKindChanged = preselected?.subject?.kind !== formData.subject?.kind
     const identityValueChanged = (() => {
