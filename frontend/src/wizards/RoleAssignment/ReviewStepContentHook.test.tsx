@@ -476,6 +476,128 @@ describe('useReviewStepContent', () => {
     })
   })
 
+  describe('identityDisplay', () => {
+    it('returns user name when subject is User', () => {
+      const { result } = renderHook(() =>
+        useReviewStepContent({
+          oldData: { clusterNames: [] },
+          newData: {
+            clusterNames: [],
+            subject: { kind: 'User', user: ['test-user'] },
+          },
+          isEditing: false,
+        })
+      )
+
+      expect(result.current.identityDisplay).toBe('test-user')
+    })
+
+    it('returns group name when subject is Group', () => {
+      const { result } = renderHook(() =>
+        useReviewStepContent({
+          oldData: { clusterNames: [] },
+          newData: {
+            clusterNames: [],
+            subject: { kind: 'Group', group: ['test-group'] },
+          },
+          isEditing: false,
+        })
+      )
+
+      expect(result.current.identityDisplay).toBe('test-group')
+    })
+
+    it('displays value from preselected when editing with same value', () => {
+      const { result } = renderHook(() =>
+        useReviewStepContent({
+          oldData: { clusterNames: [], subject: { kind: 'User', value: 'preselected-user' } },
+          newData: {
+            clusterNames: [],
+            subject: { kind: 'User', user: ['preselected-user'] },
+          },
+          isEditing: false,
+        })
+      )
+
+      expect(result.current.identityDisplay).toBe('preselected-user')
+    })
+
+    it('returns "Not selected" when subject is undefined', () => {
+      const { result } = renderHook(() =>
+        useReviewStepContent({
+          oldData: { clusterNames: [] },
+          newData: { clusterNames: [] },
+          isEditing: false,
+        })
+      )
+
+      expect(result.current.identityDisplay).toBe('Not selected')
+    })
+
+    it('returns current identity when editing but unchanged', () => {
+      const { result } = renderHook(() =>
+        useReviewStepContent({
+          oldData: { clusterNames: [], subject: { kind: 'User', value: 'test-user' } },
+          newData: {
+            clusterNames: [],
+            subject: { kind: 'User', user: ['test-user'] },
+          },
+          isEditing: true,
+        })
+      )
+
+      expect(result.current.identityDisplay).toBe('test-user')
+    })
+
+    it('returns diff JSX when editing and identity changed', () => {
+      const { result } = renderHook(() =>
+        useReviewStepContent({
+          oldData: { clusterNames: [], subject: { kind: 'User', value: 'old-user' } },
+          newData: {
+            clusterNames: [],
+            subject: { kind: 'User', user: ['new-user'] },
+          },
+          isEditing: true,
+        })
+      )
+
+      const display = result.current.identityDisplay
+      expect(display).toHaveProperty('type', 'div')
+    })
+
+    it('returns diff JSX when identity kind changed', () => {
+      const { result } = renderHook(() =>
+        useReviewStepContent({
+          oldData: { clusterNames: [], subject: { kind: 'User', value: 'test-user' } },
+          newData: {
+            clusterNames: [],
+            subject: { kind: 'Group', group: ['test-group'] },
+          },
+          isEditing: true,
+        })
+      )
+
+      const display = result.current.identityDisplay
+      expect(display).toHaveProperty('type', 'div')
+    })
+
+    it('handles change from User to Group', () => {
+      const { result } = renderHook(() =>
+        useReviewStepContent({
+          oldData: { clusterNames: [], subject: { kind: 'User', value: 'user-1' } },
+          newData: {
+            clusterNames: [],
+            subject: { kind: 'Group', group: ['group-1'] },
+          },
+          isEditing: true,
+        })
+      )
+
+      const display = result.current.identityDisplay
+      expect(display).toHaveProperty('type', 'div')
+    })
+  })
+
   describe('integration scenarios', () => {
     it('handles complete scenario with all fields changed during editing', () => {
       const { result } = renderHook(() =>
