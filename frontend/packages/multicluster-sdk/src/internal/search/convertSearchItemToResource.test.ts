@@ -582,6 +582,102 @@ describe('convertSearchItemToResource', () => {
     })
   })
 
+  describe('MigrationPolicy.migrations.kubevirt.io', () => {
+    it('should handle MigrationPolicy resource transformation', () => {
+      const migrationPolicyItem = {
+        ...baseSearchItem,
+        kind: 'MigrationPolicy',
+        apigroup: 'migrations.kubevirt.io',
+        allowAutoConverge: 'true',
+        allowPostCopy: 'false',
+        bandwidthPerMigration: '1073741824',
+        completionTimeoutPerGiB: '800',
+        _namespaceSelector: 'environment=production;team=backend',
+        _virtualMachineInstanceSelector: 'app=database;tier=critical',
+      }
+
+      const result = convert(migrationPolicyItem)
+
+      expect(result.spec?.allowAutoConverge).toBe(true)
+      expect(result.spec?.allowPostCopy).toBe(false)
+      expect(result.spec?.bandwidthPerMigration).toBe(1073741824)
+      expect(result.spec?.completionTimeoutPerGiB).toBe(800)
+      expect(result.spec?.selectors?.namespaceSelector).toEqual({
+        environment: 'production',
+        team: 'backend',
+      })
+      expect(result.spec?.selectors?.virtualMachineInstanceSelector).toEqual({
+        app: 'database',
+        tier: 'critical',
+      })
+    })
+
+    it('should handle MigrationPolicy with partial fields', () => {
+      const migrationPolicyItem = {
+        ...baseSearchItem,
+        kind: 'MigrationPolicy',
+        apigroup: 'migrations.kubevirt.io',
+        allowAutoConverge: true,
+      }
+
+      const result = convert(migrationPolicyItem)
+
+      expect(result.spec?.allowAutoConverge).toBe(true)
+      expect(result.spec?.allowPostCopy).toBeUndefined()
+      expect(result.spec?.bandwidthPerMigration).toBeUndefined()
+      expect(result.spec?.completionTimeoutPerGiB).toBeUndefined()
+      expect(result.spec?.selectors?.namespaceSelector).toBeUndefined()
+      expect(result.spec?.selectors?.virtualMachineInstanceSelector).toBeUndefined()
+    })
+
+    it('should handle MigrationPolicy with only namespaceSelector', () => {
+      const migrationPolicyItem = {
+        ...baseSearchItem,
+        kind: 'MigrationPolicy',
+        apigroup: 'migrations.kubevirt.io',
+        _namespaceSelector: 'environment=staging',
+      }
+
+      const result = convert(migrationPolicyItem)
+
+      expect(result.spec?.selectors?.namespaceSelector).toEqual({
+        environment: 'staging',
+      })
+      expect(result.spec?.selectors?.virtualMachineInstanceSelector).toBeUndefined()
+    })
+
+    it('should handle MigrationPolicy with only virtualMachineInstanceSelector', () => {
+      const migrationPolicyItem = {
+        ...baseSearchItem,
+        kind: 'MigrationPolicy',
+        apigroup: 'migrations.kubevirt.io',
+        _virtualMachineInstanceSelector: 'workload=server',
+      }
+
+      const result = convert(migrationPolicyItem)
+
+      expect(result.spec?.selectors?.namespaceSelector).toBeUndefined()
+      expect(result.spec?.selectors?.virtualMachineInstanceSelector).toEqual({
+        workload: 'server',
+      })
+    })
+
+    it('should handle MigrationPolicy with empty selector strings', () => {
+      const migrationPolicyItem = {
+        ...baseSearchItem,
+        kind: 'MigrationPolicy',
+        apigroup: 'migrations.kubevirt.io',
+        _namespaceSelector: '',
+        _virtualMachineInstanceSelector: '',
+      }
+
+      const result = convert(migrationPolicyItem)
+
+      expect(result.spec?.selectors?.namespaceSelector).toBeUndefined()
+      expect(result.spec?.selectors?.virtualMachineInstanceSelector).toBeUndefined()
+    })
+  })
+
   describe('Namespace', () => {
     it('should handle Namespace resource transformation', () => {
       const namespaceItem = {

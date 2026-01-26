@@ -210,6 +210,29 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
       setIfDefined(resource, 'status.phase', item.phase)
       break
 
+    case 'MigrationPolicy.migrations.kubevirt.io':
+      setIfDefined(resource, 'spec.allowAutoConverge', item.allowAutoConverge, convertToBoolean(item.allowAutoConverge))
+      setIfDefined(resource, 'spec.allowPostCopy', item.allowPostCopy, convertToBoolean(item.allowPostCopy))
+      setIfDefined(
+        resource,
+        'spec.bandwidthPerMigration',
+        item.bandwidthPerMigration,
+        Number(item.bandwidthPerMigration)
+      )
+      setIfDefined(
+        resource,
+        'spec.completionTimeoutPerGiB',
+        item.completionTimeoutPerGiB,
+        Number(item.completionTimeoutPerGiB)
+      )
+      setIfDefined(resource, 'spec.selectors.namespaceSelector', parseMapString(item._namespaceSelector))
+      setIfDefined(
+        resource,
+        'spec.selectors.virtualMachineInstanceSelector',
+        parseMapString(item._virtualMachineInstanceSelector)
+      )
+      break
+
     case 'Namespace':
       setIfDefined(resource, 'status.phase', item.status)
       break
