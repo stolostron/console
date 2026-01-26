@@ -9,7 +9,7 @@ import {
   SelfSubjectAccessReviewApiVersion,
   SelfSubjectAccessReviewKind,
 } from '../self-subject-access-review'
-import { getMCAMethod, resourceReq } from './fine-grained-rbac-resource-request'
+import { resourceReq } from './fleet-resource-request'
 import { managedClusterProxyRequest } from './managed-cluster-proxy-request'
 
 // Mock the dependencies
@@ -42,7 +42,7 @@ const getCanUserRes = (isAllowed: boolean): SelfSubjectAccessReview => {
   }
 }
 
-describe('fine-grained-rbac-resource-request', () => {
+describe('fleet-resource-request', () => {
   const mockCluster = 'test-cluster'
   const mockResource = {
     apiVersion: 'v1',
@@ -67,23 +67,6 @@ describe('fine-grained-rbac-resource-request', () => {
 
   afterEach(() => {
     jest.restoreAllMocks()
-  })
-
-  it('should return all MCA ActionTypes correctly', async () => {
-    const put = await getMCAMethod('PUT')
-    expect(put).toEqual('Update')
-
-    const get = await getMCAMethod('GET')
-    expect(get).toEqual('Create')
-
-    const post = await getMCAMethod('POST')
-    expect(post).toEqual('Create')
-
-    const patch = await getMCAMethod('PATCH')
-    expect(patch).toEqual('Update')
-
-    const del = await getMCAMethod('DELETE')
-    expect(del).toEqual('Delete')
   })
 
   it('should use ManagedClusterView when user is authorized to create MCV for GET request', async () => {
@@ -131,6 +114,72 @@ describe('fine-grained-rbac-resource-request', () => {
     expect(mockedCanUser).toHaveBeenCalledWith('create', ManagedClusterActionDefinition)
     expect(mockedFireManagedClusterAction).toHaveBeenCalledWith(
       'Delete',
+      mockCluster,
+      mockResource.kind,
+      mockResource.apiVersion,
+      mockResource.name,
+      mockResource.namespace,
+      undefined
+    )
+    expect(mockedFireManagedClusterView).not.toHaveBeenCalled()
+    expect(mockedManagedClusterProxyRequest).not.toHaveBeenCalled()
+    expect(result).toEqual({
+      actionDone: 'ActionDone',
+      result: mockPodResource,
+    })
+  })
+
+  it('should use ManagedClusterAction when user is authorized to create MCA for PUT request', async () => {
+    // Mock canUser to return authorized
+    mockedCanUser.mockReturnValue({
+      promise: Promise.resolve(getCanUserRes(true)),
+      abort: jest.fn(),
+    })
+
+    // Mock fireManagedClusterAction to return successful result
+    mockedFireManagedClusterAction.mockResolvedValue({
+      actionDone: 'ActionDone',
+      result: mockPodResource,
+    })
+
+    const result = await resourceReq('PUT', mockCluster, mockResource)
+
+    expect(mockedCanUser).toHaveBeenCalledWith('create', ManagedClusterActionDefinition)
+    expect(mockedFireManagedClusterAction).toHaveBeenCalledWith(
+      'Update',
+      mockCluster,
+      mockResource.kind,
+      mockResource.apiVersion,
+      mockResource.name,
+      mockResource.namespace,
+      undefined
+    )
+    expect(mockedFireManagedClusterView).not.toHaveBeenCalled()
+    expect(mockedManagedClusterProxyRequest).not.toHaveBeenCalled()
+    expect(result).toEqual({
+      actionDone: 'ActionDone',
+      result: mockPodResource,
+    })
+  })
+
+  it('should use ManagedClusterAction when user is authorized to create MCA for POST request', async () => {
+    // Mock canUser to return authorized
+    mockedCanUser.mockReturnValue({
+      promise: Promise.resolve(getCanUserRes(true)),
+      abort: jest.fn(),
+    })
+
+    // Mock fireManagedClusterAction to return successful result
+    mockedFireManagedClusterAction.mockResolvedValue({
+      actionDone: 'ActionDone',
+      result: mockPodResource,
+    })
+
+    const result = await resourceReq('POST', mockCluster, mockResource)
+
+    expect(mockedCanUser).toHaveBeenCalledWith('create', ManagedClusterActionDefinition)
+    expect(mockedFireManagedClusterAction).toHaveBeenCalledWith(
+      'Create',
       mockCluster,
       mockResource.kind,
       mockResource.apiVersion,
