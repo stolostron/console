@@ -129,5 +129,5 @@ function getGitInformation(path: string) {
 }
 
 const handleGitError = (err: any) => {
-  console.log(Error(err))
+  console.log(new Error(err))
 }

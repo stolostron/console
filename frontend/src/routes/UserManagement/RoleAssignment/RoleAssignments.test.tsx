@@ -6,6 +6,7 @@ import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { defaultPlugin, PluginContext } from '../../../lib/PluginContext'
 import { useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
 import { clickByText, waitForText } from '../../../lib/test-util'
+import { FlattenedRoleAssignment } from '../../../resources/clients/model/flattened-role-assignment'
 import { deleteRoleAssignment } from '../../../resources/clients/multicluster-role-assignment-client'
 import {
   MulticlusterRoleAssignment,
@@ -13,7 +14,6 @@ import {
 } from '../../../resources/multicluster-role-assignment'
 import { AcmToastContext } from '../../../ui-components'
 import { RoleAssignments } from './RoleAssignments'
-import { FlattenedRoleAssignment } from '../../../resources/clients/model/flattened-role-assignment'
 
 // Mock Apollo Client
 jest.mock('@apollo/client', () => ({
@@ -166,6 +166,7 @@ const mockRoleAssignments: FlattenedRoleAssignment[] = [
       placements: [{ name: 'placement-test-cluster-1', namespace: MulticlusterRoleAssignmentNamespace }],
     },
     clusterNames: ['test-cluster-1'],
+    clusterSetNames: ['cluster-set-alpha', 'cluster-set-beta'],
     relatedMulticlusterRoleAssignment: mockMulticlusterRoleAssignments[0],
     subject: {
       name: mockMulticlusterRoleAssignments[0].spec.subject.name,
@@ -182,6 +183,7 @@ const mockRoleAssignments: FlattenedRoleAssignment[] = [
       placements: [{ name: 'placement-test-cluster-2', namespace: MulticlusterRoleAssignmentNamespace }],
     },
     clusterNames: ['test-cluster-2'],
+    clusterSetNames: ['cluster-set-beta'],
     relatedMulticlusterRoleAssignment: mockMulticlusterRoleAssignments[0],
     subject: {
       name: mockMulticlusterRoleAssignments[0].spec.subject.name,
@@ -198,6 +200,7 @@ const mockRoleAssignments: FlattenedRoleAssignment[] = [
       placements: [{ name: 'placement-dev-cluster', namespace: MulticlusterRoleAssignmentNamespace }],
     },
     clusterNames: ['dev-cluster'],
+    clusterSetNames: ['cluster-set-gamma'],
     relatedMulticlusterRoleAssignment: mockMulticlusterRoleAssignments[1],
     subject: {
       name: mockMulticlusterRoleAssignments[1].spec.subject.name,
@@ -214,6 +217,7 @@ const mockRoleAssignments: FlattenedRoleAssignment[] = [
       placements: [{ name: 'placement-staging-cluster', namespace: MulticlusterRoleAssignmentNamespace }],
     },
     clusterNames: ['staging-cluster'],
+    clusterSetNames: ['cluster-set-delta'],
     relatedMulticlusterRoleAssignment: mockMulticlusterRoleAssignments[2],
     subject: {
       name: mockMulticlusterRoleAssignments[2].spec.subject.name,
@@ -275,6 +279,10 @@ jest.mock('../../../ui-components', () => {
             switch (filterId) {
               case 'role':
                 return item.clusterRole === value
+              case 'clusterSets': {
+                const clusterSetNames = item.clusterSetNames || []
+                return clusterSetNames.includes(value)
+              }
               case 'clusters': {
                 const clusterNames = item.clusterNames || []
                 return clusterNames.includes(value)
@@ -348,6 +356,13 @@ jest.mock('../../../ui-components', () => {
                   <button onClick={() => handleFilter(filter.id, 'developer')}>Filter developer</button>
                 </>
               )}
+              {filter.id === 'clusterSets' && (
+                <>
+                  <button onClick={() => handleFilter(filter.id, 'cluster-set-alpha')}>Filter cluster-set-alpha</button>
+                  <button onClick={() => handleFilter(filter.id, 'cluster-set-beta')}>Filter cluster-set-beta</button>
+                  <button onClick={() => handleFilter(filter.id, 'cluster-set-gamma')}>Filter cluster-set-gamma</button>
+                </>
+              )}
               {filter.id === 'clusters' && (
                 <>
                   <button onClick={() => handleFilter(filter.id, 'test-cluster-1')}>Filter test-cluster-1</button>
@@ -384,6 +399,7 @@ jest.mock('../../../ui-components', () => {
                   {item.subject.kind}: {item.subject.name}
                 </div>
                 <div>{item.clusterRole}</div>
+                <div>{(item.clusterSetNames || []).join(', ') || 'No cluster sets'}</div>
                 <div>{(item.clusterNames || []).join(', ') || 'No clusters'}</div>
                 <div>{item.targetNamespaces?.join(', ') || 'No namespaces'}</div>
                 <div>{`Status: ${item.status?.status ?? 'Unknown'}`}</div>
@@ -482,10 +498,12 @@ const Component = ({
   roleAssignments = mockRoleAssignments,
   isLoading = false,
   hiddenColumns = undefined,
+  hiddenFilters = [],
 }: {
   roleAssignments?: FlattenedRoleAssignment[]
   isLoading?: boolean
-  hiddenColumns?: ('subject' | 'role' | 'clusters')[]
+  hiddenColumns?: ('subject' | 'role' | 'clusters' | 'clusterSets' | 'name')[]
+  hiddenFilters?: ('role' | 'identity' | 'clusters' | 'clusterSets' | 'namespace' | 'status')[]
 } = {}) => (
   <RecoilRoot>
     <MemoryRouter>
@@ -495,7 +513,7 @@ const Component = ({
             roleAssignments={roleAssignments}
             isLoading={isLoading}
             hiddenColumns={hiddenColumns}
-            hiddenFilters={[]}
+            hiddenFilters={hiddenFilters}
             preselected={{
               subject: undefined,
               roles: undefined,
@@ -682,6 +700,66 @@ describe('RoleAssignments', () => {
     expect(screen.queryByText('staging-ns-1')).not.toBeInTheDocument()
   })
 
+  it('can filter by cluster set', async () => {
+    render(<Component />)
+    // Initially all 4 flattened assignments should be visible
+    await waitForText('test-cluster-1', true) // Allow multiple matches
+    await waitForText('User: test.user2', true) // Allow multiple matches
+    await waitForText('User: test.user1', true) // Allow multiple matches
+    await waitForText('User: test.user3', true) // Allow multiple matches
+
+    // Filter by 'cluster-set-alpha' cluster set
+    await clickByText('Cluster sets')
+    await clickByText('Filter cluster-set-alpha')
+
+    // Should still show only the flattened row with 'cluster-set-alpha' (test.user1's admin role)
+    await waitForText('User: test.user1', true) // Allow multiple matches
+    await waitForText('test-cluster-1', true) // Allow multiple matches
+    await waitForText('admin', true) // Verify this is the admin role row
+    // Verify cluster set is visible (displayed as joined string)
+    expect(screen.getByText('cluster-set-alpha, cluster-set-beta')).toBeInTheDocument()
+
+    // Should filter out rows without 'cluster-set-alpha' cluster set
+    expect(screen.queryAllByText(/User: test\.user2/i)).toHaveLength(0) // cluster-set-gamma filtered out
+    expect(screen.queryAllByText(/User: test\.user3/i)).toHaveLength(0) // cluster-set-delta filtered out
+    expect(screen.queryByText('cluster-admin')).not.toBeInTheDocument() // test.user1's second role (only has cluster-set-beta) filtered out
+    expect(screen.queryByText('cluster-set-gamma')).not.toBeInTheDocument()
+    expect(screen.queryByText('cluster-set-delta')).not.toBeInTheDocument()
+  })
+
+  it('can filter by cluster set with multiple matches', async () => {
+    render(<Component />)
+    // Initially all 4 flattened assignments should be visible
+    await waitForText('test-cluster-1', true)
+    await waitForText('User: test.user1', true)
+
+    // Filter by 'cluster-set-beta' which is in both A1 and A2 (test.user1's roles)
+    await clickByText('Cluster sets')
+    await clickByText('Filter cluster-set-beta')
+
+    // Should show both rows that have 'cluster-set-beta'
+    await waitForText('User: test.user1', true)
+    await waitForText('admin', true) // A1 has cluster-set-alpha and cluster-set-beta
+    await waitForText('cluster-admin', true) // A2 has cluster-set-beta
+
+    // Should filter out rows without 'cluster-set-beta' cluster set
+    expect(screen.queryAllByText(/User: test\.user2/i)).toHaveLength(0) // cluster-set-gamma filtered out
+    expect(screen.queryAllByText(/User: test\.user3/i)).toHaveLength(0) // cluster-set-delta filtered out
+  })
+
+  it('displays cluster set data in table', async () => {
+    render(<Component />)
+
+    // Wait for data to load
+    await waitForText('test-cluster-1', true)
+
+    // Verify cluster set data is displayed (as joined strings in the mock)
+    expect(screen.getByText('cluster-set-alpha, cluster-set-beta')).toBeInTheDocument() // A1
+    expect(screen.getByText('cluster-set-beta')).toBeInTheDocument() // A2
+    expect(screen.getByText('cluster-set-gamma')).toBeInTheDocument() // B1
+    expect(screen.getByText('cluster-set-delta')).toBeInTheDocument() // C1
+  })
+
   it('displays all role assignment data correctly', async () => {
     render(<Component />)
 
@@ -745,6 +823,20 @@ describe('RoleAssignments', () => {
       expect(screen.getByText('admin')).toBeInTheDocument()
     })
 
+    it('hides cluster sets data when hiddenColumns includes clusterSets', async () => {
+      render(<Component hiddenColumns={['clusterSets']} />)
+
+      // Wait for other data to load
+      await waitForText('User: test.user1', true) // Subject should still be visible
+      await waitForText('admin', true) // Role should still be visible
+      await waitForText('test-cluster-1', true) // Cluster should still be visible
+
+      // Component should render without errors when clusterSets column is hidden
+      expect(screen.getAllByText('User: test.user1')[0]).toBeInTheDocument()
+      expect(screen.getByText('admin')).toBeInTheDocument()
+      expect(screen.getByText('test-cluster-1')).toBeInTheDocument()
+    })
+
     it('hides multiple columns when specified', async () => {
       render(<Component hiddenColumns={['subject', 'role']} />)
 
@@ -765,6 +857,20 @@ describe('RoleAssignments', () => {
       await waitForText('admin', true) // Role column data
       await waitForText('User: test.user1', true) // Subject column data
       await waitForText('test-cluster-1', true) // Cluster column data
+      // Cluster set column data (displayed as joined string)
+      expect(screen.getByText('cluster-set-alpha, cluster-set-beta')).toBeInTheDocument()
+    })
+
+    it('hides cluster sets and clusters columns together', async () => {
+      render(<Component hiddenColumns={['clusterSets', 'clusters']} />)
+
+      // Wait for other data to load
+      await waitForText('User: test.user1', true) // Subject should still be visible
+      await waitForText('admin', true) // Role should still be visible
+
+      // Component should render without errors when both cluster-related columns are hidden
+      expect(screen.getAllByText('User: test.user1')[0]).toBeInTheDocument()
+      expect(screen.getByText('admin')).toBeInTheDocument()
     })
   })
 

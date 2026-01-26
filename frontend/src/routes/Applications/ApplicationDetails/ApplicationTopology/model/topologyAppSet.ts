@@ -321,7 +321,7 @@ async function getAppSetResources(name: string, namespace: string, appSetApps: a
     )
 
     // Extract application name by stripping cluster name from namePart
-    const appName = clusterName ? namePart.replace(clusterName, '').replace(/(?:^-)|(?:-$)/g, '') : namePart
+    const appName = clusterName ? namePart.replace(clusterName, '').replaceAll(/(?:^-)|(?:-$)/g, '') : namePart
 
     if (appName) {
       applicationNameSet.add(appName)

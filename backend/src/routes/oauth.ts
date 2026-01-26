@@ -92,9 +92,9 @@ export function logout(req: Http2ServerRequest, res: Http2ServerResponse): void 
     tokenName = `sha256~${createHash('sha256')
       .update(token.substring(sha256Prefix.length))
       .digest('base64')
-      .replace(/=/g, '')
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')}`
+      .replaceAll('=', '')
+      .replaceAll('+', '-')
+      .replaceAll('/', '_')}`
   }
 
   const url =

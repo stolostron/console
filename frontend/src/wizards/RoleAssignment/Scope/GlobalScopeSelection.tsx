@@ -14,7 +14,7 @@ export const GlobalScopeSelection = () => {
     >
       <PanelMain>
         <PanelMainBody>
-          {t('This role assignment will apply to all resources registered in Advanced Cluster Management.')}
+          {t('This role assignment will apply to all current and future resources in all clusters.')}
         </PanelMainBody>
       </PanelMain>
     </Panel>

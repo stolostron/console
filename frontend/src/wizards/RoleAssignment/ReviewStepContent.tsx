@@ -11,6 +11,7 @@ import { GranularityStepContent } from './GranularityStepContent'
 import { RoleAssignmentWizardFormData, RoleAssignmentWizardModalProps } from './types'
 import { useMemo } from 'react'
 import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
+import { ManagedClusterSet } from '../../resources'
 
 interface ReviewStepContentProps {
   formData: RoleAssignmentWizardFormData
@@ -80,7 +81,22 @@ export const ReviewStepContent = ({ formData, preselected }: ReviewStepContentPr
                 {(() => {
                   switch (formData.scopeType) {
                     case 'Global access':
-                      return <div>{t('All clusters')}</div>
+                      return (
+                        <div>
+                          <div style={{ marginTop: '8px' }}>
+                            <div>
+                              <strong>{t('Access level')}</strong>{' '}
+                            </div>
+                            <div>{t('All current and future clusters')}</div>
+                          </div>
+                          <div style={{ marginTop: '8px' }}>
+                            <div>
+                              <strong>{t('Projects')}</strong>{' '}
+                            </div>
+                            <div>{t('Full access')}</div>
+                          </div>
+                        </div>
+                      )
                     case 'Select cluster sets':
                       return (
                         <>
@@ -90,7 +106,9 @@ export const ReviewStepContent = ({ formData, preselected }: ReviewStepContentPr
                             </div>
                             <div>
                               {formData.selectedClusterSets && formData.selectedClusterSets.length > 0
-                                ? formData.selectedClusterSets.map((cs) => cs.metadata?.name || cs).join(', ')
+                                ? formData.selectedClusterSets
+                                    .map((cs) => (cs as ManagedClusterSet).metadata?.name || (cs as string))
+                                    .join(', ')
                                 : t('None selected')}
                             </div>
                           </div>

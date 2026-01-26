@@ -39,7 +39,6 @@ export function isAnyNamespaceAuthorized(resourceAttributes: Promise<ResourceAtt
             resourceList.push({ ...resourceAttributes, namespace })
           })
 
-          // eslint-disable-next-line no-inner-declarations
           async function processBatch(): Promise<boolean> {
             const nextBatch = resourceList.splice(0, SELF_ACCESS_CHECK_BATCH_SIZE)
             const results = nextBatch.map((resource) => {
@@ -100,7 +99,6 @@ export function areAllNamespacesUnauthorized(resourceAttributes: Promise<Resourc
             resourceList.push({ ...resourceAttributes, namespace })
           })
 
-          // eslint-disable-next-line no-inner-declarations
           async function processBatch(): Promise<boolean> {
             const nextBatch = resourceList.splice(0, SELF_ACCESS_CHECK_BATCH_SIZE)
             const results = nextBatch.map((resource) => {

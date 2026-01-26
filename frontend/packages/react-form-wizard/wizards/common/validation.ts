@@ -70,7 +70,7 @@ export function validatePublicSshKey(value: string, t: TFunction) {
             // Valid key; exit validation
             return undefined
           }
-        } catch (e) {
+        } catch {
           // Fall through to error case
         }
       }
@@ -111,7 +111,7 @@ export function validateJSON(value: string, t: TFunction) {
     if (Object.entries(obj).length <= 0) {
       return t('validate.json')
     }
-  } catch (e) {
+  } catch {
     return t('validate.json')
   }
   return undefined
@@ -225,7 +225,7 @@ export function validateCloudsYaml(yamlValue: string, cloudValue: string, t: TFu
       if (cloudValue !== undefined && !found) {
         return t('validate.yaml.cloud.not.found')
       }
-    } catch (e) {
+    } catch {
       return t('validate.yaml.not.valid')
     }
   }
@@ -275,7 +275,7 @@ export function validateImageContentSources(value: string, t: TFunction) {
       if (!isValid) {
         return t('validate.yaml.not.valid')
       }
-    } catch (e) {
+    } catch {
       return t('validate.yaml.not.valid')
     }
   }

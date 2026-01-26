@@ -478,10 +478,10 @@ function ObjectTemplate() {
             {template?.complianceType === 'musthave'
               ? 'Must have'
               : template?.complianceType === 'mustonlyhave'
-              ? 'Must only have'
-              : template?.complianceType === 'mustnothave'
-              ? 'Must not have'
-              : template?.complianceType}
+                ? 'Must only have'
+                : template?.complianceType === 'mustnothave'
+                  ? 'Must not have'
+                  : template?.complianceType}
           </Content>
           <WizHidden hidden={(template: any) => template?.objectDefinition?.kind === undefined}>
             <Title headingLevel="h6">{pascalCaseToSentenceCase(template?.objectDefinition?.kind)}</Title>
@@ -600,7 +600,7 @@ function ObjectTemplate() {
 }
 
 function pascalCaseToSentenceCase(text: string) {
-  const result = text?.replace(/([A-Z])/g, ' $1') ?? ''
+  const result = text?.replaceAll(/([A-Z])/g, ' $1') ?? ''
   const finalResult = result.charAt(0).toUpperCase() + result.slice(1)
   return finalResult
 }

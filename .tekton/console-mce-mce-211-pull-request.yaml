@@ -42,6 +42,8 @@ spec:
     value: "true"
   - name: prefetch-input
     value: '[{"path":".","type":"npm"},{"path":"./frontend","type":"npm"},{"path":"./backend","type":"npm"}]'
+  - name: enable-cache-proxy
+    value: "true"
   pipelineRef:
     resolver: git
     params:

@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Button, SelectOption } from '@patternfly/react-core'
 import { useTranslation } from '../../lib/acm-i18next'
+import { ManagedClusterSet } from '../../resources'
 import { AcmSelect } from '../../ui-components'
 import { GranularityStepContent } from './GranularityStepContent'
 import { ClusterSetsList } from './Scope/ClusterSets/ClusterSetsList'
@@ -14,7 +15,7 @@ interface ScopeSelectionStepContentProps {
   selectedClusterSets: any[]
   selectedClusters: any[]
   selectedScope: RoleAssignmentWizardFormData['scopeType']
-  onSelectClusterSets?: (clusterSets: any[]) => void
+  onSelectClusterSets?: (clusterSets: ManagedClusterSet[]) => void
   onSelectClusters?: (clusters: any[]) => void
   onSelectScopeType?: (scopeType?: RoleAssignmentWizardFormData['scopeType']) => void
 }
@@ -83,18 +84,14 @@ export const ScopeSelectionStepContent = ({
               return (
                 <ClusterSetsList
                   selectedClusterSets={selectedClusterSets}
-                  onSelectClusterSet={(clusterSets) => {
-                    onSelectClusterSets?.(clusterSets)
-                  }}
+                  onSelectClusterSet={(clusterSets) => onSelectClusterSets?.(clusterSets)}
                 />
               )
             case 'Select clusters':
               return (
                 <ClusterList
                   selectedClusters={selectedClusters}
-                  onSelectCluster={(clusters) => {
-                    onSelectClusters?.(clusters)
-                  }}
+                  onSelectCluster={(clusters) => onSelectClusters?.(clusters)}
                 />
               )
             default:

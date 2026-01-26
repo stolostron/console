@@ -109,6 +109,7 @@ export enum NavigationPath {
   clusterSetManage = '/multicloud/infrastructure/clusters/sets/details/:id/manage-resources',
   clusterSetSubmariner = '/multicloud/infrastructure/clusters/sets/details/:id/submariner',
   clusterSetSubmarinerInstall = '/multicloud/infrastructure/clusters/sets/details/:id/install-submariner',
+  clusterSetRoleAssignments = '/multicloud/infrastructure/clusters/sets/details/:id/role-assignments',
 
   // Infrastructure - Clusters - Cluster Pools
   clusterPools = '/multicloud/infrastructure/clusters/pools',

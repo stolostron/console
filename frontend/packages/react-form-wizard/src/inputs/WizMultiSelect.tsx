@@ -100,7 +100,9 @@ export function WizMultiSelect(props: WizMultiSelectProps) {
       <WizFormGroup {...props}>
         <PfSelect
           onOpenChange={(isOpen) => {
-            !isOpen && setOpen(false)
+            if (!isOpen) {
+              setOpen(false)
+            }
           }}
           isOpen={open}
           toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
@@ -120,7 +122,6 @@ export function WizMultiSelect(props: WizMultiSelectProps) {
             />
           )}
           selected={value}
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
           onSelect={(_event, value) => onSelect(value?.toString() ?? '')}
         >
           <SelectListOptions

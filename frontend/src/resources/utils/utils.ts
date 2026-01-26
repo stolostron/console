@@ -53,7 +53,7 @@ export function exportObjectString(object: Record<string, string>) {
 
 export function returnCSVSafeString(exportValue: string | ReactNode) {
   // extract newlines
-  return `"${typeof exportValue === 'string' ? exportValue.split('\n').join(' ').replace(/"/g, '""') : exportValue}"`
+  return `"${typeof exportValue === 'string' ? exportValue.split('\n').join(' ').replaceAll('"', '""') : exportValue}"`
 }
 
 export const getISOStringTimestamp = (timestamp: string) => {

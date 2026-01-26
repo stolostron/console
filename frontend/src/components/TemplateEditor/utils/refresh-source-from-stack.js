@@ -338,8 +338,8 @@ const generateSourceFromResources = (resources) => {
         lineWidth: 2000,
         sortKeys,
       })
-      yaml = yaml.replace(/'\d+':(\s|$)\s*/gm, '- ')
-      yaml = yaml.replace(/:\s*null$/gm, ':')
+      yaml = yaml.replaceAll(/'\d+':(\s|$)\s*/gm, '- ')
+      yaml = yaml.replaceAll(/:\s*null$/gm, ':')
       const $synced = new YamlParser().parse(yaml, row)
       $synced.$r = row
       $synced.$l = yaml.split(/[\r\n]+/g).length

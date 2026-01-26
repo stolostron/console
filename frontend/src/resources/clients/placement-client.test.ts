@@ -21,6 +21,12 @@ import {
   doesPlacementContainsClusterSetTestCases,
   isPlacementForClusterNamesTestCases,
   isPlacementForClusterSetsTestCases,
+  producePlacementNameHashTestCases,
+  producePlacementNameLengthTestCases,
+  producePlacementNameLongListTestCases,
+  producePlacementNameSuggestedTestCases,
+  producePlacementNameUniqueTestCases,
+  producePlacementNameValidTestCases,
 } from './placement-client.fixtures'
 import * as placementDecisionClient from './placement-decision-client'
 
@@ -1325,6 +1331,291 @@ describe('placement-client', () => {
   describe('doesPlacementContainsClusterSet', () => {
     it.each(doesPlacementContainsClusterSetTestCases)('$description', ({ placement, clusterSetName, expected }) => {
       expect(doesPlacementContainsClusterSet(placement, clusterSetName)).toBe(expected)
+    })
+  })
+
+  describe('producePlacementName (via createForClusters)', () => {
+    beforeEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('should return suggestedName when length is less than 63', () => {
+      // Arrange
+      const clusterNames = ['cluster-1', 'cluster-2']
+      const expected = 'clusters-cluster-1-and-cluster-2'
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      // Act
+      createForClusters(clusterNames)
+
+      // Assert
+      expect(createResourceMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            name: expected,
+          }),
+        })
+      )
+      expect(expected.length).toBeLessThan(63)
+    })
+
+    it('should return suggestedName when length equals 63', () => {
+      // Arrange - create cluster name that results in exactly 63 characters
+      // 'clusters-' = 9 chars, so we need 54 chars for the cluster name part
+      // Single cluster name of 54 characters will make total = 63
+      const clusterName = 'a'.repeat(54)
+      const clusterNames = [clusterName]
+      const expected = `clusters-${clusterName}`
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      // Act
+      createForClusters(clusterNames)
+
+      // Assert
+      expect(createResourceMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            name: expected,
+          }),
+        })
+      )
+      expect(expected.length).toBe(63)
+    })
+
+    it('should return hash-based name when suggestedName length is greater than 63', () => {
+      // Arrange - create cluster names that exceed 63 characters
+      const longClusterName = 'a'.repeat(100)
+      const clusterNames = [longClusterName, 'another-long-cluster-name']
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      // Act
+      createForClusters(clusterNames)
+
+      // Assert
+      const placementCall = createResourceMock.mock.calls[0][0] as Placement
+      expect(placementCall.metadata.name!.length).toBe(63)
+      expect(placementCall.metadata.name!).toMatch(/^clusters-[a-f0-9]+$/)
+      expect(placementCall.metadata.name!).not.toContain(longClusterName)
+    })
+
+    it.each(producePlacementNameLengthTestCases)(
+      'should never produce a string longer than 63 characters for $description',
+      ({ clusterNames }) => {
+        // Arrange
+        const mockResult = {
+          promise: Promise.resolve({} as Placement),
+          abort: jest.fn(),
+        }
+        createResourceMock.mockReturnValue(mockResult)
+
+        // Act
+        createForClusters(clusterNames)
+
+        // Assert
+        const placementCall = createResourceMock.mock.calls[0][0] as Placement
+        expect(placementCall.metadata.name!.length).toBeLessThanOrEqual(63)
+      }
+    )
+
+    it.each(producePlacementNameValidTestCases)('should produce a valid name for $description', ({ clusterNames }) => {
+      // Arrange
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      // Act
+      createForClusters(clusterNames)
+
+      // Assert
+      const placementCall = createResourceMock.mock.calls[0][0] as Placement
+      expect(placementCall.metadata.name).toBeDefined()
+      expect(placementCall.metadata.name!.length).toBeLessThanOrEqual(63)
+      expect(placementCall.metadata.name!).toMatch(/^clusters-/)
+    })
+
+    it('should produce unique names for different cluster name lists', () => {
+      // Arrange
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      // Act
+      producePlacementNameUniqueTestCases.forEach(({ clusterNames }) => {
+        createForClusters(clusterNames)
+      })
+
+      // Assert - all should be unique
+      const names = createResourceMock.mock.calls.map((call) => (call[0] as Placement).metadata.name)
+      const uniqueNames = new Set(names)
+      expect(uniqueNames.size).toBe(names.length)
+    })
+
+    it('should produce the same name for the same cluster name list', () => {
+      // Arrange
+      const clusterNames = ['cluster-1', 'cluster-2', 'cluster-3']
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      // Act - call twice with the same cluster names
+      createForClusters(clusterNames)
+      createForClusters(clusterNames)
+
+      // Assert - both calls should produce the same name
+      const name1 = (createResourceMock.mock.calls[0][0] as Placement).metadata.name
+      const name2 = (createResourceMock.mock.calls[1][0] as Placement).metadata.name
+      expect(name1).toBe(name2)
+    })
+
+    it('should handle empty cluster names array', () => {
+      // Arrange
+      const clusterNames: string[] = []
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      // Act
+      createForClusters(clusterNames)
+
+      // Assert
+      const placementCall = createResourceMock.mock.calls[0][0] as Placement
+      expect(placementCall.metadata.name!.length).toBeLessThanOrEqual(63)
+      expect(placementCall.metadata.name!).toMatch(/^clusters-/)
+    })
+
+    it('should handle single cluster name', () => {
+      // Arrange
+      const clusterNames = ['single-cluster']
+      const expected = 'clusters-single-cluster'
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      // Act
+      createForClusters(clusterNames)
+
+      // Assert
+      expect(createResourceMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            name: expected,
+          }),
+        })
+      )
+      expect(expected.length).toBeLessThanOrEqual(63)
+    })
+
+    it.each(producePlacementNameHashTestCases)(
+      'should produce hash when many short cluster names exceed 63 characters for $description',
+      ({ clusterNames }) => {
+        // Arrange
+        const suggestedName = `clusters-${clusterNames.join('-and-')}`
+        const mockResult = {
+          promise: Promise.resolve({} as Placement),
+          abort: jest.fn(),
+        }
+        createResourceMock.mockReturnValue(mockResult)
+
+        // Act
+        createForClusters(clusterNames)
+
+        // Assert
+        const placementCall = createResourceMock.mock.calls[0][0] as Placement
+        expect(placementCall.metadata.name!.length).toBeLessThanOrEqual(63)
+        expect(placementCall.metadata.name!).toMatch(/^clusters-[a-f0-9]+$/)
+        expect(placementCall.metadata.name!).not.toBe(suggestedName)
+      }
+    )
+
+    it.each(producePlacementNameSuggestedTestCases)(
+      'should produce suggestedName when many short cluster names do not exceed 63 characters for $description',
+      ({ clusterNames }) => {
+        // Arrange
+        const suggestedName = `clusters-${clusterNames.join('-and-')}`
+        const mockResult = {
+          promise: Promise.resolve({} as Placement),
+          abort: jest.fn(),
+        }
+        createResourceMock.mockReturnValue(mockResult)
+
+        // Act
+        createForClusters(clusterNames)
+
+        // Assert
+        const placementCall = createResourceMock.mock.calls[0][0] as Placement
+        expect(placementCall.metadata.name).toBe(suggestedName)
+      }
+    )
+
+    it.each(producePlacementNameLongListTestCases)(
+      'should produce hash-based name for long cluster name list: $description',
+      ({ clusterNames }) => {
+        // Arrange - create long cluster names that definitely exceed 63
+        // 'clusters-' = 9, so we need cluster names that when joined exceed 54 chars
+        const mockResult = {
+          promise: Promise.resolve({} as Placement),
+          abort: jest.fn(),
+        }
+        createResourceMock.mockReturnValue(mockResult)
+
+        // Act
+        createForClusters(clusterNames)
+
+        // Assert
+        const placementCall = createResourceMock.mock.calls[0][0] as Placement
+        const name = placementCall.metadata.name!
+        expect(name.length).toBeLessThanOrEqual(63)
+        expect(name).toMatch(/^clusters-[a-f0-9]+$/)
+      }
+    )
+
+    it('should ensure hash-based names are unique for different long cluster name lists', () => {
+      // Arrange - create two different sets of long cluster names that definitely exceed 63
+      // 'clusters-' = 9, so we need cluster names that when joined exceed 54 chars
+      const clusterNames1 = ['a'.repeat(30), 'b'.repeat(30)]
+      const clusterNames2 = ['c'.repeat(30), 'd'.repeat(30)]
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      // Act
+      createForClusters(clusterNames1)
+      createForClusters(clusterNames2)
+
+      // Assert
+      const placement1 = createResourceMock.mock.calls[0][0] as Placement
+      const placement2 = createResourceMock.mock.calls[1][0] as Placement
+      const name1 = placement1.metadata.name!
+      const name2 = placement2.metadata.name!
+      expect(name1.length).toBeLessThanOrEqual(63)
+      expect(name2.length).toBeLessThanOrEqual(63)
+      expect(name1).not.toBe(name2)
+      expect(name1).toMatch(/^clusters-[a-f0-9]+$/)
+      expect(name2).toMatch(/^clusters-[a-f0-9]+$/)
     })
   })
 })

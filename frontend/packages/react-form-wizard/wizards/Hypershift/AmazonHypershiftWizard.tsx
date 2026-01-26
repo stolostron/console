@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-// eslint-disable-next-line no-use-before-define
+
 import { CodeBlock, Icon, List, ListItem, Stack } from '@patternfly/react-core'
 import { CheckIcon, CloseIcon } from '@patternfly/react-icons'
 import { useHistory } from 'react-router-dom'

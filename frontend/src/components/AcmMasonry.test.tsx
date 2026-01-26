@@ -284,7 +284,11 @@ describe('AcmMasonry', () => {
         {null}
         {undefined}
         <div>Test Item 2</div>
-        {false && <div>Should not render</div>}
+
+        {
+          // eslint-disable-next-line no-constant-binary-expression
+          false && <div>Should not render</div>
+        }
       </AcmMasonry>
     )
 

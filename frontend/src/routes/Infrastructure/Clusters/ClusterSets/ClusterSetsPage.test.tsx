@@ -18,7 +18,6 @@ jest.mock('../../../../components/ClusterSets/ClusterSetsTable', () => ({
 
 // Mock AcmTableStateProvider and other ui-components
 jest.mock('../../../../ui-components', () => {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const ReactModule = jest.requireActual<typeof import('react')>('react')
   return {
     AcmPageContent: jest.fn(({ children }: { children: React.ReactNode }) => (
@@ -94,11 +93,11 @@ describe('ClusterSetsPage', () => {
     expect(clusterSetsTable).toBeInTheDocument()
   })
 
-  test('should pass hiddenColumns prop to ClusterSetsTable', () => {
+  test('should not pass hiddenColumns prop to ClusterSetsTable', () => {
     const { container } = render(<Component />)
 
     const clusterSetsTable = container.querySelector('[data-testid="mocked-cluster-sets-table"]')
     expect(clusterSetsTable).toBeInTheDocument()
-    expect(clusterSetsTable).toHaveAttribute('data-hiddencolumns', '["table.clusters"]')
+    expect(clusterSetsTable).not.toHaveAttribute('data-hiddencolumns')
   })
 })

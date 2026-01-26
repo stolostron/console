@@ -54,7 +54,7 @@ const getImageName = (image) => {
   return `img${image
     .split(':')
     .pop()
-    .replace(/[^\w.]|_/g, '-')}`
+    .replaceAll(/[^\w.]|_/g, '-')}`
 }
 
 const getImageVersion = (image) => {
