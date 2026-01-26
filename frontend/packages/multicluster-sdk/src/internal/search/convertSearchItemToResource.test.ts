@@ -809,6 +809,90 @@ describe('convertSearchItemToResource', () => {
     })
   })
 
+  describe('Pod', () => {
+    it('should handle Pod resource transformation with ownerReferences and initContainers', () => {
+      const podItem = {
+        ...baseSearchItem,
+        kind: 'Pod',
+        apigroup: '',
+        _ownerUID: 'test-cluster/abc-123-def-456',
+        initContainer: 'init-db;init-config',
+      }
+
+      const result = convert(podItem)
+
+      expect(result.metadata?.ownerReferences).toEqual([{ uid: 'abc-123-def-456' }])
+      expect(result.spec?.initContainers).toEqual([{ name: 'init-db' }, { name: 'init-config' }])
+    })
+
+    it('should handle Pod with only ownerReferences', () => {
+      const podItem = {
+        ...baseSearchItem,
+        kind: 'Pod',
+        apigroup: '',
+        _ownerUID: 'local-cluster/owner-uid-789',
+      }
+
+      const result = convert(podItem)
+
+      expect(result.metadata?.ownerReferences).toEqual([{ uid: 'owner-uid-789' }])
+      expect(result.spec?.initContainers).toBeUndefined()
+    })
+
+    it('should handle Pod with single initContainer', () => {
+      const podItem = {
+        ...baseSearchItem,
+        kind: 'Pod',
+        apigroup: '',
+        initContainer: 'init-setup',
+      }
+
+      const result = convert(podItem)
+
+      expect(result.spec?.initContainers).toEqual([{ name: 'init-setup' }])
+      expect(result.metadata?.ownerReferences).toBeUndefined()
+    })
+
+    it('should handle Pod with _ownerUID in direct format', () => {
+      const podItem = {
+        ...baseSearchItem,
+        kind: 'Pod',
+        apigroup: '',
+        _ownerUID: 'direct-owner-uid',
+      }
+
+      const result = convert(podItem)
+
+      expect(result.metadata?.ownerReferences).toEqual([{ uid: 'direct-owner-uid' }])
+    })
+
+    it('should handle Pod with no special fields', () => {
+      const podItem = {
+        ...baseSearchItem,
+        kind: 'Pod',
+        apigroup: '',
+      }
+
+      const result = convert(podItem)
+
+      expect(result.metadata?.ownerReferences).toBeUndefined()
+      expect(result.spec?.initContainers).toBeUndefined()
+    })
+
+    it('should handle Pod with empty initContainer string', () => {
+      const podItem = {
+        ...baseSearchItem,
+        kind: 'Pod',
+        apigroup: '',
+        initContainer: '',
+      }
+
+      const result = convert(podItem)
+
+      expect(result.spec?.initContainers).toBeUndefined()
+    })
+  })
+
   describe('StorageClass.storage.k8s.io', () => {
     it('should handle StorageClass resource transformation', () => {
       const storageClassItem = {
