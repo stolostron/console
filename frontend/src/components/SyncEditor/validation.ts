@@ -282,6 +282,13 @@ export function validateResource(
               errorMsg.linePos.start.col = mapping.$gv.start.col
               errorMsg.linePos.end.col = mapping.$gv.end.col
               break
+            // validateName
+            case 'validateName':
+              errorMsg.message =
+                'Name must start/end alphanumerically, can contain dashes and periods, and must be less then 253 characters'
+              errorMsg.linePos.start.col = mapping.$gv.start.col
+              errorMsg.linePos.end.col = mapping.$gv.end.col
+              break
             // validateLabel
             case 'validateLabel':
               errorMsg.message =
