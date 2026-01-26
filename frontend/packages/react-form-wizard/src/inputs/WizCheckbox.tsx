@@ -56,6 +56,7 @@ export function WizCheckbox(props: WizCheckboxProps) {
             id={id}
             isChecked={getIsChecked(value)}
             onChange={onChange}
+            isDisabled={props.disabled}
             label={
               <>
                 {props.label} <LabelHelp id={id} labelHelp={props.labelHelp} labelHelpTitle={props.labelHelpTitle} />
