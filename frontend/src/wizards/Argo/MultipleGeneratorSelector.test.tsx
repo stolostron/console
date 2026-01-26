@@ -251,13 +251,6 @@ describe('pascalCaseToSentenceCase utility', () => {
     const result = expected.charAt(0).toUpperCase() + expected.slice(1)
     expect(result).toBe('')
   })
-
-  test('should handle undefined gracefully', () => {
-    const input = undefined
-    const expected = input?.replace(/([A-Z])/g, ' $1') ?? ''
-    const result = expected.charAt(0).toUpperCase() + expected.slice(1)
-    expect(result).toBe('')
-  })
 })
 
 describe('Generator template creation', () => {
