@@ -10,11 +10,6 @@
           "properties": {
             "clusterDecisionResource": {
               "type": "object",
-              "required": [
-                "configMapRef",
-                "labelSelector",
-                "requeueAfterSeconds"
-              ],
               "properties": {
                 "configMapRef": {
                   "const": "acm-placement"

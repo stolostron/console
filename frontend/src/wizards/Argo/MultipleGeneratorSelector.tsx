@@ -54,7 +54,7 @@ export function MultipleGeneratorSelector(props: MultipleGeneratorSelectorProps)
       let shouldUpdate = false
 
       function fix(path: string, value: unknown) {
-        set(item, path, value, { preservePaths: false })
+        set(item, path, value, { preservePaths: true })
         shouldUpdate = true
       }
 
