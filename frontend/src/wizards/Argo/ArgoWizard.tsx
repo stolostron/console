@@ -230,6 +230,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
   })
 
   let defaultData
+
   if (resources && resources.length > 0) {
     defaultData = resources
   } else {

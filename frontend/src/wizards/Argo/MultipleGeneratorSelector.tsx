@@ -11,7 +11,7 @@ import generatorPlugin from './generators/generator-plugin.yaml'
 import { HelperText, HelperTextItem, Title } from '@patternfly/react-core'
 import get from 'get-value'
 import { klona } from 'klona/json'
-import { useCallback, useContext, useMemo, useState } from 'react'
+import { useCallback, useContext, useMemo, useRef, useState } from 'react'
 import set from 'set-value'
 import {
   useEditMode,
@@ -72,23 +72,44 @@ export function MultipleGeneratorSelector(props: MultipleGeneratorSelectorProps)
 
       // Check which generator types are present
       const hasGitGen = generators.some((gen: unknown) => getGeneratorType(gen) === 'git')
-      // const hasListGen = generators?.some((gen) => getGeneratorType(gen) === 'list') ?? false
+      const hasListGen = generators?.some((gen) => getGeneratorType(gen) === 'list') ?? false
       // const hasClustersGen = generators?.some((gen) => getGeneratorType(gen) === 'clusters') ?? false
       // const hasClusterDecisionResourceGen = generators?.some((gen) => getGeneratorType(gen) === 'clusterDecisionResource') ?? false
       // const hasScmProviderGen = generators?.some((gen) => getGeneratorType(gen) === 'scmProvider') ?? false
       // const hasPullRequestGen = generators?.some((gen) => getGeneratorType(gen) === 'pullRequest') ?? false
       // const hasPluginGen = generators?.some((gen) => getGeneratorType(gen) === 'plugin') ?? false
 
-      const basePath = '{{path.basename}}'
+      const url = '{{.url}}'
+      const cluster = '{{.cluster}}'
+      const server = '{{server}}'
+      const pathBasename = '{{path.basename}}'
       const templateNamePath = 'spec.template.metadata.name'
-      const destinationNamePath = 'spec.template.spec.destination.namespace'
-      const templateName = get(item, templateNamePath) ?? ''
-      if (hasGitGen && !templateName.toString().includes(`-${basePath}`)) {
-          fix(templateNamePath, `${templateName}-${basePath}`)
-          fix(destinationNamePath, `${basePath}`)
+      const destinationNamePathNamespace = 'spec.template.spec.destination.namespace'
+      const destinationNamePathServer = 'spec.template.spec.destination.server'
+      let templateName = get(item, templateNamePath) ?? ''
+
+      // Handle git generator
+      if (hasGitGen) {
+        if (!templateName.toString().includes(`-${pathBasename}`)) {
+          fix(templateNamePath, `${templateName}-${pathBasename}`)
+          fix(destinationNamePathNamespace, `${pathBasename}`)
+          templateName = `${templateName}-${pathBasename}`
+        }
       } else {
-        fix(templateNamePath, templateName.toString().replace(`-${basePath}`, ''))
-        fix(destinationNamePath, '')
+        fix(templateNamePath, templateName.toString().replace(`-${pathBasename}`, ''))
+        fix(destinationNamePathNamespace, '')
+        templateName = templateName.toString().replace(`-${pathBasename}`, '')
+      }
+
+      // Handle list generator
+      if (hasListGen) {
+        if (!templateName.toString().includes(`-${cluster}`)) {
+          fix(templateNamePath, `${templateName}-${cluster}`)
+          fix(destinationNamePathServer, url)
+        }
+      } else {
+        fix(templateNamePath, templateName.toString().replace(`-${cluster}`, ''))
+        fix(destinationNamePathServer, server)
       }
 
       if (shouldUpdate) {
@@ -131,13 +152,12 @@ function GeneratorCollapsedContent() {
   </div>
 }
 
-// this is an array dependency in Wiz which doesn't compare by stringify
-// so if you change the array object, react thinks the value changed
-// which causes infinite loop 
-const directoryPaths: string[] = []
-
 function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
   const { gitChannels, channels, disableForm } = props
+  // this is an array dependency in Wiz which doesn't compare by stringify
+  // so if you change the array object, react thinks the value changed
+  // which causes infinite loop 
+  const directoryPaths = useRef<string[]>([])
   const generator = useContext(ItemContext)
   const generatorType = getGeneratorType(generator)
   const requeueTimes = useMemo(() => [30, 60, 120, 180, 300], [])
@@ -185,9 +205,9 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
           disabled={disableForm}
           pathValueToInputValue={(value: unknown) => {
             if (Array.isArray(value)) {
-              directoryPaths.splice(0, directoryPaths.length, ...value.map((v: { path: string }) => v.path))
+              directoryPaths.current.splice(0, directoryPaths.current.length, ...value.map((v: { path: string }) => v.path))
             }
-            return directoryPaths
+            return directoryPaths.current
           }}
           inputValueToPathValue={(value: unknown) => {
             return Array.isArray(value) ? value.map((v: string) => ({ path: v })) : []

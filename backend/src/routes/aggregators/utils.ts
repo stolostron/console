@@ -638,9 +638,9 @@ function getSubscriptionCluster(
         const placement = placementDecisions.find(
           (placementDecision) =>
             placementDecision.metadata.labels?.['cluster.open-cluster-management.io/placement'] ===
-            placementRef?.name ||
+              placementRef?.name ||
             placementDecision.metadata.labels?.['cluster.open-cluster-management.io/placementrule'] ===
-            placementRef?.name
+              placementRef?.name
         )
 
         const decisions = placement?.status?.decisions

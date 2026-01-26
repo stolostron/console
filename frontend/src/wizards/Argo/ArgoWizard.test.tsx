@@ -119,12 +119,19 @@ describe('ArgoWizard tests', () => {
     )
     await clickByRole('combobox', { name: 'Select the Argo server' })
     await clickByRole('option', { name: /http:\/\/argoserver\.com/i })
+    await clickByText('Next')
+
+    //=====================================================================
+    //                      generators page
+    //=====================================================================
+    // Click on the generator to expand it
+    await clickByText('Cluster Decision Resource Generator')
     await clickByRole('combobox', { name: 'Select the requeue time' })
     await clickByRole('option', { name: /120/i })
     await clickByText('Next')
 
     //=====================================================================
-    //                      template page
+    //                      repository page
     //=====================================================================
     await clickByText('Git')
     await typeByRole(url, 'combobox', { name: /Enter or select a Git URL/i })
@@ -235,13 +242,22 @@ describe('ArgoWizard tests', () => {
     )
 
     //=====================================================================
-    //                      template page
+    //                      generators page - skip with defaults
+    //=====================================================================
+    userEvent.click(
+      screen.getByRole('button', {
+        name: /next/i,
+      })
+    )
+
+    //=====================================================================
+    //                      repository page
     //=====================================================================
     userEvent.click(screen.getByText(/use a helm repository/i))
-    userEvent.type(screen.getByPlaceholderText(/enter or select a helm url/i), 'https://github.com/fxiang1/app-samples')
+    await typeByRole('https://github.com/fxiang1/app-samples', 'combobox', { name: /enter or select a helm url/i })
     userEvent.click(
       screen.getByRole('option', {
-        name: /create new option "https:\/\/github\.com\/fxiang1\/app-samples"/i,
+        name: /https:\/\/github\.com\/fxiang1\/app-samples/i,
       })
     )
     userEvent.type(
@@ -316,12 +332,19 @@ describe('ArgoWizard tests', () => {
     )
     await clickByRole('combobox', { name: 'Select the Argo server' })
     await clickByRole('option', { name: /http:\/\/argoserver\.com/i })
+    await clickByText('Next')
+
+    //=====================================================================
+    //                      generators page
+    //=====================================================================
+    // Click on the generator to expand it
+    await clickByText('Cluster Decision Resource Generator')
     await clickByRole('combobox', { name: 'Select the requeue time' })
     await clickByRole('option', { name: /120/i })
     await clickByText('Next')
 
     //=====================================================================
-    //                      template page
+    //                      repository page
     //=====================================================================
     await clickByText('Git')
     await typeByRole(url, 'combobox', { name: /Enter or select a Git URL/i })
