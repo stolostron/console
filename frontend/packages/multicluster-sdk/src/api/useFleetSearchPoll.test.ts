@@ -2,7 +2,8 @@
 import { renderHook } from '@testing-library/react-hooks'
 import { useFleetSearchPoll } from './useFleetSearchPoll'
 import { useSearchResultItemsQuery } from '../internal/search/search-sdk'
-import { K8sResourceCommon, WatchK8sResource } from '@openshift-console/dynamic-plugin-sdk'
+import { K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk'
+import { FleetWatchK8sResource } from '../types'
 
 // Mock the search-sdk hook
 jest.mock('../internal/search/search-sdk', () => ({
@@ -17,11 +18,18 @@ jest.mock('../internal/search/search-client', () => ({
 const mockUseSearchResultItemsQuery = useSearchResultItemsQuery as jest.MockedFunction<typeof useSearchResultItemsQuery>
 
 describe('useFleetSearchPoll', () => {
-  const mockWatchOptions: WatchK8sResource = {
+  const mockWatchOptions: FleetWatchK8sResource = {
     groupVersionKind: { group: '', version: 'v1', kind: 'Pod' },
     namespace: 'default',
     namespaced: true,
-    isList: false, // Changed to false so we can test undefined responses
+    isList: true,
+  }
+
+  const mockWatchOptionsSingle: FleetWatchK8sResource = {
+    groupVersionKind: { group: '', version: 'v1', kind: 'Pod' },
+    namespace: 'default',
+    namespaced: true,
+    isList: false,
   }
 
   const mockSearchResultItem = {
@@ -48,7 +56,7 @@ describe('useFleetSearchPoll', () => {
   })
 
   describe('basic functionality', () => {
-    it('should return undefined data, false loaded, undefined error, and refetch function when loading', () => {
+    it('should return empty list data, false loaded, undefined error, and refetch function when loading and isList is true', () => {
       mockUseSearchResultItemsQuery.mockReturnValue({
         data: undefined,
         loading: true,
@@ -57,6 +65,23 @@ describe('useFleetSearchPoll', () => {
       } as any)
 
       const { result } = renderHook(() => useFleetSearchPoll(mockWatchOptions))
+
+      const [data, loaded, error, refetch] = result.current
+      expect(data).toEqual([])
+      expect(loaded).toBe(false)
+      expect(error).toBeUndefined()
+      expect(typeof refetch).toBe('function')
+    })
+
+    it('should return undefined data, false loaded, undefined error, and refetch function when loading and isList is false', () => {
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: undefined,
+        loading: true,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      const { result } = renderHook(() => useFleetSearchPoll(mockWatchOptionsSingle))
 
       const [data, loaded, error, refetch] = result.current
       expect(data).toBeUndefined()
@@ -96,7 +121,7 @@ describe('useFleetSearchPoll', () => {
       })
     })
 
-    it('should return undefined data, true loaded, error, and refetch function when error occurs', () => {
+    it('should return empty list data, true loaded, error, and refetch function when error occurs and isList is true', () => {
       const mockError = new Error('Search failed')
       const mockRefetch = jest.fn()
       mockUseSearchResultItemsQuery.mockReturnValue({
@@ -107,6 +132,25 @@ describe('useFleetSearchPoll', () => {
       } as any)
 
       const { result } = renderHook(() => useFleetSearchPoll(mockWatchOptions))
+
+      const [data, loaded, error, refetch] = result.current
+      expect(data).toEqual([])
+      expect(loaded).toBe(true)
+      expect(error).toBe(mockError)
+      expect(typeof refetch).toBe('function')
+    })
+
+    it('should return undefined data, true loaded, error, and refetch function when error occurs and isList is false', () => {
+      const mockError = new Error('Search failed')
+      const mockRefetch = jest.fn()
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: undefined,
+        loading: false,
+        error: mockError,
+        refetch: mockRefetch,
+      } as any)
+
+      const { result } = renderHook(() => useFleetSearchPoll(mockWatchOptionsSingle))
 
       const [data, loaded, error, refetch] = result.current
       expect(data).toBeUndefined()
@@ -308,6 +352,41 @@ describe('useFleetSearchPoll', () => {
         },
       })
     })
+
+    it('should include cluster filter when cluster is specified in watchOptions', () => {
+      const watchOptionsWithCluster = {
+        ...mockWatchOptions,
+        cluster: 'managed-cluster-1',
+      }
+
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: mockSearchResult,
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      renderHook(() => useFleetSearchPoll(watchOptionsWithCluster))
+
+      expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith({
+        client: 'mock-search-client',
+        skip: false,
+        pollInterval: 30000,
+        variables: {
+          input: [
+            {
+              filters: [
+                { property: 'cluster', values: ['managed-cluster-1'] },
+                { property: 'apiversion', values: ['v1'] },
+                { property: 'kind', values: ['Pod'] },
+                { property: 'namespace', values: ['default'] },
+              ],
+              limit: -1,
+            },
+          ],
+        },
+      })
+    })
   })
 
   describe('advanced search filters', () => {
@@ -382,6 +461,47 @@ describe('useFleetSearchPoll', () => {
       })
     })
 
+    it('should prioritize cluster from watchOptions over advanced search filters', () => {
+      const watchOptionsWithCluster = {
+        ...mockWatchOptions,
+        cluster: 'managed-cluster-1',
+      }
+
+      const advancedFilters = [
+        { property: 'cluster', values: ['different-cluster'] }, // This should be ignored
+        { property: 'label', values: ['app=test'] },
+      ]
+
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: mockSearchResult,
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      renderHook(() => useFleetSearchPoll(watchOptionsWithCluster, advancedFilters))
+
+      expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith({
+        client: 'mock-search-client',
+        skip: false,
+        pollInterval: 30000,
+        variables: {
+          input: [
+            {
+              filters: [
+                { property: 'cluster', values: ['managed-cluster-1'] }, // From watch options, not advanced search
+                { property: 'apiversion', values: ['v1'] },
+                { property: 'kind', values: ['Pod'] },
+                { property: 'namespace', values: ['default'] },
+                { property: 'label', values: ['app=test'] },
+              ],
+              limit: -1,
+            },
+          ],
+        },
+      })
+    })
+
     it('should filter out undefined values from advanced search', () => {
       const advancedFilters = [
         { property: 'label', values: ['app=test'] },
@@ -420,7 +540,11 @@ describe('useFleetSearchPoll', () => {
   })
 
   describe('data transformation', () => {
-    it('should parse labels correctly', () => {
+    // Note: Comprehensive tests for convertSearchItemToResource are in
+    // convertSearchItemToResource.test.ts. These tests verify the hook's
+    // integration with the transformation function.
+
+    it('should parse labels correctly (integration test)', () => {
       const itemWithLabels = {
         ...mockSearchResultItem,
         label: 'app=test;version=1.0;environment=prod',
@@ -445,28 +569,7 @@ describe('useFleetSearchPoll', () => {
       })
     })
 
-    it('should handle empty labels', () => {
-      const itemWithoutLabels = {
-        ...mockSearchResultItem,
-        label: '',
-      }
-
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: {
-          searchResult: [{ items: [itemWithoutLabels] }],
-        },
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-
-      const { result } = renderHook(() => useFleetSearchPoll<K8sResourceCommon[]>(mockWatchOptions))
-
-      const [data] = result.current
-      expect(data?.[0].metadata?.labels).toEqual({})
-    })
-
-    it('should handle VirtualMachine resource transformation', () => {
+    it('should handle VirtualMachine resource transformation (integration test)', () => {
       const vmItem = {
         ...mockSearchResultItem,
         kind: 'VirtualMachine',
@@ -534,583 +637,6 @@ describe('useFleetSearchPoll', () => {
         ],
         printableStatus: 'Running',
       })
-    })
-    it('should handle ClusterServiceVersion resource transformation', () => {
-      const csvItem = {
-        ...mockSearchResultItem,
-        kind: 'ClusterServiceVersion',
-        apigroup: 'operators.coreos.com',
-        version: '1.0.0',
-        display: 'Test',
-        phase: 'Running',
-      }
-
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: {
-          searchResult: [{ items: [csvItem] }],
-        },
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-
-      const watchOptionsCSV = {
-        ...mockWatchOptions,
-        groupVersionKind: { group: 'operators.coreos.com', version: 'v1', kind: 'ClusterServiceVersion' },
-      }
-      const { result } = renderHook(() => useFleetSearchPoll<any[]>(watchOptionsCSV))
-
-      const [data] = result.current
-      expect(data?.[0].spec).toEqual({
-        version: '1.0.0',
-        displayName: 'Test',
-      })
-      expect(data?.[0].status).toEqual({
-        phase: 'Running',
-      })
-    })
-
-    it('should handle PersistentVolumeClaim resource transformation', () => {
-      const pvcItem = {
-        ...mockSearchResultItem,
-        kind: 'PersistentVolumeClaim',
-        requestedStorage: '1Gi',
-        volumeMode: 'Filesystem',
-        storageClassName: 'gp3-csi',
-        capacity: '1Gi',
-        status: 'Bound',
-      }
-
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: {
-          searchResult: [{ items: [pvcItem] }],
-        },
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-
-      const watchOptionsPVC = {
-        ...mockWatchOptions,
-        groupVersionKind: { group: '', version: 'v1', kind: 'PersistentVolumeClaim' },
-      }
-      const { result } = renderHook(() => useFleetSearchPoll<any[]>(watchOptionsPVC))
-
-      const [data] = result.current
-      expect(data?.[0].spec).toEqual({
-        resources: {
-          requests: {
-            storage: '1Gi',
-          },
-        },
-        volumeMode: 'Filesystem',
-        storageClassName: 'gp3-csi',
-      })
-      expect(data?.[0].status).toEqual({
-        phase: 'Bound',
-        capacity: { storage: '1Gi' },
-      })
-    })
-
-    it('should handle VirtualMachineInstance resource transformation', () => {
-      const vmiItem = {
-        ...mockSearchResultItem,
-        kind: 'VirtualMachineInstance',
-        apigroup: 'kubevirt.io',
-        cpu: '4',
-        cpuSockets: '2',
-        cpuThreads: '2',
-        memory: '8Gi',
-        liveMigratable: 'True',
-        ready: 'True',
-        ipaddress: '10.0.0.1',
-        node: 'worker-node-1',
-        phase: 'Running',
-        osVersion: 'rhel',
-      }
-
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: {
-          searchResult: [{ items: [vmiItem] }],
-        },
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-
-      const watchOptionsVMI = {
-        ...mockWatchOptions,
-        groupVersionKind: { group: 'kubevirt.io', version: 'v1', kind: 'VirtualMachineInstance' },
-      }
-
-      const { result } = renderHook(() => useFleetSearchPoll<any[]>(watchOptionsVMI))
-
-      const [data] = result.current
-      expect(data?.[0].spec).toEqual({
-        domain: {
-          cpu: {
-            cores: 4,
-            sockets: 2,
-            threads: 2,
-          },
-          memory: { guest: '8Gi' },
-        },
-      })
-      expect(data?.[0].status).toEqual({
-        conditions: [
-          { type: 'LiveMigratable', status: 'True' },
-          { type: 'Ready', status: 'True' },
-        ],
-        interfaces: [{ ipAddress: '10.0.0.1', name: 'default' }],
-        nodeName: 'worker-node-1',
-        phase: 'Running',
-        guestOSInfo: { version: 'rhel' },
-      })
-    })
-
-    it('should handle VirtualMachineInstanceMigration resource transformation', () => {
-      const vmimItem = {
-        ...mockSearchResultItem,
-        kind: 'VirtualMachineInstanceMigration',
-        apigroup: 'kubevirt.io',
-        phase: 'Running',
-        endTime: '2025-08-12T08:00:00Z',
-        vmiName: 'testMigrate',
-      }
-
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: {
-          searchResult: [{ items: [vmimItem] }],
-        },
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-
-      const watchOptionsVMIM = {
-        ...mockWatchOptions,
-        groupVersionKind: { group: 'kubevirt.io', version: 'v1', kind: 'VirtualMachineInstanceMigration' },
-      }
-      const { result } = renderHook(() => useFleetSearchPoll<any[]>(watchOptionsVMIM))
-
-      const [data] = result.current
-      expect(data?.[0].status).toEqual({
-        phase: 'Running',
-        migrationState: { endTimestamp: '2025-08-12T08:00:00Z' },
-      })
-      expect(data?.[0].spec).toEqual({
-        vmiName: 'testMigrate',
-      })
-    })
-
-    it('should handle ClusterOperator resource transformation', () => {
-      const clusterOperatorItem = {
-        ...mockSearchResultItem,
-        kind: 'ClusterOperator',
-        apigroup: 'config.openshift.io',
-        version: '1.0.0',
-        available: 'True',
-        progressing: 'False',
-        degraded: 'False',
-      }
-
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: {
-          searchResult: [{ items: [clusterOperatorItem] }],
-        },
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-
-      const watchOptionsClusterOperator = {
-        ...mockWatchOptions,
-        groupVersionKind: { group: 'config.openshift.io', version: 'v1', kind: 'ClusterOperator' },
-      }
-
-      const { result } = renderHook(() => useFleetSearchPoll<any[]>(watchOptionsClusterOperator))
-
-      const [data] = result.current
-      expect(data?.[0].status?.versions).toEqual([{ name: 'operator', version: '1.0.0' }])
-      expect(data?.[0].status?.conditions).toEqual([
-        { type: 'Available', status: 'True' },
-        { type: 'Progressing', status: 'False' },
-        { type: 'Degraded', status: 'False' },
-      ])
-    })
-
-    it('should handle DataVolume resource transformation', () => {
-      const dataVolumeItem = {
-        ...mockSearchResultItem,
-        kind: 'DataVolume',
-        apigroup: 'cdi.kubevirt.io',
-        size: '10Gi',
-        storageClassName: 'ssd',
-      }
-
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: {
-          searchResult: [{ items: [dataVolumeItem] }],
-        },
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-
-      const watchOptionsDataVolume = {
-        ...mockWatchOptions,
-        groupVersionKind: { group: 'cdi.kubevirt.io', version: 'v1beta1', kind: 'DataVolume' },
-      }
-
-      const { result } = renderHook(() => useFleetSearchPoll<any[]>(watchOptionsDataVolume))
-
-      const [data] = result.current
-      expect(data?.[0].spec?.storage?.resources?.requests?.storage).toBe('10Gi')
-      expect(data?.[0].spec?.storage?.storageClassName).toBe('ssd')
-    })
-
-    it('should handle Namespace resource transformation', () => {
-      const namespaceItem = {
-        ...mockSearchResultItem,
-        kind: 'Namespace',
-        apigroup: '',
-        status: 'Active',
-      }
-
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: {
-          searchResult: [{ items: [namespaceItem] }],
-        },
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-
-      const watchOptionsNamespace = {
-        ...mockWatchOptions,
-        groupVersionKind: { group: '', version: 'v1', kind: 'Namespace' },
-      }
-
-      const { result } = renderHook(() => useFleetSearchPoll<any[]>(watchOptionsNamespace))
-
-      const [data] = result.current
-      expect(data?.[0].status?.phase).toBe('Active')
-    })
-
-    it('should handle Node resource transformation', () => {
-      const nodeItem = {
-        ...mockSearchResultItem,
-        kind: 'Node',
-        apigroup: '',
-        ipAddress: '127.0.0.1',
-        memoryAllocatable: '5Gi',
-        memoryCapacity: '10Gi',
-        condition: 'Ready=True; TestCondition=False',
-      }
-
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: {
-          searchResult: [{ items: [nodeItem] }],
-        },
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-
-      const watchOptionsNode = {
-        ...mockWatchOptions,
-        groupVersionKind: { group: '', version: 'v1', kind: 'Node' },
-      }
-
-      const { result } = renderHook(() => useFleetSearchPoll<any[]>(watchOptionsNode))
-
-      const [data] = result.current
-      expect(data?.[0].status?.addresses).toEqual([{ type: 'InternalIP', address: '127.0.0.1' }])
-      expect(data?.[0].status?.allocatable?.memory).toBe('5Gi')
-      expect(data?.[0].status?.capacity?.memory).toBe('10Gi')
-      expect(data?.[0].status?.conditions).toEqual([
-        { type: 'Ready', status: 'True' },
-        { type: 'TestCondition', status: 'False' },
-      ])
-    })
-
-    it('should handle StorageClass resource transformation', () => {
-      const storageClassItem = {
-        ...mockSearchResultItem,
-        kind: 'StorageClass',
-        apigroup: 'storage.k8s.io',
-        allowVolumeExpansion: true,
-        provisioner: 'test',
-        reclaimPolicy: 'test',
-        volumeBindingMode: 'test',
-      }
-
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: {
-          searchResult: [{ items: [storageClassItem] }],
-        },
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-
-      const watchOptionsStorageClass = {
-        ...mockWatchOptions,
-        groupVersionKind: { group: 'storage.k8s.io', version: 'v1', kind: 'StorageClass' },
-      }
-
-      const { result } = renderHook(() => useFleetSearchPoll<any[]>(watchOptionsStorageClass))
-
-      const [data] = result.current
-      expect(data?.[0].allowVolumeExpansion).toBe(true)
-      expect(data?.[0].provisioner).toBe('test')
-      expect(data?.[0].reclaimPolicy).toBe('test')
-      expect(data?.[0].volumeBindingMode).toBe('test')
-    })
-
-    it('should handle Subscription resource transformation', () => {
-      const subscriptionItem = {
-        ...mockSearchResultItem,
-        kind: 'Subscription',
-        apigroup: 'operators.coreos.com',
-        source: 'testSource',
-        package: 'testPackage',
-        channel: 'testChannel',
-        installplan: 'testInstall',
-        phase: 'Succeeded',
-      }
-
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: {
-          searchResult: [{ items: [subscriptionItem] }],
-        },
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-
-      const watchOptionsSubscription = {
-        ...mockWatchOptions,
-        groupVersionKind: { group: 'operators.coreos.com', version: 'v1alpha1', kind: 'Subscription' },
-      }
-
-      const { result } = renderHook(() => useFleetSearchPoll<any[]>(watchOptionsSubscription))
-
-      const [data] = result.current
-      expect(data?.[0].spec?.source).toBe('testSource')
-      expect(data?.[0].spec?.name).toBe('testPackage')
-      expect(data?.[0].spec?.channel).toBe('testChannel')
-      expect(data?.[0].status?.installedCSV).toBe('testInstall')
-      expect(data?.[0].status?.state).toBe('Succeeded')
-    })
-
-    it('should handle VirtualMachineSnapshot resource transformation', () => {
-      const virtualMachineSnapshotItem = {
-        ...mockSearchResultItem,
-        kind: 'VirtualMachineSnapshot',
-        apigroup: 'snapshot.kubevirt.io',
-        ready: 'True',
-        phase: 'Succeeded',
-        indications: 'test;indication',
-        sourceKind: 'VirtualMachine',
-        sourceName: 'test-vm',
-        readyToUse: true,
-      }
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: {
-          searchResult: [{ items: [virtualMachineSnapshotItem] }],
-        },
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-      const watchOptionsVirtualMachineSnapshot = {
-        ...mockWatchOptions,
-        groupVersionKind: { group: 'snapshot.kubevirt.io', version: 'v1alpha1', kind: 'VirtualMachineSnapshot' },
-      }
-      const { result } = renderHook(() => useFleetSearchPoll<any[]>(watchOptionsVirtualMachineSnapshot))
-      const [data] = result.current
-      expect(data?.[0].status?.conditions).toEqual([
-        {
-          type: 'Ready',
-          status: 'True',
-        },
-      ])
-      expect(data?.[0].status?.phase).toBe('Succeeded')
-      expect(data?.[0].status?.indications).toEqual(['test', 'indication'])
-      expect(data?.[0].spec?.source?.kind).toBe('VirtualMachine')
-      expect(data?.[0].spec?.source?.name).toBe('test-vm')
-      expect(data?.[0].status?.readyToUse).toBe(true)
-    })
-
-    it('should handle VirtualMachineRestore resource transformation', () => {
-      const virtualMachineRestoreItem = {
-        ...mockSearchResultItem,
-        kind: 'VirtualMachineRestore',
-        apigroup: 'snapshot.kubevirt.io',
-        ready: 'True',
-        restoreTime: '2025-08-12T08:00:00Z',
-        complete: true,
-        targetKind: 'VirtualMachine',
-        targetName: 'test-vm',
-      }
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: {
-          searchResult: [{ items: [virtualMachineRestoreItem] }],
-        },
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-      const watchOptionsVirtualMachineRestore = {
-        ...mockWatchOptions,
-        groupVersionKind: { group: 'snapshot.kubevirt.io', version: 'v1alpha1', kind: 'VirtualMachineRestore' },
-      }
-      const { result } = renderHook(() => useFleetSearchPoll<any[]>(watchOptionsVirtualMachineRestore))
-      const [data] = result.current
-      expect(data?.[0].status?.conditions).toEqual([
-        {
-          type: 'Ready',
-          status: 'True',
-        },
-      ])
-      expect(data?.[0].status?.restoreTime).toBe('2025-08-12T08:00:00Z')
-      expect(data?.[0].status?.complete).toBe(true)
-      expect(data?.[0].spec?.target?.kind).toBe('VirtualMachine')
-      expect(data?.[0].spec?.target?.name).toBe('test-vm')
-    })
-
-    it('should handle apiVersion with group correctly', () => {
-      const itemWithGroup = {
-        ...mockSearchResultItem,
-        apigroup: 'apps',
-        apiversion: 'v1',
-        kind: 'Deployment',
-      }
-
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: {
-          searchResult: [{ items: [itemWithGroup] }],
-        },
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-
-      const { result } = renderHook(() => useFleetSearchPoll<K8sResourceCommon[]>(mockWatchOptions))
-
-      const [data] = result.current
-      expect(data?.[0].apiVersion).toBe('apps/v1')
-    })
-
-    it('should handle apiVersion without group correctly', () => {
-      const itemWithoutGroup = {
-        ...mockSearchResultItem,
-        apigroup: '',
-        apiversion: 'v1',
-        kind: 'Pod',
-      }
-
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: {
-          searchResult: [{ items: [itemWithoutGroup] }],
-        },
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-
-      const { result } = renderHook(() => useFleetSearchPoll(mockWatchOptions))
-
-      const [data] = result.current
-      expect(data).toBeDefined()
-      expect(Array.isArray(data)).toBe(true)
-      const dataArray = data as any[]
-      expect(dataArray[0].apiVersion).toBe('v1')
-    })
-
-    it('should process _uid field in "<cluster>/<uid>" format correctly', () => {
-      const itemWithClusterUid = {
-        ...mockSearchResultItem,
-        _uid: 'test-cluster/abc-123-def-456',
-      }
-
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: {
-          searchResult: [{ items: [itemWithClusterUid] }],
-        },
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-
-      const { result } = renderHook(() => useFleetSearchPoll<K8sResourceCommon[]>(mockWatchOptions))
-
-      const [data] = result.current
-      expect(data?.[0].metadata?.uid).toBe('abc-123-def-456')
-    })
-
-    it('should process _uid field in "<uid>" format correctly', () => {
-      const itemWithDirectUid = {
-        ...mockSearchResultItem,
-        _uid: 'xyz-789-ghi-012',
-      }
-
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: {
-          searchResult: [{ items: [itemWithDirectUid] }],
-        },
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-
-      const { result } = renderHook(() => useFleetSearchPoll<K8sResourceCommon[]>(mockWatchOptions))
-
-      const [data] = result.current
-      expect(data?.[0].metadata?.uid).toBe('xyz-789-ghi-012')
-    })
-
-    it('should handle undefined _uid field correctly', () => {
-      const itemWithoutUid = {
-        ...mockSearchResultItem,
-        _uid: undefined,
-      }
-
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: {
-          searchResult: [{ items: [itemWithoutUid] }],
-        },
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-
-      const { result } = renderHook(() => useFleetSearchPoll<K8sResourceCommon[]>(mockWatchOptions))
-
-      const [data] = result.current
-      expect(data?.[0].metadata?.uid).toBeUndefined()
-    })
-
-    it('should handle empty string _uid field correctly', () => {
-      const itemWithEmptyUid = {
-        ...mockSearchResultItem,
-        _uid: '',
-      }
-
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: {
-          searchResult: [{ items: [itemWithEmptyUid] }],
-        },
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-
-      const { result } = renderHook(() => useFleetSearchPoll<K8sResourceCommon[]>(mockWatchOptions))
-
-      const [data] = result.current
-      expect(data?.[0].metadata?.uid).toBeUndefined()
     })
   })
 

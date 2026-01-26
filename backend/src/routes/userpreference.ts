@@ -55,7 +55,7 @@ export async function userpreference<T = unknown>(req: Http2ServerRequest, res: 
           userResponse.body.status &&
           userResponse.body.status.user &&
           userResponse.body.status.user.username
-            ? userResponse.body.status.user.username.toLowerCase().replace(/[^a-z0-9-.]/g, '-')
+            ? userResponse.body.status.user.username.toLowerCase().replaceAll(/[^a-z0-9-.]/g, '-')
             : ''
         if (name) {
           let path = process.env.CLUSTER_API_URL + '/apis/console.open-cluster-management.io/v1/userpreferences'

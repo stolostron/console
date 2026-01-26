@@ -31,7 +31,6 @@ export function AcmInlineCopy(props: {
           icon={<CopyIcon />}
           iconPosition={iconPosition ? iconPosition : 'right'}
           isInline
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onClick={(event: any) => {
             setCopied(true)
             onCopy(event, props.text)

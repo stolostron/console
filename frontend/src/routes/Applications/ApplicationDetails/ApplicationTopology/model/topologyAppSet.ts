@@ -200,14 +200,15 @@ export async function getAppSetTopology(
   ////  APPLICATION RESOURCE NODES /////////////////
   /////////////////////////////////////////////
   let parentNodeId = clusterId
-  Object.entries(applicationResourceMap).forEach(([appName, resources]) => {
+  Object.entries(applicationResourceMap).forEach(([appNameClusterKey, resources]) => {
+    const [appName, clusterName] = appNameClusterKey.split('--')
     // if there are multiple applications and moe then one application is selected,
     // we need to insert an application node above the resources
     const isApplicationFiltered =
       applicationNames.length > 0 && activeApplications && !activeApplications.includes(appName)
     if (applicationNames.length > 0 && !isApplicationFiltered) {
       // Has application name - create application node
-      parentNodeId = `member--application--${clusterNames.join('-')}--${appName}`
+      parentNodeId = `member--application--${clusterName}--${appName}`
       const healthStatus = appStatusByNameMap[`${name}-${appName}`]?.health.status || 'Healthy'
       const appNode: TopologyNode = {
         name: appName,
@@ -314,17 +315,19 @@ async function getAppSetResources(name: string, namespace: string, appSetApps: a
     // Remove appset name prefix to get namePart
     const namePart = compositeName.startsWith(name) ? compositeName.substring(name.length + 1) : compositeName
 
-    // Find matching cluster name (sorted longest first for correct matching)
-    const clusterName = sortedAllClusterNames.find((cluster: string) => namePart.startsWith(cluster))
+    // Find matching cluster name in namePart bounded by '-' (sorted longest first for correct matching)
+    const clusterName = sortedAllClusterNames.find(
+      (cluster: string) => namePart === cluster || namePart.includes(`-${cluster}`) || namePart.includes(`${cluster}-`)
+    )
 
-    // Extract application name from remaining part after cluster name
-    const appName = clusterName ? namePart.substring(clusterName.length).replace(/^-/, '') : namePart
+    // Extract application name by stripping cluster name from namePart
+    const appName = clusterName ? namePart.replace(clusterName, '').replaceAll(/(?:^-)|(?:-$)/g, '') : namePart
 
     if (appName) {
       applicationNameSet.add(appName)
-      applicationResourceMap[appName] = resourceList
+      applicationResourceMap[`${appName}--${clusterName ?? ''}`] = resourceList
     } else {
-      applicationResourceMap[name] = resourceList
+      applicationResourceMap[`${name}--${clusterName ?? ''}`] = resourceList
     }
   })
 

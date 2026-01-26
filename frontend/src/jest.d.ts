@@ -7,5 +7,6 @@ declare namespace jest {
     hasUnusedMocks(): R
     hasNoMissingNocks(): R
     hasNoPendingNocks(): R
+    toHaveMultilineValue(expected: string): R
   }
 }

@@ -52,7 +52,6 @@ const NamespaceSelector = ({
     const options = commonNamespaces.toSorted((a, b) => a.localeCompare(b)).map((ns) => ({ id: ns, value: ns }))
 
     return options
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedClusters, clusters])
 
   const handleNamespaceChange = useCallback(

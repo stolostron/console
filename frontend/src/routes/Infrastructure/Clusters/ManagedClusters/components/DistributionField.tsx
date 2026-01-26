@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
-import { Button, ButtonVariant } from '@patternfly/react-core'
-import { ArrowCircleUpIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { Fragment, ReactNode, useMemo, useState } from 'react'
+import { HostedClusterK8sResourceWithChannel } from '../../../../../resources/hosted-cluster'
+import { Button, ButtonVariant, Icon } from '@patternfly/react-core'
+import { ArrowCircleUpIcon, ExclamationTriangleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom-v5-compat'
 import { RbacButton } from '../../../../../components/Rbac'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -13,6 +13,7 @@ import {
   ClusterCuratorApiVersion,
   ClusterCuratorDefinition,
   getLatestAnsibleJob,
+  HostedClusterDefinition,
   NodePool,
 } from '../../../../../resources'
 import { Cluster, ClusterStatus, CuratorCondition } from '../../../../../resources/utils'
@@ -22,6 +23,7 @@ import { getSearchLink } from '../../../../Applications/helpers/resource-helper'
 import { useAgentClusterInstall } from '../CreateCluster/components/assisted-installer/utils'
 import { useHypershiftAvailableUpdates } from '../hooks/useHypershiftAvailableUpdates'
 import { getVersionFromReleaseImage } from '../utils/utils'
+import { BatchChannelSelectModal } from './BatchChannelSelectModal'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 import { HypershiftUpgradeModal } from './HypershiftUpgradeModal'
 import { getNodepoolStatus } from './NodePoolsTable'
@@ -30,12 +32,14 @@ export function DistributionField(props: {
   cluster?: Cluster
   clusterCurator?: ClusterCurator | undefined
   nodepool?: NodePool
-  hostedCluster?: HostedClusterK8sResource
+  hostedCluster?: HostedClusterK8sResourceWithChannel
   resource?: string
 }) {
   const { t } = useTranslation()
   const [open, toggleOpen] = useState<boolean>(false)
   const toggle = () => toggleOpen(!open)
+  const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
+  const [channelSelectionPending, setChannelSelectionPending] = useState<boolean>(false)
   const { ansibleJobState, clusterImageSetsState, agentMachinesState, agentsState } = useSharedAtoms()
   const ansibleJobs = useRecoilValue(ansibleJobState)
   const agents = useRecoilValue(agentsState)
@@ -108,6 +112,63 @@ export function DistributionField(props: {
     props.resource,
   ])
 
+  // Track if curator is selecting channel (from cluster status or local pending state)
+  const isSelectingChannel = props.cluster?.distribution?.upgradeInfo?.isSelectingChannel
+
+  // Clear pending state when cluster status catches up
+  useEffect(() => {
+    if (isSelectingChannel) {
+      setChannelSelectionPending(false)
+    }
+  }, [isSelectingChannel])
+
+  // Don't show the Select channel button if curator is working on channel selection
+  const isChannelSelectionInProgress = isSelectingChannel || channelSelectionPending
+
+  const renderChannelWarning = (): JSX.Element | null => {
+    // Check if curator already has a channel set (channel selection was initiated)
+    const hasNoChannel =
+      props.cluster?.isHypershift &&
+      props.hostedCluster &&
+      !props.hostedCluster.spec?.channel &&
+      !isChannelSelectionInProgress &&
+      props.resource !== 'nodepool'
+
+    // Don't show warning if no channel issue or if channel selection is in progress
+    if (!hasNoChannel || isChannelSelectionInProgress) return null
+
+    return (
+      <span style={{ whiteSpace: 'nowrap', display: 'block' }}>
+        <Icon status="warning" size="sm">
+          <ExclamationTriangleIcon />
+        </Icon>{' '}
+        <RbacButton
+          onClick={() => setShowChannelSelectModal(true)}
+          variant={ButtonVariant.link}
+          style={{ padding: 0, margin: 0, fontSize: 'inherit' }}
+          rbac={[
+            rbacPatch(
+              HostedClusterDefinition,
+              props.hostedCluster?.metadata?.namespace,
+              props.hostedCluster?.metadata?.name
+            ),
+          ]}
+        >
+          {t('managed.selectChannel')}
+        </RbacButton>
+        <BatchChannelSelectModal
+          clusters={props.cluster ? [props.cluster] : []}
+          open={showChannelSelectModal}
+          close={() => setShowChannelSelectModal(false)}
+          hostedClusters={
+            props.hostedCluster && props.cluster?.name ? { [props.cluster.name]: props.hostedCluster } : undefined
+          }
+          onSuccess={() => setChannelSelectionPending(true)}
+        />
+      </span>
+    )
+  }
+
   if (props.cluster?.provider === Provider.microshift) {
     const version = props.cluster?.microshiftDistribution?.version
     return <>{version ? `${microshiftText} ${version}` : '-'}</>
@@ -119,6 +180,17 @@ export function DistributionField(props: {
       : { prehook: undefined, posthook: undefined }
 
   if (!props.cluster?.distribution) {
+    // For HostedClusters without channel, show the warning even without distribution
+    const channelWarning = renderChannelWarning()
+    if (channelWarning) {
+      return (
+        <>
+          <div>{displayVersion ?? '-'}</div>
+          {channelWarning}
+        </>
+      )
+    }
+
     //we try to get version from clusterimage
     if (agentClusterInstall) {
       const clusterImage = clusterImageSets.find(
@@ -412,7 +484,17 @@ export function DistributionField(props: {
       </>
     )
   } else {
-    // NO UPGRADE, JUST VERSION
+    // NO UPGRADE ACTIVITY - Show channel warning for HostedClusters without channel
+    const channelWarning = renderChannelWarning()
+    if (channelWarning) {
+      return (
+        <>
+          <div>{displayVersion ?? '-'}</div>
+          {channelWarning}
+        </>
+      )
+    }
+    // Default: just show version
     return <>{displayVersion ?? '-'}</>
   }
 }

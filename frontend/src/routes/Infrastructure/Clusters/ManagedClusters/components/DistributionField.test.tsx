@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { HostedClusterK8sResource, NodePoolK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { NodePoolK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import * as nock from 'nock'
@@ -24,6 +24,7 @@ import {
   NodePool,
   ResourceAttributes,
 } from '../../../../../resources'
+import { HostedClusterK8sResourceWithChannel } from '../../../../../resources/hosted-cluster'
 import { Cluster, ClusterStatus, CuratorCondition, DistributionInfo } from '../../../../../resources/utils'
 import { DistributionField } from './DistributionField'
 
@@ -631,10 +632,11 @@ const mockClusterImageSet5: ClusterImageSet = {
   },
 }
 
-const mockHostedCluster: HostedClusterK8sResource = {
+const mockHostedCluster: HostedClusterK8sResourceWithChannel = {
   apiVersion: HostedClusterApiVersion,
   kind: HostedClusterKind,
   spec: {
+    channel: 'fast-4.11',
     dns: {
       baseDomain: 'dev06.red-chesterfield.com',
     },
@@ -833,7 +835,7 @@ describe('DistributionField hypershift clusters', () => {
     hasUpgrade = false,
     clusterCurator?: ClusterCurator,
     nodepool?: NodePool,
-    hostedCluster?: HostedClusterK8sResource,
+    hostedCluster?: HostedClusterK8sResourceWithChannel,
     setClusterImageSet = true,
     resource = 'managedclusterpage'
   ) => {
@@ -1294,10 +1296,11 @@ describe('DistributionField hypershift clusters', () => {
   })
 
   it('Should show upgrading but with unavailable version num', async () => {
-    const mockHostedCluster: HostedClusterK8sResource = {
+    const mockHostedCluster: HostedClusterK8sResourceWithChannel = {
       apiVersion: HostedClusterApiVersion,
       kind: HostedClusterKind,
       spec: {
+        channel: 'fast-4.11',
         dns: {
           baseDomain: 'dev06.red-chesterfield.com',
         },
@@ -1585,5 +1588,133 @@ describe('DistributionField hypershift clusters', () => {
     expect(queryAllByText('OpenShift 4.11.12').length).toBe(1)
     // Should not show upgrade available since nodepool version equals cluster version
     expect(queryAllByText('Upgrade available').length).toBe(0)
+  })
+
+  // Channel warning tests for HostedClusters
+  describe('HostedCluster channel warning', () => {
+    // Hosted cluster without channel set
+    const mockHostedClusterWithoutChannel: HostedClusterK8sResourceWithChannel = {
+      apiVersion: mockHostedCluster.apiVersion,
+      kind: mockHostedCluster.kind,
+      metadata: mockHostedCluster.metadata,
+      spec: {
+        dns: mockHostedCluster.spec.dns,
+        release: mockHostedCluster.spec.release,
+        services: mockHostedCluster.spec.services,
+        platform: mockHostedCluster.spec.platform,
+        pullSecret: mockHostedCluster.spec.pullSecret,
+        sshKey: mockHostedCluster.spec.sshKey,
+        // Note: channel is intentionally omitted
+      },
+      status: mockHostedCluster.status,
+    }
+
+    // Base hypershift cluster
+    const baseHypershiftCluster: Cluster = {
+      name: 'hypershift-cluster1',
+      displayName: 'hypershift-cluster1',
+      namespace: 'clusters',
+      uid: 'hypershift-cluster1-uid',
+      provider: undefined,
+      status: ClusterStatus.ready,
+      distribution: {
+        ocp: { version: '4.11.12', availableUpdates: [], desiredVersion: '4.11.12', upgradeFailed: false },
+        displayVersion: 'OpenShift 4.11.12',
+        isManagedOpenShift: false,
+      },
+      labels: { abc: '123' },
+      nodes: undefined,
+      kubeApiServer: '',
+      consoleURL: 'some url',
+      hasAutomationTemplate: false,
+      hive: { isHibernatable: true, clusterPool: undefined, secrets: { installConfig: '' } },
+      hypershift: {
+        agent: false,
+        hostingNamespace: 'clusters',
+        nodePools: [],
+        secretNames: ['feng-hs-bug-ssh-key', 'feng-hs-bug-pull-secret'],
+        isUpgrading: false,
+      },
+      isHive: false,
+      isManaged: true,
+      isCurator: true,
+      isHostedCluster: true,
+      isHypershift: true,
+      isSNOCluster: false,
+      owner: {},
+      kubeadmin: '',
+      kubeconfig: '',
+      isRegionalHubCluster: false,
+    }
+
+    it('should show channel warning when HostedCluster has no channel and is not upgrading', async () => {
+      const { queryAllByText } = await renderDistributionInfoField(
+        baseHypershiftCluster,
+        true,
+        false,
+        undefined,
+        undefined,
+        mockHostedClusterWithoutChannel,
+        false,
+        'managedclusterpage'
+      )
+      expect(queryAllByText('Select channel').length).toBe(1)
+    })
+
+    it('should show upgrade status only (no channel warning) when HostedCluster is upgrading', async () => {
+      const cluster: Cluster = {
+        ...baseHypershiftCluster,
+        hypershift: { ...baseHypershiftCluster.hypershift!, isUpgrading: true },
+      }
+      const { queryAllByText, queryByRole } = await renderDistributionInfoField(
+        cluster,
+        true,
+        false,
+        undefined,
+        undefined,
+        mockHostedClusterWithoutChannel,
+        false,
+        'managedclusterpage'
+      )
+      // Should NOT show channel warning when upgrading
+      expect(queryAllByText('Select channel').length).toBe(0)
+      // Should show upgrade progress
+      expect(queryAllByText(/upgrading to 4\.11\.22/i).length).toBe(1)
+      expect(queryByRole('progressbar')).toBeTruthy()
+    })
+
+    it('should not show channel warning when HostedCluster has channel set', async () => {
+      const { queryAllByText } = await renderDistributionInfoField(
+        baseHypershiftCluster,
+        true,
+        false,
+        undefined,
+        undefined,
+        mockHostedCluster, // HAS channel set
+        false,
+        'managedclusterpage'
+      )
+      expect(queryAllByText('Select channel').length).toBe(0)
+    })
+
+    it('should not show channel warning for non-hypershift clusters', async () => {
+      const nonHypershiftCluster: Cluster = {
+        ...baseHypershiftCluster,
+        isHypershift: false,
+        isHostedCluster: false,
+        hypershift: undefined,
+      }
+      const { queryAllByText } = await renderDistributionInfoField(
+        nonHypershiftCluster,
+        true,
+        false,
+        undefined,
+        undefined,
+        undefined, // No hostedCluster prop
+        false,
+        'managedclusterpage'
+      )
+      expect(queryAllByText('Select channel').length).toBe(0)
+    })
   })
 })

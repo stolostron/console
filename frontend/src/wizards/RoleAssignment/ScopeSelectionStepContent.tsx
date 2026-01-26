@@ -1,31 +1,39 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { Button, SelectOption } from '@patternfly/react-core'
 import { useTranslation } from '../../lib/acm-i18next'
-import { Button } from '@patternfly/react-core'
-import { WizSelect } from '@patternfly-labs/react-form-wizard/lib/src/inputs/WizSelect'
-import { useItem } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ItemContext'
+import { ManagedClusterSet } from '../../resources'
+import { AcmSelect } from '../../ui-components'
+import { GranularityStepContent } from './GranularityStepContent'
 import { ClusterSetsList } from './Scope/ClusterSets/ClusterSetsList'
 import { ClusterList } from './Scope/Clusters/ClusterList'
 import { GlobalScopeSelection } from './Scope/GlobalScopeSelection'
-import { GranularityStepContent } from './GranularityStepContent'
+import { RoleAssignmentWizardFormData } from './types'
 
 interface ScopeSelectionStepContentProps {
   isDrawerExpanded: boolean
   setIsDrawerExpanded: (expanded: boolean) => void
-  onSelectClusterSets?: (clusterSets: any[]) => void
+  selectedClusterSets: any[]
+  selectedClusters: any[]
+  selectedScope: RoleAssignmentWizardFormData['scopeType']
+  onSelectClusterSets?: (clusterSets: ManagedClusterSet[]) => void
   onSelectClusters?: (clusters: any[]) => void
+  onSelectScopeType?: (scopeType?: RoleAssignmentWizardFormData['scopeType']) => void
 }
 
 export const ScopeSelectionStepContent = ({
   isDrawerExpanded,
   setIsDrawerExpanded,
+  selectedClusterSets,
+  selectedClusters,
   onSelectClusterSets,
   onSelectClusters,
+  onSelectScopeType,
+  selectedScope,
 }: ScopeSelectionStepContentProps) => {
   const { t } = useTranslation()
-  const item = useItem()
-  const selectedScope = item?.scopeType
-  const selectedClusterSets = item?.selectedClusterSets
-  const selectedClusters = item?.selectedClusters
+
+  const handleScopeTypeChange = (value?: string) =>
+    onSelectScopeType?.(value as RoleAssignmentWizardFormData['scopeType'])
 
   return (
     <div>
@@ -41,12 +49,8 @@ export const ScopeSelectionStepContent = ({
           </Button>
         }
       />
-      <WizSelect
-        pathValueToInputValue={(pathValue) => pathValue || 'Global access'}
-        path="scopeType"
-        label=""
-        required
-        options={[
+      <AcmSelect id="scope-type" value={selectedScope} onChange={handleScopeTypeChange} isRequired label="">
+        {[
           {
             label: t('Global access'),
             value: 'Global access',
@@ -64,8 +68,12 @@ export const ScopeSelectionStepContent = ({
             value: 'Select clusters',
             description: t('Grant access to 1 or more clusters. Optionally, narrow this access to projects'),
           },
-        ]}
-      />
+        ].map((option) => (
+          <SelectOption key={option.value} value={option.value} description={option.description}>
+            {option.label}
+          </SelectOption>
+        ))}
+      </AcmSelect>
 
       <div style={{ marginTop: '16px' }}>
         {(() => {
@@ -76,18 +84,14 @@ export const ScopeSelectionStepContent = ({
               return (
                 <ClusterSetsList
                   selectedClusterSets={selectedClusterSets}
-                  onSelectClusterSet={(clusterSets) => {
-                    onSelectClusterSets?.(clusterSets)
-                  }}
+                  onSelectClusterSet={(clusterSets) => onSelectClusterSets?.(clusterSets)}
                 />
               )
             case 'Select clusters':
               return (
                 <ClusterList
                   selectedClusters={selectedClusters}
-                  onSelectCluster={(clusters) => {
-                    onSelectClusters?.(clusters)
-                  }}
+                  onSelectCluster={(clusters) => onSelectClusters?.(clusters)}
                 />
               )
             default:

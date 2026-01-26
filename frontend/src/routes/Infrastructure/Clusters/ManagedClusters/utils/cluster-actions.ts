@@ -52,7 +52,8 @@ export function clusterDestroyable(cluster: Cluster) {
 export function clusterSupportsAction(
   cluster: Cluster,
   clusterAction: ClusterAction,
-  isHypershiftUpdatesReady?: boolean
+  isHypershiftUpdatesReady?: boolean,
+  isHypershiftChannelSelectable?: boolean
 ): boolean {
   if (!isHypershiftUpdatesReady) {
     isHypershiftUpdatesReady = false
@@ -71,7 +72,8 @@ export function clusterSupportsAction(
       return (
         !!cluster.name &&
         cluster.status === ClusterStatus.ready &&
-        !!cluster.distribution?.upgradeInfo?.isReadySelectChannels
+        (!!cluster.distribution?.upgradeInfo?.isReadySelectChannels ||
+          (cluster.isHypershift && !!isHypershiftChannelSelectable))
       )
     case ClusterAction.Import:
       return cluster.status === ClusterStatus.detached

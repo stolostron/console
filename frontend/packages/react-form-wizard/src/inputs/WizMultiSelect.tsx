@@ -6,7 +6,7 @@ import {
   MenuToggleElement,
   Select as PfSelect,
 } from '@patternfly/react-core'
-import { ReactNode, useCallback, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useState } from 'react'
 import { DisplayMode } from '../contexts/DisplayModeContext'
 import { useStringContext } from '../contexts/StringContext'
 import { getSelectPlaceholder, InputCommonProps, useInput } from './Input'
@@ -31,22 +31,26 @@ export function WizMultiSelect(props: WizMultiSelectProps) {
   const [open, setOpen] = useState(false)
   const [filteredOptions, setFilteredOptions] = useState<string[]>([])
 
-  const allOptions = useMemo(() => {
-    // If resource (value) contains values not available in props.options - they should be included in order to deselect from dropdown.
-    // Create a new Set from the array - Sets only store unique values.
-    const uniqueSet = new Set([...options, ...(value || [])])
-    return [...uniqueSet]
-  }, [options, value])
-
   const handleSetOptions = useCallback(
     (o: string[]) => {
       if (o.length > 0) {
-        setFilteredOptions(o)
+        let filtered =
+          options?.filter((option) => {
+            return o.includes(option)
+          }) ?? []
+        if (value.length > 0) {
+          // Check if value contains custom options
+          const customValues = (value as string[])?.filter((v: string) => !options.includes(v))
+          if (customValues.length) {
+            filtered = [...customValues, ...filtered]
+          }
+        }
+        setFilteredOptions([...filtered, ...o])
       } else {
         setFilteredOptions([noResults])
       }
     },
-    [noResults]
+    [noResults, options, value]
   )
 
   const onSelect = useCallback(
@@ -96,7 +100,9 @@ export function WizMultiSelect(props: WizMultiSelectProps) {
       <WizFormGroup {...props}>
         <PfSelect
           onOpenChange={(isOpen) => {
-            !isOpen && setOpen(false)
+            if (!isOpen) {
+              setOpen(false)
+            }
           }}
           isOpen={open}
           toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
@@ -104,23 +110,24 @@ export function WizMultiSelect(props: WizMultiSelectProps) {
               disabled={disabled}
               validated={validated}
               placeholder={placeholder}
-              options={allOptions}
+              options={options}
               setOptions={handleSetOptions}
+              isCreatable={isCreatable}
               toggleRef={toggleRef}
               value={value}
               onSelect={onSelect}
               open={open}
               setOpen={setOpen}
+              isMultiSelect
             />
           )}
           selected={value}
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-call
           onSelect={(_event, value) => onSelect(value?.toString() ?? '')}
         >
           <SelectListOptions
             value={value}
             allOptions={options}
-            options={filteredOptions}
+            filteredOptions={filteredOptions}
             isCreatable={isCreatable}
             footer={footer}
             isMultiSelect

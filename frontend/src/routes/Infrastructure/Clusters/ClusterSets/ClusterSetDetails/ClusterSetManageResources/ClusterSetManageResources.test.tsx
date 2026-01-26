@@ -203,7 +203,7 @@ const mockClusterPool: ClusterPool = {
 function nockPatchManagedCluster(clusterName: string, op: 'replace' | 'add' | 'remove', value?: string) {
   const patch: { op: 'replace' | 'add' | 'remove'; path: string; value?: string } = {
     op,
-    path: `/metadata/labels/${managedClusterSetLabel.replace(/\//g, '~1')}`,
+    path: `/metadata/labels/${managedClusterSetLabel.replaceAll('/', '~1')}`,
   }
   if (value) {
     patch.value = value
@@ -223,7 +223,7 @@ function nockPatchManagedCluster(clusterName: string, op: 'replace' | 'add' | 'r
 function nockPatchClusterDeployment(clusterName: string, op: 'replace' | 'add' | 'remove', value?: string) {
   const patch: { op: 'replace' | 'add' | 'remove'; path: string; value?: string } = {
     op,
-    path: `/metadata/labels/${managedClusterSetLabel.replace(/\//g, '~1')}`,
+    path: `/metadata/labels/${managedClusterSetLabel.replaceAll('/', '~1')}`,
   }
   if (value) {
     patch.value = value

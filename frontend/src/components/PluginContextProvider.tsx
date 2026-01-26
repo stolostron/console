@@ -9,7 +9,7 @@ import { useFleetK8sWatchResource } from '@stolostron/multicluster-sdk'
 import { ReactNode, useMemo } from 'react'
 import { PluginContext } from '../lib/PluginContext'
 import { useAcmExtension } from '../plugin-extensions/handler'
-import { AcmTableStateProvider, AcmToastGroup, AcmToastProvider } from '../ui-components'
+import { AcmToastGroup, AcmToastProvider } from '../ui-components'
 import { LoadingPage } from './LoadingPage'
 
 import { Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
@@ -64,7 +64,7 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
         <div style={{ position: 'absolute', height: '100%', width: '100%' }}>
           <AcmToastProvider>
             <AcmToastGroup />
-            <AcmTableStateProvider>{props.children}</AcmTableStateProvider>
+            {props.children}
           </AcmToastProvider>
         </div>
       </div>

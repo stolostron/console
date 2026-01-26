@@ -321,6 +321,7 @@ const createFlattenedRoleAssignment = (
   clusterRole,
   clusterSelection: { type: 'placements', placements: [] },
   clusterNames: [],
+  clusterSetNames: [],
   targetNamespaces: [],
   relatedMulticlusterRoleAssignment: {} as MulticlusterRoleAssignment,
 })
@@ -406,6 +407,78 @@ export const createMockMulticlusterRoleAssignment = (
   },
   status: {},
 })
+
+/**
+ * Interface for role assignment configuration in MRA
+ */
+interface RoleAssignmentConfig {
+  name: string
+  clusterRole: string
+  placementNames: string[]
+  targetNamespaces?: string[]
+}
+
+/**
+ * Helper to create a MulticlusterRoleAssignment with specific role assignments and placements
+ */
+export const createMulticlusterRoleAssignment = (
+  name: string,
+  subject: Subject,
+  roleAssignments: RoleAssignmentConfig[]
+): MulticlusterRoleAssignment => ({
+  apiVersion: 'rbac.open-cluster-management.io/v1beta1',
+  kind: 'MulticlusterRoleAssignment',
+  metadata: { name, namespace: MulticlusterRoleAssignmentNamespace },
+  spec: {
+    subject,
+    roleAssignments: roleAssignments.map((ra) => ({
+      name: ra.name,
+      clusterRole: ra.clusterRole,
+      clusterSelection: {
+        type: 'placements' as const,
+        placements: ra.placementNames.map((placementName) => ({
+          name: placementName,
+          namespace: MulticlusterRoleAssignmentNamespace,
+        })),
+      },
+      targetNamespaces: ra.targetNamespaces ?? [],
+    })),
+  },
+  status: {},
+})
+
+/**
+ * Helper to create a MulticlusterRoleAssignment with a single role assignment referencing one placement
+ */
+export const createMRAWithSingleRoleAndPlacement = (
+  name: string,
+  subject: Subject,
+  roleName: string,
+  clusterRole: string,
+  placementName: string
+): MulticlusterRoleAssignment =>
+  createMulticlusterRoleAssignment(name, subject, [{ name: roleName, clusterRole, placementNames: [placementName] }])
+
+/**
+ * Helper to create a MulticlusterRoleAssignment with a single role assignment referencing multiple placements
+ */
+export const createMRAWithSingleRoleAndMultiplePlacements = (
+  name: string,
+  subject: Subject,
+  roleName: string,
+  clusterRole: string,
+  placementNames: string[]
+): MulticlusterRoleAssignment =>
+  createMulticlusterRoleAssignment(name, subject, [{ name: roleName, clusterRole, placementNames }])
+
+/**
+ * Helper to create a MulticlusterRoleAssignment with multiple role assignments
+ */
+export const createMRAWithMultipleRoles = (
+  name: string,
+  subject: Subject,
+  roleAssignments: RoleAssignmentConfig[]
+): MulticlusterRoleAssignment => createMulticlusterRoleAssignment(name, subject, roleAssignments)
 
 /**
  * Test cases for addRoleAssignment

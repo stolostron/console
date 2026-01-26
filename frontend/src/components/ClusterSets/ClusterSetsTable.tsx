@@ -217,11 +217,6 @@ export const ClusterSetsTable = ({
               }
             },
           },
-          {
-            header: t('table.clusters'),
-            cell: (managedClusterSet: ExtendedManagedClusterSet) => managedClusterSet.clusters?.length,
-            exportContent: (managedClusterSet: ExtendedManagedClusterSet) => managedClusterSet.clusters?.length,
-          },
           ...(hideTableActions
             ? []
             : [

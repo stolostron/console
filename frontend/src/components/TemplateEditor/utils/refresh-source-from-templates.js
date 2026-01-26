@@ -46,7 +46,7 @@ export const generateSourceFromTemplate = (template, controlData, otherYAMLTabs)
       encodeInfo.forEach(({ id, control, templateYAML, encode, newTab, snippetKey }) => {
         templateYAML = replaceSnippetMap(templateYAML, snippetMap)
         if (encode) {
-          snippetMap[snippetKey] = Buffer.from(templateYAML.replace(/\s*##.+$/gm, ''), 'ascii').toString('base64')
+          snippetMap[snippetKey] = Buffer.from(templateYAML.replaceAll(/\s*##.+$/gm, ''), 'ascii').toString('base64')
         }
         if (newTab) {
           const existingInx = otherYAMLTabs.findIndex(({ id: existingId }) => existingId === id)
@@ -165,7 +165,7 @@ export const generateTemplateData = (controlData, replacements, controlMap) => {
           ret = Buffer.from(active, 'ascii').toString('base64')
         }
       } else if (singleline) {
-        ret = active.replace(/\n/g, '')
+        ret = active.replaceAll('\n', '')
       } else if (multiline) {
         let lines = active.trim().split(/[\r\n]+/g)
         const max = 64
@@ -281,7 +281,7 @@ const addCodeSnippetsTemplateData = (mainTemplateData, replacements, controlMap)
             const typeOf = typeof partial
             if (typeOf === 'string' || typeOf === 'function') {
               let snippet = typeOf === 'string' ? partial : partial(templateData, helpers)
-              snippet = snippet.trim().replace(/^\s*$(?:\r\n?|\n)/gm, '')
+              snippet = snippet.trim().replaceAll(/^\s*$(?:\r\n?|\n)/gm, '')
               let arr = templateData[_id]
               if (!arr) {
                 arr = templateData[_id] = []
@@ -358,14 +358,14 @@ const replaceSnippetMap = (yaml, snippetMap) => {
       replaced = true
       const inx = str.indexOf(key)
       const indent = inx !== -1 ? str.substring(0, inx) : '    '
-      return indent + replace.replace(/\n/g, '\n' + indent)
+      return indent + replace.replaceAll('\n', '\n' + indent)
     })
     // if not replaced, may be an in-line replacement--no need to worry about indent
     if (!replaced) {
       yaml = yaml.replace(key, replace)
     }
   })
-  yaml = yaml.replace(/^\s*$(?:\r\n?|\n)/gm, '')
+  yaml = yaml.replaceAll(/^\s*$(?:\r\n?|\n)/gm, '')
   if (!yaml.endsWith('\n')) {
     yaml += '\n'
   }

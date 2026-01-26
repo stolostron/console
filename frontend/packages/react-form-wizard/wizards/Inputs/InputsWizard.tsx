@@ -7,6 +7,7 @@ import {
   Tile,
   WizardPage,
   WizArrayInput,
+  WizAsyncSelect,
   WizCheckbox,
   WizKeyValue,
   WizMultiSelect,
@@ -47,15 +48,22 @@ export function InputsWizard() {
           <WizSelect label="Select" path="select.value" options={['Option 1', 'Option 2']} />
           <WizSelect label="Select required" path="select.required" options={['Option 1', 'Option 2']} required />
           <WizSelect
-            label="Select with prompt"
-            path="select.value"
+            label="Select with create option"
+            path="select.create"
             options={['Option 1', 'Option 2']}
-            prompt={{ label: 'See selection', href: '/?route=inputs' }}
+            isCreatable
             required
+            helperText="isCreatable"
           />
         </Section>
         <Section label="MultiSelect">
-          <WizMultiSelect label="MultiSelect" path="multiSelect.value" isCreatable options={['Option 1', 'Option 2']} />
+          <WizMultiSelect
+            label="MultiSelect"
+            path="multiSelect.value"
+            isCreatable
+            options={['Option 1', 'Option 2']}
+            helperText="isCreatable"
+          />
         </Section>
         <Section label="SingleSelect">
           <WizSingleSelect
@@ -72,6 +80,20 @@ export function InputsWizard() {
             path="singleSelectPrompt.value"
             options={['Option 1', 'Option 2']}
             prompt={{ label: 'See selection', href: '/?route=inputs' }}
+          />
+        </Section>
+        <Section label="AsyncSelect with create">
+          <WizAsyncSelect
+            label="AsyncSelect"
+            path="asyncSelectPrompt.value"
+            isCreatable
+            placeholder="Type to search or create..."
+            helperText="Options are loaded asynchronously. You can also create new options."
+            asyncCallback={async () => {
+              // Simulate async data fetching
+              await new Promise((resolve) => setTimeout(resolve, 500))
+              return ['Async Option 1', 'Async Option 2', 'Async Option 3']
+            }}
           />
         </Section>
       </Step>

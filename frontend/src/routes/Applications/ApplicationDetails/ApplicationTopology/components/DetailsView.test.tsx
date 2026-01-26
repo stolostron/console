@@ -690,7 +690,7 @@ const mockLaidoutNodes: { laidoutNodes: TopologyNodeWithStatus[] } = {
       cluster: undefined,
       clusterName: undefined,
       type: 'service',
-      specs: { deployStatuses: Array(1), isDesign: false, row: 201 },
+      specs: { deployStatuses: new Array(1), isDesign: false, row: 201 },
       namespace: '',
       topology: null,
       labels: null,

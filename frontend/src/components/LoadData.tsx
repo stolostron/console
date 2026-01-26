@@ -600,7 +600,7 @@ export function LoadData(props: { children?: ReactNode }) {
   // Update fine-grained RBAC state from mch response
   const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
   if (mchResponse && !mchLoading && !isFineGrainedRbacEnabled) {
-    setIsFineGrainedRbacEnabled(mchResponse?.find((e) => e?.name === 'fine-grained-rbac-preview')?.enabled ?? false)
+    setIsFineGrainedRbacEnabled(mchResponse?.find((e) => e?.name === 'fine-grained-rbac')?.enabled ?? false)
   }
 
   // If all data not loaded (!loaded) & events data is loaded (eventsLoaded) && global hub value is loaded (!globalHubLoading) -> set loaded to true

@@ -8,7 +8,13 @@ import { useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../lib/doc-util'
 import { PluginContext } from '../../../../lib/PluginContext'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
-import { AcmAlertContext, AcmButton, AcmExpandableCard, AcmPageContent } from '../../../../ui-components'
+import {
+  AcmAlertContext,
+  AcmButton,
+  AcmExpandableCard,
+  AcmPageContent,
+  AcmTableStateProvider,
+} from '../../../../ui-components'
 
 export default function ClusterSetsPage() {
   const { t } = useTranslation()
@@ -70,7 +76,9 @@ export default function ClusterSetsPage() {
             </Flex>
           </AcmExpandableCard>
           <Stack>
-            <ClusterSetsTable managedClusterSets={managedClusterSets} hiddenColumns={[t('table.clusters')]} />
+            <AcmTableStateProvider localStorageKey={'cluster-sets-table-state'}>
+              <ClusterSetsTable managedClusterSets={managedClusterSets} />
+            </AcmTableStateProvider>
           </Stack>
         </Stack>
       </PageSection>

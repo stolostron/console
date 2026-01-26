@@ -48,7 +48,6 @@ export default function SavedSearchQueries(props: {
   const [shareSearch, setShareSearch] = useState<SavedSearch | undefined>(undefined)
   const [deleteSearch, setDeleteSearch] = useState<SavedSearch | undefined>(undefined)
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   // combine suggested and saved search queries
   const input = useMemo(
     () => [
@@ -105,7 +104,7 @@ export default function SavedSearchQueries(props: {
         })
         .then((searchResults) => {
           generateSearchResultExport(
-            `${query.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
+            `${query.name.toLowerCase().replaceAll(/\s+/g, '-')}-${Date.now()}`,
             searchResults.data,
             searchDefinitions,
             toast,

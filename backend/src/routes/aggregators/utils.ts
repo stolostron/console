@@ -478,6 +478,12 @@ export function getAppNameFromLabel(label: string, defaultName?: string) {
 //////////////////////////////////////////////////////////////////
 
 export const systemAppNamespacePrefixes: string[] = []
+
+/** Clear system app namespace prefixes. Used for test isolation. */
+export function resetSystemAppNamespacePrefixes() {
+  systemAppNamespacePrefixes.length = 0
+}
+
 export async function discoverSystemAppNamespacePrefixes() {
   if (!systemAppNamespacePrefixes.length) {
     systemAppNamespacePrefixes.push('openshift')
@@ -994,7 +1000,7 @@ export function logApplicationCountChanges(applicationCache: ApplicationCacheTyp
   const memUsed = (cache: any) => {
     return `${Math.round(sizeOf(cache) / 1024)
       .toString()
-      .replace(/\B(?=(\d{3})+(?!\d))/g, ',')} KB`
+      .replaceAll(/\B(?=(\d{3})+(?!\d))/g, ',')} KB`
   }
   logger.info({
     msg: 'memory',

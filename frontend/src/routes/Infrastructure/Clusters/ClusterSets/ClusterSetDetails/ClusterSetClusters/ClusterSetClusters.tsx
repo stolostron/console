@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ManagedClusterSetDefinition, isGlobalClusterSet } from '../../../../../../resources'
-import { AcmEmptyState, AcmPageContent } from '../../../../../../ui-components'
+import { AcmEmptyState, AcmPageContent, AcmTableStateProvider } from '../../../../../../ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
@@ -24,27 +24,29 @@ export function ClusterSetClustersPageContent() {
   return (
     <AcmPageContent id="clusters">
       <PageSection hasBodyWrapper={false}>
-        <ClustersTable
-          clusters={clusters}
-          tableKey="clusterSetClusters"
-          emptyState={
-            <AcmEmptyState
-              key="mcEmptyState"
-              title={t("You don't have any clusters assigned to this cluster set yet")}
-              message={t('To get started, manage your resource assignments to add a cluster.')}
-              action={
-                <RbacButton
-                  component={Link}
-                  to={generatePath(NavigationPath.clusterSetManage, { id: clusterSet.metadata.name! })}
-                  variant="primary"
-                  rbac={[rbacCreate(ManagedClusterSetDefinition, undefined, clusterSet.metadata.name, 'join')]}
-                >
-                  {t('managed.clusterSets.clusters.emptyStateButton')}
-                </RbacButton>
-              }
-            />
-          }
-        />
+        <AcmTableStateProvider localStorageKey={'cluster-set-clusters-table-state'}>
+          <ClustersTable
+            clusters={clusters}
+            tableKey="clusterSetClusters"
+            emptyState={
+              <AcmEmptyState
+                key="mcEmptyState"
+                title={t("You don't have any clusters assigned to this cluster set yet")}
+                message={t('To get started, manage your resource assignments to add a cluster.')}
+                action={
+                  <RbacButton
+                    component={Link}
+                    to={generatePath(NavigationPath.clusterSetManage, { id: clusterSet.metadata.name! })}
+                    variant="primary"
+                    rbac={[rbacCreate(ManagedClusterSetDefinition, undefined, clusterSet.metadata.name, 'join')]}
+                  >
+                    {t('managed.clusterSets.clusters.emptyStateButton')}
+                  </RbacButton>
+                }
+              />
+            }
+          />
+        </AcmTableStateProvider>
       </PageSection>
     </AcmPageContent>
   )

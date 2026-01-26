@@ -22,12 +22,14 @@ type Story = StoryObj<typeof meta>
 
 export const Default: Story = {
   args: {
+    selectedRole: '',
     onRadioSelect: (roleName: string) => console.log('Selected role:', roleName),
   },
 }
 
 export const WithCallback: Story = {
   args: {
+    selectedRole: '',
     onRadioSelect: (roleName: string) => console.log('Selected role:', roleName),
   },
 }
@@ -46,6 +48,7 @@ const InteractiveRolesList = () => {
         </small>
       </div>
       <RolesList
+        selectedRole={selectedRole || ''}
         onRadioSelect={(roleName) => {
           console.log('Role selected:', roleName)
           setSelectedRole(roleName)

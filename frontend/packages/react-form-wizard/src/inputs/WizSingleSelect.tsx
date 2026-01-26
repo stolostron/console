@@ -44,12 +44,24 @@ export function WizSingleSelect(props: WizSingleSelectProps) {
   const handleSetOptions = useCallback(
     (o: string[]) => {
       if (o.length > 0) {
-        setFilteredOptions(o)
+        const filtered =
+          options?.filter((option) => {
+            return o.includes(option)
+          }) ?? []
+        if (value !== '') {
+          const valueAsString = String(value)
+          // Check if value already exists in filtered to avoid duplicates
+          const valueExists = options?.some((op) => op === valueAsString)
+          if (!valueExists) {
+            filtered.unshift(value)
+          }
+        }
+        setFilteredOptions([...filtered, ...o])
       } else {
         setFilteredOptions([noResults])
       }
     },
-    [noResults]
+    [noResults, options, value]
   )
 
   if (hidden) return null
@@ -72,7 +84,9 @@ export function WizSingleSelect(props: WizSingleSelectProps) {
             <PfSelect
               isOpen={open}
               onOpenChange={(isOpen) => {
-                !isOpen && setOpen(false)
+                if (!isOpen) {
+                  setOpen(false)
+                }
               }}
               toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
                 <InputSelect
@@ -82,6 +96,7 @@ export function WizSingleSelect(props: WizSingleSelectProps) {
                   required={required}
                   options={options}
                   setOptions={handleSetOptions}
+                  isCreatable={isCreatable}
                   toggleRef={toggleRef}
                   value={value}
                   onSelect={onSelect}
@@ -90,13 +105,12 @@ export function WizSingleSelect(props: WizSingleSelectProps) {
                 />
               )}
               selected={value}
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-call
               onSelect={(_event, value) => onSelect(value?.toString() ?? '')}
             >
               <SelectListOptions
                 value={value}
                 allOptions={options}
-                options={filteredOptions}
+                filteredOptions={filteredOptions}
                 isCreatable={isCreatable}
                 footer={footer}
               />

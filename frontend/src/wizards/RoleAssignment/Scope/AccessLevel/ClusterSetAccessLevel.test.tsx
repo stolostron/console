@@ -15,7 +15,7 @@ describe('ClusterSetAccessLevel', () => {
     render(<ClusterSetAccessLevel />)
 
     expect(
-      screen.getByText('This role assignment will apply to all current and future resources on the cluster set.')
+      screen.getByText('This role assignment will apply to all current and future resources in all clusters.')
     ).toBeInTheDocument()
   })
 

@@ -1,16 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { DataContext } from '@patternfly-labs/react-form-wizard/lib/src/contexts/DataContext'
 import { ItemContext } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ItemContext'
-import { WizSelect } from '@patternfly-labs/react-form-wizard/lib/src/inputs/WizSelect'
-import { Drawer, DrawerContent, Wizard, WizardHeader, WizardStep } from '@patternfly/react-core'
+import { Drawer, DrawerContent, SelectOption, Wizard, WizardHeader, WizardStep } from '@patternfly/react-core'
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { isType } from '../../lib/is-type'
-import { GroupKind, UserKind } from '../../resources'
+import { GroupKind, ManagedClusterSet, UserKind } from '../../resources'
 import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
+import { AcmSelect } from '../../ui-components'
 import { ClusterGranularityStepContent } from './ClusterGranularityWizardStep'
 import { GranularityStepContent } from './GranularityStepContent'
 import { IdentitiesList } from './Identities/IdentitiesList'
@@ -37,6 +37,8 @@ const getWizardTitle = (
       return t('Create role assignment for {{preselected}}', { preselected: preselected.roles[0] })
     case preselected?.clusterNames && preselected.clusterNames.length > 0:
       return t('Create role assignment for {{preselected}}', { preselected: preselected.clusterNames.join(', ') })
+    case preselected?.clusterSetNames && preselected.clusterSetNames.length > 0:
+      return t('Create role assignment for {{preselected}}', { preselected: preselected.clusterSetNames.join(', ') })
     default:
       return t('Create role assignment')
   }
@@ -64,6 +66,8 @@ const getInitialFormData = (): RoleAssignmentWizardFormData => ({
   },
   roles: [],
   scopeType: 'Global access',
+  clusterSetAccessLevel: 'Cluster set role assignment',
+  selectedClustersAccessLevel: 'Cluster role assignment',
 })
 
 export const RoleAssignmentWizardModal = ({
@@ -72,6 +76,7 @@ export const RoleAssignmentWizardModal = ({
   onSubmit,
   isEditing,
   preselected,
+  isLoading,
 }: RoleAssignmentWizardModalProps) => {
   const { t } = useTranslation()
   const [isDrawerExpanded, setIsDrawerExpanded] = useState(false)
@@ -90,15 +95,34 @@ export const RoleAssignmentWizardModal = ({
     })
   }, [])
 
-  const handleClusterSetsChange = useCallback((clusterSets: any[]) => {
+  const handleClusterSetsChange = useCallback((clusterSets: ManagedClusterSet[]) => {
     setSelectedClusterSets(clusterSets)
     setSelectedClusters([])
-    setFormData((prev) => ({ ...prev, selectedClusterSets: clusterSets, selectedClusters: [] }))
+    setFormData((prev) => ({
+      ...prev,
+      selectedClusterSets: clusterSets,
+      selectedClusters: [],
+      scope: {
+        ...prev.scope,
+        namespaces: [],
+      },
+    }))
   }, [])
 
   const handleClustersChange = useCallback((clusters: any[]) => {
     setSelectedClusters(clusters)
-    setFormData((prev) => ({ ...prev, selectedClusters: clusters }))
+    setFormData((prev) => ({
+      ...prev,
+      selectedClusters: clusters,
+      scope: {
+        ...prev.scope,
+        namespaces: clusters.length === 0 ? [] : prev.scope.namespaces,
+      },
+    }))
+  }, [])
+
+  const handleScopeTypeChange = useCallback((scopeType?: RoleAssignmentWizardFormData['scopeType']) => {
+    setFormData((prev) => ({ ...prev, scopeType }))
   }, [])
 
   const handleRoleSelect = useCallback((roleName: string) => {
@@ -148,6 +172,26 @@ export const RoleAssignmentWizardModal = ({
     }))
   }, [])
 
+  const handleClustersAccessLevelChange = useCallback(
+    (clustersAccessLevel?: RoleAssignmentWizardFormData['selectedClustersAccessLevel']) => {
+      setFormData((prev) => ({
+        ...prev,
+        selectedClustersAccessLevel: clustersAccessLevel,
+      }))
+    },
+    []
+  )
+
+  const handleClusterSetAccessLevelChange = useCallback(
+    (clusterSetAccessLevel?: RoleAssignmentWizardFormData['clusterSetAccessLevel']) => {
+      setFormData((prev) => ({
+        ...prev,
+        clusterSetAccessLevel: clusterSetAccessLevel,
+      }))
+    },
+    []
+  )
+
   const handleClose = useCallback(() => {
     setIsDrawerExpanded(false)
     onClose()
@@ -167,6 +211,7 @@ export const RoleAssignmentWizardModal = ({
     isOpen,
     preselected,
     setFormData,
+    setSelectedClusterSets,
     setSelectedClusters,
   })
 
@@ -186,43 +231,93 @@ export const RoleAssignmentWizardModal = ({
 
   const showIdentitiesStep =
     preselected?.context !== 'identity' &&
-    (isEditing || (!isEditing && (preselected?.roles?.[0] || preselected?.clusterNames?.[0]) && !preselected?.subject))
+    (isEditing ||
+      (!isEditing &&
+        (preselected?.roles?.[0] || preselected?.clusterSetNames?.[0] || preselected?.clusterNames?.[0]) &&
+        !preselected?.subject))
 
   const hideRolesStep = preselected?.context === 'role'
 
   const title = getWizardTitle(isEditing, preselected, t)
+
+  const hasNoClusterSets = selectedClusterSets.length === 0
+  const hasNoClusters = selectedClusters.length === 0
+  const isScopeInvalid =
+    (formData.scopeType === 'Select cluster sets' && hasNoClusterSets) ||
+    (formData.scopeType === 'Select clusters' && hasNoClusters)
+
+  const hasChanges = useMemo(() => {
+    if (!isEditing) return true
+
+    const roleChanged = preselected?.roles?.[0] !== formData.roles?.[0]
+    const clustersChanged =
+      JSON.stringify(preselected?.clusterNames?.toSorted()) !==
+      JSON.stringify(formData.selectedClusters?.map((c) => c.metadata?.name || c.name || c).toSorted())
+    const namespacesChanged =
+      JSON.stringify(preselected?.namespaces?.toSorted()) !== JSON.stringify(formData.scope.namespaces?.toSorted())
+
+    const identityKindChanged = preselected?.subject?.kind !== formData.subject?.kind
+    const identityValueChanged = (() => {
+      switch (true) {
+        case !preselected?.subject?.value:
+          return false
+        case formData.subject?.kind === 'User':
+          return preselected.subject.value !== formData.subject.user?.[0]
+        case formData.subject?.kind === 'Group':
+          return preselected.subject.value !== formData.subject.group?.[0]
+        default:
+          return false
+      }
+    })()
+
+    return roleChanged || clustersChanged || namespacesChanged || identityKindChanged || identityValueChanged
+  }, [isEditing, preselected, formData])
 
   const scopeSubSteps = [
     <WizardStep
       key="scope-selection"
       name={t('Select scope')}
       id="scope-selection"
-      isHidden={preselected?.context === 'cluster'}
+      isHidden={(['cluster', 'clusterSets'] as RoleAssignmentPreselected['context'][]).includes(preselected?.context)}
+      footer={{
+        isNextDisabled: !isEditing && isScopeInvalid,
+      }}
     >
       <ScopeSelectionStepContent
         isDrawerExpanded={isDrawerExpanded}
         setIsDrawerExpanded={setIsDrawerExpanded}
+        selectedClusterSets={selectedClusterSets}
+        selectedClusters={selectedClusters}
         onSelectClusterSets={handleClusterSetsChange}
         onSelectClusters={handleClustersChange}
+        onSelectScopeType={handleScopeTypeChange}
+        selectedScope={formData.scopeType}
       />
     </WizardStep>,
     <WizardStep
       key="cluster-set-granularity"
       name={t('Define cluster set granularity')}
       id="scope-cluster-set-granularity"
-      isHidden={formData.scopeType !== 'Select cluster sets'}
+      isHidden={formData.scopeType !== 'Select cluster sets' || hasNoClusterSets}
+      footer={{
+        isNextDisabled: !isEditing && formData.clusterSetAccessLevel === 'Cluster role assignment' && hasNoClusters,
+      }}
     >
       <GranularityStepContent
         title={t('Choose access level')}
         description={t('Define the level of access for the 1 selected cluster set.')}
       />
       <div style={{ margin: '16px 0' }}>
-        <WizSelect
-          pathValueToInputValue={(pathValue) => pathValue || 'Cluster set role assignment'}
-          path="clusterSetAccessLevel"
+        <AcmSelect
+          id="clusters-set-access-level"
+          value={formData.clusterSetAccessLevel}
+          onChange={(value) =>
+            handleClusterSetAccessLevelChange(value as RoleAssignmentWizardFormData['clusterSetAccessLevel'])
+          }
+          isRequired
           label="Access level"
-          required
-          options={[
+        >
+          {[
             {
               label: t('Cluster set role assignment'),
               value: 'Cluster set role assignment',
@@ -235,14 +330,22 @@ export const RoleAssignmentWizardModal = ({
                 'Grant access to specific clusters on the cluster set. Optionally, narrow this access to projects on the selected clusters'
               ),
             },
-          ]}
-        />
+          ].map((option) => (
+            <SelectOption key={option.value} value={option.value} description={option.description}>
+              {option.label}
+            </SelectOption>
+          ))}
+        </AcmSelect>
       </div>
       {formData.clusterSetAccessLevel === 'Cluster role assignment' && (
         <div style={{ marginTop: '16px' }}>
           <ClusterList
-            selectedClusters={formData.selectedClusters}
-            namespaces={formData.selectedClusterSets?.map((cs) => cs.metadata?.name).filter(isType)}
+            selectedClusters={selectedClusters}
+            namespaces={formData.selectedClusterSets
+              ?.map((cs) =>
+                (cs as ManagedClusterSet).metadata ? (cs as ManagedClusterSet).metadata.name : (cs as string)
+              )
+              .filter(isType)}
             onSelectCluster={(clusters) => {
               handleClustersChange(clusters)
             }}
@@ -256,7 +359,10 @@ export const RoleAssignmentWizardModal = ({
       name={t('Define cluster granularity')}
       id="scope-cluster-set-cluster-granularity"
       isHidden={
-        formData.scopeType !== 'Select cluster sets' || formData.clusterSetAccessLevel !== 'Cluster role assignment'
+        formData.scopeType !== 'Select cluster sets' ||
+        hasNoClusterSets ||
+        formData.clusterSetAccessLevel !== 'Cluster role assignment' ||
+        hasNoClusters
       }
     >
       <ClusterGranularityStepContent
@@ -264,19 +370,23 @@ export const RoleAssignmentWizardModal = ({
         selectedClusters={selectedClusters}
         selectedNamespaces={formData.scope.namespaces}
         onNamespacesChange={handleNamespacesChange}
+        selectedClustersAccessLevel={formData.selectedClustersAccessLevel}
+        onClustersAccessLevelChange={handleClustersAccessLevelChange}
       />
     </WizardStep>,
     <WizardStep
       key="cluster-granularity"
       name={t('Define cluster granularity')}
       id="scope-cluster-granularity"
-      isHidden={formData.scopeType !== 'Select clusters'}
+      isHidden={formData.scopeType !== 'Select clusters' || hasNoClusters}
     >
       <ClusterGranularityStepContent
         description={t('Define the level of access for the selected cluster(s).')}
         selectedClusters={selectedClusters}
         selectedNamespaces={formData.scope.namespaces}
         onNamespacesChange={handleNamespacesChange}
+        selectedClustersAccessLevel={formData.selectedClustersAccessLevel}
+        onClustersAccessLevelChange={handleClustersAccessLevelChange}
       />
     </WizardStep>,
   ]
@@ -309,6 +419,7 @@ export const RoleAssignmentWizardModal = ({
                     }
                     descriptionId="role-assignment-wizard-description"
                     closeButtonAriaLabel={t('Close wizard')}
+                    isCloseHidden={isLoading}
                   />
                 }
               >
@@ -342,10 +453,7 @@ export const RoleAssignmentWizardModal = ({
                   id="scope"
                   steps={scopeSubSteps}
                   footer={{
-                    isNextDisabled:
-                      !isEditing &&
-                      ((formData.scopeType === 'Select cluster sets' && selectedClusterSets.length === 0) ||
-                        (formData.scopeType === 'Select clusters' && selectedClusters.length === 0)),
+                    isNextDisabled: !isEditing && isScopeInvalid,
                   }}
                 />
 
@@ -358,7 +466,7 @@ export const RoleAssignmentWizardModal = ({
                       isNextDisabled: !formData.roles || formData.roles.length === 0,
                     }}
                   >
-                    <RolesList onRadioSelect={handleRoleSelect} />
+                    <RolesList onRadioSelect={handleRoleSelect} selectedRole={formData.roles?.[0]} />
                   </WizardStep>
                 )}
 
@@ -366,9 +474,21 @@ export const RoleAssignmentWizardModal = ({
                   key="review"
                   name={t('Review')}
                   id="review"
-                  footer={{ nextButtonText: isEditing ? t('Save') : t('Create'), onNext: handleSubmit }}
+                  footer={{
+                    nextButtonText: isEditing ? t('Save') : t('Create'),
+                    onNext: handleSubmit,
+                    nextButtonProps: { isLoading },
+                    isBackDisabled: isLoading,
+                    cancelButtonProps: { isDisabled: isLoading },
+                    isNextDisabled: isEditing && !hasChanges,
+                  }}
                 >
-                  <ReviewStepContent formData={formData} preselected={preselected} />
+                  <ReviewStepContent
+                    formData={formData}
+                    preselected={preselected}
+                    isEditing={isEditing}
+                    hasChanges={hasChanges}
+                  />
                 </WizardStep>
               </Wizard>
             </DataContext.Provider>

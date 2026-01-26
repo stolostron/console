@@ -105,6 +105,26 @@ export function getAppStatusByNameMap() {
   return appStatusByNameMap || {}
 }
 
+/** Reset all Argo application module-level state. Used for test isolation. */
+export function resetArgoApplicationState() {
+  pushedAppSetMap = {}
+  tempPushedAppSetMap = {}
+  pulledAppSetMap = {}
+  tempPulledAppSetMap = {}
+  for (const key in appStatusByNameMap) {
+    delete appStatusByNameMap[key]
+  }
+  hubClusterName = undefined as unknown as string
+  clusters = undefined as unknown as Cluster[]
+  localCluster = undefined as unknown as Cluster
+  placementDecisions = undefined as unknown as IResource[]
+  ocpArgoAppFilter.clear()
+  argoPageChunks.length = 0
+  for (const key in oldResourceUidSets) {
+    delete oldResourceUidSets[key]
+  }
+}
+
 // filter out ocp apps that are argo apps
 // each entry is a string of the form:
 // <argo app name>-<argo app namespace>-<argo app cluster>
@@ -148,7 +168,7 @@ export async function cacheArgoApplications(applicationCache: ApplicationCacheTy
   const clusters: Cluster[] = await getClusters()
   const localCluster = clusters.find((cls) => cls.name === hubClusterName)
   const remoteArgoApps = searchResult.items.filter((app) => app.cluster !== hubClusterName)
-  const argoStatusMap = createArgoStatusMap(searchResult)
+  const argoStatusMap = createArgoStatusMap(searchResult, clusters)
   // should be rarely used, argo apps are usually created by appsets
   if (applicationCache['localArgoApps']?.resourceUidMap) {
     try {
@@ -419,9 +439,10 @@ export function getAppSetRelatedResources(appSet: IResource, applicationSets: IA
   return [currentAppSetPlacement, appSetsSharingPlacement]
 }
 
-export function createArgoStatusMap(searchResult: SearchResult) {
+export function createArgoStatusMap(searchResult: SearchResult, clusters: Cluster[]) {
   const argoClusterStatusMap: ApplicationClusterStatusMap = {}
   const statuses2IDMap = new WeakMap<ApplicationStatuses, { appName: string; uids: string[] }>()
+  const sortedClusterNames = clusters.map((c) => c.name).sort((a, b) => b.length - a.length)
 
   // create an app map with syncs and health
   searchResult.items.forEach((app: ISearchResource) => {
@@ -439,7 +460,13 @@ export function createArgoStatusMap(searchResult: SearchResult) {
       if (!app.label.includes('apps.open-cluster-management.io/pull-to-ocm-managed-cluster=true')) {
         appName = `${app.namespace}/${app.applicationSet}`
         appKey = `appset/${appName}`
-        appCluster = app.name.replace(`${app.applicationSet}-`, '')
+        const namePart = app.name.startsWith(app.applicationSet)
+          ? app.name.substring(app.applicationSet.length + 1)
+          : app.applicationSet
+        appCluster = sortedClusterNames.find(
+          (cluster: string) =>
+            namePart === cluster || namePart.includes(`-${cluster}`) || namePart.includes(`${cluster}-`)
+        )
         appSetName = app.applicationSet
       }
     } else {

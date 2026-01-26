@@ -220,7 +220,7 @@ export function validateResource(
           .substring(1)
           .split('/')
           .map((p) => {
-            return p.replace(/~\d+/g, '/')
+            return p.replaceAll(/~\d+/g, '/')
           })
         path = [...prefix, ...path]
         path = getPathArray(path)

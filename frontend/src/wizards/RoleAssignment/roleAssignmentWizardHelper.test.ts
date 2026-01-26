@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { ManagedClusterSet, UserKind } from '../../resources'
 import { wizardDataToRoleAssignmentToSave } from './roleAssignmentWizardHelper'
-import { UserKind } from '../../resources'
 import { RoleAssignmentWizardFormData } from './types'
 
 describe('wizardDataToRoleAssignmentToSave', () => {
@@ -44,7 +44,9 @@ describe('wizardDataToRoleAssignmentToSave', () => {
     const formData = createFormData({
       scope: { kind: 'specific', clusterNames: [] },
       scopeType: 'Select cluster sets',
-      selectedClusterSets: [{ name: 'cluster-set-1', metadata: { name: 'cluster-set-1' } }],
+      selectedClusterSets: [
+        { name: 'cluster-set-1', metadata: { name: 'cluster-set-1' } },
+      ] as any as ManagedClusterSet[],
     })
 
     // Act

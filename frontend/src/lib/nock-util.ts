@@ -397,7 +397,8 @@ export function nockIgnoreOperatorCheck(noAnsible?: boolean) {
 
 export function nockArgoGitBranches(repositoryUrl: string, response: GetGitBranchesArgoResponse, statusCode = 200) {
   const url = new URL(repositoryUrl)
-  return nocked('https://api.github.com')
+  return nock('https://api.github.com')
+    .persist()
     .get('/repos' + url.pathname + '/branches')
     .reply(statusCode, response.branchList)
 }
@@ -409,14 +410,16 @@ export function nockArgoGitPathSha(
   statusCode = 200
 ) {
   const url = new URL(repositoryUrl)
-  return nocked('https://api.github.com')
+  return nock('https://api.github.com')
+    .persist()
     .get('/repos' + url.pathname + '/branches/' + branch)
     .reply(statusCode, response)
 }
 
 export function nockArgoGitPathTree(repositoryUrl: string, response: GetGitPathsArgoResponse, statusCode = 200) {
   const url = new URL(repositoryUrl)
-  return nocked('https://api.github.com')
+  return nock('https://api.github.com')
+    .persist()
     .get('/repos' + url.pathname + '/git/trees/01?recursive=true')
     .reply(statusCode, response)
 }

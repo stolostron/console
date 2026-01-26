@@ -6,6 +6,7 @@ import {
   ManagedClusterDefinition,
   isAutomationTemplate,
 } from '../../../../../../resources'
+import { HostedClusterK8sResourceWithChannel } from '../../../../../../resources/hosted-cluster'
 import { ClusterStatus } from '../../../../../../resources/utils'
 import {
   AcmButton,
@@ -22,7 +23,7 @@ import {
 import { AlertVariant, ButtonVariant, PageSection, Popover } from '@patternfly/react-core'
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { ExternalLinkAltIcon, OutlinedQuestionCircleIcon, PencilAltIcon } from '@patternfly/react-icons'
-import { Fragment, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import {
   AgentClusterInstallK8sResource,
   ClusterDeploymentK8sResource,
@@ -83,6 +84,18 @@ export function ClusterOverviewPageContent() {
   const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
   const [curatorSummaryModalIsOpen, setCuratorSummaryModalIsOpen] = useState<boolean>(false)
   const { projects } = useProjects()
+
+  // Channel selection conditions for showing the edit button next to the Channel row
+  // - isSelectingChannel: true when ClusterCurator is processing a channel change
+  // - isReadySelectChannels: true for standard OCP clusters that have available channels
+  // - hypershiftNeedsChannel: true for hypershift clusters that don't have a channel configured yet
+  // - canSelectChannel: combined condition to show/hide the channel edit button
+  const isSelectingChannel = cluster?.distribution?.upgradeInfo?.isSelectingChannel
+  const isReadySelectChannels = cluster?.distribution?.upgradeInfo?.isReadySelectChannels
+  const hypershiftNeedsChannel =
+    cluster?.isHypershift && hostedCluster && !(hostedCluster as HostedClusterK8sResourceWithChannel).spec?.channel
+  const canSelectChannel =
+    cluster?.isManaged && !isSelectingChannel && (isReadySelectChannels || hypershiftNeedsChannel)
 
   const clusterProperties: { [key: string]: { key: string; value?: React.ReactNode; keyAction?: React.ReactNode } } = {
     /*
@@ -160,7 +173,7 @@ export function ClusterOverviewPageContent() {
               })}
             ></AcmInlineStatus>
           ) : (
-            cluster.distribution?.upgradeInfo?.currentChannel ?? ''
+            cluster.distribution?.upgradeInfo?.currentChannel ?? '-'
           )}
           <Popover bodyContent={<Trans i18nKey="table.clusterChannel.helperText" components={{ bold: <strong /> }} />}>
             <AcmButton variant="link" style={{ paddingLeft: '6px' }}>
@@ -169,7 +182,7 @@ export function ClusterOverviewPageContent() {
           </Popover>
         </span>
       ),
-      keyAction: cluster?.isManaged && cluster.distribution?.upgradeInfo?.isReadySelectChannels && (
+      keyAction: canSelectChannel && (
         <RbacButton
           onClick={() => {
             if (cluster) {
@@ -339,8 +352,8 @@ export function ClusterOverviewPageContent() {
     clusterProperties.status,
     clusterProperties.provider,
     clusterProperties.distribution,
-    // should only show channel for ocp clusters with version
-    ...(!cluster?.isHypershift && hasOCPVersion ? [clusterProperties.channel] : []),
+    // should show channel for ocp clusters with version or hypershift clusters
+    ...(hasOCPVersion || cluster?.isHypershift ? [clusterProperties.channel] : []),
     ...(cluster?.isRegionalHubCluster ? [clusterProperties.acmDistribution, clusterProperties.acmChannel] : []),
     clusterProperties.labels,
     ...(hasAIClusterProperties ? clusterClaimedBySetPool : []),
@@ -367,6 +380,14 @@ export function ClusterOverviewPageContent() {
   const handleModalToggle = () => {
     setIsModalOpen(!isModalOpen)
   }
+
+  // Build hostedClusters map for BatchChannelSelectModal
+  const hostedClustersMap = useMemo(() => {
+    if (hostedCluster && cluster?.name) {
+      return { [cluster.name]: hostedCluster }
+    }
+    return undefined
+  }, [hostedCluster, cluster?.name])
 
   let details = <ProgressStepBar />
   if (cluster?.isHypershift) {
@@ -470,6 +491,7 @@ export function ClusterOverviewPageContent() {
             close={() => {
               setShowChannelSelectModal(false)
             }}
+            hostedClusters={hostedClustersMap}
           />
         )}
       </PageSection>

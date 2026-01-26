@@ -36,7 +36,7 @@ describe('PluginDataContextProvider', () => {
   it('renders LoadData when requested', async () => {
     const mockGlobalHubReq: any = { isGlobalHub: true }
     nockRequest('/hub', mockGlobalHubReq)
-    const mockMCHReq: any = { enabled: true, name: 'fine-grained-rbac-preview' }
+    const mockMCHReq: any = { enabled: true, name: 'fine-grained-rbac' }
     nockRequest('/multiclusterhub/components', mockMCHReq)
     const pluginData: PluginData = {
       ...defaultContext,

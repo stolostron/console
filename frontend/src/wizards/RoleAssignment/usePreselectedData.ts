@@ -1,14 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useEffect, useRef } from 'react'
-import { UserKind, GroupKind } from '../../resources'
-import { RoleAssignmentWizardFormData } from './types'
-import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
+import { GroupKind, UserKind } from '../../resources'
 import { useRoleAssignmentData } from '../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
+import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
+import { RoleAssignmentWizardFormData } from './types'
 
 interface UsePreselectedDataProps {
   isOpen: boolean
   preselected?: RoleAssignmentPreselected
   setFormData: React.Dispatch<React.SetStateAction<RoleAssignmentWizardFormData>>
+  setSelectedClusterSets: React.Dispatch<React.SetStateAction<any[]>>
   setSelectedClusters: React.Dispatch<React.SetStateAction<any[]>>
 }
 
@@ -25,6 +26,7 @@ export const usePreselectedData = ({
   isOpen,
   preselected,
   setFormData,
+  setSelectedClusterSets,
   setSelectedClusters,
 }: UsePreselectedDataProps) => {
   const { roleAssignmentData } = useRoleAssignmentData()
@@ -36,7 +38,7 @@ export const usePreselectedData = ({
     } else if (!hasAppliedPreselection.current) {
       hasAppliedPreselection.current = true
 
-      const allClusters = roleAssignmentData.clusterSets?.flatMap((cs) => cs.clusters || []) || []
+      const allClusters = roleAssignmentData.clusterSets?.flatMap((cs) => cs.clusters ?? []) ?? []
 
       setFormData((prev) => {
         const updates: Partial<RoleAssignmentWizardFormData> = {}
@@ -48,6 +50,19 @@ export const usePreselectedData = ({
 
         if (preselected?.roles && preselected.roles.length > 0) {
           updates.roles = preselected.roles
+        }
+
+        if (preselected?.clusterSetNames && preselected.clusterSetNames.length > 0) {
+          const clusterSetNames = roleAssignmentData.clusterSets
+            .map((e) => e.name)
+            .filter((clusterSetName) => preselected.clusterSetNames?.includes(clusterSetName))
+
+          updates.scopeType = 'Select cluster sets'
+          updates.scope = {
+            kind: 'all',
+          }
+          updates.selectedClusterSets = clusterSetNames
+          setSelectedClusterSets(clusterSetNames)
         }
 
         if (preselected?.clusterNames && preselected.clusterNames.length > 0) {
@@ -75,5 +90,5 @@ export const usePreselectedData = ({
         return { ...prev, ...updates }
       })
     }
-  }, [isOpen, preselected, roleAssignmentData.clusterSets, setFormData, setSelectedClusters])
+  }, [isOpen, preselected, roleAssignmentData.clusterSets, setFormData, setSelectedClusterSets, setSelectedClusters])
 }

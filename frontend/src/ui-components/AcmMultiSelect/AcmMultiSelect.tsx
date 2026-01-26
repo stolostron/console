@@ -74,13 +74,16 @@ export function AcmMultiSelect(props: AcmMultiSelectProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ValidationContext.validate])
 
+  if (props.hidden) {
+    return null
+  }
+
   return (
     <FormGroup
       id={`${props.id}-label`}
       label={props.label}
       isRequired={isRequired}
       fieldId={props.id}
-      hidden={props.hidden}
       labelHelp={
         /* istanbul ignore next */
         props.labelHelp ? (

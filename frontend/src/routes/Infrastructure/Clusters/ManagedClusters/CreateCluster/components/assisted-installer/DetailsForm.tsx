@@ -3,7 +3,7 @@
 import { useCallback, useRef, useEffect, useState, useMemo, Dispatch, SetStateAction } from 'react'
 import { FormikProps } from 'formik'
 import { set, get, isEqual, debounce } from 'lodash'
-// eslint-disable-next-line
+
 import { TFunction } from 'react-i18next'
 import { Content, SelectOption } from '@patternfly/react-core'
 import { Link } from 'react-router-dom-v5-compat'

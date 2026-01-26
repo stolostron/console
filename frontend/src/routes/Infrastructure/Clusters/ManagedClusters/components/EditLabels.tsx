@@ -74,7 +74,7 @@ export function EditLabels(props: { resource?: IResource; displayName?: string; 
                     patch = [
                       ...patch,
                       ...Object.keys(resource!.metadata!.labels).map((key) => {
-                        key = key.replace(/\//g, '~1')
+                        key = key.replaceAll('/', '~1')
                         return {
                           op: 'remove',
                           path: `/metadata/labels/${key}`,
@@ -85,7 +85,7 @@ export function EditLabels(props: { resource?: IResource; displayName?: string; 
                   patch = [
                     ...patch,
                     ...Object.keys(labels).map((key) => {
-                      const keyPath = key.replace(/\//g, '~1')
+                      const keyPath = key.replaceAll('/', '~1')
                       return {
                         op: 'add',
                         path: `/metadata/labels/${keyPath}`,

@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { sha256 } from 'js-sha256'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assignment'
 import { Placement, PlacementApiVersionBeta, PlacementKind, PlacementPredicates } from '../placement'
@@ -235,6 +236,25 @@ export const createForClusterSets = (clusterSets: string[], namespace = Multiclu
   }
   return create(placement)
 }
+/**
+ * Generates a placement resource name based on the given cluster names.
+ * The name is the cluster names joined with '-and-'. If the resulting name exceeds
+ * 63 characters, it returns a SHA-256 hash truncated to 63 characters instead.
+ *
+ * @param clusterNames - Array of cluster names used to generate the placement name
+ * @returns A placement name as a string (max length 63)
+ */
+const producePlacementName = (clusterNames: string[]) => {
+  const MAX_LENGTH = 63
+  const PREFIX = 'clusters-'
+  const clusterNamesString = clusterNames.join('-and-')
+
+  const suggestedName = `${PREFIX}${clusterNamesString}`
+
+  return suggestedName.length > MAX_LENGTH
+    ? `${PREFIX}${sha256(clusterNamesString)}`.substring(0, MAX_LENGTH)
+    : suggestedName
+}
 
 /**
  * Creates a Placement resource that selects specific clusters using label selectors.
@@ -250,7 +270,7 @@ export const createForClusters = (clusters: string[], namespace = MulticlusterRo
   const placement: Placement = {
     apiVersion: PlacementApiVersionBeta,
     kind: PlacementKind,
-    metadata: { name: `clusters-${clusters.join('-and-')}`, namespace },
+    metadata: { name: producePlacementName(clusters), namespace },
     spec: {
       predicates: [
         {

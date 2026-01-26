@@ -20,7 +20,7 @@ export const ManagedClusterActionApiGroup = 'action.open-cluster-management.io'
 export const ManagedClusterActionVersion = 'v1beta1'
 export const ManagedClusterActionResources = 'managedclusteractions'
 
-type ActionType = 'Update' | 'Delete' | 'Create'
+export type ActionType = 'Update' | 'Delete' | 'Create'
 
 export interface ManagedClusterAction {
   apiVersion: ManagedClusterActionApiVersionType
@@ -36,15 +36,7 @@ export interface ManagedClusterAction {
     }
   }
   spec?: {
-    cluster?: {
-      name: string
-    }
-    type?: 'Action'
     actionType?: ActionType
-    scope?: {
-      resourceType: string
-      namespace: string
-    }
     kube?: {
       resource?: string
       name?: string
@@ -116,7 +108,7 @@ export const fireManagedClusterAction = (
   resourceKind: string,
   resourceApiVersion: string,
   resourceName: string,
-  resourceNamespace: string,
+  resourceNamespace?: string,
   resourceBody?: any
 ) => {
   const actionName = uuidv4()
@@ -130,16 +122,6 @@ export const fireManagedClusterAction = (
         namespace: clusterName,
       },
       spec: {
-        cluster: {
-          name: clusterName,
-        },
-        type: 'Action',
-        scope: {
-          resourceType: apiGroup
-            ? `${resourceKind.toLowerCase()}.${version}.${apiGroup}`
-            : `${resourceKind.toLowerCase()}`,
-          namespace: resourceNamespace,
-        },
         actionType: actionType,
         kube: {
           resource: apiGroup ? `${resourceKind.toLowerCase()}.${version}.${apiGroup}` : `${resourceKind.toLowerCase()}`,

@@ -114,4 +114,20 @@ describe('AcmNumberInput', () => {
     const helpButton = screen.queryByRole('button', { name: 'More info' })
     expect(helpButton).not.toBeInTheDocument()
   })
+
+  test('hides component when hidden prop is true', () => {
+    const { queryByTestId, queryByText } = render(
+      <AcmNumberInput id="number-input" label="Number input" value={5} onChange={() => null} hidden />
+    )
+    expect(queryByTestId('number-input-label')).toBeNull()
+    expect(queryByText('Number input')).toBeNull()
+  })
+
+  test('shows component when hidden prop is false', () => {
+    const { getByText, getByLabelText } = render(
+      <AcmNumberInput id="number-input" label="Number input" value={5} onChange={() => null} hidden={false} />
+    )
+    expect(getByText('Number input')).toBeInTheDocument()
+    expect(getByLabelText('Number input')).toBeInstanceOf(HTMLInputElement)
+  })
 })

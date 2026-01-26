@@ -48,12 +48,16 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
   const handleSetOptions = useCallback(
     (o: string[]) => {
       if (o.length > 0) {
+        const isValueCustomOption = options?.filter((op) => op === value).length === 0
+        if (isValueCustomOption) {
+          o.unshift(value)
+        }
         setFilteredOptions(o)
       } else {
         setFilteredOptions([noResults])
       }
     },
-    [noResults]
+    [noResults, value, options]
   )
 
   const sync = useCallback(() => {
@@ -68,8 +72,6 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
                 setOptions(options)
                 setFilteredOptions(options)
               } else {
-                // eslint-disable-next-line no-console
-                console.warn('AsyncSelect: options is not an array of strings')
                 setOptions([])
               }
             })
@@ -102,7 +104,9 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
         <InputGroupItem isFill>
           <PfSelect
             onOpenChange={(isOpen) => {
-              !isOpen && setOpen(false)
+              if (!isOpen) {
+                setOpen(false)
+              }
             }}
             isOpen={open}
             toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
@@ -112,6 +116,7 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
                 placeholder={placeholder}
                 options={options}
                 setOptions={handleSetOptions}
+                isCreatable={isCreatable}
                 toggleRef={toggleRef}
                 value={value}
                 onSelect={onSelect}
@@ -120,13 +125,12 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
               />
             )}
             selected={value}
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             onSelect={(_event, value) => onSelect(value?.toString() ?? '')}
             shouldFocusFirstItemOnOpen={false}
           >
             <SelectListOptions
               allOptions={options}
-              options={filteredOptions}
+              filteredOptions={filteredOptions}
               value={value}
               isCreatable={isCreatable}
               footer={footer}

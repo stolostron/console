@@ -58,7 +58,8 @@ describe('ClusterSetsList', () => {
   test('renders cluster sets', async () => {
     render(<Component />)
     await waitForText(mockManagedClusterSet.metadata.name!)
-    await waitForText(mockGlobalClusterSet.metadata.name!)
+    // Global cluster set should not be rendered as it's filtered out
+    await waitForNotText(mockGlobalClusterSet.metadata.name!)
   })
 
   test('does not render links', async () => {
@@ -74,16 +75,30 @@ describe('ClusterSetsList', () => {
     expect(screen.queryByText('Create cluster set')).not.toBeInTheDocument()
   })
 
-  test('hides cluster statuses and cluster set binding columns', async () => {
+  test('hides cluster set binding column', async () => {
     render(<Component />)
     await waitForText(mockManagedClusterSet.metadata.name!)
-    await waitForNotText('Cluster statuses')
     await waitForNotText('Namespace bindings')
+    // Cluster status column should be visible (not hidden)
+    await waitForText('Cluster status')
   })
 
   test('does not show export button', async () => {
     render(<Component />)
     await waitForText(mockManagedClusterSet.metadata.name!)
     expect(screen.queryByLabelText('export-search-result')).not.toBeInTheDocument()
+  })
+
+  test('filters out global cluster set using isGlobalClusterSet', async () => {
+    render(<Component />)
+    // Regular cluster set should be rendered
+    await waitForText(mockManagedClusterSet.metadata.name!)
+    // Global cluster set should be filtered out and not rendered
+    await waitForNotText(mockGlobalClusterSet.metadata.name!)
+    // Verify only the non-global cluster set is in the table
+    const clusterSetRows = screen.queryAllByText(mockManagedClusterSet.metadata.name!)
+    expect(clusterSetRows.length).toBeGreaterThan(0)
+    const globalClusterSetRows = screen.queryAllByText(mockGlobalClusterSet.metadata.name!)
+    expect(globalClusterSetRows.length).toBe(0)
   })
 })
