@@ -57,7 +57,7 @@
         "@cypress/code-coverage": "^3.14.4",
         "@pmmmwh/react-refresh-webpack-plugin": "^0.6.2",
         "@react-hook/resize-observer": "1.2.6",
-        "@svgr/webpack": "6.5.1",
+        "@svgr/webpack": "^8.1.0",
         "@types/get-value": "3.0.5",
         "@types/html-webpack-plugin": "3.2.9",
         "@types/node": "^18.19.112",
