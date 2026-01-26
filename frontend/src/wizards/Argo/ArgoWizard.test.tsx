@@ -312,7 +312,7 @@ describe('ArgoWizard tests', () => {
     await clickByRole('button', { name: 'Submit' })
 
     const submitted = mockOnsubmit.mock.calls[0][0]
-    expect(submitted[0].spec.template.spec.syncPolicy.automated).toEqual({ prune: true, selfHeal: true })
+    expect(submitted[0].spec.template.spec.syncPolicy.automated).toEqual({ enabled: true, prune: true, selfHeal: true })
   })
 
   //=====================================================================
@@ -630,6 +630,7 @@ const submittedGit = [
           ],
           syncPolicy: {
             automated: {
+              enabled: true,
               allowEmpty: true,
               prune: true,
               selfHeal: true,
@@ -719,6 +720,7 @@ const submittedHelm = [
           ],
           syncPolicy: {
             automated: {
+              enabled: true,
               prune: true,
               selfHeal: true,
             },
@@ -781,6 +783,7 @@ const submittedGitPullModel = [
           ],
           syncPolicy: {
             automated: {
+              enabled: true,
               prune: true,
               selfHeal: true,
             },

@@ -273,6 +273,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
                   destination: { namespace: '', server: '{{server}}' },
                   syncPolicy: {
                     automated: {
+                      enabled: true,
                       selfHeal: true,
                       prune: true,
                     },
@@ -348,6 +349,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
                   destination: { namespace: '', server: '{{server}}' },
                   syncPolicy: {
                     automated: {
+                      enabled: true,
                       selfHeal: true,
                       prune: true,
                     },
@@ -538,6 +540,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
         <Step id="sync-policy" label={t('Sync policy')}>
           <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
             <ArgoSyncPolicySection />
+            <ArgoAutomatedSyncPolicySection />
           </WizItemSelector>
         </Step>
         <Step id="placement" label={t('Placement')}>
@@ -701,7 +704,6 @@ function syncOptionsToPrunePropagationPolicy(array: unknown) {
 
 function ArgoSyncPolicySection() {
   const { t } = useTranslation()
-  const automated = useItem('spec.template.spec.syncPolicy.automated')
 
   return (
     <Section
@@ -710,16 +712,6 @@ function ArgoSyncPolicySection() {
         'Settings used to configure application syncing when there are differences between the desired state and the live cluster state.'
       )}
     >
-      <WizCheckbox
-        label={t('Delete resources that are no longer defined in the source repository')}
-        path="spec.template.spec.syncPolicy.automated.prune"
-        disabled={automated === null}
-        onValueChange={(value: unknown, item?: ApplicationSet) => {
-          if (value === true && item && get(item, 'spec.template.spec.syncPolicy.automated') !== null) {
-            set(item, 'spec.template.spec.syncPolicy.automated.prune', true)
-          }
-        }}
-      />
       <WizCheckbox
         id="prune-last"
         label={t('Delete resources that are no longer defined in the source repository at the end of a sync operation')}
@@ -735,30 +727,11 @@ function ArgoSyncPolicySection() {
         pathValueToInputValue={syncOptionsToBoolean('Replace')}
       />
       <WizCheckbox
-        path="spec.template.spec.syncPolicy.automated.allowEmpty"
-        label={t('Allow applications to have empty resources')}
-        disabled={automated === null}
-      />
-      <WizCheckbox
         id="apply-out-of-sync-only"
         label={t('Only synchronize out-of-sync resources')}
         path="spec.template.spec.syncPolicy.syncOptions"
         inputValueToPathValue={booleanToSyncOptions('ApplyOutOfSyncOnly')}
         pathValueToInputValue={syncOptionsToBoolean('ApplyOutOfSyncOnly')}
-      />
-      <WizCheckbox
-        path="spec.template.spec.syncPolicy.automated.selfHeal"
-        label={t('Automatically sync when cluster state changes')}
-        onValueChange={(value: unknown, item?: ApplicationSet) => {
-          if (value === false && item) {
-            set(item, 'spec.template.spec.syncPolicy.automated', null)
-          }
-          if (value === true && item) {
-            if (get(item, 'spec.template.spec.syncPolicy.automated') !== null) {
-              set(item, 'spec.template.spec.syncPolicy.automated.prune', true)
-            }
-          }
-        }}
       />
       <WizCheckbox
         id="create-namespace"
@@ -794,6 +767,41 @@ function ArgoSyncPolicySection() {
           required
         />
       </WizCheckbox>
+    </Section>
+  )
+}
+
+function ArgoAutomatedSyncPolicySection() {
+  const { t } = useTranslation()
+  const automatedField = useItem('spec.template.spec.syncPolicy.automated')
+  // Retain support for the old automated field behavior
+  // Set enabled to true if the old automated field is not null but no enabled field is present
+  if (automatedField !== null && get(automatedField, 'enabled') === undefined) {
+    set(automatedField, 'enabled', true)
+  }
+  const automated = useItem('spec.template.spec.syncPolicy.automated.enabled')
+
+  return (
+    <Section label={t('Automated sync options')} description={t('argo.automated.sync.description')}>
+      <WizCheckbox path="spec.template.spec.syncPolicy.automated.enabled" label={t('Enable automated sync')} />
+      <WizCheckbox
+        label={t('Delete resources that are no longer defined in the source repository')}
+        path="spec.template.spec.syncPolicy.automated.prune"
+        disabled={automated === false}
+        labelHelp={t('If automated sync is disabled, this option will be ignored.')}
+      />
+      <WizCheckbox
+        path="spec.template.spec.syncPolicy.automated.allowEmpty"
+        label={t('Allow applications to have empty resources')}
+        disabled={automated === false}
+        labelHelp={t('If automated sync is disabled, this option will be ignored.')}
+      />
+      <WizCheckbox
+        path="spec.template.spec.syncPolicy.automated.selfHeal"
+        label={t('Automatically sync when cluster state changes')}
+        disabled={automated === false}
+        labelHelp={t('If automated sync is disabled, this option will be ignored.')}
+      />
     </Section>
   )
 }
