@@ -15,6 +15,7 @@ export const ArgoApplicationDefinition: IResourceDefinition = {
 
 export interface ArgoSyncPolicy {
   automated?: {
+    enabled?: boolean
     selfHeal?: boolean
     prune?: boolean
     allowEmpty?: boolean
