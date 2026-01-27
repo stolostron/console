@@ -5,7 +5,6 @@ import { Link, LinkProps } from 'react-router-dom-v5-compat'
 import { css } from '@emotion/css'
 import { getItemWithExpiration, setItemWithExpiration } from '../AcmTable/AcmTableStateProvider'
 
-
 const visitedLinkClass = css`
   color: var(--pf-v5-global--link--Color--visited) !important;
   span {
