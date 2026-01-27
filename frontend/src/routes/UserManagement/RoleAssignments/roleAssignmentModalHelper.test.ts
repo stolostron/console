@@ -15,7 +15,7 @@ import {
   MulticlusterRoleAssignmentApiVersion,
   MulticlusterRoleAssignmentKind,
 } from '../../../resources/multicluster-role-assignment'
-import { Placement } from '../../../resources/placement'
+import { GlobalPlacementName, Placement } from '../../../resources/placement'
 import {
   existingRoleAssignmentsBySubjectRole,
   saveAllRoleAssignments,
@@ -38,6 +38,13 @@ jest.mock('../../../resources/clients/multicluster-role-assignment-client', () =
 jest.mock('../../../resources/clients/managed-cluster-set-binding-client', () => ({
   findManagedClusterSetBinding: jest.fn(),
 }))
+
+const createMockPlacement = (name: string): Placement => ({
+  apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+  kind: 'Placement',
+  metadata: { name, namespace: MulticlusterRoleAssignmentNamespace },
+  spec: { clusterSets: ['default'] },
+})
 
 describe('roleAssignmentHelper', () => {
   describe('existingRoleAssignmentsBySubjectRole', () => {
@@ -90,6 +97,7 @@ describe('roleAssignmentHelper', () => {
           clusterNames: ['cluster-1'],
           clusterSetNames: [],
           subject: { name: 'user1', kind: UserKind },
+          isGlobalScope: false,
         },
       ]
       const multiClusterRoleAssignments: MulticlusterRoleAssignment[] = []
@@ -124,12 +132,14 @@ describe('roleAssignmentHelper', () => {
           clusterNames: ['cluster-1'],
           clusterSetNames: [],
           subject: { name: 'user1', kind: UserKind },
+          isGlobalScope: false,
         },
         {
           clusterRole: 'admin',
           clusterNames: ['cluster-1'],
           clusterSetNames: [],
           subject: { name: 'user2', kind: UserKind },
+          isGlobalScope: false,
         },
       ]
 
@@ -152,6 +162,7 @@ describe('roleAssignmentHelper', () => {
           clusterNames: ['cluster-1'],
           clusterSetNames: [],
           subject: { name: 'developers', kind: GroupKind },
+          isGlobalScope: false,
         },
       ]
 
@@ -175,18 +186,21 @@ describe('roleAssignmentHelper', () => {
           clusterNames: ['cluster-1'],
           clusterSetNames: [],
           subject: { name: 'user1', kind: UserKind },
+          isGlobalScope: false,
         },
         {
           clusterRole: 'admin',
           clusterNames: ['cluster-1'],
           clusterSetNames: [],
           subject: { name: undefined as unknown as string, kind: UserKind },
+          isGlobalScope: false,
         },
         {
           clusterRole: 'admin',
           clusterNames: ['cluster-1'],
           clusterSetNames: [],
           subject: { name: 'user2', kind: UserKind },
+          isGlobalScope: false,
         },
       ]
 
@@ -208,6 +222,7 @@ describe('roleAssignmentHelper', () => {
           clusterNames: ['cluster-1'],
           clusterSetNames: [],
           subject: { name: 'user1', kind: UserKind },
+          isGlobalScope: false,
         },
       ]
       const createMockPlacement = (name: string): Placement => ({
@@ -248,6 +263,7 @@ describe('roleAssignmentHelper', () => {
           clusterNames: ['cluster-1'],
           clusterSetNames: [],
           subject: { name: 'user1', kind: UserKind },
+          isGlobalScope: false,
         },
       ]
 
@@ -270,6 +286,7 @@ describe('roleAssignmentHelper', () => {
           clusterNames: ['cluster-1'],
           clusterSetNames: [],
           subject: { name: 'user1', kind: UserKind },
+          isGlobalScope: false,
         },
       ]
 
@@ -305,13 +322,6 @@ describe('roleAssignmentHelper', () => {
           },
         ],
       },
-    })
-
-    const createMockPlacement = (name: string): Placement => ({
-      apiVersion: 'cluster.open-cluster-management.io/v1beta1',
-      kind: 'Placement',
-      metadata: { name, namespace: MulticlusterRoleAssignmentNamespace },
-      spec: { clusterSets: ['default'] },
     })
 
     const createMockManagedClusterSetBinding = (name: string): ManagedClusterSetBinding => ({
@@ -356,6 +366,7 @@ describe('roleAssignmentHelper', () => {
         clusterNames: ['cluster-1'],
         clusterSetNames: ['cluster-set-1'],
         subject: { name: 'user1', kind: UserKind },
+        isGlobalScope: false,
       }
 
       const callbacks: SaveRoleAssignmentCallbacks = {
@@ -397,6 +408,7 @@ describe('roleAssignmentHelper', () => {
         clusterNames: ['cluster-1'],
         clusterSetNames: [],
         subject: { name: 'user1', kind: UserKind },
+        isGlobalScope: false,
       }
 
       const callbacks: SaveRoleAssignmentCallbacks = {
@@ -420,6 +432,7 @@ describe('roleAssignmentHelper', () => {
         clusterNames: ['cluster-1'],
         clusterSetNames: [],
         subject: { name: 'user1', kind: UserKind },
+        isGlobalScope: false,
       }
 
       const callbacks: SaveRoleAssignmentCallbacks = {
@@ -450,6 +463,7 @@ describe('roleAssignmentHelper', () => {
         clusterNames: ['cluster-1'],
         clusterSetNames: [],
         subject: { name: 'newuser', kind: UserKind },
+        isGlobalScope: false,
       }
 
       const callbacks: SaveRoleAssignmentCallbacks = {
@@ -488,6 +502,7 @@ describe('roleAssignmentHelper', () => {
         clusterNames: ['cluster-1'],
         clusterSetNames: [],
         subject: { name: 'user1', kind: UserKind },
+        isGlobalScope: false,
       }
 
       const callbacks: SaveRoleAssignmentCallbacks = {
@@ -527,6 +542,7 @@ describe('roleAssignmentHelper', () => {
         clusterNames: ['cluster-1'],
         clusterSetNames: [],
         subject: { name: 'developers', kind: GroupKind },
+        isGlobalScope: false,
       }
 
       const callbacks: SaveRoleAssignmentCallbacks = {
@@ -544,6 +560,103 @@ describe('roleAssignmentHelper', () => {
       )
       expect(callbacks.onSuccess).toHaveBeenCalledWith(savedRoleAssignment)
       expect(result).toBe(savedRoleAssignment)
+    })
+
+    it('should call addRoleAssignment with global placement when isGlobalScope is true', async () => {
+      const existingMcra = createMockMulticlusterRoleAssignment('existing-mcra')
+      const existingBySubjectRole = new Map<string, MulticlusterRoleAssignment>()
+      existingBySubjectRole.set(`${UserKind}|user1`, existingMcra)
+
+      const globalPlacement: Placement = {
+        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+        kind: 'Placement',
+        metadata: { name: GlobalPlacementName, namespace: MulticlusterRoleAssignmentNamespace },
+        spec: {},
+      }
+
+      const placementClusters: PlacementClusters[] = [
+        {
+          placement: globalPlacement,
+          clusters: ['cluster-a', 'cluster-b', 'cluster-c'],
+          clusterSetNames: undefined,
+        },
+      ]
+
+      const savedRoleAssignment: RoleAssignment = {
+        name: 'saved-role-assignment',
+        clusterRole: 'admin',
+        clusterSelection: {
+          type: 'placements',
+          placements: [{ name: GlobalPlacementName, namespace: MulticlusterRoleAssignmentNamespace }],
+        },
+      }
+
+      mockFindManagedClusterSetBinding.mockReturnValue([])
+      mockGetPlacementsForRoleAssignment.mockReturnValue([globalPlacement])
+      mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment)
+
+      const roleAssignment: RoleAssignmentToSave = {
+        clusterRole: 'admin',
+        subject: { name: 'user1', kind: UserKind },
+        isGlobalScope: true,
+      }
+
+      const callbacks: SaveRoleAssignmentCallbacks = {
+        onSuccess: jest.fn(),
+        onError: jest.fn(),
+      }
+
+      await saveRoleAssignment(roleAssignment, existingBySubjectRole, [], placementClusters, callbacks)
+
+      expect(mockGetPlacementsForRoleAssignment).toHaveBeenCalledWith(roleAssignment, placementClusters)
+      expect(mockAddRoleAssignment).toHaveBeenCalledWith(roleAssignment, {
+        existingMulticlusterRoleAssignment: existingMcra,
+        existingManagedClusterSetBindings: [],
+        existingPlacements: [globalPlacement],
+      })
+      expect(callbacks.onSuccess).toHaveBeenCalledWith(savedRoleAssignment)
+      expect(callbacks.onError).not.toHaveBeenCalled()
+    })
+
+    it('should invoke onError callback when isGlobalScope is true but global placement is not found', async () => {
+      const placementClusters: PlacementClusters[] = [
+        {
+          placement: createMockPlacement('other-placement'),
+          clusters: ['cluster-a'],
+          clusterSetNames: ['default'],
+        },
+      ]
+
+      mockFindManagedClusterSetBinding.mockReturnValue([])
+      mockGetPlacementsForRoleAssignment.mockImplementation(() => {
+        throw new Error(
+          'Global placement not found. Expected placement with name: global and namespace: open-cluster-management-global-set.'
+        )
+      })
+
+      const roleAssignment: RoleAssignmentToSave = {
+        clusterRole: 'admin',
+        subject: { name: 'user1', kind: UserKind },
+        isGlobalScope: true,
+      }
+
+      const callbacks: SaveRoleAssignmentCallbacks = {
+        onSuccess: jest.fn(),
+        onError: jest.fn(),
+      }
+
+      let errorThrown: Error | undefined
+      try {
+        await saveRoleAssignment(roleAssignment, new Map(), [], placementClusters, callbacks)
+      } catch (error) {
+        errorThrown = error as Error
+      }
+
+      expect(errorThrown).toBeDefined()
+      expect(errorThrown?.message).toContain('Global placement not found')
+
+      expect(callbacks.onSuccess).not.toHaveBeenCalled()
+      expect(callbacks.onError).not.toHaveBeenCalled()
     })
   })
 
@@ -598,12 +711,14 @@ describe('roleAssignmentHelper', () => {
           clusterNames: ['cluster-1'],
           clusterSetNames: [],
           subject: { name: 'user1', kind: UserKind },
+          isGlobalScope: false,
         },
         {
           clusterRole: 'viewer',
           clusterNames: ['cluster-1'],
           clusterSetNames: [],
           subject: { name: 'user2', kind: UserKind },
+          isGlobalScope: false,
         },
       ]
 
@@ -642,6 +757,7 @@ describe('roleAssignmentHelper', () => {
           clusterNames: ['cluster-1'],
           clusterSetNames: [],
           subject: { name: 'user1', kind: UserKind },
+          isGlobalScope: false,
         },
       ]
 
@@ -666,6 +782,7 @@ describe('roleAssignmentHelper', () => {
           clusterNames: ['cluster-1'],
           clusterSetNames: [],
           subject: { name: 'user1', kind: UserKind },
+          isGlobalScope: false,
         },
       ]
 
@@ -696,12 +813,14 @@ describe('roleAssignmentHelper', () => {
           clusterNames: ['cluster-1'],
           clusterSetNames: [],
           subject: { name: 'user1', kind: UserKind },
+          isGlobalScope: false,
         },
         {
           clusterRole: 'viewer',
           clusterNames: ['cluster-1'],
           clusterSetNames: [],
           subject: { name: 'user2', kind: UserKind },
+          isGlobalScope: false,
         },
       ]
 
@@ -750,6 +869,7 @@ describe('roleAssignmentHelper', () => {
           clusterNames: ['cluster-1'],
           clusterSetNames: [],
           subject: { name: 'user1', kind: UserKind },
+          isGlobalScope: false,
         },
       ]
 
@@ -786,6 +906,7 @@ describe('roleAssignmentHelper', () => {
           clusterNames: ['cluster-1'],
           clusterSetNames: [],
           subject: { name: 'developers', kind: GroupKind },
+          isGlobalScope: false,
         },
       ]
 
@@ -806,6 +927,186 @@ describe('roleAssignmentHelper', () => {
       )
       expect(mockToastContext.addAlert).toHaveBeenCalledWith(expect.objectContaining({ type: 'success' }))
       expect(result).toEqual([savedRoleAssignment])
+    })
+
+    it('should save role assignment with isGlobalScope true and show success toast', async () => {
+      const globalPlacement: Placement = {
+        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+        kind: 'Placement',
+        metadata: { name: GlobalPlacementName, namespace: MulticlusterRoleAssignmentNamespace },
+        spec: {},
+      }
+
+      const savedRoleAssignment: RoleAssignment = {
+        name: 'saved-role-assignment',
+        clusterRole: 'admin',
+        clusterSelection: {
+          type: 'placements',
+          placements: [{ name: GlobalPlacementName, namespace: MulticlusterRoleAssignmentNamespace }],
+        },
+      }
+
+      mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment)
+      mockGetPlacementsForRoleAssignment.mockReturnValue([globalPlacement])
+
+      const roleAssignmentsToSave: RoleAssignmentToSave[] = [
+        {
+          clusterRole: 'admin',
+          subject: { name: 'user1', kind: UserKind },
+          isGlobalScope: true,
+        },
+      ]
+
+      const placementClusters: PlacementClusters[] = [
+        {
+          placement: globalPlacement,
+          clusters: ['cluster-a', 'cluster-b'],
+          clusterSetNames: undefined,
+        },
+      ]
+
+      await saveAllRoleAssignments(
+        roleAssignmentsToSave,
+        new Map(),
+        [],
+        placementClusters,
+        mockToastContext,
+        mockT as never
+      )
+
+      expect(mockAddRoleAssignment).toHaveBeenCalledTimes(1)
+      expect(mockGetPlacementsForRoleAssignment).toHaveBeenCalledWith(roleAssignmentsToSave[0], placementClusters)
+      expect(mockToastContext.addAlert).toHaveBeenCalledWith({
+        title: 'Role assignment added',
+        message: 'A role assignment for admin role added.',
+        type: 'success',
+        autoClose: true,
+      })
+    })
+
+    it('should show error toast when isGlobalScope is true but global placement is not found', async () => {
+      const placementClusters: PlacementClusters[] = [
+        {
+          placement: createMockPlacement('other-placement'),
+          clusters: ['cluster-a'],
+          clusterSetNames: ['default'],
+        },
+      ]
+
+      mockGetPlacementsForRoleAssignment.mockImplementation(() => {
+        throw new Error(
+          'Global placement not found. Expected placement with name: global and namespace: open-cluster-management-global-set.'
+        )
+      })
+
+      const roleAssignmentsToSave: RoleAssignmentToSave[] = [
+        {
+          clusterRole: 'admin',
+          subject: { name: 'user1', kind: UserKind },
+          isGlobalScope: true,
+        },
+      ]
+
+      await expect(
+        saveAllRoleAssignments(
+          roleAssignmentsToSave,
+          new Map(),
+          [],
+          placementClusters,
+          mockToastContext,
+          mockT as never
+        )
+      ).rejects.toThrow('Global placement not found')
+
+      expect(mockAddRoleAssignment).not.toHaveBeenCalled()
+      expect(mockToastContext.addAlert).not.toHaveBeenCalled()
+    })
+
+    it('should handle mixed isGlobalScope true and false role assignments', async () => {
+      const globalPlacement: Placement = {
+        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+        kind: 'Placement',
+        metadata: { name: GlobalPlacementName, namespace: MulticlusterRoleAssignmentNamespace },
+        spec: {},
+      }
+
+      const regularPlacement = createMockPlacement('placement-1')
+
+      const savedRoleAssignment1: RoleAssignment = {
+        name: 'saved-role-assignment-1',
+        clusterRole: 'admin',
+        clusterSelection: {
+          type: 'placements',
+          placements: [{ name: GlobalPlacementName, namespace: MulticlusterRoleAssignmentNamespace }],
+        },
+      }
+      const savedRoleAssignment2: RoleAssignment = {
+        name: 'saved-role-assignment-2',
+        clusterRole: 'viewer',
+        clusterSelection: {
+          type: 'placements',
+          placements: [{ name: 'placement-1', namespace: MulticlusterRoleAssignmentNamespace }],
+        },
+      }
+
+      mockAddRoleAssignment
+        .mockResolvedValueOnce(savedRoleAssignment1) // For isGlobalScope: true
+        .mockResolvedValueOnce(savedRoleAssignment2) // For isGlobalScope: false
+      mockGetPlacementsForRoleAssignment
+        .mockReturnValueOnce([globalPlacement]) // For isGlobalScope: true
+        .mockReturnValueOnce([regularPlacement]) // For isGlobalScope: false
+
+      const roleAssignmentsToSave: RoleAssignmentToSave[] = [
+        {
+          clusterRole: 'admin',
+          subject: { name: 'user1', kind: UserKind },
+          isGlobalScope: true,
+        },
+        {
+          clusterRole: 'viewer',
+          clusterNames: ['cluster-1'],
+          clusterSetNames: [],
+          subject: { name: 'user2', kind: UserKind },
+          isGlobalScope: false,
+        },
+      ]
+
+      const placementClusters: PlacementClusters[] = [
+        {
+          placement: globalPlacement,
+          clusters: ['cluster-a', 'cluster-b'],
+          clusterSetNames: undefined,
+        },
+        {
+          placement: regularPlacement,
+          clusters: ['cluster-1'],
+          clusterSetNames: ['default'],
+        },
+      ]
+
+      await saveAllRoleAssignments(
+        roleAssignmentsToSave,
+        new Map(),
+        [],
+        placementClusters,
+        mockToastContext,
+        mockT as never
+      )
+
+      expect(mockAddRoleAssignment).toHaveBeenCalledTimes(2)
+      expect(mockToastContext.addAlert).toHaveBeenCalledTimes(2)
+      expect(mockToastContext.addAlert).toHaveBeenCalledWith({
+        title: 'Role assignment added',
+        message: 'A role assignment for admin role added.',
+        type: 'success',
+        autoClose: true,
+      })
+      expect(mockToastContext.addAlert).toHaveBeenCalledWith({
+        title: 'Role assignment added',
+        message: 'A role assignment for viewer role added.',
+        type: 'success',
+        autoClose: true,
+      })
     })
   })
 })

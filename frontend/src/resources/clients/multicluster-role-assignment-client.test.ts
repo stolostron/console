@@ -35,6 +35,7 @@ import {
   findRoleAssignmentsSortTestCases,
   getClustersDeduplicationTestCases,
   getClustersSortingTestCases,
+  globalScopeTestCases,
   namespaceFilteringTestCases,
 } from './multicluster-role-assignment-client.fixtures'
 
@@ -756,6 +757,7 @@ describe('multicluster-role-assignment-client', function () {
           clusterRole: 'admin',
           clusterNames: ['selected-cluster'],
           subject: { name: 'user1', kind: UserKind },
+          isGlobalScope: false,
         }
 
         // Act
@@ -793,6 +795,7 @@ describe('multicluster-role-assignment-client', function () {
           clusterRole: 'admin',
           clusterNames: ['cluster-a'],
           subject: { name: 'user1', kind: UserKind },
+          isGlobalScope: false,
         }
 
         // Act
@@ -817,6 +820,7 @@ describe('multicluster-role-assignment-client', function () {
           clusterRole: 'admin',
           clusterNames: ['cluster-a', 'cluster-b'],
           subject: { name: 'user1', kind: UserKind },
+          isGlobalScope: false,
         }
 
         // Act
@@ -825,6 +829,25 @@ describe('multicluster-role-assignment-client', function () {
         // Assert: No placements should be returned since none are in the correct namespace
         expect(result).toHaveLength(0)
       })
+    })
+
+    describe('isGlobalScope: true', () => {
+      it.each(globalScopeTestCases.filter((tc) => !tc.shouldThrow))(
+        '$description',
+        ({ placementClusters, roleAssignment, expectedPlacementNames }) => {
+          const result = getPlacementsForRoleAssignment(roleAssignment, placementClusters)
+
+          expect(result).toHaveLength(expectedPlacementNames!.length)
+          expect(result.map((p) => p.metadata.name)).toEqual(expectedPlacementNames)
+        }
+      )
+
+      it.each(globalScopeTestCases.filter((tc) => tc.shouldThrow))(
+        '$description',
+        ({ placementClusters, roleAssignment, expectedErrorMessage }) => {
+          expect(() => getPlacementsForRoleAssignment(roleAssignment, placementClusters)).toThrow(expectedErrorMessage)
+        }
+      )
     })
   })
 
@@ -1054,6 +1077,7 @@ describe('multicluster-role-assignment-client', function () {
           clusterRole: 'admin',
           clusterSetNames: ['cs01', 'cs02'],
           subject: { kind: UserKind, name: 'user1' },
+          isGlobalScope: false,
         }
         const existingManagedClusterSetBindings = [{ spec: { clusterSet: 'cs01' } }] as any[]
 
@@ -1075,6 +1099,7 @@ describe('multicluster-role-assignment-client', function () {
           clusterRole: 'admin',
           clusterSetNames: ['cs01'],
           subject: { kind: UserKind, name: 'user1' },
+          isGlobalScope: false,
         }
         const existingManagedClusterSetBindings = [{ spec: { clusterSet: 'cs01' } }] as any[]
 
@@ -1093,6 +1118,7 @@ describe('multicluster-role-assignment-client', function () {
           clusterRole: 'admin',
           clusterNames: ['cluster-a'],
           subject: { kind: UserKind, name: 'user1' },
+          isGlobalScope: false,
         }
         const newPlacement = createMockPlacement('clusters-cluster-a')
 
@@ -1114,6 +1140,7 @@ describe('multicluster-role-assignment-client', function () {
           clusterRole: 'admin',
           clusterNames: ['cluster-a', 'cluster-b'],
           subject: { kind: UserKind, name: 'user1' },
+          isGlobalScope: false,
         }
         const existingPlacement = createMockPlacement('existing-placement')
         const newPlacement = createMockPlacement('clusters-cluster-a-and-cluster-b')
@@ -1138,6 +1165,7 @@ describe('multicluster-role-assignment-client', function () {
           clusterRole: 'admin',
           clusterNames: ['cluster-a'],
           subject: { kind: UserKind, name: 'user1' },
+          isGlobalScope: false,
         }
         const existingPlacement = createMockPlacement('existing-placement')
 
@@ -1158,6 +1186,7 @@ describe('multicluster-role-assignment-client', function () {
           clusterRole: 'admin',
           clusterNames: ['cluster-a', 'cluster-b', 'cluster-c'],
           subject: { kind: UserKind, name: 'user1' },
+          isGlobalScope: false,
         }
         const existingPlacement = createMockPlacement('existing-placement')
         const newPlacement = createMockPlacement('clusters-cluster-b-and-cluster-c')
@@ -1183,6 +1212,7 @@ describe('multicluster-role-assignment-client', function () {
           clusterRole: 'admin',
           clusterSetNames: ['cs01'],
           subject: { kind: UserKind, name: 'user1' },
+          isGlobalScope: false,
         }
 
         mockIsPlacementForClusterSets.mockReturnValue(false)
@@ -1202,6 +1232,7 @@ describe('multicluster-role-assignment-client', function () {
           clusterRole: 'admin',
           clusterSetNames: ['cs01', 'cs02'],
           subject: { kind: UserKind, name: 'user1' },
+          isGlobalScope: false,
         }
         const newPlacement1 = createMockPlacement('cs01', ['cs01'])
         const newPlacement2 = createMockPlacement('cs02', ['cs02'])
@@ -1229,6 +1260,7 @@ describe('multicluster-role-assignment-client', function () {
           clusterRole: 'admin',
           clusterSetNames: ['cs01'],
           subject: { kind: UserKind, name: 'user1' },
+          isGlobalScope: false,
         }
         const existingPlacement = createMockPlacement('cs01', ['cs01'])
 
@@ -1250,6 +1282,7 @@ describe('multicluster-role-assignment-client', function () {
           clusterRole: 'admin',
           clusterSetNames: ['cs01', 'cs02', 'cs03'],
           subject: { kind: UserKind, name: 'user1' },
+          isGlobalScope: false,
         }
         const existingPlacement = createMockPlacement('cs01', ['cs01'])
         const newPlacement2 = createMockPlacement('cs02', ['cs02'])
@@ -1285,6 +1318,7 @@ describe('multicluster-role-assignment-client', function () {
           clusterNames: ['cluster-a'],
           clusterSetNames: ['cs01'],
           subject: { kind: UserKind, name: 'user1' },
+          isGlobalScope: false,
         }
         const existingPlacement = createMockPlacement('existing')
         const clusterPlacement = createMockPlacement('clusters-cluster-a')
@@ -1313,6 +1347,7 @@ describe('multicluster-role-assignment-client', function () {
           clusterNames: ['cluster-a'],
           clusterSetNames: ['cs01'],
           subject: { kind: UserKind, name: 'user1' },
+          isGlobalScope: false,
         }
         const clusterPlacement = createMockPlacement('clusters-cluster-a')
         const clusterSetPlacement = createMockPlacement('cs01', ['cs01'])
@@ -1338,6 +1373,7 @@ describe('multicluster-role-assignment-client', function () {
         const roleAssignment: RoleAssignmentToSave = {
           clusterRole: 'admin',
           subject: { kind: UserKind, name: 'user1' },
+          isGlobalScope: false,
         }
 
         const result = await createAdditionalRoleAssignmentResources(roleAssignment, {
@@ -1352,6 +1388,7 @@ describe('multicluster-role-assignment-client', function () {
         const roleAssignment: RoleAssignmentToSave = {
           clusterRole: 'admin',
           subject: { kind: UserKind, name: 'user1' },
+          isGlobalScope: false,
         }
 
         const result = await createAdditionalRoleAssignmentResources(roleAssignment, {
@@ -1892,6 +1929,7 @@ describe('multicluster-role-assignment-client', function () {
           clusterRole: 'admin',
           clusterNames: ['cluster-a'],
           subject: { name: 'user1', kind: UserKind },
+          isGlobalScope: false,
         }
 
         // Compute the expected hash the same way getRoleAssignmentName does
@@ -1932,6 +1970,7 @@ describe('multicluster-role-assignment-client', function () {
           clusterRole: 'admin',
           clusterNames: ['cluster-a'],
           subject: { name: 'user1', kind: UserKind },
+          isGlobalScope: false,
         }
 
         // Create an existing MRA with a role assignment that has a different hash
