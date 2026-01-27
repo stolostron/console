@@ -10,16 +10,18 @@ export const useClustersFromClusterSets = (selectedClusterSets?: (ManagedCluster
   const [filteredClusters, setFilteredClusters] = useState<Cluster[]>([])
   const [namespaces, setNamespaces] = useState<string[]>()
 
-  useEffect(() => {
-    setNamespaces(
-      selectedClusterSets
-        ?.map((cs) => ((cs as ManagedClusterSet).metadata ? (cs as ManagedClusterSet).metadata.name : (cs as string)))
-        .filter(isType)
-    )
-  }, [selectedClusterSets])
+  useEffect(
+    () =>
+      setNamespaces(
+        selectedClusterSets
+          ?.map((cs) => ((cs as ManagedClusterSet).metadata ? (cs as ManagedClusterSet).metadata.name : (cs as string)))
+          .filter(isType)
+      ),
+    [selectedClusterSets]
+  )
 
   useEffect(() => {
-    if (namespaces) {
+    if (namespaces && namespaces.length > 0) {
       setFilteredClusters(
         clusters.filter((cluster) => cluster.clusterSet !== undefined && namespaces?.includes(cluster.clusterSet))
       )
