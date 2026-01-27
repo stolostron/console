@@ -595,7 +595,7 @@ describe('usePreselectedData', () => {
       expect(setSelectedClusterSets).not.toHaveBeenCalled()
     })
 
-    it('does not apply namespaces when Global access is set', () => {
+    it('applies namespaces when Global access is set (namespaces always applied)', () => {
       const { mockFn: setFormData, calls } = createMockSetFormData()
       const setSelectedClusterSets = jest.fn()
       const setSelectedClusters = jest.fn()
@@ -619,11 +619,10 @@ describe('usePreselectedData', () => {
           scopeType: 'Global access',
           scope: {
             kind: 'all',
+            namespaces: ['namespace-1', 'namespace-2'],
           },
         })
       )
-      // Namespaces should not be applied when global access
-      expect(calls[0].scope.namespaces).toBeUndefined()
     })
 
     it('sets cluster sets when clusterSetNames exist, ignoring cluster names', () => {
@@ -682,7 +681,7 @@ describe('usePreselectedData', () => {
         expect.objectContaining({
           scopeType: 'Select cluster sets',
           scope: {
-            kind: 'specific',
+            kind: 'all',
             namespaces: ['namespace-1', 'namespace-2'],
           },
           selectedClusterSets: ['cluster-set-1'],
@@ -750,7 +749,7 @@ describe('usePreselectedData', () => {
       )
     })
 
-    it('handles all precedence conditions: global access takes precedence over everything', () => {
+    it('handles all precedence conditions: global access takes precedence over everything, but namespaces are always applied', () => {
       const { mockFn: setFormData, calls } = createMockSetFormData()
       const setSelectedClusterSets = jest.fn()
       const setSelectedClusters = jest.fn()
@@ -775,12 +774,12 @@ describe('usePreselectedData', () => {
           scopeType: 'Global access',
           scope: {
             kind: 'all',
+            namespaces: ['namespace-1'],
           },
         })
       )
-      // Everything else should be ignored
+      // Cluster names and cluster sets should be ignored
       expect(calls[0].scope.clusterNames).toBeUndefined()
-      expect(calls[0].scope.namespaces).toBeUndefined()
       expect(calls[0].selectedClusterSets).toBeUndefined()
       expect(setSelectedClusterSets).not.toHaveBeenCalled()
       expect(setSelectedClusters).not.toHaveBeenCalled()
@@ -810,7 +809,7 @@ describe('usePreselectedData', () => {
         expect.objectContaining({
           scopeType: 'Select cluster sets',
           scope: {
-            kind: 'specific',
+            kind: 'all',
             namespaces: ['namespace-1'],
           },
           selectedClusterSets: ['cluster-set-1'],
