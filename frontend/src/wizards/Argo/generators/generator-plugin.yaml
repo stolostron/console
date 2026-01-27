@@ -1,0 +1,12 @@
+plugin:
+  configMapRef:
+    name: my-plugin
+  input:
+    parameters:
+      key1: 'value1'
+      key2: 'value2'
+      list: ['list', 'of', 'values']
+      boolean: true
+  values:
+    value1: something
+  requeueAfterSeconds: 180

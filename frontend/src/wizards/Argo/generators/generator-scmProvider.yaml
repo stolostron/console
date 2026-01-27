@@ -1,0 +1,9 @@
+scmProvider:
+  github:
+    organization: myorg
+    api: https://git.example.com/
+    allBranches: true
+    tokenRef:
+      secretName: github-token
+      key: token
+    appSecretName: gh-app-repo-creds

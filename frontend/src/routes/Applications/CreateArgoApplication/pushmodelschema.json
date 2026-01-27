@@ -223,36 +223,9 @@
                   "properties": {
                     "name": {
                       "type": "string"
-                    },
-                    "annotations": {
-                      "type": "object",
-                      "properties": {
-                        "apps.open-cluster-management.io/ocm-managed-cluster": {
-                          "type": "string"
-                        },
-                        "apps.open-cluster-management.io/ocm-managed-cluster-app-namespace": {
-                          "type": "string"
-                        },
-                        "argocd.argoproj.io/skip-reconcile": {
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "apps.open-cluster-management.io/ocm-managed-cluster",
-                        "apps.open-cluster-management.io/ocm-managed-cluster-app-namespace",
-                        "argocd.argoproj.io/skip-reconcile"
-                      ]
-                    },
-                    "labels": {
-                      "type": "object",
-                      "properties": {
-                        "apps.open-cluster-management.io/pull-to-ocm-managed-cluster": {
-                          "type": "string"
-                        }
-                      }
                     }
                   },
-                  "required": ["name", "annotations"]
+                  "required": ["name"]
                 },
                 "spec": {
                   "type": "object",

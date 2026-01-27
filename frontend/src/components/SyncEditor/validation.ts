@@ -43,6 +43,16 @@ export const compileAjvSchemas = (schema: Schema) => {
   }
 }
 
+const validGenerators = [
+  'clusterDecisionResource',
+  'git',
+  'list',
+  'clusters',
+  'merge',
+  'scmProvider',
+  'pullRequest',
+  'plugin',
+]
 export const addAjvKeywords = (ajv: Ajv) => {
   ajv.addKeyword({
     keyword: 'validateName',
@@ -97,6 +107,19 @@ export const addAjvKeywords = (ajv: Ajv) => {
     schemaType: 'string',
     validate: () => {
       return false
+    },
+  })
+  ajv.addKeyword({
+    keyword: 'validateGenerator',
+    schemaType: 'boolean',
+    validate: (_schema: null, data: any) => {
+      if (!data) return true
+      const keys = Array.isArray(data)
+        ? data.flatMap((item) => (typeof item === 'object' ? Object.keys(item) : [item]))
+        : typeof data === 'object'
+          ? Object.keys(data)
+          : [data]
+      return keys.every((key) => validGenerators.includes(key))
     },
   })
 }
@@ -249,13 +272,7 @@ export function validateResource(
               errorMsg.linePos.start.col = mapping.$gv.start.col
               errorMsg.linePos.end.col = mapping.$gv.end.col
               break
-            // validateName
-            case 'validateName':
-              errorMsg.message =
-                'Name must start/end alphanumerically, can contain dashes and periods, and must be less then 253 characters'
-              errorMsg.linePos.start.col = mapping.$gv.start.col
-              errorMsg.linePos.end.col = mapping.$gv.end.col
-              break
+
             // validateDep
             case 'validateDep':
               errorMsg.message =
@@ -265,12 +282,26 @@ export function validateResource(
               errorMsg.linePos.start.col = mapping.$gv.start.col
               errorMsg.linePos.end.col = mapping.$gv.end.col
               break
+            // validateName
+            case 'validateName':
+              errorMsg.message =
+                'Name must start/end alphanumerically, can contain dashes and periods, and must be less then 253 characters'
+              errorMsg.linePos.start.col = mapping.$gv.start.col
+              errorMsg.linePos.end.col = mapping.$gv.end.col
+              break
             // validateLabel
             case 'validateLabel':
               errorMsg.message =
                 'Name must start/end alphanumerically, can contain dashes, and must be less then 63 characters'
               errorMsg.linePos.start.col = mapping.$gv.start.col
               errorMsg.linePos.end.col = mapping.$gv.end.col
+              break
+            // validateGenerator
+            case 'validateGenerator':
+              errorMsg.message = `Generator must be one of: ${validGenerators.map((g) => `"${g}"`).join(', ')}`
+              errorMsg.linePos.start.col = mapping.$gv.start.col
+              errorMsg.linePos.end.col = mapping.$gv.end.col
+              errorMsg.errorType = ErrorType.warning
               break
             // value wrong enum
             case 'enum':

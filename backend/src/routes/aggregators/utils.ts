@@ -214,6 +214,9 @@ export function computeAppSyncStatus(synced: ApplicationStatusEntry, app: ISearc
     case 'Synced':
       synced[StatusColumn.counts][ScoreColumn.healthy]++
       break
+    case 'OutOfSync':
+      synced[StatusColumn.counts][ScoreColumn.warning]++
+      break
     case 'Unknown':
       synced[StatusColumn.counts][ScoreColumn.unknown]++
       extractMessages(synced, app, app.syncStatus)

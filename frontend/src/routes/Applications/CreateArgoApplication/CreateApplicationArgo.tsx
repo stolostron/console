@@ -21,7 +21,7 @@ import {
 } from '../../../resources'
 import { listResources } from '../../../resources/utils'
 import { createArgoResources } from './createArgoResources'
-import schema from './schema.json'
+import pushmodelschema from './pushmodelschema.json'
 import { LostChangesContext } from '../../../components/LostChanges'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { useTimezones } from '../../../hooks/useTimezone'
@@ -50,7 +50,7 @@ export function WizardSyncEditor() {
       editorTitle={t('Application set YAML')}
       variant="toolbar"
       resources={resources}
-      schema={schema}
+      schema={pushmodelschema}
       onEditorChange={(changes: { resources: any[] }): void => {
         update(changes?.resources)
       }}

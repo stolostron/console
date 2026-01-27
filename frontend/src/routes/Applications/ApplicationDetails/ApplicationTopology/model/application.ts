@@ -249,7 +249,7 @@ const getRemoteArgoApp = async (
  * Recursively search an object for a property with the given key.
  * Returns the first matching object that contains the key, or undefined.
  */
-const findObjectWithKey = (obj: unknown, key: string): Record<string, unknown> | undefined => {
+export const findObjectWithKey = (obj: unknown, key: string): Record<string, unknown> | undefined => {
   if (!obj || typeof obj !== 'object') return undefined
   const record = obj as Record<string, unknown>
   if (key in record) return record

@@ -1,0 +1,456 @@
+/* Copyright Contributors to the Open Cluster Management project */
+import YAML from 'yaml'
+import generatorClusterDecisionResource from './generators/generator-clusterDecisionResource.yaml'
+import generatorList from './generators/generator-list.yaml'
+import generatorClusters from './generators/generator-clusters.yaml'
+import generatorGit from './generators/generator-git.yaml'
+import generatorSCMProvider from './generators/generator-scmProvider.yaml'
+import generatorPullRequest from './generators/generator-pullRequest.yaml'
+import generatorPlugin from './generators/generator-plugin.yaml'
+import { HelperText, HelperTextItem, Title } from '@patternfly/react-core'
+import get from 'get-value'
+import { klona } from 'klona/json'
+import { useCallback, useContext, useMemo, useRef, useState } from 'react'
+import set from 'set-value'
+import {
+  useEditMode,
+  ItemContext,
+  EditMode,
+  WizArrayInput,
+  WizCheckbox,
+  WizHidden,
+  WizKeyValue,
+  WizSelect,
+  useData,
+  WizTextInput,
+  WizMultiSelect,
+} from '@patternfly-labs/react-form-wizard'
+import { IResource } from '../common/resources/IResource'
+import { useTranslation } from '../../lib/acm-i18next'
+import { Channel } from './ArgoWizard'
+import { validateWebURL } from '../../lib/validation'
+import { GitRevisionSelect } from './common/GitRevisionSelect'
+
+export interface MultipleGeneratorSelectorProps {
+  resources: IResource[]
+  channels: Channel[] | undefined
+  gitChannels: string[]
+  helmChannels: string[]
+  disableForm: boolean
+}
+
+export function MultipleGeneratorSelector(props: MultipleGeneratorSelectorProps) {
+  const item = useContext(ItemContext)
+  const { update } = useData() // Wizard framework sets this context
+  const [generatorPath, setGeneratorPath] = useState<string>(() =>
+    get(item, 'spec.generators.0.matrix') ? 'spec.generators.0.matrix.generators' : 'spec.generators'
+  )
+
+  // fixup yaml based on what generators are selected
+  const updateTemplate = useCallback(
+    (generators: IResource[]) => {
+      let shouldUpdate = false
+
+      function fix(path: string, value: unknown) {
+        set(item, path, value, { preservePaths: true })
+        shouldUpdate = true
+      }
+
+      const matrixGenerator = get(item, 'spec.generators.0.matrix') ? true : false
+      // if there are more than one generator and no matrix generator, add a matrix generator
+      if (generators && generators.length > 1 && !matrixGenerator) {
+        setGeneratorPath('spec.generators.0.matrix.generators')
+        fix('spec.generators', [{ matrix: { generators: generators } }])
+      }
+      // if is one generator and a matrix generator, remove the matrix generator
+      if (generators && generators.length === 1 && matrixGenerator) {
+        setGeneratorPath('spec.generators')
+        fix('spec.generators', generators)
+      }
+
+      // Check which generator types are present
+      const hasGitGen = generators.some((gen: unknown) => getGeneratorType(gen) === 'git')
+      const hasListGen = generators?.some((gen) => getGeneratorType(gen) === 'list') ?? false
+      // const hasClustersGen = generators?.some((gen) => getGeneratorType(gen) === 'clusters') ?? false
+      // const hasClusterDecisionResourceGen = generators?.some((gen) => getGeneratorType(gen) === 'clusterDecisionResource') ?? false
+      // const hasScmProviderGen = generators?.some((gen) => getGeneratorType(gen) === 'scmProvider') ?? false
+      // const hasPullRequestGen = generators?.some((gen) => getGeneratorType(gen) === 'pullRequest') ?? false
+      // const hasPluginGen = generators?.some((gen) => getGeneratorType(gen) === 'plugin') ?? false
+
+      const url = '{{.url}}'
+      const cluster = '{{.cluster}}'
+      const server = '{{server}}'
+      const pathBasename = '{{path.basename}}'
+      const templateNamePath = 'spec.template.metadata.name'
+      const destinationNamePathNamespace = 'spec.template.spec.destination.namespace'
+      const destinationNamePathServer = 'spec.template.spec.destination.server'
+      let templateName = get(item, templateNamePath) ?? ''
+
+      // Handle git generator
+      if (hasGitGen) {
+        if (!templateName.toString().includes(`-${pathBasename}`)) {
+          fix(templateNamePath, `${templateName}-${pathBasename}`)
+          fix(destinationNamePathNamespace, `${pathBasename}`)
+          templateName = `${templateName}-${pathBasename}`
+        }
+      } else {
+        fix(templateNamePath, templateName.toString().replace(`-${pathBasename}`, ''))
+        fix(destinationNamePathNamespace, '')
+        templateName = templateName.toString().replace(`-${pathBasename}`, '')
+      }
+
+      // Handle list generator
+      if (hasListGen) {
+        if (!templateName.toString().includes(`-${cluster}`)) {
+          fix(templateNamePath, `${templateName}-${cluster}`)
+          fix(destinationNamePathServer, url)
+        }
+      } else {
+        fix(templateNamePath, templateName.toString().replace(`-${cluster}`, ''))
+        fix(destinationNamePathServer, server)
+      }
+
+      if (shouldUpdate) {
+        update()
+      }
+    },
+    [item, update]
+  )
+
+  const editMode = useEditMode()
+  const generators = get(item, generatorPath)
+  const { t } = useTranslation()
+  return (
+    <WizArrayInput
+      key="generators"
+      id="generators"
+      path={generatorPath}
+      placeholder={generators?.length >= 2 ? undefined : t('Add generator')}
+      onValueChange={(value) => updateTemplate(value as IResource[])}
+      required
+      dropdownItems={Specifications.map((specification) => ({
+        label: specification.description,
+        action: () => createGeneratorFromSpecification(specification),
+      }))}
+      collapsedContent={<GeneratorCollapsedContent />}
+      defaultCollapsed={editMode !== EditMode.Create}
+    >
+      <GeneratorInputForm {...props} />
+    </WizArrayInput>
+  )
+}
+
+function GeneratorCollapsedContent() {
+  const generator = useContext(ItemContext)
+  const generatorType = getGeneratorType(generator)
+  const { t } = useTranslation()
+  return (
+    <div>
+      <Title headingLevel="h6">{t('{{type}} Generator', { type: pascalCaseToSentenceCase(generatorType) })}</Title>
+    </div>
+  )
+}
+
+function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
+  const { gitChannels, channels, disableForm } = props
+  // this is an array dependency in Wiz which doesn't compare by stringify
+  // so if you change the array object, react thinks the value changed
+  // which causes infinite loop
+  const directoryPaths = useRef<string[]>([])
+  const generator = useContext(ItemContext)
+  const generatorType = getGeneratorType(generator)
+  const requeueTimes = useMemo(() => [30, 60, 120, 180, 300], [])
+  const { t } = useTranslation()
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {/* Cluster Decision Resource generator - uses Placement to determine target clusters */}
+      <WizHidden hidden={() => generatorType !== 'clusterDecisionResource'}>
+        <HelperText>
+          <HelperTextItem>{t('The Placement step defines where applications are deployed.')}</HelperTextItem>
+        </HelperText>
+        <WizSelect
+          path="clusterDecisionResource.requeueAfterSeconds"
+          label={t('Requeue time')}
+          options={requeueTimes}
+          labelHelp={t('cluster.decision.resource.requeue.time.description')}
+          required
+          disabled={disableForm}
+        />
+      </WizHidden>
+      {/* Git generator - uses a Git repository to determine target clusters */}
+      <WizHidden hidden={() => generatorType !== 'git'}>
+        <HelperText>
+          <HelperTextItem>
+            {t('Use the manifest files in a git repository directory to generate applications')}
+          </HelperTextItem>
+        </HelperText>
+        <WizSelect
+          path="git.repoURL"
+          label={t('URL')}
+          labelHelp={t('The URL path for the Git repository.')}
+          placeholder={t('Enter or select a Git URL')}
+          options={gitChannels}
+          validation={validateWebURL}
+          required
+          isCreatable
+          disabled={disableForm}
+        />
+        <GitRevisionSelect channels={channels ?? []} path="git.repoURL" target="git.revision" />
+        <WizMultiSelect
+          label="Directory paths"
+          placeholder="Select or enter a directory path"
+          path="git.directories"
+          required
+          options={['default', 'development', 'production']}
+          isCreatable
+          disabled={disableForm}
+          pathValueToInputValue={(value: unknown) => {
+            if (Array.isArray(value)) {
+              directoryPaths.current.splice(
+                0,
+                directoryPaths.current.length,
+                ...value.map((v: { path: string }) => v.path)
+              )
+            }
+            return directoryPaths.current
+          }}
+          inputValueToPathValue={(value: unknown) => {
+            return Array.isArray(value) ? value.map((v: string) => ({ path: v })) : []
+          }}
+        />
+        <WizSelect
+          path="git.requeueAfterSeconds"
+          label={t('Requeue time')}
+          options={requeueTimes}
+          labelHelp={t('Git requeue time in seconds')}
+          required
+          disabled={disableForm}
+        />
+      </WizHidden>
+      {/* List generator - uses a list of clusters to determine target clusters */}
+      <WizHidden hidden={() => generatorType !== 'list'}>
+        <HelperText>
+          <HelperTextItem>{t('Use the list of clusters to generate applications')}</HelperTextItem>
+        </HelperText>
+        <WizArrayInput
+          path="list.elements"
+          label={t('List elements')}
+          placeholder={t('Add element')}
+          collapsedContent="{cluster}"
+        >
+          <WizTextInput
+            path="cluster"
+            label={t('Cluster')}
+            placeholder={t('Enter the cluster name')}
+            required
+            disabled={disableForm}
+          />
+          <WizTextInput
+            path="url"
+            label={t('URL')}
+            placeholder={t('Enter the cluster URL')}
+            required
+            disabled={disableForm}
+          />
+        </WizArrayInput>
+      </WizHidden>
+      {/* Clusters generator - uses a cluster selector to determine target cluster */}
+      <WizHidden hidden={() => generatorType !== 'clusters'}>
+        <HelperText>
+          <HelperTextItem>{t('Use a cluster selector to determine target clusters')}</HelperTextItem>
+        </HelperText>
+        <WizKeyValue
+          path="clusters.selector.matchLabels"
+          label={t('Match labels')}
+          labelHelp={t('Labels to match clusters by')}
+          placeholder={t('Add label')}
+          disabled={disableForm}
+        />
+      </WizHidden>
+      {/* SCM Provider generator - uses an SCM provider to determine target clusters */}
+      <WizHidden hidden={() => generatorType !== 'scmProvider'}>
+        <HelperText>
+          <HelperTextItem>{t('Use an SCM provider to determine target clusters')}</HelperTextItem>
+        </HelperText>
+        <WizTextInput
+          path="scmProvider.github.organization"
+          label={t('Organization')}
+          placeholder={t('Enter the GitHub organization')}
+          required
+          disabled={disableForm}
+        />
+        <WizTextInput
+          path="scmProvider.github.api"
+          label={t('API URL')}
+          placeholder={t('Enter the GitHub API URL')}
+          disabled={disableForm}
+        />
+        <WizCheckbox path="scmProvider.github.allBranches" label={t('All branches')} disabled={disableForm} />
+        <WizTextInput
+          path="scmProvider.github.tokenRef.secretName"
+          label={t('Token secret name')}
+          placeholder={t('Enter the token secret name')}
+          disabled={disableForm}
+        />
+        <WizTextInput
+          path="scmProvider.github.tokenRef.key"
+          label={t('Token key')}
+          placeholder={t('Enter the token key')}
+          disabled={disableForm}
+        />
+        <WizTextInput
+          path="scmProvider.github.appSecretName"
+          label={t('App secret name')}
+          placeholder={t('Enter the app secret name')}
+          disabled={disableForm}
+        />
+      </WizHidden>
+      {/* Pull Request generator - uses a Pull Request to determine target clusters */}
+      <WizHidden hidden={() => generatorType !== 'pullRequest'}>
+        <HelperText>
+          <HelperTextItem>{t('Use a Pull Request to determine target clusters')}</HelperTextItem>
+        </HelperText>
+        <WizTextInput
+          path="pullRequest.github.owner"
+          label={t('Owner')}
+          placeholder={t('Enter the GitHub owner')}
+          required
+          disabled={disableForm}
+        />
+        <WizTextInput
+          path="pullRequest.github.repo"
+          label={t('Repository')}
+          placeholder={t('Enter the repository name')}
+          required
+          disabled={disableForm}
+        />
+        <WizTextInput
+          path="pullRequest.github.api"
+          label={t('API URL')}
+          placeholder={t('Enter the GitHub API URL')}
+          disabled={disableForm}
+        />
+        <WizTextInput
+          path="pullRequest.github.tokenRef.secretName"
+          label={t('Token secret name')}
+          placeholder={t('Enter the token secret name')}
+          disabled={disableForm}
+        />
+        <WizTextInput
+          path="pullRequest.github.tokenRef.key"
+          label={t('Token key')}
+          placeholder={t('Enter the token key')}
+          disabled={disableForm}
+        />
+        <WizTextInput
+          path="pullRequest.github.appSecretName"
+          label={t('App secret name')}
+          placeholder={t('Enter the app secret name')}
+          disabled={disableForm}
+        />
+        <WizMultiSelect
+          path="pullRequest.github.labels"
+          label={t('Labels')}
+          placeholder={t('Enter labels')}
+          options={[]}
+          isCreatable
+          disabled={disableForm}
+        />
+        <WizSelect
+          path="pullRequest.requeueAfterSeconds"
+          label={t('Requeue time')}
+          options={requeueTimes}
+          labelHelp={t('Pull request requeue time in seconds')}
+          required
+          disabled={disableForm}
+        />
+      </WizHidden>
+      {/* Plugin generator - uses a Plugin to determine target clusters */}
+      <WizHidden hidden={() => generatorType !== 'plugin'}>
+        <HelperText>
+          <HelperTextItem>{t('Use a Plugin to determine target clusters')}</HelperTextItem>
+        </HelperText>
+        <WizTextInput
+          path="plugin.configMapRef.name"
+          label={t('ConfigMap name')}
+          placeholder={t('Enter the ConfigMap name')}
+          required
+          disabled={disableForm}
+        />
+        <WizKeyValue
+          path="plugin.input.parameters"
+          label={t('Input parameters')}
+          labelHelp={t('Key-value parameters to pass to the plugin')}
+          placeholder={t('Add input parameter')}
+          disabled={disableForm}
+        />
+        <WizKeyValue
+          path="plugin.values"
+          label={t('Values')}
+          labelHelp={t('Values to include in the generated parameters')}
+          placeholder={t('Add value')}
+          disabled={disableForm}
+        />
+        <WizSelect
+          path="plugin.requeueAfterSeconds"
+          label={t('Requeue time')}
+          options={requeueTimes}
+          labelHelp={t('Plugin requeue time in seconds')}
+          required
+          disabled={disableForm}
+        />
+      </WizHidden>
+    </div>
+  )
+}
+
+function getGeneratorType(generator: unknown): string {
+  if (!generator || typeof generator !== 'object') return 'unknown'
+  const gen = generator as Record<string, unknown>
+  if ('clusterDecisionResource' in gen) return 'clusterDecisionResource'
+  if ('list' in gen) return 'list'
+  if ('clusters' in gen) return 'clusters'
+  if ('git' in gen) return 'git'
+  if ('scmProvider' in gen) return 'scmProvider'
+  if ('pullRequest' in gen) return 'pullRequest'
+  if ('plugin' in gen) return 'plugin'
+  return 'unknown'
+}
+
+function createGeneratorFromSpecification(specification: (typeof Specifications)[number]) {
+  return klona(specification.generatorTemplate)
+}
+
+export const Specifications: {
+  name: string
+  description: string
+  generatorTemplate: object
+}[] = [
+  getGeneratorSpecification('Cluster Decision Resource generator', generatorClusterDecisionResource),
+  getGeneratorSpecification('Git generator', generatorGit),
+  getGeneratorSpecification('List generator', generatorList),
+  getGeneratorSpecification('Clusters generator', generatorClusters),
+  getGeneratorSpecification('SCM Provider generator', generatorSCMProvider),
+  getGeneratorSpecification('Pull Request generator', generatorPullRequest),
+  getGeneratorSpecification('Plugin generator', generatorPlugin),
+].sort((a, b) => {
+  if (a.name < b.name) {
+    return -1
+  }
+  return a.name > b.name ? 1 : 0
+})
+
+function getGeneratorSpecification(description: string, yaml: string) {
+  const resource = YAML.parseAllDocuments(yaml).map((doc) => doc.toJSON())
+  return {
+    name: description,
+    description,
+    generatorTemplate: resource as object,
+  }
+}
+
+function pascalCaseToSentenceCase(text: string) {
+  const result = text?.replace(/([A-Z])/g, ' $1') ?? ''
+  const finalResult = result.charAt(0).toUpperCase() + result.slice(1)
+  return finalResult
+}
