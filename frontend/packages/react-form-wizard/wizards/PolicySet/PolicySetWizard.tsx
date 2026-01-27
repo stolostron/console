@@ -5,25 +5,25 @@ import { Fragment, ReactNode, useMemo } from 'react'
 import {
   EditMode,
   ItemContext,
-  WizItemSelector,
   Section,
-  WizSingleSelect,
   Step,
-  WizTableSelect,
-  WizTextArea,
   WizardCancel,
   WizardPage,
   WizardSubmit,
+  WizItemSelector,
+  WizSingleSelect,
+  WizTableSelect,
+  WizTextArea,
   WizTextInput,
 } from '../../src'
-import { useItem } from '../../src/contexts/ItemContext'
 import { IResource } from '../../src/common/resource'
+import { useItem } from '../../src/contexts/ItemContext'
+import { Sync } from '../../src/Sync'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
 import { PlacementBindingKind, PlacementBindingType } from '../common/resources/IPlacementBinding'
 import { PlacementRuleApiGroup, PlacementRuleKind, PlacementRuleType } from '../common/resources/IPlacementRule'
 import { PolicyApiVersion, PolicyKind } from '../common/resources/IPolicy'
 import { PolicySetApiGroup, PolicySetKind, PolicySetType } from '../common/resources/IPolicySet'
-import { Sync } from '../../src/Sync'
 import { isValidKubernetesResourceName } from '../common/validation'
 import { PlacementSection } from '../Placement/PlacementSection'
 
@@ -168,14 +168,13 @@ export function PolicySetWizard(props: PolicySetWizardProps) {
 
 function PoliciesSection(props: { policies: IResource[] }) {
   const resources = useItem() as IResource[]
+  const policySet = resources?.find((resource) => resource.kind === PolicySetKind) ?? {}
+  const namespace = policySet?.metadata?.namespace
+
   const namespacedPolicies = useMemo(() => {
-    if (!resources.find) return []
-    const policySet = resources?.find((resource) => resource.kind === PolicySetKind)
-    if (!policySet) return []
-    const namespace = policySet.metadata?.namespace
     if (!namespace) return []
     return props.policies.filter((policy) => policy.metadata?.namespace === namespace)
-  }, [props.policies, resources])
+  }, [props.policies, namespace])
 
   // If at least one selected policy does not have a uid it is "missing" and we need to alert the user.
   const arePoliciesMissing = useMemo(() => {
@@ -208,7 +207,11 @@ function PoliciesSection(props: { policies: IResource[] }) {
           itemToValue={(policy: IResource) => policy.metadata?.name}
           valueMatchesItem={(value: unknown, policy: IResource) => value === policy.metadata?.name}
           emptyTitle="No policies available for selection."
-          emptyMessage="Select a namespace to be able to select policies in that namespace."
+          emptyMessage={
+            !namespace
+              ? 'Select a namespace to be able to select policies in that namespace.'
+              : 'No policies were found in the selected namespace.'
+          }
         />
       </WizItemSelector>
     </Section>
