@@ -494,8 +494,7 @@ const RoleAssignments = ({
                   {t('Create role assignment')}
                 </AcmButton>
                 {/* ) : null} */}
-                {/* TODO: add correct documentation link */}
-                <ViewDocumentationLink doclink={DOC_LINKS.CLUSTERS} />
+                <ViewDocumentationLink doclink={DOC_LINKS.RBAC} />
               </div>
             }
           />
