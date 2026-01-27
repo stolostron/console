@@ -24,6 +24,16 @@ describe('ExampleScopeBaseHelper', () => {
       expect(title).toBe('Example scope: Multiple clusters → Common projects')
     })
 
+    it('returns correct title for example index 9', () => {
+      const title = getExampleTitle(9, mockT)
+      expect(title).toBe('Example scope: Single cluster set → Partial access')
+    })
+
+    it('returns correct title for example index 10', () => {
+      const title = getExampleTitle(10, mockT)
+      expect(title).toBe('Example scope: Multiple cluster sets → Common projects')
+    })
+
     it('returns default title for invalid index', () => {
       const title = getExampleTitle(99, mockT)
       expect(title).toBe('Example scope')
@@ -70,6 +80,45 @@ describe('ExampleScopeBaseHelper', () => {
       expect(treeData).toHaveLength(1)
       expect(treeData[0].id).toBe('case5-cluster-1')
       expect(treeData[0].children).toBeDefined()
+    })
+
+    it('returns tree data for example index 9 (single cluster set → partial access)', () => {
+      const treeData = getExampleTreeData(9, mockT)
+
+      expect(treeData).toHaveLength(1)
+      expect(treeData[0].id).toBe('case9-cluster-set-1')
+      expect(treeData[0].children).toBeDefined()
+
+      // Check that some projects are checked and some are not
+      const projects = treeData[0].children!
+      expect(projects).toHaveLength(3)
+
+      // First project should be checked
+      expect(projects[0].id).toBe('case9-project-1')
+      // Other projects should not be checked
+      expect(projects[1].id).toBe('case9-project-2')
+      expect(projects[2].id).toBe('case9-project-3')
+    })
+
+    it('returns tree data for example index 10 (multiple cluster sets → common projects)', () => {
+      const treeData = getExampleTreeData(10, mockT)
+
+      expect(treeData).toHaveLength(2)
+      expect(treeData[0].id).toBe('case10-cluster-set-1')
+      expect(treeData[1].id).toBe('case10-cluster-set-2')
+
+      // Both cluster sets should have children (projects)
+      expect(treeData[0].children).toBeDefined()
+      expect(treeData[1].children).toBeDefined()
+
+      // Check common projects structure
+      const firstClusterSetProjects = treeData[0].children!
+      expect(firstClusterSetProjects).toHaveLength(3)
+      expect(firstClusterSetProjects[0].id).toBe('case10-project-1') // Common project
+
+      const secondClusterSetProjects = treeData[1].children!
+      expect(secondClusterSetProjects).toHaveLength(3)
+      expect(secondClusterSetProjects[0].id).toBe('case10-project-4') // Common project
     })
 
     it('returns empty array for invalid index', () => {

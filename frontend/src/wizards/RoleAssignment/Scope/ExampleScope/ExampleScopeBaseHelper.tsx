@@ -403,6 +403,80 @@ export const getExampleTreeData = (exampleIndex: number, t: TFunction): TreeView
         },
       ]
 
+    case 9: // Single cluster set → Partial access
+      return [
+        {
+          name: createName(t('Cluster set'), true),
+          id: 'case9-cluster-set-1',
+          icon: createCheckIcon(true),
+          children: [
+            {
+              name: createName(t('Project'), true),
+              id: 'case9-project-1',
+              icon: createCheckIcon(true),
+            },
+            {
+              name: createName(t('Project'), false),
+              id: 'case9-project-2',
+              icon: createCheckIcon(false),
+            },
+            {
+              name: createName(t('Project'), false),
+              id: 'case9-project-3',
+              icon: createCheckIcon(false),
+            },
+          ],
+        },
+      ]
+
+    case 10: // Multiple cluster sets → Common projects
+      return [
+        {
+          name: createName(t('Cluster set'), true),
+          id: 'case10-cluster-set-1',
+          icon: createCheckIcon(true),
+          children: [
+            {
+              name: createName(t('Common project'), true),
+              id: 'case10-project-1',
+              icon: createCheckIcon(true),
+            },
+            {
+              name: createName(t('Project'), false),
+              id: 'case10-project-2',
+              icon: createCheckIcon(false),
+            },
+            {
+              name: createName(t('Project'), false),
+              id: 'case10-project-3',
+              icon: createCheckIcon(false),
+            },
+          ],
+        },
+        {
+          name: createName(t('Cluster set'), true),
+          id: 'case10-cluster-set-2',
+          icon: createCheckIcon(true),
+          children: [
+            {
+              name: createName(t('Common project'), true),
+              id: 'case10-project-4',
+              icon: createCheckIcon(true),
+            },
+            {
+              name: createName(t('Project'), false),
+              id: 'case10-project-5',
+              icon: createCheckIcon(false),
+            },
+            {
+              name: createName(t('Project'), false),
+              id: 'case10-project-6',
+              icon: createCheckIcon(false),
+            },
+          ],
+        },
+      ]
+
     default:
       return []
   }
@@ -428,6 +502,10 @@ export const getExampleTitle = (exampleIndex: number, t: TFunction): string => {
       return t('Example scope: Multiple clusters → Full access')
     case 8:
       return t('Example scope: Multiple clusters → Common projects')
+    case 9:
+      return t('Example scope: Single cluster set → Partial access')
+    case 10:
+      return t('Example scope: Multiple cluster sets → Common projects')
     default:
       return t('Example scope')
   }
