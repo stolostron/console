@@ -585,7 +585,10 @@ describe('roleAssignmentHelper', () => {
       const savedRoleAssignment: RoleAssignment = {
         name: 'saved-role-assignment',
         clusterRole: 'admin',
-        clusterSelection: { type: 'placements', placements: [{ name: GlobalPlacementName, namespace: MulticlusterRoleAssignmentNamespace }] },
+        clusterSelection: {
+          type: 'placements',
+          placements: [{ name: GlobalPlacementName, namespace: MulticlusterRoleAssignmentNamespace }],
+        },
       }
 
       mockFindManagedClusterSetBinding.mockReturnValue([])
@@ -937,7 +940,10 @@ describe('roleAssignmentHelper', () => {
       const savedRoleAssignment: RoleAssignment = {
         name: 'saved-role-assignment',
         clusterRole: 'admin',
-        clusterSelection: { type: 'placements', placements: [{ name: GlobalPlacementName, namespace: MulticlusterRoleAssignmentNamespace }] },
+        clusterSelection: {
+          type: 'placements',
+          placements: [{ name: GlobalPlacementName, namespace: MulticlusterRoleAssignmentNamespace }],
+        },
       }
 
       mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment)
@@ -1029,12 +1035,18 @@ describe('roleAssignmentHelper', () => {
       const savedRoleAssignment1: RoleAssignment = {
         name: 'saved-role-assignment-1',
         clusterRole: 'admin',
-        clusterSelection: { type: 'placements', placements: [{ name: GlobalPlacementName, namespace: MulticlusterRoleAssignmentNamespace }] },
+        clusterSelection: {
+          type: 'placements',
+          placements: [{ name: GlobalPlacementName, namespace: MulticlusterRoleAssignmentNamespace }],
+        },
       }
       const savedRoleAssignment2: RoleAssignment = {
         name: 'saved-role-assignment-2',
         clusterRole: 'viewer',
-        clusterSelection: { type: 'placements', placements: [{ name: 'placement-1', namespace: MulticlusterRoleAssignmentNamespace }] },
+        clusterSelection: {
+          type: 'placements',
+          placements: [{ name: 'placement-1', namespace: MulticlusterRoleAssignmentNamespace }],
+        },
       }
 
       mockAddRoleAssignment
