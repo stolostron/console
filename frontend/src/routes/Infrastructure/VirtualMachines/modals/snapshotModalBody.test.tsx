@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
+import { isFineGrainedRbacEnabledState } from '../../../../atoms'
 import { nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { wait } from '../../../../lib/test-util'
 import { SnapshotModalBody } from './snapshotModalBody'
@@ -31,7 +32,11 @@ describe('SnapshotModalBody', () => {
   })
   test('Should render SnapshotModalBody correctly', async () => {
     render(
-      <RecoilRoot>
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(isFineGrainedRbacEnabledState, true)
+        }}
+      >
         <SnapshotModalBody
           item={{
             apigroup: 'kubevirt.io',

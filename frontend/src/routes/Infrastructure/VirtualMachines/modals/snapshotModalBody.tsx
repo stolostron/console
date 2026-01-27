@@ -23,7 +23,8 @@ import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import { Dispatch, FC, FormEvent, SetStateAction, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../lib/doc-util'
-import { fireManagedClusterView, IResource } from '../../../../resources'
+import { IResource } from '../../../../resources'
+import { fleetResourceRequest } from '../../../../resources/utils/fleet-resource-request'
 import { getBackendUrl, getRequest } from '../../../../resources/utils/resource-request'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { printableVMStatus } from '../utils'
@@ -222,13 +223,19 @@ export function SnapshotModalBody(
           setVMLoading(false)
         })
     } else {
-      fireManagedClusterView(item.cluster, item.kind, item.apiversion, item.name, item.namespace)
-        .then((viewResponse) => {
+      fleetResourceRequest('GET', item.cluster, {
+        apiVersion: item.apiversion,
+        kind: item.kind,
+        name: item.name,
+        namespace: item.namespace,
+      })
+        .then((res) => {
           setVMLoading(false)
-          if (viewResponse?.message) {
+          if ('errorMessage' in res) {
+            console.error(`Error fetching parent VM: ${res.errorMessage}`)
             setGetVMError(true)
           } else {
-            setVM(viewResponse?.result)
+            setVM(res)
             setGetVMError(false)
           }
         })

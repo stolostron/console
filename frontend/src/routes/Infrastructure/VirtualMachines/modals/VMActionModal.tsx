@@ -6,8 +6,9 @@ import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { useContext, useEffect, useState } from 'react'
 import { TFunction } from 'react-i18next'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { fireManagedClusterView, IResource } from '../../../../resources'
+import { IResource } from '../../../../resources'
 import { fetchRetry, getBackendUrl, getRequest } from '../../../../resources/utils'
+import { fleetResourceRequest } from '../../../../resources/utils/fleet-resource-request'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmButton, AcmModal, AcmToastContext, IAlertContext } from '../../../../ui-components'
 import { searchClient } from '../../../Search/search-sdk/search-client'
@@ -135,16 +136,24 @@ export const VMActionModal = (props: IVMActionModalProps) => {
             console.error('Error getting VM resource: ', err)
           })
       } else {
-        fireManagedClusterView(item.cluster, 'VirtualMachine', 'kubevirt.io/v1', name, item.namespace).then(
-          (viewResponse) => {
+        fleetResourceRequest('GET', item.cluster, {
+          apiVersion: 'kubevirt.io/v1',
+          kind: 'VirtualMachine',
+          name,
+          namespace: item.namespace,
+        })
+          .then((res) => {
             setVMLoading(false)
-            if (viewResponse?.message) {
-              console.error('Error fetching parent VM')
+            if ('errorMessage' in res) {
+              console.error(`Error fetching parent VM: ${res.errorMessage}`)
             } else {
-              setVM(viewResponse?.result)
+              setVM(res)
             }
-          }
-        )
+          })
+          .catch((err) => {
+            console.error('Error getting VirtualMachine: ', err)
+            setVMLoading(false)
+          })
       }
     } else {
       setVMLoading(false)
