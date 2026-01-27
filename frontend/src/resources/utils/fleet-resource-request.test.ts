@@ -216,7 +216,7 @@ describe('fleet-resource-request', () => {
       {
         apiVersion: mockResource.apiVersion,
         kind: mockResource.kind,
-        namespace: 'default',
+        namespace: mockResource.namespace,
         name: mockResource.name,
       },
       undefined
@@ -245,7 +245,7 @@ describe('fleet-resource-request', () => {
       {
         apiVersion: mockResource.apiVersion,
         kind: mockResource.kind,
-        namespace: 'default',
+        namespace: mockResource.namespace,
         name: mockResource.name,
       },
       undefined
