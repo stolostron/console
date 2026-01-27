@@ -196,7 +196,7 @@ const argoAppSetGit: ApplicationSet = {
           server: '{{server}}',
         },
         syncPolicy: {
-          automated: { selfHeal: true, prune: true },
+          automated: { enabled: true, selfHeal: true, prune: true },
           syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
         },
       },
@@ -248,7 +248,7 @@ const argoAppSetHelm: ApplicationSet = {
           server: '{{server}}',
         },
         syncPolicy: {
-          automated: { selfHeal: true, prune: true },
+          automated: { enabled: true, selfHeal: true, prune: true },
           syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
         },
       },
