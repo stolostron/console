@@ -1,6 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-/* eslint-disable prettier/prettier */
-//import { css } from '@emotion/css'
 import YAML from 'yaml'
 import generatorClusterDecisionResource from './generators/generator-clusterDecisionResource.yaml'
 import generatorList from './generators/generator-list.yaml'
