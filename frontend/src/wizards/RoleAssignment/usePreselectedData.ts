@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useEffect, useRef } from 'react'
-import { GroupKind, UserKind } from '../../resources'
+import { GlobalPlacementName, GroupKind, UserKind } from '../../resources'
 import { useRoleAssignmentData } from '../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
 import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
 import { RoleAssignmentWizardFormData } from './types'
@@ -52,38 +52,50 @@ export const usePreselectedData = ({
           updates.roles = preselected.roles
         }
 
-        if (preselected?.clusterSetNames && preselected.clusterSetNames.length > 0) {
-          const clusterSetNames = roleAssignmentData.clusterSets
-            .map((e) => e.name)
-            .filter((clusterSetName) => preselected.clusterSetNames?.includes(clusterSetName))
+        const hasClusterSetNames = preselected?.clusterSetNames && preselected.clusterSetNames.length > 0
+        const isGlobalAccess = hasClusterSetNames && preselected.clusterSetNames!.includes(GlobalPlacementName)
+        const hasClusters = preselected?.clusterNames && preselected.clusterNames.length > 0
+        const hasNamespaces = preselected?.namespaces && preselected.namespaces.length > 0
 
-          updates.scopeType = 'Select cluster sets'
-          updates.scope = {
-            kind: 'all',
-          }
-          updates.selectedClusterSets = clusterSetNames
-          setSelectedClusterSets(clusterSetNames)
+        switch (true) {
+          case isGlobalAccess:
+            updates.scopeType = 'Global access'
+            updates.scope = {
+              kind: 'all',
+            }
+            break
+          case hasClusterSetNames:
+            const clusterSetNames = roleAssignmentData.clusterSets
+              .map((e) => e.name)
+              .filter((clusterSetName) => preselected.clusterSetNames?.includes(clusterSetName))
+
+            updates.scopeType = 'Select cluster sets'
+            updates.scope = {
+              kind: 'all',
+            }
+            updates.selectedClusterSets = clusterSetNames
+            setSelectedClusterSets(clusterSetNames)
+            break
+          case hasClusters:
+            const clusterObjects = allClusters.filter((cluster) => preselected.clusterNames?.includes(cluster.name))
+
+            updates.scopeType = 'Select clusters'
+            updates.scope = {
+              kind: 'specific',
+              clusterNames: preselected.clusterNames,
+            }
+            updates.selectedClusters = clusterObjects
+            setSelectedClusters(clusterObjects)
+            break
         }
 
-        if (preselected?.clusterNames && preselected.clusterNames.length > 0) {
-          const clusterObjects = allClusters.filter((cluster) => preselected.clusterNames?.includes(cluster.name))
-
-          updates.scopeType = 'Select clusters'
+        if (!isGlobalAccess && hasNamespaces) {
           updates.scope = {
             kind: 'specific',
-            clusterNames: preselected.clusterNames,
             namespaces: preselected.namespaces,
           }
-          updates.selectedClusters = clusterObjects
-          setSelectedClusters(clusterObjects)
-
-          if (preselected.namespaces && preselected.namespaces.length > 0) {
+          if (hasClusters) {
             updates.selectedClustersAccessLevel = 'Project role assignment'
-          }
-        } else if (preselected?.namespaces && preselected.namespaces.length > 0) {
-          updates.scope = {
-            kind: 'specific',
-            namespaces: preselected.namespaces,
           }
         }
 
