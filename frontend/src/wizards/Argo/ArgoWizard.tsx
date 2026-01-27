@@ -929,14 +929,7 @@ function SyncPlacementNameToApplicationSet() {
     return null
   }
 
-  return (
-    <Sync
-      kind={PlacementKind}
-      path="metadata.name"
-      targetKind="ApplicationSet"
-      targetPath={targetPath}
-    />
-  )
+  return <Sync kind={PlacementKind} path="metadata.name" targetKind="ApplicationSet" targetPath={targetPath} />
 }
 
 function ExistingPlacementSelect(props: { placements: IPlacement[] }) {

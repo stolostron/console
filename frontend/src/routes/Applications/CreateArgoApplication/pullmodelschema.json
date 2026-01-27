@@ -24,14 +24,10 @@
                           "type": "string"
                         }
                       },
-                      "required": [
-                        "cluster.open-cluster-management.io/placement"
-                      ]
+                      "required": ["cluster.open-cluster-management.io/placement"]
                     }
                   },
-                  "required": [
-                    "matchLabels"
-                  ]
+                  "required": ["matchLabels"]
                 },
                 "requeueAfterSeconds": {
                   "type": "number"
@@ -39,9 +35,7 @@
               }
             }
           },
-          "required": [
-            "clusterDecisionResource"
-          ]
+          "required": ["clusterDecisionResource"]
         },
         "gitGenerator": {
           "type": "object",
@@ -50,9 +44,7 @@
               "type": "object"
             }
           },
-          "required": [
-            "git"
-          ]
+          "required": ["git"]
         },
         "listGenerator": {
           "type": "object",
@@ -61,9 +53,7 @@
               "type": "object"
             }
           },
-          "required": [
-            "list"
-          ]
+          "required": ["list"]
         },
         "clustersGenerator": {
           "type": "object",
@@ -75,14 +65,10 @@
                   "type": "object"
                 }
               },
-              "required": [
-                "selector"
-              ]
+              "required": ["selector"]
             }
           },
-          "required": [
-            "clusters"
-          ]
+          "required": ["clusters"]
         },
         "scmProviderGenerator": {
           "type": "object",
@@ -91,9 +77,7 @@
               "type": "object"
             }
           },
-          "required": [
-            "scmProvider"
-          ]
+          "required": ["scmProvider"]
         },
         "pullRequestGenerator": {
           "type": "object",
@@ -102,9 +86,7 @@
               "type": "object"
             }
           },
-          "required": [
-            "pullRequest"
-          ]
+          "required": ["pullRequest"]
         },
         "pluginGenerator": {
           "type": "object",
@@ -113,9 +95,7 @@
               "type": "object"
             }
           },
-          "required": [
-            "plugin"
-          ]
+          "required": ["plugin"]
         },
         "mergeGenerator": {
           "type": "object",
@@ -124,9 +104,7 @@
               "type": "object"
             }
           },
-          "required": [
-            "merge"
-          ]
+          "required": ["merge"]
         }
       },
       "properties": {
@@ -146,10 +124,7 @@
               "validateName": true
             }
           },
-          "required": [
-            "name",
-            "namespace"
-          ]
+          "required": ["name", "namespace"]
         },
         "spec": {
           "type": "object",
@@ -186,9 +161,7 @@
                         "type": "object"
                       }
                     },
-                    "required": [
-                      "merge"
-                    ]
+                    "required": ["merge"]
                   },
                   {
                     "properties": {
@@ -228,22 +201,16 @@
                                       "type": "object"
                                     }
                                   },
-                                  "required": [
-                                    "merge"
-                                  ]
+                                  "required": ["merge"]
                                 }
                               ]
                             }
                           }
                         },
-                        "required": [
-                          "generators"
-                        ]
+                        "required": ["generators"]
                       }
                     },
-                    "required": [
-                      "matrix"
-                    ]
+                    "required": ["matrix"]
                   }
                 ]
               }
@@ -285,10 +252,7 @@
                       }
                     }
                   },
-                  "required": [
-                    "name",
-                    "annotations"
-                  ]
+                  "required": ["name", "annotations"]
                 },
                 "spec": {
                   "type": "object",
@@ -311,29 +275,16 @@
                       "type": "array"
                     }
                   },
-                  "required": [
-                    "project",
-                    "destination"
-                  ]
+                  "required": ["project", "destination"]
                 }
               },
-              "required": [
-                "metadata",
-                "spec"
-              ]
+              "required": ["metadata", "spec"]
             }
           },
-          "required": [
-            "generators",
-            "template"
-          ]
+          "required": ["generators", "template"]
         }
       },
-      "required": [
-        "apiVersion",
-        "metadata",
-        "spec"
-      ]
+      "required": ["apiVersion", "metadata", "spec"]
     }
   },
   {
@@ -358,17 +309,10 @@
               "validateName": true
             }
           },
-          "required": [
-            "name",
-            "namespace"
-          ]
+          "required": ["name", "namespace"]
         }
       },
-      "required": [
-        "apiVersion",
-        "kind",
-        "metadata"
-      ]
+      "required": ["apiVersion", "kind", "metadata"]
     }
   }
 ]

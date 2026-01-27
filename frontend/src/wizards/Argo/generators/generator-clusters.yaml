@@ -1,4 +1,4 @@
 clusters:
   selector:
     matchLabels:
-      staging: "true"
+      staging: 'true'

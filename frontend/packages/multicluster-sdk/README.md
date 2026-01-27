@@ -307,13 +307,6 @@ Returns:
 
 A rendered event stream component showing real-time Kubernetes events
 
-References:
-
-* [https://github.com/openshift/console/blob/main/frontend/packages/console-dynamic-plugin-sdk/docs/api.md#resourceeventstream](https://github.com/openshift/console/blob/main/frontend/packages/console-dynamic-plugin-sdk/docs/api.md#resourceeventstream)
-* `FleetK8sResourceCommon`
-* [https://github.com/openshift/console/tree/master/frontend/packages/console-dynamic-plugin-sdk](https://github.com/openshift/console/tree/master/frontend/packages/console-dynamic-plugin-sdk)
-
-
 Examples:
 
 // Display events for a resource on a managed cluster
@@ -373,11 +366,6 @@ Parameters:
 * `props.inline`: - whether to display inline
 * `props.hideIcon`: - whether to hide the resource icon
 * `props.children`: - additional content to render
-
-
-References:
-
-* [https://github.com/openshift/console/blob/main/frontend/packages/console-dynamic-plugin-sdk/docs/api.md#resourcelink](https://github.com/openshift/console/blob/main/frontend/packages/console-dynamic-plugin-sdk/docs/api.md#resourcelink)
 
 
 Examples:

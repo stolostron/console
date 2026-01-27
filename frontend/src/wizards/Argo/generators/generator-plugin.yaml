@@ -3,9 +3,9 @@ plugin:
     name: my-plugin
   input:
     parameters:
-      key1: "value1"
-      key2: "value2"
-      list: ["list", "of", "values"]
+      key1: 'value1'
+      key2: 'value2'
+      list: ['list', 'of', 'values']
       boolean: true
   values:
     value1: something

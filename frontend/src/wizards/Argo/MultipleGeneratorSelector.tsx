@@ -39,7 +39,6 @@ export interface MultipleGeneratorSelectorProps {
   gitChannels: string[]
   helmChannels: string[]
   disableForm: boolean
-
 }
 
 export function MultipleGeneratorSelector(props: MultipleGeneratorSelectorProps) {
@@ -120,7 +119,6 @@ export function MultipleGeneratorSelector(props: MultipleGeneratorSelectorProps)
     [item, update]
   )
 
-
   const editMode = useEditMode()
   const generators = get(item, generatorPath)
   const { t } = useTranslation()
@@ -148,16 +146,18 @@ function GeneratorCollapsedContent() {
   const generator = useContext(ItemContext)
   const generatorType = getGeneratorType(generator)
   const { t } = useTranslation()
-  return <div>
-    <Title headingLevel="h6">{t('{{type}} Generator', { type: pascalCaseToSentenceCase(generatorType) })}</Title>
-  </div>
+  return (
+    <div>
+      <Title headingLevel="h6">{t('{{type}} Generator', { type: pascalCaseToSentenceCase(generatorType) })}</Title>
+    </div>
+  )
 }
 
 function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
   const { gitChannels, channels, disableForm } = props
   // this is an array dependency in Wiz which doesn't compare by stringify
   // so if you change the array object, react thinks the value changed
-  // which causes infinite loop 
+  // which causes infinite loop
   const directoryPaths = useRef<string[]>([])
   const generator = useContext(ItemContext)
   const generatorType = getGeneratorType(generator)
@@ -168,7 +168,7 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
       {/* Cluster Decision Resource generator - uses Placement to determine target clusters */}
       <WizHidden hidden={() => generatorType !== 'clusterDecisionResource'}>
         <HelperText>
-          <HelperTextItem >{t('The Placement step defines where applications are deployed.')}</HelperTextItem>
+          <HelperTextItem>{t('The Placement step defines where applications are deployed.')}</HelperTextItem>
         </HelperText>
         <WizSelect
           path="clusterDecisionResource.requeueAfterSeconds"
@@ -182,7 +182,9 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
       {/* Git generator - uses a Git repository to determine target clusters */}
       <WizHidden hidden={() => generatorType !== 'git'}>
         <HelperText>
-          <HelperTextItem>{t('Use the manifest files in a git repository directory to generate applications')}</HelperTextItem>
+          <HelperTextItem>
+            {t('Use the manifest files in a git repository directory to generate applications')}
+          </HelperTextItem>
         </HelperText>
         <WizSelect
           path="git.repoURL"
@@ -206,7 +208,11 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
           disabled={disableForm}
           pathValueToInputValue={(value: unknown) => {
             if (Array.isArray(value)) {
-              directoryPaths.current.splice(0, directoryPaths.current.length, ...value.map((v: { path: string }) => v.path))
+              directoryPaths.current.splice(
+                0,
+                directoryPaths.current.length,
+                ...value.map((v: { path: string }) => v.path)
+              )
             }
             return directoryPaths.current
           }}
@@ -281,11 +287,7 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
           placeholder={t('Enter the GitHub API URL')}
           disabled={disableForm}
         />
-        <WizCheckbox
-          path="scmProvider.github.allBranches"
-          label={t('All branches')}
-          disabled={disableForm}
-        />
+        <WizCheckbox path="scmProvider.github.allBranches" label={t('All branches')} disabled={disableForm} />
         <WizTextInput
           path="scmProvider.github.tokenRef.secretName"
           label={t('Token secret name')}
