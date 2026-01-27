@@ -231,12 +231,19 @@ describe('ArgoWizard tests', () => {
     )
     await clickByRole('combobox', { name: 'Select the Argo server' })
     await clickByRole('option', { name: /http:\/\/argoserver\.com/i })
+    await clickByText('Next')
+
+    //=====================================================================
+    //                      generators page
+    //=====================================================================
+    // Click on the generator to expand it
+    await clickByText('Cluster Decision Resource Generator')
     await clickByRole('combobox', { name: 'Select the requeue time' })
     await clickByRole('option', { name: /120/i })
     await clickByText('Next')
 
     //=====================================================================
-    //                      template page
+    //                      repository page
     //=====================================================================
     await clickByText('Git')
     await typeByRole(url, 'combobox', { name: /Enter or select a Git URL/i })
