@@ -172,7 +172,7 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
           path="clusterDecisionResource.requeueAfterSeconds"
           label={t('Requeue time')}
           options={requeueTimes}
-          labelHelp={t('Cluster decision resource requeue time in seconds')}
+          labelHelp={t('cluster.decision.resource.requeue.time.description')}
           required
           disabled={disableForm}
         />
