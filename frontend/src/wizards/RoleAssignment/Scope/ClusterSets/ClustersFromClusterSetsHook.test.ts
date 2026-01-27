@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { act, renderHook } from '@testing-library/react-hooks'
 import { waitFor } from '@testing-library/react'
 import { useClustersFromClusterSets } from './ClustersFromClusterSetsHook'
