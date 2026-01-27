@@ -582,9 +582,15 @@ describe('roleAssignmentHelper', () => {
         },
       ]
 
+      const savedRoleAssignment: RoleAssignment = {
+        name: 'saved-role-assignment',
+        clusterRole: 'admin',
+        clusterSelection: { type: 'placements', placements: [{ name: GlobalPlacementName, namespace: MulticlusterRoleAssignmentNamespace }] },
+      }
+
       mockFindManagedClusterSetBinding.mockReturnValue([])
       mockGetPlacementsForRoleAssignment.mockReturnValue([globalPlacement])
-      mockAddRoleAssignment.mockResolvedValue({} as never)
+      mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment)
 
       const roleAssignment: RoleAssignmentToSave = {
         clusterRole: 'admin',
@@ -605,7 +611,7 @@ describe('roleAssignmentHelper', () => {
         existingManagedClusterSetBindings: [],
         existingPlacements: [globalPlacement],
       })
-      expect(callbacks.onSuccess).toHaveBeenCalledWith('admin')
+      expect(callbacks.onSuccess).toHaveBeenCalledWith(savedRoleAssignment)
       expect(callbacks.onError).not.toHaveBeenCalled()
     })
 
@@ -928,7 +934,13 @@ describe('roleAssignmentHelper', () => {
         spec: {},
       }
 
-      mockAddRoleAssignment.mockResolvedValue({} as never)
+      const savedRoleAssignment: RoleAssignment = {
+        name: 'saved-role-assignment',
+        clusterRole: 'admin',
+        clusterSelection: { type: 'placements', placements: [{ name: GlobalPlacementName, namespace: MulticlusterRoleAssignmentNamespace }] },
+      }
+
+      mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment)
       mockGetPlacementsForRoleAssignment.mockReturnValue([globalPlacement])
 
       const roleAssignmentsToSave: RoleAssignmentToSave[] = [
@@ -1014,7 +1026,20 @@ describe('roleAssignmentHelper', () => {
 
       const regularPlacement = createMockPlacement('placement-1')
 
-      mockAddRoleAssignment.mockResolvedValue({} as never)
+      const savedRoleAssignment1: RoleAssignment = {
+        name: 'saved-role-assignment-1',
+        clusterRole: 'admin',
+        clusterSelection: { type: 'placements', placements: [{ name: GlobalPlacementName, namespace: MulticlusterRoleAssignmentNamespace }] },
+      }
+      const savedRoleAssignment2: RoleAssignment = {
+        name: 'saved-role-assignment-2',
+        clusterRole: 'viewer',
+        clusterSelection: { type: 'placements', placements: [{ name: 'placement-1', namespace: MulticlusterRoleAssignmentNamespace }] },
+      }
+
+      mockAddRoleAssignment
+        .mockResolvedValueOnce(savedRoleAssignment1) // For isGlobalScope: true
+        .mockResolvedValueOnce(savedRoleAssignment2) // For isGlobalScope: false
       mockGetPlacementsForRoleAssignment
         .mockReturnValueOnce([globalPlacement]) // For isGlobalScope: true
         .mockReturnValueOnce([regularPlacement]) // For isGlobalScope: false
