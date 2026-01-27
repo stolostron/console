@@ -495,13 +495,18 @@ describe('Generator template cloning', () => {
     expect(generator1).toEqual(generator2)
 
     // Modifying one should not affect the other
-    if (Array.isArray(generator1) && generator1[0]?.git) {
-      generator1[0].git.repoURL = 'modified-url'
-    }
+    // Assert structure first to satisfy TypeScript, then modify and verify independence
+    expect(Array.isArray(generator1)).toBe(true)
+    expect(Array.isArray(generator2)).toBe(true)
 
-    if (Array.isArray(generator2) && generator2[0]?.git) {
-      expect(generator2[0].git.repoURL).not.toBe('modified-url')
-    }
+    const gen1 = generator1 as { git: { repoURL: string } }[]
+    const gen2 = generator2 as { git: { repoURL: string } }[]
+
+    expect(gen1[0]?.git).toBeDefined()
+    expect(gen2[0]?.git).toBeDefined()
+
+    gen1[0].git.repoURL = 'modified-url'
+    expect(gen2[0].git.repoURL).not.toBe('modified-url')
   })
 
   test('should not modify original specification when cloning', () => {
