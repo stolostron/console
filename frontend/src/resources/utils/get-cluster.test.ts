@@ -9,6 +9,8 @@ import {
   getDistributionInfo,
   getHCUpgradePercent,
   getHCUpgradeStatus,
+  getCCUpgradeStatus,
+  getCCUpgradePercent,
   getIsHostedCluster,
   getProvider,
 } from './get-cluster'
@@ -1875,6 +1877,235 @@ describe('getProvider', () => {
       const managedCluster = createManagedClusterWithPlatformClaim('AUTO-DETECT')
       const result = getProvider({ managedCluster })
       expect(result).toBeUndefined()
+    })
+  })
+
+  describe('getCCUpgradeStatus', () => {
+    it('should return curator upgrade status when curator is in progress', () => {
+      const curator: ClusterCurator = {
+        apiVersion: ClusterCuratorApiVersion,
+        kind: ClusterCuratorKind,
+        metadata: { name: 'test' },
+        spec: { desiredCuration: 'upgrade' },
+        status: {
+          conditions: [{ type: 'clustercurator-job', status: 'False', reason: 'Job_has_finished', message: '' }],
+        },
+      }
+      expect(getCCUpgradeStatus(curator, undefined)).toBe(true)
+    })
+
+    it('should return false when curator job not in progress', () => {
+      const curator: ClusterCurator = {
+        apiVersion: ClusterCuratorApiVersion,
+        kind: ClusterCuratorKind,
+        metadata: { name: 'test' },
+        spec: {},
+        status: {
+          conditions: [{ type: 'clustercurator-job', status: 'True', reason: 'Running', message: '' }],
+        },
+      }
+      expect(getCCUpgradeStatus(curator, undefined)).toBe(false)
+    })
+
+    it('should fallback to HC upgrade status when curator not provided', () => {
+      const hc: HostedClusterK8sResource = {
+        apiVersion: HostedClusterApiVersion,
+        kind: HostedClusterKind,
+        metadata: { name: 'test', namespace: 'clusters' },
+        spec: {} as any,
+        status: {
+          version: {
+            desired: { image: 'v1.0.1' },
+            history: [{ image: 'v1.0.0', state: 'Completed' }],
+          },
+        } as any,
+      }
+      expect(getCCUpgradeStatus(undefined, hc)).toBe(true)
+    })
+  })
+
+  describe('getCCUpgradePercent', () => {
+    it('should return curator upgrade percentage when curator is provided', () => {
+      const curator: ClusterCurator = {
+        apiVersion: ClusterCuratorApiVersion,
+        kind: ClusterCuratorKind,
+        metadata: { name: 'test' },
+        spec: {},
+        status: {
+          conditions: [{ type: 'monitor-upgrade', status: 'True', reason: '', message: 'Upgrade 50% complete' }],
+        },
+      }
+      expect(getCCUpgradePercent(curator, undefined)).toBe('50%')
+    })
+
+    it('should return empty string when no percentage match', () => {
+      const curator: ClusterCurator = {
+        apiVersion: ClusterCuratorApiVersion,
+        kind: ClusterCuratorKind,
+        metadata: { name: 'test' },
+        spec: {},
+        status: { conditions: [{ type: 'monitor-upgrade', status: 'True', reason: '', message: 'Upgrading' }] },
+      }
+      expect(getCCUpgradePercent(curator, undefined)).toBe('')
+    })
+
+    it('should fallback to HC upgrade percent when curator not provided', () => {
+      const hc: HostedClusterK8sResource = {
+        apiVersion: HostedClusterApiVersion,
+        kind: HostedClusterKind,
+        metadata: { name: 'test', namespace: 'clusters' },
+        spec: {} as any,
+        status: {
+          conditions: [{ type: 'ClusterVersionProgressing', status: 'True', message: 'Working towards (75%)' }],
+        } as any,
+      }
+      expect(getCCUpgradePercent(undefined, hc)).toBe('(75%)')
+    })
+
+    it('should return empty string when curator has no monitor-upgrade condition', () => {
+      const curator: ClusterCurator = {
+        apiVersion: ClusterCuratorApiVersion,
+        kind: ClusterCuratorKind,
+        metadata: { name: 'test' },
+        spec: {},
+        status: { conditions: [{ type: 'other-condition', status: 'True', reason: '', message: 'Other message' }] },
+      }
+      expect(getCCUpgradePercent(curator, undefined)).toBe('')
+    })
+
+    it('should return empty string when curator has no status', () => {
+      const curator: ClusterCurator = {
+        apiVersion: ClusterCuratorApiVersion,
+        kind: ClusterCuratorKind,
+        metadata: { name: 'test' },
+        spec: {},
+      }
+      expect(getCCUpgradePercent(curator, undefined)).toBe('')
+    })
+
+    it('should return empty string when curator status has no conditions', () => {
+      const curator: ClusterCurator = {
+        apiVersion: ClusterCuratorApiVersion,
+        kind: ClusterCuratorKind,
+        metadata: { name: 'test' },
+        spec: {},
+        status: { conditions: [] },
+      }
+      expect(getCCUpgradePercent(curator, undefined)).toBe('')
+    })
+  })
+
+  describe('getCCUpgradeStatus - additional coverage', () => {
+    it('should return false when curator job not in progress', () => {
+      const curator: ClusterCurator = {
+        apiVersion: ClusterCuratorApiVersion,
+        kind: ClusterCuratorKind,
+        metadata: { name: 'test' },
+        spec: { desiredCuration: 'install' },
+        status: {
+          conditions: [
+            { type: 'clustercurator-job', status: 'True', reason: 'Job_has_finished', message: 'Completed' },
+          ],
+        },
+      }
+      expect(getCCUpgradeStatus(curator, undefined)).toBe(false)
+    })
+
+    it('should return false when curator has no status', () => {
+      const curator: ClusterCurator = {
+        apiVersion: ClusterCuratorApiVersion,
+        kind: ClusterCuratorKind,
+        metadata: { name: 'test' },
+        spec: {},
+      }
+      expect(getCCUpgradeStatus(curator, undefined)).toBe(false)
+    })
+
+    it('should return false when curator job finished and desiredCuration is not upgrade', () => {
+      const curator: ClusterCurator = {
+        apiVersion: ClusterCuratorApiVersion,
+        kind: ClusterCuratorKind,
+        metadata: { name: 'test' },
+        spec: { desiredCuration: 'install' },
+        status: {
+          conditions: [{ type: 'clustercurator-job', status: 'True', reason: 'Job_has_finished', message: '' }],
+        },
+      }
+      expect(getCCUpgradeStatus(curator, undefined)).toBe(false)
+    })
+
+    it('should return true when curator has desiredCuration upgrade and job in progress', () => {
+      const curator: ClusterCurator = {
+        apiVersion: ClusterCuratorApiVersion,
+        kind: ClusterCuratorKind,
+        metadata: { name: 'test' },
+        spec: { desiredCuration: 'upgrade' },
+        status: {
+          conditions: [{ type: 'clustercurator-job', status: 'False', reason: 'Job_has_finished', message: '' }],
+        },
+      }
+      expect(getCCUpgradeStatus(curator, undefined)).toBe(true)
+    })
+  })
+
+  describe('getCCUpgradePercent - edge cases', () => {
+    it('should return percentage when found in detailed message', () => {
+      const curator: ClusterCurator = {
+        apiVersion: ClusterCuratorApiVersion,
+        kind: ClusterCuratorKind,
+        metadata: { name: 'test' },
+        spec: {},
+        status: {
+          conditions: [{ type: 'monitor-upgrade', status: 'True', reason: '', message: 'Upgrade is 85% complete' }],
+        },
+      }
+      expect(getCCUpgradePercent(curator, undefined)).toBe('85%')
+    })
+
+    it('should return empty when no percentage match in message', () => {
+      const curator: ClusterCurator = {
+        apiVersion: ClusterCuratorApiVersion,
+        kind: ClusterCuratorKind,
+        metadata: { name: 'test' },
+        spec: {},
+        status: {
+          conditions: [{ type: 'monitor-upgrade', status: 'True', reason: '', message: 'Upgrade in progress' }],
+        },
+      }
+      expect(getCCUpgradePercent(curator, undefined)).toBe('')
+    })
+
+    it('should handle empty condition message', () => {
+      const curator: ClusterCurator = {
+        apiVersion: ClusterCuratorApiVersion,
+        kind: ClusterCuratorKind,
+        metadata: { name: 'test' },
+        spec: {},
+        status: {
+          conditions: [{ type: 'monitor-upgrade', status: 'True', reason: '', message: '' }],
+        },
+      }
+      expect(getCCUpgradePercent(curator, undefined)).toBe('')
+    })
+
+    it('should extract percentage from complex message', () => {
+      const curator: ClusterCurator = {
+        apiVersion: ClusterCuratorApiVersion,
+        kind: ClusterCuratorKind,
+        metadata: { name: 'test' },
+        spec: {},
+        status: {
+          conditions: [
+            {
+              type: 'monitor-upgrade',
+              status: 'True',
+              reason: '',
+              message: 'Progress: 42% - updating nodes',
+            },
+          ],
+        },
+      }
+      expect(getCCUpgradePercent(curator, undefined)).toBe('42%')
     })
   })
 })
