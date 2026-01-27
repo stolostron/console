@@ -280,7 +280,7 @@ export const RoleAssignmentWizardModal = ({
       id="scope-selection"
       isHidden={(['cluster', 'clusterSets'] as RoleAssignmentPreselected['context'][]).includes(preselected?.context)}
       footer={{
-        isNextDisabled: !isEditing && isScopeInvalid,
+        isNextDisabled: isScopeInvalid,
       }}
     >
       <ScopeSelectionStepContent
@@ -300,7 +300,7 @@ export const RoleAssignmentWizardModal = ({
       id="scope-cluster-set-granularity"
       isHidden={formData.scopeType !== 'Select cluster sets' || hasNoClusterSets}
       footer={{
-        isNextDisabled: !isEditing && formData.clusterSetAccessLevel === 'Cluster role assignment' && hasNoClusters,
+        isNextDisabled: formData.clusterSetAccessLevel === 'Cluster role assignment' && hasNoClusters,
       }}
     >
       <GranularityStepContent
@@ -453,7 +453,7 @@ export const RoleAssignmentWizardModal = ({
                   id="scope"
                   steps={scopeSubSteps}
                   footer={{
-                    isNextDisabled: !isEditing && isScopeInvalid,
+                    isNextDisabled: isScopeInvalid,
                   }}
                 />
 
