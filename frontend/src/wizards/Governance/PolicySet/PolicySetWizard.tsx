@@ -1,34 +1,34 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import {
+  EditMode,
+  ItemContext,
+  Section,
+  Step,
+  Sync,
+  useItem,
+  WizardCancel,
+  WizardSubmit,
+  WizItemSelector,
+  WizSingleSelect,
+  WizTableSelect,
+  WizTextArea,
+  WizTextInput,
+} from '@patternfly-labs/react-form-wizard'
 import { Alert } from '@patternfly/react-core'
 import get from 'get-value'
 import { Fragment, ReactNode, useMemo } from 'react'
-import {
-  useItem,
-  EditMode,
-  ItemContext,
-  WizItemSelector,
-  Section,
-  WizSingleSelect,
-  Step,
-  WizTableSelect,
-  WizTextArea,
-  WizardCancel,
-  WizardSubmit,
-  WizTextInput,
-  Sync,
-} from '@patternfly-labs/react-form-wizard'
-import { WizardPage } from '../../WizardPage'
+import { useTranslation } from '../../../lib/acm-i18next'
+import { validateKubernetesResourceName } from '../../../lib/validation'
+import { useWizardStrings } from '../../../lib/wizardStrings'
 import { NavigationPath } from '../../../NavigationPath'
-import { IResource } from '../../common/resources/IResource'
 import { IClusterSetBinding } from '../../common/resources/IClusterSetBinding'
+import { PlacementApiGroup, PlacementKind, PlacementSpec, PlacementType } from '../../common/resources/IPlacement'
 import { PlacementBindingKind, PlacementBindingType } from '../../common/resources/IPlacementBinding'
-import { PlacementApiGroup, PlacementKind, PlacementType, PlacementSpec } from '../../common/resources/IPlacement'
 import { PolicyApiVersion, PolicyKind } from '../../common/resources/IPolicy'
 import { PolicySetApiGroup, PolicySetKind, PolicySetType } from '../../common/resources/IPolicySet'
-import { validateKubernetesResourceName } from '../../../lib/validation'
+import { IResource } from '../../common/resources/IResource'
 import { PlacementSection } from '../../Placement/PlacementSection'
-import { useTranslation } from '../../../lib/acm-i18next'
-import { useWizardStrings } from '../../../lib/wizardStrings'
+import { WizardPage } from '../../WizardPage'
 
 export interface PolicySetWizardProps {
   breadcrumb?: { text: string; to?: string }[]
@@ -197,14 +197,13 @@ export function PolicySetWizard(props: PolicySetWizardProps) {
 function PoliciesSection(props: { policies: IResource[] }) {
   const resources = useItem() as IResource[]
   const { t } = useTranslation()
+  const policySet = resources?.find((resource) => resource.kind === PolicySetKind) ?? {}
+  const namespace = policySet?.metadata?.namespace
+
   const namespacedPolicies = useMemo(() => {
-    if (!resources.find) return []
-    const policySet = resources?.find((resource) => resource.kind === PolicySetKind)
-    if (!policySet) return []
-    const namespace = policySet.metadata?.namespace
     if (!namespace) return []
     return props.policies.filter((policy) => policy.metadata?.namespace === namespace)
-  }, [props.policies, resources])
+  }, [props.policies, namespace])
 
   // If at least one selected policy does not have a uid it is "missing" and we need to alert the user.
   const arePoliciesMissing = useMemo(() => {
@@ -237,7 +236,11 @@ function PoliciesSection(props: { policies: IResource[] }) {
           itemToValue={(policy: IResource) => policy.metadata?.name}
           valueMatchesItem={(value: unknown, policy: IResource) => value === policy.metadata?.name}
           emptyTitle={t('No policies available for selection.')}
-          emptyMessage={t('Select a namespace to be able to select policies in that namespace.')}
+          emptyMessage={
+            !namespace
+              ? t('Select a namespace to be able to select policies in that namespace.')
+              : t('No policies were found in the selected namespace.')
+          }
         />
       </WizItemSelector>
     </Section>

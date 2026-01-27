@@ -2077,6 +2077,7 @@
   "No pods found": "No pods found",
   "No polices found": "No polices found",
   "No policies available for selection.": "No policies available for selection.",
+  "No policies were found in the selected namespace.": "No policies were found in the selected namespace.",
   "No policy set in given namespace": "No policy set in given namespace",
   "No proxy": "No proxy",
   "No recommendations found": "No recommendations found",
