@@ -11,9 +11,7 @@ interface ClusterGranularityStepContentProps {
   selectedNamespaces?: string[]
   onNamespacesChange: (namespaces: string[]) => void
   clustersAccessLevel: RoleAssignmentWizardFormData['clustersAccessLevel']
-  onClustersAccessLevelChange: (
-    clustersAccessLevel?: RoleAssignmentWizardFormData['clustersAccessLevel']
-  ) => void
+  onClustersAccessLevelChange: (clustersAccessLevel?: RoleAssignmentWizardFormData['clustersAccessLevel']) => void
 }
 
 export const ClusterGranularityStepContent = ({

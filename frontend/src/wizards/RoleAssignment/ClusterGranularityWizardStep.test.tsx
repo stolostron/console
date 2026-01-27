@@ -76,12 +76,7 @@ describe('ClusterGranularityStepContent', () => {
   })
 
   it('renders with title and description for single cluster', () => {
-    renderWithContext(
-      <ClusterGranularityStepContent
-        {...defaultProps}
-        selectedClusters={[{ name: 'cluster-1' }]}
-      />
-    )
+    renderWithContext(<ClusterGranularityStepContent {...defaultProps} selectedClusters={[{ name: 'cluster-1' }]} />)
 
     expect(mockGranularityStepContent).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -104,17 +99,13 @@ describe('ClusterGranularityStepContent', () => {
   })
 
   it('does not render ProjectsList when clustersAccessLevel is not Project role assignment', () => {
-    renderWithContext(
-      <ClusterGranularityStepContent {...defaultProps} clustersAccessLevel="Cluster role assignment" />
-    )
+    renderWithContext(<ClusterGranularityStepContent {...defaultProps} clustersAccessLevel="Cluster role assignment" />)
 
     expect(mockProjectsList).not.toHaveBeenCalled()
   })
 
   it('renders ProjectsList when clustersAccessLevel is Project role assignment', () => {
-    renderWithContext(
-      <ClusterGranularityStepContent {...defaultProps} clustersAccessLevel="Project role assignment" />
-    )
+    renderWithContext(<ClusterGranularityStepContent {...defaultProps} clustersAccessLevel="Project role assignment" />)
 
     expect(mockProjectsList).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -167,11 +158,7 @@ describe('ClusterGranularityStepContent', () => {
 
   describe('when selectedClusters.length > 1', () => {
     it('renders plural description and Alert message for multiple clusters with Cluster role assignment', () => {
-      const multipleClusters = [
-        { name: 'cluster-1' },
-        { name: 'cluster-2' },
-        { name: 'cluster-3' },
-      ]
+      const multipleClusters = [{ name: 'cluster-1' }, { name: 'cluster-2' }, { name: 'cluster-3' }]
 
       renderWithContext(
         <ClusterGranularityStepContent
@@ -198,10 +185,7 @@ describe('ClusterGranularityStepContent', () => {
     })
 
     it('renders plural description for multiple clusters with Project role assignment', () => {
-      const multipleClusters = [
-        { name: 'cluster-1' },
-        { name: 'cluster-2' },
-      ]
+      const multipleClusters = [{ name: 'cluster-1' }, { name: 'cluster-2' }]
 
       renderWithContext(
         <ClusterGranularityStepContent
