@@ -646,7 +646,7 @@ exports[`HostForm it renders 1`] = `
               <span
                 class="pf-v6-c-button__text"
               >
-                ai:Add Nodepool
+                ai:Add nodepool
               </span>
               <span
                 class="pf-v6-c-button__icon pf-m-end"

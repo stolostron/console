@@ -320,11 +320,13 @@ exports[`DetailsForm it renders 1`] = `
                 ai:All DNS records must be subdomains of this base and include the cluster name. This cannot be changed after cluster installation. The full cluster address will be:
                  
                 <br />
-                <strong>
+                <span
+                  class="pf-v6-u-font-weight-bold"
+                >
                   [Cluster Name]
                   .
                   [example.com]
-                </strong>
+                </span>
               </span>
             </div>
           </div>
