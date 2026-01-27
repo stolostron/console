@@ -449,7 +449,7 @@ describe('VMActionModal', () => {
     })
 
     Date.now = jest.fn(() => 1234)
-    const { getByTestId } = render(
+    render(
       <RecoilRoot
         initializeState={(snapshot) => {
           snapshot.set(isFineGrainedRbacEnabledState, false)
