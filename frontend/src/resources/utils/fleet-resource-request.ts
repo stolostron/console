@@ -31,7 +31,7 @@ function getMCAMethod(method: 'GET' | 'PUT' | 'POST' | 'PATCH' | 'DELETE'): Acti
  * @param data Optional request body data to send with the request
  * @returns Promise that resolves to either the IResource or an object with an errorMessage property
  */
-export async function resourceReq(
+export async function fleetResourceRequest(
   method: 'PUT' | 'GET' | 'POST' | 'PATCH' | 'DELETE',
   cluster: string,
   resource: { apiVersion: string; kind: string; namespace?: string; name: string },
@@ -97,7 +97,7 @@ export async function resourceReq(
         {
           apiVersion,
           kind,
-          namespace: 'default',
+          namespace,
           name,
         },
         data

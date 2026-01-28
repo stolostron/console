@@ -9,7 +9,7 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { PluginContext } from '../../../lib/PluginContext'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource, IResourceDefinition } from '../../../resources'
-import { fireManagedClusterView } from '../../../resources/managedclusterview'
+import { fleetResourceRequest } from '../../../resources/utils/fleet-resource-request'
 import { getBackendUrl, getRequest, getResource } from '../../../resources/utils/resource-request'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../../ui-components'
@@ -94,13 +94,18 @@ export default function DetailsPage() {
             setResourceError(err.message)
           })
       } else {
-        fireManagedClusterView(cluster, kind, apiversion, name, namespace)
-          .then((viewResponse) => {
-            if (viewResponse?.message) {
-              setResourceError(viewResponse.message)
+        fleetResourceRequest('GET', cluster, {
+          apiVersion: apiversion,
+          kind,
+          name,
+          namespace,
+        })
+          .then((res) => {
+            if ('errorMessage' in res) {
+              setResourceError(res.errorMessage)
             } else {
-              setResource(viewResponse?.result)
-              setResourceVersion(viewResponse?.result?.metadata.resourceVersion ?? '')
+              setResource(res)
+              setResourceVersion(res?.metadata?.resourceVersion ?? '')
             }
           })
           .catch((err) => {

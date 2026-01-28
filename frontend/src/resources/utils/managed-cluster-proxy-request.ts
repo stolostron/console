@@ -6,7 +6,7 @@ import { fetchRetry, getBackendUrl } from './resource-request'
 export async function managedClusterProxyRequest(
   method: 'PUT' | 'GET' | 'POST' | 'PATCH' | 'DELETE',
   cluster: string,
-  resource: { apiVersion: string; kind: string; namespace: string; name: string },
+  resource: { apiVersion: string; kind: string; namespace?: string; name: string },
   data?: any
 ): Promise<IResource | { errorMessage: string }> {
   const { apiVersion, kind, namespace, name } = resource

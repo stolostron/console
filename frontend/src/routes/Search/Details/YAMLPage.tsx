@@ -18,8 +18,9 @@ import YamlEditor from '../../../components/YamlEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PluginContext } from '../../../lib/PluginContext'
 import { canUser } from '../../../lib/rbac-util'
-import { fireManagedClusterAction, fireManagedClusterView, IResource } from '../../../resources'
+import { IResource } from '../../../resources'
 import { getGroupFromApiVersion } from '../../../resources/utils'
+import { fleetResourceRequest } from '../../../resources/utils/fleet-resource-request'
 import {
   getBackendUrl,
   getRequest,
@@ -73,13 +74,18 @@ function loadResource(
         setUpdateError(`Error getting new resource YAML: ${err.message}`)
       })
   } else {
-    fireManagedClusterView(cluster, kind, apiversion, name, namespace)
-      .then((viewResponse: any) => {
-        if (viewResponse?.message) {
-          setUpdateError(`Error getting new resource YAML: ${viewResponse.message}`)
+    fleetResourceRequest('GET', cluster, {
+      apiVersion: apiversion,
+      kind,
+      name,
+      namespace,
+    })
+      .then((res) => {
+        if ('errorMessage' in res) {
+          setUpdateError(`Error getting new resource YAML: ${res.errorMessage}`)
         } else {
-          setResourceYaml(jsYaml.dump(viewResponse?.result, { indent: 2 }))
-          setResourceVersion(viewResponse?.result?.metadata?.resourceVersion ?? '')
+          setResourceYaml(jsYaml.dump(res))
+          setResourceVersion(res?.metadata?.resourceVersion ?? '')
           setStale(false)
         }
       })
@@ -146,9 +152,21 @@ function updateResource(
       setUpdateError(err?.message)
     }
   } else {
-    fireManagedClusterAction('Update', cluster, kind, apiversion, name, namespace, jsYaml.loadAll(resourceYaml)[0])
-      .then((actionResponse) => {
-        if (actionResponse.actionDone === 'ActionDone') {
+    fleetResourceRequest(
+      'PUT',
+      cluster,
+      {
+        apiVersion: apiversion,
+        kind,
+        name,
+        namespace,
+      },
+      jsYaml.loadAll(resourceYaml)[0]
+    )
+      .then((res) => {
+        if ('errorMessage' in res) {
+          setUpdateError(res.errorMessage)
+        } else {
           loadResource(
             cluster,
             kind,
@@ -163,8 +181,6 @@ function updateResource(
             isFineGrainedRbacEnabled
           )
           setUpdateSuccess(true)
-        } else {
-          setUpdateError(actionResponse.message)
         }
       })
       .catch((err) => {

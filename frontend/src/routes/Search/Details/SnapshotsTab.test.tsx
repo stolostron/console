@@ -4,12 +4,12 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { GraphQLError } from 'graphql'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
+import { v4 as uuidv4 } from 'uuid'
 import { isFineGrainedRbacEnabledState, Settings, settingsState } from '../../../atoms'
-import { nockGet, nockIgnoreApiPaths, nockRequest } from '../../../lib/nock-util'
+import { nockCreate, nockGet, nockIgnoreApiPaths, nockRequest } from '../../../lib/nock-util'
 import { wait, waitForNocks } from '../../../lib/test-util'
 import { SearchResultItemsDocument } from '../search-sdk/search-sdk'
 import SnapshotsTab from './SnapshotsTab'
-import { v4 as uuidv4 } from 'uuid'
 
 // Mock UUID v4 to return predictable values during testing
 jest.mock('uuid', () => ({
@@ -21,6 +21,36 @@ const MOCKED_UUID = 'MOCKED_UUID'
 
 const mockSettings: Settings = {
   SEARCH_RESULT_LIMIT: '1000',
+}
+
+const getCanUserCreateMCVReq = {
+  apiVersion: 'authorization.k8s.io/v1',
+  kind: 'SelfSubjectAccessReview',
+  metadata: {},
+  spec: {
+    resourceAttributes: {
+      resource: 'managedclusterviews',
+      verb: 'create',
+      group: 'view.open-cluster-management.io',
+    },
+  },
+}
+
+const getCanUserCreateMCVRes = {
+  kind: 'SelfSubjectAccessReview',
+  apiVersion: 'authorization.k8s.io/v1',
+  spec: {
+    resourceAttributes: {
+      verb: 'create',
+      group: 'view.open-cluster-management.io',
+      resource: 'managedclusterviews',
+    },
+  },
+  status: {
+    allowed: true,
+    reason:
+      'RBAC: allowed by ClusterRoleBinding "cluster-admins" of ClusterRole "cluster-admin" to Group "system:cluster-admins"',
+  },
 }
 
 const getMCVRequest = {
@@ -105,7 +135,35 @@ describe('SnapshotsTab', () => {
     })
   })
   it('should render tab in loading state', async () => {
-    const getVMManagedClusterViewNock = nockGet(getMCVRequest, getMCVResponse)
+    // create the nocks but do not wait for them below to trigger the loading state.
+    nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
+    nockGet(getMCVRequest, getMCVResponse)
+    const mocks = [
+      {
+        request: {
+          query: SearchResultItemsDocument,
+          variables: {
+            input: [
+              {
+                keywords: [],
+                filters: [
+                  {
+                    property: 'kind',
+                    values: ['VirtualMachineSnapshot'],
+                  },
+                  { property: 'sourceName', values: ['centos-stream9'] },
+                ],
+                limit: 1000,
+              },
+            ],
+          },
+        },
+        result: {
+          data: {},
+          loading: true,
+        },
+      },
+    ]
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -113,21 +171,18 @@ describe('SnapshotsTab', () => {
         }}
       >
         <MemoryRouter>
-          <MockedProvider mocks={[]}>
+          <MockedProvider mocks={mocks}>
             <SnapshotsTab />
           </MockedProvider>
         </MemoryRouter>
       </RecoilRoot>
     )
-    // Wait for managed cluster view requests to finish
-    await waitForNocks([getVMManagedClusterViewNock])
-    await wait()
-
-    // Test the loading state while apollo query finishes
+    // Test the loading state while  queries finish
     expect(screen.getByText('Loading')).toBeInTheDocument()
   })
 
   it('should render tab with errors', async () => {
+    const getCanCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
     const getVMManagedClusterViewNock = nockGet(getMCVRequest, getMCVResponse)
     const mocks = [
       {
@@ -169,7 +224,7 @@ describe('SnapshotsTab', () => {
       </RecoilRoot>
     )
     // Wait for managed cluster view requests to finish
-    await waitForNocks([getVMManagedClusterViewNock])
+    await waitForNocks([getCanCreateMCVNock, getVMManagedClusterViewNock])
     await wait()
     // Test that the component has rendered errors correctly
     await waitFor(() => expect(screen.queryByText('An unexpected error occurred.')).toBeTruthy())
@@ -177,6 +232,7 @@ describe('SnapshotsTab', () => {
   })
 
   it('should render tab with correct snapshot data from search', async () => {
+    const getCanCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
     const getVMManagedClusterViewNock = nockGet(getMCVRequest, getMCVResponse)
     const mocks = [
       {
@@ -256,7 +312,7 @@ describe('SnapshotsTab', () => {
       </RecoilRoot>
     )
     // Wait for managed cluster view requests to finish
-    await waitForNocks([getVMManagedClusterViewNock])
+    await waitForNocks([getCanCreateMCVNock, getVMManagedClusterViewNock])
     await wait()
     // Test that the component has rendered correctly with data
     await waitFor(() => expect(screen.queryByText('centos-stream9-snapshot-20250327135448211')).toBeTruthy())
