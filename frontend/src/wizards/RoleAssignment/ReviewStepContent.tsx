@@ -88,16 +88,7 @@ export const ReviewStepContent = ({
                       return (
                         <div>
                           <div style={{ marginTop: '8px' }}>
-                            <div>
-                              <strong>{t('Access level')}</strong>{' '}
-                            </div>
-                            <div>{t('All current and future clusters')}</div>
-                          </div>
-                          <div style={{ marginTop: '8px' }}>
-                            <div>
-                              <strong>{t('Projects')}</strong>{' '}
-                            </div>
-                            <div>{t('Full access')}</div>
+                            Global / Applies to all resources registered in ACM 
                           </div>
                         </div>
                       )

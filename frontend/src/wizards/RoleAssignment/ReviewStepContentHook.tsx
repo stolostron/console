@@ -73,6 +73,11 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: UseReviewS
   const namespacesDisplay = useMemo(() => {
     const hasOriginalNamespaces = oldData.namespaces && oldData.namespaces.length > 0
     const hasCurrentNamespaces = newData.namespaces && newData.namespaces.length > 0
+
+    if (!hasOriginalNamespaces && !hasCurrentNamespaces) {
+      return t('Full access')
+    }
+
     const namespacesChanged =
       hasOriginalNamespaces !== hasCurrentNamespaces ||
       (hasOriginalNamespaces &&
