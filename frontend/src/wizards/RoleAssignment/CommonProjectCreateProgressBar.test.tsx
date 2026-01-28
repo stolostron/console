@@ -97,4 +97,18 @@ describe('CommonProjectCreateProgressBar', () => {
     expect(Number(value)).toBeGreaterThanOrEqual(33)
     expect(Number(value)).toBeLessThanOrEqual(34)
   })
+
+  it.each([
+    ['uses default successCount when undefined is passed', undefined, 0, 0],
+    ['uses default errorCount when undefined is passed', 2, undefined, 40],
+    ['handles both successCount and errorCount as undefined', undefined, undefined, 0],
+  ])('HelperTextComponent %s', (_testName, successCount, errorCount, expectedProgress) => {
+    render(<CommonProjectCreateProgressBar successCount={successCount} errorCount={errorCount} totalCount={5} />)
+
+    // When errorCount defaults to 0, helper text should not be displayed
+    expect(screen.queryByText(/Failed to create common projects/)).not.toBeInTheDocument()
+    // Progress should be calculated with default values from CommonProjectCreateProgressBar
+    const progress = screen.getByRole('progressbar')
+    expect(progress).toHaveAttribute('aria-valuenow', String(expectedProgress))
+  })
 })
