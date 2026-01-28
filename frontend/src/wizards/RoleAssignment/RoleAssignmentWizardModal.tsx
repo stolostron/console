@@ -275,7 +275,12 @@ export const RoleAssignmentWizardModal = ({
     })()
 
     return (
-      roleChanged || clustersChanged || clusterSetsChanged || namespacesChanged || identityKindChanged || identityValueChanged
+      roleChanged ||
+      clustersChanged ||
+      clusterSetsChanged ||
+      namespacesChanged ||
+      identityKindChanged ||
+      identityValueChanged
     )
   }, [isEditing, preselected, formData])
 
