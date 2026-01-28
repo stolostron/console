@@ -145,12 +145,6 @@ async function getRelatedResources(reports: ResourceReport[]): Promise<RelatedRe
             break
           case 'Ingress':
             // For ingresses, fetch the actual Ingress resource
-            fleetResourceRequest('GET', cluster, {
-              apiVersion: 'networking.k8s.io/v1',
-              kind: 'ingress',
-              name,
-              namespace,
-            })
             promises.push(
               fleetResourceRequest('GET', cluster, {
                 apiVersion: 'networking.k8s.io/v1',
