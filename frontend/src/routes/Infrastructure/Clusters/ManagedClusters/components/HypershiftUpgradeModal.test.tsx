@@ -1834,6 +1834,186 @@ describe('HypershiftUpgradeModal', () => {
     expect(getByText('nodepool-feng-test-1')).toBeTruthy()
     expect(getByText('fog26.cluster.internal')).toBeTruthy()
   })
+
+  describe('version-specific upgrade risks', () => {
+    const mockClusterWithRisk: Cluster = {
+      name: 'hypershift-cluster-risk',
+      displayName: 'hypershift-cluster-risk',
+      namespace: 'clusters',
+      uid: 'hypershift-cluster-risk-uid',
+      provider: undefined,
+      status: ClusterStatus.ready,
+      distribution: {
+        ocp: {
+          version: '4.13.10',
+          availableUpdates: [],
+          desiredVersion: '4.13.10',
+          upgradeFailed: false,
+        },
+        isManagedOpenShift: false,
+        upgradeInfo: {
+          upgradeFailed: false,
+          isUpgrading: false,
+          isReadyUpdates: true,
+          isReadySelectChannels: false,
+          availableUpdates: ['4.13.50', '4.14.2', '4.15.0'],
+          currentVersion: '4.13.10',
+          desiredVersion: '4.13.10',
+          latestJob: {},
+          upgradeableCondition: {
+            type: 'Upgradeable',
+            status: 'False',
+            reason: 'AdminAckRequired',
+            message:
+              'Kubernetes 1.25 and therefore OpenShift 4.12 remove several APIs which require admin consideration.',
+            lastTransitionTime: new Date('2024-01-01T00:00:00Z'),
+          },
+        },
+      },
+      labels: { abc: '123' },
+      nodes: undefined,
+      kubeApiServer: '',
+      consoleURL: '',
+      hasAutomationTemplate: false,
+      hive: {
+        isHibernatable: true,
+        clusterPool: undefined,
+        secrets: {
+          installConfig: '',
+        },
+      },
+      hypershift: {
+        agent: false,
+        hostingNamespace: 'clusters',
+        nodePools: mockNodepools,
+        secretNames: ['test-ssh-key', 'test-pull-secret'],
+      },
+      isHive: false,
+      isManaged: true,
+      isCurator: true,
+      isHostedCluster: true,
+      isHypershift: true,
+      isSNOCluster: false,
+      owner: {},
+      kubeadmin: '',
+      kubeconfig: '',
+      isRegionalHubCluster: false,
+    }
+
+    const availableUpdatesWithRisk: Record<string, string> = {
+      '4.13.50': 'quay.io/openshift-release-dev/ocp-release:4.13.50-x86_64',
+      '4.14.2': 'quay.io/openshift-release-dev/ocp-release:4.14.2-x86_64',
+      '4.15.0': 'quay.io/openshift-release-dev/ocp-release:4.15.0-x86_64',
+    }
+
+    it('should show warning banner for minor/major upgrade with Upgradeable=False', async () => {
+      const { getByText } = await renderHypershiftUpgradeModal(
+        mockClusterWithRisk,
+        mockClusterWithRisk.hypershift?.nodePools as NodePool[],
+        availableUpdatesWithRisk,
+        undefined,
+        undefined,
+        undefined,
+        true,
+        true
+      )
+
+      // Banner should appear because default selected version (4.15.0) is a minor upgrade
+      expect(getByText('Cluster version upgrade risks detected')).toBeTruthy()
+      expect(
+        getByText(
+          'Clusters with warnings have version-specific risks that may cause upgrade failure. Resolve these risks or choose a different target version.'
+        )
+      ).toBeTruthy()
+    })
+
+    it('should NOT show warning banner for patch upgrade with Upgradeable=False', async () => {
+      const { queryAllByText, queryByText } = await renderHypershiftUpgradeModal(
+        mockClusterWithRisk,
+        mockClusterWithRisk.hypershift?.nodePools as NodePool[],
+        availableUpdatesWithRisk,
+        undefined,
+        undefined,
+        undefined,
+        true,
+        true
+      )
+
+      // Change to patch version (4.13.50)
+      const versionDropdown = queryAllByText('4.15.0')[0]
+      userEvent.click(versionDropdown)
+      const patchVersion = queryAllByText('4.13.50')[0]
+      userEvent.click(patchVersion)
+
+      // Banner should NOT appear for patch upgrade
+      expect(queryByText('Cluster version upgrade risks detected')).toBeFalsy()
+    })
+
+    it('should show version in helper text warning', async () => {
+      const { getByText } = await renderHypershiftUpgradeModal(
+        mockClusterWithRisk,
+        mockClusterWithRisk.hypershift?.nodePools as NodePool[],
+        availableUpdatesWithRisk,
+        undefined,
+        undefined,
+        undefined,
+        true,
+        true
+      )
+
+      // Should show version 4.15.0 in helper text
+      expect(getByText('Cluster version upgrade risk detected for 4.15.0', { exact: false })).toBeTruthy()
+    })
+
+    it('should update helper text version when different version selected', async () => {
+      const { queryAllByText, getByText, queryByText } = await renderHypershiftUpgradeModal(
+        mockClusterWithRisk,
+        mockClusterWithRisk.hypershift?.nodePools as NodePool[],
+        availableUpdatesWithRisk,
+        undefined,
+        undefined,
+        undefined,
+        true,
+        true
+      )
+
+      // Initially shows 4.15.0
+      expect(getByText('Cluster version upgrade risk detected for 4.15.0', { exact: false })).toBeTruthy()
+
+      // Change to different minor version (4.14.2)
+      const versionDropdown = queryAllByText('4.15.0')[0]
+      userEvent.click(versionDropdown)
+      const newVersion = queryAllByText('4.14.2')[0]
+      userEvent.click(newVersion)
+
+      // Should update to show 4.14.2
+      expect(queryByText('Cluster version upgrade risk detected for 4.15.0', { exact: false })).toBeFalsy()
+      expect(getByText('Cluster version upgrade risk detected for 4.14.2', { exact: false })).toBeTruthy()
+    })
+
+    it('should show View alert details popover', async () => {
+      const { getByText } = await renderHypershiftUpgradeModal(
+        mockClusterWithRisk,
+        mockClusterWithRisk.hypershift?.nodePools as NodePool[],
+        availableUpdatesWithRisk,
+        undefined,
+        undefined,
+        undefined,
+        true,
+        true
+      )
+
+      // Click on "View alert details" link
+      const viewDetailsButton = getByText('View alert details')
+      expect(viewDetailsButton).toBeTruthy()
+      userEvent.click(viewDetailsButton)
+
+      // Should show popover with risk message
+      expect(
+        getByText('Kubernetes 1.25 and therefore OpenShift 4.12 remove several APIs', { exact: false })
+      ).toBeTruthy()
+    })
+  })
 })
 
 describe('HypershiftUpgradeModal - SupportVersion', () => {
