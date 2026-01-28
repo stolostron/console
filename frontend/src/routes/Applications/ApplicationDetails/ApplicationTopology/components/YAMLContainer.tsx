@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { TFunction } from 'react-i18next'
 import { Fragment, useEffect, useState } from 'react'
-import { fireManagedClusterView } from '../../../../../resources/managedclusterview'
+import { TFunction } from 'react-i18next'
 import { SyncEditor } from '../../../../../components/SyncEditor/SyncEditor'
-import { AcmAlert, AcmLoadingPage } from '../../../../../ui-components'
 import { getResource } from '../../../../../resources/utils'
+import { fleetResourceRequest } from '../../../../../resources/utils/fleet-resource-request'
+import { AcmAlert, AcmLoadingPage } from '../../../../../ui-components'
 
 const typesWithoutDefaultName = ['replicaset', 'pod', 'replicationcontroller', 'controllerrevision']
 
@@ -84,13 +84,18 @@ export function YAMLContainer(props: IYAMLContainerProps) {
         isComponentMounted = false
       }
     } else {
-      fireManagedClusterView(cluster, kind, apiVersion, name, namespace)
-        .then((viewResponse) => {
-          if (viewResponse.message) {
-            setResourceError({ message: viewResponse.message, stack: '' })
+      fleetResourceRequest('GET', cluster, {
+        apiVersion,
+        kind,
+        name,
+        namespace,
+      })
+        .then((res: any) => {
+          if ('errorMessage' in res) {
+            setResourceError(res.errorMessage)
           } else {
             if (isComponentMounted) {
-              setResource(viewResponse.result)
+              setResource(res)
               setResourceError({ message: '', stack: '' })
             }
           }

@@ -1,36 +1,36 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 // Lodash imports removed - using native TypeScript equivalents
+import { TFunction } from 'react-i18next'
 import { getResource, listNamespacedResources } from '../../../../../resources/utils'
-import { fireManagedClusterView } from '../../../../../resources'
+import { fleetResourceRequest } from '../../../../../resources/utils/fleet-resource-request'
 import { searchClient } from '../../../../Search/search-sdk/search-client'
 import { SearchRelatedResult, SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
 import { convertStringToQuery } from '../helpers/search-helper'
-import {
-  addClusters,
-  getClusterName,
-  getResourceTypes,
-  processMultiples,
-  createReplicaChild,
-  createControllerRevisionChild,
-  createDataVolumeChild,
-  createVirtualMachineInstance,
-  addTopologyNode,
-} from './topologyUtils'
+import { ToolbarControl } from '../topology/components/TopologyToolbar'
 import {
   ApplicationModel,
   AppSetCluster,
-  TopologyNode,
-  TopologyLink,
-  RouteObject,
+  ExtendedTopology,
   ManagedClusterViewData,
   ProcessedDeployableResource,
-  SearchQuery,
   ResourceItem,
-  ExtendedTopology,
+  RouteObject,
+  SearchQuery,
+  TopologyLink,
+  TopologyNode,
 } from '../types'
-import { TFunction } from 'react-i18next'
-import { ToolbarControl } from '../topology/components/TopologyToolbar'
+import {
+  addClusters,
+  addTopologyNode,
+  createControllerRevisionChild,
+  createDataVolumeChild,
+  createReplicaChild,
+  createVirtualMachineInstance,
+  getClusterName,
+  getResourceTypes,
+  processMultiples,
+} from './topologyUtils'
 
 /**
  * Generates topology data for ApplicationSet applications
@@ -537,15 +537,20 @@ const getArgoRoute = async (
     if (!managedclusterviewdata) return
 
     const { cluster: clusterName, kind, apiVersion, name, namespace } = managedclusterviewdata
-    fireManagedClusterView(clusterName, kind, apiVersion, name, namespace)
-      .then((viewResponse: any) => {
-        if (viewResponse.message) {
+    fleetResourceRequest('GET', clusterName, {
+      apiVersion,
+      kind,
+      name,
+      namespace,
+    })
+      .then((res: any) => {
+        if ('errorMessage' in res) {
           // Handle error case - could add error handling here
         } else {
-          openArgoEditorWindow(viewResponse.result, appName)
+          openArgoEditorWindow(res, appName)
         }
       })
-      .catch((err: any) => {
+      .catch((err) => {
         console.error('Error getting resource: ', err)
       })
   }
@@ -595,16 +600,20 @@ export const openRouteURL = (
       })
   } else {
     // Handle remote cluster using ManagedClusterView
-    fireManagedClusterView(cluster, kind, apiVersion, name, namespace)
-      .then((viewResponse: any) => {
-        toggleLoading()
-        if (viewResponse.message) {
+    fleetResourceRequest('GET', cluster, {
+      apiVersion,
+      kind,
+      name,
+      namespace,
+    })
+      .then((res: any) => {
+        if ('errorMessage' in res) {
           // Handle error case - could add error handling here
         } else {
-          openRouteURLWindow(viewResponse.result)
+          openRouteURLWindow(res)
         }
       })
-      .catch((err: any) => {
+      .catch((err) => {
         toggleLoading()
         console.error('Error getting resource: ', err)
       })

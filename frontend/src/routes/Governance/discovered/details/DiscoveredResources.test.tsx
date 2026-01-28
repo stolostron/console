@@ -2,14 +2,14 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { generatePath, MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
+import { RecoilRoot } from 'recoil'
+import { v4 as uuidv4 } from 'uuid'
+import { channelsState, helmReleaseState, subscriptionsState } from '../../../../atoms'
+import { nockCreate, nockGet, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
+import { waitForNocks, waitForText } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { DiscoveredDetailsContext } from './DiscoveredPolicyDetailsPage'
-import { waitForNocks, waitForText } from '../../../../lib/test-util'
-import { RecoilRoot } from 'recoil'
-import { channelsState, helmReleaseState, subscriptionsState } from '../../../../atoms'
-import { nockGet, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { DiscoveredResources } from './DiscoveredResources'
-import { v4 as uuidv4 } from 'uuid'
 
 // Mock UUID v4 to return predictable values during testing
 jest.mock('uuid', () => ({
@@ -19,6 +19,36 @@ jest.mock('uuid', () => ({
 const mockUuidV4 = jest.mocked(uuidv4)
 const MOCKED_UUID_1 = 'MOCKED_UUID_1'
 const MOCKED_UUID_2 = 'MOCKED_UUID_2'
+
+const getCanUserCreateMCVReq = {
+  apiVersion: 'authorization.k8s.io/v1',
+  kind: 'SelfSubjectAccessReview',
+  metadata: {},
+  spec: {
+    resourceAttributes: {
+      resource: 'managedclusterviews',
+      verb: 'create',
+      group: 'view.open-cluster-management.io',
+    },
+  },
+}
+
+const getCanUserCreateMCVRes = {
+  kind: 'SelfSubjectAccessReview',
+  apiVersion: 'authorization.k8s.io/v1',
+  spec: {
+    resourceAttributes: {
+      verb: 'create',
+      group: 'view.open-cluster-management.io',
+      resource: 'managedclusterviews',
+    },
+  },
+  status: {
+    allowed: true,
+    reason:
+      'RBAC: allowed by ClusterRoleBinding "cluster-admins" of ClusterRole "cluster-admin" to Group "system:cluster-admins"',
+  },
+}
 
 describe('DiscoveredResources', () => {
   beforeEach(() => {
@@ -370,6 +400,7 @@ describe('DiscoveredResources', () => {
     }
 
     nockIgnoreApiPaths()
+    const canUserCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
     const getResourceNock = nockGet(getResourceRequest, getResourceResponse)
     const { container } = render(
       <RecoilRoot
@@ -397,7 +428,7 @@ describe('DiscoveredResources', () => {
         </MemoryRouter>
       </RecoilRoot>
     )
-    await waitForNocks([getResourceNock])
+    await waitForNocks([canUserCreateMCVNock, getResourceNock])
 
     await waitForText('Related resources')
     await waitForText('Resource found as expected')
@@ -555,6 +586,7 @@ describe('DiscoveredResources', () => {
     }
 
     nockIgnoreApiPaths()
+    const canUserCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
     const getResourceNock = nockGet(getResourceRequest, getResourceResponse)
     const { container } = render(
       <RecoilRoot
@@ -582,7 +614,7 @@ describe('DiscoveredResources', () => {
         </MemoryRouter>
       </RecoilRoot>
     )
-    await waitForNocks([getResourceNock])
+    await waitForNocks([canUserCreateMCVNock, getResourceNock])
     await waitForText('Related resources')
 
     const row1 = container.querySelector('table > tbody:nth-child(2) > tr')
@@ -845,6 +877,8 @@ describe('DiscoveredResources', () => {
     }
 
     nockIgnoreApiPaths()
+    nockIgnoreRBAC()
+    // const canUserCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
     const getResourceNock1 = nockGet(getResourceRequest1, getResourceResponse1)
     const getResourceNock2 = nockGet(getResourceRequest2, getResourceResponse2)
     const { container } = render(
@@ -971,6 +1005,7 @@ test('Should render DiscoveredResources for Gatekeeper with tooltip when showing
   }
 
   nockIgnoreApiPaths()
+  nockIgnoreRBAC()
   const { container } = render(
     <RecoilRoot
       initializeState={(snapshot) => {
@@ -1102,6 +1137,7 @@ test('Should NOT render tooltip when showing all Gatekeeper results', async () =
   }
 
   nockIgnoreApiPaths()
+  nockIgnoreRBAC()
   render(
     <RecoilRoot
       initializeState={(s) => {

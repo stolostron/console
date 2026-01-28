@@ -1,9 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useEffect, useRef, useState } from 'react'
-import { fireManagedClusterView } from '../../../resources'
-import { ResultsTableData } from '../policies/policy-details/PolicyDetailsResults'
-import { useTranslation } from '../../../lib/acm-i18next'
+import { Grid } from '@mui/material'
 import {
   Alert,
   Button,
@@ -16,9 +13,12 @@ import {
   Skeleton,
   Title,
 } from '@patternfly/react-core'
-import { Grid } from '@mui/material'
-import { TemplateDetailTitle } from './TemplateDetailTitle'
+import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from '../../../lib/acm-i18next'
+import { fleetResourceRequest } from '../../../resources/utils/fleet-resource-request'
+import { ResultsTableData } from '../policies/policy-details/PolicyDetailsResults'
 import { CodeBlock } from './CodeBlock'
+import { TemplateDetailTitle } from './TemplateDetailTitle'
 
 export function ViewDiffApiCall({ item }: Readonly<{ item: ResultsTableData }>) {
   const { templateName, apiVersion, kind, cluster } = item
@@ -39,32 +39,29 @@ export function ViewDiffApiCall({ item }: Readonly<{ item: ResultsTableData }>) 
       setIsFetching(true)
       setTemplateErr(undefined)
 
-      fireManagedClusterView(cluster, kind, apiVersion, templateName, cluster)
-        .then((viewResponse) => {
+      fleetResourceRequest('GET', cluster, {
+        apiVersion,
+        kind,
+        name: templateName,
+      })
+        .then((res: any) => {
           if (ignore) {
             return
           }
-
-          if (viewResponse?.message) {
-            setTemplateErr(viewResponse.message)
+          if ('errorMessage' in res) {
+            setTemplateErr(res.errorMessage)
           } else {
-            setRelatedObjs(viewResponse.result.status?.relatedObjects)
+            setRelatedObjs(res.status?.relatedObjects)
           }
           hasInitialFetch.current = true
+          setIsFetching(false)
         })
         .catch((err) => {
           if (ignore) {
             return
           }
-
           console.error('Error getting resource: ', err)
           setTemplateErr(err)
-        })
-        .finally(() => {
-          if (ignore) {
-            return
-          }
-
           setIsFetching(false)
         })
     }

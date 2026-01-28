@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
-import { waitForNocks, waitForText } from '../../../lib/test-util'
-import { ViewDiffApiCall } from './ViewDiffApiCall'
-import { nockGet, nockIgnoreApiPaths } from '../../../lib/nock-util'
-import { ResultsTableData } from '../policies/policy-details/PolicyDetailsResults'
 import userEvent from '@testing-library/user-event'
 import { v4 as uuidv4 } from 'uuid'
+import { nockGet, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
+import { waitForNocks, waitForText } from '../../../lib/test-util'
+import { ResultsTableData } from '../policies/policy-details/PolicyDetailsResults'
+import { ViewDiffApiCall } from './ViewDiffApiCall'
 
 // Mock UUID v4 to return predictable values during testing
 jest.mock('uuid', () => ({
@@ -185,6 +185,7 @@ describe('ViewDiffApiCall components test', () => {
     mockUuidV4.mockReset()
     mockUuidV4.mockReturnValue(MOCKED_UUID)
     nockIgnoreApiPaths()
+    nockIgnoreRBAC()
   })
   test('Should render ViewDiffApCall correctly', async () => {
     const getResourceNockMount = nockGet(getResourceRequest, getResourceResponse)
