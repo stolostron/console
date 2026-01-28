@@ -18,12 +18,19 @@ interface ReviewStepContentProps {
   preselected?: RoleAssignmentWizardModalProps['preselected']
   isEditing?: boolean
   hasChanges?: boolean
+  hasNoClusterSets?: boolean
 }
 
-export const ReviewStepContent = ({ formData, preselected, isEditing, hasChanges }: ReviewStepContentProps) => {
+export const ReviewStepContent = ({
+  formData,
+  preselected,
+  isEditing,
+  hasChanges,
+  hasNoClusterSets,
+}: ReviewStepContentProps) => {
   const { t } = useTranslation()
 
-  const { clusterNames, clustersDisplay, namespacesDisplay, roleDisplay, identityDisplay } = useReviewStepContent({
+  const { clustersDisplay, namespacesDisplay, roleDisplay, identityDisplay } = useReviewStepContent({
     oldData: {
       clusterNames: preselected?.clusterNames,
       namespaces: preselected?.namespaces,
@@ -102,19 +109,19 @@ export const ReviewStepContent = ({ formData, preselected, isEditing, hasChanges
                               <strong>{t('Cluster sets')}</strong>{' '}
                             </div>
                             <div>
-                              {formData.selectedClusterSets && formData.selectedClusterSets.length > 0
+                              {!hasNoClusterSets
                                 ? formData.selectedClusterSets
-                                    .map((cs) => (cs as ManagedClusterSet).metadata?.name || (cs as string))
+                                    ?.map((cs) => (cs as ManagedClusterSet).metadata?.name || (cs as string))
                                     .join(', ')
                                 : t('None selected')}
                             </div>
                           </div>
                           <div style={{ marginTop: '8px' }}>
                             <div>
-                              <strong>{clusterNames ? t('Clusters') : t('Access level')}</strong>{' '}
+                              <strong>{t('Clusters')}</strong>{' '}
                             </div>
                             <div>
-                              {clusterNames
+                              {hasNoClusterSets
                                 ? clustersDisplay
                                 : t('Full access to all clusters in selected cluster sets')}
                             </div>

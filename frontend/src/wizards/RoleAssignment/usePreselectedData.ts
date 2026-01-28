@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react'
 import { GlobalPlacementName, GroupKind, UserKind } from '../../resources'
 import { useRoleAssignmentData } from '../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
 import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
+import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { RoleAssignmentWizardFormData } from './types'
 
 interface UsePreselectedDataProps {
@@ -30,6 +31,8 @@ export const usePreselectedData = ({
   setSelectedClusters,
 }: UsePreselectedDataProps) => {
   const { roleAssignmentData } = useRoleAssignmentData()
+  const { managedClusterSetsState } = useSharedAtoms()
+  const managedClusterSets = useRecoilValue(managedClusterSetsState)
   const hasAppliedPreselection = useRef(false)
 
   useEffect(() => {
@@ -65,16 +68,21 @@ export const usePreselectedData = ({
             kind: 'all',
           }
         } else if (hasClusterSetNames) {
-          const clusterSetNames = roleAssignmentData.clusterSets
-            .map((e) => e.name)
-            .filter((clusterSetName) => preselected?.clusterSetNames?.includes(clusterSetName))
+          const clusterSetObjects = managedClusterSets.filter(
+            (cs) => cs.metadata?.name && preselected?.clusterSetNames?.includes(cs.metadata.name)
+          )
 
           updates.scopeType = 'Select cluster sets'
           updates.scope = {
-            kind: 'all',
+            kind: preselected?.namespaces && preselected.namespaces.length > 0 ? 'specific' : 'all',
+            namespaces: preselected?.namespaces,
           }
-          updates.selectedClusterSets = clusterSetNames
-          setSelectedClusterSets(clusterSetNames)
+          updates.selectedClusterSets = clusterSetObjects
+          setSelectedClusterSets(clusterSetObjects)
+
+          if (preselected?.namespaces && preselected.namespaces.length > 0) {
+            updates.clustersetsAccessLevel = 'Project role assignment'
+          }
         } else if (hasClusters) {
           const clusterObjects = allClusters.filter((cluster) => preselected?.clusterNames?.includes(cluster.name))
 

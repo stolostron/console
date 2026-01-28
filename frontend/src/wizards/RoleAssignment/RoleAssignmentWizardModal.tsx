@@ -252,6 +252,11 @@ export const RoleAssignmentWizardModal = ({
     const clustersChanged =
       JSON.stringify(preselected?.clusterNames?.toSorted()) !==
       JSON.stringify(formData.selectedClusters?.map((c) => c.metadata?.name || c.name || c).toSorted())
+    const clusterSetsChanged =
+      JSON.stringify(preselected?.clusterSetNames?.toSorted()) !==
+      JSON.stringify(
+        formData.selectedClusterSets?.map((cs) => (typeof cs === 'string' ? cs : cs.metadata?.name)).toSorted()
+      )
     const namespacesChanged =
       JSON.stringify(preselected?.namespaces?.toSorted()) !== JSON.stringify(formData.scope.namespaces?.toSorted())
 
@@ -269,7 +274,9 @@ export const RoleAssignmentWizardModal = ({
       }
     })()
 
-    return roleChanged || clustersChanged || namespacesChanged || identityKindChanged || identityValueChanged
+    return (
+      roleChanged || clustersChanged || clusterSetsChanged || namespacesChanged || identityKindChanged || identityValueChanged
+    )
   }, [isEditing, preselected, formData])
 
   const scopeSubSteps = [
