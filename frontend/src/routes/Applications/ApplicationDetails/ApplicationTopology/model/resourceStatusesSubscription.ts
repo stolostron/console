@@ -1,18 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { fireManagedClusterView } from '../../../../../resources/managedclusterview'
+import { fleetResourceRequest } from '../../../../../resources/utils/fleet-resource-request'
 import { searchClient } from '../../../../Search/search-sdk/search-client'
 import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
 import { convertStringToQuery } from '../helpers/search-helper'
 import {
   ApplicationModel,
-  ResourceReport,
   RelatedResourcesMap,
   RelatedResourcesSearchQuery,
   RelatedResourcesSearchResponse,
+  ResourceReport,
+  SearchQuery,
   SubscriptionApplicationData,
   SubscriptionResourceStatusResult,
-  SearchQuery,
 } from '../types'
 
 /**
@@ -134,15 +134,42 @@ async function getRelatedResources(reports: ResourceReport[]): Promise<RelatedRe
             break
           case 'Route':
             // For routes, fetch the actual Route resource (OpenShift specific)
-            promises.push(fireManagedClusterView(cluster, 'route', 'route.openshift.io/v1', name, namespace))
+            promises.push(
+              fleetResourceRequest('GET', cluster, {
+                apiVersion: 'route.openshift.io/v1',
+                kind: 'route',
+                name,
+                namespace,
+              })
+            )
             break
           case 'Ingress':
             // For ingresses, fetch the actual Ingress resource
-            promises.push(fireManagedClusterView(cluster, 'ingress', 'networking.k8s.io/v1', name, namespace))
+            fleetResourceRequest('GET', cluster, {
+              apiVersion: 'networking.k8s.io/v1',
+              kind: 'ingress',
+              name,
+              namespace,
+            })
+            promises.push(
+              fleetResourceRequest('GET', cluster, {
+                apiVersion: 'networking.k8s.io/v1',
+                kind: 'ingress',
+                name,
+                namespace,
+              })
+            )
             break
           case 'StatefulSet':
             // For stateful sets, fetch the actual StatefulSet resource
-            promises.push(fireManagedClusterView(cluster, 'statefulset', 'apps/v1', name, namespace))
+            promises.push(
+              fleetResourceRequest('GET', cluster, {
+                apiVersion: 'apps/v1',
+                kind: 'statefulset',
+                name,
+                namespace,
+              })
+            )
             break
         }
       })
