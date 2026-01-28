@@ -202,7 +202,7 @@ describe('usePreselectedData', () => {
           namespaces: ['namespace-1', 'namespace-2'],
         },
         selectedClusters: [{ name: 'cluster-1', namespaces: ['ns1', 'ns2'] }],
-        selectedClustersAccessLevel: 'Project role assignment',
+        clustersAccessLevel: 'Project role assignment',
       })
     )
   })
@@ -298,7 +298,7 @@ describe('usePreselectedData', () => {
           namespaces: ['namespace-1'],
         },
         selectedClusters: [{ name: 'cluster-1', namespaces: ['ns1', 'ns2'] }],
-        selectedClustersAccessLevel: 'Project role assignment',
+        clustersAccessLevel: 'Project role assignment',
       })
     )
   })
@@ -716,7 +716,7 @@ describe('usePreselectedData', () => {
             namespaces: ['namespace-1'],
           },
           selectedClusters: [{ name: 'cluster-1', namespaces: ['ns1', 'ns2'] }],
-          selectedClustersAccessLevel: 'Project role assignment',
+          clustersAccessLevel: 'Project role assignment',
         })
       )
     })

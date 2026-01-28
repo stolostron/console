@@ -9,7 +9,7 @@ import { ExampleScopeBase } from './ExampleScopeBase'
 export const ExampleScopes = () => {
   const { t } = useTranslation()
   const [currentStep, setCurrentStep] = useState(0)
-  const totalSteps = 9
+  const totalSteps = 11
 
   const handlePrevious = () => setCurrentStep((prev) => Math.max(0, prev - 1))
   const handleNext = () => setCurrentStep((prev) => Math.min(totalSteps - 1, prev + 1))
