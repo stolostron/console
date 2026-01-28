@@ -2,6 +2,7 @@
 
 import {
   EditMode,
+  ItemContext,
   Section,
   Step,
   Sync,
@@ -20,7 +21,7 @@ import { Button, Content, ContentVariants, Flex, FlexItem, ToggleGroup, ToggleGr
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { get, set } from 'lodash'
-import { Fragment, ReactNode, useMemo, useState } from 'react'
+import { Fragment, ReactNode, useContext, useMemo, useState } from 'react'
 import { CreateCredentialModal } from '../../components/CreateCredentialModal'
 import { GitOpsOperatorAlert } from '../../components/GitOpsOperatorAlert'
 import { useTranslation } from '../../lib/acm-i18next'
@@ -41,6 +42,9 @@ import { ClusterSetMonitor } from './ClusterSetMonitor'
 import { CreateArgoResources } from './CreateArgoResources'
 import { MultipleSourcesSelector } from './MultipleSourcesSelector'
 import { SourceSelector } from './SourceSelector'
+import { MultipleGeneratorSelector } from './MultipleGeneratorSelector'
+import { safeGet } from '../../routes/Applications/ApplicationDetails/ApplicationTopology/utils'
+import { findObjectWithKey } from '../../routes/Applications/ApplicationDetails/ApplicationTopology/model/application'
 
 export interface Channel {
   metadata?: {
@@ -144,7 +148,6 @@ export function ArgoWizard(props: ArgoWizardProps) {
   const source = applicationSet?.spec.template.spec.source
   const sources = applicationSet?.spec.template.spec.sources
 
-  const requeueTimes = useMemo(() => [30, 60, 120, 180, 300], [])
   const { t } = useTranslation()
 
   const hubCluster = useMemo(
@@ -418,12 +421,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
             placements={props.placements}
             onFilteredClusterSetsChange={setFilteredClusterSets}
           />
-          <Sync
-            kind={PlacementKind}
-            path="metadata.name"
-            targetKind="ApplicationSet"
-            targetPath="spec.generators.0.clusterDecisionResource.labelSelector.matchLabels.cluster\.open-cluster-management\.io/placement"
-          />
+          <SyncPlacementNameToApplicationSet />
           {editMode === EditMode.Create && (
             <Fragment>
               <Sync kind="ApplicationSet" path="metadata.name" suffix="-placement" />
@@ -502,20 +500,30 @@ export function ArgoWizard(props: ArgoWizardProps) {
                   }
                 }}
               />
-              <WizSelect
-                path="spec.generators.0.clusterDecisionResource.requeueAfterSeconds"
-                label={t('Requeue time')}
-                options={requeueTimes}
-                labelHelp={t('cluster.decision.resource.requeue.time.description')}
-                required
-                disabled={disableForm}
+            </Section>
+          </WizItemSelector>
+        </Step>
+        <Step id="generators" label={t('Generators')}>
+          <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
+            <Section
+              label={t('Generators')}
+              description={t(
+                'Generators determine where applications are deployed by substituting parameter values in a template from which applications are created. Up to two complementary generators may be defined. One might be used to define the clusters and the other the application names.'
+              )}
+            >
+              <MultipleGeneratorSelector
+                resources={props.resources ?? []}
+                gitChannels={gitChannels}
+                channels={props.channels}
+                helmChannels={helmChannels}
+                disableForm={disableForm}
               />
             </Section>
           </WizItemSelector>
         </Step>
-        <Step id="template" label={t('Template')}>
+        <Step id="repository" label={t('Repository')}>
           <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
-            <Section label={t('Repository')}>
+            <Section label={t('Repository')} description={t('Repository of the applications to be created.')}>
               {source && !sources ? (
                 <SourceSelector gitChannels={gitChannels} channels={props.channels} helmChannels={helmChannels} />
               ) : (
@@ -917,14 +925,59 @@ function ArgoWizardPlacementSection(props: {
         </WizItemSelector>
       ) : (
         <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
-          <WizSelect
-            path="spec.generators.0.clusterDecisionResource.labelSelector.matchLabels.cluster\.open-cluster-management\.io/placement"
-            label={t('Existing placement')}
-            placeholder={t('Select the existing placement')}
-            options={placements.map((placement) => placement.metadata?.name ?? '')}
-          />
+          <ExistingPlacementSelect placements={placements} />
         </WizItemSelector>
       )}
     </Section>
+  )
+}
+
+function findGeneratorPathWithCDR(item: unknown): string | undefined {
+  // Generators can be at 'spec.generators' or 'spec.generators.0.matrix.generators' (matrix case)
+  // When called from SyncPlacementNameToApplicationSet, item is an array; otherwise it's not
+  const targetItem = Array.isArray(item) ? item[0] : item
+  const generatorsPath = get(targetItem, 'spec.generators.0.matrix')
+    ? 'spec.generators.0.matrix.generators'
+    : 'spec.generators'
+
+  const generators = safeGet(targetItem, generatorsPath, []) as unknown[]
+  if (!Array.isArray(generators)) return undefined
+
+  for (let i = 0; i < generators.length; i++) {
+    const generator = generators[i]
+    if (findObjectWithKey(generator, 'clusterDecisionResource')) {
+      return `${generatorsPath}.${i}.clusterDecisionResource.labelSelector.matchLabels.cluster\\.open-cluster-management\\.io/placement`
+    }
+  }
+  return undefined
+}
+
+function SyncPlacementNameToApplicationSet() {
+  const item = useContext(ItemContext)
+  const targetPath = findGeneratorPathWithCDR(item)
+
+  if (!targetPath) {
+    return null
+  }
+
+  return <Sync kind={PlacementKind} path="metadata.name" targetKind="ApplicationSet" targetPath={targetPath} />
+}
+
+function ExistingPlacementSelect(props: { placements: IPlacement[] }) {
+  const { t } = useTranslation()
+  const item = useContext(ItemContext)
+  const path = findGeneratorPathWithCDR(item)
+
+  if (!path) {
+    return null
+  }
+
+  return (
+    <WizSelect
+      path={path}
+      label={t('Existing placement')}
+      placeholder={t('Select the existing placement')}
+      options={props.placements.map((placement) => placement.metadata?.name ?? '')}
+    />
   )
 }

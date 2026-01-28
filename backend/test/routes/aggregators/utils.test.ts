@@ -708,7 +708,7 @@ describe('aggregators utils', () => {
 
       computeAppSyncStatus(synced, app)
 
-      expect(synced[0][3]).toBe(1) // danger count
+      expect(synced[0][2]).toBe(1) // warning count
     })
   })
 

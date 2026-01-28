@@ -107,7 +107,6 @@ describe('Topology tests', () => {
       </RecoilRoot>
     )
     await new Promise((resolve) => setTimeout(resolve, 500))
-    screen.logTestingPlaygroundURL()
 
     // Wait for the alert to appear
     await waitFor(() => {

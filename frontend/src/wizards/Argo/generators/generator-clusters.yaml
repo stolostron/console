@@ -1,0 +1,4 @@
+clusters:
+  selector:
+    matchLabels:
+      staging: 'true'
