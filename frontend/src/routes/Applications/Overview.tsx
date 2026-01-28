@@ -16,7 +16,7 @@ import { cellWidth } from '@patternfly/react-table'
 import { get } from 'lodash'
 import { useCallback, useContext, useMemo, useState } from 'react'
 import { TFunction } from 'react-i18next'
-import { generatePath, Link, useNavigate } from 'react-router-dom-v5-compat'
+import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { HighlightSearchText } from '../../components/HighlightSearchText'
 import { Pages, usePageVisitMetricHandler } from '../../hooks/console-metrics'
 import { useTranslation } from '../../lib/acm-i18next'
@@ -54,6 +54,7 @@ import {
   AcmEmptyState,
   AcmInlineStatusGroup,
   AcmTable,
+  AcmVisitedLink,
   compareStrings,
   IAcmRowAction,
   IAcmTableColumn,
@@ -166,7 +167,7 @@ export function getApplicationName(application: IApplicationResource, search: st
   }
   return (
     <span style={{ whiteSpace: 'nowrap' }}>
-      <Link
+      <AcmVisitedLink
         to={{
           pathname: generatePath(NavigationPath.applicationDetails, {
             namespace: application.metadata?.namespace!,
@@ -176,7 +177,7 @@ export function getApplicationName(application: IApplicationResource, search: st
         }}
       >
         <HighlightSearchText text={application.metadata?.name} searchText={search} isLink useFuzzyHighlighting />
-      </Link>
+      </AcmVisitedLink>
     </span>
   )
 }

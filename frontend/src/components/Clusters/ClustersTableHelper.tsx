@@ -46,6 +46,7 @@ import {
   ITableAdvancedFilter,
   ITableFilter,
   StatusType,
+  AcmVisitedLink,
 } from '../../ui-components'
 import { getDateTimeCell } from '../../routes/Infrastructure/helpers/table-row-helpers'
 import { DistributionField } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/DistributionField'
@@ -90,9 +91,9 @@ export function useClusterNameColumn(areLinksDisplayed: boolean = true): IAcmTab
       <>
         <span style={{ whiteSpace: 'nowrap' }}>
           {areLinksDisplayed ? (
-            <Link to={getClusterNavPath(NavigationPath.clusterDetails, cluster)}>
+            <AcmVisitedLink to={getClusterNavPath(NavigationPath.clusterDetails, cluster)}>
               <HighlightSearchText text={cluster.displayName} searchText={search} isLink useFuzzyHighlighting />
-            </Link>
+            </AcmVisitedLink>
           ) : (
             <HighlightSearchText text={cluster.displayName} searchText={search} useFuzzyHighlighting />
           )}
