@@ -9,29 +9,21 @@ const mockT = (key: string) => key
 
 describe('ExampleScopeBaseHelper', () => {
   describe('getExampleTitle', () => {
-    it('returns correct title for example index 0', () => {
-      const title = getExampleTitle(0, mockT)
-      expect(title).toBe('Example scope: Full access to all resources')
-    })
-
-    it('returns correct title for example index 1', () => {
-      const title = getExampleTitle(1, mockT)
-      expect(title).toBe('Example scope: Single cluster set → Single cluster → Partial access')
-    })
-
-    it('returns correct title for example index 8', () => {
-      const title = getExampleTitle(8, mockT)
-      expect(title).toBe('Example scope: Multiple clusters → Common projects')
-    })
-
-    it('returns correct title for example index 9', () => {
-      const title = getExampleTitle(9, mockT)
-      expect(title).toBe('Example scope: Single cluster set → Partial access')
-    })
-
-    it('returns correct title for example index 10', () => {
-      const title = getExampleTitle(10, mockT)
-      expect(title).toBe('Example scope: Multiple cluster sets → Common projects')
+    it.each([
+      [0, 'Example scope: Full access to all resources'],
+      [1, 'Example scope: Single cluster set → Single cluster → Partial access'],
+      [2, 'Example scope: Single cluster set → Multiple clusters → Common projects'],
+      [3, 'Example scope: Multiple cluster sets → Full access'],
+      [4, 'Example scope: Multiple cluster sets → Partial access → Common projects'],
+      [5, 'Example scope: Single cluster → Full access'],
+      [6, 'Example scope: Single cluster → Partial access'],
+      [7, 'Example scope: Multiple clusters → Full access'],
+      [8, 'Example scope: Multiple clusters → Common projects'],
+      [9, 'Example scope: Single cluster set → Partial access'],
+      [10, 'Example scope: Multiple cluster sets → Common projects'],
+    ])('returns correct title for example index %i', (exampleIndex, expectedTitle) => {
+      const title = getExampleTitle(exampleIndex, mockT)
+      expect(title).toBe(expectedTitle)
     })
 
     it('returns default title for invalid index', () => {
@@ -74,12 +66,118 @@ describe('ExampleScopeBaseHelper', () => {
       expect(projects[1].id).toBe('case1-project-2')
     })
 
+    it('returns tree data for example index 2 (single cluster set → multiple clusters → common projects)', () => {
+      const treeData = getExampleTreeData(2, mockT)
+
+      expect(treeData).toHaveLength(1)
+      expect(treeData[0].id).toBe('case2-cluster-set-1')
+      expect(treeData[0].children).toBeDefined()
+
+      const clusters = treeData[0].children!
+      expect(clusters).toHaveLength(2)
+      expect(clusters[0].id).toBe('case2-cluster-1')
+      expect(clusters[1].id).toBe('case2-cluster-2')
+
+      // Both clusters should have common projects
+      expect(clusters[0].children).toBeDefined()
+      expect(clusters[1].children).toBeDefined()
+    })
+
+    it('returns tree data for example index 3 (multiple cluster sets → full access)', () => {
+      const treeData = getExampleTreeData(3, mockT)
+
+      expect(treeData).toHaveLength(2)
+      expect(treeData[0].id).toBe('case3-cluster-set-1')
+      expect(treeData[1].id).toBe('case3-cluster-set-2')
+
+      // Both cluster sets should have clusters
+      expect(treeData[0].children).toBeDefined()
+      expect(treeData[1].children).toBeDefined()
+
+      const firstClusterSetClusters = treeData[0].children!
+      expect(firstClusterSetClusters).toHaveLength(2)
+      expect(firstClusterSetClusters[0].id).toBe('case3-cluster-1')
+      expect(firstClusterSetClusters[1].id).toBe('case3-cluster-2')
+    })
+
+    it('returns tree data for example index 4 (multiple cluster sets → partial access → common projects)', () => {
+      const treeData = getExampleTreeData(4, mockT)
+
+      expect(treeData).toHaveLength(2)
+      expect(treeData[0].id).toBe('case4-cluster-set-1')
+      expect(treeData[1].id).toBe('case4-cluster-set-2')
+
+      // First cluster set should have one checked cluster and one unchecked
+      const firstClusterSetClusters = treeData[0].children!
+      expect(firstClusterSetClusters).toHaveLength(2)
+      expect(firstClusterSetClusters[0].id).toBe('case4-cluster-1')
+      expect(firstClusterSetClusters[1].id).toBe('case4-cluster-2')
+
+      // Second cluster set should have one checked cluster with common project
+      const secondClusterSetClusters = treeData[1].children!
+      expect(secondClusterSetClusters).toHaveLength(1)
+      expect(secondClusterSetClusters[0].id).toBe('case4-cluster-3')
+    })
+
     it('returns tree data for single cluster examples (index 5)', () => {
       const treeData = getExampleTreeData(5, mockT)
 
       expect(treeData).toHaveLength(1)
       expect(treeData[0].id).toBe('case5-cluster-1')
       expect(treeData[0].children).toBeDefined()
+
+      const projects = treeData[0].children!
+      expect(projects).toHaveLength(3)
+      expect(projects[0].id).toBe('case5-project-1')
+      expect(projects[1].id).toBe('case5-project-2')
+      expect(projects[2].id).toBe('case5-project-3')
+    })
+
+    it('returns tree data for example index 6 (single cluster → partial access)', () => {
+      const treeData = getExampleTreeData(6, mockT)
+
+      expect(treeData).toHaveLength(1)
+      expect(treeData[0].id).toBe('case6-cluster-1')
+      expect(treeData[0].children).toBeDefined()
+
+      const projects = treeData[0].children!
+      expect(projects).toHaveLength(3)
+      expect(projects[0].id).toBe('case6-project-1')
+      expect(projects[1].id).toBe('case6-project-2')
+      expect(projects[2].id).toBe('case6-project-3')
+    })
+
+    it('returns tree data for example index 7 (multiple clusters → full access)', () => {
+      const treeData = getExampleTreeData(7, mockT)
+
+      expect(treeData).toHaveLength(2)
+      expect(treeData[0].id).toBe('case7-cluster-1')
+      expect(treeData[1].id).toBe('case7-cluster-2')
+
+      // Both clusters should have projects
+      expect(treeData[0].children).toBeDefined()
+      expect(treeData[1].children).toBeDefined()
+
+      const firstClusterProjects = treeData[0].children!
+      expect(firstClusterProjects).toHaveLength(2)
+      expect(firstClusterProjects[0].id).toBe('case7-project-1')
+      expect(firstClusterProjects[1].id).toBe('case7-project-2')
+    })
+
+    it('returns tree data for example index 8 (multiple clusters → common projects)', () => {
+      const treeData = getExampleTreeData(8, mockT)
+
+      expect(treeData).toHaveLength(2)
+      expect(treeData[0].id).toBe('case8-cluster-1')
+      expect(treeData[1].id).toBe('case8-cluster-2')
+
+      // Both clusters should have common projects
+      expect(treeData[0].children).toBeDefined()
+      expect(treeData[1].children).toBeDefined()
+
+      const firstClusterProjects = treeData[0].children!
+      expect(firstClusterProjects).toHaveLength(3)
+      expect(firstClusterProjects[0].id).toBe('case8-project-1') // Common project
     })
 
     it('returns tree data for example index 9 (single cluster set → partial access)', () => {
