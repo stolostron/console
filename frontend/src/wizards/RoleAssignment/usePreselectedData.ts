@@ -74,13 +74,13 @@ export const usePreselectedData = ({
 
           updates.scopeType = 'Select cluster sets'
           updates.scope = {
-            kind: preselected?.namespaces && preselected.namespaces.length > 0 ? 'specific' : 'all',
+            kind: hasNamespaces ? 'specific' : 'all',
             namespaces: preselected?.namespaces,
           }
           updates.selectedClusterSets = clusterSetObjects
           setSelectedClusterSets(clusterSetObjects)
 
-          if (preselected?.namespaces && preselected.namespaces.length > 0) {
+          if (hasNamespaces) {
             updates.clustersetsAccessLevel = 'Project role assignment'
           }
         } else if (hasClusters) {
