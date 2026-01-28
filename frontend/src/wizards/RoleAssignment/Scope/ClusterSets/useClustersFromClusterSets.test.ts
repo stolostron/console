@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { act, renderHook } from '@testing-library/react-hooks'
 import { waitFor } from '@testing-library/react'
-import { useClustersFromClusterSets } from './ClustersFromClusterSetsHook'
-import { testCases } from './ClustersFromClusterSetsHook.fixtures'
+import { useClustersFromClusterSets } from './useClustersFromClusterSets'
+import { testCases } from './useClustersFromClusterSets.fixtures'
 import { useAllClusters } from '../../../../routes/Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 
 jest.mock('../../../../routes/Infrastructure/Clusters/ManagedClusters/components/useAllClusters', () => ({
@@ -11,7 +11,7 @@ jest.mock('../../../../routes/Infrastructure/Clusters/ManagedClusters/components
 
 const mockUseAllClusters = useAllClusters as jest.MockedFunction<typeof useAllClusters>
 
-describe('ClustersFromClusterSetsHook', () => {
+describe('useClustersFromClusterSets', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })

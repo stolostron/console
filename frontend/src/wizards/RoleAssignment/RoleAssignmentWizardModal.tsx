@@ -18,7 +18,7 @@ import { ExampleScopesPanelContent } from './Scope/ExampleScope/ExampleScopesPan
 import { ScopeSelectionStepContent } from './ScopeSelectionStepContent'
 import { RoleAssignmentWizardFormData, RoleAssignmentWizardModalProps } from './types'
 import { usePreselectedData } from './usePreselectedData'
-import { useClustersFromClusterSets } from './Scope/ClusterSets/ClustersFromClusterSetsHook'
+import { useClustersFromClusterSets } from './Scope/ClusterSets/useClustersFromClusterSets'
 
 const getWizardTitle = (
   isEditing: boolean | undefined,

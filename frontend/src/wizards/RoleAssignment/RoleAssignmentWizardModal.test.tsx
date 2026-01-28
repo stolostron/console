@@ -27,7 +27,7 @@ jest.mock('./usePreselectedData', () => ({
 
 // Mock useClustersFromClusterSets hook
 const mockUseClustersFromClusterSets = jest.fn()
-jest.mock('./Scope/ClusterSets/ClustersFromClusterSetsHook', () => ({
+jest.mock('./Scope/ClusterSets/useClustersFromClusterSets', () => ({
   useClustersFromClusterSets: (selectedClusterSets?: any[]) => mockUseClustersFromClusterSets(selectedClusterSets),
 }))
 
