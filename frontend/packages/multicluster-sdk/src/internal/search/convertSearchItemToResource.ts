@@ -93,7 +93,7 @@ const parseMapString = (mapString: string): Record<string, string> | undefined =
   if (!mapString || typeof mapString !== 'string') {
     return undefined
   }
-  return Object.fromEntries(mapString.split(';').map((pair: string) => pair.trimStart().split('=')))
+  return Object.fromEntries(mapString.split(';').map((pair) => pair.trimStart().split('=')))
 }
 
 /**
@@ -107,7 +107,7 @@ const parseListString = (listString: string): string[] | undefined => {
   }
   return listString
     .split(';')
-    .map((value: string) => value.trim())
+    .map((value) => value.trim())
     .filter(Boolean)
 }
 
@@ -273,7 +273,7 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
         resource,
         'spec.initContainers',
         initContainerNamesList,
-        initContainerNamesList?.map((name: string) => ({ name }))
+        initContainerNamesList?.map((name) => ({ name }))
       )
       break
     }
@@ -308,10 +308,10 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
       const volumes =
         dataVolumeNamesList || pvcClaimNamesList
           ? [
-              ...(dataVolumeNamesList || []).map((name: string) => ({
+              ...(dataVolumeNamesList || []).map((name) => ({
                 dataVolume: { name },
               })),
-              ...(pvcClaimNamesList || []).map((claimName: string) => ({
+              ...(pvcClaimNamesList || []).map((claimName) => ({
                 persistentVolumeClaim: { claimName },
               })),
             ]
@@ -333,15 +333,40 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
       setIfDefined(resource, 'status.phase', item.phase)
       break
 
-    case 'VirtualMachineInstance.kubevirt.io':
+    case 'VirtualMachineInstance.kubevirt.io': {
       setIfDefined(resource, 'spec.domain.cpu.cores', item.cpu, Number(item.cpu))
       setIfDefined(resource, 'spec.domain.cpu.sockets', item.cpuSockets, Number(item.cpuSockets))
       setIfDefined(resource, 'spec.domain.cpu.threads', item.cpuThreads, Number(item.cpuThreads))
+      setIfDefined(
+        resource,
+        'spec.domain.devices.gpus',
+        parseListString(item.gpuName)?.map((name) => ({ name }))
+      )
+      setIfDefined(
+        resource,
+        'spec.domain.devices.hostDevices',
+        parseListString(item.hostDeviceName)?.map((name) => ({ name }))
+      )
+      setIfDefined(
+        resource,
+        'spec.domain.devices.interfaces',
+        parseListString(item.intefaceName)?.map((name) => ({ name }))
+      )
       setIfDefined(resource, 'spec.domain.memory.guest', item.memory)
-      setIfDefined(resource, 'status.interfaces[0]', item.ipaddress, {
-        ipAddress: item.ipaddress,
-        name: 'default',
-      })
+      // interfaces are collected by search as 3 separate lists; recombine them here
+      const interfaceNames = parseListString(item.interfaceStatusName) ?? (item.ipaddress ? ['default'] : undefined)
+      const intefaceInterfaceNames = parseListString(item.interfaceStatusInterfaceName)
+      const interfaceIPAddresses =
+        parseListString(item.interfaceStatusIPAddress) ?? (item.ipaddress ? [item.ipaddress] : undefined)
+      const interfaces = []
+      while (interfaceNames?.length || intefaceInterfaceNames?.length || interfaceIPAddresses?.length) {
+        interfaces.push({
+          name: interfaceNames?.shift(),
+          interfaceName: intefaceInterfaceNames?.shift(),
+          ipAddress: interfaceIPAddresses?.shift(),
+        })
+      }
+      setIfDefined(resource, 'status.interfaces', interfaces.length ? interfaces : undefined)
       setIfDefined(resource, 'status.nodeName', item.node)
       setIfDefined(resource, 'status.phase', item.phase)
       setIfDefined(resource, 'status.guestOSInfo.version', item.osVersion)
@@ -350,6 +375,7 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
         { type: 'Ready', value: item.ready },
       ])
       break
+    }
 
     case 'VirtualMachineInstanceMigration.kubevirt.io':
       setIfDefined(resource, 'metadata.deletionTimestamp', item.deleted)
