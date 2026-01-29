@@ -17,6 +17,8 @@ const getLayoutModel = (elements: { nodes: any[]; links: any[] }): Model => {
   const nodes: NodeModel[] = elements.nodes.map((d) => {
     const data = getNodeStyle(d, nodeOffsetMap[d.id])
     return {
+      x: data.dx,
+      y: data.dy,
       id: d.id,
       type: 'node',
       data,
