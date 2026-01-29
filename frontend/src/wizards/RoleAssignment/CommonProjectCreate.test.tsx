@@ -414,7 +414,7 @@ describe('CommonProjectCreate', () => {
     })
 
     it('shows progress bar with error state when requests fail', async () => {
-      mockFireManagedClusterActionCreate.mockRejectedValue(new Error('Network error'))
+      mockFleetResourceRequestCreate.mockRejectedValue(new Error('Network error'))
 
       render(
         <TestWrapper>
@@ -476,7 +476,7 @@ describe('CommonProjectCreate', () => {
     })
 
     it('shows progress bar with correct values for partial success and errors', async () => {
-      mockFireManagedClusterActionCreate
+      mockFleetResourceRequestCreate
         .mockResolvedValueOnce({
           actionDone: 'ActionDone',
           complete: 'Completed',
