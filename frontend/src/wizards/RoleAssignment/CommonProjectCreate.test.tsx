@@ -90,6 +90,16 @@ describe('CommonProjectCreate', () => {
     expect(screen.getByText('Mock ProjectCreateForm')).toBeInTheDocument()
   })
 
+  it('does not show progress bar initially', () => {
+    render(
+      <TestWrapper>
+        <CommonProjectCreate onCancelCallback={mockOnCancel} selectedClusters={sampleClusters} />
+      </TestWrapper>
+    )
+
+    expect(screen.queryByText('Creating common projects')).not.toBeInTheDocument()
+  })
+
   it('calls onCancelCallback when cancel is clicked', async () => {
     render(
       <TestWrapper>
@@ -377,5 +387,170 @@ describe('CommonProjectCreate', () => {
 
     // onSuccess should not be called when there's a partial failure
     expect(mockOnSuccess).not.toHaveBeenCalled()
+  })
+
+  describe('Progress bar integration', () => {
+    it('shows progress bar with correct values when all requests succeed', async () => {
+      render(
+        <TestWrapper>
+          <CommonProjectCreate
+            onCancelCallback={mockOnCancel}
+            onSuccess={mockOnSuccess}
+            selectedClusters={sampleClusters}
+          />
+        </TestWrapper>
+      )
+
+      const submitButton = screen.getByText('Submit')
+      await userEvent.click(submitButton)
+
+      await waitFor(() => {
+        expect(screen.getByText('Creating common projects')).toBeInTheDocument()
+      })
+
+      await waitFor(() => {
+        const progress = screen.getByRole('progressbar')
+        expect(progress).toHaveAttribute('aria-valuenow', '100')
+      })
+
+      // Should not show error helper text when all succeed
+      expect(screen.queryByText(/Failed to create common projects/)).not.toBeInTheDocument()
+    })
+
+    it('shows progress bar with error state when requests fail', async () => {
+      mockFireManagedClusterActionCreate.mockRejectedValue(new Error('Network error'))
+
+      render(
+        <TestWrapper>
+          <CommonProjectCreate
+            onCancelCallback={mockOnCancel}
+            onSuccess={mockOnSuccess}
+            onError={mockOnError}
+            selectedClusters={[{ name: 'cluster-1', namespace: 'cluster-1' }]}
+          />
+        </TestWrapper>
+      )
+
+      const submitButton = screen.getByText('Submit')
+      await userEvent.click(submitButton)
+
+      await waitFor(() => {
+        expect(screen.getByText('Creating common projects')).toBeInTheDocument()
+      })
+
+      await waitFor(() => {
+        // Progress bar should show 100% (1 error out of 1 total)
+        const progress = screen.getByRole('progressbar')
+        expect(progress).toHaveAttribute('aria-valuenow', '100')
+      })
+
+      // Should show error helper text
+      await waitFor(() => {
+        expect(screen.getByText(/Failed to create common projects. Error: 1. Success: 0./)).toBeInTheDocument()
+      })
+    })
+
+    it('shows progress bar when requests are in progress', async () => {
+      render(
+        <TestWrapper>
+          <CommonProjectCreate
+            onCancelCallback={mockOnCancel}
+            onSuccess={mockOnSuccess}
+            selectedClusters={sampleClusters}
+          />
+        </TestWrapper>
+      )
+
+      const submitButton = screen.getByText('Submit')
+      await userEvent.click(submitButton)
+
+      // Progress bar should appear when requests start
+      await waitFor(() => {
+        expect(screen.getByText('Creating common projects')).toBeInTheDocument()
+      })
+
+      // After all requests complete, should show 100%
+      await waitFor(
+        () => {
+          const progress = screen.getByRole('progressbar')
+          expect(progress).toHaveAttribute('aria-valuenow', '100')
+        },
+        { timeout: 3000 }
+      )
+    })
+
+    it('shows progress bar with correct values for partial success and errors', async () => {
+      mockFireManagedClusterActionCreate
+        .mockResolvedValueOnce({
+          actionDone: 'ActionDone',
+          complete: 'Completed',
+          message: 'Action completed successfully',
+          result: { success: true },
+        } as any)
+        .mockRejectedValueOnce(new Error('Cluster unreachable'))
+
+      render(
+        <TestWrapper>
+          <CommonProjectCreate
+            onCancelCallback={mockOnCancel}
+            onSuccess={mockOnSuccess}
+            onError={mockOnError}
+            selectedClusters={sampleClusters}
+          />
+        </TestWrapper>
+      )
+
+      const submitButton = screen.getByText('Submit')
+      await userEvent.click(submitButton)
+
+      await waitFor(() => {
+        expect(screen.getByText('Creating common projects')).toBeInTheDocument()
+      })
+
+      await waitFor(() => {
+        // Progress bar should show 100% (2 out of 2 completed, 1 success, 1 error)
+        const progress = screen.getByRole('progressbar')
+        expect(progress).toHaveAttribute('aria-valuenow', '100')
+      })
+
+      // Should show error helper text with correct counts
+      await waitFor(() => {
+        expect(screen.getByText(/Failed to create common projects. Error: 1. Success: 1./)).toBeInTheDocument()
+      })
+    })
+
+    it('updates progress bar correctly with multiple clusters', async () => {
+      const threeClusters: Cluster[] = [
+        { name: 'cluster-1', namespace: 'cluster-1' },
+        { name: 'cluster-2', namespace: 'cluster-2' },
+        { name: 'cluster-3', namespace: 'cluster-3' },
+      ]
+
+      render(
+        <TestWrapper>
+          <CommonProjectCreate
+            onCancelCallback={mockOnCancel}
+            onSuccess={mockOnSuccess}
+            selectedClusters={threeClusters}
+          />
+        </TestWrapper>
+      )
+
+      const submitButton = screen.getByText('Submit')
+      await userEvent.click(submitButton)
+
+      await waitFor(() => {
+        expect(screen.getByText('Creating common projects')).toBeInTheDocument()
+      })
+
+      await waitFor(() => {
+        // Progress bar should show 100% when all 3 complete
+        const progress = screen.getByRole('progressbar')
+        expect(progress).toHaveAttribute('aria-valuenow', '100')
+      })
+
+      // Should not show error helper text when all succeed
+      expect(screen.queryByText(/Failed to create common projects/)).not.toBeInTheDocument()
+    })
   })
 })
