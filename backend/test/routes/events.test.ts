@@ -181,8 +181,8 @@ describe('events Route', () => {
       const apiVersionPlural = '/v1/configmaps'
       expect(cache[apiVersionPlural]).toBeDefined()
       expect(cache[apiVersionPlural]['config-uid-123']).toBeDefined()
-      expect(cache[apiVersionPlural]['config-uid-123'].compressed).toBeDefined()
-      expect(cache[apiVersionPlural]['config-uid-123'].eventID).toBeGreaterThan(0)
+      expect(await cache[apiVersionPlural]['config-uid-123'].compressed).toBeDefined()
+      expect(await cache[apiVersionPlural]['config-uid-123'].eventID).toBeGreaterThan(0)
     })
 
     it('should not update cache if resourceVersion is unchanged', async () => {
@@ -226,15 +226,15 @@ describe('events Route', () => {
       await cacheResource(mockResource)
       const cache = getEventCache()
       const apiVersionPlural = '/apps/v1/deployments'
-      const firstEventID = cache[apiVersionPlural]['deploy-uid-789'].eventID
+      const firstEventID = await cache[apiVersionPlural]['deploy-uid-789'].eventID
 
       // Update resourceVersion and cache again
       mockResource.metadata.resourceVersion = '301'
       await cacheResource(mockResource)
 
       // EventID should be different (new event created)
-      expect(cache[apiVersionPlural]['deploy-uid-789'].eventID).not.toBe(firstEventID)
-      expect(cache[apiVersionPlural]['deploy-uid-789'].eventID).toBeGreaterThan(firstEventID)
+      expect(await cache[apiVersionPlural]['deploy-uid-789'].eventID).not.toBe(firstEventID)
+      expect(await cache[apiVersionPlural]['deploy-uid-789'].eventID).toBeGreaterThan(firstEventID)
     })
 
     it('should set hubClusterName when caching local ManagedCluster', async () => {
@@ -402,6 +402,9 @@ describe('events Route', () => {
       }
 
       await cacheResource(resource)
+      const cache = getEventCache()
+      const apiVersionPlural = '/v1/namespaces'
+      await cache[apiVersionPlural]['namespace-uid'].eventID
 
       const eventsAfter = Object.keys(ServerSideEvents.getEvents()).length
 
