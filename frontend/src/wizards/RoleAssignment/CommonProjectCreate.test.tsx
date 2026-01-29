@@ -2,13 +2,13 @@
 
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import * as managedClusterAction from '../../resources/managedclusteraction'
+import * as FleetResourceRequest from '../../resources/utils/fleet-resource-request'
 import type { Cluster } from '../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
 import { AcmToastContext } from '../../ui-components'
 import { CommonProjectCreate } from './CommonProjectCreate'
 
 // Mock the dependencies
-jest.mock('../../resources/managedclusteraction')
+jest.mock('../../resources/utils/fleet-resource-request')
 jest.mock('../../components/project', () => ({
   ProjectCreateForm: ({ onCancelCallback, onSubmit }: any) => (
     <div>
@@ -40,8 +40,8 @@ jest.mock('../../components/project', () => ({
   ),
 }))
 
-const mockFireManagedClusterActionCreate = managedClusterAction.fireManagedClusterActionCreate as jest.MockedFunction<
-  typeof managedClusterAction.fireManagedClusterActionCreate
+const mockFleetResourceRequestCreate = FleetResourceRequest.fleetResourceRequest as jest.MockedFunction<
+  typeof FleetResourceRequest.fleetResourceRequest
 >
 
 const mockOnCancel = jest.fn()
@@ -71,7 +71,7 @@ const sampleClusters: Cluster[] = [
 describe('CommonProjectCreate', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    mockFireManagedClusterActionCreate.mockResolvedValue({
+    mockFleetResourceRequestCreate.mockResolvedValue({
       actionDone: 'ActionDone',
       complete: 'Completed',
       message: 'Action completed successfully',
@@ -129,26 +129,44 @@ describe('CommonProjectCreate', () => {
     await userEvent.click(submitButton)
 
     await waitFor(() => {
-      expect(mockFireManagedClusterActionCreate).toHaveBeenCalledTimes(2)
+      expect(mockFleetResourceRequestCreate).toHaveBeenCalledTimes(2)
     })
 
     // Verify it was called with correct parameters for cluster-1
-    expect(mockFireManagedClusterActionCreate).toHaveBeenCalledWith('cluster-1', {
-      apiVersion: 'project.openshift.io/v1',
-      kind: 'ProjectRequest',
-      metadata: { name: 'test-project' },
-      displayName: 'Test Project',
-      description: 'Test Description',
-    })
+    expect(mockFleetResourceRequestCreate).toHaveBeenCalledWith(
+      'POST',
+      'cluster-1',
+      {
+        apiVersion: 'project.openshift.io/v1',
+        kind: 'ProjectRequest',
+        name: 'test-project',
+      },
+      {
+        apiVersion: 'project.openshift.io/v1',
+        kind: 'ProjectRequest',
+        metadata: { name: 'test-project' },
+        description: 'Test Description',
+        displayName: 'Test Project',
+      }
+    )
 
     // Verify it was called with correct parameters for cluster-2
-    expect(mockFireManagedClusterActionCreate).toHaveBeenCalledWith('cluster-2', {
-      apiVersion: 'project.openshift.io/v1',
-      kind: 'ProjectRequest',
-      metadata: { name: 'test-project' },
-      displayName: 'Test Project',
-      description: 'Test Description',
-    })
+    expect(mockFleetResourceRequestCreate).toHaveBeenCalledWith(
+      'POST',
+      'cluster-2',
+      {
+        apiVersion: 'project.openshift.io/v1',
+        kind: 'ProjectRequest',
+        name: 'test-project',
+      },
+      {
+        apiVersion: 'project.openshift.io/v1',
+        kind: 'ProjectRequest',
+        metadata: { name: 'test-project' },
+        description: 'Test Description',
+        displayName: 'Test Project',
+      }
+    )
   })
 
   it('shows success toast for each cluster when project is created', async () => {
@@ -238,7 +256,7 @@ describe('CommonProjectCreate', () => {
       await userEvent.click(submitButton)
 
       await waitFor(() => {
-        expect(mockFireManagedClusterActionCreate).not.toHaveBeenCalled()
+        expect(mockFleetResourceRequestCreate).not.toHaveBeenCalled()
         expect(mockOnSuccess).toHaveBeenCalledTimes(1)
         expect(mockOnSuccess).toHaveBeenCalledWith('test-project')
       })
@@ -246,7 +264,7 @@ describe('CommonProjectCreate', () => {
   })
 
   it('shows error toast when action response is not ActionDone', async () => {
-    mockFireManagedClusterActionCreate.mockResolvedValue({
+    mockFleetResourceRequestCreate.mockResolvedValue({
       actionDone: 'ActionFailed',
       complete: 'Completed',
       message: 'Resource already exists',
@@ -283,7 +301,7 @@ describe('CommonProjectCreate', () => {
   })
 
   it('shows error toast when fireManagedClusterActionCreate throws', async () => {
-    mockFireManagedClusterActionCreate.mockRejectedValue(new Error('Network error'))
+    mockFleetResourceRequestCreate.mockRejectedValue(new Error('Network error'))
 
     render(
       <TestWrapper>
@@ -314,7 +332,7 @@ describe('CommonProjectCreate', () => {
   })
 
   it('does not call onSuccess when creation fails', async () => {
-    mockFireManagedClusterActionCreate.mockRejectedValue(new Error('Network error'))
+    mockFleetResourceRequestCreate.mockRejectedValue(new Error('Network error'))
 
     render(
       <TestWrapper>
@@ -338,7 +356,7 @@ describe('CommonProjectCreate', () => {
   })
 
   it('handles partial failure - one cluster succeeds, one fails', async () => {
-    mockFireManagedClusterActionCreate
+    mockFleetResourceRequestCreate
       .mockResolvedValueOnce({
         actionDone: 'ActionDone',
         complete: 'Completed',
@@ -418,7 +436,7 @@ describe('CommonProjectCreate', () => {
     })
 
     it('shows progress bar with error state when requests fail', async () => {
-      mockFireManagedClusterActionCreate.mockRejectedValue(new Error('Network error'))
+      mockFleetResourceRequestCreate.mockRejectedValue(new Error('Network error'))
 
       render(
         <TestWrapper>
@@ -480,7 +498,7 @@ describe('CommonProjectCreate', () => {
     })
 
     it('shows progress bar with correct values for partial success and errors', async () => {
-      mockFireManagedClusterActionCreate
+      mockFleetResourceRequestCreate
         .mockResolvedValueOnce({
           actionDone: 'ActionDone',
           complete: 'Completed',

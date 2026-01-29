@@ -4,7 +4,8 @@ import { Title } from '@patternfly/react-core'
 import { useContext, useState } from 'react'
 import { ProjectCreateForm, ProjectFormData } from '../../components/project'
 import { useTranslation } from '../../lib/acm-i18next'
-import { fireManagedClusterActionCreate, ProjectRequestApiVersion, ProjectRequestKind } from '../../resources'
+import { ProjectRequestApiVersion, ProjectRequestKind } from '../../resources'
+import { fleetResourceRequest } from '../../resources/utils/fleet-resource-request'
 import type { Cluster } from '../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
 import { AcmToastContext } from '../../ui-components'
 import { CommonProjectCreateProgressBar } from './CommonProjectCreateProgressBar'
@@ -35,27 +36,40 @@ export function CommonProjectCreate({
       const counter = { success: 0, error: 0 }
       await Promise.all(
         selectedClusters.map((cluster) =>
-          fireManagedClusterActionCreate(cluster.name, {
-            apiVersion: ProjectRequestApiVersion,
-            kind: ProjectRequestKind,
-            metadata: { name: data.name },
-            displayName: data.displayName || undefined,
-            description: data.description || undefined,
-          })
-            .then(async (actionResponse) => {
-              if (actionResponse.actionDone === 'ActionDone') {
-                toastContext.addAlert({
-                  title: t('Common project created'),
-                  message: t('{{name}} project has been successfully created for the cluster {{cluster}}.', {
-                    name: data.name,
-                    cluster: cluster.name,
-                  }),
-                  type: 'success',
-                  autoClose: true,
-                })
-                counter.success++
+          fleetResourceRequest(
+            'POST',
+            cluster.name,
+            {
+              apiVersion: ProjectRequestApiVersion,
+              kind: ProjectRequestKind,
+              name: data.name,
+            },
+            {
+              apiVersion: ProjectRequestApiVersion,
+              kind: ProjectRequestKind,
+              metadata: { name: data.name },
+              displayName: data.displayName || undefined,
+              description: data.description || undefined,
+            }
+          )
+            .then((res: any) => {
+              if ('errorMessage' in res) {
+                throw new Error(res.errorMessage)
               } else {
-                throw new Error(actionResponse.message)
+                if ('actionDone' in res && res.actionDone === 'ActionDone') {
+                  toastContext.addAlert({
+                    title: t('Common project created'),
+                    message: t('{{name}} project has been successfully created for the cluster {{cluster}}.', {
+                      name: data.name,
+                      cluster: cluster.name,
+                    }),
+                    type: 'success',
+                    autoClose: true,
+                  })
+                  counter.success++
+                } else {
+                  throw new Error(res?.message)
+                }
               }
             })
             .catch((err) => {
