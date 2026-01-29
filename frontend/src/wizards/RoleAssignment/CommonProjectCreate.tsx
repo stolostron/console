@@ -1,13 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Title } from '@patternfly/react-core'
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 import { ProjectCreateForm, ProjectFormData } from '../../components/project'
 import { useTranslation } from '../../lib/acm-i18next'
 import { ProjectRequestApiVersion, ProjectRequestKind } from '../../resources'
 import { fleetResourceRequest } from '../../resources/utils/fleet-resource-request'
 import type { Cluster } from '../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
 import { AcmToastContext } from '../../ui-components'
+import { CommonProjectCreateProgressBar } from './CommonProjectCreateProgressBar'
 interface CommonProjectCreateProps {
   /** Callback function called when the cancel button is clicked */
   onCancelCallback: () => void
@@ -27,9 +28,12 @@ export function CommonProjectCreate({
 }: CommonProjectCreateProps) {
   const { t } = useTranslation()
   const toastContext = useContext(AcmToastContext)
+  const [requestsCounter, setRequestsCounter] = useState<{ success: number; error: number }>()
 
   const handleSubmit = async (data: ProjectFormData) => {
     try {
+      setRequestsCounter({ success: 0, error: 0 })
+      const counter = { success: 0, error: 0 }
       await Promise.all(
         selectedClusters.map((cluster) =>
           fleetResourceRequest('POST', cluster.name, {
@@ -51,6 +55,7 @@ export function CommonProjectCreate({
                     type: 'success',
                     autoClose: true,
                   })
+                  counter.success++
                 } else {
                   throw new Error(res?.message)
                 }
@@ -67,8 +72,10 @@ export function CommonProjectCreate({
                 type: 'danger',
                 autoClose: true,
               })
+              counter.error++
               throw err
             })
+            .finally(() => setRequestsCounter(counter))
         )
       )
       onSuccess?.(data.name)
@@ -83,6 +90,13 @@ export function CommonProjectCreate({
       <Title headingLevel="h1" size="lg" style={{ marginBottom: '1rem' }}>
         {t('Create common project')}
       </Title>
+      {requestsCounter && (
+        <CommonProjectCreateProgressBar
+          successCount={requestsCounter?.success}
+          errorCount={requestsCounter?.error}
+          totalCount={selectedClusters.length}
+        />
+      )}
       <ProjectCreateForm onCancelCallback={onCancelCallback} onSubmit={handleSubmit} />
     </div>
   )
