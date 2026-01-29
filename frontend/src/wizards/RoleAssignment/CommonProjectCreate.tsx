@@ -44,7 +44,13 @@ export function CommonProjectCreate({
               kind: ProjectRequestKind,
               name: data.name,
             },
-            { apiVersion: ProjectRequestApiVersion, kind: ProjectRequestKind, metadata: { name: data.name } }
+            {
+              apiVersion: ProjectRequestApiVersion,
+              kind: ProjectRequestKind,
+              metadata: { name: data.name },
+              displayName: data.displayName || undefined,
+              description: data.description || undefined,
+            }
           )
             .then((res: any) => {
               if ('errorMessage' in res) {

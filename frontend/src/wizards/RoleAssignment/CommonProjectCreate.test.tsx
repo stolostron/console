@@ -141,7 +141,13 @@ describe('CommonProjectCreate', () => {
         kind: 'ProjectRequest',
         name: 'test-project',
       },
-      { apiVersion: 'project.openshift.io/v1', kind: 'ProjectRequest', metadata: { name: 'test-project' } }
+      {
+        apiVersion: 'project.openshift.io/v1',
+        kind: 'ProjectRequest',
+        metadata: { name: 'test-project' },
+        description: 'Test Description',
+        displayName: 'Test Project',
+      }
     )
 
     // Verify it was called with correct parameters for cluster-2
@@ -153,7 +159,13 @@ describe('CommonProjectCreate', () => {
         kind: 'ProjectRequest',
         name: 'test-project',
       },
-      { apiVersion: 'project.openshift.io/v1', kind: 'ProjectRequest', metadata: { name: 'test-project' } }
+      {
+        apiVersion: 'project.openshift.io/v1',
+        kind: 'ProjectRequest',
+        metadata: { name: 'test-project' },
+        description: 'Test Description',
+        displayName: 'Test Project',
+      }
     )
   })
 
