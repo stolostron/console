@@ -20,8 +20,8 @@ export interface RoleAssignmentWizardFormData extends RoleAssignmentFormData {
   scopeType?: 'Global access' | 'Select cluster sets' | 'Select clusters'
   selectedClusterSets?: (ManagedClusterSet | string)[]
   selectedClusters?: any[]
-  clusterSetAccessLevel?: 'Cluster set role assignment' | 'Cluster role assignment'
-  selectedClustersAccessLevel?: 'Cluster role assignment' | 'Project role assignment'
+  clustersetsAccessLevel?: 'Cluster set role assignment' | 'Project role assignment'
+  clustersAccessLevel?: 'Cluster role assignment' | 'Project role assignment'
 }
 
 export interface RoleAssignmentWizardModalProps {
