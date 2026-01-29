@@ -112,6 +112,15 @@ const parseListString = (listString: string): string[] | undefined => {
 }
 
 /**
+ * Gets the UUID from a search UUID string.
+ * @param searchUUID - The search UUID string
+ * @returns The UUID, or undefined if the input is falsy or not a string
+ */
+const getUUIDFromSearchUUID = (searchUUID?: string): string | undefined => {
+  return searchUUID?.split('/').pop() || undefined
+}
+
+/**
  * Creates a resource object with the basic metadata available from search results.
  * @param item - The search result item
  * @returns A resource object with the appropriate nested fields
@@ -127,7 +136,7 @@ const createResourceCommon = (item: any): any => {
       name: item.name,
       namespace: item.namespace,
       labels: parseMapString(item.label),
-      uid: item._uid?.split('/').pop() || undefined, // _uid field holds '<cluster>/<uid>' but may be removed in the future
+      uid: getUUIDFromSearchUUID(item._uid), // _uid field holds '<cluster>/<uid>' but may be removed in the future
     },
   }
   setIfDefined(resource, 'status.conditions', parseConditionString(item.condition as string))
@@ -210,6 +219,29 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
       setIfDefined(resource, 'status.phase', item.phase)
       break
 
+    case 'MigrationPolicy.migrations.kubevirt.io':
+      setIfDefined(resource, 'spec.allowAutoConverge', item.allowAutoConverge, convertToBoolean(item.allowAutoConverge))
+      setIfDefined(resource, 'spec.allowPostCopy', item.allowPostCopy, convertToBoolean(item.allowPostCopy))
+      setIfDefined(
+        resource,
+        'spec.bandwidthPerMigration',
+        item.bandwidthPerMigration,
+        Number(item.bandwidthPerMigration)
+      )
+      setIfDefined(
+        resource,
+        'spec.completionTimeoutPerGiB',
+        item.completionTimeoutPerGiB,
+        Number(item.completionTimeoutPerGiB)
+      )
+      setIfDefined(resource, 'spec.selectors.namespaceSelector', parseMapString(item._namespaceSelector))
+      setIfDefined(
+        resource,
+        'spec.selectors.virtualMachineInstanceSelector',
+        parseMapString(item._virtualMachineInstanceSelector)
+      )
+      break
+
     case 'Namespace':
       setIfDefined(resource, 'status.phase', item.status)
       break
@@ -231,6 +263,20 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
       setIfDefined(resource, 'status.phase', item.status)
       setIfDefined(resource, 'status.capacity.storage', item.capacity)
       break
+
+    case 'Pod': {
+      setIfDefined(resource, 'metadata.ownerReferences', item._ownerUID, [
+        { uid: getUUIDFromSearchUUID(item._ownerUID) },
+      ])
+      const initContainerNamesList = parseListString(item.initContainer)
+      setIfDefined(
+        resource,
+        'spec.initContainers',
+        initContainerNamesList,
+        initContainerNamesList?.map((name: string) => ({ name }))
+      )
+      break
+    }
 
     case 'StorageClass.storage.k8s.io':
       setIfDefined(resource, 'allowVolumeExpansion', item.allowVolumeExpansion)
