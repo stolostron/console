@@ -133,18 +133,28 @@ describe('CommonProjectCreate', () => {
     })
 
     // Verify it was called with correct parameters for cluster-1
-    expect(mockFleetResourceRequestCreate).toHaveBeenCalledWith('POST', 'cluster-1', {
-      apiVersion: 'project.openshift.io/v1',
-      kind: 'ProjectRequest',
-      name: 'test-project',
-    })
+    expect(mockFleetResourceRequestCreate).toHaveBeenCalledWith(
+      'POST',
+      'cluster-1',
+      {
+        apiVersion: 'project.openshift.io/v1',
+        kind: 'ProjectRequest',
+        name: 'test-project',
+      },
+      { apiVersion: 'project.openshift.io/v1', kind: 'ProjectRequest', metadata: { name: 'test-project' } }
+    )
 
     // Verify it was called with correct parameters for cluster-2
-    expect(mockFleetResourceRequestCreate).toHaveBeenCalledWith('POST', 'cluster-2', {
-      apiVersion: 'project.openshift.io/v1',
-      kind: 'ProjectRequest',
-      name: 'test-project',
-    })
+    expect(mockFleetResourceRequestCreate).toHaveBeenCalledWith(
+      'POST',
+      'cluster-2',
+      {
+        apiVersion: 'project.openshift.io/v1',
+        kind: 'ProjectRequest',
+        name: 'test-project',
+      },
+      { apiVersion: 'project.openshift.io/v1', kind: 'ProjectRequest', metadata: { name: 'test-project' } }
+    )
   })
 
   it('shows success toast for each cluster when project is created', async () => {

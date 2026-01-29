@@ -36,11 +36,16 @@ export function CommonProjectCreate({
       const counter = { success: 0, error: 0 }
       await Promise.all(
         selectedClusters.map((cluster) =>
-          fleetResourceRequest('POST', cluster.name, {
-            apiVersion: ProjectRequestApiVersion,
-            kind: ProjectRequestKind,
-            name: data.name,
-          })
+          fleetResourceRequest(
+            'POST',
+            cluster.name,
+            {
+              apiVersion: ProjectRequestApiVersion,
+              kind: ProjectRequestKind,
+              name: data.name,
+            },
+            { apiVersion: ProjectRequestApiVersion, kind: ProjectRequestKind, metadata: { name: data.name } }
+          )
             .then((res: any) => {
               if ('errorMessage' in res) {
                 throw new Error(res.errorMessage)
