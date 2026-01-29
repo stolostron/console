@@ -1,16 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as React from 'react'
-import { observer } from 'mobx-react'
+import { css } from '@emotion/css'
 import {
   Edge,
   Layer,
-  Point,
-  useBendpoint,
   WithRemoveConnectorProps,
   WithSourceDragProps,
   WithTargetDragProps,
+  observer,
+  DefaultConnectorTerminal,
+  EdgeTerminalType,
 } from '@patternfly/react-topology'
-import EdgeConnectorSquare from './EdgeConnectorSquare'
 
 type EdgeProps = {
   element: Edge
@@ -19,41 +19,13 @@ type EdgeProps = {
   WithTargetDragProps &
   WithRemoveConnectorProps
 
-interface BendpointProps {
-  point: Point
-}
-
-const Bendpoint: React.FunctionComponent<BendpointProps> = observer(({ point }) => {
-  const [hover, setHover] = React.useState(false)
-  const [, ref] = useBendpoint(point)
-  return (
-    <circle
-      ref={ref}
-      cx={point.x}
-      cy={point.y}
-      r={5}
-      fill="lightblue"
-      fillOpacity={hover ? 0.8 : 0}
-      onMouseOver={() => setHover(true)}
-      onMouseOut={() => setHover(false)}
-    />
-  )
-})
-
-const StyledEdge: React.FunctionComponent<EdgeProps> = ({
-  element,
-  sourceDragRef,
-  dragging,
-  onShowRemoveConnector,
-  onHideRemoveConnector,
-}) => {
+const StyledEdge: React.FunctionComponent<EdgeProps> = ({ element, dragging }) => {
   const startPoint = element.getStartPoint()
   const endPoint = element.getEndPoint()
-  const bendpoints = element.getBendpoints()
 
   // Create curved path segments using quadratic Bezier curves that arc upward
   const curveOffset = 25 // pixels to curve upward (negative Y direction)
-  const allPoints = [startPoint, ...bendpoints, endPoint]
+  const allPoints = [startPoint, endPoint]
   let d = `M${startPoint.x} ${startPoint.y}`
   for (let i = 0; i < allPoints.length - 1; i++) {
     const from = allPoints[i]
@@ -65,6 +37,13 @@ const StyledEdge: React.FunctionComponent<EdgeProps> = ({
 
   const edgeColor = (element.getData() && element.getData().color) || '#808080'
   const markerId = `arrowhead-${element.getId()}`
+
+  const solidSquareClass = css`
+    & rect {
+      fill: ${edgeColor};
+      stroke: ${edgeColor};
+    }
+  `
 
   return (
     <>
@@ -82,19 +61,15 @@ const StyledEdge: React.FunctionComponent<EdgeProps> = ({
         </marker>
       </defs>
       <Layer id={dragging ? 'top' : undefined}>
-        <EdgeConnectorSquare dragRef={sourceDragRef} edge={element} />
-        <path
-          strokeWidth={1}
-          stroke={edgeColor}
-          d={d}
-          fill="none"
-          markerEnd={`url(#${markerId})`}
-          onMouseEnter={onShowRemoveConnector}
-          onMouseLeave={onHideRemoveConnector}
+        <DefaultConnectorTerminal
+          className={solidSquareClass}
+          isTarget={false}
+          edge={element}
+          size={4}
+          terminalType={EdgeTerminalType.square}
         />
-        {sourceDragRef && <circle ref={sourceDragRef} r={8} cx={startPoint.x} cy={startPoint.y} fillOpacity={0} />}
+        <path strokeWidth={1} stroke={edgeColor} d={d} fill="none" markerEnd={`url(#${markerId})`} />
       </Layer>
-      {bendpoints && bendpoints.map((p, i) => <Bendpoint point={p} key={i.toString()} />)}
     </>
   )
 }
