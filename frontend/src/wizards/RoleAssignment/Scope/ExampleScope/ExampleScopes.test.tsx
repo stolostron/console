@@ -27,7 +27,7 @@ describe('ExampleScopes', () => {
     render(<ExampleScopes />)
 
     expect(screen.getByText('These examples show different ways to scope role assignments.')).toBeInTheDocument()
-    expect(screen.getByText('Example 1 of 9')).toBeInTheDocument()
+    expect(screen.getByText('Example 1 of 11')).toBeInTheDocument()
 
     // Instead of looking for the test ID, let's look for the mock content
     expect(screen.getByText('Example Scope 0')).toBeInTheDocument()
@@ -56,7 +56,7 @@ describe('ExampleScopes', () => {
     const nextButton = screen.getByLabelText('Next example')
     fireEvent.click(nextButton)
 
-    expect(screen.getByText('Example 2 of 9')).toBeInTheDocument()
+    expect(screen.getByText('Example 2 of 11')).toBeInTheDocument()
     expect(screen.getByText('Example Scope 1')).toBeInTheDocument()
   })
 
@@ -68,11 +68,11 @@ describe('ExampleScopes', () => {
 
     // Go to second example
     fireEvent.click(nextButton)
-    expect(screen.getByText('Example 2 of 9')).toBeInTheDocument()
+    expect(screen.getByText('Example 2 of 11')).toBeInTheDocument()
 
     // Go back to first example
     fireEvent.click(previousButton)
-    expect(screen.getByText('Example 1 of 9')).toBeInTheDocument()
+    expect(screen.getByText('Example 1 of 11')).toBeInTheDocument()
     expect(screen.getByText('Example Scope 0')).toBeInTheDocument()
   })
 
@@ -81,12 +81,12 @@ describe('ExampleScopes', () => {
 
     const nextButton = screen.getByLabelText('Next example')
 
-    // Navigate to last example (8 clicks to get to index 8)
-    for (let i = 0; i < 8; i++) {
+    // Navigate to last example (10 clicks to get to index 10)
+    for (let i = 0; i < 10; i++) {
       fireEvent.click(nextButton)
     }
 
-    expect(screen.getByText('Example 9 of 9')).toBeInTheDocument()
+    expect(screen.getByText('Example 11 of 11')).toBeInTheDocument()
     expect(nextButton).toBeDisabled()
   })
 
