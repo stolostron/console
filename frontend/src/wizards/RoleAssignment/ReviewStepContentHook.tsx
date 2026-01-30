@@ -34,7 +34,7 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: UseReviewS
   }): string | null => {
     switch (true) {
       case selectedClusters && selectedClusters.length > 0:
-        return selectedClusters.map((c) => c.metadata?.name || c.name || c).join(', ')
+        return selectedClusters.join(', ')
       case clusterNames && clusterNames.length > 0:
         return clusterNames.join(', ')
       default:

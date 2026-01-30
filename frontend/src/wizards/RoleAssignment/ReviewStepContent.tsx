@@ -31,7 +31,7 @@ export const ReviewStepContent = ({ formData, preselected, isEditing, hasChanges
       subject: preselected?.subject,
     },
     newData: {
-      clusterNames: formData.selectedClusters?.map((cluster) => cluster.name) ?? [],
+      clusterNames: formData.selectedClusters?.map((cluster) => cluster.metadata?.name || cluster.name) ?? [],
       namespaces: formData.scope.namespaces ?? [],
       role: formData.roles?.[0],
       subject: formData.subject,
