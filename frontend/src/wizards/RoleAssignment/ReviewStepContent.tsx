@@ -18,9 +18,10 @@ interface ReviewStepContentProps {
   preselected?: RoleAssignmentWizardModalProps['preselected']
   isEditing?: boolean
   hasChanges?: boolean
+  hasNoClusterSets?: boolean
 }
 
-export const ReviewStepContent = ({ formData, preselected, isEditing, hasChanges }: ReviewStepContentProps) => {
+export const ReviewStepContent = ({ formData, preselected, isEditing, hasChanges, hasNoClusterSets, }: ReviewStepContentProps) => {
   const { t } = useTranslation()
 
   const { clusterNames, clustersDisplay, namespacesDisplay, roleDisplay, identityDisplay } = useReviewStepContent({
@@ -100,9 +101,9 @@ export const ReviewStepContent = ({ formData, preselected, isEditing, hasChanges
                               <strong>{t('Cluster sets')}</strong>{' '}
                             </div>
                             <div>
-                              {formData.selectedClusterSets && formData.selectedClusterSets.length > 0
+                               {!hasNoClusterSets
                                 ? formData.selectedClusterSets
-                                    .map((cs) => (cs as ManagedClusterSet).metadata?.name || (cs as string))
+                                    ?.map((cs) => (cs as ManagedClusterSet).metadata?.name || (cs as string))
                                     .join(', ')
                                 : t('None selected')}
                             </div>

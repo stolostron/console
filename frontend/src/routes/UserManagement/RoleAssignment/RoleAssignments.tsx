@@ -393,6 +393,7 @@ const RoleAssignments = ({
         preselected={
           editingRoleAssignment
             ? {
+                clusterSetNames: editingRoleAssignment.clusterSetNames,
                 clusterNames: editingRoleAssignment.clusterNames,
                 roles: [editingRoleAssignment.clusterRole],
                 subject: {
