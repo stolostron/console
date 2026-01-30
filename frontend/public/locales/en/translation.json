@@ -448,7 +448,6 @@
   "All clusters": "All clusters",
   "All clusters in the cluster set already have the Submariner add-on installed. To get started, add more clusters to this cluster set.": "All clusters in the cluster set already have the Submariner add-on installed. To get started, add more clusters to this cluster set.",
   "All copied": "All copied",
-  "All current and future clusters": "All current and future clusters",
   "All DNS records must be subdomains of this base and include the cluster name. This cannot be changed after cluster installation.": "All DNS records must be subdomains of this base and include the cluster name. This cannot be changed after cluster installation.",
   "All namespaces on the cluster (default)": "All namespaces on the cluster (default)",
   "All resources in this group have deployed on the target clusters, although their status might not be successful.": "All resources in this group have deployed on the target clusters, although their status might not be successful.",

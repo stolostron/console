@@ -69,8 +69,7 @@ export const usePreselectedData = ({
           }
         } else if (hasClusterSetNames) {
           const clusterSets = managedClusterSets.filter(
-            (clusterSet) =>
-              clusterSet.metadata.name && preselected?.clusterSetNames?.includes(clusterSet.metadata.name)
+            (clusterSet) => clusterSet.metadata.name && preselected?.clusterSetNames?.includes(clusterSet.metadata.name)
           )
 
           updates.scopeType = 'Select cluster sets'
