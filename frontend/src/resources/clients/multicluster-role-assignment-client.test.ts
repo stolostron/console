@@ -16,6 +16,7 @@ import {
   deleteRoleAssignment,
   findRoleAssignments,
   getPlacementsForRoleAssignment,
+  getRoleAssignmentName,
   useFindRoleAssignments,
 } from './multicluster-role-assignment-client'
 import * as managedClusterSetBindingClient from './managed-cluster-set-binding-client'
@@ -35,6 +36,7 @@ import {
   findRoleAssignmentsSortTestCases,
   getClustersDeduplicationTestCases,
   getClustersSortingTestCases,
+  getRoleAssignmentNameEquivalentPairTestCases,
   globalScopeTestCases,
   namespaceFilteringTestCases,
 } from './multicluster-role-assignment-client.fixtures'
@@ -1922,28 +1924,15 @@ describe('multicluster-role-assignment-client', function () {
 
     describe('duplicate detection', () => {
       it('should reject when adding duplicate role assignment', async () => {
-        // Import sha256 to compute the expected hash
-        const { sha256 } = await import('js-sha256')
-
         const roleAssignment: RoleAssignmentToSave = {
           clusterRole: 'admin',
           clusterNames: ['cluster-a'],
           subject: { name: 'user1', kind: UserKind },
           isGlobalScope: false,
+          targetNamespaces: [],
         }
 
-        // Compute the expected hash the same way getRoleAssignmentName does
-        const sortedKeys = Object.keys(roleAssignment).sort((a, b) => a.localeCompare(b))
-        const sortedObject: Record<string, unknown> = {}
-        for (const key of sortedKeys) {
-          const value = roleAssignment[key as keyof typeof roleAssignment]
-          if (['targetNamespaces', 'clusterNames', 'clusterSetNames'].includes(key) && value && Array.isArray(value)) {
-            sortedObject[key] = [...value].sort((a: string, b: string) => a.localeCompare(b))
-          } else {
-            sortedObject[key] = value
-          }
-        }
-        const expectedHash = sha256(JSON.stringify(sortedObject)).substring(0, 16)
+        const expectedHash = getRoleAssignmentName(roleAssignment)
 
         // Create an existing MRA with a role assignment that has the same hash name
         const existingMRA = createMockMulticlusterRoleAssignment('existing-mra', roleAssignment.subject, [])
@@ -2006,6 +1995,34 @@ describe('multicluster-role-assignment-client', function () {
         expect(result.name).toBeDefined()
         expect(mockPatchResourceForAdd).toHaveBeenCalled()
       })
+    })
+  })
+
+  describe('getRoleAssignmentName', () => {
+    it.each(getRoleAssignmentNameEquivalentPairTestCases)('$description', ({ roleAssignmentA, roleAssignmentB }) => {
+      const nameA = getRoleAssignmentName(roleAssignmentA)
+      const nameB = getRoleAssignmentName(roleAssignmentB)
+      expect(nameA).toBe(nameB)
+    })
+
+    it('produces different names when array contents differ', () => {
+      const withClusterA: RoleAssignmentToSave = {
+        clusterRole: 'admin',
+        clusterNames: ['cluster-a'],
+        clusterSetNames: [],
+        subject: { name: 'user1', kind: UserKind },
+        isGlobalScope: false,
+        targetNamespaces: [],
+      }
+      const withClusterB: RoleAssignmentToSave = {
+        clusterRole: 'admin',
+        clusterNames: ['cluster-b'],
+        clusterSetNames: [],
+        subject: { name: 'user1', kind: UserKind },
+        isGlobalScope: false,
+        targetNamespaces: [],
+      }
+      expect(getRoleAssignmentName(withClusterA)).not.toBe(getRoleAssignmentName(withClusterB))
     })
   })
 })
