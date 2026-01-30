@@ -152,6 +152,18 @@ describe('useReviewStepContent', () => {
       // Should be treated as unchanged since sorted arrays are equal
       expect(result.current.namespacesDisplay).toBe('ns1, ns2')
     })
+
+    it('returns "Full access" when both old and new namespaces are empty during edit', () => {
+      const { result } = renderHook(() =>
+        useReviewStepContent({
+          oldData: { clusterNames: [] },
+          newData: { clusterNames: [] },
+          isEditing: true,
+        })
+      )
+
+      expect(result.current.namespacesDisplay).toBe('Full access')
+    })
   })
 
   describe('clusterNames', () => {
@@ -595,6 +607,64 @@ describe('useReviewStepContent', () => {
 
       const display = result.current.identityDisplay
       expect(display).toHaveProperty('type', 'div')
+    })
+  })
+
+  describe('clusterSetsDisplay', () => {
+    it('returns current cluster set names when not editing', () => {
+      const { result } = renderHook(() =>
+        useReviewStepContent({
+          oldData: { clusterNames: [], clusterSetNames: ['old-set'] },
+          newData: {
+            clusterNames: [],
+            clusterSetNames: ['new-set-1', 'new-set-2'],
+          },
+          isEditing: false,
+        })
+      )
+
+      expect(result.current.clusterSetsDisplay).toBe('new-set-1, new-set-2')
+    })
+
+
+    it('sorts cluster sets before displaying', () => {
+      const { result } = renderHook(() =>
+        useReviewStepContent({
+          oldData: { clusterNames: [] },
+          newData: {
+            clusterNames: [],
+            clusterSetNames: ['set-b', 'set-a'],
+          },
+          isEditing: false,
+        })
+      )
+
+      expect(result.current.clusterSetsDisplay).toBe('set-a, set-b')
+    })
+
+    it('handles change from "None selected" to cluster sets', () => {
+      const { result } = renderHook(() =>
+        useReviewStepContent({
+          oldData: { clusterNames: [] },
+          newData: { clusterNames: [], clusterSetNames: ['new-set'] },
+          isEditing: true,
+        })
+      )
+
+      const display = result.current.clusterSetsDisplay
+      expect(display).toHaveProperty('type', 'div')
+    })
+
+    it('uses oldData as fallback when newData is empty and not editing', () => {
+      const { result } = renderHook(() =>
+        useReviewStepContent({
+          oldData: { clusterNames: [], clusterSetNames: ['fallback-set'] },
+          newData: { clusterNames: [] },
+          isEditing: false,
+        })
+      )
+
+      expect(result.current.clusterSetsDisplay).toBe('fallback-set')
     })
   })
 

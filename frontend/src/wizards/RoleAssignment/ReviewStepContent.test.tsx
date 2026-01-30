@@ -96,11 +96,7 @@ describe('ReviewStepContent', () => {
     )
 
     expect(screen.getByText('Scope')).toBeInTheDocument()
-    expect(screen.getByText('Access level')).toBeInTheDocument()
-    // Test for either "All clusters" (staged) or "All current and future clusters" (unstaged changes)
-    expect(screen.getByText(/All (current and future )?clusters/)).toBeInTheDocument()
-    expect(screen.getByText('Projects')).toBeInTheDocument()
-    expect(screen.getByText('Full access')).toBeInTheDocument()
+    expect(screen.getByText('Global / Applies to all resources registered in ACM')).toBeInTheDocument()
   })
 
   it('renders Scope section for Select cluster sets', () => {

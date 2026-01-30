@@ -5,6 +5,11 @@ import { GlobalPlacementName, GroupKind, UserKind } from '../../resources'
 import { RoleAssignmentWizardFormData } from './types'
 import { usePreselectedData } from './usePreselectedData'
 
+const mockManagedClusterSets = [
+  { metadata: { name: 'cluster-set-1' } },
+  { metadata: { name: 'cluster-set-2' } },
+]
+
 // Mock the useRoleAssignmentData hook
 jest.mock('../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook', () => ({
   useRoleAssignmentData: () => ({
@@ -25,6 +30,14 @@ jest.mock('../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHo
     },
     isLoading: false,
   }),
+}))
+
+// Mock Recoil
+jest.mock('../../shared-recoil', () => ({
+  useRecoilValue: jest.fn(() => mockManagedClusterSets),
+  useSharedAtoms: jest.fn(() => ({
+    managedClusterSetsState: {},
+  })),
 }))
 
 describe('usePreselectedData', () => {
@@ -429,13 +442,14 @@ describe('usePreselectedData', () => {
         scopeType: 'Select cluster sets',
         scope: {
           kind: 'all',
+          namespaces: undefined,
         },
-        selectedClusterSets: ['cluster-set-1', 'cluster-set-2'],
+        selectedClusterSets: mockManagedClusterSets,
       })
     )
   })
 
-  it('calls setSelectedClusterSets with cluster set names when cluster set names are preselected', () => {
+  it('calls setSelectedClusterSets with cluster set objects when cluster set names are preselected', () => {
     const { mockFn: setFormData } = createMockSetFormData()
     const setSelectedClusterSets = jest.fn()
     const setSelectedClusters = jest.fn()
@@ -450,7 +464,7 @@ describe('usePreselectedData', () => {
       })
     )
 
-    expect(setSelectedClusterSets).toHaveBeenCalledWith(['cluster-set-1'])
+    expect(setSelectedClusterSets).toHaveBeenCalledWith([mockManagedClusterSets[0]])
   })
 
   it('filters out non-existent cluster set names', () => {
@@ -469,8 +483,8 @@ describe('usePreselectedData', () => {
     )
 
     expect(setFormData).toHaveBeenCalled()
-    expect(calls[0].selectedClusterSets).toEqual(['cluster-set-1'])
-    expect(setSelectedClusterSets).toHaveBeenCalledWith(['cluster-set-1'])
+    expect(calls[0].selectedClusterSets).toEqual([mockManagedClusterSets[0]])
+    expect(setSelectedClusterSets).toHaveBeenCalledWith([mockManagedClusterSets[0]])
   })
 
   it('does not update cluster sets when preselected clusterSetNames is empty array', () => {
@@ -524,11 +538,12 @@ describe('usePreselectedData', () => {
         scopeType: 'Select cluster sets',
         scope: {
           kind: 'all',
+          namespaces: undefined,
         },
-        selectedClusterSets: ['cluster-set-1', 'cluster-set-2'],
+        selectedClusterSets: mockManagedClusterSets,
       })
     )
-    expect(setSelectedClusterSets).toHaveBeenCalledWith(['cluster-set-1', 'cluster-set-2'])
+    expect(setSelectedClusterSets).toHaveBeenCalledWith(mockManagedClusterSets)
   })
 
   describe('precedence logic', () => {
@@ -649,8 +664,9 @@ describe('usePreselectedData', () => {
           scopeType: 'Select cluster sets',
           scope: {
             kind: 'all',
+            namespaces: undefined,
           },
-          selectedClusterSets: ['cluster-set-1'],
+          selectedClusterSets: [mockManagedClusterSets[0]],
         })
       )
       // Cluster names should be ignored
@@ -681,10 +697,11 @@ describe('usePreselectedData', () => {
         expect.objectContaining({
           scopeType: 'Select cluster sets',
           scope: {
-            kind: 'all',
+            kind: 'specific',
             namespaces: ['namespace-1', 'namespace-2'],
           },
-          selectedClusterSets: ['cluster-set-1'],
+          selectedClusterSets: [mockManagedClusterSets[0]],
+          clustersetsAccessLevel: 'Project role assignment',
         })
       )
     })
@@ -809,10 +826,11 @@ describe('usePreselectedData', () => {
         expect.objectContaining({
           scopeType: 'Select cluster sets',
           scope: {
-            kind: 'all',
+            kind: 'specific',
             namespaces: ['namespace-1'],
           },
-          selectedClusterSets: ['cluster-set-1'],
+          selectedClusterSets: [mockManagedClusterSets[0]],
+          clustersetsAccessLevel: 'Project role assignment',
         })
       )
       // Cluster names should be ignored

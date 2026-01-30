@@ -109,5 +109,13 @@ export const usePreselectedData = ({
         return { ...prev, ...updates }
       })
     }
-  }, [isOpen, preselected, roleAssignmentData.clusterSets, setFormData, setSelectedClusterSets, setSelectedClusters])
+  }, [
+    isOpen,
+    preselected,
+    roleAssignmentData.clusterSets,
+    managedClusterSets,
+    setFormData,
+    setSelectedClusterSets,
+    setSelectedClusters,
+  ])
 }
