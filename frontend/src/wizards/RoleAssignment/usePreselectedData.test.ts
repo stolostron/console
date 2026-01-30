@@ -5,10 +5,7 @@ import { GlobalPlacementName, GroupKind, UserKind } from '../../resources'
 import { RoleAssignmentWizardFormData } from './types'
 import { usePreselectedData } from './usePreselectedData'
 
-const mockManagedClusterSets = [
-  { metadata: { name: 'cluster-set-1' } },
-  { metadata: { name: 'cluster-set-2' } },
-]
+const mockManagedClusterSets = [{ metadata: { name: 'cluster-set-1' } }, { metadata: { name: 'cluster-set-2' } }]
 
 // Mock the useRoleAssignmentData hook
 jest.mock('../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook', () => ({

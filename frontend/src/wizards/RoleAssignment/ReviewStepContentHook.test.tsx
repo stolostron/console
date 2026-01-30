@@ -626,7 +626,6 @@ describe('useReviewStepContent', () => {
       expect(result.current.clusterSetsDisplay).toBe('new-set-1, new-set-2')
     })
 
-
     it('sorts cluster sets before displaying', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
