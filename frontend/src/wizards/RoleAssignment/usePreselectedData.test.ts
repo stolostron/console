@@ -5,6 +5,18 @@ import { GlobalPlacementName, GroupKind, UserKind } from '../../resources'
 import { RoleAssignmentWizardFormData } from './types'
 import { usePreselectedData } from './usePreselectedData'
 
+// Mock managedClusterSets for Recoil
+const mockManagedClusterSets = [
+  {
+    metadata: { name: 'cluster-set-1' },
+    spec: {},
+  },
+  {
+    metadata: { name: 'cluster-set-2' },
+    spec: {},
+  },
+]
+
 // Mock the useRoleAssignmentData hook
 jest.mock('../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook', () => ({
   useRoleAssignmentData: () => ({
@@ -25,6 +37,14 @@ jest.mock('../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHo
     },
     isLoading: false,
   }),
+}))
+
+// Mock Recoil
+jest.mock('../../shared-recoil', () => ({
+  useSharedAtoms: () => ({
+    managedClusterSetsState: 'managedClusterSetsState',
+  }),
+  useRecoilValue: () => mockManagedClusterSets,
 }))
 
 describe('usePreselectedData', () => {
@@ -435,7 +455,7 @@ describe('usePreselectedData', () => {
     )
   })
 
-  it('calls setSelectedClusterSets with cluster set names when cluster set names are preselected', () => {
+  it('calls setSelectedClusterSets with cluster set objects when cluster set names are preselected', () => {
     const { mockFn: setFormData } = createMockSetFormData()
     const setSelectedClusterSets = jest.fn()
     const setSelectedClusters = jest.fn()
@@ -450,7 +470,7 @@ describe('usePreselectedData', () => {
       })
     )
 
-    expect(setSelectedClusterSets).toHaveBeenCalledWith(['cluster-set-1'])
+    expect(setSelectedClusterSets).toHaveBeenCalledWith([{ metadata: { name: 'cluster-set-1' }, spec: {} }])
   })
 
   it('filters out non-existent cluster set names', () => {
@@ -470,7 +490,7 @@ describe('usePreselectedData', () => {
 
     expect(setFormData).toHaveBeenCalled()
     expect(calls[0].selectedClusterSets).toEqual(['cluster-set-1'])
-    expect(setSelectedClusterSets).toHaveBeenCalledWith(['cluster-set-1'])
+    expect(setSelectedClusterSets).toHaveBeenCalledWith([{ metadata: { name: 'cluster-set-1' }, spec: {} }])
   })
 
   it('does not update cluster sets when preselected clusterSetNames is empty array', () => {
@@ -528,7 +548,7 @@ describe('usePreselectedData', () => {
         selectedClusterSets: ['cluster-set-1', 'cluster-set-2'],
       })
     )
-    expect(setSelectedClusterSets).toHaveBeenCalledWith(['cluster-set-1', 'cluster-set-2'])
+    expect(setSelectedClusterSets).toHaveBeenCalledWith(mockManagedClusterSets)
   })
 
   describe('precedence logic', () => {
