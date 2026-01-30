@@ -54,6 +54,7 @@ import {
   AcmEmptyState,
   AcmInlineStatusGroup,
   AcmTable,
+  AcmTableStateProvider,
   AcmVisitedLink,
   compareStrings,
   IAcmRowAction,
@@ -1217,31 +1218,33 @@ export default function ApplicationsOverview() {
     <PageSection hasBodyWrapper={false}>
       <DeleteResourceModal {...modalProps} />
       {pluginModal}
-      <AcmTable<IResource<ApplicationStatus>>
-        id={TABLE_ID}
-        key="data-table"
-        columns={columns}
-        keyFn={keyFn}
-        items={tableItems as IResource<ApplicationStatus>[]}
-        filters={filters}
-        setRequestView={setRequestedView}
-        resultView={resultView}
-        resultCounts={resultCounts}
-        fetchExport={fetchAggregateForExport}
-        customTableAction={appCreationButton}
-        additionalToolbarItems={additionalToolbarItems}
-        showExportButton
-        exportFilePrefix="applicationsoverview"
-        emptyState={
-          <AcmEmptyState
-            key="appOverviewEmptyState"
-            title={t("You don't have any applications yet")}
-            message={t('To get started, create an application.')}
-            action={emptyStateActions}
-          />
-        }
-        rowActionResolver={rowActionResolver}
-      />
+      <AcmTableStateProvider localStorageKey={'applications-overview-table-state'}>
+        <AcmTable<IResource<ApplicationStatus>>
+          id={TABLE_ID}
+          key="data-table"
+          columns={columns}
+          keyFn={keyFn}
+          items={tableItems as IResource<ApplicationStatus>[]}
+          filters={filters}
+          setRequestView={setRequestedView}
+          resultView={resultView}
+          resultCounts={resultCounts}
+          fetchExport={fetchAggregateForExport}
+          customTableAction={appCreationButton}
+          additionalToolbarItems={additionalToolbarItems}
+          showExportButton
+          exportFilePrefix="applicationsoverview"
+          emptyState={
+            <AcmEmptyState
+              key="appOverviewEmptyState"
+              title={t("You don't have any applications yet")}
+              message={t('To get started, create an application.')}
+              action={emptyStateActions}
+            />
+          }
+          rowActionResolver={rowActionResolver}
+        />
+      </AcmTableStateProvider>
     </PageSection>
   )
 }
