@@ -176,6 +176,7 @@ export const Topology = (props: TopologyProps) => {
       // this creates the StyledNodes and StyledEdges from the props.elements
       // when called a second time, Nodes and Edges are added removed
       controller.fromModel(getLayoutModel(props.elements))
+      controller.getGraph()?.layout()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [controller, nodesKey])

@@ -23,16 +23,21 @@ const StyledEdge: React.FunctionComponent<EdgeProps> = ({ element, dragging }) =
   const startPoint = element.getStartPoint()
   const endPoint = element.getEndPoint()
 
-  // Create curved path segments using quadratic Bezier curves that arc upward
-  const curveOffset = 25 // pixels to curve upward (negative Y direction)
-  const allPoints = [startPoint, endPoint]
-  let d = `M${startPoint.x} ${startPoint.y}`
-  for (let i = 0; i < allPoints.length - 1; i++) {
-    const from = allPoints[i]
-    const to = allPoints[i + 1]
-    const midX = (from.x + to.x) / 2
-    const midY = (from.y + to.y) / 2 - curveOffset
-    d += ` Q${midX} ${midY} ${to.x} ${to.y}`
+  // Create path: straight line if horizontally aligned, otherwise curved
+  const horizontalDistance = Math.abs(endPoint.y - startPoint.y)
+  let d: string
+
+  if (horizontalDistance <= 50) {
+    // Use straight line when target is within 20px horizontally of source
+    d = `M${startPoint.x} ${startPoint.y} L${endPoint.x} ${endPoint.y}`
+  } else {
+    // Use quadratic Bezier curve
+    const curveOffset = 25
+    const midX = (startPoint.x + endPoint.x) / 2
+    // Curve towards top if target is below source, towards bottom if target is above
+    const curveDirection = endPoint.y > startPoint.y ? -1 : 1
+    const midY = (startPoint.y + endPoint.y) / 2 + curveOffset * curveDirection
+    d = `M${startPoint.x} ${startPoint.y} Q${midX} ${midY} ${endPoint.x} ${endPoint.y}`
   }
 
   const edgeColor = (element.getData() && element.getData().color) || '#808080'
