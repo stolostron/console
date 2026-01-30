@@ -279,7 +279,14 @@ export const RoleAssignmentWizardModal = ({
       }
     })()
 
-    return roleChanged || clusterSetsChanged || clustersChanged || namespacesChanged || identityKindChanged || identityValueChanged
+    return (
+      roleChanged ||
+      clusterSetsChanged ||
+      clustersChanged ||
+      namespacesChanged ||
+      identityKindChanged ||
+      identityValueChanged
+    )
   }, [isEditing, preselected, formData])
 
   const scopeSubSteps = [
