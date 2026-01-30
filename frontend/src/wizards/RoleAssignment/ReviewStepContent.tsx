@@ -25,10 +25,11 @@ export const ReviewStepContent = ({
   preselected,
   isEditing,
   hasChanges,
+  hasNoClusterSets,
 }: ReviewStepContentProps) => {
   const { t } = useTranslation()
 
-  const { clusterNames, clusterSetsDisplay, clustersDisplay, namespacesDisplay, roleDisplay, identityDisplay } =
+  const { clusterSetsDisplay, clustersDisplay, namespacesDisplay, roleDisplay, identityDisplay } =
     useReviewStepContent({
       oldData: {
         clusterNames: preselected?.clusterNames,
@@ -100,10 +101,10 @@ export const ReviewStepContent = ({
                           </div>
                           <div style={{ marginTop: '8px' }}>
                             <div>
-                              <strong>{clusterNames ? t('Clusters') : t('Access level')}</strong>{' '}
+                              <strong>{t('Clusters')}</strong>{' '}
                             </div>
                             <div>
-                              {clusterNames
+                              {hasNoClusterSets
                                 ? clustersDisplay
                                 : t('Full access to all clusters in selected cluster sets')}
                             </div>
