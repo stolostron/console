@@ -1423,12 +1423,14 @@ describe('RoleAssignmentWizardModalWrapper', () => {
         })
       })
 
-      await waitFor(() => expect(mockToastContext.addAlert).toHaveBeenCalledWith(
-        expect.objectContaining({
-          title: 'Role assignment update failed',
-          type: 'danger',
-        })
-      ))
+      await waitFor(() =>
+        expect(mockToastContext.addAlert).toHaveBeenCalledWith(
+          expect.objectContaining({
+            title: 'Role assignment update failed',
+            type: 'danger',
+          })
+        )
+      )
       await waitFor(() => expect(mockClose).toHaveBeenCalled(), { timeout: 3000 })
       await waitFor(() => expect(capturedIsLoading).toBe(false))
     })
