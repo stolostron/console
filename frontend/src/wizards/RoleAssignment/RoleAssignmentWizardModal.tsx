@@ -274,7 +274,7 @@ export const RoleAssignmentWizardModal = ({
     const stringComparison = (a: string, b: string) => a.localeCompare(b)
     const clusterSetsChanged =
       formData.scopeType === 'Select cluster sets' &&
-      JSON.stringify((preselected?.clusterSetNames || []).filter((name) => name !== GlobalPlacementName).toSorted(stringComparison)) !==
+      JSON.stringify((preselected?.clusterSetNames || []).toSorted(stringComparison)) !==
         JSON.stringify(
           (formData.selectedClusterSets || [])
             .map((cs) => (typeof cs === 'string' ? cs : cs.metadata?.name))
