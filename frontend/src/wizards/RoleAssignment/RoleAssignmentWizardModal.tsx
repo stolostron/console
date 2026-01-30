@@ -272,19 +272,21 @@ export const RoleAssignmentWizardModal = ({
     const roleChanged = preselected?.roles?.[0] !== formData.roles?.[0]
     const clusterSetsChanged =
       formData.scopeType === 'Select cluster sets' &&
-      JSON.stringify((preselected?.clusterSetNames || []).filter((name) => name !== GlobalPlacementName).toSorted()) !==
+      JSON.stringify(
+        (preselected?.clusterSetNames || []).filter((name) => name !== GlobalPlacementName).toSorted((a, b) => a.localeCompare(b))
+      ) !==
         JSON.stringify(
           (formData.selectedClusterSets || [])
             .map((cs) => (typeof cs === 'string' ? cs : cs.metadata?.name))
-            .toSorted()
+            .toSorted((a, b) => (a ?? '').localeCompare(b ?? ''))
         )
     const clustersChanged =
       formData.scopeType === 'Select clusters' &&
-      JSON.stringify((preselected?.clusterNames || []).toSorted()) !==
-        JSON.stringify((formData.selectedClusters || []).map((c) => c.metadata?.name || c.name || c).toSorted())
+      JSON.stringify((preselected?.clusterNames || []).toSorted((a, b) => a.localeCompare(b))) !==
+        JSON.stringify((formData.selectedClusters || []).map((c) => c.metadata?.name || c.name || c).toSorted((a, b) => (a ?? '').localeCompare(b ?? '')))
     const namespacesChanged =
-      JSON.stringify((preselected?.namespaces || []).toSorted()) !==
-      JSON.stringify((formData.scope.namespaces || []).toSorted())
+      JSON.stringify((preselected?.namespaces || []).toSorted((a, b) => a.localeCompare(b))) !==
+      JSON.stringify((formData.scope.namespaces || []).toSorted((a, b) => a.localeCompare(b)))
 
     const identityKindChanged = preselected?.subject?.kind !== formData.subject?.kind
     const identityValueChanged = (() => {
