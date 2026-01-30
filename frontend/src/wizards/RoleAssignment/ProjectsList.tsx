@@ -47,6 +47,17 @@ export const ProjectsList = ({ selectedClusters, selectedNamespaces, onSelection
     onSelectionChange(projects.map((p) => p.name))
   }
 
+  const createProjectTooltipText = useMemo(() => {
+    switch (true) {
+      case hasSelectedProjects:
+        return t('Deselect projects to create a new common project')
+      case isSelectedClustersEmpty:
+        return t('No clusters selection to create projects for')
+      default:
+        return undefined
+    }
+  }, [t, hasSelectedProjects, isSelectedClustersEmpty])
+
   const tableActionButtons = useMemo<IAcmTableButtonAction[]>(
     () => [
       {
@@ -55,14 +66,10 @@ export const ProjectsList = ({ selectedClusters, selectedNamespaces, onSelection
         click: handleCreateClick,
         variant: ButtonVariant.primary,
         isDisabled: hasSelectedProjects || isSelectedClustersEmpty,
-        tooltip: hasSelectedProjects
-          ? t('Deselect projects to create a new common project')
-          : isSelectedClustersEmpty
-            ? t('No clusters selection to create projects for')
-            : undefined,
+        tooltip: createProjectTooltipText,
       },
     ],
-    [t, hasSelectedProjects, isSelectedClustersEmpty]
+    [t, hasSelectedProjects, isSelectedClustersEmpty, createProjectTooltipText]
   )
   return (
     <PageSection>
