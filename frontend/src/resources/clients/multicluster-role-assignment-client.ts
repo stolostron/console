@@ -267,7 +267,18 @@ export const getRoleAssignmentName = (roleAssignment: RoleAssignmentToSave): str
     return acc
   }, {})
 
-  const stringified = JSON.stringify(sortedObject)
+  const emptyValuesToUndefinedReplacer = (_k: any, value: any) => {
+    switch (true) {
+      case value !== undefined && Array.isArray(value) && value.length === 0:
+      case value !== undefined && typeof value === 'object' && Object.keys(value).length === 0:
+      case value !== undefined && typeof value === 'string' && value.trim().length === 0:
+        return undefined
+      default:
+        return value
+    }
+  }
+
+  const stringified = JSON.stringify(sortedObject, emptyValuesToUndefinedReplacer)
   const hash = sha256(stringified)
   return hash.substring(0, 16)
 }
