@@ -248,8 +248,7 @@ export const RoleAssignmentWizardModal = ({
   const hasChanges = useMemo(() => {
     if (!isEditing) return true
 
-    const originalIsGlobal =
-      preselected?.clusterSetNames && preselected.clusterSetNames.includes(GlobalPlacementName)
+    const originalIsGlobal = preselected?.clusterSetNames && preselected.clusterSetNames.includes(GlobalPlacementName)
     const originalHasClusterSets =
       preselected?.clusterSetNames &&
       preselected.clusterSetNames.length > 0 &&
@@ -273,7 +272,9 @@ export const RoleAssignmentWizardModal = ({
     const clusterSetsChanged =
       formData.scopeType === 'Select cluster sets' &&
       JSON.stringify(
-        (preselected?.clusterSetNames || []).filter((name) => name !== GlobalPlacementName).toSorted((a, b) => a.localeCompare(b))
+        (preselected?.clusterSetNames || [])
+          .filter((name) => name !== GlobalPlacementName)
+          .toSorted((a, b) => a.localeCompare(b))
       ) !==
         JSON.stringify(
           (formData.selectedClusterSets || [])
@@ -283,7 +284,11 @@ export const RoleAssignmentWizardModal = ({
     const clustersChanged =
       formData.scopeType === 'Select clusters' &&
       JSON.stringify((preselected?.clusterNames || []).toSorted((a, b) => a.localeCompare(b))) !==
-        JSON.stringify((formData.selectedClusters || []).map((c) => c.metadata?.name || c.name || c).toSorted((a, b) => (a ?? '').localeCompare(b ?? '')))
+        JSON.stringify(
+          (formData.selectedClusters || [])
+            .map((c) => c.metadata?.name || c.name || c)
+            .toSorted((a, b) => (a ?? '').localeCompare(b ?? ''))
+        )
     const namespacesChanged =
       JSON.stringify((preselected?.namespaces || []).toSorted((a, b) => a.localeCompare(b))) !==
       JSON.stringify((formData.scope.namespaces || []).toSorted((a, b) => a.localeCompare(b)))
