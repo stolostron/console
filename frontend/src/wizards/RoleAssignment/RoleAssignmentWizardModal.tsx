@@ -248,8 +248,7 @@ export const RoleAssignmentWizardModal = ({
   const hasChanges = useMemo(() => {
     if (!isEditing) return true
 
-    const originalIsGlobal =
-      preselected?.clusterSetNames && preselected.clusterSetNames.includes(GlobalPlacementName)
+    const originalIsGlobal = preselected?.clusterSetNames && preselected.clusterSetNames.includes(GlobalPlacementName)
     const originalHasClusterSets =
       preselected?.clusterSetNames &&
       preselected.clusterSetNames.length > 0 &&

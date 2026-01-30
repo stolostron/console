@@ -29,8 +29,8 @@ export const ReviewStepContent = ({
 }: ReviewStepContentProps) => {
   const { t } = useTranslation()
 
-  const { clusterSetsDisplay, clustersDisplay, namespacesDisplay, roleDisplay, identityDisplay } =
-    useReviewStepContent({
+  const { clusterSetsDisplay, clustersDisplay, namespacesDisplay, roleDisplay, identityDisplay } = useReviewStepContent(
+    {
       oldData: {
         clusterNames: preselected?.clusterNames,
         clusterSetNames: preselected?.clusterSetNames,
@@ -46,7 +46,8 @@ export const ReviewStepContent = ({
         subject: formData.subject,
       },
       isEditing,
-    })
+    }
+  )
 
   return (
     <div>
