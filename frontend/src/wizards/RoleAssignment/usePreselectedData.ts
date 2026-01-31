@@ -94,7 +94,7 @@ export const usePreselectedData = ({
           }
 
           if (hasClusters) {
-            updates.selectedClustersAccessLevel = 'Project role assignment'
+            updates.clustersAccessLevel = 'Project role assignment'
           }
         }
 

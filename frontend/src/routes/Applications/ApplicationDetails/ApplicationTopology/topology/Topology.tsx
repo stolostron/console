@@ -161,9 +161,25 @@ export const Topology = (props: TopologyProps) => {
     controller.registerLayoutFactory(layoutFactory)
     controller.registerComponentFactory(componentFactory)
   }
-  if (props.elements.nodes.length > 0) {
-    controller.fromModel(getLayoutModel(props.elements), false)
-  }
+
+  const nodesKey = JSON.stringify(
+    props.elements.nodes
+      .map((node: any) => ({
+        id: node.id,
+        name: node.name,
+        pulse: node.specs?.pulse,
+      }))
+      .sort((a: any, b: any) => a.id.localeCompare(b.id))
+  )
+  useEffect(() => {
+    if (props.elements.nodes.length > 0) {
+      // this creates the StyledNodes and StyledEdges from the props.elements
+      // when called a second time, Nodes and Edges are added removed
+      controller.fromModel(getLayoutModel(props.elements))
+      controller.getGraph()?.layout()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [controller, nodesKey])
 
   return (
     <VisualizationProvider controller={controller}>
