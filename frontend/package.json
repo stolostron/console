@@ -99,7 +99,7 @@
     "svg.js": "2.7.1",
     "validator": "13.15.26",
     "victory": "^37.3.6",
-    "yaml": "1.10.2",
+    "yaml": "2.8.2",
     "yup": "0.32.11"
   },
   "devDependencies": {
