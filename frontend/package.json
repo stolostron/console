@@ -188,7 +188,7 @@
     "react-router-dom-v5-compat": "^6.30.3",
     "react-tagsinput": "3.20.x",
     "recoil": "0.7.7",
-    "redux": "^4.2.1",
+    "redux": "^5.0.0",
     "redux-thunk": "2.4.2",
     "regenerator-runtime": "^0.14.1",
     "reselect": "^4.1.8",
