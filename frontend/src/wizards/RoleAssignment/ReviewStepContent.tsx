@@ -58,9 +58,7 @@ export const ReviewStepContent = ({ formData, preselected, isEditing, hasChanges
                 {formData.subject.kind}
               </Title>
               <DescriptionListDescription>
-                <div style={{ margin: '0 16px' }}>
-                  <strong>{identityDisplay}</strong>
-                </div>
+                <div style={{ margin: '0 16px' }}>{identityDisplay}</div>
               </DescriptionListDescription>
             </DescriptionListGroup>
           </DescriptionList>
