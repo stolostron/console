@@ -25,14 +25,14 @@ export const ReviewStepContent = ({ formData, preselected, isEditing, hasChanges
 
   const { clusterNames, clustersDisplay, namespacesDisplay, roleDisplay, identityDisplay } = useReviewStepContent({
     oldData: {
-      clusterNames: preselected?.clusterNames,
-      namespaces: preselected?.namespaces,
+      clusterNames: preselected?.clusterNames ?? [],
+      namespaces: preselected?.namespaces ?? [],
       role: preselected?.roles?.[0],
       subject: preselected?.subject,
     },
     newData: {
-      clusterNames: formData.selectedClusters,
-      namespaces: formData.scope.namespaces,
+      clusterNames: formData.selectedClusters?.map((cluster) => cluster.metadata?.name || cluster.name) ?? [],
+      namespaces: formData.scope.namespaces ?? [],
       role: formData.roles?.[0],
       subject: formData.subject,
     },
