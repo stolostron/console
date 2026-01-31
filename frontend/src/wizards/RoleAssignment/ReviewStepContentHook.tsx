@@ -9,12 +9,14 @@ interface UseReviewStepContentProps {
   oldData: {
     namespaces?: RoleAssignmentPreselected['namespaces']
     clusterNames: RoleAssignmentPreselected['clusterNames']
+    clusterSetNames?: RoleAssignmentPreselected['clusterSetNames']
     role?: string
     subject?: RoleAssignmentPreselected['subject']
   }
   newData: {
     namespaces?: string[]
     clusterNames: RoleAssignmentWizardFormData['selectedClusters']
+    clusterSetNames?: RoleAssignmentWizardFormData['selectedClusterSets']
     role?: string
     subject?: RoleAssignmentWizardFormData['subject']
   }
@@ -73,6 +75,11 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: UseReviewS
   const namespacesDisplay = useMemo(() => {
     const hasOriginalNamespaces = oldData.namespaces && oldData.namespaces.length > 0
     const hasCurrentNamespaces = newData.namespaces && newData.namespaces.length > 0
+
+    if (!hasOriginalNamespaces && !hasCurrentNamespaces) {
+      return t('Full access')
+    }
+
     const namespacesChanged =
       hasOriginalNamespaces !== hasCurrentNamespaces ||
       (hasOriginalNamespaces &&
@@ -114,6 +121,36 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: UseReviewS
       </div>
     )
   }, [originalClusterNames, currentClusterNames, t, isEditing])
+
+  const clusterSetsDisplay = useMemo(() => {
+    const getClusterSetNames = (clusterSets: any) => {
+      if (!clusterSets || clusterSets.length === 0) return null
+      return clusterSets
+        .map((cs: any) => cs.metadata?.name || cs)
+        .toSorted((a: string, b: string) => a.localeCompare(b))
+        .join(', ')
+    }
+
+    const originalClusterSetNames = getClusterSetNames(oldData.clusterSetNames)
+    const currentClusterSetNames = getClusterSetNames(newData.clusterSetNames)
+
+    const original = originalClusterSetNames || t('None selected')
+    const current = currentClusterSetNames || (!isEditing && originalClusterSetNames) || t('None selected')
+
+    return !isEditing || original === current ? (
+      current
+    ) : (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div>
+          <s>{original}</s>
+        </div>
+        <ArrowRightIcon />
+        <div>
+          <strong>{current}</strong>
+        </div>
+      </div>
+    )
+  }, [oldData.clusterSetNames, newData.clusterSetNames, t, isEditing])
 
   const roleDisplay = useMemo(() => {
     const original = oldData.role ?? t('No role selected')
@@ -168,5 +205,5 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: UseReviewS
     )
   }, [oldData.subject, newData.subject, t, isEditing])
 
-  return { clusterNames, clustersDisplay, namespacesDisplay, roleDisplay, identityDisplay }
+  return { clusterNames, clusterSetsDisplay, clustersDisplay, namespacesDisplay, roleDisplay, identityDisplay }
 }
