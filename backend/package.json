@@ -57,7 +57,7 @@
     "jest-sonar-reporter": "^2.0.0",
     "nock": "13.5.6",
     "nodemon": "^3.1.11",
-    "pino-zen": "2.0.8",
+    "pino-zen": "3.2.0",
     "prettier": "^3.8.1",
     "rollup": "2.79.2",
     "ts-jest": "^29.4.6",
