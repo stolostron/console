@@ -249,12 +249,16 @@ export const RoleAssignmentWizardModal = ({
     if (!isEditing) return true
 
     const roleChanged = preselected?.roles?.[0] !== formData.roles?.[0]
+
+    const stringComparison = (a: string, b: string) => a.localeCompare(b)
     const clustersChanged =
-      JSON.stringify(preselected?.clusterNames?.toSorted() ?? []) !==
-      JSON.stringify(formData.selectedClusters?.map((c) => c.metadata?.name || c.name || c).toSorted() ?? [])
+      JSON.stringify(preselected?.clusterNames?.toSorted(stringComparison) ?? []) !==
+      JSON.stringify(
+        formData.selectedClusters?.map((c) => c.metadata?.name || c.name || c).toSorted(stringComparison) ?? []
+      )
     const namespacesChanged =
-      JSON.stringify((preselected?.namespaces ?? []).toSorted()) !==
-      JSON.stringify((formData.scope.namespaces ?? []).toSorted())
+      JSON.stringify((preselected?.namespaces ?? []).toSorted(stringComparison)) !==
+      JSON.stringify((formData.scope.namespaces ?? []).toSorted(stringComparison))
 
     const identityKindChanged = preselected?.subject?.kind !== formData.subject?.kind
     const identityValueChanged = (() => {

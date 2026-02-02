@@ -258,7 +258,7 @@ export const getRoleAssignmentName = (roleAssignment: RoleAssignmentToSave): str
   )
   const sortedObject = allKeys.reduce<Record<string, unknown>>((acc, key) => {
     const value = roleAssignment[key as keyof RoleAssignmentToSave]
-    if (ARRAY_KEYS_FOR_NAME.includes(key as (typeof ARRAY_KEYS_FOR_NAME)[number])) {
+    if (ARRAY_KEYS_FOR_NAME.includes(key)) {
       const arr = Array.isArray(value) && value.length > 0 ? value : []
       acc[key] = arr.length > 0 ? [...arr].sort((a, b) => a.localeCompare(b)) : []
     } else {
