@@ -423,7 +423,9 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           //model.resources = cloneDeep(change.resources)
           const saveDecorations = getResourceEditorDecorations(editor, false)
           const viewState = editor.saveViewState()
-          model.setValue(yaml)
+          // instead of setYaml, it's more robust to create a new text model
+          editor.getModel()?.dispose()
+          editor.setModel(monaco.editor.createModel(yaml, 'yaml'))
           if (viewState) {
             editor.restoreViewState(viewState)
           }
