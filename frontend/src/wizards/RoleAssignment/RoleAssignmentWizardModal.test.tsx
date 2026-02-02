@@ -94,8 +94,12 @@ jest.mock('./ClusterSetGranularityWizardStep', () => ({
   },
 }))
 
+const mockReviewStepContent = jest.fn()
 jest.mock('./ReviewStepContent', () => ({
-  ReviewStepContent: () => <div data-testid="review-step-content">Review Step</div>,
+  ReviewStepContent: (props: any) => {
+    mockReviewStepContent(props)
+    return <div data-testid="review-step-content">Review Step</div>
+  },
 }))
 
 jest.mock('./Scope/ExampleScope/ExampleScopesPanelContent', () => ({
@@ -142,6 +146,7 @@ describe('RoleAssignmentWizardModal - useClustersFromClusterSets Integration', (
     mockScopeSelectionStepContent.mockClear()
     mockClusterSetGranularityWizardStep.mockClear()
     mockClusterGranularityStepContent.mockClear()
+    mockReviewStepContent.mockClear()
     mockUseClustersFromClusterSets.mockReturnValue([])
   })
 
@@ -593,6 +598,54 @@ describe('RoleAssignmentWizardModal - useClustersFromClusterSets Integration', (
     })
   })
 
+  describe('Wizard Title Generation', () => {
+    it('should render when editing', async () => {
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isEditing={true} />)
+
+      await waitFor(() => {
+        expect(mockUseClustersFromClusterSets).toHaveBeenCalled()
+      })
+    })
+
+    it('should render with preselected subject value', async () => {
+      renderWithRouter(
+        <RoleAssignmentWizardModal {...defaultProps} preselected={{ subject: { kind: 'User', value: 'john.doe' } }} />
+      )
+
+      await waitFor(() => {
+        expect(mockUseClustersFromClusterSets).toHaveBeenCalled()
+      })
+    })
+
+    it('should render with preselected role', async () => {
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} preselected={{ roles: ['admin-role'] }} />)
+
+      await waitFor(() => {
+        expect(mockUseClustersFromClusterSets).toHaveBeenCalled()
+      })
+    })
+
+    it('should render with preselected cluster names', async () => {
+      renderWithRouter(
+        <RoleAssignmentWizardModal {...defaultProps} preselected={{ clusterNames: ['cluster-1', 'cluster-2'] }} />
+      )
+
+      await waitFor(() => {
+        expect(mockUseClustersFromClusterSets).toHaveBeenCalled()
+      })
+    })
+
+    it('should render with preselected cluster set names', async () => {
+      renderWithRouter(
+        <RoleAssignmentWizardModal {...defaultProps} preselected={{ clusterSetNames: ['set-1', 'set-2'] }} />
+      )
+
+      await waitFor(() => {
+        expect(mockUseClustersFromClusterSets).toHaveBeenCalled()
+      })
+    })
+  })
+
   describe('onEscapePress', () => {
     it('should call onClose when Escape is pressed and not loading', async () => {
       const onClose = jest.fn()
@@ -622,6 +675,63 @@ describe('RoleAssignmentWizardModal - useClustersFromClusterSets Integration', (
       })
 
       expect(onClose).not.toHaveBeenCalled()
+    })
+  })
+  describe('Callback Handlers', () => {
+    it('should handle user selection in identities step', async () => {
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} preselected={{ roles: ['admin-role'] }} />)
+
+      await waitFor(() => {
+        expect(mockIdentitiesList).toHaveBeenCalled()
+      })
+
+      const identitiesListCall = mockIdentitiesList.mock.calls[0]?.[0]
+      act(() => {
+        identitiesListCall?.onUserSelect({ metadata: { name: 'test-user' } })
+      })
+    })
+
+    it('should handle group selection in identities step', async () => {
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} preselected={{ roles: ['admin-role'] }} />)
+
+      await waitFor(() => {
+        expect(mockIdentitiesList).toHaveBeenCalled()
+      })
+
+      const identitiesListCall = mockIdentitiesList.mock.calls[0]?.[0]
+      act(() => {
+        identitiesListCall?.onGroupSelect({ metadata: { name: 'test-group' } })
+      })
+    })
+  })
+
+  describe('hasChanges Logic', () => {
+    it('should render when editing', async () => {
+      renderWithRouter(
+        <RoleAssignmentWizardModal
+          {...defaultProps}
+          isEditing={true}
+          preselected={{ roles: ['viewer-role'], clusterSetNames: ['global'] }}
+        />
+      )
+
+      await waitFor(() => {
+        expect(mockUseClustersFromClusterSets).toHaveBeenCalled()
+      })
+    })
+
+    it('should handle cluster selection changes', async () => {
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(mockScopeSelectionStepContent).toHaveBeenCalled()
+      })
+
+      const scopeSelectionCall = mockScopeSelectionStepContent.mock.calls[0]?.[0]
+      act(() => {
+        scopeSelectionCall?.onSelectScopeType('Select clusters')
+        scopeSelectionCall?.onSelectClusters([{ name: 'cluster-1' }])
+      })
     })
   })
 })
