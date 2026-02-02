@@ -32,15 +32,15 @@ export const ReviewStepContent = ({
   const { clusterSetsDisplay, clustersDisplay, namespacesDisplay, roleDisplay, identityDisplay } = useReviewStepContent(
     {
       oldData: {
-        clusterNames: preselected?.clusterNames,
         clusterSetNames: preselected?.clusterSetNames,
+        clusterNames: preselected?.clusterNames,
         namespaces: preselected?.namespaces,
         role: preselected?.roles?.[0],
         subject: preselected?.subject,
       },
       newData: {
-        clusterNames: formData.selectedClusters,
         clusterSetNames: formData.selectedClusterSets,
+        clusterNames: formData.selectedClusters,
         namespaces: formData.scope.namespaces,
         role: formData.roles?.[0],
         subject: formData.subject,
