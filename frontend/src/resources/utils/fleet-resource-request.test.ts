@@ -9,7 +9,7 @@ import {
   SelfSubjectAccessReviewApiVersion,
   SelfSubjectAccessReviewKind,
 } from '../self-subject-access-review'
-import { resourceReq } from './fleet-resource-request'
+import { fleetResourceRequest } from './fleet-resource-request'
 import { managedClusterProxyRequest } from './managed-cluster-proxy-request'
 
 // Mock the dependencies
@@ -81,7 +81,7 @@ describe('fleet-resource-request', () => {
       result: mockPodResource,
     })
 
-    const result = await resourceReq('GET', mockCluster, mockResource)
+    const result = await fleetResourceRequest('GET', mockCluster, mockResource)
 
     expect(mockedCanUser).toHaveBeenCalledWith('create', ManagedClusterViewDefinition)
     expect(mockedFireManagedClusterView).toHaveBeenCalledWith(
@@ -109,7 +109,7 @@ describe('fleet-resource-request', () => {
       result: mockPodResource,
     })
 
-    const result = await resourceReq('DELETE', mockCluster, mockResource)
+    const result = await fleetResourceRequest('DELETE', mockCluster, mockResource)
 
     expect(mockedCanUser).toHaveBeenCalledWith('create', ManagedClusterActionDefinition)
     expect(mockedFireManagedClusterAction).toHaveBeenCalledWith(
@@ -142,7 +142,7 @@ describe('fleet-resource-request', () => {
       result: mockPodResource,
     })
 
-    const result = await resourceReq('PUT', mockCluster, mockResource)
+    const result = await fleetResourceRequest('PUT', mockCluster, mockResource)
 
     expect(mockedCanUser).toHaveBeenCalledWith('create', ManagedClusterActionDefinition)
     expect(mockedFireManagedClusterAction).toHaveBeenCalledWith(
@@ -175,7 +175,7 @@ describe('fleet-resource-request', () => {
       result: mockPodResource,
     })
 
-    const result = await resourceReq('POST', mockCluster, mockResource)
+    const result = await fleetResourceRequest('POST', mockCluster, mockResource)
 
     expect(mockedCanUser).toHaveBeenCalledWith('create', ManagedClusterActionDefinition)
     expect(mockedFireManagedClusterAction).toHaveBeenCalledWith(
@@ -205,7 +205,7 @@ describe('fleet-resource-request', () => {
     // Mock managedClusterProxyRequest to return successful result
     mockedManagedClusterProxyRequest.mockResolvedValue(mockPodResource)
 
-    const result = await resourceReq('DELETE', mockCluster, mockResource)
+    const result = await fleetResourceRequest('DELETE', mockCluster, mockResource)
 
     expect(mockedCanUser).toHaveBeenCalledWith('create', ManagedClusterActionDefinition)
     expect(mockedFireManagedClusterAction).not.toHaveBeenCalled()
@@ -216,7 +216,7 @@ describe('fleet-resource-request', () => {
       {
         apiVersion: mockResource.apiVersion,
         kind: mockResource.kind,
-        namespace: 'default',
+        namespace: mockResource.namespace,
         name: mockResource.name,
       },
       undefined
@@ -234,7 +234,7 @@ describe('fleet-resource-request', () => {
     // Mock managedClusterProxyRequest to return successful result
     mockedManagedClusterProxyRequest.mockResolvedValue(mockPodResource)
 
-    const result = await resourceReq('GET', mockCluster, mockResource)
+    const result = await fleetResourceRequest('GET', mockCluster, mockResource)
 
     expect(mockedCanUser).toHaveBeenCalledWith('create', ManagedClusterViewDefinition)
     expect(mockedFireManagedClusterView).not.toHaveBeenCalled()
@@ -245,7 +245,7 @@ describe('fleet-resource-request', () => {
       {
         apiVersion: mockResource.apiVersion,
         kind: mockResource.kind,
-        namespace: 'default',
+        namespace: mockResource.namespace,
         name: mockResource.name,
       },
       undefined
@@ -260,14 +260,14 @@ describe('fleet-resource-request', () => {
       abort: jest.fn(),
     })
 
-    const result = await resourceReq('GET', mockCluster, mockResource)
+    const result = await fleetResourceRequest('GET', mockCluster, mockResource)
 
     expect(result).toEqual({ errorMessage: 'RBAC check failed' })
     expect(console.error).toHaveBeenCalledWith(`Error performing GET request for Pod test-pod: `, mockError)
   })
 
   it('should return error message for invalid request parameters', async () => {
-    const res = await resourceReq('GET', '', mockResource)
+    const res = await fleetResourceRequest('GET', '', mockResource)
     expect(res).toEqual({ errorMessage: 'Invalid request parameters' })
   })
 })

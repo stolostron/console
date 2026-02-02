@@ -120,7 +120,8 @@ export const ReviewStepContent = ({ formData, preselected, isEditing, hasChanges
                             </div>
                           </div>
                           <div style={{ marginTop: '8px' }}>
-                            <strong>{t('Projects')}</strong> {namespacesDisplay}
+                            <strong>{t('Projects')}</strong>
+                            <div>{namespacesDisplay}</div>
                           </div>
                         </>
                       )

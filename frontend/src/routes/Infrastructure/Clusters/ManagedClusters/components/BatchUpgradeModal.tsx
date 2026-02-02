@@ -1,7 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Skeleton, Stack, StackItem, Content, ContentVariants, SelectOption } from '@patternfly/react-core'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import {
+  Skeleton,
+  Stack,
+  StackItem,
+  Content,
+  ContentVariants,
+  SelectOption,
+  FormHelperText,
+  Popover,
+  Button,
+} from '@patternfly/react-core'
+import { ExternalLinkAltIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { useEffect, useMemo, useState } from 'react'
 import { BulkActionModal } from '../../../../../components/BulkActionModal'
 import { PrePostTemplatesList } from '../../../../../components/TemplateSummaryModal'
@@ -20,6 +30,7 @@ import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { AcmAlert, AcmButton, AcmEmptyState, AcmSelect } from '../../../../../ui-components'
 import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
 import { ReleaseNotesLink } from './ReleaseNotesLink'
+import { isMinorOrMajorUpgrade } from './utils/version-utils'
 import './style.css'
 
 // compare version
@@ -80,6 +91,16 @@ export function BatchUpgradeModal(props: {
       const curator = clusterCurators.find((cc) => cc.metadata?.namespace === cluster.namespace)
       return curatorActionHasJobs(curator?.spec?.upgrade)
     })
+
+    // Check if any clusters have version-specific operator risks (only for minor/major upgrades)
+    const hasOperatorRisks = !!upgradeableClusters.find((cluster) => {
+      const upgradeableCondition = cluster.distribution?.upgradeInfo?.upgradeableCondition
+      const currentVersion = cluster.distribution?.upgradeInfo?.currentVersion
+      const selectedVersion = selectVersions[cluster.name || '']
+      const isMinorMajor = selectedVersion && isMinorOrMajorUpgrade(currentVersion, selectedVersion)
+      return upgradeableCondition?.status === 'False' && isMinorMajor
+    })
+
     return (
       <Stack hasGutter>
         {hasUpgradeActions && (
@@ -95,10 +116,23 @@ export function BatchUpgradeModal(props: {
             />
           </StackItem>
         )}
+        {hasOperatorRisks && (
+          <StackItem>
+            <AcmAlert
+              isInline
+              noClose
+              variant="warning"
+              title={t('Cluster version upgrade risks detected')}
+              message={t(
+                'Clusters with warnings have version-specific risks that may cause upgrade failure. Resolve these risks or choose a different target version.'
+              )}
+            />
+          </StackItem>
+        )}
         <StackItem>{t('bulk.message.upgrade')}</StackItem>
       </Stack>
     )
-  }, [clusterCurators, upgradeableClusters, t])
+  }, [clusterCurators, upgradeableClusters, selectVersions, t])
 
   useEffect(() => {
     // set up latest if not selected
@@ -126,6 +160,7 @@ export function BatchUpgradeModal(props: {
           }
           return acc
         }, [])
+
         setUpgradeRiskPredictions(reducedUpgradeRiskPredictions)
         setUpgradeRiskPredictionsLoading(false)
       })
@@ -176,22 +211,56 @@ export function BatchUpgradeModal(props: {
             const predictions = upgradeRiskPredictions.find(
               (clusterPredictions) => clusterPredictions.cluster_id === clusterID
             )
-            if (predictions?.upgrade_risks_predictors?.alerts.length > 0) {
-              return (
-                <AcmButton
-                  variant={'link'}
-                  component={ContentVariants.a}
-                  href={`https://console.redhat.com/openshift/insights/advisor/clusters/${clusterID}?active_tab=update_risks`}
-                  target="_blank"
-                  style={{ padding: 0, fontSize: '14px' }}
-                >
-                  {t('upgrade.table.update.risk.link', [predictions?.upgrade_risks_predictors?.alerts.length])}
-                  <ExternalLinkAltIcon style={{ marginLeft: '8px' }} />
-                </AcmButton>
-              )
+            const insightsRiskCount = predictions?.upgrade_risks_predictors?.alerts?.length || 0
+            const upgradeableCondition = item.distribution?.upgradeInfo?.upgradeableCondition
+            const currentVersion = item.distribution?.upgradeInfo?.currentVersion
+            const selectedVersion = selectVersions[item.name || '']
+            const isMinorMajor = selectedVersion && isMinorOrMajorUpgrade(currentVersion, selectedVersion)
+            const hasOperatorRisk = upgradeableCondition?.status === 'False' && isMinorMajor
+            const totalRiskCount = insightsRiskCount + (hasOperatorRisk ? 1 : 0)
+
+            if (totalRiskCount === 0) {
+              return t('No risks found')
             }
-            // Update is currently only available for OCP clusters. Don't need to handle case where predictions aren't available for a non-OCP cluster.
-            return t('No risks found')
+
+            return (
+              <Popover
+                headerContent={t('Upgrade risks')}
+                bodyContent={
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {hasOperatorRisk && (
+                      <div>
+                        <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
+                          {t('Cluster version upgrade risk')}
+                        </div>
+                        <div>{upgradeableCondition.message}</div>
+                      </div>
+                    )}
+                    {insightsRiskCount > 0 && (
+                      <div>
+                        <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
+                          {t('Risks discovered by OpenShift Insights Advisor')}
+                        </div>
+                        <AcmButton
+                          variant={'link'}
+                          component={ContentVariants.a}
+                          href={`https://console.redhat.com/openshift/insights/advisor/clusters/${clusterID}?active_tab=update_risks`}
+                          target="_blank"
+                          style={{ padding: 0, fontSize: '14px' }}
+                        >
+                          {t('upgrade.table.update.risk.link', [insightsRiskCount])}
+                          <ExternalLinkAltIcon style={{ marginLeft: '8px' }} />
+                        </AcmButton>
+                      </div>
+                    )}
+                  </div>
+                }
+              >
+                <Button variant="link" isInline style={{ padding: 0, fontSize: '14px' }}>
+                  {t('upgrade.table.update.risk.link', [totalRiskCount])}
+                </Button>
+              </Popover>
+            )
           },
         },
         {
@@ -206,12 +275,21 @@ export function BatchUpgradeModal(props: {
           cell: (cluster: Cluster) => {
             const availableUpdates = (cluster.distribution?.upgradeInfo?.availableUpdates ?? []).sort(compareVersion)
             const hasAvailableUpgrades = availableUpdates && availableUpdates.length > 0
+            const currentVersion = cluster.distribution?.upgradeInfo?.currentVersion
+            const selectedVersion = selectVersions[cluster.name || '']
+            const upgradeableCondition = cluster.distribution?.upgradeInfo?.upgradeableCondition
+            const hasUpgradeableIssue = upgradeableCondition?.status === 'False'
+
+            // Check if selected version is a minor/major upgrade
+            const isMinorMajor = selectedVersion && isMinorOrMajorUpgrade(currentVersion, selectedVersion)
+            const showWarning = hasUpgradeableIssue && isMinorMajor
+
             return (
               <div>
                 {hasAvailableUpgrades && (
                   <>
                     <AcmSelect
-                      value={selectVersions[cluster.name || ''] || ''}
+                      value={selectedVersion || ''}
                       id={`${cluster.name}-upgrade-selector`}
                       maxHeight={'6em'}
                       label=""
@@ -223,13 +301,43 @@ export function BatchUpgradeModal(props: {
                         }
                       }}
                     >
-                      {availableUpdates?.map((version) => (
-                        <SelectOption key={`${cluster.name}-${version}`} value={version}>
-                          {version}
-                        </SelectOption>
-                      ))}
+                      {availableUpdates?.map((version) => {
+                        const isVersionMinorMajor = isMinorOrMajorUpgrade(currentVersion, version)
+                        const hasWarning = hasUpgradeableIssue && isVersionMinorMajor
+                        return (
+                          <SelectOption key={`${cluster.name}-${version}`} value={version}>
+                            <div
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                width: '100%',
+                              }}
+                            >
+                              <span>{version}</span>
+                              {hasWarning && (
+                                <ExclamationTriangleIcon style={{ color: 'var(--pf-v5-global--warning-color--100)' }} />
+                              )}
+                            </div>
+                          </SelectOption>
+                        )
+                      })}
                     </AcmSelect>
-                    <ReleaseNotesLink version={selectVersions[cluster.name!]} />
+                    {showWarning ? (
+                      <FormHelperText>
+                        <ExclamationTriangleIcon
+                          style={{
+                            marginRight: '4px',
+                            verticalAlign: 'middle',
+                            color: 'var(--pf-v5-global--warning-color--100)',
+                          }}
+                        />
+                        {t('Cluster version upgrade risk detected for {{version}}', { version: selectedVersion })} -{' '}
+                        <ReleaseNotesLink version={selectedVersion} />
+                      </FormHelperText>
+                    ) : (
+                      <ReleaseNotesLink version={selectedVersion} />
+                    )}
                   </>
                 )}
               </div>

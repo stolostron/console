@@ -6,7 +6,7 @@ import { useTranslation } from '../lib/acm-i18next'
 import { NavigationPath } from '../NavigationPath'
 import type { Cluster } from '../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
 import { useRoleAssignmentData } from '../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
-import { AcmTable, AcmTableStateProvider, IAcmTableColumn } from '../ui-components'
+import { AcmTable, IAcmTableColumn } from '../ui-components'
 import { IAcmTableButtonAction, ITableFilter } from '../ui-components/AcmTable/AcmTableTypes'
 import { isClusterInClusters } from '../wizards/RoleAssignment/utils'
 import { CommonProjectsEmptyState } from './project/CommonProjectsEmptyState'
@@ -178,18 +178,16 @@ export const ProjectsTable = ({
   const handleSelect = useCallback((projects: ProjectTableData[]) => onSelectionChange?.(projects), [onSelectionChange])
 
   return (
-    <AcmTableStateProvider localStorageKey="projects-table">
-      <AcmTable<ProjectTableData>
-        items={isRoleAssignmentDataLoading ? undefined : projectsData}
-        columns={columns}
-        keyFn={(project) => `${project.name}-${project.clusters.join(',')}`}
-        initialSelectedItems={selectedProjects}
-        tableActionButtons={tableActionButtons?.length ? tableActionButtons : undefined}
-        onSelect={handleSelect}
-        filters={filters}
-        searchPlaceholder={t('Search projects')}
-        emptyState={onCreateClick ? <CommonProjectsEmptyState onCreateCommonProject={onCreateClick} /> : null}
-      />
-    </AcmTableStateProvider>
+    <AcmTable<ProjectTableData>
+      items={isRoleAssignmentDataLoading ? undefined : projectsData}
+      columns={columns}
+      keyFn={(project) => `${project.name}-${project.clusters.join(',')}`}
+      initialSelectedItems={selectedProjects}
+      tableActionButtons={tableActionButtons?.length ? tableActionButtons : undefined}
+      onSelect={handleSelect}
+      filters={filters}
+      searchPlaceholder={t('Search projects')}
+      emptyState={onCreateClick ? <CommonProjectsEmptyState onCreateCommonProject={onCreateClick} /> : null}
+    />
   )
 }

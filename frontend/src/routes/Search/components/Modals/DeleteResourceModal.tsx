@@ -6,7 +6,7 @@ import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { canUser } from '../../../../lib/rbac-util'
-import { fireManagedClusterAction } from '../../../../resources/managedclusteraction'
+import { fleetResourceRequest } from '../../../../resources/utils/fleet-resource-request'
 import { deleteResource } from '../../../../resources/utils/resource-request'
 import { useSharedAtoms } from '../../../../shared-recoil'
 import { AcmAlert, AcmButton, AcmModal } from '../../../../ui-components'
@@ -186,15 +186,20 @@ export function deleteResourceFn(
         setDeleteResourceError(err.message)
       })
   } else {
-    fireManagedClusterAction('Delete', resource.cluster, resource.kind, apiGroup, resource.name, resource.namespace)
-      .then(async (actionResponse) => {
-        if (actionResponse.actionDone === 'ActionDone') {
+    fleetResourceRequest('DELETE', resource.cluster, {
+      apiVersion: apiGroup,
+      kind: resource.kind,
+      name: resource.name,
+      namespace: resource.namespace,
+    })
+      .then((res) => {
+        if ('errorMessage' in res) {
+          setDeleteResourceError(res.errorMessage as any)
+        } else {
           if (currentQuery !== '') {
             updateSearchResults(resource, relatedResource, currentQuery, searchResultLimit)
           }
           onCloseModal()
-        } else {
-          setDeleteResourceError(actionResponse.message)
         }
       })
       .catch((err) => {

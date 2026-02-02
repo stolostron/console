@@ -26,6 +26,8 @@ type CuratorUpgradeAction = CuratorAction & {
   channel?: string
   upstream?: string
   monitorTimeout?: number
+  upgradeType?: 'ControlPlane' | 'NodePools'
+  nodePoolNames?: string[]
 }
 
 export const ClusterCuratorDefinition: IResourceDefinition = {

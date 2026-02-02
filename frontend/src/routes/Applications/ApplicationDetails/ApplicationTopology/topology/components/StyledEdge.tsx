@@ -1,16 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as React from 'react'
-import { observer } from 'mobx-react'
+import { css } from '@emotion/css'
 import {
   Edge,
   Layer,
-  Point,
-  useBendpoint,
   WithRemoveConnectorProps,
   WithSourceDragProps,
   WithTargetDragProps,
+  observer,
+  DefaultConnectorTerminal,
+  EdgeTerminalType,
 } from '@patternfly/react-topology'
-import EdgeConnectorSquare from './EdgeConnectorSquare'
 
 type EdgeProps = {
   element: Edge
@@ -19,52 +19,36 @@ type EdgeProps = {
   WithTargetDragProps &
   WithRemoveConnectorProps
 
-interface BendpointProps {
-  point: Point
-}
-
-const Bendpoint: React.FunctionComponent<BendpointProps> = observer(({ point }) => {
-  const [hover, setHover] = React.useState(false)
-  const [, ref] = useBendpoint(point)
-  return (
-    <circle
-      ref={ref}
-      cx={point.x}
-      cy={point.y}
-      r={5}
-      fill="lightblue"
-      fillOpacity={hover ? 0.8 : 0}
-      onMouseOver={() => setHover(true)}
-      onMouseOut={() => setHover(false)}
-    />
-  )
-})
-
-const StyledEdge: React.FunctionComponent<EdgeProps> = ({
-  element,
-  sourceDragRef,
-  dragging,
-  onShowRemoveConnector,
-  onHideRemoveConnector,
-}) => {
+const StyledEdge: React.FunctionComponent<EdgeProps> = ({ element, dragging }) => {
   const startPoint = element.getStartPoint()
   const endPoint = element.getEndPoint()
-  const bendpoints = element.getBendpoints()
 
-  // Create curved path segments using quadratic Bezier curves that arc upward
-  const curveOffset = 25 // pixels to curve upward (negative Y direction)
-  const allPoints = [startPoint, ...bendpoints, endPoint]
-  let d = `M${startPoint.x} ${startPoint.y}`
-  for (let i = 0; i < allPoints.length - 1; i++) {
-    const from = allPoints[i]
-    const to = allPoints[i + 1]
-    const midX = (from.x + to.x) / 2
-    const midY = (from.y + to.y) / 2 - curveOffset
-    d += ` Q${midX} ${midY} ${to.x} ${to.y}`
+  // Create path: straight line if horizontally aligned, otherwise curved
+  const horizontalDistance = Math.abs(endPoint.y - startPoint.y)
+  let d: string
+
+  if (horizontalDistance <= 50) {
+    // Use straight line when target is within 20px horizontally of source
+    d = `M${startPoint.x} ${startPoint.y} L${endPoint.x} ${endPoint.y}`
+  } else {
+    // Use quadratic Bezier curve
+    const curveOffset = 25
+    const midX = (startPoint.x + endPoint.x) / 2
+    // Curve towards top if target is below source, towards bottom if target is above
+    const curveDirection = endPoint.y > startPoint.y ? -1 : 1
+    const midY = (startPoint.y + endPoint.y) / 2 + curveOffset * curveDirection
+    d = `M${startPoint.x} ${startPoint.y} Q${midX} ${midY} ${endPoint.x} ${endPoint.y}`
   }
 
   const edgeColor = (element.getData() && element.getData().color) || '#808080'
   const markerId = `arrowhead-${element.getId()}`
+
+  const solidSquareClass = css`
+    & rect {
+      fill: ${edgeColor};
+      stroke: ${edgeColor};
+    }
+  `
 
   return (
     <>
@@ -82,19 +66,15 @@ const StyledEdge: React.FunctionComponent<EdgeProps> = ({
         </marker>
       </defs>
       <Layer id={dragging ? 'top' : undefined}>
-        <EdgeConnectorSquare dragRef={sourceDragRef} edge={element} />
-        <path
-          strokeWidth={1}
-          stroke={edgeColor}
-          d={d}
-          fill="none"
-          markerEnd={`url(#${markerId})`}
-          onMouseEnter={onShowRemoveConnector}
-          onMouseLeave={onHideRemoveConnector}
+        <DefaultConnectorTerminal
+          className={solidSquareClass}
+          isTarget={false}
+          edge={element}
+          size={4}
+          terminalType={EdgeTerminalType.square}
         />
-        {sourceDragRef && <circle ref={sourceDragRef} r={8} cx={startPoint.x} cy={startPoint.y} fillOpacity={0} />}
+        <path strokeWidth={1} stroke={edgeColor} d={d} fill="none" markerEnd={`url(#${markerId})`} />
       </Layer>
-      {bendpoints && bendpoints.map((p, i) => <Bendpoint point={p} key={i.toString()} />)}
     </>
   )
 }

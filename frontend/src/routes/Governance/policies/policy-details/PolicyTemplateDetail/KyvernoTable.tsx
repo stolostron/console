@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { TFunction } from 'react-i18next'
-import { parseStringMap } from '../../../common/util'
-import { useEffect, useState } from 'react'
-import { fireManagedClusterView } from '../../../../../resources'
-import { ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Flex, FlexItem, Spinner } from '@patternfly/react-core'
+import { ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { useEffect, useState } from 'react'
+import { TFunction } from 'react-i18next'
 import { NavigationPath } from '../../../../../NavigationPath'
+import { fleetResourceRequest } from '../../../../../resources/utils/fleet-resource-request'
 import { compareStrings } from '../../../../../ui-components'
+import { parseStringMap } from '../../../common/util'
 import { IRelatedObjMessages, IRuleMessage } from './KyvernoRelatedResources'
 
 export const kyvernoMessageCell = (
@@ -82,17 +82,21 @@ export const KyvernoMessages = ({
       } else if (!loading) {
         setLoading(true)
 
-        fireManagedClusterView(reportCluster, reportKind, reportVersion, reportName, reportNs)
-          .then((viewResponse) => {
+        fleetResourceRequest('GET', reportCluster, {
+          apiVersion: reportVersion,
+          kind: reportKind,
+          name: reportName,
+          namespace: reportNs,
+        })
+          .then((res: any) => {
             if (ignore) {
               return
             }
-
-            if (viewResponse?.message) {
-              setErrString(viewResponse.message)
+            if ('errorMessage' in res) {
+              setErrString(res.errorMessage)
             } else {
               // policy field: namespace/policyName
-              const results: { message: string; rule: string; policy: string }[] = viewResponse?.result?.results.filter(
+              const results: { message: string; rule: string; policy: string }[] = res?.results.filter(
                 ({ policy: policyNsName }: { policy: string }) => {
                   // To avoid scenarios where a ClusterPolicy and a Kyverno Policy share the same name.
                   const nsName = KyvernoPolicyNamespace
@@ -106,26 +110,18 @@ export const KyvernoMessages = ({
                   return false
                 }
               )
-
               const ruleMsgs = results.map((r) => ({ ruleName: r.rule, message: r.message }))
               messageCache[uid] = ruleMsgs
-
               setRuleMsg(ruleMsgs)
             }
+            setLoading(false)
           })
-          .catch((err: Error) => {
+          .catch((err) => {
             if (ignore) {
               return
             }
-
             console.error('Error getting resource: ', err)
             setErrString(err.message)
-          })
-          .finally(() => {
-            if (ignore) {
-              return
-            }
-
             setLoading(false)
           })
       }

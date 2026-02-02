@@ -567,9 +567,11 @@ exports[`NetworkForm it renders 1`] = `
                         >
                           <div>
                             ai:URL must start with 
-                            <strong>
+                            <span
+                              class="pf-v6-u-font-weight-bold"
+                            >
                               http
-                            </strong>
+                            </span>
                             .
                           </div>
                         </span>
@@ -680,9 +682,11 @@ exports[`NetworkForm it renders 1`] = `
                         >
                           <div>
                             ai:URL must start with 
-                            <strong>
+                            <span
+                              class="pf-v6-u-font-weight-bold"
+                            >
                               http
-                            </strong>
+                            </span>
                              (https schemes are not currently supported).
                           </div>
                         </span>
@@ -793,13 +797,17 @@ exports[`NetworkForm it renders 1`] = `
                         >
                           <div>
                             ai:Use a comma to separate each listed domain. Preface a domain with 
-                            <strong>
+                            <span
+                              class="pf-v6-u-font-weight-bold"
+                            >
                               .
-                            </strong>
+                            </span>
                              to include its subdomains. Use 
-                            <strong>
+                            <span
+                              class="pf-v6-u-font-weight-bold"
+                            >
                               *
-                            </strong>
+                            </span>
                              to bypass the proxy for all destinations.
                           </div>
                         </span>

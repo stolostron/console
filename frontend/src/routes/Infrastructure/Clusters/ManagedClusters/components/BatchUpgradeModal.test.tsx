@@ -475,4 +475,328 @@ describe('BatchUpgradeModal', () => {
     expect(getByText('Upgrade')).toBeTruthy()
     expect(getByText('No risks found')).toBeTruthy()
   })
+
+  describe('version-specific upgrade risks', () => {
+    const mockClusterWithOperatorRisk: Cluster = {
+      name: 'cluster-with-operator-risk',
+      displayName: 'cluster-with-operator-risk',
+      namespace: 'cluster-with-operator-risk',
+      uid: 'cluster-with-operator-risk-uid',
+      status: ClusterStatus.ready,
+      isHive: false,
+      distribution: {
+        k8sVersion: '1.19',
+        displayVersion: 'Openshift 4.13.10',
+        isManagedOpenShift: false,
+        upgradeInfo: {
+          upgradeFailed: false,
+          isUpgrading: false,
+          isReadyUpdates: true,
+          isReadySelectChannels: false,
+          availableUpdates: ['4.13.50', '4.14.2', '4.15.0'],
+          currentVersion: '4.13.10',
+          desiredVersion: '4.13.10',
+          latestJob: {},
+          upgradeableCondition: {
+            type: 'Upgradeable',
+            status: 'False',
+            reason: 'AdminAckRequired',
+            message:
+              'Kubernetes 1.25 and therefore OpenShift 4.12 remove several APIs which require admin consideration.',
+            lastTransitionTime: new Date('2024-01-01T00:00:00Z'),
+          },
+        },
+      },
+      labels: {
+        clusterID: 'cluster-with-risk-id',
+      },
+      nodes: undefined,
+      kubeApiServer: '',
+      consoleURL: '',
+      hasAutomationTemplate: false,
+      hive: {
+        isHibernatable: true,
+        clusterPool: undefined,
+        secrets: {
+          installConfig: '',
+        },
+      },
+      isManaged: true,
+      isCurator: false,
+      isHostedCluster: false,
+      isSNOCluster: false,
+      owner: {},
+      kubeadmin: '',
+      kubeconfig: '',
+      isHypershift: false,
+      isRegionalHubCluster: false,
+    }
+
+    it('should show warning banner for minor/major upgrade with Upgradeable=False', async () => {
+      const getUpgradeRisksPredictionsNock = nockUpgradeRiskRequest(
+        '/upgrade-risks-prediction',
+        { clusterIds: ['cluster-with-risk-id'] },
+        [
+          {
+            statusCode: 200,
+            body: {
+              predictions: [
+                {
+                  cluster_id: 'cluster-with-risk-id',
+                  prediction_status: 'ok',
+                  upgrade_recommended: true,
+                  upgrade_risks_predictors: {
+                    alerts: [],
+                    operator_conditions: [],
+                  },
+                },
+              ],
+            },
+          },
+        ]
+      )
+
+      const { getByText } = render(
+        <RecoilRoot>
+          <MemoryRouter>
+            <BatchUpgradeModal clusters={[mockClusterWithOperatorRisk]} open={true} close={() => {}} />
+          </MemoryRouter>
+        </RecoilRoot>
+      )
+
+      await waitForNocks([getUpgradeRisksPredictionsNock])
+
+      // Banner should appear because default selected version (4.15.0) is a minor upgrade
+      expect(getByText('Cluster version upgrade risks detected')).toBeTruthy()
+      expect(
+        getByText(
+          'Clusters with warnings have version-specific risks that may cause upgrade failure. Resolve these risks or choose a different target version.'
+        )
+      ).toBeTruthy()
+    })
+
+    it('should NOT show warning banner for patch upgrade with Upgradeable=False', async () => {
+      const getUpgradeRisksPredictionsNock = nockUpgradeRiskRequest(
+        '/upgrade-risks-prediction',
+        { clusterIds: ['cluster-with-risk-id'] },
+        [
+          {
+            statusCode: 200,
+            body: {
+              predictions: [
+                {
+                  cluster_id: 'cluster-with-risk-id',
+                  prediction_status: 'ok',
+                  upgrade_recommended: true,
+                  upgrade_risks_predictors: {
+                    alerts: [],
+                    operator_conditions: [],
+                  },
+                },
+              ],
+            },
+          },
+        ]
+      )
+
+      const { getByText, queryByText } = render(
+        <RecoilRoot>
+          <MemoryRouter>
+            <BatchUpgradeModal clusters={[mockClusterWithOperatorRisk]} open={true} close={() => {}} />
+          </MemoryRouter>
+        </RecoilRoot>
+      )
+
+      await waitForNocks([getUpgradeRisksPredictionsNock])
+
+      // Change to patch version (4.13.50)
+      const versionDropdown = getByText('4.15.0')
+      userEvent.click(versionDropdown)
+      const patchVersion = getByText('4.13.50')
+      userEvent.click(patchVersion)
+
+      // Banner should NOT appear for patch upgrade
+      await waitFor(() => {
+        expect(queryByText('Cluster version upgrade risks detected')).toBeFalsy()
+      })
+    })
+
+    it('should include operator risk in count for minor/major upgrade', async () => {
+      const getUpgradeRisksPredictionsNock = nockUpgradeRiskRequest(
+        '/upgrade-risks-prediction',
+        { clusterIds: ['cluster-with-risk-id'] },
+        [
+          {
+            statusCode: 200,
+            body: {
+              predictions: [
+                {
+                  cluster_id: 'cluster-with-risk-id',
+                  prediction_status: 'ok',
+                  upgrade_recommended: true,
+                  upgrade_risks_predictors: {
+                    alerts: [],
+                    operator_conditions: [],
+                  },
+                },
+              ],
+            },
+          },
+        ]
+      )
+
+      const { queryByText } = render(
+        <RecoilRoot>
+          <MemoryRouter>
+            <BatchUpgradeModal clusters={[mockClusterWithOperatorRisk]} open={true} close={() => {}} />
+          </MemoryRouter>
+        </RecoilRoot>
+      )
+
+      await waitForNocks([getUpgradeRisksPredictionsNock])
+
+      // Should show 1 risk (operator risk) for minor upgrade (default is 4.15.0)
+      // The text contains "1" and "risk" - using regex to match
+      await waitFor(() => {
+        expect(queryByText(/.*1.*risk.*/i)).toBeTruthy()
+      })
+    })
+
+    it('should NOT include operator risk in count for patch upgrade', async () => {
+      const getUpgradeRisksPredictionsNock = nockUpgradeRiskRequest(
+        '/upgrade-risks-prediction',
+        { clusterIds: ['cluster-with-risk-id'] },
+        [
+          {
+            statusCode: 200,
+            body: {
+              predictions: [
+                {
+                  cluster_id: 'cluster-with-risk-id',
+                  prediction_status: 'ok',
+                  upgrade_recommended: true,
+                  upgrade_risks_predictors: {
+                    alerts: [],
+                    operator_conditions: [],
+                  },
+                },
+              ],
+            },
+          },
+        ]
+      )
+
+      const { getByText, queryByText } = render(
+        <RecoilRoot>
+          <MemoryRouter>
+            <BatchUpgradeModal clusters={[mockClusterWithOperatorRisk]} open={true} close={() => {}} />
+          </MemoryRouter>
+        </RecoilRoot>
+      )
+
+      await waitForNocks([getUpgradeRisksPredictionsNock])
+
+      // Change to patch version (4.13.50)
+      const versionDropdown = getByText('4.15.0')
+      userEvent.click(versionDropdown)
+      const patchVersion = getByText('4.13.50')
+      userEvent.click(patchVersion)
+
+      // Should show "No risks found" for patch upgrade (operator risk not counted)
+      await waitFor(() => {
+        expect(queryByText('View 1 risk', { exact: false })).toBeFalsy()
+        expect(getByText('No risks found')).toBeTruthy()
+      })
+    })
+
+    it('should show version in helper text warning', async () => {
+      const getUpgradeRisksPredictionsNock = nockUpgradeRiskRequest(
+        '/upgrade-risks-prediction',
+        { clusterIds: ['cluster-with-risk-id'] },
+        [
+          {
+            statusCode: 200,
+            body: {
+              predictions: [
+                {
+                  cluster_id: 'cluster-with-risk-id',
+                  prediction_status: 'ok',
+                  upgrade_recommended: true,
+                  upgrade_risks_predictors: {
+                    alerts: [],
+                    operator_conditions: [],
+                  },
+                },
+              ],
+            },
+          },
+        ]
+      )
+
+      const { getByText } = render(
+        <RecoilRoot>
+          <MemoryRouter>
+            <BatchUpgradeModal clusters={[mockClusterWithOperatorRisk]} open={true} close={() => {}} />
+          </MemoryRouter>
+        </RecoilRoot>
+      )
+
+      await waitForNocks([getUpgradeRisksPredictionsNock])
+
+      // Should show version 4.15.0 in helper text
+      await waitFor(() => {
+        expect(getByText('Cluster version upgrade risk detected for 4.15.0', { exact: false })).toBeTruthy()
+      })
+    })
+
+    it('should show operator risk in popover for minor/major upgrade', async () => {
+      const getUpgradeRisksPredictionsNock = nockUpgradeRiskRequest(
+        '/upgrade-risks-prediction',
+        { clusterIds: ['cluster-with-risk-id'] },
+        [
+          {
+            statusCode: 200,
+            body: {
+              predictions: [
+                {
+                  cluster_id: 'cluster-with-risk-id',
+                  prediction_status: 'ok',
+                  upgrade_recommended: true,
+                  upgrade_risks_predictors: {
+                    alerts: [],
+                    operator_conditions: [],
+                  },
+                },
+              ],
+            },
+          },
+        ]
+      )
+
+      const { getByText, queryByText } = render(
+        <RecoilRoot>
+          <MemoryRouter>
+            <BatchUpgradeModal clusters={[mockClusterWithOperatorRisk]} open={true} close={() => {}} />
+          </MemoryRouter>
+        </RecoilRoot>
+      )
+
+      await waitForNocks([getUpgradeRisksPredictionsNock])
+
+      // Click on risk link to open popover - find link that contains "1" and "risk"
+      await waitFor(() => {
+        const riskLink = queryByText(/.*1.*risk.*/i)
+        expect(riskLink).toBeTruthy()
+        userEvent.click(riskLink!)
+      })
+
+      // Should show operator risk in popover
+      await waitFor(() => {
+        expect(getByText('Cluster version upgrade risk')).toBeTruthy()
+        expect(
+          getByText('Kubernetes 1.25 and therefore OpenShift 4.12 remove several APIs', { exact: false })
+        ).toBeTruthy()
+      })
+    })
+  })
 })

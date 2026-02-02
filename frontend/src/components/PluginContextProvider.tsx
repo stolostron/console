@@ -61,7 +61,7 @@ export function PluginContextProvider(props: { children?: ReactNode }) {
     >
       <AcmFeedbackModal />
       <div style={{ position: 'relative', height: '100%', width: '100%' }}>
-        <div style={{ position: 'absolute', height: '100%', width: '100%' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', position: 'absolute', height: '100%', width: '100%' }}>
           <AcmToastProvider>
             <AcmToastGroup />
             {props.children}

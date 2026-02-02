@@ -4,7 +4,7 @@ import { Fragment, Suspense, useCallback, useEffect, useMemo, useState } from 'r
 import { generatePath, Outlet, useOutletContext, useParams } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../../NavigationPath'
-import { fireManagedClusterView } from '../../../../../resources'
+import { fleetResourceRequest } from '../../../../../resources/utils/fleet-resource-request'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { AcmAlert, AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../../../../ui-components'
 import { TemplateDetailTitle } from '../../../components/TemplateDetailTitle'
@@ -141,32 +141,28 @@ export function PolicyTemplateDetailsPage() {
     if (kind && templateName && apiVersion) {
       setTemplateLoading(true)
       const version = apiGroup ? `${apiGroup}/${apiVersion}` : apiVersion
-
-      fireManagedClusterView(templateClusterName, kind, version, templateName, templateNamespace)
-        .then((viewResponse) => {
+      fleetResourceRequest('GET', templateClusterName, {
+        apiVersion: version,
+        kind,
+        name: templateName,
+        namespace: templateNamespace,
+      })
+        .then((res) => {
           if (ignore) {
             return
           }
-
-          if (viewResponse?.message) {
-            setTemplateError(viewResponse.message)
+          if ('errorMessage' in res) {
+            setTemplateError(res.errorMessage)
           } else {
-            setTemplate(viewResponse.result)
+            setTemplate(res)
           }
+          setTemplateLoading(false)
         })
         .catch((err) => {
           if (ignore) {
             return
           }
-
           console.error('Error getting resource: ', err)
-          setTemplateError(err)
-        })
-        .finally(() => {
-          if (ignore) {
-            return
-          }
-
           setTemplateLoading(false)
         })
     }

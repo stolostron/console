@@ -8,19 +8,19 @@ import {
   HelpIcon,
 } from '@patternfly/react-icons'
 import { ReactNode, useEffect, useMemo, useState } from 'react'
-import { useTranslation } from '../../../../lib/acm-i18next'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
+import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { AcmTable, AcmTableStateProvider, compareStrings, IAcmTableColumn } from '../../../../ui-components'
 import { DiffModal } from '../../components/DiffModal'
 
-import { useDiscoveredDetailsContext } from './DiscoveredPolicyDetailsPage'
-import { fireManagedClusterView } from '../../../../resources'
+import { fleetResourceRequest } from '../../../../resources/utils/fleet-resource-request'
 import { emptyResources } from '../../common/util'
 import { flexKyvernoMessages } from '../../policies/policy-details/PolicyTemplateDetail/KyvernoTable'
+import { useDiscoveredDetailsContext } from './DiscoveredPolicyDetailsPage'
 
 const extractRelatedObjectReasons = (viewResponse: any, tmpl: any) => {
-  return viewResponse?.result?.status?.relatedObjects?.reduce((acc: any, relObj: any) => {
+  return viewResponse?.status?.relatedObjects?.reduce((acc: any, relObj: any) => {
     const key =
       `${tmpl.clusterName}:${relObj?.object?.kind}:${relObj?.object?.apiVersion}` +
       `:${relObj?.object?.metadata?.namespace}:${relObj?.object?.metadata?.name}`
@@ -35,7 +35,7 @@ const extractRelatedObjectReasons = (viewResponse: any, tmpl: any) => {
 }
 
 const extractGKViolationReasons = (viewResponse: any, tmpl: any) => {
-  return viewResponse?.result?.status?.violations?.reduce((acc: any, violation: any) => {
+  return viewResponse?.status?.violations?.reduce((acc: any, violation: any) => {
     const key =
       `${tmpl.clusterName}:${violation?.kind}:${violation?.group ? violation.group + '/' + violation?.version : violation?.version}` +
       `:${violation?.namespace}:${violation?.name}`
@@ -165,35 +165,43 @@ export function DiscoveredResources() {
       const foundReasons = reasonCache[tmplKey]
       if (foundReasons.loading === undefined) {
         updateReasonCacheLoading(tmplKey, foundReasons)
-
         const tmpl = foundReasons.tmpl
-
         const tmplApiVersion = tmpl.apiGroup ? tmpl.apiGroup + '/' + tmpl.apiVersion : tmpl.apiVersion
-        fireManagedClusterView(tmpl.clusterName, tmpl.kind, tmplApiVersion, tmpl.templateName, tmpl.templateNamespace)
-          .then((viewResponse) => {
-            const update: any = { tmpl, loading: false }
 
-            switch (tmpl.kind) {
-              case 'ConfigurationPolicy':
-              case 'OperatorPolicy':
-                update.reasons = extractRelatedObjectReasons(viewResponse, tmpl)
-                break
-              case 'CertificatePolicy':
-                update.certificateMessages = viewResponse?.result?.status?.compliancyDetails
-                break
-              case 'PolicyReport':
-              case 'ClusterPolicyReport':
-                update.kyvernoMessages = viewResponse?.result?.results.map(mapKyvernoResults)
-                break
-              default:
-                if (tmpl.apiGroup === 'constraints.gatekeeper.sh') {
-                  update.reasons = extractGKViolationReasons(viewResponse, tmpl)
-                }
-                break
+        fleetResourceRequest('GET', tmpl.clusterName, {
+          apiVersion: tmplApiVersion,
+          kind: tmpl.kind,
+          name: tmpl.templateName,
+          namespace: tmpl.templateNamespace,
+        })
+          .then((res: any) => {
+            if ('errorMessage' in res) {
+              console.error('Error getting resource: ', res.errorMessage)
+            } else {
+              const update: any = { tmpl, loading: false }
+
+              switch (tmpl.kind) {
+                case 'ConfigurationPolicy':
+                case 'OperatorPolicy':
+                  update.reasons = extractRelatedObjectReasons(res, tmpl)
+                  break
+                case 'CertificatePolicy':
+                  update.certificateMessages = res?.status?.compliancyDetails
+                  break
+                case 'PolicyReport':
+                case 'ClusterPolicyReport':
+                  update.kyvernoMessages = res?.results.map(mapKyvernoResults)
+                  break
+                default:
+                  if (tmpl.apiGroup === 'constraints.gatekeeper.sh') {
+                    update.reasons = extractGKViolationReasons(res, tmpl)
+                  }
+                  break
+              }
+              updateReasonCacheAfterFetch(tmplKey, update)
             }
-            updateReasonCacheAfterFetch(tmplKey, update)
           })
-          .catch((err: Error) => {
+          .catch((err) => {
             console.error('Error getting resource: ', err)
           })
       }
