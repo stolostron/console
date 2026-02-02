@@ -868,7 +868,11 @@ describe('useReviewStepContent', () => {
           oldData: { clusterNames: [], clusterSetNames: ['set-3', 'set-1', 'set-2'] },
           newData: {
             clusterNames: [],
-            clusterSetNames: [createMockClusterSet('set-1'), createMockClusterSet('set-2'), createMockClusterSet('set-3')],
+            clusterSetNames: [
+              createMockClusterSet('set-1'),
+              createMockClusterSet('set-2'),
+              createMockClusterSet('set-3'),
+            ],
           },
           isEditing: true,
         })

@@ -283,7 +283,12 @@ export const RoleAssignmentWizardModal = ({
     const clustersChanged =
       formData.scopeType === 'Select clusters' &&
       JSON.stringify((preselected?.clusterNames || []).toSorted(stringComparison)) !==
-        JSON.stringify((formData.selectedClusters || []).map((c) => c.metadata?.name || c.name || c).filter((name): name is string => !!name).toSorted(stringComparison))
+        JSON.stringify(
+          (formData.selectedClusters || [])
+            .map((c) => c.metadata?.name || c.name || c)
+            .filter((name): name is string => !!name)
+            .toSorted(stringComparison)
+        )
     const namespacesChanged =
       JSON.stringify((preselected?.namespaces || []).toSorted(stringComparison)) !==
       JSON.stringify((formData.scope.namespaces || []).toSorted(stringComparison))
