@@ -91,7 +91,7 @@ const sectionStyles = {
     fontSize: '28px',
     '& a': {
       textDecoration: 'none !important',
-      fontColor: 'var(--pf-t--global--text--color--100)',
+      fontColor: 'var(--pf-t--global--text--color--regular)',
     },
   }),
   description: css({
