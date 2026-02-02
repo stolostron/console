@@ -1,12 +1,10 @@
-
-
-[class="pf-topology__node__background"] {
+[class='pf-topology__node__background'] {
   fill: white;
 }
 
 .pf-v5-theme-dark .pf-topology__node__background,
 .pf-v6-theme-dark .pf-topology__node__background {
-  fill: #D5CCC2;
+  fill: #d5ccc2;
   stroke-width: 3;
 }
 
