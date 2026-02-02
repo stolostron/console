@@ -7,14 +7,14 @@ import { RoleAssignmentWizardFormData, RoleAssignmentWizardModalProps } from './
 
 interface UseReviewStepContentProps {
   oldData: {
-    namespaces?: RoleAssignmentPreselected['namespaces']
-    clusterNames: RoleAssignmentPreselected['clusterNames']
+    namespaces: string[]
+    clusterNames: string[]
     role?: string
     subject?: RoleAssignmentPreselected['subject']
   }
   newData: {
-    namespaces?: string[]
-    clusterNames: RoleAssignmentWizardFormData['selectedClusters']
+    namespaces: string[]
+    clusterNames: string[]
     role?: string
     subject?: RoleAssignmentWizardFormData['subject']
   }
@@ -34,7 +34,7 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: UseReviewS
   }): string | null => {
     switch (true) {
       case selectedClusters && selectedClusters.length > 0:
-        return selectedClusters.map((c) => c.metadata?.name || c.name || c).join(', ')
+        return selectedClusters.join(', ')
       case clusterNames && clusterNames.length > 0:
         return clusterNames.join(', ')
       default:
@@ -53,10 +53,7 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: UseReviewS
   const currentClusterNames = useMemo(
     () =>
       newData.clusterNames && newData.clusterNames.length > 0
-        ? newData.clusterNames
-            .map((c) => c.metadata?.name || c.name || c)
-            .toSorted((a, b) => a.localeCompare(b))
-            .join(', ')
+        ? newData.clusterNames.toSorted((a, b) => a.localeCompare(b)).join(', ')
         : null,
     [newData.clusterNames]
   )
@@ -71,26 +68,26 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: UseReviewS
   )
 
   const namespacesDisplay = useMemo(() => {
-    const hasOriginalNamespaces = oldData.namespaces && oldData.namespaces.length > 0
-    const hasCurrentNamespaces = newData.namespaces && newData.namespaces.length > 0
+    const hasOriginalNamespaces = oldData.namespaces.length > 0
+    const hasCurrentNamespaces = newData.namespaces.length > 0
     const namespacesChanged =
       hasOriginalNamespaces !== hasCurrentNamespaces ||
       (hasOriginalNamespaces &&
         hasCurrentNamespaces &&
-        JSON.stringify(oldData.namespaces?.toSorted((a, b) => a.localeCompare(b))) !==
-          JSON.stringify(newData.namespaces?.toSorted((a, b) => a.localeCompare(b))))
+        JSON.stringify(oldData.namespaces.toSorted((a, b) => a.localeCompare(b))) !==
+          JSON.stringify(newData.namespaces.toSorted((a, b) => a.localeCompare(b))))
     if (!isEditing || !namespacesChanged) {
-      return hasCurrentNamespaces ? newData.namespaces!.join(', ') : t('Full access')
+      return hasCurrentNamespaces ? newData.namespaces.join(', ') : t('Full access')
     }
 
     return (
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <div>
-          <s>{hasOriginalNamespaces ? oldData.namespaces!.join(', ') : t('Full access')}</s>
+          <s>{hasOriginalNamespaces ? oldData.namespaces.join(', ') : t('Full access')}</s>
         </div>
         <ArrowRightIcon />
         <div>
-          <strong>{hasCurrentNamespaces ? newData.namespaces!.join(', ') : t('Full access')}</strong>
+          <strong>{hasCurrentNamespaces ? newData.namespaces.join(', ') : t('Full access')}</strong>
         </div>
       </div>
     )
