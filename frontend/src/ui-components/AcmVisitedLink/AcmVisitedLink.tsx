@@ -23,7 +23,8 @@ export function AcmVisitedLink({ to, ...props }: LinkProps) {
   if (typeof to === 'string') {
     pathname = to
   } else if (typeof to === 'object' && to !== null && 'pathname' in to) {
-    pathname = (to as { pathname: string }).pathname
+    const toObj = to as { pathname: string; search?: string }
+    pathname = toObj.pathname + (toObj.search ?? '')
   }
 
   const handleClick = (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
