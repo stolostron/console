@@ -259,6 +259,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
     setIsOpen(false)
     if (
       variant === SelectVariant.checkbox ||
+      variant === SelectVariant.typeahead ||
       variant == SelectVariant.typeaheadCheckbox ||
       variant == SelectVariant.typeaheadMulti
     ) {
@@ -649,10 +650,14 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
   }
 
   function renderMultipleTextInput(): ReactNode {
+    const value =
+      inputValue === selectedItem || inputValue === ''
+        ? initialFilteredOptions.find((option) => option.value === selectedItem)?.children
+        : inputValue
     return (
       <TextInputGroup isPlain>
         <TextInputGroupMain
-          value={inputValue || selectedItem}
+          value={value}
           onClick={onInputClick}
           onChange={onTextInputChange}
           onKeyDown={onInputKeyDown}
