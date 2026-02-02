@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { CommonProjectsEmptyState } from './CommonProjectsEmptyState'
 
@@ -117,6 +117,54 @@ describe('CommonProjectsEmptyState', () => {
           children: 'Create common project',
         }),
       }),
+    })
+  })
+
+  describe('createButtonDisabledReason', () => {
+    it('renders button enabled with no tooltip when createButtonDisabledReason is not provided', () => {
+      render(<CommonProjectsEmptyState onCreateCommonProject={mockOnCreateCommonProject} />)
+
+      const button = screen.getByRole('button', { name: 'Create common project' })
+      expect(button).not.toHaveAttribute('aria-disabled', 'true')
+      expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
+    })
+
+    it('aria-disables the button when createButtonDisabledReason is provided', () => {
+      render(
+        <CommonProjectsEmptyState
+          onCreateCommonProject={mockOnCreateCommonProject}
+          createButtonDisabledReason="Select at least two clusters to create a common project."
+        />
+      )
+
+      const button = screen.getByRole('button', { name: 'Create common project' })
+      expect(button).toHaveAttribute('aria-disabled', 'true')
+    })
+
+    it('shows tooltip with createButtonDisabledReason when user hovers over the disabled button', async () => {
+      const disabledReason = 'Select at least two clusters to create a common project.'
+      render(
+        <CommonProjectsEmptyState
+          onCreateCommonProject={mockOnCreateCommonProject}
+          createButtonDisabledReason={disabledReason}
+        />
+      )
+
+      const button = screen.getByRole('button', { name: 'Create common project' })
+      await userEvent.hover(button)
+
+      await waitFor(() => {
+        expect(screen.getByRole('tooltip')).toHaveTextContent(disabledReason)
+      })
+    })
+
+    it('does not show tooltip when createButtonDisabledReason is not provided and user hovers over button', async () => {
+      render(<CommonProjectsEmptyState onCreateCommonProject={mockOnCreateCommonProject} />)
+
+      const button = screen.getByRole('button', { name: 'Create common project' })
+      await userEvent.hover(button)
+
+      expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
     })
   })
 })

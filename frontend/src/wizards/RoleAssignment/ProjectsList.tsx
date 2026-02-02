@@ -88,6 +88,7 @@ export const ProjectsList = ({ selectedClusters, selectedNamespaces, onSelection
           onSelectionChange={handleSelectionChange}
           tableActionButtons={tableActionButtons}
           additionalProjects={createdProjects}
+          createButtonDisabledReason={createProjectTooltipText}
         />
       )}
     </PageSection>
