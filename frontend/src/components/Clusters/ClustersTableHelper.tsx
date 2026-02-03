@@ -582,7 +582,6 @@ export function useTableActions(
                 title={t('You selected {{count}} cluster that cannot be destroyed', {
                   count: unDestroyedClusters.length,
                 })}
-                style={{ marginTop: '20px' }}
               >
                 <Content>
                   {t('It will not be destroyed when you perform this action.', {
