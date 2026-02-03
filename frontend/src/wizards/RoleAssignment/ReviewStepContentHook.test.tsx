@@ -644,230 +644,265 @@ describe('useReviewStepContent', () => {
     it('returns current cluster sets when not editing', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [], clusterSetNames: ['old-set'] },
+          oldData: { clusterNames: [], namespaces: [], clusterSetNames: ['old-set'] },
           newData: {
             clusterNames: [],
+            namespaces: [],
             clusterSetNames: [createMockClusterSet('new-set')],
           },
           isEditing: false,
         })
       )
 
-      expect(result.current.clusterSetsDisplay).toBe('new-set')
+      const { container } = render(<>{result.current.clusterSetsDisplay}</>)
+      expect(container).toHaveTextContent('new-set')
     })
 
     it('returns "None selected" when no cluster sets and not editing', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [] },
-          newData: { clusterNames: [] },
+          oldData: { clusterNames: [], namespaces: [] },
+          newData: { clusterNames: [], namespaces: [] },
           isEditing: false,
         })
       )
 
-      expect(result.current.clusterSetsDisplay).toBe('None selected')
+      const { container } = render(<>{result.current.clusterSetsDisplay}</>)
+      expect(container).toHaveTextContent('None selected')
     })
 
     it('returns current cluster sets when editing but unchanged', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [], clusterSetNames: ['cluster-set-1'] },
+          oldData: { clusterNames: [], namespaces: [], clusterSetNames: ['cluster-set-1'] },
           newData: {
             clusterNames: [],
+            namespaces: [],
             clusterSetNames: [createMockClusterSet('cluster-set-1')],
           },
           isEditing: true,
         })
       )
 
-      expect(result.current.clusterSetsDisplay).toBe('cluster-set-1')
+      const { container } = render(<>{result.current.clusterSetsDisplay}</>)
+      expect(container).toHaveTextContent('cluster-set-1')
     })
 
     it('returns diff JSX when editing and cluster sets changed', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [], clusterSetNames: ['old-set'] },
+          oldData: { clusterNames: [], namespaces: [], clusterSetNames: ['old-set'] },
           newData: {
             clusterNames: [],
+            namespaces: [],
             clusterSetNames: [createMockClusterSet('new-set')],
           },
           isEditing: true,
         })
       )
 
-      const display = result.current.clusterSetsDisplay
-      expect(display).toHaveProperty('type', 'div')
+      const { container } = render(<>{result.current.clusterSetsDisplay}</>)
+      expect(container.querySelector('s')).toBeInTheDocument()
+      expect(container).toHaveTextContent('old-set')
+      expect(container).toHaveTextContent('new-set')
     })
 
     it('sorts cluster sets before comparing', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [], clusterSetNames: ['set-2', 'set-1'] },
+          oldData: { clusterNames: [], namespaces: [], clusterSetNames: ['set-2', 'set-1'] },
           newData: {
             clusterNames: [],
+            namespaces: [],
             clusterSetNames: [createMockClusterSet('set-1'), createMockClusterSet('set-2')],
           },
           isEditing: true,
         })
       )
-      expect(result.current.clusterSetsDisplay).toBe('set-1, set-2')
+      const { container } = render(<>{result.current.clusterSetsDisplay}</>)
+      expect(container).toHaveTextContent('set-1, set-2')
     })
 
     it('handles cluster sets as strings', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [], clusterSetNames: ['set-1', 'set-2'] },
+          oldData: { clusterNames: [], namespaces: [], clusterSetNames: ['set-1', 'set-2'] },
           newData: {
             clusterNames: [],
+            namespaces: [],
             clusterSetNames: ['set-1', 'set-2'],
           },
           isEditing: false,
         })
       )
 
-      expect(result.current.clusterSetsDisplay).toBe('set-1, set-2')
+      const { container } = render(<>{result.current.clusterSetsDisplay}</>)
+      expect(container).toHaveTextContent('set-1, set-2')
     })
 
     it('handles cluster sets as objects with metadata.name', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [] },
+          oldData: { clusterNames: [], namespaces: [] },
           newData: {
             clusterNames: [],
+            namespaces: [],
             clusterSetNames: [createMockClusterSet('set-1'), createMockClusterSet('set-2')],
           },
           isEditing: false,
         })
       )
 
-      expect(result.current.clusterSetsDisplay).toBe('set-1, set-2')
+      const { container } = render(<>{result.current.clusterSetsDisplay}</>)
+      expect(container).toHaveTextContent('set-1, set-2')
     })
 
     it('handles empty cluster sets array in oldData', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [], clusterSetNames: [] },
+          oldData: { clusterNames: [], namespaces: [], clusterSetNames: [] },
           newData: {
             clusterNames: [],
+            namespaces: [],
             clusterSetNames: [createMockClusterSet('new-set')],
           },
           isEditing: true,
         })
       )
 
-      const display = result.current.clusterSetsDisplay
-      expect(display).toHaveProperty('type', 'div')
+      const { container } = render(<>{result.current.clusterSetsDisplay}</>)
+      expect(container.querySelector('s')).toBeInTheDocument()
+      expect(container).toHaveTextContent('None selected')
+      expect(container).toHaveTextContent('new-set')
     })
 
     it('handles empty cluster sets array in newData', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [], clusterSetNames: ['old-set'] },
+          oldData: { clusterNames: [], namespaces: [], clusterSetNames: ['old-set'] },
           newData: {
             clusterNames: [],
+            namespaces: [],
             clusterSetNames: [],
           },
           isEditing: true,
         })
       )
 
-      const display = result.current.clusterSetsDisplay
-      expect(display).toHaveProperty('type', 'div')
+      const { container } = render(<>{result.current.clusterSetsDisplay}</>)
+      expect(container.querySelector('s')).toBeInTheDocument()
+      expect(container).toHaveTextContent('old-set')
+      expect(container).toHaveTextContent('None selected')
     })
 
     it('handles undefined cluster sets in oldData', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [] },
+          oldData: { clusterNames: [], namespaces: [] },
           newData: {
             clusterNames: [],
+            namespaces: [],
             clusterSetNames: [createMockClusterSet('new-set')],
           },
           isEditing: true,
         })
       )
 
-      const display = result.current.clusterSetsDisplay
-      expect(display).toHaveProperty('type', 'div')
+      const { container } = render(<>{result.current.clusterSetsDisplay}</>)
+      expect(container.querySelector('s')).toBeInTheDocument()
+      expect(container).toHaveTextContent('None selected')
+      expect(container).toHaveTextContent('new-set')
     })
 
     it('handles undefined cluster sets in newData', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [], clusterSetNames: ['old-set'] },
+          oldData: { clusterNames: [], namespaces: [], clusterSetNames: ['old-set'] },
           newData: {
+            namespaces: [],
             clusterNames: [],
           },
           isEditing: true,
         })
       )
 
-      const display = result.current.clusterSetsDisplay
-      expect(display).toHaveProperty('type', 'div')
+      const { container } = render(<>{result.current.clusterSetsDisplay}</>)
+      expect(container.querySelector('s')).toBeInTheDocument()
+      expect(container).toHaveTextContent('old-set')
+      expect(container).toHaveTextContent('None selected')
     })
 
     it('uses oldData cluster sets as fallback for current when not editing and newData is empty', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [], clusterSetNames: ['fallback-set'] },
-          newData: { clusterNames: [], clusterSetNames: [] },
+          oldData: { clusterNames: [], namespaces: [], clusterSetNames: ['fallback-set'] },
+          newData: { clusterNames: [], namespaces: [], clusterSetNames: [] },
           isEditing: false,
         })
       )
 
-      expect(result.current.clusterSetsDisplay).toBe('fallback-set')
+      const { container } = render(<>{result.current.clusterSetsDisplay}</>)
+      expect(container).toHaveTextContent('fallback-set')
     })
 
     it('returns "None selected" when both original and current are empty', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [], clusterSetNames: [] },
-          newData: { clusterNames: [], clusterSetNames: [] },
+          oldData: { clusterNames: [], namespaces: [], clusterSetNames: [] },
+          newData: { clusterNames: [], namespaces: [], clusterSetNames: [] },
           isEditing: true,
         })
       )
 
-      expect(result.current.clusterSetsDisplay).toBe('None selected')
+      const { container } = render(<>{result.current.clusterSetsDisplay}</>)
+      expect(container).toHaveTextContent('None selected')
     })
 
     it('handles change from "None selected" to cluster sets', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [], clusterSetNames: [] },
+          oldData: { clusterNames: [], namespaces: [], clusterSetNames: [] },
           newData: {
             clusterNames: [],
+            namespaces: [],
             clusterSetNames: [createMockClusterSet('new-set')],
           },
           isEditing: true,
         })
       )
 
-      const display = result.current.clusterSetsDisplay
-      expect(display).toHaveProperty('type', 'div')
+      const { container } = render(<>{result.current.clusterSetsDisplay}</>)
+      expect(container.querySelector('s')).toBeInTheDocument()
+      expect(container).toHaveTextContent('None selected')
+      expect(container).toHaveTextContent('new-set')
     })
 
     it('shows diff when cluster sets change from one set to another', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [], clusterSetNames: ['old-set-1'] },
+          oldData: { clusterNames: [], namespaces: [], clusterSetNames: ['old-set-1'] },
           newData: {
             clusterNames: [],
+            namespaces: [],
             clusterSetNames: [createMockClusterSet('new-set-2')],
           },
           isEditing: true,
         })
       )
 
-      const display = result.current.clusterSetsDisplay
-      expect(display).toHaveProperty('type', 'div')
+      const { container } = render(<>{result.current.clusterSetsDisplay}</>)
+      expect(container.querySelector('s')).toBeInTheDocument()
+      expect(container).toHaveTextContent('old-set-1')
+      expect(container).toHaveTextContent('new-set-2')
     })
 
     it('correctly compares cluster sets in different order (regression test for filter removal)', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [], clusterSetNames: ['set-3', 'set-1', 'set-2'] },
+          oldData: { clusterNames: [], namespaces: [], clusterSetNames: ['set-3', 'set-1', 'set-2'] },
           newData: {
             clusterNames: [],
+            namespaces: [],
             clusterSetNames: [
               createMockClusterSet('set-1'),
               createMockClusterSet('set-2'),
@@ -878,22 +913,25 @@ describe('useReviewStepContent', () => {
         })
       )
 
-      expect(result.current.clusterSetsDisplay).toBe('set-1, set-2, set-3')
+      const { container } = render(<>{result.current.clusterSetsDisplay}</>)
+      expect(container).toHaveTextContent('set-1, set-2, set-3')
     })
 
     it('handles mixed cluster set formats', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [] },
+          oldData: { clusterNames: [], namespaces: [] },
           newData: {
             clusterNames: [],
+            namespaces: [],
             clusterSetNames: [createMockClusterSet('set-1'), 'set-2', createMockClusterSet('set-3')],
           },
           isEditing: false,
         })
       )
 
-      expect(result.current.clusterSetsDisplay).toBe('set-1, set-2, set-3')
+      const { container } = render(<>{result.current.clusterSetsDisplay}</>)
+      expect(container).toHaveTextContent('set-1, set-2, set-3')
     })
   })
 

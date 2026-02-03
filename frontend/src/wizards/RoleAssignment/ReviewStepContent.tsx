@@ -33,15 +33,15 @@ export const ReviewStepContent = ({
     {
       oldData: {
         clusterSetNames: preselected?.clusterSetNames,
-        clusterNames: preselected?.clusterNames,
-        namespaces: preselected?.namespaces,
+        clusterNames: preselected?.clusterNames ?? [],
+        namespaces: preselected?.namespaces ?? [],
         role: preselected?.roles?.[0],
         subject: preselected?.subject,
       },
       newData: {
         clusterSetNames: formData.selectedClusterSets,
-        clusterNames: formData.selectedClusters,
-        namespaces: formData.scope.namespaces,
+        clusterNames: formData.selectedClusters?.map((cluster) => cluster.metadata?.name || cluster.name) ?? [],
+        namespaces: formData.scope.namespaces ?? [],
         role: formData.roles?.[0],
         subject: formData.subject,
       },

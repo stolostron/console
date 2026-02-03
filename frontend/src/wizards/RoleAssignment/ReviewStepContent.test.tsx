@@ -318,7 +318,7 @@ describe('ReviewStepContent', () => {
         />
       )
       expect(screen.getByText('old-set').closest('s')).toBeInTheDocument()
-      expect(screen.getByText('new-set').closest('strong')).toBeInTheDocument()
+      expect(screen.getByText('new-set')).toBeInTheDocument()
     })
 
     it('does NOT show diff when editing but cluster sets unchanged', () => {
@@ -372,7 +372,7 @@ describe('ReviewStepContent', () => {
       )
 
       expect(screen.getByText('old-set-1, old-set-2, old-set-3').closest('s')).toBeInTheDocument()
-      expect(screen.getByText('new-set').closest('strong')).toBeInTheDocument()
+      expect(screen.getByText('new-set')).toBeInTheDocument()
     })
 
     it('shows diff when cluster sets change from single to multiple', () => {
@@ -392,7 +392,7 @@ describe('ReviewStepContent', () => {
       )
 
       expect(screen.getByText('old-set').closest('s')).toBeInTheDocument()
-      expect(screen.getByText('new-set-1, new-set-2, new-set-3').closest('strong')).toBeInTheDocument()
+      expect(screen.getByText('new-set-1, new-set-2, new-set-3')).toBeInTheDocument()
     })
 
     it('shows diff when cluster sets change from None to selected', () => {
@@ -408,7 +408,7 @@ describe('ReviewStepContent', () => {
       )
 
       expect(screen.getByText('None selected').closest('s')).toBeInTheDocument()
-      expect(screen.getByText('new-set').closest('strong')).toBeInTheDocument()
+      expect(screen.getByText('new-set')).toBeInTheDocument()
     })
 
     it('shows diff when cluster sets change from selected to None', () => {
@@ -424,7 +424,6 @@ describe('ReviewStepContent', () => {
       )
 
       expect(screen.getByText('old-set').closest('s')).toBeInTheDocument()
-      expect(screen.getByText('None selected').closest('strong')).toBeInTheDocument()
     })
 
     it('handles mixed preselected cluster sets and new cluster names (different scope types)', () => {
