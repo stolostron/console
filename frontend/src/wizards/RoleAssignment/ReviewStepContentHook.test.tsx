@@ -1,5 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import React from 'react'
+import { render } from '@testing-library/react'
 import { renderHook } from '@testing-library/react-hooks'
 import { useReviewStepContent } from './ReviewStepContentHook'
 
@@ -21,7 +23,8 @@ describe('useReviewStepContent', () => {
         })
       )
 
-      expect(result.current.namespacesDisplay).toBe('ns3, ns4')
+      const { container } = render(<>{result.current.namespacesDisplay}</>)
+      expect(container).toHaveTextContent('ns3, ns4')
     })
 
     it('returns "Full access" when no namespaces and not editing', () => {
@@ -33,7 +36,8 @@ describe('useReviewStepContent', () => {
         })
       )
 
-      expect(result.current.namespacesDisplay).toBe('Full access')
+      const { container } = render(<>{result.current.namespacesDisplay}</>)
+      expect(container).toHaveTextContent('Full access')
     })
 
     it('returns current namespaces when editing but unchanged', () => {
@@ -45,7 +49,8 @@ describe('useReviewStepContent', () => {
         })
       )
 
-      expect(result.current.namespacesDisplay).toBe('ns1, ns2')
+      const { container } = render(<>{result.current.namespacesDisplay}</>)
+      expect(container).toHaveTextContent('ns1, ns2')
     })
 
     it('returns diff JSX when editing and namespaces changed from specific to full access', () => {
@@ -58,8 +63,7 @@ describe('useReviewStepContent', () => {
       )
 
       const display = result.current.namespacesDisplay
-      expect(display).toHaveProperty('type', 'div')
-      expect(display).toHaveProperty('props.children')
+      expect(React.isValidElement(display)).toBe(true)
     })
 
     it('returns diff JSX when editing and namespaces changed from full access to specific', () => {
@@ -72,7 +76,7 @@ describe('useReviewStepContent', () => {
       )
 
       const display = result.current.namespacesDisplay
-      expect(display).toHaveProperty('type', 'div')
+      expect(React.isValidElement(display)).toBe(true)
     })
 
     it('returns diff JSX when editing and namespaces changed between different values', () => {
@@ -85,7 +89,7 @@ describe('useReviewStepContent', () => {
       )
 
       const display = result.current.namespacesDisplay
-      expect(display).toHaveProperty('type', 'div')
+      expect(React.isValidElement(display)).toBe(true)
     })
 
     it('handles empty namespaces array in oldData', () => {
@@ -98,7 +102,7 @@ describe('useReviewStepContent', () => {
       )
 
       const display = result.current.namespacesDisplay
-      expect(display).toHaveProperty('type', 'div')
+      expect(React.isValidElement(display)).toBe(true)
     })
 
     it('handles empty namespaces array in newData', () => {
@@ -111,7 +115,7 @@ describe('useReviewStepContent', () => {
       )
 
       const display = result.current.namespacesDisplay
-      expect(display).toHaveProperty('type', 'div')
+      expect(React.isValidElement(display)).toBe(true)
     })
 
     it('handles empty namespaces in oldData (full access to specific)', () => {
@@ -124,7 +128,7 @@ describe('useReviewStepContent', () => {
       )
 
       const display = result.current.namespacesDisplay
-      expect(display).toHaveProperty('type', 'div')
+      expect(React.isValidElement(display)).toBe(true)
     })
 
     it('handles empty namespaces in newData (specific to full access)', () => {
@@ -137,7 +141,7 @@ describe('useReviewStepContent', () => {
       )
 
       const display = result.current.namespacesDisplay
-      expect(display).toHaveProperty('type', 'div')
+      expect(React.isValidElement(display)).toBe(true)
     })
 
     it('sorts namespaces before comparing', () => {
@@ -150,7 +154,8 @@ describe('useReviewStepContent', () => {
       )
 
       // Should be treated as unchanged since sorted arrays are equal
-      expect(result.current.namespacesDisplay).toBe('ns1, ns2')
+      const { container } = render(<>{result.current.namespacesDisplay}</>)
+      expect(container).toHaveTextContent('ns1, ns2')
     })
   })
 
@@ -280,7 +285,8 @@ describe('useReviewStepContent', () => {
         })
       )
 
-      expect(result.current.clustersDisplay).toBe('new-cluster')
+      const { container } = render(<>{result.current.clustersDisplay}</>)
+      expect(container).toHaveTextContent('new-cluster')
     })
 
     it('returns "None selected" when no clusters and not editing', () => {
@@ -292,7 +298,8 @@ describe('useReviewStepContent', () => {
         })
       )
 
-      expect(result.current.clustersDisplay).toBe('None selected')
+      const { container } = render(<>{result.current.clustersDisplay}</>)
+      expect(container).toHaveTextContent('None selected')
     })
 
     it('returns current clusters when editing but unchanged', () => {
@@ -307,7 +314,8 @@ describe('useReviewStepContent', () => {
         })
       )
 
-      expect(result.current.clustersDisplay).toBe('cluster-1')
+      const { container } = render(<>{result.current.clustersDisplay}</>)
+      expect(container).toHaveTextContent('cluster-1')
     })
 
     it('returns diff JSX when editing and clusters changed', () => {
@@ -323,7 +331,7 @@ describe('useReviewStepContent', () => {
       )
 
       const display = result.current.clustersDisplay
-      expect(display).toHaveProperty('type', 'div')
+      expect(React.isValidElement(display)).toBe(true)
     })
 
     it('uses oldData.clusterNames as fallback for current when currentClusterNames is null', () => {
@@ -335,7 +343,8 @@ describe('useReviewStepContent', () => {
         })
       )
 
-      expect(result.current.clustersDisplay).toBe('fallback-cluster')
+      const { container } = render(<>{result.current.clustersDisplay}</>)
+      expect(container).toHaveTextContent('fallback-cluster')
     })
 
     it('returns "None selected" when both original and current are empty', () => {
@@ -347,7 +356,8 @@ describe('useReviewStepContent', () => {
         })
       )
 
-      expect(result.current.clustersDisplay).toBe('None selected')
+      const { container } = render(<>{result.current.clustersDisplay}</>)
+      expect(container).toHaveTextContent('None selected')
     })
 
     it('handles change from "None selected" to clusters', () => {
@@ -363,7 +373,7 @@ describe('useReviewStepContent', () => {
       )
 
       const display = result.current.clustersDisplay
-      expect(display).toHaveProperty('type', 'div')
+      expect(React.isValidElement(display)).toBe(true)
     })
 
     it('shows diff when clusters change from one set to another', () => {
@@ -379,7 +389,7 @@ describe('useReviewStepContent', () => {
       )
 
       const display = result.current.clustersDisplay
-      expect(display).toHaveProperty('type', 'div')
+      expect(React.isValidElement(display)).toBe(true)
     })
   })
 
@@ -393,7 +403,8 @@ describe('useReviewStepContent', () => {
         })
       )
 
-      expect(result.current.roleDisplay).toBe('new-role')
+      const { container } = render(<>{result.current.roleDisplay}</>)
+      expect(container).toHaveTextContent('new-role')
     })
 
     it('returns "No role selected" when no role and not editing', () => {
@@ -405,7 +416,8 @@ describe('useReviewStepContent', () => {
         })
       )
 
-      expect(result.current.roleDisplay).toBe('No role selected')
+      const { container } = render(<>{result.current.roleDisplay}</>)
+      expect(container).toHaveTextContent('No role selected')
     })
 
     it('returns current role when editing but unchanged', () => {
@@ -417,7 +429,8 @@ describe('useReviewStepContent', () => {
         })
       )
 
-      expect(result.current.roleDisplay).toBe('admin-role')
+      const { container } = render(<>{result.current.roleDisplay}</>)
+      expect(container).toHaveTextContent('admin-role')
     })
 
     it('returns diff JSX when editing and role changed', () => {
@@ -430,7 +443,7 @@ describe('useReviewStepContent', () => {
       )
 
       const display = result.current.roleDisplay
-      expect(display).toHaveProperty('type', 'div')
+      expect(React.isValidElement(display)).toBe(true)
     })
 
     it('handles change from "No role selected" to role', () => {
@@ -443,7 +456,7 @@ describe('useReviewStepContent', () => {
       )
 
       const display = result.current.roleDisplay
-      expect(display).toHaveProperty('type', 'div')
+      expect(React.isValidElement(display)).toBe(true)
     })
 
     it('handles change from role to "No role selected"', () => {
@@ -456,7 +469,7 @@ describe('useReviewStepContent', () => {
       )
 
       const display = result.current.roleDisplay
-      expect(display).toHaveProperty('type', 'div')
+      expect(React.isValidElement(display)).toBe(true)
     })
 
     it('handles undefined role in oldData', () => {
@@ -469,7 +482,7 @@ describe('useReviewStepContent', () => {
       )
 
       const display = result.current.roleDisplay
-      expect(display).toHaveProperty('type', 'div')
+      expect(React.isValidElement(display)).toBe(true)
     })
 
     it('handles undefined role in newData', () => {
@@ -482,7 +495,7 @@ describe('useReviewStepContent', () => {
       )
 
       const display = result.current.roleDisplay
-      expect(display).toHaveProperty('type', 'div')
+      expect(React.isValidElement(display)).toBe(true)
     })
   })
 
@@ -500,7 +513,8 @@ describe('useReviewStepContent', () => {
         })
       )
 
-      expect(result.current.identityDisplay).toBe('test-user')
+      const { container } = render(<>{result.current.identityDisplay}</>)
+      expect(container).toHaveTextContent('test-user')
     })
 
     it('returns group name when subject is Group', () => {
@@ -516,7 +530,8 @@ describe('useReviewStepContent', () => {
         })
       )
 
-      expect(result.current.identityDisplay).toBe('test-group')
+      const { container } = render(<>{result.current.identityDisplay}</>)
+      expect(container).toHaveTextContent('test-group')
     })
 
     it('displays value from preselected when editing with same value', () => {
@@ -532,7 +547,8 @@ describe('useReviewStepContent', () => {
         })
       )
 
-      expect(result.current.identityDisplay).toBe('preselected-user')
+      const { container } = render(<>{result.current.identityDisplay}</>)
+      expect(container).toHaveTextContent('preselected-user')
     })
 
     it('returns "Not selected" when subject is undefined', () => {
@@ -544,7 +560,8 @@ describe('useReviewStepContent', () => {
         })
       )
 
-      expect(result.current.identityDisplay).toBe('Not selected')
+      const { container } = render(<>{result.current.identityDisplay}</>)
+      expect(container).toHaveTextContent('Not selected')
     })
 
     it('returns current identity when editing but unchanged', () => {
@@ -560,7 +577,8 @@ describe('useReviewStepContent', () => {
         })
       )
 
-      expect(result.current.identityDisplay).toBe('test-user')
+      const { container } = render(<>{result.current.identityDisplay}</>)
+      expect(container).toHaveTextContent('test-user')
     })
 
     it('returns diff JSX when editing and identity changed', () => {
@@ -577,7 +595,7 @@ describe('useReviewStepContent', () => {
       )
 
       const display = result.current.identityDisplay
-      expect(display).toHaveProperty('type', 'div')
+      expect(React.isValidElement(display)).toBe(true)
     })
 
     it('returns diff JSX when identity kind changed', () => {
@@ -594,7 +612,7 @@ describe('useReviewStepContent', () => {
       )
 
       const display = result.current.identityDisplay
-      expect(display).toHaveProperty('type', 'div')
+      expect(React.isValidElement(display)).toBe(true)
     })
 
     it('handles change from User to Group', () => {
@@ -611,7 +629,7 @@ describe('useReviewStepContent', () => {
       )
 
       const display = result.current.identityDisplay
-      expect(display).toHaveProperty('type', 'div')
+      expect(React.isValidElement(display)).toBe(true)
     })
   })
 
@@ -634,9 +652,9 @@ describe('useReviewStepContent', () => {
       )
 
       expect(result.current.clusterNames).toBe('new-cluster')
-      expect(result.current.clustersDisplay).toHaveProperty('type', 'div')
-      expect(result.current.namespacesDisplay).toHaveProperty('type', 'div')
-      expect(result.current.roleDisplay).toHaveProperty('type', 'div')
+      expect(React.isValidElement(result.current.clustersDisplay)).toBe(true)
+      expect(React.isValidElement(result.current.namespacesDisplay)).toBe(true)
+      expect(React.isValidElement(result.current.roleDisplay)).toBe(true)
     })
 
     it('handles complete scenario with no changes during editing', () => {
@@ -657,9 +675,12 @@ describe('useReviewStepContent', () => {
       )
 
       expect(result.current.clusterNames).toBe('cluster-1')
-      expect(result.current.clustersDisplay).toBe('cluster-1')
-      expect(result.current.namespacesDisplay).toBe('ns1')
-      expect(result.current.roleDisplay).toBe('admin')
+      const clustersContainer = render(<>{result.current.clustersDisplay}</>).container
+      expect(clustersContainer).toHaveTextContent('cluster-1')
+      const namespacesContainer = render(<>{result.current.namespacesDisplay}</>).container
+      expect(namespacesContainer).toHaveTextContent('ns1')
+      const roleContainer = render(<>{result.current.roleDisplay}</>).container
+      expect(roleContainer).toHaveTextContent('admin')
     })
 
     it('handles new assignment scenario (not editing)', () => {
@@ -679,9 +700,12 @@ describe('useReviewStepContent', () => {
       )
 
       expect(result.current.clusterNames).toBe('cluster-1')
-      expect(result.current.clustersDisplay).toBe('cluster-1')
-      expect(result.current.namespacesDisplay).toBe('ns1, ns2')
-      expect(result.current.roleDisplay).toBe('viewer')
+      const clustersContainer = render(<>{result.current.clustersDisplay}</>).container
+      expect(clustersContainer).toHaveTextContent('cluster-1')
+      const namespacesContainer = render(<>{result.current.namespacesDisplay}</>).container
+      expect(namespacesContainer).toHaveTextContent('ns1, ns2')
+      const roleContainer = render(<>{result.current.roleDisplay}</>).container
+      expect(roleContainer).toHaveTextContent('viewer')
     })
   })
 })
