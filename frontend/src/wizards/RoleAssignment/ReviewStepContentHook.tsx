@@ -144,9 +144,15 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: UseReviewS
     [newData.clusterNames, oldData.clusterNames]
   )
 
-  const originalNamespaces = useMemo(() => oldData.namespaces?.join(', ') ?? t('Full access'), [oldData.namespaces, t])
+  const originalNamespaces = useMemo(
+    () => (oldData.namespaces.length ? oldData.namespaces.join(', ') : t('Full access')),
+    [oldData.namespaces, t]
+  )
 
-  const currentNamespaces = useMemo(() => newData.namespaces?.join(', ') ?? t('Full access'), [newData.namespaces, t])
+  const currentNamespaces = useMemo(
+    () => (newData.namespaces.length ? newData.namespaces.join(', ') : t('Full access')),
+    [newData.namespaces, t]
+  )
 
   const namespacesDisplay = useMemo(() => {
     const hasOriginalNamespaces = oldData.namespaces.length > 0
