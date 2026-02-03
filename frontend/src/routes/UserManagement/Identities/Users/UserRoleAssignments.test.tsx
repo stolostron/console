@@ -170,9 +170,6 @@ describe('UserRoleAssignments', () => {
     // Verify the component renders without crashing
     expect(screen.getByText(/loaded/i)).toBeInTheDocument()
 
-    // Verify the user has role assignments - check for the actual rendered content
-    screen.logTestingPlaygroundURL()
-
     // Check that role assignments are rendered
     expect(screen.getByText(/kubevirt\.io:edit/i)).toBeInTheDocument() // ClusterRole
     expect(screen.getByText(/network-admin/i)).toBeInTheDocument() // ClusterRole

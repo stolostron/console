@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
@@ -119,12 +119,19 @@ describe('ArgoWizard tests', () => {
     )
     await clickByRole('combobox', { name: 'Select the Argo server' })
     await clickByRole('option', { name: /http:\/\/argoserver\.com/i })
+    await clickByText('Next')
+
+    //=====================================================================
+    //                      generators page
+    //=====================================================================
+    // Click on the generator to expand it
+    await clickByText('Cluster Decision Resource Generator')
     await clickByRole('combobox', { name: 'Select the requeue time' })
     await clickByRole('option', { name: /120/i })
     await clickByText('Next')
 
     //=====================================================================
-    //                      template page
+    //                      repository page
     //=====================================================================
     await clickByText('Git')
     await typeByRole(url, 'combobox', { name: /Enter or select a Git URL/i })
@@ -207,6 +214,121 @@ describe('ArgoWizard tests', () => {
     expect(mockOnsubmit).toHaveBeenCalledWith(submittedGit)
   })
 
+  test('various auto sync options', async () => {
+    nockIgnoreApiPaths()
+    const url = 'https://github.com/fxiang1/app-samples'
+
+    render(<TestArgoWizard />)
+
+    //=====================================================================
+    //                      general page
+    //=====================================================================
+    userEvent.type(
+      screen.getByRole('textbox', {
+        name: /name/i,
+      }),
+      'testapp'
+    )
+    await clickByRole('combobox', { name: 'Select the Argo server' })
+    await clickByRole('option', { name: /http:\/\/argoserver\.com/i })
+    await clickByText('Next')
+
+    //=====================================================================
+    //                      generators page
+    //=====================================================================
+    // Click on the generator to expand it
+    await clickByText('Cluster Decision Resource Generator')
+    await clickByRole('combobox', { name: 'Select the requeue time' })
+    await clickByRole('option', { name: /120/i })
+    await clickByText('Next')
+
+    //=====================================================================
+    //                      repository page
+    //=====================================================================
+    await clickByText('Git')
+    await typeByRole(url, 'combobox', { name: /Enter or select a Git URL/i })
+
+    const appBranchNocks = [nockArgoGitBranches(url, { branchList: [{ name: 'main' }] })]
+    userEvent.click(
+      screen.getByRole('option', {
+        name: /https:\/\/github\.com\/fxiang1\/app-samples/i,
+      })
+    )
+
+    await waitForNocks(appBranchNocks)
+    await clickByRole('combobox', { name: /enter or select a tracking revision/i })
+    const pathNocks = [
+      nockArgoGitPathSha(url, 'main', { commit: { sha: '01' } }),
+      nockArgoGitPathTree(url, { tree: [{ path: 'application-test', type: 'tree' }] }),
+    ]
+
+    await clickByRole('option', { name: /main/i })
+    await waitForNocks(pathNocks)
+
+    await typeByRole('ansible', 'combobox', { name: /enter or select a repository path/i })
+    await clickByRole('option', {
+      name: /ansible/i,
+    })
+
+    await typeByRole('default', 'textbox')
+
+    await clickByText('Next')
+
+    //=====================================================================
+    //                      sync page
+    //=====================================================================
+    const pruneCheckbox = screen.getByRole('checkbox', {
+      name: /delete resources that are no longer defined in the source repository$/i,
+    })
+    await waitFor(() => expect(pruneCheckbox).toBeChecked())
+    await clickByRole('checkbox', {
+      name: /delete resources that are no longer defined in the source repository$/i,
+    })
+    await waitFor(() => expect(pruneCheckbox).not.toBeChecked())
+    await clickByRole('checkbox', {
+      name: /delete resources that are no longer defined in the source repository$/i,
+    })
+    await waitFor(() => expect(pruneCheckbox).toBeChecked())
+
+    const selfHealCheckbox = screen.getByRole('checkbox', {
+      name: /automatically sync when cluster state changes/i,
+    })
+    await clickByRole('checkbox', { name: /automatically sync when cluster state changes/i })
+    await waitFor(() => expect(selfHealCheckbox).not.toBeChecked())
+
+    await clickByRole('checkbox', { name: /automatically sync when cluster state changes/i })
+    await waitFor(() => expect(selfHealCheckbox).toBeChecked())
+
+    await clickByText('Next')
+
+    //=====================================================================
+    //                      placement page
+    //=====================================================================
+    await clickByText('New placement')
+    await clickByRole('button', { name: 'Action' })
+    await clickByRole('combobox', { name: 'Select the label' })
+    await clickByRole('option', { name: /cloud/i })
+
+    await clickByRole('combobox', {
+      name: /select the operator/i,
+    })
+    await clickByRole('option', { name: /does not equal any of/i })
+
+    await clickByRole('combobox', {
+      name: /select the values/i,
+    })
+    await clickByRole('option', { name: /amazon/i })
+    await clickByText('Next')
+
+    //=====================================================================
+    //                      review page
+    //=====================================================================
+    await clickByRole('button', { name: 'Submit' })
+
+    const submitted = mockOnsubmit.mock.calls[0][0]
+    expect(submitted[0].spec.template.spec.syncPolicy.automated).toEqual({ enabled: true, prune: true, selfHeal: true })
+  })
+
   //=====================================================================
   //                      HELM
   //=====================================================================
@@ -235,13 +357,22 @@ describe('ArgoWizard tests', () => {
     )
 
     //=====================================================================
-    //                      template page
+    //                      generators page - skip with defaults
+    //=====================================================================
+    userEvent.click(
+      screen.getByRole('button', {
+        name: /next/i,
+      })
+    )
+
+    //=====================================================================
+    //                      repository page
     //=====================================================================
     userEvent.click(screen.getByText(/use a helm repository/i))
-    userEvent.type(screen.getByPlaceholderText(/enter or select a helm url/i), 'https://github.com/fxiang1/app-samples')
+    await typeByRole('https://github.com/fxiang1/app-samples', 'combobox', { name: /enter or select a helm url/i })
     userEvent.click(
       screen.getByRole('option', {
-        name: /create new option "https:\/\/github\.com\/fxiang1\/app-samples"/i,
+        name: /https:\/\/github\.com\/fxiang1\/app-samples/i,
       })
     )
     userEvent.type(
@@ -316,12 +447,19 @@ describe('ArgoWizard tests', () => {
     )
     await clickByRole('combobox', { name: 'Select the Argo server' })
     await clickByRole('option', { name: /http:\/\/argoserver\.com/i })
+    await clickByText('Next')
+
+    //=====================================================================
+    //                      generators page
+    //=====================================================================
+    // Click on the generator to expand it
+    await clickByText('Cluster Decision Resource Generator')
     await clickByRole('combobox', { name: 'Select the requeue time' })
     await clickByRole('option', { name: /120/i })
     await clickByText('Next')
 
     //=====================================================================
-    //                      template page
+    //                      repository page
     //=====================================================================
     await clickByText('Git')
     await typeByRole(url, 'combobox', { name: /Enter or select a Git URL/i })
@@ -522,6 +660,7 @@ const submittedGit = [
           ],
           syncPolicy: {
             automated: {
+              enabled: true,
               allowEmpty: true,
               prune: true,
               selfHeal: true,
@@ -611,6 +750,7 @@ const submittedHelm = [
           ],
           syncPolicy: {
             automated: {
+              enabled: true,
               prune: true,
               selfHeal: true,
             },
@@ -673,6 +813,7 @@ const submittedGitPullModel = [
           ],
           syncPolicy: {
             automated: {
+              enabled: true,
               prune: true,
               selfHeal: true,
             },

@@ -148,7 +148,7 @@ export function SummaryClustersCard(props: {
 
   return (
     <Card
-      id={`${title.toLowerCase().replace(/\s+/g, '-')}-chart`}
+      id={`${title.toLowerCase().replaceAll(/\s+/g, '-')}-chart`}
       style={{
         height: '200px',
         overflow: 'hidden',

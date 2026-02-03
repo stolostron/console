@@ -196,7 +196,7 @@ const argoAppSetGit: ApplicationSet = {
           server: '{{server}}',
         },
         syncPolicy: {
-          automated: { selfHeal: true, prune: true },
+          automated: { enabled: true, selfHeal: true, prune: true },
           syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
         },
       },
@@ -248,7 +248,7 @@ const argoAppSetHelm: ApplicationSet = {
           server: '{{server}}',
         },
         syncPolicy: {
-          automated: { selfHeal: true, prune: true },
+          automated: { enabled: true, selfHeal: true, prune: true },
           syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
         },
       },
@@ -372,7 +372,10 @@ describe('Create Argo Application Set', () => {
     await clickByText(gitOpsCluster!.spec!.argoServer!.argoNamespace)
     await clickByText('Next')
 
-    // Template
+    // Generators - skip with default
+    await clickByText('Next')
+
+    // Repository
     await clickByText('Git')
     await clickByRole('combobox', { name: /Enter or select a Git URL/i })
 
@@ -424,10 +427,11 @@ describe('Create Argo Application Set', () => {
     await clickByRole('combobox', { name: 'Select the Argo server' })
     await clickByText(gitOpsCluster!.spec!.argoServer!.argoNamespace)
 
-    // next - Source
+    // next - Generators
     await clickByText('Next')
 
-    /////////////////////////////////////////
+    // Generators - skip with default
+    await clickByText('Next')
 
     // repository type
     await clickByText('Helm')

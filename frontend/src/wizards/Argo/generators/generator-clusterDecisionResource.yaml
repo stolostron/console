@@ -1,0 +1,6 @@
+clusterDecisionResource:
+  configMapRef: acm-placement
+  labelSelector:
+    matchLabels:
+      cluster.open-cluster-management.io/placement: -placement
+  requeueAfterSeconds: 180

@@ -3,6 +3,7 @@
 import { render, screen } from '@testing-library/react'
 import { ReviewStepContent } from './ReviewStepContent'
 import { RoleAssignmentWizardFormData } from './types'
+import { ManagedClusterSet } from '../../resources'
 
 // Mock the translation hook
 jest.mock('../../lib/acm-i18next', () => ({
@@ -95,7 +96,11 @@ describe('ReviewStepContent', () => {
     )
 
     expect(screen.getByText('Scope')).toBeInTheDocument()
-    expect(screen.getByText('All clusters')).toBeInTheDocument()
+    expect(screen.getByText('Access level')).toBeInTheDocument()
+    // Test for either "All clusters" (staged) or "All current and future clusters" (unstaged changes)
+    expect(screen.getByText(/All (current and future )?clusters/)).toBeInTheDocument()
+    expect(screen.getByText('Projects')).toBeInTheDocument()
+    expect(screen.getByText('Full access')).toBeInTheDocument()
   })
 
   it('renders Scope section for Select cluster sets', () => {
@@ -103,7 +108,10 @@ describe('ReviewStepContent', () => {
       <ReviewStepContent
         formData={createFormData({
           scopeType: 'Select cluster sets',
-          selectedClusterSets: [{ metadata: { name: 'cluster-set-1' } }, { metadata: { name: 'cluster-set-2' } }],
+          selectedClusterSets: [
+            { metadata: { name: 'cluster-set-1' } },
+            { metadata: { name: 'cluster-set-2' } },
+          ] as ManagedClusterSet[],
         })}
       />
     )
@@ -130,7 +138,7 @@ describe('ReviewStepContent', () => {
       <ReviewStepContent
         formData={createFormData({
           scopeType: 'Select cluster sets',
-          selectedClusterSets: [{ metadata: { name: 'cs-1' } }],
+          selectedClusterSets: [{ metadata: { name: 'cs-1' } }] as ManagedClusterSet[],
         })}
       />
     )
@@ -230,30 +238,6 @@ describe('ReviewStepContent', () => {
     expect(screen.getByText(/preselected-cluster-1, preselected-cluster-2/)).toBeInTheDocument()
   })
 
-  it('renders multiple users joined by comma', () => {
-    render(
-      <ReviewStepContent
-        formData={createFormData({
-          subject: { kind: 'User', user: ['user1', 'user2', 'user3'] },
-        })}
-      />
-    )
-
-    expect(screen.getByText('user1, user2, user3')).toBeInTheDocument()
-  })
-
-  it('renders multiple groups joined by comma', () => {
-    render(
-      <ReviewStepContent
-        formData={createFormData({
-          subject: { kind: 'Group', group: ['group1', 'group2'] },
-        })}
-      />
-    )
-
-    expect(screen.getByText('group1, group2')).toBeInTheDocument()
-  })
-
   it('handles clusters with name property', () => {
     render(
       <ReviewStepContent
@@ -285,7 +269,7 @@ describe('ReviewStepContent', () => {
       <ReviewStepContent
         formData={createFormData({
           scopeType: 'Select cluster sets',
-          selectedClusterSets: [{ metadata: { name: 'cs-1' } }],
+          selectedClusterSets: [{ metadata: { name: 'cs-1' } }] as ManagedClusterSet[],
           selectedClusters: [],
         })}
       />

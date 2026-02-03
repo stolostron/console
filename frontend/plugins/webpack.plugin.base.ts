@@ -105,7 +105,7 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
     ].filter(Boolean) as webpack.WebpackPluginInstance[],
     output: {
       devtoolModuleFilenameTemplate: (info: { absoluteResourcePath: string }) =>
-        path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
+        path.resolve(info.absoluteResourcePath).replaceAll('\\', '/'),
       assetModuleFilename: 'assets/[name].[contenthash:8][ext][query]',
       filename: '[name].[contenthash:8].js',
       chunkFilename: '[name].[contenthash:8].js',

@@ -403,7 +403,7 @@ export class TimeWindow extends Component {
       })
 
       // remove spaces between time and AM/PM
-      return formattedTime.replace(/\s+/g, '')
+      return formattedTime.replaceAll(/\s+/g, '')
     } catch {
       return ''
     }
@@ -497,7 +497,7 @@ export class TimeWindow extends Component {
         if (!control.active.mode && event.target.value && timezoneCache.isSelected) {
           control.active.timezone = timezoneCache.tz
         }
-        control.active.mode = (event.target.value || '').replace(/"/g, '')
+        control.active.mode = (event.target.value || '').replaceAll(/"/g, '')
         this.setState({ isExpanded: control.active.mode })
       } else if (targetName.startsWith('days-selector')) {
         if (checked) {

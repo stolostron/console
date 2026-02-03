@@ -26,6 +26,7 @@ import { useHubConfigurationItem } from '../internal/useHubConfigurationItem'
  * if (error) {
  *   return <ErrorState error={error} />
  * }
+ * ```
  *
  * @remarks
  * This hook

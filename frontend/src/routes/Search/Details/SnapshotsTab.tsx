@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { IResource } from '../../../resources'
-import { fireManagedClusterView } from '../../../resources/managedclusterview'
+import { fleetResourceRequest } from '../../../resources/utils/fleet-resource-request'
 import { getBackendUrl, getRequest } from '../../../resources/utils/resource-request'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmLoadingPage, AcmTable } from '../../../ui-components'
@@ -62,13 +62,18 @@ export default function SnapshotsTab() {
           console.error('Error getting VM resource: ', err)
         })
     } else {
-      fireManagedClusterView(cluster, kind, apiversion, name, namespace)
-        .then((viewResponse) => {
+      fleetResourceRequest('GET', cluster, {
+        apiVersion: apiversion,
+        kind,
+        name,
+        namespace,
+      })
+        .then((res) => {
           setVMLoading(false)
-          if (viewResponse?.message) {
-            console.error('Error fetching parent VM')
+          if ('errorMessage' in res) {
+            console.error(`Error fetching parent VM: ${res.errorMessage}`)
           } else {
-            setVM(viewResponse?.result)
+            setVM(res)
           }
         })
         .catch((err) => {

@@ -8,9 +8,10 @@ import {
   MulticlusterRoleAssignmentApiVersion,
   MulticlusterRoleAssignmentKind,
   MulticlusterRoleAssignmentNamespace,
+  PlacementRef,
   RoleAssignment,
 } from '../multicluster-role-assignment'
-import { Placement } from '../placement'
+import { GlobalPlacementName, Placement } from '../placement'
 import { createResource, deleteResource, patchResource } from '../utils'
 import { getResource, IRequestResult, ResourceError, ResourceErrorCode } from '../utils/resource-request'
 import { createForClusterSets as createForClusterSetsBinding } from './managed-cluster-set-binding-client'
@@ -39,6 +40,8 @@ interface MulticlusterRoleAssignmentQuery {
   roles?: string[]
   /** Filter by cluster names (resolved from placements) */
   clusterNames?: string[]
+  /** Filter by cluster set names (resolved from placements) */
+  clusterSetNames?: string[]
 }
 
 /**
@@ -53,7 +56,8 @@ interface MulticlusterRoleAssignmentQuery {
 const roleAssignmentToFlattenedRoleAssignment = (
   multiClusterRoleAssignment: MulticlusterRoleAssignment,
   roleAssignment: RoleAssignment,
-  clusterNames: string[]
+  clusterNames: string[],
+  clusterSetNames: string[]
 ): FlattenedRoleAssignment => ({
   ...roleAssignment,
   subject: {
@@ -63,6 +67,7 @@ const roleAssignmentToFlattenedRoleAssignment = (
   relatedMulticlusterRoleAssignment: multiClusterRoleAssignment,
   status: multiClusterRoleAssignment?.status?.roleAssignments?.find((e) => e.name === roleAssignment.name),
   clusterNames,
+  clusterSetNames,
 })
 
 /**
@@ -87,6 +92,9 @@ const getClustersForRoleAssignment = (
     ),
   ].sort((a, b) => a.localeCompare(b))
 
+const doesPlacementRefMatchesPlacement = (placementRef: PlacementRef, placementB: Placement) =>
+  placementRef.name === placementB.metadata.name && placementRef.namespace === placementB.metadata.namespace
+
 /**
  * Flattens a MulticlusterRoleAssignment into individual FlattenedRoleAssignment objects,
  * filtering by cluster or role match.
@@ -106,10 +114,19 @@ const flattenMulticlusterRoleAssignment = (
       roleAssignmentToFlattenedRoleAssignment(
         multiclusterRoleAssignment,
         roleAssignment,
-        getClustersForRoleAssignment(roleAssignment, placementClusters)
+        getClustersForRoleAssignment(roleAssignment, placementClusters),
+        placementClusters
+          .filter(
+            (placementCluster) =>
+              roleAssignment.clusterSelection.type === 'placements' &&
+              roleAssignment.clusterSelection.placements.some((roleAssignmentPlacement) =>
+                doesPlacementRefMatchesPlacement(roleAssignmentPlacement, placementCluster.placement)
+              )
+          )
+          .flatMap((placementCluster) => placementCluster.clusterSetNames ?? [])
       )
     )
-    .filter((flattenedRoleAssignment) => isClusterOrRoleMatch(flattenedRoleAssignment, query))
+    .filter((flattenedRoleAssignment) => isClusterOrClustersetOrRoleMatch(flattenedRoleAssignment, query))
 
 /**
  * Checks if a MulticlusterRoleAssignment's subject matches the query filters.
@@ -143,7 +160,7 @@ const isSubjectMatch = (
  * @param query - Query containing cluster and role filters
  * @returns True if the assignment matches all provided filters
  */
-const isClusterOrRoleMatch = (
+const isClusterOrClustersetOrRoleMatch = (
   roleAssignment: FlattenedRoleAssignment,
   query: MulticlusterRoleAssignmentQuery
 ): boolean => {
@@ -151,6 +168,10 @@ const isClusterOrRoleMatch = (
     // Filter by cluster names
     case query.clusterNames?.length &&
       !roleAssignment.clusterNames.some((clusterName) => query.clusterNames!.includes(clusterName)):
+      return false
+    // Filter by cluster set names
+    case query.clusterSetNames?.length &&
+      !roleAssignment.clusterSetNames.some((clusterSetName) => query.clusterSetNames!.includes(clusterSetName)):
       return false
     // Filter by roles
     case query.roles?.length && !query.roles.includes(roleAssignment.clusterRole):
@@ -229,24 +250,37 @@ export const useFindRoleAssignments = (query: MulticlusterRoleAssignmentQuery): 
  * @param roleAssignment - The role assignment to generate a name for
  * @returns A 16-character hash string as the role assignment name
  */
-const getRoleAssignmentName = (roleAssignment: RoleAssignmentToSave): string => {
-  const sortedKeys = Object.keys(roleAssignment).sort((a, b) => a.localeCompare(b))
-  const sortedObject: any = {}
-  for (const key of sortedKeys) {
-    const value = roleAssignment[key as keyof typeof roleAssignment]
+const ARRAY_KEYS_FOR_NAME = ['clusterNames', 'clusterSetNames', 'targetNamespaces']
 
-    if (['targetNamespaces', 'clusterNames', 'clusterSetNames'].includes(key) && value && Array.isArray(value)) {
-      sortedObject[key] = [...value].sort((a, b) => a.localeCompare(b))
+export const getRoleAssignmentName = (roleAssignment: RoleAssignmentToSave): string => {
+  const allKeys = [...new Set([...Object.keys(roleAssignment), ...ARRAY_KEYS_FOR_NAME])].sort((a, b) =>
+    a.localeCompare(b)
+  )
+  const sortedObject = allKeys.reduce<Record<string, unknown>>((acc, key) => {
+    const value = roleAssignment[key as keyof RoleAssignmentToSave]
+    if (ARRAY_KEYS_FOR_NAME.includes(key)) {
+      const arr = Array.isArray(value) && value.length > 0 ? value : []
+      acc[key] = arr.length > 0 ? [...arr].sort((a, b) => a.localeCompare(b)) : []
     } else {
-      sortedObject[key] = value
+      acc[key] = value
+    }
+    return acc
+  }, {})
+
+  const emptyValuesToUndefinedReplacer = (_k: any, value: any) => {
+    switch (true) {
+      case value !== undefined && Array.isArray(value) && value.length === 0:
+      case value !== undefined && typeof value === 'object' && Object.keys(value).length === 0:
+      case value !== undefined && typeof value === 'string' && value.trim().length === 0:
+        return undefined
+      default:
+        return value
     }
   }
-  const stringified = JSON.stringify(sortedObject)
 
+  const stringified = JSON.stringify(sortedObject, emptyValuesToUndefinedReplacer)
   const hash = sha256(stringified)
-
-  const shortHash = hash.substring(0, 16)
-  return shortHash
+  return hash.substring(0, 16)
 }
 
 /**
@@ -377,7 +411,7 @@ export const addRoleAssignment = async (
     existingManagedClusterSetBindings?: ManagedClusterSetBinding[]
     existingPlacements: Placement[]
   }
-): Promise<IRequestResult<MulticlusterRoleAssignment>> => {
+): Promise<RoleAssignment> => {
   const existingRoleAssignments = existingMulticlusterRoleAssignment?.spec.roleAssignments || []
   const isUnique = validateRoleAssignmentName(roleAssignment, existingRoleAssignments)
 
@@ -385,7 +419,7 @@ export const addRoleAssignment = async (
     throw new ResourceError(ResourceErrorCode.BadRequest, 'Duplicate role assignment detected.')
   }
 
-  if (roleAssignment.clusterNames?.length || roleAssignment.clusterSetNames?.length) {
+  if (roleAssignment.clusterNames?.length || roleAssignment.clusterSetNames?.length || roleAssignment.isGlobalScope) {
     const placements: Placement[] = await createAdditionalRoleAssignmentResources(roleAssignment, {
       existingManagedClusterSetBindings,
       existingPlacements,
@@ -393,7 +427,7 @@ export const addRoleAssignment = async (
 
     const mappedRoleAssignment = mapRoleAssignmentBeforeSaving(roleAssignment, placements)
     if (existingMulticlusterRoleAssignment) {
-      return patchResource(existingMulticlusterRoleAssignment, {
+      patchResource(existingMulticlusterRoleAssignment, {
         spec: {
           ...existingMulticlusterRoleAssignment.spec,
           roleAssignments: [...existingMulticlusterRoleAssignment.spec.roleAssignments, mappedRoleAssignment],
@@ -414,8 +448,9 @@ export const addRoleAssignment = async (
         },
         status: {},
       }
-      return createResource<MulticlusterRoleAssignment>(newMultiClusterRoleAssignment)
+      createResource<MulticlusterRoleAssignment>(newMultiClusterRoleAssignment)
     }
+    return mappedRoleAssignment
   } else {
     throw new ResourceError(ResourceErrorCode.BadRequest, 'No cluster or cluster set selected.')
   }
@@ -504,19 +539,36 @@ export const getPlacementsForRoleAssignment = (
   roleAssignment: RoleAssignmentToSave,
   placementClusters: PlacementClusters[]
 ): Placement[] => {
-  const relevantPlacementClusters = placementClusters.filter(
-    (placementCluster) => placementCluster.placement.metadata.namespace === MulticlusterRoleAssignmentNamespace
-  )
-
-  const placementClustersForClusters = roleAssignment.clusterNames
-    ? relevantPlacementClusters.filter((placementCluster) =>
-        isPlacementClustersExactMatch(placementCluster.clusters, roleAssignment.clusterNames)
+  if (roleAssignment.isGlobalScope) {
+    const globalPlacement = placementClusters
+      .map((placementCluster) => placementCluster.placement)
+      .find(
+        (placement) =>
+          placement.metadata.namespace === MulticlusterRoleAssignmentNamespace &&
+          placement.metadata.name === GlobalPlacementName
       )
-    : []
-  const placementClustersForClusterSets = relevantPlacementClusters.filter((placementCluster) =>
-    isPlacementClusterSetsSubset(placementCluster.clusterSetNames, roleAssignment.clusterSetNames)
-  )
-  return [...placementClustersForClusters, ...placementClustersForClusterSets].map(
-    (placementCluster) => placementCluster.placement
-  )
+    if (globalPlacement === undefined) {
+      throw new ResourceError(
+        ResourceErrorCode.BadRequest,
+        `Global placement not found. Expected placement with name: ${GlobalPlacementName} and namespace: ${MulticlusterRoleAssignmentNamespace}.`
+      )
+    }
+    return [globalPlacement]
+  } else {
+    const relevantPlacementClusters = placementClusters.filter(
+      (placementCluster) => placementCluster.placement.metadata.namespace === MulticlusterRoleAssignmentNamespace
+    )
+
+    const placementClustersForClusters = roleAssignment.clusterNames
+      ? relevantPlacementClusters.filter((placementCluster) =>
+          isPlacementClustersExactMatch(placementCluster.clusters, roleAssignment.clusterNames)
+        )
+      : []
+    const placementClustersForClusterSets = relevantPlacementClusters.filter((placementCluster) =>
+      isPlacementClusterSetsSubset(placementCluster.clusterSetNames, roleAssignment.clusterSetNames)
+    )
+    return [...placementClustersForClusters, ...placementClustersForClusterSets].map(
+      (placementCluster) => placementCluster.placement
+    )
+  }
 }

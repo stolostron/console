@@ -4,23 +4,59 @@ import {
   aggregateLocalApplications,
   aggregateRemoteApplications,
   resetApplicationCache,
+  resetAggregatingApplications,
+  stopAggregatingApplications,
   searchLoop,
 } from '../../src/routes/aggregators/applications'
-import { cacheResource } from '../../src/routes/events'
+import { cacheResource, resetResourceCache, resetAccessCache, resetHubClusterName } from '../../src/routes/events'
+import { resetArgoApplicationState } from '../../src/routes/aggregators/applicationsArgo'
 import { request } from '../mock-request'
 import nock from 'nock'
-import { discoverSystemAppNamespacePrefixes } from '../../src/routes/aggregators/utils'
+import { discoverSystemAppNamespacePrefixes, resetSystemAppNamespacePrefixes } from '../../src/routes/aggregators/utils'
+import { resetMultiClusterHubCache } from '../../src/lib/multi-cluster-hub'
+import { resetMultiClusterEngineCache } from '../../src/lib/multi-cluster-engine'
+import { ServerSideEvents } from '../../src/lib/server-side-events'
 import { polledAggregation } from '../../src/routes/aggregator'
 import { IResource } from '../../src/resources/resource'
 
 /// to get exact nock request body, put bp at line 303 in /backend/node_modules/nock/lib/intercepted_request_router.js
 describe(`aggregator Route`, function () {
-  it(`should page Unfiltered Applications`, async function () {
+  beforeEach(() => {
+    // Reset all caches and state before each test for proper test isolation
     resetApplicationCache()
+    resetResourceCache()
+    resetAccessCache()
+    resetHubClusterName()
+    resetArgoApplicationState()
+    resetAggregatingApplications()
+    resetSystemAppNamespacePrefixes()
+    resetMultiClusterHubCache()
+    resetMultiClusterEngineCache()
+    ServerSideEvents.reset()
+    nock.cleanAll()
+  })
+
+  afterEach(async () => {
+    stopAggregatingApplications()
+    nock.cleanAll()
+    // Give time for any pending promises to settle
+    await new Promise((resolve) => setImmediate(resolve))
+  })
+
+  afterAll(async () => {
+    nock.restore()
+    // Clean up the ServerSideEvents interval to prevent orphan handles
+    const { ServerSideEvents } = await import('../../src/lib/server-side-events')
+    await ServerSideEvents.dispose()
+  })
+
+  it(`should page Unfiltered Applications`, async function () {
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
 
-    // initialize events
-    await Promise.all(resources.map((resource) => cacheResource(resource)))
+    // initialize events - cache sequentially to ensure deterministic order
+    for (const resource of resources) {
+      await cacheResource(resource)
+    }
 
     await polledAggregation(
       {
@@ -62,11 +98,12 @@ describe(`aggregator Route`, function () {
     expect(await parseResponseJsonBody(res)).toEqual(responseNoFilter)
   })
   it(`should page Filtered Applications`, async function () {
-    resetApplicationCache()
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
 
-    // initialize events
-    await Promise.all(resources.map((resource) => cacheResource(resource)))
+    // initialize events - cache sequentially to ensure deterministic order
+    for (const resource of resources) {
+      await cacheResource(resource)
+    }
 
     // setup nocks
     setupNocks()
@@ -92,11 +129,12 @@ describe(`aggregator Route`, function () {
     expect(await parseResponseJsonBody(res)).toEqual(responseFiltered)
   })
   it(`should return application  counts`, async function () {
-    resetApplicationCache()
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
 
-    // initialize events
-    await Promise.all(resources.map((resource) => cacheResource(resource)))
+    // initialize events - cache sequentially to ensure deterministic order
+    for (const resource of resources) {
+      await cacheResource(resource)
+    }
 
     // setup nocks
     setupNocks(true)
@@ -115,11 +153,12 @@ describe(`aggregator Route`, function () {
     expect(await parseResponseJsonBody(res)).toEqual(responseCount)
   })
   it(`should return ui data`, async function () {
-    resetApplicationCache()
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
 
-    // initialize events
-    resources.forEach((resource) => cacheResource(resource))
+    // initialize events - cache sequentially to ensure deterministic order
+    for (const resource of resources) {
+      await cacheResource(resource)
+    }
     await polledAggregation(
       {
         kind: 'Application',
@@ -506,8 +545,19 @@ function setupNocks(prefixes?: boolean) {
   })
 
   //
-  // RBAC
+  // RBAC - use persist() so nocks can be reused within a test
+  // Catch-all RBAC nock - matches any authorization request
   nock(process.env.CLUSTER_API_URL)
+    .persist()
+    .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
+    .reply(200, {
+      status: {
+        allowed: true,
+      },
+    })
+
+  nock(process.env.CLUSTER_API_URL)
+    .persist()
     .post(
       '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
       '{"apiVersion":"authorization.k8s.io/v1","kind":"SelfSubjectAccessReview","metadata":{},"spec":{"resourceAttributes":{"group":"argoproj.io","resource":"applications","verb":"list"}}}'
@@ -518,6 +568,7 @@ function setupNocks(prefixes?: boolean) {
       },
     })
   nock(process.env.CLUSTER_API_URL)
+    .persist()
     .post(
       '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
       '{"apiVersion":"authorization.k8s.io/v1","kind":"SelfSubjectAccessReview","metadata":{},"spec":{"resourceAttributes":{"group":"view.open-cluster-management.io","namespace":"default","resource":"managedclusterviews","verb":"create"}}}'
@@ -529,6 +580,7 @@ function setupNocks(prefixes?: boolean) {
     })
 
   nock(process.env.CLUSTER_API_URL)
+    .persist()
     .post(
       '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
       '{"apiVersion":"authorization.k8s.io/v1","kind":"SelfSubjectAccessReview","metadata":{},"spec":{"resourceAttributes":{"group":"view.open-cluster-management.io","namespace":"feng-managed","resource":"managedclusterviews","verb":"create"}}}'
@@ -540,6 +592,7 @@ function setupNocks(prefixes?: boolean) {
     })
 
   nock(process.env.CLUSTER_API_URL)
+    .persist()
     .post(
       '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
       '{"apiVersion":"authorization.k8s.io/v1","kind":"SelfSubjectAccessReview","metadata":{},"spec":{"resourceAttributes":{"group":"app.k8s.io","resource":"applications","verb":"list"}}}'
@@ -550,6 +603,7 @@ function setupNocks(prefixes?: boolean) {
       },
     })
   nock(process.env.CLUSTER_API_URL)
+    .persist()
     .post(
       '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
       '{"apiVersion":"authorization.k8s.io/v1","kind":"SelfSubjectAccessReview","metadata":{},"spec":{"resourceAttributes":{"group":"argoproj.io","resource":"applicationsets","verb":"list"}}}'
@@ -560,6 +614,7 @@ function setupNocks(prefixes?: boolean) {
       },
     })
   nock(process.env.CLUSTER_API_URL)
+    .persist()
     .post(
       '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
       '{"apiVersion":"authorization.k8s.io/v1","kind":"SelfSubjectAccessReview","metadata":{},"spec":{"resourceAttributes":{"group":"apps","resource":"deployments","verb":"list"}}}'
@@ -570,6 +625,7 @@ function setupNocks(prefixes?: boolean) {
       },
     })
   nock(process.env.CLUSTER_API_URL)
+    .persist()
     .post(
       '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
       '{"apiVersion":"authorization.k8s.io/v1","kind":"SelfSubjectAccessReview","metadata":{},"spec":{"resourceAttributes":{"group":"view.open-cluster-management.io","namespace":"openshift-gitops","resource":"managedclusterviews","verb":"create"}}}'
@@ -580,6 +636,7 @@ function setupNocks(prefixes?: boolean) {
       },
     })
   nock(process.env.CLUSTER_API_URL)
+    .persist()
     .post(
       '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
       '{"apiVersion":"authorization.k8s.io/v1","kind":"SelfSubjectAccessReview","metadata":{},"spec":{"resourceAttributes":{"group":"view.open-cluster-management.io","namespace":"authentication-operator-ns","resource":"managedclusterviews","verb":"create"}}}'
@@ -590,6 +647,7 @@ function setupNocks(prefixes?: boolean) {
       },
     })
   nock(process.env.CLUSTER_API_URL)
+    .persist()
     .post(
       '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
       '{"apiVersion":"authorization.k8s.io/v1","kind":"SelfSubjectAccessReview","metadata":{},"spec":{"resourceAttributes":{"group":"view.open-cluster-management.io","namespace":"test-cluster","resource":"managedclusterviews","verb":"create"}}}'
@@ -601,6 +659,7 @@ function setupNocks(prefixes?: boolean) {
     })
 
   nock(process.env.CLUSTER_API_URL)
+    .persist()
     .post(
       '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
       '{"apiVersion":"authorization.k8s.io/v1","kind":"SelfSubjectAccessReview","metadata":{},"spec":{"resourceAttributes":{"group":"view.open-cluster-management.io","namespace":"test-app-ns","resource":"managedclusterviews","verb":"create"}}}'
@@ -612,6 +671,12 @@ function setupNocks(prefixes?: boolean) {
     })
 
   if (prefixes) {
+    // Nock for getMultiClusterHub
+    nock(process.env.CLUSTER_API_URL)
+      .get('/apis/operator.open-cluster-management.io/v1/multiclusterhubs')
+      .reply(200, { items: [] })
+
+    // Nock for getMultiClusterEngine
     nock(process.env.CLUSTER_API_URL)
       .get('/apis/multicluster.openshift.io/v1/multiclusterengines')
       .reply(200, {

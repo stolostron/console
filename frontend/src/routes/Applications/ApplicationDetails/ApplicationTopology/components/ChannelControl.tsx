@@ -153,7 +153,7 @@ class ChannelControl extends Component<ChannelControlProps, ChannelControlState>
       if (channelLabel === '__ALL__') {
         channelLabel = this.props.t('All Subscriptions')
       }
-      const channelID = channelLabel.replace(/\s+/g, '-').toLowerCase()
+      const channelID = channelLabel.replaceAll(/\s+/g, '-').toLowerCase()
 
       displayChannels.push({
         id: channelID,

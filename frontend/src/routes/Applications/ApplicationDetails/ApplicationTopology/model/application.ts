@@ -1,21 +1,21 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { getSubscriptionApplication } from './applicationSubscription'
+import { fetchAggregate, SupportedAggregate } from '../../../../../lib/useAggregates'
 import {
-  fireManagedClusterView,
-  ArgoApplicationApiVersion,
-  ArgoApplicationKind,
+  Application,
   ApplicationSetApiVersion,
   ApplicationSetKind,
-  Application,
+  ArgoApplicationApiVersion,
+  ArgoApplicationKind,
+  IResource,
   Placement,
   PlacementDecision,
-  IResource,
 } from '../../../../../resources'
 import { getResource } from '../../../../../resources/utils'
-import { fetchAggregate, SupportedAggregate } from '../../../../../lib/useAggregates'
+import { fleetResourceRequest } from '../../../../../resources/utils/fleet-resource-request'
 import type { ApplicationModel, ManagedCluster, RecoilStates } from '../types'
 import { safeGet, safeSet } from '../utils'
+import { getSubscriptionApplication } from './applicationSubscription'
 
 /**
  * Resolve an application model for ACM, Argo, ApplicationSet, OCP, or Flux app kinds.
@@ -235,14 +235,18 @@ const getRemoteArgoApp = async (
   let response: any
 
   try {
-    response = await fireManagedClusterView(cluster, kind, apiVersion, name, namespace)
+    response = await fleetResourceRequest('GET', cluster, {
+      apiVersion,
+      kind,
+      name,
+      namespace,
+    })
   } catch (err) {
-    // eslint-disable-next-line no-console
     console.error('Error getting remote Argo app', err)
   }
 
   if (response) {
-    return response.result
+    return response
   }
 }
 
@@ -250,7 +254,7 @@ const getRemoteArgoApp = async (
  * Recursively search an object for a property with the given key.
  * Returns the first matching object that contains the key, or undefined.
  */
-const findObjectWithKey = (obj: unknown, key: string): Record<string, unknown> | undefined => {
+export const findObjectWithKey = (obj: unknown, key: string): Record<string, unknown> | undefined => {
   if (!obj || typeof obj !== 'object') return undefined
   const record = obj as Record<string, unknown>
   if (key in record) return record

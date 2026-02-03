@@ -105,7 +105,6 @@ const ControlPanelSingleSelect = (props: {
                 footer={footer}
               >
                 {available.map((item: any, inx: React.Key) => {
-                  /* eslint-disable-next-line react/no-array-index-key */
                   return <SelectOption key={inx} value={item} />
                 })}
               </AcmSelectBase>

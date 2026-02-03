@@ -247,7 +247,11 @@ function BulkSelect(props: {
 
   const { selectNone, selectAll } = props
   const onCheckbox = useCallback(() => {
-    anySelected ? selectNone() : selectAll()
+    if (anySelected) {
+      selectNone()
+    } else {
+      selectAll()
+    }
   }, [anySelected, selectNone, selectAll])
 
   const { deselectAllAriaLabel, selectAllAriaLabel } = useStringContext()

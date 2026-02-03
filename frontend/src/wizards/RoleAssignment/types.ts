@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
-import { GroupKindType, ServiceAccountKindType, UserKindType } from '../../resources'
+import { GroupKindType, ManagedClusterSet, ServiceAccountKindType, UserKindType } from '../../resources'
 
 export interface RoleAssignmentFormData {
   subject: {
@@ -18,10 +18,10 @@ export interface RoleAssignmentFormData {
 
 export interface RoleAssignmentWizardFormData extends RoleAssignmentFormData {
   scopeType?: 'Global access' | 'Select cluster sets' | 'Select clusters'
-  selectedClusterSets?: any[]
+  selectedClusterSets?: (ManagedClusterSet | string)[]
   selectedClusters?: any[]
-  clusterSetAccessLevel?: 'Cluster set role assignment' | 'Cluster role assignment'
-  selectedClustersAccessLevel?: 'Cluster role assignment' | 'Project role assignment'
+  clustersetsAccessLevel?: 'Cluster set role assignment' | 'Project role assignment'
+  clustersAccessLevel?: 'Cluster role assignment' | 'Project role assignment'
 }
 
 export interface RoleAssignmentWizardModalProps {
@@ -30,4 +30,5 @@ export interface RoleAssignmentWizardModalProps {
   onSubmit: (data: RoleAssignmentFormData) => void
   isEditing?: boolean
   preselected?: RoleAssignmentPreselected
+  isLoading?: boolean
 }

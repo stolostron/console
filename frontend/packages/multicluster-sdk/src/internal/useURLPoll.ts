@@ -26,7 +26,7 @@ export function useURLPoll<R>(
           if (err.name !== 'AbortError') {
             setResponse(undefined)
             setError(err)
-            // eslint-disable-next-line no-console
+
             console.error(`Error polling URL: ${err}`)
           }
         })

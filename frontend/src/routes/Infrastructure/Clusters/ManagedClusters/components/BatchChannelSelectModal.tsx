@@ -1,11 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  ClusterCurator,
-  ClusterCuratorDefinition,
-  HostedClusterApiVersion,
-  HostedClusterKind,
-} from '../../../../../resources'
+import { ClusterCurator, ClusterCuratorDefinition } from '../../../../../resources'
 import { HostedClusterK8sResourceWithChannel } from '../../../../../resources/hosted-cluster'
 import {
   Cluster,
@@ -15,9 +10,9 @@ import {
   ResourceError,
   ResourceErrorCode,
 } from '../../../../../resources/utils'
-import { AcmEmptyState, AcmSelect } from '../../../../../ui-components'
-import { Content, ContentVariants, SelectOption } from '@patternfly/react-core'
-import { useEffect, useState } from 'react'
+import { AcmAlert, AcmEmptyState, AcmSelect } from '../../../../../ui-components'
+import { AlertVariant, Content, ContentVariants, SelectOption } from '@patternfly/react-core'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { BulkActionModal } from '../../../../../components/BulkActionModal'
 import './style.css'
@@ -113,6 +108,7 @@ export function BatchChannelSelectModal(props: {
   open: boolean
   clusters: Cluster[] | undefined
   hostedClusters?: Record<string, HostedClusterK8sResourceWithChannel>
+  onSuccess?: () => void
 }): JSX.Element {
   const { t } = useTranslation()
   const [selectChannels, setSelectChannels] = useState<Record<string, string>>({})
@@ -125,6 +121,11 @@ export function BatchChannelSelectModal(props: {
     setSelectChannels((s) => setCurrentChannel(newChannelSelectableClusters, s, props.hostedClusters))
     setChannelSelectableClusters(newChannelSelectableClusters || [])
   }, [props.clusters, props.open, props.hostedClusters])
+
+  // Check if any cluster has no current channel configured
+  const hasClustersWithoutChannel = useMemo(() => {
+    return channelSelectableClusters.some((cluster) => !cluster.distribution?.upgradeInfo?.currentChannel)
+  }, [channelSelectableClusters])
 
   return (
     <BulkActionModal<Cluster>
@@ -141,9 +142,26 @@ export function BatchChannelSelectModal(props: {
       }
       close={() => {
         setSelectChannels({})
+        props.onSuccess?.()
+        props.close()
+      }}
+      onCancel={() => {
+        setSelectChannels({})
         props.close()
       }}
       description={t('bulk.message.selectChannel')}
+      alert={
+        hasClustersWithoutChannel ? (
+          <div style={{ paddingTop: '16px' }}>
+            <AcmAlert
+              isInline
+              noClose
+              variant={AlertVariant.warning}
+              title={t('upgrade.selectChannel.alert.noChannel')}
+            />
+          </div>
+        ) : undefined
+      }
       columns={[
         {
           header: t('upgrade.table.name'),
@@ -226,34 +244,13 @@ export function BatchChannelSelectModal(props: {
           return emptyRes
         }
 
-        // Look up the hosted cluster for this specific cluster
-        const hostedCluster = getHostedClusterForCluster(cluster, props.hostedClusters)
-
-        // For hosted clusters, PATCH HostedCluster.spec.channel directly (this will change when curator support is added)
-        if (hostedCluster) {
-          const hostedClusterResource = {
-            apiVersion: HostedClusterApiVersion,
-            kind: HostedClusterKind,
-            metadata: {
-              name: hostedCluster.metadata?.name,
-              namespace: hostedCluster.metadata?.namespace,
-            },
-          }
-          const patchSpec = {
-            spec: {
-              channel: selectChannels[cluster.name],
-            },
-          }
-          return patchResource(hostedClusterResource, patchSpec)
-        }
-
-        // For standalone clusters, use ClusterCurator
+        // Use ClusterCurator for all clusters (both standalone and hosted)
         const patchSpec = {
           spec: {
             desiredCuration: 'upgrade',
             upgrade: {
               channel: selectChannels[cluster.name],
-              // set channel to empty to make sure we only use channel
+              // set desiredUpdate to empty to make sure we only set channel
               desiredUpdate: '',
             },
           },

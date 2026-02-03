@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
+  Alert,
   DescriptionList,
   DescriptionListDescription,
   DescriptionListGroup,
@@ -7,47 +8,48 @@ import {
   Title,
 } from '@patternfly/react-core'
 import { useTranslation } from '../../lib/acm-i18next'
+import { ManagedClusterSet } from '../../resources'
 import { GranularityStepContent } from './GranularityStepContent'
+import { useReviewStepContent } from './ReviewStepContentHook'
 import { RoleAssignmentWizardFormData, RoleAssignmentWizardModalProps } from './types'
-import { useMemo } from 'react'
-import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
 
 interface ReviewStepContentProps {
   formData: RoleAssignmentWizardFormData
   preselected?: RoleAssignmentWizardModalProps['preselected']
+  isEditing?: boolean
+  hasChanges?: boolean
 }
 
-export const ReviewStepContent = ({ formData, preselected }: ReviewStepContentProps) => {
+export const ReviewStepContent = ({ formData, preselected, isEditing, hasChanges }: ReviewStepContentProps) => {
   const { t } = useTranslation()
 
-  const getClusterNames = ({
-    selectedClusters,
-    clusterNames,
-  }: {
-    selectedClusters: RoleAssignmentWizardFormData['selectedClusters']
-    clusterNames: RoleAssignmentPreselected['clusterNames']
-  }): string | null => {
-    switch (true) {
-      case selectedClusters && selectedClusters.length > 0:
-        return selectedClusters.map((c) => c.metadata?.name || c.name || c).join(', ')
-      case clusterNames && clusterNames.length > 0:
-        return clusterNames.join(', ')
-      default:
-        return null
-    }
-  }
-  const clusterNames = useMemo(
-    () =>
-      getClusterNames({
-        selectedClusters: formData.selectedClusters,
-        clusterNames: preselected?.clusterNames,
-      }),
-    [formData.selectedClusters, preselected?.clusterNames]
-  )
+  const { clusterNames, clustersDisplay, namespacesDisplay, roleDisplay, identityDisplay } = useReviewStepContent({
+    oldData: {
+      clusterNames: preselected?.clusterNames ?? [],
+      namespaces: preselected?.namespaces ?? [],
+      role: preselected?.roles?.[0],
+      subject: preselected?.subject,
+    },
+    newData: {
+      clusterNames: formData.selectedClusters?.map((cluster) => cluster.metadata?.name || cluster.name) ?? [],
+      namespaces: formData.scope.namespaces ?? [],
+      role: formData.roles?.[0],
+      subject: formData.subject,
+    },
+    isEditing,
+  })
 
   return (
     <div>
       <GranularityStepContent title={t('Review')} titleSize="lg" description={''} />
+      {!hasChanges && isEditing && (
+        <Alert
+          variant="danger"
+          title={t('No changes have been made. Please modify or cancel to exit.')}
+          isInline
+          style={{ marginBottom: '16px' }}
+        />
+      )}
       {formData.subject && (
         <div style={{ marginBottom: '16px' }}>
           <DescriptionList>
@@ -56,13 +58,7 @@ export const ReviewStepContent = ({ formData, preselected }: ReviewStepContentPr
                 {formData.subject.kind}
               </Title>
               <DescriptionListDescription>
-                <div style={{ margin: '0 16px' }}>
-                  <strong>
-                    {formData.subject.kind === 'User'
-                      ? formData.subject.user?.join(', ') || t('Not selected')
-                      : formData.subject.group?.join(', ') || t('Not selected')}
-                  </strong>
-                </div>
+                <div style={{ margin: '0 16px' }}>{identityDisplay}</div>
               </DescriptionListDescription>
             </DescriptionListGroup>
           </DescriptionList>
@@ -80,7 +76,22 @@ export const ReviewStepContent = ({ formData, preselected }: ReviewStepContentPr
                 {(() => {
                   switch (formData.scopeType) {
                     case 'Global access':
-                      return <div>{t('All clusters')}</div>
+                      return (
+                        <div>
+                          <div style={{ marginTop: '8px' }}>
+                            <div>
+                              <strong>{t('Access level')}</strong>{' '}
+                            </div>
+                            <div>{t('All current and future clusters')}</div>
+                          </div>
+                          <div style={{ marginTop: '8px' }}>
+                            <div>
+                              <strong>{t('Projects')}</strong>{' '}
+                            </div>
+                            <div>{t('Full access')}</div>
+                          </div>
+                        </div>
+                      )
                     case 'Select cluster sets':
                       return (
                         <>
@@ -90,7 +101,9 @@ export const ReviewStepContent = ({ formData, preselected }: ReviewStepContentPr
                             </div>
                             <div>
                               {formData.selectedClusterSets && formData.selectedClusterSets.length > 0
-                                ? formData.selectedClusterSets.map((cs) => cs.metadata?.name || cs).join(', ')
+                                ? formData.selectedClusterSets
+                                    .map((cs) => (cs as ManagedClusterSet).metadata?.name || (cs as string))
+                                    .join(', ')
                                 : t('None selected')}
                             </div>
                           </div>
@@ -98,17 +111,15 @@ export const ReviewStepContent = ({ formData, preselected }: ReviewStepContentPr
                             <div>
                               <strong>{clusterNames ? t('Clusters') : t('Access level')}</strong>{' '}
                             </div>
-                            <div>{clusterNames || t('Full access to all clusters in selected cluster sets')}</div>
+                            <div>
+                              {clusterNames
+                                ? clustersDisplay
+                                : t('Full access to all clusters in selected cluster sets')}
+                            </div>
                           </div>
                           <div style={{ marginTop: '8px' }}>
-                            <div>
-                              <strong>{t('Projects')}</strong>{' '}
-                            </div>
-                            <div>
-                              {formData.scope.namespaces && formData.scope.namespaces.length > 0
-                                ? formData.scope.namespaces.join(', ')
-                                : t('Full access')}
-                            </div>
+                            <strong>{t('Projects')}</strong>
+                            <div>{namespacesDisplay}</div>
                           </div>
                         </>
                       )
@@ -116,13 +127,10 @@ export const ReviewStepContent = ({ formData, preselected }: ReviewStepContentPr
                       return (
                         <>
                           <div>
-                            <strong>{t('Clusters')}:</strong> {clusterNames || t('None selected')}
+                            <strong>{t('Clusters')}:</strong> {clustersDisplay}
                           </div>
                           <div style={{ marginTop: '8px' }}>
-                            <strong>{t('Projects')}:</strong>{' '}
-                            {formData.scope.namespaces && formData.scope.namespaces.length > 0
-                              ? formData.scope.namespaces.join(', ')
-                              : t('Full access')}
+                            <strong>{t('Projects')}:</strong> {namespacesDisplay}
                           </div>
                         </>
                       )
@@ -143,11 +151,7 @@ export const ReviewStepContent = ({ formData, preselected }: ReviewStepContentPr
               {t('Role')}
             </Title>
             <DescriptionListDescription>
-              <div style={{ margin: '0 16px' }}>
-                <strong>
-                  <strong>{formData.roles?.[0] ?? t('No role selected')}</strong>
-                </strong>
-              </div>
+              <div style={{ margin: '0 16px' }}>{roleDisplay}</div>
             </DescriptionListDescription>
           </DescriptionListGroup>
         </DescriptionList>

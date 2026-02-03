@@ -6,7 +6,7 @@ import { RecoilRoot } from 'recoil'
 import { Settings, settingsState } from '../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../../../lib/nock-util'
 import { wait, waitForNocks } from '../../../../lib/test-util'
-import { fireManagedClusterAction } from '../../../../resources/managedclusteraction'
+import { fleetResourceRequest } from '../../../../resources/utils/fleet-resource-request'
 import { deleteResource } from '../../../../resources/utils/resource-request'
 import { deleteResourceFn, DeleteResourceModal } from './DeleteResourceModal'
 
@@ -24,8 +24,8 @@ jest.mock('../../../../resources/utils/resource-request', () => ({
   deleteResource: jest.fn(() => ({ promise: Promise.resolve() })),
 }))
 
-jest.mock('../../../../resources/managedclusteraction', () => ({
-  fireManagedClusterAction: jest.fn(() => Promise.resolve({ actionDone: 'ActionDone' })),
+jest.mock('../../../../resources/utils/fleet-resource-request', () => ({
+  fleetResourceRequest: jest.fn(() => Promise.resolve({ actionDone: 'ActionDone' })),
 }))
 
 const mockSettings: Settings = {
@@ -176,16 +176,14 @@ describe('DeleteResourceModal', () => {
     )
 
     // Assert that deleteResource is called with the correct parameters
-    expect(fireManagedClusterAction).toHaveBeenCalledWith(
-      'Delete',
-      'test-cluster',
-      'Pod',
-      'v1',
-      'testPod',
-      'testNamespace'
-    )
+    expect(fleetResourceRequest).toHaveBeenCalledWith('DELETE', 'test-cluster', {
+      apiVersion: 'v1',
+      kind: 'Pod',
+      name: 'testPod',
+      namespace: 'testNamespace',
+    })
 
-    // Simulate the promise resolution of fireManagedClusterAction
+    // Simulate the promise resolution of fleetResourceRequest
     await Promise.resolve({ actionDone: 'ActionDone' })
 
     await waitForNocks([search])

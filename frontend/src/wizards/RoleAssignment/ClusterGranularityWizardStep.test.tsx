@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { DataContext } from '@patternfly-labs/react-form-wizard/lib/src/contexts/DataContext'
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { ClusterGranularityStepContent } from './ClusterGranularityWizardStep'
 
 // Mock the translation hook
@@ -53,10 +53,9 @@ describe('ClusterGranularityStepContent', () => {
   const mockOnNamespacesChange = jest.fn()
   const mockOnClustersAccessLevelChange = jest.fn()
   const defaultProps = {
-    description: 'Test description',
     selectedClusters: [{ name: 'cluster-1' }, { name: 'cluster-2' }],
     onNamespacesChange: mockOnNamespacesChange,
-    selectedClustersAccessLevel: undefined as 'Cluster role assignment' | 'Project role assignment' | undefined,
+    clustersAccessLevel: undefined as 'Cluster role assignment' | 'Project role assignment' | undefined,
     onClustersAccessLevelChange: mockOnClustersAccessLevelChange,
   }
 
@@ -65,13 +64,24 @@ describe('ClusterGranularityStepContent', () => {
     mockAcmSelect.mockClear()
   })
 
-  it('renders with title and description', () => {
+  it('renders with title and description for multiple clusters', () => {
     renderWithContext(<ClusterGranularityStepContent {...defaultProps} />)
 
     expect(mockGranularityStepContent).toHaveBeenCalledWith(
       expect.objectContaining({
         title: 'Define cluster granularity',
-        description: 'Test description',
+        description: 'Define the level of access for the selected clusters.',
+      })
+    )
+  })
+
+  it('renders with title and description for single cluster', () => {
+    renderWithContext(<ClusterGranularityStepContent {...defaultProps} selectedClusters={[{ name: 'cluster-1' }]} />)
+
+    expect(mockGranularityStepContent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Define cluster granularity',
+        description: 'Define the level of access for the selected cluster.',
       })
     )
   })
@@ -88,18 +98,14 @@ describe('ClusterGranularityStepContent', () => {
     )
   })
 
-  it('does not render ProjectsList when selectedClustersAccessLevel is not Project role assignment', () => {
-    renderWithContext(
-      <ClusterGranularityStepContent {...defaultProps} selectedClustersAccessLevel="Cluster role assignment" />
-    )
+  it('does not render ProjectsList when clustersAccessLevel is not Project role assignment', () => {
+    renderWithContext(<ClusterGranularityStepContent {...defaultProps} clustersAccessLevel="Cluster role assignment" />)
 
     expect(mockProjectsList).not.toHaveBeenCalled()
   })
 
-  it('renders ProjectsList when selectedClustersAccessLevel is Project role assignment', () => {
-    renderWithContext(
-      <ClusterGranularityStepContent {...defaultProps} selectedClustersAccessLevel="Project role assignment" />
-    )
+  it('renders ProjectsList when clustersAccessLevel is Project role assignment', () => {
+    renderWithContext(<ClusterGranularityStepContent {...defaultProps} clustersAccessLevel="Project role assignment" />)
 
     expect(mockProjectsList).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -113,10 +119,9 @@ describe('ClusterGranularityStepContent', () => {
 
     renderWithContext(
       <ClusterGranularityStepContent
-        description="Test"
         selectedClusters={clusters}
         onNamespacesChange={mockOnNamespacesChange}
-        selectedClustersAccessLevel="Project role assignment"
+        clustersAccessLevel="Project role assignment"
         onClustersAccessLevelChange={jest.fn()}
       />
     )
@@ -131,10 +136,9 @@ describe('ClusterGranularityStepContent', () => {
   it('renders with empty selectedClusters array', () => {
     renderWithContext(
       <ClusterGranularityStepContent
-        description="Test"
         selectedClusters={[]}
         onNamespacesChange={mockOnNamespacesChange}
-        selectedClustersAccessLevel="Project role assignment"
+        clustersAccessLevel="Project role assignment"
         onClustersAccessLevelChange={jest.fn()}
       />
     )
@@ -146,10 +150,63 @@ describe('ClusterGranularityStepContent', () => {
     )
   })
 
-  it('does not render ProjectsList when selectedClustersAccessLevel is undefined', () => {
-    renderWithContext(<ClusterGranularityStepContent {...defaultProps} selectedClustersAccessLevel={undefined} />)
+  it('does not render ProjectsList when clustersAccessLevel is undefined', () => {
+    renderWithContext(<ClusterGranularityStepContent {...defaultProps} clustersAccessLevel={undefined} />)
 
     expect(mockProjectsList).not.toHaveBeenCalled()
+  })
+
+  describe('when selectedClusters.length > 1', () => {
+    it('renders plural description and Alert message for multiple clusters with Cluster role assignment', () => {
+      const multipleClusters = [{ name: 'cluster-1' }, { name: 'cluster-2' }, { name: 'cluster-3' }]
+
+      renderWithContext(
+        <ClusterGranularityStepContent
+          selectedClusters={multipleClusters}
+          onNamespacesChange={mockOnNamespacesChange}
+          clustersAccessLevel="Cluster role assignment"
+          onClustersAccessLevelChange={mockOnClustersAccessLevelChange}
+        />
+      )
+
+      // Verify plural description is used
+      expect(mockGranularityStepContent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Define cluster granularity',
+          description: 'Define the level of access for the selected clusters.',
+        })
+      )
+
+      // Verify plural Alert message is rendered
+      const alert = screen.getByText(
+        'This role assignment will apply to all current and future resources on the selected clusters.'
+      )
+      expect(alert).toBeInTheDocument()
+    })
+
+    it('renders plural description for multiple clusters with Project role assignment', () => {
+      const multipleClusters = [{ name: 'cluster-1' }, { name: 'cluster-2' }]
+
+      renderWithContext(
+        <ClusterGranularityStepContent
+          selectedClusters={multipleClusters}
+          onNamespacesChange={mockOnNamespacesChange}
+          clustersAccessLevel="Project role assignment"
+          onClustersAccessLevelChange={mockOnClustersAccessLevelChange}
+        />
+      )
+
+      // Verify plural description is used
+      expect(mockGranularityStepContent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Define cluster granularity',
+          description: 'Define the level of access for the selected clusters.',
+        })
+      )
+
+      // Verify ProjectsList is rendered instead of Alert
+      expect(mockProjectsList).toHaveBeenCalled()
+    })
   })
 
   describe('onClustersAccessLevelChange callback', () => {
@@ -185,7 +242,7 @@ describe('ClusterGranularityStepContent', () => {
         <ClusterGranularityStepContent
           {...defaultProps}
           onClustersAccessLevelChange={onClustersAccessLevelChange}
-          selectedClustersAccessLevel="Cluster role assignment"
+          clustersAccessLevel="Cluster role assignment"
         />
       )
 

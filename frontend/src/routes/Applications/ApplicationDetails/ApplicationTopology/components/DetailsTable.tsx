@@ -104,7 +104,7 @@ class DetailsTable extends Component<DetailsTableProps, DetailsTableState> {
 
         if (displayResource) {
           // Create entries for each replica of the resource
-          Array.from(Array(replicaCount)).forEach((_, i) => {
+          Array.from(new Array(replicaCount)).forEach((_, i) => {
             // Build model key for status lookup
             const modelKey = resource.namespace
               ? `${resource.name}-${cluster}-${resource.namespace}`

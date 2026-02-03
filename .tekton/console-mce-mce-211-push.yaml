@@ -45,6 +45,8 @@ spec:
     value: release-mce-211
   - name: slack-group-id
     value: S09M3BVC3T3 # acm-console-build-focal group-id
+  - name: enable-cache-proxy
+    value: "true"
   pipelineRef:
     resolver: git
     params:

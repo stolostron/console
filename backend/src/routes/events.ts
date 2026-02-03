@@ -43,7 +43,7 @@ export async function getKubeResources(kind: string, apiVersion: string) {
   const apiVersionPlural = apiVersionPluralFn(option)
   return await Promise.all(
     Object.values(resourceCache[apiVersionPlural] || {}).map((event) => {
-      return inflateResource(event.compressed, eventDict)
+      return event.compressed.then((compressed) => inflateResource(compressed, eventDict))
     })
   )
 }
@@ -51,6 +51,11 @@ export async function getKubeResources(kind: string, apiVersion: string) {
 let hubClusterName = 'local-cluster'
 export function getHubClusterName() {
   return hubClusterName
+}
+
+/** Reset hub cluster name to default. Used for test isolation. */
+export function resetHubClusterName() {
+  hubClusterName = 'local-cluster'
 }
 
 let isHubSelfManaged: boolean = false
@@ -134,8 +139,8 @@ function canAccessRemoteResource(token: string, clusterNames: string[]): Promise
 export interface ResourceCache {
   [apiVersionKind: string]: {
     [uid: string]: {
-      compressed: Buffer
-      eventID: number
+      compressed: Promise<Buffer>
+      eventID: Promise<number>
     }
   }
 }
@@ -145,12 +150,26 @@ export function getEventCache() {
   return resourceCache
 }
 
+/** Clear all cached resources. Used for test isolation. */
+export function resetResourceCache() {
+  for (const key in resourceCache) {
+    delete resourceCache[key]
+  }
+}
+
 const eventDict = createDictionary()
 export function getEventDict() {
   return eventDict
 }
 
 const accessCache: Record<string, Record<string, { time: number; promise: Promise<boolean> }>> = {}
+
+/** Clear all cached RBAC access checks. Used for test isolation. */
+export function resetAccessCache() {
+  for (const key in accessCache) {
+    delete accessCache[key]
+  }
+}
 
 const definitions: IWatchOptions[] = [
   { kind: 'ClusterManagementAddOn', apiVersion: 'addon.open-cluster-management.io/v1alpha1' },
@@ -253,7 +272,7 @@ export function startWatching(): void {
   }
 }
 // https://kubernetes.io/docs/reference/using-api/api-concepts/
-async function listAndWatch(options: IWatchOptions) {
+export async function listAndWatch(options: IWatchOptions) {
   const serviceAccountToken = getServiceAccountToken()
   while (!stopping) {
     try {
@@ -284,8 +303,8 @@ async function listAndWatch(options: IWatchOptions) {
             break
         }
       } else if (err instanceof Error) {
-        if (err.message === 'Premature close') {
-          // Do nothing
+        if (err.message === 'Premature close' || err.message.startsWith('too old resource version')) {
+          // Retry list and watch/poll immediately
         } else {
           await new Promise((resolve) => setTimeout(resolve, 60 * 1000 + Math.ceil(Math.random() * 10 * 1000)).unref())
         }
@@ -353,7 +372,7 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
   const removeResources: IResource[] = []
   for (const uid in cache) {
     const existing = cache[uid]
-    const resource = await inflateResource(existing.compressed, eventDict)
+    const resource = await existing.compressed.then((compressed) => inflateResource(compressed, eventDict))
     if (options.fieldSelector && !matchesSelector(resource, options.fieldSelector)) {
       // skip as this object would not be in the items result for this list operation
       continue
@@ -555,7 +574,7 @@ export function createWatchEventProcessor(options: IWatchOptions, url: string, r
                 event: watchEvent,
               })
             }
-            break
+            throw new Error((watchEvent.object as unknown as { message?: string }).message)
         }
 
         // Don't push anything downstream - we're just processing events
@@ -706,18 +725,19 @@ export async function cacheResource(resource: IResource) {
   const uid = resource.metadata.uid
   const existing = cache[uid]
 
-  let eventID = -1
   if (existing) {
     if (
-      (await inflateResource(existing.compressed, eventDict)).metadata.resourceVersion ===
+      (await inflateResource(await existing.compressed, eventDict)).metadata.resourceVersion ===
       resource.metadata.resourceVersion
-    )
+    ) {
       return resource.metadata.resourceVersion
-    ServerSideEvents.removeEvent(existing.eventID)
+    }
+    ServerSideEvents.removeEvent(await existing.eventID)
   }
-
-  const compressed = await deflateResource(resource, eventDict)
-  eventID = await ServerSideEvents.pushEvent({ data: { type: 'MODIFIED', object: compressed } })
+  const compressed = deflateResource(resource, eventDict)
+  const eventID = compressed.then((compressed) =>
+    ServerSideEvents.pushEvent({ data: { type: 'MODIFIED', object: compressed } })
+  )
   cache[uid] = { compressed, eventID }
 
   if (resource.kind === 'ManagedCluster') {
@@ -741,7 +761,7 @@ async function deleteResource(resource: IResource) {
   const uid = resource.metadata.uid
 
   const existing = cache[uid]
-  if (existing) ServerSideEvents.removeEvent(existing.eventID)
+  if (existing) ServerSideEvents.removeEvent(await existing.eventID)
 
   const deletedID = await ServerSideEvents.pushEvent({
     data: {

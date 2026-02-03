@@ -530,7 +530,7 @@ const addException = (sourcePath, exceptions, i18n) => {
 }
 
 const getKey = (path) => {
-  return path.join('.').replace('.$synced', '').replace('[0]', '').replace(/\.\$v/g, '')
+  return path.join('.').replace('.$synced', '').replace('[0]', '').replaceAll(/\.\$v/g, '')
 }
 
 const getRow = (sourcePath) => {

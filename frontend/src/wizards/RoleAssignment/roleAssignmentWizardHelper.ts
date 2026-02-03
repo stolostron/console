@@ -22,17 +22,19 @@ export const wizardDataToRoleAssignmentToSave = (
   data: RoleAssignmentWizardFormData,
   allClusterNames: string[]
 ): RoleAssignmentToSave[] => {
+  const isGlobalScope = data.scopeType === 'Global access'
   const subjectNames = (data.subject.kind === UserKind ? data.subject.user : data.subject.group) || []
-  const clusterNames = getClusterNames(data, allClusterNames)
-  const clusterSetNames = getClusterSetNames(data)
+  const clusterNames = isGlobalScope ? undefined : getClusterNames(data, allClusterNames)
+  const clusterSetNames = isGlobalScope ? undefined : getClusterSetNames(data)
 
-  const targetNamespaces = data.scope.namespaces
+  const targetNamespaces = data.scope?.namespaces
 
   return data.roles.reduce<RoleAssignmentToSave[]>(
     (acc, role) => [
       ...acc,
       ...subjectNames.map((subjectName) => ({
         clusterRole: role,
+        isGlobalScope,
         clusterNames,
         clusterSetNames,
         targetNamespaces,

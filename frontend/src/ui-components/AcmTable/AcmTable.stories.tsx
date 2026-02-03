@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-/* eslint-disable react/display-name */
 import {
   ButtonVariant,
   PageSection,
@@ -312,7 +311,7 @@ function commonProperties(
           {
             id: 'primary-table-button',
             title: 'Primary action',
-            // eslint-disable-next-line no-console
+
             click: () => console.log('Primary action'),
             isDisabled: false,
             variant: ButtonVariant.primary,
@@ -320,7 +319,7 @@ function commonProperties(
           {
             id: 'secondary-table-button',
             title: 'Secondary action',
-            // eslint-disable-next-line no-console
+
             click: () => console.log('Secondary action'),
             variant: ButtonVariant.secondary,
           },
@@ -335,14 +334,14 @@ function commonProperties(
               {
                 id: 'status-1',
                 title: 'Status 1',
-                // eslint-disable-next-line no-console
+
                 click: (it: IExampleData[]) => console.log('Status 1 items: ', it),
                 variant: 'bulk-action',
               },
               {
                 id: 'status-2',
                 title: 'Status 2',
-                // eslint-disable-next-line no-console
+
                 click: (it: IExampleData[]) => console.log('Status 2 items: ', it),
                 variant: 'bulk-action',
               },

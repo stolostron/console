@@ -220,26 +220,22 @@ export const getNetworkingPatches = (
   appendPatch(
     agentClusterInstallPatches,
     '/spec/networking/clusterNetwork',
-    [
-      {
-        cidr: values.clusterNetworkCidr,
-        hostPrefix: values.clusterNetworkHostPrefix,
-      },
-    ],
+    values.clusterNetworks?.map((cn) => ({ cidr: cn.cidr, hostPrefix: cn.hostPrefix })),
     agentClusterInstall.spec?.networking?.clusterNetwork
   )
 
   appendPatch(
     agentClusterInstallPatches,
     '/spec/networking/serviceNetwork',
-    [values.serviceNetworkCidr],
+    values.serviceNetworks?.map((sn) => sn.cidr),
     agentClusterInstall.spec?.networking?.serviceNetwork
   )
 
-  // Setting Machine network CIDR is forbidden when cluster is not in vip-dhcp-allocation mode (which is not soppurted ATM anyway)
-  if (values.vipDhcpAllocation) {
-    const hostSubnet = values.hostSubnet?.split(' ')?.[0]
-    const machineNetworkValue = hostSubnet ? [{ cidr: hostSubnet }] : []
+  const machineNetworkValue = values.machineNetworks
+    ?.filter((mn) => mn.cidr && mn.cidr !== 'NO_SUBNET_SET')
+    .map((mn) => ({ cidr: mn.cidr }))
+
+  if (machineNetworkValue && machineNetworkValue.length > 0) {
     appendPatch(
       agentClusterInstallPatches,
       '/spec/networking/machineNetwork',
@@ -248,17 +244,7 @@ export const getNetworkingPatches = (
     )
   }
 
-  if (
-    agentClusterInstall?.spec?.provisionRequirements?.controlPlaneAgents === 1 &&
-    values.hostSubnet !== 'NO_SUBNET_SET'
-  ) {
-    appendPatch(
-      agentClusterInstallPatches,
-      '/spec/networking/machineNetwork',
-      [{ cidr: values.hostSubnet }],
-      agentClusterInstall.spec?.networking?.machineNetwork?.[0]?.cidr
-    )
-  } else {
+  if (agentClusterInstall?.spec?.provisionRequirements?.controlPlaneAgents !== 1) {
     const isUserNetworking = values.managedNetworkingType === 'userManaged'
     appendPatch(
       agentClusterInstallPatches,
@@ -280,6 +266,19 @@ export const getNetworkingPatches = (
           path: '/spec/apiVIP',
         })
       }
+      if (agentClusterInstall.spec?.ingressVIPs?.length) {
+        agentClusterInstallPatches.push({
+          op: 'remove',
+          path: '/spec/ingressVIPs',
+        })
+      }
+
+      if (agentClusterInstall.spec?.apiVIPs?.length) {
+        agentClusterInstallPatches.push({
+          op: 'remove',
+          path: '/spec/apiVIPs',
+        })
+      }
       if (agentClusterInstall.spec?.platformType == 'BareMetal') {
         appendPatch(agentClusterInstallPatches, '/spec/platformType', 'None', agentClusterInstall.spec?.platformType)
       }
@@ -298,6 +297,17 @@ export const getNetworkingPatches = (
         '/spec/ingressVIP',
         values.ingressVips?.[0]?.ip,
         agentClusterInstall.spec?.ingressVIP
+      )
+
+      const apiVIPsValue = values.apiVips?.filter((v) => v.ip).map((v) => v.ip) || []
+      appendPatch(agentClusterInstallPatches, '/spec/apiVIPs', apiVIPsValue, agentClusterInstall.spec?.apiVIPs)
+
+      const ingressVIPsValue = values.ingressVips?.filter((v) => v.ip).map((v) => v.ip) || []
+      appendPatch(
+        agentClusterInstallPatches,
+        '/spec/ingressVIPs',
+        ingressVIPsValue,
+        agentClusterInstall.spec?.ingressVIPs
       )
     }
   }
@@ -340,9 +350,9 @@ export const onSaveNetworking = async (
     }
   } catch (e) {
     if (e instanceof Error) {
-      throw Error(`Failed to patch the AgentClusterInstall resource: ${e.message}`)
+      throw new Error(`Failed to patch the AgentClusterInstall resource: ${e.message}`)
     }
-    throw Error('Failed to patch the AgentClusterInstall resource')
+    throw new Error('Failed to patch the AgentClusterInstall resource')
   }
 }
 

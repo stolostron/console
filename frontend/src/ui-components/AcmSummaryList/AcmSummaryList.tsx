@@ -91,7 +91,7 @@ const sectionStyles = {
     fontSize: '28px',
     '& a': {
       textDecoration: 'none !important',
-      fontColor: 'var(--pf-t--global--text--color--100)',
+      fontColor: 'var(--pf-t--global--text--color--regular)',
     },
   }),
   description: css({
@@ -113,7 +113,7 @@ const SummarySection = (props: SummarySectionProps) => {
     <Card
       component="div"
       className={sectionStyles.card}
-      id={`${props.description.toLowerCase().replace(/\s+/g, '-')}-summary`}
+      id={`${props.description.toLowerCase().replaceAll(/\s+/g, '-')}-summary`}
     >
       {props.isLoading ? (
         <CardBody className={sectionStyles.cardBody}>

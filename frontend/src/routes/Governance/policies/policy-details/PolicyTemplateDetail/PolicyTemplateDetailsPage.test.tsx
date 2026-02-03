@@ -4,7 +4,7 @@ import { generatePath, MemoryRouter, Route, Routes } from 'react-router-dom-v5-c
 import { RecoilRoot } from 'recoil'
 import { v4 as uuidv4 } from 'uuid'
 import { managedClusterAddonsState } from '../../../../../atoms'
-import { nockGet, nockIgnoreApiPaths } from '../../../../../lib/nock-util'
+import { nockCreate, nockGet, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import { waitForNocks, waitForNotText, waitForText } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { ManagedClusterAddOn } from '../../../../../resources'
@@ -31,8 +31,37 @@ jest.mock('../../../../../components/YamlEditor', () => {
     return <div>Yaml Editor Open</div>
   }
 })
-
 jest.mock('../../../../Search/search-sdk/search-sdk')
+
+const getCanUserCreateMCVReq = {
+  apiVersion: 'authorization.k8s.io/v1',
+  kind: 'SelfSubjectAccessReview',
+  metadata: {},
+  spec: {
+    resourceAttributes: {
+      resource: 'managedclusterviews',
+      verb: 'create',
+      group: 'view.open-cluster-management.io',
+    },
+  },
+}
+
+const getCanUserCreateMCVRes = {
+  kind: 'SelfSubjectAccessReview',
+  apiVersion: 'authorization.k8s.io/v1',
+  spec: {
+    resourceAttributes: {
+      verb: 'create',
+      group: 'view.open-cluster-management.io',
+      resource: 'managedclusterviews',
+    },
+  },
+  status: {
+    allowed: true,
+    reason:
+      'RBAC: allowed by ClusterRoleBinding "cluster-admins" of ClusterRole "cluster-admin" to Group "system:cluster-admins"',
+  },
+}
 
 const getResourceRequest = {
   apiVersion: 'view.open-cluster-management.io/v1beta1',
@@ -545,6 +574,7 @@ describe('Policy Template Details Page', () => {
     const path =
       '/multicloud/governance/policies/details/test/parent-policy/template/test-cluster/' +
       'policy.open-cluster-management.io/v1/ConfigurationPolicy/config-policy'
+    const canUserCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
     const getResourceNock = nockGet(getResourceRequest, getResourceResponse)
     const { container } = render(
       <RecoilRoot
@@ -563,7 +593,7 @@ describe('Policy Template Details Page', () => {
       </RecoilRoot>
     )
     // Wait for delete resource requests to finish
-    await waitForNocks([getResourceNock])
+    await waitForNocks([canUserCreateMCVNock, getResourceNock])
 
     // wait for page load - looking for breadcrumb items
     await waitForText('Policies')
@@ -652,6 +682,7 @@ describe('Policy Template Details Page', () => {
       'policy.open-cluster-management.io/cluster-namespace': installNamespace,
     }
 
+    const canUserCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
     const getResourceNock = nockGet(getResourceRequestCopy, getResourceResponseCopy)
 
     render(
@@ -672,7 +703,7 @@ describe('Policy Template Details Page', () => {
     )
 
     // Wait for the get resource requests to finish
-    await waitForNocks([getResourceNock])
+    await waitForNocks([canUserCreateMCVNock, getResourceNock])
 
     await waitForText('ConfigurationPolicy details')
 
@@ -793,6 +824,7 @@ describe('Policy Template Details Page', () => {
       },
     }
 
+    const canUserCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
     const getResourceNock = nockGet(getResourceRequest, getResourceResponse)
 
     render(
@@ -813,7 +845,7 @@ describe('Policy Template Details Page', () => {
     )
 
     // Wait for the get resource requests to finish
-    await waitForNocks([getResourceNock])
+    await waitForNocks([canUserCreateMCVNock, getResourceNock])
 
     await waitForText('K8sRequiredLabels details')
 
@@ -874,6 +906,7 @@ describe('Policy Template Details Page', () => {
       '/multicloud/governance/policies/details/test/parent-policy/template/local-cluster/' +
       'policy.open-cluster-management.io/v1beta1/OperatorPolicy/oppol-no-group'
 
+    const canUserCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
     const getResourceNock = nockGet(getOppolResourceRequest, getOppolResourceResponse)
 
     render(
@@ -894,7 +927,7 @@ describe('Policy Template Details Page', () => {
     )
 
     // Wait for the get resource requests to finish
-    await waitForNocks([getResourceNock])
+    await waitForNocks([canUserCreateMCVNock, getResourceNock])
 
     await waitForText('OperatorPolicy details')
 
@@ -1033,6 +1066,7 @@ describe('Policy Template Details Page', () => {
       },
     ]
 
+    const canUserCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
     getOppolResourceResponse.status.result.status.relatedObjects = replaceRelatedObj
     const getResourceNock = nockGet(getOppolResourceRequest, getOppolResourceResponse)
 
@@ -1054,7 +1088,7 @@ describe('Policy Template Details Page', () => {
     )
 
     // Wait for the get resource requests to finish
-    await waitForNocks([getResourceNock])
+    await waitForNocks([canUserCreateMCVNock, getResourceNock])
 
     await waitForText('OperatorPolicy details')
 
@@ -1091,6 +1125,7 @@ describe('Policy Template Details Page', () => {
     ]
     getResourceResponse.status.result.status.relatedObjects = replaceRelatedObj
     const getResourceNock = nockGet(getResourceRequest, getResourceResponse)
+    const canUserCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
 
     render(
       <RecoilRoot
@@ -1110,7 +1145,7 @@ describe('Policy Template Details Page', () => {
     )
 
     // Wait for the get resource requests to finish
-    await waitForNocks([getResourceNock])
+    await waitForNocks([canUserCreateMCVNock, getResourceNock])
 
     await waitForText('ConfigurationPolicy details')
 
@@ -1139,6 +1174,7 @@ describe('Policy Template Details Page', () => {
     ]
     getResourceResponse.status.result.status.relatedObjects = replaceRelatedObj
     const getResourceNock = nockGet(getResourceRequest, getResourceResponse)
+    const canUserCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
 
     render(
       <RecoilRoot
@@ -1158,7 +1194,7 @@ describe('Policy Template Details Page', () => {
     )
 
     // Wait for the get resource requests to finish
-    await waitForNocks([getResourceNock])
+    await waitForNocks([canUserCreateMCVNock, getResourceNock])
 
     // wait for template yaml to load correctly
     await waitForText('ConfigurationPolicy details')
@@ -1198,6 +1234,7 @@ describe('Policy Template Details Page', () => {
   })
 
   test('Should render discovered policy detail page successfully', async () => {
+    const canUserCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
     const getResourceNock = nockGet(getResourceRequest, getResourceResponse)
 
     const { container } = render(
@@ -1229,7 +1266,7 @@ describe('Policy Template Details Page', () => {
     )
 
     // Wait for delete resource requests to finish
-    await waitForNocks([getResourceNock])
+    await waitForNocks([canUserCreateMCVNock, getResourceNock])
 
     // wait for page load - looking for breadcrumb items
     await waitForText('Discovered policies')
@@ -1268,6 +1305,7 @@ describe('Policy Template Details Page', () => {
   })
 
   test('Should render ValidatingAdmissionPolicyBinding page successfully without parameter references', async () => {
+    const canUserCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
     const getResourceNock = nockGet(getVapbResourceRequest, getVapbResourceResponse)
 
     render(
@@ -1299,7 +1337,7 @@ describe('Policy Template Details Page', () => {
     )
 
     // Wait for delete resource requests to finish
-    await waitForNocks([getResourceNock])
+    await waitForNocks([canUserCreateMCVNock, getResourceNock])
 
     // wait for page load - looking for breadcrumb items
     await waitForText('Discovered policies')
@@ -1565,6 +1603,7 @@ describe('Policy Template Details Page', () => {
 
     const getReportResourceNock2 = nockGet(getClusterPolicyReportResourceRequest2, getClusterPolicyResourceResponse2)
 
+    nockIgnoreRBAC()
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -1593,8 +1632,8 @@ describe('Policy Template Details Page', () => {
       </RecoilRoot>
     )
 
-    // Wait for delete resource requests to finish
-    await waitForNocks([getReportResourceNock1, getReportResourceNock2, getResourceNock])
+    // Wait for resource requests to finish
+    await waitForNocks([getResourceNock, getReportResourceNock1, getReportResourceNock2])
 
     // wait for page load - looking for breadcrumb items
     await waitForText('Discovered policies')
@@ -1826,6 +1865,7 @@ describe('Policy Template Details Page', () => {
       },
     }
 
+    const canUserCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
     const getResourceNock = nockGet(getClusterPolicyResourceRequest, getClusterPolicyResourceResponse)
 
     // load the page:
@@ -1858,7 +1898,7 @@ describe('Policy Template Details Page', () => {
     )
 
     // Wait for delete resource requests to finish
-    await waitForNocks([getResourceNock])
+    await waitForNocks([canUserCreateMCVNock, getResourceNock])
 
     // wait for page load - looking for breadcrumb items
     await waitForText('Discovered policies')

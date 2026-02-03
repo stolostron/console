@@ -1,0 +1,5 @@
+git:
+  requeueAfterSeconds: 180
+  repoURL:
+  revision: HEAD
+  directories:

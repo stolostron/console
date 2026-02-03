@@ -92,7 +92,7 @@ const isImportMode = (importMode?: string): importMode is ImportMode => {
 }
 
 function escapePath(key: string) {
-  return key.replace(/\./g, '\\.')
+  return key.replaceAll('.', '\\.')
 }
 
 type Labels = Record<string, string>

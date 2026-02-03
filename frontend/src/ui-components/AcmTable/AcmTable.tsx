@@ -929,10 +929,9 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             padding={{ default: 'padding' }}
           >
             <Fragment>
-              {Array(10).fill(
+              {new Array(10).fill(
                 <>
                   <Skeleton width="100%" role="progressbar" screenreaderText="Loading" />
-                  <br />
                 </>
               )}
             </Fragment>

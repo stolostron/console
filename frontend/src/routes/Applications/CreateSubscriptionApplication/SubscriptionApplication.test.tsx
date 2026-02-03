@@ -577,11 +577,13 @@ describe('Create Subscription Application page', () => {
     )
 
     // pick existing PlacementRule
-    screen.getByPlaceholderText(/select an existing placement configuration/i).click()
+    const placementSelect = await screen.findByPlaceholderText(/select an existing placement configuration/i)
+    userEvent.click(placementSelect)
     await clickByText(mockPlacementRule.metadata.name!)
 
     // pick existing Placement
-    screen.getByPlaceholderText(/select an existing placement configuration/i).click()
+    const placementSelectAfterRule = await screen.findByPlaceholderText(/select an existing placement configuration/i)
+    userEvent.click(placementSelectAfterRule)
     await clickByText(mockPlacement.metadata.name!)
 
     // open and close the credential modal

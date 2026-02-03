@@ -2,122 +2,33 @@
 import { ButtonVariant } from '@patternfly/react-core'
 import { fitContent, nowrap } from '@patternfly/react-table'
 import { useCallback, useMemo, useState } from 'react'
-import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { useTranslation } from '../../../lib/acm-i18next'
-import AcmTimestamp from '../../../lib/AcmTimestamp'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../lib/doc-util'
 import { rbacCreate, rbacDelete, rbacPatch, useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
-import { NavigationPath } from '../../../NavigationPath'
 import { FlattenedRoleAssignment } from '../../../resources/clients/model/flattened-role-assignment'
 import { deleteRoleAssignment } from '../../../resources/clients/multicluster-role-assignment-client'
 import { MulticlusterRoleAssignmentDefinition } from '../../../resources/multicluster-role-assignment'
-import { IRequestResult } from '../../../resources/utils/resource-request'
 import { AcmButton, AcmEmptyState, AcmTable, compareStrings, IAcmTableColumn } from '../../../ui-components'
 import { IAcmTableAction, IAcmTableButtonAction, ITableFilter } from '../../../ui-components/AcmTable/AcmTableTypes'
 import { RoleAssignmentPreselected } from '../RoleAssignments/model/role-assignment-preselected'
 import { RoleAssignmentWizardModalWrapper } from '../RoleAssignments/RoleAssignmentWizardModalWrapper'
-import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
-import { RoleAssignmentLabel } from './RoleAssignmentLabel'
-import { RoleAssignmentStatusComponent } from './RoleAssignmentStatusComponent'
-
-// Component for rendering clickable role links
-const RoleLinkCell = ({ roleName }: { roleName: string }) => (
-  <Link to={generatePath(NavigationPath.roleDetails, { id: roleName })}>{roleName}</Link>
-)
-
-// Component for rendering clickable cluster links
-const ClusterLinksCell = ({ clusterNames }: { clusterNames: string[] }) => (
-  <RoleAssignmentLabel
-    elements={clusterNames}
-    numLabel={3}
-    renderElement={(clusterName) => (
-      <Link
-        key={clusterName}
-        to={generatePath(NavigationPath.clusterOverview, {
-          namespace: clusterName,
-          name: clusterName,
-        })}
-      >
-        {clusterName}
-      </Link>
-    )}
-  />
-)
-
-// Component for rendering namespaces with label group
-const NamespacesCell = ({ namespaces }: { namespaces?: string[] }) => (
-  <RoleAssignmentLabel elements={namespaces} numLabel={5} />
-)
-
-const renderSubjectNameCell = (name: string, kind: string) => {
-  if (!name || name.trim() === '') {
-    return '-'
-  }
-
-  const linkPath =
-    kind === 'Group'
-      ? generatePath(NavigationPath.identitiesGroupsDetails, { id: name })
-      : generatePath(NavigationPath.identitiesUsersDetails, { id: name })
-
-  return <Link to={linkPath}>{name}</Link>
-}
-
-// Component for rendering status
-const StatusCell = ({ status }: { status?: any }) => <RoleAssignmentStatusComponent status={status} />
-
-// Component for rendering created timestamp placeholder
-const renderCreatedCell = (roleAssignment: FlattenedRoleAssignment) => (
-  <AcmTimestamp timestamp={roleAssignment.status?.createdAt ?? undefined} />
-)
-
-// Cell renderer functions
-const renderRoleCell = (roleAssignment: FlattenedRoleAssignment) => (
-  <RoleLinkCell roleName={roleAssignment.clusterRole} />
-)
-
-const renderNamespacesCell = (roleAssignment: FlattenedRoleAssignment) => (
-  <NamespacesCell namespaces={roleAssignment.targetNamespaces} />
-)
-
-const renderStatusCell = (roleAssignment: FlattenedRoleAssignment) => <StatusCell status={roleAssignment.status} />
-
-const renderClustersCell = (roleAssignment: FlattenedRoleAssignment) => (
-  <ClusterLinksCell clusterNames={roleAssignment.clusterNames} />
-)
-
-// Component for rendering action dropdown
-const ActionCell = ({
-  roleAssignment,
-  setModalProps,
-  deleteAction,
-  canDelete,
-  canPatch,
-  onEdit,
-}: {
-  roleAssignment: FlattenedRoleAssignment
-  setModalProps: React.Dispatch<React.SetStateAction<BulkActionModalProps<FlattenedRoleAssignment> | { open: false }>>
-  deleteAction: (roleAssignment: FlattenedRoleAssignment) => IRequestResult<unknown>
-  canDelete: boolean
-  canPatch: boolean
-  onEdit: (roleAssignment: FlattenedRoleAssignment) => void
-}) => (
-  <RoleAssignmentActionDropdown
-    roleAssignment={roleAssignment}
-    setModalProps={setModalProps}
-    deleteAction={deleteAction}
-    canDelete={canDelete}
-    canPatch={canPatch}
-    onEdit={onEdit}
-  />
-)
+import {
+  renderActionCell,
+  renderClustersCell,
+  renderClusterSetsCell,
+  renderCreatedCell,
+  renderNamespacesCell,
+  renderRoleCell,
+  renderStatusCell,
+  renderSubjectNameCell,
+} from './RoleAssignmentsHelper'
 
 type RoleAssignmentsProps = {
   roleAssignments: FlattenedRoleAssignment[]
   isLoading?: boolean
-  hiddenColumns?: ('subject' | 'role' | 'clusters' | 'name')[]
-  hiddenFilters?: ('role' | 'identity' | 'clusters' | 'namespace' | 'status')[]
-  // isCreateButtonHidden?: boolean
+  hiddenColumns?: ('subject' | 'role' | 'clusters' | 'clusterSets' | 'name')[]
+  hiddenFilters?: ('role' | 'identity' | 'clusters' | 'clusterSets' | 'namespace' | 'status')[]
   preselected: RoleAssignmentPreselected
 }
 
@@ -126,7 +37,6 @@ const RoleAssignments = ({
   isLoading,
   hiddenColumns,
   hiddenFilters,
-  // isCreateButtonHidden,
   preselected,
 }: RoleAssignmentsProps) => {
   const { t } = useTranslation()
@@ -208,6 +118,7 @@ const RoleAssignments = ({
   const filters = useMemo<ITableFilter<FlattenedRoleAssignment>[]>(() => {
     // Get all unique values for filter options
     const allRoles = new Set<string>()
+    const allClusterSets = new Set<string>()
     const allClusters = new Set<string>()
     const allNamespaces = new Set<string>()
     const allStatuses = new Set<string>()
@@ -231,6 +142,9 @@ const RoleAssignments = ({
       }
 
       // Add cluster names and target namespaces
+      for (const clusterSetName of roleAssignment.clusterSetNames) {
+        allClusterSets.add(clusterSetName)
+      }
       for (const clusterName of roleAssignment.clusterNames) {
         allClusters.add(clusterName)
       }
@@ -243,6 +157,9 @@ const RoleAssignments = ({
     const roleOptions = Array.from(allRoles)
       .sort((a, b) => a.localeCompare(b))
       .map((role) => ({ label: role, value: role }))
+    const clusterSetOptions = Array.from(allClusterSets)
+      .sort((a, b) => a.localeCompare(b))
+      .map((cluster) => ({ label: cluster, value: cluster }))
     const clusterOptions = Array.from(allClusters)
       .sort((a, b) => a.localeCompare(b))
       .map((cluster) => ({ label: cluster, value: cluster }))
@@ -279,6 +196,15 @@ const RoleAssignments = ({
           const identityValue = `${roleAssignment.subject.kind}:${roleAssignment.subject.name}`
           return selectedValues.includes(identityValue)
         },
+      },
+      {
+        id: 'clusterSets',
+        label: t('clusterSets'),
+        options: clusterSetOptions,
+        tableFilterFn: (selectedValues, roleAssignment) =>
+          selectedValues.some((selectedClusterSetName) =>
+            roleAssignment.clusterSetNames.includes(selectedClusterSetName)
+          ),
       },
       {
         id: 'clusters',
@@ -326,18 +252,6 @@ const RoleAssignments = ({
     setIsCreateModalOpen(true)
   }, [])
 
-  // Action cell renderer (needs access to component state)
-  const renderActionCell = (roleAssignment: FlattenedRoleAssignment) => (
-    <ActionCell
-      roleAssignment={roleAssignment}
-      setModalProps={setDeleteModalProps}
-      deleteAction={deleteRoleAssignment}
-      canDelete={canDeleteRoleAssignment}
-      canPatch={canPatchRoleAssignment}
-      onEdit={handleEdit}
-    />
-  )
-
   // Table columns
   const columns: IAcmTableColumn<FlattenedRoleAssignment>[] = [
     {
@@ -377,6 +291,12 @@ const RoleAssignments = ({
       isHidden: hiddenColumns?.includes('subject'),
     },
     {
+      header: t('Cluster sets'),
+      cell: renderClusterSetsCell,
+      exportContent: (roleAssignment) => roleAssignment.clusterSetNames.join(', '),
+      isHidden: hiddenColumns?.includes('clusterSets'),
+    },
+    {
       header: t('Clusters'),
       cell: renderClustersCell,
       exportContent: (roleAssignment) => roleAssignment.clusterNames.join(', '),
@@ -401,7 +321,15 @@ const RoleAssignments = ({
     },
     {
       header: '',
-      cell: renderActionCell,
+      cell: (roleAssignment: FlattenedRoleAssignment) =>
+        renderActionCell({
+          roleAssignment,
+          setModalProps: setDeleteModalProps,
+          deleteAction: deleteRoleAssignment,
+          canDelete: canDeleteRoleAssignment,
+          canPatch: canPatchRoleAssignment,
+          onEdit: handleEdit,
+        }),
       cellTransforms: [fitContent],
       isActionCol: true,
     },
@@ -449,8 +377,7 @@ const RoleAssignments = ({
                   {t('Create role assignment')}
                 </AcmButton>
                 {/* ) : null} */}
-                {/* TODO: add correct documentation link */}
-                <ViewDocumentationLink doclink={DOC_LINKS.CLUSTERS} />
+                <ViewDocumentationLink doclink={DOC_LINKS.RBAC} />
               </div>
             }
           />

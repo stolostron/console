@@ -11,7 +11,6 @@ import {
 import get from 'get-value'
 import { ReactNode, useCallback, useMemo, useState } from 'react'
 import { DisplayMode } from '../contexts/DisplayModeContext'
-import { useStringContext } from '../contexts/StringContext'
 import { getSelectPlaceholder, InputCommonProps, useInput } from './Input'
 import { InputSelect, SelectListOptions } from './InputSelect'
 import { WizFormGroup } from './WizFormGroup'
@@ -60,12 +59,10 @@ type SelectProps<T> = WizSelectSingleProps<T>
 
 function WizSelectBase<T = any>(props: SelectProps<T>) {
   const { displayMode: mode, value, setValue, validated, hidden, id, disabled, required } = useInput(props)
-  const { noResults } = useStringContext()
   const placeholder = getSelectPlaceholder(props)
   const keyPath = props.keyPath ?? props.path
   const isCreatable = props.isCreatable
   const [open, setOpen] = useState(false)
-
   const [filteredOptions, setFilteredOptions] = useState<OptionType<T>[]>([])
 
   // The drop down items with descriptions - optionally grouped
@@ -101,37 +98,48 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
   }, [props.options, keyPath])
 
   const inputSelectOptions = useMemo(() => {
-    return selectOptions?.map((option) => option.value?.toString() ?? '') ?? []
+    // **This should probably use option.value but argo server (and maybe other options) .value is a (kube resource) object - so using label to be sure we have a string for later comparison
+    return selectOptions?.map((option) => option.label?.toString() ?? '') ?? []
   }, [selectOptions])
 
   const handleSetOptions = useCallback(
-    (o: string[]) => {
+    (op: string[], inputValue: string) => {
       const filtered =
         selectOptions?.filter((option) => {
-          const valueStr =
-            typeof option.value === 'string'
-              ? option.value
-              : typeof option.value === 'number'
-              ? option.value.toString()
-              : String(option.value)
-          return o.includes(valueStr)
+          return op.includes(option.label)
         }) ?? []
-
-      if (filtered.length > 0) {
-        setFilteredOptions([...filtered, { id: 'input', label: '', value: o[0], keyedValue: '' }])
-      } else {
-        setFilteredOptions([{ id: o[0], label: o[0] ?? noResults, value: o[0], keyedValue: '' }])
+      const isValueCustomOption =
+        (selectOptions as OptionType<any>[])?.filter(
+          (op) => op.id !== 'input' && (op.value === value || op.label === value)
+        ).length === 0
+      if (isValueCustomOption && value) {
+        const valueAsString = String(value)
+        // Check if value already exists in filtered to avoid duplicates
+        const valueExists = selectOptions?.some(
+          (o) => o.id === valueAsString || o.value === value || o.label === valueAsString
+        )
+        if (!valueExists) {
+          filtered.unshift(value)
+        }
       }
+
+      setFilteredOptions(
+        isCreatable && inputValue !== '' && inputSelectOptions.find((o) => o === inputValue) === undefined
+          ? [...filtered, { id: 'input', label: inputValue, value: inputValue, keyedValue: inputValue }]
+          : filtered
+      )
     },
-    [noResults, selectOptions]
+    [inputSelectOptions, isCreatable, selectOptions, value]
   )
 
   const onSelect = useCallback(
     (selectOptionObject: string | undefined) => {
+      if (!selectOptionObject) return
       const idOption = selectOptions?.find((o) => o.id === selectOptionObject)
       if (idOption) {
         setValue(idOption.value)
       } else {
+        // creating new selectOption
         setValue(selectOptionObject)
       }
       setOpen(false)
@@ -158,7 +166,9 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
           <InputGroupItem isFill>
             <PfSelect
               onOpenChange={(isOpen) => {
-                !isOpen && setOpen(false)
+                if (!isOpen) {
+                  setOpen(false)
+                }
               }}
               isOpen={open}
               toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
@@ -169,6 +179,7 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
                   placeholder={placeholder}
                   options={inputSelectOptions}
                   setOptions={handleSetOptions}
+                  isCreatable={isCreatable}
                   toggleRef={toggleRef}
                   value={value}
                   onSelect={onSelect}
@@ -178,13 +189,12 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
               )}
               popperProps={{ appendTo: 'inline' }}
               selected={value}
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-call
               onSelect={(_event, value) => onSelect(value?.toString() ?? '')}
             >
               <SelectListOptions
                 value={value}
                 allOptions={selectOptions ?? []}
-                options={filteredOptions}
+                filteredOptions={filteredOptions}
                 isCreatable={isCreatable}
                 onCreate={props.onCreate}
                 footer={props.footer}

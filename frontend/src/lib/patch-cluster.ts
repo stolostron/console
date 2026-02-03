@@ -17,7 +17,7 @@ export function patchClusterSetLabel(
 ) {
   const patch: { op: 'remove' | 'add' | 'replace'; path: string; value?: string } = {
     op,
-    path: `/metadata/labels/${managedClusterSetLabel.replace(/\//g, '~1')}`,
+    path: `/metadata/labels/${managedClusterSetLabel.replaceAll('/', '~1')}`,
   }
   if (value && op !== 'remove') {
     patch.value = value

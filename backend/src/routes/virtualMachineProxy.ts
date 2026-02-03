@@ -117,7 +117,7 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
       const mch = await getMultiClusterHub()
       const isFineGrainedRbacEnabled =
         mch?.spec?.overrides?.components?.find(
-          (e: { enabled: boolean; name: string }) => e.name === 'fine-grained-rbac-preview'
+          (e: { enabled: boolean; name: string }) => e.name === 'fine-grained-rbac'
         )?.enabled ?? false
       const proxyURL = await getProxyUrl()
 

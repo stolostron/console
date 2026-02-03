@@ -19,7 +19,7 @@ type HostedClusterProgressProps = {
 
 const HostedClusterProgress = ({ hostedCluster, handleModalToggle }: HostedClusterProgressProps) => {
   const { t } = useTranslation()
-  const { cluster } = useClusterDetailsContext()
+  const { cluster, clusterCurator } = useClusterDetailsContext()
   const hostedClusterProgressID = `${window.location.href}hosted-cluster-progress`
   if (!localStorage.getItem(hostedClusterProgressID)) {
     localStorage.setItem(hostedClusterProgressID, 'show')
@@ -52,7 +52,7 @@ const HostedClusterProgress = ({ hostedCluster, handleModalToggle }: HostedClust
             <StackItem className="nodepool-progress-item__body">
               <DistributionField
                 cluster={cluster}
-                clusterCurator={undefined}
+                clusterCurator={clusterCurator}
                 hostedCluster={hostedCluster}
                 resource={'hostedcluster'}
               />

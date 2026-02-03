@@ -1,36 +1,36 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 // Lodash imports removed - using native TypeScript equivalents
+import { TFunction } from 'react-i18next'
 import { getResource, listNamespacedResources } from '../../../../../resources/utils'
-import { fireManagedClusterView } from '../../../../../resources'
+import { fleetResourceRequest } from '../../../../../resources/utils/fleet-resource-request'
 import { searchClient } from '../../../../Search/search-sdk/search-client'
 import { SearchRelatedResult, SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
 import { convertStringToQuery } from '../helpers/search-helper'
-import {
-  addClusters,
-  getClusterName,
-  getResourceTypes,
-  processMultiples,
-  createReplicaChild,
-  createControllerRevisionChild,
-  createDataVolumeChild,
-  createVirtualMachineInstance,
-  addTopologyNode,
-} from './topologyUtils'
+import { ToolbarControl } from '../topology/components/TopologyToolbar'
 import {
   ApplicationModel,
   AppSetCluster,
-  TopologyNode,
-  TopologyLink,
-  RouteObject,
+  ExtendedTopology,
   ManagedClusterViewData,
   ProcessedDeployableResource,
-  SearchQuery,
   ResourceItem,
-  ExtendedTopology,
+  RouteObject,
+  SearchQuery,
+  TopologyLink,
+  TopologyNode,
 } from '../types'
-import { TFunction } from 'react-i18next'
-import { ToolbarControl } from '../topology/components/TopologyToolbar'
+import {
+  addClusters,
+  addTopologyNode,
+  createControllerRevisionChild,
+  createDataVolumeChild,
+  createReplicaChild,
+  createVirtualMachineInstance,
+  getClusterName,
+  getResourceTypes,
+  processMultiples,
+} from './topologyUtils'
 
 /**
  * Generates topology data for ApplicationSet applications
@@ -200,14 +200,15 @@ export async function getAppSetTopology(
   ////  APPLICATION RESOURCE NODES /////////////////
   /////////////////////////////////////////////
   let parentNodeId = clusterId
-  Object.entries(applicationResourceMap).forEach(([appName, resources]) => {
+  Object.entries(applicationResourceMap).forEach(([appNameClusterKey, resources]) => {
+    const [appName, clusterName] = appNameClusterKey.split('--')
     // if there are multiple applications and moe then one application is selected,
     // we need to insert an application node above the resources
     const isApplicationFiltered =
       applicationNames.length > 0 && activeApplications && !activeApplications.includes(appName)
     if (applicationNames.length > 0 && !isApplicationFiltered) {
       // Has application name - create application node
-      parentNodeId = `member--application--${clusterNames.join('-')}--${appName}`
+      parentNodeId = `member--application--${clusterName}--${appName}`
       const healthStatus = appStatusByNameMap[`${name}-${appName}`]?.health.status || 'Healthy'
       const appNode: TopologyNode = {
         name: appName,
@@ -314,17 +315,19 @@ async function getAppSetResources(name: string, namespace: string, appSetApps: a
     // Remove appset name prefix to get namePart
     const namePart = compositeName.startsWith(name) ? compositeName.substring(name.length + 1) : compositeName
 
-    // Find matching cluster name (sorted longest first for correct matching)
-    const clusterName = sortedAllClusterNames.find((cluster: string) => namePart.startsWith(cluster))
+    // Find matching cluster name in namePart bounded by '-' (sorted longest first for correct matching)
+    const clusterName = sortedAllClusterNames.find(
+      (cluster: string) => namePart === cluster || namePart.includes(`-${cluster}`) || namePart.includes(`${cluster}-`)
+    )
 
-    // Extract application name from remaining part after cluster name
-    const appName = clusterName ? namePart.substring(clusterName.length).replace(/^-/, '') : namePart
+    // Extract application name by stripping cluster name from namePart
+    const appName = clusterName ? namePart.replace(clusterName, '').replaceAll(/(?:^-)|(?:-$)/g, '') : namePart
 
     if (appName) {
       applicationNameSet.add(appName)
-      applicationResourceMap[appName] = resourceList
+      applicationResourceMap[`${appName}--${clusterName ?? ''}`] = resourceList
     } else {
-      applicationResourceMap[name] = resourceList
+      applicationResourceMap[`${name}--${clusterName ?? ''}`] = resourceList
     }
   })
 
@@ -534,15 +537,20 @@ const getArgoRoute = async (
     if (!managedclusterviewdata) return
 
     const { cluster: clusterName, kind, apiVersion, name, namespace } = managedclusterviewdata
-    fireManagedClusterView(clusterName, kind, apiVersion, name, namespace)
-      .then((viewResponse: any) => {
-        if (viewResponse.message) {
+    fleetResourceRequest('GET', clusterName, {
+      apiVersion,
+      kind,
+      name,
+      namespace,
+    })
+      .then((res: any) => {
+        if ('errorMessage' in res) {
           // Handle error case - could add error handling here
         } else {
-          openArgoEditorWindow(viewResponse.result, appName)
+          openArgoEditorWindow(res, appName)
         }
       })
-      .catch((err: any) => {
+      .catch((err) => {
         console.error('Error getting resource: ', err)
       })
   }
@@ -592,16 +600,20 @@ export const openRouteURL = (
       })
   } else {
     // Handle remote cluster using ManagedClusterView
-    fireManagedClusterView(cluster, kind, apiVersion, name, namespace)
-      .then((viewResponse: any) => {
-        toggleLoading()
-        if (viewResponse.message) {
+    fleetResourceRequest('GET', cluster, {
+      apiVersion,
+      kind,
+      name,
+      namespace,
+    })
+      .then((res: any) => {
+        if ('errorMessage' in res) {
           // Handle error case - could add error handling here
         } else {
-          openRouteURLWindow(viewResponse.result)
+          openRouteURLWindow(res)
         }
       })
-      .catch((err: any) => {
+      .catch((err) => {
         toggleLoading()
         console.error('Error getting resource: ', err)
       })

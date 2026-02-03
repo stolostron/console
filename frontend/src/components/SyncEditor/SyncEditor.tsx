@@ -263,7 +263,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
       }
       setEditorHasFocus(editorHasFocus && !isClickOnFilteredLine)
     }, 0),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
     [filteredRows, showFiltered]
   )
   useEffect(() => {
@@ -423,7 +423,14 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           //model.resources = cloneDeep(change.resources)
           const saveDecorations = getResourceEditorDecorations(editor, false)
           const viewState = editor.saveViewState()
-          model.setValue(yaml)
+          // instead of setValue, it's more robust to create a new text model
+          // but fall back to setValue for test environments where createModel may not be available
+          if (typeof monaco.editor.createModel === 'function') {
+            editor.getModel()?.dispose?.()
+            editor.setModel(monaco.editor.createModel(yaml, 'yaml'))
+          } else {
+            model.setValue(yaml)
+          }
           if (viewState) {
             editor.restoreViewState(viewState)
           }
@@ -619,116 +626,111 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     [editorChanged, onStatusChange]
   )
 
-  /* eslint-enable react-hooks/exhaustive-deps */
-  const toolbarControls = useMemo(
-    () => {
-      return (
-        <>
-          <div className="sy-c-code-editor__title">{editorTitle || 'YAML'}</div>
-          <div className="sy-toolbar-buttons" style={{ display: 'flex' }}>
-            {/* undo */}
-            {!readonly && (
-              <CodeEditorControl
-                id="undo-button"
-                icon={<UndoIcon />}
-                aria-label={t('Undo')}
-                tooltipProps={{ content: t('Undo') }}
-                isDisabled={!hasUndo}
-                onClick={() => {
-                  editor?.trigger('source', 'undo', undefined)
-                }}
-              />
-            )}
-            {/* redo */}
-            {!readonly && (
-              <CodeEditorControl
-                id="redo-button"
-                icon={<RedoIcon />}
-                aria-label={t('Redo')}
-                tooltipProps={{ content: t('Redo') }}
-                isDisabled={!hasRedo}
-                onClick={() => {
-                  editor?.trigger('source', 'redo', undefined)
-                }}
-              />
-            )}
-            {/* search */}
+  const toolbarControls = useMemo(() => {
+    return (
+      <>
+        <div className="sy-c-code-editor__title">{editorTitle || 'YAML'}</div>
+        <div className="sy-toolbar-buttons" style={{ display: 'flex' }}>
+          {/* undo */}
+          {!readonly && (
             <CodeEditorControl
-              id="search-button"
-              icon={<SearchIcon />}
-              aria-label={t('Find')}
-              tooltipProps={{ content: t('Find') }}
+              id="undo-button"
+              icon={<UndoIcon />}
+              aria-label={t('Undo')}
+              tooltipProps={{ content: t('Undo') }}
+              isDisabled={!hasUndo}
               onClick={() => {
-                editor?.trigger('source', 'actions.find', undefined)
+                editor?.trigger('source', 'undo', undefined)
               }}
             />
-            {/* secrets */}
-            {secrets && (
-              <CodeEditorControl
-                id="secret-button"
-                icon={showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
-                aria-label={t('Show Secrets')}
-                tooltipProps={{ content: t('Show Secrets') }}
-                onClick={() => {
-                  setShowSecrets(!showSecrets)
-                }}
-              />
-            )}
-            {/* copy */}
-            <ClipboardCopyButton
-              id="copy-button"
-              textId="code-content"
-              aria-label={t('Copy to clipboard')}
-              disabled={false}
+          )}
+          {/* redo */}
+          {!readonly && (
+            <CodeEditorControl
+              id="redo-button"
+              icon={<RedoIcon />}
+              aria-label={t('Redo')}
+              tooltipProps={{ content: t('Redo') }}
+              isDisabled={!hasRedo}
               onClick={() => {
-                if (editor && editor.getModel()) {
-                  const model = editor.getModel()
-                  const selection = editor.getSelection()
-                  if (model && selection) {
-                    const selectedText = model.getValueInRange(selection)
-                    navigator.clipboard.writeText(selectedText || lastUnredactedChange?.yaml || '')
-                    setCopyHint(selectedText.length === 0 ? allCopiedCopy : copiedCopy)
-                    setTimeout(() => {
-                      setCopyHint(defaultCopy)
-                    }, 800)
-                  }
-                }
+                editor?.trigger('source', 'redo', undefined)
               }}
-              exitDelay={600}
-              variant="plain"
-            >
-              {copyHint}
-            </ClipboardCopyButton>
-            {!!onClose && (
-              <CodeEditorControl
-                icon={<CloseIcon />}
-                aria-label={t('Close')}
-                tooltipProps={{ content: t('Close') }}
-                onClick={onClose || noop}
-              />
-            )}
-          </div>
-        </>
-      )
-    },
-    /* eslint-disable-next-line react-hooks/exhaustive-deps */
-    [
-      editorTitle,
-      readonly,
-      t,
-      hasUndo,
-      hasRedo,
-      secrets,
-      showSecrets,
-      copyHint,
-      onClose,
-      editor,
-      lastUnredactedChange?.yaml,
-      allCopiedCopy,
-      copiedCopy,
-      defaultCopy,
-    ]
-  )
+            />
+          )}
+          {/* search */}
+          <CodeEditorControl
+            id="search-button"
+            icon={<SearchIcon />}
+            aria-label={t('Find')}
+            tooltipProps={{ content: t('Find') }}
+            onClick={() => {
+              editor?.trigger('source', 'actions.find', undefined)
+            }}
+          />
+          {/* secrets */}
+          {secrets && (
+            <CodeEditorControl
+              id="secret-button"
+              icon={showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
+              aria-label={t('Show Secrets')}
+              tooltipProps={{ content: t('Show Secrets') }}
+              onClick={() => {
+                setShowSecrets(!showSecrets)
+              }}
+            />
+          )}
+          {/* copy */}
+          <ClipboardCopyButton
+            id="copy-button"
+            textId="code-content"
+            aria-label={t('Copy to clipboard')}
+            disabled={false}
+            onClick={() => {
+              if (editor && editor.getModel()) {
+                const model = editor.getModel()
+                const selection = editor.getSelection()
+                if (model && selection) {
+                  const selectedText = model.getValueInRange(selection)
+                  navigator.clipboard.writeText(selectedText || lastUnredactedChange?.yaml || '')
+                  setCopyHint(selectedText.length === 0 ? allCopiedCopy : copiedCopy)
+                  setTimeout(() => {
+                    setCopyHint(defaultCopy)
+                  }, 800)
+                }
+              }
+            }}
+            exitDelay={600}
+            variant="plain"
+          >
+            {copyHint}
+          </ClipboardCopyButton>
+          {!!onClose && (
+            <CodeEditorControl
+              icon={<CloseIcon />}
+              aria-label={t('Close')}
+              tooltipProps={{ content: t('Close') }}
+              onClick={onClose || noop}
+            />
+          )}
+        </div>
+      </>
+    )
+  }, [
+    editorTitle,
+    readonly,
+    t,
+    hasUndo,
+    hasRedo,
+    secrets,
+    showSecrets,
+    copyHint,
+    onClose,
+    editor,
+    lastUnredactedChange?.yaml,
+    allCopiedCopy,
+    copiedCopy,
+    defaultCopy,
+  ])
 
   useResizeObserver(pageRef, () => {
     layoutEditor(editor)

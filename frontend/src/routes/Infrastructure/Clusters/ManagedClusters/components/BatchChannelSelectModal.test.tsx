@@ -435,6 +435,35 @@ const mockHypershiftClusterWithMCIChannels: Cluster = {
 describe('BatchChannelSelectModal - Hosted Clusters', () => {
   beforeEach(() => nockIgnoreApiPaths())
 
+  it('should show warning alert when cluster has no current channel configured', () => {
+    const { queryByText } = render(
+      <MemoryRouter>
+        <BatchChannelSelectModal
+          clusters={[mockHypershiftClusterNoChannel]}
+          open={true}
+          close={() => {}}
+          hostedClusters={{ 'hosted-cluster-test': mockHostedClusterNoChannel }}
+        />
+      </MemoryRouter>
+    )
+    // Should show the warning alert
+    expect(
+      queryByText('Update channel is not configured for one or more clusters. Select a channel to see update options.')
+    ).toBeTruthy()
+  })
+
+  it('should not show warning alert when all clusters have current channel configured', () => {
+    const { queryByText } = render(
+      <MemoryRouter>
+        <BatchChannelSelectModal clusters={[mockClusterReady1]} open={true} close={() => {}} />
+      </MemoryRouter>
+    )
+    // Should NOT show the warning alert
+    expect(
+      queryByText('Update channel is not configured for one or more clusters. Select a channel to see update options.')
+    ).toBeFalsy()
+  })
+
   it('should show hosted cluster without channel set using fallback fast-X.Y channel', () => {
     const { queryByText, getByText } = render(
       <MemoryRouter>
@@ -500,7 +529,7 @@ describe('BatchChannelSelectModal - Hosted Clusters', () => {
     expect(queryAllByText('stable-4.14').length).toBeGreaterThanOrEqual(1)
   })
 
-  it('should patch HostedCluster.spec.channel for hosted clusters', async () => {
+  it('should use ClusterCurator to set channel for hosted clusters', async () => {
     let isClosed = false
     const { getByText, queryByText } = render(
       <MemoryRouter>
@@ -515,22 +544,33 @@ describe('BatchChannelSelectModal - Hosted Clusters', () => {
       </MemoryRouter>
     )
 
-    const hostedClusterResource = {
-      apiVersion: HostedClusterApiVersion,
-      kind: HostedClusterKind,
+    const clusterCurator = {
+      apiVersion: ClusterCuratorDefinition.apiVersion,
+      kind: ClusterCuratorDefinition.kind,
       metadata: {
-        name: mockHostedClusterNoChannel.metadata?.name,
-        namespace: mockHostedClusterNoChannel.metadata?.namespace,
+        name: mockHypershiftClusterNoChannel.name,
+        namespace: mockHypershiftClusterNoChannel.namespace,
       },
     }
-    const patchSpec = { spec: { channel: 'fast-4.14' } }
-    const mockNockPatchHostedCluster = nockPatch(hostedClusterResource, patchSpec)
+    const patchSpec = {
+      spec: {
+        desiredCuration: 'upgrade',
+        upgrade: {
+          channel: 'fast-4.14',
+          desiredUpdate: '',
+        },
+      },
+    }
+    // Mock patch returns 404, then create succeeds
+    const mockNockPatchCurator = nockPatch(clusterCurator, patchSpec, undefined, 404)
+    const mockNockCreateCurator = nockCreate({ ...clusterCurator, ...patchSpec })
 
     expect(getByText('Save')).toBeTruthy()
     userEvent.click(getByText('Save'))
 
     await act(async () => {
-      await waitFor(() => expect(mockNockPatchHostedCluster.isDone()).toBeTruthy())
+      await waitFor(() => expect(mockNockPatchCurator.isDone()).toBeTruthy())
+      await waitFor(() => expect(mockNockCreateCurator.isDone()).toBeTruthy())
       await waitFor(() => expect(queryByText('Saving')).toBeFalsy())
       await waitFor(() => expect(isClosed).toBe(true))
     })

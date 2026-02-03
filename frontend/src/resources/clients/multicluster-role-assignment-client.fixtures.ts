@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { FlattenedRoleAssignment } from './model/flattened-role-assignment'
 import { Subject } from '../kubernetes-client'
 import { MulticlusterRoleAssignment, MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assignment'
 import { Placement } from '../placement'
 import { UserKind } from '../rbac'
+import { FlattenedRoleAssignment } from './model/flattened-role-assignment'
 import { PlacementClusters } from './model/placement-clusters'
 import { RoleAssignmentToSave } from './model/role-assignment-to-save'
 
@@ -52,6 +52,7 @@ export const clusterSetsMatchingTestCases: GetPlacementsTestCase[] = [
       clusterNames: [],
       clusterSetNames: ['cs01'],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     expectedPlacementNames: ['placement-1'],
   },
@@ -63,6 +64,7 @@ export const clusterSetsMatchingTestCases: GetPlacementsTestCase[] = [
       clusterNames: [],
       clusterSetNames: ['cs01', 'cs02'],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     expectedPlacementNames: ['placement-1'],
   },
@@ -75,6 +77,7 @@ export const clusterSetsMatchingTestCases: GetPlacementsTestCase[] = [
       clusterNames: [],
       clusterSetNames: ['cs01', 'cs02', 'cs03'],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     expectedPlacementNames: ['placement-1'],
   },
@@ -90,6 +93,7 @@ export const clusterSetsMatchingTestCases: GetPlacementsTestCase[] = [
       clusterNames: [],
       clusterSetNames: ['cs01', 'cs02', 'cs03'],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     expectedPlacementNames: ['placement-1', 'placement-2'],
   },
@@ -105,6 +109,7 @@ export const clusterSetsMatchingTestCases: GetPlacementsTestCase[] = [
       clusterNames: [],
       clusterSetNames: ['cs01', 'cs02', 'cs03'],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     expectedPlacementNames: ['placement-1', 'placement-2'],
   },
@@ -120,6 +125,7 @@ export const clusterSetsMatchingTestCases: GetPlacementsTestCase[] = [
       clusterNames: [],
       clusterSetNames: ['cs01', 'cs02', 'cs03'],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     expectedPlacementNames: ['placement-2'],
   },
@@ -131,6 +137,7 @@ export const clusterSetsMatchingTestCases: GetPlacementsTestCase[] = [
       clusterNames: [],
       clusterSetNames: ['cs01'],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     expectedPlacementNames: [],
   },
@@ -142,6 +149,7 @@ export const clusterSetsMatchingTestCases: GetPlacementsTestCase[] = [
       clusterNames: ['cluster-a'],
       clusterSetNames: [],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     expectedPlacementNames: [],
   },
@@ -159,6 +167,7 @@ export const clusterNamesMatchingTestCases: GetPlacementsTestCase[] = [
       clusterNames: ['cluster-a', 'cluster-b'],
       clusterSetNames: [],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     expectedPlacementNames: ['placement-1'],
   },
@@ -171,6 +180,7 @@ export const clusterNamesMatchingTestCases: GetPlacementsTestCase[] = [
       clusterNames: ['cluster-a', 'cluster-b', 'cluster-c'],
       clusterSetNames: [],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     expectedPlacementNames: [],
   },
@@ -182,6 +192,7 @@ export const clusterNamesMatchingTestCases: GetPlacementsTestCase[] = [
       clusterNames: ['cluster-a'],
       clusterSetNames: [],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     expectedPlacementNames: [],
   },
@@ -193,6 +204,7 @@ export const clusterNamesMatchingTestCases: GetPlacementsTestCase[] = [
       clusterNames: ['cluster-a'],
       clusterSetNames: [],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     expectedPlacementNames: [],
   },
@@ -204,6 +216,7 @@ export const clusterNamesMatchingTestCases: GetPlacementsTestCase[] = [
       clusterNames: [],
       clusterSetNames: [],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     expectedPlacementNames: [],
   },
@@ -215,6 +228,7 @@ export const clusterNamesMatchingTestCases: GetPlacementsTestCase[] = [
       clusterNames: undefined,
       clusterSetNames: [],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     expectedPlacementNames: [],
   },
@@ -226,6 +240,7 @@ export const clusterNamesMatchingTestCases: GetPlacementsTestCase[] = [
       clusterNames: ['cluster-a', 'cluster-b', 'cluster-c'],
       clusterSetNames: [],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     expectedPlacementNames: ['placement-1'],
   },
@@ -246,6 +261,7 @@ export const combinedMatchingTestCases: GetPlacementsTestCase[] = [
       clusterNames: ['cluster-a', 'cluster-b'],
       clusterSetNames: ['cs01', 'cs02'],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     expectedPlacementNames: ['placement-by-sets'],
   },
@@ -260,6 +276,7 @@ export const combinedMatchingTestCases: GetPlacementsTestCase[] = [
       clusterNames: ['cluster-a', 'cluster-b'],
       clusterSetNames: ['cs01', 'cs02'],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     expectedPlacementNames: ['placement-by-clusters', 'placement-by-sets'],
   },
@@ -274,6 +291,7 @@ export const combinedMatchingTestCases: GetPlacementsTestCase[] = [
       clusterNames: ['cluster-a'],
       clusterSetNames: ['cs01', 'cs02'],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     expectedPlacementNames: ['placement-by-clusters'],
   },
@@ -288,6 +306,7 @@ export const combinedMatchingTestCases: GetPlacementsTestCase[] = [
       clusterNames: ['cluster-a'],
       clusterSetNames: ['cs01'],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     expectedPlacementNames: [],
   },
@@ -304,6 +323,7 @@ export const combinedMatchingTestCases: GetPlacementsTestCase[] = [
       clusterNames: ['cluster-a', 'cluster-b'],
       clusterSetNames: ['cs01', 'cs02', 'cs03'],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     expectedPlacementNames: ['placement-exact-clusters', 'placement-subset-sets-1', 'placement-subset-sets-2'],
   },
@@ -321,6 +341,7 @@ const createFlattenedRoleAssignment = (
   clusterRole,
   clusterSelection: { type: 'placements', placements: [] },
   clusterNames: [],
+  clusterSetNames: [],
   targetNamespaces: [],
   relatedMulticlusterRoleAssignment: {} as MulticlusterRoleAssignment,
 })
@@ -408,6 +429,78 @@ export const createMockMulticlusterRoleAssignment = (
 })
 
 /**
+ * Interface for role assignment configuration in MRA
+ */
+interface RoleAssignmentConfig {
+  name: string
+  clusterRole: string
+  placementNames: string[]
+  targetNamespaces?: string[]
+}
+
+/**
+ * Helper to create a MulticlusterRoleAssignment with specific role assignments and placements
+ */
+export const createMulticlusterRoleAssignment = (
+  name: string,
+  subject: Subject,
+  roleAssignments: RoleAssignmentConfig[]
+): MulticlusterRoleAssignment => ({
+  apiVersion: 'rbac.open-cluster-management.io/v1beta1',
+  kind: 'MulticlusterRoleAssignment',
+  metadata: { name, namespace: MulticlusterRoleAssignmentNamespace },
+  spec: {
+    subject,
+    roleAssignments: roleAssignments.map((ra) => ({
+      name: ra.name,
+      clusterRole: ra.clusterRole,
+      clusterSelection: {
+        type: 'placements' as const,
+        placements: ra.placementNames.map((placementName) => ({
+          name: placementName,
+          namespace: MulticlusterRoleAssignmentNamespace,
+        })),
+      },
+      targetNamespaces: ra.targetNamespaces ?? [],
+    })),
+  },
+  status: {},
+})
+
+/**
+ * Helper to create a MulticlusterRoleAssignment with a single role assignment referencing one placement
+ */
+export const createMRAWithSingleRoleAndPlacement = (
+  name: string,
+  subject: Subject,
+  roleName: string,
+  clusterRole: string,
+  placementName: string
+): MulticlusterRoleAssignment =>
+  createMulticlusterRoleAssignment(name, subject, [{ name: roleName, clusterRole, placementNames: [placementName] }])
+
+/**
+ * Helper to create a MulticlusterRoleAssignment with a single role assignment referencing multiple placements
+ */
+export const createMRAWithSingleRoleAndMultiplePlacements = (
+  name: string,
+  subject: Subject,
+  roleName: string,
+  clusterRole: string,
+  placementNames: string[]
+): MulticlusterRoleAssignment =>
+  createMulticlusterRoleAssignment(name, subject, [{ name: roleName, clusterRole, placementNames }])
+
+/**
+ * Helper to create a MulticlusterRoleAssignment with multiple role assignments
+ */
+export const createMRAWithMultipleRoles = (
+  name: string,
+  subject: Subject,
+  roleAssignments: RoleAssignmentConfig[]
+): MulticlusterRoleAssignment => createMulticlusterRoleAssignment(name, subject, roleAssignments)
+
+/**
  * Test cases for addRoleAssignment
  */
 export const addRoleAssignmentTestCases: AddRoleAssignmentTestCase[] = [
@@ -416,6 +509,7 @@ export const addRoleAssignmentTestCases: AddRoleAssignmentTestCase[] = [
     roleAssignment: {
       clusterRole: 'admin',
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
       // No clusterNames or clusterSetNames
     },
     existingPlacements: [],
@@ -429,6 +523,7 @@ export const addRoleAssignmentTestCases: AddRoleAssignmentTestCase[] = [
       clusterNames: [],
       clusterSetNames: [],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     existingPlacements: [],
     shouldSucceed: false,
@@ -440,6 +535,7 @@ export const addRoleAssignmentTestCases: AddRoleAssignmentTestCase[] = [
       clusterRole: 'admin',
       clusterNames: ['cluster-a'],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     existingPlacements: [],
     shouldSucceed: true,
@@ -450,6 +546,7 @@ export const addRoleAssignmentTestCases: AddRoleAssignmentTestCase[] = [
       clusterRole: 'admin',
       clusterSetNames: ['cs01'],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     existingPlacements: [],
     shouldSucceed: true,
@@ -460,6 +557,7 @@ export const addRoleAssignmentTestCases: AddRoleAssignmentTestCase[] = [
       clusterRole: 'viewer',
       clusterNames: ['cluster-b'],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     existingMulticlusterRoleAssignment: createMockMulticlusterRoleAssignment(
       'existing-mra',
@@ -487,11 +585,114 @@ export const duplicateDetectionTestCases: DuplicateDetectionTestCase[] = [
       clusterRole: 'admin',
       clusterNames: ['cluster-a'],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     existingRoleAssignmentData: {
       clusterRole: 'admin',
       clusterNames: ['cluster-a'],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+    },
+  },
+]
+
+/**
+ * Test case fixture for getRoleAssignmentName: pairs of RoleAssignmentToSave that differ only
+ * by undefined vs empty array for targetNamespaces, clusterNames, or clusterSetNames.
+ * Both entries in each pair must produce the same hash name.
+ */
+export interface GetRoleAssignmentNameEquivalentPairTestCase {
+  description: string
+  roleAssignmentA: RoleAssignmentToSave
+  roleAssignmentB: RoleAssignmentToSave
+}
+
+export const getRoleAssignmentNameEquivalentPairTestCases: GetRoleAssignmentNameEquivalentPairTestCase[] = [
+  {
+    description: 'same name when targetNamespaces is undefined vs empty array',
+    roleAssignmentA: {
+      clusterRole: 'admin',
+      clusterNames: ['cluster-a'],
+      clusterSetNames: [],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+    },
+    roleAssignmentB: {
+      clusterRole: 'admin',
+      clusterNames: ['cluster-a'],
+      clusterSetNames: [],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+      targetNamespaces: [],
+    },
+  },
+  {
+    description: 'same name when clusterNames is undefined vs empty array',
+    roleAssignmentA: {
+      clusterRole: 'admin',
+      clusterSetNames: ['cs01'],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+      targetNamespaces: [],
+    },
+    roleAssignmentB: {
+      clusterRole: 'admin',
+      clusterNames: [],
+      clusterSetNames: ['cs01'],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+      targetNamespaces: [],
+    },
+  },
+  {
+    description: 'same name when clusterSetNames is undefined vs empty array',
+    roleAssignmentA: {
+      clusterRole: 'admin',
+      clusterNames: ['cluster-a'],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+      targetNamespaces: [],
+    },
+    roleAssignmentB: {
+      clusterRole: 'admin',
+      clusterNames: ['cluster-a'],
+      clusterSetNames: [],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+      targetNamespaces: [],
+    },
+  },
+  {
+    description: 'same name when all three array properties are undefined vs all empty arrays',
+    roleAssignmentA: {
+      clusterRole: 'viewer',
+      subject: { name: 'user2', kind: UserKind },
+      isGlobalScope: true,
+      targetNamespaces: [],
+    },
+    roleAssignmentB: {
+      clusterRole: 'viewer',
+      clusterNames: [],
+      clusterSetNames: [],
+      subject: { name: 'user2', kind: UserKind },
+      isGlobalScope: true,
+      targetNamespaces: [],
+    },
+  },
+  {
+    description: 'same name when targetNamespaces is undefined (omitted) vs empty in minimal assignment',
+    roleAssignmentA: {
+      clusterRole: 'admin',
+      clusterNames: ['cluster-a'],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+    },
+    roleAssignmentB: {
+      clusterRole: 'admin',
+      clusterNames: ['cluster-a'],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+      targetNamespaces: [],
     },
   },
 ]
@@ -720,6 +921,7 @@ export const namespaceFilteringTestCases: NamespaceFilteringTestCase[] = [
       clusterNames: ['cluster-a', 'cluster-b'],
       clusterSetNames: [],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     expectedPlacementNames: ['placement-correct-ns'],
   },
@@ -734,6 +936,7 @@ export const namespaceFilteringTestCases: NamespaceFilteringTestCase[] = [
       clusterNames: ['cluster-a', 'cluster-b'],
       clusterSetNames: [],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     expectedPlacementNames: [],
   },
@@ -748,6 +951,7 @@ export const namespaceFilteringTestCases: NamespaceFilteringTestCase[] = [
       clusterNames: [],
       clusterSetNames: ['cs01'],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     expectedPlacementNames: ['placement-correct-ns'],
   },
@@ -765,6 +969,7 @@ export const namespaceFilteringTestCases: NamespaceFilteringTestCase[] = [
       clusterNames: ['cluster-x', 'cluster-y'],
       clusterSetNames: [],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     expectedPlacementNames: ['placement-global-set'],
   },
@@ -791,6 +996,7 @@ export const namespaceFilteringTestCases: NamespaceFilteringTestCase[] = [
       clusterNames: ['cluster-a', 'cluster-b'],
       clusterSetNames: ['cs01', 'cs02'],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     expectedPlacementNames: ['placement-clusters-correct', 'placement-sets-correct'],
   },
@@ -807,6 +1013,7 @@ export const namespaceFilteringTestCases: NamespaceFilteringTestCase[] = [
       clusterNames: [],
       clusterSetNames: ['cs01', 'cs02', 'cs03'],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     expectedPlacementNames: ['placement-1', 'placement-2', 'placement-3'],
   },
@@ -833,7 +1040,101 @@ export const namespaceFilteringTestCases: NamespaceFilteringTestCase[] = [
       clusterNames: ['cluster-a', 'cluster-b'],
       clusterSetNames: [],
       subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
     },
     expectedPlacementNames: ['placement-correct'],
+  },
+]
+
+/**
+ * Test case fixture for getPlacementsForRoleAssignment with isGlobalScope: true
+ */
+interface GetPlacementsGlobalScopeTestCase {
+  description: string
+  placementClusters: PlacementClusters[]
+  roleAssignment: RoleAssignmentToSave
+  expectedPlacementNames?: string[]
+  shouldThrow?: boolean
+  expectedErrorMessage?: string
+}
+
+/**
+ * Test cases for isGlobalScope: true in getPlacementsForRoleAssignment
+ */
+export const globalScopeTestCases: GetPlacementsGlobalScopeTestCase[] = [
+  {
+    description: 'should return global placement when isGlobalScope is true and GlobalPlacementName exists',
+    placementClusters: [
+      createPlacementClustersWithNamespace('global', MulticlusterRoleAssignmentNamespace, [
+        'cluster-a',
+        'cluster-b',
+        'cluster-c',
+      ]),
+      createPlacementClustersWithNamespace('placement-other', MulticlusterRoleAssignmentNamespace, ['cluster-a']),
+    ],
+    roleAssignment: {
+      clusterRole: 'admin',
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: true,
+    },
+    expectedPlacementNames: ['global'],
+  },
+  {
+    description:
+      'should return global placement when isGlobalScope is true and GlobalPlacementName exists, ignoring other placements',
+    placementClusters: [
+      createPlacementClustersWithNamespace('placement-1', MulticlusterRoleAssignmentNamespace, ['cluster-a']),
+      createPlacementClustersWithNamespace('global', MulticlusterRoleAssignmentNamespace, ['cluster-a', 'cluster-b']),
+      createPlacementClustersWithNamespace('placement-2', MulticlusterRoleAssignmentNamespace, ['cluster-b']),
+    ],
+    roleAssignment: {
+      clusterRole: 'admin',
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: true,
+    },
+    expectedPlacementNames: ['global'],
+  },
+  {
+    description:
+      'should throw error when isGlobalScope is true but GlobalPlacementName does not exist in placementClusters',
+    placementClusters: [
+      createPlacementClustersWithNamespace('placement-1', MulticlusterRoleAssignmentNamespace, ['cluster-a']),
+      createPlacementClustersWithNamespace('placement-2', MulticlusterRoleAssignmentNamespace, ['cluster-b']),
+    ],
+    roleAssignment: {
+      clusterRole: 'admin',
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: true,
+    },
+    shouldThrow: true,
+    expectedErrorMessage:
+      'Global placement not found. Expected placement with name: global and namespace: open-cluster-management-global-set.',
+  },
+  {
+    description: 'should throw error when isGlobalScope is true and GlobalPlacementName exists but in wrong namespace',
+    placementClusters: [
+      createPlacementClustersWithNamespace('global', 'wrong-namespace', ['cluster-a']),
+      createPlacementClustersWithNamespace('placement-1', MulticlusterRoleAssignmentNamespace, ['cluster-b']),
+    ],
+    roleAssignment: {
+      clusterRole: 'admin',
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: true,
+    },
+    shouldThrow: true,
+    expectedErrorMessage:
+      'Global placement not found. Expected placement with name: global and namespace: open-cluster-management-global-set.',
+  },
+  {
+    description: 'should throw error when isGlobalScope is true and placementClusters is empty',
+    placementClusters: [],
+    roleAssignment: {
+      clusterRole: 'admin',
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: true,
+    },
+    shouldThrow: true,
+    expectedErrorMessage:
+      'Global placement not found. Expected placement with name: global and namespace: open-cluster-management-global-set.',
   },
 ]

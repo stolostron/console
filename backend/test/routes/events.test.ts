@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Writable } from 'node:stream'
+import nock from 'nock'
 import { request } from '../mock-request'
 import {
   getKubeResources,
@@ -11,9 +12,14 @@ import {
   createSplitStream,
   errorToString,
   createWatchEventProcessor,
+  listAndWatch,
+  stopWatching,
 } from '../../src/routes/events'
+import * as serviceAccountTokenModule from '../../src/lib/serviceAccountToken'
 import { IArgoApplication, IResource } from '../../src/resources/resource'
 import { ServerSideEvents } from '../../src/lib/server-side-events'
+
+jest.mock('../../src/lib/serviceAccountToken')
 
 describe('events Route', () => {
   describe('GET /events', () => {
@@ -175,8 +181,8 @@ describe('events Route', () => {
       const apiVersionPlural = '/v1/configmaps'
       expect(cache[apiVersionPlural]).toBeDefined()
       expect(cache[apiVersionPlural]['config-uid-123']).toBeDefined()
-      expect(cache[apiVersionPlural]['config-uid-123'].compressed).toBeDefined()
-      expect(cache[apiVersionPlural]['config-uid-123'].eventID).toBeGreaterThan(0)
+      expect(await cache[apiVersionPlural]['config-uid-123'].compressed).toBeDefined()
+      expect(await cache[apiVersionPlural]['config-uid-123'].eventID).toBeGreaterThan(0)
     })
 
     it('should not update cache if resourceVersion is unchanged', async () => {
@@ -220,15 +226,15 @@ describe('events Route', () => {
       await cacheResource(mockResource)
       const cache = getEventCache()
       const apiVersionPlural = '/apps/v1/deployments'
-      const firstEventID = cache[apiVersionPlural]['deploy-uid-789'].eventID
+      const firstEventID = await cache[apiVersionPlural]['deploy-uid-789'].eventID
 
       // Update resourceVersion and cache again
       mockResource.metadata.resourceVersion = '301'
       await cacheResource(mockResource)
 
       // EventID should be different (new event created)
-      expect(cache[apiVersionPlural]['deploy-uid-789'].eventID).not.toBe(firstEventID)
-      expect(cache[apiVersionPlural]['deploy-uid-789'].eventID).toBeGreaterThan(firstEventID)
+      expect(await cache[apiVersionPlural]['deploy-uid-789'].eventID).not.toBe(firstEventID)
+      expect(await cache[apiVersionPlural]['deploy-uid-789'].eventID).toBeGreaterThan(firstEventID)
     })
 
     it('should set hubClusterName when caching local ManagedCluster', async () => {
@@ -305,6 +311,89 @@ describe('events Route', () => {
       await cacheResource(otherAddon)
 
       expect(getIsObservabilityInstalled()).toBe(initialObsFlag)
+    })
+
+    it('should avoid race condition when caching same resource concurrently', async () => {
+      // This test guards against a race condition where concurrent calls to cacheResource
+      // for the same UID could create duplicate/orphaned events in ServerSideEvents.
+      //
+      // The race condition occurred when:
+      // 1. First call checks cache (finds nothing)
+      // 2. First call starts async compression (await deflateResource yields control)
+      // 3. Second call checks cache (still finds nothing because first hasn't written yet)
+      // 4. Second call starts async compression (await deflateResource yields control)
+      // 5. Both calls create separate events, first event becomes orphaned
+      //
+      // The fix stores promises immediately in the cache so concurrent calls see pending entries.
+      // This allows the second call to see the pending entry and properly coordinate.
+
+      const resource1: IResource = {
+        kind: 'ConfigMap',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'race-test-config',
+          namespace: 'default',
+          uid: 'race-test-uid-concurrent',
+          resourceVersion: '1',
+        },
+      }
+
+      const resource2: IResource = {
+        kind: 'ConfigMap',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'race-test-config',
+          namespace: 'default',
+          uid: 'race-test-uid-concurrent', // Same UID as resource1
+          resourceVersion: '2', // Different resourceVersion
+        },
+      }
+
+      // Reset ServerSideEvents to a clean state to ensure test isolation
+      ServerSideEvents.reset()
+
+      // Flush the microtask queue multiple times to ensure any pending promises
+      // from previous tests (like getKubeResources) have resolved
+      for (let i = 0; i < 5; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 0))
+      }
+
+      // Reset AGAIN after flushing to clear any events created by resolved promises
+      ServerSideEvents.reset()
+
+      // Snapshot event IDs BEFORE our concurrent calls (should only be START=1 and LOADED=2)
+      const eventIdsBefore = new Set(Object.keys(ServerSideEvents.getEvents()).map(Number))
+
+      // Start both cache operations concurrently WITHOUT awaiting first
+      // This simulates the race condition scenario
+      const promise1 = cacheResource(resource1)
+      const promise2 = cacheResource(resource2)
+      await Promise.all([promise1, promise2])
+
+      // With the fix, cacheResource stores promises and returns without awaiting pushEvent.
+      // We must await the eventID promise to ensure pushEvent has been called.
+      const cache = getEventCache()
+      const cachedEventID = await Promise.resolve(cache['/v1/configmaps']['race-test-uid-concurrent'].eventID)
+
+      // Snapshot event IDs AFTER our concurrent calls
+      const events = ServerSideEvents.getEvents()
+      const eventIdsAfter = new Set(Object.keys(events).map(Number))
+
+      // Find NEW MODIFIED events created during this test
+      const newModifiedEventIds = [...eventIdsAfter]
+        .filter((id) => !eventIdsBefore.has(id))
+        .filter((id) => {
+          const event = events[id]
+          return event && (event.data as { type: string }).type === 'MODIFIED'
+        })
+
+      // THE KEY ASSERTION:
+      // With the fix: Only 1 MODIFIED event should survive (the second call properly removes the first)
+      // Without the fix: 2 MODIFIED events survive (one is orphaned - created but never removed)
+      expect(newModifiedEventIds.length).toBe(1)
+
+      // The surviving event should be the one in the cache
+      expect(newModifiedEventIds[0]).toBe(cachedEventID)
     })
 
     it('should handle resources with complex nested structures', async () => {
@@ -396,6 +485,9 @@ describe('events Route', () => {
       }
 
       await cacheResource(resource)
+      const cache = getEventCache()
+      const apiVersionPlural = '/v1/namespaces'
+      await cache[apiVersionPlural]['namespace-uid'].eventID
 
       const eventsAfter = Object.keys(ServerSideEvents.getEvents()).length
 
@@ -920,12 +1012,19 @@ describe('events Route', () => {
         },
       }
 
+      let caughtError: Error | null = null
+      processor.on('error', (err) => {
+        caughtError = err
+      })
+
       processor.write(JSON.stringify(watchEvent))
       processor.end()
 
       await new Promise((resolve) => setTimeout(resolve, 50))
 
-      // Should not throw, just log warning
+      // Should throw an error so that listAndWatch will retry
+      expect(caughtError).not.toBeNull()
+      expect(caughtError?.message).toBe('too old resource version: 100 (12345)')
       expect(resourceVersionRef.value).toBe('100') // Should remain unchanged for ERROR
     })
 
@@ -945,12 +1044,19 @@ describe('events Route', () => {
         },
       }
 
+      let caughtError: Error | null = null
+      processor.on('error', (err) => {
+        caughtError = err
+      })
+
       processor.write(JSON.stringify(watchEvent))
       processor.end()
 
       await new Promise((resolve) => setTimeout(resolve, 50))
 
-      // Should not throw, just log warning
+      // Should throw an error so that listAndWatch will retry
+      expect(caughtError).not.toBeNull()
+      expect(caughtError?.message).toBe('some other error')
       expect(resourceVersionRef.value).toBe('100')
     })
 
@@ -1009,6 +1115,115 @@ describe('events Route', () => {
       const cache = getEventCache()
       expect(cache['/v1/configmaps']?.['uid-1']).toBeDefined()
       expect(cache['/v1/configmaps']?.['uid-2']).toBeDefined()
+    })
+  })
+
+  describe('listAndWatch', () => {
+    const mockedGetServiceAccountToken = serviceAccountTokenModule.getServiceAccountToken as jest.MockedFunction<
+      typeof serviceAccountTokenModule.getServiceAccountToken
+    >
+    const mockedGetCACertificate = serviceAccountTokenModule.getCACertificate as jest.MockedFunction<
+      typeof serviceAccountTokenModule.getCACertificate
+    >
+
+    beforeEach(() => {
+      jest.clearAllMocks()
+      process.env.CLUSTER_API_URL = 'https://api.test-cluster.com:6443'
+      mockedGetServiceAccountToken.mockReturnValue('mock-token')
+      mockedGetCACertificate.mockReturnValue(undefined)
+    })
+
+    afterEach(() => {
+      stopWatching()
+      nock.abortPendingRequests()
+      nock.cleanAll()
+      delete process.env.CLUSTER_API_URL
+    })
+
+    it('should retry immediately when receiving "too old resource version" error', async () => {
+      // This test verifies that line 289 in events.ts handles "too old resource version"
+      // errors by retrying immediately without the 60-second delay.
+
+      const options = { kind: 'ConfigMap', apiVersion: 'v1' }
+      let listCallCount = 0
+      let secondListTime = 0
+
+      // First list call - succeeds
+      nock('https://api.test-cluster.com:6443')
+        .get('/api/v1/configmaps')
+        .query(true)
+        .reply(200, {
+          kind: 'ConfigMapList',
+          apiVersion: 'v1',
+          metadata: { resourceVersion: '1000' },
+          items: [],
+        })
+
+      // Watch call - returns ERROR event with "too old resource version"
+      const errorEvent = JSON.stringify({
+        type: 'ERROR',
+        object: {
+          kind: 'Status',
+          apiVersion: 'v1',
+          metadata: {},
+          message: 'too old resource version: 1000 (5000)',
+          reason: 'Expired',
+        },
+      })
+
+      nock('https://api.test-cluster.com:6443')
+        .get('/api/v1/configmaps')
+        .query((query) => query.watch !== undefined)
+        .reply(200, errorEvent + '\n')
+
+      // Second list call - after immediate retry due to "too old resource version" error
+      nock('https://api.test-cluster.com:6443')
+        .get('/api/v1/configmaps')
+        .query((query) => query.watch === undefined && query.limit !== undefined)
+        .reply(200, () => {
+          listCallCount++
+          secondListTime = Date.now()
+          return {
+            kind: 'ConfigMapList',
+            apiVersion: 'v1',
+            metadata: { resourceVersion: '5000' },
+            items: [],
+          }
+        })
+
+      // Second watch - will hang until stopWatching is called
+      nock('https://api.test-cluster.com:6443')
+        .get('/api/v1/configmaps')
+        .query((query) => query.watch !== undefined)
+        .delay(60000) // Long delay - will be interrupted by stopWatching
+        .reply(200, '')
+
+      const startTime = Date.now()
+
+      // Start listAndWatch and schedule stopWatching after a brief delay
+      const listAndWatchPromise = listAndWatch(options)
+
+      // Wait for the second list to happen, then stop
+      await new Promise<void>((resolve) => {
+        const checkInterval = setInterval(() => {
+          if (listCallCount >= 1) {
+            clearInterval(checkInterval)
+            // Give a small buffer then stop
+            setTimeout(() => {
+              stopWatching()
+              resolve()
+            }, 100)
+          }
+        }, 50)
+      })
+
+      await listAndWatchPromise
+
+      // The second list should have happened quickly (< 5 seconds) because "too old resource version"
+      // triggers an immediate retry without the 60-second delay (line 289)
+      const retryTime = secondListTime - startTime
+      expect(retryTime).toBeLessThan(5000)
+      expect(listCallCount).toBe(1) // Only counting second list call
     })
   })
 })

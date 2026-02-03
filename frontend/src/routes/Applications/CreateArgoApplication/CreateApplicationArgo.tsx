@@ -4,7 +4,7 @@ import { EditorValidationStatus, useData, useEditorValidationStatus, useItem } f
 import { ArgoWizard } from '../../../wizards/Argo/ArgoWizard'
 import { AcmToastContext } from '../../../ui-components'
 import { useContext, useEffect, useState } from 'react'
-import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
+import { useNavigate } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
 import { SyncEditor, ValidationStatus } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -19,9 +19,9 @@ import {
   GitOpsCluster,
   IResource,
 } from '../../../resources'
-import { createResources, listResources } from '../../../resources/utils'
-import { argoAppSetQueryString } from './actions'
-import schema from './schema.json'
+import { listResources } from '../../../resources/utils'
+import { createArgoResources } from './createArgoResources'
+import pushmodelschema from './pushmodelschema.json'
 import { LostChangesContext } from '../../../components/LostChanges'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { useTimezones } from '../../../hooks/useTimezone'
@@ -50,7 +50,7 @@ export function WizardSyncEditor() {
       editorTitle={t('Application set YAML')}
       variant="toolbar"
       resources={resources}
-      schema={schema}
+      schema={pushmodelschema}
       onEditorChange={(changes: { resources: any[] }): void => {
         update(changes?.resources)
       }}
@@ -142,28 +142,15 @@ export function CreateApplicationArgo() {
         cancelForm()
         navigate(NavigationPath.applications)
       }}
-      onSubmit={(data) => {
-        const resources = data as IResource[]
-        return createResources(resources).then(() => {
-          const applicationSet = resources.find((resource) => resource.kind === ApplicationSetKind)
-          if (applicationSet) {
-            toast.addAlert({
-              title: t('Application set created'),
-              message: t('{{name}} was successfully created.', { name: applicationSet.metadata?.name }),
-              type: 'success',
-              autoClose: true,
-            })
-          }
-          submitForm()
-          navigate({
-            pathname: generatePath(NavigationPath.applicationOverview, {
-              namespace: applicationSet?.metadata?.namespace ?? '',
-              name: applicationSet?.metadata?.name ?? '',
-            }),
-            search: argoAppSetQueryString,
-          })
+      onSubmit={(data) =>
+        createArgoResources({
+          resources: data as IResource[],
+          toast,
+          t,
+          submitForm,
+          navigate,
         })
-      }}
+      }
       timeZones={timeZones}
     />
   )

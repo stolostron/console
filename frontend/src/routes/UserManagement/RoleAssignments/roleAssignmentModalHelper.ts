@@ -10,7 +10,7 @@ import {
   getPlacementsForRoleAssignment,
 } from '../../../resources/clients/multicluster-role-assignment-client'
 import { Subject } from '../../../resources/kubernetes-client'
-import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
+import { MulticlusterRoleAssignment, RoleAssignment } from '../../../resources/multicluster-role-assignment'
 import { Placement } from '../../../resources/placement'
 import { IAlertContext } from '../../../ui-components'
 
@@ -65,10 +65,10 @@ export const saveRoleAssignment = (
   managedClusterSetBindings: ManagedClusterSetBinding[],
   placementClusters: PlacementClusters[],
   callbacks: {
-    onSuccess: (role: string) => void
+    onSuccess: (roleAssignment: RoleAssignment) => void
     onError: (role: string, error: unknown, isDuplicateError: boolean) => void
   }
-): Promise<void> => {
+): Promise<RoleAssignment> => {
   const lookupKey = `${roleAssignment.subject.kind}|${roleAssignment.subject.name}`
   const existingMulticlusterRoleAssignment = existingBySubjectRole.get(lookupKey)
   const existingManagedClusterSetBindings = findManagedClusterSetBinding(managedClusterSetBindings, {
@@ -82,10 +82,14 @@ export const saveRoleAssignment = (
     existingManagedClusterSetBindings,
     existingPlacements,
   })
-    .then(() => callbacks.onSuccess(roleAssignment.clusterRole))
+    .then((roleAssignment) => {
+      callbacks.onSuccess(roleAssignment)
+      return roleAssignment
+    })
     .catch((e) => {
       const isDuplicateError = e?.message?.includes('Duplicate role assignment detected')
       callbacks.onError(roleAssignment.clusterRole, e, isDuplicateError)
+      throw e
     })
 }
 
@@ -109,16 +113,16 @@ export const saveAllRoleAssignments = async (
   toastContext: IAlertContext,
   t: TFunction,
   isEditing = false
-): Promise<void> => {
+): Promise<RoleAssignment[]> =>
   await Promise.all(
     roleAssignmentsToSave.map((roleAssignment) =>
       saveRoleAssignment(roleAssignment, existingBySubjectRole, managedClusterSetBindings, placementClusters, {
-        onSuccess: (role) =>
+        onSuccess: (roleAssignment: RoleAssignment) =>
           toastContext.addAlert({
             title: isEditing ? t('Role assignment updated') : t('Role assignment added'),
             message: isEditing
-              ? t('A role assignment for {{role}} role updated.', { role })
-              : t('A role assignment for {{role}} role added.', { role }),
+              ? t('A role assignment for {{role}} role updated.', { role: roleAssignment.clusterRole })
+              : t('A role assignment for {{role}} role added.', { role: roleAssignment.clusterRole }),
             type: 'success',
             autoClose: true,
           }),
@@ -141,4 +145,3 @@ export const saveAllRoleAssignments = async (
       })
     )
   )
-}

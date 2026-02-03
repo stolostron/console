@@ -16,7 +16,7 @@ import { cellWidth } from '@patternfly/react-table'
 import { get } from 'lodash'
 import { useCallback, useContext, useMemo, useState } from 'react'
 import { TFunction } from 'react-i18next'
-import { generatePath, Link, useNavigate } from 'react-router-dom-v5-compat'
+import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { HighlightSearchText } from '../../components/HighlightSearchText'
 import { Pages, usePageVisitMetricHandler } from '../../hooks/console-metrics'
 import { useTranslation } from '../../lib/acm-i18next'
@@ -54,6 +54,8 @@ import {
   AcmEmptyState,
   AcmInlineStatusGroup,
   AcmTable,
+  AcmTableStateProvider,
+  AcmVisitedLink,
   compareStrings,
   IAcmRowAction,
   IAcmTableColumn,
@@ -166,7 +168,7 @@ export function getApplicationName(application: IApplicationResource, search: st
   }
   return (
     <span style={{ whiteSpace: 'nowrap' }}>
-      <Link
+      <AcmVisitedLink
         to={{
           pathname: generatePath(NavigationPath.applicationDetails, {
             namespace: application.metadata?.namespace!,
@@ -176,7 +178,7 @@ export function getApplicationName(application: IApplicationResource, search: st
         }}
       >
         <HighlightSearchText text={application.metadata?.name} searchText={search} isLink useFuzzyHighlighting />
-      </Link>
+      </AcmVisitedLink>
     </span>
   )
 }
@@ -229,7 +231,7 @@ export function getAppNamespace(resource: IResource) {
 
 export const getApplicationStatuses = (resource: IResource, type: 'health' | 'synced' | 'deployed') => {
   const uidata = (resource as IUIResource).uidata
-  const allCounts = Array(ScoreColumnSize).fill(0) as number[]
+  const allCounts = new Array(ScoreColumnSize).fill(0) as number[]
   if (
     Array.isArray(uidata?.appClusterStatuses) &&
     uidata.appClusterStatuses.length > 0 &&
@@ -269,7 +271,7 @@ const renderPopoverContent = (
             // Remove leading underscore and "condition" from the key
             let cleanedKey = message.key.replace(/^_/, '').replace(/^condition/i, '')
             // Add space before each capitalized letter
-            cleanedKey = cleanedKey.replace(/([A-Z])/g, ' $1')
+            cleanedKey = cleanedKey.replaceAll(/([A-Z])/g, ' $1')
             // Capitalize the first letter and trim any leading space
             cleanedKey = cleanedKey.charAt(0).toUpperCase() + cleanedKey.slice(1)
             cleanedKey = cleanedKey.trim()
@@ -1105,7 +1107,7 @@ export default function ApplicationsOverview() {
             id: 'create-argo-pull-model',
             text: t('Argo CD ApplicationSet - Pull model'),
             description: t(
-              'Considered the better choice for security. Managed clusters pull application resources directly from Git repositories.'
+              'Considered the better choice for security although you cannot deploy to hub cluster. Managed clusters pull application resources directly from Git repositories.'
             ),
             isDisabled: !canCreateApplicationSet,
             tooltip: !canCreateApplicationSet ? t('rbac.unauthorized') : '',
@@ -1216,31 +1218,33 @@ export default function ApplicationsOverview() {
     <PageSection hasBodyWrapper={false}>
       <DeleteResourceModal {...modalProps} />
       {pluginModal}
-      <AcmTable<IResource<ApplicationStatus>>
-        id={TABLE_ID}
-        key="data-table"
-        columns={columns}
-        keyFn={keyFn}
-        items={tableItems as IResource<ApplicationStatus>[]}
-        filters={filters}
-        setRequestView={setRequestedView}
-        resultView={resultView}
-        resultCounts={resultCounts}
-        fetchExport={fetchAggregateForExport}
-        customTableAction={appCreationButton}
-        additionalToolbarItems={additionalToolbarItems}
-        showExportButton
-        exportFilePrefix="applicationsoverview"
-        emptyState={
-          <AcmEmptyState
-            key="appOverviewEmptyState"
-            title={t("You don't have any applications yet")}
-            message={t('To get started, create an application.')}
-            action={emptyStateActions}
-          />
-        }
-        rowActionResolver={rowActionResolver}
-      />
+      <AcmTableStateProvider localStorageKey={'applications-overview-table-state'}>
+        <AcmTable<IResource<ApplicationStatus>>
+          id={TABLE_ID}
+          key="data-table"
+          columns={columns}
+          keyFn={keyFn}
+          items={tableItems as IResource<ApplicationStatus>[]}
+          filters={filters}
+          setRequestView={setRequestedView}
+          resultView={resultView}
+          resultCounts={resultCounts}
+          fetchExport={fetchAggregateForExport}
+          customTableAction={appCreationButton}
+          additionalToolbarItems={additionalToolbarItems}
+          showExportButton
+          exportFilePrefix="applicationsoverview"
+          emptyState={
+            <AcmEmptyState
+              key="appOverviewEmptyState"
+              title={t("You don't have any applications yet")}
+              message={t('To get started, create an application.')}
+              action={emptyStateActions}
+            />
+          }
+          rowActionResolver={rowActionResolver}
+        />
+      </AcmTableStateProvider>
     </PageSection>
   )
 }

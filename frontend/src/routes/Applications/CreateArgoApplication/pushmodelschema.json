@@ -1,0 +1,291 @@
+[
+  {
+    "type": "ApplicationSet",
+    "required": 1,
+    "schema": {
+      "type": "object",
+      "definitions": {
+        "clusterDecisionResourceGenerator": {
+          "type": "object",
+          "properties": {
+            "clusterDecisionResource": {
+              "type": "object",
+              "properties": {
+                "configMapRef": {
+                  "const": "acm-placement"
+                },
+                "labelSelector": {
+                  "type": "object",
+                  "properties": {
+                    "matchLabels": {
+                      "type": "object",
+                      "properties": {
+                        "cluster.open-cluster-management.io/placement": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["cluster.open-cluster-management.io/placement"]
+                    }
+                  },
+                  "required": ["matchLabels"]
+                },
+                "requeueAfterSeconds": {
+                  "type": "number"
+                }
+              }
+            }
+          },
+          "required": ["clusterDecisionResource"]
+        },
+        "gitGenerator": {
+          "type": "object",
+          "properties": {
+            "git": {
+              "type": "object"
+            }
+          },
+          "required": ["git"]
+        },
+        "listGenerator": {
+          "type": "object",
+          "properties": {
+            "list": {
+              "type": "object"
+            }
+          },
+          "required": ["list"]
+        },
+        "clustersGenerator": {
+          "type": "object",
+          "properties": {
+            "clusters": {
+              "type": "object",
+              "properties": {
+                "selector": {
+                  "type": "object"
+                }
+              },
+              "required": ["selector"]
+            }
+          },
+          "required": ["clusters"]
+        },
+        "scmProviderGenerator": {
+          "type": "object",
+          "properties": {
+            "scmProvider": {
+              "type": "object"
+            }
+          },
+          "required": ["scmProvider"]
+        },
+        "pullRequestGenerator": {
+          "type": "object",
+          "properties": {
+            "pullRequest": {
+              "type": "object"
+            }
+          },
+          "required": ["pullRequest"]
+        },
+        "pluginGenerator": {
+          "type": "object",
+          "properties": {
+            "plugin": {
+              "type": "object"
+            }
+          },
+          "required": ["plugin"]
+        },
+        "mergeGenerator": {
+          "type": "object",
+          "properties": {
+            "merge": {
+              "type": "object"
+            }
+          },
+          "required": ["merge"]
+        }
+      },
+      "properties": {
+        "apiVersion": {
+          "type": "string"
+        },
+        "kind": {
+          "const": "ApplicationSet"
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "validateName": true
+            },
+            "namespace": {
+              "validateName": true
+            }
+          },
+          "required": ["name", "namespace"]
+        },
+        "spec": {
+          "type": "object",
+          "properties": {
+            "generators": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/clusterDecisionResourceGenerator"
+                  },
+                  {
+                    "$ref": "#/definitions/gitGenerator"
+                  },
+                  {
+                    "$ref": "#/definitions/listGenerator"
+                  },
+                  {
+                    "$ref": "#/definitions/clustersGenerator"
+                  },
+                  {
+                    "$ref": "#/definitions/scmProviderGenerator"
+                  },
+                  {
+                    "$ref": "#/definitions/pullRequestGenerator"
+                  },
+                  {
+                    "$ref": "#/definitions/pluginGenerator"
+                  },
+                  {
+                    "properties": {
+                      "merge": {
+                        "type": "object"
+                      }
+                    },
+                    "required": ["merge"]
+                  },
+                  {
+                    "properties": {
+                      "matrix": {
+                        "type": "object",
+                        "properties": {
+                          "generators": {
+                            "validateGenerator": true,
+                            "type": "array",
+                            "contains": {
+                              "type": "object",
+                              "anyOf": [
+                                {
+                                  "$ref": "#/definitions/clusterDecisionResourceGenerator"
+                                },
+                                {
+                                  "$ref": "#/definitions/gitGenerator"
+                                },
+                                {
+                                  "$ref": "#/definitions/listGenerator"
+                                },
+                                {
+                                  "$ref": "#/definitions/clustersGenerator"
+                                },
+                                {
+                                  "$ref": "#/definitions/scmProviderGenerator"
+                                },
+                                {
+                                  "$ref": "#/definitions/pullRequestGenerator"
+                                },
+                                {
+                                  "$ref": "#/definitions/pluginGenerator"
+                                },
+                                {
+                                  "properties": {
+                                    "merge": {
+                                      "type": "object"
+                                    }
+                                  },
+                                  "required": ["merge"]
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        "required": ["generators"]
+                      }
+                    },
+                    "required": ["matrix"]
+                  }
+                ]
+              }
+            },
+            "template": {
+              "type": "object",
+              "properties": {
+                "metadata": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["name"]
+                },
+                "spec": {
+                  "type": "object",
+                  "properties": {
+                    "project": {
+                      "type": "string"
+                    },
+                    "destination": {
+                      "type": "object",
+                      "properties": {
+                        "namespace": {
+                          "type": "string"
+                        },
+                        "server": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "sources": {
+                      "type": "array"
+                    }
+                  },
+                  "required": ["project", "destination"]
+                }
+              },
+              "required": ["metadata", "spec"]
+            }
+          },
+          "required": ["generators", "template"]
+        }
+      },
+      "required": ["apiVersion", "metadata", "spec"]
+    }
+  },
+  {
+    "type": "Placement",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "apiVersion": {
+          "type": "string"
+        },
+        "kind": {
+          "type": "string",
+          "const": "Placement"
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "validateName": true
+            },
+            "namespace": {
+              "validateName": true
+            }
+          },
+          "required": ["name", "namespace"]
+        }
+      },
+      "required": ["apiVersion", "kind", "metadata"]
+    }
+  }
+]

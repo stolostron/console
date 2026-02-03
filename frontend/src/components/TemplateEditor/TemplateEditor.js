@@ -219,7 +219,7 @@ export default class TemplateEditor extends React.Component {
       previouslySelectedCards: [],
       notifications: [],
       otherYAMLTabs: [],
-      /* eslint-disable-next-line react/no-unused-state */
+
       hasFormExceptions: false,
       isFinalValidate: false,
       hasUndo: false,
@@ -1129,7 +1129,7 @@ export default class TemplateEditor extends React.Component {
 
     this.setState({
       notifications,
-      /* eslint-disable-next-line react/no-unused-state */
+
       hasFormExceptions: !canCreate,
       isFinalValidate: true,
     })

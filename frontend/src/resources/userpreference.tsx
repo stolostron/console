@@ -43,7 +43,6 @@ export function getUserPreference() {
   })
     .then((res) => res.data as UserPreference | undefined)
     .catch((error) => {
-      // eslint-disable-next-line no-console
       console.error(error)
       return undefined
     })
@@ -63,7 +62,6 @@ export async function createUserPreference(savedSearches: SavedSearch[]) {
   })
     .then((res) => res.data as UserPreference | undefined)
     .catch((error) => {
-      // eslint-disable-next-line no-console
       console.error(error)
       return undefined
     })
@@ -97,7 +95,6 @@ export function patchUserPreference(
   })
     .then((res) => res.data as UserPreference | undefined)
     .catch((error) => {
-      // eslint-disable-next-line no-console
       console.error(error)
       return undefined
     })

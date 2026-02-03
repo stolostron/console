@@ -68,8 +68,140 @@ describe('networking patch utils', () => {
       enableProxy: false,
       editProxy: false,
     })
-    expect(patches.length).toBe(6)
+    expect(patches.length).toBe(4)
   })
+
+  it('creates patches for clusterNetworks array', () => {
+    const aci: AgentClusterInstallK8sResource = {
+      spec: {
+        networking: {
+          userManagedNetworking: true,
+        },
+        platformType: 'BareMetal',
+        provisionRequirements: {
+          controlPlaneAgents: 0,
+        },
+      },
+    }
+    const patches = getNetworkingPatches(aci, {
+      managedNetworkingType: 'userManaged',
+      enableProxy: false,
+      editProxy: false,
+      clusterNetworks: [
+        { cidr: '10.128.0.0/14', hostPrefix: 23 },
+        { cidr: 'fd01::/48', hostPrefix: 64 },
+      ],
+    })
+
+    // Find the clusterNetwork patch
+    const clusterNetworkPatch = patches.find((p: any) => p.path === '/spec/networking/clusterNetwork')
+    expect(clusterNetworkPatch).toBeDefined()
+    expect(clusterNetworkPatch.value).toEqual([
+      { cidr: '10.128.0.0/14', hostPrefix: 23 },
+      { cidr: 'fd01::/48', hostPrefix: 64 },
+    ])
+  })
+
+  it('creates patches for serviceNetworks array', () => {
+    const aci: AgentClusterInstallK8sResource = {
+      spec: {
+        networking: {
+          userManagedNetworking: true,
+        },
+        platformType: 'BareMetal',
+        provisionRequirements: {
+          controlPlaneAgents: 0,
+        },
+      },
+    }
+    const patches = getNetworkingPatches(aci, {
+      managedNetworkingType: 'userManaged',
+      enableProxy: false,
+      editProxy: false,
+      serviceNetworks: [{ cidr: '172.30.0.0/16' }, { cidr: 'fd02::/112' }],
+    })
+
+    // Find the serviceNetwork patch
+    const serviceNetworkPatch = patches.find((p: any) => p.path === '/spec/networking/serviceNetwork')
+    expect(serviceNetworkPatch).toBeDefined()
+    // serviceNetworks maps to just the cidr values (not objects)
+    expect(serviceNetworkPatch.value).toEqual(['172.30.0.0/16', 'fd02::/112'])
+  })
+
+  it('creates patches for machineNetworks array', () => {
+    const aci: AgentClusterInstallK8sResource = {
+      spec: {
+        networking: {
+          userManagedNetworking: true,
+        },
+        platformType: 'BareMetal',
+        provisionRequirements: {
+          controlPlaneAgents: 3,
+        },
+      },
+    }
+    const patches = getNetworkingPatches(aci, {
+      managedNetworkingType: 'userManaged',
+      enableProxy: false,
+      editProxy: false,
+      machineNetworks: [{ cidr: '192.168.1.0/24' }, { cidr: 'fd03::/64' }],
+    })
+
+    const machineNetworkPatch = patches.find((p: any) => p.path === '/spec/networking/machineNetwork')
+    expect(machineNetworkPatch).toBeDefined()
+    expect(machineNetworkPatch.value).toEqual([{ cidr: '192.168.1.0/24' }, { cidr: 'fd03::/64' }])
+  })
+
+  it('creates patches for apiVIPs array', () => {
+    const aci: AgentClusterInstallK8sResource = {
+      spec: {
+        networking: {
+          userManagedNetworking: false,
+        },
+        platformType: 'BareMetal',
+        provisionRequirements: {
+          controlPlaneAgents: 0,
+        },
+      },
+    }
+    const patches = getNetworkingPatches(aci, {
+      managedNetworkingType: 'clusterManaged',
+      enableProxy: false,
+      editProxy: false,
+      apiVips: [{ ip: '10.0.0.100' }, { ip: '2001:db8::100' }],
+    })
+
+    // apiVIPs should be an array of IP strings
+    const apiVIPsPatch = patches.find((p: any) => p.path === '/spec/apiVIPs')
+    expect(apiVIPsPatch).toBeDefined()
+    expect(apiVIPsPatch.value).toEqual(['10.0.0.100', '2001:db8::100'])
+  })
+
+  it('creates patches for ingressVIPs array', () => {
+    const aci: AgentClusterInstallK8sResource = {
+      spec: {
+        networking: {
+          userManagedNetworking: false,
+        },
+        platformType: 'BareMetal',
+        provisionRequirements: {
+          controlPlaneAgents: 0,
+        },
+      },
+    }
+    const patches = getNetworkingPatches(aci, {
+      managedNetworkingType: 'clusterManaged',
+      enableProxy: false,
+      editProxy: false,
+      ingressVips: [{ ip: '10.0.0.101' }, { ip: '2001:db8::101' }],
+    })
+
+    // ingressVIPs should be an array of IP strings
+    const ingressVIPsPatch = patches.find((p: any) => p.path === '/spec/ingressVIPs')
+    expect(ingressVIPsPatch).toBeDefined()
+    expect(ingressVIPsPatch.value).toEqual(['10.0.0.101', '2001:db8::101'])
+  })
+
   it('enables cluster networking', () => {
     const aci: AgentClusterInstallK8sResource = {
       spec: {

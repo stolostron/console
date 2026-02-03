@@ -14,6 +14,17 @@ jest.mock('./UsersTable', () => ({
   )),
 }))
 
+// Mock AcmTableStateProvider
+jest.mock('../../../../ui-components', () => ({
+  AcmTableStateProvider: jest.fn(
+    ({ children, localStorageKey }: { children: React.ReactNode; localStorageKey: string }) => (
+      <div data-testid="acm-table-state-provider" data-localstorage-key={localStorageKey}>
+        {children}
+      </div>
+    )
+  ),
+}))
+
 jest.mock('../../../../shared-recoil', () => ({
   useRecoilValue: jest.fn(() => []),
   useSharedAtoms: jest.fn(() => ({ usersState: {} })),
@@ -47,5 +58,21 @@ describe('UsersTablePage', () => {
     const usersTable = container.querySelector('[data-testid="mocked-users-table"]')
     expect(usersTable).toBeInTheDocument()
     expect(usersTable).toHaveAttribute('data-hiddencolumns', '["radio"]')
+  })
+
+  test('should wrap UsersTable with AcmTableStateProvider using correct localStorageKey', () => {
+    const { container } = render(<Component />)
+
+    const provider = container.querySelector('[data-testid="acm-table-state-provider"]')
+    expect(provider).toBeInTheDocument()
+    expect(provider).toHaveAttribute('data-localstorage-key', 'identities-users-table-state')
+  })
+
+  test('should render UsersTable as a child of AcmTableStateProvider', () => {
+    const { container } = render(<Component />)
+
+    const provider = container.querySelector('[data-testid="acm-table-state-provider"]')
+    const usersTable = provider?.querySelector('[data-testid="mocked-users-table"]')
+    expect(usersTable).toBeInTheDocument()
   })
 })

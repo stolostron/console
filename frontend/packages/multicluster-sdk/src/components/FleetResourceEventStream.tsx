@@ -158,7 +158,6 @@ export const FleetResourceEventStream: FC<FleetResourceEventStreamProps> = ({ re
               case 'DELETED':
                 return topEvents.filter((e) => e?.metadata?.uid !== uid)
               default:
-                // eslint-disable-next-line no-console
                 console.error(`UNHANDLED EVENT: ${eventType}`)
                 return topEvents
             }

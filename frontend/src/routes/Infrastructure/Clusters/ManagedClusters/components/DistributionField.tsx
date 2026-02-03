@@ -3,7 +3,7 @@
 import { HostedClusterK8sResourceWithChannel } from '../../../../../resources/hosted-cluster'
 import { Button, ButtonVariant, Icon } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExclamationTriangleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { Fragment, ReactNode, useMemo, useState } from 'react'
+import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom-v5-compat'
 import { RbacButton } from '../../../../../components/Rbac'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -39,6 +39,7 @@ export function DistributionField(props: {
   const [open, toggleOpen] = useState<boolean>(false)
   const toggle = () => toggleOpen(!open)
   const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
+  const [channelSelectionPending, setChannelSelectionPending] = useState<boolean>(false)
   const { ansibleJobState, clusterImageSetsState, agentMachinesState, agentsState } = useSharedAtoms()
   const ansibleJobs = useRecoilValue(ansibleJobState)
   const agents = useRecoilValue(agentsState)
@@ -111,21 +112,36 @@ export function DistributionField(props: {
     props.resource,
   ])
 
+  // Track if curator is selecting channel (from cluster status or local pending state)
+  const isSelectingChannel = props.cluster?.distribution?.upgradeInfo?.isSelectingChannel
+
+  // Clear pending state when cluster status catches up
+  useEffect(() => {
+    if (isSelectingChannel) {
+      setChannelSelectionPending(false)
+    }
+  }, [isSelectingChannel])
+
+  // Don't show the Select channel button if curator is working on channel selection
+  const isChannelSelectionInProgress = isSelectingChannel || channelSelectionPending
+
   const renderChannelWarning = (): JSX.Element | null => {
+    // Check if curator already has a channel set (channel selection was initiated)
     const hasNoChannel =
       props.cluster?.isHypershift &&
       props.hostedCluster &&
       !props.hostedCluster.spec?.channel &&
+      !isChannelSelectionInProgress &&
       props.resource !== 'nodepool'
 
-    if (!hasNoChannel) return null
+    // Don't show warning if no channel issue or if channel selection is in progress
+    if (!hasNoChannel || isChannelSelectionInProgress) return null
 
     return (
       <span style={{ whiteSpace: 'nowrap', display: 'block' }}>
         <Icon status="warning" size="sm">
           <ExclamationTriangleIcon />
         </Icon>{' '}
-        {t('upgrade.channel.not.configured')} -{' '}
         <RbacButton
           onClick={() => setShowChannelSelectModal(true)}
           variant={ButtonVariant.link}
@@ -147,6 +163,7 @@ export function DistributionField(props: {
           hostedClusters={
             props.hostedCluster && props.cluster?.name ? { [props.cluster.name]: props.hostedCluster } : undefined
           }
+          onSuccess={() => setChannelSelectionPending(true)}
         />
       </span>
     )

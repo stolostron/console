@@ -87,7 +87,7 @@ exports[`ControlPanelMultiSelect component renders as expected 1`] = `
                     placeholder="None"
                     role="combobox"
                     type="text"
-                    value="None"
+                    value=""
                   />
                 </span>
               </div>
