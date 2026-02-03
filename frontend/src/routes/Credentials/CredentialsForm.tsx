@@ -1541,7 +1541,7 @@ export function CredentialsForm(
     cancelLabel: t('Cancel'),
     nextLabel: t('Next'),
     backLabel: t('Back'),
-    back: handleModalToggle ? guardedHandleModalToggle : back(NavigationPath.credentials),
+    back: handleModalToggle ? guardedHandleModalToggle : back(NavigationPath.addCredentials),
     cancel: handleModalToggle ? guardedHandleModalToggle : cancel(NavigationPath.credentials),
     stateToSyncs,
     stateToData,

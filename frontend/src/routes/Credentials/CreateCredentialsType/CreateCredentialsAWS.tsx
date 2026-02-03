@@ -69,8 +69,8 @@ export function CreateCredentialsAWS() {
           items={cards}
           itemKeyFn={keyFn}
           itemToCardFn={(card) => card}
-          onBack={back(NavigationPath.createCluster)}
-          onCancel={cancel(NavigationPath.clusters)}
+          onBack={back(NavigationPath.addCredentials)}
+          onCancel={cancel(NavigationPath.credentials)}
         />
       </DataViewStringContext.Provider>
     </AcmPage>
