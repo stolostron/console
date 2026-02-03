@@ -250,24 +250,37 @@ export const useFindRoleAssignments = (query: MulticlusterRoleAssignmentQuery): 
  * @param roleAssignment - The role assignment to generate a name for
  * @returns A 16-character hash string as the role assignment name
  */
-const getRoleAssignmentName = (roleAssignment: RoleAssignmentToSave): string => {
-  const sortedKeys = Object.keys(roleAssignment).sort((a, b) => a.localeCompare(b))
-  const sortedObject: any = {}
-  for (const key of sortedKeys) {
-    const value = roleAssignment[key as keyof typeof roleAssignment]
+const ARRAY_KEYS_FOR_NAME = ['clusterNames', 'clusterSetNames', 'targetNamespaces']
 
-    if (['targetNamespaces', 'clusterNames', 'clusterSetNames'].includes(key) && value && Array.isArray(value)) {
-      sortedObject[key] = [...value].sort((a, b) => a.localeCompare(b))
+export const getRoleAssignmentName = (roleAssignment: RoleAssignmentToSave): string => {
+  const allKeys = [...new Set([...Object.keys(roleAssignment), ...ARRAY_KEYS_FOR_NAME])].sort((a, b) =>
+    a.localeCompare(b)
+  )
+  const sortedObject = allKeys.reduce<Record<string, unknown>>((acc, key) => {
+    const value = roleAssignment[key as keyof RoleAssignmentToSave]
+    if (ARRAY_KEYS_FOR_NAME.includes(key)) {
+      const arr = Array.isArray(value) && value.length > 0 ? value : []
+      acc[key] = arr.length > 0 ? [...arr].sort((a, b) => a.localeCompare(b)) : []
     } else {
-      sortedObject[key] = value
+      acc[key] = value
+    }
+    return acc
+  }, {})
+
+  const emptyValuesToUndefinedReplacer = (_k: any, value: any) => {
+    switch (true) {
+      case value !== undefined && Array.isArray(value) && value.length === 0:
+      case value !== undefined && typeof value === 'object' && Object.keys(value).length === 0:
+      case value !== undefined && typeof value === 'string' && value.trim().length === 0:
+        return undefined
+      default:
+        return value
     }
   }
-  const stringified = JSON.stringify(sortedObject)
 
+  const stringified = JSON.stringify(sortedObject, emptyValuesToUndefinedReplacer)
   const hash = sha256(stringified)
-
-  const shortHash = hash.substring(0, 16)
-  return shortHash
+  return hash.substring(0, 16)
 }
 
 /**

@@ -27,7 +27,7 @@ export const wizardDataToRoleAssignmentToSave = (
   const clusterNames = isGlobalScope ? undefined : getClusterNames(data, allClusterNames)
   const clusterSetNames = isGlobalScope ? undefined : getClusterSetNames(data)
 
-  const targetNamespaces = data.scope.namespaces
+  const targetNamespaces = data.scope?.namespaces
 
   return data.roles.reduce<RoleAssignmentToSave[]>(
     (acc, role) => [

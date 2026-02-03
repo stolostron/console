@@ -597,6 +597,107 @@ export const duplicateDetectionTestCases: DuplicateDetectionTestCase[] = [
 ]
 
 /**
+ * Test case fixture for getRoleAssignmentName: pairs of RoleAssignmentToSave that differ only
+ * by undefined vs empty array for targetNamespaces, clusterNames, or clusterSetNames.
+ * Both entries in each pair must produce the same hash name.
+ */
+export interface GetRoleAssignmentNameEquivalentPairTestCase {
+  description: string
+  roleAssignmentA: RoleAssignmentToSave
+  roleAssignmentB: RoleAssignmentToSave
+}
+
+export const getRoleAssignmentNameEquivalentPairTestCases: GetRoleAssignmentNameEquivalentPairTestCase[] = [
+  {
+    description: 'same name when targetNamespaces is undefined vs empty array',
+    roleAssignmentA: {
+      clusterRole: 'admin',
+      clusterNames: ['cluster-a'],
+      clusterSetNames: [],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+    },
+    roleAssignmentB: {
+      clusterRole: 'admin',
+      clusterNames: ['cluster-a'],
+      clusterSetNames: [],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+      targetNamespaces: [],
+    },
+  },
+  {
+    description: 'same name when clusterNames is undefined vs empty array',
+    roleAssignmentA: {
+      clusterRole: 'admin',
+      clusterSetNames: ['cs01'],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+      targetNamespaces: [],
+    },
+    roleAssignmentB: {
+      clusterRole: 'admin',
+      clusterNames: [],
+      clusterSetNames: ['cs01'],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+      targetNamespaces: [],
+    },
+  },
+  {
+    description: 'same name when clusterSetNames is undefined vs empty array',
+    roleAssignmentA: {
+      clusterRole: 'admin',
+      clusterNames: ['cluster-a'],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+      targetNamespaces: [],
+    },
+    roleAssignmentB: {
+      clusterRole: 'admin',
+      clusterNames: ['cluster-a'],
+      clusterSetNames: [],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+      targetNamespaces: [],
+    },
+  },
+  {
+    description: 'same name when all three array properties are undefined vs all empty arrays',
+    roleAssignmentA: {
+      clusterRole: 'viewer',
+      subject: { name: 'user2', kind: UserKind },
+      isGlobalScope: true,
+      targetNamespaces: [],
+    },
+    roleAssignmentB: {
+      clusterRole: 'viewer',
+      clusterNames: [],
+      clusterSetNames: [],
+      subject: { name: 'user2', kind: UserKind },
+      isGlobalScope: true,
+      targetNamespaces: [],
+    },
+  },
+  {
+    description: 'same name when targetNamespaces is undefined (omitted) vs empty in minimal assignment',
+    roleAssignmentA: {
+      clusterRole: 'admin',
+      clusterNames: ['cluster-a'],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+    },
+    roleAssignmentB: {
+      clusterRole: 'admin',
+      clusterNames: ['cluster-a'],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+      targetNamespaces: [],
+    },
+  },
+]
+
+/**
  * Test case fixture for getClustersForRoleAssignment deduplication and sorting
  * Tests that the function returns unique cluster names without duplicates, sorted alphabetically
  */

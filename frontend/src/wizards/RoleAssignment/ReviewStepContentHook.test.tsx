@@ -30,8 +30,8 @@ describe('useReviewStepContent', () => {
     it('returns "Full access" when no namespaces and not editing', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [] },
-          newData: { clusterNames: [] },
+          oldData: { clusterNames: [], namespaces: [] },
+          newData: { clusterNames: [], namespaces: [] },
           isEditing: false,
         })
       )
@@ -57,7 +57,7 @@ describe('useReviewStepContent', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
           oldData: { clusterNames: [], namespaces: ['ns1', 'ns2'] },
-          newData: { clusterNames: [] },
+          newData: { clusterNames: [], namespaces: [] },
           isEditing: true,
         })
       )
@@ -69,7 +69,7 @@ describe('useReviewStepContent', () => {
     it('returns diff JSX when editing and namespaces changed from full access to specific', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [] },
+          oldData: { clusterNames: [], namespaces: [] },
           newData: { clusterNames: [], namespaces: ['ns1', 'ns2'] },
           isEditing: true,
         })
@@ -118,10 +118,10 @@ describe('useReviewStepContent', () => {
       expect(React.isValidElement(display)).toBe(true)
     })
 
-    it('handles undefined namespaces in oldData', () => {
+    it('handles empty namespaces in oldData (full access to specific)', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [] },
+          oldData: { clusterNames: [], namespaces: [] },
           newData: { clusterNames: [], namespaces: ['ns1'] },
           isEditing: true,
         })
@@ -131,11 +131,11 @@ describe('useReviewStepContent', () => {
       expect(React.isValidElement(display)).toBe(true)
     })
 
-    it('handles undefined namespaces in newData', () => {
+    it('handles empty namespaces in newData (specific to full access)', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
           oldData: { clusterNames: [], namespaces: ['ns1'] },
-          newData: { clusterNames: [] },
+          newData: { clusterNames: [], namespaces: [] },
           isEditing: true,
         })
       )
@@ -163,9 +163,10 @@ describe('useReviewStepContent', () => {
     it('returns cluster names from selectedClusters with metadata.name', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [] },
+          oldData: { clusterNames: [], namespaces: [] },
           newData: {
-            clusterNames: [{ metadata: { name: 'cluster-1' } }, { metadata: { name: 'cluster-2' } }],
+            clusterNames: ['cluster-1', 'cluster-2'],
+            namespaces: [],
           },
           isEditing: false,
         })
@@ -177,9 +178,10 @@ describe('useReviewStepContent', () => {
     it('returns cluster names from selectedClusters with name property', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [] },
+          oldData: { clusterNames: [], namespaces: [] },
           newData: {
-            clusterNames: [{ name: 'cluster-1' }, { name: 'cluster-2' }],
+            clusterNames: ['cluster-1', 'cluster-2'],
+            namespaces: [],
           },
           isEditing: false,
         })
@@ -191,9 +193,10 @@ describe('useReviewStepContent', () => {
     it('returns cluster names from selectedClusters as strings', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [] },
+          oldData: { clusterNames: [], namespaces: [] },
           newData: {
             clusterNames: ['cluster-1', 'cluster-2'],
+            namespaces: [],
           },
           isEditing: false,
         })
@@ -205,8 +208,8 @@ describe('useReviewStepContent', () => {
     it('returns cluster names from oldData.clusterNames when selectedClusters is empty', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: ['old-cluster-1', 'old-cluster-2'] },
-          newData: { clusterNames: [] },
+          oldData: { clusterNames: ['old-cluster-1', 'old-cluster-2'], namespaces: [] },
+          newData: { clusterNames: [], namespaces: [] },
           isEditing: false,
         })
       )
@@ -217,8 +220,8 @@ describe('useReviewStepContent', () => {
     it('returns null when both selectedClusters and clusterNames are empty', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [] },
-          newData: { clusterNames: [] },
+          oldData: { clusterNames: [], namespaces: [] },
+          newData: { clusterNames: [], namespaces: [] },
           isEditing: false,
         })
       )
@@ -226,11 +229,11 @@ describe('useReviewStepContent', () => {
       expect(result.current.clusterNames).toBeNull()
     })
 
-    it('returns null when both selectedClusters and clusterNames are undefined', () => {
+    it('returns null when both selectedClusters and clusterNames are empty arrays', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: undefined },
-          newData: { clusterNames: undefined },
+          oldData: { clusterNames: [], namespaces: [] },
+          newData: { clusterNames: [], namespaces: [] },
           isEditing: false,
         })
       )
@@ -241,9 +244,10 @@ describe('useReviewStepContent', () => {
     it('prioritizes selectedClusters over oldData.clusterNames', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: ['old-cluster'] },
+          oldData: { clusterNames: ['old-cluster'], namespaces: [] },
           newData: {
-            clusterNames: [{ metadata: { name: 'new-cluster' } }],
+            clusterNames: ['new-cluster'],
+            namespaces: [],
           },
           isEditing: false,
         })
@@ -255,9 +259,10 @@ describe('useReviewStepContent', () => {
     it('handles mixed cluster formats', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [] },
+          oldData: { clusterNames: [], namespaces: [] },
           newData: {
-            clusterNames: [{ metadata: { name: 'cluster-1' } }, { name: 'cluster-2' }, 'cluster-3'],
+            clusterNames: ['cluster-1', 'cluster-2', 'cluster-3'],
+            namespaces: [],
           },
           isEditing: false,
         })
@@ -271,9 +276,10 @@ describe('useReviewStepContent', () => {
     it('returns current cluster names when not editing', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: ['old-cluster'] },
+          oldData: { clusterNames: ['old-cluster'], namespaces: [] },
           newData: {
-            clusterNames: [{ metadata: { name: 'new-cluster' } }],
+            clusterNames: ['new-cluster'],
+            namespaces: [],
           },
           isEditing: false,
         })
@@ -286,8 +292,8 @@ describe('useReviewStepContent', () => {
     it('returns "None selected" when no clusters and not editing', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [] },
-          newData: { clusterNames: [] },
+          oldData: { clusterNames: [], namespaces: [] },
+          newData: { clusterNames: [], namespaces: [] },
           isEditing: false,
         })
       )
@@ -299,9 +305,10 @@ describe('useReviewStepContent', () => {
     it('returns current clusters when editing but unchanged', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: ['cluster-1'] },
+          oldData: { clusterNames: ['cluster-1'], namespaces: [] },
           newData: {
-            clusterNames: [{ metadata: { name: 'cluster-1' } }],
+            clusterNames: ['cluster-1'],
+            namespaces: [],
           },
           isEditing: true,
         })
@@ -314,9 +321,10 @@ describe('useReviewStepContent', () => {
     it('returns diff JSX when editing and clusters changed', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: ['old-cluster'] },
+          oldData: { clusterNames: ['old-cluster'], namespaces: [] },
           newData: {
-            clusterNames: [{ metadata: { name: 'new-cluster' } }],
+            clusterNames: ['new-cluster'],
+            namespaces: [],
           },
           isEditing: true,
         })
@@ -329,8 +337,8 @@ describe('useReviewStepContent', () => {
     it('uses oldData.clusterNames as fallback for current when currentClusterNames is null', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: ['fallback-cluster'] },
-          newData: { clusterNames: [] },
+          oldData: { clusterNames: ['fallback-cluster'], namespaces: [] },
+          newData: { clusterNames: [], namespaces: [] },
           isEditing: false,
         })
       )
@@ -342,8 +350,8 @@ describe('useReviewStepContent', () => {
     it('returns "None selected" when both original and current are empty', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [] },
-          newData: { clusterNames: [] },
+          oldData: { clusterNames: [], namespaces: [] },
+          newData: { clusterNames: [], namespaces: [] },
           isEditing: true,
         })
       )
@@ -355,9 +363,10 @@ describe('useReviewStepContent', () => {
     it('handles change from "None selected" to clusters', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [] },
+          oldData: { clusterNames: [], namespaces: [] },
           newData: {
-            clusterNames: [{ metadata: { name: 'new-cluster' } }],
+            clusterNames: ['new-cluster'],
+            namespaces: [],
           },
           isEditing: true,
         })
@@ -370,9 +379,10 @@ describe('useReviewStepContent', () => {
     it('shows diff when clusters change from one set to another', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: ['old-cluster-1'] },
+          oldData: { clusterNames: ['old-cluster-1'], namespaces: [] },
           newData: {
-            clusterNames: [{ metadata: { name: 'new-cluster-2' } }],
+            clusterNames: ['new-cluster-2'],
+            namespaces: [],
           },
           isEditing: true,
         })
@@ -387,8 +397,8 @@ describe('useReviewStepContent', () => {
     it('returns current role when not editing', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [], role: 'old-role' },
-          newData: { clusterNames: [], role: 'new-role' },
+          oldData: { clusterNames: [], namespaces: [], role: 'old-role' },
+          newData: { clusterNames: [], namespaces: [], role: 'new-role' },
           isEditing: false,
         })
       )
@@ -400,8 +410,8 @@ describe('useReviewStepContent', () => {
     it('returns "No role selected" when no role and not editing', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [] },
-          newData: { clusterNames: [] },
+          oldData: { clusterNames: [], namespaces: [] },
+          newData: { clusterNames: [], namespaces: [] },
           isEditing: false,
         })
       )
@@ -413,8 +423,8 @@ describe('useReviewStepContent', () => {
     it('returns current role when editing but unchanged', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [], role: 'admin-role' },
-          newData: { clusterNames: [], role: 'admin-role' },
+          oldData: { clusterNames: [], namespaces: [], role: 'admin-role' },
+          newData: { clusterNames: [], namespaces: [], role: 'admin-role' },
           isEditing: true,
         })
       )
@@ -426,8 +436,8 @@ describe('useReviewStepContent', () => {
     it('returns diff JSX when editing and role changed', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [], role: 'old-role' },
-          newData: { clusterNames: [], role: 'new-role' },
+          oldData: { clusterNames: [], namespaces: [], role: 'old-role' },
+          newData: { clusterNames: [], namespaces: [], role: 'new-role' },
           isEditing: true,
         })
       )
@@ -439,8 +449,8 @@ describe('useReviewStepContent', () => {
     it('handles change from "No role selected" to role', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [] },
-          newData: { clusterNames: [], role: 'new-role' },
+          oldData: { clusterNames: [], namespaces: [] },
+          newData: { clusterNames: [], namespaces: [], role: 'new-role' },
           isEditing: true,
         })
       )
@@ -452,8 +462,8 @@ describe('useReviewStepContent', () => {
     it('handles change from role to "No role selected"', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [], role: 'old-role' },
-          newData: { clusterNames: [] },
+          oldData: { clusterNames: [], namespaces: [], role: 'old-role' },
+          newData: { clusterNames: [], namespaces: [] },
           isEditing: true,
         })
       )
@@ -465,8 +475,8 @@ describe('useReviewStepContent', () => {
     it('handles undefined role in oldData', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [] },
-          newData: { clusterNames: [], role: 'new-role' },
+          oldData: { clusterNames: [], namespaces: [] },
+          newData: { clusterNames: [], namespaces: [], role: 'new-role' },
           isEditing: true,
         })
       )
@@ -478,8 +488,8 @@ describe('useReviewStepContent', () => {
     it('handles undefined role in newData', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [], role: 'old-role' },
-          newData: { clusterNames: [] },
+          oldData: { clusterNames: [], namespaces: [], role: 'old-role' },
+          newData: { clusterNames: [], namespaces: [] },
           isEditing: true,
         })
       )
@@ -493,9 +503,10 @@ describe('useReviewStepContent', () => {
     it('returns user name when subject is User', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [] },
+          oldData: { clusterNames: [], namespaces: [] },
           newData: {
             clusterNames: [],
+            namespaces: [],
             subject: { kind: 'User', user: ['test-user'] },
           },
           isEditing: false,
@@ -509,9 +520,10 @@ describe('useReviewStepContent', () => {
     it('returns group name when subject is Group', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [] },
+          oldData: { clusterNames: [], namespaces: [] },
           newData: {
             clusterNames: [],
+            namespaces: [],
             subject: { kind: 'Group', group: ['test-group'] },
           },
           isEditing: false,
@@ -525,9 +537,10 @@ describe('useReviewStepContent', () => {
     it('displays value from preselected when editing with same value', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [], subject: { kind: 'User', value: 'preselected-user' } },
+          oldData: { clusterNames: [], namespaces: [], subject: { kind: 'User', value: 'preselected-user' } },
           newData: {
             clusterNames: [],
+            namespaces: [],
             subject: { kind: 'User', user: ['preselected-user'] },
           },
           isEditing: false,
@@ -541,8 +554,8 @@ describe('useReviewStepContent', () => {
     it('returns "Not selected" when subject is undefined', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [] },
-          newData: { clusterNames: [] },
+          oldData: { clusterNames: [], namespaces: [] },
+          newData: { clusterNames: [], namespaces: [] },
           isEditing: false,
         })
       )
@@ -554,9 +567,10 @@ describe('useReviewStepContent', () => {
     it('returns current identity when editing but unchanged', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [], subject: { kind: 'User', value: 'test-user' } },
+          oldData: { clusterNames: [], namespaces: [], subject: { kind: 'User', value: 'test-user' } },
           newData: {
             clusterNames: [],
+            namespaces: [],
             subject: { kind: 'User', user: ['test-user'] },
           },
           isEditing: true,
@@ -570,9 +584,10 @@ describe('useReviewStepContent', () => {
     it('returns diff JSX when editing and identity changed', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [], subject: { kind: 'User', value: 'old-user' } },
+          oldData: { clusterNames: [], namespaces: [], subject: { kind: 'User', value: 'old-user' } },
           newData: {
             clusterNames: [],
+            namespaces: [],
             subject: { kind: 'User', user: ['new-user'] },
           },
           isEditing: true,
@@ -586,9 +601,10 @@ describe('useReviewStepContent', () => {
     it('returns diff JSX when identity kind changed', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [], subject: { kind: 'User', value: 'test-user' } },
+          oldData: { clusterNames: [], namespaces: [], subject: { kind: 'User', value: 'test-user' } },
           newData: {
             clusterNames: [],
+            namespaces: [],
             subject: { kind: 'Group', group: ['test-group'] },
           },
           isEditing: true,
@@ -602,9 +618,10 @@ describe('useReviewStepContent', () => {
     it('handles change from User to Group', () => {
       const { result } = renderHook(() =>
         useReviewStepContent({
-          oldData: { clusterNames: [], subject: { kind: 'User', value: 'user-1' } },
+          oldData: { clusterNames: [], namespaces: [], subject: { kind: 'User', value: 'user-1' } },
           newData: {
             clusterNames: [],
+            namespaces: [],
             subject: { kind: 'Group', group: ['group-1'] },
           },
           isEditing: true,
@@ -626,7 +643,7 @@ describe('useReviewStepContent', () => {
             role: 'old-role',
           },
           newData: {
-            clusterNames: [{ metadata: { name: 'new-cluster' } }],
+            clusterNames: ['new-cluster'],
             namespaces: ['new-ns'],
             role: 'new-role',
           },
@@ -649,7 +666,7 @@ describe('useReviewStepContent', () => {
             role: 'admin',
           },
           newData: {
-            clusterNames: [{ metadata: { name: 'cluster-1' } }],
+            clusterNames: ['cluster-1'],
             namespaces: ['ns1'],
             role: 'admin',
           },
@@ -671,9 +688,10 @@ describe('useReviewStepContent', () => {
         useReviewStepContent({
           oldData: {
             clusterNames: [],
+            namespaces: [],
           },
           newData: {
-            clusterNames: [{ metadata: { name: 'cluster-1' } }],
+            clusterNames: ['cluster-1'],
             namespaces: ['ns1', 'ns2'],
             role: 'viewer',
           },

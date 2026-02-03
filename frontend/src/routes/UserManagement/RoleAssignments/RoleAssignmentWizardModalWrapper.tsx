@@ -48,32 +48,34 @@ export const RoleAssignmentWizardModalWrapper = ({
         allRoleAssignmentNames.has(savedRoleAssignment.name)
       )
       if (allSaved) {
-        setSavedRoleAssignments([])
-        setIsSaving(false)
-        close()
+        if (editingRoleAssignment) {
+          deleteRoleAssignment(editingRoleAssignment)
+            .promise.catch((error: any) => {
+              toastContext.addAlert({
+                title: t('Role assignment update failed'),
+                message: t("The role assignment can't be deleted. Error: {{error}}", {
+                  error: (error as Error).message,
+                }),
+                type: 'danger',
+                autoClose: true,
+              })
+            })
+            .finally(() => {
+              setSavedRoleAssignments([])
+              setIsSaving(false)
+              close()
+            })
+        } else {
+          setSavedRoleAssignments([])
+          setIsSaving(false)
+          close()
+        }
       }
     }
-  }, [savedRoleAssignments, multiClusterRoleAssignments, close])
+  }, [savedRoleAssignments, multiClusterRoleAssignments, close, editingRoleAssignment, toastContext, t])
 
   const saveFromWizard = async (data: RoleAssignmentWizardFormData) => {
     setIsSaving(true)
-    if (editingRoleAssignment) {
-      try {
-        await deleteRoleAssignment(editingRoleAssignment).promise
-      } catch (error: any) {
-        toastContext.addAlert({
-          title: t('Role assignment update failed'),
-          message: t("The role assignment can't be updated. Error: {{error}}", {
-            error: (error as Error).message,
-          }),
-          type: 'danger',
-          autoClose: true,
-        })
-        setIsSaving(false)
-        close()
-        return
-      }
-    }
 
     const allClusterNames = [...new Set(placementClusters.flatMap((placementCluster) => placementCluster.clusters))]
 

@@ -932,7 +932,6 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
               {new Array(10).fill(
                 <>
                   <Skeleton width="100%" role="progressbar" screenreaderText="Loading" />
-                  <br />
                 </>
               )}
             </Fragment>

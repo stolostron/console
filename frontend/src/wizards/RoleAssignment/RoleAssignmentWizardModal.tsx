@@ -1,27 +1,24 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { DataContext } from '@patternfly-labs/react-form-wizard/lib/src/contexts/DataContext'
 import { ItemContext } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ItemContext'
-import { Drawer, DrawerContent, SelectOption, Wizard, WizardHeader, WizardStep } from '@patternfly/react-core'
+import { Drawer, DrawerContent, Wizard, WizardHeader, WizardStep } from '@patternfly/react-core'
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS } from '../../lib/doc-util'
-import { isType } from '../../lib/is-type'
 import { GroupKind, ManagedClusterSet, UserKind } from '../../resources'
 import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
-import { AcmSelect } from '../../ui-components'
 import { ClusterGranularityStepContent } from './ClusterGranularityWizardStep'
-import { GranularityStepContent } from './GranularityStepContent'
+import { ClusterSetGranularityWizardStep } from './ClusterSetGranularityWizardStep'
 import { IdentitiesList } from './Identities/IdentitiesList'
 import { ReviewStepContent } from './ReviewStepContent'
 import { RolesList } from './Roles/RolesList'
-import { ClusterSetAccessLevel } from './Scope/AccessLevel/ClusterSetAccessLevel'
-import { ClusterList } from './Scope/Clusters/ClusterList'
 import { ExampleScopesPanelContent } from './Scope/ExampleScope/ExampleScopesPanelContent'
 import { ScopeSelectionStepContent } from './ScopeSelectionStepContent'
 import { RoleAssignmentWizardFormData, RoleAssignmentWizardModalProps } from './types'
 import { usePreselectedData } from './usePreselectedData'
+import { useClustersFromClusterSets } from './Scope/ClusterSets/useClustersFromClusterSets'
 
 const getWizardTitle = (
   isEditing: boolean | undefined,
@@ -66,8 +63,8 @@ const getInitialFormData = (): RoleAssignmentWizardFormData => ({
   },
   roles: [],
   scopeType: 'Global access',
-  clusterSetAccessLevel: 'Cluster set role assignment',
-  selectedClustersAccessLevel: 'Cluster role assignment',
+  clustersetsAccessLevel: 'Cluster set role assignment',
+  clustersAccessLevel: 'Cluster role assignment',
 })
 
 export const RoleAssignmentWizardModal = ({
@@ -83,6 +80,8 @@ export const RoleAssignmentWizardModal = ({
   const [formData, setFormData] = useState<RoleAssignmentWizardFormData>(getInitialFormData())
   const [selectedClusterSets, setSelectedClusterSets] = useState<any[]>([])
   const [selectedClusters, setSelectedClusters] = useState<any[]>([])
+
+  const clustersFromClusterSets = useClustersFromClusterSets(selectedClusterSets)
 
   const update = useCallback((updateFn?: (draft: RoleAssignmentWizardFormData) => void) => {
     setFormData((prev) => {
@@ -173,20 +172,20 @@ export const RoleAssignmentWizardModal = ({
   }, [])
 
   const handleClustersAccessLevelChange = useCallback(
-    (clustersAccessLevel?: RoleAssignmentWizardFormData['selectedClustersAccessLevel']) => {
+    (clustersAccessLevel?: RoleAssignmentWizardFormData['clustersAccessLevel']) => {
       setFormData((prev) => ({
         ...prev,
-        selectedClustersAccessLevel: clustersAccessLevel,
+        clustersAccessLevel: clustersAccessLevel,
       }))
     },
     []
   )
 
   const handleClusterSetAccessLevelChange = useCallback(
-    (clusterSetAccessLevel?: RoleAssignmentWizardFormData['clusterSetAccessLevel']) => {
+    (clustersetsAccessLevel?: RoleAssignmentWizardFormData['clustersetsAccessLevel']) => {
       setFormData((prev) => ({
         ...prev,
-        clusterSetAccessLevel: clusterSetAccessLevel,
+        clustersetsAccessLevel,
       }))
     },
     []
@@ -250,11 +249,16 @@ export const RoleAssignmentWizardModal = ({
     if (!isEditing) return true
 
     const roleChanged = preselected?.roles?.[0] !== formData.roles?.[0]
+
+    const stringComparison = (a: string, b: string) => a.localeCompare(b)
     const clustersChanged =
-      JSON.stringify(preselected?.clusterNames?.toSorted()) !==
-      JSON.stringify(formData.selectedClusters?.map((c) => c.metadata?.name || c.name || c).toSorted())
+      JSON.stringify(preselected?.clusterNames?.toSorted(stringComparison) ?? []) !==
+      JSON.stringify(
+        formData.selectedClusters?.map((c) => c.metadata?.name || c.name || c).toSorted(stringComparison) ?? []
+      )
     const namespacesChanged =
-      JSON.stringify(preselected?.namespaces?.toSorted()) !== JSON.stringify(formData.scope.namespaces?.toSorted())
+      JSON.stringify((preselected?.namespaces ?? []).toSorted(stringComparison)) !==
+      JSON.stringify((formData.scope.namespaces ?? []).toSorted(stringComparison))
 
     const identityKindChanged = preselected?.subject?.kind !== formData.subject?.kind
     const identityValueChanged = (() => {
@@ -300,78 +304,16 @@ export const RoleAssignmentWizardModal = ({
       id="scope-cluster-set-granularity"
       isHidden={formData.scopeType !== 'Select cluster sets' || hasNoClusterSets}
       footer={{
-        isNextDisabled: formData.clusterSetAccessLevel === 'Cluster role assignment' && hasNoClusters,
+        isNextDisabled: formData.clustersetsAccessLevel === 'Project role assignment' && hasNoClusterSets,
       }}
     >
-      <GranularityStepContent
-        title={t('Choose access level')}
-        description={t('Define the level of access for the 1 selected cluster set.')}
-      />
-      <div style={{ margin: '16px 0' }}>
-        <AcmSelect
-          id="clusters-set-access-level"
-          value={formData.clusterSetAccessLevel}
-          onChange={(value) =>
-            handleClusterSetAccessLevelChange(value as RoleAssignmentWizardFormData['clusterSetAccessLevel'])
-          }
-          isRequired
-          label="Access level"
-        >
-          {[
-            {
-              label: t('Cluster set role assignment'),
-              value: 'Cluster set role assignment',
-              description: t('Grant access to all current and future resources on the cluster set'),
-            },
-            {
-              label: t('Cluster role assignment'),
-              value: 'Cluster role assignment',
-              description: t(
-                'Grant access to specific clusters on the cluster set. Optionally, narrow this access to projects on the selected clusters'
-              ),
-            },
-          ].map((option) => (
-            <SelectOption key={option.value} value={option.value} description={option.description}>
-              {option.label}
-            </SelectOption>
-          ))}
-        </AcmSelect>
-      </div>
-      {formData.clusterSetAccessLevel === 'Cluster role assignment' && (
-        <div style={{ marginTop: '16px' }}>
-          <ClusterList
-            selectedClusters={selectedClusters}
-            namespaces={formData.selectedClusterSets
-              ?.map((cs) =>
-                (cs as ManagedClusterSet).metadata ? (cs as ManagedClusterSet).metadata.name : (cs as string)
-              )
-              .filter(isType)}
-            onSelectCluster={(clusters) => {
-              handleClustersChange(clusters)
-            }}
-          />
-        </div>
-      )}
-      {[undefined, 'Cluster set role assignment'].includes(formData.clusterSetAccessLevel) && <ClusterSetAccessLevel />}
-    </WizardStep>,
-    <WizardStep
-      key="cluster-set-cluster-granularity"
-      name={t('Define cluster granularity')}
-      id="scope-cluster-set-cluster-granularity"
-      isHidden={
-        formData.scopeType !== 'Select cluster sets' ||
-        hasNoClusterSets ||
-        formData.clusterSetAccessLevel !== 'Cluster role assignment' ||
-        hasNoClusters
-      }
-    >
-      <ClusterGranularityStepContent
-        description={t('Define cluster granularity options.')}
-        selectedClusters={selectedClusters}
+      <ClusterSetGranularityWizardStep
+        selectedClustersets={selectedClusterSets}
+        clustersFromClusterSets={clustersFromClusterSets}
         selectedNamespaces={formData.scope.namespaces}
         onNamespacesChange={handleNamespacesChange}
-        selectedClustersAccessLevel={formData.selectedClustersAccessLevel}
-        onClustersAccessLevelChange={handleClustersAccessLevelChange}
+        clustersetsAccessLevel={formData.clustersetsAccessLevel}
+        onClustersetsAccessLevelChange={handleClusterSetAccessLevelChange}
       />
     </WizardStep>,
     <WizardStep
@@ -381,11 +323,10 @@ export const RoleAssignmentWizardModal = ({
       isHidden={formData.scopeType !== 'Select clusters' || hasNoClusters}
     >
       <ClusterGranularityStepContent
-        description={t('Define the level of access for the selected cluster(s).')}
         selectedClusters={selectedClusters}
         selectedNamespaces={formData.scope.namespaces}
         onNamespacesChange={handleNamespacesChange}
-        selectedClustersAccessLevel={formData.selectedClustersAccessLevel}
+        clustersAccessLevel={formData.clustersAccessLevel}
         onClustersAccessLevelChange={handleClustersAccessLevelChange}
       />
     </WizardStep>,
