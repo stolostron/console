@@ -333,7 +333,13 @@ export const RoleAssignmentWizardModal = ({
   ]
 
   return (
-    <Modal variant={ModalVariant.large} isOpen={isOpen} showClose={false} hasNoBodyWrapper>
+    <Modal
+      variant={ModalVariant.large}
+      isOpen={isOpen}
+      showClose={false}
+      hasNoBodyWrapper
+      onEscapePress={() => !isLoading && handleClose()}
+    >
       <Drawer isExpanded={isDrawerExpanded}>
         <DrawerContent panelContent={<ExampleScopesPanelContent onClose={() => setIsDrawerExpanded(false)} />}>
           <ItemContext.Provider value={formData}>
@@ -421,7 +427,7 @@ export const RoleAssignmentWizardModal = ({
                     nextButtonProps: { isLoading },
                     isBackDisabled: isLoading,
                     cancelButtonProps: { isDisabled: isLoading },
-                    isNextDisabled: isEditing && !hasChanges,
+                    isNextDisabled: isLoading || (isEditing && !hasChanges),
                   }}
                 >
                   <ReviewStepContent

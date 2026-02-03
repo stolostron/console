@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { act, render, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RoleAssignmentWizardModal } from './RoleAssignmentWizardModal'
 import React from 'react'
@@ -545,6 +545,83 @@ describe('RoleAssignmentWizardModal - useClustersFromClusterSets Integration', (
       await waitFor(() => {
         expect(mockUseClustersFromClusterSets).toHaveBeenCalled()
       })
+    })
+  })
+
+  describe('Review step Next button (isNextDisabled)', () => {
+    // Preselected with context 'role' and subject hides Identities and Roles steps → only Scope then Review
+    const preselectedScopeThenReview = {
+      context: 'role' as const,
+      roles: ['admin'],
+      subject: { kind: 'User' as const, value: 'test-user' },
+    }
+
+    const navigateToReviewStep = async () => {
+      // Scope step (default Global access): one Next goes to Review
+      const nextButton = await screen.findByRole('button', { name: 'Next' })
+      act(() => {
+        nextButton.click()
+      })
+    }
+
+    it('should disable the Next/Save button when isLoading is true', async () => {
+      renderWithRouter(
+        <RoleAssignmentWizardModal {...defaultProps} isLoading={true} preselected={preselectedScopeThenReview} />
+      )
+
+      await navigateToReviewStep()
+
+      await waitFor(() => {
+        const buttons = screen.getAllByRole('button')
+        const createOrSaveButton = buttons.find((b) => b.textContent === 'Create' || b.textContent === 'Save')
+        expect(createOrSaveButton).toBeDefined()
+        expect(createOrSaveButton).toBeDisabled()
+      })
+    })
+
+    it('should not disable the Next button when isLoading is false and not editing', async () => {
+      renderWithRouter(
+        <RoleAssignmentWizardModal {...defaultProps} isLoading={false} preselected={preselectedScopeThenReview} />
+      )
+
+      await navigateToReviewStep()
+
+      await waitFor(() => {
+        const createButton = screen.getByRole('button', { name: 'Create' })
+        expect(createButton).not.toBeDisabled()
+      })
+    })
+  })
+
+  describe('onEscapePress', () => {
+    it('should call onClose when Escape is pressed and not loading', async () => {
+      const onClose = jest.fn()
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} onClose={onClose} isLoading={false} />)
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Next' })).toBeInTheDocument()
+      })
+
+      act(() => {
+        fireEvent.keyDown(document.body, { key: 'Escape', code: 'Escape' })
+      })
+
+      expect(onClose).toHaveBeenCalledTimes(1)
+    })
+
+    it('should not call onClose when Escape is pressed and isLoading is true', async () => {
+      const onClose = jest.fn()
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} onClose={onClose} isLoading={true} />)
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Next' })).toBeInTheDocument()
+      })
+
+      act(() => {
+        fireEvent.keyDown(document.body, { key: 'Escape', code: 'Escape' })
+      })
+
+      expect(onClose).not.toHaveBeenCalled()
     })
   })
 })
