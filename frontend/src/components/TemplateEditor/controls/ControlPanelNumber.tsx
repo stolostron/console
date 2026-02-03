@@ -4,6 +4,7 @@
 import { RefCallback, useCallback } from 'react'
 import ControlPanelFormGroup from './ControlPanelFormGroup'
 import { TFunction } from 'react-i18next'
+import { ButtonProps, NumberInput } from '@patternfly/react-core'
 
 const ControlPanelNumber = (props: {
   control: any
@@ -49,58 +50,23 @@ const ControlPanelNumber = (props: {
   return (
     <div className="creation-view-controls-number" ref={setControlRef}>
       <ControlPanelFormGroup i18n={i18n} controlId={controlId} control={control} controlData={controlData}>
-        <div className="pf-v6-c-number-input">
-          <div className="pf-v6-c-input-group">
-            <button
-              className="pf-v6-c-button pf-m-control"
-              style={{ lineHeight: '16px' }}
-              type="button"
-              aria-label={i18n('Minus')}
-              id={`down-${controlId}`}
-              data-testid={`down-${controlId}`}
-              onClick={() => {
-                onChange(-1)
-              }}
-            >
-              <span className="pf-v6-c-number-input__icon">
-                <svg height="16" width="16" role="img" viewBox="0 0 24 24">
-                  <path d="M0 10h24v4h-24z" />
-                </svg>
-              </span>
-            </button>
-            <input
-              className="pf-v6-c-form-control"
-              type="number"
-              value={control.active || ''}
-              pattern="[0-9]*"
-              name="number-input-default-name"
-              onFocus={(e) => {
-                e.target.select()
-              }}
-              onChange={(e) => {
-                onSet(e.target.value)
-              }}
-              aria-label={i18n('Number input')}
-              id={controlId}
-              data-testid={`number-${controlId}`}
-            />
-            <button
-              className="pf-v6-c-button pf-m-control"
-              style={{ lineHeight: '16px' }}
-              type="button"
-              aria-label={i18n('Plus')}
-              id={`up-${controlId}`}
-              data-testid={`up-${controlId}`}
-              onClick={() => {
-                onChange(1)
-              }}
-            >
-              <svg height="16" width="16" role="img" viewBox="0 0 24 24">
-                <path d="M24 10h-10v-10h-4v10h-10v4h10v10h4v-10h10z" />
-              </svg>
-            </button>
-          </div>
-        </div>
+        <NumberInput
+          inputName="number-input-default-name"
+          inputAriaLabel={i18n('Number input')}
+          inputProps={{ id: controlId, 'data-testid': `number-${controlId}` }}
+          onChange={(event) => {
+            if (event.type === 'change') {
+              onSet((event.target as HTMLInputElement).value)
+            }
+          }}
+          onMinus={() => onChange(-1)}
+          onPlus={() => onChange(1)}
+          value={control.active || ''}
+          minusBtnAriaLabel={i18n('Minus')}
+          minusBtnProps={{ id: `down-${controlId}`, 'data-testid': `down-${controlId}` } as ButtonProps}
+          plusBtnAriaLabel={i18n('Plus')}
+          plusBtnProps={{ id: `up-${controlId}`, 'data-testid': `up-${controlId}` } as ButtonProps}
+        />
         {validated === 'error' && (
           <div
             style={{
