@@ -28,6 +28,8 @@ interface UseReviewStepContentProps {
 type ExpandableSections =
   | 'clusters-original'
   | 'clusters-current'
+  | 'clustersets-original'
+  | 'clustersets-current'
   | 'namespaces-original'
   | 'namespaces-current'
   | 'role-original'
@@ -157,8 +159,8 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: UseReviewS
   )
 
   const namespacesDisplay = useMemo(() => {
-    const hasOriginalNamespaces = oldData.namespaces && oldData.namespaces.length > 0
-    const hasCurrentNamespaces = newData.namespaces && newData.namespaces.length > 0
+    const hasOriginalNamespaces = oldData.namespaces.length > 0
+    const hasCurrentNamespaces = newData.namespaces.length > 0
 
     if (!hasOriginalNamespaces && !hasCurrentNamespaces) {
       return t('Full access')
@@ -227,20 +229,18 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: UseReviewS
     const original = originalClusterSetNames || t('None selected')
     const current = currentClusterSetNames || (!isEditing && originalClusterSetNames) || t('None selected')
 
-    return !isEditing || original === current ? (
-      current
-    ) : (
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <div>
-          <s>{original}</s>
-        </div>
-        <ArrowRightIcon />
-        <div>
-          <strong>{current}</strong>
-        </div>
-      </div>
+    return (
+      <BeforeAfterDisplay
+        original={original}
+        current={current}
+        showComparison={isEditing === true && original !== current}
+        onToggleOriginalCallback={() => onToggleExpandableSection('clustersets-original')}
+        onToggleCurrentCallback={() => onToggleExpandableSection('clustersets-current')}
+        isOriginalExpanded={expandableSections['clustersets-original']}
+        isCurrentExpanded={expandableSections['clustersets-current']}
+      />
     )
-  }, [oldData.clusterSetNames, newData.clusterSetNames, t, isEditing])
+  }, [oldData.clusterSetNames, newData.clusterSetNames, t, isEditing, expandableSections, onToggleExpandableSection])
 
   const roleDisplay = useMemo(() => {
     const original: string = oldData.role ?? t('No role selected')
