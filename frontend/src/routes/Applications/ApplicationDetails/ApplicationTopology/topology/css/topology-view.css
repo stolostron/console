@@ -1,11 +1,11 @@
-.pf-topology-content {
-  background-color: var(--pf-v5-global--Color--light-200);
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
+[class='pf-topology__node__background'] {
+  fill: white;
+}
+
+.pf-v5-theme-dark .pf-topology__node__background,
+.pf-v6-theme-dark .pf-topology__node__background {
+  fill: #d5ccc2;
+  stroke-width: 3;
 }
 
 .pf-topology-container {

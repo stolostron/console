@@ -1,7 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { t_color_white as globalColorLight100 } from '@patternfly/react-tokens/dist/js/t_color_white'
-import { t_global_background_color_200 as globalBackground200 } from '@patternfly/react-tokens/dist/js/t_global_background_color_200'
-import { t_global_background_color_secondary_default as darkEditorBackground } from '@patternfly/react-tokens/dist/js/t_global_background_color_secondary_default'
+import {
+  t_color_green_70,
+  t_color_yellow_70,
+  t_color_blue_70,
+  t_color_purple_70,
+  t_color_green_30,
+  t_color_blue_30,
+  t_color_yellow_30,
+  t_color_purple_30,
+  t_color_white,
+  t_color_gray_20,
+  t_color_gray_60,
+  t_color_gray_90,
+  t_color_black,
+} from '@patternfly/react-tokens'
 export const THEME_LOCAL_STORAGE_KEY = 'bridge/theme'
 const THEME_SYSTEM_DEFAULT = 'systemDefault'
 export const darkThemeMq = window.matchMedia('(prefers-color-scheme: dark)')
@@ -15,7 +27,10 @@ export const getTheme = () => {
     return 'console-dark'
   }
   // else only give them what user wants
-  return !document.documentElement.classList.contains('pf-v5-theme-dark') ? 'console-light' : 'console-dark'
+  const isDark =
+    document.documentElement.classList.contains('pf-v5-theme-dark') ||
+    document.documentElement.classList.contains('pf-v6-theme-dark')
+  return isDark ? 'console-dark' : 'console-light'
 }
 /**
  * Define the themes `console-light` and `console-dark` for an instance of Monaco editor.
@@ -25,15 +40,15 @@ export const defineThemes = (editor: typeof monacoEditor) => {
     base: 'vs',
     inherit: true,
     colors: {
-      'editor.background': '#ffffff',
-      'editorLineNumber.activeForeground': '#000000',
-      'editorLineNumber.foreground': '#4d4d4d',
+      'editor.background': t_color_white.value,
+      'editorLineNumber.activeForeground': t_color_black.value,
+      'editorLineNumber.foreground': t_color_gray_60.value,
     },
     rules: [
-      { token: 'number', foreground: '#204d00' },
-      { token: 'type', foreground: '#73480b' },
-      { token: 'string', foreground: '#73480b' },
-      { token: 'keyword', foreground: '#21134d' },
+      { token: 'number', foreground: t_color_green_70.value },
+      { token: 'type', foreground: t_color_yellow_70.value },
+      { token: 'string', foreground: t_color_blue_70.value },
+      { token: 'keyword', foreground: t_color_purple_70.value },
     ],
   })
 
@@ -41,15 +56,15 @@ export const defineThemes = (editor: typeof monacoEditor) => {
     base: 'vs-dark',
     inherit: true,
     colors: {
-      'editor.background': darkEditorBackground.value,
-      'editorLineNumber.activeForeground': globalColorLight100.value,
-      'editorLineNumber.foreground': globalBackground200.value,
+      'editor.background': t_color_gray_90.value,
+      'editorLineNumber.activeForeground': t_color_white.value,
+      'editorLineNumber.foreground': t_color_gray_20.value,
     },
     rules: [
-      { token: 'number', foreground: 'ace12e' },
-      { token: 'type', foreground: '73bcf7' },
-      { token: 'string', foreground: 'f0ab00' },
-      { token: 'keyword', foreground: 'cbc0ff' },
+      { token: 'number', foreground: t_color_green_30.value },
+      { token: 'type', foreground: t_color_blue_30.value },
+      { token: 'string', foreground: t_color_yellow_30.value },
+      { token: 'keyword', foreground: t_color_purple_30.value },
     ],
   })
 }

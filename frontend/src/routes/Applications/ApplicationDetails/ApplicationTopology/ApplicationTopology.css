@@ -39,7 +39,7 @@
   stroke: 'none';
 }
 
-:root:where(.pf-v5-theme-dark) .pf-topology__node__icon {
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .pf-topology__node__icon {
   fill: #fff;
 }
 
@@ -48,7 +48,7 @@
   stroke: 'none';
 }
 
-:root:where(.pf-v5-theme-dark) .pf-topology__node__icon_reverse {
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .pf-topology__node__icon_reverse {
   fill: #000;
 }
 
@@ -56,6 +56,6 @@
   stroke: #000;
 }
 
-:root:where(.pf-v5-theme-dark) .pf-topology__node__icon__stroke {
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .pf-topology__node__icon__stroke {
   stroke: #fff;
 }
