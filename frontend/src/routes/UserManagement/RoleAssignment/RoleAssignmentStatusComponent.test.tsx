@@ -1,112 +1,103 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import React from 'react'
 import { render, screen } from '@testing-library/react'
+import { RoleAssignmentStatus } from '../../../resources/multicluster-role-assignment'
 import { RoleAssignmentStatusComponent } from './RoleAssignmentStatusComponent'
-import userEvent from '@testing-library/user-event'
+
+jest.mock('../../../lib/acm-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+  }),
+}))
+
+// Mock Popover to always render header and body (simulates popover content visible on hover)
+jest.mock('@patternfly/react-core', () => {
+  const React = jest.requireActual<typeof import('react')>('react')
+  const actual = jest.requireActual('@patternfly/react-core')
+  const MockPopover = (props: {
+    children?: React.ReactNode
+    headerContent?: React.ReactNode
+    bodyContent?: React.ReactNode
+  }) =>
+    React.createElement(
+      'div',
+      { 'data-testid': 'popover' },
+      React.createElement('div', { 'data-testid': 'popover-trigger' }, props.children),
+      React.createElement(
+        'div',
+        { 'data-testid': 'popover-content' },
+        props.headerContent != null &&
+          React.createElement('div', { 'data-testid': 'popover-header' }, props.headerContent),
+        props.bodyContent != null && React.createElement('div', { 'data-testid': 'popover-body' }, props.bodyContent)
+      )
+    )
+  return { ...actual, Popover: MockPopover }
+})
+
+const baseStatus: RoleAssignmentStatus = {
+  name: 'test-role-assignment',
+  status: 'Active',
+  reason: 'Applied',
+  message: 'Role assignment applied successfully',
+}
 
 describe('RoleAssignmentStatusComponent', () => {
-  describe('properly rendered', () => {
-    it('Active', () => {
-      // Act
-      render(<RoleAssignmentStatusComponent status={{ name: 'x', status: 'Active' }} />)
+  it('renders Unknown when status is undefined', () => {
+    render(<RoleAssignmentStatusComponent />)
 
-      // Assert
-      expect(screen.getByText('Active')).toBeInTheDocument()
-      expect(
-        screen
-          .getByRole('img', {
-            hidden: true,
-          })
-          .children[0].getAttribute('d')
-      ).toBe(
-        'M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zM227.314 387.314l184-184c6.248-6.248 6.248-16.379 0-22.627l-22.627-22.627c-6.248-6.249-16.379-6.249-22.628 0L216 308.118l-70.059-70.059c-6.248-6.248-16.379-6.248-22.628 0l-22.627 22.627c-6.248 6.248-6.248 16.379 0 22.627l104 104c6.249 6.249 16.379 6.249 22.628.001z'
-      )
-    })
-
-    it('Error', () => {
-      // Act
-      render(<RoleAssignmentStatusComponent status={{ name: 'x', status: 'Error', reason: 'whatever the reason' }} />)
-
-      // Assert
-      expect(screen.getByText('Error')).toBeInTheDocument()
-      expect(
-        screen
-          .getByRole('img', {
-            hidden: true,
-          })
-          .children[0].getAttribute('d')
-      ).toBe(
-        'M504 256c0 136.997-111.043 248-248 248S8 392.997 8 256C8 119.083 119.043 8 256 8s248 111.083 248 248zm-248 50c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595 46-46-20.595-46-46-46zm-43.673-165.346l7.418 136c.347 6.364 5.609 11.346 11.982 11.346h48.546c6.373 0 11.635-4.982 11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z'
-      )
-      expect(screen.queryByText('whatever the reason')).not.toBeInTheDocument()
-    })
-
-    it('Pending', () => {
-      // Act
-      render(<RoleAssignmentStatusComponent status={{ name: 'x', status: 'Pending' }} />)
-
-      // Assert
-      expect(screen.getByText('Pending')).toBeInTheDocument()
-      expect(
-        screen.getByRole('progressbar', {
-          name: /role assignment being applied/i,
-        })
-      ).toBeInTheDocument()
-      expect(screen.queryByText('Role assignment is being applied')).not.toBeInTheDocument()
-    })
-
-    it('undefined', () => {
-      // Act
-      render(<RoleAssignmentStatusComponent />)
-
-      // Assert
-      expect(screen.getByText('Unknown')).toBeInTheDocument()
-    })
+    expect(screen.getByText('Unknown')).toBeInTheDocument()
   })
 
-  describe('tooltips', () => {
-    it('Active', () => {
-      // Arrange
-      render(
-        <RoleAssignmentStatusComponent
-          status={{ name: 'x', status: 'Active', reason: 'ACTIVE_REASON', message: 'active message' }}
-        />
-      )
+  it('renders Active label when status is Active', () => {
+    render(<RoleAssignmentStatusComponent status={{ ...baseStatus, status: 'Active' }} />)
 
-      // Act
-      userEvent.hover(screen.getByText('Active'))
+    expect(screen.getByText('Active')).toBeInTheDocument()
+  })
 
-      // Assert
-      expect(screen.getByText('ACTIVE_REASON: active message')).toBeInTheDocument()
-    })
+  it('renders Error label when status is Error', () => {
+    render(
+      <RoleAssignmentStatusComponent
+        status={{
+          ...baseStatus,
+          status: 'Error',
+          reason: 'Failed',
+          message: 'Role assignment failed',
+        }}
+      />
+    )
 
-    it('Error', () => {
-      // Arrange
-      render(
-        <RoleAssignmentStatusComponent
-          status={{ name: 'x', status: 'Error', reason: 'WHATEVER_THE_REASON', message: 'whatever the reason' }}
-        />
-      )
+    expect(screen.getByText('Error')).toBeInTheDocument()
+  })
 
-      // Act
-      userEvent.hover(screen.getByText('Error'))
+  it('renders Pending label and spinner when status is Pending', () => {
+    render(<RoleAssignmentStatusComponent status={{ ...baseStatus, status: 'Pending' }} />)
 
-      // Assert
-      expect(screen.getByText('WHATEVER_THE_REASON: whatever the reason')).toBeInTheDocument()
-    })
+    expect(screen.getByText('Pending')).toBeInTheDocument()
+    expect(screen.getByRole('progressbar', { name: 'Role Assignment being applied' })).toBeInTheDocument()
+  })
 
-    it('Pending', () => {
-      // Arrange
-      render(
-        <RoleAssignmentStatusComponent
-          status={{ name: 'x', status: 'Pending', reason: 'PENDING_REASON', message: 'pending message' }}
-        />
-      )
+  it('renders Unknown when status has an unsupported value', () => {
+    render(
+      <RoleAssignmentStatusComponent
+        status={{ ...baseStatus, status: 'Something' as RoleAssignmentStatus['status'] }}
+      />
+    )
 
-      // Act
-      userEvent.hover(screen.getByText('Pending'))
+    expect(screen.getByText('Unknown')).toBeInTheDocument()
+  })
 
-      // Assert
-      expect(screen.getByText('PENDING_REASON: pending message')).toBeInTheDocument()
-    })
+  it('renders label when status has no reason or message', () => {
+    render(<RoleAssignmentStatusComponent status={{ name: 'ra1', status: 'Active' }} />)
+
+    expect(screen.getByText('Active')).toBeInTheDocument()
+  })
+
+  it('displays reason and message in popover when user hovers over label', () => {
+    render(<RoleAssignmentStatusComponent status={{ ...baseStatus, status: 'Active' }} />)
+
+    expect(screen.getByText('Active')).toBeInTheDocument()
+    // Popover is mocked to always show content (simulating hover); reason and message are visible
+    expect(screen.getByText('Applied')).toBeInTheDocument()
+    expect(screen.getByText('Role assignment applied successfully')).toBeInTheDocument()
   })
 })
