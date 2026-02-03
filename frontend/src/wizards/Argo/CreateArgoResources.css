@@ -1,3 +1,19 @@
-.pf-v6-c-modal-box .pf-v6-c-page__main {
-  height: 600px;
+/* Add Argo Server modal - add padding since hasNoBodyWrapper is used */
+.add-argo-server-modal.pf-v6-c-modal-box > div {
+  padding: 24px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* Ensure proper height for modal content */
+.add-argo-server-modal.pf-v6-c-modal-box > div > div {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Drawer should take remaining space */
+.add-argo-server-modal .pf-v6-c-drawer {
+  flex: 1;
+  min-height: 0;
 }
