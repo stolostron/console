@@ -215,13 +215,13 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: UseReviewS
   }, [originalClusterNames, t, currentClusterNames, isEditing, expandableSections, onToggleExpandableSection])
 
   const clusterSetsDisplay = useMemo(() => {
-    const getClusterSetNames = (clusterSets: any) => {
-      if (!clusterSets || clusterSets.length === 0) return null
-      return clusterSets
-        .map((cs: any) => cs.metadata?.name || cs)
-        .toSorted((a: string, b: string) => a.localeCompare(b))
-        .join(', ')
-    }
+    const getClusterSetNames = (clusterSets: any) =>
+      !clusterSets || clusterSets.length === 0
+        ? null
+        : clusterSets
+            .map((cs: any) => cs.metadata?.name || cs)
+            .toSorted((a: string, b: string) => a.localeCompare(b))
+            .join(', ')
 
     const originalClusterSetNames = getClusterSetNames(oldData.clusterSetNames)
     const currentClusterSetNames = getClusterSetNames(newData.clusterSetNames)
