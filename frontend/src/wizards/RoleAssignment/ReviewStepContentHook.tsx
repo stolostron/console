@@ -8,16 +8,16 @@ import { RoleAssignmentWizardFormData, RoleAssignmentWizardModalProps } from './
 
 interface UseReviewStepContentProps {
   oldData: {
-    namespaces?: RoleAssignmentPreselected['namespaces']
+    namespaces: string[]
     clusterSetNames?: RoleAssignmentPreselected['clusterSetNames']
-    clusterNames: RoleAssignmentPreselected['clusterNames']
+    clusterNames: string[]
     role?: string
     subject?: RoleAssignmentPreselected['subject']
   }
   newData: {
-    namespaces?: string[]
+    namespaces: string[]
     clusterSetNames?: RoleAssignmentWizardFormData['selectedClusterSets']
-    clusterNames: RoleAssignmentWizardFormData['selectedClusters']
+    clusterNames: string[]
     role?: string
     subject?: RoleAssignmentWizardFormData['subject']
   }
@@ -113,7 +113,7 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: UseReviewS
   }): string | null => {
     switch (true) {
       case selectedClusters && selectedClusters.length > 0:
-        return selectedClusters.map((c) => c.metadata?.name || c.name || c).join(', ')
+        return selectedClusters.join(', ')
       case clusterNames && clusterNames.length > 0:
         return clusterNames.join(', ')
       default:
@@ -132,10 +132,7 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: UseReviewS
   const currentClusterNames = useMemo(
     () =>
       newData.clusterNames && newData.clusterNames.length > 0
-        ? newData.clusterNames
-            .map((c) => c.metadata?.name || c.name || c)
-            .toSorted((a, b) => a.localeCompare(b))
-            .join(', ')
+        ? newData.clusterNames.toSorted((a, b) => a.localeCompare(b)).join(', ')
         : null,
     [newData.clusterNames]
   )
