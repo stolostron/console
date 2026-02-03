@@ -13,7 +13,16 @@ const fn = jest.fn()
 describe('ControlPanelNumber component', () => {
   afterEach(cleanup)
   it('renders as expected', () => {
-    const control = {
+    const control: {
+      name: string
+      tooltip: string
+      controlData: unknown[]
+      id: string
+      type: string
+      initial: string
+      active?: string
+      exception?: string
+    } = {
       name: 'creation.app.name',
       tooltip: 'tooltip.creation.app.name',
       controlData: [],
@@ -22,7 +31,16 @@ describe('ControlPanelNumber component', () => {
       initial: '3',
     }
     const Component = () => {
-      return <ControlPanelNumber key={'key'} control={control} controlId={'controlId'} handleChange={fn} i18n={t} />
+      return (
+        <ControlPanelNumber
+          key={'key'}
+          control={control}
+          controlData={control.controlData}
+          controlId={'controlId'}
+          handleChange={fn}
+          i18n={t}
+        />
+      )
     }
     const { getByTestId, asFragment, rerender } = render(<Component />)
     expect(asFragment()).toMatchSnapshot()
@@ -39,7 +57,16 @@ describe('ControlPanelNumber component', () => {
     expect(control.active).toBe('0')
   })
   it('renders as expected with min int value', () => {
-    const control = {
+    const control: {
+      name: string
+      tooltip: string
+      controlData: unknown[]
+      id: string
+      type: string
+      initial: string
+      min: number
+      active?: string
+    } = {
       name: 'creation.app.name',
       tooltip: 'tooltip.creation.app.name',
       controlData: [],
@@ -49,7 +76,16 @@ describe('ControlPanelNumber component', () => {
       min: 1,
     }
     const Component = () => {
-      return <ControlPanelNumber key={'key'} control={control} controlId={'controlId-min'} handleChange={fn} i18n={t} />
+      return (
+        <ControlPanelNumber
+          key={'key'}
+          control={control}
+          controlData={control.controlData}
+          controlId={'controlId-min'}
+          handleChange={fn}
+          i18n={t}
+        />
+      )
     }
     const { getByTestId } = render(<Component />)
 
