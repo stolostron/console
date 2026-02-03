@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RoleAssignmentWizardModal } from './RoleAssignmentWizardModal'
 import React from 'react'
@@ -590,6 +590,38 @@ describe('RoleAssignmentWizardModal - useClustersFromClusterSets Integration', (
         const createButton = screen.getByRole('button', { name: 'Create' })
         expect(createButton).not.toBeDisabled()
       })
+    })
+  })
+
+  describe('onEscapePress', () => {
+    it('should call onClose when Escape is pressed and not loading', async () => {
+      const onClose = jest.fn()
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} onClose={onClose} isLoading={false} />)
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Next' })).toBeInTheDocument()
+      })
+
+      act(() => {
+        fireEvent.keyDown(document.body, { key: 'Escape', code: 'Escape' })
+      })
+
+      expect(onClose).toHaveBeenCalledTimes(1)
+    })
+
+    it('should not call onClose when Escape is pressed and isLoading is true', async () => {
+      const onClose = jest.fn()
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} onClose={onClose} isLoading={true} />)
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Next' })).toBeInTheDocument()
+      })
+
+      act(() => {
+        fireEvent.keyDown(document.body, { key: 'Escape', code: 'Escape' })
+      })
+
+      expect(onClose).not.toHaveBeenCalled()
     })
   })
 })
