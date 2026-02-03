@@ -421,7 +421,7 @@ export const RoleAssignmentWizardModal = ({
                     nextButtonProps: { isLoading },
                     isBackDisabled: isLoading,
                     cancelButtonProps: { isDisabled: isLoading },
-                    isNextDisabled: isEditing && !hasChanges,
+                    isNextDisabled: isLoading || (isEditing && !hasChanges),
                   }}
                 >
                   <ReviewStepContent
