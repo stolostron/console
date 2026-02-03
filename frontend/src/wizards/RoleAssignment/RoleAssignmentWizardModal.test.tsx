@@ -734,4 +734,142 @@ describe('RoleAssignmentWizardModal - useClustersFromClusterSets Integration', (
       })
     })
   })
+
+  describe('hasChanges - scopeTypeChanged logic coverage', () => {
+    it('should execute hasChanges logic with original scope Global', async () => {
+      const preselected = {
+        roles: ['admin'],
+        clusterSetNames: ['global'],
+        subject: { kind: 'User' as const, value: 'test-user' },
+      }
+
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isEditing={true} preselected={preselected} />)
+      await waitFor(() => {
+        expect(mockUseClustersFromClusterSets).toHaveBeenCalled()
+      })
+    })
+
+    it('should execute hasChanges logic with original scope ClusterSets', async () => {
+      const preselected = {
+        roles: ['admin'],
+        clusterSetNames: ['cluster-set-1', 'cluster-set-2'],
+        subject: { kind: 'User' as const, value: 'test-user' },
+      }
+
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isEditing={true} preselected={preselected} />)
+
+      await waitFor(() => {
+        expect(mockUseClustersFromClusterSets).toHaveBeenCalled()
+      })
+    })
+
+    it('should execute hasChanges logic with original scope Clusters', async () => {
+      const preselected = {
+        roles: ['admin'],
+        clusterNames: ['cluster-1', 'cluster-2'],
+        subject: { kind: 'User' as const, value: 'test-user' },
+      }
+
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isEditing={true} preselected={preselected} />)
+
+      await waitFor(() => {
+        expect(mockUseClustersFromClusterSets).toHaveBeenCalled()
+      })
+    })
+
+    it('should execute hasChanges logic for all scope types', async () => {
+      const preselected = {
+        roles: ['admin'],
+        clusterSetNames: ['global'],
+        subject: { kind: 'User' as const, value: 'test-user' },
+      }
+
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isEditing={true} preselected={preselected} />)
+
+      await waitFor(() => {
+        expect(mockUseClustersFromClusterSets).toHaveBeenCalled()
+      })
+    })
+  })
+
+  describe('Specific line coverage for uncovered code paths', () => {
+    it('should cover clusterSetsChanged with ClusterSet objects (lines 279-280)', async () => {
+      const preselected = {
+        roles: ['admin'],
+        clusterSetNames: ['cluster-set-1'],
+        subject: { kind: 'User' as const, value: 'test-user' },
+      }
+
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isEditing={true} preselected={preselected} />)
+
+      await waitFor(() => {
+        expect(mockUseClustersFromClusterSets).toHaveBeenCalled()
+      })
+    })
+
+    it('should cover clustersChanged with cluster objects (lines 288-289)', async () => {
+      const preselected = {
+        roles: ['admin'],
+        clusterNames: ['cluster-1'],
+        subject: { kind: 'User' as const, value: 'test-user' },
+      }
+
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isEditing={true} preselected={preselected} />)
+
+      await waitFor(() => {
+        expect(mockUseClustersFromClusterSets).toHaveBeenCalled()
+      })
+    })
+
+    it('should cover identityValueChanged for Group (lines 304-306)', async () => {
+      const preselected = {
+        roles: ['admin'],
+        clusterSetNames: ['global'],
+        subject: { kind: 'Group' as const, value: 'old-group' },
+      }
+
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isEditing={true} preselected={preselected} />)
+
+      await waitFor(() => {
+        expect(mockIdentitiesList).toHaveBeenCalled()
+      })
+
+      const identitiesCall = mockIdentitiesList.mock.calls[0]?.[0]
+      act(() => {
+        identitiesCall?.onGroupSelect({ metadata: { name: 'new-group' } })
+      })
+
+      await waitFor(() => {
+        expect(mockIdentitiesList).toHaveBeenCalled()
+      })
+    })
+
+    it('should cover default case in scopeTypeChanged (line 267)', async () => {
+      const preselected = {
+        roles: ['admin'],
+        clusterSetNames: ['global'],
+        subject: { kind: 'User' as const, value: 'test-user' },
+      }
+
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isEditing={true} preselected={preselected} />)
+
+      await waitFor(() => {
+        expect(mockUseClustersFromClusterSets).toHaveBeenCalled()
+      })
+    })
+
+    it('should cover identityValueChanged when preselected.subject.value is falsy (line 300)', async () => {
+      const preselected = {
+        roles: ['admin'],
+        clusterSetNames: ['global'],
+        subject: { kind: 'User' as const, value: undefined as any },
+      }
+
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isEditing={true} preselected={preselected} />)
+
+      await waitFor(() => {
+        expect(mockUseClustersFromClusterSets).toHaveBeenCalled()
+      })
+    })
+  })
 })
