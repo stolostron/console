@@ -260,9 +260,6 @@ export function CreateClusterCatalog() {
               <>
                 <Divider style={{ paddingTop: '24px', paddingBottom: '12px' }} />
                 <ExpandableSection
-                  style={{
-                    backgroundColor: 'var(--pf-t--global--background--color--secondary--default)',
-                  }}
                   isExpanded={isAdditionalProvidersExpanded}
                   onToggle={(_event, isExpanded: boolean) => onAdditionalProvidersToggle(isExpanded)}
                   toggleContent={

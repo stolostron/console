@@ -124,6 +124,7 @@ const defaultPanelSize = 600
 
 export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
   const pageRef = useRef(null)
+  const headerRef = useRef(null)
   const { t } = useTranslation()
 
   const { editorTitle, schema, secrets, immutables, formData, globalWizardAlert, hideYaml, isModalWizard } = props
@@ -133,6 +134,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
 
   const mode = props.mode ?? 'form'
   const isHorizontal = props.isHorizontal ?? false
+  const [headerHeight, setHeaderHeight] = useState(130)
   const [drawerExpanded, setDrawerExpanded] = useState(localStorage.getItem('yaml') === 'true')
   const [drawerMaxSize, setDrawerMaxSize] = useState<string | undefined>()
   const [copyHint, setCopyHint] = useState<ReactNode>(
@@ -158,6 +160,10 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
   useResizeObserver(pageRef, (entry) => {
     const inline = drawerExpanded && entry.contentRect.width > minWizardSize + defaultPanelSize
     setDrawerMaxSize(inline ? `${Math.round((entry.contentRect.width * 2) / 3)}px` : undefined)
+  })
+
+  useResizeObserver(headerRef, (entry) => {
+    setHeaderHeight(entry.contentRect.height)
   })
 
   const drawerContent = () => {
@@ -263,42 +269,44 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
   }
 
   return (
-    <div ref={pageRef} style={{ height: hideYaml ? '40em' : '100%' }}>
+    <>
       {isModalWizard ? (
         drawerContent()
       ) : (
-        <div style={{ height: '100%' }}>
-          <AcmPageHeader
-            title={formData.title}
-            titleTooltip={formData.titleTooltip}
-            description={formData.description}
-            breadcrumb={formData.breadcrumb}
-            actions={
-              <ActionList>
-                {mode === 'details' && props.edit !== undefined && (
-                  <ActionListItem>
-                    <Button onClick={props.edit}>{t('Edit')}</Button>
-                  </ActionListItem>
-                )}
-              </ActionList>
-            }
-            switches={
-              hideYaml ? undefined : (
-                <Fragment>
-                  {(editorTitle || process.env.NODE_ENV === 'development') && (
-                    <Switch
-                      label="YAML"
-                      isChecked={drawerExpanded}
-                      onChange={() => {
-                        localStorage.setItem('yaml', (!drawerExpanded).toString())
-                        setDrawerExpanded(!drawerExpanded)
-                      }}
-                    />
+        <>
+          <div ref={headerRef}>
+            <AcmPageHeader
+              title={formData.title}
+              titleTooltip={formData.titleTooltip}
+              description={formData.description}
+              breadcrumb={formData.breadcrumb}
+              actions={
+                <ActionList>
+                  {mode === 'details' && props.edit !== undefined && (
+                    <ActionListItem>
+                      <Button onClick={props.edit}>{t('Edit')}</Button>
+                    </ActionListItem>
                   )}
-                </Fragment>
-              )
-            }
-          />
+                </ActionList>
+              }
+              switches={
+                hideYaml ? undefined : (
+                  <Fragment>
+                    {(editorTitle || process.env.NODE_ENV === 'development') && (
+                      <Switch
+                        label="YAML"
+                        isChecked={drawerExpanded}
+                        onChange={() => {
+                          localStorage.setItem('yaml', (!drawerExpanded).toString())
+                          setDrawerExpanded(!drawerExpanded)
+                        }}
+                      />
+                    )}
+                  </Fragment>
+                )
+              }
+            />
+          </div>
           {showFormErrors &&
             mode === 'form' &&
             (editorValidationStatus === ValidationStatus.failure || formHasErrors(t, formData)) && (
@@ -306,10 +314,10 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                 {renderErrors(true, formHasRequiredErrors(formData))}
               </PageSection>
             )}
-          {drawerContent()}
-        </div>
+          <div style={{ height: `calc(100% - ${headerHeight}px)` }}>{drawerContent()}</div>
+        </>
       )}
-    </div>
+    </>
   )
 }
 
@@ -692,7 +700,6 @@ export function AcmDataFormWizard(props: {
     <Fragment>
       {isModalWizard ? (
         <div ref={wizardRef}>
-          {/* <div ref={wizardRef} style={{ height: '100%' }}> */}
           <Wizard
             height={modalHeight}
             header={<WizardHeader title={formData.title} description={formData.description} onClose={cancel} />}
