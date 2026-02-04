@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { EditorValidationStatus, useData, useEditorValidationStatus, useItem } from '@patternfly-labs/react-form-wizard'
-import { ArgoWizard } from '../../../wizards/Argo/ArgoWizard'
+import { ArgoWizard, setRepositoryTypeForSources } from '../../../wizards/Argo/ArgoWizard'
 import { AcmToastContext } from '../../../ui-components'
 import { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom-v5-compat'
@@ -52,7 +52,7 @@ export function WizardSyncEditor() {
       resources={resources}
       schema={pushmodelschema}
       onEditorChange={(changes: { resources: any[] }): void => {
-        update(changes?.resources)
+        update(setRepositoryTypeForSources(changes?.resources))
       }}
       onStatusChange={(editorStatus: ValidationStatus): void => {
         setEditorValidationStatus(editorStatus as unknown as EditorValidationStatus)

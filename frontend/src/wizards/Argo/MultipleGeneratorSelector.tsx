@@ -36,6 +36,7 @@ export interface MultipleGeneratorSelectorProps {
   channels: Channel[] | undefined
   gitChannels: string[]
   helmChannels: string[]
+  gitGeneratorRepos: { urls: string[]; versions: string[]; paths: string[] }
   disableForm: boolean
 }
 
@@ -152,7 +153,7 @@ function GeneratorCollapsedContent() {
 }
 
 function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
-  const { gitChannels, channels, disableForm } = props
+  const { gitGeneratorRepos, channels, disableForm } = props
   // this is an array dependency in Wiz which doesn't compare by stringify
   // so if you change the array object, react thinks the value changed
   // which causes infinite loop
@@ -189,19 +190,24 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
           label={t('URL')}
           labelHelp={t('The URL path for the Git repository.')}
           placeholder={t('Enter or select a Git URL')}
-          options={gitChannels}
+          options={gitGeneratorRepos.urls}
           validation={validateWebURL}
           required
           isCreatable
           disabled={disableForm}
         />
-        <GitRevisionSelect channels={channels ?? []} path="git.repoURL" target="git.revision" />
+        <GitRevisionSelect
+          channels={channels ?? []}
+          path="git.repoURL"
+          target="git.revision"
+          revisions={gitGeneratorRepos.versions}
+        />
         <WizMultiSelect
           label="Directory paths"
           placeholder="Select or enter a directory path"
           path="git.directories"
           required
-          options={['default', 'development', 'production']}
+          options={[...gitGeneratorRepos.paths, 'default', 'development', 'production']}
           isCreatable
           disabled={disableForm}
           pathValueToInputValue={(value: unknown) => {
@@ -223,7 +229,6 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
           label={t('Requeue time')}
           options={requeueTimes}
           labelHelp={t('Git requeue time in seconds')}
-          required
           disabled={disableForm}
         />
       </WizHidden>
@@ -361,7 +366,6 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
           label={t('Requeue time')}
           options={requeueTimes}
           labelHelp={t('Pull request requeue time in seconds')}
-          required
           disabled={disableForm}
         />
       </WizHidden>
@@ -396,7 +400,6 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
           label={t('Requeue time')}
           options={requeueTimes}
           labelHelp={t('Plugin requeue time in seconds')}
-          required
           disabled={disableForm}
         />
       </WizHidden>

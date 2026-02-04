@@ -183,6 +183,32 @@ export function ArgoWizard(props: ArgoWizardProps) {
     return [...(sourceGitChannels ?? []), ...(gitArgoAppSetRepoURLs ?? [])].filter(onlyUnique)
   }, [props.applicationSets, sourceGitChannels])
 
+  const gitGeneratorRepos = useMemo(() => {
+    const urls: string[] = []
+    const versions: string[] = []
+    const paths: string[] = []
+
+    props.applicationSets?.forEach((appset) => {
+      const generatorPath = findGeneratorPathWithGenType(appset, 'git')
+      if (generatorPath) {
+        const url = get(appset, `${generatorPath}.repoURL`)
+        if (url) urls.push(url)
+
+        const version = get(appset, `${generatorPath}.revision`)
+        if (version) versions.push(version)
+
+        const directories = get(appset, `${generatorPath}.directories`) as { path: string }[] | undefined
+        if (Array.isArray(directories)) {
+          directories.forEach((dir) => {
+            if (dir.path) paths.push(dir.path)
+          })
+        }
+      }
+    })
+
+    return { urls: urls.filter(onlyUnique), versions: versions.filter(onlyUnique), paths: paths.filter(onlyUnique) }
+  }, [props.applicationSets])
+
   const sourceHelmChannels = useMemo(() => {
     if (props.channels)
       return props.channels
@@ -516,6 +542,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
                 gitChannels={gitChannels}
                 channels={props.channels}
                 helmChannels={helmChannels}
+                gitGeneratorRepos={gitGeneratorRepos}
                 disableForm={disableForm}
               />
             </Section>
@@ -932,7 +959,7 @@ function ArgoWizardPlacementSection(props: {
   )
 }
 
-function findGeneratorPathWithCDR(item: unknown): string | undefined {
+function findGeneratorPathWithGenType(item: unknown, genType: string): string | undefined {
   // Generators can be at 'spec.generators' or 'spec.generators.0.matrix.generators' (matrix case)
   // When called from SyncPlacementNameToApplicationSet, item is an array; otherwise it's not
   const targetItem = Array.isArray(item) ? item[0] : item
@@ -945,16 +972,43 @@ function findGeneratorPathWithCDR(item: unknown): string | undefined {
 
   for (let i = 0; i < generators.length; i++) {
     const generator = generators[i]
-    if (findObjectWithKey(generator, 'clusterDecisionResource')) {
-      return `${generatorsPath}.${i}.clusterDecisionResource.labelSelector.matchLabels.cluster\\.open-cluster-management\\.io/placement`
+    if (findObjectWithKey(generator, genType)) {
+      return `${generatorsPath}.${i}.${genType}`
     }
   }
   return undefined
 }
 
+// fun fact, you can paste an argo app without a repositoryType key value because argo defaults to git
+//  but the wizard needs a reositoryType in order to function
+export function setRepositoryTypeForSources(resources: any[] | undefined): any[] | undefined {
+  return resources?.map((resource: any) => {
+    const sources = resource?.spec?.template?.spec?.sources
+    if (Array.isArray(sources)) {
+      const updatedSources = sources.map((source: any) =>
+        source.repositoryType ? source : { ...source, repositoryType: 'git' }
+      )
+      return {
+        ...resource,
+        spec: {
+          ...resource.spec,
+          template: {
+            ...resource.spec.template,
+            spec: {
+              ...resource.spec.template.spec,
+              sources: updatedSources,
+            },
+          },
+        },
+      }
+    }
+    return resource
+  })
+}
+
 function SyncPlacementNameToApplicationSet() {
   const item = useContext(ItemContext)
-  const targetPath = findGeneratorPathWithCDR(item)
+  const targetPath = `${findGeneratorPathWithGenType(item, 'clusterDecisionResource')}.labelSelector.matchLabels.cluster\\.open-cluster-management\\.io/placement`
 
   if (!targetPath) {
     return null
@@ -966,7 +1020,7 @@ function SyncPlacementNameToApplicationSet() {
 function ExistingPlacementSelect(props: { placements: IPlacement[] }) {
   const { t } = useTranslation()
   const item = useContext(ItemContext)
-  const path = findGeneratorPathWithCDR(item)
+  const path = `${findGeneratorPathWithGenType(item, 'clusterDecisionResource')}.labelSelector.matchLabels.cluster\\.open-cluster-management\\.io/placement`
 
   if (!path) {
     return null
