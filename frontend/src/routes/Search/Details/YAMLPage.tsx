@@ -20,6 +20,7 @@ import { PluginContext } from '../../../lib/PluginContext'
 import { canUser } from '../../../lib/rbac-util'
 import { IResource } from '../../../resources'
 import { getGroupFromApiVersion } from '../../../resources/utils'
+import { fleetCanUser } from '../../../resources/utils/fleet-can-user'
 import { fleetResourceRequest } from '../../../resources/utils/fleet-resource-request'
 import {
   getBackendUrl,
@@ -481,22 +482,21 @@ export default function YAMLPage() {
     if (!resourceYaml) {
       return
     }
-    const canUpdateResource = canUser(
-      'update',
-      {
-        apiVersion: apiversion,
-        kind,
-        metadata: {
-          name,
-          namespace,
-        },
+    const resource = {
+      apiVersion: apiversion,
+      kind,
+      metadata: {
+        name,
+        namespace,
       },
-      isHubClusterResource ? namespace : cluster,
-      name
-    )
+    }
+
+    const canUpdateResource = isHubClusterResource
+      ? canUser('update', resource, namespace, name)
+      : fleetCanUser('update', cluster, resource, namespace, name)
 
     canUpdateResource.promise
-      .then((result) => setUserCanEdit(result.status?.allowed! ?? false))
+      .then((result) => setUserCanEdit(result.status?.allowed ?? false))
       .catch((err) => console.error(err))
     return () => canUpdateResource.abort()
   }, [apiversion, cluster, resourceYaml, kind, name, namespace, isHubClusterResource])
