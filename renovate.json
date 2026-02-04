@@ -8,9 +8,7 @@
     "release-2.12",
     "release-2.11"
   ],
-  "schedule": [
-    "every weekend"
-  ],
+  "schedule": ["every weekend"],
   "timezone": "America/New_York",
   "lockFileMaintenance": {
     "enabled": false
@@ -21,5 +19,24 @@
     "@openshift-assisted/locales",
     "monaco-editor",
     "react-monaco-editor"
+  ],
+  "packageRules": [
+    {
+      "description": "Restrict npm updates to main branch only",
+      "matchManagers": ["npm"],
+      "matchBaseBranches": ["!/^main$/"],
+      "enabled": false
+    },
+    {
+      "description": "Only allow minor and patch updates for npm packages (disable major)",
+      "matchManagers": ["npm"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
+      "description": "Ignore all storybook packages",
+      "matchPackageNames": ["storybook", "@storybook/**"],
+      "enabled": false
+    }
   ]
 }
