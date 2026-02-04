@@ -82,7 +82,7 @@
     "i18next-http-backend": "1.4.0",
     "ip-cidr": "2.1.5",
     "js-yaml": "4.1.0",
-    "lodash": "4.17.21",
+    "lodash": "^4.17.23",
     "moment": "2.29.4",
     "moment-timezone": "^0.5.37",
     "monaco-editor": "^0.34.1",
