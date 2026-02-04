@@ -336,17 +336,15 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
 export interface SyncGeneratorProps {
   setGeneratorPath: (path: string) => void
   prevGenState: React.MutableRefObject<{ hasGitGen?: boolean; hasListGen?: boolean }>
+  generatorPath: string
 }
 
 // syncs the app name with the template name based on the generators selected
 export function SyncGenerator(props: SyncGeneratorProps) {
-  const { setGeneratorPath, prevGenState } = props
+  const { setGeneratorPath, prevGenState, generatorPath } = props
   const item = useContext(ItemContext)
   const { update } = useData()
   const appName = get(item, 'metadata.name')
-  const generatorPath = get(item, 'spec.generators.0.matrix')
-    ? 'spec.generators.0.matrix.generators'
-    : 'spec.generators'
   const generators = get(item, generatorPath) as IResource[] | undefined
   const generatorsString = JSON.stringify(generators)
   const { hasGitGen, hasListGen } = useMemo(
@@ -369,14 +367,15 @@ export function SyncGenerator(props: SyncGeneratorProps) {
       shouldUpdate = true
     }
 
-    const matrixGenerator = get(item, 'spec.generators.0.matrix') ? true : false
-    setGeneratorPath(matrixGenerator ? 'spec.generators.0.matrix.generators' : 'spec.generators')
+    const matrixGenerator = get(item, 'spec.generators.0.matrix')
     // if there are more than one generator and no matrix generator, add a matrix generator
     if (generators.length > 1 && !matrixGenerator) {
+      setGeneratorPath('spec.generators.0.matrix.generators')
       fix('spec.generators', [{ matrix: { generators: generators } }])
     }
     // if is one generator and a matrix generator, remove the matrix generator
-    if (generators.length === 1 && matrixGenerator) {
+    if (generators.length === 1 && matrixGenerator?.generators.length === 1) {
+      setGeneratorPath('spec.generators')
       fix('spec.generators', generators)
     }
 
@@ -388,7 +387,6 @@ export function SyncGenerator(props: SyncGeneratorProps) {
     const destinationNamePathNamespace = 'spec.template.spec.destination.namespace'
     const destinationNamePathServer = 'spec.template.spec.destination.server'
     const templateName = get(item, templateNamePath) ?? ''
-    // set(item, templateNamePath, `${appName}-{{name}}`, { preservePaths: true })
 
     // Handle git generator
     if (hasGitGen) {

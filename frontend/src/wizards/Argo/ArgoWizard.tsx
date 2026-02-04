@@ -544,7 +544,11 @@ export function ArgoWizard(props: ArgoWizardProps) {
                 disableForm={disableForm}
                 generatorPath={generatorPath}
               />
-              <SyncGenerator setGeneratorPath={setGeneratorPath} prevGenState={prevGenState} />
+              <SyncGenerator
+                setGeneratorPath={setGeneratorPath}
+                prevGenState={prevGenState}
+                generatorPath={generatorPath}
+              />
             </Section>
           </WizItemSelector>
         </Step>
