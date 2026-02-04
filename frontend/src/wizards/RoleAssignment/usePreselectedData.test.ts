@@ -711,6 +711,36 @@ describe('usePreselectedData', () => {
       )
     })
 
+    it('does not set clustersetsAccessLevel when cluster sets are selected without namespaces', () => {
+      const { mockFn: setFormData, calls } = createMockSetFormData()
+      const setSelectedClusterSets = jest.fn()
+      const setSelectedClusters = jest.fn()
+
+      renderHook(() =>
+        usePreselectedData({
+          isOpen: true,
+          preselected: {
+            clusterSetNames: ['cluster-set-1'],
+          },
+          setFormData,
+          setSelectedClusterSets,
+          setSelectedClusters,
+        })
+      )
+
+      expect(setFormData).toHaveBeenCalled()
+      expect(calls[0]).toEqual(
+        expect.objectContaining({
+          scopeType: 'Select cluster sets',
+          scope: {
+            kind: 'all',
+          },
+          selectedClusterSets: ['cluster-set-1'],
+        })
+      )
+      expect(calls[0]).not.toHaveProperty('clustersetsAccessLevel')
+    })
+
     it('applies namespaces when clusters are selected (not global access)', () => {
       const { mockFn: setFormData, calls } = createMockSetFormData()
       const setSelectedClusterSets = jest.fn()
@@ -741,6 +771,37 @@ describe('usePreselectedData', () => {
           clustersAccessLevel: 'Project role assignment',
         })
       )
+    })
+
+    it('does not set clustersAccessLevel when clusters are selected without namespaces', () => {
+      const { mockFn: setFormData, calls } = createMockSetFormData()
+      const setSelectedClusterSets = jest.fn()
+      const setSelectedClusters = jest.fn()
+
+      renderHook(() =>
+        usePreselectedData({
+          isOpen: true,
+          preselected: {
+            clusterNames: ['cluster-1'],
+          },
+          setFormData,
+          setSelectedClusterSets,
+          setSelectedClusters,
+        })
+      )
+
+      expect(setFormData).toHaveBeenCalled()
+      expect(calls[0]).toEqual(
+        expect.objectContaining({
+          scopeType: 'Select clusters',
+          scope: {
+            kind: 'specific',
+            clusterNames: ['cluster-1'],
+          },
+          selectedClusters: [{ name: 'cluster-1', namespaces: ['ns1', 'ns2'] }],
+        })
+      )
+      expect(calls[0]).not.toHaveProperty('clustersAccessLevel')
     })
 
     it('applies namespaces even when only namespaces are preselected (no clusters or cluster sets)', () => {
