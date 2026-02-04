@@ -2,7 +2,7 @@
 import { renderHook } from '@testing-library/react-hooks'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assignment'
-import { Placement, PlacementApiVersionBeta, PlacementKind } from '../placement'
+import { GlobalPlacementName, Placement, PlacementApiVersionBeta, PlacementKind } from '../placement'
 import { PlacementDecision } from '../placement-decision'
 import { MatchExpressions } from '../selector'
 import { createResource } from '../utils'
@@ -45,6 +45,14 @@ const createResourceMock = createResource as jest.MockedFunction<typeof createRe
 
 const useSharedAtomsMock = useSharedAtoms as jest.Mock
 const useRecoilValueMock = useRecoilValue as jest.Mock
+
+/** Global placement included in placement lists when includeGlobalPlacement is used. */
+const globalPlacement: Placement = {
+  apiVersion: PlacementApiVersionBeta,
+  kind: PlacementKind,
+  metadata: { name: GlobalPlacementName, namespace: 'default' },
+  spec: {},
+}
 
 describe('placement-client', () => {
   const mockPlacements: Placement[] = [
@@ -107,6 +115,7 @@ describe('placement-client', () => {
       },
       spec: {},
     },
+    globalPlacement,
   ]
 
   beforeAll(() => {
@@ -165,7 +174,7 @@ describe('placement-client', () => {
         })
       )
 
-      // Assert - empty placementNames matches all placements
+      // Assert - empty placementNames matches all placements (including global)
       expect(result.current).toHaveLength(mockPlacements.length)
     })
 
@@ -173,7 +182,7 @@ describe('placement-client', () => {
       // Act
       const { result } = renderHook(() => useFindPlacements({}))
 
-      // Assert - no filters means match all
+      // Assert - no filters means match all (including global)
       expect(result.current).toHaveLength(mockPlacements.length)
     })
 
@@ -362,6 +371,68 @@ describe('placement-client', () => {
 
       // Assert - empty clusterSets cannot match
       expect(result.current).toHaveLength(0)
+    })
+
+    describe('includeGlobalPlacement', () => {
+      it('should include global placement in results when includeGlobalPlacement is true even if query would exclude it', () => {
+        const { result } = renderHook(() =>
+          useFindPlacements({
+            placementNames: ['placement-1'],
+            includeGlobalPlacement: true,
+          })
+        )
+
+        expect(result.current).toHaveLength(2)
+        expect(result.current[0].metadata.name).toBe('placement-1')
+        expect(result.current[1].metadata.name).toBe(GlobalPlacementName)
+      })
+
+      it('should not include global placement when includeGlobalPlacement is false', () => {
+        const { result } = renderHook(() =>
+          useFindPlacements({
+            placementNames: ['placement-1'],
+            includeGlobalPlacement: false,
+          })
+        )
+
+        expect(result.current).toHaveLength(1)
+        expect(result.current[0].metadata.name).toBe('placement-1')
+      })
+
+      it('should not include global placement when includeGlobalPlacement is undefined', () => {
+        const { result } = renderHook(() =>
+          useFindPlacements({
+            placementNames: ['placement-1'],
+          })
+        )
+
+        expect(result.current).toHaveLength(1)
+        expect(result.current[0].metadata.name).toBe('placement-1')
+      })
+
+      it('should return only global placement when includeGlobalPlacement is true and no other placements match', () => {
+        const { result } = renderHook(() =>
+          useFindPlacements({
+            placementNames: ['nonexistent'],
+            includeGlobalPlacement: true,
+          })
+        )
+
+        expect(result.current).toHaveLength(1)
+        expect(result.current[0].metadata.name).toBe(GlobalPlacementName)
+      })
+
+      it('should include global placement at the end when includeGlobalPlacement is true with other filters', () => {
+        const { result } = renderHook(() =>
+          useFindPlacements({
+            placementNames: ['placement-1', 'placement-2'],
+            includeGlobalPlacement: true,
+          })
+        )
+
+        expect(result.current).toHaveLength(3)
+        expect(result.current.map((p) => p.metadata.name)).toEqual(['placement-1', 'placement-2', GlobalPlacementName])
+      })
     })
 
     describe('labels query', () => {
@@ -842,15 +913,17 @@ describe('placement-client', () => {
       it('should extract cluster names from placement predicates with key=name', () => {
         // Arrange
         const placement = createPlacementWithPredicates('placement-with-clusters', ['cluster-a', 'cluster-b'])
-        useRecoilValueMock.mockReturnValue([placement])
+        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
         const { result } = renderHook(() => useGetPlacementClusters(['placement-with-clusters']))
 
-        // Assert
+        // Assert - includeGlobalPlacement: true adds global at the end
+        expect(result.current).toHaveLength(2)
         expect(result.current[0].clusters).toEqual(['cluster-a', 'cluster-b'])
         expect(result.current[0].placement).toBe(placement)
+        expect(result.current[1].placement.metadata.name).toBe(GlobalPlacementName)
       })
 
       it('should return empty clusters array for placement without predicates', () => {
@@ -861,14 +934,16 @@ describe('placement-client', () => {
           metadata: { name: 'no-predicates', namespace: 'default', labels: ManagedByConsoleLabel },
           spec: {},
         }
-        useRecoilValueMock.mockReturnValue([placement])
+        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
         const { result } = renderHook(() => useGetPlacementClusters(['no-predicates']))
 
         // Assert
+        expect(result.current).toHaveLength(2)
         expect(result.current[0].clusters).toEqual([])
+        expect(result.current[1].placement.metadata.name).toBe(GlobalPlacementName)
       })
 
       it('should return empty clusters array for placement with empty predicates array', () => {
@@ -879,14 +954,16 @@ describe('placement-client', () => {
           metadata: { name: 'empty-predicates', namespace: 'default', labels: ManagedByConsoleLabel },
           spec: { predicates: [] },
         }
-        useRecoilValueMock.mockReturnValue([placement])
+        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
         const { result } = renderHook(() => useGetPlacementClusters(['empty-predicates']))
 
         // Assert
+        expect(result.current).toHaveLength(2)
         expect(result.current[0].clusters).toEqual([])
+        expect(result.current[1].placement.metadata.name).toBe(GlobalPlacementName)
       })
 
       it('should ignore matchExpressions with key other than name', () => {
@@ -910,14 +987,16 @@ describe('placement-client', () => {
             ],
           },
         }
-        useRecoilValueMock.mockReturnValue([placement])
+        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
         const { result } = renderHook(() => useGetPlacementClusters(['wrong-key']))
 
         // Assert
+        expect(result.current).toHaveLength(2)
         expect(result.current[0].clusters).toEqual([])
+        expect(result.current[1].placement.metadata.name).toBe(GlobalPlacementName)
       })
 
       it('should extract only values from matchExpressions with key=name', () => {
@@ -942,14 +1021,16 @@ describe('placement-client', () => {
             ],
           },
         }
-        useRecoilValueMock.mockReturnValue([placement])
+        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
         const { result } = renderHook(() => useGetPlacementClusters(['mixed-keys']))
 
         // Assert
+        expect(result.current).toHaveLength(2)
         expect(result.current[0].clusters).toEqual(['cluster-x', 'cluster-y'])
+        expect(result.current[1].placement.metadata.name).toBe(GlobalPlacementName)
       })
 
       it('should handle placement with no labelSelector', () => {
@@ -966,14 +1047,16 @@ describe('placement-client', () => {
             ],
           },
         }
-        useRecoilValueMock.mockReturnValue([placement])
+        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
         const { result } = renderHook(() => useGetPlacementClusters(['no-label-selector']))
 
         // Assert
+        expect(result.current).toHaveLength(2)
         expect(result.current[0].clusters).toEqual([])
+        expect(result.current[1].placement.metadata.name).toBe(GlobalPlacementName)
       })
 
       it('should handle placement with no matchExpressions', () => {
@@ -992,14 +1075,16 @@ describe('placement-client', () => {
             ],
           },
         }
-        useRecoilValueMock.mockReturnValue([placement])
+        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
         const { result } = renderHook(() => useGetPlacementClusters(['no-match-expressions']))
 
         // Assert
+        expect(result.current).toHaveLength(2)
         expect(result.current[0].clusters).toEqual([])
+        expect(result.current[1].placement.metadata.name).toBe(GlobalPlacementName)
       })
 
       it('should handle placement with empty matchExpressions array', () => {
@@ -1020,14 +1105,16 @@ describe('placement-client', () => {
             ],
           },
         }
-        useRecoilValueMock.mockReturnValue([placement])
+        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
         const { result } = renderHook(() => useGetPlacementClusters(['empty-match-expressions']))
 
         // Assert
+        expect(result.current).toHaveLength(2)
         expect(result.current[0].clusters).toEqual([])
+        expect(result.current[1].placement.metadata.name).toBe(GlobalPlacementName)
       })
 
       it('should handle matchExpression with key=name but no values', () => {
@@ -1048,14 +1135,16 @@ describe('placement-client', () => {
             ],
           },
         }
-        useRecoilValueMock.mockReturnValue([placement])
+        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
         const { result } = renderHook(() => useGetPlacementClusters(['no-values']))
 
         // Assert
+        expect(result.current).toHaveLength(2)
         expect(result.current[0].clusters).toEqual([])
+        expect(result.current[1].placement.metadata.name).toBe(GlobalPlacementName)
       })
 
       it('should handle matchExpression with key=name but empty values array', () => {
@@ -1076,14 +1165,16 @@ describe('placement-client', () => {
             ],
           },
         }
-        useRecoilValueMock.mockReturnValue([placement])
+        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
         const { result } = renderHook(() => useGetPlacementClusters(['empty-values']))
 
         // Assert
+        expect(result.current).toHaveLength(2)
         expect(result.current[0].clusters).toEqual([])
+        expect(result.current[1].placement.metadata.name).toBe(GlobalPlacementName)
       })
 
       it('should filter out falsy values from matchExpression values', () => {
@@ -1110,14 +1201,16 @@ describe('placement-client', () => {
             ],
           },
         }
-        useRecoilValueMock.mockReturnValue([placement])
+        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
         const { result } = renderHook(() => useGetPlacementClusters(['falsy-values']))
 
         // Assert
+        expect(result.current).toHaveLength(2)
         expect(result.current[0].clusters).toEqual(['cluster-a', 'cluster-b'])
+        expect(result.current[1].placement.metadata.name).toBe(GlobalPlacementName)
       })
 
       it('should deduplicate cluster names from predicates', () => {
@@ -1148,14 +1241,16 @@ describe('placement-client', () => {
             ],
           },
         }
-        useRecoilValueMock.mockReturnValue([placement])
+        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
         const { result } = renderHook(() => useGetPlacementClusters(['duplicates']))
 
         // Assert
+        expect(result.current).toHaveLength(2)
         expect(result.current[0].clusters).toEqual(['cluster-a', 'cluster-b', 'cluster-c', 'cluster-d'])
+        expect(result.current[1].placement.metadata.name).toBe(GlobalPlacementName)
       })
 
       it('should handle multiple predicates each with their own matchExpressions', () => {
@@ -1190,14 +1285,16 @@ describe('placement-client', () => {
             ],
           },
         }
-        useRecoilValueMock.mockReturnValue([placement])
+        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
         const { result } = renderHook(() => useGetPlacementClusters(['multi-predicates']))
 
         // Assert
+        expect(result.current).toHaveLength(2)
         expect(result.current[0].clusters).toEqual(['cluster-1', 'cluster-2', 'cluster-3'])
+        expect(result.current[1].placement.metadata.name).toBe(GlobalPlacementName)
       })
     })
 
@@ -1206,7 +1303,7 @@ describe('placement-client', () => {
         // Arrange
         const placement = createPlacementWithPredicates('combined', ['cluster-from-predicate'])
         const placementDecision = createPlacementDecision('decision-1', 'combined', ['cluster-from-decision'])
-        useRecoilValueMock.mockReturnValue([placement])
+        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([placementDecision])
         getClustersFromPlacementDecisionSpy.mockReturnValue(['cluster-from-decision'])
 
@@ -1214,10 +1311,12 @@ describe('placement-client', () => {
         const { result } = renderHook(() => useGetPlacementClusters(['combined']))
 
         // Assert
+        expect(result.current).toHaveLength(2)
         expect(result.current[0].clusters).toEqual(
           expect.arrayContaining(['cluster-from-predicate', 'cluster-from-decision'])
         )
         expect(result.current[0].clusters).toHaveLength(2)
+        expect(result.current[1].placement.metadata.name).toBe(GlobalPlacementName)
       })
 
       it('should deduplicate clusters from predicates and PlacementDecision', () => {
@@ -1227,7 +1326,7 @@ describe('placement-client', () => {
           'shared-cluster',
           'decision-only',
         ])
-        useRecoilValueMock.mockReturnValue([placement])
+        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([placementDecision])
         getClustersFromPlacementDecisionSpy.mockReturnValue(['shared-cluster', 'decision-only'])
 
@@ -1235,24 +1334,28 @@ describe('placement-client', () => {
         const { result } = renderHook(() => useGetPlacementClusters(['dedupe-combined']))
 
         // Assert
+        expect(result.current).toHaveLength(2)
         expect(result.current[0].clusters).toEqual(
           expect.arrayContaining(['shared-cluster', 'predicate-only', 'decision-only'])
         )
         expect(result.current[0].clusters).toHaveLength(3)
+        expect(result.current[1].placement.metadata.name).toBe(GlobalPlacementName)
       })
 
       it('should handle PlacementDecision without matching Placement', () => {
         // Arrange
         const placement = createPlacementWithPredicates('orphan-test', ['cluster-a'])
         const placementDecision = createPlacementDecision('orphan-decision', 'different-placement', ['cluster-b'])
-        useRecoilValueMock.mockReturnValue([placement])
+        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([placementDecision])
 
         // Act
         const { result } = renderHook(() => useGetPlacementClusters(['orphan-test']))
 
-        // Assert - only clusters from predicate, not from orphan decision
+        // Assert - only clusters from predicate, not from orphan decision; global at end
+        expect(result.current).toHaveLength(2)
         expect(result.current[0].clusters).toEqual(['cluster-a'])
+        expect(result.current[1].placement.metadata.name).toBe(GlobalPlacementName)
       })
 
       it('should use PlacementDecision clusters when placement has no predicates', () => {
@@ -1267,7 +1370,7 @@ describe('placement-client', () => {
           'decision-cluster-1',
           'decision-cluster-2',
         ])
-        useRecoilValueMock.mockReturnValue([placement])
+        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([placementDecision])
         getClustersFromPlacementDecisionSpy.mockReturnValue(['decision-cluster-1', 'decision-cluster-2'])
 
@@ -1275,7 +1378,9 @@ describe('placement-client', () => {
         const { result } = renderHook(() => useGetPlacementClusters(['decision-only-clusters']))
 
         // Assert
+        expect(result.current).toHaveLength(2)
         expect(result.current[0].clusters).toEqual(['decision-cluster-1', 'decision-cluster-2'])
+        expect(result.current[1].placement.metadata.name).toBe(GlobalPlacementName)
       })
     })
 
@@ -1285,20 +1390,21 @@ describe('placement-client', () => {
         const placement1 = createPlacementWithPredicates('placement-a', ['cluster-1'])
         const placement2 = createPlacementWithPredicates('placement-b', ['cluster-2'])
         const placement3 = createPlacementWithPredicates('placement-c', ['cluster-3'])
-        useRecoilValueMock.mockReturnValue([placement1, placement2, placement3])
+        useRecoilValueMock.mockReturnValue([placement1, placement2, placement3, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
         const { result } = renderHook(() => useGetPlacementClusters(['placement-a', 'placement-b', 'placement-c']))
 
-        // Assert
-        expect(result.current).toHaveLength(3)
+        // Assert - includeGlobalPlacement adds global at the end
+        expect(result.current).toHaveLength(4)
         expect(result.current[0].placement.metadata.name).toBe('placement-a')
         expect(result.current[0].clusters).toEqual(['cluster-1'])
         expect(result.current[1].placement.metadata.name).toBe('placement-b')
         expect(result.current[1].clusters).toEqual(['cluster-2'])
         expect(result.current[2].placement.metadata.name).toBe('placement-c')
         expect(result.current[2].clusters).toEqual(['cluster-3'])
+        expect(result.current[3].placement.metadata.name).toBe(GlobalPlacementName)
       })
 
       it('should return empty array when no placements match', () => {
@@ -1319,7 +1425,7 @@ describe('placement-client', () => {
         const placement2 = createPlacementWithPredicates('p2', [])
         const decision1 = createPlacementDecision('d1', 'p1', ['c1'])
         const decision2 = createPlacementDecision('d2', 'p2', ['c2'])
-        useRecoilValueMock.mockReturnValue([placement1, placement2])
+        useRecoilValueMock.mockReturnValue([placement1, placement2, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([decision1, decision2])
         getClustersFromPlacementDecisionSpy.mockImplementation((decision: PlacementDecision) => {
           if (decision.metadata.name === 'd1') return ['c1']
@@ -1331,10 +1437,12 @@ describe('placement-client', () => {
         const { result } = renderHook(() => useGetPlacementClusters(['p1', 'p2']))
 
         // Assert
+        expect(result.current).toHaveLength(3)
         const p1Entry = result.current.find((e) => e.placement.metadata.name === 'p1')
         const p2Entry = result.current.find((e) => e.placement.metadata.name === 'p2')
         expect(p1Entry?.clusters).toEqual(['c1'])
         expect(p2Entry?.clusters).toEqual(['c2'])
+        expect(result.current[2].placement.metadata.name).toBe(GlobalPlacementName)
       })
 
       it('should return all placements when called without arguments', () => {
@@ -1342,31 +1450,33 @@ describe('placement-client', () => {
         const placement1 = createPlacementWithPredicates('placement-a', ['cluster-1'])
         const placement2 = createPlacementWithPredicates('placement-b', ['cluster-2'])
         const placement3 = createPlacementWithPredicates('placement-c', ['cluster-3'])
-        useRecoilValueMock.mockReturnValue([placement1, placement2, placement3])
+        useRecoilValueMock.mockReturnValue([placement1, placement2, placement3, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
         const { result } = renderHook(() => useGetPlacementClusters())
 
-        // Assert
-        expect(result.current).toHaveLength(3)
+        // Assert - includeGlobalPlacement adds global at the end
+        expect(result.current).toHaveLength(4)
         expect(result.current[0].placement.metadata.name).toBe('placement-a')
         expect(result.current[1].placement.metadata.name).toBe('placement-b')
         expect(result.current[2].placement.metadata.name).toBe('placement-c')
+        expect(result.current[3].placement.metadata.name).toBe(GlobalPlacementName)
       })
 
       it('should return all placements when called with undefined', () => {
         // Arrange
         const placement1 = createPlacementWithPredicates('p1', ['c1'])
         const placement2 = createPlacementWithPredicates('p2', ['c2'])
-        useRecoilValueMock.mockReturnValue([placement1, placement2])
+        useRecoilValueMock.mockReturnValue([placement1, placement2, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
         const { result } = renderHook(() => useGetPlacementClusters(undefined))
 
-        // Assert
-        expect(result.current).toHaveLength(2)
+        // Assert - includeGlobalPlacement adds global at the end
+        expect(result.current).toHaveLength(3)
+        expect(result.current[2].placement.metadata.name).toBe(GlobalPlacementName)
       })
     })
 
@@ -1389,14 +1499,15 @@ describe('placement-client', () => {
             ],
           },
         }
-        useRecoilValueMock.mockReturnValue([withLabel, withoutLabel])
+        useRecoilValueMock.mockReturnValue([withLabel, withoutLabel, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         const { result } = renderHook(() => useGetPlacementClusters(['with-label', 'without-label']))
 
-        expect(result.current).toHaveLength(1)
+        expect(result.current).toHaveLength(2)
         expect(result.current[0].placement.metadata.name).toBe('with-label')
         expect(result.current[0].clusters).toEqual(['cluster-a'])
+        expect(result.current[1].placement.metadata.name).toBe(GlobalPlacementName)
       })
 
       it('should return empty array when no placements have ManagedByConsoleLabel', () => {
@@ -1416,12 +1527,14 @@ describe('placement-client', () => {
             ],
           },
         }
-        useRecoilValueMock.mockReturnValue([placement])
+        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         const { result } = renderHook(() => useGetPlacementClusters(['unmanaged']))
 
-        expect(result.current).toHaveLength(0)
+        // includeGlobalPlacement: true adds global even when no other placements match
+        expect(result.current).toHaveLength(1)
+        expect(result.current[0].placement.metadata.name).toBe(GlobalPlacementName)
       })
     })
 
@@ -1434,13 +1547,14 @@ describe('placement-client', () => {
           metadata: { name: 'missing-label', namespace: 'default' },
           spec: {},
         }
-        useRecoilValueMock.mockReturnValue([withLabel, withoutLabel])
+        useRecoilValueMock.mockReturnValue([withLabel, withoutLabel, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         renderHook(() => useGetPlacementClusters(['found-placement', 'missing-label']))
 
+        // placementDecisions queried by names of found placements (with label) + global
         expect(useFindPlacementDecisionsSpy).toHaveBeenCalledWith({
-          placementNames: ['found-placement'],
+          placementNames: ['found-placement', GlobalPlacementName],
         })
       })
 
@@ -1449,7 +1563,7 @@ describe('placement-client', () => {
         const placementB = createPlacementWithPredicates('placement-b', [])
         const decisionA = createPlacementDecision('d-a', 'placement-a', ['cluster-a'])
         const decisionB = createPlacementDecision('d-b', 'placement-b', ['cluster-b'])
-        useRecoilValueMock.mockReturnValue([placementA, placementB])
+        useRecoilValueMock.mockReturnValue([placementA, placementB, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([decisionA, decisionB])
         getClustersFromPlacementDecisionSpy.mockImplementation((d: PlacementDecision) =>
           d.metadata.name === 'd-a' ? ['cluster-a'] : ['cluster-b']
@@ -1458,11 +1572,12 @@ describe('placement-client', () => {
         const { result } = renderHook(() => useGetPlacementClusters(['placement-a', 'placement-b']))
 
         expect(useFindPlacementDecisionsSpy).toHaveBeenCalledWith({
-          placementNames: ['placement-a', 'placement-b'],
+          placementNames: ['placement-a', 'placement-b', GlobalPlacementName],
         })
-        expect(result.current).toHaveLength(2)
+        expect(result.current).toHaveLength(3)
         expect(result.current[0].clusters).toEqual(['cluster-a'])
         expect(result.current[1].clusters).toEqual(['cluster-b'])
+        expect(result.current[2].placement.metadata.name).toBe(GlobalPlacementName)
       })
     })
   })

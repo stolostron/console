@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Placement, PlacementApiVersionBeta, PlacementKind } from '../placement'
+import { GlobalPlacementName, Placement, PlacementApiVersionBeta, PlacementKind } from '../placement'
 
 /**
  * Test case fixture for isPlacementForClusterSets
@@ -686,7 +686,17 @@ export const producePlacementNameLongListTestCases: ProducePlacementNameLongList
 ]
 
 /**
- * Default placements used by useFindPlacements tests (same 3 as in placement-client.test mockPlacements).
+ * Global placement included in placement lists (same as in placement-client.test).
+ */
+const globalPlacementForLabelsQuery: Placement = {
+  apiVersion: PlacementApiVersionBeta,
+  kind: PlacementKind,
+  metadata: { name: GlobalPlacementName, namespace: 'default' },
+  spec: {},
+}
+
+/**
+ * Default placements used by useFindPlacements tests (same as in placement-client.test mockPlacements, including global).
  * Used by labels query test cases when no label filter is applied.
  */
 export const defaultPlacementsForLabelsQuery: Placement[] = [
@@ -728,6 +738,7 @@ export const defaultPlacementsForLabelsQuery: Placement[] = [
     metadata: { name: 'placement-no-predicates', namespace: 'default' },
     spec: {},
   },
+  globalPlacementForLabelsQuery,
 ]
 
 /**
@@ -750,13 +761,13 @@ export const useFindPlacementsLabelsQueryTestCases: UseFindPlacementsLabelsQuery
     description: 'should return all placements when no label query is provided and no other filters',
     placements: defaultPlacementsForLabelsQuery,
     query: {},
-    expectedCount: 3,
+    expectedCount: 4,
   },
   {
     description: 'should return all placements when labels is empty array and no other filters',
     placements: defaultPlacementsForLabelsQuery,
     query: { labels: [] },
-    expectedCount: 3,
+    expectedCount: 4,
   },
   {
     description: 'should return placement when single label query matches (placement has that key-value)',

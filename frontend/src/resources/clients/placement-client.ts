@@ -2,7 +2,13 @@
 import { sha256 } from 'js-sha256'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assignment'
-import { Placement, PlacementApiVersionBeta, PlacementKind, PlacementPredicates } from '../placement'
+import {
+  GlobalPlacementName,
+  Placement,
+  PlacementApiVersionBeta,
+  PlacementKind,
+  PlacementPredicates,
+} from '../placement'
 import { PlacementDecision } from '../placement-decision'
 import { createResource, IRequestResult } from '../utils'
 import { ManagedByConsoleLabel } from './constants'
@@ -23,6 +29,8 @@ interface PlacementQuery {
   logicalOperator?: 'and' | 'or'
   /** Filter by labels. Empty array matches all. */
   labels?: Record<string, string>[]
+  /** Whether to include the global placement in the results */
+  includeGlobalPlacement?: boolean
 }
 
 /**
@@ -112,24 +120,27 @@ const findPlacements = (placements: Placement[], query: PlacementQuery): Placeme
   const isClusterNameMatchFn = (placement: Placement) => isClusterNameMatch(placement, query)
   const isClusterSetNameMatchFn = (placement: Placement) => isClusterSetNameMatch(placement, query)
   const isManagedByLabelMatchFn = (placement: Placement) => isLabelMatch(placement, query)
+  const globalPlacement: Placement | undefined = query.includeGlobalPlacement
+    ? placements.find((placement) => placement.metadata.name === GlobalPlacementName)
+    : undefined
 
-  if (query.logicalOperator === 'or') {
-    return placements?.filter(
-      (placement) =>
-        isPlacementNameMatchFn(placement) ||
-        isClusterNameMatchFn(placement) ||
-        isClusterSetNameMatchFn(placement) ||
-        isManagedByLabelMatchFn(placement)
-    )
-  } else {
-    return placements?.filter(
-      (placement) =>
-        isPlacementNameMatchFn(placement) &&
-        isClusterNameMatchFn(placement) &&
-        isClusterSetNameMatchFn(placement) &&
-        isManagedByLabelMatchFn(placement)
-    )
-  }
+  const filteredPlacements =
+    query.logicalOperator === 'or'
+      ? placements?.filter(
+          (placement) =>
+            isPlacementNameMatchFn(placement) ||
+            isClusterNameMatchFn(placement) ||
+            isClusterSetNameMatchFn(placement) ||
+            isManagedByLabelMatchFn(placement)
+        )
+      : placements?.filter(
+          (placement) =>
+            isPlacementNameMatchFn(placement) &&
+            isClusterNameMatchFn(placement) &&
+            isClusterSetNameMatchFn(placement) &&
+            isManagedByLabelMatchFn(placement)
+        )
+  return [...filteredPlacements, ...(globalPlacement ? [globalPlacement] : [])]
 }
 
 /**
@@ -198,7 +209,11 @@ const doesPlacementDecisionBelongToPlacement = (placementDecision: PlacementDeci
  * @returns Array of PlacementClusters for the placements together with the clusters and cluster sets
  */
 export const useGetPlacementClusters = (placementNames?: string[]): PlacementClusters[] => {
-  const placements = useFindPlacements({ placementNames, labels: [ManagedByConsoleLabel] })
+  const placements = useFindPlacements({
+    placementNames,
+    labels: [ManagedByConsoleLabel],
+    includeGlobalPlacement: true,
+  })
   const placementDecisions = useFindPlacementDecisions({
     placementNames: [
       ...new Set(
