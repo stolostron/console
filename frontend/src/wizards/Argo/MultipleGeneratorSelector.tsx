@@ -335,11 +335,12 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
 
 export interface SyncGeneratorProps {
   setGeneratorPath: (path: string) => void
+  prevGenState: React.MutableRefObject<{ hasGitGen?: boolean; hasListGen?: boolean }>
 }
 
 // syncs the app name with the template name based on the generators selected
 export function SyncGenerator(props: SyncGeneratorProps) {
-  const { setGeneratorPath } = props
+  const { setGeneratorPath, prevGenState } = props
   const item = useContext(ItemContext)
   const { update } = useData()
   const appName = get(item, 'metadata.name')
@@ -410,9 +411,14 @@ export function SyncGenerator(props: SyncGeneratorProps) {
       if (templateName !== `${appName}-{{name}}`) {
         fix(templateNamePath, `${appName}-{{name}}`)
       }
-      fix(destinationNamePathNamespace, '')
-      fix(destinationNamePathServer, server)
+      // Only reset destination when hasGitGen or hasListGen have changed
+      if (prevGenState.current.hasGitGen !== hasGitGen || prevGenState.current.hasListGen !== hasListGen) {
+        fix(destinationNamePathNamespace, '')
+        fix(destinationNamePathServer, server)
+      }
     }
+
+    prevGenState.current = { hasGitGen, hasListGen }
 
     if (shouldUpdate) {
       update()

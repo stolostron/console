@@ -21,7 +21,7 @@ import { Button, Content, ContentVariants, Flex, FlexItem, ToggleGroup, ToggleGr
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { get, set } from 'lodash'
-import { Fragment, ReactNode, useContext, useMemo, useState } from 'react'
+import { Fragment, ReactNode, useContext, useMemo, useRef, useState } from 'react'
 import { CreateCredentialModal } from '../../components/CreateCredentialModal'
 import { GitOpsOperatorAlert } from '../../components/GitOpsOperatorAlert'
 import { useTranslation } from '../../lib/acm-i18next'
@@ -244,6 +244,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
   const [generatorPath, setGeneratorPath] = useState<string>(() =>
     get(applicationSet, 'spec.generators.0.matrix') ? 'spec.generators.0.matrix.generators' : 'spec.generators'
   )
+  const prevGenState = useRef<{ hasGitGen?: boolean; hasListGen?: boolean }>({})
   const editMode = useEditMode()
 
   const { gitOpsOperatorSubscriptionsValue } = useSharedSelectors()
@@ -543,7 +544,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
                 disableForm={disableForm}
                 generatorPath={generatorPath}
               />
-              <SyncGenerator setGeneratorPath={setGeneratorPath} />
+              <SyncGenerator setGeneratorPath={setGeneratorPath} prevGenState={prevGenState} />
             </Section>
           </WizItemSelector>
         </Step>
