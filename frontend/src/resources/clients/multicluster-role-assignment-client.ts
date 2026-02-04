@@ -14,6 +14,7 @@ import {
 import { GlobalPlacementName, Placement } from '../placement'
 import { createResource, deleteResource, patchResource } from '../utils'
 import { getResource, IRequestResult, ResourceError, ResourceErrorCode } from '../utils/resource-request'
+import { ManagedByConsoleLabelKey, ManagedByConsoleLabelValue } from './constants'
 import { createForClusterSets as createForClusterSetsBinding } from './managed-cluster-set-binding-client'
 import { FlattenedRoleAssignment } from './model/flattened-role-assignment'
 import { PlacementClusters } from './model/placement-clusters'
@@ -384,6 +385,23 @@ export async function createAdditionalRoleAssignmentResources(
   return [...(existingPlacements ?? []), ...placementsForNames, ...placementsForSets]
 }
 
+const isMulticlusterRoleAssignmentManagedByConsole = (
+  multiclusterRoleAssignment?: MulticlusterRoleAssignment
+): boolean =>
+  Object.entries(multiclusterRoleAssignment?.metadata?.labels ?? {}).some(
+    ([key, value]) => key === ManagedByConsoleLabelKey && value === ManagedByConsoleLabelValue
+  )
+
+/**
+ * it returns the MulticlusterRoleAssignment managed by console or undefined
+ * @param multiclusterRoleAssignments array of MulticlusterRoleAssignments
+ * @returns MulticlusterRoleAssignment managed by console or undefined
+ */
+const getMulticlusterRoleAssignmentManagedByConsole = (
+  multiclusterRoleAssignments?: MulticlusterRoleAssignment[]
+): MulticlusterRoleAssignment | undefined =>
+  multiclusterRoleAssignments?.find((mra) => isMulticlusterRoleAssignmentManagedByConsole(mra))
+
 // TODO: get existingRelatedRoleAssignmets once useFindRoleAssignments is not a custom hook
 /**
  * Adds a new role assignment, either to an existing MulticlusterRoleAssignment or by creating a new one.
@@ -394,7 +412,7 @@ export async function createAdditionalRoleAssignmentResources(
  * 4. Patches existing or creates new MulticlusterRoleAssignment
  *
  * @param roleAssignment - The role assignment data to save
- * @param existingMulticlusterRoleAssignment - Existing MCRA for the same subject (to patch instead of create)
+ * @param existingMulticlusterRoleAssignments - Existing MRAs for the same subject (one with ManagedByConsole label is patched instead of create)
  * @param existingManagedClusterSetBindings - Existing bindings that can be reused
  * @param existingPlacement - Existing placement that can be reused
  * @returns IRequestResult containing the created/patched MulticlusterRoleAssignment
@@ -403,16 +421,16 @@ export async function createAdditionalRoleAssignmentResources(
 export const addRoleAssignment = async (
   roleAssignment: RoleAssignmentToSave,
   {
-    existingMulticlusterRoleAssignment,
+    existingMulticlusterRoleAssignments,
     existingManagedClusterSetBindings,
     existingPlacements,
   }: {
-    existingMulticlusterRoleAssignment?: MulticlusterRoleAssignment
+    existingMulticlusterRoleAssignments?: MulticlusterRoleAssignment[]
     existingManagedClusterSetBindings?: ManagedClusterSetBinding[]
     existingPlacements: Placement[]
   }
 ): Promise<RoleAssignment> => {
-  const existingRoleAssignments = existingMulticlusterRoleAssignment?.spec.roleAssignments || []
+  const existingRoleAssignments = existingMulticlusterRoleAssignments?.flatMap((mra) => mra.spec.roleAssignments) || []
   const isUnique = validateRoleAssignmentName(roleAssignment, existingRoleAssignments)
 
   if (!isUnique) {
@@ -426,11 +444,18 @@ export const addRoleAssignment = async (
     })
 
     const mappedRoleAssignment = mapRoleAssignmentBeforeSaving(roleAssignment, placements)
-    if (existingMulticlusterRoleAssignment) {
-      patchResource(existingMulticlusterRoleAssignment, {
+    const existingMulticlusterRoleAssignmentManagedByConsole = getMulticlusterRoleAssignmentManagedByConsole(
+      existingMulticlusterRoleAssignments
+    )
+
+    if (existingMulticlusterRoleAssignmentManagedByConsole) {
+      patchResource(existingMulticlusterRoleAssignmentManagedByConsole, {
         spec: {
-          ...existingMulticlusterRoleAssignment.spec,
-          roleAssignments: [...existingMulticlusterRoleAssignment.spec.roleAssignments, mappedRoleAssignment],
+          ...existingMulticlusterRoleAssignmentManagedByConsole.spec,
+          roleAssignments: [
+            ...existingMulticlusterRoleAssignmentManagedByConsole.spec.roleAssignments,
+            mappedRoleAssignment,
+          ],
         },
       })
     } else {
