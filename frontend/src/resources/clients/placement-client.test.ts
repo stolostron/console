@@ -13,6 +13,7 @@ import {
   doesPlacementContainsClusterSet,
   isPlacementForClusterNames,
   isPlacementForClusterSets,
+  PlacementLabel,
   useGetPlacementClusters,
   useFindPlacements,
 } from './placement-client'
@@ -380,14 +381,15 @@ describe('placement-client', () => {
       // Act
       createForClusterSets(clusterSets)
 
-      // Assert
+      // Assert - name from producePlacementName with prefix 'cluster-sets-'
       expect(createResourceMock).toHaveBeenCalledTimes(1)
       expect(createResourceMock).toHaveBeenCalledWith({
         apiVersion: PlacementApiVersionBeta,
         kind: PlacementKind,
         metadata: {
-          name: 'cluster-set-1-and-cluster-set-2',
+          name: 'cluster-sets-cluster-set-1-and-cluster-set-2',
           namespace: MulticlusterRoleAssignmentNamespace,
+          labels: { ...PlacementLabel },
         },
         spec: {
           clusterSets,
@@ -450,9 +452,31 @@ describe('placement-client', () => {
       )
     })
 
-    it('should join cluster set names with -and- for the placement name', () => {
+    it('should prefix placement name with cluster-sets- and join set names with -and-', () => {
       // Arrange
       const clusterSets = ['set-a', 'set-b', 'set-c']
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      // Act
+      createForClusterSets(clusterSets)
+
+      // Assert - name from producePlacementName with prefix 'cluster-sets-'
+      expect(createResourceMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            name: 'cluster-sets-set-a-and-set-b-and-set-c',
+          }),
+        })
+      )
+    })
+
+    it('should include metadata.labels (PlacementLabel)', () => {
+      // Arrange
+      const clusterSets = ['label-test']
       const mockResult = {
         promise: Promise.resolve({} as Placement),
         abort: jest.fn(),
@@ -466,7 +490,7 @@ describe('placement-client', () => {
       expect(createResourceMock).toHaveBeenCalledWith(
         expect.objectContaining({
           metadata: expect.objectContaining({
-            name: 'set-a-and-set-b-and-set-c',
+            labels: PlacementLabel,
           }),
         })
       )
@@ -545,6 +569,7 @@ describe('placement-client', () => {
         metadata: {
           name: 'clusters-cluster-1-and-cluster-2',
           namespace: MulticlusterRoleAssignmentNamespace,
+          labels: { ...PlacementLabel },
         },
         spec: {
           predicates: [
@@ -709,6 +734,28 @@ describe('placement-client', () => {
                 },
               },
             ],
+          }),
+        })
+      )
+    })
+
+    it('should include metadata.labels (PlacementLabel)', () => {
+      // Arrange
+      const clusters = ['label-test']
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      // Act
+      createForClusters(clusters)
+
+      // Assert
+      expect(createResourceMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            labels: PlacementLabel,
           }),
         })
       )
@@ -1616,6 +1663,252 @@ describe('placement-client', () => {
       expect(name1).not.toBe(name2)
       expect(name1).toMatch(/^clusters-[a-f0-9]+$/)
       expect(name2).toMatch(/^clusters-[a-f0-9]+$/)
+    })
+  })
+
+  describe('producePlacementName (via createForClusterSets)', () => {
+    beforeEach(() => {
+      jest.clearAllMocks()
+    })
+
+    it('should return suggestedName when length is less than 63', () => {
+      const clusterSets = ['set-1', 'set-2']
+      const expected = 'cluster-sets-set-1-and-set-2'
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      createForClusterSets(clusterSets)
+
+      expect(createResourceMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            name: expected,
+          }),
+        })
+      )
+      expect(expected.length).toBeLessThan(63)
+    })
+
+    it('should return suggestedName when length equals 63', () => {
+      // 'cluster-sets-' = 13 chars, so we need 50 chars for the set name to get total 63
+      const clusterSetName = 'a'.repeat(50)
+      const clusterSets = [clusterSetName]
+      const expected = `cluster-sets-${clusterSetName}`
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      createForClusterSets(clusterSets)
+
+      expect(createResourceMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            name: expected,
+          }),
+        })
+      )
+      expect(expected.length).toBe(63)
+    })
+
+    it('should return hash-based name when suggestedName length is greater than 63', () => {
+      const longName = 'a'.repeat(100)
+      const clusterSets = [longName, 'another-long-set-name']
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      createForClusterSets(clusterSets)
+
+      const placementCall = createResourceMock.mock.calls[0][0] as Placement
+      expect(placementCall.metadata.name!.length).toBe(63)
+      expect(placementCall.metadata.name!).toMatch(/^cluster-sets-[a-f0-9]+$/)
+      expect(placementCall.metadata.name!).not.toContain(longName)
+    })
+
+    it.each(producePlacementNameLengthTestCases)(
+      'should never produce a string longer than 63 characters for $description',
+      ({ clusterNames: clusterSetNames }) => {
+        const mockResult = {
+          promise: Promise.resolve({} as Placement),
+          abort: jest.fn(),
+        }
+        createResourceMock.mockReturnValue(mockResult)
+
+        createForClusterSets(clusterSetNames)
+
+        const placementCall = createResourceMock.mock.calls[0][0] as Placement
+        expect(placementCall.metadata.name!.length).toBeLessThanOrEqual(63)
+      }
+    )
+
+    it.each(producePlacementNameValidTestCases)(
+      'should produce a valid name for $description',
+      ({ clusterNames: clusterSetNames }) => {
+        const mockResult = {
+          promise: Promise.resolve({} as Placement),
+          abort: jest.fn(),
+        }
+        createResourceMock.mockReturnValue(mockResult)
+
+        createForClusterSets(clusterSetNames)
+
+        const placementCall = createResourceMock.mock.calls[0][0] as Placement
+        expect(placementCall.metadata.name).toBeDefined()
+        expect(placementCall.metadata.name!.length).toBeLessThanOrEqual(63)
+        expect(placementCall.metadata.name!).toMatch(/^cluster-sets-/)
+      }
+    )
+
+    it('should produce unique names for different cluster set name lists', () => {
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      producePlacementNameUniqueTestCases.forEach(({ clusterNames: clusterSetNames }) => {
+        createForClusterSets(clusterSetNames)
+      })
+
+      const names = createResourceMock.mock.calls.map((call) => (call[0] as Placement).metadata.name)
+      const uniqueNames = new Set(names)
+      expect(uniqueNames.size).toBe(names.length)
+    })
+
+    it('should produce the same name for the same cluster set name list', () => {
+      const clusterSets = ['set-1', 'set-2', 'set-3']
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      createForClusterSets(clusterSets)
+      createForClusterSets(clusterSets)
+
+      const name1 = (createResourceMock.mock.calls[0][0] as Placement).metadata.name
+      const name2 = (createResourceMock.mock.calls[1][0] as Placement).metadata.name
+      expect(name1).toBe(name2)
+    })
+
+    it('should handle empty cluster set names array', () => {
+      const clusterSets: string[] = []
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      createForClusterSets(clusterSets)
+
+      const placementCall = createResourceMock.mock.calls[0][0] as Placement
+      expect(placementCall.metadata.name!.length).toBeLessThanOrEqual(63)
+      expect(placementCall.metadata.name!).toMatch(/^cluster-sets-/)
+    })
+
+    it('should handle single cluster set name', () => {
+      const clusterSets = ['single-set']
+      const expected = 'cluster-sets-single-set'
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      createForClusterSets(clusterSets)
+
+      expect(createResourceMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: expect.objectContaining({
+            name: expected,
+          }),
+        })
+      )
+      expect(expected.length).toBeLessThanOrEqual(63)
+    })
+
+    it.each(producePlacementNameHashTestCases)(
+      'should produce hash when many short cluster set names exceed 63 characters for $description',
+      ({ clusterNames: clusterSetNames }) => {
+        const suggestedName = `cluster-sets-${clusterSetNames.join('-and-')}`
+        const mockResult = {
+          promise: Promise.resolve({} as Placement),
+          abort: jest.fn(),
+        }
+        createResourceMock.mockReturnValue(mockResult)
+
+        createForClusterSets(clusterSetNames)
+
+        const placementCall = createResourceMock.mock.calls[0][0] as Placement
+        expect(placementCall.metadata.name!.length).toBeLessThanOrEqual(63)
+        expect(placementCall.metadata.name!).toMatch(/^cluster-sets-[a-f0-9]+$/)
+        expect(placementCall.metadata.name!).not.toBe(suggestedName)
+      }
+    )
+
+    it.each(producePlacementNameSuggestedTestCases)(
+      'should produce suggestedName when many short cluster set names do not exceed 63 characters for $description',
+      ({ clusterNames: clusterSetNames }) => {
+        const suggestedName = `cluster-sets-${clusterSetNames.join('-and-')}`
+        const mockResult = {
+          promise: Promise.resolve({} as Placement),
+          abort: jest.fn(),
+        }
+        createResourceMock.mockReturnValue(mockResult)
+
+        createForClusterSets(clusterSetNames)
+
+        const placementCall = createResourceMock.mock.calls[0][0] as Placement
+        expect(placementCall.metadata.name).toBe(suggestedName)
+      }
+    )
+
+    it.each(producePlacementNameLongListTestCases)(
+      'should produce hash-based name for long cluster set name list: $description',
+      ({ clusterNames: clusterSetNames }) => {
+        const mockResult = {
+          promise: Promise.resolve({} as Placement),
+          abort: jest.fn(),
+        }
+        createResourceMock.mockReturnValue(mockResult)
+
+        createForClusterSets(clusterSetNames)
+
+        const placementCall = createResourceMock.mock.calls[0][0] as Placement
+        const name = placementCall.metadata.name!
+        expect(name.length).toBeLessThanOrEqual(63)
+        expect(name).toMatch(/^cluster-sets-[a-f0-9]+$/)
+      }
+    )
+
+    it('should ensure hash-based names are unique for different long cluster set name lists', () => {
+      const clusterSetNames1 = ['a'.repeat(30), 'b'.repeat(30)]
+      const clusterSetNames2 = ['c'.repeat(30), 'd'.repeat(30)]
+      const mockResult = {
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      }
+      createResourceMock.mockReturnValue(mockResult)
+
+      createForClusterSets(clusterSetNames1)
+      createForClusterSets(clusterSetNames2)
+
+      const placement1 = createResourceMock.mock.calls[0][0] as Placement
+      const placement2 = createResourceMock.mock.calls[1][0] as Placement
+      const name1 = placement1.metadata.name!
+      const name2 = placement2.metadata.name!
+      expect(name1.length).toBeLessThanOrEqual(63)
+      expect(name2.length).toBeLessThanOrEqual(63)
+      expect(name1).not.toBe(name2)
+      expect(name1).toMatch(/^cluster-sets-[a-f0-9]+$/)
+      expect(name2).toMatch(/^cluster-sets-[a-f0-9]+$/)
     })
   })
 })

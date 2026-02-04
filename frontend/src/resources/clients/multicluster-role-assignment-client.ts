@@ -25,6 +25,7 @@ import {
   doesPlacementContainsClusterSet,
   isPlacementForClusterNames,
   isPlacementForClusterSets,
+  PlacementLabel,
   useGetPlacementClusters,
 } from './placement-client'
 
@@ -440,7 +441,7 @@ export const addRoleAssignment = async (
         metadata: {
           name: `role-assignment-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
           namespace: MulticlusterRoleAssignmentNamespace,
-          labels: { 'open-cluster-management.io/managed-by': 'console' },
+          labels: { ...PlacementLabel },
         },
         spec: {
           subject: roleAssignment.subject,
