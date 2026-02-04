@@ -8,9 +8,10 @@ import { CreateUserForm } from './CreateUserForm'
 
 interface CreatePreAuthorizedUserProps {
   onClose: () => void
+  onSuccess: (user: User) => void
 }
 
-export function CreatePreAuthorizedUser({ onClose }: CreatePreAuthorizedUserProps) {
+export function CreatePreAuthorizedUser({ onClose, onSuccess }: CreatePreAuthorizedUserProps) {
   const { t } = useTranslation()
   const toastContext = useContext(AcmToastContext)
 
@@ -23,6 +24,7 @@ export function CreatePreAuthorizedUser({ onClose }: CreatePreAuthorizedUserProp
       type: 'success',
       autoClose: true,
     })
+    onSuccess(user)
     onClose()
   }
 
