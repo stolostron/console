@@ -6,6 +6,23 @@ import { RoleAssignmentWizardModal } from './RoleAssignmentWizardModal'
 import React from 'react'
 import { ManagedClusterSet } from '../../resources'
 
+let dataContextValue: { update?: (updateFn?: (draft: any) => void) => void } | undefined
+
+jest.mock('@patternfly-labs/react-form-wizard/lib/src/contexts/DataContext', () => {
+  const actual = jest.requireActual('@patternfly-labs/react-form-wizard/lib/src/contexts/DataContext')
+  return {
+    ...actual,
+    DataContext: {
+      ...actual.DataContext,
+      Provider: ({ value, children }: any) => {
+        dataContextValue = value
+        const Provider = actual.DataContext.Provider
+        return <Provider value={value}>{children}</Provider>
+      },
+    },
+  }
+})
+
 // Mock the translation hook
 jest.mock('../../lib/acm-i18next', () => ({
   useTranslation: () => ({
@@ -143,6 +160,7 @@ describe('RoleAssignmentWizardModal - useClustersFromClusterSets Integration', (
 
   beforeEach(() => {
     jest.clearAllMocks()
+    dataContextValue = undefined
     mockScopeSelectionStepContent.mockClear()
     mockClusterSetGranularityWizardStep.mockClear()
     mockClusterGranularityStepContent.mockClear()
@@ -701,6 +719,242 @@ describe('RoleAssignmentWizardModal - useClustersFromClusterSets Integration', (
       const identitiesListCall = mockIdentitiesList.mock.calls[0]?.[0]
       act(() => {
         identitiesListCall?.onGroupSelect({ metadata: { name: 'test-group' } })
+      })
+    })
+  })
+
+  describe('DataContext update', () => {
+    it('should apply update function and no-op update', async () => {
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(mockScopeSelectionStepContent).toHaveBeenCalled()
+      })
+
+      expect(dataContextValue?.update).toBeDefined()
+
+      act(() => {
+        dataContextValue?.update?.((draft) => {
+          draft.scopeType = 'Select clusters'
+        })
+      })
+
+      await waitFor(() => {
+        const lastCall =
+          mockScopeSelectionStepContent.mock.calls[mockScopeSelectionStepContent.mock.calls.length - 1]?.[0]
+        expect(lastCall?.selectedScope).toBe('Select clusters')
+      })
+
+      const callCountBefore = mockScopeSelectionStepContent.mock.calls.length
+      act(() => {
+        dataContextValue?.update?.()
+      })
+
+      await waitFor(() => {
+        expect(mockScopeSelectionStepContent.mock.calls.length).toBeGreaterThan(callCountBefore)
+      })
+    })
+  })
+
+  describe('Role and scope handler coverage', () => {
+    it('should update selected role when role is selected', async () => {
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} />)
+
+      const nextButton = await screen.findByRole('button', { name: 'Next' })
+      act(() => {
+        fireEvent.click(nextButton)
+      })
+
+      const selectRoleButton = await screen.findByRole('button', { name: 'Select admin role' })
+      act(() => {
+        fireEvent.click(selectRoleButton)
+      })
+
+      await waitFor(() => {
+        const lastCall = mockRolesList.mock.calls[mockRolesList.mock.calls.length - 1]?.[0]
+        expect(lastCall?.selectedRole).toBe('admin')
+      })
+    })
+
+    it('should update namespaces and cluster set access level in cluster set granularity step', async () => {
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(mockScopeSelectionStepContent).toHaveBeenCalled()
+      })
+
+      const scopeSelectionCall = mockScopeSelectionStepContent.mock.calls[0]?.[0]
+      act(() => {
+        scopeSelectionCall?.onSelectClusterSets([mockClusterSet1])
+        scopeSelectionCall?.onSelectScopeType('Select cluster sets')
+      })
+
+      const nextButton = await screen.findByRole('button', { name: 'Next' })
+      act(() => {
+        nextButton.click()
+      })
+
+      await waitFor(() => {
+        expect(mockClusterSetGranularityWizardStep).toHaveBeenCalled()
+      })
+
+      const clusterSetCall = mockClusterSetGranularityWizardStep.mock.calls[0]?.[0]
+      act(() => {
+        clusterSetCall?.onNamespacesChange(['ns-a'])
+        clusterSetCall?.onClustersetsAccessLevelChange('Project role assignment')
+      })
+
+      await waitFor(() => {
+        const lastCall =
+          mockClusterSetGranularityWizardStep.mock.calls[mockClusterSetGranularityWizardStep.mock.calls.length - 1]?.[0]
+        expect(lastCall?.selectedNamespaces).toEqual(['ns-a'])
+        expect(lastCall?.clustersetsAccessLevel).toBe('Project role assignment')
+      })
+    })
+
+    it('should update namespaces and cluster access level in cluster granularity step', async () => {
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(mockScopeSelectionStepContent).toHaveBeenCalled()
+      })
+
+      const scopeSelectionCall = mockScopeSelectionStepContent.mock.calls[0]?.[0]
+      act(() => {
+        scopeSelectionCall?.onSelectScopeType('Select clusters')
+        scopeSelectionCall?.onSelectClusters([{ metadata: { name: 'cluster-1' } }])
+      })
+
+      const nextButton = await screen.findByRole('button', { name: 'Next' })
+      act(() => {
+        nextButton.click()
+      })
+
+      await waitFor(() => {
+        expect(mockClusterGranularityStepContent).toHaveBeenCalled()
+      })
+
+      const clusterCall = mockClusterGranularityStepContent.mock.calls[0]?.[0]
+      act(() => {
+        clusterCall?.onNamespacesChange(['ns-b'])
+        clusterCall?.onClustersAccessLevelChange('Project role assignment')
+      })
+
+      await waitFor(() => {
+        const lastCall =
+          mockClusterGranularityStepContent.mock.calls[mockClusterGranularityStepContent.mock.calls.length - 1]?.[0]
+        expect(lastCall?.selectedNamespaces).toEqual(['ns-b'])
+        expect(lastCall?.clustersAccessLevel).toBe('Project role assignment')
+      })
+    })
+  })
+
+  describe('hasChanges mapping and defaults', () => {
+    it('should handle undefined scopeType for scopeTypeChanged default case', async () => {
+      renderWithRouter(
+        <RoleAssignmentWizardModal
+          {...defaultProps}
+          isEditing={true}
+          preselected={{
+            context: 'identity',
+            roles: ['admin'],
+            clusterSetNames: ['global'],
+            subject: { kind: 'User', value: 'test-user' },
+          }}
+        />
+      )
+
+      await waitFor(() => {
+        expect(mockScopeSelectionStepContent).toHaveBeenCalled()
+      })
+
+      const scopeSelectionCall = mockScopeSelectionStepContent.mock.calls[0]?.[0]
+      act(() => {
+        scopeSelectionCall?.onSelectScopeType(undefined)
+      })
+
+      await waitFor(() => {
+        const lastCall =
+          mockScopeSelectionStepContent.mock.calls[mockScopeSelectionStepContent.mock.calls.length - 1]?.[0]
+        expect(lastCall?.selectedScope).toBeUndefined()
+      })
+    })
+
+    it('should map cluster set objects by metadata name', async () => {
+      const preselected = {
+        context: 'identity' as const,
+        roles: ['admin'],
+        clusterSetNames: ['cluster-set-1'],
+        subject: { kind: 'User' as const, value: 'test-user' },
+      }
+
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isEditing={true} preselected={preselected} />)
+
+      await waitFor(() => {
+        expect(mockScopeSelectionStepContent).toHaveBeenCalled()
+      })
+
+      const scopeSelectionCall = mockScopeSelectionStepContent.mock.calls[0]?.[0]
+      act(() => {
+        scopeSelectionCall?.onSelectScopeType('Select cluster sets')
+        scopeSelectionCall?.onSelectClusterSets([{ metadata: { name: 'cluster-set-1' } }])
+      })
+
+      await waitFor(() => {
+        const lastCall =
+          mockScopeSelectionStepContent.mock.calls[mockScopeSelectionStepContent.mock.calls.length - 1]?.[0]
+        expect(lastCall?.selectedClusterSets).toHaveLength(1)
+      })
+    })
+
+    it('should map cluster objects by metadata name', async () => {
+      const preselected = {
+        context: 'identity' as const,
+        roles: ['admin'],
+        clusterNames: ['cluster-1'],
+        subject: { kind: 'User' as const, value: 'test-user' },
+      }
+
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isEditing={true} preselected={preselected} />)
+
+      await waitFor(() => {
+        expect(mockScopeSelectionStepContent).toHaveBeenCalled()
+      })
+
+      const scopeSelectionCall = mockScopeSelectionStepContent.mock.calls[0]?.[0]
+      act(() => {
+        scopeSelectionCall?.onSelectScopeType('Select clusters')
+        scopeSelectionCall?.onSelectClusters([{ metadata: { name: 'cluster-1' } }])
+      })
+
+      await waitFor(() => {
+        const lastCall =
+          mockScopeSelectionStepContent.mock.calls[mockScopeSelectionStepContent.mock.calls.length - 1]?.[0]
+        expect(lastCall?.selectedClusters).toHaveLength(1)
+      })
+    })
+
+    it('should update group identity value in form state', async () => {
+      const preselected = {
+        roles: ['admin'],
+        clusterSetNames: ['global'],
+        subject: { kind: 'Group' as const, value: 'old-group' },
+      }
+
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} isEditing={true} preselected={preselected} />)
+
+      await waitFor(() => {
+        expect(mockIdentitiesList).toHaveBeenCalled()
+      })
+
+      const identitiesCall = mockIdentitiesList.mock.calls[0]?.[0]
+      act(() => {
+        identitiesCall?.onGroupSelect({ metadata: { name: 'new-group' } })
+      })
+
+      await waitFor(() => {
+        const lastCall = mockIdentitiesList.mock.calls[mockIdentitiesList.mock.calls.length - 1]?.[0]
+        expect(lastCall?.initialSelectedIdentity).toEqual({ kind: 'Group', name: 'new-group' })
       })
     })
   })
