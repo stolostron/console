@@ -135,8 +135,6 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
         disabled: boolean
       }[] = []
   let selections = props.value ?? props.selections
-  const allOptions = Children.toArray(props.children).map((item) => (item as ReactElement).props)
-
   if (useFilter) {
     const children = Children.toArray(props.children)
     if (Array.isArray(props?.options)) {
@@ -220,13 +218,8 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
     footer,
     ...selectProps
   } = props
-  const selectedItem = !Array.isArray(selections)
-    ? allOptions.find((option) => option.value === selections)?.children || (selections as string)
-    : undefined
-  const selectedItems = Array.isArray(selections)
-    ? selections.map((selection) => allOptions.find((option) => option.value === selection)?.children) ||
-      (selections as string[])
-    : []
+  const selectedItem = !Array.isArray(selections) ? (selections as string) : undefined
+  const selectedItems = Array.isArray(selections) ? (selections as string[]) : []
 
   const isMulti = Array.isArray(selections)
   const isSingle = typeof selections === 'string' && selections?.length !== 0
@@ -267,6 +260,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
     setIsOpen(false)
     if (
       variant === SelectVariant.checkbox ||
+      variant === SelectVariant.typeahead ||
       variant == SelectVariant.typeaheadCheckbox ||
       variant == SelectVariant.typeaheadMulti
     ) {
@@ -407,10 +401,10 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
   }, [initialOptionsStr])
 
   useEffect(() => {
-    if (variant === SelectVariant.typeahead && selectedItem) {
-      setInputValue(selectedItem)
+    if (variant === SelectVariant.typeahead && selections) {
+      setInputValue(String(selections))
     }
-  }, [selectedItem, variant])
+  }, [selections, variant])
 
   const setActiveAndFocusedItem = (itemIndex: number) => {
     setFocusedItemIndex(itemIndex)
@@ -662,10 +656,14 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
   }
 
   function renderMultipleTextInput(): ReactNode {
+    const value =
+      inputValue === selectedItem || inputValue === ''
+        ? initialFilteredOptions.find((option) => option.value === selectedItem)?.children
+        : inputValue
     return (
       <TextInputGroup isPlain>
         <TextInputGroupMain
-          value={inputValue || selectedItem}
+          value={value}
           onClick={onInputClick}
           onChange={onTextInputChange}
           onKeyDown={onInputKeyDown}

@@ -66,6 +66,7 @@ export function AcmPageHeader(props: AcmPageHeaderProps) {
       style={{
         border: 'none',
       }}
+      stickyOnBreakpoint={{ default: 'top' }}
     >
       <Split>
         <SplitItem isFilled>

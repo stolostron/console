@@ -20,6 +20,7 @@ import { PluginContext } from '../../../lib/PluginContext'
 import { canUser } from '../../../lib/rbac-util'
 import { IResource } from '../../../resources'
 import { getGroupFromApiVersion } from '../../../resources/utils'
+import { fleetCanUser } from '../../../resources/utils/fleet-can-user'
 import { fleetResourceRequest } from '../../../resources/utils/fleet-resource-request'
 import {
   getBackendUrl,
@@ -236,6 +237,7 @@ export function EditorActionBar(
     namespace: string
     isHubClusterResource: boolean
     resourceYaml: string
+    readOnly?: boolean
     setResourceYaml: Dispatch<SetStateAction<string>>
     handleResize: () => void
     setResourceVersion: Dispatch<SetStateAction<string>>
@@ -251,6 +253,7 @@ export function EditorActionBar(
     namespace,
     isHubClusterResource,
     resourceYaml,
+    readOnly,
     setResourceYaml,
     handleResize,
     setResourceVersion,
@@ -314,6 +317,7 @@ export function EditorActionBar(
             <Button
               variant="primary"
               id="update-resource-button"
+              isDisabled={readOnly}
               onClick={() => {
                 setUpdateError('')
                 setUpdateSuccess(false)
@@ -363,7 +367,12 @@ export function EditorActionBar(
             </Button>
           </ActionListItem>
           <ActionListItem>
-            <Button variant="secondary" id="cancel-resource-button" onClick={() => onCancel(navigate)}>
+            <Button
+              variant="secondary"
+              id="cancel-resource-button"
+              isDisabled={readOnly}
+              onClick={() => onCancel(navigate)}
+            >
               {t('Cancel')}
             </Button>
           </ActionListItem>
@@ -481,22 +490,21 @@ export default function YAMLPage() {
     if (!resourceYaml) {
       return
     }
-    const canUpdateResource = canUser(
-      'update',
-      {
-        apiVersion: apiversion,
-        kind,
-        metadata: {
-          name,
-          namespace,
-        },
+    const resource = {
+      apiVersion: apiversion,
+      kind,
+      metadata: {
+        name,
+        namespace,
       },
-      isHubClusterResource ? namespace : cluster,
-      name
-    )
+    }
+
+    const canUpdateResource = isHubClusterResource
+      ? canUser('update', resource, namespace, name)
+      : fleetCanUser('update', cluster, resource, namespace, name)
 
     canUpdateResource.promise
-      .then((result) => setUserCanEdit(result.status?.allowed! ?? false))
+      .then((result) => setUserCanEdit(result.status?.allowed ?? false))
       .catch((err) => console.error(err))
     return () => canUpdateResource.abort()
   }, [apiversion, cluster, resourceYaml, kind, name, namespace, isHubClusterResource])
@@ -546,6 +554,7 @@ export default function YAMLPage() {
         namespace={namespace}
         isHubClusterResource={isHubClusterResource}
         resourceYaml={resourceYaml}
+        readOnly={!userCanEdit}
         setResourceYaml={setResourceYaml}
         handleResize={handleResize}
         setResourceVersion={setResourceVersion}

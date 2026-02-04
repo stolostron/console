@@ -21,7 +21,6 @@ export const HypershiftDiagramExpand = (props: HypershiftDiagramExpandProps) => 
     <ExpandableSection
       style={{
         paddingTop: '24px',
-        backgroundColor: 'var(--pf-t--global--background--color--secondary--default)',
       }}
       isExpanded={isDiagramExpanded}
       onToggle={(_event, isExpanded) => onDiagramToggle(isExpanded)}

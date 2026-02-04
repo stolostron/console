@@ -146,8 +146,8 @@ describe('roleAssignmentHelper', () => {
       const result = existingRoleAssignmentsBySubjectRole(roleAssignmentsToSave, UserKind, [], [])
 
       expect(result.size).toBe(2)
-      expect(result.get(`${UserKind}|user1`)).toBe(mcra1)
-      expect(result.get(`${UserKind}|user2`)).toBe(mcra2)
+      expect(result.get(`${UserKind}|user1`)).toEqual([mcra1])
+      expect(result.get(`${UserKind}|user2`)).toEqual([mcra2])
     })
 
     it('should handle group subjects', () => {
@@ -169,7 +169,7 @@ describe('roleAssignmentHelper', () => {
       const result = existingRoleAssignmentsBySubjectRole(roleAssignmentsToSave, GroupKind, [], [])
 
       expect(result.size).toBe(1)
-      expect(result.get(`${GroupKind}|developers`)).toBe(mcra)
+      expect(result.get(`${GroupKind}|developers`)).toEqual([mcra])
       expect(mockFindRoleAssignments).toHaveBeenCalledWith(
         { subjectKinds: [GroupKind], subjectNames: ['developers'] },
         [],
@@ -269,9 +269,9 @@ describe('roleAssignmentHelper', () => {
 
       const result = existingRoleAssignmentsBySubjectRole(roleAssignmentsToSave, UserKind, [], [])
 
-      // The last one wins
+      // Same subject can have multiple MRAs; all are collected in an array
       expect(result.size).toBe(1)
-      expect(result.get(`${UserKind}|user1`)).toBe(mcra2)
+      expect(result.get(`${UserKind}|user1`)).toEqual([mcra1, mcra2])
     })
 
     it('should handle mixed user and group lookups with correct subject kind', () => {
@@ -292,7 +292,7 @@ describe('roleAssignmentHelper', () => {
 
       const result = existingRoleAssignmentsBySubjectRole(roleAssignmentsToSave, UserKind, [], [])
 
-      expect(result.get(`${UserKind}|user1`)).toBe(mcraUser)
+      expect(result.get(`${UserKind}|user1`)).toEqual([mcraUser])
       // Verify that a group with the same name would have a different key
       expect(result.get(`${GroupKind}|user1`)).toBeUndefined()
     })
@@ -344,8 +344,8 @@ describe('roleAssignmentHelper', () => {
 
     it('should call addRoleAssignment with correct parameters and invoke onSuccess callback', async () => {
       const existingMcra = createMockMulticlusterRoleAssignment('existing-mcra')
-      const existingBySubjectRole = new Map<string, MulticlusterRoleAssignment>()
-      existingBySubjectRole.set(`${UserKind}|user1`, existingMcra)
+      const existingBySubjectRole = new Map<string, MulticlusterRoleAssignment[]>()
+      existingBySubjectRole.set(`${UserKind}|user1`, [existingMcra])
 
       const mockMcsb = createMockManagedClusterSetBinding('cluster-set-1')
       const placementClusters = createPlacementClustersArray([{ name: 'placement-1', clusters: ['cluster-1'] }])
@@ -389,7 +389,7 @@ describe('roleAssignmentHelper', () => {
         namespaces: [MulticlusterRoleAssignmentNamespace],
       })
       expect(mockAddRoleAssignment).toHaveBeenCalledWith(roleAssignment, {
-        existingMulticlusterRoleAssignment: existingMcra,
+        existingMulticlusterRoleAssignments: [existingMcra],
         existingManagedClusterSetBindings: [mockMcsb],
         existingPlacements,
       })
@@ -447,7 +447,7 @@ describe('roleAssignmentHelper', () => {
       expect(callbacks.onError).toHaveBeenCalledWith('editor', expect.any(Error), true)
     })
 
-    it('should pass undefined for existingMulticlusterRoleAssignment when not found in map', async () => {
+    it('should pass undefined for existingMulticlusterRoleAssignments when not found in map', async () => {
       const savedRoleAssignment: RoleAssignment = {
         name: 'saved-role-assignment',
         clusterRole: 'admin',
@@ -474,7 +474,7 @@ describe('roleAssignmentHelper', () => {
       const result = await saveRoleAssignment(roleAssignment, new Map(), [], [], callbacks)
 
       expect(mockAddRoleAssignment).toHaveBeenCalledWith(roleAssignment, {
-        existingMulticlusterRoleAssignment: undefined,
+        existingMulticlusterRoleAssignments: undefined,
         existingManagedClusterSetBindings: [],
         existingPlacements: [],
       })
@@ -524,8 +524,8 @@ describe('roleAssignmentHelper', () => {
 
     it('should handle group subjects correctly', async () => {
       const existingMcra = createMockMulticlusterRoleAssignment('group-mcra')
-      const existingBySubjectRole = new Map<string, MulticlusterRoleAssignment>()
-      existingBySubjectRole.set(`${GroupKind}|developers`, existingMcra)
+      const existingBySubjectRole = new Map<string, MulticlusterRoleAssignment[]>()
+      existingBySubjectRole.set(`${GroupKind}|developers`, [existingMcra])
 
       const savedRoleAssignment: RoleAssignment = {
         name: 'saved-role-assignment',
@@ -555,7 +555,7 @@ describe('roleAssignmentHelper', () => {
       expect(mockAddRoleAssignment).toHaveBeenCalledWith(
         roleAssignment,
         expect.objectContaining({
-          existingMulticlusterRoleAssignment: existingMcra,
+          existingMulticlusterRoleAssignments: [existingMcra],
         })
       )
       expect(callbacks.onSuccess).toHaveBeenCalledWith(savedRoleAssignment)
@@ -564,8 +564,8 @@ describe('roleAssignmentHelper', () => {
 
     it('should call addRoleAssignment with global placement when isGlobalScope is true', async () => {
       const existingMcra = createMockMulticlusterRoleAssignment('existing-mcra')
-      const existingBySubjectRole = new Map<string, MulticlusterRoleAssignment>()
-      existingBySubjectRole.set(`${UserKind}|user1`, existingMcra)
+      const existingBySubjectRole = new Map<string, MulticlusterRoleAssignment[]>()
+      existingBySubjectRole.set(`${UserKind}|user1`, [existingMcra])
 
       const globalPlacement: Placement = {
         apiVersion: 'cluster.open-cluster-management.io/v1beta1',
@@ -610,7 +610,7 @@ describe('roleAssignmentHelper', () => {
 
       expect(mockGetPlacementsForRoleAssignment).toHaveBeenCalledWith(roleAssignment, placementClusters)
       expect(mockAddRoleAssignment).toHaveBeenCalledWith(roleAssignment, {
-        existingMulticlusterRoleAssignment: existingMcra,
+        existingMulticlusterRoleAssignments: [existingMcra],
         existingManagedClusterSetBindings: [],
         existingPlacements: [globalPlacement],
       })
@@ -852,8 +852,8 @@ describe('roleAssignmentHelper', () => {
         },
       }
 
-      const existingBySubjectRole = new Map<string, MulticlusterRoleAssignment>()
-      existingBySubjectRole.set(`${UserKind}|user1`, existingMcra)
+      const existingBySubjectRole = new Map<string, MulticlusterRoleAssignment[]>()
+      existingBySubjectRole.set(`${UserKind}|user1`, [existingMcra])
 
       const savedRoleAssignment: RoleAssignment = {
         name: 'saved-role-assignment',
@@ -885,7 +885,7 @@ describe('roleAssignmentHelper', () => {
       expect(mockAddRoleAssignment).toHaveBeenCalledWith(
         roleAssignmentsToSave[0],
         expect.objectContaining({
-          existingMulticlusterRoleAssignment: existingMcra,
+          existingMulticlusterRoleAssignments: [existingMcra],
         })
       )
       expect(result).toEqual([savedRoleAssignment])

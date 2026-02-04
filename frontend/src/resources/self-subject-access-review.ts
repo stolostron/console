@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
-import { createResource } from './utils/resource-request'
+import { createResource, createResourceWithBaseUrl } from './utils/resource-request'
 
 export const SelfSubjectAccessReviewApiVersion = 'authorization.k8s.io/v1'
 export type SelfSubjectAccessReviewApiVersionType = 'authorization.k8s.io/v1'
@@ -52,6 +52,31 @@ export function createSubjectAccessReview(resourceAttributes: Promise<ResourceAt
     })
   )
   return createResource<SelfSubjectAccessReview>(resources)
+}
+
+/**
+ * Creates a SelfSubjectAccessReview request with a custom base URL.
+ * This is useful for checking permissions on a remote cluster via a proxy.
+ *
+ * @param resourceAttributes The resource attributes to check permission for
+ * @param baseUrl The base URL to use for the request (e.g., managed cluster proxy URL)
+ * @returns IRequestResult with the SelfSubjectAccessReview response
+ */
+export function createSubjectAccessReviewWithBaseUrl(
+  resourceAttributes: Promise<ResourceAttributes> | ResourceAttributes,
+  baseUrl: string
+) {
+  const resources = Promise.resolve(resourceAttributes).then(
+    (resourceAttributes): SelfSubjectAccessReview => ({
+      apiVersion: SelfSubjectAccessReviewApiVersion,
+      kind: SelfSubjectAccessReviewKind,
+      metadata: {},
+      spec: {
+        resourceAttributes,
+      },
+    })
+  )
+  return createResourceWithBaseUrl<SelfSubjectAccessReview>(resources, baseUrl)
 }
 
 export function createSubjectAccessReviews(resourceAttributes: Array<ResourceAttributes>) {
