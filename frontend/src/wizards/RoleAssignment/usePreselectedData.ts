@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react'
 import { GlobalPlacementName, GroupKind, UserKind } from '../../resources'
 import { useRoleAssignmentData } from '../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
 import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
+import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { RoleAssignmentWizardFormData } from './types'
 
 interface UsePreselectedDataProps {
@@ -30,6 +31,8 @@ export const usePreselectedData = ({
   setSelectedClusters,
 }: UsePreselectedDataProps) => {
   const { roleAssignmentData } = useRoleAssignmentData()
+  const { managedClusterSetsState } = useSharedAtoms()
+  const managedClusterSets = useRecoilValue(managedClusterSetsState)
   const hasAppliedPreselection = useRef(false)
 
   useEffect(() => {
@@ -65,16 +68,16 @@ export const usePreselectedData = ({
             kind: 'all',
           }
         } else if (hasClusterSetNames) {
-          const clusterSetNames = roleAssignmentData.clusterSets
-            .map((e) => e.name)
-            .filter((clusterSetName) => preselected?.clusterSetNames?.includes(clusterSetName))
+          const clusterSets = managedClusterSets.filter(
+            (clusterSet) => clusterSet.metadata.name && preselected?.clusterSetNames?.includes(clusterSet.metadata.name)
+          )
 
           updates.scopeType = 'Select cluster sets'
           updates.scope = {
             kind: 'all',
           }
-          updates.selectedClusterSets = clusterSetNames
-          setSelectedClusterSets(clusterSetNames)
+          updates.selectedClusterSets = clusterSets.map((clusterSet) => clusterSet.metadata.name!)
+          setSelectedClusterSets(clusterSets)
         } else if (hasClusters) {
           const clusterObjects = allClusters.filter((cluster) => preselected?.clusterNames?.includes(cluster.name))
 
@@ -96,10 +99,22 @@ export const usePreselectedData = ({
           if (hasClusters) {
             updates.clustersAccessLevel = 'Project role assignment'
           }
+
+          if (hasClusterSetNames && !isGlobalAccess) {
+            updates.clustersetsAccessLevel = 'Project role assignment'
+          }
         }
 
         return { ...prev, ...updates }
       })
     }
-  }, [isOpen, preselected, roleAssignmentData.clusterSets, setFormData, setSelectedClusterSets, setSelectedClusters])
+  }, [
+    isOpen,
+    preselected,
+    roleAssignmentData.clusterSets,
+    managedClusterSets,
+    setFormData,
+    setSelectedClusterSets,
+    setSelectedClusters,
+  ])
 }
