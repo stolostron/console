@@ -237,6 +237,7 @@ export function EditorActionBar(
     namespace: string
     isHubClusterResource: boolean
     resourceYaml: string
+    readOnly?: boolean
     setResourceYaml: Dispatch<SetStateAction<string>>
     handleResize: () => void
     setResourceVersion: Dispatch<SetStateAction<string>>
@@ -252,6 +253,7 @@ export function EditorActionBar(
     namespace,
     isHubClusterResource,
     resourceYaml,
+    readOnly,
     setResourceYaml,
     handleResize,
     setResourceVersion,
@@ -315,6 +317,7 @@ export function EditorActionBar(
             <Button
               variant="primary"
               id="update-resource-button"
+              isDisabled={readOnly}
               onClick={() => {
                 setUpdateError('')
                 setUpdateSuccess(false)
@@ -364,7 +367,12 @@ export function EditorActionBar(
             </Button>
           </ActionListItem>
           <ActionListItem>
-            <Button variant="secondary" id="cancel-resource-button" onClick={() => onCancel(navigate)}>
+            <Button
+              variant="secondary"
+              id="cancel-resource-button"
+              isDisabled={readOnly}
+              onClick={() => onCancel(navigate)}
+            >
               {t('Cancel')}
             </Button>
           </ActionListItem>
@@ -546,6 +554,7 @@ export default function YAMLPage() {
         namespace={namespace}
         isHubClusterResource={isHubClusterResource}
         resourceYaml={resourceYaml}
+        readOnly={!userCanEdit}
         setResourceYaml={setResourceYaml}
         handleResize={handleResize}
         setResourceVersion={setResourceVersion}
