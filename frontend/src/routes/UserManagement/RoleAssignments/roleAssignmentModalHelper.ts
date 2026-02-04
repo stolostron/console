@@ -22,14 +22,14 @@ import { IAlertContext } from '../../../ui-components'
  * @param subjectKind - The kind of subject (User, Group, or ServiceAccount)
  * @param multiClusterRoleAssignments - All multicluster role assignments to search through
  * @param placementClusters - PlacementClusters for the placements together with the clusters and cluster sets
- * @returns Map where key is "subjectKind|subjectName" and value is the related MulticlusterRoleAssignment
+ * @returns Map where key is "subjectKind|subjectName" and value are the related MulticlusterRoleAssignments
  */
 export const existingRoleAssignmentsBySubjectRole = (
   roleAssignmentsToSave: RoleAssignmentToSave[],
   subjectKind: Subject['kind'],
   multiClusterRoleAssignments: MulticlusterRoleAssignment[],
   placementClusters: PlacementClusters[]
-): Map<string, MulticlusterRoleAssignment> => {
+): Map<string, MulticlusterRoleAssignment[]> => {
   const subjectNames = roleAssignmentsToSave.map((ra) => ra.subject.name).filter((e): e is string => e !== undefined)
 
   const existingRoleAssignments = findRoleAssignments(
@@ -43,9 +43,9 @@ export const existingRoleAssignmentsBySubjectRole = (
 
   return existingRoleAssignments.reduce((acc, ra) => {
     const key = `${ra.subject.kind}|${ra.subject.name}`
-    acc.set(key, ra.relatedMulticlusterRoleAssignment)
+    acc.set(key, [...(acc.get(key) ?? []), ra.relatedMulticlusterRoleAssignment])
     return acc
-  }, new Map<string, MulticlusterRoleAssignment>())
+  }, new Map<string, MulticlusterRoleAssignment[]>())
 }
 
 /**
@@ -61,7 +61,7 @@ export const existingRoleAssignmentsBySubjectRole = (
  */
 export const saveRoleAssignment = (
   roleAssignment: RoleAssignmentToSave,
-  existingBySubjectRole: Map<string, MulticlusterRoleAssignment>,
+  existingBySubjectRole: Map<string, MulticlusterRoleAssignment[]>,
   managedClusterSetBindings: ManagedClusterSetBinding[],
   placementClusters: PlacementClusters[],
   callbacks: {
@@ -70,7 +70,7 @@ export const saveRoleAssignment = (
   }
 ): Promise<RoleAssignment> => {
   const lookupKey = `${roleAssignment.subject.kind}|${roleAssignment.subject.name}`
-  const existingMulticlusterRoleAssignment = existingBySubjectRole.get(lookupKey)
+  const existingMulticlusterRoleAssignments = existingBySubjectRole.get(lookupKey)
   const existingManagedClusterSetBindings = findManagedClusterSetBinding(managedClusterSetBindings, {
     clusterSets: roleAssignment.clusterSetNames,
     namespaces: [MulticlusterRoleAssignmentNamespace],
@@ -78,7 +78,7 @@ export const saveRoleAssignment = (
   const existingPlacements: Placement[] = getPlacementsForRoleAssignment(roleAssignment, placementClusters)
 
   return addRoleAssignment(roleAssignment, {
-    existingMulticlusterRoleAssignment,
+    existingMulticlusterRoleAssignments,
     existingManagedClusterSetBindings,
     existingPlacements,
   })
@@ -107,7 +107,7 @@ export const saveRoleAssignment = (
  */
 export const saveAllRoleAssignments = async (
   roleAssignmentsToSave: RoleAssignmentToSave[],
-  existingBySubjectRole: Map<string, MulticlusterRoleAssignment>,
+  existingBySubjectRole: Map<string, MulticlusterRoleAssignment[]>,
   managedClusterSetBindings: ManagedClusterSetBinding[],
   placementClusters: PlacementClusters[],
   toastContext: IAlertContext,

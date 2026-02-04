@@ -3,6 +3,7 @@ import { Subject } from '../kubernetes-client'
 import { MulticlusterRoleAssignment, MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assignment'
 import { Placement } from '../placement'
 import { UserKind } from '../rbac'
+import { ManagedByConsoleLabelKey, ManagedByConsoleLabelValue } from './constants'
 import { FlattenedRoleAssignment } from './model/flattened-role-assignment'
 import { PlacementClusters } from './model/placement-clusters'
 import { RoleAssignmentToSave } from './model/role-assignment-to-save'
@@ -399,7 +400,7 @@ export const createFlattenedRoleAssignmentsForSort = (
 export interface AddRoleAssignmentTestCase {
   description: string
   roleAssignment: RoleAssignmentToSave
-  existingMulticlusterRoleAssignment?: MulticlusterRoleAssignment
+  existingMulticlusterRoleAssignments?: MulticlusterRoleAssignment[]
   existingPlacements: Placement[]
   shouldSucceed: boolean
   expectedErrorMessage?: string
@@ -427,6 +428,21 @@ export const createMockMulticlusterRoleAssignment = (
   },
   status: {},
 })
+
+/**
+ * Helper to create a mock MulticlusterRoleAssignment with ManagedByConsole label (console-managed)
+ */
+export const createMockMulticlusterRoleAssignmentManagedByConsole = (
+  name: string,
+  subject: Subject,
+  roleAssignmentNames: string[] = []
+): MulticlusterRoleAssignment => {
+  const base = createMockMulticlusterRoleAssignment(name, subject, roleAssignmentNames)
+  return {
+    ...base,
+    metadata: { ...base.metadata, labels: { [ManagedByConsoleLabelKey]: ManagedByConsoleLabelValue } },
+  }
+}
 
 /**
  * Interface for role assignment configuration in MRA
@@ -552,18 +568,18 @@ export const addRoleAssignmentTestCases: AddRoleAssignmentTestCase[] = [
     shouldSucceed: true,
   },
   {
-    description: 'should patch existing MulticlusterRoleAssignment when one exists',
+    description: 'should patch existing MulticlusterRoleAssignment when one with ManagedByConsole label exists',
     roleAssignment: {
       clusterRole: 'viewer',
       clusterNames: ['cluster-b'],
       subject: { name: 'user1', kind: UserKind },
       isGlobalScope: false,
     },
-    existingMulticlusterRoleAssignment: createMockMulticlusterRoleAssignment(
-      'existing-mra',
-      { name: 'user1', kind: UserKind },
-      ['existing-role']
-    ),
+    existingMulticlusterRoleAssignments: [
+      createMockMulticlusterRoleAssignmentManagedByConsole('existing-mra', { name: 'user1', kind: UserKind }, [
+        'existing-role',
+      ]),
+    ],
     existingPlacements: [],
     shouldSucceed: true,
   },
