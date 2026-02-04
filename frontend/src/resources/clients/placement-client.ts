@@ -5,9 +5,9 @@ import { MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assign
 import { Placement, PlacementApiVersionBeta, PlacementKind, PlacementPredicates } from '../placement'
 import { PlacementDecision } from '../placement-decision'
 import { createResource, IRequestResult } from '../utils'
+import { ManagedByConsoleLabel } from './constants'
 import { PlacementClusters } from './model/placement-clusters'
 import { getClustersFromPlacementDecision, useFindPlacementDecisions } from './placement-decision-client'
-import { ManagedByConsoleLabel } from './constants'
 
 /**
  * Query parameters for filtering Placement resources.
@@ -81,14 +81,12 @@ export const isPlacementForClusterNames = (placement: Placement): boolean => !is
  * No labels in query matches all. Otherwise the placement must contain every label (key-value) in the query (AND).
  * Placements may have additional labels beyond the query.
  */
-const isLabelMatch = (placement: Placement, query: PlacementQuery): boolean => {
-  if (!query.labels?.length) {
-    return true
-  }
-  return query.labels.every((label) =>
-    Object.entries(label).every(([key, value]) => placement.metadata.labels?.[key] === value)
-  )
-}
+const isLabelMatch = (placement: Placement, query: PlacementQuery): boolean =>
+  query.labels && query.labels.length > 0
+    ? query.labels.every((label) =>
+        Object.entries(label).every(([key, value]) => placement.metadata.labels?.[key] === value)
+      )
+    : true
 
 export const doesPlacementContainsClusterName = (placement: Placement, clusterName: string): boolean =>
   placement.spec.predicates?.some((predicate) =>
