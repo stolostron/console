@@ -21,6 +21,8 @@ interface PlacementQuery {
   clusterSetNames?: string[]
   /** Logical operator for combining filters: 'and' (default) requires all to match, 'or' requires any to match. */
   logicalOperator?: 'and' | 'or'
+  /** Filter by labels. Empty array matches all. */
+  labels?: Record<string, string>[]
 }
 
 /**
@@ -74,6 +76,20 @@ export const isPlacementForClusterSets = (placement: Placement): boolean =>
 
 export const isPlacementForClusterNames = (placement: Placement): boolean => !isPlacementForClusterSets(placement)
 
+/**
+ * Checks if a placement matches the labels filter.
+ * No labels in query matches all. Otherwise the placement must contain every label (key-value) in the query (AND).
+ * Placements may have additional labels beyond the query.
+ */
+const isLabelMatch = (placement: Placement, query: PlacementQuery): boolean => {
+  if (!query.labels?.length) {
+    return true
+  }
+  return query.labels.every((label) =>
+    Object.entries(label).every(([key, value]) => placement.metadata.labels?.[key] === value)
+  )
+}
+
 export const doesPlacementContainsClusterName = (placement: Placement, clusterName: string): boolean =>
   placement.spec.predicates?.some((predicate) =>
     predicate.requiredClusterSelector?.labelSelector?.matchExpressions?.some(
@@ -97,16 +113,23 @@ const findPlacements = (placements: Placement[], query: PlacementQuery): Placeme
   const isPlacementNameMatchFn = (placement: Placement) => isPlacementNameMatch(placement, query)
   const isClusterNameMatchFn = (placement: Placement) => isClusterNameMatch(placement, query)
   const isClusterSetNameMatchFn = (placement: Placement) => isClusterSetNameMatch(placement, query)
+  const isManagedByLabelMatchFn = (placement: Placement) => isLabelMatch(placement, query)
 
   if (query.logicalOperator === 'or') {
     return placements?.filter(
       (placement) =>
-        isPlacementNameMatchFn(placement) || isClusterNameMatchFn(placement) || isClusterSetNameMatchFn(placement)
+        isPlacementNameMatchFn(placement) ||
+        isClusterNameMatchFn(placement) ||
+        isClusterSetNameMatchFn(placement) ||
+        isManagedByLabelMatchFn(placement)
     )
   } else {
     return placements?.filter(
       (placement) =>
-        isPlacementNameMatchFn(placement) && isClusterNameMatchFn(placement) && isClusterSetNameMatchFn(placement)
+        isPlacementNameMatchFn(placement) &&
+        isClusterNameMatchFn(placement) &&
+        isClusterSetNameMatchFn(placement) &&
+        isManagedByLabelMatchFn(placement)
     )
   }
 }
@@ -177,8 +200,16 @@ const doesPlacementDecisionBelongToPlacement = (placementDecision: PlacementDeci
  * @returns Array of PlacementClusters for the placements together with the clusters and cluster sets
  */
 export const useGetPlacementClusters = (placementNames?: string[]): PlacementClusters[] => {
-  const placements = useFindPlacements({ placementNames })
-  const placementDecisions = useFindPlacementDecisions({ placementNames })
+  const placements = useFindPlacements({ placementNames, labels: [ManagedByConsoleLabel] })
+  const placementDecisions = useFindPlacementDecisions({
+    placementNames: [
+      ...new Set(
+        placements
+          .filter((placement) => placement.metadata.name !== undefined)
+          .map((placement) => placement.metadata.name!)
+      ),
+    ],
+  })
 
   return placements.reduce((acc: PlacementClusters[], placement: Placement) => {
     const placementDecision = placementDecisions.find((placementDecision) =>
@@ -254,7 +285,7 @@ const createPlacement = (
     metadata: {
       name: producePlacementName(nameElements, namePrefix),
       namespace,
-      labels: { ...ManagedByConsoleLabel },
+      labels: ManagedByConsoleLabel,
     },
     spec: {
       ...specContent,

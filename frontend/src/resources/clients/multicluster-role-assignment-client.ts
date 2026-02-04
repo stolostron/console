@@ -441,7 +441,7 @@ export const addRoleAssignment = async (
         metadata: {
           name: `role-assignment-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
           namespace: MulticlusterRoleAssignmentNamespace,
-          labels: { ...ManagedByConsoleLabel },
+          labels: ManagedByConsoleLabel,
         },
         spec: {
           subject: roleAssignment.subject,
