@@ -643,6 +643,7 @@ describe('usePreselectedData', () => {
           },
         })
       )
+      expect(calls[0].clustersetsAccessLevel).toBeUndefined()
     })
 
     it('sets cluster sets when clusterSetNames exist, ignoring cluster names', () => {
@@ -705,6 +706,7 @@ describe('usePreselectedData', () => {
             namespaces: ['namespace-1', 'namespace-2'],
           },
           selectedClusterSets: ['cluster-set-1'],
+          clustersetsAccessLevel: 'Project role assignment',
         })
       )
     })

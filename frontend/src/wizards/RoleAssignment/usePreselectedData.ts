@@ -99,6 +99,10 @@ export const usePreselectedData = ({
           if (hasClusters) {
             updates.clustersAccessLevel = 'Project role assignment'
           }
+
+          if (hasClusterSetNames && !isGlobalAccess) {
+            updates.clustersetsAccessLevel = 'Project role assignment'
+          }
         }
 
         return { ...prev, ...updates }

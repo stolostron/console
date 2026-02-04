@@ -26,10 +26,10 @@ interface UseReviewStepContentProps {
 }
 
 type ExpandableSections =
-  | 'clusters-original'
-  | 'clusters-current'
   | 'clustersets-original'
   | 'clustersets-current'
+  | 'clusters-original'
+  | 'clusters-current'
   | 'namespaces-original'
   | 'namespaces-current'
   | 'role-original'
