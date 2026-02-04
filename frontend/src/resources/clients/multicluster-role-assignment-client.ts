@@ -92,6 +92,31 @@ const getClustersForRoleAssignment = (
     ),
   ].sort((a, b) => a.localeCompare(b))
 
+/**
+ * Resolves cluster set names for a role assignment by looking up its placement references.
+ *
+ * @param roleAssignment - The role assignment containing placement references
+ * @param placementClusters - Array of placement clusters to search
+ * @returns Array of cluster set names associated with the role assignment's placements
+ */
+const getClusterSetsForRoleAssignment = (
+  roleAssignment: RoleAssignment,
+  placementClusters: PlacementClusters[]
+): string[] =>
+  [
+    ...new Set(
+      placementClusters
+        .filter(
+          (placementCluster) =>
+            roleAssignment.clusterSelection.type === 'placements' &&
+            roleAssignment.clusterSelection.placements.some((roleAssignmentPlacement) =>
+              doesPlacementRefMatchesPlacement(roleAssignmentPlacement, placementCluster.placement)
+            )
+        )
+        .flatMap((placementCluster) => placementCluster.clusterSetNames ?? [])
+    ),
+  ].sort((a, b) => a.localeCompare(b))
+
 const doesPlacementRefMatchesPlacement = (placementRef: PlacementRef, placementB: Placement) =>
   placementRef.name === placementB.metadata.name && placementRef.namespace === placementB.metadata.namespace
 
@@ -115,15 +140,7 @@ const flattenMulticlusterRoleAssignment = (
         multiclusterRoleAssignment,
         roleAssignment,
         getClustersForRoleAssignment(roleAssignment, placementClusters),
-        placementClusters
-          .filter(
-            (placementCluster) =>
-              roleAssignment.clusterSelection.type === 'placements' &&
-              roleAssignment.clusterSelection.placements.some((roleAssignmentPlacement) =>
-                doesPlacementRefMatchesPlacement(roleAssignmentPlacement, placementCluster.placement)
-              )
-          )
-          .flatMap((placementCluster) => placementCluster.clusterSetNames ?? [])
+        getClusterSetsForRoleAssignment(roleAssignment, placementClusters)
       )
     )
     .filter((flattenedRoleAssignment) => isClusterOrClustersetOrRoleMatch(flattenedRoleAssignment, query))
