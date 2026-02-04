@@ -7,7 +7,7 @@ import React, { useRef, useState } from 'react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { managedClustersState } from '../../../atoms'
-import { nockOff, nockIgnoreRBAC } from '../../../lib/nock-util'
+import { nockOff, nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../lib/nock-util'
 import { waitForNocks } from '../../../lib/test-util'
 import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../resources'
 import { SearchDetailsContext } from './DetailsPage'
@@ -368,6 +368,7 @@ const localClusterSearchDetailsContext: Partial<SearchDetailsContext> = {
 describe('LogsPage', () => {
   beforeEach(async () => {
     nockIgnoreRBAC()
+    nockIgnoreApiPaths()
   })
 
   it('should correctly render resource error if pod is no longer found', async () => {
