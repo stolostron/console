@@ -42,7 +42,7 @@ import { ClusterSetMonitor } from './ClusterSetMonitor'
 import { CreateArgoResources } from './CreateArgoResources'
 import { MultipleSourcesSelector } from './MultipleSourcesSelector'
 import { SourceSelector } from './SourceSelector'
-import { MultipleGeneratorSelector } from './MultipleGeneratorSelector'
+import { MultipleGeneratorSelector, SyncGenerator } from './MultipleGeneratorSelector'
 import { safeGet } from '../../routes/Applications/ApplicationDetails/ApplicationTopology/utils'
 import { findObjectWithKey } from '../../routes/Applications/ApplicationDetails/ApplicationTopology/model/application'
 
@@ -241,6 +241,9 @@ export function ArgoWizard(props: ArgoWizardProps) {
   }, [props.applicationSets, sourceHelmChannels])
 
   const [filteredClusterSets, setFilteredClusterSets] = useState<IResource[]>([])
+  const [generatorPath, setGeneratorPath] = useState<string>(() =>
+    get(applicationSet, 'spec.generators.0.matrix') ? 'spec.generators.0.matrix.generators' : 'spec.generators'
+  )
   const editMode = useEditMode()
 
   const { gitOpsOperatorSubscriptionsValue } = useSharedSelectors()
@@ -454,13 +457,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
             </Fragment>
           )}
           <Sync kind="ApplicationSet" path="metadata.namespace" />
-          <Sync
-            kind="ApplicationSet"
-            path="metadata.name"
-            targetKind="ApplicationSet"
-            targetPath="spec.template.metadata.name"
-            suffix="-{{name}}"
-          />
+          {/* the generator now syncs app name with template name */}
           <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
             <GitOpsOperatorAlert showAlert={showAlert} isPullModel={isPullModel} />
             {isPullModel && !resources && !showAlert && (
@@ -544,7 +541,9 @@ export function ArgoWizard(props: ArgoWizardProps) {
                 helmChannels={helmChannels}
                 gitGeneratorRepos={gitGeneratorRepos}
                 disableForm={disableForm}
+                generatorPath={generatorPath}
               />
+              <SyncGenerator setGeneratorPath={setGeneratorPath} />
             </Section>
           </WizItemSelector>
         </Step>
