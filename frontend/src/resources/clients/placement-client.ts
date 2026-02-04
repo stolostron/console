@@ -7,8 +7,7 @@ import { PlacementDecision } from '../placement-decision'
 import { createResource, IRequestResult } from '../utils'
 import { PlacementClusters } from './model/placement-clusters'
 import { getClustersFromPlacementDecision, useFindPlacementDecisions } from './placement-decision-client'
-
-export const PlacementLabel = { 'open-cluster-management.io/managed-by': 'console' }
+import { ManagedByConsoleLabel } from './constants'
 
 /**
  * Query parameters for filtering Placement resources.
@@ -255,7 +254,7 @@ const createPlacement = (
     metadata: {
       name: producePlacementName(nameElements, namePrefix),
       namespace,
-      labels: { ...PlacementLabel },
+      labels: { ...ManagedByConsoleLabel },
     },
     spec: {
       ...specContent,

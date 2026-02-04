@@ -3,9 +3,10 @@ import { renderHook } from '@testing-library/react-hooks'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assignment'
 import { Placement, PlacementApiVersionBeta, PlacementKind } from '../placement'
-import { MatchExpressions } from '../selector'
 import { PlacementDecision } from '../placement-decision'
+import { MatchExpressions } from '../selector'
 import { createResource } from '../utils'
+import { ManagedByConsoleLabel } from './constants'
 import {
   createForClusters,
   createForClusterSets,
@@ -13,9 +14,8 @@ import {
   doesPlacementContainsClusterSet,
   isPlacementForClusterNames,
   isPlacementForClusterSets,
-  PlacementLabel,
-  useGetPlacementClusters,
   useFindPlacements,
+  useGetPlacementClusters,
 } from './placement-client'
 import {
   doesPlacementContainsClusterNameTestCases,
@@ -389,7 +389,7 @@ describe('placement-client', () => {
         metadata: {
           name: 'cluster-sets-cluster-set-1-and-cluster-set-2',
           namespace: MulticlusterRoleAssignmentNamespace,
-          labels: { ...PlacementLabel },
+          labels: { ...ManagedByConsoleLabel },
         },
         spec: {
           clusterSets,
@@ -474,7 +474,7 @@ describe('placement-client', () => {
       )
     })
 
-    it('should include metadata.labels (PlacementLabel)', () => {
+    it('should include metadata.labels (ManagedByConsoleLabel)', () => {
       // Arrange
       const clusterSets = ['label-test']
       const mockResult = {
@@ -490,7 +490,7 @@ describe('placement-client', () => {
       expect(createResourceMock).toHaveBeenCalledWith(
         expect.objectContaining({
           metadata: expect.objectContaining({
-            labels: PlacementLabel,
+            labels: ManagedByConsoleLabel,
           }),
         })
       )
@@ -569,7 +569,7 @@ describe('placement-client', () => {
         metadata: {
           name: 'clusters-cluster-1-and-cluster-2',
           namespace: MulticlusterRoleAssignmentNamespace,
-          labels: { ...PlacementLabel },
+          labels: { ...ManagedByConsoleLabel },
         },
         spec: {
           predicates: [
@@ -739,7 +739,7 @@ describe('placement-client', () => {
       )
     })
 
-    it('should include metadata.labels (PlacementLabel)', () => {
+    it('should include metadata.labels (ManagedByConsoleLabel)', () => {
       // Arrange
       const clusters = ['label-test']
       const mockResult = {
@@ -755,7 +755,7 @@ describe('placement-client', () => {
       expect(createResourceMock).toHaveBeenCalledWith(
         expect.objectContaining({
           metadata: expect.objectContaining({
-            labels: PlacementLabel,
+            labels: ManagedByConsoleLabel,
           }),
         })
       )
