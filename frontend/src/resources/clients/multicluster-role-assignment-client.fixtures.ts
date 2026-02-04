@@ -247,6 +247,248 @@ export const clusterNamesMatchingTestCases: GetPlacementsTestCase[] = [
 ]
 
 /**
+ * Test cases for minimal placement cover (clusters): no redundant placements.
+ * When multiple placements exactly match or multiple combinations can cover the target,
+ * only one valid combination is returned (e.g. PlacementA OR PlacementB, or PlacementD+PlacementE).
+ */
+export const minimalPlacementCoverClustersTestCases: GetPlacementsTestCase[] = [
+  {
+    description:
+      'should return only one placement when two placements have identical clusters (PlacementA and PlacementB both [clusterA, clusterB, clusterC])',
+    placementClusters: [
+      createPlacementClusters('PlacementA', ['clusterA', 'clusterB', 'clusterC'], undefined),
+      createPlacementClusters('PlacementB', ['clusterA', 'clusterB', 'clusterC'], undefined),
+    ],
+    roleAssignment: {
+      clusterRole: 'admin',
+      clusterNames: ['clusterA', 'clusterB', 'clusterC'],
+      clusterSetNames: [],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+    },
+    expectedPlacementNames: ['PlacementA'],
+  },
+  {
+    description:
+      'should return two placements when one exact match does not exist but D+E cover (PlacementD [A,B] + PlacementE [C])',
+    placementClusters: [
+      createPlacementClusters('PlacementD', ['clusterA', 'clusterB'], undefined),
+      createPlacementClusters('PlacementE', ['clusterC'], undefined),
+    ],
+    roleAssignment: {
+      clusterRole: 'admin',
+      clusterNames: ['clusterA', 'clusterB', 'clusterC'],
+      clusterSetNames: [],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+    },
+    expectedPlacementNames: ['PlacementD', 'PlacementE'],
+  },
+  {
+    description:
+      'should return three placements when only single-cluster placements cover (PlacementH [A] + PlacementI [B] + PlacementJ [C])',
+    placementClusters: [
+      createPlacementClusters('PlacementH', ['clusterA'], undefined),
+      createPlacementClusters('PlacementI', ['clusterB'], undefined),
+      createPlacementClusters('PlacementJ', ['clusterC'], undefined),
+    ],
+    roleAssignment: {
+      clusterRole: 'admin',
+      clusterNames: ['clusterA', 'clusterB', 'clusterC'],
+      clusterSetNames: [],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+    },
+    expectedPlacementNames: ['PlacementH', 'PlacementI', 'PlacementJ'],
+  },
+  {
+    description:
+      'should return one exact match and ignore placement with extra cluster (PlacementC has A,B,C,D; target A,B,C)',
+    placementClusters: [
+      createPlacementClusters('PlacementA', ['clusterA', 'clusterB', 'clusterC'], undefined),
+      createPlacementClusters('PlacementC', ['clusterA', 'clusterB', 'clusterC', 'clusterD'], undefined),
+    ],
+    roleAssignment: {
+      clusterRole: 'admin',
+      clusterNames: ['clusterA', 'clusterB', 'clusterC'],
+      clusterSetNames: [],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+    },
+    expectedPlacementNames: ['PlacementA'],
+  },
+  {
+    description: 'should return PlacementF+PlacementH when they cover [clusterA, clusterB, clusterC] (F: B,C; H: A)',
+    placementClusters: [
+      createPlacementClusters('PlacementF', ['clusterB', 'clusterC'], undefined),
+      createPlacementClusters('PlacementH', ['clusterA'], undefined),
+    ],
+    roleAssignment: {
+      clusterRole: 'admin',
+      clusterNames: ['clusterA', 'clusterB', 'clusterC'],
+      clusterSetNames: [],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+    },
+    expectedPlacementNames: ['PlacementF', 'PlacementH'],
+  },
+  {
+    description: 'should not return PlacementG (has A,B,D) for target [A,B,C] because D is not in target',
+    placementClusters: [
+      createPlacementClusters('PlacementG', ['clusterA', 'clusterB', 'clusterD'], undefined),
+      createPlacementClusters('PlacementH', ['clusterA'], undefined),
+      createPlacementClusters('PlacementI', ['clusterB'], undefined),
+      createPlacementClusters('PlacementJ', ['clusterC'], undefined),
+    ],
+    roleAssignment: {
+      clusterRole: 'admin',
+      clusterNames: ['clusterA', 'clusterB', 'clusterC'],
+      clusterSetNames: [],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+    },
+    expectedPlacementNames: ['PlacementH', 'PlacementI', 'PlacementJ'],
+  },
+  {
+    description: 'should return a combination of placements when combining them produce the expected target',
+    placementClusters: [
+      createPlacementClusters('PlacementG', ['clusterA', 'clusterB', 'clusterD'], undefined),
+      createPlacementClusters('PlacementH', ['clusterA', 'clusterB'], undefined),
+      createPlacementClusters('PlacementI', ['clusterB', 'clusterC'], undefined),
+      createPlacementClusters('PlacementJ', ['clusterC', 'clusterD'], undefined),
+    ],
+    roleAssignment: {
+      clusterRole: 'admin',
+      clusterNames: ['clusterA', 'clusterB', 'clusterC'],
+      clusterSetNames: [],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+    },
+    expectedPlacementNames: ['PlacementH', 'PlacementI'],
+  },
+  {
+    description: 'should not return any placement when no placements cover the target',
+    placementClusters: [
+      createPlacementClusters('PlacementG', ['clusterA', 'clusterB', 'clusterD'], undefined),
+      createPlacementClusters('PlacementH', ['clusterA', 'clusterB', 'clusterE'], undefined),
+      createPlacementClusters('PlacementI', ['clusterB', 'clusterC', 'clusterD'], undefined),
+      createPlacementClusters('PlacementJ', ['clusterC', 'clusterD'], undefined),
+    ],
+    roleAssignment: {
+      clusterRole: 'admin',
+      clusterNames: ['clusterA', 'clusterB', 'clusterC'],
+      clusterSetNames: [],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+    },
+    expectedPlacementNames: [],
+  },
+]
+
+/**
+ * Test cases for minimal placement cover (cluster sets): no redundant placements.
+ * When multiple placements have the same cluster sets, only one is returned; minimal combinations for coverage.
+ */
+export const minimalPlacementCoverClusterSetsTestCases: GetPlacementsTestCase[] = [
+  {
+    description:
+      'should return only one placement when two placements have identical cluster sets (both [cs01, cs02, cs03])',
+    placementClusters: [
+      createPlacementClusters('PlacementA', [], ['cs01', 'cs02', 'cs03']),
+      createPlacementClusters('PlacementB', [], ['cs01', 'cs02', 'cs03']),
+    ],
+    roleAssignment: {
+      clusterRole: 'admin',
+      clusterNames: [],
+      clusterSetNames: ['cs01', 'cs02', 'cs03'],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+    },
+    expectedPlacementNames: ['PlacementA'],
+  },
+  {
+    description: 'should return two placements when each contributes (PlacementX [cs01, cs02] + PlacementY [cs03])',
+    placementClusters: [
+      createPlacementClusters('PlacementX', [], ['cs01', 'cs02']),
+      createPlacementClusters('PlacementY', [], ['cs03']),
+    ],
+    roleAssignment: {
+      clusterRole: 'admin',
+      clusterNames: [],
+      clusterSetNames: ['cs01', 'cs02', 'cs03'],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+    },
+    expectedPlacementNames: ['PlacementX', 'PlacementY'],
+  },
+  {
+    description:
+      'should return three placements when each has one cluster set (cs01, cs02, cs03) and together they cover',
+    placementClusters: [
+      createPlacementClusters('PlacementP', [], ['cs01']),
+      createPlacementClusters('PlacementQ', [], ['cs02']),
+      createPlacementClusters('PlacementR', [], ['cs03']),
+    ],
+    roleAssignment: {
+      clusterRole: 'admin',
+      clusterNames: [],
+      clusterSetNames: ['cs01', 'cs02', 'cs03'],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+    },
+    expectedPlacementNames: ['PlacementP', 'PlacementQ', 'PlacementR'],
+  },
+  {
+    description: 'should return only one placement when three exact-match placements exist (no redundancy)',
+    placementClusters: [
+      createPlacementClusters('PlacementAlpha', [], ['cs01', 'cs02']),
+      createPlacementClusters('PlacementBeta', [], ['cs01', 'cs02']),
+      createPlacementClusters('PlacementGamma', [], ['cs01', 'cs02']),
+    ],
+    roleAssignment: {
+      clusterRole: 'admin',
+      clusterNames: [],
+      clusterSetNames: ['cs01', 'cs02'],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+    },
+    expectedPlacementNames: ['PlacementAlpha'],
+  },
+  {
+    description: 'should return a combination of placements when combining them produce the expected target',
+    placementClusters: [
+      createPlacementClusters('PlacementAlpha', [], ['cs01']),
+      createPlacementClusters('PlacementBeta', [], ['cs01', 'cs02']),
+      createPlacementClusters('PlacementGamma', [], ['cs03']),
+    ],
+    roleAssignment: {
+      clusterRole: 'admin',
+      clusterNames: [],
+      clusterSetNames: ['cs01', 'cs02', 'cs03'],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+    },
+    expectedPlacementNames: ['PlacementBeta', 'PlacementGamma'],
+  },
+  {
+    description: 'should not return any placement when no placements cover the target',
+    placementClusters: [
+      createPlacementClusters('PlacementAlpha', [], ['cs01', 'cs04']),
+      createPlacementClusters('PlacementBeta', [], ['cs01', 'cs02', 'cs05']),
+      createPlacementClusters('PlacementGamma', [], ['cs03', 'cs06']),
+    ],
+    roleAssignment: {
+      clusterRole: 'admin',
+      clusterNames: [],
+      clusterSetNames: ['cs01', 'cs02', 'cs03'],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+    },
+    expectedPlacementNames: [],
+  },
+]
+
+/**
  * Test cases for combined matching (clusters and cluster sets)
  */
 export const combinedMatchingTestCases: GetPlacementsTestCase[] = [
