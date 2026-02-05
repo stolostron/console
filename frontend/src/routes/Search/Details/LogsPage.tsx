@@ -12,6 +12,7 @@ import { AcmSelectBase, SelectOptionObject, SelectVariant } from '../../../compo
 import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { fetchRetry, getBackendUrl } from '../../../resources/utils'
+import { fleetLogsRequest } from '../../../resources/utils/fleet-logs-request'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmAlert, AcmLoadingPage } from '../../../ui-components'
 import { useSearchDetailsContext } from './DetailsPage'
@@ -332,20 +333,24 @@ export default function LogsPage() {
     if (!isHubClusterResource && container !== '') {
       setIsLoadingLogs(true)
       const abortController = new AbortController()
-      const logsResult = fetchRetry({
-        method: 'GET',
-        url:
-          getBackendUrl() +
-          `/apis/proxy.open-cluster-management.io/v1beta1/namespaces/${cluster}/clusterstatuses/${cluster}/log/${namespace}/${name}/${container}?tailLines=1000${
-            previousLogs ? '&previous=true' : ''
-          }`,
+
+      // Use the fleet logs request utility which handles permission checking
+      // and falls back to managed cluster proxy if clusterstatuses/logs is not accessible
+      fleetLogsRequest({
+        cluster,
+        namespace,
+        podName: name,
+        container,
+        tailLines: 1000,
+        previous: previousLogs,
         signal: abortController.signal,
-        retries: /* istanbul ignore next */ process.env.NODE_ENV === 'production' ? 2 : 0,
-        headers: { Accept: '*/*' },
       })
-      logsResult
         .then((result) => {
-          setLogs((result.data as string) ?? '')
+          if (result.errorMessage) {
+            setLogsError(result.errorMessage)
+          } else {
+            setLogs(result.data)
+          }
           setIsLoadingLogs(false)
         })
         .catch((err) => {
@@ -354,8 +359,12 @@ export default function LogsPage() {
           } else {
             setLogsError(err.message)
           }
+          setIsLoadingLogs(false)
         })
+
+      return () => abortController.abort()
     } else if (isHubClusterResource && container !== '') {
+      setIsLoadingLogs(true)
       const abortController = new AbortController()
       const logsResult = fetchRetry({
         method: 'GET',
@@ -375,7 +384,10 @@ export default function LogsPage() {
         })
         .catch((err) => {
           setLogsError(err.message)
+          setIsLoadingLogs(false)
         })
+
+      return () => abortController.abort()
     }
   }, [cluster, container, managedClusters, name, namespace, previousLogs, isHubClusterResource])
 

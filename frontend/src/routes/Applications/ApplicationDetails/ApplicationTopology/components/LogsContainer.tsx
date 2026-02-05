@@ -5,6 +5,7 @@ import { AcmAlert, AcmLoadingPage, AcmLogWindow, AcmSelect } from '../../../../.
 import { TFunction } from 'react-i18next'
 import { ReactNode, useEffect, useState } from 'react'
 import { fetchRetry, getBackendUrl } from '../../../../../resources/utils'
+import { fleetLogsRequest } from '../../../../../resources/utils/fleet-logs-request'
 import { createResourceURL } from '../helpers/diagram-helpers'
 import './LogsContainer.css'
 import { useLocalHubName } from '../../../../../hooks/use-local-hub'
@@ -70,22 +71,29 @@ export function LogsContainer(props: ILogsContainerProps) {
   useEffect(() => {
     if (cluster !== localHubName && container !== '') {
       const abortController = new AbortController()
-      const logsResult = fetchRetry({
-        method: 'GET',
-        url:
-          getBackendUrl() +
-          `/apis/proxy.open-cluster-management.io/v1beta1/namespaces/${cluster}/clusterstatuses/${cluster}/log/${currentNamespace}/${selectedPod}/${container}?tailLines=1000`,
+
+      // Use the fleet logs request utility which handles permission checking
+      // and falls back to managed cluster proxy if clusterstatuses/logs is not accessible
+      fleetLogsRequest({
+        cluster,
+        namespace: currentNamespace,
+        podName: selectedPod,
+        container,
+        tailLines: 1000,
         signal: abortController.signal,
-        retries: process.env.NODE_ENV === 'production' ? 2 : 0,
-        headers: { Accept: '*/*' },
       })
-      logsResult
         .then((result) => {
-          setLogs(result.data as string)
+          if (result.errorMessage) {
+            setLogsError(result.errorMessage)
+          } else {
+            setLogs(result.data)
+          }
         })
         .catch((err) => {
           setLogsError(err.message)
         })
+
+      return () => abortController.abort()
     } else if (cluster === localHubName && container !== '') {
       const abortController = new AbortController()
       const logsResult = fetchRetry({
@@ -104,6 +112,8 @@ export function LogsContainer(props: ILogsContainerProps) {
         .catch((err) => {
           setLogsError(err.message)
         })
+
+      return () => abortController.abort()
     }
   }, [cluster, container, currentNamespace, selectedPod, localHubName])
 
