@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Placement, PlacementApiVersionBeta, PlacementKind } from '../placement'
+import { GlobalPlacementName, Placement, PlacementApiVersionBeta, PlacementKind } from '../placement'
 
 /**
  * Test case fixture for isPlacementForClusterSets
@@ -682,5 +682,220 @@ export const producePlacementNameLongListTestCases: ProducePlacementNameLongList
   {
     description: 'c and d repeated 30 times',
     clusterNames: ['c'.repeat(30), 'd'.repeat(30)],
+  },
+]
+
+/**
+ * Global placement included in placement lists (same as in placement-client.test).
+ */
+const globalPlacementForLabelsQuery: Placement = {
+  apiVersion: PlacementApiVersionBeta,
+  kind: PlacementKind,
+  metadata: { name: GlobalPlacementName, namespace: 'default' },
+  spec: {},
+}
+
+/**
+ * Default placements used by useFindPlacements tests (same as in placement-client.test mockPlacements, including global).
+ * Used by labels query test cases when no label filter is applied.
+ */
+export const defaultPlacementsForLabelsQuery: Placement[] = [
+  {
+    apiVersion: PlacementApiVersionBeta,
+    kind: PlacementKind,
+    metadata: { name: 'placement-1', namespace: 'default' },
+    spec: {
+      predicates: [
+        {
+          requiredClusterSelector: {
+            labelSelector: {
+              matchExpressions: [{ key: 'name', operator: 'In', values: ['cluster-a', 'cluster-b'] }],
+            },
+          },
+        },
+      ],
+    },
+  },
+  {
+    apiVersion: PlacementApiVersionBeta,
+    kind: PlacementKind,
+    metadata: { name: 'placement-2', namespace: 'default' },
+    spec: {
+      predicates: [
+        {
+          requiredClusterSelector: {
+            labelSelector: {
+              matchExpressions: [{ key: 'name', operator: 'In', values: ['cluster-c'] }],
+            },
+          },
+        },
+      ],
+    },
+  },
+  {
+    apiVersion: PlacementApiVersionBeta,
+    kind: PlacementKind,
+    metadata: { name: 'placement-no-predicates', namespace: 'default' },
+    spec: {},
+  },
+  globalPlacementForLabelsQuery,
+]
+
+/**
+ * Test case fixture for useFindPlacements labels query
+ */
+export interface UseFindPlacementsLabelsQueryTestCase {
+  description: string
+  placements: Placement[]
+  query: { placementNames?: string[]; labels?: Record<string, string>[] }
+  expectedCount: number
+  expectedFirstName?: string
+  expectedLabels?: Record<string, string>
+}
+
+/**
+ * Test cases for useFindPlacements with labels query
+ */
+export const useFindPlacementsLabelsQueryTestCases: UseFindPlacementsLabelsQueryTestCase[] = [
+  {
+    description: 'should return all placements when no label query is provided and no other filters',
+    placements: defaultPlacementsForLabelsQuery,
+    query: {},
+    expectedCount: 4,
+  },
+  {
+    description: 'should return all placements when labels is empty array and no other filters',
+    placements: defaultPlacementsForLabelsQuery,
+    query: { labels: [] },
+    expectedCount: 4,
+  },
+  {
+    description: 'should return placement when single label query matches (placement has that key-value)',
+    placements: [
+      {
+        apiVersion: PlacementApiVersionBeta,
+        kind: PlacementKind,
+        metadata: {
+          name: 'placement-with-labels',
+          namespace: 'default',
+          labels: { env: 'prod', team: 'a', tier: 'frontend' },
+        },
+        spec: {},
+      },
+    ],
+    query: { labels: [{ env: 'prod' }] },
+    expectedCount: 1,
+    expectedFirstName: 'placement-with-labels',
+  },
+  {
+    description: 'should return placement when single label query matches and placement has additional labels',
+    placements: [
+      {
+        apiVersion: PlacementApiVersionBeta,
+        kind: PlacementKind,
+        metadata: {
+          name: 'placement-abc',
+          namespace: 'default',
+          labels: { a: '1', b: '2', c: '3' },
+        },
+        spec: {},
+      },
+    ],
+    query: { labels: [{ a: '1' }] },
+    expectedCount: 1,
+    expectedLabels: { a: '1', b: '2', c: '3' },
+  },
+  {
+    description: 'should return empty when single label query does not match (placement has other labels)',
+    placements: [
+      {
+        apiVersion: PlacementApiVersionBeta,
+        kind: PlacementKind,
+        metadata: {
+          name: 'placement-abc',
+          namespace: 'default',
+          labels: { a: '1', b: '2', c: '3' },
+        },
+        spec: {},
+      },
+    ],
+    query: { labels: [{ d: '4' }] },
+    expectedCount: 0,
+  },
+  {
+    description: 'should return empty when single label query is provided but placement has no labels',
+    placements: [
+      {
+        apiVersion: PlacementApiVersionBeta,
+        kind: PlacementKind,
+        metadata: { name: 'placement-no-labels', namespace: 'default' },
+        spec: {},
+      },
+    ],
+    query: { labels: [{ a: '1' }] },
+    expectedCount: 0,
+  },
+  {
+    description: 'should return placement when multiple labels query matches (placement has all queried labels)',
+    placements: [
+      {
+        apiVersion: PlacementApiVersionBeta,
+        kind: PlacementKind,
+        metadata: {
+          name: 'placement-abc',
+          namespace: 'default',
+          labels: { a: '1', b: '2', c: '3' },
+        },
+        spec: {},
+      },
+    ],
+    query: { labels: [{ a: '1' }, { b: '2' }] },
+    expectedCount: 1,
+    expectedFirstName: 'placement-abc',
+  },
+  {
+    description: 'should return empty when multiple labels query and placement is missing one label',
+    placements: [
+      {
+        apiVersion: PlacementApiVersionBeta,
+        kind: PlacementKind,
+        metadata: {
+          name: 'placement-abc',
+          namespace: 'default',
+          labels: { a: '1', b: '2', c: '3' },
+        },
+        spec: {},
+      },
+    ],
+    query: { labels: [{ a: '1' }, { d: '4' }] },
+    expectedCount: 0,
+  },
+  {
+    description: 'should combine labels filter with other filters (AND)',
+    placements: [
+      {
+        apiVersion: PlacementApiVersionBeta,
+        kind: PlacementKind,
+        metadata: {
+          name: 'placement-named-and-labeled',
+          namespace: 'default',
+          labels: { env: 'prod' },
+        },
+        spec: {},
+      },
+      {
+        apiVersion: PlacementApiVersionBeta,
+        kind: PlacementKind,
+        metadata: {
+          name: 'other-labeled',
+          namespace: 'default',
+          labels: { env: 'prod' },
+        },
+        spec: {},
+      },
+    ],
+    query: { placementNames: ['placement-named-and-labeled'], labels: [{ env: 'prod' }] },
+    expectedCount: 1,
+    expectedFirstName: 'placement-named-and-labeled',
   },
 ]

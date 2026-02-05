@@ -14,7 +14,7 @@ import {
 import { GlobalPlacementName, Placement } from '../placement'
 import { createResource, deleteResource, patchResource } from '../utils'
 import { getResource, IRequestResult, ResourceError, ResourceErrorCode } from '../utils/resource-request'
-import { ManagedByConsoleLabelKey, ManagedByConsoleLabelValue } from './constants'
+import { ManagedByConsoleLabel, ManagedByConsoleLabelKey, ManagedByConsoleLabelValue } from './constants'
 import { createForClusterSets as createForClusterSetsBinding } from './managed-cluster-set-binding-client'
 import { FlattenedRoleAssignment } from './model/flattened-role-assignment'
 import { PlacementClusters } from './model/placement-clusters'
@@ -465,7 +465,7 @@ export const addRoleAssignment = async (
         metadata: {
           name: `role-assignment-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
           namespace: MulticlusterRoleAssignmentNamespace,
-          labels: { 'open-cluster-management.io/managed-by': 'console' },
+          labels: ManagedByConsoleLabel,
         },
         spec: {
           subject: roleAssignment.subject,

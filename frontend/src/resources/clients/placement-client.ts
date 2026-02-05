@@ -2,9 +2,16 @@
 import { sha256 } from 'js-sha256'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assignment'
-import { Placement, PlacementApiVersionBeta, PlacementKind, PlacementPredicates } from '../placement'
+import {
+  GlobalPlacementName,
+  Placement,
+  PlacementApiVersionBeta,
+  PlacementKind,
+  PlacementPredicates,
+} from '../placement'
 import { PlacementDecision } from '../placement-decision'
 import { createResource, IRequestResult } from '../utils'
+import { ManagedByConsoleLabel } from './constants'
 import { PlacementClusters } from './model/placement-clusters'
 import { getClustersFromPlacementDecision, useFindPlacementDecisions } from './placement-decision-client'
 
@@ -20,6 +27,10 @@ interface PlacementQuery {
   clusterSetNames?: string[]
   /** Logical operator for combining filters: 'and' (default) requires all to match, 'or' requires any to match. */
   logicalOperator?: 'and' | 'or'
+  /** Filter by labels. Empty array matches all. */
+  labels?: Record<string, string>[]
+  /** Whether to include the global placement in the results */
+  includeGlobalPlacement?: boolean
 }
 
 /**
@@ -73,6 +84,18 @@ export const isPlacementForClusterSets = (placement: Placement): boolean =>
 
 export const isPlacementForClusterNames = (placement: Placement): boolean => !isPlacementForClusterSets(placement)
 
+/**
+ * Checks if a placement matches the labels filter.
+ * No labels in query matches all. Otherwise the placement must contain every label (key-value) in the query (AND).
+ * Placements may have additional labels beyond the query.
+ */
+const isLabelMatch = (placement: Placement, query: PlacementQuery): boolean =>
+  query.labels && query.labels.length > 0
+    ? query.labels.every((label) =>
+        Object.entries(label).every(([key, value]) => placement.metadata.labels?.[key] === value)
+      )
+    : true
+
 export const doesPlacementContainsClusterName = (placement: Placement, clusterName: string): boolean =>
   placement.spec.predicates?.some((predicate) =>
     predicate.requiredClusterSelector?.labelSelector?.matchExpressions?.some(
@@ -96,18 +119,28 @@ const findPlacements = (placements: Placement[], query: PlacementQuery): Placeme
   const isPlacementNameMatchFn = (placement: Placement) => isPlacementNameMatch(placement, query)
   const isClusterNameMatchFn = (placement: Placement) => isClusterNameMatch(placement, query)
   const isClusterSetNameMatchFn = (placement: Placement) => isClusterSetNameMatch(placement, query)
+  const isManagedByLabelMatchFn = (placement: Placement) => isLabelMatch(placement, query)
+  const globalPlacement: Placement | undefined = query.includeGlobalPlacement
+    ? placements.find((placement) => placement.metadata.name === GlobalPlacementName)
+    : undefined
 
-  if (query.logicalOperator === 'or') {
-    return placements?.filter(
-      (placement) =>
-        isPlacementNameMatchFn(placement) || isClusterNameMatchFn(placement) || isClusterSetNameMatchFn(placement)
-    )
-  } else {
-    return placements?.filter(
-      (placement) =>
-        isPlacementNameMatchFn(placement) && isClusterNameMatchFn(placement) && isClusterSetNameMatchFn(placement)
-    )
-  }
+  const filteredPlacements =
+    query.logicalOperator === 'or'
+      ? placements?.filter(
+          (placement) =>
+            isPlacementNameMatchFn(placement) ||
+            isClusterNameMatchFn(placement) ||
+            isClusterSetNameMatchFn(placement) ||
+            isManagedByLabelMatchFn(placement)
+        )
+      : placements?.filter(
+          (placement) =>
+            isPlacementNameMatchFn(placement) &&
+            isClusterNameMatchFn(placement) &&
+            isClusterSetNameMatchFn(placement) &&
+            isManagedByLabelMatchFn(placement)
+        )
+  return [...filteredPlacements, ...(globalPlacement ? [globalPlacement] : [])]
 }
 
 /**
@@ -176,8 +209,20 @@ const doesPlacementDecisionBelongToPlacement = (placementDecision: PlacementDeci
  * @returns Array of PlacementClusters for the placements together with the clusters and cluster sets
  */
 export const useGetPlacementClusters = (placementNames?: string[]): PlacementClusters[] => {
-  const placements = useFindPlacements({ placementNames })
-  const placementDecisions = useFindPlacementDecisions({ placementNames })
+  const placements = useFindPlacements({
+    placementNames,
+    labels: [ManagedByConsoleLabel],
+    includeGlobalPlacement: true,
+  })
+  const placementDecisions = useFindPlacementDecisions({
+    placementNames: [
+      ...new Set(
+        placements
+          .filter((placement) => placement.metadata.name !== undefined)
+          .map((placement) => placement.metadata.name!)
+      ),
+    ],
+  })
 
   return placements.reduce((acc: PlacementClusters[], placement: Placement) => {
     const placementDecision = placementDecisions.find((placementDecision) =>
@@ -207,6 +252,63 @@ export const useGetPlacementClusters = (placementNames?: string[]): PlacementClu
 const create = (placement: Placement): IRequestResult<Placement> => createResource<Placement>(placement)
 
 /**
+ * Generates a placement resource name based on the given cluster/clusterSet names.
+ * The name is the cluster names joined with '-and-'. If the resulting name exceeds
+ * 63 characters, it returns a SHA-256 hash truncated to 63 characters instead.
+ *
+ * @param elements - Array of cluster names or cluster set names used to generate the placement name
+ * @param prefix - Prefix for the placement name
+ * @returns A placement name as a string (max length 63 characters)
+ */
+const producePlacementName = (elements: string[], prefix: string) => {
+  const MAX_LENGTH = 63
+  const clusterNamesString = elements.join('-and-')
+
+  const suggestedName = `${prefix}${elements.join('-and-')}`
+
+  return suggestedName.length > MAX_LENGTH
+    ? `${prefix}${sha256(clusterNamesString)}`.substring(0, MAX_LENGTH)
+    : suggestedName
+}
+
+const placementTolerations: Placement['spec']['tolerations'] = [
+  { key: 'cluster.open-cluster-management.io/unreachable', operator: 'Equal' },
+  { key: 'cluster.open-cluster-management.io/unavailable', operator: 'Equal' },
+]
+
+/**
+ * Creates a Placement resource with the given name elements, prefix, and spec content.
+ * Shared helper for createForClusterSets and createForClusters.
+ *
+ * @param nameElements - Array of names used to generate the placement name (e.g. cluster set or cluster names)
+ * @param namePrefix - Prefix for the placement name (e.g. 'cluster-sets-' or 'clusters-')
+ * @param specContent - Either clusterSets or predicates to define which clusters the placement selects
+ * @param namespace - Namespace for the placement (defaults to MulticlusterRoleAssignmentNamespace)
+ * @returns IRequestResult containing the promise and abort function
+ */
+const createPlacement = (
+  nameElements: string[],
+  namePrefix: string,
+  specContent: { clusterSets: string[] } | { predicates: PlacementPredicates[] },
+  namespace = MulticlusterRoleAssignmentNamespace
+): IRequestResult<Placement> => {
+  const placement: Placement = {
+    apiVersion: PlacementApiVersionBeta,
+    kind: PlacementKind,
+    metadata: {
+      name: producePlacementName(nameElements, namePrefix),
+      namespace,
+      labels: ManagedByConsoleLabel,
+    },
+    spec: {
+      ...specContent,
+      tolerations: placementTolerations,
+    },
+  }
+  return create(placement)
+}
+
+/**
  * Creates a Placement resource that selects clusters based on cluster sets.
  * The placement name is generated by joining cluster set names with '-and-'.
  * Includes tolerations for unreachable and unavailable clusters.
@@ -215,46 +317,8 @@ const create = (placement: Placement): IRequestResult<Placement> => createResour
  * @param namespace - Namespace for the placement (defaults to MulticlusterRoleAssignmentNamespace)
  * @returns IRequestResult containing the promise and abort function
  */
-export const createForClusterSets = (clusterSets: string[], namespace = MulticlusterRoleAssignmentNamespace) => {
-  const placement: Placement = {
-    apiVersion: PlacementApiVersionBeta,
-    kind: PlacementKind,
-    metadata: { name: clusterSets.join('-and-'), namespace },
-    spec: {
-      clusterSets,
-      tolerations: [
-        {
-          key: 'cluster.open-cluster-management.io/unreachable',
-          operator: 'Equal',
-        },
-        {
-          key: 'cluster.open-cluster-management.io/unavailable',
-          operator: 'Equal',
-        },
-      ],
-    },
-  }
-  return create(placement)
-}
-/**
- * Generates a placement resource name based on the given cluster names.
- * The name is the cluster names joined with '-and-'. If the resulting name exceeds
- * 63 characters, it returns a SHA-256 hash truncated to 63 characters instead.
- *
- * @param clusterNames - Array of cluster names used to generate the placement name
- * @returns A placement name as a string (max length 63)
- */
-const producePlacementName = (clusterNames: string[]) => {
-  const MAX_LENGTH = 63
-  const PREFIX = 'clusters-'
-  const clusterNamesString = clusterNames.join('-and-')
-
-  const suggestedName = `${PREFIX}${clusterNamesString}`
-
-  return suggestedName.length > MAX_LENGTH
-    ? `${PREFIX}${sha256(clusterNamesString)}`.substring(0, MAX_LENGTH)
-    : suggestedName
-}
+export const createForClusterSets = (clusterSets: string[], namespace = MulticlusterRoleAssignmentNamespace) =>
+  createPlacement(clusterSets, 'cluster-sets-', { clusterSets }, namespace)
 
 /**
  * Creates a Placement resource that selects specific clusters using label selectors.
@@ -266,12 +330,11 @@ const producePlacementName = (clusterNames: string[]) => {
  * @param namespace - Namespace for the placement (defaults to MulticlusterRoleAssignmentNamespace)
  * @returns IRequestResult containing the promise and abort function
  */
-export const createForClusters = (clusters: string[], namespace = MulticlusterRoleAssignmentNamespace) => {
-  const placement: Placement = {
-    apiVersion: PlacementApiVersionBeta,
-    kind: PlacementKind,
-    metadata: { name: producePlacementName(clusters), namespace },
-    spec: {
+export const createForClusters = (clusters: string[], namespace = MulticlusterRoleAssignmentNamespace) =>
+  createPlacement(
+    clusters,
+    'clusters-',
+    {
       predicates: [
         {
           requiredClusterSelector: {
@@ -281,17 +344,6 @@ export const createForClusters = (clusters: string[], namespace = MulticlusterRo
           },
         },
       ],
-      tolerations: [
-        {
-          key: 'cluster.open-cluster-management.io/unreachable',
-          operator: 'Equal',
-        },
-        {
-          key: 'cluster.open-cluster-management.io/unavailable',
-          operator: 'Equal',
-        },
-      ],
     },
-  }
-  return create(placement)
-}
+    namespace
+  )
