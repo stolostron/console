@@ -37,7 +37,6 @@ export type BulkActionModalProps<T = undefined> = {
   actionOneByOne?: boolean
   actionFn: (item: T, options?: { [key: string]: boolean }) => IRequestResult
   alert?: React.ReactNode
-  checkBox?: JSX.Element
   close: () => void
   confirmText?: string
   description: string | React.ReactNode
@@ -91,7 +90,6 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
     action,
     actionFn,
     alert,
-    checkBox,
     close,
     columns,
     confirmText,
@@ -163,36 +161,38 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
       position="top"
     >
       <AcmForm style={{ gap: 0 }}>
-        {hasNoErrors ? (
-          <Fragment>
-            {description}
-            {checkBox}
-            {alert}
-            {columns && !(hideTableAfterSubmit && progress != 0) && (
-              <AcmTableStateProvider localStorageKey="model">
-                <AcmTable<T>
-                  gridBreakPoint={TableGridBreakpoint.none}
-                  tableActions={[]}
-                  rowActions={[]}
-                  perPageOptions={[]}
-                  autoHidePagination
-                  columns={columns}
-                  {...tableProps}
-                />
-              </AcmTableStateProvider>
-            )}
-
-            <div style={{ paddingTop: '12px', paddingBottom: '12px' }}>
-              {progress > 0 ? (
-                <Progress
-                  value={(progress * 100) / progressCount}
-                  measureLocation={progress ? ProgressMeasureLocation.outside : ProgressMeasureLocation.none}
-                />
-              ) : (
-                <div style={{ minHeight: '24px' }} />
+        <Stack hasGutter>
+          {hasNoErrors ? (
+            <Fragment>
+              {description && <StackItem>{description}</StackItem>}
+              {alert && <StackItem>{alert}</StackItem>}
+              {columns && !(hideTableAfterSubmit && progress != 0) && (
+                <StackItem>
+                  <AcmTableStateProvider localStorageKey="model">
+                    <AcmTable<T>
+                      gridBreakPoint={TableGridBreakpoint.none}
+                      tableActions={[]}
+                      rowActions={[]}
+                      perPageOptions={[]}
+                      autoHidePagination
+                      columns={columns}
+                      {...tableProps}
+                    />
+                  </AcmTableStateProvider>
+                </StackItem>
               )}
-            </div>
-            <Stack hasGutter>
+
+              <StackItem>
+                {progress > 0 ? (
+                  <Progress
+                    value={(progress * 100) / progressCount}
+                    measureLocation={progress ? ProgressMeasureLocation.outside : ProgressMeasureLocation.none}
+                  />
+                ) : (
+                  <div style={{ minHeight: '24px' }} />
+                )}
+              </StackItem>
+
               {enableDeletePullSecret && (
                 <StackItem>
                   <Checkbox
@@ -215,67 +215,71 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
                   />
                 </StackItem>
               )}
-            </Stack>
-          </Fragment>
-        ) : (
-          <Fragment>
-            <AcmAlert
-              isInline
-              noClose
-              variant="danger"
-              title={t('there.were.errors')}
-              message={t('Expand the table rows to view detailed error messages.')}
-            />
-            {columns && (
-              <AcmTableStateProvider localStorageKey="model">
-                <AcmTable<T>
-                  emptyState={undefined} // table only displayed when there are errors
-                  items={tableProps.items.filter((item) => getItemError(item) !== undefined)}
-                  columns={[
-                    columns[0],
-                    {
-                      header: t('error'),
-                      cell: (item) => {
-                        const itemError = getItemError(item)
-                        return (
-                          <DescriptionList isHorizontal>
-                            <DescriptionListGroup>
-                              <DescriptionListTerm>{itemError?.title}</DescriptionListTerm>
-                              <DescriptionListDescription>{itemError?.message}</DescriptionListDescription>
-                            </DescriptionListGroup>
-                          </DescriptionList>
-                        )
-                      },
-                    },
-                  ]}
-                  addSubRows={(item: T) => {
-                    const itemError = getItemError(item)
-                    return itemError?.details
-                      ? [
-                          {
-                            noPadding: false,
-                            cells: [
-                              {
-                                title: itemError.details,
-                              },
-                            ],
-                          },
-                        ]
-                      : []
-                  }}
-                  keyFn={tableProps.keyFn}
-                  tableActions={[]}
-                  rowActions={[]}
-                  perPageOptions={[]}
-                  autoHidePagination
+            </Fragment>
+          ) : (
+            <Fragment>
+              <StackItem>
+                <AcmAlert
+                  isInline
+                  noClose
+                  variant="danger"
+                  title={t('there.were.errors')}
+                  message={t('Expand the table rows to view detailed error messages.')}
                 />
-              </AcmTableStateProvider>
-            )}
-            <div style={{ minHeight: '24px' }} />
-          </Fragment>
-        )}
-        {hasExternalResources && (
-          <Stack>
+              </StackItem>
+              {columns && (
+                <StackItem>
+                  <AcmTableStateProvider localStorageKey="model">
+                    <AcmTable<T>
+                      emptyState={undefined} // table only displayed when there are errors
+                      items={tableProps.items.filter((item) => getItemError(item) !== undefined)}
+                      columns={[
+                        columns[0],
+                        {
+                          header: t('error'),
+                          cell: (item) => {
+                            const itemError = getItemError(item)
+                            return (
+                              <DescriptionList isHorizontal>
+                                <DescriptionListGroup>
+                                  <DescriptionListTerm>{itemError?.title}</DescriptionListTerm>
+                                  <DescriptionListDescription>{itemError?.message}</DescriptionListDescription>
+                                </DescriptionListGroup>
+                              </DescriptionList>
+                            )
+                          },
+                        },
+                      ]}
+                      addSubRows={(item: T) => {
+                        const itemError = getItemError(item)
+                        return itemError?.details
+                          ? [
+                              {
+                                noPadding: false,
+                                cells: [
+                                  {
+                                    title: itemError.details,
+                                  },
+                                ],
+                              },
+                            ]
+                          : []
+                      }}
+                      keyFn={tableProps.keyFn}
+                      tableActions={[]}
+                      rowActions={[]}
+                      perPageOptions={[]}
+                      autoHidePagination
+                    />
+                  </AcmTableStateProvider>
+                </StackItem>
+              )}
+              <StackItem>
+                <div style={{ minHeight: '24px' }} />
+              </StackItem>
+            </Fragment>
+          )}
+          {hasExternalResources && (
             <StackItem>
               <AcmAlert
                 variant="info"
@@ -284,8 +288,8 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
                 isInline
               />
             </StackItem>
-          </Stack>
-        )}
+          )}
+        </Stack>
         <ActionGroup>
           {errors
             ? [

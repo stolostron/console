@@ -7,7 +7,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS } from '../../lib/doc-util'
-import { GroupKind, ManagedClusterSet, UserKind } from '../../resources'
+import { GlobalPlacementName, GroupKind, ManagedClusterSet, UserKind } from '../../resources'
 import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
 import { ClusterGranularityStepContent } from './ClusterGranularityWizardStep'
 import { ClusterSetGranularityWizardStep } from './ClusterSetGranularityWizardStep'
@@ -248,12 +248,50 @@ export const RoleAssignmentWizardModal = ({
   const hasChanges = useMemo(() => {
     if (!isEditing) return true
 
+    const originalIsGlobal = preselected?.clusterSetNames?.includes(GlobalPlacementName)
+    const originalHasClusterSets =
+      preselected?.clusterSetNames &&
+      preselected.clusterSetNames.length > 0 &&
+      !preselected.clusterSetNames.includes(GlobalPlacementName)
+    const originalHasClusters = preselected?.clusterNames && preselected.clusterNames.length > 0
+
+    const scopeTypeChanged = (() => {
+      switch (formData.scopeType) {
+        case 'Global access':
+          return !originalIsGlobal
+        case 'Select cluster sets':
+          return !originalHasClusterSets
+        case 'Select clusters':
+          return !originalHasClusters
+        default:
+          return false
+      }
+    })()
+
     const roleChanged = preselected?.roles?.[0] !== formData.roles?.[0]
+
+    const stringComparison = (a: string, b: string) => a.localeCompare(b)
+    const clusterSetsChanged =
+      formData.scopeType === 'Select cluster sets' &&
+      JSON.stringify((preselected?.clusterSetNames || []).toSorted(stringComparison)) !==
+        JSON.stringify(
+          (formData.selectedClusterSets || [])
+            .map((cs) => (typeof cs === 'string' ? cs : cs.metadata?.name))
+            .filter((name): name is string => !!name)
+            .toSorted(stringComparison)
+        )
     const clustersChanged =
-      JSON.stringify(preselected?.clusterNames?.toSorted()) !==
-      JSON.stringify(formData.selectedClusters?.map((c) => c.metadata?.name || c.name || c).toSorted())
+      formData.scopeType === 'Select clusters' &&
+      JSON.stringify((preselected?.clusterNames || []).toSorted(stringComparison)) !==
+        JSON.stringify(
+          (formData.selectedClusters || [])
+            .map((c) => c.metadata?.name || c.name || c)
+            .filter((name): name is string => !!name)
+            .toSorted(stringComparison)
+        )
     const namespacesChanged =
-      JSON.stringify(preselected?.namespaces?.toSorted()) !== JSON.stringify(formData.scope.namespaces?.toSorted())
+      JSON.stringify((preselected?.namespaces || []).toSorted(stringComparison)) !==
+      JSON.stringify((formData.scope.namespaces || []).toSorted(stringComparison))
 
     const identityKindChanged = preselected?.subject?.kind !== formData.subject?.kind
     const identityValueChanged = (() => {
@@ -269,7 +307,15 @@ export const RoleAssignmentWizardModal = ({
       }
     })()
 
-    return roleChanged || clustersChanged || namespacesChanged || identityKindChanged || identityValueChanged
+    return (
+      scopeTypeChanged ||
+      roleChanged ||
+      clusterSetsChanged ||
+      clustersChanged ||
+      namespacesChanged ||
+      identityKindChanged ||
+      identityValueChanged
+    )
   }, [isEditing, preselected, formData])
 
   const scopeSubSteps = [
@@ -328,7 +374,13 @@ export const RoleAssignmentWizardModal = ({
   ]
 
   return (
-    <Modal variant={ModalVariant.large} isOpen={isOpen} showClose={false} hasNoBodyWrapper>
+    <Modal
+      variant={ModalVariant.large}
+      isOpen={isOpen}
+      showClose={false}
+      hasNoBodyWrapper
+      onEscapePress={() => !isLoading && handleClose()}
+    >
       <Drawer isExpanded={isDrawerExpanded}>
         <DrawerContent panelContent={<ExampleScopesPanelContent onClose={() => setIsDrawerExpanded(false)} />}>
           <ItemContext.Provider value={formData}>
@@ -416,7 +468,7 @@ export const RoleAssignmentWizardModal = ({
                     nextButtonProps: { isLoading },
                     isBackDisabled: isLoading,
                     cancelButtonProps: { isDisabled: isLoading },
-                    isNextDisabled: isEditing && !hasChanges,
+                    isNextDisabled: isLoading || (isEditing && !hasChanges),
                   }}
                 >
                   <ReviewStepContent

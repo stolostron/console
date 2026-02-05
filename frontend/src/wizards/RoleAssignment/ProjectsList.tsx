@@ -41,6 +41,7 @@ export const ProjectsList = ({ selectedClusters, selectedNamespaces, onSelection
   const handleCreateSuccess = (newProjectName: string) => {
     setIsCreateCommonProject(false)
     setCreatedProjects([...createdProjects, newProjectName])
+    onSelectionChange([...selectedProjects.map((p) => p.name), newProjectName])
   }
 
   const handleSelectionChange = (projects: ProjectTableData[]) => {

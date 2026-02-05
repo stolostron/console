@@ -339,7 +339,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
 
       await waitFor(() => {
         expect(mockAddRoleAssignment).toHaveBeenCalled()
-        expect(mockAddRoleAssignment.mock.calls[0][1].existingMulticlusterRoleAssignment).toBe(existingAssignment)
+        expect(mockAddRoleAssignment.mock.calls[0][1].existingMulticlusterRoleAssignments).toEqual([existingAssignment])
       })
     })
 
@@ -364,7 +364,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
 
       await waitFor(() => {
         expect(mockAddRoleAssignment).toHaveBeenCalled()
-        expect(mockAddRoleAssignment.mock.calls[0][1].existingMulticlusterRoleAssignment).toBeUndefined()
+        expect(mockAddRoleAssignment.mock.calls[0][1].existingMulticlusterRoleAssignments).toBeUndefined()
       })
     })
   })
@@ -414,7 +414,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       } as MulticlusterRoleAssignment,
     }
 
-    it('should delete existing role assignment before saving when editing', async () => {
+    it('should delete existing role assignment after saving succeeds when editing', async () => {
       mockDeleteRoleAssignment.mockReturnValue({
         promise: Promise.resolve({}),
         abort: jest.fn(),
@@ -422,6 +422,69 @@ describe('RoleAssignmentWizardModalWrapper', () => {
 
       const savedRoleAssignment = { name: 'saved-role-assignment', clusterRole: 'admin' }
       mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment as never)
+
+      // Mock multiClusterRoleAssignments to include the saved role assignment
+      // This simulates the Recoil state being updated after the save
+      mockUseRecoilValue.mockReturnValue([
+        {
+          metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
+          spec: {
+            subject: { name: 'test-user', kind: 'User' },
+            roleAssignments: [{ name: 'saved-role-assignment' }],
+          },
+        },
+      ])
+
+      render(
+        <TestWrapper>
+          <RoleAssignmentWizardModalWrapper
+            close={mockClose}
+            isOpen={true}
+            editingRoleAssignment={mockEditingRoleAssignment}
+          />
+        </TestWrapper>
+      )
+
+      await waitFor(() => expect(capturedOnSubmit).not.toBeNull())
+
+      await act(async () => {
+        await capturedOnSubmit({
+          subject: { kind: UserKind, user: ['test-user'] },
+          scope: { kind: 'specific', clusterNames: ['cluster1'] },
+          roles: ['admin'],
+        })
+      })
+
+      // Assert - deleteRoleAssignment should be called AFTER saveAllRoleAssignments succeeds
+      await waitFor(
+        () => {
+          expect(mockAddRoleAssignment).toHaveBeenCalled()
+          expect(mockDeleteRoleAssignment).toHaveBeenCalledWith(mockEditingRoleAssignment)
+          expect(mockToastContext.addAlert).toHaveBeenCalledWith({
+            title: 'Role assignment updated',
+            message: 'A role assignment for admin role updated.',
+            type: 'success',
+            autoClose: true,
+          })
+        },
+        { timeout: 3000 }
+      )
+    })
+
+    it('should show error and close modal when delete fails after saving succeeds during editing', async () => {
+      // Arrange - saveAllRoleAssignments will succeed
+      const savedRoleAssignment = { name: 'saved-role-assignment', clusterRole: 'admin' }
+      mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment as never)
+
+      // Create a rejection that is handled to avoid unhandled rejection warnings
+      const deletePromise = Promise.reject(new Error('Delete failed'))
+      // Attach a catch handler to prevent unhandled rejection
+      deletePromise.catch(() => {})
+
+      mockDeleteRoleAssignment.mockReturnValue({
+        promise: deletePromise,
+        abort: jest.fn(),
+      } as any)
 
       // Mock multiClusterRoleAssignments to include the saved role assignment
       mockUseRecoilValue.mockReturnValue([
@@ -446,85 +509,54 @@ describe('RoleAssignmentWizardModalWrapper', () => {
 
       await waitFor(() => expect(capturedOnSubmit).not.toBeNull())
 
-      await capturedOnSubmit({
-        subject: { kind: UserKind, user: ['test-user'] },
-        scope: { kind: 'specific', clusterNames: ['cluster1'] },
-        roles: ['admin'],
-      })
-
-      await waitFor(() => {
-        expect(mockDeleteRoleAssignment).toHaveBeenCalledWith(mockEditingRoleAssignment)
-        expect(mockToastContext.addAlert).toHaveBeenCalledWith({
-          title: 'Role assignment updated',
-          message: 'A role assignment for admin role updated.',
-          type: 'success',
-          autoClose: true,
+      await act(async () => {
+        await capturedOnSubmit({
+          subject: { kind: UserKind, user: ['test-user'] },
+          scope: { kind: 'specific', clusterNames: ['cluster1'] },
+          roles: ['admin'],
         })
       })
-    })
 
-    it('should show error and close modal when delete fails during editing', async () => {
-      // Create a rejection that is handled to avoid unhandled rejection warnings
-      const deletePromise = Promise.reject(new Error('Delete failed'))
-      // Attach a catch handler to prevent unhandled rejection
-      deletePromise.catch(() => {})
-
-      mockDeleteRoleAssignment.mockReturnValue({
-        promise: deletePromise,
-        abort: jest.fn(),
-      } as any)
-
-      render(
-        <TestWrapper>
-          <RoleAssignmentWizardModalWrapper
-            close={mockClose}
-            isOpen={true}
-            editingRoleAssignment={mockEditingRoleAssignment}
-          />
-        </TestWrapper>
+      // Assert - deleteRoleAssignment should be called after saveAllRoleAssignments succeeds
+      await waitFor(
+        () => {
+          expect(mockAddRoleAssignment).toHaveBeenCalled()
+          expect(mockDeleteRoleAssignment).toHaveBeenCalledWith(mockEditingRoleAssignment)
+        },
+        { timeout: 3000 }
       )
 
-      await waitFor(() => expect(capturedOnSubmit).not.toBeNull())
-
-      await capturedOnSubmit({
-        subject: { kind: UserKind, user: ['test-user'] },
-        scope: { kind: 'specific', clusterNames: ['cluster1'] },
-        roles: ['admin'],
-      })
-
+      // Assert - close should be called even when delete fails, and error toast should be shown
       await waitFor(() => {
         expect(mockToastContext.addAlert).toHaveBeenCalledWith({
           title: 'Role assignment update failed',
-          message: "The role assignment can't be updated. Error: Delete failed",
+          message: "The role assignment can't be deleted. Error: Delete failed",
           type: 'danger',
           autoClose: true,
         })
         expect(mockClose).toHaveBeenCalled()
       })
-
-      // Should not proceed to add new role assignment
-      expect(mockAddRoleAssignment).not.toHaveBeenCalled()
     })
 
     it('should filter out the editing role assignment from existing assignments', async () => {
-      const existingMcra = {
-        metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
-        spec: {
-          roleAssignments: [
-            { name: 'test-assignment', clusterRole: 'admin' },
-            { name: 'other-assignment', clusterRole: 'viewer' },
-          ],
-        },
-      } as MulticlusterRoleAssignment
-
-      mockUseRecoilValue.mockReturnValue([existingMcra])
+      const savedRoleAssignment = { name: 'saved-role-assignment', clusterRole: 'admin' }
+      mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment as never)
 
       mockDeleteRoleAssignment.mockReturnValue({
         promise: Promise.resolve({}),
         abort: jest.fn(),
       } as any)
 
-      mockAddRoleAssignment.mockResolvedValue({ name: 'saved-role-assignment', clusterRole: 'admin' } as never)
+      // Mock multiClusterRoleAssignments to include the saved role assignment after save
+      mockUseRecoilValue.mockReturnValue([
+        {
+          metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
+          spec: {
+            subject: { name: 'test-user', kind: 'User' },
+            roleAssignments: [{ name: 'saved-role-assignment' }],
+          },
+        },
+      ])
 
       render(
         <TestWrapper>
@@ -538,16 +570,21 @@ describe('RoleAssignmentWizardModalWrapper', () => {
 
       await waitFor(() => expect(capturedOnSubmit).not.toBeNull())
 
-      await capturedOnSubmit({
-        subject: { kind: UserKind, user: ['test-user'] },
-        scope: { kind: 'specific', clusterNames: ['cluster1'] },
-        roles: ['admin'],
+      await act(async () => {
+        await capturedOnSubmit({
+          subject: { kind: UserKind, user: ['test-user'] },
+          scope: { kind: 'specific', clusterNames: ['cluster1'] },
+          roles: ['admin'],
+        })
       })
 
-      await waitFor(() => {
-        expect(mockDeleteRoleAssignment).toHaveBeenCalled()
-        expect(mockAddRoleAssignment).toHaveBeenCalled()
-      })
+      await waitFor(
+        () => {
+          expect(mockAddRoleAssignment).toHaveBeenCalled()
+          expect(mockDeleteRoleAssignment).toHaveBeenCalled()
+        },
+        { timeout: 3000 }
+      )
     })
 
     it('should not delete when not in editing mode', async () => {
@@ -819,7 +856,11 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       clusterSetNames: [],
     }
 
-    it('should set isSaving back to false when deleteRoleAssignment fails', async () => {
+    it('should set isSaving back to false when deleteRoleAssignment fails after saveAllRoleAssignments succeeds', async () => {
+      // Arrange - saveAllRoleAssignments will succeed
+      const savedRoleAssignment = { name: 'saved-role-assignment', clusterRole: 'admin' }
+      mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment as never)
+
       const deletePromise = Promise.reject(new Error('Delete failed'))
       deletePromise.catch(() => {}) // Prevent unhandled rejection
 
@@ -827,6 +868,17 @@ describe('RoleAssignmentWizardModalWrapper', () => {
         promise: deletePromise,
         abort: jest.fn(),
       } as any)
+
+      // Mock multiClusterRoleAssignments to include the saved role assignment
+      mockUseRecoilValue.mockReturnValue([
+        {
+          metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
+          spec: {
+            subject: { name: 'test-user', kind: 'User' },
+            roleAssignments: [{ name: 'saved-role-assignment' }],
+          },
+        },
+      ])
 
       render(
         <TestWrapper>
@@ -843,17 +895,28 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       // Initially isLoading should be false
       expect(capturedIsLoading).toBe(false)
 
-      await capturedOnSubmit({
-        subject: { kind: UserKind, user: ['test-user'] },
-        scope: { kind: 'specific', clusterNames: ['cluster1'] },
-        roles: ['admin'],
+      await act(async () => {
+        await capturedOnSubmit({
+          subject: { kind: UserKind, user: ['test-user'] },
+          scope: { kind: 'specific', clusterNames: ['cluster1'] },
+          roles: ['admin'],
+        })
       })
+
+      // Wait for deleteRoleAssignment to be called and fail
+      await waitFor(
+        () => {
+          expect(mockAddRoleAssignment).toHaveBeenCalled()
+          expect(mockDeleteRoleAssignment).toHaveBeenCalled()
+        },
+        { timeout: 3000 }
+      )
 
       // Wait for the error to be processed
       await waitFor(() => {
         expect(mockToastContext.addAlert).toHaveBeenCalledWith({
           title: 'Role assignment update failed',
-          message: "The role assignment can't be updated. Error: Delete failed",
+          message: "The role assignment can't be deleted. Error: Delete failed",
           type: 'danger',
           autoClose: true,
         })
@@ -865,7 +928,11 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       })
     })
 
-    it('should call close when deleteRoleAssignment fails', async () => {
+    it('should call close when deleteRoleAssignment fails after saveAllRoleAssignments succeeds', async () => {
+      // Arrange - saveAllRoleAssignments will succeed
+      const savedRoleAssignment = { name: 'saved-role-assignment', clusterRole: 'admin' }
+      mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment as never)
+
       const deletePromise = Promise.reject(new Error('Delete failed'))
       deletePromise.catch(() => {}) // Prevent unhandled rejection
 
@@ -873,6 +940,17 @@ describe('RoleAssignmentWizardModalWrapper', () => {
         promise: deletePromise,
         abort: jest.fn(),
       } as any)
+
+      // Mock multiClusterRoleAssignments to include the saved role assignment
+      mockUseRecoilValue.mockReturnValue([
+        {
+          metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
+          spec: {
+            subject: { name: 'test-user', kind: 'User' },
+            roleAssignments: [{ name: 'saved-role-assignment' }],
+          },
+        },
+      ])
 
       render(
         <TestWrapper>
@@ -886,19 +964,30 @@ describe('RoleAssignmentWizardModalWrapper', () => {
 
       await waitFor(() => expect(capturedOnSubmit).not.toBeNull())
 
-      await capturedOnSubmit({
-        subject: { kind: UserKind, user: ['test-user'] },
-        scope: { kind: 'specific', clusterNames: ['cluster1'] },
-        roles: ['admin'],
+      await act(async () => {
+        await capturedOnSubmit({
+          subject: { kind: UserKind, user: ['test-user'] },
+          scope: { kind: 'specific', clusterNames: ['cluster1'] },
+          roles: ['admin'],
+        })
       })
 
-      // Wait for close to be called
-      await waitFor(() => {
-        expect(mockClose).toHaveBeenCalled()
-      })
+      // Wait for deleteRoleAssignment to be called and fail, then close should be called
+      await waitFor(
+        () => {
+          expect(mockAddRoleAssignment).toHaveBeenCalled()
+          expect(mockDeleteRoleAssignment).toHaveBeenCalled()
+          expect(mockClose).toHaveBeenCalled()
+        },
+        { timeout: 3000 }
+      )
     })
 
-    it('should not proceed to addRoleAssignment when deleteRoleAssignment fails', async () => {
+    it('should call addRoleAssignment before deleteRoleAssignment when editing', async () => {
+      // Arrange - saveAllRoleAssignments will succeed
+      const savedRoleAssignment = { name: 'saved-role-assignment', clusterRole: 'admin' }
+      mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment as never)
+
       const deletePromise = Promise.reject(new Error('Delete failed'))
       deletePromise.catch(() => {}) // Prevent unhandled rejection
 
@@ -906,6 +995,17 @@ describe('RoleAssignmentWizardModalWrapper', () => {
         promise: deletePromise,
         abort: jest.fn(),
       } as any)
+
+      // Mock multiClusterRoleAssignments to include the saved role assignment
+      mockUseRecoilValue.mockReturnValue([
+        {
+          metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
+          spec: {
+            subject: { name: 'test-user', kind: 'User' },
+            roleAssignments: [{ name: 'saved-role-assignment' }],
+          },
+        },
+      ])
 
       render(
         <TestWrapper>
@@ -919,22 +1019,34 @@ describe('RoleAssignmentWizardModalWrapper', () => {
 
       await waitFor(() => expect(capturedOnSubmit).not.toBeNull())
 
-      await capturedOnSubmit({
-        subject: { kind: UserKind, user: ['test-user'] },
-        scope: { kind: 'specific', clusterNames: ['cluster1'] },
-        roles: ['admin'],
+      await act(async () => {
+        await capturedOnSubmit({
+          subject: { kind: UserKind, user: ['test-user'] },
+          scope: { kind: 'specific', clusterNames: ['cluster1'] },
+          roles: ['admin'],
+        })
       })
 
-      // Wait for the error to be processed
-      await waitFor(() => {
-        expect(mockToastContext.addAlert).toHaveBeenCalled()
-      })
+      // Wait for both to be called in the correct order
+      await waitFor(
+        () => {
+          expect(mockAddRoleAssignment).toHaveBeenCalled()
+          expect(mockDeleteRoleAssignment).toHaveBeenCalled()
+        },
+        { timeout: 3000 }
+      )
 
-      // addRoleAssignment should not be called
-      expect(mockAddRoleAssignment).not.toHaveBeenCalled()
+      // Verify addRoleAssignment was called before deleteRoleAssignment
+      const addCallOrder = mockAddRoleAssignment.mock.invocationCallOrder[0]
+      const deleteCallOrder = mockDeleteRoleAssignment.mock.invocationCallOrder[0]
+      expect(addCallOrder).toBeLessThan(deleteCallOrder)
     })
 
-    it('should show error toast with correct message when deleteRoleAssignment fails', async () => {
+    it('should show error toast with correct message when deleteRoleAssignment fails after saveAllRoleAssignments succeeds', async () => {
+      // Arrange - saveAllRoleAssignments will succeed
+      const savedRoleAssignment = { name: 'saved-role-assignment', clusterRole: 'admin' }
+      mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment as never)
+
       const deletePromise = Promise.reject(new Error('Permission denied'))
       deletePromise.catch(() => {}) // Prevent unhandled rejection
 
@@ -943,6 +1055,17 @@ describe('RoleAssignmentWizardModalWrapper', () => {
         abort: jest.fn(),
       } as any)
 
+      // Mock multiClusterRoleAssignments to include the saved role assignment
+      mockUseRecoilValue.mockReturnValue([
+        {
+          metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
+          spec: {
+            subject: { name: 'test-user', kind: 'User' },
+            roleAssignments: [{ name: 'saved-role-assignment' }],
+          },
+        },
+      ])
+
       render(
         <TestWrapper>
           <RoleAssignmentWizardModalWrapper
@@ -955,20 +1078,418 @@ describe('RoleAssignmentWizardModalWrapper', () => {
 
       await waitFor(() => expect(capturedOnSubmit).not.toBeNull())
 
+      await act(async () => {
+        await capturedOnSubmit({
+          subject: { kind: UserKind, user: ['test-user'] },
+          scope: { kind: 'specific', clusterNames: ['cluster1'] },
+          roles: ['admin'],
+        })
+      })
+
+      // Wait for deleteRoleAssignment to be called and fail
+      await waitFor(
+        () => {
+          expect(mockAddRoleAssignment).toHaveBeenCalled()
+          expect(mockDeleteRoleAssignment).toHaveBeenCalled()
+        },
+        { timeout: 3000 }
+      )
+
+      await waitFor(() => {
+        expect(mockToastContext.addAlert).toHaveBeenCalledWith({
+          title: 'Role assignment update failed',
+          message: "The role assignment can't be deleted. Error: Permission denied",
+          type: 'danger',
+          autoClose: true,
+        })
+      })
+    })
+  })
+
+  describe('deleteRoleAssignment only after saveAllRoleAssignments succeeds', () => {
+    const mockEditingRoleAssignment: FlattenedRoleAssignment = {
+      name: 'test-assignment',
+      clusterRole: 'admin',
+      clusterNames: ['cluster1'],
+      clusterSetNames: [],
+      clusterSelection: {
+        type: 'placements',
+        placements: [],
+      },
+      subject: { name: 'test-user', kind: 'User' },
+      relatedMulticlusterRoleAssignment: {
+        metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
+        spec: {
+          roleAssignments: [{ name: 'test-assignment', clusterRole: 'admin' }],
+        },
+      } as MulticlusterRoleAssignment,
+    }
+
+    it('should NOT call deleteRoleAssignment when editing and saveAllRoleAssignments fails', async () => {
+      // Arrange - saveAllRoleAssignments will fail
+      const saveError = new Error('Save failed')
+      mockAddRoleAssignment.mockRejectedValue(saveError)
+
+      render(
+        <TestWrapper>
+          <RoleAssignmentWizardModalWrapper
+            close={mockClose}
+            isOpen={true}
+            editingRoleAssignment={mockEditingRoleAssignment}
+          />
+        </TestWrapper>
+      )
+
+      await waitFor(() => expect(capturedOnSubmit).not.toBeNull())
+
+      // Act - submit the form
       await capturedOnSubmit({
         subject: { kind: UserKind, user: ['test-user'] },
         scope: { kind: 'specific', clusterNames: ['cluster1'] },
         roles: ['admin'],
       })
 
+      // Assert - deleteRoleAssignment should NOT be called when saveAllRoleAssignments fails
+      await waitFor(() => {
+        expect(mockToastContext.addAlert).toHaveBeenCalled()
+        expect(capturedIsLoading).toBe(false)
+      })
+
+      expect(mockDeleteRoleAssignment).not.toHaveBeenCalled()
+      expect(mockClose).not.toHaveBeenCalled()
+    })
+
+    it('should call deleteRoleAssignment when editing and saveAllRoleAssignments succeeds, then close on success', async () => {
+      // Arrange - saveAllRoleAssignments will succeed
+      const savedRoleAssignment = { name: 'saved-role-assignment', clusterRole: 'admin' }
+      mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment as never)
+
+      // Mock deleteRoleAssignment to succeed
+      mockDeleteRoleAssignment.mockReturnValue({
+        promise: Promise.resolve({}),
+        abort: jest.fn(),
+      } as any)
+
+      // Mock multiClusterRoleAssignments to include the saved role assignment
+      // This simulates the Recoil state being updated after the save
+      mockUseRecoilValue.mockReturnValue([
+        {
+          metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
+          spec: {
+            subject: { name: 'test-user', kind: 'User' },
+            roleAssignments: [{ name: 'saved-role-assignment' }],
+          },
+        },
+      ])
+
+      render(
+        <TestWrapper>
+          <RoleAssignmentWizardModalWrapper
+            close={mockClose}
+            isOpen={true}
+            editingRoleAssignment={mockEditingRoleAssignment}
+          />
+        </TestWrapper>
+      )
+
+      await waitFor(() => expect(capturedOnSubmit).not.toBeNull())
+
+      // Act - submit the form
+      await act(async () => {
+        await capturedOnSubmit({
+          subject: { kind: UserKind, user: ['test-user'] },
+          scope: { kind: 'specific', clusterNames: ['cluster1'] },
+          roles: ['admin'],
+        })
+      })
+
+      // Assert - deleteRoleAssignment should be called AFTER saveAllRoleAssignments succeeds
+      await waitFor(
+        () => {
+          expect(mockAddRoleAssignment).toHaveBeenCalled()
+          expect(mockDeleteRoleAssignment).toHaveBeenCalledWith(mockEditingRoleAssignment)
+        },
+        { timeout: 3000 }
+      )
+
+      // Assert - close() should be called after deleteRoleAssignment succeeds
+      await waitFor(
+        () => {
+          expect(mockClose).toHaveBeenCalled()
+        },
+        { timeout: 3000 }
+      )
+
+      // Verify success toast was shown
+      expect(mockToastContext.addAlert).toHaveBeenCalledWith({
+        title: 'Role assignment updated',
+        message: 'A role assignment for admin role updated.',
+        type: 'success',
+        autoClose: true,
+      })
+    })
+
+    it('should call deleteRoleAssignment when editing and saveAllRoleAssignments succeeds, then close even if delete fails', async () => {
+      // Arrange - saveAllRoleAssignments will succeed
+      const savedRoleAssignment = { name: 'saved-role-assignment', clusterRole: 'admin' }
+      mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment as never)
+
+      // Mock deleteRoleAssignment to fail
+      const deleteError = new Error('Delete failed')
+      const deletePromise = Promise.reject(deleteError)
+      deletePromise.catch(() => {}) // Prevent unhandled rejection warning
+
+      mockDeleteRoleAssignment.mockReturnValue({
+        promise: deletePromise,
+        abort: jest.fn(),
+      } as any)
+
+      // Mock multiClusterRoleAssignments to include the saved role assignment
+      mockUseRecoilValue.mockReturnValue([
+        {
+          metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
+          spec: {
+            subject: { name: 'test-user', kind: 'User' },
+            roleAssignments: [{ name: 'saved-role-assignment' }],
+          },
+        },
+      ])
+
+      render(
+        <TestWrapper>
+          <RoleAssignmentWizardModalWrapper
+            close={mockClose}
+            isOpen={true}
+            editingRoleAssignment={mockEditingRoleAssignment}
+          />
+        </TestWrapper>
+      )
+
+      await waitFor(() => expect(capturedOnSubmit).not.toBeNull())
+
+      // Act - submit the form
+      await act(async () => {
+        await capturedOnSubmit({
+          subject: { kind: UserKind, user: ['test-user'] },
+          scope: { kind: 'specific', clusterNames: ['cluster1'] },
+          roles: ['admin'],
+        })
+      })
+
+      // Assert - deleteRoleAssignment should be called AFTER saveAllRoleAssignments succeeds
+      await waitFor(
+        () => {
+          expect(mockAddRoleAssignment).toHaveBeenCalled()
+          expect(mockDeleteRoleAssignment).toHaveBeenCalledWith(mockEditingRoleAssignment)
+        },
+        { timeout: 3000 }
+      )
+
+      // Assert - close() should be called even when deleteRoleAssignment fails (in finally block)
+      await waitFor(
+        () => {
+          expect(mockClose).toHaveBeenCalled()
+        },
+        { timeout: 3000 }
+      )
+
+      // Verify error toast was shown for delete failure
       await waitFor(() => {
         expect(mockToastContext.addAlert).toHaveBeenCalledWith({
           title: 'Role assignment update failed',
-          message: "The role assignment can't be updated. Error: Permission denied",
+          message: "The role assignment can't be deleted. Error: Delete failed",
           type: 'danger',
           autoClose: true,
         })
       })
+
+      // Verify isSaving is set to false
+      await waitFor(() => {
+        expect(capturedIsLoading).toBe(false)
+      })
+    })
+
+    it('should NOT call deleteRoleAssignment when NOT editing, even if saveAllRoleAssignments succeeds', async () => {
+      // Arrange - saveAllRoleAssignments will succeed
+      const savedRoleAssignment = { name: 'saved-role-assignment', clusterRole: 'admin' }
+      mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment as never)
+
+      // Mock multiClusterRoleAssignments to include the saved role assignment
+      mockUseRecoilValue.mockReturnValue([
+        {
+          metadata: { name: 'mcra-1', namespace: 'test-ns' },
+          spec: {
+            subject: { name: 'test-user', kind: 'User' },
+            roleAssignments: [{ name: 'saved-role-assignment' }],
+          },
+        },
+      ])
+
+      render(
+        <TestWrapper>
+          <RoleAssignmentWizardModalWrapper close={mockClose} isOpen={true} />
+        </TestWrapper>
+      )
+
+      await waitFor(() => expect(capturedOnSubmit).not.toBeNull())
+
+      // Act - submit the form (NOT in editing mode)
+      await act(async () => {
+        await capturedOnSubmit({
+          subject: { kind: UserKind, user: ['test-user'] },
+          scope: { kind: 'specific', clusterNames: ['cluster1'] },
+          roles: ['admin'],
+        })
+      })
+
+      // Assert - deleteRoleAssignment should NOT be called when not editing
+      await waitFor(
+        () => {
+          expect(mockAddRoleAssignment).toHaveBeenCalled()
+          expect(mockDeleteRoleAssignment).not.toHaveBeenCalled()
+          expect(mockClose).toHaveBeenCalled()
+        },
+        { timeout: 3000 }
+      )
+    })
+
+    it('when editing, cleanup (close, reset isSaving) runs in finally for both deleteRoleAssignment success and failure', async () => {
+      // Regression: deleteRoleAssignment(..).promise uses .catch() for error toast and .finally() for cleanup.
+      // There is no .then() — cleanup must run in finally so it runs whether delete succeeds or fails.
+      const savedRoleAssignment = { name: 'saved-role-assignment', clusterRole: 'admin' }
+      mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment as never)
+
+      mockUseRecoilValue.mockReturnValue([
+        {
+          metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
+          spec: {
+            subject: { name: 'test-user', kind: 'User' },
+            roleAssignments: [{ name: 'saved-role-assignment' }],
+          },
+        },
+      ])
+
+      // Case 1: delete succeeds — finally runs, close and isLoading false
+      mockDeleteRoleAssignment.mockReturnValue({
+        promise: Promise.resolve({}),
+        abort: jest.fn(),
+      } as any)
+
+      render(
+        <TestWrapper>
+          <RoleAssignmentWizardModalWrapper
+            close={mockClose}
+            isOpen={true}
+            editingRoleAssignment={mockEditingRoleAssignment}
+          />
+        </TestWrapper>
+      )
+
+      await waitFor(() => expect(capturedOnSubmit).not.toBeNull())
+      await act(async () => {
+        await capturedOnSubmit({
+          subject: { kind: UserKind, user: ['test-user'] },
+          scope: { kind: 'specific', clusterNames: ['cluster1'] },
+          roles: ['admin'],
+        })
+      })
+
+      await waitFor(() => expect(mockClose).toHaveBeenCalled(), { timeout: 3000 })
+      await waitFor(() => expect(capturedIsLoading).toBe(false))
+
+      mockClose.mockClear()
+
+      // Case 2: delete fails — catch shows toast, finally still runs (close and isLoading false)
+      const deletePromise = Promise.reject(new Error('Delete failed'))
+      deletePromise.catch(() => {})
+      mockDeleteRoleAssignment.mockReturnValue({ promise: deletePromise, abort: jest.fn() } as any)
+
+      render(
+        <TestWrapper>
+          <RoleAssignmentWizardModalWrapper
+            close={mockClose}
+            isOpen={true}
+            editingRoleAssignment={mockEditingRoleAssignment}
+          />
+        </TestWrapper>
+      )
+
+      await waitFor(() => expect(capturedOnSubmit).not.toBeNull())
+      await act(async () => {
+        await capturedOnSubmit({
+          subject: { kind: UserKind, user: ['test-user'] },
+          scope: { kind: 'specific', clusterNames: ['cluster1'] },
+          roles: ['admin'],
+        })
+      })
+
+      await waitFor(() =>
+        expect(mockToastContext.addAlert).toHaveBeenCalledWith(
+          expect.objectContaining({
+            title: 'Role assignment update failed',
+            type: 'danger',
+          })
+        )
+      )
+      await waitFor(() => expect(mockClose).toHaveBeenCalled(), { timeout: 3000 })
+      await waitFor(() => expect(capturedIsLoading).toBe(false))
+    })
+
+    it('should wait for all saved role assignments to appear in multiClusterRoleAssignments before calling deleteRoleAssignment', async () => {
+      // Arrange - saveAllRoleAssignments will succeed with multiple role assignments
+      const savedRoleAssignment1 = { name: 'saved-role-assignment-1', clusterRole: 'admin' }
+      const savedRoleAssignment2 = { name: 'saved-role-assignment-2', clusterRole: 'viewer' }
+      mockAddRoleAssignment
+        .mockResolvedValueOnce(savedRoleAssignment1 as never)
+        .mockResolvedValueOnce(savedRoleAssignment2 as never)
+
+      mockDeleteRoleAssignment.mockReturnValue({
+        promise: Promise.resolve({}),
+        abort: jest.fn(),
+      } as any)
+
+      // Mock multiClusterRoleAssignments to include both saved assignments
+      // This simulates the Recoil state being updated after both saves complete
+      mockUseRecoilValue.mockReturnValue([
+        {
+          metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
+          spec: {
+            subject: { name: 'test-user', kind: 'User' },
+            roleAssignments: [{ name: 'saved-role-assignment-1' }, { name: 'saved-role-assignment-2' }],
+          },
+        },
+      ])
+
+      render(
+        <TestWrapper>
+          <RoleAssignmentWizardModalWrapper
+            close={mockClose}
+            isOpen={true}
+            editingRoleAssignment={mockEditingRoleAssignment}
+          />
+        </TestWrapper>
+      )
+
+      await waitFor(() => expect(capturedOnSubmit).not.toBeNull())
+
+      // Act - submit the form with multiple roles
+      await act(async () => {
+        await capturedOnSubmit({
+          subject: { kind: UserKind, user: ['test-user'] },
+          scope: { kind: 'specific', clusterNames: ['cluster1'] },
+          roles: ['admin', 'viewer'],
+        })
+      })
+
+      // Assert - deleteRoleAssignment should be called after all saved assignments appear in multiClusterRoleAssignments
+      await waitFor(
+        () => {
+          expect(mockAddRoleAssignment).toHaveBeenCalledTimes(2)
+          expect(mockDeleteRoleAssignment).toHaveBeenCalledWith(mockEditingRoleAssignment)
+          expect(mockClose).toHaveBeenCalled()
+        },
+        { timeout: 3000 }
+      )
     })
   })
 })

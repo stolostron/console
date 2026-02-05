@@ -8,6 +8,7 @@ source ./oauth-client-name.sh
 CONSOLE_VERSION=${CONSOLE_VERSION:=4.19}
 KUBEVIRT_PORT=${KUBEVIRT_PORT:=""}
 ODF_PORT=${ODF_PORT:=""}
+GITOPS_PORT=${GITOPS_PORT:=""}
 CONSOLE_IMAGE="quay.io/openshift/origin-console:${CONSOLE_VERSION}"
 
 mkdir -p ocp-console
@@ -62,6 +63,9 @@ function getBridgePlugins {
         plugins="${plugins},odf-multicluster-console=http://${host}:${ODF_PORT}"
     fi
 
+    if [ -n "$GITOPS_PORT" ]; then
+        plugins="${plugins},gitops-plugin=http://${host}:${GITOPS_PORT}"
+    fi
 
     echo "mce=http://${host}:${MCE_PORT},acm=http://${host}:${ACM_PORT}${plugins}"
 }

@@ -104,6 +104,36 @@ describe('ProjectsList', () => {
     expect(screen.getByTestId('projects-table')).toBeInTheDocument()
   })
 
+  it('calls onSelectionChange with new project name when create succeeds and no projects selected', async () => {
+    render(<ProjectsList selectedClusters={[{ name: 'cluster-1' }]} onSelectionChange={mockOnSelectionChange} />)
+
+    await userEvent.click(screen.getByText('Create common project'))
+    await waitFor(() => {
+      expect(screen.getByTestId('common-project-create')).toBeInTheDocument()
+    })
+    await userEvent.click(screen.getByText('Submit'))
+
+    expect(mockOnSelectionChange).toHaveBeenCalledWith(['new-project'])
+  })
+
+  it('calls onSelectionChange with existing selection plus new project name when create succeeds', async () => {
+    render(
+      <ProjectsList
+        selectedClusters={[{ name: 'cluster-1' }]}
+        selectedNamespaces={['existing-ns-1', 'existing-ns-2']}
+        onSelectionChange={mockOnSelectionChange}
+      />
+    )
+
+    await userEvent.click(screen.getByText('Create common project'))
+    await waitFor(() => {
+      expect(screen.getByTestId('common-project-create')).toBeInTheDocument()
+    })
+    await userEvent.click(screen.getByText('Submit Custom'))
+
+    expect(mockOnSelectionChange).toHaveBeenCalledWith(['existing-ns-1', 'existing-ns-2', 'custom-project'])
+  })
+
   it('handles project selection changes', async () => {
     // Arrange - empty clusters is fine for selection-only test
     render(<ProjectsList selectedClusters={mockClustersWithOne} onSelectionChange={mockOnSelectionChange} />)

@@ -423,7 +423,14 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           //model.resources = cloneDeep(change.resources)
           const saveDecorations = getResourceEditorDecorations(editor, false)
           const viewState = editor.saveViewState()
-          model.setValue(yaml)
+          // instead of setValue, it's more robust to create a new text model
+          // but fall back to setValue for test environments where createModel may not be available
+          if (typeof monaco.editor.createModel === 'function') {
+            editor.getModel()?.dispose?.()
+            editor.setModel(monaco.editor.createModel(yaml, 'yaml'))
+          } else {
+            model.setValue(yaml)
+          }
           if (viewState) {
             editor.restoreViewState(viewState)
           }

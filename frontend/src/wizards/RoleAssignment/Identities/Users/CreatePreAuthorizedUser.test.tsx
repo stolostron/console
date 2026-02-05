@@ -22,18 +22,27 @@ jest.mock('react', () => ({
 
 // Mock the CreateUserForm component to avoid complex form validation issues
 jest.mock('./CreateUserForm', () => ({
-  CreateUserForm: ({ saveButtonText, cancelButtonText, onCancel }: any) => (
-    <div>
-      <div>Mocked CreateUserForm</div>
-      <button onClick={onCancel}>{cancelButtonText}</button>
-      <button>{saveButtonText}</button>
-    </div>
-  ),
+  CreateUserForm: ({ saveButtonText, cancelButtonText, onCancel, onSuccess, onError }: any) => {
+    const mockUser = { metadata: { name: 'created-user', uid: 'created-user-uid' } }
+    return (
+      <div>
+        <div>Mocked CreateUserForm</div>
+        <button onClick={onCancel}>{cancelButtonText}</button>
+        <button onClick={() => onSuccess(mockUser)} data-testid="trigger-success">
+          {saveButtonText}
+        </button>
+        <button onClick={() => onError('error-user-name')} data-testid="trigger-error">
+          Trigger error
+        </button>
+      </div>
+    )
+  },
 }))
 
 describe('CreatePreAuthorizedUser', () => {
   const defaultProps = {
     onClose: jest.fn(),
+    onSuccess: jest.fn(),
   }
 
   beforeEach(() => {
@@ -66,5 +75,34 @@ describe('CreatePreAuthorizedUser', () => {
     // Verify the correct button texts are displayed (passed as props to CreateUserForm)
     expect(screen.getByRole('button', { name: 'Save pre-authorized user' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Cancel and search users instead' })).toBeInTheDocument()
+  })
+
+  it('calls onSuccess with user and onClose when handleSuccess is triggered', async () => {
+    render(<CreatePreAuthorizedUser {...defaultProps} />)
+
+    const successButton = screen.getByRole('button', { name: 'Save pre-authorized user' })
+    await userEvent.click(successButton)
+
+    expect(defaultProps.onSuccess).toHaveBeenCalledTimes(1)
+    expect(defaultProps.onSuccess).toHaveBeenCalledWith(
+      expect.objectContaining({ metadata: { name: 'created-user', uid: 'created-user-uid' } })
+    )
+    expect(defaultProps.onClose).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not call onClose or onSuccess when handleError is triggered', async () => {
+    render(<CreatePreAuthorizedUser {...defaultProps} />)
+
+    const errorButton = screen.getByRole('button', { name: 'Trigger error' })
+    await userEvent.click(errorButton)
+
+    expect(defaultProps.onClose).not.toHaveBeenCalled()
+    expect(defaultProps.onSuccess).not.toHaveBeenCalled()
+    expect(mockAddAlert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Failed to create pre-authorized user',
+        type: 'danger',
+      })
+    )
   })
 })

@@ -6,7 +6,7 @@
   fill: #252f3e;
 }
 
-:root:where(.pf-v5-theme-dark) .aws-icon .type,
-:root:where(.pf-v5-theme-dark) .aws-icon .graphic {
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .aws-icon .type,
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .aws-icon .graphic {
   fill: #ffffff;
 }

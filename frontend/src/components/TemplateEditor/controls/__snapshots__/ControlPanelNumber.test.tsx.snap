@@ -69,58 +69,98 @@ exports[`ControlPanelNumber component renders as expected 1`] = `
             <div
               class="pf-v6-c-input-group"
             >
-              <button
-                aria-label="Minus"
-                class="pf-v6-c-button pf-m-control"
-                data-testid="down-controlId"
-                id="down-controlId"
-                style="line-height: 16px;"
-                type="button"
+              <div
+                class="pf-v6-c-input-group__item"
+              >
+                <button
+                  aria-label="Minus"
+                  class="pf-v6-c-button pf-m-control"
+                  data-ouia-component-id="OUIA-Generated-Button-control-1"
+                  data-ouia-component-type="PF6/Button"
+                  data-ouia-safe="true"
+                  data-testid="down-controlId"
+                  id="down-controlId"
+                  type="button"
+                >
+                  <span
+                    class="pf-v6-c-button__icon"
+                  >
+                    <span
+                      class="pf-v6-c-number-input__icon"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="pf-v6-svg"
+                        fill="currentColor"
+                        height="1em"
+                        role="img"
+                        viewBox="0 0 448 512"
+                        width="1em"
+                      >
+                        <path
+                          d="M416 208H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h384c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z"
+                        />
+                      </svg>
+                    </span>
+                  </span>
+                </button>
+              </div>
+              <div
+                class="pf-v6-c-input-group__item"
               >
                 <span
-                  class="pf-v6-c-number-input__icon"
+                  class="pf-v6-c-form-control"
                 >
-                  <svg
-                    height="16"
-                    role="img"
-                    viewBox="0 0 24 24"
-                    width="16"
-                  >
-                    <path
-                      d="M0 10h24v4h-24z"
-                    />
-                  </svg>
-                </span>
-              </button>
-              <input
-                aria-label="Number input"
-                class="pf-v6-c-form-control"
-                data-testid="number-controlId"
-                id="controlId"
-                name="number-input-default-name"
-                pattern="[0-9]*"
-                type="number"
-                value=""
-              />
-              <button
-                aria-label="Plus"
-                class="pf-v6-c-button pf-m-control"
-                data-testid="up-controlId"
-                id="up-controlId"
-                style="line-height: 16px;"
-                type="button"
-              >
-                <svg
-                  height="16"
-                  role="img"
-                  viewBox="0 0 24 24"
-                  width="16"
-                >
-                  <path
-                    d="M24 10h-10v-10h-4v10h-10v4h10v10h4v-10h10z"
+                  <input
+                    aria-invalid="false"
+                    aria-label="Number input"
+                    data-ouia-component-id="OUIA-Generated-TextInputBase-1"
+                    data-ouia-component-type="PF6/TextInput"
+                    data-ouia-safe="true"
+                    data-testid="number-controlId"
+                    id="controlId"
+                    name="number-input-default-name"
+                    type="number"
+                    value=""
                   />
-                </svg>
-              </button>
+                </span>
+              </div>
+              <div
+                class="pf-v6-c-input-group__item"
+              >
+                <button
+                  aria-label="Plus"
+                  class="pf-v6-c-button pf-m-control"
+                  data-ouia-component-id="OUIA-Generated-Button-control-2"
+                  data-ouia-component-type="PF6/Button"
+                  data-ouia-safe="true"
+                  data-testid="up-controlId"
+                  id="up-controlId"
+                  type="button"
+                >
+                  <span
+                    class="pf-v6-c-button__icon"
+                  >
+                    <span
+                      class="pf-v6-c-number-input__icon"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="pf-v6-svg"
+                        fill="currentColor"
+                        height="1em"
+                        role="img"
+                        viewBox="0 0 448 512"
+                        width="1em"
+                      >
+                        <path
+                          d="M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z"
+                        />
+                      </svg>
+                    </span>
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -199,58 +239,98 @@ exports[`ControlPanelNumber component renders as expected 2`] = `
             <div
               class="pf-v6-c-input-group"
             >
-              <button
-                aria-label="Minus"
-                class="pf-v6-c-button pf-m-control"
-                data-testid="down-controlId"
-                id="down-controlId"
-                style="line-height: 16px;"
-                type="button"
+              <div
+                class="pf-v6-c-input-group__item"
+              >
+                <button
+                  aria-label="Minus"
+                  class="pf-v6-c-button pf-m-control"
+                  data-ouia-component-id="OUIA-Generated-Button-control-1"
+                  data-ouia-component-type="PF6/Button"
+                  data-ouia-safe="true"
+                  data-testid="down-controlId"
+                  id="down-controlId"
+                  type="button"
+                >
+                  <span
+                    class="pf-v6-c-button__icon"
+                  >
+                    <span
+                      class="pf-v6-c-number-input__icon"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="pf-v6-svg"
+                        fill="currentColor"
+                        height="1em"
+                        role="img"
+                        viewBox="0 0 448 512"
+                        width="1em"
+                      >
+                        <path
+                          d="M416 208H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h384c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z"
+                        />
+                      </svg>
+                    </span>
+                  </span>
+                </button>
+              </div>
+              <div
+                class="pf-v6-c-input-group__item"
               >
                 <span
-                  class="pf-v6-c-number-input__icon"
+                  class="pf-v6-c-form-control"
                 >
-                  <svg
-                    height="16"
-                    role="img"
-                    viewBox="0 0 24 24"
-                    width="16"
-                  >
-                    <path
-                      d="M0 10h24v4h-24z"
-                    />
-                  </svg>
-                </span>
-              </button>
-              <input
-                aria-label="Number input"
-                class="pf-v6-c-form-control"
-                data-testid="number-controlId"
-                id="controlId"
-                name="number-input-default-name"
-                pattern="[0-9]*"
-                type="number"
-                value="0"
-              />
-              <button
-                aria-label="Plus"
-                class="pf-v6-c-button pf-m-control"
-                data-testid="up-controlId"
-                id="up-controlId"
-                style="line-height: 16px;"
-                type="button"
-              >
-                <svg
-                  height="16"
-                  role="img"
-                  viewBox="0 0 24 24"
-                  width="16"
-                >
-                  <path
-                    d="M24 10h-10v-10h-4v10h-10v4h10v10h4v-10h10z"
+                  <input
+                    aria-invalid="false"
+                    aria-label="Number input"
+                    data-ouia-component-id="OUIA-Generated-TextInputBase-1"
+                    data-ouia-component-type="PF6/TextInput"
+                    data-ouia-safe="true"
+                    data-testid="number-controlId"
+                    id="controlId"
+                    name="number-input-default-name"
+                    type="number"
+                    value="0"
                   />
-                </svg>
-              </button>
+                </span>
+              </div>
+              <div
+                class="pf-v6-c-input-group__item"
+              >
+                <button
+                  aria-label="Plus"
+                  class="pf-v6-c-button pf-m-control"
+                  data-ouia-component-id="OUIA-Generated-Button-control-2"
+                  data-ouia-component-type="PF6/Button"
+                  data-ouia-safe="true"
+                  data-testid="up-controlId"
+                  id="up-controlId"
+                  type="button"
+                >
+                  <span
+                    class="pf-v6-c-button__icon"
+                  >
+                    <span
+                      class="pf-v6-c-number-input__icon"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        class="pf-v6-svg"
+                        fill="currentColor"
+                        height="1em"
+                        role="img"
+                        viewBox="0 0 448 512"
+                        width="1em"
+                      >
+                        <path
+                          d="M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z"
+                        />
+                      </svg>
+                    </span>
+                  </span>
+                </button>
+              </div>
             </div>
           </div>
           <div

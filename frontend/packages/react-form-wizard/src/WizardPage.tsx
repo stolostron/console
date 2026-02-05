@@ -49,7 +49,7 @@ export function WizardPage(props: WizardPageProps) {
         )
       }
     >
-      <PageSection hasBodyWrapper={false}>
+      <PageSection hasBodyWrapper={false} stickyOnBreakpoint={{ default: 'top' }}>
         <Flex alignItems={{ default: 'alignItemsCenter' }} wrap="noWrap" style={{ flexWrap: 'nowrap', gap: 16 }}>
           <Title headingLevel="h1">{props.title}</Title>
           {props.yaml !== false && (

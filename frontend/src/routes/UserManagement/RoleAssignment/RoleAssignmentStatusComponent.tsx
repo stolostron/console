@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Label, Spinner, Tooltip, TooltipProps } from '@patternfly/react-core'
+import { Label, Panel, PanelMain, PanelMainBody, Popover, Spinner, TooltipProps } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { RoleAssignmentStatus } from '../../../resources/multicluster-role-assignment'
@@ -8,9 +8,38 @@ type RoleAssignmentStatusComponentProps = {
   status?: RoleAssignmentStatus
 }
 
-const StatusTooltip = ({ status, children }: { status: RoleAssignmentStatus; children: TooltipProps['children'] }) => (
-  <Tooltip content={`${status.reason}: ${status.message}`}>{children}</Tooltip>
-)
+const StatusTooltip = ({
+  status,
+  icon,
+  label,
+}: {
+  status: RoleAssignmentStatus
+  icon: TooltipProps['children']
+  label: string
+}) => {
+  const { t } = useTranslation()
+  const reason = status.reason ?? t('Not available')
+  const message = status.message ?? t('Not available')
+
+  return (
+    <Popover
+      triggerAction="hover"
+      headerContent={reason}
+      bodyContent={
+        <Panel isScrollable>
+          <PanelMain tabIndex={0} maxHeight="150px">
+            <PanelMainBody style={{ padding: '0px' }}>{message}</PanelMainBody>
+          </PanelMain>
+        </Panel>
+      }
+    >
+      <Label variant="outline">
+        <span style={{ paddingRight: '8px' }}>{icon}</span>
+        {label}
+      </Label>
+    </Popover>
+  )
+}
 
 const RoleAssignmentStatusComponent = ({ status }: RoleAssignmentStatusComponentProps) => {
   const { t } = useTranslation()
@@ -18,40 +47,27 @@ const RoleAssignmentStatusComponent = ({ status }: RoleAssignmentStatusComponent
   switch (status?.status) {
     case 'Active':
       return (
-        <StatusTooltip status={status}>
-          <Label variant="outline">
-            <span style={{ paddingRight: '8px' }}>
-              <CheckCircleIcon
-                style={{
-                  color: 'var(--pf-t--global--icon--color--status--success--default)',
-                }}
-              />
-            </span>
-            {t('Active')}
-          </Label>
-        </StatusTooltip>
+        <StatusTooltip
+          status={status}
+          icon={<CheckCircleIcon color="var(--pf-t--global--icon--color--status--success--default)" />}
+          label={t('Active')}
+        />
       )
     case 'Error':
       return (
-        <StatusTooltip status={status}>
-          <Label variant="outline">
-            <span style={{ paddingRight: '8px' }}>
-              <ExclamationCircleIcon color="var(--pf-t--global--icon--color--status--danger--default)" />
-            </span>
-            {t('Error')}
-          </Label>
-        </StatusTooltip>
+        <StatusTooltip
+          status={status}
+          icon={<ExclamationCircleIcon color="var(--pf-t--global--icon--color--status--danger--default)" />}
+          label={t('Error')}
+        />
       )
     case 'Pending':
       return (
-        <StatusTooltip status={status}>
-          <Label variant="outline">
-            <span style={{ paddingRight: '8px' }}>
-              <Spinner isInline aria-label="Role Assignment being applied" />
-            </span>
-            {t('Pending')}
-          </Label>
-        </StatusTooltip>
+        <StatusTooltip
+          status={status}
+          icon={<Spinner isInline aria-label="Role Assignment being applied" />}
+          label={t('Pending')}
+        />
       )
     default:
       return <p>{t('Unknown')}</p>

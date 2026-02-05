@@ -20,8 +20,15 @@ if (process.env.NODE_ENV === 'development') {
   }
 }
 
+function isDarkTheme() {
+  return (
+    document.documentElement.classList.contains('pf-v5-theme-dark') ||
+    document.documentElement.classList.contains('pf-v6-theme-dark')
+  )
+}
+
 function toggleTheme() {
-  if (document.documentElement.classList.contains('pf-v5-theme-dark')) {
+  if (isDarkTheme()) {
     setLightTheme(true)
   } else {
     setDarkTheme(true)
@@ -29,26 +36,26 @@ function toggleTheme() {
 }
 
 export function setLightTheme(save?: boolean) {
-  document.documentElement.classList.remove('pf-v5-theme-dark')
+  document.documentElement.classList.remove('pf-v5-theme-dark', 'pf-v6-theme-dark')
   if (save) {
     localStorage.setItem('theme', 'light')
   }
 }
 
 function setDarkTheme(save?: boolean) {
-  document.documentElement.classList.add('pf-v5-theme-dark')
+  document.documentElement.classList.add('pf-v5-theme-dark', 'pf-v6-theme-dark')
   if (save) {
     localStorage.setItem('theme', 'dark')
   }
 }
 
 export function ThemeSwitcher(props: { style?: CSSProperties }) {
-  const [light, setLight] = useState(!document.documentElement.classList.contains('pf-v5-theme-dark'))
+  const [light, setLight] = useState(!isDarkTheme())
   return (
     <Button
       onClick={() => {
         toggleTheme()
-        setLight(!document.documentElement.classList.contains('pf-v5-theme-dark'))
+        setLight(!isDarkTheme())
       }}
       variant="plain"
       icon={light ? <SunIcon /> : <MoonIcon />}

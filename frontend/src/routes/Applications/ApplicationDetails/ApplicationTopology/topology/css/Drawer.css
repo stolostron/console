@@ -369,7 +369,7 @@
 }
 .topologyDetails .value {
   font-size: 14px;
-  color: var(--pf-t--global--text--color--100);
+  color: var(--pf-t--global--text--color--regular);
   word-break: normal;
 }
 .topologyDetails .ksLabelBackground {

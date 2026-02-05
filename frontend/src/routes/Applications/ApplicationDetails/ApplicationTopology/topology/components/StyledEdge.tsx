@@ -28,15 +28,18 @@ const StyledEdge: React.FunctionComponent<EdgeProps> = ({ element, dragging }) =
   let d: string
 
   if (horizontalDistance <= 50) {
-    // Use straight line when target is within 20px horizontally of source
+    // Use straight line when target is within 50px vertically of source
     d = `M${startPoint.x} ${startPoint.y} L${endPoint.x} ${endPoint.y}`
   } else {
-    // Use quadratic Bezier curve
-    const curveOffset = 25
+    // Use quadratic Bezier curve with gradual offset based on vertical distance
+    const verticalDelta = endPoint.y - startPoint.y
+    // Scale curve offset proportionally to vertical distance
+    // Positive delta (target below) curves up (negative offset), negative delta curves down
+    const maxCurveOffset = 50
+    const curveScale = Math.min(Math.abs(verticalDelta) / 200, 1) // Normalize to max at 200px distance
+    const curveOffset = -Math.sign(verticalDelta) * maxCurveOffset * curveScale
     const midX = (startPoint.x + endPoint.x) / 2
-    // Curve towards top if target is below source, towards bottom if target is above
-    const curveDirection = endPoint.y > startPoint.y ? -1 : 1
-    const midY = (startPoint.y + endPoint.y) / 2 + curveOffset * curveDirection
+    const midY = (startPoint.y + endPoint.y) / 2 + curveOffset
     d = `M${startPoint.x} ${startPoint.y} Q${midX} ${midY} ${endPoint.x} ${endPoint.y}`
   }
 

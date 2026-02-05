@@ -2,6 +2,6 @@
   fill: #131313;
 }
 
-:root:where(.pf-v5-theme-dark) .nutanix-icon {
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .nutanix-icon {
   fill: #ffffff;
 }

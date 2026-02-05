@@ -45,7 +45,7 @@ This will concurrently start the backend server, frontend webpack development se
 
 The console will be running at http://localhost:<CONSOLE_PORT>.
 
-If you are running [kubevirt-plugin](https://github.com/kubevirt-ui/kubevirt-plugin), you can have it loaded into the OpenShift console as well by specifying the port it is served on with the `KUBEVIRT_PORT` environment variable.
+If you are running [kubevirt-plugin](https://github.com/kubevirt-ui/kubevirt-plugin), [odf-console](https://github.com/red-hat-storage/odf-console), or [gitops-plugin](https://github.com/redhat-developer/gitops-console-plugin), you can have them loaded into the OpenShift console as well by specifying the port they are served on with the `KUBEVIRT_PORT`, `ODF_PORT`, or `GITOPS_PORT` environment variables, respectively.
 ```
 KUBEVIRT_PORT=9001 npm run plugins
 ```
