@@ -889,7 +889,7 @@ const submittedHelm = [
 //=====================================================================
 //                      gitGeneratorRepos mock data
 //=====================================================================
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 const mockAppSetWithGitGenerator: any = {
   apiVersion: 'argoproj.io/v1alpha1',
   kind: 'ApplicationSet',
@@ -918,7 +918,6 @@ const mockAppSetWithGitGenerator: any = {
   },
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockAppSetWithMatrixGitGenerator: any = {
   apiVersion: 'argoproj.io/v1alpha1',
   kind: 'ApplicationSet',
@@ -960,7 +959,6 @@ const mockAppSetWithMatrixGitGenerator: any = {
   },
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockAppSetWithDuplicateGitInfo: any = {
   apiVersion: 'argoproj.io/v1alpha1',
   kind: 'ApplicationSet',
