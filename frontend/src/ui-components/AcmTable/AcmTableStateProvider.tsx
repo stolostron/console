@@ -74,11 +74,7 @@ export function AcmTableStateProvider(props: { children: ReactNode; localStorage
     setSort(
       (() => {
         const sortValue = getItemWithExpiration(`${localStorageKey}-sort`)
-        if (sortValue) {
-          const parsedSort = JSON.parse(sortValue) as ISortBy
-          return parsedSort ?? DEFAULT_SORT
-        }
-        return DEFAULT_SORT
+        return (sortValue && JSON.parse(sortValue)) ?? DEFAULT_SORT
       })()
     )
   }, [localStorageKey, setSearch, setPage, setPerPage, setSort])
@@ -92,8 +88,9 @@ export function AcmTableStateProvider(props: { children: ReactNode; localStorage
       },
       sort,
       setSort: (sort: ISortBy) => {
-        setItemWithExpiration(`${localStorageKey}-sort`, JSON.stringify(sort ?? DEFAULT_SORT))
-        setSort(sort ?? DEFAULT_SORT)
+        const newSort = sort ?? DEFAULT_SORT
+        setItemWithExpiration(`${localStorageKey}-sort`, JSON.stringify(newSort))
+        setSort(newSort)
       },
       page,
       setPage: (page: number) => {
