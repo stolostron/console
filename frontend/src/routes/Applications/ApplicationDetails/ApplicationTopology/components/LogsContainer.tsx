@@ -113,9 +113,7 @@ export function LogsContainer(props: ILogsContainerProps) {
           setLogsError(err.message)
         })
 
-      return () => {
-        abortController.abort()
-      }
+      return () => abortController.abort()
     }
   }, [cluster, container, currentNamespace, selectedPod, localHubName])
 
