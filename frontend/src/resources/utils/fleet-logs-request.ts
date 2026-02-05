@@ -114,7 +114,7 @@ async function fetchLogsViaManagedClusterProxy(
 ): Promise<FleetLogsRequestResult> {
   // Build the Kubernetes API path for pod logs
   const podLogsPath = `/api/v1/namespaces/${namespace}/pods/${podName}/log?container=${container}&tailLines=${tailLines}${previous ? '&previous=true' : ''}`
-  const managedClusterProxyURL = getBackendUrl() + `/managedclusterproxy/${cluster}${podLogsPath}`
+  const managedClusterProxyURL = `${getBackendUrl()}/managedclusterproxy/${cluster}${podLogsPath}`
 
   const result = await fetchRetry({
     method: 'GET',
