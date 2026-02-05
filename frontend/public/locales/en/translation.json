@@ -2091,6 +2091,7 @@
   "No clusters available": "No clusters available",
   "No clusters found": "No clusters found",
   "No clusters in this cluster set have the Submariner add-on installed. To get started, install Submariner add-ons to install the add-on on any available clusters in this cluster set.": "No clusters in this cluster set have the Submariner add-on installed. To get started, install Submariner add-ons to install the add-on on any available clusters in this cluster set.",
+  "No clusters selection to create projects for": "No clusters selection to create projects for",
   "No common projects found": "No common projects found",
   "No conditions found": "No conditions found",
   "No etcd storage classes. Enter an etcd storage classes name.": "No etcd storage classes. Enter an etcd storage classes name.",

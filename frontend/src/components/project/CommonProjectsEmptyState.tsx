@@ -1,14 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Button } from '@patternfly/react-core'
+import { Button, Tooltip } from '@patternfly/react-core'
 import { useTranslation } from '../../lib/acm-i18next'
 import { AcmEmptyState } from '../../ui-components'
 
 interface CommonProjectsEmptyStateProps {
   onCreateCommonProject: () => void
+  createButtonDisabledReason?: string
 }
 
-export function CommonProjectsEmptyState({ onCreateCommonProject }: CommonProjectsEmptyStateProps) {
+export function CommonProjectsEmptyState({
+  onCreateCommonProject,
+  createButtonDisabledReason,
+}: CommonProjectsEmptyStateProps) {
   const { t } = useTranslation()
 
   return (
@@ -16,9 +20,17 @@ export function CommonProjectsEmptyState({ onCreateCommonProject }: CommonProjec
       title={t('No common projects found')}
       message={t('Go back and select different clusters, or create projects with the same name on these clusters.')}
       action={
-        <Button variant="primary" onClick={onCreateCommonProject}>
-          {t('Create common project')}
-        </Button>
+        createButtonDisabledReason ? (
+          <Tooltip content={createButtonDisabledReason}>
+            <Button variant="primary" onClick={onCreateCommonProject} isAriaDisabled>
+              {t('Create common project')}
+            </Button>
+          </Tooltip>
+        ) : (
+          <Button variant="primary" onClick={onCreateCommonProject}>
+            {t('Create common project')}
+          </Button>
+        )
       }
     />
   )

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { ProjectsTable, ProjectTableData } from '../../components/ProjectsTable'
 import { useTranslation } from '../../lib/acm-i18next'
 import type { Cluster } from '../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
@@ -18,6 +18,9 @@ export const ProjectsList = ({ selectedClusters, selectedNamespaces, onSelection
   const [isCreateCommonProject, setIsCreateCommonProject] = useState(false)
   // this is used to display the created projects in the projects table to avoid discrepancies between search results and the already created projects
   const [createdProjects, setCreatedProjects] = useState<string[]>([])
+  const [isSelectedClustersEmpty, setIsSelectedClustersEmpty] = useState<boolean>()
+
+  useEffect(() => setIsSelectedClustersEmpty(selectedClusters.length === 0), [selectedClusters])
 
   const selectedProjects = useMemo(
     () =>
@@ -45,6 +48,17 @@ export const ProjectsList = ({ selectedClusters, selectedNamespaces, onSelection
     onSelectionChange(projects.map((p) => p.name))
   }
 
+  const createProjectTooltipText = useMemo(() => {
+    switch (true) {
+      case hasSelectedProjects:
+        return t('Deselect projects to create a new common project')
+      case isSelectedClustersEmpty:
+        return t('No clusters selection to create projects for')
+      default:
+        return undefined
+    }
+  }, [t, hasSelectedProjects, isSelectedClustersEmpty])
+
   const tableActionButtons = useMemo<IAcmTableButtonAction[]>(
     () => [
       {
@@ -52,11 +66,11 @@ export const ProjectsList = ({ selectedClusters, selectedNamespaces, onSelection
         title: t('Create common project'),
         click: handleCreateClick,
         variant: ButtonVariant.primary,
-        isDisabled: hasSelectedProjects,
-        tooltip: hasSelectedProjects ? t('Deselect projects to create a new common project') : undefined,
+        isDisabled: hasSelectedProjects || isSelectedClustersEmpty,
+        tooltip: createProjectTooltipText,
       },
     ],
-    [t, hasSelectedProjects]
+    [t, hasSelectedProjects, isSelectedClustersEmpty, createProjectTooltipText]
   )
   return (
     <PageSection>
@@ -75,6 +89,7 @@ export const ProjectsList = ({ selectedClusters, selectedNamespaces, onSelection
           onSelectionChange={handleSelectionChange}
           tableActionButtons={tableActionButtons}
           additionalProjects={createdProjects}
+          createButtonDisabledReason={createProjectTooltipText}
         />
       )}
     </PageSection>

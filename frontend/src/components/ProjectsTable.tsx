@@ -29,6 +29,7 @@ interface ProjectsTableProps {
   useRoleAssignmentDataHook?: typeof useRoleAssignmentData
   tableActionButtons?: IAcmTableButtonAction[]
   additionalProjects?: string[]
+  createButtonDisabledReason?: string
 }
 
 export const ProjectsTable = ({
@@ -41,6 +42,7 @@ export const ProjectsTable = ({
   useRoleAssignmentDataHook = useRoleAssignmentData,
   tableActionButtons,
   additionalProjects,
+  createButtonDisabledReason,
 }: ProjectsTableProps) => {
   const { t } = useTranslation()
 
@@ -187,7 +189,14 @@ export const ProjectsTable = ({
       onSelect={handleSelect}
       filters={filters}
       searchPlaceholder={t('Search projects')}
-      emptyState={onCreateClick ? <CommonProjectsEmptyState onCreateCommonProject={onCreateClick} /> : null}
+      emptyState={
+        onCreateClick ? (
+          <CommonProjectsEmptyState
+            onCreateCommonProject={onCreateClick}
+            createButtonDisabledReason={createButtonDisabledReason}
+          />
+        ) : null
+      }
     />
   )
 }
