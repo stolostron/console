@@ -206,7 +206,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
       }
     })
 
-    return { urls: urls.filter(onlyUnique), versions: versions.filter(onlyUnique), paths: paths.filter(onlyUnique) }
+    return { urls: [...new Set(urls)], versions: [...new Set(versions)], paths: [...new Set(paths)] }
   }, [props.applicationSets])
 
   const sourceHelmChannels = useMemo(() => {

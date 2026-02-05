@@ -390,7 +390,11 @@ export function SyncGenerator(props: SyncGeneratorProps) {
 
     // Handle git generator
     if (hasGitGen) {
-      if (templateName !== `${appName}-{{name}}-${pathBasename}`) {
+      if (
+        !templateName.startsWith(appName) ||
+        !templateName.includes('{{name}}') ||
+        !templateName.includes(pathBasename)
+      ) {
         fix(templateNamePath, `${appName}-{{name}}-${pathBasename}`)
         fix(destinationNamePathNamespace, `${pathBasename}`)
       }
@@ -422,7 +426,7 @@ export function SyncGenerator(props: SyncGeneratorProps) {
       update()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [generatorsString, generatorPath, appName, hasGitGen, hasListGen])
+  }, [generatorPath, appName, hasGitGen, hasListGen])
 
   return <></>
 }
