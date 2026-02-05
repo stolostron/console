@@ -93,9 +93,7 @@ export function LogsContainer(props: ILogsContainerProps) {
           setLogsError(err.message)
         })
 
-      return () => {
-        abortController.abort()
-      }
+      return () => abortController.abort()
     } else if (cluster === localHubName && container !== '') {
       const abortController = new AbortController()
       const logsResult = fetchRetry({
