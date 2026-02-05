@@ -45,10 +45,9 @@ export default function ClusterSetsPage() {
                     onClick={() => window.open(DOC_LINKS.CLUSTER_SETS, '_blank')}
                     variant="link"
                     role="link"
-                    icon={<ExternalLinkAltIcon />}
-                    iconPosition="right"
                   >
-                    {t('view.documentation')}
+                    {t('view.documentation')}{' '}
+                    <ExternalLinkAltIcon />
                   </AcmButton>
                 </FlexItem>
               </Flex>
@@ -65,10 +64,9 @@ export default function ClusterSetsPage() {
                       onClick={() => window.open(DOC_LINKS.SUBMARINER, '_blank')}
                       variant="link"
                       role="link"
-                      icon={<ExternalLinkAltIcon />}
-                      iconPosition="right"
                     >
-                      {t('view.documentation')}
+                      {t('view.documentation')}{' '}
+                      <ExternalLinkAltIcon />
                     </AcmButton>
                   </FlexItem>
                 </Flex>

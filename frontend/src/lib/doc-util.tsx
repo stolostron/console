@@ -86,15 +86,14 @@ export function ViewDocumentationLink(props: { doclink: string }): JSX.Element {
           }}
           variant="link"
           isInline
-          icon={<ExternalLinkAltIcon />}
-          iconPosition="right"
           style={{
             display: 'inline-block',
             paddingTop: '15px',
             fontSize: '14px',
           }}
         >
-          {t('View documentation')}
+          {t('View documentation')}{' '}
+          <ExternalLinkAltIcon />
         </AcmButton>
       </a>
     </Content>
