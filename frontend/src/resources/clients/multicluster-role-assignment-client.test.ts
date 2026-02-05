@@ -40,6 +40,8 @@ import {
   getClustersSortingTestCases,
   getRoleAssignmentNameEquivalentPairTestCases,
   globalScopeTestCases,
+  minimalPlacementCoverClusterSetsTestCases,
+  minimalPlacementCoverClustersTestCases,
   namespaceFilteringTestCases,
 } from './multicluster-role-assignment-client.fixtures'
 
@@ -704,6 +706,30 @@ describe('multicluster-role-assignment-client', function () {
 
     describe('cluster names matching', () => {
       it.each(clusterNamesMatchingTestCases)(
+        '$description',
+        ({ placementClusters, roleAssignment, expectedPlacementNames }) => {
+          const result = getPlacementsForRoleAssignment(roleAssignment, placementClusters)
+
+          expect(result).toHaveLength(expectedPlacementNames.length)
+          expect(result.map((p) => p.metadata.name)).toEqual(expectedPlacementNames)
+        }
+      )
+    })
+
+    describe('minimal placement cover (clusters)', () => {
+      it.each(minimalPlacementCoverClustersTestCases)(
+        '$description',
+        ({ placementClusters, roleAssignment, expectedPlacementNames }) => {
+          const result = getPlacementsForRoleAssignment(roleAssignment, placementClusters)
+
+          expect(result).toHaveLength(expectedPlacementNames.length)
+          expect(result.map((p) => p.metadata.name)).toEqual(expectedPlacementNames)
+        }
+      )
+    })
+
+    describe('minimal placement cover (cluster sets)', () => {
+      it.each(minimalPlacementCoverClusterSetsTestCases)(
         '$description',
         ({ placementClusters, roleAssignment, expectedPlacementNames }) => {
           const result = getPlacementsForRoleAssignment(roleAssignment, placementClusters)

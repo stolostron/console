@@ -93,6 +93,31 @@ const getClustersForRoleAssignment = (
     ),
   ].sort((a, b) => a.localeCompare(b))
 
+/**
+ * Resolves cluster set names for a role assignment by looking up its placement references.
+ *
+ * @param roleAssignment - The role assignment containing placement references
+ * @param placementClusters - Array of placement clusters to search
+ * @returns Array of cluster set names associated with the role assignment's placements
+ */
+const getClusterSetsForRoleAssignment = (
+  roleAssignment: RoleAssignment,
+  placementClusters: PlacementClusters[]
+): string[] =>
+  [
+    ...new Set(
+      placementClusters
+        .filter(
+          (placementCluster) =>
+            roleAssignment.clusterSelection.type === 'placements' &&
+            roleAssignment.clusterSelection.placements.some((roleAssignmentPlacement) =>
+              doesPlacementRefMatchesPlacement(roleAssignmentPlacement, placementCluster.placement)
+            )
+        )
+        .flatMap((placementCluster) => placementCluster.clusterSetNames ?? [])
+    ),
+  ].sort((a, b) => a.localeCompare(b))
+
 const doesPlacementRefMatchesPlacement = (placementRef: PlacementRef, placementB: Placement) =>
   placementRef.name === placementB.metadata.name && placementRef.namespace === placementB.metadata.namespace
 
@@ -116,15 +141,7 @@ const flattenMulticlusterRoleAssignment = (
         multiclusterRoleAssignment,
         roleAssignment,
         getClustersForRoleAssignment(roleAssignment, placementClusters),
-        placementClusters
-          .filter(
-            (placementCluster) =>
-              roleAssignment.clusterSelection.type === 'placements' &&
-              roleAssignment.clusterSelection.placements.some((roleAssignmentPlacement) =>
-                doesPlacementRefMatchesPlacement(roleAssignmentPlacement, placementCluster.placement)
-              )
-          )
-          .flatMap((placementCluster) => placementCluster.clusterSetNames ?? [])
+        getClusterSetsForRoleAssignment(roleAssignment, placementClusters)
       )
     )
     .filter((flattenedRoleAssignment) => isClusterOrClustersetOrRoleMatch(flattenedRoleAssignment, query))
@@ -552,13 +569,118 @@ const isPlacementClustersExactMatch = (
     : placementClusterNames.every((cluster) => roleAssignmentClusterNames.includes(cluster))
 
 /**
+ * Returns true if every cluster in placementClusters is in targetClusterNames (placement is a subset of target).
+ */
+const isPlacementClustersSubsetOf = (placementClusterNames: string[], targetClusterNames: string[]): boolean =>
+  !!placementClusterNames.length &&
+  !!targetClusterNames.length &&
+  placementClusterNames.every((cluster) => targetClusterNames.includes(cluster))
+
+/**
+ * Finds a minimal set of placements whose combined clusters equal exactly targetClusterNames.
+ * Prefers a single placement with exact match; otherwise returns a minimal combination (no redundant placements).
+ *
+ * @param placementClusters - Candidates (e.g. from correct namespace)
+ * @param targetClusterNames - The role assignment's cluster names to cover
+ * @returns Minimal PlacementClusters[] that together cover exactly targetClusterNames
+ */
+const findMinimalPlacementCoverForClusters = (
+  placementClusters: PlacementClusters[],
+  targetClusterNames: string[]
+): PlacementClusters[] => {
+  if (!targetClusterNames.length) {
+    return []
+  }
+
+  const targetSet = new Set(targetClusterNames)
+  const candidates = placementClusters.filter(
+    (pc) => pc.clusters.length && isPlacementClustersSubsetOf(pc.clusters, targetClusterNames)
+  )
+  const exactMatch = candidates.find((pc) => isPlacementClustersExactMatch(pc.clusters, targetClusterNames))
+
+  if (exactMatch) {
+    return [exactMatch]
+  }
+
+  const bySizeDesc = [...candidates].sort((a, b) => b.clusters.length - a.clusters.length)
+  const { covered, result } = bySizeDesc.reduce<{ covered: Set<string>; result: PlacementClusters[] }>(
+    (acc, pc) => {
+      if (acc.covered.size !== targetSet.size) {
+        const addsNew = pc.clusters.some((c) => !acc.covered.has(c))
+        if (addsNew) {
+          acc = { covered: new Set([...acc.covered, ...pc.clusters]), result: [...acc.result, pc] }
+        }
+      }
+      return acc
+    },
+    { covered: new Set<string>(), result: [] }
+  )
+  return covered.size === targetSet.size ? result : []
+}
+
+/**
+ * Finds a minimal set of placements whose combined cluster sets cover the target, without redundancy.
+ * Prefers a single placement whose cluster sets exactly match target; otherwise returns a minimal greedy cover.
+ *
+ * @param placementClusters - Candidates (e.g. from correct namespace)
+ * @param targetClusterSetNames - The role assignment's cluster set names to cover
+ * @returns Minimal PlacementClusters[] that together cover target (no duplicate coverage)
+ */
+const findMinimalPlacementCoverForClusterSets = (
+  placementClusters: PlacementClusters[],
+  targetClusterSetNames: string[]
+): PlacementClusters[] => {
+  if (!targetClusterSetNames.length) {
+    return []
+  }
+
+  const candidates = placementClusters.filter((pc) =>
+    isPlacementClusterSetsSubset(pc.clusterSetNames, targetClusterSetNames)
+  )
+  const exactMatch = candidates.find(
+    (pc) =>
+      pc.clusterSetNames?.length === targetClusterSetNames.length &&
+      pc.clusterSetNames.every((cs) => targetClusterSetNames.includes(cs))
+  )
+  if (exactMatch) {
+    return [exactMatch]
+  }
+
+  const bySizeDesc = [...candidates].sort((a, b) => (b.clusterSetNames?.length ?? 0) - (a.clusterSetNames?.length ?? 0))
+  const { result } = bySizeDesc.reduce<{ covered: Set<string>; result: PlacementClusters[] }>(
+    (acc, pc) => {
+      const addsNew = (pc.clusterSetNames ?? []).some((cs) => !acc.covered.has(cs))
+      if (addsNew) {
+        acc = { covered: new Set([...acc.covered, ...(pc.clusterSetNames ?? [])]), result: [...acc.result, pc] }
+      }
+      return acc
+    },
+    { covered: new Set<string>(), result: [] }
+  )
+  return result
+}
+
+/**
+ * Deduplicates PlacementClusters by placement identity (name + namespace), preserving order.
+ */
+const dedupePlacementClustersByPlacement = (list: PlacementClusters[]): PlacementClusters[] => {
+  const seen = new Set<string>()
+  return list.filter((pc) => {
+    const key = `${pc.placement.metadata.namespace}/${pc.placement.metadata.name}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
+/**
  * Finds placements that match a role assignment based on cluster names or cluster sets.
- * A placement matches by clusters if its clusters exactly match the role assignment's cluster names.
- * A placement matches by cluster sets if all its cluster sets are in the role assignment's cluster set names (subset).
+ * Returns one valid combination without redundancy: either a single placement that exactly matches,
+ * or a minimal set of placements that together cover the role assignment's clusters/cluster sets.
  *
  * @param roleAssignment - The role assignment to find placements for
  * @param placementClusters - Array of PlacementClusters to search through
- * @returns Array of Placement resources that match the role assignment
+ * @returns Array of Placement resources that match the role assignment (no redundant placements)
  */
 export const getPlacementsForRoleAssignment = (
   roleAssignment: RoleAssignmentToSave,
@@ -584,16 +706,17 @@ export const getPlacementsForRoleAssignment = (
       (placementCluster) => placementCluster.placement.metadata.namespace === MulticlusterRoleAssignmentNamespace
     )
 
-    const placementClustersForClusters = roleAssignment.clusterNames
-      ? relevantPlacementClusters.filter((placementCluster) =>
-          isPlacementClustersExactMatch(placementCluster.clusters, roleAssignment.clusterNames)
-        )
+    const placementClustersForClusters = roleAssignment.clusterNames?.length
+      ? findMinimalPlacementCoverForClusters(relevantPlacementClusters, roleAssignment.clusterNames)
       : []
-    const placementClustersForClusterSets = relevantPlacementClusters.filter((placementCluster) =>
-      isPlacementClusterSetsSubset(placementCluster.clusterSetNames, roleAssignment.clusterSetNames)
-    )
-    return [...placementClustersForClusters, ...placementClustersForClusterSets].map(
-      (placementCluster) => placementCluster.placement
-    )
+    const placementClustersForClusterSets = roleAssignment.clusterSetNames?.length
+      ? findMinimalPlacementCoverForClusterSets(relevantPlacementClusters, roleAssignment.clusterSetNames)
+      : []
+
+    const combined = dedupePlacementClustersByPlacement([
+      ...placementClustersForClusters,
+      ...placementClustersForClusterSets,
+    ])
+    return combined.map((placementCluster) => placementCluster.placement)
   }
 }
