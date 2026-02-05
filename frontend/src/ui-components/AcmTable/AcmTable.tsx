@@ -171,7 +171,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   }, [items, loading, loadStarted, loadCompleted, resultView])
 
   // State that can come from context or component state (search, sort, page, perPage)
-  const initialSort = props.initialSort || DEFAULT_SORT
+  const initialSort = props.initialSort ?? DEFAULT_SORT
   const initialSearch = props.initialSearch ?? ''
   const [statePerPage, stateSetPerPage] = useState(props.initialPerPage || DEFAULT_ITEMS_PER_PAGE)
   const [statePage, stateSetPage] = useState(props.initialPage || 1)
@@ -974,9 +974,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
                           ? {
                               sort: {
                                 sortBy: adjustedSort || {},
-                                onSort: (_event: React.MouseEvent, index: number, direction: SortByDirection) => {
-                                  return updateSort({ index, direction })
-                                },
+                                onSort: (_event: React.MouseEvent, index: number, direction: SortByDirection) =>
+                                  updateSort({ index, direction }),
                                 columnIndex: columnIndex,
                               },
                             }
