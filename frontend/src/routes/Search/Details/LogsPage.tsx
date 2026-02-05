@@ -389,9 +389,7 @@ export default function LogsPage() {
           setIsLoadingLogs(false)
         })
 
-      return () => {
-        abortController.abort()
-      }
+      return () => abortController.abort()
     }
   }, [cluster, container, managedClusters, name, namespace, previousLogs, isHubClusterResource])
 
