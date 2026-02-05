@@ -378,6 +378,10 @@ export function SyncGenerator(props: SyncGeneratorProps) {
       setGeneratorPath('spec.generators')
       fix('spec.generators', generators)
     }
+    // clean up errant syncs
+    if (matrixGenerator && generators.length === 1 && Object.keys(generators[0]).length > 1) {
+      fix('spec.generators', [{ matrix: matrixGenerator }])
+    }
 
     const url = '{{.url}}'
     const cluster = '{{.cluster}}'
