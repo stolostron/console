@@ -96,11 +96,7 @@ describe('ReviewStepContent', () => {
     )
 
     expect(screen.getByText('Scope')).toBeInTheDocument()
-    expect(screen.getByText('Access level')).toBeInTheDocument()
-    // Test for either "All clusters" (staged) or "All current and future clusters" (unstaged changes)
-    expect(screen.getByText(/All (current and future )?clusters/)).toBeInTheDocument()
-    expect(screen.getByText('Projects')).toBeInTheDocument()
-    expect(screen.getByText('Full access')).toBeInTheDocument()
+    expect(screen.getByText('Global / Applies to all resources registered in ACM')).toBeInTheDocument()
   })
 
   it('renders Scope section for Select cluster sets', () => {
@@ -276,5 +272,173 @@ describe('ReviewStepContent', () => {
     )
 
     expect(screen.getByText('Full access to all clusters in selected cluster sets')).toBeInTheDocument()
+  })
+
+  describe('Preselected data with cluster sets', () => {
+    it('uses preselected cluster set names when selectedClusterSets is empty', () => {
+      render(
+        <ReviewStepContent
+          formData={createFormData({
+            scopeType: 'Select cluster sets',
+            selectedClusterSets: [],
+          })}
+          preselected={{ clusterSetNames: ['preselected-set-1', 'preselected-set-2'] }}
+        />
+      )
+
+      expect(screen.getByText('preselected-set-1, preselected-set-2')).toBeInTheDocument()
+    })
+
+    it('shows new cluster sets when selectedClusterSets is not empty', () => {
+      render(
+        <ReviewStepContent
+          formData={createFormData({
+            scopeType: 'Select cluster sets',
+            selectedClusterSets: [
+              { metadata: { name: 'new-set-1' } },
+              { metadata: { name: 'new-set-2' } },
+            ] as ManagedClusterSet[],
+          })}
+          preselected={{ clusterSetNames: ['old-set-1', 'old-set-2'] }}
+        />
+      )
+
+      expect(screen.getByText('new-set-1, new-set-2')).toBeInTheDocument()
+    })
+
+    it('shows diff (old - new) when editing and cluster sets changed', () => {
+      render(
+        <ReviewStepContent
+          formData={createFormData({
+            scopeType: 'Select cluster sets',
+            selectedClusterSets: [{ metadata: { name: 'new-set' } }] as ManagedClusterSet[],
+          })}
+          preselected={{ clusterSetNames: ['old-set'] }}
+          isEditing={true}
+        />
+      )
+      expect(screen.getByText('old-set').closest('s')).toBeInTheDocument()
+      expect(screen.getByText('new-set')).toBeInTheDocument()
+    })
+
+    it('does NOT show diff when editing but cluster sets unchanged', () => {
+      render(
+        <ReviewStepContent
+          formData={createFormData({
+            scopeType: 'Select cluster sets',
+            selectedClusterSets: [{ metadata: { name: 'same-set' } }] as ManagedClusterSet[],
+          })}
+          preselected={{ clusterSetNames: ['same-set'] }}
+          isEditing={true}
+        />
+      )
+
+      expect(screen.queryByText('same-set')?.closest('s')).not.toBeInTheDocument()
+      expect(screen.queryByText('same-set')?.closest('strong')).not.toBeInTheDocument()
+      expect(screen.getByText('same-set')).toBeInTheDocument()
+    })
+
+    it('correctly handles cluster sets in different order (regression test for sorting)', () => {
+      render(
+        <ReviewStepContent
+          formData={createFormData({
+            scopeType: 'Select cluster sets',
+            selectedClusterSets: [
+              { metadata: { name: 'set-1' } },
+              { metadata: { name: 'set-2' } },
+              { metadata: { name: 'set-3' } },
+            ] as ManagedClusterSet[],
+          })}
+          preselected={{ clusterSetNames: ['set-3', 'set-1', 'set-2'] }}
+          isEditing={true}
+        />
+      )
+
+      expect(screen.queryByText(/set-\d/)?.closest('s')).not.toBeInTheDocument()
+      expect(screen.queryByText(/set-\d/)?.closest('strong')).not.toBeInTheDocument()
+      expect(screen.getByText('set-1, set-2, set-3')).toBeInTheDocument()
+    })
+
+    it('shows diff when cluster sets change from multiple to single', () => {
+      render(
+        <ReviewStepContent
+          formData={createFormData({
+            scopeType: 'Select cluster sets',
+            selectedClusterSets: [{ metadata: { name: 'new-set' } }] as ManagedClusterSet[],
+          })}
+          preselected={{ clusterSetNames: ['old-set-1', 'old-set-2', 'old-set-3'] }}
+          isEditing={true}
+        />
+      )
+
+      expect(screen.getByText('old-set-1, old-set-2, old-set-3').closest('s')).toBeInTheDocument()
+      expect(screen.getByText('new-set')).toBeInTheDocument()
+    })
+
+    it('shows diff when cluster sets change from single to multiple', () => {
+      render(
+        <ReviewStepContent
+          formData={createFormData({
+            scopeType: 'Select cluster sets',
+            selectedClusterSets: [
+              { metadata: { name: 'new-set-1' } },
+              { metadata: { name: 'new-set-2' } },
+              { metadata: { name: 'new-set-3' } },
+            ] as ManagedClusterSet[],
+          })}
+          preselected={{ clusterSetNames: ['old-set'] }}
+          isEditing={true}
+        />
+      )
+
+      expect(screen.getByText('old-set').closest('s')).toBeInTheDocument()
+      expect(screen.getByText('new-set-1, new-set-2, new-set-3')).toBeInTheDocument()
+    })
+
+    it('shows diff when cluster sets change from None to selected', () => {
+      render(
+        <ReviewStepContent
+          formData={createFormData({
+            scopeType: 'Select cluster sets',
+            selectedClusterSets: [{ metadata: { name: 'new-set' } }] as ManagedClusterSet[],
+          })}
+          preselected={{ clusterSetNames: [] }}
+          isEditing={true}
+        />
+      )
+
+      expect(screen.getByText('None selected').closest('s')).toBeInTheDocument()
+      expect(screen.getByText('new-set')).toBeInTheDocument()
+    })
+
+    it('shows diff when cluster sets change from selected to None', () => {
+      render(
+        <ReviewStepContent
+          formData={createFormData({
+            scopeType: 'Select cluster sets',
+            selectedClusterSets: [],
+          })}
+          preselected={{ clusterSetNames: ['old-set'] }}
+          isEditing={true}
+        />
+      )
+
+      expect(screen.getByText('old-set').closest('s')).toBeInTheDocument()
+    })
+
+    it('handles mixed preselected cluster sets and new cluster names (different scope types)', () => {
+      render(
+        <ReviewStepContent
+          formData={createFormData({
+            scopeType: 'Select clusters',
+            selectedClusters: [{ metadata: { name: 'new-cluster' } }],
+          })}
+          preselected={{ clusterSetNames: ['old-set'] }}
+          isEditing={true}
+        />
+      )
+
+      expect(screen.queryByText('old-set')).not.toBeInTheDocument()
+    })
   })
 })

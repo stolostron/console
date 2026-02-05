@@ -1,3 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-export const ManagedByConsoleLabel: Record<string, string> = { 'open-cluster-management.io/managed-by': 'console' }
+export const ManagedByConsoleLabelKey = 'open-cluster-management.io/managed-by'
+export const ManagedByConsoleLabelValue = 'console'
+export const ManagedByConsoleLabel: Record<string, string> = { ManagedByConsoleLabelKey: ManagedByConsoleLabelValue }

@@ -392,6 +392,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
         aria-describedby="modal-wizard-description"
         onClose={handleModalToggle}
         hasNoBodyWrapper
+        className="add-argo-server-modal"
       >
         <CreateArgoResources handleModalToggle={handleModalToggle} clusterSets={props.clusterSets} />
       </Modal>

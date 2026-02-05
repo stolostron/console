@@ -9,12 +9,14 @@ import { RoleAssignmentWizardFormData, RoleAssignmentWizardModalProps } from './
 interface UseReviewStepContentProps {
   oldData: {
     namespaces: string[]
+    clusterSetNames?: RoleAssignmentPreselected['clusterSetNames']
     clusterNames: string[]
     role?: string
     subject?: RoleAssignmentPreselected['subject']
   }
   newData: {
     namespaces: string[]
+    clusterSetNames?: RoleAssignmentWizardFormData['selectedClusterSets']
     clusterNames: string[]
     role?: string
     subject?: RoleAssignmentWizardFormData['subject']
@@ -24,6 +26,8 @@ interface UseReviewStepContentProps {
 }
 
 type ExpandableSections =
+  | 'clustersets-original'
+  | 'clustersets-current'
   | 'clusters-original'
   | 'clusters-current'
   | 'namespaces-original'
@@ -157,6 +161,11 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: UseReviewS
   const namespacesDisplay = useMemo(() => {
     const hasOriginalNamespaces = oldData.namespaces.length > 0
     const hasCurrentNamespaces = newData.namespaces.length > 0
+
+    if (!hasOriginalNamespaces && !hasCurrentNamespaces) {
+      return t('Full access')
+    }
+
     const namespacesChanged =
       hasOriginalNamespaces !== hasCurrentNamespaces ||
       (hasOriginalNamespaces &&
@@ -186,6 +195,7 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: UseReviewS
     isEditing,
     expandableSections,
     onToggleExpandableSection,
+    t,
   ])
 
   const clustersDisplay = useMemo(() => {
@@ -203,6 +213,34 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: UseReviewS
       />
     )
   }, [originalClusterNames, t, currentClusterNames, isEditing, expandableSections, onToggleExpandableSection])
+
+  const clusterSetsDisplay = useMemo(() => {
+    const getClusterSetNames = (clusterSets: any) =>
+      !clusterSets || clusterSets.length === 0
+        ? null
+        : clusterSets
+            .map((cs: any) => cs.metadata?.name || cs)
+            .toSorted((a: string, b: string) => a.localeCompare(b))
+            .join(', ')
+
+    const originalClusterSetNames = getClusterSetNames(oldData.clusterSetNames)
+    const currentClusterSetNames = getClusterSetNames(newData.clusterSetNames)
+
+    const original = originalClusterSetNames || t('None selected')
+    const current = currentClusterSetNames || (!isEditing && originalClusterSetNames) || t('None selected')
+
+    return (
+      <BeforeAfterDisplay
+        original={original}
+        current={current}
+        showComparison={isEditing === true && original !== current}
+        onToggleOriginalCallback={() => onToggleExpandableSection('clustersets-original')}
+        onToggleCurrentCallback={() => onToggleExpandableSection('clustersets-current')}
+        isOriginalExpanded={expandableSections['clustersets-original']}
+        isCurrentExpanded={expandableSections['clustersets-current']}
+      />
+    )
+  }, [oldData.clusterSetNames, newData.clusterSetNames, t, isEditing, expandableSections, onToggleExpandableSection])
 
   const roleDisplay = useMemo(() => {
     const original: string = oldData.role ?? t('No role selected')
@@ -253,5 +291,5 @@ export const useReviewStepContent = ({ oldData, newData, isEditing }: UseReviewS
     )
   }, [oldData.subject, newData.subject, isEditing, expandableSections, t, onToggleExpandableSection])
 
-  return { clusterNames, clustersDisplay, namespacesDisplay, roleDisplay, identityDisplay }
+  return { clusterNames, clusterSetsDisplay, clustersDisplay, namespacesDisplay, roleDisplay, identityDisplay }
 }
