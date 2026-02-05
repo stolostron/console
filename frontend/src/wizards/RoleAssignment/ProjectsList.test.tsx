@@ -117,7 +117,16 @@ describe('ProjectsList', () => {
   })
 
   it('calls onSelectionChange with existing selection plus new project name when create succeeds', async () => {
-    render(
+    const { rerender } = render(
+      <ProjectsList selectedClusters={[{ name: 'cluster-1' }]} onSelectionChange={mockOnSelectionChange} />
+    )
+
+    await userEvent.click(screen.getByText('Create common project'))
+    await waitFor(() => {
+      expect(screen.getByTestId('common-project-create')).toBeInTheDocument()
+    })
+
+    rerender(
       <ProjectsList
         selectedClusters={[{ name: 'cluster-1' }]}
         selectedNamespaces={['existing-ns-1', 'existing-ns-2']}
@@ -125,10 +134,6 @@ describe('ProjectsList', () => {
       />
     )
 
-    await userEvent.click(screen.getByText('Create common project'))
-    await waitFor(() => {
-      expect(screen.getByTestId('common-project-create')).toBeInTheDocument()
-    })
     await userEvent.click(screen.getByText('Submit Custom'))
 
     expect(mockOnSelectionChange).toHaveBeenCalledWith(['existing-ns-1', 'existing-ns-2', 'custom-project'])
