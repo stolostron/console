@@ -362,9 +362,7 @@ export default function LogsPage() {
           setIsLoadingLogs(false)
         })
 
-      return () => {
-        abortController.abort()
-      }
+      return () => abortController.abort()
     } else if (isHubClusterResource && container !== '') {
       setIsLoadingLogs(true)
       const abortController = new AbortController()
