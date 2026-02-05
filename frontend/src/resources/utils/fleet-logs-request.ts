@@ -87,9 +87,7 @@ async function fetchLogsViaClusterStatuses(
   previous: boolean,
   signal?: AbortSignal
 ): Promise<FleetLogsRequestResult> {
-  const url =
-    getBackendUrl() +
-    `/apis/proxy.open-cluster-management.io/v1beta1/namespaces/${cluster}/clusterstatuses/${cluster}/log/${namespace}/${podName}/${container}?tailLines=${tailLines}${previous ? '&previous=true' : ''}`
+  const url = `${getBackendUrl()}/apis/proxy.open-cluster-management.io/v1beta1/namespaces/${cluster}/clusterstatuses/${cluster}/log/${namespace}/${podName}/${container}?tailLines=${tailLines}${previous ? '&previous=true' : ''}`
 
   const result = await fetchRetry({
     method: 'GET',
