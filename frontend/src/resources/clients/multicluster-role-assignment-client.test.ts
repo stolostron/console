@@ -22,12 +22,14 @@ import {
 import * as managedClusterSetBindingClient from './managed-cluster-set-binding-client'
 import { PlacementClusters } from './model/placement-clusters'
 import * as placementClient from './placement-client'
+import { ManagedByConsoleLabelKey, ManagedByConsoleLabelValue } from './constants'
 import {
   addRoleAssignmentTestCases,
   clusterNamesMatchingTestCases,
   clusterSetsMatchingTestCases,
   combinedMatchingTestCases,
   createMockMulticlusterRoleAssignment,
+  createMockMulticlusterRoleAssignmentManagedByConsole,
   createMRAWithMultipleRoles,
   createMRAWithSingleRoleAndMultiplePlacements,
   createMRAWithSingleRoleAndPlacement,
@@ -1891,7 +1893,7 @@ describe('multicluster-role-assignment-client', function () {
         async ({ roleAssignment, existingPlacements, expectedErrorMessage }) => {
           await expect(
             addRoleAssignment(roleAssignment, {
-              existingMulticlusterRoleAssignment: undefined,
+              existingMulticlusterRoleAssignments: undefined,
               existingManagedClusterSetBindings: [],
               existingPlacements,
             })
@@ -1901,51 +1903,54 @@ describe('multicluster-role-assignment-client', function () {
     })
 
     describe('create new MulticlusterRoleAssignment', () => {
-      it.each(addRoleAssignmentTestCases.filter((tc) => tc.shouldSucceed && !tc.existingMulticlusterRoleAssignment))(
-        '$description',
-        async ({ roleAssignment, existingPlacements }) => {
-          const createdMRA: MulticlusterRoleAssignment = {
-            apiVersion: 'rbac.open-cluster-management.io/v1beta1',
-            kind: 'MulticlusterRoleAssignment',
-            metadata: { name: 'new-mra', namespace: MulticlusterRoleAssignmentNamespace },
-            spec: { subject: roleAssignment.subject, roleAssignments: [] },
-            status: {},
-          }
-          mockCreateResource.mockReturnValue({ promise: Promise.resolve(createdMRA), abort: jest.fn() })
-
-          const result = await addRoleAssignment(roleAssignment, {
-            existingMulticlusterRoleAssignment: undefined,
-            existingManagedClusterSetBindings: [],
-            existingPlacements,
-          })
-
-          expect(result).toBeDefined()
-          expect(result.name).toBeDefined()
-          expect(mockCreateResource).toHaveBeenCalled()
+      it.each(
+        addRoleAssignmentTestCases.filter(
+          (tc) => tc.shouldSucceed && !(tc.existingMulticlusterRoleAssignments?.length ?? 0)
+        )
+      )('$description', async ({ roleAssignment, existingPlacements }) => {
+        const createdMRA: MulticlusterRoleAssignment = {
+          apiVersion: 'rbac.open-cluster-management.io/v1beta1',
+          kind: 'MulticlusterRoleAssignment',
+          metadata: { name: 'new-mra', namespace: MulticlusterRoleAssignmentNamespace },
+          spec: { subject: roleAssignment.subject, roleAssignments: [] },
+          status: {},
         }
-      )
+        mockCreateResource.mockReturnValue({ promise: Promise.resolve(createdMRA), abort: jest.fn() })
+
+        const result = await addRoleAssignment(roleAssignment, {
+          existingMulticlusterRoleAssignments: undefined,
+          existingManagedClusterSetBindings: [],
+          existingPlacements,
+        })
+
+        expect(result).toBeDefined()
+        expect(result.name).toBeDefined()
+        expect(mockCreateResource).toHaveBeenCalled()
+      })
     })
 
     describe('patch existing MulticlusterRoleAssignment', () => {
-      it.each(addRoleAssignmentTestCases.filter((tc) => tc.shouldSucceed && tc.existingMulticlusterRoleAssignment))(
-        '$description',
-        async ({ roleAssignment, existingMulticlusterRoleAssignment, existingPlacements }) => {
-          mockPatchResourceForAdd.mockReturnValue({
-            promise: Promise.resolve(existingMulticlusterRoleAssignment!),
-            abort: jest.fn(),
-          })
+      it.each(
+        addRoleAssignmentTestCases.filter(
+          (tc) => tc.shouldSucceed && (tc.existingMulticlusterRoleAssignments?.length ?? 0) > 0
+        )
+      )('$description', async ({ roleAssignment, existingMulticlusterRoleAssignments, existingPlacements }) => {
+        const mraToPatch = existingMulticlusterRoleAssignments![0]
+        mockPatchResourceForAdd.mockReturnValue({
+          promise: Promise.resolve(mraToPatch),
+          abort: jest.fn(),
+        })
 
-          const result = await addRoleAssignment(roleAssignment, {
-            existingMulticlusterRoleAssignment,
-            existingManagedClusterSetBindings: [],
-            existingPlacements,
-          })
+        const result = await addRoleAssignment(roleAssignment, {
+          existingMulticlusterRoleAssignments,
+          existingManagedClusterSetBindings: [],
+          existingPlacements,
+        })
 
-          expect(result).toBeDefined()
-          expect(result.name).toBeDefined()
-          expect(mockPatchResourceForAdd).toHaveBeenCalled()
-        }
-      )
+        expect(result).toBeDefined()
+        expect(result.name).toBeDefined()
+        expect(mockPatchResourceForAdd).toHaveBeenCalled()
+      })
     })
 
     describe('duplicate detection', () => {
@@ -1970,10 +1975,10 @@ describe('multicluster-role-assignment-client', function () {
           },
         ]
 
-        // Test with existing MRA that has matching role assignment - should reject as duplicate
+        // Test with existing MRAs that have matching role assignment - should reject as duplicate
         await expect(
           addRoleAssignment(roleAssignment, {
-            existingMulticlusterRoleAssignment: existingMRA,
+            existingMulticlusterRoleAssignments: [existingMRA],
             existingManagedClusterSetBindings: [],
             existingPlacements: [],
           })
@@ -1988,8 +1993,12 @@ describe('multicluster-role-assignment-client', function () {
           isGlobalScope: false,
         }
 
-        // Create an existing MRA with a role assignment that has a different hash
-        const existingMRA = createMockMulticlusterRoleAssignment('existing-mra', roleAssignment.subject, [])
+        // Create an existing MRA with ManagedByConsole label and a role assignment that has a different hash
+        const existingMRA = createMockMulticlusterRoleAssignmentManagedByConsole(
+          'existing-mra',
+          roleAssignment.subject,
+          []
+        )
         existingMRA.spec.roleAssignments = [
           {
             name: 'different-hash-value', // Different hash, not a duplicate
@@ -1998,21 +2007,13 @@ describe('multicluster-role-assignment-client', function () {
           },
         ]
 
-        // We cannot directly test duplicate detection without knowing the hash algorithm output
-        // Instead, test that when existingMRA has matching role assignments, it works correctly
-        mockCreateResource.mockReturnValue({
-          promise: Promise.resolve({
-            apiVersion: 'rbac.open-cluster-management.io/v1beta1' as const,
-            kind: 'MulticlusterRoleAssignment' as const,
-            metadata: { name: 'test', namespace: MulticlusterRoleAssignmentNamespace },
-            spec: { subject: roleAssignment.subject, roleAssignments: [] },
-            status: {},
-          }),
+        mockPatchResourceForAdd.mockReturnValue({
+          promise: Promise.resolve(existingMRA),
           abort: jest.fn(),
         })
 
         const result = await addRoleAssignment(roleAssignment, {
-          existingMulticlusterRoleAssignment: existingMRA,
+          existingMulticlusterRoleAssignments: [existingMRA],
           existingManagedClusterSetBindings: [],
           existingPlacements: [],
         })
@@ -2020,6 +2021,196 @@ describe('multicluster-role-assignment-client', function () {
         expect(result).toBeDefined()
         expect(result.name).toBeDefined()
         expect(mockPatchResourceForAdd).toHaveBeenCalled()
+        expect(mockCreateResource).not.toHaveBeenCalled()
+      })
+    })
+
+    describe('create vs patch by ManagedByConsole label', () => {
+      const roleAssignment: RoleAssignmentToSave = {
+        clusterRole: 'admin',
+        clusterNames: ['cluster-a'],
+        subject: { name: 'user1', kind: UserKind },
+        isGlobalScope: false,
+      }
+
+      it('fixture createMockMulticlusterRoleAssignmentManagedByConsole adds ManagedByConsole label', () => {
+        const mra = createMockMulticlusterRoleAssignmentManagedByConsole('test', { name: 'user1', kind: UserKind }, [])
+        expect(mra.metadata?.labels?.[ManagedByConsoleLabelKey]).toBe(ManagedByConsoleLabelValue)
+      })
+
+      it('creates new MRA when existingMulticlusterRoleAssignments is empty', async () => {
+        mockCreateResource.mockReturnValue({
+          promise: Promise.resolve({
+            apiVersion: 'rbac.open-cluster-management.io/v1beta1' as const,
+            kind: 'MulticlusterRoleAssignment' as const,
+            metadata: { name: 'new-mra', namespace: MulticlusterRoleAssignmentNamespace },
+            spec: { subject: roleAssignment.subject, roleAssignments: [] },
+            status: {},
+          }),
+          abort: jest.fn(),
+        })
+
+        const result = await addRoleAssignment(roleAssignment, {
+          existingMulticlusterRoleAssignments: [],
+          existingManagedClusterSetBindings: [],
+          existingPlacements: [],
+        })
+
+        expect(result).toBeDefined()
+        expect(mockCreateResource).toHaveBeenCalled()
+        expect(mockPatchResourceForAdd).not.toHaveBeenCalled()
+      })
+
+      it('creates new MRA when existingMulticlusterRoleAssignments is undefined', async () => {
+        mockCreateResource.mockReturnValue({
+          promise: Promise.resolve({
+            apiVersion: 'rbac.open-cluster-management.io/v1beta1' as const,
+            kind: 'MulticlusterRoleAssignment' as const,
+            metadata: { name: 'new-mra', namespace: MulticlusterRoleAssignmentNamespace },
+            spec: { subject: roleAssignment.subject, roleAssignments: [] },
+            status: {},
+          }),
+          abort: jest.fn(),
+        })
+
+        const result = await addRoleAssignment(roleAssignment, {
+          existingMulticlusterRoleAssignments: undefined,
+          existingManagedClusterSetBindings: [],
+          existingPlacements: [],
+        })
+
+        expect(result).toBeDefined()
+        expect(mockCreateResource).toHaveBeenCalled()
+        expect(mockPatchResourceForAdd).not.toHaveBeenCalled()
+      })
+
+      it('creates new MRA when multiple existing MRAs have no ManagedByConsole label', async () => {
+        const mra1 = createMockMulticlusterRoleAssignment('mra1', roleAssignment.subject, [])
+        const mra2 = createMockMulticlusterRoleAssignment('mra2', roleAssignment.subject, [])
+
+        mockCreateResource.mockReturnValue({
+          promise: Promise.resolve({
+            apiVersion: 'rbac.open-cluster-management.io/v1beta1' as const,
+            kind: 'MulticlusterRoleAssignment' as const,
+            metadata: { name: 'new-mra', namespace: MulticlusterRoleAssignmentNamespace },
+            spec: { subject: roleAssignment.subject, roleAssignments: [] },
+            status: {},
+          }),
+          abort: jest.fn(),
+        })
+
+        const result = await addRoleAssignment(roleAssignment, {
+          existingMulticlusterRoleAssignments: [mra1, mra2],
+          existingManagedClusterSetBindings: [],
+          existingPlacements: [],
+        })
+
+        expect(result).toBeDefined()
+        expect(mockCreateResource).toHaveBeenCalled()
+        expect(mockPatchResourceForAdd).not.toHaveBeenCalled()
+      })
+
+      it('patches once and does not create when multiple existing MRAs and some have ManagedByConsole label', async () => {
+        const mraWithoutLabel = createMockMulticlusterRoleAssignment('mra-other', roleAssignment.subject, [])
+        const mraWithLabel = createMockMulticlusterRoleAssignmentManagedByConsole(
+          'mra-console',
+          roleAssignment.subject,
+          ['existing-role']
+        )
+
+        mockPatchResourceForAdd.mockReturnValue({
+          promise: Promise.resolve(mraWithLabel),
+          abort: jest.fn(),
+        })
+
+        const result = await addRoleAssignment(roleAssignment, {
+          existingMulticlusterRoleAssignments: [mraWithoutLabel, mraWithLabel],
+          existingManagedClusterSetBindings: [],
+          existingPlacements: [],
+        })
+
+        expect(result).toBeDefined()
+        expect(mockPatchResourceForAdd).toHaveBeenCalledTimes(1)
+        expect(mockPatchResourceForAdd).toHaveBeenCalledWith(
+          mraWithLabel,
+          expect.objectContaining({
+            spec: expect.objectContaining({
+              roleAssignments: expect.arrayContaining([
+                expect.objectContaining({ name: expect.any(String), clusterRole: 'admin' }),
+              ]),
+            }),
+          })
+        )
+        expect(mockCreateResource).not.toHaveBeenCalled()
+      })
+
+      it('patches once and does not create when multiple existing MRAs and only one has ManagedByConsole label', async () => {
+        const mraWithLabel = createMockMulticlusterRoleAssignmentManagedByConsole(
+          'mra-console',
+          roleAssignment.subject,
+          ['existing-role']
+        )
+        const mra1 = createMockMulticlusterRoleAssignment('mra1', roleAssignment.subject, [])
+        const mra2 = createMockMulticlusterRoleAssignment('mra2', roleAssignment.subject, [])
+
+        mockPatchResourceForAdd.mockReturnValue({
+          promise: Promise.resolve(mraWithLabel),
+          abort: jest.fn(),
+        })
+
+        const result = await addRoleAssignment(roleAssignment, {
+          existingMulticlusterRoleAssignments: [mra1, mraWithLabel, mra2],
+          existingManagedClusterSetBindings: [],
+          existingPlacements: [],
+        })
+
+        expect(result).toBeDefined()
+        expect(mockPatchResourceForAdd).toHaveBeenCalledTimes(1)
+        expect(mockPatchResourceForAdd).toHaveBeenCalledWith(mraWithLabel, expect.any(Object))
+        expect(mockCreateResource).not.toHaveBeenCalled()
+      })
+
+      it('patches once and does not create when one existing MRA has ManagedByConsole label', async () => {
+        const mraWithLabel = createMockMulticlusterRoleAssignmentManagedByConsole(
+          'mra-console',
+          roleAssignment.subject,
+          ['existing-role']
+        )
+
+        mockPatchResourceForAdd.mockReturnValue({
+          promise: Promise.resolve(mraWithLabel),
+          abort: jest.fn(),
+        })
+
+        const result = await addRoleAssignment(roleAssignment, {
+          existingMulticlusterRoleAssignments: [mraWithLabel],
+          existingManagedClusterSetBindings: [],
+          existingPlacements: [],
+        })
+
+        expect(result).toBeDefined()
+        expect(mockPatchResourceForAdd).toHaveBeenCalledTimes(1)
+        expect(mockCreateResource).not.toHaveBeenCalled()
+      })
+
+      it('patches the first MRA with ManagedByConsole label when multiple have the label', async () => {
+        const mraFirst = createMockMulticlusterRoleAssignmentManagedByConsole('mra-first', roleAssignment.subject, [])
+        const mraSecond = createMockMulticlusterRoleAssignmentManagedByConsole('mra-second', roleAssignment.subject, [])
+
+        mockPatchResourceForAdd.mockReturnValue({
+          promise: Promise.resolve(mraFirst),
+          abort: jest.fn(),
+        })
+
+        await addRoleAssignment(roleAssignment, {
+          existingMulticlusterRoleAssignments: [mraFirst, mraSecond],
+          existingManagedClusterSetBindings: [],
+          existingPlacements: [],
+        })
+
+        expect(mockPatchResourceForAdd).toHaveBeenCalledTimes(1)
+        expect(mockPatchResourceForAdd).toHaveBeenCalledWith(mraFirst, expect.any(Object))
+        expect(mockCreateResource).not.toHaveBeenCalled()
       })
     })
   })

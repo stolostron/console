@@ -91,7 +91,7 @@ export function IdentitiesList({ onUserSelect, onGroupSelect, initialSelectedIde
         <Tab eventKey="users" title={<TabTitleText>{t('Users')}</TabTitleText>} aria-label={t('Users tab')}>
           <div style={{ marginTop: 'var(--pf-t--global--spacer--md)' }}>
             {showCreatePreAuthorized ? (
-              <CreatePreAuthorizedUser onClose={handleClosePreAuthorizedUser} />
+              <CreatePreAuthorizedUser onClose={handleClosePreAuthorizedUser} onSuccess={handleOnUserSelect} />
             ) : (
               <UsersTable areLinksDisplayed={false} selectedUser={selectedUser} setSelectedUser={handleOnUserSelect} />
             )}

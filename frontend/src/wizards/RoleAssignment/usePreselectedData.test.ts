@@ -5,6 +5,18 @@ import { GlobalPlacementName, GroupKind, UserKind } from '../../resources'
 import { RoleAssignmentWizardFormData } from './types'
 import { usePreselectedData } from './usePreselectedData'
 
+// Mock managedClusterSets for Recoil
+const mockManagedClusterSets = [
+  {
+    metadata: { name: 'cluster-set-1' },
+    spec: {},
+  },
+  {
+    metadata: { name: 'cluster-set-2' },
+    spec: {},
+  },
+]
+
 // Mock the useRoleAssignmentData hook
 jest.mock('../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook', () => ({
   useRoleAssignmentData: () => ({
@@ -25,6 +37,14 @@ jest.mock('../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHo
     },
     isLoading: false,
   }),
+}))
+
+// Mock Recoil
+jest.mock('../../shared-recoil', () => ({
+  useSharedAtoms: () => ({
+    managedClusterSetsState: 'managedClusterSetsState',
+  }),
+  useRecoilValue: () => mockManagedClusterSets,
 }))
 
 describe('usePreselectedData', () => {
@@ -435,7 +455,7 @@ describe('usePreselectedData', () => {
     )
   })
 
-  it('calls setSelectedClusterSets with cluster set names when cluster set names are preselected', () => {
+  it('calls setSelectedClusterSets with cluster set objects when cluster set names are preselected', () => {
     const { mockFn: setFormData } = createMockSetFormData()
     const setSelectedClusterSets = jest.fn()
     const setSelectedClusters = jest.fn()
@@ -450,7 +470,7 @@ describe('usePreselectedData', () => {
       })
     )
 
-    expect(setSelectedClusterSets).toHaveBeenCalledWith(['cluster-set-1'])
+    expect(setSelectedClusterSets).toHaveBeenCalledWith([{ metadata: { name: 'cluster-set-1' }, spec: {} }])
   })
 
   it('filters out non-existent cluster set names', () => {
@@ -470,7 +490,7 @@ describe('usePreselectedData', () => {
 
     expect(setFormData).toHaveBeenCalled()
     expect(calls[0].selectedClusterSets).toEqual(['cluster-set-1'])
-    expect(setSelectedClusterSets).toHaveBeenCalledWith(['cluster-set-1'])
+    expect(setSelectedClusterSets).toHaveBeenCalledWith([{ metadata: { name: 'cluster-set-1' }, spec: {} }])
   })
 
   it('does not update cluster sets when preselected clusterSetNames is empty array', () => {
@@ -528,7 +548,7 @@ describe('usePreselectedData', () => {
         selectedClusterSets: ['cluster-set-1', 'cluster-set-2'],
       })
     )
-    expect(setSelectedClusterSets).toHaveBeenCalledWith(['cluster-set-1', 'cluster-set-2'])
+    expect(setSelectedClusterSets).toHaveBeenCalledWith(mockManagedClusterSets)
   })
 
   describe('precedence logic', () => {
@@ -623,6 +643,7 @@ describe('usePreselectedData', () => {
           },
         })
       )
+      expect(calls[0].clustersetsAccessLevel).toBeUndefined()
     })
 
     it('sets cluster sets when clusterSetNames exist, ignoring cluster names', () => {
@@ -685,8 +706,39 @@ describe('usePreselectedData', () => {
             namespaces: ['namespace-1', 'namespace-2'],
           },
           selectedClusterSets: ['cluster-set-1'],
+          clustersetsAccessLevel: 'Project role assignment',
         })
       )
+    })
+
+    it('does not set clustersetsAccessLevel when cluster sets are selected without namespaces', () => {
+      const { mockFn: setFormData, calls } = createMockSetFormData()
+      const setSelectedClusterSets = jest.fn()
+      const setSelectedClusters = jest.fn()
+
+      renderHook(() =>
+        usePreselectedData({
+          isOpen: true,
+          preselected: {
+            clusterSetNames: ['cluster-set-1'],
+          },
+          setFormData,
+          setSelectedClusterSets,
+          setSelectedClusters,
+        })
+      )
+
+      expect(setFormData).toHaveBeenCalled()
+      expect(calls[0]).toEqual(
+        expect.objectContaining({
+          scopeType: 'Select cluster sets',
+          scope: {
+            kind: 'all',
+          },
+          selectedClusterSets: ['cluster-set-1'],
+        })
+      )
+      expect(calls[0]).not.toHaveProperty('clustersetsAccessLevel')
     })
 
     it('applies namespaces when clusters are selected (not global access)', () => {
@@ -719,6 +771,37 @@ describe('usePreselectedData', () => {
           clustersAccessLevel: 'Project role assignment',
         })
       )
+    })
+
+    it('does not set clustersAccessLevel when clusters are selected without namespaces', () => {
+      const { mockFn: setFormData, calls } = createMockSetFormData()
+      const setSelectedClusterSets = jest.fn()
+      const setSelectedClusters = jest.fn()
+
+      renderHook(() =>
+        usePreselectedData({
+          isOpen: true,
+          preselected: {
+            clusterNames: ['cluster-1'],
+          },
+          setFormData,
+          setSelectedClusterSets,
+          setSelectedClusters,
+        })
+      )
+
+      expect(setFormData).toHaveBeenCalled()
+      expect(calls[0]).toEqual(
+        expect.objectContaining({
+          scopeType: 'Select clusters',
+          scope: {
+            kind: 'specific',
+            clusterNames: ['cluster-1'],
+          },
+          selectedClusters: [{ name: 'cluster-1', namespaces: ['ns1', 'ns2'] }],
+        })
+      )
+      expect(calls[0]).not.toHaveProperty('clustersAccessLevel')
     })
 
     it('applies namespaces even when only namespaces are preselected (no clusters or cluster sets)', () => {

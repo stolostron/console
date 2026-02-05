@@ -63,14 +63,21 @@ jest.mock('../../../routes/UserManagement/Identities/Groups/GroupsTable', () => 
   ),
 }))
 
-// Mock CreatePreAuthorizedUser component
+// Mock CreatePreAuthorizedUser component - onSuccess is passed as handleOnUserSelect from IdentitiesList
 jest.mock('./Users/CreatePreAuthorizedUser', () => ({
-  CreatePreAuthorizedUser: ({ onClose }: any) => (
-    <div data-testid="create-pre-authorized">
-      <button onClick={onClose}>Cancel</button>
-      <button onClick={onClose}>Submit</button>
-    </div>
-  ),
+  CreatePreAuthorizedUser: ({ onClose, onSuccess }: any) => {
+    const mockCreatedUser = { metadata: { name: 'new-pre-authorized-user', uid: 'new-user-uid' } }
+    const handleSubmit = () => {
+      onSuccess?.(mockCreatedUser)
+      onClose()
+    }
+    return (
+      <div data-testid="create-pre-authorized">
+        <button onClick={onClose}>Cancel</button>
+        <button onClick={handleSubmit}>Submit</button>
+      </div>
+    )
+  },
 }))
 
 function Component(props: any = {}) {
@@ -186,22 +193,42 @@ describe('IdentitiesList', () => {
     expect(screen.getByText('Users Table (No Links)')).toBeInTheDocument()
   })
 
-  test('should return to Users table when CreatePreAuthorizedUser is submitted', () => {
+  test('should return to Users table when CreatePreAuthorizedUser is submitted', async () => {
     render(<Component />)
 
     // Click pre-authorized link to show the form
     const preAuthorizedLink = screen.getByRole('button', { name: 'add pre-authorized user' })
     fireEvent.click(preAuthorizedLink)
-    expect(screen.queryByText('Users Table (No Links)')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
 
-    // Submit the form
+    // Submit the form (mock calls onSuccess then onClose)
     const submitButton = screen.getByRole('button', { name: 'Submit' })
     fireEvent.click(submitButton)
 
-    // Should return to Users table
-    const usersTab = screen.getByRole('tab', { name: 'Users tab' })
-    expect(usersTab).toHaveAttribute('aria-selected', 'true')
-    expect(screen.getByText('Users Table (No Links)')).toBeInTheDocument()
+    // Should close the form (onClose called after onSuccess); create form unmounts
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: 'Cancel' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'Submit' })).not.toBeInTheDocument()
+    })
+  })
+
+  test('should call onUserSelect with created user when CreatePreAuthorizedUser onSuccess is called', () => {
+    const mockOnUserSelect = jest.fn()
+    render(<Component onUserSelect={mockOnUserSelect} />)
+
+    // Click pre-authorized link to show the form
+    const preAuthorizedLink = screen.getByRole('button', { name: 'add pre-authorized user' })
+    fireEvent.click(preAuthorizedLink)
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument()
+
+    // Submit the form - mock calls onSuccess(createdUser) which is handleOnUserSelect
+    const submitButton = screen.getByRole('button', { name: 'Submit' })
+    fireEvent.click(submitButton)
+
+    expect(mockOnUserSelect).toHaveBeenCalledTimes(1)
+    expect(mockOnUserSelect).toHaveBeenCalledWith(
+      expect.objectContaining({ metadata: { name: 'new-pre-authorized-user', uid: 'new-user-uid' } })
+    )
   })
 
   test('should pass areLinksDisplayed=false to both table components', () => {

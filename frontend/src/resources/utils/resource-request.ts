@@ -297,6 +297,30 @@ export function createResource<Resource extends IResource, ResultType = Resource
   return postRequest<Resource, ResultType>(url, resource)
 }
 
+/**
+ * Creates a resource using a custom base URL instead of the default backend URL.
+ * This is useful for creating resources on a remote cluster via a proxy.
+ *
+ * @param resource The resource to create
+ * @param baseUrl The base URL to use for the request (e.g., managed cluster proxy URL)
+ * @param options Optional settings like dryRun
+ * @returns IRequestResult with the created resource
+ */
+export function createResourceWithBaseUrl<Resource extends IResource, ResultType = Resource>(
+  resource: Resource | Promise<Resource>,
+  baseUrl: string,
+  options?: { dryRun?: boolean }
+): IRequestResult<ResultType> {
+  const url = Promise.resolve(resource).then((resource) => {
+    return getResourceApiPath(resource).then((path) => {
+      let url = baseUrl + path
+      if (options?.dryRun) url += '?dryRun=All'
+      return url
+    })
+  })
+  return postRequest<Resource, ResultType>(url, resource)
+}
+
 export function replaceResource<Resource extends IResource, ResultType = Resource>(
   resource: Resource,
   options?: { dryRun?: boolean }

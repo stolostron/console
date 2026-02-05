@@ -339,7 +339,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
 
       await waitFor(() => {
         expect(mockAddRoleAssignment).toHaveBeenCalled()
-        expect(mockAddRoleAssignment.mock.calls[0][1].existingMulticlusterRoleAssignment).toBe(existingAssignment)
+        expect(mockAddRoleAssignment.mock.calls[0][1].existingMulticlusterRoleAssignments).toEqual([existingAssignment])
       })
     })
 
@@ -364,7 +364,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
 
       await waitFor(() => {
         expect(mockAddRoleAssignment).toHaveBeenCalled()
-        expect(mockAddRoleAssignment.mock.calls[0][1].existingMulticlusterRoleAssignment).toBeUndefined()
+        expect(mockAddRoleAssignment.mock.calls[0][1].existingMulticlusterRoleAssignments).toBeUndefined()
       })
     })
   })
