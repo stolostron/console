@@ -138,7 +138,7 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
               <StackItem>
                 <AcmButton
                   variant="link"
-                  style={{ paddingLeft: '0px' }}
+                  isInline
                   onClick={() =>
                     importHostedControlPlaneCluster(
                       selectedHostedClusterResource,
