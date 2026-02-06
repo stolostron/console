@@ -79,6 +79,25 @@ function TestArgoWizardPullModel() {
   )
 }
 
+function TestArgoWizardWithGitGeneratorAppSets(testProps: Partial<ArgoWizardProps> = {}) {
+  return (
+    <RecoilRoot
+      initializeState={(snapshot) => {
+        snapshot.set(subscriptionOperatorsState, gitOpsOperators)
+        snapshot.set(managedClusterSetsState, mockClusterSets)
+        snapshot.set(argoCDsState, [mockArgoCD])
+        snapshot.set(namespacesState, mockNamespaces)
+      }}
+    >
+      <MemoryRouter initialEntries={[NavigationPath.createApplicationArgo]}>
+        <Routes>
+          <Route path={NavigationPath.createApplicationArgo} element={<ArgoWizard {...props} {...testProps} />} />
+        </Routes>
+      </MemoryRouter>
+    </RecoilRoot>
+  )
+}
+
 describe('ArgoWizard tests', () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -507,6 +526,111 @@ describe('ArgoWizard tests', () => {
     await clickByRole('button', { name: 'Submit' })
     expect(mockOnsubmit).toHaveBeenCalledWith(submittedGitPullModel)
   })
+
+  //=====================================================================
+  //                      gitGeneratorRepos tests
+  //=====================================================================
+  describe('gitGeneratorRepos extraction from applicationSets', () => {
+    test('extracts git generator URLs, versions, and paths from regular git generators', async () => {
+      nockIgnoreApiPaths()
+      render(<TestArgoWizardWithGitGeneratorAppSets applicationSets={[mockAppSetWithGitGenerator]} />)
+
+      // Navigate to general page
+      userEvent.type(screen.getByRole('textbox', { name: /name/i }), 'testapp')
+      await clickByRole('combobox', { name: 'Select the Argo server' })
+      await clickByRole('option', { name: /http:\/\/argoserver\.com/i })
+      await clickByText('Next')
+
+      // On generators page, click "Add generator" dropdown and select "Git generator"
+      await clickByText('Add generator')
+      await clickByText('Git generator')
+
+      // Verify git generator URL options are populated from applicationSets
+      const urlCombobox = screen.getByRole('combobox', { name: /Enter or select a Git URL/i })
+      userEvent.click(urlCombobox)
+
+      // Should see the URL from mockAppSetWithGitGenerator
+      await waitForText('https://github.com/example/repo1')
+    })
+
+    test('extracts git generator info from matrix generators', async () => {
+      nockIgnoreApiPaths()
+      render(<TestArgoWizardWithGitGeneratorAppSets applicationSets={[mockAppSetWithMatrixGitGenerator]} />)
+
+      // Navigate to general page
+      userEvent.type(screen.getByRole('textbox', { name: /name/i }), 'testapp')
+      await clickByRole('combobox', { name: 'Select the Argo server' })
+      await clickByRole('option', { name: /http:\/\/argoserver\.com/i })
+      await clickByText('Next')
+
+      // On generators page, click "Add generator" dropdown and select "Git generator"
+      await clickByText('Add generator')
+      await clickByText('Git generator')
+
+      // Verify git generator URL options are populated from matrix generator
+      const urlCombobox = screen.getByRole('combobox', { name: /Enter or select a Git URL/i })
+      userEvent.click(urlCombobox)
+
+      // Should see the URL from mockAppSetWithMatrixGitGenerator
+      await waitForText('https://github.com/example/repo2')
+    })
+
+    test('deduplicates URLs, versions, and paths from multiple applicationSets', async () => {
+      nockIgnoreApiPaths()
+      // Include both an appset and one with duplicate values
+      render(
+        <TestArgoWizardWithGitGeneratorAppSets
+          applicationSets={[mockAppSetWithGitGenerator, mockAppSetWithDuplicateGitInfo]}
+        />
+      )
+
+      // Navigate to general page
+      userEvent.type(screen.getByRole('textbox', { name: /name/i }), 'testapp')
+      await clickByRole('combobox', { name: 'Select the Argo server' })
+      await clickByRole('option', { name: /http:\/\/argoserver\.com/i })
+      await clickByText('Next')
+
+      // On generators page, click "Add generator" dropdown and select "Git generator"
+      await clickByText('Add generator')
+      await clickByText('Git generator')
+
+      // Verify git generator URL options are populated (duplicates should be removed)
+      const urlCombobox = screen.getByRole('combobox', { name: /Enter or select a Git URL/i })
+      userEvent.click(urlCombobox)
+
+      // Should see the URL only once (deduplication via Set)
+      const options = screen.getAllByRole('option')
+      const repo1Options = options.filter((opt) => opt.textContent?.includes('https://github.com/example/repo1'))
+      expect(repo1Options.length).toBe(1)
+    })
+
+    test('combines git info from multiple applicationSets', async () => {
+      nockIgnoreApiPaths()
+      render(
+        <TestArgoWizardWithGitGeneratorAppSets
+          applicationSets={[mockAppSetWithGitGenerator, mockAppSetWithMatrixGitGenerator]}
+        />
+      )
+
+      // Navigate to general page
+      userEvent.type(screen.getByRole('textbox', { name: /name/i }), 'testapp')
+      await clickByRole('combobox', { name: 'Select the Argo server' })
+      await clickByRole('option', { name: /http:\/\/argoserver\.com/i })
+      await clickByText('Next')
+
+      // On generators page, click "Add generator" dropdown and select "Git generator"
+      await clickByText('Add generator')
+      await clickByText('Git generator')
+
+      // Verify both URLs are available
+      const urlCombobox = screen.getByRole('combobox', { name: /Enter or select a Git URL/i })
+      userEvent.click(urlCombobox)
+
+      // Should see URLs from both applicationSets
+      await waitForText('https://github.com/example/repo1')
+      await waitForText('https://github.com/example/repo2')
+    })
+  })
 })
 
 const props: ArgoWizardProps = {
@@ -761,6 +885,107 @@ const submittedHelm = [
     },
   },
 ]
+
+//=====================================================================
+//                      gitGeneratorRepos mock data
+//=====================================================================
+
+const mockAppSetWithGitGenerator: any = {
+  apiVersion: 'argoproj.io/v1alpha1',
+  kind: 'ApplicationSet',
+  metadata: {
+    name: 'git-appset',
+    namespace: 'openshift-gitops',
+  },
+  spec: {
+    generators: [
+      {
+        git: {
+          repoURL: 'https://github.com/example/repo1',
+          revision: 'main',
+          directories: [{ path: 'apps/dev' }, { path: 'apps/prod' }],
+        },
+      },
+    ],
+    template: {
+      metadata: { name: 'git-app-{{path.basename}}' },
+      spec: {
+        destination: { namespace: 'default', server: '{{server}}' },
+        project: 'default',
+        source: { path: '{{path}}', repoURL: 'https://github.com/example/repo1', targetRevision: 'main' },
+      },
+    },
+  },
+}
+
+const mockAppSetWithMatrixGitGenerator: any = {
+  apiVersion: 'argoproj.io/v1alpha1',
+  kind: 'ApplicationSet',
+  metadata: {
+    name: 'matrix-git-appset',
+    namespace: 'openshift-gitops',
+  },
+  spec: {
+    generators: [
+      {
+        matrix: {
+          generators: [
+            {
+              git: {
+                repoURL: 'https://github.com/example/repo2',
+                revision: 'develop',
+                directories: [{ path: 'envs/staging' }],
+              },
+            },
+            {
+              clusterDecisionResource: {
+                configMapRef: 'acm-placement',
+                labelSelector: { matchLabels: { 'cluster.open-cluster-management.io/placement': 'test-placement' } },
+                requeueAfterSeconds: 180,
+              },
+            },
+          ],
+        },
+      },
+    ],
+    template: {
+      metadata: { name: 'matrix-app-{{name}}' },
+      spec: {
+        destination: { namespace: 'default', server: '{{server}}' },
+        project: 'default',
+        source: { path: '{{path}}', repoURL: 'https://github.com/example/repo2', targetRevision: 'develop' },
+      },
+    },
+  },
+}
+
+const mockAppSetWithDuplicateGitInfo: any = {
+  apiVersion: 'argoproj.io/v1alpha1',
+  kind: 'ApplicationSet',
+  metadata: {
+    name: 'duplicate-git-appset',
+    namespace: 'openshift-gitops',
+  },
+  spec: {
+    generators: [
+      {
+        git: {
+          repoURL: 'https://github.com/example/repo1', // duplicate URL
+          revision: 'main', // duplicate revision
+          directories: [{ path: 'apps/dev' }], // duplicate path
+        },
+      },
+    ],
+    template: {
+      metadata: { name: 'dup-app-{{path.basename}}' },
+      spec: {
+        destination: { namespace: 'default', server: '{{server}}' },
+        project: 'default',
+        source: { path: '{{path}}', repoURL: 'https://github.com/example/repo1', targetRevision: 'main' },
+      },
+    },
+  },
+}
 
 const submittedGitPullModel = [
   {

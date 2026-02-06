@@ -21,7 +21,6 @@ import {
   IResourceDefinition,
   JobKind,
   Placement,
-  PlacementDecision,
   PlacementKind,
   PlacementRule,
   PlacementRuleKind,
@@ -111,34 +110,6 @@ export const isArgoPullModel = (resource: ApplicationSet) => {
     return true
   }
   return false
-}
-
-export const getArgoPullModelClusterList = (
-  resource: ApplicationSet,
-  placementDecisions: PlacementDecision[],
-  hubClusterName: string
-) => {
-  const clusterSet = new Set<string>()
-  const placementName = _.get(
-    resource,
-    'spec.generators[0].clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]',
-    ''
-  )
-  const placementNamespace = _.get(resource, 'metadata.namespace', '')
-  const placementDecision = placementDecisions.find(
-    (pd) =>
-      pd.metadata.labels?.['cluster.open-cluster-management.io/placement'] === placementName &&
-      pd.metadata.namespace === placementNamespace
-  )
-  const clusterDecisions = _.get(placementDecision, 'status.decisions', [])
-
-  clusterDecisions.forEach((cd: any) => {
-    if (cd.clusterName !== hubClusterName) {
-      clusterSet.add(cd.clusterName)
-    }
-  })
-
-  return Array.from(clusterSet)
 }
 
 export const getClusterCount = (clusterList: string[], hubClusterName: string): ClusterCount => {

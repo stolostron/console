@@ -11,12 +11,13 @@ import { usePrevious } from '../../../components/usePrevious'
 type GitRevisionSelectProps = {
   target?: string
   path?: string
+  revisions?: string[]
   channels: Channel[]
 }
 
 type WizardItem = Record<string, unknown>
 
-export const GitRevisionSelect = ({ channels, path, target }: GitRevisionSelectProps) => {
+export const GitRevisionSelect = ({ channels, path, target, revisions }: GitRevisionSelectProps) => {
   const { t } = useTranslation()
   const repoURL = useItem(path ?? 'repoURL')
   const targetRevision = useItem(target ?? 'targetRevision')
@@ -37,8 +38,8 @@ export const GitRevisionSelect = ({ channels, path, target }: GitRevisionSelectP
         spec: { pathname: repoURL, type: 'git' },
       },
       getGitChannelBranches
-    )
-  }, [channels, repoURL])
+    ).then((branches) => [...(revisions ?? []), ...branches])
+  }, [channels, repoURL, revisions])
 
   // Clear targetRevision and path when repoURL changes (update during render)
   if (previousRepoURL !== repoURL && previousRepoURL !== undefined) {

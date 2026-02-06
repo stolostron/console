@@ -21,7 +21,7 @@ import { Button, Content, ContentVariants, Flex, FlexItem, ToggleGroup, ToggleGr
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { get, set } from 'lodash'
-import { Fragment, ReactNode, useContext, useMemo, useState } from 'react'
+import { Fragment, ReactNode, useContext, useMemo, useRef, useState } from 'react'
 import { CreateCredentialModal } from '../../components/CreateCredentialModal'
 import { GitOpsOperatorAlert } from '../../components/GitOpsOperatorAlert'
 import { useTranslation } from '../../lib/acm-i18next'
@@ -42,7 +42,7 @@ import { ClusterSetMonitor } from './ClusterSetMonitor'
 import { CreateArgoResources } from './CreateArgoResources'
 import { MultipleSourcesSelector } from './MultipleSourcesSelector'
 import { SourceSelector } from './SourceSelector'
-import { MultipleGeneratorSelector } from './MultipleGeneratorSelector'
+import { MultipleGeneratorSelector, SyncGenerator } from './MultipleGeneratorSelector'
 import { safeGet } from '../../routes/Applications/ApplicationDetails/ApplicationTopology/utils'
 import { findObjectWithKey } from '../../routes/Applications/ApplicationDetails/ApplicationTopology/model/application'
 
@@ -183,6 +183,32 @@ export function ArgoWizard(props: ArgoWizardProps) {
     return [...(sourceGitChannels ?? []), ...(gitArgoAppSetRepoURLs ?? [])].filter(onlyUnique)
   }, [props.applicationSets, sourceGitChannels])
 
+  const gitGeneratorRepos = useMemo(() => {
+    const urls: string[] = []
+    const versions: string[] = []
+    const paths: string[] = []
+
+    props.applicationSets?.forEach((appset) => {
+      const generatorPath = findGeneratorPathWithGenType(appset, 'git')
+      if (generatorPath) {
+        const url = get(appset, `${generatorPath}.repoURL`)
+        if (url) urls.push(url)
+
+        const version = get(appset, `${generatorPath}.revision`)
+        if (version) versions.push(version)
+
+        const directories = get(appset, `${generatorPath}.directories`) as { path: string }[] | undefined
+        if (Array.isArray(directories)) {
+          directories.forEach((dir) => {
+            if (dir.path) paths.push(dir.path)
+          })
+        }
+      }
+    })
+
+    return { urls: [...new Set(urls)], versions: [...new Set(versions)], paths: [...new Set(paths)] }
+  }, [props.applicationSets])
+
   const sourceHelmChannels = useMemo(() => {
     if (props.channels)
       return props.channels
@@ -215,6 +241,10 @@ export function ArgoWizard(props: ArgoWizardProps) {
   }, [props.applicationSets, sourceHelmChannels])
 
   const [filteredClusterSets, setFilteredClusterSets] = useState<IResource[]>([])
+  const [generatorPath, setGeneratorPath] = useState<string>(() =>
+    get(applicationSet, 'spec.generators.0.matrix') ? 'spec.generators.0.matrix.generators' : 'spec.generators'
+  )
+  const prevGenState = useRef<{ hasGitGen?: boolean; hasListGen?: boolean }>({})
   const editMode = useEditMode()
 
   const { gitOpsOperatorSubscriptionsValue } = useSharedSelectors()
@@ -429,13 +459,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
             </Fragment>
           )}
           <Sync kind="ApplicationSet" path="metadata.namespace" />
-          <Sync
-            kind="ApplicationSet"
-            path="metadata.name"
-            targetKind="ApplicationSet"
-            targetPath="spec.template.metadata.name"
-            suffix="-{{name}}"
-          />
+          {/* the generator now syncs app name with template name */}
           <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
             <GitOpsOperatorAlert showAlert={showAlert} isPullModel={isPullModel} />
             {isPullModel && !resources && !showAlert && (
@@ -517,7 +541,14 @@ export function ArgoWizard(props: ArgoWizardProps) {
                 gitChannels={gitChannels}
                 channels={props.channels}
                 helmChannels={helmChannels}
+                gitGeneratorRepos={gitGeneratorRepos}
                 disableForm={disableForm}
+                generatorPath={generatorPath}
+              />
+              <SyncGenerator
+                setGeneratorPath={setGeneratorPath}
+                prevGenState={prevGenState}
+                generatorPath={generatorPath}
               />
             </Section>
           </WizItemSelector>
@@ -933,7 +964,7 @@ function ArgoWizardPlacementSection(props: {
   )
 }
 
-function findGeneratorPathWithCDR(item: unknown): string | undefined {
+function findGeneratorPathWithGenType(item: unknown, genType: string): string | undefined {
   // Generators can be at 'spec.generators' or 'spec.generators.0.matrix.generators' (matrix case)
   // When called from SyncPlacementNameToApplicationSet, item is an array; otherwise it's not
   const targetItem = Array.isArray(item) ? item[0] : item
@@ -946,16 +977,43 @@ function findGeneratorPathWithCDR(item: unknown): string | undefined {
 
   for (let i = 0; i < generators.length; i++) {
     const generator = generators[i]
-    if (findObjectWithKey(generator, 'clusterDecisionResource')) {
-      return `${generatorsPath}.${i}.clusterDecisionResource.labelSelector.matchLabels.cluster\\.open-cluster-management\\.io/placement`
+    if (findObjectWithKey(generator, genType)) {
+      return `${generatorsPath}.${i}.${genType}`
     }
   }
   return undefined
 }
 
+// fun fact, you can paste an argo app without a repositoryType key value because argo defaults to git
+//  but the wizard needs a reositoryType in order to function
+export function setRepositoryTypeForSources(resources: any[] | undefined): any[] | undefined {
+  return resources?.map((resource: any) => {
+    const sources = resource?.spec?.template?.spec?.sources
+    if (Array.isArray(sources)) {
+      const updatedSources = sources.map((source: any) =>
+        source.repositoryType ? source : { ...source, repositoryType: 'git' }
+      )
+      return {
+        ...resource,
+        spec: {
+          ...resource.spec,
+          template: {
+            ...resource.spec.template,
+            spec: {
+              ...resource.spec.template.spec,
+              sources: updatedSources,
+            },
+          },
+        },
+      }
+    }
+    return resource
+  })
+}
+
 function SyncPlacementNameToApplicationSet() {
   const item = useContext(ItemContext)
-  const targetPath = findGeneratorPathWithCDR(item)
+  const targetPath = `${findGeneratorPathWithGenType(item, 'clusterDecisionResource')}.labelSelector.matchLabels.cluster\\.open-cluster-management\\.io/placement`
 
   if (!targetPath) {
     return null
@@ -967,7 +1025,7 @@ function SyncPlacementNameToApplicationSet() {
 function ExistingPlacementSelect(props: { placements: IPlacement[] }) {
   const { t } = useTranslation()
   const item = useContext(ItemContext)
-  const path = findGeneratorPathWithCDR(item)
+  const path = `${findGeneratorPathWithGenType(item, 'clusterDecisionResource')}.labelSelector.matchLabels.cluster\\.open-cluster-management\\.io/placement`
 
   if (!path) {
     return null

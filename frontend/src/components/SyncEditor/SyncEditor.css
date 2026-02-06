@@ -93,11 +93,13 @@
 .insertedLineDecoration {
   background: #87d4ecab;
   width: 6px !important;
-  margin-left: 12px;
+  margin-left: 4px;
+  pointer-events: none;
 }
 
 .customLineDecoration {
   background: blue;
   width: 6px !important;
-  margin-left: 12px;
+  margin-left: 4px;
+  pointer-events: none;
 }

@@ -10,7 +10,7 @@ import generatorPlugin from './generators/generator-plugin.yaml'
 import { HelperText, HelperTextItem, Title } from '@patternfly/react-core'
 import get from 'get-value'
 import { klona } from 'klona/json'
-import { useCallback, useContext, useMemo, useRef, useState } from 'react'
+import { useContext, useEffect, useMemo, useRef } from 'react'
 import set from 'set-value'
 import {
   useEditMode,
@@ -36,86 +36,14 @@ export interface MultipleGeneratorSelectorProps {
   channels: Channel[] | undefined
   gitChannels: string[]
   helmChannels: string[]
+  gitGeneratorRepos: { urls: string[]; versions: string[]; paths: string[] }
   disableForm: boolean
+  generatorPath: string
 }
 
 export function MultipleGeneratorSelector(props: MultipleGeneratorSelectorProps) {
+  const { generatorPath } = props
   const item = useContext(ItemContext)
-  const { update } = useData() // Wizard framework sets this context
-  const [generatorPath, setGeneratorPath] = useState<string>(() =>
-    get(item, 'spec.generators.0.matrix') ? 'spec.generators.0.matrix.generators' : 'spec.generators'
-  )
-
-  // fixup yaml based on what generators are selected
-  const updateTemplate = useCallback(
-    (generators: IResource[]) => {
-      let shouldUpdate = false
-
-      function fix(path: string, value: unknown) {
-        set(item, path, value, { preservePaths: true })
-        shouldUpdate = true
-      }
-
-      const matrixGenerator = get(item, 'spec.generators.0.matrix') ? true : false
-      // if there are more than one generator and no matrix generator, add a matrix generator
-      if (generators && generators.length > 1 && !matrixGenerator) {
-        setGeneratorPath('spec.generators.0.matrix.generators')
-        fix('spec.generators', [{ matrix: { generators: generators } }])
-      }
-      // if is one generator and a matrix generator, remove the matrix generator
-      if (generators && generators.length === 1 && matrixGenerator) {
-        setGeneratorPath('spec.generators')
-        fix('spec.generators', generators)
-      }
-
-      // Check which generator types are present
-      const hasGitGen = generators.some((gen: unknown) => getGeneratorType(gen) === 'git')
-      const hasListGen = generators?.some((gen) => getGeneratorType(gen) === 'list') ?? false
-      // const hasClustersGen = generators?.some((gen) => getGeneratorType(gen) === 'clusters') ?? false
-      // const hasClusterDecisionResourceGen = generators?.some((gen) => getGeneratorType(gen) === 'clusterDecisionResource') ?? false
-      // const hasScmProviderGen = generators?.some((gen) => getGeneratorType(gen) === 'scmProvider') ?? false
-      // const hasPullRequestGen = generators?.some((gen) => getGeneratorType(gen) === 'pullRequest') ?? false
-      // const hasPluginGen = generators?.some((gen) => getGeneratorType(gen) === 'plugin') ?? false
-
-      const url = '{{.url}}'
-      const cluster = '{{.cluster}}'
-      const server = '{{server}}'
-      const pathBasename = '{{path.basename}}'
-      const templateNamePath = 'spec.template.metadata.name'
-      const destinationNamePathNamespace = 'spec.template.spec.destination.namespace'
-      const destinationNamePathServer = 'spec.template.spec.destination.server'
-      let templateName = get(item, templateNamePath) ?? ''
-
-      // Handle git generator
-      if (hasGitGen) {
-        if (!templateName.toString().includes(`-${pathBasename}`)) {
-          fix(templateNamePath, `${templateName}-${pathBasename}`)
-          fix(destinationNamePathNamespace, `${pathBasename}`)
-          templateName = `${templateName}-${pathBasename}`
-        }
-      } else {
-        fix(templateNamePath, templateName.toString().replace(`-${pathBasename}`, ''))
-        fix(destinationNamePathNamespace, '')
-        templateName = templateName.toString().replace(`-${pathBasename}`, '')
-      }
-
-      // Handle list generator
-      if (hasListGen) {
-        if (!templateName.toString().includes(`-${cluster}`)) {
-          fix(templateNamePath, `${templateName}-${cluster}`)
-          fix(destinationNamePathServer, url)
-        }
-      } else {
-        fix(templateNamePath, templateName.toString().replace(`-${cluster}`, ''))
-        fix(destinationNamePathServer, server)
-      }
-
-      if (shouldUpdate) {
-        update()
-      }
-    },
-    [item, update]
-  )
 
   const editMode = useEditMode()
   const generators = get(item, generatorPath)
@@ -126,7 +54,6 @@ export function MultipleGeneratorSelector(props: MultipleGeneratorSelectorProps)
       id="generators"
       path={generatorPath}
       placeholder={generators?.length >= 2 ? undefined : t('Add generator')}
-      onValueChange={(value) => updateTemplate(value as IResource[])}
       required
       dropdownItems={Specifications.map((specification) => ({
         label: specification.description,
@@ -152,7 +79,7 @@ function GeneratorCollapsedContent() {
 }
 
 function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
-  const { gitChannels, channels, disableForm } = props
+  const { gitGeneratorRepos, channels, disableForm } = props
   // this is an array dependency in Wiz which doesn't compare by stringify
   // so if you change the array object, react thinks the value changed
   // which causes infinite loop
@@ -189,19 +116,24 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
           label={t('URL')}
           labelHelp={t('The URL path for the Git repository.')}
           placeholder={t('Enter or select a Git URL')}
-          options={gitChannels}
+          options={gitGeneratorRepos.urls}
           validation={validateWebURL}
           required
           isCreatable
           disabled={disableForm}
         />
-        <GitRevisionSelect channels={channels ?? []} path="git.repoURL" target="git.revision" />
+        <GitRevisionSelect
+          channels={channels ?? []}
+          path="git.repoURL"
+          target="git.revision"
+          revisions={gitGeneratorRepos.versions}
+        />
         <WizMultiSelect
           label="Directory paths"
           placeholder="Select or enter a directory path"
           path="git.directories"
           required
-          options={['default', 'development', 'production']}
+          options={[...gitGeneratorRepos.paths, 'default', 'development', 'production']}
           isCreatable
           disabled={disableForm}
           pathValueToInputValue={(value: unknown) => {
@@ -223,7 +155,6 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
           label={t('Requeue time')}
           options={requeueTimes}
           labelHelp={t('Git requeue time in seconds')}
-          required
           disabled={disableForm}
         />
       </WizHidden>
@@ -361,7 +292,6 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
           label={t('Requeue time')}
           options={requeueTimes}
           labelHelp={t('Pull request requeue time in seconds')}
-          required
           disabled={disableForm}
         />
       </WizHidden>
@@ -396,12 +326,113 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
           label={t('Requeue time')}
           options={requeueTimes}
           labelHelp={t('Plugin requeue time in seconds')}
-          required
           disabled={disableForm}
         />
       </WizHidden>
     </div>
   )
+}
+
+export interface SyncGeneratorProps {
+  setGeneratorPath: (path: string) => void
+  prevGenState: React.MutableRefObject<{ hasGitGen?: boolean; hasListGen?: boolean }>
+  generatorPath: string
+}
+
+// syncs the app name with the template name based on the generators selected
+export function SyncGenerator(props: SyncGeneratorProps) {
+  const { setGeneratorPath, prevGenState, generatorPath } = props
+  const item = useContext(ItemContext)
+  const { update } = useData()
+  const appName = get(item, 'metadata.name')
+  const generators = get(item, generatorPath) as IResource[] | undefined
+  const generatorsString = JSON.stringify(generators)
+  const { hasGitGen, hasListGen } = useMemo(
+    () => ({
+      hasGitGen: generators?.some((gen: unknown) => getGeneratorType(gen) === 'git'),
+      hasListGen: generators?.some((gen) => getGeneratorType(gen) === 'list'),
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [generatorsString]
+  )
+
+  // fixup yaml based on what generators are selected
+  useEffect(() => {
+    if (!generators) return
+
+    let shouldUpdate = false
+
+    function fix(path: string, value: unknown) {
+      set(item, path, value, { preservePaths: true })
+      shouldUpdate = true
+    }
+
+    const matrixGenerator = get(item, 'spec.generators.0.matrix')
+    // if there are more than one generator and no matrix generator, add a matrix generator
+    if (generators.length > 1 && !matrixGenerator) {
+      setGeneratorPath('spec.generators.0.matrix.generators')
+      fix('spec.generators', [{ matrix: { generators: generators } }])
+    }
+    // if is one generator and a matrix generator, remove the matrix generator
+    if (generators.length === 1 && matrixGenerator?.generators.length === 1) {
+      setGeneratorPath('spec.generators')
+      fix('spec.generators', generators)
+    }
+    // clean up errant syncs
+    if (matrixGenerator && generators.length === 1 && Object.keys(generators[0]).length > 1) {
+      fix('spec.generators', [{ matrix: matrixGenerator }])
+    }
+
+    const url = '{{.url}}'
+    const cluster = '{{.cluster}}'
+    const server = '{{server}}'
+    const pathBasename = '{{path.basename}}'
+    const templateNamePath = 'spec.template.metadata.name'
+    const destinationNamePathNamespace = 'spec.template.spec.destination.namespace'
+    const destinationNamePathServer = 'spec.template.spec.destination.server'
+    const templateName = get(item, templateNamePath) ?? ''
+
+    // Handle git generator
+    if (hasGitGen) {
+      if (
+        !templateName.startsWith(appName) ||
+        !templateName.includes('{{name}}') ||
+        !templateName.includes(pathBasename)
+      ) {
+        fix(templateNamePath, `${appName}-{{name}}-${pathBasename}`)
+        fix(destinationNamePathNamespace, `${pathBasename}`)
+      }
+    }
+
+    // Handle list generator
+    if (hasListGen) {
+      if (templateName !== `${appName}-${cluster}`) {
+        fix(templateNamePath, `${appName}-${cluster}`)
+        fix(destinationNamePathServer, url)
+      }
+    }
+
+    // handle generators that don't affect template
+    if (!hasGitGen && !hasListGen) {
+      if (templateName !== `${appName}-{{name}}`) {
+        fix(templateNamePath, `${appName}-{{name}}`)
+      }
+      // Only reset destination when hasGitGen or hasListGen have changed
+      if (prevGenState.current.hasGitGen !== hasGitGen || prevGenState.current.hasListGen !== hasListGen) {
+        fix(destinationNamePathNamespace, '')
+        fix(destinationNamePathServer, server)
+      }
+    }
+
+    prevGenState.current = { hasGitGen, hasListGen }
+
+    if (shouldUpdate) {
+      update()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [generatorPath, appName, hasGitGen, hasListGen])
+
+  return <></>
 }
 
 function getGeneratorType(generator: unknown): string {
