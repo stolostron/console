@@ -1,8 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { css } from '@emotion/css'
 import { useState } from 'react'
 import { Card, CardBody, CardExpandableContent, CardHeader, CardTitle } from '@patternfly/react-core'
 import { useTranslation } from '../../../lib/acm-i18next'
+
+/** Ensures flex content (e.g. terminology paragraphs) can shrink and wrap so text is fully visible. */
+const expandableCardContent = css({
+  // '& .pf-v6-c-card__expandable-content': { minWidth: 0 },
+  // '& .pf-v6-c-card__body': { minWidth: 0 },
+  // '& .pf-v6-l-flex': { minWidth: 0 },
+  // '& .pf-v6-l-flex__item:first-child': { minWidth: 0, flex: '1 1 0' },
+})
 
 const onToggle = (acmCardID: string, open: boolean, setOpen: (open: boolean) => void) => {
   setOpen(!open)
@@ -30,7 +39,7 @@ export function AcmExpandableCard(
   const [open, setOpen] = useState<boolean>(props.defaultOpen ?? localStorage.getItem(acmCardID) === 'show')
   const { t } = useTranslation()
   return (
-    <Card id={props.id} className={props.className} isExpanded={open}>
+    <Card id={props.id} className={props.className} isExpanded={open} isFullHeight>
       <CardHeader
         onExpand={() => onToggle(acmCardID, open, setOpen)}
         toggleButtonProps={{
