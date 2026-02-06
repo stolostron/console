@@ -109,10 +109,6 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
           typescript: {
             configFile: isDevelopment ? 'tsconfig.dev.json' : 'tsconfig.json',
           },
-          eslint: {
-            enabled: isDevelopment,
-            files: ['./src/**/*.{ts,tsx,js,jsx}'],
-          },
         }),
       new MonacoWebpackPlugin({ languages: ['yaml'] }),
       isProduction &&
