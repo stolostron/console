@@ -57,8 +57,8 @@ export default function ClusterPoolsPage() {
         <Stack hasGutter style={{ height: 'unset' }}>
           <AcmExpandableCard title={t('learn.terminology')} id="cluster-pools-learn">
             <Flex style={{ flexWrap: 'inherit' }}>
-              <Flex style={{ maxWidth: '50%' }}>
-                <FlexItem>
+              <Flex style={{ maxWidth: '50%', minWidth: 0 }}>
+                <FlexItem style={{ minWidth: 0 }} grow={{ default: 'grow' }}>
                   <Content>
                     <Content component={ContentVariants.h4}>{t('clusterPools')}</Content>
                     <Content component={ContentVariants.p}>{t('learn.clusterPools')}</Content>
@@ -76,8 +76,8 @@ export default function ClusterPoolsPage() {
                   </AcmButton>
                 </FlexItem>
               </Flex>
-              <Flex>
-                <FlexItem>
+              <Flex style={{ minWidth: 0 }}>
+                <FlexItem style={{ minWidth: 0 }} grow={{ default: 'grow' }}>
                   <Content>
                     <Content component={ContentVariants.h4}>{t('clusterClaims')}</Content>
                     <Content component={ContentVariants.p}>{t('learn.clusterClaims')}</Content>
