@@ -30,7 +30,7 @@ export function AcmExpandableCard(
   const [open, setOpen] = useState<boolean>(props.defaultOpen ?? localStorage.getItem(acmCardID) === 'show')
   const { t } = useTranslation()
   return (
-    <Card id={props.id} className={props.className} isExpanded={open}>
+    <Card id={props.id} className={props.className} isExpanded={open} isFullHeight>
       <CardHeader
         onExpand={() => onToggle(acmCardID, open, setOpen)}
         toggleButtonProps={{
