@@ -471,7 +471,6 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
                   placeholder={searchPlaceholder}
                   spellCheck={false}
                   resultsCount={`${search === internalSearch ? filteredCount : '-'} / ${totalCount}`}
-                  style={{ flexGrow: 1 }}
                   canAddConstraints
                   useAdvancedSearchPopper={advancedFilters.length > 0}
                   setActiveConstraints={setActiveAdvancedFilters}

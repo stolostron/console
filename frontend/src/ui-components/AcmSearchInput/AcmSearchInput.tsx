@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { css } from '@emotion/css'
 import { useRef, useState, useEffect, useCallback } from 'react'
 import {
   ActionGroup,
@@ -152,6 +153,10 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
   const activeConstraints = pendingConstraints.filter(
     (constraint) => constraint.columnId && constraint.value && constraint.operator
   ).length
+  const inputCharCount = Math.max(1, (placeholder ?? '').length, (fuzzySearchValue ?? '').length)
+  const inputMinWidthClass = css({
+    minWidth: `${inputCharCount}ch`,
+  })
   const searchInput = (
     <SearchInput
       placeholder={placeholder}
@@ -160,6 +165,7 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
       ref={searchInputRef}
       id="custom-advanced-search"
       style={style}
+      className={inputMinWidthClass}
       onChange={(_event, value) => onChange(value)}
       onToggleAdvancedSearch={
         useAdvancedSearchPopper
