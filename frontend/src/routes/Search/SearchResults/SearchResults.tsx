@@ -62,7 +62,7 @@ const accordionItemKind = css({
 const accordionItemGroup = css({
   marginLeft: '10px',
   fontSize: 'var(--pf-t--global--font--size--sm)',
-  color: 'var(--pf-t--global--text--color--200)',
+  color: 'var(--pf-t--global--text--color--subtle)',
 })
 
 function RenderAccordionItem(
