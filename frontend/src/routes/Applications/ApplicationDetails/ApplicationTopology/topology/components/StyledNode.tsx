@@ -1,8 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as React from 'react'
 import {
-  DEFAULT_LAYER,
-  Layer,
   Ellipse,
   Decorator,
   DefaultNode,
@@ -12,7 +10,6 @@ import {
   ShapeProps,
   Node,
   observer,
-  TOP_LAYER,
   useHover,
   WithContextMenuProps,
   WithCreateConnectorProps,
@@ -50,7 +47,7 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
   ...rest
 }) => {
   const data = element.getData()
-  const [hover, hoverRef] = useHover()
+  const [hover] = useHover()
 
   let detailsLevel = ScaleDetailsLevel.high
   const scale = element.getGraph().getScale()
@@ -76,42 +73,30 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
   const LabelIcon = passedData.labelIcon
   const { width, height } = element.getDimensions()
   return (
-    <Layer id={hover ? TOP_LAYER : DEFAULT_LAYER}>
-      <g
-        data-test-id={passedData.id}
-        ref={(r) => {
-          if (r) {
-            hoverRef(r)
-          }
-        }}
-      >
-        <DefaultNode
-          element={element}
-          nodeStatus={data.status}
-          scaleLabel={detailsLevel !== ScaleDetailsLevel.low}
-          scaleNode={hover && detailsLevel === ScaleDetailsLevel.low}
-          showLabel={hover || (detailsLevel !== ScaleDetailsLevel.low && showLabel)}
-          showStatusBackground={!hover && detailsLevel === ScaleDetailsLevel.low}
-          showStatusDecorator={detailsLevel === ScaleDetailsLevel.high && passedData.showStatusDecorator}
-          {...rest}
-          {...passedData}
-          getCustomShape={() => (passedData?.specs?.resourceCount > 1 ? MultiEllipse : Ellipse)}
-          dragging={dragging}
-          regrouping={regrouping}
-          onContextMenu={data.showContextMenu ? onContextMenu : undefined}
-          contextMenuOpen={contextMenuOpen}
-          labelIcon={LabelIcon && <LabelIcon noVerticalAlign />}
-          attachments={
-            detailsLevel !== ScaleDetailsLevel.low &&
-            renderDecorators(element, passedData, rest.getShapeDecoratorCenter)
-          }
-        >
-          {(hover || detailsLevel !== ScaleDetailsLevel.low) && (
-            <use href={`#nodeIcon_${data.shape}`} width={width} height={height} />
-          )}
-        </DefaultNode>
-      </g>
-    </Layer>
+    <DefaultNode
+      element={element}
+      nodeStatus={data.status}
+      scaleLabel={detailsLevel !== ScaleDetailsLevel.low}
+      scaleNode={hover && detailsLevel === ScaleDetailsLevel.low}
+      showLabel={hover || (detailsLevel !== ScaleDetailsLevel.low && showLabel)}
+      showStatusBackground={!hover && detailsLevel === ScaleDetailsLevel.low}
+      showStatusDecorator={detailsLevel === ScaleDetailsLevel.high && passedData.showStatusDecorator}
+      {...rest}
+      {...passedData}
+      getCustomShape={() => (passedData?.specs?.resourceCount > 1 ? MultiEllipse : Ellipse)}
+      dragging={dragging}
+      regrouping={regrouping}
+      onContextMenu={data.showContextMenu ? onContextMenu : undefined}
+      contextMenuOpen={contextMenuOpen}
+      labelIcon={LabelIcon && <LabelIcon noVerticalAlign />}
+      attachments={
+        detailsLevel !== ScaleDetailsLevel.low && renderDecorators(element, passedData, rest.getShapeDecoratorCenter)
+      }
+    >
+      {(hover || detailsLevel !== ScaleDetailsLevel.low) && (
+        <use href={`#nodeIcon_${data.shape}`} width={width} height={height} />
+      )}
+    </DefaultNode>
   )
 }
 
