@@ -4,7 +4,6 @@
 
 .pf-v5-theme-dark .pf-topology__node__background,
 .pf-v6-theme-dark .pf-topology__node__background {
-  fill: #d5ccc2;
   stroke-width: 3;
 }
 
