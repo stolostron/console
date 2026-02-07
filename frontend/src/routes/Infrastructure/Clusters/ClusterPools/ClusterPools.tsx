@@ -69,10 +69,9 @@ export default function ClusterPoolsPage() {
                     onClick={() => window.open(DOC_LINKS.CLUSTER_POOLS, '_blank')}
                     variant="link"
                     role="link"
-                    icon={<ExternalLinkAltIcon />}
-                    iconPosition="right"
                   >
-                    {t('view.documentation')}
+                    {t('view.documentation')}{' '}
+                    <ExternalLinkAltIcon />
                   </AcmButton>
                 </FlexItem>
               </Flex>
@@ -88,10 +87,9 @@ export default function ClusterPoolsPage() {
                     onClick={() => window.open(DOC_LINKS.CLUSTER_CLAIMS, '_blank')}
                     variant="link"
                     role="link"
-                    icon={<ExternalLinkAltIcon />}
-                    iconPosition="right"
                   >
-                    {t('view.documentation')}
+                    {t('view.documentation')}{' '}
+                    <ExternalLinkAltIcon />
                   </AcmButton>
                 </FlexItem>
               </Flex>
