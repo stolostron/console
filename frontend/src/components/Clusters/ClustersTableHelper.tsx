@@ -429,6 +429,21 @@ export function useClusterCreatedDateColumn(): IAcmTableColumn<Cluster> {
   }
 }
 
+export function useClusterSetColumn(): IAcmTableColumn<Cluster> {
+  const { t } = useTranslation()
+  return {
+    header: t('table.clusterSet'),
+    sort: 'clusterSet',
+    search: 'clusterSet',
+    cell: (cluster, search) => (
+      <span style={{ whiteSpace: 'nowrap' }}>
+        <HighlightSearchText text={cluster.clusterSet ?? '-'} searchText={search} useFuzzyHighlighting />
+      </span>
+    ),
+    exportContent: (cluster) => cluster.clusterSet,
+  }
+}
+
 export function useModalColumns(
   clusterNameColumnModal: IAcmTableColumn<Cluster>,
   clusterStatusColumn: IAcmTableColumn<Cluster>,
@@ -778,6 +793,7 @@ export function useTableColumns({
   const clusterControlPlaneColumn = useClusterControlPlaneColumn(localHubName)
   const clusterDistributionColumn = useClusterDistributionColumn(clusters, clusterCurators, hostedClusters)
   const clusterLabelsColumn = useClusterLabelsColumn(clusters.length > 10, localHubName)
+  const clusterSetColumn = useClusterSetColumn()
   const clusterNodesColumn = useClusterNodesColumn()
   const clusterAddonsColumn = useClusterAddonColumn()
   const clusterCreatedDataColumn = useClusterCreatedDateColumn()
@@ -792,6 +808,7 @@ export function useTableColumns({
       clusterProviderColumn,
       clusterControlPlaneColumn,
       clusterDistributionColumn,
+      clusterSetColumn,
       clusterLabelsColumn,
       clusterNodesColumn,
       clusterAddonsColumn,
@@ -814,6 +831,7 @@ export function useTableColumns({
       clusterProviderColumn,
       clusterControlPlaneColumn,
       clusterDistributionColumn,
+      clusterSetColumn,
       clusterLabelsColumn,
       clusterNodesColumn,
       clusterAddonsColumn,
