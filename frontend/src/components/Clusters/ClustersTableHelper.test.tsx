@@ -12,6 +12,7 @@ import {
   useClusterControlPlaneColumn,
   useClusterDistributionColumn,
   useClusterLabelsColumn,
+  useClusterSetColumn,
   useClusterNodesColumn,
   useClusterAddonColumn,
   useClusterCreatedDateColumn,
@@ -147,6 +148,7 @@ const mockCluster: Cluster = {
   uid: 'test-cluster-uid',
   status: ClusterStatus.ready,
   provider: Provider.aws,
+  clusterSet: 'test-cluster-set',
   distribution: {
     displayVersion: 'OpenShift 4.12.0',
     isManagedOpenShift: false,
@@ -344,6 +346,21 @@ describe('ClustersTableHelper', () => {
       expect(column.cell).toBeDefined()
     })
 
+    it('should render cluster set column', () => {
+      const column = useClusterSetColumn()
+      renderWithProviders(<TestColumnComponent column={column} cluster={mockCluster} />)
+
+      expect(screen.getByText('test-cluster-set')).toBeInTheDocument()
+    })
+
+    it('should render cluster set column with dash when no cluster set', () => {
+      const clusterWithoutSet = { ...mockCluster, clusterSet: undefined }
+      const column = useClusterSetColumn()
+      renderWithProviders(<TestColumnComponent column={column} cluster={clusterWithoutSet} />)
+
+      expect(screen.getByText('-')).toBeInTheDocument()
+    })
+
     it('should render cluster nodes column', () => {
       const column = useClusterNodesColumn()
       renderWithProviders(<TestColumnComponent column={column} cluster={mockCluster} />)
@@ -434,6 +451,7 @@ describe('ClustersTableHelper', () => {
       expect(useClusterControlPlaneColumn('').header).toBe('table.controlplane')
       expect(useClusterDistributionColumn([], [], []).header).toBe('table.distribution')
       expect(useClusterLabelsColumn(false).header).toBe('table.labels')
+      expect(useClusterSetColumn().header).toBe('table.clusterSet')
       expect(useClusterNodesColumn().header).toBe('table.nodes')
       expect(useClusterAddonColumn().header).toBe('Add-ons')
       expect(useClusterCreatedDateColumn().header).toBe('table.creationDate')
@@ -444,6 +462,7 @@ describe('ClustersTableHelper', () => {
       expect(useClusterStatusColumn().sort).toBe('status')
       expect(useClusterProviderColumn().sort).toBe('provider')
       expect(useClusterDistributionColumn([], [], []).sort).toBe('distribution.displayVersion')
+      expect(useClusterSetColumn().sort).toBe('clusterSet')
       expect(useClusterNodesColumn().sort).toBe('nodes')
       expect(useClusterAddonColumn().sort).toBe('addons')
     })
