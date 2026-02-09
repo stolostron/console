@@ -32,7 +32,7 @@ jest.mock('@patternfly/react-core', () => {
         'div',
         { 'data-testid': 'actions-dropdown-mock', onKeyDown },
         toggle,
-        props.isOpen ? props.children : null
+        props.isOpen ? (props.children as React.ReactNode) : null
       )
     },
   }
