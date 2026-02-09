@@ -5,7 +5,7 @@ set -euo pipefail
 source ./port-defaults.sh
 source ./oauth-client-name.sh
 
-CONSOLE_VERSION=${CONSOLE_VERSION:=4.19}
+CONSOLE_VERSION=${CONSOLE_VERSION:=4.20}
 KUBEVIRT_PORT=${KUBEVIRT_PORT:=""}
 ODF_PORT=${ODF_PORT:=""}
 GITOPS_PORT=${GITOPS_PORT:=""}
