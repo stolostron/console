@@ -412,13 +412,18 @@ export function SyncGenerator(props: SyncGeneratorProps) {
       }
     }
 
+    const isInitialSync = prevGenState.current.hasGitGen === undefined && prevGenState.current.hasListGen === undefined
+
     // handle generators that don't affect template
     if (!hasGitGen && !hasListGen) {
       if (templateName !== `${appName}-{{name}}`) {
         fix(templateNamePath, `${appName}-{{name}}`)
       }
       // Only reset destination when hasGitGen or hasListGen have changed
-      if (prevGenState.current.hasGitGen !== hasGitGen || prevGenState.current.hasListGen !== hasListGen) {
+      if (
+        !isInitialSync &&
+        (prevGenState.current.hasGitGen !== hasGitGen || prevGenState.current.hasListGen !== hasListGen)
+      ) {
         fix(destinationNamePathNamespace, '')
         fix(destinationNamePathServer, server)
       }
