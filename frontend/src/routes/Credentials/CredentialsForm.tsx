@@ -1499,39 +1499,63 @@ export function CredentialsForm(
           }
         })
         patch.push({ op: 'replace', path: `/data`, value: data })
-        patchResource(secret, patch).promise.then(() => {
-          toastContext.addAlert({
-            title: t('Credentials updated'),
-            /*
+        patchResource(secret, patch)
+          .promise.then(() => {
+            toastContext.addAlert({
+              title: t('Credentials updated'),
+              /*
                             t('name')
                         */
-            message: t('credentialsForm.updated.message', { name }),
-            type: 'success',
-            autoClose: true,
-          })
-          submitForm()
-          navigate(NavigationPath.credentials)
-        })
-      } else {
-        createResource(credentialData as IResource).promise.then((resource) => {
-          toastContext.addAlert({
-            title: t('Credentials created'),
-            message: t('credentialsForm.created.message', { name }),
-            type: 'success',
-            autoClose: true,
-          })
-          submitForm()
-
-          if (newCredentialCallback) {
-            newCredentialCallback(resource as Secret)
-          }
-
-          if (handleModalToggle) {
-            handleModalToggle()
-          } else {
+              message: t('credentialsForm.updated.message', { name }),
+              type: 'success',
+              autoClose: true,
+            })
+            submitForm()
             navigate(NavigationPath.credentials)
-          }
-        })
+          })
+          .catch((err) => {
+            toastContext.addAlert({
+              title: t('Failed to update Credentials'),
+              message: t('Reason: {{reason}}. Error: {{error}}.', {
+                reason: err.reason,
+                error: err.message,
+              }),
+              type: 'danger',
+              autoClose: true,
+            })
+          })
+      } else {
+        createResource(credentialData as IResource)
+          .promise.then((resource) => {
+            toastContext.addAlert({
+              title: t('Credentials created'),
+              message: t('credentialsForm.created.message', { name }),
+              type: 'success',
+              autoClose: true,
+            })
+            submitForm()
+
+            if (newCredentialCallback) {
+              newCredentialCallback(resource as Secret)
+            }
+
+            if (handleModalToggle) {
+              handleModalToggle()
+            } else {
+              navigate(NavigationPath.credentials)
+            }
+          })
+          .catch((err) => {
+            toastContext.addAlert({
+              title: t('Failed to create Credentials'),
+              message: t('Reason: {{reason}}. Error: {{error}}.', {
+                reason: err.reason,
+                error: err.message,
+              }),
+              type: 'danger',
+              autoClose: true,
+            })
+          })
       }
     },
     submitText: isEditing ? t('Save') : t('Add'),
