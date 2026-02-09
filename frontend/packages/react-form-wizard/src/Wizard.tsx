@@ -66,6 +66,7 @@ export interface WizardProps {
   yamlEditor?: () => ReactNode
   submitButtonText?: string
   submittingButtonText?: string
+  isLoading?: boolean
 }
 
 export type WizardSubmit = (data: unknown) => Promise<void>
@@ -104,6 +105,7 @@ export function Wizard(props: WizardProps & { showHeader?: boolean; showYaml?: b
                                   hasButtons={props.hasButtons}
                                   submitButtonText={props.submitButtonText}
                                   submittingButtonText={props.submittingButtonText}
+                                  isLoading={props.isLoading}
                                 >
                                   {props.children}
                                 </WizardInternal>
@@ -135,6 +137,7 @@ type WizardFooterProps = {
   submitButtonText?: string
   submittingButtonText?: string
   steps: ReactElement[]
+  isLoading?: boolean
 }
 
 type WizardInternalProps = Omit<WizardFooterProps, 'steps'> & {
@@ -142,9 +145,17 @@ type WizardInternalProps = Omit<WizardFooterProps, 'steps'> & {
   children: ReactNode
   onCancel: WizardCancel
   hasButtons?: boolean
+  isLoading?: boolean
 }
 
-function WizardInternal({ children, onSubmit, onCancel, submitButtonText, submittingButtonText }: WizardInternalProps) {
+function WizardInternal({
+  children,
+  onSubmit,
+  onCancel,
+  submitButtonText,
+  submittingButtonText,
+  isLoading,
+}: WizardInternalProps) {
   const { reviewLabel, stepsAriaLabel, contentAriaLabel } = useStringContext()
   const stepComponents = useMemo(
     () => Children.toArray(children).filter((child) => isValidElement(child) && child.type === Step) as ReactElement[],
@@ -203,6 +214,7 @@ function WizardInternal({ children, onSubmit, onCancel, submitButtonText, submit
             steps={stepComponents}
             submitButtonText={submitButtonText}
             submittingButtonText={submittingButtonText}
+            isLoading={isLoading}
           />
         }
         onClose={onCancel}
@@ -223,7 +235,7 @@ function MyFooter(props: WizardFooterProps) {
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
 
-  const { onSubmit, submitButtonText, submittingButtonText } = props
+  const { onSubmit, submitButtonText, submittingButtonText, isLoading } = props
 
   const { unknownError } = useStringContext()
 
@@ -321,9 +333,10 @@ function MyFooter(props: WizardFooterProps) {
                 isDisabled={
                   ((wizardHasValidationError || editorValidationStatus !== EditorValidationStatus.success) &&
                     showWizardValidation) ||
-                  submitting
+                  submitting ||
+                  isLoading
                 }
-                isLoading={submitting}
+                isLoading={submitting || isLoading}
                 type="submit"
               >
                 {!submitButtonText && (submitting ? submittingText : submitText)}
