@@ -182,7 +182,7 @@ export function EditArgoApplicationSet() {
           navigate(NavigationPath.applications)
         } else {
           navigate({
-            pathname: generatePath(NavigationPath.applicationOverview, { name, namespace }),
+            pathname: generatePath(NavigationPath.applicationDetails, { name, namespace }),
             search: argoAppSetQueryString,
           })
         }
@@ -207,7 +207,7 @@ export function EditArgoApplicationSet() {
               navigate(NavigationPath.applications)
             } else {
               navigate({
-                pathname: generatePath(NavigationPath.applicationOverview, {
+                pathname: generatePath(NavigationPath.applicationDetails, {
                   namespace: applicationSet.metadata?.namespace ?? '',
                   name: applicationSet.metadata?.name ?? '',
                 }),
