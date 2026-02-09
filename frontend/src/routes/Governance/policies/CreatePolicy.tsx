@@ -72,26 +72,36 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
   )
   const { cancelForm, submitForm } = useContext(LostChangesContext)
   const [createdPolicy, setCreatedPolicy] = useState<IResource>()
+
   // Before move to PolicyDetailPage,
   // Wait until "policies" are updated
   useEffect(() => {
     if (createdPolicy) {
-      const found = policies.find(
+      const foundPolicy = policies.find(
         (policy: Policy) =>
           policy.metadata.namespace === createdPolicy.metadata?.namespace &&
           policy.metadata.name === createdPolicy.metadata?.name
       )
 
-      if (found) {
+      if (foundPolicy) {
+        toast.addAlert({
+          title: t('Policy created'),
+          message: t('{{name}} was successfully created.', {
+            name: foundPolicy.metadata?.name,
+          }),
+          type: 'success',
+          autoClose: true,
+        })
+        submitForm()
         navigate(
           generatePath(NavigationPath.policyDetails, {
-            namespace: createdPolicy.metadata?.namespace ?? '',
-            name: createdPolicy.metadata?.name ?? '',
+            namespace: foundPolicy.metadata?.namespace ?? '',
+            name: foundPolicy.metadata?.name ?? '',
           })
         )
       }
     }
-  }, [policies, createdPolicy, navigate])
+  }, [policies, createdPolicy, navigate, toast, t, submitForm])
 
   return (
     <PolicyWizard
@@ -110,27 +120,22 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
         cancelForm()
         navigate(NavigationPath.policies)
       }}
-      onSubmit={(data) => {
-        const resources = data as IResource[]
-        return reconcileResources(resources, []).then(() => {
-          const policy = resources.find((resource) => resource.kind === PolicyKind)
-          if (policy) {
+      onSubmit={(data) =>
+        reconcileResources(data as IResource[], [])
+          .then(() => setCreatedPolicy(data as IResource))
+          .catch((err) => {
+            cancelForm()
             toast.addAlert({
-              title: t('Policy created'),
-              message: t('{{name}} was successfully created.', {
-                name: policy.metadata?.name,
+              title: t('Failed to create Policy'),
+              message: t('Reason: {{reason}}. Error: {{error}}.', {
+                reason: err.reason,
+                error: err.message,
               }),
-              type: 'success',
+              type: 'danger',
               autoClose: true,
             })
-            submitForm()
-
-            return new Promise(() => {
-              setCreatedPolicy(policy)
-            })
-          }
-        })
-      }}
+          })
+      }
     />
   )
 }
