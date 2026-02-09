@@ -2,6 +2,7 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "baseBranchPatterns": [
     "main",
+    "release-2.16",
     "release-2.15",
     "release-2.14",
     "release-2.13",
