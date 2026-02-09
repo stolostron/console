@@ -5,7 +5,14 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { namespacesState } from '../../atoms'
-import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../lib/nock-util'
+import {
+  nockCreate,
+  nockCreateError,
+  nockGet,
+  nockIgnoreApiPaths,
+  nockIgnoreRBAC,
+  nockPatch,
+} from '../../lib/nock-util'
 import {
   clearByTestId,
   clickByPlaceholderText,
@@ -19,9 +26,10 @@ import {
 } from '../../lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
 import { createProviderConnection, mockNamespaces } from '../../test-helpers/createProviderConnection'
-import { Provider } from '../../ui-components'
-import { CreateCredentialsFormPage } from './CredentialsForm'
+import { Provider, AcmToastContext } from '../../ui-components'
+import { CreateCredentialsFormPage, ViewEditCredentialsFormPage } from './CredentialsForm'
 import { CredentialsType } from './CredentialsType'
+import { Route, Routes } from 'react-router-dom-v5-compat'
 
 describe('add credentials page', () => {
   beforeEach(() => {
@@ -469,6 +477,132 @@ describe('add credentials page', () => {
 
     await clickByText('Next')
     await waitForText('This is a required field.', true)
+  })
+
+  describe('error catching', () => {
+    it('should show error toast when createResource fails and not rethrow', async () => {
+      const mockAddAlert = jest.fn()
+      const toastContext = {
+        addAlert: mockAddAlert,
+        removeAlert: jest.fn(),
+        activeAlerts: [],
+        alertInfos: [],
+        removeVisibleAlert: jest.fn(),
+        clearAlerts: jest.fn(),
+      }
+      const ComponentWithToast = (props: { credentialsType: CredentialsType }) => (
+        <AcmToastContext.Provider value={toastContext as any}>
+          <RecoilRoot initializeState={(snapshot) => snapshot.set(namespacesState, mockNamespaces)}>
+            <MemoryRouter
+              initialEntries={[`${NavigationPath.addCredentials}?credentialsType=${props.credentialsType}`]}
+            >
+              <CreateCredentialsFormPage credentialsType={props.credentialsType} />
+            </MemoryRouter>
+          </RecoilRoot>
+        </AcmToastContext.Provider>
+      )
+
+      const providerConnection = createProviderConnection('ans', {
+        host: 'https://ansiblehost.com',
+        token: 'ansibleToken',
+      })
+      nockCreateError(providerConnection, new Error('Create failed'))
+
+      render(<ComponentWithToast credentialsType={Provider.ansible} />)
+
+      await typeByTestId('credentialsName', providerConnection.metadata.name!)
+      await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
+      await clickByText('Next')
+      await typeByTestId('ansibleHost', providerConnection.stringData?.host!)
+      await typeByTestId('ansibleToken', providerConnection.stringData?.token!)
+      await clickByText('Next')
+      await clickByText('Add')
+
+      await waitFor(() => {
+        expect(mockAddAlert).toHaveBeenCalledWith(
+          expect.objectContaining({
+            title: 'Failed to create Credentials',
+            type: 'danger',
+            autoClose: true,
+          })
+        )
+      })
+      expect(mockAddAlert).toHaveBeenCalledTimes(1)
+      const alertCall = mockAddAlert.mock.calls[0][0]
+      expect(alertCall.message).toBeDefined()
+      expect(String(alertCall.message)).toMatch(/Create failed|Reason|Error/i)
+    })
+
+    it('should show error toast when patchResource fails and not rethrow', async () => {
+      const mockAddAlert = jest.fn()
+      const toastContext = {
+        addAlert: mockAddAlert,
+        removeAlert: jest.fn(),
+        activeAlerts: [],
+        alertInfos: [],
+        removeVisibleAlert: jest.fn(),
+        clearAlerts: jest.fn(),
+      }
+      const providerConnection = createProviderConnection('ans', {
+        host: 'https://ansiblehost.com',
+        token: 'ansibleToken',
+      })
+      const editPath = `/multicloud/credentials/edit/${providerConnection.metadata.namespace}/${providerConnection.metadata.name}`
+
+      nockGet(
+        {
+          apiVersion: 'v1',
+          kind: 'Secret',
+          metadata: {
+            name: providerConnection.metadata.name,
+            namespace: providerConnection.metadata.namespace,
+          },
+        },
+        providerConnection
+      )
+
+      // Build the same patch body the form sends so nock matches the PATCH request
+      const data: Record<string, string> = {}
+      const stringData = providerConnection.stringData ?? {}
+      ;(Object.keys(stringData) as (keyof typeof stringData)[]).forEach((key) => {
+        const value = stringData[key]
+        if (value) {
+          data[key as string] = Buffer.from(value, 'ascii').toString('base64')
+        }
+      })
+      const patchBody = [{ op: 'replace' as const, path: '/data', value: data }]
+      nockPatch(providerConnection, patchBody, undefined, 500)
+
+      const ComponentWithToast = () => (
+        <AcmToastContext.Provider value={toastContext as any}>
+          <RecoilRoot initializeState={(snapshot) => snapshot.set(namespacesState, mockNamespaces)}>
+            <MemoryRouter initialEntries={[editPath]}>
+              <Routes>
+                <Route path={NavigationPath.editCredentials} element={<ViewEditCredentialsFormPage />} />
+              </Routes>
+            </MemoryRouter>
+          </RecoilRoot>
+        </AcmToastContext.Provider>
+      )
+
+      render(<ComponentWithToast />)
+      await waitForText('Basic information')
+      await clickByText('Save')
+
+      await waitFor(() => {
+        expect(mockAddAlert).toHaveBeenCalledWith(
+          expect.objectContaining({
+            title: 'Failed to update Credentials',
+            type: 'danger',
+            autoClose: true,
+          })
+        )
+      })
+      expect(mockAddAlert).toHaveBeenCalledTimes(1)
+      const alertCall = mockAddAlert.mock.calls[0][0]
+      expect(alertCall.message).toBeDefined()
+      expect(String(alertCall.message)).toMatch(/Reason|Error|Conflict|500|Forbidden/i)
+    })
   })
 
   it('should create kubevirt (Red Hat Virtualization) credentials without external infra', async () => {
