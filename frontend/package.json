@@ -93,7 +93,7 @@
     "react-error-boundary": "3.1.4",
     "react-monaco-editor": "^0.51.0",
     "screenfull": "^6.0.2",
-    "semver": "^7.6.3",
+    "semver": "^7.7.4",
     "set-value": "^4.1.0",
     "string-similarity": "4.0.4",
     "svg.js": "2.7.1",
