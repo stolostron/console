@@ -11,6 +11,7 @@ export type WizardPageProps = {
   breadcrumb?: { text: string; to?: string }[]
   yaml?: boolean
   yamlEditor?: () => ReactNode
+  isLoading?: boolean
 } & WizardProps
 
 function getWizardYamlEditor() {
