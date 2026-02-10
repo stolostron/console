@@ -2,4 +2,4 @@
 
 export const ManagedByConsoleLabelKey = 'open-cluster-management.io/managed-by'
 export const ManagedByConsoleLabelValue = 'console'
-export const ManagedByConsoleLabel: Record<string, string> = { ManagedByConsoleLabelKey: ManagedByConsoleLabelValue }
+export const ManagedByConsoleLabel: Record<string, string> = { [ManagedByConsoleLabelKey]: ManagedByConsoleLabelValue }
