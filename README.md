@@ -32,6 +32,7 @@ release-2.15 → backplane-2.10
 release-2.14 → backplane-2.9
 release-2.13 → backplane-2.8
 release-2.12 → backplane-2.7
+release-2.11 → backplane-2.6
 ```
 
 ## Core Dependencies - Release Branch Mapping
