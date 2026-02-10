@@ -80,9 +80,6 @@ export function ViewDocumentationLink(props: { doclink: string }): JSX.Element {
   return (
     <Content>
       <AcmButton
-        onClick={(e) => {
-          e.stopPropagation()
-        }}
         variant="link"
         component="a"
         href={props.doclink}
