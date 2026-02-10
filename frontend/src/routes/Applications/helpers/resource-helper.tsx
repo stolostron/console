@@ -91,12 +91,13 @@ export const getArgoClusterList = (
             resource.spec.destination,
             managedClusters,
             resource.status?.cluster ?? '',
-            localCluster?.name ?? ''
+            localCluster?.name ?? '',
+            []
           )
         )
       } else {
         clusterSet.add(
-          getArgoDestinationCluster(resource.spec.destination, managedClusters, undefined, localCluster?.name ?? '')
+          getArgoDestinationCluster(resource.spec.destination, managedClusters, undefined, localCluster?.name ?? '', [])
         )
       }
     }

@@ -24,6 +24,7 @@ import type {
   OCPFluxApplicationModel,
 } from '../types'
 import { ToolbarControl } from '../topology/components/TopologyToolbar'
+import { Service } from '../../../../../resources'
 
 /**
  * Main function to get topology data for different application types.
@@ -42,7 +43,8 @@ export const getTopology = async (
   managedClusters: ManagedCluster[],
   localHubName: string,
   relatedResources: Record<string, any>,
-  argoData: ArgoData
+  argoData: ArgoData,
+  services: Service[]
 ): Promise<Topology | ExtendedTopology | undefined> => {
   let topology: Topology | ExtendedTopology | undefined
   if (application) {
@@ -53,7 +55,8 @@ export const getTopology = async (
         application as unknown as ArgoApplicationTopologyData,
         argoData,
         managedClusters,
-        localHubName
+        localHubName,
+        services
       )
     } else if (application.isAppSet) {
       // Generate topology for ApplicationSets

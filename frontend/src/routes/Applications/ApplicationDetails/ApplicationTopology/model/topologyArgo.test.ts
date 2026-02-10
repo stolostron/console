@@ -20,11 +20,13 @@ const mockToolbarControl: ToolbarControl = {
 }
 
 it('getArgoTopology success scenario', () => {
-  expect(getArgoTopology(mockToolbarControl, application, argoData, managedClusters, 'local-cluster')).toEqual(result1)
+  expect(getArgoTopology(mockToolbarControl, application, argoData, managedClusters, 'local-cluster', [])).toEqual(
+    result1
+  )
 })
 
 it('getArgoTopology success scenario', () => {
-  expect(getArgoTopology(mockToolbarControl, application2, argoData2, managedClusters, 'local-cluster')).toEqual(
+  expect(getArgoTopology(mockToolbarControl, application2, argoData2, managedClusters, 'local-cluster', [])).toEqual(
     result2
   )
 })
