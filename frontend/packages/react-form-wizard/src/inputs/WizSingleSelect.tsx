@@ -106,6 +106,7 @@ export function WizSingleSelect(props: WizSingleSelectProps) {
               )}
               selected={value}
               onSelect={(_event, value) => onSelect(value?.toString() ?? '')}
+              isScrollable
             >
               <SelectListOptions
                 value={value}

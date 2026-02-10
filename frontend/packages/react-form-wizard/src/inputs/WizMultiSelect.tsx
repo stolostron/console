@@ -123,6 +123,7 @@ export function WizMultiSelect(props: WizMultiSelectProps) {
           )}
           selected={value}
           onSelect={(_event, value) => onSelect(value?.toString() ?? '')}
+          isScrollable
         >
           <SelectListOptions
             value={value}
