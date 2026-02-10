@@ -655,10 +655,9 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
                           href={DOC_LINKS.ENABLE_OBSERVABILITY}
                           target="_blank"
                           style={{ padding: 0 }}
-                          icon={<ExternalLinkAltIcon />}
-                          iconPosition="right"
                         >
-                          {t('View documentation')}
+                          {t('View documentation')}{' '}
+                          <ExternalLinkAltIcon />
                         </AcmButton>
                       </CardBody>
                     </Card>
