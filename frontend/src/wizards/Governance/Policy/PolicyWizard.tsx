@@ -71,6 +71,7 @@ export function PolicyWizard(props: {
   gitSource?: string
   onSubmit: WizardSubmit
   onCancel: WizardCancel
+  isSaving?: boolean
 }) {
   const { t } = useTranslation()
   const translatedWizardStrings = useWizardStrings({
@@ -99,6 +100,7 @@ export function PolicyWizard(props: {
       onCancel={props.onCancel}
       editMode={props.editMode}
       defaultData={defaultData}
+      isLoading={props.isSaving}
     >
       <Step label={t('Details')} id="details">
         {props.editMode !== EditMode.Edit && (

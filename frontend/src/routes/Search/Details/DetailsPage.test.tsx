@@ -2,7 +2,8 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 
-import { render, screen, waitFor } from '@testing-library/react'
+import React from 'react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { isFineGrainedRbacEnabledState, settingsState } from '../../../atoms'
@@ -11,6 +12,31 @@ import { waitForNocks } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import Search from '../Search'
 import { getResourceParams } from './DetailsPage'
+
+let capturedActionsDropdownProps: Record<string, unknown> | null = null
+let onOpenChangeCalledFromEscape = false
+jest.mock('@patternfly/react-core', () => {
+  const actual = jest.requireActual('@patternfly/react-core')
+  return {
+    ...actual,
+    Dropdown: (props: Record<string, unknown>) => {
+      capturedActionsDropdownProps = props
+      const toggle = typeof props.toggle === 'function' ? props.toggle(React.createRef()) : props.toggle
+      const onKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Escape' && typeof props.onOpenChange === 'function') {
+          onOpenChangeCalledFromEscape = true
+          ;(props.onOpenChange as (open: boolean) => void)(false)
+        }
+      }
+      return React.createElement(
+        'div',
+        { 'data-testid': 'actions-dropdown-mock', onKeyDown },
+        toggle,
+        props.isOpen ? (props.children as React.ReactNode) : null
+      )
+    },
+  }
+})
 
 const mockLocalClusterPod = {
   kind: 'Pod',
@@ -69,6 +95,7 @@ describe('DetailsPage', () => {
   })
   afterEach(() => {
     jest.resetAllMocks()
+    onOpenChangeCalledFromEscape = false
     Object.defineProperty(window, 'location', {
       value: originalLocation,
       writable: true,
@@ -137,6 +164,18 @@ describe('DetailsPage', () => {
         })
       ).toBeTruthy()
     )
+
+    // Regression: Actions Dropdown must receive onOpenChange so it stays in sync when closed (e.g. click outside)
+    expect(capturedActionsDropdownProps).not.toBeNull()
+    expect(typeof capturedActionsDropdownProps?.onOpenChange).toBe('function')
+    expect(() => (capturedActionsDropdownProps?.onOpenChange as (open: boolean) => void)(false)).not.toThrow()
+
+    // Regression: when ESC is pressed, onOpenChange should be called so the dropdown closes
+    onOpenChangeCalledFromEscape = false
+    const actionsButton = screen.getByRole('button', { name: /actions/i })
+    fireEvent.click(actionsButton)
+    fireEvent.keyDown(actionsButton, { key: 'Escape' })
+    expect(onOpenChangeCalledFromEscape).toBe(true)
   })
 
   test('Should return the url search params correctly', () => {

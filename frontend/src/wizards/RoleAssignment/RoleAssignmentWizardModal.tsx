@@ -345,7 +345,9 @@ export const RoleAssignmentWizardModal = ({
       id="scope-cluster-set-granularity"
       isHidden={formData.scopeType !== 'Select cluster sets' || hasNoClusterSets}
       footer={{
-        isNextDisabled: formData.clustersetsAccessLevel === 'Project role assignment' && hasNoClusterSets,
+        isNextDisabled:
+          formData.clustersetsAccessLevel === 'Project role assignment' &&
+          (!formData.scope.namespaces || formData.scope.namespaces.length === 0),
       }}
     >
       <ClusterSetGranularityWizardStep
@@ -362,6 +364,11 @@ export const RoleAssignmentWizardModal = ({
       name={t('Define cluster granularity')}
       id="scope-cluster-granularity"
       isHidden={formData.scopeType !== 'Select clusters' || hasNoClusters}
+      footer={{
+        isNextDisabled:
+          formData.clustersAccessLevel === 'Project role assignment' &&
+          (!formData.scope.namespaces || formData.scope.namespaces.length === 0),
+      }}
     >
       <ClusterGranularityStepContent
         selectedClusters={selectedClusters}

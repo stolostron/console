@@ -160,6 +160,7 @@ const mockClusters: Cluster[] = [
     uid: 'cluster-1-uid',
     status: ClusterStatus.ready,
     provider: Provider.aws,
+    clusterSet: 'namespace-1',
     distribution: {
       displayVersion: 'OpenShift 4.12.0',
       isManagedOpenShift: false,
@@ -216,6 +217,7 @@ const mockClusters: Cluster[] = [
     uid: 'cluster-2-uid',
     status: ClusterStatus.ready,
     provider: Provider.gcp,
+    clusterSet: 'namespace-2',
     distribution: {
       displayVersion: 'OpenShift 4.13.0',
       isManagedOpenShift: false,
@@ -272,6 +274,7 @@ const mockClusters: Cluster[] = [
     uid: 'cluster-3-uid',
     status: ClusterStatus.offline,
     provider: Provider.azure,
+    clusterSet: 'namespace-3',
     distribution: {
       displayVersion: 'OpenShift 4.11.0',
       isManagedOpenShift: false,
@@ -415,10 +418,16 @@ describe('ClusterList', () => {
       // Test that the component renders successfully with the expected hiddenColumns configuration
       // The hiddenColumns should include translation keys for:
       // - table.namespace
-      // - Add-ons
+      // - table.provider
       // - table.controlplane
+      // - table.distribution
       // - table.labels
+      // - Add-ons
       // - table.creationDate
+      // Visible columns:
+      // - table.name (cluster name)
+      // - table.status
+      // - table.clusterSet
 
       renderWithProviders(<ClusterList onSelectCluster={mockOnSelectCluster} />)
 
@@ -437,6 +446,7 @@ describe('ClusterList', () => {
         {
           ...mockClusters[0],
           namespace: undefined,
+          clusterSet: undefined,
         },
       ]
 

@@ -1,18 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useData, useItem, useEditorValidationStatus, EditorValidationStatus } from '@patternfly-labs/react-form-wizard'
-import { PolicyWizard } from '../../../wizards/Governance/Policy/PolicyWizard'
-import { AcmToastContext } from '../../../ui-components'
+import { EditorValidationStatus, useData, useEditorValidationStatus, useItem } from '@patternfly-labs/react-form-wizard'
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { LostChangesContext } from '../../../components/LostChanges'
 import { SyncEditor, ValidationStatus } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { IResource, Policy, PolicyKind } from '../../../resources'
+import { IResource, Policy } from '../../../resources'
 import { reconcileResources } from '../../../resources/utils'
-import schema from './schema.json'
-import { LostChangesContext } from '../../../components/LostChanges'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { AcmToastContext } from '../../../ui-components'
 import { localeCompare } from '../../../utils/localeCompare'
+import { PolicyWizard } from '../../../wizards/Governance/Policy/PolicyWizard'
+import schema from './schema.json'
 
 export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
@@ -72,26 +72,38 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
   )
   const { cancelForm, submitForm } = useContext(LostChangesContext)
   const [createdPolicy, setCreatedPolicy] = useState<IResource>()
+  const [isSaving, setIsSaving] = useState(false)
+
   // Before move to PolicyDetailPage,
   // Wait until "policies" are updated
   useEffect(() => {
     if (createdPolicy) {
-      const found = policies.find(
+      const foundPolicy = policies.find(
         (policy: Policy) =>
           policy.metadata.namespace === createdPolicy.metadata?.namespace &&
           policy.metadata.name === createdPolicy.metadata?.name
       )
-
-      if (found) {
+      if (foundPolicy) {
+        toast.addAlert({
+          title: t('Policy created'),
+          message: t('{{name}} was successfully created.', {
+            name: foundPolicy.metadata?.name,
+          }),
+          type: 'success',
+          autoClose: true,
+        })
         navigate(
           generatePath(NavigationPath.policyDetails, {
-            namespace: createdPolicy.metadata?.namespace ?? '',
-            name: createdPolicy.metadata?.name ?? '',
+            namespace: foundPolicy.metadata?.namespace ?? '',
+            name: foundPolicy.metadata?.name ?? '',
           })
         )
+        setIsSaving(false)
+        submitForm()
+        setCreatedPolicy(undefined)
       }
     }
-  }, [policies, createdPolicy, navigate])
+  }, [policies, createdPolicy, navigate, toast, t, submitForm])
 
   return (
     <PolicyWizard
@@ -111,26 +123,25 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
         navigate(NavigationPath.policies)
       }}
       onSubmit={(data) => {
+        setIsSaving(true)
         const resources = data as IResource[]
-        return reconcileResources(resources, []).then(() => {
-          const policy = resources.find((resource) => resource.kind === PolicyKind)
-          if (policy) {
+        return reconcileResources(resources, [])
+          .then(() => setCreatedPolicy(resources[0]))
+          .catch((err) => {
+            cancelForm()
             toast.addAlert({
-              title: t('Policy created'),
-              message: t('{{name}} was successfully created.', {
-                name: policy.metadata?.name,
+              title: t('Failed to create Policy'),
+              message: t('Reason: {{reason}}. Error: {{error}}.', {
+                reason: err.reason,
+                error: err.message,
               }),
-              type: 'success',
+              type: 'danger',
               autoClose: true,
             })
-            submitForm()
-
-            return new Promise(() => {
-              setCreatedPolicy(policy)
-            })
-          }
-        })
+            setIsSaving(false)
+          })
       }}
+      isSaving={isSaving}
     />
   )
 }

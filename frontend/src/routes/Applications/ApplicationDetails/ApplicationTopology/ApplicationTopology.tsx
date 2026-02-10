@@ -78,6 +78,12 @@ export function ApplicationTopologyPageContent() {
     selectedClusterList: [],
   })
 
+  const [startup, setStartup] = useState(false)
+
+  useEffect(() => {
+    setStartup(true)
+  }, [])
+
   const handleErrorMsg = () => {
     //show toast message in parent container
   }
@@ -129,7 +135,7 @@ export function ApplicationTopologyPageContent() {
       setElements(cloneDeep(getDiagramElements(cloneDeep(topology), statuses, canUpdateStatuses, t)))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refreshTime])
+  }, [startup, refreshTime])
 
   return (
     <>

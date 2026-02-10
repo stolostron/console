@@ -1539,6 +1539,7 @@
   "Failed to create common project {{name}} for the cluster {{cluster}}. Error: {{error}}.": "Failed to create common project {{name}} for the cluster {{cluster}}. Error: {{error}}.",
   "Failed to create common projects. Error: {{errorCount}}. Success: {{successCount}}.": "Failed to create common projects. Error: {{errorCount}}. Success: {{successCount}}.",
   "Failed to create Credentials": "Failed to create Credentials",
+  "Failed to create Policy": "Failed to create Policy",
   "Failed to create pre-authorized user": "Failed to create pre-authorized user",
   "Failed to create pre-authorized user {{name}}. Please try again.": "Failed to create pre-authorized user {{name}}. Please try again.",
   "Failed to fetch kubeconfig": "Failed to fetch kubeconfig",
