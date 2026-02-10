@@ -115,7 +115,7 @@ export const RoleAssignmentWizardModal = ({
       selectedClusters: clusters,
       scope: {
         ...prev.scope,
-        namespaces: clusters.length === 0 ? [] : prev.scope.namespaces,
+        namespaces: [],
       },
     }))
   }, [])
