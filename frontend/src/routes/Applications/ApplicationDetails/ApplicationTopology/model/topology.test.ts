@@ -179,7 +179,8 @@ describe('topology', () => {
         argoApp,
         mockArgoData,
         mockManagedClusters,
-        'local-cluster'
+        'local-cluster',
+        []
       )
       expect(result).toBeDefined()
       expect(result?.hubClusterName).toBe('local-cluster')
