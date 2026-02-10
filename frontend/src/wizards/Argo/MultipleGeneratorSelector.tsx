@@ -447,13 +447,18 @@ export function CrossGeneratorSync(props: CrossGeneratorSyncProps) {
       }
     }
 
+    const isInitialSync = prevGenState.current.hasGitGen === undefined && prevGenState.current.hasListGen === undefined
+
     // handle generators that don't affect template
     if (!hasGitGen && !hasListGen) {
       if (templateName !== `${appName}-{{name}}`) {
         fix(appSet, TEMPLATE_NAME_PATH, `${appName}-{{name}}`)
       }
       // Only reset destination when hasGitGen or hasListGen have changed
-      if (prevGenState.current.hasGitGen !== hasGitGen || prevGenState.current.hasListGen !== hasListGen) {
+      if (
+        !isInitialSync &&
+        (prevGenState.current.hasGitGen !== hasGitGen || prevGenState.current.hasListGen !== hasListGen)
+      ) {
         fix(appSet, DESTINATION_NAME_PATH_NAMESPACE, '')
         fix(appSet, DESTINATION_NAME_PATH_SERVER, SERVER)
       }
