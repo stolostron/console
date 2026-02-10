@@ -22,6 +22,7 @@ export interface RoleAssignmentWizardFormData extends RoleAssignmentFormData {
   selectedClusters?: any[]
   clustersetsAccessLevel?: 'Cluster set role assignment' | 'Project role assignment'
   clustersAccessLevel?: 'Cluster role assignment' | 'Project role assignment'
+  isChangingSubject?: boolean
 }
 
 export interface RoleAssignmentWizardModalProps {

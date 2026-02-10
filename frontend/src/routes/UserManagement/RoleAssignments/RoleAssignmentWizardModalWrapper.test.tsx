@@ -1,18 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { RecoilRoot } from 'recoil'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
-import { RoleAssignmentWizardModalWrapper } from './RoleAssignmentWizardModalWrapper'
-import { AcmToastContext } from '../../../ui-components'
+import { RecoilRoot } from 'recoil'
 import { UserKind } from '../../../resources'
+import { FlattenedRoleAssignment } from '../../../resources/clients/model/flattened-role-assignment'
 import {
   addRoleAssignment,
-  findRoleAssignments,
   deleteRoleAssignment,
+  findRoleAssignments,
 } from '../../../resources/clients/multicluster-role-assignment-client'
-import { FlattenedRoleAssignment } from '../../../resources/clients/model/flattened-role-assignment'
 import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
+import { AcmToastContext } from '../../../ui-components'
+import { RoleAssignmentWizardModalWrapper } from './RoleAssignmentWizardModalWrapper'
 
 jest.mock('../../../resources/clients/multicluster-role-assignment-client', () => ({
   addRoleAssignment: jest.fn(),
@@ -452,10 +452,11 @@ describe('RoleAssignmentWizardModalWrapper', () => {
           subject: { kind: UserKind, user: ['test-user'] },
           scope: { kind: 'specific', clusterNames: ['cluster1'] },
           roles: ['admin'],
+          isChangingSubject: true,
         })
       })
 
-      // Assert - deleteRoleAssignment should be called AFTER saveAllRoleAssignments succeeds
+      // Assert - deleteRoleAssignment should be called AFTER saveAllRoleAssignments succeeds (only when isChangingSubject)
       await waitFor(
         () => {
           expect(mockAddRoleAssignment).toHaveBeenCalled()
@@ -514,10 +515,11 @@ describe('RoleAssignmentWizardModalWrapper', () => {
           subject: { kind: UserKind, user: ['test-user'] },
           scope: { kind: 'specific', clusterNames: ['cluster1'] },
           roles: ['admin'],
+          isChangingSubject: true,
         })
       })
 
-      // Assert - deleteRoleAssignment should be called after saveAllRoleAssignments succeeds
+      // Assert - deleteRoleAssignment should be called after saveAllRoleAssignments succeeds (only when isChangingSubject)
       await waitFor(
         () => {
           expect(mockAddRoleAssignment).toHaveBeenCalled()
@@ -575,6 +577,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
           subject: { kind: UserKind, user: ['test-user'] },
           scope: { kind: 'specific', clusterNames: ['cluster1'] },
           roles: ['admin'],
+          isChangingSubject: true,
         })
       })
 
@@ -585,6 +588,56 @@ describe('RoleAssignmentWizardModalWrapper', () => {
         },
         { timeout: 3000 }
       )
+    })
+
+    it('should not call deleteRoleAssignment when editing but isChangingSubject is false', async () => {
+      mockDeleteRoleAssignment.mockReturnValue({
+        promise: Promise.resolve({}),
+        abort: jest.fn(),
+      } as any)
+
+      const savedRoleAssignment = { name: 'saved-role-assignment', clusterRole: 'admin' }
+      mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment as never)
+
+      mockUseRecoilValue.mockReturnValue([
+        {
+          metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
+          spec: {
+            subject: { name: 'test-user', kind: 'User' },
+            roleAssignments: [{ name: 'saved-role-assignment' }],
+          },
+        },
+      ])
+
+      render(
+        <TestWrapper>
+          <RoleAssignmentWizardModalWrapper
+            close={mockClose}
+            isOpen={true}
+            editingRoleAssignment={mockEditingRoleAssignment}
+          />
+        </TestWrapper>
+      )
+
+      await waitFor(() => expect(capturedOnSubmit).not.toBeNull())
+
+      await act(async () => {
+        await capturedOnSubmit({
+          subject: { kind: UserKind, user: ['test-user'] },
+          scope: { kind: 'specific', clusterNames: ['cluster1'] },
+          roles: ['admin'],
+          isChangingSubject: false,
+        })
+      })
+
+      await waitFor(
+        () => {
+          expect(mockAddRoleAssignment).toHaveBeenCalled()
+          expect(mockClose).toHaveBeenCalled()
+        },
+        { timeout: 3000 }
+      )
+      expect(mockDeleteRoleAssignment).not.toHaveBeenCalled()
     })
 
     it('should not delete when not in editing mode', async () => {
@@ -900,6 +953,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
           subject: { kind: UserKind, user: ['test-user'] },
           scope: { kind: 'specific', clusterNames: ['cluster1'] },
           roles: ['admin'],
+          isChangingSubject: true,
         })
       })
 
@@ -969,6 +1023,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
           subject: { kind: UserKind, user: ['test-user'] },
           scope: { kind: 'specific', clusterNames: ['cluster1'] },
           roles: ['admin'],
+          isChangingSubject: true,
         })
       })
 
@@ -1024,6 +1079,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
           subject: { kind: UserKind, user: ['test-user'] },
           scope: { kind: 'specific', clusterNames: ['cluster1'] },
           roles: ['admin'],
+          isChangingSubject: true,
         })
       })
 
@@ -1083,6 +1139,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
           subject: { kind: UserKind, user: ['test-user'] },
           scope: { kind: 'specific', clusterNames: ['cluster1'] },
           roles: ['admin'],
+          isChangingSubject: true,
         })
       })
 
@@ -1194,12 +1251,13 @@ describe('RoleAssignmentWizardModalWrapper', () => {
 
       await waitFor(() => expect(capturedOnSubmit).not.toBeNull())
 
-      // Act - submit the form
+      // Act - submit the form (with isChangingSubject: true so delete is called)
       await act(async () => {
         await capturedOnSubmit({
           subject: { kind: UserKind, user: ['test-user'] },
           scope: { kind: 'specific', clusterNames: ['cluster1'] },
           roles: ['admin'],
+          isChangingSubject: true,
         })
       })
 
@@ -1267,12 +1325,13 @@ describe('RoleAssignmentWizardModalWrapper', () => {
 
       await waitFor(() => expect(capturedOnSubmit).not.toBeNull())
 
-      // Act - submit the form
+      // Act - submit the form (with isChangingSubject: true so delete is called)
       await act(async () => {
         await capturedOnSubmit({
           subject: { kind: UserKind, user: ['test-user'] },
           scope: { kind: 'specific', clusterNames: ['cluster1'] },
           roles: ['admin'],
+          isChangingSubject: true,
         })
       })
 
@@ -1391,6 +1450,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
           subject: { kind: UserKind, user: ['test-user'] },
           scope: { kind: 'specific', clusterNames: ['cluster1'] },
           roles: ['admin'],
+          isChangingSubject: true,
         })
       })
 
@@ -1420,6 +1480,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
           subject: { kind: UserKind, user: ['test-user'] },
           scope: { kind: 'specific', clusterNames: ['cluster1'] },
           roles: ['admin'],
+          isChangingSubject: true,
         })
       })
 
@@ -1472,12 +1533,13 @@ describe('RoleAssignmentWizardModalWrapper', () => {
 
       await waitFor(() => expect(capturedOnSubmit).not.toBeNull())
 
-      // Act - submit the form with multiple roles
+      // Act - submit the form with multiple roles (with isChangingSubject: true so delete is called)
       await act(async () => {
         await capturedOnSubmit({
           subject: { kind: UserKind, user: ['test-user'] },
           scope: { kind: 'specific', clusterNames: ['cluster1'] },
           roles: ['admin', 'viewer'],
+          isChangingSubject: true,
         })
       })
 

@@ -28,6 +28,7 @@ export const RoleAssignmentWizardModalWrapper = ({
 }: RoleAssignmentWizardModalWrapperProps) => {
   const [savedRoleAssignments, setSavedRoleAssignments] = useState<RoleAssignment[]>([])
   const [isSaving, setIsSaving] = useState<boolean>(false)
+  const [isChangingSubject, setIsChangingSubject] = useState<boolean>()
 
   const { multiclusterRoleAssignmentState } = useSharedAtoms()
   const multiClusterRoleAssignments = useRecoilValue(multiclusterRoleAssignmentState)
@@ -48,9 +49,9 @@ export const RoleAssignmentWizardModalWrapper = ({
         allRoleAssignmentNames.has(savedRoleAssignment.name)
       )
       if (allSaved) {
-        if (editingRoleAssignment) {
+        if (editingRoleAssignment && isChangingSubject) {
           deleteRoleAssignment(editingRoleAssignment)
-            .promise.catch((error: any) => {
+            .promise.catch((error: any) =>
               toastContext.addAlert({
                 title: t('Role assignment update failed'),
                 message: t("The role assignment can't be deleted. Error: {{error}}", {
@@ -59,7 +60,7 @@ export const RoleAssignmentWizardModalWrapper = ({
                 type: 'danger',
                 autoClose: true,
               })
-            })
+            )
             .finally(() => {
               setSavedRoleAssignments([])
               setIsSaving(false)
@@ -72,14 +73,22 @@ export const RoleAssignmentWizardModalWrapper = ({
         }
       }
     }
-  }, [savedRoleAssignments, multiClusterRoleAssignments, close, editingRoleAssignment, toastContext, t])
+  }, [
+    savedRoleAssignments,
+    multiClusterRoleAssignments,
+    close,
+    editingRoleAssignment,
+    toastContext,
+    t,
+    isChangingSubject,
+  ])
 
-  const saveFromWizard = async (data: RoleAssignmentWizardFormData) => {
+  const saveFromWizard = async (roleAssignmentWizardFormData: RoleAssignmentWizardFormData) => {
     setIsSaving(true)
 
     const allClusterNames = [...new Set(placementClusters.flatMap((placementCluster) => placementCluster.clusters))]
 
-    const roleAssignmentsToSave = wizardDataToRoleAssignmentToSave(data, allClusterNames)
+    const roleAssignmentsToSave = wizardDataToRoleAssignmentToSave(roleAssignmentWizardFormData, allClusterNames)
 
     const filteredMultiClusterRoleAssignments = editingRoleAssignment
       ? multiClusterRoleAssignments.map((mcra) =>
@@ -98,7 +107,7 @@ export const RoleAssignmentWizardModalWrapper = ({
 
     const existingBySubjectRole = existingRoleAssignmentsBySubjectRole(
       roleAssignmentsToSave,
-      data.subject.kind,
+      roleAssignmentWizardFormData.subject.kind,
       filteredMultiClusterRoleAssignments,
       placementClusters
     )
@@ -112,7 +121,10 @@ export const RoleAssignmentWizardModalWrapper = ({
       t,
       !!editingRoleAssignment
     )
-      .then((roleAssignments) => setSavedRoleAssignments(roleAssignments))
+      .then((roleAssignments) => {
+        setIsChangingSubject(roleAssignmentWizardFormData.isChangingSubject)
+        setSavedRoleAssignments(roleAssignments)
+      })
       .catch(() => setIsSaving(false))
   }
 
