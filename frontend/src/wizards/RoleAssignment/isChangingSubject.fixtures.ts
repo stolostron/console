@@ -95,7 +95,8 @@ export const isChangingSubjectUserCases: IsChangingSubjectUserCase[] = [
     expected: true,
   },
   {
-    description: 'preselected User but no value, users set → false (value undefined so first part false, kind is User so second part false)',
+    description:
+      'preselected User but no value, users set → false (value undefined so first part false, kind is User so second part false)',
     preselected: { subject: { kind: UserKind } },
     users: ['alice'],
     expected: false,

@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RoleAssignmentWizardModal } from './RoleAssignmentWizardModal'
 import React from 'react'
 import { ManagedClusterSet } from '../../resources'
+import { isChangingSubjectUserCases, isChangingSubjectGroupCases } from './isChangingSubject.fixtures'
 
 let dataContextValue: { update?: (updateFn?: (draft: any) => void) => void } | undefined
 
@@ -1125,5 +1126,109 @@ describe('RoleAssignmentWizardModal - useClustersFromClusterSets Integration', (
         expect(mockUseClustersFromClusterSets).toHaveBeenCalled()
       })
     })
+  })
+
+  describe('isChangingSubject set by handlers (handleSubjectKindChange, handleUserChange, handleGroupChange)', () => {
+    /** Navigate Identities -> Scope -> Roles (select admin) -> Review and click Save */
+    const navigateToReviewAndSubmit = async () => {
+      await waitFor(() => expect(mockIdentitiesList).toHaveBeenCalled())
+      let nextButton = screen.getByRole('button', { name: 'Next' })
+      act(() => nextButton.click())
+      await waitFor(() => expect(mockScopeSelectionStepContent).toHaveBeenCalled())
+      nextButton = screen.getByRole('button', { name: 'Next' })
+      act(() => nextButton.click())
+      await waitFor(() => expect(mockRolesList).toHaveBeenCalled())
+      const selectRoleButton = screen.getByRole('button', { name: 'Select admin role' })
+      act(() => selectRoleButton.click())
+      nextButton = screen.getByRole('button', { name: 'Next' })
+      act(() => nextButton.click())
+      const saveButton = screen.getByRole('button', { name: 'Save' })
+      act(() => saveButton.click())
+    }
+
+    it('sets isChangingSubject true when subject kind changes (preselected User, select Group)', async () => {
+      const onSubmit = jest.fn()
+      const preselected = { subject: { kind: 'User' as const, value: 'alice' } }
+      renderWithRouter(
+        <RoleAssignmentWizardModal
+          {...defaultProps}
+          isOpen={true}
+          isEditing={true}
+          preselected={preselected}
+          onSubmit={onSubmit}
+        />
+      )
+      const identitiesProps = mockIdentitiesList.mock.calls[0]?.[0]
+      act(() => identitiesProps?.onGroupSelect?.({ metadata: { name: 'admins' } }))
+      await navigateToReviewAndSubmit()
+      await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1))
+      expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ isChangingSubject: true }))
+    })
+
+    it('sets isChangingSubject true when subject kind changes (preselected Group, select User)', async () => {
+      const onSubmit = jest.fn()
+      const preselected = { subject: { kind: 'Group' as const, value: 'admins' } }
+      renderWithRouter(
+        <RoleAssignmentWizardModal
+          {...defaultProps}
+          isOpen={true}
+          isEditing={true}
+          preselected={preselected}
+          onSubmit={onSubmit}
+        />
+      )
+      const identitiesProps = mockIdentitiesList.mock.calls[0]?.[0]
+      act(() => identitiesProps?.onUserSelect?.({ metadata: { name: 'alice' } }))
+      await navigateToReviewAndSubmit()
+      await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1))
+      expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ isChangingSubject: true }))
+    })
+
+    it.each(
+      // Single-user only: onUserSelect passes one user, so we cannot simulate "users include multiple with preselected"
+      isChangingSubjectUserCases.filter((c) => c.users.length === 1)
+    )(
+      'handleUserChange: $description',
+      async ({ preselected, users, expected }) => {
+        const onSubmit = jest.fn()
+        renderWithRouter(
+          <RoleAssignmentWizardModal
+            {...defaultProps}
+            isOpen={true}
+            isEditing={true}
+            preselected={preselected}
+            onSubmit={onSubmit}
+          />
+        )
+        const identitiesProps = mockIdentitiesList.mock.calls[0]?.[0]
+        act(() => identitiesProps?.onUserSelect?.({ metadata: { name: users[0] } }))
+        await navigateToReviewAndSubmit()
+        await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1))
+        expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ isChangingSubject: expected }))
+      },
+      15000
+    )
+
+    it.each(isChangingSubjectGroupCases.filter((c) => c.groups.length > 0))(
+      'handleGroupChange: $description',
+      async ({ preselected, groups, expected }) => {
+        const onSubmit = jest.fn()
+        renderWithRouter(
+          <RoleAssignmentWizardModal
+            {...defaultProps}
+            isOpen={true}
+            isEditing={true}
+            preselected={preselected}
+            onSubmit={onSubmit}
+          />
+        )
+        const identitiesProps = mockIdentitiesList.mock.calls[0]?.[0]
+        act(() => identitiesProps?.onGroupSelect?.({ metadata: { name: groups[0] } }))
+        await navigateToReviewAndSubmit()
+        await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1))
+        expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ isChangingSubject: expected }))
+      },
+      15000
+    )
   })
 })
