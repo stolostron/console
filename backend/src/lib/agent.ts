@@ -13,7 +13,9 @@ let defaultAgent: Agent
 export function getDefaultAgent() {
   if (!defaultAgent) {
     defaultAgent = new Agent({
-      ca: getCACertificate(),
+      ca: getCACertificate(() => {
+        defaultAgent = undefined
+      }),
       ...COMMON_AGENT_OPTIONS,
     })
   }
@@ -23,7 +25,12 @@ export function getDefaultAgent() {
 let serviceAgent: Agent
 export function getServiceAgent() {
   if (!serviceAgent) {
-    serviceAgent = new Agent({ ca: getServiceCACertificate(), ...COMMON_AGENT_OPTIONS })
+    serviceAgent = new Agent({
+      ca: getServiceCACertificate(() => {
+        serviceAgent = undefined
+      }),
+      ...COMMON_AGENT_OPTIONS,
+    })
   }
   return serviceAgent
 }
