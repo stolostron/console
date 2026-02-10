@@ -36,9 +36,11 @@ export const ClusterList = ({ onSelectCluster, namespaces, selectedClusters }: C
       areLinksDisplayed={false}
       hiddenColumns={[
         t('table.namespace'),
-        t('Add-ons'),
+        t('table.provider'),
         t('table.controlplane'),
+        t('table.distribution'),
         t('table.labels'),
+        t('Add-ons'),
         t('table.creationDate'),
       ]}
       emptyState={

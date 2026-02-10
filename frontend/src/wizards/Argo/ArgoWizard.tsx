@@ -2,10 +2,8 @@
 
 import {
   EditMode,
-  ItemContext,
   Section,
   Step,
-  Sync,
   useData,
   useEditMode,
   useItem,
@@ -21,7 +19,7 @@ import { Button, Content, ContentVariants, Flex, FlexItem, ToggleGroup, ToggleGr
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { get, set } from 'lodash'
-import { Fragment, ReactNode, useContext, useMemo, useRef, useState } from 'react'
+import { Fragment, ReactNode, useMemo, useRef, useState } from 'react'
 import { CreateCredentialModal } from '../../components/CreateCredentialModal'
 import { GitOpsOperatorAlert } from '../../components/GitOpsOperatorAlert'
 import { useTranslation } from '../../lib/acm-i18next'
@@ -42,9 +40,12 @@ import { ClusterSetMonitor } from './ClusterSetMonitor'
 import { CreateArgoResources } from './CreateArgoResources'
 import { MultipleSourcesSelector } from './MultipleSourcesSelector'
 import { SourceSelector } from './SourceSelector'
-import { MultipleGeneratorSelector, SyncGenerator } from './MultipleGeneratorSelector'
-import { safeGet } from '../../routes/Applications/ApplicationDetails/ApplicationTopology/utils'
-import { findObjectWithKey } from '../../routes/Applications/ApplicationDetails/ApplicationTopology/model/application'
+import {
+  MultipleGeneratorSelector,
+  CrossGeneratorSync,
+  findGeneratorPathWithGenType,
+  ExistingPlacementSelect,
+} from './MultipleGeneratorSelector'
 
 export interface Channel {
   metadata?: {
@@ -241,12 +242,15 @@ export function ArgoWizard(props: ArgoWizardProps) {
   }, [props.applicationSets, sourceHelmChannels])
 
   const [filteredClusterSets, setFilteredClusterSets] = useState<IResource[]>([])
-  const [generatorPath, setGeneratorPath] = useState<string>(() =>
+  const generatorPathRef = useRef<string>(
     get(applicationSet, 'spec.generators.0.matrix') ? 'spec.generators.0.matrix.generators' : 'spec.generators'
   )
-  const prevGenState = useRef<{ hasGitGen?: boolean; hasListGen?: boolean }>({})
-  const editMode = useEditMode()
-
+  const [hasCDRGen, setHasCDRGen] = useState(() => {
+    if (!applicationSet) return false
+    const gens = get(applicationSet, generatorPathRef.current) as IResource[] | undefined
+    return Array.isArray(gens) && gens.some((g) => g && typeof g === 'object' && 'clusterDecisionResource' in g)
+  })
+  const prevGenState = useRef<{ hasGitGen?: boolean; hasListGen?: boolean; hasCDRGen?: boolean }>({ hasCDRGen: true })
   const { gitOpsOperatorSubscriptionsValue } = useSharedSelectors()
   const gitOpsOperator = useOperatorCheck(SupportedOperator.gitOps, gitOpsOperatorSubscriptionsValue)
   const showAlert = !gitOpsOperator.pending && !gitOpsOperator.installed
@@ -452,14 +456,6 @@ export function ArgoWizard(props: ArgoWizardProps) {
             placements={props.placements}
             onFilteredClusterSetsChange={setFilteredClusterSets}
           />
-          <SyncPlacementNameToApplicationSet />
-          {editMode === EditMode.Create && (
-            <Fragment>
-              <Sync kind="ApplicationSet" path="metadata.name" suffix="-placement" />
-            </Fragment>
-          )}
-          <Sync kind="ApplicationSet" path="metadata.namespace" />
-          {/* the generator now syncs app name with template name */}
           <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
             <GitOpsOperatorAlert showAlert={showAlert} isPullModel={isPullModel} />
             {isPullModel && !resources && !showAlert && (
@@ -543,15 +539,17 @@ export function ArgoWizard(props: ArgoWizardProps) {
                 helmChannels={helmChannels}
                 gitGeneratorRepos={gitGeneratorRepos}
                 disableForm={disableForm}
-                generatorPath={generatorPath}
-              />
-              <SyncGenerator
-                setGeneratorPath={setGeneratorPath}
-                prevGenState={prevGenState}
-                generatorPath={generatorPath}
+                generatorPath={generatorPathRef}
               />
             </Section>
           </WizItemSelector>
+          {/* placed outside a WizItemSelector so we access to all ressources */}
+          <CrossGeneratorSync
+            prevGenState={prevGenState}
+            onGeneratorStateChange={(state) => setHasCDRGen(!!state.hasCDRGen)}
+            defaultData={defaultData}
+            generatorPath={generatorPathRef}
+          />
         </Step>
         <Step id="repository" label={t('Repository')}>
           <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
@@ -583,17 +581,19 @@ export function ArgoWizard(props: ArgoWizardProps) {
             <ArgoAutomatedSyncPolicySection />
           </WizItemSelector>
         </Step>
-        <Step id="placement" label={t('Placement')}>
-          <ArgoWizardPlacementSection
-            placements={props.placements}
-            clusters={props.clusters}
-            clusterSets={filteredClusterSets}
-            clusterSetBindings={props.clusterSetBindings}
-            createClusterSetCallback={props.createClusterSetCallback}
-            isPullModel={isPullModel}
-            hubClusterName={hubCluster?.metadata?.name ?? ''}
-          />
-        </Step>
+        {hasCDRGen && (
+          <Step id="placement" label={t('Placement')}>
+            <ArgoWizardPlacementSection
+              placements={props.placements}
+              clusters={props.clusters}
+              clusterSets={filteredClusterSets}
+              clusterSetBindings={props.clusterSetBindings}
+              createClusterSetCallback={props.createClusterSetCallback}
+              isPullModel={isPullModel}
+              hubClusterName={hubCluster?.metadata?.name ?? ''}
+            />
+          </Step>
+        )}
       </WizardPage>
     </Fragment>
   )
@@ -964,26 +964,6 @@ function ArgoWizardPlacementSection(props: {
   )
 }
 
-function findGeneratorPathWithGenType(item: unknown, genType: string): string | undefined {
-  // Generators can be at 'spec.generators' or 'spec.generators.0.matrix.generators' (matrix case)
-  // When called from SyncPlacementNameToApplicationSet, item is an array; otherwise it's not
-  const targetItem = Array.isArray(item) ? item[0] : item
-  const generatorsPath = get(targetItem, 'spec.generators.0.matrix')
-    ? 'spec.generators.0.matrix.generators'
-    : 'spec.generators'
-
-  const generators = safeGet(targetItem, generatorsPath, []) as unknown[]
-  if (!Array.isArray(generators)) return undefined
-
-  for (let i = 0; i < generators.length; i++) {
-    const generator = generators[i]
-    if (findObjectWithKey(generator, genType)) {
-      return `${generatorsPath}.${i}.${genType}`
-    }
-  }
-  return undefined
-}
-
 // fun fact, you can paste an argo app without a repositoryType key value because argo defaults to git
 //  but the wizard needs a reositoryType in order to function
 export function setRepositoryTypeForSources(resources: any[] | undefined): any[] | undefined {
@@ -1009,34 +989,4 @@ export function setRepositoryTypeForSources(resources: any[] | undefined): any[]
     }
     return resource
   })
-}
-
-function SyncPlacementNameToApplicationSet() {
-  const item = useContext(ItemContext)
-  const targetPath = `${findGeneratorPathWithGenType(item, 'clusterDecisionResource')}.labelSelector.matchLabels.cluster\\.open-cluster-management\\.io/placement`
-
-  if (!targetPath) {
-    return null
-  }
-
-  return <Sync kind={PlacementKind} path="metadata.name" targetKind="ApplicationSet" targetPath={targetPath} />
-}
-
-function ExistingPlacementSelect(props: { placements: IPlacement[] }) {
-  const { t } = useTranslation()
-  const item = useContext(ItemContext)
-  const path = `${findGeneratorPathWithGenType(item, 'clusterDecisionResource')}.labelSelector.matchLabels.cluster\\.open-cluster-management\\.io/placement`
-
-  if (!path) {
-    return null
-  }
-
-  return (
-    <WizSelect
-      path={path}
-      label={t('Existing placement')}
-      placeholder={t('Select the existing placement')}
-      options={props.placements.map((placement) => placement.metadata?.name ?? '')}
-    />
-  )
 }

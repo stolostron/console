@@ -2038,6 +2038,27 @@ describe('multicluster-role-assignment-client', function () {
         expect(mra.metadata?.labels?.[ManagedByConsoleLabelKey]).toBe(ManagedByConsoleLabelValue)
       })
 
+      it('creates new MRA with managed-by label using OCM key (open-cluster-management.io/managed-by: console) to avoid literal key regression', async () => {
+        mockCreateResource.mockReturnValue({
+          promise: Promise.resolve({
+            apiVersion: 'rbac.open-cluster-management.io/v1beta1' as const,
+            kind: 'MulticlusterRoleAssignment' as const,
+            metadata: { name: 'new-mra', namespace: MulticlusterRoleAssignmentNamespace },
+            spec: { subject: roleAssignment.subject, roleAssignments: [] },
+            status: {},
+          }),
+          abort: jest.fn(),
+        })
+        await addRoleAssignment(roleAssignment, {
+          existingMulticlusterRoleAssignments: [],
+          existingManagedClusterSetBindings: [],
+          existingPlacements: [],
+        })
+        const created = mockCreateResource.mock.calls[0][0] as MulticlusterRoleAssignment
+        expect(created.metadata?.labels?.[ManagedByConsoleLabelKey]).toBe(ManagedByConsoleLabelValue)
+        expect(created.metadata?.labels).not.toHaveProperty('ManagedByConsoleLabelKey')
+      })
+
       it('creates new MRA when existingMulticlusterRoleAssignments is empty', async () => {
         mockCreateResource.mockReturnValue({
           promise: Promise.resolve({
@@ -2059,6 +2080,8 @@ describe('multicluster-role-assignment-client', function () {
         expect(result).toBeDefined()
         expect(mockCreateResource).toHaveBeenCalled()
         expect(mockPatchResourceForAdd).not.toHaveBeenCalled()
+        const created = mockCreateResource.mock.calls[0][0] as MulticlusterRoleAssignment
+        expect(created.metadata?.labels?.[ManagedByConsoleLabelKey]).toBe(ManagedByConsoleLabelValue)
       })
 
       it('creates new MRA when existingMulticlusterRoleAssignments is undefined', async () => {

@@ -6,7 +6,7 @@ import { GlobalPlacementName, Placement, PlacementApiVersionBeta, PlacementKind 
 import { PlacementDecision } from '../placement-decision'
 import { MatchExpressions } from '../selector'
 import { createResource } from '../utils'
-import { ManagedByConsoleLabel } from './constants'
+import { ManagedByConsoleLabel, ManagedByConsoleLabelKey, ManagedByConsoleLabelValue } from './constants'
 import {
   createForClusters,
   createForClusterSets,
@@ -581,6 +581,18 @@ describe('placement-client', () => {
       )
     })
 
+    it('should set managed-by label with OCM key (open-cluster-management.io/managed-by: console) to avoid literal key regression', () => {
+      const clusterSets = ['regression-label-key']
+      createResourceMock.mockReturnValue({
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      })
+      createForClusterSets(clusterSets)
+      const placement = createResourceMock.mock.calls[0][0] as Placement
+      expect(placement.metadata?.labels?.[ManagedByConsoleLabelKey]).toBe(ManagedByConsoleLabelValue)
+      expect(placement.metadata?.labels).not.toHaveProperty('ManagedByConsoleLabelKey')
+    })
+
     it('should return the IRequestResult from createResource', () => {
       // Arrange
       const clusterSets = ['result-test']
@@ -844,6 +856,18 @@ describe('placement-client', () => {
           }),
         })
       )
+    })
+
+    it('should set managed-by label with OCM key (open-cluster-management.io/managed-by: console) to avoid literal key regression', () => {
+      const clusters = ['regression-label-key']
+      createResourceMock.mockReturnValue({
+        promise: Promise.resolve({} as Placement),
+        abort: jest.fn(),
+      })
+      createForClusters(clusters)
+      const placement = createResourceMock.mock.calls[0][0] as Placement
+      expect(placement.metadata?.labels?.[ManagedByConsoleLabelKey]).toBe(ManagedByConsoleLabelValue)
+      expect(placement.metadata?.labels).not.toHaveProperty('ManagedByConsoleLabelKey')
     })
   })
 
