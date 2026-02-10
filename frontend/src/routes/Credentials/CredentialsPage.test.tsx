@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Provider } from '../../ui-components'
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
@@ -22,6 +22,7 @@ import {
   getCSVDownloadLink,
   getCSVExportSpies,
   selectTableRow,
+  typeByText,
   waitForNock,
   waitForNocks,
   waitForNotText,
@@ -194,6 +195,7 @@ describe('provider connections page', () => {
     render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
     await waitForText(mockProviderConnection1.metadata!.name!)
     await clickRowKebabAction(1, 'Delete credential')
+    await typeByText('Confirm by typing "confirm" below:', 'confirm')
     await clickByText('Delete')
     await waitForNock(deleteNock)
   })
@@ -203,6 +205,7 @@ describe('provider connections page', () => {
     render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
     await waitForText(mockProviderConnection1.metadata!.name!)
     await clickRowKebabAction(1, 'Delete credential')
+    await typeByText('Confirm by typing "confirm" below:', 'confirm')
     await clickByText('Delete')
     await waitForNock(badRequestStatus)
     await waitForText(`Could not process request because of invalid data.`)
@@ -216,12 +219,70 @@ describe('provider connections page', () => {
     await waitForNotText('Cancel')
   })
 
+  test('Delete button is disabled in row delete modal until confirm text is entered', async () => {
+    render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
+    await waitForText(mockProviderConnection1.metadata!.name!)
+    await clickRowKebabAction(1, 'Delete credential')
+    await waitForText('Confirm by typing "confirm" below:')
+    const deleteButton = screen.getByRole('button', { name: /^Delete$/i })
+    expect(deleteButton).toBeDisabled()
+  })
+
+  test('Delete button stays disabled in row delete modal when wrong confirm text is entered', async () => {
+    render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
+    await waitForText(mockProviderConnection1.metadata!.name!)
+    await clickRowKebabAction(1, 'Delete credential')
+    await typeByText('Confirm by typing "confirm" below:', 'wrong')
+    const deleteButton = screen.getByRole('button', { name: /^Delete$/i })
+    expect(deleteButton).toBeDisabled()
+  })
+
+  test('Delete button is enabled in row delete modal when correct confirm text is entered', async () => {
+    render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
+    await waitForText(mockProviderConnection1.metadata!.name!)
+    await clickRowKebabAction(1, 'Delete credential')
+    await typeByText('Confirm by typing "confirm" below:', 'confirm')
+    const deleteButton = screen.getByRole('button', { name: /^Delete$/i })
+    expect(deleteButton).not.toBeDisabled()
+  })
+
+  test('Delete button is disabled in bulk delete modal until confirm text is entered', async () => {
+    render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
+    await waitForText(mockProviderConnection1.metadata!.name!)
+    await selectTableRow(1)
+    await clickBulkAction('Delete credentials')
+    await waitForText('Confirm by typing "confirm" below:')
+    const deleteButton = screen.getByRole('button', { name: /^Delete$/i })
+    expect(deleteButton).toBeDisabled()
+  })
+
+  test('Delete button stays disabled in bulk delete modal when wrong confirm text is entered', async () => {
+    render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
+    await waitForText(mockProviderConnection1.metadata!.name!)
+    await selectTableRow(1)
+    await clickBulkAction('Delete credentials')
+    await typeByText('Confirm by typing "confirm" below:', 'wrong')
+    const deleteButton = screen.getByRole('button', { name: /^Delete$/i })
+    expect(deleteButton).toBeDisabled()
+  })
+
+  test('Delete button is enabled in bulk delete modal when correct confirm text is entered', async () => {
+    render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
+    await waitForText(mockProviderConnection1.metadata!.name!)
+    await selectTableRow(1)
+    await clickBulkAction('Delete credentials')
+    await typeByText('Confirm by typing "confirm" below:', 'confirm')
+    const deleteButton = screen.getByRole('button', { name: /^Delete$/i })
+    expect(deleteButton).not.toBeDisabled()
+  })
+
   test('should be able to bulk delete provider connections', async () => {
     const deleteNock = nockDelete(mockProviderConnection1)
     render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
     await waitForText(mockProviderConnection1.metadata!.name!)
     await selectTableRow(1)
     await clickBulkAction('Delete credentials')
+    await typeByText('Confirm by typing "confirm" below:', 'confirm')
     await clickByText('Delete')
     await waitForNock(deleteNock)
   })
