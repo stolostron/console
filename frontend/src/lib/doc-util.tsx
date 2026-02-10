@@ -79,23 +79,25 @@ export function ViewDocumentationLink(props: { doclink: string }): JSX.Element {
   const { t } = useTranslation()
   return (
     <Content>
-      <a href={props.doclink} target="_blank" rel="noreferrer">
-        <AcmButton
-          onClick={(e) => {
-            e.stopPropagation()
-          }}
-          variant="link"
-          isInline
-          style={{
-            display: 'inline-block',
-            paddingTop: '15px',
-            fontSize: '14px',
-          }}
-        >
-          {t('View documentation')}{' '}
-          <ExternalLinkAltIcon />
-        </AcmButton>
-      </a>
+      <AcmButton
+        onClick={(e) => {
+          e.stopPropagation()
+        }}
+        variant="link"
+        component="a"
+        href={props.doclink}
+        target="_blank"
+        rel="noreferrer"
+        isInline
+        icon={<ExternalLinkAltIcon />}
+        iconPosition="right"
+        style={{
+          paddingTop: '15px',
+          fontSize: '14px',
+        }}
+      >
+        {t('View documentation')}
+      </AcmButton>
     </Content>
   )
 }

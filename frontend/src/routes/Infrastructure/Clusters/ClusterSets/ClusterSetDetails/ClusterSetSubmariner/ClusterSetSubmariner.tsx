@@ -278,9 +278,10 @@ export function ClusterSetSubmarinerPageContent() {
                     onClick={() => window.open(DOC_LINKS.SUBMARINER, '_blank')}
                     variant="link"
                     role="link"
+                    icon={<ExternalLinkAltIcon />}
+                    iconPosition="right"
                   >
-                    {t('view.documentation')}{' '}
-                    <ExternalLinkAltIcon />
+                    {t('view.documentation')}
                   </AcmButton>
                 </FlexItem>
               </Flex>
