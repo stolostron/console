@@ -714,17 +714,17 @@ export async function getArgoDestinationCluster(
       clusterName = cluster || hubClusterName
     } else {
       const clusterProxyService = await getClusterProxyService()
+      let server
       if (clusterProxyService) {
         // if cluster proxy is enabled, use the cluster proxy url
-        const server = clusters.find((cls) => {
+        server = clusters.find((cls) => {
           const url = getClusterProxyServiceURL(clusterProxyService, cls.name)
           return url === serverApi
         })
-        clusterName = server ? server.name : 'unknown'
       } else {
-        const server = clusters.find((cls) => cls.kubeApiServer === serverApi)
-        clusterName = server ? server.name : 'unknown'
+        server = clusters.find((cls) => cls.kubeApiServer === serverApi)
       }
+      clusterName = server ? server.name : 'unknown'
     }
   } else {
     // target destination was set using the name property

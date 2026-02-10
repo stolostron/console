@@ -15,6 +15,8 @@ import {
   discoverSystemAppNamespacePrefixes,
   getArgoPushModelClusterList,
   getArgoDestinationCluster,
+  getClusterProxyService,
+  getClusterProxyServiceURL,
   keyBy,
   sizeOf,
 } from '../../../src/routes/aggregators/utils'
@@ -27,6 +29,7 @@ import {
   ClusterDeployment,
   ISearchResource,
   Cluster,
+  IService,
 } from '../../../src/resources/resource'
 import { ApplicationClusterStatusMap, ITransformedResource } from '../../../src/routes/aggregators/applications'
 import { ServerSideEvents } from '../../../src/lib/server-side-events'
@@ -996,6 +999,187 @@ describe('aggregators utils', () => {
       const result = await getArgoDestinationCluster(destination, [], undefined, 'my-hub')
 
       expect(result).toBe('my-hub')
+    })
+
+    it('should resolve cluster name via cluster proxy url match', async () => {
+      const proxyService: IService = {
+        kind: 'Service',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'cluster-proxy-addon-user',
+          namespace: 'multicluster-engine',
+          uid: 'service-uid-proxy',
+          resourceVersion: '1',
+        },
+        spec: {
+          ports: [{ port: 8443 }],
+        },
+      }
+      await cacheResource(proxyService)
+
+      const destination = {
+        server: 'https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:8443/cluster-1',
+        namespace: 'default',
+      }
+      const clusters: Cluster[] = [
+        {
+          name: 'cluster-1',
+          kubeApiServer: 'https://api.cluster-1.example:6443',
+        },
+      ]
+
+      const result = await getArgoDestinationCluster(destination, clusters)
+
+      expect(result).toBe('cluster-1')
+    })
+
+    it('should return unknown when proxy url does not match any cluster', async () => {
+      const proxyService: IService = {
+        kind: 'Service',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'cluster-proxy-addon-user',
+          namespace: 'multicluster-engine',
+          uid: 'service-uid-proxy-2',
+          resourceVersion: '1',
+        },
+        spec: {
+          ports: [{ port: 8443 }],
+        },
+      }
+      await cacheResource(proxyService)
+
+      const destination = {
+        server: 'https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:8443/cluster-2',
+        namespace: 'default',
+      }
+      const clusters: Cluster[] = [
+        {
+          name: 'cluster-1',
+          kubeApiServer: 'https://api.cluster-1.example:6443',
+        },
+      ]
+
+      const result = await getArgoDestinationCluster(destination, clusters)
+
+      expect(result).toBe('unknown')
+    })
+  })
+
+  describe('getClusterProxyService', () => {
+    it('should return cluster proxy service when present', async () => {
+      const proxyService: IService = {
+        kind: 'Service',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'cluster-proxy-addon-user',
+          namespace: 'multicluster-engine',
+          uid: 'service-uid-1',
+          resourceVersion: '1',
+        },
+        spec: {
+          ports: [{ port: 8443 }],
+        },
+      }
+      const otherService: IService = {
+        kind: 'Service',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'other-service',
+          namespace: 'default',
+          uid: 'service-uid-2',
+          resourceVersion: '1',
+        },
+      }
+
+      await cacheResource(otherService)
+      await cacheResource(proxyService)
+
+      const result = await getClusterProxyService()
+
+      expect(result?.metadata?.name).toBe('cluster-proxy-addon-user')
+      expect(result?.metadata?.namespace).toBe('multicluster-engine')
+    })
+
+    it('should return undefined when cluster proxy service is absent', async () => {
+      const otherService: IService = {
+        kind: 'Service',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'other-service',
+          namespace: 'default',
+          uid: 'service-uid-3',
+          resourceVersion: '1',
+        },
+      }
+
+      await cacheResource(otherService)
+
+      const result = await getClusterProxyService()
+
+      expect(result).toBeUndefined()
+    })
+  })
+
+  describe('getClusterProxyServiceURL', () => {
+    it('should build URL using service port when provided', () => {
+      const service: IService = {
+        kind: 'Service',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'cluster-proxy-addon-user',
+          namespace: 'multicluster-engine',
+          uid: 'service-uid-4',
+          resourceVersion: '1',
+        },
+        spec: {
+          ports: [{ port: 8443 }],
+        },
+      }
+
+      const result = getClusterProxyServiceURL(service, 'my-cluster')
+
+      expect(result).toBe('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:8443/my-cluster')
+    })
+
+    it('should fall back to default port when no ports are defined', () => {
+      const service: IService = {
+        kind: 'Service',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'cluster-proxy-addon-user',
+          namespace: 'multicluster-engine',
+          uid: 'service-uid-5',
+          resourceVersion: '1',
+        },
+      }
+
+      const result = getClusterProxyServiceURL(service, 'my-cluster')
+
+      expect(result).toBe('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:9092/my-cluster')
+    })
+
+    it('should return undefined when service is missing', () => {
+      const result = getClusterProxyServiceURL(undefined as unknown as IService, 'my-cluster')
+
+      expect(result).toBeUndefined()
+    })
+
+    it('should return undefined when cluster is missing', () => {
+      const service: IService = {
+        kind: 'Service',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'cluster-proxy-addon-user',
+          namespace: 'multicluster-engine',
+          uid: 'service-uid-6',
+          resourceVersion: '1',
+        },
+      }
+
+      const result = getClusterProxyServiceURL(service, '')
+
+      expect(result).toBeUndefined()
     })
   })
 
