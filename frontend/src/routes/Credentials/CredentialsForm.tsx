@@ -1503,9 +1503,6 @@ export function CredentialsForm(
           .promise.then(() => {
             toastContext.addAlert({
               title: t('Credentials updated'),
-              /*
-                            t('name')
-                        */
               message: t('credentialsForm.updated.message', { name }),
               type: 'success',
               autoClose: true,
