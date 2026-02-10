@@ -776,6 +776,130 @@ describe('RoleAssignmentWizardModal - useClustersFromClusterSets Integration', (
       })
     })
 
+    it('should clear namespaces when switching from Project role assignment to Cluster role assignment', async () => {
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(mockScopeSelectionStepContent).toHaveBeenCalled()
+      })
+
+      const scopeSelectionCall = mockScopeSelectionStepContent.mock.calls[0]?.[0]
+      act(() => {
+        scopeSelectionCall?.onSelectScopeType('Select clusters')
+        scopeSelectionCall?.onSelectClusters([{ metadata: { name: 'cluster-1' } }])
+      })
+
+      const nextButton = await screen.findByRole('button', { name: 'Next' })
+      act(() => {
+        nextButton.click()
+      })
+
+      await waitFor(() => {
+        expect(mockClusterGranularityStepContent).toHaveBeenCalled()
+      })
+
+      // Set to Project role assignment and add namespaces
+      const clusterCall1 = mockClusterGranularityStepContent.mock.calls[0]?.[0]
+      act(() => {
+        clusterCall1?.onClustersAccessLevelChange('Project role assignment')
+      })
+
+      await waitFor(() => {
+        const lastCall =
+          mockClusterGranularityStepContent.mock.calls[mockClusterGranularityStepContent.mock.calls.length - 1]?.[0]
+        expect(lastCall?.clustersAccessLevel).toBe('Project role assignment')
+      })
+
+      // Add some namespaces
+      const clusterCall2 =
+        mockClusterGranularityStepContent.mock.calls[mockClusterGranularityStepContent.mock.calls.length - 1]?.[0]
+      act(() => {
+        clusterCall2?.onNamespacesChange(['namespace-1', 'namespace-2'])
+      })
+
+      await waitFor(() => {
+        const lastCall =
+          mockClusterGranularityStepContent.mock.calls[mockClusterGranularityStepContent.mock.calls.length - 1]?.[0]
+        expect(lastCall?.selectedNamespaces).toEqual(['namespace-1', 'namespace-2'])
+      })
+
+      // switch back to Cluster role assignment - namespaces should be cleared
+      const clusterCall3 =
+        mockClusterGranularityStepContent.mock.calls[mockClusterGranularityStepContent.mock.calls.length - 1]?.[0]
+      act(() => {
+        clusterCall3?.onClustersAccessLevelChange('Cluster role assignment')
+      })
+
+      await waitFor(() => {
+        const lastCall =
+          mockClusterGranularityStepContent.mock.calls[mockClusterGranularityStepContent.mock.calls.length - 1]?.[0]
+        expect(lastCall?.clustersAccessLevel).toBe('Cluster role assignment')
+        expect(lastCall?.selectedNamespaces).toEqual([])
+      })
+    })
+
+    it('should clear namespaces when switching from Project role assignment to Cluster set role assignment', async () => {
+      renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(mockScopeSelectionStepContent).toHaveBeenCalled()
+      })
+
+      const scopeSelectionCall = mockScopeSelectionStepContent.mock.calls[0]?.[0]
+      act(() => {
+        scopeSelectionCall?.onSelectClusterSets([mockClusterSet1])
+        scopeSelectionCall?.onSelectScopeType('Select cluster sets')
+      })
+
+      const nextButton = await screen.findByRole('button', { name: 'Next' })
+      act(() => {
+        nextButton.click()
+      })
+
+      await waitFor(() => {
+        expect(mockClusterSetGranularityWizardStep).toHaveBeenCalled()
+      })
+
+      // Set to Project role assignment and add namespaces
+      const clusterSetCall1 = mockClusterSetGranularityWizardStep.mock.calls[0]?.[0]
+      act(() => {
+        clusterSetCall1?.onClustersetsAccessLevelChange('Project role assignment')
+      })
+
+      await waitFor(() => {
+        const lastCall =
+          mockClusterSetGranularityWizardStep.mock.calls[mockClusterSetGranularityWizardStep.mock.calls.length - 1]?.[0]
+        expect(lastCall?.clustersetsAccessLevel).toBe('Project role assignment')
+      })
+
+      // Add some namespaces
+      const clusterSetCall2 =
+        mockClusterSetGranularityWizardStep.mock.calls[mockClusterSetGranularityWizardStep.mock.calls.length - 1]?.[0]
+      act(() => {
+        clusterSetCall2?.onNamespacesChange(['namespace-1', 'namespace-2'])
+      })
+
+      await waitFor(() => {
+        const lastCall =
+          mockClusterSetGranularityWizardStep.mock.calls[mockClusterSetGranularityWizardStep.mock.calls.length - 1]?.[0]
+        expect(lastCall?.selectedNamespaces).toEqual(['namespace-1', 'namespace-2'])
+      })
+
+      // Switch back to Cluster set role assignment - namespaces should be cleared
+      const clusterSetCall3 =
+        mockClusterSetGranularityWizardStep.mock.calls[mockClusterSetGranularityWizardStep.mock.calls.length - 1]?.[0]
+      act(() => {
+        clusterSetCall3?.onClustersetsAccessLevelChange('Cluster set role assignment')
+      })
+
+      await waitFor(() => {
+        const lastCall =
+          mockClusterSetGranularityWizardStep.mock.calls[mockClusterSetGranularityWizardStep.mock.calls.length - 1]?.[0]
+        expect(lastCall?.clustersetsAccessLevel).toBe('Cluster set role assignment')
+        expect(lastCall?.selectedNamespaces).toEqual([])
+      })
+    })
+
     it('should update namespaces and cluster set access level in cluster set granularity step', async () => {
       renderWithRouter(<RoleAssignmentWizardModal {...defaultProps} />)
 

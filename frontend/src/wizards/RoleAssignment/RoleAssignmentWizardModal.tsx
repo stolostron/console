@@ -115,7 +115,7 @@ export const RoleAssignmentWizardModal = ({
       selectedClusters: clusters,
       scope: {
         ...prev.scope,
-        namespaces: clusters.length === 0 ? [] : prev.scope.namespaces,
+        namespaces: [],
       },
     }))
   }, [])
@@ -176,6 +176,10 @@ export const RoleAssignmentWizardModal = ({
       setFormData((prev) => ({
         ...prev,
         clustersAccessLevel: clustersAccessLevel,
+        scope: {
+          ...prev.scope,
+          namespaces: clustersAccessLevel === 'Cluster role assignment' ? [] : prev.scope.namespaces,
+        },
       }))
     },
     []
@@ -186,6 +190,10 @@ export const RoleAssignmentWizardModal = ({
       setFormData((prev) => ({
         ...prev,
         clustersetsAccessLevel,
+        scope: {
+          ...prev.scope,
+          namespaces: clustersetsAccessLevel === 'Cluster set role assignment' ? [] : prev.scope.namespaces,
+        },
       }))
     },
     []
