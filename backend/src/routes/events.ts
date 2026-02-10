@@ -262,6 +262,11 @@ const definitions: IWatchOptions[] = [
     apiVersion: 'rbac.authorization.k8s.io/v1',
     labelSelector: { 'rbac.open-cluster-management.io/filter': 'vm-clusterroles' },
   },
+  {
+    kind: 'Service',
+    apiVersion: 'v1',
+    fieldSelector: { 'metadata.name': 'cluster-proxy-addon-user', 'metadata.namespace': 'multicluster-engine' },
+  },
 ]
 
 export function startWatching(): void {

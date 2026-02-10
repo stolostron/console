@@ -826,7 +826,7 @@ describe('aggregators utils', () => {
   })
 
   describe('getArgoPushModelClusterList', () => {
-    it('should return cluster list for push model apps', () => {
+    it('should return cluster list for push model apps', async () => {
       const apps: IArgoApplication[] = [
         {
           kind: 'Application',
@@ -850,12 +850,12 @@ describe('aggregators utils', () => {
         kubeApiServer: 'https://api.local.com:6443',
       }
 
-      const clusters = getArgoPushModelClusterList(apps, localCluster, [])
+      const clusters = await getArgoPushModelClusterList(apps, localCluster, [])
 
       expect(clusters).toContain('local-cluster')
     })
 
-    it('should identify remote clusters', () => {
+    it('should identify remote clusters', async () => {
       const apps: IArgoApplication[] = [
         {
           kind: 'Application',
@@ -884,12 +884,12 @@ describe('aggregators utils', () => {
         },
       ]
 
-      const clusters = getArgoPushModelClusterList(apps, undefined, managedClusters)
+      const clusters = await getArgoPushModelClusterList(apps, undefined, managedClusters)
 
       expect(clusters).toContain('remote-cluster')
     })
 
-    it('should deduplicate cluster names', () => {
+    it('should deduplicate cluster names', async () => {
       const apps: IArgoApplication[] = [
         {
           kind: 'Application',
@@ -928,7 +928,7 @@ describe('aggregators utils', () => {
         kubeApiServer: 'https://api.local.com:6443',
       }
 
-      const clusters = getArgoPushModelClusterList(apps, localCluster, [])
+      const clusters = await getArgoPushModelClusterList(apps, localCluster, [])
 
       // Should only have one entry for local-cluster
       expect(clusters.filter((c) => c === 'local-cluster')).toHaveLength(1)
@@ -936,7 +936,7 @@ describe('aggregators utils', () => {
   })
 
   describe('getArgoDestinationCluster', () => {
-    it('should return cluster name from server API', () => {
+    it('should return cluster name from server API', async () => {
       const destination = {
         server: 'https://api.test.com:6443',
         namespace: 'default',
@@ -949,51 +949,51 @@ describe('aggregators utils', () => {
         },
       ]
 
-      const result = getArgoDestinationCluster(destination, clusters)
+      const result = await getArgoDestinationCluster(destination, clusters)
 
       expect(result).toBe('test-cluster')
     })
 
-    it('should return hub cluster for kubernetes.default.svc', () => {
+    it('should return hub cluster for kubernetes.default.svc', async () => {
       const destination = {
         server: 'https://kubernetes.default.svc',
         namespace: 'default',
       }
 
-      const result = getArgoDestinationCluster(destination, [], undefined, 'hub-cluster')
+      const result = await getArgoDestinationCluster(destination, [], undefined, 'hub-cluster')
 
       expect(result).toBe('hub-cluster')
     })
 
-    it('should return unknown for non-matching server', () => {
+    it('should return unknown for non-matching server', async () => {
       const destination = {
         server: 'https://api.unknown.com:6443',
         namespace: 'default',
       }
 
-      const result = getArgoDestinationCluster(destination, [])
+      const result = await getArgoDestinationCluster(destination, [])
 
       expect(result).toBe('unknown')
     })
 
-    it('should use destination name when server is not provided', () => {
+    it('should use destination name when server is not provided', async () => {
       const destination = {
         name: 'named-cluster',
         namespace: 'default',
       }
 
-      const result = getArgoDestinationCluster(destination, [])
+      const result = await getArgoDestinationCluster(destination, [])
 
       expect(result).toBe('named-cluster')
     })
 
-    it('should convert in-cluster to hub cluster name', () => {
+    it('should convert in-cluster to hub cluster name', async () => {
       const destination = {
         name: 'in-cluster',
         namespace: 'default',
       }
 
-      const result = getArgoDestinationCluster(destination, [], undefined, 'my-hub')
+      const result = await getArgoDestinationCluster(destination, [], undefined, 'my-hub')
 
       expect(result).toBe('my-hub')
     })
@@ -1104,7 +1104,7 @@ describe('aggregators utils', () => {
   })
 
   describe('getApplicationClusters', () => {
-    it('should return hub cluster for unknown type', () => {
+    it('should return hub cluster for unknown type', async () => {
       const resource: IResource = {
         kind: 'Unknown',
         apiVersion: 'unknown/v1',
@@ -1115,12 +1115,12 @@ describe('aggregators utils', () => {
         },
       }
 
-      const clusters = getApplicationClusters(resource, '-', [], [], undefined, [])
+      const clusters = await getApplicationClusters(resource, '-', [], [], undefined, [])
 
       expect(clusters).toContain('local-cluster')
     })
 
-    it('should return cluster for OpenShift app', () => {
+    it('should return cluster for OpenShift app', async () => {
       const resource = {
         kind: 'Deployment',
         apiVersion: 'apps/v1',
@@ -1135,12 +1135,12 @@ describe('aggregators utils', () => {
         },
       }
 
-      const clusters = getApplicationClusters(resource, 'openshift', [], [], undefined, [])
+      const clusters = await getApplicationClusters(resource, 'openshift', [], [], undefined, [])
 
       expect(clusters).toContain('ocp-cluster')
     })
 
-    it('should return cluster for Argo app', () => {
+    it('should return cluster for Argo app', async () => {
       const argoApp: IArgoApplication = {
         kind: 'Application',
         apiVersion: 'argoproj.io/v1alpha1',
@@ -1164,7 +1164,7 @@ describe('aggregators utils', () => {
         consoleUrl: 'https://console.local.com',
       }
 
-      const clusters = getApplicationClusters(argoApp, 'argo', [], [], localCluster, [])
+      const clusters = await getApplicationClusters(argoApp, 'argo', [], [], localCluster, [])
 
       expect(clusters).toHaveLength(1)
       expect(clusters[0]).toBe('local-cluster')

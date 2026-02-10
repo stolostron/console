@@ -30,7 +30,7 @@ export function requestAggregatedUIData(req: Http2ServerRequest, res: Http2Serve
     const hubClusterName = getHubClusterName()
     const clusters: Cluster[] = await getClusters()
     const localCluster = clusters.find((cls) => cls.name === hubClusterName)
-    const clusterList = getApplicationClusters(
+    const clusterList = await getApplicationClusters(
       resource,
       type,
       subscriptions,

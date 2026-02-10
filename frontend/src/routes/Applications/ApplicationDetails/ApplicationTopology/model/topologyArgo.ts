@@ -23,6 +23,11 @@ import type {
   ArgoApplicationResource,
 } from '../types'
 import { ToolbarControl } from '../topology/components/TopologyToolbar'
+import { Service } from '../../../../../resources'
+
+const CLUSTER_PROXY_SERVICE_NAME = 'cluster-proxy-addon-user'
+const CLUSTER_PROXY_SERVICE_NAMESPACE = 'multicluster-engine'
+const CLUSTER_PROXY_SERVICE_PORT = 9092
 
 /**
  * Generates topology data for Argo CD applications
@@ -42,7 +47,8 @@ export function getArgoTopology(
   application: ArgoApplicationTopologyData,
   argoData: ArgoTopologyData,
   managedClusters: ManagedCluster[],
-  hubClusterName: string
+  hubClusterName: string,
+  services: Service[]
 ): ArgoTopologyResult {
   const { topology, cluster } = argoData
   const links: TopologyLink[] = []
@@ -62,7 +68,7 @@ export function getArgoTopology(
   if (cluster) {
     // Argo app defined on remote cluster
     // Set to empty string for now, depends on backend to provide argoapi from secrets
-    const clusterName = getArgoDestinationCluster(destination, managedClusters, cluster, hubClusterName)
+    const clusterName = getArgoDestinationCluster(destination, managedClusters, cluster, hubClusterName, services)
     const remoteClusterDestination = ''
     clusterNames.push(clusterName)
     clusters.push({
@@ -74,7 +80,7 @@ export function getArgoTopology(
   } else {
     try {
       // Argo app defined on hub cluster - determine target cluster from destination
-      const clusterName = getArgoDestinationCluster(destination, managedClusters, cluster, hubClusterName)
+      const clusterName = getArgoDestinationCluster(destination, managedClusters, cluster, hubClusterName, services)
       clusterNames.push(clusterName)
       clusters.push({
         metadata: { name: clusterName, namespace: clusterName },
@@ -251,7 +257,8 @@ export function getArgoDestinationCluster(
   destination: ArgoDestination,
   managedClusters: ManagedCluster[],
   cluster: string | undefined,
-  hubClusterName: string
+  hubClusterName: string,
+  services: Service[]
 ): string {
   // cluster is the name of the managed cluster where the Argo app is defined
   let clusterName: string
@@ -263,8 +270,18 @@ export function getArgoDestinationCluster(
       // Special case: in-cluster deployment
       clusterName = cluster ? cluster : hubClusterName
     } else {
-      // Find managed cluster by matching server URL
-      const server = managedClusters.find((cls) => cls.kubeApiServer === serverApi)
+      const clusterProxyService = getClusterProxyService(services)
+      let server: ManagedCluster | undefined
+      if (clusterProxyService) {
+        // if cluster proxy is enabled, use the cluster proxy url
+        server = managedClusters.find((cls) => {
+          const url = getClusterProxyServiceURL(clusterProxyService, cls.name ?? '')
+          return url === serverApi
+        })
+      } else {
+        // Find managed cluster by matching server URL
+        server = managedClusters.find((cls) => cls.kubeApiServer === serverApi)
+      }
       clusterName = server ? server.name ?? '' : 'unknown'
     }
   } else {
@@ -283,4 +300,27 @@ export function getArgoDestinationCluster(
   }
 
   return clusterName
+}
+
+export function getClusterProxyService(services: Service[]): Service | undefined {
+  return services.find(
+    (service) =>
+      service.metadata.name === CLUSTER_PROXY_SERVICE_NAME &&
+      service.metadata.namespace === CLUSTER_PROXY_SERVICE_NAMESPACE
+  )
+}
+
+export function getClusterProxyServiceURL(service: Service, cluster: string): string {
+  if (!service) {
+    return ''
+  }
+  if (!cluster) {
+    return ''
+  }
+  let port = CLUSTER_PROXY_SERVICE_PORT
+  if (service.spec?.ports) {
+    port = service.spec.ports[0].port
+  }
+
+  return `https://${CLUSTER_PROXY_SERVICE_NAME}.${CLUSTER_PROXY_SERVICE_NAMESPACE}.svc.cluster.local:${port}/${cluster}`
 }

@@ -109,6 +109,7 @@ export default function ApplicationDetailsPage() {
     subscriptionReportsState,
     subscriptionsState,
     THROTTLE_EVENTS_DELAY,
+    servicesState,
   } = useSharedAtoms()
 
   const [waitForApplication, setWaitForApplication] = useState<boolean>(true)
@@ -139,6 +140,7 @@ export default function ApplicationDetailsPage() {
   const hubCluster = useLocalHubName()
 
   const applicationsGetter = useRecoilValueGetter(applicationsState)
+  const servicesGetter = useRecoilValueGetter(servicesState)
   const ansibleJobGetter = useRecoilValueGetter(ansibleJobState)
   const channelsGetter = useRecoilValueGetter(channelsState)
   const placementsGetter = useRecoilValueGetter(placementsState)
@@ -157,6 +159,7 @@ export default function ApplicationDetailsPage() {
       subscriptions: subscriptionsGetter(),
       subscriptionReports: subscriptionReportsGetter(),
       placementDecisions: placementDecisionsGetter(),
+      services: servicesGetter(),
     }),
     [
       ansibleJobGetter,
@@ -167,6 +170,7 @@ export default function ApplicationDetailsPage() {
       placementsGetter,
       subscriptionReportsGetter,
       subscriptionsGetter,
+      servicesGetter,
     ]
   )
 
@@ -401,7 +405,8 @@ export default function ApplicationDetailsPage() {
               lastRefreshRef?.current?.relatedResources,
               {
                 cluster,
-              }
+              },
+              recoilStates.services
             )
             const appData = getApplicationData(topology?.nodes, topology?.hubClusterName)
 
@@ -432,7 +437,8 @@ export default function ApplicationDetailsPage() {
               {
                 topology,
                 cluster,
-              }
+              },
+              recoilStates.services
             )
             setApplicationData({
               refreshTime: Date.now(),

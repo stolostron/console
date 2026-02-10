@@ -239,7 +239,7 @@ export async function polledArgoApplicationAggregation(
       let transform = resourceUidMap[uid]?.transform
       if (!transform) {
         const type = getApplicationType(item)
-        const _clusters = getApplicationClusters(item, type, [], placementDecisions, localCluster, clusters)
+        const _clusters = await getApplicationClusters(item, type, [], placementDecisions, localCluster, clusters)
         transform = getTransform(item, type, {}, _clusters)
       }
       resourceUidMap[uid] = { compressed: await deflateResource(item, getAppDict()), transform }
