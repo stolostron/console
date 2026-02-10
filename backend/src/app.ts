@@ -2,7 +2,8 @@
 import Router from 'find-my-way'
 import { Http2Server, Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { authenticated } from './lib/authenticated'
-import { loadSettings, stopSettingsWatch } from './lib/config'
+import { loadSettings } from './lib/config'
+import { stopFileWatches } from './lib/fileWatch'
 import { cors } from './lib/cors'
 import { delay } from './lib/delay'
 import { logger, stopLogger } from './lib/logger'
@@ -112,8 +113,8 @@ export async function requestHandler(req: Http2ServerRequest, res: Http2ServerRe
   }
 }
 
-export function start(): Promise<Http2Server | undefined> {
-  loadSettings()
+export async function start(): Promise<Http2Server | undefined> {
+  await loadSettings()
   if (eventsEnabled) {
     startWatching()
     startAggregating()
@@ -128,7 +129,7 @@ export async function stop(): Promise<void> {
       process.exit(1)
     }, 0.5 * 1000).unref()
   }
-  stopSettingsWatch()
+  stopFileWatches()
   await ServerSideEvents.dispose()
   stopWatching()
   stopAggregating()
