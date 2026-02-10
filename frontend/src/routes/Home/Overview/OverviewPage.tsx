@@ -656,8 +656,7 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
                           target="_blank"
                           style={{ padding: 0 }}
                         >
-                          {t('View documentation')}{' '}
-                          <ExternalLinkAltIcon />
+                          {t('View documentation')} <ExternalLinkAltIcon />
                         </AcmButton>
                       </CardBody>
                     </Card>
