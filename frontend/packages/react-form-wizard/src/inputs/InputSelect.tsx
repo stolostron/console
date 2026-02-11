@@ -229,9 +229,10 @@ export const InputSelect = ({
           innerRef={textInputRef}
           placeholder={placeholder}
           isExpanded={open}
+          style={isMultiSelect && Array.isArray(value) && value.length > 0 ? { overflow: 'auto' } : undefined}
         >
           {Array.isArray(value) && (
-            <LabelGroup style={{ marginTop: -8, marginBottom: -8 }} numLabels={9999}>
+            <LabelGroup numLabels={9999}>
               {value.map((selection) => (
                 <Label
                   variant="outline"
