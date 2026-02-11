@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
@@ -9,6 +9,7 @@ import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../lib/nock-u
 import {
   clearByTestId,
   clickByPlaceholderText,
+  clickByRole,
   clickByTestId,
   clickByText,
   selectByText,
@@ -390,16 +391,14 @@ describe('add credentials page', () => {
     const ocmTokenLink = await screen.findByText('How do I get OpenShift Cluster Manager credentials?')
     expect(ocmTokenLink).toBeInTheDocument()
 
+    // Confirm the default value is "API token"
+    expect(screen.getByRole<HTMLInputElement>('combobox', { name: 'Authentication method' }).value).toBe('API token')
+
     // Open the dropdown
-    fireEvent.click(
-      screen.getByRole('combobox', {
-        name: 'Authentication method',
-      })
-    )
+    await clickByRole('combobox', { name: 'Authentication method' })
 
     // Select the "API Token" option
-    const apiTokenOption = screen.getByRole('option', { name: 'API token' })
-    fireEvent.click(apiTokenOption)
+    await clickByRole('option', { name: 'API token' })
 
     // rhocm credentials
     await typeByTestId('ocmAPIToken', providerConnection.stringData?.ocmAPIToken!)
@@ -436,15 +435,15 @@ describe('add credentials page', () => {
     expect(serviceAccountTokenLink).toBeInTheDocument()
 
     // Open the dropdown
-    screen
-      .getByRole('combobox', {
-        name: 'Authentication method',
-      })
-      .click()
+    await clickByRole('combobox', { name: 'Authentication method' })
 
     // Select the "Service Account" option
-    const serviceAccountOption = screen.getByText('Service account')
-    fireEvent.click(serviceAccountOption)
+    await clickByRole('option', { name: 'Service account' })
+
+    // Confirm toggle has updated to say "Service account"
+    expect(screen.getByRole<HTMLInputElement>('combobox', { name: 'Authentication method' }).value).toBe(
+      'Service account'
+    )
 
     await clickByText('Next')
 
