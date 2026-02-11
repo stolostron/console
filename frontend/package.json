@@ -66,7 +66,7 @@
     "@react-hook/resize-observer": "1.2.6",
     "@redhat-cloud-services/rule-components": "^4.0.51",
     "@reduxjs/toolkit": "1.9.x",
-    "@stolostron/react-data-view": "^3.3.1",
+    "@stolostron/react-data-view": "^3.4.0",
     "@tanstack/react-query": "^4.42.2",
     "ajv": "8.17.1",
     "axios": "^0.27.2",

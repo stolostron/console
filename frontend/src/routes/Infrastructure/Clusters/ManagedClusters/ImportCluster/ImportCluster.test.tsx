@@ -216,7 +216,7 @@ const mockDiscoveredClusters: DiscoveredCluster[] = [
       creationTimestamp: '2024-06-18T10:39:27Z',
       name: 'mce-hcp',
       type: 'MultiClusterEngineHCP',
-      openshiftVersion: '4.19.8',
+      openshiftVersion: '4.20.8',
       status: 'Active',
     },
   },

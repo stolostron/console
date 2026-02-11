@@ -5,8 +5,8 @@ import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AcmButton } from '../ui-components'
 import { useTranslation } from './acm-i18next'
 
-export const DOC_VERSION = '2.16'
-export const OCP_DOC_VERSION = '4.21'
+export const DOC_VERSION = '2.17'
+export const OCP_DOC_VERSION = '4.22'
 
 export const DOC_HOME = `https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/${DOC_VERSION}`
 export const DOC_BASE_PATH = `${DOC_HOME}/html-single`

@@ -3,7 +3,7 @@
 exports[`GetHostedCard Return card data - Hypershift enabled 1`] = `
 {
   "alertContent": <a
-    href="https://docs.redhat.com/en/documentation/openshift_container_platform/4.21/html-single/hosted_control_planes/hosted-control-planes-overview#hcp-enable-manual_hcp-enable-disable"
+    href="https://docs.redhat.com/en/documentation/openshift_container_platform/4.22/html-single/hosted_control_planes/hosted-control-planes-overview#hcp-enable-manual_hcp-enable-disable"
     rel="noopener noreferrer"
     target="_blank"
   >

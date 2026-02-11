@@ -114,7 +114,7 @@ export const discoveryConfig: DiscoveryConfig = {
   spec: {
     filters: {
       lastActive: 14,
-      openShiftVersions: ['4.19'],
+      openShiftVersions: ['4.20'],
       clusterTypes: ['ROSA', 'MOA', 'OCP', 'OCP-AssistedInstall'],
       infrastructureProviders: ['aws', 'azure'],
     },
@@ -147,7 +147,7 @@ export const discoveryConfigUpdated: DiscoveryConfig = {
   spec: {
     filters: {
       lastActive: 30,
-      openShiftVersions: ['4.19', '4.20'],
+      openShiftVersions: ['4.20', '4.21'],
       clusterTypes: ['ROSA', 'MOA', 'OCP', 'OCP-AssistedInstall'],
       infrastructureProviders: ['aws', 'azure'],
     },
