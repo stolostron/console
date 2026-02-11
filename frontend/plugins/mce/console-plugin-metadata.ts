@@ -22,6 +22,6 @@ export const pluginMetadata: ConsolePluginBuildMetadata = {
     credentials: '../../src/routes/Credentials/CredentialsPlugin.tsx',
   },
   dependencies: {
-    '@console/pluginAPI': '>=4.15.0',
+    '@console/pluginAPI': '>=4.19.0',
   },
 }
