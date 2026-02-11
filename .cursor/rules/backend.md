@@ -70,7 +70,7 @@ try {
 ### Configuration
 - Load settings from config files in config/ directory
 - Use environment variables like CLUSTER_API_URL, NODE_ENV
-- Settings are watched and updated dynamically via stopSettingsWatch()
+- Settings are watched and updated dynamically
 - Feature flags are managed through MultiClusterHub components
 
 ### Health Checks
