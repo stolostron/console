@@ -10,7 +10,7 @@ export interface FormData {
   description?: string
   breadcrumb?: { text: string; to?: string }[]
   sections: (Section | SectionGroup)[]
-  submit: () => void
+  submit: () => void | Promise<void>
   cancel: () => void
   back?: () => void
   submitText: string

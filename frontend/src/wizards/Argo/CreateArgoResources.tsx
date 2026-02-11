@@ -202,14 +202,13 @@ export function CreateArgoResources(props: ICreateArgoResourcesModalProps) {
     ],
     submit: () => {
       const createData = stateToData()
-      reconcileResources(createData, []).then(() => {
+      return reconcileResources(createData, []).then(() => {
         toast.addAlert({
           title: t('GitOpsCluster created'),
           message: t('{{namespace}} has been successfully added to Argo server.', { namespace }),
           type: 'success',
           autoClose: true,
         })
-
         handleModalToggle()
       })
     },
