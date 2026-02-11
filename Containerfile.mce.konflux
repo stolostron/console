@@ -27,7 +27,7 @@ USER 1001
 CMD ["node", "backend.mjs"]
 
 LABEL com.redhat.component="multicluster-engine-console-mce-container" \
-      cpe="cpe:/a:redhat:multicluster_engine:2.11::el9" \
+      cpe="cpe:/a:redhat:multicluster_engine:2.17::el9" \
       url="https://github.com/stolostron/console" \
       name="multicluster-engine/console-mce-rhel9" \
       summary="multicluster-engine-console-mce" \

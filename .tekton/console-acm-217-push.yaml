@@ -4,17 +4,16 @@ metadata:
   annotations:
     build.appstudio.openshift.io/repo: https://github.com/stolostron/console?rev={{revision}}
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
-    build.appstudio.redhat.com/pull_request_number: '{{pull_request_number}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
-    pipelinesascode.tekton.dev/cancel-in-progress: "true"
+    pipelinesascode.tekton.dev/cancel-in-progress: "false"
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch == "main"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "release-2.17"
   creationTimestamp:
   labels:
-    appstudio.openshift.io/application: release-acm-216
-    appstudio.openshift.io/component: console-acm-216
+    appstudio.openshift.io/application: release-acm-217
+    appstudio.openshift.io/component: console-acm-217
     pipelines.appstudio.openshift.io/type: build
-  name: console-acm-216-on-pull-request
+  name: console-acm-217-on-push
   namespace: crt-redhat-acm-tenant
 spec:
   params:
@@ -23,9 +22,7 @@ spec:
   - name: revision
     value: '{{revision}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/crt-redhat-acm-tenant/console-acm-216:on-pr-{{revision}}
-  - name: image-expires-after
-    value: 5d
+    value: quay.io/redhat-user-workloads/crt-redhat-acm-tenant/console-acm-217:{{revision}}
   - name: build-platforms
     value:
     - linux/x86_64
@@ -42,6 +39,12 @@ spec:
     value: "true"
   - name: prefetch-input
     value: '[{"path":".","type":"npm"},{"path":"./frontend","type":"npm"},{"path":"./backend","type":"npm"}]'
+  - name: send-slack-notification
+    value: true
+  - name: konflux-application-name
+    value: release-acm-217
+  - name: slack-group-id
+    value: S09M3BVC3T3 # acm-console-build-focal group-id
   - name: enable-cache-proxy
     value: "true"
   pipelineRef:
@@ -54,7 +57,7 @@ spec:
     - name: pathInRepo
       value: pipelines/common.yaml
   taskRunTemplate:
-    serviceAccountName: build-pipeline-console-acm-216
+    serviceAccountName: build-pipeline-console-acm-217
   workspaces:
   - name: git-auth
     secret:

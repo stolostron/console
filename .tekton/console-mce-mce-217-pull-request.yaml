@@ -4,16 +4,17 @@ metadata:
   annotations:
     build.appstudio.openshift.io/repo: https://github.com/stolostron/console?rev={{revision}}
     build.appstudio.redhat.com/commit_sha: '{{revision}}'
+    build.appstudio.redhat.com/pull_request_number: '{{pull_request_number}}'
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
-    pipelinesascode.tekton.dev/cancel-in-progress: "false"
+    pipelinesascode.tekton.dev/cancel-in-progress: "true"
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "release-2.16"
+    pipelinesascode.tekton.dev/on-cel-expression: event == "pull_request" && target_branch == "main"
   creationTimestamp:
   labels:
-    appstudio.openshift.io/application: release-acm-216
-    appstudio.openshift.io/component: console-acm-216
+    appstudio.openshift.io/application: release-mce-217
+    appstudio.openshift.io/component: console-mce-mce-217
     pipelines.appstudio.openshift.io/type: build
-  name: console-acm-216-on-push
+  name: console-mce-mce-217-on-pull-request
   namespace: crt-redhat-acm-tenant
 spec:
   params:
@@ -22,7 +23,9 @@ spec:
   - name: revision
     value: '{{revision}}'
   - name: output-image
-    value: quay.io/redhat-user-workloads/crt-redhat-acm-tenant/console-acm-216:{{revision}}
+    value: quay.io/redhat-user-workloads/crt-redhat-acm-tenant/console-mce-mce-217:on-pr-{{revision}}
+  - name: image-expires-after
+    value: 5d
   - name: build-platforms
     value:
     - linux/x86_64
@@ -30,7 +33,7 @@ spec:
     - linux/s390x
     - linux/arm64
   - name: dockerfile
-    value: Containerfile.acm.konflux
+    value: Containerfile.mce.konflux
   - name: path-context
     value: .
   - name: hermetic
@@ -39,12 +42,6 @@ spec:
     value: "true"
   - name: prefetch-input
     value: '[{"path":".","type":"npm"},{"path":"./frontend","type":"npm"},{"path":"./backend","type":"npm"}]'
-  - name: send-slack-notification
-    value: true
-  - name: konflux-application-name
-    value: release-acm-216
-  - name: slack-group-id
-    value: S09M3BVC3T3 # acm-console-build-focal group-id
   - name: enable-cache-proxy
     value: "true"
   pipelineRef:
@@ -57,7 +54,7 @@ spec:
     - name: pathInRepo
       value: pipelines/common.yaml
   taskRunTemplate:
-    serviceAccountName: build-pipeline-console-acm-216
+    serviceAccountName: build-pipeline-console-mce-mce-217
   workspaces:
   - name: git-auth
     secret:
