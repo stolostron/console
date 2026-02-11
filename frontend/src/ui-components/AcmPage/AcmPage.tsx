@@ -65,6 +65,7 @@ export function AcmPageHeader(props: AcmPageHeaderProps) {
       padding={{ default: 'noPadding' }}
       style={{
         border: 'none',
+        boxShadow: 'none',
       }}
       stickyOnBreakpoint={{ default: 'top' }}
     >
