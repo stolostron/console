@@ -18,6 +18,7 @@ import {
 import { Button, Content, ContentVariants, Flex, FlexItem, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { css } from '@emotion/css'
 import { get, set } from 'lodash'
 import { Fragment, ReactNode, useMemo, useRef, useState } from 'react'
 import { CreateCredentialModal } from '../../components/CreateCredentialModal'
@@ -30,7 +31,6 @@ import { useWizardStrings } from '../../lib/wizardStrings'
 import { NavigationPath } from '../../NavigationPath'
 import { ApplicationSetKind, GitOpsCluster } from '../../resources'
 import { useSharedSelectors } from '../../shared-recoil'
-import { AcmAlert } from '../../ui-components'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
 import { IPlacement, PlacementApiVersion, PlacementKind, PlacementType } from '../common/resources/IPlacement'
 import { IResource } from '../common/resources/IResource'
@@ -46,6 +46,12 @@ import {
   findGeneratorPathWithGenType,
   ExistingPlacementSelect,
 } from './MultipleGeneratorSelector'
+
+const gitOpsAlertInReviewClass = css({
+  '#review &': {
+    marginBottom: '30px',
+  },
+})
 
 export interface Channel {
   metadata?: {
@@ -242,14 +248,8 @@ export function ArgoWizard(props: ArgoWizardProps) {
   }, [props.applicationSets, sourceHelmChannels])
 
   const [filteredClusterSets, setFilteredClusterSets] = useState<IResource[]>([])
-  const generatorPathRef = useRef<string>(
-    get(applicationSet, 'spec.generators.0.matrix') ? 'spec.generators.0.matrix.generators' : 'spec.generators'
-  )
-  const [hasCDRGen, setHasCDRGen] = useState(() => {
-    if (!applicationSet) return false
-    const gens = get(applicationSet, generatorPathRef.current) as IResource[] | undefined
-    return Array.isArray(gens) && gens.some((g) => g && typeof g === 'object' && 'clusterDecisionResource' in g)
-  })
+  const generatorPathRef = useRef<string>('spec.generators')
+  const [hasCDRGen, setHasCDRGen] = useState(true)
   const prevGenState = useRef<{ hasGitGen?: boolean; hasListGen?: boolean; hasCDRGen?: boolean }>({ hasCDRGen: true })
   const { gitOpsOperatorSubscriptionsValue } = useSharedSelectors()
   const gitOpsOperator = useOperatorCheck(SupportedOperator.gitOps, gitOpsOperatorSubscriptionsValue)
@@ -457,18 +457,12 @@ export function ArgoWizard(props: ArgoWizardProps) {
             onFilteredClusterSetsChange={setFilteredClusterSets}
           />
           <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
-            <GitOpsOperatorAlert showAlert={showAlert} isPullModel={isPullModel} />
-            {isPullModel && !resources && !showAlert && (
-              <AcmAlert
-                isInline
-                noClose
-                variant="info"
-                title={t('Operator required')}
-                message={t(
-                  'The OpenShift GitOps Operator is required on the managed clusters to create an application set pull model type. Make sure the operator is installed on all managed clusters you are targeting.'
-                )}
-              />
-            )}
+            <GitOpsOperatorAlert
+              editMode={!!resources}
+              showAlert={showAlert}
+              isPullModel={isPullModel}
+              className={gitOpsAlertInReviewClass}
+            />
             <Section label={t('General')}>
               <WizTextInput
                 path="metadata.name"

@@ -32,6 +32,7 @@ import { validateWebURL } from '../../lib/validation'
 import { GitRevisionSelect } from './common/GitRevisionSelect'
 import { findObjectWithKey } from '../../routes/Applications/ApplicationDetails/ApplicationTopology/model/application'
 import { IPlacement } from '../common/resources/IPlacement'
+import { useShowValidation } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ShowValidationProvider'
 
 const URL = '{{.url}}'
 const CLUSTER = '{{.cluster}}'
@@ -62,6 +63,7 @@ export interface MultipleGeneratorSelectorProps {
 export function MultipleGeneratorSelector(props: MultipleGeneratorSelectorProps) {
   const { generatorPath } = props
   const item = useContext(ItemContext)
+  const showValidation = useShowValidation()
 
   const editMode = useEditMode()
   const path = generatorPath.current || 'spec.generators'
@@ -73,7 +75,7 @@ export function MultipleGeneratorSelector(props: MultipleGeneratorSelectorProps)
       id="generators"
       path={path}
       placeholder={generators?.length >= 2 ? undefined : t('Add generator')}
-      required
+      required={showValidation}
       dropdownItems={Specifications.map((specification) => ({
         label: specification.description,
         action: () => createGeneratorFromSpecification(specification),
@@ -383,11 +385,9 @@ export function CrossGeneratorSync(props: CrossGeneratorSyncProps) {
   const appName = get(appSet as IResource, 'metadata.name')
   const appNamespace = get(appSet as IResource, 'metadata.namespace')
   const placementName = get(placement as IResource, 'metadata.name')
-  const path = props.generatorPath.current || 'spec.generators'
   const matrixGenerator = appSet ? get(appSet, 'spec.generators.0.matrix') : undefined
-  const generatorString = appSet ? JSON.stringify(get(appSet, path)) : undefined
-
-  void defaultData // passed for consumers that need initial/default generator data
+  props.generatorPath.current = matrixGenerator ? 'spec.generators.0.matrix.generators' : 'spec.generators'
+  const generatorString = appSet ? JSON.stringify(get(appSet, props.generatorPath.current)) : undefined
 
   // fixup yaml based on what generators are selected
   useEffect(() => {
@@ -403,7 +403,7 @@ export function CrossGeneratorSync(props: CrossGeneratorSyncProps) {
     /////////////////////////////////////////////////////////
     /////////////// ADD OR REMOVE MATRIX ////////////////////
     /////////////////////////////////////////////////////////
-    let generators = appSet ? (get(appSet, path) as IResource[] | undefined) : undefined
+    let generators = appSet ? (get(appSet, props.generatorPath.current) as IResource[] | undefined) : undefined
     if (!generators) return
 
     // if there are more than one generator and no matrix generator, add a matrix generator
@@ -522,7 +522,7 @@ export function CrossGeneratorSync(props: CrossGeneratorSyncProps) {
       update()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appName, appNamespace, placementName, props.generatorPath, generatorString])
+  }, [appName, appNamespace, placementName, props.generatorPath.current, generatorString])
 
   return <></>
 }

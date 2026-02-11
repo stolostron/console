@@ -23,7 +23,7 @@
 
 .spinner .swirly {
   fill: transparent;
-  stroke: #0b23f3;
+  stroke: var(--pf-t--global--icon--color--brand--default);
   stroke-width: 4;
   stroke-linecap: round;
   stroke-dasharray: 126;
