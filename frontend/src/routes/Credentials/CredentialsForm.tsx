@@ -1363,8 +1363,8 @@ export function CredentialsForm(
             value: authMethod,
             onChange: handleAuthMethodChange,
             options: [
-              { id: OCMAuthMethod.API_TOKEN, value: OCMAuthMethod.API_TOKEN, text: t('API token') },
-              { id: OCMAuthMethod.SERVICE_ACCOUNT, value: OCMAuthMethod.SERVICE_ACCOUNT, text: t('Service account') },
+              { id: OCMAuthMethod.API_TOKEN, value: t('API token') },
+              { id: OCMAuthMethod.SERVICE_ACCOUNT, value: t('Service account') },
             ],
             isRequired: true,
           },
