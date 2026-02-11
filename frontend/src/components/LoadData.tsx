@@ -113,6 +113,8 @@ import {
   SubscriptionReportKind,
   UserApiVersion,
   UserKind,
+  ServiceApiVersion,
+  ServiceKind,
 } from '../resources'
 import { getBackendUrl, getRequest } from '../resources/utils'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
@@ -171,6 +173,7 @@ import {
   secretsState,
   ServerSideEventData,
   settingsState,
+  servicesState,
   storageClassState,
   submarinerConfigsState,
   subscriptionOperatorsState,
@@ -242,6 +245,7 @@ export function LoadData(props: { children?: ReactNode }) {
   const setSearchOperator = useSetRecoilState(searchOperatorState)
   const setSecrets = useSetRecoilState(secretsState)
   const setSettings = useSetRecoilState(settingsState)
+  const setServices = useSetRecoilState(servicesState)
   const setStorageClassState = useSetRecoilState(storageClassState)
   const setSubmarinerConfigs = useSetRecoilState(submarinerConfigsState)
   const setSubscriptionOperatorsState = useSetRecoilState(subscriptionOperatorsState)
@@ -336,6 +340,7 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(RbacApiVersion, ClusterRoleKind, setVMClusterRoles)
     addSetter(SearchOperatorApiVersion, SearchOperatorKind, setSearchOperator)
     addSetter(SecretApiVersion, SecretKind, setSecrets)
+    addSetter(ServiceApiVersion, ServiceKind, setServices)
     addSetter(StorageClassApiVersion, StorageClassKind, setStorageClassState)
     addSetter(SubmarinerConfigApiVersion, SubmarinerConfigKind, setSubmarinerConfigs)
     addSetter(SubscriptionApiVersion, SubscriptionKind, setSubscriptionsState)
@@ -395,6 +400,7 @@ export function LoadData(props: { children?: ReactNode }) {
     setPolicySetsState,
     setSearchOperator,
     setSecrets,
+    setServices,
     setStorageClassState,
     setSubmarinerConfigs,
     setSubscriptionOperatorsState,

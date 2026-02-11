@@ -15,6 +15,7 @@ import {
   HostedClusterK8sResource,
   ISearchResource,
   SearchResult,
+  IService,
 } from '../../resources/resource'
 import {
   AppColumns,
@@ -39,6 +40,10 @@ import { ServerSideEvents } from '../../lib/server-side-events'
 import { getPulledAppSetMap, getPushedAppSetMap, IArgoAppRemoteResource } from './applicationsArgo'
 import { deflateResource, inflateApp } from '../../lib/compression'
 
+const CLUSTER_PROXY_SERVICE_NAME = 'cluster-proxy-addon-user'
+const CLUSTER_PROXY_SERVICE_NAMESPACE = 'multicluster-engine'
+const CLUSTER_PROXY_SERVICE_PORT = 9092
+
 //////////////////////////////////////////////////////////////////
 ////////////// TRANSFORM /////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
@@ -58,7 +63,14 @@ export async function transform(
     items.map(async (app, inx) => {
       app = await inflateApp(app)
       const type = getApplicationType(app)
-      const _clusters = getApplicationClusters(app, type, subscriptions, placementDecisions, localCluster, clusters)
+      const _clusters = await getApplicationClusters(
+        app,
+        type,
+        subscriptions,
+        placementDecisions,
+        localCluster,
+        clusters
+      )
       items[inx] = {
         transform: getTransform(app, type, argoClusterStatusMap, _clusters),
         remoteClusters:
@@ -503,7 +515,7 @@ export function isSystemApp(namespace?: string) {
   return namespace && systemAppNamespacePrefixes.some((prefix) => namespace.startsWith(prefix))
 }
 
-export function getApplicationClusters(
+export async function getApplicationClusters(
   resource: IResource | IOCPApplication | IArgoApplication,
   type: string,
   subscriptions: IResource[],
@@ -521,7 +533,7 @@ export function getApplicationClusters(
       break
     case 'argo':
       if ('spec' in resource) {
-        return [getArgoCluster(resource, clusters)]
+        return [await getArgoCluster(resource, clusters)]
       }
       break
     case 'appset':
@@ -531,7 +543,7 @@ export function getApplicationClusters(
           return getArgoPullModelClusterList(apps)
         } else {
           const apps = getPushedAppSetMap()[resource.metadata?.name] || []
-          return getArgoPushModelClusterList(apps, localCluster, clusters)
+          return await getArgoPushModelClusterList(apps, localCluster, clusters)
         }
       }
       break
@@ -564,14 +576,14 @@ function getArgoPullModelClusterList(apps: IArgoAppRemoteResource[]) {
   return Array.from(clusterSet)
 }
 
-export const getArgoPushModelClusterList = (
+export const getArgoPushModelClusterList = async (
   resources: IArgoApplication[],
   localCluster: Cluster | undefined,
   managedClusters: Cluster[]
 ) => {
   const clusterSet = new Set<string>()
 
-  resources.forEach((resource) => {
+  for (const resource of resources) {
     const isRemoteArgoApp = !!resource.status?.cluster
 
     if (
@@ -583,7 +595,7 @@ export const getArgoPushModelClusterList = (
       clusterSet.add(localCluster?.name ?? '')
     } else if (isRemoteArgoApp) {
       clusterSet.add(
-        getArgoDestinationCluster(
+        await getArgoDestinationCluster(
           resource.spec.destination,
           managedClusters,
           resource.status.cluster,
@@ -592,10 +604,10 @@ export const getArgoPushModelClusterList = (
       )
     } else {
       clusterSet.add(
-        getArgoDestinationCluster(resource.spec.destination, managedClusters, undefined, localCluster?.name)
+        await getArgoDestinationCluster(resource.spec.destination, managedClusters, undefined, localCluster?.name)
       )
     }
-  })
+  }
 
   return Array.from(clusterSet)
 }
@@ -674,7 +686,7 @@ const isLocalSubscription = (subName: string, subList: string[]) => {
   return subName.endsWith(localSubSuffixStr) && subList.includes(subName.slice(0, -localSubSuffixStr.length))
 }
 
-function getArgoCluster(resource: IArgoApplication, clusters: Cluster[]) {
+async function getArgoCluster(resource: IArgoApplication, clusters: Cluster[]) {
   if (resource.status?.cluster) {
     return resource.status?.cluster
   } else if (
@@ -684,11 +696,11 @@ function getArgoCluster(resource: IArgoApplication, clusters: Cluster[]) {
   ) {
     return getHubClusterName()
   } else {
-    return getArgoDestinationCluster(resource.spec.destination, clusters, resource?.status?.cluster)
+    return await getArgoDestinationCluster(resource.spec.destination, clusters, resource?.status?.cluster)
   }
 }
 
-export function getArgoDestinationCluster(
+export async function getArgoDestinationCluster(
   destination: { name?: string; namespace: string; server?: string },
   clusters: Cluster[],
   cluster?: string,
@@ -701,7 +713,17 @@ export function getArgoDestinationCluster(
     if (serverApi === 'https://kubernetes.default.svc') {
       clusterName = cluster || hubClusterName
     } else {
-      const server = clusters.find((cls) => cls.kubeApiServer === serverApi)
+      const clusterProxyService = await getClusterProxyService()
+      let server
+      if (clusterProxyService) {
+        // if cluster proxy is enabled, use the cluster proxy url
+        server = clusters.find((cls) => {
+          const url = getClusterProxyServiceURL(clusterProxyService, cls.name)
+          return url === serverApi
+        })
+      } else {
+        server = clusters.find((cls) => cls.kubeApiServer === serverApi)
+      }
       clusterName = server ? server.name : 'unknown'
     }
   } else {
@@ -1041,4 +1063,29 @@ export function keyBy(array: IResource[], selector: SelectorType) {
     result[key] = item
   }
   return result
+}
+
+//////////////////////////////////////////////////////////////////
+///////////////// CLUSTER PROXY SUPPORT ////////////////
+//////////////////////////////////////////////////////////////////
+export async function getClusterProxyService() {
+  const services = await getKubeResources('Service', 'v1')
+  return services.find(
+    (s) => s.metadata?.name === 'cluster-proxy-addon-user' && s.metadata?.namespace === 'multicluster-engine'
+  )
+}
+
+export function getClusterProxyServiceURL(service: IService, cluster: string) {
+  if (!service) {
+    return undefined
+  }
+  if (!cluster) {
+    return undefined
+  }
+  let port = CLUSTER_PROXY_SERVICE_PORT
+  if (service.spec?.ports) {
+    port = service.spec.ports[0].port
+  }
+
+  return `https://${CLUSTER_PROXY_SERVICE_NAME}.${CLUSTER_PROXY_SERVICE_NAMESPACE}.svc.cluster.local:${port}/${cluster}`
 }

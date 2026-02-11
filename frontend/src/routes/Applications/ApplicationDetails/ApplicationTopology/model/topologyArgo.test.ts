@@ -1,8 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { getArgoTopology } from './topologyArgo'
+import {
+  getArgoTopology,
+  getClusterProxyService,
+  getClusterProxyServiceURL,
+  getArgoDestinationCluster,
+} from './topologyArgo'
 import type { ArgoApplicationTopologyData, ArgoTopologyData, ManagedCluster, ArgoTopologyResult } from '../types'
 import type { ToolbarControl } from '../topology/components/TopologyToolbar'
+import type { Service } from '../../../../../resources'
 
 const mockToolbarControl: ToolbarControl = {
   allClusters: undefined,
@@ -20,11 +26,13 @@ const mockToolbarControl: ToolbarControl = {
 }
 
 it('getArgoTopology success scenario', () => {
-  expect(getArgoTopology(mockToolbarControl, application, argoData, managedClusters, 'local-cluster')).toEqual(result1)
+  expect(getArgoTopology(mockToolbarControl, application, argoData, managedClusters, 'local-cluster', [])).toEqual(
+    result1
+  )
 })
 
 it('getArgoTopology success scenario', () => {
-  expect(getArgoTopology(mockToolbarControl, application2, argoData2, managedClusters, 'local-cluster')).toEqual(
+  expect(getArgoTopology(mockToolbarControl, application2, argoData2, managedClusters, 'local-cluster', [])).toEqual(
     result2
   )
 })
@@ -2674,3 +2682,133 @@ const argoData2: ArgoTopologyData = {
   },
   cluster: 'feng-hs-import',
 }
+
+describe('cluster proxy helpers', () => {
+  it('getClusterProxyService returns matching service', () => {
+    const services: Service[] = [
+      {
+        apiVersion: 'v1',
+        kind: 'Service',
+        metadata: { name: 'other', namespace: 'default' },
+        spec: { ports: [{ port: 8443 }] },
+      },
+      {
+        apiVersion: 'v1',
+        kind: 'Service',
+        metadata: { name: 'cluster-proxy-addon-user', namespace: 'multicluster-engine' },
+        spec: { ports: [{ port: 9092 }] },
+      },
+    ]
+
+    const result = getClusterProxyService(services)
+
+    expect(result?.metadata.name).toBe('cluster-proxy-addon-user')
+    expect(result?.metadata.namespace).toBe('multicluster-engine')
+  })
+
+  it('getClusterProxyService returns undefined when not found', () => {
+    const services: Service[] = [
+      {
+        apiVersion: 'v1',
+        kind: 'Service',
+        metadata: { name: 'other', namespace: 'default' },
+        spec: { ports: [{ port: 8443 }] },
+      },
+    ]
+
+    const result = getClusterProxyService(services)
+
+    expect(result).toBeUndefined()
+  })
+
+  it('getClusterProxyServiceURL builds URL using service port', () => {
+    const service: Service = {
+      apiVersion: 'v1',
+      kind: 'Service',
+      metadata: { name: 'cluster-proxy-addon-user', namespace: 'multicluster-engine' },
+      spec: { ports: [{ port: 8443 }] },
+    }
+
+    const result = getClusterProxyServiceURL(service, 'my-cluster')
+
+    expect(result).toBe('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:8443/my-cluster')
+  })
+
+  it('getClusterProxyServiceURL returns empty string when service is missing', () => {
+    const result = getClusterProxyServiceURL(undefined as unknown as Service, 'my-cluster')
+
+    expect(result).toBe('')
+  })
+
+  it('getClusterProxyServiceURL returns empty string when cluster is missing', () => {
+    const service: Service = {
+      apiVersion: 'v1',
+      kind: 'Service',
+      metadata: { name: 'cluster-proxy-addon-user', namespace: 'multicluster-engine' },
+      spec: { ports: [{ port: 9092 }] },
+    }
+
+    const result = getClusterProxyServiceURL(service, '')
+
+    expect(result).toBe('')
+  })
+
+  it('getClusterProxyServiceURL falls back to default port when ports are missing', () => {
+    const service = {
+      apiVersion: 'v1',
+      kind: 'Service',
+      metadata: { name: 'cluster-proxy-addon-user', namespace: 'multicluster-engine' },
+      spec: undefined,
+    } as unknown as Service
+
+    const result = getClusterProxyServiceURL(service, 'my-cluster')
+
+    expect(result).toBe('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:9092/my-cluster')
+  })
+})
+
+describe('getArgoDestinationCluster with cluster proxy', () => {
+  it('resolves cluster name via cluster proxy url match', () => {
+    const services: Service[] = [
+      {
+        apiVersion: 'v1',
+        kind: 'Service',
+        metadata: { name: 'cluster-proxy-addon-user', namespace: 'multicluster-engine' },
+        spec: { ports: [{ port: 8443 }] },
+      },
+    ]
+    const managedClusters: ManagedCluster[] = [
+      { name: 'cluster-1', kubeApiServer: 'https://api.cluster-1.example:6443' },
+    ]
+    const destination = {
+      server: 'https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:8443/cluster-1',
+      namespace: 'default',
+    }
+
+    const result = getArgoDestinationCluster(destination, managedClusters, undefined, 'hub-cluster', services)
+
+    expect(result).toBe('cluster-1')
+  })
+
+  it('returns unknown when proxy url does not match any cluster', () => {
+    const services: Service[] = [
+      {
+        apiVersion: 'v1',
+        kind: 'Service',
+        metadata: { name: 'cluster-proxy-addon-user', namespace: 'multicluster-engine' },
+        spec: { ports: [{ port: 8443 }] },
+      },
+    ]
+    const managedClusters: ManagedCluster[] = [
+      { name: 'cluster-1', kubeApiServer: 'https://api.cluster-1.example:6443' },
+    ]
+    const destination = {
+      server: 'https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:8443/cluster-2',
+      namespace: 'default',
+    }
+
+    const result = getArgoDestinationCluster(destination, managedClusters, undefined, 'hub-cluster', services)
+
+    expect(result).toBe('unknown')
+  })
+})
