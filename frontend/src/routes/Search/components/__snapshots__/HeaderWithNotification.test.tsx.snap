@@ -12,6 +12,7 @@ exports[`renders clusters disabled message 1`] = `
         <section
           class="pf-v6-c-page__main-section pf-m-no-padding pf-m-sticky-top"
           id="page-header"
+          style="box-shadow: none;"
         >
           <div
             class="pf-v6-l-split"
@@ -142,6 +143,7 @@ exports[`renders empty message 1`] = `
         <section
           class="pf-v6-c-page__main-section pf-m-no-padding pf-m-sticky-top"
           id="page-header"
+          style="box-shadow: none;"
         >
           <div
             class="pf-v6-l-split"
@@ -214,6 +216,7 @@ exports[`renders unknown message 1`] = `
         <section
           class="pf-v6-c-page__main-section pf-m-no-padding pf-m-sticky-top"
           id="page-header"
+          style="box-shadow: none;"
         >
           <div
             class="pf-v6-l-split"
@@ -344,6 +347,7 @@ exports[`renders with Global Search alert & no message 1`] = `
         <section
           class="pf-v6-c-page__main-section pf-m-no-padding pf-m-sticky-top"
           id="page-header"
+          style="box-shadow: none;"
         >
           <div
             class="pf-v6-l-split"
