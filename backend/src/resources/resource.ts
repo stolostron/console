@@ -228,3 +228,10 @@ export interface IOCPApplication extends IResource {
     cluster?: string
   }
 }
+export interface IService extends IResource {
+  spec?: {
+    ports?: {
+      port: number
+    }[]
+  }
+}

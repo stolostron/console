@@ -133,7 +133,15 @@ describe('topology', () => {
 
   describe('getTopology', () => {
     it('should return undefined when application is null', async () => {
-      const result = await getTopology(mockToolbarControl, null, mockManagedClusters, 'local-cluster', {}, mockArgoData)
+      const result = await getTopology(
+        mockToolbarControl,
+        null,
+        mockManagedClusters,
+        'local-cluster',
+        {},
+        mockArgoData,
+        []
+      )
 
       expect(result).toBeUndefined()
     })
@@ -162,7 +170,8 @@ describe('topology', () => {
         mockManagedClusters,
         'local-cluster',
         {},
-        mockArgoData
+        mockArgoData,
+        []
       )
 
       expect(getArgoTopology).toHaveBeenCalledWith(
@@ -170,7 +179,8 @@ describe('topology', () => {
         argoApp,
         mockArgoData,
         mockManagedClusters,
-        'local-cluster'
+        'local-cluster',
+        []
       )
       expect(result).toBeDefined()
       expect(result?.hubClusterName).toBe('local-cluster')
@@ -200,7 +210,8 @@ describe('topology', () => {
         mockManagedClusters,
         'local-cluster',
         {},
-        mockArgoData
+        mockArgoData,
+        []
       )
 
       expect(getAppSetTopology).toHaveBeenCalledWith(mockToolbarControl, appSetApp, 'local-cluster')
@@ -232,7 +243,8 @@ describe('topology', () => {
         mockManagedClusters,
         'local-cluster',
         {},
-        mockArgoData
+        mockArgoData,
+        []
       )
 
       expect(getOCPFluxAppTopology).toHaveBeenCalledWith(mockToolbarControl, ocpApp, 'local-cluster')
@@ -264,7 +276,8 @@ describe('topology', () => {
         mockManagedClusters,
         'local-cluster',
         {},
-        mockArgoData
+        mockArgoData,
+        []
       )
 
       expect(getOCPFluxAppTopology).toHaveBeenCalledWith(mockToolbarControl, fluxApp, 'local-cluster')
@@ -297,7 +310,8 @@ describe('topology', () => {
         mockManagedClusters,
         'local-cluster',
         relatedResources,
-        mockArgoData
+        mockArgoData,
+        []
       )
 
       expect(getSubscriptionTopology).toHaveBeenCalledWith(

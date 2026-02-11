@@ -55,6 +55,7 @@ import {
   PolicySet,
   SearchOperator,
   Secret,
+  Service,
   SubmarinerConfig,
   Subscription,
   SubscriptionOperator,
@@ -122,6 +123,7 @@ export const policyreportState = AtomArray<PolicyReport>()
 export const policySetsState = AtomArray<PolicySet>()
 export const searchOperatorState = AtomArray<SearchOperator>()
 export const secretsState = AtomArray<Secret>()
+export const servicesState = AtomArray<Service>()
 export const storageClassState = AtomArray<StorageClassK8sResource>()
 export const submarinerConfigsState = AtomArray<SubmarinerConfig>()
 export const subscriptionOperatorsState = AtomArray<SubscriptionOperator>()

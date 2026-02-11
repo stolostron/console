@@ -15,6 +15,8 @@ import {
   discoverSystemAppNamespacePrefixes,
   getArgoPushModelClusterList,
   getArgoDestinationCluster,
+  getClusterProxyService,
+  getClusterProxyServiceURL,
   keyBy,
   sizeOf,
 } from '../../../src/routes/aggregators/utils'
@@ -27,6 +29,7 @@ import {
   ClusterDeployment,
   ISearchResource,
   Cluster,
+  IService,
 } from '../../../src/resources/resource'
 import { ApplicationClusterStatusMap, ITransformedResource } from '../../../src/routes/aggregators/applications'
 import { ServerSideEvents } from '../../../src/lib/server-side-events'
@@ -826,7 +829,7 @@ describe('aggregators utils', () => {
   })
 
   describe('getArgoPushModelClusterList', () => {
-    it('should return cluster list for push model apps', () => {
+    it('should return cluster list for push model apps', async () => {
       const apps: IArgoApplication[] = [
         {
           kind: 'Application',
@@ -850,12 +853,12 @@ describe('aggregators utils', () => {
         kubeApiServer: 'https://api.local.com:6443',
       }
 
-      const clusters = getArgoPushModelClusterList(apps, localCluster, [])
+      const clusters = await getArgoPushModelClusterList(apps, localCluster, [])
 
       expect(clusters).toContain('local-cluster')
     })
 
-    it('should identify remote clusters', () => {
+    it('should identify remote clusters', async () => {
       const apps: IArgoApplication[] = [
         {
           kind: 'Application',
@@ -884,12 +887,12 @@ describe('aggregators utils', () => {
         },
       ]
 
-      const clusters = getArgoPushModelClusterList(apps, undefined, managedClusters)
+      const clusters = await getArgoPushModelClusterList(apps, undefined, managedClusters)
 
       expect(clusters).toContain('remote-cluster')
     })
 
-    it('should deduplicate cluster names', () => {
+    it('should deduplicate cluster names', async () => {
       const apps: IArgoApplication[] = [
         {
           kind: 'Application',
@@ -928,7 +931,7 @@ describe('aggregators utils', () => {
         kubeApiServer: 'https://api.local.com:6443',
       }
 
-      const clusters = getArgoPushModelClusterList(apps, localCluster, [])
+      const clusters = await getArgoPushModelClusterList(apps, localCluster, [])
 
       // Should only have one entry for local-cluster
       expect(clusters.filter((c) => c === 'local-cluster')).toHaveLength(1)
@@ -936,7 +939,7 @@ describe('aggregators utils', () => {
   })
 
   describe('getArgoDestinationCluster', () => {
-    it('should return cluster name from server API', () => {
+    it('should return cluster name from server API', async () => {
       const destination = {
         server: 'https://api.test.com:6443',
         namespace: 'default',
@@ -949,53 +952,234 @@ describe('aggregators utils', () => {
         },
       ]
 
-      const result = getArgoDestinationCluster(destination, clusters)
+      const result = await getArgoDestinationCluster(destination, clusters)
 
       expect(result).toBe('test-cluster')
     })
 
-    it('should return hub cluster for kubernetes.default.svc', () => {
+    it('should return hub cluster for kubernetes.default.svc', async () => {
       const destination = {
         server: 'https://kubernetes.default.svc',
         namespace: 'default',
       }
 
-      const result = getArgoDestinationCluster(destination, [], undefined, 'hub-cluster')
+      const result = await getArgoDestinationCluster(destination, [], undefined, 'hub-cluster')
 
       expect(result).toBe('hub-cluster')
     })
 
-    it('should return unknown for non-matching server', () => {
+    it('should return unknown for non-matching server', async () => {
       const destination = {
         server: 'https://api.unknown.com:6443',
         namespace: 'default',
       }
 
-      const result = getArgoDestinationCluster(destination, [])
+      const result = await getArgoDestinationCluster(destination, [])
 
       expect(result).toBe('unknown')
     })
 
-    it('should use destination name when server is not provided', () => {
+    it('should use destination name when server is not provided', async () => {
       const destination = {
         name: 'named-cluster',
         namespace: 'default',
       }
 
-      const result = getArgoDestinationCluster(destination, [])
+      const result = await getArgoDestinationCluster(destination, [])
 
       expect(result).toBe('named-cluster')
     })
 
-    it('should convert in-cluster to hub cluster name', () => {
+    it('should convert in-cluster to hub cluster name', async () => {
       const destination = {
         name: 'in-cluster',
         namespace: 'default',
       }
 
-      const result = getArgoDestinationCluster(destination, [], undefined, 'my-hub')
+      const result = await getArgoDestinationCluster(destination, [], undefined, 'my-hub')
 
       expect(result).toBe('my-hub')
+    })
+
+    it('should resolve cluster name via cluster proxy url match', async () => {
+      const proxyService: IService = {
+        kind: 'Service',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'cluster-proxy-addon-user',
+          namespace: 'multicluster-engine',
+          uid: 'service-uid-proxy',
+          resourceVersion: '1',
+        },
+        spec: {
+          ports: [{ port: 8443 }],
+        },
+      }
+      await cacheResource(proxyService)
+
+      const destination = {
+        server: 'https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:8443/cluster-1',
+        namespace: 'default',
+      }
+      const clusters: Cluster[] = [
+        {
+          name: 'cluster-1',
+          kubeApiServer: 'https://api.cluster-1.example:6443',
+        },
+      ]
+
+      const result = await getArgoDestinationCluster(destination, clusters)
+
+      expect(result).toBe('cluster-1')
+    })
+
+    it('should return unknown when proxy url does not match any cluster', async () => {
+      const proxyService: IService = {
+        kind: 'Service',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'cluster-proxy-addon-user',
+          namespace: 'multicluster-engine',
+          uid: 'service-uid-proxy-2',
+          resourceVersion: '1',
+        },
+        spec: {
+          ports: [{ port: 8443 }],
+        },
+      }
+      await cacheResource(proxyService)
+
+      const destination = {
+        server: 'https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:8443/cluster-2',
+        namespace: 'default',
+      }
+      const clusters: Cluster[] = [
+        {
+          name: 'cluster-1',
+          kubeApiServer: 'https://api.cluster-1.example:6443',
+        },
+      ]
+
+      const result = await getArgoDestinationCluster(destination, clusters)
+
+      expect(result).toBe('unknown')
+    })
+  })
+
+  describe('getClusterProxyService', () => {
+    it('should return cluster proxy service when present', async () => {
+      const proxyService: IService = {
+        kind: 'Service',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'cluster-proxy-addon-user',
+          namespace: 'multicluster-engine',
+          uid: 'service-uid-1',
+          resourceVersion: '1',
+        },
+        spec: {
+          ports: [{ port: 8443 }],
+        },
+      }
+      const otherService: IService = {
+        kind: 'Service',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'other-service',
+          namespace: 'default',
+          uid: 'service-uid-2',
+          resourceVersion: '1',
+        },
+      }
+
+      await cacheResource(otherService)
+      await cacheResource(proxyService)
+
+      const result = await getClusterProxyService()
+
+      expect(result?.metadata?.name).toBe('cluster-proxy-addon-user')
+      expect(result?.metadata?.namespace).toBe('multicluster-engine')
+    })
+
+    it('should return undefined when cluster proxy service is absent', async () => {
+      const otherService: IService = {
+        kind: 'Service',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'other-service',
+          namespace: 'default',
+          uid: 'service-uid-3',
+          resourceVersion: '1',
+        },
+      }
+
+      await cacheResource(otherService)
+
+      const result = await getClusterProxyService()
+
+      expect(result).toBeUndefined()
+    })
+  })
+
+  describe('getClusterProxyServiceURL', () => {
+    it('should build URL using service port when provided', () => {
+      const service: IService = {
+        kind: 'Service',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'cluster-proxy-addon-user',
+          namespace: 'multicluster-engine',
+          uid: 'service-uid-4',
+          resourceVersion: '1',
+        },
+        spec: {
+          ports: [{ port: 8443 }],
+        },
+      }
+
+      const result = getClusterProxyServiceURL(service, 'my-cluster')
+
+      expect(result).toBe('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:8443/my-cluster')
+    })
+
+    it('should fall back to default port when no ports are defined', () => {
+      const service: IService = {
+        kind: 'Service',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'cluster-proxy-addon-user',
+          namespace: 'multicluster-engine',
+          uid: 'service-uid-5',
+          resourceVersion: '1',
+        },
+      }
+
+      const result = getClusterProxyServiceURL(service, 'my-cluster')
+
+      expect(result).toBe('https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:9092/my-cluster')
+    })
+
+    it('should return undefined when service is missing', () => {
+      const result = getClusterProxyServiceURL(undefined as unknown as IService, 'my-cluster')
+
+      expect(result).toBeUndefined()
+    })
+
+    it('should return undefined when cluster is missing', () => {
+      const service: IService = {
+        kind: 'Service',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'cluster-proxy-addon-user',
+          namespace: 'multicluster-engine',
+          uid: 'service-uid-6',
+          resourceVersion: '1',
+        },
+      }
+
+      const result = getClusterProxyServiceURL(service, '')
+
+      expect(result).toBeUndefined()
     })
   })
 
@@ -1104,7 +1288,7 @@ describe('aggregators utils', () => {
   })
 
   describe('getApplicationClusters', () => {
-    it('should return hub cluster for unknown type', () => {
+    it('should return hub cluster for unknown type', async () => {
       const resource: IResource = {
         kind: 'Unknown',
         apiVersion: 'unknown/v1',
@@ -1115,12 +1299,12 @@ describe('aggregators utils', () => {
         },
       }
 
-      const clusters = getApplicationClusters(resource, '-', [], [], undefined, [])
+      const clusters = await getApplicationClusters(resource, '-', [], [], undefined, [])
 
       expect(clusters).toContain('local-cluster')
     })
 
-    it('should return cluster for OpenShift app', () => {
+    it('should return cluster for OpenShift app', async () => {
       const resource = {
         kind: 'Deployment',
         apiVersion: 'apps/v1',
@@ -1135,12 +1319,12 @@ describe('aggregators utils', () => {
         },
       }
 
-      const clusters = getApplicationClusters(resource, 'openshift', [], [], undefined, [])
+      const clusters = await getApplicationClusters(resource, 'openshift', [], [], undefined, [])
 
       expect(clusters).toContain('ocp-cluster')
     })
 
-    it('should return cluster for Argo app', () => {
+    it('should return cluster for Argo app', async () => {
       const argoApp: IArgoApplication = {
         kind: 'Application',
         apiVersion: 'argoproj.io/v1alpha1',
@@ -1164,7 +1348,7 @@ describe('aggregators utils', () => {
         consoleUrl: 'https://console.local.com',
       }
 
-      const clusters = getApplicationClusters(argoApp, 'argo', [], [], localCluster, [])
+      const clusters = await getApplicationClusters(argoApp, 'argo', [], [], localCluster, [])
 
       expect(clusters).toHaveLength(1)
       expect(clusters[0]).toBe('local-cluster')
