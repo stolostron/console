@@ -16,6 +16,11 @@ import { ReviewStepContent } from './ReviewStepContent'
 import { RolesList } from './Roles/RolesList'
 import { ExampleScopesPanelContent } from './Scope/ExampleScope/ExampleScopesPanelContent'
 import { ScopeSelectionStepContent } from './ScopeSelectionStepContent'
+import {
+  getIsChangingSubjectForGroupChange,
+  getIsChangingSubjectForKindChange,
+  getIsChangingSubjectForUserChange,
+} from './isChangingSubject'
 import { RoleAssignmentWizardFormData, RoleAssignmentWizardModalProps } from './types'
 import { usePreselectedData } from './usePreselectedData'
 import { useClustersFromClusterSets } from './Scope/ClusterSets/useClustersFromClusterSets'
@@ -131,35 +136,47 @@ export const RoleAssignmentWizardModal = ({
     }))
   }, [])
 
-  const handleSubjectKindChange = useCallback((kind: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      subject: {
-        ...prev.subject,
-        kind: kind as typeof UserKind | typeof GroupKind,
-      },
-    }))
-  }, [])
+  const handleSubjectKindChange = useCallback(
+    (kind: string) => {
+      setFormData((prev) => ({
+        ...prev,
+        subject: {
+          ...prev.subject,
+          kind: kind as typeof UserKind | typeof GroupKind,
+        },
+        isChangingSubject: getIsChangingSubjectForKindChange(preselected, kind),
+      }))
+    },
+    [preselected]
+  )
 
-  const handleUserChange = useCallback((users: string[]) => {
-    setFormData((prev) => ({
-      ...prev,
-      subject: {
-        ...prev.subject,
-        user: users,
-      },
-    }))
-  }, [])
+  const handleUserChange = useCallback(
+    (users: string[]) => {
+      setFormData((prev) => ({
+        ...prev,
+        subject: {
+          ...prev.subject,
+          user: users,
+        },
+        isChangingSubject: getIsChangingSubjectForUserChange(preselected, users),
+      }))
+    },
+    [preselected]
+  )
 
-  const handleGroupChange = useCallback((groups: string[]) => {
-    setFormData((prev) => ({
-      ...prev,
-      subject: {
-        ...prev.subject,
-        group: groups,
-      },
-    }))
-  }, [])
+  const handleGroupChange = useCallback(
+    (groups: string[]) => {
+      setFormData((prev) => ({
+        ...prev,
+        subject: {
+          ...prev.subject,
+          group: groups,
+        },
+        isChangingSubject: getIsChangingSubjectForGroupChange(preselected, groups),
+      }))
+    },
+    [preselected]
+  )
 
   const handleNamespacesChange = useCallback((namespaces: string[]) => {
     setFormData((prev) => ({
