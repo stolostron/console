@@ -287,6 +287,7 @@ export function CredentialsTable(props: {
                       close: () => setModalProps({ open: false }),
                       isDanger: true,
                       icon: 'warning',
+                      confirmText: t('confirm'),
                     })
                   },
                   rbac: [rbacDelete(secret)],
@@ -349,6 +350,7 @@ export function CredentialsTable(props: {
                 actionFn: deleteResource,
                 close: () => setModalProps({ open: false }),
                 isDanger: true,
+                confirmText: t('confirm'),
               })
             },
             variant: 'bulk-action',
