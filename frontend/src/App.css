@@ -9,10 +9,10 @@
 .pf-v6-c-page__sidebar-body {
   padding-top: 0;
 }
-
+/* 
 #webpack-dev-server-client-overlay,
 #react-refresh-overlay {
   height: 20% !important;
   top: 80% !important;
   position: absolute !important;
-}
+} */
