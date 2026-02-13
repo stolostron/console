@@ -127,6 +127,7 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
             selected={value}
             onSelect={(_event, value) => onSelect(value?.toString() ?? '')}
             shouldFocusFirstItemOnOpen={false}
+            isScrollable
           >
             <SelectListOptions
               allOptions={options}
