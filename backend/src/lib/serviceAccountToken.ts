@@ -23,7 +23,7 @@ export function watchServiceAccountFile(
   onChange?: () => void
 ): string {
   const filePath = getServiceAccountFilePath(name)
-  if (onChange) {
+  if (onChange && process.env.NODE_ENV !== 'development') {
     watchFile(filePath, onChange)
   }
   return readFileOrUseDefault(filePath, defaultValue, exitOnError)
