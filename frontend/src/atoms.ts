@@ -168,8 +168,6 @@ export interface Settings {
 
   APP_ARGO_SEARCH_RESULT_LIMIT?: string
   APP_OCP_SEARCH_RESULT_LIMIT?: string
-
-  VM_RESULT_LIMIT?: string
 }
 
 export interface WatchEvent {
@@ -244,9 +242,4 @@ export function useVirtualMachineActionsEnabled() {
     },
     [settings]
   )
-}
-
-export function useVitualMachineSearchResultLimit() {
-  const settings = useRecoilValue(settingsState)
-  return useMemo(() => Number.parseInt(settings.VM_RESULT_LIMIT ?? '-1'), [settings])
 }
