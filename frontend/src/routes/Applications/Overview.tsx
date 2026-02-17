@@ -1,14 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+  Content,
+  ContentVariants,
   Label,
   PageSection,
   Popover,
   PopoverPosition,
   Stack,
   StackItem,
-  Content,
-  ContentVariants,
   ToolbarItem,
 } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
@@ -19,6 +19,7 @@ import { TFunction } from 'react-i18next'
 import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { HighlightSearchText } from '../../components/HighlightSearchText'
 import { Pages, usePageVisitMetricHandler } from '../../hooks/console-metrics'
+import { useLocalHubName } from '../../hooks/use-local-hub'
 import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
 import { PluginContext } from '../../lib/PluginContext'
@@ -47,12 +48,14 @@ import {
   StatusColumn,
   Subscription,
 } from '../../resources'
+import { getISOStringTimestamp } from '../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import {
   AcmButton,
   AcmDropdown,
   AcmEmptyState,
   AcmInlineStatusGroup,
+  AcmLabels,
   AcmTable,
   AcmTableStateProvider,
   AcmVisitedLink,
@@ -62,25 +65,23 @@ import {
 } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
+import { DeprecatedTitle } from './components/DeprecatedTitle'
 import { argoAppSetQueryString } from './CreateArgoApplication/actions'
 import { subscriptionAppQueryString } from './CreateSubscriptionApplication/actions'
 import {
-  getResourceTimestamp,
   getAnnotation,
   getAppChildResources,
   getClusterCount,
   getClusterCountField,
   getClusterCountSearchLink,
   getClusterCountString,
+  getResourceTimestamp,
   getSearchLink,
   getSubscriptionsFromAnnotation,
   hostingSubAnnotationStr,
   isResourceTypeOf,
 } from './helpers/resource-helper'
 import { isLocalSubscription } from './helpers/subscriptions'
-import { getISOStringTimestamp } from '../../resources/utils'
-import { DeprecatedTitle } from './components/DeprecatedTitle'
-import { useLocalHubName } from '../../hooks/use-local-hub'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -126,6 +127,13 @@ enum ScoreColumn {
   unknown = 4,
 }
 const ScoreColumnSize = Object.keys(ScoreColumn).length / 2
+
+const getLabels = (resource: OCPAppResource<ApplicationStatus>): string[] =>
+  resource.label ? resource.label.split(';').map((label) => label.trim()) : []
+
+const LabelCell = ({ labels }: { labels: string[] | Record<string, string> }) => (
+  <AcmLabels labels={labels} isCompact={true} />
+)
 
 function isOCPAppResource(resource: IApplicationResource): resource is OCPAppResource<ApplicationStatus> {
   return 'label' in resource
@@ -668,6 +676,11 @@ export default function ApplicationsOverview() {
           const clusterCount = getClusterCount(clusterList, localCluster)
           return getClusterCountString(t, clusterCount, clusterList, resource)
         },
+      },
+      {
+        header: t('table.labels'),
+        cell: (resource) => <LabelCell labels={getLabels(resource as OCPAppResource<ApplicationStatus>)} />,
+        exportContent: (resource) => getLabels(resource as OCPAppResource<ApplicationStatus>).join(','),
       },
       {
         header: t('Health Status'),
