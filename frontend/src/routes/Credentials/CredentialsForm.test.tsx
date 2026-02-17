@@ -311,12 +311,7 @@ describe('add credentials page', () => {
     // ost credentials
     await typeByTestId('cloud', providerConnection.stringData?.cloud!)
     await typeByTestId('clouds.yaml', providerConnection.stringData?.['clouds.yaml']!)
-    userEvent.type(
-      screen.getByRole('textbox', {
-        name: /internal ca certificate/i,
-      }),
-      providerConnection.stringData?.os_ca_bundle!
-    )
+    await typeByTestId('os_ca_bundle', providerConnection.stringData?.os_ca_bundle!)
 
     await clickByText('Next')
 

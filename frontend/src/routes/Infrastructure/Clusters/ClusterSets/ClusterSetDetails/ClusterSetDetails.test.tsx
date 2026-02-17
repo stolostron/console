@@ -1912,7 +1912,7 @@ describe('ClusterSetDetails page', () => {
     await clickByText('User management', 0)
     await waitForNocks([nock])
     await waitForText('mock-user')
-    userEvent.click(screen.getByRole('checkbox', { name: /select row 0/i }))
+    await userEvent.click(screen.getByRole('checkbox', { name: /select row 0/i }))
     await clickByLabel('Actions', 1)
     await clickByText('Remove')
     await waitForText('Remove users or groups?')
