@@ -168,6 +168,7 @@ class ControlPanelComboBox extends React.Component {
       'tf--list-box__menu-icon': true,
       'tf--list-box__menu-icon--open': isOpen,
     })
+    const toggleStyles = { height: isOpen ? '10%' : '100%' }
     const inputClasses = classNames({
       'pf-v6-c-form-control': true,
       input: true,
@@ -274,6 +275,7 @@ class ControlPanelComboBox extends React.Component {
                         ref={this.setToggleRef}
                         onClick={this.clickToggle.bind(this)}
                         onKeyPress={this.pressToggle.bind(this)}
+                        style={toggleStyles}
                       >
                         <svg
                           fillRule="evenodd"
@@ -292,39 +294,43 @@ class ControlPanelComboBox extends React.Component {
                   </div>
                   {!disabled && isOpen && (
                     <div
-                      role="button"
-                      className="tf--list-box__menu"
+                      className="pf-v6-c-menu pf-m-scrollable"
                       key={key}
                       id={key}
                       ref={this.setMenuRef}
+                      role="presentation"
                       onMouseDown={() => {
                         this.menuClick = true
                       }}
                       onMouseUp={() => {
                         this.menuClick = false
                       }}
-                      tabIndex="0"
                     >
-                      {items.map(({ label, id }) => {
-                        const itemClasses = classNames({
-                          'tf--list-box__menu-item': true,
-                          searching: searchText,
-                        })
-                        return (
-                          <div
-                            role="button"
-                            key={label}
-                            className={itemClasses}
-                            id={`${controlId}-item-${id}`}
-                            tabIndex="0"
-                            onMouseDown={() => this.setState({ preselect: true })}
-                            onClick={this.clickSelect.bind(this, label)}
-                            onKeyPress={this.pressSelect.bind(this, label)}
-                          >
-                            {this.renderLabel(label, searchText, active, control, simplified, describe)}
-                          </div>
-                        )
-                      })}
+                      <div className="pf-v6-c-menu__content">
+                        <ul role="listbox" aria-multiselectable="false" className="pf-v6-c-menu__list">
+                          {items.map(({ label, id }) => (
+                            <li key={label} className="pf-v6-c-menu__list-item" role="none">
+                              <button
+                                id={`${controlId}-item-${id}`}
+                                type="button"
+                                tabIndex={id === 0 ? 0 : -1}
+                                className="pf-v6-c-menu__item"
+                                role="option"
+                                aria-selected={label === active}
+                                onMouseDown={() => this.setState({ preselect: true })}
+                                onClick={this.clickSelect.bind(this, label)}
+                                onKeyPress={this.pressSelect.bind(this, label)}
+                              >
+                                <span className="pf-v6-c-menu__item-main">
+                                  <span className="pf-v6-c-menu__item-text">
+                                    {this.renderLabel(label, searchText, active, control, simplified, describe)}
+                                  </span>
+                                </span>
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     </div>
                   )}
                 </div>

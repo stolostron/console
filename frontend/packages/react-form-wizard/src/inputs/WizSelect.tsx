@@ -190,6 +190,7 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
               popperProps={{ appendTo: 'inline' }}
               selected={value}
               onSelect={(_event, value) => onSelect(value?.toString() ?? '')}
+              isScrollable
             >
               <SelectListOptions
                 value={value}
