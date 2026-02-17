@@ -1257,6 +1257,137 @@ describe('convertSearchItemToResource', () => {
         { type: 'Ready', status: 'False' },
       ])
     })
+
+    it('should set spec.domain.devices.gpus from gpuName', () => {
+      const vmiItem = {
+        ...baseSearchItem,
+        kind: 'VirtualMachineInstance',
+        apigroup: 'kubevirt.io',
+        gpuName: 'nvidia.com/GPU',
+      }
+
+      const result = convert(vmiItem)
+
+      expect(result.spec?.domain?.devices?.gpus).toEqual([{ name: 'nvidia.com/GPU' }])
+    })
+
+    it('should set spec.domain.devices.hostDevices from hostDeviceName', () => {
+      const vmiItem = {
+        ...baseSearchItem,
+        kind: 'VirtualMachineInstance',
+        apigroup: 'kubevirt.io',
+        hostDeviceName: 'host-device-1;host-device-2',
+      }
+
+      const result = convert(vmiItem)
+
+      expect(result.spec?.domain?.devices?.hostDevices).toEqual([{ name: 'host-device-1' }, { name: 'host-device-2' }])
+    })
+
+    it('should set spec.domain.devices.interfaces from intefaceName', () => {
+      const vmiItem = {
+        ...baseSearchItem,
+        kind: 'VirtualMachineInstance',
+        apigroup: 'kubevirt.io',
+        intefaceName: 'bridge;masquerade',
+      }
+
+      const result = convert(vmiItem)
+
+      expect(result.spec?.domain?.devices?.interfaces).toEqual([{ name: 'bridge' }, { name: 'masquerade' }])
+    })
+
+    it('should parse _interface with name and interfaceName into status.interfaces', () => {
+      const vmiItem = {
+        ...baseSearchItem,
+        kind: 'VirtualMachineInstance',
+        apigroup: 'kubevirt.io',
+        phase: 'Running',
+        _interface: 'default/eth0[0]=10.0.0.1',
+      }
+
+      const result = convert(vmiItem)
+
+      expect(result.status?.interfaces).toEqual([
+        {
+          name: 'default',
+          interfaceName: 'eth0',
+          ipAddress: '10.0.0.1',
+          ipAddresses: ['10.0.0.1'],
+        },
+      ])
+    })
+
+    it('should parse _interface when one entry has no name (only interfaceName and ipAddress)', () => {
+      const vmiItem = {
+        ...baseSearchItem,
+        kind: 'VirtualMachineInstance',
+        apigroup: 'kubevirt.io',
+        phase: 'Running',
+        _interface: 'default/eth0[0]=10.0.0.1; /eth1[0]=10.0.0.2',
+      }
+
+      const result = convert(vmiItem)
+
+      expect(result.status?.interfaces).toHaveLength(2)
+      expect(result.status?.interfaces?.[0]).toEqual({
+        name: 'default',
+        interfaceName: 'eth0',
+        ipAddress: '10.0.0.1',
+        ipAddresses: ['10.0.0.1'],
+      })
+      // Second interface has no name—only interfaceName and ipAddress (e.g. " /eth1[0]=10.0.0.2")
+      expect(result.status?.interfaces?.[1]).toEqual({
+        interfaceName: 'eth1',
+        ipAddress: '10.0.0.2',
+        ipAddresses: ['10.0.0.2'],
+      })
+    })
+
+    it('should parse _interface when one entry has no interfaceName (only optional name and ipAddress)', () => {
+      const vmiItem = {
+        ...baseSearchItem,
+        kind: 'VirtualMachineInstance',
+        apigroup: 'kubevirt.io',
+        phase: 'Running',
+        _interface: 'default/[0]=10.0.0.1; /[0]=10.0.0.2',
+      }
+
+      const result = convert(vmiItem)
+
+      expect(result.status?.interfaces).toHaveLength(2)
+      expect(result.status?.interfaces?.[0]).toEqual({
+        name: 'default',
+        ipAddress: '10.0.0.1',
+        ipAddresses: ['10.0.0.1'],
+      })
+      // Second interface has neither name nor interfaceName
+      expect(result.status?.interfaces?.[1]).toEqual({
+        ipAddress: '10.0.0.2',
+        ipAddresses: ['10.0.0.2'],
+      })
+    })
+
+    it('should parse _interface with multiple ipAddresses for same interface', () => {
+      const vmiItem = {
+        ...baseSearchItem,
+        kind: 'VirtualMachineInstance',
+        apigroup: 'kubevirt.io',
+        phase: 'Running',
+        _interface: 'default/eth0[0]=10.0.0.1; default/eth0[1]=10.0.0.3',
+      }
+
+      const result = convert(vmiItem)
+
+      expect(result.status?.interfaces).toEqual([
+        {
+          name: 'default',
+          interfaceName: 'eth0',
+          ipAddress: '10.0.0.1',
+          ipAddresses: ['10.0.0.1', '10.0.0.3'],
+        },
+      ])
+    })
   })
 
   describe('VirtualMachineInstanceMigration.kubevirt.io', () => {
