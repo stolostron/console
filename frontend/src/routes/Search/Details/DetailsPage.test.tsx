@@ -7,7 +7,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { isFineGrainedRbacEnabledState, settingsState } from '../../../atoms'
-import { nockGet, nockIgnoreApiPaths, nockIgnoreRBAC, nockPostRequest } from '../../../lib/nock-util'
+import { nockGet, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { waitForNocks } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import Search from '../Search'
@@ -101,7 +101,6 @@ describe('DetailsPage', () => {
       writable: true,
     })
   })
-  const metricNock = nockPostRequest('/metrics?search-details', {})
 
   it('should render local-cluster resource details correctly', async () => {
     jest.mock('react-router-dom-v5-compat', () => {
@@ -145,7 +144,7 @@ describe('DetailsPage', () => {
     )
 
     // Wait for delete resource requests to finish
-    await waitForNocks([metricNock, nockGet(mockLocalClusterPod)])
+    await waitForNocks([nockGet(mockLocalClusterPod)])
 
     // Test that the component has rendered correctly with data
     await waitFor(() =>
@@ -247,7 +246,6 @@ describe('DetailsPage', () => {
 
     // Wait for delete resource requests to finish
     await waitForNocks([
-      metricNock,
       nockGet({
         apiVersion: 'kubevirt.io/v1',
         kind: 'VirtualMachine',
@@ -333,7 +331,6 @@ describe('DetailsPage', () => {
 
     // Wait for delete resource requests to finish
     await waitForNocks([
-      metricNock,
       nockGet({
         apiVersion: 'snapshot.kubevirt.io/v1beta1',
         kind: 'VirtualMachineSnapshot',
@@ -456,8 +453,6 @@ describe('DetailsPage', () => {
       </RecoilRoot>
     )
 
-    // Wait for delete resource requests to finish
-    await waitForNocks([metricNock])
     // Test that the component has rendered correctly with data
     await waitFor(() =>
       expect(

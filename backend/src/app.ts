@@ -18,7 +18,6 @@ import { configure } from './routes/configure'
 import { events, startWatching, stopWatching } from './routes/events'
 import { hub } from './routes/hub'
 import { liveness } from './routes/liveness'
-import { metrics } from './routes/metrics'
 import { observabilityProxy, prometheusProxy } from './routes/metricsProxy'
 import { multiClusterHubComponents } from './routes/multiClusterHubComponents'
 import { login, loginCallback, logout } from './routes/oauth'
@@ -70,7 +69,6 @@ router.get('/authenticated', authenticated)
 router.post('/ansibletower', ansibleTower)
 router.get('/username', username)
 router.all('/userpreference', userpreference)
-router.all('/metrics', metrics)
 router.get('/hub', hub)
 router.get('/hypershift-status', hypershiftStatus)
 router.get('/cluster-version', clusterVersion)

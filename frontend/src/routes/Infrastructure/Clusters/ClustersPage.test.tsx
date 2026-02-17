@@ -3,7 +3,7 @@
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreApiPaths, nockIgnoreRBAC, nockPostRequest } from '../../../lib/nock-util'
+import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { waitForText } from '../../../lib/test-util'
 import Clusters from './Clusters'
 import { NavigationPath } from '../../../NavigationPath'
@@ -17,7 +17,6 @@ describe('Cluster Management', () => {
   test('Discovery Feature Flag Enabled', async () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
-    nockPostRequest('/metrics?clusters', {})
     render(
       <RecoilRoot>
         <MemoryRouter initialEntries={[NavigationPath.managedClusters]}>

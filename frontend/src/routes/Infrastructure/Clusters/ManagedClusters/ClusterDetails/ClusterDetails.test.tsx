@@ -33,7 +33,6 @@ import {
   nockIgnoreRBAC,
   nockList,
   nockNamespacedList,
-  nockPostRequest,
   nockSearch,
 } from '../../../../../lib/nock-util'
 import { mockManagedClusterSet, mockOpenShiftConsoleConfigMap } from '../../../../../lib/test-metadata'
@@ -1578,7 +1577,6 @@ describe('ClusterDetails with not found', () => {
     nockIgnoreApiPaths()
   })
   test('page renders error state to return to cluster page', async () => {
-    const metricNock = nockPostRequest('/metrics?clusters', {})
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -1609,7 +1607,6 @@ describe('ClusterDetails with not found', () => {
     await waitForText('Not found')
     await clickByRole('link', { name: /back to clusters/i })
     expect(window.location.pathname).toEqual('/')
-    await waitForNock(metricNock)
   })
   test('page renders error state, should have option to import', async () => {
     nockGet(mockSecret, undefined, 404)

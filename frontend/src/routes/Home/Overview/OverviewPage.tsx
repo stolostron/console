@@ -21,7 +21,6 @@ import { AngleDownIcon, AngleUpIcon, EllipsisVIcon, ExternalLinkAltIcon, HelpIco
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AcmDynamicGrid } from '../../../components/AcmDynamicGrid'
 import { KubevirtProviderAlert } from '../../../components/KubevirtProviderAlert'
-import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useVirtualMachineDetection } from '../../../hooks/useVirtualMachineDetection'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
@@ -70,7 +69,6 @@ interface WidgetLayout {
 
 export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Record<string, string[]> }>) {
   const { selectedClusterLabels } = props
-  usePageVisitMetricHandler(Pages.overviewFleet)
   const { t } = useTranslation()
   const { clusterManagementAddonsState, policyreportState } = useSharedAtoms()
 

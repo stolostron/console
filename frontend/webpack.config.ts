@@ -166,7 +166,6 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         '/multicloud/events',
         '/multicloud/hub',
         '/multicloud/upgrade-risks-prediction',
-        '/multicloud/metrics',
         '/multicloud/login',
         '/multicloud/logout',
         '/multicloud/observability',

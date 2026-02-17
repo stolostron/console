@@ -23,7 +23,6 @@ import {
 import {
   nockAggegateRequest,
   nockIgnoreApiPaths,
-  nockPostRequest,
   nockRequest,
   nockSearch,
   nockUpgradeRiskRequest,
@@ -159,7 +158,6 @@ it('should render overview page with expected data', async () => {
   nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
   nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
   nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
-  const metricNock = nockPostRequest('/metrics?overview-fleet', {})
   const mockAlertMetricsNock = nockRequest('/observability/query?query=ALERTS', mockAlertMetrics)
   const mockOperatorMetricsNock = nockRequest(
     '/observability/query?query=cluster_operator_conditions',
@@ -227,7 +225,6 @@ it('should render overview page with expected data', async () => {
 
   // Wait for prometheus nocks to finish
   await waitForNocks([
-    metricNock,
     mockAlertMetricsNock,
     mockOperatorMetricsNock,
     mockWorkerCoreCountMetricsNock,
@@ -256,7 +253,6 @@ it('should toggle card sections correctly', async () => {
   nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
   nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
   nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
-  const metricNock = nockPostRequest('/metrics?overview-fleet', {})
   const mockAlertMetricsNock = nockRequest('/observability/query?query=ALERTS', mockAlertMetrics)
   const mockOperatorMetricsNock = nockRequest(
     '/observability/query?query=cluster_operator_conditions',
@@ -324,7 +320,6 @@ it('should toggle card sections correctly', async () => {
 
   // Wait for prometheus nocks to finish
   await waitForNocks([
-    metricNock,
     mockAlertMetricsNock,
     mockOperatorMetricsNock,
     mockWorkerCoreCountMetricsNock,

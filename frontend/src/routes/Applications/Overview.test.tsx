@@ -5,13 +5,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { managedClustersState, placementDecisionsState, subscriptionsState } from '../../atoms'
-import {
-  nockAggegateRequest,
-  nockIgnoreApiPaths,
-  nockIgnoreRBAC,
-  nockPostRequest,
-  nockSearch,
-} from '../../lib/nock-util'
+import { nockAggegateRequest, nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
 import { defaultPlugin, PluginContext } from '../../lib/PluginContext'
 import { getCSVDownloadLink, getCSVExportSpies, waitForText, getFragmentedTextMatcher } from '../../lib/test-util'
 import {
@@ -107,7 +101,6 @@ describe('Applications Page', () => {
   beforeEach(async () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
-    nockPostRequest('/metrics?application', {})
     nockAggegateRequest('applications', applicationAggregate.req, applicationAggregate.res)
     nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
     render(
@@ -288,7 +281,6 @@ describe('Create application dropdown', () => {
     ;(useIsAnyNamespaceAuthorized as jest.Mock).mockImplementation(() => false)
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
-    nockPostRequest('/metrics?application', {})
     nockAggegateRequest('applications', applicationAggregate.req, applicationAggregate.res)
     nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
     render(

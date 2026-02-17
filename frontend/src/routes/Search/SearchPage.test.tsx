@@ -9,7 +9,7 @@ import { GraphQLError } from 'graphql'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { configMapsState, isGlobalHubState, Settings, settingsState } from '../../atoms'
-import { nockIgnoreOperatorCheck, nockPostRequest, nockRequest } from '../../lib/nock-util'
+import { nockIgnoreOperatorCheck, nockRequest } from '../../lib/nock-util'
 import { wait, waitForNocks } from '../../lib/test-util'
 import { ConfigMap } from '../../resources'
 import { UserPreference } from '../../resources/userpreference'
@@ -72,7 +72,6 @@ const mockSuggestedSearchConfigMap: ConfigMap[] = [
 describe('SearchPage', () => {
   it('should render default search page correctly', async () => {
     nockIgnoreOperatorCheck()
-    const metricNock = nockPostRequest('/metrics?search', {})
     const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
     const mocks = [
       {
@@ -120,7 +119,7 @@ describe('SearchPage', () => {
     )
 
     // Wait for username resource requests to finish
-    await waitForNocks([metricNock, getUserPreferenceNock])
+    await waitForNocks([getUserPreferenceNock])
 
     // This wait pauses till apollo query is returning data
     await wait()
@@ -134,7 +133,6 @@ describe('SearchPage', () => {
 
   it('should render page with errors', async () => {
     nockIgnoreOperatorCheck()
-    const metricNock = nockPostRequest('/metrics?search', {})
     const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
     const mocks = [
       {
@@ -178,7 +176,7 @@ describe('SearchPage', () => {
     )
 
     // Wait for username resource requests to finish
-    await waitForNocks([metricNock, getUserPreferenceNock])
+    await waitForNocks([getUserPreferenceNock])
 
     // Test the loading state while apollo query finishes - testing that saved searches card label is not present
     expect(screen.getAllByText('Saved searches')[1]).toBeFalsy()
@@ -198,7 +196,6 @@ describe('SearchPage', () => {
     const mockSettings: Settings = {
       globalSearchFeatureFlag: 'enabled',
     }
-    const metricNock = nockPostRequest('/metrics?search', {})
     const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
     const mocks = [
       {
@@ -244,7 +241,7 @@ describe('SearchPage', () => {
     )
 
     // Wait for username resource requests to finish
-    await waitForNocks([metricNock, getUserPreferenceNock])
+    await waitForNocks([getUserPreferenceNock])
 
     // Test that the component has rendered correctly with data
     await waitFor(() => expect(screen.queryByText('Open new search tab')).toBeTruthy())
@@ -256,7 +253,6 @@ describe('SearchPage', () => {
 
   it('should render search page correctly and add a search', async () => {
     nockIgnoreOperatorCheck()
-    const metricNock = nockPostRequest('/metrics?search', {})
     const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
     const mocks = [
       {
@@ -329,7 +325,7 @@ describe('SearchPage', () => {
     )
 
     // Wait for username resource requests to finish
-    await waitForNocks([metricNock, getUserPreferenceNock])
+    await waitForNocks([getUserPreferenceNock])
 
     // This wait pauses till apollo query is returning data
     await wait()
@@ -353,7 +349,6 @@ describe('SearchPage', () => {
   })
   it('should render SearchPage with predefined query', async () => {
     nockIgnoreOperatorCheck()
-    const metricNock = nockPostRequest('/metrics?search', {})
     const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
     const mocks = [
       {
@@ -457,7 +452,7 @@ describe('SearchPage', () => {
     )
 
     // Wait for username resource requests to finish
-    await waitForNocks([metricNock, getUserPreferenceNock])
+    await waitForNocks([getUserPreferenceNock])
 
     // Test the loading state while apollo query finishes - testing that saved searches card label is not present
     expect(screen.getAllByText('Saved searches')[1]).toBeFalsy()
@@ -469,7 +464,6 @@ describe('SearchPage', () => {
 
   it('should render KubevirtProviderAlert when searching for VirtualMachine kinds', async () => {
     nockIgnoreOperatorCheck()
-    const metricNock = nockPostRequest('/metrics?search', {})
     const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
     const mocks = [
       {
@@ -507,7 +501,7 @@ describe('SearchPage', () => {
       </RecoilRoot>
     )
 
-    await waitForNocks([metricNock, getUserPreferenceNock])
+    await waitForNocks([getUserPreferenceNock])
     await wait()
 
     await waitFor(() => expect(screen.getByText('KubevirtProviderAlert')).toBeTruthy())
