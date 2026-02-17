@@ -426,6 +426,7 @@ export function CrossGeneratorSync(props: CrossGeneratorSyncProps) {
     const hasGitGen = types.has('git')
     const hasListGen = types.has('list')
     const hasCDRGen = types.has('clusterDecisionResource')
+    const isInitialSync = prevGenState.current.hasGitGen === undefined && prevGenState.current.hasListGen === undefined
 
     // Handle git generator
     if (hasGitGen) {
@@ -437,6 +438,8 @@ export function CrossGeneratorSync(props: CrossGeneratorSyncProps) {
         fix(appSet, TEMPLATE_NAME_PATH, `${appName}-{{name}}-${PATH_BASENAME}`)
         fix(appSet, DESTINATION_NAME_PATH_NAMESPACE, `${PATH_BASENAME}`)
       }
+    } else if (!isInitialSync && prevGenState.current.hasGitGen !== hasGitGen) {
+      fix(appSet, DESTINATION_NAME_PATH_NAMESPACE, '')
     }
 
     // Handle list generator
@@ -445,22 +448,14 @@ export function CrossGeneratorSync(props: CrossGeneratorSyncProps) {
         fix(appSet, TEMPLATE_NAME_PATH, `${appName}-${CLUSTER}`)
         fix(appSet, DESTINATION_NAME_PATH_SERVER, URL)
       }
+    } else if (!isInitialSync && prevGenState.current.hasListGen !== hasListGen) {
+      fix(appSet, DESTINATION_NAME_PATH_SERVER, SERVER)
     }
-
-    const isInitialSync = prevGenState.current.hasGitGen === undefined && prevGenState.current.hasListGen === undefined
 
     // handle generators that don't affect template
     if (!hasGitGen && !hasListGen) {
       if (templateName !== `${appName}-{{name}}`) {
         fix(appSet, TEMPLATE_NAME_PATH, `${appName}-{{name}}`)
-      }
-      // Only reset destination when hasGitGen or hasListGen have changed
-      if (
-        !isInitialSync &&
-        (prevGenState.current.hasGitGen !== hasGitGen || prevGenState.current.hasListGen !== hasListGen)
-      ) {
-        fix(appSet, DESTINATION_NAME_PATH_NAMESPACE, '')
-        fix(appSet, DESTINATION_NAME_PATH_SERVER, SERVER)
       }
     }
 
