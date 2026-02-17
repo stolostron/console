@@ -574,8 +574,7 @@ function getGeneratorSpecification(description: string, yaml: string) {
 
 function pascalCaseToSentenceCase(text: string) {
   const result = text?.replace(/([A-Z])/g, ' $1') ?? ''
-  const finalResult = result.charAt(0).toUpperCase() + result.slice(1)
-  return finalResult
+  return (result.charAt(0).toUpperCase() + result.slice(1)).replace('Scm', 'SCM')
 }
 
 export function getCDRPlacementPath(item: unknown): string | undefined {
