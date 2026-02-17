@@ -82,6 +82,9 @@ import {
   isResourceTypeOf,
 } from './helpers/resource-helper'
 import { isLocalSubscription } from './helpers/subscriptions'
+import { ApplicationStatus } from './model/application-status'
+import { IApplicationResource } from './model/application-resource'
+import { isOCPAppResource } from './utils'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -101,12 +104,6 @@ const TABLE_ID = 'applicationTable'
 
 const filterId = 'type'
 
-type ApplicationStatus = {
-  cluster: string
-  resourceName: string
-}
-
-export type IApplicationResource = IResource<ApplicationStatus> | OCPAppResource<ApplicationStatus>
 
 export enum AppColumns {
   'name' = 0,
@@ -128,16 +125,17 @@ enum ScoreColumn {
 }
 const ScoreColumnSize = Object.keys(ScoreColumn).length / 2
 
-const getLabels = (resource: OCPAppResource<ApplicationStatus>): string[] =>
-  resource.label ? resource.label.split(';').map((label) => label.trim()) : []
+const getLabels = (resource: OCPAppResource<ApplicationStatus>): Record<string, string> => resource.label?.split(';').reduce<Record<string, string>>((acc, label) => {
+    const trimmed = label.trim()
+    const eqIndex = trimmed.indexOf('=')
+    if (eqIndex === -1) return acc
+    acc[trimmed.slice(0, eqIndex).trim()] = trimmed.slice(eqIndex + 1).trim()
+    return acc
+  }, {}) ?? {}
 
 const LabelCell = ({ labels }: { labels: string[] | Record<string, string> }) => (
   <AcmLabels labels={labels} isCompact={true} />
 )
-
-function isOCPAppResource(resource: IApplicationResource): resource is OCPAppResource<ApplicationStatus> {
-  return 'label' in resource
-}
 
 function isFluxApplication(label: string) {
   let isFlux = false
@@ -471,6 +469,10 @@ export default function ApplicationsOverview() {
   const [deletedApps, setDeletedApps] = useState<IResource[]>([])
 
   const [pluginModal, setPluginModal] = useState<JSX.Element>()
+  const [labelData, setLabelData] = useState<{
+    labelOptions: { label: string; value: string }[]
+    labelMap: Record<string, { pairs: Record<string, string>; labels: string[] }>
+  }>()
 
   // Cache cell text for sorting and searching
   const generateTransformData = useCallback(
@@ -560,6 +562,11 @@ export default function ApplicationsOverview() {
   const fetchAggregateForExport = async (requestedExport: IRequestListView) => {
     return fetchAggregate(SupportedAggregate.applications, backendUrl, requestedExport)
   }
+
+  const labelOptions = useMemo(
+    () => allApplications.flatMap((application) => getLabels(application as OCPAppResource<ApplicationStatus>)),
+    [allApplications]
+  )
 
   const tableItems: IResource[] = useMemo(() => {
     const items = allApplications
@@ -680,7 +687,7 @@ export default function ApplicationsOverview() {
       {
         header: t('table.labels'),
         cell: (resource) => <LabelCell labels={getLabels(resource as OCPAppResource<ApplicationStatus>)} />,
-        exportContent: (resource) => getLabels(resource as OCPAppResource<ApplicationStatus>).join(','),
+        exportContent: (resource) => Object.entries(getLabels(resource as OCPAppResource<ApplicationStatus>)).map(([key, value]) => `${key}=${value}`).join(','),
       },
       {
         header: t('Health Status'),
@@ -872,8 +879,15 @@ export default function ApplicationsOverview() {
           return selectedValues.includes(get(item, 'transformed.deployedStatus'))
         },
       },
+      {
+        id: 'label',
+        label: t('Label'),
+        options: labelOptions || [],
+        supportsInequality: true, // table will allow user to convert filtered values to a=b or a!=b
+        tableFilterFn: (selectedValues, item) => selectedValues. (item as OCPAppResource)?.label?.includes(),
+      },
     ],
-    [t, managedClusters, systemAppNSPrefixes]
+    [t, managedClusters, labelOptions, systemAppNSPrefixes]
   )
 
   const navigate = useNavigate()
@@ -1239,6 +1253,7 @@ export default function ApplicationsOverview() {
           keyFn={keyFn}
           items={tableItems as IResource<ApplicationStatus>[]}
           filters={filters}
+          secondaryFilterIds={['label']}
           setRequestView={setRequestedView}
           resultView={resultView}
           resultCounts={resultCounts}
