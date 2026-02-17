@@ -11,6 +11,7 @@ import {
   AppSetApplication,
   AppSetClusterInfo,
   SearchQuery,
+  ArgoAppResource,
 } from '../types'
 
 /**
@@ -85,16 +86,23 @@ async function getResourceStatuses(
 
   // Extract resource information from the first application's status (if available)
   // All applications in an ApplicationSet typically deploy the same resources
-  const resources = appSetApps.length > 0 ? appSetApps[0]?.status?.resources ?? [] : []
+  const resources: ArgoAppResource[] = []
+  if (appSetApps.length > 0) {
+    appSetApps.forEach((argoApp: any) => {
+      resources.push(...(argoApp?.status?.resources ?? []))
+    })
+  }
 
   // Separate resources into namespaced and cluster-scoped categories
   const definedNamespace: string[] = []
   const kindsNotNamespaceScoped: string[] = []
   const kindsNotNamespaceScopedNames: string[] = []
+  const clusterScopedPairs = new Set<string>()
 
   resources.forEach((resource: any) => {
     const rscNS = resource?.namespace
     const rscKind = resource?.kind
+    const rscName = resource?.name
 
     if (rscNS) {
       // Resource has a namespace - add to namespaced resources
@@ -103,13 +111,22 @@ async function getResourceStatuses(
 
     if (!rscNS) {
       // Resource is cluster-scoped - handle special cases and add to cluster-scoped list
-      if (rscKind.toLowerCase() === 'project') {
+      if (!rscKind || !rscName) {
+        return
+      }
+      const normalizedKind = rscKind.toLowerCase() === 'project' ? 'namespace' : rscKind.toLowerCase()
+      const pairKey = `${normalizedKind}::${rscName}`
+      if (clusterScopedPairs.has(pairKey)) {
+        return
+      }
+      clusterScopedPairs.add(pairKey)
+      if (normalizedKind === 'namespace') {
         // OpenShift Project resources are represented as Namespace resources in search
         kindsNotNamespaceScoped.push('namespace')
       } else {
-        kindsNotNamespaceScoped.push(resource.kind.toLowerCase())
+        kindsNotNamespaceScoped.push(normalizedKind)
       }
-      kindsNotNamespaceScopedNames.push(resource.name)
+      kindsNotNamespaceScopedNames.push(rscName)
     }
   })
 
