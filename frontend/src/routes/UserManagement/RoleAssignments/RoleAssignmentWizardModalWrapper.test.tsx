@@ -526,14 +526,8 @@ describe('RoleAssignmentWizardModalWrapper', () => {
         { timeout: 3000 }
       )
 
-      // Assert - close should be called even when delete fails, and error toast should be shown
+      // Assert - close should be called even when delete fails (error is logged to console, no toast)
       await waitFor(() => {
-        expect(mockToastContext.addAlert).toHaveBeenCalledWith({
-          title: 'Role assignment update failed',
-          message: "The role assignment can't be deleted. Error: Delete failed",
-          type: 'danger',
-          autoClose: true,
-        })
         expect(mockClose).toHaveBeenCalled()
       })
     })
@@ -912,17 +906,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
         { timeout: 3000 }
       )
 
-      // Wait for the error to be processed
-      await waitFor(() => {
-        expect(mockToastContext.addAlert).toHaveBeenCalledWith({
-          title: 'Role assignment update failed',
-          message: "The role assignment can't be deleted. Error: Delete failed",
-          type: 'danger',
-          autoClose: true,
-        })
-      })
-
-      // isSaving should be set back to false
+      // Wait for the error to be processed (logged to console, no toast) and isSaving reset
       await waitFor(() => {
         expect(capturedIsLoading).toBe(false)
       })
@@ -1042,10 +1026,12 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       expect(addCallOrder).toBeLessThan(deleteCallOrder)
     })
 
-    it('should show error toast with correct message when deleteRoleAssignment fails after saveAllRoleAssignments succeeds', async () => {
+    it('should log to console and not show error toast when deleteRoleAssignment fails after saveAllRoleAssignments succeeds', async () => {
       // Arrange - saveAllRoleAssignments will succeed
       const savedRoleAssignment = { name: 'saved-role-assignment', clusterRole: 'admin' }
       mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment as never)
+
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
 
       const deletePromise = Promise.reject(new Error('Permission denied'))
       deletePromise.catch(() => {}) // Prevent unhandled rejection
@@ -1095,14 +1081,18 @@ describe('RoleAssignmentWizardModalWrapper', () => {
         { timeout: 3000 }
       )
 
+      // Error is logged to console, not shown as toast
       await waitFor(() => {
-        expect(mockToastContext.addAlert).toHaveBeenCalledWith({
-          title: 'Role assignment update failed',
-          message: "The role assignment can't be deleted. Error: Permission denied",
-          type: 'danger',
-          autoClose: true,
-        })
+        expect(consoleErrorSpy).toHaveBeenCalledWith(
+          'Failed to delete role assignment, this is expected if the subject is not affected by the editing',
+          expect.any(Error)
+        )
       })
+      const alertCalls = mockToastContext.addAlert.mock.calls
+      const errorToastCalls = alertCalls.filter((call) => call[0]?.title === 'Role assignment update failed')
+      expect(errorToastCalls).toHaveLength(0)
+
+      consoleErrorSpy.mockRestore()
     })
   })
 
@@ -1293,17 +1283,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
         { timeout: 3000 }
       )
 
-      // Verify error toast was shown for delete failure
-      await waitFor(() => {
-        expect(mockToastContext.addAlert).toHaveBeenCalledWith({
-          title: 'Role assignment update failed',
-          message: "The role assignment can't be deleted. Error: Delete failed",
-          type: 'danger',
-          autoClose: true,
-        })
-      })
-
-      // Verify isSaving is set to false
+      // Verify isSaving is set to false (delete failure is logged to console, no error toast)
       await waitFor(() => {
         expect(capturedIsLoading).toBe(false)
       })
@@ -1399,7 +1379,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
 
       mockClose.mockClear()
 
-      // Case 2: delete fails — catch shows toast, finally still runs (close and isLoading false)
+      // Case 2: delete fails — catch logs to console, finally still runs (close and isLoading false)
       const deletePromise = Promise.reject(new Error('Delete failed'))
       deletePromise.catch(() => {})
       mockDeleteRoleAssignment.mockReturnValue({ promise: deletePromise, abort: jest.fn() } as any)
@@ -1423,14 +1403,6 @@ describe('RoleAssignmentWizardModalWrapper', () => {
         })
       })
 
-      await waitFor(() =>
-        expect(mockToastContext.addAlert).toHaveBeenCalledWith(
-          expect.objectContaining({
-            title: 'Role assignment update failed',
-            type: 'danger',
-          })
-        )
-      )
       await waitFor(() => expect(mockClose).toHaveBeenCalled(), { timeout: 3000 })
       await waitFor(() => expect(capturedIsLoading).toBe(false))
     })
