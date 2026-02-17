@@ -44,7 +44,7 @@ export async function getKubeResources(kind: string, apiVersion: string) {
   const apiVersionPlural = apiVersionPluralFn(option)
   return await Promise.all(
     Object.values(resourceCache[apiVersionPlural] || {}).map((event) => {
-      return inflateResource(event.compressed, eventDict)
+      return event.compressed.then((compressed) => inflateResource(compressed, eventDict))
     })
   )
 }
@@ -135,8 +135,8 @@ function canAccessRemoteResource(token: string, clusterNames: string[]): Promise
 export interface ResourceCache {
   [apiVersionKind: string]: {
     [uid: string]: {
-      compressed: Buffer
-      eventID: number
+      compressed: Promise<Buffer>
+      eventID: Promise<number>
     }
   }
 }
@@ -364,7 +364,7 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
   const removeResources: IResource[] = []
   for (const uid in cache) {
     const existing = cache[uid]
-    const resource = await inflateResource(existing.compressed, eventDict)
+    const resource = await existing.compressed.then((compressed) => inflateResource(compressed, eventDict))
     if (options.fieldSelector && !matchesSelector(resource, options.fieldSelector)) {
       // skip as this object would not be in the items result for this list operation
       continue
@@ -717,18 +717,19 @@ export async function cacheResource(resource: IResource) {
   const uid = resource.metadata.uid
   const existing = cache[uid]
 
-  let eventID = -1
   if (existing) {
     if (
-      (await inflateResource(existing.compressed, eventDict)).metadata.resourceVersion ===
+      (await inflateResource(await existing.compressed, eventDict)).metadata.resourceVersion ===
       resource.metadata.resourceVersion
-    )
+    ) {
       return resource.metadata.resourceVersion
-    ServerSideEvents.removeEvent(existing.eventID)
+    }
+    ServerSideEvents.removeEvent(await existing.eventID)
   }
-
-  const compressed = await deflateResource(resource, eventDict)
-  eventID = await ServerSideEvents.pushEvent({ data: { type: 'MODIFIED', object: compressed } })
+  const compressed = deflateResource(resource, eventDict)
+  const eventID = compressed.then((compressed) =>
+    ServerSideEvents.pushEvent({ data: { type: 'MODIFIED', object: compressed } })
+  )
   cache[uid] = { compressed, eventID }
 
   if (resource.kind === 'ManagedCluster') {
@@ -747,7 +748,7 @@ async function deleteResource(resource: IResource) {
   const uid = resource.metadata.uid
 
   const existing = cache[uid]
-  if (existing) ServerSideEvents.removeEvent(existing.eventID)
+  if (existing) ServerSideEvents.removeEvent(await existing.eventID)
 
   const deletedID = await ServerSideEvents.pushEvent({
     data: {

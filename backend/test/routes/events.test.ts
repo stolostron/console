@@ -190,8 +190,8 @@ describe('events Route', () => {
       const apiVersionPlural = '/v1/configmaps'
       expect(cache[apiVersionPlural]).toBeDefined()
       expect(cache[apiVersionPlural]['config-uid-123']).toBeDefined()
-      expect(cache[apiVersionPlural]['config-uid-123'].compressed).toBeDefined()
-      expect(cache[apiVersionPlural]['config-uid-123'].eventID).toBeGreaterThan(0)
+      expect(await cache[apiVersionPlural]['config-uid-123'].compressed).toBeDefined()
+      expect(await cache[apiVersionPlural]['config-uid-123'].eventID).toBeGreaterThan(0)
     })
 
     it('should not update cache if resourceVersion is unchanged', async () => {
@@ -235,15 +235,15 @@ describe('events Route', () => {
       await cacheResource(mockResource)
       const cache = getEventCache()
       const apiVersionPlural = '/apps/v1/deployments'
-      const firstEventID = cache[apiVersionPlural]['deploy-uid-789'].eventID
+      const firstEventID = await cache[apiVersionPlural]['deploy-uid-789'].eventID
 
       // Update resourceVersion and cache again
       mockResource.metadata.resourceVersion = '301'
       await cacheResource(mockResource)
 
       // EventID should be different (new event created)
-      expect(cache[apiVersionPlural]['deploy-uid-789'].eventID).not.toBe(firstEventID)
-      expect(cache[apiVersionPlural]['deploy-uid-789'].eventID).toBeGreaterThan(firstEventID)
+      expect(await cache[apiVersionPlural]['deploy-uid-789'].eventID).not.toBe(firstEventID)
+      expect(await cache[apiVersionPlural]['deploy-uid-789'].eventID).toBeGreaterThan(firstEventID)
     })
 
     it('should set hubClusterName when caching local ManagedCluster', async () => {
@@ -285,6 +285,88 @@ describe('events Route', () => {
       await cacheResource(remoteCluster)
 
       expect(getHubClusterName()).toBe(initialHubName)
+    })
+    it('should avoid race condition when caching same resource concurrently', async () => {
+      // This test guards against a race condition where concurrent calls to cacheResource
+      // for the same UID could create duplicate/orphaned events in ServerSideEvents.
+      //
+      // The race condition occurred when:
+      // 1. First call checks cache (finds nothing)
+      // 2. First call starts async compression (await deflateResource yields control)
+      // 3. Second call checks cache (still finds nothing because first hasn't written yet)
+      // 4. Second call starts async compression (await deflateResource yields control)
+      // 5. Both calls create separate events, first event becomes orphaned
+      //
+      // The fix stores promises immediately in the cache so concurrent calls see pending entries.
+      // This allows the second call to see the pending entry and properly coordinate.
+
+      const resource1: IResource = {
+        kind: 'ConfigMap',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'race-test-config',
+          namespace: 'default',
+          uid: 'race-test-uid-concurrent',
+          resourceVersion: '1',
+        },
+      }
+
+      const resource2: IResource = {
+        kind: 'ConfigMap',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'race-test-config',
+          namespace: 'default',
+          uid: 'race-test-uid-concurrent', // Same UID as resource1
+          resourceVersion: '2', // Different resourceVersion
+        },
+      }
+
+      // Reset ServerSideEvents to a clean state to ensure test isolation
+      ServerSideEvents.reset()
+
+      // Flush the microtask queue multiple times to ensure any pending promises
+      // from previous tests (like getKubeResources) have resolved
+      for (let i = 0; i < 5; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 0))
+      }
+
+      // Reset AGAIN after flushing to clear any events created by resolved promises
+      ServerSideEvents.reset()
+
+      // Snapshot event IDs BEFORE our concurrent calls (should only be START=1 and LOADED=2)
+      const eventIdsBefore = new Set(Object.keys(ServerSideEvents.getEvents()).map(Number))
+
+      // Start both cache operations concurrently WITHOUT awaiting first
+      // This simulates the race condition scenario
+      const promise1 = cacheResource(resource1)
+      const promise2 = cacheResource(resource2)
+      await Promise.all([promise1, promise2])
+
+      // With the fix, cacheResource stores promises and returns without awaiting pushEvent.
+      // We must await the eventID promise to ensure pushEvent has been called.
+      const cache = getEventCache()
+      const cachedEventID = await Promise.resolve(cache['/v1/configmaps']['race-test-uid-concurrent'].eventID)
+
+      // Snapshot event IDs AFTER our concurrent calls
+      const events = ServerSideEvents.getEvents()
+      const eventIdsAfter = new Set(Object.keys(events).map(Number))
+
+      // Find NEW MODIFIED events created during this test
+      const newModifiedEventIds = [...eventIdsAfter]
+        .filter((id) => !eventIdsBefore.has(id))
+        .filter((id) => {
+          const event = events[id]
+          return event && (event.data as { type: string }).type === 'MODIFIED'
+        })
+
+      // THE KEY ASSERTION:
+      // With the fix: Only 1 MODIFIED event should survive (the second call properly removes the first)
+      // Without the fix: 2 MODIFIED events survive (one is orphaned - created but never removed)
+      expect(newModifiedEventIds.length).toBe(1)
+
+      // The surviving event should be the one in the cache
+      expect(newModifiedEventIds[0]).toBe(cachedEventID)
     })
 
     it('should handle resources with complex nested structures', async () => {
@@ -376,6 +458,9 @@ describe('events Route', () => {
       }
 
       await cacheResource(resource)
+      const cache = getEventCache()
+      const apiVersionPlural = '/v1/namespaces'
+      await cache[apiVersionPlural]['namespace-uid'].eventID
 
       const eventsAfter = Object.keys(ServerSideEvents.getEvents()).length
 
@@ -1012,6 +1097,7 @@ describe('events Route', () => {
 
     afterEach(() => {
       stopWatching()
+      nock.abortPendingRequests()
       nock.cleanAll()
       delete process.env.CLUSTER_API_URL
     })
