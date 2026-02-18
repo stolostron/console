@@ -4,7 +4,6 @@ import { useCallback, useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom-v5-compat'
 import { ClustersTable } from '../../../../components/Clusters/ClustersTable'
 import { KubevirtProviderAlert } from '../../../../components/KubevirtProviderAlert'
-import { Pages, usePageVisitMetricHandler } from '../../../../hooks/console-metrics'
 import { useLocalHubName } from '../../../../hooks/use-local-hub'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { canUser } from '../../../../lib/rbac-util'
@@ -30,7 +29,6 @@ const onToggle = (acmCardID: string, setOpen: (open: boolean) => void) => {
 }
 
 export default function ManagedClusters() {
-  usePageVisitMetricHandler(Pages.clusters)
   const { t } = useTranslation()
   const alertContext = useContext(AcmAlertContext)
   const clusters = useAllClusters(true)

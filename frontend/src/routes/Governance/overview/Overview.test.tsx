@@ -3,8 +3,7 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { managedClustersState, policiesState } from '../../../atoms'
-import { nockIgnoreApiPaths, nockPostRequest } from '../../../lib/nock-util'
-import { waitForNock } from '../../../lib/test-util'
+import { nockIgnoreApiPaths } from '../../../lib/nock-util'
 import {
   mockEmptyPolicy,
   mockManagedClusters,
@@ -21,7 +20,6 @@ import { defaultContext, PluginDataContext } from '../../../lib/PluginDataContex
 describe('Overview Page', () => {
   beforeEach(async () => nockIgnoreApiPaths())
   test('Should render empty Overview page with create policy button correctly', async () => {
-    const metricNock = nockPostRequest('/metrics?governance', {})
     const pluginData = {
       ...defaultContext,
       loadStarted: true,
@@ -41,12 +39,10 @@ describe('Overview Page', () => {
       </PluginDataContext.Provider>
     )
 
-    await waitForNock(metricNock)
     expect(queryAllByText('Create policy').length).toBe(1)
   })
 
   test('Should render empty Overview page with manage policies button correctly', async () => {
-    const metricNock = nockPostRequest('/metrics?governance', {})
     const pluginData = {
       ...defaultContext,
       loadStarted: true,
@@ -65,12 +61,10 @@ describe('Overview Page', () => {
         </RecoilRoot>
       </PluginDataContext.Provider>
     )
-    await waitForNock(metricNock)
     expect(queryAllByText('Manage policies').length).toBe(2)
   })
 
   test('Should render Overview page correctly', async () => {
-    const metricNock = nockPostRequest('/metrics?governance', {})
     const pluginData = {
       ...defaultContext,
       loadStarted: true,
@@ -91,12 +85,10 @@ describe('Overview Page', () => {
       </PluginDataContext.Provider>
     )
 
-    await waitForNock(metricNock)
     expect(screen.getByText(/[1-9]+ with no violations/i)).toBeTruthy()
   })
 
   test('Should render Overview page correctly with pending policies', async () => {
-    const metricNock = nockPostRequest('/metrics?governance', {})
     const pluginData = {
       ...defaultContext,
       loadStarted: true,
@@ -117,12 +109,10 @@ describe('Overview Page', () => {
       </PluginDataContext.Provider>
     )
 
-    await waitForNock(metricNock)
     expect(screen.getByText(/[1-9]+ pending/i)).toBeTruthy()
   })
 
   test('Should render Overview page with lots of clusters', async () => {
-    const metricNock = nockPostRequest('/metrics?governance', {})
     const pluginData = {
       ...defaultContext,
       loadStarted: true,
@@ -143,7 +133,6 @@ describe('Overview Page', () => {
       </PluginDataContext.Provider>
     )
 
-    await waitForNock(metricNock)
     userEvent.click(screen.getByText(/show 2 more/i))
 
     expect(queryByText(/show 2 more/i)).not.toBeInTheDocument()

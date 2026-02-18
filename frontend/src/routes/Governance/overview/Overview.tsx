@@ -14,7 +14,6 @@ import {
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { Fragment, useCallback, useContext, useMemo, useState } from 'react'
 import { AcmMasonry } from '../../../components/AcmMasonry'
-import { Pages, usePageVisitMetricHandler } from '../../../hooks/console-metrics'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { rbacCreate, useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
 import { ManagedCluster, Policy, PolicyDefinition } from '../../../resources'
@@ -44,7 +43,6 @@ const getScore = (item: { cluster?: ManagedCluster; violations: any }) => {
 }
 
 export default function GovernanceOverview() {
-  usePageVisitMetricHandler(Pages.governance)
   const { usePolicies } = useSharedAtoms()
   const policies = usePolicies()
   const policyViolationSummary = usePolicyViolationSummary(policies)

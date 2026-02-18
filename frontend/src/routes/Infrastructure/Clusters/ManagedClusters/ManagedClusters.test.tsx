@@ -18,8 +18,8 @@ import {
   managedClusterInfosState,
   managedClustersState,
 } from '../../../../atoms'
-import { nockIgnoreApiPaths, nockIgnoreRBAC, nockPostRequest } from '../../../../lib/nock-util'
-import { waitForNock, waitForTestId } from '../../../../lib/test-util'
+import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
+import { waitForTestId } from '../../../../lib/test-util'
 import { ManagedCluster, ManagedClusterInfo } from '../../../../resources'
 import ManagedClusters from './ManagedClusters'
 import {
@@ -170,7 +170,6 @@ describe('Clusters Page', () => {
 
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
-    const metricNock = nockPostRequest('/metrics?clusters', {})
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -187,7 +186,6 @@ describe('Clusters Page', () => {
         </MemoryRouter>
       </RecoilRoot>
     )
-    await waitForNock(metricNock)
     await waitForTestId('clusters-table')
   })
 
@@ -271,7 +269,6 @@ describe('Clusters Page Empty State', () => {
 
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
-    const metricNock = nockPostRequest('/metrics?clusters', {})
 
     // Render with empty clusters
     render(
@@ -291,7 +288,6 @@ describe('Clusters Page Empty State', () => {
       </RecoilRoot>
     )
 
-    await waitForNock(metricNock)
     await waitForTestId('clusters-table')
 
     // Verify that empty clusters array is passed
@@ -315,7 +311,6 @@ describe('Clusters Page RBAC', () => {
 
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
-    const metricNock = nockPostRequest('/metrics?clusters', {})
 
     render(
       <RecoilRoot
@@ -331,7 +326,6 @@ describe('Clusters Page RBAC', () => {
         </MemoryRouter>
       </RecoilRoot>
     )
-    await waitForNock(metricNock)
     await waitForTestId('clusters-table')
 
     // Verify that ClustersTable is rendered even with RBAC restrictions
@@ -353,7 +347,6 @@ describe('Clusters Page hypershift', () => {
 
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
-    const metricNock = nockPostRequest('/metrics?clusters', {})
     const hypershiftMockManagedClusterInfos: ManagedClusterInfo[] = [mockManagedClusterInfo6, mockManagedClusterInfo7]
     render(
       <RecoilRoot
@@ -370,7 +363,6 @@ describe('Clusters Page hypershift', () => {
         </MemoryRouter>
       </RecoilRoot>
     )
-    await waitForNock(metricNock)
     await waitForTestId('clusters-table')
   })
 })
@@ -384,7 +376,6 @@ describe('Clusters Page regional hub cluster', () => {
 
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
-    const metricNock = nockPostRequest('/metrics?clusters', {})
     const mockRegionalHubClusterInfos: ManagedClusterInfo[] = [mockManagedClusterInfo8]
     render(
       <RecoilRoot
@@ -400,7 +391,6 @@ describe('Clusters Page regional hub cluster', () => {
         </MemoryRouter>
       </RecoilRoot>
     )
-    await waitForNock(metricNock)
     await waitForTestId('clusters-table')
   })
   test('should treat regional hub clusters as standalone if addon unreachable', async () => {
@@ -411,7 +401,6 @@ describe('Clusters Page regional hub cluster', () => {
 
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
-    const metricNock = nockPostRequest('/metrics?clusters', {})
     const mockRegionalHubClusterInfosUnreachable: ManagedClusterInfo[] = [mockManagedClusterInfo8]
     render(
       <RecoilRoot
@@ -426,7 +415,6 @@ describe('Clusters Page regional hub cluster', () => {
         </MemoryRouter>
       </RecoilRoot>
     )
-    await waitForNock(metricNock)
     await waitForTestId('clusters-table')
   })
 })
@@ -439,7 +427,6 @@ describe('Clusters Page export', () => {
 
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
-    const metricNock = nockPostRequest('/metrics?clusters', {})
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -456,7 +443,6 @@ describe('Clusters Page export', () => {
         </MemoryRouter>
       </RecoilRoot>
     )
-    await waitForNock(metricNock)
     await waitForTestId('clusters-table')
 
     // Verify that ClustersTable is rendered and will handle export functionality
