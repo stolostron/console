@@ -11,19 +11,24 @@ const useFetchApplicationLabels = (applicationData?: IResource[]) => {
 
   useEffect(() => {
     if (applicationData && applicationData.length !== storedApplicationData?.length) {
-      const allLabels = new Set<string>()
-      const labelMap: LabelMap = {}
-      applicationData.filter(isOCPAppResource).forEach((resource) => {
-        const labels: string[] = []
-        const pairs: Record<string, string> = {}
-        resource.label?.split(';').forEach((label) => {
-          labels.push(label.trim())
-          const [key, value] = label.split('=').map((seg) => seg.trim())
-          pairs[key] = value
-          allLabels.add(label.trim())
-        })
-        labelMap[resource.id] = { pairs, labels }
-      })
+      const { labelMap, allLabels } = applicationData.filter(isOCPAppResource).reduce(
+        (acc, resource) => {
+          const { labels, pairs } = (resource.label ?? '').split(';').reduce(
+            (innerAcc, label) => {
+              const trimmed = label.trim()
+              innerAcc.labels.push(trimmed)
+              const [key, value] = label.split('=').map((seg) => seg.trim())
+              innerAcc.pairs[key] = value
+              return innerAcc
+            },
+            { labels: [] as string[], pairs: {} as Record<string, string> }
+          )
+          labels.forEach((l) => acc.allLabels.add(l))
+          acc.labelMap[resource.id] = { pairs, labels }
+          return acc
+        },
+        { labelMap: {} as LabelMap, allLabels: new Set<string>() }
+      )
       setLabelMap(labelMap)
       setLabelOptions(Array.from(allLabels).map((label) => ({ label, value: label })))
       setStoredApplicationData(applicationData)
