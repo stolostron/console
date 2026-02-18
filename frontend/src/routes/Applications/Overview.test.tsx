@@ -143,7 +143,7 @@ describe('Applications Page', () => {
     expect(screen.getByText(SubscriptionKind)).toBeTruthy()
     expect(screen.getByText(mockApplication0.metadata.namespace!)).toBeTruthy()
     expect(screen.getAllByText('Local')).toBeTruthy()
-    expect(screen.getAllByText(getFragmentedTextMatcher('Feb 20, 2024, 3:30 PM'))[0]).toBeInTheDocument()
+    expect(screen.getAllByText(getFragmentedTextMatcher('Feb 20, 2024'))[0]).toBeInTheDocument()
 
     // appset
     expect(screen.getByText(mockApplicationSet0.metadata.name!)).toBeTruthy()
@@ -164,6 +164,19 @@ describe('Applications Page', () => {
     // flux
     expect(screen.getByText(mockFluxApplication0.name!)).toBeTruthy()
     expect(screen.getByText('OpenShift')).toBeTruthy()
+
+    // labels column header and OCP/Flux apps show label count (e.g. "1 label", "2 labels")
+    expect(screen.getByText('Labels')).toBeTruthy()
+    expect(screen.getByText('1 label')).toBeTruthy()
+    expect(screen.getByText('2 labels')).toBeTruthy()
+  })
+
+  test('should show Label filter in filter panel', async () => {
+    await waitForText('feng-remote-argo8')
+
+    userEvent.click(screen.getByText('Filter'))
+    expect(screen.getByRole('button', { name: /^Label$/i })).toBeInTheDocument()
+    userEvent.click(screen.getByText('Filter'))
   })
 
   test('should filter', async () => {
@@ -269,14 +282,14 @@ describe('Applications Page', () => {
 
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [
-        'Name,Type,Namespace,Clusters,Health Status,Sync Status,Pod Status,Created\n' +
-          `"application-0","Subscription","namespace-0","Local","-","-","-","${getISOStringTimestamp(applicationAggregate.res.items[0].metadata?.creationTimestamp || '')}"\n` +
-          '"applicationset-0","Application set","openshift-gitops","None","-","-","-",-\n' +
-          '"applicationset-1","Application set","openshift-gitops","None","-","-","-",-\n' +
-          '"argoapplication-1","Argo CD","argoapplication-1-ns","None","-","-","-",-\n' +
-          '"feng-remote-argo8","Argo CD","argoapplication-1-ns","None","-","-","-",-\n' +
-          '"authentication-operator","OpenShift","authentication-operator-ns","None","-","-","-",-\n' +
-          '"authentication-operatorf","Flux","authentication-operator-ns","None","-","-","-",-',
+        'Name,Type,Namespace,Clusters,Labels,Health Status,Sync Status,Pod Status,Created\n' +
+          `"application-0","Subscription","namespace-0","Local",-,"-","-","-","${getISOStringTimestamp(applicationAggregate.res.items[0].metadata?.creationTimestamp || '')}"\n` +
+          '"applicationset-0","Application set","openshift-gitops","None",-,"-","-","-",-\n' +
+          '"applicationset-1","Application set","openshift-gitops","None",-,"-","-","-",-\n' +
+          '"argoapplication-1","Argo CD","argoapplication-1-ns","None",-,"-","-","-",-\n' +
+          '"feng-remote-argo8","Argo CD","argoapplication-1-ns","None",-,"-","-","-",-\n' +
+          '"authentication-operator","OpenShift","authentication-operator-ns","None","app=authentication-operator","-","-","-",-\n' +
+          '"authentication-operatorf","Flux","authentication-operator-ns","None","kustomize.toolkit.fluxcd.io/name=test-app,kustomize.toolkit.fluxcd.io/namespace=test-app-ns","-","-","-",-',
       ],
       { type: 'text/csv' }
     )
