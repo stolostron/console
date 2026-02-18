@@ -125,10 +125,6 @@ enum ScoreColumn {
 }
 const ScoreColumnSize = Object.keys(ScoreColumn).length / 2
 
-const LabelCell = ({ labels }: { labels: string[] | Record<string, string> }) => (
-  <AcmLabels labels={labels} isCompact={true} />
-)
-
 function isFluxApplication(label: string) {
   let isFlux = false
   Object.entries(fluxAnnotations).forEach(([, values]) => {
@@ -675,7 +671,9 @@ export default function ApplicationsOverview() {
       },
       {
         header: t('table.labels'),
-        cell: (resource) => <LabelCell labels={getLabels(resource as OCPAppResource<ApplicationStatus>)} />,
+        cell: (resource) => (
+          <AcmLabels labels={getLabels(resource as OCPAppResource<ApplicationStatus>)} isCompact={true} />
+        ),
         exportContent: (resource) =>
           Object.entries(getLabels(resource as OCPAppResource<ApplicationStatus>))
             .map(([key, value]) => `${key}=${value}`)
