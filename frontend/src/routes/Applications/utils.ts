@@ -35,9 +35,8 @@ const getLabels = (resource: OCPAppResource<ApplicationStatus>): Record<string, 
   resource.label?.split(';').reduce<Record<string, string>>((acc, label) => {
     const trimmed = label.trim()
     const eqIndex = trimmed.indexOf('=')
-    if (eqIndex === -1) return acc
-    acc[trimmed.slice(0, eqIndex).trim()] = trimmed.slice(eqIndex + 1).trim()
-    return acc
+
+    return eqIndex === -1 ? acc : { ...acc, [trimmed.slice(0, eqIndex).trim()]: trimmed.slice(eqIndex + 1).trim() }
   }, {}) ?? {}
 
 export { isOCPAppResource, getApplicationId, getLabels }
