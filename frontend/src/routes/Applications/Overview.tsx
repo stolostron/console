@@ -47,7 +47,7 @@ import {
   StatusColumn,
   Subscription,
 } from '../../resources'
-import { getISOStringTimestamp } from '../../resources/utils'
+import { filterLabelFn, getISOStringTimestamp } from '../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import {
   AcmButton,
@@ -60,7 +60,7 @@ import {
   AcmVisitedLink,
   compareStrings,
   IAcmRowAction,
-  IAcmTableColumn,
+  IAcmTableColumn
 } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
@@ -81,9 +81,10 @@ import {
   isResourceTypeOf,
 } from './helpers/resource-helper'
 import { isLocalSubscription } from './helpers/subscriptions'
-import { ApplicationStatus } from './model/application-status'
 import { IApplicationResource } from './model/application-resource'
-import { isOCPAppResource } from './utils'
+import { ApplicationStatus } from './model/application-status'
+import { useFetchApplicationLabels } from './useFetchApplicationLabels'
+import { getApplicationId, getLabels, isOCPAppResource } from './utils'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -102,7 +103,6 @@ const fluxAnnotations = {
 const TABLE_ID = 'applicationTable'
 
 const filterId = 'type'
-
 
 export enum AppColumns {
   'name' = 0,
@@ -123,14 +123,6 @@ enum ScoreColumn {
   unknown = 4,
 }
 const ScoreColumnSize = Object.keys(ScoreColumn).length / 2
-
-const getLabels = (resource: OCPAppResource<ApplicationStatus>): Record<string, string> => resource.label?.split(';').reduce<Record<string, string>>((acc, label) => {
-    const trimmed = label.trim()
-    const eqIndex = trimmed.indexOf('=')
-    if (eqIndex === -1) return acc
-    acc[trimmed.slice(0, eqIndex).trim()] = trimmed.slice(eqIndex + 1).trim()
-    return acc
-  }, {}) ?? {}
 
 const LabelCell = ({ labels }: { labels: string[] | Record<string, string> }) => (
   <AcmLabels labels={labels} isCompact={true} />
@@ -467,10 +459,6 @@ export default function ApplicationsOverview() {
   const [deletedApps, setDeletedApps] = useState<IResource[]>([])
 
   const [pluginModal, setPluginModal] = useState<JSX.Element>()
-  const [labelData, setLabelData] = useState<{
-    labelOptions: { label: string; value: string }[]
-    labelMap: Record<string, { pairs: Record<string, string>; labels: string[] }>
-  }>()
 
   // Cache cell text for sorting and searching
   const generateTransformData = useCallback(
@@ -546,7 +534,11 @@ export default function ApplicationsOverview() {
       }
 
       // Cannot add properties directly to objects in typescript
-      return { ...tableItem, ...transformedObject }
+      return {
+        id: getApplicationId(tableItem, clusters),
+        ...tableItem,
+        ...transformedObject,
+      }
     },
     [channels, localCluster, subscriptions, t]
   )
@@ -561,11 +553,6 @@ export default function ApplicationsOverview() {
     return fetchAggregate(SupportedAggregate.applications, backendUrl, requestedExport)
   }
 
-  const labelOptions = useMemo(
-    () => allApplications.flatMap((application) => getLabels(application as OCPAppResource<ApplicationStatus>)),
-    [allApplications]
-  )
-
   const tableItems: IResource[] = useMemo(() => {
     const items = allApplications
     /* istanbul ignore next */
@@ -578,6 +565,8 @@ export default function ApplicationsOverview() {
     })
     return items.map((app) => generateTransformData(app))
   }, [allApplications, deletedApps, generateTransformData, resultCounts])
+
+  const { labelOptions, labelMap } = useFetchApplicationLabels(tableItems)
 
   const keyFn = useCallback(
     (resource: IResource<ApplicationStatus>) =>
@@ -675,7 +664,7 @@ export default function ApplicationsOverview() {
       {
         header: t('Clusters'),
         cell: (resource) => {
-          const clusterList = (resource as IUIResource)?.uidata?.clusterList ?? []
+          const clusterList = (resource as any as IUIResource)?.uidata?.clusterList ?? []
           const clusterCount = getClusterCount(clusterList, localCluster)
           const clusterCountString = getClusterCountString(t, clusterCount, clusterList, resource)
           const clusterCountSearchLink = getClusterCountSearchLink(resource, clusterCount, clusterList)
@@ -686,8 +675,8 @@ export default function ApplicationsOverview() {
         ),
         sort: 'transformed.clusterCount',
         search: 'transformed.clusterCount',
-        exportContent: (resource) => {
-          const clusterList = (resource as IUIResource)?.uidata?.clusterList ?? []
+        exportContent: (resource: IApplicationResource) => {
+          const clusterList = (resource as any as IUIResource)?.uidata?.clusterList ?? []
           const clusterCount = getClusterCount(clusterList, localCluster)
           return getClusterCountString(t, clusterCount, clusterList, resource)
         },
@@ -698,7 +687,10 @@ export default function ApplicationsOverview() {
       {
         header: t('table.labels'),
         cell: (resource) => <LabelCell labels={getLabels(resource as OCPAppResource<ApplicationStatus>)} />,
-        exportContent: (resource) => Object.entries(getLabels(resource as OCPAppResource<ApplicationStatus>)).map(([key, value]) => `${key}=${value}`).join(','),
+        exportContent: (resource) =>
+          Object.entries(getLabels(resource as OCPAppResource<ApplicationStatus>))
+            .map(([key, value]) => `${key}=${value}`)
+            .join(','),
       },
       {
         header: t('Health Status'),
@@ -911,10 +903,11 @@ export default function ApplicationsOverview() {
         label: t('Label'),
         options: labelOptions || [],
         supportsInequality: true, // table will allow user to convert filtered values to a=b or a!=b
-        tableFilterFn: (selectedValues, item) => selectedValues. (item as OCPAppResource)?.label?.includes(),
+        tableFilterFn: (selectedValues: string[], item: IApplicationResource) =>
+          filterLabelFn(selectedValues, item as any, labelMap || {}),
       },
     ],
-    [t, managedClusters, labelOptions, systemAppNSPrefixes]
+    [t, managedClusters, labelOptions, systemAppNSPrefixes, labelMap]
   )
 
   const navigate = useNavigate()
@@ -1275,12 +1268,12 @@ export default function ApplicationsOverview() {
       <DeleteResourceModal {...modalProps} />
       {pluginModal}
       <AcmTableStateProvider localStorageKey={'applications-overview-table-state'}>
-        <AcmTable<IResource<ApplicationStatus>>
+        <AcmTable<IApplicationResource>
           id={TABLE_ID}
           key="data-table"
           columns={columns}
           keyFn={keyFn}
-          items={tableItems as IResource<ApplicationStatus>[]}
+          items={tableItems as IApplicationResource[]}
           filters={filters}
           secondaryFilterIds={['label']}
           setRequestView={setRequestedView}

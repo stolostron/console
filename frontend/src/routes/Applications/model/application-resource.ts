@@ -3,4 +3,4 @@
 import { IResource, OCPAppResource } from '../../../resources'
 import { ApplicationStatus } from './application-status'
 
-export type IApplicationResource = IResource<ApplicationStatus> | OCPAppResource<ApplicationStatus>
+export type IApplicationResource = (IResource<ApplicationStatus> | OCPAppResource<ApplicationStatus>) & { id: string }
