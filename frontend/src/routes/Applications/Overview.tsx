@@ -61,7 +61,7 @@ import {
   AcmVisitedLink,
   compareStrings,
   IAcmRowAction,
-  IAcmTableColumn
+  IAcmTableColumn,
 } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
