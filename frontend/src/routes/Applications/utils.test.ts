@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { sha256 } from 'js-sha256'
 import { ApplicationKind, ApplicationSetKind, IResource } from '../../resources'
-import { getLabels, isOCPAppResource } from './utils'
+import { getApplicationId, getLabels, isOCPAppResource } from './utils'
 import { ApplicationStatus } from './model/application-status'
 import { OCPAppResource } from '../../resources/ocp-app-resource'
 
@@ -101,6 +102,62 @@ describe('Applications utils', () => {
         valid: 'ok',
         another: 'value',
       })
+    })
+  })
+
+  describe('getApplicationId', () => {
+    it('returns name-namespace-hash for resource with metadata and clusters', () => {
+      const resource: IResource = {
+        apiVersion: 'apps/v1',
+        kind: 'Deployment',
+        metadata: { name: 'my-app', namespace: 'my-ns' },
+      }
+      const clusters = ['cluster-1', 'cluster-2']
+      const hash = sha256(JSON.stringify(clusters))
+      expect(getApplicationId(resource, clusters)).toBe(`my-app-my-ns-${hash}`)
+    })
+
+    it('produces same id for same resource and clusters', () => {
+      const resource: IResource = {
+        apiVersion: 'apps/v1',
+        kind: 'Deployment',
+        metadata: { name: 'app', namespace: 'ns' },
+      }
+      const clusters = ['c1']
+      expect(getApplicationId(resource, clusters)).toBe(getApplicationId(resource, clusters))
+    })
+
+    it('produces different id for different clusters', () => {
+      const resource: IResource = {
+        apiVersion: 'apps/v1',
+        kind: 'Deployment',
+        metadata: { name: 'app', namespace: 'ns' },
+      }
+      const id1 = getApplicationId(resource, ['cluster-a'])
+      const id2 = getApplicationId(resource, ['cluster-b'])
+      expect(id1).not.toBe(id2)
+      expect(id1).toMatch(/^app-ns-[a-f0-9]{64}$/)
+      expect(id2).toMatch(/^app-ns-[a-f0-9]{64}$/)
+    })
+
+    it('handles empty clusters array', () => {
+      const resource: IResource = {
+        apiVersion: 'apps/v1',
+        kind: 'Deployment',
+        metadata: { name: 'app', namespace: 'ns' },
+      }
+      const hash = sha256(JSON.stringify([]))
+      expect(getApplicationId(resource, [])).toBe(`app-ns-${hash}`)
+    })
+
+    it('handles resource with undefined metadata', () => {
+      const resource: IResource = {
+        apiVersion: 'apps/v1',
+        kind: 'Deployment',
+      }
+      const clusters = ['c1']
+      const hash = sha256(JSON.stringify(clusters))
+      expect(getApplicationId(resource, clusters)).toBe(`undefined-undefined-${hash}`)
     })
   })
 
