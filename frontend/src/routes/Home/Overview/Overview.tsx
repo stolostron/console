@@ -46,13 +46,7 @@ export default function Overview() {
   }, [acmExtensions?.overviewTab, t])
 
   return (
-    <AcmPage
-      header={
-        <div>
-          <AcmPageHeader title={t('Overview')} searchbar={<ReuseableSearchbar />} />
-        </div>
-      }
-    >
+    <AcmPage header={<AcmPageHeader title={t('Overview')} searchbar={<ReuseableSearchbar />} />}>
       <Tabs
         activeKey={activeTabKey}
         onSelect={(_, tabIndex) => setActiveTabKey(tabIndex)}

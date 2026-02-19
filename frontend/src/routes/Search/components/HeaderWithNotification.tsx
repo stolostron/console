@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { PageSection } from '@patternfly/react-core'
 import { Link } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
@@ -17,19 +16,14 @@ export default function HeaderWithNotification(props: { messages: Message[] }) {
   const { messages } = props
 
   return (
-    <div style={{ outline: 'none', display: 'flex', justifyContent: 'flex-end' }}>
-      <div style={{ flex: 1 }}>
-        <AcmPageHeader
-          title={isGlobalHub && settings.globalSearchFeatureFlag === 'enabled' ? t('Global search') : t('Search')}
-          titleTooltip={
-            isGlobalHub &&
-            settings.globalSearchFeatureFlag === 'enabled' &&
-            t('Global search is enabled. Resources across all your managed hubs and clusters will be shown.')
-          }
-        />
-      </div>
-
-      {messages.map((msg, index) => {
+    <AcmPageHeader
+      title={isGlobalHub && settings.globalSearchFeatureFlag === 'enabled' ? t('Global search') : t('Search')}
+      titleTooltip={
+        isGlobalHub &&
+        settings.globalSearchFeatureFlag === 'enabled' &&
+        t('Global search is enabled. Resources across all your managed hubs and clusters will be shown.')
+      }
+      actions={messages.map((msg, index) => {
         const displayShortText = t('Search is disabled on some clusters.') || msg?.description
         const displayLongText =
           t(
@@ -38,25 +32,24 @@ export default function HeaderWithNotification(props: { messages: Message[] }) {
         const footerText = t('View clusters with search add-on disabled.')
 
         return (
-          <PageSection key={msg.id + index}>
-            <AcmInlineStatus
-              type={StatusType.warning}
-              status={displayShortText}
-              popover={{
-                headerContent: displayShortText,
-                bodyContent: displayLongText,
-                footerContent: msg.id === 'S20' && (
-                  <Link
-                    to={`${NavigationPath.search}?filters={"textsearch":"kind%3ACluster%20addon%3Asearch-collector%3Dfalse%20label%3A!local-cluster%3Dtrue"}`}
-                  >
-                    {footerText}
-                  </Link>
-                ),
-              }}
-            />
-          </PageSection>
+          <AcmInlineStatus
+            key={msg.id + index}
+            type={StatusType.warning}
+            status={displayShortText}
+            popover={{
+              headerContent: displayShortText,
+              bodyContent: displayLongText,
+              footerContent: msg.id === 'S20' && (
+                <Link
+                  to={`${NavigationPath.search}?filters={"textsearch":"kind%3ACluster%20addon%3Asearch-collector%3Dfalse%20label%3A!local-cluster%3Dtrue"}`}
+                >
+                  {footerText}
+                </Link>
+              ),
+            }}
+          />
         )
       })}
-    </div>
+    />
   )
 }

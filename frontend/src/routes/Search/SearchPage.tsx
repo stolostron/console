@@ -468,18 +468,12 @@ export default function SearchPage() {
   }
 
   return (
-    <AcmPage
-      header={
-        <div>
-          <HeaderWithNotification messages={queryMessages} />
-          <RenderDropDownAndNewTab
-            selectedSearch={selectedSearch}
-            setSelectedSearch={setSelectedSearch}
-            savedSearchQueries={userSavedSearches}
-          />
-        </div>
-      }
-    >
+    <AcmPage header={<HeaderWithNotification messages={queryMessages} />}>
+      <RenderDropDownAndNewTab
+        selectedSearch={selectedSearch}
+        setSelectedSearch={setSelectedSearch}
+        savedSearchQueries={userSavedSearches}
+      />
       <PageSection hasBodyWrapper={false} style={{ paddingTop: 0, paddingBottom: 0 }}>
         <SearchAlertGroup />
       </PageSection>
