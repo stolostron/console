@@ -3162,7 +3162,6 @@
   "The request was cancelled.": "The request was cancelled.",
   "The resource access is not implemented.": "The resource access is not implemented.",
   "The resource was not found.": "The resource was not found.",
-  "The role assignment can't be deleted. Error: {{error}}": "The role assignment can't be deleted. Error: {{error}}",
   "The role assignment creation for {{role}} role failed. Error: {{error}}": "The role assignment creation for {{role}} role failed. Error: {{error}}",
   "The role assignment update for {{role}} role failed. Error: {{error}}": "The role assignment update for {{role}} role failed. Error: {{error}}",
   "The root volume size for the node pool.": "The root volume size for the node pool.",
