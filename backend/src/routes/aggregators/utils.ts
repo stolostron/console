@@ -781,13 +781,13 @@ export function getNextApplicationPageChunk(
     }
     if (applications.length) {
       // create array of frequency of name prefixes
-      const a = 'a'.charCodeAt(0)
-      const z = '0'.charCodeAt(0)
+      const a = 'a'.codePointAt(0)
+      const z = '0'.codePointAt(0)
       const sz = 26 + 10
       const prefixFrequency = new Array(sz).fill(0) as number[]
       applications.forEach((app) => {
         const name = app.transform[AppColumns.name][0] as string
-        const ltr = name.charCodeAt(0)
+        const ltr = name.codePointAt(0)
         const index = ltr < a ? ltr - z + 26 : ltr - a
         prefixFrequency[index]++
       })
