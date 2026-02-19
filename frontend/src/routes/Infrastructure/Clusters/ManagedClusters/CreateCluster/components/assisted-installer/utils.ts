@@ -575,6 +575,12 @@ export const onSaveBMH =
       const patches: any[] = []
       appendPatch(patches, '/spec/config', nmState?.spec?.config, editModal.nmState.spec?.config)
       appendPatch(patches, '/spec/interfaces', nmState?.spec?.interfaces || [], editModal.nmState.spec?.interfaces)
+      appendPatch(
+        patches,
+        '/metadata/labels/configured-via',
+        nmState?.metadata?.labels?.['configured-via'],
+        editModal.nmState.metadata?.labels?.['configured-via']
+      )
       if (patches.length) {
         await patchResource(editModal.nmState as IResource, patches).promise
       }
