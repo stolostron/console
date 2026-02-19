@@ -291,36 +291,28 @@ describe('events Route', () => {
       // for the same UID could create duplicate/orphaned events in ServerSideEvents.
       //
       // The race condition occurred when:
-      // 1. First call checks cache (finds nothing)
-      // 2. First call starts async compression (await deflateResource yields control)
-      // 3. Second call checks cache (still finds nothing because first hasn't written yet)
-      // 4. Second call starts async compression (await deflateResource yields control)
-      // 5. Both calls create separate events, first event becomes orphaned
+      // 1. Call A checks cache (finds nothing)
+      // 2. Call A starts async compression (await deflateResource yields control)
+      // 3. Call B checks cache (still finds nothing because A hasn't written yet)
+      // 4. Call B starts async compression (yields control)
+      // 5. ... same for C, D, etc. — all see empty cache before any has written
+      // 6. Multiple calls create separate events; all but the last become orphaned
       //
-      // The fix stores promises immediately in the cache so concurrent calls see pending entries.
-      // This allows the second call to see the pending entry and properly coordinate.
+      // The fix: store promises immediately in the cache so concurrent callers see pending
+      // entries, and recheck state after awaiting async work so that only one caller
+      // proceeds to create/update the event (double-check pattern).
 
-      const resource1: IResource = {
+      const uid = 'race-test-uid-concurrent'
+      const resources: IResource[] = [1, 2, 3, 4].map((i) => ({
         kind: 'ConfigMap',
         apiVersion: 'v1',
         metadata: {
           name: 'race-test-config',
           namespace: 'default',
-          uid: 'race-test-uid-concurrent',
-          resourceVersion: '1',
+          uid,
+          resourceVersion: String(i),
         },
-      }
-
-      const resource2: IResource = {
-        kind: 'ConfigMap',
-        apiVersion: 'v1',
-        metadata: {
-          name: 'race-test-config',
-          namespace: 'default',
-          uid: 'race-test-uid-concurrent', // Same UID as resource1
-          resourceVersion: '2', // Different resourceVersion
-        },
-      }
+      }))
 
       // Reset ServerSideEvents to a clean state to ensure test isolation
       ServerSideEvents.reset()
@@ -337,16 +329,15 @@ describe('events Route', () => {
       // Snapshot event IDs BEFORE our concurrent calls (should only be START=1 and LOADED=2)
       const eventIdsBefore = new Set(Object.keys(ServerSideEvents.getEvents()).map(Number))
 
-      // Start both cache operations concurrently WITHOUT awaiting first
-      // This simulates the race condition scenario
-      const promise1 = cacheResource(resource1)
-      const promise2 = cacheResource(resource2)
-      await Promise.all([promise1, promise2])
+      // Start all 4 cache operations concurrently WITHOUT awaiting first.
+      // This simulates the race where multiple callers can interleave around deflateResource.
+      const promises = resources.map((r) => cacheResource(r))
+      await Promise.all(promises)
 
       // With the fix, cacheResource stores promises and returns without awaiting pushEvent.
       // We must await the eventID promise to ensure pushEvent has been called.
       const cache = getEventCache()
-      const cachedEventID = await Promise.resolve(cache['/v1/configmaps']['race-test-uid-concurrent'].eventID)
+      const cachedEventID = await Promise.resolve(cache['/v1/configmaps'][uid].eventID)
 
       // Snapshot event IDs AFTER our concurrent calls
       const events = ServerSideEvents.getEvents()
@@ -361,8 +352,9 @@ describe('events Route', () => {
         })
 
       // THE KEY ASSERTION:
-      // With the fix: Only 1 MODIFIED event should survive (the second call properly removes the first)
-      // Without the fix: 2 MODIFIED events survive (one is orphaned - created but never removed)
+      // With the fix: Only 1 MODIFIED event should survive (recheck-after-await ensures
+      // only one caller wins; others see existing entry and skip creating a new event).
+      // Without the fix: up to 4 MODIFIED events can survive (multiple orphaned events).
       expect(newModifiedEventIds.length).toBe(1)
 
       // The surviving event should be the one in the cache
