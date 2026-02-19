@@ -867,11 +867,11 @@ A React hook that provides fleet-wide search functionality using the ACM search 
 
 | Function | Type |
 | ---------- | ---------- |
-| `useFleetSearchPoll` | `<T extends K8sResourceCommon or K8sResourceCommon[]>(watchOptions: FleetWatchK8sResource, advancedSearchFilters?: AdvancedSearchFilter or undefined, pollInterval?: number or ... 1 more ... or undefined) => [...]` |
+| `useFleetSearchPoll` | `<T extends K8sResourceCommon or K8sResourceCommon[]>(watchOptions?: FleetWatchK8sResource or undefined, advancedSearchFilters?: AdvancedSearchFilter or undefined, pollInterval?: number or ... 1 more ... or undefined) => [...]` |
 
 Parameters:
 
-* `watchOptions`: - Configuration options for the resource watch
+* `watchOptions`: - Configuration options for the resource watch; no search query is performed if this value is null or if `kind` of `groupVersionKind` is not specified
 * `watchOptions.cluster`: - The managed cluster on which the resource resides; unspecified to search all clusters
 * `watchOptions.groupVersionKind`: - The group, version, and kind of the resource to search for
 * `watchOptions.limit`: - Maximum number of results to return (defaults to -1 for no limit)

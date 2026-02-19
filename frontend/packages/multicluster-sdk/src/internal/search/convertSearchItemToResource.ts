@@ -93,7 +93,7 @@ const parseMapString = (mapString: string): Record<string, string> | undefined =
   if (!mapString || typeof mapString !== 'string') {
     return undefined
   }
-  return Object.fromEntries(mapString.split(';').map((pair: string) => pair.trimStart().split('=')))
+  return Object.fromEntries(mapString.split(';').map((pair) => pair.trimStart().split('=')))
 }
 
 /**
@@ -107,7 +107,7 @@ const parseListString = (listString: string): string[] | undefined => {
   }
   return listString
     .split(';')
-    .map((value: string) => value.trim())
+    .map((value) => value.trim())
     .filter(Boolean)
 }
 
@@ -273,7 +273,7 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
         resource,
         'spec.initContainers',
         initContainerNamesList,
-        initContainerNamesList?.map((name: string) => ({ name }))
+        initContainerNamesList?.map((name) => ({ name }))
       )
       break
     }
@@ -308,10 +308,10 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
       const volumes =
         dataVolumeNamesList || pvcClaimNamesList
           ? [
-              ...(dataVolumeNamesList || []).map((name: string) => ({
+              ...(dataVolumeNamesList || []).map((name) => ({
                 dataVolume: { name },
               })),
-              ...(pvcClaimNamesList || []).map((claimName: string) => ({
+              ...(pvcClaimNamesList || []).map((claimName) => ({
                 persistentVolumeClaim: { claimName },
               })),
             ]
@@ -333,15 +333,63 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
       setIfDefined(resource, 'status.phase', item.phase)
       break
 
-    case 'VirtualMachineInstance.kubevirt.io':
+    case 'VirtualMachineInstance.kubevirt.io': {
       setIfDefined(resource, 'spec.domain.cpu.cores', item.cpu, Number(item.cpu))
       setIfDefined(resource, 'spec.domain.cpu.sockets', item.cpuSockets, Number(item.cpuSockets))
       setIfDefined(resource, 'spec.domain.cpu.threads', item.cpuThreads, Number(item.cpuThreads))
+      setIfDefined(
+        resource,
+        'spec.domain.devices.gpus',
+        parseListString(item.gpuName)?.map((name) => ({ name }))
+      )
+      setIfDefined(
+        resource,
+        'spec.domain.devices.hostDevices',
+        parseListString(item.hostDeviceName)?.map((name) => ({ name }))
+      )
+      setIfDefined(
+        resource,
+        'spec.domain.devices.interfaces',
+        parseListString(item.interfaceName)?.map((name) => ({ name }))
+      )
       setIfDefined(resource, 'spec.domain.memory.guest', item.memory)
-      setIfDefined(resource, 'status.interfaces[0]', item.ipaddress, {
-        ipAddress: item.ipaddress,
-        name: 'default',
-      })
+      const interfaces = []
+      if (item._interface) {
+        // _interfaces has format: "<name1>/<interfaceName1>[0]=<ipAddress>; <name1>/<interfaceName2>[1]=<ipAddress>; <name2>/interfaceName2>[0]=<ipAddress>"
+        // The name (optional) and interface are separated by a slash, followed by the index of the ipAddress in the ipAddresses array
+        const interfaceMap = new Map()
+        const keyIndexRE = /^(?<name>[^/]*)?\/(?<interfaceName>[^/]*)?\[(?<index>\d+)\]$/
+        parseListString(item._interface)?.forEach((interfaceString) => {
+          const [keyIndex, ipAddress] = interfaceString.split('=')
+          const match = keyIndexRE.exec(keyIndex)
+          if (match) {
+            const name = match.groups?.name ?? ''
+            const interfaceName = match.groups?.interfaceName ?? ''
+            const index = Number(match.groups?.index ?? 0)
+            const key = `${name}/${interfaceName}`
+            const interfaceObject =
+              interfaceMap.get(key) ||
+              interfaceMap
+                .set(key, {
+                  ...(name && { name }),
+                  ...(interfaceName && { interfaceName }),
+                  ipAddresses: [],
+                })
+                .get(key)
+            if (index === 0) {
+              interfaceObject.ipAddress = ipAddress
+            }
+            interfaceObject.ipAddresses[index] = ipAddress
+          }
+        })
+        interfaces.push(...interfaceMap.values())
+      } else if (item.ipaddress) {
+        interfaces.push({
+          ipAddress: item.ipaddress,
+          name: 'default',
+        })
+      }
+      setIfDefined(resource, 'status.interfaces', interfaces.length ? interfaces : undefined)
       setIfDefined(resource, 'status.nodeName', item.node)
       setIfDefined(resource, 'status.phase', item.phase)
       setIfDefined(resource, 'status.guestOSInfo.version', item.osVersion)
@@ -350,6 +398,7 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
         { type: 'Ready', value: item.ready },
       ])
       break
+    }
 
     case 'VirtualMachineInstanceMigration.kubevirt.io':
       setIfDefined(resource, 'metadata.deletionTimestamp', item.deleted)

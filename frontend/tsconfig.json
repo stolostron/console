@@ -2,7 +2,7 @@
     "compilerOptions": {
         "lib": ["dom", "dom.iterable", "esnext"],
         "module": "commonjs",
-        "target": "es2015",
+        "target": "ES2022",
         "jsx": "react-jsx",
         "types": ["node", "jest"],
 
