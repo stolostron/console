@@ -706,16 +706,25 @@ export async function cacheResource(resource: IResource) {
   }
 
   const uid = resource.metadata.uid
-  const existing = cache[uid]
 
-  if (existing) {
+  let existing = cache[uid]
+  while (existing) {
     if (
       (await inflateResource(await existing.compressed, eventDict)).metadata.resourceVersion ===
       resource.metadata.resourceVersion
     ) {
       return resource.metadata.resourceVersion
     }
-    ServerSideEvents.removeEvent(await existing.eventID)
+    const eventID = await existing.eventID
+    const latestExisting = cache[uid]
+    if (latestExisting === existing) {
+      // if no other cacheResource call updated the cache while we were awaiting, we can replace the cache entry and event
+      ServerSideEvents.removeEvent(eventID)
+      break
+    }
+    // if a deleteResource ran while we were awaiting, we will exit the loop because the resource is no longer existing
+    // if another cacheResource call updated the cache while we were awaiting, we will check again if the resourceVersion is the same
+    existing = latestExisting
   }
   const compressed = deflateResource(resource, eventDict)
   const eventID = compressed.then((compressed) =>
