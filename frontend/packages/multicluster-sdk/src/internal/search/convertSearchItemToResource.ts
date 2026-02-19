@@ -350,7 +350,7 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
       setIfDefined(
         resource,
         'spec.domain.devices.interfaces',
-        parseListString(item.intefaceName)?.map((name) => ({ name }))
+        parseListString(item.interfaceName)?.map((name) => ({ name }))
       )
       setIfDefined(resource, 'spec.domain.memory.guest', item.memory)
       const interfaces = []

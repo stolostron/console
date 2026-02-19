@@ -1284,12 +1284,12 @@ describe('convertSearchItemToResource', () => {
       expect(result.spec?.domain?.devices?.hostDevices).toEqual([{ name: 'host-device-1' }, { name: 'host-device-2' }])
     })
 
-    it('should set spec.domain.devices.interfaces from intefaceName', () => {
+    it('should set spec.domain.devices.interfaces from interfaceName', () => {
       const vmiItem = {
         ...baseSearchItem,
         kind: 'VirtualMachineInstance',
         apigroup: 'kubevirt.io',
-        intefaceName: 'bridge;masquerade',
+        interfaceName: 'bridge;masquerade',
       }
 
       const result = convert(vmiItem)
