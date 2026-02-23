@@ -360,7 +360,7 @@ fips: true
 {{/if}}
 
 {{#if imageContentSources}}
-pullSecret: {{{pullSecret}}}
+pullSecret: '{{{pullSecret}}}'
 {{else}}
 pullSecret: "" # skip, hive will inject based on it's secrets
 {{/if}}
