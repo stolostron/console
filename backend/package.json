@@ -23,7 +23,7 @@
   "dependencies": {
     "abort-controller": "3.0.0",
     "dotenv": "16.6.1",
-    "find-my-way": "^9.4.0",
+    "find-my-way": "^9.5.0",
     "fuse.js": "6.6.2",
     "get-value": "3.0.1",
     "got": "^12.6.1",
