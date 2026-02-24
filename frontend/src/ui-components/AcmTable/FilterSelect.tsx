@@ -1,6 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Badge, MenuToggle, Select, SelectGroup, SelectList, SelectOption, TextInput } from '@patternfly/react-core'
+import {
+  Badge,
+  MenuToggle,
+  Select,
+  SelectGroup,
+  SelectList,
+  SelectOption,
+  SelectProps,
+  TextInput,
+} from '@patternfly/react-core'
 import { FilterIcon } from '@patternfly/react-icons'
 import { useMemo, useState } from 'react'
 import { HighlightSearchText } from '../../components/HighlightSearchText'
@@ -24,7 +33,8 @@ export const FilterSelect = ({
   validFilters,
   onToggleEquality,
   hasFilter = false,
-}: FilterSelectProps) => {
+  ...selectProps
+}: FilterSelectProps & Omit<SelectProps, 'toggle'>) => {
   const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
   const [filterValue, setFilterValue] = useState<string>('')
@@ -80,7 +90,7 @@ export const FilterSelect = ({
         const option = selection as string
         onSelect(optionToFilterMap.get(option) ?? '', option)
       }}
-      isScrollable
+      {...selectProps}
     >
       <SelectList>
         {hasFilter && <TextInput aria-label={t('Search')} onChange={(_event, value) => setFilterValue(value)} />}

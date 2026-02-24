@@ -1127,6 +1127,30 @@ describe('AcmTable', () => {
     expect(container.querySelectorAll('.pf-v6-c-label-group__list-item')).toHaveLength(0)
   })
 
+  test('table filter dropdown is scrollable when opened', async () => {
+    const { getByText } = render(
+      <Table
+        filters={[
+          {
+            label: 'Cluster',
+            id: 'cluster',
+            options: Array.from(new Array(50).keys()).map((inx) => ({
+              label: `cluster${inx + 1}`,
+              value: `cluster${inx + 1}`,
+            })),
+            tableFilterFn: (selectedValues: string[], item: IExampleData) =>
+              selectedValues.includes((item['cluster'] || '').toLowerCase()),
+          },
+        ]}
+      />
+    )
+    userEvent.click(getByText('Filter'))
+    await waitFor(() => {
+      const scrollableMenu = document.querySelector('.pf-m-scrollable')
+      expect(scrollableMenu).toBeInTheDocument()
+    })
+  })
+
   test('renders with customTableAction', () => {
     const { container, getByRole } = render(
       <Table useCustomTableAction={true} useTableActions={false} useRowActions={false} />

@@ -736,12 +736,13 @@ function TableColumnFilters<T>(
               onToggleEquality={onToggleEquality}
               hasFilter={inx !== 0}
               onSelect={(filterId, value) => {
-                if (filterSelections[filterId]?.includes(value)) {
-                  removeFilterValue(filterId, value)
+                if (filterSelections[filterId as string]?.includes(value)) {
+                  removeFilterValue(filterId as string, value)
                 } else {
-                  addFilterValue(filterId, value)
+                  addFilterValue(filterId as string, value)
                 }
               }}
+              isScrollable
             />
           )
         })}
