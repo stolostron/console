@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { getVersionFromReleaseImage, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { IResource, IResourceDefinition } from './resource'
 import { Metadata } from './metadata'
+import { Cluster } from './utils/get-cluster'
 
 // Extend the external HostedClusterK8sResource type to include the channel field used by ACM
 export interface HostedClusterK8sResourceWithChannel extends HostedClusterK8sResource {
@@ -96,4 +97,11 @@ export interface HostedCluster extends IResource {
       }
     }[]
   }
+}
+
+export function getHostedClusterVersion(cluster: Cluster, hostedCluster?: HostedClusterK8sResource) {
+  return (
+    cluster.distribution?.ocp?.version ??
+    (hostedCluster ? getVersionFromReleaseImage(hostedCluster.spec.release.image) : undefined)
+  )
 }

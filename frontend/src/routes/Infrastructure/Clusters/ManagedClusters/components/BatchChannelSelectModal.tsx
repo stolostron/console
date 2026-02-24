@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ClusterCurator, ClusterCuratorDefinition } from '../../../../../resources'
-import { HostedClusterK8sResourceWithChannel } from '../../../../../resources/hosted-cluster'
+import { getHostedClusterVersion, HostedClusterK8sResourceWithChannel } from '../../../../../resources/hosted-cluster'
 import {
   Cluster,
   createResource,
@@ -17,7 +17,6 @@ import { useTranslation } from '../../../../../lib/acm-i18next'
 import { BulkActionModal } from '../../../../../components/BulkActionModal'
 import './style.css'
 import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
-import { getVersionFromReleaseImage } from '../utils/utils'
 
 /**
  * Look up the HostedCluster resource for a given cluster from the hostedClusters map.
@@ -52,13 +51,7 @@ const isChannelSelectable = (c: Cluster, hostedClusters?: Record<string, HostedC
  * Falls back to parsing version from hostedCluster.spec.release.image if distribution not available.
  */
 const getFallbackChannels = (cluster: Cluster, hostedCluster?: HostedClusterK8sResourceWithChannel): string[] => {
-  // Try distribution version first
-  let version = cluster.distribution?.ocp?.version
-
-  // If no distribution version, try to get from hostedCluster release image
-  if (!version && hostedCluster?.spec?.release?.image) {
-    version = getVersionFromReleaseImage(hostedCluster.spec.release.image)
-  }
+  const version = getHostedClusterVersion(cluster, hostedCluster)
 
   if (!version) return []
 

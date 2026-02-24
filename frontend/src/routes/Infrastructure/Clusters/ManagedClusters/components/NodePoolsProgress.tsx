@@ -113,6 +113,7 @@ const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
   return (
     <ProgressStep icon={getNodePoolsStatus(nodePools, t)}>
       <AddNodePoolModal
+        cluster={cluster}
         open={openAddNodepoolModal}
         close={toggleAddNodepoolModal}
         hostedCluster={hostedCluster}

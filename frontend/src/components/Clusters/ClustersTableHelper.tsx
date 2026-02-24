@@ -1,10 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  AgentClusterInstallK8sResource,
-  getVersionFromReleaseImage,
-  HostedClusterK8sResource,
-} from '@openshift-assisted/ui-lib/cim'
+import { AgentClusterInstallK8sResource, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { Alert, Label, Content, ContentVariants, Tooltip } from '@patternfly/react-core'
 import { fitContent, nowrap } from '@patternfly/react-table'
 import { Link } from 'react-router-dom-v5-compat'
@@ -18,6 +14,7 @@ import {
   NodeInfo,
   ClusterDeployment,
   ClusterDeploymentDefinition,
+  getClusterImageSetVersion,
 } from '../../resources'
 import {
   Cluster,
@@ -255,9 +252,11 @@ export function getClusterDistributionString(
       const clusterImage = clusterImageSets.find(
         (clusterImageSet) => clusterImageSet.metadata?.name === agentClusterInstall?.spec?.imageSetRef?.name
       )
-      const version = getVersionFromReleaseImage(clusterImage?.spec?.releaseImage)
-      if (version) {
-        agentClusterObject[cluster?.name] = version
+      if (clusterImage) {
+        const version = getClusterImageSetVersion(clusterImage)
+        if (version) {
+          agentClusterObject[cluster?.name] = version
+        }
       }
     })
   }

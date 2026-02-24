@@ -21,9 +21,8 @@ import {
   reverseStorageClass,
   updateDefaultPodNetwork,
 } from './ControlDataHelpers'
-import { getControlByID } from '../../../../../../lib/temptifly-utils'
-import { getChannelFromReleaseImage } from '../../utils/utils'
 import AvailabilityOptionsForm, { summary } from '../components/AvailabilityOptionsForm'
+import { getClusterImageSetVersion } from '../../../../../../resources'
 
 const operatorAlert = (localCluster, t) => {
   return (
@@ -58,24 +57,14 @@ const filterOCPImages = (loadOCPImages, hypershiftSupportedVersions) => {
     ...originalResult,
     query: async () => {
       const images = await originalResult.query()
-      return images.filter((image) => {
-        return hypershiftSupportedVersions.some((supportedVersion) =>
-          image.spec.releaseImage.includes(`:${supportedVersion}`)
+      return images.filter((image) =>
+        hypershiftSupportedVersions.some(
+          (supportedVersion) =>
+            getClusterImageSetVersion(image).startsWith(`${supportedVersion}.`) ||
+            getClusterImageSetVersion(image).startsWith(`${supportedVersion}-`)
         )
-      })
+      )
     },
-  }
-}
-
-// Custom onImageChange that also computes channel from release image
-const onImageChangeWithChannel = (control, controlData) => {
-  // Call the original onImageChange for network type handling
-  onImageChange(control, controlData)
-
-  // Compute and set the channel based on the selected release image
-  const channelControl = getControlByID(controlData, 'channel')
-  if (channelControl && control.active) {
-    channelControl.active = getChannelFromReleaseImage(control.active, 'fast')
   }
 }
 
@@ -180,7 +169,7 @@ export const getControlDataKubeVirt = (
         notification: t('creation.ocp.cluster.must.select.ocp.image'),
         required: true,
       },
-      onSelect: onImageChangeWithChannel,
+      onSelect: onImageChange,
       reverse: reverseImageSet,
     },
     {

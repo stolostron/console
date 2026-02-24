@@ -8,7 +8,7 @@ import { TFunction } from 'react-i18next'
 import { Content, SelectOption } from '@patternfly/react-core'
 import { Link } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../../../../../NavigationPath'
-import { Secret, ManagedClusterSet } from '../../../../../../../resources'
+import { Secret, ManagedClusterSet, getClusterImageSetVersion } from '../../../../../../../resources'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../../../ClusterSets/components/useCanJoinClusterSets'
 import { useClusterImages, getDefault } from './utils'
 import { useSharedAtoms, useRecoilValue } from '../../../../../../../shared-recoil'
@@ -24,7 +24,6 @@ import {
   ClusterImageSetK8sResource,
   FeatureGateContextProvider,
   LoadingState,
-  getVersionFromReleaseImage,
   labelsToArray,
 } from '@openshift-assisted/ui-lib/cim'
 import React from 'react'
@@ -156,7 +155,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
 
   const getVersion = (versionName = '') => {
     const clusterImage = clusterImageSets.find((clusterImageSet) => clusterImageSet.metadata?.name == versionName)
-    return getVersionFromReleaseImage(clusterImage?.spec?.releaseImage) || versionName
+    return clusterImage ? getClusterImageSetVersion(clusterImage) ?? versionName : versionName
   }
 
   useEffect(() => {
