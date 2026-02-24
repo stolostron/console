@@ -50,7 +50,7 @@ describe('OperatorAlert', () => {
   it('should render upgrade title when isUpgrade is true', () => {
     renderOperatorAlert({ isUpgrade: true })
 
-    expect(screen.getByText('Operator upgrade required')).toBeInTheDocument()
+    expect(screen.getByText('Operator update required')).toBeInTheDocument()
   })
 
   it('should render custom title when provided', () => {

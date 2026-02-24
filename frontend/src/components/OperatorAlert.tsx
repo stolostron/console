@@ -19,7 +19,7 @@ export function OperatorAlert(props: {
 
   const { t } = useTranslation()
 
-  const title = props.title || (isUpgrade ? t('Operator upgrade required') : t('Operator required'))
+  const title = props.title || (isUpgrade ? t('Operator update required') : t('Operator required'))
 
   const linkTarget = isUpgrade
     ? '/k8s/all-namespaces/operators.coreos.com~v1alpha1~ClusterServiceVersion'

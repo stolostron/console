@@ -159,7 +159,7 @@ describe('AutomationProviderHint', () => {
     await waitForText('Operator required')
     await waitForText('Install the operator')
   })
-  it('displays upgrade alert when operator installed but workflow support not available', async () => {
+  it('displays update alert when operator installed but workflow support not available', async () => {
     render(
       <WrappedAutomationProviderHint
         automationTemplates={[automationTemplate, automationTemplateWithWorkflow]}
@@ -167,7 +167,7 @@ describe('AutomationProviderHint', () => {
         componentProps={{ component: 'alert' }}
       />
     )
-    await waitForText('Operator upgrade required')
+    await waitForText('Operator update required')
     await waitForText('View installed operators')
   })
   it('displays no alert when operator installed and workflow support not needed', async () => {
@@ -191,7 +191,7 @@ describe('AutomationProviderHint', () => {
     await waitForNotText('Operator required')
     await waitForNotText('Install the operator')
   })
-  it('displays upgrade alert when operatorNotRequired=true', async () => {
+  it('displays update alert when operatorNotRequired=true', async () => {
     render(
       <WrappedAutomationProviderHint
         automationTemplates={[automationTemplateWithWorkflow]}
@@ -199,7 +199,7 @@ describe('AutomationProviderHint', () => {
         componentProps={{ component: 'alert', operatorNotRequired: true }}
       />
     )
-    await waitForText('Operator upgrade required')
+    await waitForText('Operator update required')
     await waitForText('View installed operators')
   })
   it('displays no alert when operator installed and workflow support is available', async () => {
@@ -213,7 +213,7 @@ describe('AutomationProviderHint', () => {
     await waitForNotText('Operator required')
     await waitForNotText('Install the operator')
   })
-  it('displays upgrade alert when workflowSupportRequired=true', async () => {
+  it('displays update alert when workflowSupportRequired=true', async () => {
     render(
       <WrappedAutomationProviderHint
         automationTemplates={[automationTemplate]}
@@ -221,10 +221,10 @@ describe('AutomationProviderHint', () => {
         componentProps={{ component: 'alert', workflowSupportRequired: true }}
       />
     )
-    await waitForText('Operator upgrade required')
+    await waitForText('Operator update required')
     await waitForText('View installed operators')
   })
-  it('does not display upgrade alert when workflowSupportRequired=false', async () => {
+  it('does not display update alert when workflowSupportRequired=false', async () => {
     render(
       <WrappedAutomationProviderHint
         automationTemplates={[automationTemplateWithWorkflow]}
@@ -233,7 +233,7 @@ describe('AutomationProviderHint', () => {
       />
     )
     await waitForNotText('Operator required')
-    await waitForNotText('Operator upgrade required')
+    await waitForNotText('Operator update required')
     await waitForNotText('Install the operator')
     await waitForNotText('View installed operators')
   })

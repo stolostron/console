@@ -61,7 +61,7 @@ export function TemplateSummaryExpandable(props: { clusterCurator?: ClusterCurat
           onToggle={() => setUpgradeExpandable(!isUpgradeExpandableOpen)}
           isExpanded={isUpgradeExpandableOpen}
           className={expandableSection}
-          toggleText={t('Upgrade')}
+          toggleText={t('Update')}
           isIndented
         >
           <PrePostTemplatesList curation="upgrade" curatorAction={upgradeAction} />
@@ -100,8 +100,8 @@ export function PrePostTemplatesList(props: { curation: Curation; curatorAction:
       postLabel = t('template.postInstall.name')
       break
     case 'upgrade':
-      preLabel = t('template.preUpgrade.name')
-      postLabel = t('template.postUpgrade.name')
+      preLabel = t('template.preUpdate.name')
+      postLabel = t('template.postUpdate.name')
       break
     /* istanbul ignore next */
     case 'scale': // scale not currently supported

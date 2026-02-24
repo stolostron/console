@@ -1919,10 +1919,10 @@ describe('HypershiftUpgradeModal', () => {
       )
 
       // Banner should appear because default selected version (4.15.0) is a minor upgrade
-      expect(getByText('Cluster version upgrade risks detected')).toBeTruthy()
+      expect(getByText('Cluster version update risks detected')).toBeTruthy()
       expect(
         getByText(
-          'Clusters with warnings have version-specific risks that may cause upgrade failure. Resolve these risks or choose a different target version.'
+          'Clusters with warnings have version-specific risks that may cause update failure. Resolve these risks or choose a different target version.'
         )
       ).toBeTruthy()
     })
@@ -1946,7 +1946,7 @@ describe('HypershiftUpgradeModal', () => {
       userEvent.click(patchVersion)
 
       // Banner should NOT appear for patch upgrade
-      expect(queryByText('Cluster version upgrade risks detected')).toBeFalsy()
+      expect(queryByText('Cluster version update risks detected')).toBeFalsy()
     })
 
     it('should show version in helper text warning', async () => {
@@ -1962,7 +1962,7 @@ describe('HypershiftUpgradeModal', () => {
       )
 
       // Should show version 4.15.0 in helper text
-      expect(getByText('Cluster version upgrade risk detected for 4.15.0', { exact: false })).toBeTruthy()
+      expect(getByText('Cluster version update risk detected for 4.15.0', { exact: false })).toBeTruthy()
     })
 
     it('should update helper text version when different version selected', async () => {
@@ -1978,7 +1978,7 @@ describe('HypershiftUpgradeModal', () => {
       )
 
       // Initially shows 4.15.0
-      expect(getByText('Cluster version upgrade risk detected for 4.15.0', { exact: false })).toBeTruthy()
+      expect(getByText('Cluster version update risk detected for 4.15.0', { exact: false })).toBeTruthy()
 
       // Change to different minor version (4.14.2)
       const versionDropdown = queryAllByText('4.15.0')[0]
@@ -1987,8 +1987,8 @@ describe('HypershiftUpgradeModal', () => {
       userEvent.click(newVersion)
 
       // Should update to show 4.14.2
-      expect(queryByText('Cluster version upgrade risk detected for 4.15.0', { exact: false })).toBeFalsy()
-      expect(getByText('Cluster version upgrade risk detected for 4.14.2', { exact: false })).toBeTruthy()
+      expect(queryByText('Cluster version update risk detected for 4.15.0', { exact: false })).toBeFalsy()
+      expect(getByText('Cluster version update risk detected for 4.14.2', { exact: false })).toBeTruthy()
     })
 
     it('should show View alert details popover', async () => {
@@ -3383,7 +3383,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
       }
     )
 
-    const upgradeButton = screen.getByText('Upgrade')
+    const upgradeButton = screen.getByText('Update')
     userEvent.click(upgradeButton)
     await new Promise((resolve) => setTimeout(resolve, 600))
   })
@@ -3422,7 +3422,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
       }
     )
 
-    const upgradeButton = screen.getByText('Upgrade')
+    const upgradeButton = screen.getByText('Update')
     userEvent.click(upgradeButton)
     await new Promise((resolve) => setTimeout(resolve, 600))
   })
@@ -3457,7 +3457,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
       }
     )
 
-    const upgradeButton = screen.getByText('Upgrade')
+    const upgradeButton = screen.getByText('Update')
     userEvent.click(upgradeButton)
     await new Promise((resolve) => setTimeout(resolve, 600))
   })

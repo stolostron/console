@@ -182,7 +182,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             description: t('bulk.message.import'),
             columns: [
               {
-                header: t('upgrade.table.name'),
+                header: t('update.table.name'),
                 sort: 'displayName',
                 cell: (cluster) => (
                   <>
@@ -246,7 +246,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         },
         {
           id: ClusterAction.Upgrade,
-          text: t('managed.upgrade'),
+          text: t('managed.update'),
           click: () => (cluster.isHostedCluster ? setShowHypershiftUpgradeModal(true) : setShowUpgradeModal(true)),
           isAriaDisabled: true,
           rbac: [

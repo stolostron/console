@@ -871,7 +871,7 @@ describe('CreateCluster AWS', () => {
     await waitForText(`View ${mockClusterCurators[0].metadata.name!}`)
     await waitForText('Pre-install Ansible template')
     await waitForText(mockClusterCurators[0].spec!.install!.prehook![0].name!)
-    await waitForText('Post-upgrade Ansible template')
+    await waitForText('Post-update Ansible template')
     await waitForText(mockClusterCurators[0].spec!.upgrade!.posthook![0].name!)
 
     // clear template

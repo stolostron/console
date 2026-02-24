@@ -466,7 +466,7 @@ export function useTableActions(
   return [
     {
       id: 'upgradeClusters',
-      title: t('managed.upgrade.plural'),
+      title: t('managed.update.plural'),
       click: (managedClusters: Array<Cluster>) => {
         if (!managedClusters) return
         setUpgradeClusters(managedClusters)

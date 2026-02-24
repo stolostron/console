@@ -212,7 +212,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
         cell: (nodepool: NodePool) => renderHealthCheck(nodepool),
       },
       {
-        header: t('Upgrade type'),
+        header: t('Update type'),
         sort: 'spec.management.upgradeType',
         search: 'spec.management.upgradeType',
         cell: 'spec.management.upgradeType',
@@ -252,7 +252,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
       return t('Add node pool is only supported for AWS. Use the hcp CLI to add additional node pools.')
     }
     if (cluster?.hypershift?.isUpgrading) {
-      return t('Node pools cannot be added during hosted cluster upgrade.')
+      return t('Node pools cannot be added during hosted cluster update.')
     }
     return t('rbac.unauthorized')
   }, [hostedCluster?.spec?.platform?.type, cluster?.hypershift?.isUpgrading, t])
@@ -282,7 +282,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
           }
         },
         tooltip: cluster?.hypershift?.isUpgrading
-          ? t('Node pools cannot be managed during hosted cluster upgrade.')
+          ? t('Node pools cannot be managed during hosted cluster update.')
           : '',
         isDisabled: !canPatchNodepool || cluster?.hypershift?.isUpgrading,
       })

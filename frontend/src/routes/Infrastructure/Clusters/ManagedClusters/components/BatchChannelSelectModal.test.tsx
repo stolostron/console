@@ -279,7 +279,7 @@ describe('BatchChannelSelectModal', () => {
     userEvent.click(getByText('Save'))
     await act(async () => {
       await waitFor(() => expect(queryByText('Saving')).toBeTruthy())
-      userEvent.click(getByText('Saving')) // do additional click. make sure not calling upgrade again
+      userEvent.click(getByText('Saving')) // do additional click. make sure not calling update again
       userEvent.click(getByText('Saving'))
       await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
       await waitFor(() => expect(queryByText('Saving')).toBeFalsy(), {

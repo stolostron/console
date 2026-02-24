@@ -122,7 +122,7 @@ export function KubevirtProviderAlert(
   const { t } = useTranslation()
 
   const operatorName = 'OpenShift Virtualization'
-  const upgradeHubTitle = t('Upgrade hub cluster to centrally manage VMs')
+  const upgradeHubTitle = t('Update hub cluster to centrally manage VMs')
   const centrallyManageVmsTitle = t('Centrally manage VMs with Fleet Virtualization')
 
   const clusterDetailsDescription = t(
@@ -130,7 +130,7 @@ export function KubevirtProviderAlert(
   )
 
   const upgradeHubClusterDetailsDescription = t(
-    'Upgrade to OCP version 4.20 or newer. Then, enable the OpenShift Virtualization integration to install recommended operators to manage your VMs in this cluster centrally.'
+    'Update to OCP version 4.20 or newer. Then, enable the OpenShift Virtualization integration to install recommended operators to manage your VMs in this cluster centrally.'
   )
 
   const getSearchDescription = (count: number) =>
@@ -141,7 +141,7 @@ export function KubevirtProviderAlert(
 
   const getUpgradeHubSearchDescription = (count: number) =>
     t(
-      'Upgrade to OCP version 4.20 or newer. Then, enable the OpenShift Virtualization integration to install recommended operators to manage your VMs in {{count}} cluster centrally.',
+      'Update to OCP version 4.20 or newer. Then, enable the OpenShift Virtualization integration to install recommended operators to manage your VMs in {{count}} cluster centrally.',
       { count }
     )
   let message = ''
@@ -167,7 +167,7 @@ export function KubevirtProviderAlert(
       primaryLink = (
         <Link to="/settings/cluster/" target="_blank">
           <Button variant="link" isInline>
-            {t('Upgrade hub cluster')}
+            {t('Update hub cluster')}
           </Button>
         </Link>
       )
@@ -215,7 +215,7 @@ export function KubevirtProviderAlert(
             onClick={() => window.open('/settings/cluster/', '_blank')}
             style={{ marginRight: '0.5em' }}
           >
-            {t('Upgrade hub cluster')}
+            {t('Update hub cluster')}
           </Button>
         )
       }

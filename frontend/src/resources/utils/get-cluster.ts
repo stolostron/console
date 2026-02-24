@@ -157,6 +157,7 @@ export const getClusterStatusType = (clusterStatus: ClusterStatus): StatusType =
     case ClusterStatus.prehookfailed:
     case ClusterStatus.posthookfailed:
     case ClusterStatus.importfailed:
+    case ClusterStatus.upgradefailed:
       return StatusType.danger
     case ClusterStatus.creating:
     case ClusterStatus.destroying:
@@ -220,7 +221,7 @@ export const getAlertTitle = (status: ClusterStatus | undefined, t: TFunction) =
     case ClusterStatus.stopping:
       return t('status.stopping.alert.title')
     case ClusterStatus.upgradefailed:
-      return t('status.upgradefailed.alert.title')
+      return t('status.updatefailed.alert.title')
     default:
       return t('status.unknown.alert.title')
   }
@@ -237,6 +238,7 @@ export const clusterDangerStatuses = [
   ClusterStatus.prehookfailed,
   ClusterStatus.posthookfailed,
   ClusterStatus.importfailed,
+  ClusterStatus.upgradefailed,
 ]
 
 export type Cluster = {

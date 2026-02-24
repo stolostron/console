@@ -702,7 +702,7 @@ export function HypershiftUpgradeModal(props: {
   const showUpgradeAlert = hasUpgradeAlert(upgradeableCondition, currentVersion, controlPlaneNewVersion)
 
   return (
-    <AcmModal variant={ModalVariant.large} title={t('Upgrade version')} isOpen={true} onClose={props.close}>
+    <AcmModal variant={ModalVariant.large} title={t('Update version')} isOpen={true} onClose={props.close}>
       <AcmForm style={{ gap: 0 }}>
         {patchErrors.length === 0 ? (
           <Fragment>
@@ -711,17 +711,17 @@ export function HypershiftUpgradeModal(props: {
                 isInline
                 noClose
                 variant="warning"
-                title={t('Cluster version upgrade risks detected')}
+                title={t('Cluster version update risks detected')}
                 message={t(
-                  'Clusters with warnings have version-specific risks that may cause upgrade failure. Resolve these risks or choose a different target version.'
+                  'Clusters with warnings have version-specific risks that may cause update failure. Resolve these risks or choose a different target version.'
                 )}
                 style={{ marginBottom: '16px' }}
               />
             )}
             {t(
-              'Select the new versions for the cluster and node pools that you want to upgrade. This action is irreversible.'
+              'Select the new versions for the cluster and node pools that you want to update. This action is irreversible.'
             )}
-            <Table aria-label={t('Hypershift upgrade table')} variant="compact" borders={false}>
+            <Table aria-label={t('HyperShift update table')} variant="compact" borders={false}>
               <Thead>
                 <Tr>
                   <Th width={20}>{columnNamesTranslated.name}</Th>
@@ -739,7 +739,7 @@ export function HypershiftUpgradeModal(props: {
                         variant="info"
                         title={t('Version availability')}
                         message={t(
-                          'Hosted control plane is already upgraded to the latest version available. Cluster node pools can be upgraded to match the control plane.'
+                          'Hosted control plane is already updated to the latest version available. Cluster node pools can be updated to match the control plane.'
                         )}
                       />
                     </Td>
@@ -824,12 +824,12 @@ export function HypershiftUpgradeModal(props: {
                             color: 'var(--pf-v5-global--warning-color--100)',
                           }}
                         />
-                        {t('Cluster version upgrade risk detected for {{version}}', {
+                        {t('Cluster version update risk detected for {{version}}', {
                           version: controlPlaneNewVersion,
                         })}{' '}
                         -{' '}
                         <Popover
-                          headerContent={t('Cluster version upgrade risk')}
+                          headerContent={t('Cluster version update risk')}
                           bodyContent={upgradeableCondition?.message}
                         >
                           <Button variant="link" isInline style={{ padding: 0, fontSize: 'inherit' }}>
@@ -855,7 +855,7 @@ export function HypershiftUpgradeModal(props: {
                             variant="info"
                             title={t('Version compatibility')}
                             message={t(
-                              'Node pools must be upgraded to the same version as the control plane in order to avoid compatibility issues due to being unsupported.'
+                              'Node pools must be updated to the same version as the control plane in order to avoid compatibility issues due to being unsupported.'
                             )}
                           />
                         </Td>
@@ -870,7 +870,7 @@ export function HypershiftUpgradeModal(props: {
                             variant="info"
                             title={t('Version compatibility')}
                             message={t(
-                              'Node pools cannot be upgraded to a later version than the control plane. If you wish to upgrade the node pool(s), you must select to upgrade your control plane first.'
+                              'Node pools cannot be updated to a later version than the control plane. If you wish to update the node pool(s), you must select to update your control plane first.'
                             )}
                           />
                         </Td>
@@ -1026,7 +1026,7 @@ export function HypershiftUpgradeModal(props: {
                     props.close()
                   }
                 }}
-                label={t('Upgrade')}
+                label={t('Update')}
                 processingLabel={t('Processing')}
               />
               <Button variant="link" onClick={props.close} key="cancel-hypershift-upgrade">

@@ -580,14 +580,14 @@ export function AnsibleAutomationsForm(props: {
           },
           {
             type: 'Section',
-            title: t('template.create.upgrade'),
-            wizardTitle: t('template.create.upgrade.wizard.title'),
+            title: t('template.create.update'),
+            wizardTitle: t('template.create.update.wizard.title'),
             description: t('template.information.description'),
             inputs: [
               {
                 id: 'upgradePreJob',
                 type: 'OrderedItems',
-                label: t('template.preUpgrade.label'),
+                label: t('template.preUpdate.label'),
                 placeholder: t('template.job.placeholder'),
                 value: upgradePreJobs,
                 onChange: setUpgradePreJobs,
@@ -606,7 +606,7 @@ export function AnsibleAutomationsForm(props: {
               {
                 id: 'upgradePostJob',
                 type: 'OrderedItems',
-                label: t('template.postUpgrade.label'),
+                label: t('template.postUpdate.label'),
                 placeholder: t('template.job.placeholder'),
                 value: upgradePostJobs,
                 onChange: setUpgradePostJobs,

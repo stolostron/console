@@ -751,7 +751,7 @@ describe('DistributionField', () => {
 
   it('should not show upgrade button when no available upgrades', async () => {
     const { queryAllByText } = await renderDistributionInfoField(mockDistributionInfoWithoutUpgrades, true)
-    expect(queryAllByText('Upgrade available').length).toBe(0)
+    expect(queryAllByText('Update available').length).toBe(0)
   })
 
   it('should disable the upgrade button when the user lacks permissions', async () => {
@@ -761,21 +761,21 @@ describe('DistributionField', () => {
 
   it('should show upgrade button when not upgrading and has available upgrades, and should show modal when click', async () => {
     await renderDistributionInfoField(mockDistributionInfo, true, true)
-    await clickByText('Upgrade available', 0)
+    await clickByText('Update available', 0)
     await waitForText('Name')
     await clickByText('Cancel', 0)
     await waitForNotText('Name')
   })
 
-  it('should show upgrading with loader when upgrading', async () => {
+  it('should show updating with loader when updating', async () => {
     const { getAllByText, queryByRole } = await renderDistributionInfoField(mockDistributionInfoUpgrading, true)
-    expect(getAllByText('Upgrading to 1.2.4')).toBeTruthy()
+    expect(getAllByText('Updating to 1.2.4')).toBeTruthy()
     expect(queryByRole('progressbar')).toBeTruthy()
   })
 
   it('should show failed when failed upgrade', async () => {
     const { getAllByText } = await renderDistributionInfoField(mockDistributionInfoFailedUpgrade, true)
-    expect(getAllByText('Upgrade failing')).toBeTruthy()
+    expect(getAllByText('Update failing')).toBeTruthy()
   })
 
   it('should not show failed when there is no upgrade running', async () => {
@@ -784,25 +784,25 @@ describe('DistributionField', () => {
       true,
       true
     )
-    await waitFor(() => expect(getAllByText('Upgrade available')).toBeTruthy())
-    expect(queryAllByText('Upgrade failing').length).toBe(0)
+    await waitFor(() => expect(getAllByText('Update available')).toBeTruthy())
+    expect(queryAllByText('Update failing').length).toBe(0)
   })
 
   it('should show failed when posthook is never reached', async () => {
     renderDistributionInfoField(mockDistributionInfoPosthookNotRun, false, false, clusterCuratorUpgrade)
-    await waitForText('Upgrade failing')
-    await clickByText('Upgrade failing')
-    await waitForText('Upgrade posthook was not run.')
+    await waitForText('Update failing')
+    await clickByText('Update failing')
+    await waitForText('Update posthook was not run.')
   })
 
   it('should not show upgrade button for managed OpenShift', async () => {
     const { queryAllByText } = await renderDistributionInfoField(mockManagedOpenShiftDistributionInfo, true)
-    expect(queryAllByText('Upgrade available').length).toBe(0)
+    expect(queryAllByText('Update available').length).toBe(0)
   })
 
   it('should display ansible hook status', async () => {
     await renderDistributionInfoField(mockManagedAnsibleDistributionInfo, false, false, clusterCuratorUpgrade)
-    await waitForText('Upgrade prehook')
+    await waitForText('Update prehook')
   })
 
   it('should display ansible failed hook status', async () => {
@@ -812,16 +812,16 @@ describe('DistributionField', () => {
       false,
       clusterCuratorUpgradeFailed
     )
-    await waitForText('Upgrade prehook')
-    await clickByText('Upgrade prehook')
-    await waitForText('Upgrade prehook jobs have failed:')
+    await waitForText('Update prehook')
+    await clickByText('Update prehook')
+    await waitForText('Update prehook jobs have failed:')
   })
 
   it('should open to ansible logs', async () => {
     await renderDistributionInfoField(mockManagedAnsibleDistributionInfo, false, false, clusterCuratorUpgrade)
     window.open = jest.fn()
-    await waitForText('Upgrade prehook')
-    await clickByText('Upgrade prehook')
+    await waitForText('Update prehook')
+    await clickByText('Update prehook')
     await clickByText('View logs')
     await waitForCalled(window.open as jest.Mock)
   })
@@ -986,7 +986,7 @@ describe('DistributionField hypershift clusters', () => {
       undefined,
       undefined
     )
-    expect(queryAllByText('Upgrade available').length).toBe(1)
+    expect(queryAllByText('Update available').length).toBe(1)
   })
 
   it('should render distribution info for hypershift, only nodepool has updates', async () => {
@@ -1044,7 +1044,7 @@ describe('DistributionField hypershift clusters', () => {
       undefined,
       false
     )
-    expect(queryAllByText('Upgrade available').length).toBe(1)
+    expect(queryAllByText('Update available').length).toBe(1)
   })
 
   it('should render distribution info for hypershift, nodepools tables', async () => {
@@ -1148,7 +1148,7 @@ describe('DistributionField hypershift clusters', () => {
       false,
       'nodepool'
     )
-    expect(queryAllByText('Upgrade available').length).toBe(1)
+    expect(queryAllByText('Update available').length).toBe(1)
   })
 
   it('should render distribution info for hypershift, no cluster', async () => {
@@ -1205,10 +1205,10 @@ describe('DistributionField hypershift clusters', () => {
       undefined,
       false
     )
-    expect(queryAllByText('Upgrade available').length).toBe(0)
+    expect(queryAllByText('Update available').length).toBe(0)
   })
 
-  it('Should show HCP upgrading, managed clusters page', async () => {
+  it('Should show HCP updating, managed clusters page', async () => {
     const { queryAllByText, queryByRole } = await renderDistributionInfoField(
       mockHypershiftCluster,
       true,
@@ -1220,11 +1220,11 @@ describe('DistributionField hypershift clusters', () => {
       'managedclusterpage'
     )
 
-    expect(queryAllByText(/upgrading to 4\.11\.22/i).length).toBe(1)
+    expect(queryAllByText(/updating to 4\.11\.22/i).length).toBe(1)
     expect(queryByRole('progressbar')).toBeTruthy()
   })
 
-  it('Should show HCP upgrading, hosted cluster page', async () => {
+  it('Should show HCP updating, hosted cluster page', async () => {
     const { queryAllByText, queryByRole } = await renderDistributionInfoField(
       mockHypershiftCluster,
       true,
@@ -1236,11 +1236,11 @@ describe('DistributionField hypershift clusters', () => {
       'hostedcluster'
     )
 
-    expect(queryAllByText(/upgrading to 4\.11\.22/i).length).toBe(1)
+    expect(queryAllByText(/updating to 4\.11\.22/i).length).toBe(1)
     expect(queryByRole('progressbar')).toBeTruthy()
   })
 
-  it('Should not show HCP upgrading, upgrade not in progress', async () => {
+  it('Should not show HCP updating, update not in progress', async () => {
     const mockHypershiftCluster: Cluster = {
       name: 'clusterName',
       uid: 'clusterName-uid',
@@ -1279,7 +1279,7 @@ describe('DistributionField hypershift clusters', () => {
     expect(queryByRole('progressbar')).toBeFalsy()
   })
 
-  it("Shouldn't show HCP upgrading, upgrading but on nodepools table", async () => {
+  it("Shouldn't show HCP updating, updating but on nodepools table", async () => {
     const { queryAllByText, queryByRole } = await renderDistributionInfoField(
       mockHypershiftCluster,
       true,
@@ -1291,11 +1291,11 @@ describe('DistributionField hypershift clusters', () => {
       'nodepool'
     )
 
-    expect(queryAllByText(/upgrading to 4\.11\.22/i).length).toBe(0)
+    expect(queryAllByText(/updating to 4\.11\.22/i).length).toBe(0)
     expect(queryByRole('progressbar')).toBeFalsy()
   })
 
-  it('Should show upgrading but with unavailable version num', async () => {
+  it('Should show updating but with unavailable version num', async () => {
     const mockHostedCluster: HostedClusterK8sResourceWithChannel = {
       apiVersion: HostedClusterApiVersion,
       kind: HostedClusterKind,
@@ -1351,7 +1351,7 @@ describe('DistributionField hypershift clusters', () => {
       false
     )
 
-    expect(queryAllByText(/upgrading cluster/i).length).toBe(1)
+    expect(queryAllByText(/updating cluster/i).length).toBe(1)
     expect(queryByRole('progressbar')).toBeTruthy()
   })
 
@@ -1366,11 +1366,9 @@ describe('DistributionField hypershift clusters', () => {
       false
     )
 
-    await userEvent.click(screen.getByRole('button', { name: /upgrading to 4\.11\.22/i }))
-    await waitFor(() =>
-      expect(getByText(/upgrading hypershift-cluster1 to openshift 4\.11\.22\./i)).toBeInTheDocument()
-    )
-    expect(queryAllByText(/upgrading to 4\.11\.22/i).length).toBe(1)
+    await userEvent.click(screen.getByRole('button', { name: /updating to 4\.11\.22/i }))
+    await waitFor(() => expect(getByText(/updating hypershift-cluster1 to openshift 4\.11\.22\./i)).toBeInTheDocument())
+    expect(queryAllByText(/updating to 4\.11\.22/i).length).toBe(1)
     expect(queryByRole('progressbar')).toBeTruthy()
   })
 
@@ -1479,7 +1477,7 @@ describe('DistributionField hypershift clusters', () => {
     // Should display the nodepool version instead of cluster version
     expect(queryAllByText('OpenShift 4.10.15').length).toBe(1)
     // Should show upgrade available since nodepool version (4.10.15) < cluster version (4.11.12)
-    expect(queryAllByText('Upgrade available').length).toBe(1)
+    expect(queryAllByText('Update available').length).toBe(1)
   })
 
   it('should not show upgrade available when nodepool version equals cluster version', async () => {
@@ -1587,7 +1585,7 @@ describe('DistributionField hypershift clusters', () => {
     // Should display the nodepool version
     expect(queryAllByText('OpenShift 4.11.12').length).toBe(1)
     // Should not show upgrade available since nodepool version equals cluster version
-    expect(queryAllByText('Upgrade available').length).toBe(0)
+    expect(queryAllByText('Update available').length).toBe(0)
   })
 
   // Channel warning tests for HostedClusters
@@ -1661,7 +1659,7 @@ describe('DistributionField hypershift clusters', () => {
       expect(queryAllByText('Select channel').length).toBe(1)
     })
 
-    it('should show upgrade status only (no channel warning) when HostedCluster is upgrading', async () => {
+    it('should show update status only (no channel warning) when HostedCluster is updating', async () => {
       const cluster: Cluster = {
         ...baseHypershiftCluster,
         hypershift: { ...baseHypershiftCluster.hypershift!, isUpgrading: true },
@@ -1679,7 +1677,7 @@ describe('DistributionField hypershift clusters', () => {
       // Should NOT show channel warning when upgrading
       expect(queryAllByText('Select channel').length).toBe(0)
       // Should show upgrade progress
-      expect(queryAllByText(/upgrading to 4\.11\.22/i).length).toBe(1)
+      expect(queryAllByText(/updating to 4\.11\.22/i).length).toBe(1)
       expect(queryByRole('progressbar')).toBeTruthy()
     })
 
