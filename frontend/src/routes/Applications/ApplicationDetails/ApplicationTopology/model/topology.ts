@@ -60,7 +60,7 @@ export const getTopology = async (
       )
     } else if (application.isAppSet) {
       // Generate topology for ApplicationSets
-      topology = await getAppSetTopology(toolbarControl, application, localHubName)
+      topology = await getAppSetTopology(toolbarControl, application, localHubName, services)
     } else if (application.isOCPApp || application.isFluxApp) {
       // Generate topology for OpenShift or Flux applications (async operation)
       topology = await getOCPFluxAppTopology(

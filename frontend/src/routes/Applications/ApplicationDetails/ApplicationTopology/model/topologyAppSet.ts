@@ -8,6 +8,7 @@ import { searchClient } from '../../../../Search/search-sdk/search-client'
 import { SearchRelatedResult, SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
 import { convertStringToQuery } from '../helpers/search-helper'
 import { ToolbarControl } from '../topology/components/TopologyToolbar'
+import { getClusterProxyService, getClusterProxyServiceURL } from './topologyArgo'
 import {
   ApplicationModel,
   AppSetCluster,
@@ -31,6 +32,7 @@ import {
   getResourceTypes,
   processMultiples,
 } from './topologyUtils'
+import { Service } from '../../../../../resources'
 
 /**
  * Generates topology data for ApplicationSet applications
@@ -47,7 +49,8 @@ import {
 export async function getAppSetTopology(
   toolbarControl: ToolbarControl,
   application: ApplicationModel,
-  hubClusterName: string
+  hubClusterName: string,
+  services: Service[]
 ): Promise<ExtendedTopology> {
   const links: TopologyLink[] = []
   const nodes: TopologyNode[] = []
@@ -204,9 +207,14 @@ export async function getAppSetTopology(
 
         // If cluster name not found, try to find it by server URL
         if (!appClusterName) {
-          const appCluster = application.appSetClusters?.find(
-            (cls: AppSetCluster) => cls.url === app.spec?.destination?.server
-          )
+          const clusterProxyService = getClusterProxyService(services)
+          const appCluster = application.appSetClusters?.find((cls: AppSetCluster) => {
+            if (clusterProxyService) {
+              const url = getClusterProxyServiceURL(clusterProxyService, cls.name ?? '')
+              return url === app.spec?.destination?.server
+            }
+            return cls.url === app.spec?.destination?.server
+          })
           appClusterName = appCluster ? appCluster.name : undefined
         }
 
@@ -217,7 +225,7 @@ export async function getAppSetTopology(
       })
     }
 
-    processResources(resources, clusterId, clusterNames, hubClusterName, activeTypes ?? [], links, nodes)
+    processResources(resources, clusterId, clusterNames, hubClusterName, activeTypes ?? [], links, nodes, true)
   }
 
   ////  SET TOOLBAR FILTERS ///////////////////
@@ -275,7 +283,7 @@ export async function getAppSetTopology(
       types.forEach((type) => allApplicationTypes.add(type))
 
       // Process and create resource nodes under the cluster or application node
-      processResources(resources, parentNodeId, clusterNames, hubClusterName, activeTypes ?? [], links, nodes)
+      processResources(resources, parentNodeId, clusterNames, hubClusterName, activeTypes ?? [], links, nodes, false)
     }
   })
 
@@ -384,15 +392,20 @@ function processResources(
   hubClusterName: string,
   activeTypes: string[],
   links: TopologyLink[],
-  nodes: TopologyNode[]
+  nodes: TopologyNode[],
+  singleApplicationMode: boolean
 ): void {
   // clone resources for each cluster
   const allResources: ResourceItem[] = []
-  parentClusterNames.forEach((clusterName: string) => {
-    resources.forEach((resource: any) => {
-      allResources.push({ ...resource, cluster: clusterName })
+  if (singleApplicationMode) {
+    allResources.push(...resources)
+  } else {
+    parentClusterNames.forEach((clusterName: string) => {
+      resources.forEach((resource: any) => {
+        allResources.push({ ...resource, cluster: clusterName })
+      })
     })
-  })
+  }
 
   // create nodes for each resource
   processMultiples(allResources).forEach((deployable: Record<string, unknown>) => {

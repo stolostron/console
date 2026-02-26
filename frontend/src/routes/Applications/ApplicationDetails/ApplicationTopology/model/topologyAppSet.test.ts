@@ -242,7 +242,7 @@ describe('getAppSetTopology', () => {
       appSetApps: [{ metadata: { name: 'test-appset-local-cluster' }, spec: {} }] as any,
     }
 
-    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
+    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster', [])
 
     expect(result.nodes).toBeDefined()
     expect(result.links).toBeDefined()
@@ -304,7 +304,7 @@ describe('getAppSetTopology', () => {
       appSetApps: [{ metadata: { name: 'test-appset-no-placement-local-cluster' }, spec: {} }] as any,
     }
 
-    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
+    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster', [])
 
     expect(result.nodes).toBeDefined()
     expect(result.links).toBeDefined()
@@ -399,7 +399,7 @@ describe('getAppSetTopology', () => {
       ] as any,
     }
 
-    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
+    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster', [])
 
     expect(result.nodes).toBeDefined()
     expect(result.links).toBeDefined()
@@ -465,7 +465,7 @@ describe('getAppSetTopology', () => {
       },
     }
 
-    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
+    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster', [])
 
     // Verify ApplicationSet node contains status info
     const appSetNode = result.nodes.find((n) => n.type === 'applicationset')
@@ -503,7 +503,7 @@ describe('getAppSetTopology', () => {
       appSetApps: [],
     }
 
-    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
+    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster', [])
 
     expect(result.nodes).toBeDefined()
     expect(result.links).toBeDefined()
@@ -552,7 +552,7 @@ describe('getAppSetTopology', () => {
       ] as any,
     }
 
-    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
+    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster', [])
 
     const deployNode = result.nodes.find((n) => n.type === 'deployment' && n.name === 'nginx-deployment')
     expect(deployNode).toBeDefined()
@@ -601,7 +601,7 @@ describe('getAppSetTopology', () => {
       appSetApps: [{ metadata: { name: 'test-appset-pullmodel-local-cluster' }, spec: {} }] as any,
     }
 
-    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
+    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster', [])
 
     // Verify the pull model flag is set on the ApplicationSet node
     const appSetNode = result.nodes.find((n) => n.type === 'applicationset') as any
@@ -643,7 +643,12 @@ describe('getAppSetTopology', () => {
       appSetApps: [{ metadata: { name: 'test-appset-filtered-local-cluster' }, spec: {} }] as any,
     }
 
-    const result: ExtendedTopology = await getAppSetTopology(toolbarWithActiveClusters, application, 'local-cluster')
+    const result: ExtendedTopology = await getAppSetTopology(
+      toolbarWithActiveClusters,
+      application,
+      'local-cluster',
+      []
+    )
 
     expect(result.nodes).toBeDefined()
     expect(result.links).toBeDefined()
@@ -683,7 +688,7 @@ describe('getAppSetTopology', () => {
       appSetApps: [{ metadata: { name: 'test-appset-type-filtered-local-cluster' }, spec: {} }] as any,
     }
 
-    const result: ExtendedTopology = await getAppSetTopology(toolbarWithActiveTypes, application, 'local-cluster')
+    const result: ExtendedTopology = await getAppSetTopology(toolbarWithActiveTypes, application, 'local-cluster', [])
 
     expect(result.nodes).toBeDefined()
     expect(result.links).toBeDefined()
@@ -755,7 +760,7 @@ describe('getAppSetTopology', () => {
       ] as any,
     }
 
-    const result: ExtendedTopology = await getAppSetTopology(toolbarWithActiveApps, application, 'local-cluster')
+    const result: ExtendedTopology = await getAppSetTopology(toolbarWithActiveApps, application, 'local-cluster', [])
 
     expect(result.nodes).toBeDefined()
     expect(result.links).toBeDefined()
