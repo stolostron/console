@@ -192,6 +192,34 @@ export async function getAppSetTopology(
     allClusterNames
   )
 
+  if (Object.keys(applicationResourceMap).length === 0 && applicationNames.length === 0) {
+    // fallback to single application mode
+    const resources: any[] = []
+
+    // Collect resources from all ApplicationSet applications
+    if (appSetApps && appSetApps.length > 0) {
+      appSetApps.forEach((app: any) => {
+        const appResources = app.status?.resources ?? []
+        let appClusterName = app.spec?.destination?.name
+
+        // If cluster name not found, try to find it by server URL
+        if (!appClusterName) {
+          const appCluster = application.appSetClusters?.find(
+            (cls: AppSetCluster) => cls.url === app.spec?.destination?.server
+          )
+          appClusterName = appCluster ? appCluster.name : undefined
+        }
+
+        // Add cluster information to each resource
+        appResources.forEach((resource: any) => {
+          resources.push({ ...resource, cluster: appClusterName })
+        })
+      })
+    }
+
+    processResources(resources, clusterId, clusterNames, hubClusterName, activeTypes ?? [], links, nodes)
+  }
+
   ////  SET TOOLBAR FILTERS ///////////////////
   toolbarControl.setAllApplications(applicationNames.length > 0 ? applicationNames : [name])
   const allApplicationTypes = new Set<string>()
