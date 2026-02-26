@@ -188,45 +188,7 @@ export async function getAppSetTopology(
   ////////////////////////////////////////////////////////////////
   ////  USE SEARCH TO GET APPLICATION SET RESOURCES /////////////////
   ////////////////////////////////////////////////////////////////
-  const { applicationResourceMap, applicationNames } = await getAppSetResources(
-    name,
-    namespace,
-    appSetApps,
-    allClusterNames
-  )
-
-  if (Object.keys(applicationResourceMap).length === 0 && applicationNames.length === 0) {
-    // fallback to single application mode
-    const resources: any[] = []
-
-    // Collect resources from all ApplicationSet applications
-    if (appSetApps && appSetApps.length > 0) {
-      appSetApps.forEach((app: any) => {
-        const appResources = app.status?.resources ?? []
-        let appClusterName = app.spec?.destination?.name
-
-        // If cluster name not found, try to find it by server URL
-        if (!appClusterName) {
-          const clusterProxyService = getClusterProxyService(services)
-          const appCluster = application.appSetClusters?.find((cls: AppSetCluster) => {
-            if (clusterProxyService) {
-              const url = getClusterProxyServiceURL(clusterProxyService, cls.name ?? '')
-              return url === app.spec?.destination?.server
-            }
-            return cls.url === app.spec?.destination?.server
-          })
-          appClusterName = appCluster ? appCluster.name : undefined
-        }
-
-        // Add cluster information to each resource
-        appResources.forEach((resource: any) => {
-          resources.push({ ...resource, cluster: appClusterName })
-        })
-      })
-    }
-
-    processResources(resources, clusterId, clusterNames, hubClusterName, activeTypes ?? [], links, nodes, true)
-  }
+  const { applicationResourceMap, applicationNames } = await getAppSetResources(application, hubClusterName, services)
 
   ////  SET TOOLBAR FILTERS ///////////////////
   toolbarControl.setAllApplications(applicationNames.length > 0 ? applicationNames : [name])
@@ -296,7 +258,9 @@ export async function getAppSetTopology(
   }
 }
 
-async function getAppSetResources(name: string, namespace: string, appSetApps: any[], allClusterNames: string[]) {
+async function getAppSetResources(application: ApplicationModel, hubClusterName: string, services: Service[]) {
+  const { name, namespace, appSetClusters = [], appSetApps = [], isAppSetPullModel } = application
+  const allClusterNames = appSetClusters.map((cluster: AppSetCluster) => cluster.name)
   // first get all applications that belong to this appset
   if (appSetApps.length === 0) {
     return {
@@ -305,7 +269,7 @@ async function getAppSetResources(name: string, namespace: string, appSetApps: a
     }
   }
   const query: SearchQuery = convertStringToQuery(
-    `name:${appSetApps?.map((application: ResourceItem) => application.metadata?.name).join(',')} namespace:${namespace} cluster:${allClusterNames.join(',')} apigroup:argoproj.io`
+    `name:${appSetApps?.map((application: ResourceItem) => application.metadata?.name).join(',')} namespace:${namespace} cluster:${isAppSetPullModel ? allClusterNames.join(',') : hubClusterName} apigroup:argoproj.io`
   )
   const appsetSearchResult = await searchClient.query({
     query: SearchResultItemsAndRelatedItemsDocument,
@@ -347,6 +311,37 @@ async function getAppSetResources(name: string, namespace: string, appSetApps: a
         (relatedResult: SearchRelatedResult | null) =>
           relatedResult?.items?.filter((item: ResourceItem) => item._relatedUids?.includes(applicationUid)) ?? []
       ) ?? []
+
+    // For push-model, related resources will not include managed cluster resources; add them from Application status.resources
+    if (!isAppSetPullModel) {
+      const appSetApp = appSetApps.find((app) => app.metadata?.name === application.name)
+      if (appSetApp) {
+        const appResources = appSetApp.status?.resources ?? []
+        let appClusterName = appSetApp.spec?.destination?.name
+
+        // If cluster name not found, try to find it by server URL
+        if (!appClusterName) {
+          const clusterProxyService = getClusterProxyService(services)
+          const appCluster = appSetClusters?.find((cls: AppSetCluster) => {
+            if (clusterProxyService) {
+              const url = getClusterProxyServiceURL(clusterProxyService, cls.name ?? '')
+              return url === appSetApp.spec?.destination?.server
+            }
+            return cls.url === appSetApp.spec?.destination?.server
+          })
+          appClusterName = appCluster ? appCluster.name : undefined
+        }
+
+        // Add cluster information to each resource
+        if (appClusterName !== hubClusterName) {
+          appResources.forEach((resource: any) => {
+            // TODO: do we need to transform any fields? Like group to apigroup to match search results
+            // TODO: does cluster actually matter?
+            resourceList.push({ ...resource, cluster: appClusterName })
+          })
+        }
+      }
+    }
 
     // Remove appset name prefix to get namePart
     const namePart = compositeName.startsWith(name) ? compositeName.substring(name.length + 1) : compositeName
