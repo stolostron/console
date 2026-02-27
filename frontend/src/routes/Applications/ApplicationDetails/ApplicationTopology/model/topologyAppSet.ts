@@ -8,7 +8,6 @@ import { searchClient } from '../../../../Search/search-sdk/search-client'
 import { SearchRelatedResult, SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
 import { convertStringToQuery } from '../helpers/search-helper'
 import { ToolbarControl } from '../topology/components/TopologyToolbar'
-import { getClusterProxyService, getClusterProxyServiceURL } from './topologyArgo'
 import {
   ApplicationModel,
   AppSetCluster,
@@ -32,7 +31,6 @@ import {
   getResourceTypes,
   processMultiples,
 } from './topologyUtils'
-import { Service } from '../../../../../resources'
 
 /**
  * Generates topology data for ApplicationSet applications
@@ -49,8 +47,7 @@ import { Service } from '../../../../../resources'
 export async function getAppSetTopology(
   toolbarControl: ToolbarControl,
   application: ApplicationModel,
-  hubClusterName: string,
-  services: Service[]
+  hubClusterName: string
 ): Promise<ExtendedTopology> {
   const links: TopologyLink[] = []
   const nodes: TopologyNode[] = []
@@ -188,7 +185,7 @@ export async function getAppSetTopology(
   ////////////////////////////////////////////////////////////////
   ////  USE SEARCH TO GET APPLICATION SET RESOURCES /////////////////
   ////////////////////////////////////////////////////////////////
-  const { applicationResourceMap, applicationNames } = await getAppSetResources(application, hubClusterName, services)
+  const { applicationResourceMap, applicationNames } = await getAppSetResources(application)
 
   ////  SET TOOLBAR FILTERS ///////////////////
   toolbarControl.setAllApplications(applicationNames.length > 0 ? applicationNames : [name])
@@ -245,7 +242,7 @@ export async function getAppSetTopology(
       types.forEach((type) => allApplicationTypes.add(type))
 
       // Process and create resource nodes under the cluster or application node
-      processResources(resources, parentNodeId, clusterNames, hubClusterName, activeTypes ?? [], links, nodes, false)
+      processResources(resources, parentNodeId, clusterNames, hubClusterName, activeTypes ?? [], links, nodes)
     }
   })
 
@@ -258,7 +255,7 @@ export async function getAppSetTopology(
   }
 }
 
-async function getAppSetResources(application: ApplicationModel, hubClusterName: string, services: Service[]) {
+async function getAppSetResources(application: ApplicationModel) {
   const { name, namespace, appSetClusters = [], appSetApps = [], isAppSetPullModel } = application
   const allClusterNames = appSetClusters.map((cluster: AppSetCluster) => cluster.name)
   // first get all applications that belong to this appset
@@ -268,32 +265,6 @@ async function getAppSetResources(application: ApplicationModel, hubClusterName:
       applicationNames: [],
     }
   }
-  const query: SearchQuery = convertStringToQuery(
-    `name:${appSetApps?.map((application: ResourceItem) => application.metadata?.name).join(',')} namespace:${namespace} cluster:${isAppSetPullModel ? allClusterNames.join(',') : hubClusterName} apigroup:argoproj.io`
-  )
-  const appsetSearchResult = await searchClient.query({
-    query: SearchResultItemsAndRelatedItemsDocument,
-    variables: {
-      input: [{ ...query }],
-      limit: 1000,
-    },
-    fetchPolicy: 'network-only',
-  })
-
-  const applications = appsetSearchResult.data?.searchResult?.[0]?.items
-  // // Filter out excluded kinds from related results
-  const excludedKinds = new Set([
-    'application',
-    'applicationset',
-    'cluster',
-    'subscription',
-    'namespace',
-    'pod',
-    'replicaset',
-  ])
-  const relatedResults = appsetSearchResult.data?.searchResult?.[0]?.related?.filter(
-    (relatedResult: SearchRelatedResult | null) => relatedResult && !excludedKinds.has(relatedResult.kind.toLowerCase())
-  )
 
   // Sort cluster names by length (longest first) to match longer names before shorter ones
   const sortedAllClusterNames = [...allClusterNames].sort((a, b) => b.length - a.length)
@@ -301,48 +272,7 @@ async function getAppSetResources(application: ApplicationModel, hubClusterName:
   const applicationNameSet = new Set<string>()
   const applicationResourceMap: Record<string, ResourceItem[]> = {}
 
-  applications?.forEach((application: ResourceItem) => {
-    const compositeName = application.name as string
-    const applicationUid = application._uid as string
-
-    // Find related resources for this application on this cluster
-    const resourceList =
-      relatedResults?.flatMap(
-        (relatedResult: SearchRelatedResult | null) =>
-          relatedResult?.items?.filter((item: ResourceItem) => item._relatedUids?.includes(applicationUid)) ?? []
-      ) ?? []
-
-    // For push-model, related resources will not include managed cluster resources; add them from Application status.resources
-    if (!isAppSetPullModel) {
-      const appSetApp = appSetApps.find((app) => app.metadata?.name === application.name)
-      if (appSetApp) {
-        const appResources = appSetApp.status?.resources ?? []
-        let appClusterName = appSetApp.spec?.destination?.name
-
-        // If cluster name not found, try to find it by server URL
-        if (!appClusterName) {
-          const clusterProxyService = getClusterProxyService(services)
-          const appCluster = appSetClusters?.find((cls: AppSetCluster) => {
-            if (clusterProxyService) {
-              const url = getClusterProxyServiceURL(clusterProxyService, cls.name ?? '')
-              return url === appSetApp.spec?.destination?.server
-            }
-            return cls.url === appSetApp.spec?.destination?.server
-          })
-          appClusterName = appCluster ? appCluster.name : undefined
-        }
-
-        // Add cluster information to each resource
-        if (appClusterName !== hubClusterName) {
-          appResources.forEach((resource: any) => {
-            // TODO: do we need to transform any fields? Like group to apigroup to match search results
-            // TODO: does cluster actually matter?
-            resourceList.push({ ...resource, cluster: appClusterName })
-          })
-        }
-      }
-    }
-
+  function mapRelatedResources(compositeName: string, resourceList: any) {
     // Remove appset name prefix to get namePart
     const namePart = compositeName.startsWith(name) ? compositeName.substring(name.length + 1) : compositeName
 
@@ -353,14 +283,70 @@ async function getAppSetResources(application: ApplicationModel, hubClusterName:
 
     // Extract application name by stripping cluster name from namePart
     const appName = clusterName ? namePart.replace(clusterName, '').replaceAll(/(?:^-)|(?:-$)/g, '') : namePart
-
     if (appName) {
       applicationNameSet.add(appName)
       applicationResourceMap[`${appName}--${clusterName ?? ''}`] = resourceList
     } else {
       applicationResourceMap[`${name}--${clusterName ?? ''}`] = resourceList
     }
-  })
+  }
+
+  if (isAppSetPullModel) {
+    // local Application resources do not have status.resources; use search to find related resources
+    const appsetSearchResult = await searchClient.query({
+      query: SearchResultItemsAndRelatedItemsDocument,
+      variables: {
+        input: [
+          {
+            filters: [
+              { property: 'name', values: appSetApps?.map((application: ResourceItem) => application.metadata?.name) },
+              { property: 'namespace', values: [namespace] },
+              { property: 'kind', values: ['Application'] },
+              { property: 'cluster', values: allClusterNames },
+              { property: 'apigroup', values: ['argoproj.io'] },
+            ],
+          },
+        ],
+        limit: 1000,
+      },
+      fetchPolicy: 'network-only',
+    })
+
+    const applications = appsetSearchResult.data?.searchResult?.[0]?.items
+    // Filter out excluded kinds from related results
+    const excludedKinds = new Set([
+      'application',
+      'applicationset',
+      'cluster',
+      'subscription',
+      'namespace',
+      'pod',
+      'replicaset',
+    ])
+    const relatedResults = appsetSearchResult.data?.searchResult?.[0]?.related?.filter(
+      (relatedResult: SearchRelatedResult | null) =>
+        relatedResult && !excludedKinds.has(relatedResult.kind.toLowerCase())
+    )
+
+    applications?.forEach((application: ResourceItem) => {
+      const applicationUid = application._uid as string
+
+      // Find related resources for this application on this cluster
+      const resourceList =
+        relatedResults?.flatMap(
+          (relatedResult: SearchRelatedResult | null) =>
+            relatedResult?.items?.filter((item: ResourceItem) => item._relatedUids?.includes(applicationUid)) ?? []
+        ) ?? []
+      mapRelatedResources(application.name, resourceList)
+    })
+  } else {
+    // push-model; use status.resources from local Application resource
+    appSetApps.forEach((appSetApp) => {
+      if (appSetApp.status?.resources) {
+        mapRelatedResources(appSetApp.metadata?.name!, appSetApp.status.resources)
+      }
+    })
+  }
 
   return {
     applicationResourceMap,
@@ -387,20 +373,16 @@ function processResources(
   hubClusterName: string,
   activeTypes: string[],
   links: TopologyLink[],
-  nodes: TopologyNode[],
-  singleApplicationMode: boolean
+  nodes: TopologyNode[]
 ): void {
   // clone resources for each cluster
   const allResources: ResourceItem[] = []
-  if (singleApplicationMode) {
-    allResources.push(...resources)
-  } else {
-    parentClusterNames.forEach((clusterName: string) => {
-      resources.forEach((resource: any) => {
-        allResources.push({ ...resource, cluster: clusterName })
-      })
+
+  parentClusterNames.forEach((clusterName: string) => {
+    resources.forEach((resource: any) => {
+      allResources.push({ ...resource, cluster: clusterName })
     })
-  }
+  })
 
   // create nodes for each resource
   processMultiples(allResources).forEach((deployable: Record<string, unknown>) => {
