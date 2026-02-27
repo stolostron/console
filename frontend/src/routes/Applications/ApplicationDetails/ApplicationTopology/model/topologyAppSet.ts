@@ -342,8 +342,8 @@ async function getAppSetResources(application: ApplicationModel) {
   } else {
     // push-model; use status.resources from local Application resource
     appSetApps.forEach((appSetApp) => {
-      if (appSetApp.status?.resources) {
-        mapRelatedResources(appSetApp.metadata?.name!, appSetApp.status.resources)
+      if (appSetApp.metadata?.name && appSetApp.status?.resources) {
+        mapRelatedResources(appSetApp.metadata.name, appSetApp.status.resources)
       }
     })
   }
