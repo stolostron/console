@@ -19,6 +19,8 @@ import {
   DiscoveredViolationsCard,
   getTotalViolationsCompliance,
   policyViolationSummary,
+  getLabelFilterOptions,
+  matchesSelectedLabels,
 } from './common'
 import { useMemo } from 'react'
 import { useLocation } from 'react-router-dom-v5-compat'
@@ -127,6 +129,10 @@ export default function DiscoveredByCluster() {
     }
   }, [policies, policyKind])
 
+  const labelOptions = useMemo(() => {
+    return policies ? getLabelFilterOptions(policies) : []
+  }, [policies])
+
   const filters = useMemo<ITableFilter<DiscoveredPolicyItem>[]>(() => {
     let filters = [
       ...(policyKind !== 'ValidatingAdmissionPolicyBinding'
@@ -177,6 +183,13 @@ export default function DiscoveredByCluster() {
         : []),
       getResponseActionFilter(t),
       getSeverityFilter(t),
+      {
+        id: 'label',
+        label: t('Label'),
+        options: labelOptions,
+        supportsInequality: true,
+        tableFilterFn: matchesSelectedLabels,
+      },
       {
         id: 'source',
         label: t('Source'),
@@ -233,7 +246,7 @@ export default function DiscoveredByCluster() {
       })
     }
     return filters
-  }, [t, policyKind, policies, isGatekeeperMutation])
+  }, [t, policyKind, policies, isGatekeeperMutation, labelOptions])
 
   if (details.isFetching && !details.policyItems) {
     return (
