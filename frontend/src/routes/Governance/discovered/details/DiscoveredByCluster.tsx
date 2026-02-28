@@ -20,6 +20,7 @@ import {
   getTotalViolationsCompliance,
   policyViolationSummary,
 } from './common'
+import { getLabelFilterOptions, matchesSelectedLabels } from '../../utils/label-utils'
 import { useMemo } from 'react'
 import { useLocation } from 'react-router-dom-v5-compat'
 import { useDiscoveredDetailsContext } from './DiscoveredPolicyDetailsPage'
@@ -127,6 +128,10 @@ export default function DiscoveredByCluster() {
     }
   }, [policies, policyKind])
 
+  const labelOptions = useMemo(() => {
+    return policies ? getLabelFilterOptions(policies) : []
+  }, [policies])
+
   const filters = useMemo<ITableFilter<DiscoveredPolicyItem>[]>(() => {
     let filters = [
       ...(policyKind !== 'ValidatingAdmissionPolicyBinding'
@@ -177,6 +182,13 @@ export default function DiscoveredByCluster() {
         : []),
       getResponseActionFilter(t),
       getSeverityFilter(t),
+      {
+        id: 'label',
+        label: t('Label'),
+        options: labelOptions,
+        supportsInequality: true,
+        tableFilterFn: matchesSelectedLabels,
+      },
       {
         id: 'source',
         label: t('Source'),
@@ -233,7 +245,7 @@ export default function DiscoveredByCluster() {
       })
     }
     return filters
-  }, [t, policyKind, policies, isGatekeeperMutation])
+  }, [t, policyKind, policies, isGatekeeperMutation, labelOptions])
 
   if (details.isFetching && !details.policyItems) {
     return (
@@ -324,6 +336,7 @@ export default function DiscoveredByCluster() {
           keyFn={(item) => item.cluster}
           items={policies ?? []}
           filters={filters}
+          secondaryFilterIds={['label']}
           emptyState={
             <AcmEmptyState
               title={t(`You don't have any {{kindHead}} policies.`, { kindHead })}
