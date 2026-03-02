@@ -91,6 +91,11 @@ export const FilterSelect = ({
         onSelect(optionToFilterMap.get(option) ?? '', option)
       }}
       {...selectProps}
+      /* This is a workaround to fix the issue where the popper is not hidden when it is under a sticky element */
+      /* see https://patternfly.slack.com/archives/C4FM977N0/p1770841996269279?thread_ts=1770758540.910189&cid=C4FM977N0 */
+      /* ACM-29813 */
+      style={{ zIndex: 200 }}
+      popperProps={{ appendTo: 'inline' }}
     >
       <SelectList>
         {hasFilter && <TextInput aria-label={t('Search')} onChange={(_event, value) => setFilterValue(value)} />}
