@@ -15,7 +15,6 @@ import {
   ApplicationSet,
   ApplicationSetApiVersion,
   ApplicationSetKind,
-  ArgoSource,
   getGitChannelBranches,
   getGitChannelPaths,
   IResource,
