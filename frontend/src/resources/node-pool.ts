@@ -39,7 +39,7 @@ export interface NodePool extends IResource {
       image: string
     }
     replicas?: number
-    autoscaling?: {
+    autoScaling?: {
       min: number
       max: number
     }
