@@ -513,6 +513,51 @@ describe('getAppSetTopology', () => {
     expect(appSetNode).toBeDefined()
   })
 
+  it('should fall back to app resources when search has no results', async () => {
+    mockSearchClient.query.mockResolvedValue({
+      loading: false,
+      networkStatus: 7,
+      data: {
+        searchResult: [],
+      },
+    })
+
+    const application: ApplicationModel = {
+      name: 'test-appset-fallback',
+      namespace: 'openshift-gitops',
+      app: {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'ApplicationSet',
+        metadata: {
+          name: 'test-appset-fallback',
+          namespace: 'openshift-gitops',
+        },
+        spec: {},
+      },
+      placement: undefined,
+      isArgoApp: false,
+      isAppSet: true,
+      isOCPApp: false,
+      isFluxApp: false,
+      isAppSetPullModel: false,
+      appSetClusters: [{ name: 'managed-cluster-1', url: 'https://api.managed.example.com' }],
+      appSetApps: [
+        {
+          metadata: { name: 'test-appset-fallback-managed-cluster-1' },
+          spec: { destination: { server: 'https://api.managed.example.com' } },
+          status: {
+            resources: [{ kind: 'Deployment', name: 'nginx-deployment', namespace: 'openshift-gitops' }],
+          },
+        },
+      ] as any,
+    }
+
+    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
+
+    const deployNode = result.nodes.find((n) => n.type === 'deployment' && n.name === 'nginx-deployment')
+    expect(deployNode).toBeDefined()
+  })
+
   it('should handle ArgoCD pull model targeting local cluster', async () => {
     const application: ApplicationModel = {
       name: 'test-appset-pullmodel',
