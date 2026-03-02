@@ -11,7 +11,7 @@ import {
   ConfigMapK8sResource,
   ClusterImageSetK8sResource,
 } from '@openshift-assisted/ui-lib/cim'
-import { set, get, isEqual } from 'lodash'
+import { set, isEqual } from 'lodash'
 import { getValue } from '../../../../../../../../components/TemplateEditor'
 import { useTranslation } from '../../../../../../../../lib/acm-i18next'
 import {
@@ -123,15 +123,16 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
       })
     }
     control.summary = () => {
+      const active = control.active as Record<string, any>
       return Object.keys(fields).map((key) => {
-        let desc = get(control, `active.${key}`)
+        let desc = active[key]
         if (key === 'openshiftVersion') {
-          desc = getClusterImageVersion(get(control, `active.${key}`))
+          desc = getClusterImageVersion(active[key])
         }
         return {
           term: fieldLabels[key as FieldName],
           desc: desc,
-          exception: get(control, `errors.${key}`),
+          exception: (control as Record<string, any>).errors?.[key],
         }
       })
     }
