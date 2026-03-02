@@ -2,7 +2,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useRef, useEffect, useState, useMemo, Dispatch, SetStateAction } from 'react'
 import { FormikProps } from 'formik'
-import { set, get, isEqual, debounce } from 'lodash'
+import { set, isEqual, debounce } from 'lodash'
 
 import { TFunction } from 'react-i18next'
 import { Content, SelectOption } from '@patternfly/react-core'
@@ -29,7 +29,7 @@ import {
 } from '@openshift-assisted/ui-lib/cim'
 import React from 'react'
 import { FieldName } from './types'
-import { getFieldLabels, getPlatformLabel } from './hypershift/utils'
+import { getFieldLabels, getPlatformLabel, PlatformType } from './hypershift/utils'
 import { getFirstAgentServiceConfig } from '../../../../../InfraEnvironments/InfraEnvironmentsPage'
 
 type FormControl = {
@@ -211,18 +211,19 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
       })
     }
     control.summary = () => {
+      const active = control.active as Record<string, any>
       return Object.keys(fields).map((key) => {
-        let desc = get(control, `active.${key}`)
+        let desc = active[key]
         if (key === 'openshiftVersion') {
-          desc = getVersion(get(control, `active.${key}`))
+          desc = getVersion(active[key])
         }
         if (key === 'platform') {
-          desc = getPlatformLabel(get(control, `active.${key}`))
+          desc = getPlatformLabel(active[key] as PlatformType)
         }
         return {
           term: fieldLabels[key as FieldName] ?? 'Error' + key,
           desc: desc,
-          exception: get(control, `errors.${key}`),
+          exception: (control as Record<string, any>).errors?.[key],
         }
       })
     }

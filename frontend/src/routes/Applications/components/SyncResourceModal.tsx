@@ -32,8 +32,8 @@ export function SyncResourceModal(props: ISyncResourceModalProps | { open: false
     const subNames: (string | undefined)[] = []
     props.resources.forEach((sub) => {
       subNames.push(sub.metadata?.name)
-      const annotations = _.get(sub, 'metadata.annotations', {})
-      annotations['apps.open-cluster-management.io/manual-refresh-time'] = new Date()
+      const annotations: Record<string, string> = sub.metadata?.annotations ?? {}
+      annotations['apps.open-cluster-management.io/manual-refresh-time'] = new Date().toISOString()
       const existingSubscription = subscriptions.find(
         (s) => s.metadata.name === sub?.metadata?.name && s.metadata.namespace === sub?.metadata?.namespace
       )

@@ -674,7 +674,7 @@ export default function ApplicationsOverview() {
         },
         tooltip: t('Health status for ArgoCD applications.'),
         sort: (itemA, itemB) => {
-          return get(itemB, 'transformed.healthScore') - get(itemA, 'transformed.healthScore')
+          return get(itemB, 'transformed.healthScore', 0) - get(itemA, 'transformed.healthScore', 0)
         },
         exportContent: (resource) => {
           return exportApplicationStatusGroup(resource, 'health')
@@ -687,7 +687,7 @@ export default function ApplicationsOverview() {
         },
         tooltip: t('Sync status for ArgoCD applications.'),
         sort: (itemA, itemB) => {
-          return get(itemB, 'transformed.syncedScore') - get(itemA, 'transformed.syncedScore')
+          return get(itemB, 'transformed.syncedScore', 0) - get(itemA, 'transformed.syncedScore', 0)
         },
         exportContent: (resource) => {
           return exportApplicationStatusGroup(resource, 'synced')
@@ -700,7 +700,7 @@ export default function ApplicationsOverview() {
         },
         tooltip: t('Status of pods deployed by the application.'),
         sort: (itemA, itemB) => {
-          return get(itemB, 'transformed.deployedScore') - get(itemA, 'transformed.deployedScore')
+          return get(itemB, 'transformed.deployedScore', 0) - get(itemA, 'transformed.deployedScore', 0)
         },
         exportContent: (resource) => {
           return exportApplicationStatusGroup(resource, 'deployed')
@@ -794,9 +794,9 @@ export default function ApplicationsOverview() {
           }))
           .sort((lhs, rhs) => compareStrings(lhs.label, rhs.label)),
         tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
-          const clusterList = get(item, 'transformed.clusterList')
+          const clusterList = get(item, 'transformed.clusterList') as string[] | undefined
           return selectedValues.some((value) => {
-            return clusterList.includes(value)
+            return clusterList?.includes(value)
           })
         },
       },
@@ -815,7 +815,7 @@ export default function ApplicationsOverview() {
         ],
         tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
           return (
-            selectedValues.includes(get(item, 'transformed.healthStatus')) &&
+            selectedValues.includes(get(item, 'transformed.healthStatus', '')) &&
             (item.apiVersion === ApplicationSetApiVersion || item.apiVersion === ArgoApplicationApiVersion)
           )
         },
@@ -835,7 +835,7 @@ export default function ApplicationsOverview() {
         ],
         tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
           return (
-            selectedValues.includes(get(item, 'transformed.syncedStatus')) &&
+            selectedValues.includes(get(item, 'transformed.syncedStatus', '')) &&
             (item.apiVersion === ApplicationSetApiVersion || item.apiVersion === ArgoApplicationApiVersion)
           )
         },
@@ -854,7 +854,7 @@ export default function ApplicationsOverview() {
           },
         ],
         tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
-          return selectedValues.includes(get(item, 'transformed.deployedStatus'))
+          return selectedValues.includes(get(item, 'transformed.deployedStatus', ''))
         },
       },
     ],

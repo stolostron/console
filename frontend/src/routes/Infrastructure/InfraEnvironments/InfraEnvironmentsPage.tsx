@@ -297,7 +297,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
         const [key, map] = entry
         const infraKey = get(infraEnv, ['status', 'agentLabelSelector', 'matchLabels', key])
 
-        return map[infraKey] || infraAgents
+        return (infraKey != null && map[infraKey]) || infraAgents
       }, [] as AgentK8sResource[])
 
       const errorAgents = infraAgents.filter((a) => getAgentStatusKey(a) === 'error')
