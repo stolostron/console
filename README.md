@@ -12,14 +12,21 @@
 
 ## What is console?
 
-The console provides the user interface for Red Hat Advanced Cluster Management (ACM) for Kubernetes and Red Hat MultiCluster Engine (MCE).
+The console provides the user interface for [Red Hat Advanced Cluster Management](https://www.redhat.com/en/technologies/management/advanced-cluster-management) (ACM) for Kubernetes and [Red Hat MultiCluster Engine](https://docs.redhat.com/en/documentation/red_hat_advanced_cluster_management_for_kubernetes/2.12/html/about/welcome-to-red-hat-advanced-cluster-management-for-kubernetes#multicluster_engine_operator) (MCE). It is delivered as two [OpenShift Console dynamic plugins](https://github.com/openshift/console/blob/main/frontend/packages/console-dynamic-plugin-sdk/README.md) — one for ACM features and one for MCE features — that integrate into the OpenShift Console.
+
+The ConsolePlugin resource manifests used by the product installers can be found here:
+- **ACM plugin**: [multiclusterhub-operator ConsolePlugin](https://github.com/stolostron/multiclusterhub-operator/blob/main/pkg/templates/charts/toggle/console/templates/console-plugin.yaml)
+- **MCE plugin**: [backplane-operator ConsolePlugin](https://github.com/stolostron/backplane-operator/blob/main/pkg/templates/charts/toggle/console-mce/templates/console-plugin.yaml)
 
 Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
 
 ## Prerequisites
 
--   [Node.js](https://nodejs.org) 20
--   NPM 8
+- [Node.js](https://nodejs.org) 20
+- NPM 8
+- [oc](https://docs.openshift.com/container-platform/latest/cli_reference/openshift_cli/getting-started-cli.html) (OpenShift CLI)
+- [podman](https://podman.io/) or [docker](https://www.docker.com/) (required for `npm run plugins`)
+- [jq](https://stedolan.github.io/jq/download/)
 
 ## Active Release Branches
 
@@ -51,9 +58,13 @@ A number of the core NPM package dependencies are published from other repositor
 | release-2.10<br/>backplane-2.5           | v1.27.z                           | v1.13.z                    |
 | release-2.9<br/>backplane-2.4            | v1.26.z                           | v1.12.z                    |
 
-## Running
+## Running (Recommended: OpenShift Console Plugins)
 
-1. Clone repository
+The recommended way to run the console for development is as OpenShift Console dynamic plugins using `npm run plugins`. This mode runs the ACM and MCE plugins inside a local OpenShift Console container, matching how the product is deployed in production. **Always test new work in this mode before submitting changes** to ensure production functionality.
+
+### Setup
+
+1. Clone the repository
 
 2. Install dependencies
 
@@ -61,41 +72,68 @@ A number of the core NPM package dependencies are published from other repositor
     npm ci
     ```
 
-3. Setup environment
+3. Configure environment
 
     You need:
-
-    - to be connected to a OpenShift 4.x.x cluster
+    - to be connected to an OpenShift 4.x cluster
     - to have Red Hat Advanced Cluster Management or multicluster engine for Kubernetes installed on the cluster
 
     ```
     npm run setup
     ```
 
-    This will create a `.env` file in the backend directory containing environment variables.
+    This will create a `.env` file in the `backend` directory containing environment variables for the cluster connection.
 
-4. Start the development services
+4. Start the console plugins
 
     ```
-    npm start
+    npm run plugins
     ```
 
-    This will start the frontend and the backend in parallel. (It may take up to 30 seconds for the UI to appear)
+    This concurrently starts the backend server, the frontend webpack development server (serving both ACM and MCE plugins), and a local OpenShift Console container. The console will be available at **http://localhost:9000**.
 
-**NOTE:** If any port conflict appears or you want to run different versions of the console simultaneously, all ports are customizable via environment variables. 
-The default values are defined in [port-defaults.sh](port-defaults.sh). Several of these ports are used during setup.
+### Options
 
-| Port Variable | Description | Used by |
-|-|-|-|
-| FRONTEND_PORT | Port for standalone version of this console (access console at https://localhost:<FRONTEND_PORT>) | `npm run setup`, `npm start` |
-| BACKEND_PORT | Port for the backend APIs used by both standalone and plugin versions of the console | `npm run setup`, `npm start`, `npm run plugins` |
-| CONSOLE_PORT | Port for OpenShift console (access console at http://localhost:<CONSOLE_PORT>) | `npm run setup`, `npm run plugins` |
-| MCE_PORT | Port on which the `mce` dynamic plugin is served to OpenShift console | `npm run plugins` |
-| ACM_PORT | Port on which the `acm` dynamic plugin is served to OpenShift console | `npm run plugins` |
+To specify the version of OpenShift Console to run:
 
-## Running as an OpenShift console plugin-in
+```
+CONSOLE_VERSION=4.19 npm run plugins
+```
 
-See [Dynamic Plugins - Development](frontend/PLUGIN.md#development)
+If you are running other OpenShift Console plugins locally (e.g. [kubevirt-plugin](https://github.com/kubevirt-ui/kubevirt-plugin), [odf-console](https://github.com/red-hat-storage/odf-console), or [gitops-plugin](https://github.com/redhat-developer/gitops-console-plugin)), you can have them loaded into the OpenShift Console as well by specifying the port they are served on:
+
+```
+KUBEVIRT_PORT=9001 npm run plugins
+```
+
+For additional plugin development details, including running against a locally-built OpenShift Console, see [PLUGIN.md](frontend/PLUGIN.md).
+
+## Running (Alternative: Standalone Console)
+
+The `npm start` command runs a standalone development console that **does not** require OpenShift Console or a container runtime. It can be faster and simpler to start up, but it does not use the dynamic plugin SDK and cannot exercise any OpenShift Console integration features. There may also be styling differences compared to the plugin mode.
+
+Use this mode for rapid iteration on features that don't depend on OpenShift Console APIs, but **always verify your work with `npm run plugins` before submitting**.
+
+```
+npm run setup   # if not already done
+npm start
+```
+
+The standalone console will be available at **https://localhost:3000** and a browser tab will be opened automatically.
+
+## Port Configuration
+
+All ports are customizable via environment variables. The default values are defined in [port-defaults.sh](port-defaults.sh). Several of these ports are used during setup.
+
+| Port Variable  | Default | Description                                                                         | Used by                         |
+| -------------- | ------- | ----------------------------------------------------------------------------------- | ------------------------------- |
+| FRONTEND_PORT  | 3000    | Port for standalone console (access at https://localhost:FRONTEND_PORT)              | `npm run setup`, `npm start`    |
+| BACKEND_PORT   | 4000    | Port for the backend APIs used by both standalone and plugin modes                  | `npm run setup`, `npm start`, `npm run plugins` |
+| CONSOLE_PORT   | 9000    | Port for OpenShift Console (access at http://localhost:CONSOLE_PORT)                | `npm run setup`, `npm run plugins` |
+| MCE_PORT       | 3001    | Port on which the `mce` dynamic plugin is served to OpenShift Console               | `npm run plugins`               |
+| ACM_PORT       | 3002    | Port on which the `acm` dynamic plugin is served to OpenShift Console               | `npm run plugins`               |
+
+**NOTE:** If any port conflict appears or you want to run different versions of the console simultaneously, override the relevant port variables before running.
 
 ## Architecture
 
@@ -103,11 +141,11 @@ See [ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ### Chrome
 
-To develop with self signed certificates goto `chrome://flags/`and enable
+To develop with self signed certificates go to `chrome://flags/` and enable:
 
--   Allow invalid certificates for resources loaded from localhost.
--   Insecure origins treated as secure.
-    -   <http://localhost>
+- Allow invalid certificates for resources loaded from localhost.
+- Insecure origins treated as secure.
+    - <http://localhost>
 
 ### Authentication
 
@@ -122,7 +160,7 @@ If the backend responds with a `401 Unauthorized` the frontend starts an OAuth f
 
 ## Optional Features
 
-In some cases there are development preview (Dev Preview) features or technical preview (Tech Preview) features that can optionally be enabled and used in the product. These features are enabled by updating the `console-config` configmap in the installation namepsace (default: `open-cluster-management`). The following features are available:
+In some cases there are development preview (Dev Preview) features or technical preview (Tech Preview) features that can optionally be enabled and used in the product. These features are enabled by updating the `console-config` configmap in the installation namespace (default: `open-cluster-management`). The following features are available:
 
 ### Single node OpenShift
 
@@ -141,32 +179,33 @@ It is possible to enable/disable certain features by changing `spec.overrides.co
 
 ## Troubleshooting
 
-### [webpack-cli] Failed to load './console/frontend/webpack.config.ts'
+### Apple Silicon (ARM64) podman crash: `lfstack.push`
 
-After executing the `npm start` command (either T the root level of the project or at `./frontend` folder) an error on `frontend` project is produced like
+When running `npm run plugins` (or `npm run ocp-console`) on a Mac with an Apple Silicon chip, the OpenShift Console container may crash immediately with an error like:
+
+```
+runtime: lfstack.push invalid packing: node=0xffff812aec40 cnt=0x1 packed=0xffff812aec400001 -> node=0xffffffff812aec40
+fatal error: lfstack.push
+```
+
+This is caused by incompatibility between the Rosetta x86 emulation layer in the podman machine's Linux kernel and newer versions of podman. The fix depends on your macOS version:
+
+- **macOS 15 (Sequoia)**: The last working version of podman is **5.5.2**. Downgrade your podman machine to this version or earlier. After installing podman 5.5.2, recreate your podman machine (`podman machine rm` / `podman machine init` / `podman machine start`).
+
+- **macOS 26 (Tahoe)**: Apple has fixed the underlying Rosetta issue, but podman 5.6+ ships with Rosetta disabled by default. You can re-enable it by following the instructions in the [Podman 5.6 release blog post](https://blog.podman.io/2025/08/podman-5-6-released-rosetta-status-update/).
+
+### `[webpack-cli] Failed to load './console/frontend/webpack.config.ts'`
+
+After executing the `npm start` command (either at the root level of the project or at `./frontend` folder) an error on `frontend` project is produced like
 
 ```
 [start:frontend] [webpack-cli] Failed to load 'console/frontend/webpack.config.ts' config
 [start:frontend] [webpack-cli] Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'console/frontend/src/lib/supportedLanguages' imported from console/frontend/webpack.config.ts
-[start:frontend]     at finalizeResolution (node:internal/modules/esm/resolve:275:11)
-[start:frontend]     at moduleResolve (node:internal/modules/esm/resolve:860:10)
-[start:frontend]     at defaultResolve (node:internal/modules/esm/resolve:984:11)
-[start:frontend]     at ModuleLoader.defaultResolve (node:internal/modules/esm/loader:719:12)
-[start:frontend]     at #cachedDefaultResolve (node:internal/modules/esm/loader:643:25)
-[start:frontend]     at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:678:38)
-[start:frontend]     at ModuleLoader.resolveSync (node:internal/modules/esm/loader:701:52)
-[start:frontend]     at #cachedResolveSync (node:internal/modules/esm/loader:662:25)
-[start:frontend]     at ModuleLoader.getModuleJobForRequire (node:internal/modules/esm/loader:390:50)
-[start:frontend]     at new ModuleJobSync (node:internal/modules/esm/module_job:342:34) {
-[start:frontend]   code: 'ERR_MODULE_NOT_FOUND',
-[start:frontend]   url: 'file://console/frontend/src/lib/supportedLanguages'
-[start:frontend] }
-[start:frontend] npm run start:frontend exited with code 2
 ```
 
-This is due to wrond node/npm set of versions. See [Prerequisites section](#prerequisites)
+This is due to wrong node/npm set of versions. See [Prerequisites section](#prerequisites).
 
-### [start:backend] ERROR:Error reading service account token
+### `[start:backend] ERROR:Error reading service account token`
 
 After executing the `npm start` command (either at the root level of the project or at `./backend` folder) an error on `backend` project is produced like
 
@@ -176,33 +215,26 @@ After executing the `npm start` command (either at the root level of the project
 [start:backend] [nodemon] app crashed - waiting for file changes before starting...
 ```
 
-`./backend/.env` file is not present or it is wrongly produced. Please follow [Running section guidelines](#running).
+`./backend/.env` file is not present or it is wrongly produced. Please follow [Running section guidelines](#running-recommended-openshift-console-plugins).
 
-### certs issues
+### Certs issues
 
 The application starts up apparently normally but the browser produces an error `Error occurred while trying to proxy: localhost:3000/multicloud/login`
 
 In the logs there are errors like
 
 ```
-[start:frontend] (node:1777197) MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added to [Server]. MaxListeners is 10. Use emitter.setMaxListeners() to increase limit
-[start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/username to https://localhost:4000/ [EPROTO] (https://nodejs.org/api/errors.html#errors_common_system_errors)
-[start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/events to https://localhost:4000/ [EPROTO] (https://nodejs.org/api/errors.html#errors_common_system_errors)
-[start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/authenticated to https://localhost:4000/ [EPROTO] (https://nodejs.org/api/errors.html#errors_common_system_errors)
-[start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/events to https://localhost:4000/ [EPROTO] (https://nodejs.org/api/errors.html#errors_common_system_errors)
-[start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/username to https://localhost:4000/ [EPROTO] (https://nodejs.org/api/errors.html#errors_common_system_errors)
-[start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/hub to https://localhost:4000/ [EPROTO] (https://nodejs.org/api/errors.html#errors_common_system_errors)
-[start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/authenticated to https://localhost:4000/ [EPROTO] (https://nodejs.org/api/errors.html#errors_common_system_errors)
-[start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/login to https://localhost:4000/ [EPROTO] (https://nodejs.org/api/errors.html#errors_common_system_errors)
+[start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/username to https://localhost:4000/ [EPROTO]
+[start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/login to https://localhost:4000/ [EPROTO]
 ```
 
-And if the logs are inspected right after running `npm start` command an error is produced
+And if the logs are inspected right after running `npm start` command an error is produced:
 
 `[start:backend] ERROR:no certs`
 
-The problems is about the certs not being generated properly, `./backend/certs` folder is most probably empty.
+The problem is about the certs not being generated properly, `./backend/certs` folder is most probably empty.
 
-The solution is about to completely remove `./backend/certs` folder and then to execute `npm run ci:backend` at the root level of the project.
+The solution is to completely remove `./backend/certs` folder and then execute `npm run ci:backend` at the root level of the project.
 
 > Be sure openssl library is installed before running `npm run ci:backend` command.
 

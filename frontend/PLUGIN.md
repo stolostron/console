@@ -1,123 +1,89 @@
-# Dynamic Plugins
+# OpenShift Console Plugin Development
 
-React can [lazy](https://reactjs.org/docs/code-splitting.html#reactlazy) load components.
-This means the bundled javascript for a component is not loaded until it is needed.
+This repository delivers two [OpenShift Console dynamic plugins](https://github.com/openshift/console/blob/main/frontend/packages/console-dynamic-plugin-sdk/README.md):
 
-Webpack 5 added [module federation](https://webpack.js.org/concepts/module-federation).
-The idea being that instead of lazy loading a component from the same server/container,
-you can load a component from a remote server/container. Think microservices for the frontend.
+- **ACM** (`frontend/plugins/acm`) — Red Hat Advanced Cluster Management features
+- **MCE** (`frontend/plugins/mce`) — MultiCluster Engine features
 
-[OCP Console dynamic plugins](https://github.com/openshift/console/blob/master/dynamic-demo-plugin/README.md#proxy-service)
-build upon this issue by adding a resource that registers the federated module,
-and has extensions indicating how and where that "dynamic plugin" will be loaded into the OCP console.
-
-In addition the OCP console provides dynamic [proxies]((https://github.com/openshift/console/tree/master/frontend/packages/console-dynamic-plugin-sdk) that allow those loaded conponents to communicate with the backends even in other namespaces.
-
-## ACM Dynamic Plugins
-
-ACM will run stand-alone as it needs to support back to OCP 4.6 and dynamic plugins are only available in OCP 4.10+.
-
-ACM will not only serve up the stand alone but also plugins for each of the main navigation pages in ACM.
-
-### Install Changes
-
-ACM console will need to know what version of OCP it is being installed on.
-In the case of 4.10+ we will install addition [resources](https://github.com/openshift/console/blob/master/dynamic-demo-plugin/oc-manifest.yaml) to register the plugins with the OCP console.
-
-## Development
-
-### Prerequisites
-
-- [jq](https://stedolan.github.io/jq/download/)
-- [oc](https://docs.openshift.com/container-platform/4.10/cli_reference/openshift_cli/getting-started-cli.html)
-- podman or docker
+For a quick-start guide, see the [Running section in README.md](../README.md#running-recommended-openshift-console-plugins).
 
 ## Running console as OCP dynamic plugins
 
-From the root of the `console` repository make sure your kubecontext is set to a hub cluster, then run:
+From the root of the `console` repository, make sure your kubecontext is set to a hub cluster, then run:
 
 ```
 npm run setup
 npm run plugins
 ```
 
-This will concurrently start the backend server, frontend webpack development server and OCP console.
+This concurrently starts the backend server, frontend webpack development server, and a local OpenShift Console container.
 
-The console will be running at http://localhost:<CONSOLE_PORT>.
+The console will be running at http://localhost:9000 (or the value of `CONSOLE_PORT`).
 
-If you are running [kubevirt-plugin](https://github.com/kubevirt-ui/kubevirt-plugin), [odf-console](https://github.com/red-hat-storage/odf-console), or [gitops-plugin](https://github.com/redhat-developer/gitops-console-plugin), you can have them loaded into the OpenShift console as well by specifying the port they are served on with the `KUBEVIRT_PORT`, `ODF_PORT`, or `GITOPS_PORT` environment variables, respectively.
+### Loading additional plugins
+
+If you are running [kubevirt-plugin](https://github.com/kubevirt-ui/kubevirt-plugin), [odf-console](https://github.com/red-hat-storage/odf-console), or [gitops-plugin](https://github.com/redhat-developer/gitops-console-plugin), you can have them loaded into the OpenShift Console as well by specifying the port they are served on with the `KUBEVIRT_PORT`, `ODF_PORT`, or `GITOPS_PORT` environment variables, respectively.
+
 ```
 KUBEVIRT_PORT=9001 npm run plugins
 ```
 
-To specify the version of OpenShift console to run, you can specify the `CONSOLE_VERSION` environment variable.
+### Specifying OpenShift Console version
+
+To specify the version of OpenShift Console to run, set the `CONSOLE_VERSION` environment variable.
+
 ```
 CONSOLE_VERSION=4.19 npm run plugins
 ```
 
-## Running against local development build of OCP console
+## Running against a local development build of OCP Console
+
+If you need to test against a locally-built OpenShift Console (instead of the container image), use:
 
 ```
 npm run setup
 npm run plugins-dev
 ```
 
-This will concurrently start the backend server and frontend webpack development server
+This starts the backend server and frontend webpack development server, but does **not** start the OpenShift Console container. You are responsible for building and running the OCP Console bridge yourself.
 
-### [OCP Console Git Repo](https://github.com/openshift/console)
+### Building and running OCP Console locally
 
-Ensure that [OCP Console's dependencies](https://github.com/openshift/console#dependencies) are met in your local environment.
+Clone and build the [OCP Console](https://github.com/openshift/console) repository. Ensure that its [dependencies](https://github.com/openshift/console#dependencies) are met in your local environment.
 
 ```
 git clone git@github.com:openshift/console.git
-```
-
-### Running OCP Console in development mode
-
-**Note:** With recent post-4.10 builds, you need to run OpenShift console with authentication for authorization to work with the proxied services. Follow [these instructions](https://github.com/openshift/console#openshift-with-authentication). Alternatively, you can revert a commit that regressed the ability to use proxies that require authorization when running without authentication and continue with these instructions.
-
-```
-git revert 1230920afbcd7cbc1d2f0c6b1e48744c72eb60be -m 1 -n
-```
-
-Build OCP Console
-
-```
+cd console
 ./build.sh
 ```
 
-Start ocp console bridge with plugin and proxy
+Start the OCP Console bridge with the ACM and MCE plugins registered:
 
 ```
 source ./contrib/oc-environment.sh
+./bin/bridge \
+  -plugins mce=http://localhost:3001 \
+  -plugins acm=http://localhost:3002 \
+  --plugin-proxy='{"services":[{"consoleAPIPath":"/api/proxy/plugin/mce/console/","endpoint":"https://localhost:4000","authorize":true},{"consoleAPIPath":"/api/proxy/plugin/acm/console/","endpoint":"https://localhost:4000","authorize":true}]}'
 ```
 
-```
-./bin/bridge -plugins mce=http://localhost:3001 -plugins acm=http://localhost:3002 --plugin-proxy='{"services":[{"consoleAPIPath":"/api/proxy/plugin/mce/console/","endpoint":"https://localhost:4000","authorize":true},{"consoleAPIPath":"/api/proxy/plugin/acm/console/","endpoint":"https://localhost:4000","authorize":true}]}'
-```
+The console will be running at http://localhost:9000.
 
-The console will be running at localhost:9000.
-
-Bridge variables can also be passed in as environment variables
+Bridge variables can also be passed as environment variables:
 
 ```
 BRIDGE_PLUGIN_PROXY='{"services":[{"consoleAPIPath":"/api/proxy/plugin/mce/console/","endpoint":"https://localhost:4000","authorize":true},{"consoleAPIPath":"/api/proxy/plugin/acm/console/","endpoint":"https://localhost:4000","authorize":true}]}'
 ```
 
-### Dynamic Plugin support for getting resources
-
-Q: What support does OCP have for realtime data with websockets?
-
-> `useWatchK8sResource` and `useWatchK8sResources` are the utilities we have right now for that
+**Note:** With recent post-4.10 builds, you need to run OpenShift Console with authentication for authorization to work with the proxied services. Follow [these instructions](https://github.com/openshift/console#openshift-with-authentication). Alternatively, you can revert a commit that regressed the ability to use proxies that require authorization when running without authentication and continue with the instructions above:
 
 ```
-const [data, loaded, error] = useK8sWatchResource<CustomizationResource[]>({
-    groupVersionKind: {
-        group: 'console.openshift.io',
-        version: 'v1',
-        kind: 'ConsoleLink',
-    },
-    isList: true,
-    namespaced: false,
-});
+git revert 1230920afbcd7cbc1d2f0c6b1e48744c72eb60be -m 1 -n
 ```
+
+## Further Reading
+
+- [OpenShift Console Dynamic Plugin SDK](https://github.com/openshift/console/blob/main/frontend/packages/console-dynamic-plugin-sdk/README.md) — comprehensive documentation on building dynamic plugins, shared modules, webpack configuration, and i18n
+- [ACM ConsolePlugin manifest](https://github.com/stolostron/multiclusterhub-operator/blob/main/pkg/templates/charts/toggle/console/templates/console-plugin.yaml) — the Helm template used by the ACM installer
+- [MCE ConsolePlugin manifest](https://github.com/stolostron/backplane-operator/blob/main/pkg/templates/charts/toggle/console-mce/templates/console-plugin.yaml) — the Helm template used by the MCE installer
+- [Multicluster SDK](../frontend/packages/multicluster-sdk/README.md) — APIs for multicluster-aware dynamic plugins
