@@ -804,12 +804,17 @@ export const getName = ({ data }) => data.root.ai?.name ?? data.root.name
 
 const versionRegex = /([\d]{1,5})\.([\d]{1,5})\.([\d]{1,5})/
 function versionGreater(version, x, y) {
-  const matches = version.match(versionRegex)
-  return matches && Number.parseInt(matches[1], 10) >= x && Number.parseInt(matches[2], 10) > y
+  const matches = version?.match(versionRegex)
+  if (matches) {
+    const major = Number.parseInt(matches[1], 10)
+    const minor = Number.parseInt(matches[2], 10)
+    return major > x || (major === x && minor > y)
+  }
+  return false
 }
 
 const getImageSetVersion = (control) => {
-  return control.active ? control?.availableMap?.[control.active]?.replacements?.releaseImageVersion : undefined
+  return control?.active ? control?.availableMap?.[control.active]?.replacements?.releaseImageVersion : undefined
 }
 
 export const isHidden_lt_OCP48 = (control, controlData) => {
