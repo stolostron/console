@@ -81,14 +81,6 @@
 .creation-view .pf-v6-c-form-control.input {
   padding: 0;
 }
-.temptifly .pf-v6-c-form-control .pf-v6-c-combo-control,
-.creation-view .pf-v6-c-form-control .pf-v6-c-combo-control {
-  height: 100%;
-  width: 100%;
-  border: none;
-  text-overflow: ellipsis;
-  padding-left: 6px;
-}
 .temptifly .pf-v6-c-alert h4,
 .creation-view .pf-v6-c-alert h4 {
   margin: 0;

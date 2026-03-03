@@ -395,13 +395,13 @@ describe('KubevirtProviderAlert', () => {
 
       renderKubevirtProviderAlert({ variant: 'search' })
 
-      expect(screen.getByText('Upgrade hub cluster to centrally manage VMs')).toBeInTheDocument()
+      expect(screen.getByText('Update hub cluster to centrally manage VMs')).toBeInTheDocument()
       expect(
         screen.getByText(
-          /Upgrade to OCP version 4.20 or newer. Then, enable the OpenShift Virtualization integration to install recommended operators to manage your VMs in 1 cluster centrally./
+          /Update to OCP version 4.20 or newer. Then, enable the OpenShift Virtualization integration to install recommended operators to manage your VMs in 1 cluster centrally./
         )
       ).toBeInTheDocument()
-      expect(screen.getByText('Upgrade hub cluster')).toBeInTheDocument()
+      expect(screen.getByText('Update hub cluster')).toBeInTheDocument()
       expect(screen.getByText('View documentation')).toBeInTheDocument()
     })
 
@@ -458,13 +458,13 @@ describe('KubevirtProviderAlert', () => {
 
       renderKubevirtProviderAlert({ variant: 'clusterDetails' })
 
-      expect(screen.getByText('Upgrade hub cluster to centrally manage VMs')).toBeInTheDocument()
+      expect(screen.getByText('Update hub cluster to centrally manage VMs')).toBeInTheDocument()
       expect(
         screen.getByText(
-          'Upgrade to OCP version 4.20 or newer. Then, enable the OpenShift Virtualization integration to install recommended operators to manage your VMs in this cluster centrally.'
+          'Update to OCP version 4.20 or newer. Then, enable the OpenShift Virtualization integration to install recommended operators to manage your VMs in this cluster centrally.'
         )
       ).toBeInTheDocument()
-      expect(screen.getByText('Upgrade hub cluster')).toBeInTheDocument()
+      expect(screen.getByText('Update hub cluster')).toBeInTheDocument()
     })
   })
 
@@ -630,7 +630,7 @@ describe('KubevirtProviderAlert', () => {
       // Test with no version and hub cluster not found - both should default to upgrade path
       mockUseAllClusters.mockReturnValue([createMockCluster('local-cluster', { isManagedOpenShift: false })])
       renderKubevirtProviderAlert({ variant: 'search' })
-      expect(screen.getByText('Upgrade hub cluster to centrally manage VMs')).toBeInTheDocument()
+      expect(screen.getByText('Update hub cluster to centrally manage VMs')).toBeInTheDocument()
     })
   })
 

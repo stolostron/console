@@ -302,7 +302,7 @@ describe('DiscoveredByCluster', () => {
     expect(container.querySelector('#deployments-unavailable-chart-title')).toHaveTextContent(
       'Deployments unavailable 1'
     )
-    expect(container.querySelector('#upgrade-availability-chart-title')).toHaveTextContent('Upgrade availability 1')
+    expect(container.querySelector('#update-availability-chart-title')).toHaveTextContent('Update availability 1')
 
     await waitForText('Severity')
     await waitForText('Low')
@@ -312,7 +312,7 @@ describe('DiscoveredByCluster', () => {
     await waitForText('Managed externally', true)
 
     await waitForText('Deployment available')
-    await waitForText('Upgrade available')
+    await waitForText('Update available')
     // Because of tooltip, this is presented multiple times
     await waitForText('OperatorPolicy cluster violations', true)
 
@@ -335,7 +335,7 @@ describe('DiscoveredByCluster', () => {
 
     within(deploymentAvailableFilter).getByRole('checkbox', { name: 'no 1' }).click()
 
-    const upgradeAvailableFilter = screen.getByRole('heading', { name: 'Upgrade available' }).parentElement!
+    const upgradeAvailableFilter = screen.getByRole('heading', { name: 'Update available' }).parentElement!
 
     within(upgradeAvailableFilter).getByRole('checkbox', { name: 'yes 1' }).click()
 

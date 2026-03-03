@@ -53,7 +53,7 @@ export default function DiscoveredByCluster() {
           exportContent: (item: DiscoveredPolicyItem) => convertYesNoCell(item.deploymentAvailable, t),
         },
         {
-          header: t('Upgrade available'),
+          header: t('Update available'),
           cell: (item: DiscoveredPolicyItem) => convertYesNoCell(item.upgradeAvailable, t),
           sort: 'upgradeAvailable',
           search: 'upgradeAvailable',
@@ -208,7 +208,7 @@ export default function DiscoveredByCluster() {
         },
         {
           id: 'upgradeAvailable',
-          label: t('Upgrade available'),
+          label: t('Update available'),
           options: [
             {
               label: t('yes'),
@@ -286,8 +286,8 @@ export default function DiscoveredByCluster() {
                     colorScale={colorThemes.criticalLowSuccess}
                   />
                   <AcmDonutChart
-                    title={t('Upgrade availability')}
-                    description={t('Overview of available upgrades')}
+                    title={t('Update availability')}
+                    description={t('Overview of available updates')}
                     donutLabel={{
                       title: operatorPolicyStats['upgradesAvailable'],
                       subTitle: t('Available'),

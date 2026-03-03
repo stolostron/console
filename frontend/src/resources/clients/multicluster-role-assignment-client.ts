@@ -593,8 +593,14 @@ const findMinimalPlacementCoverForClusters = (
   }
 
   const targetSet = new Set(targetClusterNames)
+  // Only consider placements defined by cluster names (predicates), not by spec.clusterSets.
+  // When both exist (e.g. cluster-sets-default vs clusters-weekly-and-weekly-managed),
+  // we prefer the placement that explicitly targets the selected clusters.
   const candidates = placementClusters.filter(
-    (pc) => pc.clusters.length && isPlacementClustersSubsetOf(pc.clusters, targetClusterNames)
+    (pc) =>
+      !isPlacementForClusterSets(pc.placement) &&
+      pc.clusters.length &&
+      isPlacementClustersSubsetOf(pc.clusters, targetClusterNames)
   )
   const exactMatch = candidates.find((pc) => isPlacementClustersExactMatch(pc.clusters, targetClusterNames))
 

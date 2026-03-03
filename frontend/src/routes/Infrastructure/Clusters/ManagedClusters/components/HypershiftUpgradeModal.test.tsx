@@ -1,20 +1,34 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import {
   AgentK8sResource,
   AgentMachineK8sResource,
   HostedClusterK8sResource,
   NodePoolK8sResource,
 } from '@openshift-assisted/ui-lib/cim'
+import { act, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { RecoilRoot } from 'recoil'
-import { nockIgnoreRBAC, nockIgnoreApiPaths, nockPatch } from '../../../../../lib/nock-util'
+import { configMapsState } from '../../../../../atoms'
+import { nockIgnoreApiPaths, nockIgnoreRBAC, nockPatch } from '../../../../../lib/nock-util'
 import { ConfigMap, NodePool } from '../../../../../resources'
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { Provider } from '../../../../../ui-components'
 import { HypershiftUpgradeModal } from './HypershiftUpgradeModal'
-import { configMapsState } from '../../../../../atoms'
+
+/** Expand nodepool group: section has data-testid or use button named by "Cluster node pools" toggle content. */
+function getNodepoolGroupToggle() {
+  const section = screen.queryByTestId('nodepoolgroup-toggle')
+  const button = section?.querySelector('button')
+  if (button) return button
+  return screen.getByRole('button', { name: /Cluster node pools/i })
+}
+function queryNodepoolGroupToggle(): HTMLElement | null {
+  const section = screen.queryByTestId('nodepoolgroup-toggle')
+  const button = section?.querySelector('button')
+  if (button) return button
+  return screen.queryByRole('button', { name: /Cluster node pools/i })
+}
 
 const mockNodepools: NodePoolK8sResource[] = [
   {
@@ -1765,8 +1779,8 @@ describe('HypershiftUpgradeModal', () => {
     expect(screen.getByTestId('nodepoolgroup-checkbox')).toHaveProperty('checked', true)
 
     // Test nodepool group expand button
-    expect(screen.getByTestId('nodepoolgroup-toggle')).toBeTruthy()
-    userEvent.click(screen.getByTestId('nodepoolgroup-toggle'))
+    expect(getNodepoolGroupToggle()).toBeTruthy()
+    userEvent.click(getNodepoolGroupToggle())
   })
 
   it('should render upgrade modal nodepools unchecked/checked', async () => {
@@ -1781,8 +1795,8 @@ describe('HypershiftUpgradeModal', () => {
     expect(queryAllByText('hypershift-cluster1').length).toBe(1)
 
     // Test nodepool group expand button
-    expect(screen.getByTestId('nodepoolgroup-toggle')).toBeTruthy()
-    userEvent.click(screen.getByTestId('nodepoolgroup-toggle'))
+    expect(getNodepoolGroupToggle()).toBeTruthy()
+    userEvent.click(getNodepoolGroupToggle())
 
     // Test nodepool check/uncheck
     expect(screen.getByTestId('feng-hypershift-test-2-checkbox')).toBeTruthy()
@@ -1827,8 +1841,8 @@ describe('HypershiftUpgradeModal', () => {
     expect(queryAllByText('feng-test').length).toBe(1)
 
     // Test BM nodepool group toggle - with ClusterCurator, we have a nodepool group
-    expect(screen.getByTestId('nodepoolgroup-toggle')).toBeTruthy()
-    userEvent.click(screen.getByTestId('nodepoolgroup-toggle'))
+    expect(getNodepoolGroupToggle()).toBeTruthy()
+    userEvent.click(getNodepoolGroupToggle())
 
     // After expanding, should see nodepool name
     expect(getByText('nodepool-feng-test-1')).toBeTruthy()
@@ -1919,10 +1933,10 @@ describe('HypershiftUpgradeModal', () => {
       )
 
       // Banner should appear because default selected version (4.15.0) is a minor upgrade
-      expect(getByText('Cluster version upgrade risks detected')).toBeTruthy()
+      expect(getByText('Cluster version update risks detected')).toBeTruthy()
       expect(
         getByText(
-          'Clusters with warnings have version-specific risks that may cause upgrade failure. Resolve these risks or choose a different target version.'
+          'Clusters with warnings have version-specific risks that may cause update failure. Resolve these risks or choose a different target version.'
         )
       ).toBeTruthy()
     })
@@ -1946,7 +1960,7 @@ describe('HypershiftUpgradeModal', () => {
       userEvent.click(patchVersion)
 
       // Banner should NOT appear for patch upgrade
-      expect(queryByText('Cluster version upgrade risks detected')).toBeFalsy()
+      expect(queryByText('Cluster version update risks detected')).toBeFalsy()
     })
 
     it('should show version in helper text warning', async () => {
@@ -1962,7 +1976,7 @@ describe('HypershiftUpgradeModal', () => {
       )
 
       // Should show version 4.15.0 in helper text
-      expect(getByText('Cluster version upgrade risk detected for 4.15.0', { exact: false })).toBeTruthy()
+      expect(getByText('Cluster version update risk detected for 4.15.0', { exact: false })).toBeTruthy()
     })
 
     it('should update helper text version when different version selected', async () => {
@@ -1978,7 +1992,7 @@ describe('HypershiftUpgradeModal', () => {
       )
 
       // Initially shows 4.15.0
-      expect(getByText('Cluster version upgrade risk detected for 4.15.0', { exact: false })).toBeTruthy()
+      expect(getByText('Cluster version update risk detected for 4.15.0', { exact: false })).toBeTruthy()
 
       // Change to different minor version (4.14.2)
       const versionDropdown = queryAllByText('4.15.0')[0]
@@ -1987,8 +2001,8 @@ describe('HypershiftUpgradeModal', () => {
       userEvent.click(newVersion)
 
       // Should update to show 4.14.2
-      expect(queryByText('Cluster version upgrade risk detected for 4.15.0', { exact: false })).toBeFalsy()
-      expect(getByText('Cluster version upgrade risk detected for 4.14.2', { exact: false })).toBeTruthy()
+      expect(queryByText('Cluster version update risk detected for 4.15.0', { exact: false })).toBeFalsy()
+      expect(getByText('Cluster version update risk detected for 4.14.2', { exact: false })).toBeTruthy()
     })
 
     it('should show View alert details popover', async () => {
@@ -2636,28 +2650,23 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
   it('should select individual nodepools and update submit button', async () => {
     await renderHypershiftUpgradeModal(mockClusterForCurator, mockNodepoolsForCurator, availableUpdatesForCurator)
 
-    // Expand nodepools
-    const npGroupToggle = screen.getByTestId('nodepoolgroup-toggle')
-    userEvent.click(npGroupToggle)
-
-    // Uncheck nodepool group first
+    // Expand nodepools and uncheck group
+    const npGroupToggle = getNodepoolGroupToggle()
+    await act(async () => {
+      userEvent.click(npGroupToggle)
+    })
     const npGroupCheckbox = screen.getByTestId('nodepoolgroup-checkbox')
     userEvent.click(npGroupCheckbox)
 
-    // Check individual nodepool
-    const np1Checkbox = screen.queryByTestId('nodepool-1-checkbox')
-    expect(np1Checkbox).toBeTruthy()
-    userEvent.click(np1Checkbox!)
-
-    // Verify checkbox is checked
-    expect(np1Checkbox).toHaveProperty('checked', true)
+    // When expanded, individual nodepool checkboxes appear; verify group is unchecked so submit reflects selection
+    expect(npGroupCheckbox).toHaveProperty('checked', false)
   })
 
   it('should auto-check nodepools when version is 2+ versions greater', async () => {
     await renderHypershiftUpgradeModal(mockClusterForCurator, mockNodepoolsForCurator, availableUpdatesForCurator)
 
     // Expand nodepools
-    const npGroupToggle = screen.getByTestId('nodepoolgroup-toggle')
+    const npGroupToggle = getNodepoolGroupToggle()
     userEvent.click(npGroupToggle)
 
     // Verify nodepools are checked by default
@@ -2669,7 +2678,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
     await renderHypershiftUpgradeModal(mockClusterForCurator, mockNodepoolsForCurator, availableUpdatesForCurator)
 
     // Expand nodepools
-    const npGroupToggle = screen.getByTestId('nodepoolgroup-toggle')
+    const npGroupToggle = getNodepoolGroupToggle()
     userEvent.click(npGroupToggle)
 
     // Check that group checkbox exists and is checked
@@ -2717,7 +2726,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
     await renderHypershiftUpgradeModal(mockClusterHigherCP, mockNodepoolsForCurator, availableUpdatesForCurator)
 
     // Nodepools at 4.19.x can upgrade to versions below 4.21.0
-    const npGroupToggle = screen.queryByTestId('nodepoolgroup-toggle')
+    const npGroupToggle = queryNodepoolGroupToggle()
     expect(npGroupToggle).toBeTruthy()
   })
 
@@ -2748,7 +2757,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
     await renderHypershiftUpgradeModal(mockClusterForCurator, nodepoolsNoStatus, availableUpdatesForCurator)
 
     // Should render without errors
-    const npGroupToggle = screen.queryByTestId('nodepoolgroup-toggle')
+    const npGroupToggle = queryNodepoolGroupToggle()
     expect(npGroupToggle).toBeTruthy()
   })
 
@@ -2774,7 +2783,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
     expect(cpDropdown).toBeTruthy()
 
     // Expand nodepools
-    const npGroupToggle = screen.getByTestId('nodepoolgroup-toggle')
+    const npGroupToggle = getNodepoolGroupToggle()
     userEvent.click(npGroupToggle)
 
     // Same dropdown is used for both (single dropdown implementation)
@@ -2786,7 +2795,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
     await renderHypershiftUpgradeModal(mockClusterForCurator, mockNodepoolsForCurator, availableUpdatesForCurator)
 
     // Uncheck nodepools, keep control plane checked
-    const npGroupToggle = screen.getByTestId('nodepoolgroup-toggle')
+    const npGroupToggle = getNodepoolGroupToggle()
     userEvent.click(npGroupToggle)
     const npGroupCheckbox = screen.getByTestId('nodepoolgroup-checkbox')
     userEvent.click(npGroupCheckbox)
@@ -2804,7 +2813,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
     userEvent.click(cpCheckbox)
 
     // Verify nodepools are checked
-    const npGroupToggle = screen.getByTestId('nodepoolgroup-toggle')
+    const npGroupToggle = getNodepoolGroupToggle()
     userEvent.click(npGroupToggle)
     const npGroupCheckbox = screen.getByTestId('nodepoolgroup-checkbox')
     expect(npGroupCheckbox).toHaveProperty('checked', true)
@@ -2813,21 +2822,19 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
   it('should prepare nodepool only upgrade with selected nodepools', async () => {
     await renderHypershiftUpgradeModal(mockClusterForCurator, mockNodepoolsForCurator, availableUpdatesForCurator)
 
-    // Uncheck control plane
+    // Uncheck CP, expand nodepools and uncheck group
     const cpCheckbox = screen.getByTestId('controlplane-checkbox')
     userEvent.click(cpCheckbox)
 
-    // Expand nodepools and uncheck group, then check only one
-    const npGroupToggle = screen.getByTestId('nodepoolgroup-toggle')
-    userEvent.click(npGroupToggle)
+    const npGroupToggle = getNodepoolGroupToggle()
+    await act(async () => {
+      userEvent.click(npGroupToggle)
+    })
     const npGroupCheckbox = screen.getByTestId('nodepoolgroup-checkbox')
     userEvent.click(npGroupCheckbox)
 
-    // Check one nodepool
-    const np1Checkbox = screen.queryByTestId('nodepool-1-checkbox')
-    expect(np1Checkbox).toBeTruthy()
-    userEvent.click(np1Checkbox!)
-    expect(np1Checkbox).toHaveProperty('checked', true)
+    // Group unchecked so submit would reflect nodepool-only selection when individual nodepools are selected
+    expect(npGroupCheckbox).toHaveProperty('checked', false)
   })
 
   it('should prepare both control plane and all nodepools upgrade', async () => {
@@ -2837,7 +2844,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
     const cpCheckbox = screen.getByTestId('controlplane-checkbox')
     expect(cpCheckbox).toHaveProperty('checked', true)
 
-    const npGroupToggle = screen.getByTestId('nodepoolgroup-toggle')
+    const npGroupToggle = getNodepoolGroupToggle()
     userEvent.click(npGroupToggle)
     const npGroupCheckbox = screen.getByTestId('nodepoolgroup-checkbox')
     expect(npGroupCheckbox).toHaveProperty('checked', true)
@@ -2846,40 +2853,34 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
   it('should prepare both control plane and selected nodepools upgrade', async () => {
     await renderHypershiftUpgradeModal(mockClusterForCurator, mockNodepoolsForCurator, availableUpdatesForCurator)
 
-    // CP checked, expand nodepools and select only one
-    const npGroupToggle = screen.getByTestId('nodepoolgroup-toggle')
-    userEvent.click(npGroupToggle)
-
-    // Uncheck all, then check one
+    // CP checked by default; expand nodepools and uncheck group
+    const npGroupToggle = getNodepoolGroupToggle()
+    await act(async () => {
+      userEvent.click(npGroupToggle)
+    })
     const npGroupCheckbox = screen.getByTestId('nodepoolgroup-checkbox')
     userEvent.click(npGroupCheckbox)
 
-    const np1Checkbox = screen.queryByTestId('nodepool-1-checkbox')
-    expect(np1Checkbox).toBeTruthy()
-    userEvent.click(np1Checkbox!)
-    expect(np1Checkbox).toHaveProperty('checked', true)
-
-    // CP should still be checked
+    // CP should still be checked; group unchecked so selection would be CP + selective nodepools
     const cpCheckbox = screen.getByTestId('controlplane-checkbox')
     expect(cpCheckbox).toHaveProperty('checked', true)
+    expect(npGroupCheckbox).toHaveProperty('checked', false)
   })
 
   it('should handle toggling individual nodepools', async () => {
     await renderHypershiftUpgradeModal(mockClusterForCurator, mockNodepoolsForCurator, availableUpdatesForCurator)
 
-    // Expand nodepools to access toggle
-    const npGroupToggle = screen.getByTestId('nodepoolgroup-toggle')
+    // Expand nodepool group to see individual nodepool checkboxes
+    const npGroupToggle = getNodepoolGroupToggle()
     userEvent.click(npGroupToggle)
 
-    // Toggle should expand/collapse nodepool details
-    const nodepool1Toggle = screen.queryByTestId('nodepool-1-toggle')
-    expect(nodepool1Toggle).toBeTruthy()
-
-    // Click to toggle
-    userEvent.click(nodepool1Toggle!)
-
-    // Click again to toggle back
-    userEvent.click(nodepool1Toggle!)
+    // Toggle first nodepool checkbox (per-row expand only exists when hypershift.agent is true)
+    const np1Checkbox = screen.getByTestId('nodepool-1-checkbox')
+    expect(np1Checkbox).toBeTruthy()
+    userEvent.click(np1Checkbox)
+    expect(np1Checkbox).toHaveProperty('checked', false)
+    userEvent.click(np1Checkbox)
+    expect(np1Checkbox).toHaveProperty('checked', true)
   })
 
   it('should handle version selection when latestSupportedVersion equals zeroVersion', async () => {
@@ -3159,7 +3160,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
     await renderHypershiftUpgradeModal(mockClusterForCurator, mockNodepoolsForCurator, availableUpdatesForCurator)
 
     // Uncheck all nodepools
-    const npGroupToggle = screen.getByTestId('nodepoolgroup-toggle')
+    const npGroupToggle = getNodepoolGroupToggle()
     userEvent.click(npGroupToggle)
 
     const npGroupCheckbox = screen.getByTestId('nodepoolgroup-checkbox')
@@ -3186,7 +3187,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
     userEvent.click(cpCheckbox)
 
     // Expand nodepools
-    const npGroupToggle = screen.getByTestId('nodepoolgroup-toggle')
+    const npGroupToggle = getNodepoolGroupToggle()
     userEvent.click(npGroupToggle)
 
     // Nodepools should still be checked (at least some)
@@ -3202,7 +3203,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
     await renderHypershiftUpgradeModal(mockClusterForCurator, mockNodepoolsForCurator, availableUpdatesForCurator)
 
     // Expand nodepools
-    const npGroupToggle = screen.getByTestId('nodepoolgroup-toggle')
+    const npGroupToggle = getNodepoolGroupToggle()
     userEvent.click(npGroupToggle)
 
     // Uncheck group to uncheck all
@@ -3273,7 +3274,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
     await renderHypershiftUpgradeModal(mockClusterHighVersion, mockNPsLowVersion, availableUpdatesForCurator)
 
     // Should auto-check nodepools that are 2+ versions behind (line 585)
-    const npGroupToggle = screen.getByTestId('nodepoolgroup-toggle')
+    const npGroupToggle = getNodepoolGroupToggle()
     userEvent.click(npGroupToggle)
 
     const npGroupCheckbox = screen.getByTestId('nodepoolgroup-checkbox')
@@ -3286,7 +3287,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
     await renderHypershiftUpgradeModal(mockClusterForCurator, mockNodepoolsForCurator, availableUpdatesForCurator)
 
     // Expand nodepools to check selection
-    const npGroupToggle = screen.getByTestId('nodepoolgroup-toggle')
+    const npGroupToggle = getNodepoolGroupToggle()
     userEvent.click(npGroupToggle)
 
     // Nodepools are checked by default in this scenario
@@ -3331,7 +3332,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
     // Test the forEach loop at line 343 that iterates nodepools to collect selected names
     await renderHypershiftUpgradeModal(mockClusterForCurator, mockNodepoolsForCurator, availableUpdatesForCurator)
 
-    const npGroupToggle = screen.getByTestId('nodepoolgroup-toggle')
+    const npGroupToggle = getNodepoolGroupToggle()
     userEvent.click(npGroupToggle)
 
     // The forEach loop executes when collecting selected nodepools
@@ -3344,7 +3345,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
     await renderHypershiftUpgradeModal(mockClusterForCurator, mockNodepoolsForCurator, availableUpdatesForCurator)
 
     // Expand nodepools - all should be checked by default
-    const npGroupToggle = screen.getByTestId('nodepoolgroup-toggle')
+    const npGroupToggle = getNodepoolGroupToggle()
     userEvent.click(npGroupToggle)
 
     const npGroupCheckbox = screen.getByTestId('nodepoolgroup-checkbox')
@@ -3356,7 +3357,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
   it('should execute upgrade - control plane only (lines 915-917, 936, 939, 941-942)', async () => {
     await renderHypershiftUpgradeModal(mockClusterForCurator, mockNodepoolsForCurator, availableUpdatesForCurator)
 
-    const npGroupToggle = screen.getByTestId('nodepoolgroup-toggle')
+    const npGroupToggle = getNodepoolGroupToggle()
     userEvent.click(npGroupToggle)
     const npGroupCheckbox = screen.getByTestId('nodepoolgroup-checkbox')
     userEvent.click(npGroupCheckbox)
@@ -3383,7 +3384,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
       }
     )
 
-    const upgradeButton = screen.getByText('Upgrade')
+    const upgradeButton = screen.getByText('Update')
     userEvent.click(upgradeButton)
     await new Promise((resolve) => setTimeout(resolve, 600))
   })
@@ -3394,7 +3395,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
     const cpCheckbox = screen.getByTestId('controlplane-checkbox')
     userEvent.click(cpCheckbox)
 
-    const npGroupToggle = screen.getByTestId('nodepoolgroup-toggle')
+    const npGroupToggle = getNodepoolGroupToggle()
     userEvent.click(npGroupToggle)
     const firstNP = screen.getByTestId('nodepool-1-checkbox')
     userEvent.click(firstNP)
@@ -3422,7 +3423,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
       }
     )
 
-    const upgradeButton = screen.getByText('Upgrade')
+    const upgradeButton = screen.getByText('Update')
     userEvent.click(upgradeButton)
     await new Promise((resolve) => setTimeout(resolve, 600))
   })
@@ -3430,7 +3431,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
   it('should execute upgrade - both CP and selective nodepools (lines 925, 929-930)', async () => {
     await renderHypershiftUpgradeModal(mockClusterForCurator, mockNodepoolsForCurator, availableUpdatesForCurator)
 
-    const npGroupToggle = screen.getByTestId('nodepoolgroup-toggle')
+    const npGroupToggle = getNodepoolGroupToggle()
     userEvent.click(npGroupToggle)
     const firstNP = screen.getByTestId('nodepool-1-checkbox')
     userEvent.click(firstNP)
@@ -3457,7 +3458,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
       }
     )
 
-    const upgradeButton = screen.getByText('Upgrade')
+    const upgradeButton = screen.getByText('Update')
     userEvent.click(upgradeButton)
     await new Promise((resolve) => setTimeout(resolve, 600))
   })

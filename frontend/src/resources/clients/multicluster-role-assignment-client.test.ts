@@ -58,14 +58,19 @@ jest.mock('../../shared-recoil', () => ({
   useSharedAtoms: jest.fn(),
 }))
 
-// Mock placement-client module
+// Mock placement-client module.
+// isPlacementForClusterSets uses real logic so getPlacementsForRoleAssignment prefers
+// placements without spec.clusterSets when both cover the same clusters.
 jest.mock('./placement-client', () => ({
   useGetClustersForPlacementMap: jest.fn(),
   useGetPlacementClusters: jest.fn(),
   createForClusters: jest.fn(),
   createForClusterSets: jest.fn(),
   isPlacementForClusterNames: jest.fn(),
-  isPlacementForClusterSets: jest.fn(),
+  isPlacementForClusterSets: jest.fn(
+    (placement: { spec?: { clusterSets?: string[] } }) =>
+      (placement.spec?.clusterSets !== undefined && (placement.spec.clusterSets?.length ?? 0) > 0) === true
+  ),
   doesPlacementContainsClusterName: jest.fn(),
   doesPlacementContainsClusterSet: jest.fn(),
 }))

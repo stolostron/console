@@ -131,8 +131,8 @@ export function BatchChannelSelectModal(props: {
     <BulkActionModal<Cluster>
       open={props.open}
       title={t('bulk.title.selectChannel')}
-      action={t('upgrade.selectChannel.submit')}
-      processing={t('upgrade.selectChannel.submit.processing')}
+      action={t('update.selectChannel.submit')}
+      processing={t('update.selectChannel.submit.processing')}
       items={channelSelectableClusters}
       emptyState={
         <AcmEmptyState
@@ -157,14 +157,14 @@ export function BatchChannelSelectModal(props: {
               isInline
               noClose
               variant={AlertVariant.warning}
-              title={t('upgrade.selectChannel.alert.noChannel')}
+              title={t('update.selectChannel.alert.noChannel')}
             />
           </div>
         ) : undefined
       }
       columns={[
         {
-          header: t('upgrade.table.name'),
+          header: t('update.table.name'),
           sort: 'displayName',
           cell: (cluster) => (
             <>
@@ -178,14 +178,14 @@ export function BatchChannelSelectModal(props: {
           ),
         },
         {
-          header: t('upgrade.table.currentchannel'),
+          header: t('update.table.currentchannel'),
           cell: (item: Cluster) => {
             const currentChannel = item?.distribution?.upgradeInfo?.currentChannel
             return <span>{currentChannel || '-'}</span>
           },
         },
         {
-          header: t('upgrade.table.newchannel'),
+          header: t('update.table.newchannel'),
           cell: (cluster: Cluster) => {
             let availableChannels = cluster.distribution?.upgradeInfo?.availableChannels || []
             const isReadySelectChannels = cluster.distribution?.upgradeInfo?.isReadySelectChannels

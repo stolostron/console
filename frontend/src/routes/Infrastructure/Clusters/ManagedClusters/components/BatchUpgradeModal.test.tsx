@@ -373,13 +373,13 @@ describe('BatchUpgradeModal', () => {
     const mockNockUpgrade1 = nockPatch(clusterCuratorReady1, getPatchUpdate('1.2.9'))
     const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('2.2.6'), undefined, 404)
     const mockNockUpgrade2backup = nockCreate({ ...clusterCuratorReady2, ...getPatchUpdate('2.2.6') })
-    expect(getByText('Upgrade')).toBeTruthy()
-    userEvent.click(getByText('Upgrade'))
+    expect(getByText('Update')).toBeTruthy()
+    userEvent.click(getByText('Update'))
     await act(async () => {
       await waitFor(() => expect(mockNockUpgrade1.isDone()).toBeTruthy())
       await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
       await waitFor(() => expect(mockNockUpgrade2backup.isDone()).toBeTruthy())
-      await waitFor(() => expect(queryByText('Upgrading')).toBeFalsy())
+      await waitFor(() => expect(queryByText('Updating')).toBeFalsy())
       await waitFor(() => expect(isClosed).toBe(true))
     })
 
@@ -402,15 +402,15 @@ describe('BatchUpgradeModal', () => {
     )
     const mockNockUpgrade1 = nockPatch(clusterCuratorReady1, getPatchUpdate('1.2.9'))
     const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('2.2.6'))
-    expect(getByText('Upgrade')).toBeTruthy()
-    userEvent.click(getByText('Upgrade'))
+    expect(getByText('Update')).toBeTruthy()
+    userEvent.click(getByText('Update'))
     await act(async () => {
-      await waitFor(() => expect(queryByText('Upgrading')).toBeTruthy())
-      userEvent.click(getByText('Upgrading')) // do additional click. make sure not calling upgrade again
-      userEvent.click(getByText('Upgrading'))
+      await waitFor(() => expect(queryByText('Updating')).toBeTruthy())
+      userEvent.click(getByText('Updating')) // do additional click. make sure not calling update again
+      userEvent.click(getByText('Updating'))
       await waitFor(() => expect(mockNockUpgrade1.isDone()).toBeTruthy())
       await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
-      await waitFor(() => expect(queryByText('Upgrading')).toBeFalsy(), { timeout: 5000 })
+      await waitFor(() => expect(queryByText('Updating')).toBeFalsy(), { timeout: 5000 })
       await waitFor(() => expect(isClosed).toBe(true))
     })
   })
@@ -446,12 +446,12 @@ describe('BatchUpgradeModal', () => {
     const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('2.2.6'), undefined, 400)
     expect(queryByText('cluster-1-ready1')).toBeTruthy()
     expect(queryByText('cluster-2-ready2')).toBeTruthy()
-    expect(getByText('Upgrade')).toBeTruthy()
-    userEvent.click(getByText('Upgrade'))
-    await waitFor(() => expect(queryByText('Upgrading')).toBeTruthy())
+    expect(getByText('Update')).toBeTruthy()
+    userEvent.click(getByText('Update'))
+    await waitFor(() => expect(queryByText('Updating')).toBeTruthy())
     await waitFor(() => expect(mockNockUpgrade1.isDone()).toBeTruthy())
     await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
-    await waitFor(() => expect(queryByText('Upgrading')).toBeFalsy())
+    await waitFor(() => expect(queryByText('Updating')).toBeFalsy())
     await waitFor(() => expect(queryByText('There were errors processing the requests')).toBeTruthy())
     expect(queryByText('cluster-2-ready2')).toBeTruthy()
     expect(queryByText('Error')).toBeTruthy()
@@ -472,7 +472,7 @@ describe('BatchUpgradeModal', () => {
     )
     // Wait for prometheus nocks to finish
     await waitForNocks([getUpgradeRisksPredictionsNock])
-    expect(getByText('Upgrade')).toBeTruthy()
+    expect(getByText('Update')).toBeTruthy()
     expect(getByText('No risks found')).toBeTruthy()
   })
 
@@ -567,10 +567,10 @@ describe('BatchUpgradeModal', () => {
       await waitForNocks([getUpgradeRisksPredictionsNock])
 
       // Banner should appear because default selected version (4.15.0) is a minor upgrade
-      expect(getByText('Cluster version upgrade risks detected')).toBeTruthy()
+      expect(getByText('Cluster version update risks detected')).toBeTruthy()
       expect(
         getByText(
-          'Clusters with warnings have version-specific risks that may cause upgrade failure. Resolve these risks or choose a different target version.'
+          'Clusters with warnings have version-specific risks that may cause update failure. Resolve these risks or choose a different target version.'
         )
       ).toBeTruthy()
     })
@@ -617,7 +617,7 @@ describe('BatchUpgradeModal', () => {
 
       // Banner should NOT appear for patch upgrade
       await waitFor(() => {
-        expect(queryByText('Cluster version upgrade risks detected')).toBeFalsy()
+        expect(queryByText('Cluster version update risks detected')).toBeFalsy()
       })
     })
 
@@ -745,7 +745,7 @@ describe('BatchUpgradeModal', () => {
 
       // Should show version 4.15.0 in helper text
       await waitFor(() => {
-        expect(getByText('Cluster version upgrade risk detected for 4.15.0', { exact: false })).toBeTruthy()
+        expect(getByText('Cluster version update risk detected for 4.15.0', { exact: false })).toBeTruthy()
       })
     })
 
@@ -792,7 +792,7 @@ describe('BatchUpgradeModal', () => {
 
       // Should show operator risk in popover
       await waitFor(() => {
-        expect(getByText('Cluster version upgrade risk')).toBeTruthy()
+        expect(getByText('Cluster version update risk')).toBeTruthy()
         expect(
           getByText('Kubernetes 1.25 and therefore OpenShift 4.12 remove several APIs', { exact: false })
         ).toBeTruthy()

@@ -138,7 +138,7 @@ export const useFilters = (roles: Role[] = []) =>
           .filter(Boolean)
         return {
           allRoleNames: new Set([...acc.allRoleNames, role.name]),
-          allRoleTitles: new Set([...acc.allRoleTitles, roleTitle]),
+          allRoleTitles: roleTitle ? new Set([...acc.allRoleTitles, roleTitle]) : acc.allRoleTitles,
           allApiGroups: new Set([...acc.allApiGroups, ...apiGroups]),
         }
       },
@@ -149,8 +149,8 @@ export const useFilters = (roles: Role[] = []) =>
       }
     )
 
-    // Combine names and titles, removing duplicates
-    const allUniqueNames = new Set([...flattenedRoles.allRoleNames, ...flattenedRoles.allRoleTitles])
+    // Combine names and titles, removing duplicates and filtering out empty strings
+    const allUniqueNames = new Set([...flattenedRoles.allRoleNames, ...flattenedRoles.allRoleTitles].filter(Boolean))
 
     // Convert to sorted arrays for options
     const nameOptions = Array.from(allUniqueNames)

@@ -9,13 +9,15 @@ import { PlacementClusters } from './model/placement-clusters'
 import { RoleAssignmentToSave } from './model/role-assignment-to-save'
 
 /**
- * Helper to create a mock Placement
+ * Helper to create a mock Placement.
+ * When clusterSetNames is undefined, the placement has no spec.clusterSets (cluster-name/predicate based).
+ * When clusterSetNames is provided, the placement is cluster-set based.
  */
-const createMockPlacement = (name: string, clusterSets: string[] = ['default']): Placement => ({
+const createMockPlacement = (name: string, clusterSetNames?: string[]): Placement => ({
   apiVersion: 'cluster.open-cluster-management.io/v1beta1',
   kind: 'Placement',
   metadata: { name, namespace: MulticlusterRoleAssignmentNamespace },
-  spec: { clusterSets },
+  spec: clusterSetNames !== undefined ? { clusterSets: clusterSetNames } : {},
 })
 
 /**
@@ -383,6 +385,22 @@ export const minimalPlacementCoverClustersTestCases: GetPlacementsTestCase[] = [
       isGlobalScope: false,
     },
     expectedPlacementNames: [],
+  },
+  {
+    description:
+      'should prefer placement without spec.clusterSets over placement with clusterSets when both cover same clusters (e.g. clusters-weekly-and-weekly-managed over cluster-sets-default)',
+    placementClusters: [
+      createPlacementClusters('cluster-sets-default', ['weekly', 'weekly-managed'], ['default']),
+      createPlacementClusters('clusters-weekly-and-weekly-managed', ['weekly', 'weekly-managed'], undefined),
+    ],
+    roleAssignment: {
+      clusterRole: 'admin',
+      clusterNames: ['weekly', 'weekly-managed'],
+      clusterSetNames: [],
+      subject: { name: 'user1', kind: UserKind },
+      isGlobalScope: false,
+    },
+    expectedPlacementNames: ['clusters-weekly-and-weekly-managed'],
   },
 ]
 
@@ -1129,7 +1147,9 @@ export const getClustersSortingTestCases: GetClustersDeduplicationTestCase[] = [
 ]
 
 /**
- * Helper to create a PlacementClusters entry with a specific namespace for testing namespace filtering
+ * Helper to create a PlacementClusters entry with a specific namespace for testing namespace filtering.
+ * When clusterSetNames is undefined, the placement has no spec.clusterSets (cluster-name based).
+ * When clusterSetNames is provided, the placement is cluster-set based.
  */
 export const createPlacementClustersWithNamespace = (
   name: string,
@@ -1141,7 +1161,7 @@ export const createPlacementClustersWithNamespace = (
     apiVersion: 'cluster.open-cluster-management.io/v1beta1',
     kind: 'Placement',
     metadata: { name, namespace },
-    spec: { clusterSets: clusterSetNames ?? ['default'] },
+    spec: clusterSetNames !== undefined ? { clusterSets: clusterSetNames } : {},
   },
   clusters,
   clusterSetNames,

@@ -16,6 +16,7 @@ import { Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
 import { PluginData } from '../lib/PluginDataContext'
 import { isSharedContext, SharedContext } from '../lib/SharedContext'
 import { AcmFeedbackModal } from './AcmFeedbackModal'
+import '../GlobalApplicationStyle.css'
 
 const isPluginDataContext = (e: Extension): e is SharedContext<PluginData> =>
   isSharedContext(e) && e.properties.id === 'mce-data-context'

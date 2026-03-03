@@ -111,7 +111,7 @@ export function BatchUpgradeModal(props: {
               variant="info"
               title={t('Automation templates are configured')}
               message={t(
-                'One or more of the selected clusters have automations that will run before or after the upgrade. Expand the table rows to view the Ansible templates for each cluster.'
+                'One or more of the selected clusters have automations that will run before or after the update. Expand the table rows to view the Ansible templates for each cluster.'
               )}
             />
           </StackItem>
@@ -122,14 +122,14 @@ export function BatchUpgradeModal(props: {
               isInline
               noClose
               variant="warning"
-              title={t('Cluster version upgrade risks detected')}
+              title={t('Cluster version update risks detected')}
               message={t(
-                'Clusters with warnings have version-specific risks that may cause upgrade failure. Resolve these risks or choose a different target version.'
+                'Clusters with warnings have version-specific risks that may cause update failure. Resolve these risks or choose a different target version.'
               )}
             />
           </StackItem>
         )}
-        <StackItem>{t('bulk.message.upgrade')}</StackItem>
+        <StackItem>{t('bulk.message.update')}</StackItem>
       </Stack>
     )
   }, [clusterCurators, upgradeableClusters, selectVersions, t])
@@ -170,14 +170,14 @@ export function BatchUpgradeModal(props: {
   return (
     <BulkActionModal<Cluster>
       open={open}
-      title={t('bulk.title.upgrade')}
-      action={t('upgrade.submit')}
-      processing={t('upgrade.submit.processing')}
+      title={t('bulk.title.update')}
+      action={t('update.submit')}
+      processing={t('update.submit.processing')}
       items={upgradeableClusters}
       emptyState={
         <AcmEmptyState
           title={t('No clusters available')}
-          message={t('None of the selected clusters can be upgraded.')}
+          message={t('None of the selected clusters can be updated.')}
         />
       }
       close={() => {
@@ -187,7 +187,7 @@ export function BatchUpgradeModal(props: {
       description={description}
       columns={[
         {
-          header: t('upgrade.table.name'),
+          header: t('update.table.name'),
           sort: 'displayName',
           cell: (cluster) => (
             <>
@@ -225,13 +225,13 @@ export function BatchUpgradeModal(props: {
 
             return (
               <Popover
-                headerContent={t('Upgrade risks')}
+                headerContent={t('Update risks')}
                 bodyContent={
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     {hasOperatorRisk && (
                       <div>
                         <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
-                          {t('Cluster version upgrade risk')}
+                          {t('Cluster version update risk')}
                         </div>
                         <div>{upgradeableCondition.message}</div>
                       </div>
@@ -248,7 +248,7 @@ export function BatchUpgradeModal(props: {
                           target="_blank"
                           style={{ padding: 0, fontSize: '14px' }}
                         >
-                          {t('upgrade.table.update.risk.link', [insightsRiskCount])}
+                          {t('update.table.update.risk.link', [insightsRiskCount])}
                           <ExternalLinkAltIcon style={{ marginLeft: '8px' }} />
                         </AcmButton>
                       </div>
@@ -257,21 +257,21 @@ export function BatchUpgradeModal(props: {
                 }
               >
                 <Button variant="link" isInline style={{ padding: 0, fontSize: '14px' }}>
-                  {t('upgrade.table.update.risk.link', [totalRiskCount])}
+                  {t('update.table.update.risk.link', [totalRiskCount])}
                 </Button>
               </Popover>
             )
           },
         },
         {
-          header: t('upgrade.table.currentversion'),
+          header: t('update.table.currentversion'),
           cell: (item: Cluster) => {
             const currentVersion = item?.distribution?.upgradeInfo?.currentVersion || ''
             return <span>{currentVersion}</span>
           },
         },
         {
-          header: t('upgrade.table.newversion'),
+          header: t('update.table.newversion'),
           cell: (cluster: Cluster) => {
             const availableUpdates = (cluster.distribution?.upgradeInfo?.availableUpdates ?? []).sort(compareVersion)
             const hasAvailableUpgrades = availableUpdates && availableUpdates.length > 0
@@ -332,7 +332,7 @@ export function BatchUpgradeModal(props: {
                             color: 'var(--pf-v5-global--warning-color--100)',
                           }}
                         />
-                        {t('Cluster version upgrade risk detected for {{version}}', { version: selectedVersion })} -{' '}
+                        {t('Cluster version update risk detected for {{version}}', { version: selectedVersion })} -{' '}
                         <ReleaseNotesLink version={selectedVersion} />
                       </FormHelperText>
                     ) : (

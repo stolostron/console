@@ -74,7 +74,10 @@ function getSecondaryLabel(node: { name: any }) {
 
 const getStatus = (node: {
   type: any
-  specs?: { clusterStatus: { hasWarning: any; hasFailure: any; isDisabled: any; hasViolations: any; isOffline: any } }
+  specs?: {
+    pulse?: string
+    clusterStatus: { hasWarning: any; hasFailure: any; isDisabled: any; hasViolations: any; isOffline: any }
+  }
 }) => {
   const { type, specs } = node
 
@@ -98,7 +101,7 @@ const getStatus = (node: {
     }
   }
 
-  const pulse = get(node, 'specs.pulse', '')
+  const pulse = node.specs?.pulse ?? ''
 
   switch (pulse) {
     case 'red':

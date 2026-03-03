@@ -168,7 +168,7 @@ export function ClusterOverviewPageContent() {
           {cluster?.distribution?.upgradeInfo?.isSelectingChannel ? (
             <AcmInlineStatus
               type={StatusType.progress}
-              status={t('upgrade.selecting.channel', {
+              status={t('update.selecting.channel', {
                 channel: cluster?.distribution?.upgradeInfo.desiredChannel,
               })}
             ></AcmInlineStatus>

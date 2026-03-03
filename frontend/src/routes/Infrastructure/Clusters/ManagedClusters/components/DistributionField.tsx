@@ -214,12 +214,12 @@ export function DistributionField(props: {
     let statusType = StatusType.progress
     let statusTitle =
       props.cluster?.distribution?.upgradeInfo?.latestJob?.step === CuratorCondition.posthook
-        ? t('upgrade.ansible.posthookjob.title')
-        : t('upgrade.ansible.prehookjob.title')
+        ? t('update.ansible.posthookjob.title')
+        : t('update.ansible.prehookjob.title')
     let statusMessage: ReactNode | string =
       props.cluster?.distribution?.upgradeInfo?.latestJob?.step === CuratorCondition.posthook
-        ? t('upgrade.ansible.posthook')
-        : t('upgrade.ansible.prehook')
+        ? t('update.ansible.posthook')
+        : t('update.ansible.prehook')
 
     const jobUrl =
       props.cluster?.distribution?.upgradeInfo?.latestJob?.step === CuratorCondition.posthook
@@ -245,18 +245,18 @@ export function DistributionField(props: {
     if (props.cluster?.distribution?.upgradeInfo?.hookFailed) {
       statusType = StatusType.warning
       if (props.cluster?.distribution?.upgradeInfo?.prehooks?.failed) {
-        statusTitle = t('upgrade.ansible.prehookjob.title')
+        statusTitle = t('update.ansible.prehookjob.title')
         statusMessage = (
           <Fragment>
-            {t('upgrade.ansible.prehook.failure')}
+            {t('update.ansible.prehook.failure')}
             <div>{props.cluster?.distribution?.upgradeInfo?.latestJob?.conditionMessage}</div>
           </Fragment>
         )
       } else {
-        statusTitle = t('upgrade.ansible.posthookjob.title')
+        statusTitle = t('update.ansible.posthookjob.title')
         statusMessage = (
           <Fragment>
-            {t('upgrade.ansible.posthook.failure')}
+            {t('update.ansible.posthook.failure')}
             <div>{props.cluster?.distribution?.upgradeInfo?.latestJob?.conditionMessage}</div>
           </Fragment>
         )
@@ -287,18 +287,18 @@ export function DistributionField(props: {
         <div>{displayVersion}</div>
         <AcmInlineStatus
           type={StatusType.danger}
-          status={t('upgrade.upgradefailed')}
+          status={t('update.updatefailed')}
           popover={
             props.cluster?.consoleURL
               ? {
-                  headerContent: t('upgrade.upgradefailed'),
-                  bodyContent: t('upgrade.upgradefailed.message', {
+                  headerContent: t('update.updatefailed'),
+                  bodyContent: t('update.updatefailed.message', {
                     clusterName: props.cluster?.name,
                     version: props.cluster?.distribution.upgradeInfo.desiredVersion,
                   }),
                   footerContent: (
                     <a href={`${props.cluster?.consoleURL}/settings/cluster`} target="_blank" rel="noreferrer">
-                      {t('upgrade.upgrading.link')} <ExternalLinkAltIcon />
+                      {t('update.updating.link')} <ExternalLinkAltIcon />
                     </a>
                   ),
                 }
@@ -318,29 +318,29 @@ export function DistributionField(props: {
           type={StatusType.progress}
           status={
             versionNum
-              ? t('upgrade.upgrading.version', {
+              ? t('update.updating.version', {
                   version: versionNum,
                 }) +
                 (props.cluster.hypershift?.upgradePercentage ? ' ' + props.cluster.hypershift?.upgradePercentage : '')
-              : t('upgrade.upgrading')
+              : t('update.updating')
           }
           popover={
             props.cluster?.consoleURL
               ? {
-                  headerContent: t('upgrade.upgrading'),
+                  headerContent: t('update.updating'),
                   bodyContent: props.cluster.hypershift?.upgradePercentage
-                    ? t('upgrade.upgrading.message.percentage', {
+                    ? t('update.updating.message.percentage', {
                         clusterName: props.cluster?.name,
                         version: versionNum,
                         percentage: props.cluster.hypershift?.upgradePercentage,
                       })
-                    : t('upgrade.upgrading.message', {
+                    : t('update.updating.message', {
                         clusterName: props.cluster?.name,
                         version: versionNum,
                       }),
                   footerContent: (
                     <a href={`${props.cluster?.consoleURL}/settings/cluster`} target="_blank" rel="noreferrer">
-                      {t('upgrade.upgrading.link')} <ExternalLinkAltIcon />
+                      {t('update.updating.link')} <ExternalLinkAltIcon />
                     </a>
                   ),
                 }
@@ -357,7 +357,7 @@ export function DistributionField(props: {
         <AcmInlineStatus
           type={StatusType.progress}
           status={
-            t('upgrade.upgrading.version', {
+            t('update.updating.version', {
               version: props.cluster?.distribution.upgradeInfo.desiredVersion,
             }) +
             (props.cluster?.distribution.upgradeInfo.upgradePercentage
@@ -367,20 +367,20 @@ export function DistributionField(props: {
           popover={
             props.cluster?.consoleURL
               ? {
-                  headerContent: t('upgrade.upgrading'),
+                  headerContent: t('update.updating'),
                   bodyContent: props.cluster?.distribution.upgradeInfo.upgradePercentage
-                    ? t('upgrade.upgrading.message.percentage', {
+                    ? t('update.updating.message.percentage', {
                         clusterName: props.cluster?.name,
                         version: props.cluster?.distribution.upgradeInfo.desiredVersion,
                         percentage: props.cluster?.distribution.upgradeInfo.upgradePercentage,
                       })
-                    : t('upgrade.upgrading.message', {
+                    : t('update.updating.message', {
                         clusterName: props.cluster?.name,
                         version: props.cluster?.distribution.upgradeInfo.desiredVersion,
                       }),
                   footerContent: (
                     <a href={`${props.cluster?.consoleURL}/settings/cluster`} target="_blank" rel="noreferrer">
-                      {t('upgrade.upgrading.link')} <ExternalLinkAltIcon />
+                      {t('update.updating.link')} <ExternalLinkAltIcon />
                     </a>
                   ),
                 }
@@ -406,14 +406,14 @@ export function DistributionField(props: {
         <div>{displayVersion}</div>
         <AcmInlineStatus
           type={StatusType.danger}
-          status={t('upgrade.upgradefailed')}
+          status={t('update.updatefailed')}
           popover={{
-            headerContent: t('upgrade.upgradefailed'),
-            bodyContent: t('Upgrade posthook was not run.'),
+            headerContent: t('update.updatefailed'),
+            bodyContent: t('Update posthook was not run.'),
             footerContent: (
               <Link to={targetLink} target={'_blank'}>
                 <Button variant="link" icon={<ExternalLinkAltIcon />} iconPosition="right" isInline>
-                  {t('upgrade.upgrading.link')}
+                  {t('update.updating.link')}
                 </Button>
               </Link>
             ),
@@ -438,7 +438,7 @@ export function DistributionField(props: {
               rbacPatch(ClusterCuratorDefinition, props.cluster?.namespace),
             ]}
           >
-            {t('upgrade.available')}
+            {t('update.available')}
           </RbacButton>
           <BatchUpgradeModal clusters={[props.cluster]} open={open} close={toggle} />
         </span>
@@ -467,7 +467,7 @@ export function DistributionField(props: {
               rbacPatch(ClusterCuratorDefinition, props.cluster?.namespace),
             ]}
           >
-            {t('upgrade.available')}
+            {t('update.available')}
           </RbacButton>
 
           <HypershiftUpgradeModal
