@@ -141,7 +141,7 @@ See [ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ### Chrome
 
-To develop with self signed certificates go to `chrome://flags/` and enable:
+To develop with self-signed certificates go to `chrome://flags/` and enable:
 
 - Allow invalid certificates for resources loaded from localhost.
 - Insecure origins treated as secure.

@@ -11,7 +11,7 @@ For a quick-start guide, see the [Running section in README.md](../README.md#run
 
 From the root of the `console` repository, make sure your kubecontext is set to a hub cluster, then run:
 
-```
+```sh
 npm run setup
 npm run plugins
 ```
@@ -24,7 +24,7 @@ The console will be running at http://localhost:9000 (or the value of `CONSOLE_P
 
 If you are running [kubevirt-plugin](https://github.com/kubevirt-ui/kubevirt-plugin), [odf-console](https://github.com/red-hat-storage/odf-console), or [gitops-plugin](https://github.com/redhat-developer/gitops-console-plugin), you can have them loaded into the OpenShift Console as well by specifying the port they are served on with the `KUBEVIRT_PORT`, `ODF_PORT`, or `GITOPS_PORT` environment variables, respectively.
 
-```
+```sh
 KUBEVIRT_PORT=9001 npm run plugins
 ```
 
@@ -32,7 +32,7 @@ KUBEVIRT_PORT=9001 npm run plugins
 
 To specify the version of OpenShift Console to run, set the `CONSOLE_VERSION` environment variable.
 
-```
+```sh
 CONSOLE_VERSION=4.19 npm run plugins
 ```
 
@@ -40,7 +40,7 @@ CONSOLE_VERSION=4.19 npm run plugins
 
 If you need to test against a locally-built OpenShift Console (instead of the container image), use:
 
-```
+```sh
 npm run setup
 npm run plugins-dev
 ```
@@ -51,7 +51,7 @@ This starts the backend server and frontend webpack development server, but does
 
 Clone and build the [OCP Console](https://github.com/openshift/console) repository. Ensure that its [dependencies](https://github.com/openshift/console#dependencies) are met in your local environment.
 
-```
+```sh
 git clone git@github.com:openshift/console.git
 cd console
 ./build.sh
@@ -59,7 +59,7 @@ cd console
 
 Start the OCP Console bridge with the ACM and MCE plugins registered:
 
-```
+```sh
 source ./contrib/oc-environment.sh
 ./bin/bridge \
   -plugins mce=http://localhost:3001 \
@@ -71,13 +71,13 @@ The console will be running at http://localhost:9000.
 
 Bridge variables can also be passed as environment variables:
 
-```
+```sh
 BRIDGE_PLUGIN_PROXY='{"services":[{"consoleAPIPath":"/api/proxy/plugin/mce/console/","endpoint":"https://localhost:4000","authorize":true},{"consoleAPIPath":"/api/proxy/plugin/acm/console/","endpoint":"https://localhost:4000","authorize":true}]}'
 ```
 
 **Note:** With recent post-4.10 builds, you need to run OpenShift Console with authentication for authorization to work with the proxied services. Follow [these instructions](https://github.com/openshift/console#openshift-with-authentication). Alternatively, you can revert a commit that regressed the ability to use proxies that require authorization when running without authentication and continue with the instructions above:
 
-```
+```sh
 git revert 1230920afbcd7cbc1d2f0c6b1e48744c72eb60be -m 1 -n
 ```
 
