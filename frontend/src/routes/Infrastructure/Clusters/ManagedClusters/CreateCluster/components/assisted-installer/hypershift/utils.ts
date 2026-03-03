@@ -1,14 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { TFunction } from 'i18next'
 import { FieldName } from '../types'
-import { getClusterImageSetFullVersion } from '../../../../../../../../resources'
+import { getClusterImageSetVersionWithArch } from '../../../../../../../../resources'
 
 export const getClusterImageSet = (clusterImageSets: any[], versionName = '') =>
   clusterImageSets.find((clusterImageSet) => clusterImageSet.metadata?.name == versionName)
 
 export const getClusterImageVersion = (clusterImageSets: any[], versionName = '') => {
   const clusterImage = getClusterImageSet(clusterImageSets, versionName)
-  return clusterImage ? getClusterImageSetFullVersion(clusterImage) ?? versionName : versionName
+  return clusterImage ? getClusterImageSetVersionWithArch(clusterImage) ?? versionName : versionName
 }
 
 export const getDefaultNetworkType = (

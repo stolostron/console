@@ -67,7 +67,7 @@ export function getClusterImageSetVersion(clusterImageSet: ClusterImageSet) {
   )
 }
 
-export function getClusterImageSetFullVersion(clusterImageSet: ClusterImageSet) {
+export function getClusterImageSetVersionWithArch(clusterImageSet: ClusterImageSet) {
   const { metadata, spec } = clusterImageSet
   const { name, labels } = metadata
   const { releaseTag } = labels ?? {}
