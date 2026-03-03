@@ -48,12 +48,9 @@ export const getVersionFromReleaseString = (value = '') => {
 
 export function getChannelFromVersion(version?: string, stream = 'fast') {
   if (version) {
-    // Extract major.minor (e.g., "4.20" from "4.20.8")
-    const lastDotIndex = version.lastIndexOf('.')
-    if (lastDotIndex > 0) {
-      const majorMinor = version.substring(0, lastDotIndex)
-      return `${stream}-${majorMinor}`
-    }
+    // Extract major.minor (e.g., "4.20" from "4.20.8" or "4.20")
+    const [major, minor] = version.split('.')
+    if (major && minor) return `${stream}-${major}.${minor}`
   }
   return undefined
 }

@@ -57,13 +57,12 @@ const filterOCPImages = (loadOCPImages, hypershiftSupportedVersions) => {
     ...originalResult,
     query: async () => {
       const images = await originalResult.query()
-      return images.filter((image) =>
-        hypershiftSupportedVersions.some(
-          (supportedVersion) =>
-            getClusterImageSetVersion(image).startsWith(`${supportedVersion}.`) ||
-            getClusterImageSetVersion(image).startsWith(`${supportedVersion}-`)
+      return images.filter((image) => {
+        const version = getClusterImageSetVersion(image) ?? ''
+        return hypershiftSupportedVersions.some(
+          (supportedVersion) => version.startsWith(`${supportedVersion}.`) || version.startsWith(`${supportedVersion}-`)
         )
-      )
+      })
     },
   }
 }

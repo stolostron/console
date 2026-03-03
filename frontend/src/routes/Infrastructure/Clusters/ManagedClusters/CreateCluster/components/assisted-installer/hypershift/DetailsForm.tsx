@@ -155,15 +155,14 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
       ({ metadata }) => metadata.name === formikValues.openshiftVersion
     )
 
+    const selectedVersion = selectedClusterImage ? getClusterImageSetVersion(selectedClusterImage) : undefined
+
     const values = {
       ...formikValues,
       managedClusterSet: control.active.managedClusterSet,
       additionalLabels: control.active.additionalLabels,
-      releaseImage: selectedClusterImage?.spec?.releaseImage,
-      channel: getChannelFromVersion(
-        selectedClusterImage ? getClusterImageSetVersion(selectedClusterImage) : undefined,
-        'fast'
-      ),
+      releaseImage: selectedClusterImage?.spec?.releaseImage ?? formikValues.releaseImage,
+      channel: getChannelFromVersion(selectedVersion, 'fast') ?? formikValues.channel,
     }
     if (!isEqual(values, control.active)) {
       if (!initRender || control.active.name === '') {
