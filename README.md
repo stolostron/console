@@ -32,7 +32,7 @@ Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
 
 The same codebase is used to build images for **Red Hat Advanced Cluster Management for Kubernetes** (from `release-*` branches) and **multicluster engine for Kubernetes** (from `backplane-*` branches). The build system fast-forwards between branches to keep the content in sync. Pull requests should only be opened against the first branch in each line listed below. The arrow represents an automatic fast-forwarding of commits from one branch to the next.
 
-```
+```text
 main → release-2.17 → backplane-2.17
 release-2.16 → backplane-2.11
 release-2.15 → backplane-2.10
@@ -68,7 +68,7 @@ The recommended way to run the console for development is as OpenShift Console d
 
 2. Install dependencies
 
-    ```
+    ```sh
     npm ci
     ```
 
@@ -78,7 +78,7 @@ The recommended way to run the console for development is as OpenShift Console d
     - to be connected to an OpenShift 4.x cluster
     - to have Red Hat Advanced Cluster Management or multicluster engine for Kubernetes installed on the cluster
 
-    ```
+    ```sh
     npm run setup
     ```
 
@@ -86,7 +86,7 @@ The recommended way to run the console for development is as OpenShift Console d
 
 4. Start the console plugins
 
-    ```
+    ```sh
     npm run plugins
     ```
 
@@ -102,7 +102,7 @@ CONSOLE_VERSION=4.21 npm run plugins
 
 If you are running other OpenShift Console plugins locally (e.g. [kubevirt-plugin](https://github.com/kubevirt-ui/kubevirt-plugin), [odf-console](https://github.com/red-hat-storage/odf-console), or [gitops-plugin](https://github.com/redhat-developer/gitops-console-plugin)), you can have them loaded into the OpenShift Console as well by specifying the port they are served on:
 
-```
+```sh
 KUBEVIRT_PORT=9001 npm run plugins
 ```
 
@@ -114,7 +114,7 @@ The `npm start` command runs a standalone development console that **does not** 
 
 Use this mode for rapid iteration on features that don't depend on OpenShift Console APIs, but **always verify your work with `npm run plugins` before submitting**.
 
-```
+```sh
 npm run setup   # if not already done
 npm start
 ```
@@ -183,7 +183,7 @@ It is possible to enable/disable certain features by changing `spec.overrides.co
 
 When running `npm run plugins` (or `npm run ocp-console`) on a Mac with an Apple Silicon chip, the OpenShift Console container may crash immediately with an error like:
 
-```
+```text
 runtime: lfstack.push invalid packing: node=0xffff812aec40 cnt=0x1 packed=0xffff812aec400001 -> node=0xffffffff812aec40
 fatal error: lfstack.push
 ```
@@ -198,7 +198,7 @@ This is caused by incompatibility between the Rosetta x86 emulation layer in the
 
 After executing the `npm start` command (either at the root level of the project or at `./frontend` folder) an error on `frontend` project is produced like
 
-```
+```text
 [start:frontend] [webpack-cli] Failed to load 'console/frontend/webpack.config.ts' config
 [start:frontend] [webpack-cli] Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'console/frontend/src/lib/supportedLanguages' imported from console/frontend/webpack.config.ts
 ```
@@ -209,7 +209,7 @@ This is due to wrong node/npm set of versions. See [Prerequisites section](#prer
 
 After executing the `npm start` command (either at the root level of the project or at `./backend` folder) an error on `backend` project is produced like
 
-```
+```text
 [start:backend] ERROR:Error reading service account token
 [start:backend] ERROR:process exit, code:1
 [start:backend] [nodemon] app crashed - waiting for file changes before starting...
@@ -223,7 +223,7 @@ The application starts up apparently normally but the browser produces an error 
 
 In the logs there are errors like
 
-```
+```text
 [start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/username to https://localhost:4000/ [EPROTO]
 [start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/login to https://localhost:4000/ [EPROTO]
 ```
