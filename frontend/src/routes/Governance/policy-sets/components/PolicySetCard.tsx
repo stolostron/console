@@ -35,39 +35,59 @@ export default function PolicySetCard(props: {
   setSelectedCardID: React.Dispatch<React.SetStateAction<string>>
   canEditPolicySet: boolean
   canDeletePolicySet: boolean
+  cardIdActionMenuOpen: string | undefined
+  setCardIdActionMenuOpen: (cardID: string | undefined) => void
 }) {
-  const { policySet, selectedCardID, setSelectedCardID, canEditPolicySet, canDeletePolicySet } = props
+  const {
+    policySet,
+    selectedCardID,
+    setSelectedCardID,
+    canEditPolicySet,
+    canDeletePolicySet,
+    cardIdActionMenuOpen,
+    setCardIdActionMenuOpen,
+  } = props
   const { t } = useTranslation()
   const { setDrawerContext } = useContext(AcmDrawerContext)
   const [modal, setModal] = useState<ReactNode | undefined>()
   const navigate = useNavigate()
   const cardID = `policyset-${policySet.metadata.namespace}-${policySet.metadata.name}`
 
-  function onClick(cardId: string) {
-    setDrawerContext({
-      isExpanded: true,
-      onCloseClick: () => {
-        setDrawerContext(undefined)
-        setSelectedCardID('')
-      },
-      title: (
-        <Stack>
-          {policySet.metadata.name}
-          <div style={{ fontSize: 'smaller', opacity: 0.6, fontWeight: 'normal' }}>
-            {`${t('Namespace')}: ${policySet.metadata.namespace}`}
-          </div>
-        </Stack>
-      ),
-      panelContent: <PolicySetDetailSidebar policySet={policySet} />,
-      panelContentProps: { defaultSize: '40%' },
-      isInline: true,
-      isResizable: true,
-    })
-    // Introduce a delay (400ms) until scroll to selected card to wait for sidebar to transition.
-    setTimeout(() => {
-      const cardElement = document.querySelector(`#${cardId}`)
-      cardElement?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' })
-    }, 400)
+  const openDetails = (cardId: string) => {
+    if (cardId) {
+      setDrawerContext({
+        isExpanded: true,
+        onCloseClick: () => {
+          setDrawerContext(undefined)
+          setSelectedCardID('')
+        },
+        title: (
+          <Stack>
+            {policySet.metadata.name}
+            <div style={{ fontSize: 'smaller', opacity: 0.6, fontWeight: 'normal' }}>
+              {`${t('Namespace')}: ${policySet.metadata.namespace}`}
+            </div>
+          </Stack>
+        ),
+        panelContent: <PolicySetDetailSidebar policySet={policySet} />,
+        panelContentProps: { defaultSize: '40%' },
+        isInline: true,
+        isResizable: true,
+      })
+      // Introduce a delay (400ms) until scroll to selected card to wait for sidebar to transition.
+      setTimeout(() => {
+        const cardElement = document.querySelector(`#${cardId}`)
+        cardElement?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' })
+      }, 400)
+    } else {
+      setDrawerContext(undefined)
+    }
+  }
+
+  const onSelect = (cardId: string) => {
+    const newSelectedCard = cardId === selectedCardID ? '' : cardId
+    setSelectedCardID(newSelectedCard)
+    openDetails(newSelectedCard)
   }
 
   return (
@@ -75,28 +95,25 @@ export default function PolicySetCard(props: {
       {modal !== undefined && modal}
       <Card
         isFullHeight
+        isClickable
+        isSelectable
+        isClicked={selectedCardID === cardID}
         isSelected={selectedCardID === cardID}
         id={cardID}
         key={cardID}
-        style={{ transition: 'box-shadow 0.25s', cursor: 'pointer' }}
-        onClick={(event) => {
-          const newSelectedCard = cardID === selectedCardID ? '' : cardID
-          setSelectedCardID(newSelectedCard)
-          if (!event.currentTarget.contains(event.target as Node)) {
-            return
-          }
-          onClick(cardID)
-        }}
       >
         <CardHeader
+          selectableActions={{
+            selectableActionId: cardID,
+            selectableActionAriaLabelledby: cardID,
+            name: cardID,
+            hasNoOffset: true,
+            isHidden: true,
+          }}
           actions={{
             actions: (
               <PolicyCardDropdown
-                onView={() => {
-                  const newSelectedCard = cardID === selectedCardID ? '' : cardID
-                  setSelectedCardID(newSelectedCard)
-                  onClick(cardID)
-                }}
+                onView={() => onSelect(cardID)}
                 onEdit={
                   canEditPolicySet
                     ? () => {
@@ -123,16 +140,20 @@ export default function PolicySetCard(props: {
                       }
                     : undefined
                 }
+                isOpen={cardIdActionMenuOpen === cardID}
+                onOpenChange={(isOpen) => setCardIdActionMenuOpen(isOpen ? cardID : undefined)}
               />
             ),
-            hasNoOffset: false,
+            hasNoOffset: true,
             className: undefined,
           }}
-          isToggleRightAligned={true}
+          isToggleRightAligned
         >
           <CardTitle>
             <Stack>
-              {policySet.metadata.name}
+              <Button variant="link" isInline onClick={() => onSelect(cardID)}>
+                {policySet.metadata.name}
+              </Button>
               <div style={{ fontSize: 'smaller', opacity: 0.6, fontWeight: 'normal' }}>
                 {t('Namespace: {{namespace}}', { namespace: policySet.metadata.namespace })}
               </div>
