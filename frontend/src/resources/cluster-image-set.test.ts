@@ -103,7 +103,7 @@ describe('getClusterImageSetVersion', () => {
   })
 })
 
-describe('getClusterImageSetFullVersion', () => {
+describe('getClusterImageSetVersionWithArch', () => {
   it('extracts full version with suffix from releaseTag label', () => {
     const cis = makeClusterImageSet({
       metadata: {
