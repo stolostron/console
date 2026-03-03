@@ -3,7 +3,6 @@
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import jsYaml from 'js-yaml'
 import _ from 'lodash'
-import { gte, lt } from 'semver'
 import { AutomationProviderHint } from '../../../../../../components/AutomationProviderHint.tsx'
 import {
   getCIDRValidator,
@@ -128,7 +127,7 @@ export const setAvailableOCPImages = (provider, control, result) => {
               }
               break
             case 'kubevirt':
-              if (!gte(version, '4.14.0')) {
+              if (!versionGreater(version, 4, 13)) {
                 // Has to be 4.14 or greater
                 return
               }
@@ -382,7 +381,7 @@ export const onImageChange = (control, controlData) => {
   if (networkDefault) {
     const { setActive } = networkDefault
     const version = getImageSetVersion(control)
-    if (!version || gte(version, '4.15.0')) {
+    if (!version || versionGreater(version, 4, 14)) {
       // assume OCP 4.15+ if version not available
       networkDefault.type = 'text'
       networkDefault.active = 'OVNKubernetes'
@@ -390,7 +389,7 @@ export const onImageChange = (control, controlData) => {
     } else {
       networkDefault.type = 'singleselect'
       networkDefault.disabled = false
-      if (!version || gte(version, '4.12.0')) {
+      if (!version || versionGreater(version, 4, 11)) {
         setActive('OVNKubernetes')
       } else {
         setActive('OpenShiftSDN')
@@ -803,6 +802,12 @@ export const architectureData = (t) => {
 
 export const getName = ({ data }) => data.root.ai?.name ?? data.root.name
 
+const versionRegex = /([\d]{1,5})\.([\d]{1,5})\.([\d]{1,5})/
+function versionGreater(version, x, y) {
+  const matches = version.match(versionRegex)
+  return matches && Number.parseInt(matches[1], 10) >= x && Number.parseInt(matches[2], 10) > y
+}
+
 const getImageSetVersion = (control) => {
   return control.active ? control?.availableMap?.[control.active]?.replacements?.releaseImageVersion : undefined
 }
@@ -812,7 +817,7 @@ export const isHidden_lt_OCP48 = (control, controlData) => {
   if (singleNodeFeatureFlag && singleNodeFeatureFlag.active) {
     const version = getImageSetVersion(getControlByID(controlData, 'imageSet'))
     if (version) {
-      return lt(version, '4.8.0')
+      return !versionGreater(version, 4, 7)
     }
   }
   return false // assume OCP version is 4.8 or higher
@@ -821,7 +826,7 @@ export const isHidden_lt_OCP48 = (control, controlData) => {
 export const isHidden_lt_OCP47 = (control, controlData) => {
   const version = getImageSetVersion(getControlByID(controlData, 'imageSet'))
   if (version) {
-    return lt(version, '4.7.0')
+    return !versionGreater(version, 4, 6)
   }
   return false // assume OCP version is 4.7 or higher
 }
