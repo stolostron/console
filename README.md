@@ -94,10 +94,10 @@ The recommended way to run the console for development is as OpenShift Console d
 
 ### Options
 
-To specify the version of OpenShift Console to run:
+The default OpenShift Console version is the oldest officially supported by the current release, as defined by `CONSOLE_VERSION` in [start-ocp-console.sh](start-ocp-console.sh). To override it:
 
-```
-CONSOLE_VERSION=4.19 npm run plugins
+```sh
+CONSOLE_VERSION=4.21 npm run plugins
 ```
 
 If you are running other OpenShift Console plugins locally (e.g. [kubevirt-plugin](https://github.com/kubevirt-ui/kubevirt-plugin), [odf-console](https://github.com/red-hat-storage/odf-console), or [gitops-plugin](https://github.com/redhat-developer/gitops-console-plugin)), you can have them loaded into the OpenShift Console as well by specifying the port they are served on:

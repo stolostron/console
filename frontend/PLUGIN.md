@@ -30,10 +30,10 @@ KUBEVIRT_PORT=9001 npm run plugins
 
 ### Specifying OpenShift Console version
 
-To specify the version of OpenShift Console to run, set the `CONSOLE_VERSION` environment variable.
+The default OpenShift Console version is the oldest officially supported by the current release, as defined by `CONSOLE_VERSION` in [start-ocp-console.sh](../start-ocp-console.sh). To override it, set the `CONSOLE_VERSION` environment variable.
 
 ```sh
-CONSOLE_VERSION=4.19 npm run plugins
+CONSOLE_VERSION=4.21 npm run plugins
 ```
 
 ## Running against a local development build of OCP Console
