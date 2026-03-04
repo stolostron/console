@@ -100,7 +100,6 @@ export default function ApplicationDetailsPage() {
 
   const { t } = useTranslation()
   const {
-    ansibleJobState,
     applicationsState,
     channelsState,
     placementRulesState,
@@ -141,7 +140,6 @@ export default function ApplicationDetailsPage() {
 
   const applicationsGetter = useRecoilValueGetter(applicationsState)
   const servicesGetter = useRecoilValueGetter(servicesState)
-  const ansibleJobGetter = useRecoilValueGetter(ansibleJobState)
   const channelsGetter = useRecoilValueGetter(channelsState)
   const placementsGetter = useRecoilValueGetter(placementsState)
   const placementRulesGetter = useRecoilValueGetter(placementRulesState)
@@ -152,7 +150,6 @@ export default function ApplicationDetailsPage() {
   const getRecoilStates = useCallback(
     () => ({
       applications: applicationsGetter(),
-      ansibleJob: ansibleJobGetter(),
       channels: channelsGetter(),
       placements: placementsGetter(),
       placementRules: placementRulesGetter(),
@@ -162,7 +159,6 @@ export default function ApplicationDetailsPage() {
       services: servicesGetter(),
     }),
     [
-      ansibleJobGetter,
       applicationsGetter,
       channelsGetter,
       placementDecisionsGetter,

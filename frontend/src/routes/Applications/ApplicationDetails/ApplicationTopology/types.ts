@@ -272,7 +272,6 @@ export interface RecoilStates {
   applications: Application[]
   placementDecisions?: PlacementDecision[]
   placements: Placement[]
-  ansibleJob: AnsibleJob[]
   subscriptions?: Subscription[]
   channels?: Channel[]
   placementRules?: PlacementRule[]
