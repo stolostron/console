@@ -24,8 +24,8 @@ const StyledEdge: React.FunctionComponent<EdgeProps> = ({ element, dragging }) =
   const startPoint = element.getStartPoint()
   const endPoint = element.getEndPoint()
   const isPending =
-    element.getTarget().getData().status === NodeStatus.default ||
-    element.getSource().getData().status === NodeStatus.default
+    element.getTarget().getData()?.status === NodeStatus.default ||
+    element.getSource().getData()?.status === NodeStatus.default
   // Create path: straight line if horizontally aligned, otherwise curved
   const horizontalDistance = Math.abs(endPoint.y - startPoint.y)
   let d: string

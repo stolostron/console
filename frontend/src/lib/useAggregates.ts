@@ -96,6 +96,9 @@ export function useAggregate(
       storedResponse = getWithExpiry(STATUSESKEY)
       defaultResponse = defaultStatusResponse
       break
+    case SupportedAggregate.appSetData:
+      defaultResponse = undefined
+      break
   }
   const usingStoredResponse = !!storedResponse
   if (usingStoredResponse) {
@@ -154,6 +157,8 @@ export function useAggregate(
       // save response for next time
       if (!loading) setWithExpiry(STATUSESKEY, response)
       return response
+    case SupportedAggregate.appSetData:
+      return undefined
   }
 }
 
