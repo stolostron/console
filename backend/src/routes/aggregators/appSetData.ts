@@ -26,20 +26,20 @@ interface IAppSetData {
 }
 
 export function requestAggregatedAppSetData(req: Http2ServerRequest, res: Http2ServerResponse): void {
-  const chucks: string[] = []
+  const chunks: string[] = []
   req.on('data', (chuck: string) => {
-    chucks.push(chuck)
+    chunks.push(chuck)
   })
   req.on('end', async () => {
     const token = getToken(req)
     if (!token) return unauthorized(req, res)
-    const body = chucks.join()
+    const body = chunks.join()
     let appset: IApplicationSet
     let isAppSetPullModel = false
     try {
       appset = JSON.parse(body) as IApplicationSet
     } catch (error) {
-      console.error(error + body.substring(0, 64))
+      console.error('Invalid appSetData request body', error)
       res.statusCode = 400
       res.end(JSON.stringify({ error: 'Invalid request body' }))
       return
@@ -75,7 +75,10 @@ export function requestAggregatedAppSetData(req: Http2ServerRequest, res: Http2S
       )
       placementDecision = placementDecisions?.find((p: IPlacementDecision) => {
         const labels = p.metadata.labels
-        return labels?.['cluster.open-cluster-management.io/placement'] === placementName
+        return (
+          p.metadata.namespace === appset.metadata.namespace &&
+          labels?.['cluster.open-cluster-management.io/placement'] === placementName
+        )
       })
       if (isClusterListEmpty && placementDecision?.status?.decisions) {
         for (const decision of placementDecision.status.decisions) {

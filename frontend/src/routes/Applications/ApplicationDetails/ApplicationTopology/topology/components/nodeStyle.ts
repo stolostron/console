@@ -52,9 +52,9 @@ function getLabel(type: string | undefined, specs: any) {
   /* istanbul ignore else */
   switch (type) {
     case 'cluster':
-      return specs.clustersNames.length === 1 ? specs.clustersNames[0] : 'Multiple Clusters'
+      return specs?.clustersNames?.length === 1 ? specs.clustersNames[0] : 'Multiple Clusters'
     case 'applicationset':
-      return `${specs.isAppSetPullModel ? 'Pull' : 'Push'} Application Set`
+      return `${specs?.isAppSetPullModel ? 'Pull' : 'Push'} Application Set`
     default:
       if (type) {
         return capitalize(type).replace('Argocd', 'Argo CD').replace('Ocpa', 'OCP A')

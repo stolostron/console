@@ -160,12 +160,12 @@ export default function CreateSubscriptionApplicationPage() {
                 newCredentialCallback={setNewSecret}
               />
             </Modal>
-            {CreateSubscriptionApplication(
-              setTitle,
-              handleModalToggleWithContext,
-              setConnectionControl,
-              onControlChange
-            )}
+            <CreateSubscriptionApplication
+              setTitle={setTitle}
+              handleModalToggleWithContext={handleModalToggleWithContext}
+              setConnectionControl={setConnectionControl}
+              onControlChange={onControlChange}
+            />
           </PageSection>
         </AcmPageContent>
       </AcmErrorBoundary>
@@ -173,12 +173,19 @@ export default function CreateSubscriptionApplicationPage() {
   )
 }
 
-export function CreateSubscriptionApplication(
-  setTitle: Dispatch<SetStateAction<string>>,
-  handleModalToggleWithContext: (affectedControl: any) => void,
-  setConnectionControl: Dispatch<SetStateAction<undefined>>,
+export interface CreateSubscriptionApplicationProps {
+  setTitle: Dispatch<SetStateAction<string>>
+  handleModalToggleWithContext: (affectedControl: any) => void
+  setConnectionControl: Dispatch<SetStateAction<any>>
   onControlChange: (control: any) => void
-) {
+}
+
+export function CreateSubscriptionApplication({
+  setTitle,
+  handleModalToggleWithContext,
+  setConnectionControl,
+  onControlChange,
+}: CreateSubscriptionApplicationProps) {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const [createdResource, setCreatedResource] = useState<any>()

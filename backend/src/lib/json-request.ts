@@ -88,6 +88,9 @@ export function jsonPut(url: string, body: unknown, token?: string, agent?: Agen
 }
 
 export function resourceUrl(resource: IResource) {
+  if (!resource.apiVersion) {
+    throw new Error('resource.apiVersion is required')
+  }
   let path: string = process.env.CLUSTER_API_URL ?? ''
   if (resource.apiVersion?.includes('/')) {
     path = join(path, '/apis', resource.apiVersion)
