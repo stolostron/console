@@ -337,6 +337,11 @@ export function useClusterLabelsColumn(isLarge: boolean, hubClusterName: string 
             collapse.push(label)
           }
         })
+        const visibleLabels = labelKeys.filter((key) => !collapse.includes(key))
+        const maxVisibleLabels = 5
+        if (visibleLabels.length > maxVisibleLabels) {
+          collapse.push(...visibleLabels.slice(maxVisibleLabels))
+        }
         return (
           <AcmLabels
             labels={cluster.labels}
