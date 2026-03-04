@@ -14,7 +14,6 @@ import {
   secretsState,
 } from '../../../atoms'
 import {
-  nockAggegateRequest,
   nockCreate,
   nockGet,
   nockIgnoreApiPaths,
@@ -66,7 +65,6 @@ import {
   SubscriptionApiVersion,
   SubscriptionKind,
 } from '../../../resources'
-import { uidata } from '../Application.sharedmocks'
 import CreateSubscriptionApplicationPage from './SubscriptionApplication'
 
 ///////////////////////////////// Mock Data /////////////////////////////////////////////////////
@@ -656,7 +654,6 @@ describe('Create Subscription Application page', () => {
       nockGet(mockSubscriptionPlacement),
       nockGet(mockChannelNamespace),
       nockGet(mockPlacement),
-      nockAggegateRequest('uidata', mockApplication0, uidata, 200, true),
     ]
     render(
       <RecoilRoot

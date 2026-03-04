@@ -152,7 +152,7 @@ describe(`aggregator Route`, function () {
     expect(res.statusCode).toEqual(200)
     expect(await parseResponseJsonBody(res)).toEqual(responseCount)
   })
-  it(`should return ui data`, async function () {
+  it(`should return appset data`, async function () {
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
 
     // initialize events - cache sequentially to ensure deterministic order
@@ -186,7 +186,7 @@ describe(`aggregator Route`, function () {
     await aggregateRemoteApplications(1)
 
     // FILTERED
-    const res = await request('POST', '/aggregate/uidata', {
+    const res = await request('POST', '/aggregate/appSetData', {
       apiVersion: 'argoproj.io/v1alpha1',
       kind: 'ApplicationSet',
       metadata: {
@@ -195,7 +195,7 @@ describe(`aggregator Route`, function () {
       },
     })
     expect(res.statusCode).toEqual(200)
-    expect(JSON.stringify(await parseResponseJsonBody(res))).toEqual(JSON.stringify(uidata))
+    expect(await parseResponseJsonBody(res)).toEqual(uidata)
   })
 })
 
@@ -220,9 +220,98 @@ const responseCount = {
 
 type AppSetPlacementDataType = (string | string[])[]
 
+const uidataAppset = {
+  apiVersion: 'argoproj.io/v1alpha1',
+  kind: 'ApplicationSet',
+  metadata: {
+    name: 'argoapplicationset-1',
+    namespace: 'openshift-gitops',
+    uid: 'cc84e62f-edb9-413b-8bd7-38a32a21ce76',
+  },
+  spec: {
+    generators: [
+      {
+        clusterDecisionResource: {
+          configMapRef: 'acm-placement',
+          labelSelector: {
+            matchLabels: {
+              'cluster.open-cluster-management.io/placement': 'test-placement-1',
+            },
+          },
+          requeueAfterSeconds: 180,
+        },
+      },
+    ],
+    template: {
+      metadata: {
+        labels: {
+          'velero.io/exclude-from-backup': 'true',
+        },
+        name: 'magchen-appset-{{name}}',
+      },
+      spec: {
+        destination: {
+          namespace: 'magchen-ns',
+          server: '{{server}}',
+        },
+        project: 'default',
+        source: {
+          path: 'acmnestedapp',
+          repoURL: 'https://github.com/fxiang1/app-samples',
+          targetRevision: 'main',
+        },
+        syncPolicy: {
+          automated: {
+            prune: true,
+            selfHeal: true,
+          },
+          syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
+        },
+      },
+    },
+  },
+}
+
+const uidataPlacementDecision = {
+  apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+  kind: 'PlacementDecision',
+  metadata: {
+    creationTimestamp: '2024-07-02T17:45:25Z',
+    generation: 1,
+    labels: {
+      'cluster.open-cluster-management.io/decision-group-index': '0',
+      'cluster.open-cluster-management.io/decision-group-name': '',
+      'cluster.open-cluster-management.io/placement': 'test-placement-1',
+    },
+    name: 'test-placement-1-decision-1',
+    namespace: 'default',
+    resourceVersion: '1625071',
+    uid: '7ba09bb1-5211-490f-a6d1-456322886ab0',
+    ownerReferences: [
+      {
+        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+        kind: 'Placement',
+        name: 'test-placement-1',
+        uid: '458708a1-f9fd-498b-9c2f-420ba246fe3f',
+        blockOwnerDeletion: true,
+        controller: true,
+      },
+    ],
+  },
+  status: {
+    decisions: [
+      {
+        clusterName: 'local-cluster',
+        reason: '',
+      },
+    ],
+  },
+}
+
 const uidata = {
+  appset: uidataAppset,
   clusterList: ['local-cluster'],
-  appSetPlacementData: ['', []] as AppSetPlacementDataType,
+  placementDecision: uidataPlacementDecision,
   appSetApps: [
     {
       apiVersion: 'argoproj.io/v1alpha1',
@@ -256,6 +345,7 @@ const uidata = {
     },
   ],
   appStatusByNameMap: {},
+  isAppSetPullModel: false,
 }
 
 const responseNoFilter = {
@@ -688,6 +778,11 @@ function setupNocks(prefixes?: boolean) {
           },
         ],
       })
+
+    // Nock for appSetData GET of single ApplicationSet
+    nock(process.env.CLUSTER_API_URL)
+      .get('/apis/argoproj.io/v1alpha1/namespaces/openshift-gitops/applicationsets/argoapplicationset-1')
+      .reply(200, uidataAppset)
   }
 }
 
