@@ -76,7 +76,7 @@ export default function PolicySetCard(props: {
       })
       // Introduce a delay (400ms) until scroll to selected card to wait for sidebar to transition.
       setTimeout(() => {
-        const cardElement = document.querySelector(`#${cardId}`)
+        const cardElement = document.getElementById(cardId)
         cardElement?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' })
       }, 400)
     } else {

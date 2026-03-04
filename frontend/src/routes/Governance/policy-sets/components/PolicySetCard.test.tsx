@@ -122,6 +122,7 @@ describe('Policy Set Card for Pending policy', () => {
 
 describe('Policy Set Card controlled dropdown and selection (ACM-30324)', () => {
   beforeEach(() => {
+    // openDetails scrolls the card into view via getElementById + scrollIntoView (setTimeout 400ms)
     Element.prototype.scrollIntoView = jest.fn()
   })
 
@@ -166,7 +167,7 @@ describe('Policy Set Card controlled dropdown and selection (ACM-30324)', () => 
     )
     await waitForText('policy-set-with-1-placement')
     fireEvent.click(screen.getByRole('button', { name: 'policy-set-with-1-placement' }))
-    expect(setSelectedCardID).toHaveBeenCalled()
+    expect(setSelectedCardID).toHaveBeenCalledWith(cardID)
   })
 
   test('setCardIdActionMenuOpen is called when opening action menu', async () => {
@@ -220,6 +221,7 @@ describe('Policy Set Card controlled dropdown and selection (ACM-30324)', () => 
 
 describe('Policy Set Card drawer behavior (onSelect vs onViewDetails)', () => {
   beforeEach(() => {
+    // openDetails scrolls the card into view via getElementById + scrollIntoView (setTimeout 400ms)
     Element.prototype.scrollIntoView = jest.fn()
   })
 
