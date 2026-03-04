@@ -75,21 +75,22 @@ export const DOC_LINKS = {
   NUTANIX_POST_INSTALL: `https://docs.redhat.com/en/documentation/assisted_installer_for_openshift_container_platform/2024/html/installing_openshift_container_platform_with_the_assisted_installer/assembly_installing-on-nutanix#nutanix-post-installation-configuration_installing-on-nutanix`,
 }
 
-export function ViewDocumentationLink(props: { doclink: string }): JSX.Element {
+export function ViewDocumentationLink(props: { doclink: string; topPadding?: boolean }): JSX.Element {
   const { t } = useTranslation()
+  const { doclink, topPadding = true } = props
   return (
     <Content>
       <AcmButton
         variant="link"
         component="a"
-        href={props.doclink}
+        href={doclink}
         target="_blank"
         rel="noreferrer"
         isInline
         icon={<ExternalLinkAltIcon />}
         iconPosition="right"
         style={{
-          paddingTop: '15px',
+          ...(topPadding ? { paddingTop: '15px' } : {}),
           fontSize: '14px',
         }}
       >

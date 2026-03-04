@@ -8,10 +8,8 @@ import {
   Stack,
   StackItem,
   Content,
-  ContentVariants,
   ToolbarItem,
 } from '@patternfly/react-core'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import { get } from 'lodash'
 import { useCallback, useContext, useMemo, useState } from 'react'
@@ -609,23 +607,8 @@ export default function ApplicationsOverview() {
         tooltip: (
           <span>
             {t('Displays the type of the application. ')}
-            <Content>
-              <Content
-                component={ContentVariants.a}
-                isVisitedLink
-                href={DOC_LINKS.MANAGE_APPLICATIONS}
-                target="_blank"
-                style={{
-                  cursor: 'pointer',
-                  display: 'inline-block',
-                  padding: '0px',
-                  fontSize: '14px',
-                  color: '#0066cc',
-                }}
-              >
-                {t('View documentation')} <ExternalLinkAltIcon />
-              </Content>
-            </Content>
+
+            <ViewDocumentationLink doclink={DOC_LINKS.MANAGE_APPLICATIONS} />
           </span>
         ),
         transforms: [cellWidth(10)],
