@@ -2,6 +2,7 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
+import { AcmDrawerContext } from '../../../../ui-components'
 import { waitForText } from '../../../../lib/test-util'
 import { Placement, PlacementBinding, PlacementRule, PolicySet } from '../../../../resources'
 import PolicySetCard from './PolicySetCard'
@@ -214,5 +215,76 @@ describe('Policy Set Card controlled dropdown and selection (ACM-30324)', () => 
     )
     await waitForText('policy-set-with-1-placement')
     expect(screen.getByRole('menuitem', { name: 'View details' })).toBeInTheDocument()
+  })
+})
+
+describe('Policy Set Card drawer behavior (onSelect vs onViewDetails)', () => {
+  beforeEach(() => {
+    Element.prototype.scrollIntoView = jest.fn()
+  })
+
+  test('clicking card title opens the drawer', async () => {
+    const setDrawerContext = jest.fn()
+    render(
+      <RecoilRoot>
+        <MemoryRouter>
+          <AcmDrawerContext.Provider value={{ drawerContext: undefined, setDrawerContext }}>
+            <PolicySetCard
+              policySet={policySet}
+              selectedCardID={''}
+              setSelectedCardID={() => {}}
+              canEditPolicySet={true}
+              canDeletePolicySet={true}
+              cardIdActionMenuOpen={undefined}
+              setCardIdActionMenuOpen={() => {}}
+            />
+          </AcmDrawerContext.Provider>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForText('policy-set-with-1-placement')
+    fireEvent.click(screen.getByRole('button', { name: 'policy-set-with-1-placement' }))
+    expect(setDrawerContext).toHaveBeenCalledWith(
+      expect.objectContaining({
+        isExpanded: true,
+        isInline: true,
+        isResizable: true,
+      })
+    )
+    expect(setDrawerContext.mock.calls[0][0].panelContent).toBeDefined()
+  })
+
+  test('with drawer open (card selected), click actions then View details keeps drawer open', async () => {
+    const setDrawerContext = jest.fn()
+    const setSelectedCardID = jest.fn()
+    render(
+      <RecoilRoot>
+        <MemoryRouter>
+          <AcmDrawerContext.Provider value={{ drawerContext: undefined, setDrawerContext }}>
+            <PolicySetCard
+              policySet={policySet}
+              selectedCardID={cardID}
+              setSelectedCardID={setSelectedCardID}
+              canEditPolicySet={true}
+              canDeletePolicySet={true}
+              cardIdActionMenuOpen={cardID}
+              setCardIdActionMenuOpen={() => {}}
+            />
+          </AcmDrawerContext.Provider>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForText('policy-set-with-1-placement')
+    expect(screen.getByRole('menuitem', { name: 'View details' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('menuitem', { name: 'View details' }))
+    expect(setSelectedCardID).toHaveBeenCalledWith(cardID)
+    expect(setDrawerContext).toHaveBeenCalledWith(
+      expect.objectContaining({
+        isExpanded: true,
+        isInline: true,
+        isResizable: true,
+      })
+    )
+    expect(setDrawerContext.mock.calls[0][0].panelContent).toBeDefined()
   })
 })

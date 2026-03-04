@@ -90,6 +90,11 @@ export default function PolicySetCard(props: {
     openDetails(newSelectedCard)
   }
 
+  const onViewDetails = (cardId: string) => {
+    setSelectedCardID(cardId)
+    openDetails(cardId)
+  }
+
   return (
     <div>
       {modal !== undefined && modal}
@@ -113,7 +118,7 @@ export default function PolicySetCard(props: {
           actions={{
             actions: (
               <PolicyCardDropdown
-                onView={() => onSelect(cardID)}
+                onView={() => onViewDetails(cardID)}
                 onEdit={
                   canEditPolicySet
                     ? () => {
