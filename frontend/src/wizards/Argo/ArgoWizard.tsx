@@ -15,16 +15,15 @@ import {
   WizSelect,
   WizTextInput,
 } from '@patternfly-labs/react-form-wizard'
-import { Button, Content, ContentVariants, Flex, FlexItem, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
+import { Button, Content, Flex, FlexItem, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { css } from '@emotion/css'
 import { get, set } from 'lodash'
 import { Fragment, ReactNode, useMemo, useRef, useState } from 'react'
 import { CreateCredentialModal } from '../../components/CreateCredentialModal'
 import { GitOpsOperatorAlert } from '../../components/GitOpsOperatorAlert'
 import { useTranslation } from '../../lib/acm-i18next'
-import { DOC_LINKS } from '../../lib/doc-util'
+import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
 import { SupportedOperator, useOperatorCheck } from '../../lib/operatorCheck'
 import { validateAppSetName } from '../../lib/validation'
 import { useWizardStrings } from '../../lib/wizardStrings'
@@ -484,23 +483,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
                     <Content component="p">
                       {t('Register a set of one or more managed clusters to Red Hat OpenShift GitOps.')}
                     </Content>
-                    <Content>
-                      <Content
-                        component={ContentVariants.a}
-                        isVisitedLink
-                        href={DOC_LINKS.GITOPS_CONFIG}
-                        target="_blank"
-                        style={{
-                          cursor: 'pointer',
-                          display: 'inline-block',
-                          padding: '0px',
-                          fontSize: '14px',
-                          color: '#0066cc',
-                        }}
-                      >
-                        {t('View documentation')} <ExternalLinkAltIcon />
-                      </Content>
-                    </Content>
+                    <ViewDocumentationLink doclink={DOC_LINKS.GITOPS_CONFIG} topPadding={false} />
                   </Fragment>
                 }
                 options={props.argoServers}

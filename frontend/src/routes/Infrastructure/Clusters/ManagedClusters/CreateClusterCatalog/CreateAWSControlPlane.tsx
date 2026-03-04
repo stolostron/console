@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { CheckIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { CheckIcon } from '@patternfly/react-icons'
 import {
   CatalogCardItemType,
   CatalogColor,
@@ -10,7 +10,7 @@ import {
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useDataViewStrings } from '../../../../../lib/dataViewStrings'
-import { DOC_LINKS } from '../../../../../lib/doc-util'
+import { DOC_LINKS, ViewDocumentationLink } from '../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { AcmPage, AcmPageHeader, Provider } from '../../../../../ui-components'
 import { getTypedCreateClusterPath } from '../ClusterInfrastructureType'
@@ -66,11 +66,7 @@ export function CreateAWSControlPlane() {
         alertVariant: 'info',
         alertContent: (() => {
           if (!loaded || isHypershiftEnabled) return undefined
-          return (
-            <a href={DOC_LINKS.HOSTED_ENABLE_FEATURE_AWS} target="_blank" rel="noopener noreferrer">
-              {t('View documentation')} <ExternalLinkAltIcon />
-            </a>
-          )
+          return <ViewDocumentationLink doclink={DOC_LINKS.HOSTED_ENABLE_FEATURE_AWS} topPadding={false} />
         })(),
         badgeList: [
           {
