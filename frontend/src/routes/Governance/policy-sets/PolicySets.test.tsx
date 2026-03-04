@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { policySetsState } from '../../../atoms'
@@ -118,7 +118,27 @@ describe('PolicySets Page', () => {
     const cardB = document.getElementById('policyset-test-policy-set-b')
     expect(cardA).toBeInTheDocument()
     expect(cardB).toBeInTheDocument()
-    expect(cardA!.querySelectorAll('button').length).toBeGreaterThanOrEqual(2)
-    expect(cardB!.querySelectorAll('button').length).toBeGreaterThanOrEqual(2)
+
+    const getActionsTrigger = (card: HTMLElement) => {
+      const buttons = card.querySelectorAll('button')
+      const kebab = Array.from(buttons).find((b) => !b.textContent?.trim()) ?? buttons[buttons.length - 1]
+      return kebab
+    }
+
+    const triggerA = getActionsTrigger(cardA!)
+    const triggerB = getActionsTrigger(cardB!)
+
+    fireEvent.click(triggerA)
+    expect(screen.getByRole('menuitem', { name: 'View details' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Edit' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Delete' })).toBeInTheDocument()
+
+    fireEvent.click(triggerB)
+    expect(screen.getByRole('menuitem', { name: 'View details' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Edit' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Delete' })).toBeInTheDocument()
+
+    fireEvent.click(triggerB)
+    expect(screen.queryByRole('menuitem', { name: 'View details' })).not.toBeInTheDocument()
   })
 })
