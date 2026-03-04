@@ -8,6 +8,7 @@ import { IRequestResult } from '../../../resources/utils/resource-request'
 import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
 import { RoleAssignmentLabel } from './RoleAssignmentLabel'
 import { RoleAssignmentStatusComponent } from './RoleAssignmentStatusComponent'
+import { useTranslation } from '../../../lib/acm-i18next'
 
 // Component for rendering clickable role links
 const RoleLinkCell = ({ roleName }: { roleName: string }) => (
@@ -15,28 +16,28 @@ const RoleLinkCell = ({ roleName }: { roleName: string }) => (
 )
 
 // Component for rendering clickable cluster links
-const ClusterSetLinksCell = ({ clusterSetNames }: { clusterSetNames: string[] }) =>
-  clusterSetNames.length ? (
-    <RoleAssignmentLabel
-      elements={clusterSetNames}
-      numLabel={3}
-      renderElement={(clusterSetName) => (
-        <Link
-          key={clusterSetName}
-          to={generatePath(NavigationPath.clusterSetOverview, {
-            id: clusterSetName,
-          })}
-        >
-          {clusterSetName}
-        </Link>
-      )}
-    />
-  ) : (
-    '-'
-  )
+const ClusterSetLinksCell = ({ clusterSetNames }: { clusterSetNames: string[] }) => (
+  <RoleAssignmentLabel
+    emptyElementsText="-"
+    elements={clusterSetNames}
+    numLabel={3}
+    renderElement={(clusterSetName) => (
+      <Link
+        key={clusterSetName}
+        to={generatePath(NavigationPath.clusterSetOverview, {
+          id: clusterSetName,
+        })}
+      >
+        {clusterSetName}
+      </Link>
+    )}
+  />
+)
+
 // Component for rendering clickable cluster links
 const ClusterLinksCell = ({ clusterNames }: { clusterNames: string[] }) => (
   <RoleAssignmentLabel
+    emptyElementsText={'-'}
     elements={clusterNames}
     numLabel={3}
     renderElement={(clusterName) => (
@@ -54,9 +55,10 @@ const ClusterLinksCell = ({ clusterNames }: { clusterNames: string[] }) => (
 )
 
 // Component for rendering namespaces with label group
-const NamespacesCell = ({ namespaces }: { namespaces?: string[] }) => (
-  <RoleAssignmentLabel elements={namespaces} numLabel={5} />
-)
+const NamespacesCell = ({ namespaces }: { namespaces?: string[] }) => {
+  const { t } = useTranslation()
+  return <RoleAssignmentLabel emptyElementsText={t('All namespaces')} elements={namespaces} numLabel={5} />
+}
 
 const renderSubjectNameCell = (name: string, kind: string) => {
   if (!name || name.trim() === '') {
