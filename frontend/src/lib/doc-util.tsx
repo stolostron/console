@@ -98,21 +98,22 @@ export const DOC_LINKS = {
     'https://registry.terraform.io/providers/terraform-redhat/rhcs/latest/docs/guides/hosted-control-planes',
 }
 
-export function ViewDocumentationLink(props: { doclink: string }): JSX.Element {
+export function ViewDocumentationLink(props: { doclink: string; topPadding?: boolean }): JSX.Element {
   const { t } = useTranslation()
+  const { doclink, topPadding = true } = props
   return (
     <Content>
       <AcmButton
         variant="link"
         component="a"
-        href={props.doclink}
+        href={doclink}
         target="_blank"
         rel="noreferrer"
         isInline
         icon={<ExternalLinkAltIcon />}
         iconPosition="right"
         style={{
-          paddingTop: '15px',
+          ...(topPadding ? { paddingTop: '15px' } : {}),
           fontSize: '14px',
         }}
       >
