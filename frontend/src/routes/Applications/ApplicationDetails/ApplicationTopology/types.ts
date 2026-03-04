@@ -10,6 +10,7 @@ import {
   PlacementRule,
   SubscriptionReport,
   Subscription,
+  IResource,
 } from '../../../../resources'
 import { TFunction } from 'react-i18next'
 import { ArgoAppDetailsContainerData, ClusterDetailsContainerData } from './ApplicationTopology'
@@ -115,25 +116,29 @@ export interface AppSetCluster {
   creationTimestamp?: string
 }
 
+interface IAppSetData {
+  appset: IResource
+  clusterList: string[]
+  placementDecision?: PlacementDecision
+  placement?: IResource
+  appSetApps: IResource[]
+  appStatusByNameMap: Record<string, { health: { status: string }; sync: { status: string } }>
+  isAppSetPullModel?: boolean
+}
+
 // Core application model returned by getApplication
-export interface ApplicationModel {
+export interface ApplicationModel extends Partial<IAppSetData> {
   channels?: SetStateAction<string[]>
   activeChannel?: SetStateAction<string | undefined>
   name: string
   namespace: string
   app: any
   metadata?: Metadata
-  placement?: PlacementDecision | Placement
   isArgoApp: boolean
   isAppSet: boolean
   isOCPApp: boolean
   isFluxApp: boolean
-  isAppSetPullModel: boolean
-  relatedPlacement?: Placement
-  clusterList?: string[]
-  appSetApps?: AppSetApplication[]
   appSetClusters?: AppSetCluster[]
-  appStatusByNameMap?: Record<string, { health: { status: string }; sync: { status: string } }>
 }
 
 // Minimal channel kind used to associate subscriptions to channels

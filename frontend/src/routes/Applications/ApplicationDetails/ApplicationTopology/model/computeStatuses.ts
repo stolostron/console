@@ -346,9 +346,7 @@ export const getPulseStatusForArgoApp = (node: TopologyNodeWithStatus, isAppSet?
   // Categorize applications by health status
   relatedApps.forEach((app) => {
     const appStatus = app.metadata?.name ? appStatusByNameMap[app.metadata.name] : undefined
-    const relatedAppHealth = appStatus
-      ? appStatus.health.status
-      : safeGet(app, 'status.health.status') || safeGet(app, 'status') || argoAppUnknownStatus
+    const relatedAppHealth = appStatus?.health.status || safeGet(app, 'status.health.status')
 
     if (relatedAppHealth === argoAppHealthyStatus) {
       healthyCount++
@@ -368,14 +366,14 @@ export const getPulseStatusForArgoApp = (node: TopologyNodeWithStatus, isAppSet?
   if (appWithConditions > 0) {
     return pulseValueArr[warningCode] as PulseColor
   }
+  if (
+    missingUnknownProgressingSuspendedCount >= relatedApps.length ||
+    (healthyCount === 0 && missingUnknownProgressingSuspendedCount === 0 && degradedCount === 0)
+  ) {
+    return pulseValueArr[pendingCode] as PulseColor
+  }
   if (degradedCount === relatedApps.length) {
     return pulseValueArr[failureCode] as PulseColor
-  }
-  if (missingUnknownProgressingSuspendedCount === relatedApps.length) {
-    return pulseValueArr[pendingCode] as PulseColor
-  }
-  if (healthyCount === 0 && missingUnknownProgressingSuspendedCount === 0 && degradedCount === 0) {
-    return pulseValueArr[pendingCode] as PulseColor
   }
   if (healthyCount < relatedApps.length) {
     return pulseValueArr[warningCode] as PulseColor

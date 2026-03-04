@@ -51,14 +51,7 @@ export async function getAppSetTopology(
 ): Promise<ExtendedTopology> {
   const links: TopologyLink[] = []
   const nodes: TopologyNode[] = []
-  const {
-    name,
-    namespace,
-    appSetClusters = [],
-    appSetApps = [],
-    appStatusByNameMap = {},
-    relatedPlacement,
-  } = application
+  const { name, namespace, appSetClusters = [], appSetApps = [], appStatusByNameMap = {} } = application
   const allClusterNames = appSetClusters.map((cluster: AppSetCluster) => cluster.name)
   toolbarControl.setAllClusters?.(allClusterNames)
   const { activeTypes, activeClusters, activeApplications } = toolbarControl
@@ -137,7 +130,7 @@ export async function getAppSetTopology(
         isDesign: true,
         raw: placement,
       },
-      placement: relatedPlacement,
+      placement,
     })
 
     // Link ApplicationSet to Placement
