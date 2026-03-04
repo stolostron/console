@@ -1377,6 +1377,7 @@ export function CredentialsForm(
             onChange: setOcmAPIToken,
             isRequired: true,
             isSecret: true,
+            placeholder: t('import.token.place'),
           },
           (authMethod === OCMAuthMethod.SERVICE_ACCOUNT || isViewing) && {
             id: 'client_id',
@@ -1386,6 +1387,7 @@ export function CredentialsForm(
             value: serviceAccClientId,
             onChange: setServiceAccClientId,
             isRequired: true,
+            placeholder: t('Enter your client ID'),
           },
           (authMethod === OCMAuthMethod.SERVICE_ACCOUNT || isViewing) && {
             id: 'client_secret',
@@ -1396,6 +1398,7 @@ export function CredentialsForm(
             onChange: setServiceAccClientSecret,
             isRequired: true,
             isSecret: true,
+            placeholder: t('Enter your client secret'),
           },
         ].filter(Boolean) as Input[],
       },
