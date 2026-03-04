@@ -18,7 +18,7 @@ import {
 } from '@patternfly/react-core'
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
-import { ReactNode, useCallback, useContext, useState } from 'react'
+import { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { deletePolicySet } from '../../../../lib/delete-policyset'
@@ -51,9 +51,23 @@ export default function PolicySetCard(props: {
   const { setDrawerContext } = useContext(AcmDrawerContext)
   const [modal, setModal] = useState<ReactNode | undefined>()
   const navigate = useNavigate()
+
   const cardID = `policyset-${policySet.metadata.namespace}-${policySet.metadata.name}`
 
+  const scrollTimeoutRef = useRef<number | undefined>(undefined)
+  useEffect(
+    () => () => {
+      if (scrollTimeoutRef.current) window.clearTimeout(scrollTimeoutRef.current)
+    },
+    []
+  )
+
   const openDetails = (cardId: string) => {
+    if (scrollTimeoutRef.current) {
+      window.clearTimeout(scrollTimeoutRef.current)
+      scrollTimeoutRef.current = undefined
+    }
+
     if (cardId) {
       setDrawerContext({
         isExpanded: true,
@@ -75,7 +89,7 @@ export default function PolicySetCard(props: {
         isResizable: true,
       })
       // Introduce a delay (400ms) until scroll to selected card to wait for sidebar to transition.
-      setTimeout(() => {
+      scrollTimeoutRef.current = window.setTimeout(() => {
         const cardElement = document.getElementById(cardId)
         cardElement?.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' })
       }, 400)
