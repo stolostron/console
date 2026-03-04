@@ -252,7 +252,7 @@ export default function ApplicationDetailsPage() {
                 )
               : [[], []]
           /* istanbul ignore else */
-          const appSetRelatedResources = (selectedApp as IUIResource)?.uidata?.appSetRelatedResources ?? ['', []]
+          const appSetPlacementData = (selectedApp as IUIResource)?.uidata?.appSetPlacementData ?? ['', []]
           setModalProps({
             open: true,
             canRemove: selectedApp.kind === ApplicationSetKind ? canDeleteApplicationSet : canDeleteApplication,
@@ -261,8 +261,8 @@ export default function ApplicationDetailsPage() {
             loading: false,
             selected: appChildResources[0], // children
             shared: appChildResources[1], // shared children
-            appSetPlacement: appSetRelatedResources[0] as string,
-            appSetsSharingPlacement: appSetRelatedResources[1] as string[],
+            appSetPlacement: appSetPlacementData[0] as string,
+            appSetsSharingPlacement: appSetPlacementData[1] as string[],
             appKind: selectedApp.kind,
             appSetApps: (selectedApp as IUIResource)?.uidata?.appSetApps ?? [],
             close: () => {
@@ -391,7 +391,8 @@ export default function ApplicationDetailsPage() {
             recoilStates,
             cluster,
             apiVersion,
-            clusters
+            clusters,
+            localHubName
           )
           if (!application) {
             setApplicationNotFound(true)

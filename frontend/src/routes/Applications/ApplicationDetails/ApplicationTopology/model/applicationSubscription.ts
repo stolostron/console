@@ -33,7 +33,7 @@ export const ALL_SUBSCRIPTIONS = '__ALL__/SUBSCRIPTIONS__'
  * - Populate channels, pre/post Ansible hooks, placement decisions and resources
  * - Determine selected channel view and aggregate cluster list
  */
-export const getSubscriptionApplication = async (
+export const addSubscriptionChannels = async (
   model: SubscriptionApplicationModel,
   app: IResource,
   selectedChannel: string | undefined,
@@ -523,4 +523,4 @@ function getAppChannels(channelsMap: SubscriptionChannelsMap, allChannels: Chann
   })
 }
 
-export default getSubscriptionApplication
+export default addSubscriptionChannels

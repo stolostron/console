@@ -116,7 +116,7 @@ export const mockApplication0: Application & IUIResource = {
     },
   },
   uidata: {
-    appSetRelatedResources: ['', []],
+    appSetPlacementData: ['', []],
     clusterList: ['local-cluster'],
     appSetApps: [] as string[],
     appClusterStatuses: [] as ApplicationStatusMap[],
@@ -152,14 +152,14 @@ export const mockApplicationUi = {
     },
   },
   uidata: {
-    appSetRelatedResources: ['', []],
+    appSetPlacementData: ['', []],
     clusterList: ['local-cluster'],
     appSetApps: [],
     appClusterStatuses: [],
   },
 }
 export const uidata = {
-  appSetRelatedResources: ['', []],
+  appSetPlacementData: ['', []],
   clusterList: ['local-cluster'],
   appSetApps: [],
 }
@@ -333,7 +333,7 @@ export const mockApplicationSet0: ApplicationSet = {
     },
   },
   uidata: {
-    appSetRelatedResources: ['', []],
+    appSetPlacementData: ['', []],
   },
 }
 
@@ -439,7 +439,7 @@ export const mockArgoApplication1: ArgoApplication & IUIResource = {
   },
   uidata: {
     clusterList: ['None'],
-    appSetRelatedResources: ['', []],
+    appSetPlacementData: ['', []],
     appSetApps: [] as string[],
     appClusterStatuses: [] as ApplicationStatusMap[],
   },

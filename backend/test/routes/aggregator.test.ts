@@ -218,11 +218,11 @@ const responseCount = {
   loading: false,
 }
 
-type RelatedResourcesType = (string | string[])[]
+type AppSetPlacementDataType = (string | string[])[]
 
 const uidata = {
   clusterList: ['local-cluster'],
-  appSetRelatedResources: ['', []] as RelatedResourcesType,
+  appSetPlacementData: ['', []] as AppSetPlacementDataType,
   appSetApps: [
     {
       apiVersion: 'argoproj.io/v1alpha1',
@@ -293,7 +293,7 @@ const responseNoFilter = {
       uidata: {
         clusterList: ['unknown'],
         appClusterStatuses: [{}],
-        appSetRelatedResources: ['', []] as RelatedResourcesType,
+        appSetPlacementData: ['', []] as AppSetPlacementDataType,
         appSetApps: [] as string[],
       },
     },
@@ -374,7 +374,7 @@ const responseNoFilter = {
             },
           },
         ],
-        appSetRelatedResources: ['test-placement-1', []] as RelatedResourcesType,
+        appSetPlacementData: ['test-placement-1', []] as AppSetPlacementDataType,
         appSetApps: ['argoapplication-2'],
       },
     },
@@ -394,7 +394,7 @@ const responseNoFilter = {
       uidata: {
         clusterList: ['local-cluster'],
         appClusterStatuses: [{}],
-        appSetRelatedResources: ['', []] as RelatedResourcesType,
+        appSetPlacementData: ['', []] as AppSetPlacementDataType,
         appSetApps: [] as string[],
       },
     },
@@ -431,7 +431,7 @@ const responseFiltered = {
       uidata: {
         clusterList: ['local-cluster'],
         appClusterStatuses: [{}],
-        appSetRelatedResources: ['', []] as RelatedResourcesType,
+        appSetPlacementData: ['', []] as AppSetPlacementDataType,
         appSetApps: [] as string[],
       },
     },
