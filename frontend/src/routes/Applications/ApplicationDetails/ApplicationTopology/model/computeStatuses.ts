@@ -343,6 +343,10 @@ export const getPulseStatusForArgoApp = (node: TopologyNodeWithStatus, isAppSet?
     appWithConditions++
   }
 
+  if (getIsDeployingAppSet(relatedApps, appStatusByNameMap)) {
+    return pulseValueArr[pendingCode] as PulseColor
+  }
+
   // Categorize applications by health status
   relatedApps.forEach((app) => {
     const appStatus = app.metadata?.name ? appStatusByNameMap[app.metadata.name] : undefined
@@ -380,6 +384,22 @@ export const getPulseStatusForArgoApp = (node: TopologyNodeWithStatus, isAppSet?
   }
 
   return pulseValueArr[checkmarkCode] as PulseColor
+}
+/**
+ * Returns true if the ApplicationSet should be considered deploying:
+ * - no related apps yet (relatedApps.length === 0), or
+ * - any related app has empty health status (relatedAppHealth === '')
+ */
+const getIsDeployingAppSet = (
+  relatedApps: ArgoApplication[],
+  appStatusByNameMap: Record<string, { health: { status: string }; sync: { status: string } }>
+): boolean => {
+  if (relatedApps.length === 0) return true
+  return relatedApps.some((app) => {
+    const appStatus = app.metadata?.name ? appStatusByNameMap[app.metadata.name] : undefined
+    const relatedAppHealth = appStatus?.health?.status ?? safeGet(app, 'status.health.status') ?? ''
+    return relatedAppHealth === ''
+  })
 }
 
 /////////////////////////////////////////////////////////////////

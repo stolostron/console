@@ -51,7 +51,14 @@ export async function getAppSetTopology(
 ): Promise<ExtendedTopology> {
   const links: TopologyLink[] = []
   const nodes: TopologyNode[] = []
-  const { name, namespace, appSetClusters = [], appSetApps = [], appStatusByNameMap = {} } = application
+  const {
+    name,
+    namespace,
+    appSetClusters = [],
+    appSetApps = [],
+    appStatusByNameMap = {},
+    isAppSetPullModel = false,
+  } = application
   const allClusterNames = appSetClusters.map((cluster: AppSetCluster) => cluster.name)
   toolbarControl.setAllClusters?.(allClusterNames)
   const { activeTypes, activeClusters, activeApplications } = toolbarControl
@@ -78,6 +85,7 @@ export async function getAppSetTopology(
       appSetApps,
       appSetClusters,
       appStatusByNameMap,
+      isAppSetPullModel,
     },
   }
   nodes.push(appSetNode)
@@ -187,15 +195,23 @@ export async function getAppSetTopology(
   /////////////////////////////////////////////
   ////  APPLICATION RESOURCE NODES /////////////////
   /////////////////////////////////////////////
+  const visibleAppCount = Object.entries(applicationResourceMap).filter(
+    ([appNameClusterKey]) =>
+      !(
+        applicationNames.length > 0 &&
+        activeApplications &&
+        !activeApplications.includes(appNameClusterKey.split('--')[0])
+      )
+  ).length
   let parentNodeId = clusterId
   Object.entries(applicationResourceMap).forEach(([appNameClusterKey, resources]) => {
     const [appName, clusterName] = appNameClusterKey.split('--')
-    // if there are multiple applications and moe then one application is selected,
-    // we need to insert an application node above the resources
+    // if there are multiple visible applications, insert an application node above the resources
+    // (skip when only one application node would be created, including after filtering)
     const isApplicationFiltered =
       applicationNames.length > 0 && activeApplications && !activeApplications.includes(appName)
-    if (applicationNames.length > 0 && !isApplicationFiltered) {
-      // Has application name - create application node
+    if (visibleAppCount > 1 && !isApplicationFiltered) {
+      // Has multiple visible applications - create application node
       parentNodeId = `member--application--${clusterName}--${appName}`
       const healthStatus = appStatusByNameMap[`${name}-${appName}`]?.health.status || 'Healthy'
       const appNode: TopologyNode = {
@@ -335,8 +351,8 @@ async function getAppSetResources(application: ApplicationModel) {
   } else {
     // push-model; use status.resources from local Application resource
     appSetApps.forEach((appSetApp) => {
-      if (appSetApp.metadata?.name && appSetApp.status?.resources) {
-        mapRelatedResources(appSetApp.metadata.name, appSetApp.status.resources)
+      if (appSetApp.metadata?.name && (appSetApp.status as any)?.resources) {
+        mapRelatedResources(appSetApp.metadata.name, (appSetApp.status as any).resources)
       }
     })
   }
