@@ -121,9 +121,16 @@ describe('Policy Set Card for Pending policy', () => {
 })
 
 describe('Policy Set Card controlled dropdown and selection (ACM-30324)', () => {
+  const originalScrollIntoView = Element.prototype.scrollIntoView
+
   beforeEach(() => {
     // openDetails scrolls the card into view via getElementById + scrollIntoView (setTimeout 400ms)
     Element.prototype.scrollIntoView = jest.fn()
+  })
+
+  afterEach(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    Element.prototype.scrollIntoView = originalScrollIntoView
   })
 
   test('card shows selected state when selectedCardID matches card ID', async () => {
@@ -220,9 +227,18 @@ describe('Policy Set Card controlled dropdown and selection (ACM-30324)', () => 
 })
 
 describe('Policy Set Card drawer behavior (onSelect vs onViewDetails)', () => {
+  const originalScrollIntoView = Element.prototype.scrollIntoView
+
   beforeEach(() => {
     // openDetails scrolls the card into view via getElementById + scrollIntoView (setTimeout 400ms)
     Element.prototype.scrollIntoView = jest.fn()
+    jest.useFakeTimers()
+  })
+
+  afterEach(() => {
+    jest.advanceTimersByTime(500)
+    jest.useRealTimers()
+    Element.prototype.scrollIntoView = originalScrollIntoView
   })
 
   test('clicking card title opens the drawer', async () => {
