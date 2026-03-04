@@ -89,7 +89,7 @@ export function ImportCommand(props: ImportCommandProps) {
       <Card style={{ marginBottom: '24px' }}>
         <Tabs activeKey={'first'}>
           <Tab eventKey={'first'} title={<TabTitleText>{t('import.command.runcommand')}</TabTitleText>}>
-            <Card>
+            <Card isPlain>
               <CardTitle>{t('import.command.generated')}</CardTitle>
               <CardBody>
                 <span>
