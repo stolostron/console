@@ -25,6 +25,10 @@ jest.mock('../../../Search/search-sdk/search-sdk', () => ({
   useSearchResultItemsQuery: jest.fn(),
 }))
 
+jest.mock('../../../../utils/useClusterNamespaceMap', () => ({
+  useClusterNamespaceMap: jest.fn(),
+}))
+
 jest.mock('../../../../ui-components/AcmTable/AcmTable', () => ({
   compareStrings: jest.fn((a, b) => a.localeCompare(b)),
 }))
@@ -33,8 +37,10 @@ import { useQuery } from '../../../../lib/useQuery'
 import { listGroups, listUsers } from '../../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { useSearchResultItemsQuery } from '../../../Search/search-sdk/search-sdk'
+import { useClusterNamespaceMap } from '../../../../utils/useClusterNamespaceMap'
 
 const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>
+const mockUseClusterNamespaceMap = useClusterNamespaceMap as jest.MockedFunction<typeof useClusterNamespaceMap>
 const mockUseRecoilValue = useRecoilValue as jest.MockedFunction<typeof useRecoilValue>
 const mockUseSharedAtoms = useSharedAtoms as jest.MockedFunction<typeof useSharedAtoms>
 const mockUseSearchResultItemsQuery = useSearchResultItemsQuery as jest.MockedFunction<typeof useSearchResultItemsQuery>
@@ -91,26 +97,19 @@ describe('useRoleAssignmentData', () => {
     ],
   }
 
-  const mockAllNamespaces = {
-    searchResult: [
-      {
-        items: [
-          { cluster: 'cluster-1', name: 'my-namespace' },
-          { cluster: 'cluster-1', name: 'test-namespace' },
-          { cluster: 'cluster-1', name: 'kube-system' },
-          { cluster: 'cluster-1', name: 'openshift-operators' },
-          { cluster: 'cluster-1', name: 'open-cluster-management-hub' },
-          { cluster: 'production-cluster', name: 'my-namespace' },
-          { cluster: 'production-cluster', name: 'test-namespace' },
-          { cluster: 'dev-cluster', name: 'my-namespace' },
-          { cluster: 'dev-cluster', name: 'test-namespace' },
-        ],
-      },
-    ],
+  const defaultClusterNamespaceMap: Record<string, string[]> = {
+    'cluster-1': ['my-namespace', 'test-namespace'],
+    'production-cluster': ['my-namespace', 'test-namespace'],
+    'dev-cluster': ['my-namespace', 'test-namespace'],
   }
 
   beforeEach(() => {
     jest.clearAllMocks()
+
+    mockUseClusterNamespaceMap.mockReturnValue({
+      clusterNamespaceMap: defaultClusterNamespaceMap,
+      isLoading: false,
+    })
 
     mockUseQuery.mockImplementation((queryFn) => {
       if (queryFn === listUsers) {
@@ -122,18 +121,7 @@ describe('useRoleAssignmentData', () => {
       return { data: undefined, loading: false } as any
     })
 
-    mockUseSearchResultItemsQuery.mockImplementation((options) => {
-      const input = options?.variables?.input as any[]
-      const isNamespacesQuery = input?.[0]?.filters?.some(
-        (filter: any) => filter.property === 'kind' && filter.values?.includes('Namespace')
-      )
-
-      if (isNamespacesQuery) {
-        return { data: mockAllNamespaces, loading: false } as any
-      }
-
-      return { data: mockClusterRoles, loading: false } as any
-    })
+    mockUseSearchResultItemsQuery.mockReturnValue({ data: mockClusterRoles, loading: false } as any)
 
     const mockManagedClusterSetsState = {} as any
     const mockManagedClustersState = {} as any
@@ -245,17 +233,9 @@ describe('useRoleAssignmentData', () => {
     })
 
     it('should still be loading when roles are loaded but namespaces are still loading', () => {
-      mockUseSearchResultItemsQuery.mockImplementation((options) => {
-        const input = options?.variables?.input as any[]
-        const isNamespacesQuery = input?.[0]?.filters?.some(
-          (filter: any) => filter.property === 'kind' && filter.values?.includes('Namespace')
-        )
-
-        if (isNamespacesQuery) {
-          return { data: undefined, loading: true } as any
-        }
-
-        return { data: mockClusterRoles, loading: false } as any
+      mockUseClusterNamespaceMap.mockReturnValue({
+        clusterNamespaceMap: {},
+        isLoading: true,
       })
 
       const { result } = renderHook(() => useRoleAssignmentData())
@@ -264,17 +244,9 @@ describe('useRoleAssignmentData', () => {
     })
 
     it('should show loading is complete when namespaces and roles are done loading', () => {
-      mockUseSearchResultItemsQuery.mockImplementation((options) => {
-        const input = options?.variables?.input as any[]
-        const isNamespacesQuery = input?.[0]?.filters?.some(
-          (filter: any) => filter.property === 'kind' && filter.values?.includes('Namespace')
-        )
-
-        if (isNamespacesQuery) {
-          return { data: mockAllNamespaces, loading: false } as any
-        }
-
-        return { data: mockClusterRoles, loading: false } as any
+      mockUseClusterNamespaceMap.mockReturnValue({
+        clusterNamespaceMap: defaultClusterNamespaceMap,
+        isLoading: false,
       })
 
       const { result } = renderHook(() => useRoleAssignmentData())
@@ -335,6 +307,7 @@ describe('useRoleAssignmentData', () => {
     it('should handle empty data gracefully', async () => {
       mockUseQuery.mockReturnValue({ data: undefined, loading: false } as any)
       mockUseSearchResultItemsQuery.mockReturnValue({ data: undefined, loading: false } as any)
+      mockUseClusterNamespaceMap.mockReturnValue({ clusterNamespaceMap: {}, isLoading: false })
       mockUseRecoilValue.mockReturnValue([])
 
       const { result } = renderHook(() => useRoleAssignmentData())
@@ -360,82 +333,37 @@ describe('useRoleAssignmentData', () => {
   })
 
   describe('System Namespace Filtering', () => {
-    it('should filter out all system namespace patterns', () => {
-      const mockAllNamespaces = {
-        searchResult: [
-          {
-            items: [
-              { cluster: 'cluster-1', name: 'user-app' },
-              { cluster: 'cluster-1', name: 'my-openshift-app' },
-              { cluster: 'cluster-1', name: 'kubernetes-dashboard' },
-              { cluster: 'cluster-1', name: 'my-cluster-app' },
-
-              { cluster: 'cluster-1', name: 'kube-system' },
-              { cluster: 'cluster-1', name: 'kube-public' },
-              { cluster: 'cluster-1', name: 'kube-node-lease' },
-              { cluster: 'cluster-1', name: 'openshift-operators' },
-              { cluster: 'cluster-1', name: 'openshift-monitoring' },
-              { cluster: 'cluster-1', name: 'openshift-config' },
-              { cluster: 'cluster-1', name: 'open-cluster-management' },
-              { cluster: 'cluster-1', name: 'open-cluster-management-hub' },
-              { cluster: 'cluster-1', name: 'open-cluster-management-agent' },
-            ],
-          },
-        ],
-      }
-
-      mockUseSearchResultItemsQuery.mockImplementation((options) => {
-        const input = options?.variables?.input as any[]
-        const isNamespacesQuery = input?.[0]?.filters?.some(
-          (filter: any) => filter.property === 'kind' && filter.values?.includes('Namespace')
-        )
-
-        if (isNamespacesQuery) {
-          return { data: mockAllNamespaces, loading: false } as any
-        }
-        return { data: mockClusterRoles, loading: false } as any
+    it('should use cluster namespace map without system namespaces (filtering is in useClusterNamespaceMap)', async () => {
+      mockUseClusterNamespaceMap.mockReturnValue({
+        clusterNamespaceMap: {
+          'cluster-1': ['user-app', 'my-openshift-app', 'kubernetes-dashboard', 'my-cluster-app'],
+        },
+        isLoading: false,
       })
 
       const { result } = renderHook(() => useRoleAssignmentData())
 
-      waitFor(() => {
+      await waitFor(() => {
         const cluster = result.current.roleAssignmentData.clusterSets[0]?.clusters?.[0]
 
-        // User namespaces should be included
-        expect(cluster?.namespaces).toContain('user-app')
-        expect(cluster?.namespaces).toContain('my-openshift-app')
-        expect(cluster?.namespaces).toContain('kubernetes-dashboard')
-        expect(cluster?.namespaces).toContain('my-cluster-app')
-
-        // All system namespace patterns should be filtered out
-        expect(cluster?.namespaces).not.toContain('kube-system')
-        expect(cluster?.namespaces).not.toContain('kube-public')
-        expect(cluster?.namespaces).not.toContain('kube-node-lease')
-        expect(cluster?.namespaces).not.toContain('openshift-operators')
-        expect(cluster?.namespaces).not.toContain('openshift-monitoring')
-        expect(cluster?.namespaces).not.toContain('openshift-config')
-        expect(cluster?.namespaces).not.toContain('open-cluster-management')
-        expect(cluster?.namespaces).not.toContain('open-cluster-management-hub')
-        expect(cluster?.namespaces).not.toContain('open-cluster-management-agent')
+        expect(cluster?.namespaces).toEqual(['user-app', 'my-openshift-app', 'kubernetes-dashboard', 'my-cluster-app'])
       })
     })
   })
 
   describe('Cluster Namespace Mapping Logic', () => {
-    it('should correctly map namespaces to their respective clusters', () => {
-      const mockAllNamespacesMultiCluster = {
-        searchResult: [
-          {
-            items: [
-              { cluster: 'cluster-1', name: 'app-frontend' },
-              { cluster: 'cluster-1', name: 'app-backend' },
-              { cluster: 'cluster-2', name: 'app-frontend' },
-              { cluster: 'cluster-2', name: 'monitoring' },
-              { cluster: 'cluster-3', name: 'data-processing' },
-            ],
-          },
-        ],
-      }
+    it('should correctly map namespaces to their respective clusters from useClusterNamespaceMap', async () => {
+      const mockManagedClustersState = {} as any
+      const mockManagedClusterSetsState = {} as any
+
+      mockUseClusterNamespaceMap.mockReturnValue({
+        clusterNamespaceMap: {
+          'cluster-1': ['app-frontend', 'app-backend'],
+          'cluster-2': ['app-frontend', 'monitoring'],
+          'cluster-3': ['data-processing'],
+        },
+        isLoading: false,
+      })
 
       const mockMultiClusters = [
         ...mockManagedClusters,
@@ -457,28 +385,24 @@ describe('useRoleAssignmentData', () => {
         },
       ]
 
-      mockUseSearchResultItemsQuery.mockImplementation((options) => {
-        const input = options?.variables?.input as any[]
-        const isNamespacesQuery = input?.[0]?.filters?.some(
-          (filter: any) => filter.property === 'kind' && filter.values?.includes('Namespace')
-        )
+      mockUseSharedAtoms.mockReturnValue({
+        managedClusterSetsState: mockManagedClusterSetsState,
+        managedClustersState: mockManagedClustersState,
+        usePolicies: jest.fn(),
+        useIsObservabilityInstalled: jest.fn(),
+        useSavedSearchLimit: jest.fn(),
+        useSearchResultLimit: jest.fn(),
+      } as any)
 
-        if (isNamespacesQuery) {
-          return { data: mockAllNamespacesMultiCluster, loading: false } as any
-        }
-
-        return { data: mockClusterRoles, loading: false } as any
-      })
-
-      const mockManagedClustersState = {} as any
       mockUseRecoilValue.mockImplementation((atom) => {
         if (atom === mockManagedClustersState) return mockMultiClusters
-        return mockManagedClusterSets
+        if (atom === mockManagedClusterSetsState) return mockManagedClusterSets
+        return []
       })
 
       const { result } = renderHook(() => useRoleAssignmentData())
 
-      waitFor(() => {
+      await waitFor(() => {
         const clusterSet = result.current.roleAssignmentData.clusterSets[0]
         const cluster1 = clusterSet?.clusters?.find((c) => c.name === 'cluster-1')
         const cluster2 = clusterSet?.clusters?.find((c) => c.name === 'cluster-2')

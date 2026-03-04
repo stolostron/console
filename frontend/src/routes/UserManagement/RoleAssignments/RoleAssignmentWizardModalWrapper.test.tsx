@@ -96,6 +96,7 @@ const mockToastContext = {
   alertInfos: [],
   removeVisibleAlert: jest.fn(),
   clearAlerts: jest.fn(),
+  modifyAlert: jest.fn(),
 }
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (

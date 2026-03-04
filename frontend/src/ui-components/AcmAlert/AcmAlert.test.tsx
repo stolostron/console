@@ -4,8 +4,43 @@ import { act, render, waitFor } from '@testing-library/react'
 import { axe } from 'jest-axe'
 import { Fragment } from 'react'
 import { AcmButton } from '../AcmButton/AcmButton'
-import { AcmAlert, AcmAlertContext, AcmAlertGroup, AcmAlertProvider } from './AcmAlert'
+import { AcmAlert, AcmAlertContext, AcmAlertGroup, AcmAlertProvider, replaceAlertById } from './AcmAlert'
+import type { AcmAlertInfoWithId } from './AcmAlert'
 import { AcmToast, AcmToastContext, AcmToastGroup, AcmToastProvider } from './AcmToast'
+
+describe('replaceAlertById', () => {
+  test('returns the same array when no alert matches the id', () => {
+    const alerts: AcmAlertInfoWithId[] = [
+      { id: 'a', title: 'A' },
+      { id: 'b', title: 'B' },
+    ]
+    const result = replaceAlertById(alerts, { id: 'c', title: 'C' })
+    expect(result).toBe(alerts)
+    expect(result).toEqual([
+      { id: 'a', title: 'A' },
+      { id: 'b', title: 'B' },
+    ])
+  })
+
+  test('replaces the alert with matching id and returns a new array', () => {
+    const alerts: AcmAlertInfoWithId[] = [
+      { id: 'a', title: 'A' },
+      { id: 'b', title: 'B' },
+    ]
+    const result = replaceAlertById(alerts, { id: 'b', title: 'B updated', message: 'msg' })
+    expect(result).not.toBe(alerts)
+    expect(result).toEqual([
+      { id: 'a', title: 'A' },
+      { id: 'b', title: 'B updated', message: 'msg' },
+    ])
+  })
+
+  test('does not mutate the original array', () => {
+    const alerts: AcmAlertInfoWithId[] = [{ id: 'x', title: 'X' }]
+    replaceAlertById(alerts, { id: 'x', title: 'Y' })
+    expect(alerts[0].title).toBe('X')
+  })
+})
 
 describe('AcmAlert', () => {
   test('renders alerts in alert group', async () => {
@@ -58,6 +93,98 @@ describe('AcmAlert', () => {
     const { queryAllByText } = render(<AcmAlert title="TITLE" message="MESSAGE" variant="info" />)
     await waitFor(() => expect(queryAllByText('TITLE')).toHaveLength(1))
     await waitFor(() => expect(queryAllByText('MESSAGE')).toHaveLength(1))
+  })
+
+  describe('modifyAlert', () => {
+    test('updates an existing alert title and message when modifyAlert is called', async () => {
+      let addAlertReturn: AcmAlertInfoWithId | null = null
+      const { getByText, queryByText } = render(
+        <AcmAlertProvider>
+          <AcmAlertGroup isInline canClose />
+          <AcmAlertContext.Consumer>
+            {(context) => (
+              <Fragment>
+                <AcmButton
+                  onClick={() => {
+                    addAlertReturn = context.addAlert({
+                      title: 'Original title',
+                      message: 'Original message',
+                      type: 'info',
+                    })
+                  }}
+                >
+                  Add Alert
+                </AcmButton>
+                <AcmButton
+                  onClick={() => {
+                    if (addAlertReturn) {
+                      context.modifyAlert({
+                        ...addAlertReturn,
+                        title: 'Updated title',
+                        message: 'Updated message',
+                        type: 'warning',
+                      })
+                    }
+                  }}
+                >
+                  Modify Alert
+                </AcmButton>
+              </Fragment>
+            )}
+          </AcmAlertContext.Consumer>
+        </AcmAlertProvider>
+      )
+
+      getByText('Add Alert').click()
+      await waitFor(() => expect(queryByText('Original title')).toBeInTheDocument())
+      expect(queryByText('Original message')).toBeInTheDocument()
+
+      getByText('Modify Alert').click()
+      await waitFor(() => expect(queryByText('Updated title')).toBeInTheDocument())
+      await waitFor(() => expect(queryByText('Updated message')).toBeInTheDocument())
+      expect(queryByText('Original title')).not.toBeInTheDocument()
+      expect(queryByText('Original message')).not.toBeInTheDocument()
+    })
+
+    test('modifyAlert returns the passed alertInfo', async () => {
+      let addAlertReturn: AcmAlertInfoWithId | null = null
+      let modifyReturn: AcmAlertInfoWithId | null = null
+      const { getByText } = render(
+        <AcmAlertProvider>
+          <AcmAlertGroup isInline canClose />
+          <AcmAlertContext.Consumer>
+            {(context) => (
+              <Fragment>
+                <AcmButton
+                  onClick={() => {
+                    addAlertReturn = context.addAlert({ title: 'Alert' })
+                  }}
+                >
+                  Add
+                </AcmButton>
+                <AcmButton
+                  onClick={() => {
+                    if (addAlertReturn) {
+                      const updated = { ...addAlertReturn, title: 'Modified' }
+                      modifyReturn = context.modifyAlert(updated)
+                    }
+                  }}
+                >
+                  Modify
+                </AcmButton>
+              </Fragment>
+            )}
+          </AcmAlertContext.Consumer>
+        </AcmAlertProvider>
+      )
+
+      getByText('Add').click()
+      await waitFor(() => expect(addAlertReturn).not.toBeNull())
+      getByText('Modify').click()
+      await waitFor(() =>
+        expect(modifyReturn).toEqual(expect.objectContaining({ id: addAlertReturn!.id, title: 'Modified' }))
+      )
+    })
   })
 })
 

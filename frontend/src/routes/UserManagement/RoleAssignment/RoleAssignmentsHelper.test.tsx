@@ -55,10 +55,17 @@ jest.mock('./RoleAssignmentLabel', () => ({
 
 // Mock RoleAssignmentStatusComponent
 jest.mock('./RoleAssignmentStatusComponent', () => ({
-  RoleAssignmentStatusComponent: ({ status }: { status?: any }) => (
+  RoleAssignmentStatusComponent: ({
+    roleAssignment,
+    isCallbackProcessing,
+  }: {
+    roleAssignment?: { status?: { status?: string; reason?: string } }
+    isCallbackProcessing?: boolean
+  }) => (
     <div data-testid="role-assignment-status">
-      {status?.status || 'Unknown'}
-      {status?.reason && <span data-testid="status-reason">{status.reason}</span>}
+      {roleAssignment?.status?.status || 'Unknown'}
+      {roleAssignment?.status?.reason && <span data-testid="status-reason">{roleAssignment.status.reason}</span>}
+      {isCallbackProcessing && <span data-testid="callback-processing">processing</span>}
     </div>
   ),
 }))
@@ -89,6 +96,7 @@ import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { FlattenedRoleAssignment } from '../../../resources/clients/model/flattened-role-assignment'
 import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
+import { RoleAssignmentCallbackReason } from './RoleAssignmentStatusComponent'
 import {
   renderActionCell,
   renderClustersCell,
@@ -99,6 +107,15 @@ import {
   renderStatusCell,
   renderSubjectNameCell,
 } from './RoleAssignmentsHelper'
+
+const mockCallbackMap: Record<RoleAssignmentCallbackReason, (ra: FlattenedRoleAssignment) => void> = {
+  Processing: jest.fn(),
+  InvalidReference: jest.fn(),
+  NoMatchingClusters: jest.fn(),
+  SuccessfullyApplied: jest.fn(),
+  ApplicationFailed: jest.fn(),
+  MissingNamespaces: jest.fn(),
+}
 
 describe('RoleAssignmentsHelper', () => {
   const mockMulticlusterRoleAssignment: MulticlusterRoleAssignment = {
@@ -230,7 +247,7 @@ describe('RoleAssignmentsHelper', () => {
   })
 
   describe('renderStatusCell', () => {
-    it('should render status component with status', () => {
+    it('should render status component with roleAssignment and isCallbackProcessing', () => {
       const roleAssignment = createMockRoleAssignment({
         status: {
           name: 'test-role-assignment',
@@ -238,12 +255,16 @@ describe('RoleAssignmentsHelper', () => {
           createdAt: '2024-01-15T10:30:00Z',
         },
       })
-      const cell = renderStatusCell(roleAssignment)
+      const cell = renderStatusCell({
+        roleAssignment,
+        callbackMap: mockCallbackMap,
+        isCallbackProcessing: false,
+      })
 
       const { container } = render(<div>{cell}</div>)
       expect(container).toBeInTheDocument()
-      // Status component should be rendered
       expect(container.firstChild).toBeTruthy()
+      expect(container.textContent).toContain('Active')
     })
 
     it('should render status component with error status and reason', () => {
@@ -251,28 +272,49 @@ describe('RoleAssignmentsHelper', () => {
         status: {
           name: 'test-role-assignment',
           status: 'Error',
-          reason: 'Some error reason',
+          reason: 'ApplicationFailed',
           createdAt: '2024-01-15T10:30:00Z',
         },
       })
-      const cell = renderStatusCell(roleAssignment)
+      const cell = renderStatusCell({
+        roleAssignment,
+        callbackMap: mockCallbackMap,
+        isCallbackProcessing: false,
+      })
 
       const { container } = render(<div>{cell}</div>)
       expect(container).toBeInTheDocument()
-      // Status component should be rendered
       expect(container.firstChild).toBeTruthy()
+      expect(container.textContent).toContain('ApplicationFailed')
     })
 
     it('should handle undefined status', () => {
       const roleAssignment = createMockRoleAssignment({
         status: undefined,
       })
-      const cell = renderStatusCell(roleAssignment)
+      const cell = renderStatusCell({
+        roleAssignment,
+        callbackMap: mockCallbackMap,
+        isCallbackProcessing: false,
+      })
 
       const { container } = render(<div>{cell}</div>)
       expect(container).toBeInTheDocument()
-      // Status component should be rendered even with undefined status
       expect(container.firstChild).toBeTruthy()
+      expect(container.textContent).toContain('Unknown')
+    })
+
+    it('should pass isCallbackProcessing to status component', () => {
+      const roleAssignment = createMockRoleAssignment()
+      const cell = renderStatusCell({
+        roleAssignment,
+        callbackMap: mockCallbackMap,
+        isCallbackProcessing: true,
+      })
+
+      const { container } = render(<div>{cell}</div>)
+      expect(container).toBeInTheDocument()
+      expect(container.textContent).toContain('processing')
     })
   })
 
