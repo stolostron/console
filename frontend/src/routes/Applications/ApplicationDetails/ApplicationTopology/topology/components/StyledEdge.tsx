@@ -10,6 +10,7 @@ import {
   observer,
   DefaultConnectorTerminal,
   EdgeTerminalType,
+  NodeStatus,
 } from '@patternfly/react-topology'
 
 type EdgeProps = {
@@ -22,7 +23,9 @@ type EdgeProps = {
 const StyledEdge: React.FunctionComponent<EdgeProps> = ({ element, dragging }) => {
   const startPoint = element.getStartPoint()
   const endPoint = element.getEndPoint()
-
+  const isPending =
+    element.getTarget().getData().status === NodeStatus.default ||
+    element.getSource().getData().status === NodeStatus.default
   // Create path: straight line if horizontally aligned, otherwise curved
   const horizontalDistance = Math.abs(endPoint.y - startPoint.y)
   let d: string
@@ -76,7 +79,24 @@ const StyledEdge: React.FunctionComponent<EdgeProps> = ({ element, dragging }) =
           size={4}
           terminalType={EdgeTerminalType.square}
         />
-        <path strokeWidth={1} stroke={edgeColor} d={d} fill="none" markerEnd={`url(#${markerId})`} />
+        <path
+          strokeWidth={1}
+          stroke={edgeColor}
+          d={d}
+          fill="none"
+          markerEnd={`url(#${markerId})`}
+          strokeDasharray={isPending ? '8 8' : undefined}
+        >
+          {isPending && (
+            <animate
+              attributeName="stroke-dashoffset"
+              values="16;0"
+              dur="0.6s"
+              calcMode="linear"
+              repeatCount="indefinite"
+            />
+          )}
+        </path>
       </Layer>
     </>
   )
