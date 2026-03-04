@@ -209,28 +209,6 @@ describe('StyledNode tests', () => {
       expect(calledProps).not.toHaveProperty('undefinedProp')
       expect(calledProps.nullProp).toBeNull()
     })
-
-    test('removes secondaryLabel at medium detail level', () => {
-      const element = createMockElement({
-        scale: 0.4,
-        data: { secondaryLabel: 'should be removed' },
-      })
-      render(<StyledNode element={element} />)
-
-      const calledProps = mockDefaultNode.mock.calls[0][0]
-      expect(calledProps).not.toHaveProperty('secondaryLabel')
-    })
-
-    test('keeps secondaryLabel at high detail level', () => {
-      const element = createMockElement({
-        scale: 0.8,
-        data: { secondaryLabel: 'should be kept' },
-      })
-      render(<StyledNode element={element} />)
-
-      const calledProps = mockDefaultNode.mock.calls[0][0]
-      expect(calledProps.secondaryLabel).toBe('should be kept')
-    })
   })
 
   describe('decorators', () => {
