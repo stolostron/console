@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import * as jsonpatch from 'fast-json-patch'
-import { noop } from 'lodash'
+import { noop, pick } from 'lodash'
 import { getCookie } from './utils'
 import { ApplicationKind, NamespaceKind, SubscriptionApiVersion, SubscriptionKind } from '../'
 import { tokenExpired } from '../../logout'
@@ -59,6 +59,14 @@ export class ResourceError extends Error {
     super(message || ResourceErrorCode[code])
     Object.setPrototypeOf(this, ResourceError.prototype)
     this.name = 'ResourceError'
+  }
+}
+
+class AnsiblePathNotFoundError extends ResourceError {
+  constructor(message?: string) {
+    super(ResourceErrorCode.NotFound, message)
+    Object.setPrototypeOf(this, AnsiblePathNotFoundError.prototype)
+    this.name = 'AnsiblePathNotFoundError'
   }
 }
 
@@ -486,40 +494,143 @@ export function isAnsibleGatewayURL(ansibleHostUrl: string): boolean {
   return true
 }
 
+interface AnsiblePaginatedResponse<T> {
+  count?: number
+  next?: string
+  results: T[]
+}
+
+/**
+ * Generic fetch function for Ansible resources.
+ */
+function fetchAnsibleResource<T>(
+  backendUrlPath: string,
+  ansibleResourceUrl: string,
+  token: string,
+  signal: AbortSignal
+) {
+  return fetchRetry<AnsiblePaginatedResponse<T>>({
+    method: 'POST',
+    url: backendUrlPath,
+    signal,
+    data: {
+      towerHost: ansibleResourceUrl,
+      token: token,
+    },
+    retries: process.env.NODE_ENV === 'production' ? 2 : 0,
+    disableRedirectUnauthorizedLogin: true,
+  })
+}
+
+/**
+ * Generic function to fetch Ansible resources with pagination.
+ * Tries all paths in the provided array and handles pagination for each.
+ * Accumulates results from all paths that succeed.
+ * Throws AnsiblePathNotFoundError if all paths return 404 on the first request.
+ */
+async function getAnsibleResourcesWithPagination<T>(
+  backendURLPath: string,
+  ansibleHostUrl: string,
+  token: string,
+  abortController: AbortController,
+  paths: string[]
+): Promise<T[]> {
+  const resources: T[] = []
+  let first404Error: ResourceError | undefined
+  let anyPathSucceeded = false
+
+  for (const path of paths) {
+    let resourceUrl: string = ansibleHostUrl + path
+    let isFirstRequest = true
+
+    while (resourceUrl) {
+      try {
+        const result = await fetchAnsibleResource<T>(backendURLPath, resourceUrl, token, abortController.signal)
+
+        if (result.data.results) {
+          resources.push(...result.data.results)
+        }
+
+        // We got a successful response from this path
+        anyPathSucceeded = true
+        isFirstRequest = false
+        const { next } = result.data
+        resourceUrl = next ? ansibleHostUrl + next : ''
+      } catch (error) {
+        if (error instanceof ResourceError && error.code === ResourceErrorCode.NotFound) {
+          // Only treat 404 as "path doesn't exist" on the first request
+          // Later-page 404s are real errors (path exists but page is missing)
+          if (isFirstRequest) {
+            first404Error = error
+            resourceUrl = ''
+          } else {
+            // 404 on pagination - this is a real error, re-throw
+            throw error
+          }
+        } else {
+          // Non-404 error (auth, network, etc.) should always be thrown
+          throw error
+        }
+      }
+    }
+  }
+
+  // If no paths succeeded and we encountered a 404 error, throw custom error
+  // (Non-404 errors are thrown immediately above, so this only runs when all tried paths returned 404)
+  if (!anyPathSucceeded && first404Error) {
+    throw new AnsiblePathNotFoundError(first404Error.message)
+  } else {
+    return resources
+  }
+}
+
+/**
+ * Higher-order function that executes a primary function and falls back to a secondary function
+ * if the primary throws an AnsiblePathNotFoundError.
+ */
+async function withAnsiblePathFallback<T>(primaryFn: () => Promise<T>, fallbackFn: () => Promise<T>): Promise<T> {
+  try {
+    return await primaryFn()
+  } catch (error) {
+    if (error instanceof AnsiblePathNotFoundError) {
+      return await fallbackFn()
+    }
+    throw error
+  }
+}
+
 async function getAnsibleTemplates(
   backendURLPath: string,
   ansibleHostUrl: string,
   token: string,
   abortController: AbortController
 ) {
-  const ansibleJobs: AnsibleTowerJobTemplate[] = []
-  const ansiblePaths = isAnsibleGatewayURL(ansibleHostUrl) ? ansibleGatewayPaths : ansibleControllerPaths
+  // Try gateway paths first (AAP 2.5+), then fall back to controller paths (AAP 2.4 and earlier)
+  const ansibleJobs = await withAnsiblePathFallback(
+    () =>
+      getAnsibleResourcesWithPagination<AnsibleTowerJobTemplate>(
+        backendURLPath,
+        ansibleHostUrl,
+        token,
+        abortController,
+        ansibleGatewayPaths
+      ),
+    () =>
+      getAnsibleResourcesWithPagination<AnsibleTowerJobTemplate>(
+        backendURLPath,
+        ansibleHostUrl,
+        token,
+        abortController,
+        ansibleControllerPaths
+      )
+  )
 
-  for (const path of ansiblePaths) {
-    let jobUrl: string = ansibleHostUrl + path
-    while (jobUrl) {
-      const result = await fetchGetAnsibleJobs(backendURLPath, jobUrl, token, abortController.signal)
-      if (result.data.results) {
-        ansibleJobs.push(...result.data.results)
-      }
-      const { next } = result.data
-      if (next) {
-        jobUrl = ansibleHostUrl + next
-      } else {
-        jobUrl = ''
-      }
-    }
-  }
-
+  // Filter to only the fields we need (Ansible Tower API returns many more fields)
   return {
-    results: ansibleJobs?.map((ansibleJob: { name: string; type?: string; description?: string; id: string }) => {
-      return {
-        name: ansibleJob.name,
-        type: ansibleJob.type!,
-        description: ansibleJob.description,
-        id: ansibleJob.id,
-      }
-    }),
+    results: ansibleJobs.map((job) => ({
+      ...pick(job, ['name', 'description', 'id']),
+      type: job.type!,
+    })),
   }
 }
 
@@ -539,50 +650,30 @@ export function listAnsibleTowerJobs(
   }
 }
 
-export function fetchGetAnsibleJobs(
-  backendUrlPath: string,
-  ansibleJobsUrl: string,
-  token: string,
-  signal: AbortSignal
-) {
-  return fetchRetry<AnsibleTowerJobTemplateList>({
-    method: 'POST',
-    url: backendUrlPath,
-    signal,
-    data: {
-      towerHost: ansibleJobsUrl,
-      token: token,
-    },
-    retries: process.env.NODE_ENV === 'production' ? 2 : 0,
-    disableRedirectUnauthorizedLogin: true,
-  })
-}
-
 async function getAnsibleInventories(
   backendURLPath: string,
   ansibleHostUrl: string,
   token: string,
   abortController: AbortController
 ) {
-  const ansibleInventories: AnsibleTowerInventory[] = []
-  const inventoryUrl: string =
-    ansibleHostUrl + (isAnsibleGatewayURL(ansibleHostUrl) ? '/api/controller/v2/inventories/' : '/api/v2/inventories/')
-  const result = await fetchGetAnsibleInventories(backendURLPath, inventoryUrl, token, abortController.signal)
-  if (result.data.results) {
-    ansibleInventories.push(...result.data.results)
-  }
+  // Try gateway path first (AAP 2.5+), then fall back to controller path (AAP 2.4 and earlier)
+  const ansibleInventories = await withAnsiblePathFallback(
+    () =>
+      getAnsibleResourcesWithPagination<AnsibleTowerInventory>(backendURLPath, ansibleHostUrl, token, abortController, [
+        '/api/controller/v2/inventories/',
+      ]),
+    () =>
+      getAnsibleResourcesWithPagination<AnsibleTowerInventory>(backendURLPath, ansibleHostUrl, token, abortController, [
+        '/api/v2/inventories/',
+      ])
+  )
 
+  // Filter to only the fields we need (Ansible Tower API returns many more fields)
   return {
-    results: ansibleInventories?.map(
-      (ansibleInventory: { name?: string; type?: string; description?: string; id?: string }) => {
-        return {
-          name: ansibleInventory.name,
-          type: ansibleInventory.type!,
-          description: ansibleInventory.description,
-          id: ansibleInventory.id,
-        }
-      }
-    ),
+    results: ansibleInventories.map((inventory) => ({
+      ...pick(inventory, ['name', 'description', 'id']),
+      type: inventory.type!,
+    })),
   }
 }
 
@@ -598,25 +689,6 @@ export function listAnsibleTowerInventories(
     }),
     abort: () => abortController.abort(),
   }
-}
-
-export function fetchGetAnsibleInventories(
-  backendUrlPath: string,
-  ansibleInventoriesUrl: string,
-  token: string,
-  signal: AbortSignal
-) {
-  return fetchRetry<AnsibleTowerInventoryList>({
-    method: 'POST',
-    url: backendUrlPath,
-    signal,
-    data: {
-      towerHost: ansibleInventoriesUrl,
-      token: token,
-    },
-    retries: process.env.NODE_ENV === 'production' ? 2 : 0,
-    disableRedirectUnauthorizedLogin: true,
-  })
 }
 
 export function getRequest<ResultT>(url: string | Promise<string>): IRequestResult<ResultT> {
