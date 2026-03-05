@@ -13,14 +13,7 @@ import {
   placementsState,
   secretsState,
 } from '../../../atoms'
-import {
-  nockCreate,
-  nockGet,
-  nockIgnoreApiPaths,
-  nockIgnoreRBAC,
-  nockList,
-  nockPatch,
-} from '../../../lib/nock-util'
+import { nockCreate, nockGet, nockIgnoreApiPaths, nockIgnoreRBAC, nockList, nockPatch } from '../../../lib/nock-util'
 import { mockGlobalClusterSet } from '../../../lib/test-metadata'
 import {
   clickBySelector,
