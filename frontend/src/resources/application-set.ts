@@ -15,7 +15,7 @@ export const ApplicationSetDefinition: IResourceDefinition = {
   kind: ApplicationSetKind,
 }
 
-type RelatedResourcesType = (string | string[])[]
+type AppSetPlacementDataType = (string | string[])[]
 
 export interface ApplicationSet extends IResource {
   apiVersion: ApplicationSetApiVersionType
@@ -47,6 +47,6 @@ export interface ApplicationSet extends IResource {
     clusterCount?: string
   }
   uidata?: {
-    appSetRelatedResources: RelatedResourcesType
+    appSetPlacementData: AppSetPlacementDataType
   }
 }
