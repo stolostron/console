@@ -31,6 +31,7 @@ import {
   getResourceTypes,
   processMultiples,
 } from './topologyUtils'
+import { PlacementDecision } from '../../../../../resources/placement-decision'
 
 /**
  * Generates topology data for ApplicationSet applications
@@ -109,7 +110,7 @@ export async function getAppSetTopology(
   // Create placement node if placement exists
   let isPlacementFound = false
   let isArgoCDPullModelTargetLocalCluster = false
-  const placement = application.placement ?? ''
+  const placement = application.placementDecision as PlacementDecision
   const placementId = `member--placements--${namespace}--${name}`
 
   if (placement) {
