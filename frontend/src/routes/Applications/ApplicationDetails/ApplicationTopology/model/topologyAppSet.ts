@@ -196,12 +196,7 @@ export async function getAppSetTopology(
   ////  APPLICATION RESOURCE NODES /////////////////
   /////////////////////////////////////////////
   const visibleAppCount = Object.entries(applicationResourceMap).filter(
-    ([appNameClusterKey]) =>
-      !(
-        applicationNames.length > 0 &&
-        activeApplications &&
-        !activeApplications.includes(appNameClusterKey.split('--')[0])
-      )
+    ([appNameClusterKey]) => !(activeApplications && !activeApplications.includes(appNameClusterKey.split('--')[0]))
   ).length
   let parentNodeId = clusterId
   Object.entries(applicationResourceMap).forEach(([appNameClusterKey, resources]) => {
@@ -210,7 +205,7 @@ export async function getAppSetTopology(
     // (skip when only one application node would be created, including after filtering)
     const isApplicationFiltered =
       applicationNames.length > 0 && activeApplications && !activeApplications.includes(appName)
-    if (visibleAppCount > 1 && !isApplicationFiltered) {
+    if (applicationNames.length > 0 && visibleAppCount > 1 && !isApplicationFiltered) {
       // Has multiple visible applications - create application node
       parentNodeId = `member--application--${clusterName}--${appName}`
       const healthStatus = appStatusByNameMap[`${name}-${appName}`]?.health.status || 'Healthy'

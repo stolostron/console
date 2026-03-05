@@ -45,8 +45,8 @@ export function requestAggregatedAppSetData(req: Http2ServerRequest, res: Http2S
       return
     }
 
-    const resourcePath = resourceUrl(appset)
     try {
+      const resourcePath = resourceUrl(appset)
       appset = await jsonRequest<IApplicationSet>(resourcePath, token)
     } catch (error) {
       console.error(error)
