@@ -284,9 +284,9 @@ const uidataPlacementDecision = {
       'cluster.open-cluster-management.io/placement': 'test-placement-1',
     },
     name: 'test-placement-1-decision-1',
-    namespace: 'default',
+    namespace: 'openshift-gitops',
     resourceVersion: '1625071',
-    uid: '7ba09bb1-5211-490f-a6d1-456322886ab0',
+    uid: '7ba09bb1-5211-490f-a6d1-456392886ab0',
     ownerReferences: [
       {
         apiVersion: 'cluster.open-cluster-management.io/v1beta1',
@@ -301,7 +301,7 @@ const uidataPlacementDecision = {
   status: {
     decisions: [
       {
-        clusterName: 'local-cluster',
+        clusterName: 'mycluster',
         reason: '',
       },
     ],
