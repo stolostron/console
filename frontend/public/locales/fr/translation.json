@@ -2873,7 +2873,7 @@
   "submariner.install.form.gateways.labelHelp": "Nombre de nœuds worker utilisés pour déployer le composant de passerelle Submariner sur le cluster géré. Si la valeur est supérieure à 1, le mode HA de la passerelle Submariner est automatiquement activé (valeur par défaut : 1).",
   "submariner.install.form.gateways.placeholder": "Saisir le nombre de passerelles",
   "submariner.install.form.instancetype": "Saisir le type d’instance",
-  "submariner.install.form.instancetype.labelHelp.aws": "Type d’instance Amazon Web Services EC2 du nœud de passerelle qui sera créé sur le cluster géré (valeur par défaut : c5d.large).",
+  "submariner.install.form.instancetype.labelHelp.aws": "Type d’instance Amazon Web Services EC2 du nœud de passerelle qui sera créé sur le cluster géré (valeur par défaut : m5.xlarge).",
   "submariner.install.form.instancetype.labelHelp.azure": "Type d’instance Azure du nœud de passerelle qui sera créé sur le cluster géré (valeur par défaut : Standard_F4s_v2).",
   "submariner.install.form.instancetype.placeholder": "Sélectionner le type d’instance",
   "submariner.install.form.nattenable": "Activer NAT-T",

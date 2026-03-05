@@ -2844,7 +2844,7 @@
   "submariner.install.form.gateways.labelHelp": "用于在受管集群中部署 Submariner 网关组件的 worker 节点的数量。如果值大于 1，则 Submariner 网关 HA 将自动启用。（默认为 1）。",
   "submariner.install.form.gateways.placeholder": "输入网关数",
   "submariner.install.form.instancetype": "输入实例类型",
-  "submariner.install.form.instancetype.labelHelp.aws": "将在受管集群上创建的网关节点的 Amazon Web Services EC2 实例类型（默认 c5d.large）。",
+  "submariner.install.form.instancetype.labelHelp.aws": "将在受管集群上创建的网关节点的 Amazon Web Services EC2 实例类型（默认 m5.xlarge）。",
   "submariner.install.form.instancetype.labelHelp.azure": "将在受管集群上创建的网关节点的 Azure 实例类型（默认 Standard_F4s_v2）。",
   "submariner.install.form.instancetype.placeholder": "选择实例类型",
   "submariner.install.form.nattenable": "启用 NAT-T",

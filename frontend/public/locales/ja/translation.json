@@ -2844,7 +2844,7 @@
   "submariner.install.form.gateways.labelHelp": "マネージドクラスターに Submariner ゲートウェイコンポーネントをデプロイするために使用されるワーカーノードの数。値が 1 より大きい場合、Submariner ゲートウェイの HA は自動的に有効化されます (デフォルト 1)。",
   "submariner.install.form.gateways.placeholder": "ゲートウェイ数を入力します",
   "submariner.install.form.instancetype": "インスタンスタイプを入力します",
-  "submariner.install.form.instancetype.labelHelp.aws": "マネージドクラスター上に作成されるゲートウェイノードの Amazon Web Services EC2 インスタンスタイプ (デフォルト c5d.large)。",
+  "submariner.install.form.instancetype.labelHelp.aws": "マネージドクラスター上に作成されるゲートウェイノードの Amazon Web Services EC2 インスタンスタイプ (デフォルト m5.xlarge)。",
   "submariner.install.form.instancetype.labelHelp.azure": "マネージドクラスター上に作成されるゲートウェイノードの Azure インスタンスタイプ (デフォルト Standard_F4s_v2)。",
   "submariner.install.form.instancetype.placeholder": "インスタンスタイプの選択",
   "submariner.install.form.nattenable": "NAT-T の有効化",

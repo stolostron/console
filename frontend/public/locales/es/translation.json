@@ -2873,7 +2873,7 @@
   "submariner.install.form.gateways.labelHelp": "La cantidad de nodos trabajadores utilizados para implementar el componente de puerta de enlace de Submariner en el clúster gestionado. Si el valor es mayor que 1, la puerta de enlace HA de Submariner se habilita automáticamente (1 predeterminado).",
   "submariner.install.form.gateways.placeholder": "Ingresar el recuento de puertas de enlace",
   "submariner.install.form.instancetype": "Ingresar el tipo de instancia",
-  "submariner.install.form.instancetype.labelHelp.aws": "El tipo de instancia EC2 de Amazon Web Services del nodo de puerta de enlace que se creará en el clúster gestionado (c5d.large predeterminado).",
+  "submariner.install.form.instancetype.labelHelp.aws": "El tipo de instancia EC2 de Amazon Web Services del nodo de puerta de enlace que se creará en el clúster gestionado (m5.xlarge predeterminado).",
   "submariner.install.form.instancetype.labelHelp.azure": "El tipo de instancia de Azure del nodo de puerta de enlace que se creará en el clúster gestionado (Standard_F4s_v2 predeterminado).",
   "submariner.install.form.instancetype.placeholder": "Seleccionar tipo de instancia",
   "submariner.install.form.nattenable": "Habilitar NAT-T",
