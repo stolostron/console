@@ -28,7 +28,7 @@ import {
 import { IResource } from '../common/resources/IResource'
 import { useTranslation } from '../../lib/acm-i18next'
 import { Channel } from './ArgoWizard'
-import { validateWebURL } from '../../lib/validation'
+import { useValidation } from '../../hooks/useValidation'
 import { GitRevisionSelect } from './common/GitRevisionSelect'
 import { IPlacement } from '../common/resources/IPlacement'
 import { useShowValidation } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ShowValidationProvider'
@@ -108,6 +108,7 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
   const generatorType = getGeneratorType(generator)
   const requeueTimes = useMemo(() => [30, 60, 120, 180, 300], [])
   const { t } = useTranslation()
+  const { validateWebURL } = useValidation()
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       {/* Cluster Decision Resource generator - uses Placement to determine target clusters */}

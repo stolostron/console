@@ -14,7 +14,7 @@ import { LoadingPage } from '../../../components/LoadingPage'
 import { LostChangesContext } from '../../../components/LostChanges'
 import { useProjects } from '../../../hooks/useProjects'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { validateKubernetesDnsName } from '../../../lib/validation'
+import { useValidation } from '../../../hooks/useValidation'
 import { NavigationPath } from '../../../NavigationPath'
 import {
   ClusterCurator,
@@ -116,6 +116,7 @@ export function AnsibleAutomationsForm(props: {
   isViewing: boolean
 }) {
   const { t } = useTranslation()
+  const { validateKubernetesDnsName } = useValidation()
   const { ansibleCredentials, clusterCurator, isEditing, isViewing } = props
   const { settingsState } = useSharedAtoms()
   const settings = useRecoilValue(settingsState)
@@ -479,7 +480,7 @@ export function AnsibleAutomationsForm(props: {
             onChange: setTemplateName,
             isRequired: true,
             isDisabled: isEditing,
-            validation: (value) => validateKubernetesDnsName(value, t),
+            validation: validateKubernetesDnsName,
           },
           {
             id: 'ansibleSecrets',

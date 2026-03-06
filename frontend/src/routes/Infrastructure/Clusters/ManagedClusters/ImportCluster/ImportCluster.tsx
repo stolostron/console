@@ -72,7 +72,7 @@ import { TemplateLinkOut, TemplateSummaryExpandable } from '../../../../../compo
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useRecoilValue, useSharedSelectors } from '../../../../../shared-recoil'
 import { AutomationProviderHint } from '../../../../../components/AutomationProviderHint'
-import { validateYAML } from '../../../../../lib/validation'
+import { useValidation } from '../../../../../hooks/useValidation'
 import { useWizardStrings } from '../../../../../lib/wizardStrings'
 import { css } from '@emotion/css'
 import { AcmFormInputAdapter } from '../../../../../wizards/common/AcmFormInputAdapter'
@@ -780,6 +780,7 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
     dispatch,
   } = props
   const { t } = useTranslation()
+  const { validateYAML } = useValidation()
 
   const resources = useItem() as any[]
   const { update } = useData()
@@ -916,7 +917,6 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
     }
   }
 
-  const validateKubeconfig = useCallback((value: string) => validateYAML(value, t), [t])
   const controlId = 'import-mode'
   const controlLabel = t('import.mode.select')
   const credentialControlId = 'credential'
@@ -1048,7 +1048,7 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
           placeholder={t('import.auto.config.prompt')}
           onValueChange={(k: any) => dispatch({ type: 'setKubeconfig', kubeconfig: (k as State['kubeconfig']) ?? '' })}
           secret
-          validation={validateKubeconfig}
+          validation={validateYAML}
           required={importMode === ImportMode.kubeconfig}
           hidden={() => importMode !== ImportMode.kubeconfig}
         />

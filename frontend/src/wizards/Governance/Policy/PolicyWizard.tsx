@@ -48,7 +48,7 @@ import { IResource } from '../../common/resources/IResource'
 import { IClusterSetBinding } from '../../common/resources/IClusterSetBinding'
 import { PlacementBindingKind } from '../../common/resources/IPlacementBinding'
 import { PolicyApiGroup, PolicyKind, PolicyType } from '../../common/resources/IPolicy'
-import { validateKubernetesResourceName, validatePolicyName } from '../../../lib/validation'
+import { useValidation } from '../../../hooks/useValidation'
 import { MatchExpression, MatchExpressionCollapsed } from '../../Placement/MatchExpression'
 import { PlacementSection } from '../../Placement/PlacementSection'
 import { Specifications } from './specifications'
@@ -74,6 +74,7 @@ export function PolicyWizard(props: {
   isSaving?: boolean
 }) {
   const { t } = useTranslation()
+  const { validatePolicyName } = useValidation()
   const translatedWizardStrings = useWizardStrings({
     stepsAriaLabel: t('Policy steps'),
     contentAriaLabel: t('Policy content'),
@@ -266,6 +267,7 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
   const selectorMatchLabels = `${selectorPath}.matchLabels`
 
   const { t } = useTranslation()
+  const { validateKubernetesResourceName } = useValidation()
 
   return (
     <Section
@@ -552,6 +554,7 @@ export function isExistingTemplateName(name: string, policies: IResource[]) {
 
 function OperatorPolicy() {
   const { t } = useTranslation()
+  const { validateKubernetesResourceName } = useValidation()
   const template: any = useItem()
 
   const { update } = useData()
