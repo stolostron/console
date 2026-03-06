@@ -20,6 +20,8 @@
   "{{count}} clusters with violations_plural": "{{count}} clusters with violations",
   "{{count}} clusters without violations": "{{count}} cluster without violations",
   "{{count}} clusters without violations_plural": "{{count}} clusters without violations",
+  "{{count}} day": "{{count}} day",
+  "{{count}} day_plural": "{{count}} days",
   "{{count}} labels": "{{count}} label",
   "{{count}} labels_plural": "{{count}} labels",
   "{{count}} more": "{{count}} more",
