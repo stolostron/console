@@ -212,15 +212,11 @@ export function DiscoveryConfigPageContent(props: {
   }, [props.credentials, discoveryConfig, editing, props.discoveryNamespaces])
 
   type LastActive = { day: number; stringDay: string; value: string }
-  const lastActiveArray: LastActive[] = [
-    { day: 1, stringDay: '1 day', value: '1d' },
-    { day: 2, stringDay: '2 days', value: '2d' },
-    { day: 3, stringDay: '3 days', value: '3d' },
-    { day: 7, stringDay: '7 days', value: '7d' },
-    { day: 14, stringDay: '14 days', value: '14d' },
-    { day: 21, stringDay: '21 days', value: '21d' },
-    { day: 30, stringDay: '30 days', value: '30d' },
-  ]
+  const lastActiveArray: LastActive[] = [1, 2, 3, 7, 14, 21, 30].map((count) => ({
+    day: count,
+    stringDay: t('{{count}} day', { count }),
+    value: `${count}d`,
+  }))
 
   const updateDiscoveryConfig = useCallback(
     (update: (discoveryConfig: DiscoveryConfig) => void) => {
