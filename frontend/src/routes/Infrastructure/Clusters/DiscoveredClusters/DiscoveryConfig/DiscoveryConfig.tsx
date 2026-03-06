@@ -11,7 +11,7 @@ import {
   SelectOption,
 } from '@patternfly/react-core'
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
-import { Fragment, useCallback, useContext, useEffect, useState } from 'react'
+import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom-v5-compat'
 import { ConfirmModal, IConfirmModalProps } from '../../../../../components/ConfirmModal'
 import { CreateCredentialModal } from '../../../../../components/CreateCredentialModal'
@@ -212,11 +212,15 @@ export function DiscoveryConfigPageContent(props: {
   }, [props.credentials, discoveryConfig, editing, props.discoveryNamespaces])
 
   type LastActive = { day: number; stringDay: string; value: string }
-  const lastActiveArray: LastActive[] = [1, 2, 3, 7, 14, 21, 30].map((count) => ({
-    day: count,
-    stringDay: t('{{count}} day', { count }),
-    value: `${count}d`,
-  }))
+  const lastActiveArray: LastActive[] = useMemo(
+    () =>
+      [1, 2, 3, 7, 14, 21, 30].map((count) => ({
+        day: count,
+        stringDay: t('{{count}} day', { count }),
+        value: `${count}d`,
+      })),
+    [t]
+  )
 
   const updateDiscoveryConfig = useCallback(
     (update: (discoveryConfig: DiscoveryConfig) => void) => {
