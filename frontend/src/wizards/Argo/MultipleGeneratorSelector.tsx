@@ -32,6 +32,7 @@ import { validateWebURL } from '../../lib/validation'
 import { GitRevisionSelect } from './common/GitRevisionSelect'
 import { IPlacement } from '../common/resources/IPlacement'
 import { useShowValidation } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ShowValidationProvider'
+import { Secret } from '../../resources'
 
 const URL = '{{.url}}'
 const CLUSTER = '{{.cluster}}'
@@ -57,6 +58,7 @@ export interface MultipleGeneratorSelectorProps {
   gitGeneratorRepos: { urls: string[]; versions: string[]; paths: string[] }
   disableForm: boolean
   generatorPath: MutableRefObject<string>
+  secrets: Secret[]
 }
 
 export function MultipleGeneratorSelector(props: MultipleGeneratorSelectorProps) {
@@ -99,7 +101,7 @@ function GeneratorCollapsedContent() {
 }
 
 function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
-  const { gitGeneratorRepos, channels, disableForm } = props
+  const { gitGeneratorRepos, channels, disableForm, secrets } = props
   // this is an array dependency in Wiz which doesn't compare by stringify
   // so if you change the array object, react thinks the value changed
   // which causes infinite loop
@@ -147,6 +149,7 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
           path="git.repoURL"
           target="git.revision"
           revisions={gitGeneratorRepos.versions}
+          secrets={secrets}
         />
         <WizMultiSelect
           label={t('Directory paths')}

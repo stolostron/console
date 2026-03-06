@@ -75,6 +75,7 @@ export function CreateApplicationArgoPullModel() {
     managedClustersState,
     managedClusterSetsState,
     managedClusterSetBindingsState,
+    secretsState,
   } = useSharedAtoms()
   const navigate = useNavigate()
   const { timeZones } = useTimezones()
@@ -87,6 +88,7 @@ export function CreateApplicationArgoPullModel() {
   const clusterSets = useRecoilValue(managedClusterSetsState)
   const managedClusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
   const { ansibleCredentialsValue } = useSharedSelectors()
+  const secrets = useRecoilValue(secretsState)
 
   const availableArgoNS = GetGitOpsClusters(gitOpsClusters)
   const availableNamespace = namespaces.map((namespace) => namespace.metadata.name).filter(isType)
@@ -153,6 +155,7 @@ export function CreateApplicationArgoPullModel() {
       }
       timeZones={timeZones}
       isPullModel={true}
+      repoSecrets={secrets}
     />
   )
 }
