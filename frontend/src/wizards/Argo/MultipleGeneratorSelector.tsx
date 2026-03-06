@@ -149,8 +149,8 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
           revisions={gitGeneratorRepos.versions}
         />
         <WizMultiSelect
-          label="Directory paths"
-          placeholder="Select or enter a directory path"
+          label={t('Directory paths')}
+          placeholder={t('Select or enter a directory path')}
           path="git.directories"
           required
           options={[...gitGeneratorRepos.paths, 'default', 'development', 'production']}
@@ -187,7 +187,7 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
           path="list.elements"
           label={t('List elements')}
           placeholder={t('Add element')}
-          collapsedContent="{cluster}"
+          collapsedContent={<GeneratorCollapsedListContent />}
         >
           <WizTextInput
             path="cluster"
@@ -349,6 +349,16 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
           disabled={disableForm}
         />
       </WizHidden>
+    </div>
+  )
+}
+
+function GeneratorCollapsedListContent() {
+  const generator = useContext(ItemContext)
+  const cluster = get(generator, 'cluster')
+  return (
+    <div>
+      <Title headingLevel="h6">{cluster}</Title>
     </div>
   )
 }
