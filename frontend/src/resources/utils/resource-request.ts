@@ -517,22 +517,65 @@ async function getAnsibleTemplates(
   abortController: AbortController
 ) {
   const ansibleJobs: AnsibleTowerJobTemplate[] = []
-  const ansiblePaths = isAnsibleGatewayURL(ansibleHostUrl) ? ansibleGatewayPaths : ansibleControllerPaths
+  let last404Error: ResourceError | undefined
+  let allPathsFailed404 = true
 
-  for (const path of ansiblePaths) {
-    let jobUrl: string = ansibleHostUrl + path
-    while (jobUrl) {
-      const result = await fetchGetAnsibleJobs(backendURLPath, jobUrl, token, abortController.signal)
-      if (result.data.results) {
-        ansibleJobs.push(...result.data.results)
-      }
-      const { next } = result.data
-      if (next) {
-        jobUrl = ansibleHostUrl + next
-      } else {
-        jobUrl = ''
+  // Hostname format doesn't reliably indicate AAP version, so we try path sets separately
+  // Try gateway paths first (AAP 2.5+), then controller paths (AAP 2.4 and earlier) as fallback
+  const pathSets = [ansibleGatewayPaths, ansibleControllerPaths]
+
+  for (const pathSet of pathSets) {
+    let pathSetSucceeded = false
+
+    for (const path of pathSet) {
+      let jobUrl: string = ansibleHostUrl + path
+      let isFirstRequest = true
+      while (jobUrl) {
+        try {
+          const result = await fetchGetAnsibleJobs(backendURLPath, jobUrl, token, abortController.signal)
+          if (result.data.results) {
+            ansibleJobs.push(...result.data.results)
+          }
+          // We got a successful response from this path set
+          pathSetSucceeded = true
+          allPathsFailed404 = false
+          isFirstRequest = false
+          const { next } = result.data
+          if (next) {
+            jobUrl = ansibleHostUrl + next
+          } else {
+            jobUrl = ''
+          }
+        } catch (error) {
+          if (error instanceof ResourceError && error.code === 404) {
+            // Only treat 404 as "path doesn't exist" on the first request
+            // Later-page 404s are real errors (path exists but page is missing)
+            if (isFirstRequest) {
+              last404Error = error
+              jobUrl = ''
+            } else {
+              // 404 on pagination - this is a real error, re-throw
+              throw error
+            }
+          } else {
+            // Non-404 error (auth, network, etc.) should always be thrown
+            // These indicate real problems (permission, network, server errors)
+            // Even with partial results, the user needs to know about these failures
+            throw error
+          }
+        }
       }
     }
+
+    // If this path set succeeded, don't try the next set (avoid duplicates)
+    if (pathSetSucceeded) {
+      break
+    }
+  }
+
+  // If all paths returned 404, throw the last error we received
+  if (allPathsFailed404 && ansibleJobs.length === 0 && last404Error) {
+    throw last404Error
   }
 
   return {
@@ -589,11 +632,58 @@ async function getAnsibleInventories(
   abortController: AbortController
 ) {
   const ansibleInventories: AnsibleTowerInventory[] = []
-  const inventoryUrl: string =
-    ansibleHostUrl + (isAnsibleGatewayURL(ansibleHostUrl) ? '/api/controller/v2/inventories/' : '/api/v2/inventories/')
-  const result = await fetchGetAnsibleInventories(backendURLPath, inventoryUrl, token, abortController.signal)
-  if (result.data.results) {
-    ansibleInventories.push(...result.data.results)
+  let last404Error: ResourceError | undefined
+  let allPathsFailed404 = true
+
+  // Hostname format doesn't reliably indicate AAP version, so we try both paths
+  // Try gateway path first (AAP 2.5+), then controller path (AAP 2.4 and earlier)
+  const inventoryPaths = ['/api/controller/v2/inventories/', '/api/v2/inventories/']
+
+  for (const path of inventoryPaths) {
+    let inventoryUrl: string = ansibleHostUrl + path
+    let isFirstRequest = true
+    while (inventoryUrl) {
+      try {
+        const result = await fetchGetAnsibleInventories(backendURLPath, inventoryUrl, token, abortController.signal)
+        if (result.data.results) {
+          ansibleInventories.push(...result.data.results)
+        }
+        allPathsFailed404 = false
+        isFirstRequest = false
+        const { next } = result.data
+        if (next) {
+          inventoryUrl = ansibleHostUrl + next
+        } else {
+          inventoryUrl = ''
+        }
+      } catch (error) {
+        if (error instanceof ResourceError && error.code === 404) {
+          // Only treat 404 as "path doesn't exist" on the first request
+          // Later-page 404s are real errors (path exists but page is missing)
+          if (isFirstRequest) {
+            last404Error = error
+            inventoryUrl = ''
+          } else {
+            // 404 on pagination - this is a real error, re-throw
+            throw error
+          }
+        } else {
+          // Non-404 error (auth, network, etc.) should always be thrown
+          // These indicate real problems (permission, network, server errors)
+          // Even with partial results, the user needs to know about these failures
+          throw error
+        }
+      }
+    }
+    // If we successfully fetched from this path, don't try the next path
+    if (!allPathsFailed404) {
+      break
+    }
+  }
+
+  // If all paths returned 404, throw the last error we received
+  if (allPathsFailed404 && ansibleInventories.length === 0 && last404Error) {
+    throw last404Error
   }
 
   return {
