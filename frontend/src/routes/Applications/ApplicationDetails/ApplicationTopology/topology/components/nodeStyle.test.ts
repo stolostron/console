@@ -495,7 +495,6 @@ const getNodeStyle = {
     namespace: 'default',
     shape: 'subscription',
     label: 'Subscription',
-    secondaryLabel: 'blocke..bscription-1',
     isDisabled: false,
   },
 }

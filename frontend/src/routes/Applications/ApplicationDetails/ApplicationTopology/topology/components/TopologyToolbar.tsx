@@ -144,7 +144,8 @@ const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
     if (selection === allValue) {
       setActive(undefined)
     } else if (activeItems?.includes(selection)) {
-      setActive(activeItems.filter((item) => item !== selection))
+      const filtered = activeItems.filter((item) => item !== selection)
+      setActive(filtered.length === 0 ? undefined : filtered)
     } else {
       setActive([...(activeItems || []), selection])
     }
