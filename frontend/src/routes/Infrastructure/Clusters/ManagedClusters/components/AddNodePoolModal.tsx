@@ -6,10 +6,12 @@ import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NodePool } from '../../../../../resources'
 import { AcmModal } from '../../../../../ui-components'
 import { NodePoolForm } from './NodePoolForm'
+import { Cluster } from '../../../../../resources/utils/get-cluster'
 
 export function AddNodePoolModal(props: {
   close: () => void
   open: boolean
+  cluster: Cluster
   hostedCluster: HostedClusterK8sResource
   clusterImages?: ClusterImageSetK8sResource[]
   refNodepool?: NodePool
@@ -24,6 +26,7 @@ export function AddNodePoolModal(props: {
   return (
     <AcmModal variant={ModalVariant.medium} title={t('Add node pool')} isOpen={true} onClose={props.close}>
       <NodePoolForm
+        cluster={props.cluster}
         hostedCluster={props.hostedCluster}
         nodepool={props.nodepool}
         refNodepool={props.refNodepool}

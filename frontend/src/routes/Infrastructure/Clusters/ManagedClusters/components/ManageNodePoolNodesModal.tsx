@@ -6,10 +6,12 @@ import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NodePool } from '../../../../../resources'
 import { AcmModal } from '../../../../../ui-components'
 import { NodePoolForm } from './NodePoolForm'
+import { Cluster } from '../../../../../resources/utils/get-cluster'
 
 export interface IManageNodePoolNodesModalProps {
   close: () => void
   open: true
+  cluster: Cluster
   hostedCluster: HostedClusterK8sResource
   clusterImages?: ClusterImageSetK8sResource[]
   refNodepool?: NodePool
@@ -26,6 +28,7 @@ export function ManageNodePoolNodesModal(props: IManageNodePoolNodesModalProps |
   return (
     <AcmModal variant={ModalVariant.medium} title={t('Manage node pool')} isOpen={true} onClose={props.close}>
       <NodePoolForm
+        cluster={props.cluster}
         hostedCluster={props.hostedCluster}
         nodepool={props.nodepool}
         refNodepool={props.refNodepool}
