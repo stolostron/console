@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { nockSearch } from '../../../../../lib/nock-util'
-import { getAppSetTopology, openArgoCDEditor, openRouteURL } from './topologyAppSet'
+import { getAppSetTopology, openArgoCDURL, openRouteURL } from './topologyAppSet'
 import i18next, { TFunction } from 'i18next'
 import type { ApplicationModel, ExtendedTopology } from '../types'
 import type { ToolbarControl } from '../topology/components/TopologyToolbar'
@@ -92,7 +92,7 @@ describe('openArgoCDEditor remote cluster', () => {
     mockWindowOpen.mockClear()
   })
   it('can open link on remote cluster', () => {
-    expect(openArgoCDEditor('cluster1', 'app1-ns', 'app1', () => {}, t, 'local-cluster')).toEqual(undefined)
+    expect(openArgoCDURL('cluster1', 'app1-ns', 'app1', () => {}, t, 'local-cluster')).toEqual(undefined)
   })
 })
 
@@ -103,9 +103,9 @@ describe('openArgoCDEditor local cluster', () => {
 
   it('can open link on local hub cluster', () => {
     const toggleLoading = jest.fn()
-    expect(
-      openArgoCDEditor('local-cluster', 'openshift-gitops', 'test-app', toggleLoading, t, 'local-cluster')
-    ).toEqual(undefined)
+    expect(openArgoCDURL('local-cluster', 'openshift-gitops', 'test-app', toggleLoading, t, 'local-cluster')).toEqual(
+      undefined
+    )
     expect(toggleLoading).toHaveBeenCalledTimes(2)
   })
 })

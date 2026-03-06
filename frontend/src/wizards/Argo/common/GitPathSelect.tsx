@@ -7,12 +7,14 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { Channel, getGitPathList } from '../ArgoWizard'
 import { getGitChannelPaths } from '../../../resources'
 import { usePrevious } from '../../../components/usePrevious'
+import { Secret } from '../../../resources'
 
 type GitPathSelectProps = {
   channels: Channel[]
+  secrets: Secret[]
 }
 
-export const GitPathSelect = ({ channels }: GitPathSelectProps) => {
+export const GitPathSelect = ({ channels, secrets }: GitPathSelectProps) => {
   const { t } = useTranslation()
   const repoURL = useItem('repoURL')
   const revision = useItem('targetRevision')
@@ -25,22 +27,51 @@ export const GitPathSelect = ({ channels }: GitPathSelectProps) => {
 
   const gitPathsAsyncCallback = useCallback(() => {
     const channel = channels?.find((channel) => channel?.spec?.pathname === repoURL)
-    return getGitPathList(
-      {
-        metadata: {
-          name: channel?.metadata?.name ?? '',
-          namespace: channel?.metadata?.namespace ?? '',
+    const secret = secrets?.find((secret) => {
+      if (!repoURL) {
+        return false
+      }
+      if (secret.metadata.labels?.['argocd.argoproj.io/secret-type'] === 'repository') {
+        // strip .git from the end of the URL
+        const newURL = repoURL.replace(/\.git$/, '')
+        const secretURL = Buffer.from(secret.data?.url ?? '', 'base64')
+          .toString()
+          .replace(/\.git$/, '')
+        return secretURL === newURL
+      }
+      return false
+    })
+    if (secret) {
+      return getGitChannelPaths(
+        repoURL,
+        revision,
+        {
+          secretRef: secret.metadata.name,
+          namespace: secret.metadata.namespace,
         },
-        spec: {
-          pathname: channel?.spec.pathname ?? repoURL ?? '',
-          type: 'git',
+        {
+          user: Buffer.from(secret.data?.username ?? '', 'base64').toString(),
+          accessToken: Buffer.from(secret.data?.password ?? '', 'base64').toString(),
+        }
+      ).then((paths) => (paths ?? []).filter((p): p is string => p !== undefined))
+    } else {
+      return getGitPathList(
+        {
+          metadata: {
+            name: channel?.metadata?.name ?? '',
+            namespace: channel?.metadata?.namespace ?? '',
+          },
+          spec: {
+            pathname: channel?.spec.pathname ?? repoURL ?? '',
+            type: 'git',
+          },
         },
-      },
-      revision,
-      getGitChannelPaths,
-      repoURL
-    )
-  }, [channels, repoURL, revision])
+        revision,
+        getGitChannelPaths,
+        repoURL
+      )
+    }
+  }, [channels, repoURL, revision, secrets])
 
   // Clear path when repoURL or revision changes (update during render)
   const repoChanged = previousRepoURL !== repoURL && previousRepoURL !== undefined

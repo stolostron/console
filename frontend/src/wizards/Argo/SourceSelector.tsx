@@ -4,7 +4,7 @@ import { ItemContext, Tile, useItem, WizHidden, WizTextInput, WizTiles } from '@
 import { GitAltIcon } from '@patternfly/react-icons'
 import { Fragment } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
-import { ApplicationSet } from '../../resources'
+import { ApplicationSet, Secret } from '../../resources'
 import { Channel } from './ArgoWizard'
 import { RepoURL } from './common'
 import { GitPathSelect } from './common/GitPathSelect'
@@ -33,7 +33,6 @@ export function sourceToRepositoryType(source: unknown) {
   if (typeof source === 'object' && source !== null) {
     const isGit = 'repoURL' in source && 'path' in source && 'targetRevision' in source
     if (isGit) return 'Git'
-
     const isHelm = 'repoURL' in source && 'chart' in source && 'targetRevision' in source
     if (isHelm) return 'Helm'
   }
@@ -45,10 +44,11 @@ export interface SourceSelectorProps {
   gitChannels: string[]
   channels: Channel[] | undefined
   helmChannels: string[]
+  secrets: Secret[]
 }
 
 export function SourceSelector(props: SourceSelectorProps) {
-  const { gitChannels, helmChannels, channels } = props
+  const { gitChannels, helmChannels, channels, secrets } = props
   const data = useItem<ApplicationSet>()
   const { t } = useTranslation()
   return (
@@ -76,15 +76,15 @@ export function SourceSelector(props: SourceSelectorProps) {
       {/* Git repo */}
       <ItemContext.Provider value={data.spec?.template?.spec?.source}>
         <WizHidden hidden={(data) => data.path === undefined}>
-          <RepoURL name="git" channels={gitChannels} />
+          <RepoURL name="git" channels={gitChannels} secrets={secrets} />
           <WizHidden hidden={(data) => data.repoURL === ''}>
-            <GitRevisionSelect channels={channels ?? []} />
-            <GitPathSelect channels={channels ?? []} />
+            <GitRevisionSelect channels={channels ?? []} secrets={secrets} />
+            <GitPathSelect channels={channels ?? []} secrets={secrets} />
           </WizHidden>
         </WizHidden>
         {/* Helm repo */}
         <WizHidden hidden={(data) => data.chart === undefined}>
-          <RepoURL name="helm" channels={helmChannels} />
+          <RepoURL name="helm" channels={helmChannels} secrets={secrets} />
           <WizTextInput
             path="chart"
             label={t('Chart name')}

@@ -75,6 +75,7 @@ export function CreateApplicationArgo() {
     managedClustersState,
     managedClusterSetsState,
     managedClusterSetBindingsState,
+    secretsState,
   } = useSharedAtoms()
   const navigate = useNavigate()
   const { timeZones } = useTimezones()
@@ -87,6 +88,7 @@ export function CreateApplicationArgo() {
   const clusterSets = useRecoilValue(managedClusterSetsState)
   const managedClusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
   const { ansibleCredentialsValue } = useSharedSelectors()
+  const secrets = useRecoilValue(secretsState)
 
   const availableArgoNS = GetGitOpsClusters(gitOpsClusters)
   const availableNamespace = namespaces.map((namespace) => namespace.metadata.name).filter(isType)
@@ -152,6 +154,7 @@ export function CreateApplicationArgo() {
         })
       }
       timeZones={timeZones}
+      repoSecrets={secrets}
     />
   )
 }

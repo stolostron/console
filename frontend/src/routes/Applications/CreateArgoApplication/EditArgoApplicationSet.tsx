@@ -66,9 +66,10 @@ export function EditArgoApplicationSet() {
     managedClustersState,
     managedClusterSetsState,
     managedClusterSetBindingsState,
+    secretsState,
   } = useSharedAtoms()
   const { ansibleCredentialsValue } = useSharedSelectors()
-
+  const secrets = useRecoilValue(secretsState)
   const navigate = useNavigate()
   const searchParams = useSearchParams()
   const toast = useContext(AcmToastContext)
@@ -220,6 +221,7 @@ export function EditArgoApplicationSet() {
       timeZones={timeZones}
       resources={existingResources}
       isPullModel={pullModel}
+      repoSecrets={secrets}
     />
   )
 }

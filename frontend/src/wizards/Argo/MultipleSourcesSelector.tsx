@@ -20,15 +20,17 @@ import { GitPathSelect } from './common/GitPathSelect'
 import { GitRevisionSelect } from './common/GitRevisionSelect'
 import HelmIcon from './logos/HelmIcon.svg'
 import { isEmpty } from 'lodash'
+import { Secret } from '../../resources'
 
 export interface MultipleSourcesSelectorProps {
   channels: Channel[] | undefined
   gitChannels: string[]
   helmChannels: string[]
+  secrets: Secret[]
 }
 
 export function MultipleSourcesSelector(props: MultipleSourcesSelectorProps) {
-  const { gitChannels, helmChannels, channels } = props
+  const { gitChannels, helmChannels, channels, secrets } = props
   const editMode = useEditMode()
   const { t } = useTranslation()
   return (
@@ -72,14 +74,14 @@ export function MultipleSourcesSelector(props: MultipleSourcesSelectorProps) {
       </WizTiles>
       <WizHidden hidden={(data) => data.repositoryType !== 'git'}>
         {/* git repository */}
-        <RepoURL name="git" channels={gitChannels} />
-        <GitRevisionSelect channels={channels ?? []} />
-        <GitPathSelect channels={channels ?? []} />
+        <RepoURL name="git" channels={gitChannels} secrets={secrets} />
+        <GitRevisionSelect channels={channels ?? []} secrets={secrets} />
+        <GitPathSelect channels={channels ?? []} secrets={secrets} />
       </WizHidden>
 
       {/* helm repository */}
       <WizHidden hidden={(data) => data.repositoryType !== 'helm'}>
-        <RepoURL name="helm" channels={helmChannels} />
+        <RepoURL name="helm" channels={helmChannels} secrets={secrets} />
         <WizTextInput
           path="chart"
           label={t('Chart name')}
