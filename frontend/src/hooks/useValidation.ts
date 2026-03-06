@@ -122,7 +122,6 @@ export function useValidation() {
     }
 
     const validateBaseDomain = (value: string) => {
-      const VALID_DNS_NAME_TESTER = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/
       if (value) {
         if (value.startsWith('.') && VALID_DNS_NAME_TESTER.test(value.substring(1))) {
           return t('validate.baseDomain.baseDNSPeriod')
