@@ -119,9 +119,7 @@ export function CreateAWSControlPlane() {
         alertVariant: 'info',
         alertContent: (() => {
           if (!rosaHcpWizardFeatureFlag && loaded && !isHypershiftEnabled)
-            return (
-              return <ViewDocumentationLink doclink={DOC_LINKS.HOSTED_ENABLE_FEATURE_AWS} topPadding={false} />
-            )
+            return <ViewDocumentationLink doclink={DOC_LINKS.HOSTED_ENABLE_FEATURE_AWS} topPadding={false} />
           return undefined
         })(),
         badgeList: !rosaHcpWizardFeatureFlag
