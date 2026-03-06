@@ -64,11 +64,8 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
         delete newData[key]
       }
     })
-    if (detailsLevel !== ScaleDetailsLevel.high) {
-      delete newData.secondaryLabel
-    }
     return newData
-  }, [data, detailsLevel])
+  }, [data])
 
   const LabelIcon = passedData.labelIcon
   const { width, height } = element.getDimensions()

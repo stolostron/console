@@ -80,13 +80,13 @@ let placementDecisions: IResource[]
 // for PUSH APPSETS, APPS ARE ON HUB (kube) but pushed to anywhere (hub/cluster)
 // for PULL APPSETS, APPS ARE ONLY REMOTE (SEARCH api), but can be pulled into local
 
-// MAINTAINING A MAP OF PUSHED APPSETS AND THEIR APPS (from kube)
+// MAINTAINING A MAP OF APPSETS AND THEIR APPS (from kube)
 // we create this map by looping through all local argo apps, getting its owner reference appset name,
 // and adding it to the map with the appset name as the key and the app as a value array
-let pushedAppSetMap: Record<string, IArgoApplication[]> = {}
-let tempPushedAppSetMap: Record<string, IArgoApplication[]> = {}
-export function getPushedAppSetMap() {
-  return pushedAppSetMap || {}
+let appSetAppsMap: Record<string, IArgoApplication[]> = {}
+let tempAppSetAppsMap: Record<string, IArgoApplication[]> = {}
+export function getAppSetAppsMap() {
+  return appSetAppsMap || {}
 }
 
 // MAINTAINING A MAP OF PULLED APPSETS AND THEIR APPS (from search)
@@ -107,8 +107,8 @@ export function getAppStatusByNameMap() {
 
 /** Reset all Argo application module-level state. Used for test isolation. */
 export function resetArgoApplicationState() {
-  pushedAppSetMap = {}
-  tempPushedAppSetMap = {}
+  appSetAppsMap = {}
+  tempAppSetAppsMap = {}
   pulledAppSetMap = {}
   tempPulledAppSetMap = {}
   for (const key in appStatusByNameMap) {
@@ -229,7 +229,7 @@ export async function polledArgoApplicationAggregation(
 
   // filter out apps that belong to an appset
   if (kind === ApplicationKind) {
-    items = filterArgoApps(items, clusters, ocpArgoAppFilter, tempPushedAppSetMap)
+    items = filterArgoApps(items, clusters, ocpArgoAppFilter, tempAppSetAppsMap)
   }
 
   // add uidata transforms
@@ -259,8 +259,8 @@ export async function polledArgoApplicationAggregation(
     // the real one will be used while a new temp map is being created
     // this fixes the problem where the argo app moves to a new appset of the same name in a new cluster
     if (kind === ApplicationKind) {
-      pushedAppSetMap = tempPushedAppSetMap
-      tempPushedAppSetMap = {}
+      appSetAppsMap = tempAppSetAppsMap
+      tempAppSetAppsMap = {}
     }
   }
 }
@@ -269,7 +269,7 @@ function filterArgoApps(
   items: IResource[],
   clusters: Cluster[],
   ocpAppSetFilter: Set<string>,
-  pushedAppSetMap: Record<string, IResource[]>
+  appSetAppsMap: Record<string, IResource[]>
 ) {
   return items.filter((app) => {
     const argoApp = app as IArgoAppLocalResource
@@ -288,9 +288,9 @@ function filterArgoApps(
       return true
     }
     const appSetName = get(argoApp, ['metadata', 'ownerReferences', '0', 'name']) as string
-    let apps = pushedAppSetMap[appSetName]
+    let apps = appSetAppsMap[appSetName]
     if (!apps) {
-      apps = pushedAppSetMap[appSetName] = []
+      apps = appSetAppsMap[appSetName] = []
     }
     const inx = apps.findIndex((itm) => itm.metadata.uid === app.metadata.uid)
     if (inx !== -1) {
@@ -406,7 +406,7 @@ const appSetPlacementStr = [
   'matchLabels',
   'cluster.open-cluster-management.io/placement',
 ]
-export function getAppSetRelatedResources(appSet: IResource, applicationSets: IApplicationSet[]) {
+export function getAppSetPlacementData(appSet: IResource, applicationSets: IApplicationSet[]) {
   const appSetsSharingPlacement: string[] = []
   const currentAppSetGenerators = (appSet as IApplicationSet).spec?.generators
   /* istanbul ignore next */
