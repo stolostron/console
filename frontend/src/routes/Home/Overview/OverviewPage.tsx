@@ -5,7 +5,6 @@ import {
   Card,
   CardBody,
   CardTitle,
-  ContentVariants,
   Divider,
   Dropdown,
   DropdownItem,
@@ -23,7 +22,7 @@ import { AcmDynamicGrid } from '../../../components/AcmDynamicGrid'
 import { KubevirtProviderAlert } from '../../../components/KubevirtProviderAlert'
 import { useVirtualMachineDetection } from '../../../hooks/useVirtualMachineDetection'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { DOC_LINKS } from '../../../lib/doc-util'
+import { DOC_LINKS, ViewDocumentationLink } from '../../../lib/doc-util'
 import { getUpgradeRiskPredictions } from '../../../lib/get-upgrade-risk-predictions'
 import { SupportedAggregate, useAggregate } from '../../../lib/useAggregates'
 import { ObservabilityEndpoint, PrometheusEndpoint, useMetricsPoll } from '../../../lib/useMetricsPoll'
@@ -647,15 +646,7 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
                     <Card isFullHeight>
                       <CardTitle>{t('Enable Observability to see more metrics')}</CardTitle>
                       <CardBody isFilled={false}>
-                        <AcmButton
-                          variant={'link'}
-                          component={ContentVariants.a}
-                          href={DOC_LINKS.ENABLE_OBSERVABILITY}
-                          target="_blank"
-                          style={{ padding: 0 }}
-                        >
-                          {t('View documentation')} <ExternalLinkAltIcon />
-                        </AcmButton>
+                        <ViewDocumentationLink doclink={DOC_LINKS.ENABLE_OBSERVABILITY} topPadding={false} />
                       </CardBody>
                     </Card>
                   </GalleryItem>
