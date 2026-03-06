@@ -545,7 +545,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
             generatorPath={generatorPathRef}
           />
         </Step>
-        <Step id="repository" label={t('Repository')}>
+        <Step id="repository" label={t('Template')}>
           <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
             <Section label={t('Repository')} description={t('Repository of the applications to be created.')}>
               {source && !sources ? (
