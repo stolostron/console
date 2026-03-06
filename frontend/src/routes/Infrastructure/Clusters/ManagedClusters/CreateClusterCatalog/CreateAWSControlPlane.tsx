@@ -24,7 +24,6 @@ import { RosaHCPModal } from '../components/rosahcp/RosaHCPModal/RosaHCPModal'
 import { Secret } from '~/resources'
 import React from 'react'
 import { useRecoilValue, useSharedAtoms } from '~/shared-recoil'
-import { DOC_LINKS } from '~/lib/doc-util'
 
 export function CreateAWSControlPlane() {
   const [t] = useTranslation()
@@ -120,9 +119,7 @@ export function CreateAWSControlPlane() {
         alertVariant: 'info',
         alertContent: (() => {
           if (!rosaHcpWizardFeatureFlag && loaded && !isHypershiftEnabled)
-            return (
-              return <ViewDocumentationLink doclink={DOC_LINKS.HOSTED_ENABLE_FEATURE_AWS} topPadding={false} />
-            )
+            return <ViewDocumentationLink doclink={DOC_LINKS.HOSTED_ENABLE_FEATURE_AWS} topPadding={false} />
           return undefined
         })(),
         badgeList: !rosaHcpWizardFeatureFlag
