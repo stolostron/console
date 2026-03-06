@@ -177,7 +177,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
       const source = get(appset, 'spec.template.spec.source')
       const sources = get(appset, 'spec.template.spec.sources')
       if (sources) {
-        sources.forEach((source: { chart: any; repoURL: string }) => {
+        sources.forEach((source) => {
           if (!source.chart) {
             gitArgoAppSetRepoURLs.push(source.repoURL)
           }
@@ -247,7 +247,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
       const sources = get(appset, 'spec.template.spec.sources')
 
       if (sources) {
-        sources.forEach((source: { chart: string; repoURL: string }) => {
+        sources.forEach((source) => {
           if (source.chart) {
             helmArgoAppSetRepoURLs.push(source.repoURL)
           }

@@ -122,26 +122,24 @@ export function EditArgoApplicationSet() {
         setPullModel(true)
       }
       const copyOfAppSet = JSON.parse(JSON.stringify(applicationSet))
-      const sources = get(applicationSet, 'spec.template.spec.sources')?.map(
-        (source: { path: string; chart: string }) => {
-          if (source.path) {
-            return {
-              ...source,
-              repositoryType: 'git',
-            }
-          }
-
-          if (source.chart) {
-            return { ...source, repositoryType: 'helm' }
-          }
-
-          // path is optional
+      const sources = get(applicationSet, 'spec.template.spec.sources')?.map((source) => {
+        if (source.path) {
           return {
             ...source,
             repositoryType: 'git',
           }
         }
-      )
+
+        if (source.chart) {
+          return { ...source, repositoryType: 'helm' }
+        }
+
+        // path is optional
+        return {
+          ...source,
+          repositoryType: 'git',
+        }
+      })
 
       if (sources) {
         set(copyOfAppSet, 'spec.template.spec.sources', sources)

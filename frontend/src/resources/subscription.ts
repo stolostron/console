@@ -38,6 +38,7 @@ export interface Subscription extends IResource {
     channel?: string
     name?: string
     placement?: {
+      local?: boolean
       placementRef?: {
         kind: string
         name: string

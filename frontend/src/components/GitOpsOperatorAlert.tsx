@@ -18,13 +18,13 @@ export function GitOpsOperatorAlert(props: {
     component = 'alert'
     message = isPullModel
       ? t(
-          'The OpenShift Gitops Operator is required on the hub cluster as well as all managed clusters you are targeting to create an application set pull model type.'
+          'The OpenShift GitOps Operator is required on the hub cluster as well as all managed clusters you are targeting to create an application set pull model type.'
         )
       : t('OpenShift GitOps Operator is required to create ApplicationSets.')
   } else if (editMode === false && isPullModel) {
     component = 'hint'
     message = t(
-      'The OpenShift GitOps Operator is required on the managed clusters to create an application set pull model type. Make sure the operator is installed on all managed clusters you are targeting.'
+      'The OpenShift GitOps Operator is required on the hub cluster and all managed clusters to create an application set pull model type. Make sure the operator is installed on the hub cluster and all managed clusters you are targeting.'
     )
   }
   if (!message) return null

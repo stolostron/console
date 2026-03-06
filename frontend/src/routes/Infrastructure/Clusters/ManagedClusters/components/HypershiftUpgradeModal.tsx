@@ -15,6 +15,7 @@ import {
   SelectOption,
   FormHelperText,
   Popover,
+  ExpandableSection,
 } from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { ExclamationTriangleIcon } from '@patternfly/react-icons'
@@ -33,18 +34,11 @@ import {
   ResourceErrorCode,
 } from '../../../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
-import {
-  AcmAlert,
-  AcmExpandableCheckbox,
-  AcmForm,
-  AcmModal,
-  AcmSelect,
-  AcmSubmit,
-  AcmTable,
-} from '../../../../../ui-components'
+import { AcmAlert, AcmForm, AcmModal, AcmSelect, AcmSubmit, AcmTable } from '../../../../../ui-components'
 import { getNodepoolAgents } from '../utils/nodepool'
 import { ReleaseNotesLink } from './ReleaseNotesLink'
 import { isMinorOrMajorUpgrade } from './utils/version-utils'
+import { HypershiftUpgradeModalNodePoolCheckbox } from './HypershiftUpgradeModalNodePoolCheckbox'
 
 // Helper: Check if version is within supported range
 // Only check minor version if major versions are equal
@@ -110,7 +104,6 @@ export function HypershiftUpgradeModal(props: {
   const [controlPlaneNewVersion, setControlPlaneNewVersion] = useState<string>()
   const [nodepoolsNameTdWidth, setNodepoolsNameTdWidth] = useState<number>()
   const [nodepoolsVersionTdWidth, setNodepoolsVersionTdWidth] = useState<number>()
-  const [controlPlaneCheckboxSpanWidth, setControlPlaneCheckboxSpanWidth] = useState<number>()
   const [controlPlaneError, setControlPlaneError] = useState<boolean>(false)
   const [overallNodepoolVersion, setOverallNodepoolVersion] = useState<string>()
   const [nodepoolGroupDisabled, setNodepoolGroupDisabled] = useState<boolean>(false)
@@ -118,6 +111,8 @@ export function HypershiftUpgradeModal(props: {
   const [controlPlaneCheckboxDisabled, setControlPlaneCheckboxDisabled] = useState<boolean>(false)
   const [patchErrors, setPatchErrors] = useState<any[]>([])
   const zeroVersion = '0.0.0'
+  const hypershiftNodePoolsToggleId = 'hypershift-nodepools-expandable-section-id'
+  const hypershiftNodePoolsContentId = 'hypershift-nodepools-expandable-content-id'
 
   const { configMapsState } = useSharedAtoms()
   const configMaps = useRecoilValue(configMapsState)
@@ -222,12 +217,6 @@ export function HypershiftUpgradeModal(props: {
   ) {
     setNodepoolsVersionTdWidth(controlPlaneVersionTdRef.current?.offsetWidth)
   }
-
-  const controlPlaneCheckboxSpanRef = useCallback((node: HTMLSpanElement | null) => {
-    if (node) {
-      setControlPlaneCheckboxSpanWidth(node.offsetWidth)
-    }
-  }, [])
 
   const checkNodepoolErrors = useCallback(
     (version?: string) => {
@@ -748,19 +737,19 @@ export function HypershiftUpgradeModal(props: {
                 <Tr key="hypershift-controlplane">
                   <Td dataLabel={columnNames.name} ref={controlPlaneNameTdRef}>
                     <div>
-                      <span style={{ paddingRight: '10px' }} ref={controlPlaneCheckboxSpanRef}>
-                        <Checkbox
-                          isChecked={controlPlaneChecked}
-                          id="controlplane-checkbox"
-                          name={props.controlPlane.name}
-                          onChange={() => handleControlPlaneChecked()}
-                          isDisabled={controlPlaneCheckboxDisabled}
-                        />
-                      </span>
-                      {props.controlPlane.name}
-                    </div>
-                    <div style={{ fontSize: '14px', color: '#6A6E73' }}>
-                      <span style={{ paddingLeft: controlPlaneCheckboxSpanWidth }}>{t('Hosted control plane')}</span>
+                      <Checkbox
+                        isChecked={controlPlaneChecked}
+                        id="controlplane-checkbox"
+                        name={props.controlPlane.name}
+                        onChange={() => handleControlPlaneChecked()}
+                        isDisabled={controlPlaneCheckboxDisabled}
+                        label={
+                          <>
+                            <p>{props.controlPlane.name}</p>
+                            <p style={{ fontSize: '14px', color: '#6A6E73' }}>{t('Hosted control plane')}</p>
+                          </>
+                        }
+                      />
                     </div>
                   </Td>
                   <Td dataLabel={columnNames.currentVersion} ref={controlPlaneVersionTdRef}>
@@ -878,18 +867,24 @@ export function HypershiftUpgradeModal(props: {
                     )}
                     <Tr key="hypershift-nodepools">
                       <Td dataLabel={columnNames.name} style={paddingZero}>
-                        <AcmExpandableCheckbox
+                        <ExpandableSection
+                          id={hypershiftNodePoolsToggleId}
+                          contentId={hypershiftNodePoolsContentId}
                           onToggle={() => setNodepoolsExpanded(!nodepoolsExpanded)}
-                          expanded={nodepoolsExpanded}
-                          checked={nodepoolGroupChecked}
-                          label={t('Cluster node pools')}
-                          onCheck={() => handleNodepoolGroupChecked()}
-                          isDisabled={nodepoolGroupDisabled}
-                          expandable={true}
-                          id="nodepoolgroup"
-                        >
-                          <Fragment />
-                        </AcmExpandableCheckbox>
+                          isExpanded={nodepoolsExpanded}
+                          aria-label={t('Expand')}
+                          data-testid="nodepoolgroup-toggle"
+                          toggleContent={
+                            <Checkbox
+                              label={t('Cluster node pools')}
+                              onChange={handleNodepoolGroupChecked}
+                              isDisabled={nodepoolGroupDisabled}
+                              isChecked={nodepoolGroupChecked}
+                              name="nodepoolgroup-checkbox"
+                              id="nodepoolgroup-checkbox"
+                            />
+                          }
+                        />
                       </Td>
                       <Td dataLabel={columnNames.currentVersion}>
                         <span>{overallNodepoolVersion}</span>
@@ -906,42 +901,43 @@ export function HypershiftUpgradeModal(props: {
                       props.nodepools?.map((np) => {
                         return (
                           <Tr key={np.metadata.name}>
-                            <Td dataLabel={columnNames.name} style={paddingZero}>
-                              <AcmExpandableCheckbox
-                                onToggle={() => handleNodepoolToggled(np.metadata.name || '')}
-                                expanded={isNodepoolToggled(np.metadata.name || '')}
-                                checked={isNodepoolChecked(np.metadata.name)}
-                                label={np.metadata.name || ''}
-                                onCheck={() => handleNodepoolsChecked(np.metadata.name || '')}
-                                isDisabled={isNodepoolDisabled(np.metadata.name || '')}
-                                additionalLabels={
-                                  props.controlPlane.hypershift?.agent ? [`${np.spec.replicas} hosts`] : undefined
-                                }
-                                expandable={props.controlPlane.hypershift?.agent}
-                                id={np.metadata.name}
-                                data-testid={`${np.metadata.name}-checkbox`}
+                            <Td dataLabel={columnNames.name}>
+                              <ExpandableSection
+                                id={hypershiftNodePoolsToggleId}
+                                contentId={hypershiftNodePoolsContentId}
+                                isExpanded={nodepoolsExpanded}
+                                isDetached
                               >
-                                {props.controlPlane.hypershift?.agent &&
-                                  getNodepoolAgents(
-                                    np as NodePoolK8sResource,
-                                    props.agents,
-                                    props.agentMachines,
-                                    props.hostedCluster!
-                                  ).map((agent) => {
-                                    const hostName = agent.spec.hostname || agent.status?.inventory.hostname
-                                    return (
-                                      <div key={hostName}>
-                                        <span
-                                          style={{
-                                            paddingLeft: controlPlaneCheckboxSpanWidth,
-                                          }}
-                                        >
-                                          {hostName}
-                                        </span>
-                                      </div>
-                                    )
-                                  })}
-                              </AcmExpandableCheckbox>
+                                <HypershiftUpgradeModalNodePoolCheckbox
+                                  label={np.metadata.name || ''}
+                                  isChecked={isNodepoolChecked(np.metadata.name)}
+                                  id={`${np.metadata.name}-checkbox`}
+                                  name={np.metadata.name}
+                                  onChange={() => handleNodepoolsChecked(np.metadata.name || '')}
+                                  isDisabled={isNodepoolDisabled(np.metadata.name || '')}
+                                  dataTestId={`${np.metadata.name}-checkbox`}
+                                  onToggle={() => handleNodepoolToggled(np.metadata.name || '')}
+                                  isExpanded={isNodepoolToggled(np.metadata.name || '')}
+                                  ariaLabel={t('Expand')}
+                                  isExpandable={props.controlPlane.hypershift?.agent}
+                                >
+                                  {props.controlPlane.hypershift?.agent &&
+                                    props.hostedCluster &&
+                                    getNodepoolAgents(
+                                      np as NodePoolK8sResource,
+                                      props.agents,
+                                      props.agentMachines,
+                                      props.hostedCluster
+                                    ).map((agent) => {
+                                      const hostName = agent.spec.hostname || agent.status?.inventory.hostname
+                                      return (
+                                        <div key={hostName}>
+                                          <span>{hostName}</span>
+                                        </div>
+                                      )
+                                    })}
+                                </HypershiftUpgradeModalNodePoolCheckbox>
+                              </ExpandableSection>
                             </Td>
                             <Td dataLabel={columnNames.currentVersion}>{np.status?.version}</Td>
                             <Td dataLabel={columnNames.newVersion}>

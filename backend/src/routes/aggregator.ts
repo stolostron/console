@@ -13,7 +13,7 @@ import {
   addUIData,
 } from './aggregators/applications'
 import { requestAggregatedStatuses } from './aggregators/statuses'
-import { requestAggregatedUIData } from './aggregators/uidata'
+import { requestAggregatedAppSetData } from './aggregators/appSetData'
 import { IResource } from '../resources/resource'
 import { IWatchOptions } from '../resources/watch-options'
 
@@ -43,8 +43,8 @@ export async function aggregate(req: Http2ServerRequest, res: Http2ServerRespons
       return paginate(req, res, token, getApplications, filterApplications, sortApplications, addUIData)
     case 'statuses':
       return requestAggregatedStatuses(req, res, token, getApplications)
-    case 'uidata':
-      return requestAggregatedUIData(req, res)
+    case 'appSetData':
+      return requestAggregatedAppSetData(req, res)
   }
 
   return notFound(req, res)

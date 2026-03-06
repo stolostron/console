@@ -30,6 +30,7 @@ import {
   PlacementRuleApiVersion,
   PlacementRuleDefinition,
   PlacementRuleKind,
+  Subscription,
   SubscriptionApiVersion,
   SubscriptionDefinition,
   SubscriptionKind,
@@ -147,16 +148,17 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
 
   const getSubscriptionClusterCount = useCallback(
     function getSubscriptionClusterCount(resource: IResource, clusterCount: ClusterCount, showSearchLink?: boolean) {
-      const namespace = _.get(resource, 'metadata.namespace')
-      const placementrule = _.get(resource, 'spec.placement')
-      const localDeployment = _.get(placementrule, 'local', '')
-      const placementRef = _.get(placementrule, 'placementRef', '')
+      const sub = resource as Subscription
+      const namespace = sub.metadata?.namespace
+      const placement = sub.spec?.placement
+      const localDeployment = placement?.local
+      const placementRef = placement?.placementRef
       if (localDeployment) {
         clusterCount.localPlacement = true
       }
       if (placementRef) {
-        const name = _.get(placementRef, 'name')
-        const kind = _.get(placementRef, 'kind')
+        const name = placementRef.name
+        const kind = placementRef.kind
         const selectedPlacementDecision = placementDecisions.find(
           (placementDecision) =>
             placementDecision.metadata.labels?.[`cluster.open-cluster-management.io/${kind.toLowerCase()}`] === name
@@ -206,14 +208,17 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
         if (tableItem.metadata) {
           const { name, namespace } = tableItem.metadata
           subscriptionsWithoutLocal.forEach((subscription) => {
-            const channel = _.get(subscription, 'spec.channel')
-            const [channelNamespace, channelName] = channel.split('/')
-            if (channelNamespace === namespace && channelName === name) {
-              subscriptionCount++
+            const channel = subscription.spec?.channel
+            if (channel) {
+              const [channelNamespace, channelName] = channel.split('/')
+              if (channelNamespace === namespace && channelName === name) {
+                subscriptionCount++
+              }
             }
           })
           const subscriptionsInUse = subscriptionsWithoutLocal.filter((subscription) => {
-            const channel = _.get(subscription, 'spec.channel')
+            const channel = subscription.spec?.channel
+            if (!channel) return false
             const [channelNamespace, channelName] = channel.split('/')
             return channelName === name && channelNamespace === namespace
           })
@@ -238,7 +243,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
               const subscriptions = annotations['apps.open-cluster-management.io/subscriptions']
               const subscriptionList = subscriptions ? subscriptions.split(',') : []
               if (subscriptionList.length) {
-                subscriptionList.forEach((element: { split: (arg: string) => [any, any] }) => {
+                subscriptionList.forEach((element: string) => {
                   const [subscriptionNamespace, subscriptionName] = element.split('/')
                   if (subscriptionNamespace === namespace && subscriptionName === name) {
                     appCount++
@@ -423,7 +428,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
           {
             header: t('Channel'),
             cell: (resource) => {
-              const channel = _.get(resource, 'spec.channel')
+              const channel = (resource as Subscription).spec?.channel
               if (channel) {
                 const [namespace, name] = channel.split('/')
                 const [apigroup, apiversion] = ChannelApiVersion.split('/')
@@ -443,9 +448,11 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
               return '-'
             },
             exportContent: (resource) => {
-              const channel = _.get(resource, 'spec.channel')
-              const [, name] = channel.split('/')
-              return name
+              const channel = (resource as Subscription).spec?.channel
+              if (channel) {
+                const [, name] = channel.split('/')
+                return name
+              }
             },
             sort: 'spec.channel',
             transforms: [cellWidth(20)],
@@ -865,19 +872,16 @@ export function getPlacementDecisionClusterCount(
   placementDecisions: PlacementDecision[],
   hubClusterName: string
 ) {
-  let clusterDecisions = _.get(resource, 'status.decisions')
+  let clusterDecisions: Array<{ clusterName: string }> | undefined = (resource as any).status?.decisions
   if (resource.kind === PlacementKind) {
     // find the placementDecisions for the placement
-    clusterDecisions = _.get(
-      placementDecisions.find(
-        (pd) => pd.metadata.labels?.['cluster.open-cluster-management.io/placement'] === resource.metadata?.name
-      ),
-      'status.decisions'
-    )
+    clusterDecisions = placementDecisions.find(
+      (pd) => pd.metadata.labels?.['cluster.open-cluster-management.io/placement'] === resource.metadata?.name
+    )?.status?.decisions
   }
 
   if (clusterDecisions) {
-    clusterDecisions.forEach((clusterDecision: { clusterName: string; clusterNamespace: string }) => {
+    clusterDecisions.forEach((clusterDecision) => {
       const { clusterName } = clusterDecision
       if (clusterName === hubClusterName) {
         clusterCount.localPlacement = true

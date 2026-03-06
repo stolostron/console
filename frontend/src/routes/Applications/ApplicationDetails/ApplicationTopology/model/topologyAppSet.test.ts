@@ -224,7 +224,7 @@ describe('getAppSetTopology', () => {
           },
         },
       },
-      placement: {
+      placementDecision: {
         metadata: {
           name: 'test-placement',
           namespace: 'openshift-gitops',
@@ -294,7 +294,7 @@ describe('getAppSetTopology', () => {
           },
         },
       },
-      placement: undefined,
+      placementDecision: undefined,
       isArgoApp: false,
       isAppSet: true,
       isOCPApp: false,
@@ -378,7 +378,7 @@ describe('getAppSetTopology', () => {
           },
         },
       },
-      placement: {
+      placementDecision: {
         metadata: {
           name: 'multi-placement',
           namespace: 'openshift-gitops',
@@ -441,7 +441,7 @@ describe('getAppSetTopology', () => {
           ],
         },
       },
-      placement: {
+      placementDecision: {
         metadata: {
           name: 'status-placement',
           namespace: 'openshift-gitops',
@@ -493,7 +493,7 @@ describe('getAppSetTopology', () => {
         },
         spec: {},
       },
-      placement: undefined,
+      placementDecision: undefined,
       isArgoApp: false,
       isAppSet: true,
       isOCPApp: false,
@@ -534,7 +534,7 @@ describe('getAppSetTopology', () => {
         },
         spec: {},
       },
-      placement: undefined,
+      placementDecision: undefined,
       isArgoApp: false,
       isAppSet: true,
       isOCPApp: false,
@@ -583,7 +583,7 @@ describe('getAppSetTopology', () => {
           ],
         },
       },
-      placement: {
+      placementDecision: {
         metadata: {
           name: 'pullmodel-placement',
           namespace: 'openshift-gitops',
@@ -633,7 +633,7 @@ describe('getAppSetTopology', () => {
         },
         spec: {},
       },
-      placement: undefined,
+      placementDecision: undefined,
       isArgoApp: false,
       isAppSet: true,
       isOCPApp: false,
@@ -673,7 +673,7 @@ describe('getAppSetTopology', () => {
         },
         spec: {},
       },
-      placement: undefined,
+      placementDecision: undefined,
       isArgoApp: false,
       isAppSet: true,
       isOCPApp: false,
@@ -742,7 +742,7 @@ describe('getAppSetTopology', () => {
         },
         spec: {},
       },
-      placement: undefined,
+      placementDecision: undefined,
       isArgoApp: false,
       isAppSet: true,
       isOCPApp: false,

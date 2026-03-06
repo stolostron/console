@@ -90,6 +90,7 @@ describe('Topology tests', () => {
             type: 'cluster',
             uid: 'cluster--magchen-vm',
             specs: {
+              clustersNames: ['magchen-vm'],
               raw: {
                 metadata: {
                   name: 'magchen-vm',

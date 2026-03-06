@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ISortBy } from '@patternfly/react-table'
-import { IUIData, IResource } from '../resources'
+import { IAppSetData, IResource } from '../resources'
 import { fetchRetry, postRequest } from '../resources/utils'
 import { useQuery } from './useQuery'
 import { useCallback, useContext, useEffect } from 'react'
@@ -51,7 +51,7 @@ export interface IResultStatuses {
 export enum SupportedAggregate {
   applications = 'applications',
   statuses = 'statuses',
-  uidata = 'uidata',
+  appSetData = 'appSetData',
 }
 
 const defaultListResponse: IResultListView = {
@@ -95,6 +95,9 @@ export function useAggregate(
     case SupportedAggregate.statuses:
       storedResponse = getWithExpiry(STATUSESKEY)
       defaultResponse = defaultStatusResponse
+      break
+    case SupportedAggregate.appSetData:
+      defaultResponse = undefined
       break
   }
   const usingStoredResponse = !!storedResponse
@@ -154,6 +157,8 @@ export function useAggregate(
       // save response for next time
       if (!loading) setWithExpiry(STATUSESKEY, response)
       return response
+    case SupportedAggregate.appSetData:
+      return undefined
   }
 }
 
@@ -183,7 +188,7 @@ export async function fetchAggregate(
   aggregate: SupportedAggregate,
   backendUrl: string,
   requestedView: IResource
-): Promise<IUIData>
+): Promise<IAppSetData>
 export async function fetchAggregate(
   aggregate: SupportedAggregate,
   backendUrl: string,
@@ -193,7 +198,7 @@ export async function fetchAggregate(
   aggregate: SupportedAggregate,
   backendUrl: string,
   requestedView: RequestListType | RequestResourceType | undefined
-): Promise<IResultListView | IUIData | undefined> {
+): Promise<IResultListView | IAppSetData | undefined> {
   const abortController = new AbortController()
   return fetchRetry({
     method: 'POST',
@@ -207,8 +212,8 @@ export async function fetchAggregate(
       switch (aggregate) {
         case SupportedAggregate.applications:
           return res.data as IResultListView
-        case SupportedAggregate.uidata:
-          return res.data as IUIData
+        case SupportedAggregate.appSetData:
+          return res.data as IAppSetData
       }
     })
     .catch((error) => {

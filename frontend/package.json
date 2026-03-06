@@ -137,7 +137,7 @@
     "@types/jest": "^29.5.14",
     "@types/jest-axe": "3.5.9",
     "@types/js-yaml": "^4.0.9",
-    "@types/lodash": "4.14.182",
+    "@types/lodash": "4.17.24",
     "@types/node": "^18.15.3",
     "@types/react": "^18.3.28",
     "@types/react-dom": "^18.3.7",
@@ -208,7 +208,7 @@
     "typescript": "^5.8.2",
     "v8-compile-cache": "2.4.0",
     "vm-browserify": "^1.1.2",
-    "webpack": "^5.105.2",
+    "webpack": "^5.105.3",
     "webpack-bundle-analyzer": "4.10.2",
     "webpack-cli": "4.10.0",
     "webpack-dev-server": "^4.15.2"
