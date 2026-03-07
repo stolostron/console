@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-/* eslint-disable jest/no-conditional-expect */
 
 import { renderHook } from '@testing-library/react-hooks'
 import { useValidation } from './useValidation'
@@ -43,25 +42,21 @@ describe('validation', () => {
 
   describe('validateKubernetesDnsName', () => {
     test.each([
-      [`should allow lowercase alphabets`, 'abc', true],
-      [`should allow empty`, '', true],
-      [`should allow number`, '123', true],
-      [`should allow name with '-'`, 'ab-c12', true],
+      [`should allow lowercase alphabets`, 'abc', undefined],
+      [`should allow empty`, '', undefined],
+      [`should allow number`, '123', undefined],
+      [`should allow name with '-'`, 'ab-c12', undefined],
       [
         `should not allow name longer than 63`,
         'abcd012345678901234567890123456789012345678901234567890123456789',
-        false,
+        'validate.kubernetesDnsName.length',
       ],
-      [`should not allow '.'`, 'abc.d', false],
-      [`should not allow '_'`, 'abc_d', false],
-      [`should not allow start with '-'`, '-abc', false],
-      [`should not allow end with '-'`, 'abc-', false],
-    ])('%s', (_name, value, isValid) => {
-      if (isValid) {
-        expect(validateKubernetesDnsName(value)).toBeUndefined()
-      } else {
-        expect(validateKubernetesDnsName(value)).toBeTruthy()
-      }
+      [`should not allow '.'`, 'abc.d', 'validate.kubernetesDnsName.char'],
+      [`should not allow '_'`, 'abc_d', 'validate.kubernetesDnsName.char'],
+      [`should not allow start with '-'`, '-abc', 'validate.kubernetesDnsName.startchar'],
+      [`should not allow end with '-'`, 'abc-', 'validate.kubernetesDnsName.endchar'],
+    ])('%s', (_name, value, expected) => {
+      expect(validateKubernetesDnsName(value)).toBe(expected)
     })
   })
   describe('validatePrivateSshKey', () => {
@@ -76,114 +71,96 @@ describe('validation', () => {
     })
 
     test('validatePrivateSshKey should not allow empty key type', () => {
-      expect(validatePrivateSshKey('-----BEGIN A PRIVATE KEY-----\n-----END A PRIVATE KEY-----\n')).not.toBeUndefined()
+      expect(validatePrivateSshKey('-----BEGIN A PRIVATE KEY-----\n-----END A PRIVATE KEY-----\n')).toBe(
+        'validate.privateSshKey'
+      )
     })
 
     test('validatePrivateSshKey should require new line', () => {
       expect(
         validatePrivateSshKey('-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----')
-      ).not.toBeUndefined()
+      ).toBe('validate.mustEndWithNewline')
     })
   })
   describe('validateCertificate', () => {
     test.each([
-      [`should allow valid certificate`, '-----BEGIN CERTIFICATE-----\nkey\n-----END CERTIFICATE-----', true],
-      [`should not allow non certificate type`, '-----BEGIN PRIVATE KEY-----\nabc\n-----END PRIVATE KEY-----', false],
+      [`should allow valid certificate`, '-----BEGIN CERTIFICATE-----\nkey\n-----END CERTIFICATE-----', undefined],
+      [
+        `should not allow non certificate type`,
+        '-----BEGIN PRIVATE KEY-----\nabc\n-----END PRIVATE KEY-----',
+        'validate.certificate',
+      ],
       [
         `should not allow end line next to the begin line`,
         '-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----',
-        false,
+        'validate.certificate',
       ],
-    ])('%s', (_name, value, isValid) => {
-      if (isValid) {
-        expect(validateCertificate(value)).toBeUndefined()
-      } else {
-        expect(validateCertificate(value)).toBeTruthy()
-      }
+    ])('%s', (_name, value, expected) => {
+      expect(validateCertificate(value)).toBe(expected)
     })
   })
   describe('validatePublicSshKey', () => {
     test.each([
-      [`should allow rsa public key`, 'ssh-rsa AAAAB3Nz', true],
-      [`should allow ed25519 public key`, 'ssh-ed25519 AAAAC3', true],
-      [`should not allow unsupported type`, 'ssh-abc AAAAB3Nz', false],
-      [`should not allow wrong length in key`, 'ssh-rsa AAAAC3', false],
-      [`should not allow invalid rsa key`, 'ssh-rsa ABC', false],
-      [`should not allow empty input`, '', false],
-      [`should not allow invalid character in key`, 'ssh-rsa A@B-C', false],
-      [`should not allow non public key`, 'abcdefg', false],
-    ])('%s', (_name, value, isValid) => {
-      if (isValid) {
-        expect(validatePublicSshKey(value, true)).toBeUndefined()
-      } else {
-        expect(validatePublicSshKey(value, true)).toBeTruthy()
-      }
+      [`should allow rsa public key`, 'ssh-rsa AAAAB3Nz', undefined],
+      [`should allow ed25519 public key`, 'ssh-ed25519 AAAAC3', undefined],
+      [`should not allow unsupported type`, 'ssh-abc AAAAB3Nz', 'validate.publicSshKey'],
+      [`should not allow wrong length in key`, 'ssh-rsa AAAAC3', 'validate.publicSshKey'],
+      [`should not allow invalid rsa key`, 'ssh-rsa ABC', 'validate.publicSshKey'],
+      [`should not allow empty input`, '', 'validate.publicSshKey'],
+      [`should not allow invalid character in key`, 'ssh-rsa A@B-C', 'validate.publicSshKey'],
+      [`should not allow non public key`, 'abcdefg', 'validate.publicSshKey'],
+    ])('%s', (_name, value, expected) => {
+      expect(validatePublicSshKey(value, true)).toBe(expected)
     })
   })
   describe('validateGCProjectID', () => {
     test.each([
-      [`should allow lowercase alphabets`, 'abcdefg', true],
-      [`should allow number (start with alphabets)`, 'a123456', true],
-      [`should allow name with '-'`, 'ab-c123', true],
-      [`should not allow less than 6`, 'abc', false],
-      [`should not allow longer than 30`, 'a012345678901234567890123456789', false],
-      [`should not allow '.'`, 'a.abcdef', false],
-      [`should not allow start with '-'`, '-abcdef', false],
-      [`should not allow end with '-'`, 'abcdef-', false],
-    ])('%s', (_name, value, isValid) => {
-      if (isValid) {
-        expect(validateGCProjectID(value)).toBeUndefined()
-      } else {
-        expect(validateGCProjectID(value)).toBeTruthy()
-      }
+      [`should allow lowercase alphabets`, 'abcdefg', undefined],
+      [`should allow number (start with alphabets)`, 'a123456', undefined],
+      [`should allow name with '-'`, 'ab-c123', undefined],
+      [`should not allow less than 6`, 'abc', 'validate.projectID.format'],
+      [`should not allow longer than 30`, 'a012345678901234567890123456789', 'validate.projectID.format'],
+      [`should not allow '.'`, 'a.abcdef', 'validate.projectID.format'],
+      [`should not allow start with '-'`, '-abcdef', 'validate.projectID.format'],
+      [`should not allow end with '-'`, 'abcdef-', 'validate.projectID.format'],
+    ])('%s', (_name, value, expected) => {
+      expect(validateGCProjectID(value)).toBe(expected)
     })
   })
   describe('validateJSON', () => {
     test.each([
-      [`should allow json object with entries`, '{"a":"b","c":"d"}', true],
-      [`should allow array with entries`, '[1]', true],
-      [`should allow json string`, '"abc"', true],
-      [`should not allow empty object`, '{}', false],
-      [`should not allow plain string`, 'abc', false],
-      [`should not allow non json string`, '{abc:"def"}', false],
-      [`should not allow empty string`, '', false],
-    ])('%s', (_name, value, isValid) => {
-      if (isValid) {
-        expect(validateJSON(value)).toBeUndefined()
-      } else {
-        expect(validateJSON(value)).toBeTruthy()
-      }
+      [`should allow json object with entries`, '{"a":"b","c":"d"}', undefined],
+      [`should allow array with entries`, '[1]', undefined],
+      [`should allow json string`, '"abc"', undefined],
+      [`should not allow empty object`, '{}', 'validate.json'],
+      [`should not allow plain string`, 'abc', 'validate.json'],
+      [`should not allow non json string`, '{abc:"def"}', 'validate.json'],
+      [`should not allow empty string`, '', 'validate.json'],
+    ])('%s', (_name, value, expected) => {
+      expect(validateJSON(value)).toBe(expected)
     })
   })
   describe('validateLibvirtURI', () => {
     test.each([
-      [`should allow qemu+ssh://any`, 'qemu+ssh://any', true],
-      [`should not allow only ssh protocols (no qemu)`, 'ssh://any', false],
-      [`should not allow only qemu`, 'qemu://any', false],
-      [`should not allow empty path`, '"qemu+ssh://"', false],
-      [`should not allow non uri`, '"qemu+ssh/b/c"', false],
-    ])('%s', (_name, value, isValid) => {
-      if (isValid) {
-        expect(validateLibvirtURI(value)).toBeUndefined()
-      } else {
-        expect(validateLibvirtURI(value)).toBeTruthy()
-      }
+      [`should allow qemu+ssh://any`, 'qemu+ssh://any', undefined],
+      [`should not allow only ssh protocols (no qemu)`, 'ssh://any', 'validate.libevirtURI.format'],
+      [`should not allow only qemu`, 'qemu://any', 'validate.libevirtURI.format'],
+      [`should not allow empty path`, '"qemu+ssh://"', 'validate.libevirtURI.format'],
+      [`should not allow non uri`, '"qemu+ssh/b/c"', 'validate.libevirtURI.format'],
+    ])('%s', (_name, value, expected) => {
+      expect(validateLibvirtURI(value)).toBe(expected)
     })
   })
   describe('validateBaseDnsName', () => {
     test.each([
-      [`should allow normal dns name`, 'abc', true],
-      [`should allow '.' and '-'`, 'a.b-c.d', true],
-      [`should not allow with protocols. For example: http://`, 'http://a.b.c', false],
-      [`should not allow start with '.'`, '.abc', false],
-      [`should not allow end with '.'`, 'abc.', false],
-      [`should not allow start with '-'`, '-abc', false],
-    ])('%s', (_name, value, isValid) => {
-      if (isValid) {
-        expect(validateBaseDnsName(value)).toBeUndefined()
-      } else {
-        expect(validateBaseDnsName(value)).toBeTruthy()
-      }
+      [`should allow normal dns name`, 'abc', undefined],
+      [`should allow '.' and '-'`, 'a.b-c.d', undefined],
+      [`should not allow with protocols. For example: http://`, 'http://a.b.c', 'validate.baseDnsName.char'],
+      [`should not allow start with '.'`, '.abc', 'validate.baseDnsName.start'],
+      [`should not allow end with '.'`, 'abc.', 'validate.baseDnsName.char'],
+      [`should not allow start with '-'`, '-abc', 'validate.baseDnsName.char'],
+    ])('%s', (_name, value, expected) => {
+      expect(validateBaseDnsName(value)).toBe(expected)
     })
   })
 
@@ -194,256 +171,245 @@ describe('validation', () => {
         'clouds:\n  openstack:\n    auth:\n      auth_url: "https://acme.com"\n      username: "fakeuser"\n      password: "fakepwd"',
         'openstack',
         '',
-        true,
+        undefined,
       ],
       [
         `should not allow no clouds key`,
         'clou:\n  openstack:\n    auth:\n      auth_url: "https://acme.com"\n      username: "fakeuser"\n      password: "fakepwd"',
         'openstack',
         '',
-        false,
+        'validate.yaml.not.valid',
       ],
       [
         `should not allow cloud name not found in clouds.yaml`,
         'clouds:\n  openstack:\n    auth:\n      auth_url: "https://acme.com"\n      username: "fakeuser"\n      password: "fakepwd"',
         'openst',
         '',
-        false,
+        'validate.yaml.cloud.not.found',
       ],
       [
         `should not allow missing password in clouds.yaml`,
         'clouds:\n  openstack:\n    auth:\n      auth_url: "https://acme.com"\n      username: "fakeuser"',
         'openstack',
         '',
-        false,
+        'validate.yaml.cloud.auth.not.found',
       ],
       [
-        `should not allow missing cacert in clouds.yaml when cacertificate is defined`,
+        `should allow valid cacert in clouds.yaml when certificate bundle is defined`,
         'clouds:\n  openstack:\n    auth:\n      auth_url: "https://acme.com"\n      username: "fakeuser"\n      password: "fakepwd"\n      cacert: "/etc/openstack-ca/ca.crt"',
         'openstack',
         '-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----',
-        true,
+        undefined,
       ],
       [
-        `should not allow missing cacert in clouds.yaml when cacertificate is defined`,
+        `should allow no cacert in clouds.yaml when certificate bundle is defined`,
         'clouds:\n  openstack:\n    auth:\n      auth_url: "https://acme.com"\n      username: "fakeuser"\n      password: "fakepwd"',
         'openstack',
         '-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----',
-        true,
+        undefined,
       ],
-    ])('%s', (_name, value, value2, value3, isValid) => {
-      if (isValid) {
-        expect(validateCloudsYaml(value, value2, value3)).toBeUndefined()
-      } else {
-        expect(validateCloudsYaml(value, value2, value3)).toBeTruthy()
-      }
+      [
+        `should not allow invalid cacert path in clouds.yaml when certificate bundle is defined`,
+        'clouds:\n  openstack:\n    auth:\n      auth_url: "https://acme.com"\n      username: "fakeuser"\n      password: "fakepwd"\n      cacert: "/wrong/path/ca.crt"',
+        'openstack',
+        '-----BEGIN CERTIFICATE-----\n-----END CERTIFICATE-----',
+        'validate.yaml.cloud.cacert.not.found',
+      ],
+      [
+        `should not allow cacert in clouds.yaml when no certificate bundle is defined`,
+        'clouds:\n  openstack:\n    auth:\n      auth_url: "https://acme.com"\n      username: "fakeuser"\n      password: "fakepwd"\n      cacert: "/etc/openstack-ca/ca.crt"',
+        'openstack',
+        '',
+        'validate.yaml.cloud.cacert.was.found',
+      ],
+      [
+        `should not allow invalid YAML`,
+        '{{invalid',
+        'openstack',
+        '',
+        'validate.yaml.not.valid',
+      ],
+    ])('%s', (_name, value, value2, value3, expected) => {
+      expect(validateCloudsYaml(value, value2, value3)).toBe(expected)
     })
   })
   describe('validateVCenterServer', () => {
     test.each([
-      ['should allow an IPv4 address', '22.22.22.22', true],
-      ['should allow an IPv6 address', '2001:0db8:85a3:0000:0000:8a2e:0370:7334', true],
-      ['should allow a full-qualified host name', 'example.com', true],
-      ['should not allow an unqualified host name', 'example', false],
-      ['should not allow a URL', 'https://vcenter.example.com', false],
-    ])('%s', (_name, value, isValid) => {
-      if (isValid) {
-        expect(validateVCenterServer(value)).toBeUndefined()
-      } else {
-        expect(validateVCenterServer(value)).toBeTruthy()
-      }
+      ['should allow an IPv4 address', '22.22.22.22', undefined],
+      ['should allow an IPv6 address', '2001:0db8:85a3:0000:0000:8a2e:0370:7334', undefined],
+      ['should allow a full-qualified host name', 'example.com', undefined],
+      [
+        'should not allow an unqualified host name',
+        'example',
+        'The value must be a fully-qualified host name or IP address.',
+      ],
+      [
+        'should not allow a URL',
+        'https://vcenter.example.com',
+        "The value must be a fully-qualified host name or IP address. Do not include the '{{scheme}}://' URL scheme.",
+      ],
+    ])('%s', (_name, value, expected) => {
+      expect(validateVCenterServer(value)).toBe(expected)
     })
   })
   describe('validateNoProxy', () => {
+    const noProxyError =
+      "Each value must be a domain name (optionally prefaced with '.' to match subdomains only), IP address, other network CIDR, or '*'."
     test.each([
-      ['should allow a domain without TLD', 'ca', true],
-      ['should allow a domain prefaced with .', '.com', true],
-      ['should allow an IP address', '10.0.0.1', true], // NOSONAR - IP address used in test
-      ['should allow a CIDR', '10.0.0.0/16', true], // NOSONAR - CIDR used in test
-      ['should allow *', '*', true],
-      ['should not allow a value with spaces', 'test space', false],
-      ['should not allow ?', '?', false],
-    ])('%s', (_name, value, isValid) => {
-      if (isValid) {
-        expect(validateNoProxy(value)).toBeUndefined()
-      } else {
-        expect(validateNoProxy(value)).toBeTruthy()
-      }
+      ['should allow a domain without TLD', 'ca', undefined],
+      ['should allow a domain prefaced with .', '.com', undefined],
+      ['should allow an IP address', '10.0.0.1', undefined], // NOSONAR - IP address used in test
+      ['should allow a CIDR', '10.0.0.0/16', undefined], // NOSONAR - CIDR used in test
+      ['should allow *', '*', undefined],
+      ['should not allow a value with spaces', 'test space', noProxyError],
+      ['should not allow ?', '?', noProxyError],
+    ])('%s', (_name, value, expected) => {
+      expect(validateNoProxy(value)).toBe(expected)
     })
   })
   describe('validateNoProxyList', () => {
+    const noProxyError =
+      "Each value must be a domain name (optionally prefaced with '.' to match subdomains only), IP address, other network CIDR, or '*'."
     test.each([
-      ['should allow a CSV with valid no proxy values', 'ca,.com,example.org,10.0.0.1,*', true], // NOSONAR - IP address used in test
-      ['should not allow a CSV with any bad proxy value', 'ca,.com,example.org,10.0.0.*,*', false], // NOSONAR - IP address used in test
-    ])('%s', (_name, value, isValid) => {
-      if (isValid) {
-        expect(validateNoProxyList(value)).toBeUndefined()
-      } else {
-        expect(validateNoProxyList(value)).toBeTruthy()
-      }
+      ['should allow a CSV with valid no proxy values', 'ca,.com,example.org,10.0.0.1,*', undefined], // NOSONAR - IP address used in test
+      ['should not allow a CSV with any bad proxy value', 'ca,.com,example.org,10.0.0.*,*', noProxyError], // NOSONAR - IP address used in test
+    ])('%s', (_name, value, expected) => {
+      expect(validateNoProxyList(value)).toBe(expected)
     })
   })
 
   describe('validateAwsRegion', () => {
     test.each([
-      ['should allow a region with valid value', 'us-east-1', true],
-      ['should not allow a region with any bad value', 'random', false],
-    ])('%s', (_name, value, isValid) => {
-      if (isValid) {
-        expect(validateAwsRegion(value)).toBeUndefined()
-      } else {
-        expect(validateAwsRegion(value)).toBeTruthy()
-      }
+      ['should allow a region with valid value', 'us-east-1', undefined],
+      [
+        'should not allow a region with any bad value',
+        'random',
+        'The provided region is not a valid Amazon Web Service region.',
+      ],
+    ])('%s', (_name, value, expected) => {
+      expect(validateAwsRegion(value)).toBe(expected)
     })
   })
 
   describe('validateBaseDomain', () => {
     test.each([
-      ['should allow a valid domain', 'example.com', true],
-      ['should allow a single label', 'example', true],
-      ['should allow empty value', '', true],
-      ['should not allow start with .', '.example.com', false],
-      ['should not allow invalid characters', 'EXAMPLE.COM', false],
-      ['should not allow start with -', '-example.com', false],
-    ])('%s', (_name, value, isValid) => {
-      if (isValid) {
-        expect(validateBaseDomain(value)).toBeUndefined()
-      } else {
-        expect(validateBaseDomain(value)).toBeTruthy()
-      }
+      ['should allow a valid domain', 'example.com', undefined],
+      ['should allow a single label', 'example', undefined],
+      ['should allow empty value', '', undefined],
+      ['should not allow start with .', '.example.com', 'validate.baseDomain.baseDNSPeriod'],
+      ['should not allow invalid characters', 'EXAMPLE.COM', 'validate.baseDomain.name'],
+      ['should not allow start with -', '-example.com', 'validate.baseDomain.name'],
+    ])('%s', (_name, value, expected) => {
+      expect(validateBaseDomain(value)).toBe(expected)
     })
   })
 
   describe('validateAnsibleHost', () => {
     test.each([
-      ['should allow a valid https URL', 'https://ansible.example.com', true],
-      ['should allow a valid http URL', 'http://ansible.example.com', true],
-      ['should not allow URL without protocol', 'ansible.example.com', false],
-      ['should not allow ftp protocol', 'ftp://ansible.example.com', false],
-      ['should not allow plain string', 'not-a-url', false],
-    ])('%s', (_name, value, isValid) => {
-      if (isValid) {
-        expect(validateAnsibleHost(value)).toBeUndefined()
-      } else {
-        expect(validateAnsibleHost(value)).toBeTruthy()
-      }
+      ['should allow a valid https URL', 'https://ansible.example.com', undefined],
+      ['should allow a valid http URL', 'http://ansible.example.com', undefined],
+      ['should not allow URL without protocol', 'ansible.example.com', 'validate.ansible.url.not.valid'],
+      ['should not allow ftp protocol', 'ftp://ansible.example.com', 'validate.ansible.url.not.valid'],
+      ['should not allow plain string', 'not-a-url', 'validate.ansible.url.not.valid'],
+    ])('%s', (_name, value, expected) => {
+      expect(validateAnsibleHost(value)).toBe(expected)
     })
   })
 
   describe('validateWebURL', () => {
     test.each([
-      ['should allow a valid https URL', 'https://example.com', true],
-      ['should allow a valid http URL', 'http://example.com', true],
-      ['should not allow URL without protocol', 'example.com', false],
-      ['should not allow ftp URL', 'ftp://example.com', false],
-      ['should not allow plain string', 'not-a-url', false],
-    ])('%s', (_name, value, isValid) => {
-      if (isValid) {
-        expect(validateWebURL(value)).toBeUndefined()
-      } else {
-        expect(validateWebURL(value)).toBeTruthy()
-      }
+      ['should allow a valid https URL', 'https://example.com', undefined],
+      ['should allow a valid http URL', 'http://example.com', undefined],
+      ['should not allow URL without protocol', 'example.com', 'The URL is not valid.'],
+      ['should not allow ftp URL', 'ftp://example.com', 'The URL is not valid.'],
+      ['should not allow plain string', 'not-a-url', 'The URL is not valid.'],
+    ])('%s', (_name, value, expected) => {
+      expect(validateWebURL(value)).toBe(expected)
     })
   })
 
   describe('validateImageContentSources', () => {
     test.each([
-      ['should allow valid image content sources', '- mirrors:\n    - registry.example.com\n  source: quay.io', true],
-      ['should allow empty value', '', true],
-      ['should not allow missing mirrors', '- source: quay.io', false],
-      ['should not allow missing source', '- mirrors:\n    - registry.example.com', false],
-      ['should not allow invalid YAML', '{{invalid', false],
-    ])('%s', (_name, value, isValid) => {
-      if (isValid) {
-        expect(validateImageContentSources(value)).toBeUndefined()
-      } else {
-        expect(validateImageContentSources(value)).toBeTruthy()
-      }
+      ['should allow valid image content sources', '- mirrors:\n    - registry.example.com\n  source: quay.io', undefined],
+      ['should allow empty value', '', undefined],
+      ['should not allow missing mirrors', '- source: quay.io', 'validate.yaml.not.valid'],
+      ['should not allow missing source', '- mirrors:\n    - registry.example.com', 'validate.yaml.not.valid'],
+      ['should not allow invalid YAML', '{{invalid', 'validate.yaml.not.valid'],
+    ])('%s', (_name, value, expected) => {
+      expect(validateImageContentSources(value)).toBe(expected)
     })
   })
 
   describe('validateYAML', () => {
     test.each([
-      ['should allow valid YAML', 'key: value', true],
-      ['should allow empty value', '', true],
-      ['should not allow invalid YAML', '{{invalid: yaml:', false],
-    ])('%s', (_name, value, isValid) => {
-      if (isValid) {
-        expect(validateYAML(value)).toBeUndefined()
-      } else {
-        expect(validateYAML(value)).toBeTruthy()
-      }
+      ['should allow valid YAML', 'key: value', undefined],
+      ['should allow empty value', '', undefined],
+      ['should not allow invalid YAML', '{{invalid: yaml:', 'validate.yaml.not.valid'],
+    ])('%s', (_name, value, expected) => {
+      expect(validateYAML(value)).toBe(expected)
     })
   })
 
   describe('validateHttpProxy', () => {
     test.each([
-      ['should allow a valid http URL', 'http://proxy.example.com', true],
-      ['should allow empty value', '', true],
-      ['should not allow https URL', 'https://proxy.example.com', false],
-      ['should not allow URL without protocol', 'proxy.example.com', false],
-      ['should not allow plain string', 'not-a-url', false],
-    ])('%s', (_name, value, isValid) => {
-      if (isValid) {
-        expect(validateHttpProxy(value)).toBeUndefined()
-      } else {
-        expect(validateHttpProxy(value)).toBeTruthy()
-      }
+      ['should allow a valid http URL', 'http://proxy.example.com', undefined],
+      ['should allow empty value', '', undefined],
+      ['should not allow https URL', 'https://proxy.example.com', 'validate.http.proxy.url.not.valid'],
+      ['should not allow URL without protocol', 'proxy.example.com', 'validate.http.proxy.url.not.valid'],
+      ['should not allow plain string', 'not-a-url', 'validate.http.proxy.url.not.valid'],
+    ])('%s', (_name, value, expected) => {
+      expect(validateHttpProxy(value)).toBe(expected)
     })
   })
 
   describe('validateHttpsProxy', () => {
     test.each([
-      ['should allow a valid https URL', 'https://proxy.example.com', true],
-      ['should allow a valid http URL', 'http://proxy.example.com', true],
-      ['should allow empty value', '', true],
-      ['should not allow ftp URL', 'ftp://proxy.example.com', false],
-      ['should not allow URL without protocol', 'proxy.example.com', false],
-      ['should not allow plain string', 'not-a-url', false],
-    ])('%s', (_name, value, isValid) => {
-      if (isValid) {
-        expect(validateHttpsProxy(value)).toBeUndefined()
-      } else {
-        expect(validateHttpsProxy(value)).toBeTruthy()
-      }
+      ['should allow a valid https URL', 'https://proxy.example.com', undefined],
+      ['should allow a valid http URL', 'http://proxy.example.com', undefined],
+      ['should allow empty value', '', undefined],
+      ['should not allow ftp URL', 'ftp://proxy.example.com', 'validate.https.proxy.url.not.valid'],
+      ['should not allow URL without protocol', 'proxy.example.com', 'validate.https.proxy.url.not.valid'],
+      ['should not allow plain string', 'not-a-url', 'validate.https.proxy.url.not.valid'],
+    ])('%s', (_name, value, expected) => {
+      expect(validateHttpsProxy(value)).toBe(expected)
     })
   })
 
   describe('validateHttpsURL', () => {
     test.each([
-      ['should allow a valid https URL', 'https://example.com', true],
-      ['should allow a valid https URL with path', 'https://example.com/path', true],
-      ['should allow empty value', '', true],
-      ['should not allow http URL', 'http://example.com', false],
-      ['should not allow URL without protocol', 'example.com', false],
-      ['should not allow plain string', 'not-a-url', false],
-    ])('%s', (_name, value, isValid) => {
-      if (isValid) {
-        expect(validateHttpsURL(value)).toBeUndefined()
-      } else {
-        expect(validateHttpsURL(value)).toBeTruthy()
-      }
+      ['should allow a valid https URL', 'https://example.com', undefined],
+      ['should allow a valid https URL with path', 'https://example.com/path', undefined],
+      ['should allow empty value', '', undefined],
+      ['should not allow http URL', 'http://example.com', 'validate.https.url.not.valid'],
+      ['should not allow URL without protocol', 'example.com', 'validate.https.url.not.valid'],
+      ['should not allow plain string', 'not-a-url', 'validate.https.url.not.valid'],
+    ])('%s', (_name, value, expected) => {
+      expect(validateHttpsURL(value)).toBe(expected)
     })
   })
 
   describe('validateKubernetesResourceName', () => {
     test.each([
-      ['should allow a valid name', 'my-resource.name', true],
-      ['should allow empty value', '', true],
-      ['should not allow uppercase', 'MyResource', false],
-      ['should not allow start with -', '-my-resource', false],
-      ['should not allow end with -', 'my-resource-', false],
-      ['should not allow underscores', 'my_resource', false],
-      ['should not allow longer than 253', 'a'.repeat(254), false],
-      ['should not allow empty labels', 'a..b', false],
-      ['should not allow labels to start with -', 'a.-b', false],
-      ['should not allow labels to end with -', 'a-.b', false],
-    ])('%s', (_name, value, isValid) => {
-      if (isValid) {
-        expect(validateKubernetesResourceName(value)).toBeUndefined()
-      } else {
-        expect(validateKubernetesResourceName(value)).toBeTruthy()
-      }
+      ['should allow a valid name', 'my-resource.name', undefined],
+      ['should allow empty value', '', undefined],
+      [
+        'should not allow uppercase',
+        'MyResource',
+        "This value can only contain lowercase alphanumeric characters or '-' or '.'",
+      ],
+      ['should not allow start with -', '-my-resource', 'This value must start with an alphanumeric character'],
+      ['should not allow end with -', 'my-resource-', 'This value must end with an alphanumeric character'],
+      [
+        'should not allow underscores',
+        'my_resource',
+        "This value can only contain lowercase alphanumeric characters or '-' or '.'",
+      ],
+      ['should not allow longer than 253', 'a'.repeat(254), 'This value can contain at most 253 characters'],
+      ['should not allow empty labels', 'a..b', 'This value must be a valid lowercase RFC 1123 subdomain.'],
+      ['should not allow labels to start with -', 'a.-b', 'This value must be a valid lowercase RFC 1123 subdomain.'],
+      ['should not allow labels to end with -', 'a-.b', 'This value must be a valid lowercase RFC 1123 subdomain.'],
+    ])('%s', (_name, value, expected) => {
+      expect(validateKubernetesResourceName(value)).toBe(expected)
     })
   })
 
@@ -455,12 +421,16 @@ describe('validation', () => {
 
     test('should not allow combined namespace and name exceeding 62 characters', () => {
       const resource = { metadata: { namespace: 'my-long-namespace' } }
-      expect(validatePolicyName('a'.repeat(46), resource)).toBeTruthy()
+      expect(validatePolicyName('a'.repeat(46), resource)).toBe(
+        'The combined length of the policy namespace and name must not exceed 62 characters'
+      )
     })
 
     test('should reject invalid kubernetes resource name', () => {
       const resource = { metadata: { namespace: 'default' } }
-      expect(validatePolicyName('INVALID', resource)).toBeTruthy()
+      expect(validatePolicyName('INVALID', resource)).toBe(
+        "This value can only contain lowercase alphanumeric characters or '-' or '.'"
+      )
     })
   })
 
@@ -472,40 +442,36 @@ describe('validation', () => {
 
     test('should not allow name longer than 53 characters', () => {
       const resource = { metadata: { namespace: 'default' } }
-      expect(validateAppSetName('a'.repeat(54), resource)).toBeTruthy()
+      expect(validateAppSetName('a'.repeat(54), resource)).toBe(
+        'The length of application set name must not exceed 53 characters'
+      )
     })
 
     test('should reject invalid kubernetes resource name', () => {
       const resource = { metadata: { namespace: 'default' } }
-      expect(validateAppSetName('INVALID', resource)).toBeTruthy()
+      expect(validateAppSetName('INVALID', resource)).toBe(
+        "This value can only contain lowercase alphanumeric characters or '-' or '.'"
+      )
     })
   })
 
   describe('validateVcenterUsername', () => {
     test.each([
-      ['should allow user@domain format', 'admin@vsphere.local', true],
-      ['should not allow username without @', 'admin', false],
-    ])('%s', (_name, value, isValid) => {
-      if (isValid) {
-        expect(validateVcenterUsername(value)).toBeUndefined()
-      } else {
-        expect(validateVcenterUsername(value)).toBeTruthy()
-      }
+      ['should allow user@domain format', 'admin@vsphere.local', undefined],
+      ['should not allow username without @', 'admin', 'Value must be in <user>@<domain> format.'],
+    ])('%s', (_name, value, expected) => {
+      expect(validateVcenterUsername(value)).toBe(expected)
     })
   })
 
   describe('validateCidr', () => {
     test.each([
-      ['should allow a valid IPv4 CIDR', '10.0.0.0/16', true], // NOSONAR - CIDR used in test
-      ['should allow empty value', '', true],
-      ['should not allow plain IP', '10.0.0.1', false], // NOSONAR - IP address used in test
-      ['should not allow invalid CIDR', 'not-a-cidr', false],
-    ])('%s', (_name, value, isValid) => {
-      if (isValid) {
-        expect(validateCidr(value)).toBeUndefined()
-      } else {
-        expect(validateCidr(value)).toBeTruthy()
-      }
+      ['should allow a valid IPv4 CIDR', '10.0.0.0/16', undefined], // NOSONAR - CIDR used in test
+      ['should allow empty value', '', undefined],
+      ['should not allow plain IP', '10.0.0.1', 'Value must be a valid IPv4 CIDR.'], // NOSONAR - IP address used in test
+      ['should not allow invalid CIDR', 'not-a-cidr', 'Value must be a valid IPv4 CIDR.'],
+    ])('%s', (_name, value, expected) => {
+      expect(validateCidr(value)).toBe(expected)
     })
   })
 
