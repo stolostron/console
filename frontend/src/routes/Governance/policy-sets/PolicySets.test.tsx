@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { policySetsState } from '../../../atoms'
@@ -8,6 +8,7 @@ import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { waitForText } from '../../../lib/test-util'
 import PolicySetsPage from './PolicySets'
 import { mockEmptyPolicySet, mockPolicySets } from '../governance.sharedMocks'
+import { PolicySet } from '../../../resources'
 
 describe('PolicySets Page', () => {
   beforeEach(async () => {
@@ -80,5 +81,64 @@ describe('PolicySets Page', () => {
     expect(screen.queryByText('Violations')).not.toBeInTheDocument()
     expect(screen.getAllByText('No violations')).toBeTruthy()
     expect(screen.queryByText('No status')).not.toBeInTheDocument()
+  })
+
+  test('renders multiple policy set cards with distinct names and each has action menu (ACM-30324)', async () => {
+    Element.prototype.scrollIntoView = jest.fn()
+    const twoPolicySetsWithDistinctNames: PolicySet[] = [
+      {
+        apiVersion: 'policy.open-cluster-management.io/v1beta1',
+        kind: 'PolicySet',
+        metadata: { name: 'policy-set-a', namespace: 'test' },
+        spec: { description: 'First', policies: [] },
+        status: { compliant: 'Compliant', placement: [] },
+      },
+      {
+        apiVersion: 'policy.open-cluster-management.io/v1beta1',
+        kind: 'PolicySet',
+        metadata: { name: 'policy-set-b', namespace: 'test' },
+        spec: { description: 'Second', policies: [] },
+        status: { compliant: 'Compliant', placement: [] },
+      },
+    ]
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policySetsState, twoPolicySetsWithDistinctNames)
+        }}
+      >
+        <MemoryRouter>
+          <PolicySetsPage />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForText('policy-set-a')
+    await waitForText('policy-set-b')
+    const cardA = document.getElementById('policyset-test-policy-set-a')
+    const cardB = document.getElementById('policyset-test-policy-set-b')
+    expect(cardA).toBeInTheDocument()
+    expect(cardB).toBeInTheDocument()
+
+    const getActionsTrigger = (card: HTMLElement) => {
+      const buttons = card.querySelectorAll('button')
+      const kebab = Array.from(buttons).find((b) => !b.textContent?.trim()) ?? buttons[buttons.length - 1]
+      return kebab
+    }
+
+    const triggerA = getActionsTrigger(cardA!)
+    const triggerB = getActionsTrigger(cardB!)
+
+    fireEvent.click(triggerA)
+    expect(screen.getByRole('menuitem', { name: 'View details' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Edit' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Delete' })).toBeInTheDocument()
+
+    fireEvent.click(triggerB)
+    expect(screen.getByRole('menuitem', { name: 'View details' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Edit' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Delete' })).toBeInTheDocument()
+
+    fireEvent.click(triggerB)
+    expect(screen.queryByRole('menuitem', { name: 'View details' })).not.toBeInTheDocument()
   })
 })
