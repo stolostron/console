@@ -8,6 +8,7 @@ import { RecoilRoot } from 'recoil'
 import { channelsState, helmReleaseState, subscriptionsState } from '../../../../atoms'
 import { ApolloError } from '@apollo/client'
 import DiscoveredByCluster from './DiscoveredByCluster'
+import { matchesSelectedLabels } from '../../utils/label-utils'
 
 describe('DiscoveredByCluster', () => {
   test('Should render DiscoveredByCluster for ConfigurationPolicy', async () => {
@@ -650,6 +651,474 @@ describe('DiscoveredByCluster', () => {
     expect(err).not.toBeInTheDocument()
   })
 
+  test('Should render labels column with user-defined labels', async () => {
+    const context: DiscoveredDetailsContext = {
+      isFetching: false,
+      relatedResources: [],
+      policyItems: [
+        {
+          id: 'test-policy-with-labelsConfigurationPolicy',
+          apigroup: 'policy.open-cluster-management.io',
+          name: 'test-policy-with-labels',
+          kind: 'ConfigurationPolicy',
+          severity: 'low',
+          responseAction: 'enforce',
+          policies: [
+            {
+              _hubClusterResource: true,
+              _uid: 'cluster1/test-uid-1',
+              apigroup: 'policy.open-cluster-management.io',
+              apiversion: 'v1',
+              cluster: 'cluster1',
+              created: '2024-08-15T14:01:52Z',
+              kind: 'ConfigurationPolicy',
+              kind_plural: 'configurationpolicies',
+              label:
+                'env=prod; team=backend; cluster-name=cluster1; policy.open-cluster-management.io/cluster-name=cluster1',
+              name: 'test-policy-with-labels',
+              namespace: 'cluster1',
+              compliant: 'Compliant',
+              responseAction: 'enforce',
+              severity: 'low',
+              disabled: false,
+              _isExternal: true,
+              source: { type: 'Local', parentName: '', parentNs: '' },
+            },
+            {
+              _hubClusterResource: true,
+              _uid: 'cluster2/test-uid-2',
+              apigroup: 'policy.open-cluster-management.io',
+              apiversion: 'v1',
+              cluster: 'cluster2',
+              created: '2024-08-15T14:01:52Z',
+              kind: 'ConfigurationPolicy',
+              kind_plural: 'configurationpolicies',
+              label: 'env=staging; team=frontend',
+              name: 'test-policy-with-labels',
+              namespace: 'cluster2',
+              compliant: 'Compliant',
+              responseAction: 'enforce',
+              severity: 'low',
+              disabled: false,
+              _isExternal: true,
+              source: { type: 'Local', parentName: '', parentNs: '' },
+            },
+          ],
+          source: { type: 'Local', parentName: '', parentNs: '' },
+        },
+      ],
+      err: undefined,
+      policyKind: 'ConfigurationPolicy',
+      apiGroup: 'policy.open-cluster-management.io',
+    }
+
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(channelsState, [])
+          snapshot.set(helmReleaseState, [])
+          snapshot.set(subscriptionsState, [])
+        }}
+      >
+        <MemoryRouter
+          initialEntries={[
+            generatePath(NavigationPath.discoveredByCluster, {
+              kind: 'ConfigurationPolicy',
+              policyName: 'test-policy-with-labels',
+              apiGroup: 'policy.open-cluster-management.io',
+              apiVersion: 'v1',
+            }),
+          ]}
+        >
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredByCluster />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    // Verify Labels column header exists
+    await waitForText('Labels')
+
+    // Labels are rendered in non-compact mode (inline) to avoid duplicate popover IDs
+    // First cluster has 2 user-defined labels (env, team) - system labels filtered out
+    await waitForText('env=prod')
+    await waitForText('team=backend')
+
+    // Verify system labels are NOT shown
+    const clusterNameLabel = screen.queryByText(/cluster-name=cluster1/)
+    const policyFrameworkLabel = screen.queryByText(/policy\.open-cluster-management\.io/)
+    expect(clusterNameLabel).not.toBeInTheDocument()
+    expect(policyFrameworkLabel).not.toBeInTheDocument()
+
+    // Second cluster also has 2 user-defined labels displayed inline
+    await waitForText('env=staging')
+    await waitForText('team=frontend')
+  })
+
+  test('Should handle policies with no labels gracefully', async () => {
+    const context: DiscoveredDetailsContext = {
+      isFetching: false,
+      relatedResources: [],
+      policyItems: [
+        {
+          id: 'test-policy-no-labelsConfigurationPolicy',
+          apigroup: 'policy.open-cluster-management.io',
+          name: 'test-policy-no-labels',
+          kind: 'ConfigurationPolicy',
+          severity: 'low',
+          responseAction: 'enforce',
+          policies: [
+            {
+              _hubClusterResource: true,
+              _uid: 'cluster1/test-uid-1',
+              apigroup: 'policy.open-cluster-management.io',
+              apiversion: 'v1',
+              cluster: 'cluster1',
+              created: '2024-08-15T14:01:52Z',
+              kind: 'ConfigurationPolicy',
+              kind_plural: 'configurationpolicies',
+              name: 'test-policy-no-labels',
+              namespace: 'cluster1',
+              compliant: 'Compliant',
+              responseAction: 'enforce',
+              severity: 'low',
+              disabled: false,
+              _isExternal: true,
+              source: { type: 'Local', parentName: '', parentNs: '' },
+            },
+          ],
+          source: { type: 'Local', parentName: '', parentNs: '' },
+        },
+      ],
+      err: undefined,
+      policyKind: 'ConfigurationPolicy',
+      apiGroup: 'policy.open-cluster-management.io',
+    }
+
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(channelsState, [])
+          snapshot.set(helmReleaseState, [])
+          snapshot.set(subscriptionsState, [])
+        }}
+      >
+        <MemoryRouter
+          initialEntries={[
+            generatePath(NavigationPath.discoveredByCluster, {
+              kind: 'ConfigurationPolicy',
+              policyName: 'test-policy-no-labels',
+              apiGroup: 'policy.open-cluster-management.io',
+              apiVersion: 'v1',
+            }),
+          ]}
+        >
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredByCluster />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    // Verify Labels column header exists even with no labels
+    await waitForText('Labels')
+
+    // Verify cluster name appears
+    await waitForText('cluster1')
+
+    // Verify no crash occurred (page renders)
+    await waitForText('Response action')
+    await waitForText('enforce')
+
+    // Verify that the labels cell shows '-' when there are no user-defined labels
+    // The table should not show "N labels" text which would indicate AcmLabels is being rendered
+    const labelsText = screen.queryByText(/\d+ labels?/)
+    expect(labelsText).not.toBeInTheDocument()
+
+    // The '-' should be present in the table as the labels cell value
+    const dashCells = screen.getAllByText('-')
+    // There should be at least one dash for the empty labels cell
+    expect(dashCells.length).toBeGreaterThan(0)
+  })
+
+  test('Should have label filter option available and filter rows correctly', async () => {
+    const context: DiscoveredDetailsContext = {
+      isFetching: false,
+      relatedResources: [],
+      policyItems: [
+        {
+          id: 'test-policy-filter-labelsConfigurationPolicy',
+          apigroup: 'policy.open-cluster-management.io',
+          name: 'test-policy-filter-labels',
+          kind: 'ConfigurationPolicy',
+          severity: 'low',
+          responseAction: 'enforce',
+          policies: [
+            {
+              _hubClusterResource: true,
+              _uid: 'cluster-prod/test-uid-1',
+              apigroup: 'policy.open-cluster-management.io',
+              apiversion: 'v1',
+              cluster: 'cluster-prod',
+              created: '2024-08-15T14:01:52Z',
+              kind: 'ConfigurationPolicy',
+              kind_plural: 'configurationpolicies',
+              label: 'env=prod; team=backend',
+              name: 'test-policy-filter-labels',
+              namespace: 'cluster-prod',
+              compliant: 'Compliant',
+              responseAction: 'enforce',
+              severity: 'low',
+              disabled: false,
+              _isExternal: true,
+              source: { type: 'Local', parentName: '', parentNs: '' },
+            },
+            {
+              _hubClusterResource: true,
+              _uid: 'cluster-dev/test-uid-2',
+              apigroup: 'policy.open-cluster-management.io',
+              apiversion: 'v1',
+              cluster: 'cluster-dev',
+              created: '2024-08-15T14:01:52Z',
+              kind: 'ConfigurationPolicy',
+              kind_plural: 'configurationpolicies',
+              label: 'env=dev; team=frontend',
+              name: 'test-policy-filter-labels',
+              namespace: 'cluster-dev',
+              compliant: 'Compliant',
+              responseAction: 'enforce',
+              severity: 'low',
+              disabled: false,
+              _isExternal: true,
+              source: { type: 'Local', parentName: '', parentNs: '' },
+            },
+            {
+              _hubClusterResource: true,
+              _uid: 'cluster-staging/test-uid-3',
+              apigroup: 'policy.open-cluster-management.io',
+              apiversion: 'v1',
+              cluster: 'cluster-staging',
+              created: '2024-08-15T14:01:52Z',
+              kind: 'ConfigurationPolicy',
+              kind_plural: 'configurationpolicies',
+              label: 'env=staging; team=backend',
+              name: 'test-policy-filter-labels',
+              namespace: 'cluster-staging',
+              compliant: 'Compliant',
+              responseAction: 'enforce',
+              severity: 'low',
+              disabled: false,
+              _isExternal: true,
+              source: { type: 'Local', parentName: '', parentNs: '' },
+            },
+          ],
+          source: { type: 'Local', parentName: '', parentNs: '' },
+        },
+      ],
+      err: undefined,
+      policyKind: 'ConfigurationPolicy',
+      apiGroup: 'policy.open-cluster-management.io',
+    }
+
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(channelsState, [])
+          snapshot.set(helmReleaseState, [])
+          snapshot.set(subscriptionsState, [])
+        }}
+      >
+        <MemoryRouter
+          initialEntries={[
+            generatePath(NavigationPath.discoveredByCluster, {
+              kind: 'ConfigurationPolicy',
+              policyName: 'test-policy-filter-labels',
+              apiGroup: 'policy.open-cluster-management.io',
+              apiVersion: 'v1',
+            }),
+          ]}
+        >
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredByCluster />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    // Verify all clusters are visible initially
+    await waitForText('cluster-prod')
+    await waitForText('cluster-dev')
+    await waitForText('cluster-staging')
+
+    // Verify Labels column header exists in the table
+    await waitForText('Labels')
+
+    // Open filter panel
+    await waitForText('Filter')
+    screen.getByRole('button', { name: 'Filter' }).click()
+
+    // Get the Label filter section
+    const labelFilterHeading = screen.getByRole('heading', { name: 'Label' })
+    expect(labelFilterHeading).toBeInTheDocument()
+    const labelFilter = labelFilterHeading.parentElement!
+
+    // Apply env=prod filter - should show only cluster-prod
+    within(labelFilter).getByRole('checkbox', { name: 'env = prod 1' }).click()
+    await waitForText('cluster-prod')
+    await waitForNotText('cluster-dev')
+    await waitForNotText('cluster-staging')
+
+    // Clear env=prod filter
+    within(labelFilter).getByRole('checkbox', { name: 'env = prod 1' }).click()
+
+    // Apply team=backend filter - should show cluster-prod and cluster-staging
+    within(labelFilter).getByRole('checkbox', { name: 'team = backend 2' }).click()
+    await waitForText('cluster-prod')
+    await waitForText('cluster-staging')
+    await waitForNotText('cluster-dev')
+
+    // Clear team=backend filter
+    within(labelFilter).getByRole('checkbox', { name: 'team = backend 2' }).click()
+    await waitForText('cluster-dev')
+  })
+
+  test('Should correctly filter with combined equality and inequality label filters', async () => {
+    const context: DiscoveredDetailsContext = {
+      isFetching: false,
+      relatedResources: [],
+      policyItems: [
+        {
+          id: 'test-policy-filter-combined',
+          apigroup: 'policy.open-cluster-management.io',
+          name: 'test-policy-filter-combined',
+          kind: 'ConfigurationPolicy',
+          severity: 'low',
+          responseAction: 'enforce',
+          policies: [
+            {
+              _hubClusterResource: true,
+              _uid: 'cluster1/test-uid-1',
+              apigroup: 'policy.open-cluster-management.io',
+              apiversion: 'v1',
+              cluster: 'cluster-prod-backend',
+              created: '2024-08-15T14:01:52Z',
+              kind: 'ConfigurationPolicy',
+              kind_plural: 'configurationpolicies',
+              label: 'env=prod; team=backend',
+              name: 'test-policy',
+              namespace: 'cluster1',
+              compliant: 'Compliant',
+              responseAction: 'enforce',
+              severity: 'low',
+              disabled: false,
+              _isExternal: true,
+              source: { type: 'Local', parentName: '', parentNs: '' },
+            },
+            {
+              _hubClusterResource: true,
+              _uid: 'cluster2/test-uid-2',
+              apigroup: 'policy.open-cluster-management.io',
+              apiversion: 'v1',
+              cluster: 'cluster-prod-frontend',
+              created: '2024-08-15T14:01:52Z',
+              kind: 'ConfigurationPolicy',
+              kind_plural: 'configurationpolicies',
+              label: 'env=prod; team=frontend',
+              name: 'test-policy',
+              namespace: 'cluster2',
+              compliant: 'Compliant',
+              responseAction: 'enforce',
+              severity: 'low',
+              disabled: false,
+              _isExternal: true,
+              source: { type: 'Local', parentName: '', parentNs: '' },
+            },
+            {
+              _hubClusterResource: true,
+              _uid: 'cluster3/test-uid-3',
+              apigroup: 'policy.open-cluster-management.io',
+              apiversion: 'v1',
+              cluster: 'cluster-dev-backend',
+              created: '2024-08-15T14:01:52Z',
+              kind: 'ConfigurationPolicy',
+              kind_plural: 'configurationpolicies',
+              label: 'env=dev; team=backend',
+              name: 'test-policy',
+              namespace: 'cluster3',
+              compliant: 'Compliant',
+              responseAction: 'enforce',
+              severity: 'low',
+              disabled: false,
+              _isExternal: true,
+              source: { type: 'Local', parentName: '', parentNs: '' },
+            },
+          ],
+        },
+      ],
+      policyKind: 'ConfigurationPolicy',
+      apiGroup: 'policy.open-cluster-management.io',
+      err: undefined,
+    }
+
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(channelsState, [])
+          snapshot.set(helmReleaseState, [])
+          snapshot.set(subscriptionsState, [])
+        }}
+      >
+        <MemoryRouter
+          initialEntries={[
+            generatePath(NavigationPath.discoveredByCluster, {
+              kind: 'ConfigurationPolicy',
+              policyName: 'test-policy-filter-combined',
+              apiGroup: 'policy.open-cluster-management.io',
+              apiVersion: 'v1',
+            }),
+          ]}
+        >
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredByCluster />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    // All three clusters should be visible initially
+    await waitForText('cluster-prod-backend')
+    await waitForText('cluster-prod-frontend')
+    await waitForText('cluster-dev-backend')
+
+    // Test the filter logic programmatically using the shared predicate
+    const policies = context.policyItems![0].policies
+
+    // Scenario 1: Filter with env=prod AND !team=backend
+    // Should show cluster-prod-frontend only (has env=prod but NOT team=backend)
+    const filter1 = ['env=prod', '!team=backend']
+    const result1 = policies.filter((policy) => matchesSelectedLabels(filter1, policy))
+
+    expect(result1.length).toBe(1)
+    expect(result1[0].cluster).toBe('cluster-prod-frontend')
+
+    // Scenario 2: Filter with only !team=backend
+    // Should show cluster-prod-frontend (not cluster-prod-backend or cluster-dev-backend)
+    const filter2 = ['!team=backend']
+    const result2 = policies.filter((policy) => matchesSelectedLabels(filter2, policy))
+
+    expect(result2.length).toBe(1)
+    expect(result2[0].cluster).toBe('cluster-prod-frontend')
+  })
+
   test('Should render DiscoveredByCluster for Kyverno Policy in multiple namespaces', async () => {
     const context: DiscoveredDetailsContext = {
       isFetching: false,
@@ -748,15 +1217,16 @@ describe('DiscoveredByCluster', () => {
 
     expect(screen.getByText('1 with violations')).toBeInTheDocument()
 
+    // Note: Labels column is now included in the table
     expect(
       screen.getByRole('row', {
-        name: /local-cluster open-cluster-management-agent-addon Audit Critical 176 Local/,
+        name: /local-cluster open-cluster-management-agent-addon .* Audit Critical 176 Local/,
       })
     ).toBeInTheDocument()
 
     expect(
       screen.getByRole('row', {
-        name: /local-cluster default Audit Critical No violations Local/,
+        name: /local-cluster default .* Audit Critical No violations Local/,
       })
     ).toBeInTheDocument()
   })
