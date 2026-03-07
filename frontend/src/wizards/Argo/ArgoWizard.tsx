@@ -26,7 +26,7 @@ import { GitOpsOperatorAlert } from '../../components/GitOpsOperatorAlert'
 import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { SupportedOperator, useOperatorCheck } from '../../lib/operatorCheck'
-import { validateAppSetName } from '../../lib/validation'
+import { useValidation } from '../../hooks/useValidation'
 import { useWizardStrings } from '../../lib/wizardStrings'
 import { NavigationPath } from '../../NavigationPath'
 import { ApplicationSetKind, GitOpsCluster } from '../../resources'
@@ -156,6 +156,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
   const sources = applicationSet?.spec.template.spec.sources
 
   const { t } = useTranslation()
+  const { validateAppSetName } = useValidation()
 
   const hubCluster = useMemo(
     () => props.clusters.find((cls) => cls.metadata?.labels && cls.metadata.labels['local-cluster'] === 'true'),

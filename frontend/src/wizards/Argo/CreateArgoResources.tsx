@@ -23,7 +23,7 @@ import { IResource } from '../common/resources/IResource'
 import schema from './schema.json'
 import './CreateArgoResources.css'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
-import { validateKubernetesResourceName } from '../../lib/validation'
+import { useValidation } from '../../hooks/useValidation'
 
 export interface ICreateArgoResourcesModalProps {
   handleModalToggle: () => void
@@ -53,6 +53,7 @@ export function WizardSyncEditor() {
 
 export function CreateArgoResources(props: ICreateArgoResourcesModalProps) {
   const { t } = useTranslation()
+  const { validateKubernetesResourceName } = useValidation()
   const { handleModalToggle, clusterSets } = props
 
   const { argoCDsState } = useSharedAtoms()
@@ -161,7 +162,7 @@ export function CreateArgoResources(props: ICreateArgoResourcesModalProps) {
             value: name,
             onChange: setName,
             isRequired: true,
-            validation: (value) => validateKubernetesResourceName(value, t),
+            validation: validateKubernetesResourceName,
           },
           {
             id: 'namespace',
