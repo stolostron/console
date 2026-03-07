@@ -2,7 +2,6 @@
 
 import YAML from 'yaml'
 
-import { TFunction } from 'react-i18next'
 import validator from 'validator'
 import { IResource } from '../resources'
 
@@ -302,10 +301,13 @@ export function useValidation() {
         if (!lowercaseAlphaNumericCharacters.includes(char) && char !== '-' && char !== '.')
           return t("This value can only contain lowercase alphanumeric characters or '-' or '.'")
       }
-      if (!lowercaseAlphaNumericCharacters.includes(value[0]))
-        return t('This value must start with an alphanumeric character')
-      if (!lowercaseAlphaNumericCharacters.includes(value.at(-1) as string))
-        return t('This value must end with an alphanumeric character')
+      if (!VALID_DNS_NAME_TESTER.test(value)) {
+        if (!lowercaseAlphaNumericCharacters.includes(value[0]))
+          return t('This value must start with an alphanumeric character')
+        if (!lowercaseAlphaNumericCharacters.includes(value.at(-1) as string))
+          return t('This value must end with an alphanumeric character')
+        return t('This value must be a valid lowercase RFC 1123 subdomain.')
+      }
       return undefined
     }
 
@@ -348,7 +350,7 @@ export function useValidation() {
     }
 
     const validateCidr = (value: string) => {
-      if (value == '') {
+      if (value === '') {
         return undefined
       }
 
@@ -387,10 +389,6 @@ export function useValidation() {
       return undefined
     }
 
-    const validateArrayNotEmpty = (value: any[], t: TFunction) => {
-      return value.length === 0 ? t('validate.array.notempty') : undefined
-    }
-
     return {
       validateKubernetesDnsName,
       validatePublicSshKey,
@@ -419,7 +417,6 @@ export function useValidation() {
       validateVcenterUsername,
       validateCidr,
       validateKubeconfig,
-      validateArrayNotEmpty,
     }
   }, [t])
 }

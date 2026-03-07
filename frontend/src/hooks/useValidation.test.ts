@@ -39,7 +39,6 @@ describe('validation', () => {
     validateVcenterUsername,
     validateCidr,
     validateKubeconfig,
-    validateArrayNotEmpty,
   } = renderHook(() => useValidation()).result.current
 
   describe('validateKubernetesDnsName', () => {
@@ -436,6 +435,9 @@ describe('validation', () => {
       ['should not allow end with -', 'my-resource-', false],
       ['should not allow underscores', 'my_resource', false],
       ['should not allow longer than 253', 'a'.repeat(254), false],
+      ['should not allow empty labels', 'a..b', false],
+      ['should not allow labels to start with -', 'a.-b', false],
+      ['should not allow labels to end with -', 'a-.b', false],
     ])('%s', (_name, value, isValid) => {
       if (isValid) {
         expect(validateKubernetesResourceName(value)).toBeUndefined()
@@ -504,18 +506,6 @@ describe('validation', () => {
       } else {
         expect(validateCidr(value)).toBeTruthy()
       }
-    })
-  })
-
-  describe('validateArrayNotEmpty', () => {
-    const t = (key: string) => key
-
-    test('should allow a non-empty array', () => {
-      expect(validateArrayNotEmpty([1, 2, 3], t)).toBeUndefined()
-    })
-
-    test('should not allow an empty array', () => {
-      expect(validateArrayNotEmpty([], t)).toBeTruthy()
     })
   })
 
