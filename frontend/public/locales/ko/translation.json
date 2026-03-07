@@ -2844,7 +2844,7 @@
   "submariner.install.form.gateways.labelHelp": "관리형 클러스터에 Submariner 게이트웨이 구성 요소를 배포하는 데 사용되는 작업자 노드 수입니다. 값이 1보다 크면 Submariner 게이트웨이 HA가 자동으로 활성화됩니다. (기본값 1)",
   "submariner.install.form.gateways.placeholder": "게이트웨이 수 입력",
   "submariner.install.form.instancetype": "인스턴스 유형 입력",
-  "submariner.install.form.instancetype.labelHelp.aws": "관리되는 클러스터에서 생성될 게이트웨이 노드의 Amazon Web Services EC2 인스턴스 유형입니다. (기본값 c5d.large)",
+  "submariner.install.form.instancetype.labelHelp.aws": "관리되는 클러스터에서 생성될 게이트웨이 노드의 Amazon Web Services EC2 인스턴스 유형입니다. (기본값 m5.xlarge)",
   "submariner.install.form.instancetype.labelHelp.azure": "관리형 클러스터에서 생성될 게이트웨이 노드의 Azure 인스턴스 유형입니다. (기본값 Standard_F4s_v2).",
   "submariner.install.form.instancetype.placeholder": "인스턴스 유형 선택",
   "submariner.install.form.nattenable": "NAT-T 활성화",
