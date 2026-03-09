@@ -17,7 +17,14 @@ import {
 import { TemplateLinkOutControl, TemplateSummaryControl } from '../../../../../../components/TemplateSummaryModal'
 import { getControlByID } from '../../../../../../lib/temptifly-utils'
 import { NavigationPath } from '../../../../../../NavigationPath'
-import { listClusterImageSets, listStorageClasses, unpackProviderConnection } from '../../../../../../resources'
+import {
+  getChannelFromVersion,
+  getClusterImageSetVersion,
+  getVersionFromReleaseString,
+  listClusterImageSets,
+  listStorageClasses,
+  unpackProviderConnection,
+} from '../../../../../../resources'
 
 const createAutomationTemplate = (t) => ({
   prompt: t('creation.ocp.cloud.add.template'),
@@ -57,15 +64,17 @@ const getImageName = (image) => {
     .replaceAll(/[^\w.]|_/g, '-')}`
 }
 
-const getImageVersion = (image) => {
-  const match = /(\d+.\d+.\d+)-/gm.exec(image)
-  return _.get(match, '1', '')
-}
+export const getSimplifiedImageName = (image, control) => {
+  let version = control?.availableMap?.[image]?.replacements?.releaseImageVersion
+  if (!version) {
+    const match = /.+:(.*)-/gm.exec(image)
+    if (match && match.length > 1) {
+      version = match[1]
+    }
+  }
 
-export const getSimplifiedImageName = (image) => {
-  const match = /.+:(.*)-/gm.exec(image)
-  if (match && match[1]) {
-    return `OpenShift ${match[1]}`
+  if (version) {
+    return `OpenShift ${version}`
   }
 }
 
@@ -102,6 +111,8 @@ export const setAvailableOCPImages = (provider, control, result) => {
         const name = metadata?.name
         const visible = metadata?.labels?.visible
         const releaseImage = spec?.releaseImage
+        const version = getClusterImageSetVersion(item)
+
         // We only hide when visible is false. We consider visible the default
         if (visible !== 'false') {
           switch (provider) {
@@ -116,7 +127,7 @@ export const setAvailableOCPImages = (provider, control, result) => {
               }
               break
             case 'kubevirt':
-              if (!versionGreater(releaseImage, 4, 13)) {
+              if (!versionGreater(version, 4, 13)) {
                 // Has to be 4.14 or greater
                 return
               }
@@ -129,7 +140,8 @@ export const setAvailableOCPImages = (provider, control, result) => {
             replacements: {
               releaseImageReference: name,
               clusterImageSetComment: releaseImage,
-              releaseImageVersion: getImageVersion(name),
+              releaseImageVersion: version,
+              releaseImageChannel: getChannelFromVersion(version, 'fast'),
             },
           }
         }
@@ -144,12 +156,15 @@ export const setAvailableOCPImages = (provider, control, result) => {
 export const setAvailableOCPMap = (control) => {
   const { active, availableMap, isFailed } = control
   if (active && !availableMap[active]) {
+    // User entered a new release image URL; try to parse OCP version from it
+    const version = getVersionFromReleaseString(active)
     availableMap[active] = !isFailed
       ? {
           replacements: {
             clusterReleaseImage: active,
             clusterImageSetName: getImageName(active),
-            releaseImageVersion: getImageVersion(active),
+            releaseImageVersion: version,
+            releaseImageChannel: getChannelFromVersion(version, 'fast'),
           },
         }
       : {
@@ -365,15 +380,16 @@ export const onImageChange = (control, controlData) => {
   const networkDefault = getControlByID(controlData, 'networkType')
   if (networkDefault) {
     const { setActive } = networkDefault
-    const { active: version } = control
-    if (versionGreater(version, 4, 14)) {
+    const version = getImageSetVersion(control)
+    if (!version || versionGreater(version, 4, 14)) {
+      // assume OCP 4.15+ if version not available
       networkDefault.type = 'text'
       networkDefault.active = 'OVNKubernetes'
       networkDefault.disabled = true
     } else {
       networkDefault.type = 'singleselect'
       networkDefault.disabled = false
-      if (versionGreater(version, 4, 11)) {
+      if (!version || versionGreater(version, 4, 11)) {
         setActive('OVNKubernetes')
       } else {
         setActive('OpenShiftSDN')
@@ -786,24 +802,38 @@ export const architectureData = (t) => {
 
 export const getName = ({ data }) => data.root.ai?.name ?? data.root.name
 
-const versionRegex = /:([\d]{1,5})\.([\d]{1,5})\.([\d]{1,5})/
+const versionRegex = /([\d]{1,5})\.([\d]{1,5})\.([\d]{1,5})/
 function versionGreater(version, x, y) {
-  const matches = version.match(versionRegex)
-  return matches && Number.parseInt(matches[1], 10) >= x && Number.parseInt(matches[2], 10) > y
+  const matches = version?.match(versionRegex)
+  if (matches) {
+    const major = Number.parseInt(matches[1], 10)
+    const minor = Number.parseInt(matches[2], 10)
+    return major > x || (major === x && minor > y)
+  }
+  return false
+}
+
+const getImageSetVersion = (control) => {
+  return control?.active ? control?.availableMap?.[control.active]?.replacements?.releaseImageVersion : undefined
 }
 
 export const isHidden_lt_OCP48 = (control, controlData) => {
   const singleNodeFeatureFlag = getControlByID(controlData, 'singleNodeFeatureFlag')
-  const imageSet = getControlByID(controlData, 'imageSet')
-  if (singleNodeFeatureFlag && singleNodeFeatureFlag.active && imageSet && imageSet.active) {
-    return !versionGreater(imageSet.active, 4, 7)
+  if (singleNodeFeatureFlag && singleNodeFeatureFlag.active) {
+    const version = getImageSetVersion(getControlByID(controlData, 'imageSet'))
+    if (version) {
+      return !versionGreater(version, 4, 7)
+    }
   }
-  return true
+  return false // assume OCP version is 4.8 or higher
 }
 
 export const isHidden_lt_OCP47 = (control, controlData) => {
-  const imageSet = getControlByID(controlData, 'imageSet')
-  return imageSet && imageSet.active && !versionGreater(imageSet.active, 4, 6)
+  const version = getImageSetVersion(getControlByID(controlData, 'imageSet'))
+  if (version) {
+    return !versionGreater(version, 4, 6)
+  }
+  return false // assume OCP version is 4.7 or higher
 }
 
 export const isHidden_SNO = (control, controlData) => {

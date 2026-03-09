@@ -272,6 +272,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
         click: () => {
           if (hostedCluster) {
             setManageNodepoolModalProps({
+              cluster,
               open: true,
               close: () => {
                 setManageNodepoolModalProps({ open: false })
@@ -305,7 +306,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
 
       return actions
     },
-    [hostedCluster, nodePools.length, t, canDeleteNodepool, canPatchNodepool, cluster?.hypershift?.isUpgrading]
+    [t, cluster, canPatchNodepool, canDeleteNodepool, hostedCluster, nodePools.length]
   )
 
   const addNodepoolButton = useMemo(
@@ -342,6 +343,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
       <AddNodePoolModal
         open={openAddNodepoolModal}
         close={toggleAddNodepoolModal}
+        cluster={cluster}
         hostedCluster={hostedCluster}
         refNodepool={nodePools && nodePools.length > 0 ? nodePools[0] : undefined}
         clusterImages={clusterImages}

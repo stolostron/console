@@ -13,8 +13,8 @@ metadata:
     "cluster.open-cluster-management.io/clusterset": '{{{clusterSet}}}'
   {{/if}}
 spec:
-  {{#if channel}}
-  channel: {{{channel}}}
+  {{#if releaseImageChannel}}
+  channel: {{{releaseImageChannel}}}
   {{/if}}
   etcd:
     managed:

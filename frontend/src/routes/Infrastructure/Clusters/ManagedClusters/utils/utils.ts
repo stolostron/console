@@ -39,29 +39,3 @@ export function getClusterLabelData(clusters: Cluster[]) {
     }),
   }
 }
-export const getCPUArchFromReleaseImage = (releaseImage = '') => {
-  const match = /.+:.*-(.*)/gm.exec(releaseImage)
-  if (match && match.length > 1 && match[1]) {
-    return match[1]
-  }
-}
-
-export const getVersionFromReleaseImage = (releaseImage = '') => {
-  const match = /.+:(\d+\.\d+(?:\.\d+)?)/gm.exec(releaseImage)
-  if (match && match.length > 1 && match[1]) {
-    return match[1]
-  }
-}
-
-export const getChannelFromReleaseImage = (releaseImage = '', stream = 'fast') => {
-  const version = getVersionFromReleaseImage(releaseImage)
-  if (version) {
-    // Extract major.minor (e.g., "4.20" from "4.20.8")
-    const lastDotIndex = version.lastIndexOf('.')
-    if (lastDotIndex > 0) {
-      const majorMinor = version.substring(0, lastDotIndex)
-      return `${stream}-${majorMinor}`
-    }
-  }
-  return undefined
-}
