@@ -41,6 +41,7 @@ export function WizardSyncEditor() {
       variant="toolbar"
       resources={resources}
       schema={pushmodelschema}
+      filters={['*.metadata.managedFields']}
       onEditorChange={(changes: { resources: any[] }): void => {
         update(changes?.resources)
       }}
