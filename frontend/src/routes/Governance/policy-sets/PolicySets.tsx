@@ -76,6 +76,7 @@ export default function PolicySetsPage() {
   const [perPage, setPerPage] = useState<number>(10)
   const [filteredPolicySets, setFilteredPolicySets] = useState<PolicySet[]>(policySets)
   const [selectedCardID, setSelectedCardID] = useState<string>('')
+  const [cardIdActionMenuOpen, setCardIdActionMenuOpen] = useState<string>()
   const canCreatePolicySet = useIsAnyNamespaceAuthorized(rbacCreate(PolicySetDefinition))
   const canEditPolicySet = useIsAnyNamespaceAuthorized(rbacUpdate(PolicySetDefinition))
   const canDeletePolicySet = useIsAnyNamespaceAuthorized(rbacDelete(PolicySetDefinition))
@@ -273,6 +274,8 @@ export default function PolicySetsPage() {
                       setSelectedCardID={setSelectedCardID}
                       canEditPolicySet={canEditPolicySet}
                       canDeletePolicySet={canDeletePolicySet}
+                      cardIdActionMenuOpen={cardIdActionMenuOpen}
+                      setCardIdActionMenuOpen={setCardIdActionMenuOpen}
                     />
                   )
                 })
