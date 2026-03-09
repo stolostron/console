@@ -77,9 +77,9 @@ describe('validation', () => {
     })
 
     test('validatePrivateSshKey should require new line', () => {
-      expect(
-        validatePrivateSshKey('-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----')
-      ).toBe('validate.mustEndWithNewline')
+      expect(validatePrivateSshKey('-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----')).toBe(
+        'validate.mustEndWithNewline'
+      )
     })
   })
   describe('validateCertificate', () => {
@@ -222,13 +222,7 @@ describe('validation', () => {
         '',
         'validate.yaml.cloud.cacert.was.found',
       ],
-      [
-        `should not allow invalid YAML`,
-        '{{invalid',
-        'openstack',
-        '',
-        'validate.yaml.not.valid',
-      ],
+      [`should not allow invalid YAML`, '{{invalid', 'openstack', '', 'validate.yaml.not.valid'],
     ])('%s', (_name, value, value2, value3, expected) => {
       expect(validateCloudsYaml(value, value2, value3)).toBe(expected)
     })
@@ -330,7 +324,11 @@ describe('validation', () => {
 
   describe('validateImageContentSources', () => {
     test.each([
-      ['should allow valid image content sources', '- mirrors:\n    - registry.example.com\n  source: quay.io', undefined],
+      [
+        'should allow valid image content sources',
+        '- mirrors:\n    - registry.example.com\n  source: quay.io',
+        undefined,
+      ],
       ['should allow empty value', '', undefined],
       ['should not allow missing mirrors', '- source: quay.io', 'validate.yaml.not.valid'],
       ['should not allow missing source', '- mirrors:\n    - registry.example.com', 'validate.yaml.not.valid'],
@@ -420,6 +418,8 @@ describe('validation', () => {
     })
 
     test('should not allow combined namespace and name exceeding 62 characters', () => {
+      // 17 (length of namespace) + 46 (length of policy name) = 63
+      // Error message does not count the dot between namespace and name
       const resource = { metadata: { namespace: 'my-long-namespace' } }
       expect(validatePolicyName('a'.repeat(46), resource)).toBe(
         'The combined length of the policy namespace and name must not exceed 62 characters'
