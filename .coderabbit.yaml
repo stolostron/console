@@ -1,0 +1,259 @@
+# CodeRabbit Configuration for @stolostron/console
+# Documentation: https://docs.coderabbit.ai/guides/configure-coderabbit
+# Full schema reference: https://docs.coderabbit.ai/reference/configuration
+
+# ============================================================================
+# LANGUAGE AND TONE SETTINGS
+# ============================================================================
+
+# language: Sets the language for review comments (supports 90+ ISO language codes)
+# Default: "en-US"
+language: en-US
+
+# tone_instructions: Customize how CodeRabbit communicates in reviews (max 250 characters)
+# Use this to set formality level, technical depth, or specific focus areas
+# Example: "Be concise and technical" or "Focus on security and performance"
+tone_instructions: "Be concise and technical. Focus on code quality, security, and maintainability."
+
+# early_access: Enable experimental features that are in beta testing
+# Default: false
+# Set to true if you want to try new features before general availability
+early_access: false
+
+# ============================================================================
+# REVIEW SETTINGS
+# ============================================================================
+
+reviews:
+  # profile: Controls the overall strictness and tone of reviews
+  # Options: "chill" (lenient, focuses on major issues) or "assertive" (strict, comprehensive)
+  # Default: "chill"
+  # Recommendation: Start with "chill" and switch to "assertive" if you want more thorough reviews
+  profile: chill
+
+  # high_level_summary: Generates an executive summary at the top of each review
+  # Default: true
+  # This provides a quick overview of changes before diving into detailed feedback
+  high_level_summary: true
+
+  # poem: Generates a fun, creative poem summarizing the PR
+  # Default: true
+  # Set to false for more professional, business-focused reviews? Will miss the whimsy of a topical poem though.
+  poem: false
+
+  # review_status: Shows the overall review status (e.g., "Looks good!" or "Needs attention")
+  # Default: true
+  # Provides a quick at-a-glance assessment of the PR health
+  review_status: true
+
+  # collapse_walkthrough: Collapses the detailed file-by-file walkthrough by default
+  # Default: true
+  # Helps keep reviews concise; users can expand sections as needed
+  collapse_walkthrough: true
+
+  # suggested_labels: Enables AI-powered label suggestions based on PR content
+  # Default: true
+  # CodeRabbit analyzes changes and suggests relevant labels (frontend, backend, security, etc.)
+  # Set to false to disable label suggestions; I don't think coderabbit's suggested labels are relevant to our workflow.
+  suggested_labels: false
+
+  # auto_apply_labels: Automatically applies suggested labels to PRs (requires suggested_labels: true)
+  # Default: false
+  # Set to true if you want labels applied automatically instead of just suggested
+  # CAUTION: May apply unwanted labels; start with false and enable after testing suggestions
+  auto_apply_labels: false
+
+  # suggested_reviewers: Enables AI-powered reviewer suggestions based on code ownership and expertise
+  # Default: true
+  # Analyzes file changes and suggests team members who have worked on similar code
+  # Set to false for now...github already provides this capability
+  suggested_reviewers: false
+
+  # auto_assign_reviewers: Automatically assigns suggested reviewers (requires suggested_reviewers: true)
+  # Default: false
+  # Set to true to automatically add reviewers; start with false to review suggestions first
+  # NOTE: Can be combined with GitHub CODEOWNERS for more intelligent assignments
+  auto_assign_reviewers: false
+
+  # ============================================================================
+  # PATH-SPECIFIC REVIEW INSTRUCTIONS
+  # ============================================================================
+
+  # path_instructions: Provides custom review guidance for specific file paths
+  # Uses glob patterns to match files and applies tailored instructions
+  # Max 20,000 characters per instruction
+  # This helps CodeRabbit understand project-specific conventions and requirements.
+  #
+  # Instructions like "Attempt to verify PatternFly components are used correctly" will likely prompt a websearch from coderabbit;
+  # this is not necessarily a bad thing, but because we dont control the websearch results, outcomes may vary in quality.
+  path_instructions:
+    # Frontend TypeScript/React files
+    - path: "frontend/src/**/*.{ts,tsx}"
+      instructions: |
+        - Ensure all user-facing strings use useTranslation() or <Trans /> from src/lib/acm-i18next.
+        - Check for proper error boundaries and error handling
+        - Attempt to verify PatternFly components are used correctly, based on their respective design-guidelines
+        - Flag any security-sensitive operations (dangerouslySetInnerHTML, innerHTML)
+
+    # Backend Node.js ESM files
+    - path: "backend/src/**/*.ts"
+      instructions: |
+        - Check for proper error handling and logging
+        - Ensure sensitive data (tokens, passwords) are not logged
+        - Verify input validation and sanitization
+        - Check for SQL injection, command injection vulnerabilities
+        - Ensure proper authentication/authorization checks
+
+    # Test files
+    - path: "**/*.test.{ts,tsx}"
+      instructions: |
+        - Verify test coverage is meaningful, not just for metrics
+        - Check that tests actually test the described behavior
+        - Ensure proper mocking and isolation
+        - Verify async tests handle promises correctly
+
+  # ============================================================================
+  # AUTOMATED REVIEW SETTINGS
+  # ============================================================================
+
+  auto_review:
+    # enabled: Master switch for automatic code reviews
+    # Default: true
+    # When true, CodeRabbit automatically reviews new PRs and commits
+    enabled: true
+
+    # auto_incremental_review: Automatically review new commits pushed to existing PRs
+    # Default: true
+    # When enabled, each new commit triggers a review of only the new changes
+    # Helps catch issues early as development progresses
+    auto_incremental_review: true
+
+    # base_branches: (list) Only auto-review PRs targeting these branches
+    # Default: [] (all branches)
+    # Limits automatic reviews to PRs against specified branches
+    # Useful to focus reviews on main integration branches
+    base_branches:
+      - main
+      - release-.*
+
+    # drafts: Whether to review draft PRs
+    # Default: false
+    # Set to true if you want CodeRabbit to review work-in-progress drafts
+    # false = skip drafts, only review when marked "Ready for review"
+    drafts: true
+
+  # ============================================================================
+  # PATH FILTERS (File Exclusions)
+  # ============================================================================
+
+  # path_filters: Excludes files/directories from reviews using glob patterns
+  # Use "!" prefix to negate/exclude patterns
+  # Helps reduce noise by skipping generated files, dependencies, and build artifacts
+  # These patterns align with .gitignore to exclude build artifacts and generated files
+  path_filters:
+    - "!**/node_modules/**" # Exclude npm dependencies
+    - "!**/build/**" # Exclude build output directories
+    - "!**/coverage/**" # Exclude test coverage reports
+    - "!**/dist/**" # Exclude distribution bundles
+    - "!**/certs/**" # Exclude SSL certificates
+    - "!**/*.snap" # Exclude Jest snapshot files
+    - "!frontend/public/locales/**" # Exclude i18n translation files
+
+  # ============================================================================
+  # TOOL INTEGRATIONS
+  # ============================================================================
+
+  # tools: Configure external linters, security scanners, and code quality tools
+  # CodeRabbit can integrate with 50+ tools to enhance reviews
+  # Each tool runs automatically when reviewing relevant files
+  # Results appear inline with CodeRabbit's AI analysis
+  tools:
+    # ESLint: JavaScript/TypeScript linting
+    # Respects your project's .eslintrc configuration
+    # Catches code quality issues, style violations, and potential bugs
+    eslint:
+      enabled: true
+
+    # LanguageTool: Grammar and style checking for comments and documentation
+    # Helps maintain professional, clear communication in code comments
+    # level: "default" (balanced) or "picky" (strict)
+    languagetool:
+      enabled: true
+      level: default
+
+    # ShellCheck: Shell script analysis
+    # Detects common issues in bash/sh scripts
+    # Helps prevent shell scripting errors and anti-patterns
+    shellcheck:
+      enabled: true
+
+    # Markdownlint: Markdown formatting and style checking
+    # Ensures consistent, clean documentation formatting
+    # Enforces markdown best practices in README.md and other docs
+    markdownlint:
+      enabled: true
+
+    # GitLeaks: Secret detection and credential scanning
+    # Scans for accidentally committed passwords, API keys, tokens
+    # For preventing security breaches
+    gitleaks:
+      enabled: true
+
+    # GitHub Checks: Integration with GitHub's native checks API
+    # Shows results in GitHub's "Checks" tab
+    # timeout_ms: Maximum time to wait for checks (0-900000ms)
+    github-checks:
+      enabled: true
+      timeout_ms: 90000 # 90 seconds
+
+# ============================================================================
+# CHAT SETTINGS
+# ============================================================================
+
+chat:
+  # auto_reply: Enables proactive participation in PR comment threads
+  # Default: true
+  # When enabled, CodeRabbit can reply to comments and questions in review threads
+  # without requiring an explicit @coderabbitai mention/tag
+  # Note: You can still use @coderabbitai to ask specific questions anywhere
+  auto_reply: true
+
+# ============================================================================
+# KNOWLEDGE BASE SETTINGS
+# ============================================================================
+
+knowledge_base:
+  # opt_out: Controls whether this repo participates in CodeRabbit's learning
+  # Default: false (opted in)
+  # false = CodeRabbit learns from this repo to improve future reviews
+  # true = Disables learning; reviews are independent of past PRs
+  opt_out: false
+
+  # web_search: Allows CodeRabbit to search the web for additional context
+  # Default: true
+  # Helps find documentation for third-party libraries, APIs, frameworks
+  # Useful for understanding external dependencies and best practices
+  web_search:
+    enabled: true
+
+  # code_guidelines: Uses repository documentation as review guidelines
+  # Default: true
+  # CodeRabbit reads CONTRIBUTING.md, CLAUDE.md, and other guideline files
+  # Ensures reviews align with your team's documented standards
+  code_guidelines:
+    enabled: true
+
+  # learnings: Controls scope of learning from past reviews and code
+  # Options: "local" (this repo only), "global" (across org), "auto" (intelligent)
+  # "local" keeps learning isolated to this repository
+  # "global" shares learnings across all your organization's repos
+  # "auto" intelligently determines scope based on code similarity
+  learnings:
+    scope: local
+
+  # pull_requests: Controls scope of PR history used for context
+  # Options: "local", "global", "auto"
+  # "local" only references PRs from this repository
+  # Helps CodeRabbit understand common patterns, past decisions, and team preferences
+  pull_requests:
+    scope: local
