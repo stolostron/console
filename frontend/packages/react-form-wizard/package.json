@@ -29,7 +29,7 @@
         "cypress:wait": "curl --no-progress-meter --retry-connrefused --retry 5 --retry-delay 5 'localhost:3000' 1>/dev/null",
         "upgrade": "ncu --upgrade --doctor --target latest --reject react-router-dom,@types/react-router-dom,@types/node && ncu --upgrade --doctor --target minor && ncu --upgrade --doctor --target patch",
         "coverage": "open coverage/lcov-report/index.html",
-        "watch": "watch 'npm run watch:build' src wizards",
+        "watch": "npm run build && watch 'npm run watch:build' src wizards",
         "watch:build": "tsc --build tsconfig.eslint.json"
     },
     "prettier": "@stolostron/prettier-config",
