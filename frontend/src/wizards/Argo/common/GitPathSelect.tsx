@@ -26,6 +26,10 @@ export const GitPathSelect = ({ channels, secrets }: GitPathSelectProps) => {
   const previousRevision = usePrevious(revision)
 
   const gitPathsAsyncCallback = useCallback(() => {
+    if (!revision) {
+      return Promise.resolve([])
+    }
+
     const channel = channels?.find((channel) => channel?.spec?.pathname === repoURL)
     const secret = secrets?.find((secret) => {
       if (!repoURL) {
@@ -54,23 +58,22 @@ export const GitPathSelect = ({ channels, secrets }: GitPathSelectProps) => {
           accessToken: Buffer.from(secret.data?.password ?? '', 'base64').toString(),
         }
       ).then((paths) => (paths ?? []).filter((p): p is string => p !== undefined))
-    } else {
-      return getGitPathList(
-        {
-          metadata: {
-            name: channel?.metadata?.name ?? '',
-            namespace: channel?.metadata?.namespace ?? '',
-          },
-          spec: {
-            pathname: channel?.spec.pathname ?? repoURL ?? '',
-            type: 'git',
-          },
-        },
-        revision,
-        getGitChannelPaths,
-        repoURL
-      )
     }
+    return getGitPathList(
+      {
+        metadata: {
+          name: channel?.metadata?.name ?? '',
+          namespace: channel?.metadata?.namespace ?? '',
+        },
+        spec: {
+          pathname: channel?.spec.pathname ?? repoURL ?? '',
+          type: 'git',
+        },
+      },
+      revision,
+      getGitChannelPaths,
+      repoURL
+    )
   }, [channels, repoURL, revision, secrets])
 
   // Clear path when repoURL or revision changes (update during render)

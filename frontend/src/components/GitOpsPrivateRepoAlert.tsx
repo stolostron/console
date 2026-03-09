@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { useItem } from '@patternfly-labs/react-form-wizard'
 import { Alert, AlertVariant, Button } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useTranslation } from '../lib/acm-i18next'
@@ -7,12 +8,12 @@ import { processResourceActionLink } from '../routes/Applications/ApplicationDet
 
 export function GitOpsPrivateRepoAlert(props: {
   isPullModel: boolean
-  namespace: string
   hubClusterName: string
   className?: string
   title?: string
 }) {
-  const { className, isPullModel, namespace, hubClusterName } = props
+  const { className, isPullModel, hubClusterName } = props
+  const namespace = useItem('metadata.namespace') as string | undefined
   const { t } = useTranslation()
   const title = props.title || t('Private repository credentials required')
   const message = isPullModel
@@ -29,9 +30,10 @@ export function GitOpsPrivateRepoAlert(props: {
       icon={<ExternalLinkAltIcon />}
       iconPosition="right"
       isInline
+      isDisabled={!namespace}
       onClick={() => {
         processResourceActionLink(
-          { action: 'open_argo_repo_settings', namespace, cluster: hubClusterName },
+          { action: 'open_argo_repo_settings', namespace: namespace ?? '', cluster: hubClusterName },
           () => {},
           t,
           hubClusterName

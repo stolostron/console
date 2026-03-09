@@ -177,7 +177,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
       const source = get(appset, 'spec.template.spec.source')
       const sources = get(appset, 'spec.template.spec.sources')
       if (sources) {
-        sources.forEach((source) => {
+        sources.forEach((source: any) => {
           if (!source.chart) {
             gitArgoAppSetRepoURLs.push(source.repoURL)
           }
@@ -247,7 +247,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
       const sources = get(appset, 'spec.template.spec.sources')
 
       if (sources) {
-        sources.forEach((source) => {
+        sources.forEach((source: any) => {
           if (source.chart) {
             helmArgoAppSetRepoURLs.push(source.repoURL)
           }
@@ -563,11 +563,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
         </Step>
         <Step id="repository" label={t('Repository')}>
           <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
-            <GitOpsPrivateRepoAlert
-              isPullModel={isPullModel}
-              namespace={applicationSet?.metadata?.namespace ?? ''}
-              hubClusterName={hubCluster?.metadata?.name ?? ''}
-            />
+            <GitOpsPrivateRepoAlert isPullModel={isPullModel} hubClusterName={hubCluster?.metadata?.name ?? ''} />
             <Section label={t('Repository')} description={t('Repository of the applications to be created.')}>
               {source && !sources ? (
                 <SourceSelector
