@@ -122,7 +122,7 @@ export function EditArgoApplicationSet() {
         setPullModel(true)
       }
       const copyOfAppSet = JSON.parse(JSON.stringify(applicationSet))
-      const sources = get(applicationSet, 'spec.template.spec.sources')?.map((source) => {
+      const sources = get(applicationSet, 'spec.template.spec.sources')?.map((source: any) => {
         if (source.path) {
           return {
             ...source,

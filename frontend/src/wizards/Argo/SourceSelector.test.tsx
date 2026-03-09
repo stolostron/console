@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
+import { createContext } from 'react'
 import { repositoryTypeToSource, sourceToRepositoryType } from './SourceSelector'
 
 const mockUpdate = jest.fn()
@@ -28,28 +29,25 @@ jest.mock('../../lib/validation', () => ({
   validateWebURL: jest.fn(),
 }))
 
-jest.mock('@patternfly-labs/react-form-wizard', () => {
-  const React = require('react')
-  return {
-    ItemContext: React.createContext({}),
-    useItem: () => mockAppSetData,
-    useData: () => ({ update: mockUpdate }),
-    WizAsyncSelect: ({ label }: any) => <div id={`async-select-${label}`} />,
-    WizSelect: ({ label, options }: any) => (
-      <div id={`select-${label}`}>
-        {options?.map((opt: string) => (
-          <span key={opt} id={`option-${opt}`}>
-            {opt}
-          </span>
-        ))}
-      </div>
-    ),
-    WizHidden: ({ children }: any) => <>{children}</>,
-    WizTiles: ({ label }: any) => <div id={`tiles-${label}`} />,
-    WizTextInput: ({ label }: any) => <div id={`text-input-${label}`} />,
-    Tile: () => null,
-  }
-})
+jest.mock('@patternfly-labs/react-form-wizard', () => ({
+  ItemContext: createContext({}),
+  useItem: () => mockAppSetData,
+  useData: () => ({ update: mockUpdate }),
+  WizAsyncSelect: ({ label }: any) => <div id={`async-select-${label}`} />,
+  WizSelect: ({ label, options }: any) => (
+    <div id={`select-${label}`}>
+      {options?.map((opt: string) => (
+        <span key={opt} id={`option-${opt}`}>
+          {opt}
+        </span>
+      ))}
+    </div>
+  ),
+  WizHidden: ({ children }: any) => <>{children}</>,
+  WizTiles: ({ label }: any) => <div id={`tiles-${label}`} />,
+  WizTextInput: ({ label }: any) => <div id={`text-input-${label}`} />,
+  Tile: () => null,
+}))
 
 jest.mock('./logos/HelmIcon.svg', () => () => null)
 
