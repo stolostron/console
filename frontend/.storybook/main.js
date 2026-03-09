@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-const sass = require('sass')
 const path = require('path')
 
 module.exports = {
@@ -8,44 +7,22 @@ module.exports = {
     '@storybook/addon-storysource',
     '@storybook/addon-a11y',
     '@storybook/addon-actions',
-    '@storybook/addon-webpack5-compiler-babel',
-    '@chromatic-com/storybook'
+    '@chromatic-com/storybook',
   ],
 
   stories: ['../src/ui-components/AcmPage/AcmPage.stories.tsx', '../src/**/*.stories.tsx'],
 
-  webpackFinal: async (config) => {
-    config.module.rules.push(
-      {
-        test: /\.(ts|tsx)$/,
-        loader: 'ts-loader',
-        options: {
-          transpileOnly: true,
-        },
-      },
-      {
-        test: /\.scss$/,
-        use: [
-          'style-loader',
-          'css-loader',
-          {
-            loader: 'sass-loader',
-            options: {
-              implementation: sass,
-            },
-          },
-        ],
-      }
-    )
-    
-    config.resolve.extensions.push('.ts', '.tsx')
-    
-    // Add alias for mocking @openshift-assisted/ui-lib
+  framework: {
+    name: '@storybook/react-vite',
+    options: {},
+  },
+
+  viteFinal: async (config) => {
+    config.resolve = config.resolve || {}
     config.resolve.alias = {
       ...config.resolve.alias,
-      '@openshift-assisted/ui-lib/cim$': path.resolve(__dirname, '../__mocks__/@openshift-assisted/dummy.ts'),
+      '@openshift-assisted/ui-lib/cim': path.resolve(__dirname, '../__mocks__/@openshift-assisted/dummy.ts'),
     }
-    
     return config
   },
 
@@ -54,14 +31,9 @@ module.exports = {
     checkOptions: {},
   },
 
-  framework: {
-    name: '@storybook/react-webpack5',
-    options: {}
-  },
-
   staticDirs: [{ from: '../public', to: '/multicloud' }],
 
   docs: {
-    autodocs: true
-  }
+    autodocs: true,
+  },
 }
