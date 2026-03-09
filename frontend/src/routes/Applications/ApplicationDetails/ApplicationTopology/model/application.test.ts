@@ -9,7 +9,7 @@ import { ApplicationModel, ManagedCluster, RecoilStates } from '../types'
 describe('getApplication Argo', () => {
   it('returns Argo app model', async () => {
     nockIgnoreApiPaths()
-    const nocks = [nockGet(mockArgoApp), nockAggegateRequest('uidata', mockArgoApp, uidata)]
+    const nocks = [nockGet(mockArgoApp)]
     const model = await getApplication(
       appData.namespace,
       appData.name,
@@ -28,7 +28,12 @@ describe('getApplication Argo', () => {
 describe('getApplication AppSet', () => {
   it('returns AppSet app model', async () => {
     nockIgnoreApiPaths()
-    const nocks = [nockGet(mockAppset), nockAggegateRequest('uidata', mockAppset, uidata2)]
+    const appSetRequest2 = {
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: 'ApplicationSet',
+      metadata: { name: appData2.name, namespace: appData2.namespace },
+    }
+    const nocks = [nockAggegateRequest('appSetData', appSetRequest2, appSetData2)]
     const model = await getApplication(
       appData2.namespace,
       appData2.name,
@@ -47,7 +52,12 @@ describe('getApplication AppSet', () => {
 describe('getApplication AppSet pull model', () => {
   it('returns AppSet pull model', async () => {
     nockIgnoreApiPaths()
-    const nocks = [nockGet(mockAppset3), nockAggegateRequest('uidata', mockAppset3, uidata3)]
+    const appSetRequest3 = {
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: 'ApplicationSet',
+      metadata: { name: appData3.name, namespace: appData3.namespace },
+    }
+    const nocks = [nockAggegateRequest('appSetData', appSetRequest3, appSetData3)]
     const model = await getApplication(
       appData3.namespace,
       appData3.name,
@@ -71,7 +81,7 @@ interface TestAppData {
   cluster: string | undefined
   apiversion: string
   clusters: ManagedCluster[]
-  relatedPlacement?: Placement
+  placement?: Placement
 }
 
 const appData: TestAppData = {
@@ -120,6 +130,9 @@ const mockArgoApp = {
     name: 'feng-argo',
     namespace: 'openshift-gitops',
   },
+  status: {
+    cluster: 'local-cluster',
+  },
 }
 
 const result: ApplicationModel = {
@@ -136,6 +149,9 @@ const result: ApplicationModel = {
       name: 'feng-argo',
       namespace: 'openshift-gitops',
     },
+    status: {
+      cluster: 'local-cluster',
+    },
   },
   metadata: {
     annotations: {
@@ -145,161 +161,18 @@ const result: ApplicationModel = {
     name: 'feng-argo',
     namespace: 'openshift-gitops',
   },
-  placement: undefined,
   isArgoApp: true,
   isAppSet: false,
   isOCPApp: false,
   isFluxApp: false,
-  isAppSetPullModel: false,
-  relatedPlacement: undefined,
   clusterList: ['local-cluster'],
 }
-interface UIData {
+interface AppSetData {
   clusterList: string[]
   appSetApps: ArgoApplication[]
+  appset?: ArgoApplication | ApplicationSet
 }
 
-const uidata: UIData = {
-  clusterList: ['local-cluster'],
-  appSetApps: [
-    {
-      apiVersion: 'argoproj.io/v1alpha1',
-      kind: 'Application',
-      metadata: {
-        name: 'magchen-old-appset-local-cluster',
-        namespace: 'openshift-gitops',
-      },
-      spec: {
-        destination: {
-          namespace: 'philip-app',
-          server: 'https://api.app-aws-central1-412-hub-n6kwd.dev11.red-chesterfield.com:6443',
-        },
-        project: 'default',
-        source: {
-          path: 'app1',
-          repoURL: 'https://github.com/philipwu08/example-k8s-app',
-          targetRevision: 'master',
-        },
-        syncPolicy: {
-          automated: {
-            prune: true,
-            selfHeal: true,
-          },
-          syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
-        },
-      },
-      status: {
-        health: {
-          status: 'Degraded',
-        },
-        history: [
-          {
-            deployStartedAt: '2023-06-19T15:38:26Z',
-            deployedAt: '2023-06-19T15:38:29Z',
-            id: 0,
-            revision: 'f56b7e6ce4501a8cb8cd446043a694fcba733dce',
-            source: {
-              path: 'app1',
-              repoURL: 'https://github.com/philipwu08/example-k8s-app',
-              targetRevision: 'master',
-            },
-          },
-        ],
-        operationState: {
-          finishedAt: '2023-06-19T15:38:29Z',
-          message: 'successfully synced (all tasks run)',
-          operation: {
-            initiatedBy: {
-              automated: true,
-            },
-            retry: {
-              limit: 5,
-            },
-            sync: {
-              prune: true,
-              revision: 'f56b7e6ce4501a8cb8cd446043a694fcba733dce',
-              syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
-            },
-          },
-          phase: 'Succeeded',
-          startedAt: '2023-06-19T15:38:26Z',
-          syncResult: {
-            resources: [
-              {
-                group: '',
-                hookPhase: 'Running',
-                kind: 'Namespace',
-                message: 'namespace/sandbox created',
-                name: 'sandbox',
-                namespace: 'philip-app',
-                status: 'Synced',
-                syncPhase: 'Sync',
-                version: 'v1',
-              },
-              {
-                group: 'apps',
-                hookPhase: 'Running',
-                kind: 'Deployment',
-                message: 'deployment.apps/example created',
-                name: 'example',
-                namespace: 'sandbox',
-                status: 'Synced',
-                syncPhase: 'Sync',
-                version: 'v1',
-              },
-            ],
-            revision: 'f56b7e6ce4501a8cb8cd446043a694fcba733dce',
-            source: {
-              path: 'app1',
-              repoURL: 'https://github.com/philipwu08/example-k8s-app',
-              targetRevision: 'master',
-            },
-          },
-        },
-        reconciledAt: '2023-06-21T14:28:42Z',
-        resources: [
-          {
-            kind: 'Namespace',
-            name: 'sandbox',
-            status: 'Synced',
-            version: 'v1',
-          },
-          {
-            group: 'apps',
-            health: {
-              message: 'Deployment "example" exceeded its progress deadline',
-              status: 'Degraded',
-            },
-            kind: 'Deployment',
-            name: 'example',
-            namespace: 'sandbox',
-            status: 'Synced',
-            version: 'v1',
-          },
-        ],
-        sourceType: 'Kustomize',
-        summary: {
-          images: ['alpinelinux/darkhttpd'],
-        },
-        sync: {
-          comparedTo: {
-            destination: {
-              namespace: 'philip-app',
-              server: 'https://api.app-aws-central1-412-hub-n6kwd.dev11.red-chesterfield.com:6443',
-            },
-            source: {
-              path: 'app1',
-              repoURL: 'https://github.com/philipwu08/example-k8s-app',
-              targetRevision: 'master',
-            },
-          },
-          revision: 'f56b7e6ce4501a8cb8cd446043a694fcba733dce',
-          status: 'Synced',
-        },
-      },
-    },
-  ],
-}
 const appData2: TestAppData = {
   namespace: 'openshift-gitops',
   name: 'magchen-old-appset',
@@ -383,7 +256,6 @@ const appData2: TestAppData = {
         },
       },
     ],
-    ansibleJob: [],
     channels: [
       {
         apiVersion: 'apps.open-cluster-management.io/v1',
@@ -20912,6 +20784,18 @@ const result1 = {
       uid: '225ca82c-80c2-4850-9c0a-080aa1649bdd',
     },
   },
+  appset: {
+    apiVersion: 'argoproj.io/v1alpha1',
+    kind: 'ApplicationSet',
+    metadata: {
+      creationTimestamp: '2023-06-14T17:45:14Z',
+      generation: 1,
+      name: 'magchen-old-appset',
+      namespace: 'openshift-gitops',
+      resourceVersion: '38674970',
+      uid: '225ca82c-80c2-4850-9c0a-080aa1649bdd',
+    },
+  },
   metadata: {
     creationTimestamp: '2023-06-14T17:45:14Z',
     generation: 1,
@@ -20920,13 +20804,10 @@ const result1 = {
     resourceVersion: '38674970',
     uid: '225ca82c-80c2-4850-9c0a-080aa1649bdd',
   },
-  placement: undefined,
   isArgoApp: false,
   isAppSet: true,
   isOCPApp: false,
   isFluxApp: false,
-  isAppSetPullModel: false,
-  relatedPlacement: undefined,
   clusterList: ['local-cluster'],
   appSetApps: [
     {
@@ -21108,8 +20989,9 @@ const mockAppset = {
   },
 } as ApplicationSet
 
-const uidata2: UIData = {
+const appSetData2: AppSetData = {
   clusterList: ['local-cluster'],
+  appset: mockAppset as ApplicationSet,
   appSetApps: [
     {
       apiVersion: 'argoproj.io/v1alpha1',
@@ -21386,7 +21268,6 @@ const appData3: TestAppData = {
         },
       },
     ],
-    ansibleJob: [],
     channels: [
       {
         apiVersion: 'apps.open-cluster-management.io/v1',
@@ -25661,6 +25542,18 @@ const result3 = {
       uid: '92436748-e765-4057-9621-2c3a74b3a487',
     },
   },
+  appset: {
+    apiVersion: 'argoproj.io/v1alpha1',
+    kind: 'ApplicationSet',
+    metadata: {
+      creationTimestamp: '2023-08-02T18:01:14Z',
+      generation: 2,
+      name: 'feng-pm',
+      namespace: 'openshift-gitops',
+      resourceVersion: '76441171',
+      uid: '92436748-e765-4057-9621-2c3a74b3a487',
+    },
+  },
   metadata: {
     creationTimestamp: '2023-08-02T18:01:14Z',
     generation: 2,
@@ -25669,13 +25562,10 @@ const result3 = {
     resourceVersion: '76441171',
     uid: '92436748-e765-4057-9621-2c3a74b3a487',
   },
-  placement: undefined,
   isArgoApp: false,
   isAppSet: true,
   isOCPApp: false,
   isFluxApp: false,
-  isAppSetPullModel: false,
-  relatedPlacement: undefined,
   clusterList: ['local-cluster'],
   appSetApps: [
     {
@@ -25858,8 +25748,9 @@ const mockAppset3 = {
   },
 }
 
-const uidata3: UIData = {
+const appSetData3: AppSetData = {
   clusterList: ['local-cluster'],
+  appset: mockAppset3 as ApplicationSet,
   appSetApps: [
     {
       apiVersion: 'argoproj.io/v1alpha1',

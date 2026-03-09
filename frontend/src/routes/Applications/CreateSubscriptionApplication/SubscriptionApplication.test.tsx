@@ -13,15 +13,7 @@ import {
   placementsState,
   secretsState,
 } from '../../../atoms'
-import {
-  nockAggegateRequest,
-  nockCreate,
-  nockGet,
-  nockIgnoreApiPaths,
-  nockIgnoreRBAC,
-  nockList,
-  nockPatch,
-} from '../../../lib/nock-util'
+import { nockCreate, nockGet, nockIgnoreApiPaths, nockIgnoreRBAC, nockList, nockPatch } from '../../../lib/nock-util'
 import { mockGlobalClusterSet } from '../../../lib/test-metadata'
 import {
   clickBySelector,
@@ -66,7 +58,6 @@ import {
   SubscriptionApiVersion,
   SubscriptionKind,
 } from '../../../resources'
-import { uidata } from '../Application.sharedmocks'
 import CreateSubscriptionApplicationPage from './SubscriptionApplication'
 
 ///////////////////////////////// Mock Data /////////////////////////////////////////////////////
@@ -656,7 +647,6 @@ describe('Create Subscription Application page', () => {
       nockGet(mockSubscriptionPlacement),
       nockGet(mockChannelNamespace),
       nockGet(mockPlacement),
-      nockAggegateRequest('uidata', mockApplication0, uidata, 200, true),
     ]
     render(
       <RecoilRoot

@@ -30,7 +30,6 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { Channel } from './ArgoWizard'
 import { validateWebURL } from '../../lib/validation'
 import { GitRevisionSelect } from './common/GitRevisionSelect'
-import { findObjectWithKey } from '../../routes/Applications/ApplicationDetails/ApplicationTopology/model/application'
 import { IPlacement } from '../common/resources/IPlacement'
 import { useShowValidation } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ShowValidationProvider'
 
@@ -150,8 +149,8 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
           revisions={gitGeneratorRepos.versions}
         />
         <WizMultiSelect
-          label="Directory paths"
-          placeholder="Select or enter a directory path"
+          label={t('Directory paths')}
+          placeholder={t('Select or enter a directory path')}
           path="git.directories"
           required
           options={[...gitGeneratorRepos.paths, 'default', 'development', 'production']}
@@ -188,7 +187,7 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
           path="list.elements"
           label={t('List elements')}
           placeholder={t('Add element')}
-          collapsedContent="{cluster}"
+          collapsedContent={<GeneratorCollapsedListContent />}
         >
           <WizTextInput
             path="cluster"
@@ -350,6 +349,16 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
           disabled={disableForm}
         />
       </WizHidden>
+    </div>
+  )
+}
+
+function GeneratorCollapsedListContent() {
+  const generator = useContext(ItemContext)
+  const cluster = get(generator, 'cluster')
+  return (
+    <div>
+      <Title headingLevel="h6">{cluster}</Title>
     </div>
   )
 }
@@ -593,6 +602,21 @@ export function findGeneratorPathWithGenType(item: unknown, genType: string): st
     if (findObjectWithKey(generator, genType)) {
       return `${generatorsPath}.${i}.${genType}`
     }
+  }
+  return undefined
+}
+
+/**
+ * Recursively search an object for a property with the given key.
+ * Returns the first matching object that contains the key, or undefined.
+ */
+const findObjectWithKey = (obj: unknown, key: string): Record<string, unknown> | undefined => {
+  if (!obj || typeof obj !== 'object') return undefined
+  const record = obj as Record<string, unknown>
+  if (key in record) return record
+  for (const value of Object.values(record)) {
+    const found = findObjectWithKey(value, key)
+    if (found) return found
   }
   return undefined
 }

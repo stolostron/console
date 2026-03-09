@@ -14,9 +14,9 @@ import { getSearchResults, ISearchResult, pingSearchAPI } from '../../lib/search
 import {
   addArgoQueryInputs,
   cacheArgoApplications,
-  getAppSetRelatedResources,
   polledArgoApplicationAggregation,
-  getPushedAppSetMap,
+  getAppSetAppsMap,
+  getAppSetPlacementData,
 } from './applicationsArgo'
 import { getGiganticApps } from '../../lib/gigantic'
 import { createDictionary, inflateApps } from '../../lib/compression'
@@ -122,13 +122,6 @@ export interface ICompressedResource {
   compressed: Buffer
   transform?: Transform
   remoteClusters?: string[]
-}
-export interface IUIData {
-  clusterList: string[]
-  appClusterStatuses?: ApplicationStatusMap[]
-  appSetRelatedResources: unknown
-  appSetApps: IResource[]
-  appStatusByNameMap: Record<string, { health: { status: string }; sync: { status: string } }>
 }
 
 export type ApplicationCache = {
@@ -336,20 +329,20 @@ export function sortApplications(sortBy: ISortBy, items: ICompressedResource[]) 
 // w/o downloading all the appsets, apps, etc
 export async function addUIData(items: ITransformedResource[]) {
   const argoAppSets = await inflateApps(getApplicationsHelper(applicationCache, ['appset']))
-  const pushedAppSetMap = getPushedAppSetMap()
+  const appSetAppsMap = getAppSetAppsMap()
   items = items.map((item) => {
     return {
       ...item,
       uidata: {
         clusterList: item?.transform?.[AppColumns.clusters] || [],
         appClusterStatuses: item?.transform?.[TransformColumns.statuses] || [],
-        appSetRelatedResources:
+        appSetPlacementData:
           item.kind === ApplicationSetKind
-            ? getAppSetRelatedResources(item, argoAppSets as IApplicationSet[])
+            ? getAppSetPlacementData(item as IApplicationSet, argoAppSets as IApplicationSet[])
             : ['', []],
         appSetApps:
           item.kind === ApplicationSetKind
-            ? pushedAppSetMap[item.metadata.name]?.map((app) => app.metadata.name) || []
+            ? appSetAppsMap[item.metadata.name]?.map((app) => app.metadata.name) || []
             : [],
       },
     }

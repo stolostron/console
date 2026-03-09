@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import capitalize from 'lodash/capitalize'
-import get from 'lodash/get'
 import { NodeStatus } from '@patternfly/react-topology'
 import { typeToIconMap } from './nodeIconsMap'
 import { statusToIconMap } from './nodeStatusIconMap'
@@ -10,7 +9,6 @@ export const NODE_WIDTH = 65
 export const NODE_HEIGHT = 65
 export const X_SPACER = 80
 export const Y_SPACER = 60
-const MAX_LABEL_WIDTH = 18
 
 export const getNodeStyle = (
   d: {
@@ -23,8 +21,8 @@ export const getNodeStyle = (
   offset: { dx: number; dy: number } | undefined
 ) => {
   const type = d.type
-  const label = getLabel(type)
-  const secondaryLabel = getSecondaryLabel(d)
+  const specs = d.specs
+  const label = getLabel(type, specs)
   const { status, statusIcon, isDisabled } = getStatus(d)
   /* istanbul ignore next */
   const shape = typeToIconMap[type]?.shape || 'customresource'
@@ -44,32 +42,26 @@ export const getNodeStyle = (
     namespace: d.namespace,
     shape,
     label,
-    secondaryLabel,
     isDisabled,
     id: d.uid,
     uid: d.uid,
   }
 }
 
-function getLabel(type: string | undefined) {
-  /* istanbul ignore else */ if (type !== undefined) {
-    const label = capitalize(type)
-      .replace('Argocd', 'Argo CD')
-      .replace('Applicationset', 'Application Set')
-      .replace('Ocpa', 'OCP A')
-    return label
-  } else {
-    return ''
+function getLabel(type: string | undefined, specs: any) {
+  /* istanbul ignore else */
+  switch (type) {
+    case 'cluster':
+      return specs?.clustersNames?.length === 1 ? specs.clustersNames[0] : 'Multiple Clusters'
+    case 'applicationset':
+      return `${specs?.isAppSetPullModel ? 'Pull' : 'Push'} Application Set`
+    default:
+      if (type) {
+        return capitalize(type).replace('Argocd', 'Argo CD').replace('Ocpa', 'OCP A')
+      } else {
+        return ''
+      }
   }
-}
-
-function getSecondaryLabel(node: { name: any }) {
-  const clusterNames = get(node, 'specs.sortedClusterNames', [])
-  let label = clusterNames.length === 1 ? clusterNames[0] : node?.name ?? ''
-  if (label.length > MAX_LABEL_WIDTH) {
-    label = label.slice(0, MAX_LABEL_WIDTH / 3) + '..' + label.slice((-MAX_LABEL_WIDTH * 2) / 3)
-  }
-  return label
 }
 
 const getStatus = (node: {

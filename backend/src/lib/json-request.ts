@@ -3,6 +3,9 @@ import { constants } from 'http2'
 import { Agent } from 'https'
 import { HeadersInit } from 'node-fetch'
 import { fetchRetry } from './fetch-retry'
+import { IResource } from '../resources/resource'
+import { join } from 'path'
+import pluralize from 'pluralize'
 
 const { HTTP2_HEADER_CONTENT_TYPE, HTTP2_HEADER_AUTHORIZATION, HTTP2_HEADER_ACCEPT, HTTP2_HEADER_USER_AGENT } =
   constants
@@ -82,4 +85,32 @@ export function jsonPut(url: string, body: unknown, token?: string, agent?: Agen
       }
       return errResult
     })
+}
+
+export function resourceUrl(resource: IResource) {
+  if (!resource.apiVersion) {
+    throw new Error('resource.apiVersion is required')
+  }
+  let path: string = process.env.CLUSTER_API_URL ?? ''
+  if (resource.apiVersion?.includes('/')) {
+    path = join(path, '/apis', resource.apiVersion)
+  } else {
+    path = join(path, '/api', resource.apiVersion)
+  }
+
+  const namespace = resource.metadata?.namespace
+  if (namespace) {
+    path = join(path, 'namespaces', namespace)
+  }
+
+  if (resource.kind) {
+    path = join(path, pluralize(resource.kind.toLowerCase()))
+  }
+
+  const name = resource.metadata?.name
+  if (name) {
+    path = join(path, name)
+  }
+
+  return path.replaceAll('\\', '/')
 }
