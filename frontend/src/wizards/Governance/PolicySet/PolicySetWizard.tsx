@@ -18,7 +18,7 @@ import { Alert } from '@patternfly/react-core'
 import get from 'get-value'
 import { Fragment, ReactNode, useMemo } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { validateKubernetesResourceName } from '../../../lib/validation'
+import { useValidation } from '../../../hooks/useValidation'
 import { useWizardStrings } from '../../../lib/wizardStrings'
 import { NavigationPath } from '../../../NavigationPath'
 import { IClusterSetBinding } from '../../common/resources/IClusterSetBinding'
@@ -50,6 +50,7 @@ export interface PolicySetWizardProps {
 export function PolicySetWizard(props: PolicySetWizardProps) {
   const policySet = props.resources?.find((resource) => resource.kind === PolicySetKind)
   const { t } = useTranslation()
+  const { validateKubernetesResourceName } = useValidation()
   const virtualPolicies = useMemo(() => {
     const virtualPolicies = [...props.policies]
     if (policySet) {

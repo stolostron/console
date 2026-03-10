@@ -28,7 +28,13 @@ import { useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
 import { navigateToBackCancelLocation, NavigationPath } from '../../../../NavigationPath'
-import { ClusterClaim, ClusterClaimDefinition, ClusterPool, isClusterPoolDeleting } from '../../../../resources'
+import {
+  ClusterClaim,
+  ClusterClaimDefinition,
+  ClusterPool,
+  getClusterImageSetVersion,
+  isClusterPoolDeleting,
+} from '../../../../resources'
 import { Cluster, ClusterStatus, deleteResource, ResourceErrorCode } from '../../../../resources/utils'
 import { ClusterStatuses, getClusterStatusCount } from '../ClusterSets/components/ClusterStatuses'
 import { StatusField } from '../ManagedClusters/components/StatusField'
@@ -252,9 +258,7 @@ export function ClusterPoolsTable(props: {
   const getDistributionVersion = (clusterPool: ClusterPool) => {
     const imageSetRef = clusterPool.spec!.imageSetRef.name
     const imageSet = clusterImageSets.find((cis) => cis.metadata.name === imageSetRef)
-    const releaseImage = imageSet?.spec?.releaseImage
-    const tagStartIndex = releaseImage?.indexOf(':') ?? 0
-    const version = releaseImage?.slice(tagStartIndex + 1, releaseImage.indexOf('-', tagStartIndex))
+    const version = imageSet ? getClusterImageSetVersion(imageSet) : undefined
     return version ? `OpenShift ${version}` : '-'
   }
 

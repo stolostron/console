@@ -12,7 +12,9 @@ import {
   ClusterCurator,
   ClusterCuratorApiVersion,
   ClusterCuratorDefinition,
+  getClusterImageSetVersion,
   getLatestAnsibleJob,
+  getVersionFromReleaseString,
   HostedClusterDefinition,
   NodePool,
 } from '../../../../../resources'
@@ -22,7 +24,6 @@ import { AcmButton, AcmInlineStatus, Provider, StatusType } from '../../../../..
 import { getSearchLink } from '../../../../Applications/helpers/resource-helper'
 import { useAgentClusterInstall } from '../CreateCluster/components/assisted-installer/utils'
 import { useHypershiftAvailableUpdates } from '../hooks/useHypershiftAvailableUpdates'
-import { getVersionFromReleaseImage } from '../utils/utils'
 import { BatchChannelSelectModal } from './BatchChannelSelectModal'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 import { HypershiftUpgradeModal } from './HypershiftUpgradeModal'
@@ -196,10 +197,12 @@ export function DistributionField(props: {
       const clusterImage = clusterImageSets.find(
         (clusterImageSet) => clusterImageSet.metadata?.name === agentClusterInstall.spec?.imageSetRef?.name
       )
-      const version = getVersionFromReleaseImage(clusterImage?.spec?.releaseImage)
+      if (clusterImage) {
+        const version = getClusterImageSetVersion(clusterImage)
 
-      if (version) {
-        return <>{version ? `${openshiftText} ${version}` : '-'}</>
+        if (version) {
+          return <>{version ? `${openshiftText} ${version}` : '-'}</>
+        }
       }
     }
     return <>-</>
@@ -309,8 +312,12 @@ export function DistributionField(props: {
     )
   } else if (props.cluster.hypershift?.isUpgrading && props.resource !== 'nodepool') {
     // HYPERSHIFT UPGRADE IN PROGRESS
-    const image = props.hostedCluster?.spec.release.image
-    const versionNum = getVersionFromReleaseImage(image)
+    const clusterImage = clusterImageSets.find(
+      (clusterImageSet) => clusterImageSet.spec?.releaseImage === props.hostedCluster?.spec.release.image
+    )
+    const versionNum = clusterImage
+      ? getClusterImageSetVersion(clusterImage)
+      : getVersionFromReleaseString(props.hostedCluster?.spec.release.image)
     return (
       <>
         <div>{displayVersion}</div>

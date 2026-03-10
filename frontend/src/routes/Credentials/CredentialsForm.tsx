@@ -14,25 +14,7 @@ import { useLocalHubName } from '../../hooks/use-local-hub'
 import { useProjects } from '../../hooks/useProjects'
 import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS } from '../../lib/doc-util'
-import {
-  validateAnsibleHost,
-  validateAwsRegion,
-  validateBaseDomain,
-  validateCertificate,
-  validateCloudsYaml,
-  validateGCProjectID,
-  validateHttpProxy,
-  validateHttpsProxy,
-  validateImageContentSources,
-  validateJSON,
-  validateKubeconfig,
-  validateKubernetesDnsName,
-  validateNoProxyList,
-  validatePrivateSshKey,
-  validatePublicSshKey,
-  validateVCenterServer,
-  validateVcenterUsername,
-} from '../../lib/validation'
+import { useValidation } from '../../hooks/useValidation'
 import { NavigationPath, useBackCancelNavigation } from '../../NavigationPath'
 import {
   getSecret,
@@ -136,6 +118,25 @@ export function CredentialsForm(
   } & ProviderConnectionOrCredentialsType
 ) {
   const { t } = useTranslation()
+  const {
+    validateAnsibleHost,
+    validateAwsRegion,
+    validateBaseDomain,
+    validateCertificate,
+    validateCloudsYaml,
+    validateGCProjectID,
+    validateHttpProxy,
+    validateHttpsProxy,
+    validateImageContentSources,
+    validateJSON,
+    validateKubeconfig,
+    validateKubernetesDnsName,
+    validateNoProxyList,
+    validatePrivateSshKey,
+    validatePublicSshKey,
+    validateVCenterServer,
+    validateVcenterUsername,
+  } = useValidation()
   const { namespaces, providerConnection, isEditing, isViewing, handleModalToggle, hideYaml, newCredentialCallback } =
     props
   const credentialsType =
@@ -660,7 +661,7 @@ export function CredentialsForm(
             labelHelp: t('The name for the credential.'),
             value: name,
             onChange: setName,
-            validation: (value) => validateKubernetesDnsName(value, t),
+            validation: validateKubernetesDnsName,
             isRequired: true,
             isDisabled: isEditing || isHostedControlPlane,
             isHidden: !credentialsType,
@@ -705,7 +706,7 @@ export function CredentialsForm(
                 ),
             value: baseDomain,
             onChange: setBaseDomain,
-            validation: (v) => validateBaseDomain(v, t),
+            validation: validateBaseDomain,
           },
           {
             id: 'azureCloudName',
@@ -822,7 +823,7 @@ export function CredentialsForm(
             onChange: setAwsS3Region,
             placeholder: t('Select region'),
             isRequired: true,
-            validation: (value) => validateAwsRegion(value, t),
+            validation: validateAwsRegion,
           },
         ],
       },
@@ -847,7 +848,7 @@ export function CredentialsForm(
             ),
             value: projectID,
             onChange: setGcProjectID,
-            validation: (value) => validateGCProjectID(value, t),
+            validation: validateGCProjectID,
             isRequired: true,
           },
           {
@@ -861,7 +862,7 @@ export function CredentialsForm(
             ),
             value: osServiceAccountJson,
             onChange: setGcServiceAccountKey,
-            validation: (value) => validateJSON(value, t),
+            validation: validateJSON,
             isRequired: true,
             isSecret: true,
           },
@@ -966,7 +967,7 @@ export function CredentialsForm(
             ),
             value: vCenter,
             onChange: setVcenter,
-            validation: (value) => validateVCenterServer(value, t),
+            validation: validateVCenterServer,
             isRequired: true,
           },
           {
@@ -980,7 +981,7 @@ export function CredentialsForm(
             ),
             value: username,
             onChange: setUsername,
-            validation: (value) => validateVcenterUsername(value, t),
+            validation: validateVcenterUsername,
             isRequired: true,
           },
           {
@@ -1006,7 +1007,7 @@ export function CredentialsForm(
             ),
             value: cacertificate,
             onChange: setCacertificate,
-            validation: (value) => validateCertificate(value, t),
+            validation: validateCertificate,
             isRequired: true,
           },
           {
@@ -1101,7 +1102,7 @@ export function CredentialsForm(
             onChange: setOpenstackCloudsYaml,
             isRequired: true,
             isSecret: true,
-            validation: (value) => validateCloudsYaml(value, cloud, osCABundle, t),
+            validation: (value) => validateCloudsYaml(value, cloud, osCABundle),
           },
           {
             id: 'cloud',
@@ -1127,7 +1128,7 @@ export function CredentialsForm(
             onChange: setOSCABundle,
             isRequired: false,
             isSecret: true,
-            validation: (value) => (value !== '' ? validateCertificate(value, t) : undefined),
+            validation: (value) => (value !== '' ? validateCertificate(value) : undefined),
           },
         ],
       },
@@ -1165,7 +1166,7 @@ export function CredentialsForm(
             ),
             value: imageContentSources,
             onChange: setImageContentSources,
-            validation: (value) => validateImageContentSources(value, t),
+            validation: validateImageContentSources,
           },
           {
             id: 'disconnectedAdditionalTrustBundle',
@@ -1204,7 +1205,7 @@ export function CredentialsForm(
             ),
             value: httpProxy,
             onChange: setHttpProxy,
-            validation: (value) => validateHttpProxy(value, t),
+            validation: validateHttpProxy,
           },
           {
             id: 'httpsProxy',
@@ -1219,7 +1220,7 @@ export function CredentialsForm(
             ),
             value: httpsProxy,
             onChange: setHttpsProxy,
-            validation: (value) => validateHttpsProxy(value, t),
+            validation: validateHttpsProxy,
           },
           {
             id: 'noProxy',
@@ -1234,7 +1235,7 @@ export function CredentialsForm(
             ),
             value: noProxy,
             onChange: setNoProxy,
-            validation: (value) => validateNoProxyList(value, t),
+            validation: validateNoProxyList,
           },
           {
             id: 'additionalTrustBundle',
@@ -1272,7 +1273,7 @@ export function CredentialsForm(
             value: ansibleHost,
             onChange: setAnsibleHost,
             isRequired: true,
-            validation: (host) => validateAnsibleHost(host, t, ['https']),
+            validation: (host) => validateAnsibleHost(host, ['https']),
           },
           {
             id: 'ansibleToken',
@@ -1323,7 +1324,7 @@ export function CredentialsForm(
                   onChange: setKubeconfig,
                   isRequired: true,
                   isSecret: true,
-                  validation: (value) => validateKubeconfig(value, t),
+                  validation: validateKubeconfig,
                 },
                 {
                   id: 'externalInfraNamespace',
@@ -1337,7 +1338,7 @@ export function CredentialsForm(
                   value: externalInfraNamespace,
                   onChange: setExternalInfraNamespace,
                   isRequired: true,
-                  validation: (value) => validateKubernetesDnsName(value, t),
+                  validation: validateKubernetesDnsName,
                 },
               ] as Input[],
             },
@@ -1377,6 +1378,7 @@ export function CredentialsForm(
             onChange: setOcmAPIToken,
             isRequired: true,
             isSecret: true,
+            placeholder: t('import.token.place'),
           },
           (authMethod === OCMAuthMethod.SERVICE_ACCOUNT || isViewing) && {
             id: 'client_id',
@@ -1386,6 +1388,7 @@ export function CredentialsForm(
             value: serviceAccClientId,
             onChange: setServiceAccClientId,
             isRequired: true,
+            placeholder: t('Enter your client ID'),
           },
           (authMethod === OCMAuthMethod.SERVICE_ACCOUNT || isViewing) && {
             id: 'client_secret',
@@ -1396,6 +1399,7 @@ export function CredentialsForm(
             onChange: setServiceAccClientSecret,
             isRequired: true,
             isSecret: true,
+            placeholder: t('Enter your client secret'),
           },
         ].filter(Boolean) as Input[],
       },
@@ -1430,7 +1434,7 @@ export function CredentialsForm(
             ),
             value: pullSecret,
             onChange: setPullSecret,
-            validation: (value) => validateJSON(value, t),
+            validation: validateJSON,
             isRequired: true,
             isSecret: true,
           },
@@ -1445,7 +1449,7 @@ export function CredentialsForm(
             labelHelp: t('The private SSH key to use to access your cluster machines.'),
             value: sshPrivatekey,
             onChange: setSshPrivatekey,
-            validation: (value) => validatePrivateSshKey(value, t, false),
+            validation: (value) => validatePrivateSshKey(value, false),
             isRequired: true,
             isSecret: true,
           },
@@ -1471,7 +1475,6 @@ export function CredentialsForm(
             validation: (value) =>
               validatePublicSshKey(
                 value,
-                t,
                 ![Provider.hybrid, Provider.hostinventory, Provider.nutanix, Provider.kubevirt].includes(
                   credentialsType as Provider
                 )

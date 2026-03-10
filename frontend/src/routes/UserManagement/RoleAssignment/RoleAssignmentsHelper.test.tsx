@@ -24,19 +24,28 @@ jest.mock('../../../NavigationPath', () => ({
   },
 }))
 
+// Mock useTranslation for NamespacesCell "All namespaces" text
+jest.mock('../../../lib/acm-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+  }),
+}))
+
 // Mock RoleAssignmentLabel
 jest.mock('./RoleAssignmentLabel', () => ({
   RoleAssignmentLabel: ({
     elements,
     numLabel,
     renderElement,
+    emptyElementsText,
   }: {
     elements?: string[]
     numLabel: number
     renderElement?: (element: string) => React.ReactNode
+    emptyElementsText: string
   }) => {
     if (!elements || elements.length === 0) {
-      return <span>All namespaces</span>
+      return <span>{emptyElementsText}</span>
     }
 
     const visibleElements = elements.slice(0, numLabel)
@@ -225,7 +234,7 @@ describe('RoleAssignmentsHelper', () => {
       expect(container.textContent).not.toBe('All namespaces')
     })
 
-    it('should handle undefined namespaces', () => {
+    it('should show "All namespaces" when namespaces is undefined', () => {
       const roleAssignment = createMockRoleAssignment({
         targetNamespaces: undefined,
       })
@@ -235,7 +244,7 @@ describe('RoleAssignmentsHelper', () => {
       expect(getByText('All namespaces')).toBeInTheDocument()
     })
 
-    it('should handle empty namespaces array', () => {
+    it('should show "All namespaces" when namespaces array is empty', () => {
       const roleAssignment = createMockRoleAssignment({
         targetNamespaces: [],
       })
@@ -331,9 +340,19 @@ describe('RoleAssignmentsHelper', () => {
       expect(container.textContent).not.toBe('-')
     })
 
-    it('should render dash for empty cluster set names', () => {
+    it('should show "-" when clusterSetNames is empty', () => {
       const roleAssignment = createMockRoleAssignment({
         clusterSetNames: [],
+      })
+      const cell = renderClusterSetsCell(roleAssignment)
+
+      const { getByText } = render(<div>{cell}</div>)
+      expect(getByText('-')).toBeInTheDocument()
+    })
+
+    it('should show "-" when clusterSetNames is undefined', () => {
+      const roleAssignment = createMockRoleAssignment({
+        clusterSetNames: undefined,
       })
       const cell = renderClusterSetsCell(roleAssignment)
 
@@ -377,16 +396,24 @@ describe('RoleAssignmentsHelper', () => {
       expect(links.length).toBeGreaterThan(0)
     })
 
-    it('should handle empty cluster names', () => {
+    it('should show "-" when clusterNames is empty', () => {
       const roleAssignment = createMockRoleAssignment({
         clusterNames: [],
       })
       const cell = renderClustersCell(roleAssignment)
 
-      const { container } = render(<MemoryRouter>{cell}</MemoryRouter>)
-      expect(container).toBeInTheDocument()
-      // Should still render the component even with empty cluster names
-      expect(container.firstChild).toBeTruthy()
+      const { getByText } = render(<div>{cell}</div>)
+      expect(getByText('-')).toBeInTheDocument()
+    })
+
+    it('should show "-" when clusterNames is undefined', () => {
+      const roleAssignment = createMockRoleAssignment({
+        clusterNames: undefined,
+      })
+      const cell = renderClustersCell(roleAssignment)
+
+      const { getByText } = render(<div>{cell}</div>)
+      expect(getByText('-')).toBeInTheDocument()
     })
   })
 

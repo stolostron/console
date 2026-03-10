@@ -1001,7 +1001,7 @@ export default function ApplicationsOverview() {
                   )
                 : [[], []]
             /* istanbul ignore else */
-            const appSetRelatedResources = (resource as IUIResource)?.uidata?.appSetRelatedResources ?? ['', []]
+            const appSetPlacementData = (resource as IUIResource)?.uidata?.appSetPlacementData ?? ['', []]
             const hostingSubAnnotation = getAnnotation(resource, hostingSubAnnotationStr)
             let modalWarnings: string | undefined
             if (hostingSubAnnotation) {
@@ -1020,8 +1020,8 @@ export default function ApplicationsOverview() {
               loading: false,
               selected: appChildResources[0], // children
               shared: appChildResources[1], // shared children
-              appSetPlacement: appSetRelatedResources[0] as string,
-              appSetsSharingPlacement: appSetRelatedResources[1] as string[],
+              appSetPlacement: appSetPlacementData[0] as string,
+              appSetsSharingPlacement: appSetPlacementData[1] as string[],
               appKind: resource.kind,
               appSetApps: (resource as IUIResource)?.uidata?.appSetApps ?? [],
               deleted: /* istanbul ignore next */ (app: IResource) => {
