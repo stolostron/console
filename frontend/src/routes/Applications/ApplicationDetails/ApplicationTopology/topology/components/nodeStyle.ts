@@ -53,6 +53,8 @@ function getLabel(type: string | undefined, specs: any) {
   switch (type) {
     case 'cluster':
       return specs?.clustersNames?.length === 1 ? specs.clustersNames[0] : 'Multiple Clusters'
+    case 'application':
+      return specs?.applicationName ? specs.applicationName : 'Application'
     case 'applicationset':
       return `${specs?.isAppSetPullModel ? 'Pull' : 'Push'} Application Set`
     default:
