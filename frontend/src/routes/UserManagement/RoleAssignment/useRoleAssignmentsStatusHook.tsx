@@ -26,14 +26,14 @@ const useRoleAssignmentsStatusHook = () => {
   const [creatingMissingProjectsAlert, setCreatingMissingProjectsAlert] = useState<AcmAlertInfoWithId>()
   const isAnyRoleAssignmentProcessing = useMemo(() => roleAssignmentToProcess !== undefined, [roleAssignmentToProcess])
 
-  const toastContext = useContext(AcmToastContext)
+  const { addAlert, removeAlert, modifyAlert } = useContext(AcmToastContext)
   const { t } = useTranslation()
 
   const handleMissingNamespaces = useCallback(
     (roleAssignment: FlattenedRoleAssignment) => {
       void handleMissingNamespacesFn(roleAssignment, {
         clusterNamespaceMap,
-        addAlertCallback: toastContext.addAlert,
+        addAlertCallback: addAlert,
         t,
         onStartCallback: (ra, creatingAlert) => {
           setIsProcessingRoleAssignmentMap((prev) => ({ ...prev, [ra.name]: true }))
@@ -43,22 +43,21 @@ const useRoleAssignmentsStatusHook = () => {
         onProgressCallback: setCallbackProgress,
       })
     },
-    [clusterNamespaceMap, toastContext, t]
+    [clusterNamespaceMap, addAlert, t]
   )
 
   useEffect(
     () => () => {
-      if (toastContext && creatingMissingProjectsAlert) {
-        toastContext.removeAlert(creatingMissingProjectsAlert)
+      if (creatingMissingProjectsAlert) {
+        removeAlert(creatingMissingProjectsAlert)
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [creatingMissingProjectsAlert]
+    [creatingMissingProjectsAlert, removeAlert]
   )
 
   useEffect(() => {
     if (creatingMissingProjectsAlert && roleAssignmentToProcess) {
-      toastContext.modifyAlert({
+      modifyAlert({
         ...creatingMissingProjectsAlert,
         message: (
           <CommonProjectCreateProgressBar
@@ -71,7 +70,7 @@ const useRoleAssignmentsStatusHook = () => {
         type: callbackProgress.errorCount > 0 ? 'danger' : 'info',
       })
     }
-  }, [callbackProgress, creatingMissingProjectsAlert, roleAssignmentToProcess, toastContext])
+  }, [callbackProgress, creatingMissingProjectsAlert, roleAssignmentToProcess, modifyAlert])
 
   useEffect(() => {
     if (
@@ -82,11 +81,11 @@ const useRoleAssignmentsStatusHook = () => {
       setIsProcessingRoleAssignmentMap((prev) => ({ ...prev, [roleAssignmentToProcess.name]: false }))
       setRoleAssignmentToProcess(undefined)
       if (creatingMissingProjectsAlert) {
-        toastContext.removeAlert(creatingMissingProjectsAlert)
+        removeAlert(creatingMissingProjectsAlert)
       }
 
       if (callbackProgress.errorCount > 0) {
-        toastContext.addAlert({
+        addAlert({
           title: t('Error creating missing projects'),
           message: t('Error creating missing projects {{project}} for clusters {{cluster}}.', {
             clusters: Object.keys(callbackProgress.errorClusterNamespacesMap).join(', '),
@@ -97,7 +96,7 @@ const useRoleAssignmentsStatusHook = () => {
           autoClose: true,
         })
       } else {
-        toastContext.addAlert({
+        addAlert({
           title: t('Missing projects created'),
           message: t('Missing projects for {{name}} have been successfully created.', {
             name: roleAssignmentToProcess.name,
@@ -107,7 +106,7 @@ const useRoleAssignmentsStatusHook = () => {
         })
       }
     }
-  }, [callbackProgress, creatingMissingProjectsAlert, roleAssignmentToProcess?.name, t, toastContext])
+  }, [callbackProgress, creatingMissingProjectsAlert, roleAssignmentToProcess?.name, t, addAlert, removeAlert])
 
   const callbackMap: RoleAssignmentStatusComponentProps['callbackMap'] = {
     MissingNamespaces: (roleAssignment) => {

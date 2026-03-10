@@ -71,40 +71,37 @@ export async function handleMissingNamespaces(
 
     const createMissingProject = async (clusterName: string, namespace: string) => {
       try {
-        await fireManagedClusterActionCreate(clusterName, {
+        const actionResponse = await fireManagedClusterActionCreate(clusterName, {
           apiVersion: ProjectRequestApiVersion,
           kind: ProjectRequestKind,
           metadata: { name: namespace },
         })
-          .then((actionResponse) => {
-            if (actionResponse.actionDone === 'ActionDone') {
-              counter.success++
-            } else {
-              counter.error++
-              counter.errorClusterNamespacesMap = {
-                ...counter.errorClusterNamespacesMap,
-                [clusterName]: [...(counter.errorClusterNamespacesMap[clusterName] ?? []), namespace],
-              }
-              throw new Error(actionResponse.message ?? '')
-            }
+
+        if (actionResponse?.actionDone === 'ActionDone') {
+          counter.success++
+        } else {
+          counter.error++
+          counter.errorClusterNamespacesMap = {
+            ...counter.errorClusterNamespacesMap,
+            [clusterName]: [...(counter.errorClusterNamespacesMap[clusterName] ?? []), namespace],
+          }
+          addAlertCallback({
+            title: t('Error creating missing project'),
+            message: t('Error creating missing project {{project}} for cluster {{cluster}}. Error: {{error}}.', {
+              project: namespace,
+              cluster: clusterName,
+              error: actionResponse?.message ?? 'Unknown error',
+            }),
+            type: 'danger',
+            autoClose: true,
           })
-          .catch((err: Error) => {
-            counter.error++
-            counter.errorClusterNamespacesMap = {
-              ...counter.errorClusterNamespacesMap,
-              [clusterName]: [...(counter.errorClusterNamespacesMap[clusterName] ?? []), namespace],
-            }
-            throw err
-          })
-          .finally(() =>
-            onProgressCallback({
-              successCount: counter.success,
-              errorCount: counter.error,
-              totalCount: counter.totalCount,
-              errorClusterNamespacesMap: counter.errorClusterNamespacesMap,
-            })
-          )
+        }
       } catch (err: unknown) {
+        counter.error++
+        counter.errorClusterNamespacesMap = {
+          ...counter.errorClusterNamespacesMap,
+          [clusterName]: [...(counter.errorClusterNamespacesMap[clusterName] ?? []), namespace],
+        }
         const error = err instanceof Error ? err : new Error('Unknown error occurred')
         addAlertCallback({
           title: t('Error creating missing project'),
@@ -115,6 +112,13 @@ export async function handleMissingNamespaces(
           }),
           type: 'danger',
           autoClose: true,
+        })
+      } finally {
+        onProgressCallback({
+          successCount: counter.success,
+          errorCount: counter.error,
+          totalCount: counter.totalCount,
+          errorClusterNamespacesMap: counter.errorClusterNamespacesMap,
         })
       }
     }
