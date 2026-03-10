@@ -63,7 +63,7 @@ export function PolicyAutomationWizard(props: {
               isInline
               variant={ButtonVariant.link}
               onClick={() =>
-                window.open(openShiftConsoleUrl + '/operatorhub/all-namespaces?keyword=ansible+automation+platform')
+                window.open(openShiftConsoleUrl + '/catalog/ns/default?keyword=ansible+automation+platform')
               }
             >
               OperatorHub

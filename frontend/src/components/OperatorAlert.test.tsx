@@ -67,7 +67,7 @@ describe('OperatorAlert', () => {
     expect(installLink).toBeInTheDocument()
 
     const linkElement = installLink.closest('a')
-    expect(linkElement).toHaveAttribute('href', '/operatorhub/all-namespaces?keyword=Test%20Operator')
+    expect(linkElement).toHaveAttribute('href', '/catalog/ns/default?keyword=Test%20Operator')
     expect(linkElement).toHaveAttribute('target', '_blank')
   })
 
@@ -102,7 +102,7 @@ describe('OperatorAlert', () => {
     const linkElement = installLink.closest('a')
     expect(linkElement).toHaveAttribute(
       'href',
-      '/operatorhub/all-namespaces?keyword=OpenShift%20Virtualization%20Operator'
+      '/catalog/ns/default?keyword=OpenShift%20Virtualization%20Operator'
     )
   })
 
