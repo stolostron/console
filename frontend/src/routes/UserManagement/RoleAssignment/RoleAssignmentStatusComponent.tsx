@@ -147,15 +147,7 @@ const StatusTooltip = ({
     <Popover
       triggerAction="hover"
       headerContent={<ReasonString reason={reason} />}
-      bodyContent={
-        bodyContent ?? (
-          <Panel isScrollable>
-            <PanelMain tabIndex={0} maxHeight="150px">
-              <PanelMainBody style={{ padding: '0px' }}>{message}</PanelMainBody>
-            </PanelMain>
-          </Panel>
-        )
-      }
+      bodyContent={bodyContent ?? <div style={{ maxHeight: '150px', overflowY: 'auto' }}>{message}</div>}
       footerContent={
         footerContent ?? (
           <ReasonFooter
@@ -232,20 +224,16 @@ const RoleAssignmentStatusComponent = ({
           icon={<ExclamationCircleIcon color="var(--pf-t--global--icon--color--status--danger--default)" />}
           label={t('Error')}
           bodyContent={
-            <Panel isScrollable>
-              <PanelMain>
-                <PanelMainBody>
-                  <ExpandableSection
-                    variant={ExpandableSectionVariant.truncate}
-                    toggleText={isErrorExpanded ? t('Show less') : t('Show more')}
-                    onToggle={onErrorToggle}
-                    isExpanded={isErrorExpanded}
-                  >
-                    {roleAssignment.status?.message ?? t('Not available')}
-                  </ExpandableSection>
-                </PanelMainBody>
-              </PanelMain>
-            </Panel>
+            <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
+              <ExpandableSection
+                variant={ExpandableSectionVariant.truncate}
+                toggleText={isErrorExpanded ? t('Show less') : t('Show more')}
+                onToggle={onErrorToggle}
+                isExpanded={isErrorExpanded}
+              >
+                {roleAssignment.status?.message ?? t('Not available')}
+              </ExpandableSection>
+            </div>
           }
           {...commonStatusTooltipProps}
         />
