@@ -770,7 +770,7 @@ const submittedGit = [
         },
         spec: {
           destination: {
-            namespace: 'default',
+            namespace: 'testappdefault',
             server: '{{server}}',
           },
           project: 'default',
@@ -860,7 +860,7 @@ const submittedHelm = [
         },
         spec: {
           destination: {
-            namespace: 'default',
+            namespace: 'testappdefault',
             server: '{{server}}',
           },
           project: 'default',
@@ -1024,7 +1024,7 @@ const submittedGitPullModel = [
         },
         spec: {
           destination: {
-            namespace: 'default',
+            namespace: 'testappdefault',
             server: '{{server}}',
           },
           project: 'default',

@@ -450,7 +450,9 @@ export function CrossGeneratorSync(props: CrossGeneratorSyncProps) {
     const shouldFixDestNamespace =
       !!appName &&
       appName !== currentDestNamespace &&
-      (currentDestNamespace === prevGenState.current.lastSetDestinationNamespace || currentDestNamespace === '')
+      (currentDestNamespace === prevGenState.current.lastSetDestinationNamespace ||
+        currentDestNamespace === '' ||
+        !prevGenState.current.lastSetDestinationNamespace)
     if (shouldFixDestNamespace) {
       fix(appSet, DESTINATION_NAME_PATH_NAMESPACE, appName)
       prevGenState.current.lastSetDestinationNamespace = appName

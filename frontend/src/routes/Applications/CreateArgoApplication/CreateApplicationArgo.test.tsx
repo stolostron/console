@@ -192,7 +192,7 @@ const argoAppSetGit: ApplicationSet = {
           },
         ],
         destination: {
-          namespace: 'gitops-ns',
+          namespace: 'application-01gitops-ns',
           server: '{{server}}',
         },
         syncPolicy: {
@@ -244,7 +244,7 @@ const argoAppSetHelm: ApplicationSet = {
           },
         ],
         destination: {
-          namespace: 'gitops-ns',
+          namespace: 'helm-application-01gitops-ns',
           server: '{{server}}',
         },
         syncPolicy: {
