@@ -10,7 +10,7 @@ import { RbacButton } from '../../../../../../components/Rbac'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../../lib/doc-util'
 import { rbacCreate } from '../../../../../../lib/rbac-util'
-import { validateJSON, validateCloudsYaml, validateCidr } from '../../../../../../lib/validation'
+import { useValidation } from '../../../../../../hooks/useValidation'
 import { NavigationPath, SubRoutesRedirect } from '../../../../../../NavigationPath'
 import {
   Broker,
@@ -184,6 +184,7 @@ function hasNodeWithUpiLabel(cluster: Cluster): boolean {
 
 export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
   const { t } = useTranslation()
+  const { validateJSON, validateCloudsYaml, validateCidr } = useValidation()
   const { clusterSet } = useClusterSetDetailsContext()
   const navigate = useNavigate()
 
@@ -713,7 +714,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
             onChange: (value: string) => {
               setBrokerGlobalNetCIDR(value)
             },
-            validation: (value) => validateCidr(value, t),
+            validation: validateCidr,
           },
         ],
       },
@@ -812,7 +813,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                   copy[clusterName] = value
                   setGcServiceAccountKeys(copy)
                 },
-                validation: (value) => validateJSON(value, t),
+                validation: validateJSON,
                 isHidden: cluster.provider !== Provider.gcp || providerSecretMap[clusterName] !== null,
                 isRequired: cluster.provider === Provider.gcp && providerSecretMap[clusterName] === null,
                 isSecret: true,
@@ -935,7 +936,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                   setOpenstackCloudsYamls(copy)
                 },
                 isSecret: true,
-                validation: (value) => validateCloudsYaml(value, clouds[clusterName] as string, '', t),
+                validation: (value) => validateCloudsYaml(value, clouds[clusterName] as string, ''),
               },
               {
                 id: 'cloud',
@@ -1059,7 +1060,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
                   copy[clusterName] = value
                   setglobalNetCIDRs(copy)
                 },
-                validation: (value) => validateCidr(value, t),
+                validation: validateCidr,
               },
               {
                 id: 'gateways',

@@ -12,7 +12,7 @@ import {
 import { PlacementRuleKind } from '../common/resources/IPlacementRule'
 import { PolicyApiGroup } from '../common/resources/IPolicy'
 import { PolicySetApiGroup } from '../common/resources/IPolicySet'
-import { validateKubernetesResourceName } from '../../lib/validation'
+import { useValidation } from '../../hooks/useValidation'
 import { useTranslation } from '../../lib/acm-i18next'
 
 export function PlacementBindings(props: {
@@ -57,6 +57,7 @@ export function PlacementBindings(props: {
 function PlacementBinding(props: { bindingSubjectKind: string; bindingSubjectApiGroup?: string }) {
   const placementBinding: IPlacementBinding = useItem()
   const { t } = useTranslation()
+  const { validateKubernetesResourceName } = useValidation()
   return (
     <Fragment>
       <WizTextInput
@@ -111,6 +112,7 @@ function PlacementBinding(props: { bindingSubjectKind: string; bindingSubjectApi
 function Subject() {
   const subject = useItem() as IPlacementSubject
   const { t } = useTranslation()
+  const { validateKubernetesResourceName } = useValidation()
   return (
     <Fragment>
       <WizSelect

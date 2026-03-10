@@ -11,7 +11,7 @@ import {
 import { IResource } from '../common/resources/IResource'
 import { IPlacementRule, PlacementRuleKind, PlacementRuleType } from '../common/resources/IPlacementRule'
 import { useLabelValuesMap } from '../common/useLabelValuesMap'
-import { validateKubernetesResourceName } from '../../lib/validation'
+import { useValidation } from '../../hooks/useValidation'
 import { MatchExpression, MatchExpressionCollapsed } from './MatchExpression'
 import { useTranslation } from '../../lib/acm-i18next'
 
@@ -47,6 +47,7 @@ export function PlacementRule(props: { clusters: IResource[]; hideName?: boolean
   const labelValuesMap = useLabelValuesMap(props.clusters)
   const placementRule = useItem() as IPlacementRule
   const { t } = useTranslation()
+  const { validateKubernetesResourceName } = useValidation()
   const inputLabel = t('Label expressions')
   const addLabel = t('Add label expression')
   return (
