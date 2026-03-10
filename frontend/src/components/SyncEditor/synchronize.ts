@@ -118,7 +118,9 @@ export const crossReference = (paths: { [name: string]: any }) => {
           path.$v.length &&
           path.$v.startsWith(values[0]) &&
           !path.$p.includes('dependencies') &&
-          !path.$p.includes('extraDependencies')
+          !path.$p.includes('extraDependencies') &&
+          path.$p?.length &&
+          path.$p[path.$p.length - 1] === key
         ) {
           references[JSON.stringify(path.$p)] = path.$p
         }
@@ -139,13 +141,28 @@ export const updateReferences = (
 ) => {
   return userEdits.filter((edit) => {
     const path = JSON.stringify(edit.$p)
-    return xreferences.every((xrefs) => {
+    const editLast = edit.$p?.[edit.$p.length - 1]
+    // Filter each xref's references to those whose path last element matches edit.$p's; remove empty xrefs
+    const filteredXrefs = xreferences
+      .map((xrefs) => ({
+        ...xrefs,
+        references: Object.fromEntries(
+          Object.entries(xrefs.references).filter(
+            ([refKey, refPath]) => refPath?.[refPath.length - 1] === editLast && refKey !== path
+          )
+        ),
+      }))
+      .filter((xrefs) => Object.keys(xrefs.references).length > 0)
+    if (filteredXrefs.length === 0) {
+      return true
+    }
+    return filteredXrefs.every((xrefs) => {
       if (xrefs.references[path]) {
         const remaining = edit.$f.replace(xrefs.value, '')
         if (typeof edit.$u === 'string') {
           const change = edit.$u.replace(remaining, '')
-          Object.values(xrefs.references).forEach((path) => {
-            set(unredactedChange.parsed, path, change)
+          Object.values(xrefs.references).forEach((refPath) => {
+            set(unredactedChange.parsed, refPath, change)
           })
         }
         return false

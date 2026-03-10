@@ -45,6 +45,7 @@ import {
   CrossGeneratorSync,
   findGeneratorPathWithGenType,
   ExistingPlacementSelect,
+  PrevGenState,
 } from './MultipleGeneratorSelector'
 
 const gitOpsAlertInReviewClass = css({
@@ -250,7 +251,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
   const [filteredClusterSets, setFilteredClusterSets] = useState<IResource[]>([])
   const generatorPathRef = useRef<string>('spec.generators')
   const [hasCDRGen, setHasCDRGen] = useState(true)
-  const prevGenState = useRef<{ hasGitGen?: boolean; hasListGen?: boolean; hasCDRGen?: boolean }>({ hasCDRGen: true })
+  const prevGenState = useRef<PrevGenState>({ hasCDRGen: true })
   const { gitOpsOperatorSubscriptionsValue } = useSharedSelectors()
   const gitOpsOperator = useOperatorCheck(SupportedOperator.gitOps, gitOpsOperatorSubscriptionsValue)
   const showAlert = !gitOpsOperator.pending && !gitOpsOperator.installed
