@@ -542,7 +542,7 @@ exports[`Cluster creation control data for KubeVirt generates correctly for MCE 
         </span>
         <AcmButton
           component="a"
-          href="https://console-openshift-console.apps.cs-aws-413-j9kqv.dev02.red-chesterfield.com/operatorhub/all-namespaces?keyword=Openshift+Virtualization"
+          href="https://console-openshift-console.apps.cs-aws-413-j9kqv.dev02.red-chesterfield.com/catalog/ns/default?keyword=Openshift+Virtualization"
           icon={<ExternalLinkAltIcon />}
           iconPosition="right"
           isInline={true}

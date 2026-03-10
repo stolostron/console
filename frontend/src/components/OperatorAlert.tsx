@@ -23,7 +23,7 @@ export function OperatorAlert(props: {
 
   const linkTarget = isUpgrade
     ? '/k8s/all-namespaces/operators.coreos.com~v1alpha1~ClusterServiceVersion'
-    : `/operatorhub/all-namespaces?keyword=${encodeURIComponent(operatorName)}`
+    : `/catalog/ns/default?keyword=${encodeURIComponent(operatorName)}`
   const link = actionLinks || (
     <Link to={linkTarget} target={'_blank'}>
       <Button variant="link" icon={<ExternalLinkAltIcon />} iconPosition="right" isInline>
