@@ -164,6 +164,7 @@ export interface Settings {
   ansibleIntegration?: 'enabled' | 'disabled'
   singleNodeOpenshift?: 'enabled' | 'disabled'
   awsPrivateWizardStep?: 'enabled' | 'disabled'
+  enhancedPlacement?: 'enabled' | 'disabled'
   globalSearchFeatureFlag?: 'enabled' | 'disabled'
 
   APP_ARGO_SEARCH_RESULT_LIMIT?: string
