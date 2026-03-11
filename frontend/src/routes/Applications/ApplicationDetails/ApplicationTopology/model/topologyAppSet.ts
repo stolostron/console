@@ -495,23 +495,24 @@ function processResources(
  * @param t - Translation function
  * @param hubClusterName - Hub cluster name
  */
-export const openArgoCDEditor = (
+export const openArgoCDURL = (
   cluster: string,
   namespace: string,
   name: string,
   toggleLoading: () => void,
   t: TFunction,
-  hubClusterName: string
+  hubClusterName: string,
+  targetPath?: string
 ): void => {
   if (cluster === hubClusterName) {
     // Handle local hub cluster
     toggleLoading()
-    getArgoRoute(name, namespace, cluster, undefined, hubClusterName)
+    getArgoRoute(name, namespace, cluster, undefined, hubClusterName, targetPath)
     toggleLoading()
   } else {
     // Handle remote managed cluster
     toggleLoading()
-    getArgoRouteFromSearch(name, namespace, cluster, t, hubClusterName)
+    getArgoRouteFromSearch(name, namespace, cluster, t, hubClusterName, targetPath)
     toggleLoading()
   }
 }
@@ -531,7 +532,8 @@ const getArgoRoute = async (
   appNamespace: string,
   cluster: string,
   managedclusterviewdata: ManagedClusterViewData | undefined,
-  hubClusterName: string
+  hubClusterName: string,
+  targetPath?: string
 ): Promise<void> => {
   let routes: any[]
   let argoRoute: RouteObject | undefined
@@ -572,7 +574,7 @@ const getArgoRoute = async (
       }
 
       if (argoRoute) {
-        openArgoEditorWindow(argoRoute, appName)
+        openArgoWindow(argoRoute, appName, targetPath)
       }
     }
   } else {
@@ -590,7 +592,7 @@ const getArgoRoute = async (
         if ('errorMessage' in res) {
           // Handle error case - could add error handling here
         } else {
-          openArgoEditorWindow(res, appName)
+          openArgoWindow(res, appName, targetPath)
         }
       })
       .catch((err) => {
@@ -678,7 +680,8 @@ const getArgoRouteFromSearch = async (
   appNamespace: string,
   cluster: string,
   t: TFunction,
-  hubClusterName: string
+  hubClusterName: string,
+  targetPath?: string
 ): Promise<void> => {
   // Build search query for Argo CD routes
   const query: SearchQuery = convertStringToQuery(
@@ -739,7 +742,8 @@ const getArgoRouteFromSearch = async (
           kind: 'Route',
           apiVersion: 'route.openshift.io/v1',
         },
-        hubClusterName
+        hubClusterName,
+        targetPath
       )
     }
   } catch (error) {
@@ -754,11 +758,13 @@ const getArgoRouteFromSearch = async (
  * @param route - Route object containing host and TLS information
  * @param appName - Application name to navigate to
  */
-const openArgoEditorWindow = (route: RouteObject, appName: string): void => {
+const openArgoWindow = (route: RouteObject, appName: string, targetPath?: string): void => {
   const hostName = route.spec?.host ?? 'unknown'
   const transport = route.spec?.tls ? 'https' : 'http'
-  const argoURL = `${transport}://${hostName}/applications`
-  window.open(`${argoURL}/${appName}`, '_blank')
+  const url = targetPath
+    ? `${transport}://${hostName}${targetPath}`
+    : `${transport}://${hostName}/applications/${appName}`
+  window.open(url, '_blank')
 }
 
 /**

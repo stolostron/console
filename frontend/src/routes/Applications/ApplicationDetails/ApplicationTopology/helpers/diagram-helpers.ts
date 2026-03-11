@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { openArgoCDEditor, openRouteURL } from '../model/topologyAppSet'
+import { openArgoCDURL, openRouteURL } from '../model/topologyAppSet'
 import { isSearchAvailable } from './search-helper'
 import queryString from 'query-string'
 import type {
@@ -750,7 +750,11 @@ export const processResourceActionLink = (
       targetLink = `/multicloud/search?filters={"textsearch":"${kindData}${nsData} ${nameData}"}`
       break
     case 'open_argo_editor': {
-      openArgoCDEditor(cluster, namespace, name, toggleLoading, t, hubClusterName)
+      openArgoCDURL(cluster, namespace, name, toggleLoading, t, hubClusterName)
+      break
+    }
+    case 'open_argo_repo_settings': {
+      openArgoCDURL(cluster, namespace, name, toggleLoading, t, hubClusterName, '/settings/repos')
       break
     }
     case 'open_route_url': {

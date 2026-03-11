@@ -29,7 +29,7 @@ import { SupportedOperator, useOperatorCheck } from '../../lib/operatorCheck'
 import { useValidation } from '../../hooks/useValidation'
 import { useWizardStrings } from '../../lib/wizardStrings'
 import { NavigationPath } from '../../NavigationPath'
-import { ApplicationSetKind, GitOpsCluster } from '../../resources'
+import { ApplicationSetKind, GitOpsCluster, Secret } from '../../resources'
 import { useSharedSelectors } from '../../shared-recoil'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
 import { IPlacement, PlacementApiVersion, PlacementKind, PlacementType } from '../common/resources/IPlacement'
@@ -47,6 +47,7 @@ import {
   ExistingPlacementSelect,
   PrevGenState,
 } from './MultipleGeneratorSelector'
+import { GitOpsPrivateRepoAlert } from '../../components/GitOpsPrivateRepoAlert'
 
 const gitOpsAlertInReviewClass = css({
   '#review &': {
@@ -144,6 +145,7 @@ export interface ArgoWizardProps {
   resources?: IResource[]
   yamlEditor?: () => ReactNode
   isPullModel?: boolean
+  repoSecrets?: Secret[]
 }
 
 function onlyUnique(value: any, index: any, self: string | any[]) {
@@ -177,7 +179,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
       const source = get(appset, 'spec.template.spec.source')
       const sources = get(appset, 'spec.template.spec.sources')
       if (sources) {
-        sources.forEach((source) => {
+        sources.forEach((source: any) => {
           if (!source.chart) {
             gitArgoAppSetRepoURLs.push(source.repoURL)
           }
@@ -196,6 +198,19 @@ export function ArgoWizard(props: ArgoWizardProps) {
     const urls: string[] = []
     const versions: string[] = []
     const paths: string[] = []
+
+    // add repo urls from secrets
+    props.repoSecrets?.forEach((secret) => {
+      if (secret.metadata.labels?.['argocd.argoproj.io/secret-type'] === 'repository') {
+        const repoType = Buffer.from(secret.data?.type ?? '', 'base64').toString()
+        if (repoType === 'git') {
+          const url = Buffer.from(secret.data?.url ?? '', 'base64').toString()
+          if (url) {
+            urls.push(url)
+          }
+        }
+      }
+    })
 
     props.applicationSets?.forEach((appset) => {
       const generatorPath = findGeneratorPathWithGenType(appset, 'git')
@@ -216,7 +231,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
     })
 
     return { urls: [...new Set(urls)], versions: [...new Set(versions)], paths: [...new Set(paths)] }
-  }, [props.applicationSets])
+  }, [props.applicationSets, props.repoSecrets])
 
   const sourceHelmChannels = useMemo(() => {
     if (props.channels)
@@ -234,7 +249,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
       const sources = get(appset, 'spec.template.spec.sources')
 
       if (sources) {
-        sources.forEach((source) => {
+        sources.forEach((source: any) => {
           if (source.chart) {
             helmArgoAppSetRepoURLs.push(source.repoURL)
           }
@@ -536,6 +551,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
                 gitGeneratorRepos={gitGeneratorRepos}
                 disableForm={disableForm}
                 generatorPath={generatorPathRef}
+                secrets={props.repoSecrets ?? []}
               />
             </Section>
           </WizItemSelector>
@@ -549,14 +565,21 @@ export function ArgoWizard(props: ArgoWizardProps) {
         </Step>
         <Step id="repository" label={t('Template')}>
           <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
+            <GitOpsPrivateRepoAlert isPullModel={isPullModel} hubClusterName={hubCluster?.metadata?.name ?? ''} />
             <Section label={t('Repository')} description={t('Repository of the applications to be created.')}>
               {source && !sources ? (
-                <SourceSelector gitChannels={gitChannels} channels={props.channels} helmChannels={helmChannels} />
+                <SourceSelector
+                  gitChannels={gitChannels}
+                  channels={props.channels}
+                  helmChannels={helmChannels}
+                  secrets={props.repoSecrets ?? []}
+                />
               ) : (
                 <MultipleSourcesSelector
                   channels={props.channels}
                   gitChannels={gitChannels}
                   helmChannels={helmChannels}
+                  secrets={props.repoSecrets ?? []}
                 />
               )}
             </Section>
