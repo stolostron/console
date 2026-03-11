@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { HostedClusterK8sResourceWithChannel } from '../../../../../resources/hosted-cluster'
-import { Button, ButtonVariant, Icon } from '@patternfly/react-core'
+import { Button, ButtonVariant } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExclamationTriangleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom-v5-compat'
@@ -139,14 +139,13 @@ export function DistributionField(props: {
     if (!hasNoChannel || isChannelSelectionInProgress) return null
 
     return (
-      <span style={{ whiteSpace: 'nowrap', display: 'block' }}>
-        <Icon status="warning" size="sm">
-          <ExclamationTriangleIcon />
-        </Icon>{' '}
+      <>
         <RbacButton
           onClick={() => setShowChannelSelectModal(true)}
           variant={ButtonVariant.link}
-          style={{ padding: 0, margin: 0, fontSize: 'inherit' }}
+          icon={
+            <ExclamationTriangleIcon style={{ fill: 'var(--pf-t--global--icon--color--status--warning--default)' }} />
+          }
           rbac={[
             rbacPatch(
               HostedClusterDefinition,
@@ -166,7 +165,7 @@ export function DistributionField(props: {
           }
           onSuccess={() => setChannelSelectionPending(true)}
         />
-      </span>
+      </>
     )
   }
 
