@@ -29,12 +29,12 @@ import {
 import {
   ClusterImageSetK8sResource,
   getOCPVersions,
-  getVersionFromReleaseImage,
   HostedClusterK8sResource,
   OpenshiftVersionOptionType,
 } from '@openshift-assisted/ui-lib/cim'
-import { NodePool, NodePoolApiVersion, NodePoolKind } from '../../../../../resources'
+import { getHostedClusterVersion, NodePool, NodePoolApiVersion, NodePoolKind } from '../../../../../resources'
 import {
+  Cluster,
   createResource,
   HypershiftCloudPlatformType,
   IRequestResult,
@@ -51,6 +51,7 @@ export type ListItems = {
 }
 
 export function NodePoolForm(props: {
+  cluster: Cluster
   hostedCluster: HostedClusterK8sResource
   close: () => void
   clusterImages?: ClusterImageSetK8sResource[]
@@ -275,7 +276,7 @@ export function NodePoolForm(props: {
   }
 
   useEffect(() => {
-    const ver = getVersionFromReleaseImage(props.hostedCluster.spec.release.image)
+    const ver = getHostedClusterVersion(props.cluster, props.hostedCluster)
     if (ver && selectedImage === undefined && props.clusterImages && props.clusterImages.length > 0) {
       const availableImages = getOCPVersions(props.clusterImages)
       const filteredImages: any[] = []
@@ -309,7 +310,7 @@ export function NodePoolForm(props: {
         setSelectedImage(filteredImages[0].version)
         setUseHCImage(false)
       } else {
-        setSelectedImage(getVersionFromReleaseImage(props.hostedCluster.spec.release.image))
+        setSelectedImage(getHostedClusterVersion(props.cluster, props.hostedCluster))
         setUseHCImage(true)
       }
     }
@@ -336,9 +337,10 @@ export function NodePoolForm(props: {
     props.hostedCluster.spec.platform.type,
     props.refNodepool?.spec.platform?.aws?.securityGroups,
     props.clusterImages,
-    props.hostedCluster.spec.release.image,
     props.refNodepool,
     selectedImage,
+    props.cluster,
+    props.hostedCluster,
   ])
 
   const nodepoolItems: ListItems[] = [

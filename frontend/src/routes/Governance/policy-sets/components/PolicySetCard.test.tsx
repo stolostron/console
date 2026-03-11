@@ -1,10 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
+import { AcmDrawerContext } from '../../../../ui-components'
 import { waitForText } from '../../../../lib/test-util'
 import { Placement, PlacementBinding, PlacementRule, PolicySet } from '../../../../resources'
 import PolicySetCard from './PolicySetCard'
+
+const cardID = 'policyset-test-policy-set-with-1-placement'
 
 const policySet: PolicySet = {
   apiVersion: 'policy.open-cluster-management.io/v1beta1',
@@ -70,6 +73,8 @@ describe('Policy Set Card', () => {
             setSelectedCardID={() => {}}
             canEditPolicySet={true}
             canDeletePolicySet={true}
+            cardIdActionMenuOpen={undefined}
+            setCardIdActionMenuOpen={() => {}}
           />
         </MemoryRouter>
       </RecoilRoot>
@@ -97,6 +102,8 @@ describe('Policy Set Card for Pending policy', () => {
             setSelectedCardID={() => {}}
             canEditPolicySet={true}
             canDeletePolicySet={true}
+            cardIdActionMenuOpen={undefined}
+            setCardIdActionMenuOpen={() => {}}
           />
         </MemoryRouter>
       </RecoilRoot>
@@ -110,5 +117,192 @@ describe('Policy Set Card for Pending policy', () => {
     await waitForText('Pending')
     // wait status message
     await waitForText('Policies awaiting pending dependencies: policy-pending')
+  })
+})
+
+describe('Policy Set Card controlled dropdown and selection (ACM-30324)', () => {
+  const originalScrollIntoView = Element.prototype.scrollIntoView
+
+  beforeEach(() => {
+    // openDetails scrolls the card into view via getElementById + scrollIntoView (setTimeout 400ms)
+    Element.prototype.scrollIntoView = jest.fn()
+  })
+
+  afterEach(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 500))
+    Element.prototype.scrollIntoView = originalScrollIntoView
+  })
+
+  test('card shows selected state when selectedCardID matches card ID', async () => {
+    render(
+      <RecoilRoot>
+        <MemoryRouter>
+          <PolicySetCard
+            policySet={policySet}
+            selectedCardID={cardID}
+            setSelectedCardID={() => {}}
+            canEditPolicySet={true}
+            canDeletePolicySet={true}
+            cardIdActionMenuOpen={undefined}
+            setCardIdActionMenuOpen={() => {}}
+          />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForText('policy-set-with-1-placement')
+    const card = document.getElementById(cardID)
+    expect(card).toBeInTheDocument()
+    expect(card).toHaveClass('pf-m-current')
+  })
+
+  test('setSelectedCardID is called when clicking card title', async () => {
+    const setSelectedCardID = jest.fn()
+    render(
+      <RecoilRoot>
+        <MemoryRouter>
+          <PolicySetCard
+            policySet={policySet}
+            selectedCardID={''}
+            setSelectedCardID={setSelectedCardID}
+            canEditPolicySet={true}
+            canDeletePolicySet={true}
+            cardIdActionMenuOpen={undefined}
+            setCardIdActionMenuOpen={() => {}}
+          />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForText('policy-set-with-1-placement')
+    fireEvent.click(screen.getByRole('button', { name: 'policy-set-with-1-placement' }))
+    expect(setSelectedCardID).toHaveBeenCalledWith(cardID)
+  })
+
+  test('setCardIdActionMenuOpen is called when opening action menu', async () => {
+    const setCardIdActionMenuOpen = jest.fn()
+    render(
+      <RecoilRoot>
+        <MemoryRouter>
+          <PolicySetCard
+            policySet={policySet}
+            selectedCardID={''}
+            setSelectedCardID={() => {}}
+            canEditPolicySet={true}
+            canDeletePolicySet={true}
+            cardIdActionMenuOpen={undefined}
+            setCardIdActionMenuOpen={setCardIdActionMenuOpen}
+          />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForText('policy-set-with-1-placement')
+    const card = document.getElementById(cardID)
+    expect(card).toBeInTheDocument()
+    const buttonsWithinCard = card!.querySelectorAll('button')
+    const kebabButton =
+      Array.from(buttonsWithinCard).find((b) => !b.textContent?.trim()) ??
+      buttonsWithinCard[buttonsWithinCard.length - 1]
+    fireEvent.click(kebabButton)
+    expect(setCardIdActionMenuOpen).toHaveBeenCalledWith(cardID)
+  })
+
+  test('dropdown menu is open when cardIdActionMenuOpen matches card ID', async () => {
+    render(
+      <RecoilRoot>
+        <MemoryRouter>
+          <PolicySetCard
+            policySet={policySet}
+            selectedCardID={''}
+            setSelectedCardID={() => {}}
+            canEditPolicySet={true}
+            canDeletePolicySet={true}
+            cardIdActionMenuOpen={cardID}
+            setCardIdActionMenuOpen={() => {}}
+          />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForText('policy-set-with-1-placement')
+    expect(screen.getByRole('menuitem', { name: 'View details' })).toBeInTheDocument()
+  })
+})
+
+describe('Policy Set Card drawer behavior (onSelect vs onViewDetails)', () => {
+  const originalScrollIntoView = Element.prototype.scrollIntoView
+
+  beforeEach(() => {
+    // openDetails scrolls the card into view via getElementById + scrollIntoView (setTimeout 400ms)
+    Element.prototype.scrollIntoView = jest.fn()
+    jest.useFakeTimers()
+  })
+
+  afterEach(() => {
+    jest.advanceTimersByTime(500)
+    jest.useRealTimers()
+    Element.prototype.scrollIntoView = originalScrollIntoView
+  })
+
+  test('clicking card title opens the drawer', async () => {
+    const setDrawerContext = jest.fn()
+    render(
+      <RecoilRoot>
+        <MemoryRouter>
+          <AcmDrawerContext.Provider value={{ drawerContext: undefined, setDrawerContext }}>
+            <PolicySetCard
+              policySet={policySet}
+              selectedCardID={''}
+              setSelectedCardID={() => {}}
+              canEditPolicySet={true}
+              canDeletePolicySet={true}
+              cardIdActionMenuOpen={undefined}
+              setCardIdActionMenuOpen={() => {}}
+            />
+          </AcmDrawerContext.Provider>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForText('policy-set-with-1-placement')
+    fireEvent.click(screen.getByRole('button', { name: 'policy-set-with-1-placement' }))
+    expect(setDrawerContext).toHaveBeenCalledWith(
+      expect.objectContaining({
+        isExpanded: true,
+        isInline: true,
+        isResizable: true,
+      })
+    )
+    expect(setDrawerContext.mock.calls[0][0].panelContent).toBeDefined()
+  })
+
+  test('with drawer open (card selected), click actions then View details keeps drawer open', async () => {
+    const setDrawerContext = jest.fn()
+    const setSelectedCardID = jest.fn()
+    render(
+      <RecoilRoot>
+        <MemoryRouter>
+          <AcmDrawerContext.Provider value={{ drawerContext: undefined, setDrawerContext }}>
+            <PolicySetCard
+              policySet={policySet}
+              selectedCardID={cardID}
+              setSelectedCardID={setSelectedCardID}
+              canEditPolicySet={true}
+              canDeletePolicySet={true}
+              cardIdActionMenuOpen={cardID}
+              setCardIdActionMenuOpen={() => {}}
+            />
+          </AcmDrawerContext.Provider>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForText('policy-set-with-1-placement')
+    expect(screen.getByRole('menuitem', { name: 'View details' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('menuitem', { name: 'View details' }))
+    expect(setSelectedCardID).toHaveBeenCalledWith(cardID)
+    expect(setDrawerContext).toHaveBeenCalledWith(
+      expect.objectContaining({
+        isExpanded: true,
+        isInline: true,
+        isResizable: true,
+      })
+    )
+    expect(setDrawerContext.mock.calls[0][0].panelContent).toBeDefined()
   })
 })

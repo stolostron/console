@@ -2,8 +2,8 @@
 
 import { WizSelect } from '@patternfly-labs/react-form-wizard'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { validateWebURL } from '../../../lib/validation'
 import { Secret } from '../../../resources'
+import { useValidation } from '../../../hooks/useValidation'
 
 export interface GitURLPathProps {
   name: string
@@ -29,6 +29,7 @@ export function RepoURL({ name, channels, secrets }: GitURLPathProps) {
 
   const allChannels = [...new Set([...channels, ...secretURLs])]
 
+  const { validateWebURL } = useValidation()
   return (
     <WizSelect
       path="repoURL"

@@ -51,6 +51,7 @@ export function WizardSyncEditor() {
       variant="toolbar"
       resources={resources}
       schema={schema}
+      filters={['*.metadata.managedFields']}
       onEditorChange={(changes: { resources: any[] }): void => {
         update(setRepositoryTypeForSources(changes?.resources))
       }}

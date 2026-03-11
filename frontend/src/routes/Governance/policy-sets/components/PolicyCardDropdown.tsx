@@ -2,52 +2,60 @@
 import { Divider, Dropdown, DropdownItem, DropdownList, MenuToggle, MenuToggleElement } from '@patternfly/react-core'
 import { EllipsisVIcon } from '@patternfly/react-icons'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { useState } from 'react'
+import './PolicyCardDropdown.css'
 
 type PolicyActionDropdownProps = {
   onView: () => void
   onDelete?: () => void
   onEdit?: () => void
+  onOpenChange: (isOpen: boolean) => void
+  isOpen: boolean
 }
-export const PolicyCardDropdown = ({ onView, onDelete, onEdit }: PolicyActionDropdownProps) => {
+export const PolicyCardDropdown = ({ onView, onDelete, onEdit, onOpenChange, isOpen }: PolicyActionDropdownProps) => {
   const { t } = useTranslation()
-  const [isKebabOpen, setIsKebabOpen] = useState(false)
 
-  const handleClick = (event: React.MouseEvent<HTMLAnchorElement>, callback?: () => void) => {
-    setIsKebabOpen(false)
+  const handleOpenChange = (
+    event:
+      | React.MouseEvent<HTMLAnchorElement>
+      | React.MouseEvent<HTMLButtonElement, MouseEvent>
+      | React.MouseEvent<HTMLDivElement, MouseEvent>,
+    isOpen: boolean
+  ) => {
     event.stopPropagation()
+    event.preventDefault()
+    onOpenChange(isOpen)
+  }
+
+  const handleActionClick = (event: React.MouseEvent<HTMLAnchorElement>, callback?: () => void) => {
+    handleOpenChange(event, false)
     callback?.()
   }
 
   return (
     <Dropdown
-      onOpenChange={() => setIsKebabOpen(!isKebabOpen)}
-      onSelect={() => setIsKebabOpen(!isKebabOpen)}
+      onOpenChange={() => onOpenChange(!isOpen)}
+      onSelect={() => onOpenChange(!isOpen)}
       toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
         <MenuToggle
           ref={toggleRef}
-          onClick={(event) => {
-            setIsKebabOpen(!isKebabOpen)
-            event.stopPropagation()
-          }}
+          onClick={(event) => handleOpenChange(event, !isOpen)}
           variant="plain"
-          isExpanded={isKebabOpen}
+          isExpanded={isOpen}
         >
           <EllipsisVIcon />
         </MenuToggle>
       )}
-      isOpen={isKebabOpen}
-      isPlain={true}
+      isOpen={isOpen}
     >
       <DropdownList>
-        <DropdownItem key="view details" onClick={(event) => handleClick(event, onView)}>
+        <DropdownItem key="view details" onClick={(event) => handleActionClick(event, onView)}>
           {t('View details')}
         </DropdownItem>
         <DropdownItem
           isAriaDisabled={!onEdit}
           tooltipProps={!onEdit ? { content: t('rbac.unauthorized') } : undefined}
           key="edit"
-          onClick={(event) => handleClick(event, onEdit)}
+          onClick={(event) => handleActionClick(event, onEdit)}
         >
           {t('Edit')}
         </DropdownItem>
@@ -56,7 +64,7 @@ export const PolicyCardDropdown = ({ onView, onDelete, onEdit }: PolicyActionDro
           isAriaDisabled={!onDelete}
           tooltipProps={!onDelete ? { content: t('rbac.unauthorized') } : undefined}
           key="delete"
-          onClick={(event) => handleClick(event, onDelete)}
+          onClick={(event) => handleActionClick(event, onDelete)}
         >
           {t('Delete')}
         </DropdownItem>

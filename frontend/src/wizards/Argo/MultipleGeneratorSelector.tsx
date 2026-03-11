@@ -28,7 +28,7 @@ import {
 import { IResource } from '../common/resources/IResource'
 import { useTranslation } from '../../lib/acm-i18next'
 import { Channel } from './ArgoWizard'
-import { validateWebURL } from '../../lib/validation'
+import { useValidation } from '../../hooks/useValidation'
 import { GitRevisionSelect } from './common/GitRevisionSelect'
 import { IPlacement } from '../common/resources/IPlacement'
 import { useShowValidation } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ShowValidationProvider'
@@ -43,9 +43,16 @@ const DESTINATION_NAME_PATH_NAMESPACE = 'spec.template.spec.destination.namespac
 const DESTINATION_NAME_PATH_SERVER = 'spec.template.spec.destination.server'
 const CDR_PLACEMENT_PATH_SUFFIX = '.labelSelector.matchLabels.cluster\\.open-cluster-management\\.io/placement'
 
+export type PrevGenState = {
+  hasGitGen?: boolean
+  hasListGen?: boolean
+  hasCDRGen?: boolean
+  lastSetDestinationNamespace?: string
+}
+
 export interface CrossGeneratorSyncProps {
-  prevGenState: React.MutableRefObject<{ hasGitGen?: boolean; hasListGen?: boolean; hasCDRGen?: boolean }>
-  onGeneratorStateChange?: (state: { hasGitGen?: boolean; hasListGen?: boolean; hasCDRGen?: boolean }) => void
+  prevGenState: React.MutableRefObject<PrevGenState>
+  onGeneratorStateChange?: (state: PrevGenState) => void
   defaultData?: IResource[] | unknown[]
   generatorPath: MutableRefObject<string>
 }
@@ -110,6 +117,7 @@ function GeneratorInputForm(props: MultipleGeneratorSelectorProps) {
   const generatorType = getGeneratorType(generator)
   const requeueTimes = useMemo(() => [30, 60, 120, 180, 300], [])
   const { t } = useTranslation()
+  const { validateWebURL } = useValidation()
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       {/* Cluster Decision Resource generator - uses Placement to determine target clusters */}
@@ -440,6 +448,20 @@ export function CrossGeneratorSync(props: CrossGeneratorSyncProps) {
     const hasCDRGen = types.has('clusterDecisionResource')
     const isInitialSync = prevGenState.current.hasGitGen === undefined && prevGenState.current.hasListGen === undefined
 
+    // fixup destination namespace with current appName unless the user has changed
+    // it since the last sync
+    const currentDestNamespace = get(appSet, DESTINATION_NAME_PATH_NAMESPACE)
+    const shouldFixDestNamespace =
+      !!appName &&
+      appName !== currentDestNamespace &&
+      (currentDestNamespace === prevGenState.current.lastSetDestinationNamespace ||
+        currentDestNamespace === '' ||
+        !prevGenState.current.lastSetDestinationNamespace)
+    if (shouldFixDestNamespace) {
+      fix(appSet, DESTINATION_NAME_PATH_NAMESPACE, appName)
+      prevGenState.current.lastSetDestinationNamespace = appName
+    }
+
     // Handle git generator
     if (hasGitGen) {
       if (
@@ -451,7 +473,8 @@ export function CrossGeneratorSync(props: CrossGeneratorSyncProps) {
         fix(appSet, DESTINATION_NAME_PATH_NAMESPACE, `${PATH_BASENAME}`)
       }
     } else if (!isInitialSync && prevGenState.current.hasGitGen !== hasGitGen) {
-      fix(appSet, DESTINATION_NAME_PATH_NAMESPACE, '')
+      fix(appSet, DESTINATION_NAME_PATH_NAMESPACE, appName)
+      prevGenState.current.lastSetDestinationNamespace = appName
     }
 
     // Handle list generator
@@ -522,7 +545,12 @@ export function CrossGeneratorSync(props: CrossGeneratorSyncProps) {
       }
     }
 
-    prevGenState.current = { hasGitGen, hasListGen, hasCDRGen }
+    prevGenState.current = {
+      ...prevGenState.current,
+      hasGitGen,
+      hasListGen,
+      hasCDRGen,
+    }
     onGeneratorStateChange?.(prevGenState.current)
 
     if (shouldUpdate) {

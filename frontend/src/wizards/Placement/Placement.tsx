@@ -17,7 +17,7 @@ import get from 'get-value'
 import { Fragment, ReactNode, useMemo } from 'react'
 import set from 'set-value'
 import { useTranslation } from '../../lib/acm-i18next'
-import { validateKubernetesResourceName } from '../../lib/validation'
+import { useValidation } from '../../hooks/useValidation'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
 import { IPlacement, PlacementKind, PlacementType, Predicate } from '../common/resources/IPlacement'
 import { IResource } from '../common/resources/IResource'
@@ -91,6 +91,7 @@ export function Placement(props: {
   const { update } = useData()
 
   const { t } = useTranslation()
+  const { validateKubernetesResourceName } = useValidation()
 
   return (
     <Fragment>

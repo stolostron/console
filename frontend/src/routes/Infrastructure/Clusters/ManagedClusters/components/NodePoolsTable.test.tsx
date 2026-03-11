@@ -15,6 +15,7 @@ import {
   NamespaceApiVersion,
   NamespaceKind,
 } from '../../../../../resources'
+import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { ClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import NodePoolsTable from './NodePoolsTable'
 
@@ -266,6 +267,30 @@ const mockHostedCluster0: HostedClusterK8sResource = {
       ],
       observedGeneration: 2,
     },
+  },
+}
+
+const mockCluster0: Cluster = {
+  name: 'feng-test',
+  namespace: 'clusters',
+  uid: 'feng-test-uid',
+  status: ClusterStatus.ready,
+  hasAutomationTemplate: false,
+  hive: {
+    isHibernatable: false,
+  },
+  isHive: false,
+  isManaged: true,
+  isCurator: false,
+  isHostedCluster: true,
+  isRegionalHubCluster: false,
+  isSNOCluster: false,
+  isHypershift: true,
+  owner: {},
+  hypershift: {
+    agent: false,
+    secretNames: [],
+    hostingNamespace: 'clusters',
   },
 }
 
@@ -787,7 +812,7 @@ describe('NodePoolsTable', () => {
   beforeEach(async () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
-    const context: Partial<ClusterDetailsContext> = { hostedCluster: mockHostedCluster0 }
+    const context: Partial<ClusterDetailsContext> = { cluster: mockCluster0, hostedCluster: mockHostedCluster0 }
     render(
       <RecoilRoot
         initializeState={(snapshot) => {

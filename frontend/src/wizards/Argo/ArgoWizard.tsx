@@ -26,7 +26,7 @@ import { GitOpsOperatorAlert } from '../../components/GitOpsOperatorAlert'
 import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { SupportedOperator, useOperatorCheck } from '../../lib/operatorCheck'
-import { validateAppSetName } from '../../lib/validation'
+import { useValidation } from '../../hooks/useValidation'
 import { useWizardStrings } from '../../lib/wizardStrings'
 import { NavigationPath } from '../../NavigationPath'
 import { ApplicationSetKind, GitOpsCluster, Secret } from '../../resources'
@@ -45,6 +45,7 @@ import {
   CrossGeneratorSync,
   findGeneratorPathWithGenType,
   ExistingPlacementSelect,
+  PrevGenState,
 } from './MultipleGeneratorSelector'
 import { GitOpsPrivateRepoAlert } from '../../components/GitOpsPrivateRepoAlert'
 
@@ -158,6 +159,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
   const sources = applicationSet?.spec.template.spec.sources
 
   const { t } = useTranslation()
+  const { validateAppSetName } = useValidation()
 
   const hubCluster = useMemo(
     () => props.clusters.find((cls) => cls.metadata?.labels && cls.metadata.labels['local-cluster'] === 'true'),
@@ -265,7 +267,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
   const [filteredClusterSets, setFilteredClusterSets] = useState<IResource[]>([])
   const generatorPathRef = useRef<string>('spec.generators')
   const [hasCDRGen, setHasCDRGen] = useState(true)
-  const prevGenState = useRef<{ hasGitGen?: boolean; hasListGen?: boolean; hasCDRGen?: boolean }>({ hasCDRGen: true })
+  const prevGenState = useRef<PrevGenState>({ hasCDRGen: true })
   const { gitOpsOperatorSubscriptionsValue } = useSharedSelectors()
   const gitOpsOperator = useOperatorCheck(SupportedOperator.gitOps, gitOpsOperatorSubscriptionsValue)
   const showAlert = !gitOpsOperator.pending && !gitOpsOperator.installed

@@ -39,7 +39,7 @@ export function createProviderConnection(
       ? {
           ...stringData,
           ...{
-            baseDomain: 'baseDomain',
+            baseDomain: 'base.domain',
             pullSecret: '{"pull":"secret"}\n',
             'ssh-privatekey': '-----BEGIN OPENSSH PRIVATE KEY-----\nkey\n-----END OPENSSH PRIVATE KEY-----\n',
             'ssh-publickey': 'ssh-rsa AAAAB1 fakeemail@redhat.com\n',

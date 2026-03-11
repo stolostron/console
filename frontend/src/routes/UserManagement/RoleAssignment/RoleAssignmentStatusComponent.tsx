@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Label, Panel, PanelMain, PanelMainBody, Popover, Spinner, TooltipProps } from '@patternfly/react-core'
+import { Label, Popover, Spinner, TooltipProps } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { RoleAssignmentStatus } from '../../../resources/multicluster-role-assignment'
@@ -25,13 +25,7 @@ const StatusTooltip = ({
     <Popover
       triggerAction="hover"
       headerContent={reason}
-      bodyContent={
-        <Panel isScrollable>
-          <PanelMain tabIndex={0} maxHeight="150px">
-            <PanelMainBody style={{ padding: '0px' }}>{message}</PanelMainBody>
-          </PanelMain>
-        </Panel>
-      }
+      bodyContent={<div style={{ maxHeight: '150px', overflowY: 'auto' }}>{message}</div>}
     >
       <Label variant="outline">
         <span style={{ paddingRight: '8px' }}>{icon}</span>
