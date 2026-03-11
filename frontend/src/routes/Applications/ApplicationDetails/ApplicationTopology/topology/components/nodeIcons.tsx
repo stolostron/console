@@ -2,7 +2,7 @@
 export const NodeIcons = () => (
   <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" width="0" height="0">
     <symbol viewBox="0 0 32 32" id="nodeIcon_application">
-      <g id="Application" fill="none" fillRule="evenodd">
+      <g id="Application" fill="none" fillRule="evenodd" fill="#000">
         <g id="02_Software/App/App_outline" transform="matrix(1.6379 0 0 1.6379 7.9512 7.8634)" stroke="none">
           <path
             id="path-application"
@@ -13,7 +13,7 @@ export const NodeIcons = () => (
       </g>
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_ansiblejob">
-      <g transform="translate(0)" fill="none" fillRule="evenodd">
+      <g transform="translate(0)" fillRule="evenodd" fill="#000">
         <g transform="matrix(1.4248 0 0 1.4248 6.7502 6.7876)" fillRule="nonzero" stroke="none">
           <ellipse id="Oval" transform="rotate(-80.819 6.492 6.4945)" cx="6.492" cy="6.4945" rx="5.6444" ry="5.6141" />
           <path
@@ -38,7 +38,7 @@ export const NodeIcons = () => (
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_cluster">
       <g id="Cluster" transform="translate(0)" fillRule="evenodd">
-        <g transform="matrix(1.8606 0 0 1.8606 6.8571 6.8572)">
+        <g transform="matrix(1.8606 0 0 1.8606 6.8571 6.8572)" fill="#000">
           <path
             id="Fill"
             d="m7.9852 6.7568c-0.2187 0.0011364-0.43304 0.0613-0.62039 0.17414l-1.1711-1.1714c0.34117-0.51205 0.34117-1.179 0-1.691l0.78225-0.78225c0.40859 0.19681 0.89955 0.070194 1.162-0.29966 0.26245-0.36986 0.21985-0.87509-0.10084-1.1958-0.32068-0.32068-0.82591-0.36329-1.1958-0.10084-0.36986 0.26245-0.49647 0.75341-0.29966 1.162l-0.78225 0.78225c-0.51205-0.34117-1.179-0.34117-1.691 0l-1.1714-1.1714c0.11279-0.18726 0.17295-0.40149 0.17414-0.62009 0-0.67848-0.55002-1.2285-1.2285-1.2285s-1.2285 0.55002-1.2285 1.2285 0.55002 1.2285 1.2285 1.2285c0.2187-0.00114 0.43304-0.0613 0.62039-0.17414l1.1711 1.1714c-0.34117 0.51205-0.34117 1.179 0 1.691l-1.1714 1.1714c-0.18727-0.11277-0.40149-0.17293-0.62009-0.17414-0.67848 0-1.2285 0.55002-1.2285 1.2285s0.55002 1.2285 1.2285 1.2285 1.2285-0.55002 1.2285-1.2285c-0.0011364-0.2187-0.0613-0.43304-0.17414-0.62039l1.1714-1.1711c0.16334 0.10887 0.34614 0.1852 0.53839 0.22482v1.0089c-0.42308 0.14958-0.67686 0.58221-0.60098 1.0245 0.075883 0.44228 0.45936 0.76557 0.90811 0.76557s0.83222-0.32329 0.90811-0.76557c0.075883-0.44228-0.1779-0.87491-0.60098-1.0245v-1.0089c0.19225-0.039617 0.37505-0.11595 0.53839-0.22482l1.1714 1.1714c-0.11279 0.18726-0.17295 0.40149-0.17414 0.62009 0 0.67848 0.55002 1.2285 1.2285 1.2285s1.2285-0.55002 1.2285-1.2285-0.55002-1.2285-1.2285-1.2285zm-3.0712-2.7641c0.50886 0 0.92138 0.41251 0.92138 0.92138s-0.41251 0.92138-0.92138 0.92138-0.92138-0.41251-0.92138-0.92138c5.079e-4 -0.50865 0.41272-0.92087 0.92138-0.92138zm-3.6855-2.1499c0-0.33924 0.27501-0.61425 0.61425-0.61425s0.61425 0.27501 0.61425 0.61425-0.27501 0.61425-0.61425 0.61425c-0.3391-3.386e-4 -0.61391-0.27515-0.61425-0.61425zm0.61425 6.7568c-0.33924 0-0.61425-0.27501-0.61425-0.61425s0.27501-0.61425 0.61425-0.61425 0.61425 0.27501 0.61425 0.61425c-3.386e-4 0.3391-0.27515 0.61391-0.61425 0.61425zm6.1425 0c-0.33924 0-0.61425-0.27501-0.61425-0.61425s0.27501-0.61425 0.61425-0.61425 0.61425 0.27501 0.61425 0.61425c-5.074e-4 0.33903-0.27522 0.61374-0.61425 0.61425z"
@@ -47,7 +47,7 @@ export const NodeIcons = () => (
       </g>
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_configmap">
-      <g id="ConfigMap">
+      <g id="ConfigMap" fill="#000">
         <g id="Organization-/-File-/-catalog-/-32" transform="matrix(2.035002,0,0,2.035002,5.6582201,5.9193449)">
           <path
             d="M 7.98525,0.61425 H 2.457 c -0.3392409,0 -0.61425,0.27500909 -0.61425,0.61425 V 2.457 H 1.2285 V 3.07125 H 1.84275 V 4.606875 H 1.2285 v 0.61425 H 1.84275 V 6.75675 H 1.2285 V 7.371 h 0.61425 v 1.2285 c 0,0.3392409 0.2750091,0.61425 0.61425,0.61425 h 5.52825 c 0.3392409,0 0.61425,-0.2750091 0.61425,-0.61425 v -7.371 c 0,-0.33924091 -0.2750091,-0.61425 -0.61425,-0.61425 z m 0,7.98525 H 2.457 V 7.371 H 3.07125 V 6.75675 H 2.457 V 5.221125 H 3.07125 V 4.606875 H 2.457 V 3.07125 H 3.07125 V 2.457 H 2.457 V 1.2285 H 7.98525 Z M 4.29975,2.457 h 2.457 v 0.61425 h -2.457 z m 0,2.149875 h 2.457 v 0.61425 h -2.457 z m 0,2.149875 h 2.457 V 7.371 h -2.457 z"
@@ -57,7 +57,7 @@ export const NodeIcons = () => (
       </g>
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_container">
-      <g id="Container" fill="none" fillRule="evenodd">
+      <g id="Container" fill="none" fillRule="evenodd" fill="#000">
         <g
           id="02_Software/Containerized-app/Containerized-app_outline"
           transform="matrix(1.6604 0 0 1.6604 7.8713 6.5104)"
@@ -72,7 +72,7 @@ export const NodeIcons = () => (
       </g>
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_customresource">
-      <g id="CustomResource" transform="translate(0)">
+      <g id="CustomResource" transform="translate(0)" fill="#000">
         <g transform="matrix(1.6446 0 0 1.6446 7.7571 7.9767)">
           <g id="Actions-/-Controls-/-settings-/-32-Copy">
             <path
@@ -87,7 +87,7 @@ export const NodeIcons = () => (
       </g>
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_daemonset">
-      <g id="DaemonSet" transform="translate(0)" fill="none" fillRule="evenodd">
+      <g id="DaemonSet" transform="translate(0)" fill="none" fillRule="evenodd" fill="#000">
         <g transform="matrix(1.7806 0 0 1.7806 8.625 8.625)">
           <g fillRule="nonzero" stroke="none">
             <g id="icon/file/template/32-copy" transform="translate(1.053,1.053)">
@@ -108,7 +108,7 @@ export const NodeIcons = () => (
       </g>
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_deployment">
-      <g id="Deployment" transform="translate(0)" fillRule="evenodd">
+      <g id="Deployment" transform="translate(0)" fillRule="evenodd" fill="#000">
         <g id="Shape" transform="matrix(1.7533 0 0 1.7533 10.619 7.4743)" fillRule="nonzero" stroke="none">
           <path d="m3.7294 0-2.2376 2.2815 0.52584 0.53615 1.3388-1.3613v4.6276h0.74588v-4.6276l1.3388 1.3613 0.52584-0.53615zm-3.7294 5.3235h2.6106v0.7605h-2.6106zm0 1.521h5.967v0.7605h-5.967zm0 1.521h5.967v0.7605h-5.967z" />
         </g>
@@ -116,13 +116,13 @@ export const NodeIcons = () => (
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_deployable">
       <g id="Deployment" transform="translate(0)" fillRule="evenodd">
-        <g id="Shape" transform="matrix(1.7533 0 0 1.7533 10.619 7.4743)" fillRule="nonzero" stroke="none">
+        <g id="Shape" transform="matrix(1.7533 0 0 1.7533 10.619 7.4743)" fillRule="nonzero" stroke="none" fill="#000">
           <path d="m3.7294 0-2.2376 2.2815 0.52584 0.53615 1.3388-1.3613v4.6276h0.74588v-4.6276l1.3388 1.3613 0.52584-0.53615zm-3.7294 5.3235h2.6106v0.7605h-2.6106zm0 1.521h5.967v0.7605h-5.967zm0 1.521h5.967v0.7605h-5.967z" />
         </g>
       </g>
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_deploymentconfig">
-      <g id="DeploymentConfig" transform="translate(0)" fill="none" fillRule="evenodd">
+      <g id="DeploymentConfig" transform="translate(0)" fillRule="evenodd" fill="#000">
         <g transform="matrix(1.3031 0 0 1.3031 -4.7627 -4.5173)">
           <circle
             id="path-dc"
@@ -145,7 +145,7 @@ export const NodeIcons = () => (
       </g>
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_host">
-      <g id="Host" transform="translate(0)" fill="none" fillRule="evenodd">
+      <g id="Host" transform="translate(0)" fill="#000" fillRule="evenodd">
         <g
           id="01_Hardware/Server-stack/Server-stack_outline"
           transform="matrix(1.7941 0 0 1.7941 7.6339 7.0305)"
@@ -160,7 +160,7 @@ export const NodeIcons = () => (
       </g>
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_ingress">
-      <g id="Ingress" transform="translate(0)" fill="none" fillRule="evenodd">
+      <g id="Ingress" transform="translate(0)" fill="#000" fillRule="evenodd">
         <g transform="matrix(1.3371 0 0 1.3371 8.4693 10.969)" stroke="none">
           <path
             id="path-ingress"
@@ -181,7 +181,7 @@ export const NodeIcons = () => (
       </g>
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_namespace">
-      <g id="Topology" stroke="none" strokeWidth="1" fill="none" fillRule="evenodd">
+      <g id="Topology" stroke="none" strokeWidth="1" fill="#000" fillRule="evenodd">
         <g id="Artboard" transform="translate(-1245.000000, -1091.000000)">
           <g id="Namespace" transform="translate(1245.000000, 1091.000000)">
             <g id="Organization-/-File-/-categories-/-32" transform="translate(10.881000, 10.881000)">
@@ -196,7 +196,7 @@ export const NodeIcons = () => (
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_namespace">
       <g id="Namespace" transform="translate(0)" fillRule="evenodd">
-        <g transform="matrix(1.8606 0 0 1.8606 6.8571 6.7143)" stroke="none">
+        <g transform="matrix(1.8606 0 0 1.8606 6.8571 6.7143)" stroke="none" fill="#000">
           <path
             id="Fill"
             d="m2.0762 1.8428 0.13821 0.27334 0.16892 0.34091h1.3022v1.5356h-2.457v-2.1499zm0.19042-0.61426h-1.3452c-0.16962 0-0.30712 0.13751-0.30712 0.30713v2.7641c0 0.16962 0.1375 0.30712 0.30712 0.30712h3.0712c0.16962 0 0.30712-0.1375 0.30712-0.30712v-2.1499c0-0.16962-0.1375-0.30712-0.30712-0.30712h-1.2285l-0.22113-0.44533c-0.052538-0.10427-0.15966-0.16973-0.27641-0.16893zm4.7236 0.61426 0.13821 0.27334 0.16892 0.34091h1.3022v1.5356h-2.457v-2.1499zm0.19042-0.61426h-1.3452c-0.16962 0-0.30712 0.13751-0.30712 0.30713v2.7641c0 0.16962 0.1375 0.30712 0.30712 0.30712h3.0712c0.16962 0 0.30712-0.1375 0.30712-0.30712v-2.1499c0-0.16962-0.1375-0.30712-0.30712-0.30712h-1.2285l-0.22113-0.44533c-0.052538-0.10427-0.15966-0.16973-0.27641-0.16893zm-5.1044 4.6069 0.13821 0.27334 0.16892 0.34091h1.3022v1.5356h-2.457v-2.1499zm0.19042-0.61426h-1.3452c-0.16962 0-0.30712 0.13751-0.30712 0.30713v2.7641c0 0.16962 0.1375 0.30712 0.30712 0.30712h3.0712c0.16962 0 0.30712-0.1375 0.30712-0.30712v-2.1499c0-0.16962-0.1375-0.30712-0.30712-0.30712h-1.2285l-0.22113-0.44533c-0.052538-0.10427-0.15966-0.16973-0.27641-0.16893zm4.7236 0.61426 0.13821 0.27334 0.16892 0.34091h1.3022v1.5356h-2.457v-2.1499zm0.19042-0.61426h-1.3452c-0.16962 0-0.30712 0.13751-0.30712 0.30713v2.7641c0 0.16962 0.1375 0.30712 0.30712 0.30712h3.0712c0.16962 0 0.30712-0.1375 0.30712-0.30712v-2.1499c0-0.16962-0.1375-0.30712-0.30712-0.30712h-1.2285l-0.22113-0.44533c-0.052538-0.10427-0.15966-0.16973-0.27641-0.16893z"
@@ -205,7 +205,7 @@ export const NodeIcons = () => (
       </g>
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_node">
-      <g id="Node" transform="translate(0)" fillRule="evenodd">
+      <g id="Node" transform="translate(0)" fillRule="evenodd" fill="#000">
         <g transform="matrix(1.3709 -1.3709 1.3709 1.3709 2.5263 16)" stroke="none">
           <path
             id="Fill"
@@ -215,7 +215,7 @@ export const NodeIcons = () => (
       </g>
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_other">
-      <g id="Other" transform="translate(0)" fillRule="evenodd">
+      <g id="Other" transform="translate(0)" fillRule="evenodd" fill="#000">
         <g transform="matrix(1.628 0 0 1.628 -9.7143 -9.8571)" stroke="none">
           <g transform="translate(10.881,11.583)">
             <path
@@ -232,7 +232,7 @@ export const NodeIcons = () => (
       </g>
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_placement">
-      <g id="Placement" transform="translate(0)" fillRule="evenodd">
+      <g id="Placement" transform="translate(0)" fillRule="evenodd" fill="#000">
         <g transform="matrix(1.8606 0 0 1.8606 6.8571 6.3571)" stroke="none">
           <path
             id="Fill"
@@ -242,7 +242,7 @@ export const NodeIcons = () => (
       </g>
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_pod">
-      <g id="Pod" transform="translate(0)" fillRule="evenodd">
+      <g id="Pod" transform="translate(0)" fillRule="evenodd" fill="#000">
         <path
           id="Combined-Shape"
           stroke="none"
@@ -253,7 +253,7 @@ export const NodeIcons = () => (
       </g>
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_policy">
-      <g id="Policy" transform="translate(0)" fill="none" fillRule="evenodd">
+      <g id="Policy" transform="translate(0)" fillRule="evenodd" fill="#000">
         <g id="10_Objects/Shield/Shield_outline" transform="matrix(1.6505 0 0 1.6505 9.3662 7.8192)" stroke="none">
           <path
             id="path-policy"
@@ -264,7 +264,7 @@ export const NodeIcons = () => (
       </g>
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_replicaset">
-      <g id="ReplicaSet" transform="translate(0)" fillRule="evenodd">
+      <g id="ReplicaSet" transform="translate(0)" fillRule="evenodd" fill="#000">
         <g transform="matrix(1.628 0 0 1.628 6.8573 6.8572)" stroke="none">
           <path
             id="Fill"
@@ -274,7 +274,7 @@ export const NodeIcons = () => (
       </g>
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_replicationcontroller">
-      <g id="ReplicationController" transform="translate(0)" fill="none" fillRule="evenodd">
+      <g id="ReplicationController" transform="translate(0)" fillRule="evenodd" fill="#000">
         <g transform="matrix(1.3031 0 0 1.3031 -4.8148 -4.8065)">
           <circle
             id="path-rc"
@@ -294,7 +294,7 @@ export const NodeIcons = () => (
       </g>
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_route">
-      <g transform="translate(0)" fillRule="evenodd">
+      <g transform="translate(0)" fillRule="evenodd" fill="#000">
         <g transform="matrix(1.6422 0 0 1.6422 8 8.5)" stroke="none">
           <g transform="translate(0 .702)">
             <path
@@ -315,7 +315,7 @@ export const NodeIcons = () => (
       </g>
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_placements">
-      <g transform="translate(0)" fill="none" fillRule="evenodd">
+      <g transform="translate(0)" fill="#000" fillRule="evenodd">
         <g transform="matrix(1.8993 0 0 1.8993 8.6667 8.6667)">
           <g stroke="none" fillRule="nonzero">
             <g id="icon/file/template/32-copy" transform="translate(.96525 .96525)">
@@ -362,7 +362,7 @@ export const NodeIcons = () => (
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_secret">
       <g id="Secret" transform="translate(0)" fillRule="evenodd">
-        <g transform="matrix(1.9509 0 0 1.9509 6.8587 6.8589)" stroke="none">
+        <g transform="matrix(1.9509 0 0 1.9509 6.8587 6.8589)" fill="#000" stroke="none">
           <path
             id="Fill"
             d="m6.1425 0.58496c-1.4539 0-2.6325 1.1786-2.6325 2.6325-2.548e-4 0.25874 0.038196 0.51606 0.11408 0.76342l-3.0391 3.0391v1.755h1.755l3.0391-3.0391c0.76221 0.23387 1.5893 0.1097 2.2493-0.33765 0.65995-0.44736 1.0816-1.1697 1.1466-1.9643 0.059053-0.62433-0.11264-1.2487-0.48262-1.755-0.49757-0.69084-1.2985-1.0984-2.1499-1.094zm0 4.68c-0.19822-7.785e-4 -0.39528-0.030337-0.585-0.08775l-0.33638-0.10238-1.1788 1.1788-0.41242-0.40365-0.41242 0.41242 0.40365 0.40365-0.46508 0.46508-0.40365-0.40365-0.41242 0.41242 0.40365 0.40365-0.64642 0.64642h-0.92722v-0.92722l2.8665-2.8753 0.24862-0.24862-0.084825-0.27788c-0.30367-0.95492 0.11368-1.9909 0.9945-2.4687 0.62531-0.32689 1.3749-0.30878 1.9837 0.047938s0.99102 1.0018 1.0115 1.7071c0.020298 0.41392-0.091339 0.8236-0.31882 1.17-0.37621 0.59077-1.0283 0.94826-1.7287 0.9477zm0.2925-1.755c0.32309 0 0.585-0.26191 0.585-0.585s-0.26191-0.585-0.585-0.585-0.585 0.26191-0.585 0.585 0.26191 0.585 0.585 0.585z"
@@ -372,7 +372,7 @@ export const NodeIcons = () => (
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_service">
       <g id="Service" transform="translate(0)" fillRule="evenodd">
-        <g transform="matrix(1.924 0 0 1.924 8.5 8.5)" fillRule="nonzero" stroke="none">
+        <g transform="matrix(1.924 0 0 1.924 8.5 8.5)" fillRule="nonzero" fill="#000" stroke="none">
           <circle cx="1.8715" cy="1.4524" r="1" />
           <path
             id="Combined-Shape"
@@ -383,7 +383,7 @@ export const NodeIcons = () => (
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_statefulset">
       <g id="StatefulSet" transform="translate(0)" fillRule="evenodd">
-        <g id="Statefulset" transform="matrix(1.6437 0 0 1.6437 9.8454 8)" fillRule="nonzero" stroke="none">
+        <g id="Statefulset" transform="matrix(1.6437 0 0 1.6437 9.8454 8)" fillRule="nonzero" fill="#000" stroke="none">
           <g id="Group" transform="translate(1.755)">
             <polygon id="Path" points="0 6.318 5.616 6.318 5.616 7.02 0 7.02" />
             <polygon points="0 4.563 2.457 4.563 2.457 5.265 0 5.265" />
@@ -404,6 +404,7 @@ export const NodeIcons = () => (
         <g
           id="01_Hardware/Storage-stack/Storage-stack_outline"
           transform="matrix(1.7145 0 0 1.7145 8.3077 7.3085)"
+          fill="#000"
           stroke="none"
         >
           <path
@@ -415,7 +416,7 @@ export const NodeIcons = () => (
       </g>
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_subscription">
-      <g transform="translate(0)" fillRule="evenodd" stroke="none">
+      <g transform="translate(0)" fillRule="evenodd" fill="#000" stroke="none">
         <g transform="matrix(1.7034 0 0 1.7034 7.3454 7.5036)">
           <path
             id="Fill"
@@ -426,7 +427,7 @@ export const NodeIcons = () => (
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_subscriptionblocked">
       <g id="SubscriptionBlocked" transform="translate(0)" fill="none" fillRule="evenodd">
-        <g transform="matrix(1.4984 0 0 1.4984 -8.013 -6.858)" stroke="none">
+        <g transform="matrix(1.4984 0 0 1.4984 -8.013 -6.858)" fill="#000" stroke="none">
           <g transform="translate(11.713 11.713)">
             <path
               id="Fill"
