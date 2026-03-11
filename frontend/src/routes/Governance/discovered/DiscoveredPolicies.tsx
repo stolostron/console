@@ -77,7 +77,7 @@ function labelsCell(
   labelMap: Record<string, { pairs?: Record<string, string>; labels?: string[] }> | undefined
 ): ReactNode | string {
   const labels = labelMap?.[item.id]?.pairs
-  return <AcmLabels labels={labels} isCompact={true} />
+  return <AcmLabels labels={labels} isCompact={true} id={`labels-${item.id}`} />
 }
 
 export default function DiscoveredPolicies() {

@@ -1201,7 +1201,7 @@ describe('Policy Template Details Page', () => {
 
     // wait for related resources table to load correctly
     await waitForText('Related resources')
-    await waitForText('-')
+    await waitForText('-', true)
     await waitForText('networking.k8s.io/v1')
 
     // Check violation badge
