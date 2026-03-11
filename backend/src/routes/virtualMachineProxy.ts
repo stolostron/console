@@ -193,31 +193,27 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
           body: reqBody,
           compress: true,
         })
-          .then(async (results) => {
-            if (results?.status > 300) {
-              logger.error({
-                msg: 'Error in VirtualMachine action results (fine grained RBAC)',
-                status: results.status,
-                statusText: results.statusText,
-              })
-              res.setHeader('Content-Type', 'application/json')
-              res.writeHead(results.status ?? HTTP_STATUS_INTERNAL_SERVER_ERROR)
-              res.end(JSON.stringify({ status: results.status, statusText: results.statusText }))
-              return 'Error in VirtualMachine action results (fine grained RBAC)'
-            }
-            let response = undefined
-            if (req.method === 'POST') {
-              response = (await results.json()) as unknown
+          .then(async (response) => {
+            let responseBody = undefined
+            const responseContentType = response.headers.get('content-type')
+            if (responseContentType && responseContentType.includes('application/json')) {
+              responseBody = (await response.json()) as unknown
             } else {
-              response = { statusCode: results.status, statusText: results.statusText }
+              responseBody = await response.text()
             }
-            res.setHeader('Content-Type', 'application/json')
-            res.end(JSON.stringify(response))
+
+            const contentType = typeof responseBody === 'string' ? 'text/plain' : 'application/json'
+            res.setHeader('Content-Type', contentType)
+            res.writeHead(response.status ?? HTTP_STATUS_INTERNAL_SERVER_ERROR)
+            res.end(JSON.stringify(responseBody))
           })
-          .catch((err: Error) => {
-            logger.error({ msg: 'Error in VirtualMachine action request (fine grained RBAC)', error: err.message })
+          .catch((err: Error): undefined => {
+            logger.error({
+              msg: 'Error in VirtualMachine action request (fine grained RBAC)',
+              error: err.message,
+            })
             respondInternalServerError(req, res)
-            return `Error in VirtualMachine action request (fine grained RBAC): ${err.message}`
+            return undefined
           })
       })
     } catch (err) {
