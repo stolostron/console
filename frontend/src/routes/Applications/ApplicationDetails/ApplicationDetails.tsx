@@ -100,7 +100,6 @@ export default function ApplicationDetailsPage() {
 
   const { t } = useTranslation()
   const {
-    ansibleJobState,
     applicationsState,
     channelsState,
     placementRulesState,
@@ -141,7 +140,6 @@ export default function ApplicationDetailsPage() {
 
   const applicationsGetter = useRecoilValueGetter(applicationsState)
   const servicesGetter = useRecoilValueGetter(servicesState)
-  const ansibleJobGetter = useRecoilValueGetter(ansibleJobState)
   const channelsGetter = useRecoilValueGetter(channelsState)
   const placementsGetter = useRecoilValueGetter(placementsState)
   const placementRulesGetter = useRecoilValueGetter(placementRulesState)
@@ -152,7 +150,6 @@ export default function ApplicationDetailsPage() {
   const getRecoilStates = useCallback(
     () => ({
       applications: applicationsGetter(),
-      ansibleJob: ansibleJobGetter(),
       channels: channelsGetter(),
       placements: placementsGetter(),
       placementRules: placementRulesGetter(),
@@ -162,7 +159,6 @@ export default function ApplicationDetailsPage() {
       services: servicesGetter(),
     }),
     [
-      ansibleJobGetter,
       applicationsGetter,
       channelsGetter,
       placementDecisionsGetter,
@@ -252,7 +248,7 @@ export default function ApplicationDetailsPage() {
                 )
               : [[], []]
           /* istanbul ignore else */
-          const appSetRelatedResources = (selectedApp as IUIResource)?.uidata?.appSetRelatedResources ?? ['', []]
+          const appSetPlacementData = (selectedApp as IUIResource)?.uidata?.appSetPlacementData ?? ['', []]
           setModalProps({
             open: true,
             canRemove: selectedApp.kind === ApplicationSetKind ? canDeleteApplicationSet : canDeleteApplication,
@@ -261,8 +257,8 @@ export default function ApplicationDetailsPage() {
             loading: false,
             selected: appChildResources[0], // children
             shared: appChildResources[1], // shared children
-            appSetPlacement: appSetRelatedResources[0] as string,
-            appSetsSharingPlacement: appSetRelatedResources[1] as string[],
+            appSetPlacement: appSetPlacementData[0] as string,
+            appSetsSharingPlacement: appSetPlacementData[1] as string[],
             appKind: selectedApp.kind,
             appSetApps: (selectedApp as IUIResource)?.uidata?.appSetApps ?? [],
             close: () => {
@@ -391,7 +387,8 @@ export default function ApplicationDetailsPage() {
             recoilStates,
             cluster,
             apiVersion,
-            clusters
+            clusters,
+            localHubName
           )
           if (!application) {
             setApplicationNotFound(true)

@@ -30,7 +30,6 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { Channel } from './ArgoWizard'
 import { validateWebURL } from '../../lib/validation'
 import { GitRevisionSelect } from './common/GitRevisionSelect'
-import { findObjectWithKey } from '../../routes/Applications/ApplicationDetails/ApplicationTopology/model/application'
 import { IPlacement } from '../common/resources/IPlacement'
 import { useShowValidation } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ShowValidationProvider'
 
@@ -426,6 +425,7 @@ export function CrossGeneratorSync(props: CrossGeneratorSyncProps) {
     const hasGitGen = types.has('git')
     const hasListGen = types.has('list')
     const hasCDRGen = types.has('clusterDecisionResource')
+    const isInitialSync = prevGenState.current.hasGitGen === undefined && prevGenState.current.hasListGen === undefined
 
     // Handle git generator
     if (hasGitGen) {
@@ -437,6 +437,8 @@ export function CrossGeneratorSync(props: CrossGeneratorSyncProps) {
         fix(appSet, TEMPLATE_NAME_PATH, `${appName}-{{name}}-${PATH_BASENAME}`)
         fix(appSet, DESTINATION_NAME_PATH_NAMESPACE, `${PATH_BASENAME}`)
       }
+    } else if (!isInitialSync && prevGenState.current.hasGitGen !== hasGitGen) {
+      fix(appSet, DESTINATION_NAME_PATH_NAMESPACE, '')
     }
 
     // Handle list generator
@@ -445,22 +447,14 @@ export function CrossGeneratorSync(props: CrossGeneratorSyncProps) {
         fix(appSet, TEMPLATE_NAME_PATH, `${appName}-${CLUSTER}`)
         fix(appSet, DESTINATION_NAME_PATH_SERVER, URL)
       }
+    } else if (!isInitialSync && prevGenState.current.hasListGen !== hasListGen) {
+      fix(appSet, DESTINATION_NAME_PATH_SERVER, SERVER)
     }
-
-    const isInitialSync = prevGenState.current.hasGitGen === undefined && prevGenState.current.hasListGen === undefined
 
     // handle generators that don't affect template
     if (!hasGitGen && !hasListGen) {
       if (templateName !== `${appName}-{{name}}`) {
         fix(appSet, TEMPLATE_NAME_PATH, `${appName}-{{name}}`)
-      }
-      // Only reset destination when hasGitGen or hasListGen have changed
-      if (
-        !isInitialSync &&
-        (prevGenState.current.hasGitGen !== hasGitGen || prevGenState.current.hasListGen !== hasListGen)
-      ) {
-        fix(appSet, DESTINATION_NAME_PATH_NAMESPACE, '')
-        fix(appSet, DESTINATION_NAME_PATH_SERVER, SERVER)
       }
     }
 
@@ -599,6 +593,21 @@ export function findGeneratorPathWithGenType(item: unknown, genType: string): st
     if (findObjectWithKey(generator, genType)) {
       return `${generatorsPath}.${i}.${genType}`
     }
+  }
+  return undefined
+}
+
+/**
+ * Recursively search an object for a property with the given key.
+ * Returns the first matching object that contains the key, or undefined.
+ */
+const findObjectWithKey = (obj: unknown, key: string): Record<string, unknown> | undefined => {
+  if (!obj || typeof obj !== 'object') return undefined
+  const record = obj as Record<string, unknown>
+  if (key in record) return record
+  for (const value of Object.values(record)) {
+    const found = findObjectWithKey(value, key)
+    if (found) return found
   }
   return undefined
 }

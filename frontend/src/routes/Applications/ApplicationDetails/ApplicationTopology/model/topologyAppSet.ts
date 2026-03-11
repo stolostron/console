@@ -31,6 +31,7 @@ import {
   getResourceTypes,
   processMultiples,
 } from './topologyUtils'
+import { PlacementDecision } from '../../../../../resources/placement-decision'
 
 /**
  * Generates topology data for ApplicationSet applications
@@ -57,7 +58,7 @@ export async function getAppSetTopology(
     appSetClusters = [],
     appSetApps = [],
     appStatusByNameMap = {},
-    relatedPlacement,
+    isAppSetPullModel = false,
   } = application
   const allClusterNames = appSetClusters.map((cluster: AppSetCluster) => cluster.name)
   toolbarControl.setAllClusters?.(allClusterNames)
@@ -85,6 +86,7 @@ export async function getAppSetTopology(
       appSetApps,
       appSetClusters,
       appStatusByNameMap,
+      isAppSetPullModel,
     },
   }
   nodes.push(appSetNode)
@@ -108,7 +110,7 @@ export async function getAppSetTopology(
   // Create placement node if placement exists
   let isPlacementFound = false
   let isArgoCDPullModelTargetLocalCluster = false
-  const placement = application.placement ?? ''
+  const placement = application.placementDecision as PlacementDecision
   const placementId = `member--placements--${namespace}--${name}`
 
   if (placement) {
@@ -137,7 +139,7 @@ export async function getAppSetTopology(
         isDesign: true,
         raw: placement,
       },
-      placement: relatedPlacement,
+      placement,
     })
 
     // Link ApplicationSet to Placement
@@ -359,8 +361,8 @@ async function getAppSetResources(application: ApplicationModel) {
   } else {
     // push-model; use status.resources from local Application resource
     appSetApps.forEach((appSetApp) => {
-      if (appSetApp.metadata?.name && appSetApp.status?.resources) {
-        mapRelatedResources(appSetApp.metadata.name, appSetApp.status.resources)
+      if (appSetApp.metadata?.name && (appSetApp.status as any)?.resources) {
+        mapRelatedResources(appSetApp.metadata.name, (appSetApp.status as any).resources)
       }
     })
   }

@@ -35,8 +35,6 @@ import { getSubscriptionAnnotations, isLocalSubscription } from './subscriptions
 import AcmTimestamp from '../../../lib/AcmTimestamp'
 
 export const CHANNEL_TYPES = ['git', 'helmrepo', 'namespace', 'objectbucket']
-const appSetPlacementStr =
-  'clusterDecisionResource.labelSelector.matchLabels["cluster.open-cluster-management.io/placement"]'
 export const hostingSubAnnotationStr = 'apps.open-cluster-management.io/hosting-subscription'
 const hostingDeployableAnnotationStr = 'apps.open-cluster-management.io/hosting-deployable'
 
@@ -300,33 +298,6 @@ export const getEditLink = (params: {
     kind,
     apiversion,
   })}`
-}
-
-export const getAppSetRelatedResources = (appSet: IResource, applicationSets: ApplicationSet[]) => {
-  const appSetsSharingPlacement: string[] = []
-  const currentAppSetGenerators = (appSet as ApplicationSet).spec.generators
-  const currentAppSetPlacement = currentAppSetGenerators
-    ? _.get(currentAppSetGenerators[0], appSetPlacementStr, '')
-    : undefined
-
-  if (!currentAppSetPlacement) {
-    return ['', []]
-  }
-
-  applicationSets.forEach((item) => {
-    const appSetGenerators = item.spec.generators
-    const appSetPlacement = appSetGenerators ? _.get(appSetGenerators[0], appSetPlacementStr, '') : ''
-    if (
-      item.metadata.name !== appSet.metadata?.name ||
-      (item.metadata.name === appSet.metadata?.name && item.metadata.namespace !== appSet.metadata?.namespace)
-    ) {
-      if (appSetPlacement && appSetPlacement === currentAppSetPlacement && item.metadata.name) {
-        appSetsSharingPlacement.push(item.metadata.name)
-      }
-    }
-  })
-
-  return [currentAppSetPlacement, appSetsSharingPlacement]
 }
 
 export const getAppChildResources = (

@@ -37,7 +37,7 @@ import { logger } from '../../lib/logger'
 import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
 import { getMultiClusterEngine } from '../../lib/multi-cluster-engine'
 import { ServerSideEvents } from '../../lib/server-side-events'
-import { getPulledAppSetMap, getPushedAppSetMap, IArgoAppRemoteResource } from './applicationsArgo'
+import { getPulledAppSetMap, getAppSetAppsMap, IArgoAppRemoteResource } from './applicationsArgo'
 import { deflateResource, inflateApp } from '../../lib/compression'
 
 const CLUSTER_PROXY_SERVICE_NAME = 'cluster-proxy-addon-user'
@@ -542,7 +542,7 @@ export async function getApplicationClusters(
           const apps = getPulledAppSetMap()[resource.metadata?.name] || []
           return getArgoPullModelClusterList(apps)
         } else {
-          const apps = getPushedAppSetMap()[resource.metadata?.name] || []
+          const apps = getAppSetAppsMap()[resource.metadata?.name] || []
           return await getArgoPushModelClusterList(apps, localCluster, clusters)
         }
       }

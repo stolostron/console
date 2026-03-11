@@ -592,7 +592,7 @@ describe('applications aggregateRemoteApplications', () => {
         uidata?: {
           clusterList?: string[]
           appClusterStatuses?: unknown[]
-          appSetRelatedResources?: unknown[]
+          appSetPlacementData?: unknown[]
           appSetApps?: unknown[]
         }
       }
@@ -600,7 +600,7 @@ describe('applications aggregateRemoteApplications', () => {
       expect(firstResult.uidata).toBeDefined()
       expect(firstResult.uidata?.clusterList).toEqual(['cluster1'])
       expect(firstResult.uidata?.appClusterStatuses).toEqual([{}])
-      expect(firstResult.uidata?.appSetRelatedResources).toEqual(['', []])
+      expect(firstResult.uidata?.appSetPlacementData).toEqual(['', []])
       expect(firstResult.uidata?.appSetApps).toEqual([])
     })
 
@@ -638,12 +638,12 @@ describe('applications aggregateRemoteApplications', () => {
       const result = await addUIData(items)
       type ResultWithUiData = (typeof result)[0] & {
         uidata?: {
-          appSetRelatedResources?: unknown[]
+          appSetPlacementData?: unknown[]
         }
       }
       const firstResult = result[0] as ResultWithUiData
       expect(firstResult.uidata).toBeDefined()
-      expect(firstResult.uidata?.appSetRelatedResources).toBeDefined()
+      expect(firstResult.uidata?.appSetPlacementData).toBeDefined()
     })
   })
 })
