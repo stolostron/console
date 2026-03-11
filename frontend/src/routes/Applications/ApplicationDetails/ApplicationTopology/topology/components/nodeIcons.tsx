@@ -2,7 +2,7 @@
 export const NodeIcons = () => (
   <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" width="0" height="0">
     <symbol viewBox="0 0 32 32" id="nodeIcon_application">
-      <g id="Application" fill="none" fillRule="evenodd" fill="#000">
+      <g id="Application" fillRule="evenodd" fill="#000">
         <g id="02_Software/App/App_outline" transform="matrix(1.6379 0 0 1.6379 7.9512 7.8634)" stroke="none">
           <path
             id="path-application"
@@ -57,7 +57,7 @@ export const NodeIcons = () => (
       </g>
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_container">
-      <g id="Container" fill="none" fillRule="evenodd" fill="#000">
+      <g id="Container" fillRule="evenodd" fill="#000">
         <g
           id="02_Software/Containerized-app/Containerized-app_outline"
           transform="matrix(1.6604 0 0 1.6604 7.8713 6.5104)"
@@ -87,7 +87,7 @@ export const NodeIcons = () => (
       </g>
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_daemonset">
-      <g id="DaemonSet" transform="translate(0)" fill="none" fillRule="evenodd" fill="#000">
+      <g id="DaemonSet" transform="translate(0)" fillRule="evenodd" fill="#000">
         <g transform="matrix(1.7806 0 0 1.7806 8.625 8.625)">
           <g fillRule="nonzero" stroke="none">
             <g id="icon/file/template/32-copy" transform="translate(1.053,1.053)">
@@ -315,9 +315,9 @@ export const NodeIcons = () => (
       </g>
     </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_placements">
-      <g transform="translate(0)" fill="#000" fillRule="evenodd">
+      <g transform="translate(0)" fill="none" fillRule="evenodd">
         <g transform="matrix(1.8993 0 0 1.8993 8.6667 8.6667)">
-          <g stroke="none" fillRule="nonzero">
+          <g stroke="none" fillRule="nonzero" fill="#000">
             <g id="icon/file/template/32-copy" transform="translate(.96525 .96525)">
               <polygon
                 id="Polygon"
