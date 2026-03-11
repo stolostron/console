@@ -651,10 +651,7 @@ async function getAnsibleTemplates(
 
   // Filter to only the fields we need (Ansible Tower API returns many more fields)
   return {
-    results: ansibleJobs.map((job) => ({
-      ...pick(job, ['name', 'description', 'id']),
-      type: job.type!,
-    })),
+    results: ansibleJobs.map((job) => pick(job, ['name', 'description', 'id', 'type'])),
   }
 }
 
@@ -694,10 +691,7 @@ async function getAnsibleInventories(
 
   // Filter to only the fields we need (Ansible Tower API returns many more fields)
   return {
-    results: ansibleInventories.map((inventory) => ({
-      ...pick(inventory, ['name', 'description', 'id']),
-      type: inventory.type!,
-    })),
+    results: ansibleInventories.map((inventory) => pick(inventory, ['name', 'description', 'id', 'type'])),
   }
 }
 
