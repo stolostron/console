@@ -160,12 +160,12 @@ export default function CreateSubscriptionApplicationPage() {
                 newCredentialCallback={setNewSecret}
               />
             </Modal>
-            {CreateSubscriptionApplication(
-              setTitle,
-              handleModalToggleWithContext,
-              setConnectionControl,
-              onControlChange
-            )}
+            <CreateSubscriptionApplication
+              setTitle={setTitle}
+              handleModalToggleWithContext={handleModalToggleWithContext}
+              setConnectionControl={setConnectionControl}
+              onControlChange={onControlChange}
+            />
           </PageSection>
         </AcmPageContent>
       </AcmErrorBoundary>
@@ -173,24 +173,24 @@ export default function CreateSubscriptionApplicationPage() {
   )
 }
 
-export function CreateSubscriptionApplication(
-  setTitle: Dispatch<SetStateAction<string>>,
-  handleModalToggleWithContext: (affectedControl: any) => void,
-  setConnectionControl: Dispatch<SetStateAction<undefined>>,
+export interface CreateSubscriptionApplicationProps {
+  setTitle: Dispatch<SetStateAction<string>>
+  handleModalToggleWithContext: (affectedControl: any) => void
+  setConnectionControl: Dispatch<SetStateAction<any>>
   onControlChange: (control: any) => void
-) {
+}
+
+export function CreateSubscriptionApplication({
+  setTitle,
+  handleModalToggleWithContext,
+  setConnectionControl,
+  onControlChange,
+}: CreateSubscriptionApplicationProps) {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const [createdResource, setCreatedResource] = useState<any>()
-  const {
-    ansibleJobState,
-    applicationsState,
-    channelsState,
-    placementRulesState,
-    secretsState,
-    subscriptionsState,
-    placementsState,
-  } = useSharedAtoms()
+  const { applicationsState, channelsState, placementRulesState, secretsState, subscriptionsState, placementsState } =
+    useSharedAtoms()
   const toastContext = useContext(AcmToastContext)
   const secrets = useRecoilValue(secretsState)
   const providerConnections = secrets.map(unpackProviderConnection)
@@ -378,7 +378,6 @@ export function CreateSubscriptionApplication(
   Handlebars.registerPartial('templateOther', Handlebars.compile(otherTemplate))
   const [fetchControl, setFetchControl] = useState<any>(null)
   const applications = useRecoilValue(applicationsState)
-  const ansibleJob = useRecoilValue(ansibleJobState)
   const subscriptions = useRecoilValue(subscriptionsState)
   const channels = useRecoilValue(channelsState)
   const placementRules = useRecoilValue(placementRulesState)
@@ -419,7 +418,6 @@ export function CreateSubscriptionApplication(
         // get application object from recoil states
         const application = await getApplication(selectedAppNamespace, selectedAppName, backendUrl, allChannels, {
           applications,
-          ansibleJob,
           subscriptions,
           channels,
           placementRules,

@@ -41,13 +41,19 @@ export type ApplicationStatusMap = Record<string, ApplicationStatuses>
 export interface IUIData {
   clusterList: string[]
   appClusterStatuses: ApplicationStatusMap[]
-  appSetRelatedResources: (string | string[])[]
+  appSetPlacementData: (string | string[])[]
   appSetApps: string[]
 }
 
 export interface IUIResource extends IResource {
   uidata: IUIData
 }
+export interface IAppSetData extends IUIData {
+  appset: IResource
+  appStatusByNameMap: Record<string, { health: { status: string }; sync: { status: string } }>
+  isAppSetPullModel: boolean
+}
+
 export interface ResourceList<Resource extends IResource> {
   kind: string
   items?: Resource[]
