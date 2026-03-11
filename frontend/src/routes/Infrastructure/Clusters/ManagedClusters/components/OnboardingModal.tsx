@@ -149,7 +149,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                     onClick={() =>
                       !isACMAvailable
                         ? launchToOCP(
-                            'operatorhub/all-namespaces?details-item=advanced-cluster-management-redhat-operators-openshift-marketplace'
+                            'catalog/all-namespaces?selectedId=advanced-cluster-management-redhat-operators-openshift-marketplace'
                           )
                         : window.open(DOC_HOME, '_blank')
                     }

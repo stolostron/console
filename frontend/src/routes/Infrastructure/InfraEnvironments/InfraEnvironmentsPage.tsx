@@ -50,7 +50,7 @@ import {
 import { getDateTimeCell } from '../helpers/table-row-helpers'
 
 // Will change perspective, still in the OCP Console app
-const storageOperatorUrl = '/operatorhub/ns/multicluster-engine?category=Storage'
+const storageOperatorUrl = '/catalog/ns/multicluster-engine?category=storage'
 const assistedServiceDeploymentUrl = '/k8s/ns/multicluster-engine/deployments/assisted-service'
 
 export const getMatchingInfraAgents = (infraEnv: InfraEnvK8sResource, agents: AgentK8sResource[]) => {
