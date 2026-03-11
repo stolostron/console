@@ -19,6 +19,7 @@ import { WizFormGroup } from './WizFormGroup'
 
 export type WizStringsInputProps = InputCommonProps & {
   placeholder?: string
+  inputTextPlaceholder?: string
 }
 
 export function WizStringsInput(props: WizStringsInputProps) {
@@ -175,6 +176,7 @@ export function StringsMapInput(props: StringsMapInputProps) {
                     value={pair}
                     spellCheck="false"
                     onChange={(_event, value) => onKeyChange(index, value)}
+                    placeholder={props.inputTextPlaceholder}
                     required
                   />
                 </InputGroupItem>
