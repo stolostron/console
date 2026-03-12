@@ -2,13 +2,14 @@
 
 import type { Meta, StoryObj } from '@storybook/react'
 import { RecoilRoot } from 'recoil' // eslint-disable-line @typescript-eslint/no-restricted-imports
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import {
   ansibleJobState,
   clusterImageSetsState,
   agentMachinesState,
   agentsState,
   agentClusterInstallsState,
-} from '../../../../../atoms' // eslint-disable-line @typescript-eslint/no-restricted-imports
+} from '../../../../../atoms'
 import { NodePool } from '../../../../../resources'
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { Provider } from '../../../../../ui-components'
