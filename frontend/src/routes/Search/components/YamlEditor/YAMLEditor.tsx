@@ -88,20 +88,23 @@ export default function YAMLEditor(props: {
     // show SyncEditor version of monaco-colors
     mountTheme('se')
 
-    // observe documentElement class changes (theme toggles)
-    if (typeof MutationObserver !== 'undefined') {
-      const classObserver = new MutationObserver(() => {
-        monaco?.editor?.setTheme(getTheme())
-        ;(window as any).monaco?.editor?.setTheme(getTheme())
-      })
-      classObserver.observe(document.documentElement, {
-        attributes: true,
-        attributeFilter: ['class'],
-      })
-    }
-
     window.getEditorValue = () => editor.getValue()
   }
+
+  useEffect(() => {
+    if (typeof MutationObserver === 'undefined' || !monacoRef) return
+
+    const classObserver = new MutationObserver(() => {
+      monacoRef?.editor?.setTheme(getTheme())
+      ;(window as any).monaco?.editor?.setTheme(getTheme())
+    })
+    classObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    })
+
+    return () => classObserver.disconnect()
+  }, [monacoRef])
 
   useEffect(() => {
     if (resource) {
@@ -212,7 +215,14 @@ export default function YAMLEditor(props: {
         {(updateSuccess || updateError || stale) && (
           <AlertGroup style={{ paddingBottom: '1rem' }}>
             {updateSuccess && (
-              <Alert id="editor-action-alert" isInline variant="success" title={`${name} ${t('has been updated.')}`} />
+              <Alert
+                id="editor-action-alert"
+                isInline
+                variant="success"
+                title={t('{{name}} has been updated.', {
+                  name,
+                })}
+              />
             )}
             {updateError !== '' && (
               <Alert
