@@ -424,6 +424,7 @@ export function ClusterPoolsTable(props: {
           {
             header: '',
             cellTransforms: [fitContent],
+            isActionCol: true,
             cell: (clusterPool: ClusterPool) => {
               if (!isClusterPoolDeleting(clusterPool)) {
                 return (
@@ -435,7 +436,6 @@ export function ClusterPoolsTable(props: {
                       })
                     }}
                     variant="link"
-                    style={{ padding: 0, margin: 0, fontSize: 'inherit' }}
                     rbac={[rbacCreate(ClusterClaimDefinition, clusterPool.metadata.namespace)]}
                   >
                     {t('clusterPool.claim')}
