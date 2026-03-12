@@ -123,7 +123,7 @@ export default function YAMLEditor(props: {
     ) {
       setStale(true)
     }
-  }, [watchedResource, resource?.metadata?.resourceVersion, watchLoaded, watchError])
+  }, [watchedResource?.metadata?.resourceVersion, resource?.metadata?.resourceVersion, watchLoaded, watchError])
 
   useEffect(() => {
     const resourceForRbac = {
@@ -257,7 +257,6 @@ export default function YAMLEditor(props: {
                 id="update-resource-button"
                 isDisabled={readOnly}
                 onClick={() => {
-                  shouldFoldAfterReloadRef.current = true
                   setUpdateError('')
                   setUpdateSuccess(false)
                   onSave(
@@ -272,7 +271,8 @@ export default function YAMLEditor(props: {
                     setUpdateError,
                     setUpdateSuccess,
                     setStale,
-                    isFineGrainedRbacEnabled
+                    isFineGrainedRbacEnabled,
+                    shouldFoldAfterReloadRef
                   )
                 }}
               >
@@ -284,7 +284,6 @@ export default function YAMLEditor(props: {
                 variant="secondary"
                 id="reload-resource-button"
                 onClick={() => {
-                  shouldFoldAfterReloadRef.current = true
                   setUpdateError('')
                   setUpdateSuccess(false)
                   onReload(
@@ -297,7 +296,8 @@ export default function YAMLEditor(props: {
                     setResourceYaml,
                     setUpdateError,
                     setStale,
-                    isFineGrainedRbacEnabled
+                    isFineGrainedRbacEnabled,
+                    shouldFoldAfterReloadRef
                   )
                 }}
               >

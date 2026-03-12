@@ -2,7 +2,7 @@
 import jsYaml from 'js-yaml'
 import { Range } from 'monaco-editor'
 import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api'
-import { Dispatch, SetStateAction } from 'react'
+import { Dispatch, MutableRefObject, SetStateAction } from 'react'
 import * as yaml from 'yaml-ast-parser'
 import { IResource } from '../../../../resources'
 import { getBackendUrl, getRequest, getResource, putRequest, replaceResource } from '../../../../resources/utils'
@@ -103,12 +103,14 @@ export function onReload(
   setResourceYaml: Dispatch<SetStateAction<string>>,
   setUpdateError: Dispatch<SetStateAction<string>>,
   setStale: Dispatch<SetStateAction<boolean>>,
-  isFineGrainedRbacEnabled: boolean
+  isFineGrainedRbacEnabled: boolean,
+  shouldFoldAfterReloadRef: MutableRefObject<boolean>
 ) {
   if (isFineGrainedRbacEnabled && (kind === 'VirtualMachine' || kind === 'VirtualMachineSnapshot')) {
     const url = getBackendUrl() + `/${kind.toLowerCase()}s/get/${cluster}/${name}/${namespace}` // need the plural kind either virtualmachines || virtualmachinesnapshots
     getRequest<IResource>(url)
       .promise.then((response) => {
+        shouldFoldAfterReloadRef.current = true
         setResourceYaml(jsYaml.dump(response, { indent: 2 }))
         setStale(false)
       })
@@ -123,6 +125,7 @@ export function onReload(
       metadata: { namespace, name },
     })
       .promise.then((response: any) => {
+        shouldFoldAfterReloadRef.current = true
         setResourceYaml(jsYaml.dump(response, { indent: 2 }))
         setStale(false)
       })
@@ -141,6 +144,7 @@ export function onReload(
         if ('errorMessage' in res) {
           setUpdateError(`Error getting new resource YAML: ${res.errorMessage}`)
         } else {
+          shouldFoldAfterReloadRef.current = true
           setResourceYaml(jsYaml.dump(res))
           setStale(false)
         }
@@ -164,7 +168,8 @@ export function onSave(
   setUpdateError: Dispatch<SetStateAction<string>>,
   setUpdateSuccess: Dispatch<SetStateAction<boolean>>,
   setStale: Dispatch<SetStateAction<boolean>>,
-  isFineGrainedRbacEnabled: boolean
+  isFineGrainedRbacEnabled: boolean,
+  shouldFoldAfterReloadRef: MutableRefObject<boolean>
 ) {
   if (isFineGrainedRbacEnabled && (kind === 'VirtualMachine' || kind === 'VirtualMachineSnapshot')) {
     const url = getBackendUrl() + `/${kind.toLowerCase()}s/update` // need the plural kind either virtualmachines || virtualmachinesnapshots
@@ -195,7 +200,8 @@ export function onSave(
             setResourceYaml,
             setUpdateError,
             setStale,
-            isFineGrainedRbacEnabled
+            isFineGrainedRbacEnabled,
+            shouldFoldAfterReloadRef
           )
           setUpdateSuccess(true)
         })
@@ -229,7 +235,8 @@ export function onSave(
             setResourceYaml,
             setUpdateError,
             setStale,
-            isFineGrainedRbacEnabled
+            isFineGrainedRbacEnabled,
+            shouldFoldAfterReloadRef
           )
           setUpdateSuccess(true)
         }

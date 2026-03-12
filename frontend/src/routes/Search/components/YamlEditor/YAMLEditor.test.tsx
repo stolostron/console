@@ -187,7 +187,8 @@ describe('YAMLEditor', () => {
       expect.any(Function),
       expect.any(Function),
       expect.any(Function),
-      expect.any(Boolean)
+      expect.any(Boolean),
+      { current: false }
     )
   })
 
@@ -234,7 +235,7 @@ describe('YAMLEditor', () => {
     )
   })
 
-  it('disables Save and Cancel when readOnly', async () => {
+  it('disables Save when readOnly', async () => {
     const { canUser } = jest.requireMock('../../../../lib/rbac-util')
     canUser.mockReturnValue({
       promise: Promise.resolve({ status: { allowed: false } }),
@@ -245,7 +246,7 @@ describe('YAMLEditor', () => {
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled()
-      expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled()
+      expect(screen.getByRole('button', { name: 'Cancel' })).toBeEnabled()
     })
   })
 
