@@ -91,7 +91,7 @@ export function PlacementsTable(props: { placements: Placement[]; emptyState: Re
           tooltip: t('tooltip.placements.table.clusterSets'),
           cell: (placement: Placement) => {
             if (placement.spec.clusterSets) {
-              const collapse = placement.spec.clusterSets.filter((_clusterSet, i) => i > clusterSetsDisplayLimit)
+              const collapse = placement.spec.clusterSets.filter((_clusterSet, i) => i >= clusterSetsDisplayLimit)
               return <AcmLabels labels={placement.spec.clusterSets} collapse={collapse} />
             } else {
               return '-'

@@ -71,7 +71,7 @@ export function ClustersPage() {
     },
   ]
 
-  if (settings.enhancedPlacement) {
+  if (settings.enhancedPlacement === 'enabled') {
     // TODO: remove feature flag
     tabs.push({
       key: 'infra-placements',
