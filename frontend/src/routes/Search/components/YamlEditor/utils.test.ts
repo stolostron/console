@@ -95,7 +95,8 @@ describe('YamlEditor utils', () => {
         mockSetResourceYaml,
         mockSetUpdateError,
         mockSetStale,
-        true
+        true,
+        { current: false }
       )
 
       await Promise.resolve()
@@ -125,7 +126,8 @@ describe('YamlEditor utils', () => {
         mockSetResourceYaml,
         mockSetUpdateError,
         mockSetStale,
-        true
+        true,
+        { current: false }
       )
 
       await Promise.resolve().then(() => Promise.resolve())
@@ -150,7 +152,8 @@ describe('YamlEditor utils', () => {
         mockSetResourceYaml,
         mockSetUpdateError,
         mockSetStale,
-        false
+        false,
+        { current: false }
       )
 
       await Promise.resolve()
@@ -181,7 +184,8 @@ describe('YamlEditor utils', () => {
         mockSetResourceYaml,
         mockSetUpdateError,
         mockSetStale,
-        false
+        false,
+        { current: false }
       )
 
       await Promise.resolve().then(() => Promise.resolve())
@@ -203,7 +207,8 @@ describe('YamlEditor utils', () => {
         mockSetResourceYaml,
         mockSetUpdateError,
         mockSetStale,
-        false
+        false,
+        { current: false }
       )
 
       await Promise.resolve()
@@ -232,7 +237,8 @@ describe('YamlEditor utils', () => {
         mockSetResourceYaml,
         mockSetUpdateError,
         mockSetStale,
-        false
+        false,
+        { current: false }
       )
 
       await Promise.resolve()
@@ -260,7 +266,8 @@ describe('YamlEditor utils', () => {
         mockSetUpdateError,
         mockSetUpdateSuccess,
         mockSetStale,
-        true
+        true,
+        { current: false }
       )
 
       await Promise.resolve()
@@ -293,7 +300,8 @@ describe('YamlEditor utils', () => {
         mockSetUpdateError,
         mockSetUpdateSuccess,
         mockSetStale,
-        true
+        true,
+        { current: false }
       )
 
       await Promise.resolve().then(() => Promise.resolve())
@@ -318,7 +326,8 @@ describe('YamlEditor utils', () => {
         mockSetUpdateError,
         mockSetUpdateSuccess,
         mockSetStale,
-        false
+        false,
+        { current: false }
       )
 
       await Promise.resolve().then(() => Promise.resolve())
@@ -343,7 +352,8 @@ describe('YamlEditor utils', () => {
         mockSetUpdateError,
         mockSetUpdateSuccess,
         mockSetStale,
-        false
+        false,
+        { current: false }
       )
 
       await Promise.resolve()
@@ -373,7 +383,8 @@ describe('YamlEditor utils', () => {
         mockSetUpdateError,
         mockSetUpdateSuccess,
         mockSetStale,
-        false
+        false,
+        { current: false }
       )
 
       await Promise.resolve()
