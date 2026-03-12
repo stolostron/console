@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { Monaco } from '@monaco-editor/react'
 import { CodeEditorRef } from '@openshift-console/dynamic-plugin-sdk'
 import { CodeEditor, Language } from '@patternfly/react-code-editor'
@@ -70,7 +71,7 @@ export default function YAMLEditor(props: {
     setEditorRef(editor)
     editor.layout()
     editor.focus()
-    monaco.editor.getModels()[0].updateOptions({ tabSize: 5 })
+    monaco.editor.getModels()[0].updateOptions({ tabSize: 2 })
 
     // Auto collapse the managedFields section
     registerAutoFold(editor)
@@ -271,6 +272,8 @@ export default function YAMLEditor(props: {
                 id="reload-resource-button"
                 onClick={() => {
                   shouldFoldAfterReloadRef.current = true
+                  setUpdateError('')
+                  setUpdateSuccess(false)
                   onReload(
                     cluster,
                     kind,
@@ -283,8 +286,6 @@ export default function YAMLEditor(props: {
                     setStale,
                     isFineGrainedRbacEnabled
                   )
-                  setUpdateError('')
-                  setUpdateSuccess(false)
                 }}
               >
                 {t('Reload')}

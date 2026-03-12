@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import jsYaml from 'js-yaml'
 import { Range } from 'monaco-editor'
 import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api'
@@ -10,7 +11,12 @@ import { fleetResourceRequest } from '../../../../resources/utils/fleet-resource
 // https://github.com/openshift/console/blob/main/frontend/packages/console-shared/src/components/editor/yaml-editor-utils.ts#L14
 const findManagedMetadata = (model: monaco.editor.ITextModel) => {
   const modelValue = model.getValue()
-  const doc = yaml.safeLoad(modelValue)
+  let doc
+  try {
+    doc = yaml.safeLoad(modelValue)
+  } catch {
+    return { start: -1, end: -1 }
+  }
   const rootMappings = doc?.mappings || []
   for (const rootElement of rootMappings) {
     const rootKey = rootElement.key
