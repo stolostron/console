@@ -43,6 +43,7 @@ export function ViewDiffApiCall({ item }: Readonly<{ item: ResultsTableData }>) 
         apiVersion,
         kind,
         name: templateName,
+        namespace: cluster,
       })
         .then((res: any) => {
           if (ignore) {
