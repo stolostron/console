@@ -120,6 +120,12 @@ export enum NavigationPath {
   configureDiscovery = '/multicloud/infrastructure/clusters/discovered/configure',
   createDiscovery = '/multicloud/infrastructure/clusters/discovered/create',
 
+  // Infrastructure - Clusters - Placements
+  placements = '/multicloud/infrastructure/clusters/placements',
+  createPlacement = '/multicloud/infrastructure/clusters/placements/create',
+  placementDetails = '/multicloud/infrastructure/clusters/placements/details/:namespace/:name',
+  placementOverview = '/multicloud/infrastructure/clusters/placements/details/:namespace/:name/overview',
+
   // Infrastructure - Environments
   infraEnvironments = '/multicloud/infrastructure/environments',
   createInfraEnv = '/multicloud/infrastructure/environments/create',
