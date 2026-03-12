@@ -1,8 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 
-import { Divider, Dropdown, DropdownItem, MenuToggle, MenuToggleElement, Tooltip } from '@patternfly/react-core'
-import { Dispatch, Fragment, SetStateAction, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import {
+  Content,
+  Divider,
+  Dropdown,
+  DropdownItem,
+  MenuToggle,
+  MenuToggleElement,
+  Tooltip,
+} from '@patternfly/react-core'
+import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { Outlet, useLocation, useNavigate, useOutletContext } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PluginContext } from '../../../lib/PluginContext'
@@ -31,7 +39,6 @@ export type SearchDetailsContext = {
   resourceLoading: boolean
   resourceError: string
   containers: string[]
-  setResourceVersion: Dispatch<SetStateAction<string>>
 }
 
 export function getResourceParams() {
@@ -170,7 +177,6 @@ export default function DetailsPage() {
       resourceLoading: !resource && resourceError === '',
       resourceError,
       containers: containers || [],
-      setResourceVersion,
     }),
     [apiversion, cluster, containers, kind, name, namespace, resource, resourceError, isHubClusterResource]
   )
@@ -430,7 +436,21 @@ export default function DetailsPage() {
       <AcmPage
         header={
           <AcmPageHeader
-            title={name}
+            title={
+              <div>
+                {name}
+                <Content component="small">
+                  <span style={{ padding: '0 .5rem 0 0' }}>Cluster:</span>
+                  <span style={{ fontWeight: 700 }}>{cluster}</span>
+                  {namespace && (
+                    <>
+                      <span style={{ padding: '0 .5rem 0 1rem' }}>Namespace:</span>
+                      <span style={{ fontWeight: 700 }}>{namespace}</span>
+                    </>
+                  )}
+                </Content>
+              </div>
+            }
             breadcrumb={[
               {
                 text: t('Search'),
