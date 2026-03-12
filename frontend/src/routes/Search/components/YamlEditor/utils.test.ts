@@ -2,7 +2,7 @@
 
 import * as resourceRequest from '../../../../resources/utils'
 import { fleetResourceRequest } from '../../../../resources/utils/fleet-resource-request'
-import { onReload, onSave } from './utils'
+import { onReload, onSave, registerAutoFold } from './utils'
 
 jest.mock('monaco-editor', () => ({
   Range: class Range {
@@ -40,6 +40,38 @@ describe('YamlEditor utils', () => {
 
   afterEach(() => {
     jest.useRealTimers()
+  })
+
+  describe('registerAutoFold', () => {
+    it('registers content change listener and runs initial tryFolding', () => {
+      const onDidChangeContent = jest.fn()
+      const mockModel = {
+        getValue: () =>
+          'apiVersion: v1\n' +
+          'kind: Pod\n' +
+          'metadata:\n' +
+          '  name: test\n' +
+          "  namespace: 'testing'\n" +
+          '  managedFields:\n' +
+          '    - manager: Mozilla\n' +
+          '    apiVersion: v1\n\n' +
+          '',
+        onDidChangeContent,
+        getPositionAt: () => ({ lineNumber: 1 }),
+      }
+      const mockEditor = {
+        getModel: () => mockModel,
+        getAction: () => ({ run: () => Promise.resolve() }),
+        setSelection: jest.fn(),
+        getScrollTop: () => 0,
+        setScrollTop: jest.fn(),
+      }
+
+      expect(() => registerAutoFold(mockEditor as any)).not.toThrow()
+      expect(onDidChangeContent).toHaveBeenCalledWith(expect.any(Function))
+
+      jest.runAllTimers()
+    })
   })
 
   describe('onReload', () => {

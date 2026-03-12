@@ -209,6 +209,9 @@ export default function YAMLEditor(props: {
           onEditorDidMount={(editor, monaco) => onEditorDidMount(editor, monaco)}
           isFullHeight={true}
           isDarkTheme={getTheme() === 'console-dark'}
+          options={{
+            readOnly,
+          }}
         />
       </div>
       <div className="yaml-editor__buttons">
@@ -216,7 +219,7 @@ export default function YAMLEditor(props: {
           <AlertGroup style={{ paddingBottom: '1rem' }}>
             {updateSuccess && (
               <Alert
-                id="editor-action-alert"
+                id="editor-action-update-alert"
                 isInline
                 variant="success"
                 title={t('{{name}} has been updated.', {
@@ -226,7 +229,7 @@ export default function YAMLEditor(props: {
             )}
             {updateError !== '' && (
               <Alert
-                id="editor-action-alert"
+                id="editor-action-error-alert"
                 isInline
                 variant="danger"
                 title={t('Error occurred while updating resource: {{name}}', { name })}
@@ -235,7 +238,7 @@ export default function YAMLEditor(props: {
               </Alert>
             )}
             {stale && (
-              <Alert id="editor-action-alert" isInline variant="info" title={t('This object has been updated.')}>
+              <Alert id="editor-action-stale-alert" isInline variant="info" title={t('This object has been updated.')}>
                 {t('Click reload to see the new version.')}
               </Alert>
             )}
@@ -306,7 +309,6 @@ export default function YAMLEditor(props: {
                 variant="secondary"
                 id="cancel-resource-button"
                 data-test="cancel-resource-button"
-                isDisabled={readOnly}
                 onClick={() => {
                   // OCP returns to previous page
                   // We could instead revert any changes and remain on the page || if no changes then go back to previous page?
