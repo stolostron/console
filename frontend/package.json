@@ -18,7 +18,7 @@
     "check:fix": "npm run i18n:fix && npm run check-doc:fix --workspaces --include-workspace-root --if-present && npm run prettier:fix:all && npm run lint:fix:all && npm run tsc:all",
     "clean": "rm -rf coverage build",
     "test": "npm run jest --",
-    "jest": "TZ=UTC jest ./src/routes/Search/components/YamlEditor/YAMLEditor.test.ts",
+    "jest": "TZ=UTC jest",
     "jest:update-snapshot": "npm run jest -- --updateSnapshot",
     "lint": "eslint src --max-warnings=0",
     "lint:all": "npm run lint --workspaces --include-workspace-root --if-present",
