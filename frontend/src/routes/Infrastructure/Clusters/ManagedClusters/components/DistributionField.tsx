@@ -466,7 +466,6 @@ export function DistributionField(props: {
             onClick={toggle}
             icon={<ArrowCircleUpIcon />}
             variant={ButtonVariant.link}
-            style={{ padding: 0, margin: 0, fontSize: 'inherit' }}
             rbac={[
               rbacCreate(ClusterCuratorDefinition, props.cluster?.namespace),
               rbacPatch(ClusterCuratorDefinition, props.cluster?.namespace),
