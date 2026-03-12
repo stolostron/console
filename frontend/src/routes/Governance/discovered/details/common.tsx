@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ViolationsCard, ViolationSummary } from '../../overview/PolicyViolationSummary'
 import { DiscoveredPolicyItem, DiscoveredPolicyTableItem, ISourceType } from '../useFetchPolicies'
-import { compareStrings, IAcmTableColumn, ITableFilter } from '../../../../ui-components'
+import { compareStrings, IAcmTableColumn, ITableFilter, AcmLabels } from '../../../../ui-components'
 import { TFunction } from 'react-i18next'
 import { getPolicySource } from '../../common/util'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
@@ -10,6 +10,8 @@ import { Channel, HelmRelease, Subscription } from '../../../../resources'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { Icon, Tooltip } from '@patternfly/react-core'
+import { exportObjectString } from '../../../../resources/utils'
+import { parsePolicyItemLabels } from '../../utils/label-utils'
 
 interface ISourceFilter {
   label: string
@@ -115,6 +117,12 @@ export const getSourceFilterOptions = (data: DiscoveredPolicyTableItem[] | Disco
     })
 }
 
+// Re-export label utilities for backward compatibility
+export { isUserDefinedPolicyLabel } from '../../utils/label-utils'
+export { parsePolicyItemLabels } from '../../utils/label-utils'
+export { getLabelFilterOptions } from '../../utils/label-utils'
+export { matchesSelectedLabels } from '../../utils/label-utils'
+
 export const byClusterCols = (
   t: TFunction<string, undefined>,
   helmReleases: HelmRelease[],
@@ -149,6 +157,21 @@ export const byClusterCols = (
     exportContent: (item) => item.cluster,
   },
   ...(moreCols ?? []),
+  {
+    header: t('table.labels'),
+    cell: (item: DiscoveredPolicyItem) => {
+      const labels = parsePolicyItemLabels(item)
+      return Object.keys(labels).length > 0 ? (
+        <AcmLabels labels={labels} isCompact={true} id={`labels-${item.cluster}`} />
+      ) : (
+        '-'
+      )
+    },
+    id: 'labels',
+    exportContent: (item: DiscoveredPolicyItem) => {
+      return exportObjectString(parsePolicyItemLabels(item))
+    },
+  },
   {
     header: t('Response action'),
     cell: responseActionCell,

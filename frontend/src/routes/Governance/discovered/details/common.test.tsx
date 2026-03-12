@@ -162,3 +162,6 @@ describe('getTotalViolationsCompliance', () => {
     expect(getTotalViolationsCompliance(undefined)).toEqual('-')
   })
 })
+
+// Note: Label utility functions (isUserDefinedPolicyLabel, parsePolicyItemLabels, getLabelFilterOptions, matchesSelectedLabels)
+// are tested in src/routes/Governance/utils/label-utils.test.ts

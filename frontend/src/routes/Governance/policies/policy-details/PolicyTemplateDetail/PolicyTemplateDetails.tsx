@@ -14,6 +14,7 @@ import { NavigationPath } from '../../../../../NavigationPath'
 import {
   AcmAlert,
   AcmDescriptionList,
+  AcmLabels,
   AcmTable,
   AcmTableStateProvider,
   compareStrings,
@@ -22,6 +23,7 @@ import {
 } from '../../../../../ui-components'
 import { emptyResources, getEngineWithSvg } from '../../../common/util'
 import { DiffModal } from '../../../components/DiffModal'
+import { isUserDefinedPolicyLabel } from '../../../utils/label-utils'
 import { KyvernoRelatedResources } from './KyvernoRelatedResources'
 import { useFetchKyvernoRelated, useFetchOnlyRelatedResources, useFetchVapb } from './PolicyTemplateDetailHooks'
 import {
@@ -192,6 +194,23 @@ export function PolicyTemplateDetails() {
         ...cols.slice(1),
       ]
     }
+
+    // Add labels row
+    const labels: Record<string, string> = {}
+
+    // Filter out system labels if template has labels
+    if (template?.metadata?.labels) {
+      Object.entries(template.metadata.labels).forEach(([key, value]) => {
+        if (isUserDefinedPolicyLabel(key)) {
+          labels[key] = value as string
+        }
+      })
+    }
+
+    cols.push({
+      key: t('table.labels'),
+      value: Object.keys(labels).length > 0 ? <AcmLabels labels={labels} /> : '-',
+    })
 
     addRowsForConstraint(cols, clusterName, apiGroup, kind)
 

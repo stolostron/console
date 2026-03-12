@@ -18,12 +18,15 @@ export function AcmLabels(props: {
   allCollapsedText?: string
   isCompact?: boolean
   isVertical?: boolean
+  id?: string
 }) {
   const { t } = useTranslation()
-  const labelsRecord: Record<string, string> = useMemo(() => {
-    if (props.labels === undefined) return {}
-    else if (Array.isArray(props.labels))
-      return props.labels.reduce(
+  const { labelsRecord, sortedKeys } = useMemo(() => {
+    let record: Record<string, string>
+    if (props.labels === undefined) {
+      record = {}
+    } else if (Array.isArray(props.labels)) {
+      record = props.labels.reduce(
         (labels, label) => {
           const parts = label.split('=')
           /* istanbul ignore if */
@@ -36,22 +39,36 @@ export function AcmLabels(props: {
         },
         {} as Record<string, string>
       )
-    else return props.labels
+    } else {
+      record = props.labels
+    }
+
+    // Sort keys once here for reuse across popoverId, labels, and hidden
+    const sorted = Object.keys(record).sort((a, b) => a.localeCompare(b))
+
+    return { labelsRecord: record, sortedKeys: sorted }
   }, [props.labels])
 
+  // Generate a unique ID for the popover based on label content
+  const popoverId = useMemo(() => {
+    if (props.id) return props.id
+    const labelKeys = sortedKeys.join('-')
+    return `labels-popover-${labelKeys.substring(0, 50).replace(/[^a-zA-Z0-9-]/g, '-')}`
+  }, [props.id, sortedKeys])
+
   const labels: string[] = useMemo(() => {
-    return Object.keys(labelsRecord)
+    return sortedKeys
       .filter((key) => !props.collapse?.includes(key))
       .map((key: string) => (labelsRecord[key] ? `${key}=${labelsRecord[key]}` : `${key}`))
-  }, [labelsRecord, props.collapse])
+  }, [sortedKeys, labelsRecord, props.collapse])
 
   const hidden: string[] = useMemo(() => {
     if (props.labels === undefined) return []
-    return Object.keys(labelsRecord)
+    return sortedKeys
       .filter((key) => props.collapse?.includes(key))
       .map((key: string) => (labelsRecord[key] ? `${key}=${labelsRecord[key]}` : `${key}`))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [labelsRecord, props.collapse])
+  }, [sortedKeys, labelsRecord, props.collapse])
 
   /* istanbul ignore next */
   let collapsedText = props.collapsedText ?? t('{{count}} more', { count: hidden.length })
@@ -90,7 +107,7 @@ export function AcmLabels(props: {
   if (labelCount) {
     return props.isCompact ? (
       <Popover
-        id={'labels-popover'}
+        id={popoverId}
         bodyContent={renderLabelGroup()}
         position={PopoverPosition.left}
         flipBehavior={['left', 'left-end', 'left-end']}
