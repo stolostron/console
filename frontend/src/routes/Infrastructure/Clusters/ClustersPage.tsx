@@ -6,6 +6,7 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../../ui-components'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 export const PageContext = createContext<{
   readonly actions: null | ReactNode
   setActions: (actions: null | ReactNode) => void
@@ -40,6 +41,45 @@ export function ClustersPage() {
   const [actions, setActions] = useState<undefined | ReactNode>(undefined)
   const location = useLocation()
   const { t } = useTranslation()
+  const { settingsState } = useSharedAtoms()
+  const settings = useRecoilValue(settingsState) // featureflag to be removed
+
+  const tabs: any[] = [
+    {
+      key: 'infra-cluster-list',
+      title: t('Cluster list'),
+      isActive: location.pathname.startsWith(NavigationPath.managedClusters),
+      to: NavigationPath.clusters,
+    },
+    {
+      key: 'infra-cluster-sets',
+      title: t('Cluster sets'),
+      isActive: location.pathname.startsWith(NavigationPath.clusterSets),
+      to: NavigationPath.clusterSets,
+    },
+    {
+      key: 'infra-cluster-pools',
+      title: t('Cluster pools'),
+      isActive: location.pathname.startsWith(NavigationPath.clusterPools),
+      to: NavigationPath.clusterPools,
+    },
+    {
+      key: 'infra-discovered-clusters',
+      title: t('Discovered clusters'),
+      isActive: location.pathname.startsWith(NavigationPath.discoveredClusters),
+      to: NavigationPath.discoveredClusters,
+    },
+  ]
+
+  if (settings.enhancedPlacement === 'enabled') {
+    // TODO: remove feature flag
+    tabs.push({
+      key: 'infra-placements',
+      title: t('Placements'),
+      isActive: location.pathname.startsWith(NavigationPath.placements),
+      to: NavigationPath.placements,
+    })
+  }
 
   return (
     <AcmPage
@@ -60,36 +100,7 @@ export function ClustersPage() {
               </a>
             </>
           }
-          navigation={
-            <AcmSecondaryNav
-              navItems={[
-                {
-                  key: 'infra-cluster-list',
-                  title: t('Cluster list'),
-                  isActive: location.pathname.startsWith(NavigationPath.managedClusters),
-                  to: NavigationPath.clusters,
-                },
-                {
-                  key: 'infra-cluster-sets',
-                  title: t('Cluster sets'),
-                  isActive: location.pathname.startsWith(NavigationPath.clusterSets),
-                  to: NavigationPath.clusterSets,
-                },
-                {
-                  key: 'infra-cluster-pools',
-                  title: t('Cluster pools'),
-                  isActive: location.pathname.startsWith(NavigationPath.clusterPools),
-                  to: NavigationPath.clusterPools,
-                },
-                {
-                  key: 'infra-discovered-clusters',
-                  title: t('Discovered clusters'),
-                  isActive: location.pathname.startsWith(NavigationPath.discoveredClusters),
-                  to: NavigationPath.discoveredClusters,
-                },
-              ]}
-            />
-          }
+          navigation={<AcmSecondaryNav navItems={tabs} />}
           actions={actions}
         />
       }

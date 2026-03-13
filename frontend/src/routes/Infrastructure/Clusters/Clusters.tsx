@@ -33,6 +33,9 @@ import { MachinePoolsPageContent } from './ManagedClusters/ClusterDetails/Cluste
 import { ClustersSettingsPageContent } from './ManagedClusters/ClusterDetails/ClusterSettings/ClusterSettings'
 import RoleAssignmentsPage from './RoleAssignmentsPage'
 import ClusterSetRoleAssignmentsPage from './ClusterSets/ClusterSetRoleAssignmentsPage'
+import PlacementsPage from './Placements/Placements'
+import PlacementDetailsPage from './Placements/PlacementDetails/PlacementDetails'
+import PlacementOverviewPageContent from './Placements/PlacementDetails/PlacementOverview/PlacementOverview'
 
 const clustersChildPath = createRoutePathFunction(NavigationPath.clusters)
 
@@ -110,7 +113,20 @@ export default function Clusters() {
         <Route path={clustersChildPath(NavigationPath.clusterSets)} element={<ClusterSetsPage />} />
         <Route path={clustersChildPath(NavigationPath.clusterPools)} element={<ClusterPoolsPage />} />
         <Route path={clustersChildPath(NavigationPath.discoveredClusters)} element={<DiscoveredClustersPage />} />
+        <Route path={clustersChildPath(NavigationPath.placements)} element={<PlacementsPage />} />
       </Route>
+      <Route element={<PlacementDetailsPage />}>
+        <Route path={clustersChildPath(NavigationPath.placementOverview)} element={<PlacementOverviewPageContent />} />
+      </Route>
+      <Route
+        path={clustersChildPath(NavigationPath.placementDetails, MatchType.SubRoutes)}
+        element={
+          <SubRoutesRedirect
+            matchPath={NavigationPath.placementDetails}
+            targetPath={NavigationPath.placementOverview}
+          />
+        }
+      />
       <Route path="*" element={<Navigate to={NavigationPath.managedClusters} replace />} />
     </Routes>
   )
