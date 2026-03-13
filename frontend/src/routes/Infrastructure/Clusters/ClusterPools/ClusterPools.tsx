@@ -424,6 +424,7 @@ export function ClusterPoolsTable(props: {
           {
             header: '',
             cellTransforms: [fitContent],
+            isActionCol: true,
             cell: (clusterPool: ClusterPool) => {
               if (!isClusterPoolDeleting(clusterPool)) {
                 return (
@@ -435,7 +436,6 @@ export function ClusterPoolsTable(props: {
                       })
                     }}
                     variant="link"
-                    style={{ padding: 0, margin: 0, fontSize: 'inherit' }}
                     rbac={[rbacCreate(ClusterClaimDefinition, clusterPool.metadata.namespace)]}
                   >
                     {t('clusterPool.claim')}
@@ -590,7 +590,7 @@ const table = css({
   },
 })
 
-function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
+export function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
   const { t } = useTranslation()
   return (
     <div className={table}>
@@ -643,7 +643,7 @@ function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
   )
 }
 
-function ClusterPoolClaimsTable(props: { claims: ClusterClaim[] }) {
+export function ClusterPoolClaimsTable(props: { claims: ClusterClaim[] }) {
   const { t } = useTranslation()
   const alertContext = useContext(AcmAlertContext)
   const [modalProps, setModalProps] = useState<BulkActionModalProps<ClusterClaim> | { open: false }>({
@@ -735,12 +735,12 @@ function ClusterPoolClaimsTable(props: { claims: ClusterClaim[] }) {
           {
             header: '',
             cellTransforms: [fitContent],
+            isActionCol: true,
             cell: (claim: ClusterClaim) => {
               return (
                 <AcmButton
                   id="deleteClaim"
                   variant="link"
-                  style={{ padding: 0, margin: 0, fontSize: 'inherit' }}
                   label={t('clusterClaim.delete')}
                   onClick={() => {
                     deleteModal(claim)

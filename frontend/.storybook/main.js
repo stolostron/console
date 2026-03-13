@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 const sass = require('sass')
 const path = require('path')
+const webpack = require('webpack')
 
 module.exports = {
   addons: [
@@ -39,6 +40,15 @@ module.exports = {
     )
     
     config.resolve.extensions.push('.ts', '.tsx')
+
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      buffer: require.resolve('buffer'),
+    }
+
+    config.plugins.push(
+      new webpack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'], process: 'process' })
+    )
     
     // Add alias for mocking @openshift-assisted/ui-lib
     config.resolve.alias = {
