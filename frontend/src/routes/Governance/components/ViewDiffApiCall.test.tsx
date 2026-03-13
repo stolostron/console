@@ -2,7 +2,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { v4 as uuidv4 } from 'uuid'
-import { nockGet, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
+import { nockIgnoreApiPaths, nockIgnoreRBAC, nockManagedClusterView } from '../../../lib/nock-util'
 import { waitForNocks, waitForText } from '../../../lib/test-util'
 import { ResultsTableData } from '../policies/policy-details/PolicyDetailsResults'
 import { ViewDiffApiCall } from './ViewDiffApiCall'
@@ -15,103 +15,75 @@ jest.mock('uuid', () => ({
 const mockUuidV4 = jest.mocked(uuidv4)
 const MOCKED_UUID = 'MOCKED_UUID'
 
-const getResourceRequest = {
-  apiVersion: 'view.open-cluster-management.io/v1beta1',
-  kind: 'ManagedClusterView',
-  metadata: {
-    name: MOCKED_UUID,
-    namespace: 'test-cluster',
-    labels: {
-      viewName: MOCKED_UUID,
-    },
-  },
-  spec: {
-    scope: {
-      name: 'policy-set-with-1-placement-policy-1',
-      resource: 'configurationpolicy.policy.open-cluster-management.io.v1',
-    },
-  },
+const scope = {
+  name: 'policy-set-with-1-placement-policy-1',
+  resource: 'configurationpolicy.v1.policy.open-cluster-management.io',
+  namespace: 'test-cluster',
 }
 
-const getResourceResponse = {
-  apiVersion: 'view.open-cluster-management.io/v1beta1',
-  kind: 'ManagedClusterView',
-  metadata: {
-    name: MOCKED_UUID,
-    namespace: 'test-cluster',
-    labels: {
-      viewName: MOCKED_UUID,
+const status = {
+  conditions: [
+    {
+      message: 'Watching resources successfully',
+      reason: 'GetResourceProcessing',
+      status: 'True',
+      type: 'Processing',
     },
-  },
-  spec: {
-    scope: {
+  ],
+  result: {
+    apiVersion: 'policy.open-cluster-management.io/v1',
+    kind: 'ConfigurationPolicy',
+    metadata: {
+      labels: {
+        'cluster-name': 'test-cluster',
+        'cluster-namespace': 'test-cluster',
+        'policy.open-cluster-management.io/cluster-name': 'test-cluster',
+        'policy.open-cluster-management.io/cluster-namespace': 'test-cluster',
+      },
       name: 'policy-set-with-1-placement-policy-1',
-      resource: 'configurationpolicy.policy.open-cluster-management.io.v1',
+      namespace: 'test-cluster',
+      uid: '36c5e139-0982-428f-9248-7da6fc3d97e2',
     },
-  },
-  status: {
-    conditions: [
-      {
-        message: 'Watching resources successfully',
-        reason: 'GetResourceProcessing',
-        status: 'True',
-        type: 'Processing',
-      },
-    ],
-    result: {
-      apiVersion: 'policy.open-cluster-management.io/v1',
-      kind: 'ConfigurationPolicy',
-      metadata: {
-        labels: {
-          'cluster-name': 'test-cluster',
-          'cluster-namespace': 'test-cluster',
-          'policy.open-cluster-management.io/cluster-name': 'test-cluster',
-          'policy.open-cluster-management.io/cluster-namespace': 'test-cluster',
+    spec: {
+      namespaceSelector: { exclude: ['kube-*'], include: ['default'] },
+      'object-templates': [
+        {
+          complianceType: 'musthave',
+          objectDefinition: { apiVersion: 'v1', kind: 'Namespace', metadata: { name: 'test' } },
         },
-        name: 'policy-set-with-1-placement-policy-1',
-        namespace: 'test-cluster',
-        uid: '36c5e139-0982-428f-9248-7da6fc3d97e2',
-      },
-      spec: {
-        namespaceSelector: { exclude: ['kube-*'], include: ['default'] },
-        'object-templates': [
-          {
-            complianceType: 'musthave',
-            objectDefinition: { apiVersion: 'v1', kind: 'Namespace', metadata: { name: 'test' } },
-          },
-          {
-            complianceType: 'musthave',
-            objectDefinition: { apiVersion: 'v1', kind: 'ConfigMap', metadata: { name: 'test-1' } },
-          },
-        ],
-        remediationAction: 'inform',
-        severity: 'low',
-      },
-      status: {
-        compliancyDetails: [
-          {
-            Compliant: 'Compliant',
-            Validity: {},
-            conditions: [
-              {
-                lastTransitionTime: '2022-02-22T13:32:41Z',
-                message: 'namespaces [test] found as specified, therefore this Object template is compliant',
-                reason: 'K8s `must have` object already exists',
-                status: 'True',
-                type: 'notification',
-              },
-            ],
-          },
-        ],
-        compliant: 'Compliant',
-        relatedObjects: [
-          {
-            compliant: 'Compliant',
-            object: { apiVersion: 'v1', kind: 'Namespace', metadata: { name: 'ns-1' } },
-            reason: 'Resource found as expected',
-            cluster: 'test-cluster',
-            properties: {
-              diff: `
+        {
+          complianceType: 'musthave',
+          objectDefinition: { apiVersion: 'v1', kind: 'ConfigMap', metadata: { name: 'test-1' } },
+        },
+      ],
+      remediationAction: 'inform',
+      severity: 'low',
+    },
+    status: {
+      compliancyDetails: [
+        {
+          Compliant: 'Compliant',
+          Validity: {},
+          conditions: [
+            {
+              lastTransitionTime: '2022-02-22T13:32:41Z',
+              message: 'namespaces [test] found as specified, therefore this Object template is compliant',
+              reason: 'K8s `must have` object already exists',
+              status: 'True',
+              type: 'notification',
+            },
+          ],
+        },
+      ],
+      compliant: 'Compliant',
+      relatedObjects: [
+        {
+          compliant: 'Compliant',
+          object: { apiVersion: 'v1', kind: 'Namespace', metadata: { name: 'ns-1' } },
+          reason: 'Resource found as expected',
+          cluster: 'test-cluster',
+          properties: {
+            diff: `
                 --- testing : existing
                 +++ testing : updated
                 @@ -5,10 +5,11 @@
@@ -127,15 +99,15 @@ const getResourceResponse = {
                      pod-security.kubernetes.io/warn: restricted
                      pod-security.kubernetes.io/warn-version: v1.24
                 `,
-            },
           },
-          {
-            compliant: 'Compliant',
-            object: { apiVersion: 'v1', kind: 'ConfigMap', metadata: { name: 'configmap-1' } },
-            reason: 'Resource found as expected',
-            cluster: 'test-cluster',
-            properties: {
-              diff: `
+        },
+        {
+          compliant: 'Compliant',
+          object: { apiVersion: 'v1', kind: 'ConfigMap', metadata: { name: 'configmap-1' } },
+          reason: 'Resource found as expected',
+          cluster: 'test-cluster',
+          properties: {
+            diff: `
                 --- configmap-1 : existing
                 +++ configmap-1 : updated
                 @@ -5,10 +5,11 @@
@@ -151,16 +123,15 @@ const getResourceResponse = {
                      pod-security.kubernetes.io/warn: restricted
                      pod-security.kubernetes.io/warn-version: v1.24
                 `,
-            },
           },
-          {
-            compliant: 'Compliant',
-            object: { apiVersion: 'v1', kind: 'Pod', metadata: { name: 'pod-1' } },
-            reason: 'Resource found as expected',
-            cluster: 'test-cluster',
-          },
-        ],
-      },
+        },
+        {
+          compliant: 'Compliant',
+          object: { apiVersion: 'v1', kind: 'Pod', metadata: { name: 'pod-1' } },
+          reason: 'Resource found as expected',
+          cluster: 'test-cluster',
+        },
+      ],
     },
   },
 }
@@ -183,20 +154,21 @@ describe('ViewDiffApiCall components test', () => {
   beforeEach(() => {
     // Reset the mock before each test
     mockUuidV4.mockReset()
-    mockUuidV4.mockReturnValue(MOCKED_UUID)
     nockIgnoreApiPaths()
     nockIgnoreRBAC()
   })
   test('Should render ViewDiffApCall correctly', async () => {
-    const getResourceNockMount = nockGet(getResourceRequest, getResourceResponse)
-    const getResourceNockModal = nockGet(getResourceRequest, getResourceResponse)
+    mockUuidV4.mockReturnValue(MOCKED_UUID)
+    const mcvNocks1 = nockManagedClusterView(MOCKED_UUID, 'test-cluster', scope, status)
+    const mcvNocks2 = nockManagedClusterView(MOCKED_UUID, 'test-cluster', scope, status)
+
     render(<ViewDiffApiCall item={item} />)
 
-    await waitForNocks([getResourceNockMount])
+    await waitForNocks(mcvNocks1)
     await waitForText('View diff')
     const viewDiffLink = screen.getByText('View diff')
     userEvent.click(viewDiffLink)
-    await waitForNocks([getResourceNockModal])
+    await waitForNocks(mcvNocks2)
     await waitForText('policy-set-with-1-placement-policy-1')
     await waitForText('Difference for the Namespace ns-1')
     await waitForText('Difference for the ConfigMap configmap-1')
@@ -209,53 +181,40 @@ describe('ViewDiffApiCall components test', () => {
   })
 
   test('Should not render ViewDiffApiCall button when no diff data is available', async () => {
-    const getResourceRequestNoDiff = {
-      ...getResourceRequest,
-      metadata: {
-        ...getResourceRequest.metadata,
-        name: 'MOCKED_UUID_NO_DIFF',
-      },
-    }
+    const NO_DIFF_UUID = 'MOCKED_UUID_NO_DIFF'
+    mockUuidV4.mockReturnValue(NO_DIFF_UUID)
 
-    const getResourceResponseNoDiff = {
-      ...getResourceResponse,
-      metadata: {
-        ...getResourceResponse.metadata,
-        name: 'MOCKED_UUID_NO_DIFF',
-      },
-      status: {
-        ...getResourceResponse.status,
-        result: {
-          ...getResourceResponse.status.result,
-          status: {
-            compliant: 'NonCompliant',
-            relatedObjects: [
-              {
-                compliant: 'NonCompliant',
-                object: {
-                  apiVersion: 'v1',
-                  kind: 'ConfigMap',
-                  metadata: {
-                    name: '-',
-                    namespace: 'open-cluster-management',
-                  },
+    const noDiffStatus = {
+      ...status,
+      result: {
+        ...status.result,
+        status: {
+          compliant: 'NonCompliant',
+          relatedObjects: [
+            {
+              compliant: 'NonCompliant',
+              object: {
+                apiVersion: 'v1',
+                kind: 'ConfigMap',
+                metadata: {
+                  name: '-',
+                  namespace: 'open-cluster-management',
                 },
-                reason: 'Resource found but does not match',
               },
-            ],
-          },
+              reason: 'Resource found but does not match',
+            },
+          ],
         },
       },
     }
 
-    mockUuidV4.mockReturnValue('MOCKED_UUID_NO_DIFF')
-    const getResourceNock = nockGet(getResourceRequestNoDiff, getResourceResponseNoDiff)
+    const mcvNocks = nockManagedClusterView(NO_DIFF_UUID, 'test-cluster', scope, noDiffStatus)
     render(<ViewDiffApiCall item={item} />)
 
     // Wait for skeleton to appear during loading
     await waitForText('Loading diff')
 
-    await waitForNocks([getResourceNock])
-    expect(screen.queryByText('View diff')).not.toBeInTheDocument()
+    await waitForNocks(mcvNocks)
+    expect(screen.queryByText('View diff')).not.toBeVisible()
   })
 })

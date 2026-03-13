@@ -4,7 +4,7 @@ import { generatePath, MemoryRouter, Route, Routes } from 'react-router-dom-v5-c
 import { RecoilRoot } from 'recoil'
 import { v4 as uuidv4 } from 'uuid'
 import { managedClusterAddonsState } from '../../../../../atoms'
-import { nockCreate, nockGet, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../lib/nock-util'
+import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC, nockManagedClusterView } from '../../../../../lib/nock-util'
 import { waitForNocks, waitForNotText, waitForText } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { ManagedClusterAddOn } from '../../../../../resources'
@@ -63,123 +63,82 @@ const getCanUserCreateMCVRes = {
   },
 }
 
-const getResourceRequest = {
-  apiVersion: 'view.open-cluster-management.io/v1beta1',
-  kind: 'ManagedClusterView',
-  metadata: {
-    name: MOCKED_UUID_1,
-    namespace: 'test-cluster',
-    labels: {
-      viewName: MOCKED_UUID_1,
-    },
-  },
-  spec: {
-    scope: {
-      name: 'config-policy',
-      resource: 'configurationpolicy.policy.open-cluster-management.io.v1',
-    },
-  },
+const configPolicyScope = {
+  name: 'config-policy',
+  resource: 'configurationpolicy.v1.policy.open-cluster-management.io',
+  namespace: 'test-cluster',
 }
 
-const getResourceResponse = {
-  apiVersion: 'view.open-cluster-management.io/v1beta1',
-  kind: 'ManagedClusterView',
-  metadata: {
-    name: MOCKED_UUID_1,
-    namespace: 'test-cluster',
-    labels: {
-      viewName: MOCKED_UUID_1,
+const configPolicyStatus = {
+  conditions: [
+    {
+      message: 'Watching resources successfully',
+      reason: 'GetResourceProcessing',
+      status: 'True',
+      type: 'Processing',
     },
-  },
-  spec: {
-    scope: {
-      name: 'config-policy',
-      resource: 'configurationpolicy.policy.open-cluster-management.io.v1',
-    },
-  },
-  status: {
-    conditions: [
-      {
-        message: 'Watching resources successfully',
-        reason: 'GetResourceProcessing',
-        status: 'True',
-        type: 'Processing',
+  ],
+  result: {
+    apiVersion: 'policy.open-cluster-management.io/v1',
+    kind: 'ConfigurationPolicy',
+    metadata: {
+      labels: {
+        'cluster-name': 'test-cluster',
+        'cluster-namespace': 'test-cluster',
+        'policy.open-cluster-management.io/cluster-name': 'test-cluster',
+        'policy.open-cluster-management.io/cluster-namespace': 'test-cluster',
       },
-    ],
-    result: {
-      apiVersion: 'policy.open-cluster-management.io/v1',
-      kind: 'ConfigurationPolicy',
-      metadata: {
-        labels: {
-          'cluster-name': 'test-cluster',
-          'cluster-namespace': 'test-cluster',
-          'policy.open-cluster-management.io/cluster-name': 'test-cluster',
-          'policy.open-cluster-management.io/cluster-namespace': 'test-cluster',
+      name: 'config-policy',
+      namespace: 'test-cluster',
+      uid: '36c5e139-0982-428f-9248-7da6fc3d97e2',
+    },
+    spec: {
+      namespaceSelector: { exclude: ['kube-*'], include: ['default'] },
+      'object-templates': [
+        {
+          complianceType: 'musthave',
+          objectDefinition: { apiVersion: 'v1', kind: 'Namespace', metadata: { name: 'test' } },
         },
-        name: 'config-policy',
-        namespace: 'test-cluster',
-        uid: '36c5e139-0982-428f-9248-7da6fc3d97e2',
-      },
-      spec: {
-        namespaceSelector: { exclude: ['kube-*'], include: ['default'] },
-        'object-templates': [
-          {
-            complianceType: 'musthave',
-            objectDefinition: { apiVersion: 'v1', kind: 'Namespace', metadata: { name: 'test' } },
-          },
-        ],
-        remediationAction: 'inform',
-        severity: 'low',
-      },
-      status: {
-        compliancyDetails: [
-          {
-            Compliant: 'Compliant',
-            Validity: {},
-            conditions: [
-              {
-                lastTransitionTime: '2022-02-22T13:32:41Z',
-                message: 'namespaces [test] found as specified, therefore this Object template is compliant',
-                reason: 'K8s `must have` object already exists',
-                status: 'True',
-                type: 'notification',
-              },
-            ],
-          },
-        ],
-        compliant: 'Compliant',
-        relatedObjects: [
-          {
-            compliant: 'Compliant',
-            object: { apiVersion: 'v1', kind: 'Namespace', metadata: { name: 'test' } },
-            reason: 'Resource found as expected',
-            cluster: 'test-cluster',
-          },
-        ],
-      },
+      ],
+      remediationAction: 'inform',
+      severity: 'low',
+    },
+    status: {
+      compliancyDetails: [
+        {
+          Compliant: 'Compliant',
+          Validity: {},
+          conditions: [
+            {
+              lastTransitionTime: '2022-02-22T13:32:41Z',
+              message: 'namespaces [test] found as specified, therefore this Object template is compliant',
+              reason: 'K8s `must have` object already exists',
+              status: 'True',
+              type: 'notification',
+            },
+          ],
+        },
+      ],
+      compliant: 'Compliant',
+      relatedObjects: [
+        {
+          compliant: 'Compliant',
+          object: { apiVersion: 'v1', kind: 'Namespace', metadata: { name: 'test' } },
+          reason: 'Resource found as expected',
+          cluster: 'test-cluster',
+        },
+      ],
     },
   },
 }
 
-const getOppolResourceRequest = {
-  apiVersion: 'view.open-cluster-management.io/v1beta1',
-  kind: 'ManagedClusterView',
-  metadata: {
-    name: MOCKED_UUID_1,
-    namespace: 'local-cluster',
-    labels: { viewName: MOCKED_UUID_1 },
-  },
-  spec: {
-    scope: {
-      name: 'oppol-no-group',
-      namespace: 'local-cluster',
-      resource: 'operatorpolicy.v1beta1.policy.open-cluster-management.io',
-    },
-  },
+const oppolScope = {
+  name: 'oppol-no-group',
+  namespace: 'local-cluster',
+  resource: 'operatorpolicy.v1beta1.policy.open-cluster-management.io',
 }
 
-const getOppolResourceResponse = JSON.parse(JSON.stringify(getOppolResourceRequest))
-getOppolResourceResponse.status = {
+const oppolStatus: Record<string, unknown> = {
   conditions: [
     {
       message: 'Watching resources successfully',
@@ -356,24 +315,12 @@ getOppolResourceResponse.status = {
   },
 }
 
-const getVapbResourceRequest = {
-  apiVersion: 'view.open-cluster-management.io/v1beta1',
-  kind: 'ManagedClusterView',
-  metadata: {
-    name: MOCKED_UUID_1,
-    namespace: 'test-cluster',
-    labels: { viewName: MOCKED_UUID_1 },
-  },
-  spec: {
-    scope: {
-      name: 'gatekeeper-ns-must-have-gk',
-      resource: 'validatingadmissionpolicybinding.v1.admissionregistration.k8s.io',
-    },
-  },
+const vapbScope = {
+  name: 'gatekeeper-ns-must-have-gk',
+  resource: 'validatingadmissionpolicybinding.v1.admissionregistration.k8s.io',
 }
 
-const getVapbResourceResponse = JSON.parse(JSON.stringify(getVapbResourceRequest))
-getVapbResourceResponse.status = {
+const vapbStatus = {
   conditions: [
     {
       message: 'Watching resources successfully',
@@ -406,7 +353,6 @@ describe('Policy Template Details Page', () => {
   beforeEach(() => {
     // Reset the mock before each test
     mockUuidV4.mockReset()
-    mockUuidV4.mockReturnValueOnce(MOCKED_UUID_1).mockReturnValueOnce(MOCKED_UUID_2).mockReturnValueOnce(MOCKED_UUID_3)
 
     nockIgnoreApiPaths()
     ;(useSearchResultItemsLazyQuery as jest.Mock).mockReturnValue([
@@ -575,7 +521,8 @@ describe('Policy Template Details Page', () => {
       '/multicloud/governance/policies/details/test/parent-policy/template/test-cluster/' +
       'policy.open-cluster-management.io/v1/ConfigurationPolicy/config-policy'
     const canUserCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
-    const getResourceNock = nockGet(getResourceRequest, getResourceResponse)
+    mockUuidV4.mockReturnValue(MOCKED_UUID_1)
+    const mcvNocks = nockManagedClusterView(MOCKED_UUID_1, 'test-cluster', configPolicyScope, configPolicyStatus)
     const { container } = render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -593,7 +540,7 @@ describe('Policy Template Details Page', () => {
       </RecoilRoot>
     )
     // Wait for delete resource requests to finish
-    await waitForNocks([canUserCreateMCVNock, getResourceNock])
+    await waitForNocks([canUserCreateMCVNock, ...mcvNocks])
 
     // wait for page load - looking for breadcrumb items
     await waitForText('Policies')
@@ -669,13 +616,10 @@ describe('Policy Template Details Page', () => {
     const mockManagedClusterAddOn: Record<string, ManagedClusterAddOn[]> = {}
     mockManagedClusterAddOn[clusterName] = [mockManagedClusterAddOnWork, mockManagedClusterAddOnPolicy]
 
-    const getResourceRequestCopy = JSON.parse(JSON.stringify(getResourceRequest))
-    getResourceRequestCopy.metadata.namespace = hostingClusterName
-
-    const getResourceResponseCopy = JSON.parse(JSON.stringify(getResourceResponse))
-    getResourceResponseCopy.metadata.namespace = hostingClusterName
-    getResourceResponseCopy.status.result.metadata.namespace = installNamespace
-    getResourceResponseCopy.status.result.metadata.labels = {
+    const hostedScope = { ...configPolicyScope, namespace: installNamespace }
+    const hostedStatus = JSON.parse(JSON.stringify(configPolicyStatus))
+    hostedStatus.result.metadata.namespace = installNamespace
+    hostedStatus.result.metadata.labels = {
       'cluster-name': clusterName,
       'cluster-namespace': installNamespace,
       'policy.open-cluster-management.io/cluster-name': clusterName,
@@ -683,7 +627,8 @@ describe('Policy Template Details Page', () => {
     }
 
     const canUserCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
-    const getResourceNock = nockGet(getResourceRequestCopy, getResourceResponseCopy)
+    mockUuidV4.mockReturnValue(MOCKED_UUID_1)
+    const mcvNocks = nockManagedClusterView(MOCKED_UUID_1, hostingClusterName, hostedScope, hostedStatus)
 
     render(
       <RecoilRoot
@@ -703,7 +648,7 @@ describe('Policy Template Details Page', () => {
     )
 
     // Wait for the get resource requests to finish
-    await waitForNocks([canUserCreateMCVNock, getResourceNock])
+    await waitForNocks([canUserCreateMCVNock, ...mcvNocks])
 
     await waitForText('ConfigurationPolicy details')
 
@@ -730,24 +675,12 @@ describe('Policy Template Details Page', () => {
       '/multicloud/governance/policies/details/test/parent-policy/template/test-cluster/' +
       'constraints.gatekeeper.sh/v1beta1/K8sRequiredLabels/ns-must-have-gk'
 
-    const getResourceRequest = {
-      apiVersion: 'view.open-cluster-management.io/v1beta1',
-      kind: 'ManagedClusterView',
-      metadata: {
-        name: MOCKED_UUID_1,
-        namespace: 'test-cluster',
-        labels: { viewName: MOCKED_UUID_1 },
-      },
-      spec: {
-        scope: {
-          name: 'ns-must-have-gk',
-          resource: 'k8srequiredlabels.v1beta1.constraints.gatekeeper.sh',
-        },
-      },
+    const gkScope = {
+      name: 'ns-must-have-gk',
+      resource: 'k8srequiredlabels.v1beta1.constraints.gatekeeper.sh',
     }
 
-    const getResourceResponse = JSON.parse(JSON.stringify(getResourceRequest))
-    getResourceResponse.status = {
+    const gkStatus = {
       conditions: [
         {
           message: 'Watching resources successfully',
@@ -825,7 +758,8 @@ describe('Policy Template Details Page', () => {
     }
 
     const canUserCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
-    const getResourceNock = nockGet(getResourceRequest, getResourceResponse)
+    mockUuidV4.mockReturnValue(MOCKED_UUID_1)
+    const mcvNocks = nockManagedClusterView(MOCKED_UUID_1, 'test-cluster', gkScope, gkStatus)
 
     render(
       <RecoilRoot
@@ -845,7 +779,7 @@ describe('Policy Template Details Page', () => {
     )
 
     // Wait for the get resource requests to finish
-    await waitForNocks([canUserCreateMCVNock, getResourceNock])
+    await waitForNocks([canUserCreateMCVNock, ...mcvNocks])
 
     await waitForText('K8sRequiredLabels details')
 
@@ -907,7 +841,8 @@ describe('Policy Template Details Page', () => {
       'policy.open-cluster-management.io/v1beta1/OperatorPolicy/oppol-no-group'
 
     const canUserCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
-    const getResourceNock = nockGet(getOppolResourceRequest, getOppolResourceResponse)
+    mockUuidV4.mockReturnValue(MOCKED_UUID_1)
+    const mcvNocks = nockManagedClusterView(MOCKED_UUID_1, 'local-cluster', oppolScope, oppolStatus)
 
     render(
       <RecoilRoot
@@ -927,7 +862,7 @@ describe('Policy Template Details Page', () => {
     )
 
     // Wait for the get resource requests to finish
-    await waitForNocks([canUserCreateMCVNock, getResourceNock])
+    await waitForNocks([canUserCreateMCVNock, ...mcvNocks])
 
     await waitForText('OperatorPolicy details')
 
@@ -1067,8 +1002,10 @@ describe('Policy Template Details Page', () => {
     ]
 
     const canUserCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
-    getOppolResourceResponse.status.result.status.relatedObjects = replaceRelatedObj
-    const getResourceNock = nockGet(getOppolResourceRequest, getOppolResourceResponse)
+    const modifiedOppolStatus = JSON.parse(JSON.stringify(oppolStatus))
+    modifiedOppolStatus.result.status.relatedObjects = replaceRelatedObj
+    mockUuidV4.mockReturnValue(MOCKED_UUID_1)
+    const mcvNocks = nockManagedClusterView(MOCKED_UUID_1, 'local-cluster', oppolScope, modifiedOppolStatus)
 
     render(
       <RecoilRoot
@@ -1088,7 +1025,7 @@ describe('Policy Template Details Page', () => {
     )
 
     // Wait for the get resource requests to finish
-    await waitForNocks([canUserCreateMCVNock, getResourceNock])
+    await waitForNocks([canUserCreateMCVNock, ...mcvNocks])
 
     await waitForText('OperatorPolicy details')
 
@@ -1123,8 +1060,10 @@ describe('Policy Template Details Page', () => {
         cluster: 'test-cluster',
       },
     ]
-    getResourceResponse.status.result.status.relatedObjects = replaceRelatedObj
-    const getResourceNock = nockGet(getResourceRequest, getResourceResponse)
+    const modifiedStatus1 = JSON.parse(JSON.stringify(configPolicyStatus))
+    modifiedStatus1.result.status.relatedObjects = replaceRelatedObj
+    mockUuidV4.mockReturnValue(MOCKED_UUID_1)
+    const mcvNocks = nockManagedClusterView(MOCKED_UUID_1, 'test-cluster', configPolicyScope, modifiedStatus1)
     const canUserCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
 
     render(
@@ -1145,7 +1084,7 @@ describe('Policy Template Details Page', () => {
     )
 
     // Wait for the get resource requests to finish
-    await waitForNocks([canUserCreateMCVNock, getResourceNock])
+    await waitForNocks([canUserCreateMCVNock, ...mcvNocks])
 
     await waitForText('ConfigurationPolicy details')
 
@@ -1172,8 +1111,10 @@ describe('Policy Template Details Page', () => {
         cluster: 'test-cluster',
       },
     ]
-    getResourceResponse.status.result.status.relatedObjects = replaceRelatedObj
-    const getResourceNock = nockGet(getResourceRequest, getResourceResponse)
+    const modifiedStatus2 = JSON.parse(JSON.stringify(configPolicyStatus))
+    modifiedStatus2.result.status.relatedObjects = replaceRelatedObj
+    mockUuidV4.mockReturnValue(MOCKED_UUID_1)
+    const mcvNocks = nockManagedClusterView(MOCKED_UUID_1, 'test-cluster', configPolicyScope, modifiedStatus2)
     const canUserCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
 
     render(
@@ -1194,7 +1135,7 @@ describe('Policy Template Details Page', () => {
     )
 
     // Wait for the get resource requests to finish
-    await waitForNocks([canUserCreateMCVNock, getResourceNock])
+    await waitForNocks([canUserCreateMCVNock, ...mcvNocks])
 
     // wait for template yaml to load correctly
     await waitForText('ConfigurationPolicy details')
@@ -1234,8 +1175,11 @@ describe('Policy Template Details Page', () => {
   })
 
   test('Should render discovered policy detail page successfully', async () => {
+    const discoveredScope = { ...configPolicyScope, namespace: 'open-cluster-management-policies' }
+
     const canUserCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
-    const getResourceNock = nockGet(getResourceRequest, getResourceResponse)
+    mockUuidV4.mockReturnValue(MOCKED_UUID_1)
+    const mcvNocks = nockManagedClusterView(MOCKED_UUID_1, 'test-cluster', discoveredScope, configPolicyStatus)
 
     const { container } = render(
       <RecoilRoot
@@ -1266,7 +1210,7 @@ describe('Policy Template Details Page', () => {
     )
 
     // Wait for delete resource requests to finish
-    await waitForNocks([canUserCreateMCVNock, getResourceNock])
+    await waitForNocks([canUserCreateMCVNock, ...mcvNocks])
 
     // wait for page load - looking for breadcrumb items
     await waitForText('Discovered policies')
@@ -1306,7 +1250,8 @@ describe('Policy Template Details Page', () => {
 
   test('Should render ValidatingAdmissionPolicyBinding page successfully without parameter references', async () => {
     const canUserCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
-    const getResourceNock = nockGet(getVapbResourceRequest, getVapbResourceResponse)
+    mockUuidV4.mockReturnValue(MOCKED_UUID_1)
+    const mcvNocks = nockManagedClusterView(MOCKED_UUID_1, 'test-cluster', vapbScope, vapbStatus)
 
     render(
       <RecoilRoot
@@ -1337,7 +1282,7 @@ describe('Policy Template Details Page', () => {
     )
 
     // Wait for delete resource requests to finish
-    await waitForNocks([canUserCreateMCVNock, getResourceNock])
+    await waitForNocks([canUserCreateMCVNock, ...mcvNocks])
 
     // wait for page load - looking for breadcrumb items
     await waitForText('Discovered policies')
@@ -1385,26 +1330,11 @@ describe('Policy Template Details Page', () => {
       },
     ])()
 
-    const getClusterPolicyResourceRequest = {
-      apiVersion: 'view.open-cluster-management.io/v1beta1',
-      kind: 'ManagedClusterView',
-      metadata: {
-        name: MOCKED_UUID_1,
-        namespace: 'test-cluster',
-        labels: {
-          viewName: MOCKED_UUID_1,
-        },
-      },
-      spec: {
-        scope: {
-          name: 'require-owner-labels',
-          resource: 'clusterpolicy.v1.kyverno.io',
-        },
-      },
+    const kyvernoScope = {
+      name: 'require-owner-labels',
+      resource: 'clusterpolicy.v1.kyverno.io',
     }
-
-    const getClusterPolicyResourceResponse = JSON.parse(JSON.stringify(getClusterPolicyResourceRequest))
-    getClusterPolicyResourceResponse.status = {
+    const kyvernoStatus = {
       conditions: [
         {
           message: 'Watching resources successfully',
@@ -1485,28 +1415,14 @@ describe('Policy Template Details Page', () => {
         },
       },
     }
+    mockUuidV4.mockReturnValueOnce(MOCKED_UUID_1).mockReturnValueOnce(MOCKED_UUID_2).mockReturnValueOnce(MOCKED_UUID_3)
+    const mcvNocks = nockManagedClusterView(MOCKED_UUID_1, 'test-cluster', kyvernoScope, kyvernoStatus)
 
-    const getResourceNock = nockGet(getClusterPolicyResourceRequest, getClusterPolicyResourceResponse)
-
-    const getClusterPolicyReportResourceRequest1 = {
-      apiVersion: 'view.open-cluster-management.io/v1beta1',
-      kind: 'ManagedClusterView',
-      metadata: {
-        name: MOCKED_UUID_3,
-        namespace: 'local-cluster',
-        labels: {
-          viewName: MOCKED_UUID_3,
-        },
-      },
-      spec: {
-        scope: {
-          name: '6cdec79f-980f-4947-95ab-3ce9789b270f',
-          resource: 'clusterpolicyreport.v1alpha2.wgpolicyk8s.io',
-        },
-      },
+    const report1Scope = {
+      name: '6cdec79f-980f-4947-95ab-3ce9789b270f',
+      resource: 'clusterpolicyreport.v1alpha2.wgpolicyk8s.io',
     }
-    const getClusterPolicyResourceResponse1 = JSON.parse(JSON.stringify(getClusterPolicyReportResourceRequest1))
-    getClusterPolicyResourceResponse1.status = {
+    const report1Status = {
       conditions: [
         {
           message: 'Watching resources successfully',
@@ -1540,27 +1456,13 @@ describe('Policy Template Details Page', () => {
       },
     }
 
-    const getReportResourceNock1 = nockGet(getClusterPolicyReportResourceRequest1, getClusterPolicyResourceResponse1)
+    const mcvReportNocks1 = nockManagedClusterView(MOCKED_UUID_3, 'local-cluster', report1Scope, report1Status)
 
-    const getClusterPolicyReportResourceRequest2 = {
-      apiVersion: 'view.open-cluster-management.io/v1beta1',
-      kind: 'ManagedClusterView',
-      metadata: {
-        name: MOCKED_UUID_2,
-        namespace: 'local-cluster',
-        labels: {
-          viewName: MOCKED_UUID_2,
-        },
-      },
-      spec: {
-        scope: {
-          name: 'b56b0432-75f8-4440-ac53-86a993c3c2f6',
-          resource: 'clusterpolicyreport.v1alpha2.wgpolicyk8s.io',
-        },
-      },
+    const report2Scope = {
+      name: 'b56b0432-75f8-4440-ac53-86a993c3c2f6',
+      resource: 'clusterpolicyreport.v1alpha2.wgpolicyk8s.io',
     }
-    const getClusterPolicyResourceResponse2 = JSON.parse(JSON.stringify(getClusterPolicyReportResourceRequest2))
-    getClusterPolicyResourceResponse2.status = {
+    const report2Status = {
       conditions: [
         {
           message: 'Watching resources successfully',
@@ -1601,7 +1503,7 @@ describe('Policy Template Details Page', () => {
       },
     }
 
-    const getReportResourceNock2 = nockGet(getClusterPolicyReportResourceRequest2, getClusterPolicyResourceResponse2)
+    const mcvReportNocks2 = nockManagedClusterView(MOCKED_UUID_2, 'local-cluster', report2Scope, report2Status)
 
     nockIgnoreRBAC()
     render(
@@ -1633,7 +1535,7 @@ describe('Policy Template Details Page', () => {
     )
 
     // Wait for resource requests to finish
-    await waitForNocks([getResourceNock, getReportResourceNock1, getReportResourceNock2])
+    await waitForNocks([...mcvNocks, ...mcvReportNocks1, ...mcvReportNocks2])
 
     // wait for page load - looking for breadcrumb items
     await waitForText('Discovered policies')
@@ -1807,26 +1709,11 @@ describe('Policy Template Details Page', () => {
       },
     ])()
 
-    const getClusterPolicyResourceRequest = {
-      apiVersion: 'view.open-cluster-management.io/v1beta1',
-      kind: 'ManagedClusterView',
-      metadata: {
-        name: MOCKED_UUID_1,
-        namespace: 'test-cluster',
-        labels: {
-          viewName: MOCKED_UUID_1,
-        },
-      },
-      spec: {
-        scope: {
-          name: 'demo-binding-test.example.com',
-          resource: 'validatingadmissionpolicybinding.v1.admissionregistration.k8s.io',
-        },
-      },
+    const vapbParamScope = {
+      name: 'demo-binding-test.example.com',
+      resource: 'validatingadmissionpolicybinding.v1.admissionregistration.k8s.io',
     }
-
-    const getClusterPolicyResourceResponse = JSON.parse(JSON.stringify(getClusterPolicyResourceRequest))
-    getClusterPolicyResourceResponse.status = {
+    const vapbParamStatus = {
       conditions: [
         {
           message: 'Watching resources successfully',
@@ -1866,7 +1753,8 @@ describe('Policy Template Details Page', () => {
     }
 
     const canUserCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
-    const getResourceNock = nockGet(getClusterPolicyResourceRequest, getClusterPolicyResourceResponse)
+    mockUuidV4.mockReturnValue(MOCKED_UUID_1)
+    const mcvNocks = nockManagedClusterView(MOCKED_UUID_1, 'test-cluster', vapbParamScope, vapbParamStatus)
 
     // load the page:
     render(
@@ -1898,7 +1786,7 @@ describe('Policy Template Details Page', () => {
     )
 
     // Wait for delete resource requests to finish
-    await waitForNocks([canUserCreateMCVNock, getResourceNock])
+    await waitForNocks([canUserCreateMCVNock, ...mcvNocks])
 
     // wait for page load - looking for breadcrumb items
     await waitForText('Discovered policies')

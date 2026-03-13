@@ -10,7 +10,7 @@ export const CodeBlock = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (codeRef?.current) {
       hljs.registerLanguage('diff', diff)
-      hljs.highlightBlock(codeRef.current)
+      hljs.highlightElement(codeRef.current)
     }
   }, [])
 
