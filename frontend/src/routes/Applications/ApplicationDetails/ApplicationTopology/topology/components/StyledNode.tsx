@@ -72,6 +72,7 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
   return (
     <DefaultNode
       element={element}
+      raiseLabelOnHover={false}
       nodeStatus={data.status}
       scaleLabel={detailsLevel !== ScaleDetailsLevel.low}
       scaleNode={hover && detailsLevel === ScaleDetailsLevel.low}
