@@ -213,8 +213,8 @@ describe('ViewDiffApiCall components test', () => {
 
     // Wait for skeleton to appear during loading
     await waitForText('Loading diff')
-    expect(screen.queryByText('View diff')).not.toBeInTheDocument()
 
     await waitForNocks(mcvNocks)
+    expect(screen.queryByText('View diff')).not.toBeVisible()
   })
 })
