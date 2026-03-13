@@ -286,13 +286,18 @@ export function ClusterOverviewPageContent() {
       value: cluster?.labels?.clusterID && (
         <>
           <div>{cluster?.labels?.clusterID}</div>
-          <a
+          <AcmButton
+            variant="link"
+            component="a"
             href={`https://console.redhat.com/openshift/details/${cluster?.labels?.clusterID}`}
             target="_blank"
             rel="noreferrer"
+            isInline
+            icon={<ExternalLinkAltIcon />}
+            iconPosition="right"
           >
-            {t('openshift.cluster.manager')} <ExternalLinkAltIcon />
-          </a>
+            {t('openshift.cluster.manager')}
+          </AcmButton>
         </>
       ),
     },
