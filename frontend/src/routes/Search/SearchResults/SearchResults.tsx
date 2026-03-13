@@ -221,7 +221,7 @@ function SearchResultAccordion(
 
   return (
     <PageSection hasBodyWrapper={false} isFilled={false}>
-      <Accordion isBordered asDefinitionList={true}>
+      <Accordion asDefinitionList={true}>
         {kinds.map((kind: string, idx: number) => {
           const accordionItemKey = `${kind}-${idx}`
           return (
