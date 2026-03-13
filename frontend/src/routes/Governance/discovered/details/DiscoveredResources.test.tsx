@@ -5,7 +5,7 @@ import { generatePath, MemoryRouter, Outlet, Route, Routes } from 'react-router-
 import { RecoilRoot } from 'recoil'
 import { v4 as uuidv4 } from 'uuid'
 import { channelsState, helmReleaseState, subscriptionsState } from '../../../../atoms'
-import { nockCreate, nockGet, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
+import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC, nockManagedClusterView } from '../../../../lib/nock-util'
 import { waitForNocks, waitForText } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { DiscoveredDetailsContext } from './DiscoveredPolicyDetailsPage'
@@ -54,7 +54,6 @@ describe('DiscoveredResources', () => {
   beforeEach(() => {
     // Reset the mock before each test
     mockUuidV4.mockReset()
-    mockUuidV4.mockReturnValueOnce(MOCKED_UUID_1).mockReturnValueOnce(MOCKED_UUID_2)
   })
   test('Should render empty DiscoveredResources for ConfigurationPolicy', async () => {
     const context: DiscoveredDetailsContext = {
@@ -182,27 +181,13 @@ describe('DiscoveredResources', () => {
     await waitForText('No related resources')
   })
   test('Should render DiscoveredResources for ConfigurationPolicy', async () => {
-    const getResourceRequest = {
-      apiVersion: 'view.open-cluster-management.io/v1beta1',
-      kind: 'ManagedClusterView',
-      metadata: {
-        name: MOCKED_UUID_1,
-        namespace: 'local-cluster',
-        labels: {
-          viewName: MOCKED_UUID_1,
-        },
-      },
-      spec: {
-        scope: {
-          name: 'sample-objects',
-          namespace: 'local-cluster',
-          resource: 'configurationpolicy.v1.policy.open-cluster-management.io',
-        },
-      },
+    const scope = {
+      name: 'sample-objects',
+      namespace: 'local-cluster',
+      resource: 'configurationpolicy.v1.policy.open-cluster-management.io',
     }
 
-    const getResourceResponse = JSON.parse(JSON.stringify(getResourceRequest))
-    getResourceResponse.status = {
+    const status = {
       conditions: [
         {
           message: 'Watching resources successfully',
@@ -401,7 +386,8 @@ describe('DiscoveredResources', () => {
 
     nockIgnoreApiPaths()
     const canUserCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
-    const getResourceNock = nockGet(getResourceRequest, getResourceResponse)
+    mockUuidV4.mockReturnValue(MOCKED_UUID_1)
+    const mcvNocks = nockManagedClusterView(MOCKED_UUID_1, 'local-cluster', scope, status)
     const { container } = render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -428,7 +414,7 @@ describe('DiscoveredResources', () => {
         </MemoryRouter>
       </RecoilRoot>
     )
-    await waitForNocks([canUserCreateMCVNock, getResourceNock])
+    await waitForNocks([canUserCreateMCVNock, ...mcvNocks])
 
     await waitForText('Related resources')
     await waitForText('Resource found as expected')
@@ -452,27 +438,13 @@ describe('DiscoveredResources', () => {
     expect(row2links).toHaveLength(2) // links in the Name column and the Cluster column
   })
   test('Should render DiscoveredResources for CertificatePolicy', async () => {
-    const getResourceRequest = {
-      apiVersion: 'view.open-cluster-management.io/v1beta1',
-      kind: 'ManagedClusterView',
-      metadata: {
-        name: MOCKED_UUID_1,
-        namespace: 'local-cluster',
-        labels: {
-          viewName: MOCKED_UUID_1,
-        },
-      },
-      spec: {
-        scope: {
-          name: 'cert-check',
-          namespace: 'local-cluster',
-          resource: 'certificatepolicy.v1.policy.open-cluster-management.io',
-        },
-      },
+    const certScope = {
+      name: 'cert-check',
+      namespace: 'local-cluster',
+      resource: 'certificatepolicy.v1.policy.open-cluster-management.io',
     }
 
-    const getResourceResponse = JSON.parse(JSON.stringify(getResourceRequest))
-    getResourceResponse.status = {
+    const certStatus = {
       conditions: [
         {
           message: 'Watching resources successfully',
@@ -587,7 +559,8 @@ describe('DiscoveredResources', () => {
 
     nockIgnoreApiPaths()
     const canUserCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
-    const getResourceNock = nockGet(getResourceRequest, getResourceResponse)
+    mockUuidV4.mockReturnValue(MOCKED_UUID_1)
+    const mcvNocks = nockManagedClusterView(MOCKED_UUID_1, 'local-cluster', certScope, certStatus)
     const { container } = render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -614,7 +587,7 @@ describe('DiscoveredResources', () => {
         </MemoryRouter>
       </RecoilRoot>
     )
-    await waitForNocks([canUserCreateMCVNock, getResourceNock])
+    await waitForNocks([canUserCreateMCVNock, ...mcvNocks])
     await waitForText('Related resources')
 
     const row1 = container.querySelector('table > tbody:nth-child(2) > tr')
@@ -625,27 +598,13 @@ describe('DiscoveredResources', () => {
     await waitFor(() => expect(row1).toHaveTextContent('rsa-ca-sample-secret expires'))
   })
   test('Should render DiscoveredResources for Kyverno', async () => {
-    const getResourceRequest1 = {
-      apiVersion: 'view.open-cluster-management.io/v1beta1',
-      kind: 'ManagedClusterView',
-      metadata: {
-        name: MOCKED_UUID_1,
-        namespace: 'local-cluster',
-        labels: {
-          viewName: MOCKED_UUID_1,
-        },
-      },
-      spec: {
-        scope: {
-          name: 'e9b1f4bb-9591-4866-b0d4-462ab9e3f28c',
-          resource: 'policyreport.v1beta1.wgpolicyk8s.io',
-          namespace: 'kyverno',
-        },
-      },
+    const scope1 = {
+      name: 'e9b1f4bb-9591-4866-b0d4-462ab9e3f28c',
+      resource: 'policyreport.v1beta1.wgpolicyk8s.io',
+      namespace: 'kyverno',
     }
 
-    const getResourceResponse1 = JSON.parse(JSON.stringify(getResourceRequest1))
-    getResourceResponse1.status = {
+    const status1 = {
       conditions: [
         {
           message: 'Watching resources successfully',
@@ -693,27 +652,13 @@ describe('DiscoveredResources', () => {
       },
     }
 
-    const getResourceRequest2 = {
-      apiVersion: 'view.open-cluster-management.io/v1beta1',
-      kind: 'ManagedClusterView',
-      metadata: {
-        name: MOCKED_UUID_2,
-        namespace: 'local-cluster',
-        labels: {
-          viewName: MOCKED_UUID_2,
-        },
-      },
-      spec: {
-        scope: {
-          name: 'dfe37369-1076-4fdb-9318-ff3eda4df9a7',
-          resource: 'policyreport.v1beta1.wgpolicyk8s.io',
-          namespace: 'kyverno',
-        },
-      },
+    const scope2 = {
+      name: 'dfe37369-1076-4fdb-9318-ff3eda4df9a7',
+      resource: 'policyreport.v1beta1.wgpolicyk8s.io',
+      namespace: 'kyverno',
     }
 
-    const getResourceResponse2 = JSON.parse(JSON.stringify(getResourceRequest2))
-    getResourceResponse2.status = {
+    const status2 = {
       conditions: [
         {
           message: 'Watching resources successfully',
@@ -878,9 +823,9 @@ describe('DiscoveredResources', () => {
 
     nockIgnoreApiPaths()
     nockIgnoreRBAC()
-    // const canUserCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
-    const getResourceNock1 = nockGet(getResourceRequest1, getResourceResponse1)
-    const getResourceNock2 = nockGet(getResourceRequest2, getResourceResponse2)
+    mockUuidV4.mockReturnValueOnce(MOCKED_UUID_1).mockReturnValueOnce(MOCKED_UUID_2)
+    const mcvNocks1 = nockManagedClusterView(MOCKED_UUID_1, 'local-cluster', scope1, status1)
+    const mcvNocks2 = nockManagedClusterView(MOCKED_UUID_2, 'local-cluster', scope2, status2)
     const { container } = render(
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -907,7 +852,7 @@ describe('DiscoveredResources', () => {
         </MemoryRouter>
       </RecoilRoot>
     )
-    await waitForNocks([getResourceNock1, getResourceNock2])
+    await waitForNocks([...mcvNocks1, ...mcvNocks2])
     await waitForText('Related resources')
 
     const row1 = container.querySelector('table > tbody:nth-child(2) > tr')
@@ -1004,8 +949,31 @@ test('Should render DiscoveredResources for Gatekeeper with tooltip when showing
     err: undefined,
   }
 
+  const gkScope = {
+    name: 'containerlivenessprobenotset',
+    resource: 'containerlivenessprobenotset.v1beta1.constraints.gatekeeper.sh',
+  }
+  const gkStatus = {
+    conditions: [
+      {
+        message: 'Watching resources successfully',
+        reason: 'GetResourceProcessing',
+        status: 'True',
+        type: 'Processing',
+      },
+    ],
+    result: {
+      apiVersion: 'constraints.gatekeeper.sh/v1beta1',
+      kind: 'ContainerLivenessprobeNotset',
+      metadata: { name: 'containerlivenessprobenotset' },
+      status: { totalViolations: 10 },
+    },
+  }
+
   nockIgnoreApiPaths()
   nockIgnoreRBAC()
+  mockUuidV4.mockReturnValue(MOCKED_UUID_1)
+  const mcvNocks = nockManagedClusterView(MOCKED_UUID_1, 'local-cluster', gkScope, gkStatus)
   const { container } = render(
     <RecoilRoot
       initializeState={(snapshot) => {
@@ -1033,6 +1001,7 @@ test('Should render DiscoveredResources for Gatekeeper with tooltip when showing
     </RecoilRoot>
   )
 
+  await waitForNocks(mcvNocks)
   await waitForText('Related resources')
 
   // Verify table rows are rendered correctly
@@ -1136,8 +1105,31 @@ test('Should NOT render tooltip when showing all Gatekeeper results', async () =
     err: undefined,
   }
 
+  const gkScope = {
+    name: 'containerlivenessprobenotset',
+    resource: 'containerlivenessprobenotset.v1beta1.constraints.gatekeeper.sh',
+  }
+  const gkStatus = {
+    conditions: [
+      {
+        message: 'Watching resources successfully',
+        reason: 'GetResourceProcessing',
+        status: 'True',
+        type: 'Processing',
+      },
+    ],
+    result: {
+      apiVersion: 'constraints.gatekeeper.sh/v1beta1',
+      kind: 'ContainerLivenessprobeNotset',
+      metadata: { name: 'containerlivenessprobenotset' },
+      status: { totalViolations: 2 },
+    },
+  }
+
   nockIgnoreApiPaths()
   nockIgnoreRBAC()
+  mockUuidV4.mockReturnValue(MOCKED_UUID_1)
+  const mcvNocks = nockManagedClusterView(MOCKED_UUID_1, 'local-cluster', gkScope, gkStatus)
   render(
     <RecoilRoot
       initializeState={(s) => {
@@ -1165,6 +1157,7 @@ test('Should NOT render tooltip when showing all Gatekeeper results', async () =
     </RecoilRoot>
   )
 
+  await waitForNocks(mcvNocks)
   await waitForText('Related resources')
   expect(screen.queryByRole('button', { name: 'More info' })).not.toBeInTheDocument()
 })

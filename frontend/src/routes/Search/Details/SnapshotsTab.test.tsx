@@ -6,7 +6,7 @@ import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { v4 as uuidv4 } from 'uuid'
 import { isFineGrainedRbacEnabledState, Settings, settingsState } from '../../../atoms'
-import { nockCreate, nockGet, nockIgnoreApiPaths, nockRequest } from '../../../lib/nock-util'
+import { nockCreate, nockIgnoreApiPaths, nockManagedClusterView, nockRequest } from '../../../lib/nock-util'
 import { wait, waitForNocks } from '../../../lib/test-util'
 import { SearchResultItemsDocument } from '../search-sdk/search-sdk'
 import SnapshotsTab from './SnapshotsTab'
@@ -53,67 +53,36 @@ const getCanUserCreateMCVRes = {
   },
 }
 
-const getMCVRequest = {
-  apiVersion: 'view.open-cluster-management.io/v1beta1',
-  kind: 'ManagedClusterView',
-  metadata: {
-    name: MOCKED_UUID,
-    namespace: 'local-cluster',
-    labels: {
-      viewName: MOCKED_UUID,
-    },
-  },
-  spec: {
-    scope: {
-      name: 'centos-stream9',
-      resource: 'virtualmachine.kubevirt.io/v1',
-      namespace: 'openshift-cnv',
-    },
-  },
+const mcvScope = {
+  name: 'centos-stream9',
+  resource: 'virtualmachine.v1.kubevirt.io',
+  namespace: 'openshift-cnv',
 }
 
-const getMCVResponse = {
-  apiVersion: 'view.open-cluster-management.io/v1beta1',
-  kind: 'ManagedClusterView',
-  metadata: {
-    name: MOCKED_UUID,
-    namespace: 'local-cluster',
-    labels: {
-      viewName: MOCKED_UUID,
+const mcvStatus = {
+  conditions: [
+    {
+      message: 'Watching resources successfully',
+      reason: 'GetResourceProcessing',
+      status: 'True',
+      type: 'Processing',
     },
-  },
-  spec: {
-    scope: {
-      name: 'centos-stream9',
-      resource: 'virtualmachine.kubevirt.io/v1',
-      namespace: 'openshift-cnv',
-    },
-  },
-  status: {
-    conditions: [
-      {
-        message: 'Watching resources successfully',
-        reason: 'GetResourceProcessing',
-        status: 'True',
-        type: 'Processing',
-      },
-    ],
+  ],
+  result: {
     result: {
-      result: {
-        apiVersion: 'kubevirt.io/v1',
-        kind: 'VirtualMachine',
-        metadata: {
-          creationTimestamp: '2024-10-02T20:02:14Z',
-          finalizers: ['kubevirt.io/virtualMachineControllerFinalize'],
-          name: 'centos-stream9',
-          namespace: 'openshift-cnv',
-          resourceVersion: '112564972',
-          uid: '4d2cd231-0794-4a4b-89a3-90bb8b6ea89b',
-        },
-        status: {
-          printableStatus: 'Running',
-          ready: true,
-        },
+      apiVersion: 'kubevirt.io/v1',
+      kind: 'VirtualMachine',
+      metadata: {
+        creationTimestamp: '2024-10-02T20:02:14Z',
+        finalizers: ['kubevirt.io/virtualMachineControllerFinalize'],
+        name: 'centos-stream9',
+        namespace: 'openshift-cnv',
+        resourceVersion: '112564972',
+        uid: '4d2cd231-0794-4a4b-89a3-90bb8b6ea89b',
+      },
+      status: {
+        printableStatus: 'Running',
+        ready: true,
       },
     },
   },
@@ -123,7 +92,6 @@ describe('SnapshotsTab', () => {
   beforeEach(() => {
     // Reset the mock before each test
     mockUuidV4.mockReset()
-    mockUuidV4.mockReturnValue(MOCKED_UUID)
 
     nockIgnoreApiPaths()
     Object.defineProperty(window, 'location', {
@@ -137,7 +105,8 @@ describe('SnapshotsTab', () => {
   it('should render tab in loading state', async () => {
     // create the nocks but do not wait for them below to trigger the loading state.
     nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
-    nockGet(getMCVRequest, getMCVResponse)
+    mockUuidV4.mockReturnValue(MOCKED_UUID)
+    nockManagedClusterView(MOCKED_UUID, 'local-cluster', mcvScope, mcvStatus)
     const mocks = [
       {
         request: {
@@ -183,7 +152,8 @@ describe('SnapshotsTab', () => {
 
   it('should render tab with errors', async () => {
     const getCanCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
-    const getVMManagedClusterViewNock = nockGet(getMCVRequest, getMCVResponse)
+    mockUuidV4.mockReturnValue(MOCKED_UUID)
+    const mcvNocks = nockManagedClusterView(MOCKED_UUID, 'local-cluster', mcvScope, mcvStatus)
     const mocks = [
       {
         request: {
@@ -224,7 +194,7 @@ describe('SnapshotsTab', () => {
       </RecoilRoot>
     )
     // Wait for managed cluster view requests to finish
-    await waitForNocks([getCanCreateMCVNock, getVMManagedClusterViewNock])
+    await waitForNocks([getCanCreateMCVNock, ...mcvNocks])
     await wait()
     // Test that the component has rendered errors correctly
     await waitFor(() => expect(screen.queryByText('An unexpected error occurred.')).toBeTruthy())
@@ -233,7 +203,8 @@ describe('SnapshotsTab', () => {
 
   it('should render tab with correct snapshot data from search', async () => {
     const getCanCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
-    const getVMManagedClusterViewNock = nockGet(getMCVRequest, getMCVResponse)
+    mockUuidV4.mockReturnValue(MOCKED_UUID)
+    const mcvNocks = nockManagedClusterView(MOCKED_UUID, 'local-cluster', mcvScope, mcvStatus)
     const mocks = [
       {
         request: {
@@ -312,7 +283,7 @@ describe('SnapshotsTab', () => {
       </RecoilRoot>
     )
     // Wait for managed cluster view requests to finish
-    await waitForNocks([getCanCreateMCVNock, getVMManagedClusterViewNock])
+    await waitForNocks([getCanCreateMCVNock, ...mcvNocks])
     await wait()
     // Test that the component has rendered correctly with data
     await waitFor(() => expect(screen.queryByText('centos-stream9-snapshot-20250327135448211')).toBeTruthy())
