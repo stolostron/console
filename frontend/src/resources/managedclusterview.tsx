@@ -87,20 +87,17 @@ export async function fireManagedClusterView(
     }
   }
 
-  // Make sure to mock uuidv4 in tests that use ManagedClusterView so the
-  // resource name is predictable. The test must then mock the full lifecycle:
-  //   1. nockCreate - POST to create the ManagedClusterView
-  //   2. nockGet    - GET to poll for the result (the view status and remote resource)
-  //   3. nockDelete - DELETE to clean up the ManagedClusterView after polling
+  // In tests, mock uuidv4 so the ManagedClusterView name is predictable, then
+  // use nockManagedClusterView() from nock-util.ts to set up the full lifecycle
+  // (create, poll, delete) in a single call. Example:
   //
-  // jest.mock('uuid', () => ({
-  //   v4: jest.fn(),
-  // }))
-  //
+  // jest.mock('uuid', () => ({ v4: jest.fn() }))
   // const mockUuidV4 = jest.mocked(uuidv4)
-  // const MOCKED_UUID = 'MOCKED_UUID'
-  // mockUuidV4.mockReset()
-  // mockUuidV4.mockReturnValue(MOCKED_UUID)
+  // mockUuidV4.mockReturnValue('MOCKED_UUID')
+  //
+  // const mcvNocks = nockManagedClusterView('MOCKED_UUID', 'cluster-ns', scope, status)
+  // render(<MyComponent />)
+  // await waitForNocks(mcvNocks)
 
   const viewName = uuidv4()
   const { apiGroup, version } = getGroupFromApiVersion(resourceApiVersion)
