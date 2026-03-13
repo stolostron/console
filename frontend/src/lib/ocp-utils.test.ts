@@ -10,9 +10,24 @@ jest.mock('../shared-recoil')
 jest.mock('./operatorCheck')
 
 describe('launchToOCP', () => {
-  test('launchToOCP newtab true', () => {
-    // These are the default values
-    expect(launchToOCP('/blah')).toEqual(undefined)
+  beforeEach(() => {
+    window.open = jest.fn()
+  })
+
+  test('handles URL with leading slash', () => {
+    launchToOCP('/catalog/all-namespaces')
+    expect(window.open).toHaveBeenCalledWith('/catalog/all-namespaces')
+  })
+
+  test('handles URL without leading slash', () => {
+    launchToOCP('k8s/ns/default/pods')
+    expect(window.open).toHaveBeenCalledWith('/k8s/ns/default/pods')
+  })
+
+  test('does not create double slash for URL with leading slash', () => {
+    launchToOCP('/operatorhub/all-namespaces')
+    expect(window.open).toHaveBeenCalledWith('/operatorhub/all-namespaces')
+    expect(window.open).not.toHaveBeenCalledWith('//operatorhub/all-namespaces')
   })
 })
 

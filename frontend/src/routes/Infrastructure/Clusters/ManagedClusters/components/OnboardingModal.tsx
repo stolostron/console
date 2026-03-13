@@ -6,6 +6,7 @@ import { CloudTenantIcon, ConnectedIcon, ExternalLinkAltIcon, ImportIcon } from 
 import { useContext, useMemo } from 'react'
 import { Link } from 'react-router-dom-v5-compat'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
+import { useOperatorCatalog } from '../../../../../lib/operator-catalog-utils'
 import { DOC_HOME } from '../../../../../lib/doc-util'
 import { launchToOCP } from '../../../../../lib/ocp-utils'
 import { PluginContext } from '../../../../../lib/PluginContext'
@@ -22,6 +23,7 @@ export interface IOnboardingModalProps {
 export function OnboardingModal(props: IOnboardingModalProps) {
   const { t } = useTranslation()
   const { isACMAvailable } = useContext(PluginContext)
+  const { buildDetailsUrl } = useOperatorCatalog()
 
   const cards = useMemo(
     () => [
@@ -149,7 +151,10 @@ export function OnboardingModal(props: IOnboardingModalProps) {
                     onClick={() =>
                       !isACMAvailable
                         ? launchToOCP(
-                            'catalog/all-namespaces?selectedId=advanced-cluster-management-redhat-operators-openshift-marketplace'
+                            buildDetailsUrl(
+                              'all-namespaces',
+                              'advanced-cluster-management-redhat-operators-openshift-marketplace'
+                            )
                           )
                         : window.open(DOC_HOME, '_blank')
                     }
