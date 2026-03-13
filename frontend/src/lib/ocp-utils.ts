@@ -12,7 +12,8 @@ function api<T>(url: string, headers?: Record<string, unknown>): Promise<T> {
 }
 
 export function launchToOCP(urlSuffix: string) {
-  window.open(`/${urlSuffix}`)
+  const normalizedPath = urlSuffix.startsWith('/') ? urlSuffix : `/${urlSuffix}`
+  window.open(normalizedPath)
 }
 
 export function checkOCPVersion(switcherExists: (arg0: boolean) => void) {
