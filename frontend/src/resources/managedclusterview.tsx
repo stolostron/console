@@ -87,87 +87,51 @@ export async function fireManagedClusterView(
     }
   }
 
-  // Make sure to mock uuidv4 in tests that use ManagedClusterView
+  // Make sure to mock uuidv4 in tests that use ManagedClusterView so the
+  // resource name is predictable. The test must then mock the full lifecycle:
+  //   1. nockCreate - POST to create the ManagedClusterView
+  //   2. nockGet    - GET to poll for the result (the view status and remote resource)
+  //   3. nockDelete - DELETE to clean up the ManagedClusterView after polling
+  //
   // jest.mock('uuid', () => ({
   //   v4: jest.fn(),
   // }))
-
-  // const mockUuidV4 = jest.mocked(uuidv4)
-  // const MOCKED_UUID = 'test-action-uuid-12345'
-
+  //
   // const mockUuidV4 = jest.mocked(uuidv4)
   // const MOCKED_UUID = 'MOCKED_UUID'
   // mockUuidV4.mockReset()
   // mockUuidV4.mockReturnValue(MOCKED_UUID)
 
-  const skipCheckExisting = process.env.NODE_ENV !== 'test'
   const viewName = uuidv4()
-
-  let getResult: any
-
-  if (!skipCheckExisting) {
-    // Try to get and return the managedClusterView if it exsits -> if not create one and poll
-    getResult = await getManagedClusterView({ namespace: clusterName, name: viewName })
-      .promise.then((viewResponse) => {
-        const isProcessing = _.get(viewResponse, 'status.conditions[0].type', undefined)
-        const reason = _.get(viewResponse, 'status.conditions[0].reason', undefined)
-        const message = _.get(viewResponse, 'status.conditions[0].message', undefined)
-        if (isProcessing && reason) {
-          if (isProcessing === 'Processing' && reason === 'GetResourceProcessing') {
-            return {
-              processing: isProcessing,
-              reason: reason,
-              result: viewResponse.status?.result,
-            }
-          } else if (isProcessing === 'Processing' && reason !== 'GetResourceProcessing') {
-            return { message: message }
-          }
-        } else {
-          return {
-            message:
-              'There was an error while getting the managed resource. Make sure the managed cluster is online and healthy, and that the work manager pod in namespace open-cluster-management-agent-addon is healthy ',
-          }
-        }
-        deleteManagedClusterView({ namespace: clusterName, name: viewName })
-      })
-      .catch((err) => {
-        return err
-      })
-  }
-
-  if (!getResult || getResult.code >= 400) {
-    const { apiGroup, version } = getGroupFromApiVersion(resourceApiVersion)
-    const body: ManagedClusterView = {
-      apiVersion: ManagedClusterViewApiVersion,
-      kind: ManagedClusterViewKind,
-      metadata: {
-        name: viewName,
-        namespace: clusterName,
-        labels: {
-          viewName,
-        },
+  const { apiGroup, version } = getGroupFromApiVersion(resourceApiVersion)
+  const body: ManagedClusterView = {
+    apiVersion: ManagedClusterViewApiVersion,
+    kind: ManagedClusterViewKind,
+    metadata: {
+      name: viewName,
+      namespace: clusterName,
+      labels: {
+        viewName,
       },
-      spec: {
-        scope: {
-          name: resourceName,
-          resource: apiGroup ? `${resourceKind.toLowerCase()}.${version}.${apiGroup}` : `${resourceKind.toLowerCase()}`,
-        },
+    },
+    spec: {
+      scope: {
+        name: resourceName,
+        resource: apiGroup ? `${resourceKind.toLowerCase()}.${version}.${apiGroup}` : `${resourceKind.toLowerCase()}`,
       },
-    }
-    // Only set namespace if not null
-    if (resourceNamespace) {
-      body.spec!.scope.namespace = resourceNamespace
-    }
-    return createResource<ManagedClusterView>(body)
-      .promise.then(async () => {
-        return pollManagedClusterView(viewName, clusterName)
-      })
-      .catch((err) => {
-        console.error(err)
-        return err
-      })
+    },
   }
-  return getResult
+  if (resourceNamespace) {
+    body.spec!.scope.namespace = resourceNamespace
+  }
+  return createResource<ManagedClusterView>(body)
+    .promise.then(async () => {
+      return pollManagedClusterView(viewName, clusterName)
+    })
+    .catch((err) => {
+      console.error(err)
+      return err
+    })
 }
 
 export async function pollManagedClusterView(viewName: string, clusterName: string): Promise<ManagedClusterView> {

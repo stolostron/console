@@ -13,6 +13,9 @@ import {
   getResourceApiPathTestHelper,
   getResourceNameApiPathTestHelper,
   IResource,
+  ManagedClusterView,
+  ManagedClusterViewApiVersion,
+  ManagedClusterViewKind,
   ResourceAttributes,
   SelfSubjectAccessReview,
   SelfSubjectAccessReviewApiVersion,
@@ -465,6 +468,34 @@ export function nockDelete(resource: IResource, response?: IResource, statusCode
       'Access-Control-Allow-Methods': 'DELETE, OPTIONS',
       'Access-Control-Allow-Credentials': 'true',
     })
+}
+
+type ManagedClusterViewCondition = NonNullable<NonNullable<ManagedClusterView['status']>['conditions']>[number]
+
+export function nockManagedClusterView(
+  name: string,
+  namespace: string,
+  scope: NonNullable<ManagedClusterView['spec']>['scope'],
+  status: {
+    conditions?: Array<
+      Partial<ManagedClusterViewCondition> & Pick<ManagedClusterViewCondition, 'message' | 'reason' | 'status' | 'type'>
+    >
+    result?: Record<string, unknown>
+  }
+) {
+  const createBody = {
+    apiVersion: ManagedClusterViewApiVersion,
+    kind: ManagedClusterViewKind,
+    metadata: { name, namespace, labels: { viewName: name } },
+    spec: { scope },
+  }
+  const mcvResource = {
+    apiVersion: ManagedClusterViewApiVersion,
+    kind: ManagedClusterViewKind,
+    metadata: { name, namespace },
+  }
+  const getResponse = { ...createBody, status }
+  return [nockCreate(createBody), nockGet(mcvResource, getResponse), nockDelete(mcvResource)]
 }
 
 export function nockDeleteError(resource: IResource, error: string | object) {
