@@ -29,6 +29,7 @@ import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkA
 import { RbacDropdown } from '../../../components/Rbac'
 import { useLocalHubName } from '../../../hooks/use-local-hub'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { useOperatorCatalog } from '../../../lib/operator-catalog-utils'
 import { deleteResources } from '../../../lib/delete-resources'
 import { DOC_LINKS, OCP_DOC, ViewDocumentationLink } from '../../../lib/doc-util'
 import { canUser, rbacDelete } from '../../../lib/rbac-util'
@@ -50,7 +51,6 @@ import {
 import { getDateTimeCell } from '../helpers/table-row-helpers'
 
 // Will change perspective, still in the OCP Console app
-const storageOperatorUrl = '/catalog/ns/multicluster-engine?category=storage'
 const assistedServiceDeploymentUrl = '/k8s/ns/multicluster-engine/deployments/assisted-service'
 
 export const getMatchingInfraAgents = (infraEnv: InfraEnvK8sResource, agents: AgentK8sResource[]) => {
@@ -252,6 +252,7 @@ type InfraEnvsTableProps = {
 const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agentServiceConfig, isStorage }) => {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { buildCategoryUrl } = useOperatorCatalog()
   const getDetailsLink = (infraEnv: InfraEnvK8sResource) =>
     generatePath(NavigationPath.infraEnvironmentDetails, {
       namespace: infraEnv.metadata?.namespace!,
@@ -411,7 +412,12 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
     <>
       <BulkActionModal<InfraEnvK8sResource> {...modalProps} />
       <Stack hasGutter>
-        {!isStorage && <CimStorageMissingAlert docStorageUrl={docStorageUrl} storageOperatorUrl={storageOperatorUrl} />}
+        {!isStorage && (
+          <CimStorageMissingAlert
+            docStorageUrl={docStorageUrl}
+            storageOperatorUrl={buildCategoryUrl('multicluster-engine', 'storage')}
+          />
+        )}
         {isStorage && (
           <CimConfigProgressAlert
             agentServiceConfig={agentServiceConfig}

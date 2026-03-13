@@ -10,6 +10,14 @@ jest.mock('../lib/acm-i18next', () => ({
   }),
 }))
 
+jest.mock('../hooks/use-cluster-version', () => ({
+  useClusterVersion: () => ({
+    version: '4.20.0',
+    isLoading: false,
+    error: undefined,
+  }),
+}))
+
 describe('OperatorAlert', () => {
   const defaultProps = {
     component: 'alert' as const,
@@ -100,10 +108,7 @@ describe('OperatorAlert', () => {
 
     const installLink = screen.getByText('Install the operator')
     const linkElement = installLink.closest('a')
-    expect(linkElement).toHaveAttribute(
-      'href',
-      '/catalog/ns/default?keyword=OpenShift%20Virtualization%20Operator'
-    )
+    expect(linkElement).toHaveAttribute('href', '/catalog/ns/default?keyword=OpenShift%20Virtualization%20Operator')
   })
 
   it('should render without message when message is not provided', () => {

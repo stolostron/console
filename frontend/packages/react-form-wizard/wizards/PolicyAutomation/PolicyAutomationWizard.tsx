@@ -34,7 +34,14 @@ export function PolicyAutomationWizard(props: {
   onCancel: WizardCancel
   getAnsibleJobsCallback: (credential: ICredential) => Promise<string[]>
   isAnsibleOperatorInstalled: boolean
+  buildSearchUrl?: (namespace: string, keyword: string) => string
+  catalogDisplayName?: string
 }) {
+  const buildSearchUrl =
+    props.buildSearchUrl ??
+    ((namespace: string, keyword: string) => `/catalog/ns/${namespace}?keyword=${encodeURIComponent(keyword)}`)
+  const displayName = props.catalogDisplayName ?? 'OperatorHub'
+
   const ansibleCredentials = useMemo(
     () =>
       props.credentials.filter(
@@ -63,14 +70,14 @@ export function PolicyAutomationWizard(props: {
               isInline
               variant={ButtonVariant.link}
               onClick={() =>
-                window.open(openShiftConsoleUrl + '/catalog/ns/default?keyword=ansible+automation+platform')
+                window.open(openShiftConsoleUrl + buildSearchUrl('default', 'ansible automation platform'))
               }
             >
-              OperatorHub
+              {displayName}
             </Button>
           </div>
         ) : (
-          'Install the Operator through operator hub.'
+          `Install the Operator through ${displayName.toLowerCase()}.`
         )}
       </div>
     )
