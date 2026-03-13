@@ -4,6 +4,7 @@ import got from 'got'
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { encode as stringifyQuery, parse as parseQueryString } from 'querystring'
 import { deleteCookie } from '../lib/cookies'
+import { fetchRetry } from '../lib/fetch-retry'
 import { jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { redirect, respondInternalServerError, unauthorized } from '../lib/respond'
@@ -16,9 +17,14 @@ let oauthInfoPromise: Promise<OAuthInfo>
 
 export function getOauthInfoPromise() {
   if (oauthInfoPromise === undefined) {
-    oauthInfoPromise = jsonRequest<OAuthInfo>(
-      `${process.env.CLUSTER_API_URL}/.well-known/oauth-authorization-server`
-    ).catch((err: Error) => {
+    const oidcIssuerUrl = process.env.OIDC_ISSUER_URL
+    const discoveryUrl = oidcIssuerUrl
+      ? new URL(
+          '.well-known/openid-configuration',
+          oidcIssuerUrl.endsWith('/') ? oidcIssuerUrl : `${oidcIssuerUrl}/`
+        ).toString()
+      : `${process.env.CLUSTER_API_URL}/.well-known/oauth-authorization-server`
+    oauthInfoPromise = jsonRequest<OAuthInfo>(discoveryUrl).catch((err: Error) => {
       logger.error({ msg: 'oauth-authorization-server error', error: err.message })
       setDead()
       return {
@@ -37,7 +43,7 @@ export async function login(_req: Http2ServerRequest, res: Http2ServerResponse):
     response_type: `code`,
     client_id: process.env.OAUTH2_CLIENT_ID,
     redirect_uri: process.env.OAUTH2_REDIRECT_URL,
-    scope: `user:full`,
+    scope: process.env.OIDC_ISSUER_URL ? 'openid' : 'user:full',
     state: '',
   })
   return redirect(res, `${oauthInfo.authorization_endpoint}?${queryString}`)
@@ -47,10 +53,9 @@ export async function loginCallback(req: Http2ServerRequest, res: Http2ServerRes
   const url = req.url
   if (url.includes('?')) {
     const oauthInfo = await getOauthInfoPromise()
-    const queryString = url.substr(url.indexOf('?') + 1)
+    const queryString = url.substring(url.indexOf('?') + 1)
     const query = parseQueryString(queryString)
     const code = query.code as string
-    // const state = query.state
     const requestQuery: Record<string, string> = {
       grant_type: `authorization_code`,
       code: code,
@@ -58,11 +63,16 @@ export async function loginCallback(req: Http2ServerRequest, res: Http2ServerRes
       client_id: process.env.OAUTH2_CLIENT_ID,
       client_secret: process.env.OAUTH2_CLIENT_SECRET,
     }
-    const requestQueryString = stringifyQuery(requestQuery)
-    const body = await jsonRequest<{ access_token: string }>(oauthInfo.token_endpoint + '?' + requestQueryString)
-    if (body.access_token) {
+    const response = await fetchRetry(oauthInfo.token_endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' },
+      body: stringifyQuery(requestQuery),
+    })
+    const body = (await response.json()) as { access_token?: string; id_token?: string }
+    const token = process.env.OIDC_ISSUER_URL ? body.id_token : body.access_token
+    if (token) {
       const headers = {
-        'Set-Cookie': `acm-access-token-cookie=${body.access_token}; ${
+        'Set-Cookie': `acm-access-token-cookie=${token}; ${
           process.env.NODE_ENV === 'production' ? 'Secure; ' : ''
         } HttpOnly; Path=/`,
         location: process.env.FRONTEND_URL,
