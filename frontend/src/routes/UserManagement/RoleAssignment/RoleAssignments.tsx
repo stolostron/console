@@ -23,6 +23,7 @@ import {
   renderStatusCell,
   renderSubjectNameCell,
 } from './RoleAssignmentsHelper'
+import { useRoleAssignmentsStatusHook } from './useRoleAssignmentsStatusHook'
 
 type RoleAssignmentsProps = {
   roleAssignments: FlattenedRoleAssignment[]
@@ -46,6 +47,8 @@ const RoleAssignments = ({
   const canPatchRoleAssignment = useIsAnyNamespaceAuthorized(rbacPatch(MulticlusterRoleAssignmentDefinition))
   const canDelete = useIsAnyNamespaceAuthorized(rbacDelete(MulticlusterRoleAssignmentDefinition))
 
+  // Hook to manage the callback status and callbacks per reason map
+  const { callbackMap, isProcessingRoleAssignmentMap, isAnyRoleAssignmentProcessing } = useRoleAssignmentsStatusHook()
   // User needs both create and patch to add role assignments
   const canCreateRoleAssignment = canCreate && canPatchRoleAssignment
   // User needs both delete and patch to remove role assignments
@@ -309,7 +312,13 @@ const RoleAssignments = ({
     },
     {
       header: t('Status'),
-      cell: renderStatusCell,
+      cell: (roleAssignment: FlattenedRoleAssignment) =>
+        renderStatusCell({
+          roleAssignment,
+          callbackMap,
+          isCallbackProcessing: isProcessingRoleAssignmentMap[roleAssignment.name],
+          areActionButtonsDisabled: isAnyRoleAssignmentProcessing || !canPatchRoleAssignment,
+        }),
       exportContent: (roleAssignment) => roleAssignment.status?.status ?? '',
     },
     {

@@ -4,6 +4,7 @@ import { useQuery } from '../../../../lib/useQuery'
 import { listGroups, listUsers } from '../../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { compareStrings } from '../../../../ui-components/AcmTable/AcmTable'
+import { useClusterNamespaceMap } from '../../../../utils/useClusterNamespaceMap'
 import { searchClient } from '../../../Search/search-sdk/search-client'
 import { useSearchResultItemsQuery } from '../../../Search/search-sdk/search-sdk'
 
@@ -91,19 +92,7 @@ const useRoleAssignmentData = (): RoleAssignmentHookReturnType => {
     },
   })
 
-  // This query returns all namespaces in all clusters
-  const { data: allNamespacesQuery, loading: isAllNamespacesLoading } = useSearchResultItemsQuery({
-    client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
-    variables: {
-      input: [
-        {
-          keywords: [],
-          filters: [{ property: 'kind', values: ['Namespace'] }],
-          limit: -1,
-        },
-      ],
-    },
-  })
+  const { clusterNamespaceMap, isLoading: isClusterNamespacesLoading } = useClusterNamespaceMap()
 
   const roles: SelectOption[] = useMemo(
     () =>
@@ -150,30 +139,6 @@ const useRoleAssignmentData = (): RoleAssignmentHookReturnType => {
     return manualClusters
   }, [managedClusterSets, allManagedClusters])
 
-  const clusterNamespaceMap = useMemo(() => {
-    const items = allNamespacesQuery?.searchResult?.[0]?.items || []
-    const map: Record<string, string[]> = {}
-
-    for (const ns of items) {
-      const clusterName = ns.cluster
-      const namespaceName = ns.name
-
-      if (
-        namespaceName &&
-        !namespaceName.startsWith('kube') &&
-        !namespaceName.startsWith('openshift') &&
-        !namespaceName.startsWith('open-cluster-management')
-      ) {
-        if (!map[clusterName]) {
-          map[clusterName] = []
-        }
-        map[clusterName].push(namespaceName)
-      }
-    }
-
-    return map
-  }, [allNamespacesQuery])
-
   useEffect(() => {
     const clustersWithClusterSet = clusters.filter((e) => e.clusterSet)
 
@@ -216,9 +181,9 @@ const useRoleAssignmentData = (): RoleAssignmentHookReturnType => {
   useEffect(
     () =>
       setIsLoading(
-        isUsersLoading || isGroupsLoading || isRolesLoading || isClusterSetLoading || isAllNamespacesLoading
+        isUsersLoading || isGroupsLoading || isRolesLoading || isClusterSetLoading || isClusterNamespacesLoading
       ),
-    [isUsersLoading, isRolesLoading, isClusterSetLoading, isGroupsLoading, isAllNamespacesLoading]
+    [isUsersLoading, isRolesLoading, isClusterSetLoading, isGroupsLoading, isClusterNamespacesLoading]
   )
 
   return {
@@ -233,4 +198,4 @@ const useRoleAssignmentData = (): RoleAssignmentHookReturnType => {
 
 export { useRoleAssignmentData }
 
-export type { RoleAssignmentHookType, SelectOption, Cluster, ClusterSet }
+export type { Cluster, ClusterSet, RoleAssignmentHookType, SelectOption }

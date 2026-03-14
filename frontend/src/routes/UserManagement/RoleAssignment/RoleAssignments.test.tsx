@@ -51,6 +51,15 @@ jest.mock('../RoleAssignments/hook/RoleAssignmentDataHook', () => ({
   })),
 }))
 
+// Mock useRoleAssignmentsStatusHook so status column and callbacks are controlled
+jest.mock('./useRoleAssignmentsStatusHook', () => ({
+  useRoleAssignmentsStatusHook: jest.fn(() => ({
+    callbacksPerReasonMap: {},
+    isProcessingRoleAssignmentMap: {},
+    isAnyRoleAssignmentProcessing: false,
+  })),
+}))
+
 // Mock multicluster role assignments data
 const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] = [
   {
@@ -231,6 +240,7 @@ const mockToastContext = {
   addAlert: jest.fn(),
   removeAlert: jest.fn(),
   replaceAlert: jest.fn(),
+  modifyAlert: jest.fn((alert: any) => alert),
   activeAlerts: [],
   alertInfos: [],
   removeVisibleAlert: jest.fn(),

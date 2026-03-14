@@ -50,6 +50,7 @@ function TestCreateArgoResources({
     removeAlert: jest.fn(),
     removeVisibleAlert: jest.fn(),
     clearAlerts: jest.fn(),
+    modifyAlert: jest.fn(),
   }
 
   return (
