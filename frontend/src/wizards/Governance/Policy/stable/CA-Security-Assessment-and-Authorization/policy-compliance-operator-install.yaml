@@ -3,7 +3,7 @@
 #
 # If set to "enforce" it'll install the operator.
 #
-# Note that OpenShift 4.6 is required.
+# Note that OpenShift 4.6+ is required.
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy
 metadata:
@@ -51,6 +51,7 @@ spec:
             namespace: openshift-compliance
             source: redhat-operators
             sourceNamespace: openshift-marketplace
+            channel: stable
             # Conditionally configure a nodeSelector for installing on ROSA hosted control planes
             config: '{{ if and (eq "ROSA" (lookup "cluster.open-cluster-management.io/v1alpha1"
               "ClusterClaim" "" "product.open-cluster-management.io").spec.value) (eq "true"
