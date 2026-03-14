@@ -2893,7 +2893,7 @@
   "submariner.install.form.gateways.labelHelp": "The number of worker nodes used to deploy the Submariner gateway component on the managed cluster. If the value is greater than 1, the Submariner gateway HA is enabled automatically (default 1).",
   "submariner.install.form.gateways.placeholder": "Enter gateway count",
   "submariner.install.form.instancetype": "Enter instance type",
-  "submariner.install.form.instancetype.labelHelp.aws": "The Amazon Web Services EC2 instance type of the gateway node that will be created on the managed cluster (default c5d.large).",
+  "submariner.install.form.instancetype.labelHelp.aws": "The Amazon Web Services EC2 instance type of the gateway node that will be created on the managed cluster (default m5.xlarge).",
   "submariner.install.form.instancetype.labelHelp.azure": "The Azure instance type of the gateway node that will be created on the managed cluster (default Standard_F4s_v2).",
   "submariner.install.form.instancetype.placeholder": "Select instance type",
   "submariner.install.form.nattenable": "Enable NAT-T",
