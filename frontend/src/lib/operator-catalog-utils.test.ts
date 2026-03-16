@@ -109,6 +109,12 @@ describe('operator-catalog-utils', () => {
         '/operatorhub/ns/multicluster-engine?category=storage'
       )
     })
+
+    it('should encode special characters in category', () => {
+      expect(buildCatalogCategoryUrl('4.20.0', 'multicluster-engine', 'storage & data')).toBe(
+        '/catalog/ns/multicluster-engine?category=storage%20%26%20data'
+      )
+    })
   })
 
   describe('buildCatalogDetailsUrl', () => {
@@ -143,6 +149,11 @@ describe('operator-catalog-utils', () => {
       expect(url).toBe(
         '/operatorhub/all-namespaces?details-item=advanced-cluster-management-redhat-operators-openshift-marketplace'
       )
+    })
+
+    it('should encode special characters in operator id', () => {
+      const url = buildCatalogDetailsUrl('4.20.0', 'all-namespaces', 'test operator&id=1')
+      expect(url).toBe('/catalog/all-namespaces?selectedId=test%20operator%26id%3D1')
     })
   })
 })
