@@ -267,7 +267,7 @@ export function generateSearchResultExport(
     })
   })
 
-  const defaulColumns = [
+  const defaultColumns = [
     { header: t('Name'), key: 'name' },
     { header: t('Namespace'), key: 'namespace' },
     { header: t('Kind'), key: 'kind' },
@@ -275,7 +275,7 @@ export function generateSearchResultExport(
     { header: t('Created'), key: 'created' },
     { header: t('Label'), key: 'label' },
   ]
-  let columns: SearchColumnDefinition[] = defaulColumns.map((defaultCol: { header: string; key: string }) => {
+  let columns: SearchColumnDefinition[] = defaultColumns.map((defaultCol: { header: string; key: string }) => {
     return {
       header: defaultCol.header,
       sort: defaultCol.key,
