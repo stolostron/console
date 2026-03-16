@@ -40,7 +40,7 @@ export const buildCatalogCategoryUrl = (
   category: string
 ): string => {
   const basePath = getOperatorCatalogBasePath(ocpVersion)
-  return `${basePath}/ns/${namespace}?category=${encodeURIComponent(category)}`
+  return `${basePath}/ns/${encodeURIComponent(namespace)}?category=${encodeURIComponent(category)}`
 }
 
 export const buildCatalogDetailsUrl = (
@@ -50,7 +50,7 @@ export const buildCatalogDetailsUrl = (
 ): string => {
   const basePath = getOperatorCatalogBasePath(ocpVersion)
   const paramName = isVersionAtLeast(ocpVersion, '4.20') ? 'selectedId' : 'details-item'
-  return `${basePath}/${namespace}?${paramName}=${encodeURIComponent(operatorId)}`
+  return `${basePath}/${encodeURIComponent(namespace)}?${paramName}=${encodeURIComponent(operatorId)}`
 }
 
 export const useOperatorCatalog = () => {
