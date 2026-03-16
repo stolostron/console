@@ -23,7 +23,20 @@ import {
   nockIgnoreOperatorCheck,
   nockList,
 } from '~/lib/nock-util'
-import { clickByRole, clickByText, typeByRole, typeByTestId, waitForNocks, waitForText } from '~/lib/test-util'
+import {
+  clickByRole,
+  clickByText,
+  createClusterVersionMock,
+  typeByRole,
+  typeByTestId,
+  waitForNocks,
+  waitForText,
+} from '~/lib/test-util'
+
+const mockUseClusterVersion = createClusterVersionMock()
+jest.mock('~/hooks/use-cluster-version', () => ({
+  useClusterVersion: () => mockUseClusterVersion(),
+}))
 import { NavigationPath } from '~/NavigationPath'
 import {
   ApplicationSet,

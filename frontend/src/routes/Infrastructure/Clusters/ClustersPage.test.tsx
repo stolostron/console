@@ -4,13 +4,18 @@ import { render } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
-import { waitForText } from '../../../lib/test-util'
+import { createClusterVersionMock, waitForText } from '../../../lib/test-util'
 import Clusters from './Clusters'
 import { NavigationPath } from '../../../NavigationPath'
 
 // Mock KubevirtProviderAlert to avoid complex dependencies
 jest.mock('../../../components/KubevirtProviderAlert', () => ({
   KubevirtProviderAlert: () => null,
+}))
+
+const mockUseClusterVersion = createClusterVersionMock()
+jest.mock('../../../hooks/use-cluster-version', () => ({
+  useClusterVersion: () => mockUseClusterVersion(),
 }))
 
 describe('Cluster Management', () => {

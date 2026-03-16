@@ -40,6 +40,7 @@ import {
   clickByLabel,
   clickByRole,
   clickByText,
+  createClusterVersionMock,
   typeByText,
   waitForCalled,
   waitForNock,
@@ -112,6 +113,11 @@ jest.mock('../../../../../hooks/useVirtualMachineDetection', () => ({
 // Mock KubevirtProviderAlert to avoid complex dependencies in error state tests
 jest.mock('../../../../../components/KubevirtProviderAlert', () => ({
   KubevirtProviderAlert: () => null,
+}))
+
+const mockUseClusterVersion = createClusterVersionMock()
+jest.mock('../../../../../hooks/use-cluster-version', () => ({
+  useClusterVersion: () => mockUseClusterVersion(),
 }))
 
 const mockManagedClusterInfo: ManagedClusterInfo = {

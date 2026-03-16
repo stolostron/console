@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { createClusterVersionMock } from '../lib/test-util'
 import { OperatorAlert } from './OperatorAlert'
 
 // Mock react-i18next
@@ -10,12 +11,9 @@ jest.mock('../lib/acm-i18next', () => ({
   }),
 }))
 
+const mockUseClusterVersion = createClusterVersionMock()
 jest.mock('../hooks/use-cluster-version', () => ({
-  useClusterVersion: () => ({
-    version: '4.20.0',
-    isLoading: false,
-    error: undefined,
-  }),
+  useClusterVersion: () => mockUseClusterVersion(),
 }))
 
 describe('OperatorAlert', () => {
@@ -127,5 +125,39 @@ describe('OperatorAlert', () => {
     // Check that the button has the external link icon
     const icon = button.querySelector('svg')
     expect(icon).toBeInTheDocument()
+  })
+
+  describe('OCP 4.20+ (uses /catalog)', () => {
+    it('should use /catalog path for OCP 4.21', () => {
+      mockUseClusterVersion.mockReturnValue({
+        version: '4.21',
+        isLoading: false,
+        error: undefined,
+      })
+
+      renderOperatorAlert()
+
+      const installLink = screen.getByText('Install the operator')
+      const linkElement = installLink.closest('a')
+      expect(linkElement).toHaveAttribute('href', '/catalog/ns/default?keyword=Test%20Operator')
+    })
+  })
+
+  describe('OCP 4.19 uses /operatorhub', () => {
+    beforeEach(() => {
+      mockUseClusterVersion.mockReturnValue({
+        version: '4.19',
+        isLoading: false,
+        error: undefined,
+      })
+    })
+
+    it('should use /operatorhub path for OCP 4.19', () => {
+      renderOperatorAlert()
+
+      const installLink = screen.getByText('Install the operator')
+      const linkElement = installLink.closest('a')
+      expect(linkElement).toHaveAttribute('href', '/operatorhub/ns/default?keyword=Test%20Operator')
+    })
   })
 })
