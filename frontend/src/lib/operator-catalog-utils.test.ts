@@ -31,6 +31,16 @@ describe('operator-catalog-utils', () => {
       expect(isVersionAtLeast('4.20', '4.20')).toBe(true)
       expect(isVersionAtLeast('4.20.0', '4.20.0')).toBe(true)
     })
+
+    it('should compare patch versions correctly', () => {
+      expect(isVersionAtLeast('4.20.0', '4.20.1')).toBe(false)
+      expect(isVersionAtLeast('4.20.1', '4.20.0')).toBe(true)
+    })
+
+    it('should handle a leading v prefix', () => {
+      expect(isVersionAtLeast('v4.20.1', '4.20.0')).toBe(true)
+      expect(isVersionAtLeast('v4.19.9', '4.20.0')).toBe(false)
+    })
   })
 
   describe('getOperatorCatalogBasePath', () => {

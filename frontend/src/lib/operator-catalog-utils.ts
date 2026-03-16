@@ -5,15 +5,22 @@ import { useClusterVersion } from '../hooks/use-cluster-version'
 export const isVersionAtLeast = (version: string | undefined, compareVersion: string): boolean => {
   if (!version) return false
 
+  const parsePart = (part?: string) => {
+    const value = Number.parseInt((part ?? '0').replace(/\D.*$/, ''), 10)
+    return Number.isFinite(value) ? value : 0
+  }
+
   const parseVersion = (v: string) => {
-    const parts = v.split('.').map((part) => parseInt(part, 10))
-    return { major: parts[0] || 0, minor: parts[1] || 0 }
+    const [major, minor, patch] = v.replace(/^v/i, '').split('.')
+    return { major: parsePart(major), minor: parsePart(minor), patch: parsePart(patch) }
   }
 
   const current = parseVersion(version)
   const target = parseVersion(compareVersion)
 
-  return current.major !== target.major ? current.major > target.major : current.minor >= target.minor
+  if (current.major !== target.major) return current.major > target.major
+  if (current.minor !== target.minor) return current.minor > target.minor
+  return current.patch >= target.patch
 }
 
 export const getOperatorCatalogBasePath = (ocpVersion: string | undefined): string =>
