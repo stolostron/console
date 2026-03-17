@@ -4846,13 +4846,14 @@ const calculateNodeOffsets2 = {
         {
           name: 'test3-placement-1',
           namespace: 'test',
-          type: 'placements',
+          type: 'placementDecision',
           id: 'member--rules--test--test3-placement-1--0',
           specs: {
             isDesign: true,
             searchClusters: [],
             pulse: 'green',
-            shapeType: 'placements',
+            shapeType: 'placementDecision',
+            isPairedInLayoutWithParent: true,
           },
         },
         {
@@ -5158,13 +5159,14 @@ const calculateNodeOffsets2 = {
         {
           name: 'test3-placement-2',
           namespace: 'test',
-          type: 'placements',
+          type: 'placementDecision',
           id: 'member--rules--test--test3-placement-2--0',
           specs: {
             isDesign: true,
             searchClusters: [],
             pulse: 'green',
-            shapeType: 'placements',
+            shapeType: 'placementDecision',
+            isPairedInLayoutWithParent: true,
           },
         },
         {
@@ -7735,15 +7737,15 @@ const calculateNodeOffsets2 = {
   ret: {
     nodeOffsetMap: {
       'application--test3': {
-        dx: -83.75,
+        dx: -167.5,
         dy: -345,
       },
       'member--subscription--test--test3-subscription-1': {
-        dx: -185,
+        dx: -370,
         dy: -220,
       },
       'member--subscription--test--test3-subscription-2': {
-        dx: 17.5,
+        dx: 35,
         dy: -220,
       },
       'member--clusters--local-cluster--test3-subscription-1': {
@@ -7798,14 +7800,14 @@ const calculateNodeOffsets2 = {
           dy: 280,
         },
       'member--rules--test--test3-placement-1--0': {
-        dx: 0,
-        dy: -95,
+        dx: -505,
+        dy: -240,
       },
       'member--rules--test--test3-placement-2--0': {
-        dx: 0,
-        dy: -95,
+        dx: 170,
+        dy: -240,
       },
     },
-    layout: 'TreeLayout',
+    layout: 'ColaTreeLayout',
   },
 }

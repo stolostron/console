@@ -235,7 +235,6 @@ export const createResourceSearchLink = (node: NodeLike, t: Translator): { type:
     if (isSearchAvailable()) {
       let kindVal: string
       switch (nodeType) {
-        case 'placements':
         case 'placementDecision':
           kindVal = 'PlacementDecision'
           break
