@@ -32,7 +32,7 @@ interface MockSearchResponse {
 
 const appData: TestAppSetApplicationData = {
   subscription: null,
-  relatedKinds: ['applicationset', 'placement', 'cluster', 'consolelink'],
+  relatedKinds: ['applicationset', 'placementDecision', 'cluster', 'consolelink'],
   targetNamespaces: ['cluster-configs-rhacm'],
   argoAppsLabelNames: [
     'app.kubernetes.io/instance=mock-app-local-cluster',
@@ -273,7 +273,7 @@ const mockSearchQuery: MockSearchQuery = {
         filters: [
           {
             property: 'kind',
-            values: ['applicationset', 'placement', 'cluster'],
+            values: ['applicationset', 'placementDecision', 'cluster'],
           },
           {
             property: 'namespace',

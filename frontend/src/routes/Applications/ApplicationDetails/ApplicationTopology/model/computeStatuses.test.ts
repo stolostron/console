@@ -481,7 +481,7 @@ describe('computeNodeStatus node type variations', () => {
 
   it('should handle placement node type with numberOfSelectedClusters 0', () => {
     const node = {
-      type: 'placement',
+      type: 'placementDecision',
       specs: {
         pulse: 'green',
         isDesign: true,

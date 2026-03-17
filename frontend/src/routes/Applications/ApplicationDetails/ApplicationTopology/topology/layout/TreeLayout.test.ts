@@ -7735,15 +7735,15 @@ const calculateNodeOffsets2 = {
   ret: {
     nodeOffsetMap: {
       'application--test3': {
-        dx: -167.5,
+        dx: -83.75,
         dy: -345,
       },
       'member--subscription--test--test3-subscription-1': {
-        dx: -370,
+        dx: -185,
         dy: -220,
       },
       'member--subscription--test--test3-subscription-2': {
-        dx: 35,
+        dx: 17.5,
         dy: -220,
       },
       'member--clusters--local-cluster--test3-subscription-1': {
@@ -7798,14 +7798,14 @@ const calculateNodeOffsets2 = {
           dy: 280,
         },
       'member--rules--test--test3-placement-1--0': {
-        dx: -505,
-        dy: -200,
+        dx: 0,
+        dy: -95,
       },
       'member--rules--test--test3-placement-2--0': {
-        dx: 170,
-        dy: -200,
+        dx: 0,
+        dy: -95,
       },
     },
-    layout: 'ColaTreeLayout',
+    layout: 'TreeLayout',
   },
 }

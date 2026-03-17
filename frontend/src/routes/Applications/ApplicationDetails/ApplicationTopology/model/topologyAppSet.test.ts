@@ -254,7 +254,7 @@ describe('getAppSetTopology', () => {
     expect(appSetNode?.name).toBe('test-appset')
 
     // Verify Placement node exists
-    const placementNode = result.nodes.find((n) => n.type === 'placement')
+    const placementNode = result.nodes.find((n) => n.type === 'placementDecision')
     expect(placementNode).toBeDefined()
 
     // Verify cluster node exists
@@ -314,7 +314,7 @@ describe('getAppSetTopology', () => {
     expect(appSetNode).toBeDefined()
 
     // Verify no Placement node when placement is undefined
-    const placementNode = result.nodes.find((n) => n.type === 'placement')
+    const placementNode = result.nodes.find((n) => n.type === 'placementDecision')
     expect(placementNode).toBeUndefined()
   })
 
