@@ -21,13 +21,13 @@ import {
 } from '../../../resources'
 import { listResources } from '../../../resources/utils'
 import { createArgoResources } from './createArgoResources'
-import pushmodelschema from './pushmodelschema.json'
+import schema from './pullmodelschema.json'
 import { LostChangesContext } from '../../../components/LostChanges'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { useTimezones } from '../../../hooks/useTimezone'
 
-export default function CreateArgoApplicationSetPage() {
-  return <CreateApplicationArgo />
+export default function CreatePullApplicationSetPage() {
+  return <CreatePullApplicationSet />
 }
 
 export function GetGitOpsClusters(gitOpsClusters: GitOpsCluster[]) {
@@ -50,7 +50,7 @@ export function WizardSyncEditor() {
       editorTitle={t('Application set YAML')}
       variant="toolbar"
       resources={resources}
-      schema={pushmodelschema}
+      schema={schema}
       filters={['*.metadata.managedFields']}
       onEditorChange={(changes: { resources: any[] }): void => {
         update(setRepositoryTypeForSources(changes?.resources))
@@ -66,7 +66,7 @@ function getWizardSyncEditor() {
   return <WizardSyncEditor />
 }
 
-export function CreateApplicationArgo() {
+export function CreatePullApplicationSet() {
   const { t } = useTranslation()
   const {
     channelsState,
@@ -132,7 +132,7 @@ export function CreateApplicationArgo() {
       placements={placements}
       breadcrumb={[
         { text: t('Applications'), to: NavigationPath.applications },
-        { text: t('Create application set - push model') },
+        { text: t('Create application set - Pull model') },
       ]}
       clusters={managedClusters}
       clusterSets={clusterSets}
@@ -155,6 +155,7 @@ export function CreateApplicationArgo() {
         })
       }
       timeZones={timeZones}
+      isPullModel={true}
       repoSecrets={secrets}
     />
   )
