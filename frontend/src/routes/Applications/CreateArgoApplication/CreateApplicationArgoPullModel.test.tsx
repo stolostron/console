@@ -12,7 +12,7 @@ import {
   placementsState,
   secretsState,
   subscriptionOperatorsState,
-} from '../../../atoms'
+} from '~/atoms'
 import {
   nockArgoGitBranches,
   nockArgoGitPathSha,
@@ -22,9 +22,9 @@ import {
   nockIgnoreApiPaths,
   nockIgnoreOperatorCheck,
   nockList,
-} from '../../../lib/nock-util'
-import { clickByRole, clickByText, typeByRole, typeByTestId, waitForNocks, waitForText } from '../../../lib/test-util'
-import { NavigationPath } from '../../../NavigationPath'
+} from '~/lib/nock-util'
+import { clickByRole, clickByText, typeByRole, typeByTestId, waitForNocks, waitForText } from '~/lib/test-util'
+import { NavigationPath } from '~/NavigationPath'
 import {
   ApplicationSet,
   ApplicationSetApiVersion,
@@ -53,8 +53,8 @@ import {
   Secret,
   SecretApiVersion,
   SecretKind,
-} from '../../../resources'
-import { gitOpsOperators } from '../Application.sharedmocks'
+} from '~/resources'
+import { gitOpsOperators } from '~/routes/Applications/Application.sharedmocks'
 import { CreateApplicationArgoPullModel } from './CreateApplicationArgoPullModel'
 import { EditArgoApplicationSet } from './EditArgoApplicationSet'
 

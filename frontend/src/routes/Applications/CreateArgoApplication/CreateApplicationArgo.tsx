@@ -1,15 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { EditorValidationStatus, useData, useEditorValidationStatus, useItem } from '@patternfly-labs/react-form-wizard'
-import { ArgoWizard, setRepositoryTypeForSources } from '../../../wizards/Argo/ArgoWizard'
-import { AcmToastContext } from '../../../ui-components'
+import { ArgoWizard, setRepositoryTypeForSources } from '~/wizards/Argo/ArgoWizard'
+import { AcmToastContext } from '~/ui-components'
 import { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom-v5-compat'
-import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
-import { SyncEditor, ValidationStatus } from '../../../components/SyncEditor/SyncEditor'
-import { useTranslation } from '../../../lib/acm-i18next'
-import { isType } from '../../../lib/is-type'
-import { NavigationPath } from '../../../NavigationPath'
+import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '~/shared-recoil'
+import { SyncEditor, ValidationStatus } from '~/components/SyncEditor/SyncEditor'
+import { useTranslation } from '~/lib/acm-i18next'
+import { isType } from '~/lib/is-type'
+import { NavigationPath } from '~/NavigationPath'
 import {
   ApplicationSet,
   ApplicationSetApiVersion,
@@ -18,13 +18,13 @@ import {
   getGitChannelPaths,
   GitOpsCluster,
   IResource,
-} from '../../../resources'
-import { listResources } from '../../../resources/utils'
+} from '~/resources'
+import { listResources } from '~/resources/utils'
 import { createArgoResources } from './createArgoResources'
 import pushmodelschema from './pushmodelschema.json'
-import { LostChangesContext } from '../../../components/LostChanges'
-import { LoadingPage } from '../../../components/LoadingPage'
-import { useTimezones } from '../../../hooks/useTimezone'
+import { LostChangesContext } from '~/components/LostChanges'
+import { LoadingPage } from '~/components/LoadingPage'
+import { useTimezones } from '~/hooks/useTimezone'
 
 export default function CreateArgoApplicationSetPage() {
   return <CreateApplicationArgo />

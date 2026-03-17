@@ -1,16 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { EditorValidationStatus, useData, useEditorValidationStatus, useItem } from '@patternfly-labs/react-form-wizard'
-import { ArgoWizard } from '../../../wizards/Argo/ArgoWizard'
+import { ArgoWizard } from '~/wizards/Argo/ArgoWizard'
 import { useContext, useEffect, useState } from 'react'
 import { useParams, useNavigate, PathParam, generatePath } from 'react-router-dom-v5-compat'
-import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
-import { LoadingPage } from '../../../components/LoadingPage'
-import { SyncEditor, ValidationStatus } from '../../../components/SyncEditor/SyncEditor'
-import { useTranslation } from '../../../lib/acm-i18next'
-import { isType } from '../../../lib/is-type'
-import { useSearchParams } from '../../../lib/search'
-import { NavigationPath } from '../../../NavigationPath'
+import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '~/shared-recoil'
+import { LoadingPage } from '~/components/LoadingPage'
+import { SyncEditor, ValidationStatus } from '~/components/SyncEditor/SyncEditor'
+import { useTranslation } from '~/lib/acm-i18next'
+import { isType } from '~/lib/is-type'
+import { useSearchParams } from '~/lib/search'
+import { NavigationPath } from '~/NavigationPath'
 import {
   ApplicationSet,
   ApplicationSetApiVersion,
@@ -20,15 +20,15 @@ import {
   IResource,
   Placement,
   PlacementKind,
-} from '../../../resources'
-import { listResources, reconcileResources } from '../../../resources/utils'
-import { AcmToastContext } from '../../../ui-components'
+} from '~/resources'
+import { listResources, reconcileResources } from '~/resources/utils'
+import { AcmToastContext } from '~/ui-components'
 import { argoAppSetQueryString } from './actions'
 import pushmodelschema from './pushmodelschema.json'
 import { GetGitOpsClusters } from './CreateApplicationArgo'
 import { get, set } from 'lodash'
-import { LostChangesContext } from '../../../components/LostChanges'
-import { useTimezones } from '../../../hooks/useTimezone'
+import { LostChangesContext } from '~/components/LostChanges'
+import { useTimezones } from '~/hooks/useTimezone'
 
 export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
