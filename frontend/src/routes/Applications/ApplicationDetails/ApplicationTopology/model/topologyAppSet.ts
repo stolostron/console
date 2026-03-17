@@ -32,6 +32,7 @@ import {
   processMultiples,
 } from './topologyUtils'
 import { PlacementDecision } from '../../../../../resources/placement-decision'
+import { Placement } from '../../../../../resources/placement'
 
 /**
  * Generates topology data for ApplicationSet applications
@@ -92,32 +93,18 @@ export async function getAppSetTopology(
   nodes.push(appSetNode)
 
   /////////////////////////////////////////////
-  ////  PLACEMENT NODE /////////////////
+  ////  PLACEMENT DECISION NODE /////////////////
   /////////////////////////////////////////////
 
-  // Extract placement name from ApplicationSet generators configuration
-  const appSetPlacementName = (application.app as any)?.spec?.generators?.[0]?.clusterDecisionResource?.labelSelector
-    ?.matchLabels?.['cluster.open-cluster-management.io/placement']
-
-  // Clean up the application spec by removing apps array
-  if (application.app && typeof application.app === 'object' && 'spec' in application.app) {
-    const spec = application.app.spec as any
-    if (spec && typeof spec === 'object' && 'apps' in spec) {
-      delete spec.apps
-    }
-  }
-
-  // Create placement node if placement exists
-  let isPlacementFound = false
+  // Create placementDecision node if placementDecision exists
   let isArgoCDPullModelTargetLocalCluster = false
-  const placement = application.placementDecision as PlacementDecision
-  const placementId = `member--placements--${namespace}--${name}`
+  const placementDecision = application.placementDecision as PlacementDecision
+  const placementDecisionId = `member--placement--decision--${namespace}--${name}`
 
-  if (placement) {
-    isPlacementFound = true
-    const placementName = (placement as any)?.metadata?.name || ''
-    const placementNamespace = (placement as any)?.metadata?.namespace || ''
-    const clusterDecisions = (placement as any)?.status?.decisions ?? []
+  if (placementDecision) {
+    const placementDecisionName = (placementDecision as any)?.metadata?.name || ''
+    const placementDecisionNamespace = (placementDecision as any)?.metadata?.namespace || ''
+    const clusterDecisions = (placementDecision as any)?.status?.decisions ?? []
 
     // Check if this is an ArgoCD pull model targeting the local cluster
     if (
@@ -128,7 +115,45 @@ export async function getAppSetTopology(
       isArgoCDPullModelTargetLocalCluster = true
     }
 
-    // Add placement node to topology
+    // Add placementDecision node to topology
+    nodes.push({
+      name: placementDecisionName,
+      namespace: placementDecisionNamespace,
+      type: 'placementDecision',
+      id: placementDecisionId,
+      uid: placementDecisionId,
+      specs: {
+        isDesign: true,
+        raw: placementDecision,
+      },
+      placementDecision,
+    })
+
+    // Link ApplicationSet to PlacementDecision
+    links.push({
+      from: { uid: appId },
+      to: { uid: placementDecisionId },
+      type: '',
+      specs: { isDesign: true },
+    })
+  }
+  ;(nodes[0] as any).isArgoCDPullModelTargetLocalCluster = isArgoCDPullModelTargetLocalCluster
+
+  /////////////////////////////////////////////
+  ////  PLACEMENT NODE /////////////////
+  /////////////////////////////////////////////
+
+  // Create placementDecision node if placementDecision exists
+  let isPlacementFound = false
+  const placement = application.placement as Placement
+  const placementId = `member--placement--${namespace}--${name}`
+
+  if (placementDecision) {
+    isPlacementFound = true
+    const placementName = (placement as any)?.metadata?.name || ''
+    const placementNamespace = (placement as any)?.metadata?.namespace || ''
+
+    // Add placementDecision node to topology
     nodes.push({
       name: placementName,
       namespace: placementNamespace,
@@ -138,30 +163,29 @@ export async function getAppSetTopology(
       specs: {
         isDesign: true,
         raw: placement,
+        isPairedInLayoutWithParent: true,
       },
       placement,
     })
 
-    // Link ApplicationSet to Placement
+    // Link PlacewmentDecision to Placement
     links.push({
-      from: { uid: appId },
+      from: { uid: placementDecisionId },
       to: { uid: placementId },
       type: '',
       specs: { isDesign: true },
     })
-  } else {
-    // Handle case where placement name exists but placement object doesn't
-    if (!appSetPlacementName && appSetPlacementName !== '') {
-      isPlacementFound = true
-    }
   }
 
   // Set placement-related flags on the ApplicationSet node
   ;(nodes[0] as any).isPlacementFound = isPlacementFound
-  ;(nodes[0] as any).isArgoCDPullModelTargetLocalCluster = isArgoCDPullModelTargetLocalCluster
 
-  // Determine the parent node for clusters (placement if exists, otherwise ApplicationSet)
-  const clusterParentId = placement ? placementId : appId
+  // Determine the parent node for clusters (placementDecision if exists, otherwise ApplicationSet)
+  const clusterParentId = placementDecision ? placementDecisionId : appId
+
+  /////////////////////////////////////////////
+  ////  CLUSTER NODE /////////////////
+  /////////////////////////////////////////////
 
   // Extract source path from ApplicationSet template or generators
   const templateSourcePath = (application.app as any)?.spec?.template?.spec?.source?.path ?? ''
@@ -169,10 +193,6 @@ export async function getAppSetTopology(
     templateSourcePath !== '{{path}}'
       ? templateSourcePath
       : (Object.values((application.app as any)?.spec?.generators?.[0] ?? {})[0] as any)?.directories?.[0]?.path ?? ''
-
-  /////////////////////////////////////////////
-  ////  CLUSTER NODE /////////////////
-  /////////////////////////////////////////////
 
   const clusterId = addClusters(
     clusterParentId,

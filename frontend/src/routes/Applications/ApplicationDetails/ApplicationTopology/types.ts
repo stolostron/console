@@ -365,6 +365,7 @@ export type NodeType =
   | 'cluster'
   | 'placements'
   | 'placement'
+  | 'placementDecision'
   | 'pod'
   | 'ansiblejob'
   | 'package'

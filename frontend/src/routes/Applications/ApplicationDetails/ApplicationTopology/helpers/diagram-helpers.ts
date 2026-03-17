@@ -236,8 +236,11 @@ export const createResourceSearchLink = (node: NodeLike, t: Translator): { type:
       let kindVal: string
       switch (nodeType) {
         case 'placements':
-        case 'placement':
+        case 'placementDecision':
           kindVal = 'PlacementDecision'
+          break
+        case 'placement':
+          kindVal = 'Placement'
           break
         default:
           kindVal = getNestedProperty(node, 'type', '') as string

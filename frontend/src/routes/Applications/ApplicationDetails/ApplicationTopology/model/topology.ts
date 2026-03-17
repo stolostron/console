@@ -195,7 +195,11 @@ export const processNodeData = (
   const isDesign = node.specs?.isDesign ?? false
 
   // Skip certain node types when in design mode
-  if (!isDeployableResource(node) && ['cluster', 'application', 'placements'].includes(type) && isDesign) {
+  if (
+    !isDeployableResource(node) &&
+    ['cluster', 'application', 'placements', 'placement', 'placementDecision'].includes(type) &&
+    isDesign
+  ) {
     return // ignore these types
   }
 

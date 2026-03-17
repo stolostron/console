@@ -276,14 +276,14 @@ function addK8Details(
     getNodePropery(node, ['specs', 'raw', 'spec', 'clusterReplicas'], t('Cluster Replicas'))
   )
 
-  if (type === 'placements' || type === 'placement') {
+  if (type === 'placements' || type === 'placement' || type === 'placementDecision') {
     const specNbOfClustersTarget = node?.specs?.raw?.status?.decisions ?? []
 
-    // placement
-    const clusterSets = node?.placement?.spec?.clusterSets
+    // placementDecision
+    const clusterSets = node?.placementDecision?.spec?.clusterSets
     const clusterSelector =
-      node?.placement?.spec?.predicates?.[0]?.requiredClusterSelector?.labelSelector ||
-      node?.placement?.spec?.clusterSelector
+      node?.placementDecision?.spec?.predicates?.[0]?.requiredClusterSelector?.labelSelector ||
+      node?.placementDecision?.spec?.clusterSelector
 
     mainDetails.push(
       {
@@ -293,7 +293,10 @@ function addK8Details(
       { labelValue: t('ClusterSet'), value: clusterSets ? clusterSets.join() : t('Not defined') },
       {
         labelValue: t('LabelSelector'),
-        value: node?.placement?.kind === PlacementKind ? getLabels(clusterSelector) : getMatchLabels(clusterSelector),
+        value:
+          node?.placementDecision?.kind === PlacementKind
+            ? getLabels(clusterSelector)
+            : getMatchLabels(clusterSelector),
       }
     )
   }
@@ -442,6 +445,10 @@ export const typeToShapeMap = Object.freeze({
   },
   placement: {
     shape: 'placement',
+    className: 'design',
+  },
+  placementDecision: {
+    shape: 'placementdecision',
     className: 'design',
   },
   pod: {

@@ -417,7 +417,7 @@ function filterPairedNodes(metrics: MetricsType) {
         const isPairedNode = (x: LayoutNodeModel) => (x as any).specs?.isPairedInLayoutWithParent
         n.incoming = n.incoming.filter((node) => !isPairedNode(node))
         n.outgoing = n.outgoing.filter((node) => !isPairedNode(node))
-        return true
+        return !isPairedNode(n)
       })
       return row
     })
