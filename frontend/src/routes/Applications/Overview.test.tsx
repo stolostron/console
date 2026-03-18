@@ -139,7 +139,7 @@ describe('Applications Page', () => {
 
     userEvent.click(screen.getByRole('button', { name: /columns-management/i }))
     await waitFor(() => expect(screen.getByRole('heading', { name: 'Manage columns' })).toBeInTheDocument())
-    userEvent.click(screen.getByTestId('checkbox-created'))
+    userEvent.click(screen.getByRole('checkbox', { name: /created/i }))
     userEvent.click(screen.getByRole('button', { name: /save/i }))
     expect(screen.getAllByText(getFragmentedTextMatcher('Feb 20, 2024, 3:30 PM'))[0]).toBeInTheDocument()
 
