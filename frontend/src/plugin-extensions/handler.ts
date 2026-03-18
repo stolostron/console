@@ -23,9 +23,10 @@ export function useAcmExtension() {
   // Resolving application list column to acm compatible type
   const [applicationListColumn, resolvedApplicationListColumn] = useResolvedExtensions(isApplicationListColumn)
   if (resolvedApplicationListColumn) {
-    acmExtension.applicationListColumn = applicationListColumn.map(
-      (column) => column.properties as ListColumnExtensionProps
-    )
+    acmExtension.applicationListColumn = applicationListColumn.map((column) => ({
+      ...(column.properties as ListColumnExtensionProps),
+      uid: column.uid,
+    }))
   }
 
   // Resolving overview tab to acm compatible type

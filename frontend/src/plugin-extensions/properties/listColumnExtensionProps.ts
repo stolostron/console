@@ -18,4 +18,7 @@ export type ListColumnExtensionProps = {
   // If it is true, This column always the last one and isn't managed by column management filter
   // By default it is true
   isActionCol?: boolean
+
+  /** Unique ID from the extension - used for stable column management */
+  uid?: string
 }

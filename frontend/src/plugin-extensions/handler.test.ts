@@ -10,13 +10,11 @@ import {
 import { useAcmExtension } from './handler'
 import { renderHook } from '@testing-library/react-hooks'
 
-let mockExtensions: (
-  | ApplicationAction
-  | VirtualMachineAction
-  | ApplicationListColumn
-  | VirtualMachineListColumn
-  | OverviewTab
-)[] = []
+let mockExtensions: Array<
+  (ApplicationAction | VirtualMachineAction | ApplicationListColumn | VirtualMachineListColumn | OverviewTab) & {
+    uid?: string
+  }
+> = []
 
 jest.mock('@console/dynamic-plugin-sdk/src/api/useResolvedExtensions', () => ({
   useResolvedExtensions: (typeGuard: any) => [mockExtensions.filter(typeGuard), true],
@@ -27,6 +25,7 @@ describe('useCatalogExtensions', () => {
     mockExtensions = [
       {
         type: 'acm.virtualmachine/action',
+        uid: 'mock-virtualmachine-action',
         properties: {
           id: 'appFailoverAction',
           title: 'FailOver',
@@ -41,6 +40,7 @@ describe('useCatalogExtensions', () => {
       },
       {
         type: 'acm.application/action',
+        uid: 'mock-application-action',
         properties: {
           id: 'vmFailoverAction',
           title: 'FailOver',
@@ -55,6 +55,7 @@ describe('useCatalogExtensions', () => {
       },
       {
         type: 'acm.virtualmachine/list/column',
+        uid: 'mock-virtualmachine-column',
         properties: {
           header: 'DR status',
           cell: jest.fn(),
@@ -62,6 +63,7 @@ describe('useCatalogExtensions', () => {
       },
       {
         type: 'acm.application/list/column',
+        uid: 'mock-application-column',
         properties: {
           header: 'DR status',
           cell: jest.fn(),
@@ -69,6 +71,7 @@ describe('useCatalogExtensions', () => {
       },
       {
         type: 'acm.overview/tab',
+        uid: 'mock-overview-tab',
         properties: {
           tabTitle: 'Test',
           component: jest.fn(),
@@ -82,6 +85,13 @@ describe('useCatalogExtensions', () => {
       result.current.virtualMachineListColumn,
       result.current.applicationListColumn,
       [result.current.overviewTab?.[0].properties],
-    ]).toEqual(mockExtensions.map((mockExtension) => [mockExtension.properties]))
+    ]).toEqual(
+      mockExtensions.map((mockExtension) => {
+        if (mockExtension.type === 'acm.application/list/column') {
+          return [{ ...mockExtension.properties, uid: mockExtension.uid }]
+        }
+        return [mockExtension.properties]
+      })
+    )
   })
 })
