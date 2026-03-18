@@ -103,6 +103,9 @@ export function useClusterNameColumn(areLinksDisplayed: boolean = true): IAcmTab
       </>
     ),
     exportContent: (cluster) => cluster.displayName,
+    id: 'name',
+    order: 1,
+    isDefault: true,
   }
 }
 
@@ -166,6 +169,9 @@ export function useClusterNamespaceColumn(): IAcmTableColumn<Cluster> {
       </span>
     ),
     exportContent: (cluster) => cluster.namespace,
+    id: 'namespace',
+    order: 2,
+    isDefault: true,
   }
 }
 
@@ -183,6 +189,9 @@ export function useClusterStatusColumn(): IAcmTableColumn<Cluster> {
     exportContent: (cluster) => {
       return getClusterStatusLabel(cluster.status, t)
     },
+    id: 'status',
+    order: 3,
+    isDefault: true,
   }
 }
 
@@ -196,6 +205,10 @@ export function useClusterProviderColumn(): IAcmTableColumn<Cluster> {
     exportContent: (cluster) => {
       return ProviderLongTextMap[cluster?.provider!]
     },
+    id: 'provider',
+    order: 5,
+    isDefault: false,
+    isFirstVisitChecked: true,
   }
 }
 
@@ -232,6 +245,10 @@ export function useClusterControlPlaneColumn(hubClusterName: string = ''): IAcmT
     exportContent: (cluster) => {
       return getControlPlaneString(cluster, hubClusterName, t)
     },
+    id: 'controlplane',
+    order: 6,
+    isDefault: false,
+    isFirstVisitChecked: true,
   }
 }
 
@@ -305,6 +322,9 @@ export function useClusterDistributionColumn(
     exportContent: (cluster) => {
       return getClusterDistributionString(cluster, clusterImageSets, agentClusterInstalls, allClusters)
     },
+    id: 'distribution',
+    order: 4,
+    isDefault: true,
   }
 }
 
@@ -360,6 +380,10 @@ export function useClusterLabelsColumn(isLarge: boolean, hubClusterName: string 
         return exportObjectString(cluster.labels)
       }
     },
+    id: 'labels',
+    order: 8,
+    isDefault: false,
+    isFirstVisitChecked: true,
   }
 }
 
@@ -381,6 +405,10 @@ export function useClusterNodesColumn(): IAcmTableColumn<Cluster> {
     exportContent: (cluster) => {
       return `${t('healthy')}: ${cluster.nodes!.ready}, ${t('danger')}: ${cluster.nodes!.unhealthy}, ${t('unknown')}: ${cluster.nodes!.unknown}`
     },
+    id: 'nodes',
+    order: 9,
+    isDefault: false,
+    isFirstVisitChecked: true,
   }
 }
 
@@ -405,13 +433,17 @@ export function useClusterAddonColumn(): IAcmTableColumn<Cluster> {
     exportContent: (cluster) => {
       return `${t('healthy')}: ${cluster.addons!.available}, ${t('danger')}: ${cluster.addons!.degraded}, ${t('in progress')}: ${cluster.addons!.progressing}, ${t('unknown')}: ${cluster.addons!.unknown}`
     },
+    id: 'addons',
+    order: 10,
+    isDefault: false,
+    isFirstVisitChecked: false,
   }
 }
 
 export function useClusterCreatedDateColumn(): IAcmTableColumn<Cluster> {
   const { t } = useTranslation()
   return {
-    header: t('table.creationDate'),
+    header: t('Created'),
     sort: (a: Cluster, b: Cluster) => {
       const dateTimeCellA = getDateTimeCell(a.creationTimestamp ? new Date(a.creationTimestamp).toString() : '-')
       const dateTimeCellB = getDateTimeCell(b.creationTimestamp ? new Date(b.creationTimestamp).toString() : '-')
@@ -430,6 +462,10 @@ export function useClusterCreatedDateColumn(): IAcmTableColumn<Cluster> {
         return getISOStringTimestamp(cluster.creationTimestamp)
       }
     },
+    id: 'created',
+    order: 11,
+    isDefault: false,
+    isFirstVisitChecked: false,
   }
 }
 
@@ -445,6 +481,10 @@ export function useClusterSetColumn(): IAcmTableColumn<Cluster> {
       </span>
     ),
     exportContent: (cluster) => cluster.clusterSet,
+    id: 'clusterset',
+    order: 7,
+    isDefault: false,
+    isFirstVisitChecked: true,
   }
 }
 
@@ -844,12 +884,9 @@ export function useTableColumns({
     ]
   )
 
-  // Filter out hidden columns
+  // Filter out hidden columns by id
   const columns = useMemo(
-    () =>
-      allTableColumns.filter((column) =>
-        typeof column.header === 'string' ? !hiddenColumns.includes(column.header) : true
-      ),
+    () => allTableColumns.filter((column) => (column.id ? !hiddenColumns.includes(column.id) : true)),
     [allTableColumns, hiddenColumns]
   )
 
