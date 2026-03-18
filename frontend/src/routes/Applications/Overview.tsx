@@ -1222,11 +1222,14 @@ export default function ApplicationsOverview() {
 
   const additionalToolbarItems = useMemo(
     () => (
-      <ToolbarItem alignSelf="center" key="compare-app-types">
-        {compareAppTypesLink}
-      </ToolbarItem>
+      <>
+        <ToolbarItem key="app-creation">{appCreationButton}</ToolbarItem>
+        <ToolbarItem alignSelf="center" key="compare-app-types">
+          {compareAppTypesLink}
+        </ToolbarItem>
+      </>
     ),
-    [compareAppTypesLink]
+    [appCreationButton, compareAppTypesLink]
   )
   const emptyStateActions = useMemo(
     () => (
@@ -1257,7 +1260,6 @@ export default function ApplicationsOverview() {
           resultView={resultView}
           resultCounts={resultCounts}
           fetchExport={fetchAggregateForExport}
-          customTableAction={appCreationButton}
           additionalToolbarItems={additionalToolbarItems}
           showExportButton
           showColumnManagement
