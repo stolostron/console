@@ -1,20 +1,23 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+  Alert,
+  AlertActionLink,
   Card,
   CardBody,
   CardTitle,
-  Split,
-  PageSection,
-  Stack,
-  StackItem,
   Content,
   ContentVariants,
+  PageSection,
+  Split,
+  Stack,
+  StackItem,
 } from '@patternfly/react-core'
 import { cellWidth } from '@patternfly/react-table'
 import _ from 'lodash'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom-v5-compat'
+import { useLocalHubName } from '../../hooks/use-local-hub'
 import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
 import { canUser } from '../../lib/rbac-util'
@@ -23,9 +26,7 @@ import {
   ChannelDefinition,
   ChannelKind,
   IResource,
-  PlacementApiVersionBeta,
   PlacementDecision,
-  PlacementDefinition,
   PlacementKind,
   PlacementRuleApiVersion,
   PlacementRuleDefinition,
@@ -39,17 +40,16 @@ import { getISOStringTimestamp } from '../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { AcmExpandableCard, IAcmRowAction, IAcmTableColumn } from '../../ui-components'
 import { IDeleteResourceModalProps } from './components/DeleteResourceModal'
+import { DeprecatedTitle } from './components/DeprecatedTitle'
 import ResourceLabels from './components/ResourceLabels'
 import { ApplicationToggleOptions, ToggleSelector } from './components/ToggleSelector'
 import {
   ClusterCount,
-  getResourceTimestamp,
   getClusterCountString,
   getEditLink,
+  getResourceTimestamp,
   getSearchLink,
 } from './helpers/resource-helper'
-import { DeprecatedTitle } from './components/DeprecatedTitle'
-import { useLocalHubName } from '../../hooks/use-local-hub'
 
 export interface AdvancedConfigurationPageProps {
   readonly defaultToggleOption?: ApplicationToggleOptions
@@ -57,19 +57,12 @@ export interface AdvancedConfigurationPageProps {
 
 export default function AdvancedConfiguration(props: AdvancedConfigurationPageProps) {
   const { t } = useTranslation()
-  const {
-    applicationsState,
-    channelsState,
-    placementDecisionsState,
-    placementsState,
-    placementRulesState,
-    subscriptionsState,
-  } = useSharedAtoms()
+  const { applicationsState, channelsState, placementDecisionsState, placementRulesState, subscriptionsState } =
+    useSharedAtoms()
 
   const applications = useRecoilValue(applicationsState)
   const channels = useRecoilValue(channelsState)
   const placementrules = useRecoilValue(placementRulesState)
-  const placements = useRecoilValue(placementsState)
   const placementDecisions = useRecoilValue(placementDecisionsState)
   const subscriptions = useRecoilValue(subscriptionsState)
 
@@ -82,12 +75,10 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
   const navigate = useNavigate()
   const [canDeleteSubscription, setCanDeleteSubscription] = useState<boolean>(false)
   const [canDeleteChannel, setCanDeleteChannel] = useState<boolean>(false)
-  const [canDeletePlacement, setCanDeletePlacement] = useState<boolean>(false)
   const [canDeletePlacementRule, setCanDeletePlacementRule] = useState<boolean>(false)
   const ChanneltableItems: IResource[] = []
   const SubscriptiontableItems: IResource[] = []
   const PlacementRuleTableItems: IResource[] = []
-  const PlacementTableItems: IResource[] = []
 
   const localHubName = useLocalHubName()
 
@@ -105,14 +96,6 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
       .then((result) => setCanDeleteChannel(result.status?.allowed!))
       .catch((err) => console.error(err))
     return () => canDeleteChannelPromise.abort()
-  }, [])
-
-  useEffect(() => {
-    const canDeletePlacementPromise = canUser('delete', PlacementDefinition)
-    canDeletePlacementPromise.promise
-      .then((result) => setCanDeletePlacement(result.status?.allowed!))
-      .catch((err) => console.error(err))
-    return () => canDeletePlacementPromise.abort()
   }, [])
 
   useEffect(() => {
@@ -260,8 +243,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
         }
         break
       }
-      case 'PlacementRule':
-      case 'Placement': {
+      case 'PlacementRule': {
         clusterCount = getPlacementDecisionClusterCount(tableItem, clusterCount, placementDecisions, localHubName)
         const clusterString = getClusterCountString(t, clusterCount)
         _.set(transformedObject.transformed, 'clusterCount', clusterString)
@@ -275,15 +257,12 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
   channels.forEach((channel) => {
     ChanneltableItems.push(generateTransformData(channel))
   })
-
   subscriptionsWithoutLocal.forEach((subscription) => {
     SubscriptiontableItems.push(generateTransformData(subscription))
   })
   placementrules.forEach((placementrule) => {
     PlacementRuleTableItems.push(generateTransformData(placementrule))
   })
-
-  placements.forEach((placement) => PlacementTableItems.push(generateTransformData(placement)))
 
   const getRowActionResolver = (item: IResource) => {
     const kind = _.get(item, 'kind') == 'PlacementRule' ? 'placement rule' : _.get(item, 'kind').toLowerCase()
@@ -306,12 +285,6 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
         editActionLabel = t('Edit channel')
         searchActionLabel = t('Search channel')
         deleteActionLabel = t('Delete channel')
-        break
-      case PlacementKind:
-        canDeleteResource = canDeletePlacement
-        editActionLabel = t('Edit placement')
-        searchActionLabel = t('Search placement')
-        deleteActionLabel = t('Delete placement')
         break
       case PlacementRuleKind:
         canDeleteResource = canDeletePlacementRule
@@ -667,58 +640,6 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
       items: ChanneltableItems,
       rowActionResolver: getRowActionResolver,
     },
-    placements: {
-      columns: useMemo<IAcmTableColumn<IResource>[]>(
-        () => [
-          {
-            header: t('Name'),
-            cell: (resource) => {
-              return editLink({
-                resource,
-                kind: 'Placement',
-                apiversion: _.get(resource, 'apiVersion') || PlacementApiVersionBeta,
-              })
-            },
-            sort: 'metadata.name',
-            search: 'metadata.name',
-            exportContent: (resource) => resource.metadata?.name,
-          },
-          {
-            header: t('Namespace'),
-            cell: 'metadata.namespace',
-            sort: 'metadata.namespace',
-            exportContent: (resource) => resource.metadata?.namespace,
-          },
-          {
-            header: t('Clusters'),
-            cell: 'transformed.clusterCount',
-            sort: 'transformed.clusterCount',
-            tooltip: t(
-              'Displays the number of remote and local clusters where resources are deployed because of the placement.'
-            ),
-            exportContent: (resource) => {
-              const clusters = _.get(resource, 'transformed.clusterCount')
-              return clusters
-            },
-          },
-          {
-            header: t('Created'),
-            cell: (resource) => {
-              return <span>{getResourceTimestamp(resource, 'metadata.creationTimestamp')}</span>
-            },
-            sort: 'metadata.creationTimestamp',
-            exportContent: (resource) => {
-              if (resource.metadata?.creationTimestamp) {
-                return getISOStringTimestamp(resource.metadata?.creationTimestamp)
-              }
-            },
-          },
-        ],
-        [t, editLink]
-      ),
-      items: PlacementTableItems,
-      rowActionResolver: getRowActionResolver,
-    },
     placementrules: {
       columns: useMemo<IAcmTableColumn<IResource>[]>(
         () => [
@@ -816,12 +737,6 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
             )}
           />
           <TerminologyCard
-            title={t('Placements')}
-            description={t(
-              'Placements define the target clusters that must subscribe to a ClusterSet where subscriptions and application sets are delivered. This is done by cluster name, cluster resource annotation(s), or cluster resource label(s).'
-            )}
-          />
-          <TerminologyCard
             title={<DeprecatedTitle title={t('Placement rules')} />}
             description={t(
               'Placement rules define the target clusters where subscriptions are delivered. This is done by cluster name, cluster resource annotation(s), or cluster resource label(s).'
@@ -847,6 +762,25 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
   return (
     <PageSection hasBodyWrapper={false}>
       <Stack hasGutter>
+        <Alert
+          title={t('Page deprecation')}
+          isInline
+          variant="warning"
+          actionLinks={
+            <AlertActionLink
+              component="a"
+              target="_blank"
+              rel="noreferrer"
+              href={DOC_LINKS.APPLICATIONS_ADVANCED_CONFIGURATION}
+            >
+              {t('Learn more')}
+            </AlertActionLink>
+          }
+        >
+          {t(
+            'This page will be removed in a future release. Placements will move to a central location under Infrastructure > Clusters > Placements. You can also view placement details directly within individual applications or policies.'
+          )}
+        </Alert>
         <StackItem>
           <ApplicationDeploymentHighlights />
         </StackItem>
