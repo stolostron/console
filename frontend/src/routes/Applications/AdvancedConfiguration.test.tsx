@@ -9,6 +9,7 @@ import {
   namespacesState,
   placementDecisionsState,
   placementRulesState,
+  settingsState,
   subscriptionsState,
 } from '../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
@@ -253,7 +254,6 @@ function TestAdvancedConfigurationPage(props: { defaultToggleOption?: Applicatio
         snapshot.set(subscriptionsState, mockSubscriptions)
         snapshot.set(namespacesState, mockNamespaces)
         snapshot.set(channelsState, mockChannels)
-        // snapshot.set(placementsState, mockPlacements)
         snapshot.set(placementDecisionsState, placementDecisions)
         snapshot.set(applicationsState, mockApplications)
         snapshot.set(placementRulesState, placementRules)
@@ -276,7 +276,19 @@ describe('advanced configuration page', () => {
   })
 
   test('should render deprecation Alert', async () => {
-    render(<TestAdvancedConfigurationPage />)
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(settingsState, {
+            enhancedPlacement: 'enabled',
+          })
+        }}
+      >
+        <MemoryRouter initialEntries={[NavigationPath.advancedConfiguration]}>
+          <AdvancedConfiguration />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
     await waitForText(
       'This page will be removed in a future release. Placements will move to a central location under Infrastructure > Clusters > Placements. You can also view placement details directly within individual applications or policies.'
     )
