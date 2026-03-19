@@ -8,6 +8,7 @@ import { useSetStepHasInputs } from './contexts/StepHasInputsProvider'
 import { useStepShowValidation } from './contexts/StepShowValidationProvider'
 import { useSetStepHasValidationError } from './contexts/StepValidationProvider'
 import { useHasValidationError, ValidationProvider } from './contexts/ValidationProvider'
+import { CurrentStepIdContext } from './contexts/StepInputsContext'
 import { HiddenFn, useInputHidden } from './inputs/Input'
 
 export interface StepProps {
@@ -21,13 +22,15 @@ export interface StepProps {
 export function Step(props: StepProps) {
   return (
     <div id={props.id}>
-      <HasInputsProvider key={props.id}>
-        <ShowValidationProvider>
-          <ValidationProvider>
-            <StepInternal {...props}>{props.children}</StepInternal>
-          </ValidationProvider>
-        </ShowValidationProvider>
-      </HasInputsProvider>
+      <CurrentStepIdContext.Provider value={props.id}>
+        <HasInputsProvider key={props.id}>
+          <ShowValidationProvider>
+            <ValidationProvider>
+              <StepInternal {...props}>{props.children}</StepInternal>
+            </ValidationProvider>
+          </ShowValidationProvider>
+        </HasInputsProvider>
+      </CurrentStepIdContext.Provider>
     </div>
   )
 }

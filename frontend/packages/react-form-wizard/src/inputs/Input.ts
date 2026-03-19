@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import get from 'get-value'
 import { ReactNode, useCallback, useContext, useLayoutEffect, useState } from 'react'
+import { CurrentStepIdContext, useStepInputsRegistry } from '../contexts/StepInputsContext'
 import set from 'set-value'
 import { EditMode } from '..'
 import { useData } from '../contexts/DataContext'
@@ -141,6 +142,14 @@ export function useInput(props: InputCommonProps) {
   }
 
   const id = convertId(props)
+
+  const stepInputsRegistry = useStepInputsRegistry()
+  const currentStepId = useContext(CurrentStepIdContext)
+  useLayoutEffect(() => {
+    if (!stepInputsRegistry || currentStepId === undefined || hidden) return
+    stepInputsRegistry.register(currentStepId, id, { path: props.path, value, label: props.label, error })
+    return () => stepInputsRegistry.unregister(currentStepId, id)
+  }, [stepInputsRegistry, currentStepId, hidden, id, props.path, value, props.label, error])
 
   const hasValue = useHasValue()
   const setHasValue = useSetHasValue()
