@@ -29,6 +29,7 @@ describe('global hub', function () {
       isGlobalHub: true,
       isHubSelfManaged: false,
       isObservabilityInstalled: false,
+      isDirectAuthenticationEnabled: false,
     })
   })
 })

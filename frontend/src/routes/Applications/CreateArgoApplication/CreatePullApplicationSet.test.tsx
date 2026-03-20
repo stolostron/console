@@ -7,11 +7,12 @@ import {
   gitOpsClustersState,
   managedClusterSetBindingsState,
   managedClusterSetsState,
+  managedClustersState,
   namespacesState,
   placementsState,
   secretsState,
   subscriptionOperatorsState,
-} from '../../../atoms'
+} from '~/atoms'
 import {
   nockArgoGitBranches,
   nockArgoGitPathSha,
@@ -21,17 +22,9 @@ import {
   nockIgnoreApiPaths,
   nockIgnoreOperatorCheck,
   nockList,
-} from '../../../lib/nock-util'
-import {
-  clickByRole,
-  clickByText,
-  typeByPlaceholderText,
-  typeByRole,
-  typeByTestId,
-  waitForNocks,
-  waitForText,
-} from '../../../lib/test-util'
-import { NavigationPath } from '../../../NavigationPath'
+} from '~/lib/nock-util'
+import { clickByRole, clickByText, typeByRole, typeByTestId, waitForNocks, waitForText } from '~/lib/test-util'
+import { NavigationPath } from '~/NavigationPath'
 import {
   ApplicationSet,
   ApplicationSetApiVersion,
@@ -42,6 +35,9 @@ import {
   GitOpsCluster,
   GitOpsClusterApiVersion,
   GitOpsClusterKind,
+  ManagedCluster,
+  ManagedClusterApiVersion,
+  ManagedClusterKind,
   ManagedClusterSet,
   ManagedClusterSetApiVersion,
   ManagedClusterSetBinding,
@@ -57,9 +53,9 @@ import {
   Secret,
   SecretApiVersion,
   SecretKind,
-} from '../../../resources'
-import { gitOpsOperators } from '../Application.sharedmocks'
-import CreateApplicationArgo from './CreateApplicationArgo'
+} from '~/resources'
+import { gitOpsOperators } from '~/routes/Applications/Application.sharedmocks'
+import { CreatePullApplicationSet } from './CreatePullApplicationSet'
 import { EditArgoApplicationSet } from './EditArgoApplicationSet'
 
 const gitOpsCluster: GitOpsCluster = {
@@ -178,8 +174,16 @@ const argoAppSetGit: ApplicationSet = {
     ],
     template: {
       metadata: {
+        annotations: {
+          'apps.open-cluster-management.io/ocm-managed-cluster': '{{name}}',
+          'apps.open-cluster-management.io/ocm-managed-cluster-app-namespace': 'openshift-gitops',
+          'argocd.argoproj.io/skip-reconcile': 'true',
+        },
         name: 'application-01-{{name}}',
-        labels: { 'velero.io/exclude-from-backup': 'true' },
+        labels: {
+          'velero.io/exclude-from-backup': 'true',
+          'apps.open-cluster-management.io/pull-to-ocm-managed-cluster': 'true',
+        },
       },
       spec: {
         project: 'default',
@@ -230,8 +234,16 @@ const argoAppSetHelm: ApplicationSet = {
 
     template: {
       metadata: {
+        annotations: {
+          'apps.open-cluster-management.io/ocm-managed-cluster': '{{name}}',
+          'apps.open-cluster-management.io/ocm-managed-cluster-app-namespace': 'openshift-gitops',
+          'argocd.argoproj.io/skip-reconcile': 'true',
+        },
         name: 'helm-application-01-{{name}}',
-        labels: { 'velero.io/exclude-from-backup': 'true' },
+        labels: {
+          'velero.io/exclude-from-backup': 'true',
+          'apps.open-cluster-management.io/pull-to-ocm-managed-cluster': 'true',
+        },
       },
       spec: {
         project: 'default',
@@ -287,9 +299,25 @@ const placementGit: Placement = {
         operator: 'Exists',
       },
     ],
+    predicates: [
+      {
+        requiredClusterSelector: {
+          labelSelector: {
+            matchExpressions: [
+              {
+                key: 'name',
+                operator: 'NotIn',
+                values: ['local-cluster'],
+              },
+            ],
+          },
+        },
+      },
+    ],
     clusterSets: [clusterSetBinding.spec.clusterSet],
   },
 }
+
 const placementHelm: Placement = {
   apiVersion: PlacementApiVersionBeta,
   kind: PlacementKind,
@@ -309,7 +337,34 @@ const placementHelm: Placement = {
         operator: 'Exists',
       },
     ],
+    predicates: [
+      {
+        requiredClusterSelector: {
+          labelSelector: {
+            matchExpressions: [
+              {
+                key: 'name',
+                operator: 'NotIn',
+                values: ['local-cluster'],
+              },
+            ],
+          },
+        },
+      },
+    ],
     clusterSets: [clusterSetBinding.spec.clusterSet],
+  },
+}
+
+const hubCluster: ManagedCluster = {
+  apiVersion: ManagedClusterApiVersion,
+  kind: ManagedClusterKind,
+  metadata: {
+    name: 'local-cluster',
+    namespace: 'local-cluster',
+    labels: {
+      'local-cluster': 'true',
+    },
   },
 }
 
@@ -341,11 +396,12 @@ describe('Create Argo Application Set', () => {
           snapshot.set(managedClusterSetsState, [clusterSet])
           snapshot.set(managedClusterSetBindingsState, [clusterSetBinding])
           snapshot.set(subscriptionOperatorsState, gitOpsOperators)
+          snapshot.set(managedClustersState, [hubCluster])
         }}
       >
-        <MemoryRouter initialEntries={[NavigationPath.createApplicationArgo]}>
+        <MemoryRouter initialEntries={[NavigationPath.createApplicationArgoPullModel]}>
           <Routes>
-            <Route path={NavigationPath.createApplicationArgo} element={<CreateApplicationArgo />} />
+            <Route path={NavigationPath.createApplicationArgoPullModel} element={<CreatePullApplicationSet />} />
           </Routes>
         </MemoryRouter>
       </RecoilRoot>
@@ -391,8 +447,9 @@ describe('Create Argo Application Set', () => {
     await clickByRole('option', { name: /branch-01/i })
     await waitForNocks(pathNocks)
 
-    await clickByRole('combobox', { name: /enter or select a repository path/i })
+    await clickByRole('combobox', { name: 'Enter or select a repository path' })
     await clickByRole('option', { name: /application-test/i })
+
     await typeByRole('gitops-ns', 'textbox')
     await clickByText('Next')
 
@@ -437,22 +494,22 @@ describe('Create Argo Application Set', () => {
     await clickByText('Helm')
 
     // channel
-    await clickByRole('combobox', { name: /Enter or select a Helm URL/i })
+    await clickByRole('combobox', { name: 'Enter or select a Helm URL' })
     await clickByText(channelHelm.spec.pathname)
     // // nock.recorder.rec()
 
-    await typeByPlaceholderText('Enter the name of the Helm chart', chartName)
-    await typeByPlaceholderText('Enter the version or versions', 'v1')
+    await typeByRole(chartName, 'textbox', undefined, 0)
+    await typeByRole('v1', 'textbox', undefined, 1)
 
     // remote namespace
-    await typeByPlaceholderText('Enter the destination namespace', 'gitops-ns')
+    await typeByRole('gitops-ns', 'textbox', undefined, 2)
     await clickByText('Next')
 
     // sync policy
     await clickByText('Next')
 
     // placement
-    await clickByRole('combobox', { name: /select the cluster sets/i })
+    await clickByRole('combobox', { name: 'Select the cluster sets' })
     await clickByText(clusterSetBinding.spec.clusterSet)
 
     // submit
@@ -464,15 +521,13 @@ describe('Create Argo Application Set', () => {
   })
 
   test('can render Edit Argo Application Page', async () => {
-    const initialNocks = [
-      nockList(
-        {
-          apiVersion: 'argoproj.io/v1alpha1',
-          kind: 'applicationsets',
-        },
-        [argoAppSetGit]
-      ),
-    ]
+    nockList(
+      {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'applicationsets',
+      },
+      [argoAppSetGit]
+    )
     render(
       <RecoilRoot>
         <MemoryRouter initialEntries={[NavigationPath.editApplicationArgo]}>
@@ -482,9 +537,8 @@ describe('Create Argo Application Set', () => {
         </MemoryRouter>
       </RecoilRoot>
     )
-    await waitForNocks(initialNocks)
 
     await new Promise((resolve) => setTimeout(resolve, 500))
-    await waitForText('Edit application set - push model')
+    await waitForText('Edit application set - Pull model')
   })
 })

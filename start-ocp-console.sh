@@ -4,6 +4,7 @@ set -euo pipefail
 
 source ./port-defaults.sh
 source ./oauth-client-name.sh
+source ./backend/.env
 
 CONSOLE_VERSION=${CONSOLE_VERSION:=4.20}
 KUBEVIRT_PORT=${KUBEVIRT_PORT:=""}
@@ -12,24 +13,37 @@ GITOPS_PORT=${GITOPS_PORT:=""}
 CONSOLE_IMAGE="quay.io/openshift/origin-console:${CONSOLE_VERSION}"
 
 mkdir -p ocp-console
-oc get oauthclient $OAUTH_CLIENT_NAME -o jsonpath='{.secret}' > ocp-console/console-client-secret
 oc extract secret/off-cluster-token -n openshift-console --to ocp-console --confirm
 
-echo "Starting local OpenShift console..."
+if [ -n "${OIDC_ISSUER_URL:-}" ]; then
+    BRIDGE_USER_AUTH="oidc"
+    BRIDGE_USER_AUTH_OIDC_ISSUER_URL="$OIDC_ISSUER_URL"
+    BRIDGE_USER_AUTH_OIDC_CLIENT_ID="$OAUTH2_CLIENT_ID"
+    BRIDGE_USER_AUTH_OIDC_CLIENT_SECRET="$OAUTH2_CLIENT_SECRET"
+    # AES requires exactly 16, 24, or 32 bytes; HMAC accepts 32 or 64 bytes
+    openssl rand 32 > ocp-console/cookie-encryption-key
+    openssl rand 64 > ocp-console/cookie-authentication-key
+    BRIDGE_COOKIE_ENCRYPTION_KEY_FILE="/tmp/cookie-encryption-key"
+    BRIDGE_COOKIE_AUTHENTICATION_KEY_FILE="/tmp/cookie-authentication-key"
+else
+    oc get oauthclient "$OAUTH_CLIENT_NAME" -o jsonpath='{.secret}' > ocp-console/console-client-secret
+    BRIDGE_USER_AUTH="openshift"
+    BRIDGE_USER_AUTH_OIDC_CLIENT_ID="$OAUTH_CLIENT_NAME"
+    BRIDGE_USER_AUTH_OIDC_CLIENT_SECRET_FILE="/tmp/console-client-secret"
+fi
+
+BRIDGE_USER_AUTH_OIDC_CA_FILE="/tmp/ca.crt"
+
+echo "Starting local OpenShift console ($BRIDGE_USER_AUTH auth)..."
 
 BRIDGE_BASE_ADDRESS="http://localhost:${CONSOLE_PORT}"
-
 BRIDGE_BRANDING="openshift"
-BRIDGE_USER_AUTH="openshift"
 BRIDGE_K8S_MODE="off-cluster"
 BRIDGE_CA_FILE="/tmp/ca.crt"
-BRIDGE_USER_AUTH_OIDC_CLIENT_ID=$OAUTH_CLIENT_NAME
-BRIDGE_USER_AUTH_OIDC_CLIENT_SECRET_FILE="/tmp/console-client-secret"
-BRIDGE_USER_AUTH_OIDC_CA_FILE="/tmp/ca.crt"
 BRIDGE_K8S_MODE_OFF_CLUSTER_SERVICE_ACCOUNT_BEARER_TOKEN_FILE="/tmp/token"
-
 BRIDGE_K8S_MODE_OFF_CLUSTER_SKIP_VERIFY_TLS=true
 BRIDGE_K8S_MODE_OFF_CLUSTER_ENDPOINT=$(oc whoami --show-server)
+
 # The monitoring operator is not always installed (e.g. for local OpenShift). Tolerate missing config maps.
 set +e
 BRIDGE_K8S_MODE_OFF_CLUSTER_THANOS=$(oc -n openshift-config-managed get configmap monitoring-shared-config -o jsonpath='{.data.thanosPublicURL}' 2>/dev/null)
