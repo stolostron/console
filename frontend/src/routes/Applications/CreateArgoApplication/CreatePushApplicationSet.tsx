@@ -1,15 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { EditorValidationStatus, useData, useEditorValidationStatus, useItem } from '@patternfly-labs/react-form-wizard'
-import { ArgoWizard, setRepositoryTypeForSources } from '../../../wizards/Argo/ArgoWizard'
-import { AcmToastContext } from '../../../ui-components'
+import { ArgoWizard, setRepositoryTypeForSources } from '~/wizards/Argo/ArgoWizard'
+import { AcmToastContext } from '~/ui-components'
 import { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom-v5-compat'
-import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
-import { SyncEditor, ValidationStatus } from '../../../components/SyncEditor/SyncEditor'
-import { useTranslation } from '../../../lib/acm-i18next'
-import { isType } from '../../../lib/is-type'
-import { NavigationPath } from '../../../NavigationPath'
+import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '~/shared-recoil'
+import { SyncEditor, ValidationStatus } from '~/components/SyncEditor/SyncEditor'
+import { useTranslation } from '~/lib/acm-i18next'
+import { isType } from '~/lib/is-type'
+import { NavigationPath } from '~/NavigationPath'
 import {
   ApplicationSet,
   ApplicationSetApiVersion,
@@ -18,16 +18,16 @@ import {
   getGitChannelPaths,
   GitOpsCluster,
   IResource,
-} from '../../../resources'
-import { listResources } from '../../../resources/utils'
+} from '~/resources'
+import { listResources } from '~/resources/utils'
 import { createArgoResources } from './createArgoResources'
-import schema from './pullmodelschema.json'
-import { LostChangesContext } from '../../../components/LostChanges'
-import { LoadingPage } from '../../../components/LoadingPage'
-import { useTimezones } from '../../../hooks/useTimezone'
+import pushmodelschema from './pushmodelschema.json'
+import { LostChangesContext } from '~/components/LostChanges'
+import { LoadingPage } from '~/components/LoadingPage'
+import { useTimezones } from '~/hooks/useTimezone'
 
-export default function CreateArgoApplicationSetPullModelPage() {
-  return <CreateApplicationArgoPullModel />
+export default function CreatePushApplicationSetPage() {
+  return <CreatePushApplicationSet />
 }
 
 export function GetGitOpsClusters(gitOpsClusters: GitOpsCluster[]) {
@@ -50,7 +50,7 @@ export function WizardSyncEditor() {
       editorTitle={t('Application set YAML')}
       variant="toolbar"
       resources={resources}
-      schema={schema}
+      schema={pushmodelschema}
       filters={['*.metadata.managedFields']}
       onEditorChange={(changes: { resources: any[] }): void => {
         update(setRepositoryTypeForSources(changes?.resources))
@@ -66,7 +66,7 @@ function getWizardSyncEditor() {
   return <WizardSyncEditor />
 }
 
-export function CreateApplicationArgoPullModel() {
+export function CreatePushApplicationSet() {
   const { t } = useTranslation()
   const {
     channelsState,
@@ -132,7 +132,7 @@ export function CreateApplicationArgoPullModel() {
       placements={placements}
       breadcrumb={[
         { text: t('Applications'), to: NavigationPath.applications },
-        { text: t('Create application set - Pull model') },
+        { text: t('Create application set - push model') },
       ]}
       clusters={managedClusters}
       clusterSets={clusterSets}
@@ -155,7 +155,6 @@ export function CreateApplicationArgoPullModel() {
         })
       }
       timeZones={timeZones}
-      isPullModel={true}
       repoSecrets={secrets}
     />
   )

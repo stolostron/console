@@ -267,12 +267,19 @@ export function generateSearchResultExport(
     })
   })
 
-  const defaulColumns = ['name', 'namespace', 'kind', 'cluster', 'created', 'label']
-  let columns: SearchColumnDefinition[] = defaulColumns.map((defaultCol: string) => {
+  const defaultColumns = [
+    { header: t('Name'), key: 'name' },
+    { header: t('Namespace'), key: 'namespace' },
+    { header: t('Kind'), key: 'kind' },
+    { header: t('Cluster'), key: 'cluster' },
+    { header: t('Created'), key: 'created' },
+    { header: t('Label'), key: 'label' },
+  ]
+  let columns: SearchColumnDefinition[] = defaultColumns.map((defaultCol: { header: string; key: string }) => {
     return {
-      header: defaultCol,
-      sort: defaultCol,
-      cell: defaultCol,
+      header: defaultCol.header,
+      sort: defaultCol.key,
+      cell: defaultCol.key,
     }
   })
 
@@ -290,7 +297,7 @@ export function generateSearchResultExport(
   }
 
   // Variable to store the final csv data
-  const csv_data: string[] = [`${columns.map((col) => col.sort).join(',')}`]
+  const csv_data: string[] = [`${columns.map((col) => col.header).join(',')}`]
   kinds.forEach((kind: string) => {
     kindSearchResultItems[kind].forEach((item: any) => {
       const csv_row: string[] = []

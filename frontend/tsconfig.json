@@ -30,6 +30,11 @@
         "allowSyntheticDefaultImports": true,
         "forceConsistentCasingInFileNames": true,
         "moduleResolution": "node",
+        "baseUrl": ".",
+        "paths": {
+            "~": ["src"],
+            "~/*": ["src/*"]
+        },
         "resolveJsonModule": true,
         "isolatedModules": true,
         "noEmit": true

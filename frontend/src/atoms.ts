@@ -154,6 +154,11 @@ export const isHubSelfManagedState = atom<boolean | undefined>({
   default: undefined,
 })
 
+export const isDirectAuthenticationEnabledState = atom<boolean>({
+  key: 'isDirectAuthenticationEnabled',
+  default: false,
+})
+
 export interface Settings {
   LOG_LEVEL?: string
   SAVED_SEARCH_LIMIT?: string

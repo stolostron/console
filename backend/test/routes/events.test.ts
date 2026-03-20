@@ -535,6 +535,157 @@ describe('events Route', () => {
     })
   })
 
+  describe('forwardEventsToClients', () => {
+    beforeEach(async () => {
+      const cache = getEventCache()
+      for (const key in cache) {
+        delete cache[key]
+      }
+      ServerSideEvents.reset()
+      // Drain microtask queue so stale promises from prior tests resolve
+      for (let i = 0; i < 5; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 0))
+      }
+      ServerSideEvents.reset()
+    })
+
+    it('should not push SSE events when forwardEventsToClients is false', async () => {
+      const pushSpy = jest.spyOn(ServerSideEvents, 'pushEvent')
+
+      const resource: IResource = {
+        kind: 'Authentication',
+        apiVersion: 'config.openshift.io/v1',
+        metadata: {
+          name: 'cluster',
+          uid: 'auth-uid-1',
+          resourceVersion: '1',
+        },
+      }
+
+      await cacheResource(resource, false)
+
+      expect(pushSpy).not.toHaveBeenCalled()
+
+      const cache = getEventCache()
+      const entry = cache['/config.openshift.io/v1/authentications']?.['auth-uid-1']
+      expect(entry).toBeDefined()
+      expect(await entry.compressed).toBeDefined()
+      expect(await entry.eventID).toBe(-1)
+
+      const resources = await getKubeResources('Authentication', 'config.openshift.io/v1')
+      expect(resources).toHaveLength(1)
+      expect(resources[0].metadata.name).toBe('cluster')
+
+      pushSpy.mockRestore()
+    })
+
+    it('should still push SSE events when forwardEventsToClients is true (default)', async () => {
+      const pushSpy = jest.spyOn(ServerSideEvents, 'pushEvent')
+
+      const resource: IResource = {
+        kind: 'ConfigMap',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'test-cm',
+          uid: 'cm-forward-uid',
+          resourceVersion: '1',
+        },
+      }
+
+      await cacheResource(resource, true)
+      const cache = getEventCache()
+      await cache['/v1/configmaps']['cm-forward-uid'].eventID
+
+      expect(pushSpy).toHaveBeenCalled()
+
+      pushSpy.mockRestore()
+    })
+
+    it('should not push SSE events for delete when forwardEventsToClients is false', async () => {
+      await cacheResource(
+        {
+          kind: 'Authentication',
+          apiVersion: 'config.openshift.io/v1',
+          metadata: { name: 'cluster', uid: 'auth-del-uid', resourceVersion: '1' },
+        },
+        false
+      )
+
+      const pushSpy = jest.spyOn(ServerSideEvents, 'pushEvent')
+
+      const options = { kind: 'Authentication', apiVersion: 'config.openshift.io/v1', forwardEventsToClients: false }
+      const resourceVersionRef = { value: '1' }
+      const processor = createWatchEventProcessor(options, 'http://test/url', resourceVersionRef)
+
+      const watchEvent = {
+        type: 'DELETED',
+        object: {
+          kind: 'Authentication',
+          apiVersion: 'config.openshift.io/v1',
+          metadata: { name: 'cluster', namespace: '', uid: 'auth-del-uid', resourceVersion: '2' },
+        },
+      }
+
+      processor.write(JSON.stringify(watchEvent))
+      processor.end()
+      await new Promise((resolve) => setTimeout(resolve, 50))
+
+      expect(pushSpy).not.toHaveBeenCalled()
+
+      const cache = getEventCache()
+      expect(cache['/config.openshift.io/v1/authentications']?.['auth-del-uid']).toBeUndefined()
+
+      pushSpy.mockRestore()
+    })
+
+    it('should not push SSE events via watch processor when forwardEventsToClients is false', async () => {
+      const pushSpy = jest.spyOn(ServerSideEvents, 'pushEvent')
+
+      const options = { kind: 'Authentication', apiVersion: 'config.openshift.io/v1', forwardEventsToClients: false }
+      const resourceVersionRef = { value: '0' }
+      const processor = createWatchEventProcessor(options, 'http://test/url', resourceVersionRef)
+
+      const watchEvent = {
+        type: 'ADDED',
+        object: {
+          kind: 'Authentication',
+          apiVersion: 'config.openshift.io/v1',
+          metadata: { name: 'cluster', namespace: '', uid: 'auth-watch-uid', resourceVersion: '10' },
+        },
+      }
+
+      processor.write(JSON.stringify(watchEvent))
+      processor.end()
+      await new Promise((resolve) => setTimeout(resolve, 50))
+
+      expect(pushSpy).not.toHaveBeenCalled()
+      expect(resourceVersionRef.value).toBe('10')
+
+      const cache = getEventCache()
+      expect(cache['/config.openshift.io/v1/authentications']?.['auth-watch-uid']).toBeDefined()
+
+      pushSpy.mockRestore()
+    })
+
+    it('should still run kind-specific side effects when forwardEventsToClients is false', async () => {
+      const localCluster: IResource = {
+        kind: 'ManagedCluster',
+        apiVersion: 'cluster.open-cluster-management.io/v1',
+        metadata: {
+          name: 'my-hub',
+          uid: 'hub-no-forward-uid',
+          resourceVersion: '1',
+          labels: { 'local-cluster': 'true' },
+        },
+      }
+
+      await cacheResource(localCluster, false)
+
+      expect(getHubClusterName()).toBe('my-hub')
+      expect(getIsHubSelfManaged()).toBe(true)
+    })
+  })
+
   describe('getEventCache', () => {
     it('should return the resource cache object', () => {
       const cache = getEventCache()

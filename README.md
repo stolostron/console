@@ -121,6 +121,27 @@ npm start
 
 The standalone console will be available at **https://localhost:3000** and a browser tab will be opened automatically.
 
+## Direct Authentication with External OIDC
+
+If you are running against a cluster that is configured with direct authentication (external OIDC), you must manually configure the redirect URIs for the OAuth client with your external OIDC provider.
+
+| Mode | Redirect URI (with default ports) |
+| - | - |
+| Dynamic Plugins | http://localhost:9000/auth/callback |
+| Standalone | https://localhost:3000/multicloud/login/callback |
+
+Specify OIDC authentication when running the setup script, and the other settings (client ID and secret, issuer URL) will be obtained from the OpenShift configuration of the cluster targeted by your current kubeconfig context.
+```sh
+AUTH=oidc npm run setup
+```
+
+You can then run `npm run plugins` or `npm start` as usual.
+
+**Note:** When running as dynamic plugins, you may need to visit http://localhost:8080/ during console startup, depending on how recently you logged in on the CLI. This is easily missed in the output of `npm run plugins`:
+```sh
+[console]Please visit the following URL in your browser: http://localhost:8080/
+```
+
 ## Port Configuration
 
 All ports are customizable via environment variables. The default values are defined in [port-defaults.sh](port-defaults.sh). Several of these ports are used during setup.
