@@ -574,7 +574,6 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
             <Tooltip content={t('Export search results')}>
               <Dropdown
                 onSelect={() => setIsExportMenuOpen(false)}
-                className="export-dropdownMenu"
                 toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
                   <MenuToggle
                     ref={toggleRef}
@@ -590,7 +589,6 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
                   </MenuToggle>
                 )}
                 isOpen={isExportMenuOpen}
-                isPlain
                 popperProps={{ position: 'right' }} // changes dropdown placement to not go off screen
               >
                 <DropdownItem

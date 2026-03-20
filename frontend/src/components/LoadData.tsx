@@ -146,6 +146,7 @@ import {
   hostedClustersState,
   infraEnvironmentsState,
   infrastructuresState,
+  isDirectAuthenticationEnabledState,
   isFineGrainedRbacEnabledState,
   isGlobalHubState,
   isHubSelfManagedState,
@@ -219,6 +220,7 @@ export function LoadData(props: { children?: ReactNode }) {
   const setHostedClustersState = useSetRecoilState(hostedClustersState)
   const setInfraEnvironments = useSetRecoilState(infraEnvironmentsState)
   const setInfrastructure = useSetRecoilState(infrastructuresState)
+  const setIsDirectAuthenticationEnabled = useSetRecoilState(isDirectAuthenticationEnabledState)
   const setIsFineGrainedRbacEnabled = useSetRecoilState(isFineGrainedRbacEnabledState)
   const setIsGlobalHub = useSetRecoilState(isGlobalHubState)
   const setIsHubSelfManaged = useSetRecoilState(isHubSelfManagedState)
@@ -564,9 +566,20 @@ export function LoadData(props: { children?: ReactNode }) {
     loading: globalHubLoading,
     startPolling: globalHubStartPoll,
     stopPolling: globalHubStopPoll,
-  } = useQuery(globalHubQueryFn, [{ isGlobalHub: false, localHubName: 'local-cluster', isHubSelfManaged: undefined }], {
-    pollInterval: 30,
-  })
+  } = useQuery(
+    globalHubQueryFn,
+    [
+      {
+        isGlobalHub: false,
+        localHubName: 'local-cluster',
+        isHubSelfManaged: undefined,
+        isDirectAuthenticationEnabled: false,
+      },
+    ],
+    {
+      pollInterval: 30,
+    }
+  )
 
   // Start all Polls for Global values here
   useEffect(() => {
@@ -583,6 +596,7 @@ export function LoadData(props: { children?: ReactNode }) {
     setIsGlobalHub(globalHubRes[0]?.isGlobalHub)
     setlocalHubName(globalHubRes[0]?.localHubName)
     setIsHubSelfManaged(globalHubRes[0]?.isHubSelfManaged)
+    setIsDirectAuthenticationEnabled(globalHubRes[0]?.isDirectAuthenticationEnabled ?? false)
   }
 
   const {
@@ -658,6 +672,7 @@ const globalHubQueryFn = () => {
     isGlobalHub: boolean
     localHubName: string
     isHubSelfManaged: boolean | undefined
+    isDirectAuthenticationEnabled: boolean
   }>(getBackendUrl() + '/hub')
 }
 

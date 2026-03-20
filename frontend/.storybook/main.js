@@ -50,9 +50,10 @@ module.exports = {
       new webpack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'], process: 'process' })
     )
     
-    // Add alias for mocking @openshift-assisted/ui-lib
+    // Add alias for mocking @openshift-assisted/ui-lib and tilde path for src
     config.resolve.alias = {
       ...config.resolve.alias,
+      '~': path.resolve(__dirname, '../src'),
       '@openshift-assisted/ui-lib/cim$': path.resolve(__dirname, '../__mocks__/@openshift-assisted/dummy.ts'),
     }
     

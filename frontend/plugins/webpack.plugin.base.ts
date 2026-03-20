@@ -27,6 +27,7 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         vm: require.resolve('vm-browserify'),
       },
       alias: {
+        '~': path.resolve(__dirname, '../src'),
         handlebars: 'handlebars/dist/handlebars.js',
         // Force all @patternfly/react-core imports to use the main frontend version
         // This prevents duplicate versions from linked workspace packages like multicluster-sdk

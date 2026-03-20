@@ -188,6 +188,7 @@ const definitions: IWatchOptions[] = [
   { kind: 'Application', apiVersion: 'argoproj.io/v1alpha1', isPolled: true },
   { kind: 'ApplicationSet', apiVersion: 'argoproj.io/v1alpha1', isPolled: true },
   { kind: 'ArgoCD', apiVersion: 'argoproj.io/v1alpha1' },
+  { kind: 'Authentication', apiVersion: 'config.openshift.io/v1', forwardEventsToClients: false },
   { kind: 'Infrastructure', apiVersion: 'config.openshift.io/v1' },
   {
     kind: 'CertificateSigningRequest',
@@ -370,7 +371,8 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
     return { size: itemCount }
   }
 
-  await Promise.all(items.map((item) => cacheResource(item)))
+  const forward = options.forwardEventsToClients !== false
+  await Promise.all(items.map((item) => cacheResource(item, forward)))
 
   // Remove items that are no longer in kubernetes
   const apiVersionPlural = apiVersionPluralFn(options)
@@ -391,7 +393,7 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
       removeResources.push(resource)
     }
   }
-  await Promise.all(removeResources.map((resource) => deleteResource(resource)))
+  await Promise.all(removeResources.map((resource) => deleteResource(resource, forward)))
 
   return { resourceVersion, size: items.length }
 }
@@ -478,6 +480,7 @@ export function errorToString(err: unknown): string {
  * Creates a Transform stream that processes watch events with async operations
  */
 export function createWatchEventProcessor(options: IWatchOptions, url: string, resourceVersionRef: { value: string }) {
+  const forward = options.forwardEventsToClients !== false
   return new Transform({
     objectMode: true,
     async transform(data: string, _encoding, callback): Promise<void> {
@@ -499,7 +502,7 @@ export function createWatchEventProcessor(options: IWatchOptions, url: string, r
           case 'ADDED':
           case 'MODIFIED':
             try {
-              await cacheResource(watchEvent.object)
+              await cacheResource(watchEvent.object, forward)
             } catch (err: unknown) {
               logger.error({
                 msg: 'cacheResource failed',
@@ -510,7 +513,7 @@ export function createWatchEventProcessor(options: IWatchOptions, url: string, r
             break
           case 'DELETED':
             try {
-              await deleteResource(watchEvent.object)
+              await deleteResource(watchEvent.object, forward)
             } catch (err: unknown) {
               logger.error({
                 msg: 'deleteResource failed',
@@ -720,7 +723,9 @@ function resourceUrl(options: IWatchOptions, query: Record<string, string>) {
   return url
 }
 
-export async function cacheResource(resource: IResource) {
+const NO_BROADCAST_EVENT_ID = Promise.resolve(-1)
+
+export async function cacheResource(resource: IResource, forwardEventsToClients = true) {
   const apiVersionPlural = apiVersionPluralFn(resource)
   let cache = resourceCache[apiVersionPlural]
   if (!cache) {
@@ -742,7 +747,7 @@ export async function cacheResource(resource: IResource) {
     const latestExisting = cache[uid]
     if (latestExisting === existing) {
       // if no other cacheResource call updated the cache while we were awaiting, we can replace the cache entry and event
-      ServerSideEvents.removeEvent(eventID)
+      if (eventID > 0) ServerSideEvents.removeEvent(eventID)
       break
     }
     // if a deleteResource ran while we were awaiting, we will exit the loop because the resource is no longer existing
@@ -750,9 +755,9 @@ export async function cacheResource(resource: IResource) {
     existing = latestExisting
   }
   const compressed = deflateResource(resource, eventDict)
-  const eventID = compressed.then((compressed) =>
-    ServerSideEvents.pushEvent({ data: { type: 'MODIFIED', object: compressed } })
-  )
+  const eventID = forwardEventsToClients
+    ? compressed.then((compressed) => ServerSideEvents.pushEvent({ data: { type: 'MODIFIED', object: compressed } }))
+    : NO_BROADCAST_EVENT_ID
   cache[uid] = { compressed, eventID }
 
   if (resource.kind === 'ManagedCluster') {
@@ -768,7 +773,7 @@ export async function cacheResource(resource: IResource) {
   }
 }
 
-async function deleteResource(resource: IResource) {
+async function deleteResource(resource: IResource, forwardEventsToClients = true) {
   const apiVersionPlural = apiVersionPluralFn(resource)
   const cache = resourceCache[apiVersionPlural]
   if (!cache) return
@@ -776,20 +781,25 @@ async function deleteResource(resource: IResource) {
   const uid = resource.metadata.uid
 
   const existing = cache[uid]
-  if (existing) ServerSideEvents.removeEvent(await existing.eventID)
+  if (existing) {
+    const eventID = await existing.eventID
+    if (eventID > 0) ServerSideEvents.removeEvent(eventID)
+  }
 
-  const deletedID = await ServerSideEvents.pushEvent({
-    data: {
-      type: 'DELETED',
-      object: {
-        kind: resource.kind,
-        apiVersion: resource.apiVersion,
-        metadata: { name: resource.metadata.name, namespace: resource.metadata.namespace },
+  if (forwardEventsToClients) {
+    const deletedID = await ServerSideEvents.pushEvent({
+      data: {
+        type: 'DELETED',
+        object: {
+          kind: resource.kind,
+          apiVersion: resource.apiVersion,
+          metadata: { name: resource.metadata.name, namespace: resource.metadata.namespace },
+        },
       },
-    },
-  })
-  // after deletion has been broadcast to current clients, no need to retain
-  ServerSideEvents.removeEvent(deletedID)
+    })
+    // after deletion has been broadcast to current clients, no need to retain
+    ServerSideEvents.removeEvent(deletedID)
+  }
   delete cache[uid]
 }
 
