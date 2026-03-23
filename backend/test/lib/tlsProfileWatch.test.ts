@@ -88,10 +88,12 @@ function waitForCalls(fn: { mock: { calls: unknown[][] } }, count: number, timeo
 }
 
 describe('tlsProfileWatch', () => {
-  let stopWatch: () => void
+  let stopWatch: (() => void) | undefined
+  const originalClusterApiUrl = process.env.CLUSTER_API_URL
 
   beforeEach(() => {
     jest.clearAllMocks()
+    stopWatch = undefined
     process.env.CLUSTER_API_URL = 'https://api.test-cluster.com:6443'
     mockedGetServiceAccountToken.mockReturnValue('mock-token')
     mockedGetCACertificate.mockReturnValue(undefined)
@@ -99,11 +101,20 @@ describe('tlsProfileWatch', () => {
 
   afterEach(async () => {
     stopWatch?.()
+    stopWatch = undefined
     nock.abortPendingRequests()
     nock.cleanAll()
     // Allow the async list+watch loop to observe the stop flag and exit
     // before the next test resets it via watchTLSSecurityProfile
     await new Promise((resolve) => setTimeout(resolve, 50))
+  })
+
+  afterAll(() => {
+    if (originalClusterApiUrl === undefined) {
+      delete process.env.CLUSTER_API_URL
+    } else {
+      process.env.CLUSTER_API_URL = originalClusterApiUrl
+    }
   })
 
   it('should call onProfileChange after the initial list with Intermediate profile', async () => {
@@ -366,11 +377,15 @@ describe('tlsProfileWatch', () => {
 
     stopWatch = watchTLSSecurityProfile(onProfileChange)
 
-    await new Promise<void>((resolve) => {
+    await new Promise<void>((resolve, reject) => {
+      const deadline = Date.now() + 5000
       const interval = setInterval(() => {
         if (listCount >= 2) {
           clearInterval(interval)
           resolve()
+        } else if (Date.now() > deadline) {
+          clearInterval(interval)
+          reject(new Error(`Timed out waiting for relist; listCount=${listCount}`))
         }
       }, 20)
     })

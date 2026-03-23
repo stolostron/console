@@ -110,7 +110,9 @@ const BUILTIN_SPECS: Record<string, { minTLSVersion: TLSVersionValue; ciphers: s
 
 function toNodeTLSOptions(spec?: TLSSecurityProfile): SecureContextOptions {
   const securityProfileSpec =
-    spec?.type === 'Custom' && spec.custom ? spec.custom : BUILTIN_SPECS[spec?.type ?? 'Intermediate']
+    spec?.type === 'Custom' && spec.custom
+      ? spec.custom
+      : (BUILTIN_SPECS[spec?.type ?? 'Intermediate'] ?? BUILTIN_SPECS['Intermediate'])
   const minVersion = TLS_VERSION_MAP[securityProfileSpec.minTLSVersion ?? 'VersionTLS12']
   const supportedCiphers = getCiphers()
   // If the profile is custom and the minimum TLS version is TLSv1.3, custom ciphers are currently not allowed
@@ -174,7 +176,7 @@ async function handleWatchError(err: unknown): Promise<void> {
       await new Promise((resolve) => setTimeout(resolve, 60_000 + Math.ceil(Math.random() * 10_000)).unref())
     }
   } else {
-    logger.error({ msg: 'TLS profile watch error', error: err instanceof Error ? err.message : JSON.stringify(err) })
+    logger.error({ msg: 'TLS profile watch error', error: JSON.stringify(err) })
     await new Promise((resolve) => setTimeout(resolve, 60_000 + Math.ceil(Math.random() * 10_000)).unref())
   }
 }
