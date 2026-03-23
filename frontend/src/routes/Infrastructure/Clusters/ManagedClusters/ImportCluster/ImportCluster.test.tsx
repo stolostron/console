@@ -701,6 +701,7 @@ describe('ImportCluster', () => {
 
   beforeEach(() => {
     window.sessionStorage.clear()
+    mockNavigate.mockClear()
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     nockIgnoreOperatorCheck(true)
