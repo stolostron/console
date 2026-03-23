@@ -1,0 +1,79 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Placement utils getPlacementsForApplicationSet 1`] = `
+[
+  {
+    "apiVersion": "cluster.open-cluster-management.io/v1beta1",
+    "kind": "Placement",
+    "metadata": {
+      "creationTimestamp": "2026-03-23T15:16:57Z",
+      "generation": 1,
+      "name": "layne-testing-placement",
+      "namespace": "openshift-gitops",
+      "resourceVersion": "410880",
+      "uid": "52554d53-bab2-41c8-9c65-52f152802d95",
+    },
+    "spec": {
+      "clusterSets": [
+        "default",
+      ],
+      "predicates": [
+        {
+          "requiredClusterSelector": {
+            "labelSelector": {
+              "matchExpressions": [
+                {
+                  "key": "cloud",
+                  "operator": "In",
+                  "values": [
+                    "Amazon",
+                  ],
+                },
+              ],
+            },
+          },
+        },
+      ],
+      "tolerations": [
+        {
+          "key": "cluster.open-cluster-management.io/unreachable",
+          "operator": "Exists",
+        },
+        {
+          "key": "cluster.open-cluster-management.io/unavailable",
+          "operator": "Exists",
+        },
+      ],
+    },
+    "status": {
+      "conditions": [
+        {
+          "lastTransitionTime": "2026-03-23T15:16:57Z",
+          "message": "Placement configurations check pass",
+          "reason": "Succeedconfigured",
+          "status": "False",
+          "type": "PlacementMisconfigured",
+        },
+        {
+          "lastTransitionTime": "2026-03-23T15:16:57Z",
+          "message": "All cluster decisions scheduled",
+          "reason": "AllDecisionsScheduled",
+          "status": "True",
+          "type": "PlacementSatisfied",
+        },
+      ],
+      "decisionGroups": [
+        {
+          "clusterCount": 2,
+          "decisionGroupIndex": 0,
+          "decisionGroupName": "",
+          "decisions": [
+            "layne-testing-placement-decision-1",
+          ],
+        },
+      ],
+      "numberOfSelectedClusters": 2,
+    },
+  },
+]
+`;

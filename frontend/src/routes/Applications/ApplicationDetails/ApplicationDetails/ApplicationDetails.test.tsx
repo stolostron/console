@@ -7,6 +7,7 @@ import {
   managedClustersState,
   namespacesState,
   placementRulesState,
+  settingsState,
   subscriptionsState,
 } from '../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '../../../../lib/nock-util'
@@ -630,6 +631,94 @@ describe('Overview Tab', () => {
     await waitForText('None')
     // created
     await waitForText(mockApplicationDataArgo.application.name, true)
+  })
+
+  test('should display AppSet app info that includes Placement', async () => {
+    const context: Partial<ApplicationDetailsContext> = {
+      applicationData: mockApplicationDataArgo,
+    }
+    context.applicationData!.application.placement = {
+      apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+      kind: 'Placement',
+      metadata: {
+        creationTimestamp: '2026-03-23T15:16:57Z',
+        name: 'appset-helm-placement',
+        uid: '52554d53-bab2-41c8-9c65-52f152802d95',
+        resourceVersion: '410880',
+        namespace: 'openshift-gitops',
+      },
+      spec: {
+        tolerations: [
+          {
+            key: 'cluster.open-cluster-management.io/unreachable',
+            operator: 'Exists',
+          },
+          {
+            key: 'cluster.open-cluster-management.io/unavailable',
+            operator: 'Exists',
+          },
+        ],
+        clusterSets: ['default'],
+        predicates: [
+          {
+            requiredClusterSelector: {
+              labelSelector: {
+                matchExpressions: [
+                  {
+                    key: 'cloud',
+                    operator: 'In',
+                    values: ['Amazon'],
+                  },
+                ],
+              },
+            },
+          },
+        ],
+      },
+      status: {
+        conditions: [],
+        decisionGroups: [
+          {
+            clusterCount: 2,
+            decisionGroupIndex: 0,
+            decisionGroupName: '',
+            decisions: ['appset-helm-placement-decision-1'],
+          },
+        ],
+        numberOfSelectedClusters: 2,
+      },
+    }
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(subscriptionsState, mockSubscriptions)
+          snapshot.set(channelsState, mockChannels)
+          snapshot.set(placementRulesState, mockPlacementrules)
+          snapshot.set(managedClustersState, mockManagedClusters)
+          snapshot.set(settingsState, {
+            enhancedPlacement: 'enabled',
+          })
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ApplicationDetailsPageContent />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForText('Name')
+    // cluster
+    await waitForText('Clusters')
+    await waitForText('None')
+    // created
+    await waitForText(mockApplicationDataArgo.application.name, true)
+
+    // ensure Placement list item displayed
+    await waitForText('Placement')
+    await waitForText('appset-helm-placement')
   })
 
   test('should extract repo info from ArgoApplication with single source when search data is incomplete', async () => {
