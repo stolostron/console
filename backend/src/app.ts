@@ -112,7 +112,7 @@ export async function requestHandler(req: Http2ServerRequest, res: Http2ServerRe
   }
 }
 
-let stopTLSProfileWatch: () => void
+let stopTLSProfileWatch: (() => void) | undefined
 export async function start() {
   await loadSettings()
   if (eventsEnabled) {
@@ -121,7 +121,7 @@ export async function start() {
   }
   stopTLSProfileWatch = watchTLSSecurityProfile(async (options) => {
     await stopServer()
-    void startServer({ requestHandler, ...options })
+    await startServer({ requestHandler, ...options })
   })
 }
 
@@ -136,7 +136,7 @@ export async function stop(): Promise<void> {
   await ServerSideEvents.dispose()
   stopWatching()
   stopAggregating()
-  stopTLSProfileWatch()
+  stopTLSProfileWatch?.()
   await stopServer()
   stopLogger()
 }
