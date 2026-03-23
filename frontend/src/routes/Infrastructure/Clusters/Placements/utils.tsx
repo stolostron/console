@@ -51,7 +51,7 @@ export function PlacementLinkList(props: { placementsForCluster: Placement[] }) 
           variant={'outline'}
           onClick={() => setShowMore(!showMore)}
         >
-          {showMore ? t('Show less') : `${placementsForCluster.length - 3} more`}
+          {showMore ? t('Show less') : t('{{count}} more', { count: placementsForCluster.length - 3 })}
         </Label>
       )}
     </div>
