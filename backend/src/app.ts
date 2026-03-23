@@ -120,8 +120,15 @@ export async function start() {
     startAggregating()
   }
   stopTLSProfileWatch = watchTLSSecurityProfile(async (options) => {
-    await stopServer()
-    await startServer({ requestHandler, ...options })
+    try {
+      await stopServer()
+      await startServer({ requestHandler, ...options })
+    } catch (err) {
+      logger.error({
+        msg: 'server restart failed on TLS profile change',
+        error: err instanceof Error ? err.message : String(err),
+      })
+    }
   })
 }
 
