@@ -265,7 +265,7 @@ describe('AutomationProviderHint - Version-specific URLs', () => {
       await waitForText('Operator required')
       const installLink = getByText('Install the operator')
       const linkElement = installLink.closest('a')
-      expect(linkElement).toHaveAttribute('href', '/catalog/ns/default?keyword=Ansible%20Automation%20Platform')
+      expect(linkElement).toHaveAttribute('href', '/catalog/all-namespaces?keyword=Ansible%20Automation%20Platform')
     })
   })
 

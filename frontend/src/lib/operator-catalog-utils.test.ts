@@ -4,7 +4,6 @@ import {
   buildCatalogDetailsUrl,
   buildCatalogSearchUrl,
   getOperatorCatalogBasePath,
-  getOperatorCatalogDisplayName,
   isVersionAtLeast,
 } from './operator-catalog-utils'
 
@@ -23,8 +22,8 @@ describe('operator-catalog-utils', () => {
       expect(isVersionAtLeast('3.11.0', '4.20')).toBe(false)
     })
 
-    it('should return false for undefined version (safe fallback)', () => {
-      expect(isVersionAtLeast(undefined, '4.20')).toBe(false)
+    it('should return true for undefined version', () => {
+      expect(isVersionAtLeast(undefined, '4.20')).toBe(true)
     })
 
     it('should handle exact version matches', () => {
@@ -56,31 +55,15 @@ describe('operator-catalog-utils', () => {
       expect(getOperatorCatalogBasePath('4.15.0')).toBe('/operatorhub')
     })
 
-    it('should return /operatorhub for undefined version', () => {
-      expect(getOperatorCatalogBasePath(undefined)).toBe('/operatorhub')
-    })
-  })
-
-  describe('getOperatorCatalogDisplayName', () => {
-    it('should return "Software Catalog" for OCP 4.20+', () => {
-      expect(getOperatorCatalogDisplayName('4.20.0')).toBe('Software Catalog')
-      expect(getOperatorCatalogDisplayName('4.21.0')).toBe('Software Catalog')
-    })
-
-    it('should return "OperatorHub" for OCP 4.19 and below', () => {
-      expect(getOperatorCatalogDisplayName('4.19.0')).toBe('OperatorHub')
-      expect(getOperatorCatalogDisplayName('4.18.0')).toBe('OperatorHub')
-    })
-
-    it('should return "OperatorHub" for undefined version', () => {
-      expect(getOperatorCatalogDisplayName(undefined)).toBe('OperatorHub')
+    it('should return /catalog for undefined version', () => {
+      expect(getOperatorCatalogBasePath(undefined)).toBe('/catalog')
     })
   })
 
   describe('buildCatalogSearchUrl', () => {
     it('should build correct URL for OCP 4.20+', () => {
       expect(buildCatalogSearchUrl('4.20.0', 'default', 'test operator')).toBe(
-        '/catalog/ns/default?keyword=test%20operator'
+        '/catalog/all-namespaces?keyword=test%20operator'
       )
     })
 
@@ -92,36 +75,51 @@ describe('operator-catalog-utils', () => {
 
     it('should properly encode special characters in keyword', () => {
       expect(buildCatalogSearchUrl('4.20.0', 'default', 'test & special')).toBe(
-        '/catalog/ns/default?keyword=test%20%26%20special'
+        '/catalog/all-namespaces?keyword=test%20%26%20special'
       )
     })
   })
 
   describe('buildCatalogCategoryUrl', () => {
     it('should build correct URL for OCP 4.20+ with category', () => {
-      expect(buildCatalogCategoryUrl('4.20.0', 'multicluster-engine', 'storage')).toBe(
-        '/catalog/ns/multicluster-engine?category=storage'
-      )
+      expect(buildCatalogCategoryUrl('4.20.0', 'storage')).toBe('/catalog/all-namespaces?category=storage')
     })
 
     it('should build correct URL for OCP 4.19 with category', () => {
-      expect(buildCatalogCategoryUrl('4.19.0', 'multicluster-engine', 'storage')).toBe(
-        '/operatorhub/ns/multicluster-engine?category=storage'
+      expect(buildCatalogCategoryUrl('4.19.0', 'storage')).toBe('/operatorhub/ns/multicluster-engine?category=storage')
+    })
+
+    it('should encode special characters in category for OCP 4.20+', () => {
+      expect(buildCatalogCategoryUrl('4.20.0', 'storage & data')).toBe(
+        '/catalog/all-namespaces?category=storage%20%26%20data'
       )
     })
 
-    it('should encode special characters in category', () => {
-      expect(buildCatalogCategoryUrl('4.20.0', 'multicluster-engine', 'storage & data')).toBe(
-        '/catalog/ns/multicluster-engine?category=storage%20%26%20data'
+    it('should encode special characters in category for OCP 4.19', () => {
+      expect(buildCatalogCategoryUrl('4.19.0', 'storage & data')).toBe(
+        '/operatorhub/ns/multicluster-engine?category=storage%20%26%20data'
       )
     })
   })
 
   describe('buildCatalogDetailsUrl', () => {
     it('should use selectedId parameter for OCP 4.20+', () => {
+      const url = buildCatalogDetailsUrl('4.20.0', 'advanced-cluster-management-redhat-operators-openshift-marketplace')
+      expect(url).toBe(
+        '/catalog/all-namespaces?selectedId=advanced-cluster-management-redhat-operators-openshift-marketplace'
+      )
+    })
+
+    it('should use details-item parameter for OCP 4.19', () => {
+      const url = buildCatalogDetailsUrl('4.19.0', 'advanced-cluster-management-redhat-operators-openshift-marketplace')
+      expect(url).toBe(
+        '/operatorhub/all-namespaces?details-item=advanced-cluster-management-redhat-operators-openshift-marketplace'
+      )
+    })
+
+    it('should handle undefined version by using catalog path', () => {
       const url = buildCatalogDetailsUrl(
-        '4.20.0',
-        'all-namespaces',
+        undefined,
         'advanced-cluster-management-redhat-operators-openshift-marketplace'
       )
       expect(url).toBe(
@@ -129,30 +127,8 @@ describe('operator-catalog-utils', () => {
       )
     })
 
-    it('should use details-item parameter for OCP 4.19', () => {
-      const url = buildCatalogDetailsUrl(
-        '4.19.0',
-        'all-namespaces',
-        'advanced-cluster-management-redhat-operators-openshift-marketplace'
-      )
-      expect(url).toBe(
-        '/operatorhub/all-namespaces?details-item=advanced-cluster-management-redhat-operators-openshift-marketplace'
-      )
-    })
-
-    it('should handle undefined version by using operatorhub path', () => {
-      const url = buildCatalogDetailsUrl(
-        undefined,
-        'all-namespaces',
-        'advanced-cluster-management-redhat-operators-openshift-marketplace'
-      )
-      expect(url).toBe(
-        '/operatorhub/all-namespaces?details-item=advanced-cluster-management-redhat-operators-openshift-marketplace'
-      )
-    })
-
     it('should encode special characters in operator id', () => {
-      const url = buildCatalogDetailsUrl('4.20.0', 'all-namespaces', 'test operator&id=1')
+      const url = buildCatalogDetailsUrl('4.20.0', 'test operator&id=1')
       expect(url).toBe('/catalog/all-namespaces?selectedId=test%20operator%26id%3D1')
     })
   })

@@ -73,7 +73,7 @@ describe('OperatorAlert', () => {
     expect(installLink).toBeInTheDocument()
 
     const linkElement = installLink.closest('a')
-    expect(linkElement).toHaveAttribute('href', '/catalog/ns/default?keyword=Test%20Operator')
+    expect(linkElement).toHaveAttribute('href', '/catalog/all-namespaces?keyword=Test%20Operator')
     expect(linkElement).toHaveAttribute('target', '_blank')
   })
 
@@ -106,7 +106,7 @@ describe('OperatorAlert', () => {
 
     const installLink = screen.getByText('Install the operator')
     const linkElement = installLink.closest('a')
-    expect(linkElement).toHaveAttribute('href', '/catalog/ns/default?keyword=OpenShift%20Virtualization%20Operator')
+    expect(linkElement).toHaveAttribute('href', '/catalog/all-namespaces?keyword=OpenShift%20Virtualization%20Operator')
   })
 
   it('should render without message when message is not provided', () => {
@@ -139,7 +139,7 @@ describe('OperatorAlert', () => {
 
       const installLink = screen.getByText('Install the operator')
       const linkElement = installLink.closest('a')
-      expect(linkElement).toHaveAttribute('href', '/catalog/ns/default?keyword=Test%20Operator')
+      expect(linkElement).toHaveAttribute('href', '/catalog/all-namespaces?keyword=Test%20Operator')
     })
   })
 

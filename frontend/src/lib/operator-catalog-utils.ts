@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { useClusterVersion } from '../hooks/use-cluster-version'
 
 export const isVersionAtLeast = (version: string | undefined, compareVersion: string): boolean => {
-  if (!version) return false
+  if (!version) return true
 
   const parsePart = (part?: string) => {
     const value = Number.parseInt((part ?? '0').replace(/\D.*$/, ''), 10)
@@ -26,53 +26,38 @@ export const isVersionAtLeast = (version: string | undefined, compareVersion: st
 export const getOperatorCatalogBasePath = (ocpVersion: string | undefined): string =>
   isVersionAtLeast(ocpVersion, '4.20') ? '/catalog' : '/operatorhub'
 
-export const getOperatorCatalogDisplayName = (ocpVersion: string | undefined): string =>
-  isVersionAtLeast(ocpVersion, '4.20') ? 'Software Catalog' : 'OperatorHub'
-
 export const buildCatalogSearchUrl = (ocpVersion: string | undefined, namespace: string, keyword: string): string => {
   const basePath = getOperatorCatalogBasePath(ocpVersion)
-  return `${basePath}/ns/${namespace}?keyword=${encodeURIComponent(keyword)}`
+  const namespacePath = isVersionAtLeast(ocpVersion, '4.20') ? 'all-namespaces' : `ns/${namespace}`
+  return `${basePath}/${namespacePath}?keyword=${encodeURIComponent(keyword)}`
 }
 
-export const buildCatalogCategoryUrl = (
-  ocpVersion: string | undefined,
-  namespace: string,
-  category: string
-): string => {
+export const buildCatalogCategoryUrl = (ocpVersion: string | undefined, category: string): string => {
   const basePath = getOperatorCatalogBasePath(ocpVersion)
-  return `${basePath}/ns/${encodeURIComponent(namespace)}?category=${encodeURIComponent(category)}`
+  const namespace = isVersionAtLeast(ocpVersion, '4.20') ? 'all-namespaces' : 'ns/multicluster-engine'
+  return `${basePath}/${namespace}?category=${encodeURIComponent(category)}`
 }
 
-export const buildCatalogDetailsUrl = (
-  ocpVersion: string | undefined,
-  namespace: string,
-  operatorId: string
-): string => {
+export const buildCatalogDetailsUrl = (ocpVersion: string | undefined, operatorId: string): string => {
   const basePath = getOperatorCatalogBasePath(ocpVersion)
   const paramName = isVersionAtLeast(ocpVersion, '4.20') ? 'selectedId' : 'details-item'
-  return `${basePath}/${encodeURIComponent(namespace)}?${paramName}=${encodeURIComponent(operatorId)}`
+  return `${basePath}/all-namespaces?${paramName}=${encodeURIComponent(operatorId)}`
 }
 
 export const useOperatorCatalog = () => {
-  const { version, isLoading } = useClusterVersion()
+  const { version } = useClusterVersion()
 
   return useMemo(() => {
     const buildSearchUrl = (namespace: string, keyword: string) => buildCatalogSearchUrl(version, namespace, keyword)
 
-    const buildCategoryUrl = (namespace: string, category: string) =>
-      buildCatalogCategoryUrl(version, namespace, category)
+    const buildCategoryUrl = (category: string) => buildCatalogCategoryUrl(version, category)
 
-    const buildDetailsUrl = (namespace: string, operatorId: string) =>
-      buildCatalogDetailsUrl(version, namespace, operatorId)
+    const buildDetailsUrl = (operatorId: string) => buildCatalogDetailsUrl(version, operatorId)
 
     return {
-      basePath: getOperatorCatalogBasePath(version),
-      displayName: getOperatorCatalogDisplayName(version),
       buildSearchUrl,
       buildCategoryUrl,
       buildDetailsUrl,
-      isLoading,
-      version,
     }
-  }, [version, isLoading])
+  }, [version])
 }

@@ -23,8 +23,11 @@ import {
 } from './ControlDataHelpers'
 import AvailabilityOptionsForm, { summary } from '../components/AvailabilityOptionsForm'
 import { getClusterImageSetVersion } from '../../../../../../resources'
+import { useOperatorCatalog } from '../../../../../../lib/operator-catalog-utils'
 
-const operatorAlert = (localCluster, t) => {
+const OperatorAlert = ({ localCluster, t }) => {
+  const { buildSearchUrl } = useOperatorCatalog()
+
   return (
     <Alert style={{ marginBottom: '1rem' }} isInline variant={'danger'} title={t('Operator required')}>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
@@ -37,7 +40,7 @@ const operatorAlert = (localCluster, t) => {
           isInline
           href={
             localCluster?.consoleURL
-              ? `${localCluster.consoleURL}/catalog/ns/default?keyword=Openshift+Virtualization`
+              ? `${localCluster.consoleURL}${buildSearchUrl('default', 'Openshift Virtualization')}`
               : ''
           }
           target="_blank"
@@ -98,7 +101,7 @@ export const getControlDataKubeVirt = (
       id: 'kubevirt-operator-alert',
       type: 'custom',
       hidden: false, // toggled in CreateCluster.tsx
-      component: operatorAlert(localCluster, t),
+      component: <OperatorAlert localCluster={localCluster} t={t} />,
     },
     /////////////////////// ACM Credentials /////////////////////////////////////
     {

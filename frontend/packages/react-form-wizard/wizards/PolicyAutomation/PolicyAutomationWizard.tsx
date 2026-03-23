@@ -34,13 +34,10 @@ export function PolicyAutomationWizard(props: {
   onCancel: WizardCancel
   getAnsibleJobsCallback: (credential: ICredential) => Promise<string[]>
   isAnsibleOperatorInstalled: boolean
-  buildSearchUrl?: (namespace: string, keyword: string) => string
-  catalogDisplayName?: string
 }) {
-  const buildSearchUrl =
-    props.buildSearchUrl ??
-    ((namespace: string, keyword: string) => `/catalog/ns/${namespace}?keyword=${encodeURIComponent(keyword)}`)
-  const displayName = props.catalogDisplayName ?? 'OperatorHub'
+  const buildSearchUrl = (namespace: string, keyword: string) =>
+    `/catalog/ns/${namespace}?keyword=${encodeURIComponent(keyword)}`
+  const displayName = 'OperatorHub'
 
   const ansibleCredentials = useMemo(
     () =>
@@ -77,7 +74,11 @@ export function PolicyAutomationWizard(props: {
             </Button>
           </div>
         ) : (
-          `Install the Operator through ${displayName.toLowerCase()}.`
+          <>
+            {'Install the Operator through '}
+            {displayName.toLowerCase()}
+            {'.'}
+          </>
         )}
       </div>
     )

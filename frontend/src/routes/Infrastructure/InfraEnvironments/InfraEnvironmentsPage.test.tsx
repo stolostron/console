@@ -189,7 +189,7 @@ describe('InfraEnvironmentsPage - Version-specific URLs', () => {
       render(<Component />)
       await waitForText('Host inventory', true)
       userEvent.click(screen.getByRole('button', { name: /install storage operator/i }))
-      expect(mockNavigate).toHaveBeenCalledWith('/catalog/ns/multicluster-engine?category=storage')
+      expect(mockNavigate).toHaveBeenCalledWith('/catalog/all-namespaces?category=storage')
     })
   })
 
