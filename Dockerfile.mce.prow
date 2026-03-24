@@ -1,24 +1,31 @@
 # Copyright Contributors to the Open Cluster Management project
 
 FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:714ca1c5e1350d28c0fa896675323d9d4f7c133420c699bb95b3326783b769fb as dynamic-plugin
+USER root
+ENV NPM_CONFIG_NODEDIR=/usr
+
 WORKDIR /app/frontend
 COPY ./frontend .
-RUN npm ci --legacy-peer-deps --ignore-scripts
+RUN npm ci --legacy-peer-deps --unsafe-perm --ignore-scripts
 RUN npm run build:plugin:mce
 
 FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:714ca1c5e1350d28c0fa896675323d9d4f7c133420c699bb95b3326783b769fb as backend
+USER root
+ENV NPM_CONFIG_NODEDIR=/usr
 WORKDIR /app/backend
 # Copy only package.json and package-lock.json so that the docker layer cache only changes if those change
 # This will cause the npm ci to only rerun if the package.json or package-lock.json changes
 COPY ./backend/package.json ./backend/package-lock.json ./
-RUN npm ci --omit=optional --ignore-scripts
+RUN npm ci --omit=optional --unsafe-perm --ignore-scripts
 COPY ./backend .
 RUN npm run build
 
 FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:714ca1c5e1350d28c0fa896675323d9d4f7c133420c699bb95b3326783b769fb as production
+USER root
+ENV NPM_CONFIG_NODEDIR=/usr
 WORKDIR /app/backend
 COPY ./backend/package-lock.json ./backend/package.json ./
-RUN npm ci --omit=optional --only=production --ignore-scripts
+RUN npm ci --omit=optional --only=production --unsafe-perm --ignore-scripts
 
 FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:714ca1c5e1350d28c0fa896675323d9d4f7c133420c699bb95b3326783b769fb
 WORKDIR /app
@@ -28,3 +35,15 @@ COPY --from=backend /app/backend/backend.mjs ./
 COPY --from=dynamic-plugin /app/frontend/plugins/mce/dist ./public/plugin
 USER 1001
 CMD ["node", "backend.mjs"]
+
+LABEL com.redhat.component="multicluster-engine-console-mce-container" \
+      cpe="cpe:/a:redhat:multicluster_engine:2.17::el9" \
+      url="https://github.com/stolostron/console" \
+      name="multicluster-engine/console-mce-rhel9" \
+      summary="multicluster-engine-console-mce" \
+      io.openshift.expose-services="" \
+      io.openshift.tags="data,images" \
+      io.k8s.display-name="multicluster-engine-console-mce" \
+      maintainer="['acm-component-maintainers@redhat.com']" \
+      description="multicluster-engine-console-mce" \
+      io.k8s.description="multicluster-engine-console-mce"

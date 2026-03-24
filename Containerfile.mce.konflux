@@ -1,28 +1,38 @@
-FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:714ca1c5e1350d28c0fa896675323d9d4f7c133420c699bb95b3326783b769fb AS builder
+# Copyright Contributors to the Open Cluster Management project
 
+FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:714ca1c5e1350d28c0fa896675323d9d4f7c133420c699bb95b3326783b769fb as dynamic-plugin
 USER root
 ENV NPM_CONFIG_NODEDIR=/usr
 
-WORKDIR /app
-COPY . .
+WORKDIR /app/frontend
+COPY ./frontend .
+RUN npm ci --legacy-peer-deps --unsafe-perm --ignore-scripts
+RUN npm run build:plugin:mce
 
-# Running installs concurrently fails on aarch64
-RUN npm ci --omit=optional --unsafe-perm --ignore-scripts && npm cache clean --force
-RUN cd backend && npm ci --omit=optional  --unsafe-perm --ignore-scripts && npm cache clean --force
-RUN cd frontend && npm ci --legacy-peer-deps --unsafe-perm --ignore-scripts && npm cache clean --force
-RUN npm run build:backend
-RUN cd frontend && npm run build:plugin:mce
+FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:714ca1c5e1350d28c0fa896675323d9d4f7c133420c699bb95b3326783b769fb as backend
+USER root
+ENV NPM_CONFIG_NODEDIR=/usr
+WORKDIR /app/backend
+# Copy only package.json and package-lock.json so that the docker layer cache only changes if those change
+# This will cause the npm ci to only rerun if the package.json or package-lock.json changes
+COPY ./backend/package.json ./backend/package-lock.json ./
+RUN npm ci --omit=optional --unsafe-perm --ignore-scripts
+COPY ./backend .
+RUN npm run build
 
-# Remove build-time dependencies before packaging
-RUN cd backend && npm ci --omit=optional --only=production --unsafe-perm --ignore-scripts
+FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:714ca1c5e1350d28c0fa896675323d9d4f7c133420c699bb95b3326783b769fb as production
+USER root
+ENV NPM_CONFIG_NODEDIR=/usr
+WORKDIR /app/backend
+COPY ./backend/package-lock.json ./backend/package.json ./
+RUN npm ci --omit=optional --only=production --unsafe-perm --ignore-scripts
 
 FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:714ca1c5e1350d28c0fa896675323d9d4f7c133420c699bb95b3326783b769fb
-
 WORKDIR /app
 ENV NODE_ENV production
-COPY --from=builder /app/backend/node_modules ./node_modules
-COPY --from=builder /app/backend/backend.mjs ./
-COPY --from=builder /app/frontend/plugins/mce/dist ./public/plugin
+COPY --from=production /app/backend/node_modules ./node_modules
+COPY --from=backend /app/backend/backend.mjs ./
+COPY --from=dynamic-plugin /app/frontend/plugins/mce/dist ./public/plugin
 USER 1001
 CMD ["node", "backend.mjs"]
 

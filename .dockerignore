@@ -25,7 +25,6 @@
 /.dockerignore
 /.gitignore
 /Dockerfile
-/Dockerfile.mce.prow
 /Dockerfile.prow
 /Containerfile.mce.konflux
 /Containerfile.acm.konflux
