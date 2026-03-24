@@ -102,7 +102,9 @@ export function CreatePolicyAutomation() {
         cancelForm()
         navigate(destination)
       }}
-      onSubmit={(data) => handlePolicyAutomationSubmit(submitForm, data, secrets, navigate, destination, toast, t)}
+      onSubmit={(data: unknown) =>
+        handlePolicyAutomationSubmit(submitForm, data, secrets, navigate, destination, toast, t)
+      }
       getAnsibleJobsCallback={async (credential: any) => {
         const host = Buffer.from(credential.data.host || '', 'base64').toString('ascii')
         const token = Buffer.from(credential.data.token || '', 'base64').toString('ascii')

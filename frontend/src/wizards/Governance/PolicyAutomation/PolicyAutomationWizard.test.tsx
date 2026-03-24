@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { clusterCuratorsState, subscriptionOperatorsState } from '../../../atoms'
-import { nockIgnoreOperatorCheck } from '../../../lib/nock-util'
+import { nockIgnoreOperatorCheck, nockIgnoreClusterVersion } from '../../../lib/nock-util'
 import { PolicyAutomationWizard, PolicyAutomationWizardProps } from './PolicyAutomationWizard'
 
 const mockGetwizardsynceditor = jest.fn()
@@ -32,6 +32,7 @@ describe('PolicyAutomationWizard tests', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     nockIgnoreOperatorCheck()
+    nockIgnoreClusterVersion()
   })
 
   test('create policy automation', async () => {

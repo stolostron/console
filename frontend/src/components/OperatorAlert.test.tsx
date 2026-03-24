@@ -157,7 +157,7 @@ describe('OperatorAlert', () => {
 
       const installLink = screen.getByText('Install the operator')
       const linkElement = installLink.closest('a')
-      expect(linkElement).toHaveAttribute('href', '/operatorhub/ns/default?keyword=Test%20Operator')
+      expect(linkElement).toHaveAttribute('href', '/operatorhub/all-namespaces?keyword=Test%20Operator')
     })
   })
 })

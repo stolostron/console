@@ -9,6 +9,7 @@ import {
   nockCreate,
   nockIgnoreApiPaths,
   nockIgnoreOperatorCheck,
+  nockIgnoreClusterVersion,
 } from '../../../lib/nock-util'
 import { clickByText, waitForNocks, waitForNotText, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
@@ -53,6 +54,7 @@ describe('Create Policy Automation Wizard', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     nockIgnoreOperatorCheck(true)
+    nockIgnoreClusterVersion()
   })
 
   test('can create policy automation', async () => {

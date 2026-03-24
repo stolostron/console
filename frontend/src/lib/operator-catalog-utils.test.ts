@@ -62,19 +62,19 @@ describe('operator-catalog-utils', () => {
 
   describe('buildCatalogSearchUrl', () => {
     it('should build correct URL for OCP 4.20+', () => {
-      expect(buildCatalogSearchUrl('4.20.0', 'default', 'test operator')).toBe(
+      expect(buildCatalogSearchUrl('4.20.0', 'test operator')).toBe(
         '/catalog/all-namespaces?keyword=test%20operator'
       )
     })
 
     it('should build correct URL for OCP 4.19', () => {
-      expect(buildCatalogSearchUrl('4.19.0', 'default', 'test operator')).toBe(
-        '/operatorhub/ns/default?keyword=test%20operator'
+      expect(buildCatalogSearchUrl('4.19.0', 'test operator')).toBe(
+        '/operatorhub/all-namespaces?keyword=test%20operator'
       )
     })
 
     it('should properly encode special characters in keyword', () => {
-      expect(buildCatalogSearchUrl('4.20.0', 'default', 'test & special')).toBe(
+      expect(buildCatalogSearchUrl('4.20.0', 'test & special')).toBe(
         '/catalog/all-namespaces?keyword=test%20%26%20special'
       )
     })

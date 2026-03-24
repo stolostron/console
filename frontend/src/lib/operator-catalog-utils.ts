@@ -26,10 +26,9 @@ export const isVersionAtLeast = (version: string | undefined, compareVersion: st
 export const getOperatorCatalogBasePath = (ocpVersion: string | undefined): string =>
   isVersionAtLeast(ocpVersion, '4.20') ? '/catalog' : '/operatorhub'
 
-export const buildCatalogSearchUrl = (ocpVersion: string | undefined, namespace: string, keyword: string): string => {
+export const buildCatalogSearchUrl = (ocpVersion: string | undefined, keyword: string): string => {
   const basePath = getOperatorCatalogBasePath(ocpVersion)
-  const namespacePath = isVersionAtLeast(ocpVersion, '4.20') ? 'all-namespaces' : `ns/${namespace}`
-  return `${basePath}/${namespacePath}?keyword=${encodeURIComponent(keyword)}`
+  return `${basePath}/all-namespaces?keyword=${encodeURIComponent(keyword)}`
 }
 
 export const buildCatalogCategoryUrl = (ocpVersion: string | undefined, category: string): string => {
@@ -48,7 +47,7 @@ export const useOperatorCatalog = () => {
   const { version, isLoading } = useClusterVersion()
 
   return useMemo(() => {
-    const buildSearchUrl = (namespace: string, keyword: string) => buildCatalogSearchUrl(version, namespace, keyword)
+    const buildSearchUrl = (keyword: string) => buildCatalogSearchUrl(version, keyword)
 
     const buildCategoryUrl = (category: string) => buildCatalogCategoryUrl(version, category)
 
