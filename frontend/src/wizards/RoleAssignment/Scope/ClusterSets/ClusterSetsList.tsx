@@ -2,7 +2,6 @@
 
 import { useMemo } from 'react'
 import { ClusterSetsTable } from '../../../../components/ClusterSets/ClusterSetsTable'
-import { useTranslation } from '../../../../lib/acm-i18next'
 import { isGlobalClusterSet, ManagedClusterSet } from '../../../../resources'
 import { useAllClusters } from '../../../../routes/Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
@@ -27,8 +26,6 @@ export const ClusterSetsList = ({ onSelectClusterSet, selectedClusterSets }: Clu
     [managedClusterSets, clusters]
   )
 
-  const { t } = useTranslation()
-
   return (
     <ClusterSetsTable
       managedClusterSets={extendedManagedClusterSets}
@@ -37,7 +34,7 @@ export const ClusterSetsList = ({ onSelectClusterSet, selectedClusterSets }: Clu
       onSelectClusterSet={onSelectClusterSet}
       initialSelectedClusterSets={selectedClusterSets}
       showExportButton={false}
-      hiddenColumns={[t('table.clusterSetBinding')]}
+      hiddenColumns={['clustersetbinding']}
     />
   )
 }
