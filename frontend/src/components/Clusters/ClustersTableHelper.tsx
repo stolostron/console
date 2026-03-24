@@ -443,7 +443,7 @@ export function useClusterAddonColumn(): IAcmTableColumn<Cluster> {
 export function useClusterCreatedDateColumn(): IAcmTableColumn<Cluster> {
   const { t } = useTranslation()
   return {
-    header: t('Created'),
+    header: t('table.created'),
     sort: (a: Cluster, b: Cluster) => {
       const dateTimeCellA = getDateTimeCell(a.creationTimestamp ? new Date(a.creationTimestamp).toString() : '-')
       const dateTimeCellB = getDateTimeCell(b.creationTimestamp ? new Date(b.creationTimestamp).toString() : '-')
