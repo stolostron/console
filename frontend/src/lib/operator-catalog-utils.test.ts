@@ -82,7 +82,7 @@ describe('operator-catalog-utils', () => {
 
   describe('buildCatalogCategoryUrl', () => {
     it('should build correct URL for OCP 4.20+ with category', () => {
-      expect(buildCatalogCategoryUrl('4.20.0', 'storage')).toBe('/catalog/all-namespaces?category=storage')
+      expect(buildCatalogCategoryUrl('4.20.0', 'storage')).toBe('/catalog/ns/default?category=storage')
     })
 
     it('should build correct URL for OCP 4.19 with category', () => {
@@ -91,7 +91,7 @@ describe('operator-catalog-utils', () => {
 
     it('should encode special characters in category for OCP 4.20+', () => {
       expect(buildCatalogCategoryUrl('4.20.0', 'storage & data')).toBe(
-        '/catalog/all-namespaces?category=storage%20%26%20data'
+        '/catalog/ns/default?category=storage%20%26%20data'
       )
     })
 

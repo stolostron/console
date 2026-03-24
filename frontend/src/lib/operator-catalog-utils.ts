@@ -34,7 +34,7 @@ export const buildCatalogSearchUrl = (ocpVersion: string | undefined, namespace:
 
 export const buildCatalogCategoryUrl = (ocpVersion: string | undefined, category: string): string => {
   const basePath = getOperatorCatalogBasePath(ocpVersion)
-  const namespace = isVersionAtLeast(ocpVersion, '4.20') ? 'all-namespaces' : 'ns/multicluster-engine'
+  const namespace = isVersionAtLeast(ocpVersion, '4.20') ? 'ns/default' : 'ns/multicluster-engine'
   return `${basePath}/${namespace}?category=${encodeURIComponent(category)}`
 }
 
@@ -45,7 +45,7 @@ export const buildCatalogDetailsUrl = (ocpVersion: string | undefined, operatorI
 }
 
 export const useOperatorCatalog = () => {
-  const { version } = useClusterVersion()
+  const { version, isLoading } = useClusterVersion()
 
   return useMemo(() => {
     const buildSearchUrl = (namespace: string, keyword: string) => buildCatalogSearchUrl(version, namespace, keyword)
@@ -58,6 +58,7 @@ export const useOperatorCatalog = () => {
       buildSearchUrl,
       buildCategoryUrl,
       buildDetailsUrl,
+      isLoading,
     }
-  }, [version])
+  }, [version, isLoading])
 }

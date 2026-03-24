@@ -17,8 +17,9 @@ describe('Cluster creation control data for KubeVirt', () => {
   beforeEach(() => {
     useOperatorCatalog.mockReturnValue({
       buildSearchUrl: jest.fn((namespace, keyword) => `/catalog/all-namespaces?keyword=${encodeURIComponent(keyword)}`),
-      buildCategoryUrl: jest.fn((category) => `/catalog/all-namespaces?category=${encodeURIComponent(category)}`),
+      buildCategoryUrl: jest.fn((category) => `/catalog/ns/default?category=${encodeURIComponent(category)}`),
       buildDetailsUrl: jest.fn((operatorId) => `/catalog/all-namespaces?selectedId=${encodeURIComponent(operatorId)}`),
+      isLoading: false,
     })
   })
 
