@@ -2997,7 +2997,6 @@
   "table.consoleUrl": "Console URL",
   "table.controlplane": "Control plane type",
   "table.cpu": "CPU",
-  "table.created": "Created",
   "table.createdBy": "Created by",
   "table.credentials": "Username & password",
   "table.currentReleaseImage": "Current release image",
