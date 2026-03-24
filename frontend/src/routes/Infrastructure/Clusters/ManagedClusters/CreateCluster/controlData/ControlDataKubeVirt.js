@@ -39,9 +39,7 @@ const OperatorAlert = ({ localCluster, t }) => {
           component="a"
           isInline
           href={
-            localCluster?.consoleURL
-              ? `${localCluster.consoleURL}${buildSearchUrl('Openshift Virtualization')}`
-              : ''
+            localCluster?.consoleURL ? `${localCluster.consoleURL}${buildSearchUrl('Openshift Virtualization')}` : ''
           }
           target="_blank"
           icon={<ExternalLinkAltIcon />}

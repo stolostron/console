@@ -62,9 +62,7 @@ describe('operator-catalog-utils', () => {
 
   describe('buildCatalogSearchUrl', () => {
     it('should build correct URL for OCP 4.20+', () => {
-      expect(buildCatalogSearchUrl('4.20.0', 'test operator')).toBe(
-        '/catalog/all-namespaces?keyword=test%20operator'
-      )
+      expect(buildCatalogSearchUrl('4.20.0', 'test operator')).toBe('/catalog/all-namespaces?keyword=test%20operator')
     })
 
     it('should build correct URL for OCP 4.19', () => {
