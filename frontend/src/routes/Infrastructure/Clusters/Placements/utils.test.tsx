@@ -3,8 +3,41 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { Placement, PlacementApiVersionBeta } from '~/resources/placement'
-import { getPlacementsForApplicationSet, PlacementLinkList } from './utils'
+import { PlacementDecision, PlacementDecisionApiVersion, PlacementDecisionKind } from '~/resources/placement-decision'
+import { Placement, PlacementApiVersionBeta, PlacementKind } from '~/resources/placement'
+import { getPlacementsForApplicationSet, getPlacementsForCluster, PlacementLinkList } from './utils'
+
+const placementUidAlpha = 'uid-placement-alpha'
+const placementWithUid: Placement = {
+  apiVersion: PlacementApiVersionBeta,
+  kind: PlacementKind,
+  metadata: {
+    name: 'placement-alpha',
+    namespace: 'ns-alpha',
+    uid: placementUidAlpha,
+  },
+  spec: {},
+}
+
+const placementDecisionForCluster = (clusterName: string, placementUid: string): PlacementDecision => ({
+  apiVersion: PlacementDecisionApiVersion,
+  kind: PlacementDecisionKind,
+  metadata: {
+    name: 'pd-1',
+    namespace: 'ns-alpha',
+    ownerReferences: [
+      {
+        apiVersion: PlacementApiVersionBeta,
+        kind: PlacementKind,
+        name: 'placement-alpha',
+        uid: placementUid,
+      },
+    ],
+  },
+  status: {
+    decisions: [{ clusterName, reason: 'Scheduled' }],
+  },
+})
 
 const mockPlacement1: Placement = {
   apiVersion: PlacementApiVersionBeta,
@@ -44,6 +77,40 @@ const mockPlacement4: Placement = {
 }
 
 describe('Placement utils', () => {
+  describe('getPlacementsForCluster', () => {
+    const clusterName = 'managed-cluster-east'
+
+    test('returns empty array when no placement decision selects the cluster', () => {
+      expect(
+        getPlacementsForCluster(
+          clusterName,
+          [placementWithUid],
+          [placementDecisionForCluster('other-cluster', placementUidAlpha)]
+        )
+      ).toEqual([])
+    })
+
+    test('returns empty array when owner reference uid does not match any placement', () => {
+      expect(
+        getPlacementsForCluster(
+          clusterName,
+          [placementWithUid],
+          [placementDecisionForCluster(clusterName, 'unknown-uid')]
+        )
+      ).toEqual([])
+    })
+
+    test('returns placements whose uid matches the PlacementDecision owner reference when the cluster is selected', () => {
+      expect(
+        getPlacementsForCluster(
+          clusterName,
+          [placementWithUid, mockPlacement1],
+          [placementDecisionForCluster(clusterName, placementUidAlpha)]
+        )
+      ).toEqual([placementWithUid])
+    })
+  })
+
   test('getPlacementsForApplicationSet', () => {
     const mockAppSetData = {
       refreshTime: 1774290222745,

@@ -5,8 +5,30 @@ import { useMemo, useState } from 'react'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { useTranslation } from '~/lib/acm-i18next'
 import { NavigationPath } from '~/NavigationPath'
-import { Placement } from '~/resources'
+import { Placement, PlacementDecision } from '~/resources'
 import { ApplicationDataType } from '~/routes/Applications/ApplicationDetails/ApplicationDetails'
+
+export const getPlacementsForCluster = (
+  clusterName: string,
+  placements: Placement[],
+  placementDecisions: PlacementDecision[]
+) => {
+  const placementMatches: Placement[] = []
+  placementDecisions.forEach((placementDecision) => {
+    // Does PlacementDecision contain a status.decision with the given clusterName
+    const isMatch = placementDecision.status?.decisions.some((decision) => decision.clusterName === clusterName)
+    if (isMatch) {
+      placementDecision.metadata.ownerReferences?.find((ownerReference) => {
+        const placementMatch = placements.find((placement) => placement.metadata.uid === ownerReference.uid)
+        if (placementMatch) {
+          placementMatches.push(placementMatch)
+          return
+        }
+      })
+    }
+  })
+  return placementMatches
+}
 
 export const getPlacementsForApplicationSet = (app: ApplicationDataType) => {
   if (app.application.placement) return [app.application.placement]
