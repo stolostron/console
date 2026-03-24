@@ -21,7 +21,6 @@ import {
   ClusterDeployment,
   ManagedCluster,
   ManagedClusterAddOn,
-  Placement,
   SecretDefinition,
 } from '../../../../../resources'
 import {
@@ -61,7 +60,6 @@ export type ClusterDetailsContext = {
   readonly infraEnvAIFlow?: InfraEnvK8sResource
   readonly hostedCluster?: HostedClusterK8sResource
   readonly canGetSecret: boolean
-  readonly placements?: Placement[]
 }
 
 export function showMachinePools(cluster: Cluster) {
@@ -92,7 +90,6 @@ export default function ClusterDetailsPage() {
     managedClustersState,
     nodePoolsState,
     discoveredClusterState,
-    placementsState,
   } = useSharedAtoms()
   const managedClusters = useRecoilValue(managedClustersState)
   const clusterDeployments = useRecoilValue(clusterDeploymentsState)
@@ -109,7 +106,6 @@ export default function ClusterDetailsPage() {
   const nodePools = useRecoilValue(nodePoolsState)
   const discoveredClusters = useRecoilValue(discoveredClusterState)
   const clusterManagementAddOns = keyBy(allClusterManagementAddons, 'metadata.name')
-  const placements = useRecoilValue(placementsState)
 
   const managedCluster = managedClusters.find((mc) => mc.metadata?.name === name)
   const clusterDeployment = clusterDeployments.find(
@@ -188,7 +184,6 @@ export default function ClusterDetailsPage() {
       infraEnvAIFlow,
       hostedCluster,
       canGetSecret,
-      placements,
     }),
     [
       addons,
@@ -201,7 +196,6 @@ export default function ClusterDetailsPage() {
       hostedCluster,
       infraEnvAIFlow,
       managedCluster,
-      placements,
     ]
   )
 

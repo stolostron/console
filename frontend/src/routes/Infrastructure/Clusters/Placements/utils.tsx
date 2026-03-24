@@ -16,7 +16,7 @@ export const getPlacementsForCluster = (
   const placementMatches: Placement[] = []
   placementDecisions.forEach((placementDecision) => {
     // Does PlacementDecision contain a status.decision with the given clusterName
-    const isMatch = placementDecision.status?.decisions.some((decision) => decision.clusterName === clusterName)
+    const isMatch = placementDecision.status?.decisions?.some((decision) => decision.clusterName === clusterName)
     if (isMatch) {
       placementDecision.metadata.ownerReferences?.find((ownerReference) => {
         const placementMatch = placements.find((placement) => placement.metadata.uid === ownerReference.uid)

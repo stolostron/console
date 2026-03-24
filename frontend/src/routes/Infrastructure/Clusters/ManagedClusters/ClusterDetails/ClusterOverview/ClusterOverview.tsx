@@ -78,7 +78,7 @@ function getAIClusterProperties(
 }
 
 export function ClusterOverviewPageContent() {
-  const { canGetSecret, cluster, clusterCurator, clusterDeployment, agentClusterInstall, hostedCluster, placements } =
+  const { canGetSecret, cluster, clusterCurator, clusterDeployment, agentClusterInstall, hostedCluster } =
     useClusterDetailsContext()
   const { t } = useTranslation()
   const localHubName = useLocalHubName()
@@ -86,8 +86,9 @@ export function ClusterOverviewPageContent() {
   const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
   const [curatorSummaryModalIsOpen, setCuratorSummaryModalIsOpen] = useState<boolean>(false)
   const { projects } = useProjects()
-  const { settingsState, placementDecisionsState } = useSharedAtoms()
+  const { settingsState, placementsState, placementDecisionsState } = useSharedAtoms()
   const settings = useRecoilValue(settingsState)
+  const placements = useRecoilValue(placementsState)
   const placementDecisions = useRecoilValue(placementDecisionsState)
   const placementsForCluster = useMemo(() => {
     return getPlacementsForCluster(cluster.name, placements, placementDecisions)
