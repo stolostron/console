@@ -9,7 +9,7 @@ import {
   Select as PfSelect,
 } from '@patternfly/react-core'
 import get from 'get-value'
-import { ReactNode, useCallback, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useMemo, useRef, useState } from 'react'
 import { DisplayMode } from '../contexts/DisplayModeContext'
 import { getSelectPlaceholder, InputCommonProps, useInput } from './Input'
 import { InputSelect, SelectListOptions } from './InputSelect'
@@ -58,7 +58,17 @@ export function WizSelect<T>(props: Omit<WizSelectSingleProps<T>, 'variant'>) {
 type SelectProps<T> = WizSelectSingleProps<T>
 
 function WizSelectBase<T = any>(props: SelectProps<T>) {
-  const { displayMode: mode, value, setValue, validated, hidden, id, disabled, required } = useInput(props)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const {
+    displayMode: mode,
+    value,
+    setValue,
+    validated,
+    hidden,
+    id,
+    disabled,
+    required,
+  } = useInput(props, containerRef)
   const placeholder = getSelectPlaceholder(props)
   const keyPath = props.keyPath ?? props.path
   const isCreatable = props.isCreatable
@@ -152,15 +162,17 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
   if (mode === DisplayMode.Details) {
     if (!value) return null
     return (
-      <DescriptionListGroup>
-        <DescriptionListTerm>{props.label}</DescriptionListTerm>
-        <DescriptionListDescription id={id}>{value}</DescriptionListDescription>
-      </DescriptionListGroup>
+      <div ref={containerRef}>
+        <DescriptionListGroup>
+          <DescriptionListTerm>{props.label}</DescriptionListTerm>
+          <DescriptionListDescription id={id}>{value}</DescriptionListDescription>
+        </DescriptionListGroup>
+      </div>
     )
   }
 
   return (
-    <div id={id}>
+    <div ref={containerRef} id={id}>
       <WizFormGroup {...props}>
         <InputGroup>
           <InputGroupItem isFill>

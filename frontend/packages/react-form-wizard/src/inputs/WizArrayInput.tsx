@@ -17,7 +17,7 @@ import {
 } from '@patternfly/react-core'
 import { ArrowDownIcon, ArrowUpIcon, ExclamationCircleIcon, PlusCircleIcon, TrashIcon } from '@patternfly/react-icons'
 import get from 'get-value'
-import { Fragment, ReactNode, useCallback, useContext, useMemo, useState } from 'react'
+import { Fragment, ReactNode, useCallback, useContext, useMemo, useRef, useState } from 'react'
 import { WizTextDetail } from '..'
 import { FieldGroup } from '../components/FieldGroup'
 import { Indented } from '../components/Indented'
@@ -59,7 +59,15 @@ export type WizArrayInputProps = Omit<InputCommonProps, 'path'> & {
 }
 
 export function WizArrayInput(props: WizArrayInputProps) {
-  const { displayMode: mode, value, setValue, hidden, id, required } = useInput(props as InputCommonProps)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const {
+    displayMode: mode,
+    value,
+    setValue,
+    hidden,
+    id,
+    required,
+  } = useInput(props as InputCommonProps, containerRef, { isArrayInput: true })
   const [open, setOpen] = useState(false)
   const onToggle = useCallback(() => setOpen((open: boolean) => !open), [])
 
@@ -132,7 +140,7 @@ export function WizArrayInput(props: WizArrayInputProps) {
     }
     if (props.isSection) {
       return (
-        <Fragment>
+        <div ref={containerRef}>
           <Title headingLevel="h2">{props.label}</Title>
           <Indented id={id}>
             <List style={{ marginTop: -4 }} isPlain={props.summaryList !== true}>
@@ -153,11 +161,11 @@ export function WizArrayInput(props: WizArrayInputProps) {
               ))}
             </List>
           </Indented>
-        </Fragment>
+        </div>
       )
     }
     return (
-      <Fragment>
+      <div ref={containerRef}>
         <div className="pf-v6-c-description-list__term">{props.label}</div>
         <Indented id={id}>
           <List style={{ marginTop: -4 }} isPlain={props.summaryList !== true}>
@@ -178,11 +186,11 @@ export function WizArrayInput(props: WizArrayInputProps) {
             ))}
           </List>
         </Indented>
-      </Fragment>
+      </div>
     )
   }
   return (
-    <div id={id} className="form-wizard-array-input">
+    <div ref={containerRef} id={id} className="form-wizard-array-input">
       {props.label && (
         <div style={{ paddingBottom: 8, paddingTop: 0 }}>
           {props.isSection ? (

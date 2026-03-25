@@ -10,7 +10,7 @@ import {
   Gallery,
   Icon,
 } from '@patternfly/react-core'
-import { Children, Fragment, isValidElement, ReactNode, useContext } from 'react'
+import { Children, Fragment, isValidElement, ReactNode, useContext, useRef } from 'react'
 import { DisplayMode } from '../contexts/DisplayModeContext'
 import { InputCommonProps, useInput } from './Input'
 import { WizFormGroup } from './WizFormGroup'
@@ -30,7 +30,8 @@ type WizTilesProps = InputCommonProps & { children?: ReactNode }
 // helperText?: string
 // children?: ReactNode
 export function WizTiles(props: WizTilesProps) {
-  const { displayMode: mode, value, setValue, hidden, id } = useInput(props)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const { displayMode: mode, value, setValue, hidden, id } = useInput(props, containerRef)
 
   const state: IRadioGroupContextState = {
     value: value,
@@ -52,20 +53,24 @@ export function WizTiles(props: WizTilesProps) {
     })
     if (label)
       return (
-        <DescriptionListGroup>
-          <DescriptionListTerm>{props.label}</DescriptionListTerm>
-          <DescriptionListDescription id={id}>{label}</DescriptionListDescription>
-        </DescriptionListGroup>
+        <div ref={containerRef}>
+          <DescriptionListGroup>
+            <DescriptionListTerm>{props.label}</DescriptionListTerm>
+            <DescriptionListDescription id={id}>{label}</DescriptionListDescription>
+          </DescriptionListGroup>
+        </div>
       )
     return <Fragment />
   }
 
   return (
-    <RadioGroupContext.Provider value={state}>
-      <WizFormGroup {...props} id={id}>
-        <Gallery hasGutter>{props.children}</Gallery>
-      </WizFormGroup>
-    </RadioGroupContext.Provider>
+    <div ref={containerRef}>
+      <RadioGroupContext.Provider value={state}>
+        <WizFormGroup {...props} id={id}>
+          <Gallery hasGutter>{props.children}</Gallery>
+        </WizFormGroup>
+      </RadioGroupContext.Provider>
+    </div>
   )
 }
 

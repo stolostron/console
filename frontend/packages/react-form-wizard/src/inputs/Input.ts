@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import get from 'get-value'
-import { ReactNode, useCallback, useContext, useLayoutEffect, useState } from 'react'
-import { CurrentStepIdContext, useStepInputsRegistry } from '../contexts/StepInputsContext'
+import { ReactNode, RefObject, useCallback, useContext, useLayoutEffect, useState } from 'react'
 import set from 'set-value'
 import { EditMode } from '..'
 import { useData } from '../contexts/DataContext'
@@ -15,6 +14,11 @@ import { useStringContext } from '../contexts/StringContext'
 import { useHasValidationError, useSetHasValidationError, useValidate } from '../contexts/ValidationProvider'
 
 export type HiddenFn = (item: any) => boolean
+
+/** DOM nodes that carry wizard input metadata (e.g. for review / focus helpers). */
+export type InputContainerElement = HTMLElement & {
+  __review?: { path: string; value: unknown; label?: string; error: string | undefined; isArrayInput?: boolean }
+}
 
 export type InputCommonProps<ValueT = any> = {
   id?: string
@@ -95,7 +99,12 @@ export function useInputHidden(props: { hidden?: (item: any) => boolean }) {
   return props.hidden ? props.hidden(item) : false
 }
 
-export function useInput(props: InputCommonProps) {
+export function useInput(
+  props: InputCommonProps,
+  containerRef?: RefObject<HTMLElement | null>,
+  options?: { isArrayInput?: boolean }
+) {
+  const { isArrayInput } = options ?? {}
   const editMode = useEditMode()
   const displayMode = useDisplayMode()
   const [value, setValue] = useValue(props, '')
@@ -143,13 +152,28 @@ export function useInput(props: InputCommonProps) {
 
   const id = convertId(props)
 
-  const stepInputsRegistry = useStepInputsRegistry()
-  const currentStepId = useContext(CurrentStepIdContext)
   useLayoutEffect(() => {
-    if (!stepInputsRegistry || currentStepId === undefined || hidden) return
-    stepInputsRegistry.register(currentStepId, id, { path: props.path, value, label: props.label, error })
-    return () => stepInputsRegistry.unregister(currentStepId, id)
-  }, [stepInputsRegistry, currentStepId, hidden, id, props.path, value, props.label, error])
+    const el = containerRef?.current
+    if (!el) return
+    const typed = el as InputContainerElement
+    typed.__review = {
+      path: props.path,
+      value,
+      label: props.label,
+      error,
+      ...(isArrayInput !== undefined ? { isArrayInput } : {}),
+    }
+    return () => {
+      delete typed.__review
+    }
+  }, [containerRef, props.path, value, props.label, error, isArrayInput])
+  // const stepInputsRegistry = useStepInputsRegistry()
+  // const currentStepId = useContext(CurrentStepIdContext)
+  // useLayoutEffect(() => {
+  //   if (!stepInputsRegistry || currentStepId === undefined || hidden) return
+  //   stepInputsRegistry.register(currentStepId, id, { path: props.path, value, label: props.label, error })
+  //   return () => stepInputsRegistry.unregister(currentStepId, id)
+  // }, [stepInputsRegistry, currentStepId, hidden, id, props.path, value, props.label, error])
 
   const hasValue = useHasValue()
   const setHasValue = useSetHasValue()
@@ -169,6 +193,7 @@ export function useInput(props: InputCommonProps) {
     ...props,
     id,
     displayMode,
+    containerRef,
     value,
     setValue,
     validated,

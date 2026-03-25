@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { CheckboxProps, Checkbox as PFCheckbox, Split, Stack } from '@patternfly/react-core'
 import { CheckIcon } from '@patternfly/react-icons'
-import { Fragment, ReactNode, useCallback } from 'react'
+import { Fragment, ReactNode, useCallback, useRef } from 'react'
 import { WizHelperText } from '../components/WizHelperText'
 import { Indented } from '../components/Indented'
 import { LabelHelp } from '../components/LabelHelp'
@@ -25,7 +25,8 @@ function getIsChecked(value: any) {
 }
 
 export function WizCheckbox(props: WizCheckboxProps) {
-  const { displayMode: mode, value, setValue, hidden, id } = useInput(props)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const { displayMode: mode, value, setValue, hidden, id } = useInput(props, containerRef)
   const onChange = useCallback<NonNullable<CheckboxProps['onChange']>>(
     (_event, checked) => setValue(checked),
     [setValue]
@@ -36,7 +37,7 @@ export function WizCheckbox(props: WizCheckboxProps) {
   if (mode === DisplayMode.Details) {
     if (!value) return <Fragment />
     return (
-      <Fragment>
+      <div ref={containerRef}>
         <Split id={id}>
           <CheckIcon style={{ paddingRight: 5 }} />
           <div className="pf-v6-c-description-list__term" style={{ paddingLeft: 2 }}>
@@ -44,30 +45,32 @@ export function WizCheckbox(props: WizCheckboxProps) {
           </div>
         </Split>
         {value && props.children}
-      </Fragment>
+      </div>
     )
   }
 
   return (
-    <Stack hasGutter>
-      <Stack>
-        <WizFormGroup {...props} id={id} label={props.title} noHelperText>
-          <PFCheckbox
-            id={id}
-            isChecked={getIsChecked(value)}
-            onChange={onChange}
-            isDisabled={props.disabled}
-            label={
-              <>
-                {props.label} <LabelHelp id={id} labelHelp={props.labelHelp} labelHelpTitle={props.labelHelpTitle} />
-              </>
-            }
-            value={value}
-            body={<WizHelperText {...props} />}
-          />
-        </WizFormGroup>
+    <div ref={containerRef}>
+      <Stack hasGutter>
+        <Stack>
+          <WizFormGroup {...props} id={id} label={props.title} noHelperText>
+            <PFCheckbox
+              id={id}
+              isChecked={getIsChecked(value)}
+              onChange={onChange}
+              isDisabled={props.disabled}
+              label={
+                <>
+                  {props.label} <LabelHelp id={id} labelHelp={props.labelHelp} labelHelpTitle={props.labelHelpTitle} />
+                </>
+              }
+              value={value}
+              body={<WizHelperText {...props} />}
+            />
+          </WizFormGroup>
+        </Stack>
+        {value && <Indented paddingBottom={8}>{props.children}</Indented>}
       </Stack>
-      {value && <Indented paddingBottom={8}>{props.children}</Indented>}
-    </Stack>
+    </div>
   )
 }

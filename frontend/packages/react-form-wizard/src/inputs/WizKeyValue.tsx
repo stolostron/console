@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Button, Divider, List, ListItem, TextInput } from '@patternfly/react-core'
 import { PlusCircleIcon, TrashIcon } from '@patternfly/react-icons'
-import { Fragment } from 'react'
+import { Fragment, useRef } from 'react'
 import { Indented } from '../components/Indented'
 import { LabelHelp } from '../components/LabelHelp'
 import { WizHelperText } from '../components/WizHelperText'
@@ -12,7 +12,8 @@ import { getAddPlaceholder, InputCommonProps, useInput } from './Input'
 type KeyValueProps = InputCommonProps & { placeholder?: string; summaryList?: boolean }
 
 export function WizKeyValue(props: KeyValueProps) {
-  const { displayMode: mode, value, setValue, hidden, id } = useInput(props)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const { displayMode: mode, value, setValue, hidden, id } = useInput(props, containerRef)
   const pairs: { key: string; value: string }[] =
     value instanceof Object ? Object.keys(value).map((key) => ({ key, value: value[key] })) : []
 
@@ -75,7 +76,7 @@ export function WizKeyValue(props: KeyValueProps) {
   if (mode === DisplayMode.Details) {
     if (!pairs.length) return <Fragment />
     return (
-      <Fragment>
+      <div ref={containerRef}>
         <div className="pf-v6-c-description-list__term">{props.label}</div>
         <Indented id={id}>
           <List style={{ marginTop: -4 }} isPlain={props.summaryList !== true}>
@@ -86,12 +87,12 @@ export function WizKeyValue(props: KeyValueProps) {
             ))}
           </List>
         </Indented>
-      </Fragment>
+      </div>
     )
   }
 
   return (
-    <div id={id} style={{ display: 'flex', flexDirection: 'column', rowGap: pairs.length ? 8 : 4 }}>
+    <div ref={containerRef} id={id} style={{ display: 'flex', flexDirection: 'column', rowGap: pairs.length ? 8 : 4 }}>
       <div>
         <span className="pf-v6-c-form__label pf-v6-c-form__label-text">{props.label}</span>
         {props.labelHelp && <LabelHelp id={id} labelHelp={props.labelHelp} labelHelpTitle={props.labelHelpTitle} />}

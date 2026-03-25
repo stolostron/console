@@ -28,6 +28,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react'
 import { EditMode } from '.'
@@ -159,6 +160,7 @@ function WizardInternal({
   submittingButtonText,
   isLoading,
 }: WizardInternalProps) {
+  const wizardRef = useRef<HTMLDivElement>(null)
   const { reviewLabel, stepsAriaLabel, contentAriaLabel } = useStringContext()
   const stepComponents = useMemo(
     () => Children.toArray(children).filter((child) => isValidElement(child) && child.type === Step) as ReactElement[],
@@ -169,7 +171,7 @@ function WizardInternal({
     () => ({
       id: 'review-step',
       name: reviewLabel,
-      component: <ReviewStep>{children}</ReviewStep>,
+      component: <ReviewStep wizardRef={wizardRef}>{children}</ReviewStep>,
     }),
     [children, reviewLabel]
   )
@@ -201,7 +203,7 @@ function WizardInternal({
   }, [reviewStep, showValidation, stepComponents, stepHasValidationError, stepShowValidation])
 
   return (
-    <Fragment>
+    <div ref={wizardRef}>
       <PFWizard
         navAriaLabel={`${stepsAriaLabel}`}
         aria-label={`${contentAriaLabel}`}
@@ -222,7 +224,7 @@ function WizardInternal({
           </WizardStep>
         ))}
       </PFWizard>
-    </Fragment>
+    </div>
   )
 }
 

@@ -14,19 +14,87 @@ import {
   Tooltip,
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
-import { Children, isValidElement, MouseEvent, ReactNode, useMemo, useState } from 'react'
+import {
+  Children,
+  isValidElement,
+  MouseEvent,
+  ReactNode,
+  RefObject,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { StepInputEntry, useStepInputs } from './contexts/StepInputsContext'
 import { useStringContext } from './contexts/StringContext'
+import { InputContainerElement } from './inputs/Input'
 import { Step, StepProps } from './Step'
 import './ReviewStep.css'
 
 export interface ReviewStepProps {
   children: ReactNode
+  wizardRef?: RefObject<HTMLDivElement | null>
 }
 
-export function ReviewStep({ children }: ReviewStepProps) {
+/** Serializable snapshot of wizard input containers with `__review` (tag, id, class, nested review children). */
+export interface WizardDomTreeNode {
+  tagName: string
+  id: string | null
+  className: string | null
+  /** Present on nodes from input containers; omitted on synthetic `WIZARD_REVIEW_ROOT`. */
+  __review?: NonNullable<InputContainerElement['__review']>
+  children: WizardDomTreeNode[]
+}
+
+/** Collect review nodes: skip elements without `__review`; flatten wrappers by splicing in descendants that have metadata. */
+function buildReviewSubtree(element: Element): WizardDomTreeNode[] {
+  if (element instanceof HTMLElement) {
+    const review = (element as InputContainerElement).__review
+    if (review) {
+      const children: WizardDomTreeNode[] = []
+      for (let i = 0; i < element.children.length; i++) {
+        children.push(...buildReviewSubtree(element.children[i]!))
+      }
+      return [
+        {
+          tagName: element.tagName,
+          id: element.id || null,
+          className: element.className || null,
+          __review: review,
+          children,
+        },
+      ]
+    }
+  }
+  const out: WizardDomTreeNode[] = []
+  for (let i = 0; i < element.children.length; i++) {
+    out.push(...buildReviewSubtree(element.children[i]!))
+  }
+  return out
+}
+
+export function buildTree(element: Element): WizardDomTreeNode {
+  const nodes = buildReviewSubtree(element)
+  if (nodes.length === 1) return nodes[0]!
+  return {
+    tagName: 'WIZARD_REVIEW_ROOT',
+    id: null,
+    className: null,
+    children: nodes,
+  }
+}
+
+export function ReviewStep({ children, wizardRef }: ReviewStepProps) {
   const { reviewLabel } = useStringContext()
   const stepInputs = useStepInputs()
+  const wizardDomTreeRef = useRef<WizardDomTreeNode | null>(null)
+
+  useLayoutEffect(() => {
+    const root = wizardRef?.current
+    if (!root) return
+    const treeData = buildTree(root)
+    wizardDomTreeRef.current = treeData
+  }, [wizardRef])
 
   const inputsByStepId = useMemo(() => {
     const m = new Map<string, StepInputEntry[]>()
@@ -48,7 +116,12 @@ export function ReviewStep({ children }: ReviewStepProps) {
         const reviewEntries = entries.filter((e) => !!e.error || !isStepInputValueEmpty(e.value))
         const label = (child.props as StepProps).label
         return (
-          <ReviewExpandableSection key={index} label={label} entries={reviewEntries}>
+          <ReviewExpandableSection
+            key={index}
+            label={label}
+            entries={reviewEntries}
+            wizardDomTreeRef={wizardDomTreeRef}
+          >
             <DescriptionList
               isHorizontal
               horizontalTermWidthModifier={{
@@ -83,8 +156,13 @@ export function ReviewStep({ children }: ReviewStepProps) {
   )
 }
 
-function ReviewExpandableSection(props: { label: string; entries: readonly StepInputEntry[]; children: ReactNode }) {
-  const { label, entries, children } = props
+function ReviewExpandableSection(props: {
+  label: string
+  entries: readonly StepInputEntry[]
+  children: ReactNode
+  wizardDomTreeRef: RefObject<WizardDomTreeNode | null>
+}) {
+  const { label, entries, children, wizardDomTreeRef } = props
   const [isExpanded, setIsExpanded] = useState(false)
 
   return (
@@ -103,7 +181,7 @@ function ReviewExpandableSection(props: { label: string; entries: readonly StepI
             {label}
           </Title>
         ) : (
-          <ToggleContent label={label} entries={entries} />
+          <ToggleContent label={label} entries={entries} wizardDomTreeRef={wizardDomTreeRef} />
         )
       }
     >
@@ -112,14 +190,17 @@ function ReviewExpandableSection(props: { label: string; entries: readonly StepI
   )
 }
 
-function handleEntryClicked(event: MouseEvent, entry: StepInputEntry): void {
+function handleEntryClicked(event: MouseEvent, entry: StepInputEntry, wizardDomTree: WizardDomTreeNode | null): void {
   event.stopPropagation()
-  console.log('entry clicked', entry)
-  void entry
+  console.log('entry clicked', entry, wizardDomTree)
 }
 
-function ToggleContent(props: { label: string; entries: readonly StepInputEntry[] }) {
-  const { label, entries } = props
+function ToggleContent(props: {
+  label: string
+  entries: readonly StepInputEntry[]
+  wizardDomTreeRef: RefObject<WizardDomTreeNode | null>
+}) {
+  const { label, entries, wizardDomTreeRef } = props
   return (
     <div className="wizard-review-toggle-row">
       <Split hasGutter isWrappable style={{ alignItems: 'center', flex: 1, minWidth: 0, position: 'relative' }}>
@@ -139,18 +220,18 @@ function ToggleContent(props: { label: string; entries: readonly StepInputEntry[
               {entries.map((entry) => (
                 <SplitItem key={entry.path}>
                   {entry.error ? (
-                    <Badge isRead onClick={(e) => handleEntryClicked(e, entry)}>
+                    <Badge isRead onClick={(e) => handleEntryClicked(e, entry, wizardDomTreeRef.current)}>
                       {entry.label ?? entry.path}
                       {reviewAlertIndicator(entry.error)}
                     </Badge>
                   ) : entry.label ? (
                     <Tooltip content={entry.label}>
-                      <Badge isRead onClick={(e) => handleEntryClicked(e, entry)}>
+                      <Badge isRead onClick={(e) => handleEntryClicked(e, entry, wizardDomTreeRef.current)}>
                         {formatStepInputValue(entry.value)}
                       </Badge>
                     </Tooltip>
                   ) : (
-                    <Badge isRead onClick={(e) => handleEntryClicked(e, entry)}>
+                    <Badge isRead onClick={(e) => handleEntryClicked(e, entry, wizardDomTreeRef.current)}>
                       {formatStepInputValue(entry.value)}
                     </Badge>
                   )}

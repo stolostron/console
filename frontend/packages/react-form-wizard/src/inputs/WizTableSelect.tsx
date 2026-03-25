@@ -18,7 +18,7 @@ import {
   PaginationVariant,
 } from '@patternfly/react-core'
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
-import { Fragment, ReactNode, useCallback, useMemo, useState } from 'react'
+import { Fragment, ReactNode, useCallback, useMemo, useRef, useState } from 'react'
 import { Indented } from '../components/Indented'
 import { DisplayMode } from '../contexts/DisplayModeContext'
 import { useStringContext } from '../contexts/StringContext'
@@ -42,7 +42,8 @@ export type WizTableSelectProps<T> = InputCommonProps<string> & {
 }
 
 export function WizTableSelect<T = any>(props: WizTableSelectProps<T>) {
-  const { displayMode: mode, value, setValue, hidden, id } = useInput(props)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const { displayMode: mode, value, setValue, hidden, id } = useInput(props, containerRef)
 
   const [page, setPage] = useState(1)
   const onSetPage = useCallback<OnSetPage>((_: unknown, page) => setPage(page), [])
@@ -102,28 +103,36 @@ export function WizTableSelect<T = any>(props: WizTableSelectProps<T>) {
     if (!selectedItems.length) return <Fragment />
     if (!props.label) {
       if (values.length > 5) {
-        return <div id={id}>{values.length} selected</div>
+        return (
+          <div ref={containerRef} id={id}>
+            {values.length} selected
+          </div>
+        )
       }
       return (
-        <List isPlain={props.summaryList !== true}>
-          {values.map((value, index) => (
-            <ListItem key={index} style={{ paddingBottom: 4 }}>
-              {value}
-            </ListItem>
-          ))}
-        </List>
+        <div ref={containerRef}>
+          <List isPlain={props.summaryList !== true}>
+            {values.map((value, index) => (
+              <ListItem key={index} style={{ paddingBottom: 4 }}>
+                {value}
+              </ListItem>
+            ))}
+          </List>
+        </div>
       )
     }
     if (values.length > 5) {
       return (
-        <DescriptionListGroup>
-          <DescriptionListTerm>{props.label}</DescriptionListTerm>
-          <DescriptionListDescription id={id}>{values.length} selected</DescriptionListDescription>
-        </DescriptionListGroup>
+        <div ref={containerRef}>
+          <DescriptionListGroup>
+            <DescriptionListTerm>{props.label}</DescriptionListTerm>
+            <DescriptionListDescription id={id}>{values.length} selected</DescriptionListDescription>
+          </DescriptionListGroup>
+        </div>
       )
     }
     return (
-      <Fragment>
+      <div ref={containerRef}>
         <div className="pf-v6-c-description-list__term">{props.label}</div>
         <Indented paddingBottom={4}>
           <List style={{ marginTop: -4 }} isPlain={props.summaryList !== true}>
@@ -134,68 +143,72 @@ export function WizTableSelect<T = any>(props: WizTableSelectProps<T>) {
             ))}
           </List>
         </Indented>
-      </Fragment>
+      </div>
     )
   }
 
   if (props.items.length === 0) {
     return (
-      <EmptyState headingLevel="h4" titleText={<>{props.emptyTitle}</>}>
-        <EmptyStateBody>{props.emptyMessage}</EmptyStateBody>
-      </EmptyState>
+      <div ref={containerRef}>
+        <EmptyState headingLevel="h4" titleText={<>{props.emptyTitle}</>}>
+          <EmptyStateBody>{props.emptyMessage}</EmptyStateBody>
+        </EmptyState>
+      </div>
     )
   }
 
   return (
-    <WizFormGroup {...props}>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <BulkSelect
-          selectedCount={selectedItems.length}
-          selectAll={selectAll}
-          selectPage={selectPage}
-          selectNone={selectNone}
-          perPage={10}
-          total={props.items.length}
-        />
-        {/* <SearchInput style={{ flexGrow: 1 }} /> */}
-      </div>
-      <Table aria-label={props.label} variant="compact" id={id}>
-        <Thead>
-          <Tr>
-            <Th />
-            {props.columns.map((column) => (
-              <Th key={column.name}>{column.name}</Th>
-            ))}
-          </Tr>
-        </Thead>
-        <Tbody>
-          {pagedItems.map((item, index) => (
-            <Tr key={index}>
-              <Td
-                select={{
-                  rowIndex: index,
-                  onSelect: (_event, isSelecting) => onSelect(item, isSelecting),
-                  isSelected: isSelected(item),
-                }}
-              />
+    <div ref={containerRef}>
+      <WizFormGroup {...props}>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <BulkSelect
+            selectedCount={selectedItems.length}
+            selectAll={selectAll}
+            selectPage={selectPage}
+            selectNone={selectNone}
+            perPage={10}
+            total={props.items.length}
+          />
+          {/* <SearchInput style={{ flexGrow: 1 }} /> */}
+        </div>
+        <Table aria-label={props.label} variant="compact" id={id}>
+          <Thead>
+            <Tr>
+              <Th />
               {props.columns.map((column) => (
-                <Td key={column.name}>{column.cellFn(item)}</Td>
+                <Th key={column.name}>{column.name}</Th>
               ))}
             </Tr>
-          ))}
-        </Tbody>
-      </Table>
-      {props.items.length > 10 && (
-        <Pagination
-          itemCount={props.items.length}
-          perPage={10}
-          variant={PaginationVariant.bottom}
-          page={page}
-          onSetPage={onSetPage}
-          perPageOptions={[]}
-        />
-      )}
-    </WizFormGroup>
+          </Thead>
+          <Tbody>
+            {pagedItems.map((item, index) => (
+              <Tr key={index}>
+                <Td
+                  select={{
+                    rowIndex: index,
+                    onSelect: (_event, isSelecting) => onSelect(item, isSelecting),
+                    isSelected: isSelected(item),
+                  }}
+                />
+                {props.columns.map((column) => (
+                  <Td key={column.name}>{column.cellFn(item)}</Td>
+                ))}
+              </Tr>
+            ))}
+          </Tbody>
+        </Table>
+        {props.items.length > 10 && (
+          <Pagination
+            itemCount={props.items.length}
+            perPage={10}
+            variant={PaginationVariant.bottom}
+            page={page}
+            onSetPage={onSetPage}
+            perPageOptions={[]}
+          />
+        )}
+      </WizFormGroup>
+    </div>
   )
 }
 

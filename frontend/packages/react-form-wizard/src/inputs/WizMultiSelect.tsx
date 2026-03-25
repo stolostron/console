@@ -6,7 +6,7 @@ import {
   MenuToggleElement,
   Select as PfSelect,
 } from '@patternfly/react-core'
-import { ReactNode, useCallback, useState } from 'react'
+import { ReactNode, useCallback, useRef, useState } from 'react'
 import { DisplayMode } from '../contexts/DisplayModeContext'
 import { useStringContext } from '../contexts/StringContext'
 import { getSelectPlaceholder, InputCommonProps, useInput } from './Input'
@@ -24,7 +24,8 @@ export type WizMultiSelectProps = InputCommonProps<string[]> & {
 }
 
 export function WizMultiSelect(props: WizMultiSelectProps) {
-  const { displayMode: mode, value, setValue, validated, hidden, id, disabled } = useInput(props)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const { displayMode: mode, value, setValue, validated, hidden, id, disabled } = useInput(props, containerRef)
   const { noResults } = useStringContext()
   const { isCreatable, options, footer } = props
   const placeholder = getSelectPlaceholder(props)
@@ -78,25 +79,27 @@ export function WizMultiSelect(props: WizMultiSelectProps) {
   if (mode === DisplayMode.Details) {
     if (!value) return null
     return (
-      <DescriptionListGroup>
-        <DescriptionListTerm>{props.label}</DescriptionListTerm>
-        <DescriptionListDescription id={id}>
-          {value.length > 5 ? (
-            `${value.length as string} selected`
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', rowGap: 8 }}>
-              {(value as string[]).map((selection, index) => (
-                <div key={index}>{selection}</div>
-              ))}
-            </div>
-          )}
-        </DescriptionListDescription>
-      </DescriptionListGroup>
+      <div ref={containerRef}>
+        <DescriptionListGroup>
+          <DescriptionListTerm>{props.label}</DescriptionListTerm>
+          <DescriptionListDescription id={id}>
+            {value.length > 5 ? (
+              `${value.length as string} selected`
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', rowGap: 8 }}>
+                {(value as string[]).map((selection, index) => (
+                  <div key={index}>{selection}</div>
+                ))}
+              </div>
+            )}
+          </DescriptionListDescription>
+        </DescriptionListGroup>
+      </div>
     )
   }
 
   return (
-    <div id={id}>
+    <div ref={containerRef} id={id}>
       <WizFormGroup {...props}>
         <PfSelect
           onOpenChange={(isOpen) => {

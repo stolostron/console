@@ -1,11 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { InputGroup, InputGroupItem, TextInput as PFTextInput, TextInputProps } from '@patternfly/react-core'
-import { Fragment, useCallback, useState } from 'react'
-import { WizTextDetail } from '..'
+import { Fragment, useCallback, useRef, useState } from 'react'
 import { ClearInputButton } from '../components/ClearInputButton'
 import { PasteInputButton } from '../components/PasteInputButton'
 import { ShowSecretsButton } from '../components/ShowSecretsButton'
-import { DisplayMode } from '../contexts/DisplayModeContext'
 import { InputCommonProps, getEnterPlaceholder, useInput } from './Input'
 import { WizFormGroup } from './WizFormGroup'
 
@@ -16,17 +14,13 @@ export type WizTextInputProps = InputCommonProps<string> & {
 }
 
 export function WizTextInput(props: WizTextInputProps) {
-  const { displayMode: mode, value, setValue, disabled, validated, hidden, id } = useInput(props)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const { value, setValue, disabled, validated, hidden, id } = useInput(props, containerRef)
   const [showSecrets, setShowSecrets] = useState(false)
 
   const onChange = useCallback<NonNullable<TextInputProps['onChange']>>((_event, value) => setValue(value), [setValue])
 
   if (hidden) return <Fragment />
-
-  if (mode === DisplayMode.Details) {
-    if (!value) return <Fragment />
-    return <WizTextDetail id={id} path={props.path} label={props.label} secret={props.secret} />
-  }
 
   const placeholder = getEnterPlaceholder(props)
   const canPaste = props.canPaste !== undefined ? props.canPaste : props.secret === true
@@ -58,11 +52,13 @@ export function WizTextInput(props: WizTextInputProps) {
     </InputGroup>
   )
 
-  return props.label ? (
+  const content = props.label ? (
     <WizFormGroup {...props} id={id}>
       {inputGroup}
     </WizFormGroup>
   ) : (
     inputGroup
   )
+
+  return <div ref={containerRef}>{content}</div>
 }

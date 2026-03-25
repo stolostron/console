@@ -18,7 +18,8 @@ export type WizTextAreaProps = InputCommonProps<string> & {
 }
 
 export function WizTextArea(props: WizTextAreaProps) {
-  const { displayMode: mode, value, disabled, setValue, validated, hidden, id } = useInput(props)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const { displayMode: mode, value, disabled, setValue, validated, hidden, id } = useInput(props, containerRef)
 
   // Hide initially if a value is set
   const [showSecrets, setShowSecrets] = useState(!value)
@@ -54,47 +55,53 @@ export function WizTextArea(props: WizTextAreaProps) {
 
   if (mode === DisplayMode.Details) {
     if (!value) return <Fragment />
-    return <WizTextDetail id={id} path={props.path} label={props.label} secret={props.secret} />
+    return (
+      <div ref={containerRef}>
+        <WizTextDetail id={id} path={props.path} label={props.label} secret={props.secret} />
+      </div>
+    )
   }
 
   const placeholder = getEnterPlaceholder(props)
   const canPaste = props.canPaste !== undefined ? props.canPaste : props.secret === true
 
   return (
-    <WizFormGroup {...props} id={id} key={id}>
-      <InputGroup>
-        {value && !showSecrets && props.secret ? (
-          <TextInput id={id} value={value} validated={validated} type="password" readOnlyVariant="default" />
-        ) : (
-          <PFTextArea
-            id={id}
-            placeholder={placeholder}
-            validated={validated}
-            value={value}
-            onChange={onChange}
-            type={!props.secret || showSecrets ? 'text' : 'password'}
-            spellCheck="false"
-            resizeOrientation="vertical"
-            autoResize
-            readOnlyVariant={props.readonly ? 'default' : undefined}
-            ref={textAreaRef}
-          />
-        )}
-        {!disabled && value !== '' && props.secret && (
-          <ShowSecretsButton showSecrets={showSecrets} setShowSecrets={setShowSecrets} />
-        )}
-        {canPaste && !disabled && value === '' && (
-          <PasteInputButton setValue={setValue} setShowSecrets={setShowSecrets} />
-        )}
-        {canPaste && !disabled && value !== '' && !props.readonly && !props.disabled && (
-          <ClearInputButton
-            onClick={() => {
-              setValue('')
-              setShowSecrets(true)
-            }}
-          />
-        )}
-      </InputGroup>
-    </WizFormGroup>
+    <div ref={containerRef}>
+      <WizFormGroup {...props} id={id} key={id}>
+        <InputGroup>
+          {value && !showSecrets && props.secret ? (
+            <TextInput id={id} value={value} validated={validated} type="password" readOnlyVariant="default" />
+          ) : (
+            <PFTextArea
+              id={id}
+              placeholder={placeholder}
+              validated={validated}
+              value={value}
+              onChange={onChange}
+              type={!props.secret || showSecrets ? 'text' : 'password'}
+              spellCheck="false"
+              resizeOrientation="vertical"
+              autoResize
+              readOnlyVariant={props.readonly ? 'default' : undefined}
+              ref={textAreaRef}
+            />
+          )}
+          {!disabled && value !== '' && props.secret && (
+            <ShowSecretsButton showSecrets={showSecrets} setShowSecrets={setShowSecrets} />
+          )}
+          {canPaste && !disabled && value === '' && (
+            <PasteInputButton setValue={setValue} setShowSecrets={setShowSecrets} />
+          )}
+          {canPaste && !disabled && value !== '' && !props.readonly && !props.disabled && (
+            <ClearInputButton
+              onClick={() => {
+                setValue('')
+                setShowSecrets(true)
+              }}
+            />
+          )}
+        </InputGroup>
+      </WizFormGroup>
+    </div>
   )
 }
