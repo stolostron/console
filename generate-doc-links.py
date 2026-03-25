@@ -512,6 +512,10 @@ def main() -> None:
             num_links_acm += 1
 
             if enable_compare:
+                if not doc_base_path_minus1 or not doc_staging_base_path:
+                    acm_sheet[f"E{row_index}"] = False
+                    acm_sheet[f"F{row_index}"] = "Missing ACM compare base URL"
+                    continue
                 # take screenshot of the links
                 print(f"Relative path: {relative_path}")
                 anchor = relative_path.find("#")
@@ -556,6 +560,10 @@ def main() -> None:
             num_links_ocp += 1
 
             if enable_compare:
+                if not ocp_doc_base_path_minus1 or not ocp_doc_staging_base_path:
+                    ocp_sheet[f"E{row_index}"] = False
+                    ocp_sheet[f"F{row_index}"] = "Missing OCP compare base URL"
+                    continue
                 # take screenshot of the links
                 print(f"Relative path: {relative_path}")
                 anchor = relative_path.find("#")
