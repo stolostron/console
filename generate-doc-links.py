@@ -1,6 +1,6 @@
+#!/usr/bin/env python3
 # Copyright Contributors to the Open Cluster Management project
 
-#!/usr/bin/env python3
 """
 Prerequisites:
 - Python 3.10 or higher
@@ -43,12 +43,6 @@ from pathlib import Path
 from openpyxl import Workbook
 from openpyxl.styles import Font
 from openpyxl.worksheet.datavalidation import DataValidation
-from playwright.sync_api import sync_playwright
-
-import torch
-import torch.nn as nn
-from torchvision import models, transforms
-from PIL import Image
 
 DOC_FILE = Path("./frontend/src/lib/doc-util.tsx")
 OUTPUT_XLSX = Path("doc-links.xlsx")
@@ -212,6 +206,8 @@ def derive_doc_base_path_for_version(doc_base_path: str, version: str, target_ve
 
 def take_screenshot(url, name, anchor_selector):
     """Take a screenshot and return the HTTP status code (0 if unknown)."""
+    from playwright.sync_api import sync_playwright
+
     with sync_playwright() as p:
         if Path(f"{name}.png").is_file():
             print(f"Skipping screenshot for {url} because {name}.png already exists")
@@ -306,8 +302,15 @@ def take_screenshot(url, name, anchor_selector):
 
 class SmartComparator:
     def __init__(self, crop_left_px=360):
-        # 1. Load a pre-trained VGG16 model
-        # We only need the "features" part, not the final classification part
+        import torch  # noqa: F811
+        from torchvision import models, transforms  # noqa: F811
+        from PIL import Image  # noqa: F811
+
+        self._torch = torch
+        self._Image = Image
+        self._transforms = transforms
+
+        # Load a pre-trained VGG16 model
         vgg = models.vgg16(weights=models.VGG16_Weights.DEFAULT)
         self.feature_extractor = vgg.features
 
@@ -316,11 +319,11 @@ class SmartComparator:
 
         # 2. Define the image transformation pipeline
         # Resize to standard size and normalize to match what VGG expects
-        self.preprocess = transforms.Compose([
-            transforms.Resize((224, 224)),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                 std=[0.229, 0.224, 0.225]),
+        self.preprocess = self._transforms.Compose([
+            self._transforms.Resize((224, 224)),
+            self._transforms.ToTensor(),
+            self._transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                       std=[0.229, 0.224, 0.225]),
         ])
         self.crop_left_px = crop_left_px
 
@@ -334,11 +337,11 @@ class SmartComparator:
 
     def get_embedding(self, image_path):
         """Turn an image into a dense vector of numbers"""
-        img = Image.open(image_path).convert('RGB')
+        img = self._Image.open(image_path).convert('RGB')
         img = self._crop_left_nav(img)
         img_tensor = self.preprocess(img).unsqueeze(0) # Add batch dimension
 
-        with torch.no_grad():
+        with self._torch.no_grad():
             # Pass image through the network
             features = self.feature_extractor(img_tensor)
 
@@ -352,7 +355,7 @@ class SmartComparator:
         # 3. Calculate Cosine Similarity
         # 1.0 = Identical
         # 0.0 = Completely different
-        cos = nn.CosineSimilarity(dim=0, eps=1e-6)
+        cos = self._torch.nn.CosineSimilarity(dim=0, eps=1e-6)
         similarity = cos(vec1, vec2)
 
         return similarity.item()
@@ -488,6 +491,8 @@ def main() -> None:
     num_links_ocp = 0
     num_links_other = 0
 
+    comparator = SmartComparator(crop_left_px=360) if enable_compare else None
+
     for line in lines:
         key_match = DOC_LINKS_LINE_RE.match(line)
         key = key_match.group(1) if key_match else ""
@@ -527,8 +532,7 @@ def main() -> None:
                     acm_sheet[f"F{row_index}"] = f"HTTP {status1}/{status2}"
                 else:
                     # compare the screenshots
-                    tool = SmartComparator(crop_left_px=360)
-                    score = tool.compare(f"{version_minus1_label}acm_link{row_index}.png", f"{version_label}acm_link{row_index}.png")
+                    score = comparator.compare(f"{version_minus1_label}acm_link{row_index}.png", f"{version_label}acm_link{row_index}.png")
                     print(f"Similarity Score: {score:.4f}")
                     if score < ACM_DOC_THRESHOLD:
                         print("❌ ALERT: Visual Regression Detected!")
@@ -572,8 +576,7 @@ def main() -> None:
                     ocp_sheet[f"F{row_index}"] = f"HTTP {status1}/{status2}"
                 else:
                     # compare the screenshots
-                    tool = SmartComparator(crop_left_px=360)
-                    score = tool.compare(f"{ocp_version_minus1_label}ocp_link{row_index}.png", f"{ocp_version_label}ocp_link{row_index}.png")
+                    score = comparator.compare(f"{ocp_version_minus1_label}ocp_link{row_index}.png", f"{ocp_version_label}ocp_link{row_index}.png")
                     print(f"Similarity Score: {score:.4f}")
                     if score < OCP_DOC_THRESHOLD:
                         print("❌ ALERT: Visual Regression Detected!")
