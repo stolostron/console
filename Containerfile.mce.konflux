@@ -8,7 +8,7 @@ ENV NPM_CONFIG_NODEDIR=/usr
 FROM build-base as dynamic-plugin
 WORKDIR /app/frontend
 COPY ./frontend .
-# Optimization of copying only package.json and package.json does not work because of workspace packages 
+# Optimization of copying only package.json and package-lock.json does not work because of workspace packages 
 RUN npm ci --legacy-peer-deps --unsafe-perm --ignore-scripts
 RUN npm run build:plugin:mce
 
