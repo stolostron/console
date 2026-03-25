@@ -33,7 +33,7 @@ spec:
     - linux/s390x
     - linux/arm64
   - name: dockerfile
-    value: Containerfile.mce.konflux
+    value: Containerfile.mce
   - name: path-context
     value: .
   - name: hermetic

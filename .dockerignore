@@ -24,8 +24,8 @@
 /node_modules/
 /.dockerignore
 /.gitignore
-/Containerfile.mce.konflux
-/Containerfile.acm.konflux
+/Containerfile.mce
+/Containerfile.acm
 /console.code-workspace
 /*.md
 
