@@ -1,20 +1,18 @@
 # Copyright Contributors to the Open Cluster Management project
+ARG NODE_BASE=registry.redhat.io/ubi9/nodejs-20-minimal@sha256:714ca1c5e1350d28c0fa896675323d9d4f7c133420c699bb95b3326783b769fb
 
-FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:714ca1c5e1350d28c0fa896675323d9d4f7c133420c699bb95b3326783b769fb as dynamic-plugin
+FROM ${NODE_BASE} as build-base
 USER root
 ENV NPM_CONFIG_NODEDIR=/usr
 
+FROM build-base as dynamic-plugin
 WORKDIR /app/frontend
-# Copy only package.json and package-lock.json so that the docker layer cache only changes if those change
-# This will cause the npm ci to only rerun if the package.json or package-lock.json changes
-COPY ./frontend/package.json ./frontend/package-lock.json ./
-RUN npm ci --legacy-peer-deps --unsafe-perm --ignore-scripts
 COPY ./frontend .
+# Optimization of copying only package.json and package.json does not work because of workspace packages 
+RUN npm ci --legacy-peer-deps --unsafe-perm --ignore-scripts
 RUN npm run build:plugin:mce
 
-FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:714ca1c5e1350d28c0fa896675323d9d4f7c133420c699bb95b3326783b769fb as backend
-USER root
-ENV NPM_CONFIG_NODEDIR=/usr
+FROM build-base as backend
 WORKDIR /app/backend
 # Copy only package.json and package-lock.json so that the docker layer cache only changes if those change
 # This will cause the npm ci to only rerun if the package.json or package-lock.json changes
@@ -23,14 +21,12 @@ RUN npm ci --omit=optional --unsafe-perm --ignore-scripts
 COPY ./backend .
 RUN npm run build
 
-FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:714ca1c5e1350d28c0fa896675323d9d4f7c133420c699bb95b3326783b769fb as production
-USER root
-ENV NPM_CONFIG_NODEDIR=/usr
+FROM build-base as production
 WORKDIR /app/backend
 COPY ./backend/package-lock.json ./backend/package.json ./
 RUN npm ci --omit=optional --only=production --unsafe-perm --ignore-scripts
 
-FROM registry.redhat.io/ubi9/nodejs-20-minimal@sha256:714ca1c5e1350d28c0fa896675323d9d4f7c133420c699bb95b3326783b769fb
+FROM ${NODE_BASE}
 WORKDIR /app
 ENV NODE_ENV production
 COPY --from=production /app/backend/node_modules ./node_modules
