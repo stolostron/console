@@ -1,16 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import _ from 'lodash'
-import { AcmTable, AcmEmptyState, AcmTableStateProvider, AcmButton } from '../../../ui-components'
 import { Stack, StackItem, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
+import _ from 'lodash'
+import queryString from 'query-string'
 import { TFunction } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom-v5-compat'
-import queryString from 'query-string'
-import { ApplicationDefinition, IResource } from '../../../resources'
-import { DeleteResourceModal, IDeleteResourceModalProps } from './DeleteResourceModal'
-import { NavigationPath } from '../../../NavigationPath'
-import { rbacCreate, useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
+import { useRecoilValue, useSharedAtoms } from '~/shared-recoil'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../lib/doc-util'
+import { rbacCreate, useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
+import { NavigationPath } from '../../../NavigationPath'
+import { ApplicationDefinition, IResource } from '../../../resources'
+import { AcmButton, AcmEmptyState, AcmTable, AcmTableStateProvider } from '../../../ui-components'
+import { DeleteResourceModal, IDeleteResourceModalProps } from './DeleteResourceModal'
 
 export interface IToggleSelectorProps<T = any> {
   keyFn: (item: T) => string
@@ -22,12 +23,17 @@ export interface IToggleSelectorProps<T = any> {
 export type ApplicationToggleOptions = 'subscriptions' | 'channels' | 'placements' | 'placementrules'
 
 export function ToggleSelector(props: IToggleSelectorProps) {
+  const { settingsState } = useSharedAtoms()
+  const settings = useRecoilValue(settingsState)
+
   const t = props.t
   const defaultOption = props.defaultToggleOption ?? 'subscriptions'
   const options = [
     { id: 'subscriptions', title: t('Subscriptions'), emptyMessage: t("You don't have any subscriptions yet") },
     { id: 'channels', title: t('Channels'), emptyMessage: t("You don't have any channels") },
-    { id: 'placements', title: t('Placements'), emptyMessage: t("You don't have any placements") },
+    ...(settings.enhancedPlacement !== 'enabled'
+      ? [{ id: 'placements' as const, title: t('Placements'), emptyMessage: t("You don't have any placements") }]
+      : []),
     { id: 'placementrules', title: t('Placement rules'), emptyMessage: t("You don't have any placement rules") },
   ] as const
   const canCreateApplication = useIsAnyNamespaceAuthorized(rbacCreate(ApplicationDefinition))

@@ -5,43 +5,57 @@ import { Alert, AlertActionCloseButton, AlertGroup, AlertProps, Flex } from '@pa
 import { createContext, CSSProperties, Fragment, ReactNode, useCallback, useContext, useEffect, useState } from 'react'
 
 export interface AcmAlertInfo {
+  id?: string
   type?: AlertProps['variant']
   title: ReactNode
   message?: ReactNode
   actions?: ReactNode
-  id?: string
   group?: string
   autoClose?: boolean
+}
+
+export type AcmAlertInfoWithId = Omit<AcmAlertInfo, 'id'> & { id: string }
+
+export const replaceAlertById = (alerts: AcmAlertInfo[], alertToReplace: AcmAlertInfoWithId): AcmAlertInfo[] => {
+  const index = alerts.findIndex((ai) => ai.id === alertToReplace.id)
+  if (index === -1) return alerts
+  const next = [...alerts]
+  next[index] = alertToReplace
+  return next
 }
 
 export interface IAlertContext {
   readonly activeAlerts: AcmAlertInfo[]
   readonly alertInfos: AcmAlertInfo[]
-  addAlert: (alertInfo: AcmAlertInfo) => void
+  addAlert: (alertInfo: AcmAlertInfo) => AcmAlertInfoWithId
   removeAlert: (alertInfo: AcmAlertInfo) => void
   removeVisibleAlert: (alertInfo: AcmAlertInfo) => void
   clearAlerts: (matcher?: (alertInfo: AcmAlertInfo) => boolean) => void
+  modifyAlert: (alertInfo: AcmAlertInfoWithId) => AcmAlertInfoWithId
 }
 
 /* istanbul ignore next */
 const noop = () => null
+const noopAcmAlertInfo = (): AcmAlertInfoWithId => ({ id: '', title: '' })
 
 export const AcmAlertContext = createContext<IAlertContext>({
   activeAlerts: [],
   alertInfos: [],
-  addAlert: noop,
+  addAlert: noopAcmAlertInfo,
   removeAlert: noop,
   removeVisibleAlert: noop,
   clearAlerts: noop,
+  modifyAlert: noopAcmAlertInfo,
 })
 
 export function AcmAlertProvider(props: { children: ReactNode; isToast?: boolean }) {
   const [activeAlerts, setActiveAlerts] = useState<AcmAlertInfo[]>([])
   const [visibleAlerts, setVisibleAlerts] = useState<AcmAlertInfo[]>([])
-  const addAlert = useCallback<(alertInfo: AcmAlertInfo) => void>((alert: AcmAlertInfo) => {
+  const addAlert = useCallback<(alertInfo: AcmAlertInfo) => AcmAlertInfoWithId>((alert: AcmAlertInfo) => {
     alert.id = Math.random().toString(36).substring(7)
     setActiveAlerts((alerts) => [...alerts, alert])
     setVisibleAlerts((alerts) => [...alerts, alert])
+    return { ...alert, id: alert.id }
   }, [])
   const removeAlert = useCallback<(alertInfo: AcmAlertInfo) => void>((alertInfo: AcmAlertInfo) => {
     setActiveAlerts((activeAlerts) => {
@@ -61,6 +75,14 @@ export function AcmAlertProvider(props: { children: ReactNode; isToast?: boolean
       return newAlertInfos
     })
   }, [])
+  const modifyAlert = useCallback<(alertInfo: AcmAlertInfoWithId) => AcmAlertInfoWithId>(
+    (alertInfo: AcmAlertInfoWithId) => {
+      setVisibleAlerts((alerts) => replaceAlertById(alerts, alertInfo))
+      setActiveAlerts((alerts) => replaceAlertById(alerts, alertInfo))
+      return alertInfo
+    },
+    []
+  )
   const clearAlerts = (matcher?: (alertInfo: AcmAlertInfo) => boolean) => {
     if (!matcher) {
       for (const alertInfo of [...activeAlerts]) {
@@ -83,6 +105,7 @@ export function AcmAlertProvider(props: { children: ReactNode; isToast?: boolean
         removeAlert,
         removeVisibleAlert,
         clearAlerts,
+        modifyAlert,
       }}
     >
       {props.children}

@@ -47,6 +47,7 @@ export const DOC_LINKS = {
   INFRASTRUCTURE_ENVIRONMENTS: `${DOC_BASE_PATH}/clusters/index#create-host-inventory-console`,
   DISCOVERED_CLUSTERS: `${DOC_BASE_PATH}/clusters/index#discovery-intro`,
   MANAGE_APPLICATIONS: `${DOC_BASE_PATH}/applications/index#managing-applications`,
+  APPLICATIONS_ADVANCED_CONFIGURATION: `${DOC_BASE_PATH}/applications/managing-applications#application-advanced-configuration`,
   ANSIBLE_JOBS: `${DOC_BASE_PATH}/clusters/index#ansible-config-cluster`,
   TROUBLESHOOTING_CLUSTER_IMPORT_FAILURE: `${DOC_BASE_PATH}/clusters/cluster_mce_overview#troubleshooting-a-managed-cluster-import-failure-mce`,
   TROUBLESHOOTING_CERTIFICATE_AUTHORITY_ERROR: `${DOC_BASE_PATH}/clusters/cluster_mce_overview#ca-update-error-hive-ai`,

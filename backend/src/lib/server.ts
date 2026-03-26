@@ -32,6 +32,7 @@ export type ServerOptions = {
 }
 
 export function startServer(options: ServerOptions): Promise<Http2Server | undefined> {
+  isStopping = false
   let cert: Buffer | undefined
   let key: Buffer | undefined
   try {
@@ -43,13 +44,10 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
 
   try {
     if (cert && key) {
-      logger.debug({ msg: `server start`, secure: true })
-      server = createSecureServer(
-        { cert, key, allowHTTP1: true },
-        options.requestHandler as (req: Http2ServerRequest, res: Http2ServerResponse) => void
-      )
+      logger.info({ msg: `server start`, secure: true, options })
+      server = createSecureServer({ cert, key, allowHTTP1: true, ...options }, options.requestHandler)
     } else {
-      logger.debug({ msg: `server start`, secure: false })
+      logger.info({ msg: `server start`, secure: false })
       server = createServer(options.requestHandler as (req: Http2ServerRequest, res: Http2ServerResponse) => void)
     }
     return new Promise((resolve, reject) => {
@@ -177,7 +175,7 @@ export async function stopServer(): Promise<void> {
   }
 
   if (server?.listening) {
-    logger.debug({ msg: 'closing server' })
+    logger.info({ msg: 'closing server' })
     if (process.env.NODE_ENV === 'production') {
       logger.info({ msg: 'waiting 25 seconds before closing the server' })
       await new Promise<void>((resolve) =>

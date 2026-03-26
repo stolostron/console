@@ -1,20 +1,23 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+  Alert,
+  AlertActionLink,
   Card,
   CardBody,
   CardTitle,
-  Split,
-  PageSection,
-  Stack,
-  StackItem,
   Content,
   ContentVariants,
+  PageSection,
+  Split,
+  Stack,
+  StackItem,
 } from '@patternfly/react-core'
 import { cellWidth } from '@patternfly/react-table'
 import _ from 'lodash'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom-v5-compat'
+import { useLocalHubName } from '../../hooks/use-local-hub'
 import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
 import { canUser } from '../../lib/rbac-util'
@@ -39,17 +42,16 @@ import { getISOStringTimestamp } from '../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { AcmExpandableCard, IAcmRowAction, IAcmTableColumn } from '../../ui-components'
 import { IDeleteResourceModalProps } from './components/DeleteResourceModal'
+import { DeprecatedTitle } from './components/DeprecatedTitle'
 import ResourceLabels from './components/ResourceLabels'
 import { ApplicationToggleOptions, ToggleSelector } from './components/ToggleSelector'
 import {
   ClusterCount,
-  getResourceTimestamp,
   getClusterCountString,
   getEditLink,
+  getResourceTimestamp,
   getSearchLink,
 } from './helpers/resource-helper'
-import { DeprecatedTitle } from './components/DeprecatedTitle'
-import { useLocalHubName } from '../../hooks/use-local-hub'
 
 export interface AdvancedConfigurationPageProps {
   readonly defaultToggleOption?: ApplicationToggleOptions
@@ -60,18 +62,20 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
   const {
     applicationsState,
     channelsState,
-    placementDecisionsState,
     placementsState,
+    placementDecisionsState,
     placementRulesState,
     subscriptionsState,
+    settingsState,
   } = useSharedAtoms()
 
   const applications = useRecoilValue(applicationsState)
   const channels = useRecoilValue(channelsState)
-  const placementrules = useRecoilValue(placementRulesState)
   const placements = useRecoilValue(placementsState)
+  const placementrules = useRecoilValue(placementRulesState)
   const placementDecisions = useRecoilValue(placementDecisionsState)
   const subscriptions = useRecoilValue(subscriptionsState)
+  const settings = useRecoilValue(settingsState)
 
   const subscriptionsWithoutLocal = subscriptions.filter((subscription) => {
     return !_.endsWith(subscription.metadata.name, '-local')
@@ -275,7 +279,6 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
   channels.forEach((channel) => {
     ChanneltableItems.push(generateTransformData(channel))
   })
-
   subscriptionsWithoutLocal.forEach((subscription) => {
     SubscriptiontableItems.push(generateTransformData(subscription))
   })
@@ -395,6 +398,55 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
     }
     return ''
   }
+
+  const placementColumns = useMemo<IAcmTableColumn<IResource>[]>(
+    () => [
+      {
+        header: t('Name'),
+        cell: (resource) => {
+          return editLink({
+            resource,
+            kind: 'Placement',
+            apiversion: _.get(resource, 'apiVersion') || PlacementApiVersionBeta,
+          })
+        },
+        sort: 'metadata.name',
+        search: 'metadata.name',
+        exportContent: (resource) => resource.metadata?.name,
+      },
+      {
+        header: t('Namespace'),
+        cell: 'metadata.namespace',
+        sort: 'metadata.namespace',
+        exportContent: (resource) => resource.metadata?.namespace,
+      },
+      {
+        header: t('Clusters'),
+        cell: 'transformed.clusterCount',
+        sort: 'transformed.clusterCount',
+        tooltip: t(
+          'Displays the number of remote and local clusters where resources are deployed because of the placement.'
+        ),
+        exportContent: (resource) => {
+          const clusters = _.get(resource, 'transformed.clusterCount')
+          return clusters
+        },
+      },
+      {
+        header: t('Created'),
+        cell: (resource) => {
+          return <span>{getResourceTimestamp(resource, 'metadata.creationTimestamp')}</span>
+        },
+        sort: 'metadata.creationTimestamp',
+        exportContent: (resource) => {
+          if (resource.metadata?.creationTimestamp) {
+            return getISOStringTimestamp(resource.metadata?.creationTimestamp)
+          }
+        },
+      },
+    ],
+    [t, editLink]
+  )
 
   const table = {
     subscriptions: {
@@ -667,58 +719,15 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
       items: ChanneltableItems,
       rowActionResolver: getRowActionResolver,
     },
-    placements: {
-      columns: useMemo<IAcmTableColumn<IResource>[]>(
-        () => [
-          {
-            header: t('Name'),
-            cell: (resource) => {
-              return editLink({
-                resource,
-                kind: 'Placement',
-                apiversion: _.get(resource, 'apiVersion') || PlacementApiVersionBeta,
-              })
-            },
-            sort: 'metadata.name',
-            search: 'metadata.name',
-            exportContent: (resource) => resource.metadata?.name,
+    ...(settings.enhancedPlacement !== 'enabled'
+      ? {
+          placements: {
+            columns: placementColumns,
+            items: PlacementTableItems,
+            rowActionResolver: getRowActionResolver,
           },
-          {
-            header: t('Namespace'),
-            cell: 'metadata.namespace',
-            sort: 'metadata.namespace',
-            exportContent: (resource) => resource.metadata?.namespace,
-          },
-          {
-            header: t('Clusters'),
-            cell: 'transformed.clusterCount',
-            sort: 'transformed.clusterCount',
-            tooltip: t(
-              'Displays the number of remote and local clusters where resources are deployed because of the placement.'
-            ),
-            exportContent: (resource) => {
-              const clusters = _.get(resource, 'transformed.clusterCount')
-              return clusters
-            },
-          },
-          {
-            header: t('Created'),
-            cell: (resource) => {
-              return <span>{getResourceTimestamp(resource, 'metadata.creationTimestamp')}</span>
-            },
-            sort: 'metadata.creationTimestamp',
-            exportContent: (resource) => {
-              if (resource.metadata?.creationTimestamp) {
-                return getISOStringTimestamp(resource.metadata?.creationTimestamp)
-              }
-            },
-          },
-        ],
-        [t, editLink]
-      ),
-      items: PlacementTableItems,
-      rowActionResolver: getRowActionResolver,
-    },
+        }
+      : {}),
     placementrules: {
       columns: useMemo<IAcmTableColumn<IResource>[]>(
         () => [
@@ -815,12 +824,14 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
               'Channels point to repositories where Kubernetes resources are stored, such as Git, Helm chart, or object storage repositories. Channels support multiple subscriptions from multiple targets.'
             )}
           />
-          <TerminologyCard
-            title={t('Placements')}
-            description={t(
-              'Placements define the target clusters that must subscribe to a ClusterSet where subscriptions and application sets are delivered. This is done by cluster name, cluster resource annotation(s), or cluster resource label(s).'
-            )}
-          />
+          {settings.enhancedPlacement !== 'enabled' && (
+            <TerminologyCard
+              title={t('Placements')}
+              description={t(
+                'Placements define the target clusters that must subscribe to a ClusterSet where subscriptions and application sets are delivered. This is done by cluster name, cluster resource annotation(s), or cluster resource label(s).'
+              )}
+            />
+          )}
           <TerminologyCard
             title={<DeprecatedTitle title={t('Placement rules')} />}
             description={t(
@@ -847,6 +858,27 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
   return (
     <PageSection hasBodyWrapper={false}>
       <Stack hasGutter>
+        {settings.enhancedPlacement === 'enabled' && (
+          <Alert
+            title={t('Page deprecation')}
+            isInline
+            variant="warning"
+            actionLinks={
+              <AlertActionLink
+                component="a"
+                target="_blank"
+                rel="noreferrer"
+                href={DOC_LINKS.APPLICATIONS_ADVANCED_CONFIGURATION}
+              >
+                {t('Learn more')}
+              </AlertActionLink>
+            }
+          >
+            {t(
+              'This page will be removed in a future release. Placements will move to a central location under Infrastructure > Clusters > Placements. You can also view placement details directly within individual applications or policies.'
+            )}
+          </Alert>
+        )}
         <StackItem>
           <ApplicationDeploymentHighlights />
         </StackItem>

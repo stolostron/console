@@ -99,11 +99,17 @@ describe('GroupPage', () => {
     mockUseSharedAtoms.mockReturnValue({
       usersState: {} as any,
       groupsState: {} as any,
+      multiclusterRoleAssignmentState: {} as any,
+      isDirectAuthenticationEnabledState: {} as any,
     } as any)
   })
 
   test('should render group page with data', async () => {
-    mockUseRecoilValue.mockReturnValueOnce(mockGroups).mockReturnValueOnce(mockUsers)
+    mockUseRecoilValue
+      .mockReturnValueOnce(mockGroups) // useMergedGroups: groupsState
+      .mockReturnValueOnce([]) // useMergedGroups: mraState
+      .mockReturnValueOnce(mockUsers) // GroupPage: usersState
+      .mockReturnValueOnce(false) // GroupPage: isDirectAuth
 
     render(<Component />)
 
@@ -124,7 +130,11 @@ describe('GroupPage', () => {
   })
 
   test('should render group page with navigation tabs', async () => {
-    mockUseRecoilValue.mockReturnValueOnce(mockGroups).mockReturnValueOnce(mockUsers)
+    mockUseRecoilValue
+      .mockReturnValueOnce(mockGroups) // useMergedGroups: groupsState
+      .mockReturnValueOnce([]) // useMergedGroups: mraState
+      .mockReturnValueOnce(mockUsers) // GroupPage: usersState
+      .mockReturnValueOnce(false) // GroupPage: isDirectAuth
 
     render(<Component />)
 
@@ -150,12 +160,34 @@ describe('GroupPage', () => {
   })
 
   test('should find group by UID', async () => {
-    mockUseRecoilValue.mockReturnValueOnce(mockGroups).mockReturnValueOnce(mockUsers)
+    mockUseRecoilValue
+      .mockReturnValueOnce(mockGroups) // useMergedGroups: groupsState
+      .mockReturnValueOnce([]) // useMergedGroups: mraState
+      .mockReturnValueOnce(mockUsers) // GroupPage: usersState
+      .mockReturnValueOnce(false) // GroupPage: isDirectAuth
 
     render(<Component groupId="kubevirt-admins" />)
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { level: 1, name: 'kubevirt-admins' })).toBeInTheDocument()
+    })
+  })
+
+  test('should hide YAML and Users tabs when isDirectAuthenticationEnabled', async () => {
+    mockUseRecoilValue
+      .mockReturnValueOnce(mockGroups) // useMergedGroups: groupsState
+      .mockReturnValueOnce([]) // useMergedGroups: mraState
+      .mockReturnValueOnce(mockUsers) // GroupPage: usersState
+      .mockReturnValueOnce(true) // GroupPage: isDirectAuth
+
+    render(<Component />)
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1, name: 'kubevirt-admins' })).toBeInTheDocument()
+      expect(screen.getByRole('tab', { name: 'Details' })).toBeInTheDocument()
+      expect(screen.getByRole('tab', { name: 'Role assignments' })).toBeInTheDocument()
+      expect(screen.queryByRole('tab', { name: 'YAML' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('tab', { name: 'Users' })).not.toBeInTheDocument()
     })
   })
 })

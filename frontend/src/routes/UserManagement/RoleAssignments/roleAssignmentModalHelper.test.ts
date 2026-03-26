@@ -676,6 +676,7 @@ describe('roleAssignmentHelper', () => {
       alertInfos: [],
       removeVisibleAlert: jest.fn(),
       clearAlerts: jest.fn(),
+      modifyAlert: jest.fn(),
     }
 
     const mockT = ((key: string, options?: Record<string, unknown>) => {

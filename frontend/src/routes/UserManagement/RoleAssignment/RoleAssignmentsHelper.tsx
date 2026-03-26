@@ -7,8 +7,8 @@ import { FlattenedRoleAssignment } from '../../../resources/clients/model/flatte
 import { IRequestResult } from '../../../resources/utils/resource-request'
 import { RoleAssignmentActionDropdown } from './RoleAssignmentActionDropdown'
 import { RoleAssignmentLabel } from './RoleAssignmentLabel'
-import { RoleAssignmentStatusComponent } from './RoleAssignmentStatusComponent'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { RoleAssignmentStatusComponent, RoleAssignmentStatusComponentProps } from './RoleAssignmentStatusComponent'
 
 // Component for rendering clickable role links
 const RoleLinkCell = ({ roleName }: { roleName: string }) => (
@@ -73,9 +73,6 @@ const renderSubjectNameCell = (name: string, kind: string) => {
   return <Link to={linkPath}>{name}</Link>
 }
 
-// Component for rendering status
-const StatusCell = ({ status }: { status?: any }) => <RoleAssignmentStatusComponent status={status} />
-
 // Component for rendering created timestamp placeholder
 const renderCreatedCell = (roleAssignment: FlattenedRoleAssignment) => (
   <AcmTimestamp timestamp={roleAssignment.status?.createdAt ?? undefined} />
@@ -90,7 +87,12 @@ const renderNamespacesCell = (roleAssignment: FlattenedRoleAssignment) => (
   <NamespacesCell namespaces={roleAssignment.targetNamespaces} />
 )
 
-const renderStatusCell = (roleAssignment: FlattenedRoleAssignment) => <StatusCell status={roleAssignment.status} />
+const renderStatusCell = (props: {
+  roleAssignment: FlattenedRoleAssignment
+  callbackMap: RoleAssignmentStatusComponentProps['callbackMap']
+  isCallbackProcessing: boolean
+  areActionButtonsDisabled?: boolean
+}) => <RoleAssignmentStatusComponent {...props} />
 
 const renderClusterSetsCell = (roleAssignment: FlattenedRoleAssignment) => (
   <ClusterSetLinksCell clusterSetNames={roleAssignment.clusterSetNames} />
@@ -153,11 +155,11 @@ const renderActionCell = ({
 
 export {
   renderActionCell,
-  renderRoleCell,
-  renderSubjectNameCell,
-  renderNamespacesCell,
-  renderStatusCell,
-  renderClusterSetsCell,
   renderClustersCell,
+  renderClusterSetsCell,
   renderCreatedCell,
+  renderNamespacesCell,
+  renderRoleCell,
+  renderStatusCell,
+  renderSubjectNameCell,
 }

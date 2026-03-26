@@ -177,6 +177,7 @@ export const ClusterSetsTable = ({
               </>
             ),
             exportContent: (managedClusterSet: ManagedClusterSet) => managedClusterSet.metadata.name,
+            id: 'name',
           },
           {
             header: t('table.cluster.statuses'),
@@ -198,6 +199,7 @@ export const ClusterSetsTable = ({
                   `${t('unknown')}: ${status?.unknown}`
                 )
             },
+            id: 'statuses',
           },
           {
             header: t('table.clusterSetBinding'),
@@ -216,6 +218,7 @@ export const ClusterSetsTable = ({
                 return `${getNamespaceBindings(managedClusterSet).toString()}`
               }
             },
+            id: 'clustersetbinding',
           },
           ...(hideTableActions
             ? []
@@ -229,7 +232,7 @@ export const ClusterSetsTable = ({
                   cellTransforms: [fitContent],
                 },
               ]),
-        ].filter((column) => !hiddenColumns.includes(column.header))}
+        ].filter((column) => (column.id ? !hiddenColumns.includes(column.id) : true))}
         keyFn={mckeyFn}
         key="clusterSetsTable"
         tableActions={

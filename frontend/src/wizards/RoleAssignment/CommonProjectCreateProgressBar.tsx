@@ -6,6 +6,7 @@ interface CommonProjectCreateProgressBarProps {
   successCount?: number
   errorCount?: number
   totalCount: number
+  hideTitle?: boolean
 }
 
 const HelperTextComponent = ({
@@ -29,6 +30,7 @@ export const CommonProjectCreateProgressBar = ({
   successCount = 0,
   errorCount = 0,
   totalCount,
+  hideTitle = false,
 }: CommonProjectCreateProgressBarProps) => {
   const { t } = useTranslation()
   const isErrorState = errorCount > 0
@@ -37,7 +39,8 @@ export const CommonProjectCreateProgressBar = ({
     <Progress
       aria-describedby="common-project-create-progress-bar"
       value={progressValue}
-      title={t('Creating common projects')}
+      title={hideTitle ? undefined : t('Creating common projects')}
+      aria-label={t('Creating common projects')}
       helperText={<HelperTextComponent errorCount={errorCount} successCount={successCount} />}
       variant={isErrorState ? 'danger' : 'success'}
     />

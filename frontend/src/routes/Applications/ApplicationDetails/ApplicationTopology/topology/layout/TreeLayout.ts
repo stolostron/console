@@ -12,7 +12,6 @@ export interface TreeLayoutOptions {
   nodeHeight: number
   maxColumns?: number
   useCola?: boolean
-  placeWith?: { parentType: string; childType: string }
   sortRowsBy?: string[]
   filterBy?: string[]
 }
@@ -56,6 +55,7 @@ interface MetricsType {
   sourceMap: LinkMapType
   targetMap: LinkMapType
   allNodeMap: NodeMapType
+  pairedInLayoutNodes: LayoutNodeModel[]
 }
 
 type NodeOffsetMapType = {
@@ -109,11 +109,11 @@ export function calculateNodeOffsets(elements: { nodes: any[]; links: any[] }, o
     const metrics: MetricsType = groupNodesByConnections(_elements)
     addRootsLeavesToConnectedGroups(metrics)
     sortConnectedGroupsIntoRows(metrics, options)
-    const placeLast = filterLastPlaced(metrics, options)
+    const pairedNodes = filterPairedNodes(metrics)
     setRowY(metrics, nodeOffsetMap, options)
     setRowX(metrics, nodeOffsetMap, options)
-    placePairedNodes(metrics, nodeOffsetMap, placeLast, options)
-    if (placeLast.length > 1) {
+    placePairedNodes(metrics, nodeOffsetMap, pairedNodes, options)
+    if (pairedNodes.length > 1) {
       layout = 'ColaTreeLayout'
     }
   }
@@ -181,7 +181,10 @@ function groupNodesByConnections(elements: { nodes: any[]; links: any[] }) {
       unconnected.push(node)
     }
   })
-  return { connected, unconnected, sourceMap, targetMap, allNodeMap }
+  const pairedInLayoutNodes = Object.values(allNodeMap).filter(
+    (node) => (node as any).specs?.isPairedInLayoutWithParent
+  )
+  return { connected, unconnected, sourceMap, targetMap, allNodeMap, pairedInLayoutNodes }
 }
 
 //////////////////////// reentrantly find all the nodes connected to that first node
@@ -401,27 +404,25 @@ function sortRowIntoRelatedNodes(data: { newRow: RowType; sortRowsBy: string[] |
 }
 
 // filter out nodes that are placed last
-function filterLastPlaced(metrics: MetricsType, options: TreeLayoutOptions) {
-  const placeLast: any[] = []
-  if (options?.placeWith) {
-    const { connected } = metrics
-    connected.forEach((group) => {
-      group.rows = group.rows.map((row) => {
-        row.row = row.row.filter((n) => {
-          const isPlaceType = (n: { type: string | undefined }) => n.type === options.placeWith?.childType
-          n.incoming = n.incoming.filter((n) => !isPlaceType(n))
-          n.outgoing = n.outgoing.filter((n) => !isPlaceType(n))
-          if (isPlaceType(n)) {
-            placeLast.push(n)
-            return false
-          }
-          return true
-        })
-        return row
+function filterPairedNodes(metrics: MetricsType) {
+  const pairedNodes: any[] = []
+  const { connected, pairedInLayoutNodes } = metrics
+  if (pairedInLayoutNodes.length === 0) return pairedNodes
+  pairedInLayoutNodes.forEach((node) => {
+    pairedNodes.push(node)
+  })
+  connected.forEach((group) => {
+    group.rows = group.rows.map((row) => {
+      row.row = row.row.filter((n) => {
+        const isPairedNode = (x: LayoutNodeModel) => (x as any).specs?.isPairedInLayoutWithParent
+        n.incoming = n.incoming.filter((node) => !isPairedNode(node))
+        n.outgoing = n.outgoing.filter((node) => !isPairedNode(node))
+        return !isPairedNode(n)
       })
+      return row
     })
-  }
-  return placeLast
+  })
+  return pairedNodes
 }
 
 // set the dy on the nodes in each row
@@ -527,7 +528,7 @@ function placePairedNodes(
   deltas.forEach(({ id, delta }, inx) => {
     const { dx, dy } = delta
     const sign = deltas.length > 1 && inx === 0 ? -1 : 1
-    nodeOffsetMap[id] = { dx: dx + sign * (options.xSpacer + options.nodeWidth), dy: dy + 20 }
+    nodeOffsetMap[id] = { dx: dx + sign * (options.xSpacer + options.nodeWidth), dy: dy - 20 }
   })
 }
 

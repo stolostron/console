@@ -661,6 +661,21 @@ const subscriptionOperator: SubscriptionOperator = {
 
 const mockClusterCurators = [clusterCurator]
 
+const mockNavigate = jest.fn()
+jest.mock('react-router-dom-v5-compat', () => {
+  const actual = jest.requireActual('react-router-dom-v5-compat')
+  return {
+    ...actual,
+    useNavigate: () => {
+      const realNavigate = actual.useNavigate()
+      return (...args: any[]) => {
+        mockNavigate(...args)
+        realNavigate(...args)
+      }
+    },
+  }
+})
+
 describe('ImportCluster', () => {
   function Component(props: { subscriptions?: SubscriptionOperator[] }) {
     return (
@@ -686,6 +701,7 @@ describe('ImportCluster', () => {
 
   beforeEach(() => {
     window.sessionStorage.clear()
+    mockNavigate.mockClear()
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     nockIgnoreOperatorCheck(true)
@@ -782,6 +798,78 @@ describe('ImportCluster', () => {
       ansibleCopiedNock,
       clusterCuratorNock,
     ])
+  })
+
+  test('redirects to cluster details with correct namespace after import with automation template', async () => {
+    const projectNock = nockCreate(mockProject, mockProjectResponse)
+    const mockCluster = JSON.parse(JSON.stringify(mockManagedCluster))
+    const mockClusterResponse = JSON.parse(JSON.stringify(mockManagedClusterResponse))
+    const mockKac = JSON.parse(JSON.stringify(mockKlusterletAddonConfig))
+    const mockKacResponse = JSON.parse(JSON.stringify(mockKlusterletAddonConfigResponse))
+    mockCluster.metadata.labels[managedClusterSetLabel] = mockManagedClusterSet.metadata.name
+    mockClusterResponse.metadata.labels[managedClusterSetLabel] = mockManagedClusterSet.metadata.name
+    mockKac.spec.clusterLabels[managedClusterSetLabel] = mockManagedClusterSet.metadata.name
+    mockKacResponse.spec.clusterLabels[managedClusterSetLabel] = mockManagedClusterSet.metadata.name
+    const managedClusterNock = nockCreate(mockCluster, mockClusterResponse)
+    const kacNock = nockCreate(mockKac, mockKacResponse)
+    const importSecretNock = nockGet(mockSecretResponse)
+    const ansibleCopiedNock = nockCreate(mockProviderConnectionAnsibleCopied)
+    const clusterCuratorNock = nockCreate(mockClusterCurator)
+
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
+          snapshot.set(clusterCuratorsState, mockClusterCurators)
+          snapshot.set(secretsState, [providerConnectionAnsible as Secret])
+          snapshot.set(subscriptionOperatorsState, [subscriptionOperator])
+        }}
+      >
+        <AcmToastProvider>
+          <AcmToastGroup />
+          <MemoryRouter initialEntries={[NavigationPath.importCluster]}>
+            <Routes>
+              <Route path={NavigationPath.importCluster} element={<ImportClusterPage />} />
+            </Routes>
+          </MemoryRouter>
+        </AcmToastProvider>
+      </RecoilRoot>
+    )
+
+    await typeByTestId('clusterName', 'foobar')
+
+    await waitForText('Cluster set')
+    await clickByPlaceholderText('Select a cluster set')
+    await clickByText(mockManagedClusterSet.metadata.name!)
+    await clickByTestId('label-input-button')
+    await typeByTestId('additionalLabels', 'foo=bar{enter}')
+
+    // Advance to Automation step and select template
+    await clickByText('Next')
+    await waitForText('Automation template')
+    await waitForNotText('Install the operator')
+    await clickByPlaceholderText('Select an automation template')
+    await clickByText(mockClusterCurators[0].metadata.name!)
+
+    // Advance to Review step and submit the form
+    await clickByText('Next')
+    await waitForText('Generate command')
+    await clickByText('Generate command')
+
+    await waitForNocks([
+      projectNock,
+      managedClusterNock,
+      kacNock,
+      importSecretNock,
+      ansibleCopiedNock,
+      clusterCuratorNock,
+    ])
+
+    // After submission, the component redirects to cluster details after a 2s delay.
+    // Verify the redirect URL uses the cluster name as both name and namespace.
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining('/details/foobar/foobar')), {
+      timeout: 10000,
+    })
   })
 
   test('can import without KlusterletAddonConfig for MCE', async () => {

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { render } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
   applicationsState,
@@ -9,9 +9,18 @@ import {
   namespacesState,
   placementDecisionsState,
   placementRulesState,
-  placementsState,
+  settingsState,
   subscriptionsState,
 } from '../../atoms'
+import { nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
+import {
+  clickByLabel,
+  clickByTestId,
+  clickByText,
+  getCSVDownloadLink,
+  getCSVExportSpies,
+  waitForText,
+} from '../../lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
 import {
   Application,
@@ -27,8 +36,6 @@ import {
   Namespace,
   NamespaceApiVersion,
   NamespaceKind,
-  Placement,
-  PlacementApiVersionBeta,
   PlacementDecision,
   PlacementDecisionApiVersion,
   PlacementDecisionKind,
@@ -39,25 +46,16 @@ import {
   SubscriptionApiVersion,
   SubscriptionKind,
 } from '../../resources'
-import { nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
-import {
-  clickByTestId,
-  waitForText,
-  clickByLabel,
-  clickByText,
-  getCSVExportSpies,
-  getCSVDownloadLink,
-} from '../../lib/test-util'
+import { PlacementApiVersion } from '../../wizards/common/resources/IPlacement'
+import AdvancedConfiguration, { getPlacementDecisionClusterCount } from './AdvancedConfiguration'
 import {
   mockSearchQueryArgoApps,
   mockSearchQueryOCPApplications,
   mockSearchResponseArgoApps,
   mockSearchResponseOCPApplications,
 } from './Application.sharedmocks'
-import AdvancedConfiguration, { getPlacementDecisionClusterCount } from './AdvancedConfiguration'
-import { PlacementApiVersion } from '../../wizards/common/resources/IPlacement'
-import { ClusterCount } from './helpers/resource-helper'
 import { ApplicationToggleOptions } from './components/ToggleSelector'
+import { ClusterCount } from './helpers/resource-helper'
 
 const mockSubscription1: Subscription = {
   kind: SubscriptionKind,
@@ -135,34 +133,6 @@ const mockChannel: Channel = {
   spec: {
     pathname: 'https://www.github.com/randy424',
     type: 'Git',
-  },
-}
-
-const mockPlacement: Placement = {
-  kind: PlacementKind,
-  apiVersion: PlacementApiVersionBeta,
-  metadata: {
-    name: 'helloworld-simple-placement-3',
-    namespace: 'helloworld-simple-placement-3',
-    creationTimestamp: '2024-06-28T03:18:48Z',
-  },
-  spec: {
-    predicates: [
-      {
-        requiredClusterSelector: {
-          labelSelector: {
-            matchExpressions: [
-              {
-                key: 'name',
-                operator: 'In',
-                values: ['local-cluster'],
-              },
-            ],
-          },
-        },
-      },
-    ],
-    clusterSets: ['global'],
   },
 }
 
@@ -273,7 +243,6 @@ const mockNamespaces: Namespace[] = ['namespace1', 'namespace2', 'namespace3'].m
 
 const mockSubscriptions = [mockSubscription1, mockSubscription2, mockSubscription3]
 const mockChannels = [mockChannel]
-const mockPlacements = [mockPlacement]
 const mockApplications = [mockApplication]
 const mockClusters = [hubCluster]
 
@@ -285,7 +254,6 @@ function TestAdvancedConfigurationPage(props: { defaultToggleOption?: Applicatio
         snapshot.set(subscriptionsState, mockSubscriptions)
         snapshot.set(namespacesState, mockNamespaces)
         snapshot.set(channelsState, mockChannels)
-        snapshot.set(placementsState, mockPlacements)
         snapshot.set(placementDecisionsState, placementDecisions)
         snapshot.set(applicationsState, mockApplications)
         snapshot.set(placementRulesState, placementRules)
@@ -307,6 +275,25 @@ describe('advanced configuration page', () => {
     nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
   })
 
+  test('should render deprecation Alert', async () => {
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(settingsState, {
+            enhancedPlacement: 'enabled',
+          })
+        }}
+      >
+        <MemoryRouter initialEntries={[NavigationPath.advancedConfiguration]}>
+          <AdvancedConfiguration />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForText(
+      'This page will be removed in a future release. Placements will move to a central location under Infrastructure > Clusters > Placements. You can also view placement details directly within individual applications or policies.'
+    )
+  })
+
   test('should render the table with subscriptions', async () => {
     render(<TestAdvancedConfigurationPage />)
     await waitForText(mockSubscription1.metadata!.name!)
@@ -315,11 +302,6 @@ describe('advanced configuration page', () => {
   test('should click channel option', async () => {
     render(<TestAdvancedConfigurationPage />)
     await clickByTestId('channels')
-  })
-
-  test('should click placement option', async () => {
-    render(<TestAdvancedConfigurationPage />)
-    await clickByTestId('placements')
   })
 
   test('should click placement rule option', async () => {
@@ -445,26 +427,6 @@ describe('Export from application tables', () => {
     )
     expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(
       /^applicationadvancedconfiguration-channels-[\d]+\.csv$/
-    )
-  })
-
-  test('export button should produce a file for download for placements', async () => {
-    render(<TestAdvancedConfigurationPage defaultToggleOption="placements" />)
-    const { blobConstructorSpy, createElementSpy } = getCSVExportSpies()
-
-    //download for placements
-    await clickByLabel('export-search-result')
-    await clickByText('Export all to CSV')
-
-    expect(blobConstructorSpy).toHaveBeenCalledWith(
-      [
-        'Name,Namespace,Clusters,Created\n' +
-          '"helloworld-simple-placement-3","helloworld-simple-placement-3","1 Remote, 1 Local","2024-06-28T03:18:48.000Z"',
-      ],
-      { type: 'text/csv' }
-    )
-    expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(
-      /^applicationadvancedconfiguration-placements-[\d]+\.csv$/
     )
   })
 

@@ -57,6 +57,8 @@ function getLabel(type: string | undefined, specs: any) {
       return specs?.applicationName ? specs.applicationName : 'Application'
     case 'applicationset':
       return `${specs?.isAppSetPullModel ? 'Pull' : 'Push'} Application Set`
+    case 'placementDecision':
+      return 'Placement Decision'
     default:
       if (type) {
         return capitalize(type).replace('Argocd', 'Argo CD').replace('Ocpa', 'OCP A')

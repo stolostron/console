@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Navigate, Route, Routes } from 'react-router-dom-v5-compat'
 import { NavigationPath, createRoutePathFunction } from '../../../NavigationPath'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import IdentitiesPage from './IdentitiesPage'
 import { ServiceAccounts } from './ServiceAccounts/ServiceAccounts'
 import { UserDetails } from './Users/UserDetails'
@@ -23,39 +24,62 @@ import { UsersTablePage } from './Users/UsersTablePage'
 
 const identitiesChildPath = createRoutePathFunction(NavigationPath.identities)
 
+function RedirectToParent() {
+  return <Navigate to=".." relative="path" replace />
+}
+
 export default function IdentitiesManagement() {
+  const { isDirectAuthenticationEnabledState } = useSharedAtoms()
+  const isDirectAuth = useRecoilValue(isDirectAuthenticationEnabledState)
+
   return (
     <Routes>
       {/* User detail routes with nested tabs */}
       <Route path={identitiesChildPath(NavigationPath.identitiesUsersDetails)} element={<UserPage />}>
         <Route index element={<UserDetails />} />
       </Route>
-      <Route path={identitiesChildPath(NavigationPath.identitiesUsersYaml)} element={<UserPage />}>
-        <Route index element={<UserYaml />} />
-      </Route>
+      {isDirectAuth ? (
+        <Route path={identitiesChildPath(NavigationPath.identitiesUsersYaml)} element={<RedirectToParent />} />
+      ) : (
+        <Route path={identitiesChildPath(NavigationPath.identitiesUsersYaml)} element={<UserPage />}>
+          <Route index element={<UserYaml />} />
+        </Route>
+      )}
       <Route path={identitiesChildPath(NavigationPath.identitiesUsersRoleAssignments)} element={<UserPage />}>
         <Route index element={<UserRoleAssignments />} />
       </Route>
       <Route path={identitiesChildPath(NavigationPath.identitiesUsersRoleAssignmentsCreate)} element={<UserPage />}>
         <Route index element={<UserRoleAssignments />} />
       </Route>
-      <Route path={identitiesChildPath(NavigationPath.identitiesUsersGroups)} element={<UserPage />}>
-        <Route index element={<UserGroups />} />
-      </Route>
+      {isDirectAuth ? (
+        <Route path={identitiesChildPath(NavigationPath.identitiesUsersGroups)} element={<RedirectToParent />} />
+      ) : (
+        <Route path={identitiesChildPath(NavigationPath.identitiesUsersGroups)} element={<UserPage />}>
+          <Route index element={<UserGroups />} />
+        </Route>
+      )}
 
       {/* Group detail routes */}
       <Route path={identitiesChildPath(NavigationPath.identitiesGroupsDetails)} element={<GroupPage />}>
         <Route index element={<GroupDetails />} />
       </Route>
-      <Route path={identitiesChildPath(NavigationPath.identitiesGroupsYaml)} element={<GroupPage />}>
-        <Route index element={<GroupYaml />} />
-      </Route>
+      {isDirectAuth ? (
+        <Route path={identitiesChildPath(NavigationPath.identitiesGroupsYaml)} element={<RedirectToParent />} />
+      ) : (
+        <Route path={identitiesChildPath(NavigationPath.identitiesGroupsYaml)} element={<GroupPage />}>
+          <Route index element={<GroupYaml />} />
+        </Route>
+      )}
       <Route path={identitiesChildPath(NavigationPath.identitiesGroupsRoleAssignments)} element={<GroupPage />}>
         <Route index element={<GroupRoleAssignments />} />
       </Route>
-      <Route path={identitiesChildPath(NavigationPath.identitiesGroupsUsers)} element={<GroupPage />}>
-        <Route index element={<GroupUsers />} />
-      </Route>
+      {isDirectAuth ? (
+        <Route path={identitiesChildPath(NavigationPath.identitiesGroupsUsers)} element={<RedirectToParent />} />
+      ) : (
+        <Route path={identitiesChildPath(NavigationPath.identitiesGroupsUsers)} element={<GroupPage />}>
+          <Route index element={<GroupUsers />} />
+        </Route>
+      )}
 
       {/* Service Account detail routes */}
       <Route

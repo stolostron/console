@@ -764,6 +764,7 @@ const mockData = {
       host: { shape: 'host', className: 'host' },
       policy: { shape: 'roundedSq', className: 'design', nodeRadius: 30 },
       placement: { shape: 'placement', className: 'design' },
+      placementDecision: { shape: 'placementdecision', className: 'design' },
       cluster: { shape: 'cluster', className: 'container' },
       service: { shape: 'service', className: 'service' },
       deployment: { shape: 'deployment', className: 'deployment' },

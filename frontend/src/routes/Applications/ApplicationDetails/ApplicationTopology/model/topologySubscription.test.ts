@@ -8744,7 +8744,7 @@ const result7: TestTopology = {
           },
         },
       },
-      type: 'placements',
+      type: 'placementDecision',
       uid: 'member--rules--feng-cronjob--feng-cronjob-placement-1-decision-1--0',
     },
     {

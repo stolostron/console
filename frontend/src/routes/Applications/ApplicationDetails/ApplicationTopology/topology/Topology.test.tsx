@@ -1220,6 +1220,10 @@ const props1: TopologyProps = {
         shape: 'placement',
         className: 'design',
       },
+      placementDecision: {
+        shape: 'placementdecision',
+        className: 'design',
+      },
       pod: {
         shape: 'pod',
         className: 'pod',

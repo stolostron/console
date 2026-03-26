@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import Router from 'find-my-way'
-import { Http2Server, Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { authenticated } from './lib/authenticated'
 import { loadSettings } from './lib/config'
 import { stopFileWatches } from './lib/fileWatch'
@@ -33,6 +33,7 @@ import { virtualMachineGETProxy, virtualMachineProxy, vmResourceUsageProxy } fro
 import { managedClusterProxy } from './routes/managedClusterProxy'
 import { hypershiftStatus } from './routes/hypershift-status'
 import { clusterVersion } from './routes/clusterVersion'
+import { watchTLSSecurityProfile } from './lib/tlsProfileWatch'
 
 const isProduction = process.env.NODE_ENV === 'production'
 const isDevelopment = process.env.NODE_ENV === 'development'
@@ -111,13 +112,24 @@ export async function requestHandler(req: Http2ServerRequest, res: Http2ServerRe
   }
 }
 
-export async function start(): Promise<Http2Server | undefined> {
+let stopTLSProfileWatch: (() => void) | undefined
+export async function start() {
   await loadSettings()
   if (eventsEnabled) {
     startWatching()
     startAggregating()
   }
-  return startServer({ requestHandler })
+  stopTLSProfileWatch = watchTLSSecurityProfile(async (options) => {
+    try {
+      await stopServer()
+      await startServer({ requestHandler, ...options })
+    } catch (err) {
+      logger.error({
+        msg: 'server restart failed on TLS profile change',
+        error: err instanceof Error ? err.message : String(err),
+      })
+    }
+  })
 }
 
 export async function stop(): Promise<void> {
@@ -131,6 +143,7 @@ export async function stop(): Promise<void> {
   await ServerSideEvents.dispose()
   stopWatching()
   stopAggregating()
+  stopTLSProfileWatch?.()
   await stopServer()
   stopLogger()
 }

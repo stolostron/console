@@ -16,6 +16,7 @@ import { cloneDeep } from 'lodash'
 import { Fragment, useEffect, useState } from 'react'
 import { TFunction } from 'react-i18next'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
+import { getPlacementsForApplicationSet, PlacementLinkList } from '~/routes/Infrastructure/Clusters/Placements/utils'
 import { useLocalHubName } from '../../../../hooks/use-local-hub'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
@@ -71,12 +72,11 @@ const clusterResourceStatusTooltipOther = (t: TFunction) => t('Status of resourc
 export function ApplicationDetailsPageContent() {
   const { applicationData } = useApplicationDetailsContext()
   const { t } = useTranslation()
-
-  const { channelsState, namespacesState, subscriptionsState } = useSharedAtoms()
-
+  const { channelsState, namespacesState, subscriptionsState, settingsState } = useSharedAtoms()
   const channels = useRecoilValue(channelsState)
   const subscriptions = useRecoilValue(subscriptionsState)
   const namespaces = useRecoilValue(namespacesState)
+  const settings = useRecoilValue(settingsState)
   const localCluster = useLocalHubName()
   const [modalProps, setModalProps] = useState<ISyncResourceModalProps | { open: false }>({
     open: false,
@@ -249,6 +249,8 @@ export function ApplicationDetailsPageContent() {
           key: t('Repository'),
           value: createSourceCards(applicationData?.application.app, t, subscriptions, channels),
         },
+      ]
+      rightItems = [
         {
           key: clusterResourceStatusText(t),
           value: createStatusIcons(applicationData, t),
@@ -269,7 +271,6 @@ export function ApplicationDetailsPageContent() {
               <OutlinedQuestionCircleIcon className="help-icon" />
             </Tooltip>
           ),
-
           value: (
             <Flex gap={{ default: 'gapNone' }} alignItems={{ default: 'alignItemsCenter' }}>
               <FlexItem>
@@ -281,6 +282,14 @@ export function ApplicationDetailsPageContent() {
             </Flex>
           ),
         },
+        ...(settings.enhancedPlacement === 'enabled'
+          ? [
+              {
+                key: t('Placement'),
+                value: <PlacementLinkList placementsForCluster={getPlacementsForApplicationSet(applicationData)} />,
+              },
+            ]
+          : []),
       ]
     } else {
       /////////////////////////// subscription items //////////////////////////////////////////////
