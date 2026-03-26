@@ -11,6 +11,7 @@ import {
 import get from 'get-value'
 import { ReactNode, useCallback, useMemo, useRef, useState } from 'react'
 import { DisplayMode } from '../contexts/DisplayModeContext'
+import { useReviewStepOutlineId } from '../ReviewStep'
 import { getSelectPlaceholder, InputCommonProps, useInput } from './Input'
 import { InputSelect, SelectListOptions } from './InputSelect'
 import { WizFormGroup } from './WizFormGroup'
@@ -59,6 +60,7 @@ type SelectProps<T> = WizSelectSingleProps<T>
 
 function WizSelectBase<T = any>(props: SelectProps<T>) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const outlineId = useReviewStepOutlineId()
   const {
     displayMode: mode,
     value,
@@ -162,7 +164,7 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
   if (mode === DisplayMode.Details) {
     if (!value) return null
     return (
-      <div ref={containerRef}>
+      <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
         <DescriptionListGroup>
           <DescriptionListTerm>{props.label}</DescriptionListTerm>
           <DescriptionListDescription id={id}>{value}</DescriptionListDescription>
@@ -172,7 +174,7 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
   }
 
   return (
-    <div ref={containerRef} id={id}>
+    <div ref={containerRef} id={id} data-is-review-outline-target={id === outlineId || undefined}>
       <WizFormGroup {...props}>
         <InputGroup>
           <InputGroupItem isFill>

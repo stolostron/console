@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Form } from '@patternfly/react-core'
-import { Fragment, ReactNode, useLayoutEffect } from 'react'
+import { Fragment, ReactNode, useLayoutEffect, useRef } from 'react'
 import { DisplayMode, useDisplayMode } from './contexts/DisplayModeContext'
 import { HasInputsProvider, useHasInputs } from './contexts/HasInputsProvider'
 import { ShowValidationProvider, useSetShowValidation } from './contexts/ShowValidationProvider'
@@ -8,8 +8,8 @@ import { useSetStepHasInputs } from './contexts/StepHasInputsProvider'
 import { useStepShowValidation } from './contexts/StepShowValidationProvider'
 import { useSetStepHasValidationError } from './contexts/StepValidationProvider'
 import { useHasValidationError, ValidationProvider } from './contexts/ValidationProvider'
-import { CurrentStepIdContext } from './contexts/StepInputsContext'
-import { HiddenFn, useInputHidden } from './inputs/Input'
+import { useBumpReviewDomTree } from './contexts/ReviewDomTreeSyncContext'
+import { HiddenFn, InputContainerElement, InputReviewMeta, useInputHidden } from './inputs/Input'
 
 export interface StepProps {
   label: string
@@ -20,17 +20,33 @@ export interface StepProps {
 }
 
 export function Step(props: StepProps) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const bumpReviewDomTree = useBumpReviewDomTree()
+  useLayoutEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    const typed = el as InputContainerElement
+    typed.__reviewStepProps = {
+      id: props.id,
+      label: props.label,
+      type: InputReviewMeta.STEP,
+    }
+    bumpReviewDomTree?.()
+    return () => {
+      delete typed.__reviewStepProps
+      bumpReviewDomTree?.()
+    }
+  }, [bumpReviewDomTree, containerRef, props.id, props.label])
+
   return (
-    <div id={props.id}>
-      <CurrentStepIdContext.Provider value={props.id}>
-        <HasInputsProvider key={props.id}>
-          <ShowValidationProvider>
-            <ValidationProvider>
-              <StepInternal {...props}>{props.children}</StepInternal>
-            </ValidationProvider>
-          </ShowValidationProvider>
-        </HasInputsProvider>
-      </CurrentStepIdContext.Provider>
+    <div id={props.id} ref={containerRef}>
+      <HasInputsProvider key={props.id}>
+        <ShowValidationProvider>
+          <ValidationProvider>
+            <StepInternal {...props}>{props.children}</StepInternal>
+          </ValidationProvider>
+        </ShowValidationProvider>
+      </HasInputsProvider>
     </div>
   )
 }

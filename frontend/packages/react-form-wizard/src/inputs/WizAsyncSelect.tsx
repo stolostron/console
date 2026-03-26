@@ -12,6 +12,7 @@ import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { SpinnerButton } from '../components/SpinnerButton'
 import { SyncButton } from '../components/SyncButton'
 import { DisplayMode } from '../contexts/DisplayModeContext'
+import { useReviewStepOutlineId } from '../ReviewStep'
 import { useStringContext } from '../contexts/StringContext'
 import { getSelectPlaceholder, InputCommonProps, useInput } from './Input'
 import { InputSelect, SelectListOptions } from './InputSelect'
@@ -30,6 +31,7 @@ type WizAsyncSelectProps = InputCommonProps<string> & {
 export function WizAsyncSelect(props: WizAsyncSelectProps) {
   const { asyncCallback, isCreatable, footer } = props
   const containerRef = useRef<HTMLDivElement>(null)
+  const outlineId = useReviewStepOutlineId()
   const { displayMode, value, setValue, validated, hidden, id, disabled } = useInput(props, containerRef)
   const { noResults } = useStringContext()
   const placeholder = getSelectPlaceholder(props)
@@ -92,7 +94,7 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
   if (displayMode === DisplayMode.Details) {
     if (!value) return null
     return (
-      <div ref={containerRef}>
+      <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
         <DescriptionListGroup>
           <DescriptionListTerm>{props.label}</DescriptionListTerm>
           <DescriptionListDescription id={id}>{value}</DescriptionListDescription>
@@ -102,7 +104,7 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
   }
 
   return (
-    <div ref={containerRef}>
+    <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
       <WizFormGroup {...props} id={id}>
         <InputGroup>
           <InputGroupItem isFill>

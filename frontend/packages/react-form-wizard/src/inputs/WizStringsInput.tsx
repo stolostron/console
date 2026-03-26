@@ -13,6 +13,7 @@ import { PlusCircleIcon, TrashIcon } from '@patternfly/react-icons'
 import { Fragment, useRef } from 'react'
 import { WizTextInput } from '..'
 import { DisplayMode } from '../contexts/DisplayModeContext'
+import { useReviewStepOutlineId } from '../ReviewStep'
 import { useStringContext } from '../contexts/StringContext'
 import { getAddPlaceholder, InputCommonProps, useInput } from './Input'
 import { WizFormGroup } from './WizFormGroup'
@@ -24,6 +25,7 @@ export type WizStringsInputProps = InputCommonProps & {
 
 export function WizStringsInput(props: WizStringsInputProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const outlineId = useReviewStepOutlineId()
   const { displayMode: mode, value, setValue, id, hidden, required } = useInput(props, containerRef)
 
   const values: string[] = Array.isArray(value) ? value : []
@@ -47,7 +49,7 @@ export function WizStringsInput(props: WizStringsInputProps) {
   if (mode === DisplayMode.Details) {
     if (!values.length) return <Fragment />
     return (
-      <div ref={containerRef}>
+      <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
         <DescriptionListGroup>
           <DescriptionListTerm>{props.label}</DescriptionListTerm>
           <DescriptionListDescription id={id}>
@@ -64,7 +66,7 @@ export function WizStringsInput(props: WizStringsInputProps) {
   }
 
   return (
-    <div ref={containerRef}>
+    <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
       <WizFormGroup {...props} id={id}>
         <div id={id} style={{ display: 'flex', flexDirection: 'column', rowGap: values.length ? 8 : 4 }}>
           <div style={{ display: 'flex', flexDirection: 'column', rowGap: 8 }}>
@@ -119,6 +121,7 @@ type StringsMapInputProps = WizStringsInputProps & {
 
 export function StringsMapInput(props: StringsMapInputProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const outlineId = useReviewStepOutlineId()
   const { displayMode: mode, value, setValue, id, hidden } = useInput(props, containerRef)
 
   let values: string[] = value
@@ -155,7 +158,7 @@ export function StringsMapInput(props: StringsMapInputProps) {
   if (mode === DisplayMode.Details) {
     if (!values.length) return <Fragment />
     return (
-      <div ref={containerRef}>
+      <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
         <DescriptionListGroup>
           <DescriptionListTerm>{props.label}</DescriptionListTerm>
           <DescriptionListDescription id={id}>
@@ -172,7 +175,7 @@ export function StringsMapInput(props: StringsMapInputProps) {
   }
 
   return (
-    <div ref={containerRef}>
+    <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
       <WizFormGroup {...props} id={id}>
         <div id={id} style={{ display: 'flex', flexDirection: 'column', rowGap: values.length ? 8 : 4 }}>
           <div style={{ display: 'flex', flexDirection: 'column', rowGap: 8 }}>

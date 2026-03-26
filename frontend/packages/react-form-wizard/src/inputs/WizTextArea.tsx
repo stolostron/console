@@ -6,6 +6,7 @@ import { ClearInputButton } from '../components/ClearInputButton'
 import { PasteInputButton } from '../components/PasteInputButton'
 import { ShowSecretsButton } from '../components/ShowSecretsButton'
 import { DisplayMode } from '../contexts/DisplayModeContext'
+import { useReviewStepOutlineId } from '../ReviewStep'
 import { getEnterPlaceholder, InputCommonProps, useInput } from './Input'
 import { WizFormGroup } from './WizFormGroup'
 import useResizeObserver from '@react-hook/resize-observer'
@@ -19,6 +20,7 @@ export type WizTextAreaProps = InputCommonProps<string> & {
 
 export function WizTextArea(props: WizTextAreaProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const outlineId = useReviewStepOutlineId()
   const { displayMode: mode, value, disabled, setValue, validated, hidden, id } = useInput(props, containerRef)
 
   // Hide initially if a value is set
@@ -56,7 +58,7 @@ export function WizTextArea(props: WizTextAreaProps) {
   if (mode === DisplayMode.Details) {
     if (!value) return <Fragment />
     return (
-      <div ref={containerRef}>
+      <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
         <WizTextDetail id={id} path={props.path} label={props.label} secret={props.secret} />
       </div>
     )
@@ -66,7 +68,7 @@ export function WizTextArea(props: WizTextAreaProps) {
   const canPaste = props.canPaste !== undefined ? props.canPaste : props.secret === true
 
   return (
-    <div ref={containerRef}>
+    <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
       <WizFormGroup {...props} id={id} key={id}>
         <InputGroup>
           {value && !showSecrets && props.secret ? (

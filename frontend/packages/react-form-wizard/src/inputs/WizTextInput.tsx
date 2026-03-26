@@ -4,6 +4,7 @@ import { Fragment, useCallback, useRef, useState } from 'react'
 import { ClearInputButton } from '../components/ClearInputButton'
 import { PasteInputButton } from '../components/PasteInputButton'
 import { ShowSecretsButton } from '../components/ShowSecretsButton'
+import { useReviewStepOutlineId } from '../ReviewStep'
 import { InputCommonProps, getEnterPlaceholder, useInput } from './Input'
 import { WizFormGroup } from './WizFormGroup'
 
@@ -15,6 +16,7 @@ export type WizTextInputProps = InputCommonProps<string> & {
 
 export function WizTextInput(props: WizTextInputProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const outlineId = useReviewStepOutlineId()
   const { value, setValue, disabled, validated, hidden, id } = useInput(props, containerRef)
   const [showSecrets, setShowSecrets] = useState(false)
 
@@ -60,5 +62,9 @@ export function WizTextInput(props: WizTextInputProps) {
     inputGroup
   )
 
-  return <div ref={containerRef}>{content}</div>
+  return (
+    <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
+      {content}
+    </div>
+  )
 }

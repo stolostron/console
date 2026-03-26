@@ -8,6 +8,7 @@ import {
 } from '@patternfly/react-core'
 import { Fragment, useCallback, useRef } from 'react'
 import { DisplayMode } from '../contexts/DisplayModeContext'
+import { useReviewStepOutlineId } from '../ReviewStep'
 import { getEnterPlaceholder, InputCommonProps, useInput } from './Input'
 import { WizFormGroup } from './WizFormGroup'
 
@@ -22,6 +23,7 @@ export type WizNumberInputProps = InputCommonProps<string> & {
 
 export function WizNumberInput(props: WizNumberInputProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const outlineId = useReviewStepOutlineId()
   const { displayMode: mode, value, setValue, disabled, hidden, id } = useInput(props, containerRef)
 
   const onMinus = useCallback(() => {
@@ -55,7 +57,7 @@ export function WizNumberInput(props: WizNumberInputProps) {
     if (!value) return <Fragment />
     // return <WizTextDetail id={id} path={props.path} label={props.label} />
     return (
-      <div ref={containerRef}>
+      <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
         <DescriptionListGroup>
           <DescriptionListTerm>{props.label}</DescriptionListTerm>
           <DescriptionListDescription id={id}>{value}</DescriptionListDescription>
@@ -67,7 +69,7 @@ export function WizNumberInput(props: WizNumberInputProps) {
   const placeholder = getEnterPlaceholder(props)
 
   return (
-    <div ref={containerRef}>
+    <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
       <WizFormGroup {...props} id={id}>
         <PFNumberInput
           id={id}

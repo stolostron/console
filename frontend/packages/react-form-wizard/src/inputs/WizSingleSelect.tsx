@@ -10,6 +10,7 @@ import {
 } from '@patternfly/react-core'
 import { ReactNode, useCallback, useRef, useState } from 'react'
 import { DisplayMode } from '../contexts/DisplayModeContext'
+import { useReviewStepOutlineId } from '../ReviewStep'
 import { useStringContext } from '../contexts/StringContext'
 import { getSelectPlaceholder, InputCommonProps, useInput } from './Input'
 import { InputSelect, SelectListOptions } from './InputSelect'
@@ -27,6 +28,7 @@ export type WizSingleSelectProps = InputCommonProps<string> & {
 
 export function WizSingleSelect(props: WizSingleSelectProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const outlineId = useReviewStepOutlineId()
   const {
     displayMode: mode,
     value,
@@ -79,7 +81,7 @@ export function WizSingleSelect(props: WizSingleSelectProps) {
   if (mode === DisplayMode.Details) {
     if (!value) return null
     return (
-      <div ref={containerRef}>
+      <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
         <DescriptionListGroup>
           <DescriptionListTerm>{label}</DescriptionListTerm>
           <DescriptionListDescription id={id}>{value}</DescriptionListDescription>
@@ -89,7 +91,7 @@ export function WizSingleSelect(props: WizSingleSelectProps) {
   }
 
   return (
-    <div ref={containerRef} id={id}>
+    <div ref={containerRef} id={id} data-is-review-outline-target={id === outlineId || undefined}>
       <WizFormGroup {...props} id={id}>
         <InputGroup>
           <InputGroupItem isFill>

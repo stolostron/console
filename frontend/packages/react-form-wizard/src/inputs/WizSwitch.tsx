@@ -6,6 +6,7 @@ import { WizHelperText } from '../components/WizHelperText'
 import { Indented } from '../components/Indented'
 import { LabelHelp } from '../components/LabelHelp'
 import { DisplayMode } from '../contexts/DisplayModeContext'
+import { useReviewStepOutlineId } from '../ReviewStep'
 import { InputCommonProps, useInput } from './Input'
 import { WizFormGroup } from './WizFormGroup'
 
@@ -26,6 +27,7 @@ function getIsChecked(value: any) {
 
 export function WizSwitch(props: WizSwitchProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const outlineId = useReviewStepOutlineId()
   const { displayMode: mode, value, setValue, hidden, id } = useInput(props, containerRef)
   const onChange = useCallback<NonNullable<SwitchProps['onChange']>>((_event, value) => setValue(value), [setValue])
 
@@ -34,7 +36,7 @@ export function WizSwitch(props: WizSwitchProps) {
   if (mode === DisplayMode.Details) {
     if (!value) return <Fragment />
     return (
-      <div ref={containerRef}>
+      <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
         <Split id={id}>
           <CheckIcon style={{ paddingRight: 5 }} />
           <div className="pf-v6-c-description-list__term" style={{ paddingLeft: 2 }}>
@@ -47,7 +49,7 @@ export function WizSwitch(props: WizSwitchProps) {
   }
 
   return (
-    <div ref={containerRef}>
+    <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
       <Stack hasGutter>
         <Stack>
           <WizFormGroup {...props} id={id} label={props.title} noHelperText>

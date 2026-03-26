@@ -6,6 +6,7 @@ import { Indented } from '../components/Indented'
 import { LabelHelp } from '../components/LabelHelp'
 import { WizHelperText } from '../components/WizHelperText'
 import { DisplayMode } from '../contexts/DisplayModeContext'
+import { useReviewStepOutlineId } from '../ReviewStep'
 import { useStringContext } from '../contexts/StringContext'
 import { getAddPlaceholder, InputCommonProps, useInput } from './Input'
 
@@ -13,6 +14,7 @@ type KeyValueProps = InputCommonProps & { placeholder?: string; summaryList?: bo
 
 export function WizKeyValue(props: KeyValueProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const outlineId = useReviewStepOutlineId()
   const { displayMode: mode, value, setValue, hidden, id } = useInput(props, containerRef)
   const pairs: { key: string; value: string }[] =
     value instanceof Object ? Object.keys(value).map((key) => ({ key, value: value[key] })) : []
@@ -76,7 +78,7 @@ export function WizKeyValue(props: KeyValueProps) {
   if (mode === DisplayMode.Details) {
     if (!pairs.length) return <Fragment />
     return (
-      <div ref={containerRef}>
+      <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
         <div className="pf-v6-c-description-list__term">{props.label}</div>
         <Indented id={id}>
           <List style={{ marginTop: -4 }} isPlain={props.summaryList !== true}>
@@ -92,7 +94,12 @@ export function WizKeyValue(props: KeyValueProps) {
   }
 
   return (
-    <div ref={containerRef} id={id} style={{ display: 'flex', flexDirection: 'column', rowGap: pairs.length ? 8 : 4 }}>
+    <div
+      ref={containerRef}
+      id={id}
+      style={{ display: 'flex', flexDirection: 'column', rowGap: pairs.length ? 8 : 4 }}
+      data-is-review-outline-target={id === outlineId || undefined}
+    >
       <div>
         <span className="pf-v6-c-form__label pf-v6-c-form__label-text">{props.label}</span>
         {props.labelHelp && <LabelHelp id={id} labelHelp={props.labelHelp} labelHelpTitle={props.labelHelpTitle} />}

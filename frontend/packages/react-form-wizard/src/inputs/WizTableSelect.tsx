@@ -21,6 +21,7 @@ import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
 import { Fragment, ReactNode, useCallback, useMemo, useRef, useState } from 'react'
 import { Indented } from '../components/Indented'
 import { DisplayMode } from '../contexts/DisplayModeContext'
+import { useReviewStepOutlineId } from '../ReviewStep'
 import { useStringContext } from '../contexts/StringContext'
 import { InputCommonProps, useInput } from './Input'
 import { WizFormGroup } from './WizFormGroup'
@@ -43,6 +44,7 @@ export type WizTableSelectProps<T> = InputCommonProps<string> & {
 
 export function WizTableSelect<T = any>(props: WizTableSelectProps<T>) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const outlineId = useReviewStepOutlineId()
   const { displayMode: mode, value, setValue, hidden, id } = useInput(props, containerRef)
 
   const [page, setPage] = useState(1)
@@ -104,13 +106,13 @@ export function WizTableSelect<T = any>(props: WizTableSelectProps<T>) {
     if (!props.label) {
       if (values.length > 5) {
         return (
-          <div ref={containerRef} id={id}>
+          <div ref={containerRef} id={id} data-is-review-outline-target={id === outlineId || undefined}>
             {values.length} selected
           </div>
         )
       }
       return (
-        <div ref={containerRef}>
+        <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
           <List isPlain={props.summaryList !== true}>
             {values.map((value, index) => (
               <ListItem key={index} style={{ paddingBottom: 4 }}>
@@ -123,7 +125,7 @@ export function WizTableSelect<T = any>(props: WizTableSelectProps<T>) {
     }
     if (values.length > 5) {
       return (
-        <div ref={containerRef}>
+        <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
           <DescriptionListGroup>
             <DescriptionListTerm>{props.label}</DescriptionListTerm>
             <DescriptionListDescription id={id}>{values.length} selected</DescriptionListDescription>
@@ -132,7 +134,7 @@ export function WizTableSelect<T = any>(props: WizTableSelectProps<T>) {
       )
     }
     return (
-      <div ref={containerRef}>
+      <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
         <div className="pf-v6-c-description-list__term">{props.label}</div>
         <Indented paddingBottom={4}>
           <List style={{ marginTop: -4 }} isPlain={props.summaryList !== true}>
@@ -149,7 +151,7 @@ export function WizTableSelect<T = any>(props: WizTableSelectProps<T>) {
 
   if (props.items.length === 0) {
     return (
-      <div ref={containerRef}>
+      <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
         <EmptyState headingLevel="h4" titleText={<>{props.emptyTitle}</>}>
           <EmptyStateBody>{props.emptyMessage}</EmptyStateBody>
         </EmptyState>
@@ -158,7 +160,7 @@ export function WizTableSelect<T = any>(props: WizTableSelectProps<T>) {
   }
 
   return (
-    <div ref={containerRef}>
+    <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
       <WizFormGroup {...props}>
         <div style={{ display: 'flex', gap: 8 }}>
           <BulkSelect

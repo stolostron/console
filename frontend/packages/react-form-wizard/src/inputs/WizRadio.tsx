@@ -10,6 +10,7 @@ import { Indented } from '../components/Indented'
 import { WizHelperText } from '../components/WizHelperText'
 import { DisplayMode } from '../contexts/DisplayModeContext'
 import { useRandomID } from '../contexts/useRandomID'
+import { useReviewStepOutlineId } from '../ReviewStep'
 import { InputCommonProps, useInput } from './Input'
 import { WizFormGroup } from './WizFormGroup'
 
@@ -28,6 +29,7 @@ export type WizRadioGroupProps = InputCommonProps & { children?: ReactNode }
 
 export function WizRadioGroup(props: WizRadioGroupProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const outlineId = useReviewStepOutlineId()
   const { displayMode: mode, value, setValue, hidden, id } = useInput(props, containerRef)
 
   const radioGroup = useRandomID()
@@ -56,7 +58,7 @@ export function WizRadioGroup(props: WizRadioGroupProps) {
 
     if (!selectedChild) return <Fragment />
     return (
-      <div ref={containerRef}>
+      <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
         <DescriptionListGroup id={id}>
           <DescriptionListTerm>{props.label}</DescriptionListTerm>
           <DescriptionListDescription id={selectedChild.props.id}>
@@ -70,7 +72,7 @@ export function WizRadioGroup(props: WizRadioGroupProps) {
 
   return (
     <RadioGroupContext.Provider value={state}>
-      <div ref={containerRef} id={id}>
+      <div ref={containerRef} id={id} data-is-review-outline-target={id === outlineId || undefined}>
         <WizFormGroup {...props} id={id} noHelperText>
           <WizHelperText {...props} />
           <div style={{ display: 'flex', flexDirection: 'column', rowGap: 12, paddingTop: 8, paddingBottom: 4 }}>

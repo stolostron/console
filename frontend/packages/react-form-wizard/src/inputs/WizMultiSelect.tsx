@@ -8,6 +8,7 @@ import {
 } from '@patternfly/react-core'
 import { ReactNode, useCallback, useRef, useState } from 'react'
 import { DisplayMode } from '../contexts/DisplayModeContext'
+import { useReviewStepOutlineId } from '../ReviewStep'
 import { useStringContext } from '../contexts/StringContext'
 import { getSelectPlaceholder, InputCommonProps, useInput } from './Input'
 import { InputSelect, SelectListOptions } from './InputSelect'
@@ -25,6 +26,7 @@ export type WizMultiSelectProps = InputCommonProps<string[]> & {
 
 export function WizMultiSelect(props: WizMultiSelectProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const outlineId = useReviewStepOutlineId()
   const { displayMode: mode, value, setValue, validated, hidden, id, disabled } = useInput(props, containerRef)
   const { noResults } = useStringContext()
   const { isCreatable, options, footer } = props
@@ -79,7 +81,7 @@ export function WizMultiSelect(props: WizMultiSelectProps) {
   if (mode === DisplayMode.Details) {
     if (!value) return null
     return (
-      <div ref={containerRef}>
+      <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
         <DescriptionListGroup>
           <DescriptionListTerm>{props.label}</DescriptionListTerm>
           <DescriptionListDescription id={id}>
@@ -99,7 +101,7 @@ export function WizMultiSelect(props: WizMultiSelectProps) {
   }
 
   return (
-    <div ref={containerRef} id={id}>
+    <div ref={containerRef} id={id} data-is-review-outline-target={id === outlineId || undefined}>
       <WizFormGroup {...props}>
         <PfSelect
           onOpenChange={(isOpen) => {

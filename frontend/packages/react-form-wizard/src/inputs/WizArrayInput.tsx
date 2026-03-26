@@ -17,19 +17,40 @@ import {
 } from '@patternfly/react-core'
 import { ArrowDownIcon, ArrowUpIcon, ExclamationCircleIcon, PlusCircleIcon, TrashIcon } from '@patternfly/react-icons'
 import get from 'get-value'
-import { Fragment, ReactNode, useCallback, useContext, useMemo, useRef, useState } from 'react'
+import {
+  Fragment,
+  ReactNode,
+  RefObject,
+  useCallback,
+  useContext,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { WizTextDetail } from '..'
 import { FieldGroup } from '../components/FieldGroup'
 import { Indented } from '../components/Indented'
 import { LabelHelp } from '../components/LabelHelp'
 import { WizHelperText } from '../components/WizHelperText'
 import { useData } from '../contexts/DataContext'
+import { useBumpReviewDomTree } from '../contexts/ReviewDomTreeSyncContext'
+import { useReviewStepOutlineId } from '../ReviewStep'
 import { DisplayMode } from '../contexts/DisplayModeContext'
 import { ItemContext } from '../contexts/ItemContext'
 import { ShowValidationContext } from '../contexts/ShowValidationProvider'
 import { useStringContext } from '../contexts/StringContext'
 import { HasValidationErrorContext, ValidationProvider } from '../contexts/ValidationProvider'
-import { getCollapsedPlaceholder, InputCommonProps, useInput } from './Input'
+import {
+  getCollapsedPlaceholder,
+  InputCommonProps,
+  InputContainerElement,
+  InputReviewMeta,
+  useInput,
+  useValue,
+} from './Input'
+
+const WIZ_ARRAY_INSTANCE_LABEL_UNUSED_PATH = '__wizArrayInstanceLabel__'
 
 export function wizardArrayItems(props: any, item: any) {
   const id = props.id
@@ -60,6 +81,7 @@ export type WizArrayInputProps = Omit<InputCommonProps, 'path'> & {
 
 export function WizArrayInput(props: WizArrayInputProps) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const outlineId = useReviewStepOutlineId()
   const {
     displayMode: mode,
     value,
@@ -190,7 +212,12 @@ export function WizArrayInput(props: WizArrayInputProps) {
     )
   }
   return (
-    <div ref={containerRef} id={id} className="form-wizard-array-input">
+    <div
+      ref={containerRef}
+      id={id}
+      className="form-wizard-array-input"
+      data-is-review-outline-target={id === outlineId || undefined}
+    >
       {props.label && (
         <div style={{ paddingBottom: 8, paddingTop: 0 }}>
           {props.isSection ? (
@@ -284,6 +311,54 @@ export function WizArrayInput(props: WizArrayInputProps) {
   )
 }
 
+function ArrayInstanceReviewHost(props: {
+  value: object
+  instancePathSegment: string
+  pathLabelValue: unknown
+  collapsedContentProp: ReactNode
+  collapsedContentRevision: ReactNode
+  measureRootRef: RefObject<HTMLDivElement | null>
+  children: ReactNode
+}) {
+  const {
+    value,
+    instancePathSegment,
+    pathLabelValue,
+    collapsedContentProp,
+    collapsedContentRevision,
+    measureRootRef,
+    children,
+  } = props
+  const hostRef = useRef<HTMLDivElement>(null)
+  const bumpReviewDomTree = useBumpReviewDomTree()
+  useLayoutEffect(() => {
+    const el = hostRef.current
+    if (!el) return
+    const typed = el as InputContainerElement
+    const label = getArrayInstanceLabel(collapsedContentProp, pathLabelValue, measureRootRef.current)
+    typed.__reviewStepProps = {
+      path: instancePathSegment,
+      value,
+      label: label ?? '',
+      type: InputReviewMeta.ARRAY_INSTANCE,
+    }
+    bumpReviewDomTree?.()
+    return () => {
+      delete typed.__reviewStepProps
+      bumpReviewDomTree?.()
+    }
+  }, [
+    bumpReviewDomTree,
+    value,
+    instancePathSegment,
+    pathLabelValue,
+    collapsedContentProp,
+    collapsedContentRevision,
+    measureRootRef,
+  ])
+  return <div ref={hostRef}>{children}</div>
+}
+
 export function ArrayInputItem(props: {
   id: string
   value: object
@@ -302,6 +377,12 @@ export function ArrayInputItem(props: {
 }) {
   const { id, value, index, defaultExpanded, moveUp, moveDown, removeItem, count, required } = props
   const [expanded, setExpanded] = useState(defaultExpanded !== undefined ? defaultExpanded : true)
+
+  const collapsedContentPath =
+    typeof props.collapsedContent === 'string' ? props.collapsedContent : WIZ_ARRAY_INSTANCE_LABEL_UNUSED_PATH
+  const [pathLabelValue] = useValue({ path: collapsedContentPath, id: `${id}-${index}-array-instance-label` }, '')
+
+  const collapsedContentMeasureRef = useRef<HTMLDivElement>(null)
 
   const collapsedContent = useMemo(() => {
     return typeof props.collapsedContent === 'string' ? (
@@ -405,6 +486,22 @@ export function ArrayInputItem(props: {
                     />
                   }
                 >
+                  {typeof props.collapsedContent !== 'string' && (
+                    <div
+                      ref={collapsedContentMeasureRef}
+                      aria-hidden
+                      style={{
+                        position: 'absolute',
+                        width: 0,
+                        height: 0,
+                        overflow: 'hidden',
+                        clip: 'rect(0,0,0,0)',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {collapsedContent}
+                    </div>
+                  )}
                   <Split>
                     <SplitItem isFilled>
                       {expanded ? <Fragment>{expandedContent}</Fragment> : <Fragment>{collapsedContent}</Fragment>}
@@ -439,7 +536,16 @@ export function ArrayInputItem(props: {
                       )}
                     </SplitItem>
                   </Split>
-                  {props.children}
+                  <ArrayInstanceReviewHost
+                    value={value}
+                    instancePathSegment={String(index)}
+                    pathLabelValue={pathLabelValue}
+                    collapsedContentProp={props.collapsedContent}
+                    collapsedContentRevision={collapsedContent}
+                    measureRootRef={collapsedContentMeasureRef}
+                  >
+                    {props.children}
+                  </ArrayInstanceReviewHost>
                 </FieldGroup>
               </ItemContext.Provider>
             )}
@@ -448,4 +554,32 @@ export function ArrayInputItem(props: {
       </ShowValidationContext.Consumer>
     </ValidationProvider>
   )
+}
+
+function getText(node: Node): string | undefined {
+  if (node.nodeType === 3) {
+    return node.nodeValue ?? undefined
+  }
+  for (let i = 0; i < node.childNodes.length; i++) {
+    const found = getText(node.childNodes[i] as Node)
+    if (found !== undefined) return found
+  }
+  return undefined
+}
+
+function getArrayInstanceLabel(
+  collapsedContent: ReactNode | string,
+  pathValue: unknown,
+  measureRoot: HTMLElement | null
+): string | undefined {
+  if (typeof collapsedContent === 'string') {
+    if (pathValue != null && pathValue !== '') {
+      return String(pathValue)
+    }
+    return undefined
+  }
+  if (measureRoot) {
+    return getText(measureRoot) ?? undefined
+  }
+  return undefined
 }

@@ -10,14 +10,54 @@ import { useHasInputs, useSetHasInputs, useUpdateHasInputs } from '../contexts/H
 import { useHasValue, useSetHasValue } from '../contexts/HasValueProvider'
 import { ItemContext } from '../contexts/ItemContext'
 import { useShowValidation } from '../contexts/ShowValidationProvider'
+import { useBumpReviewDomTree } from '../contexts/ReviewDomTreeSyncContext'
 import { useStringContext } from '../contexts/StringContext'
 import { useHasValidationError, useSetHasValidationError, useValidate } from '../contexts/ValidationProvider'
 
 export type HiddenFn = (item: any) => boolean
 
 /** DOM nodes that carry wizard input metadata (e.g. for review / focus helpers). */
+export enum InputReviewMeta {
+  INPUT = 'input',
+  STEP = 'step',
+  ARRAY_INPUT = 'arrayInput',
+  ARRAY_INSTANCE = 'arrayInstance',
+}
+/** DOM metadata for review / focus: wizard step container vs. individual inputs. */
+export type InputReviewStepMeta =
+  | {
+      id: string
+      path: string
+      value: unknown
+      label?: string
+      error: string | undefined
+      type: InputReviewMeta.INPUT
+      /** Nearest enclosing wizard step `id` (set when building the review DOM tree). */
+      stepId?: string
+    }
+  | {
+      id: string
+      path: string
+      value: unknown
+      label?: string
+      error: string | undefined
+      type: InputReviewMeta.ARRAY_INPUT
+    }
+  | {
+      id: string
+      label?: string
+      type: InputReviewMeta.STEP
+    }
+  | {
+      /** Index segment within the parent array (`String(index)`); merged with parent ARRAY_INPUT path in the review DOM tree. */
+      path?: string
+      value: unknown
+      label?: string
+      type: InputReviewMeta.ARRAY_INSTANCE
+    }
+
 export type InputContainerElement = HTMLElement & {
-  __review?: { path: string; value: unknown; label?: string; error: string | undefined; isArrayInput?: boolean }
+  __reviewStepProps?: InputReviewStepMeta
 }
 
 export type InputCommonProps<ValueT = any> = {
@@ -105,6 +145,7 @@ export function useInput(
   options?: { isArrayInput?: boolean }
 ) {
   const { isArrayInput } = options ?? {}
+  const bumpReviewDomTree = useBumpReviewDomTree()
   const editMode = useEditMode()
   const displayMode = useDisplayMode()
   const [value, setValue] = useValue(props, '')
@@ -156,24 +197,21 @@ export function useInput(
     const el = containerRef?.current
     if (!el) return
     const typed = el as InputContainerElement
-    typed.__review = {
+    const type = isArrayInput ? InputReviewMeta.ARRAY_INPUT : InputReviewMeta.INPUT
+    typed.__reviewStepProps = {
+      id,
       path: props.path,
       value,
       label: props.label,
       error,
-      ...(isArrayInput !== undefined ? { isArrayInput } : {}),
+      type,
     }
+    bumpReviewDomTree?.()
     return () => {
-      delete typed.__review
+      delete typed.__reviewStepProps
+      bumpReviewDomTree?.()
     }
-  }, [containerRef, props.path, value, props.label, error, isArrayInput])
-  // const stepInputsRegistry = useStepInputsRegistry()
-  // const currentStepId = useContext(CurrentStepIdContext)
-  // useLayoutEffect(() => {
-  //   if (!stepInputsRegistry || currentStepId === undefined || hidden) return
-  //   stepInputsRegistry.register(currentStepId, id, { path: props.path, value, label: props.label, error })
-  //   return () => stepInputsRegistry.unregister(currentStepId, id)
-  // }, [stepInputsRegistry, currentStepId, hidden, id, props.path, value, props.label, error])
+  }, [bumpReviewDomTree, id, props.path, value, props.label, error, isArrayInput, containerRef])
 
   const hasValue = useHasValue()
   const setHasValue = useSetHasValue()
