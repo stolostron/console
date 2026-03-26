@@ -3,10 +3,10 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { CreatePreAuthorizedIdentity } from './CreatePreAuthorizedIdentity'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { ClaimMappings } from '~/resources/authentication'
 
-jest.mock('../../../lib/acm-i18next', () => ({
+jest.mock('../../lib/acm-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, opts?: Record<string, string>) => {
       if (opts) return Object.entries(opts).reduce((s, [k, v]) => s.replace(`{{${k}}}`, v), key)
@@ -15,7 +15,7 @@ jest.mock('../../../lib/acm-i18next', () => ({
   }),
 }))
 
-jest.mock('../../../shared-recoil', () => ({
+jest.mock('../../shared-recoil', () => ({
   useRecoilValue: jest.fn(),
   useSharedAtoms: jest.fn(),
 }))

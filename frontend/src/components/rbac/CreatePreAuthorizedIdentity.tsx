@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useContext } from 'react'
-import { useTranslation } from '../../../lib/acm-i18next'
-import { Group, User } from '../../../resources/rbac'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
-import { AcmToastContext } from '../../../ui-components/AcmAlert/AcmToast'
-import { CreateIdentityForm } from './CreateIdentityForm'
-import { CreateIdentityFormDirectAuthentication } from './CreateIdentityFormDirectAuthentication'
+import { useTranslation } from '../../lib/acm-i18next'
+import { Group, User } from '../../resources/rbac'
+import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { AcmToastContext } from '../../ui-components/AcmAlert/AcmToast'
+import { CreateIdentityForm } from '../../wizards/RoleAssignment/Identities/CreateIdentityForm'
+import { CreateIdentityFormDirectAuthentication } from '../../wizards/RoleAssignment/Identities/CreateIdentityFormDirectAuthentication'
 
 function getDescriptionText(t: ReturnType<typeof useTranslation>['t'], isDirectAuth: boolean, isUser: boolean): string {
   if (isDirectAuth) {

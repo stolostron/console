@@ -36,7 +36,7 @@ import {
   compareStrings,
   IAcmTableColumn,
 } from '../../../../../../ui-components'
-import { IdentitiesList } from '../../../../../../wizards/RoleAssignment/Identities/IdentitiesList'
+import { IdentitiesList } from '../../../../../../components/rbac/IdentitiesList'
 import { useClusterSetDetailsContext } from '../ClusterSetDetails'
 
 const addAccessModalIdentitiesClass = css({

@@ -3,12 +3,12 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { Group, User } from '../../../resources/rbac'
-import { useMergedGroups, useMergedUsers } from '../../../routes/UserManagement/Identities/useMergedIdentities'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { Group, User } from '../../resources/rbac'
+import { useMergedGroups, useMergedUsers } from '../../routes/UserManagement/Identities/useMergedIdentities'
+import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { IdentitiesList } from './IdentitiesList'
 
-jest.mock('../../../routes/UserManagement/Identities/useMergedIdentities', () => ({
+jest.mock('../../routes/UserManagement/Identities/useMergedIdentities', () => ({
   useMergedUsers: jest.fn(),
   useMergedGroups: jest.fn(),
 }))

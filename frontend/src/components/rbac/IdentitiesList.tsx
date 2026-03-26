@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ButtonVariant, PageSection, Tab, Tabs, TabTitleText, Title } from '@patternfly/react-core'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useTranslation } from '../../../lib/acm-i18next'
-import { Group, User } from '../../../resources/rbac'
-import { GroupsTable } from '../../../routes/UserManagement/Identities/Groups/GroupsTable'
-import { useMergedGroups, useMergedUsers } from '../../../routes/UserManagement/Identities/useMergedIdentities'
-import { UsersTable } from '../../../routes/UserManagement/Identities/Users/UsersTable'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
-import { IAcmTableButtonAction } from '../../../ui-components/AcmTable/AcmTableTypes'
+import { useTranslation } from '../../lib/acm-i18next'
+import { Group, User } from '../../resources/rbac'
+import { GroupsTable } from '../../routes/UserManagement/Identities/Groups/GroupsTable'
+import { useMergedGroups, useMergedUsers } from '../../routes/UserManagement/Identities/useMergedIdentities'
+import { UsersTable } from '../../routes/UserManagement/Identities/Users/UsersTable'
+import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { IAcmTableButtonAction } from '../../ui-components/AcmTable/AcmTableTypes'
 import { CreatePreAuthorizedIdentity } from './CreatePreAuthorizedIdentity'
 
 interface IdentitiesListProps {
