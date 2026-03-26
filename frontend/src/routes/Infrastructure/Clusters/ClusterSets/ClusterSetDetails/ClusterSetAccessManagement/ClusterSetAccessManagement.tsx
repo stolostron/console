@@ -167,7 +167,6 @@ export function ClusterSetAccessManagement() {
             refresh()
             setAddModalOpen(false)
           }}
-          clusterRoleBindings={clusterRoleBindings}
         />
         <AcmTable<ClusterRoleBinding>
           items={clusterRoleBindings}
@@ -254,7 +253,7 @@ export function ClusterSetAccessManagement() {
   )
 }
 
-function AddUsersModal(props: { isOpen: boolean; onClose: () => void; clusterRoleBindings?: ClusterRoleBinding[] }) {
+function AddUsersModal(props: { isOpen: boolean; onClose: () => void }) {
   const { t } = useTranslation()
   const { clusterSet } = useClusterSetDetailsContext()
   const [selectedIdentity, setSelectedIdentity] = useState<{ kind: 'User' | 'Group'; name: string } | undefined>()
@@ -306,7 +305,6 @@ function AddUsersModal(props: { isOpen: boolean; onClose: () => void; clusterRol
               <div className={addAccessModalIdentitiesClass}>
                 <IdentitiesList onUserSelect={handleUserSelect} onGroupSelect={handleGroupSelect} />
               </div>
-              &nbsp;
               <AcmSelect
                 id="role"
                 maxHeight="12em"
@@ -316,6 +314,7 @@ function AddUsersModal(props: { isOpen: boolean; onClose: () => void; clusterRol
                 placeholder={t('access.select.role')}
                 value={role}
                 onChange={(role) => setRole(role)}
+                style={{ marginTop: 'var(--pf-v5-global--spacer--md)' }}
               >
                 {clusterSet &&
                   getUserRoles().map((userRole) => (
