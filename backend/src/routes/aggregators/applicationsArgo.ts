@@ -21,12 +21,12 @@ import {
   type IArgoApplication,
   type IQuery,
   type ITransformedResource,
-  type ScoreColumn,
+  ScoreColumn,
   ScoreColumnSize,
   SEARCH_QUERY_LIMIT,
   StatusColumn,
 } from './applications'
-import { PushModelResourceEntry, PushModelResourceMap } from './applicationsPushModel'
+import type { PushModelResourceEntry, PushModelResourceMap } from './applicationsPushModel'
 import {
   cacheRemoteApps,
   getClusters,
@@ -37,10 +37,21 @@ import {
   getApplicationClusters,
   getTransform,
   computeDeployedPodStatuses,
+  computePodStatus,
 } from './utils'
 import { deflateResource } from '../../lib/compression'
-import { IWatchOptions } from '../../resources/watch-options'
+import type { IWatchOptions } from '../../resources/watch-options'
 import { computeAppHealthStatus, computeAppSyncStatus } from './utils'
+
+interface IArgoAppStatusResource {
+  group?: string
+  kind: string
+  name: string
+  namespace: string
+  version?: string
+  status?: string
+  health?: { status: string }
+}
 
 interface IArgoAppLocalResource extends IResource {
   spec: {

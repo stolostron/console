@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
-import { readdir, readFile, stat } from 'fs/promises'
-import { join } from 'path'
+import { readdir, readFile, stat } from 'node:fs/promises'
+import { join } from 'node:path'
 import type { SettingsEvent } from '../routes/events'
 import { watchFile } from './fileWatch'
 import { logger } from './logger'

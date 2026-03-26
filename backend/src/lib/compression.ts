@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import type { IResource } from './../resources/resource'
-import type { Readable, Transform } from 'stream'
-import { pipeline } from 'stream'
+import type { Readable, Transform } from 'node:stream'
+import { pipeline } from 'node:stream'
 import type { Zlib } from 'node:zlib'
 import {
   createBrotliCompress,

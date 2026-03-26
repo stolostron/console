@@ -2,7 +2,7 @@
 
 import get from 'get-value'
 import got, { CancelError, HTTPError, TimeoutError } from 'got'
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import pluralize from 'pluralize'
 import { pipeline } from 'node:stream/promises'
 import { Transform } from 'node:stream'

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import type { IncomingMessage } from 'http'
-import type { Http2ServerRequest, Http2ServerResponse } from 'http2'
-import { constants } from 'http2'
+import type { IncomingMessage } from 'node:http'
+import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
+import { constants } from 'node:http2'
 import rawBody from 'raw-body'
 import { getDecodeStream } from './compression'
 

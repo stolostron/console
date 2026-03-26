@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import type { Http2ServerRequest, Http2ServerResponse } from 'http2'
-import { constants } from 'http2'
+import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
+import { constants } from 'node:http2'
 import { parseCookies } from '../lib/cookies'
 import { fetchRetry } from '../lib/fetch-retry'
 import { unauthorized } from './respond'
 import { LocalStorage } from 'node-localstorage'
-import type { TLSSocket } from 'tls'
+import type { TLSSocket } from 'node:tls'
 
 const { HTTP2_HEADER_AUTHORIZATION } = constants
 

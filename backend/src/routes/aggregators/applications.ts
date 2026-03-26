@@ -18,7 +18,7 @@ import {
   getAppSetAppsMap,
   getAppSetPlacementData,
 } from './applicationsArgo'
-import { addPushModelPodQueryInputs, PushModelResourceMap } from './applicationsPushModel'
+import { addPushModelPodQueryInputs, type PushModelResourceMap } from './applicationsPushModel'
 import { getGiganticApps } from '../../lib/gigantic'
 import { createDictionary, inflateApps } from '../../lib/compression'
 import type { IWatchOptions } from '../../resources/watch-options'

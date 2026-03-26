@@ -52,6 +52,7 @@ export default defineConfig([{
         "@typescript-eslint/no-misused-promises": ["error", {
             checksVoidReturn: false,
         }],
-        "unicorn/new-for-builtins": "error"
+        "unicorn/new-for-builtins": "error",
+        "unicorn/prefer-node-protocol": "error"
     },
 }]);

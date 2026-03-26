@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import type { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import Fuse from 'fuse.js'
 import type { IResource } from '../resources/resource'
 import { getAuthorizedResources } from '../routes/events'
