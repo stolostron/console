@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 import { readdir, readFile, stat } from 'fs/promises'
 import { join } from 'path'
-import { SettingsEvent } from '../routes/events'
+import type { SettingsEvent } from '../routes/events'
 import { watchFile } from './fileWatch'
 import { logger } from './logger'
 import { ServerSideEvents } from './server-side-events'

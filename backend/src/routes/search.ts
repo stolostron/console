@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { constants, Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders } from 'http2'
+import type { Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders } from 'http2'
+import { constants } from 'http2'
 import { request } from 'https'
 import { pipeline } from 'stream'
 import { logger } from '../lib/logger'

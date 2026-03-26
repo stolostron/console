@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { constants } from 'http2'
-import { Agent } from 'https'
-import { HeadersInit } from 'node-fetch'
+import type { Agent } from 'https'
+import type { HeadersInit } from 'node-fetch'
 import { fetchRetry } from './fetch-retry'
-import { IResource } from '../resources/resource'
+import type { IResource } from '../resources/resource'
 import { join } from 'path'
 import pluralize from 'pluralize'
 

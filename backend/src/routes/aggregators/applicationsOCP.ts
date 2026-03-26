@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { logger } from '../../lib/logger'
-import { IResource, ISearchResource, SearchResult } from '../../resources/resource'
+import type { IResource, ISearchResource, SearchResult } from '../../resources/resource'
 import { getKubeResources, getHubClusterName } from '../events'
 import {
   AppColumns,
-  ApplicationCacheType,
-  ApplicationClusterStatusMap,
-  ApplicationStatuses,
-  IQuery,
+  type ApplicationCacheType,
+  type ApplicationClusterStatusMap,
+  type ApplicationStatuses,
+  type IQuery,
   ScoreColumnSize,
   SEARCH_QUERY_LIMIT,
 } from './applications'
@@ -15,7 +15,7 @@ import { appOwnerLabels, computeDeployedPodStatuses, getAppNameFromLabel } from 
 import {
   transform,
   getClusterMap,
-  ApplicationPageChunk,
+  type ApplicationPageChunk,
   getNextApplicationPageChunk,
   cacheRemoteApps,
   getApplicationType,

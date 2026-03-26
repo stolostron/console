@@ -1,6 +1,8 @@
-import { Http2ServerRequest, Http2ServerResponse, constants } from 'http2'
+import type { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { constants } from 'http2'
 /* Copyright Contributors to the Open Cluster Management project */
-import { Stats, createReadStream } from 'fs'
+import type { Stats } from 'fs'
+import { createReadStream } from 'fs'
 
 import { extname } from 'path'
 import { logger } from '../lib/logger'

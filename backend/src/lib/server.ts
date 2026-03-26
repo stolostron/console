@@ -1,16 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
 import { readFileSync } from 'fs'
-import {
-  constants,
-  createSecureServer,
-  createServer,
-  Http2Server,
-  Http2ServerRequest,
-  Http2ServerResponse,
-} from 'http2'
-import { Socket } from 'net'
-import { TLSSocket } from 'tls'
+import type { Http2Server, Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { constants, createSecureServer, createServer } from 'http2'
+import type { Socket } from 'net'
+import type { TLSSocket } from 'tls'
 import { logger } from './logger'
 import { managedClusterProxy } from '../routes/managedClusterProxy'
 

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import got, { HTTPError, TimeoutError } from 'got'
-import { getCiphers, SecureContextOptions, SecureVersion } from 'node:tls'
+import { getCiphers, type SecureContextOptions, type SecureVersion } from 'node:tls'
 import { pipeline } from 'node:stream/promises'
 import { Transform } from 'node:stream'
 import { logger } from './logger'

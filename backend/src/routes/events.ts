@@ -9,13 +9,13 @@ import { Transform } from 'node:stream'
 import { createDictionary, deflateResource, inflateResource } from '../lib/compression'
 import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
-import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
+import { type ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
 import { getCACertificate, getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
-import { IResource } from '../resources/resource'
-import { IWatchOptions } from '../resources/watch-options'
+import type { IResource } from '../resources/resource'
+import type { IWatchOptions } from '../resources/watch-options'
 import { polledAggregation } from './aggregator'
-import { getAppDict, ICompressedResource, ITransformedResource } from './aggregators/applications'
+import { getAppDict, type ICompressedResource, type ITransformedResource } from './aggregators/applications'
 
 export async function events(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   const token = await getAuthenticatedToken(req, res)
