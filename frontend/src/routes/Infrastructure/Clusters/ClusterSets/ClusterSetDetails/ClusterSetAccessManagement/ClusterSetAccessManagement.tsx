@@ -267,8 +267,9 @@ function AddUsersModal(props: { isOpen: boolean; onClose: () => void; clusterRol
   }
 
   const setIdentity = (kind: 'User' | 'Group', name?: string) => {
-    if (!name) return
-    setSelectedIdentity({ kind, name })
+    if (name) {
+      setSelectedIdentity({ kind, name })
+    }
   }
 
   const handleUserSelect = (user: User) => setIdentity('User', user.metadata.name)
@@ -332,33 +333,33 @@ function AddUsersModal(props: { isOpen: boolean; onClose: () => void; clusterRol
                   processingLabel={t('adding')}
                   isDisabled={!selectedIdentity || !role}
                   onClick={() => {
-                    if (!selectedIdentity || !role) return
-
-                    alertContext.clearAlerts()
-                    const resource: ClusterRoleBinding = {
-                      apiVersion: RbacApiVersion,
-                      kind: ClusterRoleBindingKind,
-                      metadata: {
-                        generateName: `${clusterSet?.metadata.name}-`,
-                      },
-                      subjects: [
-                        {
-                          kind: selectedIdentity.kind,
-                          apiGroup: 'rbac.authorization.k8s.io',
-                          name: selectedIdentity.name,
+                    if (selectedIdentity && role) {
+                      alertContext.clearAlerts()
+                      const resource: ClusterRoleBinding = {
+                        apiVersion: RbacApiVersion,
+                        kind: ClusterRoleBindingKind,
+                        metadata: {
+                          generateName: `${clusterSet?.metadata.name}-`,
                         },
-                      ],
-                      roleRef: {
-                        apiGroup: 'rbac.authorization.k8s.io',
-                        kind: ClusterRoleKind,
-                        name: role,
-                      },
+                        subjects: [
+                          {
+                            kind: selectedIdentity.kind,
+                            apiGroup: 'rbac.authorization.k8s.io',
+                            name: selectedIdentity.name,
+                          },
+                        ],
+                        roleRef: {
+                          apiGroup: 'rbac.authorization.k8s.io',
+                          kind: ClusterRoleKind,
+                          name: role,
+                        },
+                      }
+                      return createResource(resource)
+                        .promise.then(() => reset())
+                        .catch((err) => {
+                          alertContext.addAlert(getErrorInfo(err, t))
+                        })
                     }
-                    return createResource(resource)
-                      .promise.then(() => reset())
-                      .catch((err) => {
-                        alertContext.addAlert(getErrorInfo(err, t))
-                      })
                   }}
                 />
                 <AcmButton key="cancel" variant="link" onClick={reset}>
