@@ -21,7 +21,7 @@ jest.mock('../../shared-recoil', () => ({
 }))
 
 const mockAddAlert = jest.fn()
-jest.mock('../../../ui-components/AcmAlert/AcmToast', () => ({
+jest.mock('../../ui-components/AcmAlert/AcmToast', () => ({
   AcmToastContext: {
     _currentValue: { addAlert: jest.fn() },
     Provider: ({ children }: any) => children,
@@ -29,7 +29,7 @@ jest.mock('../../../ui-components/AcmAlert/AcmToast', () => ({
   },
 }))
 
-jest.mock('./CreateIdentityForm', () => ({
+jest.mock('../../wizards/RoleAssignment/Identities/CreateIdentityForm', () => ({
   CreateIdentityForm: ({ subjectKind, saveButtonText, cancelButtonText, onCancel, onSuccess, onError }: any) => {
     const mockUser = { metadata: { name: 'created-user', uid: 'uid-1' } }
     const mockGroup = { metadata: { name: 'created-group', uid: 'uid-2' }, users: [] }
@@ -44,7 +44,7 @@ jest.mock('./CreateIdentityForm', () => ({
   },
 }))
 
-jest.mock('./CreateIdentityFormDirectAuthentication', () => ({
+jest.mock('../../wizards/RoleAssignment/Identities/CreateIdentityFormDirectAuthentication', () => ({
   CreateIdentityFormDirectAuthentication: ({
     subjectKind,
     saveButtonText,

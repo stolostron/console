@@ -77,7 +77,7 @@ jest.mock('./Roles/RolesList', () => ({
 }))
 
 const mockIdentitiesList = jest.fn()
-jest.mock('./Identities/IdentitiesList', () => ({
+jest.mock('./Identities', () => ({
   IdentitiesList: (props: any) => {
     mockIdentitiesList(props)
     return (

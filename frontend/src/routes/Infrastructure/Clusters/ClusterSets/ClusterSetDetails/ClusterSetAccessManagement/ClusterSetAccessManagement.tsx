@@ -265,14 +265,13 @@ function AddUsersModal(props: { isOpen: boolean; onClose: () => void }) {
     props.onClose()
   }
 
-  const setIdentity = (kind: 'User' | 'Group', name?: string) => {
-    if (name) {
-      setSelectedIdentity({ kind, name })
-    }
+  const handleUserSelect = (user: User) => {
+    setSelectedIdentity({ kind: 'User', name: user.metadata.name! })
   }
 
-  const handleUserSelect = (user: User) => setIdentity('User', user.metadata.name)
-  const handleGroupSelect = (group: Group) => setIdentity('Group', group.metadata.name)
+  const handleGroupSelect = (group: Group) => {
+    setSelectedIdentity({ kind: 'Group', name: group.metadata.name! })
+  }
 
   const roles = [
     {
@@ -303,7 +302,11 @@ function AddUsersModal(props: { isOpen: boolean; onClose: () => void }) {
           {(alertContext) => (
             <>
               <div className={addAccessModalIdentitiesClass}>
-                <IdentitiesList onUserSelect={handleUserSelect} onGroupSelect={handleGroupSelect} />
+                <IdentitiesList
+                  onUserSelect={handleUserSelect}
+                  onGroupSelect={handleGroupSelect}
+                  initialSelectedIdentity={selectedIdentity}
+                />
               </div>
               <AcmSelect
                 id="role"
