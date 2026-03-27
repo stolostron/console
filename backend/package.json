@@ -7,7 +7,7 @@
     "start": "NODE_ENV=development nodemon --watch './**/*.ts' --exec 'node --inspect --experimental-transform-types --import extensionless/register src/lib/main.ts' | pino-zen -r msg=6 -d fields -d labels -d apiVersion -e error",
     "postinstall": "[ ! -d ./certs ] && npm run generate-certs || true",
     "generate-certs": "mkdir -p certs && openssl req -subj '/C=US' -new -newkey rsa:2048 -sha256 -days 365 -nodes -x509 -keyout certs/tls.key -out certs/tls.crt",
-    "build": "tsc --sourceMap false --declaration false && npx rollup --format es --file backend.mjs -- build/lib/main.js",
+    "build": "tsc -p tsconfig.build.json --sourceMap false --declaration false && npx rollup --format es --file backend.mjs -- build/lib/main.js",
     "tsc": "tsc --noEmit",
     "clean": "rm -rf coverage build",
     "check": "npm run prettier && npm run lint && npm run tsc",
