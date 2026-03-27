@@ -16,7 +16,7 @@ import {
   stopWatching,
 } from '../../src/routes/events'
 import * as serviceAccountTokenModule from '../../src/lib/serviceAccountToken'
-import { IArgoApplication, IResource } from '../../src/resources/resource'
+import type { IArgoApplication, IResource } from '../../src/resources/resource'
 import { ServerSideEvents } from '../../src/lib/server-side-events'
 
 jest.mock('../../src/lib/serviceAccountToken')

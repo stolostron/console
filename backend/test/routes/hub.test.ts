@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import nock from 'nock'
 import { parsePipedJsonBody } from '../../src/lib/body-parser'
-import { IResource } from '../../src/resources/resource'
+import type { IResource } from '../../src/resources/resource'
 import { cacheResource, resetResourceCache } from '../../src/routes/events'
 import { request } from '../mock-request'
 

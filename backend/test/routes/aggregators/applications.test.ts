@@ -19,12 +19,12 @@ import {
   getStatusFilterKey,
   addUIData,
   AppColumns,
-  ICompressedResource,
-  ApplicationScoresMap,
+  type ICompressedResource,
+  type ApplicationScoresMap,
   stopAggregatingApplications,
 } from '../../../src/routes/aggregators/applications'
 import { cacheResource } from '../../../src/routes/events'
-import { IResource } from '../../../src/resources/resource'
+import type { IResource } from '../../../src/resources/resource'
 import { getSearchResults } from '../../../src/lib/search'
 
 // Get the mocked function

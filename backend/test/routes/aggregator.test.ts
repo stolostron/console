@@ -17,7 +17,7 @@ import { resetMultiClusterHubCache } from '../../src/lib/multi-cluster-hub'
 import { resetMultiClusterEngineCache } from '../../src/lib/multi-cluster-engine'
 import { ServerSideEvents } from '../../src/lib/server-side-events'
 import { polledAggregation } from '../../src/routes/aggregator'
-import { IResource } from '../../src/resources/resource'
+import type { IResource } from '../../src/resources/resource'
 
 /// to get exact nock request body, put bp at line 303 in /backend/node_modules/nock/lib/intercepted_request_router.js
 describe(`aggregator Route`, function () {

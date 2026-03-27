@@ -77,7 +77,10 @@
       "^.+\\.[jt]sx?$": [
         "ts-jest",
         {
-          "useESM": true
+          "useESM": true,
+          "tsconfig": {
+            "verbatimModuleSyntax": false
+          }
         }
       ]
     },
