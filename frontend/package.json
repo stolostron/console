@@ -214,11 +214,6 @@
     "webpack-cli": "4.10.0",
     "webpack-dev-server": "^4.15.2"
   },
-  "overrides": {
-    "@openshift-assisted/ui-lib": {
-      "monaco-editor": "^0.34.1"
-    }
-  },
   "browserslist": {
     "production": [
       ">0.2%",
