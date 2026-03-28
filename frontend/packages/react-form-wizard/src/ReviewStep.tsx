@@ -1,5 +1,28 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { createContext, ReactNode, RefObject, useCallback, useContext, useLayoutEffect, useRef, useState } from 'react'
+import {
+  DescriptionList,
+  DescriptionListDescription,
+  DescriptionListGroup,
+  DescriptionListTerm,
+  ExpandableSection,
+  Split,
+  SplitItem,
+  Stack,
+  Title,
+} from '@patternfly/react-core'
+import { ExclamationCircleIcon } from '@patternfly/react-icons'
+import {
+  createContext,
+  Fragment,
+  type ComponentProps,
+  type ReactNode,
+  type RefObject,
+  useCallback,
+  useContext,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react'
 import { useReviewDomTreeVersion } from './contexts/ReviewDomTreeSyncContext'
 import { useStringContext } from './contexts/StringContext'
 import { InputContainerElement, InputReviewMeta, InputReviewStepMeta } from './inputs/Input'
@@ -23,6 +46,63 @@ export type WizardDomTreeNode =
   | (Omit<InputOrArrayInputMeta, 'type'> & { type: InputReviewMeta.ARRAY_INPUT; children?: WizardDomTreeNode[] })
   | (Extract<InputReviewStepMeta, { type: InputReviewMeta.ARRAY_INSTANCE }> & { children?: WizardDomTreeNode[] })
   | { children?: WizardDomTreeNode[] }
+
+/** Top-level review sections: either `{ children: [...] }` from multiple roots, or a single tree node. */
+function getWizardDomTreeRootChildren(root: WizardDomTreeNode | null): WizardDomTreeNode[] {
+  if (!root || Object.keys(root).length === 0) return []
+  const keys = Object.keys(root)
+  if (keys.length === 1 && keys[0] === 'children') {
+    return root.children ?? []
+  }
+  return [root]
+}
+
+function reviewNodeLabel(node: WizardDomTreeNode): string {
+  if ('label' in node && node.label) return node.label
+  if (!('type' in node)) return ''
+  switch (node.type) {
+    case InputReviewMeta.STEP:
+      return node.id
+    case InputReviewMeta.INPUT:
+    case InputReviewMeta.ARRAY_INPUT:
+      return node.path
+    case InputReviewMeta.ARRAY_INSTANCE:
+      return node.path ?? ''
+    default:
+      return ''
+  }
+}
+
+function reviewNodeKey(node: WizardDomTreeNode, index: number): string {
+  if (!('type' in node)) return `node-${index}`
+  switch (node.type) {
+    case InputReviewMeta.INPUT:
+      return `input-${node.path}`
+    case InputReviewMeta.STEP:
+      return `step-${node.id}`
+    case InputReviewMeta.ARRAY_INPUT:
+      return `array-${node.path}`
+    case InputReviewMeta.ARRAY_INSTANCE:
+      return `inst-${node.path ?? index}`
+    default:
+      return `node-${index}`
+  }
+}
+
+function ToggleContent(props: { label: string }) {
+  return (
+    <div className="wizard-review-toggle-row">
+      <Split hasGutter>
+        <SplitItem isFilled>{props.label}</SplitItem>
+      </Split>
+    </div>
+  )
+}
+
+export interface ReviewExpandableSectionProps {
+  label: string
+  children?: ReactNode
+}
 
 const ReviewStepOutlineIdContext = createContext('')
 
@@ -54,9 +134,10 @@ export function useSetReviewStepOutlineId(): (id: string) => void {
 export function ReviewStep({ wizardRef }: ReviewStepProps) {
   const { reviewLabel } = useStringContext()
   const reviewDomTreeVersion = useReviewDomTreeVersion()
-  const outlineId = useReviewStepOutlineId()
+  useReviewStepOutlineId()
   const setOutlineId = useSetReviewStepOutlineId()
   const wizardDomTreeRef = useRef<WizardDomTreeNode | null>(null)
+  const [wizardDomTree, setWizardDomTree] = useState<WizardDomTreeNode | null>(null)
   useLayoutEffect(() => {
     setOutlineId('123')
     return () => setOutlineId('')
@@ -66,133 +147,55 @@ export function ReviewStep({ wizardRef }: ReviewStepProps) {
     if (!root) return
     const treeData = buildTree(root)
     wizardDomTreeRef.current = treeData
+    setWizardDomTree(treeData)
   }, [wizardRef, reviewDomTreeVersion])
+
+  const sectionRoots = getWizardDomTreeRootChildren(wizardDomTree)
 
   return (
     <Step label={reviewLabel} id="review">
-      <div
-        style={{ outline: outlineId ? '2px solid blue' : undefined }}
-        data-review-outline-id={outlineId || undefined}
-      >
-        <h3>{reviewLabel}</h3>
-      </div>
-      {/* {Children.map(children, (child, index) => {
-        if (!isValidElement(child) || typeof (child.props as StepProps).label !== 'string') {
-          return child
-        }
-        const stepId = (child.props as StepProps).id
-        const entries = stepId ? inputsByStepId.get(stepId) ?? [] : []
-        const reviewEntries = entries.filter((e) => !!e.error || !isStepInputValueEmpty(e.value))
-        const label = (child.props as StepProps).label
-        return (
-          <ReviewExpandableSection
-            key={index}
-            label={label}
-            entries={reviewEntries}
-            wizardDomTreeRef={wizardDomTreeRef}
-          >
-            <DescriptionList
-              isHorizontal
-              horizontalTermWidthModifier={{
-                default: '12ch',
-                sm: '15ch',
-                md: '20ch',
-                lg: '28ch',
-                xl: '30ch',
-                '2xl': '35ch',
-              }}
-              style={{ paddingLeft: 32, paddingBottom: 16, paddingRight: 16 }}
-            >
-              {entries.length > 0
-                ? entries.map((entry) => (
-                    <DescriptionListGroup key={entry.path}>
-                      <DescriptionListTerm>
-                        {entry.label ?? entry.path}
-                        {entry.error && isStepInputValueEmpty(entry.value) ? reviewAlertIndicator(entry.error) : null}
-                      </DescriptionListTerm>
-                      <DescriptionListDescription>
-                        {formatStepInputValue(entry.value)}
-                        {entry.error && !isStepInputValueEmpty(entry.value) ? reviewAlertIndicator(entry.error) : null}
-                      </DescriptionListDescription>
-                    </DescriptionListGroup>
-                  ))
-                : child}
-            </DescriptionList>
+      <Stack hasGutter>
+        {sectionRoots.map((child, index) => (
+          <ReviewExpandableSection key={reviewNodeKey(child, index)} label={reviewNodeLabel(child)}>
+            <ReviewSectionBody node={child} />
           </ReviewExpandableSection>
-        )
-      })} */}
+        ))}
+      </Stack>
     </Step>
   )
 }
 
-// function ReviewExpandableSection(props: {
-//   label: string
-//   entries: readonly InputReviewStepMeta[]
-//   children: ReactNode
-//   wizardDomTreeRef: RefObject<WizardDomTreeNode | null>
-// }) {
-//   const { label, entries, children, wizardDomTreeRef } = props
-//   const [isExpanded, setIsExpanded] = useState(false)
-
-//   return (
-//     <ExpandableSection
-//       className="wizard-review-expandable-section"
-//       isExpanded={isExpanded}
-//       onToggle={(_event, expanded) => setIsExpanded(expanded)}
-//       toggleContent={
-//         isExpanded ? (
-//           <Title
-//             headingLevel="h3"
-//             style={{
-//               color: 'var(--pf-t--global--text--color--regular)',
-//             }}
-//           >
-//             {label}
-//           </Title>
-//         ) : (
-//           <ToggleContent label={label} entries={entries} wizardDomTreeRef={wizardDomTreeRef} />
-//         )
-//       }
-//     >
-//       {children}
-//     </ExpandableSection>
-//   )
-// }
-// const reviewAlertIndicatorMarginStyle = {
-//   marginLeft: 'var(--pf-t--global--spacer--xs)',
-//   verticalAlign: 'middle' as const,
-// }
-
-// function reviewAlertIndicator(content: string): ReactNode {
-//   return (
-//     <Tooltip content={content}>
-//       <Button type="button" variant="plain" isInline aria-label={content} style={reviewAlertIndicatorMarginStyle}>
-//         <Icon status="danger">
-//           <ExclamationCircleIcon />
-//         </Icon>
-//       </Button>
-//     </Tooltip>
-//   )
-// }
-
-// function isStepInputValueEmpty(value: unknown): boolean {
-//   if (value === null || value === undefined) return true
-//   if (typeof value === 'string') return value.trim() === ''
-//   if (Array.isArray(value)) return value.length === 0
-//   if (typeof value === 'object') return Object.keys(value as object).length === 0
-//   return false
-// }
-
-// function formatStepInputValue(value: unknown): string {
-//   if (value === null || value === undefined) return '—'
-//   if (typeof value === 'string') return value
-//   if (typeof value === 'number' || typeof value === 'boolean') return String(value)
-//   try {
-//     return JSON.stringify(value)
-//   } catch {
-//     return String(value)
-//   }
-// }
+/** PatternFly {@link ExpandableSection} with review-step toggle: {@link Title} when expanded, {@link ToggleContent} when collapsed. */
+export function ReviewExpandableSection(props: ReviewExpandableSectionProps) {
+  const [isExpanded, setIsExpanded] = useState(true)
+  const onToggle = (_event: React.MouseEvent, expanded: boolean) => {
+    setIsExpanded(expanded)
+  }
+  const { label, children } = props
+  return (
+    <ExpandableSection
+      className="wizard-review-expandable-section"
+      isExpanded={isExpanded}
+      onToggle={onToggle}
+      toggleContent={
+        isExpanded ? (
+          <Title
+            headingLevel="h2"
+            style={{
+              color: 'var(--pf-t--global--text--color--regular)',
+            }}
+          >
+            {label}
+          </Title>
+        ) : (
+          <ToggleContent label={label} />
+        )
+      }
+    >
+      {children}
+    </ExpandableSection>
+  )
+}
 
 export function buildTree(element: Element): WizardDomTreeNode {
   const nodes = buildReviewSubtree(element)
@@ -256,4 +259,248 @@ function buildReviewSubtree(
     out.push(...buildReviewSubtree(element.children[i]!, parentStepId, reviewPathPrefixSegments))
   }
   return out
+}
+
+type HorizontalTermWidthModifier = NonNullable<ComponentProps<typeof DescriptionList>['horizontalTermWidthModifier']>
+
+const REVIEW_HORIZONTAL_TERM_WIDTH_COMPACT: HorizontalTermWidthModifier = {
+  default: '12ch',
+  sm: '15ch',
+  md: '20ch',
+  lg: '28ch',
+  xl: '30ch',
+  '2xl': '35ch',
+}
+
+const REVIEW_HORIZONTAL_TERM_WIDTH_WIDE: HorizontalTermWidthModifier = {
+  default: '24ch',
+  sm: '30ch',
+  md: '40ch',
+  lg: '56ch',
+  xl: '60ch',
+  '2xl': '70ch',
+}
+
+function horizontalTermWidthModifierForInputRun(nodes: readonly WizardInputDomNode[]): HorizontalTermWidthModifier {
+  let maxLen = 0
+  for (const n of nodes) {
+    const termText = n.label ?? n.path
+    maxLen = Math.max(maxLen, termText.length)
+  }
+  return maxLen < 64 ? REVIEW_HORIZONTAL_TERM_WIDTH_COMPACT : REVIEW_HORIZONTAL_TERM_WIDTH_WIDE
+}
+
+type WizardInputDomNode = Extract<WizardDomTreeNode, { type: InputReviewMeta.INPUT }>
+
+function isReviewInputNode(node: WizardDomTreeNode): node is WizardInputDomNode {
+  return 'type' in node && node.type === InputReviewMeta.INPUT
+}
+
+function isReviewArrayInputNode(
+  node: WizardDomTreeNode
+): node is Extract<WizardDomTreeNode, { type: InputReviewMeta.ARRAY_INPUT }> {
+  return 'type' in node && node.type === InputReviewMeta.ARRAY_INPUT
+}
+
+function isReviewStepNode(node: WizardDomTreeNode): node is Extract<WizardDomTreeNode, { type: InputReviewMeta.STEP }> {
+  return 'type' in node && node.type === InputReviewMeta.STEP
+}
+
+function isReviewArrayInstanceNode(
+  node: WizardDomTreeNode
+): node is Extract<WizardDomTreeNode, { type: InputReviewMeta.ARRAY_INSTANCE }> {
+  return 'type' in node && node.type === InputReviewMeta.ARRAY_INSTANCE
+}
+
+function getReviewSectionBodyNodes(node: WizardDomTreeNode): WizardDomTreeNode[] {
+  if (!('type' in node)) {
+    return node.children ?? []
+  }
+  if (node.type === InputReviewMeta.STEP) {
+    return node.children ?? []
+  }
+  return [node]
+}
+
+function formatReviewValue(value: unknown): string {
+  if (value === undefined || value === null) return ''
+  if (typeof value === 'string') return value
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value)
+  try {
+    return JSON.stringify(value)
+  } catch {
+    return String(value)
+  }
+}
+
+function isReviewValueUnset(value: unknown): boolean {
+  if (value === undefined || value === null) return true
+  if (typeof value === 'string' && value === '') return true
+  if (Array.isArray(value) && value.length === 0) return true
+  return false
+}
+
+const REVIEW_ERROR_TEXT_COLOR = 'var(--pf-t--global--text--color--status--danger--default)'
+
+type ReviewRenderCtx = {
+  inputGroupMarginLeft: number
+  /** Number of nested ARRAY_INPUT ancestors; top-level array body uses 0. */
+  arrayInputNesting: number
+}
+
+function renderReviewInputDescriptionContent(node: WizardInputDomNode): ReactNode {
+  if (node.error) {
+    return <span style={{ color: REVIEW_ERROR_TEXT_COLOR, fontStyle: 'italic' }}>{node.error}</span>
+  }
+  if (!isReviewValueUnset(node.value)) {
+    return formatReviewValue(node.value)
+  }
+  return <span style={{ fontStyle: 'italic' }}>{'<not set>'}</span>
+}
+
+function renderReviewInputRows(nodes: readonly WizardInputDomNode[], ctx: ReviewRenderCtx): ReactNode {
+  const mod = horizontalTermWidthModifierForInputRun(nodes)
+  return (
+    <DescriptionList key={`dl-${nodes[0]!.path}`} isHorizontal horizontalTermWidthModifier={mod}>
+      <DescriptionListGroup key={nodes[0]!.path} style={{ marginLeft: ctx.inputGroupMarginLeft }}>
+        {nodes.map((inputNode) => {
+          const termText = inputNode.label ?? inputNode.path
+          return (
+            <Fragment key={inputNode.path}>
+              <DescriptionListTerm>{termText}</DescriptionListTerm>
+              <DescriptionListDescription>
+                {inputNode.error ? (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                    {renderReviewInputDescriptionContent(inputNode)}
+                    <ExclamationCircleIcon color={REVIEW_ERROR_TEXT_COLOR} />
+                  </span>
+                ) : (
+                  renderReviewInputDescriptionContent(inputNode)
+                )}
+              </DescriptionListDescription>
+            </Fragment>
+          )
+        })}
+      </DescriptionListGroup>
+    </DescriptionList>
+  )
+}
+
+function shouldShowArrayInstanceTitle(
+  node: Extract<WizardDomTreeNode, { type: InputReviewMeta.ARRAY_INSTANCE }>
+): boolean {
+  if (!node.label) return false
+  if (node.path !== undefined && node.path !== '' && node.label === node.path) return false
+  return true
+}
+
+function renderReviewNodeSequence(
+  nodes: WizardDomTreeNode[],
+  ctx: ReviewRenderCtx,
+  afterDescriptionListGroup: boolean
+): ReactNode[] {
+  const out: ReactNode[] = []
+  let i = 0
+  let precedingDlGroup = afterDescriptionListGroup
+  while (i < nodes.length) {
+    const n = nodes[i]!
+    if (isReviewInputNode(n)) {
+      const run: WizardInputDomNode[] = []
+      while (i < nodes.length && isReviewInputNode(nodes[i]!)) {
+        run.push(nodes[i] as WizardInputDomNode)
+        i++
+      }
+      out.push(renderReviewInputRows(run, ctx))
+      precedingDlGroup = true
+      continue
+    }
+    if (isReviewArrayInputNode(n)) {
+      out.push(renderReviewArrayInputSection(n, ctx, precedingDlGroup))
+      precedingDlGroup = false
+      i++
+      continue
+    }
+    if (isReviewStepNode(n) || !('type' in n)) {
+      const inner = n.children ?? []
+      out.push(
+        <Fragment key={isReviewStepNode(n) ? `step-${n.id}` : 'children-wrap'}>
+          {renderReviewNodeSequence(inner, ctx, precedingDlGroup)}
+        </Fragment>
+      )
+      precedingDlGroup = false
+      i++
+      continue
+    }
+    if (isReviewArrayInstanceNode(n)) {
+      out.push(renderReviewArrayInstanceContainer(n, ctx, precedingDlGroup, undefined, i))
+      precedingDlGroup = false
+      i++
+      continue
+    }
+    i++
+  }
+  return out
+}
+
+function renderReviewArrayInputSection(
+  node: Extract<WizardDomTreeNode, { type: InputReviewMeta.ARRAY_INPUT }>,
+  ctx: ReviewRenderCtx,
+  afterDescriptionListGroup: boolean
+): ReactNode {
+  const children = node.children ?? []
+  const marginLeft = 32 * (ctx.arrayInputNesting + 1)
+  return (
+    <Fragment key={`array-${node.path}`}>
+      {children.map((child, index) =>
+        renderReviewArrayInstanceContainer(child, ctx, afterDescriptionListGroup && index === 0, marginLeft, index)
+      )}
+    </Fragment>
+  )
+}
+
+function renderReviewArrayInstanceContainer(
+  node: WizardDomTreeNode,
+  ctx: ReviewRenderCtx,
+  addTopMarginAfterDl: boolean,
+  /** When omitted, derived from ctx.arrayInputNesting */
+  marginLeftOverride?: number,
+  instanceIndex = 0
+): ReactNode {
+  const marginLeft = marginLeftOverride ?? 32 * (ctx.arrayInputNesting + 1)
+  const innerCtx: ReviewRenderCtx = {
+    inputGroupMarginLeft: 8,
+    arrayInputNesting: ctx.arrayInputNesting + 1,
+  }
+  const key = reviewNodeKey(node, instanceIndex)
+  const showTitle = isReviewArrayInstanceNode(node) && shouldShowArrayInstanceTitle(node)
+
+  return (
+    <div
+      key={key}
+      style={{
+        marginLeft,
+        marginBottom: 32,
+        marginTop: addTopMarginAfterDl ? 32 : undefined,
+        paddingLeft: 12,
+        borderLeft: '3px solid var(--pf-t--global--border--color--200, #d2d2d2)',
+      }}
+    >
+      {showTitle ? (
+        <Title headingLevel="h4" style={{ marginBottom: 16 }}>
+          {node.label}
+        </Title>
+      ) : null}
+      {renderReviewNodeSequence(node.children ?? [], innerCtx, false)}
+    </div>
+  )
+}
+
+/** Renders review content for one wizard section from a {@link WizardDomTreeNode} (step root or wrapper). */
+export function ReviewSectionBody(props: { node: WizardDomTreeNode }) {
+  const bodyNodes = getReviewSectionBodyNodes(props.node)
+  return (
+    <Fragment>
+      {renderReviewNodeSequence(bodyNodes, { inputGroupMarginLeft: 32, arrayInputNesting: 0 }, false)}
+    </Fragment>
+  )
 }

@@ -556,17 +556,6 @@ export function ArrayInputItem(props: {
   )
 }
 
-function getText(node: Node): string | undefined {
-  if (node.nodeType === 3) {
-    return node.nodeValue ?? undefined
-  }
-  for (let i = 0; i < node.childNodes.length; i++) {
-    const found = getText(node.childNodes[i] as Node)
-    if (found !== undefined) return found
-  }
-  return undefined
-}
-
 function getArrayInstanceLabel(
   collapsedContent: ReactNode | string,
   pathValue: unknown,
@@ -579,7 +568,9 @@ function getArrayInstanceLabel(
     return undefined
   }
   if (measureRoot) {
-    return getText(measureRoot) ?? undefined
+    const text = measureRoot.textContent
+    if (text == null) return undefined
+    return text.charAt(0).toUpperCase() + text.slice(1)
   }
   return undefined
 }
