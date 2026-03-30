@@ -2,7 +2,7 @@
 
 import { AcmModal } from '../../../../../ui-components'
 import { Placement } from '../../../../../resources/placement'
-import { ReactNode, useState } from 'react'
+import { useState } from 'react'
 import { TFunction } from 'react-i18next'
 import { deleteApplication } from '../../../../../lib/delete-application'
 import { Alert, Button, List, ListItem } from '@patternfly/react-core'
@@ -11,17 +11,17 @@ import { ApplicationSet } from '../../../../../resources/application-set'
 import { Policy } from '../../../../../resources/policy'
 import { GitOpsCluster } from '../../../../../resources/gitops-cluster'
 import './DeletePlacementModal.css'
+import { PolicySet } from '../../../../../resources/policy-set'
 
 export interface IDeletePlacementModalProps {
   open: boolean
   canRemove: boolean
   resource: Placement
-  errors: ReactNode
-  loading: boolean
   close: () => void
   t: TFunction
   relatedAppSets: ApplicationSet[]
   relatedPolicies: Policy[]
+  relatedPolicySets: PolicySet[]
   relatedGitOpsClusters: GitOpsCluster[]
 }
 
@@ -32,7 +32,17 @@ export function DeletePlacementModal(props: IDeletePlacementModalProps | { open:
   if (!props.open) {
     return <></>
   }
-  const { open, canRemove, resource, close, t, relatedAppSets, relatedPolicies, relatedGitOpsClusters } = props
+  const {
+    open,
+    canRemove,
+    resource,
+    close,
+    t,
+    relatedAppSets,
+    relatedPolicies,
+    relatedPolicySets,
+    relatedGitOpsClusters,
+  } = props
 
   const handleClose = () => {
     setError(undefined)
@@ -44,7 +54,7 @@ export function DeletePlacementModal(props: IDeletePlacementModalProps | { open:
     setIsDeleting(true)
     setError(undefined)
     try {
-      await deleteApplication(resource, [], undefined)
+      await deleteApplication(resource, [], undefined).promise
       handleClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err))
@@ -83,7 +93,10 @@ export function DeletePlacementModal(props: IDeletePlacementModalProps | { open:
           </Alert>
         )}
         {t('Are you sure that you want to continue?')}
-        {(relatedAppSets.length > 0 || relatedPolicies.length > 0 || relatedGitOpsClusters.length > 0) && (
+        {(relatedAppSets.length > 0 ||
+          relatedPolicies.length > 0 ||
+          relatedPolicySets.length > 0 ||
+          relatedGitOpsClusters.length > 0) && (
           <div className="delete-placement-related-resources">
             {t('The following resources are using this placement and will be affected:')}
             <List className="delete-placement-related-resources-list">
@@ -95,6 +108,11 @@ export function DeletePlacementModal(props: IDeletePlacementModalProps | { open:
               {relatedPolicies.map((policy) => (
                 <ListItem key={policy.metadata.uid ?? `${policy.metadata.namespace}-${policy.metadata.name}`}>
                   {policy.metadata.name} [{t('Policy')}]
+                </ListItem>
+              ))}
+              {relatedPolicySets.map((policySet) => (
+                <ListItem key={policySet.metadata.uid ?? `${policySet.metadata.namespace}-${policySet.metadata.name}`}>
+                  {policySet.metadata.name} [{t('PolicySet')}]
                 </ListItem>
               ))}
               {relatedGitOpsClusters.map((gitOpsCluster) => (

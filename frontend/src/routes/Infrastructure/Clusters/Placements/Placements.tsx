@@ -163,10 +163,11 @@ export function getGitOpsClustersReferencingPlacement(
 export function PlacementsTable(props: { placements: Placement[]; emptyState: React.ReactNode }) {
   const { t } = useTranslation()
   const filtersDisplayLimit = 3
-  const { placementBindingsState, policiesState, gitOpsClustersState } = useSharedAtoms()
+  const { placementBindingsState, policiesState, gitOpsClustersState, policySetsState } = useSharedAtoms()
   const placementBindings = useRecoilValue(placementBindingsState)
   const policies = useRecoilValue(policiesState)
   const gitOpsClusters = useRecoilValue(gitOpsClustersState)
+  const policySets = useRecoilValue(policySetsState)
 
   function placementKeyFn(placement: Placement) {
     return placement.metadata.uid!
@@ -379,6 +380,7 @@ export function PlacementsTable(props: { placements: Placement[]; emptyState: Re
 
             const relatedPolicies = getPoliciesReferencingPlacement(placement, placementBindings, policies)
             const relatedGitOpsClusters = getGitOpsClustersReferencingPlacement(gitOpsClusters, placement)
+            const relatedPolicySets = getPolicySetsReferencingPlacement(placement, placementBindings, policySets)
 
             setModalProps({
               open: true,
@@ -387,8 +389,7 @@ export function PlacementsTable(props: { placements: Placement[]; emptyState: Re
               relatedAppSets,
               relatedPolicies,
               relatedGitOpsClusters,
-              errors: undefined,
-              loading: false,
+              relatedPolicySets,
               close: () => setModalProps({ open: false }),
               t,
             })
@@ -397,7 +398,7 @@ export function PlacementsTable(props: { placements: Placement[]; emptyState: Re
         },
       ]
     },
-    [navigate, t, canDeletePlacement, placementBindings, policies, gitOpsClusters]
+    [navigate, t, canDeletePlacement, placementBindings, policies, gitOpsClusters, policySets]
   )
 
   return (

@@ -18,6 +18,7 @@ import {
   getApplicationSetsReferencingPlacement,
   getPoliciesReferencingPlacement,
   getGitOpsClustersReferencingPlacement,
+  getPolicySetsReferencingPlacement,
 } from '../Placements'
 
 export type PlacementDetailsContext = {
@@ -28,11 +29,13 @@ export default function PlacementDetailsPage() {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const { name = '', namespace = '' } = useParams()
-  const { placementsState, placementBindingsState, policiesState, gitOpsClustersState } = useSharedAtoms()
+  const { placementsState, placementBindingsState, policiesState, gitOpsClustersState, policySetsState } =
+    useSharedAtoms()
   const placements = useRecoilValue(placementsState)
   const placementBindings = useRecoilValue(placementBindingsState)
   const policies = useRecoilValue(policiesState)
   const gitOpsClusters = useRecoilValue(gitOpsClustersState)
+  const policySets = useRecoilValue(policySetsState)
   const canDeletePlacement = useIsAnyNamespaceAuthorized(rbacDelete(PlacementDefinition))
 
   const placement = placements.find(
@@ -91,6 +94,7 @@ export default function PlacementDetailsPage() {
 
           const relatedPolicies = getPoliciesReferencingPlacement(placement, placementBindings, policies)
           const relatedGitOpsClusters = getGitOpsClustersReferencingPlacement(gitOpsClusters, placement)
+          const relatedPolicySets = getPolicySetsReferencingPlacement(placement, placementBindings, policySets)
 
           setModalProps({
             open: true,
@@ -99,8 +103,7 @@ export default function PlacementDetailsPage() {
             relatedAppSets,
             relatedPolicies,
             relatedGitOpsClusters,
-            errors: undefined,
-            loading: false,
+            relatedPolicySets,
             close: () => setModalProps({ open: false }),
             t,
           })
@@ -109,7 +112,7 @@ export default function PlacementDetailsPage() {
       },
     ]
     return actions
-  }, [navigate, placementBindings, policies, gitOpsClusters, placement, t, canDeletePlacement])
+  }, [navigate, placementBindings, policies, gitOpsClusters, placement, t, canDeletePlacement, policySets])
 
   if (!placement) {
     return (

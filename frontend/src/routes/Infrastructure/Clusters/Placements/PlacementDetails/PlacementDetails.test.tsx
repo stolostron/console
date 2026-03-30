@@ -4,10 +4,11 @@ import { render } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, generatePath } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { placementsState, settingsState } from '../../../../../atoms'
-import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../lib/nock-util'
+import { nockIgnoreApiPaths, nockIgnoreRBAC, nockList } from '../../../../../lib/nock-util'
 import { waitForText } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { Placement, PlacementApiVersionBeta, PlacementKind } from '../../../../../resources/placement'
+import { ApplicationSetApiVersion, ApplicationSetKind } from '../../../../../resources/application-set'
 import Clusters from '../../Clusters'
 
 jest.mock('../../../../../components/KubevirtProviderAlert', () => ({
@@ -59,12 +60,14 @@ describe('PlacementDetails page', () => {
   })
 
   test('renders placement details with breadcrumb and header', async () => {
+    nockList({ apiVersion: ApplicationSetApiVersion, kind: ApplicationSetKind, metadata: { namespace: 'default' } }, [])
     render(<PlacementDetailsComponent />)
     await waitForText('test-placement', true)
     await waitForText('Placements')
   })
 
   test('renders overview tab content', async () => {
+    nockList({ apiVersion: ApplicationSetApiVersion, kind: ApplicationSetKind, metadata: { namespace: 'default' } }, [])
     render(<PlacementDetailsComponent />)
     await waitForText('test-placement', true)
     await waitForText('default', true)

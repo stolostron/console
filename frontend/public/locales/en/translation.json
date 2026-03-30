@@ -11,7 +11,7 @@
   "{{0}} within the last:": "{{0}} within the last:",
   "{{action}} {{itemKind}}?": "{{action}} {{itemKind}}?",
   "{{count}} cluster cannot be edited ": "{{count}} cluster cannot be edited ",
-  "{{count}} cluster cannot be edited _plural": "{{count}} cluster cannot be edited ",
+  "{{count}} cluster cannot be edited _plural": "{{count}} clusters cannot be edited ",
   "{{count}} clusters with unknown status": "{{count}} cluster with unknown status",
   "{{count}} clusters with unknown status_plural": "{{count}} clusters with unknown status",
   "{{count}} clusters with unsatisfied dependencies": "{{count}} cluster with unsatisfied dependencies",

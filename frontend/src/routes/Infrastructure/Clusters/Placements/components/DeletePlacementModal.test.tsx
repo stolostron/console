@@ -7,6 +7,7 @@ import { DeletePlacementModal, IDeletePlacementModalProps } from './DeletePlacem
 import { Placement, PlacementApiVersionBeta, PlacementKind } from '../../../../../resources/placement'
 import { ApplicationSet, ApplicationSetApiVersion, ApplicationSetKind } from '../../../../../resources/application-set'
 import { Policy, PolicyApiVersion, PolicyKind } from '../../../../../resources/policy'
+import { PolicySet, PolicySetApiVersion, PolicySetKind } from '../../../../../resources/policy-set'
 import { GitOpsCluster, GitOpsClusterApiVersion, GitOpsClusterKind } from '../../../../../resources/gitops-cluster'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../lib/nock-util'
 
@@ -54,6 +55,20 @@ const mockPolicy: Policy = {
   spec: { disabled: false },
 }
 
+const mockPolicySet: PolicySet = {
+  apiVersion: PolicySetApiVersion,
+  kind: PolicySetKind,
+  metadata: {
+    name: 'my-policyset',
+    namespace: 'default',
+    uid: 'uid-policyset-1',
+  },
+  spec: {
+    description: '',
+    policies: ['my-policy'],
+  },
+}
+
 const mockGitOpsCluster: GitOpsCluster = {
   apiVersion: GitOpsClusterApiVersion,
   kind: GitOpsClusterKind,
@@ -83,12 +98,11 @@ function renderModal(overrides: Partial<IDeletePlacementModalProps> = {}) {
     open: true,
     canRemove: true,
     resource: mockPlacement,
-    errors: undefined,
-    loading: false,
     close: jest.fn(),
     t: t as IDeletePlacementModalProps['t'],
     relatedAppSets: [],
     relatedPolicies: [],
+    relatedPolicySets: [],
     relatedGitOpsClusters: [],
     ...overrides,
   }
@@ -153,6 +167,13 @@ describe('DeletePlacementModal', () => {
     expect(screen.getByText(/Policy/)).toBeInTheDocument()
   })
 
+  test('displays related PolicySets', () => {
+    renderModal({ relatedPolicySets: [mockPolicySet] })
+    expect(screen.getByText(/following resources are using/)).toBeInTheDocument()
+    expect(screen.getByText(/my-policyset/)).toBeInTheDocument()
+    expect(screen.getByText(/PolicySet/)).toBeInTheDocument()
+  })
+
   test('displays related GitOpsClusters', () => {
     renderModal({ relatedGitOpsClusters: [mockGitOpsCluster] })
     expect(screen.getByText(/my-gitops/)).toBeInTheDocument()
@@ -163,15 +184,17 @@ describe('DeletePlacementModal', () => {
     renderModal({
       relatedAppSets: [mockAppSet],
       relatedPolicies: [mockPolicy],
+      relatedPolicySets: [mockPolicySet],
       relatedGitOpsClusters: [mockGitOpsCluster],
     })
     expect(screen.getByText(/my-appset/)).toBeInTheDocument()
-    expect(screen.getByText(/my-policy/)).toBeInTheDocument()
+    expect(screen.getByText(/my-policy \[Policy\]/)).toBeInTheDocument()
+    expect(screen.getByText(/my-policyset \[PolicySet\]/)).toBeInTheDocument()
     expect(screen.getByText(/my-gitops/)).toBeInTheDocument()
   })
 
   test('calls deleteApplication and closes on successful delete', async () => {
-    mockDeleteApplication.mockResolvedValue(undefined)
+    mockDeleteApplication.mockReturnValue({ promise: Promise.resolve(undefined) })
     const { props } = renderModal()
     await userEvent.click(screen.getByText('Delete'))
     await waitFor(() => expect(mockDeleteApplication).toHaveBeenCalledWith(mockPlacement, [], undefined))
@@ -179,7 +202,7 @@ describe('DeletePlacementModal', () => {
   })
 
   test('shows error alert on delete failure', async () => {
-    mockDeleteApplication.mockRejectedValue(new Error('Network error'))
+    mockDeleteApplication.mockReturnValue({ promise: Promise.reject(new Error('Network error')) })
     const { props } = renderModal()
     await userEvent.click(screen.getByText('Delete'))
     await waitFor(() => expect(screen.getByText('Network error')).toBeInTheDocument())
@@ -188,7 +211,7 @@ describe('DeletePlacementModal', () => {
   })
 
   test('shows string error on delete failure with non-Error', async () => {
-    mockDeleteApplication.mockRejectedValue('something went wrong')
+    mockDeleteApplication.mockReturnValue({ promise: Promise.reject('something went wrong') })
     renderModal()
     await userEvent.click(screen.getByText('Delete'))
     await waitFor(() => expect(screen.getByText('something went wrong')).toBeInTheDocument())

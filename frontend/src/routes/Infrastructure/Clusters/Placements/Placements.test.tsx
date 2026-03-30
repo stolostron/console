@@ -77,7 +77,7 @@ describe('Placements page', () => {
 
   test('renders placement cluster sets', async () => {
     render(<Component />)
-    await waitForText('cluster-set-1')
+    await waitForText('cluster-set-1,')
     await waitForText('cluster-set-2')
   })
 
