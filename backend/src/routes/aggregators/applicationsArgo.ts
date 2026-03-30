@@ -502,8 +502,12 @@ function classifyPodStatus(deployed: ApplicationStatusEntry, status: string) {
 function hasDeployedPods(appStatuses: ApplicationStatuses): boolean {
   const counts = appStatuses.deployed[StatusColumn.counts]
   return (
-    counts[ScoreColumn.healthy] + counts[ScoreColumn.progress] + counts[ScoreColumn.warning] + counts[ScoreColumn.danger]
-  ) > 0
+    counts[ScoreColumn.healthy] +
+      counts[ScoreColumn.progress] +
+      counts[ScoreColumn.warning] +
+      counts[ScoreColumn.danger] >
+    0
+  )
 }
 
 export function mergePushModelPodStatuses(
