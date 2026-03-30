@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react'
 import { IResource } from '../../resources'
 import { LabelMap } from '../../resources/utils'
-import { isOCPAppResource } from './utils'
+import { IApplicationResource } from './model/application-resource'
+import { getLabels } from './utils'
 
 const useFetchApplicationLabels = (applicationData?: IResource[]) => {
   const [labelOptions, setLabelOptions] = useState<{ label: string; value: string }[]>()
@@ -11,20 +12,21 @@ const useFetchApplicationLabels = (applicationData?: IResource[]) => {
 
   useEffect(() => {
     if (applicationData && applicationData.length !== storedApplicationData?.length) {
-      const { labelMap, allLabels } = applicationData.filter(isOCPAppResource).reduce(
+      const { labelMap, allLabels } = applicationData.reduce(
         (acc, resource) => {
-          const { labels, pairs } = (resource.label ?? '').split(';').reduce(
-            (innerAcc, label) => {
-              const trimmed = label.trim()
-              innerAcc.labels.push(trimmed)
-              const [key, value] = label.split('=').map((seg) => seg.trim())
-              innerAcc.pairs[key] = value
-              return innerAcc
-            },
-            { labels: [] as string[], pairs: {} as Record<string, string> }
-          )
+          if (!resource || !resource.metadata) {
+            return acc
+          }
+
+          const pairs = getLabels(resource as IApplicationResource)
+          const labels = Object.entries(pairs).map(([key, value]) => `${key}=${value}`)
+
           labels.forEach((l) => acc.allLabels.add(l))
-          acc.labelMap[resource.id] = { pairs, labels }
+
+          const resourceId =
+            (resource as IApplicationResource).id ||
+            `${resource.metadata.namespace || 'default'}/${resource.metadata.name || 'unknown'}`
+          acc.labelMap[resourceId] = { pairs, labels }
           return acc
         },
         { labelMap: {} as LabelMap, allLabels: new Set<string>() }

@@ -3,7 +3,7 @@ import { IApplicationResource } from './model/application-resource'
 import { OCPAppResource } from '../../resources/ocp-app-resource'
 import { ApplicationStatus } from './model/application-status'
 import { sha256 } from 'js-sha256'
-import { IResource } from '../../resources'
+import { ApplicationSet, ApplicationSetKind, IResource } from '../../resources'
 
 /**
  * Check if a resource is an OCP app resource
@@ -27,16 +27,27 @@ const getApplicationId = (resource: IResource, clusters: string[]): string => {
 }
 
 /**
- * Get the labels from an OCP app resource. Input format is 'key1=value1;key2=value2;...'
- * @param resource - The OCP app resource
+ * Get the labels from an application resource
+ * @param resource - The application resource
  * @returns The labels in the format { key1: value1, key2: value2, ... }
  */
-const getLabels = (resource: OCPAppResource<ApplicationStatus>): Record<string, string> =>
-  resource.label?.split(';').reduce<Record<string, string>>((acc, label) => {
-    const trimmed = label.trim()
-    const eqIndex = trimmed.indexOf('=')
+const getLabels = (resource: IApplicationResource): Record<string, string> => {
+  if (isOCPAppResource(resource)) {
+    return (
+      resource.label?.split(';').reduce<Record<string, string>>((acc, label) => {
+        const trimmed = label.trim()
+        const eqIndex = trimmed.indexOf('=')
+        return eqIndex === -1 ? acc : { ...acc, [trimmed.slice(0, eqIndex).trim()]: trimmed.slice(eqIndex + 1).trim() }
+      }, {}) ?? {}
+    )
+  }
 
-    return eqIndex === -1 ? acc : { ...acc, [trimmed.slice(0, eqIndex).trim()]: trimmed.slice(eqIndex + 1).trim() }
-  }, {}) ?? {}
+  if (resource.kind === ApplicationSetKind) {
+    const appSet = resource as unknown as ApplicationSet
+    return appSet.spec?.template?.metadata?.labels ?? {}
+  }
+
+  return resource.metadata?.labels ?? {}
+}
 
 export { isOCPAppResource, getApplicationId, getLabels }

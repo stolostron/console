@@ -63,6 +63,29 @@ export async function transform(
     items.map(async (app, inx) => {
       app = await inflateApp(app)
       const type = getApplicationType(app)
+
+      if (type === 'subscription') {
+        const subAnnotation = app.metadata?.annotations?.['apps.open-cluster-management.io/subscriptions']
+        if (subAnnotation) {
+          const subRefs = subAnnotation.split(',').map((ref) => ref.trim())
+          const allLabels: Record<string, string> = {}
+
+          subRefs.forEach((subRef) => {
+            const [subNs, subName] = subRef.split('/')
+            const subscription = subscriptions.find(
+              (s) => s.metadata?.namespace === subNs && s.metadata?.name === subName
+            )
+            if (subscription?.metadata?.labels) {
+              Object.assign(allLabels, subscription.metadata.labels)
+            }
+          })
+
+          if (Object.keys(allLabels).length > 0) {
+            app.metadata.labels = { ...app.metadata.labels, ...allLabels }
+          }
+        }
+      }
+
       const _clusters = await getApplicationClusters(
         app,
         type,

@@ -682,11 +682,9 @@ export default function ApplicationsOverview() {
       },
       {
         header: t('table.labels'),
-        cell: (resource) => (
-          <AcmLabels labels={getLabels(resource as OCPAppResource<ApplicationStatus>)} isCompact={true} />
-        ),
+        cell: (resource) => <AcmLabels labels={getLabels(resource as IApplicationResource)} isCompact={true} />,
         exportContent: (resource) =>
-          Object.entries(getLabels(resource as OCPAppResource<ApplicationStatus>))
+          Object.entries(getLabels(resource as IApplicationResource))
             .map(([key, value]) => `${key}=${value}`)
             .join(','),
       },
