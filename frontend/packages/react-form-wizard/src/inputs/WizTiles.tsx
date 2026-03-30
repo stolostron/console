@@ -10,9 +10,8 @@ import {
   Gallery,
   Icon,
 } from '@patternfly/react-core'
-import { Children, Fragment, isValidElement, ReactNode, useContext, useRef } from 'react'
+import { Children, Fragment, isValidElement, ReactNode, useContext } from 'react'
 import { DisplayMode } from '../contexts/DisplayModeContext'
-import { useReviewStepOutlineId } from '../ReviewStep'
 import { InputCommonProps, useInput } from './Input'
 import { WizFormGroup } from './WizFormGroup'
 import { IRadioGroupContextState, RadioGroupContext } from './WizRadio'
@@ -31,9 +30,7 @@ type WizTilesProps = InputCommonProps & { children?: ReactNode }
 // helperText?: string
 // children?: ReactNode
 export function WizTiles(props: WizTilesProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const outlineId = useReviewStepOutlineId()
-  const { displayMode: mode, value, setValue, hidden, id } = useInput(props, containerRef)
+  const { displayMode: mode, value, setValue, hidden, id } = useInput(props)
 
   const state: IRadioGroupContextState = {
     value: value,
@@ -55,24 +52,20 @@ export function WizTiles(props: WizTilesProps) {
     })
     if (label)
       return (
-        <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
-          <DescriptionListGroup>
-            <DescriptionListTerm>{props.label}</DescriptionListTerm>
-            <DescriptionListDescription id={id}>{label}</DescriptionListDescription>
-          </DescriptionListGroup>
-        </div>
+        <DescriptionListGroup>
+          <DescriptionListTerm>{props.label}</DescriptionListTerm>
+          <DescriptionListDescription id={id}>{label}</DescriptionListDescription>
+        </DescriptionListGroup>
       )
     return <Fragment />
   }
 
   return (
-    <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
-      <RadioGroupContext.Provider value={state}>
-        <WizFormGroup {...props} id={id}>
-          <Gallery hasGutter>{props.children}</Gallery>
-        </WizFormGroup>
-      </RadioGroupContext.Provider>
-    </div>
+    <RadioGroupContext.Provider value={state}>
+      <WizFormGroup {...props} id={id}>
+        <Gallery hasGutter>{props.children}</Gallery>
+      </WizFormGroup>
+    </RadioGroupContext.Provider>
   )
 }
 

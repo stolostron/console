@@ -8,9 +8,8 @@ import {
   MenuToggleElement,
   Select as PfSelect,
 } from '@patternfly/react-core'
-import { ReactNode, useCallback, useRef, useState } from 'react'
+import { ReactNode, useCallback, useState } from 'react'
 import { DisplayMode } from '../contexts/DisplayModeContext'
-import { useReviewStepOutlineId } from '../ReviewStep'
 import { useStringContext } from '../contexts/StringContext'
 import { getSelectPlaceholder, InputCommonProps, useInput } from './Input'
 import { InputSelect, SelectListOptions } from './InputSelect'
@@ -27,18 +26,7 @@ export type WizSingleSelectProps = InputCommonProps<string> & {
 }
 
 export function WizSingleSelect(props: WizSingleSelectProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const outlineId = useReviewStepOutlineId()
-  const {
-    displayMode: mode,
-    value,
-    setValue,
-    validated,
-    hidden,
-    id,
-    disabled,
-    required,
-  } = useInput(props, containerRef)
+  const { displayMode: mode, value, setValue, validated, hidden, id, disabled, required } = useInput(props)
   const { noResults } = useStringContext()
   const { label, readonly, isCreatable, options, footer } = props
   const placeholder = getSelectPlaceholder(props)
@@ -81,17 +69,15 @@ export function WizSingleSelect(props: WizSingleSelectProps) {
   if (mode === DisplayMode.Details) {
     if (!value) return null
     return (
-      <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
-        <DescriptionListGroup>
-          <DescriptionListTerm>{label}</DescriptionListTerm>
-          <DescriptionListDescription id={id}>{value}</DescriptionListDescription>
-        </DescriptionListGroup>
-      </div>
+      <DescriptionListGroup>
+        <DescriptionListTerm>{label}</DescriptionListTerm>
+        <DescriptionListDescription id={id}>{value}</DescriptionListDescription>
+      </DescriptionListGroup>
     )
   }
 
   return (
-    <div ref={containerRef} id={id} data-is-review-outline-target={id === outlineId || undefined}>
+    <div id={id}>
       <WizFormGroup {...props} id={id}>
         <InputGroup>
           <InputGroupItem isFill>

@@ -9,9 +9,8 @@ import {
   Select as PfSelect,
 } from '@patternfly/react-core'
 import get from 'get-value'
-import { ReactNode, useCallback, useMemo, useRef, useState } from 'react'
+import { ReactNode, useCallback, useMemo, useState } from 'react'
 import { DisplayMode } from '../contexts/DisplayModeContext'
-import { useReviewStepOutlineId } from '../ReviewStep'
 import { getSelectPlaceholder, InputCommonProps, useInput } from './Input'
 import { InputSelect, SelectListOptions } from './InputSelect'
 import { WizFormGroup } from './WizFormGroup'
@@ -59,18 +58,7 @@ export function WizSelect<T>(props: Omit<WizSelectSingleProps<T>, 'variant'>) {
 type SelectProps<T> = WizSelectSingleProps<T>
 
 function WizSelectBase<T = any>(props: SelectProps<T>) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const outlineId = useReviewStepOutlineId()
-  const {
-    displayMode: mode,
-    value,
-    setValue,
-    validated,
-    hidden,
-    id,
-    disabled,
-    required,
-  } = useInput(props, containerRef)
+  const { displayMode: mode, value, setValue, validated, hidden, id, disabled, required } = useInput(props)
   const placeholder = getSelectPlaceholder(props)
   const keyPath = props.keyPath ?? props.path
   const isCreatable = props.isCreatable
@@ -164,17 +152,15 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
   if (mode === DisplayMode.Details) {
     if (!value) return null
     return (
-      <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
-        <DescriptionListGroup>
-          <DescriptionListTerm>{props.label}</DescriptionListTerm>
-          <DescriptionListDescription id={id}>{value}</DescriptionListDescription>
-        </DescriptionListGroup>
-      </div>
+      <DescriptionListGroup>
+        <DescriptionListTerm>{props.label}</DescriptionListTerm>
+        <DescriptionListDescription id={id}>{value}</DescriptionListDescription>
+      </DescriptionListGroup>
     )
   }
 
   return (
-    <div ref={containerRef} id={id} data-is-review-outline-target={id === outlineId || undefined}>
+    <div id={id}>
       <WizFormGroup {...props}>
         <InputGroup>
           <InputGroupItem isFill>

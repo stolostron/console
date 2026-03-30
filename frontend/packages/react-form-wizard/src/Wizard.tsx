@@ -38,6 +38,7 @@ import { EditModeContext } from './contexts/EditModeContext'
 import { ItemContext, useItem } from './contexts/ItemContext'
 import { ShowValidationProvider, useSetShowValidation, useShowValidation } from './contexts/ShowValidationProvider'
 import { StepHasInputsProvider } from './contexts/StepHasInputsProvider'
+import { StepInputsRegistryProvider } from './contexts/StepInputsContext'
 import {
   StepShowValidationProvider,
   useSetStepShowValidation,
@@ -52,7 +53,7 @@ import {
   ValidationProvider,
 } from './contexts/ValidationProvider'
 import { ReviewDomTreeSyncProvider } from './contexts/ReviewDomTreeSyncContext'
-import { ReviewStep, ReviewStepOutlineIdProvider } from './ReviewStep'
+import { ReviewStep } from './ReviewStep'
 import { Step } from './Step'
 
 export interface WizardProps {
@@ -88,41 +89,43 @@ export function Wizard(props: WizardProps & { showHeader?: boolean; showYaml?: b
   return (
     <EditModeContext.Provider value={props.editMode === undefined ? EditMode.Create : props.editMode}>
       <StepHasInputsProvider>
-        <StepShowValidationProvider>
-          <StepValidationProvider>
-            <DisplayModeContext.Provider value={displayMode}>
-              <DataContext.Provider value={{ update }}>
-                <ItemContext.Provider value={data}>
-                  <ShowValidationProvider>
-                    <ValidationProvider>
-                      <Drawer isExpanded={drawerExpanded} isInline>
-                        <DrawerContent panelContent={<WizardDrawer yamlEditor={props.yamlEditor} />}>
-                          <DrawerContentBody>
-                            <ItemContext.Provider value={data}>
-                              <StringContext.Provider value={wizardStrings || defaultStrings}>
-                                <WizardInternal
-                                  title={props.title}
-                                  onSubmit={props.onSubmit}
-                                  onCancel={props.onCancel}
-                                  hasButtons={props.hasButtons}
-                                  submitButtonText={props.submitButtonText}
-                                  submittingButtonText={props.submittingButtonText}
-                                  isLoading={props.isLoading}
-                                >
-                                  {props.children}
-                                </WizardInternal>
-                              </StringContext.Provider>
-                            </ItemContext.Provider>
-                          </DrawerContentBody>
-                        </DrawerContent>
-                      </Drawer>
-                    </ValidationProvider>
-                  </ShowValidationProvider>
-                </ItemContext.Provider>
-              </DataContext.Provider>
-            </DisplayModeContext.Provider>
-          </StepValidationProvider>
-        </StepShowValidationProvider>
+        <StepInputsRegistryProvider>
+          <StepShowValidationProvider>
+            <StepValidationProvider>
+              <DisplayModeContext.Provider value={displayMode}>
+                <DataContext.Provider value={{ update }}>
+                  <ItemContext.Provider value={data}>
+                    <ShowValidationProvider>
+                      <ValidationProvider>
+                        <Drawer isExpanded={drawerExpanded} isInline>
+                          <DrawerContent panelContent={<WizardDrawer yamlEditor={props.yamlEditor} />}>
+                            <DrawerContentBody>
+                              <ItemContext.Provider value={data}>
+                                <StringContext.Provider value={wizardStrings || defaultStrings}>
+                                  <WizardInternal
+                                    title={props.title}
+                                    onSubmit={props.onSubmit}
+                                    onCancel={props.onCancel}
+                                    hasButtons={props.hasButtons}
+                                    submitButtonText={props.submitButtonText}
+                                    submittingButtonText={props.submittingButtonText}
+                                    isLoading={props.isLoading}
+                                  >
+                                    {props.children}
+                                  </WizardInternal>
+                                </StringContext.Provider>
+                              </ItemContext.Provider>
+                            </DrawerContentBody>
+                          </DrawerContent>
+                        </Drawer>
+                      </ValidationProvider>
+                    </ShowValidationProvider>
+                  </ItemContext.Provider>
+                </DataContext.Provider>
+              </DisplayModeContext.Provider>
+            </StepValidationProvider>
+          </StepShowValidationProvider>
+        </StepInputsRegistryProvider>
       </StepHasInputsProvider>
     </EditModeContext.Provider>
   )
@@ -202,30 +205,28 @@ function WizardInternal({
 
   return (
     <div ref={wizardRef}>
-      <ReviewStepOutlineIdProvider>
-        <ReviewDomTreeSyncProvider>
-          <PFWizard
-            navAriaLabel={`${stepsAriaLabel}`}
-            aria-label={`${contentAriaLabel}`}
-            footer={
-              <MyFooter
-                onSubmit={onSubmit}
-                steps={stepComponents}
-                submitButtonText={submitButtonText}
-                submittingButtonText={submittingButtonText}
-                isLoading={isLoading}
-              />
-            }
-            onClose={onCancel}
-          >
-            {steps.map(({ id, name, component }) => (
-              <WizardStep key={id} id={id} name={name}>
-                {component}
-              </WizardStep>
-            ))}
-          </PFWizard>
-        </ReviewDomTreeSyncProvider>
-      </ReviewStepOutlineIdProvider>
+      <ReviewDomTreeSyncProvider>
+        <PFWizard
+          navAriaLabel={`${stepsAriaLabel}`}
+          aria-label={`${contentAriaLabel}`}
+          footer={
+            <MyFooter
+              onSubmit={onSubmit}
+              steps={stepComponents}
+              submitButtonText={submitButtonText}
+              submittingButtonText={submittingButtonText}
+              isLoading={isLoading}
+            />
+          }
+          onClose={onCancel}
+        >
+          {steps.map(({ id, name, component }) => (
+            <WizardStep key={id} id={id} name={name}>
+              {component}
+            </WizardStep>
+          ))}
+        </PFWizard>
+      </ReviewDomTreeSyncProvider>
     </div>
   )
 }

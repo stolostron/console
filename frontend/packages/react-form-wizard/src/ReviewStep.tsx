@@ -11,21 +11,10 @@ import {
   Title,
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
-import {
-  createContext,
-  Fragment,
-  type ComponentProps,
-  type ReactNode,
-  type RefObject,
-  useCallback,
-  useContext,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from 'react'
+import { Fragment, type ComponentProps, type ReactNode, type RefObject, useLayoutEffect, useRef, useState } from 'react'
 import { useReviewDomTreeVersion } from './contexts/ReviewDomTreeSyncContext'
 import { useStringContext } from './contexts/StringContext'
-import { InputContainerElement, InputReviewMeta, InputReviewStepMeta } from './inputs/Input'
+import { InputReviewStepMeta, InputReviewMeta, useStepInputsRegistry } from './contexts/StepInputsContext'
 import { Step } from './Step'
 import './ReviewStep.css'
 
@@ -104,51 +93,20 @@ export interface ReviewExpandableSectionProps {
   children?: ReactNode
 }
 
-const ReviewStepOutlineIdContext = createContext('')
-
-const ReviewStepSetOutlineIdContext = createContext<((id: string) => void) | undefined>(undefined)
-
-export function ReviewStepOutlineIdProvider(props: { children: ReactNode }) {
-  const [outlineId, setOutlineIdState] = useState('')
-  const setOutlineId = useCallback((id: string) => setOutlineIdState(id), [])
-  return (
-    <ReviewStepOutlineIdContext.Provider value={outlineId}>
-      <ReviewStepSetOutlineIdContext.Provider value={setOutlineId}>
-        {props.children}
-      </ReviewStepSetOutlineIdContext.Provider>
-    </ReviewStepOutlineIdContext.Provider>
-  )
-}
-
-/** Current review-step outline target id (step input id path segment), updated via {@link useSetReviewStepOutlineId}. */
-export function useReviewStepOutlineId(): string {
-  return useContext(ReviewStepOutlineIdContext)
-}
-
-/** Returns `setOutlineId(id)` to update which input id is outlined on the review step; no-op outside {@link ReviewStepOutlineIdProvider}. */
-export function useSetReviewStepOutlineId(): (id: string) => void {
-  const set = useContext(ReviewStepSetOutlineIdContext)
-  return set ?? (() => {})
-}
-
 export function ReviewStep({ wizardRef }: ReviewStepProps) {
   const { reviewLabel } = useStringContext()
+  const stepInputsRegistry = useStepInputsRegistry()
   const reviewDomTreeVersion = useReviewDomTreeVersion()
-  useReviewStepOutlineId()
-  const setOutlineId = useSetReviewStepOutlineId()
+  const stepInputMapRef = stepInputsRegistry?.get()
   const wizardDomTreeRef = useRef<WizardDomTreeNode | null>(null)
   const [wizardDomTree, setWizardDomTree] = useState<WizardDomTreeNode | null>(null)
   useLayoutEffect(() => {
-    setOutlineId('123')
-    return () => setOutlineId('')
-  }, [setOutlineId])
-  useLayoutEffect(() => {
     const root = wizardRef?.current
     if (!root) return
-    const treeData = buildTree(root)
+    const treeData = buildTree(root, stepInputMapRef?.current ?? new Map<string, InputReviewStepMeta>())
     wizardDomTreeRef.current = treeData
     setWizardDomTree(treeData)
-  }, [wizardRef, reviewDomTreeVersion])
+  }, [wizardRef, stepInputMapRef, reviewDomTreeVersion])
 
   const sectionRoots = getWizardDomTreeRootChildren(wizardDomTree)
 
@@ -197,8 +155,17 @@ export function ReviewExpandableSection(props: ReviewExpandableSectionProps) {
   )
 }
 
-export function buildTree(element: Element): WizardDomTreeNode {
-  const nodes = buildReviewSubtree(element)
+function subtreeContainsReviewInput(node: WizardDomTreeNode): boolean {
+  if ('type' in node && node.type === InputReviewMeta.INPUT) {
+    return true
+  }
+  const ch = node.children
+  if (!ch?.length) return false
+  return ch.some(subtreeContainsReviewInput)
+}
+
+export function buildTree(element: Element, stepInputMap: ReadonlyMap<string, InputReviewStepMeta>): WizardDomTreeNode {
+  const nodes = buildReviewSubtree(element, stepInputMap)
   if (nodes.length === 1) return nodes[0]!
   if (nodes.length === 0) return {}
   return { children: nodes }
@@ -206,12 +173,13 @@ export function buildTree(element: Element): WizardDomTreeNode {
 
 function buildReviewSubtree(
   element: Element,
+  stepInputMap: ReadonlyMap<string, InputReviewStepMeta>,
   parentStepId = '',
   /** ARRAY_INPUT field paths and ARRAY_INSTANCE index segments from root to current node, in DOM order. */
   reviewPathPrefixSegments: readonly string[] = []
 ): WizardDomTreeNode[] {
   if (element instanceof HTMLElement) {
-    const props = (element as InputContainerElement).__reviewStepProps
+    const props = stepInputMap.get(element.id)
     if (props) {
       const stepIdForChildren = props.type === InputReviewMeta.STEP ? props.id : parentStepId
       let segmentsForChildren = reviewPathPrefixSegments
@@ -222,14 +190,18 @@ function buildReviewSubtree(
       }
       const children: WizardDomTreeNode[] = []
       for (let i = 0; i < element.children.length; i++) {
-        children.push(...buildReviewSubtree(element.children[i]!, stepIdForChildren, segmentsForChildren))
+        children.push(...buildReviewSubtree(element.children[i]!, stepInputMap, stepIdForChildren, segmentsForChildren))
       }
       const hasChildren = children.length > 0
       if (props.type === InputReviewMeta.STEP) {
         if (props.id === 'review') {
-          return children
+          return children.filter(subtreeContainsReviewInput)
         }
-        return [hasChildren ? { ...props, children } : { ...props }]
+        const stepNode: WizardDomTreeNode = hasChildren ? { ...props, children } : { ...props }
+        if (!subtreeContainsReviewInput(stepNode)) {
+          return []
+        }
+        return [stepNode]
       }
       if (props.type === InputReviewMeta.INPUT) {
         const path =
@@ -256,7 +228,7 @@ function buildReviewSubtree(
   }
   const out: WizardDomTreeNode[] = []
   for (let i = 0; i < element.children.length; i++) {
-    out.push(...buildReviewSubtree(element.children[i]!, parentStepId, reviewPathPrefixSegments))
+    out.push(...buildReviewSubtree(element.children[i]!, stepInputMap, parentStepId, reviewPathPrefixSegments))
   }
   return out
 }

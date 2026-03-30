@@ -18,10 +18,9 @@ import {
   PaginationVariant,
 } from '@patternfly/react-core'
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
-import { Fragment, ReactNode, useCallback, useMemo, useRef, useState } from 'react'
+import { Fragment, ReactNode, useCallback, useMemo, useState } from 'react'
 import { Indented } from '../components/Indented'
 import { DisplayMode } from '../contexts/DisplayModeContext'
-import { useReviewStepOutlineId } from '../ReviewStep'
 import { useStringContext } from '../contexts/StringContext'
 import { InputCommonProps, useInput } from './Input'
 import { WizFormGroup } from './WizFormGroup'
@@ -43,9 +42,7 @@ export type WizTableSelectProps<T> = InputCommonProps<string> & {
 }
 
 export function WizTableSelect<T = any>(props: WizTableSelectProps<T>) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const outlineId = useReviewStepOutlineId()
-  const { displayMode: mode, value, setValue, hidden, id } = useInput(props, containerRef)
+  const { displayMode: mode, value, setValue, hidden, id } = useInput(props)
 
   const [page, setPage] = useState(1)
   const onSetPage = useCallback<OnSetPage>((_: unknown, page) => setPage(page), [])
@@ -56,7 +53,7 @@ export function WizTableSelect<T = any>(props: WizTableSelectProps<T>) {
 
   let values = value as unknown[]
   if (!Array.isArray(values)) values = []
-  let selectedItems: T[] = values
+  let selectedItems: T[] = values as T[]
   if (props.valueMatchesItem)
     selectedItems = values
       .map((value) =>
@@ -105,112 +102,100 @@ export function WizTableSelect<T = any>(props: WizTableSelectProps<T>) {
     if (!selectedItems.length) return <Fragment />
     if (!props.label) {
       if (values.length > 5) {
-        return (
-          <div ref={containerRef} id={id} data-is-review-outline-target={id === outlineId || undefined}>
-            {values.length} selected
-          </div>
-        )
+        return <div id={id}>{values.length} selected</div>
       }
       return (
-        <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
-          <List isPlain={props.summaryList !== true}>
-            {values.map((value, index) => (
-              <ListItem key={index} style={{ paddingBottom: 4 }}>
-                {value}
-              </ListItem>
-            ))}
-          </List>
-        </div>
+        <List isPlain={props.summaryList !== true}>
+          {values.map((v, index) => (
+            <ListItem key={index} style={{ paddingBottom: 4 }}>
+              {String(v)}
+            </ListItem>
+          ))}
+        </List>
       )
     }
     if (values.length > 5) {
       return (
-        <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
-          <DescriptionListGroup>
-            <DescriptionListTerm>{props.label}</DescriptionListTerm>
-            <DescriptionListDescription id={id}>{values.length} selected</DescriptionListDescription>
-          </DescriptionListGroup>
-        </div>
+        <DescriptionListGroup>
+          <DescriptionListTerm>{props.label}</DescriptionListTerm>
+          <DescriptionListDescription id={id}>{values.length} selected</DescriptionListDescription>
+        </DescriptionListGroup>
       )
     }
     return (
-      <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
+      <Fragment>
         <div className="pf-v6-c-description-list__term">{props.label}</div>
         <Indented paddingBottom={4}>
           <List style={{ marginTop: -4 }} isPlain={props.summaryList !== true}>
-            {values.map((value, index) => (
+            {values.map((v, index) => (
               <ListItem key={index} style={{ paddingBottom: 4 }}>
-                {value}
+                {String(v)}
               </ListItem>
             ))}
           </List>
         </Indented>
-      </div>
+      </Fragment>
     )
   }
 
   if (props.items.length === 0) {
     return (
-      <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
-        <EmptyState headingLevel="h4" titleText={<>{props.emptyTitle}</>}>
-          <EmptyStateBody>{props.emptyMessage}</EmptyStateBody>
-        </EmptyState>
-      </div>
+      <EmptyState headingLevel="h4" titleText={<>{props.emptyTitle}</>}>
+        <EmptyStateBody>{props.emptyMessage}</EmptyStateBody>
+      </EmptyState>
     )
   }
 
   return (
-    <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
-      <WizFormGroup {...props}>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <BulkSelect
-            selectedCount={selectedItems.length}
-            selectAll={selectAll}
-            selectPage={selectPage}
-            selectNone={selectNone}
-            perPage={10}
-            total={props.items.length}
-          />
-          {/* <SearchInput style={{ flexGrow: 1 }} /> */}
-        </div>
-        <Table aria-label={props.label} variant="compact" id={id}>
-          <Thead>
-            <Tr>
-              <Th />
+    <WizFormGroup {...props}>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <BulkSelect
+          selectedCount={selectedItems.length}
+          selectAll={selectAll}
+          selectPage={selectPage}
+          selectNone={selectNone}
+          perPage={10}
+          total={props.items.length}
+        />
+        {/* <SearchInput style={{ flexGrow: 1 }} /> */}
+      </div>
+      <Table aria-label={props.label} variant="compact" id={id}>
+        <Thead>
+          <Tr>
+            <Th />
+            {props.columns.map((column) => (
+              <Th key={column.name}>{column.name}</Th>
+            ))}
+          </Tr>
+        </Thead>
+        <Tbody>
+          {pagedItems.map((item, index) => (
+            <Tr key={index}>
+              <Td
+                select={{
+                  rowIndex: index,
+                  onSelect: (_event, isSelecting) => onSelect(item, isSelecting),
+                  isSelected: isSelected(item),
+                }}
+              />
               {props.columns.map((column) => (
-                <Th key={column.name}>{column.name}</Th>
+                <Td key={column.name}>{column.cellFn(item)}</Td>
               ))}
             </Tr>
-          </Thead>
-          <Tbody>
-            {pagedItems.map((item, index) => (
-              <Tr key={index}>
-                <Td
-                  select={{
-                    rowIndex: index,
-                    onSelect: (_event, isSelecting) => onSelect(item, isSelecting),
-                    isSelected: isSelected(item),
-                  }}
-                />
-                {props.columns.map((column) => (
-                  <Td key={column.name}>{column.cellFn(item)}</Td>
-                ))}
-              </Tr>
-            ))}
-          </Tbody>
-        </Table>
-        {props.items.length > 10 && (
-          <Pagination
-            itemCount={props.items.length}
-            perPage={10}
-            variant={PaginationVariant.bottom}
-            page={page}
-            onSetPage={onSetPage}
-            perPageOptions={[]}
-          />
-        )}
-      </WizFormGroup>
-    </div>
+          ))}
+        </Tbody>
+      </Table>
+      {props.items.length > 10 && (
+        <Pagination
+          itemCount={props.items.length}
+          perPage={10}
+          variant={PaginationVariant.bottom}
+          page={page}
+          onSetPage={onSetPage}
+          perPageOptions={[]}
+        />
+      )}
+    </WizFormGroup>
   )
 }
 

@@ -8,11 +8,10 @@ import {
   MenuToggleElement,
   Select as PfSelect,
 } from '@patternfly/react-core'
-import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { SpinnerButton } from '../components/SpinnerButton'
 import { SyncButton } from '../components/SyncButton'
 import { DisplayMode } from '../contexts/DisplayModeContext'
-import { useReviewStepOutlineId } from '../ReviewStep'
 import { useStringContext } from '../contexts/StringContext'
 import { getSelectPlaceholder, InputCommonProps, useInput } from './Input'
 import { InputSelect, SelectListOptions } from './InputSelect'
@@ -30,9 +29,7 @@ type WizAsyncSelectProps = InputCommonProps<string> & {
 
 export function WizAsyncSelect(props: WizAsyncSelectProps) {
   const { asyncCallback, isCreatable, footer } = props
-  const containerRef = useRef<HTMLDivElement>(null)
-  const outlineId = useReviewStepOutlineId()
-  const { displayMode, value, setValue, validated, hidden, id, disabled } = useInput(props, containerRef)
+  const { displayMode, value, setValue, validated, hidden, id, disabled } = useInput(props)
   const { noResults } = useStringContext()
   const placeholder = getSelectPlaceholder(props)
   const [open, setOpen] = useState(false)
@@ -94,60 +91,56 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
   if (displayMode === DisplayMode.Details) {
     if (!value) return null
     return (
-      <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
-        <DescriptionListGroup>
-          <DescriptionListTerm>{props.label}</DescriptionListTerm>
-          <DescriptionListDescription id={id}>{value}</DescriptionListDescription>
-        </DescriptionListGroup>
-      </div>
+      <DescriptionListGroup>
+        <DescriptionListTerm>{props.label}</DescriptionListTerm>
+        <DescriptionListDescription id={id}>{value}</DescriptionListDescription>
+      </DescriptionListGroup>
     )
   }
 
   return (
-    <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
-      <WizFormGroup {...props} id={id}>
-        <InputGroup>
-          <InputGroupItem isFill>
-            <PfSelect
-              onOpenChange={(isOpen) => {
-                if (!isOpen) {
-                  setOpen(false)
-                }
-              }}
-              isOpen={open}
-              toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-                <InputSelect
-                  disabled={disabled || (loading && !isCreatable)}
-                  validated={validated}
-                  placeholder={placeholder}
-                  options={options}
-                  setOptions={handleSetOptions}
-                  isCreatable={isCreatable}
-                  toggleRef={toggleRef}
-                  value={value}
-                  onSelect={onSelect}
-                  open={open}
-                  setOpen={setOpen}
-                />
-              )}
-              selected={value}
-              onSelect={(_event, value) => onSelect(value?.toString() ?? '')}
-              shouldFocusFirstItemOnOpen={false}
-              isScrollable
-            >
-              <SelectListOptions
-                allOptions={options}
-                filteredOptions={filteredOptions}
-                value={value}
+    <WizFormGroup {...props} id={id}>
+      <InputGroup>
+        <InputGroupItem isFill>
+          <PfSelect
+            onOpenChange={(isOpen) => {
+              if (!isOpen) {
+                setOpen(false)
+              }
+            }}
+            isOpen={open}
+            toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+              <InputSelect
+                disabled={disabled || (loading && !isCreatable)}
+                validated={validated}
+                placeholder={placeholder}
+                options={options}
+                setOptions={handleSetOptions}
                 isCreatable={isCreatable}
-                footer={footer}
+                toggleRef={toggleRef}
+                value={value}
+                onSelect={onSelect}
+                open={open}
+                setOpen={setOpen}
               />
-            </PfSelect>
-          </InputGroupItem>
-          {props.asyncCallback && loading && <SpinnerButton />}
-          {props.asyncCallback && !loading && <SyncButton onClick={sync} />}
-        </InputGroup>
-      </WizFormGroup>
-    </div>
+            )}
+            selected={value}
+            onSelect={(_event, value) => onSelect(value?.toString() ?? '')}
+            shouldFocusFirstItemOnOpen={false}
+            isScrollable
+          >
+            <SelectListOptions
+              allOptions={options}
+              filteredOptions={filteredOptions}
+              value={value}
+              isCreatable={isCreatable}
+              footer={footer}
+            />
+          </PfSelect>
+        </InputGroupItem>
+        {props.asyncCallback && loading && <SpinnerButton />}
+        {props.asyncCallback && !loading && <SyncButton onClick={sync} />}
+      </InputGroup>
+    </WizFormGroup>
   )
 }

@@ -6,9 +6,8 @@ import {
   NumberInputProps,
   NumberInput as PFNumberInput,
 } from '@patternfly/react-core'
-import { Fragment, useCallback, useRef } from 'react'
+import { Fragment, useCallback } from 'react'
 import { DisplayMode } from '../contexts/DisplayModeContext'
-import { useReviewStepOutlineId } from '../ReviewStep'
 import { getEnterPlaceholder, InputCommonProps, useInput } from './Input'
 import { WizFormGroup } from './WizFormGroup'
 
@@ -22,9 +21,7 @@ export type WizNumberInputProps = InputCommonProps<string> & {
 }
 
 export function WizNumberInput(props: WizNumberInputProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const outlineId = useReviewStepOutlineId()
-  const { displayMode: mode, value, setValue, disabled, hidden, id } = useInput(props, containerRef)
+  const { displayMode: mode, value, setValue, disabled, hidden, id } = useInput(props)
 
   const onMinus = useCallback(() => {
     const newValue = typeof value === 'number' ? value - 1 : 0
@@ -57,35 +54,31 @@ export function WizNumberInput(props: WizNumberInputProps) {
     if (!value) return <Fragment />
     // return <WizTextDetail id={id} path={props.path} label={props.label} />
     return (
-      <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
-        <DescriptionListGroup>
-          <DescriptionListTerm>{props.label}</DescriptionListTerm>
-          <DescriptionListDescription id={id}>{value}</DescriptionListDescription>
-        </DescriptionListGroup>
-      </div>
+      <DescriptionListGroup>
+        <DescriptionListTerm>{props.label}</DescriptionListTerm>
+        <DescriptionListDescription id={id}>{value}</DescriptionListDescription>
+      </DescriptionListGroup>
     )
   }
 
   const placeholder = getEnterPlaceholder(props)
 
   return (
-    <div ref={containerRef} data-is-review-outline-target={id === outlineId || undefined}>
-      <WizFormGroup {...props} id={id}>
-        <PFNumberInput
-          id={id}
-          placeholder={placeholder}
-          // validated={validated}
-          value={value}
-          onMinus={onMinus}
-          onChange={onChange}
-          onPlus={onPlus}
-          min={props.min === undefined ? 0 : props.min}
-          max={props.max}
-          // isReadOnly={props.readonly}
-          // type={!props.secret || showSecrets ? 'text' : 'password'}
-          isDisabled={disabled}
-        />
-      </WizFormGroup>
-    </div>
+    <WizFormGroup {...props} id={id}>
+      <PFNumberInput
+        id={id}
+        placeholder={placeholder}
+        // validated={validated}
+        value={value}
+        onMinus={onMinus}
+        onChange={onChange}
+        onPlus={onPlus}
+        min={props.min === undefined ? 0 : props.min}
+        max={props.max}
+        // isReadOnly={props.readonly}
+        // type={!props.secret || showSecrets ? 'text' : 'password'}
+        isDisabled={disabled}
+      />
+    </WizFormGroup>
   )
 }

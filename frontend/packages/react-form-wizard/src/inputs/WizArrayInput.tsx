@@ -28,27 +28,19 @@ import {
   useRef,
   useState,
 } from 'react'
-import { WizTextDetail } from '..'
+import { CurrentStepIdContext, InputReviewMeta, useStepInputsRegistry, WizTextDetail } from '..'
 import { FieldGroup } from '../components/FieldGroup'
 import { Indented } from '../components/Indented'
 import { LabelHelp } from '../components/LabelHelp'
 import { WizHelperText } from '../components/WizHelperText'
 import { useData } from '../contexts/DataContext'
-import { useBumpReviewDomTree } from '../contexts/ReviewDomTreeSyncContext'
-import { useReviewStepOutlineId } from '../ReviewStep'
 import { DisplayMode } from '../contexts/DisplayModeContext'
 import { ItemContext } from '../contexts/ItemContext'
 import { ShowValidationContext } from '../contexts/ShowValidationProvider'
 import { useStringContext } from '../contexts/StringContext'
 import { HasValidationErrorContext, ValidationProvider } from '../contexts/ValidationProvider'
-import {
-  getCollapsedPlaceholder,
-  InputCommonProps,
-  InputContainerElement,
-  InputReviewMeta,
-  useInput,
-  useValue,
-} from './Input'
+import { convertId, getCollapsedPlaceholder, InputCommonProps, useInput, useValue } from './Input'
+import { useBumpReviewDomTree } from '../contexts/ReviewDomTreeSyncContext'
 
 const WIZ_ARRAY_INSTANCE_LABEL_UNUSED_PATH = '__wizArrayInstanceLabel__'
 
@@ -80,8 +72,6 @@ export type WizArrayInputProps = Omit<InputCommonProps, 'path'> & {
 }
 
 export function WizArrayInput(props: WizArrayInputProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const outlineId = useReviewStepOutlineId()
   const {
     displayMode: mode,
     value,
@@ -89,7 +79,7 @@ export function WizArrayInput(props: WizArrayInputProps) {
     hidden,
     id,
     required,
-  } = useInput(props as InputCommonProps, containerRef, { isArrayInput: true })
+  } = useInput(props as InputCommonProps, { isArrayInput: true })
   const [open, setOpen] = useState(false)
   const onToggle = useCallback(() => setOpen((open: boolean) => !open), [])
 
@@ -162,7 +152,7 @@ export function WizArrayInput(props: WizArrayInputProps) {
     }
     if (props.isSection) {
       return (
-        <div ref={containerRef}>
+        <Fragment>
           <Title headingLevel="h2">{props.label}</Title>
           <Indented id={id}>
             <List style={{ marginTop: -4 }} isPlain={props.summaryList !== true}>
@@ -183,11 +173,11 @@ export function WizArrayInput(props: WizArrayInputProps) {
               ))}
             </List>
           </Indented>
-        </div>
+        </Fragment>
       )
     }
     return (
-      <div ref={containerRef}>
+      <Fragment>
         <div className="pf-v6-c-description-list__term">{props.label}</div>
         <Indented id={id}>
           <List style={{ marginTop: -4 }} isPlain={props.summaryList !== true}>
@@ -208,16 +198,11 @@ export function WizArrayInput(props: WizArrayInputProps) {
             ))}
           </List>
         </Indented>
-      </div>
+      </Fragment>
     )
   }
   return (
-    <div
-      ref={containerRef}
-      id={id}
-      className="form-wizard-array-input"
-      data-is-review-outline-target={id === outlineId || undefined}
-    >
+    <div id={id} className="form-wizard-array-input">
       {props.label && (
         <div style={{ paddingBottom: 8, paddingTop: 0 }}>
           {props.isSection ? (
@@ -320,43 +305,36 @@ function ArrayInstanceReviewHost(props: {
   measureRootRef: RefObject<HTMLDivElement | null>
   children: ReactNode
 }) {
-  const {
-    value,
-    instancePathSegment,
-    pathLabelValue,
-    collapsedContentProp,
-    collapsedContentRevision,
-    measureRootRef,
-    children,
-  } = props
-  const hostRef = useRef<HTMLDivElement>(null)
+  const { value, instancePathSegment, pathLabelValue, collapsedContentProp, measureRootRef, children } = props
+
+  const currentStepId = useContext(CurrentStepIdContext)
+  const inputId = convertId({ id: undefined, path: instancePathSegment })
+  const id = `${currentStepId}-${inputId}`
+  const stepInputsRegistry = useStepInputsRegistry()
   const bumpReviewDomTree = useBumpReviewDomTree()
   useLayoutEffect(() => {
-    const el = hostRef.current
-    if (!el) return
-    const typed = el as InputContainerElement
+    if (!stepInputsRegistry) return
     const label = getArrayInstanceLabel(collapsedContentProp, pathLabelValue, measureRootRef.current)
-    typed.__reviewStepProps = {
+    stepInputsRegistry.register(id, {
       path: instancePathSegment,
       value,
       label: label ?? '',
       type: InputReviewMeta.ARRAY_INSTANCE,
-    }
+    })
     bumpReviewDomTree?.()
-    return () => {
-      delete typed.__reviewStepProps
-      bumpReviewDomTree?.()
-    }
+    return () => stepInputsRegistry.unregister(id)
   }, [
-    bumpReviewDomTree,
-    value,
+    stepInputsRegistry,
     instancePathSegment,
     pathLabelValue,
     collapsedContentProp,
-    collapsedContentRevision,
     measureRootRef,
+    value,
+    id,
+    bumpReviewDomTree,
   ])
-  return <div ref={hostRef}>{children}</div>
+
+  return <div id={id}>{children}</div>
 }
 
 export function ArrayInputItem(props: {
