@@ -17,13 +17,17 @@ import {
   ApplicationCacheType,
   ApplicationClusterStatusMap,
   ApplicationStatuses,
+  ApplicationStatusEntry,
   getAppDict,
   IArgoApplication,
   IQuery,
   ITransformedResource,
+  ScoreColumn,
   ScoreColumnSize,
   SEARCH_QUERY_LIMIT,
+  StatusColumn,
 } from './applications'
+import { PushModelResourceEntry, PushModelResourceMap } from './applicationsPushModel'
 import {
   cacheRemoteApps,
   getClusters,
@@ -37,7 +41,17 @@ import {
 } from './utils'
 import { deflateResource } from '../../lib/compression'
 import { IWatchOptions } from '../../resources/watch-options'
-import { computeAppHealthStatus, computeAppSyncStatus } from './utils'
+import { computeAppHealthStatus, computeAppSyncStatus, resErrorStates, resWarningStates } from './utils'
+
+interface IArgoAppStatusResource {
+  group?: string
+  kind: string
+  name: string
+  namespace: string
+  version?: string
+  status?: string
+  health?: { status: string }
+}
 
 interface IArgoAppLocalResource extends IResource {
   spec: {
@@ -48,7 +62,7 @@ interface IArgoAppLocalResource extends IResource {
     }
   }
   status?: {
-    resources: [{ namespace: string }]
+    resources: IArgoAppStatusResource[]
   }
 }
 
@@ -163,12 +177,21 @@ export function addArgoQueryInputs(applicationCache: ApplicationCacheType, query
   })
 }
 
-export async function cacheArgoApplications(applicationCache: ApplicationCacheType, searchResult: SearchResult) {
+export async function cacheArgoApplications(
+  applicationCache: ApplicationCacheType,
+  searchResult: SearchResult,
+  pushModelSearchResult?: SearchResult,
+  pushModelResourceMap?: PushModelResourceMap
+) {
   const hubClusterName = getHubClusterName()
   const clusters: Cluster[] = await getClusters()
   const localCluster = clusters.find((cls) => cls.name === hubClusterName)
   const remoteArgoApps = searchResult.items.filter((app) => app.cluster !== hubClusterName)
   const argoStatusMap = createArgoStatusMap(searchResult, clusters)
+
+  if (pushModelSearchResult && pushModelResourceMap?.size > 0) {
+    mergePushModelPodStatuses(pushModelSearchResult, pushModelResourceMap, argoStatusMap)
+  }
   // should be rarely used, argo apps are usually created by appsets
   if (applicationCache['localArgoApps']?.resourceUidMap) {
     try {
@@ -437,6 +460,89 @@ export function getAppSetPlacementData(appSet: IResource, applicationSets: IAppl
   })
 
   return [currentAppSetPlacement, appSetsSharingPlacement]
+}
+
+function buildWorkloadUidMap(
+  items: ISearchResource[],
+  pushModelResourceMap: PushModelResourceMap
+): Map<string, PushModelResourceEntry> {
+  const workloadUidMap = new Map<string, PushModelResourceEntry>()
+  for (const item of items) {
+    const key = `${item.cluster}/${item.namespace}/${item.name}`
+    const entry = pushModelResourceMap.get(key)
+    if (entry) {
+      workloadUidMap.set(item._uid, entry)
+    }
+  }
+  return workloadUidMap
+}
+
+function findOwningEntry(
+  pod: ISearchResource,
+  workloadUidMap: Map<string, PushModelResourceEntry>
+): PushModelResourceEntry | undefined {
+  if (!pod._relatedUids) return undefined
+  for (const uid of pod._relatedUids) {
+    const entry = workloadUidMap.get(uid)
+    if (entry) return entry
+  }
+  return undefined
+}
+
+function classifyPodStatus(deployed: ApplicationStatusEntry, status: string) {
+  if (resErrorStates.has(status)) {
+    deployed[StatusColumn.counts][ScoreColumn.danger]++
+  } else if (resWarningStates.has(status)) {
+    deployed[StatusColumn.counts][ScoreColumn.warning]++
+  } else {
+    deployed[StatusColumn.counts][ScoreColumn.healthy]++
+  }
+}
+
+function hasDeployedPods(appStatuses: ApplicationStatuses): boolean {
+  const counts = appStatuses.deployed[StatusColumn.counts]
+  return (
+    counts[ScoreColumn.healthy] + counts[ScoreColumn.progress] + counts[ScoreColumn.warning] + counts[ScoreColumn.danger]
+  ) > 0
+}
+
+export function mergePushModelPodStatuses(
+  searchResult: SearchResult,
+  pushModelResourceMap: PushModelResourceMap,
+  argoClusterStatusMap: ApplicationClusterStatusMap
+) {
+  if (!searchResult?.items?.length) return
+
+  const workloadUidMap = buildWorkloadUidMap(searchResult.items, pushModelResourceMap)
+
+  const podRelated = searchResult.related?.find((r) => r.kind === 'Pod')
+  if (!podRelated) return
+
+  // Identify entries already populated by computeDeployedPodStatuses so we
+  // don't double-count pods that the main Argo search already found.
+  const alreadyPopulated = new Set<string>()
+  for (const entry of pushModelResourceMap.values()) {
+    const appStatuses = argoClusterStatusMap[entry.appSetKey]?.[entry.targetCluster]
+    if (appStatuses && hasDeployedPods(appStatuses)) {
+      alreadyPopulated.add(`${entry.appSetKey}/${entry.targetCluster}`)
+    }
+  }
+
+  for (const pod of podRelated.items) {
+    const matchedEntry = findOwningEntry(pod, workloadUidMap)
+    if (!matchedEntry) continue
+
+    const { appSetKey, targetCluster } = matchedEntry
+    if (alreadyPopulated.has(`${appSetKey}/${targetCluster}`)) continue
+
+    const appStatuses = argoClusterStatusMap[appSetKey]?.[targetCluster]
+    if (!appStatuses) continue
+
+    const status = pod.status?.toLocaleLowerCase()
+    if (!status || status === 'terminating') continue
+
+    classifyPodStatus(appStatuses.deployed, status)
+  }
 }
 
 export function createArgoStatusMap(searchResult: SearchResult, clusters: Cluster[]) {
