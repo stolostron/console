@@ -99,48 +99,50 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
   }
 
   return (
-    <WizFormGroup {...props} id={id}>
-      <InputGroup>
-        <InputGroupItem isFill>
-          <PfSelect
-            onOpenChange={(isOpen) => {
-              if (!isOpen) {
-                setOpen(false)
-              }
-            }}
-            isOpen={open}
-            toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-              <InputSelect
-                disabled={disabled || (loading && !isCreatable)}
-                validated={validated}
-                placeholder={placeholder}
-                options={options}
-                setOptions={handleSetOptions}
-                isCreatable={isCreatable}
-                toggleRef={toggleRef}
+    <div id={id}>
+      <WizFormGroup {...props}>
+        <InputGroup>
+          <InputGroupItem isFill>
+            <PfSelect
+              onOpenChange={(isOpen) => {
+                if (!isOpen) {
+                  setOpen(false)
+                }
+              }}
+              isOpen={open}
+              toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                <InputSelect
+                  disabled={disabled || (loading && !isCreatable)}
+                  validated={validated}
+                  placeholder={placeholder}
+                  options={options}
+                  setOptions={handleSetOptions}
+                  isCreatable={isCreatable}
+                  toggleRef={toggleRef}
+                  value={value}
+                  onSelect={onSelect}
+                  open={open}
+                  setOpen={setOpen}
+                />
+              )}
+              selected={value}
+              onSelect={(_event, value) => onSelect(value?.toString() ?? '')}
+              shouldFocusFirstItemOnOpen={false}
+              isScrollable
+            >
+              <SelectListOptions
+                allOptions={options}
+                filteredOptions={filteredOptions}
                 value={value}
-                onSelect={onSelect}
-                open={open}
-                setOpen={setOpen}
+                isCreatable={isCreatable}
+                footer={footer}
               />
-            )}
-            selected={value}
-            onSelect={(_event, value) => onSelect(value?.toString() ?? '')}
-            shouldFocusFirstItemOnOpen={false}
-            isScrollable
-          >
-            <SelectListOptions
-              allOptions={options}
-              filteredOptions={filteredOptions}
-              value={value}
-              isCreatable={isCreatable}
-              footer={footer}
-            />
-          </PfSelect>
-        </InputGroupItem>
-        {props.asyncCallback && loading && <SpinnerButton />}
-        {props.asyncCallback && !loading && <SyncButton onClick={sync} />}
-      </InputGroup>
-    </WizFormGroup>
+            </PfSelect>
+          </InputGroupItem>
+          {props.asyncCallback && loading && <SpinnerButton />}
+          {props.asyncCallback && !loading && <SyncButton onClick={sync} />}
+        </InputGroup>
+      </WizFormGroup>
+    </div>
   )
 }

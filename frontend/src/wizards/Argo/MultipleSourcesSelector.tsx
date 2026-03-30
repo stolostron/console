@@ -5,7 +5,6 @@ import {
   Tile,
   WizArrayInput,
   WizHidden,
-  WizTextDetail,
   WizTextInput,
   WizTiles,
   useEditMode,
@@ -47,10 +46,6 @@ export function MultipleSourcesSelector(props: MultipleSourcesSelectorProps) {
       }}
       collapsedContent={
         <Fragment>
-          <WizHidden hidden={(data) => !data.repositoryType}>
-            <Title headingLevel="h6">{t('Type')}</Title>
-          </WizHidden>
-
           <WizHidden hidden={(data) => data.repositoryType !== 'git'}>
             <Label style={{ marginRight: 10 }} color="grey">
               {t('Git')}
@@ -61,7 +56,6 @@ export function MultipleSourcesSelector(props: MultipleSourcesSelectorProps) {
               {t('Helm')}
             </Label>
           </WizHidden>
-          <WizTextDetail path="repoURL" placeholder={t('Repository details')} />
         </Fragment>
       }
     >
