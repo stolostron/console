@@ -18,6 +18,7 @@ import {
   getAppSetAppsMap,
   getAppSetPlacementData,
 } from './applicationsArgo'
+import { addPushModelPodQueryInputs, PushModelResourceMap } from './applicationsPushModel'
 import { getGiganticApps } from '../../lib/gigantic'
 import { createDictionary, inflateApps } from '../../lib/compression'
 import { IWatchOptions } from '../../resources/watch-options'
@@ -409,6 +410,18 @@ export async function aggregateRemoteApplications(pass: number) {
   if (querySystemApps) {
     await addSystemQueryInputs(applicationCache, query)
   }
+  // Push model AppSet apps live on the hub but deploy to remote clusters.
+  // Search relatedKinds won't cross that cluster boundary, so we add a
+  // dedicated query for the workloads listed in each hub Application's
+  // status.resources and then merge the resulting pods back in.
+  let pushModelResourceMap: PushModelResourceMap | undefined
+  const pushModelQueryIndex = query.variables.input.length
+  try {
+    pushModelResourceMap = await addPushModelPodQueryInputs(query)
+  } catch (e) {
+    logger.error(`addPushModelPodQueryInputs exception ${e}`)
+  }
+  const hasPushModelQuery = (pushModelResourceMap?.size ?? 0) > 0
 
   //////////// MAKE QUERY //////////////////////////
   let results: ISearchResult
@@ -420,7 +433,12 @@ export async function aggregateRemoteApplications(pass: number) {
   }
   const searchResult = results.data?.searchResult
   // //////////// SAVE RESULTS ///////////////////
-  const ocpArgoAppFilter = await cacheArgoApplications(applicationCache, searchResult?.[0] as SearchResult)
+  const ocpArgoAppFilter = await cacheArgoApplications(
+    applicationCache,
+    searchResult?.[0] as SearchResult,
+    hasPushModelQuery ? (searchResult?.[pushModelQueryIndex] as SearchResult) : undefined,
+    hasPushModelQuery ? pushModelResourceMap : undefined
+  )
   await cacheOCPApplications(applicationCache, searchResult?.[1] as SearchResult, ocpArgoAppFilter)
   if (querySystemApps) {
     await cacheOCPApplications(applicationCache, searchResult?.[2] as SearchResult, ocpArgoAppFilter, true)

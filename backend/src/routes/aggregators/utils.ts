@@ -185,7 +185,7 @@ function isFluxApplication(label: string) {
 //////////////////////////////////////////////////////////////////
 ////////////// COMPUTE STATUSES /////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
-const resErrorStates = new Set([
+export const resErrorStates = new Set([
   'err',
   'off',
   'invalid',
@@ -195,7 +195,7 @@ const resErrorStates = new Set([
   'crashloopbackoff',
   'lost',
 ])
-const resWarningStates = new Set(['pending', 'creating', 'terminating'])
+export const resWarningStates = new Set(['pending', 'creating', 'terminating'])
 
 export function computeAppHealthStatus(health: ApplicationStatusEntry, app: ISearchResource) {
   switch (app.healthStatus) {
