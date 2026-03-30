@@ -55,7 +55,7 @@ export function PlacementLinkList(props: { placementsForCluster: Placement[] }) 
         <Link
           key={`placement-link-${placement.metadata.name!}`}
           to={{
-            pathname: generatePath(NavigationPath.placementOverview, {
+            pathname: generatePath(NavigationPath.placementDetails, {
               namespace: placement.metadata.namespace!,
               name: placement.metadata.name!,
             }),
@@ -66,7 +66,6 @@ export function PlacementLinkList(props: { placementsForCluster: Placement[] }) 
       ))}
       {renderShowMoreBtn && (
         <Label
-          id={'placement-expandable-toggle'}
           color={'blue'}
           style={{ width: 'fit-content' }}
           isCompact
@@ -74,6 +73,87 @@ export function PlacementLinkList(props: { placementsForCluster: Placement[] }) 
           onClick={() => setShowMore(!showMore)}
         >
           {showMore ? t('Show less') : t('{{count}} more', { count: placementsForCluster.length - 3 })}
+        </Label>
+      )}
+    </div>
+  )
+}
+
+export function ClusterLinkList(props: { clusterNames: string[] }) {
+  const { clusterNames } = props
+  const { t } = useTranslation()
+  const [showMore, setShowMore] = useState(false)
+  const renderShowMoreBtn = clusterNames.length > 3
+  const displayedClusters = useMemo(() => {
+    if (clusterNames.length === 0) return []
+    if (showMore) return clusterNames
+    return clusterNames.slice(0, 3)
+  }, [clusterNames, showMore])
+  if (clusterNames.length === 0) return <>-</>
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      {displayedClusters.map((clusterName, i) => (
+        <Link
+          key={`cluster-link-${clusterName}`}
+          to={{
+            pathname: generatePath(NavigationPath.clusterDetails, {
+              name: clusterName,
+              namespace: clusterName,
+            }),
+          }}
+        >
+          {`${clusterName}${i !== displayedClusters.length - 1 ? ',' : ''}`}
+        </Link>
+      ))}
+      {renderShowMoreBtn && (
+        <Label
+          color={'blue'}
+          style={{ width: 'fit-content' }}
+          isCompact
+          variant={'outline'}
+          onClick={() => setShowMore(!showMore)}
+        >
+          {showMore ? t('Show less') : t('{{count}} more', { count: clusterNames.length - 3 })}
+        </Label>
+      )}
+    </div>
+  )
+}
+
+export function ClusterSetLinkList(props: { clusterSets: string[] }) {
+  const { clusterSets } = props
+  const { t } = useTranslation()
+  const [showMore, setShowMore] = useState(false)
+  const renderShowMoreBtn = clusterSets.length > 3
+  const displayedClusterSets = useMemo(() => {
+    if (clusterSets.length === 0) return []
+    if (showMore) return clusterSets
+    return clusterSets.slice(0, 3)
+  }, [clusterSets, showMore])
+  if (clusterSets.length === 0) return <>-</>
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      {displayedClusterSets.map((clusterSet, i) => (
+        <Link
+          key={`clusterset-link-${clusterSet}`}
+          to={{
+            pathname: generatePath(NavigationPath.clusterSetDetails, {
+              id: clusterSet,
+            }),
+          }}
+        >
+          {`${clusterSet}${i !== displayedClusterSets.length - 1 ? ',' : ''}`}
+        </Link>
+      ))}
+      {renderShowMoreBtn && (
+        <Label
+          color={'blue'}
+          style={{ width: 'fit-content' }}
+          isCompact
+          variant={'outline'}
+          onClick={() => setShowMore(!showMore)}
+        >
+          {showMore ? t('Show less') : t('{{count}} more', { count: clusterSets.length - 3 })}
         </Label>
       )}
     </div>

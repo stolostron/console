@@ -20,7 +20,10 @@ import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../../../../NavigationPath'
 import { HighlightSearchText } from '../../../../components/HighlightSearchText'
 import { Selector } from '../../../../resources/selector'
-import { getLabels, getMatchLabels } from '../../../Applications/CreateSubscriptionApplication/controlData/ControlDataPlacement'
+import {
+  getLabels,
+  getMatchLabels,
+} from '../../../Applications/CreateSubscriptionApplication/controlData/ControlDataPlacement'
 import { useCallback, useMemo, useState } from 'react'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
 import { getSearchLink } from '../../../Applications/helpers/resource-helper'
@@ -28,10 +31,17 @@ import { rbacDelete, useIsAnyNamespaceAuthorized } from '../../../../lib/rbac-ut
 import { IDeletePlacementModalProps } from './components/DeletePlacementModal'
 import { DeletePlacementModal } from './components/DeletePlacementModal'
 import { listResources } from '../../../../resources/utils'
-import { ApplicationSet, ApplicationSetApiVersion, ApplicationSetKind, AppSetGenerator } from '../../../../resources/application-set'
+import {
+  ApplicationSet,
+  ApplicationSetApiVersion,
+  ApplicationSetKind,
+  AppSetGenerator,
+} from '../../../../resources/application-set'
 import { PlacementBinding } from '../../../../resources/placement-binding'
 import { Policy, PolicyKind } from '../../../../resources/policy'
+import { PolicySet, PolicySetKind } from '../../../../resources/policy-set'
 import { GitOpsCluster } from '../../../../resources/gitops-cluster'
+import { ClusterSetLinkList } from './utils'
 
 export default function PlacementsPage() {
   const { t } = useTranslation()
@@ -75,7 +85,10 @@ function generatorReferencesPlacement(generator: AppSetGenerator, placementName:
   return nestedGenerators?.some((g) => generatorReferencesPlacement(g, placementName)) ?? false
 }
 
-function getApplicationSetsReferencingPlacement(applicationSets: ApplicationSet[], placement: Placement): ApplicationSet[] {
+export function getApplicationSetsReferencingPlacement(
+  applicationSets: ApplicationSet[],
+  placement: Placement
+): ApplicationSet[] {
   return applicationSets.filter(
     (appSet) =>
       appSet.metadata.namespace === placement.metadata.namespace &&
@@ -83,7 +96,7 @@ function getApplicationSetsReferencingPlacement(applicationSets: ApplicationSet[
   )
 }
 
-function getPoliciesReferencingPlacement(
+export function getPoliciesReferencingPlacement(
   placement: Placement,
   placementBindings: PlacementBinding[],
   policies: Policy[]
@@ -109,7 +122,36 @@ function getPoliciesReferencingPlacement(
   )
 }
 
-function getGitOpsClustersReferencingPlacement(gitOpsClusters: GitOpsCluster[], placement: Placement): GitOpsCluster[] {
+export function getPolicySetsReferencingPlacement(
+  placement: Placement,
+  placementBindings: PlacementBinding[],
+  policySets: PolicySet[]
+): PolicySet[] {
+  const bindingsForPlacement = placementBindings.filter(
+    (pb) =>
+      pb.metadata.namespace === placement.metadata.namespace &&
+      pb.placementRef.kind === PlacementKind &&
+      pb.placementRef.name === placement.metadata.name
+  )
+
+  const policySetNames = new Set<string>()
+  for (const binding of bindingsForPlacement) {
+    for (const subject of binding.subjects ?? []) {
+      if (subject.kind === PolicySetKind && subject.name) {
+        policySetNames.add(subject.name)
+      }
+    }
+  }
+
+  return policySets.filter(
+    (ps) => ps.metadata.namespace === placement.metadata.namespace && policySetNames.has(ps.metadata.name)
+  )
+}
+
+export function getGitOpsClustersReferencingPlacement(
+  gitOpsClusters: GitOpsCluster[],
+  placement: Placement
+): GitOpsCluster[] {
   return gitOpsClusters.filter(
     (gc) =>
       gc.metadata.namespace === placement.metadata.namespace &&
@@ -120,7 +162,6 @@ function getGitOpsClustersReferencingPlacement(gitOpsClusters: GitOpsCluster[], 
 
 export function PlacementsTable(props: { placements: Placement[]; emptyState: React.ReactNode }) {
   const { t } = useTranslation()
-  const clusterSetsDisplayLimit = 3
   const filtersDisplayLimit = 3
   const { placementBindingsState, policiesState, gitOpsClustersState } = useSharedAtoms()
   const placementBindings = useRecoilValue(placementBindingsState)
@@ -131,195 +172,233 @@ export function PlacementsTable(props: { placements: Placement[]; emptyState: Re
     return placement.metadata.uid!
   }
 
-  const columns = useMemo<IAcmTableColumn<Placement>[]>(() => [
-    {
-      header: t('Name'),
-      sort: 'metadata.name',
-      search: 'metadata.name',
-      cell: (placement: Placement, search: string) => {
-        return (
-          <AcmVisitedLink
-            to={generatePath(NavigationPath.placementDetails, {
-              namespace: placement.metadata.namespace!,
-              name: placement.metadata.name!,
-            })}
-          >
-            <HighlightSearchText text={placement.metadata.name!} searchText={search} isLink useFuzzyHighlighting />
-          </AcmVisitedLink>
-        )
+  const columns = useMemo<IAcmTableColumn<Placement>[]>(
+    () => [
+      {
+        header: t('Name'),
+        sort: 'metadata.name',
+        search: 'metadata.name',
+        cell: (placement: Placement, search: string) => {
+          return (
+            <AcmVisitedLink
+              to={generatePath(NavigationPath.placementDetails, {
+                namespace: placement.metadata.namespace!,
+                name: placement.metadata.name!,
+              })}
+            >
+              <HighlightSearchText text={placement.metadata.name!} searchText={search} isLink useFuzzyHighlighting />
+            </AcmVisitedLink>
+          )
+        },
+        exportContent: (placement: Placement) => {
+          return placement.metadata.name
+        },
       },
-      exportContent: (placement: Placement) => {
-        return placement.metadata.name
+      {
+        header: t('Namespace'),
+        sort: 'metadata.namespace',
+        search: 'metadata.namespace',
+        cell: (placement: Placement) => {
+          return <span>{placement.metadata.namespace}</span>
+        },
+        exportContent: (placement: Placement) => {
+          return placement.metadata.namespace
+        },
       },
-    },
-    {
-      header: t('Namespace'),
-      sort: 'metadata.namespace',
-      search: 'metadata.namespace',
-      cell: (placement: Placement) => {
-        return <span>{placement.metadata.namespace}</span>
-      },
-      exportContent: (placement: Placement) => {
-        return placement.metadata.namespace
-      },
-    },
-    {
-      header: t('Cluster sets'),
-      tooltip: t('tooltip.placements.table.clusterSets'),
-      cell: (placement: Placement) => {
-        // TODO: Add links to cluster sets
-        if (placement.spec.clusterSets) {
-          const collapse = placement.spec.clusterSets.filter((_clusterSet, i) => i >= clusterSetsDisplayLimit)
-          return <AcmLabels labels={placement.spec.clusterSets} collapse={collapse} />
-        } else {
+      {
+        header: t('Cluster sets'),
+        tooltip: t('tooltip.placements.table.clusterSets'),
+        cell: (placement: Placement) => {
+          if (placement.spec.clusterSets) {
+            return <ClusterSetLinkList clusterSets={placement.spec.clusterSets} />
+          } else {
+            return '-'
+          }
+        },
+        exportContent: (placement: Placement) => {
+          if (placement.spec.clusterSets) {
+            return placement.spec.clusterSets.join(', ')
+          }
           return '-'
-        }
+        },
       },
-      exportContent: (placement: Placement) => {
-        if (placement.spec.clusterSets) {
-          return placement.spec.clusterSets.join(', ')
-        }
-        return '-'
-      },
-    },
-    {
-      header: t('Filters'),
-      tooltip: t('tooltip.placements.table.filter'),
-      cell: (placement: Placement) => {
-        const clusterSelectors: Selector[] = []
+      {
+        header: t('Filters'),
+        tooltip: t('tooltip.placements.table.filter'),
+        cell: (placement: Placement) => {
+          const clusterSelectors: Selector[] = []
 
-        placement.spec.predicates?.forEach((predicate) => {
-          if (predicate.requiredClusterSelector.labelSelector) {
-            clusterSelectors.push(predicate.requiredClusterSelector.labelSelector)
-          }
-          if (predicate.requiredClusterSelector.claimSelector) {
-            clusterSelectors.push(predicate.requiredClusterSelector.claimSelector)
-          }
-        })
-
-        if (clusterSelectors?.length && clusterSelectors.length > 0) {
-          const filters: string[] = []
-          const collapse: string[] = []
-          clusterSelectors.forEach((s, i) => {
-            if (s.matchLabels) {
-              if (i >= filtersDisplayLimit) {
-                collapse.push(getMatchLabels(s))
-              } else {
-                filters.push(getMatchLabels(s))
-              }
+          placement.spec.predicates?.forEach((predicate) => {
+            if (!predicate.requiredClusterSelector) return
+            if (predicate.requiredClusterSelector.labelSelector) {
+              clusterSelectors.push(predicate.requiredClusterSelector.labelSelector)
             }
-            if (s.matchExpressions) {
-              if (i >= filtersDisplayLimit) {
-                collapse.push(getLabels(s))
-              } else {
-                filters.push(getLabels(s))
-              }
+            if (predicate.requiredClusterSelector.claimSelector) {
+              clusterSelectors.push(predicate.requiredClusterSelector.claimSelector)
             }
           })
-          return <AcmLabels labels={filters} collapse={collapse} />
-        }
-        return t('None')
+
+          if (clusterSelectors?.length && clusterSelectors.length > 0) {
+            const filters: string[] = []
+            const collapse: string[] = []
+            clusterSelectors.forEach((s, i) => {
+              if (s.matchLabels && Object.keys(s.matchLabels).length > 0) {
+                if (i >= filtersDisplayLimit) {
+                  collapse.push(getMatchLabels(s))
+                } else {
+                  filters.push(getMatchLabels(s))
+                }
+              }
+              if (s.matchExpressions && s.matchExpressions.length > 0) {
+                if (i >= filtersDisplayLimit) {
+                  collapse.push(getLabels(s))
+                } else {
+                  filters.push(getLabels(s))
+                }
+              }
+            })
+            if (filters.length === 0) {
+              return t('None')
+            }
+            return <AcmLabels labels={filters} collapse={collapse} />
+          }
+          return t('None')
+        },
+        exportContent: (placement: Placement) => {
+          const filters: string[] = []
+          placement.spec.predicates?.forEach((predicate) => {
+            if (!predicate.requiredClusterSelector) return
+            if (predicate.requiredClusterSelector.labelSelector?.matchLabels) {
+              filters.push(getMatchLabels(predicate.requiredClusterSelector.labelSelector))
+            }
+            if (predicate.requiredClusterSelector.labelSelector?.matchExpressions) {
+              filters.push(getLabels(predicate.requiredClusterSelector.labelSelector))
+            }
+            if (predicate.requiredClusterSelector.claimSelector?.matchLabels) {
+              filters.push(getMatchLabels(predicate.requiredClusterSelector.claimSelector))
+            }
+            if (predicate.requiredClusterSelector.claimSelector?.matchExpressions) {
+              filters.push(getLabels(predicate.requiredClusterSelector.claimSelector))
+            }
+          })
+          return filters.length > 0 ? filters.join(', ') : t('None')
+        },
       },
-      // TODO: Add export content
-    },
-    {
-      header: t('Selected clusters'),
-      tooltip: t('tooltip.placements.table.selectedClusters'),
-      cell: (placement: Placement) => {
-        return <span>{placement.status?.numberOfSelectedClusters}</span>
+      {
+        header: t('Selected clusters'),
+        tooltip: t('tooltip.placements.table.selectedClusters'),
+        cell: (placement: Placement) => {
+          return <span>{placement.status?.numberOfSelectedClusters ?? 0}</span>
+        },
+        sort: 'status.numberOfSelectedClusters',
+        search: 'status.numberOfSelectedClusters',
+        exportContent: (placement: Placement) => {
+          return placement.status?.numberOfSelectedClusters ?? '0'
+        },
       },
-      sort: 'status.numberOfSelectedClusters',
-      search: 'status.numberOfSelectedClusters',
-      exportContent: (placement: Placement) => {
-        return placement.status?.numberOfSelectedClusters
+      {
+        header: t('Last updated'),
+        sort: (a: Placement, b: Placement) => {
+          const satisfiedConditionA = a.status?.conditions?.find((condition) => condition.type === 'PlacementSatisfied')
+          const satisfiedConditionB = b.status?.conditions?.find((condition) => condition.type === 'PlacementSatisfied')
+          return compareStrings(
+            satisfiedConditionA?.lastTransitionTime ?? '',
+            satisfiedConditionB?.lastTransitionTime ?? ''
+          )
+        },
+        cell: (placement: Placement) => {
+          const satisfiedCondition = placement.status?.conditions?.find(
+            (condition) => condition.type === 'PlacementSatisfied'
+          )
+          if (satisfiedCondition) {
+            return <AcmTimestamp timestamp={satisfiedCondition.lastTransitionTime ?? ''} />
+          }
+          return '-'
+        },
+        exportContent: (placement: Placement) => {
+          const satisfiedCondition = placement.status?.conditions?.find(
+            (condition) => condition.type === 'PlacementSatisfied'
+          )
+          if (satisfiedCondition) {
+            return satisfiedCondition.lastTransitionTime
+          }
+        },
       },
-    },
-    {
-      header: t('Last updated'),
-      sort: (a: Placement, b: Placement) => {
-        const satisfiedConditionA = a.status?.conditions?.find(
-          (condition) => condition.type === 'PlacementSatisfied'
-        )
-        const satisfiedConditionB = b.status?.conditions?.find(
-          (condition) => condition.type === 'PlacementSatisfied'
-        )
-        return compareStrings(satisfiedConditionA?.lastTransitionTime ?? '', satisfiedConditionB?.lastTransitionTime ?? '')
-      },
-      cell: (placement: Placement) => {
-        const satisfiedCondition = placement.status?.conditions?.find(
-          (condition) => condition.type === 'PlacementSatisfied'
-        )
-        if (satisfiedCondition) {
-          return <AcmTimestamp timestamp={satisfiedCondition.lastTransitionTime ?? ''} />
-        }
-        return '-'
-      },
-      exportContent: (placement: Placement) => {
-        const satisfiedCondition = placement.status?.conditions?.find(
-          (condition) => condition.type === 'PlacementSatisfied'
-        )
-        if (satisfiedCondition) {
-          return satisfiedCondition.lastTransitionTime
-        }
-      },
-    }
-  ], [t])
+    ],
+    [t]
+  )
 
   const navigate = useNavigate()
   const canDeletePlacement = useIsAnyNamespaceAuthorized(rbacDelete(PlacementDefinition))
-  
+
   const [modalProps, setModalProps] = useState<IDeletePlacementModalProps | { open: false }>({
     open: false,
   })
-  
-  const rowActionResolver = useCallback((placement: Placement) => {
-    return [
-      {
-        id: 'viewPlacement',
-        title: t('View placement'),
-        click: () => navigate(generatePath(NavigationPath.placementDetails, { namespace: placement.metadata.namespace!, name: placement.metadata.name! })),
-      },
-      {
-        id: 'searchPlacement',
-        title: t('Search placement'),
-        click: () => navigate(getSearchLink({ properties: { name: placement.metadata.name!, namespace: placement.metadata.namespace! } }))
-      },
-      {
-        id: 'deletePlacement',
-        title: t('Delete placement'),
-        click: async () => {
-          const applicationSets = await listResources<ApplicationSet>({
-            apiVersion: ApplicationSetApiVersion,
-            kind: ApplicationSetKind,
-            metadata: {
-              namespace: placement.metadata.namespace!,
-            },
-          }).promise
 
-          // Filter application sets that are using this placement
-          const relatedAppSets = getApplicationSetsReferencingPlacement(applicationSets, placement)
-          // Filter policies that are using this placement
-          const relatedPolicies = getPoliciesReferencingPlacement(placement, placementBindings, policies)
-          // Filter gitopsclusters that are using this placement
-          const relatedGitOpsClusters = getGitOpsClustersReferencingPlacement(gitOpsClusters, placement)
-
-          setModalProps({
-            open: true,
-            canRemove: canDeletePlacement,
-            resource: placement,
-            relatedAppSets: relatedAppSets,
-            relatedPolicies: relatedPolicies,
-            relatedGitOpsClusters: relatedGitOpsClusters,
-            errors: undefined,
-            loading: false,
-            close: () => setModalProps({ open: false }),
-            t,
-          })
+  const rowActionResolver = useCallback(
+    (placement: Placement) => {
+      return [
+        {
+          id: 'viewPlacement',
+          title: t('View placement'),
+          click: () =>
+            navigate(
+              generatePath(NavigationPath.placementDetails, {
+                namespace: placement.metadata.namespace!,
+                name: placement.metadata.name!,
+              })
+            ),
         },
-        isDisabled: !canDeletePlacement,
-      }
-    ]
-  }, [navigate, t, canDeletePlacement])
+        {
+          id: 'searchPlacement',
+          title: t('Search placement'),
+          click: () =>
+            navigate(
+              getSearchLink({
+                properties: { name: placement.metadata.name!, namespace: placement.metadata.namespace! },
+              })
+            ),
+        },
+        {
+          id: 'deletePlacement',
+          title: t('Delete placement'),
+          click: async () => {
+            let relatedAppSets: ApplicationSet[] = []
+            try {
+              const applicationSets = await listResources<ApplicationSet>({
+                apiVersion: ApplicationSetApiVersion,
+                kind: ApplicationSetKind,
+                metadata: {
+                  namespace: placement.metadata.namespace!,
+                },
+              }).promise
+              relatedAppSets = getApplicationSetsReferencingPlacement(applicationSets, placement)
+            } catch (err) {
+              console.error('Failed to fetch ApplicationSets:', err)
+            }
+
+            const relatedPolicies = getPoliciesReferencingPlacement(placement, placementBindings, policies)
+            const relatedGitOpsClusters = getGitOpsClustersReferencingPlacement(gitOpsClusters, placement)
+
+            setModalProps({
+              open: true,
+              canRemove: canDeletePlacement,
+              resource: placement,
+              relatedAppSets,
+              relatedPolicies,
+              relatedGitOpsClusters,
+              errors: undefined,
+              loading: false,
+              close: () => setModalProps({ open: false }),
+              t,
+            })
+          },
+          isDisabled: !canDeletePlacement,
+        },
+      ]
+    },
+    [navigate, t, canDeletePlacement, placementBindings, policies, gitOpsClusters]
+  )
 
   return (
     <AcmTableStateProvider localStorageKey="advanced-tables-pagination">
