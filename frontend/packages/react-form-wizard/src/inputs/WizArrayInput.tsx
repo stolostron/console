@@ -7,13 +7,10 @@ import {
   DropdownList,
   FormFieldGroupHeader,
   Icon,
-  List,
-  ListItem,
   MenuToggle,
   MenuToggleElement,
   Split,
   SplitItem,
-  Title,
 } from '@patternfly/react-core'
 import { ArrowDownIcon, ArrowUpIcon, ExclamationCircleIcon, PlusCircleIcon, TrashIcon } from '@patternfly/react-icons'
 import get from 'get-value'
@@ -30,11 +27,9 @@ import {
 } from 'react'
 import { CurrentStepIdContext, InputReviewMeta, useStepInputsRegistry, WizTextDetail } from '..'
 import { FieldGroup } from '../components/FieldGroup'
-import { Indented } from '../components/Indented'
 import { LabelHelp } from '../components/LabelHelp'
 import { WizHelperText } from '../components/WizHelperText'
 import { useData } from '../contexts/DataContext'
-import { DisplayMode } from '../contexts/DisplayModeContext'
 import { ItemContext } from '../contexts/ItemContext'
 import { ShowValidationContext } from '../contexts/ShowValidationProvider'
 import { useStringContext } from '../contexts/StringContext'
@@ -72,14 +67,7 @@ export type WizArrayInputProps = Omit<InputCommonProps, 'path'> & {
 }
 
 export function WizArrayInput(props: WizArrayInputProps) {
-  const {
-    displayMode: mode,
-    value,
-    setValue,
-    hidden,
-    id,
-    required,
-  } = useInput(props as InputCommonProps, { isArrayInput: true })
+  const { value, setValue, hidden, id, required } = useInput(props as InputCommonProps, { isArrayInput: true })
   const [open, setOpen] = useState(false)
   const onToggle = useCallback(() => setOpen((open: boolean) => !open), [])
 
@@ -146,61 +134,6 @@ export function WizArrayInput(props: WizArrayInputProps) {
 
   if (hidden) return <Fragment />
 
-  if (mode === DisplayMode.Details) {
-    if (values.length === 0) {
-      return <Fragment />
-    }
-    if (props.isSection) {
-      return (
-        <Fragment>
-          <Title headingLevel="h2">{props.label}</Title>
-          <Indented id={id}>
-            <List style={{ marginTop: -4 }} isPlain={props.summaryList !== true}>
-              {values.map((value, index) => (
-                <ListItem key={index} style={{ paddingBottom: 4 }}>
-                  <ItemContext.Provider value={value}>
-                    {typeof props.collapsedContent === 'string' ? (
-                      <WizTextDetail
-                        id={props.collapsedContent}
-                        path={props.collapsedContent}
-                        placeholder={props.collapsedPlaceholder}
-                      />
-                    ) : (
-                      props.collapsedContent
-                    )}
-                  </ItemContext.Provider>
-                </ListItem>
-              ))}
-            </List>
-          </Indented>
-        </Fragment>
-      )
-    }
-    return (
-      <Fragment>
-        <div className="pf-v6-c-description-list__term">{props.label}</div>
-        <Indented id={id}>
-          <List style={{ marginTop: -4 }} isPlain={props.summaryList !== true}>
-            {values.map((value, index) => (
-              <ListItem key={index} style={{ paddingBottom: 4 }}>
-                <ItemContext.Provider value={value}>
-                  {typeof props.collapsedContent === 'string' ? (
-                    <WizTextDetail
-                      id={props.collapsedContent}
-                      path={props.collapsedContent}
-                      placeholder={props.collapsedPlaceholder}
-                    />
-                  ) : (
-                    props.collapsedContent
-                  )}
-                </ItemContext.Provider>
-              </ListItem>
-            ))}
-          </List>
-        </Indented>
-      </Fragment>
-    )
-  }
   return (
     <div id={id} className="form-wizard-array-input">
       {props.label && (

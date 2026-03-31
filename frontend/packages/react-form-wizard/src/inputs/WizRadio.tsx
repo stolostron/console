@@ -1,14 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import {
-  DescriptionListDescription,
-  DescriptionListGroup,
-  DescriptionListTerm,
-  Radio as PfRadio,
-} from '@patternfly/react-core'
-import { Children, createContext, Fragment, isValidElement, ReactElement, ReactNode, useContext } from 'react'
+import { Radio as PfRadio } from '@patternfly/react-core'
+import { createContext, Fragment, ReactNode, useContext } from 'react'
 import { Indented } from '../components/Indented'
 import { WizHelperText } from '../components/WizHelperText'
-import { DisplayMode } from '../contexts/DisplayModeContext'
 import { useRandomID } from '../contexts/useRandomID'
 import { InputCommonProps, useInput } from './Input'
 import { WizFormGroup } from './WizFormGroup'
@@ -27,7 +21,7 @@ RadioGroupContext.displayName = 'RadioGroupContext'
 export type WizRadioGroupProps = InputCommonProps & { children?: ReactNode }
 
 export function WizRadioGroup(props: WizRadioGroupProps) {
-  const { displayMode: mode, value, setValue, hidden, id } = useInput(props)
+  const { value, setValue, hidden, id } = useInput(props)
 
   const radioGroup = useRandomID()
   const state: IRadioGroupContextState = {
@@ -39,33 +33,6 @@ export function WizRadioGroup(props: WizRadioGroupProps) {
   }
 
   if (hidden) return <Fragment />
-
-  if (mode === DisplayMode.Details) {
-    if (!state.value) return <Fragment />
-
-    let selectedChild: ReactElement | undefined
-    Children.forEach(props.children, (child) => {
-      if (isValidElement(child)) {
-        const value = child.props.value
-        if (value === state.value) {
-          selectedChild = child
-        }
-      }
-    })
-
-    if (!selectedChild) return <Fragment />
-    return (
-      <Fragment>
-        <DescriptionListGroup id={id}>
-          <DescriptionListTerm>{props.label}</DescriptionListTerm>
-          <DescriptionListDescription id={selectedChild.props.id}>
-            {selectedChild.props.label}
-          </DescriptionListDescription>
-        </DescriptionListGroup>
-        {selectedChild.props?.children && selectedChild.props.children}
-      </Fragment>
-    )
-  }
 
   return (
     <RadioGroupContext.Provider value={state}>

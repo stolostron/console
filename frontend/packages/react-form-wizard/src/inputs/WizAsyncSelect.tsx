@@ -1,13 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import {
-  DescriptionListDescription,
-  DescriptionListGroup,
-  DescriptionListTerm,
-  InputGroup,
-  InputGroupItem,
-  MenuToggleElement,
-  Select as PfSelect,
-} from '@patternfly/react-core'
+import { InputGroup, InputGroupItem, MenuToggleElement, Select as PfSelect } from '@patternfly/react-core'
 import { ReactNode, useCallback, useEffect, useState } from 'react'
 import { SpinnerButton } from '../components/SpinnerButton'
 import { SyncButton } from '../components/SyncButton'
@@ -87,16 +79,6 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
   useEffect(() => sync(), [sync])
 
   if (hidden) return null
-
-  if (displayMode === DisplayMode.Details) {
-    if (!value) return null
-    return (
-      <DescriptionListGroup>
-        <DescriptionListTerm>{props.label}</DescriptionListTerm>
-        <DescriptionListDescription id={id}>{value}</DescriptionListDescription>
-      </DescriptionListGroup>
-    )
-  }
 
   return (
     <div id={id}>
