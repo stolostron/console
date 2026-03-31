@@ -321,7 +321,7 @@ export function PlacementsTable(props: { placements: Placement[]; emptyState: Re
             (condition) => condition.type === 'PlacementSatisfied'
           )
           if (satisfiedCondition) {
-            return satisfiedCondition.lastTransitionTime
+            return satisfiedCondition.lastTransitionTime ?? '-'
           }
           return '-'
         },
