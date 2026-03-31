@@ -323,6 +323,7 @@ export function PlacementsTable(props: { placements: Placement[]; emptyState: Re
           if (satisfiedCondition) {
             return satisfiedCondition.lastTransitionTime
           }
+          return '-'
         },
       },
     ],
