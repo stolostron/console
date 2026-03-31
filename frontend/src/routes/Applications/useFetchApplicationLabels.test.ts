@@ -6,6 +6,24 @@ import { useFetchApplicationLabels } from './useFetchApplicationLabels'
 
 jest.mock('./utils', () => ({
   isOCPAppResource: (resource: IResource) => 'label' in resource && typeof (resource as any).label === 'string',
+  getLabels: (resource: any): Record<string, string> => {
+    if ('label' in resource && typeof resource.label === 'string') {
+      const labelStr: string = resource.label
+      return (
+        labelStr.split(';').reduce(
+          (acc: Record<string, string>, label: string) => {
+            const trimmed = label.trim()
+            const eqIndex = trimmed.indexOf('=')
+            return eqIndex === -1
+              ? acc
+              : { ...acc, [trimmed.slice(0, eqIndex).trim()]: trimmed.slice(eqIndex + 1).trim() }
+          },
+          {} as Record<string, string>
+        ) ?? {}
+      )
+    }
+    return resource.metadata?.labels ?? {}
+  },
 }))
 
 const createOCPApp = (id: string, label: string): IResource & { id: string; label: string } => ({
@@ -29,7 +47,7 @@ describe('useFetchApplicationLabels', () => {
     expect(result.current.labelMap).toEqual({})
   })
 
-  it('ignores non-OCP resources and returns empty options when no OCP resources', () => {
+  it('processes non-OCP resources using metadata.labels', () => {
     const nonOCP: IResource[] = [
       {
         apiVersion: 'app.k8s.io/v1beta1',
@@ -39,7 +57,12 @@ describe('useFetchApplicationLabels', () => {
     ]
     const { result } = renderHook(() => useFetchApplicationLabels(nonOCP))
     expect(result.current.labelOptions).toEqual([])
-    expect(result.current.labelMap).toEqual({})
+    expect(result.current.labelMap).toEqual({
+      'ns-0/app-0': {
+        pairs: {},
+        labels: [],
+      },
+    })
   })
 
   it('builds labelMap and labelOptions from a single OCP resource', () => {
@@ -92,7 +115,7 @@ describe('useFetchApplicationLabels', () => {
     expect(result.current.labelMap).toEqual({
       'res-1': {
         pairs: { app: 'myapp', tier: 'frontend' },
-        labels: ['app = myapp', 'tier = frontend'],
+        labels: ['app=myapp', 'tier=frontend'],
       },
     })
     expect(result.current.labelOptions).toHaveLength(2)
@@ -104,11 +127,11 @@ describe('useFetchApplicationLabels', () => {
 
     expect(result.current.labelMap).toEqual({
       'res-1': {
-        pairs: { '': undefined },
-        labels: [''],
+        pairs: {},
+        labels: [],
       },
     })
-    expect(result.current.labelOptions).toEqual([{ label: '', value: '' }])
+    expect(result.current.labelOptions).toEqual([])
   })
 
   it('updates when applicationData length changes', () => {
