@@ -687,6 +687,10 @@ export default function ApplicationsOverview() {
           Object.entries(getLabels(resource as IApplicationResource))
             .map(([key, value]) => `${key}=${value}`)
             .join(','),
+        id: 'labels',
+        order: 5,
+        isDefault: true,
+        isFirstVisitChecked: true,
       },
       {
         header: t('Health Status'),
@@ -701,7 +705,7 @@ export default function ApplicationsOverview() {
           return exportApplicationStatusGroup(resource, 'health')
         },
         id: 'health',
-        order: 5,
+        order: 6,
         isDefault: false,
         isFirstVisitChecked: true,
       },
@@ -718,7 +722,7 @@ export default function ApplicationsOverview() {
           return exportApplicationStatusGroup(resource, 'synced')
         },
         id: 'sync',
-        order: 6,
+        order: 7,
         isDefault: false,
         isFirstVisitChecked: true,
       },
@@ -735,7 +739,7 @@ export default function ApplicationsOverview() {
           return exportApplicationStatusGroup(resource, 'deployed')
         },
         id: 'pod',
-        order: 7,
+        order: 8,
         isDefault: false,
         isFirstVisitChecked: true,
       },
@@ -756,7 +760,7 @@ export default function ApplicationsOverview() {
           }
         },
         id: 'created',
-        order: 8,
+        order: 9,
         isDefault: false,
         isFirstVisitChecked: false,
       },
