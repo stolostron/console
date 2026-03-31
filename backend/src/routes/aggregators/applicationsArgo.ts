@@ -17,7 +17,6 @@ import {
   ApplicationCacheType,
   ApplicationClusterStatusMap,
   ApplicationStatuses,
-  ApplicationStatusEntry,
   getAppDict,
   IArgoApplication,
   IQuery,
@@ -41,7 +40,7 @@ import {
 } from './utils'
 import { deflateResource } from '../../lib/compression'
 import { IWatchOptions } from '../../resources/watch-options'
-import { computeAppHealthStatus, computeAppSyncStatus, resErrorStates, resWarningStates } from './utils'
+import { computeAppHealthStatus, computeAppSyncStatus, computePodStatus } from './utils'
 
 interface IArgoAppStatusResource {
   group?: string
@@ -489,16 +488,6 @@ function findOwningEntry(
   return undefined
 }
 
-function classifyPodStatus(deployed: ApplicationStatusEntry, status: string) {
-  if (resErrorStates.has(status)) {
-    deployed[StatusColumn.counts][ScoreColumn.danger]++
-  } else if (resWarningStates.has(status)) {
-    deployed[StatusColumn.counts][ScoreColumn.warning]++
-  } else {
-    deployed[StatusColumn.counts][ScoreColumn.healthy]++
-  }
-}
-
 function hasDeployedPods(appStatuses: ApplicationStatuses): boolean {
   const counts = appStatuses.deployed[StatusColumn.counts]
   return (
@@ -508,6 +497,47 @@ function hasDeployedPods(appStatuses: ApplicationStatuses): boolean {
       counts[ScoreColumn.danger] >
     0
   )
+}
+
+function collectAlreadyPopulated(
+  pushModelResourceMap: PushModelResourceMap,
+  argoClusterStatusMap: ApplicationClusterStatusMap
+): Set<string> {
+  const populated = new Set<string>()
+  for (const entry of pushModelResourceMap.values()) {
+    const appStatuses = argoClusterStatusMap[entry.appSetKey]?.[entry.targetCluster]
+    if (appStatuses && hasDeployedPods(appStatuses)) {
+      populated.add(`${entry.appSetKey}/${entry.targetCluster}`)
+    }
+  }
+  return populated
+}
+
+function bucketPodsByEntry(
+  pods: ISearchResource[],
+  workloadUidMap: Map<string, PushModelResourceEntry>,
+  alreadyPopulated: Set<string>,
+  argoClusterStatusMap: ApplicationClusterStatusMap
+): Map<string, { statuses: ApplicationStatuses; pods: ISearchResource[] }> {
+  const podsByEntry = new Map<string, { statuses: ApplicationStatuses; pods: ISearchResource[] }>()
+  for (const pod of pods) {
+    const matchedEntry = findOwningEntry(pod, workloadUidMap)
+    if (!matchedEntry) continue
+
+    const entryKey = `${matchedEntry.appSetKey}/${matchedEntry.targetCluster}`
+    if (alreadyPopulated.has(entryKey)) continue
+
+    const appStatuses = argoClusterStatusMap[matchedEntry.appSetKey]?.[matchedEntry.targetCluster]
+    if (!appStatuses) continue
+
+    let bucket = podsByEntry.get(entryKey)
+    if (!bucket) {
+      bucket = { statuses: appStatuses, pods: [] }
+      podsByEntry.set(entryKey, bucket)
+    }
+    bucket.pods.push(pod)
+  }
+  return podsByEntry
 }
 
 export function mergePushModelPodStatuses(
@@ -524,28 +554,11 @@ export function mergePushModelPodStatuses(
 
   // Identify entries already populated by computeDeployedPodStatuses so we
   // don't double-count pods that the main Argo search already found.
-  const alreadyPopulated = new Set<string>()
-  for (const entry of pushModelResourceMap.values()) {
-    const appStatuses = argoClusterStatusMap[entry.appSetKey]?.[entry.targetCluster]
-    if (appStatuses && hasDeployedPods(appStatuses)) {
-      alreadyPopulated.add(`${entry.appSetKey}/${entry.targetCluster}`)
-    }
-  }
+  const alreadyPopulated = collectAlreadyPopulated(pushModelResourceMap, argoClusterStatusMap)
+  const podsByEntry = bucketPodsByEntry(podRelated.items, workloadUidMap, alreadyPopulated, argoClusterStatusMap)
 
-  for (const pod of podRelated.items) {
-    const matchedEntry = findOwningEntry(pod, workloadUidMap)
-    if (!matchedEntry) continue
-
-    const { appSetKey, targetCluster } = matchedEntry
-    if (alreadyPopulated.has(`${appSetKey}/${targetCluster}`)) continue
-
-    const appStatuses = argoClusterStatusMap[appSetKey]?.[targetCluster]
-    if (!appStatuses) continue
-
-    const status = pod.status?.toLocaleLowerCase()
-    if (!status || status === 'terminating') continue
-
-    classifyPodStatus(appStatuses.deployed, status)
+  for (const { statuses, pods } of podsByEntry.values()) {
+    computePodStatus(statuses.deployed, pods)
   }
 }
 

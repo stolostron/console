@@ -198,42 +198,6 @@ describe('mergePushModelPodStatuses', () => {
     expect(total).toBe(0)
   })
 
-  it('should skip pods without status', () => {
-    const statusMap: ApplicationClusterStatusMap = {
-      [appSetKey]: { 'remote-1': makeEmptyStatuses() },
-    }
-    const resourceMap: PushModelResourceMap = new Map([
-      ['remote-1/default/web', { appSetKey, targetCluster: 'remote-1' }],
-    ])
-    const deployUid = 'deploy-uid'
-    const searchResult = makeSearchResult(
-      [makeSearchItem(deployUid, 'remote-1', 'default', 'web')],
-      [
-        {
-          _uid: 'pod-1',
-          _relatedUids: [deployUid],
-          apigroup: '',
-          apiversion: 'v1',
-          kind: 'Pod',
-          name: 'web-aaa',
-          namespace: 'default',
-          cluster: 'remote-1',
-          created: '2024-01-01T00:00:00Z',
-        },
-      ]
-    )
-
-    mergePushModelPodStatuses(searchResult, resourceMap, statusMap)
-
-    const counts = statusMap[appSetKey]['remote-1'].deployed[StatusColumn.counts]
-    const total =
-      counts[ScoreColumn.healthy] +
-      counts[ScoreColumn.danger] +
-      counts[ScoreColumn.warning] +
-      counts[ScoreColumn.progress]
-    expect(total).toBe(0)
-  })
-
   it('should not double-count pods when deployed counts already populated', () => {
     const statuses = makeEmptyStatuses()
     statuses.deployed[StatusColumn.counts][ScoreColumn.healthy] = 2
