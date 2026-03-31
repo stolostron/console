@@ -3,12 +3,13 @@ import { ReactNode, useContext, useEffect } from 'react'
 import { PluginContext } from '../lib/PluginContext'
 import { LostChangesProvider } from './LostChanges'
 import { LoadingPage } from './LoadingPage'
+import { IdleOverlay } from './IdleOverlay'
 import { useLocation } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../NavigationPath'
 
 export const LoadPluginData = (props: { children?: ReactNode }) => {
   const { dataContext } = useContext(PluginContext)
-  const { load, loadStarted, loadCompleted } = useContext(dataContext)
+  const { load, loadStarted, loadCompleted, isStreamIdle, acmPageMountCountRef } = useContext(dataContext)
   const location = useLocation()
   // some pages are loaded fast by sending it's events first
   // which means these pages can appear immediately
@@ -58,14 +59,23 @@ export const LoadPluginData = (props: { children?: ReactNode }) => {
     ] as string[]
   ).includes(location.pathname.replace(/\/$/, ''))
   useEffect(() => {
+    acmPageMountCountRef.current++
+    return () => {
+      acmPageMountCountRef.current-- // eslint-disable-line react-hooks/exhaustive-deps
+    }
+  }, [acmPageMountCountRef])
+
+  useEffect(() => {
     if (!loadStarted) {
       load()
     }
   }, [load, loadStarted])
 
-  return (fastLoadPage && loadStarted) || loadCompleted ? (
-    <LostChangesProvider>{props.children}</LostChangesProvider>
-  ) : (
-    <LoadingPage />
-  )
+  if (!((fastLoadPage && loadStarted) || loadCompleted)) {
+    return <LoadingPage />
+  }
+
+  const content = <LostChangesProvider>{props.children}</LostChangesProvider>
+
+  return isStreamIdle ? <IdleOverlay>{content}</IdleOverlay> : content
 }

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import get from 'lodash/get'
-import { Fragment, ReactNode, useContext, useEffect, useMemo, useState } from 'react'
+import { Fragment, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { SetterOrUpdater, useRecoilValue, useSetRecoilState } from 'recoil'
 import { tokenExpired } from '../logout'
@@ -175,6 +175,7 @@ import {
   secretsState,
   ServerSideEventData,
   settingsState,
+  useEventStreamIdleTimeout,
   servicesState,
   storageClassState,
   submarinerConfigsState,
@@ -189,10 +190,18 @@ import { PluginDataContext } from '../lib/PluginDataContext'
 import { useQuery } from '../lib/useQuery'
 import { MultiClusterHubComponent } from '../resources/multi-cluster-hub-component'
 import { ClaimMappings } from '~/resources/authentication'
+import { usePageActivity } from '../lib/usePageActivity'
 
 export function LoadData(props: { children?: ReactNode }) {
-  const { loadCompleted, setLoadStarted, setLoadCompleted } = useContext(PluginDataContext)
+  const { loadCompleted, setLoadStarted, setLoadCompleted, setIsStreamIdle, acmPageMountCountRef } =
+    useContext(PluginDataContext)
   const [eventsLoaded, setEventsLoaded] = useState(false)
+  const idleTimeoutMs = useEventStreamIdleTimeout()
+  const isActive = usePageActivity(idleTimeoutMs, acmPageMountCountRef)
+  const wasActiveRef = useRef(true)
+  const eventSourceRef = useRef<EventSource>()
+  const processIntervalRef = useRef<ReturnType<typeof setInterval>>()
+  const [restartKey, setRestartKey] = useState(0)
 
   const setAgentClusterInstalls = useSetRecoilState(agentClusterInstallsState)
   const setAgentMachinesState = useSetRecoilState(agentMachinesState)
@@ -414,6 +423,34 @@ export function LoadData(props: { children?: ReactNode }) {
     setUsers,
   ])
 
+  const clearAllData = useCallback(() => {
+    resetAtomSetters(setters)
+    resetAtomMappers(mappers)
+    resetCaches(caches)
+    setSettings({})
+  }, [setters, mappers, caches, setSettings])
+
+  useEffect(() => {
+    if (!isActive && wasActiveRef.current) {
+      wasActiveRef.current = false
+      setIsStreamIdle(true)
+      eventSourceRef.current?.close()
+      eventSourceRef.current = undefined
+      if (processIntervalRef.current) {
+        clearInterval(processIntervalRef.current)
+        processIntervalRef.current = undefined
+      }
+    } else if (isActive && !wasActiveRef.current) {
+      wasActiveRef.current = true
+      setIsStreamIdle(false)
+      clearAllData()
+      setEventsLoaded(false)
+      setLoadStarted(false)
+      setLoadCompleted(false)
+      setRestartKey((k) => k + 1)
+    }
+  }, [isActive, clearAllData, setLoadStarted, setLoadCompleted, setIsStreamIdle])
+
   useEffect(() => {
     const eventQueue: WatchEvent[] = []
 
@@ -540,6 +577,7 @@ export function LoadData(props: { children?: ReactNode }) {
     let evtSource: EventSource | undefined
     function startWatch() {
       evtSource = new EventSource(`${getBackendUrl()}/events`, { withCredentials: true })
+      eventSourceRef.current = evtSource
       evtSource.onmessage = processMessage
       evtSource.onerror = function () {
         console.log('EventSource', 'error', 'readyState', evtSource?.readyState)
@@ -555,14 +593,15 @@ export function LoadData(props: { children?: ReactNode }) {
     startWatch()
 
     const timeout = setInterval(processEventQueue, 500)
+    processIntervalRef.current = timeout
     return () => {
       clearInterval(timeout)
       if (evtSource) evtSource.close()
+      eventSourceRef.current = undefined
+      processIntervalRef.current = undefined
     }
-    // this effect must only run once--it sets up the call to /events on the backend
-    // which should only ever be called once
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [restartKey])
 
   const {
     data: globalHubRes,
@@ -668,6 +707,48 @@ export function LoadData(props: { children?: ReactNode }) {
   const children = useMemo(() => <Fragment>{props.children}</Fragment>, [props.children])
 
   return children
+}
+
+function resetAtomSetters(setters: Record<string, Record<string, SetterOrUpdater<any[]>>>) {
+  for (const groupVersion in setters) {
+    for (const kind in setters[groupVersion]) {
+      setters[groupVersion][kind]([])
+    }
+  }
+}
+
+function resetAtomMappers(
+  mappers: Record<
+    string,
+    Record<
+      string,
+      {
+        setter: SetterOrUpdater<Record<string, any[]>>
+        mcaches: Record<string, Record<string, Record<string, IResource[]>>>
+        keyBy: string[]
+      }
+    >
+  >
+) {
+  for (const groupVersion in mappers) {
+    for (const kind in mappers[groupVersion]) {
+      const { setter, mcaches } = mappers[groupVersion][kind]
+      for (const gv in mcaches) {
+        for (const k in mcaches[gv]) {
+          mcaches[gv][k] = {}
+        }
+      }
+      setter({})
+    }
+  }
+}
+
+function resetCaches(caches: Record<string, Record<string, Record<string, IResource>>>) {
+  for (const groupVersion in caches) {
+    for (const kind in caches[groupVersion]) {
+      caches[groupVersion][kind] = {}
+    }
+  }
 }
 
 // Query for GlobalHub check and name
