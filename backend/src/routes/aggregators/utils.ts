@@ -185,7 +185,7 @@ function isFluxApplication(label: string) {
 //////////////////////////////////////////////////////////////////
 ////////////// COMPUTE STATUSES /////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
-export const resErrorStates = new Set([
+const resErrorStates = new Set([
   'err',
   'off',
   'invalid',
@@ -195,7 +195,7 @@ export const resErrorStates = new Set([
   'crashloopbackoff',
   'lost',
 ])
-export const resWarningStates = new Set(['pending', 'creating', 'terminating'])
+const resWarningStates = new Set(['pending', 'creating', 'terminating'])
 
 export function computeAppHealthStatus(health: ApplicationStatusEntry, app: ISearchResource) {
   switch (app.healthStatus) {
@@ -337,7 +337,7 @@ export function computeDeployedPodStatuses(
   })
 }
 
-function computePodStatus(deployed: ApplicationStatusEntry, pods: ISearchResource[] = []) {
+export function computePodStatus(deployed: ApplicationStatusEntry, pods: ISearchResource[] = []) {
   pods.forEach((pod) => {
     const status = pod.status.toLocaleLowerCase()
     if (status !== 'terminating') {
