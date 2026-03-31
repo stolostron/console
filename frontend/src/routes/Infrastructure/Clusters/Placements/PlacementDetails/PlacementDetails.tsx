@@ -105,7 +105,6 @@ export default function PlacementDetailsPage() {
             relatedGitOpsClusters,
             relatedPolicySets,
             close: () => setModalProps({ open: false }),
-            t,
           })
         },
         rbac: [rbacDelete(PlacementDefinition, placement?.metadata.namespace, placement?.metadata.name)],

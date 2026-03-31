@@ -391,7 +391,6 @@ export function PlacementsTable(props: { placements: Placement[]; emptyState: Re
               relatedGitOpsClusters,
               relatedPolicySets,
               close: () => setModalProps({ open: false }),
-              t,
             })
           },
           isDisabled: !canDeletePlacement,

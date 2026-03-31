@@ -86,20 +86,12 @@ const mockGitOpsCluster: GitOpsCluster = {
   },
 }
 
-function t(key: string, options?: Record<string, unknown>) {
-  if (options) {
-    return Object.entries(options).reduce((acc, [k, v]) => acc.replace(`{{${k}}}`, String(v)), key)
-  }
-  return key
-}
-
 function renderModal(overrides: Partial<IDeletePlacementModalProps> = {}) {
   const defaultProps: IDeletePlacementModalProps = {
     open: true,
     canRemove: true,
     resource: mockPlacement,
     close: jest.fn(),
-    t: t as IDeletePlacementModalProps['t'],
     relatedAppSets: [],
     relatedPolicies: [],
     relatedPolicySets: [],

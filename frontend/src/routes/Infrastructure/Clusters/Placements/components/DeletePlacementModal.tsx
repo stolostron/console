@@ -3,7 +3,6 @@
 import { AcmModal } from '../../../../../ui-components'
 import { Placement } from '../../../../../resources/placement'
 import { useState } from 'react'
-import { TFunction } from 'react-i18next'
 import { deleteApplication } from '../../../../../lib/delete-application'
 import { Alert, Button, List, ListItem } from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
@@ -12,13 +11,13 @@ import { Policy } from '../../../../../resources/policy'
 import { GitOpsCluster } from '../../../../../resources/gitops-cluster'
 import './DeletePlacementModal.css'
 import { PolicySet } from '../../../../../resources/policy-set'
+import { useTranslation } from '../../../../../lib/acm-i18next'
 
 export interface IDeletePlacementModalProps {
   open: boolean
   canRemove: boolean
   resource: Placement
   close: () => void
-  t: TFunction
   relatedAppSets: ApplicationSet[]
   relatedPolicies: Policy[]
   relatedPolicySets: PolicySet[]
@@ -26,6 +25,7 @@ export interface IDeletePlacementModalProps {
 }
 
 export function DeletePlacementModal(props: IDeletePlacementModalProps | { open: false }) {
+  const { t } = useTranslation()
   const [isDeleting, setIsDeleting] = useState(false)
   const [error, setError] = useState<string>()
 
@@ -37,7 +37,6 @@ export function DeletePlacementModal(props: IDeletePlacementModalProps | { open:
     canRemove,
     resource,
     close,
-    t,
     relatedAppSets,
     relatedPolicies,
     relatedPolicySets,
