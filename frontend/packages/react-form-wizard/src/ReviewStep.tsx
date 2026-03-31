@@ -453,8 +453,6 @@ function renderReviewArrayInstanceContainer(
         marginLeft,
         marginBottom: 32,
         marginTop: addTopMarginAfterDl ? 32 : undefined,
-        paddingLeft: 12,
-        borderLeft: '3px solid var(--pf-t--global--border--color--200, #d2d2d2)',
       }}
     >
       {showTitle ? (
@@ -462,7 +460,14 @@ function renderReviewArrayInstanceContainer(
           {node.label}
         </Title>
       ) : null}
-      {renderReviewNodeSequence(node.children ?? [], innerCtx, false)}
+      <div
+        style={{
+          paddingLeft: 12,
+          borderLeft: '3px solid var(--pf-t--global--border--color--200, #d2d2d2)',
+        }}
+      >
+        {renderReviewNodeSequence(node.children ?? [], innerCtx, false)}
+      </div>
     </div>
   )
 }
