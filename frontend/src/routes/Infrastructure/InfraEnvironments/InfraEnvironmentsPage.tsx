@@ -413,7 +413,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
       <BulkActionModal<InfraEnvK8sResource> {...modalProps} />
       <Stack hasGutter>
         {!isStorage && (
-          <CimStorageMissingAlert docStorageUrl={docStorageUrl} storageOperatorUrl={buildCategoryUrl('storage')} />
+          <CimStorageMissingAlert docStorageUrl={docStorageUrl} storageOperatorUrl={buildCategoryUrl('Storage')} />
         )}
         {isStorage && (
           <CimConfigProgressAlert
