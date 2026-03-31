@@ -2332,7 +2332,6 @@
   "per page": "per page",
   "Permanently delete {{type}} {{name}}?": "Permanently delete {{type}} {{name}}?",
   "Permanently delete credentials?": "Permanently delete credentials?",
-  "Permanently delete placement {{name}}?": "Permanently delete placement {{name}}?",
   "Permanently delete policy automation?": "Permanently delete policy automation?",
   "Permanently destroy clusters?": "Permanently destroy clusters?",
   "Permanently remove node pool {{name}}?": "Permanently remove node pool {{name}}?",

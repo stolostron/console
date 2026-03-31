@@ -67,7 +67,7 @@ export function DeletePlacementModal(props: IDeletePlacementModalProps | { open:
       id="delete-placement-modal"
       isOpen={open}
       onClose={handleClose}
-      title={t('Permanently delete placement {{name}}?', { name: resource.metadata?.name! })}
+      title={t('Permanently delete {{type}} {{name}}?', { type: t('placement'), name: resource.metadata?.name! })}
       titleIconVariant="warning"
       variant={ModalVariant.medium}
       position="top"
