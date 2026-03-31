@@ -480,6 +480,11 @@ const responseNoFilter = {
           'apps.open-cluster-management.io/subscriptions':
             'default/test-subscription-1,default/test-subscription-1-local',
         },
+        labels: {
+          app: 'test',
+          'app.kubernetes.io/part-of': 'test',
+          'apps.open-cluster-management.io/reconcile-rate': 'medium',
+        },
       },
       uidata: {
         clusterList: ['local-cluster'],
@@ -513,6 +518,11 @@ const responseFiltered = {
           'apps.open-cluster-management.io/deployables': '',
           'apps.open-cluster-management.io/subscriptions':
             'default/test-subscription-1,default/test-subscription-1-local',
+        },
+        labels: {
+          app: 'test',
+          'app.kubernetes.io/part-of': 'test',
+          'apps.open-cluster-management.io/reconcile-rate': 'medium',
         },
         name: 'test',
         uid: 'cc84e62f-edb9-413b-8bd7-38a32a21ce72',
