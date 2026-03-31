@@ -31,7 +31,7 @@ const getApplicationId = (resource: IResource, clusters: string[]): string => {
  * @param resource - The application resource
  * @returns The labels in the format { key1: value1, key2: value2, ... }
  */
-const getLabels = (resource: IApplicationResource): Record<string, string> => {
+const getLabels = (resource: IApplicationResource | IResource): Record<string, string> => {
   if (isOCPAppResource(resource)) {
     return (
       resource.label?.split(';').reduce<Record<string, string>>((acc, label) => {

@@ -18,7 +18,7 @@ const useFetchApplicationLabels = (applicationData?: IResource[]) => {
             return acc
           }
 
-          const pairs = getLabels(resource as IApplicationResource)
+          const pairs = getLabels(resource)
           const labels = Object.entries(pairs).map(([key, value]) => `${key}=${value}`)
 
           labels.forEach((l) => acc.allLabels.add(l))

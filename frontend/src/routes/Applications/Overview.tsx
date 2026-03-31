@@ -682,9 +682,9 @@ export default function ApplicationsOverview() {
       },
       {
         header: t('table.labels'),
-        cell: (resource) => <AcmLabels labels={getLabels(resource as IApplicationResource)} isCompact={true} />,
+        cell: (resource) => <AcmLabels labels={getLabels(resource)} isCompact={true} />,
         exportContent: (resource) =>
-          Object.entries(getLabels(resource as IApplicationResource))
+          Object.entries(getLabels(resource))
             .map(([key, value]) => `${key}=${value}`)
             .join(','),
         id: 'labels',
