@@ -84,7 +84,9 @@ describe('operator-catalog-utils', () => {
     })
 
     it('should build correct URL for OCP 4.19 with category', () => {
-      expect(buildCatalogCategoryUrl('4.19.0', 'storage')).toBe('/operatorhub/ns/multicluster-engine?category=storage')
+      expect(buildCatalogCategoryUrl('4.19.0', 'storage', 'multicluster-engine')).toBe(
+        '/operatorhub/ns/multicluster-engine?category=storage'
+      )
     })
 
     it('should encode special characters in category for OCP 4.20+', () => {
@@ -94,9 +96,14 @@ describe('operator-catalog-utils', () => {
     })
 
     it('should encode special characters in category for OCP 4.19', () => {
-      expect(buildCatalogCategoryUrl('4.19.0', 'storage & data')).toBe(
+      expect(buildCatalogCategoryUrl('4.19.0', 'storage & data', 'multicluster-engine')).toBe(
         '/operatorhub/ns/multicluster-engine?category=storage%20%26%20data'
       )
+    })
+
+    it('should use default namespace when no namespace is provided', () => {
+      expect(buildCatalogCategoryUrl('4.20.0', 'storage')).toBe('/catalog/ns/default?category=storage')
+      expect(buildCatalogCategoryUrl('4.19.0', 'Storage')).toBe('/operatorhub/ns/default?category=Storage')
     })
   })
 
