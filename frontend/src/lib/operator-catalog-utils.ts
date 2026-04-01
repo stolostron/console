@@ -31,11 +31,14 @@ export const buildCatalogSearchUrl = (ocpVersion: string | undefined, keyword: s
   return `${basePath}/all-namespaces?keyword=${encodeURIComponent(keyword)}`
 }
 
-export const buildCatalogCategoryUrl = (ocpVersion: string | undefined, category: string): string => {
+export const buildCatalogCategoryUrl = (
+  ocpVersion: string | undefined,
+  category: string,
+  namespace: string = 'default'
+): string => {
   const basePath = getOperatorCatalogBasePath(ocpVersion)
-  const namespace = isVersionAtLeast(ocpVersion, '4.20') ? 'ns/default' : 'ns/multicluster-engine'
   const categoryName = isVersionAtLeast(ocpVersion, '4.20') ? category.toLowerCase() : category
-  return `${basePath}/${namespace}?category=${encodeURIComponent(categoryName)}`
+  return `${basePath}/ns/${namespace}?category=${encodeURIComponent(categoryName)}`
 }
 
 export const buildCatalogDetailsUrl = (ocpVersion: string | undefined, operatorId: string): string => {
@@ -50,7 +53,8 @@ export const useOperatorCatalog = () => {
   return useMemo(() => {
     const buildSearchUrl = (keyword: string) => buildCatalogSearchUrl(version, keyword)
 
-    const buildCategoryUrl = (category: string) => buildCatalogCategoryUrl(version, category)
+    const buildCategoryUrl = (category: string, namespace?: string) =>
+      buildCatalogCategoryUrl(version, category, namespace)
 
     const buildDetailsUrl = (operatorId: string) => buildCatalogDetailsUrl(version, operatorId)
 

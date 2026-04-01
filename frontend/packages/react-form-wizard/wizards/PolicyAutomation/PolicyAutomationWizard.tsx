@@ -36,7 +36,7 @@ export function PolicyAutomationWizard(props: {
   isAnsibleOperatorInstalled: boolean
 }) {
   const buildSearchUrl = (keyword: string) => `/catalog/all-namespaces?keyword=${encodeURIComponent(keyword)}`
-  const displayName = 'OperatorHub'
+  const displayName = 'Software Catalog'
 
   const ansibleCredentials = useMemo(
     () =>

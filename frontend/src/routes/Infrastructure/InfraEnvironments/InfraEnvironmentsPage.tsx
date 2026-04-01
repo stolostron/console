@@ -253,6 +253,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { buildCategoryUrl } = useOperatorCatalog()
+  const storageNamespace = 'multicluster-engine'
   const getDetailsLink = (infraEnv: InfraEnvK8sResource) =>
     generatePath(NavigationPath.infraEnvironmentDetails, {
       namespace: infraEnv.metadata?.namespace!,
@@ -413,7 +414,10 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
       <BulkActionModal<InfraEnvK8sResource> {...modalProps} />
       <Stack hasGutter>
         {!isStorage && (
-          <CimStorageMissingAlert docStorageUrl={docStorageUrl} storageOperatorUrl={buildCategoryUrl('Storage')} />
+          <CimStorageMissingAlert
+            docStorageUrl={docStorageUrl}
+            storageOperatorUrl={buildCategoryUrl('Storage', storageNamespace)}
+          />
         )}
         {isStorage && (
           <CimConfigProgressAlert
