@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
+  Badge,
   DescriptionList,
   DescriptionListDescription,
   DescriptionListGroup,
@@ -10,6 +11,8 @@ import {
   Stack,
   Title,
 } from '@patternfly/react-core'
+import { css } from '@patternfly/react-styles'
+import titleStyles from '@patternfly/react-styles/css/components/Title/title'
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import { Fragment, type ComponentProps, type ReactNode, type RefObject, useLayoutEffect, useRef, useState } from 'react'
 import { useReviewDomTreeVersion } from './contexts/ReviewDomTreeSyncContext'
@@ -461,9 +464,11 @@ function renderReviewArrayInstanceContainer(
       }}
     >
       {showTitle ? (
-        <Title headingLevel="h4" style={{ marginBottom: 16, whiteSpace: 'pre-wrap' }}>
-          {`[ ]  ${node.label}`}
-        </Title>
+        <div style={{ marginBottom: 16 }}>
+          <Badge isRead className={css(titleStyles.title, titleStyles.modifiers.h4)}>
+            {node.label}
+          </Badge>
+        </div>
       ) : null}
       <div
         style={{
