@@ -75,3 +75,44 @@
   min-width: 0;
   max-width: 100%;
 }
+
+/* Hover edit: pen control; only the innermost hovered review block shows its button (nested shells). */
+.wizard-review-dom-node {
+  position: relative;
+}
+
+.wizard-review-pen-hover-zone {
+  cursor: pointer;
+}
+
+.wizard-review-inline-value {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--pf-t--global--spacer--xs, 0.25rem);
+}
+
+/* Pen hidden until hover dwell (~200ms; see REVIEW_PEN_HOVER_REVEAL_MS in ReviewStep.tsx) */
+.wizard-review-edit-btn {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.wizard-review-edit-btn.wizard-review-edit-btn--revealed {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Block shells (step / array): pen top-right */
+.wizard-review-dom-node > .wizard-review-edit-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+}
+
+/* Input rows: pen after value on the same line */
+.wizard-review-edit-btn.wizard-review-edit-btn--inline {
+  position: static;
+  flex-shrink: 0;
+}

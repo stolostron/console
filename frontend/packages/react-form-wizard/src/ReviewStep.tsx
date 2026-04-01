@@ -17,17 +17,21 @@ import {
   Toolbar,
   ToolbarContent,
   Tooltip,
+  useWizardContext,
 } from '@patternfly/react-core'
 import { css } from '@patternfly/react-styles'
 import titleStyles from '@patternfly/react-styles/css/components/Title/title'
-import { ExclamationCircleIcon } from '@patternfly/react-icons'
+import { ExclamationCircleIcon, PenIcon } from '@patternfly/react-icons'
 import {
+  createContext,
   Fragment,
   type ComponentProps,
-  type MouseEvent,
+  type CSSProperties,
+  type MouseEvent as ReactMouseEvent,
   type ReactNode,
   type RefObject,
   useCallback,
+  useContext,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -122,6 +126,7 @@ export interface ReviewExpandableSectionProps {
 
 export function ReviewStep({ wizardRef, reviewStorageKey = 'default' }: ReviewStepProps) {
   const { reviewLabel } = useStringContext()
+  const { goToStepById } = useWizardContext()
   const stepInputsRegistry = useStepInputsRegistry()
   const reviewDomTreeVersion = useReviewDomTreeVersion()
   const stepInputMapRef = stepInputsRegistry?.get()
@@ -197,6 +202,14 @@ export function ReviewStep({ wizardRef, reviewStorageKey = 'default' }: ReviewSt
     })
   }, [sectionKeys])
 
+  const handleReviewEdit = useCallback(
+    (node: WizardDomTreeNode) => {
+      const stepId = getReviewNodeStepId(node)
+      if (stepId) goToStepById(stepId)
+    },
+    [goToStepById]
+  )
+
   const showExpandToolbarButton = lastToolbarAction !== 'expand'
   const showCollapseToolbarButton = lastToolbarAction !== 'collapse'
 
@@ -220,7 +233,7 @@ export function ReviewStep({ wizardRef, reviewStorageKey = 'default' }: ReviewSt
               isExpanded={sectionExpanded[key] ?? true}
               onExpandedChange={(expanded) => onSectionExpandedChange(key, expanded)}
             >
-              <ReviewSectionBody node={child} />
+              <ReviewSectionBody node={child} onReviewEdit={handleReviewEdit} />
             </ReviewExpandableSection>
           )
         })}
@@ -231,7 +244,7 @@ export function ReviewStep({ wizardRef, reviewStorageKey = 'default' }: ReviewSt
 
 /** PatternFly {@link ExpandableSection} with review-step toggle: {@link Title} when expanded, {@link ToggleContent} when collapsed. */
 export function ReviewExpandableSection(props: ReviewExpandableSectionProps) {
-  const onToggle = (_event: MouseEvent, expanded: boolean) => {
+  const onToggle = (_event: ReactMouseEvent, expanded: boolean) => {
     props.onExpandedChange(expanded)
   }
   const { label, children, collapsedContent, isExpanded } = props
@@ -391,6 +404,130 @@ function isReviewArrayInstanceNode(
   return 'type' in node && node.type === InputReviewMeta.ARRAY_INSTANCE
 }
 
+/** Wizard step id for navigating from review: explicit on INPUT / STEP, else first descendant INPUT's `stepId`. */
+function getReviewNodeStepId(node: WizardDomTreeNode): string | undefined {
+  if (isReviewInputNode(node)) {
+    return node.stepId && node.stepId !== '' ? node.stepId : undefined
+  }
+  if (isReviewStepNode(node)) {
+    return node.id && node.id !== '' ? node.id : undefined
+  }
+  for (const c of node.children ?? []) {
+    const id = getReviewNodeStepId(c)
+    if (id) return id
+  }
+  return undefined
+}
+
+const REVIEW_PEN_HOVER_REVEAL_MS = 200
+
+/** Nested review pen zones call this so only the innermost hovered region can show the pen after the delay. */
+const ReviewPenParentCancelContext = createContext<(() => void) | undefined>(undefined)
+ReviewPenParentCancelContext.displayName = 'ReviewPenParentCancelContext'
+
+function ReviewPenHoverZone({
+  as,
+  className,
+  style,
+  children,
+  penClassName,
+  ariaLabel,
+  onPenClick,
+}: {
+  as?: 'div' | 'span'
+  className?: string
+  style?: CSSProperties
+  children: ReactNode
+  penClassName: string
+  ariaLabel: string
+  onPenClick: (e: ReactMouseEvent<HTMLElement>) => void
+}) {
+  const cancelParentPen = useContext(ReviewPenParentCancelContext)
+  const [penVisible, setPenVisible] = useState(false)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+
+  const cancelMe = useCallback(() => {
+    if (timerRef.current !== undefined) {
+      clearTimeout(timerRef.current)
+      timerRef.current = undefined
+    }
+    setPenVisible(false)
+  }, [])
+
+  const onEnter = useCallback(() => {
+    cancelParentPen?.()
+    if (timerRef.current !== undefined) clearTimeout(timerRef.current)
+    timerRef.current = setTimeout(() => setPenVisible(true), REVIEW_PEN_HOVER_REVEAL_MS)
+  }, [cancelParentPen])
+
+  const onLeave = useCallback(() => {
+    cancelMe()
+  }, [cancelMe])
+
+  useEffect(
+    () => () => {
+      if (timerRef.current !== undefined) clearTimeout(timerRef.current)
+    },
+    []
+  )
+
+  const Comp = as ?? 'div'
+  const penRevealedClass = penVisible ? ' wizard-review-edit-btn--revealed' : ''
+  const zoneClassName = ['wizard-review-pen-hover-zone', className].filter(Boolean).join(' ')
+
+  const onZoneClick = useCallback(
+    (e: ReactMouseEvent<HTMLElement>) => {
+      const t = e.target as HTMLElement | null
+      if (t?.closest?.('.wizard-review-edit-btn')) return
+      e.stopPropagation()
+      onPenClick(e)
+    },
+    [onPenClick]
+  )
+
+  return (
+    <ReviewPenParentCancelContext.Provider value={cancelMe}>
+      <Comp className={zoneClassName} style={style} onMouseEnter={onEnter} onMouseLeave={onLeave} onClick={onZoneClick}>
+        {children}
+        <Button
+          type="button"
+          variant="plain"
+          className={`${penClassName}${penRevealedClass}`}
+          aria-label={ariaLabel}
+          onClick={(e) => {
+            e.stopPropagation()
+            onPenClick(e)
+          }}
+        >
+          <PenIcon />
+        </Button>
+      </Comp>
+    </ReviewPenParentCancelContext.Provider>
+  )
+}
+
+function ReviewDomTreeNodeShell(props: {
+  node: WizardDomTreeNode
+  onReviewEdit?: (node: WizardDomTreeNode) => void
+  children: ReactNode
+}) {
+  const { node, onReviewEdit, children } = props
+  if (!onReviewEdit) return <>{children}</>
+  return (
+    <ReviewPenHoverZone
+      className="wizard-review-dom-node"
+      penClassName="wizard-review-edit-btn"
+      ariaLabel="Edit"
+      onPenClick={(e) => {
+        e.stopPropagation()
+        onReviewEdit(node)
+      }}
+    >
+      {children}
+    </ReviewPenHoverZone>
+  )
+}
+
 function getReviewSectionBodyNodes(node: WizardDomTreeNode): WizardDomTreeNode[] {
   if (!('type' in node)) {
     return node.children ?? []
@@ -425,6 +562,7 @@ type ReviewRenderCtx = {
   inputGroupMarginLeft: number
   /** Number of nested ARRAY_INPUT ancestors; top-level array body uses 0. */
   arrayInputNesting: number
+  onReviewEdit?: (node: WizardDomTreeNode) => void
 }
 
 /** Top-level array section uses 16px; each nested ARRAY_INPUT adds 16px (not 16). */
@@ -444,28 +582,40 @@ function renderReviewInputDescriptionContent(node: WizardInputDomNode): ReactNod
 
 function renderReviewInputRows(nodes: readonly WizardInputDomNode[], ctx: ReviewRenderCtx): ReactNode {
   const mod = horizontalTermWidthModifierForInputRun(nodes)
+  const onReviewEdit = ctx.onReviewEdit
   return (
     <DescriptionList key={`dl-${nodes[0]!.path}`} isHorizontal horizontalTermWidthModifier={mod}>
-      <DescriptionListGroup key={nodes[0]!.path} style={{ marginLeft: ctx.inputGroupMarginLeft }}>
-        {nodes.map((inputNode) => {
-          const termText = inputNode.label ?? inputNode.path
-          return (
-            <Fragment key={inputNode.path}>
-              <DescriptionListTerm>{termText}</DescriptionListTerm>
-              <DescriptionListDescription>
-                {inputNode.error ? (
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                    {renderReviewInputDescriptionContent(inputNode)}
-                    <ExclamationCircleIcon color={REVIEW_ERROR_TEXT_COLOR} />
-                  </span>
-                ) : (
-                  renderReviewInputDescriptionContent(inputNode)
-                )}
-              </DescriptionListDescription>
-            </Fragment>
-          )
-        })}
-      </DescriptionListGroup>
+      {nodes.map((inputNode) => {
+        const termText = inputNode.label ?? inputNode.path
+        const valueContent = inputNode.error ? (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            {renderReviewInputDescriptionContent(inputNode)}
+            <ExclamationCircleIcon color={REVIEW_ERROR_TEXT_COLOR} />
+          </span>
+        ) : (
+          renderReviewInputDescriptionContent(inputNode)
+        )
+        return (
+          <DescriptionListGroup key={inputNode.path} style={{ marginLeft: ctx.inputGroupMarginLeft }}>
+            <DescriptionListTerm>{termText}</DescriptionListTerm>
+            <DescriptionListDescription>
+              {onReviewEdit != null ? (
+                <ReviewPenHoverZone
+                  as="span"
+                  className="wizard-review-inline-value"
+                  penClassName="wizard-review-edit-btn wizard-review-edit-btn--inline"
+                  ariaLabel="Edit"
+                  onPenClick={() => onReviewEdit(inputNode)}
+                >
+                  {valueContent}
+                </ReviewPenHoverZone>
+              ) : (
+                <span className="wizard-review-inline-value">{valueContent}</span>
+              )}
+            </DescriptionListDescription>
+          </DescriptionListGroup>
+        )
+      })}
     </DescriptionList>
   )
 }
@@ -506,10 +656,11 @@ function renderReviewNodeSequence(
     }
     if (isReviewStepNode(n) || !('type' in n)) {
       const inner = n.children ?? []
+      const shellKey = isReviewStepNode(n) ? `step-${n.id}` : 'children-wrap'
       out.push(
-        <Fragment key={isReviewStepNode(n) ? `step-${n.id}` : 'children-wrap'}>
-          {renderReviewNodeSequence(inner, ctx, precedingDlGroup)}
-        </Fragment>
+        <ReviewDomTreeNodeShell key={shellKey} node={n} onReviewEdit={ctx.onReviewEdit}>
+          <Fragment>{renderReviewNodeSequence(inner, ctx, precedingDlGroup)}</Fragment>
+        </ReviewDomTreeNodeShell>
       )
       precedingDlGroup = false
       i++
@@ -534,11 +685,13 @@ function renderReviewArrayInputSection(
   const children = node.children ?? []
   const marginLeft = reviewArrayInstanceMarginLeft(ctx.arrayInputNesting)
   return (
-    <Fragment key={`array-${node.path}`}>
-      {children.map((child, index) =>
-        renderReviewArrayInstanceContainer(child, ctx, afterDescriptionListGroup && index === 0, marginLeft, index)
-      )}
-    </Fragment>
+    <ReviewDomTreeNodeShell key={`array-${node.path}`} node={node} onReviewEdit={ctx.onReviewEdit}>
+      <Fragment>
+        {children.map((child, index) =>
+          renderReviewArrayInstanceContainer(child, ctx, afterDescriptionListGroup && index === 0, marginLeft, index)
+        )}
+      </Fragment>
+    </ReviewDomTreeNodeShell>
   )
 }
 
@@ -554,44 +707,53 @@ function renderReviewArrayInstanceContainer(
   const innerCtx: ReviewRenderCtx = {
     inputGroupMarginLeft: 8,
     arrayInputNesting: ctx.arrayInputNesting + 1,
+    onReviewEdit: ctx.onReviewEdit,
   }
   const key = reviewNodeKey(node, instanceIndex)
   const showTitle = isReviewArrayInstanceNode(node) && shouldShowArrayInstanceTitle(node)
 
   return (
-    <div
-      key={key}
-      style={{
-        marginLeft,
-        marginBottom: 32,
-        marginTop: addTopMarginAfterDl ? 32 : undefined,
-      }}
-    >
-      {showTitle ? (
-        <div style={{ marginBottom: 16 }}>
-          <Badge isRead className={css(titleStyles.title, titleStyles.modifiers.h4)}>
-            {node.label}
-          </Badge>
-        </div>
-      ) : null}
+    <ReviewDomTreeNodeShell key={key} node={node} onReviewEdit={ctx.onReviewEdit}>
       <div
         style={{
-          paddingLeft: 12,
-          borderLeft: '3px solid var(--pf-t--global--border--color--200, #d2d2d2)',
+          marginLeft,
+          marginBottom: 32,
+          marginTop: addTopMarginAfterDl ? 32 : undefined,
         }}
       >
-        {renderReviewNodeSequence(node.children ?? [], innerCtx, false)}
+        {showTitle ? (
+          <div style={{ marginBottom: 16 }}>
+            <Badge isRead className={css(titleStyles.title, titleStyles.modifiers.h4)}>
+              {node.label}
+            </Badge>
+          </div>
+        ) : null}
+        <div
+          style={{
+            paddingLeft: 12,
+            borderLeft: '3px solid var(--pf-t--global--border--color--200, #d2d2d2)',
+          }}
+        >
+          {renderReviewNodeSequence(node.children ?? [], innerCtx, false)}
+        </div>
       </div>
-    </div>
+    </ReviewDomTreeNodeShell>
   )
 }
 
 /** Renders review content for one wizard section from a {@link WizardDomTreeNode} (step root or wrapper). */
-export function ReviewSectionBody(props: { node: WizardDomTreeNode }) {
+export function ReviewSectionBody(props: {
+  node: WizardDomTreeNode
+  onReviewEdit?: (node: WizardDomTreeNode) => void
+}) {
   const bodyNodes = getReviewSectionBodyNodes(props.node)
   return (
     <Fragment>
-      {renderReviewNodeSequence(bodyNodes, { inputGroupMarginLeft: 16, arrayInputNesting: 0 }, false)}
+      {renderReviewNodeSequence(
+        bodyNodes,
+        { inputGroupMarginLeft: 16, arrayInputNesting: 0, onReviewEdit: props.onReviewEdit },
+        false
+      )}
     </Fragment>
   )
 }
