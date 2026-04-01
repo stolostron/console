@@ -10,19 +10,18 @@ import {
   ContentVariants,
   Flex,
   FlexItem,
-  Icon,
+  Spinner,
 } from '@patternfly/react-core'
-import { PauseCircleIcon } from '@patternfly/react-icons'
 import { useTranslation } from '../lib/acm-i18next'
 
 const backdropClass = css({
   position: 'absolute',
 })
 
-export function IdleOverlay() {
+export function ReconnectingOverlay() {
   const { t } = useTranslation()
   return (
-    <Backdrop className={backdropClass} data-testid="idle-overlay">
+    <Backdrop className={backdropClass} data-testid="reconnecting-overlay">
       <Bullseye>
         <Card>
           <CardBody>
@@ -32,12 +31,10 @@ export function IdleOverlay() {
               gap={{ default: 'gapMd' }}
             >
               <FlexItem>
-                <Icon size="3xl">
-                  <PauseCircleIcon />
-                </Icon>
+                <Spinner size="xl" />
               </FlexItem>
               <FlexItem>
-                <Content component={ContentVariants.p}>{t('Session paused due to inactivity')}</Content>
+                <Content component={ContentVariants.p}>{t('Reconnecting')}</Content>
               </FlexItem>
             </Flex>
           </CardBody>

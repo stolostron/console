@@ -1,15 +1,23 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ReactNode, useContext, useEffect } from 'react'
+import { css } from '@emotion/css'
 import { PluginContext } from '../lib/PluginContext'
 import { LostChangesProvider } from './LostChanges'
 import { LoadingPage } from './LoadingPage'
 import { IdleOverlay } from './IdleOverlay'
+import { ReconnectingOverlay } from './ReconnectingOverlay'
 import { useLocation } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../NavigationPath'
 
+const contentWrapperClass = css({
+  position: 'relative',
+  height: '100%',
+})
+
 export const LoadPluginData = (props: { children?: ReactNode }) => {
   const { dataContext } = useContext(PluginContext)
-  const { load, loadStarted, loadCompleted, isStreamIdle, acmPageMountCountRef } = useContext(dataContext)
+  const { load, loadStarted, loadCompleted, isStreamIdle, isReconnecting, acmPageMountCountRef } =
+    useContext(dataContext)
   const location = useLocation()
   // some pages are loaded fast by sending it's events first
   // which means these pages can appear immediately
@@ -75,7 +83,11 @@ export const LoadPluginData = (props: { children?: ReactNode }) => {
     return <LoadingPage />
   }
 
-  const content = <LostChangesProvider>{props.children}</LostChangesProvider>
-
-  return isStreamIdle ? <IdleOverlay>{content}</IdleOverlay> : content
+  return (
+    <div className={contentWrapperClass}>
+      {isStreamIdle && <IdleOverlay />}
+      {isReconnecting && <ReconnectingOverlay />}
+      <LostChangesProvider>{props.children}</LostChangesProvider>
+    </div>
+  )
 }

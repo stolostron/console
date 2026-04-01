@@ -23,9 +23,11 @@ export type PluginData = {
   loadStarted: boolean
   startLoading: boolean
   isStreamIdle: boolean
+  isReconnecting: boolean
   setLoadCompleted: Dispatch<SetStateAction<boolean>>
   setLoadStarted: Dispatch<SetStateAction<boolean>>
   setIsStreamIdle: Dispatch<SetStateAction<boolean>>
+  setIsReconnecting: Dispatch<SetStateAction<boolean>>
   acmPageMountCountRef: { current: number }
   load: () => void
 }
@@ -40,9 +42,11 @@ export const defaultContext = {
   loadStarted: process.env.NODE_ENV === 'test',
   startLoading: false,
   isStreamIdle: false,
+  isReconnecting: false,
   setLoadCompleted: () => {},
   setLoadStarted: () => {},
   setIsStreamIdle: () => {},
+  setIsReconnecting: () => {},
   acmPageMountCountRef: { current: 0 },
   load: () => {},
 }
@@ -54,6 +58,7 @@ export const usePluginDataContextValue = () => {
   const [loadCompleted, setLoadCompleted] = useState(process.env.NODE_ENV === 'test')
   const [startLoading, setStartLoading] = useState(false)
   const [isStreamIdle, setIsStreamIdle] = useState(false)
+  const [isReconnecting, setIsReconnecting] = useState(false)
   const acmPageMountCountRef = useRef(0)
   const backendUrl = getBackendUrl()
 
@@ -68,13 +73,15 @@ export const usePluginDataContextValue = () => {
       loadStarted,
       startLoading,
       isStreamIdle,
+      isReconnecting,
       setLoadCompleted,
       setLoadStarted,
       setIsStreamIdle,
+      setIsReconnecting,
       acmPageMountCountRef,
       load: () => setStartLoading(true),
     }),
-    [backendUrl, loadStarted, loadCompleted, startLoading, isStreamIdle]
+    [backendUrl, loadStarted, loadCompleted, startLoading, isStreamIdle, isReconnecting]
   )
   return contextValue
 }

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import get from 'lodash/get'
-import { Fragment, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, ReactNode, useContext, useEffect, useMemo, useRef, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { SetterOrUpdater, useRecoilValue, useSetRecoilState } from 'recoil'
 import { tokenExpired } from '../logout'
@@ -193,12 +193,13 @@ import { ClaimMappings } from '~/resources/authentication'
 import { usePageActivity } from '../lib/usePageActivity'
 
 export function LoadData(props: { children?: ReactNode }) {
-  const { loadCompleted, setLoadStarted, setLoadCompleted, setIsStreamIdle, acmPageMountCountRef } =
+  const { loadCompleted, setLoadStarted, setLoadCompleted, setIsStreamIdle, setIsReconnecting, acmPageMountCountRef } =
     useContext(PluginDataContext)
   const [eventsLoaded, setEventsLoaded] = useState(false)
   const idleTimeoutMs = useEventStreamIdleTimeout()
   const isActive = usePageActivity(idleTimeoutMs, acmPageMountCountRef)
   const wasActiveRef = useRef(true)
+  const isReconnectingRef = useRef(false)
   const eventSourceRef = useRef<EventSource>()
   const processIntervalRef = useRef<ReturnType<typeof setInterval>>()
   const [restartKey, setRestartKey] = useState(0)
@@ -423,13 +424,6 @@ export function LoadData(props: { children?: ReactNode }) {
     setUsers,
   ])
 
-  const clearAllData = useCallback(() => {
-    resetAtomSetters(setters)
-    resetAtomMappers(mappers)
-    resetCaches(caches)
-    setSettings({})
-  }, [setters, mappers, caches, setSettings])
-
   useEffect(() => {
     if (!isActive && wasActiveRef.current) {
       wasActiveRef.current = false
@@ -443,13 +437,14 @@ export function LoadData(props: { children?: ReactNode }) {
     } else if (isActive && !wasActiveRef.current) {
       wasActiveRef.current = true
       setIsStreamIdle(false)
-      clearAllData()
+      isReconnectingRef.current = true
+      setIsReconnecting(true)
+      resetCaches(caches)
+      resetMapperCaches(mappers)
       setEventsLoaded(false)
-      setLoadStarted(false)
-      setLoadCompleted(false)
       setRestartKey((k) => k + 1)
     }
-  }, [isActive, clearAllData, setLoadStarted, setLoadCompleted, setIsStreamIdle])
+  }, [isActive, caches, mappers, setIsStreamIdle, setIsReconnecting])
 
   useEffect(() => {
     const eventQueue: WatchEvent[] = []
@@ -474,61 +469,37 @@ export function LoadData(props: { children?: ReactNode }) {
       for (const groupVersion in resourceTypeMap) {
         for (const kind in resourceTypeMap[groupVersion]) {
           const watchEvents = resourceTypeMap[groupVersion]?.[kind]
-          if (watchEvents) {
-            const setter = setters[groupVersion]?.[kind]
-            if (setter) {
-              setter(() => {
-                const cache = caches[groupVersion]?.[kind]
-                for (const watchEvent of watchEvents) {
-                  const key = `${watchEvent.object.metadata.namespace}/${watchEvent.object.metadata.name}`
-                  switch (watchEvent.type) {
-                    case 'ADDED':
-                    case 'MODIFIED':
-                      cache[key] = watchEvent.object
-                      break
-                    case 'DELETED':
-                      delete cache[key]
-                      break
-                  }
-                }
-                return Object.values(cache)
-              })
-            } else {
-              const mapper = mappers[groupVersion]?.[kind]
-              if (mapper) {
-                const { setter, mcaches, keyBy } = mapper
-                setter(() => {
-                  const map = mcaches[groupVersion]?.[kind]
-                  for (const watchEvent of watchEvents) {
-                    const key = keyBy
-                      .reduce((keys, partKey) => {
-                        keys.push(get(watchEvent.object, partKey))
-                        return keys
-                      }, [] as string[])
-                      .join('/')
-                    map[key] = [...(map[key] || [])]
-                    const arr = map[key]
-                    const index = arr.findIndex(
-                      (resource) =>
-                        resource.metadata?.name === watchEvent.object.metadata.name &&
-                        resource.metadata?.namespace === watchEvent.object.metadata.namespace
-                    )
-                    switch (watchEvent.type) {
-                      case 'ADDED':
-                      case 'MODIFIED':
-                        if (index !== -1) arr[index] = watchEvent.object
-                        else arr.push(watchEvent.object)
-                        break
-                      case 'DELETED':
-                        if (index !== -1) arr.splice(index, 1)
-                        break
-                    }
-                  }
-                  return { ...map }
-                })
+          if (!watchEvents) continue
+
+          const setter = setters[groupVersion]?.[kind]
+          if (setter) {
+            updateSetterCache(caches, groupVersion, kind, watchEvents)
+            if (!isReconnectingRef.current) {
+              setter(Object.values(caches[groupVersion]?.[kind]))
+            }
+          } else {
+            const mapper = mappers[groupVersion]?.[kind]
+            if (mapper) {
+              updateMapperCache(mapper, groupVersion, kind, watchEvents)
+              if (!isReconnectingRef.current) {
+                mapper.setter({ ...mapper.mcaches[groupVersion]?.[kind] })
               }
             }
           }
+        }
+      }
+    }
+
+    function flushCachesToRecoil() {
+      for (const groupVersion in setters) {
+        for (const kind in setters[groupVersion]) {
+          setters[groupVersion][kind](Object.values(caches[groupVersion]?.[kind]))
+        }
+      }
+      for (const groupVersion in mappers) {
+        for (const kind in mappers[groupVersion]) {
+          const { setter, mcaches } = mappers[groupVersion][kind]
+          setter({ ...mcaches[groupVersion]?.[kind] })
         }
       }
     }
@@ -551,18 +522,19 @@ export function LoadData(props: { children?: ReactNode }) {
             // tables show skeleton until firs packet is received
             // then list grows as subsequent packets packets are received
             case 'EOP': // END OF A PACKET
-              setLoadStarted(() => {
-                processEventQueue()
-                return true
-              })
+              processEventQueue()
+              if (!isReconnectingRef.current) {
+                setLoadStarted(true)
+              }
               break
             case 'LOADED':
-              setEventsLoaded((eventsLoaded) => {
-                if (!eventsLoaded) {
-                  processEventQueue()
-                }
-                return true
-              })
+              processEventQueue()
+              if (isReconnectingRef.current) {
+                flushCachesToRecoil()
+                isReconnectingRef.current = false
+                setIsReconnecting(false)
+              }
+              setEventsLoaded(true)
               break
             case 'SETTINGS':
               setSettings(data.settings)
@@ -709,15 +681,15 @@ export function LoadData(props: { children?: ReactNode }) {
   return children
 }
 
-function resetAtomSetters(setters: Record<string, Record<string, SetterOrUpdater<any[]>>>) {
-  for (const groupVersion in setters) {
-    for (const kind in setters[groupVersion]) {
-      setters[groupVersion][kind]([])
+function resetCaches(caches: Record<string, Record<string, Record<string, IResource>>>) {
+  for (const groupVersion in caches) {
+    for (const kind in caches[groupVersion]) {
+      caches[groupVersion][kind] = {}
     }
   }
 }
 
-function resetAtomMappers(
+function resetMapperCaches(
   mappers: Record<
     string,
     Record<
@@ -732,21 +704,72 @@ function resetAtomMappers(
 ) {
   for (const groupVersion in mappers) {
     for (const kind in mappers[groupVersion]) {
-      const { setter, mcaches } = mappers[groupVersion][kind]
+      const { mcaches } = mappers[groupVersion][kind]
       for (const gv in mcaches) {
         for (const k in mcaches[gv]) {
           mcaches[gv][k] = {}
         }
       }
-      setter({})
     }
   }
 }
 
-function resetCaches(caches: Record<string, Record<string, Record<string, IResource>>>) {
-  for (const groupVersion in caches) {
-    for (const kind in caches[groupVersion]) {
-      caches[groupVersion][kind] = {}
+function updateSetterCache(
+  caches: Record<string, Record<string, Record<string, IResource>>>,
+  groupVersion: string,
+  kind: string,
+  watchEvents: WatchEvent[]
+) {
+  const cache = caches[groupVersion]?.[kind]
+  for (const watchEvent of watchEvents) {
+    const key = `${watchEvent.object.metadata.namespace}/${watchEvent.object.metadata.name}`
+    switch (watchEvent.type) {
+      case 'ADDED':
+      case 'MODIFIED':
+        cache[key] = watchEvent.object
+        break
+      case 'DELETED':
+        delete cache[key]
+        break
+    }
+  }
+}
+
+function updateMapperCache(
+  mapper: {
+    setter: SetterOrUpdater<Record<string, any[]>>
+    mcaches: Record<string, Record<string, Record<string, IResource[]>>>
+    keyBy: string[]
+  },
+  groupVersion: string,
+  kind: string,
+  watchEvents: WatchEvent[]
+) {
+  const { mcaches, keyBy } = mapper
+  const map = mcaches[groupVersion]?.[kind]
+  for (const watchEvent of watchEvents) {
+    const key = keyBy
+      .reduce((keys, partKey) => {
+        keys.push(get(watchEvent.object, partKey))
+        return keys
+      }, [] as string[])
+      .join('/')
+    map[key] = [...(map[key] || [])]
+    const arr = map[key]
+    const index = arr.findIndex(
+      (resource) =>
+        resource.metadata?.name === watchEvent.object.metadata.name &&
+        resource.metadata?.namespace === watchEvent.object.metadata.namespace
+    )
+    switch (watchEvent.type) {
+      case 'ADDED':
+      case 'MODIFIED':
+        if (index !== -1) arr[index] = watchEvent.object
+        else arr.push(watchEvent.object)
+        break
+      case 'DELETED':
+        if (index !== -1) arr.splice(index, 1)
+        break
     }
   }
 }
