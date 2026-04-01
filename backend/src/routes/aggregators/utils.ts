@@ -337,7 +337,7 @@ export function computeDeployedPodStatuses(
   })
 }
 
-function computePodStatus(deployed: ApplicationStatusEntry, pods: ISearchResource[] = []) {
+export function computePodStatus(deployed: ApplicationStatusEntry, pods: ISearchResource[] = []) {
   pods.forEach((pod) => {
     const status = pod.status.toLocaleLowerCase()
     if (status !== 'terminating') {
