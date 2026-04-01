@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import { getOauthInfoPromise } from './oauth'
 
 export async function configure(_req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {

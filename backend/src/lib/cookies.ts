@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 
 export function parseCookies(req: Http2ServerRequest): Record<string, string> {
   const cookieHeader = req.headers.cookie

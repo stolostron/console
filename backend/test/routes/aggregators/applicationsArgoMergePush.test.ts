@@ -1,14 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { mergePushModelPodStatuses } from '../../../src/routes/aggregators/applicationsArgo'
-import { PushModelResourceMap } from '../../../src/routes/aggregators/applicationsPushModel'
+import { type PushModelResourceMap } from '../../../src/routes/aggregators/applicationsPushModel'
 import {
-  ApplicationClusterStatusMap,
-  ApplicationStatuses,
+  type ApplicationClusterStatusMap,
+  type ApplicationStatuses,
   ScoreColumn,
   StatusColumn,
 } from '../../../src/routes/aggregators/applications'
-import { ISearchResource, SearchResult } from '../../../src/resources/resource'
+import type { ISearchResource, SearchResult } from '../../../src/resources/resource'
 
 function makeEmptyStatuses(): ApplicationStatuses {
   return {

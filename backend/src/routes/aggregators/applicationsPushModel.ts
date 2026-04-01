@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Cluster, IResource } from '../../resources/resource'
+import type { Cluster, IResource } from '../../resources/resource'
 import { getHubClusterName } from '../events'
-import { IArgoApplication, IQuery, SEARCH_QUERY_LIMIT } from './applications'
+import { type IArgoApplication, type IQuery, SEARCH_QUERY_LIMIT } from './applications'
 import { getAppSetAppsMap } from './applicationsArgo'
 import { getClusters, getArgoDestinationCluster } from './utils'
 

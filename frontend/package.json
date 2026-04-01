@@ -215,8 +215,7 @@
   },
   "overrides": {
     "@openshift-assisted/ui-lib": {
-      "@openshift-console/dynamic-plugin-sdk": "4.19.0",
-      "monaco-editor": "^0.34.1"
+      "@openshift-console/dynamic-plugin-sdk": "4.19.0"
     }
   },
   "browserslist": {
