@@ -634,6 +634,13 @@ exports[`NetworkForm it renders 1`] = `
                         </button>
                       </div>
                     </span>
+                    <span
+                      aria-hidden="true"
+                      class="pf-v6-c-form__label-required"
+                    >
+                       
+                      *
+                    </span>
                   </label>
                     
                 </div>
@@ -658,6 +665,7 @@ exports[`NetworkForm it renders 1`] = `
                           id="form-input-httpsProxy-field"
                           name="httpsProxy"
                           placeholder="http://<user>:<password>@<ipaddr>:<port>"
+                          required=""
                           type="text"
                           value="https://user:pwd@6.7.8.9:456"
                         />
@@ -1001,7 +1009,6 @@ exports[`NetworkForm it renders 1`] = `
                 >
                   <div
                     class="pf-v6-c-helper-text__item"
-                    data-testid="ssh-public-key-helper-text"
                   >
                     <span
                       class="pf-v6-c-helper-text__item-text"

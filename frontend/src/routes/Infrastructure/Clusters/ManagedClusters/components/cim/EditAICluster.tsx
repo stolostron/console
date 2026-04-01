@@ -171,7 +171,6 @@ const EditAICluster: React.FC = () => {
         <AcmPageContent id="edit-cluster">
           <PageSection hasBodyWrapper={false} type="wizard" isFilled>
             <BulkActionModal<AgentK8sResource | BareMetalHostK8sResource> {...bulkModalProps} />
-            {/* @ts-expect-error @openshift-assisted/ui-lib needs React 18 updates */}
             <FeatureGateContextProvider features={ACM_ENABLED_FEATURES}>
               <ClusterDeploymentWizard
                 className="cluster-deployment-wizard"
