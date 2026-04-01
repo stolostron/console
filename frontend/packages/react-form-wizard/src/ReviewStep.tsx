@@ -320,6 +320,11 @@ type ReviewRenderCtx = {
   arrayInputNesting: number
 }
 
+/** Top-level array section uses 16px; each nested ARRAY_INPUT adds 16px (not 16). */
+function reviewArrayInstanceMarginLeft(arrayInputNesting: number): number {
+  return 16 + 16 * arrayInputNesting
+}
+
 function renderReviewInputDescriptionContent(node: WizardInputDomNode): ReactNode {
   if (node.error) {
     return <span style={{ color: REVIEW_ERROR_TEXT_COLOR, fontStyle: 'italic' }}>{node.error}</span>
@@ -420,7 +425,7 @@ function renderReviewArrayInputSection(
   afterDescriptionListGroup: boolean
 ): ReactNode {
   const children = node.children ?? []
-  const marginLeft = 32 * (ctx.arrayInputNesting + 1)
+  const marginLeft = reviewArrayInstanceMarginLeft(ctx.arrayInputNesting)
   return (
     <Fragment key={`array-${node.path}`}>
       {children.map((child, index) =>
@@ -438,7 +443,7 @@ function renderReviewArrayInstanceContainer(
   marginLeftOverride?: number,
   instanceIndex = 0
 ): ReactNode {
-  const marginLeft = marginLeftOverride ?? 32 * (ctx.arrayInputNesting + 1)
+  const marginLeft = marginLeftOverride ?? reviewArrayInstanceMarginLeft(ctx.arrayInputNesting)
   const innerCtx: ReviewRenderCtx = {
     inputGroupMarginLeft: 8,
     arrayInputNesting: ctx.arrayInputNesting + 1,
@@ -456,8 +461,8 @@ function renderReviewArrayInstanceContainer(
       }}
     >
       {showTitle ? (
-        <Title headingLevel="h4" style={{ marginBottom: 16 }}>
-          {node.label}
+        <Title headingLevel="h4" style={{ marginBottom: 16, whiteSpace: 'pre-wrap' }}>
+          {`[ ]  ${node.label}`}
         </Title>
       ) : null}
       <div
@@ -477,7 +482,7 @@ export function ReviewSectionBody(props: { node: WizardDomTreeNode }) {
   const bodyNodes = getReviewSectionBodyNodes(props.node)
   return (
     <Fragment>
-      {renderReviewNodeSequence(bodyNodes, { inputGroupMarginLeft: 32, arrayInputNesting: 0 }, false)}
+      {renderReviewNodeSequence(bodyNodes, { inputGroupMarginLeft: 16, arrayInputNesting: 0 }, false)}
     </Fragment>
   )
 }

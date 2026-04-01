@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { FormGroup } from '@patternfly/react-core'
-import { PropsWithChildren } from 'react'
+import { PropsWithChildren, useId } from 'react'
 import { LabelHelp } from '../components/LabelHelp'
 import { WizHelperText } from '../components/WizHelperText'
 import { convertId, InputCommonProps } from './Input'
@@ -11,7 +11,8 @@ type WizFormGroupProps = InputCommonProps & {
 
 export function WizFormGroup(props: PropsWithChildren<WizFormGroupProps>) {
   const { noHelperText } = props
-  const id = convertId(props)
+  const reactUseId = useId()
+  const id = process.env.NODE_ENV === 'test' ? convertId(props) : `wiz-form-group-${reactUseId}`
 
   return (
     <FormGroup

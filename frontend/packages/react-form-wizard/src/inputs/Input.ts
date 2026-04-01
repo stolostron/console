@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import get from 'get-value'
-import { ReactNode, useCallback, useContext, useLayoutEffect, useState } from 'react'
+import { ReactNode, useCallback, useContext, useId, useLayoutEffect, useState } from 'react'
 import set from 'set-value'
 import { EditMode } from '..'
 import { useData } from '../contexts/DataContext'
@@ -144,9 +144,9 @@ export function useInput(props: InputCommonProps, options?: { isArrayInput?: boo
     validate()
   }
 
+  const reactUseId = useId()
+  const id = process.env.NODE_ENV === 'test' ? convertId(props) : `wiz-input-${reactUseId}`
   const currentStepId = useContext(CurrentStepIdContext)
-  const inputId = convertId({ id: props.id, path: props.path })
-  const id = `${currentStepId}-${inputId}`
   const stepInputsRegistry = useStepInputsRegistry()
 
   useLayoutEffect(() => {

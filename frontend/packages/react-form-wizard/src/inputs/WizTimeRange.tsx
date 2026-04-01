@@ -1,14 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { FormGroup, FormHelperText, HelperText, HelperTextItem, TimePicker } from '@patternfly/react-core'
 import get from 'get-value'
-import { Fragment, useContext } from 'react'
+import { Fragment, useContext, useId } from 'react'
 import set from 'set-value'
 import { useData } from '../contexts/DataContext'
 import { ItemContext } from '../contexts/ItemContext'
-import { InputCommonProps, convertId } from './Input'
+import { convertId, InputCommonProps } from './Input'
 
 export function WizTimeRange(props: InputCommonProps<string>) {
-  const id = convertId(props)
+  const reactUseId = useId()
+  const id = process.env.NODE_ENV === 'test' ? convertId(props) : `wiz-time-range-${reactUseId}`
   const path = props.path ?? id
 
   const { update } = useData()

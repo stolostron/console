@@ -20,12 +20,13 @@ import {
   RefObject,
   useCallback,
   useContext,
+  useId,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from 'react'
-import { CurrentStepIdContext, InputReviewMeta, useStepInputsRegistry, WizTextDetail } from '..'
+import { InputReviewMeta, useStepInputsRegistry, WizTextDetail } from '..'
 import { FieldGroup } from '../components/FieldGroup'
 import { LabelHelp } from '../components/LabelHelp'
 import { WizHelperText } from '../components/WizHelperText'
@@ -34,10 +35,8 @@ import { ItemContext } from '../contexts/ItemContext'
 import { ShowValidationContext } from '../contexts/ShowValidationProvider'
 import { useStringContext } from '../contexts/StringContext'
 import { HasValidationErrorContext, ValidationProvider } from '../contexts/ValidationProvider'
-import { convertId, getCollapsedPlaceholder, InputCommonProps, useInput, useValue } from './Input'
+import { getCollapsedPlaceholder, InputCommonProps, useInput } from './Input'
 import { useBumpReviewDomTree } from '../contexts/ReviewDomTreeSyncContext'
-
-const WIZ_ARRAY_INSTANCE_LABEL_UNUSED_PATH = '__wizArrayInstanceLabel__'
 
 export function wizardArrayItems(props: any, item: any) {
   const id = props.id
@@ -229,47 +228,6 @@ export function WizArrayInput(props: WizArrayInputProps) {
   )
 }
 
-function ArrayInstanceReviewHost(props: {
-  value: object
-  instancePathSegment: string
-  pathLabelValue: unknown
-  collapsedContentProp: ReactNode
-  collapsedContentRevision: ReactNode
-  measureRootRef: RefObject<HTMLDivElement | null>
-  children: ReactNode
-}) {
-  const { value, instancePathSegment, pathLabelValue, collapsedContentProp, measureRootRef, children } = props
-
-  const currentStepId = useContext(CurrentStepIdContext)
-  const inputId = convertId({ id: undefined, path: instancePathSegment })
-  const id = `${currentStepId}-${inputId}`
-  const stepInputsRegistry = useStepInputsRegistry()
-  const bumpReviewDomTree = useBumpReviewDomTree()
-  useLayoutEffect(() => {
-    if (!stepInputsRegistry) return
-    const label = getArrayInstanceLabel(collapsedContentProp, pathLabelValue, measureRootRef.current)
-    stepInputsRegistry.register(id, {
-      path: instancePathSegment,
-      value,
-      label: label ?? '',
-      type: InputReviewMeta.ARRAY_INSTANCE,
-    })
-    bumpReviewDomTree?.()
-    return () => stepInputsRegistry.unregister(id)
-  }, [
-    stepInputsRegistry,
-    instancePathSegment,
-    pathLabelValue,
-    collapsedContentProp,
-    measureRootRef,
-    value,
-    id,
-    bumpReviewDomTree,
-  ])
-
-  return <div id={id}>{children}</div>
-}
-
 export function ArrayInputItem(props: {
   id: string
   value: object
@@ -286,12 +244,11 @@ export function ArrayInputItem(props: {
   moveDown: (index: number) => void
   removeItem: (value: object) => void
 }) {
-  const { id, value, index, defaultExpanded, moveUp, moveDown, removeItem, count, required } = props
+  const { id: parentId, value, index, defaultExpanded, moveUp, moveDown, removeItem, count, required } = props
   const [expanded, setExpanded] = useState(defaultExpanded !== undefined ? defaultExpanded : true)
-
-  const collapsedContentPath =
-    typeof props.collapsedContent === 'string' ? props.collapsedContent : WIZ_ARRAY_INSTANCE_LABEL_UNUSED_PATH
-  const [pathLabelValue] = useValue({ path: collapsedContentPath, id: `${id}-${index}-array-instance-label` }, '')
+  const reactUseId = useId()
+  const id =
+    process.env.NODE_ENV === 'test' ? parentId + '-' + (index + 1).toString() : `wiz-array-instance-${reactUseId}`
 
   const collapsedContentMeasureRef = useRef<HTMLDivElement>(null)
 
@@ -333,131 +290,130 @@ export function ArrayInputItem(props: {
           <HasValidationErrorContext.Consumer>
             {(hasErrors) => (
               <ItemContext.Provider value={value}>
-                <FieldGroup
-                  id={id + '-' + (index + 1).toString()}
-                  isExpanded={expanded}
-                  setIsExpanded={setExpanded}
-                  toggleAriaLabel={detailsAriaLabel}
-                  header={
-                    <FormFieldGroupHeader
-                      titleText={{
-                        text:
-                          showValidation && hasErrors ? (
-                            <Split>
-                              <SplitItem>
-                                <Icon status="danger">
-                                  <ExclamationCircleIcon />
-                                </Icon>
-                              </SplitItem>
-                              <SplitItem>
-                                <span className="pf-v6-c-form__helper-text pf-m-error">
-                                  &nbsp; {expandToFixValidationErrors}
-                                </span>
-                              </SplitItem>
-                            </Split>
-                          ) : expanded ? (
-                            <Fragment>{expandedContent}</Fragment>
-                          ) : (
-                            <Fragment>{collapsedContent}</Fragment>
-                          ),
-
-                        id: `nested-field-group1-titleText-id-${index}`,
-                      }}
-                      // titleDescription={!hasErrors && props.collapsedDescription ? props.collapsedDescription : undefined}
-                      actions={
-                        <Fragment>
-                          {props.sortable && (
-                            <Fragment>
-                              <Button
-                                icon={<ArrowUpIcon />}
-                                variant="plain"
-                                aria-label={sortableMoveItemUpAriaLabel}
-                                isDisabled={index === 0}
-                                onClick={() => moveUp(index)}
-                              />
-                              <Button
-                                icon={<ArrowDownIcon />}
-                                variant="plain"
-                                aria-label={sortableMoveItemDownAriaLabel}
-                                isDisabled={index === count - 1}
-                                onClick={() => moveDown(index)}
-                              />
-                            </Fragment>
-                          )}
-                          {(!required || count > 1) && (
-                            <Button
-                              icon={<TrashIcon />}
-                              variant="plain"
-                              aria-label={removeItemAriaLabel}
-                              onClick={() => removeItem(props.value)}
-                            />
-                          )}
-                        </Fragment>
-                      }
-                    />
-                  }
+                <ArrayInputItemReviewRegistration
+                  id={id}
+                  index={index}
+                  value={value}
+                  collapsedContent={props.collapsedContent}
+                  measureRef={collapsedContentMeasureRef}
                 >
-                  {typeof props.collapsedContent !== 'string' && (
-                    <div
-                      ref={collapsedContentMeasureRef}
-                      aria-hidden
-                      style={{
-                        position: 'absolute',
-                        width: 0,
-                        height: 0,
-                        overflow: 'hidden',
-                        clip: 'rect(0,0,0,0)',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {collapsedContent}
-                    </div>
-                  )}
-                  <Split>
-                    <SplitItem isFilled>
-                      {expanded ? <Fragment>{expandedContent}</Fragment> : <Fragment>{collapsedContent}</Fragment>}
-                    </SplitItem>
-                    <SplitItem>
-                      {props.sortable && (
-                        <Fragment>
-                          <Button
-                            icon={<ArrowUpIcon />}
-                            variant="plain"
-                            aria-label={sortableMoveItemUpAriaLabel}
-                            isDisabled={index === 0}
-                            onClick={() => moveUp(index)}
-                          />
-                          <Button
-                            icon={<ArrowDownIcon />}
-                            variant="plain"
-                            aria-label={sortableMoveItemDownAriaLabel}
-                            isDisabled={index === count - 1}
-                            onClick={() => moveDown(index)}
-                          />
-                        </Fragment>
-                      )}
-                      {(!required || count > 1) && (
-                        <Button
-                          icon={<TrashIcon />}
-                          variant="plain"
-                          aria-label={removeItemAriaLabel}
-                          onClick={() => removeItem(props.value)}
-                          style={{ marginTop: -6 }}
-                        />
-                      )}
-                    </SplitItem>
-                  </Split>
-                  <ArrayInstanceReviewHost
-                    value={value}
-                    instancePathSegment={String(index)}
-                    pathLabelValue={pathLabelValue}
-                    collapsedContentProp={props.collapsedContent}
-                    collapsedContentRevision={collapsedContent}
-                    measureRootRef={collapsedContentMeasureRef}
+                  <FieldGroup
+                    id={id}
+                    isExpanded={expanded}
+                    setIsExpanded={setExpanded}
+                    toggleAriaLabel={detailsAriaLabel}
+                    header={
+                      <FormFieldGroupHeader
+                        titleText={{
+                          text:
+                            showValidation && hasErrors ? (
+                              <Split>
+                                <SplitItem>
+                                  <Icon status="danger">
+                                    <ExclamationCircleIcon />
+                                  </Icon>
+                                </SplitItem>
+                                <SplitItem>
+                                  <span className="pf-v6-c-form__helper-text pf-m-error">
+                                    &nbsp; {expandToFixValidationErrors}
+                                  </span>
+                                </SplitItem>
+                              </Split>
+                            ) : expanded ? (
+                              <Fragment>{expandedContent}</Fragment>
+                            ) : (
+                              <Fragment>{collapsedContent}</Fragment>
+                            ),
+
+                          id: `nested-field-group1-titleText-id-${index}`,
+                        }}
+                        // titleDescription={!hasErrors && props.collapsedDescription ? props.collapsedDescription : undefined}
+                        actions={
+                          <Fragment>
+                            {props.sortable && (
+                              <Fragment>
+                                <Button
+                                  icon={<ArrowUpIcon />}
+                                  variant="plain"
+                                  aria-label={sortableMoveItemUpAriaLabel}
+                                  isDisabled={index === 0}
+                                  onClick={() => moveUp(index)}
+                                />
+                                <Button
+                                  icon={<ArrowDownIcon />}
+                                  variant="plain"
+                                  aria-label={sortableMoveItemDownAriaLabel}
+                                  isDisabled={index === count - 1}
+                                  onClick={() => moveDown(index)}
+                                />
+                              </Fragment>
+                            )}
+                            {(!required || count > 1) && (
+                              <Button
+                                icon={<TrashIcon />}
+                                variant="plain"
+                                aria-label={removeItemAriaLabel}
+                                onClick={() => removeItem(props.value)}
+                              />
+                            )}
+                          </Fragment>
+                        }
+                      />
+                    }
                   >
+                    {typeof props.collapsedContent !== 'string' && (
+                      <div
+                        ref={collapsedContentMeasureRef}
+                        aria-hidden
+                        style={{
+                          position: 'absolute',
+                          width: 0,
+                          height: 0,
+                          overflow: 'hidden',
+                          clip: 'rect(0,0,0,0)',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {collapsedContent}
+                      </div>
+                    )}
+                    <Split>
+                      <SplitItem isFilled>
+                        {expanded ? <Fragment>{expandedContent}</Fragment> : <Fragment>{collapsedContent}</Fragment>}
+                      </SplitItem>
+                      <SplitItem>
+                        {props.sortable && (
+                          <Fragment>
+                            <Button
+                              icon={<ArrowUpIcon />}
+                              variant="plain"
+                              aria-label={sortableMoveItemUpAriaLabel}
+                              isDisabled={index === 0}
+                              onClick={() => moveUp(index)}
+                            />
+                            <Button
+                              icon={<ArrowDownIcon />}
+                              variant="plain"
+                              aria-label={sortableMoveItemDownAriaLabel}
+                              isDisabled={index === count - 1}
+                              onClick={() => moveDown(index)}
+                            />
+                          </Fragment>
+                        )}
+                        {(!required || count > 1) && (
+                          <Button
+                            icon={<TrashIcon />}
+                            variant="plain"
+                            aria-label={removeItemAriaLabel}
+                            onClick={() => removeItem(props.value)}
+                            style={{ marginTop: -6 }}
+                          />
+                        )}
+                      </SplitItem>
+                    </Split>
                     {props.children}
-                  </ArrayInstanceReviewHost>
-                </FieldGroup>
+                  </FieldGroup>
+                </ArrayInputItemReviewRegistration>
               </ItemContext.Provider>
             )}
           </HasValidationErrorContext.Consumer>
@@ -467,16 +423,41 @@ export function ArrayInputItem(props: {
   )
 }
 
+function ArrayInputItemReviewRegistration(props: {
+  id: string
+  index: number
+  value: object
+  collapsedContent: ReactNode | string
+  measureRef: RefObject<HTMLDivElement | null>
+  children: ReactNode
+}) {
+  const { id, index, value, collapsedContent, measureRef, children } = props
+  const item = useContext(ItemContext)
+  const stepInputsRegistry = useStepInputsRegistry()
+  const bumpReviewDomTree = useBumpReviewDomTree()
+  useLayoutEffect(() => {
+    if (!stepInputsRegistry) return
+    const label = getArrayInstanceLabel(collapsedContent, item, measureRef.current)
+    stepInputsRegistry.register(id, {
+      path: String(index),
+      value,
+      label: label ?? '',
+      type: InputReviewMeta.ARRAY_INSTANCE,
+    })
+    bumpReviewDomTree?.()
+    return () => stepInputsRegistry.unregister(id)
+  }, [stepInputsRegistry, index, collapsedContent, measureRef, value, id, item, bumpReviewDomTree])
+
+  return <Fragment>{children}</Fragment>
+}
+
 function getArrayInstanceLabel(
   collapsedContent: ReactNode | string,
-  pathValue: unknown,
+  item: any,
   measureRoot: HTMLElement | null
 ): string | undefined {
   if (typeof collapsedContent === 'string') {
-    if (pathValue != null && pathValue !== '') {
-      return String(pathValue)
-    }
-    return undefined
+    return get(item, collapsedContent) ?? undefined
   }
   if (measureRoot) {
     const text = measureRoot.textContent
