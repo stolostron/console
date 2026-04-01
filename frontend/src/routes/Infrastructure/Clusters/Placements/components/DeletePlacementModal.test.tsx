@@ -89,7 +89,6 @@ const mockGitOpsCluster: GitOpsCluster = {
 function renderModal(overrides: Partial<IDeletePlacementModalProps> = {}) {
   const defaultProps: IDeletePlacementModalProps = {
     open: true,
-    canRemove: true,
     resource: mockPlacement,
     close: jest.fn(),
     relatedAppSets: [],
@@ -126,7 +125,7 @@ describe('DeletePlacementModal', () => {
 
   test('renders modal with placement name and confirmation text', () => {
     renderModal()
-    expect(screen.getByText('Permanently delete placement test-placement?')).toBeInTheDocument()
+    expect(screen.getByText(/Permanently delete.*placement.*test-placement/)).toBeInTheDocument()
     expect(screen.getByText('Are you sure that you want to continue?')).toBeInTheDocument()
   })
 
@@ -134,11 +133,6 @@ describe('DeletePlacementModal', () => {
     renderModal()
     expect(screen.getByText('Delete')).toBeInTheDocument()
     expect(screen.getByText('Cancel')).toBeInTheDocument()
-  })
-
-  test('disables Delete button when canRemove is false', () => {
-    renderModal({ canRemove: false })
-    expect(screen.getByText('Delete').closest('button')).toBeDisabled()
   })
 
   test('does not show related resources when lists are empty', () => {
@@ -213,6 +207,13 @@ describe('DeletePlacementModal', () => {
     const { props } = renderModal()
     await userEvent.click(screen.getByText('Cancel'))
     expect(props.close).toHaveBeenCalled()
+  })
+
+  test('displays warning alert when appSetFetchError is provided', () => {
+    renderModal({ appSetFetchError: 'Failed to list resources' })
+    expect(
+      screen.getByText('Failed to fetch ApplicationSets, the related resources list might not be accurate.')
+    ).toBeInTheDocument()
   })
 
   test('uses fallback key when uid is undefined', () => {

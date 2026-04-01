@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmModal } from '../../../../../ui-components'
+import { AcmAlert, AcmModal } from '../../../../../ui-components'
 import { Placement } from '../../../../../resources/placement'
 import { useState } from 'react'
 import { deleteApplication } from '../../../../../lib/delete-application'
@@ -15,13 +15,13 @@ import { useTranslation } from '../../../../../lib/acm-i18next'
 
 export interface IDeletePlacementModalProps {
   open: boolean
-  canRemove: boolean
   resource: Placement
   close: () => void
   relatedAppSets: ApplicationSet[]
   relatedPolicies: Policy[]
   relatedPolicySets: PolicySet[]
   relatedGitOpsClusters: GitOpsCluster[]
+  appSetFetchError?: string
 }
 
 export function DeletePlacementModal(props: IDeletePlacementModalProps | { open: false }) {
@@ -34,13 +34,13 @@ export function DeletePlacementModal(props: IDeletePlacementModalProps | { open:
   }
   const {
     open,
-    canRemove,
     resource,
     close,
     relatedAppSets,
     relatedPolicies,
     relatedPolicySets,
     relatedGitOpsClusters,
+    appSetFetchError,
   } = props
 
   const handleClose = () => {
@@ -71,13 +71,7 @@ export function DeletePlacementModal(props: IDeletePlacementModalProps | { open:
       variant={ModalVariant.medium}
       position="top"
       actions={[
-        <Button
-          key="confirm"
-          variant="danger"
-          isDisabled={!canRemove || isDeleting}
-          isLoading={isDeleting}
-          onClick={handleSubmit}
-        >
+        <Button key="confirm" variant="danger" isDisabled={isDeleting} isLoading={isDeleting} onClick={handleSubmit}>
           {t('Delete')}
         </Button>,
         <Button key="cancel" variant="link" isDisabled={isDeleting} onClick={handleClose}>
@@ -91,6 +85,16 @@ export function DeletePlacementModal(props: IDeletePlacementModalProps | { open:
             {error}
           </Alert>
         )}
+        {appSetFetchError && (
+          <AcmAlert
+            variant="warning"
+            title={t('Failed to fetch ApplicationSets, the related resources list might not be accurate.')}
+            message={appSetFetchError}
+            isInline
+            noClose
+            className="delete-placement-error"
+          />
+        )}
         {t('Are you sure that you want to continue?')}
         {(relatedAppSets.length > 0 ||
           relatedPolicies.length > 0 ||
@@ -101,17 +105,17 @@ export function DeletePlacementModal(props: IDeletePlacementModalProps | { open:
             <List className="delete-placement-related-resources-list">
               {relatedAppSets.map((appSet) => (
                 <ListItem key={appSet.metadata.uid ?? `${appSet.metadata.namespace}-${appSet.metadata.name}`}>
-                  {appSet.metadata.name} [{t('ApplicationSet')}]
+                  {appSet.metadata.name} [ApplicationSet]
                 </ListItem>
               ))}
               {relatedPolicies.map((policy) => (
                 <ListItem key={policy.metadata.uid ?? `${policy.metadata.namespace}-${policy.metadata.name}`}>
-                  {policy.metadata.name} [{t('Policy')}]
+                  {policy.metadata.name} [Policy]
                 </ListItem>
               ))}
               {relatedPolicySets.map((policySet) => (
                 <ListItem key={policySet.metadata.uid ?? `${policySet.metadata.namespace}-${policySet.metadata.name}`}>
-                  {policySet.metadata.name} [{t('PolicySet')}]
+                  {policySet.metadata.name} [PolicySet]
                 </ListItem>
               ))}
               {relatedGitOpsClusters.map((gitOpsCluster) => (
@@ -120,7 +124,7 @@ export function DeletePlacementModal(props: IDeletePlacementModalProps | { open:
                     gitOpsCluster.metadata.uid ?? `${gitOpsCluster.metadata.namespace}-${gitOpsCluster.metadata.name}`
                   }
                 >
-                  {gitOpsCluster.metadata.name} [{t('GitOpsCluster')}]
+                  {gitOpsCluster.metadata.name} [GitOpsCluster]
                 </ListItem>
               ))}
             </List>

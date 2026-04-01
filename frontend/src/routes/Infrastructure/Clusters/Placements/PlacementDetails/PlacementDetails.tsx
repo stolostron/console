@@ -11,7 +11,7 @@ import { AcmActionGroup, AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav } fr
 import { NavigationPath } from '../../../../../NavigationPath'
 import { Fragment, Suspense, useCallback, useMemo, useState } from 'react'
 import { getSearchLink } from '../../../../Applications/helpers/resource-helper'
-import { rbacDelete, useIsAnyNamespaceAuthorized } from '../../../../../lib/rbac-util'
+import { rbacDelete } from '../../../../../lib/rbac-util'
 import { IDeletePlacementModalProps, DeletePlacementModal } from '../components/DeletePlacementModal'
 import { ApplicationSet, ApplicationSetApiVersion, ApplicationSetKind } from '../../../../../resources/application-set'
 import {
@@ -36,7 +36,6 @@ export default function PlacementDetailsPage() {
   const policies = useRecoilValue(policiesState)
   const gitOpsClusters = useRecoilValue(gitOpsClustersState)
   const policySets = useRecoilValue(policySetsState)
-  const canDeletePlacement = useIsAnyNamespaceAuthorized(rbacDelete(PlacementDefinition))
 
   const placement = placements.find(
     (placement) => placement.metadata.name === name && placement.metadata.namespace === namespace
@@ -79,6 +78,7 @@ export default function PlacementDetailsPage() {
         text: t('Delete placement'),
         click: async (placement: Placement) => {
           let relatedAppSets: ApplicationSet[] = []
+          let appSetFetchError: string | undefined
           try {
             const applicationSets = await listResources<ApplicationSet>({
               apiVersion: ApplicationSetApiVersion,
@@ -89,7 +89,7 @@ export default function PlacementDetailsPage() {
             }).promise
             relatedAppSets = getApplicationSetsReferencingPlacement(applicationSets, placement)
           } catch (err) {
-            console.error('Failed to fetch ApplicationSets:', err)
+            appSetFetchError = err instanceof Error ? err.message : String(err)
           }
 
           const relatedPolicies = getPoliciesReferencingPlacement(placement, placementBindings, policies)
@@ -98,12 +98,12 @@ export default function PlacementDetailsPage() {
 
           setModalProps({
             open: true,
-            canRemove: canDeletePlacement,
             resource: placement,
             relatedAppSets,
             relatedPolicies,
             relatedGitOpsClusters,
             relatedPolicySets,
+            appSetFetchError,
             close: () => setModalProps({ open: false }),
           })
         },
@@ -111,7 +111,7 @@ export default function PlacementDetailsPage() {
       },
     ]
     return actions
-  }, [navigate, placementBindings, policies, gitOpsClusters, placement, t, canDeletePlacement, policySets])
+  }, [navigate, placementBindings, policies, gitOpsClusters, placement, t, policySets])
 
   if (!placement) {
     return (

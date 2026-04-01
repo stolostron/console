@@ -8,6 +8,8 @@ import { NavigationPath } from '~/NavigationPath'
 import { Placement, PlacementDecision } from '~/resources'
 import { ApplicationDataType } from '~/routes/Applications/ApplicationDetails/ApplicationDetails'
 
+const MAX_LINK_DISPLAY_COUNT = 3
+
 export const getPlacementsForCluster = (
   clusterName: string,
   placements: Placement[],
@@ -39,12 +41,12 @@ export function PlacementLinkList(props: { placementsForCluster: Placement[] }) 
   const { placementsForCluster } = props
   const { t } = useTranslation()
   const [showMore, setShowMore] = useState(false)
-  const renderShowMoreBtn = placementsForCluster.length > 3
+  const renderShowMoreBtn = placementsForCluster.length > MAX_LINK_DISPLAY_COUNT
 
   const displayedPlacements = useMemo(() => {
     if (placementsForCluster.length === 0) return []
     if (showMore) return placementsForCluster // if expanded -> pass the whole array
-    return placementsForCluster.slice(0, 3) // if collapsed only show 3 placements
+    return placementsForCluster.slice(0, MAX_LINK_DISPLAY_COUNT) // if collapsed only show MAX_LINK_DISPLAY_COUNT placements
   }, [placementsForCluster, showMore])
 
   if (placementsForCluster.length === 0) return <>-</>
@@ -72,7 +74,9 @@ export function PlacementLinkList(props: { placementsForCluster: Placement[] }) 
           variant={'outline'}
           onClick={() => setShowMore(!showMore)}
         >
-          {showMore ? t('Show less') : t('{{count}} more', { count: placementsForCluster.length - 3 })}
+          {showMore
+            ? t('Show less')
+            : t('{{count}} more', { count: placementsForCluster.length - MAX_LINK_DISPLAY_COUNT })}
         </Label>
       )}
     </div>
@@ -83,11 +87,11 @@ export function ClusterLinkList(props: { clusterNames: string[] }) {
   const { clusterNames } = props
   const { t } = useTranslation()
   const [showMore, setShowMore] = useState(false)
-  const renderShowMoreBtn = clusterNames.length > 3
+  const renderShowMoreBtn = clusterNames.length > MAX_LINK_DISPLAY_COUNT
   const displayedClusters = useMemo(() => {
     if (clusterNames.length === 0) return []
     if (showMore) return clusterNames
-    return clusterNames.slice(0, 3)
+    return clusterNames.slice(0, MAX_LINK_DISPLAY_COUNT)
   }, [clusterNames, showMore])
   if (clusterNames.length === 0) return <>-</>
   return (
@@ -113,7 +117,7 @@ export function ClusterLinkList(props: { clusterNames: string[] }) {
           variant={'outline'}
           onClick={() => setShowMore(!showMore)}
         >
-          {showMore ? t('Show less') : t('{{count}} more', { count: clusterNames.length - 3 })}
+          {showMore ? t('Show less') : t('{{count}} more', { count: clusterNames.length - MAX_LINK_DISPLAY_COUNT })}
         </Label>
       )}
     </div>
@@ -124,11 +128,11 @@ export function ClusterSetLinkList(props: { clusterSets: string[] }) {
   const { clusterSets } = props
   const { t } = useTranslation()
   const [showMore, setShowMore] = useState(false)
-  const renderShowMoreBtn = clusterSets.length > 3
+  const renderShowMoreBtn = clusterSets.length > MAX_LINK_DISPLAY_COUNT
   const displayedClusterSets = useMemo(() => {
     if (clusterSets.length === 0) return []
     if (showMore) return clusterSets
-    return clusterSets.slice(0, 3)
+    return clusterSets.slice(0, MAX_LINK_DISPLAY_COUNT)
   }, [clusterSets, showMore])
   if (clusterSets.length === 0) return <>-</>
   return (
@@ -153,7 +157,7 @@ export function ClusterSetLinkList(props: { clusterSets: string[] }) {
           variant={'outline'}
           onClick={() => setShowMore(!showMore)}
         >
-          {showMore ? t('Show less') : t('{{count}} more', { count: clusterSets.length - 3 })}
+          {showMore ? t('Show less') : t('{{count}} more', { count: clusterSets.length - MAX_LINK_DISPLAY_COUNT })}
         </Label>
       )}
     </div>

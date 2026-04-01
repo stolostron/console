@@ -366,6 +366,7 @@ export function PlacementsTable(props: { placements: Placement[]; emptyState: Re
           title: t('Delete placement'),
           click: async () => {
             let relatedAppSets: ApplicationSet[] = []
+            let appSetFetchError: string | undefined
             try {
               const applicationSets = await listResources<ApplicationSet>({
                 apiVersion: ApplicationSetApiVersion,
@@ -376,7 +377,7 @@ export function PlacementsTable(props: { placements: Placement[]; emptyState: Re
               }).promise
               relatedAppSets = getApplicationSetsReferencingPlacement(applicationSets, placement)
             } catch (err) {
-              console.error('Failed to fetch ApplicationSets:', err)
+              appSetFetchError = err instanceof Error ? err.message : String(err)
             }
 
             const relatedPolicies = getPoliciesReferencingPlacement(placement, placementBindings, policies)
@@ -385,12 +386,12 @@ export function PlacementsTable(props: { placements: Placement[]; emptyState: Re
 
             setModalProps({
               open: true,
-              canRemove: canDeletePlacement,
               resource: placement,
               relatedAppSets,
               relatedPolicies,
               relatedGitOpsClusters,
               relatedPolicySets,
+              appSetFetchError,
               close: () => setModalProps({ open: false }),
             })
           },
