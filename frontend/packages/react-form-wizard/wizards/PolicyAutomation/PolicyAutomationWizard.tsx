@@ -71,11 +71,7 @@ export function PolicyAutomationWizard(props: {
             </Button>
           </div>
         ) : (
-          <>
-            {'Install the Operator through '}
-            {displayName.toLowerCase()}
-            {'.'}
-          </>
+          'Install the Operator.'
         )}
       </div>
     )
