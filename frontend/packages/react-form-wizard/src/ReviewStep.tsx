@@ -20,7 +20,7 @@ import {
 } from '@patternfly/react-core'
 import { css } from '@patternfly/react-styles'
 import titleStyles from '@patternfly/react-styles/css/components/Title/title'
-import { CompressIcon, ExclamationCircleIcon, ExpandIcon } from '@patternfly/react-icons'
+import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import {
   Fragment,
   type ComponentProps,
@@ -114,6 +114,8 @@ function ToggleContent(props: { label: string }) {
 export interface ReviewExpandableSectionProps {
   label: string
   children?: ReactNode
+  /** Shown in the collapsed toggle row (e.g. summary badges). Composed into `toggleContent` because PatternFly `ExpandableSection` has no `collapsedContent` prop. */
+  collapsedContent?: ReactNode
   isExpanded: boolean
   onExpandedChange: (expanded: boolean) => void
 }
@@ -214,6 +216,7 @@ export function ReviewStep({ wizardRef, reviewStorageKey = 'default' }: ReviewSt
             <ReviewExpandableSection
               key={key}
               label={reviewNodeLabel(child)}
+              collapsedContent={<ReviewCollapsedContent label={reviewNodeLabel(child)} node={child} />}
               isExpanded={sectionExpanded[key] ?? true}
               onExpandedChange={(expanded) => onSectionExpandedChange(key, expanded)}
             >
@@ -231,7 +234,7 @@ export function ReviewExpandableSection(props: ReviewExpandableSectionProps) {
   const onToggle = (_event: MouseEvent, expanded: boolean) => {
     props.onExpandedChange(expanded)
   }
-  const { label, children, isExpanded } = props
+  const { label, children, collapsedContent, isExpanded } = props
   return (
     <ExpandableSection
       className="wizard-review-expandable-section"
@@ -247,6 +250,8 @@ export function ReviewExpandableSection(props: ReviewExpandableSectionProps) {
           >
             {label}
           </Title>
+        ) : collapsedContent ? (
+          <div className="wizard-review-toggle-row">{collapsedContent}</div>
         ) : (
           <ToggleContent label={label} />
         )
@@ -591,6 +596,109 @@ export function ReviewSectionBody(props: { node: WizardDomTreeNode }) {
   )
 }
 
+function reviewCollapsedNodeError(node: WizardDomTreeNode): string | undefined {
+  if ('error' in node && typeof (node as { error?: unknown }).error === 'string') {
+    return (node as { error: string }).error
+  }
+  for (const child of node.children ?? []) {
+    const err = reviewCollapsedNodeError(child)
+    if (err !== undefined) return err
+  }
+  return undefined
+}
+
+function ReviewCollapsedValueBadge(props: { content: ReactNode; error?: string }) {
+  const { content, error } = props
+  return (
+    <Badge isRead>
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+        {content}
+        {error ? (
+          <Tooltip content={error}>
+            <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+              <ExclamationCircleIcon color={REVIEW_ERROR_TEXT_COLOR} />
+            </span>
+          </Tooltip>
+        ) : null}
+      </span>
+    </Badge>
+  )
+}
+
+function renderCollapsedBadgesFromNodes(nodes: WizardDomTreeNode[]): ReactNode[] {
+  const out: ReactNode[] = []
+  for (let i = 0; i < nodes.length; i++) {
+    const child = nodes[i]!
+    if (isReviewInputNode(child)) {
+      if (isReviewValueUnset(child.value) && !child.error) {
+        continue
+      }
+      out.push(
+        <ReviewCollapsedValueBadge
+          key={`collapsed-input-${child.path}`}
+          content={child.error ? child.label ?? child.path : renderReviewInputDescriptionContent(child)}
+          error={child.error}
+        />
+      )
+      continue
+    }
+    if (isReviewArrayInputNode(child)) {
+      const arrChildren = child.children ?? []
+      arrChildren.forEach((inst, j) => {
+        if (!isReviewArrayInstanceNode(inst)) return
+        const instLabel = inst.label && inst.label !== '' ? inst.label : undefined
+        if (!instLabel) return
+        const err = reviewCollapsedNodeError(inst)
+        const pathPart = inst.path ?? String(j)
+        out.push(
+          <ReviewCollapsedValueBadge
+            key={`collapsed-array-${child.path}-${pathPart}`}
+            content={instLabel}
+            error={err}
+          />
+        )
+      })
+      continue
+    }
+    if (isReviewStepNode(child) || !('type' in child)) {
+      out.push(...renderCollapsedBadgesFromNodes(child.children ?? []))
+      continue
+    }
+    if (isReviewArrayInstanceNode(child)) {
+      out.push(...renderCollapsedBadgesFromNodes(child.children ?? []))
+      continue
+    }
+  }
+  return out
+}
+
+/** Collapsed review row: section {@link Title} plus summary {@link Badge}s derived from the section DOM tree. */
+export function ReviewCollapsedContent(props: { label: string; node: WizardDomTreeNode }) {
+  const bodyNodes = getReviewSectionBodyNodes(props.node)
+  const badges = renderCollapsedBadgesFromNodes(bodyNodes)
+  return (
+    <Split hasGutter>
+      <SplitItem>
+        <Title
+          headingLevel="h2"
+          style={{
+            color: 'var(--pf-t--global--text--color--regular)',
+          }}
+        >
+          {props.label}
+        </Title>
+      </SplitItem>
+      <SplitItem isFilled>
+        <div className="wizard-review-toggle-entries">
+          <Flex spaceItems={{ default: 'spaceItemsSm' }} flexWrap={{ default: 'wrap' }}>
+            {badges}
+          </Flex>
+        </div>
+      </SplitItem>
+    </Split>
+  )
+}
+
 type ReviewToolbarAction = 'expand' | 'collapse'
 
 type ReviewExpandableStored = {
@@ -659,26 +767,16 @@ function ReviewStepToolbar(props: ReviewStepToolbarProps) {
       <FlexItem flex={{ default: 'flex_1' }} />
       {props.showExpand ? (
         <FlexItem>
-          <Tooltip content={reviewExpandAllTooltip}>
-            <Button
-              variant="plain"
-              aria-label={reviewExpandAllTooltip}
-              onClick={props.onExpandAll}
-              icon={<ExpandIcon />}
-            />
-          </Tooltip>
+          <Button variant="link" onClick={props.onExpandAll}>
+            {reviewExpandAllTooltip}
+          </Button>
         </FlexItem>
       ) : null}
       {props.showCollapse ? (
         <FlexItem>
-          <Tooltip content={reviewCollapseAllTooltip}>
-            <Button
-              variant="plain"
-              aria-label={reviewCollapseAllTooltip}
-              onClick={props.onCollapseAll}
-              icon={<CompressIcon />}
-            />
-          </Tooltip>
+          <Button variant="link" onClick={props.onCollapseAll}>
+            {reviewCollapseAllTooltip}
+          </Button>
         </FlexItem>
       ) : null}
     </Flex>
