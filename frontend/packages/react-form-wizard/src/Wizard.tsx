@@ -59,6 +59,8 @@ import { Step } from './Step'
 export interface WizardProps {
   wizardStrings?: WizardStrings
   title: string
+  /** Scopes review-step expandable persistence in localStorage; defaults to a slug derived from {@link title}. */
+  reviewStorageKey?: string
   description?: string
   children: ReactNode
   defaultData?: object
@@ -104,6 +106,7 @@ export function Wizard(props: WizardProps & { showHeader?: boolean; showYaml?: b
                                 <StringContext.Provider value={wizardStrings || defaultStrings}>
                                   <WizardInternal
                                     title={props.title}
+                                    reviewStorageKey={props.reviewStorageKey}
                                     onSubmit={props.onSubmit}
                                     onCancel={props.onCancel}
                                     hasButtons={props.hasButtons}
@@ -147,14 +150,26 @@ type WizardFooterProps = {
 
 type WizardInternalProps = Omit<WizardFooterProps, 'steps'> & {
   title: string
+  reviewStorageKey?: string
   children: ReactNode
   onCancel: WizardCancel
   hasButtons?: boolean
   isLoading?: boolean
 }
 
+function defaultReviewStorageKeyFromTitle(title: string): string {
+  const s = title
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+  return (s || 'wizard').slice(0, 96)
+}
+
 function WizardInternal({
   children,
+  title,
+  reviewStorageKey,
   onSubmit,
   onCancel,
   submitButtonText,
@@ -163,6 +178,7 @@ function WizardInternal({
 }: WizardInternalProps) {
   const wizardRef = useRef<HTMLDivElement>(null)
   const { reviewLabel, stepsAriaLabel, contentAriaLabel } = useStringContext()
+  const resolvedReviewStorageKey = reviewStorageKey ?? defaultReviewStorageKeyFromTitle(title)
   const stepComponents = useMemo(
     () => Children.toArray(children).filter((child) => isValidElement(child) && child.type === Step) as ReactElement[],
     [children]
@@ -172,9 +188,9 @@ function WizardInternal({
     () => ({
       id: 'review-step',
       name: reviewLabel,
-      component: <ReviewStep wizardRef={wizardRef} />,
+      component: <ReviewStep wizardRef={wizardRef} reviewStorageKey={resolvedReviewStorageKey} />,
     }),
-    [reviewLabel]
+    [reviewLabel, resolvedReviewStorageKey]
   )
 
   const showValidation = useShowValidation()

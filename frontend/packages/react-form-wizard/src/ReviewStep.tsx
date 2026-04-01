@@ -1,20 +1,39 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
   Badge,
+  Button,
   DescriptionList,
   DescriptionListDescription,
   DescriptionListGroup,
   DescriptionListTerm,
+  Divider,
   ExpandableSection,
+  Flex,
+  FlexItem,
   Split,
   SplitItem,
   Stack,
   Title,
+  Toolbar,
+  ToolbarContent,
+  Tooltip,
 } from '@patternfly/react-core'
 import { css } from '@patternfly/react-styles'
 import titleStyles from '@patternfly/react-styles/css/components/Title/title'
-import { ExclamationCircleIcon } from '@patternfly/react-icons'
-import { Fragment, type ComponentProps, type ReactNode, type RefObject, useLayoutEffect, useRef, useState } from 'react'
+import { CompressIcon, ExclamationCircleIcon, ExpandIcon } from '@patternfly/react-icons'
+import {
+  Fragment,
+  type ComponentProps,
+  type MouseEvent,
+  type ReactNode,
+  type RefObject,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { useReviewDomTreeVersion } from './contexts/ReviewDomTreeSyncContext'
 import { useStringContext } from './contexts/StringContext'
 import { InputReviewStepMeta, InputReviewMeta, useStepInputsRegistry } from './contexts/StepInputsContext'
@@ -23,6 +42,7 @@ import './ReviewStep.css'
 
 export interface ReviewStepProps {
   wizardRef?: RefObject<HTMLDivElement | null>
+  reviewStorageKey?: string
 }
 
 type InputOrArrayInputMeta = Extract<InputReviewStepMeta, { type: InputReviewMeta.INPUT | InputReviewMeta.ARRAY_INPUT }>
@@ -94,9 +114,11 @@ function ToggleContent(props: { label: string }) {
 export interface ReviewExpandableSectionProps {
   label: string
   children?: ReactNode
+  isExpanded: boolean
+  onExpandedChange: (expanded: boolean) => void
 }
 
-export function ReviewStep({ wizardRef }: ReviewStepProps) {
+export function ReviewStep({ wizardRef, reviewStorageKey = 'default' }: ReviewStepProps) {
   const { reviewLabel } = useStringContext()
   const stepInputsRegistry = useStepInputsRegistry()
   const reviewDomTreeVersion = useReviewDomTreeVersion()
@@ -111,16 +133,94 @@ export function ReviewStep({ wizardRef }: ReviewStepProps) {
     setWizardDomTree(treeData)
   }, [wizardRef, stepInputMapRef, reviewDomTreeVersion])
 
-  const sectionRoots = getWizardDomTreeRootChildren(wizardDomTree)
+  const sectionRoots = useMemo(() => getWizardDomTreeRootChildren(wizardDomTree), [wizardDomTree])
+  const sectionKeys = useMemo(() => sectionRoots.map((child, index) => reviewNodeKey(child, index)), [sectionRoots])
+
+  const prevStorageBucketRef = useRef<string | null>(null)
+  const [lastToolbarAction, setLastToolbarAction] = useState<ReviewToolbarAction>('expand')
+  const [sectionExpanded, setSectionExpanded] = useState<Record<string, boolean>>({})
+
+  useLayoutEffect(() => {
+    const stored = readReviewExpandableStorage(reviewStorageKey)
+    const bucketChanged = prevStorageBucketRef.current !== reviewStorageKey
+    if (bucketChanged) {
+      prevStorageBucketRef.current = reviewStorageKey
+      setLastToolbarAction(stored.lastToolbar)
+    }
+    if (sectionKeys.length === 0) return
+
+    setSectionExpanded((prev) => {
+      const next: Record<string, boolean> = {}
+      for (const key of sectionKeys) {
+        if (bucketChanged) {
+          next[key] = stored.sections[key] !== undefined ? stored.sections[key]! : stored.lastToolbar === 'expand'
+        } else if (key in prev) {
+          next[key] = prev[key]!
+        } else if (stored.sections[key] !== undefined) {
+          next[key] = stored.sections[key]!
+        } else {
+          next[key] = stored.lastToolbar === 'expand'
+        }
+      }
+      return next
+    })
+  }, [reviewStorageKey, sectionKeys])
+
+  useEffect(() => {
+    if (sectionKeys.length === 0) return
+    writeReviewExpandableStorage(reviewStorageKey, sectionExpanded, lastToolbarAction)
+  }, [reviewStorageKey, sectionExpanded, lastToolbarAction, sectionKeys])
+
+  const onSectionExpandedChange = useCallback((key: string, expanded: boolean) => {
+    setSectionExpanded((p) => ({ ...p, [key]: expanded }))
+  }, [])
+
+  /** Uniform expand: clears per-section differences for persisted state. */
+  const onExpandAll = useCallback(() => {
+    setLastToolbarAction('expand')
+    setSectionExpanded(() => {
+      const next: Record<string, boolean> = {}
+      for (const k of sectionKeys) next[k] = true
+      return next
+    })
+  }, [sectionKeys])
+
+  /** Uniform collapse: clears per-section differences for persisted state. */
+  const onCollapseAll = useCallback(() => {
+    setLastToolbarAction('collapse')
+    setSectionExpanded(() => {
+      const next: Record<string, boolean> = {}
+      for (const k of sectionKeys) next[k] = false
+      return next
+    })
+  }, [sectionKeys])
+
+  const showExpandToolbarButton = lastToolbarAction !== 'expand'
+  const showCollapseToolbarButton = lastToolbarAction !== 'collapse'
 
   return (
     <Step label={reviewLabel} id="review">
       <Stack hasGutter>
-        {sectionRoots.map((child, index) => (
-          <ReviewExpandableSection key={reviewNodeKey(child, index)} label={reviewNodeLabel(child)}>
-            <ReviewSectionBody node={child} />
-          </ReviewExpandableSection>
-        ))}
+        <ReviewStepToolbar
+          onExpandAll={onExpandAll}
+          onCollapseAll={onCollapseAll}
+          showExpand={showExpandToolbarButton}
+          showCollapse={showCollapseToolbarButton}
+        />
+        <Divider />
+        {sectionRoots.map((child, index) => {
+          const key = reviewNodeKey(child, index)
+          return (
+            <ReviewExpandableSection
+              key={key}
+              label={reviewNodeLabel(child)}
+              isExpanded={sectionExpanded[key] ?? true}
+              onExpandedChange={(expanded) => onSectionExpandedChange(key, expanded)}
+            >
+              <ReviewSectionBody node={child} />
+            </ReviewExpandableSection>
+          )
+        })}
       </Stack>
     </Step>
   )
@@ -128,11 +228,10 @@ export function ReviewStep({ wizardRef }: ReviewStepProps) {
 
 /** PatternFly {@link ExpandableSection} with review-step toggle: {@link Title} when expanded, {@link ToggleContent} when collapsed. */
 export function ReviewExpandableSection(props: ReviewExpandableSectionProps) {
-  const [isExpanded, setIsExpanded] = useState(true)
-  const onToggle = (_event: React.MouseEvent, expanded: boolean) => {
-    setIsExpanded(expanded)
+  const onToggle = (_event: MouseEvent, expanded: boolean) => {
+    props.onExpandedChange(expanded)
   }
-  const { label, children } = props
+  const { label, children, isExpanded } = props
   return (
     <ExpandableSection
       className="wizard-review-expandable-section"
@@ -489,5 +588,111 @@ export function ReviewSectionBody(props: { node: WizardDomTreeNode }) {
     <Fragment>
       {renderReviewNodeSequence(bodyNodes, { inputGroupMarginLeft: 16, arrayInputNesting: 0 }, false)}
     </Fragment>
+  )
+}
+
+type ReviewToolbarAction = 'expand' | 'collapse'
+
+type ReviewExpandableStored = {
+  sections: Record<string, boolean>
+  lastToolbar: ReviewToolbarAction
+}
+
+const REVIEW_EXPANDABLE_LS_PREFIX = 'pf-labs-form-wizard-review-expandable-v1'
+
+function reviewExpandableStorageKey(reviewStorageKey: string): string {
+  return `${REVIEW_EXPANDABLE_LS_PREFIX}:${reviewStorageKey}`
+}
+
+function readReviewExpandableStorage(reviewStorageKey: string): ReviewExpandableStored {
+  if (typeof localStorage === 'undefined') {
+    return { sections: {}, lastToolbar: 'expand' }
+  }
+  try {
+    const raw = localStorage.getItem(reviewExpandableStorageKey(reviewStorageKey))
+    if (!raw) return { sections: {}, lastToolbar: 'expand' }
+    const parsed = JSON.parse(raw) as unknown
+    if (!parsed || typeof parsed !== 'object') return { sections: {}, lastToolbar: 'expand' }
+    const sections: Record<string, boolean> = {}
+    if (
+      'sections' in parsed &&
+      parsed.sections &&
+      typeof parsed.sections === 'object' &&
+      !Array.isArray(parsed.sections)
+    ) {
+      for (const [k, v] of Object.entries(parsed.sections as Record<string, unknown>)) {
+        if (typeof v === 'boolean') sections[k] = v
+      }
+    }
+    const lastToolbar =
+      'lastToolbar' in parsed && parsed.lastToolbar === 'collapse' ? 'collapse' : ('expand' as ReviewToolbarAction)
+    return { sections, lastToolbar }
+  } catch {
+    return { sections: {}, lastToolbar: 'expand' }
+  }
+}
+
+function writeReviewExpandableStorage(
+  reviewStorageKey: string,
+  sections: Record<string, boolean>,
+  lastToolbar: ReviewToolbarAction
+): void {
+  if (typeof localStorage === 'undefined') return
+  try {
+    localStorage.setItem(reviewExpandableStorageKey(reviewStorageKey), JSON.stringify({ sections, lastToolbar }))
+  } catch {
+    /* ignore quota / private mode */
+  }
+}
+
+type ReviewStepToolbarProps = {
+  onExpandAll: () => void
+  onCollapseAll: () => void
+  showExpand: boolean
+  showCollapse: boolean
+}
+
+function ReviewStepToolbar(props: ReviewStepToolbarProps) {
+  const { reviewExpandAllTooltip, reviewCollapseAllTooltip } = useStringContext()
+  const toolbarItems = (
+    <Flex direction={{ default: 'row' }} style={{ width: '100%' }}>
+      <FlexItem flex={{ default: 'flex_1' }} />
+      {props.showExpand ? (
+        <FlexItem>
+          <Tooltip content={reviewExpandAllTooltip}>
+            <Button
+              variant="plain"
+              aria-label={reviewExpandAllTooltip}
+              onClick={props.onExpandAll}
+              icon={<ExpandIcon />}
+            />
+          </Tooltip>
+        </FlexItem>
+      ) : null}
+      {props.showCollapse ? (
+        <FlexItem>
+          <Tooltip content={reviewCollapseAllTooltip}>
+            <Button
+              variant="plain"
+              aria-label={reviewCollapseAllTooltip}
+              onClick={props.onCollapseAll}
+              icon={<CompressIcon />}
+            />
+          </Tooltip>
+        </FlexItem>
+      ) : null}
+    </Flex>
+  )
+
+  return (
+    <Toolbar
+      className="pf-m-toggle-group-container"
+      style={{
+        rowGap: '14px',
+        width: '100%',
+      }}
+    >
+      <ToolbarContent>{toolbarItems}</ToolbarContent>
+    </Toolbar>
   )
 }
