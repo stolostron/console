@@ -24,7 +24,7 @@ spec:
     agentBareMetal:
       agentSelector:
         matchLabels:
-          'agentBareMetal-generated-infraenv-ai-flow': '{{{ai.name}}}-{{{ai.name}}}'
+          'agentBareMetal-generated-infraenv-ai-flow': '{{{ai.name}}}'
   pullSecretRef:
     name: pullsecret-cluster-{{{ai.name}}}
 
@@ -128,7 +128,7 @@ spec:
     name: '{{{ai.name}}}'
     namespace: '{{{ai.name}}}'
   agentLabels:
-    'agentBareMetal-generated-infraenv-ai-flow': '{{{ai.name}}}-{{{ai.name}}}'
+    'agentBareMetal-generated-infraenv-ai-flow': '{{{ai.name}}}'
   pullSecretRef:
     name: pullsecret-cluster-{{{ai.name}}}
   sshAuthorizedKey: '{{{ai.sshPublicKey}}}'
@@ -138,4 +138,4 @@ spec:
 status:
   agentLabelSelector:
     matchLabels:
-      'agentBareMetal-generated-infraenv-ai-flow': '{{{ai.name}}}-{{{ai.name}}}'
+      'agentBareMetal-generated-infraenv-ai-flow': '{{{ai.name}}}'
