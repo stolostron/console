@@ -28,7 +28,7 @@ import { TFunction } from 'i18next'
 import { isValidImageSet, ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
 
 const hasClusterImageSetWithArch = (clusterImageSets: ClusterImageSet[], architectures: string[]) =>
-  clusterImageSets.filter((cis) => isValidImageSet(cis as ClusterImageSetK8sResource, architectures))
+  clusterImageSets.filter((cis) => isValidImageSet(cis as ClusterImageSetK8sResource, architectures, true))
 
 const clusterImageSetsRequired = (
   clusterImageSets: ClusterImageSet[],
