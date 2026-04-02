@@ -100,3 +100,21 @@
   opacity: 1;
   pointer-events: auto;
 }
+
+/* Scroll-to-edit target: outline until timeout or blur (see scrollReviewEditTargetIntoView). */
+.wizard-review-edit-target-highlight {
+  outline-style: solid;
+  outline-color: #00c5ff;
+  outline-width: 0;
+}
+
+.wizard-review-edit-target-highlight.wizard-review-edit-target-highlight--visible {
+  outline-width: 5px;
+  transition: outline-width 0.4s ease-in;
+}
+
+/* With --visible still on, this rule wins so outline eases out from 5px to 0. */
+.wizard-review-edit-target-highlight.wizard-review-edit-target-highlight--ease-out {
+  outline-width: 0;
+  transition: outline-width 0.4s ease-out;
+}

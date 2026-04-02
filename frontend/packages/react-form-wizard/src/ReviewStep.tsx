@@ -213,8 +213,8 @@ export function ReviewStep({ wizardRef, reviewStorageKey = 'default' }: ReviewSt
     [goToStepById]
   )
 
-  const showExpandToolbarButton = lastToolbarAction !== 'expand'
-  const showCollapseToolbarButton = lastToolbarAction !== 'collapse'
+  const showExpandToolbarButton = sectionKeys.some((k) => sectionExpanded[k] === false)
+  const showCollapseToolbarButton = sectionKeys.some((k) => sectionExpanded[k] !== false)
 
   return (
     <Step label={reviewLabel} id="review">
@@ -444,9 +444,132 @@ function getReviewScrollTargetDomId(node: WizardDomTreeNode): string | undefined
   return undefined
 }
 
+const REVIEW_EDIT_TARGET_HIGHLIGHT_CLASS = 'wizard-review-edit-target-highlight'
+const REVIEW_EDIT_TARGET_HIGHLIGHT_VISIBLE_CLASS = 'wizard-review-edit-target-highlight--visible'
+const REVIEW_EDIT_TARGET_HIGHLIGHT_EASE_OUT_CLASS = 'wizard-review-edit-target-highlight--ease-out'
+const REVIEW_EDIT_HIGHLIGHT_MS = 1500
+const REVIEW_EDIT_HIGHLIGHT_EASE_OUT_MS = 500
+
+const reviewEditHighlightTeardownByEl = new WeakMap<Element, () => void>()
+
+function clearReviewEditHighlight(highlightEl: HTMLElement) {
+  const abort = reviewEditHighlightTeardownByEl.get(highlightEl)
+  if (abort) abort()
+  else {
+    highlightEl.classList.remove(
+      REVIEW_EDIT_TARGET_HIGHLIGHT_CLASS,
+      REVIEW_EDIT_TARGET_HIGHLIGHT_VISIBLE_CLASS,
+      REVIEW_EDIT_TARGET_HIGHLIGHT_EASE_OUT_CLASS
+    )
+  }
+}
+
+function reviewEditHighlightTarget(el: HTMLElement): HTMLElement {
+  if (el instanceof HTMLInputElement && el.parentElement?.tagName === 'DIV') {
+    return el.parentElement
+  }
+  return el
+}
+
+/** Prefer a descendant control for outline/scroll/focus when the id is on a wrapper. */
+function resolveReviewEditInputTarget(el: HTMLElement): HTMLElement {
+  if (el instanceof HTMLInputElement) return el
+  for (const input of Array.from(el.querySelectorAll('input'))) {
+    if (input instanceof HTMLInputElement && input.type !== 'hidden') {
+      return input
+    }
+  }
+  return el
+}
+
+/** `input.type` is normalized (e.g. missing `type` → `text`). */
+function isSelectableTextInput(input: HTMLInputElement): boolean {
+  const t = input.type
+  return t === 'text' || t === 'search' || t === 'url' || t === 'tel' || t === 'password' || t === 'email'
+}
+
 function scrollReviewEditTargetIntoView(domId: string) {
   const run = () => {
-    document.getElementById(domId)?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' })
+    const el = document.getElementById(domId) as HTMLElement | null
+    if (!el) return
+    const inputTarget = resolveReviewEditInputTarget(el)
+    const highlightEl = reviewEditHighlightTarget(inputTarget)
+    highlightEl.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' })
+    if (inputTarget instanceof HTMLInputElement && isSelectableTextInput(inputTarget)) {
+      inputTarget.focus()
+      inputTarget.select()
+    }
+    clearReviewEditHighlight(highlightEl)
+    highlightEl.classList.add(REVIEW_EDIT_TARGET_HIGHLIGHT_CLASS)
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        highlightEl.classList.add(REVIEW_EDIT_TARGET_HIGHLIGHT_VISIBLE_CLASS)
+      })
+    })
+
+    let timeoutId: ReturnType<typeof setTimeout> | undefined
+    let easeOutFallbackId: ReturnType<typeof setTimeout> | undefined
+
+    const finishHighlight = () => {
+      if (easeOutFallbackId !== undefined) {
+        clearTimeout(easeOutFallbackId)
+        easeOutFallbackId = undefined
+      }
+      highlightEl.removeEventListener('transitionend', onTransitionEnd)
+      highlightEl.classList.remove(
+        REVIEW_EDIT_TARGET_HIGHLIGHT_CLASS,
+        REVIEW_EDIT_TARGET_HIGHLIGHT_VISIBLE_CLASS,
+        REVIEW_EDIT_TARGET_HIGHLIGHT_EASE_OUT_CLASS
+      )
+      reviewEditHighlightTeardownByEl.delete(highlightEl)
+    }
+
+    const onTransitionEnd = (e: TransitionEvent) => {
+      if (e.target !== highlightEl || e.propertyName !== 'outline-width') return
+      if (!highlightEl.classList.contains(REVIEW_EDIT_TARGET_HIGHLIGHT_EASE_OUT_CLASS)) return
+      finishHighlight()
+    }
+
+    const abort = () => {
+      if (timeoutId !== undefined) {
+        clearTimeout(timeoutId)
+        timeoutId = undefined
+      }
+      if (easeOutFallbackId !== undefined) {
+        clearTimeout(easeOutFallbackId)
+        easeOutFallbackId = undefined
+      }
+      window.removeEventListener('blur', onWindowBlur)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+      highlightEl.removeEventListener('transitionend', onTransitionEnd)
+      highlightEl.classList.remove(
+        REVIEW_EDIT_TARGET_HIGHLIGHT_CLASS,
+        REVIEW_EDIT_TARGET_HIGHLIGHT_VISIBLE_CLASS,
+        REVIEW_EDIT_TARGET_HIGHLIGHT_EASE_OUT_CLASS
+      )
+      reviewEditHighlightTeardownByEl.delete(highlightEl)
+    }
+
+    const dismiss = () => {
+      if (timeoutId !== undefined) {
+        clearTimeout(timeoutId)
+        timeoutId = undefined
+      }
+      window.removeEventListener('blur', onWindowBlur)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+      highlightEl.addEventListener('transitionend', onTransitionEnd)
+      easeOutFallbackId = setTimeout(finishHighlight, REVIEW_EDIT_HIGHLIGHT_EASE_OUT_MS)
+      highlightEl.classList.add(REVIEW_EDIT_TARGET_HIGHLIGHT_EASE_OUT_CLASS)
+    }
+
+    const onWindowBlur = () => dismiss()
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') dismiss()
+    }
+    timeoutId = setTimeout(dismiss, REVIEW_EDIT_HIGHLIGHT_MS)
+    window.addEventListener('blur', onWindowBlur)
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    reviewEditHighlightTeardownByEl.set(highlightEl, abort)
   }
   requestAnimationFrame(() => {
     requestAnimationFrame(run)
@@ -461,18 +584,14 @@ ReviewPenParentCancelContext.displayName = 'ReviewPenParentCancelContext'
 
 function ReviewPenHoverZone({
   as,
-  className,
   style,
   children,
-  penClassName,
   ariaLabel,
   onPenClick,
 }: {
   as?: 'div' | 'span'
-  className?: string
   style?: CSSProperties
   children: ReactNode
-  penClassName: string
   ariaLabel: string
   onPenClick: (e: ReactMouseEvent<HTMLElement>) => void
 }) {
@@ -507,7 +626,7 @@ function ReviewPenHoverZone({
 
   const Comp = as ?? 'div'
   const penRevealedClass = penVisible ? ' wizard-review-edit-btn--revealed' : ''
-  const zoneClassName = ['wizard-review-pen-hover-zone', className].filter(Boolean).join(' ')
+  const zoneClassName = 'wizard-review-pen-hover-zone wizard-review-inline-value'
 
   const onZoneClick = useCallback(
     (e: ReactMouseEvent<HTMLElement>) => {
@@ -526,7 +645,7 @@ function ReviewPenHoverZone({
         <Button
           type="button"
           variant="plain"
-          className={`${penClassName}${penRevealedClass}`}
+          className={`wizard-review-edit-btn${penRevealedClass}`}
           aria-label={ariaLabel}
           onClick={(e) => {
             e.stopPropagation()
@@ -584,7 +703,7 @@ type ReviewRenderCtx = {
 
 /** Top-level array section uses 16px; each nested ARRAY_INPUT adds 16px (not 16). */
 function reviewArrayInstanceMarginLeft(arrayInputNesting: number): number {
-  return 16 + 16 * arrayInputNesting
+  return 32 + 16 * arrayInputNesting
 }
 
 function renderReviewInputDescriptionContent(node: WizardInputDomNode): ReactNode {
@@ -617,13 +736,7 @@ function renderReviewInputRows(nodes: readonly WizardInputDomNode[], ctx: Review
             <DescriptionListTerm>{termText}</DescriptionListTerm>
             <DescriptionListDescription>
               {onReviewEdit != null ? (
-                <ReviewPenHoverZone
-                  as="span"
-                  className="wizard-review-inline-value"
-                  penClassName="wizard-review-edit-btn wizard-review-edit-btn--inline"
-                  ariaLabel="Edit"
-                  onPenClick={() => onReviewEdit(inputNode)}
-                >
+                <ReviewPenHoverZone as="span" ariaLabel="Edit" onPenClick={() => onReviewEdit(inputNode)}>
                   {valueContent}
                 </ReviewPenHoverZone>
               ) : (
@@ -766,7 +879,7 @@ export function ReviewSectionBody(props: {
     <Fragment>
       {renderReviewNodeSequence(
         bodyNodes,
-        { inputGroupMarginLeft: 16, arrayInputNesting: 0, onReviewEdit: props.onReviewEdit },
+        { inputGroupMarginLeft: 32, arrayInputNesting: 0, onReviewEdit: props.onReviewEdit },
         false
       )}
     </Fragment>
