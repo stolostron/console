@@ -299,9 +299,18 @@ export function DistributionField(props: {
                     version: props.cluster?.distribution.upgradeInfo.desiredVersion,
                   }),
                   footerContent: (
-                    <a href={`${props.cluster?.consoleURL}/settings/cluster`} target="_blank" rel="noreferrer">
-                      {t('update.updating.link')} <ExternalLinkAltIcon />
-                    </a>
+                    <AcmButton
+                      variant="link"
+                      component="a"
+                      href={`${props.cluster?.consoleURL}/settings/cluster`}
+                      target="_blank"
+                      rel="noreferrer"
+                      isInline
+                      icon={<ExternalLinkAltIcon />}
+                      iconPosition="left"
+                    >
+                      {t('update.updating.link')}
+                    </AcmButton>
                   ),
                 }
               : undefined
@@ -345,9 +354,18 @@ export function DistributionField(props: {
                         version: versionNum,
                       }),
                   footerContent: (
-                    <a href={`${props.cluster?.consoleURL}/settings/cluster`} target="_blank" rel="noreferrer">
-                      {t('update.updating.link')} <ExternalLinkAltIcon />
-                    </a>
+                    <AcmButton
+                      variant="link"
+                      component="a"
+                      href={`${props.cluster?.consoleURL}/settings/cluster`}
+                      target="_blank"
+                      rel="noreferrer"
+                      isInline
+                      icon={<ExternalLinkAltIcon />}
+                      iconPosition="left"
+                    >
+                      {t('update.updating.link')}
+                    </AcmButton>
                   ),
                 }
               : undefined
@@ -385,9 +403,18 @@ export function DistributionField(props: {
                         version: props.cluster?.distribution.upgradeInfo.desiredVersion,
                       }),
                   footerContent: (
-                    <a href={`${props.cluster?.consoleURL}/settings/cluster`} target="_blank" rel="noreferrer">
-                      {t('update.updating.link')} <ExternalLinkAltIcon />
-                    </a>
+                    <AcmButton
+                      variant="link"
+                      component="a"
+                      href={`${props.cluster?.consoleURL}/settings/cluster`}
+                      target="_blank"
+                      rel="noreferrer"
+                      isInline
+                      icon={<ExternalLinkAltIcon />}
+                      iconPosition="left"
+                    >
+                      {t('update.updating.link')}
+                    </AcmButton>
                   ),
                 }
               : undefined
