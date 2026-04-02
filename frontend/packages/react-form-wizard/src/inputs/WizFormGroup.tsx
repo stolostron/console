@@ -1,9 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { FormGroup } from '@patternfly/react-core'
-import { PropsWithChildren, useId } from 'react'
+import { PropsWithChildren, useContext } from 'react'
 import { LabelHelp } from '../components/LabelHelp'
 import { WizHelperText } from '../components/WizHelperText'
-import { convertId, InputCommonProps } from './Input'
+import { ReviewPathPrefixSegmentsContext } from '../contexts/StepInputsContext'
+import { ItemContext } from '../contexts/ItemContext'
+import { buildReviewInputRegistrationPath, convertId, InputCommonProps } from './Input'
 
 type WizFormGroupProps = InputCommonProps & {
   noHelperText?: boolean
@@ -11,8 +13,10 @@ type WizFormGroupProps = InputCommonProps & {
 
 export function WizFormGroup(props: PropsWithChildren<WizFormGroupProps>) {
   const { noHelperText } = props
-  const reactUseId = useId()
-  const id = process.env.NODE_ENV === 'test' ? convertId(props) : `wiz-form-group-${reactUseId}`
+  const reviewPathPrefixSegments = useContext(ReviewPathPrefixSegmentsContext)
+  const item = useContext(ItemContext)
+  const registrationPath = buildReviewInputRegistrationPath(reviewPathPrefixSegments, props.path, item)
+  const id = process.env.NODE_ENV === 'test' ? convertId(props) : registrationPath
 
   return (
     <FormGroup

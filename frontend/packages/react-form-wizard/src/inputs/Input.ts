@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import get from 'get-value'
-import { ReactNode, useCallback, useContext, useId, useLayoutEffect, useState } from 'react'
+import { ReactNode, useCallback, useContext, useLayoutEffect, useState } from 'react'
 import set from 'set-value'
 import { EditMode } from '..'
 import { useData } from '../contexts/DataContext'
@@ -8,7 +8,12 @@ import { useDisplayMode } from '../contexts/DisplayModeContext'
 import { useEditMode } from '../contexts/EditModeContext'
 import { useHasInputs, useSetHasInputs, useUpdateHasInputs } from '../contexts/HasInputsProvider'
 import { useHasValue, useSetHasValue } from '../contexts/HasValueProvider'
-import { CurrentStepIdContext, InputReviewMeta, useStepInputsRegistry } from '../contexts/StepInputsContext'
+import {
+  CurrentStepIdContext,
+  InputReviewMeta,
+  ReviewPathPrefixSegmentsContext,
+  useStepInputsRegistry,
+} from '../contexts/StepInputsContext'
 import { ItemContext } from '../contexts/ItemContext'
 import { useShowValidation } from '../contexts/ShowValidationProvider'
 import { useBumpReviewDomTree } from '../contexts/ReviewDomTreeSyncContext'
@@ -144,16 +149,22 @@ export function useInput(props: InputCommonProps, options?: { isArrayInput?: boo
     validate()
   }
 
-  const reactUseId = useId()
-  const id = process.env.NODE_ENV === 'test' ? convertId(props) : `wiz-input-${reactUseId}`
+  const item = useContext(ItemContext)
   const currentStepId = useContext(CurrentStepIdContext)
   const stepInputsRegistry = useStepInputsRegistry()
+  const reviewPathPrefixSegments = useContext(ReviewPathPrefixSegmentsContext)
+  const registrationPath = buildReviewInputRegistrationPath(
+    isArrayInput ? [] : reviewPathPrefixSegments,
+    props.path,
+    item
+  )
+  const id = process.env.NODE_ENV === 'test' ? convertId(props) : registrationPath
 
   useLayoutEffect(() => {
     if (!stepInputsRegistry || currentStepId === undefined || hidden) return
     stepInputsRegistry.register(id, {
       id,
-      path: props.path,
+      path: registrationPath,
       value,
       label: props.label,
       error: error ?? undefined,
@@ -166,7 +177,7 @@ export function useInput(props: InputCommonProps, options?: { isArrayInput?: boo
     currentStepId,
     hidden,
     id,
-    props.path,
+    registrationPath,
     value,
     props.label,
     error,
@@ -222,4 +233,25 @@ export function getCollapsedPlaceholder(props: { collapsedPlaceholder?: ReactNod
 
 export function getAddPlaceholder(props: { placeholder?: string }) {
   return props.placeholder ?? 'Add'
+}
+
+/** Full dot-path for review registration: `prefixSegments` (array field + index segments) + `path`, with resource `kind` prepended when `item` has one. */
+export function buildReviewInputRegistrationPath(
+  prefixSegments: readonly string[],
+  path: string,
+  item?: unknown
+): string {
+  const base = prefixSegments.length > 0 ? [...prefixSegments, path].join('.') : path
+  return prependItemKindToRegistrationPath(item, base)
+}
+
+/** When the active item looks like a resource (has `kind`), prefix the review path so it stays unique across kinds. */
+export function prependItemKindToRegistrationPath(item: unknown, path: string): string {
+  if (item && typeof item === 'object' && 'kind' in item) {
+    const kind = (item as { kind: unknown }).kind
+    if (kind != null && String(kind) !== '') {
+      return `${String(kind)}.${path}`
+    }
+  }
+  return path
 }

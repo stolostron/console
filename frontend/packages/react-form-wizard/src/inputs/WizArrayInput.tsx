@@ -20,13 +20,18 @@ import {
   RefObject,
   useCallback,
   useContext,
-  useId,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from 'react'
-import { InputReviewMeta, useStepInputsRegistry, WizTextDetail } from '..'
+import {
+  InputReviewMeta,
+  ReviewPathPrefixSegmentsContext,
+  ReviewPathPrefixSegmentsProvider,
+  useStepInputsRegistry,
+  WizTextDetail,
+} from '..'
 import { FieldGroup } from '../components/FieldGroup'
 import { LabelHelp } from '../components/LabelHelp'
 import { WizHelperText } from '../components/WizHelperText'
@@ -35,7 +40,7 @@ import { ItemContext } from '../contexts/ItemContext'
 import { ShowValidationContext } from '../contexts/ShowValidationProvider'
 import { useStringContext } from '../contexts/StringContext'
 import { HasValidationErrorContext, ValidationProvider } from '../contexts/ValidationProvider'
-import { getCollapsedPlaceholder, InputCommonProps, useInput } from './Input'
+import { buildReviewInputRegistrationPath, getCollapsedPlaceholder, InputCommonProps, useInput } from './Input'
 import { useBumpReviewDomTree } from '../contexts/ReviewDomTreeSyncContext'
 
 export function wizardArrayItems(props: any, item: any) {
@@ -131,6 +136,20 @@ export function WizArrayInput(props: WizArrayInputProps) {
 
   const { actionAriaLabel } = useStringContext()
 
+  const parentReviewPathSegments = useContext(ReviewPathPrefixSegmentsContext)
+  const arrayChildReviewPathSegments = useMemo(() => {
+    if (path == null || path === '') return parentReviewPathSegments
+    const next = [...parentReviewPathSegments]
+    if (item && typeof item === 'object' && 'kind' in item) {
+      const kind = (item as { kind: unknown }).kind
+      if (kind != null && String(kind) !== '') {
+        next.push(String(kind))
+      }
+    }
+    next.push(path)
+    return next
+  }, [parentReviewPathSegments, path, item])
+
   if (hidden) return <Fragment />
 
   return (
@@ -155,80 +174,83 @@ export function WizArrayInput(props: WizArrayInputProps) {
           <WizHelperText {...props} />
         </div>
       )}
-      {values.length === 0 ? (
-        <Divider />
-      ) : (
-        values.map((value, index) => {
-          return (
-            <ArrayInputItem
-              key={index}
-              id={id}
-              value={value}
-              index={index}
-              count={values.length}
-              collapsedContent={props.collapsedContent}
-              expandedContent={props.expandedContent}
-              collapsedPlaceholder={props.collapsedPlaceholder}
-              sortable={props.sortable}
-              required={required}
-              moveUp={moveUp}
-              moveDown={moveDown}
-              removeItem={removeItem}
-              defaultExpanded={!props.defaultCollapsed}
-            >
-              {props.children}
-            </ArrayInputItem>
-          )
-        })
-      )}
-      {props.placeholder && (
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, paddingTop: values.length ? 8 : 4 }}>
-          {!props.dropdownItems ? (
-            <Button
-              id="add-button"
-              variant="link"
-              size="sm"
-              aria-label={actionAriaLabel}
-              onClick={() => addItem(props.newValue ?? {})}
-              icon={<PlusCircleIcon />}
-            >
-              {props.placeholder}
-            </Button>
-          ) : (
-            <Dropdown
-              isOpen={open}
-              onOpenChange={setOpen}
-              toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-                <MenuToggle ref={toggleRef} onClick={onToggle} variant="plainText">
-                  <Button icon={<PlusCircleIcon />} iconPosition="left" variant="link" size="sm">
-                    {props.placeholder}
-                  </Button>
-                </MenuToggle>
-              )}
-              popperProps={{ position: 'left' }}
-            >
-              <DropdownList>
-                {props.dropdownItems.map((item, index) => (
-                  <DropdownItem
-                    key={index}
-                    onClick={() => {
-                      addItem(item.action())
-                      setOpen(false)
-                    }}
-                  >
-                    {item.label}
-                  </DropdownItem>
-                ))}
-              </DropdownList>
-            </Dropdown>
-          )}
-        </div>
-      )}
+      <ReviewPathPrefixSegmentsProvider value={arrayChildReviewPathSegments}>
+        {values.length === 0 ? (
+          <Divider />
+        ) : (
+          values.map((value, index) => {
+            return (
+              <ArrayInputItem
+                key={index}
+                id={id}
+                value={value}
+                index={index}
+                count={values.length}
+                collapsedContent={props.collapsedContent}
+                expandedContent={props.expandedContent}
+                collapsedPlaceholder={props.collapsedPlaceholder}
+                sortable={props.sortable}
+                required={required}
+                moveUp={moveUp}
+                moveDown={moveDown}
+                removeItem={removeItem}
+                defaultExpanded={!props.defaultCollapsed}
+              >
+                {props.children}
+              </ArrayInputItem>
+            )
+          })
+        )}
+        {props.placeholder && (
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, paddingTop: values.length ? 8 : 4 }}>
+            {!props.dropdownItems ? (
+              <Button
+                id="add-button"
+                variant="link"
+                size="sm"
+                aria-label={actionAriaLabel}
+                onClick={() => addItem(props.newValue ?? {})}
+                icon={<PlusCircleIcon />}
+              >
+                {props.placeholder}
+              </Button>
+            ) : (
+              <Dropdown
+                isOpen={open}
+                onOpenChange={setOpen}
+                toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                  <MenuToggle ref={toggleRef} onClick={onToggle} variant="plainText">
+                    <Button icon={<PlusCircleIcon />} iconPosition="left" variant="link" size="sm">
+                      {props.placeholder}
+                    </Button>
+                  </MenuToggle>
+                )}
+                popperProps={{ position: 'left' }}
+              >
+                <DropdownList>
+                  {props.dropdownItems.map((item, index) => (
+                    <DropdownItem
+                      key={index}
+                      onClick={() => {
+                        addItem(item.action())
+                        setOpen(false)
+                      }}
+                    >
+                      {item.label}
+                    </DropdownItem>
+                  ))}
+                </DropdownList>
+              </Dropdown>
+            )}
+          </div>
+        )}
+      </ReviewPathPrefixSegmentsProvider>
     </div>
   )
 }
 
 export function ArrayInputItem(props: {
+  /** Parent `WizArrayInput` registration id; used for stable DOM ids in tests. */
   id: string
   value: object
   index: number
@@ -246,9 +268,9 @@ export function ArrayInputItem(props: {
 }) {
   const { id: parentId, value, index, defaultExpanded, moveUp, moveDown, removeItem, count, required } = props
   const [expanded, setExpanded] = useState(defaultExpanded !== undefined ? defaultExpanded : true)
-  const reactUseId = useId()
-  const id =
-    process.env.NODE_ENV === 'test' ? parentId + '-' + (index + 1).toString() : `wiz-array-instance-${reactUseId}`
+  const reviewPathPrefixSegments = useContext(ReviewPathPrefixSegmentsContext)
+  const registrationPath = buildReviewInputRegistrationPath(reviewPathPrefixSegments, String(index), value)
+  const id = process.env.NODE_ENV === 'test' ? parentId + '-' + (index + 1).toString() : registrationPath
 
   const collapsedContentMeasureRef = useRef<HTMLDivElement>(null)
 
@@ -435,6 +457,11 @@ function ArrayInputItemReviewRegistration(props: {
   const item = useContext(ItemContext)
   const stepInputsRegistry = useStepInputsRegistry()
   const bumpReviewDomTree = useBumpReviewDomTree()
+  const parentReviewPathSegments = useContext(ReviewPathPrefixSegmentsContext)
+  const instanceChildReviewPathSegments = useMemo(
+    () => [...parentReviewPathSegments, String(index)],
+    [parentReviewPathSegments, index]
+  )
   useLayoutEffect(() => {
     if (!stepInputsRegistry) return
     const label = getArrayInstanceLabel(collapsedContent, item, measureRef.current)
@@ -448,7 +475,11 @@ function ArrayInputItemReviewRegistration(props: {
     return () => stepInputsRegistry.unregister(id)
   }, [stepInputsRegistry, index, collapsedContent, measureRef, value, id, item, bumpReviewDomTree])
 
-  return <Fragment>{children}</Fragment>
+  return (
+    <ReviewPathPrefixSegmentsProvider value={instanceChildReviewPathSegments}>
+      {children}
+    </ReviewPathPrefixSegmentsProvider>
+  )
 }
 
 function getArrayInstanceLabel(

@@ -45,6 +45,21 @@ export type InputReviewStepMeta =
 export const CurrentStepIdContext = createContext<string | undefined>(undefined)
 CurrentStepIdContext.displayName = 'CurrentStepIdContext'
 
+/**
+ * Path segments from nested {@link InputReviewMeta.ARRAY_INPUT} and {@link InputReviewMeta.ARRAY_INSTANCE}
+ * ancestors (same order as `reviewPathPrefixSegments` in ReviewStep `buildReviewSubtree`).
+ */
+export const ReviewPathPrefixSegmentsContext = createContext<readonly string[]>([])
+ReviewPathPrefixSegmentsContext.displayName = 'ReviewPathPrefixSegmentsContext'
+
+export function ReviewPathPrefixSegmentsProvider(props: { value: readonly string[]; children: ReactNode }) {
+  return (
+    <ReviewPathPrefixSegmentsContext.Provider value={props.value}>
+      {props.children}
+    </ReviewPathPrefixSegmentsContext.Provider>
+  )
+}
+
 export type StepInputsRegistry = {
   register: (inputId: string, entry: InputReviewStepMeta) => void
   unregister: (inputId: string) => void

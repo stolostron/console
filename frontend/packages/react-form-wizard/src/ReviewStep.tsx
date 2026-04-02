@@ -324,12 +324,11 @@ function buildReviewSubtree(
         return [stepNode]
       }
       if (props.type === InputReviewMeta.INPUT) {
-        const path =
-          reviewPathPrefixSegments.length > 0 ? [...reviewPathPrefixSegments, props.path].join('.') : props.path
+        /* `props.path` is already the full path (array prefixes applied at registration in `useInput`). */
         return [
           hasChildren
-            ? { ...props, type: InputReviewMeta.INPUT, stepId: parentStepId, path, children }
-            : { ...props, type: InputReviewMeta.INPUT, stepId: parentStepId, path },
+            ? { ...props, type: InputReviewMeta.INPUT, stepId: parentStepId, children }
+            : { ...props, type: InputReviewMeta.INPUT, stepId: parentStepId },
         ]
       }
       if (props.type === InputReviewMeta.ARRAY_INPUT) {
