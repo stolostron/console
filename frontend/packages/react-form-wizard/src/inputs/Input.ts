@@ -168,6 +168,10 @@ export function useInput(props: InputCommonProps, options?: { isArrayInput?: boo
     }
   }
 
+  if (props.id) {
+    registrationPath = `${registrationPath};id=${props.id}`
+  }
+
   const id = process.env.NODE_ENV === 'test' ? convertId(props) : registrationPath
 
   useLayoutEffect(() => {

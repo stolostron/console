@@ -76,11 +76,7 @@
   max-width: 100%;
 }
 
-/* Hover edit: pen control; only the innermost hovered review block shows its button (nested shells). */
-.wizard-review-dom-node {
-  position: relative;
-}
-
+/* Hover edit: pen on description rows; nested zones use context so only innermost shows after dwell. */
 .wizard-review-pen-hover-zone {
   cursor: pointer;
 }
@@ -96,23 +92,11 @@
 .wizard-review-edit-btn {
   opacity: 0;
   pointer-events: none;
+  position: static;
+  flex-shrink: 0;
 }
 
 .wizard-review-edit-btn.wizard-review-edit-btn--revealed {
   opacity: 1;
   pointer-events: auto;
-}
-
-/* Block shells (step / array): pen top-right */
-.wizard-review-dom-node > .wizard-review-edit-btn {
-  position: absolute;
-  top: 0;
-  right: 0;
-  z-index: 1;
-}
-
-/* Input rows: pen after value on the same line */
-.wizard-review-edit-btn.wizard-review-edit-btn--inline {
-  position: static;
-  flex-shrink: 0;
 }

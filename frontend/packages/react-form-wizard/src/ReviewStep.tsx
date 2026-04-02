@@ -27,6 +27,7 @@ import {
   Fragment,
   type ComponentProps,
   type CSSProperties,
+  type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
   type RefObject,
@@ -231,7 +232,9 @@ export function ReviewStep({ wizardRef, reviewStorageKey = 'default' }: ReviewSt
             <ReviewExpandableSection
               key={key}
               label={reviewNodeLabel(child)}
-              collapsedContent={<ReviewCollapsedContent label={reviewNodeLabel(child)} node={child} />}
+              collapsedContent={
+                <ReviewCollapsedContent label={reviewNodeLabel(child)} node={child} onReviewEdit={handleReviewEdit} />
+              }
               isExpanded={sectionExpanded[key] ?? true}
               onExpandedChange={(expanded) => onSectionExpandedChange(key, expanded)}
             >
@@ -537,26 +540,9 @@ function ReviewPenHoverZone({
   )
 }
 
-function ReviewDomTreeNodeShell(props: {
-  node: WizardDomTreeNode
-  onReviewEdit?: (node: WizardDomTreeNode) => void
-  children: ReactNode
-}) {
-  const { node, onReviewEdit, children } = props
-  if (!onReviewEdit) return <>{children}</>
-  return (
-    <ReviewPenHoverZone
-      className="wizard-review-dom-node"
-      penClassName="wizard-review-edit-btn"
-      ariaLabel="Edit"
-      onPenClick={(e) => {
-        e.stopPropagation()
-        onReviewEdit(node)
-      }}
-    >
-      {children}
-    </ReviewPenHoverZone>
-  )
+/** Layout wrapper only; edit pen is shown only inside {@link DescriptionListDescription} rows. */
+function ReviewDomTreeNodeShell(props: { children: ReactNode }) {
+  return <>{props.children}</>
 }
 
 function getReviewSectionBodyNodes(node: WizardDomTreeNode): WizardDomTreeNode[] {
@@ -689,7 +675,7 @@ function renderReviewNodeSequence(
       const inner = n.children ?? []
       const shellKey = isReviewStepNode(n) ? `step-${n.id}` : 'children-wrap'
       out.push(
-        <ReviewDomTreeNodeShell key={shellKey} node={n} onReviewEdit={ctx.onReviewEdit}>
+        <ReviewDomTreeNodeShell key={shellKey}>
           <Fragment>{renderReviewNodeSequence(inner, ctx, precedingDlGroup)}</Fragment>
         </ReviewDomTreeNodeShell>
       )
@@ -716,7 +702,7 @@ function renderReviewArrayInputSection(
   const children = node.children ?? []
   const marginLeft = reviewArrayInstanceMarginLeft(ctx.arrayInputNesting)
   return (
-    <ReviewDomTreeNodeShell key={`array-${node.path}`} node={node} onReviewEdit={ctx.onReviewEdit}>
+    <ReviewDomTreeNodeShell key={`array-${node.path}`}>
       <Fragment>
         {children.map((child, index) =>
           renderReviewArrayInstanceContainer(child, ctx, afterDescriptionListGroup && index === 0, marginLeft, index)
@@ -744,19 +730,17 @@ function renderReviewArrayInstanceContainer(
   const showTitle = isReviewArrayInstanceNode(node) && shouldShowArrayInstanceTitle(node)
 
   return (
-    <ReviewDomTreeNodeShell key={key} node={node} onReviewEdit={ctx.onReviewEdit}>
+    <ReviewDomTreeNodeShell key={key}>
       <div
         style={{
           marginLeft,
-          marginBottom: 32,
-          marginTop: addTopMarginAfterDl ? 32 : undefined,
+          marginBottom: 16,
+          marginTop: addTopMarginAfterDl ? 24 : undefined,
         }}
       >
         {showTitle ? (
-          <div style={{ marginBottom: 16 }}>
-            <Badge isRead className={css(titleStyles.title, titleStyles.modifiers.h4)}>
-              {node.label}
-            </Badge>
+          <div style={{ marginBottom: 16 }} className={css(titleStyles.title, titleStyles.modifiers.h4)}>
+            {node.label}
           </div>
         ) : null}
         <div
@@ -800,10 +784,36 @@ function reviewCollapsedNodeError(node: WizardDomTreeNode): string | undefined {
   return undefined
 }
 
-function ReviewCollapsedValueBadge(props: { content: ReactNode; error?: string }) {
-  const { content, error } = props
+function ReviewCollapsedValueBadge(props: {
+  content: ReactNode
+  error?: string
+  inputNode?: WizardDomTreeNode
+  onReviewEdit?: (node: WizardDomTreeNode) => void
+}) {
+  const { content, error, inputNode, onReviewEdit } = props
+  const editable = onReviewEdit != null && inputNode != null
+  const activateEdit = () => {
+    if (inputNode != null && onReviewEdit != null) onReviewEdit(inputNode)
+  }
+  const badgeProps = editable
+    ? {
+        role: 'button' as const,
+        tabIndex: 0,
+        style: { cursor: 'pointer' as const },
+        onClick: (e: ReactMouseEvent) => {
+          e.stopPropagation()
+          activateEdit()
+        },
+        onKeyDown: (e: ReactKeyboardEvent<HTMLSpanElement>) => {
+          if (e.key !== 'Enter' && e.key !== ' ') return
+          e.preventDefault()
+          e.stopPropagation()
+          activateEdit()
+        },
+      }
+    : {}
   return (
-    <Badge isRead>
+    <Badge isRead {...badgeProps}>
       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
         {content}
         {error ? (
@@ -818,7 +828,10 @@ function ReviewCollapsedValueBadge(props: { content: ReactNode; error?: string }
   )
 }
 
-function renderCollapsedBadgesFromNodes(nodes: WizardDomTreeNode[]): ReactNode[] {
+function renderCollapsedBadgesFromNodes(
+  nodes: WizardDomTreeNode[],
+  onReviewEdit?: (node: WizardDomTreeNode) => void
+): ReactNode[] {
   const out: ReactNode[] = []
   for (let i = 0; i < nodes.length; i++) {
     const child = nodes[i]!
@@ -831,6 +844,8 @@ function renderCollapsedBadgesFromNodes(nodes: WizardDomTreeNode[]): ReactNode[]
           key={`collapsed-input-${child.path}`}
           content={child.error ? child.label ?? child.path : renderReviewInputDescriptionContent(child)}
           error={child.error}
+          inputNode={child}
+          onReviewEdit={onReviewEdit}
         />
       )
       continue
@@ -848,17 +863,19 @@ function renderCollapsedBadgesFromNodes(nodes: WizardDomTreeNode[]): ReactNode[]
             key={`collapsed-array-${child.path}-${pathPart}`}
             content={instLabel}
             error={err}
+            inputNode={inst}
+            onReviewEdit={onReviewEdit}
           />
         )
       })
       continue
     }
     if (isReviewStepNode(child) || !('type' in child)) {
-      out.push(...renderCollapsedBadgesFromNodes(child.children ?? []))
+      out.push(...renderCollapsedBadgesFromNodes(child.children ?? [], onReviewEdit))
       continue
     }
     if (isReviewArrayInstanceNode(child)) {
-      out.push(...renderCollapsedBadgesFromNodes(child.children ?? []))
+      out.push(...renderCollapsedBadgesFromNodes(child.children ?? [], onReviewEdit))
       continue
     }
   }
@@ -866,9 +883,13 @@ function renderCollapsedBadgesFromNodes(nodes: WizardDomTreeNode[]): ReactNode[]
 }
 
 /** Collapsed review row: section {@link Title} plus summary {@link Badge}s derived from the section DOM tree. */
-export function ReviewCollapsedContent(props: { label: string; node: WizardDomTreeNode }) {
+export function ReviewCollapsedContent(props: {
+  label: string
+  node: WizardDomTreeNode
+  onReviewEdit?: (node: WizardDomTreeNode) => void
+}) {
   const bodyNodes = getReviewSectionBodyNodes(props.node)
-  const badges = renderCollapsedBadgesFromNodes(bodyNodes)
+  const badges = renderCollapsedBadgesFromNodes(bodyNodes, props.onReviewEdit)
   return (
     <Split hasGutter>
       <SplitItem>
