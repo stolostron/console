@@ -21,9 +21,17 @@ describe('getEcdhCurves', () => {
     }
   })
 
-  it('should produce a valid ecdhCurve string for the current runtime', () => {
-    const fipsEnabled = getFips() !== 0
-    const curves = getEcdhCurves(fipsEnabled)
+  it('should produce a valid ecdhCurve string for FIPS mode', () => {
+    const curves = getEcdhCurves(true)
+    expect(() => createSecureContext({ ecdhCurve: curves })).not.toThrow()
+  })
+
+  it('should produce a valid ecdhCurve string for non-FIPS mode', () => {
+    const curves = getEcdhCurves(false)
+    if (getFips()) {
+      // On a FIPS runner, PQC curves will be rejected -- skip validation
+      return
+    }
     expect(() => createSecureContext({ ecdhCurve: curves })).not.toThrow()
   })
 })

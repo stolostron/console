@@ -19,8 +19,6 @@ export function getEcdhCurves(fipsEnabled: boolean): string {
   return (fipsEnabled ? FIPS_ECDH_CURVES : ALL_ECDH_CURVES).join(':')
 }
 
-const ecdhCurve = getEcdhCurves(getFips() !== 0)
-
 let server: Http2Server | undefined
 
 interface ISocketRequests {
@@ -51,6 +49,7 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
 
   try {
     if (cert && key) {
+      const ecdhCurve = getEcdhCurves(getFips() !== 0)
       logger.info({ msg: `server start`, secure: true, options })
       server = createSecureServer({ cert, key, allowHTTP1: true, ecdhCurve, ...options }, options.requestHandler)
     } else {
