@@ -205,7 +205,9 @@ export function ReviewStep({ wizardRef, reviewStorageKey = 'default' }: ReviewSt
   const handleReviewEdit = useCallback(
     (node: WizardDomTreeNode) => {
       const stepId = getReviewNodeStepId(node)
+      const domId = getReviewScrollTargetDomId(node)
       if (stepId) goToStepById(stepId)
+      if (domId) scrollReviewEditTargetIntoView(domId)
     },
     [goToStepById]
   )
@@ -418,6 +420,36 @@ function getReviewNodeStepId(node: WizardDomTreeNode): string | undefined {
   return undefined
 }
 
+/** DOM `id` to scroll to after leaving review: matches {@link Step} / input wrappers (`id` on the element). */
+function getReviewScrollTargetDomId(node: WizardDomTreeNode): string | undefined {
+  if ('type' in node) {
+    switch (node.type) {
+      case InputReviewMeta.STEP:
+      case InputReviewMeta.INPUT:
+      case InputReviewMeta.ARRAY_INPUT: {
+        const id = 'id' in node ? (node as { id?: string }).id : undefined
+        return id && id !== '' ? id : undefined
+      }
+      default:
+        break
+    }
+  }
+  for (const child of node.children ?? []) {
+    const id = getReviewScrollTargetDomId(child)
+    if (id) return id
+  }
+  return undefined
+}
+
+function scrollReviewEditTargetIntoView(domId: string) {
+  const run = () => {
+    document.getElementById(domId)?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' })
+  }
+  requestAnimationFrame(() => {
+    requestAnimationFrame(run)
+  })
+}
+
 const REVIEW_PEN_HOVER_REVEAL_MS = 200
 
 /** Nested review pen zones call this so only the innermost hovered region can show the pen after the delay. */
@@ -583,7 +615,7 @@ function renderReviewInputRows(nodes: readonly WizardInputDomNode[], ctx: Review
   const mod = horizontalTermWidthModifierForInputRun(nodes)
   const onReviewEdit = ctx.onReviewEdit
   return (
-    <DescriptionList key={`dl-${nodes[0]!.path}`} isHorizontal horizontalTermWidthModifier={mod}>
+    <DescriptionList key={`dl-${nodes[0]!.path}`} isHorizontal horizontalTermWidthModifier={mod} style={{ rowGap: 0 }}>
       {nodes.map((inputNode) => {
         const termText = inputNode.label ?? inputNode.path
         const valueContent = inputNode.error ? (

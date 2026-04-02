@@ -153,11 +153,21 @@ export function useInput(props: InputCommonProps, options?: { isArrayInput?: boo
   const currentStepId = useContext(CurrentStepIdContext)
   const stepInputsRegistry = useStepInputsRegistry()
   const reviewPathPrefixSegments = useContext(ReviewPathPrefixSegmentsContext)
-  const registrationPath = buildReviewInputRegistrationPath(
+  let registrationPath = buildReviewInputRegistrationPath(
     isArrayInput ? [] : reviewPathPrefixSegments,
     props.path,
     item
   )
+  if (props.inputValueToPathValue) {
+    const transformed = props.inputValueToPathValue(true, false)
+    if (Array.isArray(transformed)) {
+      const segment = JSON.stringify(transformed).replace(/=.*?(?=\])/g, '')
+      if (segment !== '') {
+        registrationPath = `${registrationPath}.${segment}`
+      }
+    }
+  }
+
   const id = process.env.NODE_ENV === 'test' ? convertId(props) : registrationPath
 
   useLayoutEffect(() => {
