@@ -489,8 +489,6 @@ describe('Policy Details Results', () => {
 
     // Verify link points to the placement details page
     const href = placementLink.getAttribute('href')
-    expect(href).toBe(
-      '/multicloud/infrastructure/clusters/placements/details/test/policy-set-with-1-placement'
-    )
+    expect(href).toBe('/multicloud/infrastructure/clusters/placements/details/test/policy-set-with-1-placement')
   })
 })
