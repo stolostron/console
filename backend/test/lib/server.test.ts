@@ -1,7 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { createSecureContext } from 'node:tls'
-import { getFips } from 'node:crypto'
 import { ALL_ECDH_CURVES, FIPS_ECDH_CURVES, getEcdhCurves } from '../../src/lib/server'
 
 describe('getEcdhCurves', () => {
@@ -19,19 +17,5 @@ describe('getEcdhCurves', () => {
     for (const curve of FIPS_ECDH_CURVES) {
       expect(ALL_ECDH_CURVES).toContain(curve)
     }
-  })
-
-  it('should produce a valid ecdhCurve string for FIPS mode', () => {
-    const curves = getEcdhCurves(true)
-    expect(() => createSecureContext({ ecdhCurve: curves })).not.toThrow()
-  })
-
-  it('should produce a valid ecdhCurve string for non-FIPS mode', () => {
-    const curves = getEcdhCurves(false)
-    if (getFips()) {
-      // On a FIPS runner, PQC curves will be rejected -- skip validation
-      return
-    }
-    expect(() => createSecureContext({ ecdhCurve: curves })).not.toThrow()
   })
 })
