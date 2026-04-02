@@ -481,14 +481,12 @@ exports[`HostForm it renders 1`] = `
           >
             <div
               class="pf-v6-c-form__group"
-              id="form-control__form-input-agentNamespace-field"
             >
               <div
                 class="pf-v6-c-form__group-label"
               >
                 <label
                   class="pf-v6-c-form__label"
-                  for="form-input-agentNamespace-field"
                 >
                   <span
                     class="pf-v6-c-form__label-text"
@@ -547,34 +545,28 @@ exports[`HostForm it renders 1`] = `
                 </span>
               </div>
               <div
-                class="pf-v6-c-form__group-control"
+                class="pf-v6-c-form__group-control pf-m-inline"
               >
-                <span
-                  class="pf-v6-c-form-control pf-m-disabled"
+                <button
+                  aria-disabled="true"
+                  aria-expanded="false"
+                  class="pf-v6-c-menu-toggle pf-m-full-width pf-m-disabled"
+                  data-ouia-component-id="OUIA-Generated-MenuToggle-1"
+                  data-ouia-component-type="PF6/MenuToggle"
+                  data-ouia-safe="true"
+                  disabled=""
+                  type="button"
                 >
-                  <select
-                    aria-describedby="form-input-agentNamespace-field-helper"
-                    aria-invalid="false"
-                    data-ouia-component-id="OUIA-Generated-FormSelect-default-1"
-                    data-ouia-component-type="PF6/FormSelect"
-                    data-ouia-safe="true"
-                    disabled=""
-                    id="form-input-agentNamespace-field"
-                    name="agentNamespace"
-                    required=""
-                  >
-                    <option
-                      class=""
-                      value="NOT_AVAILABLE"
-                    >
-                      ai:No namespace with hosts is available
-                    </option>
-                  </select>
                   <span
-                    class="pf-v6-c-form-control__utilities"
+                    class="pf-v6-c-menu-toggle__text"
+                  >
+                    ai:No namespace with hosts is available
+                  </span>
+                  <span
+                    class="pf-v6-c-menu-toggle__controls"
                   >
                     <span
-                      class="pf-v6-c-form-control__toggle-icon"
+                      class="pf-v6-c-menu-toggle__toggle-icon"
                     >
                       <svg
                         aria-hidden="true"
@@ -591,7 +583,7 @@ exports[`HostForm it renders 1`] = `
                       </svg>
                     </span>
                   </span>
-                </span>
+                </button>
               </div>
             </div>
           </div>

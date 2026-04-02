@@ -1,15 +1,15 @@
 # Copyright Contributors to the Open Cluster Management project
-ARG NODE_BASE=registry.redhat.io/ubi9/nodejs-20-minimal@sha256:714ca1c5e1350d28c0fa896675323d9d4f7c133420c699bb95b3326783b769fb
+ARG NODE_BASE=registry.redhat.io/ubi9/nodejs-24-minimal@sha256:4a92f2eb92703e318528beb58c419949024628da5276d79859cdf07018ed09a9
 
 FROM ${NODE_BASE} as build-base
 USER root
-ENV NPM_CONFIG_NODEDIR=/usr
+ENV NPM_CONFIG_IGNORE_SCRIPTS=true
 
 FROM build-base as dynamic-plugin
 WORKDIR /app/frontend
 COPY ./frontend .
 # Optimization of copying only package.json and package-lock.json does not work because of workspace packages 
-RUN npm ci --legacy-peer-deps --unsafe-perm --ignore-scripts
+RUN npm ci --legacy-peer-deps
 RUN npm run build:plugin:acm
 
 FROM build-base as backend
@@ -17,14 +17,14 @@ WORKDIR /app/backend
 # Copy only package.json and package-lock.json so that the docker layer cache only changes if those change
 # This will cause the npm ci to only rerun if the package.json or package-lock.json changes
 COPY ./backend/package.json ./backend/package-lock.json ./
-RUN npm ci --omit=optional --unsafe-perm --ignore-scripts
+RUN npm ci --omit=optional
 COPY ./backend .
 RUN npm run build
 
 FROM build-base as production
 WORKDIR /app/backend
 COPY ./backend/package-lock.json ./backend/package.json ./
-RUN npm ci --omit=optional --only=production --unsafe-perm --ignore-scripts
+RUN npm ci --omit=optional --only=production
 
 FROM ${NODE_BASE}
 WORKDIR /app

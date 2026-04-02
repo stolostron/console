@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
-import { Cluster, IApplicationSet, IPlacementDecision, IResource } from '../../resources/resource'
+import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
+import type { Cluster, IApplicationSet, IPlacementDecision, IResource } from '../../resources/resource'
 import { getAppSetAppsMap, getAppStatusByNameMap } from './applicationsArgo'
 import { getToken } from '../../lib/token'
 import { unauthorized } from '../../lib/respond'

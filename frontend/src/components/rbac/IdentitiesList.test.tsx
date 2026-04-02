@@ -3,12 +3,12 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { Group, User } from '../../../resources/rbac'
-import { useMergedGroups, useMergedUsers } from '../../../routes/UserManagement/Identities/useMergedIdentities'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { Group, User } from '../../resources/rbac'
+import { useMergedGroups, useMergedUsers } from '../../routes/UserManagement/Identities/useMergedIdentities'
+import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { IdentitiesList } from './IdentitiesList'
 
-jest.mock('../../../routes/UserManagement/Identities/useMergedIdentities', () => ({
+jest.mock('../../routes/UserManagement/Identities/useMergedIdentities', () => ({
   useMergedUsers: jest.fn(),
   useMergedGroups: jest.fn(),
 }))
@@ -44,13 +44,13 @@ const mockGroups: Group[] = [
   },
 ]
 
-jest.mock('../../../lib/acm-i18next', () => ({
+jest.mock('../../lib/acm-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => key,
   }),
 }))
 
-jest.mock('../../../shared-recoil', () => ({
+jest.mock('../../shared-recoil', () => ({
   useRecoilValue: jest.fn(),
   useSharedAtoms: jest.fn(),
 }))
@@ -77,7 +77,7 @@ function setupMocks(isDirectAuthenticationEnabled = false) {
   })
 }
 
-jest.mock('../../../routes/UserManagement/Identities/Users/UsersTable', () => ({
+jest.mock('../../routes/UserManagement/Identities/Users/UsersTable', () => ({
   UsersTable: (props: any) => (
     <div
       id="users-table"
@@ -99,6 +99,12 @@ jest.mock('../../../routes/UserManagement/Identities/Users/UsersTable', () => ({
           Select User
         </button>
       )}
+      {props.setSelectedUser &&
+        props.additionalUsers?.map((u: any) => (
+          <button key={u.metadata.name} onClick={() => props.setSelectedUser(u)}>
+            Select {u.metadata.name}
+          </button>
+        ))}
       {props.onCreateClick && <button onClick={props.onCreateClick}>Create User Action</button>}
       {props.tableActionButtons?.map((btn: any) => (
         <button key={btn.id} onClick={btn.click}>
@@ -109,7 +115,7 @@ jest.mock('../../../routes/UserManagement/Identities/Users/UsersTable', () => ({
   ),
 }))
 
-jest.mock('../../../routes/UserManagement/Identities/Groups/GroupsTable', () => ({
+jest.mock('../../routes/UserManagement/Identities/Groups/GroupsTable', () => ({
   GroupsTable: (props: any) => (
     <div
       id="groups-table"
@@ -131,6 +137,12 @@ jest.mock('../../../routes/UserManagement/Identities/Groups/GroupsTable', () => 
           Select Group
         </button>
       )}
+      {props.setSelectedGroup &&
+        props.additionalGroups?.map((g: any) => (
+          <button key={g.metadata.name} onClick={() => props.setSelectedGroup(g)}>
+            Select {g.metadata.name}
+          </button>
+        ))}
       {props.onCreateClick && <button onClick={props.onCreateClick}>Create Group Action</button>}
       {props.tableActionButtons?.map((btn: any) => (
         <button key={btn.id} onClick={btn.click}>
@@ -547,5 +559,152 @@ describe('IdentitiesList', () => {
 
     render(<Component />)
     expect(screen.getByText('Identities')).toBeInTheDocument()
+  })
+
+  describe('selection switching between created and existing users', () => {
+    test('should allow re-selecting a created user after selecting an existing user', async () => {
+      const mockOnUserSelect = jest.fn()
+      render(<Component onUserSelect={mockOnUserSelect} />)
+
+      fireEvent.click(screen.getByRole('button', { name: 'Create user' }))
+      await waitFor(() => expect(screen.getByText('Pre-Auth User Form')).toBeInTheDocument())
+      fireEvent.click(screen.getByRole('button', { name: 'Submit' }))
+
+      await waitFor(() => expect(screen.getByText(/Selected: new-pre-authorized-user/)).toBeInTheDocument())
+
+      fireEvent.click(screen.getByRole('button', { name: 'Select User' }))
+      await waitFor(() => expect(screen.getByText(/Selected: test-user/)).toBeInTheDocument())
+
+      fireEvent.click(screen.getByRole('button', { name: 'Select new-pre-authorized-user' }))
+      await waitFor(() => expect(screen.getByText(/Selected: new-pre-authorized-user/)).toBeInTheDocument())
+
+      expect(mockOnUserSelect).toHaveBeenLastCalledWith(
+        expect.objectContaining({ metadata: expect.objectContaining({ name: 'new-pre-authorized-user' }) })
+      )
+    })
+
+    test('should allow switching back and forth between created and existing users multiple times', async () => {
+      render(<Component />)
+
+      fireEvent.click(screen.getByRole('button', { name: 'Create user' }))
+      await waitFor(() => expect(screen.getByText('Pre-Auth User Form')).toBeInTheDocument())
+      fireEvent.click(screen.getByRole('button', { name: 'Submit' }))
+      await waitFor(() => expect(screen.getByText(/Selected: new-pre-authorized-user/)).toBeInTheDocument())
+
+      fireEvent.click(screen.getByRole('button', { name: 'Select User' }))
+      await waitFor(() => expect(screen.getByText(/Selected: test-user/)).toBeInTheDocument())
+
+      fireEvent.click(screen.getByRole('button', { name: 'Select new-pre-authorized-user' }))
+      await waitFor(() => expect(screen.getByText(/Selected: new-pre-authorized-user/)).toBeInTheDocument())
+
+      fireEvent.click(screen.getByRole('button', { name: 'Select User' }))
+      await waitFor(() => expect(screen.getByText(/Selected: test-user/)).toBeInTheDocument())
+
+      fireEvent.click(screen.getByRole('button', { name: 'Select new-pre-authorized-user' }))
+      await waitFor(() => expect(screen.getByText(/Selected: new-pre-authorized-user/)).toBeInTheDocument())
+    })
+
+    test('should track onUserSelect callback correctly when switching between created and existing users', async () => {
+      const mockOnUserSelect = jest.fn()
+      render(<Component onUserSelect={mockOnUserSelect} />)
+
+      fireEvent.click(screen.getByRole('button', { name: 'Create user' }))
+      await waitFor(() => expect(screen.getByText('Pre-Auth User Form')).toBeInTheDocument())
+      fireEvent.click(screen.getByRole('button', { name: 'Submit' }))
+      await waitFor(() => expect(screen.getByTestId('users-table')).toBeInTheDocument())
+
+      expect(mockOnUserSelect).toHaveBeenCalledTimes(1)
+      expect(mockOnUserSelect).toHaveBeenLastCalledWith(
+        expect.objectContaining({ metadata: expect.objectContaining({ name: 'new-pre-authorized-user' }) })
+      )
+
+      fireEvent.click(screen.getByRole('button', { name: 'Select User' }))
+      expect(mockOnUserSelect).toHaveBeenCalledTimes(2)
+      expect(mockOnUserSelect).toHaveBeenLastCalledWith(
+        expect.objectContaining({ metadata: expect.objectContaining({ name: 'test-user' }) })
+      )
+
+      fireEvent.click(screen.getByRole('button', { name: 'Select new-pre-authorized-user' }))
+      expect(mockOnUserSelect).toHaveBeenCalledTimes(3)
+      expect(mockOnUserSelect).toHaveBeenLastCalledWith(
+        expect.objectContaining({ metadata: expect.objectContaining({ name: 'new-pre-authorized-user' }) })
+      )
+    })
+  })
+
+  describe('selection switching between created and existing groups', () => {
+    test('should allow re-selecting a created group after selecting an existing group', async () => {
+      const mockOnGroupSelect = jest.fn()
+      render(<Component onGroupSelect={mockOnGroupSelect} />)
+
+      fireEvent.click(screen.getByRole('tab', { name: 'Groups tab' }))
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Create group' })).toBeInTheDocument())
+
+      fireEvent.click(screen.getByRole('button', { name: 'Create group' }))
+      await waitFor(() => expect(screen.getByText('Pre-Auth Group Form')).toBeInTheDocument())
+      fireEvent.click(screen.getByRole('button', { name: 'Submit' }))
+
+      await waitFor(() => expect(screen.getByText(/Selected: new-pre-authorized-group/)).toBeInTheDocument())
+
+      fireEvent.click(screen.getByRole('button', { name: 'Select Group' }))
+      await waitFor(() => expect(screen.getByText(/Selected: test-group/)).toBeInTheDocument())
+
+      fireEvent.click(screen.getByRole('button', { name: 'Select new-pre-authorized-group' }))
+      await waitFor(() => expect(screen.getByText(/Selected: new-pre-authorized-group/)).toBeInTheDocument())
+
+      expect(mockOnGroupSelect).toHaveBeenLastCalledWith(
+        expect.objectContaining({ metadata: expect.objectContaining({ name: 'new-pre-authorized-group' }) })
+      )
+    })
+
+    test('should allow switching back and forth between created and existing groups multiple times', async () => {
+      render(<Component />)
+
+      fireEvent.click(screen.getByRole('tab', { name: 'Groups tab' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Create group' }))
+      await waitFor(() => expect(screen.getByText('Pre-Auth Group Form')).toBeInTheDocument())
+      fireEvent.click(screen.getByRole('button', { name: 'Submit' }))
+      await waitFor(() => expect(screen.getByText(/Selected: new-pre-authorized-group/)).toBeInTheDocument())
+
+      fireEvent.click(screen.getByRole('button', { name: 'Select Group' }))
+      await waitFor(() => expect(screen.getByText(/Selected: test-group/)).toBeInTheDocument())
+
+      fireEvent.click(screen.getByRole('button', { name: 'Select new-pre-authorized-group' }))
+      await waitFor(() => expect(screen.getByText(/Selected: new-pre-authorized-group/)).toBeInTheDocument())
+
+      fireEvent.click(screen.getByRole('button', { name: 'Select Group' }))
+      await waitFor(() => expect(screen.getByText(/Selected: test-group/)).toBeInTheDocument())
+
+      fireEvent.click(screen.getByRole('button', { name: 'Select new-pre-authorized-group' }))
+      await waitFor(() => expect(screen.getByText(/Selected: new-pre-authorized-group/)).toBeInTheDocument())
+    })
+
+    test('should track onGroupSelect callback correctly when switching between created and existing groups', async () => {
+      const mockOnGroupSelect = jest.fn()
+      render(<Component onGroupSelect={mockOnGroupSelect} />)
+
+      fireEvent.click(screen.getByRole('tab', { name: 'Groups tab' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Create group' }))
+      await waitFor(() => expect(screen.getByText('Pre-Auth Group Form')).toBeInTheDocument())
+      fireEvent.click(screen.getByRole('button', { name: 'Submit' }))
+      await waitFor(() => expect(screen.getByTestId('groups-table')).toBeInTheDocument())
+
+      expect(mockOnGroupSelect).toHaveBeenCalledTimes(1)
+      expect(mockOnGroupSelect).toHaveBeenLastCalledWith(
+        expect.objectContaining({ metadata: expect.objectContaining({ name: 'new-pre-authorized-group' }) })
+      )
+
+      fireEvent.click(screen.getByRole('button', { name: 'Select Group' }))
+      expect(mockOnGroupSelect).toHaveBeenCalledTimes(2)
+      expect(mockOnGroupSelect).toHaveBeenLastCalledWith(
+        expect.objectContaining({ metadata: expect.objectContaining({ name: 'test-group' }) })
+      )
+
+      fireEvent.click(screen.getByRole('button', { name: 'Select new-pre-authorized-group' }))
+      expect(mockOnGroupSelect).toHaveBeenCalledTimes(3)
+      expect(mockOnGroupSelect).toHaveBeenLastCalledWith(
+        expect.objectContaining({ metadata: expect.objectContaining({ name: 'new-pre-authorized-group' }) })
+      )
+    })
   })
 })

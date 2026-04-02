@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import Router from 'find-my-way'
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import { authenticated } from './lib/authenticated'
 import { loadSettings } from './lib/config'
 import { stopFileWatches } from './lib/fileWatch'

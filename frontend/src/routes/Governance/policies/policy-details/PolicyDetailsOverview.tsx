@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
   Alert,
+  Button,
   ButtonVariant,
   Content,
   ContentVariants,
@@ -9,7 +10,7 @@ import {
   PageSection,
   Stack,
 } from '@patternfly/react-core'
-import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
+import { BellIcon, CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { ReactNode, useCallback, useContext, useMemo, useState } from 'react'
 import { generatePath, Link } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
@@ -41,6 +42,7 @@ import { AutomationDetailsSidebar } from '../../components/AutomationDetailsSide
 import { ClusterPolicyViolationIcons } from '../../components/ClusterPolicyViolations'
 import { useGovernanceData } from '../../useGovernanceData'
 import { usePolicyDetailsContext } from './PolicyDetailsPage'
+import { PlacementLinkList } from '../../../Infrastructure/Clusters/Placements/utils'
 
 interface TableData {
   apiVersion: string
@@ -61,6 +63,7 @@ export default function PolicyDetailsOverview() {
     placementsState,
     policyAutomationState,
     policySetsState,
+    settingsState,
   } = useSharedAtoms()
   const placements = useRecoilValue(placementsState)
   const policySets = useRecoilValue(policySetsState)
@@ -68,6 +71,7 @@ export default function PolicyDetailsOverview() {
   const placementRules = useRecoilValue(placementRulesState)
   const placementDecisions = useRecoilValue(placementDecisionsState)
   const policyAutomations = useRecoilValue(policyAutomationState)
+  const settings = useRecoilValue(settingsState)
   const policies = usePropagatedPolicies(policy)
   const govData = useGovernanceData([policy])
   const clusterRiskScore =
@@ -81,8 +85,197 @@ export default function PolicyDetailsOverview() {
     (pa: PolicyAutomation) => pa.spec.policyRef === policy.metadata.name
   )
   const [modal, setModal] = useState<ReactNode | undefined>()
+  const [expandedViolationStatuses, setExpandedViolationStatuses] = useState<Set<string>>(new Set())
   const canCreatePolicyAutomation = useIsAnyNamespaceAuthorized(rbacCreate(PolicyAutomationDefinition))
   const canUpdatePolicyAutomation = useIsAnyNamespaceAuthorized(rbacUpdate(PolicyAutomationDefinition))
+
+  const toggleViolationExpanded = useCallback((key: string) => {
+    setExpandedViolationStatuses((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(key)) {
+        newSet.delete(key)
+      } else {
+        newSet.add(key)
+      }
+      return newSet
+    })
+  }, [])
+
+  // Need to get bindings for all policysets a policy is included in
+  const associatedPolicySets = policySets.filter(
+    (ps: PolicySet) =>
+      ps.metadata.namespace === policy.metadata.namespace && ps.spec.policies.includes(policy.metadata.name!)
+  )
+
+  const getPlacementMatches = useCallback(
+    function getPlacementMatches<T extends Placement | PlacementRule>(
+      policy: Policy,
+      placementResources: T[],
+      placementDecisions: PlacementDecision[]
+    ) {
+      let matches: T[] = []
+      const resources: any[] = [policy]
+      if (associatedPolicySets.length > 0) {
+        resources.push(...associatedPolicySets)
+      }
+      resources.forEach(
+        (resource: Policy | PolicySet) =>
+          (matches = [...matches, ...getPlacementsForResource(resource, placementBindings, placementResources)])
+      )
+      return matches.map((placement: T) => {
+        if (placement.kind === 'Placement') {
+          const decisions = getPlacementDecisionsForPlacements(placementDecisions, [placement])[0]?.status
+          return {
+            apiVersion: placement.apiVersion,
+            kind: placement.kind,
+            metadata: placement.metadata,
+            status: decisions ?? {},
+            policy,
+          }
+        }
+        return {
+          apiVersion: placement.apiVersion,
+          kind: placement.kind,
+          metadata: placement.metadata,
+          status: placement.status ?? {},
+          policy,
+        }
+      })
+    },
+    [associatedPolicySets, placementBindings]
+  )
+
+  const placementRuleMatches: TableData[] = useMemo(() => {
+    return getPlacementMatches(policy, placementRules, [])
+  }, [getPlacementMatches, placementRules, policy])
+
+  const placementMatches: TableData[] = useMemo(() => {
+    return getPlacementMatches(policy, placements, placementDecisions)
+  }, [getPlacementMatches, policy, placements, placementDecisions])
+
+  // Helper function to render violations at policy level
+  const renderPolicyViolations = useCallback(
+    (expandedStatuses: Set<string>, toggleExpanded: (key: string) => void) => {
+      // Get policy status directly - this already contains the UNION of all clusters across all placements
+      const rawStatusList: {
+        clustername: string
+        compliant?: string
+      }[] = policy.status?.status ?? []
+
+      // Build lists of clusters, organized by status keys
+      const clusterList: Record<string, Set<string>> = {}
+      rawStatusList.forEach((statusObject) => {
+        let compliant = statusObject?.compliant ?? 'nostatus'
+        compliant = compliant.toLowerCase()
+        const clusterName = statusObject.clustername
+
+        // Add cluster to its associated status list in the clusterList object
+        if (Object.prototype.hasOwnProperty.call(clusterList, compliant)) {
+          // Each cluster name should be unique, so if one is already present, log an error
+          if (clusterList[compliant].has(clusterName)) {
+            console.error(`Unexpected duplicate cluster in '${compliant}' cluster list: ${clusterName}`)
+          } else {
+            clusterList[compliant].add(clusterName)
+          }
+        } else {
+          clusterList[compliant] = new Set([clusterName])
+        }
+      })
+
+      // Push lists of clusters along with status icon, heading, and overflow badge
+      const statusList = []
+      const maxClustersToShow = 3
+      for (const status of Object.keys(clusterList)) {
+        const clusterArray = Array.from(clusterList[status])
+        const totalClusters = clusterArray.length
+        const statusKey = `policy-${status}`
+        const isExpanded = expandedStatuses.has(statusKey)
+        const clustersToShow = isExpanded ? clusterArray : clusterArray.slice(0, maxClustersToShow)
+        const remainingCount = totalClusters - maxClustersToShow
+
+        let statusMsg = t('No status on {{count}} cluster', { count: totalClusters })
+        let icon = <ExclamationTriangleIcon color="var(--pf-t--global--color--status--warning--100)" />
+        switch (status) {
+          case 'noncompliant':
+            statusMsg = t('Violations on {{count}} cluster', { count: totalClusters })
+            icon = (
+              <Icon status="danger">
+                <ExclamationCircleIcon />
+              </Icon>
+            )
+            break
+          case 'compliant':
+            statusMsg = t('No violations on {{count}} cluster', { count: totalClusters })
+            icon = (
+              <Icon status="success">
+                <CheckCircleIcon />
+              </Icon>
+            )
+            break
+          case 'pending':
+            statusMsg = t('Pending on {{count}} cluster', { count: totalClusters })
+            icon = (
+              <Icon status="warning">
+                <ExclamationTriangleIcon />
+              </Icon>
+            )
+            break
+        }
+        statusList.push(
+          <div key={statusKey}>
+            <span style={{ marginRight: '0.5rem' }}>{icon}</span>
+            <span>{statusMsg}: </span>
+            {clustersToShow.map((cluster: string, index) => {
+              if (status !== 'nostatus') {
+                return (
+                  <span key={`${cluster}-link`}>
+                    <Link
+                      to={{
+                        pathname: generatePath(NavigationPath.policyDetailsResults, {
+                          namespace: policy.metadata.namespace!,
+                          name: policy.metadata.name!,
+                        }),
+                        search: `?search=${cluster}`,
+                      }}
+                    >
+                      {cluster}
+                    </Link>
+                    {index < clustersToShow.length - 1 && ', '}
+                  </span>
+                )
+              }
+              return (
+                <span key={`${cluster}-link`}>
+                  {cluster}
+                  {index < clustersToShow.length - 1 && ', '}
+                </span>
+              )
+            })}
+            {remainingCount > 0 && (
+              <Button
+                variant="link"
+                isInline
+                onClick={() => toggleExpanded(statusKey)}
+                style={{ marginLeft: '0.25rem', padding: 0 }}
+              >
+                {isExpanded ? t('Show less') : t('show.more', { count: remainingCount })}
+              </Button>
+            )}
+          </div>
+        )
+      }
+      // If there are no clusters, return a hyphen
+      if (statusList.length === 0) {
+        return (
+          <div>
+            <ExclamationTriangleIcon color="var(--pf-t--global--color--status--warning--100)" /> {t('No status')}
+          </div>
+        )
+      }
+      return statusList
+    },
+    [policy.metadata.name, policy.metadata.namespace, policy.status?.status, t]
+  )
 
   const { leftItems, rightItems } = useMemo(() => {
     const unauthorizedMessage = !canCreatePolicyAutomation || !canUpdatePolicyAutomation ? t('rbac.unauthorized') : ''
@@ -107,18 +300,31 @@ export default function PolicyDetailsOverview() {
         key: t('Remediation'),
         value: getPolicyRemediation(policy, policies),
       },
-      {
-        key: t('Cluster violations'),
-        value:
-          clusterRiskScore > 0 ? (
-            <ClusterPolicyViolationIcons risks={govData.clusterRisks} />
-          ) : (
-            <div>
-              <ExclamationTriangleIcon color="var(--pf-t--global--color--status--warning--100)" /> {'No status'}
-            </div>
-          ),
-      },
+      ...(settings.enhancedPlacement !== 'enabled'
+        ? [
+            {
+              key: t('Cluster violations'),
+              value:
+                clusterRiskScore > 0 ? (
+                  <ClusterPolicyViolationIcons risks={govData.clusterRisks} />
+                ) : (
+                  <div>
+                    <ExclamationTriangleIcon color="var(--pf-t--global--color--status--warning--100)" /> {'No status'}
+                  </div>
+                ),
+            },
+          ]
+        : []),
+      ...(settings.enhancedPlacement === 'enabled'
+        ? [
+            {
+              key: t('Cluster violations'),
+              value: renderPolicyViolations(expandedViolationStatuses, toggleViolationExpanded),
+            },
+          ]
+        : []),
     ]
+
     const rightItems = [
       {
         key: t('Categories'),
@@ -189,6 +395,29 @@ export default function PolicyDetailsOverview() {
           </AcmButton>
         ),
       },
+      ...(settings.enhancedPlacement === 'enabled'
+        ? (() => {
+            const placementResources = placementMatches.map(
+              (p) => ({ kind: p.kind, apiVersion: p.apiVersion, metadata: p.metadata }) as Placement
+            )
+            return [
+              {
+                key: t('Placement'),
+                value:
+                  placementResources.length > 0 ? (
+                    <PlacementLinkList placementsForCluster={placementResources} />
+                  ) : (
+                    <div>
+                      <Icon status="custom">
+                        <BellIcon />
+                      </Icon>{' '}
+                      {t('No placement selectors found')}
+                    </div>
+                  ),
+              },
+            ]
+          })()
+        : []),
     ]
     return { leftItems, rightItems }
   }, [
@@ -200,60 +429,13 @@ export default function PolicyDetailsOverview() {
     canCreatePolicyAutomation,
     canUpdatePolicyAutomation,
     policies,
+    placementMatches,
+    renderPolicyViolations,
+    expandedViolationStatuses,
+    toggleViolationExpanded,
+    settings.enhancedPlacement,
     t,
   ])
-
-  // Need to get bindings for all policysets a policy is included in
-  const associatedPolicySets = policySets.filter(
-    (ps: PolicySet) =>
-      ps.metadata.namespace === policy.metadata.namespace && ps.spec.policies.includes(policy.metadata.name!)
-  )
-
-  const getPlacementMatches = useCallback(
-    function getPlacementMatches<T extends Placement | PlacementRule>(
-      policy: Policy,
-      placementResources: T[],
-      placementDecisions: PlacementDecision[]
-    ) {
-      let matches: T[] = []
-      const resources: any[] = [policy]
-      if (associatedPolicySets.length > 0) {
-        resources.push(...associatedPolicySets)
-      }
-      resources.forEach(
-        (resource: Policy | PolicySet) =>
-          (matches = [...matches, ...getPlacementsForResource(resource, placementBindings, placementResources)])
-      )
-      return matches.map((placement: T) => {
-        if (placement.kind === 'Placement') {
-          const decisions = getPlacementDecisionsForPlacements(placementDecisions, [placement])[0]?.status
-          return {
-            apiVersion: placement.apiVersion,
-            kind: placement.kind,
-            metadata: placement.metadata,
-            status: decisions ?? {},
-            policy,
-          }
-        }
-        return {
-          apiVersion: placement.apiVersion,
-          kind: placement.kind,
-          metadata: placement.metadata,
-          status: placement.status ?? {},
-          policy,
-        }
-      })
-    },
-    [associatedPolicySets, placementBindings]
-  )
-
-  const placementRuleMatches: TableData[] = useMemo(() => {
-    return getPlacementMatches(policy, placementRules, [])
-  }, [getPlacementMatches, placementRules, policy])
-
-  const placementMatches: TableData[] = useMemo(() => {
-    return getPlacementMatches(policy, placements, placementDecisions)
-  }, [getPlacementMatches, policy, placements, placementDecisions])
 
   const placementCols = useMemo(
     () => [
@@ -410,33 +592,39 @@ export default function PolicyDetailsOverview() {
   return (
     <PageSection hasBodyWrapper={false}>
       {modal !== undefined && modal}
-      <Stack hasGutter>
+      {settings.enhancedPlacement === 'enabled' ? (
         <div id="violation.details">
           <AcmDescriptionList title={t('Policy details')} leftItems={leftItems} rightItems={rightItems} />
         </div>
-        <div>
-          <Content
-            component={ContentVariants.h5}
-            style={{
-              fontWeight: '700',
-            }}
-          >
-            {t('Placement')}
-          </Content>
-          {placementMatches.length > 0 || placementRuleMatches.length > 0 ? (
-            <AcmTable<TableData>
-              key="cluster-placement-list"
-              items={[...placementMatches, ...placementRuleMatches]}
-              emptyState={undefined} // only shown when there are placement matches
-              columns={placementCols}
-              keyFn={(item) => item.metadata.uid!.toString()}
-              autoHidePagination={true}
-            />
-          ) : (
-            <Alert title={t('No placement selectors found')} isInline />
-          )}
-        </div>
-      </Stack>
+      ) : (
+        <Stack hasGutter>
+          <div id="violation.details">
+            <AcmDescriptionList title={t('Policy details')} leftItems={leftItems} rightItems={rightItems} />
+          </div>
+          <div>
+            <Content
+              component={ContentVariants.h5}
+              style={{
+                fontWeight: '700',
+              }}
+            >
+              {t('Placement')}
+            </Content>
+            {placementMatches.length > 0 || placementRuleMatches.length > 0 ? (
+              <AcmTable<TableData>
+                key="cluster-placement-list"
+                items={[...placementMatches, ...placementRuleMatches]}
+                emptyState={undefined} // only shown when there are placement matches
+                columns={placementCols}
+                keyFn={(item) => item.metadata.uid!.toString()}
+                autoHidePagination={true}
+              />
+            ) : (
+              <Alert title={t('No placement selectors found')} isInline />
+            )}
+          </div>
+        </Stack>
+      )}
     </PageSection>
   )
 }

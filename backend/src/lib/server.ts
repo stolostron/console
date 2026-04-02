@@ -1,16 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
-import { readFileSync } from 'fs'
-import {
-  constants,
-  createSecureServer,
-  createServer,
-  Http2Server,
-  Http2ServerRequest,
-  Http2ServerResponse,
-} from 'http2'
-import { Socket } from 'net'
-import { TLSSocket } from 'tls'
+import { readFileSync } from 'node:fs'
+import type { Http2Server, Http2ServerRequest, Http2ServerResponse } from 'node:http2'
+import { constants, createSecureServer, createServer } from 'node:http2'
+import type { Socket } from 'node:net'
+import type { TLSSocket } from 'node:tls'
 import { logger } from './logger'
 import { managedClusterProxy } from '../routes/managedClusterProxy'
 
@@ -45,7 +39,12 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
   try {
     if (cert && key) {
       logger.info({ msg: `server start`, secure: true, options })
-      server = createSecureServer({ cert, key, allowHTTP1: true, ...options }, options.requestHandler)
+      // Explicitly set the ECDH curve to enable PQC
+      // Default image /etc/crypto-policies/config of DEFAULT does not include them
+      server = createSecureServer(
+        { cert, key, allowHTTP1: true, ecdhCurve: 'X25519MLKEM768:X25519:P-256:P-384', ...options },
+        options.requestHandler
+      )
     } else {
       logger.info({ msg: `server start`, secure: false })
       server = createServer(options.requestHandler as (req: Http2ServerRequest, res: Http2ServerResponse) => void)

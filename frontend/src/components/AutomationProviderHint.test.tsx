@@ -3,7 +3,7 @@ import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { clusterCuratorsState, subscriptionOperatorsState } from '../atoms'
-import { waitForNotText, waitForText } from '../lib/test-util'
+import { createClusterVersionMock, waitForNotText, waitForText } from '../lib/test-util'
 import {
   ClusterCurator,
   ClusterCuratorApiVersion,
@@ -23,6 +23,11 @@ jest.mock('react-router-dom-v5-compat', () => {
     useNavigate: () => jest.fn(),
   }
 })
+
+const mockUseClusterVersion = createClusterVersionMock()
+jest.mock('../hooks/use-cluster-version', () => ({
+  useClusterVersion: () => mockUseClusterVersion(),
+}))
 
 const automationTemplate: ClusterCurator = {
   apiVersion: ClusterCuratorApiVersion,
@@ -241,5 +246,45 @@ describe('AutomationProviderHint', () => {
     render(<WrappedAutomationProviderHint componentProps={{ component: 'hint' }} />)
     await waitForNotText('Operator required')
     await waitForText('Install the operator')
+  })
+})
+
+describe('AutomationProviderHint - Version-specific URLs', () => {
+  describe('OCP 4.21 (uses /catalog)', () => {
+    beforeEach(() => {
+      mockUseClusterVersion.mockReturnValue({
+        version: '4.21',
+        isLoading: false,
+        error: undefined,
+      })
+      nockIgnoreOperatorCheck(true)
+    })
+
+    it('should use /catalog path for operator install link on OCP 4.21', async () => {
+      const { getByText } = render(<WrappedAutomationProviderHint componentProps={{ component: 'alert' }} />)
+      await waitForText('Operator required')
+      const installLink = getByText('Install the operator')
+      const linkElement = installLink.closest('a')
+      expect(linkElement).toHaveAttribute('href', '/catalog/all-namespaces?keyword=Ansible%20Automation%20Platform')
+    })
+  })
+
+  describe('OCP 4.19 (uses /operatorhub)', () => {
+    beforeEach(() => {
+      mockUseClusterVersion.mockReturnValue({
+        version: '4.19',
+        isLoading: false,
+        error: undefined,
+      })
+      nockIgnoreOperatorCheck(true)
+    })
+
+    it('should use /operatorhub path for operator install link on OCP 4.19', async () => {
+      const { getByText } = render(<WrappedAutomationProviderHint componentProps={{ component: 'alert' }} />)
+      await waitForText('Operator required')
+      const installLink = getByText('Install the operator')
+      const linkElement = installLink.closest('a')
+      expect(linkElement).toHaveAttribute('href', '/operatorhub/all-namespaces?keyword=Ansible%20Automation%20Platform')
+    })
   })
 })

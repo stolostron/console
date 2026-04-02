@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { AgentK8sResource, AgentServiceConfigK8sResource, InfraEnvK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
@@ -7,7 +7,13 @@ import { RecoilRoot } from 'recoil'
 
 import { infraEnvironmentsState } from '../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
-import { getCSVDownloadLink, getCSVExportSpies, waitForTestId, waitForText } from '../../../lib/test-util'
+import {
+  createClusterVersionMock,
+  getCSVDownloadLink,
+  getCSVExportSpies,
+  waitForTestId,
+  waitForText,
+} from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import InfraEnvironmentsPage, {
   getFirstAgentServiceConfig,
@@ -17,6 +23,21 @@ import InfraEnvironmentsPage, {
   isPullSecretReused,
 } from './InfraEnvironmentsPage'
 import { infraEnvName, mockInfraEnv1 } from '../../../test-helpers/infraEnvName'
+
+const mockNavigate = jest.fn()
+jest.mock('react-router-dom-v5-compat', () => {
+  const originalModule = jest.requireActual('react-router-dom-v5-compat')
+  return {
+    __esModule: true,
+    ...originalModule,
+    useNavigate: () => mockNavigate,
+  }
+})
+
+const mockUseClusterVersion = createClusterVersionMock()
+jest.mock('../../../hooks/use-cluster-version', () => ({
+  useClusterVersion: () => mockUseClusterVersion(),
+}))
 
 const mockAgent1: AgentK8sResource = {
   apiVersion: 'agent-install.openshift.io/v1beta1',
@@ -148,5 +169,47 @@ describe('Export from host inventory table', () => {
       { type: 'text/csv' }
     )
     expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(/^hostenvironments-[\d]+\.csv$/)
+  })
+})
+
+describe('InfraEnvironmentsPage - Version-specific URLs', () => {
+  describe('OCP 4.21 (uses /catalog)', () => {
+    beforeEach(() => {
+      mockNavigate.mockClear()
+      mockUseClusterVersion.mockReturnValue({
+        version: '4.21',
+        isLoading: false,
+        error: undefined,
+      })
+      nockIgnoreRBAC()
+      nockIgnoreApiPaths()
+    })
+
+    it('should use /catalog path for storage operator link on OCP 4.21', async () => {
+      render(<Component />)
+      await waitForText('Host inventory', true)
+      userEvent.click(screen.getByRole('button', { name: /install storage operator/i }))
+      expect(mockNavigate).toHaveBeenCalledWith('/catalog/ns/multicluster-engine?category=storage')
+    })
+  })
+
+  describe('OCP 4.19 (uses /operatorhub)', () => {
+    beforeEach(() => {
+      mockNavigate.mockClear()
+      mockUseClusterVersion.mockReturnValue({
+        version: '4.19',
+        isLoading: false,
+        error: undefined,
+      })
+      nockIgnoreRBAC()
+      nockIgnoreApiPaths()
+    })
+
+    it('should use /operatorhub path for storage operator link on OCP 4.19', async () => {
+      render(<Component />)
+      await waitForText('Host inventory', true)
+      userEvent.click(screen.getByRole('button', { name: /install storage operator/i }))
+      expect(mockNavigate).toHaveBeenCalledWith('/operatorhub/ns/multicluster-engine?category=Storage')
+    })
   })
 })

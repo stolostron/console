@@ -1,20 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  ActionGroup,
-  ButtonVariant,
-  PageSection,
-  Popover,
-  SelectOption,
-  Split,
-  SplitItem,
-  ToggleGroup,
-  ToggleGroupItem,
-} from '@patternfly/react-core'
+import { css } from '@emotion/css'
+import { ActionGroup, ButtonVariant, PageSection, Popover, SelectOption } from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import { useEffect, useMemo, useState } from 'react'
-import { SelectVariant } from '../../../../../../components/AcmSelectBase'
 import { BulkActionModal, BulkActionModalProps, errorIsNot } from '../../../../../../components/BulkActionModal'
 import { ErrorPage, getErrorInfo } from '../../../../../../components/ErrorPage'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
@@ -27,7 +17,6 @@ import {
   isGlobalClusterSet,
   listClusterRoleBindings,
   listGroups,
-  listUsers,
   RbacApiVersion,
   User,
 } from '../../../../../../resources'
@@ -47,7 +36,18 @@ import {
   compareStrings,
   IAcmTableColumn,
 } from '../../../../../../ui-components'
+import { IdentitiesList } from '../../../../../../components/rbac/IdentitiesList'
 import { useClusterSetDetailsContext } from '../ClusterSetDetails'
+
+const addAccessModalIdentitiesClass = css({
+  '& .pf-v5-c-table, & .pf-v6-c-table': {
+    backgroundColor: 'inherit',
+    color: 'inherit',
+  },
+  '& .pf-v6-c-pagination.pf-m-bottom': {
+    backgroundColor: 'inherit',
+  },
+})
 
 export function ClusterSetAccessManagement() {
   const { t } = useTranslation()
@@ -58,19 +58,16 @@ export function ClusterSetAccessManagement() {
   const [addModalOpen, setAddModalOpen] = useState<boolean>(false)
 
   const { data, refresh, error, startPolling, stopPolling } = useQuery(listClusterRoleBindings)
-  const { data: users, startPolling: usersStartPolling, stopPolling: usersStopPolling } = useQuery(listUsers)
   const { data: groups, startPolling: groupsStartPolling, stopPolling: groupsStopPolling } = useQuery(listGroups)
 
   useEffect(() => {
     startPolling()
-    usersStartPolling()
     groupsStartPolling()
     return () => {
       stopPolling()
-      usersStopPolling()
       groupsStopPolling()
     }
-  }, [groupsStartPolling, groupsStopPolling, startPolling, stopPolling, usersStartPolling, usersStopPolling])
+  }, [groupsStartPolling, groupsStopPolling, startPolling, stopPolling])
 
   let clusterRoleBindings: ClusterRoleBinding[] | undefined
   if (data) {
@@ -170,9 +167,6 @@ export function ClusterSetAccessManagement() {
             refresh()
             setAddModalOpen(false)
           }}
-          clusterRoleBindings={clusterRoleBindings}
-          users={users}
-          groups={groups}
         />
         <AcmTable<ClusterRoleBinding>
           items={clusterRoleBindings}
@@ -259,45 +253,24 @@ export function ClusterSetAccessManagement() {
   )
 }
 
-function AddUsersModal(props: {
-  isOpen: boolean
-  onClose: () => void
-  clusterRoleBindings?: ClusterRoleBinding[]
-  users?: User[]
-  groups?: Group[]
-}) {
+function AddUsersModal(props: { isOpen: boolean; onClose: () => void }) {
   const { t } = useTranslation()
   const { clusterSet } = useClusterSetDetailsContext()
-  const [type, setType] = useState<'User' | 'Group'>('User')
-  const [userGroup, setUserGroup] = useState<string | undefined>()
+  const [selectedIdentity, setSelectedIdentity] = useState<{ kind: 'User' | 'Group'; name: string } | undefined>()
   const [role, setRole] = useState<string | undefined>()
 
   const reset = () => {
-    setType('User')
-    setUserGroup(undefined)
+    setSelectedIdentity(undefined)
     setRole(undefined)
     props.onClose()
   }
 
-  const filteredUsers: User[] =
-    props.users?.filter(
-      (user) =>
-        !props.clusterRoleBindings?.find(
-          (crb) => crb.subjects?.[0].kind === 'User' && crb.subjects[0].name === user.metadata.name
-        )
-    ) ?? []
+  const handleUserSelect = (user: User) => {
+    setSelectedIdentity({ kind: 'User', name: user.metadata.name! })
+  }
 
-  const filteredGroups: Group[] =
-    props.groups?.filter(
-      (group) =>
-        !props.clusterRoleBindings?.find(
-          (crb) => crb.subjects?.[0].kind === 'Group' && crb.subjects[0].name === group.metadata.name
-        )
-    ) ?? []
-
-  const selectType = (type: 'User' | 'Group') => {
-    setType(type)
-    setUserGroup(undefined)
+  const handleGroupSelect = (group: Group) => {
+    setSelectedIdentity({ kind: 'Group', name: group.metadata.name! })
   }
 
   const roles = [
@@ -323,66 +296,18 @@ function AddUsersModal(props: {
   }
 
   return (
-    <AcmModal variant={ModalVariant.medium} title={t('access.add.title')} isOpen={props.isOpen} onClose={reset}>
+    <AcmModal variant={ModalVariant.large} title={t('access.add.title')} isOpen={props.isOpen} onClose={reset}>
       <AcmForm style={{ gap: 0 }}>
         <AcmAlertContext.Consumer>
           {(alertContext) => (
             <>
-              <div>{t('access.add.message')}</div>
-              &nbsp;
-              <div>
-                <div className="pf-v6-c-form__group-label">
-                  <span className="pf-v6-c-form__label pf-v6-c-form__label-text">{t('access.add.userGroup')}</span>
-                  <span className="pf-v6-c-form__label-required">*</span>
-                </div>
-                <Split hasGutter>
-                  <SplitItem>
-                    <ToggleGroup title="test">
-                      <ToggleGroupItem
-                        text={t('access.users')}
-                        buttonId="user"
-                        isSelected={type === 'User'}
-                        onChange={() => selectType('User')}
-                      />
-                      <ToggleGroupItem
-                        text={t('access.groups')}
-                        buttonId="group"
-                        isSelected={type === 'Group'}
-                        onChange={() => selectType('Group')}
-                      />
-                    </ToggleGroup>
-                  </SplitItem>
-                  <SplitItem isFilled>
-                    <AcmSelect
-                      id="role"
-                      variant={SelectVariant.typeahead}
-                      maxHeight="12em"
-                      menuAppendTo="parent"
-                      isRequired
-                      label=""
-                      placeholder={type === 'User' ? t('access.select.user') : t('access.select.group')}
-                      value={userGroup}
-                      onChange={(userGroup) => setUserGroup(userGroup)}
-                    >
-                      {type === 'User'
-                        ? filteredUsers.map((item: User) => (
-                            <SelectOption key={item.metadata.uid} value={item.metadata.name}>
-                              {item.metadata.name}
-                            </SelectOption>
-                          ))
-                        : filteredGroups.map((item: Group) => (
-                            <SelectOption key={item.metadata.uid} value={item.metadata.name}>
-                              {item.metadata.name}
-                            </SelectOption>
-                          ))}
-                    </AcmSelect>
-                  </SplitItem>
-                </Split>
+              <div className={addAccessModalIdentitiesClass}>
+                <IdentitiesList
+                  onUserSelect={handleUserSelect}
+                  onGroupSelect={handleGroupSelect}
+                  initialSelectedIdentity={selectedIdentity}
+                />
               </div>
-              {type === 'Group' && (
-                <GroupUsersPopover group={filteredGroups.find((group) => group.metadata.name === userGroup)} />
-              )}
-              &nbsp;
               <AcmSelect
                 id="role"
                 maxHeight="12em"
@@ -392,6 +317,7 @@ function AddUsersModal(props: {
                 placeholder={t('access.select.role')}
                 value={role}
                 onChange={(role) => setRole(role)}
+                style={{ marginTop: 'var(--pf-v5-global--spacer--md)' }}
               >
                 {clusterSet &&
                   getUserRoles().map((userRole) => (
@@ -407,32 +333,35 @@ function AddUsersModal(props: {
                   variant="primary"
                   label={t('add')}
                   processingLabel={t('adding')}
+                  isDisabled={!selectedIdentity || !role}
                   onClick={() => {
-                    alertContext.clearAlerts()
-                    const resource: ClusterRoleBinding = {
-                      apiVersion: RbacApiVersion,
-                      kind: ClusterRoleBindingKind,
-                      metadata: {
-                        generateName: `${clusterSet?.metadata.name}-`,
-                      },
-                      subjects: [
-                        {
-                          kind: type,
-                          apiGroup: 'rbac.authorization.k8s.io',
-                          name: userGroup!,
+                    if (selectedIdentity && role) {
+                      alertContext.clearAlerts()
+                      const resource: ClusterRoleBinding = {
+                        apiVersion: RbacApiVersion,
+                        kind: ClusterRoleBindingKind,
+                        metadata: {
+                          generateName: `${clusterSet?.metadata.name}-`,
                         },
-                      ],
-                      roleRef: {
-                        apiGroup: 'rbac.authorization.k8s.io',
-                        kind: ClusterRoleKind,
-                        name: role!,
-                      },
+                        subjects: [
+                          {
+                            kind: selectedIdentity.kind,
+                            apiGroup: 'rbac.authorization.k8s.io',
+                            name: selectedIdentity.name,
+                          },
+                        ],
+                        roleRef: {
+                          apiGroup: 'rbac.authorization.k8s.io',
+                          kind: ClusterRoleKind,
+                          name: role,
+                        },
+                      }
+                      return createResource(resource)
+                        .promise.then(() => reset())
+                        .catch((err) => {
+                          alertContext.addAlert(getErrorInfo(err, t))
+                        })
                     }
-                    return createResource(resource)
-                      .promise.then(() => reset())
-                      .catch((err) => {
-                        alertContext.addAlert(getErrorInfo(err, t))
-                      })
                   }}
                 />
                 <AcmButton key="cancel" variant="link" onClick={reset}>

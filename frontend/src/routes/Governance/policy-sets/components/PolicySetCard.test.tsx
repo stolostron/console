@@ -6,6 +6,7 @@ import { AcmDrawerContext } from '../../../../ui-components'
 import { waitForText } from '../../../../lib/test-util'
 import { Placement, PlacementBinding, PlacementRule, PolicySet } from '../../../../resources'
 import PolicySetCard from './PolicySetCard'
+import { placementBindingsState, placementsState, placementRulesState, settingsState } from '../../../../atoms'
 
 const cardID = 'policyset-test-policy-set-with-1-placement'
 
@@ -57,10 +58,58 @@ const policySetPending: PolicySet = {
   },
 }
 
+const mockPlacement: Placement = {
+  apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+  kind: 'Placement',
+  metadata: {
+    name: 'policy-set-with-1-placement',
+    namespace: 'test',
+    uid: 'placement-uid-123',
+  },
+  spec: {
+    predicates: [
+      {
+        requiredClusterSelector: {
+          labelSelector: {
+            matchExpressions: [
+              {
+                key: 'local-cluster',
+                operator: 'In',
+                values: ['true'],
+              },
+            ],
+          },
+        },
+      },
+    ],
+  },
+}
+
+const mockPlacementBinding: PlacementBinding = {
+  apiVersion: 'policy.open-cluster-management.io/v1',
+  kind: 'PlacementBinding',
+  metadata: {
+    name: 'policy-set-with-1-placement',
+    namespace: 'test',
+  },
+  placementRef: {
+    apiGroup: 'cluster.open-cluster-management.io',
+    kind: 'Placement',
+    name: 'policy-set-with-1-placement',
+  },
+  subjects: [
+    {
+      apiGroup: 'policy.open-cluster-management.io',
+      kind: 'PolicySet',
+      name: 'policy-set-with-1-placement',
+    },
+  ],
+}
+
 export const mockPolicySets: PolicySet[] = []
-export const mockPlacements: Placement[] = []
+export const mockPlacements: Placement[] = [mockPlacement]
 export const mockPlacementRules: PlacementRule[] = []
-export const mockPlacementBindings: PlacementBinding[] = []
+export const mockPlacementBindings: PlacementBinding[] = [mockPlacementBinding]
 
 describe('Policy Set Card', () => {
   test('Should render Policy Set Card content correctly', async () => {
@@ -304,5 +353,53 @@ describe('Policy Set Card drawer behavior (onSelect vs onViewDetails)', () => {
       })
     )
     expect(setDrawerContext.mock.calls[0][0].panelContent).toBeDefined()
+  })
+
+  test('drawer title includes placement name when placement exists', async () => {
+    const setDrawerContext = jest.fn()
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(placementsState, mockPlacements)
+          snapshot.set(placementRulesState, mockPlacementRules)
+          snapshot.set(placementBindingsState, mockPlacementBindings)
+          snapshot.set(settingsState, { enhancedPlacement: 'enabled' })
+        }}
+      >
+        <MemoryRouter>
+          <AcmDrawerContext.Provider value={{ drawerContext: undefined, setDrawerContext }}>
+            <PolicySetCard
+              policySet={policySet}
+              selectedCardID={''}
+              setSelectedCardID={() => {}}
+              canEditPolicySet={true}
+              canDeletePolicySet={true}
+              cardIdActionMenuOpen={undefined}
+              setCardIdActionMenuOpen={() => {}}
+            />
+          </AcmDrawerContext.Provider>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForText('policy-set-with-1-placement')
+    fireEvent.click(screen.getByRole('button', { name: 'policy-set-with-1-placement' }))
+    expect(setDrawerContext).toHaveBeenCalled()
+    const drawerProps = setDrawerContext.mock.calls[0][0]
+    expect(drawerProps.title).toBeDefined()
+
+    // Render the title in a new wrapper with router context to verify it contains the placement name
+    const { container } = render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(placementsState, mockPlacements)
+          snapshot.set(placementRulesState, mockPlacementRules)
+          snapshot.set(placementBindingsState, mockPlacementBindings)
+          snapshot.set(settingsState, { enhancedPlacement: 'enabled' })
+        }}
+      >
+        <MemoryRouter>{drawerProps.title}</MemoryRouter>
+      </RecoilRoot>
+    )
+    expect(container.textContent).toContain('policy-set-with-1-placement')
   })
 })

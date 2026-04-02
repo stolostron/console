@@ -1,15 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
-import { HeadersInit } from 'node-fetch'
+import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
+import { constants } from 'node:http2'
+import type { HeadersInit } from 'node-fetch'
 import { fetchRetry } from '../lib/fetch-retry'
 import { jsonPost, jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { respondInternalServerError } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'
-import { IResource } from '../resources/resource'
+import type { IResource } from '../resources/resource'
 import { getServiceAccountToken } from '../lib/serviceAccountToken'
-import { TokenReview } from './username'
+import type { TokenReview } from './username'
 
 const { HTTP2_HEADER_CONTENT_TYPE, HTTP2_HEADER_AUTHORIZATION, HTTP2_HEADER_ACCEPT } = constants
 

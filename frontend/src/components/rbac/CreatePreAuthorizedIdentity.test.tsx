@@ -3,10 +3,10 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { CreatePreAuthorizedIdentity } from './CreatePreAuthorizedIdentity'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { ClaimMappings } from '~/resources/authentication'
 
-jest.mock('../../../lib/acm-i18next', () => ({
+jest.mock('../../lib/acm-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, opts?: Record<string, string>) => {
       if (opts) return Object.entries(opts).reduce((s, [k, v]) => s.replace(`{{${k}}}`, v), key)
@@ -15,13 +15,13 @@ jest.mock('../../../lib/acm-i18next', () => ({
   }),
 }))
 
-jest.mock('../../../shared-recoil', () => ({
+jest.mock('../../shared-recoil', () => ({
   useRecoilValue: jest.fn(),
   useSharedAtoms: jest.fn(),
 }))
 
 const mockAddAlert = jest.fn()
-jest.mock('../../../ui-components/AcmAlert/AcmToast', () => ({
+jest.mock('../../ui-components/AcmAlert/AcmToast', () => ({
   AcmToastContext: {
     _currentValue: { addAlert: jest.fn() },
     Provider: ({ children }: any) => children,
@@ -29,7 +29,7 @@ jest.mock('../../../ui-components/AcmAlert/AcmToast', () => ({
   },
 }))
 
-jest.mock('./CreateIdentityForm', () => ({
+jest.mock('../../wizards/RoleAssignment/Identities/CreateIdentityForm', () => ({
   CreateIdentityForm: ({ subjectKind, saveButtonText, cancelButtonText, onCancel, onSuccess, onError }: any) => {
     const mockUser = { metadata: { name: 'created-user', uid: 'uid-1' } }
     const mockGroup = { metadata: { name: 'created-group', uid: 'uid-2' }, users: [] }
@@ -44,7 +44,7 @@ jest.mock('./CreateIdentityForm', () => ({
   },
 }))
 
-jest.mock('./CreateIdentityFormDirectAuthentication', () => ({
+jest.mock('../../wizards/RoleAssignment/Identities/CreateIdentityFormDirectAuthentication', () => ({
   CreateIdentityFormDirectAuthentication: ({
     subjectKind,
     saveButtonText,

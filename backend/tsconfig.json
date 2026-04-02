@@ -24,7 +24,7 @@
         "experimentalDecorators": true,
         "skipLibCheck": true,
         "esModuleInterop": true,
-        "isolatedModules": true
+        "verbatimModuleSyntax": true
     },
-    "include": ["src"]
+    "include": ["src", "test"]
 }

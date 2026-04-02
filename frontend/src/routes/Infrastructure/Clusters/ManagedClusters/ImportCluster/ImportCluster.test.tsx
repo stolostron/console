@@ -67,6 +67,7 @@ import {
   clickByRole,
   clickByTestId,
   clickByText,
+  createClusterVersionMock,
   typeByTestId,
   waitForNocks,
   waitForNotText,
@@ -78,6 +79,11 @@ import ImportClusterPage from './ImportCluster'
 import { defaultPlugin, PluginContext } from '../../../../../lib/PluginContext'
 import { AcmToastGroup, AcmToastProvider } from '../../../../../ui-components'
 import { PropsWithChildren, useEffect } from 'react'
+
+const mockUseClusterVersion = createClusterVersionMock()
+jest.mock('../../../../../hooks/use-cluster-version', () => ({
+  useClusterVersion: () => mockUseClusterVersion(),
+}))
 
 const mockProject: ProjectRequest = {
   apiVersion: ProjectRequestApiVersion,

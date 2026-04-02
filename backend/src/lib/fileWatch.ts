@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { FSWatcher, watch } from 'node:fs'
+import type { FSWatcher } from 'node:fs'
+import { watch } from 'node:fs'
 import { logger } from './logger'
 
 type WatchEntry = {

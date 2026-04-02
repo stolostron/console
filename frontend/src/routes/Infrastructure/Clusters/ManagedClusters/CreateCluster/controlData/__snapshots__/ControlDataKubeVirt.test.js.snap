@@ -45,46 +45,10 @@ exports[`Cluster creation control data for KubeVirt generates correctly 1`] = `
     "type": "reviewinfo",
   },
   {
-    "component": <Alert
-      isInline={true}
-      style={
-        {
-          "marginBottom": "1rem",
-        }
-      }
-      title="Operator required"
-      variant="danger"
-    >
-      <div
-        style={
-          {
-            "display": "flex",
-            "flexDirection": "column",
-          }
-        }
-      >
-        <span
-          style={
-            {
-              "margin": "0.5rem 0",
-            }
-          }
-        >
-          OpenShift Virtualization operator is required to create a cluster.
-        </span>
-        <AcmButton
-          component="a"
-          href=""
-          icon={<ExternalLinkAltIcon />}
-          iconPosition="right"
-          isInline={true}
-          target="_blank"
-          variant="link"
-        >
-          Install operator
-        </AcmButton>
-      </div>
-    </Alert>,
+    "component": <OperatorAlert
+      localCluster={{}}
+      t={[Function]}
+    />,
     "hidden": false,
     "id": "kubevirt-operator-alert",
     "type": "custom",
@@ -513,46 +477,46 @@ exports[`Cluster creation control data for KubeVirt generates correctly for MCE 
     "type": "reviewinfo",
   },
   {
-    "component": <Alert
-      isInline={true}
-      style={
+    "component": <OperatorAlert
+      localCluster={
         {
-          "marginBottom": "1rem",
+          "clusterSet": "default",
+          "consoleURL": "https://console-openshift-console.apps.cs-aws-413-j9kqv.dev02.red-chesterfield.com",
+          "creationTimestamp": "2024-01-29T04:31:03Z",
+          "displayName": "local-cluster",
+          "hasAutomationTemplate": false,
+          "hive": {
+            "isHibernatable": false,
+            "secrets": {},
+          },
+          "isCurator": false,
+          "isHive": false,
+          "isHostedCluster": false,
+          "isHypershift": false,
+          "isManaged": true,
+          "isRegionalHubCluster": false,
+          "isSNOCluster": false,
+          "labels": {
+            "cloud": "Amazon",
+            "cluster.open-cluster-management.io/clusterset": "default",
+            "clusterID": "68438ab6-ceec-4f2f-9d9e-675b518ab0ef",
+            "local-cluster": "true",
+            "name": "local-cluster",
+            "openshiftVersion": "4.13.23",
+            "openshiftVersion-major": "4",
+            "openshiftVersion-major-minor": "4.13",
+            "velero.io/exclude-from-backup": "true",
+            "vendor": "OpenShift",
+          },
+          "name": "local-cluster",
+          "namespace": "local-cluster",
+          "owner": {},
+          "provider": "aws",
+          "status": "ready",
         }
       }
-      title="Operator required"
-      variant="danger"
-    >
-      <div
-        style={
-          {
-            "display": "flex",
-            "flexDirection": "column",
-          }
-        }
-      >
-        <span
-          style={
-            {
-              "margin": "0.5rem 0",
-            }
-          }
-        >
-          OpenShift Virtualization operator is required to create a cluster.
-        </span>
-        <AcmButton
-          component="a"
-          href="https://console-openshift-console.apps.cs-aws-413-j9kqv.dev02.red-chesterfield.com/operatorhub/all-namespaces?keyword=Openshift+Virtualization"
-          icon={<ExternalLinkAltIcon />}
-          iconPosition="right"
-          isInline={true}
-          target="_blank"
-          variant="link"
-        >
-          Install operator
-        </AcmButton>
-      </div>
-    </Alert>,
+      t={[Function]}
+    />,
     "hidden": false,
     "id": "kubevirt-operator-alert",
     "type": "custom",

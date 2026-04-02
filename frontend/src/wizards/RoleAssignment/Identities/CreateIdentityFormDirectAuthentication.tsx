@@ -2,6 +2,7 @@
 
 import { ActionGroup, ActionList, ActionListGroup, ActionListItem, Button } from '@patternfly/react-core'
 import { useState } from 'react'
+import { v4 as uuidv4 } from 'uuid'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { ClaimMappings } from '../../../resources/authentication'
 import { Group, GroupKind, User, UserApiVersion, UserKind } from '../../../resources/rbac'
@@ -85,17 +86,18 @@ export function CreateIdentityFormDirectAuthentication({
 
   const handleSubmit = async () => {
     const name = formData.identityIdentifier.trim()
+    const uid = uuidv4()
     if (isUser) {
       onSuccess({
         apiVersion: UserApiVersion,
         kind: UserKind,
-        metadata: { name },
+        metadata: { name, uid },
       } as User)
     } else {
       onSuccess({
         apiVersion: UserApiVersion,
         kind: GroupKind,
-        metadata: { name },
+        metadata: { name, uid },
         users: [],
       } as Group)
     }

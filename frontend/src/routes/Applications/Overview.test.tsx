@@ -136,6 +136,11 @@ describe('Applications Page', () => {
     expect(screen.getByText(SubscriptionKind)).toBeTruthy()
     expect(screen.getByText(mockApplication0.metadata.namespace!)).toBeTruthy()
     expect(screen.getAllByText('Local')).toBeTruthy()
+
+    userEvent.click(screen.getByRole('button', { name: /columns-management/i }))
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Manage columns' })).toBeInTheDocument())
+    userEvent.click(screen.getByRole('checkbox', { name: /created/i }))
+    userEvent.click(screen.getByRole('button', { name: /save/i }))
     expect(screen.getAllByText(getFragmentedTextMatcher('Feb 20, 2024, 3:30 PM'))[0]).toBeInTheDocument()
 
     // appset

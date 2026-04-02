@@ -4,7 +4,6 @@ import { AgentClusterInstallK8sResource, HostedClusterK8sResource } from '@opens
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import _ from 'lodash'
 import cloneDeep from 'lodash/cloneDeep'
-import nock from 'nock'
 import { Scope } from 'nock/types'
 import { generatePath, MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
@@ -40,6 +39,7 @@ import {
   clickByLabel,
   clickByRole,
   clickByText,
+  createClusterVersionMock,
   typeByText,
   waitForCalled,
   waitForNock,
@@ -112,6 +112,11 @@ jest.mock('../../../../../hooks/useVirtualMachineDetection', () => ({
 // Mock KubevirtProviderAlert to avoid complex dependencies in error state tests
 jest.mock('../../../../../components/KubevirtProviderAlert', () => ({
   KubevirtProviderAlert: () => null,
+}))
+
+const mockUseClusterVersion = createClusterVersionMock()
+jest.mock('../../../../../hooks/use-cluster-version', () => ({
+  useClusterVersion: () => mockUseClusterVersion(),
 }))
 
 const mockManagedClusterInfo: ManagedClusterInfo = {
@@ -1343,17 +1348,6 @@ describe('ClusterDetails', () => {
       { data: { searchResult: { items: [], __typename: 'SearchResult' } } }
     )
 
-    nock(process.env.JEST_DEFAULT_HOST as string)
-      .get('/cluster-version')
-      .reply(
-        200,
-        { version: '4.21.0' },
-        {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, OPTIONS',
-          'Access-Control-Allow-Credentials': 'true',
-        }
-      )
     nockIgnoreOperatorCheck()
 
     render(<Component />)

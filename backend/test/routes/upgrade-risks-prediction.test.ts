@@ -4,6 +4,39 @@ import { parsePipedJsonBody } from '../../src/lib/body-parser'
 import { request } from '../mock-request'
 
 describe('Upgrade risks prediction Route', function () {
+  afterEach(() => {
+    delete process.env.UPGRADE_RISKS_PREDICTION_URL
+  })
+
+  it('should use UPGRADE_RISKS_PREDICTION_URL env var when set', async function () {
+    process.env.UPGRADE_RISKS_PREDICTION_URL =
+      'https://on-prem.example.com/api/insights-results-aggregator/v2/upgrade-risks-prediction'
+    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL)
+      .get('/api/v1/namespaces/openshift-config/secrets')
+      .reply(200, {
+        statusCode: 200,
+        body: {
+          apiVersion: 'v1',
+          kind: 'SecretList',
+          items: [
+            {
+              kind: 'Secret',
+              apiVersion: 'v1',
+              metadata: { name: 'pull-secret', namespace: 'openshift-config' },
+              data: { '.dockerconfigjson': 'test' },
+              type: 'kubernetes.io/dockerconfigjson',
+            },
+          ],
+        },
+      })
+    nock('https://on-prem.example.com')
+      .post('/api/insights-results-aggregator/v2/upgrade-risks-prediction')
+      .reply(200, { predictions: [] })
+    const res = await request('POST', '/upgrade-risks-prediction', { clusterIds: ['id-1234-abcd'] })
+    expect(res.statusCode).toEqual(200)
+  })
+
   it('should return the upgrade risks', async function () {
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
     nock(process.env.CLUSTER_API_URL)

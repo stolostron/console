@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { createHash } from 'crypto'
+import { createHash } from 'node:crypto'
 import got from 'got'
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
-import { encode as stringifyQuery, parse as parseQueryString } from 'querystring'
+import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
+import { encode as stringifyQuery, parse as parseQueryString } from 'node:querystring'
 import { deleteCookie } from '../lib/cookies'
 import { fetchRetry } from '../lib/fetch-retry'
 import { jsonRequest } from '../lib/json-request'

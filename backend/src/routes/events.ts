@@ -2,20 +2,20 @@
 
 import get from 'get-value'
 import got, { CancelError, HTTPError, TimeoutError } from 'got'
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import pluralize from 'pluralize'
 import { pipeline } from 'node:stream/promises'
 import { Transform } from 'node:stream'
 import { createDictionary, deflateResource, inflateResource } from '../lib/compression'
 import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
-import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
+import { type ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
 import { getCACertificate, getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
-import { IResource } from '../resources/resource'
-import { IWatchOptions } from '../resources/watch-options'
+import type { IResource } from '../resources/resource'
+import type { IWatchOptions } from '../resources/watch-options'
 import { polledAggregation } from './aggregator'
-import { getAppDict, ICompressedResource, ITransformedResource } from './aggregators/applications'
+import { getAppDict, type ICompressedResource, type ITransformedResource } from './aggregators/applications'
 
 export async function events(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   const token = await getAuthenticatedToken(req, res)

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import nock from 'nock'
-import { SecureContextOptions } from 'node:tls'
+import type { SecureContextOptions } from 'node:tls'
 import { watchTLSSecurityProfile } from '../../src/lib/tlsProfileWatch'
 import * as serviceAccountTokenModule from '../../src/lib/serviceAccountToken'
 

@@ -6,11 +6,23 @@ import i18next from 'i18next'
 import { Warning } from '../Warning'
 import { setAvailableStorageClasses } from './ControlDataHelpers'
 import { getControlDataKubeVirt } from './ControlDataKubeVirt'
+import { useOperatorCatalog } from '../../../../../../lib/operator-catalog-utils'
+
+jest.mock('../../../../../../lib/operator-catalog-utils')
 
 const t = i18next.t.bind(i18next)
 const handleModalToggle = jest.fn()
 
 describe('Cluster creation control data for KubeVirt', () => {
+  beforeEach(() => {
+    useOperatorCatalog.mockReturnValue({
+      buildSearchUrl: jest.fn((keyword) => `/catalog/all-namespaces?keyword=${encodeURIComponent(keyword)}`),
+      buildCategoryUrl: jest.fn((category) => `/catalog/ns/default?category=${encodeURIComponent(category)}`),
+      buildDetailsUrl: jest.fn((operatorId) => `/catalog/all-namespaces?selectedId=${encodeURIComponent(operatorId)}`),
+      isLoading: false,
+    })
+  })
+
   const localCluster = {
     name: 'local-cluster',
     displayName: 'local-cluster',
@@ -48,10 +60,10 @@ describe('Cluster creation control data for KubeVirt', () => {
   }
 
   it('generates correctly', () => {
-    expect(getControlDataKubeVirt(t, handleModalToggle, <Warning />, true, {})).toMatchSnapshot()
+    expect(getControlDataKubeVirt(t, handleModalToggle, <Warning />, true, {}, [])).toMatchSnapshot()
   })
   it('generates correctly for MCE', () => {
-    expect(getControlDataKubeVirt(t, handleModalToggle, <Warning />, false, localCluster)).toMatchSnapshot()
+    expect(getControlDataKubeVirt(t, handleModalToggle, <Warning />, false, localCluster, [])).toMatchSnapshot()
   })
   it('Correctly sets available storage classes', () => {
     const control = {

@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import { jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { respondInternalServerError } from '../lib/respond'
 import { getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
-import { IResource } from '../resources/resource'
-import { ResourceList } from '../resources/resource-list'
+import type { IResource } from '../resources/resource'
+import type { ResourceList } from '../resources/resource-list'
 import { getHubClusterName, getIsHubSelfManaged, getIsObservabilityInstalled, getKubeResources } from './events'
 
 interface AuthenticationResource {

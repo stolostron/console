@@ -601,6 +601,9 @@ export default function ApplicationsOverview() {
         exportContent: (application) => {
           return application.metadata?.name
         },
+        id: 'name',
+        order: 1,
+        isDefault: true,
       },
       {
         header: t('Type'),
@@ -633,6 +636,10 @@ export default function ApplicationsOverview() {
         exportContent: (resource) => {
           return getApplicationType(resource, systemAppNSPrefixes, t)
         },
+        id: 'type',
+        order: 2,
+        isDefault: false,
+        isFirstVisitChecked: true,
       },
       {
         header: t('Namespace'),
@@ -646,6 +653,9 @@ export default function ApplicationsOverview() {
         exportContent: (resource) => {
           return getAppNamespace(resource)
         },
+        id: 'namespace',
+        order: 3,
+        isDefault: true,
       },
       {
         header: t('Clusters'),
@@ -666,6 +676,9 @@ export default function ApplicationsOverview() {
           const clusterCount = getClusterCount(clusterList, localCluster)
           return getClusterCountString(t, clusterCount, clusterList, resource)
         },
+        id: 'clusters',
+        order: 4,
+        isDefault: true,
       },
       {
         header: t('Health Status'),
@@ -679,6 +692,10 @@ export default function ApplicationsOverview() {
         exportContent: (resource) => {
           return exportApplicationStatusGroup(resource, 'health')
         },
+        id: 'health',
+        order: 5,
+        isDefault: false,
+        isFirstVisitChecked: true,
       },
       {
         header: t('Sync Status'),
@@ -692,6 +709,10 @@ export default function ApplicationsOverview() {
         exportContent: (resource) => {
           return exportApplicationStatusGroup(resource, 'synced')
         },
+        id: 'sync',
+        order: 6,
+        isDefault: false,
+        isFirstVisitChecked: true,
       },
       {
         header: t('Pod Status'),
@@ -705,6 +726,10 @@ export default function ApplicationsOverview() {
         exportContent: (resource) => {
           return exportApplicationStatusGroup(resource, 'deployed')
         },
+        id: 'pod',
+        order: 7,
+        isDefault: false,
+        isFirstVisitChecked: true,
       },
       ...extensionColumns,
       {
@@ -722,6 +747,10 @@ export default function ApplicationsOverview() {
             return getISOStringTimestamp(resource.metadata?.creationTimestamp)
           }
         },
+        id: 'created',
+        order: 8,
+        isDefault: false,
+        isFirstVisitChecked: false,
       },
     ],
     [t, extensionColumns, systemAppNSPrefixes, localCluster]
@@ -1193,9 +1222,11 @@ export default function ApplicationsOverview() {
 
   const additionalToolbarItems = useMemo(
     () => (
-      <ToolbarItem alignSelf="center" key="compare-app-types">
-        {compareAppTypesLink}
-      </ToolbarItem>
+      <>
+        <ToolbarItem alignSelf="center" key="compare-app-types">
+          {compareAppTypesLink}
+        </ToolbarItem>
+      </>
     ),
     [compareAppTypesLink]
   )
@@ -1227,10 +1258,11 @@ export default function ApplicationsOverview() {
           setRequestView={setRequestedView}
           resultView={resultView}
           resultCounts={resultCounts}
-          fetchExport={fetchAggregateForExport}
           customTableAction={appCreationButton}
+          fetchExport={fetchAggregateForExport}
           additionalToolbarItems={additionalToolbarItems}
           showExportButton
+          showColumnManagement
           exportFilePrefix="applicationsoverview"
           emptyState={
             <AcmEmptyState

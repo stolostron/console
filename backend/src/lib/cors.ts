@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
 
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 
 export function cors(req: Http2ServerRequest, res: Http2ServerResponse): boolean {
   if (process.env.NODE_ENV !== 'production') {

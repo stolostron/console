@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { constants } from 'http2'
+import { constants } from 'node:http2'
 import { jest } from '@jest/globals'
-import { pipeline } from 'stream'
-import { request } from 'https'
+import { pipeline } from 'node:stream'
+import { request } from 'node:https'
 import { proxy } from '../../src/routes/proxy'
 import { getToken } from '../../src/lib/token'
 import { getDefaultAgent } from '../../src/lib/agent'
@@ -29,9 +29,8 @@ jest.mock('../../src/lib/respond', () => ({
   unauthorized: jest.fn(),
 }))
 
-jest.mock('https', () => ({
+jest.mock('node:https', () => ({
   request: jest.fn((_options: unknown, callback: unknown) => {
-    // Return a mock stream and call the callback with a mock response
     const mockStream = {} as NodeJS.ReadableStream
     const mockResponse = {
       headers: {},
@@ -44,9 +43,8 @@ jest.mock('https', () => ({
   }),
 }))
 
-jest.mock('stream', () => ({
+jest.mock('node:stream', () => ({
   pipeline: jest.fn((_req: unknown, _request: unknown, callback: unknown) => {
-    // Simulate the pipeline behavior - just call the error callback
     if (callback && typeof callback === 'function') {
       process.nextTick(() => (callback as (error: Error | null) => void)(null))
     }

@@ -24,7 +24,7 @@ spec:
     agentBareMetal:
       agentSelector:
         matchLabels:
-          'agentBareMetal-generated-infraenv-ai-flow': '{{{ai.name}}}-{{{ai.name}}}'
+          'agentBareMetal-generated-infraenv-ai-flow': '{{{ai.name}}}'
   pullSecretRef:
     name: pullsecret-cluster-{{{ai.name}}}
 
@@ -40,16 +40,17 @@ spec:
     name: '{{{ai.name}}}'
   holdInstallation: true
   provisionRequirements:
-    workerAgents: 0
-{{#switch ai.highAvailabilityMode}}
-  {{#case 'Full'}}
+    workerAgents: 0    
+    {{#if ai.controlPlaneCount}}
+    controlPlaneAgents: {{{ai.controlPlaneCount}}}
+    {{else}}
     controlPlaneAgents: 3
-  {{/case}}
-
-  {{#case 'None'}}
-    controlPlaneAgents: 1
-  {{/case}}
-{{/switch}}
+    {{/if}}
+    {{#switch ai.controlPlaneCount}}
+    {{#case 2}}
+    arbiterAgents: 1
+    {{/case}}
+    {{/switch}}
   imageSetRef:
     name: '{{{ai.openshiftVersion}}}'
   networking:
@@ -127,7 +128,7 @@ spec:
     name: '{{{ai.name}}}'
     namespace: '{{{ai.name}}}'
   agentLabels:
-    'agentBareMetal-generated-infraenv-ai-flow': '{{{ai.name}}}-{{{ai.name}}}'
+    'agentBareMetal-generated-infraenv-ai-flow': '{{{ai.name}}}'
   pullSecretRef:
     name: pullsecret-cluster-{{{ai.name}}}
   sshAuthorizedKey: '{{{ai.sshPublicKey}}}'
@@ -137,4 +138,4 @@ spec:
 status:
   agentLabelSelector:
     matchLabels:
-      'agentBareMetal-generated-infraenv-ai-flow': '{{{ai.name}}}-{{{ai.name}}}'
+      'agentBareMetal-generated-infraenv-ai-flow': '{{{ai.name}}}'

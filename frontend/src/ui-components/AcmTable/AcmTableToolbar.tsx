@@ -504,8 +504,8 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
         {tableActions.length > 0 && (
           <TableActions actions={tableActions} selections={selected} items={items} keyFn={keyFn} />
         )}
-        {renderColumnManagement()}
         {customTableAction}
+        {renderColumnManagement()}
         {showExportButton && (
           <Tooltip content={t('Export all table data')}>
             <ToolbarItem key={`export-toolbar-item`}>

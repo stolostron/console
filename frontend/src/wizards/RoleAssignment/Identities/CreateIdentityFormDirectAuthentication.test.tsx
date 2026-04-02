@@ -52,7 +52,7 @@ describe('CreateIdentityFormDirectAuthentication', () => {
         expect.objectContaining({
           apiVersion: 'user.openshift.io/v1',
           kind: 'User',
-          metadata: { name: 'oidc:test@example.com' },
+          metadata: expect.objectContaining({ name: 'oidc:test@example.com' }),
         })
       )
     })
@@ -72,7 +72,7 @@ describe('CreateIdentityFormDirectAuthentication', () => {
         expect.objectContaining({
           apiVersion: 'user.openshift.io/v1',
           kind: 'Group',
-          metadata: { name: 'oidc:my-group' },
+          metadata: expect.objectContaining({ name: 'oidc:my-group' }),
           users: [],
         })
       )
@@ -95,7 +95,7 @@ describe('CreateIdentityFormDirectAuthentication', () => {
     await waitFor(() => {
       expect(defaultProps.onSuccess).toHaveBeenCalledWith(
         expect.objectContaining({
-          metadata: { name: 'no-prefix-user' },
+          metadata: expect.objectContaining({ name: 'no-prefix-user' }),
         })
       )
     })
@@ -137,7 +137,7 @@ describe('CreateIdentityFormDirectAuthentication', () => {
     await waitFor(() => {
       expect(defaultProps.onSuccess).toHaveBeenCalledWith(
         expect.objectContaining({
-          metadata: { name: 'no-prefix-group' },
+          metadata: expect.objectContaining({ name: 'no-prefix-group' }),
         })
       )
     })
@@ -215,5 +215,59 @@ describe('CreateIdentityFormDirectAuthentication', () => {
 
     const input = screen.getByTestId('identity-identifier')
     expect(input).toHaveAttribute('placeholder', 'user@company.com or username')
+  })
+
+  describe('generated uid for in-memory identities', () => {
+    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+    it('should generate a valid uuid for a created User', async () => {
+      render(<CreateIdentityFormDirectAuthentication {...defaultProps} />)
+
+      await userEvent.type(screen.getByTestId('identity-identifier'), 'test-user')
+      await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+      await waitFor(() => {
+        expect(defaultProps.onSuccess).toHaveBeenCalledTimes(1)
+      })
+
+      const createdUser = defaultProps.onSuccess.mock.calls[0][0]
+      expect(createdUser.metadata.uid).toBeDefined()
+      expect(createdUser.metadata.uid).toMatch(UUID_REGEX)
+    })
+
+    it('should generate a valid uuid for a created Group', async () => {
+      render(<CreateIdentityFormDirectAuthentication {...defaultProps} subjectKind="Group" />)
+
+      await userEvent.type(screen.getByTestId('identity-identifier'), 'test-group')
+      await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+      await waitFor(() => {
+        expect(defaultProps.onSuccess).toHaveBeenCalledTimes(1)
+      })
+
+      const createdGroup = defaultProps.onSuccess.mock.calls[0][0]
+      expect(createdGroup.metadata.uid).toBeDefined()
+      expect(createdGroup.metadata.uid).toMatch(UUID_REGEX)
+    })
+
+    it('should generate unique uids for each created identity', async () => {
+      const onSuccess1 = jest.fn()
+      const onSuccess2 = jest.fn()
+
+      const { unmount } = render(<CreateIdentityFormDirectAuthentication {...defaultProps} onSuccess={onSuccess1} />)
+      await userEvent.type(screen.getByTestId('identity-identifier'), 'user-one')
+      await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+      await waitFor(() => expect(onSuccess1).toHaveBeenCalledTimes(1))
+      unmount()
+
+      render(<CreateIdentityFormDirectAuthentication {...defaultProps} onSuccess={onSuccess2} />)
+      await userEvent.type(screen.getByTestId('identity-identifier'), 'user-two')
+      await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+      await waitFor(() => expect(onSuccess2).toHaveBeenCalledTimes(1))
+
+      const uid1 = onSuccess1.mock.calls[0][0].metadata.uid
+      const uid2 = onSuccess2.mock.calls[0][0].metadata.uid
+      expect(uid1).not.toEqual(uid2)
+    })
   })
 })

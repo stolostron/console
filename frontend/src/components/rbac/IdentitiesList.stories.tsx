@@ -13,7 +13,7 @@ import {
 } from '@patternfly/react-core'
 import { Meta, StoryObj } from '@storybook/react'
 import React, { useState } from 'react'
-import { useTranslation } from '../../../lib/acm-i18next'
+import { useTranslation } from '../../lib/acm-i18next'
 
 const MockUsersTable = ({
   onUserClick,

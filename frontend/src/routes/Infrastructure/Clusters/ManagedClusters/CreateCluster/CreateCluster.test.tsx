@@ -19,6 +19,7 @@ import {
 import {
   nockCreate,
   nockIgnoreApiPaths,
+  nockIgnoreClusterVersion,
   nockIgnoreOperatorCheck,
   nockIgnoreRBAC,
   nockList,
@@ -827,6 +828,7 @@ describe('CreateCluster AWS', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     nockIgnoreOperatorCheck()
+    nockIgnoreClusterVersion()
   })
 
   test('can create AWS cluster without ansible template', async () => {
@@ -1143,6 +1145,7 @@ describe('CreateCluster on premise', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     nockIgnoreOperatorCheck()
+    nockIgnoreClusterVersion()
   })
 
   test(
@@ -1491,6 +1494,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     nockIgnoreOperatorCheck()
+    nockIgnoreClusterVersion()
   })
 
   test('KubeVirt cluster creation with a kubervirt credential that has external infrastructure', async () => {
@@ -1744,6 +1748,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     nockIgnoreOperatorCheck()
+    nockIgnoreClusterVersion()
   })
 
   test('KubeVirt cluster creation with a kubervirt credential that has external infrastructure', async () => {
@@ -2456,6 +2461,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     nockIgnoreOperatorCheck()
+    nockIgnoreClusterVersion()
   })
 
   test('KubeVirt cluster creation with a kubervirt credential that has external infrastructure', async () => {
@@ -2938,6 +2944,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     nockIgnoreOperatorCheck()
+    nockIgnoreClusterVersion()
   })
 
   test('KubeVirt cluster creation with a kubervirt credential that has no external infrastructure', async () => {
@@ -3423,6 +3430,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     nockIgnoreOperatorCheck()
+    nockIgnoreClusterVersion()
   })
 
   test('KubeVirt cluster creation with a kubervirt credential that has no external infrastructure', async () => {
@@ -3971,6 +3979,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     nockIgnoreOperatorCheck()
+    nockIgnoreClusterVersion()
   })
 
   // verifies adding networks to 2 different node pools
