@@ -429,7 +429,8 @@ function getReviewScrollTargetDomId(node: WizardDomTreeNode): string | undefined
     switch (node.type) {
       case InputReviewMeta.STEP:
       case InputReviewMeta.INPUT:
-      case InputReviewMeta.ARRAY_INPUT: {
+      case InputReviewMeta.ARRAY_INPUT:
+      case InputReviewMeta.ARRAY_INSTANCE: {
         const id = 'id' in node ? (node as { id?: string }).id : undefined
         return id && id !== '' ? id : undefined
       }
@@ -465,8 +466,12 @@ function clearReviewEditHighlight(highlightEl: HTMLElement) {
 }
 
 function reviewEditHighlightTarget(el: HTMLElement): HTMLElement {
-  if (el instanceof HTMLInputElement && el.parentElement?.tagName === 'DIV') {
-    return el.parentElement
+  if (el instanceof HTMLInputElement) {
+    let parent = el.parentElement
+    while (parent && parent.tagName === 'SPAN') {
+      parent = parent.parentElement
+    }
+    return parent ?? el
   }
   return el
 }
@@ -493,7 +498,7 @@ function scrollReviewEditTargetIntoView(domId: string) {
     const el = document.getElementById(domId) as HTMLElement | null
     if (!el) return
     const inputTarget = resolveReviewEditInputTarget(el)
-    const highlightEl = reviewEditHighlightTarget(inputTarget)
+    const highlightEl = reviewEditHighlightTarget(el)
     highlightEl.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' })
     if (inputTarget instanceof HTMLInputElement && isSelectableTextInput(inputTarget)) {
       inputTarget.focus()

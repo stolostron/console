@@ -466,6 +466,7 @@ function ArrayInputItemReviewRegistration(props: {
     if (!stepInputsRegistry) return
     const label = getArrayInstanceLabel(collapsedContent, item, measureRef.current)
     stepInputsRegistry.register(id, {
+      id,
       path: String(index),
       value,
       label: label ?? '',
@@ -477,7 +478,7 @@ function ArrayInputItemReviewRegistration(props: {
 
   return (
     <ReviewPathPrefixSegmentsProvider value={instanceChildReviewPathSegments}>
-      {children}
+      <div id={id}>{children}</div>
     </ReviewPathPrefixSegmentsProvider>
   )
 }

@@ -34,7 +34,7 @@ export type InputReviewStepMeta =
       type: InputReviewMeta.STEP
     }
   | {
-      /** Index segment within the parent array (`String(index)`); merged with parent ARRAY_INPUT path in the review DOM tree. */
+      id: string
       path?: string
       value: unknown
       label?: string
