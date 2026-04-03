@@ -708,7 +708,7 @@ type ReviewRenderCtx = {
 
 /** Top-level array section uses 16px; each nested ARRAY_INPUT adds 16px (not 16). */
 function reviewArrayInstanceMarginLeft(arrayInputNesting: number): number {
-  return 32 + 16 * arrayInputNesting
+  return 32 + 2 * arrayInputNesting
 }
 
 function renderReviewInputDescriptionContent(node: WizardInputDomNode): ReactNode {
