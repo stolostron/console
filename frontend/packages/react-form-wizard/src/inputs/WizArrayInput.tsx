@@ -478,7 +478,7 @@ function ArrayInputItemReviewRegistration(props: {
 
   return (
     <ReviewPathPrefixSegmentsProvider value={instanceChildReviewPathSegments}>
-      <div id={id}>{children}</div>
+      {children}
     </ReviewPathPrefixSegmentsProvider>
   )
 }

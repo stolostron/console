@@ -3,6 +3,15 @@
   flex-direction: column;
 }
 
+/* Collapsed summary title sits inside a link-styled toggle; force regular body text color. */
+.wizard-review-expandable-section .pf-v6-c-expandable-section__toggle .wizard-review-collapsed-title,
+.wizard-review-expandable-section
+  .pf-v6-c-expandable-section__toggle
+  .pf-v6-c-button:is(:hover, :focus)
+  .wizard-review-collapsed-title {
+  color: var(--pf-t--global--text--color--regular);
+}
+
 /* ExpandableSection wraps toggleContent in a link Button (inline-flex); stretch it to the section width */
 .wizard-review-expandable-section .pf-v6-c-expandable-section__toggle > .pf-v6-c-button {
   width: 100%;
@@ -105,7 +114,7 @@
 .wizard-review-edit-target-highlight {
   outline-style: solid;
   outline-offset: 10px;
-  outline-color: #e66f0e;
+  outline-color: #eb8c3e;
   outline-width: 0;
 }
 
