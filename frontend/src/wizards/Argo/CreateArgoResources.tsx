@@ -1,6 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { EditorValidationStatus, useData, useEditorValidationStatus, useItem } from '@patternfly-labs/react-form-wizard'
+import {
+  EditorValidationStatus,
+  useData,
+  useEditorValidationStatus,
+  useHighlightEditorPath,
+  useItem,
+} from '@patternfly-labs/react-form-wizard'
 import { useContext, useState } from 'react'
 import { AcmDataFormPage } from '../../components/AcmDataForm'
 import { FormData } from '../../components/AcmFormData'
@@ -34,6 +40,7 @@ export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
   const { update } = useData() // Wizard framework sets this context
   const { setEditorValidationStatus } = useEditorValidationStatus()
+  const { highlightEditorPath } = useHighlightEditorPath()
   const { t } = useTranslation()
   return (
     <SyncEditor
@@ -42,6 +49,7 @@ export function WizardSyncEditor() {
       resources={resources}
       schema={schema}
       filters={['*.metadata.managedFields']}
+      highlightEditorPath={highlightEditorPath}
       onEditorChange={(changes: { resources: any[] }): void => {
         update(changes?.resources)
       }}

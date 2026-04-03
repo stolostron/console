@@ -113,7 +113,6 @@
 /* Scroll-to-edit target: outline until timeout or blur (see scrollReviewEditTargetIntoView). */
 .wizard-review-edit-target-highlight {
   outline-style: solid;
-  outline-offset: 10px;
   outline-color: #eb8c3e;
   outline-width: 0;
 }

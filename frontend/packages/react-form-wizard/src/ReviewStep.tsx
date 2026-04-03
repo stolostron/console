@@ -39,6 +39,7 @@ import {
   useRef,
   useState,
 } from 'react'
+import { useHighlightEditorPath } from './contexts/HighlightEditorPathContext'
 import { useReviewDomTreeVersion } from './contexts/ReviewDomTreeSyncContext'
 import { useStringContext } from './contexts/StringContext'
 import { InputReviewStepMeta, InputReviewMeta, useStepInputsRegistry } from './contexts/StepInputsContext'
@@ -143,6 +144,7 @@ const reviewEditHighlightTeardownByEl = new WeakMap<Element, () => void>()
 export function ReviewStep({ wizardRef, reviewStorageKey = 'default' }: ReviewStepProps) {
   const { reviewLabel } = useStringContext()
   const { goToStepById } = useWizardContext()
+  const { setHighlightEditorPath } = useHighlightEditorPath()
   const stepInputsRegistry = useStepInputsRegistry()
   const reviewDomTreeVersion = useReviewDomTreeVersion()
   const stepInputMapRef = stepInputsRegistry?.get()
@@ -220,12 +222,14 @@ export function ReviewStep({ wizardRef, reviewStorageKey = 'default' }: ReviewSt
 
   const handleReviewEdit = useCallback(
     (node: WizardDomTreeNode) => {
+      const yamlPath = getReviewNodeYamlHighlightPath(node)
+      if (yamlPath !== undefined) setHighlightEditorPath(yamlPath)
       const stepId = getReviewNodeStepId(node)
       const domId = getReviewScrollTargetDomId(node)
       if (stepId) goToStepById(stepId)
       if (domId) scrollReviewEditTargetIntoView(domId)
     },
-    [goToStepById]
+    [goToStepById, setHighlightEditorPath]
   )
 
   const showExpandToolbarButton = sectionKeys.some((k) => sectionExpanded[k] === false)
@@ -947,6 +951,12 @@ function renderReviewArrayInstanceContainer(
       </div>
     </ReviewDomTreeNodeShell>
   )
+}
+
+/** Dot path for YAML editor highlight: matches review registration path without `;id=` suffix. */
+function getReviewNodeYamlHighlightPath(node: WizardDomTreeNode): string | undefined {
+  if (!('path' in node) || typeof node.path !== 'string' || node.path === '') return undefined
+  return node.path.replace(/;id=[^;]*$/u, '')
 }
 
 /** Wizard step id for navigating from review: explicit on INPUT / STEP, else first descendant INPUT's `stepId`. */

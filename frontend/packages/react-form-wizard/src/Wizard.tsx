@@ -46,6 +46,7 @@ import {
 } from './contexts/StepShowValidationProvider'
 import { StepValidationProvider, useStepHasValidationError } from './contexts/StepValidationProvider'
 import { defaultStrings, StringContext, useStringContext, WizardStrings } from './contexts/StringContext'
+import { HighlightEditorPathProvider } from './contexts/HighlightEditorPathContext'
 import {
   EditorValidationStatus,
   useEditorValidationStatus,
@@ -99,28 +100,30 @@ export function Wizard(props: WizardProps & { showHeader?: boolean; showYaml?: b
                   <ItemContext.Provider value={data}>
                     <ShowValidationProvider>
                       <ValidationProvider>
-                        <Drawer isExpanded={drawerExpanded} isInline>
-                          <DrawerContent panelContent={<WizardDrawer yamlEditor={props.yamlEditor} />}>
-                            <DrawerContentBody>
-                              <ItemContext.Provider value={data}>
-                                <StringContext.Provider value={wizardStrings || defaultStrings}>
-                                  <WizardInternal
-                                    title={props.title}
-                                    reviewStorageKey={props.reviewStorageKey}
-                                    onSubmit={props.onSubmit}
-                                    onCancel={props.onCancel}
-                                    hasButtons={props.hasButtons}
-                                    submitButtonText={props.submitButtonText}
-                                    submittingButtonText={props.submittingButtonText}
-                                    isLoading={props.isLoading}
-                                  >
-                                    {props.children}
-                                  </WizardInternal>
-                                </StringContext.Provider>
-                              </ItemContext.Provider>
-                            </DrawerContentBody>
-                          </DrawerContent>
-                        </Drawer>
+                        <HighlightEditorPathProvider>
+                          <Drawer isExpanded={drawerExpanded} isInline>
+                            <DrawerContent panelContent={<WizardDrawer yamlEditor={props.yamlEditor} />}>
+                              <DrawerContentBody>
+                                <ItemContext.Provider value={data}>
+                                  <StringContext.Provider value={wizardStrings || defaultStrings}>
+                                    <WizardInternal
+                                      title={props.title}
+                                      reviewStorageKey={props.reviewStorageKey}
+                                      onSubmit={props.onSubmit}
+                                      onCancel={props.onCancel}
+                                      hasButtons={props.hasButtons}
+                                      submitButtonText={props.submitButtonText}
+                                      submittingButtonText={props.submittingButtonText}
+                                      isLoading={props.isLoading}
+                                    >
+                                      {props.children}
+                                    </WizardInternal>
+                                  </StringContext.Provider>
+                                </ItemContext.Provider>
+                              </DrawerContentBody>
+                            </DrawerContent>
+                          </Drawer>
+                        </HighlightEditorPathProvider>
                       </ValidationProvider>
                     </ShowValidationProvider>
                   </ItemContext.Provider>
