@@ -18,7 +18,7 @@ import { editor as editorTypes } from 'monaco-editor'
 import { loader, Monaco } from '@monaco-editor/react'
 import { Schema } from 'ajv'
 import { defineThemes, getTheme, mountTheme, dismountTheme } from '../theme'
-import { rangeForHighlightPath } from './highlightFromPath'
+import { rangeForHighlightPath } from './decorate'
 
 // loader can be null in tests
 loader?.config({ monaco })

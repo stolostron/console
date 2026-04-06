@@ -160,12 +160,7 @@ export function useInput(props: InputCommonProps, options?: { isArrayInput?: boo
   )
   if (props.inputValueToPathValue) {
     const transformed = props.inputValueToPathValue(true, false)
-    if (Array.isArray(transformed)) {
-      const segment = JSON.stringify(transformed).replace(/=.*?(?=\])/g, '')
-      if (segment !== '') {
-        registrationPath = `${registrationPath}.${segment}`
-      }
-    }
+    registrationPath = `${registrationPath}#${JSON.stringify(transformed)}`
   }
 
   if (props.id) {

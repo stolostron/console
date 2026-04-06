@@ -467,7 +467,7 @@ function ArrayInputItemReviewRegistration(props: {
     const label = getArrayInstanceLabel(collapsedContent, item, measureRef.current)
     stepInputsRegistry.register(id, {
       id,
-      path: String(index),
+      path: id,
       value,
       label: label ?? '',
       type: InputReviewMeta.ARRAY_INSTANCE,
