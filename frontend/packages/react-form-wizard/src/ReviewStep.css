@@ -110,7 +110,7 @@
   pointer-events: auto;
 }
 
-/* Scroll-to-edit target: outline until timeout or blur (see scrollReviewEditTargetIntoView). */
+/* Scroll-to-edit target: outline eases in, eases out on focus leaving the target or window/tab blur. */
 .wizard-review-edit-target-highlight {
   outline-style: solid;
   outline-color: #eb8c3e;

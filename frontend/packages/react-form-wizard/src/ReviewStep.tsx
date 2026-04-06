@@ -85,6 +85,9 @@ type ReviewRenderCtx = {
   /** Number of nested ARRAY_INPUT ancestors; top-level array body uses 0. */
   arrayInputNesting: number
   onReviewEdit?: (node: WizardDomTreeNode) => void
+  /** When set, top-level {@link InputReviewMeta.ARRAY_INSTANCE} expandables use this state (same storage keys as review sections). */
+  getTopLevelArrayInstanceExpanded?: (storageKey: string) => boolean
+  onTopLevelArrayInstanceExpandedChange?: (storageKey: string, expanded: boolean) => void
 }
 
 type ReviewToolbarAction = 'expand' | 'collapse'
@@ -124,7 +127,6 @@ const REVIEW_HORIZONTAL_TERM_WIDTH_WIDE: HorizontalTermWidthModifier = {
 const REVIEW_EDIT_TARGET_HIGHLIGHT_CLASS = 'wizard-review-edit-target-highlight'
 const REVIEW_EDIT_TARGET_HIGHLIGHT_VISIBLE_CLASS = 'wizard-review-edit-target-highlight--visible'
 const REVIEW_EDIT_TARGET_HIGHLIGHT_EASE_OUT_CLASS = 'wizard-review-edit-target-highlight--ease-out'
-const REVIEW_EDIT_HIGHLIGHT_MS = 1500
 const REVIEW_EDIT_HIGHLIGHT_EASE_OUT_MS = 500
 
 const REVIEW_PEN_HOVER_REVEAL_MS = 200
@@ -160,6 +162,10 @@ export function ReviewStep({ wizardRef, reviewStorageKey = 'default' }: ReviewSt
 
   const sectionRoots = useMemo(() => getWizardDomTreeRootChildren(wizardDomTree), [wizardDomTree])
   const sectionKeys = useMemo(() => sectionRoots.map((child, index) => reviewNodeKey(child, index)), [sectionRoots])
+  const topLevelArrayInstanceKeys = useMemo(
+    () => collectTopLevelArrayInstanceExpandableKeys(wizardDomTree),
+    [wizardDomTree]
+  )
 
   const prevStorageBucketRef = useRef<string | null>(null)
   const [lastToolbarAction, setLastToolbarAction] = useState<ReviewToolbarAction>('expand')
@@ -172,7 +178,7 @@ export function ReviewStep({ wizardRef, reviewStorageKey = 'default' }: ReviewSt
       prevStorageBucketRef.current = reviewStorageKey
       setLastToolbarAction(stored.lastToolbar)
     }
-    if (sectionKeys.length === 0) return
+    if (sectionKeys.length === 0 && topLevelArrayInstanceKeys.length === 0) return
 
     setSectionExpanded((prev) => {
       const next: Record<string, boolean> = {}
@@ -187,14 +193,25 @@ export function ReviewStep({ wizardRef, reviewStorageKey = 'default' }: ReviewSt
           next[key] = stored.lastToolbar === 'expand'
         }
       }
+      for (const key of topLevelArrayInstanceKeys) {
+        if (bucketChanged) {
+          next[key] = stored.sections[key] !== undefined ? stored.sections[key]! : false
+        } else if (key in prev) {
+          next[key] = prev[key]!
+        } else if (stored.sections[key] !== undefined) {
+          next[key] = stored.sections[key]!
+        } else {
+          next[key] = false
+        }
+      }
       return next
     })
-  }, [reviewStorageKey, sectionKeys])
+  }, [reviewStorageKey, sectionKeys, topLevelArrayInstanceKeys])
 
   useEffect(() => {
-    if (sectionKeys.length === 0) return
+    if (sectionKeys.length === 0 && topLevelArrayInstanceKeys.length === 0) return
     writeReviewExpandableStorage(reviewStorageKey, sectionExpanded, lastToolbarAction)
-  }, [reviewStorageKey, sectionExpanded, lastToolbarAction, sectionKeys])
+  }, [reviewStorageKey, sectionExpanded, lastToolbarAction, sectionKeys, topLevelArrayInstanceKeys])
 
   const onSectionExpandedChange = useCallback((key: string, expanded: boolean) => {
     setSectionExpanded((p) => ({ ...p, [key]: expanded }))
@@ -206,9 +223,10 @@ export function ReviewStep({ wizardRef, reviewStorageKey = 'default' }: ReviewSt
     setSectionExpanded(() => {
       const next: Record<string, boolean> = {}
       for (const k of sectionKeys) next[k] = true
+      for (const k of topLevelArrayInstanceKeys) next[k] = false
       return next
     })
-  }, [sectionKeys])
+  }, [sectionKeys, topLevelArrayInstanceKeys])
 
   /** Uniform collapse: clears per-section differences for persisted state. */
   const onCollapseAll = useCallback(() => {
@@ -216,9 +234,10 @@ export function ReviewStep({ wizardRef, reviewStorageKey = 'default' }: ReviewSt
     setSectionExpanded(() => {
       const next: Record<string, boolean> = {}
       for (const k of sectionKeys) next[k] = false
+      for (const k of topLevelArrayInstanceKeys) next[k] = false
       return next
     })
-  }, [sectionKeys])
+  }, [sectionKeys, topLevelArrayInstanceKeys])
 
   const handleReviewEdit = useCallback(
     (node: WizardDomTreeNode) => {
@@ -257,7 +276,12 @@ export function ReviewStep({ wizardRef, reviewStorageKey = 'default' }: ReviewSt
               isExpanded={sectionExpanded[key] ?? true}
               onExpandedChange={(expanded) => onSectionExpandedChange(key, expanded)}
             >
-              <ReviewSectionBody node={child} onReviewEdit={handleReviewEdit} />
+              <ReviewSectionBody
+                node={child}
+                onReviewEdit={handleReviewEdit}
+                getTopLevelArrayInstanceExpanded={(k) => sectionExpanded[k] ?? false}
+                onTopLevelArrayInstanceExpandedChange={onSectionExpandedChange}
+              />
             </ReviewExpandableSection>
           )
         })}
@@ -521,13 +545,21 @@ function ReviewCollapsedValueBadge(props: {
 export function ReviewSectionBody(props: {
   node: WizardDomTreeNode
   onReviewEdit?: (node: WizardDomTreeNode) => void
+  getTopLevelArrayInstanceExpanded?: (storageKey: string) => boolean
+  onTopLevelArrayInstanceExpandedChange?: (storageKey: string, expanded: boolean) => void
 }) {
   const bodyNodes = getReviewSectionBodyNodes(props.node)
   return (
     <Fragment>
       {renderReviewNodeSequence(
         bodyNodes,
-        { inputGroupMarginLeft: 32, arrayInputNesting: 0, onReviewEdit: props.onReviewEdit },
+        {
+          inputGroupMarginLeft: 32,
+          arrayInputNesting: 0,
+          onReviewEdit: props.onReviewEdit,
+          getTopLevelArrayInstanceExpanded: props.getTopLevelArrayInstanceExpanded,
+          onTopLevelArrayInstanceExpandedChange: props.onTopLevelArrayInstanceExpandedChange,
+        },
         false
       )}
     </Fragment>
@@ -707,6 +739,55 @@ function getReviewSectionBodyNodes(node: WizardDomTreeNode): WizardDomTreeNode[]
   return [node]
 }
 
+/** Storage keys for {@link ReviewTopLevelArrayInstanceExpandable} — same `sections` map as review step expandables. */
+function collectTopLevelArrayInstanceExpandableKeys(root: WizardDomTreeNode | null): string[] {
+  const out: string[] = []
+  if (!root) return out
+
+  const walkSequence = (nodes: WizardDomTreeNode[], arrayInputNesting: number) => {
+    let i = 0
+    while (i < nodes.length) {
+      const n = nodes[i]!
+      if (isReviewInputNode(n)) {
+        while (i < nodes.length && isReviewInputNode(nodes[i]!)) i++
+        continue
+      }
+      if (isReviewArrayInputNode(n)) {
+        const children = n.children ?? []
+        children.forEach((child, index) => {
+          if (isReviewArrayInstanceNode(child) && arrayInputNesting === 0) {
+            out.push(reviewNodeKey(child, index))
+          }
+          if (isReviewArrayInstanceNode(child)) {
+            walkSequence(child.children ?? [], arrayInputNesting + 1)
+          }
+        })
+        i++
+        continue
+      }
+      if (isReviewStepNode(n) || !('type' in n)) {
+        walkSequence(n.children ?? [], arrayInputNesting)
+        i++
+        continue
+      }
+      if (isReviewArrayInstanceNode(n)) {
+        if (arrayInputNesting === 0) {
+          out.push(reviewNodeKey(n, i))
+        }
+        walkSequence(n.children ?? [], arrayInputNesting + 1)
+        i++
+        continue
+      }
+      i++
+    }
+  }
+
+  for (const sectionRoot of getWizardDomTreeRootChildren(root)) {
+    walkSequence(getReviewSectionBodyNodes(sectionRoot), 0)
+  }
+  return [...new Set(out)]
+}
+
 function formatReviewValue(value: unknown): string {
   if (value === undefined || value === null) return ''
   if (typeof value === 'string') return value
@@ -760,12 +841,17 @@ function shouldShowArrayInstanceTitle(
 function ReviewTopLevelArrayInstanceExpandable(props: {
   toggleLabel: string
   instanceNode: WizardDomTreeNode
+  isExpanded?: boolean
+  onExpandedChange?: (expanded: boolean) => void
   onReviewEdit?: (node: WizardDomTreeNode) => void
   children: ReactNode
 }) {
-  const [isExpanded, setIsExpanded] = useState(false)
+  const [localExpanded, setLocalExpanded] = useState(false)
+  const isControlled = props.isExpanded !== undefined && props.onExpandedChange !== undefined
+  const isExpanded = isControlled ? props.isExpanded! : localExpanded
   const onToggle = (_event: ReactMouseEvent, expanded: boolean) => {
-    setIsExpanded(expanded)
+    if (isControlled) props.onExpandedChange!(expanded)
+    else setLocalExpanded(expanded)
   }
   return (
     <ExpandableSection
@@ -906,6 +992,8 @@ function renderReviewArrayInstanceContainer(
     inputGroupMarginLeft: 8,
     arrayInputNesting: ctx.arrayInputNesting + 1,
     onReviewEdit: ctx.onReviewEdit,
+    getTopLevelArrayInstanceExpanded: ctx.getTopLevelArrayInstanceExpanded,
+    onTopLevelArrayInstanceExpandedChange: ctx.onTopLevelArrayInstanceExpandedChange,
   }
   const key = reviewNodeKey(node, instanceIndex)
   const showTitle = isReviewArrayInstanceNode(node) && shouldShowArrayInstanceTitle(node)
@@ -934,6 +1022,8 @@ function renderReviewArrayInstanceContainer(
           <ReviewTopLevelArrayInstanceExpandable
             toggleLabel={showTitle && node.label ? node.label : reviewNodeLabel(node) || `Item ${instanceIndex + 1}`}
             instanceNode={node}
+            isExpanded={ctx.getTopLevelArrayInstanceExpanded?.(key)}
+            onExpandedChange={(expanded) => ctx.onTopLevelArrayInstanceExpandedChange?.(key, expanded)}
             onReviewEdit={ctx.onReviewEdit}
           >
             {paddedBody}
@@ -1015,7 +1105,6 @@ function scrollReviewEditTargetIntoView(domId: string) {
       })
     })
 
-    let timeoutId: ReturnType<typeof setTimeout> | undefined
     let easeOutFallbackId: ReturnType<typeof setTimeout> | undefined
 
     const finishHighlight = () => {
@@ -1038,15 +1127,34 @@ function scrollReviewEditTargetIntoView(domId: string) {
       finishHighlight()
     }
 
-    const abort = () => {
-      if (timeoutId !== undefined) {
-        clearTimeout(timeoutId)
-        timeoutId = undefined
-      }
+    function dismiss() {
+      highlightEl.removeEventListener('focusout', onHighlightFocusOut)
+      window.removeEventListener('blur', onWindowBlur)
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+      highlightEl.addEventListener('transitionend', onTransitionEnd)
+      easeOutFallbackId = setTimeout(finishHighlight, REVIEW_EDIT_HIGHLIGHT_EASE_OUT_MS)
+      highlightEl.classList.add(REVIEW_EDIT_TARGET_HIGHLIGHT_EASE_OUT_CLASS)
+    }
+
+    function onHighlightFocusOut(e: FocusEvent) {
+      const next = e.relatedTarget
+      if (next instanceof Node && highlightEl.contains(next)) return
+      dismiss()
+    }
+
+    function onWindowBlur() {
+      dismiss()
+    }
+    function onVisibilityChange() {
+      if (document.visibilityState === 'hidden') dismiss()
+    }
+
+    function abort() {
       if (easeOutFallbackId !== undefined) {
         clearTimeout(easeOutFallbackId)
         easeOutFallbackId = undefined
       }
+      highlightEl.removeEventListener('focusout', onHighlightFocusOut)
       window.removeEventListener('blur', onWindowBlur)
       document.removeEventListener('visibilitychange', onVisibilityChange)
       highlightEl.removeEventListener('transitionend', onTransitionEnd)
@@ -1058,25 +1166,9 @@ function scrollReviewEditTargetIntoView(domId: string) {
       reviewEditHighlightTeardownByEl.delete(highlightEl)
     }
 
-    const dismiss = () => {
-      if (timeoutId !== undefined) {
-        clearTimeout(timeoutId)
-        timeoutId = undefined
-      }
-      window.removeEventListener('blur', onWindowBlur)
-      document.removeEventListener('visibilitychange', onVisibilityChange)
-      highlightEl.addEventListener('transitionend', onTransitionEnd)
-      easeOutFallbackId = setTimeout(finishHighlight, REVIEW_EDIT_HIGHLIGHT_EASE_OUT_MS)
-      highlightEl.classList.add(REVIEW_EDIT_TARGET_HIGHLIGHT_EASE_OUT_CLASS)
-    }
-
-    const onWindowBlur = () => dismiss()
-    const onVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') dismiss()
-    }
-    timeoutId = setTimeout(dismiss, REVIEW_EDIT_HIGHLIGHT_MS)
     window.addEventListener('blur', onWindowBlur)
     document.addEventListener('visibilitychange', onVisibilityChange)
+    highlightEl.addEventListener('focusout', onHighlightFocusOut)
     reviewEditHighlightTeardownByEl.set(highlightEl, abort)
   }
   requestAnimationFrame(() => {
