@@ -21,7 +21,7 @@ import {
 } from '@patternfly/react-core'
 import { css } from '@patternfly/react-styles'
 import titleStyles from '@patternfly/react-styles/css/components/Title/title'
-import { ExclamationCircleIcon, PenIcon } from '@patternfly/react-icons'
+import { ExclamationCircleIcon, PenIcon, ArrowRightIcon } from '@patternfly/react-icons'
 import {
   createContext,
   Fragment,
@@ -51,6 +51,8 @@ import './ReviewStep.css'
 export interface ReviewStepProps {
   wizardRef?: RefObject<HTMLDivElement | null>
   reviewStorageKey?: string
+  /** When false, the review row control that highlights the field in the YAML editor is hidden. */
+  showYaml?: boolean
 }
 
 type InputOrArrayInputMeta = Extract<InputReviewStepMeta, { type: InputReviewMeta.INPUT | InputReviewMeta.ARRAY_INPUT }>
@@ -80,11 +82,18 @@ type HorizontalTermWidthModifier = NonNullable<ComponentProps<typeof Description
 
 type WizardInputDomNode = Extract<WizardDomTreeNode, { type: InputReviewMeta.INPUT }>
 
+/** Pen / row click: go to step and scroll; arrow: set YAML editor highlight path only. */
+export type ReviewEditIntent = 'navigate' | 'highlight'
+
+export type OnReviewEditHandler = (node: WizardDomTreeNode, intent?: ReviewEditIntent) => void
+
 type ReviewRenderCtx = {
   inputGroupMarginLeft: number
   /** Number of nested ARRAY_INPUT ancestors; top-level array body uses 0. */
   arrayInputNesting: number
-  onReviewEdit?: (node: WizardDomTreeNode) => void
+  onReviewEdit?: OnReviewEditHandler
+  /** When false, hide the arrow control that highlights the field in YAML. */
+  showYaml?: boolean
   /** When set, top-level {@link InputReviewMeta.ARRAY_INSTANCE} expandables use this state (same storage keys as review sections). */
   getTopLevelArrayInstanceExpanded?: (storageKey: string) => boolean
   onTopLevelArrayInstanceExpandedChange?: (storageKey: string, expanded: boolean) => void
@@ -127,7 +136,10 @@ const REVIEW_HORIZONTAL_TERM_WIDTH_WIDE: HorizontalTermWidthModifier = {
 const REVIEW_EDIT_TARGET_HIGHLIGHT_CLASS = 'wizard-review-edit-target-highlight'
 const REVIEW_EDIT_TARGET_HIGHLIGHT_VISIBLE_CLASS = 'wizard-review-edit-target-highlight--visible'
 const REVIEW_EDIT_TARGET_HIGHLIGHT_EASE_OUT_CLASS = 'wizard-review-edit-target-highlight--ease-out'
+/** Fallback if `transitionend` on outline-width does not fire (should exceed ease-out duration). */
 const REVIEW_EDIT_HIGHLIGHT_EASE_OUT_MS = 500
+/** Time to keep the full outline before easing out (unless focus leaves the target sooner). */
+const REVIEW_EDIT_TARGET_HIGHLIGHT_AUTO_DISMISS_MS = 2000
 
 const REVIEW_PEN_HOVER_REVEAL_MS = 200
 
@@ -143,7 +155,7 @@ const reviewEditHighlightTeardownByEl = new WeakMap<Element, () => void>()
 
 // --- ReviewStep ---
 
-export function ReviewStep({ wizardRef, reviewStorageKey = 'default' }: ReviewStepProps) {
+export function ReviewStep({ wizardRef, reviewStorageKey = 'default', showYaml }: ReviewStepProps) {
   const { reviewLabel } = useStringContext()
   const { goToStepById } = useWizardContext()
   const { setHighlightEditorPath } = useHighlightEditorPath()
@@ -239,10 +251,13 @@ export function ReviewStep({ wizardRef, reviewStorageKey = 'default' }: ReviewSt
     })
   }, [sectionKeys, topLevelArrayInstanceKeys])
 
-  const handleReviewEdit = useCallback(
-    (node: WizardDomTreeNode) => {
+  const handleReviewEdit = useCallback<OnReviewEditHandler>(
+    (node, intent = 'navigate') => {
       const yamlPath = getReviewNodeYamlHighlightPath(node)
-      if (yamlPath !== undefined) setHighlightEditorPath(yamlPath)
+      if (intent === 'highlight') {
+        if (yamlPath !== undefined) setHighlightEditorPath(yamlPath)
+        return
+      }
       const stepId = getReviewNodeStepId(node)
       const domId = getReviewScrollTargetDomId(node)
       if (stepId) goToStepById(stepId)
@@ -279,6 +294,7 @@ export function ReviewStep({ wizardRef, reviewStorageKey = 'default' }: ReviewSt
               <ReviewSectionBody
                 node={child}
                 onReviewEdit={handleReviewEdit}
+                showYaml={showYaml}
                 getTopLevelArrayInstanceExpanded={(k) => sectionExpanded[k] ?? false}
                 onTopLevelArrayInstanceExpandedChange={onSectionExpandedChange}
               />
@@ -420,13 +436,25 @@ function ReviewPenHoverZone({
   style,
   children,
   ariaLabel,
+  arrowAriaLabel = 'Highlight in YAML',
   onPenClick,
+  onPenIconClick,
+  onArrowClick,
+  descriptionListTerm,
 }: {
   as?: 'div' | 'span'
   style?: CSSProperties
   children: ReactNode
   ariaLabel: string
+  /** Shown on the arrow control when {@link onArrowClick} is set. */
+  arrowAriaLabel?: string
+  /** Row / term / value click (not the pen or arrow buttons). */
   onPenClick: (e: ReactMouseEvent<HTMLElement>) => void
+  /** Pen icon button; defaults to {@link onPenClick} when omitted. */
+  onPenIconClick?: (e: ReactMouseEvent<HTMLElement>) => void
+  onArrowClick?: (e: ReactMouseEvent<HTMLElement>) => void
+  /** When set, render term + description as one grid row so the hover zone includes the term. */
+  descriptionListTerm?: ReactNode
 }) {
   const cancelParentPen = useContext(ReviewPenParentCancelContext)
   const [penVisible, setPenVisible] = useState(false)
@@ -459,7 +487,10 @@ function ReviewPenHoverZone({
 
   const Comp = as ?? 'div'
   const penRevealedClass = penVisible ? ' wizard-review-edit-btn--revealed' : ''
-  const zoneClassName = 'wizard-review-pen-hover-zone wizard-review-inline-value'
+  const zoneClassName =
+    descriptionListTerm != null
+      ? 'wizard-review-pen-hover-zone wizard-review-pen-hover-zone--dl-group-row'
+      : 'wizard-review-pen-hover-zone wizard-review-inline-value'
 
   const onZoneClick = useCallback(
     (e: ReactMouseEvent<HTMLElement>) => {
@@ -471,28 +502,88 @@ function ReviewPenHoverZone({
     [onPenClick]
   )
 
-  return (
-    <ReviewPenParentCancelContext.Provider value={cancelMe}>
-      <Comp className={zoneClassName} style={style} onMouseEnter={onEnter} onMouseLeave={onLeave} onClick={onZoneClick}>
-        {children}
+  const onZoneKeyDown = useCallback(
+    (e: ReactKeyboardEvent<HTMLElement>) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return
+      const t = e.target as HTMLElement | null
+      if (t?.closest?.('.wizard-review-edit-btn')) return
+      e.preventDefault()
+      e.stopPropagation()
+      onPenClick(e as unknown as ReactMouseEvent<HTMLElement>)
+    },
+    [onPenClick]
+  )
+
+  const controls = (
+    <>
+      <Button
+        type="button"
+        variant="plain"
+        className={`wizard-review-edit-btn${penRevealedClass}`}
+        aria-label={ariaLabel}
+        onClick={(e) => {
+          e.stopPropagation()
+          const handler = onPenIconClick ?? onPenClick
+          handler(e)
+        }}
+      >
+        <PenIcon />
+      </Button>
+      {onArrowClick ? (
         <Button
           type="button"
           variant="plain"
           className={`wizard-review-edit-btn${penRevealedClass}`}
-          aria-label={ariaLabel}
+          aria-label={arrowAriaLabel}
           onClick={(e) => {
             e.stopPropagation()
-            onPenClick(e)
+            onArrowClick(e)
           }}
         >
-          <PenIcon />
+          <ArrowRightIcon />
         </Button>
-      </Comp>
+      ) : null}
+    </>
+  )
+
+  return (
+    <ReviewPenParentCancelContext.Provider value={cancelMe}>
+      {descriptionListTerm != null ? (
+        <div
+          role="button"
+          tabIndex={0}
+          className={zoneClassName}
+          style={style}
+          onMouseEnter={onEnter}
+          onMouseLeave={onLeave}
+          onClick={onZoneClick}
+          onKeyDown={onZoneKeyDown}
+        >
+          <DescriptionListTerm>{descriptionListTerm}</DescriptionListTerm>
+          <DescriptionListDescription>
+            <span className="wizard-review-inline-value">
+              {children}
+              {controls}
+            </span>
+          </DescriptionListDescription>
+        </div>
+      ) : (
+        <Comp
+          className={zoneClassName}
+          style={style}
+          onMouseEnter={onEnter}
+          onMouseLeave={onLeave}
+          onClick={onZoneClick}
+        >
+          {children}
+          {controls}
+        </Comp>
+      )}
     </ReviewPenParentCancelContext.Provider>
   )
 }
 
-/** Layout wrapper only; edit pen is shown only inside {@link DescriptionListDescription} rows. */
+/** Layout wrapper only; edit pen is shown on review description-list rows (term + value). */
 function ReviewDomTreeNodeShell(props: { children: ReactNode }) {
   return <>{props.children}</>
 }
@@ -501,7 +592,7 @@ function ReviewCollapsedValueBadge(props: {
   content: ReactNode
   error?: string
   inputNode?: WizardDomTreeNode
-  onReviewEdit?: (node: WizardDomTreeNode) => void
+  onReviewEdit?: OnReviewEditHandler
 }) {
   const { content, error, inputNode, onReviewEdit } = props
   const editable = onReviewEdit != null && inputNode != null
@@ -544,7 +635,8 @@ function ReviewCollapsedValueBadge(props: {
 /** Renders review content for one wizard section from a {@link WizardDomTreeNode} (step root or wrapper). */
 export function ReviewSectionBody(props: {
   node: WizardDomTreeNode
-  onReviewEdit?: (node: WizardDomTreeNode) => void
+  onReviewEdit?: OnReviewEditHandler
+  showYaml?: boolean
   getTopLevelArrayInstanceExpanded?: (storageKey: string) => boolean
   onTopLevelArrayInstanceExpandedChange?: (storageKey: string, expanded: boolean) => void
 }) {
@@ -557,6 +649,7 @@ export function ReviewSectionBody(props: {
           inputGroupMarginLeft: 32,
           arrayInputNesting: 0,
           onReviewEdit: props.onReviewEdit,
+          showYaml: props.showYaml,
           getTopLevelArrayInstanceExpanded: props.getTopLevelArrayInstanceExpanded,
           onTopLevelArrayInstanceExpandedChange: props.onTopLevelArrayInstanceExpandedChange,
         },
@@ -570,14 +663,14 @@ export function ReviewSectionBody(props: {
 export function ReviewCollapsedContent(props: {
   label: string
   node: WizardDomTreeNode
-  onReviewEdit?: (node: WizardDomTreeNode) => void
+  onReviewEdit?: OnReviewEditHandler
   titleHeadingLevel?: ComponentProps<typeof Title>['headingLevel']
 }) {
   const { titleHeadingLevel = 'h2' } = props
   const bodyNodes = getReviewSectionBodyNodes(props.node)
   const badges = renderCollapsedBadgesFromNodes(bodyNodes, props.onReviewEdit)
   return (
-    <Split hasGutter>
+    <Split hasGutter className="wizard-review-collapsed-split">
       <SplitItem>
         <Title
           className="wizard-review-collapsed-title"
@@ -591,7 +684,12 @@ export function ReviewCollapsedContent(props: {
       </SplitItem>
       <SplitItem isFilled>
         <div className="wizard-review-toggle-entries">
-          <Flex spaceItems={{ default: 'spaceItemsSm' }} flexWrap={{ default: 'wrap' }}>
+          <Flex
+            alignItems={{ default: 'alignItemsCenter' }}
+            flexWrap={{ default: 'wrap' }}
+            justifyContent={{ default: 'justifyContentCenter' }}
+            spaceItems={{ default: 'spaceItemsSm' }}
+          >
             {badges}
           </Flex>
         </div>
@@ -600,10 +698,7 @@ export function ReviewCollapsedContent(props: {
   )
 }
 
-function renderCollapsedBadgesFromNodes(
-  nodes: WizardDomTreeNode[],
-  onReviewEdit?: (node: WizardDomTreeNode) => void
-): ReactNode[] {
+function renderCollapsedBadgesFromNodes(nodes: WizardDomTreeNode[], onReviewEdit?: OnReviewEditHandler): ReactNode[] {
   const out: ReactNode[] = []
   for (let i = 0; i < nodes.length; i++) {
     const child = nodes[i]!
@@ -843,7 +938,7 @@ function ReviewTopLevelArrayInstanceExpandable(props: {
   instanceNode: WizardDomTreeNode
   isExpanded?: boolean
   onExpandedChange?: (expanded: boolean) => void
-  onReviewEdit?: (node: WizardDomTreeNode) => void
+  onReviewEdit?: OnReviewEditHandler
   children: ReactNode
 }) {
   const [localExpanded, setLocalExpanded] = useState(false)
@@ -860,7 +955,9 @@ function ReviewTopLevelArrayInstanceExpandable(props: {
       onToggle={onToggle}
       toggleContent={
         isExpanded ? (
-          <span className={css(titleStyles.title, titleStyles.modifiers.h4)}>{props.toggleLabel}</span>
+          <span className={css(titleStyles.title, titleStyles.modifiers.h4, 'wizard-review-expanded-title')}>
+            {props.toggleLabel}
+          </span>
         ) : (
           <div className="wizard-review-toggle-row">
             <ReviewCollapsedContent
@@ -893,18 +990,27 @@ function renderReviewInputRows(nodes: readonly WizardInputDomNode[], ctx: Review
         ) : (
           renderReviewInputDescriptionContent(inputNode)
         )
+        const yamlVisible = ctx.showYaml !== false
         return (
           <DescriptionListGroup key={inputNode.path} style={{ marginLeft: ctx.inputGroupMarginLeft }}>
-            <DescriptionListTerm>{termText}</DescriptionListTerm>
-            <DescriptionListDescription>
-              {onReviewEdit != null ? (
-                <ReviewPenHoverZone as="span" ariaLabel="Edit" onPenClick={() => onReviewEdit(inputNode)}>
-                  {valueContent}
-                </ReviewPenHoverZone>
-              ) : (
-                <span className="wizard-review-inline-value">{valueContent}</span>
-              )}
-            </DescriptionListDescription>
+            {onReviewEdit != null ? (
+              <ReviewPenHoverZone
+                ariaLabel="Edit"
+                descriptionListTerm={termText}
+                onPenClick={() => onReviewEdit(inputNode, yamlVisible ? 'highlight' : 'navigate')}
+                onPenIconClick={() => onReviewEdit(inputNode, 'navigate')}
+                onArrowClick={yamlVisible ? () => onReviewEdit(inputNode, 'highlight') : undefined}
+              >
+                {valueContent}
+              </ReviewPenHoverZone>
+            ) : (
+              <>
+                <DescriptionListTerm>{termText}</DescriptionListTerm>
+                <DescriptionListDescription>
+                  <span className="wizard-review-inline-value">{valueContent}</span>
+                </DescriptionListDescription>
+              </>
+            )}
           </DescriptionListGroup>
         )
       })}
@@ -992,6 +1098,7 @@ function renderReviewArrayInstanceContainer(
     inputGroupMarginLeft: 8,
     arrayInputNesting: ctx.arrayInputNesting + 1,
     onReviewEdit: ctx.onReviewEdit,
+    showYaml: ctx.showYaml,
     getTopLevelArrayInstanceExpanded: ctx.getTopLevelArrayInstanceExpanded,
     onTopLevelArrayInstanceExpandedChange: ctx.onTopLevelArrayInstanceExpandedChange,
   }
@@ -1102,12 +1209,21 @@ function scrollReviewEditTargetIntoView(domId: string) {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         highlightEl.classList.add(REVIEW_EDIT_TARGET_HIGHLIGHT_VISIBLE_CLASS)
+        autoDismissId = setTimeout(() => {
+          autoDismissId = undefined
+          dismiss()
+        }, REVIEW_EDIT_TARGET_HIGHLIGHT_AUTO_DISMISS_MS)
       })
     })
 
     let easeOutFallbackId: ReturnType<typeof setTimeout> | undefined
+    let autoDismissId: ReturnType<typeof setTimeout> | undefined
 
     const finishHighlight = () => {
+      if (autoDismissId !== undefined) {
+        clearTimeout(autoDismissId)
+        autoDismissId = undefined
+      }
       if (easeOutFallbackId !== undefined) {
         clearTimeout(easeOutFallbackId)
         easeOutFallbackId = undefined
@@ -1128,6 +1244,10 @@ function scrollReviewEditTargetIntoView(domId: string) {
     }
 
     function dismiss() {
+      if (autoDismissId !== undefined) {
+        clearTimeout(autoDismissId)
+        autoDismissId = undefined
+      }
       highlightEl.removeEventListener('focusout', onHighlightFocusOut)
       window.removeEventListener('blur', onWindowBlur)
       document.removeEventListener('visibilitychange', onVisibilityChange)
@@ -1150,6 +1270,10 @@ function scrollReviewEditTargetIntoView(domId: string) {
     }
 
     function abort() {
+      if (autoDismissId !== undefined) {
+        clearTimeout(autoDismissId)
+        autoDismissId = undefined
+      }
       if (easeOutFallbackId !== undefined) {
         clearTimeout(easeOutFallbackId)
         easeOutFallbackId = undefined

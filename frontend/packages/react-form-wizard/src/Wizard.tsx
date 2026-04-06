@@ -109,6 +109,7 @@ export function Wizard(props: WizardProps & { showHeader?: boolean; showYaml?: b
                                     <WizardInternal
                                       title={props.title}
                                       reviewStorageKey={props.reviewStorageKey}
+                                      showYaml={props.showYaml}
                                       onSubmit={props.onSubmit}
                                       onCancel={props.onCancel}
                                       hasButtons={props.hasButtons}
@@ -154,6 +155,7 @@ type WizardFooterProps = {
 type WizardInternalProps = Omit<WizardFooterProps, 'steps'> & {
   title: string
   reviewStorageKey?: string
+  showYaml?: boolean
   children: ReactNode
   onCancel: WizardCancel
   hasButtons?: boolean
@@ -173,6 +175,7 @@ function WizardInternal({
   children,
   title,
   reviewStorageKey,
+  showYaml,
   onSubmit,
   onCancel,
   submitButtonText,
@@ -191,9 +194,9 @@ function WizardInternal({
     () => ({
       id: 'review-step',
       name: reviewLabel,
-      component: <ReviewStep wizardRef={wizardRef} reviewStorageKey={resolvedReviewStorageKey} />,
+      component: <ReviewStep wizardRef={wizardRef} reviewStorageKey={resolvedReviewStorageKey} showYaml={showYaml} />,
     }),
-    [reviewLabel, resolvedReviewStorageKey]
+    [reviewLabel, resolvedReviewStorageKey, showYaml]
   )
 
   const showValidation = useShowValidation()

@@ -9,7 +9,16 @@
   .pf-v6-c-expandable-section__toggle
   .pf-v6-c-button:is(:hover, :focus)
   .wizard-review-collapsed-title {
-  color: var(--pf-t--global--text--color--regular);
+  color: var(--pf-t--global--text--color--regular) !important;
+}
+
+/* Expanded toggle title (h4) is also inside the link-styled button; match regular text color. */
+.wizard-review-expandable-section .pf-v6-c-expandable-section__toggle .wizard-review-expanded-title,
+.wizard-review-expandable-section
+  .pf-v6-c-expandable-section__toggle
+  .pf-v6-c-button:is(:hover, :focus)
+  .wizard-review-expanded-title {
+  color: var(--pf-t--global--text--color--regular) !important;
 }
 
 /* ExpandableSection wraps toggleContent in a link Button (inline-flex); stretch it to the section width */
@@ -32,6 +41,11 @@
   min-width: 0;
   flex-wrap: nowrap;
   gap: var(--pf-t--global--spacer--gutter--default);
+}
+
+.wizard-review-collapsed-split {
+  align-items: center;
+  width: 100%;
 }
 
 .wizard-review-toggle-entries {
@@ -90,6 +104,15 @@
   cursor: pointer;
 }
 
+/* Span both term/description columns inside PatternFly horizontal DescriptionListGroup (subgrid). */
+.wizard-review-pen-hover-zone--dl-group-row {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  grid-template-rows: auto;
+  align-items: baseline;
+}
+
 .wizard-review-inline-value {
   display: inline-flex;
   align-items: center;
@@ -110,7 +133,7 @@
   pointer-events: auto;
 }
 
-/* Scroll-to-edit target: outline eases in, eases out on focus leaving the target or window/tab blur. */
+/* Scroll-to-edit target: outline eases in; eases out after 2s (REVIEW_EDIT_TARGET_HIGHLIGHT_AUTO_DISMISS_MS) or when focus leaves / window blurs. */
 .wizard-review-edit-target-highlight {
   outline-style: solid;
   outline-color: #eb8c3e;
