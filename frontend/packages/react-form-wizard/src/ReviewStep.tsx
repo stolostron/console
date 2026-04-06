@@ -286,7 +286,12 @@ export function ReviewStep({ wizardRef, reviewStorageKey = 'default', showYaml }
               key={key}
               label={reviewNodeLabel(child)}
               collapsedContent={
-                <ReviewCollapsedContent label={reviewNodeLabel(child)} node={child} onReviewEdit={handleReviewEdit} />
+                <ReviewCollapsedContent
+                  label={reviewNodeLabel(child)}
+                  node={child}
+                  onReviewEdit={handleReviewEdit}
+                  showYaml={showYaml}
+                />
               }
               isExpanded={sectionExpanded[key] ?? true}
               onExpandedChange={(expanded) => onSectionExpandedChange(key, expanded)}
@@ -593,11 +598,15 @@ function ReviewCollapsedValueBadge(props: {
   error?: string
   inputNode?: WizardDomTreeNode
   onReviewEdit?: OnReviewEditHandler
+  showYaml?: boolean
 }) {
-  const { content, error, inputNode, onReviewEdit } = props
+  const { content, error, inputNode, onReviewEdit, showYaml } = props
   const editable = onReviewEdit != null && inputNode != null
+  const yamlVisible = showYaml !== false
   const activateEdit = () => {
-    if (inputNode != null && onReviewEdit != null) onReviewEdit(inputNode)
+    if (inputNode != null && onReviewEdit != null) {
+      onReviewEdit(inputNode, yamlVisible ? 'highlight' : 'navigate')
+    }
   }
   const badgeProps = editable
     ? {
@@ -664,11 +673,12 @@ export function ReviewCollapsedContent(props: {
   label: string
   node: WizardDomTreeNode
   onReviewEdit?: OnReviewEditHandler
+  showYaml?: boolean
   titleHeadingLevel?: ComponentProps<typeof Title>['headingLevel']
 }) {
   const { titleHeadingLevel = 'h2' } = props
   const bodyNodes = getReviewSectionBodyNodes(props.node)
-  const badges = renderCollapsedBadgesFromNodes(bodyNodes, props.onReviewEdit)
+  const badges = renderCollapsedBadgesFromNodes(bodyNodes, props.onReviewEdit, props.showYaml)
   return (
     <Split hasGutter className="wizard-review-collapsed-split">
       <SplitItem>
@@ -698,7 +708,11 @@ export function ReviewCollapsedContent(props: {
   )
 }
 
-function renderCollapsedBadgesFromNodes(nodes: WizardDomTreeNode[], onReviewEdit?: OnReviewEditHandler): ReactNode[] {
+function renderCollapsedBadgesFromNodes(
+  nodes: WizardDomTreeNode[],
+  onReviewEdit?: OnReviewEditHandler,
+  showYaml?: boolean
+): ReactNode[] {
   const out: ReactNode[] = []
   for (let i = 0; i < nodes.length; i++) {
     const child = nodes[i]!
@@ -713,6 +727,7 @@ function renderCollapsedBadgesFromNodes(nodes: WizardDomTreeNode[], onReviewEdit
           error={child.error}
           inputNode={child}
           onReviewEdit={onReviewEdit}
+          showYaml={showYaml}
         />
       )
       continue
@@ -732,17 +747,18 @@ function renderCollapsedBadgesFromNodes(nodes: WizardDomTreeNode[], onReviewEdit
             error={err}
             inputNode={inst}
             onReviewEdit={onReviewEdit}
+            showYaml={showYaml}
           />
         )
       })
       continue
     }
     if (isReviewStepNode(child) || !('type' in child)) {
-      out.push(...renderCollapsedBadgesFromNodes(child.children ?? [], onReviewEdit))
+      out.push(...renderCollapsedBadgesFromNodes(child.children ?? [], onReviewEdit, showYaml))
       continue
     }
     if (isReviewArrayInstanceNode(child)) {
-      out.push(...renderCollapsedBadgesFromNodes(child.children ?? [], onReviewEdit))
+      out.push(...renderCollapsedBadgesFromNodes(child.children ?? [], onReviewEdit, showYaml))
       continue
     }
   }
@@ -939,6 +955,7 @@ function ReviewTopLevelArrayInstanceExpandable(props: {
   isExpanded?: boolean
   onExpandedChange?: (expanded: boolean) => void
   onReviewEdit?: OnReviewEditHandler
+  showYaml?: boolean
   children: ReactNode
 }) {
   const [localExpanded, setLocalExpanded] = useState(false)
@@ -964,6 +981,7 @@ function ReviewTopLevelArrayInstanceExpandable(props: {
               label={props.toggleLabel}
               node={props.instanceNode}
               onReviewEdit={props.onReviewEdit}
+              showYaml={props.showYaml}
               titleHeadingLevel="h4"
             />
           </div>
@@ -1132,6 +1150,7 @@ function renderReviewArrayInstanceContainer(
             isExpanded={ctx.getTopLevelArrayInstanceExpanded?.(key)}
             onExpandedChange={(expanded) => ctx.onTopLevelArrayInstanceExpandedChange?.(key, expanded)}
             onReviewEdit={ctx.onReviewEdit}
+            showYaml={ctx.showYaml}
           >
             {paddedBody}
           </ReviewTopLevelArrayInstanceExpandable>

@@ -137,6 +137,7 @@
 .wizard-review-edit-target-highlight {
   outline-style: solid;
   outline-color: #eb8c3e;
+  outline-offset: 10px;
   outline-width: 0;
 }
 
