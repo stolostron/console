@@ -84,6 +84,7 @@ export default function RelatedResourceDetailsTab() {
     (kind: string, items: SearchRelatedResult[]) => {
       return (
         <AcmTable
+          id={`search-result-${kind.toLowerCase()}`}
           items={items}
           emptyState={undefined} // table only shown for kinds with related resources
           columns={_.get(
@@ -92,6 +93,7 @@ export default function RelatedResourceDetailsTab() {
             searchDefinitions['genericresource'].columns
           )}
           keyFn={(item: any) => item._uid.toString()}
+          showColumnManagement
         />
       )
     },

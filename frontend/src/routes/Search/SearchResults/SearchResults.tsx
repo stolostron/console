@@ -144,6 +144,7 @@ function RenderAccordionItem(
 
       return (
         <AcmTable
+          id={`search-result-${kind.toLowerCase()}`}
           items={items}
           emptyState={undefined} // table only shown for kinds with results
           columns={_.get(
@@ -153,6 +154,7 @@ function RenderAccordionItem(
           )}
           keyFn={(item: any) => item._uid.toString()}
           rowActionResolver={rowActions}
+          showColumnManagement
         />
       )
     },
