@@ -1,15 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
-  DescriptionListDescription,
-  DescriptionListGroup,
-  DescriptionListTerm,
   Dropdown,
   DropdownItem,
   DropdownList,
   EmptyState,
   EmptyStateBody,
-  List,
-  ListItem,
   MenuToggle,
   MenuToggleCheckbox,
   MenuToggleElement,
@@ -19,8 +14,6 @@ import {
 } from '@patternfly/react-core'
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
 import { Fragment, ReactNode, useCallback, useMemo, useState } from 'react'
-import { Indented } from '../components/Indented'
-import { DisplayMode } from '../contexts/DisplayModeContext'
 import { useStringContext } from '../contexts/StringContext'
 import { InputCommonProps, useInput } from './Input'
 import { WizFormGroup } from './WizFormGroup'
@@ -42,7 +35,7 @@ export type WizTableSelectProps<T> = InputCommonProps<string> & {
 }
 
 export function WizTableSelect<T = any>(props: WizTableSelectProps<T>) {
-  const { displayMode: mode, value, setValue, hidden, id } = useInput(props)
+  const { value, setValue, hidden, id } = useInput(props)
 
   const [page, setPage] = useState(1)
   const onSetPage = useCallback<OnSetPage>((_: unknown, page) => setPage(page), [])
@@ -53,7 +46,7 @@ export function WizTableSelect<T = any>(props: WizTableSelectProps<T>) {
 
   let values = value as unknown[]
   if (!Array.isArray(values)) values = []
-  let selectedItems: T[] = values
+  let selectedItems: T[] = values as T[]
   if (props.valueMatchesItem)
     selectedItems = values
       .map((value) =>
@@ -97,46 +90,6 @@ export function WizTableSelect<T = any>(props: WizTableSelectProps<T>) {
   const selectNone = useCallback(() => setValue([]), [setValue])
 
   if (hidden) return <Fragment />
-
-  if (mode === DisplayMode.Details) {
-    if (!selectedItems.length) return <Fragment />
-    if (!props.label) {
-      if (values.length > 5) {
-        return <div id={id}>{values.length} selected</div>
-      }
-      return (
-        <List isPlain={props.summaryList !== true}>
-          {values.map((value, index) => (
-            <ListItem key={index} style={{ paddingBottom: 4 }}>
-              {value}
-            </ListItem>
-          ))}
-        </List>
-      )
-    }
-    if (values.length > 5) {
-      return (
-        <DescriptionListGroup>
-          <DescriptionListTerm>{props.label}</DescriptionListTerm>
-          <DescriptionListDescription id={id}>{values.length} selected</DescriptionListDescription>
-        </DescriptionListGroup>
-      )
-    }
-    return (
-      <Fragment>
-        <div className="pf-v6-c-description-list__term">{props.label}</div>
-        <Indented paddingBottom={4}>
-          <List style={{ marginTop: -4 }} isPlain={props.summaryList !== true}>
-            {values.map((value, index) => (
-              <ListItem key={index} style={{ paddingBottom: 4 }}>
-                {value}
-              </ListItem>
-            ))}
-          </List>
-        </Indented>
-      </Fragment>
-    )
-  }
 
   if (props.items.length === 0) {
     return (

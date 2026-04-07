@@ -4,6 +4,7 @@ import {
   EditorValidationStatus,
   useData,
   useEditorValidationStatus,
+  useHighlightEditorPath,
   useItem,
 } from '@patternfly-labs/react-form-wizard'
 import { IResource, PolicySetKind } from '../../../resources'
@@ -27,6 +28,7 @@ export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
   const { update } = useData() // Wizard framework sets this context
   const { setEditorValidationStatus } = useEditorValidationStatus()
+  const { highlightEditorPath } = useHighlightEditorPath()
   const { t } = useTranslation()
   return (
     <SyncEditor
@@ -35,6 +37,7 @@ export function WizardSyncEditor() {
       resources={resources}
       schema={schema}
       filters={['*.metadata.managedFields']}
+      highlightEditorPath={highlightEditorPath}
       immutables={['PlacementBinding.0.*']}
       onEditorChange={(changes: { resources: any[] }): void => {
         update(changes?.resources)

@@ -8,6 +8,7 @@ import { useSetStepHasInputs } from './contexts/StepHasInputsProvider'
 import { useStepShowValidation } from './contexts/StepShowValidationProvider'
 import { useSetStepHasValidationError } from './contexts/StepValidationProvider'
 import { useHasValidationError, ValidationProvider } from './contexts/ValidationProvider'
+import { CurrentStepIdContext, InputReviewMeta, useStepInputsRegistry } from './contexts/StepInputsContext'
 import { HiddenFn, useInputHidden } from './inputs/Input'
 
 export interface StepProps {
@@ -19,15 +20,29 @@ export interface StepProps {
 }
 
 export function Step(props: StepProps) {
+  const { id, label } = props
+  const stepInputsRegistry = useStepInputsRegistry()
+  useLayoutEffect(() => {
+    if (!stepInputsRegistry) return
+    stepInputsRegistry.register(id, {
+      id,
+      label,
+      type: InputReviewMeta.STEP,
+    })
+    return () => stepInputsRegistry.unregister(id)
+  }, [stepInputsRegistry, id, label])
+
   return (
-    <div id={props.id}>
-      <HasInputsProvider key={props.id}>
-        <ShowValidationProvider>
-          <ValidationProvider>
-            <StepInternal {...props}>{props.children}</StepInternal>
-          </ValidationProvider>
-        </ShowValidationProvider>
-      </HasInputsProvider>
+    <div id={id}>
+      <CurrentStepIdContext.Provider value={id}>
+        <HasInputsProvider key={id}>
+          <ShowValidationProvider>
+            <ValidationProvider>
+              <StepInternal {...props}>{props.children}</StepInternal>
+            </ValidationProvider>
+          </ShowValidationProvider>
+        </HasInputsProvider>
+      </CurrentStepIdContext.Provider>
     </div>
   )
 }

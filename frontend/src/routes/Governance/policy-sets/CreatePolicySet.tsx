@@ -1,5 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { EditorValidationStatus, useData, useEditorValidationStatus, useItem } from '@patternfly-labs/react-form-wizard'
+import {
+  EditorValidationStatus,
+  useData,
+  useEditorValidationStatus,
+  useHighlightEditorPath,
+  useItem,
+} from '@patternfly-labs/react-form-wizard'
 import { PolicySetWizard } from '../../../wizards/Governance/PolicySet/PolicySetWizard'
 import { AcmToastContext } from '../../../ui-components'
 import { useContext, useMemo } from 'react'
@@ -18,6 +24,7 @@ export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
   const { update } = useData() // Wizard framework sets this context
   const { setEditorValidationStatus } = useEditorValidationStatus()
+  const { highlightEditorPath } = useHighlightEditorPath()
   const { t } = useTranslation()
   return (
     <SyncEditor
@@ -25,6 +32,7 @@ export function WizardSyncEditor() {
       variant="toolbar"
       resources={resources}
       schema={schema}
+      highlightEditorPath={highlightEditorPath}
       onEditorChange={(changes: { resources: any[] }): void => {
         update(changes?.resources)
       }}
