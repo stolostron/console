@@ -40,6 +40,11 @@
       "enabled": false
     },
     {
+      "description": "Disable updates for .tool-versions (asdf local dev tooling)",
+      "matchManagers": ["asdf"],
+      "enabled": false
+    },
+    {
       "description": "Major/minor versions for dynamic plugin SDK must obey support matrix",
       "matchPackageNames": [
         "@openshift-console/dynamic-plugin-sdk",
