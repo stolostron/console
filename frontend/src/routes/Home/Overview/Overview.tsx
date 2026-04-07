@@ -56,7 +56,7 @@ export default function Overview() {
               activeKey={activeTabKey}
               onSelect={(_, tabIndex) => setActiveTabKey(tabIndex)}
               usePageInsets
-              aria-label="Tabs in the default example"
+              aria-label={t('Overview page navigation tabs')}
               role="region"
               style={{
                 // match page section padding inset
@@ -69,7 +69,6 @@ export default function Overview() {
                   key={`tab-item-${tab.eventKey}`}
                   eventKey={tab.eventKey}
                   title={<TabTitleText>{tab.title}</TabTitleText>}
-                  aria-label={`tab-item-${tab.title}`}
                 />
               ))}
             </Tabs>
