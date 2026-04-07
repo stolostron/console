@@ -689,7 +689,7 @@ export default function ApplicationsOverview() {
             .join(','),
         id: 'labels',
         order: 5,
-        isDefault: true,
+        isDefault: false,
         isFirstVisitChecked: true,
       },
       {
