@@ -58,6 +58,7 @@ export function PolicyWizard(props: {
 }) {
   return (
     <WizardPage
+      id="policy-wizard"
       title={props.title}
       description="A policy generates reports and validates cluster compliance based on specified security standards, categories, and controls."
       yamlEditor={props.yamlEditor}

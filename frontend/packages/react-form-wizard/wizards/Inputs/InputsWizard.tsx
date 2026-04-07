@@ -26,7 +26,7 @@ import { onCancel, onSubmit } from '../common/utils'
 export function InputsWizard() {
   const history = useHistory()
   return (
-    <WizardPage title="Inputs" onSubmit={onSubmit} onCancel={() => onCancel(history)}>
+    <WizardPage id="inputs-wizard" title="Inputs" onSubmit={onSubmit} onCancel={() => onCancel(history)}>
       <Step label="Text Input" id="text-input">
         <Section label="Text Input">
           <WizTextInput label="Text input" path="textInput.text" />

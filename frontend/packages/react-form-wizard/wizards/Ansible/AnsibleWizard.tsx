@@ -22,6 +22,7 @@ export function AnsibleWizard(props: {
 }) {
   return (
     <WizardPage
+      id="ansible-wizard"
       title="Create Ansible automation"
       breadcrumb={props.breadcrumb}
       onSubmit={props.onSubmit}

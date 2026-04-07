@@ -16,6 +16,7 @@ import { PlacementRuleKind, PlacementRuleType } from '../common/resources/IPlace
 export function AppWizard(props: { onSubmit: WizardSubmit; onCancel: WizardCancel }) {
   return (
     <WizardPage
+      id="app-wizard"
       title="Create application"
       defaultData={[
         { apiVersion: 'v1', kind: 'Namespace', metadata: { name: '' } },

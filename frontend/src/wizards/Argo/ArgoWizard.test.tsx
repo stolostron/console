@@ -150,8 +150,8 @@ describe('ArgoWizard tests', () => {
     //=====================================================================
     //                      generators page
     //=====================================================================
-    // Click on the generator to expand it
-    await clickByText('Cluster Decision Resource Generator')
+    // Expand generator row; label can appear twice when expanded — target the header (first match).
+    await clickByText('Cluster Decision Resource Generator', 0)
     await clickByRole('combobox', { name: 'Select the requeue time' })
     await clickByRole('option', { name: /120/i })
     await clickByText('Next')
@@ -262,8 +262,8 @@ describe('ArgoWizard tests', () => {
     //=====================================================================
     //                      generators page
     //=====================================================================
-    // Click on the generator to expand it
-    await clickByText('Cluster Decision Resource Generator')
+    // Expand generator row; label can appear twice when expanded — target the header (first match).
+    await clickByText('Cluster Decision Resource Generator', 0)
     await clickByRole('combobox', { name: 'Select the requeue time' })
     await clickByRole('option', { name: /120/i })
     await clickByText('Next')
@@ -478,8 +478,8 @@ describe('ArgoWizard tests', () => {
     //=====================================================================
     //                      generators page
     //=====================================================================
-    // Click on the generator to expand it
-    await clickByText('Cluster Decision Resource Generator')
+    // Expand generator row; label can appear twice when expanded — target the header (first match).
+    await clickByText('Cluster Decision Resource Generator', 0)
     await clickByRole('combobox', { name: 'Select the requeue time' })
     await clickByRole('option', { name: /120/i })
     await clickByText('Next')

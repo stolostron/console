@@ -211,6 +211,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
 
   return (
     <WizardPage
+      id="application-set-wizard"
       breadcrumb={props.breadcrumb}
       title={props.resources ? 'Edit application set' : 'Create application set'}
       yamlEditor={props.yamlEditor}

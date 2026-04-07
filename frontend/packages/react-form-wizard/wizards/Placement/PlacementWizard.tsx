@@ -23,6 +23,7 @@ export function PlacementWizard(props: {
 }) {
   return (
     <WizardPage
+      id="placement-wizard"
       title={props.title}
       onSubmit={props.onSubmit}
       onCancel={props.onCancel}

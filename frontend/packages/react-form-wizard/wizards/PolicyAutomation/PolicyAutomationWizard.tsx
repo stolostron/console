@@ -97,6 +97,7 @@ export function PolicyAutomationWizard(props: {
 
   return (
     <WizardPage
+      id="policy-automation-wizard"
       title={props.title}
       breadcrumb={props.breadcrumb}
       onSubmit={props.onSubmit}

@@ -577,6 +577,7 @@ export default function ImportClusterPage() {
       }
     >
       <Wizard
+        id="import-cluster-wizard"
         wizardStrings={translatedWizardStrings}
         title={t('page.header.import-cluster')}
         showHeader={false}

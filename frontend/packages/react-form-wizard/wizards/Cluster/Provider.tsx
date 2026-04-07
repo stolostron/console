@@ -170,6 +170,7 @@ export function CreateCluster() {
   const history = useHistory()
   return (
     <WizardPage
+      id="cluster-provider-wizard"
       title="Create cluster"
       breadcrumb={[
         { label: 'Provider', to: RouteE.Provider },

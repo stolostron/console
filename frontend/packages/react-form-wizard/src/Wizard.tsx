@@ -60,7 +60,12 @@ import { Step } from './Step'
 export interface WizardProps {
   wizardStrings?: WizardStrings
   title: string
-  /** Scopes review-step expandable persistence in localStorage; defaults to a slug derived from {@link title}. */
+  /**
+   * Stable scope for review-step expandable persistence in localStorage when {@link reviewStorageKey} is omitted.
+   * Should not be localized (e.g. route or product id), unlike {@link title}.
+   */
+  id?: string
+  /** Scopes review-step expandable persistence in localStorage; defaults to {@link defaultReviewStorageKeyFromId} when {@link id} is set, else `wizard-default`. */
   reviewStorageKey?: string
   description?: string
   children: ReactNode
@@ -107,7 +112,7 @@ export function Wizard(props: WizardProps & { showHeader?: boolean; showYaml?: b
                                 <ItemContext.Provider value={data}>
                                   <StringContext.Provider value={wizardStrings || defaultStrings}>
                                     <WizardInternal
-                                      title={props.title}
+                                      id={props.id}
                                       reviewStorageKey={props.reviewStorageKey}
                                       showYaml={props.showYaml}
                                       onSubmit={props.onSubmit}
@@ -153,7 +158,7 @@ type WizardFooterProps = {
 }
 
 type WizardInternalProps = Omit<WizardFooterProps, 'steps'> & {
-  title: string
+  id?: string
   reviewStorageKey?: string
   showYaml?: boolean
   children: ReactNode
@@ -162,18 +167,23 @@ type WizardInternalProps = Omit<WizardFooterProps, 'steps'> & {
   isLoading?: boolean
 }
 
-function defaultReviewStorageKeyFromTitle(title: string): string {
-  const s = title
+const MAX_REVIEW_STORAGE_KEY_LEN = 96
+
+/** Builds a stable localStorage bucket key from a non-localized wizard id (`wizard-{sanitized}`). */
+export function defaultReviewStorageKeyFromId(id: string): string {
+  const sanitized = id
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
-  return (s || 'wizard').slice(0, 96)
+  const suffix = sanitized || 'default'
+  const key = `wizard-${suffix}`
+  return key.slice(0, MAX_REVIEW_STORAGE_KEY_LEN)
 }
 
 function WizardInternal({
   children,
-  title,
+  id,
   reviewStorageKey,
   showYaml,
   onSubmit,
@@ -184,7 +194,7 @@ function WizardInternal({
 }: WizardInternalProps) {
   const wizardRef = useRef<HTMLDivElement>(null)
   const { reviewLabel, stepsAriaLabel, contentAriaLabel } = useStringContext()
-  const resolvedReviewStorageKey = reviewStorageKey ?? defaultReviewStorageKeyFromTitle(title)
+  const resolvedReviewStorageKey = reviewStorageKey ?? defaultReviewStorageKeyFromId(id ?? '')
   const stepComponents = useMemo(
     () => Children.toArray(children).filter((child) => isValidElement(child) && child.type === Step) as ReactElement[],
     [children]
