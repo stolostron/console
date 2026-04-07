@@ -120,7 +120,7 @@ export function RenderItemContent(
 
   return (
     <AcmTable
-      id={`search-result-${relatedKind.toLowerCase()}`}
+      id={`related-search-result-${relatedKind.toLowerCase()}`}
       items={relatedResultItems}
       emptyState={undefined} // table only shown for kinds with related resources
       columns={colDefs}

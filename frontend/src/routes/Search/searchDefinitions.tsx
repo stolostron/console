@@ -167,7 +167,7 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
       ]).map((col, index) => ({ ...col, order: index + 1 })),
     },
     genericresource: {
-      columns: AddDefaultColumns(t, []),
+      columns: AddDefaultColumns(t, []).map((col, index) => ({ ...col, order: index + 1 })),
     },
     helmrelease: {
       // This is the Application Helm CR.
