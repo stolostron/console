@@ -77,7 +77,7 @@ export default function OverviewClusterLabelSelector(props: {
   return (
     <PageSection hasBodyWrapper={false}>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
-        <div style={{ display: 'flex', flexDirection: 'row' }}>
+        <div style={{ display: 'flex', flexDirection: 'row', gap: '1rem' }}>
           <AcmSelectBase
             id="cluster-label-key"
             key="cluster-label-key"
@@ -101,7 +101,6 @@ export default function OverviewClusterLabelSelector(props: {
               <SelectOption key={`cluster-label-key-${labelKey}`} value={labelKey} />
             ))}
           </AcmSelectBase>
-          <div style={{ width: '1rem' }} />
           <AcmSelectBase
             id="cluster-label-value"
             aria-label={t('Select cluster label value')}
@@ -140,11 +139,9 @@ export default function OverviewClusterLabelSelector(props: {
                 </div>
               )
             })}
-            {Object.values(selectedClusterLabels).length > 0 && (
-              <Button variant={'link'} onClick={() => deleteAllChips()}>
-                {t('Clear all labels')}
-              </Button>
-            )}
+            <Button variant={'link'} onClick={() => deleteAllChips()}>
+              {t('Clear all labels')}
+            </Button>
           </div>
         )}
       </div>
