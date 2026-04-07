@@ -9,7 +9,8 @@ import { convertId, InputCommonProps } from './Input'
 
 export function WizTimeRange(props: InputCommonProps<string>) {
   const reactUseId = useId()
-  const id = process.env.NODE_ENV === 'test' ? convertId(props) : `wiz-time-range-${reactUseId}`
+  const id =
+    process.env.NODE_ENV === 'test' || (window as any).Cypress ? convertId(props) : `wiz-time-range-${reactUseId}`
   const path = props.path ?? id
 
   const { update } = useData()

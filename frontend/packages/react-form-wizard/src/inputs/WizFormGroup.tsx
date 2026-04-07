@@ -16,7 +16,7 @@ export function WizFormGroup(props: PropsWithChildren<WizFormGroupProps>) {
   const reviewPathPrefixSegments = useContext(ReviewPathPrefixSegmentsContext)
   const item = useContext(ItemContext)
   const registrationPath = buildReviewInputRegistrationPath(reviewPathPrefixSegments, props.path, item)
-  const id = process.env.NODE_ENV === 'test' ? convertId(props) : registrationPath
+  const id = process.env.NODE_ENV === 'test' || (window as any).Cypress ? convertId(props) : registrationPath
 
   return (
     <FormGroup

@@ -70,6 +70,7 @@ export type WizardDomTreeNode =
   | { children?: WizardDomTreeNode[] }
 
 export interface ReviewExpandableSectionProps {
+  id: string
   label: string
   children?: ReactNode
   /** Shown in the collapsed toggle row (e.g. summary badges). Composed into `toggleContent` because PatternFly `ExpandableSection` has no `collapsedContent` prop. */
@@ -283,6 +284,7 @@ export function ReviewStep({ wizardRef, reviewStorageKey = 'default', showYaml }
           const key = reviewNodeKey(child, index)
           return (
             <ReviewExpandableSection
+              id={reviewExpandableSectionId(child, index)}
               key={key}
               label={reviewNodeLabel(child)}
               collapsedContent={
@@ -366,6 +368,7 @@ export function ReviewExpandableSection(props: ReviewExpandableSectionProps) {
   const { label, children, collapsedContent, isExpanded } = props
   return (
     <ExpandableSection
+      id={props.id}
       className="wizard-review-expandable-section"
       isExpanded={isExpanded}
       onToggle={onToggle}
@@ -446,6 +449,7 @@ function ReviewPenHoverZone({
   onPenIconClick,
   onArrowClick,
   descriptionListTerm,
+  descriptionListDescriptionId,
 }: {
   as?: 'div' | 'span'
   style?: CSSProperties
@@ -460,6 +464,8 @@ function ReviewPenHoverZone({
   onArrowClick?: (e: ReactMouseEvent<HTMLElement>) => void
   /** When set, render term + description as one grid row so the hover zone includes the term. */
   descriptionListTerm?: ReactNode
+  /** `id` on the value cell (scroll target); same as non-pen description rows. */
+  descriptionListDescriptionId?: string
 }) {
   const cancelParentPen = useContext(ReviewPenParentCancelContext)
   const [penVisible, setPenVisible] = useState(false)
@@ -565,7 +571,7 @@ function ReviewPenHoverZone({
           onKeyDown={onZoneKeyDown}
         >
           <DescriptionListTerm>{descriptionListTerm}</DescriptionListTerm>
-          <DescriptionListDescription>
+          <DescriptionListDescription id={descriptionListDescriptionId ?? ''}>
             <span className="wizard-review-inline-value">
               {children}
               {controls}
@@ -840,6 +846,12 @@ function reviewNodeKey(node: WizardDomTreeNode, index: number): string {
   }
 }
 
+/** DOM id for top-level review expandables; wrapper-only roots have no `id`, use the same key as localStorage. */
+function reviewExpandableSectionId(node: WizardDomTreeNode, index: number): string {
+  if ('type' in node) return node.id
+  return reviewNodeKey(node, index)
+}
+
 function getReviewSectionBodyNodes(node: WizardDomTreeNode): WizardDomTreeNode[] {
   if (!('type' in node)) {
     return node.children ?? []
@@ -1015,6 +1027,7 @@ function renderReviewInputRows(nodes: readonly WizardInputDomNode[], ctx: Review
               <ReviewPenHoverZone
                 ariaLabel="Edit"
                 descriptionListTerm={termText}
+                descriptionListDescriptionId={inputNode.id}
                 onPenClick={() => onReviewEdit(inputNode, yamlVisible ? 'highlight' : 'navigate')}
                 onPenIconClick={() => onReviewEdit(inputNode, 'navigate')}
                 onArrowClick={yamlVisible ? () => onReviewEdit(inputNode, 'highlight') : undefined}
@@ -1024,7 +1037,7 @@ function renderReviewInputRows(nodes: readonly WizardInputDomNode[], ctx: Review
             ) : (
               <>
                 <DescriptionListTerm>{termText}</DescriptionListTerm>
-                <DescriptionListDescription>
+                <DescriptionListDescription id={inputNode.id ?? ''}>
                   <span className="wizard-review-inline-value">{valueContent}</span>
                 </DescriptionListDescription>
               </>

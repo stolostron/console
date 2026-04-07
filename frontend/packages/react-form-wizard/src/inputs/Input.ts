@@ -167,7 +167,7 @@ export function useInput(props: InputCommonProps, options?: { isArrayInput?: boo
     registrationPath = `${registrationPath};id=${props.id}`
   }
 
-  const id = process.env.NODE_ENV === 'test' ? convertId(props) : registrationPath
+  const id = process.env.NODE_ENV === 'test' || (window as any).Cypress ? convertId(props) : registrationPath
 
   useLayoutEffect(() => {
     if (!stepInputsRegistry || currentStepId === undefined || hidden) return

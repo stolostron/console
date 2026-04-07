@@ -270,7 +270,10 @@ export function ArrayInputItem(props: {
   const [expanded, setExpanded] = useState(defaultExpanded !== undefined ? defaultExpanded : true)
   const reviewPathPrefixSegments = useContext(ReviewPathPrefixSegmentsContext)
   const registrationPath = buildReviewInputRegistrationPath(reviewPathPrefixSegments, String(index), value)
-  const id = process.env.NODE_ENV === 'test' ? parentId + '-' + (index + 1).toString() : registrationPath
+  const id =
+    process.env.NODE_ENV === 'test' || (window as any).Cypress
+      ? parentId + '-' + (index + 1).toString()
+      : registrationPath
 
   const collapsedContentMeasureRef = useRef<HTMLDivElement>(null)
 
