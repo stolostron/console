@@ -222,6 +222,14 @@ export function DiscoveryConfigPageContent(props: {
     [t]
   )
 
+  const sortedInfrastructureProviders = useMemo(
+    () =>
+      [...INFRASTRUCTURE_PROVIDERS].sort((a, b) =>
+        getDisplayNameForInfrastructureProvider(a, t).localeCompare(getDisplayNameForInfrastructureProvider(b, t))
+      ),
+    [t]
+  )
+
   const updateDiscoveryConfig = useCallback(
     (update: (discoveryConfig: DiscoveryConfig) => void) => {
       const copy = { ...discoveryConfig }
@@ -570,9 +578,7 @@ export function DiscoveryConfigPageContent(props: {
               })
             }}
           >
-            {INFRASTRUCTURE_PROVIDERS.sort((a, b) =>
-              getDisplayNameForInfrastructureProvider(a, t).localeCompare(getDisplayNameForInfrastructureProvider(b, t))
-            ).map((provider) => (
+            {sortedInfrastructureProviders.map((provider) => (
               <SelectOption key={provider} value={provider}>
                 {getDisplayNameForInfrastructureProvider(provider, t)}
               </SelectOption>
