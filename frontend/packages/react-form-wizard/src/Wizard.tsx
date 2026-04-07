@@ -38,7 +38,7 @@ import { EditModeContext } from './contexts/EditModeContext'
 import { ItemContext, useItem } from './contexts/ItemContext'
 import { ShowValidationProvider, useSetShowValidation, useShowValidation } from './contexts/ShowValidationProvider'
 import { StepHasInputsProvider } from './contexts/StepHasInputsProvider'
-import { StepInputsRegistryProvider } from './contexts/StepInputsContext'
+import { StepInputsRegistryProvider } from './review/StepInputsContext'
 import {
   StepShowValidationProvider,
   useSetStepShowValidation,
@@ -54,7 +54,7 @@ import {
   ValidationProvider,
 } from './contexts/ValidationProvider'
 import { ReviewDomTreeSyncProvider } from './contexts/ReviewDomTreeSyncContext'
-import { ReviewStep } from './ReviewStep'
+import { ReviewStep } from './review/ReviewStep'
 import { Step } from './Step'
 
 export interface WizardProps {
@@ -204,7 +204,7 @@ function WizardInternal({
     () => ({
       id: 'review-step',
       name: reviewLabel,
-      component: <ReviewStep wizardRef={wizardRef} reviewStorageKey={resolvedReviewStorageKey} showYaml={showYaml} />,
+      component: <ReviewStep reviewStorageKey={resolvedReviewStorageKey} showYaml={showYaml} />,
     }),
     [reviewLabel, resolvedReviewStorageKey, showYaml]
   )

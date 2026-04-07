@@ -9,13 +9,10 @@ import {
   Divider,
   ExpandableSection,
   Flex,
-  FlexItem,
   Split,
   SplitItem,
   Stack,
   Title,
-  Toolbar,
-  ToolbarContent,
   Tooltip,
   useWizardContext,
 } from '@patternfly/react-core'
@@ -30,7 +27,6 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
-  type RefObject,
   useCallback,
   useContext,
   useEffect,
@@ -39,35 +35,23 @@ import {
   useRef,
   useState,
 } from 'react'
-import { useHighlightEditorPath } from './contexts/HighlightEditorPathContext'
-import { useReviewDomTreeVersion } from './contexts/ReviewDomTreeSyncContext'
-import { useStringContext } from './contexts/StringContext'
-import { InputReviewStepMeta, InputReviewMeta, useStepInputsRegistry } from './contexts/StepInputsContext'
-import { Step } from './Step'
+import { useHighlightEditorPath } from '../contexts/HighlightEditorPathContext'
+import { useStringContext } from '../contexts/StringContext'
+import { InputReviewMeta, useStepRegister, type WizardDomTreeNode } from './StepInputsContext'
+import { ReviewStepToolbar } from './ReviewStepToolbar'
+import { Step } from '../Step'
 import './ReviewStep.css'
 
 // --- Types & interfaces ---
 
 export interface ReviewStepProps {
-  wizardRef?: RefObject<HTMLDivElement | null>
   reviewStorageKey?: string
   /** When false, the review row control that highlights the field in the YAML editor is hidden. */
   showYaml?: boolean
 }
 
-type InputOrArrayInputMeta = Extract<InputReviewStepMeta, { type: InputReviewMeta.INPUT | InputReviewMeta.ARRAY_INPUT }>
-
-/** Snapshot of wizard input containers: merged `InputReviewStepMeta`, nested `children` when non-empty. The review step (`id === 'review'`) is omitted; its descendants are hoisted. Root may be `{ children }` only. `stepId` is set only on {@link InputReviewMeta.INPUT} nodes (nearest enclosing wizard step). */
-export type WizardDomTreeNode =
-  | (Extract<InputReviewStepMeta, { type: InputReviewMeta.STEP }> & { children?: WizardDomTreeNode[] })
-  | (Omit<InputOrArrayInputMeta, 'type'> & {
-      type: InputReviewMeta.INPUT
-      stepId: string
-      children?: WizardDomTreeNode[]
-    })
-  | (Omit<InputOrArrayInputMeta, 'type'> & { type: InputReviewMeta.ARRAY_INPUT; children?: WizardDomTreeNode[] })
-  | (Extract<InputReviewStepMeta, { type: InputReviewMeta.ARRAY_INSTANCE }> & { children?: WizardDomTreeNode[] })
-  | { children?: WizardDomTreeNode[] }
+export type { WizardDomTreeNode } from './StepInputsContext'
+export { buildTree, type BuildTreeStepContext } from './utils'
 
 export interface ReviewExpandableSectionProps {
   id: string
@@ -105,13 +89,6 @@ type ReviewToolbarAction = 'expand' | 'collapse'
 type ReviewExpandableStored = {
   sections: Record<string, boolean>
   lastToolbar: ReviewToolbarAction
-}
-
-type ReviewStepToolbarProps = {
-  onExpandAll: () => void
-  onCollapseAll: () => void
-  showExpand: boolean
-  showCollapse: boolean
 }
 
 // --- Constants & module scope ---
@@ -156,24 +133,26 @@ const reviewEditHighlightTeardownByEl = new WeakMap<Element, () => void>()
 
 // --- ReviewStep ---
 
-export function ReviewStep({ wizardRef, reviewStorageKey = 'default', showYaml }: ReviewStepProps) {
+export function ReviewStep({ reviewStorageKey = 'default', showYaml }: ReviewStepProps) {
   const { reviewLabel } = useStringContext()
   const { goToStepById } = useWizardContext()
   const { setHighlightEditorPath } = useHighlightEditorPath()
-  const stepInputsRegistry = useStepInputsRegistry()
-  const reviewDomTreeVersion = useReviewDomTreeVersion()
-  const stepInputMapRef = stepInputsRegistry?.get()
-  const wizardDomTreeRef = useRef<WizardDomTreeNode | null>(null)
-  const [wizardDomTree, setWizardDomTree] = useState<WizardDomTreeNode | null>(null)
-  useLayoutEffect(() => {
-    const root = wizardRef?.current
-    if (!root) return
-    const treeData = buildTree(root, stepInputMapRef?.current ?? new Map<string, InputReviewStepMeta>())
-    wizardDomTreeRef.current = treeData
-    setWizardDomTree(treeData)
-  }, [wizardRef, stepInputMapRef, reviewDomTreeVersion])
+  const stepRegister = useStepRegister()
+  const sectionRoots = useMemo(() => {
+    if (!stepRegister) return []
+    const roots: WizardDomTreeNode[] = []
+    for (const step of stepRegister.getSteps()) {
+      roots.push(...getWizardDomTreeRootChildren(step.tree))
+    }
+    return roots
+  }, [stepRegister])
 
-  const sectionRoots = useMemo(() => getWizardDomTreeRootChildren(wizardDomTree), [wizardDomTree])
+  const wizardDomTree = useMemo((): WizardDomTreeNode | null => {
+    if (sectionRoots.length === 0) return null
+    if (sectionRoots.length === 1) return sectionRoots[0]!
+    return { children: sectionRoots }
+  }, [sectionRoots])
+
   const sectionKeys = useMemo(() => sectionRoots.map((child, index) => reviewNodeKey(child, index)), [sectionRoots])
   const topLevelArrayInstanceKeys = useMemo(
     () => collectTopLevelArrayInstanceExpandableKeys(wizardDomTree),
@@ -401,41 +380,6 @@ function ToggleContent(props: { label: string }) {
         <SplitItem isFilled>{props.label}</SplitItem>
       </Split>
     </div>
-  )
-}
-
-function ReviewStepToolbar(props: ReviewStepToolbarProps) {
-  const { reviewExpandAllTooltip, reviewCollapseAllTooltip } = useStringContext()
-  const toolbarItems = (
-    <Flex direction={{ default: 'row' }} style={{ width: '100%' }}>
-      <FlexItem flex={{ default: 'flex_1' }} />
-      {props.showExpand ? (
-        <FlexItem>
-          <Button variant="link" onClick={props.onExpandAll}>
-            {reviewExpandAllTooltip}
-          </Button>
-        </FlexItem>
-      ) : null}
-      {props.showCollapse ? (
-        <FlexItem>
-          <Button variant="link" onClick={props.onCollapseAll}>
-            {reviewCollapseAllTooltip}
-          </Button>
-        </FlexItem>
-      ) : null}
-    </Flex>
-  )
-
-  return (
-    <Toolbar
-      className="pf-m-toggle-group-container"
-      style={{
-        rowGap: '14px',
-        width: '100%',
-      }}
-    >
-      <ToolbarContent>{toolbarItems}</ToolbarContent>
-    </Toolbar>
   )
 }
 
@@ -759,7 +703,7 @@ function renderCollapsedBadgesFromNodes(
       })
       continue
     }
-    if (isReviewStepNode(child) || !('type' in child)) {
+    if (isReviewSectionNode(child) || !('type' in child)) {
       out.push(...renderCollapsedBadgesFromNodes(child.children ?? [], onReviewEdit, showYaml))
       continue
     }
@@ -794,8 +738,10 @@ function isReviewArrayInputNode(
   return 'type' in node && node.type === InputReviewMeta.ARRAY_INPUT
 }
 
-function isReviewStepNode(node: WizardDomTreeNode): node is Extract<WizardDomTreeNode, { type: InputReviewMeta.STEP }> {
-  return 'type' in node && node.type === InputReviewMeta.STEP
+function isReviewSectionNode(
+  node: WizardDomTreeNode
+): node is Extract<WizardDomTreeNode, { type: InputReviewMeta.SECTION }> {
+  return 'type' in node && node.type === InputReviewMeta.SECTION
 }
 
 function isReviewArrayInstanceNode(
@@ -818,8 +764,8 @@ function reviewNodeLabel(node: WizardDomTreeNode): string {
   if ('label' in node && node.label) return node.label
   if (!('type' in node)) return ''
   switch (node.type) {
-    case InputReviewMeta.STEP:
-      return node.id
+    case InputReviewMeta.SECTION:
+      return node.label && node.label !== '' ? node.label : node.id
     case InputReviewMeta.INPUT:
     case InputReviewMeta.ARRAY_INPUT:
       return node.path
@@ -835,7 +781,7 @@ function reviewNodeKey(node: WizardDomTreeNode, index: number): string {
   switch (node.type) {
     case InputReviewMeta.INPUT:
       return `input-${node.path}`
-    case InputReviewMeta.STEP:
+    case InputReviewMeta.SECTION:
       return `step-${node.id}`
     case InputReviewMeta.ARRAY_INPUT:
       return `array-${node.path}`
@@ -856,7 +802,7 @@ function getReviewSectionBodyNodes(node: WizardDomTreeNode): WizardDomTreeNode[]
   if (!('type' in node)) {
     return node.children ?? []
   }
-  if (node.type === InputReviewMeta.STEP) {
+  if (node.type === InputReviewMeta.SECTION) {
     return node.children ?? []
   }
   return [node]
@@ -888,7 +834,7 @@ function collectTopLevelArrayInstanceExpandableKeys(root: WizardDomTreeNode | nu
         i++
         continue
       }
-      if (isReviewStepNode(n) || !('type' in n)) {
+      if (isReviewSectionNode(n) || !('type' in n)) {
         walkSequence(n.children ?? [], arrayInputNesting)
         i++
         continue
@@ -1075,9 +1021,9 @@ function renderReviewNodeSequence(
       i++
       continue
     }
-    if (isReviewStepNode(n) || !('type' in n)) {
+    if (isReviewSectionNode(n) || !('type' in n)) {
       const inner = n.children ?? []
-      const shellKey = isReviewStepNode(n) ? `step-${n.id}` : 'children-wrap'
+      const shellKey = isReviewSectionNode(n) ? `step-${n.id}` : 'children-wrap'
       out.push(
         <ReviewDomTreeNodeShell key={shellKey}>
           <Fragment>{renderReviewNodeSequence(inner, ctx, precedingDlGroup)}</Fragment>
@@ -1188,12 +1134,12 @@ function getReviewNodeYamlHighlightPath(node: WizardDomTreeNode): string | undef
   return node.path.replace(/;id=[^;]*$/u, '')
 }
 
-/** Wizard step id for navigating from review: explicit on INPUT / STEP, else first descendant INPUT's `stepId`. */
+/** Wizard step id for navigating from review: explicit on INPUT / SECTION, else first descendant INPUT's `stepId`. */
 function getReviewNodeStepId(node: WizardDomTreeNode): string | undefined {
   if (isReviewInputNode(node)) {
     return node.stepId && node.stepId !== '' ? node.stepId : undefined
   }
-  if (isReviewStepNode(node)) {
+  if (isReviewSectionNode(node)) {
     return node.id && node.id !== '' ? node.id : undefined
   }
   for (const c of node.children ?? []) {
@@ -1207,7 +1153,7 @@ function getReviewNodeStepId(node: WizardDomTreeNode): string | undefined {
 function getReviewScrollTargetDomId(node: WizardDomTreeNode): string | undefined {
   if ('type' in node) {
     switch (node.type) {
-      case InputReviewMeta.STEP:
+      case InputReviewMeta.SECTION:
       case InputReviewMeta.INPUT:
       case InputReviewMeta.ARRAY_INPUT:
       case InputReviewMeta.ARRAY_INSTANCE: {
@@ -1370,81 +1316,4 @@ function resolveReviewEditInputTarget(el: HTMLElement): HTMLElement {
 function isSelectableTextInput(input: HTMLInputElement): boolean {
   const t = input.type
   return t === 'text' || t === 'search' || t === 'url' || t === 'tel' || t === 'password' || t === 'email'
-}
-
-export function buildTree(element: Element, stepInputMap: ReadonlyMap<string, InputReviewStepMeta>): WizardDomTreeNode {
-  const nodes = buildReviewSubtree(element, stepInputMap)
-  if (nodes.length === 1) return nodes[0]!
-  if (nodes.length === 0) return {}
-  return { children: nodes }
-}
-
-function buildReviewSubtree(
-  element: Element,
-  stepInputMap: ReadonlyMap<string, InputReviewStepMeta>,
-  parentStepId = '',
-  /** ARRAY_INPUT field paths and ARRAY_INSTANCE index segments from root to current node, in DOM order. */
-  reviewPathPrefixSegments: readonly string[] = []
-): WizardDomTreeNode[] {
-  if (element instanceof HTMLElement) {
-    const props = stepInputMap.get(element.id)
-    if (props) {
-      const stepIdForChildren = props.type === InputReviewMeta.STEP ? props.id : parentStepId
-      let segmentsForChildren = reviewPathPrefixSegments
-      if (props.type === InputReviewMeta.ARRAY_INPUT && props.path != null && props.path !== '') {
-        segmentsForChildren = [...reviewPathPrefixSegments, props.path]
-      } else if (props.type === InputReviewMeta.ARRAY_INSTANCE && props.path !== undefined && props.path !== '') {
-        segmentsForChildren = [...reviewPathPrefixSegments, props.path]
-      }
-      const children: WizardDomTreeNode[] = []
-      for (let i = 0; i < element.children.length; i++) {
-        children.push(...buildReviewSubtree(element.children[i]!, stepInputMap, stepIdForChildren, segmentsForChildren))
-      }
-      const hasChildren = children.length > 0
-      if (props.type === InputReviewMeta.STEP) {
-        if (props.id === 'review') {
-          return children.filter(subtreeContainsReviewInput)
-        }
-        const stepNode: WizardDomTreeNode = hasChildren ? { ...props, children } : { ...props }
-        if (!subtreeContainsReviewInput(stepNode)) {
-          return []
-        }
-        return [stepNode]
-      }
-      if (props.type === InputReviewMeta.INPUT) {
-        /* `props.path` is already the full path (array prefixes applied at registration in `useInput`). */
-        return [
-          hasChildren
-            ? { ...props, type: InputReviewMeta.INPUT, stepId: parentStepId, children }
-            : { ...props, type: InputReviewMeta.INPUT, stepId: parentStepId },
-        ]
-      }
-      if (props.type === InputReviewMeta.ARRAY_INPUT) {
-        return [
-          hasChildren
-            ? { ...props, type: InputReviewMeta.ARRAY_INPUT, children }
-            : { ...props, type: InputReviewMeta.ARRAY_INPUT },
-        ]
-      }
-      return [
-        hasChildren
-          ? { ...props, type: InputReviewMeta.ARRAY_INSTANCE, children }
-          : { ...props, type: InputReviewMeta.ARRAY_INSTANCE },
-      ]
-    }
-  }
-  const out: WizardDomTreeNode[] = []
-  for (let i = 0; i < element.children.length; i++) {
-    out.push(...buildReviewSubtree(element.children[i]!, stepInputMap, parentStepId, reviewPathPrefixSegments))
-  }
-  return out
-}
-
-function subtreeContainsReviewInput(node: WizardDomTreeNode): boolean {
-  if ('type' in node && node.type === InputReviewMeta.INPUT) {
-    return true
-  }
-  const ch = node.children
-  if (!ch?.length) return false
-  return ch.some(subtreeContainsReviewInput)
 }

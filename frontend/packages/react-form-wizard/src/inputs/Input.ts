@@ -13,7 +13,7 @@ import {
   InputReviewMeta,
   ReviewPathPrefixSegmentsContext,
   useStepInputsRegistry,
-} from '../contexts/StepInputsContext'
+} from '../review/StepInputsContext'
 import { ItemContext } from '../contexts/ItemContext'
 import { useShowValidation } from '../contexts/ShowValidationProvider'
 import { useBumpReviewDomTree } from '../contexts/ReviewDomTreeSyncContext'

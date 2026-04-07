@@ -1,15 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Form } from '@patternfly/react-core'
-import { Fragment, ReactNode, useLayoutEffect } from 'react'
+import { Fragment, ReactNode, useLayoutEffect, useRef } from 'react'
 import { DisplayMode, useDisplayMode } from './contexts/DisplayModeContext'
+import { useReviewDomTreeVersion } from './contexts/ReviewDomTreeSyncContext'
 import { HasInputsProvider, useHasInputs } from './contexts/HasInputsProvider'
 import { ShowValidationProvider, useSetShowValidation } from './contexts/ShowValidationProvider'
 import { useSetStepHasInputs } from './contexts/StepHasInputsProvider'
 import { useStepShowValidation } from './contexts/StepShowValidationProvider'
 import { useSetStepHasValidationError } from './contexts/StepValidationProvider'
 import { useHasValidationError, ValidationProvider } from './contexts/ValidationProvider'
-import { CurrentStepIdContext, InputReviewMeta, useStepInputsRegistry } from './contexts/StepInputsContext'
+import { CurrentStepIdContext, useStepInputsRegistry, useStepRegister } from './review/StepInputsContext'
 import { HiddenFn, useInputHidden } from './inputs/Input'
+import { buildTree } from './review/utils'
 
 export interface StepProps {
   label: string
@@ -21,19 +23,38 @@ export interface StepProps {
 
 export function Step(props: StepProps) {
   const { id, label } = props
+  const containerRef = useRef<HTMLDivElement>(null)
   const stepInputsRegistry = useStepInputsRegistry()
+  const stepRegister = useStepRegister()
+  const reviewDomTreeVersion = useReviewDomTreeVersion()
+
+  /* Context value includes `version` and changes identity on every bump; do not list it in effect
+   * deps or unregister/register + setStepTree retrigger in a loop (maximum update depth). */
+  const stepRegisterRef = useRef(stepRegister)
+  stepRegisterRef.current = stepRegister
+  const stepInputsRegistryRef = useRef(stepInputsRegistry)
+  stepInputsRegistryRef.current = stepInputsRegistry
+
   useLayoutEffect(() => {
-    if (!stepInputsRegistry) return
-    stepInputsRegistry.register(id, {
-      id,
-      label,
-      type: InputReviewMeta.STEP,
-    })
-    return () => stepInputsRegistry.unregister(id)
-  }, [stepInputsRegistry, id, label])
+    const sr = stepRegisterRef.current
+    if (!sr) return
+    sr.register(id, label)
+    return () => sr.unregister(id)
+  }, [id, label])
+
+  useLayoutEffect(() => {
+    if (id === 'review') return
+    const sr = stepRegisterRef.current
+    const reg = stepInputsRegistryRef.current
+    if (!sr || !reg) return
+    const el = containerRef.current
+    const map = reg.get().current
+    const tree = el ? buildTree(el, map, { stepId: id, label }) : {}
+    sr.setStepTree(id, tree)
+  }, [id, label, reviewDomTreeVersion])
 
   return (
-    <div id={id}>
+    <div id={id} ref={containerRef}>
       <CurrentStepIdContext.Provider value={id}>
         <HasInputsProvider key={id}>
           <ShowValidationProvider>
