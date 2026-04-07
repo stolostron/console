@@ -398,6 +398,14 @@ export function nockIgnoreOperatorCheck(noAnsible?: boolean) {
     .reply(200, noAnsible ? mockOperatorCheckResponseNoAnsible : mockOperatorCheckResponse)
 }
 
+export function nockIgnoreClusterVersion(version = '4.20.0') {
+  return nocked(process.env.JEST_DEFAULT_HOST as string)
+    .persist()
+    .get('/cluster-version')
+    .optionally()
+    .reply(200, { version })
+}
+
 export function nockArgoGitBranches(repositoryUrl: string, response: GetGitBranchesArgoResponse, statusCode = 200) {
   const url = new URL(repositoryUrl)
   return nock('https://api.github.com')

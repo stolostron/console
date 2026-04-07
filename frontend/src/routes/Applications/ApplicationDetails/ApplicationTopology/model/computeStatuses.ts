@@ -166,6 +166,7 @@ export const computeNodeStatus = (
       break
 
     case 'placement':
+    case 'placementDecision':
       if (isDeployable) {
         pulse = getPulseStatusForGenericNode(node, t, hubClusterName)
       } else if (safeGet<number>(node, 'specs.raw.status.numberOfSelectedClusters') === 0) {
@@ -576,7 +577,7 @@ const getPulseStatusForGenericNode = (
   // If no resourceMap from search query or no online clusters, show unknown status
   if (!resourceMap || onlineClusters.length === 0) {
     pulse = orangePulse
-    if (nodeType === 'placement') {
+    if (nodeType === 'placement' || nodeType === 'placementDecision') {
       pulse = greenPulse // Placements are OK without resources
     }
     return pulse

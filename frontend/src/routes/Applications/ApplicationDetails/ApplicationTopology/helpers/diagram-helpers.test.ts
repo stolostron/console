@@ -416,7 +416,7 @@ describe('createResourceSearchLink for cluster', () => {
 
 describe('createResourceSearchLink for PR', () => {
   const node: NodeLike = {
-    type: 'placements',
+    type: 'placement',
     name: 'rule1',
     namespace: 'ns',
     specs: {
@@ -432,7 +432,7 @@ describe('createResourceSearchLink for PR', () => {
     value: {
       data: {
         action: 'show_search',
-        kind: 'PlacementDecision',
+        kind: 'Placement',
         name: 'rule1',
         namespace: 'ns',
       },
@@ -1528,7 +1528,7 @@ describe('createEditLink subscriptionstatus', () => {
             },
           },
         ],
-        placements: [
+        placement: [
           {
             apiVersion: 'cluster.open-cluster-management.io/v1beta1',
             kind: 'Placement',

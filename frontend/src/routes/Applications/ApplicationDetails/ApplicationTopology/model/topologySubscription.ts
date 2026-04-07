@@ -270,7 +270,7 @@ const addSubscriptionRules = (
     nodes.push({
       name: name as string,
       namespace: namespace as string,
-      type: 'placements',
+      type: 'placementDecision',
       id: ruleId,
       uid: ruleId,
       specs: { isDesign: true, raw: rule, isPairedInLayoutWithParent: true },

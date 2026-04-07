@@ -6,7 +6,13 @@ import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { v4 as uuidv4 } from 'uuid'
 import { isFineGrainedRbacEnabledState, Settings, settingsState } from '../../../atoms'
-import { nockCreate, nockIgnoreApiPaths, nockManagedClusterView, nockRequest } from '../../../lib/nock-util'
+import {
+  nockCreate,
+  nockIgnoreApiPaths,
+  nockIgnoreClusterVersion,
+  nockManagedClusterView,
+  nockRequest,
+} from '../../../lib/nock-util'
 import { wait, waitForNocks } from '../../../lib/test-util'
 import { SearchResultItemsDocument } from '../search-sdk/search-sdk'
 import SnapshotsTab from './SnapshotsTab'
@@ -94,6 +100,7 @@ describe('SnapshotsTab', () => {
     mockUuidV4.mockReset()
 
     nockIgnoreApiPaths()
+    nockIgnoreClusterVersion()
     Object.defineProperty(window, 'location', {
       value: {
         pathname: '/multicloud/search/resources',

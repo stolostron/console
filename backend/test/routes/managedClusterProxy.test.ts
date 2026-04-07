@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import { managedClusterProxy } from '../../src/routes/managedClusterProxy'
 import proxy from 'http2-proxy'
 import { jest } from '@jest/globals'
-import { TLSSocket } from 'tls'
+import { TLSSocket } from 'node:tls'
 let isHttp2Response: boolean = true
 const proxyWeb = proxy.web as jest.Mock
 const proxyWs = proxy.ws as jest.Mock

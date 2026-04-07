@@ -7,7 +7,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { isFineGrainedRbacEnabledState, settingsState } from '../../../atoms'
-import { nockGet, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
+import { nockGet, nockIgnoreApiPaths, nockIgnoreRBAC, nockIgnoreClusterVersion } from '../../../lib/nock-util'
 import { waitForNocks } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import Search from '../Search'
@@ -92,6 +92,7 @@ describe('DetailsPage', () => {
     // jest.resetAllMocks()
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
+    nockIgnoreClusterVersion()
   })
   afterEach(() => {
     jest.resetAllMocks()

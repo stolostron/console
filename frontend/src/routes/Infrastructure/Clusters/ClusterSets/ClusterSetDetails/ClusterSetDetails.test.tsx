@@ -9,12 +9,14 @@ import {
   certificateSigningRequestsState,
   clusterDeploymentsState,
   clusterPoolsState,
+  groupsState,
   managedClusterAddonsState,
   managedClusterInfosState,
   managedClusterSetsState,
   managedClustersState,
   submarinerConfigsState,
   hostedClustersState,
+  usersState,
 } from '../../../../../atoms'
 import {
   nockClusterList,
@@ -1530,6 +1532,8 @@ const Component = (props: { isGlobal?: boolean }) => (
       snapshot.set(submarinerConfigsState, [mockSubmarinerConfig])
       snapshot.set(clusterPoolsState, [])
       snapshot.set(hostedClustersState, [mockHostedClusterKubeVirt, mockHostedClusterBaremetal])
+      snapshot.set(usersState, [mockUser])
+      snapshot.set(groupsState, [mockGroup])
     }}
   >
     <MemoryRouter
@@ -1568,19 +1572,19 @@ const mockClusterRoleBinding: ClusterRoleBinding = {
 }
 
 const mockUser = {
-  kind: 'User',
-  apiVersion: 'user.openshift.io/v1',
+  kind: 'User' as const,
+  apiVersion: 'user.openshift.io/v1' as const,
   metadata: {
     name: 'mock-user2',
     uid: 'e3d73187-dcf4-49a2-b0fb-d2805c5dd584',
   },
   identities: ['myuser:mock-user2'],
-  groups: null,
+  groups: [],
 }
 
 const mockGroup = {
-  kind: 'Group',
-  apiVersion: 'user.openshift.io/v1',
+  kind: 'Group' as const,
+  apiVersion: 'user.openshift.io/v1' as const,
   metadata: {
     name: 'mock-group',
     uid: '98d01b86-7721-4b98-b145-58df2bff2f6e',
@@ -1926,11 +1930,8 @@ describe('ClusterSetDetails page', () => {
     await clickByText('User management', 0)
     await waitForNocks([nock])
     await clickByText('Add user or group')
-    await waitForText(
-      'Adding a user or group will grant access permissions to the cluster set and all of its associated clusters. These permissions can be revoked at any time.'
-    )
-    await clickByPlaceholderText('Select user')
-    await clickByText(mockUser.metadata.name!)
+    await waitForText('Identities')
+    await clickByLabel(`Select ${mockUser.metadata.name}`)
     await clickByText('Select role')
     await waitForText('Cluster set admin', true)
     await waitForText('Cluster set view', true)
@@ -1965,12 +1966,9 @@ describe('ClusterSetDetails page', () => {
     await clickByText('User management', 0)
     await waitForNocks([nock])
     await clickByText('Add user or group')
-    await waitForText(
-      'Adding a user or group will grant access permissions to the cluster set and all of its associated clusters. These permissions can be revoked at any time.'
-    )
+    await waitForText('Identities')
     await clickByText('Groups')
-    await clickByPlaceholderText('Select group')
-    await clickByText(mockGroup.metadata.name!)
+    await clickByLabel(`Select ${mockGroup.metadata.name}`)
     await clickByText('Select role')
     await clickByText('Cluster set view')
     const createNock = nockCreate({
@@ -2015,11 +2013,8 @@ describe('Global ClusterSetDetails page', () => {
     await clickByText('User management', 0)
     await waitForNocks([nock])
     await clickByText('Add user or group')
-    await waitForText(
-      'Adding a user or group will grant access permissions to the cluster set and all of its associated clusters. These permissions can be revoked at any time.'
-    )
-    await clickByPlaceholderText('Select user')
-    await clickByText(mockUser.metadata.name!)
+    await waitForText('Identities')
+    await clickByLabel(`Select ${mockUser.metadata.name}`)
     await clickByText('Select role')
     await waitForNotText('Cluster set admin')
     await waitForText('Cluster set view', true)

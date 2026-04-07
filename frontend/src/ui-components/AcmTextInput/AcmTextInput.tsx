@@ -7,10 +7,22 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { useValidationContext } from '../AcmForm/AcmForm'
 import { AcmHelperText } from '../AcmHelperText/AcmHelperText'
 
+function resolveValidated(hasError: boolean, hasWarning: boolean): 'default' | 'error' | 'warning' {
+  switch (true) {
+    case hasError:
+      return 'error'
+    case hasWarning:
+      return 'warning'
+    default:
+      return 'default'
+  }
+}
+
 type AcmTextInputProps = TextInputProps & {
   id: string
   label: string
   validation?: (value: string) => string | undefined
+  warning?: (value: string) => string | undefined
   labelHelp?: string
   labelHelpTitle?: ReactNode
   helperText?: ReactNode
@@ -19,11 +31,13 @@ export function AcmTextInput(props: AcmTextInputProps) {
   const ValidationContext = useValidationContext()
   const [validated, setValidated] = useState<'default' | 'success' | 'error' | 'warning'>('default')
   const [error, setError] = useState<string>('')
-  const { validation, labelHelp, labelHelpTitle, helperText, ...textInputProps } = props
+  const [warningMsg, setWarningMsg] = useState<string>('')
+  const { validation, warning, labelHelp, labelHelpTitle, helperText, ...textInputProps } = props
   const { t } = useTranslation()
 
   useLayoutEffect(() => {
     let error: string | undefined = undefined
+    let warn: string | undefined = undefined
     /* istanbul ignore else */
     if (props.hidden !== true) {
       if (props.isRequired) {
@@ -34,17 +48,23 @@ export function AcmTextInput(props: AcmTextInputProps) {
       if (!error && validation) {
         error = validation(props.value as string)
       }
+      if (!error && warning) {
+        warn = warning(props.value as string)
+      }
     }
     setError(error ?? '')
+    setWarningMsg(warn ?? '')
     if (ValidationContext.validate) {
-      setValidated(error ? 'error' : 'default')
+      setValidated(resolveValidated(!!error, !!warn))
+    } else {
+      setValidated(resolveValidated(false, !!warn))
     }
     ValidationContext.setError(props.id, error)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.value, props.hidden])
 
   useLayoutEffect(() => {
-    setValidated(error ? 'error' : 'default')
+    setValidated(resolveValidated(!!error, !!warningMsg))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ValidationContext.validate])
 
@@ -82,7 +102,13 @@ export function AcmTextInput(props: AcmTextInputProps) {
         validated={validated}
         isDisabled={props.isDisabled || ValidationContext.isReadOnly}
       />
-      <AcmHelperText controlId={props.id} helperText={helperText} validated={validated} error={error} />
+      <AcmHelperText
+        controlId={props.id}
+        helperText={helperText}
+        validated={validated}
+        error={error}
+        warning={warningMsg}
+      />
     </FormGroup>
   )
 }

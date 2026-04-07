@@ -494,3 +494,12 @@ export async function clickDropdownAction(actionText: string, buttonLabel = 'Act
   await waitFor(() => screen.getByText(actionText))
   await clickByText(actionText)
 }
+
+export const CLUSTER_VERSION_MOCK_DEFAULT = {
+  version: '4.20',
+  isLoading: false,
+  error: undefined,
+}
+
+export const createClusterVersionMock = (overrides = {}) =>
+  jest.fn(() => ({ ...CLUSTER_VERSION_MOCK_DEFAULT, ...overrides }))

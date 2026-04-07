@@ -12,6 +12,13 @@ import {
   nockIgnoreApiPaths,
   nockIgnoreOperatorCheck,
 } from '../../lib/nock-util'
+import { createClusterVersionMock } from '../../lib/test-util'
+
+const mockUseClusterVersion = createClusterVersionMock()
+jest.mock('../../hooks/use-cluster-version', () => ({
+  useClusterVersion: () => mockUseClusterVersion(),
+}))
+
 import { clickByRole, clickByText, typeByRole, waitForNocks, waitForText } from '../../lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
 import {

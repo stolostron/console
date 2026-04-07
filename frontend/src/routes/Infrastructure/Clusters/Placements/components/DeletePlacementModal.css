@@ -1,0 +1,15 @@
+.delete-placement-error {
+  margin-bottom: 1rem;
+}
+
+.delete-placement-related-resources {
+  margin-top: 1rem;
+}
+
+.delete-placement-related-resources-list {
+  margin-top: 0.5rem;
+}
+
+.delete-placement-related-resources-list li {
+  border-bottom: 1px solid #dfe3e6;
+}

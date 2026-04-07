@@ -168,7 +168,10 @@ describe('GroupRoleAssignments', () => {
   })
 
   it('renders GroupRoleAssignments component with developers group found', async () => {
-    ;(useRecoilValue as jest.Mock).mockReturnValueOnce(mockGroups).mockReturnValueOnce(mockMulticlusterRoleAssignments)
+    ;(useRecoilValue as jest.Mock)
+      .mockReturnValueOnce(mockGroups)
+      .mockReturnValueOnce(mockMulticlusterRoleAssignments)
+      .mockReturnValueOnce(mockMulticlusterRoleAssignments)
 
     render(<Component groupId="developers" />)
 
@@ -184,5 +187,13 @@ describe('GroupRoleAssignments', () => {
     expect(screen.getByText(/vm-dev/i)).toBeInTheDocument() // Target namespace
     expect(screen.getByText(/storage-dev/i)).toBeInTheDocument() // Target namespace
     expect(screen.getByText(/networking-dev/i)).toBeInTheDocument() // Target namespace
+  })
+
+  it('renders without crashing when multicluster role assignment state is undefined', async () => {
+    ;(useRecoilValue as jest.Mock).mockReturnValueOnce(mockGroups).mockReturnValueOnce(undefined)
+
+    render(<Component groupId="developers" />)
+    expect(screen.getByText('Loaded')).toBeInTheDocument()
+    expect(screen.getByText('0')).toBeInTheDocument()
   })
 })

@@ -1,14 +1,34 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+  AgentClusterInstallK8sResource,
+  ClusterDeploymentK8sResource,
+  getClusterProperties,
+} from '@openshift-assisted/ui-lib/cim'
+import { AlertVariant, ButtonVariant, PageSection, Popover } from '@patternfly/react-core'
+import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
+import { ExternalLinkAltIcon, OutlinedQuestionCircleIcon, PencilAltIcon } from '@patternfly/react-icons'
+import { Fragment, useMemo, useState } from 'react'
+import { generatePath, Link } from 'react-router-dom-v5-compat'
+import { getControlPlaneString } from '../../../../../../components/Clusters'
+import { RbacButton } from '../../../../../../components/Rbac'
+import TemplateSummaryModal from '../../../../../../components/TemplateSummaryModal'
+import { useLocalHubName } from '../../../../../../hooks/use-local-hub'
+import { useProjects } from '../../../../../../hooks/useProjects'
+import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
+import { rbacCreate, rbacPatch } from '../../../../../../lib/rbac-util'
+import { NavigationPath } from '../../../../../../NavigationPath'
+import {
   ClusterCuratorDefinition,
   ClusterDeployment,
-  ManagedClusterDefinition,
   isAutomationTemplate,
+  ManagedClusterDefinition,
 } from '../../../../../../resources'
 import { HostedClusterK8sResourceWithChannel } from '../../../../../../resources/hosted-cluster'
 import { ClusterStatus } from '../../../../../../resources/utils'
+import { useRecoilValue, useSharedAtoms } from '../../../../../../shared-recoil'
 import {
+  AcmAlert,
   AcmButton,
   AcmDescriptionList,
   AcmInlineCopy,
@@ -16,46 +36,28 @@ import {
   AcmInlineStatus,
   AcmLabels,
   AcmPageContent,
-  StatusType,
   Provider,
-  AcmAlert,
+  StatusType,
 } from '../../../../../../ui-components'
-import { AlertVariant, ButtonVariant, PageSection, Popover } from '@patternfly/react-core'
-import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
-import { ExternalLinkAltIcon, OutlinedQuestionCircleIcon, PencilAltIcon } from '@patternfly/react-icons'
-import { Fragment, useMemo, useState } from 'react'
-import {
-  AgentClusterInstallK8sResource,
-  ClusterDeploymentK8sResource,
-  getClusterProperties,
-} from '@openshift-assisted/ui-lib/cim'
-import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
-import { Link, generatePath } from 'react-router-dom-v5-compat'
-import { RbacButton } from '../../../../../../components/Rbac'
-import { rbacCreate, rbacPatch } from '../../../../../../lib/rbac-util'
-import { NavigationPath } from '../../../../../../NavigationPath'
+import { CredentialsForm } from '../../../../../Credentials/CredentialsForm'
+import { getPlacementsForCluster, PlacementLinkList } from '../../../Placements/utils'
 import { BatchChannelSelectModal } from '../../components/BatchChannelSelectModal'
+import AIClusterDetails from '../../components/cim/AIClusterDetails'
+import AIHypershiftClusterDetails from '../../components/cim/AIHypershiftClusterDetails'
 import { ClusterStatusMessageAlert } from '../../components/ClusterStatusMessageAlert'
 import { DistributionField } from '../../components/DistributionField'
 import { EditLabels } from '../../components/EditLabels'
 import { HiveNotification } from '../../components/HiveNotification'
+import HypershiftClusterDetails from '../../components/HypershiftClusterDetails'
+import { HypershiftImportCommand } from '../../components/HypershiftImportCommand'
 import { ImportCommandContainer } from '../../components/ImportCommand'
 import { LoginCredentials } from '../../components/LoginCredentials'
 import { ProgressStepBar } from '../../components/ProgressStepBar'
 import { StatusField } from '../../components/StatusField'
 import { StatusSummaryCount } from '../../components/StatusSummaryCount'
-import { useClusterDetailsContext } from '../ClusterDetails'
-import AIClusterDetails from '../../components/cim/AIClusterDetails'
-import AIHypershiftClusterDetails from '../../components/cim/AIHypershiftClusterDetails'
-import HypershiftClusterDetails from '../../components/HypershiftClusterDetails'
-import HypershiftKubeAPI from './HypershiftKubeAPI'
-import { HypershiftImportCommand } from '../../components/HypershiftImportCommand'
-import TemplateSummaryModal from '../../../../../../components/TemplateSummaryModal'
-import { CredentialsForm } from '../../../../../Credentials/CredentialsForm'
-import { useProjects } from '../../../../../../hooks/useProjects'
 import { ClusterAction, clusterSupportsAction } from '../../utils/cluster-actions'
-import { useLocalHubName } from '../../../../../../hooks/use-local-hub'
-import { getControlPlaneString } from '../../../../../../components/Clusters'
+import { useClusterDetailsContext } from '../ClusterDetails'
+import HypershiftKubeAPI from './HypershiftKubeAPI'
 
 function getAIClusterProperties(
   clusterDeployment: ClusterDeployment,
@@ -84,6 +86,13 @@ export function ClusterOverviewPageContent() {
   const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
   const [curatorSummaryModalIsOpen, setCuratorSummaryModalIsOpen] = useState<boolean>(false)
   const { projects } = useProjects()
+  const { settingsState, placementsState, placementDecisionsState } = useSharedAtoms()
+  const settings = useRecoilValue(settingsState)
+  const placements = useRecoilValue(placementsState)
+  const placementDecisions = useRecoilValue(placementDecisionsState)
+  const placementsForCluster = useMemo(() => {
+    return getPlacementsForCluster(cluster.name, placements, placementDecisions)
+  }, [cluster, placements, placementDecisions])
 
   // Channel selection conditions for showing the edit button next to the Channel row
   // - isSelectingChannel: true when ClusterCurator is processing a channel change
@@ -325,6 +334,10 @@ export function ClusterOverviewPageContent() {
           </AcmButton>
         ) : undefined,
     },
+    placements: {
+      key: t('Placements'),
+      value: <PlacementLinkList placementsForCluster={placementsForCluster} />,
+    },
   }
 
   const fromClusterPool =
@@ -374,6 +387,7 @@ export function ClusterOverviewPageContent() {
             ? [clusterProperties.automationTemplate]
             : []),
         ]),
+    ...(settings.enhancedPlacement === 'enabled' ? [clusterProperties.placements] : []),
   ]
 
   const [isModalOpen, setIsModalOpen] = useState(false)

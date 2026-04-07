@@ -28,7 +28,7 @@ import {
 import { ClusterInfrastructureType, getTypedCreateClusterPath } from '../ClusterInfrastructureType'
 
 const hasClusterImageSetWithArch = (clusterImageSets: ClusterImageSet[], architectures: string[]) =>
-  clusterImageSets.filter((cis) => isValidImageSet(cis as ClusterImageSetK8sResource, architectures))
+  clusterImageSets.filter((cis) => isValidImageSet(cis as ClusterImageSetK8sResource, architectures, true))
 
 const clusterImageSetsRequired = (
   clusterImageSets: ClusterImageSet[],

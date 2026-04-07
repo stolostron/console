@@ -16,6 +16,7 @@ import {
 import { useMemo } from 'react'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { atom, useRecoilValue } from 'recoil'
+import type { ClaimMappings } from './resources/authentication'
 import {
   AnsibleJob,
   Application,
@@ -151,6 +152,16 @@ export const localHubNameState = atom<string>({
 
 export const isHubSelfManagedState = atom<boolean | undefined>({
   key: 'isHubSelfManaged',
+  default: undefined,
+})
+
+export const isDirectAuthenticationEnabledState = atom<boolean>({
+  key: 'isDirectAuthenticationEnabled',
+  default: false,
+})
+
+export const claimMappingsState = atom<ClaimMappings | undefined>({
+  key: 'claimMappings',
   default: undefined,
 })
 

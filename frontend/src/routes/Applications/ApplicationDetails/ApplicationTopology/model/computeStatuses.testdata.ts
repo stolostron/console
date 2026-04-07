@@ -388,7 +388,7 @@ export const placementDeployable: TopologyNodeWithStatus = {
   specs: {
     placementModel: [],
   },
-  type: 'placement',
+  type: 'placementDecision',
 }
 
 export const clusterNode: TopologyNodeWithStatus = {

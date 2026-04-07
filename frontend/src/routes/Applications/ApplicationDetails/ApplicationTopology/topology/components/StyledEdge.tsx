@@ -23,9 +23,11 @@ type EdgeProps = {
 const StyledEdge: React.FunctionComponent<EdgeProps> = ({ element, dragging }) => {
   const startPoint = element.getStartPoint()
   const endPoint = element.getEndPoint()
-  const isPending =
-    element.getTarget().getData()?.status === NodeStatus.default ||
-    element.getSource().getData()?.status === NodeStatus.default
+  const sourceData = element.getSource().getData()
+  const targetData = element.getTarget().getData()
+  const isPending = targetData?.status === NodeStatus.default || sourceData?.status === NodeStatus.default
+  const isReversed = targetData?.specs?.isPairedInLayoutWithParent === true
+
   // Create path: straight line if horizontally aligned, otherwise curved
   const horizontalDistance = Math.abs(endPoint.y - startPoint.y)
   let d: string
@@ -48,6 +50,7 @@ const StyledEdge: React.FunctionComponent<EdgeProps> = ({ element, dragging }) =
 
   const edgeColor = (element.getData() && element.getData().color) || '#808080'
   const markerId = `arrowhead-${element.getId()}`
+  const markerIdStart = `arrowhead-start-${element.getId()}`
 
   const solidSquareClass = css`
     & rect {
@@ -70,11 +73,22 @@ const StyledEdge: React.FunctionComponent<EdgeProps> = ({ element, dragging }) =
         >
           <polygon points="0 0, 15 5.25, 0 10.5" fill={edgeColor} />
         </marker>
+        <marker
+          id={markerIdStart}
+          markerWidth="15"
+          markerHeight="10.5"
+          refX="13.5"
+          refY="5.25"
+          orient="auto-start-reverse"
+          markerUnits="strokeWidth"
+        >
+          <polygon points="0 0, 15 5.25, 0 10.5" fill={edgeColor} />
+        </marker>
       </defs>
       <Layer id={dragging ? 'top' : undefined}>
         <DefaultConnectorTerminal
           className={solidSquareClass}
-          isTarget={false}
+          isTarget={isReversed}
           edge={element}
           size={4}
           terminalType={EdgeTerminalType.square}
@@ -84,13 +98,14 @@ const StyledEdge: React.FunctionComponent<EdgeProps> = ({ element, dragging }) =
           stroke={edgeColor}
           d={d}
           fill="none"
-          markerEnd={`url(#${markerId})`}
+          markerStart={isReversed ? `url(#${markerIdStart})` : undefined}
+          markerEnd={isReversed ? undefined : `url(#${markerId})`}
           strokeDasharray={isPending ? '8 8' : undefined}
         >
           {isPending && (
             <animate
               attributeName="stroke-dashoffset"
-              values="16;0"
+              values={isReversed ? '0;16' : '16;0'}
               dur="0.6s"
               calcMode="linear"
               repeatCount="indefinite"

@@ -22,6 +22,9 @@ import {
 import { nockAggegateRequest, nockGet, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../../lib/nock-util'
 import { clickByText, waitForNocks, waitForText } from '../../../../../../lib/test-util'
 import {
+  ClusterCurator,
+  ClusterCuratorApiVersion,
+  ClusterCuratorKind,
   HostedClusterApiVersion,
   HostedClusterKind,
   Secret,
@@ -35,6 +38,7 @@ import {
   mockAWSHypershiftClusterNoHypershift,
   mockBMHypershiftCluster,
   mockBMHypershiftClusterNoNamespace,
+  mockCluster,
   mockRegionalHubCluster,
 } from '../ClusterDetails.sharedmocks'
 import { ClusterOverviewPageContent } from './ClusterOverview'
@@ -803,5 +807,109 @@ describe('ClusterOverview with AWS hypershift cluster', () => {
         )
       ).toHaveLength(1)
     )
+  })
+})
+
+describe('ClusterOverview automation template', () => {
+  const clusterCuratorWithTemplate: ClusterCurator = {
+    apiVersion: ClusterCuratorApiVersion,
+    kind: ClusterCuratorKind,
+    metadata: {
+      name: mockCluster.name,
+      namespace: mockCluster.namespace,
+    },
+    spec: {
+      install: {
+        prehook: [{ name: 'prehook-ansible-job', extra_vars: {} }],
+        towerAuthSecret: 'ansible-cred',
+      },
+    },
+  }
+
+  beforeEach(() => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+    nockAggegateRequest('statuses', { clusters: [mockCluster.name] }, { itemCount: 0, filterCounts: undefined })
+  })
+
+  it('should display automation template when ClusterCurator has jobs', async () => {
+    const clusterWithAutomation = {
+      ...mockCluster,
+      hasAutomationTemplate: true,
+      isCurator: true,
+    }
+    const context: Partial<ClusterDetailsContext> = {
+      cluster: clusterWithAutomation,
+      clusterCurator: clusterCuratorWithTemplate,
+    }
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policyreportState, [])
+          snapshot.set(managedClustersState, [])
+          snapshot.set(clusterDeploymentsState, [])
+          snapshot.set(managedClusterInfosState, [])
+          snapshot.set(certificateSigningRequestsState, [])
+          snapshot.set(managedClusterAddonsState, {})
+          snapshot.set(clusterManagementAddonsState, [])
+          snapshot.set(clusterClaimsState, [])
+          snapshot.set(clusterCuratorsState, [clusterCuratorWithTemplate])
+          snapshot.set(agentClusterInstallsState, [])
+          snapshot.set(agentsState, [])
+          snapshot.set(infraEnvironmentsState, [])
+          snapshot.set(hostedClustersState, [])
+          snapshot.set(nodePoolsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ClusterOverviewPageContent />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    await waitForText(mockCluster.name)
+    await waitForText('Automation template')
+    await waitForText('View template')
+  })
+
+  it('should not display automation template when ClusterCurator has no jobs', async () => {
+    const context: Partial<ClusterDetailsContext> = {
+      cluster: mockCluster,
+    }
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policyreportState, [])
+          snapshot.set(managedClustersState, [])
+          snapshot.set(clusterDeploymentsState, [])
+          snapshot.set(managedClusterInfosState, [])
+          snapshot.set(certificateSigningRequestsState, [])
+          snapshot.set(managedClusterAddonsState, {})
+          snapshot.set(clusterManagementAddonsState, [])
+          snapshot.set(clusterClaimsState, [])
+          snapshot.set(clusterCuratorsState, [])
+          snapshot.set(agentClusterInstallsState, [])
+          snapshot.set(agentsState, [])
+          snapshot.set(infraEnvironmentsState, [])
+          snapshot.set(hostedClustersState, [])
+          snapshot.set(nodePoolsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ClusterOverviewPageContent />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    await waitForText(mockCluster.name)
+    expect(screen.queryByText('View template')).not.toBeInTheDocument()
   })
 })

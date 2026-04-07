@@ -17,18 +17,26 @@ export const ApplicationSetDefinition: IResourceDefinition = {
 
 type AppSetPlacementDataType = (string | string[])[]
 
+export interface AppSetGenerator {
+  clusterDecisionResource?: {
+    configMapRef?: string
+    labelSelector?: Selector
+    requeueAfterSeconds?: number
+  }
+  matrix?: {
+    generators?: AppSetGenerator[]
+  }
+  merge?: {
+    generators?: AppSetGenerator[]
+  }
+}
+
 export interface ApplicationSet extends IResource {
   apiVersion: ApplicationSetApiVersionType
   kind: ApplicationSetKindType
   metadata: Metadata
   spec: {
-    generators?: {
-      clusterDecisionResource?: {
-        configMapRef?: string
-        labelSelector?: Selector
-        requeueAfterSeconds?: number
-      }
-    }[]
+    generators?: AppSetGenerator[]
     template?: {
       metadata?: Metadata
       spec?: {

@@ -28,6 +28,7 @@ import {
   clickByLabel,
   clickByText,
   clickRowKebabAction,
+  createClusterVersionMock,
   getCSVDownloadLink,
   getCSVExportSpies,
   selectTableRow,
@@ -35,6 +36,11 @@ import {
   waitForNotText,
   waitForText,
 } from '../../../lib/test-util'
+
+const mockUseClusterVersion = createClusterVersionMock()
+jest.mock('../../../hooks/use-cluster-version', () => ({
+  useClusterVersion: () => mockUseClusterVersion(),
+}))
 import { NavigationPath } from '../../../NavigationPath'
 import AnsibleAutomationsPage from './AnsibleAutomations'
 

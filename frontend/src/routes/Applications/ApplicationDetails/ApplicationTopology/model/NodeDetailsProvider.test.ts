@@ -181,6 +181,7 @@ describe('NodeDetailsProvider', () => {
         'other',
         'package',
         'placement',
+        'placementDecision',
         'pod',
         'policy',
         'replicaset',

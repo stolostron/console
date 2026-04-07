@@ -112,7 +112,7 @@ export function EditPolicyAutomation() {
         navigate(destination)
       }}
       configMaps={configMaps}
-      onSubmit={(data) =>
+      onSubmit={(data: unknown) =>
         handlePolicyAutomationSubmit(
           submitForm,
           data,

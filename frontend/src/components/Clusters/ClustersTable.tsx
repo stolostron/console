@@ -144,6 +144,7 @@ export function ClustersTable({
         filters={filters}
         advancedFilters={advancedFilters}
         id={tableKey}
+        showColumnManagement
         showExportButton={showExportButton}
         secondaryFilterIds={['label']}
         exportFilePrefix={tableKey}

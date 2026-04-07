@@ -114,6 +114,7 @@ export function AcmSubmit(props: AcmSubmitProps) {
     <Button
       type="submit"
       variant={props.variant ?? 'primary'}
+      icon={props.icon}
       spinnerAriaValueText={isLoading ? 'Loading' : undefined}
       isLoading={isLoading}
       onClick={async (event) => {

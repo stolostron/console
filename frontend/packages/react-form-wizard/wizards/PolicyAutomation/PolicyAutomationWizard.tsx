@@ -35,6 +35,9 @@ export function PolicyAutomationWizard(props: {
   getAnsibleJobsCallback: (credential: ICredential) => Promise<string[]>
   isAnsibleOperatorInstalled: boolean
 }) {
+  const buildSearchUrl = (keyword: string) => `/catalog/all-namespaces?keyword=${encodeURIComponent(keyword)}`
+  const displayName = 'Software Catalog'
+
   const ansibleCredentials = useMemo(
     () =>
       props.credentials.filter(
@@ -62,15 +65,13 @@ export function PolicyAutomationWizard(props: {
               icon={<ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />}
               isInline
               variant={ButtonVariant.link}
-              onClick={() =>
-                window.open(openShiftConsoleUrl + '/operatorhub/all-namespaces?keyword=ansible+automation+platform')
-              }
+              onClick={() => window.open(openShiftConsoleUrl + buildSearchUrl('ansible automation platform'))}
             >
-              OperatorHub
+              {displayName}
             </Button>
           </div>
         ) : (
-          'Install the Operator through operator hub.'
+          'Install the Operator.'
         )}
       </div>
     )

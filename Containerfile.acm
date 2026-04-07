@@ -1,0 +1,48 @@
+# Copyright Contributors to the Open Cluster Management project
+ARG NODE_BASE=registry.redhat.io/ubi9/nodejs-24-minimal@sha256:4a92f2eb92703e318528beb58c419949024628da5276d79859cdf07018ed09a9
+
+FROM ${NODE_BASE} as build-base
+USER root
+ENV NPM_CONFIG_IGNORE_SCRIPTS=true
+
+FROM build-base as dynamic-plugin
+WORKDIR /app/frontend
+COPY ./frontend .
+# Optimization of copying only package.json and package-lock.json does not work because of workspace packages 
+RUN npm ci --legacy-peer-deps
+RUN npm run build:plugin:acm
+
+FROM build-base as backend
+WORKDIR /app/backend
+# Copy only package.json and package-lock.json so that the docker layer cache only changes if those change
+# This will cause the npm ci to only rerun if the package.json or package-lock.json changes
+COPY ./backend/package.json ./backend/package-lock.json ./
+RUN npm ci --omit=optional
+COPY ./backend .
+RUN npm run build
+
+FROM build-base as production
+WORKDIR /app/backend
+COPY ./backend/package-lock.json ./backend/package.json ./
+RUN npm ci --omit=optional --only=production
+
+FROM ${NODE_BASE}
+WORKDIR /app
+ENV NODE_ENV production
+COPY --from=production /app/backend/node_modules ./node_modules
+COPY --from=backend /app/backend/backend.mjs ./
+COPY --from=dynamic-plugin /app/frontend/plugins/acm/dist ./public/plugin
+USER 1001
+CMD ["node", "backend.mjs"]
+
+LABEL com.redhat.component="console-container" \
+      cpe="cpe:/a:redhat:acm:2.17::el9" \
+      url="https://github.com/stolostron/console" \
+      name="rhacm2/console-rhel9" \
+      summary="console" \
+      io.openshift.expose-services="" \
+      io.openshift.tags="data,images" \
+      io.k8s.display-name="console" \
+      maintainer="['acm-component-maintainers@redhat.com']" \
+      description="console" \
+      io.k8s.description="console"

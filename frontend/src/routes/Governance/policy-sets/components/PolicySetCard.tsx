@@ -18,8 +18,8 @@ import {
 } from '@patternfly/react-core'
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
-import { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react'
-import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
+import { ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { generatePath, Link, useNavigate } from 'react-router-dom-v5-compat'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { deletePolicySet } from '../../../../lib/delete-policyset'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -28,6 +28,54 @@ import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmDrawerContext, AcmDrawerProps } from '../../../../ui-components'
 import { PolicySetDetailSidebar } from '../components/PolicySetDetailSidebar'
 import { PolicyCardDropdown } from './PolicyCardDropdown'
+import { getPlacementsForResource } from '../../common/util'
+
+function PolicySetDrawerTitle(props: { policySet: PolicySet }) {
+  const { policySet } = props
+  const { t } = useTranslation()
+  const { placementBindingsState, placementRulesState, placementsState, settingsState } = useSharedAtoms()
+  const placements = useRecoilValue(placementsState)
+  const placementRules = useRecoilValue(placementRulesState)
+  const placementBindings = useRecoilValue(placementBindingsState)
+  const settings = useRecoilValue(settingsState)
+
+  const policySetPlacements = useMemo(
+    () => [
+      ...getPlacementsForResource(policySet, placementBindings, placements),
+      ...getPlacementsForResource(policySet, placementBindings, placementRules),
+    ],
+    [policySet, placementBindings, placements, placementRules]
+  )
+
+  return (
+    <Stack>
+      {policySet.metadata.name}
+      <div style={{ fontSize: 'smaller', opacity: 0.6, fontWeight: 'normal' }}>
+        {`${t('Namespace')}: ${policySet.metadata.namespace}`}
+      </div>
+      {settings.enhancedPlacement === 'enabled' && policySetPlacements.length > 0 && (
+        <div style={{ fontSize: 'smaller', opacity: 0.6, fontWeight: 'normal' }}>
+          {`${t('Placement')}: `}
+          {policySetPlacements
+            .filter((placement) => placement.metadata?.name && placement.metadata?.namespace)
+            .map((placement, index, filteredArray) => (
+              <span key={`${placement.metadata.namespace}/${placement.metadata.name}`}>
+                <Link
+                  to={generatePath(NavigationPath.placementDetails, {
+                    namespace: placement.metadata.namespace!,
+                    name: placement.metadata.name!,
+                  })}
+                >
+                  {placement.metadata.name}
+                </Link>
+                {index < filteredArray.length - 1 && ', '}
+              </span>
+            ))}
+        </div>
+      )}
+    </Stack>
+  )
+}
 
 export default function PolicySetCard(props: {
   policySet: PolicySet
@@ -75,14 +123,7 @@ export default function PolicySetCard(props: {
           setDrawerContext(undefined)
           setSelectedCardID('')
         },
-        title: (
-          <Stack>
-            {policySet.metadata.name}
-            <div style={{ fontSize: 'smaller', opacity: 0.6, fontWeight: 'normal' }}>
-              {`${t('Namespace')}: ${policySet.metadata.namespace}`}
-            </div>
-          </Stack>
-        ),
+        title: <PolicySetDrawerTitle policySet={policySet} />,
         panelContent: <PolicySetDetailSidebar policySet={policySet} />,
         panelContentProps: { defaultSize: '40%' },
         isInline: true,

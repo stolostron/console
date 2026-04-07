@@ -69,6 +69,8 @@ describe('UserPage', () => {
     mockUseSharedAtoms.mockReturnValue({
       usersState: {} as any,
       groupsState: {} as any,
+      multiclusterRoleAssignmentState: {} as any,
+      isDirectAuthenticationEnabledState: {} as any,
     } as any)
   })
 
@@ -82,7 +84,12 @@ describe('UserPage', () => {
   })
 
   test('should render user page with navigation tabs', () => {
-    mockUseRecoilValue.mockReturnValueOnce([mockUser]).mockReturnValueOnce(mockGroups)
+    mockUseRecoilValue
+      .mockReturnValueOnce(false) // IdentitiesManagement: isDirectAuth
+      .mockReturnValueOnce([mockUser]) // useMergedUsers: usersState
+      .mockReturnValueOnce([]) // useMergedUsers: mraState
+      .mockReturnValueOnce(mockGroups) // UserPage: groupsState
+      .mockReturnValueOnce(false) // UserPage: isDirectAuth
 
     render(<Component />)
 
@@ -99,7 +106,12 @@ describe('UserPage', () => {
       ...mockUser,
       fullName: undefined,
     }
-    mockUseRecoilValue.mockReturnValueOnce([userWithoutFullName]).mockReturnValueOnce(mockGroups)
+    mockUseRecoilValue
+      .mockReturnValueOnce(false) // IdentitiesManagement: isDirectAuth
+      .mockReturnValueOnce([userWithoutFullName]) // useMergedUsers: usersState
+      .mockReturnValueOnce([]) // useMergedUsers: mraState
+      .mockReturnValueOnce(mockGroups) // UserPage: groupsState
+      .mockReturnValueOnce(false) // UserPage: isDirectAuth
 
     render(<Component />)
 
@@ -108,10 +120,32 @@ describe('UserPage', () => {
   })
 
   test('should find user by UID', () => {
-    mockUseRecoilValue.mockReturnValueOnce([mockUser]).mockReturnValueOnce(mockGroups)
+    mockUseRecoilValue
+      .mockReturnValueOnce(false) // IdentitiesManagement: isDirectAuth
+      .mockReturnValueOnce([mockUser]) // useMergedUsers: usersState
+      .mockReturnValueOnce([]) // useMergedUsers: mraState
+      .mockReturnValueOnce(mockGroups) // UserPage: groupsState
+      .mockReturnValueOnce(false) // UserPage: isDirectAuth
 
     render(<Component userId="test-user-uid" />)
 
     expect(screen.getByRole('heading', { level: 1, name: 'Test User' })).toBeInTheDocument()
+  })
+
+  test('should hide YAML and Groups tabs when isDirectAuthenticationEnabled', () => {
+    mockUseRecoilValue
+      .mockReturnValueOnce(true) // IdentitiesManagement: isDirectAuth
+      .mockReturnValueOnce([mockUser]) // useMergedUsers: usersState
+      .mockReturnValueOnce([]) // useMergedUsers: mraState
+      .mockReturnValueOnce(mockGroups) // UserPage: groupsState
+      .mockReturnValueOnce(true) // UserPage: isDirectAuth
+
+    render(<Component />)
+
+    expect(screen.getByRole('heading', { level: 1, name: 'Test User' })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Details' })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Role assignments' })).toBeInTheDocument()
+    expect(screen.queryByRole('tab', { name: 'YAML' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('tab', { name: 'Groups' })).not.toBeInTheDocument()
   })
 })

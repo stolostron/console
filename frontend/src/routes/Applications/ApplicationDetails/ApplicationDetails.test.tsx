@@ -68,7 +68,7 @@ const mockSearchQuery = {
           { property: 'name', values: ['subscription-0'] },
           { property: 'namespace', values: ['namespace-0'] },
         ],
-        relatedKinds: ['application', 'subscription', 'placements', 'cluster'],
+        relatedKinds: ['application', 'subscription', 'placementDecision', 'cluster'],
       },
     ],
   },

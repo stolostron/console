@@ -23,6 +23,12 @@ export interface UserRequest extends IResource {
   metadata: Metadata
 }
 
+export interface GroupRequest extends IResource {
+  apiVersion: UserApiVersionType
+  kind: GroupKindType
+  metadata: Metadata
+}
+
 export const GroupKind = 'Group'
 export type GroupKindType = 'Group'
 
@@ -166,5 +172,15 @@ export const createUser = (user: Pick<User, 'fullName' | 'groups' | 'identities'
     apiVersion: UserApiVersion,
     kind: UserKind,
     ...user,
+  })
+}
+
+export const createGroup = (group: Pick<Group, 'metadata' | 'users'>) => {
+  if (!group.metadata.name) throw new Error('Group name is undefined')
+
+  return createResource<GroupRequest, Group>({
+    apiVersion: UserApiVersion,
+    kind: GroupKind,
+    ...group,
   })
 }

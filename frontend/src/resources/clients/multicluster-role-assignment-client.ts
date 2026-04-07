@@ -208,10 +208,10 @@ const isClusterOrClustersetOrRoleMatch = (
  * @returns Array of PlacementClusters for the placements together with the clusters and cluster sets
  */
 const useGetPlacementClustersForMulticlusterRoleAssignments = (
-  multiclusterRoleAssignments: MulticlusterRoleAssignment[]
+  multiclusterRoleAssignments: MulticlusterRoleAssignment[] | undefined
 ): PlacementClusters[] =>
   useGetPlacementClusters(
-    multiclusterRoleAssignments.flatMap((multiclusterRoleAssignment) =>
+    (multiclusterRoleAssignments ?? []).flatMap((multiclusterRoleAssignment) =>
       multiclusterRoleAssignment.spec.roleAssignments.flatMap((roleAssignment) =>
         roleAssignment.clusterSelection.placements.map((e) => e.name)
       )
@@ -255,7 +255,7 @@ export const useFindRoleAssignments = (query: MulticlusterRoleAssignmentQuery): 
   const clustersForPlacements = useGetPlacementClustersForMulticlusterRoleAssignments(multiclusterRoleAssignments)
 
   return useMemo(
-    () => findRoleAssignments(query, multiclusterRoleAssignments, clustersForPlacements),
+    () => findRoleAssignments(query, multiclusterRoleAssignments ?? [], clustersForPlacements),
     [query, multiclusterRoleAssignments, clustersForPlacements]
   )
 }

@@ -3,8 +3,13 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, generatePath } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { policyAutomationState, secretsState, subscriptionOperatorsState } from '../../../atoms'
-import { nockAnsibleTower, nockIgnoreApiPaths, nockIgnoreRBAC /*nockPatch*/, nockPatch } from '../../../lib/nock-util'
-// import { waitForNocks } from '../../../lib/test-util'
+import {
+  nockAnsibleTower,
+  nockIgnoreApiPaths,
+  nockIgnoreRBAC,
+  nockIgnoreClusterVersion,
+  nockPatch,
+} from '../../../lib/nock-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { EditPolicyAutomation } from './EditPolicyAutomation'
 import {
@@ -46,6 +51,7 @@ describe('Edit Policy Automation', () => {
   beforeEach(async () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
+    nockIgnoreClusterVersion()
   })
 
   test('can edit policy automation', async () => {

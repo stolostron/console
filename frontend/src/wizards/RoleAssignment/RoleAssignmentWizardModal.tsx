@@ -11,7 +11,7 @@ import { GlobalPlacementName, GroupKind, ManagedClusterSet, UserKind } from '../
 import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
 import { ClusterGranularityStepContent } from './ClusterGranularityWizardStep'
 import { ClusterSetGranularityWizardStep } from './ClusterSetGranularityWizardStep'
-import { IdentitiesList } from './Identities/IdentitiesList'
+import { IdentitiesList } from './Identities'
 import { ReviewStepContent } from './ReviewStepContent'
 import { RolesList } from './Roles/RolesList'
 import { ExampleScopesPanelContent } from './Scope/ExampleScope/ExampleScopesPanelContent'

@@ -13,7 +13,7 @@ language: en-US
 # tone_instructions: Customize how CodeRabbit communicates in reviews (max 250 characters)
 # Use this to set formality level, technical depth, or specific focus areas
 # Addresses: factual errors (verify before asserting), out-of-scope feedback (docs, README), review fatigue
-tone_instructions: "Be concise and technical. Focus on code quality, security, maintainability. Limit feedback to the PR's objective; skip off-scope or legacy nits unless critical. Only state facts clearly supported by the diff—when uncertain, suggest verification instead of asserting. Do not critique documentation content; limit doc feedback to structure and formatting."
+tone_instructions: 'Be concise and technical. Focus on code quality, security, maintainability. Limit feedback to PR scope; skip off-scope/legacy nits unless critical. State only facts from diff; suggest verification if uncertain. Docs: structure/formatting only.'
 
 # early_access: Enable experimental features that are in beta testing
 # Default: false

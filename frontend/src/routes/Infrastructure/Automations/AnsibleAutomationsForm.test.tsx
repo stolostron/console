@@ -33,6 +33,7 @@ import {
 import {
   clickByPlaceholderText,
   clickByText,
+  createClusterVersionMock,
   typeByPlaceholderText,
   waitForNock,
   waitForNocks,
@@ -40,6 +41,11 @@ import {
   waitForTestId,
   waitForText,
 } from '../../../lib/test-util'
+
+const mockUseClusterVersion = createClusterVersionMock()
+jest.mock('../../../hooks/use-cluster-version', () => ({
+  useClusterVersion: () => mockUseClusterVersion(),
+}))
 import { NavigationPath } from '../../../NavigationPath'
 import { AnsibleTowerJobTemplateList } from '../../../resources'
 import AnsibleAutomationsFormPage from './AnsibleAutomationsForm'

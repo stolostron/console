@@ -92,6 +92,10 @@ export const typeToIconMap: TypeToIcon = Object.freeze({
     shape: 'placement',
     className: 'design',
   },
+  placementDecision: {
+    shape: 'placementdecision',
+    className: 'design',
+  },
   pod: {
     shape: 'pod',
     className: 'pod',

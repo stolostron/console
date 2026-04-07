@@ -231,7 +231,7 @@ export const NodeIcons = () => (
         </g>
       </g>
     </symbol>
-    <symbol viewBox="0 0 32 32" id="nodeIcon_placement">
+    <symbol viewBox="0 0 32 32" id="nodeIcon_placementdecision">
       <g id="Placement" transform="translate(0)" fillRule="evenodd" fill="#000">
         <g transform="matrix(1.8606 0 0 1.8606 6.8571 6.3571)" stroke="none">
           <path
@@ -314,7 +314,7 @@ export const NodeIcons = () => (
         </g>
       </g>
     </symbol>
-    <symbol viewBox="0 0 32 32" id="nodeIcon_placements">
+    <symbol viewBox="0 0 32 32" id="nodeIcon_placement">
       <g transform="translate(0)" fill="none" fillRule="evenodd">
         <g transform="matrix(1.8993 0 0 1.8993 8.6667 8.6667)">
           <g stroke="none" fillRule="nonzero" fill="#000">

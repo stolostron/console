@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { constants, Http2ServerRequest, Http2ServerResponse } from 'node:http2'
-import { HeadersInit } from 'node-fetch'
+import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
+import { constants } from 'node:http2'
+import type { HeadersInit } from 'node-fetch'
 import { getServiceAgent } from '../lib/agent'
 import { fetchRetry } from '../lib/fetch-retry'
 import { jsonRequest } from '../lib/json-request'
@@ -15,17 +16,17 @@ import {
   convertBytesToGibibytes,
   convertKibibytesToMebibytes,
   convertNanocoresToMillicores,
-  FilesystemType,
-  PodListType,
-  PodMetric,
-  PodMetricsList,
-  PodType,
+  type FilesystemType,
+  type PodListType,
+  type PodMetric,
+  type PodMetricsList,
+  type PodType,
   toMebibytes,
   toMillicores,
-  VmiUsageType,
+  type VmiUsageType,
 } from '../lib/virtual-machine'
-import { ResourceList } from '../resources/resource-list'
-import { Secret } from '../resources/secret'
+import type { ResourceList } from '../resources/resource-list'
+import type { Secret } from '../resources/secret'
 import { canAccess } from './events'
 
 const {

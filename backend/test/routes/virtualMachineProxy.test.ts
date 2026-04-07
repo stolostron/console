@@ -2,7 +2,7 @@
 import nock from 'nock'
 import { request } from '../mock-request'
 import { parseResponseJsonBody } from '../../src/lib/body-parser'
-import { VmiUsageType } from '../../src/lib/virtual-machine'
+import type { VmiUsageType } from '../../src/lib/virtual-machine'
 
 describe('Virtual Machine actions', function () {
   afterEach(() => {

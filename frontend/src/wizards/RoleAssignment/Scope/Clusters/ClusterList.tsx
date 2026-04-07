@@ -2,10 +2,10 @@
 
 import { useMemo } from 'react'
 import { ClustersTable } from '../../../../components/Clusters'
-import { useTranslation } from '../../../../lib/acm-i18next'
 import { AddCluster } from '../../../../routes/Infrastructure/Clusters/ManagedClusters/components/AddCluster'
 import { useAllClusters } from '../../../../routes/Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { Cluster } from '../../../../resources/utils'
+import { useTranslation } from '../../../../lib/acm-i18next'
 import { AcmEmptyState } from '../../../../ui-components'
 
 interface ClusterListProps {
@@ -34,15 +34,7 @@ export const ClusterList = ({ onSelectCluster, namespaces, selectedClusters }: C
       initialSelectedClusters={selectedClusters}
       showExportButton={false}
       areLinksDisplayed={false}
-      hiddenColumns={[
-        t('table.namespace'),
-        t('table.provider'),
-        t('table.controlplane'),
-        t('table.distribution'),
-        t('table.labels'),
-        t('Add-ons'),
-        t('table.creationDate'),
-      ]}
+      hiddenColumns={['namespace', 'provider', 'controlplane', 'distribution', 'labels', 'addons', 'created']}
       emptyState={
         <AcmEmptyState
           key="mcEmptyState"

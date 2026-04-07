@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import { logger } from '../lib/logger'
 import { respondInternalServerError } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'
-import { getMultiClusterEngineComponents, MultiClusterEngineComponent } from '../lib/multi-cluster-engine'
-import { getManagedClusterAddOn, isAddOnHealthy, ManagedClusterAddOn } from '../lib/managed-cluster-addon'
+import { getMultiClusterEngineComponents, type MultiClusterEngineComponent } from '../lib/multi-cluster-engine'
+import { getManagedClusterAddOn, isAddOnHealthy, type ManagedClusterAddOn } from '../lib/managed-cluster-addon'
 
 function processHypershiftStatus(
   components: MultiClusterEngineComponent[] | undefined,

@@ -97,6 +97,7 @@ export const setResourceDeployStatus = (
         'applicationset',
         'placements',
         'placement',
+        'placementDecision',
         'cluster',
         'subscription',
         'ocpapplication',

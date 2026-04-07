@@ -8,11 +8,11 @@ import { Group, User } from '../../../../resources/rbac'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../../../ui-components'
+import { useMergedUsers } from '../useMergedIdentities'
 
 export const useCurrentUser = (): User | undefined => {
   const { id } = useParams()
-  const { usersState } = useSharedAtoms()
-  const users = useRecoilValue(usersState)
+  const users = useMergedUsers()
 
   return useMemo(
     () => (!users || !id ? undefined : users.find((u) => u.metadata.uid === id || u.metadata.name === id)),
@@ -31,8 +31,9 @@ const UserPage = () => {
   const location = useLocation()
 
   const user = useCurrentUser()
-  const { groupsState } = useSharedAtoms()
+  const { groupsState, isDirectAuthenticationEnabledState } = useSharedAtoms()
   const groups = useRecoilValue(groupsState)
+  const isDirectAuth = useRecoilValue(isDirectAuthenticationEnabledState)
 
   const userDetailsContext = useMemo<UserDetailsContext>(
     () => ({
@@ -84,24 +85,32 @@ const UserPage = () => {
                   isActive: isDetailsActive,
                   to: generatePath(NavigationPath.identitiesUsersDetails, { id: id ?? '' }),
                 },
-                {
-                  key: 'user-mgmt-identities-users-yaml',
-                  title: t('YAML'),
-                  isActive: isYamlActive,
-                  to: generatePath(NavigationPath.identitiesUsersYaml, { id: id ?? '' }),
-                },
+                ...(!isDirectAuth
+                  ? [
+                      {
+                        key: 'user-mgmt-identities-users-yaml',
+                        title: t('YAML'),
+                        isActive: isYamlActive,
+                        to: generatePath(NavigationPath.identitiesUsersYaml, { id: id ?? '' }),
+                      },
+                    ]
+                  : []),
                 {
                   key: 'user-mgmt-identities-users-role-assignments',
                   title: t('Role assignments'),
                   isActive: isRoleAssignmentsActive,
                   to: generatePath(NavigationPath.identitiesUsersRoleAssignments, { id: id ?? '' }),
                 },
-                {
-                  key: 'user-mgmt-identities-users-groups',
-                  title: t('Groups'),
-                  isActive: isGroupsActive,
-                  to: generatePath(NavigationPath.identitiesUsersGroups, { id: id ?? '' }),
-                },
+                ...(!isDirectAuth
+                  ? [
+                      {
+                        key: 'user-mgmt-identities-users-groups',
+                        title: t('Groups'),
+                        isActive: isGroupsActive,
+                        to: generatePath(NavigationPath.identitiesUsersGroups, { id: id ?? '' }),
+                      },
+                    ]
+                  : []),
               ]}
             />
           }

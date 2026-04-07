@@ -454,7 +454,7 @@ describe('ClustersTableHelper', () => {
       expect(useClusterSetColumn().header).toBe('table.clusterSet')
       expect(useClusterNodesColumn().header).toBe('table.nodes')
       expect(useClusterAddonColumn().header).toBe('Add-ons')
-      expect(useClusterCreatedDateColumn().header).toBe('table.creationDate')
+      expect(useClusterCreatedDateColumn().header).toBe('Created')
     })
 
     it('should have correct sort properties', () => {

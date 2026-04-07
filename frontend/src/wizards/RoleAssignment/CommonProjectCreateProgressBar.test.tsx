@@ -98,6 +98,34 @@ describe('CommonProjectCreateProgressBar', () => {
     expect(Number(value)).toBeLessThanOrEqual(34)
   })
 
+  describe('hideTitle', () => {
+    test('shows "Creating common projects" title when hideTitle is false (default)', () => {
+      render(<CommonProjectCreateProgressBar totalCount={5} />)
+
+      expect(screen.getByText('Creating common projects')).toBeInTheDocument()
+    })
+
+    test('shows title when hideTitle is explicitly false', () => {
+      render(<CommonProjectCreateProgressBar totalCount={5} hideTitle={false} />)
+
+      expect(screen.getByText('Creating common projects')).toBeInTheDocument()
+    })
+
+    test('does not show "Creating common projects" title when hideTitle is true', () => {
+      render(<CommonProjectCreateProgressBar totalCount={5} hideTitle />)
+
+      expect(screen.queryByText('Creating common projects')).not.toBeInTheDocument()
+    })
+
+    test('progress bar still renders and works when hideTitle is true', () => {
+      render(<CommonProjectCreateProgressBar successCount={2} errorCount={0} totalCount={5} hideTitle />)
+
+      const progress = screen.getByRole('progressbar')
+      expect(progress).toBeInTheDocument()
+      expect(progress).toHaveAttribute('aria-valuenow', '40')
+    })
+  })
+
   it.each([
     ['uses default successCount when undefined is passed', undefined, 0, 0],
     ['uses default errorCount when undefined is passed', 2, undefined, 40],
