@@ -45,13 +45,13 @@
       "enabled": false
     },
     {
-      "description": "Major/minor versions for dynamic plugin SDK must obey support matrix",
+      "description": "Dynamic plugin SDK major/minor must obey support matrix; allow only patch",
       "matchPackageNames": [
         "@openshift-console/dynamic-plugin-sdk",
         "@openshift-console/dynamic-plugin-sdk-webpack"
       ],
-      "matchUpdateTypes": ["patch"],
-      "enabled": true
+      "matchUpdateTypes": ["major", "minor"],
+      "enabled": false
     }
   ]
 }
