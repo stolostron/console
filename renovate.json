@@ -38,6 +38,15 @@
       "description": "Ignore all storybook packages",
       "matchPackageNames": ["storybook", "@storybook/**"],
       "enabled": false
+    },
+    {
+      "description": "Major/minor versions for dynamic plugin SDK must obey support matrix",
+      "matchPackageNames": [
+        "@openshift-console/dynamic-plugin-sdk",
+        "@openshift-console/dynamic-plugin-sdk-webpack"
+      ],
+      "matchUpdateTypes": ["patch"],
+      "enabled": true
     }
   ]
 }
