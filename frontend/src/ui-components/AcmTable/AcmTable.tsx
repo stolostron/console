@@ -42,6 +42,7 @@ import useResizeObserver from '@react-hook/resize-observer'
 import Fuse from 'fuse.js'
 import get from 'get-value'
 import { mergeWith } from 'lodash'
+import { debounce } from 'debounce'
 import {
   cloneElement,
   FormEvent,
@@ -101,6 +102,8 @@ const BREAKPOINT_SIZES = [
   { name: TableGridBreakpoint.grid2xl, size: 1450 },
   { name: TableGridBreakpoint.grid, size: Infinity },
 ]
+
+const SEARCH_DEBOUNCE_TIME = 500
 
 function mergeProps(...props: any) {
   const firstProps = props[0]
@@ -198,6 +201,15 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     initialSort ?? storedPreFilterSort ?? DEFAULT_SORT
   )
   const [stateSearch, setStateSearch] = useState(initialSearch ?? storedSearch ?? '')
+  const [internalSearch, setInternalSearch] = useState(propsSearch ?? storedSearch ?? '')
+
+  // Dependencies cannot be determined without inline function
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const setInternalSearchWithDebounce = useCallback<
+    ReturnType<typeof debounce<typeof setInternalSearch>> | typeof setInternalSearch
+  >(process.env.NODE_ENV === 'test' ? setInternalSearch : debounce(setInternalSearch, SEARCH_DEBOUNCE_TIME), [
+    setInternalSearch,
+  ])
 
   const perPage = statePerPage
   const setPerPage = useCallback(
@@ -255,6 +267,22 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     },
     [propsSetSearch, setStoredSearch]
   )
+
+  // Debounce the search input to prevent excessive re-renders while typing
+  useEffect(() => {
+    if (search !== internalSearch) {
+      if (search === '') {
+        setInternalSearch('')
+      } else {
+        setInternalSearchWithDebounce(search)
+      }
+    }
+    return () => {
+      if ('clear' in setInternalSearchWithDebounce) {
+        setInternalSearchWithDebounce.clear()
+      }
+    }
+  }, [internalSearch, setInternalSearchWithDebounce, search])
 
   const [activeAdvancedFilters, setActiveAdvancedFilters] = useState<SearchConstraint[]>([])
 
@@ -433,12 +461,12 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       setRequestView({
         page,
         perPage,
-        search,
+        search: internalSearch,
         filters: JSON.parse(filterSelectionsStr),
         sortBy: sort,
       })
     }
-  }, [filterSelectionsStr, search, isPreProcessed, page, perPage, setRequestView, sort])
+  }, [filterSelectionsStr, internalSearch, isPreProcessed, page, perPage, setRequestView, sort])
 
   const { tableItems, totalCount, allTableItems } = useMemo<{
     tableItems: ITableItem<T>[]
@@ -515,7 +543,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       threshold = props.fuseThreshold
     }
     // if using a result view from backend, the items have already been searched
-    if (!isPreProcessed && search && search !== '') {
+    if (!isPreProcessed && internalSearch && internalSearch !== '') {
       const fuse = new Fuse(tableItems, {
         ignoreLocation: true,
         threshold: threshold,
@@ -524,12 +552,12 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
           .filter((value) => value !== undefined),
         // TODO use FuseOptionKeyObject to allow for weights
       })
-      const filtered = fuse.search<ITableItem<T>>(search).map((result) => result.item)
+      const filtered = fuse.search<ITableItem<T>>(internalSearch).map((result) => result.item)
       return { filtered, filteredCount: filtered.length }
     } else {
       return { filtered: tableItems, filteredCount: totalCount }
     }
-  }, [props.fuseThreshold, isPreProcessed, search, tableItems, columns, totalCount])
+  }, [props.fuseThreshold, isPreProcessed, internalSearch, tableItems, columns, totalCount])
   const { sorted, itemCount } = useMemo<{
     sorted: ITableItem<T>[]
     itemCount: number
@@ -672,7 +700,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       selectedSortedCols.map((column) => {
         return typeof column.cell === 'string'
           ? get(item as Record<string, unknown>, column.cell)
-          : { title: <Fragment key={key}>{column.cell(item, search)}</Fragment> }
+          : { title: <Fragment key={key}>{column.cell(item, internalSearch)}</Fragment> }
       })
     let addedSubRowCount = 0
     paged.forEach((tableItem, i) => {
@@ -703,7 +731,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       addedSubRows: newSubRows,
       addedSubRowCount,
     }
-  }, [paged, selectedSortedCols, search, expanded, selected, disabled])
+  }, [paged, selectedSortedCols, internalSearch, expanded, selected, disabled])
 
   const onCollapse = useMemo<((_event: unknown, rowIndex: number, isOpen: boolean) => void) | undefined>(() => {
     if (addSubRows && addedSubRowCount) {
@@ -755,12 +783,12 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
           direction: newSort && newSort.direction ? newSort.direction : undefined,
         })
       }
-      if (search) {
+      if (internalSearch) {
         // sort changed while filtering; forget previous setting
         setPreFilterSort(undefined)
       }
     },
-    [filtered.length, search, setPreFilterSort, setSort]
+    [filtered.length, internalSearch, setPreFilterSort, setSort]
   )
 
   const updatePerPage = useCallback(
@@ -960,6 +988,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             filteredCount,
             hasFilter,
             hasSelectionColumn,
+            internalSearch,
             page,
             paged,
             perPage,

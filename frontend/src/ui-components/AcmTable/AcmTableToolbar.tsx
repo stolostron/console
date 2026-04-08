@@ -17,7 +17,6 @@ import {
 } from '@patternfly/react-core'
 import { ExportIcon } from '@patternfly/react-icons'
 import { ISortBy } from '@patternfly/react-table'
-import { debounce } from 'debounce'
 import { parse, ParsedQuery, stringify } from 'query-string'
 import {
   forwardRef,
@@ -61,8 +60,6 @@ const SPLIT_FILTER_THRESHOLD = 30
 // with the assumption that if the user is looking for an option
 // they will use filter to find it
 const MAXIMUM_OPTIONS = 200
-
-export const SEARCH_DEBOUNCE_TIME = 500
 
 const createFilterSelectOptionObject = (filterId: string, value: string): FilterSelectOptionObject => ({
   filterId,
@@ -273,6 +270,7 @@ export type AcmTableToolbarProps<T> = Pick<
     exportTable: () => Promise<void>
     hasFilter: boolean
     hasSelectionColumn: boolean
+    internalSearch: string
     preFilterSort: ISortBy | undefined
     renderColumnManagement: () => JSX.Element | undefined
     selected: { [uid: string]: boolean }
@@ -292,45 +290,44 @@ export interface ToolbarRef {
 const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<ToolbarRef>) => {
   useImperativeHandle(ref, () => ({ clearSearchAndFilters }))
   const {
-    id,
-    items,
-    columns,
-    keyFn,
-    tableActions = [],
-    customTableAction,
     additionalToolbarItems,
-    filters = [],
-    secondaryFilterIds,
     advancedFilters = [],
-    onSelect: propsOnSelect,
-    resultCounts,
-    renderColumnManagement,
-    showExportButton,
-    hasFilter,
-    hasSelectionColumn,
+    columns,
     commonPaginationProps,
-    search,
-    setSearch,
-    sort,
-    setPage,
-    setSort,
-    setPreFilterSort,
-    selected,
-    setSelected,
+    customTableAction,
     disabled,
-    preFilterSort,
     exportTable,
-    setActiveAdvancedFilters,
-    perPage,
-    paged,
     filtered,
     filteredCount,
+    filters = [],
+    hasFilter,
+    hasSelectionColumn,
+    id,
+    internalSearch,
+    items,
+    keyFn,
+    onSelect: propsOnSelect,
+    paged,
+    perPage,
+    preFilterSort,
+    renderColumnManagement,
+    resultCounts,
+    search,
+    secondaryFilterIds,
+    selected,
+    setActiveAdvancedFilters,
+    setPage,
+    setPreFilterSort,
+    setSearch,
+    setSelected,
+    setSort,
+    showExportButton,
+    sort,
+    tableActions = [],
     totalCount,
   } = props
 
   const { t } = useTranslation()
-
-  const [stateSearch, setStateSearch] = useState(search ?? '')
 
   const searchPlaceholder = props.searchPlaceholder ?? t('Search')
   const hasSearch = useMemo(() => columns.some((column) => column.search), [columns])
@@ -342,35 +339,13 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
     { operator: undefined, value: '', columnId: '' },
   ])
 
-  // Dependencies cannot be determined without inline function
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const setSearchWithDebounce = useCallback<ReturnType<typeof debounce<typeof setSearch>> | typeof setSearch>(
-    process.env.NODE_ENV === 'test' ? setSearch : debounce(setSearch, SEARCH_DEBOUNCE_TIME),
-    [setSearch]
-  )
-
-  useEffect(() => {
-    if (stateSearch !== search) {
-      setSearchWithDebounce(stateSearch)
-    }
-    return () => {
-      if ('clear' in setSearchWithDebounce) {
-        setSearchWithDebounce.clear()
-      }
-    }
-  }, [search, setSearchWithDebounce, stateSearch])
-
   const clearSearch = useCallback(() => {
-    if ('clear' in setSearchWithDebounce) {
-      setSearchWithDebounce.clear()
-    }
-    setStateSearch('')
     setSearch('')
     setPage(1)
     if (preFilterSort) {
       setSort(preFilterSort)
     }
-  }, [setSearch, setStateSearch, setPage, preFilterSort, setSearchWithDebounce, setSort])
+  }, [setSearch, setPage, preFilterSort, setSort])
 
   const clearSearchAndFilters = useCallback(() => {
     clearSearch()
@@ -381,20 +356,20 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
 
   const updateSearch = useCallback(
     (newSearch: string) => {
-      setStateSearch(newSearch)
+      setSearch(newSearch)
       setPage(1)
       if (!newSearch) {
         // clearing filtered state; restore previous sorting if applicable
         if (preFilterSort) {
           setSort(preFilterSort)
         }
-      } else if (!stateSearch) {
+      } else if (!search) {
         // entering a filtered state; save sort setting use fuzzy match sort
         setPreFilterSort(sort)
         setSort({})
       }
     },
-    [setPage, stateSearch, preFilterSort, setSort, setPreFilterSort, sort]
+    [setSearch, setPage, search, preFilterSort, setSort, setPreFilterSort, sort]
   )
 
   return (
@@ -452,7 +427,7 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
                 <AcmSearchInput
                   placeholder={searchPlaceholder}
                   spellCheck={false}
-                  resultsCount={`${stateSearch === search ? filteredCount : '-'} / ${totalCount}`}
+                  resultsCount={`${search === internalSearch ? filteredCount : '-'} / ${totalCount}`}
                   canAddConstraints
                   useAdvancedSearchPopper={advancedFilters.length > 0}
                   setActiveConstraints={setActiveAdvancedFilters}
@@ -463,7 +438,7 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
                     columnDisplayName: filter.label,
                     availableOperators: filter.availableOperators,
                   }))}
-                  fuzzySearchValue={stateSearch}
+                  fuzzySearchValue={search}
                   fuzzySearchOnChange={updateSearch}
                   fuzzySearchOnClear={clearSearch}
                 />
