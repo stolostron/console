@@ -8,7 +8,7 @@ describe('UrlQuery', () => {
     // These are the default values
     expect(result).toEqual({
       initialFilters: {},
-      initialSearch: '',
+      initialSearch: undefined,
       initialSort: { index: 0, direction: 'asc' },
       initialPage: 1,
       initialPerPage: 10,

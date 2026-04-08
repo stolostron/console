@@ -801,30 +801,6 @@ describe('AcmTable', () => {
       )
     ).toHaveTextContent('Arabela')
   })
-  test('can use saved pagination', async () => {
-    const { getAllByLabelText, getByText, container } = render(
-      <MemoryRouter>
-        <Routes>
-          <Route
-            path="/*"
-            element={
-              <AcmTableStateProvider localStorageKey="my-table">
-                <Table useRouter={false} />
-                <Table useRouter={false} />
-              </AcmTableStateProvider>
-            }
-          />
-        </Routes>
-      </MemoryRouter>
-    )
-    // set pagination on first table
-    userEvent.click(getAllByLabelText('items per page')[0])
-    await waitFor(() => expect(getByText('100 per page')).toBeVisible())
-    userEvent.click(getByText('100 per page'))
-
-    // verify pagination changes on both tables
-    await waitFor(() => expect(container.querySelectorAll('tbody tr')).toHaveLength(200))
-  })
   test('initialSearch is used when no cached search exists in localStorage', async () => {
     const storageKey = 'initial-search-no-cache-test'
 

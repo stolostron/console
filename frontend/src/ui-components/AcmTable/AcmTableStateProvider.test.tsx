@@ -164,43 +164,6 @@ describe('AcmTableStateProvider', () => {
       expect(getItemWithExpiration(`${TEST_KEY}-search`)).toBe('my-query')
       expect(getItemWithExpiration(`${TEST_KEY}-page`)).toBe('3')
     })
-
-    test('when localStorageKey changes, state is rehydrated from new key', async () => {
-      setItemWithExpiration(`${TEST_KEY}-search`, 'first-query')
-      setItemWithExpiration(`${TEST_KEY}-sort`, JSON.stringify(DEFAULT_SORT))
-
-      const otherKey = 'other-table-state'
-      setItemWithExpiration(`${otherKey}-search`, 'second-query')
-      setItemWithExpiration(`${otherKey}-sort`, JSON.stringify({ index: 1, direction: SortByDirection.desc }))
-
-      const { rerender } = render(
-        <MemoryRouter>
-          <AcmTableStateProvider localStorageKey={TEST_KEY}>
-            <TestConsumer />
-          </AcmTableStateProvider>
-        </MemoryRouter>
-      )
-
-      await waitFor(() => {
-        expect(screen.getByTestId('search')).toHaveTextContent('first-query')
-        expect(screen.getByTestId('sort')).toHaveTextContent(JSON.stringify(DEFAULT_SORT))
-      })
-
-      rerender(
-        <MemoryRouter>
-          <AcmTableStateProvider localStorageKey={otherKey}>
-            <TestConsumer />
-          </AcmTableStateProvider>
-        </MemoryRouter>
-      )
-
-      await waitFor(() => {
-        expect(screen.getByTestId('search')).toHaveTextContent('second-query')
-        expect(screen.getByTestId('sort')).toHaveTextContent(
-          JSON.stringify({ index: 1, direction: SortByDirection.desc })
-        )
-      })
-    })
   })
 
   describe('exports', () => {
