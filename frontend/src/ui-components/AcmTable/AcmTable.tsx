@@ -64,7 +64,7 @@ import { AcmButton } from '../AcmButton/AcmButton'
 import { AcmEmptyState } from '../AcmEmptyState/AcmEmptyState'
 import { SearchConstraint } from '../AcmSearchInput'
 import { AcmManageColumn } from './AcmManageColumn'
-import { AcmTableStateContext, DEFAULT_ITEMS_PER_PAGE, DEFAULT_SORT } from './AcmTableStateProvider'
+import { AcmTableStateContext, DEFAULT_ITEMS_PER_PAGE, DEFAULT_PAGE, DEFAULT_SORT } from './AcmTableStateProvider'
 import { AcmTableToolbar, applyFilters, ToolbarRef, useTableFilterSelections } from './AcmTableToolbar'
 import {
   AcmTableProps,
@@ -130,25 +130,33 @@ function mergeProps(...props: any) {
 
 export function AcmTable<T>(props: AcmTableProps<T>) {
   const {
-    id,
-    items,
-    columns,
     addSubRows,
-    keyFn,
-    tableActions = [],
-    rowActions = [],
-    rowActionResolver,
-    filters = [],
     advancedFilters = [],
-    gridBreakPoint,
-    initialSelectedItems,
-    onSelect: propsOnSelect,
-    showColumnManagement,
+    columns,
     exportFilePrefix,
-    setRequestView,
-    resultView,
-    resultCounts,
     fetchExport,
+    filters = [],
+    gridBreakPoint,
+    id,
+    initialSearch,
+    initialSelectedItems,
+    initialSort,
+    items,
+    keyFn,
+    onSelect: propsOnSelect,
+    page: propsPage,
+    resultCounts,
+    resultView,
+    rowActionResolver,
+    rowActions = [],
+    search: propsSearch,
+    setPage: propsSetPage,
+    setRequestView,
+    setSearch: propsSetSearch,
+    setSort: propsSetSort,
+    sort: propsSort,
+    showColumnManagement,
+    tableActions = [],
   } = props
 
   // a ref forwarded from toolbar to access its methods
@@ -171,34 +179,83 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   }, [items, loading, loadStarted, loadCompleted, resultView])
 
   // State that can come from context or component state (search, sort, page, perPage)
-  const initialSort = props.initialSort ?? DEFAULT_SORT
-  const initialSearch = props.initialSearch ?? ''
-  const [statePerPage, stateSetPerPage] = useState(props.initialPerPage || DEFAULT_ITEMS_PER_PAGE)
-  const [statePage, stateSetPage] = useState(props.initialPage || 1)
-  const [stateSort, stateSetSort] = useState<ISortBy | undefined>(initialSort)
-  const [internalSearch, setInternalSearch] = useState(props.search ?? initialSearch)
   const {
     search: storedSearch,
+    setSearch: setStoredSearch,
     sort: storedSort,
     setSort: setStoredSort,
+    preFilterSort: storedPreFilterSort,
+    setPreFilterSort: setStoredPreFilterSort,
     page: storedPage,
     setPage: setStoredPage,
     perPage: storedPerPage,
     setPerPage: setStoredPerPage,
   } = useContext(AcmTableStateContext)
-  const perPage = storedPerPage || statePerPage
-  const setPerPage = setStoredPerPage || stateSetPerPage
-  const page = props.page || storedPage || statePage
-  const setPage = props.setPage || setStoredPage || stateSetPage
-  const sort = props.sort || storedSort || stateSort
-  const setSort = props.setSort || setStoredSort || stateSetSort
-  useEffect(() => {
-    if (process.env.NODE_ENV !== 'test' && storedSearch !== undefined) {
-      setInternalSearch(storedSearch)
-    }
-  }, [storedSearch])
+  const [statePerPage, setStatePerPage] = useState(props.initialPerPage ?? storedPerPage ?? DEFAULT_ITEMS_PER_PAGE)
+  const [statePage, setStatePage] = useState(props.initialPage ?? storedPage ?? DEFAULT_PAGE)
+  const [stateSort, setStateSort] = useState<ISortBy | undefined>(initialSort ?? storedSort ?? DEFAULT_SORT)
+  const [statePreFilterSort, setStatePreFilterSort] = useState<ISortBy | undefined>(
+    initialSort ?? storedPreFilterSort ?? DEFAULT_SORT
+  )
+  const [stateSearch, setStateSearch] = useState(initialSearch ?? storedSearch ?? '')
 
-  const [preFilterSort, setPreFilterSort] = useState<ISortBy | undefined>(initialSort)
+  const perPage = statePerPage
+  const setPerPage = useCallback(
+    (perPage: number) => {
+      setStoredPerPage?.(perPage)
+      setStatePerPage(perPage)
+    },
+    [setStoredPerPage]
+  )
+
+  const page = propsPage ?? statePage
+  const setPage = useCallback(
+    (page: number) => {
+      if (propsSetPage) {
+        propsSetPage(page)
+      } else {
+        setStoredPage?.(page)
+        setStatePage(page)
+      }
+    },
+    [propsSetPage, setStoredPage]
+  )
+
+  const sort = propsSort ?? stateSort
+  const setSort = useCallback(
+    (sort: ISortBy) => {
+      if (propsSetSort) {
+        propsSetSort(sort)
+      } else {
+        setStoredSort?.(sort)
+        setStateSort(sort)
+      }
+    },
+    [propsSetSort, setStoredSort]
+  )
+
+  const preFilterSort = statePreFilterSort
+  const setPreFilterSort = useCallback(
+    (preFilterSort: ISortBy) => {
+      setStoredPreFilterSort?.(preFilterSort)
+      setStatePreFilterSort(preFilterSort)
+    },
+    [setStoredPreFilterSort]
+  )
+
+  const search = propsSearch ?? stateSearch
+  const setSearch = useCallback(
+    (search: string) => {
+      if (propsSetSearch) {
+        propsSetSearch(search)
+      } else {
+        setStoredSearch?.(search)
+        setStateSearch(search)
+      }
+    },
+    [propsSetSearch, setStoredSearch]
+  )
+
   const [activeAdvancedFilters, setActiveAdvancedFilters] = useState<SearchConstraint[]>([])
 
   // State that is only stored in the component state
@@ -376,12 +433,12 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       setRequestView({
         page,
         perPage,
-        search: internalSearch,
+        search,
         filters: JSON.parse(filterSelectionsStr),
         sortBy: sort,
       })
     }
-  }, [filterSelectionsStr, internalSearch, isPreProcessed, page, perPage, setRequestView, sort])
+  }, [filterSelectionsStr, search, isPreProcessed, page, perPage, setRequestView, sort])
 
   const { tableItems, totalCount, allTableItems } = useMemo<{
     tableItems: ITableItem<T>[]
@@ -458,7 +515,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       threshold = props.fuseThreshold
     }
     // if using a result view from backend, the items have already been searched
-    if (!isPreProcessed && internalSearch && internalSearch !== '') {
+    if (!isPreProcessed && search && search !== '') {
       const fuse = new Fuse(tableItems, {
         ignoreLocation: true,
         threshold: threshold,
@@ -467,12 +524,12 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
           .filter((value) => value !== undefined),
         // TODO use FuseOptionKeyObject to allow for weights
       })
-      const filtered = fuse.search<ITableItem<T>>(internalSearch).map((result) => result.item)
+      const filtered = fuse.search<ITableItem<T>>(search).map((result) => result.item)
       return { filtered, filteredCount: filtered.length }
     } else {
       return { filtered: tableItems, filteredCount: totalCount }
     }
-  }, [props.fuseThreshold, isPreProcessed, internalSearch, tableItems, columns, totalCount])
+  }, [props.fuseThreshold, isPreProcessed, search, tableItems, columns, totalCount])
   const { sorted, itemCount } = useMemo<{
     sorted: ITableItem<T>[]
     itemCount: number
@@ -615,7 +672,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       selectedSortedCols.map((column) => {
         return typeof column.cell === 'string'
           ? get(item as Record<string, unknown>, column.cell)
-          : { title: <Fragment key={key}>{column.cell(item, internalSearch)}</Fragment> }
+          : { title: <Fragment key={key}>{column.cell(item, search)}</Fragment> }
       })
     let addedSubRowCount = 0
     paged.forEach((tableItem, i) => {
@@ -646,7 +703,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       addedSubRows: newSubRows,
       addedSubRowCount,
     }
-  }, [paged, selectedSortedCols, internalSearch, expanded, selected, disabled])
+  }, [paged, selectedSortedCols, search, expanded, selected, disabled])
 
   const onCollapse = useMemo<((_event: unknown, rowIndex: number, isOpen: boolean) => void) | undefined>(() => {
     if (addSubRows && addedSubRowCount) {
@@ -698,12 +755,12 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
           direction: newSort && newSort.direction ? newSort.direction : undefined,
         })
       }
-      if (internalSearch) {
+      if (search) {
         // sort changed while filtering; forget previous setting
         setPreFilterSort(undefined)
       }
     },
-    [filtered.length, internalSearch, setSort]
+    [filtered.length, search, setSort]
   )
 
   const updatePerPage = useCallback(
@@ -896,26 +953,27 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         <AcmTableToolbar
           {...{
             ...props,
-            hasFilter,
-            hasSelectionColumn,
             commonPaginationProps,
-            sort,
-            setPage,
-            setSort,
-            preFilterSort,
-            setPreFilterSort,
-            selected,
-            setSelected,
             disabled,
-            internalSearch,
-            setInternalSearch,
             exportTable,
-            renderColumnManagement,
-            setActiveAdvancedFilters,
-            perPage,
-            paged,
             filtered,
             filteredCount,
+            hasFilter,
+            hasSelectionColumn,
+            page,
+            paged,
+            perPage,
+            preFilterSort,
+            renderColumnManagement,
+            search,
+            selected,
+            setActiveAdvancedFilters,
+            setPage,
+            setPreFilterSort,
+            setSearch,
+            setSelected,
+            setSort,
+            sort,
             totalCount,
           }}
           ref={toolbarRef}

@@ -18,7 +18,6 @@ import {
 import { ExportIcon } from '@patternfly/react-icons'
 import { ISortBy } from '@patternfly/react-table'
 import { debounce } from 'debounce'
-import { noop } from 'lodash'
 import { parse, ParsedQuery, stringify } from 'query-string'
 import {
   forwardRef,
@@ -26,7 +25,6 @@ import {
   Ref,
   RefObject,
   useCallback,
-  useContext,
   useEffect,
   useImperativeHandle,
   useMemo,
@@ -39,7 +37,6 @@ import { matchesFilterValue, parseLabel } from '../../resources/utils'
 import { AcmButton } from '../AcmButton'
 import { AcmDropdown, AcmDropdownItems } from '../AcmDropdown'
 import { AcmSearchInput, SearchConstraint } from '../AcmSearchInput'
-import { AcmTableStateContext } from './AcmTableStateProvider'
 import {
   AcmTableProps,
   CommonPaginationPropsType,
@@ -266,28 +263,28 @@ export const applyFilters = <T, S>(
   )
 }
 
-export type AcmTableToolbarProps<T> = Pick<AcmTableProps<T>, Exclude<keyof AcmTableProps<T>, 'setPage' | 'setSort'>> & {
-  hasFilter: boolean
-  hasSelectionColumn: boolean
-  commonPaginationProps: CommonPaginationPropsType
-  preFilterSort: ISortBy | undefined
-  setPage: (page: number) => void
-  setSort: (sort: ISortBy) => void
-  setPreFilterSort: React.Dispatch<React.SetStateAction<ISortBy | undefined>>
-  selected: { [uid: string]: boolean }
-  setSelected: React.Dispatch<React.SetStateAction<{ [uid: string]: boolean }>>
-  disabled: { [uid: string]: boolean }
-  internalSearch: string
-  setInternalSearch: React.Dispatch<React.SetStateAction<string>>
-  exportTable: () => Promise<void>
-  renderColumnManagement: () => JSX.Element | undefined
-  setActiveAdvancedFilters: React.Dispatch<React.SetStateAction<SearchConstraint[]>>
-  perPage: number
-  paged: ITableItem<T>[]
-  filtered: ITableItem<T>[]
-  filteredCount: number
-  totalCount: number
-}
+export type AcmTableToolbarProps<T> = Pick<
+  AcmTableProps<T>,
+  Exclude<keyof AcmTableProps<T>, 'setPage' | 'setSearch' | 'setSort'>
+> &
+  Required<Pick<AcmTableProps<T>, 'setPage' | 'setSearch' | 'setSort'>> & {
+    commonPaginationProps: CommonPaginationPropsType
+    disabled: { [uid: string]: boolean }
+    exportTable: () => Promise<void>
+    hasFilter: boolean
+    hasSelectionColumn: boolean
+    preFilterSort: ISortBy | undefined
+    renderColumnManagement: () => JSX.Element | undefined
+    selected: { [uid: string]: boolean }
+    setActiveAdvancedFilters: React.Dispatch<React.SetStateAction<SearchConstraint[]>>
+    setPreFilterSort: (sort: ISortBy) => void
+    setSelected: React.Dispatch<React.SetStateAction<{ [uid: string]: boolean }>>
+    perPage: number
+    paged: ITableItem<T>[]
+    filtered: ITableItem<T>[]
+    filteredCount: number
+    totalCount: number
+  }
 
 export interface ToolbarRef {
   clearSearchAndFilters: () => void
@@ -312,6 +309,8 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
     hasFilter,
     hasSelectionColumn,
     commonPaginationProps,
+    search,
+    setSearch,
     sort,
     setPage,
     setSort,
@@ -319,8 +318,6 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
     selected,
     setSelected,
     disabled,
-    internalSearch,
-    setInternalSearch,
     preFilterSort,
     exportTable,
     setActiveAdvancedFilters,
@@ -332,19 +329,8 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
   } = props
 
   const { t } = useTranslation()
-  const initialSearch = props.initialSearch ?? ''
 
-  const [stateSearch, stateSetSearch] = useState(initialSearch)
-  const { search: storedSearch, setSearch: setStoredSearch = noop } = useContext(AcmTableStateContext)
-  const search = props.search ?? storedSearch ?? stateSearch
-  const setSearch = props.setSearch ?? stateSetSearch
-
-  useEffect(() => {
-    if (initialSearch) {
-      setStoredSearch(initialSearch)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialSearch])
+  const [stateSearch, setStateSearch] = useState(search ?? '')
 
   const searchPlaceholder = props.searchPlaceholder ?? t('Search')
   const hasSearch = useMemo(() => columns.some((column) => column.search), [columns])
@@ -357,37 +343,38 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
   ])
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const setInternalSearchWithDebounce = useCallback(
+  const setSearchWithDebounce = useCallback(
     process.env.NODE_ENV !== 'test'
       ? debounce((search: string) => {
-          setInternalSearch(search)
+          setSearch(search)
         }, SEARCH_DEBOUNCE_TIME)
-      : setInternalSearch,
-    [setInternalSearch]
+      : setSearch,
+    [setSearch]
   )
 
   useEffect(() => {
-    setInternalSearchWithDebounce(search)
+    if (stateSearch !== search) {
+      setSearchWithDebounce(stateSearch)
+    }
     return () => {
-      if ('clear' in setInternalSearchWithDebounce) {
-        ;(setInternalSearchWithDebounce as any).clear()
+      if ('clear' in setSearchWithDebounce) {
+        ;(setSearchWithDebounce as any).clear()
       }
     }
-  }, [search, setInternalSearchWithDebounce])
+  }, [search, setSearchWithDebounce, stateSearch])
 
   const clearSearch = useCallback(() => {
     /* istanbul ignore if */
     if (process.env.NODE_ENV !== 'test') {
-      ;(setInternalSearchWithDebounce as unknown as ReturnType<typeof debounce>).clear()
+      ;(setSearchWithDebounce as unknown as ReturnType<typeof debounce>).clear()
     }
+    setStateSearch('')
     setSearch('')
-    setInternalSearch('')
-    setStoredSearch('')
     setPage(1)
     if (preFilterSort) {
       setSort(preFilterSort)
     }
-  }, [setSearch, setStoredSearch, setInternalSearch, setPage, preFilterSort, setInternalSearchWithDebounce, setSort])
+  }, [setSearch, setStateSearch, setPage, preFilterSort, setSearchWithDebounce, setSort])
 
   const clearSearchAndFilters = useCallback(() => {
     clearSearch()
@@ -403,23 +390,20 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
       // To: (_event: React.FormEvent<HTMLInputElement>, value: string) => void
       // both cases need to be handled for backwards compatibility
       const newSearch = typeof input === 'string' ? input : (input.target as HTMLInputElement).value
-      setSearch(newSearch)
-      setStoredSearch(newSearch)
+      setStateSearch(newSearch)
       setPage(1)
       if (!newSearch) {
         // clearing filtered state; restore previous sorting if applicable
         if (preFilterSort) {
           setSort(preFilterSort)
         }
-      } else if (!search) {
+      } else if (!stateSearch) {
         // entering a filtered state; save sort setting use fuzzy match sort
         setPreFilterSort(sort)
         setSort({})
       }
     },
-    // setSort/setSearch/setPage can come from props, but setPreFilterSort is only from state and therefore
-    // guaranteed stable - not needed in dependency list
-    [setSearch, setStoredSearch, setPage, search, preFilterSort, setSort, setPreFilterSort, sort]
+    [setPage, stateSearch, preFilterSort, setSort, setPreFilterSort, sort]
   )
 
   return (
@@ -477,7 +461,7 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
                 <AcmSearchInput
                   placeholder={searchPlaceholder}
                   spellCheck={false}
-                  resultsCount={`${search === internalSearch ? filteredCount : '-'} / ${totalCount}`}
+                  resultsCount={`${stateSearch === search ? filteredCount : '-'} / ${totalCount}`}
                   canAddConstraints
                   useAdvancedSearchPopper={advancedFilters.length > 0}
                   setActiveConstraints={setActiveAdvancedFilters}
@@ -488,7 +472,7 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
                     columnDisplayName: filter.label,
                     availableOperators: filter.availableOperators,
                   }))}
-                  fuzzySearchValue={search}
+                  fuzzySearchValue={stateSearch}
                   fuzzySearchOnChange={updateSearch}
                   fuzzySearchOnClear={clearSearch}
                 />
