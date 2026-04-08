@@ -67,7 +67,7 @@ export const AcmTableStateContext: React.Context<{
 export function AcmTableStateProvider(props: { children: ReactNode; localStorageKey?: string }) {
   const location = useLocation()
   const { localStorageKey = `${location.pathname.split('/').pop() || 'default'}-table-state` } = props
-  const { initialSearch, intialSort, initialPreFilterSort, initialPerPage, initialSort } = useMemo(() => {
+  const { initialSearch, initialPage, initialPreFilterSort, initialPerPage, initialSort } = useMemo(() => {
     let initialSort = DEFAULT_SORT
     let initialPreFilterSort = DEFAULT_SORT
     try {
@@ -83,7 +83,7 @@ export function AcmTableStateProvider(props: { children: ReactNode; localStorage
     return {
       initialSearch: getItemWithExpiration(`${localStorageKey}-search`) || '',
       // NaN on parseInt failure is falsy - will use default instead (DO NOT change || to ?? here!)
-      intialSort: Number.parseInt(getItemWithExpiration(`${localStorageKey}-page`) || '0', 10) || DEFAULT_PAGE,
+      initialPage: Number.parseInt(getItemWithExpiration(`${localStorageKey}-page`) || '0', 10) || DEFAULT_PAGE,
       initialPerPage:
         Number.parseInt(localStorage.getItem(`${localStorageKey}-perPage`) || '0', 10) || DEFAULT_ITEMS_PER_PAGE,
       initialSort,
@@ -91,7 +91,7 @@ export function AcmTableStateProvider(props: { children: ReactNode; localStorage
     }
   }, [localStorageKey])
   const [search, setSearch] = useState<string>(initialSearch)
-  const [page, setPage] = useState(intialSort)
+  const [page, setPage] = useState(initialPage)
   const [perPage, setPerPage] = useState(initialPerPage)
   const [sort, setSort] = useState<ISortBy>(initialSort)
   const [preFilterSort, setPreFilterSort] = useState<ISortBy | undefined>(initialPreFilterSort)
