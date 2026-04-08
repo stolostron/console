@@ -5,7 +5,6 @@ import {
   Tile,
   WizArrayInput,
   WizHidden,
-  WizTextDetail,
   WizTextInput,
   WizTiles,
   useEditMode,
@@ -47,10 +46,6 @@ export function MultipleSourcesSelector(props: MultipleSourcesSelectorProps) {
       }}
       collapsedContent={
         <Fragment>
-          <WizHidden hidden={(data) => !data.repositoryType}>
-            <Title headingLevel="h6">{t('Type')}</Title>
-          </WizHidden>
-
           <WizHidden hidden={(data) => data.repositoryType !== 'git'}>
             <Label style={{ marginRight: 10 }} color="grey">
               {t('Git')}
@@ -61,14 +56,13 @@ export function MultipleSourcesSelector(props: MultipleSourcesSelectorProps) {
               {t('Helm')}
             </Label>
           </WizHidden>
-          <WizTextDetail path="repoURL" placeholder={t('Expand to enter the repository details')} />
         </Fragment>
       }
     >
       <WizHidden hidden={(data) => data.repositoryType}>
         <Title headingLevel="h6">{t('Repository type')}</Title>
       </WizHidden>
-      <WizTiles path="repositoryType" required>
+      <WizTiles path="repositoryType" label={t('Repository type')} required>
         <Tile id="git" value="git" label="Git" icon={<GitAltIcon />} description={t('Use a Git repository')} />
         <Tile id="helm" value="helm" label="Helm" icon={<HelmIcon />} description={t('Use a Helm repository')} />
       </WizTiles>

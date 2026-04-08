@@ -66,6 +66,7 @@ import {
   WizTextInput,
   useSetHasValue,
   useEditorValidationStatus,
+  useHighlightEditorPath,
   EditorValidationStatus,
 } from '@patternfly-labs/react-form-wizard'
 import { TemplateLinkOut, TemplateSummaryExpandable } from '../../../../../components/TemplateSummaryModal'
@@ -515,6 +516,7 @@ export default function ImportClusterPage() {
   function WizardSyncEditor() {
     const resources = useItem() // Wizard framework sets this context
     const { setEditorValidationStatus } = useEditorValidationStatus()
+    const { highlightEditorPath } = useHighlightEditorPath()
     const { update } = useData() // Wizard framework sets this context
 
     return (
@@ -524,6 +526,7 @@ export default function ImportClusterPage() {
         id="code-content"
         schema={isACMAvailable ? acmSchema : schema}
         resources={resources}
+        highlightEditorPath={highlightEditorPath}
         secrets={[
           'Secret.*.stringData.token',
           'Secret.*.stringData.kubeconfig',
@@ -574,6 +577,7 @@ export default function ImportClusterPage() {
       }
     >
       <Wizard
+        id="import-cluster-wizard"
         wizardStrings={translatedWizardStrings}
         title={t('page.header.import-cluster')}
         showHeader={false}

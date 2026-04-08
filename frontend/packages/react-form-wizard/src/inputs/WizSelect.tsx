@@ -1,16 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import {
-  DescriptionListDescription,
-  DescriptionListGroup,
-  DescriptionListTerm,
-  InputGroup,
-  InputGroupItem,
-  MenuToggleElement,
-  Select as PfSelect,
-} from '@patternfly/react-core'
+import { InputGroup, InputGroupItem, MenuToggleElement, Select as PfSelect } from '@patternfly/react-core'
 import get from 'get-value'
 import { ReactNode, useCallback, useMemo, useState } from 'react'
-import { DisplayMode } from '../contexts/DisplayModeContext'
 import { getSelectPlaceholder, InputCommonProps, useInput } from './Input'
 import { InputSelect, SelectListOptions } from './InputSelect'
 import { WizFormGroup } from './WizFormGroup'
@@ -58,7 +49,7 @@ export function WizSelect<T>(props: Omit<WizSelectSingleProps<T>, 'variant'>) {
 type SelectProps<T> = WizSelectSingleProps<T>
 
 function WizSelectBase<T = any>(props: SelectProps<T>) {
-  const { displayMode: mode, value, setValue, validated, hidden, id, disabled, required } = useInput(props)
+  const { value, setValue, validated, hidden, id, disabled, required } = useInput(props)
   const placeholder = getSelectPlaceholder(props)
   const keyPath = props.keyPath ?? props.path
   const isCreatable = props.isCreatable
@@ -148,16 +139,6 @@ function WizSelectBase<T = any>(props: SelectProps<T>) {
   )
 
   if (hidden) return null
-
-  if (mode === DisplayMode.Details) {
-    if (!value) return null
-    return (
-      <DescriptionListGroup>
-        <DescriptionListTerm>{props.label}</DescriptionListTerm>
-        <DescriptionListDescription id={id}>{value}</DescriptionListDescription>
-      </DescriptionListGroup>
-    )
-  }
 
   return (
     <div id={id}>

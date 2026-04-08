@@ -1,11 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { CheckboxProps, Checkbox as PFCheckbox, Split, Stack } from '@patternfly/react-core'
-import { CheckIcon } from '@patternfly/react-icons'
+import { CheckboxProps, Checkbox as PFCheckbox, Stack } from '@patternfly/react-core'
 import { Fragment, ReactNode, useCallback } from 'react'
 import { WizHelperText } from '../components/WizHelperText'
 import { Indented } from '../components/Indented'
 import { LabelHelp } from '../components/LabelHelp'
-import { DisplayMode } from '../contexts/DisplayModeContext'
 import { InputCommonProps, useInput } from './Input'
 import { WizFormGroup } from './WizFormGroup'
 
@@ -25,28 +23,13 @@ function getIsChecked(value: any) {
 }
 
 export function WizCheckbox(props: WizCheckboxProps) {
-  const { displayMode: mode, value, setValue, hidden, id } = useInput(props)
+  const { value, setValue, hidden, id } = useInput(props)
   const onChange = useCallback<NonNullable<CheckboxProps['onChange']>>(
     (_event, checked) => setValue(checked),
     [setValue]
   )
 
   if (hidden) return <Fragment />
-
-  if (mode === DisplayMode.Details) {
-    if (!value) return <Fragment />
-    return (
-      <Fragment>
-        <Split id={id}>
-          <CheckIcon style={{ paddingRight: 5 }} />
-          <div className="pf-v6-c-description-list__term" style={{ paddingLeft: 2 }}>
-            {props.label}
-          </div>
-        </Split>
-        {value && props.children}
-      </Fragment>
-    )
-  }
 
   return (
     <Stack hasGutter>

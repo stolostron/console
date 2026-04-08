@@ -74,6 +74,7 @@ export function PolicySetWizard(props: PolicySetWizardProps) {
 
   return (
     <WizardPage
+      id="policy-set-wizard"
       title={props.title}
       breadcrumb={props.breadcrumb}
       onSubmit={props.onSubmit}

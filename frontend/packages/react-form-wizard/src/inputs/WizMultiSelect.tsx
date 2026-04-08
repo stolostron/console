@@ -1,13 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import {
-  DescriptionListDescription,
-  DescriptionListGroup,
-  DescriptionListTerm,
-  MenuToggleElement,
-  Select as PfSelect,
-} from '@patternfly/react-core'
+import { MenuToggleElement, Select as PfSelect } from '@patternfly/react-core'
 import { ReactNode, useCallback, useState } from 'react'
-import { DisplayMode } from '../contexts/DisplayModeContext'
 import { useStringContext } from '../contexts/StringContext'
 import { getSelectPlaceholder, InputCommonProps, useInput } from './Input'
 import { InputSelect, SelectListOptions } from './InputSelect'
@@ -24,7 +17,7 @@ export type WizMultiSelectProps = InputCommonProps<string[]> & {
 }
 
 export function WizMultiSelect(props: WizMultiSelectProps) {
-  const { displayMode: mode, value, setValue, validated, hidden, id, disabled } = useInput(props)
+  const { value, setValue, validated, hidden, id, disabled } = useInput(props)
   const { noResults } = useStringContext()
   const { isCreatable, options, footer } = props
   const placeholder = getSelectPlaceholder(props)
@@ -74,26 +67,6 @@ export function WizMultiSelect(props: WizMultiSelectProps) {
   )
 
   if (hidden) return null
-
-  if (mode === DisplayMode.Details) {
-    if (!value) return null
-    return (
-      <DescriptionListGroup>
-        <DescriptionListTerm>{props.label}</DescriptionListTerm>
-        <DescriptionListDescription id={id}>
-          {value.length > 5 ? (
-            `${value.length as string} selected`
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', rowGap: 8 }}>
-              {(value as string[]).map((selection, index) => (
-                <div key={index}>{selection}</div>
-              ))}
-            </div>
-          )}
-        </DescriptionListDescription>
-      </DescriptionListGroup>
-    )
-  }
 
   return (
     <div id={id}>

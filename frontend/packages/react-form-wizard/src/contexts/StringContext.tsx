@@ -31,6 +31,8 @@ export interface WizardStrings {
   syncButtonTooltip: string
   required: string
   expandToFixValidationErrors: string
+  reviewExpandAllTooltip: string
+  reviewCollapseAllTooltip: string
   selectNoItems: string
   selected: (count: number) => string
   selectPageItems: (count: number) => string
@@ -69,6 +71,8 @@ export const defaultStrings: WizardStrings = {
   syncButtonTooltip: 'Refresh',
   required: 'Required',
   expandToFixValidationErrors: 'Expand to fix validation errors',
+  reviewExpandAllTooltip: 'Expand all',
+  reviewCollapseAllTooltip: 'Collapse all',
   selectNoItems: 'Select none (0 items)',
   selected: (count) => `${count} selected`,
   selectPageItems: (count) => `Select page (${count} items)`,

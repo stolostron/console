@@ -18,6 +18,7 @@ import { editor as editorTypes } from 'monaco-editor'
 import { loader, Monaco } from '@monaco-editor/react'
 import { Schema } from 'ajv'
 import { defineThemes, getTheme, mountTheme, dismountTheme } from '../theme'
+import { rangeForHighlightPath } from './decorate'
 
 // loader can be null in tests
 loader?.config({ monaco })
@@ -45,6 +46,8 @@ export interface SyncEditorProps extends HTMLProps<HTMLPreElement> {
   onClose?: () => void
   onStatusChange?: (status: ValidationStatus) => void
   onEditorChange?: (editorResources: any) => void
+  /** Wizard review / form dot path used to scroll and highlight the matching YAML region. */
+  highlightEditorPath?: string
 }
 
 export function SyncEditor(props: SyncEditorProps): JSX.Element {
@@ -65,8 +68,10 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     onStatusChange,
     onEditorChange,
     onClose,
+    highlightEditorPath,
   } = props
   const pageRef = useRef<HTMLDivElement>(null)
+  const highlightDecorationIdsRef = useRef<string[]>([])
   const [editor, setEditor] = useState<editorTypes.IStandaloneCodeEditor | null>(null)
   const [monaco, setMonaco] = useState<Monaco | null>(null)
   if (mock) {
@@ -731,6 +736,44 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     copiedCopy,
     defaultCopy,
   ])
+
+  useEffect(() => {
+    if (!editor || !monaco) return
+    const prev = highlightDecorationIdsRef.current
+    if (!highlightEditorPath?.trim()) {
+      if (prev.length) {
+        editor.deltaDecorations(prev, [])
+        highlightDecorationIdsRef.current = []
+      }
+      return
+    }
+    const paths = (lastChange as { paths?: Record<string, unknown> } | undefined)?.paths
+    const range = rangeForHighlightPath(monaco, paths as never, lastChange?.mappings, highlightEditorPath)
+    if (!range) {
+      if (prev.length) {
+        editor.deltaDecorations(prev, [])
+        highlightDecorationIdsRef.current = []
+      }
+      return
+    }
+    editor.revealRangeInCenter(range)
+    highlightDecorationIdsRef.current = editor.deltaDecorations(prev, [
+      {
+        range,
+        options: {
+          className: 'syncEditorYamlHighlight',
+          isWholeLine: range.startLineNumber !== range.endLineNumber,
+        },
+      },
+    ])
+    return () => {
+      const ids = highlightDecorationIdsRef.current
+      if (ids.length) {
+        editor.deltaDecorations(ids, [])
+        highlightDecorationIdsRef.current = []
+      }
+    }
+  }, [highlightEditorPath, editor, monaco, lastChange])
 
   useResizeObserver(pageRef, () => {
     layoutEditor(editor)
