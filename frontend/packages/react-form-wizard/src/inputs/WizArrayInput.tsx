@@ -41,7 +41,7 @@ import { ShowValidationContext } from '../contexts/ShowValidationProvider'
 import { useStringContext } from '../contexts/StringContext'
 import { HasValidationErrorContext, ValidationProvider } from '../contexts/ValidationProvider'
 import { buildReviewInputRegistrationPath, getCollapsedPlaceholder, InputCommonProps, useInput } from './Input'
-import { useBumpReviewDomTree } from '../contexts/ReviewDomTreeSyncContext'
+import { useBumpReviewDomTree } from '../review/ReviewStepContexts'
 
 export function wizardArrayItems(props: any, item: any) {
   const id = props.id

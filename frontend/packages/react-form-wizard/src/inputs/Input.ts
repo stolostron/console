@@ -16,7 +16,7 @@ import {
 } from '../review/ReviewStepContexts'
 import { ItemContext } from '../contexts/ItemContext'
 import { useShowValidation } from '../contexts/ShowValidationProvider'
-import { useBumpReviewDomTree } from '../contexts/ReviewDomTreeSyncContext'
+import { useBumpReviewDomTree } from '../review/ReviewStepContexts'
 import { useStringContext } from '../contexts/StringContext'
 import { useHasValidationError, useSetHasValidationError, useValidate } from '../contexts/ValidationProvider'
 

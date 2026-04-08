@@ -13,7 +13,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import { useHighlightEditorPath } from '../contexts/HighlightEditorPathContext'
+import { useHighlightEditorPath } from './ReviewStepContexts'
 import { InputReviewMeta, type WizardDomTreeNode } from './ReviewStepContexts'
 
 /** Pen / row click: go to step and scroll; arrow: set YAML editor highlight path only. */

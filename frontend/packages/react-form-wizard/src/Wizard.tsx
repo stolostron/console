@@ -38,7 +38,11 @@ import { EditModeContext } from './contexts/EditModeContext'
 import { ItemContext, useItem } from './contexts/ItemContext'
 import { ShowValidationProvider, useSetShowValidation, useShowValidation } from './contexts/ShowValidationProvider'
 import { StepHasInputsProvider } from './contexts/StepHasInputsProvider'
-import { StepInputsRegistryProvider } from './review/ReviewStepContexts'
+import {
+  HighlightEditorPathProvider,
+  ReviewDomTreeSyncProvider,
+  StepInputsRegistryProvider,
+} from './review/ReviewStepContexts'
 import {
   StepShowValidationProvider,
   useSetStepShowValidation,
@@ -46,14 +50,12 @@ import {
 } from './contexts/StepShowValidationProvider'
 import { StepValidationProvider, useStepHasValidationError } from './contexts/StepValidationProvider'
 import { defaultStrings, StringContext, useStringContext, WizardStrings } from './contexts/StringContext'
-import { HighlightEditorPathProvider } from './contexts/HighlightEditorPathContext'
 import {
   EditorValidationStatus,
   useEditorValidationStatus,
   useHasValidationError,
   ValidationProvider,
 } from './contexts/ValidationProvider'
-import { ReviewDomTreeSyncProvider } from './contexts/ReviewDomTreeSyncContext'
 import { ReviewStep } from './review/ReviewStep'
 import { Step } from './Step'
 

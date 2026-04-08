@@ -2,7 +2,7 @@
 import { Form } from '@patternfly/react-core'
 import { Fragment, ReactNode, useLayoutEffect, useRef } from 'react'
 import { DisplayMode, useDisplayMode } from './contexts/DisplayModeContext'
-import { useReviewDomTreeVersion } from './contexts/ReviewDomTreeSyncContext'
+import { useReviewDomTreeVersion } from './review/ReviewStepContexts'
 import { HasInputsProvider, useHasInputs } from './contexts/HasInputsProvider'
 import { ShowValidationProvider, useSetShowValidation } from './contexts/ShowValidationProvider'
 import { useSetStepHasInputs } from './contexts/StepHasInputsProvider'

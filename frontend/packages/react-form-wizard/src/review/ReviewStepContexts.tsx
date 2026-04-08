@@ -187,3 +187,47 @@ export function StepRegisterProvider(props: { children: ReactNode }) {
 export function useStepRegister(): StepRegister | null {
   return useContext(StepRegisterContext)
 }
+
+// --- Review DOM tree sync (rebuild after `__reviewStepProps` changes) ---
+
+const ReviewDomTreeVersionContext = createContext(0)
+
+const ReviewDomTreeBumpContext = createContext<(() => void) | undefined>(undefined)
+
+/** Bumps a version consumed by ReviewStep so the wizard DOM review tree is rebuilt after `__reviewStepProps` changes. */
+export function ReviewDomTreeSyncProvider(props: { children: ReactNode }) {
+  const [version, setVersion] = useState(0)
+  const bump = useCallback(() => setVersion((v) => v + 1), [])
+  return (
+    <ReviewDomTreeVersionContext.Provider value={version}>
+      <ReviewDomTreeBumpContext.Provider value={bump}>{props.children}</ReviewDomTreeBumpContext.Provider>
+    </ReviewDomTreeVersionContext.Provider>
+  )
+}
+
+export function useReviewDomTreeVersion(): number {
+  return useContext(ReviewDomTreeVersionContext)
+}
+
+export function useBumpReviewDomTree(): (() => void) | undefined {
+  return useContext(ReviewDomTreeBumpContext)
+}
+
+// --- Highlight path for editor / review navigation ---
+
+export const HighlightEditorPathContext = createContext<{
+  highlightEditorPath: string
+  setHighlightEditorPath: (path: string) => void
+}>({
+  highlightEditorPath: '',
+  setHighlightEditorPath: () => void 0,
+})
+HighlightEditorPathContext.displayName = 'HighlightEditorPathContext'
+
+export const useHighlightEditorPath = () => useContext(HighlightEditorPathContext)
+
+export function HighlightEditorPathProvider(props: { children: ReactNode }) {
+  const [highlightEditorPath, setHighlightEditorPath] = useState('')
+  const value = useMemo(() => ({ highlightEditorPath, setHighlightEditorPath }), [highlightEditorPath])
+  return <HighlightEditorPathContext.Provider value={value}>{props.children}</HighlightEditorPathContext.Provider>
+}
