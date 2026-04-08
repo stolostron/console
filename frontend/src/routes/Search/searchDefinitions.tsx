@@ -80,7 +80,7 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
           },
         },
         AddColumn('labels', t('Labels')),
-      ].map((col, index) => ({ ...col, order: index + 1 })),
+      ].map((col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })),
     },
     cluster: {
       columns: [
@@ -102,7 +102,7 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
           },
         },
         AddColumn('labels', t('Labels')),
-      ].map((col, index) => ({ ...col, order: index + 1 })),
+      ].map((col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })),
     },
     clusteroperator: {
       columns: AddDefaultColumns(t, [
@@ -110,18 +110,18 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
         AddColumn('available', t('Available')),
         AddColumn('progressing', t('Progressing')),
         AddColumn('degraded', t('Degraded')),
-      ]).map((col, index) => ({ ...col, order: index + 1 })),
+      ]).map((col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })),
     },
     clusterserviceversion: {
       columns: AddDefaultColumns(t, [
         AddColumn('version', t('Version')),
         AddColumn('phase', t('Phase')),
         AddColumn('display', t('Display')),
-      ]).map((col, index) => ({ ...col, order: index + 1 })),
+      ]).map((col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })),
     },
     channel: {
       columns: AddDefaultColumns(t, [AddColumn('type', t('Type')), AddColumn('pathname', t('Pathname'))]).map(
-        (col, index) => ({ ...col, order: index + 1 })
+        (col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })
       ),
     },
     cronjob: {
@@ -137,7 +137,7 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
             return GetAge(item, 'lastSchedule')
           },
         },
-      ]).map((col, index) => ({ ...col, order: index + 1 })),
+      ]).map((col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })),
     },
     daemonset: {
       columns: AddDefaultColumns(t, [
@@ -146,7 +146,7 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
         AddColumn('ready', t('Ready')),
         AddColumn('updated', t('Updated')),
         AddColumn('available', t('Available')),
-      ]).map((col, index) => ({ ...col, order: index + 1 })),
+      ]).map((col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })),
     },
     deployable: {
       columns: [
@@ -156,7 +156,7 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
         AddColumn('dependencies', t('Dependencies')),
         AddColumn('created', t('Created')),
         AddColumn('labels', t('Labels')),
-      ].map((col, index) => ({ ...col, order: index + 1 })),
+      ].map((col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })),
     },
     deployment: {
       columns: AddDefaultColumns(t, [
@@ -164,10 +164,10 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
         AddColumn('current', t('Current')),
         AddColumn('ready', t('Ready')),
         AddColumn('available', t('Available')),
-      ]).map((col, index) => ({ ...col, order: index + 1 })),
+      ]).map((col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })),
     },
     genericresource: {
-      columns: AddDefaultColumns(t, []).map((col, index) => ({ ...col, order: index + 1 })),
+      columns: AddDefaultColumns(t, []).map((col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })),
     },
     helmrelease: {
       // This is the Application Helm CR.
@@ -176,14 +176,14 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
         AddColumn('url', t('URL')),
         AddColumn('chartPath', t('Chart path')),
         AddColumn('branch', t('Branch')),
-      ]).map((col, index) => ({ ...col, order: index + 1 })),
+      ]).map((col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })),
     },
     job: {
       columns: AddDefaultColumns(t, [
         AddColumn('completions', t('Completions')),
         AddColumn('parallelism', t('Parallelism')),
         AddColumn('successful', t('Successful')),
-      ]).map((col, index) => ({ ...col, order: index + 1 })),
+      ]).map((col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })),
     },
     namespace: {
       columns: [
@@ -192,7 +192,7 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
         AddColumn('status', t('Status')),
         AddColumn('created', t('Created')),
         AddColumn('labels', t('Labels')),
-      ].map((col, index) => ({ ...col, order: index + 1 })),
+      ].map((col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })),
     },
     node: {
       columns: [
@@ -205,7 +205,7 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
         AddColumn('cpu', t('CPU')),
         AddColumn('created', t('Created')),
         AddColumn('labels', t('Labels')),
-      ].map((col, index) => ({ ...col, order: index + 1 })),
+      ].map((col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })),
     },
     persistentvolume: {
       columns: [
@@ -220,7 +220,7 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
         AddColumn('path', t('Path')),
         AddColumn('created', t('Created')),
         AddColumn('labels', t('Labels')),
-      ].map((col, index) => ({ ...col, order: index + 1 })),
+      ].map((col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })),
     },
     persistentvolumeclaim: {
       columns: AddDefaultColumns(t, [
@@ -228,7 +228,7 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
         AddColumn('volumeName', t('Persistent volume')),
         AddColumn('request', t('Requests')),
         AddColumn('accessMode', t('Access mode')),
-      ]).map((col, index) => ({ ...col, order: index + 1 })),
+      ]).map((col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })),
     },
     placementbinding: {
       columns: [
@@ -238,7 +238,7 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
         AddColumn('placementpolicy', t('Placement policy')),
         AddColumn('created', t('Created')),
         AddColumn('labels', t('Labels')),
-      ].map((col, index) => ({ ...col, order: index + 1 })),
+      ].map((col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })),
     },
     placementpolicy: {
       columns: [
@@ -248,12 +248,13 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
         AddColumn('decisions', t('Decisions')),
         AddColumn('created', t('Created')),
         AddColumn('labels', t('Labels')),
-      ].map((col, index) => ({ ...col, order: index + 1 })),
+      ].map((col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })),
     },
     placementrule: {
       columns: AddDefaultColumns(t, [AddColumn('replicas', t('Replicas'))]).map((col, index) => ({
         ...col,
         order: index + 1,
+        isFirstVisitChecked: true,
       })),
     },
     pod: {
@@ -262,7 +263,7 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
         AddColumn('restarts', t('Restarts')),
         AddColumn('hostIP', t('Host IP')),
         AddColumn('podIP', t('Pod IP')),
-      ]).map((col, index) => ({ ...col, order: index + 1 })),
+      ]).map((col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })),
     },
     policy: {
       columns: AddDefaultColumns(t, [
@@ -297,7 +298,7 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
           },
         },
         AddColumn('remediationAction', t('Remediation action')),
-      ]).map((col, index) => ({ ...col, order: index + 1 })),
+      ]).map((col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })),
     },
     policyreport: {
       columns: [
@@ -323,12 +324,12 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
         },
         {
           id: 'policyreport-categories',
-          header: 'Categories',
+          header: t('Categories'),
           cell: (item: any) => {
             return FormatPolicyReportCategories(item.category)
           },
         },
-      ].map((col, index) => ({ ...col, order: index + 1 })),
+      ].map((col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })),
     },
     release: {
       columns: [
@@ -346,26 +347,30 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
             return GetAge(item, 'updated')
           },
         },
-      ].map((col, index) => ({ ...col, order: index + 1 })),
+      ].map((col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })),
     },
     replicaset: {
       columns: AddDefaultColumns(t, [AddColumn('desired', t('Desired')), AddColumn('current', t('Current'))]).map(
-        (col, index) => ({ ...col, order: index + 1 })
+        (col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })
       ),
     },
     secret: {
-      columns: AddDefaultColumns(t, [AddColumn('type', t('Type'))]).map((col, index) => ({ ...col, order: index + 1 })),
+      columns: AddDefaultColumns(t, [AddColumn('type', t('Type'))]).map((col, index) => ({
+        ...col,
+        order: index + 1,
+        isFirstVisitChecked: true,
+      })),
     },
     service: {
       columns: AddDefaultColumns(t, [
         AddColumn('type', t('Type')),
         AddColumn('clusterIP', t('Cluster IP')),
         AddColumn('port', t('Port')),
-      ]).map((col, index) => ({ ...col, order: index + 1 })),
+      ]).map((col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })),
     },
     statefulset: {
       columns: AddDefaultColumns(t, [AddColumn('desired', t('Desired')), AddColumn('current', t('Current'))]).map(
-        (col, index) => ({ ...col, order: index + 1 })
+        (col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })
       ),
     },
     'subscription.apps.open-cluster-management.io': {
@@ -374,14 +379,14 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
         AddColumn('status', t('Status')),
         AddColumn('localPlacement', t('Local placement')),
         AddColumn('timeWindow', t('Time window')),
-      ]).map((col, index) => ({ ...col, order: index + 1 })),
+      ]).map((col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })),
     },
     'subscription.operators.coreos.com': {
       columns: AddDefaultColumns(t, [
         AddColumn('package', t('Package')),
         AddColumn('source', t('Source')),
         AddColumn('Channel', t('Channel')),
-      ]).map((col, index) => ({ ...col, order: index + 1 })),
+      ]).map((col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })),
     },
     virtualmachine: {
       columns: AddDefaultColumns(t, [
@@ -389,16 +394,16 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
         AddColumn('ready', t('Ready')),
         {
           id: 'virtualmachine-launch-links',
-          header: '',
+          header: t('External links'),
           cell: (item: any) => {
             return <VMLaunchLinks item={item} t={t} />
           },
         },
-      ]).map((col, index) => ({ ...col, order: index + 1 })),
+      ]).map((col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })),
     },
     virtualmachineinstance: {
       columns: AddDefaultColumns(t, [AddColumn('node', t('Node')), AddColumn('ipaddress', t('IP address'))]).map(
-        (col, index) => ({ ...col, order: index + 1 })
+        (col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })
       ),
     },
     virtualmachinesnapshot: {
@@ -415,7 +420,7 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
           },
         },
         AddColumn('created', t('Created')),
-      ].map((col, index) => ({ ...col, order: index + 1 })),
+      ].map((col, index) => ({ ...col, order: index + 1, isFirstVisitChecked: true })),
     },
   }
 }
