@@ -57,7 +57,7 @@ export const AcmTableStateContext: React.Context<{
   sort?: ISortBy
   setSort?: (sort: ISortBy) => void
   preFilterSort?: ISortBy
-  setPreFilterSort?: (preFilterSort: ISortBy) => void
+  setPreFilterSort?: (preFilterSort?: ISortBy) => void
   page?: number
   setPage?: (page: number) => void
   perPage?: number
@@ -94,7 +94,7 @@ export function AcmTableStateProvider(props: { children: ReactNode; localStorage
   const [page, setPage] = useState(intialSort)
   const [perPage, setPerPage] = useState(initialPerPage)
   const [sort, setSort] = useState<ISortBy>(initialSort)
-  const [preFilterSort, setPreFilterSort] = useState<ISortBy>(initialPreFilterSort)
+  const [preFilterSort, setPreFilterSort] = useState<ISortBy | undefined>(initialPreFilterSort)
 
   const wrappedSetSearch = useCallback(
     (search: string) => {
@@ -113,7 +113,7 @@ export function AcmTableStateProvider(props: { children: ReactNode; localStorage
   )
 
   const wrappedSetPreFilterSort = useCallback(
-    (preFilterSort: ISortBy) => {
+    (preFilterSort?: ISortBy) => {
       setItemWithExpiration(`${localStorageKey}-preFilterSort`, JSON.stringify(preFilterSort))
       setPreFilterSort(preFilterSort)
     },

@@ -277,7 +277,7 @@ export type AcmTableToolbarProps<T> = Pick<
     renderColumnManagement: () => JSX.Element | undefined
     selected: { [uid: string]: boolean }
     setActiveAdvancedFilters: React.Dispatch<React.SetStateAction<SearchConstraint[]>>
-    setPreFilterSort: (sort: ISortBy) => void
+    setPreFilterSort: (sort?: ISortBy) => void
     setSelected: React.Dispatch<React.SetStateAction<{ [uid: string]: boolean }>>
     perPage: number
     paged: ITableItem<T>[]
@@ -342,13 +342,10 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
     { operator: undefined, value: '', columnId: '' },
   ])
 
+  // Dependencies cannot be determined without inline function
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const setSearchWithDebounce = useCallback(
-    process.env.NODE_ENV !== 'test'
-      ? debounce((search: string) => {
-          setSearch(search)
-        }, SEARCH_DEBOUNCE_TIME)
-      : setSearch,
+  const setSearchWithDebounce = useCallback<ReturnType<typeof debounce<typeof setSearch>> | typeof setSearch>(
+    process.env.NODE_ENV === 'test' ? setSearch : debounce(setSearch, SEARCH_DEBOUNCE_TIME),
     [setSearch]
   )
 
@@ -358,15 +355,14 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
     }
     return () => {
       if ('clear' in setSearchWithDebounce) {
-        ;(setSearchWithDebounce as any).clear()
+        setSearchWithDebounce.clear()
       }
     }
   }, [search, setSearchWithDebounce, stateSearch])
 
   const clearSearch = useCallback(() => {
-    /* istanbul ignore if */
-    if (process.env.NODE_ENV !== 'test') {
-      ;(setSearchWithDebounce as unknown as ReturnType<typeof debounce>).clear()
+    if ('clear' in setSearchWithDebounce) {
+      setSearchWithDebounce.clear()
     }
     setStateSearch('')
     setSearch('')
@@ -384,12 +380,8 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
   }, [clearSearch, clearFilters, setActiveAdvancedFilters, setPendingConstraints])
 
   const updateSearch = useCallback(
-    (input: any) => {
-      // **Note: PatternFly change the fn signature
-      // From: (value: string, event: React.FormEvent<HTMLInputElement>) => void
-      // To: (_event: React.FormEvent<HTMLInputElement>, value: string) => void
-      // both cases need to be handled for backwards compatibility
-      const newSearch = typeof input === 'string' ? input : (input.target as HTMLInputElement).value
+    (input: string) => {
+      const newSearch = input
       setStateSearch(newSearch)
       setPage(1)
       if (!newSearch) {

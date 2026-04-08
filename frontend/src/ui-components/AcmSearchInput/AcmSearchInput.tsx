@@ -92,7 +92,7 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
   }, [fuzzySearchOnClear, setActiveConstraints, setPendingConstraints])
 
   const onChange = useCallback(
-    (value: any) => {
+    (value: string) => {
       fuzzySearchOnChange?.(value)
     },
     [fuzzySearchOnChange]
@@ -195,7 +195,7 @@ export function AcmSearchInput(props: Readonly<AcmSearchInputProps>) {
                 placeholder={placeholder}
                 value={fuzzySearchValue}
                 validation={() => 'Required'}
-                onChange={(value) => {
+                onChange={(_event, value) => {
                   onChange(value)
                 }}
               />

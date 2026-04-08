@@ -236,7 +236,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 
   const preFilterSort = statePreFilterSort
   const setPreFilterSort = useCallback(
-    (preFilterSort: ISortBy) => {
+    (preFilterSort?: ISortBy) => {
       setStoredPreFilterSort?.(preFilterSort)
       setStatePreFilterSort(preFilterSort)
     },
@@ -760,7 +760,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         setPreFilterSort(undefined)
       }
     },
-    [filtered.length, search, setSort]
+    [filtered.length, search, setPreFilterSort, setSort]
   )
 
   const updatePerPage = useCallback(
