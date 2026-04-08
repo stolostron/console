@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
   Button,
-  Content,
   Divider,
   Dropdown,
   DropdownItem,
@@ -568,7 +567,7 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
               variant="plain"
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }} // center button when input is vertically expanded
             >
-              <Content component={'p'}>{t('Save search')}</Content>
+              {t('Save search')}
             </AcmButton>
           </>
         )}
