@@ -31,14 +31,14 @@ import {
   useRef,
   useState,
 } from 'react'
-import { EditMode } from '.'
+import { EditMode } from './contexts/EditMode'
 import { DataContext } from './contexts/DataContext'
 import { DisplayMode, DisplayModeContext } from './contexts/DisplayModeContext'
 import { EditModeContext } from './contexts/EditModeContext'
 import { ItemContext, useItem } from './contexts/ItemContext'
 import { ShowValidationProvider, useSetShowValidation, useShowValidation } from './contexts/ShowValidationProvider'
 import { StepHasInputsProvider } from './contexts/StepHasInputsProvider'
-import { StepInputsRegistryProvider } from './review/StepInputsContext'
+import { StepInputsRegistryProvider } from './review/ReviewStepContexts'
 import {
   StepShowValidationProvider,
   useSetStepShowValidation,

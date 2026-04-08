@@ -9,7 +9,7 @@ import { useSetStepHasInputs } from './contexts/StepHasInputsProvider'
 import { useStepShowValidation } from './contexts/StepShowValidationProvider'
 import { useSetStepHasValidationError } from './contexts/StepValidationProvider'
 import { useHasValidationError, ValidationProvider } from './contexts/ValidationProvider'
-import { CurrentStepIdContext, useStepInputsRegistry, useStepRegister } from './review/StepInputsContext'
+import { CurrentStepIdContext, useStepInputsRegistry, useStepRegister } from './review/ReviewStepContexts'
 import { HiddenFn, useInputHidden } from './inputs/Input'
 import { buildTree } from './review/utils'
 
@@ -35,6 +35,9 @@ export function Step(props: StepProps) {
   const stepInputsRegistryRef = useRef(stepInputsRegistry)
   stepInputsRegistryRef.current = stepInputsRegistry
 
+  /* Step identity only: register/unregister when id or label changes. Kept separate from the
+   * tree-sync effect so reviewDomTreeVersion bumps do not run cleanup (unregister would drop the
+   * step from the register map between runs and cause extra version churn). */
   useLayoutEffect(() => {
     const sr = stepRegisterRef.current
     if (!sr) return
@@ -42,6 +45,9 @@ export function Step(props: StepProps) {
     return () => sr.unregister(id)
   }, [id, label])
 
+  /* Rebuild the review DOM tree from the live container + input registry. Depends on
+   * reviewDomTreeVersion so hidden inputs and layout changes can refresh the tree without
+   * re-running registration. */
   useLayoutEffect(() => {
     if (id === 'review') return
     const sr = stepRegisterRef.current

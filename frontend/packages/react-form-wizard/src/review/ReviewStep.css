@@ -120,7 +120,7 @@
   gap: var(--pf-t--global--spacer--xs, 0.25rem);
 }
 
-/* Pen hidden until hover dwell (~200ms; see REVIEW_PEN_HOVER_REVEAL_MS in review/ReviewStep.tsx) */
+/* Pen hidden until hover dwell (~200ms; see REVIEW_PEN_HOVER_REVEAL_MS in review/ReviewStepNavigation.tsx) */
 .wizard-review-edit-btn {
   opacity: 0;
   pointer-events: none;
@@ -136,14 +136,13 @@
 /* Scroll-to-edit target: outline eases in; eases out after 2s (REVIEW_EDIT_TARGET_HIGHLIGHT_AUTO_DISMISS_MS) or when focus leaves / window blurs. */
 .wizard-review-edit-target-highlight {
   outline-style: solid;
-  outline-color: #eb8c3e;
-  outline-offset: 10px;
+  outline-color: rgba(255, 190, 140, 0.38);
   outline-width: 0;
 }
 
 .wizard-review-edit-target-highlight.wizard-review-edit-target-highlight--visible {
-  outline-width: 5px;
-  transition: outline-width 0.4s ease-in;
+  outline-width: 15px;
+  transition: outline-width 0.2s ease-in;
 }
 
 /* With --visible still on, this rule wins so outline eases out from 5px to 0. */

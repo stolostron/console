@@ -2,7 +2,7 @@
 import { Button, Divider, InputGroup, InputGroupItem, TextInput as PFTextInput } from '@patternfly/react-core'
 import { PlusCircleIcon, TrashIcon } from '@patternfly/react-icons'
 import { Fragment } from 'react'
-import { WizTextInput } from '..'
+import { WizTextInput } from './WizTextInput'
 import { useStringContext } from '../contexts/StringContext'
 import { getAddPlaceholder, InputCommonProps, useInput } from './Input'
 import { WizFormGroup } from './WizFormGroup'

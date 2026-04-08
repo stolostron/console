@@ -3,7 +3,7 @@ import { FormGroup } from '@patternfly/react-core'
 import { PropsWithChildren, useContext } from 'react'
 import { LabelHelp } from '../components/LabelHelp'
 import { WizHelperText } from '../components/WizHelperText'
-import { ReviewPathPrefixSegmentsContext } from '../review/StepInputsContext'
+import { ReviewPathPrefixSegmentsContext } from '../review/ReviewStepContexts'
 import { ItemContext } from '../contexts/ItemContext'
 import { buildReviewInputRegistrationPath, convertId, InputCommonProps } from './Input'
 

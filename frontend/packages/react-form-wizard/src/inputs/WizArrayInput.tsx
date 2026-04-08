@@ -30,8 +30,8 @@ import {
   ReviewPathPrefixSegmentsContext,
   ReviewPathPrefixSegmentsProvider,
   useStepInputsRegistry,
-  WizTextDetail,
-} from '..'
+} from '../review/ReviewStepContexts'
+import { WizTextDetail } from './WizTextDetail'
 import { FieldGroup } from '../components/FieldGroup'
 import { LabelHelp } from '../components/LabelHelp'
 import { WizHelperText } from '../components/WizHelperText'

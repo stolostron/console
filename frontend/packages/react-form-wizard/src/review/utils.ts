@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { InputReviewMeta, type InputReviewStepMeta, type WizardDomTreeNode } from './StepInputsContext'
+import { InputReviewMeta, type InputReviewStepMeta, type WizardDomTreeNode } from './ReviewStepContexts'
 
 export type BuildTreeStepContext = {
   stepId: string

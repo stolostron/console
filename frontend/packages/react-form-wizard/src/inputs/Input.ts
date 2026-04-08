@@ -2,7 +2,7 @@
 import get from 'get-value'
 import { ReactNode, useCallback, useContext, useLayoutEffect, useState } from 'react'
 import set from 'set-value'
-import { EditMode } from '..'
+import { EditMode } from '../contexts/EditMode'
 import { useData } from '../contexts/DataContext'
 import { useDisplayMode } from '../contexts/DisplayModeContext'
 import { useEditMode } from '../contexts/EditModeContext'
@@ -13,7 +13,7 @@ import {
   InputReviewMeta,
   ReviewPathPrefixSegmentsContext,
   useStepInputsRegistry,
-} from '../review/StepInputsContext'
+} from '../review/ReviewStepContexts'
 import { ItemContext } from '../contexts/ItemContext'
 import { useShowValidation } from '../contexts/ShowValidationProvider'
 import { useBumpReviewDomTree } from '../contexts/ReviewDomTreeSyncContext'

@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Button, Flex, FlexItem, Toolbar, ToolbarContent } from '@patternfly/react-core'
+import { type Dispatch, type SetStateAction, useCallback } from 'react'
 import { useStringContext } from '../contexts/StringContext'
 
 export interface ReviewStepToolbarProps {
@@ -42,4 +43,35 @@ export function ReviewStepToolbar(props: ReviewStepToolbarProps) {
       <ToolbarContent>{toolbarItems}</ToolbarContent>
     </Toolbar>
   )
+}
+
+export type ReviewToolbarAction = 'expand' | 'collapse'
+
+export function useReviewExpandCollapseHandlers(
+  sectionKeys: readonly string[],
+  topLevelArrayInstanceKeys: readonly string[],
+  setLastToolbarAction: Dispatch<SetStateAction<ReviewToolbarAction>>,
+  setSectionExpanded: Dispatch<SetStateAction<Record<string, boolean>>>
+) {
+  const onExpandAll = useCallback(() => {
+    setLastToolbarAction('expand')
+    setSectionExpanded(() => {
+      const next: Record<string, boolean> = {}
+      for (const k of sectionKeys) next[k] = true
+      for (const k of topLevelArrayInstanceKeys) next[k] = false
+      return next
+    })
+  }, [sectionKeys, topLevelArrayInstanceKeys, setLastToolbarAction, setSectionExpanded])
+
+  const onCollapseAll = useCallback(() => {
+    setLastToolbarAction('collapse')
+    setSectionExpanded(() => {
+      const next: Record<string, boolean> = {}
+      for (const k of sectionKeys) next[k] = false
+      for (const k of topLevelArrayInstanceKeys) next[k] = false
+      return next
+    })
+  }, [sectionKeys, topLevelArrayInstanceKeys, setLastToolbarAction, setSectionExpanded])
+
+  return { onExpandAll, onCollapseAll }
 }

@@ -50,7 +50,7 @@ export function Tile(props: {
   const context = useContext(RadioGroupContext) || {}
   const isSelected = context.value === props.value
   const reactUseId = useId()
-  const id = process.env.NODE_ENV === 'test' || (window as any).Cypress ? `tile-${props.id}` : `wiz-tile-${reactUseId}`
+  const id = process.env.NODE_ENV === 'test' ? `tile-${props.id}` : `wiz-tile-${reactUseId}`
   if (!props) return <Fragment />
   return (
     <Card
