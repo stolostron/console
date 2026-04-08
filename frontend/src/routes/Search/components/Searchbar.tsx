@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
   Button,
+  Content,
   Divider,
   Dropdown,
   DropdownItem,
@@ -539,6 +540,7 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
             setMenuIsOpen(false)
           }}
           isDisabled={currentQuery === '' || currentQuery.endsWith(':')}
+          style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }} // center button when input is vertically expanded
         />
         <Divider orientation={{ default: 'vertical' }} />
         <Button
@@ -547,6 +549,7 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
           variant="plain"
           onClick={toggleInfoModal}
           aria-label={t('Search help modal toggle')}
+          style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }} // center button when input is vertically expanded
         />
         {setSaveSearch && (
           <>
@@ -563,8 +566,9 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
               isDisabled={currentQuery === '' || currentQuery.endsWith(':') || disableSaveSearch}
               tooltip={saveSearchTooltip}
               variant="plain"
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }} // center button when input is vertically expanded
             >
-              {t('Save search')}
+              <Content component={'p'}>{t('Save search')}</Content>
             </AcmButton>
           </>
         )}
