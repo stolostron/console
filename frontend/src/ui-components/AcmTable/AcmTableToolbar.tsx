@@ -380,8 +380,7 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
   }, [clearSearch, clearFilters, setActiveAdvancedFilters, setPendingConstraints])
 
   const updateSearch = useCallback(
-    (input: string) => {
-      const newSearch = input
+    (newSearch: string) => {
       setStateSearch(newSearch)
       setPage(1)
       if (!newSearch) {
