@@ -476,7 +476,10 @@ function ArrayInputItemReviewRegistration(props: {
       type: InputReviewMeta.ARRAY_INSTANCE,
     })
     bumpReviewDomTree?.()
-    return () => stepInputsRegistry.unregister(id)
+    return () => {
+      stepInputsRegistry.unregister(id)
+      bumpReviewDomTree?.()
+    }
   }, [stepInputsRegistry, index, collapsedContent, measureRef, value, id, item, bumpReviewDomTree])
 
   return (

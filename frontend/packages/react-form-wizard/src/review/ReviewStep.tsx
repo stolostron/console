@@ -694,7 +694,7 @@ function horizontalTermWidthModifierForInputRun(nodes: readonly WizardInputDomNo
   return maxLen < 64 ? REVIEW_HORIZONTAL_TERM_WIDTH_COMPACT : REVIEW_HORIZONTAL_TERM_WIDTH_WIDE
 }
 
-/** Top-level array section uses 16px; each nested ARRAY_INPUT adds 16px (not 16). */
+/** Base margin 32px; each nested ARRAY_INPUT adds 2px. */
 function reviewArrayInstanceMarginLeft(arrayInputNesting: number): number {
   return 32 + 2 * arrayInputNesting
 }

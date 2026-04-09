@@ -271,7 +271,8 @@ export function rangeForHighlightPath(
         fromPaths = paths?.[pathKey]
       }
 
-      return mappingLeafToRange(monaco, fromPaths)
+      const range = mappingLeafToRange(monaco, fromPaths)
+      if (range) return range
     }
     return null
   }
