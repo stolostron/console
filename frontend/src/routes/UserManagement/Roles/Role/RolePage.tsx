@@ -40,7 +40,7 @@ const RolePage = () => {
           title={role?.metadata.name}
           description={`ClusterRole`}
           breadcrumb={[
-            { text: t('User Management'), to: NavigationPath.roles },
+            { text: t('User management'), to: NavigationPath.roles },
             { text: t('Roles'), to: NavigationPath.roles },
             { text: role?.metadata.name ?? t('Unknown Role') },
           ]}

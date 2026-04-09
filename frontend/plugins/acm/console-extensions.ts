@@ -148,13 +148,13 @@ const hookProvider: EncodedExtension<FeatureFlagHookProvider> = {
   },
 }
 
-// User Management navigation section
+// User management navigation section
 const userManagementSection: EncodedExtension<NavSection> = {
   type: 'console.navigation/section',
   properties: {
     perspective: 'acm',
     id: 'acm-user-management',
-    name: '%plugin__acm~User Management%',
+    name: '%plugin__acm~User management%',
     insertAfter: 'mce-credentials',
   },
   flags: {

@@ -27,7 +27,7 @@ describe('IdentitiesPage', () => {
     })
 
     expect(screen.getAllByText('Identities')).toHaveLength(2)
-    expect(screen.getByText('User Management')).toBeInTheDocument()
+    expect(screen.getByText('User management')).toBeInTheDocument()
 
     expect(screen.getByText('Users')).toBeInTheDocument()
     expect(screen.getByText('Groups')).toBeInTheDocument()

@@ -224,7 +224,7 @@ const routes: (IRoute | IRouteGroup)[] = [
     element: <Credentials />,
   },
   {
-    title: 'User Management',
+    title: 'User management',
     type: 'group',
     routes: [
       {
