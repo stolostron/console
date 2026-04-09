@@ -139,12 +139,13 @@ function RenderAccordionItem(
 
   const renderContent = useCallback(
     (kind: string, items: ISearchResult[]) => {
+      const tableID = `${kind.toLowerCase()}-${items[0].apigroup}`
       const kindAndGroup =
         kind.toLowerCase() === 'subscription' ? `subscription.${items[0].apigroup}` : kind.toLowerCase()
 
       return (
         <AcmTable
-          id={`search-result-${kind.toLowerCase()}`}
+          id={`search-result-${tableID}`}
           items={items}
           emptyState={undefined} // table only shown for kinds with results
           columns={_.get(
