@@ -139,7 +139,7 @@ function RenderAccordionItem(
 
   const renderContent = useCallback(
     (kind: string, items: ISearchResult[]) => {
-      const tableID = `${kind.toLowerCase()}-${items[0].apigroup}`
+      const tableID = `${kind.toLowerCase()}-${items[0].apigroup ? `${items[0].apigroup}-${items[0].apiversion}` : items[0].apiversion}`
       const kindAndGroup =
         kind.toLowerCase() === 'subscription' ? `subscription.${items[0].apigroup}` : kind.toLowerCase()
 

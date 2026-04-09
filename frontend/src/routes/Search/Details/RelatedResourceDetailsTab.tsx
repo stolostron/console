@@ -82,7 +82,7 @@ export default function RelatedResourceDetailsTab() {
 
   const renderContent = useCallback(
     (kind: string, items: ISearchResult[]) => {
-      const tableID = `${kind.toLowerCase()}-${items[0].apigroup}`
+      const tableID = `${kind.toLowerCase()}-${items[0].apigroup ? `${items[0].apigroup}-${items[0].apiversion}` : items[0].apiversion}`
       return (
         <AcmTable
           id={`search-result-${tableID}`}
