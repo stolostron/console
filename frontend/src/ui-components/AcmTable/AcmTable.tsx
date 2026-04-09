@@ -201,7 +201,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     initialSort ?? storedPreFilterSort ?? DEFAULT_SORT
   )
   const [stateSearch, setStateSearch] = useState(initialSearch ?? storedSearch ?? '')
-  const [internalSearch, setInternalSearch] = useState(propsSearch ?? storedSearch ?? '')
+  const [internalSearch, setInternalSearch] = useState(propsSearch ?? initialSearch ?? storedSearch ?? '')
 
   // Dependencies cannot be determined without inline function
   // eslint-disable-next-line react-hooks/exhaustive-deps
