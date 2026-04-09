@@ -76,72 +76,74 @@ export default function OverviewClusterLabelSelector(props: {
 
   return (
     <PageSection hasBodyWrapper={false}>
-      <div style={{ display: 'flex', flexDirection: 'row' }}>
-        <AcmSelectBase
-          id="cluster-label-key"
-          key="cluster-label-key"
-          aria-label={t('Select cluster label')}
-          toggleIcon={<FilterIcon />}
-          width={'auto'}
-          maxHeight={'400px'}
-          variant={SelectVariant.typeahead}
-          onSelect={(selection) => {
-            if (selectedClusterLabel === selection) {
-              setSelectedClusterLabel('')
-            } else {
-              setSelectedClusterLabel(selection as string)
-            }
-          }}
-          selections={selectedClusterLabel}
-          placeholder={t('Select cluster label')}
-          aria-labelledby={'cluster-label-key'}
-        >
-          {Object.keys(allClusterLabels).map((labelKey: string) => (
-            <SelectOption key={`cluster-label-key-${labelKey}`} value={labelKey} />
-          ))}
-        </AcmSelectBase>
-        <AcmSelectBase
-          id="cluster-label-value"
-          aria-label={t('Select cluster label value')}
-          width={'auto'}
-          maxHeight={'400px'}
-          variant={SelectVariant.typeaheadCheckbox}
-          onSelect={(selection) => {
-            const tempLabels = { ...selectedClusterLabels }
-            const tempValues = tempLabels[selectedClusterLabel ?? ''] ?? []
-            if (tempValues?.includes(selection as string)) {
-              deleteChip(selectedClusterLabel, selection as string)
-            } else {
-              tempLabels[selectedClusterLabel ?? ''] = [...tempValues, selection as string]
-              setSelectedClusterLabels(tempLabels)
-            }
-          }}
-          selections={selectedClusterLabels[selectedClusterLabel ?? '']}
-          placeholderText={t('Select label value')}
-          aria-labelledby={'cluster-label-value'}
-        >
-          {allClusterLabels[selectedClusterLabel ?? '']?.map((label) => <SelectOption key={label} value={label} />)}
-        </AcmSelectBase>
-        <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-          {Object.keys(selectedClusterLabels).map((label) => {
-            return (
-              <div key={label} style={{ marginRight: '.5rem' }}>
-                <LabelGroup key={label} categoryName={label} isClosable onClick={() => deleteChipGroup(label)}>
-                  {selectedClusterLabels[label].map((value) => (
-                    <Label variant="outline" key={value} onClose={() => deleteChip(label, value)}>
-                      {value}
-                    </Label>
-                  ))}
-                </LabelGroup>
-              </div>
-            )
-          })}
-          {Object.values(selectedClusterLabels).length > 0 && (
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', flexDirection: 'row', gap: '1rem' }}>
+          <AcmSelectBase
+            id="cluster-label-key"
+            key="cluster-label-key"
+            aria-label={t('Select cluster label')}
+            toggleIcon={<FilterIcon />}
+            width={'auto'}
+            maxHeight={'400px'}
+            variant={SelectVariant.typeahead}
+            onSelect={(selection) => {
+              if (selectedClusterLabel === selection) {
+                setSelectedClusterLabel('')
+              } else {
+                setSelectedClusterLabel(selection as string)
+              }
+            }}
+            selections={selectedClusterLabel}
+            placeholder={t('Select cluster label')}
+            aria-labelledby={'cluster-label-key'}
+          >
+            {Object.keys(allClusterLabels).map((labelKey: string) => (
+              <SelectOption key={`cluster-label-key-${labelKey}`} value={labelKey} />
+            ))}
+          </AcmSelectBase>
+          <AcmSelectBase
+            id="cluster-label-value"
+            aria-label={t('Select cluster label value')}
+            width={'auto'}
+            maxHeight={'400px'}
+            variant={SelectVariant.typeaheadCheckbox}
+            onSelect={(selection) => {
+              const tempLabels = { ...selectedClusterLabels }
+              const tempValues = tempLabels[selectedClusterLabel ?? ''] ?? []
+              if (tempValues?.includes(selection as string)) {
+                deleteChip(selectedClusterLabel, selection as string)
+              } else {
+                tempLabels[selectedClusterLabel ?? ''] = [...tempValues, selection as string]
+                setSelectedClusterLabels(tempLabels)
+              }
+            }}
+            selections={selectedClusterLabels[selectedClusterLabel ?? '']}
+            placeholderText={t('Select label value')}
+            aria-labelledby={'cluster-label-value'}
+          >
+            {allClusterLabels[selectedClusterLabel ?? '']?.map((label) => <SelectOption key={label} value={label} />)}
+          </AcmSelectBase>
+        </div>
+        {Object.values(selectedClusterLabels).length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', marginTop: '1rem' }}>
+            {Object.keys(selectedClusterLabels).map((label) => {
+              return (
+                <div key={label} style={{ marginRight: '.5rem' }}>
+                  <LabelGroup key={label} categoryName={label} isClosable onClick={() => deleteChipGroup(label)}>
+                    {selectedClusterLabels[label].map((value) => (
+                      <Label variant="outline" key={value} onClose={() => deleteChip(label, value)}>
+                        {value}
+                      </Label>
+                    ))}
+                  </LabelGroup>
+                </div>
+              )
+            })}
             <Button variant={'link'} onClick={() => deleteAllChips()}>
               {t('Clear all labels')}
             </Button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </PageSection>
   )
