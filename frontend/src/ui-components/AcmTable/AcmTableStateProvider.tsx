@@ -21,11 +21,15 @@ interface StorageItem {
 }
 
 export function setItemWithExpiration(key: string, value: string): void {
-  const item: StorageItem = {
-    value,
-    timestamp: Date.now(),
+  if (value === undefined) {
+    localStorage.removeItem(key)
+  } else {
+    const item: StorageItem = {
+      value,
+      timestamp: Date.now(),
+    }
+    localStorage.setItem(key, JSON.stringify(item))
   }
-  localStorage.setItem(key, JSON.stringify(item))
 }
 
 export function getItemWithExpiration(key: string): string | null {
@@ -130,7 +134,7 @@ export function AcmTableStateProvider(props: { children: ReactNode; localStorage
 
   const wrappedSetPerPage = useCallback(
     (perPage: number) => {
-      setItemWithExpiration(`${localStorageKey}-perPage`, String(perPage))
+      localStorage.setItem(`${localStorageKey}-perPage`, String(perPage))
       setPerPage(perPage)
     },
     [localStorageKey]
