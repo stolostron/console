@@ -20,7 +20,7 @@ interface StorageItem {
   timestamp: number
 }
 
-export function setItemWithExpiration(key: string, value: string): void {
+export function setItemWithExpiration(key: string, value?: string): void {
   if (value === undefined) {
     localStorage.removeItem(key)
   } else {
@@ -68,22 +68,28 @@ export const AcmTableStateContext: React.Context<{
   setPerPage?: (perPage: number) => void
 }> = createContext({})
 
+function parseSortBy(raw: string | null): ISortBy | undefined {
+  if (!raw) return undefined
+  try {
+    const parsed: unknown = JSON.parse(raw)
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return undefined
+    const obj = parsed as Record<string, unknown>
+    if (obj.index !== undefined && typeof obj.index !== 'number') return undefined
+    if (obj.direction !== undefined && obj.direction !== 'asc' && obj.direction !== 'desc') return undefined
+    if (obj.defaultDirection !== undefined && obj.defaultDirection !== 'asc' && obj.defaultDirection !== 'desc')
+      return undefined
+    return parsed as ISortBy
+  } catch {
+    return undefined
+  }
+}
+
 export function AcmTableStateProvider(props: { children: ReactNode; localStorageKey?: string }) {
   const location = useLocation()
   const { localStorageKey = `${location.pathname.split('/').pop() || 'default'}-table-state` } = props
   const { initialSearch, initialPage, initialPreFilterSort, initialPerPage, initialSort } = useMemo(() => {
-    let initialSort = DEFAULT_SORT
-    let initialPreFilterSort = DEFAULT_SORT
-    try {
-      initialSort = JSON.parse(getItemWithExpiration(`${localStorageKey}-sort`) || '')
-    } catch {
-      // corrupted sort JSON in local storage; ignore and use default
-    }
-    try {
-      initialPreFilterSort = JSON.parse(getItemWithExpiration(`${localStorageKey}-preFilterSort`) || '')
-    } catch {
-      // corrupted sort JSON in local storage; ignore and use default
-    }
+    const initialSort = parseSortBy(getItemWithExpiration(`${localStorageKey}-sort`)) ?? DEFAULT_SORT
+    const initialPreFilterSort = parseSortBy(getItemWithExpiration(`${localStorageKey}-preFilterSort`)) ?? DEFAULT_SORT
     return {
       initialSearch: getItemWithExpiration(`${localStorageKey}-search`) || '',
       // NaN on parseInt failure is falsy - will use default instead (DO NOT change || to ?? here!)
