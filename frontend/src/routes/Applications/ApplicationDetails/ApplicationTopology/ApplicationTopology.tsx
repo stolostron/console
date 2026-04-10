@@ -46,6 +46,7 @@ export function ApplicationTopologyPageContent() {
     },
     channelControl,
     toolbarControl,
+    refreshResources,
   } = useApplicationDetailsContext()
   const { t } = useTranslation()
   const { refreshTime, topology, statuses } = applicationData
@@ -151,6 +152,7 @@ export function ApplicationTopologyPageContent() {
         nodeDetailsProvider={nodeDetailsProvider}
         setDrawerContent={setDrawerContent}
         hubClusterName={hubClusterName}
+        onRefreshResources={refreshResources}
       />
     </>
   )

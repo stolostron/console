@@ -89,6 +89,7 @@ const greenPulse: PulseColor = 'green'
 const yellowPulse: PulseColor = 'yellow'
 const orangePulse: PulseColor = 'orange'
 const blockedPulse: PulseColor = 'blocked'
+const syncPulse: PulseColor = 'sync'
 
 ///////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////// COMPUTE EACH DIAGRAM NODE STATUS ////////////////////////////////
@@ -118,6 +119,11 @@ export const computeNodeStatus = (
   if (!isSearchingStatusComplete) {
     safeSet(node, specPulse, 'spinner')
     return 'spinner'
+  }
+
+  if (node.type === 'git' || node.type === 'chart') {
+    safeSet(node, specPulse, syncPulse)
+    return syncPulse
   }
 
   const isDeployable = isDeployableResource(node)

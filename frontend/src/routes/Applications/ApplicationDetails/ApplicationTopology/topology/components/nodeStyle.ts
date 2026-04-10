@@ -139,6 +139,10 @@ const getStatus = (node: {
       status = NodeStatus.default
       statusIcon = statusToIconMap['spinner']
       break
+    case 'sync':
+      status = NodeStatus.default
+      statusIcon = statusToIconMap['sync']
+      break
     case 'blocked':
       status = NodeStatus.success
       statusIcon = statusToIconMap['blocked']

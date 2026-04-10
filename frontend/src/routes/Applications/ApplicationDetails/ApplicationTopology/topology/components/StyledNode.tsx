@@ -1,5 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as React from 'react'
+import { Tooltip, TooltipPosition } from '@patternfly/react-core'
+import { useTranslation } from '../../../../../../lib/acm-i18next'
+import { useTopologyRefresh } from '../contexts/TopologyRefreshContext'
 import {
   Ellipse,
   Decorator,
@@ -46,6 +49,8 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
   regrouping,
   ...rest
 }) => {
+  const { t } = useTranslation()
+  const { refreshResources } = useTopologyRefresh()
   const data = element.getData()
   const [hover] = useHover()
 
@@ -88,7 +93,8 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
       contextMenuOpen={contextMenuOpen}
       labelIcon={LabelIcon && <LabelIcon noVerticalAlign />}
       attachments={
-        detailsLevel !== ScaleDetailsLevel.low && renderDecorators(element, passedData, rest.getShapeDecoratorCenter)
+        detailsLevel !== ScaleDetailsLevel.low &&
+        renderDecorators(element, passedData, rest.getShapeDecoratorCenter, refreshResources, t)
       }
     >
       {(hover || detailsLevel !== ScaleDetailsLevel.low) && (
@@ -110,15 +116,63 @@ const renderDecorators = (
   ) => {
     x: number
     y: number
-  }
+  },
+  refreshResources?: () => void,
+  translate?: (key: string) => string
 ): React.ReactNode => {
   const { statusIcon, specs } = data
   return (
     <>
-      {statusIcon && renderStatusDecorator(element, TopologyQuadrant.upperLeft, statusIcon, getShapeDecoratorCenter)}
+      {statusIcon &&
+        renderStatusDecorator(
+          element,
+          TopologyQuadrant.upperLeft,
+          statusIcon,
+          getShapeDecoratorCenter,
+          refreshResources,
+          translate
+        )}
       {specs?.resourceCount > 1 && renderCountDecorator(element, specs?.resourceCount)}
     </>
   )
+}
+
+const StatusIconDecorator: React.FunctionComponent<{
+  x: number
+  y: number
+  statusIcon: { icon: string; classType: string; width: number; height: number }
+  refreshResources?: () => void
+  translate?: (key: string) => string
+}> = ({ x, y, statusIcon, refreshResources, translate }) => {
+  const decoratorRef = React.useRef<SVGGElement>(null)
+  const { icon, classType, width, height } = statusIcon
+  const iconUse = <use href={`#nodeStatusIcon_${icon}`} width={width} height={height} className={classType} />
+  const isSyncRefresh = icon === 'sync' && refreshResources
+  const syncResourcesLabel = isSyncRefresh && translate ? translate('Sync resources') : undefined
+
+  const decorator = (
+    <Decorator
+      x={x}
+      y={y}
+      radius={DEFAULT_DECORATOR_RADIUS}
+      showBackground
+      icon={iconUse}
+      className={isSyncRefresh ? 'pf-topology-sync-resource-decorator' : undefined}
+      onClick={isSyncRefresh ? () => refreshResources?.() : undefined}
+      ariaLabel={syncResourcesLabel}
+      innerRef={syncResourcesLabel ? decoratorRef : undefined}
+    />
+  )
+
+  if (syncResourcesLabel) {
+    return (
+      <Tooltip triggerRef={decoratorRef} content={syncResourcesLabel} position={TooltipPosition.left}>
+        {decorator}
+      </Tooltip>
+    )
+  }
+
+  return decorator
 }
 
 const renderStatusDecorator = (
@@ -132,14 +186,22 @@ const renderStatusDecorator = (
   ) => {
     x: number
     y: number
-  }
+  },
+  refreshResources?: () => void,
+  translate?: (key: string) => string
 ): React.ReactNode => {
   const { x, y } = getShapeDecoratorCenter
     ? getShapeDecoratorCenter(quadrant, element)
     : getDefaultShapeDecoratorCenter(quadrant, element)
-  const { icon, classType, width, height } = statusIcon
-  const use = <use href={`#nodeStatusIcon_${icon}`} width={width} height={height} className={classType} />
-  return <Decorator x={x} y={y} radius={DEFAULT_DECORATOR_RADIUS} showBackground icon={use} />
+  return (
+    <StatusIconDecorator
+      x={x}
+      y={y}
+      statusIcon={statusIcon}
+      refreshResources={refreshResources}
+      translate={translate}
+    />
+  )
 }
 
 const renderCountDecorator = (element: Node, resourceCount: number): React.ReactNode => {
