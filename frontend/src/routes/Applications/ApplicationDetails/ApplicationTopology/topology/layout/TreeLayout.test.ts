@@ -7800,12 +7800,12 @@ const calculateNodeOffsets2 = {
           dy: 280,
         },
       'member--rules--test--test3-placement-1--0': {
-        dx: -505,
-        dy: -240,
+        dx: -235,
+        dy: -270,
       },
       'member--rules--test--test3-placement-2--0': {
         dx: 170,
-        dy: -240,
+        dy: -270,
       },
     },
     layout: 'ColaTreeLayout',

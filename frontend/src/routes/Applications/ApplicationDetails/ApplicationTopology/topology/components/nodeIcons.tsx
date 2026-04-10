@@ -36,6 +36,22 @@ export const NodeIcons = () => (
         />
       </g>
     </symbol>
+    <symbol viewBox="0 0 32 32" id="nodeIcon_git">
+      <g id="Git" fillRule="evenodd" transform="translate(16 16) scale(0.7) translate(-16 -16)">
+        <rect x="6" y="6" width="20" height="20" rx="2.2" transform="rotate(45 16 16)" fill="#171717" />
+        <path
+          d="M16 23.25V14m0 0 6.35-2.6M16 14l-6.1-5.1"
+          fill="none"
+          stroke="#fff"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <circle cx="16" cy="23.25" r="1.65" fill="#fff" />
+        <circle cx="16" cy="14" r="1.65" fill="#fff" />
+        <circle cx="22.35" cy="11.4" r="1.65" fill="#fff" />
+      </g>
+    </symbol>
     <symbol viewBox="0 0 32 32" id="nodeIcon_cluster">
       <g id="Cluster" transform="translate(0)" fillRule="evenodd">
         <g transform="matrix(1.8606 0 0 1.8606 6.8571 6.8572)" fill="#000">
