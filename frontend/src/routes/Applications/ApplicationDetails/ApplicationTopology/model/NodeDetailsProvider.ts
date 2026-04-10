@@ -64,6 +64,30 @@ export const nodeDetailsProvider = (
         ])
         break
 
+      case 'git':
+      case 'chart': {
+        //for appset repo sources
+        const appSetSources = node?.specs?.resources
+        if (Array.isArray(appSetSources)) {
+          appSetSources.forEach((resource: any) => {
+            addPropertyToList(details, getNodePropery(resource, ['repoURL'], t('Repository')))
+            if (resource?.chart != null && String(resource.chart).trim() !== '') {
+              addPropertyToList(details, getNodePropery(resource, ['chart'], t('Chart name')))
+            }
+            if (resource?.path != null && String(resource.path).trim() !== '') {
+              addPropertyToList(details, getNodePropery(resource, ['path'], t('Path')))
+            }
+            if (resource?.targetRevision != null && String(resource.targetRevision).trim() !== '') {
+              addPropertyToList(details, getNodePropery(resource, ['targetRevision'], t('Revision')))
+            }
+            details.push({
+              type: 'spacer',
+            })
+          })
+        }
+        break
+      }
+
       default:
         addK8Details(node, details, activeFilters, t, hubClusterName)
         break
@@ -412,6 +436,14 @@ export const typeToShapeMap = Object.freeze({
     className: 'deployment',
   },
   helmrelease: {
+    shape: 'chart',
+    className: 'container',
+  },
+  git: {
+    shape: 'git',
+    className: 'container',
+  },
+  chart: {
     shape: 'chart',
     className: 'container',
   },

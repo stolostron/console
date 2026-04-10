@@ -60,6 +60,10 @@ export const typeToIconMap: TypeToIcon = Object.freeze({
     shape: 'git',
     className: 'container',
   },
+  chart: {
+    shape: 'chart',
+    className: 'container',
+  },
   helmrelease: {
     shape: 'chart',
     className: 'container',

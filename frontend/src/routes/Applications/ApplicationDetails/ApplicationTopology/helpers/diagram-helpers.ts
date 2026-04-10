@@ -55,13 +55,9 @@ export const getNodePropery = (
   const dataObj = getNestedProperty(node, propPath)
 
   const data = dataObj
-    ? JSON.stringify(dataObj)
-        .replaceAll(':', '=')
-        .replaceAll('{', '')
-        .replaceAll('}', '')
-        .replaceAll('"', '')
-        .replaceAll(' ', '')
-        .replaceAll('/', ',')
+    ? isAbsoluteHttpUrl(dataObj)
+      ? dataObj
+      : JSON.stringify(dataObj).replace(/[{}": /]/g, (c) => (c === ':' ? '=' : c === '/' ? ',' : ''))
     : defaultValue
 
   if (data !== undefined) {
@@ -281,7 +277,7 @@ export const parseApplicationNodeName = (id: string): string => {
  */
 export const createResourceURL = (node: NodeLike, _t: Translator, isLogURL = false): string => {
   const cluster = getNestedProperty(node, 'cluster', '') as string
-  const type = getNestedProperty(node, 'type', '') as string
+  const type = node.type === 'git' || node.type === 'chart' ? 'applicationset' : node.type
   const apiVersion = getNestedProperty(node, 'specs.raw.apiVersion', '') as string
   const namespace = getNestedProperty(node, 'namespace', '') as string
   const name = getNestedProperty(node, 'name', '') as string
@@ -857,4 +853,14 @@ export const getEditLink = (
     kind,
     apiversion: apiVersion,
   })}`
+}
+
+function isAbsoluteHttpUrl(value: unknown): value is string {
+  if (typeof value !== 'string') return false
+  try {
+    const { protocol } = new URL(value)
+    return protocol === 'http:' || protocol === 'https:'
+  } catch {
+    return false
+  }
 }

@@ -100,17 +100,22 @@ export async function getAppSetTopology(
   const repoId = `member--repo--${namespace}--${name}`
 
   const sources = application.app?.spec?.template?.spec?.sources
+  const sourcesArray = Array.isArray(sources) ? sources : []
+  const repoNodeType = sourcesArray.some((s: { chart?: string }) => s?.chart != null && String(s.chart).trim() !== '')
+    ? 'chart'
+    : 'git'
+
   nodes.push({
-    name: 'repo',
+    name,
     namespace,
-    type: 'git',
+    type: repoNodeType,
     id: repoId,
     uid: repoId,
     specs: {
       isDesign: true,
-      resources: sources,
-      resourceCount: sources.length,
-      raw: sources,
+      resources: sourcesArray,
+      resourceCount: sourcesArray.length,
+      raw: application.app,
       isPairedInLayoutWithParent: true,
     },
   })

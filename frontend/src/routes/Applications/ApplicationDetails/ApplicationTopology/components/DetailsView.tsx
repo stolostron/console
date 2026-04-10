@@ -181,6 +181,8 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
     const isTableView =
       ((currentNode as any)?.specs?.resourceCount ?? 0) > 1 &&
       currentNode.type !== 'cluster' &&
+      currentNode.type !== 'git' &&
+      currentNode.type !== 'chart' &&
       currentNode.type !== 'application'
 
     // Get shape and styling information for the resource type
