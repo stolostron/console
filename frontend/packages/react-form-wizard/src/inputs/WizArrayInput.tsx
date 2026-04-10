@@ -386,7 +386,7 @@ export function ArrayInputItem(props: {
                       />
                     }
                   >
-                    {typeof props.collapsedContent !== 'string' && (
+                    {expanded && typeof props.collapsedContent !== 'string' && (
                       <div
                         ref={collapsedContentMeasureRef}
                         aria-hidden
@@ -404,7 +404,15 @@ export function ArrayInputItem(props: {
                     )}
                     <Split>
                       <SplitItem isFilled>
-                        {expanded ? <Fragment>{expandedContent}</Fragment> : <Fragment>{collapsedContent}</Fragment>}
+                        {expanded ? (
+                          <Fragment>{expandedContent}</Fragment>
+                        ) : typeof props.collapsedContent !== 'string' ? (
+                          <div ref={collapsedContentMeasureRef} style={{ display: 'inline' }}>
+                            {collapsedContent}
+                          </div>
+                        ) : (
+                          <Fragment>{collapsedContent}</Fragment>
+                        )}
                       </SplitItem>
                       <SplitItem>
                         {props.sortable && (
