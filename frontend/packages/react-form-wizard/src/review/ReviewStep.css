@@ -99,9 +99,19 @@
   max-width: 100%;
 }
 
-/* Hover edit: pen on description rows; nested zones use context so only innermost shows after dwell. */
+/* Review row: pen / YAML highlight controls always visible, aligned to the end of the row. */
 .wizard-review-pen-hover-zone {
   cursor: pointer;
+}
+
+.wizard-review-pen-hover-zone--controls-only {
+  cursor: default;
+}
+
+/* Let a sibling expandable fill the row so pen controls stay at the end. */
+.wizard-review-pen-hover-zone.wizard-review-inline-value > .wizard-review-expandable-section {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 /* Span both term/description columns inside PatternFly horizontal DescriptionListGroup (subgrid). */
@@ -120,17 +130,25 @@
   gap: var(--pf-t--global--spacer--xs, 0.25rem);
 }
 
-/* Pen hidden until hover dwell (~200ms; see REVIEW_PEN_HOVER_REVEAL_MS in review/ReviewStepNavigation.tsx) */
-.wizard-review-edit-btn {
-  opacity: 0;
-  pointer-events: none;
-  position: static;
-  flex-shrink: 0;
+/* Full width of the value cell so pen controls can sit at the far right. */
+.wizard-review-pen-hover-zone.wizard-review-inline-value,
+.wizard-review-pen-hover-zone--dl-group-row .wizard-review-inline-value {
+  display: flex;
+  width: 100%;
+  min-width: 0;
 }
 
-.wizard-review-edit-btn.wizard-review-edit-btn--revealed {
-  opacity: 1;
-  pointer-events: auto;
+.wizard-review-pen-controls {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: auto;
+  gap: var(--pf-t--global--spacer--xs, 0.25rem);
+}
+
+.wizard-review-edit-btn {
+  position: static;
+  flex-shrink: 0;
 }
 
 /* Scroll-to-edit target: outline eases in; eases out after 2s (REVIEW_EDIT_TARGET_HIGHLIGHT_AUTO_DISMISS_MS) or when focus leaves / window blurs. */

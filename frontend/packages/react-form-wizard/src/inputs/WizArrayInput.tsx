@@ -18,6 +18,7 @@ import {
   Fragment,
   ReactNode,
   RefObject,
+  forwardRef,
   useCallback,
   useContext,
   useLayoutEffect,
@@ -387,20 +388,9 @@ export function ArrayInputItem(props: {
                     }
                   >
                     {expanded && typeof props.collapsedContent !== 'string' && (
-                      <div
-                        ref={collapsedContentMeasureRef}
-                        aria-hidden
-                        style={{
-                          position: 'absolute',
-                          width: 0,
-                          height: 0,
-                          overflow: 'hidden',
-                          clip: 'rect(0,0,0,0)',
-                          whiteSpace: 'nowrap',
-                        }}
-                      >
+                      <CollapsedContentMeasure ref={collapsedContentMeasureRef}>
                         {collapsedContent}
-                      </div>
+                      </CollapsedContentMeasure>
                     )}
                     <Split>
                       <SplitItem isFilled>
@@ -488,7 +478,7 @@ function ArrayInputItemReviewRegistration(props: {
       stepInputsRegistry.unregister(id)
       bumpReviewDomTree?.()
     }
-  }, [stepInputsRegistry, index, collapsedContent, measureRef, value, id, item, bumpReviewDomTree])
+  }, [stepInputsRegistry, collapsedContent, measureRef, value, id, item, bumpReviewDomTree])
 
   return (
     <ReviewPathPrefixSegmentsProvider value={instanceChildReviewPathSegments}>
@@ -512,3 +502,25 @@ function getArrayInstanceLabel(
   }
   return undefined
 }
+
+const CollapsedContentMeasure = forwardRef<HTMLDivElement, { children: ReactNode }>(function CollapsedContentMeasure(
+  { children },
+  ref
+) {
+  return (
+    <div
+      ref={ref}
+      aria-hidden
+      style={{
+        position: 'absolute',
+        width: 0,
+        height: 0,
+        overflow: 'hidden',
+        clip: 'rect(0,0,0,0)',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {children}
+    </div>
+  )
+})

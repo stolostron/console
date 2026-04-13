@@ -560,17 +560,31 @@ function getWizardDomTreeRootChildren(root: WizardDomTreeNode | null): WizardDom
   return [root]
 }
 
+/** Last `.`-delimited segment that is not entirely digits; used for review labels derived from paths/ids. */
+function formatReviewPathOrIdLabel(raw: string): string {
+  if (!raw) return ''
+  const segments = raw.split('.')
+  for (let i = segments.length - 1; i >= 0; i--) {
+    const seg = segments[i]!
+    if (seg !== '' && !/^\d+$/.test(seg)) {
+      return seg.charAt(0).toUpperCase() + seg.slice(1)
+    }
+  }
+  const fallback = segments[segments.length - 1] ?? raw
+  return fallback.charAt(0).toUpperCase() + fallback.slice(1)
+}
+
 function reviewNodeLabel(node: WizardDomTreeNode): string {
   if ('label' in node && node.label) return node.label
   if (!('type' in node)) return ''
   switch (node.type) {
     case InputReviewMeta.SECTION:
-      return node.label && node.label !== '' ? node.label : node.id
+      return node.label && node.label !== '' ? node.label : formatReviewPathOrIdLabel(node.id)
     case InputReviewMeta.INPUT:
     case InputReviewMeta.ARRAY_INPUT:
-      return node.path
+      return formatReviewPathOrIdLabel(node.path)
     case InputReviewMeta.ARRAY_INSTANCE:
-      return node.path ?? ''
+      return formatReviewPathOrIdLabel(node.path ?? '')
     default:
       return ''
   }
@@ -751,6 +765,63 @@ function ReviewTopLevelArrayInstanceExpandable(props: {
   )
 }
 
+/** Pen / YAML controls on the instance row only when collapsed; expanded state from review storage or local fallback. */
+function TopLevelArrayInstancePenWrap(props: {
+  storageKey: string
+  toggleLabel: string
+  instanceNode: WizardDomTreeNode
+  onReviewEdit?: OnReviewEditHandler
+  showYaml?: boolean
+  children: ReactNode
+  getTopLevelArrayInstanceExpanded?: (key: string) => boolean
+  onTopLevelArrayInstanceExpandedChange?: (key: string, expanded: boolean) => void
+}) {
+  const useCtx =
+    props.getTopLevelArrayInstanceExpanded !== undefined && props.onTopLevelArrayInstanceExpandedChange !== undefined
+  const [internalExpanded, setInternalExpanded] = useState(false)
+
+  const isExpanded = useCtx ? props.getTopLevelArrayInstanceExpanded!(props.storageKey) : internalExpanded
+
+  const onExpandedChange = useCallback(
+    (expanded: boolean) => {
+      if (useCtx) props.onTopLevelArrayInstanceExpandedChange!(props.storageKey, expanded)
+      else setInternalExpanded(expanded)
+    },
+    [useCtx, props.storageKey, props.onTopLevelArrayInstanceExpandedChange]
+  )
+
+  const expandable = (
+    <ReviewTopLevelArrayInstanceExpandable
+      toggleLabel={props.toggleLabel}
+      instanceNode={props.instanceNode}
+      isExpanded={isExpanded}
+      onExpandedChange={onExpandedChange}
+      onReviewEdit={props.onReviewEdit}
+      showYaml={props.showYaml}
+    >
+      {props.children}
+    </ReviewTopLevelArrayInstanceExpandable>
+  )
+
+  const { onReviewEdit, instanceNode: node, showYaml } = props
+  if (onReviewEdit == null) return expandable
+
+  if (isExpanded) return expandable
+
+  const yamlVisible = showYaml !== false
+  return (
+    <ReviewPenHoverZone
+      ariaLabel="Edit"
+      zoneClickable={false}
+      onPenClick={() => onReviewEdit(node, yamlVisible ? 'highlight' : 'navigate')}
+      onPenIconClick={() => onReviewEdit(node, 'navigate')}
+      onArrowClick={yamlVisible ? () => onReviewEdit(node, 'highlight') : undefined}
+    >
+      {expandable}
+    </ReviewPenHoverZone>
+  )
+}
+
 function renderReviewInputRows(nodes: readonly WizardInputDomNode[], ctx: ReviewRenderCtx): ReactNode {
   const mod = horizontalTermWidthModifierForInputRun(nodes)
   const onReviewEdit = ctx.onReviewEdit
@@ -893,6 +964,9 @@ function renderReviewArrayInstanceContainer(
     </div>
   )
 
+  const topLevelToggleLabel =
+    showTitle && node.label ? node.label : reviewNodeLabel(node) || `Item ${instanceIndex + 1}`
+
   return (
     <ReviewDomTreeNodeShell key={key}>
       <div
@@ -903,16 +977,17 @@ function renderReviewArrayInstanceContainer(
         }}
       >
         {isTopLevelArrayInstance ? (
-          <ReviewTopLevelArrayInstanceExpandable
-            toggleLabel={showTitle && node.label ? node.label : reviewNodeLabel(node) || `Item ${instanceIndex + 1}`}
+          <TopLevelArrayInstancePenWrap
+            storageKey={key}
+            toggleLabel={topLevelToggleLabel}
             instanceNode={node}
-            isExpanded={ctx.getTopLevelArrayInstanceExpanded?.(key)}
-            onExpandedChange={(expanded) => ctx.onTopLevelArrayInstanceExpandedChange?.(key, expanded)}
             onReviewEdit={ctx.onReviewEdit}
             showYaml={ctx.showYaml}
+            getTopLevelArrayInstanceExpanded={ctx.getTopLevelArrayInstanceExpanded}
+            onTopLevelArrayInstanceExpandedChange={ctx.onTopLevelArrayInstanceExpandedChange}
           >
             {paddedBody}
-          </ReviewTopLevelArrayInstanceExpandable>
+          </TopLevelArrayInstancePenWrap>
         ) : (
           <Fragment>
             {showTitle ? (

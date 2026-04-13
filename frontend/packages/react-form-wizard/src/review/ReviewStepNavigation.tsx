@@ -2,16 +2,11 @@
 import { Button, DescriptionListDescription, DescriptionListTerm, useWizardContext } from '@patternfly/react-core'
 import { ArrowRightIcon, PenIcon } from '@patternfly/react-icons'
 import {
-  createContext,
   type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
   useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
 } from 'react'
 import { useHighlightEditorPath } from './ReviewStepContexts'
 import { InputReviewMeta, type WizardDomTreeNode } from './ReviewStepContexts'
@@ -252,12 +247,6 @@ function isSelectableTextInput(input: HTMLInputElement): boolean {
   return t === 'text' || t === 'search' || t === 'url' || t === 'tel' || t === 'password' || t === 'email'
 }
 
-const REVIEW_PEN_HOVER_REVEAL_MS = 200
-
-/** Nested review pen zones call this so only the innermost hovered region can show the pen after the delay. */
-const ReviewPenParentCancelContext = createContext<(() => void) | undefined>(undefined)
-ReviewPenParentCancelContext.displayName = 'ReviewPenParentCancelContext'
-
 export function ReviewPenHoverZone({
   as,
   style,
@@ -269,6 +258,7 @@ export function ReviewPenHoverZone({
   onArrowClick,
   descriptionListTerm,
   descriptionListDescriptionId,
+  zoneClickable = true,
 }: {
   as?: 'div' | 'span'
   style?: CSSProperties
@@ -285,42 +275,20 @@ export function ReviewPenHoverZone({
   descriptionListTerm?: ReactNode
   /** `id` on the value cell (scroll target); same as non-pen description rows. */
   descriptionListDescriptionId?: string
+  /**
+   * When false, only the pen / arrow buttons activate edit; the wrapper is not clickable.
+   * Use beside controls that need their own click targets (e.g. an expandable toggle).
+   */
+  zoneClickable?: boolean
 }) {
-  const cancelParentPen = useContext(ReviewPenParentCancelContext)
-  const [penVisible, setPenVisible] = useState(false)
-  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
-
-  const cancelMe = useCallback(() => {
-    if (timerRef.current !== undefined) {
-      clearTimeout(timerRef.current)
-      timerRef.current = undefined
-    }
-    setPenVisible(false)
-  }, [])
-
-  const onEnter = useCallback(() => {
-    cancelParentPen?.()
-    if (timerRef.current !== undefined) clearTimeout(timerRef.current)
-    timerRef.current = setTimeout(() => setPenVisible(true), REVIEW_PEN_HOVER_REVEAL_MS)
-  }, [cancelParentPen])
-
-  const onLeave = useCallback(() => {
-    cancelMe()
-  }, [cancelMe])
-
-  useEffect(
-    () => () => {
-      if (timerRef.current !== undefined) clearTimeout(timerRef.current)
-    },
-    []
-  )
-
   const Comp = as ?? 'div'
-  const penRevealedClass = penVisible ? ' wizard-review-edit-btn--revealed' : ''
-  const zoneClassName =
-    descriptionListTerm != null
-      ? 'wizard-review-pen-hover-zone wizard-review-pen-hover-zone--dl-group-row'
-      : 'wizard-review-pen-hover-zone wizard-review-inline-value'
+  const zoneClassName = [
+    'wizard-review-pen-hover-zone',
+    descriptionListTerm != null ? 'wizard-review-pen-hover-zone--dl-group-row' : 'wizard-review-inline-value',
+    zoneClickable ? null : 'wizard-review-pen-hover-zone--controls-only',
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   const onZoneClick = useCallback(
     (e: ReactMouseEvent<HTMLElement>) => {
@@ -345,11 +313,11 @@ export function ReviewPenHoverZone({
   )
 
   const controls = (
-    <>
+    <span className="wizard-review-pen-controls">
       <Button
         type="button"
         variant="plain"
-        className={`wizard-review-edit-btn${penRevealedClass}`}
+        className="wizard-review-edit-btn"
         aria-label={ariaLabel}
         onClick={(e) => {
           e.stopPropagation()
@@ -363,7 +331,7 @@ export function ReviewPenHoverZone({
         <Button
           type="button"
           variant="plain"
-          className={`wizard-review-edit-btn${penRevealedClass}`}
+          className="wizard-review-edit-btn"
           aria-label={arrowAriaLabel}
           onClick={(e) => {
             e.stopPropagation()
@@ -373,42 +341,30 @@ export function ReviewPenHoverZone({
           <ArrowRightIcon />
         </Button>
       ) : null}
-    </>
+    </span>
   )
 
-  return (
-    <ReviewPenParentCancelContext.Provider value={cancelMe}>
-      {descriptionListTerm != null ? (
-        <div
-          role="button"
-          tabIndex={0}
-          className={zoneClassName}
-          style={style}
-          onMouseEnter={onEnter}
-          onMouseLeave={onLeave}
-          onClick={onZoneClick}
-          onKeyDown={onZoneKeyDown}
-        >
-          <DescriptionListTerm>{descriptionListTerm}</DescriptionListTerm>
-          <DescriptionListDescription id={descriptionListDescriptionId ?? ''}>
-            <span className="wizard-review-inline-value">
-              {children}
-              {controls}
-            </span>
-          </DescriptionListDescription>
-        </div>
-      ) : (
-        <Comp
-          className={zoneClassName}
-          style={style}
-          onMouseEnter={onEnter}
-          onMouseLeave={onLeave}
-          onClick={onZoneClick}
-        >
+  return descriptionListTerm != null ? (
+    <div
+      role={zoneClickable ? 'button' : undefined}
+      tabIndex={zoneClickable ? 0 : undefined}
+      className={zoneClassName}
+      style={style}
+      onClick={zoneClickable ? onZoneClick : undefined}
+      onKeyDown={zoneClickable ? onZoneKeyDown : undefined}
+    >
+      <DescriptionListTerm>{descriptionListTerm}</DescriptionListTerm>
+      <DescriptionListDescription id={descriptionListDescriptionId ?? ''}>
+        <span className="wizard-review-inline-value">
           {children}
           {controls}
-        </Comp>
-      )}
-    </ReviewPenParentCancelContext.Provider>
+        </span>
+      </DescriptionListDescription>
+    </div>
+  ) : (
+    <Comp className={zoneClassName} style={style} onClick={zoneClickable ? onZoneClick : undefined}>
+      {children}
+      {controls}
+    </Comp>
   )
 }
