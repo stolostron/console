@@ -28,7 +28,6 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from 'react'
 import { EditMode } from './contexts/EditMode'
@@ -194,7 +193,6 @@ function WizardInternal({
   submittingButtonText,
   isLoading,
 }: WizardInternalProps) {
-  const wizardRef = useRef<HTMLDivElement>(null)
   const { reviewLabel, stepsAriaLabel, contentAriaLabel } = useStringContext()
   const resolvedReviewStorageKey = reviewStorageKey ?? defaultReviewStorageKeyFromId(id ?? '')
   const stepComponents = useMemo(
@@ -238,30 +236,28 @@ function WizardInternal({
   }, [reviewStep, showValidation, stepComponents, stepHasValidationError, stepShowValidation])
 
   return (
-    <div ref={wizardRef}>
-      <ReviewDomTreeSyncProvider>
-        <PFWizard
-          navAriaLabel={`${stepsAriaLabel}`}
-          aria-label={`${contentAriaLabel}`}
-          footer={
-            <MyFooter
-              onSubmit={onSubmit}
-              steps={stepComponents}
-              submitButtonText={submitButtonText}
-              submittingButtonText={submittingButtonText}
-              isLoading={isLoading}
-            />
-          }
-          onClose={onCancel}
-        >
-          {steps.map(({ id, name, component }) => (
-            <WizardStep key={id} id={id} name={name}>
-              {component}
-            </WizardStep>
-          ))}
-        </PFWizard>
-      </ReviewDomTreeSyncProvider>
-    </div>
+    <ReviewDomTreeSyncProvider>
+      <PFWizard
+        navAriaLabel={`${stepsAriaLabel}`}
+        aria-label={`${contentAriaLabel}`}
+        footer={
+          <MyFooter
+            onSubmit={onSubmit}
+            steps={stepComponents}
+            submitButtonText={submitButtonText}
+            submittingButtonText={submittingButtonText}
+            isLoading={isLoading}
+          />
+        }
+        onClose={onCancel}
+      >
+        {steps.map(({ id, name, component }) => (
+          <WizardStep key={id} id={id} name={name}>
+            {component}
+          </WizardStep>
+        ))}
+      </PFWizard>
+    </ReviewDomTreeSyncProvider>
   )
 }
 

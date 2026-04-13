@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Card, CardBody, CardHeader, CardTitle, Gallery, Icon } from '@patternfly/react-core'
-import { Fragment, ReactNode, useContext, useId } from 'react'
+import { Fragment, ReactNode, useContext } from 'react'
+import { useRandomID } from '../contexts/useRandomID'
 import { InputCommonProps, useInput } from './Input'
 import { WizFormGroup } from './WizFormGroup'
 import { IRadioGroupContextState, RadioGroupContext } from './WizRadio'
@@ -49,8 +50,8 @@ export function Tile(props: {
 }) {
   const context = useContext(RadioGroupContext) || {}
   const isSelected = context.value === props.value
-  const reactUseId = useId()
-  const id = process.env.NODE_ENV === 'test' || (window as any).Cypress ? `tile-${props.id}` : `wiz-tile-${reactUseId}`
+  const instanceId = useRandomID()
+  const id = process.env.NODE_ENV === 'test' || (window as any).Cypress ? `tile-${props.id}` : `wiz-tile-${instanceId}`
   if (!props) return <Fragment />
   return (
     <Card
