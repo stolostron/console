@@ -38,6 +38,8 @@ export type InputCommonProps<ValueT = any> = {
   helperText?: ReactNode
   prompt?: { label?: string; href?: string; isDisabled?: boolean }
   disabledInEditMode?: boolean
+  /** When true, this input is omitted from the review step navigation / registry. */
+  hideFromReviewStep?: boolean
 
   inputValueToPathValue?: (inputValue: unknown, pathValue: unknown) => unknown
   pathValueToInputValue?: (pathValue: unknown) => unknown
@@ -170,7 +172,7 @@ export function useInput(props: InputCommonProps, options?: { isArrayInput?: boo
   const id = process.env.NODE_ENV === 'test' || (window as any).Cypress ? convertId(props) : registrationPath
 
   useLayoutEffect(() => {
-    if (!stepInputsRegistry || currentStepId === undefined || hidden) return
+    if (!stepInputsRegistry || currentStepId === undefined || hidden || props.hideFromReviewStep) return
     stepInputsRegistry.register(id, {
       id,
       path: registrationPath,
@@ -185,6 +187,7 @@ export function useInput(props: InputCommonProps, options?: { isArrayInput?: boo
     stepInputsRegistry,
     currentStepId,
     hidden,
+    props.hideFromReviewStep,
     id,
     registrationPath,
     value,

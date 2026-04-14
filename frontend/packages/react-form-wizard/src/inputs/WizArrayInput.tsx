@@ -196,6 +196,7 @@ export function WizArrayInput(props: WizArrayInputProps) {
                 moveDown={moveDown}
                 removeItem={removeItem}
                 defaultExpanded={!props.defaultCollapsed}
+                hideFromReviewStep={props.hideFromReviewStep}
               >
                 {props.children}
               </ArrayInputItem>
@@ -266,8 +267,20 @@ export function ArrayInputItem(props: {
   moveUp: (index: number) => void
   moveDown: (index: number) => void
   removeItem: (value: object) => void
+  hideFromReviewStep?: boolean
 }) {
-  const { id: parentId, value, index, defaultExpanded, moveUp, moveDown, removeItem, count, required } = props
+  const {
+    id: parentId,
+    value,
+    index,
+    defaultExpanded,
+    moveUp,
+    moveDown,
+    removeItem,
+    count,
+    required,
+    hideFromReviewStep,
+  } = props
   const [expanded, setExpanded] = useState(defaultExpanded !== undefined ? defaultExpanded : true)
   const reviewPathPrefixSegments = useContext(ReviewPathPrefixSegmentsContext)
   const registrationPath = buildReviewInputRegistrationPath(reviewPathPrefixSegments, String(index), value)
@@ -322,6 +335,7 @@ export function ArrayInputItem(props: {
                   value={value}
                   collapsedContent={props.collapsedContent}
                   measureRef={collapsedContentMeasureRef}
+                  hideFromReviewStep={hideFromReviewStep}
                 >
                   <FieldGroup
                     id={id}
@@ -453,8 +467,9 @@ function ArrayInputItemReviewRegistration(props: {
   collapsedContent: ReactNode | string
   measureRef: RefObject<HTMLDivElement | null>
   children: ReactNode
+  hideFromReviewStep?: boolean
 }) {
-  const { id, index, value, collapsedContent, measureRef, children } = props
+  const { id, index, value, collapsedContent, measureRef, children, hideFromReviewStep } = props
   const item = useContext(ItemContext)
   const stepInputsRegistry = useStepInputsRegistry()
   const bumpReviewDomTree = useBumpReviewDomTree()
@@ -464,7 +479,7 @@ function ArrayInputItemReviewRegistration(props: {
     [parentReviewPathSegments, index]
   )
   useLayoutEffect(() => {
-    if (!stepInputsRegistry) return
+    if (!stepInputsRegistry || hideFromReviewStep) return
     const label = getArrayInstanceLabel(collapsedContent, item, measureRef.current)
     stepInputsRegistry.register(id, {
       id,
@@ -478,7 +493,7 @@ function ArrayInputItemReviewRegistration(props: {
       stepInputsRegistry.unregister(id)
       bumpReviewDomTree?.()
     }
-  }, [stepInputsRegistry, collapsedContent, measureRef, value, id, item, bumpReviewDomTree])
+  }, [stepInputsRegistry, collapsedContent, measureRef, value, id, item, bumpReviewDomTree, hideFromReviewStep])
 
   return (
     <ReviewPathPrefixSegmentsProvider value={instanceChildReviewPathSegments}>
