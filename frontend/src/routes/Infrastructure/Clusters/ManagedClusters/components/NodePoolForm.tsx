@@ -33,6 +33,7 @@ import {
   OpenshiftVersionOptionType,
 } from '@openshift-assisted/ui-lib/cim'
 import { getHostedClusterVersion, NodePool, NodePoolApiVersion, NodePoolKind } from '../../../../../resources'
+import { compareVersions } from './utils/version-utils'
 import {
   Cluster,
   createResource,
@@ -265,7 +266,9 @@ export function NodePoolForm(props: {
     const cpVersionParts = cpVersion.split('.')
     const npVersionParts = npVersion.split('.')
 
-    if (cpVersionParts[0] > npVersionParts[0] || cpVersionParts[0] < npVersionParts[0]) {
+    const cpMajor = Number(cpVersionParts[0])
+    const npMajor = Number(npVersionParts[0])
+    if (cpMajor !== npMajor) {
       return false
     }
 
@@ -283,7 +286,11 @@ export function NodePoolForm(props: {
       const availableImages = getOCPVersions(props.clusterImages)
       const filteredImages: any[] = []
       availableImages.forEach((image) => {
-        if (image.version <= ver && isWithinTwoVersions(ver, image.version) && isValidImage(image.version)) {
+        if (
+          compareVersions(image.version, ver) <= 0 &&
+          isWithinTwoVersions(ver, image.version) &&
+          isValidImage(image.version)
+        ) {
           filteredImages.push(image)
         }
       })

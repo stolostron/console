@@ -1,6 +1,28 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 /**
+ * Numerically compares two version strings segment by segment.
+ * Returns negative if a < b, positive if a > b, 0 if equal.
+ * Handles two-part (4.16) and three-part (4.16.3) versions correctly,
+ * treating missing segments as 0 (e.g., "5.0" is equivalent to "5.0.0").
+ */
+export function compareVersions(a: string | undefined, b: string | undefined): number {
+  if (!a && !b) return 0
+  if (!a) return -1
+  if (!b) return 1
+
+  const aParts = a.split('.').map((s) => Number.parseInt(s, 10) || 0)
+  const bParts = b.split('.').map((s) => Number.parseInt(s, 10) || 0)
+  const len = Math.max(aParts.length, bParts.length)
+
+  for (let i = 0; i < len; i++) {
+    const diff = (aParts[i] ?? 0) - (bParts[i] ?? 0)
+    if (diff !== 0) return diff
+  }
+  return 0
+}
+
+/**
  * Determines if upgrading from currentVersion to targetVersion is a minor or major version upgrade.
  *
  * @param currentVersion - The current cluster version (e.g., "4.13.10")

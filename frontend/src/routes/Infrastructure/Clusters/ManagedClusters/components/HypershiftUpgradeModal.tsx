@@ -37,7 +37,7 @@ import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { AcmAlert, AcmForm, AcmModal, AcmSelect, AcmSubmit, AcmTable } from '../../../../../ui-components'
 import { getNodepoolAgents } from '../utils/nodepool'
 import { ReleaseNotesLink } from './ReleaseNotesLink'
-import { isMinorOrMajorUpgrade } from './utils/version-utils'
+import { compareVersions, isMinorOrMajorUpgrade } from './utils/version-utils'
 import { HypershiftUpgradeModalNodePoolCheckbox } from './HypershiftUpgradeModalNodePoolCheckbox'
 
 // Helper: Check if version is within supported range
@@ -456,37 +456,22 @@ export function HypershiftUpgradeModal(props: {
     if (!cpVersion || !npVersion) {
       return false
     }
-    const cpVersionParts = cpVersion.split('.')
-    const npVersionParts = npVersion.split('.')
+    const cpParts = cpVersion.split('.')
+    const npParts = npVersion.split('.')
+    const cpMajor = Number(cpParts[0])
+    const npMajor = Number(npParts[0])
 
-    if (cpVersionParts[0] > npVersionParts[0]) {
-      return true
+    if (cpMajor !== npMajor) {
+      return cpMajor > npMajor
     }
-    if (Number(cpVersionParts[1]) - Number(npVersionParts[1]) > 2) {
-      return true
-    }
-
-    return false
+    return Number(cpParts[1]) - Number(npParts[1]) > 2
   }
 
   const isVersionGreater = (cpVersion: string | undefined, npVersion: string | undefined) => {
     if (!cpVersion || !npVersion) {
       return false
     }
-    const cpVersionParts = cpVersion.split('.')
-    const npVersionParts = npVersion.split('.')
-
-    if (cpVersionParts[0] > npVersionParts[0]) {
-      return true
-    }
-    if (Number(cpVersionParts[1]) > Number(npVersionParts[1])) {
-      return true
-    }
-    if (Number(cpVersionParts[2]) > Number(npVersionParts[2])) {
-      return true
-    }
-
-    return false
+    return compareVersions(cpVersion, npVersion) > 0
   }
 
   const handleNodepoolsChecked = (name: string) => {

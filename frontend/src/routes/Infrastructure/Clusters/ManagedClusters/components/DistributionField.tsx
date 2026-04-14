@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { HostedClusterK8sResourceWithChannel } from '../../../../../resources/hosted-cluster'
+import { compareVersions } from './utils/version-utils'
 import { Button, ButtonVariant } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExclamationTriangleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
@@ -69,7 +70,7 @@ export function DistributionField(props: {
     if (props.resource != null && props.resource === 'nodepool' && props.nodepool) {
       if (
         getNodepoolStatus(props.nodepool) == 'Ready' &&
-        (props.nodepool?.status?.version || '') < (props.cluster?.distribution?.ocp?.version || '')
+        compareVersions(props.nodepool?.status?.version, props.cluster?.distribution?.ocp?.version) < 0
       ) {
         return true
       }
@@ -83,8 +84,10 @@ export function DistributionField(props: {
         for (let i = 0; i < props.cluster?.hypershift?.nodePools.length; i++) {
           if (
             getNodepoolStatus(props.cluster?.hypershift?.nodePools[i]) == 'Ready' &&
-            (props.cluster?.hypershift?.nodePools[i].status?.version || '') <
-              (props.cluster.distribution?.ocp?.version || '')
+            compareVersions(
+              props.cluster?.hypershift?.nodePools[i].status?.version,
+              props.cluster.distribution?.ocp?.version
+            ) < 0
           ) {
             updateAvailable = true
             break
