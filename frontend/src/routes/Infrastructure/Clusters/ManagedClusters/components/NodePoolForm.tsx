@@ -243,13 +243,15 @@ export function NodePoolForm(props: {
     },
   }
 
-  //Checks if minor version of image is >= 11
+  // Checks if image is at least 4.11.0
   const isValidImage = (version: string | undefined) => {
     if (!version) {
       return false
     }
     const versionParts = version.split('.')
-    if (Number(versionParts[1]) < 11) {
+    const major = Number(versionParts[0])
+    const minor = Number(versionParts[1])
+    if (major < 4 || (major === 4 && minor < 11)) {
       return false
     }
     return true
