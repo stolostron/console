@@ -46,6 +46,12 @@ reviews:
   # Provides a quick at-a-glance assessment of the PR health
   review_status: true
 
+  # in_progress_fortune: Posts a "Currently processing..." comment while CodeRabbit is reviewing
+  # Default: true
+  # The pending commit status is sufficient to indicate a review is in progress;
+  # disable this to reduce noise in the PR comment thread.
+  in_progress_fortune: false
+
   # collapse_walkthrough: Collapses the detailed file-by-file walkthrough by default
   # Default: true
   # Helps keep reviews concise; users can expand sections as needed
