@@ -20,17 +20,12 @@ export type WizCustomInputWrapperProps = {
   label?: string
   value: ReactNode
   hidden?: HiddenFn
-  hideFromReviewStep?: boolean
   inputValueToPathValue?: (inputValue: unknown, pathValue: unknown) => unknown
-  /**
-   * Receives the computed review/DOM id (same as registered for the review step). Pass it to the wrapped
-   * control’s `id` so labels, review links, and highlights stay aligned with wizard inputs.
-   */
-  renderControl: (reviewDomId: string) => ReactNode
+  children: ReactNode
 }
 
 export function WizCustomInputWrapper(props: WizCustomInputWrapperProps) {
-  const { path, id: idProp, label, value, hideFromReviewStep, inputValueToPathValue, renderControl } = props
+  const { path, id: idProp, label, value, inputValueToPathValue, children } = props
   const hidden = useInputHidden(props)
   const item = useContext(ItemContext)
   const currentStepId = useContext(CurrentStepIdContext)
@@ -52,7 +47,7 @@ export function WizCustomInputWrapper(props: WizCustomInputWrapperProps) {
     process.env.NODE_ENV === 'test' || (window as any).Cypress ? convertId({ id: idProp, path }) : registrationPath
 
   useLayoutEffect(() => {
-    if (!stepInputsRegistry || currentStepId === undefined || hidden || hideFromReviewStep) return
+    if (!stepInputsRegistry || currentStepId === undefined || hidden) return
     stepInputsRegistry.register(id, {
       id,
       path: registrationPath,
@@ -63,17 +58,7 @@ export function WizCustomInputWrapper(props: WizCustomInputWrapperProps) {
     })
     bumpReviewDomTree?.()
     return () => stepInputsRegistry.unregister(id)
-  }, [
-    stepInputsRegistry,
-    currentStepId,
-    hidden,
-    hideFromReviewStep,
-    id,
-    registrationPath,
-    value,
-    label,
-    bumpReviewDomTree,
-  ])
+  }, [stepInputsRegistry, currentStepId, hidden, id, registrationPath, value, label, bumpReviewDomTree])
 
-  return <>{renderControl(id)}</>
+  return <div id={id}>{children}</div>
 }

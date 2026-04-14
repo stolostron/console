@@ -743,6 +743,7 @@ const AdditionalLabels = (props: { state: State; dispatch: Dispatch<Action> }) =
     update(resources)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(additionalLabels), managedClusterSet, JSON.stringify(defaultLabels), update])
+
   const controlId = 'additionalLabels'
   const controlLabel = t('import.form.labels.label')
   return (
@@ -756,16 +757,15 @@ const AdditionalLabels = (props: { state: State; dispatch: Dispatch<Action> }) =
           .map((key) => (additionalLabels[key] ? `${key}=${additionalLabels[key]}` : key))
           .join(', ')
       }
-      renderControl={(reviewDomId) => (
-        <AcmKubernetesLabelsInput
-          id={reviewDomId}
-          label={controlLabel}
-          value={additionalLabels}
-          onChange={(labels) => onChangeAdditionalLabels(labels as Labels)}
-          placeholder={t('labels.edit.placeholder')}
-        />
-      )}
-    />
+    >
+      <AcmKubernetesLabelsInput
+        id={controlId}
+        label={controlLabel}
+        value={additionalLabels}
+        onChange={(labels) => onChangeAdditionalLabels(labels as Labels)}
+        placeholder={t('labels.edit.placeholder')}
+      />
+    </WizCustomInputWrapper>
   )
 }
 
@@ -924,94 +924,91 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
         id={controlId}
         label={controlLabel}
         value={getImportModeDescription(importMode)}
-        renderControl={(reviewDomId) => (
-          <AcmFormInputAdapter>
-            <AcmSelect
-              id={reviewDomId}
-              label={controlLabel}
-              placeholder={t('import.mode.default')}
-              value={importMode}
-              onChange={onChangeImportMode}
-              helperText={getImportModeHelperText(importMode)}
-              isRequired
-            >
-              {Object.values(ImportMode).map((m) => {
-                return (
-                  <SelectOption key={m} value={m}>
-                    {getImportModeDescription(m)}
-                  </SelectOption>
-                )
-              })}
-            </AcmSelect>
-          </AcmFormInputAdapter>
-        )}
-      />
+      >
+        <AcmFormInputAdapter>
+          <AcmSelect
+            id={controlId}
+            label={controlLabel}
+            placeholder={t('import.mode.default')}
+            value={importMode}
+            onChange={onChangeImportMode}
+            helperText={getImportModeHelperText(importMode)}
+            isRequired
+          >
+            {Object.values(ImportMode).map((m) => {
+              return (
+                <SelectOption key={m} value={m}>
+                  {getImportModeDescription(m)}
+                </SelectOption>
+              )
+            })}
+          </AcmSelect>
+        </AcmFormInputAdapter>
+      </WizCustomInputWrapper>
       <WizCustomInputWrapper
         path="discoveryNamespace"
         id={namespaceControlId}
         label={namespaceLabel}
         value={namespace}
         hidden={() => importMode !== ImportMode.discoveryOCM}
-        renderControl={(reviewDomId) => (
-          <AcmFormInputAdapter>
-            <AcmSelect
-              id={reviewDomId}
-              label={t('discoveryConfig.namespaces.label')}
-              placeholder={t('discoveryConfig.namespaces.placeholder')}
-              labelHelp={t('discoveryConfig.namespaces.labelHelp')}
-              value={namespace}
-              isRequired={importMode === ImportMode.discoveryOCM}
-              hidden={importMode !== ImportMode.discoveryOCM}
-              onChange={(namespaceName) => {
-                if (namespaceName) {
-                  dispatch({ type: 'setNamespace', namespace: namespaceName })
-                }
-              }}
-            >
-              {ocmCredentialNamespaces.map((namespace) => {
-                return (
-                  <SelectOption key={namespace} value={namespace}>
-                    {namespace}
-                  </SelectOption>
-                )
-              })}
-            </AcmSelect>
-          </AcmFormInputAdapter>
-        )}
-      />
+      >
+        <AcmFormInputAdapter>
+          <AcmSelect
+            id={'namespace'}
+            label={t('discoveryConfig.namespaces.label')}
+            placeholder={t('discoveryConfig.namespaces.placeholder')}
+            labelHelp={t('discoveryConfig.namespaces.labelHelp')}
+            value={namespace}
+            isRequired={importMode === ImportMode.discoveryOCM}
+            hidden={importMode !== ImportMode.discoveryOCM}
+            onChange={(namespaceName) => {
+              if (namespaceName) {
+                dispatch({ type: 'setNamespace', namespace: namespaceName })
+              }
+            }}
+          >
+            {ocmCredentialNamespaces.map((namespace) => {
+              return (
+                <SelectOption key={namespace} value={namespace}>
+                  {namespace}
+                </SelectOption>
+              )
+            })}
+          </AcmSelect>
+        </AcmFormInputAdapter>
+      </WizCustomInputWrapper>
       <WizCustomInputWrapper
         path="discoveryCredential"
         id={credentialControlId}
         label={credentialLabel}
         value={credential}
         hidden={() => importMode !== ImportMode.discoveryOCM}
-        renderControl={(reviewDomId) => (
-          <AcmFormInputAdapter>
-            <AcmSelect
-              id={reviewDomId}
-              label={credentialLabel}
-              placeholder={t('import.credential.place')}
-              value={credential}
-              onChange={(credentialName) => {
-                if (credentialName) {
-                  dispatch({ type: 'setCredential', credential: credentialName })
-                }
-              }}
-              isRequired={importMode === ImportMode.discoveryOCM}
-              hidden={importMode !== ImportMode.discoveryOCM}
-              isDisabled={!namespace}
-            >
-              {credentials.map((credential) => {
-                return (
-                  <SelectOption key={credential.metadata.uid} value={credential.metadata.name}>
-                    {credential.metadata.name}
-                  </SelectOption>
-                )
-              })}
-            </AcmSelect>
-          </AcmFormInputAdapter>
-        )}
-      />
+      >
+        <AcmFormInputAdapter>
+          <AcmSelect
+            id={credentialControlId}
+            label={credentialLabel}
+            placeholder={t('import.credential.place')}
+            value={credential}
+            onChange={(credentialName) => {
+              if (credentialName) {
+                dispatch({ type: 'setCredential', credential: credentialName })
+              }
+            }}
+            isRequired={importMode === ImportMode.discoveryOCM}
+            hidden={importMode !== ImportMode.discoveryOCM}
+            isDisabled={!namespace}
+          >
+            {credentials.map((credential) => {
+              return (
+                <SelectOption key={credential.metadata.uid} value={credential.metadata.name}>
+                  {credential.metadata.name}
+                </SelectOption>
+              )
+            })}
+          </AcmSelect>
+        </AcmFormInputAdapter>
+      </WizCustomInputWrapper>
       <Sync kind={ManagedClusterKind} path="metadata.name" targetKind={SecretKind} targetPath="metadata.namespace" />
       <Sync kind={ManagedClusterKind} path="metadata.name" targetKind={ClusterCuratorKind} targetPath="metadata.name" />
       <Sync
@@ -1159,54 +1156,48 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
   const controlLabel = t('template.clusterCreate.name')
   return (
     <>
-      <WizCustomInputWrapper
-        path="templateName"
-        id={controlId}
-        label={controlLabel}
-        value={templateName}
-        renderControl={(reviewDomId) => (
-          <AcmFormInputAdapter>
-            <AcmSelect
-              id={reviewDomId}
-              label={controlLabel}
-              placeholder={t('template.clusterCreate.select.placeholder')}
-              labelHelp={t('template.clusterImport.tooltip')}
-              variant={SelectVariant.typeahead}
-              helperText={
-                <Split>
-                  <SplitItem isFilled />
-                  <SplitItem>
-                    <AcmButton
-                      variant="link"
-                      style={{ paddingRight: '0px' }}
-                      onClick={() =>
-                        window.open(
-                          `${window.location.origin}${NavigationPath.addAnsibleAutomation}`,
-                          'add-automation-template'
-                        )
-                      }
-                    >
-                      {t('creation.ocp.cloud.add.template')}
-                      <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
-                    </AcmButton>
-                  </SplitItem>
-                </Split>
-              }
-              value={templateName}
-              onChange={onChangeAutomationTemplate}
-            >
-              {Object.values(curatorTemplates).map((template) => {
-                const templateName = template.metadata.name
-                return (
-                  <SelectOption key={templateName} value={templateName}>
-                    {templateName}
-                  </SelectOption>
-                )
-              })}
-            </AcmSelect>
-          </AcmFormInputAdapter>
-        )}
-      />
+      <WizCustomInputWrapper path="templateName" id={controlId} label={controlLabel} value={templateName}>
+        <AcmFormInputAdapter>
+          <AcmSelect
+            id={controlId}
+            label={controlLabel}
+            placeholder={t('template.clusterCreate.select.placeholder')}
+            labelHelp={t('template.clusterImport.tooltip')}
+            variant={SelectVariant.typeahead}
+            helperText={
+              <Split>
+                <SplitItem isFilled />
+                <SplitItem>
+                  <AcmButton
+                    variant="link"
+                    style={{ paddingRight: '0px' }}
+                    onClick={() =>
+                      window.open(
+                        `${window.location.origin}${NavigationPath.addAnsibleAutomation}`,
+                        'add-automation-template'
+                      )
+                    }
+                  >
+                    {t('creation.ocp.cloud.add.template')}
+                    <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
+                  </AcmButton>
+                </SplitItem>
+              </Split>
+            }
+            value={templateName}
+            onChange={onChangeAutomationTemplate}
+          >
+            {Object.values(curatorTemplates).map((template) => {
+              const templateName = template.metadata.name
+              return (
+                <SelectOption key={templateName} value={templateName}>
+                  {templateName}
+                </SelectOption>
+              )
+            })}
+          </AcmSelect>
+        </AcmFormInputAdapter>
+      </WizCustomInputWrapper>
       <TemplateLinkOut templateCurator={selectedTemplateName} />
       <TemplateSummaryExpandable clusterCurator={resources.find((r) => r.kind === ClusterCuratorKind)} />
     </>
