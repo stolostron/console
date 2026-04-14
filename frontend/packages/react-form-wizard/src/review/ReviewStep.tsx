@@ -17,7 +17,7 @@ import {
 } from '@patternfly/react-core'
 import { css } from '@patternfly/react-styles'
 import titleStyles from '@patternfly/react-styles/css/components/Title/title'
-import { ExclamationCircleIcon } from '@patternfly/react-icons'
+import { CheckIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
 import {
   Fragment,
   type ComponentProps,
@@ -470,10 +470,17 @@ function renderCollapsedBadgesFromNodes(
       if (isReviewValueUnset(child.value) && !child.error) {
         continue
       }
+      const collapsedInputContent = child.error ? (
+        child.label ?? child.path
+      ) : child.value === true ? (
+        <CheckIcon aria-hidden />
+      ) : (
+        renderReviewInputDescriptionContent(child)
+      )
       out.push(
         <ReviewCollapsedValueBadge
           key={`collapsed-input-${child.path}`}
-          content={child.error ? child.label ?? child.path : renderReviewInputDescriptionContent(child)}
+          content={collapsedInputContent}
           error={child.error}
           inputNode={child}
           onReviewEdit={onReviewEdit}
@@ -671,9 +678,10 @@ function collectTopLevelArrayInstanceExpandableKeys(root: WizardDomTreeNode | nu
   return [...new Set(out)]
 }
 
-function formatReviewValue(value: unknown): string {
+function formatReviewValue(value: unknown): ReactNode {
   if (value === undefined || value === null) return ''
   if (typeof value === 'string') return value
+  if (value === true) return ''
   if (typeof value === 'number' || typeof value === 'boolean') return String(value)
   try {
     return JSON.stringify(value)
@@ -689,6 +697,12 @@ function isReviewValueUnset(value: unknown): boolean {
   return false
 }
 
+/** True when the review row should be omitted: no user-visible value (still show rows with errors). */
+function isReviewInputRowValueHidden(value: unknown): boolean {
+  if (value === false) return true
+  return isReviewValueUnset(value)
+}
+
 function renderReviewInputDescriptionContent(node: WizardInputDomNode): ReactNode {
   if (node.error) {
     return <span style={{ color: REVIEW_ERROR_TEXT_COLOR, fontStyle: 'italic' }}>{node.error}</span>
@@ -696,7 +710,7 @@ function renderReviewInputDescriptionContent(node: WizardInputDomNode): ReactNod
   if (!isReviewValueUnset(node.value)) {
     return formatReviewValue(node.value)
   }
-  return <span style={{ fontStyle: 'italic' }}>{'<not set>'}</span>
+  return <></>
 }
 
 function horizontalTermWidthModifierForInputRun(nodes: readonly WizardInputDomNode[]): HorizontalTermWidthModifier {
@@ -823,12 +837,28 @@ function TopLevelArrayInstancePenWrap(props: {
 }
 
 function renderReviewInputRows(nodes: readonly WizardInputDomNode[], ctx: ReviewRenderCtx): ReactNode {
-  const mod = horizontalTermWidthModifierForInputRun(nodes)
+  const visibleNodes = nodes.filter((n) => n.error || !isReviewInputRowValueHidden(n.value))
+  if (visibleNodes.length === 0) return null
+  const mod = horizontalTermWidthModifierForInputRun(visibleNodes)
   const onReviewEdit = ctx.onReviewEdit
   return (
-    <DescriptionList key={`dl-${nodes[0]!.path}`} isHorizontal horizontalTermWidthModifier={mod} style={{ rowGap: 0 }}>
-      {nodes.map((inputNode) => {
+    <DescriptionList
+      key={`dl-${visibleNodes[0]!.path}`}
+      isHorizontal
+      horizontalTermWidthModifier={mod}
+      style={{ rowGap: 0 }}
+    >
+      {visibleNodes.map((inputNode) => {
         const termText = inputNode.label ?? inputNode.path
+        const termContent =
+          !inputNode.error && inputNode.value === true ? (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+              <CheckIcon aria-hidden />
+              {termText}
+            </span>
+          ) : (
+            termText
+          )
         const valueContent = inputNode.error ? (
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
             {renderReviewInputDescriptionContent(inputNode)}
@@ -843,7 +873,7 @@ function renderReviewInputRows(nodes: readonly WizardInputDomNode[], ctx: Review
             {onReviewEdit != null ? (
               <ReviewPenHoverZone
                 ariaLabel="Edit"
-                descriptionListTerm={termText}
+                descriptionListTerm={termContent}
                 descriptionListDescriptionId={inputNode.id}
                 onPenClick={() => onReviewEdit(inputNode, yamlVisible ? 'highlight' : 'navigate')}
                 onPenIconClick={() => onReviewEdit(inputNode, 'navigate')}
@@ -853,7 +883,7 @@ function renderReviewInputRows(nodes: readonly WizardInputDomNode[], ctx: Review
               </ReviewPenHoverZone>
             ) : (
               <>
-                <DescriptionListTerm>{termText}</DescriptionListTerm>
+                <DescriptionListTerm>{termContent}</DescriptionListTerm>
                 <DescriptionListDescription id={inputNode.id ?? ''}>
                   <span className="wizard-review-inline-value">{valueContent}</span>
                 </DescriptionListDescription>
