@@ -98,11 +98,16 @@ export function NodesPoolsTable() {
   const isObservabilityInstalled = useIsObservabilityInstalled()
   const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
   const obsCont = clusterManagementAddons.find((cma) => cma.metadata.name === 'observability-controller')
-  let grafanaLink = obsCont?.metadata?.annotations?.['console.open-cluster-management.io/launch-link']
-  grafanaLink = grafanaLink ? new URL(grafanaLink).origin : undefined
+  let grafanaLink: string | undefined
+  try {
+    const rawLink = obsCont?.metadata?.annotations?.['console.open-cluster-management.io/launch-link']
+    grafanaLink = rawLink ? new URL(rawLink).origin : undefined
+  } catch {
+    grafanaLink = undefined
+  }
   // accelerator_card_info metric link for all managed cluster GPU data
   const observabilityLink = `${grafanaLink}/explore?schemaVersion=1&panes={"jjq":{"queries":[{"expr":"accelerator_card_info"}]}}&orgId=1`
-  const nodes: NodeInfo[] = cluster?.nodes?.nodeList!
+  const nodes: NodeInfo[] = cluster?.nodes?.nodeList ?? []
 
   // polling metric every 1min
   const [gpuData, gpuDataError, gpuDataLoading] = useMetricsPoll({
@@ -116,8 +121,9 @@ export function NodesPoolsTable() {
     if (isObservabilityInstalled && !gpuDataLoading && !gpuDataError) {
       const resultData = gpuData?.data?.result ?? []
       resultData.forEach((data) => {
+        const metricNodeName = data.metric.instance.split(':')[0]
         // increase count by 1 for each gpu metric instance
-        counts[data.metric.instance] = (counts[data.metric.instance] ?? 0) + 1
+        counts[metricNodeName] = (counts[metricNodeName] ?? 0) + 1
       })
     }
     return counts
