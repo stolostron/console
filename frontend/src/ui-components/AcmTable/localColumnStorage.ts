@@ -28,14 +28,22 @@ export function setColumnValues(id: string, localSavedCols: string[], localSaved
   }
 }
 
+/** Coerces parsed localStorage values to string[] (ignores corrupt or legacy non-array shapes). */
+function toPersistedColumnIdArray(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return []
+  }
+  return value.filter((item): item is string => typeof item === 'string')
+}
+
 /** Reads persisted column selection and order for a table, or empty arrays if unset. */
 export function getColumnValues(id: string): ColumnValues {
   const localCols = getLocalStorage(id + columnKey, [])
   const localColsOrder = getLocalStorage(id + orderKey, [])
 
   return {
-    localSavedCols: localCols,
-    localSavedColOrder: localColsOrder,
+    localSavedCols: toPersistedColumnIdArray(localCols),
+    localSavedColOrder: toPersistedColumnIdArray(localColsOrder),
   }
 }
 

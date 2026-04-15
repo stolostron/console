@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { mergePersistedSelectedColumnIds } from './localColumnStorage'
+import { getColumnValues, mergePersistedSelectedColumnIds } from './localColumnStorage'
 
 describe('mergePersistedSelectedColumnIds', () => {
   const requiredColIds = ['a']
@@ -54,5 +54,25 @@ describe('mergePersistedSelectedColumnIds', () => {
         defaultOrderIds: ['a', 'b', 'c'],
       })
     ).toEqual(['a', 'b'])
+  })
+})
+
+describe('getColumnValues', () => {
+  afterEach(() => {
+    window.localStorage.clear()
+  })
+
+  test('treats non-array JSON as empty selection (e.g. wrong key or legacy shape)', () => {
+    const id = 'testTable'
+    window.localStorage.setItem(`${id}SavedCols`, JSON.stringify({ label: ['x'] }))
+    window.localStorage.setItem(`${id}SavedColOrder`, JSON.stringify({ not: 'an array' }))
+    expect(getColumnValues(id)).toEqual({ localSavedCols: [], localSavedColOrder: [] })
+  })
+
+  test('preserves string[] column ids when valid', () => {
+    const id = 'testTable2'
+    window.localStorage.setItem(`${id}SavedCols`, JSON.stringify(['a', 'b']))
+    window.localStorage.setItem(`${id}SavedColOrder`, JSON.stringify(['b', 'a']))
+    expect(getColumnValues(id)).toEqual({ localSavedCols: ['a', 'b'], localSavedColOrder: ['b', 'a'] })
   })
 })

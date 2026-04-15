@@ -7,10 +7,15 @@ import { waitForText, waitForNotText, getCSVExportSpies, getCSVDownloadLink } fr
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { ApolloError } from '@apollo/client'
 
+/** Filter UI state for `acm-table-filter.discoveredPolicyTable` — must not be returned for column keys (`*SavedCols`). */
+const DISCOVERED_POLICIES_FILTER_STORAGE = '{"label":["governance!=some"]}'
 const storageMock = (function () {
   return {
-    getItem: function () {
-      return '{"label":["governance!=some"]}'
+    getItem: function (key: string) {
+      if (key === 'acm-table-filter.discoveredPolicyTable') {
+        return DISCOVERED_POLICIES_FILTER_STORAGE
+      }
+      return null
     },
     setItem: function () {},
   }

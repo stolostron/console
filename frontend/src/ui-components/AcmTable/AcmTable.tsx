@@ -404,8 +404,10 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   }, [columns, selectedColIds, colOrderIds, showColumnManagement])
 
   useEffect(() => {
-    setColumnValues(id || '', selectedColIds, colOrderIds)
-  }, [selectedColIds, colOrderIds, id])
+    if (showColumnManagement) {
+      setColumnValues(id || '', selectedColIds, colOrderIds)
+    }
+  }, [colOrderIds, id, selectedColIds, showColumnManagement])
 
   /* istanbul ignore next */
   const updateBreakpoint = useCallback(
