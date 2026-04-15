@@ -39,10 +39,10 @@ import {
   Tr,
 } from '@patternfly/react-table'
 import useResizeObserver from '@react-hook/resize-observer'
+import { debounce } from 'debounce'
 import Fuse from 'fuse.js'
 import get from 'get-value'
 import { mergeWith } from 'lodash'
-import { debounce } from 'debounce'
 import {
   cloneElement,
   FormEvent,
@@ -76,7 +76,12 @@ import {
   IAcmTableColumn,
   ITableItem,
 } from './AcmTableTypes'
-import { getColumnValues, setColumnValues } from './localColumnStorage'
+import {
+  dedupeColumnIdsPreserveOrder,
+  getColumnValues,
+  mergePersistedSelectedColumnIds,
+  setColumnValues,
+} from './localColumnStorage'
 
 const tableDivClass = css({
   display: 'table',
@@ -301,7 +306,13 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
 
   const { filterSelections } = useTableFilterSelections({ id, filters })
 
-  //Column management
+  /**
+   * Column management (when `showColumnManagement` and `id` are set):
+   * - `requiredColIds` / `defaultColIds` drive which columns are fixed or on by default.
+   * - `colOrderIds` / `selectedColIds` mirror the manage-columns UI and localStorage.
+   * - Persisted prefs are merged on init via `mergePersistedSelectedColumnIds`; runtime merges
+   *   when `columns` gains new ids (e.g. conditional columns) are handled in the effect below.
+   */
   const requiredColIds = useMemo(
     () => columns.filter((col) => col.isDefault && col.id && !col.isActionCol).map((col) => col.id as string),
     [columns]
@@ -331,12 +342,39 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       ? [...localSavedColOrder, ...defaultOrderIds.filter((val: string) => !localSavedColOrder.includes(val))]
       : defaultOrderIds
   )
-  const [selectedColIds, setSelectedColIds] = useState<string[]>(
-    localSavedCols?.length > 0
-      ? [...requiredColIds, ...localSavedCols.filter((val: string) => !requiredColIds.includes(val))]
-      : [...requiredColIds, ...defaultColIds]
+  /** Initial selection merged from localStorage + column definition props */
+  const [selectedColIds, setSelectedColIds] = useState<string[]>(() =>
+    mergePersistedSelectedColumnIds({
+      localSavedCols,
+      localSavedColOrder,
+      requiredColIds,
+      defaultColIds,
+      defaultOrderIds,
+    })
   )
-  setColumnValues(id || '', selectedColIds, colOrderIds)
+
+  /**
+   * Keeps order and selection in sync when `columns` gains new manageable ids after mount (e.g. feature
+   * flags or async data). New ids are those present in `defaultOrderIds` but not yet in `colOrderIds` (local storage).
+   * They are appended to the order; optional columns in `defaultColIds` are added to the selection.
+   */
+  useEffect(() => {
+    if (!showColumnManagement) {
+      return
+    }
+    const newIds = defaultOrderIds.filter((columnId) => columnId && !colOrderIds.includes(columnId))
+    if (newIds.length === 0) {
+      return
+    }
+    setColOrderIds((prevOrder) => {
+      const toAppend = newIds.filter((colId) => !prevOrder.includes(colId))
+      return toAppend.length === 0 ? prevOrder : [...prevOrder, ...toAppend]
+    })
+    setSelectedColIds((prevSel) => {
+      const toSelect = newIds.filter((colId) => defaultColIds.includes(colId) && !prevSel.includes(colId))
+      return toSelect.length === 0 ? prevSel : dedupeColumnIdsPreserveOrder([...prevSel, ...toSelect])
+    })
+  }, [showColumnManagement, defaultOrderIds, defaultColIds, colOrderIds])
 
   const [tableId] = useState<string>(id || '')
   const selectedSortedCols = useMemo(() => {

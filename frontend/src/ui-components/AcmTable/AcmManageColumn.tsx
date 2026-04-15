@@ -1,22 +1,22 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { FormEvent, useState } from 'react'
 import {
   Button,
+  Content,
   DataList,
+  DataListCell,
   DataListCheck,
   DataListControl,
   DataListDragButton,
   DataListItem,
-  DataListItemRow,
-  Content,
-  Tooltip,
   DataListItemCells,
-  DataListCell,
+  DataListItemRow,
+  Tooltip,
 } from '@patternfly/react-core'
-import { Modal, DragDrop, Droppable, Draggable } from '@patternfly/react-core/deprecated'
-import { IAcmTableColumn } from './AcmTableTypes'
-import { useTranslation } from '../../lib/acm-i18next'
+import { DragDrop, Draggable, Droppable, Modal } from '@patternfly/react-core/deprecated'
 import ColumnsIcon from '@patternfly/react-icons/dist/js/icons/columns-icon'
+import { FormEvent, useEffect, useMemo, useState } from 'react'
+import { useTranslation } from '../../lib/acm-i18next'
+import { IAcmTableColumn } from './AcmTableTypes'
 import { setColumnValues } from './localColumnStorage'
 
 interface AcmManageColumnProps<T> {
@@ -41,6 +41,20 @@ export function AcmManageColumn<T>({
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
   const { t } = useTranslation()
 
+  /**
+   * Stable key so `ManageColumnModal` remounts when the set of manageable column ids changes
+   * (e.g. an async/conditional column appears). Ensures `useState` initializers see the current `allCols`.
+   */
+  const manageableColumnIdsKey = useMemo(
+    () =>
+      allCols
+        .filter((c) => c.id && !c.isActionCol)
+        .map((c) => c.id as string)
+        .sort()
+        .join('|'),
+    [allCols]
+  )
+
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen)
   }
@@ -48,6 +62,7 @@ export function AcmManageColumn<T>({
   return (
     <>
       <ManageColumnModal<T>
+        key={manageableColumnIdsKey}
         {...{
           isModalOpen,
           selectedColIds,
@@ -74,16 +89,35 @@ function reorder<T>(list: IAcmTableColumn<T>[], startIndex: number, endIndex: nu
   return [...result]
 }
 
-function sortByList<T>(colOrderIds: string[], items: IAcmTableColumn<T>[]) {
-  // sort listed column by saved column order
+/**
+ * Builds the list of columns shown in the manage-columns modal: follow `colOrderIds`, then append
+ * any manageable columns from `allCols` that were not listed (new columns, or ids missing from storage).
+ * Action columns and columns without `id` are excluded.
+ *
+ * @param colOrderIds - Saved order from `AcmTable` / localStorage.
+ * @param allCols - Current column definitions from the table (non-action, with ids).
+ * @returns Ordered columns for the modal data list.
+ */
+export function sortColumnsForManageModal<T>(colOrderIds: string[], allCols: IAcmTableColumn<T>[]) {
+  const manageable = allCols.filter((col) => col.id && !col.isActionCol)
   const sortedColumns: IAcmTableColumn<T>[] = []
+  const seen = new Set<string>()
   colOrderIds.forEach((id) => {
-    const find = items.find((col) => col.id === id)
+    if (!id) {
+      return
+    }
+    const find = manageable.find((col) => col.id === id)
     if (find) {
       sortedColumns.push(find)
+      seen.add(id)
     }
   })
-  return sortedColumns
+  const remaining = manageable
+    .filter((col) => !seen.has(col.id as string))
+    .sort((a, b) => {
+      return a.order != null && b.order != null ? a.order - b.order : -1
+    })
+  return [...sortedColumns, ...remaining]
 }
 
 interface ManageColumnModalProps<T> {
@@ -113,8 +147,23 @@ function ManageColumnModal<T>(props: ManageColumnModalProps<T>) {
     defaultColIds,
     tableId,
   } = props
-  const [items, setItems] = useState<IAcmTableColumn<T>[]>(sortByList(colOrderIds, allCols))
+  const [items, setItems] = useState<IAcmTableColumn<T>[]>(() => sortColumnsForManageModal(colOrderIds, allCols))
   const [localSelectedIds, setlocalSelectedIds] = useState<string[]>(selectedColIds)
+
+  /**
+   * When the modal opens, refresh from parent props so the list matches the table after `allCols`
+   * has changed since the initial `ManageColumnModal` mount (without relying on a ref).
+   * Dependencies are only `isModalOpen` so drag-and-drop and checkbox edits are not reset on unrelated
+   * parent re-renders while the modal stays open.
+   */
+  useEffect(() => {
+    if (!isModalOpen) {
+      return
+    }
+    setItems(sortColumnsForManageModal(colOrderIds, allCols))
+    setlocalSelectedIds(selectedColIds)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- sync only on open/close; see JSDoc above
+  }, [isModalOpen])
 
   const onDrop = (source: any, dest?: any) => {
     if (dest) {
@@ -145,17 +194,20 @@ function ManageColumnModal<T>(props: ManageColumnModalProps<T>) {
 
   const restoreDefault = () => {
     setlocalSelectedIds(defaultColIds || requiredColIds)
-    const sortedItems = [...items].sort((a, b) => {
-      return a.order != null && b.order != null ? a.order - b.order : -1
-    })
-    setItems(sortedItems)
+    setItems(
+      [...allCols]
+        .filter((col) => col.id && !col.isActionCol)
+        .sort((a, b) => {
+          return a.order != null && b.order != null ? a.order - b.order : -1
+        })
+    )
   }
 
+  /** Discard local edits and align with parent state (also runs when the modal is dismissed). */
   const onClose = () => {
     toggleModal()
     setlocalSelectedIds(selectedColIds)
-    // sort listed column by saved column order
-    setItems(sortByList(colOrderIds, items))
+    setItems(sortColumnsForManageModal(colOrderIds, allCols))
   }
 
   return (
