@@ -467,7 +467,7 @@ function renderCollapsedBadgesFromNodes(
   for (let i = 0; i < nodes.length; i++) {
     const child = nodes[i]!
     if (isReviewInputNode(child)) {
-      if (isReviewValueUnset(child.value) && !child.error) {
+      if (!child.error && isReviewInputRowValueHidden(child.value)) {
         continue
       }
       const collapsedInputContent = child.error ? (
