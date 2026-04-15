@@ -103,7 +103,7 @@ export function sortColumnsForManageModal<T>(colOrderIds: string[], allCols: IAc
   const sortedColumns: IAcmTableColumn<T>[] = []
   const seen = new Set<string>()
   colOrderIds.forEach((id) => {
-    if (!id) {
+    if (!id || seen.has(id)) {
       return
     }
     const find = manageable.find((col) => col.id === id)
@@ -115,7 +115,10 @@ export function sortColumnsForManageModal<T>(colOrderIds: string[], allCols: IAc
   const remaining = manageable
     .filter((col) => !seen.has(col.id as string))
     .sort((a, b) => {
-      return a.order != null && b.order != null ? a.order - b.order : -1
+      if (a.order == null && b.order == null) return 0
+      if (a.order == null) return 1
+      if (b.order == null) return -1
+      return a.order - b.order
     })
   return [...sortedColumns, ...remaining]
 }
