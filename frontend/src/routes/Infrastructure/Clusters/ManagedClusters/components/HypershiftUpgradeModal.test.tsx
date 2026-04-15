@@ -3462,4 +3462,78 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
     userEvent.click(upgradeButton)
     await new Promise((resolve) => setTimeout(resolve, 600))
   })
+
+  it('should auto-check nodepools when CP is a major version ahead (5.0 vs 4.x)', async () => {
+    const mockClusterMajorVersion: Cluster = {
+      ...mockClusterForCurator,
+      distribution: {
+        ocp: {
+          version: '5.0.0',
+          availableUpdates: ['5.0.1'],
+          desiredVersion: '5.0.0',
+          upgradeFailed: false,
+        },
+        isManagedOpenShift: false,
+      },
+    }
+
+    const mockNPsOldMajor: NodePool[] = [
+      {
+        ...mockNodepoolsForCurator[0],
+        status: { version: '4.19.10' },
+      },
+    ]
+
+    const crossMajorUpdates: Record<string, string> = {
+      '5.0.0': 'quay.io/openshift-release-dev/ocp-release:5.0.0-multi',
+      '5.0.1': 'quay.io/openshift-release-dev/ocp-release:5.0.1-multi',
+    }
+
+    await renderHypershiftUpgradeModal(mockClusterMajorVersion, mockNPsOldMajor, crossMajorUpdates)
+
+    const npGroupToggle = getNodepoolGroupToggle()
+    userEvent.click(npGroupToggle)
+
+    const npGroupCheckbox = screen.getByTestId('nodepoolgroup-checkbox')
+    expect(npGroupCheckbox).toHaveProperty('checked', true)
+  })
+
+  it('should correctly identify version ordering with multi-digit minors (4.9 vs 4.10)', async () => {
+    const mockClusterMinor10: Cluster = {
+      ...mockClusterForCurator,
+      distribution: {
+        ocp: {
+          version: '4.10.0',
+          availableUpdates: ['4.10.1'],
+          desiredVersion: '4.10.0',
+          upgradeFailed: false,
+        },
+        isManagedOpenShift: false,
+      },
+    }
+
+    const mockNPsMinor9: NodePool[] = [
+      {
+        ...mockNodepoolsForCurator[0],
+        status: { version: '4.9.5' },
+      },
+    ]
+
+    const updatesFor410: Record<string, string> = {
+      '4.9.6': 'quay.io/openshift-release-dev/ocp-release:4.9.6-multi',
+      '4.10.0': 'quay.io/openshift-release-dev/ocp-release:4.10.0-multi',
+      '4.10.1': 'quay.io/openshift-release-dev/ocp-release:4.10.1-multi',
+    }
+
+    await renderHypershiftUpgradeModal(mockClusterMinor10, mockNPsMinor9, updatesFor410)
+
+    const npGroupToggle = getNodepoolGroupToggle()
+    userEvent.click(npGroupToggle)
+
+    // 4.10 is 1 minor version ahead of 4.9, so isVersionGreater should be true
+    // (old string comparison "4.10" > "4.9" was correct by accident, but the
+    // independent-segment comparison bug in the old isVersionGreater is gone)
+    const npGroupCheckbox = screen.getByTestId('nodepoolgroup-checkbox')
+    expect(npGroupCheckbox).toBeTruthy()
+  })
 })

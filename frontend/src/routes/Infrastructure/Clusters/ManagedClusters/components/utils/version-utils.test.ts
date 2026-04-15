@@ -41,6 +41,32 @@ describe('compareVersions', () => {
     expect(compareVersions('4.14.2', undefined)).toBeGreaterThan(0)
     expect(compareVersions('', '4.14.2')).toBeLessThan(0)
   })
+
+  describe('regression: string comparison bugs', () => {
+    it('should order 4.9 < 4.10 (string comparison would get this wrong)', () => {
+      expect(compareVersions('4.9.0', '4.10.0')).toBeLessThan(0)
+      expect(compareVersions('4.9.5', '4.10.0')).toBeLessThan(0)
+    })
+
+    it('should not produce false positives from independent segment comparison', () => {
+      // The old isVersionGreater compared each segment independently:
+      // isVersionGreater("4.13.5", "4.14.3") returned true because 5 > 3 at patch,
+      // even though 4.14.3 > 4.13.5 overall.
+      expect(compareVersions('4.13.5', '4.14.3')).toBeLessThan(0)
+      expect(compareVersions('4.14.3', '4.13.5')).toBeGreaterThan(0)
+    })
+
+    it('should compare patch versions correctly when major.minor are equal', () => {
+      expect(compareVersions('4.14.3', '4.14.5')).toBeLessThan(0)
+      expect(compareVersions('4.14.10', '4.14.9')).toBeGreaterThan(0)
+    })
+
+    it('should handle OCP 5.0 version comparisons', () => {
+      expect(compareVersions('5.0.0', '4.17.5')).toBeGreaterThan(0)
+      expect(compareVersions('4.17.5', '5.0.0')).toBeLessThan(0)
+      expect(compareVersions('5.0.1', '5.0.0')).toBeGreaterThan(0)
+    })
+  })
 })
 
 describe('isMinorOrMajorUpgrade', () => {

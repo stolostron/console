@@ -1588,6 +1588,99 @@ describe('DistributionField hypershift clusters', () => {
     expect(queryAllByText('Update available').length).toBe(0)
   })
 
+  it('should detect update available when minor version requires numeric comparison (4.9 vs 4.10)', async () => {
+    const mockCluster: Cluster = {
+      name: 'hypershift-cluster1',
+      displayName: 'hypershift-cluster1',
+      namespace: 'clusters',
+      uid: 'hypershift-cluster1-uid',
+      provider: undefined,
+      status: ClusterStatus.ready,
+      distribution: {
+        ocp: {
+          version: '4.10.0',
+          availableUpdates: [],
+          desiredVersion: '4.10.0',
+          upgradeFailed: false,
+        },
+        displayVersion: 'OpenShift 4.10.0',
+        isManagedOpenShift: false,
+      },
+      labels: { abc: '123' },
+      nodes: undefined,
+      kubeApiServer: '',
+      consoleURL: '',
+      hasAutomationTemplate: false,
+      hive: {
+        isHibernatable: true,
+        clusterPool: undefined,
+        secrets: {
+          installConfig: '',
+        },
+      },
+      hypershift: {
+        agent: false,
+        hostingNamespace: 'clusters',
+        nodePools: mockNodepools,
+        secretNames: ['feng-hs-bug-ssh-key', 'feng-hs-bug-pull-secret'],
+      },
+      isHive: false,
+      isManaged: true,
+      isCurator: true,
+      isHostedCluster: true,
+      isHypershift: true,
+      isSNOCluster: false,
+      owner: {},
+      kubeadmin: '',
+      kubeconfig: '',
+      isRegionalHubCluster: false,
+    }
+
+    const testNodepool: NodePool = {
+      apiVersion: 'hypershift.openshift.io/v1beta1',
+      kind: 'NodePool',
+      metadata: {
+        name: 'test-nodepool',
+        namespace: 'clusters',
+      },
+      spec: {
+        management: { upgradeType: 'Replace' },
+        clusterName: 'hypershift-cluster1',
+        platform: {
+          aws: {
+            instanceProfile: '',
+            instanceType: '',
+            rootVolume: { size: 1, type: '' },
+            securityGroups: [],
+            subnet: { id: '' },
+          },
+          type: '',
+        },
+        release: { image: '' },
+        replicas: 1,
+      },
+      status: {
+        conditions: [{ message: '', reason: 'AsExpected', status: 'True', type: 'Ready' }],
+        version: '4.9.5',
+      },
+    }
+
+    const { queryAllByText } = await renderDistributionInfoField(
+      mockCluster,
+      true,
+      false,
+      undefined,
+      testNodepool,
+      undefined,
+      false,
+      'nodepool'
+    )
+
+    expect(queryAllByText('OpenShift 4.9.5').length).toBe(1)
+    // String comparison "4.9.5" < "4.10.0" is false lexicographically, but numerically 4.9 < 4.10
+    expect(queryAllByText('Update available').length).toBe(1)
+  })
+
   // Channel warning tests for HostedClusters
   describe('HostedCluster channel warning', () => {
     // Hosted cluster without channel set
