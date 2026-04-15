@@ -206,7 +206,12 @@ export const createResourceSearchLink = (node: NodeLike, t: Translator): { type:
         },
       }
     }
-  } else if (node && getNestedProperty(node, ['specs', 'pulse'], '') !== 'orange') {
+  } else if (
+    node &&
+    getNestedProperty(node, ['specs', 'pulse'], '') !== 'orange' &&
+    nodeType !== 'git' &&
+    nodeType !== 'chart'
+  ) {
     const kindModel = getNestedProperty(node, `specs.${nodeType}Model`, {}) as Record<string, any[]>
     let computedNameList: string[] = []
     let computedNSList: string[] = []
@@ -237,6 +242,7 @@ export const createResourceSearchLink = (node: NodeLike, t: Translator): { type:
         case 'placement':
           kindVal = 'Placement'
           break
+
         default:
           kindVal = getNestedProperty(node, 'type', '') as string
       }
