@@ -3530,10 +3530,10 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
     const npGroupToggle = getNodepoolGroupToggle()
     userEvent.click(npGroupToggle)
 
-    // 4.10 is 1 minor version ahead of 4.9, so isVersionGreater should be true
-    // (old string comparison "4.10" > "4.9" was correct by accident, but the
-    // independent-segment comparison bug in the old isVersionGreater is gone)
+    // 4.10 > 4.9 numerically, so isVersionGreater auto-checks the nodepool.
+    // A string comparison would evaluate "4.10" < "4.9" (lexicographic), so
+    // a regression in isVersionGreater would leave the checkbox unchecked.
     const npGroupCheckbox = screen.getByTestId('nodepoolgroup-checkbox')
-    expect(npGroupCheckbox).toBeTruthy()
+    expect(npGroupCheckbox).toHaveProperty('checked', true)
   })
 })
