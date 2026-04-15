@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { HostedClusterK8sResource, OpenshiftVersionOptionType } from '@openshift-assisted/ui-lib/cim'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
+import { clickByRole, waitForRole } from '../../../../../lib/test-util'
 import { Cluster, ClusterStatus, HypershiftCloudPlatformType } from '../../../../../resources/utils'
 import { Provider } from '../../../../../ui-components'
 import { NodePoolForm } from './NodePoolForm'
@@ -71,10 +72,6 @@ function fakeClusterImageSets(versions: string[]) {
   }))
 }
 
-function getVersionToggle() {
-  return screen.getByRole('combobox', { name: /openshift version/i })
-}
-
 function renderNodePoolForm(clusterVersion: string, imageVersions: string[]) {
   getOCPVersions.mockReturnValue(makeImageVersions(imageVersions))
   return render(
@@ -87,49 +84,69 @@ function renderNodePoolForm(clusterVersion: string, imageVersions: string[]) {
   )
 }
 
+async function openVersionDropdown() {
+  await waitForRole('combobox', { name: /openshift version/i })
+  await clickByRole('combobox', { name: /openshift version/i })
+}
+
+function getDropdownOptionTexts(): string[] {
+  return screen.getAllByRole('option').map((o) => o.textContent ?? '')
+}
+
 describe('NodePoolForm image filtering', () => {
   beforeEach(() => {
     getOCPVersions.mockReset()
   })
 
-  it('should select the first valid image using numeric comparison', async () => {
+  it('should exclude versions greater than the cluster version via compareVersions', async () => {
     renderNodePoolForm('4.14.5', ['4.14.5', '4.14.3', '4.15.0', '4.12.0'])
+    await openVersionDropdown()
 
-    await waitFor(() => {
-      expect(getVersionToggle().textContent).toContain('4.14.5')
-    })
+    const options = getDropdownOptionTexts()
+    expect(options).toContain('4.14.5')
+    expect(options).toContain('4.14.3')
+    expect(options).toContain('4.12.0')
+    expect(options).not.toContain('4.15.0')
   })
 
-  it('should include 4.9 images for a 4.10 cluster (numeric isWithinTwoVersions)', async () => {
-    renderNodePoolForm('4.10.0', ['4.10.0', '4.9.5', '4.9.0', '4.7.0'])
+  it('should include images within 2 minor versions via numeric isWithinTwoVersions', async () => {
+    renderNodePoolForm('4.14.0', ['4.14.0', '4.13.0', '4.12.0', '4.11.0'])
+    await openVersionDropdown()
 
-    await waitFor(() => {
-      expect(getVersionToggle().textContent).toContain('4.10.0')
-    })
+    const options = getDropdownOptionTexts()
+    expect(options).toContain('4.14.0')
+    expect(options).toContain('4.13.0')
+    expect(options).toContain('4.12.0')
+    expect(options).not.toContain('4.11.0')
   })
 
-  it('should reject images below version 4.11.0 (isValidImage major/minor check)', async () => {
+  it('should reject images below version 4.11.0 via isValidImage', async () => {
     renderNodePoolForm('4.14.0', ['4.14.0', '4.13.0', '4.10.5', '3.11.0'])
+    await openVersionDropdown()
 
-    await waitFor(() => {
-      const text = getVersionToggle().textContent
-      expect(text).toContain('4.14.0')
-    })
+    const options = getDropdownOptionTexts()
+    expect(options).toContain('4.14.0')
+    expect(options).toContain('4.13.0')
+    expect(options).not.toContain('4.10.5')
+    expect(options).not.toContain('3.11.0')
   })
 
   it('should accept 5.x images when cluster is 5.x (isValidImage for major > 4)', async () => {
     renderNodePoolForm('5.0.0', ['5.0.0', '4.17.0'])
+    await openVersionDropdown()
 
-    await waitFor(() => {
-      expect(getVersionToggle().textContent).toContain('5.0.0')
-    })
+    const options = getDropdownOptionTexts()
+    expect(options).toContain('5.0.0')
+    expect(options).not.toContain('4.17.0')
   })
 
-  it('should exclude images from different major versions (isWithinTwoVersions major != check)', async () => {
+  it('should exclude images from different major versions via isWithinTwoVersions', async () => {
     renderNodePoolForm('5.0.0', ['5.0.0', '4.17.0', '4.16.0'])
+    await openVersionDropdown()
 
-    await waitFor(() => {
-      expect(getVersionToggle().textContent).toContain('5.0.0')
-    })
+    const options = getDropdownOptionTexts()
+    expect(options).toContain('5.0.0')
+    expect(options).not.toContain('4.17.0')
+    expect(options).not.toContain('4.16.0')
   })
 })
