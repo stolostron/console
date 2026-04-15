@@ -16,6 +16,7 @@ import { DragDrop, Draggable, Droppable, Modal } from '@patternfly/react-core/de
 import ColumnsIcon from '@patternfly/react-icons/dist/js/icons/columns-icon'
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
+import { compareStrings } from './AcmTable'
 import { IAcmTableColumn } from './AcmTableTypes'
 import { setColumnValues } from './localColumnStorage'
 
@@ -50,7 +51,7 @@ export function AcmManageColumn<T>({
       allCols
         .filter((c) => c.id && !c.isActionCol)
         .map((c) => c.id as string)
-        .sort()
+        .sort((a, b) => compareStrings(a, b))
         .join('|'),
     [allCols]
   )
