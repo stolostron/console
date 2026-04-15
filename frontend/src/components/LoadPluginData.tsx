@@ -4,8 +4,7 @@ import { css } from '@emotion/css'
 import { PluginContext } from '../lib/PluginContext'
 import { LostChangesProvider } from './LostChanges'
 import { LoadingPage } from './LoadingPage'
-import { IdleOverlay } from './IdleOverlay'
-import { ReconnectingOverlay } from './ReconnectingOverlay'
+import { StreamStatusOverlay } from './StreamStatusOverlay'
 import { useLocation } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../NavigationPath'
 
@@ -85,8 +84,8 @@ export const LoadPluginData = (props: { children?: ReactNode }) => {
 
   return (
     <div className={contentWrapperClass}>
-      {isStreamIdle && <IdleOverlay />}
-      {isReconnecting && <ReconnectingOverlay />}
+      {isStreamIdle && <StreamStatusOverlay variant="idle" />}
+      {isReconnecting && <StreamStatusOverlay variant="reconnecting" />}
       <LostChangesProvider>{props.children}</LostChangesProvider>
     </div>
   )
