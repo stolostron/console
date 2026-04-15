@@ -17,51 +17,82 @@ exports[`Correctly returns Cluster resource definitions in global search: Search
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "global-hub",
     "header": "Managed hub",
+    "id": "managedHub",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "managedHub",
   },
   {
     "cell": "-",
     "header": "Available",
+    "id": "ManagedClusterConditionAvailable",
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "ManagedClusterConditionAvailable",
   },
   {
     "cell": "-",
     "header": "Hub accepted",
+    "id": "HubAcceptedManagedCluster",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "HubAcceptedManagedCluster",
   },
   {
     "cell": "-",
     "header": "Joined",
+    "id": "ManagedClusterJoined",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "ManagedClusterJoined",
   },
   {
     "cell": "-",
     "header": "Nodes",
+    "id": "nodes",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "nodes",
   },
   {
     "cell": "-",
     "header": "Kubernetes version",
+    "id": "kubernetesVersion",
+    "isFirstVisitChecked": true,
+    "order": 7,
     "sort": "kubernetesVersion",
   },
   {
     "cell": "-",
     "header": "CPU",
+    "id": "cpu",
+    "isFirstVisitChecked": true,
+    "order": 8,
     "sort": "cpu",
   },
   {
     "cell": "-",
     "header": "Memory",
+    "id": "memory",
+    "isFirstVisitChecked": true,
+    "order": 9,
     "sort": "memory",
   },
   {
     "cell": "-",
     "header": "Console URL",
+    "id": "cluster-consoleURL",
+    "isFirstVisitChecked": true,
+    "order": 10,
     "sort": "consoleURL",
   },
   {
@@ -75,6 +106,9 @@ exports[`Correctly returns Cluster resource definitions in global search: Search
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 11,
     "sort": "label",
   },
 ]
@@ -615,11 +649,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-applicati
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "testNamespace",
     "header": "Namespace",
+    "id": "namespace",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "namespace",
   },
   {
@@ -627,6 +668,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-applicati
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "created",
   },
   {
@@ -645,6 +689,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-applicati
       t={[Function]}
     />,
     "header": "Topology",
+    "id": "application-topology",
+    "isFirstVisitChecked": true,
+    "order": 4,
   },
   {
     "cell": <AcmLabels
@@ -657,6 +704,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-applicati
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "label",
   },
 ]
@@ -679,11 +729,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-channel 1
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "testNamespace",
     "header": "Namespace",
+    "id": "namespace",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "namespace",
   },
   {
@@ -691,16 +748,26 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-channel 1
       testCluster
     </React.Fragment>,
     "header": "Cluster",
+    "id": "cluster",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "cluster",
   },
   {
     "cell": "-",
     "header": "Type",
+    "id": "type",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "type",
   },
   {
     "cell": "-",
     "header": "Pathname",
+    "id": "pathname",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "pathname",
   },
   {
@@ -708,6 +775,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-channel 1
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "created",
   },
   {
@@ -721,6 +791,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-channel 1
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 7,
     "sort": "label",
   },
 ]
@@ -743,46 +816,74 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-cluster 1
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "-",
     "header": "Available",
+    "id": "ManagedClusterConditionAvailable",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "ManagedClusterConditionAvailable",
   },
   {
     "cell": "-",
     "header": "Hub accepted",
+    "id": "HubAcceptedManagedCluster",
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "HubAcceptedManagedCluster",
   },
   {
     "cell": "-",
     "header": "Joined",
+    "id": "ManagedClusterJoined",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "ManagedClusterJoined",
   },
   {
     "cell": "-",
     "header": "Nodes",
+    "id": "nodes",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "nodes",
   },
   {
     "cell": "-",
     "header": "Kubernetes version",
+    "id": "kubernetesVersion",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "kubernetesVersion",
   },
   {
     "cell": "-",
     "header": "CPU",
+    "id": "cpu",
+    "isFirstVisitChecked": true,
+    "order": 7,
     "sort": "cpu",
   },
   {
     "cell": "-",
     "header": "Memory",
+    "id": "memory",
+    "isFirstVisitChecked": true,
+    "order": 8,
     "sort": "memory",
   },
   {
     "cell": "-",
     "header": "Console URL",
+    "id": "cluster-consoleURL",
+    "isFirstVisitChecked": true,
+    "order": 9,
     "sort": "consoleURL",
   },
   {
@@ -796,6 +897,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-cluster 1
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 10,
     "sort": "label",
   },
 ]
@@ -818,11 +922,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-clusterop
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "testNamespace",
     "header": "Namespace",
+    "id": "namespace",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "namespace",
   },
   {
@@ -830,26 +941,42 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-clusterop
       testCluster
     </React.Fragment>,
     "header": "Cluster",
+    "id": "cluster",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "cluster",
   },
   {
     "cell": "-",
     "header": "Version",
+    "id": "version",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "version",
   },
   {
     "cell": "-",
     "header": "Available",
+    "id": "available",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "available",
   },
   {
     "cell": "-",
     "header": "Progressing",
+    "id": "progressing",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "progressing",
   },
   {
     "cell": "-",
     "header": "Degraded",
+    "id": "degraded",
+    "isFirstVisitChecked": true,
+    "order": 7,
     "sort": "degraded",
   },
   {
@@ -857,6 +984,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-clusterop
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 8,
     "sort": "created",
   },
   {
@@ -870,6 +1000,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-clusterop
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 9,
     "sort": "label",
   },
 ]
@@ -892,11 +1025,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-clusterse
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "testNamespace",
     "header": "Namespace",
+    "id": "namespace",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "namespace",
   },
   {
@@ -904,21 +1044,34 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-clusterse
       testCluster
     </React.Fragment>,
     "header": "Cluster",
+    "id": "cluster",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "cluster",
   },
   {
     "cell": "-",
     "header": "Version",
+    "id": "version",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "version",
   },
   {
     "cell": "-",
     "header": "Phase",
+    "id": "phase",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "phase",
   },
   {
     "cell": "-",
     "header": "Display",
+    "id": "display",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "display",
   },
   {
@@ -926,6 +1079,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-clusterse
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 7,
     "sort": "created",
   },
   {
@@ -939,6 +1095,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-clusterse
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 8,
     "sort": "label",
   },
 ]
@@ -961,11 +1120,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-cronjob 1
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "testNamespace",
     "header": "Namespace",
+    "id": "namespace",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "namespace",
   },
   {
@@ -973,26 +1139,42 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-cronjob 1
       testCluster
     </React.Fragment>,
     "header": "Cluster",
+    "id": "cluster",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "cluster",
   },
   {
     "cell": "-",
     "header": "schedule",
+    "id": "schedule",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "schedule",
   },
   {
     "cell": "-",
     "header": "Suspend",
+    "id": "suspend",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "suspend",
   },
   {
     "cell": "-",
     "header": "Active",
+    "id": "active",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "active",
   },
   {
     "cell": <AcmTimestamp />,
     "header": "Last schedule",
+    "id": "cronjob-lastSchedule",
+    "isFirstVisitChecked": true,
+    "order": 7,
     "sort": "lastSchedule",
   },
   {
@@ -1000,6 +1182,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-cronjob 1
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 8,
     "sort": "created",
   },
   {
@@ -1013,6 +1198,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-cronjob 1
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 9,
     "sort": "label",
   },
 ]
@@ -1035,11 +1223,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-daemonset
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "testNamespace",
     "header": "Namespace",
+    "id": "namespace",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "namespace",
   },
   {
@@ -1047,31 +1242,50 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-daemonset
       testCluster
     </React.Fragment>,
     "header": "Cluster",
+    "id": "cluster",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "cluster",
   },
   {
     "cell": "-",
     "header": "Desired",
+    "id": "desired",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "desired",
   },
   {
     "cell": "-",
     "header": "Current",
+    "id": "current",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "current",
   },
   {
     "cell": "-",
     "header": "Ready",
+    "id": "ready",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "ready",
   },
   {
     "cell": "-",
     "header": "Updated",
+    "id": "updated",
+    "isFirstVisitChecked": true,
+    "order": 7,
     "sort": "updated",
   },
   {
     "cell": "-",
     "header": "Available",
+    "id": "available",
+    "isFirstVisitChecked": true,
+    "order": 8,
     "sort": "available",
   },
   {
@@ -1079,6 +1293,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-daemonset
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 9,
     "sort": "created",
   },
   {
@@ -1092,6 +1309,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-daemonset
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 10,
     "sort": "label",
   },
 ]
@@ -1114,21 +1334,34 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-deployabl
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "testNamespace",
     "header": "Namespace",
+    "id": "namespace",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "namespace",
   },
   {
     "cell": "-",
     "header": "Chart URL",
+    "id": "chartUrl",
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "chartUrl",
   },
   {
     "cell": "-",
     "header": "Dependencies",
+    "id": "dependencies",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "dependencies",
   },
   {
@@ -1136,6 +1369,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-deployabl
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "created",
   },
   {
@@ -1149,6 +1385,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-deployabl
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "label",
   },
 ]
@@ -1171,11 +1410,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-deploymen
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "testNamespace",
     "header": "Namespace",
+    "id": "namespace",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "namespace",
   },
   {
@@ -1183,26 +1429,42 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-deploymen
       testCluster
     </React.Fragment>,
     "header": "Cluster",
+    "id": "cluster",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "cluster",
   },
   {
     "cell": "-",
     "header": "Desired",
+    "id": "desired",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "desired",
   },
   {
     "cell": "-",
     "header": "Current",
+    "id": "current",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "current",
   },
   {
     "cell": "-",
     "header": "Ready",
+    "id": "ready",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "ready",
   },
   {
     "cell": "-",
     "header": "Available",
+    "id": "available",
+    "isFirstVisitChecked": true,
+    "order": 7,
     "sort": "available",
   },
   {
@@ -1210,6 +1472,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-deploymen
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 8,
     "sort": "created",
   },
   {
@@ -1223,6 +1488,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-deploymen
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 9,
     "sort": "label",
   },
 ]
@@ -1245,11 +1513,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-genericre
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "testNamespace",
     "header": "Namespace",
+    "id": "namespace",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "namespace",
   },
   {
@@ -1257,6 +1532,10 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-genericre
       testCluster
     </React.Fragment>,
     "header": "Cluster",
+    "id": "cluster",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "cluster",
   },
   {
@@ -1264,6 +1543,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-genericre
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "created",
   },
   {
@@ -1277,6 +1559,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-genericre
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "label",
   },
 ]
@@ -1299,11 +1584,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-helmrelea
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "testNamespace",
     "header": "Namespace",
+    "id": "namespace",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "namespace",
   },
   {
@@ -1311,26 +1603,42 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-helmrelea
       testCluster
     </React.Fragment>,
     "header": "Cluster",
+    "id": "cluster",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "cluster",
   },
   {
     "cell": "-",
     "header": "Source type",
+    "id": "sourceType",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "sourceType",
   },
   {
     "cell": "-",
     "header": "URL",
+    "id": "url",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "url",
   },
   {
     "cell": "-",
     "header": "Chart path",
+    "id": "chartPath",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "chartPath",
   },
   {
     "cell": "-",
     "header": "Branch",
+    "id": "branch",
+    "isFirstVisitChecked": true,
+    "order": 7,
     "sort": "branch",
   },
   {
@@ -1338,6 +1646,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-helmrelea
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 8,
     "sort": "created",
   },
   {
@@ -1351,6 +1662,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-helmrelea
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 9,
     "sort": "label",
   },
 ]
@@ -1373,11 +1687,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-job 1`] =
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "testNamespace",
     "header": "Namespace",
+    "id": "namespace",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "namespace",
   },
   {
@@ -1385,21 +1706,34 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-job 1`] =
       testCluster
     </React.Fragment>,
     "header": "Cluster",
+    "id": "cluster",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "cluster",
   },
   {
     "cell": "-",
     "header": "Completions",
+    "id": "completions",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "completions",
   },
   {
     "cell": "-",
     "header": "Parallelism",
+    "id": "parallelism",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "parallelism",
   },
   {
     "cell": "-",
     "header": "Successful",
+    "id": "successful",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "successful",
   },
   {
@@ -1407,6 +1741,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-job 1`] =
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 7,
     "sort": "created",
   },
   {
@@ -1420,6 +1757,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-job 1`] =
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 8,
     "sort": "label",
   },
 ]
@@ -1442,6 +1782,10 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-namespace
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
@@ -1449,11 +1793,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-namespace
       testCluster
     </React.Fragment>,
     "header": "Cluster",
+    "id": "cluster",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "cluster",
   },
   {
     "cell": "-",
     "header": "Status",
+    "id": "status",
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "status",
   },
   {
@@ -1461,6 +1812,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-namespace
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "created",
   },
   {
@@ -1474,6 +1828,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-namespace
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "label",
   },
 ]
@@ -1496,6 +1853,10 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-node 1`] 
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
@@ -1503,31 +1864,50 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-node 1`] 
       testCluster
     </React.Fragment>,
     "header": "Cluster",
+    "id": "cluster",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "cluster",
   },
   {
     "cell": "-",
     "header": "Status",
+    "id": "status",
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "status",
   },
   {
     "cell": "-",
     "header": "Role",
+    "id": "role",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "role",
   },
   {
     "cell": "-",
     "header": "Architecture",
+    "id": "architecture",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "architecture",
   },
   {
     "cell": "-",
     "header": "OS image",
+    "id": "osImage",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "osImage",
   },
   {
     "cell": "-",
     "header": "CPU",
+    "id": "cpu",
+    "isFirstVisitChecked": true,
+    "order": 7,
     "sort": "cpu",
   },
   {
@@ -1535,6 +1915,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-node 1`] 
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 8,
     "sort": "created",
   },
   {
@@ -1548,6 +1931,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-node 1`] 
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 9,
     "sort": "label",
   },
 ]
@@ -1570,6 +1956,10 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-persisten
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
@@ -1577,41 +1967,66 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-persisten
       testCluster
     </React.Fragment>,
     "header": "Cluster",
+    "id": "cluster",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "cluster",
   },
   {
     "cell": "-",
     "header": "Type",
+    "id": "type",
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "type",
   },
   {
     "cell": "-",
     "header": "Status",
+    "id": "status",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "status",
   },
   {
     "cell": "-",
     "header": "Capacity",
+    "id": "capacity",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "capacity",
   },
   {
     "cell": "-",
     "header": "Access mode",
+    "id": "accessMode",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "accessMode",
   },
   {
     "cell": "-",
     "header": "Claim",
+    "id": "claimRef",
+    "isFirstVisitChecked": true,
+    "order": 7,
     "sort": "claimRef",
   },
   {
     "cell": "-",
     "header": "Reclaim policy",
+    "id": "reclaimPolicy",
+    "isFirstVisitChecked": true,
+    "order": 8,
     "sort": "reclaimPolicy",
   },
   {
     "cell": "-",
     "header": "Path",
+    "id": "path",
+    "isFirstVisitChecked": true,
+    "order": 9,
     "sort": "path",
   },
   {
@@ -1619,6 +2034,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-persisten
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 10,
     "sort": "created",
   },
   {
@@ -1632,6 +2050,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-persisten
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 11,
     "sort": "label",
   },
 ]
@@ -1654,11 +2075,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-persisten
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "testNamespace",
     "header": "Namespace",
+    "id": "namespace",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "namespace",
   },
   {
@@ -1666,26 +2094,42 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-persisten
       testCluster
     </React.Fragment>,
     "header": "Cluster",
+    "id": "cluster",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "cluster",
   },
   {
     "cell": "-",
     "header": "Status",
+    "id": "status",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "status",
   },
   {
     "cell": "-",
     "header": "Persistent volume",
+    "id": "volumeName",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "volumeName",
   },
   {
     "cell": "-",
     "header": "Requests",
+    "id": "request",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "request",
   },
   {
     "cell": "-",
     "header": "Access mode",
+    "id": "accessMode",
+    "isFirstVisitChecked": true,
+    "order": 7,
     "sort": "accessMode",
   },
   {
@@ -1693,6 +2137,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-persisten
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 8,
     "sort": "created",
   },
   {
@@ -1706,6 +2153,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-persisten
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 9,
     "sort": "label",
   },
 ]
@@ -1728,21 +2178,34 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-placement
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "testNamespace",
     "header": "Namespace",
+    "id": "namespace",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "namespace",
   },
   {
     "cell": "-",
     "header": "Subjects",
+    "id": "subjects",
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "subjects",
   },
   {
     "cell": "-",
     "header": "Placement policy",
+    "id": "placementpolicy",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "placementpolicy",
   },
   {
@@ -1750,6 +2213,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-placement
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "created",
   },
   {
@@ -1763,6 +2229,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-placement
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "label",
   },
 ]
@@ -1785,21 +2254,34 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-placement
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "testNamespace",
     "header": "Namespace",
+    "id": "namespace",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "namespace",
   },
   {
     "cell": "-",
     "header": "Replicas",
+    "id": "replicas",
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "replicas",
   },
   {
     "cell": "-",
     "header": "Decisions",
+    "id": "decisions",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "decisions",
   },
   {
@@ -1807,6 +2289,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-placement
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "created",
   },
   {
@@ -1820,6 +2305,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-placement
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "label",
   },
 ]
@@ -1842,11 +2330,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-placement
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "testNamespace",
     "header": "Namespace",
+    "id": "namespace",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "namespace",
   },
   {
@@ -1854,11 +2349,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-placement
       testCluster
     </React.Fragment>,
     "header": "Cluster",
+    "id": "cluster",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "cluster",
   },
   {
     "cell": "-",
     "header": "Replicas",
+    "id": "replicas",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "replicas",
   },
   {
@@ -1866,6 +2368,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-placement
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "created",
   },
   {
@@ -1879,6 +2384,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-placement
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "label",
   },
 ]
@@ -1901,11 +2409,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-pod 1`] =
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "testNamespace",
     "header": "Namespace",
+    "id": "namespace",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "namespace",
   },
   {
@@ -1913,26 +2428,42 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-pod 1`] =
       testCluster
     </React.Fragment>,
     "header": "Cluster",
+    "id": "cluster",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "cluster",
   },
   {
     "cell": "-",
     "header": "Status",
+    "id": "status",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "status",
   },
   {
     "cell": "-",
     "header": "Restarts",
+    "id": "restarts",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "restarts",
   },
   {
     "cell": "-",
     "header": "Host IP",
+    "id": "hostIP",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "hostIP",
   },
   {
     "cell": "-",
     "header": "Pod IP",
+    "id": "podIP",
+    "isFirstVisitChecked": true,
+    "order": 7,
     "sort": "podIP",
   },
   {
@@ -1940,6 +2471,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-pod 1`] =
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 8,
     "sort": "created",
   },
   {
@@ -1953,6 +2487,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-pod 1`] =
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 9,
     "sort": "label",
   },
 ]
@@ -1975,11 +2512,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-policy 1`
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "testNamespace",
     "header": "Namespace",
+    "id": "namespace",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "namespace",
   },
   {
@@ -1987,21 +2531,34 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-policy 1`
       testCluster
     </React.Fragment>,
     "header": "Cluster",
+    "id": "cluster",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "cluster",
   },
   {
     "cell": "-",
     "header": "Disabled",
+    "id": "disabled",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "disabled",
   },
   {
     "cell": "-",
     "header": "Violations",
+    "id": "policy-compliance",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "compliant",
   },
   {
     "cell": "-",
     "header": "Remediation action",
+    "id": "remediationAction",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "remediationAction",
   },
   {
@@ -2009,6 +2566,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-policy 1`
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 7,
     "sort": "created",
   },
   {
@@ -2022,6 +2582,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-policy 1`
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 8,
     "sort": "label",
   },
 ]
@@ -2044,42 +2607,67 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-policyrep
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "scope",
     "header": "Scope",
+    "id": "policyreport-scope",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "scope",
     "tooltip": "Scope refers to the cluster associated to the PolicyReport.",
   },
   {
     "cell": "-",
     "header": "Critical",
+    "id": "critical",
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "critical",
   },
   {
     "cell": "-",
     "header": "Important",
+    "id": "important",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "important",
   },
   {
     "cell": "-",
     "header": "Moderate",
+    "id": "moderate",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "moderate",
   },
   {
     "cell": "-",
     "header": "Low",
+    "id": "low",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "low",
   },
   {
     "cell": "-",
     "header": "Rules",
+    "id": "policyreport-rules",
+    "isFirstVisitChecked": true,
+    "order": 7,
     "tooltip": "Use the rules filter to search for PolicyReports that contain a specific rule.",
   },
   {
     "cell": "-",
     "header": "Categories",
+    "id": "policyreport-categories",
+    "isFirstVisitChecked": true,
+    "order": 8,
   },
 ]
 `;
@@ -2101,11 +2689,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-release 1
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "testNamespace",
     "header": "Namespace",
+    "id": "namespace",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "namespace",
   },
   {
@@ -2113,26 +2708,42 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-release 1
       testCluster
     </React.Fragment>,
     "header": "Cluster",
+    "id": "cluster",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "cluster",
   },
   {
     "cell": "-",
     "header": "Status",
+    "id": "status",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "status",
   },
   {
     "cell": "-",
     "header": "Chart name",
+    "id": "chartName",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "chartName",
   },
   {
     "cell": "-",
     "header": "Chart version",
+    "id": "chartVersion",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "chartVersion",
   },
   {
     "cell": <AcmTimestamp />,
     "header": "Updated",
+    "id": "release-updated",
+    "isFirstVisitChecked": true,
+    "order": 7,
     "sort": "updated",
   },
 ]
@@ -2155,11 +2766,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-replicase
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "testNamespace",
     "header": "Namespace",
+    "id": "namespace",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "namespace",
   },
   {
@@ -2167,16 +2785,26 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-replicase
       testCluster
     </React.Fragment>,
     "header": "Cluster",
+    "id": "cluster",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "cluster",
   },
   {
     "cell": "-",
     "header": "Desired",
+    "id": "desired",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "desired",
   },
   {
     "cell": "-",
     "header": "Current",
+    "id": "current",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "current",
   },
   {
@@ -2184,6 +2812,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-replicase
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "created",
   },
   {
@@ -2197,6 +2828,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-replicase
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 7,
     "sort": "label",
   },
 ]
@@ -2219,11 +2853,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-secret 1`
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "testNamespace",
     "header": "Namespace",
+    "id": "namespace",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "namespace",
   },
   {
@@ -2231,11 +2872,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-secret 1`
       testCluster
     </React.Fragment>,
     "header": "Cluster",
+    "id": "cluster",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "cluster",
   },
   {
     "cell": "-",
     "header": "Type",
+    "id": "type",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "type",
   },
   {
@@ -2243,6 +2891,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-secret 1`
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "created",
   },
   {
@@ -2256,6 +2907,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-secret 1`
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "label",
   },
 ]
@@ -2278,11 +2932,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-service 1
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "testNamespace",
     "header": "Namespace",
+    "id": "namespace",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "namespace",
   },
   {
@@ -2290,21 +2951,34 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-service 1
       testCluster
     </React.Fragment>,
     "header": "Cluster",
+    "id": "cluster",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "cluster",
   },
   {
     "cell": "-",
     "header": "Type",
+    "id": "type",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "type",
   },
   {
     "cell": "-",
     "header": "Cluster IP",
+    "id": "clusterIP",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "clusterIP",
   },
   {
     "cell": "-",
     "header": "Port",
+    "id": "port",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "port",
   },
   {
@@ -2312,6 +2986,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-service 1
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 7,
     "sort": "created",
   },
   {
@@ -2325,6 +3002,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-service 1
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 8,
     "sort": "label",
   },
 ]
@@ -2347,11 +3027,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-statefuls
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "testNamespace",
     "header": "Namespace",
+    "id": "namespace",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "namespace",
   },
   {
@@ -2359,16 +3046,26 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-statefuls
       testCluster
     </React.Fragment>,
     "header": "Cluster",
+    "id": "cluster",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "cluster",
   },
   {
     "cell": "-",
     "header": "Desired",
+    "id": "desired",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "desired",
   },
   {
     "cell": "-",
     "header": "Current",
+    "id": "current",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "current",
   },
   {
@@ -2376,6 +3073,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-statefuls
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "created",
   },
   {
@@ -2389,6 +3089,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-statefuls
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 7,
     "sort": "label",
   },
 ]
@@ -2411,11 +3114,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-subscript
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "testNamespace",
     "header": "Namespace",
+    "id": "namespace",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "namespace",
   },
   {
@@ -2423,26 +3133,42 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-subscript
       testCluster
     </React.Fragment>,
     "header": "Cluster",
+    "id": "cluster",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "cluster",
   },
   {
     "cell": "-",
     "header": "Package",
+    "id": "package",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "package",
   },
   {
     "cell": "-",
     "header": "Status",
+    "id": "status",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "status",
   },
   {
     "cell": "-",
     "header": "Local placement",
+    "id": "localPlacement",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "localPlacement",
   },
   {
     "cell": "-",
     "header": "Time window",
+    "id": "timeWindow",
+    "isFirstVisitChecked": true,
+    "order": 7,
     "sort": "timeWindow",
   },
   {
@@ -2450,6 +3176,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-subscript
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 8,
     "sort": "created",
   },
   {
@@ -2463,6 +3192,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-subscript
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 9,
     "sort": "label",
   },
 ]
@@ -2485,11 +3217,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-subscript
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "testNamespace",
     "header": "Namespace",
+    "id": "namespace",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "namespace",
   },
   {
@@ -2497,21 +3236,34 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-subscript
       testCluster
     </React.Fragment>,
     "header": "Cluster",
+    "id": "cluster",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "cluster",
   },
   {
     "cell": "-",
     "header": "Package",
+    "id": "package",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "package",
   },
   {
     "cell": "-",
     "header": "Source",
+    "id": "source",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "source",
   },
   {
     "cell": "-",
     "header": "Channel",
+    "id": "Channel",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "Channel",
   },
   {
@@ -2519,6 +3271,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-subscript
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 7,
     "sort": "created",
   },
   {
@@ -2532,6 +3287,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-subscript
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 8,
     "sort": "label",
   },
 ]
@@ -2554,11 +3312,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-virtualma
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "testNamespace",
     "header": "Namespace",
+    "id": "namespace",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "namespace",
   },
   {
@@ -2566,16 +3331,26 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-virtualma
       testCluster
     </React.Fragment>,
     "header": "Cluster",
+    "id": "cluster",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "cluster",
   },
   {
     "cell": "-",
     "header": "Status",
+    "id": "status",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "status",
   },
   {
     "cell": "-",
     "header": "Ready",
+    "id": "ready",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "ready",
   },
   {
@@ -2593,14 +3368,19 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-virtualma
       }
       t={[Function]}
     />,
-    "header": "",
-    "id": "launch-links",
+    "header": "External links",
+    "id": "virtualmachine-launch-links",
+    "isFirstVisitChecked": true,
+    "order": 6,
   },
   {
     "cell": <AcmTimestamp
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 7,
     "sort": "created",
   },
   {
@@ -2614,6 +3394,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-virtualma
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 8,
     "sort": "label",
   },
 ]
@@ -2636,11 +3419,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-virtualma
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "testNamespace",
     "header": "Namespace",
+    "id": "namespace",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "namespace",
   },
   {
@@ -2648,16 +3438,26 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-virtualma
       testCluster
     </React.Fragment>,
     "header": "Cluster",
+    "id": "cluster",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "cluster",
   },
   {
     "cell": "-",
     "header": "Node",
+    "id": "node",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "node",
   },
   {
     "cell": "-",
     "header": "IP address",
+    "id": "ipaddress",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "ipaddress",
   },
   {
@@ -2665,6 +3465,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-virtualma
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "created",
   },
   {
@@ -2678,6 +3481,9 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-virtualma
       }
     />,
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 7,
     "sort": "label",
   },
 ]
@@ -2700,11 +3506,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-virtualma
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
     "cell": "testNamespace",
     "header": "Namespace",
+    "id": "namespace",
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "namespace",
   },
   {
@@ -2712,11 +3525,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-virtualma
       testCluster
     </React.Fragment>,
     "header": "Cluster",
+    "id": "cluster",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "cluster",
   },
   {
     "cell": "-",
     "header": "Status",
+    "id": "_conditionReadyReason",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "_conditionReadyReason",
   },
   {
@@ -2734,13 +3554,18 @@ exports[`Correctly returns all resource definitions: SearchDefinitions-virtualma
       }
     />,
     "header": "Indications",
-    "id": "vmsnapshot-indications",
+    "id": "virtualmachinesnapshot-indications",
+    "isFirstVisitChecked": true,
+    "order": 5,
   },
   {
     "cell": <AcmTimestamp
       timestamp="2021-01-01T00:00:00Z"
     />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "created",
   },
 ]
@@ -2836,6 +3661,10 @@ exports[`Correctly returns resource with managedHub column: SearchDefinitions-gl
       }
     />,
     "header": "Name",
+    "id": "name",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 1,
     "sort": "name",
   },
   {
@@ -2850,41 +3679,66 @@ exports[`Correctly returns resource with managedHub column: SearchDefinitions-gl
       </Content>
     </React.Fragment>,
     "header": "Cluster",
+    "id": "cluster",
+    "isDefault": true,
+    "isFirstVisitChecked": true,
+    "order": 2,
     "sort": "cluster",
   },
   {
     "cell": "-",
     "header": "Status",
+    "id": "status",
+    "isFirstVisitChecked": true,
+    "order": 3,
     "sort": "status",
   },
   {
     "cell": "-",
     "header": "Role",
+    "id": "role",
+    "isFirstVisitChecked": true,
+    "order": 4,
     "sort": "role",
   },
   {
     "cell": "-",
     "header": "Architecture",
+    "id": "architecture",
+    "isFirstVisitChecked": true,
+    "order": 5,
     "sort": "architecture",
   },
   {
     "cell": "-",
     "header": "OS image",
+    "id": "osImage",
+    "isFirstVisitChecked": true,
+    "order": 6,
     "sort": "osImage",
   },
   {
     "cell": "-",
     "header": "CPU",
+    "id": "cpu",
+    "isFirstVisitChecked": true,
+    "order": 7,
     "sort": "cpu",
   },
   {
     "cell": <AcmTimestamp />,
     "header": "Created",
+    "id": "created",
+    "isFirstVisitChecked": true,
+    "order": 8,
     "sort": "created",
   },
   {
     "cell": "-",
     "header": "Labels",
+    "id": "label",
+    "isFirstVisitChecked": true,
+    "order": 9,
     "sort": "label",
   },
 ]

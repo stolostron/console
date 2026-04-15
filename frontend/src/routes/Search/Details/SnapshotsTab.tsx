@@ -168,6 +168,7 @@ export default function SnapshotsTab() {
           ) : null}
           <PageSection hasBodyWrapper={false} isFilled={false}>
             <AcmTable
+              id={'search-details-vmsnapshots-table'}
               items={snapshotItems}
               emptyState={undefined} // table only shown for kinds with related resources
               columns={searchDefinitions['virtualmachinesnapshot'].columns}
@@ -186,6 +187,7 @@ export default function SnapshotsTab() {
                 )
               }
               keyFn={(item: any) => item._uid.toString()}
+              showColumnManagement
             />
           </PageSection>
         </Stack>

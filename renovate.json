@@ -38,6 +38,20 @@
       "description": "Ignore all storybook packages",
       "matchPackageNames": ["storybook", "@storybook/**"],
       "enabled": false
+    },
+    {
+      "description": "Disable updates for .tool-versions (asdf local dev tooling)",
+      "matchManagers": ["asdf"],
+      "enabled": false
+    },
+    {
+      "description": "Dynamic plugin SDK major/minor must obey support matrix; allow only patch",
+      "matchPackageNames": [
+        "@openshift-console/dynamic-plugin-sdk",
+        "@openshift-console/dynamic-plugin-sdk-webpack"
+      ],
+      "matchUpdateTypes": ["major", "minor"],
+      "enabled": false
     }
   ]
 }

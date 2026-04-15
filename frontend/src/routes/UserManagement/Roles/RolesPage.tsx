@@ -28,7 +28,7 @@ const RolesPage = () => {
         <AcmPageHeader
           title={t('Roles')}
           description={t('Manage roles and permissions')}
-          breadcrumb={[{ text: t('User Management') }, { text: t('Roles') }]}
+          breadcrumb={[{ text: t('User management') }, { text: t('Roles') }]}
         />
       }
     >

@@ -39,6 +39,7 @@ export enum CredentialsType {
 export function CredentialsWizard(props: { onSubmit: WizardSubmit; onCancel: WizardCancel }) {
   return (
     <WizardPage
+      id="credentials-wizard"
       title="Add credentials"
       defaultData={{
         apiVersion: 'v1',

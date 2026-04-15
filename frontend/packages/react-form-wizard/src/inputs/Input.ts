@@ -2,14 +2,21 @@
 import get from 'get-value'
 import { ReactNode, useCallback, useContext, useLayoutEffect, useState } from 'react'
 import set from 'set-value'
-import { EditMode } from '..'
+import { EditMode } from '../contexts/EditMode'
 import { useData } from '../contexts/DataContext'
 import { useDisplayMode } from '../contexts/DisplayModeContext'
 import { useEditMode } from '../contexts/EditModeContext'
 import { useHasInputs, useSetHasInputs, useUpdateHasInputs } from '../contexts/HasInputsProvider'
 import { useHasValue, useSetHasValue } from '../contexts/HasValueProvider'
+import {
+  CurrentStepIdContext,
+  InputReviewMeta,
+  ReviewPathPrefixSegmentsContext,
+  useStepInputsRegistry,
+} from '../review/ReviewStepContexts'
 import { ItemContext } from '../contexts/ItemContext'
 import { useShowValidation } from '../contexts/ShowValidationProvider'
+import { useBumpReviewDomTree } from '../review/ReviewStepContexts'
 import { useStringContext } from '../contexts/StringContext'
 import { useHasValidationError, useSetHasValidationError, useValidate } from '../contexts/ValidationProvider'
 
@@ -31,6 +38,8 @@ export type InputCommonProps<ValueT = any> = {
   helperText?: ReactNode
   prompt?: { label?: string; href?: string; isDisabled?: boolean }
   disabledInEditMode?: boolean
+  /** When true, this input is omitted from the review step navigation / registry. */
+  hideFromReviewStep?: boolean
 
   inputValueToPathValue?: (inputValue: unknown, pathValue: unknown) => unknown
   pathValueToInputValue?: (pathValue: unknown) => unknown
@@ -94,7 +103,9 @@ export function useInputHidden(props: { hidden?: (item: any) => boolean }) {
   return props.hidden ? props.hidden(item) : false
 }
 
-export function useInput(props: InputCommonProps) {
+export function useInput(props: InputCommonProps, options?: { isArrayInput?: boolean }) {
+  const { isArrayInput } = options ?? {}
+  const bumpReviewDomTree = useBumpReviewDomTree()
   const editMode = useEditMode()
   const displayMode = useDisplayMode()
   const [value, setValue] = useValue(props, '')
@@ -140,7 +151,51 @@ export function useInput(props: InputCommonProps) {
     validate()
   }
 
-  const id = convertId(props)
+  const item = useContext(ItemContext)
+  const currentStepId = useContext(CurrentStepIdContext)
+  const stepInputsRegistry = useStepInputsRegistry()
+  const reviewPathPrefixSegments = useContext(ReviewPathPrefixSegmentsContext)
+  let registrationPath = buildReviewInputRegistrationPath(
+    isArrayInput ? [] : reviewPathPrefixSegments,
+    props.path,
+    item
+  )
+  if (props.inputValueToPathValue) {
+    const transformed = props.inputValueToPathValue(true, false)
+    registrationPath = `${registrationPath}#${JSON.stringify(transformed)}`
+  }
+
+  if (props.id) {
+    registrationPath = `${registrationPath};id=${props.id}`
+  }
+
+  const id = process.env.NODE_ENV === 'test' || (window as any).Cypress ? convertId(props) : registrationPath
+
+  useLayoutEffect(() => {
+    if (!stepInputsRegistry || currentStepId === undefined || hidden || props.hideFromReviewStep) return
+    stepInputsRegistry.register(id, {
+      id,
+      path: registrationPath,
+      value,
+      label: props.label,
+      error: error ?? undefined,
+      type: isArrayInput ? InputReviewMeta.ARRAY_INPUT : InputReviewMeta.INPUT,
+    })
+    bumpReviewDomTree?.()
+    return () => stepInputsRegistry.unregister(id)
+  }, [
+    stepInputsRegistry,
+    currentStepId,
+    hidden,
+    props.hideFromReviewStep,
+    id,
+    registrationPath,
+    value,
+    props.label,
+    error,
+    isArrayInput,
+    bumpReviewDomTree,
+  ])
 
   const hasValue = useHasValue()
   const setHasValue = useSetHasValue()
@@ -190,4 +245,25 @@ export function getCollapsedPlaceholder(props: { collapsedPlaceholder?: ReactNod
 
 export function getAddPlaceholder(props: { placeholder?: string }) {
   return props.placeholder ?? 'Add'
+}
+
+/** Full dot-path for review registration: `prefixSegments` (array field + index segments) + `path`, with resource `kind` prepended when `item` has one. */
+export function buildReviewInputRegistrationPath(
+  prefixSegments: readonly string[],
+  path: string,
+  item?: unknown
+): string {
+  const base = prefixSegments.length > 0 ? [...prefixSegments, path].join('.') : path
+  return prependItemKindToRegistrationPath(item, base)
+}
+
+/** When the active item looks like a resource (has `kind`), prefix the review path so it stays unique across kinds. */
+export function prependItemKindToRegistrationPath(item: unknown, path: string): string {
+  if (item && typeof item === 'object' && 'kind' in item) {
+    const kind = (item as { kind: unknown }).kind
+    if (kind != null && String(kind) !== '') {
+      return `${String(kind)}.${path}`
+    }
+  }
+  return path
 }

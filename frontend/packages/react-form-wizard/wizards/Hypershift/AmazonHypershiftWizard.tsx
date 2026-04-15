@@ -91,6 +91,7 @@ export function AmazonHypershiftWizard(props: AWSHypershiftWizardProps) {
   const clusterSets = props.clusterSets.map((clusterSet) => clusterSet.metadata?.name) as string[]
   return (
     <WizardPage
+      id="amazon-hypershift-wizard"
       title="Create cluster"
       breadcrumb={[{ label: 'Managed clusters', to: '.' }]}
       onSubmit={() => Promise.resolve(undefined)}

@@ -1,6 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { EditorValidationStatus, useData, useEditorValidationStatus, useItem } from '@patternfly-labs/react-form-wizard'
+import {
+  EditorValidationStatus,
+  useData,
+  useEditorValidationStatus,
+  useHighlightEditorPath,
+  useItem,
+} from '@patternfly-labs/react-form-wizard'
 import { ArgoWizard } from '~/wizards/Argo/ArgoWizard'
 import { useContext, useEffect, useState } from 'react'
 import { useParams, useNavigate, PathParam, generatePath } from 'react-router-dom-v5-compat'
@@ -34,6 +40,7 @@ export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
   const { update } = useData() // Wizard framework sets this context
   const { setEditorValidationStatus } = useEditorValidationStatus()
+  const { highlightEditorPath } = useHighlightEditorPath()
   const { t } = useTranslation()
   return (
     <SyncEditor
@@ -42,6 +49,7 @@ export function WizardSyncEditor() {
       resources={resources}
       schema={pushmodelschema}
       filters={['*.metadata.managedFields']}
+      highlightEditorPath={highlightEditorPath}
       onEditorChange={(changes: { resources: any[] }): void => {
         update(changes?.resources)
       }}

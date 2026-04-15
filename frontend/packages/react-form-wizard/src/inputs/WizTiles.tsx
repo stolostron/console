@@ -1,17 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import {
-  Card,
-  CardBody,
-  CardHeader,
-  CardTitle,
-  DescriptionListDescription,
-  DescriptionListGroup,
-  DescriptionListTerm,
-  Gallery,
-  Icon,
-} from '@patternfly/react-core'
-import { Children, Fragment, isValidElement, ReactNode, useContext } from 'react'
-import { DisplayMode } from '../contexts/DisplayModeContext'
+import { Card, CardBody, CardHeader, CardTitle, Gallery, Icon } from '@patternfly/react-core'
+import { Fragment, ReactNode, useContext } from 'react'
+import { useRandomID } from '../contexts/useRandomID'
 import { InputCommonProps, useInput } from './Input'
 import { WizFormGroup } from './WizFormGroup'
 import { IRadioGroupContextState, RadioGroupContext } from './WizRadio'
@@ -30,7 +20,7 @@ type WizTilesProps = InputCommonProps & { children?: ReactNode }
 // helperText?: string
 // children?: ReactNode
 export function WizTiles(props: WizTilesProps) {
-  const { displayMode: mode, value, setValue, hidden, id } = useInput(props)
+  const { value, setValue, hidden, id } = useInput(props)
 
   const state: IRadioGroupContextState = {
     value: value,
@@ -40,25 +30,6 @@ export function WizTiles(props: WizTilesProps) {
   }
 
   if (hidden) return <Fragment />
-
-  if (mode === DisplayMode.Details) {
-    let label: string | undefined
-    Children.forEach(props.children, (child) => {
-      if (!isValidElement(child)) return
-      if (child.type !== Tile) return
-      if (child.props.value === value) {
-        label = child.props.label
-      }
-    })
-    if (label)
-      return (
-        <DescriptionListGroup>
-          <DescriptionListTerm>{props.label}</DescriptionListTerm>
-          <DescriptionListDescription id={id}>{label}</DescriptionListDescription>
-        </DescriptionListGroup>
-      )
-    return <Fragment />
-  }
 
   return (
     <RadioGroupContext.Provider value={state}>
@@ -79,12 +50,12 @@ export function Tile(props: {
 }) {
   const context = useContext(RadioGroupContext) || {}
   const isSelected = context.value === props.value
-
+  const instanceId = useRandomID()
+  const id = process.env.NODE_ENV === 'test' || (window as any).Cypress ? `tile-${props.id}` : `wiz-tile-${instanceId}`
   if (!props) return <Fragment />
-
   return (
     <Card
-      id={`tile-${props.id}`}
+      id={id}
       isSelectable
       isSelected={isSelected}
       onClick={() => {
@@ -93,8 +64,8 @@ export function Tile(props: {
     >
       <CardHeader
         selectableActions={{
-          selectableActionId: props.id,
-          selectableActionAriaLabelledby: `tile-${props.id}`,
+          selectableActionId: id,
+          selectableActionAriaLabelledby: id,
           name: props.id,
           variant: 'single',
           isHidden: true,

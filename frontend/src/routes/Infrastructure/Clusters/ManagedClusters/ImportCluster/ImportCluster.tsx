@@ -1,14 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import {
-  DescriptionListDescription,
-  DescriptionListGroup,
-  DescriptionListTerm,
-  Split,
-  SplitItem,
-  Switch,
-  Content,
-  SelectOption,
-} from '@patternfly/react-core'
+import { Split, SplitItem, Switch, Content, SelectOption } from '@patternfly/react-core'
 import '@patternfly/react-styles/css/components/CodeEditor/code-editor.css'
 import {
   AcmButton,
@@ -52,20 +43,20 @@ import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/
 import schema from './schema.json'
 import kac from './kac.json'
 import {
-  DisplayMode,
   Section,
   Step,
   Sync,
   useData,
-  useDisplayMode,
   useItem,
   Wizard,
   WizItemSelector,
+  WizCustomInputWrapper,
   WizSingleSelect,
   WizTextArea,
   WizTextInput,
   useSetHasValue,
   useEditorValidationStatus,
+  useHighlightEditorPath,
   EditorValidationStatus,
 } from '@patternfly-labs/react-form-wizard'
 import { TemplateLinkOut, TemplateSummaryExpandable } from '../../../../../components/TemplateSummaryModal'
@@ -515,6 +506,7 @@ export default function ImportClusterPage() {
   function WizardSyncEditor() {
     const resources = useItem() // Wizard framework sets this context
     const { setEditorValidationStatus } = useEditorValidationStatus()
+    const { highlightEditorPath } = useHighlightEditorPath()
     const { update } = useData() // Wizard framework sets this context
 
     return (
@@ -524,6 +516,7 @@ export default function ImportClusterPage() {
         id="code-content"
         schema={isACMAvailable ? acmSchema : schema}
         resources={resources}
+        highlightEditorPath={highlightEditorPath}
         secrets={[
           'Secret.*.stringData.token',
           'Secret.*.stringData.kubeconfig',
@@ -574,6 +567,7 @@ export default function ImportClusterPage() {
       }
     >
       <Wizard
+        id="import-cluster-wizard"
         wizardStrings={translatedWizardStrings}
         title={t('page.header.import-cluster')}
         showHeader={false}
@@ -729,7 +723,6 @@ const AdditionalLabels = (props: { state: State; dispatch: Dispatch<Action> }) =
   const { t } = useTranslation()
   const resources = useItem() as any[]
   const { update } = useData()
-  const mode = useDisplayMode()
 
   const managedCluster = resources.find((item) => item.kind === ManagedClusterKind) as ManagedCluster
   const klusterletAddonConfig = resources.find(
@@ -752,25 +745,27 @@ const AdditionalLabels = (props: { state: State; dispatch: Dispatch<Action> }) =
   }, [JSON.stringify(additionalLabels), managedClusterSet, JSON.stringify(defaultLabels), update])
 
   const controlId = 'additionalLabels'
+  const path = process.env.NODE_ENV === 'test' ? controlId : 'ManagedCluster.metadata.labels'
   const controlLabel = t('import.form.labels.label')
-  return mode === DisplayMode.Details ? (
-    <DescriptionListGroup>
-      <DescriptionListTerm>{controlLabel}</DescriptionListTerm>
-      <DescriptionListDescription id={controlId}>
-        {additionalLabels &&
-          Object.keys(additionalLabels)
-            .map((key) => (additionalLabels[key] ? `${key}=${additionalLabels[key]}` : key))
-            .join(', ')}
-      </DescriptionListDescription>
-    </DescriptionListGroup>
-  ) : (
-    <AcmKubernetesLabelsInput
-      id={controlId}
+  return (
+    <WizCustomInputWrapper
+      path={path}
       label={controlLabel}
-      value={additionalLabels}
-      onChange={(labels) => onChangeAdditionalLabels(labels as Labels)}
-      placeholder={t('labels.edit.placeholder')}
-    />
+      value={
+        additionalLabels &&
+        Object.keys(additionalLabels)
+          .map((key) => (additionalLabels[key] ? `${key}=${additionalLabels[key]}` : key))
+          .join(', ')
+      }
+    >
+      <AcmKubernetesLabelsInput
+        id={controlId}
+        label={controlLabel}
+        value={additionalLabels}
+        onChange={(labels) => onChangeAdditionalLabels(labels as Labels)}
+        placeholder={t('labels.edit.placeholder')}
+      />
+    </WizCustomInputWrapper>
   )
 }
 
@@ -784,7 +779,6 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
 
   const resources = useItem() as any[]
   const { update } = useData()
-  const mode = useDisplayMode()
   const { RHOCMCredentials } = useSharedSelectors()
   const ocmCredentials = useRecoilValue(RHOCMCredentials)
   let ocmCredentialNamespaces = ocmCredentials.map((credential) => credential.metadata.namespace!)
@@ -925,12 +919,12 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
   const namespaceLabel = t('discoveryConfig.namespaces.label')
   return (
     <>
-      {mode === DisplayMode.Details ? (
-        <DescriptionListGroup>
-          <DescriptionListTerm>{controlLabel}</DescriptionListTerm>
-          <DescriptionListDescription id={controlId}>{getImportModeDescription(importMode)}</DescriptionListDescription>
-        </DescriptionListGroup>
-      ) : (
+      <WizCustomInputWrapper
+        path="importMode"
+        id={controlId}
+        label={controlLabel}
+        value={getImportModeDescription(importMode)}
+      >
         <AcmFormInputAdapter>
           <AcmSelect
             id={controlId}
@@ -950,13 +944,14 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
             })}
           </AcmSelect>
         </AcmFormInputAdapter>
-      )}
-      {mode === DisplayMode.Details ? (
-        <DescriptionListGroup>
-          <DescriptionListTerm>{namespaceLabel}</DescriptionListTerm>
-          <DescriptionListDescription id={namespaceControlId}>{namespace}</DescriptionListDescription>
-        </DescriptionListGroup>
-      ) : (
+      </WizCustomInputWrapper>
+      <WizCustomInputWrapper
+        path="discoveryNamespace"
+        id={namespaceControlId}
+        label={namespaceLabel}
+        value={namespace}
+        hidden={() => importMode !== ImportMode.discoveryOCM}
+      >
         <AcmFormInputAdapter>
           <AcmSelect
             id={'namespace'}
@@ -981,13 +976,14 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
             })}
           </AcmSelect>
         </AcmFormInputAdapter>
-      )}
-      {mode === DisplayMode.Details ? (
-        <DescriptionListGroup>
-          <DescriptionListTerm>{credentialLabel}</DescriptionListTerm>
-          <DescriptionListDescription id={credentialControlId}>{credential}</DescriptionListDescription>
-        </DescriptionListGroup>
-      ) : (
+      </WizCustomInputWrapper>
+      <WizCustomInputWrapper
+        path="discoveryCredential"
+        id={credentialControlId}
+        label={credentialLabel}
+        value={credential}
+        hidden={() => importMode !== ImportMode.discoveryOCM}
+      >
         <AcmFormInputAdapter>
           <AcmSelect
             id={credentialControlId}
@@ -1012,7 +1008,7 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
             })}
           </AcmSelect>
         </AcmFormInputAdapter>
-      )}
+      </WizCustomInputWrapper>
       <Sync kind={ManagedClusterKind} path="metadata.name" targetKind={SecretKind} targetPath="metadata.namespace" />
       <Sync kind={ManagedClusterKind} path="metadata.name" targetKind={ClusterCuratorKind} targetPath="metadata.name" />
       <Sync
@@ -1074,7 +1070,6 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
   const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
   const ansibleCredentials = useRecoilValue(ansibleCredentialsValue)
   const resources = useItem() as any[]
-  const mode = useDisplayMode()
   const {
     state: { clusterName, templateName },
     dispatch,
@@ -1159,53 +1154,50 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
 
   const controlId = 'templateName'
   const controlLabel = t('template.clusterCreate.name')
-  return mode === DisplayMode.Details ? (
-    <DescriptionListGroup>
-      <DescriptionListTerm>{controlLabel}</DescriptionListTerm>
-      <DescriptionListDescription id={controlId}>{templateName}</DescriptionListDescription>
-    </DescriptionListGroup>
-  ) : (
+  return (
     <>
-      <AcmFormInputAdapter>
-        <AcmSelect
-          id={controlId}
-          label={controlLabel}
-          placeholder={t('template.clusterCreate.select.placeholder')}
-          labelHelp={t('template.clusterImport.tooltip')}
-          variant={SelectVariant.typeahead}
-          helperText={
-            <Split>
-              <SplitItem isFilled />
-              <SplitItem>
-                <AcmButton
-                  variant="link"
-                  style={{ paddingRight: '0px' }}
-                  onClick={() =>
-                    window.open(
-                      `${window.location.origin}${NavigationPath.addAnsibleAutomation}`,
-                      'add-automation-template'
-                    )
-                  }
-                >
-                  {t('creation.ocp.cloud.add.template')}
-                  <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
-                </AcmButton>
-              </SplitItem>
-            </Split>
-          }
-          value={templateName}
-          onChange={onChangeAutomationTemplate}
-        >
-          {Object.values(curatorTemplates).map((template) => {
-            const templateName = template.metadata.name
-            return (
-              <SelectOption key={templateName} value={templateName}>
-                {templateName}
-              </SelectOption>
-            )
-          })}
-        </AcmSelect>
-      </AcmFormInputAdapter>
+      <WizCustomInputWrapper path="templateName" id={controlId} label={controlLabel} value={templateName}>
+        <AcmFormInputAdapter>
+          <AcmSelect
+            id={controlId}
+            label={controlLabel}
+            placeholder={t('template.clusterCreate.select.placeholder')}
+            labelHelp={t('template.clusterImport.tooltip')}
+            variant={SelectVariant.typeahead}
+            helperText={
+              <Split>
+                <SplitItem isFilled />
+                <SplitItem>
+                  <AcmButton
+                    variant="link"
+                    style={{ paddingRight: '0px' }}
+                    onClick={() =>
+                      window.open(
+                        `${window.location.origin}${NavigationPath.addAnsibleAutomation}`,
+                        'add-automation-template'
+                      )
+                    }
+                  >
+                    {t('creation.ocp.cloud.add.template')}
+                    <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
+                  </AcmButton>
+                </SplitItem>
+              </Split>
+            }
+            value={templateName}
+            onChange={onChangeAutomationTemplate}
+          >
+            {Object.values(curatorTemplates).map((template) => {
+              const templateName = template.metadata.name
+              return (
+                <SelectOption key={templateName} value={templateName}>
+                  {templateName}
+                </SelectOption>
+              )
+            })}
+          </AcmSelect>
+        </AcmFormInputAdapter>
+      </WizCustomInputWrapper>
       <TemplateLinkOut templateCurator={selectedTemplateName} />
       <TemplateSummaryExpandable clusterCurator={resources.find((r) => r.kind === ClusterCuratorKind)} />
     </>

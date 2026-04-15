@@ -222,6 +222,14 @@ export function DiscoveryConfigPageContent(props: {
     [t]
   )
 
+  const sortedInfrastructureProviders = useMemo(
+    () =>
+      [...INFRASTRUCTURE_PROVIDERS].sort((a, b) =>
+        getDisplayNameForInfrastructureProvider(a, t).localeCompare(getDisplayNameForInfrastructureProvider(b, t))
+      ),
+    [t]
+  )
+
   const updateDiscoveryConfig = useCallback(
     (update: (discoveryConfig: DiscoveryConfig) => void) => {
       const copy = { ...discoveryConfig }
@@ -549,11 +557,13 @@ export function DiscoveryConfigPageContent(props: {
               })
             }}
           >
-            {Object.entries(CLUSTER_TYPE_GROUPS).map(([key, group]) => (
-              <SelectOption key={key} value={key}>
-                {group.displayName}
-              </SelectOption>
-            ))}
+            {Object.entries(CLUSTER_TYPE_GROUPS)
+              .sort((a, b) => a[1].displayName.localeCompare(b[1].displayName))
+              .map(([key, group]) => (
+                <SelectOption key={key} value={key}>
+                  {group.displayName}
+                </SelectOption>
+              ))}
           </AcmMultiSelect>
           <AcmMultiSelect
             id="discoveryInfrastructureProviders"
@@ -568,7 +578,7 @@ export function DiscoveryConfigPageContent(props: {
               })
             }}
           >
-            {INFRASTRUCTURE_PROVIDERS.map((provider) => (
+            {sortedInfrastructureProviders.map((provider) => (
               <SelectOption key={provider} value={provider}>
                 {getDisplayNameForInfrastructureProvider(provider, t)}
               </SelectOption>

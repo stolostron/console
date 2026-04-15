@@ -20,6 +20,7 @@ export function ClusterForm() {
   const history = useHistory()
   return (
     <WizardPage
+      id="cluster-form-wizard"
       title="Create cluster"
       // template={YamlTemplate}
       breadcrumb={[{ label: 'Managed clusters', to: '.' }]}

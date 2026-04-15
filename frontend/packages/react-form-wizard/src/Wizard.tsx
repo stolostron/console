@@ -5,7 +5,6 @@ import {
   ActionListItem,
   Alert,
   Button,
-  DescriptionList,
   Drawer,
   DrawerContent,
   DrawerContentBody,
@@ -31,13 +30,18 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { EditMode } from '.'
+import { EditMode } from './contexts/EditMode'
 import { DataContext } from './contexts/DataContext'
 import { DisplayMode, DisplayModeContext } from './contexts/DisplayModeContext'
 import { EditModeContext } from './contexts/EditModeContext'
 import { ItemContext, useItem } from './contexts/ItemContext'
 import { ShowValidationProvider, useSetShowValidation, useShowValidation } from './contexts/ShowValidationProvider'
 import { StepHasInputsProvider } from './contexts/StepHasInputsProvider'
+import {
+  HighlightEditorPathProvider,
+  ReviewDomTreeSyncProvider,
+  StepInputsRegistryProvider,
+} from './review/ReviewStepContexts'
 import {
   StepShowValidationProvider,
   useSetStepShowValidation,
@@ -51,11 +55,19 @@ import {
   useHasValidationError,
   ValidationProvider,
 } from './contexts/ValidationProvider'
+import { ReviewStep } from './review/ReviewStep'
 import { Step } from './Step'
 
 export interface WizardProps {
   wizardStrings?: WizardStrings
   title: string
+  /**
+   * Stable scope for review-step expandable persistence in localStorage when {@link reviewStorageKey} is omitted.
+   * Should not be localized (e.g. route or product id), unlike {@link title}.
+   */
+  id?: string
+  /** Scopes review-step expandable persistence in localStorage; defaults to {@link defaultReviewStorageKeyFromId} when {@link id} is set, else `wizard-default`. */
+  reviewStorageKey?: string
   description?: string
   children: ReactNode
   defaultData?: object
@@ -86,41 +98,47 @@ export function Wizard(props: WizardProps & { showHeader?: boolean; showYaml?: b
   return (
     <EditModeContext.Provider value={props.editMode === undefined ? EditMode.Create : props.editMode}>
       <StepHasInputsProvider>
-        <StepShowValidationProvider>
-          <StepValidationProvider>
-            <DisplayModeContext.Provider value={displayMode}>
-              <DataContext.Provider value={{ update }}>
-                <ItemContext.Provider value={data}>
-                  <ShowValidationProvider>
-                    <ValidationProvider>
-                      <Drawer isExpanded={drawerExpanded} isInline>
-                        <DrawerContent panelContent={<WizardDrawer yamlEditor={props.yamlEditor} />}>
-                          <DrawerContentBody>
-                            <ItemContext.Provider value={data}>
-                              <StringContext.Provider value={wizardStrings || defaultStrings}>
-                                <WizardInternal
-                                  title={props.title}
-                                  onSubmit={props.onSubmit}
-                                  onCancel={props.onCancel}
-                                  hasButtons={props.hasButtons}
-                                  submitButtonText={props.submitButtonText}
-                                  submittingButtonText={props.submittingButtonText}
-                                  isLoading={props.isLoading}
-                                >
-                                  {props.children}
-                                </WizardInternal>
-                              </StringContext.Provider>
-                            </ItemContext.Provider>
-                          </DrawerContentBody>
-                        </DrawerContent>
-                      </Drawer>
-                    </ValidationProvider>
-                  </ShowValidationProvider>
-                </ItemContext.Provider>
-              </DataContext.Provider>
-            </DisplayModeContext.Provider>
-          </StepValidationProvider>
-        </StepShowValidationProvider>
+        <StepInputsRegistryProvider>
+          <StepShowValidationProvider>
+            <StepValidationProvider>
+              <DisplayModeContext.Provider value={displayMode}>
+                <DataContext.Provider value={{ update }}>
+                  <ItemContext.Provider value={data}>
+                    <ShowValidationProvider>
+                      <ValidationProvider>
+                        <HighlightEditorPathProvider>
+                          <Drawer isExpanded={drawerExpanded} isInline>
+                            <DrawerContent panelContent={<WizardDrawer yamlEditor={props.yamlEditor} />}>
+                              <DrawerContentBody>
+                                <ItemContext.Provider value={data}>
+                                  <StringContext.Provider value={wizardStrings || defaultStrings}>
+                                    <WizardInternal
+                                      id={props.id}
+                                      reviewStorageKey={props.reviewStorageKey}
+                                      showYaml={props.showYaml}
+                                      onSubmit={props.onSubmit}
+                                      onCancel={props.onCancel}
+                                      hasButtons={props.hasButtons}
+                                      submitButtonText={props.submitButtonText}
+                                      submittingButtonText={props.submittingButtonText}
+                                      isLoading={props.isLoading}
+                                    >
+                                      {props.children}
+                                    </WizardInternal>
+                                  </StringContext.Provider>
+                                </ItemContext.Provider>
+                              </DrawerContentBody>
+                            </DrawerContent>
+                          </Drawer>
+                        </HighlightEditorPathProvider>
+                      </ValidationProvider>
+                    </ShowValidationProvider>
+                  </ItemContext.Provider>
+                </DataContext.Provider>
+              </DisplayModeContext.Provider>
+            </StepValidationProvider>
+          </StepShowValidationProvider>
+        </StepInputsRegistryProvider>
       </StepHasInputsProvider>
     </EditModeContext.Provider>
   )
@@ -141,15 +159,34 @@ type WizardFooterProps = {
 }
 
 type WizardInternalProps = Omit<WizardFooterProps, 'steps'> & {
-  title: string
+  id?: string
+  reviewStorageKey?: string
+  showYaml?: boolean
   children: ReactNode
   onCancel: WizardCancel
   hasButtons?: boolean
   isLoading?: boolean
 }
 
+const MAX_REVIEW_STORAGE_KEY_LEN = 96
+
+/** Builds a stable localStorage bucket key from a non-localized wizard id (`wizard-{sanitized}`). */
+export function defaultReviewStorageKeyFromId(id: string): string {
+  const sanitized = id
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+  const suffix = sanitized || 'default'
+  const key = `wizard-${suffix}`
+  return key.slice(0, MAX_REVIEW_STORAGE_KEY_LEN)
+}
+
 function WizardInternal({
   children,
+  id,
+  reviewStorageKey,
+  showYaml,
   onSubmit,
   onCancel,
   submitButtonText,
@@ -157,6 +194,7 @@ function WizardInternal({
   isLoading,
 }: WizardInternalProps) {
   const { reviewLabel, stepsAriaLabel, contentAriaLabel } = useStringContext()
+  const resolvedReviewStorageKey = reviewStorageKey ?? defaultReviewStorageKeyFromId(id ?? '')
   const stepComponents = useMemo(
     () => Children.toArray(children).filter((child) => isValidElement(child) && child.type === Step) as ReactElement[],
     [children]
@@ -166,15 +204,9 @@ function WizardInternal({
     () => ({
       id: 'review-step',
       name: reviewLabel,
-      component: (
-        <Step label={reviewLabel} id="review">
-          <DescriptionList isHorizontal isCompact style={{ paddingLeft: 16, paddingBottom: 16, paddingRight: 16 }}>
-            <DisplayModeContext.Provider value={DisplayMode.Details}>{children}</DisplayModeContext.Provider>
-          </DescriptionList>
-        </Step>
-      ),
+      component: <ReviewStep reviewStorageKey={resolvedReviewStorageKey} showYaml={showYaml} />,
     }),
-    [children, reviewLabel]
+    [reviewLabel, resolvedReviewStorageKey, showYaml]
   )
 
   const showValidation = useShowValidation()
@@ -204,7 +236,7 @@ function WizardInternal({
   }, [reviewStep, showValidation, stepComponents, stepHasValidationError, stepShowValidation])
 
   return (
-    <Fragment>
+    <ReviewDomTreeSyncProvider>
       <PFWizard
         navAriaLabel={`${stepsAriaLabel}`}
         aria-label={`${contentAriaLabel}`}
@@ -225,7 +257,7 @@ function WizardInternal({
           </WizardStep>
         ))}
       </PFWizard>
-    </Fragment>
+    </ReviewDomTreeSyncProvider>
   )
 }
 

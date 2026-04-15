@@ -18,7 +18,13 @@ import {
 
 export function RosaWizard(props: { onSubmit: WizardSubmit; onCancel: WizardCancel }) {
   return (
-    <WizardPage title="Create ROSA cluster" defaultData={{}} onSubmit={props.onSubmit} onCancel={props.onCancel}>
+    <WizardPage
+      id="rosa-wizard"
+      title="Create ROSA cluster"
+      defaultData={{}}
+      onSubmit={props.onSubmit}
+      onCancel={props.onCancel}
+    >
       <Step label="Account and roles" id="account">
         <Section
           label="Account and roles"

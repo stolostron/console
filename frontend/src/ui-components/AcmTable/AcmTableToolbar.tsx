@@ -17,8 +17,6 @@ import {
 } from '@patternfly/react-core'
 import { ExportIcon } from '@patternfly/react-icons'
 import { ISortBy } from '@patternfly/react-table'
-import { debounce } from 'debounce'
-import { noop } from 'lodash'
 import { parse, ParsedQuery, stringify } from 'query-string'
 import {
   forwardRef,
@@ -26,7 +24,6 @@ import {
   Ref,
   RefObject,
   useCallback,
-  useContext,
   useEffect,
   useImperativeHandle,
   useMemo,
@@ -39,7 +36,6 @@ import { matchesFilterValue, parseLabel } from '../../resources/utils'
 import { AcmButton } from '../AcmButton'
 import { AcmDropdown, AcmDropdownItems } from '../AcmDropdown'
 import { AcmSearchInput, SearchConstraint } from '../AcmSearchInput'
-import { AcmTableStateContext } from './AcmTableStateProvider'
 import {
   AcmTableProps,
   CommonPaginationPropsType,
@@ -64,8 +60,6 @@ const SPLIT_FILTER_THRESHOLD = 30
 // with the assumption that if the user is looking for an option
 // they will use filter to find it
 const MAXIMUM_OPTIONS = 200
-
-export const SEARCH_DEBOUNCE_TIME = 500
 
 const createFilterSelectOptionObject = (filterId: string, value: string): FilterSelectOptionObject => ({
   filterId,
@@ -266,28 +260,29 @@ export const applyFilters = <T, S>(
   )
 }
 
-export type AcmTableToolbarProps<T> = Pick<AcmTableProps<T>, Exclude<keyof AcmTableProps<T>, 'setPage' | 'setSort'>> & {
-  hasFilter: boolean
-  hasSelectionColumn: boolean
-  commonPaginationProps: CommonPaginationPropsType
-  preFilterSort: ISortBy | undefined
-  setPage: (page: number) => void
-  setSort: (sort: ISortBy) => void
-  setPreFilterSort: React.Dispatch<React.SetStateAction<ISortBy | undefined>>
-  selected: { [uid: string]: boolean }
-  setSelected: React.Dispatch<React.SetStateAction<{ [uid: string]: boolean }>>
-  disabled: { [uid: string]: boolean }
-  internalSearch: string
-  setInternalSearch: React.Dispatch<React.SetStateAction<string>>
-  exportTable: () => Promise<void>
-  renderColumnManagement: () => JSX.Element | undefined
-  setActiveAdvancedFilters: React.Dispatch<React.SetStateAction<SearchConstraint[]>>
-  perPage: number
-  paged: ITableItem<T>[]
-  filtered: ITableItem<T>[]
-  filteredCount: number
-  totalCount: number
-}
+export type AcmTableToolbarProps<T> = Pick<
+  AcmTableProps<T>,
+  Exclude<keyof AcmTableProps<T>, 'setPage' | 'setSearch' | 'setSort'>
+> &
+  Required<Pick<AcmTableProps<T>, 'setPage' | 'setSearch' | 'setSort'>> & {
+    commonPaginationProps: CommonPaginationPropsType
+    disabled: { [uid: string]: boolean }
+    exportTable: () => Promise<void>
+    hasFilter: boolean
+    hasSelectionColumn: boolean
+    internalSearch: string
+    preFilterSort: ISortBy | undefined
+    renderColumnManagement: () => JSX.Element | undefined
+    selected: { [uid: string]: boolean }
+    setActiveAdvancedFilters: React.Dispatch<React.SetStateAction<SearchConstraint[]>>
+    setPreFilterSort: (sort?: ISortBy) => void
+    setSelected: React.Dispatch<React.SetStateAction<{ [uid: string]: boolean }>>
+    perPage: number
+    paged: ITableItem<T>[]
+    filtered: ITableItem<T>[]
+    filteredCount: number
+    totalCount: number
+  }
 
 export interface ToolbarRef {
   clearSearchAndFilters: () => void
@@ -295,49 +290,44 @@ export interface ToolbarRef {
 const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<ToolbarRef>) => {
   useImperativeHandle(ref, () => ({ clearSearchAndFilters }))
   const {
-    id,
-    items,
-    columns,
-    keyFn,
-    tableActions = [],
-    customTableAction,
     additionalToolbarItems,
-    filters = [],
-    secondaryFilterIds,
     advancedFilters = [],
-    onSelect: propsOnSelect,
-    resultCounts,
-    renderColumnManagement,
-    showExportButton,
-    hasFilter,
-    hasSelectionColumn,
+    columns,
     commonPaginationProps,
-    sort,
-    setPage,
-    setSort,
-    setPreFilterSort,
-    selected,
-    setSelected,
+    customTableAction,
     disabled,
-    internalSearch,
-    setInternalSearch,
-    preFilterSort,
     exportTable,
-    setActiveAdvancedFilters,
-    perPage,
-    paged,
     filtered,
     filteredCount,
+    filters = [],
+    hasFilter,
+    hasSelectionColumn,
+    id,
+    internalSearch,
+    items,
+    keyFn,
+    onSelect: propsOnSelect,
+    paged,
+    perPage,
+    preFilterSort,
+    renderColumnManagement,
+    resultCounts,
+    search,
+    secondaryFilterIds,
+    selected,
+    setActiveAdvancedFilters,
+    setPage,
+    setPreFilterSort,
+    setSearch,
+    setSelected,
+    setSort,
+    showExportButton,
+    sort,
+    tableActions = [],
     totalCount,
   } = props
 
   const { t } = useTranslation()
-  const initialSearch = props.initialSearch ?? ''
-
-  const [stateSearch, stateSetSearch] = useState(initialSearch)
-  const { search: storedSearch, setSearch: setStoredSearch = noop } = useContext(AcmTableStateContext)
-  const search = props.search ?? storedSearch ?? stateSearch
-  const setSearch = props.setSearch ?? stateSetSearch
 
   const searchPlaceholder = props.searchPlaceholder ?? t('Search')
   const hasSearch = useMemo(() => columns.some((column) => column.search), [columns])
@@ -349,38 +339,13 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
     { operator: undefined, value: '', columnId: '' },
   ])
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const setInternalSearchWithDebounce = useCallback(
-    process.env.NODE_ENV !== 'test'
-      ? debounce((search: string) => {
-          setInternalSearch(search)
-        }, SEARCH_DEBOUNCE_TIME)
-      : setInternalSearch,
-    [setInternalSearch]
-  )
-
-  useEffect(() => {
-    setInternalSearchWithDebounce(search)
-    return () => {
-      if ('clear' in setInternalSearchWithDebounce) {
-        ;(setInternalSearchWithDebounce as any).clear()
-      }
-    }
-  }, [search, setInternalSearchWithDebounce])
-
   const clearSearch = useCallback(() => {
-    /* istanbul ignore if */
-    if (process.env.NODE_ENV !== 'test') {
-      ;(setInternalSearchWithDebounce as unknown as ReturnType<typeof debounce>).clear()
-    }
     setSearch('')
-    setInternalSearch('')
-    setStoredSearch('')
     setPage(1)
     if (preFilterSort) {
       setSort(preFilterSort)
     }
-  }, [setSearch, setStoredSearch, setInternalSearch, setPage, preFilterSort, setInternalSearchWithDebounce, setSort])
+  }, [setSearch, setPage, preFilterSort, setSort])
 
   const clearSearchAndFilters = useCallback(() => {
     clearSearch()
@@ -390,14 +355,8 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
   }, [clearSearch, clearFilters, setActiveAdvancedFilters, setPendingConstraints])
 
   const updateSearch = useCallback(
-    (input: any) => {
-      // **Note: PatternFly change the fn signature
-      // From: (value: string, event: React.FormEvent<HTMLInputElement>) => void
-      // To: (_event: React.FormEvent<HTMLInputElement>, value: string) => void
-      // both cases need to be handled for backwards compatibility
-      const newSearch = typeof input === 'string' ? input : (input.target as HTMLInputElement).value
+    (newSearch: string) => {
       setSearch(newSearch)
-      setStoredSearch(newSearch)
       setPage(1)
       if (!newSearch) {
         // clearing filtered state; restore previous sorting if applicable
@@ -410,9 +369,7 @@ const AcmTableToolbarBase = <T,>(props: AcmTableToolbarProps<T>, ref: Ref<Toolba
         setSort({})
       }
     },
-    // setSort/setSearch/setPage can come from props, but setPreFilterSort is only from state and therefore
-    // guaranteed stable - not needed in dependency list
-    [setSearch, setStoredSearch, setPage, search, preFilterSort, setSort, setPreFilterSort, sort]
+    [setSearch, setPage, search, preFilterSort, setSort, setPreFilterSort, sort]
   )
 
   return (

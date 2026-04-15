@@ -183,47 +183,47 @@ export type CurrentFilters<S> = {
 }
 
 export type AcmTableProps<T> = {
-  items?: T[]
   addSubRows?: (item: T) => IRow[] | undefined
-  initialSelectedItems?: T[]
-  disabledItems?: T[]
-  columns: IAcmTableColumn<T>[]
-  keyFn: (item: T) => string
-  customTableAction?: ReactNode
-  tableActionButtons?: IAcmTableButtonAction[]
-  tableActions?: IAcmTableAction<T>[]
-  rowActions?: IAcmRowAction<T>[]
-  rowActionResolver?: (item: T) => IAcmRowAction<T>[]
-  extraToolbarControls?: ReactNode
   additionalToolbarItems?: ReactNode
+  advancedFilters?: ITableAdvancedFilter<T>[]
+  autoHidePagination?: boolean
+  columns: IAcmTableColumn<T>[]
+  customTableAction?: ReactNode
+  disabledItems?: T[]
   emptyState: ReactNode
-  onSelect?: (items: T[]) => void
-  initialPage?: number
-  page?: number
-  setPage?: (page: number) => void
-  setRequestView?: (requestedView: IRequestListView) => void
-  resultView?: IResultListView
-  resultCounts?: IResultStatuses
+  exportFilePrefix?: string
+  extraToolbarControls?: ReactNode
   fetchExport?: (requestedExport: IRequestListView) => Promise<IResultListView | undefined>
+  filters?: ITableFilter<T>[]
+  fuseThreshold?: number
+  gridBreakPoint?: TableGridBreakpoint
+  id?: string
+  initialPage?: number
   initialPerPage?: number
   initialSearch?: string
-  search?: string
-  setSearch?: (search: string) => void
-  searchPlaceholder?: string
+  initialSelectedItems?: T[]
   initialSort?: ISortBy | undefined
-  sort?: ISortBy | undefined
-  setSort?: (sort: ISortBy) => void
-  showToolbar?: boolean
-  gridBreakPoint?: TableGridBreakpoint
-  perPageOptions?: PerPageOptions[]
-  autoHidePagination?: boolean
+  items?: T[]
+  keyFn: (item: T) => string
   noBorders?: boolean
-  fuseThreshold?: number
-  filters?: ITableFilter<T>[]
+  onSelect?: (items: T[]) => void
+  page?: number
+  perPageOptions?: PerPageOptions[]
+  resultCounts?: IResultStatuses
+  resultView?: IResultListView
+  rowActionResolver?: (item: T) => IAcmRowAction<T>[]
+  rowActions?: IAcmRowAction<T>[]
+  search?: string
+  searchPlaceholder?: string
   secondaryFilterIds?: string[]
-  advancedFilters?: ITableAdvancedFilter<T>[]
-  id?: string
+  setPage?: (page: number) => void
+  setRequestView?: (requestedView: IRequestListView) => void
+  setSearch?: (search: string) => void
+  setSort?: (sort: ISortBy) => void
   showColumnManagement?: boolean
   showExportButton?: boolean
-  exportFilePrefix?: string
+  showToolbar?: boolean
+  sort?: ISortBy | undefined
+  tableActionButtons?: IAcmTableButtonAction[]
+  tableActions?: IAcmTableAction<T>[]
 }

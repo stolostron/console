@@ -84,6 +84,7 @@ export function ApplicationWizard(props: ApplicationWizardProps) {
   })
   return (
     <WizardPage
+      id="application-wizard"
       title="Create application"
       defaultData={{ curlyServer: '{{server}}', curlyName: '{{name}}', uniqueGroupID: 1 }}
       onCancel={props.onCancel}

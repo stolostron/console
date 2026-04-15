@@ -12,10 +12,10 @@ import { managedClusterProxy } from '../routes/managedClusterProxy'
 // Explicitly set ECDH curves to enable PQC (X25519MLKEM768).
 // The default image crypto policy (/etc/crypto-policies/config) does not include them.
 // In FIPS mode, X25519MLKEM768 and X25519 are not approved and must be excluded.
-export const ALL_ECDH_CURVES = ['X25519MLKEM768', 'X25519', 'P-256', 'P-384']
-export const FIPS_ECDH_CURVES = ['P-256', 'P-384']
+const ALL_ECDH_CURVES = ['X25519MLKEM768', 'X25519', 'P-256', 'P-384']
+const FIPS_ECDH_CURVES = ['SecP256r1MLKEM768', 'SecP384r1MLKEM1024', 'P-256', 'P-384']
 
-export function getEcdhCurves(fipsEnabled: boolean): string {
+function getEcdhCurves(fipsEnabled: boolean): string {
   return (fipsEnabled ? FIPS_ECDH_CURVES : ALL_ECDH_CURVES).join(':')
 }
 

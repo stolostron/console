@@ -46,28 +46,36 @@ export default function Overview() {
   }, [acmExtensions?.overviewTab, t])
 
   return (
-    <AcmPage header={<AcmPageHeader title={t('Overview')} searchbar={<ReuseableSearchbar />} />}>
-      <Tabs
-        activeKey={activeTabKey}
-        onSelect={(_, tabIndex) => setActiveTabKey(tabIndex)}
-        usePageInsets
-        aria-label="Tabs in the default example"
-        role="region"
-        style={{
-          // match page section padding inset
-          paddingInlineStart:
-            'calc(var(--pf-v6-c-page__main-section--PaddingInlineStart) - var(--pf-v6-c-page__main-container--BorderWidth))',
-        }}
-      >
-        {tabItems.map((tab) => (
-          <Tab
-            key={`tab-item-${tab.eventKey}`}
-            eventKey={tab.eventKey}
-            title={<TabTitleText>{tab.title}</TabTitleText>}
-            aria-label={`tab-item-${tab.title}`}
-          />
-        ))}
-      </Tabs>
+    <AcmPage
+      header={
+        <AcmPageHeader
+          title={t('Overview')}
+          searchbar={<ReuseableSearchbar />}
+          navigation={
+            <Tabs
+              activeKey={activeTabKey}
+              onSelect={(_, tabIndex) => setActiveTabKey(tabIndex)}
+              usePageInsets
+              aria-label={t('Overview page navigation tabs')}
+              role="region"
+              style={{
+                // match page section padding inset
+                paddingInlineStart:
+                  'calc(var(--pf-v6-c-page__main-section--PaddingInlineStart) - var(--pf-v6-c-page__main-container--BorderWidth))',
+              }}
+            >
+              {tabItems.map((tab) => (
+                <Tab
+                  key={`tab-item-${tab.eventKey}`}
+                  eventKey={tab.eventKey}
+                  title={<TabTitleText>{tab.title}</TabTitleText>}
+                />
+              ))}
+            </Tabs>
+          }
+        />
+      }
+    >
       {/* Fleet view includes a cluster label filter */}
       {activeTabKey === CLUSTERS_TAB && (
         <OverviewClusterLabelSelector

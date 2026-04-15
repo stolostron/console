@@ -84,7 +84,7 @@ const getClustersForRoleAssignment = (
 ): string[] =>
   [
     ...new Set(
-      roleAssignment.clusterSelection.placements
+      (roleAssignment.clusterSelection?.placements ?? [])
         .map((placement) => placement.name)
         .flatMap(
           (placementName) =>
@@ -109,8 +109,8 @@ const getClusterSetsForRoleAssignment = (
       placementClusters
         .filter(
           (placementCluster) =>
-            roleAssignment.clusterSelection.type === 'placements' &&
-            roleAssignment.clusterSelection.placements.some((roleAssignmentPlacement) =>
+            roleAssignment.clusterSelection?.type === 'placements' &&
+            (roleAssignment.clusterSelection?.placements ?? []).some((roleAssignmentPlacement) =>
               doesPlacementRefMatchesPlacement(roleAssignmentPlacement, placementCluster.placement)
             )
         )
@@ -135,7 +135,7 @@ const flattenMulticlusterRoleAssignment = (
   placementClusters: PlacementClusters[],
   query: MulticlusterRoleAssignmentQuery
 ): FlattenedRoleAssignment[] =>
-  multiclusterRoleAssignment.spec.roleAssignments
+  (multiclusterRoleAssignment.spec?.roleAssignments ?? [])
     .map((roleAssignment) =>
       roleAssignmentToFlattenedRoleAssignment(
         multiclusterRoleAssignment,
@@ -212,8 +212,8 @@ const useGetPlacementClustersForMulticlusterRoleAssignments = (
 ): PlacementClusters[] =>
   useGetPlacementClusters(
     (multiclusterRoleAssignments ?? []).flatMap((multiclusterRoleAssignment) =>
-      multiclusterRoleAssignment.spec.roleAssignments.flatMap((roleAssignment) =>
-        roleAssignment.clusterSelection.placements.map((e) => e.name)
+      (multiclusterRoleAssignment.spec?.roleAssignments ?? []).flatMap((roleAssignment) =>
+        (roleAssignment.clusterSelection?.placements ?? []).map((e) => e.name)
       )
     )
   )

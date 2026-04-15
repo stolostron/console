@@ -2,7 +2,7 @@
 import { get } from 'lodash'
 import { ErrorType } from './validation'
 import { Monaco } from '@monaco-editor/react'
-import { editor as editorTypes } from 'monaco-editor'
+import { editor as editorTypes, IRange } from 'monaco-editor'
 
 const startCase = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1)
@@ -219,4 +219,91 @@ const scrollToChangeDecoration = (editor: editorTypes.IStandaloneCodeEditor, err
       }
     }
   }
+}
+
+/**
+ * Resolves a wizard review / form dot path to a Monaco range using SyncEditor `change.paths` and `mappings`.
+ */
+
+type MappingLeaf = {
+  $gv?: { start: { line: number; column?: number; col?: number }; end: { line: number; column?: number; col?: number } }
+  $r?: number
+  $l?: number
+  $k?: string
+  $v?: unknown
+}
+
+export function rangeForHighlightPath(
+  monaco: Monaco,
+  paths: Record<string, MappingLeaf> | undefined,
+  mappings: Record<string, unknown[]> | undefined,
+  highlightEditorPath: string
+): IRange | null {
+  const clean = highlightEditorPath.replace(/;id=[^;]*$/u, '').trim()
+  if (!clean || !mappings) return null
+
+  // Form paths escape dots inside keys (e.g. annotation names) as "\."; mapping keys use real dots.
+  const normalized = clean.replace(/\\\./g, '.')
+  const firstDot = normalized.indexOf('.')
+  const kind = firstDot === -1 ? normalized : normalized.slice(0, firstDot)
+  const afterKind = firstDot === -1 ? '' : normalized.slice(firstDot + 1)
+  if (!kind) return null
+  // Only the first segment is the resource kind; the rest is one path suffix (YAML keys may contain ".").
+  const restSegments = afterKind ? [afterKind] : []
+
+  const tryKind = (kind: string, restSegments: string[]): IRange | null => {
+    const arr = mappings[kind]
+    if (!Array.isArray(arr)) return null
+    const rest = restSegments.join('.')
+    for (let i = 0; i < arr.length; i++) {
+      let fromPaths: MappingLeaf | undefined
+      const pathKey = rest ? `${kind}.${i}.${rest}` : `${kind}.${i}`
+      const [pathArrayKey, pathItemKey] = pathKey.split('#')
+      if (pathItemKey) {
+        const vItems = paths?.[pathArrayKey]?.$v
+        if (Array.isArray(vItems)) {
+          const items = vItems as MappingLeaf[]
+          fromPaths = items.find((p) => pathItemKey.indexOf(p.$v as string) !== -1)
+        } else {
+          fromPaths = undefined
+        }
+      } else {
+        fromPaths = paths?.[pathKey]
+      }
+
+      const range = mappingLeafToRange(monaco, fromPaths)
+      if (range) return range
+    }
+    return null
+  }
+
+  if (mappings[kind]) {
+    return tryKind(kind, restSegments)
+  }
+  for (const k of Object.keys(mappings)) {
+    const r = tryKind(k, restSegments)
+    if (r) return r
+  }
+  return null
+}
+
+function startCol(gv: MappingLeaf['$gv']): number {
+  if (!gv) return 1
+  return gv.start.column ?? gv.start.col ?? 1
+}
+
+function endCol(gv: NonNullable<MappingLeaf['$gv']>): number {
+  return gv.end.column ?? gv.end.col ?? 1
+}
+
+function mappingLeafToRange(monaco: Monaco, m: MappingLeaf | undefined | null): IRange | null {
+  if (!m) return null
+  if (m.$gv) {
+    return new monaco.Range(m.$gv.start.line, startCol(m.$gv), m.$gv.end.line, endCol(m.$gv))
+  }
+  if (m.$r != null) {
+    const lines = m.$l ?? 1
+    return new monaco.Range(m.$r, 1, m.$r + Math.max(0, lines - 1), 999)
+  }
+  return null
 }

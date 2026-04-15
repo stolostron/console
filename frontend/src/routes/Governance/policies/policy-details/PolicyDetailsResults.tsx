@@ -3,7 +3,7 @@ import { Icon, PageSection, Title, Tooltip } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmEmptyState, AcmTable, AcmTableStateProvider, compareStrings } from '../../../../ui-components'
 import { ReactNode, useMemo } from 'react'
-import { Link, generatePath } from 'react-router-dom-v5-compat'
+import { Link, generatePath, useLocation } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { rbacCreate, useIsAnyNamespaceAuthorized } from '../../../../lib/rbac-util'
@@ -85,7 +85,8 @@ function getTemplateName(item: ResultsTableData, canCreatePolicy: boolean, t: TF
 
 export default function PolicyDetailsResults() {
   const { t } = useTranslation()
-  const filterPresets = transformBrowserUrlToFilterPresets(window.location.search)
+  const location = useLocation()
+  const filterPresets = transformBrowserUrlToFilterPresets(location.search)
   const { policy } = usePolicyDetailsContext()
   const { policiesState } = useSharedAtoms()
   const policies = useRecoilValue(policiesState)
@@ -329,7 +330,7 @@ export default function PolicyDetailsResults() {
           columns={columns}
           keyFn={(item) => `${item.cluster}.${item.templateName}`}
           initialSort={
-            window.location.search === ''
+            location.search === ''
               ? {
                   index: 1,
                   direction: 'desc',

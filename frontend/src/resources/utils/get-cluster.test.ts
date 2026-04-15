@@ -2107,5 +2107,27 @@ describe('getProvider', () => {
       }
       expect(getCCUpgradePercent(curator, undefined)).toBe('42%')
     })
+
+    it('should fallback to HC percentage when curator message has no percentage', () => {
+      const curator: ClusterCurator = {
+        apiVersion: ClusterCuratorApiVersion,
+        kind: ClusterCuratorKind,
+        metadata: { name: 'test' },
+        spec: {},
+        status: {
+          conditions: [{ type: 'monitor-upgrade', status: 'True', reason: '', message: 'Upgrade in progress' }],
+        },
+      }
+      const hc: HostedClusterK8sResource = {
+        apiVersion: HostedClusterApiVersion,
+        kind: HostedClusterKind,
+        metadata: { name: 'test', namespace: 'clusters' },
+        spec: {} as any,
+        status: {
+          conditions: [{ type: 'ClusterVersionProgressing', status: 'True', message: 'Working towards (60%)' }],
+        } as any,
+      }
+      expect(getCCUpgradePercent(curator, hc)).toBe('(60%)')
+    })
   })
 })

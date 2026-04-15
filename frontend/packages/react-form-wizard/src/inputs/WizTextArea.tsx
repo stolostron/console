@@ -1,11 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { InputGroup, TextArea as PFTextArea, TextAreaProps, TextInput } from '@patternfly/react-core'
 import { Fragment, useCallback, useRef, useState } from 'react'
-import { WizTextDetail } from '..'
 import { ClearInputButton } from '../components/ClearInputButton'
 import { PasteInputButton } from '../components/PasteInputButton'
 import { ShowSecretsButton } from '../components/ShowSecretsButton'
-import { DisplayMode } from '../contexts/DisplayModeContext'
 import { getEnterPlaceholder, InputCommonProps, useInput } from './Input'
 import { WizFormGroup } from './WizFormGroup'
 import useResizeObserver from '@react-hook/resize-observer'
@@ -18,7 +16,7 @@ export type WizTextAreaProps = InputCommonProps<string> & {
 }
 
 export function WizTextArea(props: WizTextAreaProps) {
-  const { displayMode: mode, value, disabled, setValue, validated, hidden, id } = useInput(props)
+  const { value, disabled, setValue, validated, hidden, id } = useInput(props)
 
   // Hide initially if a value is set
   const [showSecrets, setShowSecrets] = useState(!value)
@@ -51,11 +49,6 @@ export function WizTextArea(props: WizTextAreaProps) {
   const onChange = useCallback<NonNullable<TextAreaProps['onChange']>>((_event, value) => setValue(value), [setValue])
 
   if (hidden) return <Fragment />
-
-  if (mode === DisplayMode.Details) {
-    if (!value) return <Fragment />
-    return <WizTextDetail id={id} path={props.path} label={props.label} secret={props.secret} />
-  }
 
   const placeholder = getEnterPlaceholder(props)
   const canPaste = props.canPaste !== undefined ? props.canPaste : props.secret === true

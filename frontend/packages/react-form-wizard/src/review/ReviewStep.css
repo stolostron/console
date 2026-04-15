@@ -1,0 +1,170 @@
+#review .pf-v6-c-form {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Collapsed summary title sits inside a link-styled toggle; force regular body text color. */
+.wizard-review-expandable-section .pf-v6-c-expandable-section__toggle .wizard-review-collapsed-title,
+.wizard-review-expandable-section
+  .pf-v6-c-expandable-section__toggle
+  .pf-v6-c-button:is(:hover, :focus)
+  .wizard-review-collapsed-title {
+  color: var(--pf-t--global--text--color--regular) !important;
+}
+
+/* Expanded toggle title (h4) is also inside the link-styled button; match regular text color. */
+.wizard-review-expandable-section .pf-v6-c-expandable-section__toggle .wizard-review-expanded-title,
+.wizard-review-expandable-section
+  .pf-v6-c-expandable-section__toggle
+  .pf-v6-c-button:is(:hover, :focus)
+  .wizard-review-expanded-title {
+  color: var(--pf-t--global--text--color--regular) !important;
+}
+
+/* ExpandableSection wraps toggleContent in a link Button (inline-flex); stretch it to the section width */
+.wizard-review-expandable-section .pf-v6-c-expandable-section__toggle > .pf-v6-c-button {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: start;
+  white-space: normal;
+}
+
+.wizard-review-expandable-section .pf-v6-c-expandable-section__toggle > .pf-v6-c-button > .wizard-review-toggle-row {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.wizard-review-toggle-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  flex-wrap: nowrap;
+  gap: var(--pf-t--global--spacer--gutter--default);
+}
+
+.wizard-review-collapsed-split {
+  align-items: center;
+  width: 100%;
+}
+
+.wizard-review-toggle-entries {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  align-self: stretch;
+  max-width: 100%;
+  min-width: 0;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Uniform badge height in collapsed review row (text vs. label + alert control) */
+.wizard-review-toggle-row .pf-v6-c-badge {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: 32px;
+  min-height: 32px;
+  line-height: 1;
+}
+
+.wizard-review-toggle-row .pf-v6-c-badge .pf-v6-c-button.pf-m-plain {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  height: 16px;
+  min-width: 16px;
+  line-height: 1;
+}
+
+.wizard-review-toggle-row .pf-v6-c-badge .pf-v6-c-button__text {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+
+.wizard-review-toggle-row .pf-v6-c-badge .pf-v6-c-icon {
+  --pf-v6-c-icon--Width: 14px;
+  --pf-v6-c-icon--Height: 14px;
+}
+
+/* Let the filled middle column shrink so inner flex content cannot widen past the toggle */
+.wizard-review-expandable-section .pf-v6-c-expandable-section__toggle .pf-v6-l-split__item.pf-m-fill {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Review row: pen / YAML highlight controls always visible, aligned to the end of the row. */
+.wizard-review-pen-hover-zone {
+  cursor: pointer;
+}
+
+.wizard-review-pen-hover-zone--controls-only {
+  cursor: default;
+}
+
+/* Let a sibling expandable fill the row so pen controls stay at the end. */
+.wizard-review-pen-hover-zone.wizard-review-inline-value > .wizard-review-expandable-section {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Span both term/description columns inside PatternFly horizontal DescriptionListGroup (subgrid). */
+.wizard-review-pen-hover-zone--dl-group-row {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  grid-template-rows: auto;
+  align-items: baseline;
+}
+
+.wizard-review-inline-value {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--pf-t--global--spacer--xs, 0.25rem);
+}
+
+/* Full width of the value cell so pen controls can sit at the far right. */
+.wizard-review-pen-hover-zone.wizard-review-inline-value,
+.wizard-review-pen-hover-zone--dl-group-row .wizard-review-inline-value {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+}
+
+.wizard-review-pen-controls {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: auto;
+  gap: var(--pf-t--global--spacer--xs, 0.25rem);
+}
+
+.wizard-review-edit-btn {
+  position: static;
+  flex-shrink: 0;
+}
+
+/* Scroll-to-edit target: outline eases in; eases out after 2s (REVIEW_EDIT_TARGET_HIGHLIGHT_AUTO_DISMISS_MS) or when focus leaves / window blurs. */
+.wizard-review-edit-target-highlight {
+  outline-style: solid;
+  outline-color: rgba(255, 190, 140, 0.38);
+  outline-width: 0;
+}
+
+.wizard-review-edit-target-highlight.wizard-review-edit-target-highlight--visible {
+  outline-width: 15px;
+  transition: outline-width 0.2s ease-in;
+}
+
+/* With --visible still on, this rule wins so outline eases out from 5px to 0. */
+.wizard-review-edit-target-highlight.wizard-review-edit-target-highlight--ease-out {
+  outline-width: 0;
+  transition: outline-width 0.4s ease-out;
+}

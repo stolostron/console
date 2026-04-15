@@ -15,7 +15,7 @@ import { getGroupFromApiVersion } from '../../../resources/utils'
 import { useSharedAtoms } from '../../../shared-recoil'
 import { AcmLoadingPage, AcmTable, compareStrings } from '../../../ui-components'
 import { searchClient } from '../search-sdk/search-client'
-import { SearchRelatedResult, useSearchResultRelatedItemsQuery } from '../search-sdk/search-sdk'
+import { useSearchResultRelatedItemsQuery } from '../search-sdk/search-sdk'
 import { useSearchDefinitions } from '../searchDefinitions'
 import { ISearchResult } from '../SearchResults/utils'
 import { useSearchDetailsContext } from './DetailsPage'
@@ -81,9 +81,11 @@ export default function RelatedResourceDetailsTab() {
   const searchDefinitions = useSearchDefinitions()
 
   const renderContent = useCallback(
-    (kind: string, items: SearchRelatedResult[]) => {
+    (kind: string, items: ISearchResult[]) => {
+      const tableID = `${kind.toLowerCase()}-${items[0].apigroup ? `${items[0].apigroup}-${items[0].apiversion}` : items[0].apiversion}`
       return (
         <AcmTable
+          id={`search-result-${tableID}`}
           items={items}
           emptyState={undefined} // table only shown for kinds with related resources
           columns={_.get(
@@ -92,6 +94,7 @@ export default function RelatedResourceDetailsTab() {
             searchDefinitions['genericresource'].columns
           )}
           keyFn={(item: any) => item._uid.toString()}
+          showColumnManagement
         />
       )
     },

@@ -268,20 +268,24 @@ export function generateSearchResultExport(
   })
 
   const defaultColumns = [
-    { header: t('Name'), key: 'name' },
-    { header: t('Namespace'), key: 'namespace' },
-    { header: t('Kind'), key: 'kind' },
-    { header: t('Cluster'), key: 'cluster' },
-    { header: t('Created'), key: 'created' },
-    { header: t('Label'), key: 'label' },
+    { id: 'name', order: 1, header: t('Name'), key: 'name' },
+    { id: 'namespace', order: 2, header: t('Namespace'), key: 'namespace' },
+    { id: 'kind', order: 3, header: t('Kind'), key: 'kind' },
+    { id: 'cluster', order: 4, header: t('Cluster'), key: 'cluster' },
+    { id: 'created', order: 5, header: t('Created'), key: 'created' },
+    { id: 'label', order: 6, header: t('Label'), key: 'label' },
   ]
-  let columns: SearchColumnDefinition[] = defaultColumns.map((defaultCol: { header: string; key: string }) => {
-    return {
-      header: defaultCol.header,
-      sort: defaultCol.key,
-      cell: defaultCol.key,
+  let columns: SearchColumnDefinition[] = defaultColumns.map(
+    (defaultCol: { id: string; order: number; header: string; key: string }) => {
+      return {
+        id: defaultCol.id,
+        order: defaultCol.order,
+        header: defaultCol.header,
+        sort: defaultCol.key,
+        cell: defaultCol.key,
+      }
     }
-  })
+  )
 
   // If only 1 resource kind -> use column headers from searchDefinitions
   if (kinds.length === 1) {

@@ -248,3 +248,59 @@ describe('Export from policy details results table', () => {
     )
   })
 })
+
+describe('Search prefill from URL query string', () => {
+  beforeEach(async () => {
+    localStorage.clear()
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+  })
+
+  test('Should prefill search bar when location.search contains a search param', async () => {
+    const context: PolicyDetailsContext = { policy: mockPolicy[0] }
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policiesState, mockPolicy)
+        }}
+      >
+        <MemoryRouter initialEntries={['?search=local-cluster']}>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<PolicyDetailsResults />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    await waitForText('Clusters')
+
+    const searchInput = screen.getByPlaceholderText('Find clusters')
+    expect(searchInput).toHaveValue('local-cluster')
+  })
+
+  test('Should have empty search bar when location.search is empty', async () => {
+    const context: PolicyDetailsContext = { policy: mockPolicy[0] }
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policiesState, mockPolicy)
+        }}
+      >
+        <MemoryRouter initialEntries={['/']}>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<PolicyDetailsResults />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    await waitForText('Clusters')
+
+    const searchInput = screen.getByPlaceholderText('Find clusters')
+    expect(searchInput).toHaveValue('')
+  })
+})

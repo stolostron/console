@@ -71,7 +71,7 @@ const UserPage = () => {
           title={user?.fullName ?? user?.metadata.name ?? t('Unknown User')}
           description={user?.metadata.name}
           breadcrumb={[
-            { text: t('User Management'), to: NavigationPath.roles },
+            { text: t('User management'), to: NavigationPath.roles },
             { text: t('Identities'), to: NavigationPath.identities },
             { text: t('Users'), to: NavigationPath.identitiesUsers },
             { text: user?.fullName ?? user?.metadata.name ?? t('Unknown User') },

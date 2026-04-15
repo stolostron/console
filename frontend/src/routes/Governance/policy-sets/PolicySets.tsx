@@ -53,7 +53,7 @@ function getPresetURIFilters(initialSearch: string | undefined) {
   let presetNames: string[] = [],
     presetNs: string[] = []
   const urlParams = initialSearch?.replace('?', '')?.split('&') ?? []
-  if (urlParams[0] !== '') {
+  if (urlParams[0]) {
     const parsed = JSON.parse(urlParams[0])
     presetNames = parsed.name
     presetNs = parsed.namespace

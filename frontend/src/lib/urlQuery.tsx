@@ -26,7 +26,7 @@
  * */
 export function transformBrowserUrlToFilterPresets(urlSearch: string) {
   const initialFilters: { [key: string]: string[] } = {}
-  let initialSearch = ''
+  let initialSearch = undefined
   let initialSort: { index: number; direction: 'asc' | 'desc' } = { index: 0, direction: 'asc' }
   let initialPage = 1
   let initialPerPage = 10

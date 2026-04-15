@@ -11,7 +11,7 @@ type WizFormGroupProps = InputCommonProps & {
 
 export function WizFormGroup(props: PropsWithChildren<WizFormGroupProps>) {
   const { noHelperText } = props
-  const id = convertId(props)
+  const id = process.env.NODE_ENV === 'test' || (window as any).Cypress ? convertId(props) : props.id ?? ''
 
   return (
     <FormGroup

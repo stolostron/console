@@ -103,6 +103,10 @@ export function RenderItemContent(
     searchDefinitions['genericresource'].columns
   )
   const relatedResultItems = useMemo(() => data?.searchResult?.[0]?.related?.[0]?.items || [], [data])
+  const firstRelatedItem = relatedResultItems[0]
+  const tableIDSuffix = firstRelatedItem?.apigroup
+    ? `${firstRelatedItem.apigroup}-${firstRelatedItem.apiversion}`
+    : firstRelatedItem?.apiversion ?? 'unknown'
 
   if (error && !hasFederatedError) {
     return (
@@ -120,11 +124,13 @@ export function RenderItemContent(
 
   return (
     <AcmTable
+      id={`related-search-result-${relatedKind.toLowerCase()}-${tableIDSuffix}`}
       items={relatedResultItems}
       emptyState={undefined} // table only shown for kinds with related resources
       columns={colDefs}
       keyFn={(item: any) => item?._uid.toString() ?? `${item.name}-${item.namespace}-${item.cluster}`}
       rowActionResolver={rowActions}
+      showColumnManagement
     />
   )
 }

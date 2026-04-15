@@ -7,29 +7,42 @@ import {
   DropdownList,
   FormFieldGroupHeader,
   Icon,
-  List,
-  ListItem,
   MenuToggle,
   MenuToggleElement,
   Split,
   SplitItem,
-  Title,
 } from '@patternfly/react-core'
 import { ArrowDownIcon, ArrowUpIcon, ExclamationCircleIcon, PlusCircleIcon, TrashIcon } from '@patternfly/react-icons'
 import get from 'get-value'
-import { Fragment, ReactNode, useCallback, useContext, useMemo, useState } from 'react'
-import { WizTextDetail } from '..'
+import {
+  Fragment,
+  ReactNode,
+  RefObject,
+  forwardRef,
+  useCallback,
+  useContext,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+import {
+  InputReviewMeta,
+  ReviewPathPrefixSegmentsContext,
+  ReviewPathPrefixSegmentsProvider,
+  useStepInputsRegistry,
+} from '../review/ReviewStepContexts'
+import { WizTextDetail } from './WizTextDetail'
 import { FieldGroup } from '../components/FieldGroup'
-import { Indented } from '../components/Indented'
 import { LabelHelp } from '../components/LabelHelp'
 import { WizHelperText } from '../components/WizHelperText'
 import { useData } from '../contexts/DataContext'
-import { DisplayMode } from '../contexts/DisplayModeContext'
 import { ItemContext } from '../contexts/ItemContext'
 import { ShowValidationContext } from '../contexts/ShowValidationProvider'
 import { useStringContext } from '../contexts/StringContext'
 import { HasValidationErrorContext, ValidationProvider } from '../contexts/ValidationProvider'
-import { getCollapsedPlaceholder, InputCommonProps, useInput } from './Input'
+import { buildReviewInputRegistrationPath, getCollapsedPlaceholder, InputCommonProps, useInput } from './Input'
+import { useBumpReviewDomTree } from '../review/ReviewStepContexts'
 
 export function wizardArrayItems(props: any, item: any) {
   const id = props.id
@@ -59,7 +72,7 @@ export type WizArrayInputProps = Omit<InputCommonProps, 'path'> & {
 }
 
 export function WizArrayInput(props: WizArrayInputProps) {
-  const { displayMode: mode, value, setValue, hidden, id, required } = useInput(props as InputCommonProps)
+  const { value, setValue, hidden, id, required } = useInput(props as InputCommonProps, { isArrayInput: true })
   const [open, setOpen] = useState(false)
   const onToggle = useCallback(() => setOpen((open: boolean) => !open), [])
 
@@ -124,63 +137,22 @@ export function WizArrayInput(props: WizArrayInputProps) {
 
   const { actionAriaLabel } = useStringContext()
 
+  const parentReviewPathSegments = useContext(ReviewPathPrefixSegmentsContext)
+  const arrayChildReviewPathSegments = useMemo(() => {
+    if (path == null || path === '') return parentReviewPathSegments
+    const next = [...parentReviewPathSegments]
+    if (item && typeof item === 'object' && 'kind' in item) {
+      const kind = (item as { kind: unknown }).kind
+      if (kind != null && String(kind) !== '') {
+        next.push(String(kind))
+      }
+    }
+    next.push(path)
+    return next
+  }, [parentReviewPathSegments, path, item])
+
   if (hidden) return <Fragment />
 
-  if (mode === DisplayMode.Details) {
-    if (values.length === 0) {
-      return <Fragment />
-    }
-    if (props.isSection) {
-      return (
-        <Fragment>
-          <Title headingLevel="h2">{props.label}</Title>
-          <Indented id={id}>
-            <List style={{ marginTop: -4 }} isPlain={props.summaryList !== true}>
-              {values.map((value, index) => (
-                <ListItem key={index} style={{ paddingBottom: 4 }}>
-                  <ItemContext.Provider value={value}>
-                    {typeof props.collapsedContent === 'string' ? (
-                      <WizTextDetail
-                        id={props.collapsedContent}
-                        path={props.collapsedContent}
-                        placeholder={props.collapsedPlaceholder}
-                      />
-                    ) : (
-                      props.collapsedContent
-                    )}
-                  </ItemContext.Provider>
-                </ListItem>
-              ))}
-            </List>
-          </Indented>
-        </Fragment>
-      )
-    }
-    return (
-      <Fragment>
-        <div className="pf-v6-c-description-list__term">{props.label}</div>
-        <Indented id={id}>
-          <List style={{ marginTop: -4 }} isPlain={props.summaryList !== true}>
-            {values.map((value, index) => (
-              <ListItem key={index} style={{ paddingBottom: 4 }}>
-                <ItemContext.Provider value={value}>
-                  {typeof props.collapsedContent === 'string' ? (
-                    <WizTextDetail
-                      id={props.collapsedContent}
-                      path={props.collapsedContent}
-                      placeholder={props.collapsedPlaceholder}
-                    />
-                  ) : (
-                    props.collapsedContent
-                  )}
-                </ItemContext.Provider>
-              </ListItem>
-            ))}
-          </List>
-        </Indented>
-      </Fragment>
-    )
-  }
   return (
     <div id={id} className="form-wizard-array-input">
       {props.label && (
@@ -203,80 +175,84 @@ export function WizArrayInput(props: WizArrayInputProps) {
           <WizHelperText {...props} />
         </div>
       )}
-      {values.length === 0 ? (
-        <Divider />
-      ) : (
-        values.map((value, index) => {
-          return (
-            <ArrayInputItem
-              key={index}
-              id={id}
-              value={value}
-              index={index}
-              count={values.length}
-              collapsedContent={props.collapsedContent}
-              expandedContent={props.expandedContent}
-              collapsedPlaceholder={props.collapsedPlaceholder}
-              sortable={props.sortable}
-              required={required}
-              moveUp={moveUp}
-              moveDown={moveDown}
-              removeItem={removeItem}
-              defaultExpanded={!props.defaultCollapsed}
-            >
-              {props.children}
-            </ArrayInputItem>
-          )
-        })
-      )}
-      {props.placeholder && (
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, paddingTop: values.length ? 8 : 4 }}>
-          {!props.dropdownItems ? (
-            <Button
-              id="add-button"
-              variant="link"
-              size="sm"
-              aria-label={actionAriaLabel}
-              onClick={() => addItem(props.newValue ?? {})}
-              icon={<PlusCircleIcon />}
-            >
-              {props.placeholder}
-            </Button>
-          ) : (
-            <Dropdown
-              isOpen={open}
-              onOpenChange={setOpen}
-              toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-                <MenuToggle ref={toggleRef} onClick={onToggle} variant="plainText">
-                  <Button icon={<PlusCircleIcon />} iconPosition="left" variant="link" size="sm">
-                    {props.placeholder}
-                  </Button>
-                </MenuToggle>
-              )}
-              popperProps={{ position: 'left' }}
-            >
-              <DropdownList>
-                {props.dropdownItems.map((item, index) => (
-                  <DropdownItem
-                    key={index}
-                    onClick={() => {
-                      addItem(item.action())
-                      setOpen(false)
-                    }}
-                  >
-                    {item.label}
-                  </DropdownItem>
-                ))}
-              </DropdownList>
-            </Dropdown>
-          )}
-        </div>
-      )}
+      <ReviewPathPrefixSegmentsProvider value={arrayChildReviewPathSegments}>
+        {values.length === 0 ? (
+          <Divider />
+        ) : (
+          values.map((value, index) => {
+            return (
+              <ArrayInputItem
+                key={index}
+                id={id}
+                value={value}
+                index={index}
+                count={values.length}
+                collapsedContent={props.collapsedContent}
+                expandedContent={props.expandedContent}
+                collapsedPlaceholder={props.collapsedPlaceholder}
+                sortable={props.sortable}
+                required={required}
+                moveUp={moveUp}
+                moveDown={moveDown}
+                removeItem={removeItem}
+                defaultExpanded={!props.defaultCollapsed}
+                hideFromReviewStep={props.hideFromReviewStep}
+              >
+                {props.children}
+              </ArrayInputItem>
+            )
+          })
+        )}
+        {props.placeholder && (
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, paddingTop: values.length ? 8 : 4 }}>
+            {!props.dropdownItems ? (
+              <Button
+                id="add-button"
+                variant="link"
+                size="sm"
+                aria-label={actionAriaLabel}
+                onClick={() => addItem(props.newValue ?? {})}
+                icon={<PlusCircleIcon />}
+              >
+                {props.placeholder}
+              </Button>
+            ) : (
+              <Dropdown
+                isOpen={open}
+                onOpenChange={setOpen}
+                toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                  <MenuToggle ref={toggleRef} onClick={onToggle} variant="plainText">
+                    <Button icon={<PlusCircleIcon />} iconPosition="left" variant="link" size="sm">
+                      {props.placeholder}
+                    </Button>
+                  </MenuToggle>
+                )}
+                popperProps={{ position: 'left' }}
+              >
+                <DropdownList>
+                  {props.dropdownItems.map((item, index) => (
+                    <DropdownItem
+                      key={index}
+                      onClick={() => {
+                        addItem(item.action())
+                        setOpen(false)
+                      }}
+                    >
+                      {item.label}
+                    </DropdownItem>
+                  ))}
+                </DropdownList>
+              </Dropdown>
+            )}
+          </div>
+        )}
+      </ReviewPathPrefixSegmentsProvider>
     </div>
   )
 }
 
 export function ArrayInputItem(props: {
+  /** Parent `WizArrayInput` registration id; used for stable DOM ids in tests. */
   id: string
   value: object
   index: number
@@ -291,9 +267,29 @@ export function ArrayInputItem(props: {
   moveUp: (index: number) => void
   moveDown: (index: number) => void
   removeItem: (value: object) => void
+  hideFromReviewStep?: boolean
 }) {
-  const { id, value, index, defaultExpanded, moveUp, moveDown, removeItem, count, required } = props
+  const {
+    id: parentId,
+    value,
+    index,
+    defaultExpanded,
+    moveUp,
+    moveDown,
+    removeItem,
+    count,
+    required,
+    hideFromReviewStep,
+  } = props
   const [expanded, setExpanded] = useState(defaultExpanded !== undefined ? defaultExpanded : true)
+  const reviewPathPrefixSegments = useContext(ReviewPathPrefixSegmentsContext)
+  const registrationPath = buildReviewInputRegistrationPath(reviewPathPrefixSegments, String(index), value)
+  const id =
+    process.env.NODE_ENV === 'test' || (window as any).Cypress
+      ? parentId + '-' + (index + 1).toString()
+      : registrationPath
+
+  const collapsedContentMeasureRef = useRef<HTMLDivElement>(null)
 
   const collapsedContent = useMemo(() => {
     return typeof props.collapsedContent === 'string' ? (
@@ -333,106 +329,128 @@ export function ArrayInputItem(props: {
           <HasValidationErrorContext.Consumer>
             {(hasErrors) => (
               <ItemContext.Provider value={value}>
-                <FieldGroup
-                  id={id + '-' + (index + 1).toString()}
-                  isExpanded={expanded}
-                  setIsExpanded={setExpanded}
-                  toggleAriaLabel={detailsAriaLabel}
-                  header={
-                    <FormFieldGroupHeader
-                      titleText={{
-                        text:
-                          showValidation && hasErrors ? (
-                            <Split>
-                              <SplitItem>
-                                <Icon status="danger">
-                                  <ExclamationCircleIcon />
-                                </Icon>
-                              </SplitItem>
-                              <SplitItem>
-                                <span className="pf-v6-c-form__helper-text pf-m-error">
-                                  &nbsp; {expandToFixValidationErrors}
-                                </span>
-                              </SplitItem>
-                            </Split>
-                          ) : expanded ? (
-                            <Fragment>{expandedContent}</Fragment>
-                          ) : (
-                            <Fragment>{collapsedContent}</Fragment>
-                          ),
-
-                        id: `nested-field-group1-titleText-id-${index}`,
-                      }}
-                      // titleDescription={!hasErrors && props.collapsedDescription ? props.collapsedDescription : undefined}
-                      actions={
-                        <Fragment>
-                          {props.sortable && (
-                            <Fragment>
-                              <Button
-                                icon={<ArrowUpIcon />}
-                                variant="plain"
-                                aria-label={sortableMoveItemUpAriaLabel}
-                                isDisabled={index === 0}
-                                onClick={() => moveUp(index)}
-                              />
-                              <Button
-                                icon={<ArrowDownIcon />}
-                                variant="plain"
-                                aria-label={sortableMoveItemDownAriaLabel}
-                                isDisabled={index === count - 1}
-                                onClick={() => moveDown(index)}
-                              />
-                            </Fragment>
-                          )}
-                          {(!required || count > 1) && (
-                            <Button
-                              icon={<TrashIcon />}
-                              variant="plain"
-                              aria-label={removeItemAriaLabel}
-                              onClick={() => removeItem(props.value)}
-                            />
-                          )}
-                        </Fragment>
-                      }
-                    />
-                  }
+                <ArrayInputItemReviewRegistration
+                  id={id}
+                  index={index}
+                  value={value}
+                  collapsedContent={props.collapsedContent}
+                  measureRef={collapsedContentMeasureRef}
+                  hideFromReviewStep={hideFromReviewStep}
                 >
-                  <Split>
-                    <SplitItem isFilled>
-                      {expanded ? <Fragment>{expandedContent}</Fragment> : <Fragment>{collapsedContent}</Fragment>}
-                    </SplitItem>
-                    <SplitItem>
-                      {props.sortable && (
-                        <Fragment>
+                  <FieldGroup
+                    id={id}
+                    isExpanded={expanded}
+                    setIsExpanded={setExpanded}
+                    toggleAriaLabel={detailsAriaLabel}
+                    header={
+                      <FormFieldGroupHeader
+                        titleText={{
+                          text:
+                            showValidation && hasErrors ? (
+                              <Split>
+                                <SplitItem>
+                                  <Icon status="danger">
+                                    <ExclamationCircleIcon />
+                                  </Icon>
+                                </SplitItem>
+                                <SplitItem>
+                                  <span className="pf-v6-c-form__helper-text pf-m-error">
+                                    &nbsp; {expandToFixValidationErrors}
+                                  </span>
+                                </SplitItem>
+                              </Split>
+                            ) : expanded ? (
+                              <Fragment>{expandedContent}</Fragment>
+                            ) : (
+                              <Fragment>{collapsedContent}</Fragment>
+                            ),
+
+                          id: `nested-field-group1-titleText-id-${index}`,
+                        }}
+                        // titleDescription={!hasErrors && props.collapsedDescription ? props.collapsedDescription : undefined}
+                        actions={
+                          <Fragment>
+                            {props.sortable && (
+                              <Fragment>
+                                <Button
+                                  icon={<ArrowUpIcon />}
+                                  variant="plain"
+                                  aria-label={sortableMoveItemUpAriaLabel}
+                                  isDisabled={index === 0}
+                                  onClick={() => moveUp(index)}
+                                />
+                                <Button
+                                  icon={<ArrowDownIcon />}
+                                  variant="plain"
+                                  aria-label={sortableMoveItemDownAriaLabel}
+                                  isDisabled={index === count - 1}
+                                  onClick={() => moveDown(index)}
+                                />
+                              </Fragment>
+                            )}
+                            {(!required || count > 1) && (
+                              <Button
+                                icon={<TrashIcon />}
+                                variant="plain"
+                                aria-label={removeItemAriaLabel}
+                                onClick={() => removeItem(props.value)}
+                              />
+                            )}
+                          </Fragment>
+                        }
+                      />
+                    }
+                  >
+                    {expanded && typeof props.collapsedContent !== 'string' && (
+                      <CollapsedContentMeasure ref={collapsedContentMeasureRef}>
+                        {collapsedContent}
+                      </CollapsedContentMeasure>
+                    )}
+                    <Split>
+                      <SplitItem isFilled>
+                        {expanded ? (
+                          <Fragment>{expandedContent}</Fragment>
+                        ) : typeof props.collapsedContent !== 'string' ? (
+                          <div ref={collapsedContentMeasureRef} style={{ display: 'inline' }}>
+                            {collapsedContent}
+                          </div>
+                        ) : (
+                          <Fragment>{collapsedContent}</Fragment>
+                        )}
+                      </SplitItem>
+                      <SplitItem>
+                        {props.sortable && (
+                          <Fragment>
+                            <Button
+                              icon={<ArrowUpIcon />}
+                              variant="plain"
+                              aria-label={sortableMoveItemUpAriaLabel}
+                              isDisabled={index === 0}
+                              onClick={() => moveUp(index)}
+                            />
+                            <Button
+                              icon={<ArrowDownIcon />}
+                              variant="plain"
+                              aria-label={sortableMoveItemDownAriaLabel}
+                              isDisabled={index === count - 1}
+                              onClick={() => moveDown(index)}
+                            />
+                          </Fragment>
+                        )}
+                        {(!required || count > 1) && (
                           <Button
-                            icon={<ArrowUpIcon />}
+                            icon={<TrashIcon />}
                             variant="plain"
-                            aria-label={sortableMoveItemUpAriaLabel}
-                            isDisabled={index === 0}
-                            onClick={() => moveUp(index)}
+                            aria-label={removeItemAriaLabel}
+                            onClick={() => removeItem(props.value)}
+                            style={{ marginTop: -6 }}
                           />
-                          <Button
-                            icon={<ArrowDownIcon />}
-                            variant="plain"
-                            aria-label={sortableMoveItemDownAriaLabel}
-                            isDisabled={index === count - 1}
-                            onClick={() => moveDown(index)}
-                          />
-                        </Fragment>
-                      )}
-                      {(!required || count > 1) && (
-                        <Button
-                          icon={<TrashIcon />}
-                          variant="plain"
-                          aria-label={removeItemAriaLabel}
-                          onClick={() => removeItem(props.value)}
-                          style={{ marginTop: -6 }}
-                        />
-                      )}
-                    </SplitItem>
-                  </Split>
-                  {props.children}
-                </FieldGroup>
+                        )}
+                      </SplitItem>
+                    </Split>
+                    {props.children}
+                  </FieldGroup>
+                </ArrayInputItemReviewRegistration>
               </ItemContext.Provider>
             )}
           </HasValidationErrorContext.Consumer>
@@ -441,3 +459,83 @@ export function ArrayInputItem(props: {
     </ValidationProvider>
   )
 }
+
+function ArrayInputItemReviewRegistration(props: {
+  id: string
+  index: number
+  value: object
+  collapsedContent: ReactNode | string
+  measureRef: RefObject<HTMLDivElement | null>
+  children: ReactNode
+  hideFromReviewStep?: boolean
+}) {
+  const { id, index, value, collapsedContent, measureRef, children, hideFromReviewStep } = props
+  const item = useContext(ItemContext)
+  const stepInputsRegistry = useStepInputsRegistry()
+  const bumpReviewDomTree = useBumpReviewDomTree()
+  const parentReviewPathSegments = useContext(ReviewPathPrefixSegmentsContext)
+  const instanceChildReviewPathSegments = useMemo(
+    () => [...parentReviewPathSegments, String(index)],
+    [parentReviewPathSegments, index]
+  )
+  useLayoutEffect(() => {
+    if (!stepInputsRegistry || hideFromReviewStep) return
+    const label = getArrayInstanceLabel(collapsedContent, item, measureRef.current)
+    stepInputsRegistry.register(id, {
+      id,
+      path: id,
+      value,
+      label: label ?? '',
+      type: InputReviewMeta.ARRAY_INSTANCE,
+    })
+    bumpReviewDomTree?.()
+    return () => {
+      stepInputsRegistry.unregister(id)
+      bumpReviewDomTree?.()
+    }
+  }, [stepInputsRegistry, collapsedContent, measureRef, value, id, item, bumpReviewDomTree, hideFromReviewStep])
+
+  return (
+    <ReviewPathPrefixSegmentsProvider value={instanceChildReviewPathSegments}>
+      {children}
+    </ReviewPathPrefixSegmentsProvider>
+  )
+}
+
+function getArrayInstanceLabel(
+  collapsedContent: ReactNode | string,
+  item: any,
+  measureRoot: HTMLElement | null
+): string | undefined {
+  if (typeof collapsedContent === 'string') {
+    return get(item, collapsedContent) ?? undefined
+  }
+  if (measureRoot) {
+    const text = measureRoot.textContent
+    if (text == null) return undefined
+    return text.charAt(0).toUpperCase() + text.slice(1)
+  }
+  return undefined
+}
+
+const CollapsedContentMeasure = forwardRef<HTMLDivElement, { children: ReactNode }>(function CollapsedContentMeasure(
+  { children },
+  ref
+) {
+  return (
+    <div
+      ref={ref}
+      aria-hidden
+      style={{
+        position: 'absolute',
+        width: 0,
+        height: 0,
+        overflow: 'hidden',
+        clip: 'rect(0,0,0,0)',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {children}
+    </div>
+  )
+})

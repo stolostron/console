@@ -1,14 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+  Content,
+  ContentVariants,
   Label,
   PageSection,
   Popover,
   PopoverPosition,
   Stack,
   StackItem,
-  Content,
-  ContentVariants,
   ToolbarItem,
 } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
@@ -18,6 +18,7 @@ import { useCallback, useContext, useMemo, useState } from 'react'
 import { TFunction } from 'react-i18next'
 import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { HighlightSearchText } from '../../components/HighlightSearchText'
+import { useLocalHubName } from '../../hooks/use-local-hub'
 import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
 import { PluginContext } from '../../lib/PluginContext'
@@ -46,12 +47,14 @@ import {
   StatusColumn,
   Subscription,
 } from '../../resources'
+import { filterLabelFn, getISOStringTimestamp } from '../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import {
   AcmButton,
   AcmDropdown,
   AcmEmptyState,
   AcmInlineStatusGroup,
+  AcmLabels,
   AcmTable,
   AcmTableStateProvider,
   AcmVisitedLink,
@@ -61,25 +64,27 @@ import {
 } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
+import { DeprecatedTitle } from './components/DeprecatedTitle'
 import { argoAppSetQueryString } from './CreateArgoApplication/actions'
 import { subscriptionAppQueryString } from './CreateSubscriptionApplication/actions'
 import {
-  getResourceTimestamp,
   getAnnotation,
   getAppChildResources,
   getClusterCount,
   getClusterCountField,
   getClusterCountSearchLink,
   getClusterCountString,
+  getResourceTimestamp,
   getSearchLink,
   getSubscriptionsFromAnnotation,
   hostingSubAnnotationStr,
   isResourceTypeOf,
 } from './helpers/resource-helper'
 import { isLocalSubscription } from './helpers/subscriptions'
-import { getISOStringTimestamp } from '../../resources/utils'
-import { DeprecatedTitle } from './components/DeprecatedTitle'
-import { useLocalHubName } from '../../hooks/use-local-hub'
+import { IApplicationResource } from './model/application-resource'
+import { ApplicationStatus } from './model/application-status'
+import { useFetchApplicationLabels } from './useFetchApplicationLabels'
+import { getApplicationId, getLabels, isOCPAppResource } from './utils'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -98,13 +103,6 @@ const fluxAnnotations = {
 const TABLE_ID = 'applicationTable'
 
 const filterId = 'type'
-
-type ApplicationStatus = {
-  cluster: string
-  resourceName: string
-}
-
-export type IApplicationResource = IResource<ApplicationStatus> | OCPAppResource<ApplicationStatus>
 
 export enum AppColumns {
   'name' = 0,
@@ -125,10 +123,6 @@ enum ScoreColumn {
   unknown = 4,
 }
 const ScoreColumnSize = Object.keys(ScoreColumn).length / 2
-
-function isOCPAppResource(resource: IApplicationResource): resource is OCPAppResource<ApplicationStatus> {
-  return 'label' in resource
-}
 
 function isFluxApplication(label: string) {
   let isFlux = false
@@ -536,7 +530,11 @@ export default function ApplicationsOverview() {
       }
 
       // Cannot add properties directly to objects in typescript
-      return { ...tableItem, ...transformedObject }
+      return {
+        id: getApplicationId(tableItem, clusters),
+        ...tableItem,
+        ...transformedObject,
+      }
     },
     [channels, localCluster, subscriptions, t]
   )
@@ -563,6 +561,8 @@ export default function ApplicationsOverview() {
     })
     return items.map((app) => generateTransformData(app))
   }, [allApplications, deletedApps, generateTransformData, resultCounts])
+
+  const { labelOptions, labelMap } = useFetchApplicationLabels(tableItems)
 
   const keyFn = useCallback(
     (resource: IResource<ApplicationStatus>) =>
@@ -660,7 +660,7 @@ export default function ApplicationsOverview() {
       {
         header: t('Clusters'),
         cell: (resource) => {
-          const clusterList = (resource as IUIResource)?.uidata?.clusterList ?? []
+          const clusterList = (resource as any as IUIResource)?.uidata?.clusterList ?? []
           const clusterCount = getClusterCount(clusterList, localCluster)
           const clusterCountString = getClusterCountString(t, clusterCount, clusterList, resource)
           const clusterCountSearchLink = getClusterCountSearchLink(resource, clusterCount, clusterList)
@@ -671,14 +671,26 @@ export default function ApplicationsOverview() {
         ),
         sort: 'transformed.clusterCount',
         search: 'transformed.clusterCount',
-        exportContent: (resource) => {
-          const clusterList = (resource as IUIResource)?.uidata?.clusterList ?? []
+        exportContent: (resource: IApplicationResource) => {
+          const clusterList = (resource as any as IUIResource)?.uidata?.clusterList ?? []
           const clusterCount = getClusterCount(clusterList, localCluster)
           return getClusterCountString(t, clusterCount, clusterList, resource)
         },
         id: 'clusters',
         order: 4,
         isDefault: true,
+      },
+      {
+        header: t('table.labels'),
+        cell: (resource) => <AcmLabels labels={getLabels(resource)} isCompact={true} />,
+        exportContent: (resource) =>
+          Object.entries(getLabels(resource))
+            .map(([key, value]) => `${key}=${value}`)
+            .join(','),
+        id: 'labels',
+        order: 5,
+        isDefault: false,
+        isFirstVisitChecked: true,
       },
       {
         header: t('Health Status'),
@@ -693,7 +705,7 @@ export default function ApplicationsOverview() {
           return exportApplicationStatusGroup(resource, 'health')
         },
         id: 'health',
-        order: 5,
+        order: 6,
         isDefault: false,
         isFirstVisitChecked: true,
       },
@@ -710,7 +722,7 @@ export default function ApplicationsOverview() {
           return exportApplicationStatusGroup(resource, 'synced')
         },
         id: 'sync',
-        order: 6,
+        order: 7,
         isDefault: false,
         isFirstVisitChecked: true,
       },
@@ -727,7 +739,7 @@ export default function ApplicationsOverview() {
           return exportApplicationStatusGroup(resource, 'deployed')
         },
         id: 'pod',
-        order: 7,
+        order: 8,
         isDefault: false,
         isFirstVisitChecked: true,
       },
@@ -748,7 +760,7 @@ export default function ApplicationsOverview() {
           }
         },
         id: 'created',
-        order: 8,
+        order: 9,
         isDefault: false,
         isFirstVisitChecked: false,
       },
@@ -886,8 +898,16 @@ export default function ApplicationsOverview() {
           return selectedValues.includes(get(item, 'transformed.deployedStatus', ''))
         },
       },
+      {
+        id: 'label',
+        label: t('Label'),
+        options: labelOptions || [],
+        supportsInequality: true, // table will allow user to convert filtered values to a=b or a!=b
+        tableFilterFn: (selectedValues: string[], item: IApplicationResource) =>
+          filterLabelFn(selectedValues, item as any, labelMap || {}),
+      },
     ],
-    [t, managedClusters, systemAppNSPrefixes]
+    [t, managedClusters, labelOptions, systemAppNSPrefixes, labelMap]
   )
 
   const navigate = useNavigate()
@@ -1248,13 +1268,14 @@ export default function ApplicationsOverview() {
       <DeleteResourceModal {...modalProps} />
       {pluginModal}
       <AcmTableStateProvider localStorageKey={'applications-overview-table-state'}>
-        <AcmTable<IResource<ApplicationStatus>>
+        <AcmTable<IApplicationResource>
           id={TABLE_ID}
           key="data-table"
           columns={columns}
           keyFn={keyFn}
-          items={tableItems as IResource<ApplicationStatus>[]}
+          items={tableItems as IApplicationResource[]}
           filters={filters}
+          secondaryFilterIds={['label']}
           setRequestView={setRequestedView}
           resultView={resultView}
           resultCounts={resultCounts}

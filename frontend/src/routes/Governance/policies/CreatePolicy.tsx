@@ -1,5 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { EditorValidationStatus, useData, useEditorValidationStatus, useItem } from '@patternfly-labs/react-form-wizard'
+import {
+  EditorValidationStatus,
+  useData,
+  useEditorValidationStatus,
+  useHighlightEditorPath,
+  useItem,
+} from '@patternfly-labs/react-form-wizard'
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
 import { LostChangesContext } from '../../../components/LostChanges'
@@ -18,6 +24,7 @@ export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
   const { update } = useData() // Wizard framework sets this context
   const { setEditorValidationStatus } = useEditorValidationStatus()
+  const { highlightEditorPath } = useHighlightEditorPath()
 
   const { t } = useTranslation()
   return (
@@ -26,6 +33,7 @@ export function WizardSyncEditor() {
       variant="toolbar"
       resources={resources}
       schema={schema}
+      highlightEditorPath={highlightEditorPath}
       onEditorChange={(changes: { resources: any[] }): void => {
         update(changes?.resources)
       }}

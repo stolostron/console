@@ -1660,7 +1660,10 @@ export function getCCUpgradePercent(clusterCurator?: ClusterCurator, hostedClust
     const curatorConditions = clusterCurator.status?.conditions ?? []
     const upgradeDetailedMessage = getConditionMessage('monitor-upgrade', curatorConditions) || ''
     const percentageMatch = upgradeDetailedMessage.match(/\d+%/) || []
-    return percentageMatch.length > 0 ? percentageMatch[0] : ''
+    if (percentageMatch.length > 0) {
+      return percentageMatch[0]
+    }
   }
-  return getHCUpgradePercent(hostedCluster)
+  const hcPercentage = getHCUpgradePercent(hostedCluster)
+  return hcPercentage
 }

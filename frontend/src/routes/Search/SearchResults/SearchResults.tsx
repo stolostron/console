@@ -139,11 +139,13 @@ function RenderAccordionItem(
 
   const renderContent = useCallback(
     (kind: string, items: ISearchResult[]) => {
+      const tableID = `${kind.toLowerCase()}-${items[0].apigroup ? `${items[0].apigroup}-${items[0].apiversion}` : items[0].apiversion}`
       const kindAndGroup =
         kind.toLowerCase() === 'subscription' ? `subscription.${items[0].apigroup}` : kind.toLowerCase()
 
       return (
         <AcmTable
+          id={`search-result-${tableID}`}
           items={items}
           emptyState={undefined} // table only shown for kinds with results
           columns={_.get(
@@ -153,6 +155,7 @@ function RenderAccordionItem(
           )}
           keyFn={(item: any) => item._uid.toString()}
           rowActionResolver={rowActions}
+          showColumnManagement
         />
       )
     },

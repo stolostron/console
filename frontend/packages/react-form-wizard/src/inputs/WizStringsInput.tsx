@@ -1,18 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import {
-  Button,
-  DescriptionListDescription,
-  DescriptionListGroup,
-  DescriptionListTerm,
-  Divider,
-  InputGroup,
-  InputGroupItem,
-  TextInput as PFTextInput,
-} from '@patternfly/react-core'
+import { Button, Divider, InputGroup, InputGroupItem, TextInput as PFTextInput } from '@patternfly/react-core'
 import { PlusCircleIcon, TrashIcon } from '@patternfly/react-icons'
 import { Fragment } from 'react'
-import { WizTextInput } from '..'
-import { DisplayMode } from '../contexts/DisplayModeContext'
+import { WizTextInput } from './WizTextInput'
 import { useStringContext } from '../contexts/StringContext'
 import { getAddPlaceholder, InputCommonProps, useInput } from './Input'
 import { WizFormGroup } from './WizFormGroup'
@@ -23,7 +13,7 @@ export type WizStringsInputProps = InputCommonProps & {
 }
 
 export function WizStringsInput(props: WizStringsInputProps) {
-  const { displayMode: mode, value, setValue, id, hidden, required } = useInput(props)
+  const { value, setValue, id, hidden, required } = useInput(props)
 
   const values: string[] = Array.isArray(value) ? value : []
 
@@ -41,23 +31,6 @@ export function WizStringsInput(props: WizStringsInputProps) {
 
   if (hidden) {
     return <Fragment />
-  }
-
-  if (mode === DisplayMode.Details) {
-    if (!values.length) return <Fragment />
-    return (
-      <DescriptionListGroup>
-        <DescriptionListTerm>{props.label}</DescriptionListTerm>
-        <DescriptionListDescription id={id}>
-          <div style={{ display: 'flex', flexDirection: 'column', rowGap: 8 }}>
-            {values.map((value, index) => {
-              if (!value) return <Fragment key={index} />
-              return <div key={index}>{value}</div>
-            })}
-          </div>
-        </DescriptionListDescription>
-      </DescriptionListGroup>
-    )
   }
 
   return (
@@ -113,7 +86,7 @@ type StringsMapInputProps = WizStringsInputProps & {
 }
 
 export function StringsMapInput(props: StringsMapInputProps) {
-  const { displayMode: mode, value, setValue, id, hidden } = useInput(props)
+  const { value, setValue, id, hidden } = useInput(props)
 
   let values: string[] = value
   if (props.map) values = props.map(values)
@@ -144,23 +117,6 @@ export function StringsMapInput(props: StringsMapInputProps) {
 
   if (hidden) {
     return <Fragment />
-  }
-
-  if (mode === DisplayMode.Details) {
-    if (!values.length) return <Fragment />
-    return (
-      <DescriptionListGroup>
-        <DescriptionListTerm>{props.label}</DescriptionListTerm>
-        <DescriptionListDescription id={id}>
-          <div style={{ display: 'flex', flexDirection: 'column', rowGap: 8 }}>
-            {values.map((value, index) => {
-              if (!value) return <Fragment key={index} />
-              return <div key={index}>{value}</div>
-            })}
-          </div>
-        </DescriptionListDescription>
-      </DescriptionListGroup>
-    )
   }
 
   return (

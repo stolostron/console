@@ -16,6 +16,7 @@ export function HomeWizard() {
   const history = useHistory()
   return (
     <WizardPage
+      id="home-wizard"
       title="Welcome"
       onSubmit={() => Promise.resolve(undefined)}
       onCancel={() => history.push('.')}

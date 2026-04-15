@@ -1,28 +1,20 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import {
-  DescriptionListDescription,
-  FormGroup,
-  FormHelperText,
-  HelperText,
-  HelperTextItem,
-  Split,
-  TimePicker,
-} from '@patternfly/react-core'
-import { CheckIcon } from '@patternfly/react-icons'
+import { FormGroup, FormHelperText, HelperText, HelperTextItem, TimePicker } from '@patternfly/react-core'
 import get from 'get-value'
 import { Fragment, useContext } from 'react'
 import set from 'set-value'
 import { useData } from '../contexts/DataContext'
 import { ItemContext } from '../contexts/ItemContext'
-import { DisplayMode, useDisplayMode } from '../contexts/DisplayModeContext'
-import { InputCommonProps, convertId } from './Input'
+import { useRandomID } from '../contexts/useRandomID'
+import { convertId, InputCommonProps } from './Input'
 
 export function WizTimeRange(props: InputCommonProps<string>) {
-  const id = convertId(props)
+  const instanceId = useRandomID()
+  const id =
+    process.env.NODE_ENV === 'test' || (window as any).Cypress ? convertId(props) : `wiz-time-range-${instanceId}`
   const path = props.path ?? id
 
   const { update } = useData()
-  const mode = useDisplayMode()
   const item = useContext(ItemContext)
 
   const value = get(item, path)
@@ -38,16 +30,6 @@ export function WizTimeRange(props: InputCommonProps<string>) {
   }
 
   if (props.hidden) return <Fragment />
-
-  if (mode === DisplayMode.Details) {
-    if (!value) return <Fragment />
-    return (
-      <Split hasGutter>
-        <CheckIcon />
-        <DescriptionListDescription>{props.label}</DescriptionListDescription>
-      </Split>
-    )
-  }
 
   const showHelperText = (validated === 'error' && error) || (validated !== 'error' && props.helperText)
   const helperText = validated === 'error' ? error : props.helperText
