@@ -38,6 +38,7 @@ describe('validation', () => {
     validateVcenterUsername,
     validateCidr,
     validateKubeconfig,
+    validatePlacementName,
   } = renderHook(() => useValidation()).result.current
 
   describe('validateKubernetesDnsName', () => {
@@ -451,6 +452,51 @@ describe('validation', () => {
       const resource = { metadata: { namespace: 'default' } }
       expect(validateAppSetName('INVALID', resource)).toBe(
         "This value can only contain lowercase alphanumeric characters or '-' or '.'"
+      )
+    })
+  })
+
+  describe('validatePlacementName', () => {
+    test('should allow a valid placement name', () => {
+      const resource = { metadata: { namespace: 'default' } }
+      expect(validatePlacementName('my-placement', resource)).toBeUndefined()
+    })
+
+    test('should allow an empty value', () => {
+      const resource = { metadata: { namespace: 'default' } }
+      expect(validatePlacementName('', resource)).toBeUndefined()
+    })
+
+    test('should allow a name with exactly 63 characters', () => {
+      const resource = { metadata: { namespace: 'default' } }
+      expect(validatePlacementName('a'.repeat(63), resource)).toBeUndefined()
+    })
+
+    test('should not allow a name longer than 63 characters', () => {
+      const resource = { metadata: { namespace: 'default' } }
+      expect(validatePlacementName('a'.repeat(64), resource)).toBe(
+        'The length of placement name must not exceed 63 characters'
+      )
+    })
+
+    test('should reject invalid kubernetes resource name', () => {
+      const resource = { metadata: { namespace: 'default' } }
+      expect(validatePlacementName('INVALID', resource)).toBe(
+        "This value can only contain lowercase alphanumeric characters or '-' or '.'"
+      )
+    })
+
+    test('should reject name starting with a non-alphanumeric character', () => {
+      const resource = { metadata: { namespace: 'default' } }
+      expect(validatePlacementName('-my-placement', resource)).toBe(
+        'This value must start with an alphanumeric character'
+      )
+    })
+
+    test('should reject name ending with a non-alphanumeric character', () => {
+      const resource = { metadata: { namespace: 'default' } }
+      expect(validatePlacementName('my-placement-', resource)).toBe(
+        'This value must end with an alphanumeric character'
       )
     })
   })
