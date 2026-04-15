@@ -338,6 +338,8 @@ export const getPulseStatusForArgoApp = (node: TopologyNodeWithStatus, isAppSet?
       },
       status: { health: { status: appStatus } },
     })
+  } else if (relatedApps.length === 0) {
+    return redPulse
   }
 
   let healthyCount = 0

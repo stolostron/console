@@ -23,7 +23,7 @@ jest.mock('../helpers/diagram-helpers', () => ({
     }
   }),
   addPropertyToList: jest.fn((list, data) => {
-    if (list && data) {
+    if (list && data !== undefined) {
       list.push(data)
     }
     return list

@@ -332,7 +332,7 @@ export type StatusCode = 0 | 1 | 2 | 3
 export type ArgoHealthStatus = 'Healthy' | 'Degraded' | 'Missing' | 'Progressing' | 'Unknown' | 'Suspended'
 
 // Pulse colors for node status visualization
-export type PulseColor = 'red' | 'green' | 'yellow' | 'orange' | 'blocked' | 'spinner'
+export type PulseColor = 'red' | 'green' | 'yellow' | 'orange' | 'blocked' | 'spinner' | 'sync'
 
 // Resource state types
 export type ResourceState =

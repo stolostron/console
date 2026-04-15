@@ -20,12 +20,17 @@ type EdgeProps = {
   WithTargetDragProps &
   WithRemoveConnectorProps
 
+/** Default is used for spinner, orange (pending), and sync — only dash edges for loading/pending, not git/chart sync. */
+function isPendingEdgeEndpoint(data: { status?: NodeStatus; specs?: { pulse?: string } } | undefined): boolean {
+  return data?.status === NodeStatus.default && data.specs?.pulse !== 'sync'
+}
+
 const StyledEdge: React.FunctionComponent<EdgeProps> = ({ element, dragging }) => {
   const startPoint = element.getStartPoint()
   const endPoint = element.getEndPoint()
   const sourceData = element.getSource().getData()
   const targetData = element.getTarget().getData()
-  const isPending = targetData?.status === NodeStatus.default || sourceData?.status === NodeStatus.default
+  const isPending = isPendingEdgeEndpoint(targetData) || isPendingEdgeEndpoint(sourceData)
   const isReversed = targetData?.specs?.isPairedInLayoutWithParent === true
 
   // Create path: straight line if horizontally aligned, otherwise curved

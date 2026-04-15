@@ -75,7 +75,7 @@ export const getNodePropery = (
  * Conditionally push an item into a list if both are defined.
  */
 export const addPropertyToList = <T>(list: T[] | undefined, data: T | undefined): T[] | undefined => {
-  if (list && data) {
+  if (list && data !== undefined) {
     list.push(data)
   }
 
