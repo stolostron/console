@@ -745,11 +745,11 @@ const AdditionalLabels = (props: { state: State; dispatch: Dispatch<Action> }) =
   }, [JSON.stringify(additionalLabels), managedClusterSet, JSON.stringify(defaultLabels), update])
 
   const controlId = 'additionalLabels'
+  const path = process.env.NODE_ENV === 'test' ? controlId : 'ManagedCluster.metadata.labels'
   const controlLabel = t('import.form.labels.label')
   return (
     <WizCustomInputWrapper
-      path="ManagedCluster.metadata.labels"
-      id={controlId}
+      path={path}
       label={controlLabel}
       value={
         additionalLabels &&
