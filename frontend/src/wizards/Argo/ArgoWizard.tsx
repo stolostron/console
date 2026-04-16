@@ -357,9 +357,9 @@ export function ArgoWizard(props: ArgoWizardProps) {
                     labelSelector: {
                       matchExpressions: [
                         {
-                          key: 'name',
+                          key: 'local-cluster',
                           operator: 'NotIn',
-                          values: [hubClusterName],
+                          values: ['true'],
                         },
                       ],
                     },
@@ -607,7 +607,6 @@ export function ArgoWizard(props: ArgoWizardProps) {
               clusterSetBindings={props.clusterSetBindings}
               createClusterSetCallback={props.createClusterSetCallback}
               isPullModel={isPullModel}
-              hubClusterName={hubClusterName}
             />
           </Step>
         )}
@@ -870,7 +869,6 @@ function ArgoWizardPlacementSection(props: {
   clusters: IResource[]
   createClusterSetCallback?: () => void
   isPullModel?: boolean
-  hubClusterName: string
 }) {
   const { t } = useTranslation()
   const resources = useItem() as IResource[]
@@ -922,9 +920,9 @@ function ArgoWizardPlacementSection(props: {
                                   labelSelector: {
                                     matchExpressions: [
                                       {
-                                        key: 'name',
+                                        key: 'local-cluster',
                                         operator: 'NotIn',
-                                        values: [props.hubClusterName],
+                                        values: ['true'],
                                       },
                                     ],
                                   },
