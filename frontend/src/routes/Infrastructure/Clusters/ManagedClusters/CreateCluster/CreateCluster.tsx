@@ -130,7 +130,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   const providerConnections = useRecoilValue(providerConnectionsValue)
   const ansibleCredentials = useRecoilValue(ansibleCredentialsValue)
   const { isACMAvailable } = useContext(PluginContext)
-  const templateEditorRef = useRef<null>()
+  const templateEditorRef = useRef<{ getResourceJSON: () => unknown } | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newSecret, setNewSecret] = useState<Secret>()
   const localHubName = useLocalHubName()
@@ -695,7 +695,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                   template={template}
                   portals={Portals}
                   createControl={{
-                    createResource: (resourceJSON, noRedirect) => {
+                    createResource: (resourceJSON: { createResources: IResource[] }, noRedirect: boolean) => {
                       createResource(resourceJSON, noRedirect)
                     },
                     cancelCreate,

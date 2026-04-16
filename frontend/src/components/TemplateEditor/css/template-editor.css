@@ -1,18 +1,18 @@
-.temptifly,
+.template-editor,
 .creation-view {
   height: 100%;
   display: flex;
   position: relative;
 }
-.temptifly .creation-view-split-container,
+.template-editor .creation-view-split-container,
 .creation-view .creation-view-split-container {
   width: 100%;
 }
-.temptifly .creation-view-split-container .creation-view-controls-container {
+.template-editor .creation-view-split-container .creation-view-controls-container {
   height: 100%;
   overflow-y: auto;
 }
-.temptifly .creation-view-split-container.showEditor .creation-view-controls-container-blurr,
+.template-editor .creation-view-split-container.showEditor .creation-view-controls-container-blurr,
 .creation-view .creation-view-split-container.showEditor .creation-view-controls-container-blurr {
   position: absolute;
   z-index: 1;
@@ -22,35 +22,35 @@
   height: 1em;
 }
 
-.temptifly .pf-v6-c-drawer__panel,
+.template-editor .pf-v6-c-drawer__panel,
 .creation-view .pf-v6-c-drawer__panel {
   transition: none;
 }
-.temptifly .creation-view-split-container.showEditor .creation-view-yaml,
+.template-editor .creation-view-split-container.showEditor .creation-view-yaml,
 .creation-view .creation-view-split-container.showEditor .creation-view-yaml {
   width: 100%;
   height: 100%;
   overflow: hidden;
   position: relative;
 }
-.temptifly .creation-view-split-container.showEditor .creation-view-yaml.hasTabs,
+.template-editor .creation-view-split-container.showEditor .creation-view-yaml.hasTabs,
 .creation-view .creation-view-split-container.showEditor .creation-view-yaml.hasTabs {
   height: calc(100% - 30px);
 }
-.temptifly .creation-view-split-container.showEditor .creation-view-yaml-notification,
+.template-editor .creation-view-split-container.showEditor .creation-view-yaml-notification,
 .creation-view .creation-view-split-container.showEditor .creation-view-yaml-notification {
   position: absolute;
   top: 0;
   right: 0;
   z-index: 1000;
 }
-.temptifly .creation-view-split-container.showEditor .creation-view-yaml .yamlEditorContainer,
+.template-editor .creation-view-split-container.showEditor .creation-view-yaml .yamlEditorContainer,
 .creation-view .creation-view-split-container.showEditor .creation-view-yaml .yamlEditorContainer {
   width: 100%;
   height: 100%;
 }
 
-.pf-v6-c-content .temptifly .pf-v6-c-wizard__toggle-list {
+.pf-v6-c-content .template-editor .pf-v6-c-wizard__toggle-list {
   margin-bottom: 0;
 }
 

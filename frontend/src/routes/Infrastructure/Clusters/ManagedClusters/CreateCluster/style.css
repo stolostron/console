@@ -2,20 +2,20 @@
   --pf-v5-c-page__main-wizard--BorderTopWidth: 0;
 }
 
-.pf-v6-c-content .temptifly.showEditor,
-.temptifly.showWizard {
+.pf-v6-c-content .template-editor.showEditor,
+.template-editor.showWizard {
   height: 100%;
   margin: 0;
   padding: 0;
 }
 
-.pf-v6-c-content .temptifly .creation-view-split-container.showEditor {
+.pf-v6-c-content .template-editor .creation-view-split-container.showEditor {
   margin: 0;
   padding: 0;
 }
 
-.pf-v6-c-content .temptifly .creation-view-split-container.showEditor .creation-view-controls-container,
-.pf-v6-c-content .temptifly.showWizard .creation-view-controls-container {
+.pf-v6-c-content .template-editor .creation-view-split-container.showEditor .creation-view-controls-container,
+.pf-v6-c-content .template-editor.showWizard .creation-view-controls-container {
   padding: 0;
   margin: 0 -10px 0 0;
   height: 100%;
@@ -32,22 +32,11 @@
   height: 100%;
 }
 
-.temptifly-controls-singleselect .tf--list-box,
-.temptifly-controls-combobox .tf--list-box,
-.temptifly-controls-treeselect .tf--list-box,
+.template-editor-controls-singleselect .tf--list-box,
+.template-editor-controls-combobox .tf--list-box,
+.template-editor-controls-treeselect .tf--list-box,
 .creation-view-controls-singleselect .tf--list-box,
 .creation-view-controls-combobox .tf--list-box,
 .creation-view-controls-treeselect .tf--list-box {
-  box-shadow: unset !important;
-}
-
-.temptifly-controls-labels-container,
-.creation-view-controls-labels-container {
-  border-style: solid;
-  border-width: var(--pf-v5-global--BorderWidth--sm);
-  border-top-color: var(--pf-v5-global--BorderColor--300);
-  border-right-color: var(--pf-v5-global--BorderColor--300);
-  border-bottom-color: var(--pf-v5-global--BorderColor--200);
-  border-left-color: var(--pf-v5-global--BorderColor--300);
   box-shadow: unset !important;
 }

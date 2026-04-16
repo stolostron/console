@@ -3,11 +3,8 @@
 import { TFunction } from 'react-i18next'
 import { ReactNode } from 'react'
 
-export function useDynamicPropertyValues<
-  Control extends Record<string, ((control: Control, controlData: unknown, t: TFunction) => ReactNode) | ReactNode>,
-  DynamicProperty extends keyof Control,
->(
-  control: Control,
+export function useDynamicPropertyValues<DynamicProperty extends string>(
+  control: Record<string, unknown>,
   controlData: unknown,
   t: TFunction,
   dynamicProperties: DynamicProperty[]
@@ -16,7 +13,11 @@ export function useDynamicPropertyValues<
   dynamicProperties.forEach((key) => {
     const property = control[key]
     if (typeof property === 'function') {
-      values[key] = property(control, controlData, t)
+      values[key] = (property as (c: Record<string, unknown>, cd: unknown, tf: TFunction) => ReactNode)(
+        control,
+        controlData,
+        t
+      )
     } else {
       values[key] = property as ReactNode
     }

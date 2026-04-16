@@ -4,8 +4,8 @@
 import IPCIDR from 'ip-cidr'
 import { Address4, Address6 } from 'ip-address'
 import { TFunction } from 'react-i18next'
-import { getControlByID } from '../../../lib/temptifly-utils'
-import { VALID_DNS_NAME_TESTER, validateHttpsURL, validateNoProxy } from '../../../lib/validation'
+import { getControlByID } from '~/lib/temptifly-utils'
+import { VALID_DNS_NAME_TESTER, validateHttpsURL, validateNoProxy } from '~/lib/validation'
 
 type Tester = {
   test: (value: string) => boolean

@@ -1,9 +1,9 @@
-.temptifly .tf--finish-details .tf--finish-step-title,
+.template-editor .tf--finish-details .tf--finish-step-title,
 .creation-view .tf--finish-details .tf--finish-step-title {
   display: flex;
   font-size: 16px;
 }
-.temptifly .tf--finish-details .tf--finish-step-circle,
+.template-editor .tf--finish-details .tf--finish-step-circle,
 .creation-view .tf--finish-details .tf--finish-step-circle {
   display: flex;
   align-items: center;
@@ -17,12 +17,12 @@
   color: black;
   font-size: 14px;
 }
-.temptifly .tf--finish-details .tf--finish-step-section,
+.template-editor .tf--finish-details .tf--finish-step-section,
 .creation-view .tf--finish-details .tf--finish-step-section {
   padding: 10px 0 20px 40px;
   grid-template-columns: 375px;
 }
-.temptifly .tf--finish-comment,
+.template-editor .tf--finish-comment,
 .creation-view .tf--finish-comment {
   border: 1px solid #bfe2f4;
   background-color: #e8f1fa;
@@ -30,23 +30,23 @@
   margin: 5px;
   line-height: 24px;
 }
-.temptifly .tf--finish-step-prompt,
+.template-editor .tf--finish-step-prompt,
 .creation-view .tf--finish-step-prompt {
   font-weight: bold;
   font-size: 14px;
   margin-right: 20px;
 }
-.temptifly .tf--finish-step-table,
+.template-editor .tf--finish-step-table,
 .creation-view .tf--finish-step-table {
   display: grid;
   padding: 10px 0 20px 40px;
   grid-template-columns: 150px;
 }
-.temptifly .tf--finish-step-table > div,
+.template-editor .tf--finish-step-table > div,
 .creation-view .tf--finish-step-table > div {
   word-break: keep-all;
 }
-.temptifly .tf--finish-step-button,
+.template-editor .tf--finish-step-button,
 .creation-view .tf--finish-step-button {
   display: flex;
   justify-content: space-between;

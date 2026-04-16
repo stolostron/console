@@ -1,14 +1,14 @@
-.temptifly .pf-v6-c-number-input,
+.template-editor .pf-v6-c-number-input,
 .creation-view .pf-v6-c-number-input {
   width: 180px;
 }
-.temptifly .pf-v6-c-number-input .pf-v6-c-form-control,
+.template-editor .pf-v6-c-number-input .pf-v6-c-form-control,
 .creation-view .pf-v6-c-number-input .pf-v6-c-form-control {
   text-align: right;
 }
-.temptifly input[type='number']::-webkit-inner-spin-button,
+.template-editor input[type='number']::-webkit-inner-spin-button,
 .creation-view input[type='number']::-webkit-inner-spin-button,
-.temptifly input[type='number']::-webkit-outer-spin-button,
+.template-editor input[type='number']::-webkit-outer-spin-button,
 .creation-view input[type='number']::-webkit-outer-spin-button {
   text-align: right;
   -webkit-appearance: none;

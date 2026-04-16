@@ -20,7 +20,7 @@ class YamlParseException {
 }
 class YamlInline {
   parse(value) {
-    var result = null
+    let result = null
     value = this.trim(value)
 
     if (0 == value.length) {
@@ -52,16 +52,16 @@ class YamlInline {
     if (i == undefined) i = 0
     if (evaluate == undefined) evaluate = true
 
-    var output = null
-    var pos = null
-    var matches = null
+    let output = null
+    let pos = null
+    let matches = null
 
     if (this.inArray(scalar[i], stringDelimiters)) {
       // quoted scalar
       output = this.parseQuotedScalar(scalar, i)
       i = this.i
       if (null !== delimiters) {
-        var tmp = scalar.substr(i).replace(/^\s+/, '')
+        const tmp = scalar.substr(i).replace(/^\s+/, '')
         if (!this.inArray(tmp.charAt(0), delimiters)) {
           throw new YamlParseException(`Unexpected characters (${scalar.substr(i)}).`)
         }
@@ -89,7 +89,7 @@ class YamlInline {
       }
 
       // unended inline string
-      var end = output.slice(-1)
+      const end = output.slice(-1)
       if (end === '}' || end === ']') {
         throw new YamlParseException(`Malformed inline YAML string (${scalar}).`)
       }
@@ -102,16 +102,16 @@ class YamlInline {
   }
 
   parseQuotedScalar(scalar, i) {
-    var matches = null
+    let matches = null
     //var item = /^(.*?)['"]\s*(?:[,:]|[}\]]\s*,)/.exec((scalar+'').substring(i))[1];
 
     if (!(matches = new RegExp('^' + YamlInline.REGEX_QUOTED_STRING).exec((scalar + '').substring(i)))) {
       throw new YamlParseException(`Malformed inline YAML string (${(scalar + '').substring(i)}).`)
     }
 
-    var output = matches[0].substr(1, matches[0].length - 2)
+    let output = matches[0].substr(1, matches[0].length - 2)
 
-    var unescaper = new YamlUnescaper()
+    const unescaper = new YamlUnescaper()
 
     if ('"' == (scalar + '').charAt(i)) {
       output = unescaper.unescapeDoubleQuotedString(output)
@@ -128,8 +128,8 @@ class YamlInline {
   parseSequence(sequence, i) {
     if (i == undefined) i = 0
 
-    var output = []
-    var len = sequence.length
+    const output = []
+    const len = sequence.length
     i += 1
 
     // [foo, bar, ...]
@@ -179,11 +179,11 @@ class YamlInline {
 
   parseMapping(mapping, i) {
     if (i == undefined) i = 0
-    var output = {}
-    var len = mapping.length
+    const output = {}
+    const len = mapping.length
     i += 1
-    var done = false
-    var doContinue = false
+    let done = false
+    let doContinue = false
 
     // {foo: bar, bar:foo, ...}
     while (i < len) {
@@ -203,7 +203,7 @@ class YamlInline {
       if (doContinue) continue
 
       // key
-      var key = this.parseScalar(mapping, [':', ' '], ['"', "'"], i, false)
+      const key = this.parseScalar(mapping, [':', ' '], ['"', "'"], i, false)
       i = this.i
 
       // value
@@ -251,8 +251,8 @@ class YamlInline {
   evaluateScalar(scalar) {
     scalar = this.trim(scalar)
 
-    var raw = null
-    var cast = null
+    let raw = null
+    let cast = null
 
     if ('null' == scalar.toLowerCase() || '' == scalar || '~' == scalar) return null
     if ((scalar + '').indexOf('!str ') == 0) return ('' + scalar).substring(5)
@@ -303,8 +303,8 @@ class YamlInline {
   }
 
   inArray(key, tab) {
-    var i
-    var len = tab.length
+    let i
+    const len = tab.length
     for (i = 0; i < len; i++) {
       if (key == tab[i]) return true
     }
@@ -312,9 +312,9 @@ class YamlInline {
   }
 
   getKeys(tab) {
-    var ret = []
+    const ret = []
 
-    for (var name in tab) {
+    for (const name in tab) {
       if (Object.prototype.hasOwnProperty.call(tab, name)) {
         ret.push(name)
       }
@@ -334,7 +334,7 @@ class YamlInline {
   }
 
   strtotime(h, b) {
-    var f,
+    let f,
       c,
       g,
       k,
@@ -354,7 +354,7 @@ class YamlInline {
       }
     }
     h = h.toLowerCase()
-    var e = {
+    const e = {
       day: {
         sun: 0,
         mon: 1,
@@ -366,8 +366,8 @@ class YamlInline {
       },
       mon: ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'],
     }
-    var a = function (i) {
-      var o = i[2] && i[2] === 'ago'
+    const a = function (i) {
+      const o = i[2] && i[2] === 'ago'
       var n = (n = i[0] === 'last' ? -1 : 1) * (o ? -1 : 1)
       switch (i[0]) {
         case 'last':
@@ -395,9 +395,9 @@ class YamlInline {
               if (i[0] === 'mon' && i[1] === 'month') {
                 b.setMonth(b.getMonth() + n)
               } else {
-                var l = e.day[i[1].substring(0, 3)]
+                const l = e.day[i[1].substring(0, 3)]
                 if (typeof l !== 'undefined') {
-                  var p = l - b.getDay()
+                  let p = l - b.getDay()
                   if (p === 0) {
                     p = 7 * n
                   } else {
@@ -470,7 +470,7 @@ class YamlInline {
             : k[0] + ''
       return Number.parseInt(this.strtotime(k[2] + ' ' + k[1] + ' ' + k[0] + ' ' + g[2]) + (g[4] ? g[4] : ''), 10)
     }
-    var j =
+    const j =
       '([+-]?\\d+\\s(years?|months?|weeks?|days?|hours?|min|minutes?|sec|seconds?|sun\\.?|sunday|mon\\.?|monday|tue\\.?|tuesday|wed\\.?|wednesday|thu\\.?|thursday|fri\\.?|friday|sat\\.?|saturday)|(last|next)\\s(years?|months?|weeks?|days?|hours?|min|minutes?|sec|seconds?|sun\\.?|sunday|mon\\.?|monday|tue\\.?|tuesday|wed\\.?|wednesday|thu\\.?|thursday|fri\\.?|friday|sat\\.?|saturday))(\\sago)?'
     g = h.match(new RegExp(j, 'gi'))
     if (g === null) {
@@ -492,7 +492,7 @@ class YamlUnescaper {
   }
 
   unescapeDoubleQuotedString(value) {
-    var callback = function (m) {
+    const callback = function (m) {
       return new YamlUnescaper().unescapeCharacter(m)
     }
 
@@ -552,7 +552,7 @@ class YamlUnescaper {
   }
 
   pack(B) {
-    var g = 0,
+    let g = 0,
       o = 1,
       m = '',
       z = 0,
@@ -627,15 +627,15 @@ class YamlParser {
     this.currentLine = ''
     this.lines = this.cleanup(value).split('\n')
     if (!this.lined) {
-      var offset = (row || 0) + this.offset // add this.offset in case leading comments are removed by cleanup
+      const offset = (row || 0) + this.offset // add this.offset in case leading comments are removed by cleanup
       for (var i = 0; i < this.lines.length; i++) {
         this.lines[i] += ' #' + (i + offset)
       }
       this.lined = true
     }
 
-    var data = null
-    var context = null
+    let data = null
+    let context = null
 
     while (this.moveToNextLine()) {
       if (this.isCurrentLineEmpty()) {
@@ -651,18 +651,18 @@ class YamlParser {
         )
       }
 
-      var isRef = false
-      var isInPlace = false
-      var isProcessed = false
-      var values = null
-      var matches = null
-      var c = null
-      var parser = null
-      var block = null
-      var key = null
-      var parsed = null
-      var len = null
-      var reverse = null
+      let isRef = false
+      let isInPlace = false
+      let isProcessed = false
+      let values = null
+      let matches = null
+      let c = null
+      let parser = null
+      let block = null
+      let key = null
+      let parsed = null
+      let len = null
+      let reverse = null
 
       let isSequence = false
       let isMapping = false
@@ -739,9 +739,9 @@ class YamlParser {
             }
 
             //  array element
-            var blockLines = block.trim().split('\n')
-            var b = this.getRealLineNb(blockLines[0])
-            var e = this.getRealLineNb(blockLines.pop())
+            const blockLines = block.trim().split('\n')
+            const b = this.getRealLineNb(blockLines[0])
+            const e = this.getRealLineNb(blockLines.pop())
 
             data.push({
               $r: c,
@@ -806,7 +806,7 @@ class YamlParser {
             parsed = parser.parse(value)
             this.refs = parser.refs
 
-            var merged = []
+            let merged = []
             if (!this.isObject(parsed)) {
               throw new YamlParseException(
                 'YAML merge keys used with a scalar value instead of an array',
@@ -818,7 +818,7 @@ class YamlParser {
               reverse = this.reverseArray(parsed)
               len = reverse.length
               for (i = 0; i < len; i++) {
-                var parsedItem = reverse[i]
+                const parsedItem = reverse[i]
                 if (!this.isObject(parsedItem)) {
                   throw new YamlParseException(
                     'Merge items must be arrays',
@@ -906,7 +906,7 @@ class YamlParser {
           }
 
           if (this.isObject(value)) {
-            var first = value[0]
+            const first = value[0]
             if (typeof value == 'string' && '*' == first.charAt(0)) {
               data = []
               len = value.length
@@ -936,13 +936,13 @@ class YamlParser {
   }
 
   getRealCurrentLineNb(obj) {
-    var inxNb = this.currentLine.lastIndexOf('#')
+    const inxNb = this.currentLine.lastIndexOf('#')
     if (inxNb !== -1) {
-      var row = Number.parseInt(this.currentLine.substr(inxNb + 1), 10)
+      const row = Number.parseInt(this.currentLine.substr(inxNb + 1), 10)
       if (obj) {
         obj.$r = row
         obj.$l = 1
-        var inxCmt = this.currentLine.lastIndexOf('#', inxNb - 1)
+        const inxCmt = this.currentLine.lastIndexOf('#', inxNb - 1)
         if (inxCmt !== -1) {
           obj.$cmt = this.currentLine.substring(inxCmt + 1, inxNb - 1).trim()
         }
@@ -955,7 +955,7 @@ class YamlParser {
   }
 
   getRealLineNb(line) {
-    var row = line.lastIndexOf('#')
+    let row = line.lastIndexOf('#')
     if (row !== -1) {
       row = Number.parseInt(line.substr(row + 1), 10)
     }
@@ -968,14 +968,14 @@ class YamlParser {
 
   getNextEmbedBlock(indentation) {
     this.moveToNextLine()
-    var newIndent = null
-    var indent = null
+    let newIndent = null
+    let indent = null
 
     // if indentation not defined, get indentation from current line
     if (!this.isDefined(indentation)) {
       newIndent = this.getCurrentLineIndentation()
 
-      var unindentedEmbedBlock = this.isStringUnIndentedCollectionItem(this.currentLine)
+      const unindentedEmbedBlock = this.isStringUnIndentedCollectionItem(this.currentLine)
 
       if (!this.isCurrentLineEmpty() && 0 == newIndent && !unindentedEmbedBlock) {
         throw new YamlParseException(
@@ -988,21 +988,21 @@ class YamlParser {
       newIndent = indentation
     }
 
-    var continuationIndent = -1
-    var isUnindentedCollection = this.isStringUnIndentedCollectionItem(this.currentLine)
+    let continuationIndent = -1
+    const isUnindentedCollection = this.isStringUnIndentedCollectionItem(this.currentLine)
     if (isUnindentedCollection === true) {
       continuationIndent = 1 + /^-((\s+)(.+?))?\s*$/.exec(this.currentLine)[2].length
     }
 
-    var eol = null
-    var num = null
-    var data = [this.currentLine.substr(newIndent)]
+    let eol = null
+    let num = null
+    const data = [this.currentLine.substr(newIndent)]
     while (this.moveToNextLine()) {
       // building up line?
-      var last = data.length - 1
+      const last = data.length - 1
       if (eol) {
-        var sb = eol === '\\'
-        var lastLine = this.lastLineRaw.trim()
+        const sb = eol === '\\'
+        let lastLine = this.lastLineRaw.trim()
         if (sb) {
           if (lastLine[0] === '\\') {
             lastLine = lastLine.substr(1) // remove starting \
@@ -1011,7 +1011,7 @@ class YamlParser {
           lastLine = ' ' + lastLine
         }
         data[last] += lastLine
-        var eb = lastLine.endsWith(eol)
+        const eb = lastLine.endsWith(eol)
         if ((sb && !eb) || (!sb && eb)) {
           data[last] += ' #' + num
           //eol = null
@@ -1048,7 +1048,7 @@ class YamlParser {
       }
 
       indent = this.getCurrentLineIndentation()
-      var matches = /^( *)$/.exec(this.currentLine)
+      const matches = /^( *)$/.exec(this.currentLine)
       if (matches) {
         // empty line
         data.push(matches[1])
@@ -1076,12 +1076,12 @@ class YamlParser {
       if (str.endsWith('\\')) {
         return '\\'
       } else {
-        var arr = str.split(':')
+        const arr = str.split(':')
         if (arr.length >= 2) {
           if (arr[0].indexOf("'") === -1 && arr[0].indexOf('"') === -1) {
-            var val = arr[1].trim()
-            var ci = str.indexOf('#')
-            var chr = this.getEndOfLineCharacterHelper(str, ci, val, '{', '}')
+            const val = arr[1].trim()
+            const ci = str.indexOf('#')
+            let chr = this.getEndOfLineCharacterHelper(str, ci, val, '{', '}')
             if (!chr) chr = this.getEndOfLineCharacterHelper(str, ci, val, '[', ']')
             return chr
           }
@@ -1093,7 +1093,7 @@ class YamlParser {
 
   getEndOfLineCharacterHelper(str, ci, val, beg, end) {
     // if starts with brace and end brace is missing or in past a comment (#)
-    var bi = str.indexOf(end)
+    const bi = str.indexOf(end)
     if (val.length > 0 && (bi === -1 || (ci !== -1 && bi > ci))) {
       if (val[0] === beg) {
         return end
@@ -1111,7 +1111,7 @@ class YamlParser {
     this.lastLineNum = this.getRealCurrentLineNb()
     this.currentLineNb++
     this.currentLine = this.currentLineRaw = this.lines[this.currentLineNb]
-    var inx = this.currentLineRaw.lastIndexOf('#')
+    const inx = this.currentLineRaw.lastIndexOf('#')
     if (inx !== -1) {
       this.currentLineRaw = this.currentLineRaw.substr(0, inx - 1)
     }
@@ -1122,7 +1122,7 @@ class YamlParser {
   moveToPreviousLine() {
     this.currentLineNb--
     this.currentLine = this.currentLineRaw = this.lines[this.currentLineNb]
-    var inx = this.currentLineRaw.lastIndexOf('#')
+    const inx = this.currentLineRaw.lastIndexOf('#')
     if (inx !== -1) {
       this.currentLineRaw = this.currentLineRaw.substr(0, inx - 1)
     }
@@ -1146,14 +1146,14 @@ class YamlParser {
       return this.refs[value]
     }
 
-    var matches = /^(\||>)(\+|-|\d+|\+\d+|-\d+|\d+\+|\d+-)?( +#.*)?$/.exec(value)
+    let matches = /^(\||>)(\+|-|\d+|\+\d+|-\d+|\d+\+|\d+-)?( +#.*)?$/.exec(value)
     if (matches) {
       matches = {
         separator: matches[1],
         modifiers: matches[2],
         comments: matches[3],
       }
-      var modifiers = this.isDefined(matches.modifiers) ? matches.modifiers : ''
+      const modifiers = this.isDefined(matches.modifiers) ? matches.modifiers : ''
 
       return this.parseFoldedScalar(
         matches.separator,
@@ -1177,10 +1177,10 @@ class YamlParser {
     if (indentation == undefined) indentation = 0
 
     separator = '|' == separator ? '\n' : ' '
-    var text = ''
-    var diff = null
+    let text = ''
+    let diff = null
 
-    var notEOF = this.moveToNextLine()
+    let notEOF = this.moveToNextLine()
 
     while (notEOF && this.isCurrentLineBlank()) {
       text += '\n'
@@ -1192,7 +1192,7 @@ class YamlParser {
       return ''
     }
 
-    var matches = null
+    let matches = null
     if (
       !(matches = new RegExp('^(' + (indentation ? this.strRepeat(' ', indentation) : ' +') + ')(.*)$').exec(
         this.currentLineRaw
@@ -1208,8 +1208,8 @@ class YamlParser {
       text: matches[2],
     }
 
-    var textIndent = matches.indent
-    var previousIndent = 0
+    const textIndent = matches.indent
+    let previousIndent = 0
 
     text += matches.text + separator
     while (this.currentLineNb + 1 < this.lines.length) {
@@ -1260,8 +1260,8 @@ class YamlParser {
   }
 
   isNextLineIndented() {
-    var currentIndentation = this.getCurrentLineIndentation()
-    var notEOF = this.moveToNextLine()
+    const currentIndentation = this.getCurrentLineIndentation()
+    let notEOF = this.moveToNextLine()
 
     while (notEOF && this.isCurrentLineEmpty()) {
       notEOF = this.moveToNextLine()
@@ -1271,7 +1271,7 @@ class YamlParser {
       return false
     }
 
-    var ret = false
+    let ret = false
     if (this.getCurrentLineIndentation() <= currentIndentation) {
       ret = true
     }
@@ -1290,7 +1290,7 @@ class YamlParser {
   }
 
   isCurrentLineComment() {
-    var ltrimmedLine = this.currentLine.replaceAll(/^ +/g, '')
+    const ltrimmedLine = this.currentLine.replaceAll(/^ +/g, '')
     return ltrimmedLine.charAt(0) == '#'
   }
 
@@ -1302,8 +1302,8 @@ class YamlParser {
     }
 
     // strip YAML header
-    var count = 0
-    var regex = /^%YAML[: ][\d.]+.*\n/
+    let count = 0
+    let regex = /^%YAML[: ][\d.]+.*\n/
     while (regex.test(value)) {
       value = value.replace(regex, '')
       count++
@@ -1337,8 +1337,8 @@ class YamlParser {
   }
 
   isNextLineUnIndentedCollection() {
-    var currentIndentation = this.getCurrentLineIndentation()
-    var notEOF = this.moveToNextLine()
+    const currentIndentation = this.getCurrentLineIndentation()
+    let notEOF = this.moveToNextLine()
 
     while (notEOF && this.isCurrentLineEmpty()) {
       notEOF = this.moveToNextLine()
@@ -1348,7 +1348,7 @@ class YamlParser {
       return false
     }
 
-    var ret = false
+    let ret = false
     if (
       this.getCurrentLineIndentation() == currentIndentation &&
       this.isStringUnIndentedCollectionItem(this.currentLine)
@@ -1378,9 +1378,9 @@ class YamlParser {
   }
 
   reverseArray(input) {
-    var result = []
-    var len = input.length
-    for (var i = len - 1; i >= 0; i--) {
+    const result = []
+    const len = input.length
+    for (let i = len - 1; i >= 0; i--) {
       result.push(input[i])
     }
 
@@ -1388,8 +1388,8 @@ class YamlParser {
   }
 
   merge(a, b) {
-    var c = {}
-    var i
+    const c = {}
+    let i
 
     for (i in a) {
       if (/^\d+$/.test(i)) c.push(a)
@@ -1404,8 +1404,8 @@ class YamlParser {
   }
 
   strRepeat(str, count) {
-    var i
-    var result = ''
+    let i
+    let result = ''
     for (i = 0; i < count; i++) result += str
     return result
   }

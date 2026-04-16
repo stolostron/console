@@ -11,7 +11,7 @@
   box-shadow: var(--pf-v5-global--BoxShadow--sm);
 }
 .pf-topology-control-bar__button.pf-v6-c-button.pf-m-tertiary:not(.pf-m-disabled) {
-  background-color: var(--pf-v5-global--BackgroundColor--100);
+  background-color: var(--pf-t--global--background--color--100);
 }
 .pf-topology-control-bar__button.pf-v6-c-button.pf-m-tertiary:after {
   display: none;

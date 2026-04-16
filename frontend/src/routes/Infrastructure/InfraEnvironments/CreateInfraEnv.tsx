@@ -131,7 +131,7 @@ const CreateInfraEnv: React.FC = () => {
               template={template}
               portals={Portals}
               createControl={{
-                createResource: (resourceJSON) => {
+                createResource: (resourceJSON: { createResources: unknown[] }) => {
                   createInfraEnv(resourceJSON)
                 },
                 cancelCreate: () => navigate(NavigationPath.infraEnvironments),
