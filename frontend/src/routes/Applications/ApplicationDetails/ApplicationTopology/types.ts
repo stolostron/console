@@ -7,7 +7,6 @@ import {
   Metadata,
   Placement,
   PlacementDecision,
-  PlacementRule,
   SubscriptionReport,
   Subscription,
   IResource,
@@ -168,14 +167,8 @@ export interface PlacementDecisionKind {
   [key: string]: unknown
 }
 
-// Minimal Placement and PlacementRule resources
+// Minimal Placement resource
 export interface PlacementResource {
-  kind?: string
-  metadata: { name: string; namespace: string; [key: string]: unknown }
-  [key: string]: unknown
-}
-
-export interface PlacementRuleResource {
   kind?: string
   metadata: { name: string; namespace: string; [key: string]: unknown }
   [key: string]: unknown
@@ -223,7 +216,7 @@ export interface SubscriptionKind {
   posthooks?: AnsibleJob[]
   channels?: ChannelKind[]
   decisions?: PlacementDecisionKind[]
-  placements?: Array<Placement | PlacementRule>
+  placements?: Placement[]
   deployablePaths?: string[]
   isChucked?: boolean
   rules?: unknown[]
@@ -274,7 +267,6 @@ export interface RecoilStates {
   placements: Placement[]
   subscriptions?: Subscription[]
   channels?: Channel[]
-  placementRules?: PlacementRule[]
   subscriptionReports?: SubscriptionReport[]
 }
 

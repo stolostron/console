@@ -433,13 +433,11 @@ function createRepoFromArgoSource(source: any) {
 
 export default function ApplicationsOverview() {
   const { t } = useTranslation()
-  const { applicationsState, channelsState, placementRulesState, placementsState, subscriptionsState } =
-    useSharedAtoms()
+  const { applicationsState, channelsState, placementsState, subscriptionsState } = useSharedAtoms()
 
   const applications = useRecoilValue(applicationsState)
   const subscriptions = useRecoilValue(subscriptionsState)
   const channels = useRecoilValue(channelsState)
-  const placementRules = useRecoilValue(placementRulesState)
   const placements = useRecoilValue(placementsState)
   const { acmExtensions } = useContext(PluginContext)
   const { dataContext } = useContext(PluginContext)
@@ -1039,15 +1037,7 @@ export default function ApplicationsOverview() {
           click: () => {
             const appChildResources =
               resource.kind === ApplicationKind
-                ? getAppChildResources(
-                    resource,
-                    applications,
-                    subscriptions,
-                    placementRules,
-                    placements,
-                    channels,
-                    localCluster
-                  )
+                ? getAppChildResources(resource, applications, subscriptions, placements, channels, localCluster)
                 : [[], []]
             /* istanbul ignore else */
             const appSetPlacementData = (resource as IUIResource)?.uidata?.appSetPlacementData ?? ['', []]
@@ -1120,7 +1110,6 @@ export default function ApplicationsOverview() {
       canDeleteApplication,
       applications,
       subscriptions,
-      placementRules,
       placements,
       channels,
       canCreateApplication,

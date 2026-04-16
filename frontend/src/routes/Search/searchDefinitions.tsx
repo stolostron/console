@@ -35,7 +35,6 @@ export interface ResourceDefinitions {
   persistentvolumeclaim: Record<'columns', SearchColumnDefinition[]>
   placementbinding: Record<'columns', SearchColumnDefinition[]>
   placementpolicy: Record<'columns', SearchColumnDefinition[]>
-  placementrule: Record<'columns', SearchColumnDefinition[]>
   pod: Record<'columns', SearchColumnDefinition[]>
   policy: Record<'columns', SearchColumnDefinition[]>
   policyreport: Record<'columns', SearchColumnDefinition[]>
@@ -263,9 +262,6 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
         AddColumn('created', t('Created')),
         AddColumn('labels', t('Labels')),
       ]),
-    },
-    placementrule: {
-      columns: AddColumns(AddDefaultColumns(t, [AddColumn('replicas', t('Replicas'))])),
     },
     pod: {
       columns: AddColumns(

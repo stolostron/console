@@ -243,10 +243,7 @@ function getSubscriptionClusters(
         const placementRef = (sub as Subscription).spec?.placement?.placementRef
         const placement = placementDecisions.find(
           (placementDecision) =>
-            placementDecision.metadata?.labels?.['cluster.open-cluster-management.io/placement'] ===
-              placementRef?.name ||
-            placementDecision.metadata?.labels?.['cluster.open-cluster-management.io/placementrule'] ===
-              placementRef?.name
+            placementDecision.metadata?.labels?.['cluster.open-cluster-management.io/placement'] === placementRef?.name
         )
         const decisions = (placement as PlacementDecision)?.status?.decisions
         if (decisions) {

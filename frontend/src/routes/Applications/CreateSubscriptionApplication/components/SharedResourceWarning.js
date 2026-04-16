@@ -15,13 +15,10 @@ export const RESOURCE_TYPES = {
   HCM_APPLICATIONS: { name: 'HCMApplication', list: 'HCMApplicationList' },
   HCM_CHANNELS: { name: 'HCMChannel', list: 'HCMChannelList' },
   HCM_SUBSCRIPTIONS: { name: 'HCMSubscription', list: 'HCMSubscriptionList' },
-  HCM_PLACEMENT_RULES: {
-    name: 'HCMPlacementRule',
-    list: 'HCMPlacementRuleList',
-  },
+  HCM_PLACEMENTS: { name: 'HCMPlacement', list: 'HCMPlacementList' },
 }
 
-const CHILD_RESOURCE_TYPES = ['Application', 'Subscription', 'PlacementRule', 'Channel']
+const CHILD_RESOURCE_TYPES = ['Application', 'Subscription', 'Placement', 'Channel']
 
 const getSelfLinks = (control) => {
   const channel = _.get(control, 'groupControlData', []).find((d) => d.id === 'channel')
@@ -35,8 +32,8 @@ const getResourceKind = (resourceType) => {
     case 'HCMSubscription':
       kind = 'Subscription'
       break
-    case 'HCMPlacementRule':
-      kind = 'PlacementRule'
+    case 'HCMPlacement':
+      kind = 'Placement'
       break
   }
   return kind
@@ -53,9 +50,9 @@ const getResourceNameAndNamespace = (resourceType, selfLinks) => {
       selfLinksKey = 'Application'
       selfLinkPlural = 'applications'
       break
-    case 'HCMPlacementRule':
-      selfLinksKey = 'PlacementRule'
-      selfLinkPlural = 'placementrules'
+    case 'HCMPlacement':
+      selfLinksKey = 'Placement'
+      selfLinkPlural = 'placements'
       break
   }
   const selfLink = _.get(selfLinks, selfLinksKey, '')
@@ -95,7 +92,7 @@ const SharedResourceWarning = ({ resourceType, control }) => {
     RESOURCE_TYPES.HCM_APPLICATIONS,
     selfLinks
   )
-  const [prNamespace, prName] = getResourceNameAndNamespace(RESOURCE_TYPES.HCM_PLACEMENT_RULES, selfLinks)
+  const [placementNamespace, placementName] = getResourceNameAndNamespace(RESOURCE_TYPES.HCM_PLACEMENTS, selfLinks)
   const [resourceNamespace, resourceName] = getResourceNameAndNamespace(resourceType, selfLinks)
   const { t } = useTranslation()
   useEffect(() => {
@@ -172,8 +169,8 @@ const SharedResourceWarning = ({ resourceType, control }) => {
     control.editMode,
     applicationName,
     applicationNamespace,
-    prName,
-    prNamespace,
+    placementName,
+    placementNamespace,
     resourceName,
     resourceNamespace,
     resourceType,

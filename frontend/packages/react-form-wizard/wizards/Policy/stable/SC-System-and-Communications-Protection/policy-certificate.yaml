@@ -29,21 +29,20 @@ metadata:
   name: binding-policy-certificate
 placementRef:
   name: placement-policy-certificate
-  kind: PlacementRule
-  apiGroup: apps.open-cluster-management.io
+  kind: Placement
+  apiGroup: cluster.open-cluster-management.io
 subjects:
   - name: policy-certificate
     kind: Policy
     apiGroup: policy.open-cluster-management.io
 ---
-apiVersion: apps.open-cluster-management.io/v1
-kind: PlacementRule
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
 metadata:
   name: placement-policy-certificate
 spec:
-  clusterConditions:
-    - status: 'True'
-      type: ManagedClusterConditionAvailable
-  clusterSelector:
-    matchExpressions:
-      - { key: environment, operator: In, values: ['dev'] }
+  predicates:
+    - requiredClusterSelector:
+        labelSelector:
+          matchExpressions:
+            - { key: environment, operator: In, values: ['dev'] }

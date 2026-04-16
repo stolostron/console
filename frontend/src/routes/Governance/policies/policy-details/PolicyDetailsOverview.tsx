@@ -21,8 +21,6 @@ import {
   Placement,
   PlacementDecision,
   PlacementDecisionStatus,
-  PlacementRule,
-  PlacementRuleStatus,
   Policy,
   PolicyAutomation,
   PolicyAutomationDefinition,
@@ -48,7 +46,7 @@ interface TableData {
   apiVersion: string
   kind: string
   metadata: Metadata
-  status: PlacementRuleStatus | PlacementDecisionStatus
+  status: PlacementDecisionStatus
   policy: Policy
 }
 
@@ -59,7 +57,6 @@ export default function PolicyDetailsOverview() {
   const {
     placementBindingsState,
     placementDecisionsState,
-    placementRulesState,
     placementsState,
     policyAutomationState,
     policySetsState,
@@ -68,7 +65,6 @@ export default function PolicyDetailsOverview() {
   const placements = useRecoilValue(placementsState)
   const policySets = useRecoilValue(policySetsState)
   const placementBindings = useRecoilValue(placementBindingsState)
-  const placementRules = useRecoilValue(placementRulesState)
   const placementDecisions = useRecoilValue(placementDecisionsState)
   const policyAutomations = useRecoilValue(policyAutomationState)
   const settings = useRecoilValue(settingsState)
@@ -108,7 +104,7 @@ export default function PolicyDetailsOverview() {
   )
 
   const getPlacementMatches = useCallback(
-    function getPlacementMatches<T extends Placement | PlacementRule>(
+    function getPlacementMatches<T extends Placement>(
       policy: Policy,
       placementResources: T[],
       placementDecisions: PlacementDecision[]
@@ -123,31 +119,18 @@ export default function PolicyDetailsOverview() {
           (matches = [...matches, ...getPlacementsForResource(resource, placementBindings, placementResources)])
       )
       return matches.map((placement: T) => {
-        if (placement.kind === 'Placement') {
-          const decisions = getPlacementDecisionsForPlacements(placementDecisions, [placement])[0]?.status
-          return {
-            apiVersion: placement.apiVersion,
-            kind: placement.kind,
-            metadata: placement.metadata,
-            status: decisions ?? {},
-            policy,
-          }
-        }
+        const decisions = getPlacementDecisionsForPlacements(placementDecisions, [placement])[0]?.status
         return {
           apiVersion: placement.apiVersion,
           kind: placement.kind,
           metadata: placement.metadata,
-          status: placement.status ?? {},
+          status: decisions ?? { decisions: [] },
           policy,
         }
       })
     },
     [associatedPolicySets, placementBindings]
   )
-
-  const placementRuleMatches: TableData[] = useMemo(() => {
-    return getPlacementMatches(policy, placementRules, [])
-  }, [getPlacementMatches, placementRules, policy])
 
   const placementMatches: TableData[] = useMemo(() => {
     return getPlacementMatches(policy, placements, placementDecisions)
@@ -610,10 +593,10 @@ export default function PolicyDetailsOverview() {
             >
               {t('Placement')}
             </Content>
-            {placementMatches.length > 0 || placementRuleMatches.length > 0 ? (
+            {placementMatches.length > 0 ? (
               <AcmTable<TableData>
                 key="cluster-placement-list"
-                items={[...placementMatches, ...placementRuleMatches]}
+                items={placementMatches}
                 emptyState={undefined} // only shown when there are placement matches
                 columns={placementCols}
                 keyFn={(item) => item.metadata.uid!.toString()}

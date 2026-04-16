@@ -49,7 +49,6 @@ import {
   Placement,
   PlacementBinding,
   PlacementDecision,
-  PlacementRule,
   Policy,
   PolicyAutomation,
   PolicyReport,
@@ -116,7 +115,6 @@ export const nmStateConfigsState = AtomArray<NMStateK8sResource>()
 export const nodePoolsState = AtomArray<NodePoolK8sResource>()
 export const placementBindingsState = AtomArray<PlacementBinding>()
 export const placementDecisionsState = AtomArray<PlacementDecision>()
-export const placementRulesState = AtomArray<PlacementRule>()
 export const placementsState = AtomArray<Placement>()
 export const policiesState = AtomArray<Policy>()
 export const policyAutomationState = AtomArray<PolicyAutomation>()

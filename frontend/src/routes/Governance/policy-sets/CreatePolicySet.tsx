@@ -57,14 +57,12 @@ export function CreatePolicySet() {
     managedClusterSetsState,
     managedClustersState,
     namespacesState,
-    placementRulesState,
     placementsState,
     usePolicies,
   } = useSharedAtoms()
   const policies = usePolicies()
   const namespaces = useRecoilValue(namespacesState)
   const placements = useRecoilValue(placementsState)
-  const placementRules = useRecoilValue(placementRulesState)
   const managedClusters = useRecoilValue(managedClustersState)
   const clusterSets = useRecoilValue(managedClusterSetsState)
   const clusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
@@ -82,7 +80,6 @@ export function CreatePolicySet() {
       placements={placements}
       breadcrumb={[{ text: t('Policy sets'), to: NavigationPath.policySets }, { text: t('Create policy set') }]}
       namespaces={namespaceNames}
-      placementRules={placementRules}
       yamlEditor={getWizardSyncEditor}
       clusterSets={clusterSets}
       clusterSetBindings={clusterSetBindings}

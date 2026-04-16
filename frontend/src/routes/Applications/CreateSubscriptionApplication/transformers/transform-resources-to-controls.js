@@ -11,11 +11,8 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import YAML from 'yaml'
 import { initializeControls, getSourcePath, getResourceID } from '../../../../components/TemplateEditor'
-import { filterDeep } from './transform-data-to-resources'
 import _ from 'lodash'
-import { PlacementRuleKind } from '../../../../resources'
 
 //only called when editing an existing application
 //examines resources to create the correct resource types that are being deployed
@@ -145,19 +142,6 @@ const discoverChannelFromSource = (
         const channelNamespace = groupControlData.find(({ id: _id }) => _id === 'channelNamespace')
         channelNamespace.active = ns
       }
-    }
-
-    // remember if this is a deprecated PlacementRuleKind
-    const placementKind = _.get(templateObject, getSourcePath('Subscription[0].spec.placement.placementRef.kind'))?.$v
-    const isDeprecatedPRControl = groupControlData.find(({ id }) => id === 'isDeprecatedPR')
-    const deprecatedRuleControl = groupControlData.find(({ id }) => id === 'deprecated-rule')
-    if (isDeprecatedPRControl && deprecatedRuleControl && placementKind === PlacementRuleKind) {
-      isDeprecatedPRControl.active = true
-      const ruleName = _.get(templateObject, getSourcePath('Subscription[0].spec.placement.placementRef.name'))?.$v
-      const rule = templateObject[PlacementRuleKind]
-        ? templateObject[PlacementRuleKind].find((ruleItem) => ruleName === ruleItem?.$raw?.metadata?.name)
-        : undefined
-      deprecatedRuleControl.active = YAML.stringify(filterDeep(rule?.$raw))
     }
 
     // if more then one group, collapse all groups

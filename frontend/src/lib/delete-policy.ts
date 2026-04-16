@@ -1,13 +1,12 @@
 // Copyright Contributors to the Open Cluster Management project
 
-import { IResource, Placement, PlacementBinding, PlacementRule, Policy } from '../resources'
+import { IResource, Placement, PlacementBinding, Policy } from '../resources'
 import { ResourceError, ResourceErrorCode } from '../resources/utils'
 import { deleteResources } from './delete-resources'
 
 export function deletePolicy(
   policy: Policy,
   placements: Placement[],
-  placementRules: PlacementRule[],
   placementBindings: PlacementBinding[],
   deletePlacements?: boolean,
   deletePlacementBindings?: boolean
@@ -19,7 +18,6 @@ export function deletePolicy(
   }
 
   if (deletePlacements) {
-    resources = [...resources, ...placementRules]
     resources = [...resources, ...placements]
   }
 

@@ -60,7 +60,6 @@ export function PolicyWizard(props: {
   namespaces: string[]
   policies: IResource[]
   placements: IResource[]
-  placementRules: IResource[]
   clusters: IResource[]
   clusterSets: IResource[]
   clusterSetBindings: IClusterSetBinding[]
@@ -188,7 +187,6 @@ export function PolicyWizard(props: {
         <PolicyPolicySets />
         <PlacementSection
           existingPlacements={props.placements}
-          existingPlacementRules={props.placementRules}
           createClusterSetCallback={() => open(NavigationPath.clusterSets, '_blank')}
           existingClusterSets={props.clusterSets}
           existingClusterSetBindings={props.clusterSetBindings}

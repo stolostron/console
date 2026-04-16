@@ -9,7 +9,6 @@ import {
   PlacementBindingKind,
   PlacementBindingType,
 } from '../common/resources/IPlacementBinding'
-import { PlacementRuleKind } from '../common/resources/IPlacementRule'
 import { PolicyApiGroup } from '../common/resources/IPolicy'
 import { PolicySetApiGroup } from '../common/resources/IPolicySet'
 import { useValidation } from '../../hooks/useValidation'
@@ -17,12 +16,10 @@ import { useTranslation } from '../../lib/acm-i18next'
 
 export function PlacementBindings(props: {
   placementCount: number
-  placementRuleCount: number
   placementBindingCount: number
   bindingSubjectKind: string
   bindingSubjectApiGroup?: string
   existingPlacements: IResource[]
-  existingPlacementRules: IResource[]
 }) {
   const { t } = useTranslation()
   return (
@@ -68,30 +65,11 @@ function PlacementBinding(props: { bindingSubjectKind: string; bindingSubjectApi
         helperText={t('The placement binding name must be unique to the namespace.')}
         validation={validateKubernetesResourceName}
       />
-      <WizSelect
-        path="placementRef.kind"
-        label={t('Placement kind')}
-        helperText={t('The placement rule used to select clusters for placement.')}
-        required
-        options={[
-          { label: t('Placement'), value: 'Placement' },
-          { label: t('PlacementRule'), value: PlacementRuleKind },
-        ]}
-      />
       <WizTextInput
         path="placementRef.name"
         label={t('Placement name')}
         required
-        hidden={(binding) => binding.placementRef?.kind !== PlacementKind}
         helperText={t('The placement name should match the name of a placement in this namespace..')}
-        validation={validateKubernetesResourceName}
-      />
-      <WizTextInput
-        path="placementRef.name"
-        label={t('Placement rule name')}
-        required
-        hidden={(binding) => binding.placementRef?.kind !== PlacementRuleKind}
-        helperText={t('The placement rule name should match the name of a placement rule in this namespace.')}
         validation={validateKubernetesResourceName}
       />
       <WizArrayInput

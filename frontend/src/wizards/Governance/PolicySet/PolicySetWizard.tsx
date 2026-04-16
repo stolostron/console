@@ -36,7 +36,6 @@ export interface PolicySetWizardProps {
   namespaces: string[]
   policies: IResource[]
   placements: IResource[]
-  placementRules: IResource[]
   clusters: IResource[]
   clusterSets: IResource[]
   clusterSetBindings: IClusterSetBinding[]
@@ -185,7 +184,6 @@ export function PolicySetWizard(props: PolicySetWizardProps) {
           bindingSubjectKind={PolicySetKind}
           bindingSubjectApiGroup={PolicySetApiGroup}
           existingPlacements={props.placements}
-          existingPlacementRules={props.placementRules}
           clusters={props.clusters}
           defaultPlacementSpec={defaultPlacementSpec}
           withoutOnlineClusterCondition

@@ -16,10 +16,10 @@ export const convertStringToQuery = (searchText: string): SearchQuery => {
   let relatedKinds: string[] = []
 
   if (searchText.indexOf('kind:subscription') >= 0) {
-    relatedKinds = ['placementrule', 'deployable', 'application', 'subscription', 'channel']
+    relatedKinds = ['placement', 'deployable', 'application', 'subscription', 'channel']
   } else if (searchText.indexOf('kind:channel') >= 0) {
     relatedKinds = ['subscription']
-  } else if (searchText.indexOf('kind:placementrule') >= 0) {
+  } else if (searchText.indexOf('kind:placement') >= 0) {
     relatedKinds = ['subscription']
   }
 

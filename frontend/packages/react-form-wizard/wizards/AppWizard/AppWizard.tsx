@@ -11,7 +11,7 @@ import {
   WizArrayInput,
   WizTextInput,
 } from '../../src'
-import { PlacementRuleKind, PlacementRuleType } from '../common/resources/IPlacementRule'
+import { PlacementKind, PlacementType } from '../common/resources/IPlacement'
 
 export function AppWizard(props: { onSubmit: WizardSubmit; onCancel: WizardCancel }) {
   return (
@@ -61,7 +61,7 @@ export function AppWizard(props: { onSubmit: WizardSubmit; onCancel: WizardCance
                   'apps.open-cluster-management.io/reconcile-option': 'merge',
                 },
               },
-              spec: { channel: '', placement: { placementRef: { kind: PlacementRuleKind, name: '' } } },
+              spec: { channel: '', placement: { placementRef: { kind: PlacementKind, name: '' } } },
             }}
             collapsedPlaceholder="Expand to enter the subscription details"
           >
@@ -180,11 +180,15 @@ export function AppWizard(props: { onSubmit: WizardSubmit; onCancel: WizardCance
             collapsedPlaceholder="Expand to enter the placement details"
             label="Placements"
             path={null}
-            filter={(item) => item.kind === PlacementRuleKind}
-            newValue={{ ...PlacementRuleType, metadata: { name: '' } }}
+            filter={(item) => item.kind === PlacementKind}
+            newValue={{ ...PlacementType, metadata: { name: '' } }}
           >
             <WizTextInput id="text-input" path="metadata.name" label="Name" required />
-            <WizKeyValue id="" path="spec.clusterSelector.matchLabels" label="Cluster labels"></WizKeyValue>
+            <WizKeyValue
+              id=""
+              path="spec.predicates[0].requiredClusterSelector.labelSelector.matchLabels"
+              label="Cluster labels"
+            ></WizKeyValue>
           </WizArrayInput>
         </Section>
       </Step>

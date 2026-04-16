@@ -37,7 +37,7 @@ export interface Policy {
   status?: {
     compliant?: 'Compliant' | 'NonCompliant' | 'Pending'
     details?: PolicyStatusDetails[]
-    placement?: { placementBinding: string; placementRule?: string; placement?: string; policySet?: string }[]
+    placement?: { placementBinding: string; placement?: string; policySet?: string }[]
     status?: { clustername: string; clusternamespace: string; compliant?: string }[]
   }
   // This not from API, this will be added at console

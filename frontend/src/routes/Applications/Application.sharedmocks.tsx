@@ -31,9 +31,6 @@ import {
   PlacementDecision,
   PlacementDecisionApiVersion,
   PlacementDecisionKind,
-  PlacementRule,
-  PlacementRuleApiVersion,
-  PlacementRuleKind,
   Subscription,
   SubscriptionApiVersion,
   SubscriptionKind,
@@ -178,8 +175,8 @@ const mockSubscription0: Subscription = {
     channel: 'ch-namespace-0/channel-0',
     placement: {
       placementRef: {
-        kind: PlacementRuleKind,
-        name: 'placementrule-0',
+        kind: 'Placement',
+        name: 'placement-0',
       },
     },
   },
@@ -197,41 +194,13 @@ const mockChannel0: Channel = {
   },
 }
 
-const mockPlacementrule0: PlacementRule = {
-  apiVersion: PlacementRuleApiVersion,
-  kind: PlacementRuleKind,
-  metadata: {
-    name: 'placementrule-0',
-    namespace: 'namespace-0',
-    labels: {
-      app: 'application-0-app',
-    },
-  },
-  spec: {
-    clusterReplicas: 1,
-    clusterSelector: {
-      matchLabels: {
-        name: 'local-cluster',
-      },
-    },
-  },
-  status: {
-    decisions: [
-      {
-        clusterName: 'local-cluster',
-        clusterNamespace: 'local-cluster',
-      },
-    ],
-  },
-}
-
 const mockPlacementDecision0: PlacementDecision = {
   apiVersion: PlacementDecisionApiVersion,
   kind: PlacementDecisionKind,
   metadata: {
-    labels: { 'cluster.open-cluster-management.io/placementrule': mockPlacementrule0.metadata.name! },
-    name: 'placementrule-0-decision-1',
-    namespace: mockPlacementrule0.metadata.namespace,
+    labels: { 'cluster.open-cluster-management.io/placement': 'placement-0' },
+    name: 'placement-0-decision-1',
+    namespace: 'namespace-0',
   },
   status: {
     decisions: [
@@ -520,7 +489,6 @@ export const mockClusterSets: ManagedClusterSet[] = [mockClusterSet0]
 export const mockSubscriptions: Subscription[] = [mockSubscription0]
 export const mockChannels: Channel[] = [mockChannel0]
 export const mockPlacementsDecisions: PlacementDecision[] = [mockPlacementDecision0]
-export const mockPlacementrules: PlacementRule[] = [mockPlacementrule0]
 export const mockManagedClusters: ManagedCluster[] = [mockManagedCluster0]
 export const mockManagedClusterInfos = [mockManagedClusterInfo0]
 export const mockNamespaces: Namespace[] = ['namespace1', 'namespace2', 'namespace3'].map((name) => ({

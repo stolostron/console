@@ -33,18 +33,14 @@ import { getPlacementsForResource } from '../../common/util'
 function PolicySetDrawerTitle(props: { policySet: PolicySet }) {
   const { policySet } = props
   const { t } = useTranslation()
-  const { placementBindingsState, placementRulesState, placementsState, settingsState } = useSharedAtoms()
+  const { placementBindingsState, placementsState, settingsState } = useSharedAtoms()
   const placements = useRecoilValue(placementsState)
-  const placementRules = useRecoilValue(placementRulesState)
   const placementBindings = useRecoilValue(placementBindingsState)
   const settings = useRecoilValue(settingsState)
 
   const policySetPlacements = useMemo(
-    () => [
-      ...getPlacementsForResource(policySet, placementBindings, placements),
-      ...getPlacementsForResource(policySet, placementBindings, placementRules),
-    ],
-    [policySet, placementBindings, placements, placementRules]
+    () => getPlacementsForResource(policySet, placementBindings, placements),
+    [policySet, placementBindings, placements]
   )
 
   return (
@@ -290,9 +286,8 @@ function DeletePolicySetModal(props: {
   const { t } = useTranslation()
   const [deletePlacements, setDeletePlacements] = useState(true)
   const [deletePlacementBindings, setDeletePlacementBindings] = useState(true)
-  const { placementBindingsState, placementRulesState, placementsState } = useSharedAtoms()
+  const { placementBindingsState, placementsState } = useSharedAtoms()
   const placements = useRecoilValue(placementsState)
-  const placementRules = useRecoilValue(placementRulesState)
   const placementBindings = useRecoilValue(placementBindingsState)
   const [isDeleting, setIsDeleting] = useState(false)
   const [error, setError] = useState('')
@@ -300,14 +295,8 @@ function DeletePolicySetModal(props: {
     setIsDeleting(true)
     try {
       setError('')
-      await deletePolicySet(
-        props.item,
-        placements,
-        placementRules,
-        placementBindings,
-        deletePlacements,
-        deletePlacementBindings
-      ).promise
+      await deletePolicySet(props.item, placements, placementBindings, deletePlacements, deletePlacementBindings)
+        .promise
       props.onClose()
       setIsDeleting(false)
       props.setDrawerContext(undefined)
@@ -320,7 +309,7 @@ function DeletePolicySetModal(props: {
       }
       setIsDeleting(false)
     }
-  }, [props, placements, placementRules, placementBindings, deletePlacements, deletePlacementBindings, t])
+  }, [props, placements, placementBindings, deletePlacements, deletePlacementBindings, t])
   return (
     <Modal
       title={t('Permanently delete {{type}} {{name}}?', {

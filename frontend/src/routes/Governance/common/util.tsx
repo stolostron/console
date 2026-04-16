@@ -17,7 +17,6 @@ import {
   ManagedCluster,
   Placement,
   PlacementBinding,
-  PlacementRule,
   Policy,
   PolicyAutomation,
   PolicySet,
@@ -54,7 +53,7 @@ export function getPlacementBindingsForResource(resource: Policy | PolicySet, pl
   )
 }
 
-export function getPlacementsForResource<T extends Placement | PlacementRule>(
+export function getPlacementsForResource<T extends Placement>(
   resource: Policy | PolicySet,
   placementBindings: PlacementBinding[],
   placements: T[]
@@ -71,10 +70,7 @@ export function getPlacementsForResource<T extends Placement | PlacementRule>(
     )
 }
 
-export function getPlacementDecisionsForPlacements(
-  placementDecisions: PlacementDecision[],
-  placements: (Placement | PlacementRule)[]
-) {
+export function getPlacementDecisionsForPlacements(placementDecisions: PlacementDecision[], placements: Placement[]) {
   return placementDecisions.filter((placementDecision) =>
     placementDecision.metadata.ownerReferences?.find((ownerReference) =>
       placements.find((placement) => placement.metadata.uid === ownerReference.uid)
@@ -86,7 +82,7 @@ export function getPlacementDecisionsForResource(
   resource: Policy | PolicySet,
   placementDecisions: PlacementDecision[],
   resourceBindings: PlacementBinding[],
-  placements: (Placement | PlacementRule)[]
+  placements: Placement[]
 ) {
   const resourcePlacements = getPlacementsForResource(resource, resourceBindings, placements)
   return getPlacementDecisionsForPlacements(placementDecisions, resourcePlacements)
@@ -116,7 +112,7 @@ export function getPolicyComplianceForPolicySet(
   policies: Policy[],
   placementDecisions: PlacementDecision[],
   resourceBindings: PlacementBinding[],
-  placements: (Placement | PlacementRule)[]
+  placements: Placement[]
 ) {
   const policySetPlacementDecisions = getPlacementDecisionsForResource(
     policySet,
@@ -208,7 +204,7 @@ export function getClustersComplianceForPolicySet(
   policies: Policy[],
   placementDecisions: PlacementDecision[],
   resourceBindings: PlacementBinding[],
-  placements: (Placement | PlacementRule)[]
+  placements: Placement[]
 ) {
   const policySetPlacementDecisions = getPlacementDecisionsForResource(
     policySet,
@@ -258,7 +254,7 @@ export function getClustersSummaryForPolicySet(
   policies: Policy[],
   placementDecisions: PlacementDecision[],
   resourceBindings: PlacementBinding[],
-  placements: (Placement | PlacementRule)[]
+  placements: Placement[]
 ) {
   const clustersCompliance = getClustersComplianceForPolicySet(
     policySet,

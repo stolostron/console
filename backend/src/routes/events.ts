@@ -182,7 +182,6 @@ const definitions: IWatchOptions[] = [
   { kind: 'Channel', apiVersion: 'apps.open-cluster-management.io/v1' },
   { kind: 'GitOpsCluster', apiVersion: 'apps.open-cluster-management.io/v1beta1' },
   { kind: 'HelmRelease', apiVersion: 'apps.open-cluster-management.io/v1' },
-  { kind: 'PlacementRule', apiVersion: 'apps.open-cluster-management.io/v1' },
   { kind: 'Subscription', apiVersion: 'apps.open-cluster-management.io/v1' },
   { kind: 'SubscriptionReport', apiVersion: 'apps.open-cluster-management.io/v1alpha1' },
   { kind: 'Application', apiVersion: 'argoproj.io/v1alpha1', isPolled: true },

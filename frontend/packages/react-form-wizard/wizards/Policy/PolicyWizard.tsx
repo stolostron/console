@@ -33,7 +33,6 @@ import { ItemContext, useItem } from '../../src/contexts/ItemContext'
 import { Sync } from '../../src/Sync'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
 import { PlacementBindingKind } from '../common/resources/IPlacementBinding'
-import { PlacementRuleKind } from '../common/resources/IPlacementRule'
 import { PolicyApiGroup, PolicyKind, PolicyType } from '../common/resources/IPolicy'
 import { isValidKubernetesResourceName, validatePolicyName } from '../common/validation'
 import { MatchExpression, MatchExpressionCollapsed } from '../Placement/MatchExpression'
@@ -45,7 +44,6 @@ export function PolicyWizard(props: {
   namespaces: string[]
   policies: IResource[]
   placements: IResource[]
-  placementRules: IResource[]
   clusters: IResource[]
   clusterSets: IResource[]
   clusterSetBindings: IClusterSetBinding[]
@@ -153,12 +151,10 @@ export function PolicyWizard(props: {
         <PolicyPolicySets />
         <PlacementSection
           existingPlacements={props.placements}
-          existingPlacementRules={props.placementRules}
           existingClusterSets={props.clusterSets}
           existingClusterSetBindings={props.clusterSetBindings}
           bindingSubjectKind={PolicyKind}
           bindingSubjectApiGroup={PolicyApiGroup}
-          defaultPlacementKind={PlacementRuleKind}
           clusters={props.clusters}
           allowNoPlacement
           withoutOnlineClusterCondition

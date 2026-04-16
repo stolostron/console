@@ -1,13 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  Placement,
-  PlacementKind,
-  PlacementRule,
-  PlacementRuleKind,
-  Subscription,
-  SubscriptionReport,
-} from '../../../../../resources'
+import { Placement, PlacementKind, Subscription, SubscriptionReport } from '../../../../../resources'
 import { listResources } from '../../../../../resources/utils/resource-request'
 import type { IResource } from '../../../../../resources/resource'
 import { getSubscriptionAnnotations, isLocalSubscription } from '../../../helpers/subscriptions'
@@ -99,11 +92,7 @@ export const addSubscriptionChannels = async (
       model.allClusters,
       recoilStates.placementDecisions as unknown as PlacementDecisionKind[]
     )
-    getAppPlacements(
-      placementsMap,
-      (recoilStates.placements as Placement[]) || [],
-      (recoilStates.placementRules as PlacementRule[]) || []
-    )
+    getAppPlacements(placementsMap, (recoilStates.placements as Placement[]) || [])
 
     // get all channels
     getAllAppChannels(model.allChannels, subscriptions, (recoilStates.channels as unknown as ChannelKind[]) || [])
@@ -309,33 +298,19 @@ const buildSubscriptionMaps = (
 }
 
 /**
- * For each subscription, find and attach Placement or PlacementRule objects by rule name/namespace.
+ * For each subscription, find and attach Placement objects by rule name/namespace.
  */
-const getAppPlacements = (
-  placementsMap: SubscriptionPlacementsMap,
-  placements: Placement[],
-  placementRules: PlacementRule[]
-): void => {
+const getAppPlacements = (placementsMap: SubscriptionPlacementsMap, placements: Placement[]): void => {
   Object.entries(placementsMap).forEach(([namespace, values]) => {
-    // stuff placements or placement rules into subscriptions that use them
+    // stuff placements into subscriptions that use them
     values.forEach(({ ruleName, subscription }) => {
       const placementRef = subscription?.spec?.placement?.placementRef as { kind?: string } | undefined
-      if (placementRef) {
-        const { kind } = placementRef
-        if (kind === PlacementRuleKind) {
-          const foundPR = placementRules.find(
-            (pr) => pr.metadata.name === ruleName && pr.metadata.namespace === namespace
-          )
-          if (foundPR) {
-            ;(subscription.placements || (subscription.placements = [])).push(foundPR)
-          }
-        } else if (kind === PlacementKind) {
-          const foundPlacement = placements.find(
-            (placement) => placement.metadata.name === ruleName && placement.metadata.namespace === namespace
-          )
-          if (foundPlacement) {
-            ;(subscription.placements || (subscription.placements = [])).push(foundPlacement)
-          }
+      if (placementRef && placementRef.kind === PlacementKind) {
+        const foundPlacement = placements.find(
+          (placement) => placement.metadata.name === ruleName && placement.metadata.namespace === namespace
+        )
+        if (foundPlacement) {
+          ;(subscription.placements || (subscription.placements = [])).push(foundPlacement)
         }
       }
     })
@@ -357,9 +332,7 @@ const getAppDecisions = (
         return placementDecision?.metadata?.namespace === namespace
       })
       .forEach((placementDecision) => {
-        const name =
-          placementDecision.metadata.labels?.['cluster.open-cluster-management.io/placement'] ||
-          placementDecision.metadata.labels?.['cluster.open-cluster-management.io/placementrule']
+        const name = placementDecision.metadata.labels?.['cluster.open-cluster-management.io/placement']
         values.forEach(({ ruleName, subscription }) => {
           if (name === ruleName) {
             ;(subscription.decisions || (subscription.decisions = [])).push(placementDecision)

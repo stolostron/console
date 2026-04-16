@@ -30,38 +30,6 @@
     }
   },
   {
-    "type": "PlacementRule",
-    "schema": {
-      "type": "object",
-      "properties": {
-        "apiVersion": { "type": "string" },
-        "kind": { "type": "string", "deprecatedKind": "PlacementRule" },
-        "metadata": {
-          "type": "object",
-          "properties": {
-            "name": { "validateName": true },
-            "namespace": { "validateName": true }
-          },
-          "required": ["name", "namespace"]
-        },
-        "spec": {
-          "type": "object",
-          "properties": {
-            "clusterSelector": {
-              "type": "object",
-              "properties": {
-                "matchExpressions": { "type": "array" }
-              },
-              "required": ["matchExpressions"]
-            }
-          },
-          "required": ["clusterSelector"]
-        }
-      },
-      "required": ["apiVersion", "kind", "metadata", "spec"]
-    }
-  },
-  {
     "type": "Placement",
     "schema": {
       "type": "object",
@@ -108,7 +76,7 @@
           "properties": {
             "name": { "validateName": true },
             "apiGroup": { "type": "string" },
-            "kind": { "type": "string", "enum": ["Placement", "PlacementRule"] }
+            "kind": { "type": "string", "enum": ["Placement"] }
           },
           "required": ["name", "apiGroup", "kind"]
         },

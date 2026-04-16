@@ -86,8 +86,6 @@ import {
   PlacementDecisionApiVersion,
   PlacementDecisionKind,
   PlacementKind,
-  PlacementRuleApiVersion,
-  PlacementRuleKind,
   PolicyApiVersion,
   PolicyAutomationApiVersion,
   PolicyAutomationKind,
@@ -165,7 +163,6 @@ import {
   nodePoolsState,
   placementBindingsState,
   placementDecisionsState,
-  placementRulesState,
   placementsState,
   policiesState,
   policyAutomationState,
@@ -255,7 +252,6 @@ export function LoadData(props: { children?: ReactNode }) {
   const setNodePoolsState = useSetRecoilState(nodePoolsState)
   const setPlacementBindingsState = useSetRecoilState(placementBindingsState)
   const setPlacementDecisionsState = useSetRecoilState(placementDecisionsState)
-  const setPlacementRulesState = useSetRecoilState(placementRulesState)
   const setPlacementsState = useSetRecoilState(placementsState)
   const setPoliciesState = useSetRecoilState(policiesState)
   const setPolicyAutomationState = useSetRecoilState(policyAutomationState)
@@ -351,7 +347,6 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(PlacementApiVersionAlpha, PlacementKind, setPlacementsState)
     addSetter(PlacementBindingApiVersion, PlacementBindingKind, setPlacementBindingsState)
     addSetter(PlacementDecisionApiVersion, PlacementDecisionKind, setPlacementDecisionsState)
-    addSetter(PlacementRuleApiVersion, PlacementRuleKind, setPlacementRulesState)
     addSetter(PolicyApiVersion, PolicyKind, setPoliciesState)
     addSetter(PolicyAutomationApiVersion, PolicyAutomationKind, setPolicyAutomationState)
     addSetter(PolicyReportApiVersion, PolicyReportKind, setPolicyReports)
@@ -411,7 +406,6 @@ export function LoadData(props: { children?: ReactNode }) {
     setNodePoolsState,
     setPlacementBindingsState,
     setPlacementDecisionsState,
-    setPlacementRulesState,
     setPlacementsState,
     setPoliciesState,
     setPolicyAutomationState,

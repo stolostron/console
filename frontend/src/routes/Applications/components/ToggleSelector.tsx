@@ -20,7 +20,7 @@ export interface IToggleSelectorProps<T = any> {
   t: TFunction
   defaultToggleOption?: ApplicationToggleOptions
 }
-export type ApplicationToggleOptions = 'subscriptions' | 'channels' | 'placements' | 'placementrules'
+export type ApplicationToggleOptions = 'subscriptions' | 'channels' | 'placements'
 
 export function ToggleSelector(props: IToggleSelectorProps) {
   const { settingsState } = useSharedAtoms()
@@ -34,7 +34,6 @@ export function ToggleSelector(props: IToggleSelectorProps) {
     ...(settings.enhancedPlacement !== 'enabled'
       ? [{ id: 'placements' as const, title: t('Placements'), emptyMessage: t("You don't have any placements") }]
       : []),
-    { id: 'placementrules', title: t('Placement rules'), emptyMessage: t("You don't have any placement rules") },
   ] as const
   const canCreateApplication = useIsAnyNamespaceAuthorized(rbacCreate(ApplicationDefinition))
   const selectedId = getSelectedId({ location, options, defaultOption, queryParam: 'resources' })

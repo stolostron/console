@@ -25,9 +25,9 @@ import { loadExistingNamespaces } from '../../../../lib/temptifly-utils'
 export const updateNameControls = (nameControl, globalControl) => {
   const channelsControl = globalControl.find(({ id }) => id === 'channels')
   channelsControl?.active.forEach((subscription) => {
-    const placementCheckbox = subscription.find(({ id }) => id === 'existingrule-checkbox')
+    const placementCheckbox = subscription.find(({ id }) => id === 'existing-placement-checkbox')
     if (!placementCheckbox?.active) {
-      const rule = subscription.find(({ id }) => id === 'selectedRuleName')
+      const rule = subscription.find(({ id }) => id === 'selectedPlacementName')
       if (rule?.active) rule.active = undefined
     }
   })
