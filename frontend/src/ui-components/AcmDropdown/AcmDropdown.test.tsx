@@ -104,4 +104,15 @@ describe('AcmDropdown', () => {
     expect(queryByTestId('install-config')).toBeNull()
     await new Promise((resolve) => setTimeout(resolve, 0))
   })
+
+  test('renders items with href as anchor tags', async () => {
+    const { getByTestId } = render(<Component />)
+    userEvent.click(getByTestId('dropdown'))
+    await waitFor(() => expect(getByTestId('link item')).toBeInTheDocument())
+    const linkItem = getByTestId('link item')
+    const anchor = linkItem.closest('a')
+    expect(anchor).toBeInTheDocument()
+    expect(anchor).toHaveAttribute('href', 'www.google.com')
+    await new Promise((resolve) => setTimeout(resolve, 0))
+  })
 })
