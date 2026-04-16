@@ -17,14 +17,7 @@ import { createCluster } from '../../../../../lib/create-cluster'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
-import {
-  ClusterCurator,
-  createClusterCurator,
-  IResource,
-  ProviderConnection,
-  Secret,
-  SubscriptionOperator,
-} from '../../../../../resources'
+import { ClusterCurator, createClusterCurator, IResource, ProviderConnection, Secret } from '../../../../../resources'
 import { createResource as createResourceTool } from '../../../../../resources/utils'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
 // template/data
@@ -67,6 +60,7 @@ import { useLocalHubName } from '../../../../../hooks/use-local-hub'
 import './style.css'
 import { VALID_DNS_LABEL } from '../../../../../components/TemplateEditor/utils/validation-types'
 import { getPlatform } from './components/assisted-installer/hypershift/utils'
+import { SupportedOperator, useOperatorCheck } from '~/lib/operatorCheck'
 
 // Register the custom 'and' helper
 Handlebars.registerHelper('and', function (a, b) {
@@ -118,11 +112,11 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
     namespacesState,
     secretsState,
     settingsState,
-    subscriptionOperatorsState,
   } = useSharedAtoms()
   const {
     ansibleCredentialsValue,
     clusterCuratorSupportedCurationsValue,
+    kubevirtOperatorSubscriptionsValue,
     providerConnectionsValue,
     validClusterCuratorTemplatesValue,
   } = useSharedSelectors()
@@ -171,14 +165,9 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   const namespaces = useRecoilValue(namespacesState)
   const validCuratorTemplates = useRecoilValue(validClusterCuratorTemplatesValue)
 
-  const subscriptionOperators = useRecoilValue(subscriptionOperatorsState)
-  const isKubevirtEnabled = useMemo(() => {
-    return (
-      subscriptionOperators.findIndex(
-        (operator: SubscriptionOperator) => operator.metadata.name === 'kubevirt-hyperconverged'
-      ) > -1
-    )
-  }, [subscriptionOperators])
+  // use common operator check to determine if Openshift Virtualization is installed
+  const kubevirtOperator = useOperatorCheck(SupportedOperator.kubevirt, kubevirtOperatorSubscriptionsValue)
+  const isKubevirtEnabled = !kubevirtOperator.pending && kubevirtOperator.installed
 
   const [selectedConnection, setSelectedConnection] = useState<ProviderConnection>()
   const onControlChange = useCallback(
