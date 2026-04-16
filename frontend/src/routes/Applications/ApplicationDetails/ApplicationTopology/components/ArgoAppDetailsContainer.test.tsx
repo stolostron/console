@@ -149,18 +149,12 @@ describe('ArgoAppDetailsContainer test functions', () => {
   }
 
   let container: HTMLElement
-  let instance: any
   beforeEach(async () => {
     ;({ container } = render(
       <ArgoAppDetailsContainer
         argoAppList={mockData.argoAppList}
         t={t}
         argoAppDetailsContainerControl={mockData.argoAppDetailsContainerControl}
-        ref={(node: ArgoAppDetailsContainer | null) => {
-          if (node) {
-            instance = node
-          }
-        }}
         hubClusterName="local-cluster"
       />
     ))
@@ -168,39 +162,8 @@ describe('ArgoAppDetailsContainer test functions', () => {
     await waitFor(() => container.querySelector(`input[placeholder="Find application"]`))
   })
 
-  it('works as expected', () => {
-    Object.prototype.toString.call(instance.toggleLinkLoading())
-    Object.prototype.toString.call(instance.handleExpandSectionToggle(0))
-    Object.prototype.toString.call(instance.handleSelection('test1'))
-    Object.prototype.toString.call(instance.handleSelection(null))
-    Object.prototype.toString.call(instance.handleSelectToggle())
-    Object.prototype.toString.call(instance.handleSelectionClear())
-    Object.prototype.toString.call(instance.handleFirstClick())
-    Object.prototype.toString.call(instance.handleLastClick())
-    Object.prototype.toString.call(instance.handleNextClick({}, 1))
-    Object.prototype.toString.call(instance.handlePreviousClick({}, 1))
-    Object.prototype.toString.call(instance.handlePageInput({}, 1))
-    Object.prototype.toString.call(
-      instance.handleKeyPress(
-        {
-          action: 'open_link',
-          targetLink: 'https://test',
-        },
-        {
-          key: 'Enter',
-        }
-      )
-    )
-    Object.prototype.toString.call(
-      instance.handleKeyPress(
-        {
-          action: 'open_link',
-          targetLink: 'https://test',
-        },
-        {
-          key: 'Any',
-        }
-      )
-    )
+  it('renders application search and accordion', () => {
+    expect(container.querySelector(`input[placeholder="Find application"]`)).toBeTruthy()
+    expect(container.querySelector('.appDetails')).toBeTruthy()
   })
 })

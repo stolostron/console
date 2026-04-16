@@ -69,6 +69,11 @@ export interface ResourceAction {
   editLink?: string
   routeObject?: ResourceRef
   targetLink?: string
+  /** Present on some topology link payloads (e.g. design vs runtime) */
+  specs?: {
+    isDesign?: boolean
+    [key: string]: unknown
+  }
 }
 
 // Parameters used to build a Search YAML editor link for a resource

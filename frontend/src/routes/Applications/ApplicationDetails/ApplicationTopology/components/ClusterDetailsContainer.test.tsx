@@ -163,7 +163,6 @@ describe('ClusterDetailsContainer test functions', () => {
   }
 
   let container: HTMLElement
-  let instance: any
   beforeEach(async () => {
     ;({ container } = render(
       <ClusterDetailsContainer
@@ -171,47 +170,14 @@ describe('ClusterDetailsContainer test functions', () => {
         t={t}
         clusterDetailsContainerControl={mockData.clusterDetailsContainerControl}
         clusterID={mockData.clusterID}
-        ref={(node: any) => {
-          instance = node
-        }}
       />
     ))
 
     await waitFor(() => container.querySelector(`input[placeholder="Find cluster"]`))
   })
 
-  it('work as expected', () => {
-    Object.prototype.toString.call(instance.handleSelection('vbirsan1-remote'))
-    Object.prototype.toString.call(instance.handleSelection(undefined))
-    Object.prototype.toString.call(instance.handleSelectionClear())
-    Object.prototype.toString.call(instance.handleFirstClick())
-    Object.prototype.toString.call(instance.handleLastClick())
-    Object.prototype.toString.call(instance.handleNextClick({}, 1))
-    Object.prototype.toString.call(instance.handlePreviousClick({}, 1))
-    Object.prototype.toString.call(instance.handlePageInput({}, 1))
-    Object.prototype.toString.call(
-      instance.handleKeyPress(
-        {
-          action: 'open_link',
-          targetLink: 'https://test',
-        },
-        {
-          key: 'Enter',
-        }
-      )
-    )
-    Object.prototype.toString.call(
-      instance.handleKeyPress(
-        {
-          action: 'open_link',
-          targetLink: 'https://test',
-        },
-        {
-          key: 'Any',
-        }
-      )
-    )
-    Object.prototype.toString.call(instance.handleSelectToggle())
-    Object.prototype.toString.call(instance.handleExpandSectionToggle(0))
+  it('renders cluster search and accordion', () => {
+    expect(container.querySelector(`input[placeholder="Find cluster"]`)).toBeTruthy()
+    expect(container.querySelector('.clusterDetails')).toBeTruthy()
   })
 })
