@@ -157,12 +157,7 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
 
 export const Topology = (props: TopologyProps) => {
   const { onRefreshResources } = props
-  const refreshResources = useCallback(() => {
-    onRefreshResources?.()
-  }, [onRefreshResources])
-
-  const topologyRefreshValue = useMemo(() => ({ refreshResources }), [refreshResources])
-
+  const topologyRefreshValue = useMemo(() => ({ refreshResources: onRefreshResources }), [onRefreshResources])
   const controllerRef = useRef<Controller>()
   let controller = controllerRef.current
   if (!controller) {

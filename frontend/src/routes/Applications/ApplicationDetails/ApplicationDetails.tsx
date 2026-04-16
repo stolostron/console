@@ -131,6 +131,7 @@ export default function ApplicationDetailsPage() {
   const { backendUrl } = useContext(dataContext)
 
   const lastRefreshRef = useRef<any>()
+  const refreshRequestIdRef = useRef(0)
   const refreshApplicationResourcesRef = useRef<() => Promise<void>>(async () => {})
   const navigate = useNavigate()
   const isArgoApp = applicationData?.application?.isArgoApp
@@ -377,74 +378,95 @@ export default function ApplicationDetailsPage() {
   })
 
   refreshApplicationResourcesRef.current = async () => {
-    const recoilStates = getRecoilStates()
+    const requestId = ++refreshRequestIdRef.current
+    const isLatestRefresh = () => requestId === refreshRequestIdRef.current
 
-    const application = await getApplication(
-      namespace,
-      name,
-      backendUrl,
-      activeChannel,
-      recoilStates,
-      cluster,
-      apiVersion,
-      clusters,
-      localHubName
-    )
-    if (!application) {
-      setApplicationNotFound(true)
-    } else {
-      setApplicationNotFound(false)
-      const topology: any = await getTopology(
-        toolbarControl,
-        application,
+    try {
+      const recoilStates = getRecoilStates()
+
+      const application = await getApplication(
+        namespace,
+        name,
+        backendUrl,
+        activeChannel,
+        recoilStates,
+        cluster,
+        apiVersion,
         clusters,
-        localHubName,
-        lastRefreshRef?.current?.relatedResources,
-        {
-          cluster,
-        },
-        recoilStates.services
+        localHubName
       )
-      const appData = getApplicationData(topology?.nodes, topology?.hubClusterName)
+      if (!isLatestRefresh()) {
+        return
+      }
+      if (!application) {
+        setApplicationNotFound(true)
+      } else {
+        setApplicationNotFound(false)
+        const topology: any = await getTopology(
+          toolbarControl,
+          application,
+          clusters,
+          localHubName,
+          lastRefreshRef?.current?.relatedResources,
+          {
+            cluster,
+          },
+          recoilStates.services
+        )
+        if (!isLatestRefresh()) {
+          return
+        }
+        const appData = getApplicationData(topology?.nodes, topology?.hubClusterName)
 
-      if (!lastRefreshRef?.current?.resourceStatuses) {
+        if (!lastRefreshRef?.current?.resourceStatuses) {
+          setApplicationData({
+            refreshTime: Date.now(),
+            application,
+            topology,
+            appData,
+          })
+          setActiveChannel(application.activeChannel)
+          setAllChannels(application.channels ?? [])
+        }
+
+        const { resourceStatuses, relatedResources, appDataWithStatuses } = await getResourceStatuses(
+          application,
+          appData,
+          topology
+        )
+        if (!isLatestRefresh()) {
+          return
+        }
+        const topologyWithRelated = await getTopology(
+          toolbarControl,
+          application,
+          clusters,
+          localHubName,
+          relatedResources,
+          {
+            topology,
+            cluster,
+          },
+          recoilStates.services
+        )
+        if (!isLatestRefresh()) {
+          return
+        }
         setApplicationData({
           refreshTime: Date.now(),
           application,
-          topology,
-          appData,
+          topology: topologyWithRelated,
+          appData: appDataWithStatuses,
+          statuses: resourceStatuses,
         })
         setActiveChannel(application.activeChannel)
-        setAllChannels(application.channels ?? [])
+        setAllChannels(application?.channels ?? [])
+        lastRefreshRef.current = { application, resourceStatuses, relatedResources }
       }
-
-      const { resourceStatuses, relatedResources, appDataWithStatuses } = await getResourceStatuses(
-        application,
-        appData,
-        topology
-      )
-      const topologyWithRelated = await getTopology(
-        toolbarControl,
-        application,
-        clusters,
-        localHubName,
-        relatedResources,
-        {
-          topology,
-          cluster,
-        },
-        recoilStates.services
-      )
-      setApplicationData({
-        refreshTime: Date.now(),
-        application,
-        topology: topologyWithRelated,
-        appData: appDataWithStatuses,
-        statuses: resourceStatuses,
-      })
-      setActiveChannel(application.activeChannel)
-      setAllChannels(application?.channels ?? [])
-      lastRefreshRef.current = { application, resourceStatuses, relatedResources }
+    } catch (err) {
+      if (isLatestRefresh()) {
+        console.error(err)
+      }
     }
   }
 
@@ -453,11 +475,15 @@ export default function ApplicationDetailsPage() {
   }, [])
 
   useEffect(() => {
+    const requestIdRef = refreshRequestIdRef
     void refreshApplicationResourcesRef.current()
     const interval = setInterval(() => {
       void refreshApplicationResourcesRef.current()
     }, 15000)
-    return () => clearInterval(interval)
+    return () => {
+      clearInterval(interval)
+      requestIdRef.current++
+    }
     // disabling to use clustersString instead of clusters
     // because clusters is an array and will change on every render
   }, [

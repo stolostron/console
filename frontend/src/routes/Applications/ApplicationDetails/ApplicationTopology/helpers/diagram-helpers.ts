@@ -54,11 +54,12 @@ export const getNodePropery = (
 ): DetailItem | undefined => {
   const dataObj = getNestedProperty(node, propPath)
 
-  const data = dataObj
-    ? isAbsoluteHttpUrl(dataObj)
-      ? dataObj
-      : JSON.stringify(dataObj).replace(/[{}": /]/g, (c) => (c === ':' ? '=' : c === '/' ? ',' : ''))
-    : defaultValue
+  const data =
+    dataObj === undefined || dataObj === null
+      ? defaultValue
+      : typeof dataObj === 'string'
+        ? dataObj
+        : JSON.stringify(dataObj).replace(/[{}": /]/g, (c) => (c === ':' ? '=' : c === '/' ? ',' : ''))
 
   if (data !== undefined) {
     return {
