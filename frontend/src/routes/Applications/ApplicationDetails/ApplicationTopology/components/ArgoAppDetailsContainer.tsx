@@ -99,8 +99,7 @@ function ArgoAppDetailsContainer(props: ArgoAppDetailsContainerProps): JSX.Eleme
       const { handleArgoAppDetailsContainerUpdate } = argoAppDetailsContainerControl
       const { isLoading } = state
 
-      const selectedVal =
-        selection == null ? undefined : Array.isArray(selection) ? selection[0] : selection
+      const selectedVal = selection == null ? undefined : Array.isArray(selection) ? selection[0] : selection
 
       let selectedApp: ArgoApp | undefined
       let newArgoAppList: ArgoApp[]
@@ -133,7 +132,7 @@ function ArgoAppDetailsContainer(props: ArgoAppDetailsContainerProps): JSX.Eleme
         selectedArgoAppList: newArgoAppList,
       }))
     },
-    [argoAppDetailsContainerControl, argoAppList, state.isLoading]
+    [argoAppDetailsContainerControl, argoAppList, state]
   )
 
   const handleSelectionClear = useCallback((): void => {
@@ -158,7 +157,7 @@ function ArgoAppDetailsContainer(props: ArgoAppDetailsContainerProps): JSX.Eleme
       expandSectionToggleMap: new Set(),
       argoAppList,
     }))
-  }, [argoAppDetailsContainerControl, argoAppList, state.isLoading])
+  }, [argoAppDetailsContainerControl, argoAppList, state])
 
   const handleFirstClick = useCallback((): void => {
     const { handleArgoAppDetailsContainerUpdate } = argoAppDetailsContainerControl
@@ -180,7 +179,7 @@ function ArgoAppDetailsContainer(props: ArgoAppDetailsContainerProps): JSX.Eleme
       page: 1,
       expandSectionToggleMap: new Set(),
     }))
-  }, [argoAppDetailsContainerControl, state.isLoading])
+  }, [argoAppDetailsContainerControl, state])
 
   const handleLastClick = useCallback((): void => {
     const { handleArgoAppDetailsContainerUpdate } = argoAppDetailsContainerControl
@@ -214,7 +213,7 @@ function ArgoAppDetailsContainer(props: ArgoAppDetailsContainerProps): JSX.Eleme
       page: lastPage,
       expandSectionToggleMap: new Set(),
     }))
-  }, [argoAppDetailsContainerControl, state.argoAppList, state.isLoading, state.perPage])
+  }, [argoAppDetailsContainerControl, state])
 
   const handleNextClick = useCallback(
     (_event: React.SyntheticEvent<HTMLButtonElement>, currentPage: number): void => {
@@ -239,7 +238,7 @@ function ArgoAppDetailsContainer(props: ArgoAppDetailsContainerProps): JSX.Eleme
         expandSectionToggleMap: new Set(),
       }))
     },
-    [argoAppDetailsContainerControl, state.isLoading, state.perPage, state.startIdx]
+    [argoAppDetailsContainerControl, state]
   )
 
   const handlePreviousClick = useCallback(
@@ -265,7 +264,7 @@ function ArgoAppDetailsContainer(props: ArgoAppDetailsContainerProps): JSX.Eleme
         expandSectionToggleMap: new Set(),
       }))
     },
-    [argoAppDetailsContainerControl, state.isLoading, state.perPage, state.startIdx]
+    [argoAppDetailsContainerControl, state]
   )
 
   const handlePageInput = useCallback(
@@ -291,7 +290,7 @@ function ArgoAppDetailsContainer(props: ArgoAppDetailsContainerProps): JSX.Eleme
         expandSectionToggleMap: new Set(),
       }))
     },
-    [argoAppDetailsContainerControl, state.isLoading, state.perPage]
+    [argoAppDetailsContainerControl, state]
   )
 
   const handleKeyPress = useCallback(
@@ -387,8 +386,15 @@ function ArgoAppDetailsContainer(props: ArgoAppDetailsContainerProps): JSX.Eleme
     )
   }, [])
 
-  const { selected, argoAppList: stateArgoList, page, perPage, startIdx, expandSectionToggleMap, selectedArgoAppList } =
-    state
+  const {
+    selected,
+    argoAppList: stateArgoList,
+    page,
+    perPage,
+    startIdx,
+    expandSectionToggleMap,
+    selectedArgoAppList,
+  } = state
 
   const titleId = 'app-select-id-1'
   const findAppMsg = 'Find application'
