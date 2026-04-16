@@ -42,10 +42,7 @@ describe('nodeStyle tests', () => {
 
   test('git node label is Repo when resources missing or empty', () => {
     expect(
-      nodeStyleAPI.getNodeStyle(
-        { uid: 'u', name: 'repo', namespace: 'ns', type: 'git', specs: {} },
-        undefined
-      ).label
+      nodeStyleAPI.getNodeStyle({ uid: 'u', name: 'repo', namespace: 'ns', type: 'git', specs: {} }, undefined).label
     ).toBe('Repo')
     expect(
       nodeStyleAPI.getNodeStyle(

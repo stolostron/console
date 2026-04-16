@@ -22,8 +22,9 @@
 }
 
 .sync {
-  color: #0066cc !important;
-  fill: currentColor !important;
+  color: `#0066cc` !important;
+  fill: currentcolor !important;
+}
 }
 
 :root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .sync {
