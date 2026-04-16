@@ -305,9 +305,9 @@ const placementGit: Placement = {
           labelSelector: {
             matchExpressions: [
               {
-                key: 'name',
+                key: 'local-cluster',
                 operator: 'NotIn',
-                values: ['local-cluster'],
+                values: ['true'],
               },
             ],
           },
@@ -343,9 +343,9 @@ const placementHelm: Placement = {
           labelSelector: {
             matchExpressions: [
               {
-                key: 'name',
+                key: 'local-cluster',
                 operator: 'NotIn',
-                values: ['local-cluster'],
+                values: ['true'],
               },
             ],
           },

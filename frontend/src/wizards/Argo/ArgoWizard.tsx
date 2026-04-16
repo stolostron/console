@@ -157,10 +157,6 @@ export function ArgoWizard(props: ArgoWizardProps) {
 
   const { t } = useTranslation()
 
-  const hubCluster = useMemo(
-    () => props.clusters.find((cls) => cls.metadata?.labels && cls.metadata.labels['local-cluster'] === 'true'),
-    [props.clusters]
-  )
   const sourceGitChannels = useMemo(
     () =>
       props.channels
@@ -342,9 +338,9 @@ export function ArgoWizard(props: ArgoWizardProps) {
                     labelSelector: {
                       matchExpressions: [
                         {
-                          key: 'name',
+                          key: 'local-cluster',
                           operator: 'NotIn',
-                          values: [hubCluster?.metadata?.name],
+                          values: ['true'],
                         },
                       ],
                     },
@@ -584,7 +580,6 @@ export function ArgoWizard(props: ArgoWizardProps) {
               clusterSetBindings={props.clusterSetBindings}
               createClusterSetCallback={props.createClusterSetCallback}
               isPullModel={isPullModel}
-              hubClusterName={hubCluster?.metadata?.name ?? ''}
             />
           </Step>
         )}
@@ -847,7 +842,6 @@ function ArgoWizardPlacementSection(props: {
   clusters: IResource[]
   createClusterSetCallback?: () => void
   isPullModel?: boolean
-  hubClusterName: string
 }) {
   const { t } = useTranslation()
   const resources = useItem() as IResource[]
@@ -899,9 +893,9 @@ function ArgoWizardPlacementSection(props: {
                                   labelSelector: {
                                     matchExpressions: [
                                       {
-                                        key: 'name',
+                                        key: 'local-cluster',
                                         operator: 'NotIn',
-                                        values: [props.hubClusterName],
+                                        values: ['true'],
                                       },
                                     ],
                                   },
