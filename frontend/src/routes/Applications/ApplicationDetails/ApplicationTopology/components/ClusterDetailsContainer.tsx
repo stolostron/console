@@ -99,7 +99,7 @@ function ClusterDetailsContainer(props: ClusterDetailsContainerProps): JSX.Eleme
     (selection: string | string[] | undefined): void => {
       const selectedValue = Array.isArray(selection) ? selection[0] : selection
       const { handleClusterDetailsContainerUpdate } = clusterDetailsContainerControl
-      const { clusterID: stateClusterId } = state
+      const stateClusterId = state.clusterID
 
       let selectedCluster: ClusterData | undefined
       let newClusterList: ClusterData[]
@@ -139,7 +139,7 @@ function ClusterDetailsContainer(props: ClusterDetailsContainerProps): JSX.Eleme
 
   const handleSelectionClear = useCallback((): void => {
     const { handleClusterDetailsContainerUpdate } = clusterDetailsContainerControl
-    const { clusterID: stateClusterId } = state
+    const stateClusterId = state.clusterID
 
     handleClusterDetailsContainerUpdate({
       page: 1,
@@ -163,7 +163,7 @@ function ClusterDetailsContainer(props: ClusterDetailsContainerProps): JSX.Eleme
 
   const handleFirstClick = useCallback((): void => {
     const { handleClusterDetailsContainerUpdate } = clusterDetailsContainerControl
-    const { clusterID: stateClusterId } = state
+    const stateClusterId = state.clusterID
 
     handleClusterDetailsContainerUpdate({
       page: 1,
@@ -185,7 +185,9 @@ function ClusterDetailsContainer(props: ClusterDetailsContainerProps): JSX.Eleme
 
   const handleLastClick = useCallback((): void => {
     const { handleClusterDetailsContainerUpdate } = clusterDetailsContainerControl
-    const { clusterList: list, perPage, clusterID: stateClusterId } = state
+    const list = state.clusterList
+    const perPage = state.perPage
+    const stateClusterId = state.clusterID
 
     let divResult = Math.floor(list.length / perPage)
     let lastPage = divResult
@@ -220,7 +222,9 @@ function ClusterDetailsContainer(props: ClusterDetailsContainerProps): JSX.Eleme
   const handleNextClick = useCallback(
     (_event: SyntheticEvent<HTMLButtonElement>, currentPage: number): void => {
       const { handleClusterDetailsContainerUpdate } = clusterDetailsContainerControl
-      const { perPage, startIdx, clusterID: stateClusterId } = state
+      const perPage = state.perPage
+      const startIdx = state.startIdx
+      const stateClusterId = state.clusterID
       const newStartIdx = startIdx + perPage
 
       handleClusterDetailsContainerUpdate({
@@ -246,7 +250,9 @@ function ClusterDetailsContainer(props: ClusterDetailsContainerProps): JSX.Eleme
   const handlePreviousClick = useCallback(
     (_event: SyntheticEvent<HTMLButtonElement>, currentPage: number): void => {
       const { handleClusterDetailsContainerUpdate } = clusterDetailsContainerControl
-      const { perPage, startIdx, clusterID: stateClusterId } = state
+      const perPage = state.perPage
+      const startIdx = state.startIdx
+      const stateClusterId = state.clusterID
       const newStartIdx = startIdx - perPage
 
       handleClusterDetailsContainerUpdate({
@@ -272,7 +278,8 @@ function ClusterDetailsContainer(props: ClusterDetailsContainerProps): JSX.Eleme
   const handlePageInput = useCallback(
     (_event: KeyboardEvent<HTMLInputElement>, newPage: number): void => {
       const { handleClusterDetailsContainerUpdate } = clusterDetailsContainerControl
-      const { perPage, clusterID: stateClusterId } = state
+      const perPage = state.perPage
+      const stateClusterId = state.clusterID
       const newStartIdx = (newPage - 1) * perPage
 
       handleClusterDetailsContainerUpdate({

@@ -195,7 +195,7 @@ function deriveDetailsTableState(
  * The table supports searching, sorting, and pagination for better user experience with large datasets.
  */
 function DetailsTable(props: DetailsTableProps): React.ReactNode {
-  const { id, node, t, handleOpen } = props
+  const { id, node, t } = props
   const { type } = node
 
   const [page, setPage] = useState(1)
@@ -211,7 +211,7 @@ function DetailsTable(props: DetailsTableProps): React.ReactNode {
 
   const derived = useMemo(
     () => deriveDetailsTableState(props, { perPage, sortBy, searchValue, detailType }),
-    [id, node, handleOpen, t, perPage, sortBy, searchValue, detailType]
+    [props, perPage, sortBy, searchValue, detailType]
   )
 
   useLayoutEffect(() => {
