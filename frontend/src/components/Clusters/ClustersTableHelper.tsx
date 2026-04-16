@@ -1,68 +1,72 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AgentClusterInstallK8sResource, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
-import { Alert, Label, Content, ContentVariants, Tooltip } from '@patternfly/react-core'
+import { Alert, Content, ContentVariants, Label, Tooltip } from '@patternfly/react-core'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { fitContent, nowrap } from '@patternfly/react-table'
-import { Link } from 'react-router-dom-v5-compat'
+import keyBy from 'lodash/keyBy'
 import { useMemo } from 'react'
+import { TFunction } from 'react-i18next'
+import { Link } from 'react-router-dom-v5-compat'
+import { ObservabilityEndpoint, useMetricsPoll } from '~/lib/useMetricsPoll'
 import { useTranslation } from '../../lib/acm-i18next'
+import AcmTimestamp from '../../lib/AcmTimestamp'
+import { deleteCluster, detachCluster } from '../../lib/delete-cluster'
+import { handleSemverOperatorComparison, handleStandardComparison } from '../../lib/search-utils'
 import { getClusterNavPath, NavigationPath } from '../../NavigationPath'
 import {
   ClusterCurator,
-  ClusterImageSet,
-  getRoles,
-  NodeInfo,
   ClusterDeployment,
   ClusterDeploymentDefinition,
+  ClusterImageSet,
   getClusterImageSetVersion,
+  getRoles,
+  NodeInfo,
 } from '../../resources'
 import {
+  AddonStatus,
   Cluster,
+  ClusterStatus,
   exportObjectString,
+  filterLabelFn,
+  getAddonStatusLabel,
   getClusterStatusLabel,
   getISOStringTimestamp,
-  AddonStatus,
-  ClusterStatus,
-  getAddonStatusLabel,
-  ResourceErrorCode,
   patchResource,
-  filterLabelFn,
+  ResourceErrorCode,
 } from '../../resources/utils'
-import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
-import {
-  AcmInlineProvider,
-  AcmInlineStatusGroup,
-  AcmLabels,
-  compareStrings,
-  IAcmTableColumn,
-  Provider,
-  ProviderLongTextMap,
-  AcmEmptyState,
-  getNodeStatusLabel,
-  IAcmTableAction,
-  ITableAdvancedFilter,
-  ITableFilter,
-  StatusType,
-  AcmVisitedLink,
-} from '../../ui-components'
-import { getDateTimeCell } from '../../routes/Infrastructure/helpers/table-row-helpers'
+import { ClusterActionDropdown } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/ClusterActionDropdown'
 import { DistributionField } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/DistributionField'
 import { StatusField } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/StatusField'
-import { ClusterActionDropdown } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/ClusterActionDropdown'
-import { TFunction } from 'react-i18next'
-import keyBy from 'lodash/keyBy'
-import { HighlightSearchText } from '../HighlightSearchText'
-import AcmTimestamp from '../../lib/AcmTimestamp'
-import { BulkActionModalProps, errorIsNot } from '../BulkActionModal'
-import { deleteCluster, detachCluster } from '../../lib/delete-cluster'
 import {
   ClusterAction,
   clusterDestroyable,
   clusterSupportsAction,
 } from '../../routes/Infrastructure/Clusters/ManagedClusters/utils/cluster-actions'
-import { SearchOperator } from '../../ui-components/AcmSearchInput'
-import { handleStandardComparison, handleSemverOperatorComparison } from '../../lib/search-utils'
 import { getClusterLabelData } from '../../routes/Infrastructure/Clusters/ManagedClusters/utils/utils'
+import { getDateTimeCell } from '../../routes/Infrastructure/helpers/table-row-helpers'
+import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import {
+  AcmButton,
+  AcmEmptyState,
+  AcmInlineProvider,
+  AcmInlineStatusGroup,
+  AcmLabels,
+  AcmVisitedLink,
+  compareNumbers,
+  compareStrings,
+  getNodeStatusLabel,
+  IAcmTableAction,
+  IAcmTableColumn,
+  ITableAdvancedFilter,
+  ITableFilter,
+  Provider,
+  ProviderLongTextMap,
+  StatusType,
+} from '../../ui-components'
+import { SearchOperator } from '../../ui-components/AcmSearchInput'
+import { BulkActionModalProps, errorIsNot } from '../BulkActionModal'
+import { HighlightSearchText } from '../HighlightSearchText'
 
 const patchClusterPowerState = (cluster: Cluster, powerState: 'Hibernating' | 'Running') =>
   patchResource(
@@ -488,6 +492,80 @@ export function useClusterSetColumn(): IAcmTableColumn<Cluster> {
   }
 }
 
+export function useGPUCountColumn(): IAcmTableColumn<Cluster> {
+  const { t } = useTranslation()
+  const { clusterManagementAddonsState, useIsObservabilityInstalled } = useSharedAtoms()
+  const isObservabilityInstalled = useIsObservabilityInstalled()
+  const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
+  const obsCont = clusterManagementAddons.find((cma) => cma.metadata.name === 'observability-controller')
+  let grafanaLink: string | undefined
+  try {
+    const rawLink = obsCont?.metadata?.annotations?.['console.open-cluster-management.io/launch-link']
+    grafanaLink = rawLink ? new URL(rawLink).origin : undefined
+  } catch {
+    grafanaLink = undefined
+  }
+  // accelerator_card_info metric link for all managed cluster GPU data
+  const link = `${grafanaLink}/explore?schemaVersion=1&panes={"jjq":{"queries":[{"expr":"accelerator_card_info"}]}}&orgId=1`
+
+  // polling metric every 1min
+  const [gpuData, gpuDataError, gpuDataLoading] = useMetricsPoll({
+    endpoint: ObservabilityEndpoint.QUERY,
+    query: 'accelerator_card_info',
+    skip: !isObservabilityInstalled,
+  })
+
+  // parse metric and return Record in format: { [clusterID]: 0 }
+  const clusterGPUCounts = useMemo(() => {
+    const counts: Record<string, number> = {}
+    if (isObservabilityInstalled && !gpuDataLoading && !gpuDataError) {
+      const resultData = gpuData?.data?.result ?? []
+      resultData.forEach((data) => {
+        // increase count by 1 for each gpu metric instance
+        counts[data.metric.clusterID] = (counts[data.metric.clusterID] ?? 0) + 1
+      })
+    }
+    return counts
+  }, [gpuData?.data?.result, gpuDataError, gpuDataLoading, isObservabilityInstalled])
+
+  return {
+    header: t('GPU count'),
+    tooltip: (
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        {t(
+          'The count of GPUs on the managed cluster is gathered from the "accelerator_card_info" metric, which is present only when Red Hat Advanced Cluster Management Observability is installed.'
+        )}
+        {grafanaLink && (
+          // Only show link if it is defined
+          <AcmButton
+            variant="link"
+            component="a"
+            target="_blank"
+            isInline={true}
+            href={link}
+            icon={<ExternalLinkAltIcon />}
+            iconPosition="right"
+          >
+            {t('Observability metrics')}
+          </AcmButton>
+        )}
+      </div>
+    ),
+    sort: (a: Cluster, b: Cluster) => {
+      return compareNumbers(
+        clusterGPUCounts[a.labels?.['clusterID'] ?? ''],
+        clusterGPUCounts[b.labels?.['clusterID'] ?? '']
+      )
+    },
+    cell: (cluster) => clusterGPUCounts[cluster.labels?.['clusterID'] ?? ''] ?? 0,
+    exportContent: (cluster) => clusterGPUCounts[cluster.labels?.['clusterID'] ?? ''] ?? '0',
+    id: 'gpu-count',
+    order: 12,
+    isDefault: false,
+    isFirstVisitChecked: isObservabilityInstalled ? true : false,
+  }
+}
+
 export function useModalColumns(
   clusterNameColumnModal: IAcmTableColumn<Cluster>,
   clusterStatusColumn: IAcmTableColumn<Cluster>,
@@ -829,6 +907,8 @@ export function useTableColumns({
   hideTableActions,
   hiddenColumns,
 }: UseTableColumnsParams) {
+  const { useIsObservabilityInstalled } = useSharedAtoms()
+  const isObservabilityInstalled = useIsObservabilityInstalled()
   const clusterNameColumn = useClusterNameColumn(areLinksDisplayed)
   const clusterNameColumnModal = useClusterNameColumnModal(areLinksDisplayed)
   const clusterNamespaceColumn = useClusterNamespaceColumn()
@@ -841,6 +921,7 @@ export function useTableColumns({
   const clusterNodesColumn = useClusterNodesColumn()
   const clusterAddonsColumn = useClusterAddonColumn()
   const clusterCreatedDataColumn = useClusterCreatedDateColumn()
+  const gpuCountColumn = useGPUCountColumn()
 
   const modalColumns = useModalColumns(clusterNameColumnModal, clusterStatusColumn, clusterProviderColumn)
 
@@ -857,6 +938,7 @@ export function useTableColumns({
       clusterNodesColumn,
       clusterAddonsColumn,
       clusterCreatedDataColumn,
+      ...(isObservabilityInstalled ? [gpuCountColumn] : []),
       ...(hideTableActions
         ? []
         : [
@@ -880,7 +962,9 @@ export function useTableColumns({
       clusterNodesColumn,
       clusterAddonsColumn,
       clusterCreatedDataColumn,
+      gpuCountColumn,
       hideTableActions,
+      isObservabilityInstalled,
     ]
   )
 

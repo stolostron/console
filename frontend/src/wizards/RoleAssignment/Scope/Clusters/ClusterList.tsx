@@ -34,7 +34,16 @@ export const ClusterList = ({ onSelectCluster, namespaces, selectedClusters }: C
       initialSelectedClusters={selectedClusters}
       showExportButton={false}
       areLinksDisplayed={false}
-      hiddenColumns={['namespace', 'provider', 'controlplane', 'distribution', 'labels', 'addons', 'created']}
+      hiddenColumns={[
+        'namespace',
+        'provider',
+        'controlplane',
+        'distribution',
+        'labels',
+        'addons',
+        'created',
+        'gpu-count',
+      ]}
       emptyState={
         <AcmEmptyState
           key="mcEmptyState"

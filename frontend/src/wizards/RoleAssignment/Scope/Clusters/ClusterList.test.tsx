@@ -33,6 +33,7 @@ jest.mock('../../../../shared-recoil', () => ({
     infraEnvironmentsState: 'infraEnvironmentsState',
     agentClusterInstallsState: 'agentClusterInstallsState',
     clusterImageSetsState: 'clusterImageSetsState',
+    useIsObservabilityInstalled: () => false,
   }),
   useRecoilValue: (state: string) => {
     switch (state) {

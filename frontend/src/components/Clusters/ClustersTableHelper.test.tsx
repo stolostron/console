@@ -1,28 +1,41 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen } from '@testing-library/react'
+type GpuMetricsPollTuple = [{ data?: { result?: Array<{ metric: { clusterID: string } }> } }, unknown, boolean]
+
+/* Read by jest.mock factories for useGPUCountColumn tests. */
+// eslint-disable-next-line no-var
+var gpuColumnTestState: {
+  observabilityInstalled: boolean
+  metricsPoll: GpuMetricsPollTuple
+} = {
+  observabilityInstalled: false,
+  metricsPoll: [{ data: { result: [] } }, undefined, false],
+}
+
+import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
-import {
-  getControlPlaneString,
-  getClusterDistributionString,
-  useClusterNameColumn,
-  useClusterStatusColumn,
-  useClusterProviderColumn,
-  useClusterControlPlaneColumn,
-  useClusterDistributionColumn,
-  useClusterLabelsColumn,
-  useClusterSetColumn,
-  useClusterNodesColumn,
-  useClusterAddonColumn,
-  useClusterCreatedDateColumn,
-  useTableColumns,
-  useTableActions,
-  useAdvancedFilters,
-  useFilters,
-} from './ClustersTableHelper'
 import { Cluster, ClusterStatus } from '../../resources/utils'
 import { Provider } from '../../ui-components'
+import {
+  getClusterDistributionString,
+  getControlPlaneString,
+  useAdvancedFilters,
+  useClusterAddonColumn,
+  useClusterControlPlaneColumn,
+  useClusterCreatedDateColumn,
+  useClusterDistributionColumn,
+  useClusterLabelsColumn,
+  useClusterNameColumn,
+  useClusterNodesColumn,
+  useClusterProviderColumn,
+  useClusterSetColumn,
+  useClusterStatusColumn,
+  useFilters,
+  useGPUCountColumn,
+  useTableActions,
+  useTableColumns,
+} from './ClustersTableHelper'
 
 // Mock the translation hook
 jest.mock('../../lib/acm-i18next', () => ({
@@ -44,6 +57,8 @@ jest.mock('../../shared-recoil', () => ({
   useSharedAtoms: () => ({
     agentClusterInstallsState: 'agentClusterInstallsState',
     clusterImageSetsState: 'clusterImageSetsState',
+    clusterManagementAddonsState: 'clusterManagementAddonsState',
+    useIsObservabilityInstalled: () => gpuColumnTestState.observabilityInstalled,
   }),
   useRecoilValue: (state: string) => {
     switch (state) {
@@ -51,10 +66,17 @@ jest.mock('../../shared-recoil', () => ({
         return []
       case 'clusterImageSetsState':
         return []
+      case 'clusterManagementAddonsState':
+        return []
       default:
         return []
     }
   },
+}))
+
+jest.mock('~/lib/useMetricsPoll', () => ({
+  ObservabilityEndpoint: { QUERY: 'QUERY' },
+  useMetricsPoll: () => gpuColumnTestState.metricsPoll,
 }))
 
 // Mock the components that are not essential for testing
@@ -209,6 +231,11 @@ const renderWithProviders = (component: React.ReactElement) => {
 }
 
 describe('ClustersTableHelper', () => {
+  beforeEach(() => {
+    gpuColumnTestState.observabilityInstalled = false
+    gpuColumnTestState.metricsPoll = [{ data: { result: [] } }, undefined, false]
+  })
+
   describe('getControlPlaneString', () => {
     const mockT = (key: string) => key
 
@@ -289,6 +316,16 @@ describe('ClustersTableHelper', () => {
     const TestColumnComponent = ({ column, cluster }: { column: any; cluster: Cluster }) => {
       const cellContent = column.cell(cluster, '')
       return <div>{cellContent}</div>
+    }
+
+    const GpuCountColumnComponent = ({ cluster }: { cluster: Cluster }) => {
+      const column = useGPUCountColumn()
+      return (
+        <>
+          <span data-testid="gpu-count-col-header">{column.header}</span>
+          <TestColumnComponent column={column} cluster={cluster} />
+        </>
+      )
     }
 
     it('should render cluster name column with link', () => {
@@ -383,6 +420,51 @@ describe('ClustersTableHelper', () => {
 
       // Verify the created date column cell function is defined
       expect(column.cell).toBeDefined()
+    })
+
+    it('should render gpu count column', () => {
+      gpuColumnTestState.observabilityInstalled = true
+      gpuColumnTestState.metricsPoll = [
+        {
+          data: {
+            result: [
+              { metric: { clusterID: 'managed-cluster-gpu' } },
+              { metric: { clusterID: 'managed-cluster-gpu' } },
+            ],
+          },
+        },
+        undefined,
+        false,
+      ]
+      const clusterWithGpu: Cluster = {
+        ...mockCluster,
+        labels: {
+          ...mockCluster.labels,
+          clusterID: 'managed-cluster-gpu',
+        },
+      }
+      const { container } = renderWithProviders(<GpuCountColumnComponent cluster={clusterWithGpu} />)
+      const view = within(container)
+
+      expect(view.getByText('GPU count')).toBeInTheDocument()
+      expect(view.getByText('2')).toBeInTheDocument()
+    })
+
+    it('should render gpu count column with 0 when no cluster metrics are found', () => {
+      gpuColumnTestState.observabilityInstalled = true
+      gpuColumnTestState.metricsPoll = [{ data: { result: [] } }, undefined, false]
+      const clusterWithId: Cluster = {
+        ...mockCluster,
+        labels: {
+          ...mockCluster.labels,
+          clusterID: 'cluster-without-metric-rows',
+        },
+      }
+      const { container } = renderWithProviders(<GpuCountColumnComponent cluster={clusterWithId} />)
+      const view = within(container)
+
+      expect(view.getByText('GPU count')).toBeInTheDocument()
+      expect(view.getByText('0')).toBeInTheDocument()
     })
   })
 
