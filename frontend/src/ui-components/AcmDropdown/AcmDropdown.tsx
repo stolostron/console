@@ -83,6 +83,7 @@ const MenuItems = forwardRef<HTMLDivElement, MenuItemProps>((props, ref) => {
                 isSelected={item.isSelected}
                 to={item.href}
                 target={item.target}
+                rel={item.rel ?? (item.target === '_blank' ? 'noopener noreferrer' : undefined)}
                 flyoutMenu={
                   item.flyoutMenu?.length ? (
                     <MenuItems id={`${item.id}-submenu`} menuItems={item.flyoutMenu} onSelect={onSelect} />
