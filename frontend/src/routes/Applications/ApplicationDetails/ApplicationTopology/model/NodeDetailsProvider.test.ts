@@ -152,9 +152,9 @@ describe('NodeDetailsProvider', () => {
       const result = nodeDetailsProvider(gitNode, mockActiveFilters, mockT, mockHubClusterName)
 
       expect(detail(result, 'Repository', 'https://git.example/repo')).toBe(true)
-      expect(detail(result, 'Chart name', 'my-chart')).toBe(true)
-      expect(detail(result, 'Path', 'charts,app')).toBe(true)
-      expect(detail(result, 'Revision', '1.0')).toBe(true)
+      expect(detail(result, 'Chart name', ' my-chart ')).toBe(true)
+      expect(detail(result, 'Path', ' charts/app ')).toBe(true)
+      expect(detail(result, 'Revision', ' 1.0 ')).toBe(true)
       expect(detail(result, 'Enabled', 'false')).toBe(true)
       expect(detail(result, 'Self-heal', 'true')).toBe(true)
       expect(detail(result, 'Prune', 'true')).toBe(true)
@@ -179,7 +179,7 @@ describe('NodeDetailsProvider', () => {
         },
       }
       const result = nodeDetailsProvider(chartNode, mockActiveFilters, mockT, mockHubClusterName)
-      expect(detail(result, 'Repository', 'oci=,,quay.io,chart')).toBe(true)
+      expect(detail(result, 'Repository', 'oci://quay.io/chart')).toBe(true)
     })
 
     it('should not iterate specs.resources when it is not an array', () => {

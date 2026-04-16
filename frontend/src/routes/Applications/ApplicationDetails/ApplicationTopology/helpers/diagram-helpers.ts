@@ -861,13 +861,3 @@ export const getEditLink = (
     apiversion: apiVersion,
   })}`
 }
-
-function isAbsoluteHttpUrl(value: unknown): value is string {
-  if (typeof value !== 'string') return false
-  try {
-    const { protocol } = new URL(value)
-    return protocol === 'http:' || protocol === 'https:'
-  } catch {
-    return false
-  }
-}
