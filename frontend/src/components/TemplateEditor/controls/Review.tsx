@@ -10,12 +10,7 @@ import {
   DescriptionListGroup,
   DescriptionListTerm,
 } from '@patternfly/react-core'
-import {
-  ControlPanelFinishProps,
-  FinishSummaryRow,
-  TemplateControl,
-  WizardStepSection,
-} from '../types'
+import { ControlPanelFinishProps, FinishSummaryRow, TemplateControl, WizardStepSection } from '../types'
 import { TFunction } from 'react-i18next'
 
 function renderTables(tables: TemplateControl[]) {

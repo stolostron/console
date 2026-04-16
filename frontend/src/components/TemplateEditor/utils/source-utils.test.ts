@@ -142,9 +142,7 @@ metadata:
     })
 
     it('builds a lowercase synthetic path when selfLink is absent', () => {
-      expect(getResourceID({ kind: 'Pod', metadata: { name: 'n', namespace: 'ns' } })).toBe(
-        '/namespaces/ns/pods/n'
-      )
+      expect(getResourceID({ kind: 'Pod', metadata: { name: 'n', namespace: 'ns' } })).toBe('/namespaces/ns/pods/n')
       expect(getResourceID({ kind: 'Pod', metadata: { name: 'n' } })).toBe('/namespaces/none/pods/n')
     })
   })
@@ -181,10 +179,7 @@ metadata:
           userData: data,
         },
       ])
-      expect(setItem).toHaveBeenCalledWith(
-        expect.stringMatching(/^my-key--/),
-        JSON.stringify(data)
-      )
+      expect(setItem).toHaveBeenCalledWith(expect.stringMatching(/^my-key--/), JSON.stringify(data))
       setItem.mockRestore()
     })
 
@@ -230,9 +225,7 @@ metadata:
         { decorationType: DecorationType.IMMUTABLE, path: 'Pod[0].metadata.labels.app', value: 'fixed' },
       ]
       setImmutableValues(decorationData, resources)
-      expect(
-        (resources[0] as unknown as { metadata: { labels: { app: string } } }).metadata.labels.app
-      ).toBe('fixed')
+      expect((resources[0] as unknown as { metadata: { labels: { app: string } } }).metadata.labels.app).toBe('fixed')
     })
   })
 

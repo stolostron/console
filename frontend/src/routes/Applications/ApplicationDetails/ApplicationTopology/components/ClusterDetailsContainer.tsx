@@ -78,10 +78,13 @@ function ClusterDetailsContainer(props: ClusterDetailsContainerProps): JSX.Eleme
   const { clusterList, clusterDetailsContainerControl } = props
   const [state, setState] = useState<ClusterDetailsContainerState>(() => buildInitialState(props))
 
-  const processActionLink = useCallback((resource: ResourceAction): void => {
-    const { t } = state
-    processResourceActionLink(resource, () => {}, t, '')
-  }, [state])
+  const processActionLink = useCallback(
+    (resource: ResourceAction): void => {
+      const { t } = state
+      processResourceActionLink(resource, () => {}, t, '')
+    },
+    [state]
+  )
 
   const handleKeyPress = useCallback(
     (resource: ResourceAction, event: KeyboardEvent): void => {
@@ -295,8 +298,15 @@ function ClusterDetailsContainer(props: ClusterDetailsContainerProps): JSX.Eleme
   const handleExpandSectionToggle = useCallback(
     (itemNum: number): void => {
       const { handleClusterDetailsContainerUpdate } = clusterDetailsContainerControl
-      const { page, startIdx, clusterSearchToggle, expandSectionToggleMap, clusterID: stateClusterId, selected, selectedClusterList } =
-        state
+      const {
+        page,
+        startIdx,
+        clusterSearchToggle,
+        expandSectionToggleMap,
+        clusterID: stateClusterId,
+        selected,
+        selectedClusterList,
+      } = state
 
       const newExpandSectionToggleMap = new Set(expandSectionToggleMap)
 
@@ -450,8 +460,16 @@ function ClusterDetailsContainer(props: ClusterDetailsContainerProps): JSX.Eleme
     )
   }, [])
 
-  const { selected, clusterList: stateClusterList, page, perPage, startIdx, t, expandSectionToggleMap, selectedClusterList } =
-    state
+  const {
+    selected,
+    clusterList: stateClusterList,
+    page,
+    perPage,
+    startIdx,
+    t,
+    expandSectionToggleMap,
+    selectedClusterList,
+  } = state
 
   const titleId = 'cluster-select-id-1'
   const findClusterMsg = 'Find cluster'
@@ -470,8 +488,10 @@ function ClusterDetailsContainer(props: ClusterDetailsContainerProps): JSX.Eleme
     const status = cluster.status || calculateClusterStatus(cluster) || 'unknown'
     const statusIcon = mapClusterStatusToIcon(status)
     const clusterName = cluster.name || (metadata as { name?: string })?.name || ''
-    const clusterNamespace = cluster.namespace || cluster._clusterNamespace || (metadata as { namespace?: string })?.namespace || ''
-    const creationTimestamp = cluster.creationTimestamp || (metadata as { creationTimestamp?: string })?.creationTimestamp
+    const clusterNamespace =
+      cluster.namespace || cluster._clusterNamespace || (metadata as { namespace?: string })?.namespace || ''
+    const creationTimestamp =
+      cluster.creationTimestamp || (metadata as { creationTimestamp?: string })?.creationTimestamp
     const cc = cluster.cpu ? cluster.cpu.toString() : capacity.cpu
     const cm = cluster.memory ? cluster.memory.toString() : capacity.memory
     const am = allocatable.memory || ''

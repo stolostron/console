@@ -94,7 +94,8 @@ function deriveDetailsTableState(
 
   available = available.sort((a, b) => {
     const cmp =
-      pulseValueArr.indexOf(a.pulse as PulseColor | undefined) - pulseValueArr.indexOf(b.pulse as PulseColor | undefined)
+      pulseValueArr.indexOf(a.pulse as PulseColor | undefined) -
+      pulseValueArr.indexOf(b.pulse as PulseColor | undefined)
     return cmp !== 0 ? cmp : a.name.localeCompare(b.name)
   })
 
@@ -327,7 +328,10 @@ function DetailsTable(props: DetailsTableProps): React.ReactNode {
                     onSetPage={(_event: React.MouseEvent | React.KeyboardEvent | MouseEvent, nextPage: number) => {
                       setPage(nextPage)
                     }}
-                    onPerPageSelect={(_event: React.MouseEvent | React.KeyboardEvent | MouseEvent, nextPerPage: number) => {
+                    onPerPageSelect={(
+                      _event: React.MouseEvent | React.KeyboardEvent | MouseEvent,
+                      nextPerPage: number
+                    ) => {
                       setPerPage(nextPerPage)
                       setPage(1)
                     }}
