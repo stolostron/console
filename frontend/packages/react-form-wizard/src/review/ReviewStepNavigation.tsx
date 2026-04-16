@@ -69,6 +69,10 @@ function getReviewNodeStepId(node: WizardDomTreeNode): string | undefined {
     return node.stepId && node.stepId !== '' ? node.stepId : undefined
   }
   if (isReviewSectionNode(node)) {
+    for (const c of node.children ?? []) {
+      const id = getReviewNodeStepId(c)
+      if (id) return id
+    }
     return node.id && node.id !== '' ? node.id : undefined
   }
   for (const c of node.children ?? []) {
@@ -85,7 +89,8 @@ function getReviewScrollTargetDomId(node: WizardDomTreeNode): string | undefined
       case InputReviewMeta.SECTION:
       case InputReviewMeta.INPUT:
       case InputReviewMeta.ARRAY_INPUT:
-      case InputReviewMeta.ARRAY_INSTANCE: {
+      case InputReviewMeta.ARRAY_INSTANCE:
+      case InputReviewMeta.GROUP: {
         const id = 'id' in node ? (node as { id?: string }).id : undefined
         return id && id !== '' ? id : undefined
       }

@@ -13,8 +13,8 @@ import {
 /** DOM nodes that carry wizard input metadata (e.g. for review / focus helpers). */
 export enum InputReviewMeta {
   INPUT = 'input',
-  /** Review UI grouping for one wizard step; not stored in the step-input registry map. */
   SECTION = 'section',
+  GROUP = 'group',
   ARRAY_INPUT = 'arrayInput',
   ARRAY_INSTANCE = 'arrayInstance',
 }
@@ -45,6 +45,22 @@ export type InputReviewStepMeta =
       label?: string
       type: InputReviewMeta.ARRAY_INSTANCE
     }
+  | {
+      id: string
+      path: string
+      value: unknown
+      label?: string
+      error: undefined
+      type: InputReviewMeta.SECTION
+    }
+  | {
+      id: string
+      path: string
+      value?: unknown
+      label?: string
+      error: undefined
+      type: InputReviewMeta.GROUP
+    }
 
 type InputOrArrayInputMeta = Extract<InputReviewStepMeta, { type: InputReviewMeta.INPUT | InputReviewMeta.ARRAY_INPUT }>
 
@@ -63,6 +79,7 @@ export type WizardDomTreeNode =
     })
   | (Omit<InputOrArrayInputMeta, 'type'> & { type: InputReviewMeta.ARRAY_INPUT; children?: WizardDomTreeNode[] })
   | (Extract<InputReviewStepMeta, { type: InputReviewMeta.ARRAY_INSTANCE }> & { children?: WizardDomTreeNode[] })
+  | (Extract<InputReviewStepMeta, { type: InputReviewMeta.GROUP }> & { children?: WizardDomTreeNode[] })
   | { children?: WizardDomTreeNode[] }
 
 /** Nearest wizard step id; set by each `Step` for inputs to register against. */

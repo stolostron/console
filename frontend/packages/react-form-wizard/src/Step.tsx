@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Form } from '@patternfly/react-core'
 import { Fragment, ReactNode, useLayoutEffect, useRef } from 'react'
-import { DisplayMode, useDisplayMode } from './contexts/DisplayModeContext'
 import { useReviewDomTreeVersion } from './review/ReviewStepContexts'
 import { HasInputsProvider, useHasInputs } from './contexts/HasInputsProvider'
 import { ShowValidationProvider, useSetShowValidation } from './contexts/ShowValidationProvider'
@@ -75,39 +74,29 @@ export function Step(props: StepProps) {
 }
 
 export function StepInternal(props: StepProps) {
-  const displayMode = useDisplayMode()
-
   const setShowValidation = useSetShowValidation()
   const stepShowValidation = useStepShowValidation()
   useLayoutEffect(() => {
-    if (displayMode !== DisplayMode.Details) {
-      if (stepShowValidation[props.id]) {
-        setShowValidation(true)
-      }
+    if (stepShowValidation[props.id]) {
+      setShowValidation(true)
     }
-  }, [displayMode, props.id, setShowValidation, stepShowValidation])
+  }, [props.id, setShowValidation, stepShowValidation])
 
   const hasValidationError = useHasValidationError()
   const setStepHasValidationError = useSetStepHasValidationError()
   useLayoutEffect(() => {
-    if (displayMode !== DisplayMode.Details) setStepHasValidationError(props.id, hasValidationError)
-  }, [hasValidationError, displayMode, props.id, setStepHasValidationError])
+    setStepHasValidationError(props.id, hasValidationError)
+  }, [hasValidationError, props.id, setStepHasValidationError])
 
   const hasInputs = useHasInputs()
   const setStepHasInputs = useSetStepHasInputs()
   useLayoutEffect(() => {
-    if (displayMode !== DisplayMode.Details) {
-      setStepHasInputs(props.id, hasInputs)
-    }
-  }, [hasInputs, displayMode, props.id, setStepHasInputs])
+    setStepHasInputs(props.id, hasInputs)
+  }, [hasInputs, props.id, setStepHasInputs])
 
   const hidden = useInputHidden(props)
   if (hidden && props.autohide !== false) return <Fragment />
 
-  if (displayMode === DisplayMode.Details) {
-    // Don't use forms in steps which are forms
-    return <Fragment>{props.children}</Fragment>
-  }
   return (
     <Form
       onSubmit={(event) => {

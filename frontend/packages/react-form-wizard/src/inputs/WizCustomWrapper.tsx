@@ -10,7 +10,14 @@ import {
 } from '../review/ReviewStepContexts'
 import { buildReviewInputRegistrationPath, convertId, HiddenFn, useInputHidden } from './Input'
 
-export type WizCustomInputWrapperProps = {
+type WizCustomWrapperBase = {
+  hidden?: HiddenFn
+  children: ReactNode
+}
+
+export type WizCustomWrapperInputProps = WizCustomWrapperBase & {
+  /** Defaults to {@link InputReviewMeta.INPUT}. */
+  type?: InputReviewMeta.INPUT
   /**
    * Path segment for review registration (same role as {@link InputCommonProps.path} on wizard inputs).
    * May not correspond to data on the current item when the value only lives in React state.
@@ -19,13 +26,24 @@ export type WizCustomInputWrapperProps = {
   id?: string
   label?: string
   value: ReactNode
-  hidden?: HiddenFn
   inputValueToPathValue?: (inputValue: unknown, pathValue: unknown) => unknown
-  children: ReactNode
 }
 
-export function WizCustomInputWrapper(props: WizCustomInputWrapperProps) {
-  const { path, id: idProp, label, value, inputValueToPathValue, children } = props
+export type WizCustomWrapperGroupProps = WizCustomWrapperBase & {
+  type: InputReviewMeta.GROUP
+  path: string
+  id?: string
+  label?: string
+}
+
+export type WizCustomWrapperProps = WizCustomWrapperInputProps | WizCustomWrapperGroupProps
+
+export function WizCustomWrapper(props: WizCustomWrapperProps) {
+  const isGroup = props.type === InputReviewMeta.GROUP
+  const { path, id: idProp, label, children } = props
+  const value = isGroup ? undefined : props.value
+  const inputValueToPathValue = isGroup ? undefined : props.inputValueToPathValue
+
   const hidden = useInputHidden(props)
   const item = useContext(ItemContext)
   const currentStepId = useContext(CurrentStepIdContext)
@@ -34,7 +52,7 @@ export function WizCustomInputWrapper(props: WizCustomInputWrapperProps) {
   const bumpReviewDomTree = useBumpReviewDomTree()
 
   let registrationPath = buildReviewInputRegistrationPath(reviewPathPrefixSegments, path, item)
-  if (inputValueToPathValue) {
+  if (!isGroup && inputValueToPathValue) {
     const transformed = inputValueToPathValue(true, false)
     registrationPath = `${registrationPath}#${JSON.stringify(transformed)}`
   }
@@ -48,17 +66,37 @@ export function WizCustomInputWrapper(props: WizCustomInputWrapperProps) {
 
   useLayoutEffect(() => {
     if (!stepInputsRegistry || currentStepId === undefined || hidden) return
-    stepInputsRegistry.register(id, {
-      id,
-      path: registrationPath,
-      value,
-      label,
-      error: undefined,
-      type: InputReviewMeta.INPUT,
-    })
+    if (isGroup) {
+      stepInputsRegistry.register(id, {
+        id,
+        path: registrationPath,
+        label,
+        error: undefined,
+        type: InputReviewMeta.GROUP,
+      })
+    } else {
+      stepInputsRegistry.register(id, {
+        id,
+        path: registrationPath,
+        value,
+        label,
+        error: undefined,
+        type: InputReviewMeta.INPUT,
+      })
+    }
     bumpReviewDomTree?.()
     return () => stepInputsRegistry.unregister(id)
-  }, [stepInputsRegistry, currentStepId, hidden, id, registrationPath, value, label, bumpReviewDomTree])
+  }, [
+    stepInputsRegistry,
+    currentStepId,
+    hidden,
+    id,
+    registrationPath,
+    value,
+    label,
+    bumpReviewDomTree,
+    isGroup,
+  ])
 
   return <div id={id}>{children}</div>
 }

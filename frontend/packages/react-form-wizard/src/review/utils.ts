@@ -62,6 +62,13 @@ function buildReviewSubtree(
         children.push(...buildReviewSubtree(element.children[i]!, stepInputMap, parentStepId, segmentsForChildren))
       }
       const hasChildren = children.length > 0
+      if (props.type === InputReviewMeta.SECTION) {
+        return [
+          hasChildren
+            ? { type: InputReviewMeta.SECTION, id: props.id, label: props.label, children }
+            : { type: InputReviewMeta.SECTION, id: props.id, label: props.label },
+        ]
+      }
       if (props.type === InputReviewMeta.INPUT) {
         /* `props.path` is already the full path (array prefixes applied at registration in `useInput`). */
         return [
@@ -75,6 +82,11 @@ function buildReviewSubtree(
           hasChildren
             ? { ...props, type: InputReviewMeta.ARRAY_INPUT, children }
             : { ...props, type: InputReviewMeta.ARRAY_INPUT },
+        ]
+      }
+      if (props.type === InputReviewMeta.GROUP) {
+        return [
+          hasChildren ? { ...props, type: InputReviewMeta.GROUP, children } : { ...props, type: InputReviewMeta.GROUP },
         ]
       }
       /* ARRAY_INSTANCE: repeat-group row or similar; `path` often carries the instance index segment. */

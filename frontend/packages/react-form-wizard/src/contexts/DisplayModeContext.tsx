@@ -2,7 +2,6 @@
 import { createContext, useContext } from 'react'
 
 export enum DisplayMode {
-  Details,
   Step,
   StepsHidden,
 }

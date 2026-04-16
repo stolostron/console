@@ -3,7 +3,6 @@ import { ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { WizDetailsHidden, EditMode, WizItemSelector, Section, WizSelect, WizSingleSelect } from '../../src'
 import { useData } from '../../src/contexts/DataContext'
-import { DisplayMode, useDisplayMode } from '../../src/contexts/DisplayModeContext'
 import { useEditMode } from '../../src/contexts/EditModeContext'
 import { useSetHasInputs } from '../../src/contexts/HasInputsProvider'
 import { useItem } from '../../src/contexts/ItemContext'
@@ -39,7 +38,6 @@ export function PlacementSection(props: {
   const { update } = useData()
   const resources = useItem() as IResource[]
   const editMode = useEditMode()
-  const displayMode = useDisplayMode()
 
   const [placementCount, setPlacementCount] = useState(0)
   const [placementRuleCount, setPlacementRuleCount] = useState(0)
@@ -157,10 +155,8 @@ export function PlacementSection(props: {
 
   const setHasInputs = useSetHasInputs()
   useEffect(() => {
-    if (displayMode !== DisplayMode.Details) {
-      setHasInputs()
-    }
-  }, [displayMode, setHasInputs])
+    setHasInputs()
+  }, [setHasInputs])
 
   if (isAdvanced) {
     return (

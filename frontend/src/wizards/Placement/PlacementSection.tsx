@@ -8,8 +8,6 @@ import {
   Section,
   WizSingleSelect,
   useData,
-  DisplayMode,
-  useDisplayMode,
   useEditMode,
   useSetHasInputs,
   useItem,
@@ -53,7 +51,6 @@ export function PlacementSection(props: {
   const { update } = useData()
   const resources = useItem() as IResource[]
   const editMode = useEditMode()
-  const displayMode = useDisplayMode()
 
   const [placementCount, setPlacementCount] = useState(0)
   const [placementRuleCount, setPlacementRuleCount] = useState(0)
@@ -168,10 +165,8 @@ export function PlacementSection(props: {
 
   const setHasInputs = useSetHasInputs()
   useEffect(() => {
-    if (displayMode !== DisplayMode.Details) {
-      setHasInputs()
-    }
-  }, [displayMode, setHasInputs])
+    setHasInputs()
+  }, [setHasInputs])
 
   if (isAdvanced) {
     return (

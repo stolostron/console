@@ -37,9 +37,11 @@ import {
   WizStringsInput,
   WizTextArea,
   WizTextInput,
+  WizCustomWrapper,
   ItemContext,
   useItem,
   useData,
+  InputReviewMeta,
 } from '@patternfly-labs/react-form-wizard'
 import { FormGroup as CoreFormGroup, Radio as CoreRadio } from '@patternfly/react-core'
 import { WizardPage } from '../../WizardPage'
@@ -678,44 +680,53 @@ function OperatorPolicy() {
       />
 
       <Form>
-        <FormFieldGroupExpandable
-          isExpanded
-          header={<FormFieldGroupHeader titleText={{ text: 'Operator Subscription', id: 'form-field-group-sub' }} />}
+        <WizCustomWrapper
+          path="objectDefinition.spec.subscription"
+          type={InputReviewMeta.GROUP}
+          id="policy-wizard-operator-subscription"
+          label={t('Operator Subscription')}
         >
-          <WizTextInput
-            path="objectDefinition.spec.subscription.name"
-            label={t('Name')}
-            labelHelp={t(
-              'operatorPolicy.subscription.labelHelper',
-              'This is the package name of the Operator to install, which might be different from the Display Name used in the catalog.'
-            )}
-            required
-          />
-          <WizTextInput
-            path="objectDefinition.spec.subscription.channel"
-            label={t('Channel')}
-            labelHelp={t('operatorPolicy.channel.labelHelper')}
-          />
-          <WizTextInput
-            path="objectDefinition.spec.subscription.source"
-            label={t('Source')}
-            labelHelp={t('operatorPolicy.source.labelHelper')}
-          />
-          <WizTextInput
-            path="objectDefinition.spec.subscription.sourceNamespace"
-            label={t('Source Namespace')}
-            labelHelp={t('operatorPolicy.sourceNamespace.labelHelper')}
-          />
-          <WizTextInput
-            path="objectDefinition.spec.subscription.startingCSV"
-            label={t('Starting CSV')}
-            placeholder={t('Enter the ClusterServiceVersion')}
-            labelHelp={t(
-              'operatorPolicy.startingCsv.labelHelper',
-              `If you want to install a particular version of your Operator, specify the startingCSV property.`
-            )}
-          />
-        </FormFieldGroupExpandable>
+          <FormFieldGroupExpandable
+            isExpanded
+            header={
+              <FormFieldGroupHeader titleText={{ text: t('Operator Subscription'), id: 'form-field-group-sub' }} />
+            }
+          >
+            <WizTextInput
+              path="objectDefinition.spec.subscription.name"
+              label={t('Name')}
+              labelHelp={t(
+                'operatorPolicy.subscription.labelHelper',
+                'This is the package name of the Operator to install, which might be different from the Display Name used in the catalog.'
+              )}
+              required
+            />
+            <WizTextInput
+              path="objectDefinition.spec.subscription.channel"
+              label={t('Channel')}
+              labelHelp={t('operatorPolicy.channel.labelHelper')}
+            />
+            <WizTextInput
+              path="objectDefinition.spec.subscription.source"
+              label={t('Source')}
+              labelHelp={t('operatorPolicy.source.labelHelper')}
+            />
+            <WizTextInput
+              path="objectDefinition.spec.subscription.sourceNamespace"
+              label={t('Source Namespace')}
+              labelHelp={t('operatorPolicy.sourceNamespace.labelHelper')}
+            />
+            <WizTextInput
+              path="objectDefinition.spec.subscription.startingCSV"
+              label={t('Starting CSV')}
+              placeholder={t('Enter the ClusterServiceVersion')}
+              labelHelp={t(
+                'operatorPolicy.startingCsv.labelHelper',
+                `If you want to install a particular version of your Operator, specify the startingCSV property.`
+              )}
+            />
+          </FormFieldGroupExpandable>
+        </WizCustomWrapper>
       </Form>
       <WizRadioGroup path="objectDefinition.spec.upgradeApproval" label={t('Update Approval')}>
         <Radio id="operator-policy-automatic" label={t('Automatic')} value="Automatic" />
