@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import head from 'lodash/head'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import {
@@ -28,6 +28,7 @@ import TopologyZoomBar from './components/TopologyZoomBar'
 
 import './css/topology-view.css'
 import { TFunction } from 'react-i18next'
+import { TopologyRefreshContext } from './contexts/TopologyRefreshContext'
 
 export interface TopologyProps {
   elements: {
@@ -66,6 +67,7 @@ export interface TopologyProps {
   disableRenderConstraint?: boolean
   processActionLink?: (resource: any, toggleLoading: () => void, hubClusterName: string) => void
   hubClusterName: string
+  onRefreshResources?: () => void
 }
 
 interface TopologyViewComponentsProps {
@@ -154,6 +156,8 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
 }
 
 export const Topology = (props: TopologyProps) => {
+  const { onRefreshResources } = props
+  const topologyRefreshValue = useMemo(() => ({ refreshResources: onRefreshResources }), [onRefreshResources])
   const controllerRef = useRef<Controller>()
   let controller = controllerRef.current
   if (!controller) {
@@ -182,18 +186,20 @@ export const Topology = (props: TopologyProps) => {
   }, [controller, nodesKey])
 
   return (
-    <VisualizationProvider controller={controller}>
-      <NodeIcons />
-      <NodeStatusIcons />
-      {!props.canUpdateStatuses && (
-        <svg width="0" height="0">
-          <symbol className="spinner" viewBox="0 0 40 40" id="nodeStatusIcon_spinner">
-            <circle cx="20" cy="20" r="18" fill="white"></circle>
-            <circle className="swirly" cx="20" cy="20" r="18"></circle>
-          </symbol>
-        </svg>
-      )}
-      <TopologyViewComponents controller={controller} topologyProps={props} />
-    </VisualizationProvider>
+    <TopologyRefreshContext.Provider value={topologyRefreshValue}>
+      <VisualizationProvider controller={controller}>
+        <NodeIcons />
+        <NodeStatusIcons />
+        {!props.canUpdateStatuses && (
+          <svg width="0" height="0">
+            <symbol className="spinner" viewBox="0 0 40 40" id="nodeStatusIcon_spinner">
+              <circle cx="20" cy="20" r="18" fill="white"></circle>
+              <circle className="swirly" cx="20" cy="20" r="18"></circle>
+            </symbol>
+          </svg>
+        )}
+        <TopologyViewComponents controller={controller} topologyProps={props} />
+      </VisualizationProvider>
+    </TopologyRefreshContext.Provider>
   )
 }

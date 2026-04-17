@@ -64,6 +64,31 @@ export const nodeDetailsProvider = (
         ])
         break
 
+      case 'git':
+      case 'chart': {
+        //for appset repo sources
+        const appSetSources = node?.specs?.resources
+        if (Array.isArray(appSetSources)) {
+          appSetSources.forEach((resource: any) => {
+            addPropertyToList(details, getNodePropery(resource, ['repoURL'], t('Repository')))
+            if (resource?.chart != null && String(resource.chart).trim() !== '') {
+              addPropertyToList(details, getNodePropery(resource, ['chart'], t('Chart name')))
+            }
+            if (resource?.path != null && String(resource.path).trim() !== '') {
+              addPropertyToList(details, getNodePropery(resource, ['path'], t('Path')))
+            }
+            if (resource?.targetRevision != null && String(resource.targetRevision).trim() !== '') {
+              addPropertyToList(details, getNodePropery(resource, ['targetRevision'], t('Revision')))
+            }
+            details.push({
+              type: 'spacer',
+            })
+          })
+          addAppSetTemplateSyncPolicyDetails(details, node?.specs?.raw?.spec?.template?.spec?.syncPolicy, t)
+        }
+        break
+      }
+
       default:
         addK8Details(node, details, activeFilters, t, hubClusterName)
         break
@@ -82,6 +107,96 @@ export const nodeDetailsProvider = (
     }
   }
   return details
+}
+
+/** ApplicationSet template.spec.syncPolicy: nested automated + syncOptions (separate from per-source rows). */
+function addAppSetTemplateSyncPolicyDetails(
+  details: any[],
+  syncPolicy: Record<string, unknown> | undefined,
+  t: TFunction
+) {
+  if (!syncPolicy || typeof syncPolicy !== 'object') {
+    return
+  }
+
+  const automated = syncPolicy.automated as Record<string, unknown> | null | undefined
+  const syncOptions = syncPolicy.syncOptions
+  const showAutomated = automated !== null && automated !== undefined && typeof automated === 'object'
+  const showSyncOptions = Array.isArray(syncOptions) && syncOptions.length > 0
+  const legacyPrune = syncPolicy.prune
+  const legacySelfHeal = syncPolicy.selfHeal
+  const legacyAllowEmpty = syncPolicy.allowEmpty
+  const showLegacyAutomated =
+    !showAutomated && (legacyPrune !== undefined || legacySelfHeal !== undefined || legacyAllowEmpty !== undefined)
+
+  if (!showAutomated && !showSyncOptions && !showLegacyAutomated) {
+    return
+  }
+
+  details.push({
+    type: 'spacer',
+  })
+
+  if (showAutomated) {
+    details.push({
+      type: 'label',
+      labelValue: t('Automated'),
+    })
+    addPropertyToList(details, {
+      labelValue: t('Enabled'),
+      value: String((automated.enabled as boolean | undefined) ?? true),
+    })
+    addPropertyToList(details, {
+      labelValue: t('Self-heal'),
+      value: String((automated.selfHeal as boolean | undefined) ?? false),
+    })
+    addPropertyToList(details, {
+      labelValue: t('Prune'),
+      value: String((automated.prune as boolean | undefined) ?? false),
+    })
+    if (automated.allowEmpty !== undefined) {
+      addPropertyToList(details, {
+        labelValue: t('Allow empty'),
+        value: String(automated.allowEmpty),
+      })
+    }
+  } else if (showLegacyAutomated) {
+    details.push({
+      type: 'label',
+      labelValue: t('Automated'),
+    })
+    if (legacyPrune !== undefined) {
+      addPropertyToList(details, { labelValue: t('Prune'), value: String(legacyPrune) })
+    }
+    if (legacySelfHeal !== undefined) {
+      addPropertyToList(details, { labelValue: t('Self-heal'), value: String(legacySelfHeal) })
+    }
+    if (legacyAllowEmpty !== undefined) {
+      addPropertyToList(details, { labelValue: t('Allow empty'), value: String(legacyAllowEmpty) })
+    }
+  }
+
+  if (showSyncOptions) {
+    if (showAutomated || showLegacyAutomated) {
+      details.push({
+        type: 'spacer',
+      })
+    }
+    details.push({
+      type: 'label',
+      labelValue: t('Sync options'),
+    })
+    ;(syncOptions as string[]).forEach((option) => {
+      const raw = String(option)
+      const eq = raw.indexOf('=')
+      const key = eq >= 0 ? raw.slice(0, eq) : raw
+      const value = eq >= 0 ? raw.slice(eq + 1) : ''
+      addPropertyToList(details, {
+        labelValue: key,
+        value,
+      })
+    })
+  }
 }
 
 function addK8Details(
@@ -412,6 +527,14 @@ export const typeToShapeMap = Object.freeze({
     className: 'deployment',
   },
   helmrelease: {
+    shape: 'chart',
+    className: 'container',
+  },
+  git: {
+    shape: 'git',
+    className: 'container',
+  },
+  chart: {
     shape: 'chart',
     className: 'container',
   },

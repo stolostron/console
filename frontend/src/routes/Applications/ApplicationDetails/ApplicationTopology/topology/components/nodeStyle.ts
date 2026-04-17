@@ -57,6 +57,9 @@ function getLabel(type: string | undefined, specs: any) {
       return specs?.applicationName ? specs.applicationName : 'Application'
     case 'applicationset':
       return `${specs?.isAppSetPullModel ? 'Pull' : 'Push'} Application Set`
+    case 'git':
+    case 'chart':
+      return getGitOrChartNodeLabel(specs)
     case 'placementDecision':
       return 'Placement Decision'
     default:
@@ -66,6 +69,22 @@ function getLabel(type: string | undefined, specs: any) {
         return ''
       }
   }
+}
+
+function getGitOrChartNodeLabel(specs: { resources?: unknown } | undefined) {
+  const resources = specs?.resources
+  if (!Array.isArray(resources) || resources.length === 0) {
+    return 'Repo'
+  }
+  const parts: string[] = []
+  for (const r of resources as { chart?: string; path?: string }[]) {
+    const isChartSource = r?.chart != null && String(r.chart).trim() !== ''
+    const value = isChartSource ? r?.chart : r?.path
+    if (value != null && value !== '') {
+      parts.push(String(value))
+    }
+  }
+  return parts.length > 0 ? parts.join(', ') : 'Repo'
 }
 
 const getStatus = (node: {
@@ -119,6 +138,10 @@ const getStatus = (node: {
     case 'spinner':
       status = NodeStatus.default
       statusIcon = statusToIconMap['spinner']
+      break
+    case 'sync':
+      status = NodeStatus.default
+      statusIcon = statusToIconMap['sync']
       break
     case 'blocked':
       status = NodeStatus.success

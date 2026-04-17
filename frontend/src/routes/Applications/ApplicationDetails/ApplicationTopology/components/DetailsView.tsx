@@ -386,6 +386,8 @@ function DetailsView(props: DetailsViewProps): JSX.Element {
   const isTableView =
     ((currentNode as { specs?: { resourceCount?: number } }).specs?.resourceCount ?? 0) > 1 &&
     currentNode.type !== 'cluster' &&
+    currentNode.type !== 'git' &&
+    currentNode.type !== 'chart' &&
     currentNode.type !== 'application'
 
   const { shape = 'other', className = 'default' } =

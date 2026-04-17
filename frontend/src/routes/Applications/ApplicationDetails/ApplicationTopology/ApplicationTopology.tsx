@@ -1,11 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmDrawerContext } from '../../../../ui-components'
+import { AcmDrawerContext } from '~/ui-components'
 import cloneDeep from 'lodash/cloneDeep'
-import { useContext, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 import { Topology } from './topology/Topology'
-import { useTranslation } from '../../../../lib/acm-i18next'
-import { useApplicationDetailsContext } from '../ApplicationDetails'
+import { useTranslation } from '~/lib/acm-i18next'
+import { useApplicationDetailsContext } from '~/routes/Applications/ApplicationDetails/ApplicationDetails'
+import { ISyncArgoCDModalProps, SyncArgoCDModal } from '~/routes/Applications/components/SyncArgoCDModal'
 import { processResourceActionLink } from './helpers/diagram-helpers'
 import { getDiagramElements } from './model/topology'
 import { DrawerShapes } from './components/DrawerShapes'
@@ -137,8 +138,24 @@ export function ApplicationTopologyPageContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startup, refreshTime])
 
+  const [syncArgoCDModalProps, setSyncArgoCDModalProps] = useState<ISyncArgoCDModalProps | { open: false }>({
+    open: false,
+  })
+
+  const refreshResources = useCallback(() => {
+    const app = applicationData?.application
+    if (app) {
+      setSyncArgoCDModalProps({
+        open: true,
+        close: () => setSyncArgoCDModalProps({ open: false }),
+        appOrAppSet: app,
+      })
+    }
+  }, [applicationData?.application])
+
   return (
     <>
+      <SyncArgoCDModal {...syncArgoCDModalProps} />
       <DrawerShapes />
       <Topology
         elements={elements}
@@ -151,6 +168,7 @@ export function ApplicationTopologyPageContent() {
         nodeDetailsProvider={nodeDetailsProvider}
         setDrawerContent={setDrawerContent}
         hubClusterName={hubClusterName}
+        onRefreshResources={refreshResources}
       />
     </>
   )

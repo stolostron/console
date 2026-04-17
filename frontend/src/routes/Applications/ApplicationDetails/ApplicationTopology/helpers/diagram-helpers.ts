@@ -54,15 +54,12 @@ export const getNodePropery = (
 ): DetailItem | undefined => {
   const dataObj = getNestedProperty(node, propPath)
 
-  const data = dataObj
-    ? JSON.stringify(dataObj)
-        .replaceAll(':', '=')
-        .replaceAll('{', '')
-        .replaceAll('}', '')
-        .replaceAll('"', '')
-        .replaceAll(' ', '')
-        .replaceAll('/', ',')
-    : defaultValue
+  const data =
+    dataObj === undefined || dataObj === null
+      ? defaultValue
+      : typeof dataObj === 'string'
+        ? dataObj
+        : JSON.stringify(dataObj).replace(/[{}": /]/g, (c) => (c === ':' ? '=' : c === '/' ? ',' : ''))
 
   if (data !== undefined) {
     return {
@@ -79,7 +76,7 @@ export const getNodePropery = (
  * Conditionally push an item into a list if both are defined.
  */
 export const addPropertyToList = <T>(list: T[] | undefined, data: T | undefined): T[] | undefined => {
-  if (list && data) {
+  if (list && data !== undefined) {
     list.push(data)
   }
 
@@ -210,7 +207,12 @@ export const createResourceSearchLink = (node: NodeLike, t: Translator): { type:
         },
       }
     }
-  } else if (node && getNestedProperty(node, ['specs', 'pulse'], '') !== 'orange') {
+  } else if (
+    node &&
+    getNestedProperty(node, ['specs', 'pulse'], '') !== 'orange' &&
+    nodeType !== 'git' &&
+    nodeType !== 'chart'
+  ) {
     const kindModel = getNestedProperty(node, `specs.${nodeType}Model`, {}) as Record<string, any[]>
     let computedNameList: string[] = []
     let computedNSList: string[] = []
@@ -241,6 +243,7 @@ export const createResourceSearchLink = (node: NodeLike, t: Translator): { type:
         case 'placement':
           kindVal = 'Placement'
           break
+
         default:
           kindVal = getNestedProperty(node, 'type', '') as string
       }
@@ -281,7 +284,7 @@ export const parseApplicationNodeName = (id: string): string => {
  */
 export const createResourceURL = (node: NodeLike, _t: Translator, isLogURL = false): string => {
   const cluster = getNestedProperty(node, 'cluster', '') as string
-  const type = getNestedProperty(node, 'type', '') as string
+  const type = node.type === 'git' || node.type === 'chart' ? 'applicationset' : node.type
   const apiVersion = getNestedProperty(node, 'specs.raw.apiVersion', '') as string
   const namespace = getNestedProperty(node, 'namespace', '') as string
   const name = getNestedProperty(node, 'name', '') as string

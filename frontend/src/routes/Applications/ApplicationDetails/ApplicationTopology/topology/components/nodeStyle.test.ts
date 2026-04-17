@@ -23,6 +23,66 @@ describe('nodeStyle tests', () => {
     const getNodeStyleFn = jest.spyOn(nodeStyleAPI, 'getNodeStyle') as jest.Mock<any>
     expect(cleanResults(getNodeStyleFn(...getNodeStyle.args))).toEqual(getNodeStyle.ret)
   })
+
+  test('git node label joins path and chart from spec.resources', () => {
+    const result = nodeStyleAPI.getNodeStyle(
+      {
+        uid: 'u',
+        name: 'repo',
+        namespace: 'ns',
+        type: 'git',
+        specs: {
+          resources: [{ path: 'apps/foo' }, { chart: 'mychart' }],
+        },
+      },
+      undefined
+    )
+    expect(result.label).toBe('apps/foo, mychart')
+  })
+
+  test('git node label is Repo when resources missing or empty', () => {
+    expect(
+      nodeStyleAPI.getNodeStyle({ uid: 'u', name: 'repo', namespace: 'ns', type: 'git', specs: {} }, undefined).label
+    ).toBe('Repo')
+    expect(
+      nodeStyleAPI.getNodeStyle(
+        { uid: 'u', name: 'repo', namespace: 'ns', type: 'git', specs: { resources: [] } },
+        undefined
+      ).label
+    ).toBe('Repo')
+  })
+
+  test('git node uses path when no chart property (argo git default)', () => {
+    const result = nodeStyleAPI.getNodeStyle(
+      {
+        uid: 'u',
+        name: 'repo',
+        namespace: 'ns',
+        type: 'git',
+        specs: {
+          resources: [{ path: 'manifests' }],
+        },
+      },
+      undefined
+    )
+    expect(result.label).toBe('manifests')
+  })
+
+  test('chart node uses same label rules as git', () => {
+    const result = nodeStyleAPI.getNodeStyle(
+      {
+        uid: 'u',
+        name: 'repo',
+        namespace: 'ns',
+        type: 'chart',
+        specs: {
+          resources: [{ chart: 'redis' }],
+        },
+      },
+      undefined
+    )
+    expect(result.label).toBe('redis')
+  })
 })
 
 const getNodeStyle = {

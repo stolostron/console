@@ -78,6 +78,8 @@ export type ApplicationDetailsContext = {
     setActiveChannel: (channel: string) => void
   }
   toolbarControl: ToolbarControl
+  /** Re-fetches application, topology, and resource statuses (same as the periodic refresh). */
+  refreshResources?: () => void
 }
 
 function searchError(completeError: ApolloError | undefined, t: TFunction) {
@@ -129,6 +131,8 @@ export default function ApplicationDetailsPage() {
   const { backendUrl } = useContext(dataContext)
 
   const lastRefreshRef = useRef<any>()
+  const refreshRequestIdRef = useRef(0)
+  const refreshApplicationResourcesRef = useRef<() => Promise<void>>(async () => {})
   const navigate = useNavigate()
   const isArgoApp = applicationData?.application?.isArgoApp
   const isAppSet = applicationData?.application?.isAppSet
@@ -372,91 +376,116 @@ export default function ApplicationDetailsPage() {
     activeClusters: toolbarControl.activeClusters,
     activeApplications: toolbarControl.activeApplications,
   })
-  useEffect(() => {
-    const interval = setInterval(
-      (function refresh() {
-        ;(async () => {
-          const recoilStates = getRecoilStates()
 
-          // get application object from recoil states
-          const application = await getApplication(
-            namespace,
-            name,
-            backendUrl,
-            activeChannel,
-            recoilStates,
+  refreshApplicationResourcesRef.current = async () => {
+    const requestId = ++refreshRequestIdRef.current
+    const isLatestRefresh = () => requestId === refreshRequestIdRef.current
+
+    try {
+      const recoilStates = getRecoilStates()
+
+      const application = await getApplication(
+        namespace,
+        name,
+        backendUrl,
+        activeChannel,
+        recoilStates,
+        cluster,
+        apiVersion,
+        clusters,
+        localHubName
+      )
+      if (!isLatestRefresh()) {
+        return
+      }
+      if (!application) {
+        setApplicationNotFound(true)
+      } else {
+        setApplicationNotFound(false)
+        const topology: any = await getTopology(
+          toolbarControl,
+          application,
+          clusters,
+          localHubName,
+          lastRefreshRef?.current?.relatedResources,
+          {
             cluster,
-            apiVersion,
-            clusters,
-            localHubName
-          )
-          if (!application) {
-            setApplicationNotFound(true)
-          } else {
-            setApplicationNotFound(false)
-            const topology: any = await getTopology(
-              toolbarControl,
-              application,
-              clusters,
-              localHubName,
-              lastRefreshRef?.current?.relatedResources,
-              {
-                cluster,
-              },
-              recoilStates.services
-            )
-            const appData = getApplicationData(topology?.nodes, topology?.hubClusterName)
+          },
+          recoilStates.services
+        )
+        if (!isLatestRefresh()) {
+          return
+        }
+        const appData = getApplicationData(topology?.nodes, topology?.hubClusterName)
 
-            // when first opened, refresh topology with wait statuses
-            if (!lastRefreshRef?.current?.resourceStatuses) {
-              setApplicationData({
-                refreshTime: Date.now(),
-                application,
-                topology,
-                appData,
-              })
-              setActiveChannel(application.activeChannel)
-              setAllChannels(application.channels ?? [])
-            }
+        if (!lastRefreshRef?.current?.resourceStatuses) {
+          setApplicationData({
+            refreshTime: Date.now(),
+            application,
+            topology,
+            appData,
+          })
+          setActiveChannel(application.activeChannel)
+          setAllChannels(application.channels ?? [])
+        }
 
-            // from then on, only refresh topology with new statuses
-            const { resourceStatuses, relatedResources, appDataWithStatuses } = await getResourceStatuses(
-              application,
-              appData,
-              topology
-            )
-            const topologyWithRelated = await getTopology(
-              toolbarControl,
-              application,
-              clusters,
-              localHubName,
-              relatedResources,
-              {
-                topology,
-                cluster,
-              },
-              recoilStates.services
-            )
-            setApplicationData({
-              refreshTime: Date.now(),
-              application,
-              topology: topologyWithRelated,
-              appData: appDataWithStatuses,
-              statuses: resourceStatuses,
-            })
-            setActiveChannel(application.activeChannel)
-            setAllChannels(application?.channels ?? [])
-            lastRefreshRef.current = { application, resourceStatuses, relatedResources }
-          }
-        })()
-        return refresh
-      })(),
-      15000
-    )
-    return () => clearInterval(interval)
+        const { resourceStatuses, relatedResources, appDataWithStatuses } = await getResourceStatuses(
+          application,
+          appData,
+          topology
+        )
+        if (!isLatestRefresh()) {
+          return
+        }
+        const topologyWithRelated = await getTopology(
+          toolbarControl,
+          application,
+          clusters,
+          localHubName,
+          relatedResources,
+          {
+            topology,
+            cluster,
+          },
+          recoilStates.services
+        )
+        if (!isLatestRefresh()) {
+          return
+        }
+        setApplicationData({
+          refreshTime: Date.now(),
+          application,
+          topology: topologyWithRelated,
+          appData: appDataWithStatuses,
+          statuses: resourceStatuses,
+        })
+        setActiveChannel(application.activeChannel)
+        setAllChannels(application?.channels ?? [])
+        lastRefreshRef.current = { application, resourceStatuses, relatedResources }
+      }
+    } catch (err) {
+      if (isLatestRefresh()) {
+        console.error(err)
+      }
+    }
+  }
+
+  const refreshResources = useCallback(() => {
+    void refreshApplicationResourcesRef.current()
+  }, [])
+
+  useEffect(() => {
+    const requestIdRef = refreshRequestIdRef
+    void refreshApplicationResourcesRef.current()
+    const interval = setInterval(() => {
+      void refreshApplicationResourcesRef.current()
+    }, 15000)
+    return () => {
+      clearInterval(interval)
+      requestIdRef.current++
+    }
     // disabling to use clustersString instead of clusters
     // because clusters is an array and will change on every render
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     waitForApplication,
     activeChannel,
@@ -483,8 +512,9 @@ export default function ApplicationDetailsPage() {
         setActiveChannel,
       },
       toolbarControl,
+      refreshResources,
     }),
-    [activeChannel, allChannels, applicationData, toolbarControl]
+    [activeChannel, allChannels, applicationData, refreshResources, toolbarControl]
   )
 
   if (!applicationData) {

@@ -38,6 +38,7 @@ import { Placement } from '../../../../../resources/placement'
  * Generates topology data for ApplicationSet applications
  * Creates nodes and links representing the application structure including:
  * - ApplicationSet node
+ * - Git repo node (design placeholder)
  * - Placement node (if applicable)
  * - Cluster nodes
  * - Deployed resource nodes
@@ -91,6 +92,40 @@ export async function getAppSetTopology(
     },
   }
   nodes.push(appSetNode)
+
+  /////////////////////////////////////////////
+  ////  REPO (GIT) NODE /////////////////
+  /////////////////////////////////////////////
+
+  const repoId = `member--repo--${namespace}--${name}`
+
+  const sources = application.app?.spec?.template?.spec?.sources
+  const sourcesArray = Array.isArray(sources) ? sources : []
+  const repoNodeType = sourcesArray.some((s: { chart?: string }) => s?.chart != null && String(s.chart).trim() !== '')
+    ? 'chart'
+    : 'git'
+
+  nodes.push({
+    name,
+    namespace,
+    type: repoNodeType,
+    id: repoId,
+    uid: repoId,
+    specs: {
+      isDesign: true,
+      resources: sourcesArray,
+      resourceCount: sourcesArray.length,
+      raw: application.app,
+      isPairedInLayoutWithParent: true,
+    },
+  })
+
+  links.push({
+    from: { uid: appId },
+    to: { uid: repoId },
+    type: '',
+    specs: { isDesign: true },
+  })
 
   /////////////////////////////////////////////
   ////  PLACEMENT DECISION NODE /////////////////
