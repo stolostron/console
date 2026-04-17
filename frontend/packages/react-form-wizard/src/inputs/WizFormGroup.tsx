@@ -14,16 +14,18 @@ export function WizFormGroup(props: PropsWithChildren<WizFormGroupProps>) {
   const id = process.env.NODE_ENV === 'test' || (window as any).Cypress ? convertId(props) : props.id ?? ''
 
   return (
-    <FormGroup
-      id={`${id}-form-group`}
-      key={`${id}-form-group`}
-      fieldId={id}
-      label={props.label}
-      labelHelp={<LabelHelp id={id} labelHelp={props.labelHelp} labelHelpTitle={props.labelHelpTitle} />}
-      isRequired={props.required}
-    >
-      {props.children}
-      {!noHelperText && <WizHelperText {...props} />}
-    </FormGroup>
+    <div id={id}>
+      <FormGroup
+        id={`${id}-form-group`}
+        key={`${id}-form-group`}
+        fieldId={id}
+        label={props.label}
+        labelHelp={<LabelHelp id={id} labelHelp={props.labelHelp} labelHelpTitle={props.labelHelpTitle} />}
+        isRequired={props.required}
+      >
+        {props.children}
+        {!noHelperText && <WizHelperText {...props} />}
+      </FormGroup>
+    </div>
   )
 }

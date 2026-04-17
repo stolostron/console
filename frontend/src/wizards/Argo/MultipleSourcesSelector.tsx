@@ -46,22 +46,22 @@ export function MultipleSourcesSelector(props: MultipleSourcesSelectorProps) {
       }}
       collapsedContent={
         <Fragment>
+          <WizHidden hidden={(data) => Boolean(data.repositoryType)}>
+            <Title headingLevel="h6">{t('Source repository')}</Title>
+          </WizHidden>
           <WizHidden hidden={(data) => data.repositoryType !== 'git'}>
             <Label style={{ marginRight: 10 }} color="grey">
-              {t('Git')}
+              {t('Git repository')}
             </Label>
           </WizHidden>
           <WizHidden hidden={(data) => data.repositoryType !== 'helm'}>
             <Label style={{ marginRight: 10 }} color="grey">
-              {t('Helm')}
+              {t('Helm repository')}
             </Label>
           </WizHidden>
         </Fragment>
       }
     >
-      <WizHidden hidden={(data) => data.repositoryType}>
-        <Title headingLevel="h6">{t('Repository type')}</Title>
-      </WizHidden>
       <WizTiles path="repositoryType" label={t('Repository type')} required>
         <Tile id="git" value="git" label="Git" icon={<GitAltIcon />} description={t('Use a Git repository')} />
         <Tile id="helm" value="helm" label="Helm" icon={<HelmIcon />} description={t('Use a Helm repository')} />
