@@ -2,12 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-/** Default idle timeout in minutes when EVENT_STREAM_IDLE_TIMEOUT is not configured. */
-export const DEFAULT_EVENT_STREAM_IDLE_TIMEOUT_MINUTES = 15
-
-/** Default inactivity timeout before the page is considered idle. */
-export const DEFAULT_INACTIVITY_TIMEOUT_MS = DEFAULT_EVENT_STREAM_IDLE_TIMEOUT_MINUTES * 60 * 1000
-
 const ACTIVITY_EVENTS = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'pointerdown'] as const
 
 /**
@@ -40,7 +34,7 @@ export interface PageActivityDebug {
 }
 
 export function usePageActivity(
-  timeoutMs: number = DEFAULT_INACTIVITY_TIMEOUT_MS,
+  timeoutMs: number = 0, // Disabled unless specified
   pageActiveRef?: { current: number },
   debugRef?: { current: PageActivityDebug }
 ): boolean {

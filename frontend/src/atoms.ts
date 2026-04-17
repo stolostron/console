@@ -219,7 +219,7 @@ export function useIsObservabilityInstalled() {
   }, [clusterManagementAddons])
 }
 
-import { DEFAULT_EVENT_STREAM_IDLE_TIMEOUT_MINUTES } from './lib/usePageActivity'
+const DEFAULT_EVENT_STREAM_IDLE_TIMEOUT_MINUTES = 30
 
 export function useEventStreamIdleTimeout(): number {
   const settings = useRecoilValue(settingsState)
@@ -233,7 +233,7 @@ export function useEventStreamIdleTimeout(): number {
   }, [settings])
 }
 
-const DEFAULT_EVENT_STREAM_IDLE_GRACE_PERIOD_MINUTES = 1
+const DEFAULT_EVENT_STREAM_IDLE_GRACE_PERIOD_MINUTES = 2
 
 export function useEventStreamIdleGracePeriod(): number {
   const settings = useRecoilValue(settingsState)
