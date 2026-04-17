@@ -238,18 +238,20 @@ const scrollToChangeDecoration = (editor: editorTypes.IStandaloneCodeEditor, err
         editor.revealLineInCenter(errorLine)
       })
     } else if (decorations.length) {
-      // if visible range doesn't show any change decorations, scroll to first change decoration
-      const changeDecorations = decorations.filter(
-        (decoration) => decoration.options.linesDecorationsClassName === 'insertedLineDecoration'
+      // if visible range doesn't show any scroll-to decorations, scroll to the first one
+      const scrollToDecorations = decorations.filter(
+        (decoration) =>
+          decoration.options.linesDecorationsClassName === 'insertedLineDecoration' ||
+          decoration.options.className === 'syncEditorYamlHighlight'
       )
       if (
-        changeDecorations.length &&
-        !changeDecorations.some((decoration) => {
+        scrollToDecorations.length &&
+        !scrollToDecorations.some((decoration) => {
           return visibleRange.containsPosition(decoration?.range.getStartPosition())
         })
       ) {
         setTimeout(() => {
-          editor.revealLineInCenter(changeDecorations[0]?.range.getStartPosition()?.lineNumber)
+          editor.revealLineInCenter(scrollToDecorations[0]?.range.getStartPosition()?.lineNumber)
         })
       }
     }
