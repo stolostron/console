@@ -86,17 +86,7 @@ export function WizCustomWrapper(props: WizCustomWrapperProps) {
     }
     bumpReviewDomTree?.()
     return () => stepInputsRegistry.unregister(id)
-  }, [
-    stepInputsRegistry,
-    currentStepId,
-    hidden,
-    id,
-    registrationPath,
-    value,
-    label,
-    bumpReviewDomTree,
-    isGroup,
-  ])
+  }, [stepInputsRegistry, currentStepId, hidden, id, registrationPath, value, label, bumpReviewDomTree, isGroup])
 
   return <div id={id}>{children}</div>
 }
