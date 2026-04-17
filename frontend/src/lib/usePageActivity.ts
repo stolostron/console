@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-const ACTIVITY_EVENTS = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'pointerdown'] as const
+const ACTIVITY_EVENTS = ['mousemove', 'mousewheel', 'scroll', 'touchmove', 'wheel'] as const
 
 /**
  * Tracks user activity and page visibility to determine whether the page is
@@ -13,42 +13,34 @@ const ACTIVITY_EVENTS = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchst
  * - The document is visible, the window is focused, and a relevant page is
  *   mounted (the user may simply be reading without generating events).
  * - The user generates interaction events (mouse, keyboard, scroll, touch)
- *   while a relevant page is mounted.
+ *   while a relevant page is mounted but not focused.
  *
  * The timer counts down when:
  * - The document is hidden (tab switched, browser minimized).
  * - The window has lost focus (user Alt-Tabbed to another application).
- * - No relevant page is mounted (`pageActiveRef.current <= 0`), e.g. the
+ * - No relevant page is mounted (`pageMounted` is false), e.g. the
  *   user navigated to an unrelated page in the same app.
  *
  * @param timeoutMs  Milliseconds of inactivity before going idle.
- * @param pageActiveRef  Optional ref whose `.current` must be > 0 for
- *   the page to be considered "relevant". When 0, user interactions are
- *   ignored and document visibility alone cannot prevent idle.
+ * @param pageMounted  Whether a relevant page is currently mounted.
+ *   When false, user interactions are ignored and document visibility
+ *   alone cannot prevent idle.
  */
-export interface PageActivityDebug {
-  /** Timestamp (ms) when the current idle timer will fire. null if no timer is running. */
-  deadline: number | null
-  /** True when the page is visible+focused+mounted; the timer will reschedule rather than trigger idle. */
-  suspended: boolean
-}
-
-export function usePageActivity(
-  timeoutMs: number = 0, // Disabled unless specified
-  pageActiveRef?: { current: number },
-  debugRef?: { current: PageActivityDebug }
-): boolean {
+export function usePageActivity(timeoutMs: number = 0, pageMounted = true) {
   const disabled = timeoutMs <= 0
   const [isActive, setIsActive] = useState(true)
+  const [deadline, setDeadline] = useState<number | null>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout>>()
   const isActiveRef = useRef(true)
+  const pageMountedRef = useRef(pageMounted)
+
+  const isPageInUse = useCallback(() => {
+    return !document.hidden && document.hasFocus() && pageMountedRef.current
+  }, [])
 
   const resetTimer = useCallback(() => {
-    if (disabled) return
-
-    if (pageActiveRef && pageActiveRef.current <= 0) return
-
     if (timerRef.current) clearTimeout(timerRef.current)
+    if (disabled) return
 
     if (!isActiveRef.current) {
       isActiveRef.current = true
@@ -57,57 +49,66 @@ export function usePageActivity(
 
     if (process.env.NODE_ENV === 'test') return
 
-    const deadline = Date.now() + timeoutMs
-    const suspended = !document.hidden && document.hasFocus() && (!pageActiveRef || pageActiveRef.current > 0)
-    if (debugRef) debugRef.current = { deadline, suspended }
+    if (!isPageInUse()) {
+      const deadline = Date.now() + timeoutMs
+      setDeadline(deadline)
 
-    timerRef.current = setTimeout(function onTimeout() {
-      if (!document.hidden && document.hasFocus() && (!pageActiveRef || pageActiveRef.current > 0)) {
-        const nextDeadline = Date.now() + timeoutMs
-        if (debugRef) debugRef.current = { deadline: nextDeadline, suspended: true }
-        timerRef.current = setTimeout(onTimeout, timeoutMs)
-        return
-      }
-      if (debugRef) debugRef.current = { deadline: null, suspended: false }
-      isActiveRef.current = false
-      setIsActive(false)
-    }, timeoutMs)
-  }, [disabled, timeoutMs, pageActiveRef, debugRef])
+      timerRef.current = setTimeout(function onTimeout() {
+        if (!isPageInUse()) {
+          isActiveRef.current = false
+          setIsActive(false)
+        }
+      }, timeoutMs)
+    }
+  }, [disabled, isPageInUse, timeoutMs])
 
-  const unsuspend = useCallback(() => {
-    if (debugRef) debugRef.current = { ...debugRef.current, suspended: false }
-  }, [debugRef])
+  const [pageInUse, setPageInUse] = useState(isPageInUse())
+
+  const onActivity = useCallback(() => {
+    resetTimer()
+  }, [resetTimer])
+
+  const updatePageInUse = useCallback(() => {
+    const newSuspended = isPageInUse()
+    resetTimer()
+    setPageInUse(newSuspended)
+  }, [isPageInUse, resetTimer])
+
+  if (pageMounted !== pageMountedRef.current) {
+    pageMountedRef.current = pageMounted
+    updatePageInUse()
+  }
+
+  // Only listen for activity events if the page is mounted, but not focused
+  const trackActivity = pageMounted && !document.hasFocus()
 
   useEffect(() => {
     if (disabled) return
 
     resetTimer()
 
-    for (const event of ACTIVITY_EVENTS) {
-      globalThis.addEventListener(event, resetTimer, { passive: true })
-    }
-
-    const onVisibilityChange = () => {
-      if (document.hidden) {
-        unsuspend()
-      } else {
-        resetTimer()
+    if (trackActivity) {
+      for (const event of ACTIVITY_EVENTS) {
+        globalThis.addEventListener(event, onActivity, { passive: true })
       }
     }
-    document.addEventListener('visibilitychange', onVisibilityChange)
-    globalThis.addEventListener('focus', resetTimer)
-    globalThis.addEventListener('blur', unsuspend)
+
+    document.addEventListener('visibilitychange', updatePageInUse)
+    globalThis.addEventListener('focus', updatePageInUse)
+    globalThis.addEventListener('blur', updatePageInUse)
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current)
-      for (const event of ACTIVITY_EVENTS) {
-        globalThis.removeEventListener(event, resetTimer)
+      if (trackActivity) {
+        for (const event of ACTIVITY_EVENTS) {
+          globalThis.removeEventListener(event, onActivity)
+        }
       }
-      document.removeEventListener('visibilitychange', onVisibilityChange)
-      globalThis.removeEventListener('focus', resetTimer)
-      globalThis.removeEventListener('blur', unsuspend)
+      document.removeEventListener('visibilitychange', updatePageInUse)
+      globalThis.removeEventListener('focus', updatePageInUse)
+      globalThis.removeEventListener('blur', updatePageInUse)
     }
-  }, [disabled, resetTimer, unsuspend])
+  }, [disabled, resetTimer, onActivity, updatePageInUse, trackActivity])
 
-  return isActive
+  return useMemo(() => ({ isActive, deadline, pageInUse }), [isActive, deadline, pageInUse])
 }

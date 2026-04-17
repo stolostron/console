@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { createContext, useState, useMemo, useRef, Dispatch, SetStateAction } from 'react'
+import { createContext, useState, useMemo, useCallback, Dispatch, SetStateAction } from 'react'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import * as atoms from '../atoms'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
@@ -28,7 +28,9 @@ export type PluginData = {
   setLoadStarted: Dispatch<SetStateAction<boolean>>
   setIsStreamIdle: Dispatch<SetStateAction<boolean>>
   setIsReconnecting: Dispatch<SetStateAction<boolean>>
-  acmPageMountCountRef: { current: number }
+  mounted: boolean
+  mount: () => void
+  unmount: () => void
   load: () => void
 }
 
@@ -47,7 +49,9 @@ export const defaultContext = {
   setLoadStarted: () => {},
   setIsStreamIdle: () => {},
   setIsReconnecting: () => {},
-  acmPageMountCountRef: { current: 0 },
+  mounted: false,
+  mount: () => {},
+  unmount: () => {},
   load: () => {},
 }
 
@@ -59,8 +63,11 @@ export const usePluginDataContextValue = () => {
   const [startLoading, setStartLoading] = useState(false)
   const [isStreamIdle, setIsStreamIdle] = useState(false)
   const [isReconnecting, setIsReconnecting] = useState(false)
-  const acmPageMountCountRef = useRef(0)
+  const [mountCount, setMountCount] = useState(0)
   const backendUrl = getBackendUrl()
+
+  const mount = useCallback(() => setMountCount((c) => c + 1), [])
+  const unmount = useCallback(() => setMountCount((c) => c - 1), [])
 
   const contextValue = useMemo(
     () => ({
@@ -78,10 +85,12 @@ export const usePluginDataContextValue = () => {
       setLoadStarted,
       setIsStreamIdle,
       setIsReconnecting,
-      acmPageMountCountRef,
+      mounted: mountCount > 0,
+      mount,
+      unmount,
       load: () => setStartLoading(true),
     }),
-    [backendUrl, loadStarted, loadCompleted, startLoading, isStreamIdle, isReconnecting]
+    [backendUrl, loadStarted, loadCompleted, startLoading, isStreamIdle, isReconnecting, mountCount, mount, unmount]
   )
   return contextValue
 }

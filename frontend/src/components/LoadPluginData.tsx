@@ -15,8 +15,7 @@ const contentWrapperClass = css({
 
 export const LoadPluginData = (props: { children?: ReactNode }) => {
   const { dataContext } = useContext(PluginContext)
-  const { load, loadStarted, loadCompleted, isStreamIdle, isReconnecting, acmPageMountCountRef } =
-    useContext(dataContext)
+  const { load, loadStarted, loadCompleted, isStreamIdle, isReconnecting, mount, unmount } = useContext(dataContext)
   const location = useLocation()
   // some pages are loaded fast by sending it's events first
   // which means these pages can appear immediately
@@ -65,12 +64,11 @@ export const LoadPluginData = (props: { children?: ReactNode }) => {
       NavigationPath.identitiesGroups,
     ] as string[]
   ).includes(location.pathname.replace(/\/$/, ''))
+
   useEffect(() => {
-    acmPageMountCountRef.current++
-    return () => {
-      acmPageMountCountRef.current-- // eslint-disable-line react-hooks/exhaustive-deps
-    }
-  }, [acmPageMountCountRef])
+    mount()
+    return unmount
+  }, [mount, unmount])
 
   useEffect(() => {
     if (!loadStarted) {
@@ -78,15 +76,13 @@ export const LoadPluginData = (props: { children?: ReactNode }) => {
     }
   }, [load, loadStarted])
 
-  if (!((fastLoadPage && loadStarted) || loadCompleted)) {
-    return <LoadingPage />
-  }
-
-  return (
+  return (fastLoadPage && loadStarted) || loadCompleted ? (
     <div className={contentWrapperClass}>
       {isStreamIdle && <StreamStatusOverlay variant="idle" />}
       {isReconnecting && <StreamStatusOverlay variant="reconnecting" />}
       <LostChangesProvider>{props.children}</LostChangesProvider>
     </div>
+  ) : (
+    <LoadingPage />
   )
 }

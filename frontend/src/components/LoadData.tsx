@@ -194,12 +194,12 @@ import { ClaimMappings } from '~/resources/authentication'
 import { usePageActivity } from '../lib/usePageActivity'
 
 export function LoadData(props: { children?: ReactNode }) {
-  const { loadCompleted, setLoadStarted, setLoadCompleted, setIsStreamIdle, setIsReconnecting, acmPageMountCountRef } =
+  const { loadCompleted, setLoadStarted, setLoadCompleted, setIsStreamIdle, setIsReconnecting, mounted } =
     useContext(PluginDataContext)
   const [eventsLoaded, setEventsLoaded] = useState(false)
   const idleTimeoutMs = useEventStreamIdleTimeout()
   const gracePeriodMs = useEventStreamIdleGracePeriod()
-  const isActive = usePageActivity(idleTimeoutMs, acmPageMountCountRef)
+  const { isActive } = usePageActivity(idleTimeoutMs, mounted)
   const wasActiveRef = useRef(true)
   const isReconnectingRef = useRef(false)
   const streamStoppedRef = useRef(false)

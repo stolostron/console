@@ -90,6 +90,7 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         'process.env.NODE_ENV': isProduction ? JSON.stringify('production') : JSON.stringify('development'),
         'process.env.REACT_APP_BACKEND_PATH': JSON.stringify('/multicloud'),
         'process.env.TRANSLATION_NAMESPACE': JSON.stringify('translation'),
+        'process.env.DEBUG_EVENT_STREAM_IDLE': JSON.stringify(process.env.DEBUG_EVENT_STREAM_IDLE ?? ''),
       }) as unknown as webpack.WebpackPluginInstance,
       ...locales.map((locale) => {
         return new MergeJsonWebpackPlugin({
