@@ -32,9 +32,17 @@ const ACTIVITY_EVENTS = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchst
  *   the page to be considered "relevant". When 0, user interactions are
  *   ignored and document visibility alone cannot prevent idle.
  */
+export interface PageActivityDebug {
+  /** Timestamp (ms) when the current idle timer will fire. null if no timer is running. */
+  deadline: number | null
+  /** True when the page is visible+focused+mounted; the timer will reschedule rather than trigger idle. */
+  suspended: boolean
+}
+
 export function usePageActivity(
   timeoutMs: number = DEFAULT_INACTIVITY_TIMEOUT_MS,
-  pageActiveRef?: { current: number }
+  pageActiveRef?: { current: number },
+  debugRef?: { current: PageActivityDebug }
 ): boolean {
   const [isActive, setIsActive] = useState(true)
   const timerRef = useRef<ReturnType<typeof setTimeout>>()
@@ -52,15 +60,26 @@ export function usePageActivity(
 
     if (process.env.NODE_ENV === 'test') return
 
+    const deadline = Date.now() + timeoutMs
+    const suspended = !document.hidden && document.hasFocus() && (!pageActiveRef || pageActiveRef.current > 0)
+    if (debugRef) debugRef.current = { deadline, suspended }
+
     timerRef.current = setTimeout(function onTimeout() {
       if (!document.hidden && document.hasFocus() && (!pageActiveRef || pageActiveRef.current > 0)) {
+        const nextDeadline = Date.now() + timeoutMs
+        if (debugRef) debugRef.current = { deadline: nextDeadline, suspended: true }
         timerRef.current = setTimeout(onTimeout, timeoutMs)
         return
       }
+      if (debugRef) debugRef.current = { deadline: null, suspended: false }
       isActiveRef.current = false
       setIsActive(false)
     }, timeoutMs)
-  }, [timeoutMs, pageActiveRef])
+  }, [timeoutMs, pageActiveRef, debugRef])
+
+  const unsuspend = useCallback(() => {
+    if (debugRef) debugRef.current = { ...debugRef.current, suspended: false }
+  }, [debugRef])
 
   useEffect(() => {
     resetTimer()
@@ -70,10 +89,15 @@ export function usePageActivity(
     }
 
     const onVisibilityChange = () => {
-      if (!document.hidden) resetTimer()
+      if (document.hidden) {
+        unsuspend()
+      } else {
+        resetTimer()
+      }
     }
     document.addEventListener('visibilitychange', onVisibilityChange)
     globalThis.addEventListener('focus', resetTimer)
+    globalThis.addEventListener('blur', unsuspend)
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current)
@@ -82,8 +106,9 @@ export function usePageActivity(
       }
       document.removeEventListener('visibilitychange', onVisibilityChange)
       globalThis.removeEventListener('focus', resetTimer)
+      globalThis.removeEventListener('blur', unsuspend)
     }
-  }, [resetTimer])
+  }, [resetTimer, unsuspend])
 
   return isActive
 }

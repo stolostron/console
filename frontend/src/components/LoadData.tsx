@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import get from 'lodash/get'
-import { Fragment, ReactNode, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { SetterOrUpdater, useRecoilValue, useSetRecoilState } from 'recoil'
 import { tokenExpired } from '../logout'
@@ -175,6 +175,7 @@ import {
   secretsState,
   ServerSideEventData,
   settingsState,
+  useEventStreamIdleGracePeriod,
   useEventStreamIdleTimeout,
   servicesState,
   storageClassState,
@@ -197,9 +198,12 @@ export function LoadData(props: { children?: ReactNode }) {
     useContext(PluginDataContext)
   const [eventsLoaded, setEventsLoaded] = useState(false)
   const idleTimeoutMs = useEventStreamIdleTimeout()
+  const gracePeriodMs = useEventStreamIdleGracePeriod()
   const isActive = usePageActivity(idleTimeoutMs, acmPageMountCountRef)
   const wasActiveRef = useRef(true)
   const isReconnectingRef = useRef(false)
+  const streamStoppedRef = useRef(false)
+  const graceTimerRef = useRef<ReturnType<typeof setTimeout>>()
   const eventSourceRef = useRef<EventSource>()
   const processIntervalRef = useRef<ReturnType<typeof setInterval>>()
   const [restartKey, setRestartKey] = useState(0)
@@ -424,27 +428,44 @@ export function LoadData(props: { children?: ReactNode }) {
     setUsers,
   ])
 
+  const stopStream = useCallback(() => {
+    streamStoppedRef.current = true
+    eventSourceRef.current?.close()
+    eventSourceRef.current = undefined
+    if (processIntervalRef.current) {
+      clearInterval(processIntervalRef.current)
+      processIntervalRef.current = undefined
+    }
+  }, [])
+
   useEffect(() => {
     if (!isActive && wasActiveRef.current) {
+      // active → idle: show overlay, start grace timer (stream keeps running)
       wasActiveRef.current = false
       setIsStreamIdle(true)
-      eventSourceRef.current?.close()
-      eventSourceRef.current = undefined
-      if (processIntervalRef.current) {
-        clearInterval(processIntervalRef.current)
-        processIntervalRef.current = undefined
-      }
+      graceTimerRef.current = setTimeout(stopStream, gracePeriodMs)
     } else if (isActive && !wasActiveRef.current) {
       wasActiveRef.current = true
-      setIsStreamIdle(false)
-      isReconnectingRef.current = true
-      setIsReconnecting(true)
-      resetCaches(caches)
-      resetMapperCaches(mappers)
-      setEventsLoaded(false)
-      setRestartKey((k) => k + 1)
+      if (graceTimerRef.current) {
+        clearTimeout(graceTimerRef.current)
+        graceTimerRef.current = undefined
+      }
+      if (streamStoppedRef.current) {
+        // stopped → reconnecting: stream was killed, need full reload
+        streamStoppedRef.current = false
+        setIsStreamIdle(false)
+        isReconnectingRef.current = true
+        setIsReconnecting(true)
+        resetCaches(caches)
+        resetMapperCaches(mappers)
+        setEventsLoaded(false)
+        setRestartKey((k) => k + 1)
+      } else {
+        // idle → active: returned during grace period, just hide overlay
+        setIsStreamIdle(false)
+      }
     }
-  }, [isActive, caches, mappers, setIsStreamIdle, setIsReconnecting])
+  }, [isActive, gracePeriodMs, caches, mappers, stopStream, setIsStreamIdle, setIsReconnecting])
 
   useEffect(() => {
     const eventQueue: WatchEvent[] = []
@@ -553,6 +574,7 @@ export function LoadData(props: { children?: ReactNode }) {
       evtSource.onmessage = processMessage
       evtSource.onerror = function () {
         console.log('EventSource', 'error', 'readyState', evtSource?.readyState)
+        if (streamStoppedRef.current) return
         switch (evtSource?.readyState) {
           case EventSource.CLOSED:
             setTimeout(() => {

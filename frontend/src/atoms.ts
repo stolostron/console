@@ -172,6 +172,7 @@ export interface Settings {
   SEARCH_AUTOCOMPLETE_LIMIT?: string
   VIRTUAL_MACHINE_ACTIONS?: 'enabled' | 'disabled'
   EVENT_STREAM_IDLE_TIMEOUT?: string
+  EVENT_STREAM_IDLE_GRACE_PERIOD?: string
 
   ansibleIntegration?: 'enabled' | 'disabled'
   singleNodeOpenshift?: 'enabled' | 'disabled'
@@ -227,6 +228,18 @@ export function useEventStreamIdleTimeout(): number {
     const minutes = Number.parseFloat(raw ?? String(DEFAULT_EVENT_STREAM_IDLE_TIMEOUT_MINUTES))
     const valid = !Number.isNaN(minutes) && minutes > 0
     return (valid ? minutes : DEFAULT_EVENT_STREAM_IDLE_TIMEOUT_MINUTES) * 60 * 1000
+  }, [settings])
+}
+
+const DEFAULT_EVENT_STREAM_IDLE_GRACE_PERIOD_MINUTES = 1
+
+export function useEventStreamIdleGracePeriod(): number {
+  const settings = useRecoilValue(settingsState)
+  return useMemo(() => {
+    const raw = settings.EVENT_STREAM_IDLE_GRACE_PERIOD
+    const minutes = Number.parseFloat(raw ?? String(DEFAULT_EVENT_STREAM_IDLE_GRACE_PERIOD_MINUTES))
+    const valid = !Number.isNaN(minutes) && minutes > 0
+    return (valid ? minutes : DEFAULT_EVENT_STREAM_IDLE_GRACE_PERIOD_MINUTES) * 60 * 1000
   }, [settings])
 }
 
