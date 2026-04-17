@@ -318,6 +318,40 @@ describe('getAppSetTopology', () => {
     expect(placementNode).toBeUndefined()
   })
 
+  it('should set repo node type to chart when any source has chart, else git', async () => {
+    const baseApp = (sources: unknown[]): ApplicationModel => ({
+      name: 'test-appset-repo-type',
+      namespace: 'openshift-gitops',
+      app: {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'ApplicationSet',
+        metadata: { name: 'test-appset-repo-type', namespace: 'openshift-gitops' },
+        spec: {
+          generators: [{ list: { elements: [{ cluster: 'local-cluster' }] } }],
+          template: { spec: { sources } as any },
+        },
+      },
+      placementDecision: undefined,
+      isArgoApp: false,
+      isAppSet: true,
+      isOCPApp: false,
+      isFluxApp: false,
+      isAppSetPullModel: false,
+      appSetClusters: [{ name: 'local-cluster' }],
+      appSetApps: [{ metadata: { name: 'test-appset-repo-type-local-cluster' }, spec: {} }] as any,
+    })
+
+    const gitOnly = await getAppSetTopology(mockToolbarControl, baseApp([{ path: 'apps/nginx' }]), 'local-cluster')
+    expect(gitOnly.nodes.find((n) => n.id?.startsWith('member--repo--'))?.type).toBe('git')
+
+    const withHelm = await getAppSetTopology(
+      mockToolbarControl,
+      baseApp([{ path: 'apps/nginx' }, { chart: 'redis', repoURL: 'https://charts.example.com' }]),
+      'local-cluster'
+    )
+    expect(withHelm.nodes.find((n) => n.id?.startsWith('member--repo--'))?.type).toBe('chart')
+  })
+
   it('should handle ApplicationSet with multiple clusters', async () => {
     mockSearchClient.query.mockResolvedValue({
       loading: false,

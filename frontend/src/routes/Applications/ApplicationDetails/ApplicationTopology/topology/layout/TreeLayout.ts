@@ -1,5 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Graph, ColaLayout, LayoutNode, NodeModel, ColaLayoutOptions, LayoutOptions } from '@patternfly/react-topology'
+import {
+  ColaGroup,
+  ColaLayout,
+  ColaLink,
+  ColaNode,
+  Graph,
+  LayoutNode,
+  NodeModel,
+  ColaLayoutOptions,
+  LayoutOptions,
+} from '@patternfly/react-topology'
 import get from 'lodash/get'
 import chunk from 'lodash/chunk'
 import uniqBy from 'lodash/uniqBy'
@@ -23,6 +33,9 @@ const TREE_LAYOUT_DEFAULTS: TreeLayoutOptions = {
   nodeHeight: 65,
   useCola: false,
 }
+
+/** Paired nodes sit this many pixels above their parent (smaller graph Y). */
+const PAIRED_LAYOUT_DY_OFFSET_FROM_PARENT = -50
 
 interface LayoutNodeModel extends NodeModel {
   cycles: boolean
@@ -95,6 +108,29 @@ class TreeLayout extends ColaLayout {
     if (this.treeOptions.useCola) {
       super.startLayout(graph, initialRun, addingNodes)
     }
+  }
+
+  protected getConstraints(nodes: ColaNode[], groups: ColaGroup[], edges: ColaLink[]): any[] {
+    const constraints = super.getConstraints(nodes, groups, edges)
+    if (!this.treeOptions.useCola) {
+      return constraints
+    }
+    edges.forEach((edge) => {
+      const target = edge.target as ColaNode
+      const source = edge.source as ColaNode
+      const specs = target.element.getData()?.specs as { isPairedInLayoutWithParent?: boolean } | undefined
+      if (specs?.isPairedInLayoutWithParent) {
+        constraints.push({
+          type: 'alignment',
+          axis: 'y',
+          offsets: [
+            { node: source.index, offset: 0 },
+            { node: target.index, offset: PAIRED_LAYOUT_DY_OFFSET_FROM_PARENT },
+          ],
+        })
+      }
+    })
+    return constraints
   }
 }
 
@@ -506,7 +542,7 @@ function setRowX(metrics: MetricsType, nodeOffsetMap: NodeOffsetMapType, options
   })
 }
 
-// place paired next to its parent
+// place paired to the right of its parent
 function placePairedNodes(
   metrics: MetricsType,
   nodeOffsetMap: NodeOffsetMapType,
@@ -522,13 +558,10 @@ function placePairedNodes(
         delta: nodeOffsetMap[allNodeMap[id]?.incoming[0].id],
       }
     })
-  deltas.sort((a, b) => {
-    return a.delta.dx - b.delta.dx
-  })
-  deltas.forEach(({ id, delta }, inx) => {
+  const xStep = options.xSpacer + options.nodeWidth
+  deltas.forEach(({ id, delta }) => {
     const { dx, dy } = delta
-    const sign = deltas.length > 1 && inx === 0 ? -1 : 1
-    nodeOffsetMap[id] = { dx: dx + sign * (options.xSpacer + options.nodeWidth), dy: dy - 20 }
+    nodeOffsetMap[id] = { dx: dx + xStep, dy: dy + PAIRED_LAYOUT_DY_OFFSET_FROM_PARENT }
   })
 }
 

@@ -20,3 +20,10 @@
 .pf-topology-view__project-toolbar {
   width: 100%;
 }
+
+/* Clickable sync resources decorator on topology node */
+.pf-topology-sync-resource-decorator {
+  cursor: pointer;
+  color: blue !important;
+  fill: blue !important;
+}

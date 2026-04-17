@@ -21,6 +21,15 @@
   fill: #e0182d;
 }
 
+.sync {
+  color: #0066cc !important;
+  fill: currentcolor !important;
+}
+
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .sync {
+  color: rgb(185, 218, 252) !important;
+}
+
 .spinner .swirly {
   fill: transparent;
   stroke: var(--pf-t--global--icon--color--brand--default);

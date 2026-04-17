@@ -96,6 +96,12 @@ describe('addPropertyToList undefined data', () => {
   })
 })
 
+describe('addPropertyToList falsy defined data', () => {
+  it('pushes false', () => {
+    expect(addPropertyToList<boolean>([], false)).toEqual([false])
+  })
+})
+
 describe('computeResourceName node with pods no _hostingDeployable', () => {
   it('nodeMustHavePods POD no _hostingDeployable', () => {
     expect(

@@ -33,6 +33,14 @@ export const statusToIconMap = Object.freeze({
     dx: -18,
     dy: 12,
   },
+  sync: {
+    icon: 'sync',
+    classType: 'sync',
+    width: 16,
+    height: 16,
+    dx: -18,
+    dy: 12,
+  },
   blocked: {
     icon: 'blocked',
     classType: 'success',

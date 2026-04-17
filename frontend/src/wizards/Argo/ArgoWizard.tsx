@@ -37,6 +37,7 @@ import { IResource } from '../common/resources/IResource'
 import { Placement } from '../Placement/Placement'
 import { WizardPage } from '../WizardPage'
 import { ClusterSetMonitor } from './ClusterSetMonitor'
+import { useLocalHubName } from '../../hooks/use-local-hub'
 import { CreateArgoResources } from './CreateArgoResources'
 import { MultipleSourcesSelector } from './MultipleSourcesSelector'
 import { SourceSelector } from './SourceSelector'
@@ -161,10 +162,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
   const { t } = useTranslation()
   const { validateAppSetName } = useValidation()
 
-  const hubCluster = useMemo(
-    () => props.clusters.find((cls) => cls.metadata?.labels && cls.metadata.labels['local-cluster'] === 'true'),
-    [props.clusters]
-  )
+  const hubClusterName = useLocalHubName()
   const sourceGitChannels = useMemo(
     () =>
       props.channels
@@ -359,9 +357,9 @@ export function ArgoWizard(props: ArgoWizardProps) {
                     labelSelector: {
                       matchExpressions: [
                         {
-                          key: 'name',
+                          key: 'local-cluster',
                           operator: 'NotIn',
-                          values: [hubCluster?.metadata?.name],
+                          values: ['true'],
                         },
                       ],
                     },
@@ -565,7 +563,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
         </Step>
         <Step id="repository" label={t('Template')}>
           <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
-            <GitOpsPrivateRepoAlert isPullModel={isPullModel} hubClusterName={hubCluster?.metadata?.name ?? ''} />
+            <GitOpsPrivateRepoAlert isPullModel={isPullModel} hubClusterName={hubClusterName} />
             <Section label={t('Repository')} description={t('Repository of the applications to be created.')}>
               {source && !sources ? (
                 <SourceSelector
@@ -609,7 +607,6 @@ export function ArgoWizard(props: ArgoWizardProps) {
               clusterSetBindings={props.clusterSetBindings}
               createClusterSetCallback={props.createClusterSetCallback}
               isPullModel={isPullModel}
-              hubClusterName={hubCluster?.metadata?.name ?? ''}
             />
           </Step>
         )}
@@ -872,7 +869,6 @@ function ArgoWizardPlacementSection(props: {
   clusters: IResource[]
   createClusterSetCallback?: () => void
   isPullModel?: boolean
-  hubClusterName: string
 }) {
   const { t } = useTranslation()
   const resources = useItem() as IResource[]
@@ -924,9 +920,9 @@ function ArgoWizardPlacementSection(props: {
                                   labelSelector: {
                                     matchExpressions: [
                                       {
-                                        key: 'name',
+                                        key: 'local-cluster',
                                         operator: 'NotIn',
-                                        values: [props.hubClusterName],
+                                        values: ['true'],
                                       },
                                     ],
                                   },
