@@ -44,11 +44,14 @@ export function usePageActivity(
   pageActiveRef?: { current: number },
   debugRef?: { current: PageActivityDebug }
 ): boolean {
+  const disabled = timeoutMs <= 0
   const [isActive, setIsActive] = useState(true)
   const timerRef = useRef<ReturnType<typeof setTimeout>>()
   const isActiveRef = useRef(true)
 
   const resetTimer = useCallback(() => {
+    if (disabled) return
+
     if (pageActiveRef && pageActiveRef.current <= 0) return
 
     if (timerRef.current) clearTimeout(timerRef.current)
@@ -75,13 +78,15 @@ export function usePageActivity(
       isActiveRef.current = false
       setIsActive(false)
     }, timeoutMs)
-  }, [timeoutMs, pageActiveRef, debugRef])
+  }, [disabled, timeoutMs, pageActiveRef, debugRef])
 
   const unsuspend = useCallback(() => {
     if (debugRef) debugRef.current = { ...debugRef.current, suspended: false }
   }, [debugRef])
 
   useEffect(() => {
+    if (disabled) return
+
     resetTimer()
 
     for (const event of ACTIVITY_EVENTS) {
@@ -108,7 +113,7 @@ export function usePageActivity(
       globalThis.removeEventListener('focus', resetTimer)
       globalThis.removeEventListener('blur', unsuspend)
     }
-  }, [resetTimer, unsuspend])
+  }, [disabled, resetTimer, unsuspend])
 
   return isActive
 }

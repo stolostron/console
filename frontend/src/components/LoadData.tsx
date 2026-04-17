@@ -440,10 +440,15 @@ export function LoadData(props: { children?: ReactNode }) {
 
   useEffect(() => {
     if (!isActive && wasActiveRef.current) {
-      // active → idle: show overlay, start grace timer (stream keeps running)
       wasActiveRef.current = false
       setIsStreamIdle(true)
-      graceTimerRef.current = setTimeout(stopStream, gracePeriodMs)
+      if (gracePeriodMs <= 0) {
+        // No grace period: stop stream immediately
+        stopStream()
+      } else {
+        // Start grace timer (stream keeps running during grace period)
+        graceTimerRef.current = setTimeout(stopStream, gracePeriodMs)
+      }
     } else if (isActive && !wasActiveRef.current) {
       wasActiveRef.current = true
       if (graceTimerRef.current) {

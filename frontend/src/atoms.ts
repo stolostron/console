@@ -225,9 +225,11 @@ export function useEventStreamIdleTimeout(): number {
   const settings = useRecoilValue(settingsState)
   return useMemo(() => {
     const raw = settings.EVENT_STREAM_IDLE_TIMEOUT
-    const minutes = Number.parseFloat(raw ?? String(DEFAULT_EVENT_STREAM_IDLE_TIMEOUT_MINUTES))
-    const valid = !Number.isNaN(minutes) && minutes > 0
-    return (valid ? minutes : DEFAULT_EVENT_STREAM_IDLE_TIMEOUT_MINUTES) * 60 * 1000
+    if (raw === undefined || raw === '') return DEFAULT_EVENT_STREAM_IDLE_TIMEOUT_MINUTES * 60 * 1000
+    const minutes = Number.parseFloat(raw)
+    if (Number.isNaN(minutes)) return DEFAULT_EVENT_STREAM_IDLE_TIMEOUT_MINUTES * 60 * 1000
+    if (minutes <= 0) return 0
+    return minutes * 60 * 1000
   }, [settings])
 }
 
@@ -237,9 +239,11 @@ export function useEventStreamIdleGracePeriod(): number {
   const settings = useRecoilValue(settingsState)
   return useMemo(() => {
     const raw = settings.EVENT_STREAM_IDLE_GRACE_PERIOD
-    const minutes = Number.parseFloat(raw ?? String(DEFAULT_EVENT_STREAM_IDLE_GRACE_PERIOD_MINUTES))
-    const valid = !Number.isNaN(minutes) && minutes > 0
-    return (valid ? minutes : DEFAULT_EVENT_STREAM_IDLE_GRACE_PERIOD_MINUTES) * 60 * 1000
+    if (raw === undefined || raw === '') return DEFAULT_EVENT_STREAM_IDLE_GRACE_PERIOD_MINUTES * 60 * 1000
+    const minutes = Number.parseFloat(raw)
+    if (Number.isNaN(minutes)) return DEFAULT_EVENT_STREAM_IDLE_GRACE_PERIOD_MINUTES * 60 * 1000
+    if (minutes <= 0) return 0
+    return minutes * 60 * 1000
   }, [settings])
 }
 
