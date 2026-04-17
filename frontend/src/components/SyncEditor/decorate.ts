@@ -18,10 +18,12 @@ export const decorate = (
   change: {
     parsed: { [name: string]: any[] }
     mappings: { [name: string]: any[] }
+    paths?: Record<string, unknown>
   },
   preservedUserEdits: any[],
   protectedRanges: any[],
-  filteredRows: number[]
+  filteredRows: number[],
+  highlightEditorPath: string
 ) => {
   const decorations: any[] = []
   const squigglyTooltips: any[] = []
@@ -42,6 +44,9 @@ export const decorate = (
 
   // add filter row toggle decorations
   addFilteredDecorations(monaco, filteredRows, decorations)
+
+  // add highlight decorations from wizard
+  addHighlightDecorations(isCustomEdit, monaco, changes, change, highlightEditorPath, decorations)
 
   // add decorations to editor
   const hasErrors = errors.length > 0
@@ -139,6 +144,35 @@ const addErrorDecorations = (monaco: Monaco, errors: any[], decorations: any[], 
   })
 }
 
+const addHighlightDecorations = (
+  isCustomEdit: boolean,
+  monaco: Monaco,
+  changes: any[],
+  change: {
+    parsed: { [name: string]: any[] }
+    mappings: { [name: string]: any[] }
+    paths?: Record<string, unknown>
+  },
+  highlightEditorPath: string,
+  decorations: any[]
+) => {
+  if (isCustomEdit || changes.length !== 0 || !highlightEditorPath.trim()) {
+    return
+  }
+  const paths = (change as { paths?: Record<string, unknown> } | undefined)?.paths
+  const range = rangeForHighlightPath(monaco, paths as never, change?.mappings, highlightEditorPath)
+  if (!range) {
+    return
+  }
+  decorations.push({
+    range,
+    options: {
+      className: 'syncEditorYamlHighlight',
+      isWholeLine: range.startLineNumber !== range.endLineNumber,
+    },
+  })
+}
+
 const addChangeDecorations = (
   isCustomEdit: boolean,
   monaco: Monaco,
@@ -185,6 +219,7 @@ export const getResourceEditorDecorations = (editor: editorTypes.IStandaloneCode
   decorations = decorations.filter(({ options }) => {
     return (
       options?.className?.startsWith('squiggly-') ||
+      options?.className === 'syncEditorYamlHighlight' ||
       ['customLineDecoration', 'insertedLineDecoration'].includes(options?.linesDecorationsClassName ?? '') ||
       (!!options?.glyphMarginClassName && (options?.inlineClassName !== 'protectedDecoration' || !hasErrors))
     )
