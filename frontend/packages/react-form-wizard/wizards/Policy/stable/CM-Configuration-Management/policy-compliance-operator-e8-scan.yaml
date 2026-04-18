@@ -76,27 +76,3 @@ spec:
                   labels:
                     compliance.openshift.io/check-status: FAIL
                     compliance.openshift.io/suite: e8
----
-apiVersion: policy.open-cluster-management.io/v1
-kind: PlacementBinding
-metadata:
-  name: binding-policy-e8-scan
-placementRef:
-  name: placement-policy-e8-scan
-  kind: Placement
-  apiGroup: cluster.open-cluster-management.io
-subjects:
-  - name: policy-e8-scan
-    kind: Policy
-    apiGroup: policy.open-cluster-management.io
----
-apiVersion: cluster.open-cluster-management.io/v1beta1
-kind: Placement
-metadata:
-  name: placement-policy-e8-scan
-spec:
-  predicates:
-    - requiredClusterSelector:
-        labelSelector:
-          matchExpressions:
-            - { key: vendor, operator: In, values: ['OpenShift'] }

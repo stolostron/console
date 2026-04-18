@@ -35,27 +35,3 @@ spec:
                       defaultRequest:
                         memory: 256Mi
                       type: Container
----
-apiVersion: policy.open-cluster-management.io/v1
-kind: PlacementBinding
-metadata:
-  name: binding-policy-limitmemory
-placementRef:
-  name: placement-policy-limitmemory
-  kind: Placement
-  apiGroup: cluster.open-cluster-management.io
-subjects:
-  - name: policy-limitmemory
-    kind: Policy
-    apiGroup: policy.open-cluster-management.io
----
-apiVersion: cluster.open-cluster-management.io/v1beta1
-kind: Placement
-metadata:
-  name: placement-policy-limitmemory
-spec:
-  predicates:
-    - requiredClusterSelector:
-        labelSelector:
-          matchExpressions:
-            - { key: environment, operator: In, values: ['dev'] }

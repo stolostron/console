@@ -76,27 +76,3 @@ spec:
                   labels:
                     compliance.openshift.io/check-status: FAIL
                     compliance.openshift.io/suite: cis
----
-apiVersion: policy.open-cluster-management.io/v1
-kind: PlacementBinding
-metadata:
-  name: binding-policy-cis-scan
-placementRef:
-  name: placement-policy-cis-scan
-  kind: Placement
-  apiGroup: cluster.open-cluster-management.io
-subjects:
-  - name: policy-cis-scan
-    kind: Policy
-    apiGroup: policy.open-cluster-management.io
----
-apiVersion: cluster.open-cluster-management.io/v1beta1
-kind: Placement
-metadata:
-  name: placement-policy-cis-scan
-spec:
-  predicates:
-    - requiredClusterSelector:
-        labelSelector:
-          matchExpressions:
-            - { key: vendor, operator: In, values: ['OpenShift'] }
