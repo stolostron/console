@@ -20,7 +20,8 @@ export default function HeaderWithNotification() {
   const { data, loading, error } = useQuery(queryDisabled)
 
   useEffect(() => {
-    setIsSearchDisabled(!loading && !error && data?.[0]?.data?.searchResult?.[0]?.items.length > 0)
+    const items = data?.[0]?.data?.searchResult?.[0]?.items
+    setIsSearchDisabled(!loading && !error && Array.isArray(items) && items.length > 0)
   }, [data, loading, error])
 
   return (
