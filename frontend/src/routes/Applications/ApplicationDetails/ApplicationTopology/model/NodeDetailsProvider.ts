@@ -392,7 +392,7 @@ function addK8Details(
   )
 
   if (type === 'placements' || type === 'placement' || type === 'placementDecision') {
-    const specNbOfClustersTarget = node?.specs?.raw?.status?.decisions ?? []
+    const specNbOfClustersTarget = node?.specs?.raw?.status?.numberOfSelectedClusters ?? 0
 
     // placementDecision
     const clusterSets = node?.placementDecision?.spec?.clusterSets
@@ -403,7 +403,7 @@ function addK8Details(
     mainDetails.push(
       {
         labelValue: t('Matched Clusters'),
-        value: specNbOfClustersTarget.length,
+        value: specNbOfClustersTarget,
       },
       { labelValue: t('ClusterSet'), value: clusterSets ? clusterSets.join() : t('Not defined') },
       {
