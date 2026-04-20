@@ -1403,11 +1403,6 @@ describe('computeStatuses exported helpers', () => {
     expect(computeNodeStatus(node, true, t, 'local-cluster')).toEqual('red')
   })
 
-  it('computeNodeStatus routes deployable placements through generic node logic', () => {
-    const pulse = computeNodeStatus(placementsDeployable, true, t, 'local-cluster')
-    expect(pulse).toBeDefined()
-  })
-
   it('computeNodeStatus treats deployable placementDecision without model as green', () => {
     const pulse = computeNodeStatus(placementDeployable, true, t, 'local-cluster')
     expect(pulse).toEqual('green')

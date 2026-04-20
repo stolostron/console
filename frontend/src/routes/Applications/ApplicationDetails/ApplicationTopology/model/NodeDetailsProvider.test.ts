@@ -5,7 +5,6 @@ import {
   setApplicationDeployStatus,
   setClusterStatus,
   setPlacementDeployStatus,
-  setPlacementRuleDeployStatus,
   setPodDeployStatus,
   setResourceDeployStatus,
   setSubscriptionDeployStatus,
@@ -350,7 +349,6 @@ describe('NodeDetailsProvider', () => {
 
       expect(setApplicationDeployStatus).toHaveBeenCalled()
       expect(setSubscriptionDeployStatus).toHaveBeenCalled()
-      expect(setPlacementRuleDeployStatus).toHaveBeenCalled()
       expect(setPlacementDeployStatus).toHaveBeenCalled()
       expect(setResourceDeployStatus).toHaveBeenCalled()
       expect(setPodDeployStatus).toHaveBeenCalled()

@@ -76,7 +76,7 @@ describe('CreateControlPlane', () => {
     )
   })
 
-  test('Hosted control plane card should be disabled when there are no hosts', async () => {
+  test('Hosted control plane card should be enabled when there is an infrastructure environment', async () => {
     const hypershiftStatusNock = nockHypershiftStatus(true)
 
     const { getByTestId } = render(<Component enableHypershift={true} infraEnvsMock={[mockInfraEnv1]} />)
