@@ -27,9 +27,9 @@ describe('create policy set', () => {
     })
 
     it('placement', () => {
-        cy.get('#add-button').click()
+        cy.contains('New placement').click()
 
-        // set label expression label
+        // set label expression key
         cy.get('#key').click()
         cy.get('#region').click()
 
