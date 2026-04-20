@@ -4,7 +4,6 @@ import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
   placementBindingsState,
-  placementRulesState,
   placementsState,
   policiesState,
   policyAutomationState,
@@ -12,7 +11,7 @@ import {
 } from '../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { getCSVDownloadLink, getCSVExportSpies, waitForText } from '../../../lib/test-util'
-import { Placement, PlacementBinding, PlacementRule } from '../../../resources'
+import { Placement, PlacementBinding } from '../../../resources'
 import PoliciesPage, { AddToPolicySetModal, DeletePolicyModal, PolicyTableItem } from './Policies'
 import {
   mockPolicy,
@@ -323,9 +322,9 @@ describe('Delete policy modal with shared placements and bindings', () => {
       },
       spec: {},
     }
-    const placementRule: PlacementRule = {
-      apiVersion: 'apps.open-cluster-management.io/v1',
-      kind: 'PlacementRule',
+    const placementLegacy: Placement = {
+      apiVersion: 'cluster.open-cluster-management.io/v1alpha1',
+      kind: 'Placement',
       metadata: {
         name: 'all-clusters-legacy',
         namespace: 'test',
@@ -340,7 +339,7 @@ describe('Delete policy modal with shared placements and bindings', () => {
         namespace: 'test',
       },
       placementRef: {
-        apiGroup: 'clusters.open-cluster-management.io',
+        apiGroup: 'cluster.open-cluster-management.io',
         kind: 'Placement',
         name: 'all-clusters',
       },
@@ -365,8 +364,8 @@ describe('Delete policy modal with shared placements and bindings', () => {
         namespace: 'test',
       },
       placementRef: {
-        apiGroup: 'apps.open-cluster-management.io',
-        kind: 'PlacementRule',
+        apiGroup: 'cluster.open-cluster-management.io',
+        kind: 'Placement',
         name: 'all-clusters-legacy',
       },
       subjects: [
@@ -390,7 +389,7 @@ describe('Delete policy modal with shared placements and bindings', () => {
         namespace: 'test',
       },
       placementRef: {
-        apiGroup: 'clusters.open-cluster-management.io',
+        apiGroup: 'cluster.open-cluster-management.io',
         kind: 'Placement',
         name: 'all-clusters',
       },
@@ -410,8 +409,8 @@ describe('Delete policy modal with shared placements and bindings', () => {
         namespace: 'test',
       },
       placementRef: {
-        apiGroup: 'apps.open-cluster-management.io',
-        kind: 'PlacementRule',
+        apiGroup: 'cluster.open-cluster-management.io',
+        kind: 'Placement',
         name: 'all-clusters-legacy',
       },
       subjects: [
@@ -427,14 +426,13 @@ describe('Delete policy modal with shared placements and bindings', () => {
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
-          snapshot.set(placementsState, [placement])
+          snapshot.set(placementsState, [placement, placementLegacy])
           snapshot.set(placementBindingsState, [
             placementBinding1,
             placementBinding2,
             placementBinding3,
             placementBinding4,
           ])
-          snapshot.set(placementRulesState, [placementRule])
         }}
       >
         <DeletePolicyModal item={tableItem} onClose={onClose} />
@@ -443,7 +441,7 @@ describe('Delete policy modal with shared placements and bindings', () => {
 
     screen.getByRole('heading', { name: 'Warning alert: These PlacementBindings are in use elsewhere' })
     screen.getByText('all-clusters-placement, all-clusters-legacy-placement')
-    screen.getByRole('heading', { name: 'Warning alert: These Placements/PlacementRules are in use elsewhere' })
+    screen.getByRole('heading', { name: 'Warning alert: These Placements are in use elsewhere' })
     screen.getByText('all-clusters, all-clusters-legacy')
   })
 })

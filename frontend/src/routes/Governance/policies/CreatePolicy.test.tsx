@@ -7,7 +7,6 @@ import {
   namespacesState,
   managedClustersState,
   placementsState,
-  placementRulesState,
   managedClusterSetBindingsState,
   managedClusterSetsState,
 } from '../../../atoms'
@@ -21,7 +20,6 @@ import {
   mockManagedClusters,
   mockNamespaces,
   mockPlacementBindings,
-  mockPlacementRules,
   mockPlacements,
   mockPolicy,
 } from '../governance.sharedMocks'
@@ -36,7 +34,6 @@ function TestCreatePolicyPage(props: { initialResources?: IResource[] }) {
         snapshot.set(namespacesState, mockNamespaces)
         snapshot.set(managedClustersState, mockManagedClusters)
         snapshot.set(placementsState, mockPlacements)
-        snapshot.set(placementRulesState, mockPlacementRules)
         snapshot.set(managedClusterSetsState, [mockClusterSet])
         snapshot.set(managedClusterSetBindingsState, [mockClusterSetBinding])
       }}
@@ -188,8 +185,8 @@ describe('Create Policy Page', () => {
     await waitForNocks(placementBindingNock)
   })
 
-  test('can switch to existing placement in PlacementRule mode', async () => {
-    // The PlacementBinding points to a PlacementRule to activate PlacementRule mode
+  test('can switch to existing placement in Placement mode', async () => {
+    // The PlacementBinding points to a Placement to activate Placement mode
     render(<TestCreatePolicyPage initialResources={[mockPolicy[2], mockPlacementBindings[0]]} />)
 
     await new Promise((resolve) => setTimeout(resolve, 500))
@@ -197,10 +194,8 @@ describe('Create Policy Page', () => {
     screen.getByRole('button', { name: 'Next' }).click()
 
     await waitForText('How do you want to select clusters?')
-    screen.getByText(/placementrule resource is deprecated and will not receive updates or fixes./i)
     screen.getByRole('button', { name: 'Existing placement' }).click()
-    screen.getByPlaceholderText(/select the placement rule/i)
-    screen.getByText(/placementrule resource is deprecated and will not receive updates or fixes./i)
+    screen.getByPlaceholderText(/select the placement/i)
   })
 
   test('can cancel create policy', async () => {

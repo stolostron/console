@@ -274,7 +274,7 @@ const props1: TopologyProps = {
           activeChannel: '__ALL__/__ALL__//__ALL__/__ALL__',
           allSubscriptions: [
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
               kind: 'Subscription',
               metadata: {
                 annotations: {
@@ -297,7 +297,7 @@ const props1: TopologyProps = {
                 channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
                 placement: {
                   placementRef: {
-                    kind: 'PlacementRule',
+                    kind: 'Placement',
                     name: 'test-placement-1',
                   },
                 },
@@ -310,7 +310,7 @@ const props1: TopologyProps = {
               prehooks: [],
               channels: [
                 {
-                  apiVersion: 'apps.open-cluster-management.io/v1',
+                  apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                   kind: 'Channel',
                   metadata: {
                     annotations: {
@@ -340,7 +340,7 @@ const props1: TopologyProps = {
                   namespace: 'test',
                   ownerReferences: [
                     {
-                      apiVersion: 'apps.open-cluster-management.io/v1',
+                      apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                       blockOwnerDeletion: true,
                       controller: true,
                       kind: 'Subscription',
@@ -389,7 +389,7 @@ const props1: TopologyProps = {
               },
             },
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
               kind: 'Subscription',
               metadata: {
                 annotations: {
@@ -412,7 +412,7 @@ const props1: TopologyProps = {
                 channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
                 placement: {
                   placementRef: {
-                    kind: 'PlacementRule',
+                    kind: 'Placement',
                     name: 'test-placement-2',
                   },
                 },
@@ -436,7 +436,7 @@ const props1: TopologyProps = {
                   namespace: 'test',
                   ownerReferences: [
                     {
-                      apiVersion: 'apps.open-cluster-management.io/v1',
+                      apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                       blockOwnerDeletion: true,
                       controller: true,
                       kind: 'Subscription',
@@ -527,7 +527,7 @@ const props1: TopologyProps = {
               },
             },
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
               kind: 'Subscription',
               metadata: {
                 annotations: {
@@ -550,7 +550,7 @@ const props1: TopologyProps = {
                 channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
                 placement: {
                   placementRef: {
-                    kind: 'PlacementRule',
+                    kind: 'Placement',
                     name: 'test-placement-3',
                   },
                 },
@@ -574,7 +574,7 @@ const props1: TopologyProps = {
                   namespace: 'test',
                   ownerReferences: [
                     {
-                      apiVersion: 'apps.open-cluster-management.io/v1',
+                      apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                       blockOwnerDeletion: true,
                       controller: true,
                       kind: 'Subscription',

@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Scope } from 'nock/types'
 import { generatePath, MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
@@ -16,7 +16,6 @@ import {
 import { nockCreate, nockGet, nockIgnoreApiPaths, nockIgnoreRBAC, nockList, nockPatch } from '../../../lib/nock-util'
 import { mockGlobalClusterSet } from '../../../lib/test-metadata'
 import {
-  clickBySelector,
   clickByTestId,
   clickByText,
   typeByTestId,
@@ -42,9 +41,6 @@ import {
   Placement,
   PlacementApiVersionBeta,
   PlacementKind,
-  PlacementRule,
-  PlacementRuleApiVersion,
-  PlacementRuleKind,
   Project,
   ProjectApiVersion,
   ProjectKind,
@@ -365,26 +361,6 @@ const mockPlacement: Placement = {
   },
 }
 
-const mockPlacementRule: PlacementRule = {
-  apiVersion: PlacementRuleApiVersion,
-  kind: PlacementRuleKind,
-  metadata: {
-    labels: {
-      app: 'application-0',
-    },
-    name: 'application-0-rule-1',
-    namespace: 'namespace-0',
-  },
-  spec: {
-    clusterConditions: [
-      {
-        status: 'True',
-        type: 'ManagedClusterConditionAvailable',
-      },
-    ],
-  },
-}
-
 const mockManagedClusters: ManagedCluster[] = [
   {
     apiVersion: 'cluster.open-cluster-management.io/v1',
@@ -430,8 +406,6 @@ const mockNamespace1: Namespace = {
 }
 
 const mockProjects = [mockProject, mockProject2, mockChannelProject]
-const mockPlacements = [mockPlacement]
-const mockPlacementRules = [mockPlacementRule]
 const mockNamespaces = [mockNamespace0, mockNamespace1]
 const mockHubChannels = [mockChannel1]
 
@@ -440,6 +414,11 @@ const mockSecrets = [mockAnsibleSecret, mockCopiedFromSecret]
 ///////////////////////////////// TESTS /////////////////////////////////////////////////////
 
 describe('Create Subscription Application page', () => {
+  const clickGitCard = async (container: HTMLElement) => {
+    await waitFor(() => expect(container.querySelector('#git')).toBeTruthy())
+    userEvent.click(container.querySelector('#git') as HTMLElement)
+  }
+
   const Component = () => {
     return (
       <RecoilRoot
@@ -448,6 +427,7 @@ describe('Create Subscription Application page', () => {
           snapshot.set(namespacesState, mockNamespaces)
           snapshot.set(managedClustersState, mockManagedClusters)
           snapshot.set(managedClusterSetsState, [mockGlobalClusterSet])
+          snapshot.set(placementsState, [mockPlacement])
         }}
       >
         <MemoryRouter initialEntries={[NavigationPath.createApplicationSubscription]}>
@@ -480,6 +460,16 @@ describe('Create Subscription Application page', () => {
 
   test('create a git subscription app using placement', async () => {
     const initialNocks = [nockList(mockProject, mockProjects)]
+    const placementNocks = [
+      nockList(
+        {
+          apiVersion: PlacementApiVersionBeta,
+          kind: PlacementKind,
+          metadata: { namespace: mockApplication0.metadata.namespace! },
+        },
+        [mockPlacement]
+      ),
+    ]
     window.scrollBy = () => {}
     const { container } = render(<Component />)
     await waitForNocks(initialNocks)
@@ -488,14 +478,17 @@ describe('Create Subscription Application page', () => {
     await typeByTestId('eman', mockApplication0.metadata.name!)
     await typeByTestId('emanspace', mockApplication0.metadata.namespace!)
     // click git card
-    await clickByTestId('git')
-    await waitForNocks([nockList(mockPlacementRule, mockPlacementRules), nockList(mockPlacement, mockPlacements)])
+    await clickGitCard(container)
+    await waitForNocks(placementNocks)
+    // Wait for git form to render
+    await screen.findByTestId('githubURL')
     await typeByTestId('githubURL', gitLink)
     userEvent.type(screen.getByLabelText(/branch/i), 'test-branch')
     userEvent.type(screen.getByLabelText(/path/i), 'test-path')
 
     // create placement
-    await clickBySelector(container, '#clusterSelector-checkbox-clusterSelector')
+    await waitForText('Select an existing placement configuration', true)
+    fireEvent.click(screen.getByLabelText(/deploy application resources on clusters with all specified labels/i))
     userEvent.click(screen.getByPlaceholderText(/select the cluster sets/i))
     userEvent.click(
       screen.getByRole('option', {
@@ -538,19 +531,30 @@ describe('Create Subscription Application page', () => {
     ])
   })
 
-  test('create a git subscription app using placementrule', async () => {
+  test('create a git subscription app using an existing placement', async () => {
     const initialNocks = [nockList(mockProject, mockProjects)]
+    const placementNocks = [
+      nockList(
+        {
+          apiVersion: PlacementApiVersionBeta,
+          kind: PlacementKind,
+          metadata: { namespace: mockApplication0.metadata.namespace! },
+        },
+        [mockPlacement]
+      ),
+    ]
     window.scrollBy = () => {}
-    render(<Component />)
+    const { container } = render(<Component />)
     await waitForNocks(initialNocks)
     await waitForText('Create application', true)
     // fill the form
     await typeByTestId('eman', mockApplication0.metadata.name!)
     await typeByTestId('emanspace', mockApplication0.metadata.namespace!)
     // click git card
-    userEvent.click(screen.getByText(/git/i))
-    await waitForNocks([nockList(mockPlacementRule, mockPlacementRules), nockList(mockPlacement, mockPlacements)])
-    const githubURL = screen.getByLabelText(/url/i)
+    await clickGitCard(container)
+    await waitForNocks(placementNocks)
+    // Wait for git form to render
+    const githubURL = await screen.findByLabelText(/url/i, {}, { timeout: 3000 })
     userEvent.type(githubURL, gitLink)
     userEvent.type(screen.getByLabelText(/branch/i), 'test-branch')
     userEvent.type(screen.getByLabelText(/path/i), 'test-path')
@@ -560,21 +564,15 @@ describe('Create Subscription Application page', () => {
     userEvent.click(ansibleSecretName)
     userEvent.type(ansibleSecretName, mockAnsibleSecret.metadata.name!)
 
-    // select an existing placement rule
+    // select an existing placement
     userEvent.click(
       screen.getByRole('radio', {
         name: /select an existing placement configuration/i,
       })
     )
 
-    // pick existing PlacementRule
     const placementSelect = await screen.findByPlaceholderText(/select an existing placement configuration/i)
     userEvent.click(placementSelect)
-    await clickByText(mockPlacementRule.metadata.name!)
-
-    // pick existing Placement
-    const placementSelectAfterRule = await screen.findByPlaceholderText(/select an existing placement configuration/i)
-    userEvent.click(placementSelectAfterRule)
     await clickByText(mockPlacement.metadata.name!)
 
     // open and close the credential modal
@@ -648,7 +646,17 @@ describe('Create Subscription Application page', () => {
       nockGet(mockChannelNamespace),
       nockGet(mockPlacement),
     ]
-    render(
+    const placementNocks = [
+      nockList(
+        {
+          apiVersion: PlacementApiVersionBeta,
+          kind: PlacementKind,
+          metadata: { namespace: mockApplication0.metadata.namespace! },
+        },
+        [mockPlacement]
+      ),
+    ]
+    const { container } = render(
       <RecoilRoot
         initializeState={(snapshot) => {
           snapshot.set(secretsState, mockSecrets)
@@ -680,10 +688,11 @@ describe('Create Subscription Application page', () => {
     ).toBeTruthy()
 
     // click git card
-    userEvent.click(screen.getByText(/git/i))
-    await waitForNocks([nockList(mockPlacementRule, mockPlacementRules), nockList(mockPlacement, mockPlacements)])
-    const githubURL = screen.getByLabelText(/url \*/i)
-    userEvent.type(githubURL, gitLink)
+    await clickGitCard(container)
+    await waitForNocks(placementNocks)
+    // Wait for git form to render from the existing subscription data
+    await screen.findByTestId('githubURL')
+    await typeByTestId('githubURL', gitLink)
     userEvent.type(screen.getByLabelText(/branch/i), 'test-branch')
     userEvent.type(screen.getByLabelText(/path/i), 'test-path2')
     await new Promise((resolve) => setTimeout(resolve, 500))

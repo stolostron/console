@@ -338,7 +338,7 @@ const mockLaidoutNodes: { laidoutNodes: TopologyNodeWithStatus[] } = {
       name: 'mortgage-app-placement',
       cluster: '',
       clusterName: null,
-      type: 'placements',
+      type: 'placementDecision',
       specs: {
         isDesign: true,
         row: 49,
@@ -354,7 +354,7 @@ const mockLaidoutNodes: { laidoutNodes: TopologyNodeWithStatus[] } = {
       __typename: 'Resource',
       layout: {
         uid: 'member--rules--default--mortgage-app-placement--0',
-        type: 'placements',
+        type: 'placementDecision',
         label: 'mortgage-app-↵placement',
         compactLabel: 'mortgage-app-↵placement',
         nodeIcons: {},
@@ -366,7 +366,7 @@ const mockLaidoutNodes: { laidoutNodes: TopologyNodeWithStatus[] } = {
           {
             name: 'Placements',
             value: 'mortgage-app-placement',
-            href: "/multicloud/search?filters={'textsearch':'kind:placementrule name:mortgage-app-placement'}",
+            href: "/multicloud/search?filters={'textsearch':'kind:placement name:mortgage-app-placement'}",
           },
           {
             name: 'Namespace',

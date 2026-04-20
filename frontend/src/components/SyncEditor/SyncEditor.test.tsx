@@ -204,7 +204,12 @@ describe('SyncEditor component', () => {
     const lastChange = onEditorChange.mock.calls[onEditorChange.mock.calls.length - 1]
     expect(get(lastChange, '0.resources.0.spec.disabled')).toBeFalsy()
     expect(get(lastChange, '0.resources.0.metadata.annotations.test')).toBe('me')
-    expect(get(lastChange, '0.resources.1.spec.clusterSelector.matchExpressions.0.values.0')).toBe('newthing')
+    expect(
+      get(
+        lastChange,
+        '0.resources.1.spec.predicates.0.requiredClusterSelector.labelSelector.matchExpressions.0.values.0'
+      )
+    ).toBe('newthing')
     const decorators = JSON.parse(input.dataset['decorators'] || '')
     expect(decorators).toEqual(protectedDecorators)
   })
@@ -435,23 +440,28 @@ const propsNewResource: SyncEditorProps = {
       },
     },
     {
-      apiVersion: 'apps.open-cluster-management.io/v1',
-      kind: 'PlacementRule',
+      apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+      kind: 'Placement',
       metadata: {
         name: 'test-placement',
         namespace: 'default',
       },
       spec: {
-        clusterSelector: {
-          matchExpressions: [
-            {
-              key: 'name',
-              operator: 'In',
-              values: ['local-cluster'],
+        predicates: [
+          {
+            requiredClusterSelector: {
+              labelSelector: {
+                matchExpressions: [
+                  {
+                    key: 'name',
+                    operator: 'In',
+                    values: ['local-cluster'],
+                  },
+                ],
+              },
             },
-          ],
-        },
-        clusterConditions: [],
+          },
+        ],
       },
     },
     {
@@ -462,8 +472,8 @@ const propsNewResource: SyncEditorProps = {
         namespace: 'default',
       },
       placementRef: {
-        apiGroup: 'apps.open-cluster-management.io',
-        kind: 'PlacementRule',
+        apiGroup: 'cluster.open-cluster-management.io',
+        kind: 'Placement',
         name: 'test-placement',
       },
       subjects: [
@@ -591,7 +601,7 @@ const propsNewResource: SyncEditorProps = {
       },
     },
     {
-      type: 'PlacementRule',
+      type: 'Placement',
       schema: {
         type: 'object',
         properties: {
@@ -600,7 +610,7 @@ const propsNewResource: SyncEditorProps = {
           },
           kind: {
             type: 'string',
-            const: 'PlacementRule',
+            const: 'Placement',
           },
           metadata: {
             type: 'object',
@@ -617,17 +627,10 @@ const propsNewResource: SyncEditorProps = {
           spec: {
             type: 'object',
             properties: {
-              clusterSelector: {
-                type: 'object',
-                properties: {
-                  matchExpressions: {
-                    type: 'array',
-                  },
-                },
-                required: ['matchExpressions'],
+              predicates: {
+                type: 'array',
               },
             },
-            required: ['clusterSelector'],
           },
         },
         required: ['apiVersion', 'kind', 'metadata', 'spec'],
@@ -668,7 +671,7 @@ const propsNewResource: SyncEditorProps = {
               },
               kind: {
                 type: 'string',
-                enum: ['Placement', 'PlacementRule'],
+                enum: ['Placement'],
               },
             },
             required: ['name', 'apiGroup', 'kind'],
@@ -697,7 +700,7 @@ const propsNewResource: SyncEditorProps = {
     },
   ],
   immutables: ['*.placementRef.apiGroup'],
-  secrets: ['PlacementRule.0.metadata.name', 'PlacementBinding.0.metadata.namespace'],
+  secrets: ['Placement.0.metadata.name', 'PlacementBinding.0.metadata.namespace'],
   onEditorChange: mockOneditorchangeCreate,
 }
 
@@ -709,7 +712,7 @@ const certificate =
   '-----END CERTIFICATE-----'
 
 const pastedResource =
-  'apiVersion: policy.open-cluster-management.io/v1\nkind: Policy\nmetadata:\n  name: test\n  namespace: default\n  pem: "|"\n    -----BEGIN CERTIFICATE-----\n    FakeCertificateContentsForTestingPurposesNotRealDataAtAllJustFun\n    FakeCertificateContentsForTestingPurposesNotRealDataAtAllAndMore\n    FakeCertificateContentsFinalLine==\n    -----END CERTIFICATE-----\n  annotations:\n    policy.open-cluster-management.io/categories: AC Access Control\n    policy.open-cluster-management.io/standards: NIST SP 800-53\n    policy.open-cluster-management.io/controls: AC-3 Access Enforcement\nspec:\n  disabled: true\n  policy-templates:\n    - objectDefinition:\n        apiVersion: policy.open-cluster-management.io/v1\n        kind: IamPolicy\n        metadata:\n          name: policy-limitclusteradmin\n        spec:\n          severity: medium\n          remediationAction: inform\n          maxClusterRoleBindingUsers: 5\n---\napiVersion: apps.open-cluster-management.io/v1\nkind: PlacementRule\nmetadata:\n  name: test-placement\n  namespace: default\nspec:\n  clusterSelector:\n    matchExpressions:\n      - key: name\n        operator: In\n        values:\n          - local-cluster\n  clusterConditions: []\n---\napiVersion: policy.open-cluster-management.io/v1\nkind: PlacementBinding\nmetadata:\n  name: test-placement\n  namespace: default\nplacementRef:\n  name: test-placement\n  apiGroup: apps.open-cluster-management.io\n  kind: PlacementRule\nsubjects:\n  - name: test\n    apiGroup: policy.open-cluster-management.io\n    kind: Policy\n'
+  'apiVersion: policy.open-cluster-management.io/v1\nkind: Policy\nmetadata:\n  name: test\n  namespace: default\n  pem: "|"\n    -----BEGIN CERTIFICATE-----\n    FakeCertificateContentsForTestingPurposesNotRealDataAtAllJustFun\n    FakeCertificateContentsForTestingPurposesNotRealDataAtAllAndMore\n    FakeCertificateContentsFinalLine==\n    -----END CERTIFICATE-----\n  annotations:\n    policy.open-cluster-management.io/categories: AC Access Control\n    policy.open-cluster-management.io/standards: NIST SP 800-53\n    policy.open-cluster-management.io/controls: AC-3 Access Enforcement\nspec:\n  disabled: true\n  policy-templates:\n    - objectDefinition:\n        apiVersion: policy.open-cluster-management.io/v1\n        kind: IamPolicy\n        metadata:\n          name: policy-limitclusteradmin\n        spec:\n          severity: medium\n          remediationAction: inform\n          maxClusterRoleBindingUsers: 5\n---\napiVersion: cluster.open-cluster-management.io/v1beta1\nkind: Placement\nmetadata:\n  name: test-placement\n  namespace: default\nspec:\n  predicates:\n    - requiredClusterSelector:\n        labelSelector:\n          matchExpressions:\n            - key: name\n              operator: In\n              values:\n                - local-cluster\n---\napiVersion: policy.open-cluster-management.io/v1\nkind: PlacementBinding\nmetadata:\n  name: test-placement\n  namespace: default\nplacementRef:\n  name: test-placement\n  apiGroup: cluster.open-cluster-management.io\n  kind: Placement\nsubjects:\n  - name: test\n    apiGroup: policy.open-cluster-management.io\n    kind: Policy\n'
 
 const pastedWONSResource =
   'apiVersion: policy.open-cluster-management.io/v1\nkind: Policy\nmetadata:\n  name: test\nspec:\n  disabled: false'
@@ -740,19 +743,20 @@ const newResourceYaml =
   '          remediationAction: inform\n' +
   '          maxClusterRoleBindingUsers: 5\n' +
   '---\n' +
-  'apiVersion: apps.open-cluster-management.io/v1\n' +
-  'kind: PlacementRule\n' +
+  'apiVersion: cluster.open-cluster-management.io/v1beta1\n' +
+  'kind: Placement\n' +
   'metadata:\n' +
   '  name: "**************"\n' +
   '  namespace: default\n' +
   'spec:\n' +
-  '  clusterSelector:\n' +
-  '    matchExpressions:\n' +
-  '      - key: name\n' +
-  '        operator: In\n' +
-  '        values:\n' +
-  '          - local-cluster\n' +
-  '  clusterConditions: []\n' +
+  '  predicates:\n' +
+  '    - requiredClusterSelector:\n' +
+  '        labelSelector:\n' +
+  '          matchExpressions:\n' +
+  '            - key: name\n' +
+  '              operator: In\n' +
+  '              values:\n' +
+  '                - local-cluster\n' +
   '---\n' +
   'apiVersion: policy.open-cluster-management.io/v1\n' +
   'kind: PlacementBinding\n' +
@@ -761,13 +765,12 @@ const newResourceYaml =
   '  namespace: "*******"\n' +
   'placementRef:\n' +
   '  name: test-placement\n' +
-  '  apiGroup: apps.open-cluster-management.io\n' +
-  '  kind: PlacementRule\n' +
+  '  apiGroup: cluster.open-cluster-management.io\n' +
+  '  kind: Placement\n' +
   'subjects:\n' +
   '  - name: test\n' +
   '    apiGroup: policy.open-cluster-management.io\n' +
-  '    kind: Policy\n' +
-  '\n'
+  '    kind: Policy\n'
 
 const newResourceDecorators: Decorators = [
   {
@@ -784,9 +787,9 @@ const newResourceDecorators: Decorators = [
   },
   {
     range: {
-      endLineNumber: 42,
+      endLineNumber: 43,
       endColumn: 132,
-      startLineNumber: 42,
+      startLineNumber: 43,
       startColumn: 1,
     },
     options: {
@@ -796,9 +799,9 @@ const newResourceDecorators: Decorators = [
   },
   {
     range: {
-      endLineNumber: 45,
+      endLineNumber: 46,
       endColumn: 132,
-      startLineNumber: 45,
+      startLineNumber: 46,
       startColumn: 1,
     },
     options: {
@@ -1031,7 +1034,7 @@ const propsExistingResource: SyncEditorProps = {
       },
     },
     {
-      type: 'PlacementRule',
+      type: 'Placement',
       schema: {
         type: 'object',
         properties: {
@@ -1040,7 +1043,7 @@ const propsExistingResource: SyncEditorProps = {
           },
           kind: {
             type: 'string',
-            const: 'PlacementRule',
+            const: 'Placement',
           },
           metadata: {
             type: 'object',
@@ -1057,17 +1060,10 @@ const propsExistingResource: SyncEditorProps = {
           spec: {
             type: 'object',
             properties: {
-              clusterSelector: {
-                type: 'object',
-                properties: {
-                  matchExpressions: {
-                    type: 'array',
-                  },
-                },
-                required: ['matchExpressions'],
+              predicates: {
+                type: 'array',
               },
             },
-            required: ['clusterSelector'],
           },
         },
         required: ['apiVersion', 'kind', 'metadata', 'spec'],
@@ -1108,7 +1104,7 @@ const propsExistingResource: SyncEditorProps = {
               },
               kind: {
                 type: 'string',
-                enum: ['Placement', 'PlacementRule'],
+                enum: ['Placement'],
               },
             },
             required: ['name', 'apiGroup', 'kind'],
@@ -1330,9 +1326,9 @@ const protectedDecorators = [
   },
   {
     range: {
-      endLineNumber: 40,
+      endLineNumber: 41,
       endColumn: 132,
-      startLineNumber: 40,
+      startLineNumber: 41,
       startColumn: 1,
     },
     options: {
@@ -1342,9 +1338,9 @@ const protectedDecorators = [
   },
   {
     range: {
-      endLineNumber: 43,
+      endLineNumber: 44,
       endColumn: 132,
-      startLineNumber: 43,
+      startLineNumber: 44,
       startColumn: 1,
     },
     options: {

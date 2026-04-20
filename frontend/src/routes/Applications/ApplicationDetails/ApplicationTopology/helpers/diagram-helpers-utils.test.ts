@@ -81,9 +81,9 @@ describe('getResourcesClustersForApp', () => {
       specs: {},
     },
     {
-      name: 'placementrule',
+      name: 'placement',
       namespace: 'default',
-      type: 'placements',
+      type: 'placementDecision',
       id: 'member--rule--placement',
       uid: 'placement-uid',
       specs: {
@@ -114,9 +114,9 @@ describe('getResourcesClustersForApp', () => {
       specs: {},
     },
     {
-      name: 'placementrule',
+      name: 'placement',
       namespace: 'default',
-      type: 'placements',
+      type: 'placementDecision',
       id: 'member--rule--placement',
       uid: 'placement-uid',
       specs: {
@@ -143,9 +143,9 @@ describe('getResourcesClustersForApp', () => {
       specs: {},
     },
     {
-      name: 'placementrule',
+      name: 'placement',
       namespace: 'default',
-      type: 'placements',
+      type: 'placementDecision',
       id: 'member--deployable--placement',
       uid: 'placement-uid',
       specs: {

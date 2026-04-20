@@ -95,7 +95,11 @@ const setAvailableRules = (control, result) => {
             getLabels(clusterSelector),
           ])
         } else if (_.get(clusterSelector, 'matchLabels')) {
-          selector = i18n('creation.app.clusters.matching', [placement.kind, placementName, getMatchLabels(clusterSelector)])
+          selector = i18n('creation.app.clusters.matching', [
+            placement.kind,
+            placementName,
+            getMatchLabels(clusterSelector),
+          ])
         }
         control.availableInfo[placementName] = selector
         return placementName

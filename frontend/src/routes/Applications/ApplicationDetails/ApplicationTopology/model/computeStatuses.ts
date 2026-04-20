@@ -162,15 +162,6 @@ export const computeNodeStatus = (
       }
       break
 
-    case 'placements':
-      if (isDeployable) {
-        pulse = getPulseStatusForGenericNode(node, t, hubClusterName)
-      } else if (!safeGet<any>(node, 'specs.raw.status.decisions')) {
-        // PlacementRule without decisions
-        pulse = redPulse
-      }
-      break
-
     case 'placement':
     case 'placementDecision':
       if (isDeployable) {

@@ -439,7 +439,7 @@ const props = {
                     cacheUserValueKey: 'create.app.github.path',
                   },
                   {
-                    id: 'existingrule-checkbox',
+                    id: 'existing-placement-checkbox',
                     type: 'radio',
                     name: 'creation.app.settings.existingRule',
                     tooltip: 'tooltip.creation.app.settings.existingRule',
@@ -448,19 +448,19 @@ const props = {
                     summarize: () => {} /*summarizeOnline*/,
                   },
                   {
-                    id: 'placementrulecombo',
+                    id: 'placementcombo',
                     type: 'combobox',
                     opaque: false,
                     placeholder: 'creation.app.settings.existingRule',
-                    reverse: () => {} /*reverseExistingRule*/,
-                    onSelect: () => {} /*updateNewRuleControls*/,
+                    reverse: () => {} /*reverseExistingPlacement*/,
+                    onSelect: () => {} /*updateSelectedPlacementControls*/,
                     validation: {},
                     summarize: () => {} /*summarize*/,
                   },
                   {
-                    id: 'selectedRuleName',
+                    id: 'selectedPlacementName',
                     type: 'hidden',
-                    reverse: () => {} /*reverseExistingRule*/,
+                    reverse: () => {} /*reverseExistingPlacement*/,
                   },
                   {
                     id: 'enableHubSelfManagement',
@@ -488,7 +488,7 @@ const props = {
                     available: [],
                     reverse: [
                       'Subscription[0].spec.placement.local',
-                      'PlacementRule[0].spec.clusterSelector.matchLabels.local-cluster',
+                      'Placement[0].spec.predicates[0].requiredClusterSelector.labelSelector.matchLabels.local-cluster',
                     ],
                     summarize: () => {} /*summarize*/,
                   },

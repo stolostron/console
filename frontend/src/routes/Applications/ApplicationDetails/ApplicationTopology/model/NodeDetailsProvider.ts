@@ -390,8 +390,8 @@ function addK8Details(
     getNodePropery(node, ['specs', 'raw', 'spec', 'clusterReplicas'], t('Cluster Replicas'))
   )
 
-  if (type === 'placements' || type === 'placement' || type === 'placementDecision') {
-    const specNbOfClustersTarget = node?.specs?.raw?.status?.numberOfSelectedClusters ?? 0
+  if (type === 'placement' || type === 'placementDecision') {
+    const specNbOfClustersTarget = node?.specs?.raw?.status?.decisions ?? []
 
     // placementDecision
     const clusterSets = node?.placementDecision?.spec?.clusterSets

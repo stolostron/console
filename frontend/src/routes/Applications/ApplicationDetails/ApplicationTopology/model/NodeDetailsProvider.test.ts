@@ -18,9 +18,8 @@ jest.mock('./NodeDetailsProviderStatuses', () => ({
   setPodDeployStatus: jest.fn(),
   setSubscriptionDeployStatus: jest.fn(),
   setApplicationDeployStatus: jest.fn(),
-  setPlacementRuleDeployStatus: jest.fn(),
-  setClusterStatus: jest.fn(),
   setPlacementDeployStatus: jest.fn(),
+  setClusterStatus: jest.fn(),
 }))
 
 jest.mock('../helpers/diagram-helpers', () => {

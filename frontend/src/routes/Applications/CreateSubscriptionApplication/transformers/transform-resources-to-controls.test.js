@@ -283,7 +283,7 @@ const discoverGroupsFromSource = {
                     isInitialized: true,
                   },
                   {
-                    id: 'existingrule-checkbox',
+                    id: 'existing-placement-checkbox',
                     type: 'radio',
                     name: 'Select an existing placement configuration',
                     tooltip:
@@ -304,7 +304,7 @@ const discoverGroupsFromSource = {
                     isInitialized: true,
                   },
                   {
-                    id: 'placementrulecombo',
+                    id: 'placementcombo',
                     type: 'combobox',
                     opaque: false,
                     placeholder: 'Select an existing placement configuration',
@@ -315,7 +315,7 @@ const discoverGroupsFromSource = {
                     isInitialized: true,
                   },
                   {
-                    id: 'selectedRuleName',
+                    id: 'selectedPlacementName',
                     type: 'hidden',
                     isInitialized: true,
                   },
@@ -323,14 +323,6 @@ const discoverGroupsFromSource = {
                     id: 'enableHubSelfManagement',
                     type: 'hidden',
                     active: true,
-                    isInitialized: true,
-                  },
-                  {
-                    id: 'placementRuleDeprecated',
-                    type: 'hidden',
-                    deprecated: {
-                      path: 'PlacementRule[*].kind',
-                    },
                     isInitialized: true,
                   },
                   {
@@ -531,7 +523,7 @@ const discoverGroupsFromSource = {
                     isInitialized: true,
                   },
                   {
-                    id: 'existingrule-checkbox',
+                    id: 'existing-placement-checkbox',
                     type: 'radio',
                     name: 'Select an existing placement configuration',
                     tooltip:
@@ -552,7 +544,7 @@ const discoverGroupsFromSource = {
                     isInitialized: true,
                   },
                   {
-                    id: 'placementrulecombo',
+                    id: 'placementcombo',
                     type: 'combobox',
                     opaque: false,
                     placeholder: 'Select an existing placement configuration',
@@ -563,7 +555,7 @@ const discoverGroupsFromSource = {
                     isInitialized: true,
                   },
                   {
-                    id: 'selectedRuleName',
+                    id: 'selectedPlacementName',
                     type: 'hidden',
                     isInitialized: true,
                   },
@@ -571,14 +563,6 @@ const discoverGroupsFromSource = {
                     id: 'enableHubSelfManagement',
                     type: 'hidden',
                     active: true,
-                    isInitialized: true,
-                  },
-                  {
-                    id: 'placementRuleDeprecated',
-                    type: 'hidden',
-                    deprecated: {
-                      path: 'PlacementRule[*].kind',
-                    },
                     isInitialized: true,
                   },
                   {
@@ -727,7 +711,7 @@ const discoverGroupsFromSource = {
                     isInitialized: true,
                   },
                   {
-                    id: 'existingrule-checkbox',
+                    id: 'existing-placement-checkbox',
                     type: 'radio',
                     name: 'Select an existing placement configuration',
                     tooltip:
@@ -748,7 +732,7 @@ const discoverGroupsFromSource = {
                     isInitialized: true,
                   },
                   {
-                    id: 'placementrulecombo',
+                    id: 'placementcombo',
                     type: 'combobox',
                     opaque: false,
                     placeholder: 'Select an existing placement configuration',
@@ -759,7 +743,7 @@ const discoverGroupsFromSource = {
                     isInitialized: true,
                   },
                   {
-                    id: 'selectedRuleName',
+                    id: 'selectedPlacementName',
                     type: 'hidden',
                     isInitialized: true,
                   },
@@ -767,14 +751,6 @@ const discoverGroupsFromSource = {
                     id: 'enableHubSelfManagement',
                     type: 'hidden',
                     active: true,
-                    isInitialized: true,
-                  },
-                  {
-                    id: 'placementRuleDeprecated',
-                    type: 'hidden',
-                    deprecated: {
-                      path: 'PlacementRule[*].kind',
-                    },
                     isInitialized: true,
                   },
                   {
@@ -858,7 +834,7 @@ const discoverGroupsFromSource = {
                     isInitialized: true,
                   },
                   {
-                    id: 'existingrule-checkbox',
+                    id: 'existing-placement-checkbox',
                     type: 'radio',
                     name: 'Select an existing placement configuration',
                     tooltip:
@@ -879,7 +855,7 @@ const discoverGroupsFromSource = {
                     isInitialized: true,
                   },
                   {
-                    id: 'placementrulecombo',
+                    id: 'placementcombo',
                     type: 'combobox',
                     opaque: false,
                     placeholder: 'Select an existing placement configuration',
@@ -890,7 +866,7 @@ const discoverGroupsFromSource = {
                     isInitialized: true,
                   },
                   {
-                    id: 'selectedRuleName',
+                    id: 'selectedPlacementName',
                     type: 'hidden',
                     isInitialized: true,
                   },
@@ -898,14 +874,6 @@ const discoverGroupsFromSource = {
                     id: 'enableHubSelfManagement',
                     type: 'hidden',
                     active: true,
-                    isInitialized: true,
-                  },
-                  {
-                    id: 'placementRuleDeprecated',
-                    type: 'hidden',
-                    deprecated: {
-                      path: 'PlacementRule[*].kind',
-                    },
                     isInitialized: true,
                   },
                   {
@@ -1323,7 +1291,7 @@ const discoverGroupsFromSource = {
                       isInitialized: true,
                     },
                     {
-                      id: 'existingrule-checkbox',
+                      id: 'existing-placement-checkbox',
                       type: 'radio',
                       name: 'Select an existing placement configuration',
                       tooltip:
@@ -1344,7 +1312,7 @@ const discoverGroupsFromSource = {
                       isInitialized: true,
                     },
                     {
-                      id: 'placementrulecombo',
+                      id: 'placementcombo',
                       type: 'combobox',
                       opaque: false,
                       placeholder: 'Select an existing placement configuration',
@@ -1355,7 +1323,7 @@ const discoverGroupsFromSource = {
                       isInitialized: true,
                     },
                     {
-                      id: 'selectedRuleName',
+                      id: 'selectedPlacementName',
                       type: 'hidden',
                       isInitialized: true,
                     },
@@ -1363,14 +1331,6 @@ const discoverGroupsFromSource = {
                       id: 'enableHubSelfManagement',
                       type: 'hidden',
                       active: true,
-                      isInitialized: true,
-                    },
-                    {
-                      id: 'placementRuleDeprecated',
-                      type: 'hidden',
-                      deprecated: {
-                        path: 'PlacementRule[*].kind',
-                      },
                       isInitialized: true,
                     },
                     {
@@ -1571,7 +1531,7 @@ const discoverGroupsFromSource = {
                       isInitialized: true,
                     },
                     {
-                      id: 'existingrule-checkbox',
+                      id: 'existing-placement-checkbox',
                       type: 'radio',
                       name: 'Select an existing placement configuration',
                       tooltip:
@@ -1592,7 +1552,7 @@ const discoverGroupsFromSource = {
                       isInitialized: true,
                     },
                     {
-                      id: 'placementrulecombo',
+                      id: 'placementcombo',
                       type: 'combobox',
                       opaque: false,
                       placeholder: 'Select an existing placement configuration',
@@ -1603,7 +1563,7 @@ const discoverGroupsFromSource = {
                       isInitialized: true,
                     },
                     {
-                      id: 'selectedRuleName',
+                      id: 'selectedPlacementName',
                       type: 'hidden',
                       isInitialized: true,
                     },
@@ -1611,14 +1571,6 @@ const discoverGroupsFromSource = {
                       id: 'enableHubSelfManagement',
                       type: 'hidden',
                       active: true,
-                      isInitialized: true,
-                    },
-                    {
-                      id: 'placementRuleDeprecated',
-                      type: 'hidden',
-                      deprecated: {
-                        path: 'PlacementRule[*].kind',
-                      },
                       isInitialized: true,
                     },
                     {
@@ -1767,7 +1719,7 @@ const discoverGroupsFromSource = {
                       isInitialized: true,
                     },
                     {
-                      id: 'existingrule-checkbox',
+                      id: 'existing-placement-checkbox',
                       type: 'radio',
                       name: 'Select an existing placement configuration',
                       tooltip:
@@ -1788,7 +1740,7 @@ const discoverGroupsFromSource = {
                       isInitialized: true,
                     },
                     {
-                      id: 'placementrulecombo',
+                      id: 'placementcombo',
                       type: 'combobox',
                       opaque: false,
                       placeholder: 'Select an existing placement configuration',
@@ -1799,7 +1751,7 @@ const discoverGroupsFromSource = {
                       isInitialized: true,
                     },
                     {
-                      id: 'selectedRuleName',
+                      id: 'selectedPlacementName',
                       type: 'hidden',
                       isInitialized: true,
                     },
@@ -1807,14 +1759,6 @@ const discoverGroupsFromSource = {
                       id: 'enableHubSelfManagement',
                       type: 'hidden',
                       active: true,
-                      isInitialized: true,
-                    },
-                    {
-                      id: 'placementRuleDeprecated',
-                      type: 'hidden',
-                      deprecated: {
-                        path: 'PlacementRule[*].kind',
-                      },
                       isInitialized: true,
                     },
                     {
@@ -1898,7 +1842,7 @@ const discoverGroupsFromSource = {
                       isInitialized: true,
                     },
                     {
-                      id: 'existingrule-checkbox',
+                      id: 'existing-placement-checkbox',
                       type: 'radio',
                       name: 'Select an existing placement configuration',
                       tooltip:
@@ -1919,7 +1863,7 @@ const discoverGroupsFromSource = {
                       isInitialized: true,
                     },
                     {
-                      id: 'placementrulecombo',
+                      id: 'placementcombo',
                       type: 'combobox',
                       opaque: false,
                       placeholder: 'Select an existing placement configuration',
@@ -1930,7 +1874,7 @@ const discoverGroupsFromSource = {
                       isInitialized: true,
                     },
                     {
-                      id: 'selectedRuleName',
+                      id: 'selectedPlacementName',
                       type: 'hidden',
                       isInitialized: true,
                     },
@@ -1938,14 +1882,6 @@ const discoverGroupsFromSource = {
                       id: 'enableHubSelfManagement',
                       type: 'hidden',
                       active: true,
-                      isInitialized: true,
-                    },
-                    {
-                      id: 'placementRuleDeprecated',
-                      type: 'hidden',
-                      deprecated: {
-                        path: 'PlacementRule[*].kind',
-                      },
                       isInitialized: true,
                     },
                     {
@@ -2239,7 +2175,7 @@ const discoverGroupsFromSource = {
               isInitialized: true,
             },
             {
-              id: 'existingrule-checkbox',
+              id: 'existing-placement-checkbox',
               type: 'radio',
               name: 'Select an existing placement configuration',
               tooltip: 'If available in the application namespace, you can select a predefined placement configuration',
@@ -2249,18 +2185,17 @@ const discoverGroupsFromSource = {
             {
               id: 'isDeprecatedPR',
               type: 'hidden',
-              active: true,
+              active: '',
               isInitialized: true,
             },
             {
               id: 'deprecated-rule',
               type: 'hidden',
-              active:
-                'apiVersion: apps.open-cluster-management.io/v1\nkind: PlacementRule\nmetadata:\n  annotations:\n    open-cluster-management.io/user-group: c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk\n    open-cluster-management.io/user-identity: a3ViZTphZG1pbg==\n  labels:\n    app: old-3\n  name: old-3-placement-1\n  namespace: old-prs\nspec:\n  clusterConditions:\n    "0":\n      status: "True"\n      type: ManagedClusterConditionAvailable\n',
+              active: '',
               isInitialized: true,
             },
             {
-              id: 'placementrulecombo',
+              id: 'placementcombo',
               type: 'combobox',
               opaque: false,
               placeholder: 'Select an existing placement configuration',
@@ -2271,7 +2206,7 @@ const discoverGroupsFromSource = {
               isInitialized: true,
             },
             {
-              id: 'selectedRuleName',
+              id: 'selectedPlacementName',
               type: 'hidden',
               isInitialized: true,
             },
@@ -2279,14 +2214,6 @@ const discoverGroupsFromSource = {
               id: 'enableHubSelfManagement',
               type: 'hidden',
               active: true,
-              isInitialized: true,
-            },
-            {
-              id: 'placementRuleDeprecated',
-              type: 'hidden',
-              deprecated: {
-                path: 'PlacementRule[*].kind',
-              },
               isInitialized: true,
             },
             {
@@ -2572,7 +2499,7 @@ const discoverGroupsFromSource = {
               isInitialized: true,
             },
             {
-              id: 'existingrule-checkbox',
+              id: 'existing-placement-checkbox',
               type: 'radio',
               name: 'Select an existing placement configuration',
               tooltip: 'If available in the application namespace, you can select a predefined placement configuration',
@@ -2582,18 +2509,17 @@ const discoverGroupsFromSource = {
             {
               id: 'isDeprecatedPR',
               type: 'hidden',
-              active: true,
+              active: '',
               isInitialized: true,
             },
             {
               id: 'deprecated-rule',
               type: 'hidden',
-              active:
-                'apiVersion: apps.open-cluster-management.io/v1\nkind: PlacementRule\nmetadata:\n  annotations:\n    open-cluster-management.io/user-group: c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk\n    open-cluster-management.io/user-identity: a3ViZTphZG1pbg==\n  labels:\n    app: old-3\n  name: old-3-placement-2\n  namespace: old-prs\nspec:\n  clusterSelector:\n    matchLabels:\n      local-cluster: "true"\n',
+              active: '',
               isInitialized: true,
             },
             {
-              id: 'placementrulecombo',
+              id: 'placementcombo',
               type: 'combobox',
               opaque: false,
               placeholder: 'Select an existing placement configuration',
@@ -2604,7 +2530,7 @@ const discoverGroupsFromSource = {
               isInitialized: true,
             },
             {
-              id: 'selectedRuleName',
+              id: 'selectedPlacementName',
               type: 'hidden',
               isInitialized: true,
             },
@@ -2612,14 +2538,6 @@ const discoverGroupsFromSource = {
               id: 'enableHubSelfManagement',
               type: 'hidden',
               active: true,
-              isInitialized: true,
-            },
-            {
-              id: 'placementRuleDeprecated',
-              type: 'hidden',
-              deprecated: {
-                path: 'PlacementRule[*].kind',
-              },
               isInitialized: true,
             },
             {
@@ -3023,7 +2941,7 @@ const discoverGroupsFromSource = {
               channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
               placement: {
                 placementRef: {
-                  kind: 'PlacementRule',
+                  kind: 'Placement',
                   name: 'old-3-placement-1',
                 },
               },
@@ -3031,7 +2949,7 @@ const discoverGroupsFromSource = {
             posthooks: {},
             prehooks: {},
           },
-          $yml: "apiVersion: apps.open-cluster-management.io/v1\nkind: Subscription\nmetadata:\n  name: old-3-subscription-1\n  namespace: old-prs\n  annotations:\n    apps.open-cluster-management.io/git-branch: main\n    apps.open-cluster-management.io/git-path: ''\n    apps.open-cluster-management.io/reconcile-option: merge\n    open-cluster-management.io/user-group: c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk\n    open-cluster-management.io/user-identity: a3ViZTphZG1pbg==\n  labels:\n    app: old-3\n    app.kubernetes.io/part-of: old-3\n    apps.open-cluster-management.io/reconcile-rate: medium\nspec:\n  channel: ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples\n  placement:\n    placementRef:\n      name: old-3-placement-1\n      kind: PlacementRule\nposthooks: {}\nprehooks: {}\n",
+          $yml: "apiVersion: apps.open-cluster-management.io/v1\nkind: Subscription\nmetadata:\n  name: old-3-subscription-1\n  namespace: old-prs\n  annotations:\n    apps.open-cluster-management.io/git-branch: main\n    apps.open-cluster-management.io/git-path: ''\n    apps.open-cluster-management.io/reconcile-option: merge\n    open-cluster-management.io/user-group: c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk\n    open-cluster-management.io/user-identity: a3ViZTphZG1pbg==\n  labels:\n    app: old-3\n    app.kubernetes.io/part-of: old-3\n    apps.open-cluster-management.io/reconcile-rate: medium\nspec:\n  channel: ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples\n  placement:\n    placementRef:\n      name: old-3-placement-1\n      kind: Placement\nposthooks: {}\nprehooks: {}\n",
           $synced: {
             apiVersion: {
               $r: 35,
@@ -3136,7 +3054,7 @@ const discoverGroupsFromSource = {
                         kind: {
                           $r: 55,
                           $l: 1,
-                          $v: 'PlacementRule',
+                          $v: 'Placement',
                         },
                       },
                     },
@@ -3183,7 +3101,7 @@ const discoverGroupsFromSource = {
               channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
               placement: {
                 placementRef: {
-                  kind: 'PlacementRule',
+                  kind: 'Placement',
                   name: 'old-3-placement-2',
                 },
               },
@@ -3191,7 +3109,7 @@ const discoverGroupsFromSource = {
             posthooks: {},
             prehooks: {},
           },
-          $yml: 'apiVersion: apps.open-cluster-management.io/v1\nkind: Subscription\nmetadata:\n  name: old-3-subscription-2\n  namespace: old-prs\n  annotations:\n    apps.open-cluster-management.io/git-branch: val-b1\n    apps.open-cluster-management.io/git-current-commit: 08872515ceab79a2b2ed7929f37bd2ecfe726346\n    apps.open-cluster-management.io/git-path: resources-roke\n    apps.open-cluster-management.io/reconcile-option: merge\n    open-cluster-management.io/user-group: c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk\n    open-cluster-management.io/user-identity: a3ViZTphZG1pbg==\n  labels:\n    app: old-3\n    app.kubernetes.io/part-of: old-3\n    apps.open-cluster-management.io/reconcile-rate: medium\nspec:\n  channel: ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples\n  placement:\n    placementRef:\n      name: old-3-placement-2\n      kind: PlacementRule\nposthooks: {}\nprehooks: {}\n',
+          $yml: 'apiVersion: apps.open-cluster-management.io/v1\nkind: Subscription\nmetadata:\n  name: old-3-subscription-2\n  namespace: old-prs\n  annotations:\n    apps.open-cluster-management.io/git-branch: val-b1\n    apps.open-cluster-management.io/git-current-commit: 08872515ceab79a2b2ed7929f37bd2ecfe726346\n    apps.open-cluster-management.io/git-path: resources-roke\n    apps.open-cluster-management.io/reconcile-option: merge\n    open-cluster-management.io/user-group: c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk\n    open-cluster-management.io/user-identity: a3ViZTphZG1pbg==\n  labels:\n    app: old-3\n    app.kubernetes.io/part-of: old-3\n    apps.open-cluster-management.io/reconcile-rate: medium\nspec:\n  channel: ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples\n  placement:\n    placementRef:\n      name: old-3-placement-2\n      kind: Placement\nposthooks: {}\nprehooks: {}\n',
           $synced: {
             apiVersion: {
               $r: 87,
@@ -3301,7 +3219,7 @@ const discoverGroupsFromSource = {
                         kind: {
                           $r: 108,
                           $l: 1,
-                          $v: 'PlacementRule',
+                          $v: 'Placement',
                         },
                       },
                     },
@@ -3324,11 +3242,11 @@ const discoverGroupsFromSource = {
           },
         },
       ],
-      PlacementRule: [
+      Placement: [
         {
           $raw: {
-            apiVersion: 'apps.open-cluster-management.io/v1',
-            kind: 'PlacementRule',
+            apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+            kind: 'Placement',
             metadata: {
               annotations: {
                 'open-cluster-management.io/user-group': 'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
@@ -3349,17 +3267,17 @@ const discoverGroupsFromSource = {
               },
             },
           },
-          $yml: "apiVersion: apps.open-cluster-management.io/v1\nkind: PlacementRule\nmetadata:\n  name: old-3-placement-1\n  namespace: old-prs\n  annotations:\n    open-cluster-management.io/user-group: c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk\n    open-cluster-management.io/user-identity: a3ViZTphZG1pbg==\n  labels:\n    app: old-3\nspec:\n  clusterConditions:\n    - status: 'True'\n      type: ManagedClusterConditionAvailable\n",
+          $yml: "apiVersion: cluster.open-cluster-management.io/v1beta1\nkind: Placement\nmetadata:\n  name: old-3-placement-1\n  namespace: old-prs\n  annotations:\n    open-cluster-management.io/user-group: c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk\n    open-cluster-management.io/user-identity: a3ViZTphZG1pbg==\n  labels:\n    app: old-3\nspec:\n  clusterConditions:\n    - status: 'True'\n      type: ManagedClusterConditionAvailable\n",
           $synced: {
             apiVersion: {
               $r: 59,
               $l: 1,
-              $v: 'apps.open-cluster-management.io/v1',
+              $v: 'cluster.open-cluster-management.io/v1beta1',
             },
             kind: {
               $r: 60,
               $l: 1,
-              $v: 'PlacementRule',
+              $v: 'Placement',
             },
             metadata: {
               $r: 61,
@@ -3438,8 +3356,8 @@ const discoverGroupsFromSource = {
         },
         {
           $raw: {
-            apiVersion: 'apps.open-cluster-management.io/v1',
-            kind: 'PlacementRule',
+            apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+            kind: 'Placement',
             metadata: {
               annotations: {
                 'open-cluster-management.io/user-group': 'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
@@ -3459,17 +3377,17 @@ const discoverGroupsFromSource = {
               },
             },
           },
-          $yml: "apiVersion: apps.open-cluster-management.io/v1\nkind: PlacementRule\nmetadata:\n  name: old-3-placement-2\n  namespace: old-prs\n  annotations:\n    open-cluster-management.io/user-group: c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk\n    open-cluster-management.io/user-identity: a3ViZTphZG1pbg==\n  labels:\n    app: old-3\nspec:\n  clusterSelector:\n    matchLabels:\n      local-cluster: 'true'\n",
+          $yml: "apiVersion: cluster.open-cluster-management.io/v1beta1\nkind: Placement\nmetadata:\n  name: old-3-placement-2\n  namespace: old-prs\n  annotations:\n    open-cluster-management.io/user-group: c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk\n    open-cluster-management.io/user-identity: a3ViZTphZG1pbg==\n  labels:\n    app: old-3\nspec:\n  clusterSelector:\n    matchLabels:\n      local-cluster: 'true'\n",
           $synced: {
             apiVersion: {
               $r: 112,
               $l: 1,
-              $v: 'apps.open-cluster-management.io/v1',
+              $v: 'cluster.open-cluster-management.io/v1beta1',
             },
             kind: {
               $r: 113,
               $l: 1,
-              $v: 'PlacementRule',
+              $v: 'Placement',
             },
             metadata: {
               $r: 114,
@@ -3810,7 +3728,7 @@ const discoverGroupsFromSource = {
                   isInitialized: true,
                 },
                 {
-                  id: 'existingrule-checkbox',
+                  id: 'existing-placement-checkbox',
                   type: 'radio',
                   name: 'Select an existing placement configuration',
                   tooltip:
@@ -3831,7 +3749,7 @@ const discoverGroupsFromSource = {
                   isInitialized: true,
                 },
                 {
-                  id: 'placementrulecombo',
+                  id: 'placementcombo',
                   type: 'combobox',
                   opaque: false,
                   placeholder: 'Select an existing placement configuration',
@@ -3842,7 +3760,7 @@ const discoverGroupsFromSource = {
                   isInitialized: true,
                 },
                 {
-                  id: 'selectedRuleName',
+                  id: 'selectedPlacementName',
                   type: 'hidden',
                   isInitialized: true,
                 },
@@ -3850,14 +3768,6 @@ const discoverGroupsFromSource = {
                   id: 'enableHubSelfManagement',
                   type: 'hidden',
                   active: true,
-                  isInitialized: true,
-                },
-                {
-                  id: 'placementRuleDeprecated',
-                  type: 'hidden',
-                  deprecated: {
-                    path: 'PlacementRule[*].kind',
-                  },
                   isInitialized: true,
                 },
                 {
@@ -4058,7 +3968,7 @@ const discoverGroupsFromSource = {
                   isInitialized: true,
                 },
                 {
-                  id: 'existingrule-checkbox',
+                  id: 'existing-placement-checkbox',
                   type: 'radio',
                   name: 'Select an existing placement configuration',
                   tooltip:
@@ -4079,7 +3989,7 @@ const discoverGroupsFromSource = {
                   isInitialized: true,
                 },
                 {
-                  id: 'placementrulecombo',
+                  id: 'placementcombo',
                   type: 'combobox',
                   opaque: false,
                   placeholder: 'Select an existing placement configuration',
@@ -4090,7 +4000,7 @@ const discoverGroupsFromSource = {
                   isInitialized: true,
                 },
                 {
-                  id: 'selectedRuleName',
+                  id: 'selectedPlacementName',
                   type: 'hidden',
                   isInitialized: true,
                 },
@@ -4098,14 +4008,6 @@ const discoverGroupsFromSource = {
                   id: 'enableHubSelfManagement',
                   type: 'hidden',
                   active: true,
-                  isInitialized: true,
-                },
-                {
-                  id: 'placementRuleDeprecated',
-                  type: 'hidden',
-                  deprecated: {
-                    path: 'PlacementRule[*].kind',
-                  },
                   isInitialized: true,
                 },
                 {
@@ -4254,7 +4156,7 @@ const discoverGroupsFromSource = {
                   isInitialized: true,
                 },
                 {
-                  id: 'existingrule-checkbox',
+                  id: 'existing-placement-checkbox',
                   type: 'radio',
                   name: 'Select an existing placement configuration',
                   tooltip:
@@ -4275,7 +4177,7 @@ const discoverGroupsFromSource = {
                   isInitialized: true,
                 },
                 {
-                  id: 'placementrulecombo',
+                  id: 'placementcombo',
                   type: 'combobox',
                   opaque: false,
                   placeholder: 'Select an existing placement configuration',
@@ -4286,7 +4188,7 @@ const discoverGroupsFromSource = {
                   isInitialized: true,
                 },
                 {
-                  id: 'selectedRuleName',
+                  id: 'selectedPlacementName',
                   type: 'hidden',
                   isInitialized: true,
                 },
@@ -4294,14 +4196,6 @@ const discoverGroupsFromSource = {
                   id: 'enableHubSelfManagement',
                   type: 'hidden',
                   active: true,
-                  isInitialized: true,
-                },
-                {
-                  id: 'placementRuleDeprecated',
-                  type: 'hidden',
-                  deprecated: {
-                    path: 'PlacementRule[*].kind',
-                  },
                   isInitialized: true,
                 },
                 {
@@ -4385,7 +4279,7 @@ const discoverGroupsFromSource = {
                   isInitialized: true,
                 },
                 {
-                  id: 'existingrule-checkbox',
+                  id: 'existing-placement-checkbox',
                   type: 'radio',
                   name: 'Select an existing placement configuration',
                   tooltip:
@@ -4406,7 +4300,7 @@ const discoverGroupsFromSource = {
                   isInitialized: true,
                 },
                 {
-                  id: 'placementrulecombo',
+                  id: 'placementcombo',
                   type: 'combobox',
                   opaque: false,
                   placeholder: 'Select an existing placement configuration',
@@ -4417,7 +4311,7 @@ const discoverGroupsFromSource = {
                   isInitialized: true,
                 },
                 {
-                  id: 'selectedRuleName',
+                  id: 'selectedPlacementName',
                   type: 'hidden',
                   isInitialized: true,
                 },
@@ -4425,14 +4319,6 @@ const discoverGroupsFromSource = {
                   id: 'enableHubSelfManagement',
                   type: 'hidden',
                   active: true,
-                  isInitialized: true,
-                },
-                {
-                  id: 'placementRuleDeprecated',
-                  type: 'hidden',
-                  deprecated: {
-                    path: 'PlacementRule[*].kind',
-                  },
                   isInitialized: true,
                 },
                 {
@@ -4726,7 +4612,7 @@ const discoverGroupsFromSource = {
           isInitialized: true,
         },
         {
-          id: 'existingrule-checkbox',
+          id: 'existing-placement-checkbox',
           type: 'radio',
           name: 'Select an existing placement configuration',
           tooltip: 'If available in the application namespace, you can select a predefined placement configuration',
@@ -4736,18 +4622,17 @@ const discoverGroupsFromSource = {
         {
           id: 'isDeprecatedPR',
           type: 'hidden',
-          active: true,
+          active: '',
           isInitialized: true,
         },
         {
           id: 'deprecated-rule',
           type: 'hidden',
-          active:
-            'apiVersion: apps.open-cluster-management.io/v1\nkind: PlacementRule\nmetadata:\n  annotations:\n    open-cluster-management.io/user-group: c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk\n    open-cluster-management.io/user-identity: a3ViZTphZG1pbg==\n  labels:\n    app: old-3\n  name: old-3-placement-1\n  namespace: old-prs\nspec:\n  clusterConditions:\n    "0":\n      status: "True"\n      type: ManagedClusterConditionAvailable\n',
+          active: '',
           isInitialized: true,
         },
         {
-          id: 'placementrulecombo',
+          id: 'placementcombo',
           type: 'combobox',
           opaque: false,
           placeholder: 'Select an existing placement configuration',
@@ -4758,7 +4643,7 @@ const discoverGroupsFromSource = {
           isInitialized: true,
         },
         {
-          id: 'selectedRuleName',
+          id: 'selectedPlacementName',
           type: 'hidden',
           isInitialized: true,
         },
@@ -4766,14 +4651,6 @@ const discoverGroupsFromSource = {
           id: 'enableHubSelfManagement',
           type: 'hidden',
           active: true,
-          isInitialized: true,
-        },
-        {
-          id: 'placementRuleDeprecated',
-          type: 'hidden',
-          deprecated: {
-            path: 'PlacementRule[*].kind',
-          },
           isInitialized: true,
         },
         {
@@ -5059,7 +4936,7 @@ const discoverGroupsFromSource = {
           isInitialized: true,
         },
         {
-          id: 'existingrule-checkbox',
+          id: 'existing-placement-checkbox',
           type: 'radio',
           name: 'Select an existing placement configuration',
           tooltip: 'If available in the application namespace, you can select a predefined placement configuration',
@@ -5069,18 +4946,17 @@ const discoverGroupsFromSource = {
         {
           id: 'isDeprecatedPR',
           type: 'hidden',
-          active: true,
+          active: '',
           isInitialized: true,
         },
         {
           id: 'deprecated-rule',
           type: 'hidden',
-          active:
-            'apiVersion: apps.open-cluster-management.io/v1\nkind: PlacementRule\nmetadata:\n  annotations:\n    open-cluster-management.io/user-group: c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk\n    open-cluster-management.io/user-identity: a3ViZTphZG1pbg==\n  labels:\n    app: old-3\n  name: old-3-placement-2\n  namespace: old-prs\nspec:\n  clusterSelector:\n    matchLabels:\n      local-cluster: "true"\n',
+          active: '',
           isInitialized: true,
         },
         {
-          id: 'placementrulecombo',
+          id: 'placementcombo',
           type: 'combobox',
           opaque: false,
           placeholder: 'Select an existing placement configuration',
@@ -5091,7 +4967,7 @@ const discoverGroupsFromSource = {
           isInitialized: true,
         },
         {
-          id: 'selectedRuleName',
+          id: 'selectedPlacementName',
           type: 'hidden',
           isInitialized: true,
         },
@@ -5099,14 +4975,6 @@ const discoverGroupsFromSource = {
           id: 'enableHubSelfManagement',
           type: 'hidden',
           active: true,
-          isInitialized: true,
-        },
-        {
-          id: 'placementRuleDeprecated',
-          type: 'hidden',
-          deprecated: {
-            path: 'PlacementRule[*].kind',
-          },
           isInitialized: true,
         },
         {

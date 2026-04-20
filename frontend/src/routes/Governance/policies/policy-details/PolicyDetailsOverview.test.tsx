@@ -6,7 +6,6 @@ import { RecoilRoot } from 'recoil'
 import {
   placementBindingsState,
   placementDecisionsState,
-  placementRulesState,
   placementsState,
   policiesState,
   policySetsState,
@@ -325,22 +324,29 @@ describe('Policy Details Results', () => {
     await waitForText('nostatus-cluster1')
   })
 
-  test('Should show dash for PlacementRule-only policy when feature flag is enabled', async () => {
-    const mockPlacementRule = {
-      apiVersion: 'apps.open-cluster-management.io/v1' as const,
-      kind: 'PlacementRule' as const,
+  test('Should show dash for Placement-only policy when feature flag is enabled', async () => {
+    const mockPlacement = {
+      apiVersion: 'cluster.open-cluster-management.io/v1beta1' as const,
+      kind: 'Placement' as const,
       metadata: {
         name: 'test-placement-rule',
         namespace: 'test',
-        uid: 'placementrule-uid',
+        uid: 'placement-uid',
       },
       spec: {
-        clusterSelector: {
-          matchExpressions: [],
-        },
+        predicates: [
+          {
+            requiredClusterSelector: {
+              labelSelector: {
+                matchExpressions: [],
+              },
+            },
+          },
+        ],
       },
       status: {
-        decisions: [{ clusterName: 'cluster1', clusterNamespace: 'cluster1' }],
+        numberOfSelectedClusters: 1,
+        conditions: [],
       },
     }
     const mockPlacementBindingForRule = {
@@ -349,7 +355,7 @@ describe('Policy Details Results', () => {
       metadata: { name: 'test-placement-rule-binding', namespace: 'test' },
       placementRef: {
         apiGroup: 'apps.open-cluster-management.io',
-        kind: 'PlacementRule',
+        kind: 'Placement',
         name: 'test-placement-rule',
       },
       subjects: [
@@ -360,8 +366,7 @@ describe('Policy Details Results', () => {
     render(
       <RecoilRoot
         initializeState={(snapshot) => {
-          snapshot.set(placementsState, [])
-          snapshot.set(placementRulesState, [mockPlacementRule])
+          snapshot.set(placementsState, [mockPlacement])
           snapshot.set(policySetsState, [])
           snapshot.set(placementBindingsState, [mockPlacementBindingForRule])
           snapshot.set(placementDecisionsState, [])
@@ -381,9 +386,8 @@ describe('Policy Details Results', () => {
     // wait page load
     await waitForText('policy-set-with-1-placement-policy')
 
-    // PlacementLinkList only handles Placement kind, so PlacementRule-only should show '-'
-    // The PlacementRule will still appear in the table when the feature flag is disabled
-    expect(screen.queryByText('test-placement-rule')).not.toBeInTheDocument()
+    // Placement should be shown with link
+    await waitForText('test-placement-rule')
   })
 
   test('Should handle policy with no placements', async () => {
@@ -392,7 +396,6 @@ describe('Policy Details Results', () => {
       <RecoilRoot
         initializeState={(snapshot) => {
           snapshot.set(placementsState, [])
-          snapshot.set(placementRulesState, [])
           snapshot.set(policySetsState, [])
           snapshot.set(placementBindingsState, [])
           snapshot.set(placementDecisionsState, [])
@@ -417,9 +420,7 @@ describe('Policy Details Results', () => {
 
     // Look for the description list structure and verify no placement links exist
     const placementLinks = container.querySelectorAll('a[href*="kind=Placement"]')
-    const placementRuleLinks = container.querySelectorAll('a[href*="kind=PlacementRule"]')
     expect(placementLinks.length).toBe(0)
-    expect(placementRuleLinks.length).toBe(0)
   })
 
   test('Should handle policy with no cluster status', async () => {

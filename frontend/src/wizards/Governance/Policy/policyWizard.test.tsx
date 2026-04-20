@@ -36,7 +36,6 @@ function TestPolicyWizard() {
         namespaces={['argo-server-1']}
         policies={[mockPolicy as IResource]}
         placements={[mockPlacements as IResource]}
-        placementRules={[]}
         clusters={mockManagedClusters}
         clusterSets={[mockClusterSet]}
         clusterSetBindings={[mockClusterSetBinding]}
@@ -75,7 +74,6 @@ function TestPolicyWizardGK() {
         namespaces={['argo-server-1']}
         policies={[mockPolicyGK as IResource]}
         placements={[mockPlacements as IResource]}
-        placementRules={[]}
         clusters={mockManagedClusters}
         clusterSets={[mockClusterSet]}
         clusterSetBindings={[mockClusterSetBinding]}
@@ -107,7 +105,6 @@ function TestPolicyWizardOperatorPolicy() {
         namespaces={['argo-server-1']}
         policies={[mockPolicyOperatorPlc as IResource]}
         placements={[mockPlacements as IResource]}
-        placementRules={[]}
         clusters={mockManagedClusters}
         clusterSets={[mockClusterSet]}
         clusterSetBindings={[mockClusterSetBinding]}

@@ -613,10 +613,10 @@ const result: TestTopologyNode = {
         resourceCount: 1,
         sortedClusterNames: ['local-cluster'],
         subscription: {
-          apiVersion: 'apps.open-cluster-management.io/v1',
+          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
           channels: [
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
               kind: 'Channel',
               metadata: {
                 annotations: {
@@ -674,7 +674,7 @@ const result: TestTopologyNode = {
               namespace: 'feng-hello',
               ownerReferences: [
                 {
-                  apiVersion: 'apps.open-cluster-management.io/v1',
+                  apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                   blockOwnerDeletion: true,
                   controller: true,
                   kind: 'Subscription',
@@ -726,8 +726,8 @@ const result: TestTopologyNode = {
           },
           rules: [
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
-              kind: 'PlacementRule',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+              kind: 'Placement',
               metadata: {
                 annotations: {
                   'open-cluster-management.io/user-group': 'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
@@ -764,7 +764,7 @@ const result: TestTopologyNode = {
             channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
             placement: {
               placementRef: {
-                kind: 'PlacementRule',
+                kind: 'Placement',
                 name: 'feng-hello-placement-1',
               },
             },
@@ -801,7 +801,7 @@ const parentObject: TestTopologyNode = {
       parentSpecs: {
         title: '',
         subscription: {
-          apiVersion: 'apps.open-cluster-management.io/v1',
+          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
           kind: 'Subscription',
           metadata: {
             annotations: {
@@ -828,7 +828,7 @@ const parentObject: TestTopologyNode = {
             channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
             placement: {
               placementRef: {
-                kind: 'PlacementRule',
+                kind: 'Placement',
                 name: 'feng-hello-placement-1',
               },
             },
@@ -841,7 +841,7 @@ const parentObject: TestTopologyNode = {
           prehooks: [],
           channels: [
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
               kind: 'Channel',
               metadata: {
                 annotations: {
@@ -864,8 +864,8 @@ const parentObject: TestTopologyNode = {
           ],
           rules: [
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
-              kind: 'PlacementRule',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+              kind: 'Placement',
               metadata: {
                 annotations: {
                   'open-cluster-management.io/user-group': 'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
@@ -911,7 +911,7 @@ const parentObject: TestTopologyNode = {
               namespace: 'feng-hello',
               ownerReferences: [
                 {
-                  apiVersion: 'apps.open-cluster-management.io/v1',
+                  apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                   blockOwnerDeletion: true,
                   controller: true,
                   kind: 'Subscription',
@@ -1444,7 +1444,7 @@ const parentObjectRC: TestTopologyNode = {
       parentSpecs: {
         title: '',
         subscription: {
-          apiVersion: 'apps.open-cluster-management.io/v1',
+          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
           kind: 'Subscription',
           metadata: {
             annotations: {
@@ -1471,7 +1471,7 @@ const parentObjectRC: TestTopologyNode = {
             channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
             placement: {
               placementRef: {
-                kind: 'PlacementRule',
+                kind: 'Placement',
                 name: 'feng-hello-placement-1',
               },
             },
@@ -1484,7 +1484,7 @@ const parentObjectRC: TestTopologyNode = {
           prehooks: [],
           channels: [
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
               kind: 'Channel',
               metadata: {
                 annotations: {
@@ -1507,8 +1507,8 @@ const parentObjectRC: TestTopologyNode = {
           ],
           rules: [
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
-              kind: 'PlacementRule',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+              kind: 'Placement',
               metadata: {
                 annotations: {
                   'open-cluster-management.io/user-group': 'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
@@ -1554,7 +1554,7 @@ const parentObjectRC: TestTopologyNode = {
               namespace: 'feng-hello',
               ownerReferences: [
                 {
-                  apiVersion: 'apps.open-cluster-management.io/v1',
+                  apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                   blockOwnerDeletion: true,
                   controller: true,
                   kind: 'Subscription',
@@ -2600,10 +2600,10 @@ const result2: TestTopologyNode = {
         resourceCount: 1,
         sortedClusterNames: ['local-cluster'],
         subscription: {
-          apiVersion: 'apps.open-cluster-management.io/v1',
+          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
           channels: [
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
               kind: 'Channel',
               metadata: {
                 annotations: {
@@ -2661,7 +2661,7 @@ const result2: TestTopologyNode = {
               namespace: 'feng-hello',
               ownerReferences: [
                 {
-                  apiVersion: 'apps.open-cluster-management.io/v1',
+                  apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                   blockOwnerDeletion: true,
                   controller: true,
                   kind: 'Subscription',
@@ -2713,8 +2713,8 @@ const result2: TestTopologyNode = {
           },
           rules: [
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
-              kind: 'PlacementRule',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+              kind: 'Placement',
               metadata: {
                 annotations: {
                   'open-cluster-management.io/user-group': 'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
@@ -2751,7 +2751,7 @@ const result2: TestTopologyNode = {
             channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
             placement: {
               placementRef: {
-                kind: 'PlacementRule',
+                kind: 'Placement',
                 name: 'feng-hello-placement-1',
               },
             },
@@ -3302,10 +3302,10 @@ const result3: TestTopologyNode = {
         resourceCount: 1,
         sortedClusterNames: ['local-cluster'],
         subscription: {
-          apiVersion: 'apps.open-cluster-management.io/v1',
+          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
           channels: [
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
               kind: 'Channel',
               metadata: {
                 annotations: {
@@ -3363,7 +3363,7 @@ const result3: TestTopologyNode = {
               namespace: 'feng-hello',
               ownerReferences: [
                 {
-                  apiVersion: 'apps.open-cluster-management.io/v1',
+                  apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                   blockOwnerDeletion: true,
                   controller: true,
                   kind: 'Subscription',
@@ -3415,8 +3415,8 @@ const result3: TestTopologyNode = {
           },
           rules: [
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
-              kind: 'PlacementRule',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+              kind: 'Placement',
               metadata: {
                 annotations: {
                   'open-cluster-management.io/user-group': 'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
@@ -3453,7 +3453,7 @@ const result3: TestTopologyNode = {
             channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
             placement: {
               placementRef: {
-                kind: 'PlacementRule',
+                kind: 'Placement',
                 name: 'feng-hello-placement-1',
               },
             },
@@ -4005,10 +4005,10 @@ const result4: TestTopologyNode = {
         resourceCount: 1,
         sortedClusterNames: ['local-cluster'],
         subscription: {
-          apiVersion: 'apps.open-cluster-management.io/v1',
+          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
           channels: [
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
               kind: 'Channel',
               metadata: {
                 annotations: {
@@ -4066,7 +4066,7 @@ const result4: TestTopologyNode = {
               namespace: 'feng-hello',
               ownerReferences: [
                 {
-                  apiVersion: 'apps.open-cluster-management.io/v1',
+                  apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                   blockOwnerDeletion: true,
                   controller: true,
                   kind: 'Subscription',
@@ -4118,8 +4118,8 @@ const result4: TestTopologyNode = {
           },
           rules: [
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
-              kind: 'PlacementRule',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+              kind: 'Placement',
               metadata: {
                 annotations: {
                   'open-cluster-management.io/user-group': 'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
@@ -4156,7 +4156,7 @@ const result4: TestTopologyNode = {
             channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
             placement: {
               placementRef: {
-                kind: 'PlacementRule',
+                kind: 'Placement',
                 name: 'feng-hello-placement-1',
               },
             },
@@ -4684,10 +4684,10 @@ const result5: TestTopologyNode = {
         resourceCount: 1,
         sortedClusterNames: ['local-cluster'],
         subscription: {
-          apiVersion: 'apps.open-cluster-management.io/v1',
+          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
           channels: [
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
               kind: 'Channel',
               metadata: {
                 annotations: {
@@ -4745,7 +4745,7 @@ const result5: TestTopologyNode = {
               namespace: 'feng-hello',
               ownerReferences: [
                 {
-                  apiVersion: 'apps.open-cluster-management.io/v1',
+                  apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                   blockOwnerDeletion: true,
                   controller: true,
                   kind: 'Subscription',
@@ -4797,8 +4797,8 @@ const result5: TestTopologyNode = {
           },
           rules: [
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
-              kind: 'PlacementRule',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+              kind: 'Placement',
               metadata: {
                 annotations: {
                   'open-cluster-management.io/user-group': 'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
@@ -4835,7 +4835,7 @@ const result5: TestTopologyNode = {
             channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
             placement: {
               placementRef: {
-                kind: 'PlacementRule',
+                kind: 'Placement',
                 name: 'feng-hello-placement-1',
               },
             },
@@ -5363,10 +5363,10 @@ const result6: TestTopologyNode = {
         resourceCount: 1,
         sortedClusterNames: ['local-cluster'],
         subscription: {
-          apiVersion: 'apps.open-cluster-management.io/v1',
+          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
           channels: [
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
               kind: 'Channel',
               metadata: {
                 annotations: {
@@ -5424,7 +5424,7 @@ const result6: TestTopologyNode = {
               namespace: 'feng-hello',
               ownerReferences: [
                 {
-                  apiVersion: 'apps.open-cluster-management.io/v1',
+                  apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                   blockOwnerDeletion: true,
                   controller: true,
                   kind: 'Subscription',
@@ -5476,8 +5476,8 @@ const result6: TestTopologyNode = {
           },
           rules: [
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
-              kind: 'PlacementRule',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+              kind: 'Placement',
               metadata: {
                 annotations: {
                   'open-cluster-management.io/user-group': 'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
@@ -5514,7 +5514,7 @@ const result6: TestTopologyNode = {
             channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
             placement: {
               placementRef: {
-                kind: 'PlacementRule',
+                kind: 'Placement',
                 name: 'feng-hello-placement-1',
               },
             },
@@ -5603,7 +5603,7 @@ const application: TestSubscriptionApplicationModel = {
   ],
   subscriptions: [
     {
-      apiVersion: 'apps.open-cluster-management.io/v1',
+      apiVersion: 'cluster.open-cluster-management.io/v1beta1',
       kind: 'Subscription',
       metadata: {
         annotations: {
@@ -5645,7 +5645,7 @@ const application: TestSubscriptionApplicationModel = {
       prehooks: [],
       channels: [
         {
-          apiVersion: 'apps.open-cluster-management.io/v1',
+          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
           kind: 'Channel',
           metadata: {
             annotations: {
@@ -5762,7 +5762,7 @@ const application: TestSubscriptionApplicationModel = {
           namespace: 'feng-cronjob',
           ownerReferences: [
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
               blockOwnerDeletion: true,
               controller: true,
               kind: 'Subscription',
@@ -5860,7 +5860,7 @@ const application: TestSubscriptionApplicationModel = {
   ],
   allSubscriptions: [
     {
-      apiVersion: 'apps.open-cluster-management.io/v1',
+      apiVersion: 'cluster.open-cluster-management.io/v1beta1',
       kind: 'Subscription',
       metadata: {
         annotations: {
@@ -5902,7 +5902,7 @@ const application: TestSubscriptionApplicationModel = {
       prehooks: [],
       channels: [
         {
-          apiVersion: 'apps.open-cluster-management.io/v1',
+          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
           kind: 'Channel',
           metadata: {
             annotations: {
@@ -6018,7 +6018,7 @@ const application: TestSubscriptionApplicationModel = {
           namespace: 'feng-cronjob',
           ownerReferences: [
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
               blockOwnerDeletion: true,
               controller: true,
               kind: 'Subscription',
@@ -6116,7 +6116,7 @@ const application: TestSubscriptionApplicationModel = {
   ],
   allChannels: [
     {
-      apiVersion: 'apps.open-cluster-management.io/v1',
+      apiVersion: 'cluster.open-cluster-management.io/v1beta1',
       kind: 'Channel',
       metadata: {
         annotations: {
@@ -6151,7 +6151,7 @@ const application: TestSubscriptionApplicationModel = {
         namespace: 'feng-cronjob',
         ownerReferences: [
           {
-            apiVersion: 'apps.open-cluster-management.io/v1',
+            apiVersion: 'cluster.open-cluster-management.io/v1beta1',
             blockOwnerDeletion: true,
             controller: true,
             kind: 'Subscription',
@@ -7955,7 +7955,7 @@ const result7: TestTopology = {
           'feng-cronjob/feng-cronjob-subscription-1//ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
         allChannels: [
           {
-            apiVersion: 'apps.open-cluster-management.io/v1',
+            apiVersion: 'cluster.open-cluster-management.io/v1beta1',
             kind: 'Channel',
             metadata: {
               annotations: {
@@ -7982,10 +7982,10 @@ const result7: TestTopology = {
         },
         allSubscriptions: [
           {
-            apiVersion: 'apps.open-cluster-management.io/v1',
+            apiVersion: 'cluster.open-cluster-management.io/v1beta1',
             channels: [
               {
-                apiVersion: 'apps.open-cluster-management.io/v1',
+                apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                 kind: 'Channel',
                 metadata: {
                   annotations: {
@@ -8126,7 +8126,7 @@ const result7: TestTopology = {
                 namespace: 'feng-cronjob',
                 ownerReferences: [
                   {
-                    apiVersion: 'apps.open-cluster-management.io/v1',
+                    apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                     blockOwnerDeletion: true,
                     controller: true,
                     kind: 'Subscription',
@@ -8297,7 +8297,7 @@ const result7: TestTopology = {
           namespace: 'feng-cronjob',
           ownerReferences: [
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
               blockOwnerDeletion: true,
               controller: true,
               kind: 'Subscription',
@@ -8398,10 +8398,10 @@ const result7: TestTopology = {
         isDesign: true,
         isPlaced: true,
         raw: {
-          apiVersion: 'apps.open-cluster-management.io/v1',
+          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
           channels: [
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
               kind: 'Channel',
               metadata: {
                 annotations: {
@@ -8543,7 +8543,7 @@ const result7: TestTopology = {
               namespace: 'feng-cronjob',
               ownerReferences: [
                 {
-                  apiVersion: 'apps.open-cluster-management.io/v1',
+                  apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                   blockOwnerDeletion: true,
                   controller: true,
                   kind: 'Subscription',
@@ -10404,10 +10404,10 @@ const result7: TestTopology = {
         resourceCount: 2,
         sortedClusterNames: ['feng-managed', 'local-cluster'],
         subscription: {
-          apiVersion: 'apps.open-cluster-management.io/v1',
+          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
           channels: [
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
               kind: 'Channel',
               metadata: {
                 annotations: {
@@ -10549,7 +10549,7 @@ const result7: TestTopology = {
               namespace: 'feng-cronjob',
               ownerReferences: [
                 {
-                  apiVersion: 'apps.open-cluster-management.io/v1',
+                  apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                   blockOwnerDeletion: true,
                   controller: true,
                   kind: 'Subscription',
@@ -12328,10 +12328,10 @@ const result7: TestTopology = {
             resourceCount: 2,
             sortedClusterNames: ['feng-managed', 'local-cluster'],
             subscription: {
-              apiVersion: 'apps.open-cluster-management.io/v1',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
               channels: [
                 {
-                  apiVersion: 'apps.open-cluster-management.io/v1',
+                  apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                   kind: 'Channel',
                   metadata: {
                     annotations: {
@@ -12474,7 +12474,7 @@ const result7: TestTopology = {
                   namespace: 'feng-cronjob',
                   ownerReferences: [
                     {
-                      apiVersion: 'apps.open-cluster-management.io/v1',
+                      apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                       blockOwnerDeletion: true,
                       controller: true,
                       kind: 'Subscription',

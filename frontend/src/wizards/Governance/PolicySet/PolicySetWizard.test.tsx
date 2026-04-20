@@ -20,7 +20,6 @@ function TestPolicySetWizard() {
         namespaces={['argo-server-1']}
         policies={[mockPolicy as IResource]}
         placements={[mockPlacements as IResource]}
-        placementRules={[]}
         clusters={mockManagedClusters}
         clusterSets={[mockClusterSet]}
         clusterSetBindings={[mockClusterSetBinding]}

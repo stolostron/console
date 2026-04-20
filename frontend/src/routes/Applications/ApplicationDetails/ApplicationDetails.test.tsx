@@ -12,7 +12,6 @@ import {
   managedClustersState,
   namespacesState,
   placementDecisionsState,
-  placementRulesState,
   subscriptionsState,
 } from '../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../../lib/nock-util'
@@ -28,7 +27,6 @@ import {
   mockManagedClusterInfos,
   mockManagedClusters,
   mockNamespaces,
-  mockPlacementrules,
   mockPlacementsDecisions,
   mockSubscriptions,
 } from '../Application.sharedmocks'
@@ -344,7 +342,6 @@ describe('Applications Page', () => {
           snapshot.set(applicationsState, mockApplications)
           snapshot.set(subscriptionsState, mockSubscriptions)
           snapshot.set(channelsState, mockChannels)
-          snapshot.set(placementRulesState, mockPlacementrules)
           snapshot.set(placementDecisionsState, mockPlacementsDecisions)
           snapshot.set(managedClustersState, mockManagedClusters)
           snapshot.set(managedClusterInfosState, mockManagedClusterInfos)

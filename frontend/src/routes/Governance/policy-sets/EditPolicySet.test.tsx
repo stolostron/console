@@ -8,7 +8,6 @@ import {
   managedClusterSetsState,
   namespacesState,
   placementBindingsState,
-  placementRulesState,
   placementsState,
   policiesState,
   policySetsState,
@@ -19,7 +18,6 @@ import { EditPolicySet } from './EditPolicySet'
 import {
   mockPolicySets,
   mockNamespaces,
-  mockPlacementRules,
   mockPlacementBindings,
   mockPlacements,
   mockClusterSet,
@@ -41,7 +39,6 @@ function EditPolicySetTest() {
         snapshot.set(policiesState, [mockPolicy[0]])
         snapshot.set(namespacesState, mockNamespaces)
         snapshot.set(placementsState, mockPlacements)
-        snapshot.set(placementRulesState, mockPlacementRules)
         snapshot.set(placementBindingsState, mockPlacementBindings)
         snapshot.set(managedClusterSetsState, [mockClusterSet])
         snapshot.set(managedClusterSetBindingsState, [mockClusterSetBinding])
@@ -57,32 +54,6 @@ function EditPolicySetTest() {
 }
 
 const policySetPatch = [{ op: 'replace', path: '/spec/description', value: 'updated text' }]
-
-const placementRulePatch = [
-  { op: 'remove', path: '/spec' },
-  { op: 'replace', path: '/kind', value: 'PlacementBinding' },
-  { op: 'replace', path: '/apiVersion', value: 'policy.open-cluster-management.io/v1' },
-  {
-    op: 'add',
-    path: '/placementRef',
-    value: {
-      apiGroup: 'apps.open-cluster-management.io',
-      kind: 'PlacementRule',
-      name: 'policy-set-with-1-placement-placement',
-    },
-  },
-  {
-    op: 'add',
-    path: '/subjects',
-    value: [
-      {
-        apiGroup: 'policy.open-cluster-management.io',
-        kind: 'PolicySet',
-        name: 'policy-set-with-1-placement',
-      },
-    ],
-  },
-]
 
 describe('Edit Policy Set Page', () => {
   beforeEach(async () => {
@@ -104,14 +75,9 @@ describe('Edit Policy Set Page', () => {
       nockPatch(mockPolicySets[0], policySetPatch, undefined, 204, { dryRun: 'All' }),
       nockPatch(mockPolicySets[0], policySetPatch),
     ]
-    const mockPlacementRulesUpdate = [
-      nockPatch(mockPlacementRules[1], placementRulePatch, undefined, 204, { dryRun: 'All' }),
-      nockPatch(mockPlacementRules[1], placementRulePatch),
-    ]
 
     screen.getByRole('button', { name: 'Submit' }).click()
 
     await waitForNocks(mockPolicySetUpdate)
-    await waitForNocks(mockPlacementRulesUpdate)
   })
 })

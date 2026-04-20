@@ -894,7 +894,7 @@ export const setPlacementDeployStatus = (
   details: DetailItem[],
   t: TFunction
 ): DetailItem[] => {
-  if (node.type !== 'placements' || !node.isPlacement) {
+  if ((node.type !== 'placement' && node.type !== 'placementDecision') || !node.isPlacement) {
     return details
   }
 
