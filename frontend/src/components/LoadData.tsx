@@ -495,20 +495,20 @@ export function LoadData(props: { children?: ReactNode }) {
       for (const groupVersion in resourceTypeMap) {
         for (const kind in resourceTypeMap[groupVersion]) {
           const watchEvents = resourceTypeMap[groupVersion]?.[kind]
-          if (!watchEvents) continue
-
-          const setter = setters[groupVersion]?.[kind]
-          if (setter) {
-            updateSetterCache(caches, groupVersion, kind, watchEvents)
-            if (!isReconnectingRef.current) {
-              setter(Object.values(caches[groupVersion]?.[kind]))
-            }
-          } else {
-            const mapper = mappers[groupVersion]?.[kind]
-            if (mapper) {
-              updateMapperCache(mapper, groupVersion, kind, watchEvents)
+          if (watchEvents) {
+            const setter = setters[groupVersion]?.[kind]
+            if (setter) {
+              updateSetterCache(caches, groupVersion, kind, watchEvents)
               if (!isReconnectingRef.current) {
-                mapper.setter({ ...mapper.mcaches[groupVersion]?.[kind] })
+                setter(Object.values(caches[groupVersion]?.[kind]))
+              }
+            } else {
+              const mapper = mappers[groupVersion]?.[kind]
+              if (mapper) {
+                updateMapperCache(mapper, groupVersion, kind, watchEvents)
+                if (!isReconnectingRef.current) {
+                  mapper.setter({ ...mapper.mcaches[groupVersion]?.[kind] })
+                }
               }
             }
           }
@@ -599,8 +599,7 @@ export function LoadData(props: { children?: ReactNode }) {
       eventSourceRef.current = undefined
       processIntervalRef.current = undefined
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [restartKey])
+  }, [caches, mappers, restartKey, setIsReconnecting, setLoadStarted, setSettings, setters])
 
   const {
     data: globalHubRes,
