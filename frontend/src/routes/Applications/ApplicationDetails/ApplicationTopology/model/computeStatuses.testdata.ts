@@ -3752,7 +3752,8 @@ export const HCMSubscriptionList: Record<string, any> = {
               kind: 'placement',
               name: 'guestbook-placement',
               namespace: 'kube-system',
-              selfLink: '/apis/cluster.open-cluster-management.io/v1beta1/namespaces/kube-system/placements/guestbook-placement',
+              selfLink:
+                '/apis/cluster.open-cluster-management.io/v1beta1/namespaces/kube-system/placements/guestbook-placement',
               created: '2019-02-11T23:26:17Z',
               cluster: 'local-cluster',
               apigroup: 'cluster.open-cluster-management.io',
@@ -3943,7 +3944,8 @@ export const HCMSubscriptionList: Record<string, any> = {
               kind: 'placement',
               name: 'guestbook-placement',
               namespace: 'kube-system',
-              selfLink: '/apis/cluster.open-cluster-management.io/v1beta1/namespaces/kube-system/placements/guestbook-placement',
+              selfLink:
+                '/apis/cluster.open-cluster-management.io/v1beta1/namespaces/kube-system/placements/guestbook-placement',
               created: '2019-02-11T23:26:17Z',
               cluster: 'local-cluster',
               apigroup: 'cluster.open-cluster-management.io',
