@@ -35,8 +35,11 @@ describe('PolicySetWizard wizard', () => {
   test('can show correct cluster sets dropdown', async () => {
     const { container } = render(<TestPolicySetWizard />)
 
-    const nameTextbox = screen.getByRole('textbox', { name: /name/i })
-    userEvent.type(nameTextbox, 'test-policy')
+    // Name fields no longer get an accessible name from the label via role=textbox; use the policy
+    // set details step scope so we do not match the placement name (same placeholder and id="name").
+    const nameTextbox = container.querySelector('#details-step #name-form-group input#name')
+    expect(nameTextbox).toBeInstanceOf(HTMLInputElement)
+    userEvent.type(nameTextbox as HTMLInputElement, 'test-policy')
     screen.getByPlaceholderText(/select the namespace/i).click()
     screen.getByRole('option', { name: /argo-server-1/i }).click()
 
