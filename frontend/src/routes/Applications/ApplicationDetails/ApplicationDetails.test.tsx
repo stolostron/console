@@ -20,7 +20,7 @@ import { defaultPlugin, PluginContext } from '../../../lib/PluginContext'
 import { waitForText } from '../../../lib/test-util'
 import { ActionExtensionProps } from '../../../plugin-extensions/properties'
 import { AcmExtension } from '../../../plugin-extensions/types'
-import { GetMessagesDocument, SearchSchemaDocument } from '../../Search/search-sdk/search-sdk'
+import { SearchSchemaDocument } from '../../Search/search-sdk/search-sdk'
 import {
   mockApplication0,
   mockApplications,
@@ -334,16 +334,6 @@ describe('Applications Page', () => {
             searchSchema: {
               allProperties: ['cluster', 'kind', 'label', 'name', 'namespace'],
             },
-          },
-        },
-      },
-      {
-        request: {
-          query: GetMessagesDocument,
-        },
-        result: {
-          data: {
-            messages: [],
           },
         },
       },

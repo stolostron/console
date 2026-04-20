@@ -13,13 +13,12 @@ import { nockIgnoreOperatorCheck, nockRequest } from '../../lib/nock-util'
 import { wait, waitForNocks } from '../../lib/test-util'
 import { ConfigMap } from '../../resources'
 import { UserPreference } from '../../resources/userpreference'
-import {
-  GetMessagesDocument,
-  SearchCompleteDocument,
-  SearchResultItemsDocument,
-  SearchSchemaDocument,
-} from './search-sdk/search-sdk'
+import { SearchCompleteDocument, SearchResultItemsDocument, SearchSchemaDocument } from './search-sdk/search-sdk'
 import SearchPage from './SearchPage'
+
+jest.mock('../../lib/search', () => ({
+  useQuerySearchDisabledManagedClusters: jest.fn(() => jest.fn()),
+}))
 
 // Mock the KubevirtProviderAlert component
 jest.mock('../../components/KubevirtProviderAlert', () => ({
@@ -93,16 +92,6 @@ describe('SearchPage', () => {
           },
         },
       },
-      {
-        request: {
-          query: GetMessagesDocument,
-        },
-        result: {
-          data: {
-            messages: [],
-          },
-        },
-      },
     ]
     render(
       <RecoilRoot
@@ -148,16 +137,6 @@ describe('SearchPage', () => {
         },
         result: {
           errors: [new GraphQLError('Error getting search schema data')],
-        },
-      },
-      {
-        request: {
-          query: GetMessagesDocument,
-        },
-        result: {
-          data: {
-            messages: [],
-          },
         },
       },
     ]
@@ -211,16 +190,6 @@ describe('SearchPage', () => {
         },
         result: {
           errors: ['error sending federated request' as unknown as GraphQLError],
-        },
-      },
-      {
-        request: {
-          query: GetMessagesDocument,
-        },
-        result: {
-          data: {
-            messages: [],
-          },
         },
       },
     ]
@@ -292,23 +261,6 @@ describe('SearchPage', () => {
           },
         },
       },
-      {
-        request: {
-          query: GetMessagesDocument,
-        },
-        result: {
-          data: {
-            messages: [
-              {
-                id: 'S20',
-                kind: 'info',
-                description: 'Search is disabled on some of your managed clusters.',
-                __typename: 'Message',
-              },
-            ],
-          },
-        },
-      },
     ]
     render(
       <RecoilRoot
@@ -343,9 +295,6 @@ describe('SearchPage', () => {
 
     // check searchbar updated properly
     await waitFor(() => expect(screen.queryByText('kind:deployment')).toBeTruthy())
-
-    // Validate message when managed clusters are disabled. We don't have translation in this context.
-    await waitFor(() => expect(screen.queryByText('Search is disabled on some clusters.')).toBeTruthy())
   })
   it('should render SearchPage with predefined query', async () => {
     nockIgnoreOperatorCheck()
@@ -370,16 +319,6 @@ describe('SearchPage', () => {
             searchSchema: {
               allProperties: ['cluster', 'kind', 'label', 'name', 'namespace'],
             },
-          },
-        },
-      },
-      {
-        request: {
-          query: GetMessagesDocument,
-        },
-        result: {
-          data: {
-            messages: [],
           },
         },
       },
@@ -475,7 +414,6 @@ describe('SearchPage', () => {
         },
         result: { data: { searchSchema: { allProperties: ['cluster', 'kind', 'label', 'name', 'namespace'] } } },
       },
-      { request: { query: GetMessagesDocument }, result: { data: { messages: [] } } },
       {
         request: {
           query: SearchResultItemsDocument,

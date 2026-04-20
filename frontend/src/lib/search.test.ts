@@ -59,39 +59,13 @@ describe('useQuerySearchDisabledManagedClusters', () => {
             filters: [
               { property: 'kind', values: ['Cluster'] },
               { property: 'addon', values: ['search-collector=false'] },
-              { property: 'name', values: ['!local-cluster'] },
+              { property: 'label', values: ['!local-cluster=true'] },
             ],
           },
         ],
       },
       query: 'query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}',
     })
-  })
-
-  it('should use the local hub name from useLocalHubName hook', async () => {
-    mockUseLocalHubName.mockReturnValue('custom-hub')
-
-    const { result } = renderHookWithRecoil(() => useQuerySearchDisabledManagedClusters())
-
-    const queryFunction = result.current
-    await queryFunction()
-
-    expect(mockPostRequest).toHaveBeenCalledWith(
-      expect.any(String),
-      expect.objectContaining({
-        variables: {
-          input: [
-            {
-              filters: [
-                { property: 'kind', values: ['Cluster'] },
-                { property: 'addon', values: ['search-collector=false'] },
-                { property: 'name', values: ['!custom-hub'] },
-              ],
-            },
-          ],
-        },
-      })
-    )
   })
 
   it('should handle different hub names correctly', async () => {
@@ -119,7 +93,7 @@ describe('useQuerySearchDisabledManagedClusters', () => {
                 filters: [
                   { property: 'kind', values: ['Cluster'] },
                   { property: 'addon', values: ['search-collector=false'] },
-                  { property: 'name', values: [testCase.expectedName] },
+                  { property: 'label', values: ['!local-cluster=true'] },
                 ],
               },
             ],
@@ -174,21 +148,6 @@ describe('useQuerySearchDisabledManagedClusters', () => {
     expect(firstQueryFunction).toBe(secondQueryFunction)
   })
 
-  it('should create new function when localHubName changes', () => {
-    const { result, rerender } = renderHookWithRecoil(() => useQuerySearchDisabledManagedClusters())
-
-    const firstQueryFunction = result.current
-
-    // Change hub name
-    mockUseLocalHubName.mockReturnValue('different-hub')
-    rerender()
-
-    const secondQueryFunction = result.current
-
-    // The function should be different due to useCallback dependency
-    expect(firstQueryFunction).not.toBe(secondQueryFunction)
-  })
-
   it('should use the correct API endpoint', async () => {
     const { result } = renderHookWithRecoil(() => useQuerySearchDisabledManagedClusters())
 
@@ -211,7 +170,7 @@ describe('useQuerySearchDisabledManagedClusters', () => {
     expect(searchQuery.variables.input[0].filters).toEqual([
       { property: 'kind', values: ['Cluster'] },
       { property: 'addon', values: ['search-collector=false'] },
-      { property: 'name', values: ['!local-cluster'] },
+      { property: 'label', values: ['!local-cluster=true'] },
     ])
   })
 })

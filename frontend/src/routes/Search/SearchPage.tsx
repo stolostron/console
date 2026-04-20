@@ -32,7 +32,6 @@ import {
 import { searchClient } from './search-sdk/search-client'
 import {
   SearchResultItemsQuery,
-  useGetMessagesQuery,
   useSearchCompleteQuery,
   useSearchResultItemsQuery,
   useSearchSchemaQuery,
@@ -385,7 +384,6 @@ export default function SearchPage() {
   const configMaps = useRecoilValue(configMapsState)
   const [selectedSearch, setSelectedSearch] = useState(savedSearchesText)
   const [queryErrors, setQueryErrors] = useState(false)
-  const [queryMessages, setQueryMessages] = useState<any[]>([])
   const [isUserPreferenceLoading, setIsUserPreferenceLoading] = useState(true)
   const [userPreference, setUserPreference] = useState<UserPreference | undefined>(undefined)
 
@@ -454,14 +452,6 @@ export default function SearchPage() {
   }, [presetSearchQuery, userSavedSearches, t])
 
   const query = convertStringToQuery(presetSearchQuery, searchResultLimit)
-  const msgQuery = useGetMessagesQuery({
-    client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
-  })
-  useEffect(() => {
-    if (msgQuery.data?.messages) {
-      setQueryMessages(msgQuery.data?.messages)
-    }
-  }, [msgQuery.data])
   // Helper function to check if search query contains VirtualMachine kinds
   const hasVirtualMachineKinds = (query: string): boolean => {
     const lowerQuery = query.toLowerCase()
@@ -470,7 +460,7 @@ export default function SearchPage() {
   }
 
   return (
-    <AcmPage header={<HeaderWithNotification messages={queryMessages} />}>
+    <AcmPage header={<HeaderWithNotification />}>
       <RenderDropDownAndNewTab
         selectedSearch={selectedSearch}
         setSelectedSearch={setSelectedSearch}

@@ -3,7 +3,6 @@
 import { useCallback, useMemo } from 'react'
 import { useLocation } from 'react-router-dom-v5-compat'
 import { getBackendUrl, IRequestResult, postRequest } from '../resources/utils'
-import { useLocalHubName } from '../hooks/use-local-hub'
 
 export const apiSearchUrl = '/proxy/search'
 const searchFilterQuery =
@@ -35,7 +34,6 @@ export type SearchQuery = {
 }
 
 export function useQuerySearchDisabledManagedClusters(): () => IRequestResult<ISearchResult> {
-  const localHubName = useLocalHubName()
   return useCallback(
     () =>
       postRequest<SearchQuery, ISearchResult>(getBackendUrl() + apiSearchUrl, {
@@ -46,14 +44,14 @@ export function useQuerySearchDisabledManagedClusters(): () => IRequestResult<IS
               filters: [
                 { property: 'kind', values: ['Cluster'] },
                 { property: 'addon', values: ['search-collector=false'] },
-                { property: 'name', values: [`!${localHubName}`] },
+                { property: 'label', values: [`!local-cluster=true`] },
               ],
             },
           ],
         },
         query: searchFilterQuery,
       }),
-    [localHubName]
+    []
   )
 }
 
