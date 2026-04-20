@@ -37,7 +37,7 @@ function wrapper({ children }: { children: ReactElement }) {
 }
 
 describe('EventStreamIdleDebugPanel rendering', () => {
-  it('renders when DEBUG_EVENT_STREAM_IDLE is true', () => {
+  it('renders expected ACTIVE state text', () => {
     const { container } = render(createElement(EventStreamIdleDebugPanel), { wrapper })
     expect(container.textContent).toContain('state: ACTIVE')
   })

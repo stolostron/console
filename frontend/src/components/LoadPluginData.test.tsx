@@ -29,6 +29,7 @@ describe('LoadPluginData', () => {
   it('shows loading page when loadCompleted and loadStarted are false', () => {
     renderWithContext({ loadCompleted: false, loadStarted: false })
     expect(screen.queryByText('Page Content')).not.toBeInTheDocument()
+    expect(screen.getByText('Loading')).toBeInTheDocument()
   })
 
   it('shows children when loadCompleted is true', () => {

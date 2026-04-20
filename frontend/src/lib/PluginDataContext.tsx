@@ -67,7 +67,7 @@ export const usePluginDataContextValue = () => {
   const backendUrl = getBackendUrl()
 
   const mount = useCallback(() => setMountCount((c) => c + 1), [])
-  const unmount = useCallback(() => setMountCount((c) => c - 1), [])
+  const unmount = useCallback(() => setMountCount((c) => Math.max(0, c - 1)), [])
 
   const contextValue = useMemo(
     () => ({

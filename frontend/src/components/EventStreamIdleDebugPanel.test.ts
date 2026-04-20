@@ -21,6 +21,7 @@ function computeIdleFrac(
 function computeGraceFrac(idleStart: number | null, isReconnecting: boolean, now: number, gracePeriodMs: number) {
   if (!idleStart) return 0
   if (isReconnecting) return 1
+  if (gracePeriodMs <= 0) return 1
   return Math.min(1, (now - idleStart) / gracePeriodMs)
 }
 
@@ -94,6 +95,14 @@ describe('computeGraceFrac', () => {
     const start = 1000000
     const result = computeGraceFrac(start, false, start, 60000)
     expect(result).toBe(0)
+  })
+
+  it('returns 1 when gracePeriodMs is 0 (disabled)', () => {
+    expect(computeGraceFrac(1000000, false, 1000000, 0)).toBe(1)
+  })
+
+  it('returns 1 when gracePeriodMs is negative', () => {
+    expect(computeGraceFrac(1000000, false, 1000000, -1)).toBe(1)
   })
 })
 

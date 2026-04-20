@@ -72,6 +72,19 @@ describe('usePluginDataContextValue', () => {
     expect(result.current.mounted).toBe(false)
   })
 
+  it('clamps mountCount at zero on extra unmount calls', () => {
+    const { result } = renderHook(() => usePluginDataContextValue())
+    act(() => {
+      result.current.unmount()
+    })
+    expect(result.current.mounted).toBe(false)
+
+    act(() => {
+      result.current.mount()
+    })
+    expect(result.current.mounted).toBe(true)
+  })
+
   it('starts with isStreamIdle false', () => {
     const { result } = renderHook(() => usePluginDataContextValue())
     expect(result.current.isStreamIdle).toBe(false)

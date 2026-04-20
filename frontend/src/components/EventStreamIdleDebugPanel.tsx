@@ -53,6 +53,7 @@ function computeIdleFrac(
 function computeGraceFrac(idleStart: number | null, isReconnecting: boolean, now: number, gracePeriodMs: number) {
   if (!idleStart) return 0
   if (isReconnecting) return 1
+  if (gracePeriodMs <= 0) return 1
   return Math.min(1, (now - idleStart) / gracePeriodMs)
 }
 
