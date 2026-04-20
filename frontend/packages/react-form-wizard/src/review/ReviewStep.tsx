@@ -34,7 +34,9 @@ import {
 import { useStringContext } from '../contexts/StringContext'
 import { InputReviewMeta, useStepRegister, type WizardDomTreeNode } from './ReviewStepContexts'
 import { ReviewPenHoverZone, useReviewEditHandler, type OnReviewEditHandler } from './ReviewStepNavigation'
+import { ReviewStepFindList } from './ReviewStepFindList'
 import { ReviewStepToolbar, useReviewExpandCollapseHandlers, type ReviewToolbarAction } from './ReviewStepToolbar'
+import { horizontalTermWidthModifierForInputRun, REVIEW_ERROR_TEXT_COLOR } from './utils'
 import { Step } from '../Step'
 import './ReviewStep.css'
 
@@ -61,8 +63,6 @@ export interface ReviewExpandableSectionProps {
   onExpandedChange: (expanded: boolean) => void
 }
 
-type HorizontalTermWidthModifier = NonNullable<ComponentProps<typeof DescriptionList>['horizontalTermWidthModifier']>
-
 type WizardInputDomNode = Extract<WizardDomTreeNode, { type: InputReviewMeta.INPUT }>
 
 type ReviewRenderCtx = {
@@ -83,26 +83,6 @@ type ReviewExpandableStored = {
 }
 
 // --- Constants & module scope ---
-
-const REVIEW_HORIZONTAL_TERM_WIDTH_COMPACT: HorizontalTermWidthModifier = {
-  default: '12ch',
-  sm: '15ch',
-  md: '20ch',
-  lg: '28ch',
-  xl: '30ch',
-  '2xl': '35ch',
-}
-
-const REVIEW_HORIZONTAL_TERM_WIDTH_WIDE: HorizontalTermWidthModifier = {
-  default: '24ch',
-  sm: '30ch',
-  md: '40ch',
-  lg: '56ch',
-  xl: '60ch',
-  '2xl': '70ch',
-}
-
-const REVIEW_ERROR_TEXT_COLOR = 'var(--pf-t--global--text--color--status--danger--default)'
 
 const REVIEW_EXPANDABLE_LS_PREFIX = 'pf-labs-form-wizard-review-expandable-v1'
 
@@ -147,6 +127,7 @@ export function ReviewStep({ reviewStorageKey = 'default', showYaml }: ReviewSte
   const prevStorageBucketRef = useRef<string | null>(null)
   const [lastToolbarAction, setLastToolbarAction] = useState<ReviewToolbarAction>('expand')
   const [sectionExpanded, setSectionExpanded] = useState<Record<string, boolean>>({})
+  const [reviewSearch, setReviewSearch] = useState('')
 
   useLayoutEffect(() => {
     const stored = readReviewExpandableStorage(reviewStorageKey)
@@ -203,45 +184,57 @@ export function ReviewStep({ reviewStorageKey = 'default', showYaml }: ReviewSte
 
   const showExpandToolbarButton = sectionKeys.some((k) => sectionExpanded[k] === false)
   const showCollapseToolbarButton = sectionKeys.some((k) => sectionExpanded[k] !== false)
+  const reviewFindActive = reviewSearch.trim().length > 0
 
   return (
     <Step label={reviewLabel} id="review">
       <Stack hasGutter>
         <ReviewStepToolbar
+          reviewSearchValue={reviewSearch}
+          onReviewSearchChange={setReviewSearch}
           onExpandAll={onExpandAll}
           onCollapseAll={onCollapseAll}
-          showExpand={showExpandToolbarButton}
-          showCollapse={showCollapseToolbarButton}
+          showExpand={showExpandToolbarButton && !reviewFindActive}
+          showCollapse={showCollapseToolbarButton && !reviewFindActive}
         />
         <Divider />
-        {sectionRoots.map((child, index) => {
-          const key = reviewNodeKey(child, index)
-          return (
-            <ReviewExpandableSection
-              id={reviewExpandableSectionId(child, index)}
-              key={key}
-              label={reviewNodeLabel(child)}
-              collapsedContent={
-                <ReviewCollapsedContent
-                  label={reviewNodeLabel(child)}
+        {reviewFindActive ? (
+          <ReviewStepFindList
+            sectionRoots={sectionRoots}
+            searchQuery={reviewSearch}
+            onReviewEdit={handleReviewEdit}
+            showYaml={showYaml}
+          />
+        ) : (
+          sectionRoots.map((child, index) => {
+            const key = reviewNodeKey(child, index)
+            return (
+              <ReviewExpandableSection
+                id={reviewExpandableSectionId(child, index)}
+                key={key}
+                label={reviewNodeLabel(child)}
+                collapsedContent={
+                  <ReviewCollapsedContent
+                    label={reviewNodeLabel(child)}
+                    node={child}
+                    onReviewEdit={handleReviewEdit}
+                    showYaml={showYaml}
+                  />
+                }
+                isExpanded={sectionExpanded[key] ?? true}
+                onExpandedChange={(expanded) => onSectionExpandedChange(key, expanded)}
+              >
+                <ReviewSectionBody
                   node={child}
                   onReviewEdit={handleReviewEdit}
                   showYaml={showYaml}
+                  getTopLevelArrayInstanceExpanded={(k) => sectionExpanded[k] ?? false}
+                  onTopLevelArrayInstanceExpandedChange={onSectionExpandedChange}
                 />
-              }
-              isExpanded={sectionExpanded[key] ?? true}
-              onExpandedChange={(expanded) => onSectionExpandedChange(key, expanded)}
-            >
-              <ReviewSectionBody
-                node={child}
-                onReviewEdit={handleReviewEdit}
-                showYaml={showYaml}
-                getTopLevelArrayInstanceExpanded={(k) => sectionExpanded[k] ?? false}
-                onTopLevelArrayInstanceExpandedChange={onSectionExpandedChange}
-              />
-            </ReviewExpandableSection>
-          )
-        })}
+              </ReviewExpandableSection>
+            )
+          })
+        )}
       </Stack>
     </Step>
   )
@@ -711,15 +704,6 @@ function renderReviewInputDescriptionContent(node: WizardInputDomNode): ReactNod
     return formatReviewValue(node.value)
   }
   return <></>
-}
-
-function horizontalTermWidthModifierForInputRun(nodes: readonly WizardInputDomNode[]): HorizontalTermWidthModifier {
-  let maxLen = 0
-  for (const n of nodes) {
-    const termText = n.label ?? n.path
-    maxLen = Math.max(maxLen, termText.length)
-  }
-  return maxLen < 64 ? REVIEW_HORIZONTAL_TERM_WIDTH_COMPACT : REVIEW_HORIZONTAL_TERM_WIDTH_WIDE
 }
 
 /** Base margin 32px; each nested ARRAY_INPUT adds 2px. */

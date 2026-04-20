@@ -1,4 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { type DescriptionList } from '@patternfly/react-core'
+import { type ComponentProps } from 'react'
 import { InputReviewMeta, type InputReviewStepMeta, type WizardDomTreeNode } from './ReviewStepContexts'
 
 export type BuildTreeStepContext = {
@@ -100,4 +102,41 @@ function subtreeContainsReviewInput(node: WizardDomTreeNode): boolean {
   const ch = node.children
   if (!ch?.length) return false
   return ch.some(subtreeContainsReviewInput)
+}
+
+// --- Review description-list layout (shared by ReviewStep, ReviewStepFindList) ---
+
+type WizardInputDomNode = Extract<WizardDomTreeNode, { type: InputReviewMeta.INPUT }>
+
+type HorizontalTermWidthModifier = NonNullable<ComponentProps<typeof DescriptionList>['horizontalTermWidthModifier']>
+
+const REVIEW_HORIZONTAL_TERM_WIDTH_COMPACT: HorizontalTermWidthModifier = {
+  default: '12ch',
+  sm: '15ch',
+  md: '20ch',
+  lg: '28ch',
+  xl: '30ch',
+  '2xl': '35ch',
+}
+
+const REVIEW_HORIZONTAL_TERM_WIDTH_WIDE: HorizontalTermWidthModifier = {
+  default: '24ch',
+  sm: '30ch',
+  md: '40ch',
+  lg: '56ch',
+  xl: '60ch',
+  '2xl': '70ch',
+}
+
+export const REVIEW_ERROR_TEXT_COLOR = 'var(--pf-t--global--text--color--status--danger--default)'
+
+export function horizontalTermWidthModifierForInputRun(
+  nodes: readonly WizardInputDomNode[]
+): HorizontalTermWidthModifier {
+  let maxLen = 0
+  for (const n of nodes) {
+    const termText = n.label ?? n.path
+    maxLen = Math.max(maxLen, termText.length)
+  }
+  return maxLen < 64 ? REVIEW_HORIZONTAL_TERM_WIDTH_COMPACT : REVIEW_HORIZONTAL_TERM_WIDTH_WIDE
 }

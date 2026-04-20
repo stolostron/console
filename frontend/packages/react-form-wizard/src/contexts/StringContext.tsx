@@ -33,6 +33,10 @@ export interface WizardStrings {
   expandToFixValidationErrors: string
   reviewExpandAllTooltip: string
   reviewCollapseAllTooltip: string
+  reviewSearchDetailsPlaceholder: string
+  reviewBooleanTrue: string
+  reviewBooleanFalse: string
+  reviewBooleanNotSet: string
   selectNoItems: string
   selected: (count: number) => string
   selectPageItems: (count: number) => string
@@ -73,6 +77,10 @@ export const defaultStrings: WizardStrings = {
   expandToFixValidationErrors: 'Expand to fix validation errors',
   reviewExpandAllTooltip: 'Expand all',
   reviewCollapseAllTooltip: 'Collapse all',
+  reviewSearchDetailsPlaceholder: 'Search review details',
+  reviewBooleanTrue: 'True',
+  reviewBooleanFalse: 'False',
+  reviewBooleanNotSet: 'Not set',
   selectNoItems: 'Select none (0 items)',
   selected: (count) => `${count} selected`,
   selectPageItems: (count) => `Select page (${count} items)`,
