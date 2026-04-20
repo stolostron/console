@@ -74,10 +74,12 @@ export function usePageActivity(timeoutMs: number = 0, pageMounted = true) {
     setPageInUse(newSuspended)
   }, [isPageInUse, resetTimer])
 
-  if (pageMounted !== pageMountedRef.current) {
-    pageMountedRef.current = pageMounted
-    updatePageInUse()
-  }
+  useEffect(() => {
+    if (pageMounted !== pageMountedRef.current) {
+      pageMountedRef.current = pageMounted
+      updatePageInUse()
+    }
+  }, [pageMounted, updatePageInUse])
 
   // Only listen for activity events if the page is mounted, but not focused
   const trackActivity = pageMounted && !document.hasFocus()
