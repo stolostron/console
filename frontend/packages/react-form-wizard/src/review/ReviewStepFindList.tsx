@@ -37,6 +37,7 @@ type ReviewFindRow = {
   stepLabel: string
   searchLabel: string
   searchValue: string
+  /** Last `.` segment after stripping `;id=…` only — not display-formatted. */
   pathLast: string
 }
 
@@ -138,8 +139,9 @@ function pathLastSegment(path: string): string {
 }
 
 /**
- * Path suffix `#["CreateNamespace=true"]` → `["CreateNamespace"]` (strip `=<tail>` after first `=` in the bracketed string).
+ * Display-only: path suffix `#["CreateNamespace=true"]` → `["CreateNamespace"]` (strip `=<tail>` after first `=` in the bracketed string).
  * Also handles a trailing `#["…"]` on a longer last segment, e.g. `policy#["x=y"]` → `policy["x"]`.
+ * Do not use for Fuse indexing — `ReviewFindRow.pathLast` stays the raw last segment from the tree.
  */
 function formatPathLastSegmentForDisplay(segment: string): string {
   return segment.replace(/#\["([^"]*)"\]$/, (_full, inner: string) => {
@@ -310,7 +312,7 @@ function buildFindListModel(
       stepLabel,
       searchLabel: node.label ?? node.path,
       searchValue: formatReviewFindSearchValue(node, booleanStrings),
-      pathLast: formatPathLastSegmentForDisplay(pathLastSegment(node.path)),
+      pathLast: pathLastSegment(node.path),
     }))
     sections.push({ stepLabel, rows })
     allRows.push(...rows)
@@ -387,12 +389,16 @@ export function ReviewStepFindList(props: ReviewStepFindListProps) {
 
                 const termText = row.node.label ?? row.node.path
                 const valueText = row.searchValue
-                const pathLast = row.pathLast
-                const rowExact = rowHasExactSubstringMatch(q, termText, valueText, pathLast)
+                const pathLastRaw = row.pathLast
+                const pathDisplay = formatPathLastSegmentForDisplay(pathLastRaw)
+                const rowExact = rowHasExactSubstringMatch(q, termText, valueText, pathLastRaw)
 
                 const labelHighlight = pickHighlightIndices(termText, q, pathOnly ? undefined : labelIndices, rowExact)
                 const valueHighlight = pickHighlightIndices(valueText, q, valueIndices, rowExact)
-                const pathHighlight = pickHighlightIndices(pathLast, q, pathIndices, rowExact)
+                const pathHighlight =
+                  pathDisplay === pathLastRaw
+                    ? pickHighlightIndices(pathLastRaw, q, pathIndices, rowExact)
+                    : pickHighlightIndices(pathDisplay, q, undefined, rowExact)
 
                 const termBase = (
                   <>
@@ -401,7 +407,7 @@ export function ReviewStepFindList(props: ReviewStepFindListProps) {
                       <>
                         {' '}
                         <span className="wizard-review-find-path-suffix">
-                          ({renderHighlighted(pathLast, pathHighlight)})
+                          ({renderHighlighted(pathDisplay, pathHighlight)})
                         </span>
                       </>
                     ) : null}
