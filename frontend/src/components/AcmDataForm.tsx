@@ -56,6 +56,7 @@ import {
   Title,
   ToggleGroup,
   ToggleGroupItem,
+  Tooltip,
   Wizard,
   WizardFooterType,
   WizardFooterWrapper,
@@ -1509,17 +1510,21 @@ function SelectOptionsGallery(props: { input: InputBase<string>; options: Select
 
 function PasteInputButton(props: { setValue: (value: string) => void; setShowSecrets?: (value: boolean) => void }) {
   const { setValue, setShowSecrets } = props
+  const { t } = useTranslation()
   return (
-    <Button
-      icon={<PasteIcon />}
-      variant="control"
-      onClick={() => {
-        navigator.clipboard.readText().then((value) => {
-          setValue(value)
-          if (value && setShowSecrets) setShowSecrets(false)
-        })
-      }}
-    ></Button>
+    <Tooltip content={t('Paste')}>
+      <Button
+        icon={<PasteIcon />}
+        variant="control"
+        onClick={() => {
+          navigator.clipboard.readText().then((value) => {
+            setValue(value)
+            if (value && setShowSecrets) setShowSecrets(false)
+          })
+        }}
+        tabIndex={-1}
+      ></Button>
+    </Tooltip>
   )
 }
 
