@@ -57,6 +57,8 @@ export type AcmDropdownItems = {
   isSelected?: boolean
   flyoutMenu?: AcmDropdownItems[]
   component?: React.ReactNode
+  target?: string
+  rel?: string
 }
 
 type MenuItemProps = {
@@ -79,6 +81,9 @@ const MenuItems = forwardRef<HTMLDivElement, MenuItemProps>((props, ref) => {
                 itemId={item.id}
                 isAriaDisabled={item.isDisabled || item.isAriaDisabled}
                 isSelected={item.isSelected}
+                to={item.href}
+                target={item.target}
+                rel={item.rel ?? (item.target === '_blank' ? 'noopener noreferrer' : undefined)}
                 flyoutMenu={
                   item.flyoutMenu?.length ? (
                     <MenuItems id={`${item.id}-submenu`} menuItems={item.flyoutMenu} onSelect={onSelect} />

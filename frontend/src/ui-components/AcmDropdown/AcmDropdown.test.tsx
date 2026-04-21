@@ -25,6 +25,7 @@ describe('AcmDropdown', () => {
       { id: 'forbidden', text: 'Other config', isAriaDisabled: true, tooltip: 'Forbidden' },
       { id: 'launch-out', text: 'Launch page', icon: <ExternalLinkAltIcon /> },
       { id: 'link item', text: 'Link item', href: 'www.google.com', component: 'a' },
+      { id: 'external-link', text: 'External link', href: 'https://example.com', target: '_blank' },
       { id: 'new-feature', text: 'New feature', label: 'Technology Preview', labelColor: 'blue' },
     ]
     return (
@@ -102,6 +103,29 @@ describe('AcmDropdown', () => {
     expect(getByTestId('dropdown')).toBeInTheDocument()
     userEvent.click(getByTestId('dropdown'))
     expect(queryByTestId('install-config')).toBeNull()
+    await new Promise((resolve) => setTimeout(resolve, 0))
+  })
+
+  test('renders target="_blank" items with rel="noopener noreferrer"', async () => {
+    const { getByTestId } = render(<Component />)
+    userEvent.click(getByTestId('dropdown'))
+    await waitFor(() => expect(getByTestId('external-link')).toBeInTheDocument())
+    const externalLink = getByTestId('external-link')
+    const anchor = externalLink.closest('a')
+    expect(anchor).toBeInTheDocument()
+    expect(anchor).toHaveAttribute('rel', 'noopener noreferrer')
+    expect(anchor).toHaveAttribute('target', '_blank')
+    await new Promise((resolve) => setTimeout(resolve, 0))
+  })
+
+  test('renders items with href as anchor tags', async () => {
+    const { getByTestId } = render(<Component />)
+    userEvent.click(getByTestId('dropdown'))
+    await waitFor(() => expect(getByTestId('link item')).toBeInTheDocument())
+    const linkItem = getByTestId('link item')
+    const anchor = linkItem.closest('a')
+    expect(anchor).toBeInTheDocument()
+    expect(anchor).toHaveAttribute('href', 'www.google.com')
     await new Promise((resolve) => setTimeout(resolve, 0))
   })
 })
