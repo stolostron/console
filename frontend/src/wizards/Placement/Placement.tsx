@@ -186,6 +186,12 @@ export function Placement(props: {
             label={t('Value')}
             placeholder={t('Enter the value')}
             hidden={(toleration) => toleration?.operator !== 'Equal'}
+            validation={(value, item: any) => {
+              if (item?.operator === 'Equal' && !value) {
+                return t('Value is required when operator is Equal')
+              }
+              return undefined
+            }}
           />
           <WizLabelSelect
             id="toleration-effect"
