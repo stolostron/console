@@ -130,6 +130,12 @@
   gap: var(--pf-t--global--spacer--xs, 0.25rem);
 }
 
+/* Value text grows so trailing controls (reveal / pen / YAML) stay on the right. */
+.wizard-review-inline-value-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 /* Full width of the value cell so pen controls can sit at the far right. */
 .wizard-review-pen-hover-zone.wizard-review-inline-value,
 .wizard-review-pen-hover-zone--dl-group-row .wizard-review-inline-value {
@@ -138,9 +144,14 @@
   min-width: 0;
 }
 
+/* Match description-list term baseline; keep reveal + pen + arrow on one typographic line. */
+.wizard-review-pen-hover-zone--dl-group-row .wizard-review-inline-value {
+  align-items: baseline;
+}
+
 .wizard-review-pen-controls {
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   flex-shrink: 0;
   margin-left: auto;
   gap: var(--pf-t--global--spacer--xs, 0.25rem);
@@ -181,7 +192,9 @@
 
 /* One flex child so .wizard-review-inline-value gap does not sit between each match span */
 .wizard-review-inline-value > .wizard-review-find-inline-body,
-.wizard-review-inline-value > .wizard-review-find-value-with-trailing-icon {
+.wizard-review-inline-value > .wizard-review-find-value-with-trailing-icon,
+.wizard-review-inline-value-body > .wizard-review-find-inline-body,
+.wizard-review-inline-value-body > .wizard-review-find-value-with-trailing-icon {
   flex: 1 1 auto;
   min-width: 0;
 }

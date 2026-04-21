@@ -40,6 +40,8 @@ export type InputCommonProps<ValueT = any> = {
   disabledInEditMode?: boolean
   /** When true, this input is omitted from the review step navigation / registry. */
   hideFromReviewStep?: boolean
+  /** When true, the review step masks the value until the user chooses to reveal it. */
+  secret?: boolean
 
   inputValueToPathValue?: (inputValue: unknown, pathValue: unknown) => unknown
   pathValueToInputValue?: (pathValue: unknown) => unknown
@@ -179,6 +181,7 @@ export function useInput(props: InputCommonProps, options?: { isArrayInput?: boo
       value,
       label: props.label,
       error: error ?? undefined,
+      secret: props.secret,
       type: isArrayInput ? InputReviewMeta.ARRAY_INPUT : InputReviewMeta.INPUT,
     })
     bumpReviewDomTree?.()
@@ -192,6 +195,7 @@ export function useInput(props: InputCommonProps, options?: { isArrayInput?: boo
     registrationPath,
     value,
     props.label,
+    props.secret,
     error,
     isArrayInput,
     bumpReviewDomTree,

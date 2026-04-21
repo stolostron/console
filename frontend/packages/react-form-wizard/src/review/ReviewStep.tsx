@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
   Badge,
+  Button,
   DescriptionList,
   DescriptionListDescription,
   DescriptionListGroup,
@@ -17,7 +18,7 @@ import {
 } from '@patternfly/react-core'
 import { css } from '@patternfly/react-styles'
 import titleStyles from '@patternfly/react-styles/css/components/Title/title'
-import { CheckIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
+import { CheckIcon, ExclamationCircleIcon, EyeIcon, EyeSlashIcon } from '@patternfly/react-icons'
 import {
   Fragment,
   type ComponentProps,
@@ -706,6 +707,60 @@ function renderReviewInputDescriptionContent(node: WizardInputDomNode): ReactNod
   return <></>
 }
 
+function useReviewSecretMaskState(value: unknown) {
+  const [showSecrets, setShowSecrets] = useState(() => isReviewValueUnset(value))
+  const hasValue = !isReviewValueUnset(value)
+  const masked = !showSecrets && hasValue
+  const displayContent = formatReviewValue(value)
+  const maskedText = masked ? '****************' : displayContent
+  const revealButton = hasValue ? (
+    <Button
+      type="button"
+      className="wizard-review-edit-btn"
+      icon={showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
+      variant="plain"
+      onClick={(e) => {
+        e.stopPropagation()
+        setShowSecrets((s) => !s)
+      }}
+    />
+  ) : null
+  return { maskedText, revealButton }
+}
+
+function ReviewSecretMaskedValue(props: { value: unknown }) {
+  const { maskedText, revealButton } = useReviewSecretMaskState(props.value)
+  return (
+    <Split>
+      <SplitItem isFilled>{maskedText}</SplitItem>
+      {revealButton ? <SplitItem>{revealButton}</SplitItem> : null}
+    </Split>
+  )
+}
+
+function ReviewSecretPenHoverInputRow(props: {
+  inputNode: WizardInputDomNode
+  termContent: ReactNode
+  yamlVisible: boolean
+  onReviewEdit: OnReviewEditHandler
+}) {
+  const { inputNode, termContent, yamlVisible, onReviewEdit } = props
+  const { maskedText, revealButton } = useReviewSecretMaskState(inputNode.value)
+  return (
+    <ReviewPenHoverZone
+      ariaLabel="Edit"
+      descriptionListTerm={termContent}
+      descriptionListDescriptionId={inputNode.id}
+      onPenClick={() => onReviewEdit(inputNode, yamlVisible ? 'highlight' : 'navigate')}
+      onPenIconClick={() => onReviewEdit(inputNode, 'navigate')}
+      onArrowClick={yamlVisible ? () => onReviewEdit(inputNode, 'highlight') : undefined}
+      beforePenControls={revealButton}
+    >
+      <span style={{ whiteSpace: 'pre-wrap' }}>{maskedText}</span>
+    </ReviewPenHoverZone>
+  )
+}
+
 /** Base margin 32px; each nested ARRAY_INPUT adds 2px. */
 function reviewArrayInstanceMarginLeft(arrayInputNesting: number): number {
   return 32 + 2 * arrayInputNesting
@@ -848,6 +903,8 @@ function renderReviewInputRows(nodes: readonly WizardInputDomNode[], ctx: Review
             {renderReviewInputDescriptionContent(inputNode)}
             <ExclamationCircleIcon color={REVIEW_ERROR_TEXT_COLOR} />
           </span>
+        ) : inputNode.secret ? (
+          <ReviewSecretMaskedValue value={inputNode.value} />
         ) : (
           renderReviewInputDescriptionContent(inputNode)
         )
@@ -855,21 +912,37 @@ function renderReviewInputRows(nodes: readonly WizardInputDomNode[], ctx: Review
         return (
           <DescriptionListGroup key={inputNode.path} style={{ marginLeft: ctx.inputGroupMarginLeft }}>
             {onReviewEdit != null ? (
-              <ReviewPenHoverZone
-                ariaLabel="Edit"
-                descriptionListTerm={termContent}
-                descriptionListDescriptionId={inputNode.id}
-                onPenClick={() => onReviewEdit(inputNode, yamlVisible ? 'highlight' : 'navigate')}
-                onPenIconClick={() => onReviewEdit(inputNode, 'navigate')}
-                onArrowClick={yamlVisible ? () => onReviewEdit(inputNode, 'highlight') : undefined}
-              >
-                {valueContent}
-              </ReviewPenHoverZone>
+              inputNode.secret && !inputNode.error ? (
+                <ReviewSecretPenHoverInputRow
+                  inputNode={inputNode}
+                  termContent={termContent}
+                  yamlVisible={yamlVisible}
+                  onReviewEdit={onReviewEdit}
+                />
+              ) : (
+                <ReviewPenHoverZone
+                  ariaLabel="Edit"
+                  descriptionListTerm={termContent}
+                  descriptionListDescriptionId={inputNode.id}
+                  onPenClick={() => onReviewEdit(inputNode, yamlVisible ? 'highlight' : 'navigate')}
+                  onPenIconClick={() => onReviewEdit(inputNode, 'navigate')}
+                  onArrowClick={yamlVisible ? () => onReviewEdit(inputNode, 'highlight') : undefined}
+                >
+                  {valueContent}
+                </ReviewPenHoverZone>
+              )
             ) : (
               <>
                 <DescriptionListTerm>{termContent}</DescriptionListTerm>
-                <DescriptionListDescription id={inputNode.id ?? ''}>
-                  <span className="wizard-review-inline-value">{valueContent}</span>
+                <DescriptionListDescription
+                  id={inputNode.id ?? ''}
+                  style={inputNode.secret && !inputNode.error ? { whiteSpace: 'pre-wrap' } : undefined}
+                >
+                  {inputNode.secret && !inputNode.error ? (
+                    valueContent
+                  ) : (
+                    <span className="wizard-review-inline-value">{valueContent}</span>
+                  )}
                 </DescriptionListDescription>
               </>
             )}
