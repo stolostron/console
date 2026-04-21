@@ -68,21 +68,18 @@ export function CreateIdentityForm({
         }
         isRequired
       />
-
-      <ActionGroup>
-        <ActionList>
-          <ActionListGroup>
-            <ActionListItem>
-              <AcmSubmit label={saveButtonText} processingLabel={t('Saving...')} onClick={handleSubmit} />
-            </ActionListItem>
-            <ActionListItem>
-              <Button variant="link" onClick={onCancel}>
-                {cancelButtonText}
-              </Button>
-            </ActionListItem>
-          </ActionListGroup>
-        </ActionList>
-      </ActionGroup>
+      <ActionList>
+        <ActionListGroup>
+          <ActionListItem>
+            <AcmSubmit label={saveButtonText} processingLabel={t('Saving...')} onClick={handleSubmit} />
+          </ActionListItem>
+          <ActionListItem>
+            <Button variant="link" onClick={onCancel}>
+              {cancelButtonText}
+            </Button>
+          </ActionListItem>
+        </ActionListGroup>
+      </ActionList>
     </AcmForm>
   )
 }
