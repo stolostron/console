@@ -717,8 +717,10 @@ function useReviewSecretMaskState(value: unknown) {
     <Button
       type="button"
       className="wizard-review-edit-btn"
-      icon={showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
+      icon={showSecrets ? <EyeSlashIcon /> : <EyeIcon />}
       variant="plain"
+      aria-label={showSecrets ? 'Hide secret value' : 'Show secret value'}
+      aria-pressed={showSecrets}
       onClick={(e) => {
         e.stopPropagation()
         setShowSecrets((s) => !s)
