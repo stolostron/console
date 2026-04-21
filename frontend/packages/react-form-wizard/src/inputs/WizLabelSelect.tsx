@@ -1,15 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import {
-  DescriptionListDescription,
-  DescriptionListGroup,
-  DescriptionListTerm,
-  Label,
-  MenuToggle,
-  MenuToggleElement,
-  Select as PfSelect,
-} from '@patternfly/react-core'
+import { Label, MenuToggle, MenuToggleElement, Select as PfSelect } from '@patternfly/react-core'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
-import { DisplayMode } from '../contexts/DisplayModeContext'
 import { useStringContext } from '../contexts/StringContext'
 import { getSelectPlaceholder, InputCommonProps, useInput } from './Input'
 import { InputSelect, SelectListOptions } from './InputSelect'
@@ -37,9 +28,9 @@ export type WizLabelSelectProps = InputCommonProps<string> & {
  * When a value is selected, shows a simple toggle with the Label pill.
  */
 export function WizLabelSelect(props: WizLabelSelectProps) {
-  const { displayMode: mode, value, setValue, validated, hidden, id, disabled, required } = useInput(props)
+  const { value, setValue, validated, hidden, id, disabled, required } = useInput(props)
   const { noResults } = useStringContext()
-  const { label, readonly, isCreatable, footer } = props
+  const { readonly, isCreatable, footer } = props
   const placeholder = getSelectPlaceholder(props)
   const [open, setOpen] = useState(false)
   const [filteredOptions, setFilteredOptions] = useState<string[]>([])
@@ -101,18 +92,6 @@ export function WizLabelSelect(props: WizLabelSelectProps) {
   )
 
   if (hidden) return null
-
-  if (mode === DisplayMode.Details) {
-    if (!value) return null
-    return (
-      <DescriptionListGroup>
-        <DescriptionListTerm>{label}</DescriptionListTerm>
-        <DescriptionListDescription id={id}>
-          <Label variant="outline">{displayLabel}</Label>
-        </DescriptionListDescription>
-      </DescriptionListGroup>
-    )
-  }
 
   const toggle = (toggleRef: React.Ref<MenuToggleElement>) =>
     value ? (
