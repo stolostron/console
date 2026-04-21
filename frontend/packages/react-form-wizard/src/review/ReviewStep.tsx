@@ -706,6 +706,20 @@ function renderReviewInputDescriptionContent(node: WizardInputDomNode): ReactNod
   return <></>
 }
 
+/** When review value is a plain string with newlines, show each segment on its own line. */
+function renderReviewValueWithNewlines(valueContent: ReactNode): ReactNode {
+  if (typeof valueContent === 'string' && valueContent.includes('\n')) {
+    const lines = valueContent.split('\n')
+    return lines.map((line, index) => (
+      <Fragment key={index}>
+        {index > 0 ? <br /> : null}
+        {line}
+      </Fragment>
+    ))
+  }
+  return valueContent
+}
+
 /** Base margin 32px; each nested ARRAY_INPUT adds 2px. */
 function reviewArrayInstanceMarginLeft(arrayInputNesting: number): number {
   return 32 + 2 * arrayInputNesting
@@ -863,13 +877,13 @@ function renderReviewInputRows(nodes: readonly WizardInputDomNode[], ctx: Review
                 onPenIconClick={() => onReviewEdit(inputNode, 'navigate')}
                 onArrowClick={yamlVisible ? () => onReviewEdit(inputNode, 'highlight') : undefined}
               >
-                {valueContent}
+                {renderReviewValueWithNewlines(valueContent)}
               </ReviewPenHoverZone>
             ) : (
               <>
                 <DescriptionListTerm>{termContent}</DescriptionListTerm>
                 <DescriptionListDescription id={inputNode.id ?? ''}>
-                  <span className="wizard-review-inline-value">{valueContent}</span>
+                  <span className="wizard-review-inline-value">{renderReviewValueWithNewlines(valueContent)}</span>
                 </DescriptionListDescription>
               </>
             )}
