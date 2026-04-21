@@ -1,60 +1,64 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Flex } from '@patternfly/react-core'
+import { Flex, Label } from '@patternfly/react-core'
 import set from 'set-value'
 import {
   ItemContext,
   useItem,
-  WizSelect,
+  WizLabelSelect,
   WizMultiSelect,
-  WizSingleSelect,
   WizStringsInput,
   WizTextInput,
 } from '@patternfly-labs/react-form-wizard'
 import { IExpression } from '../common/resources/IMatchExpression'
 import { useTranslation } from '../../lib/acm-i18next'
+import './MatchExpression.css'
 
 export function MatchExpression(props: { labelValuesMap?: Record<string, string[]> }) {
   const labelValuesMap = props.labelValuesMap
   const { t } = useTranslation()
   return (
     <Flex style={{ rowGap: 16 }}>
-      {labelValuesMap ? (
-        <WizSingleSelect
-          label={t('Label')}
-          placeholder={t('Select the label')}
-          path="key"
-          options={Object.keys(labelValuesMap)}
-          isCreatable
+      <div className="match-expression-field" style={{ maxWidth: 200 }}>
+        {labelValuesMap ? (
+          <WizLabelSelect
+            label={t('Label')}
+            placeholder={t('Select the label')}
+            path="key"
+            options={Object.keys(labelValuesMap)}
+            isCreatable
+            required
+            onValueChange={(_value, item) => set(item as object, 'values', [])}
+          />
+        ) : (
+          <WizTextInput
+            label={t('Label')}
+            path="key"
+            required
+            onValueChange={(_value, item) => set(item as object, 'values', [])}
+          />
+        )}
+      </div>
+      <div className="match-expression-field" style={{ maxWidth: 200 }}>
+        <WizLabelSelect
+          label={t('Operator')}
+          path="operator"
+          options={[
+            { label: t('equals any of'), value: 'In' },
+            { label: t('does not equal any of'), value: 'NotIn' },
+            { label: t('exists'), value: 'Exists' },
+            { label: t('does not exist'), value: 'DoesNotExist' },
+          ]}
           required
-          onValueChange={(_value, item) => set(item as object, 'values', [])}
+          onValueChange={(value, item) => {
+            switch (value) {
+              case 'Exists':
+              case 'DoesNotExist':
+                set(item as object, 'values', undefined)
+                break
+            }
+          }}
         />
-      ) : (
-        <WizTextInput
-          label={t('Label')}
-          path="key"
-          required
-          onValueChange={(_value, item) => set(item as object, 'values', [])}
-        />
-      )}
-      <WizSelect
-        label={t('Operator')}
-        path="operator"
-        options={[
-          { label: t('equals any of'), value: 'In' },
-          { label: t('does not equal any of'), value: 'NotIn' },
-          { label: t('exists'), value: 'Exists' },
-          { label: t('does not exist'), value: 'DoesNotExist' },
-        ]}
-        required
-        onValueChange={(value, item) => {
-          switch (value) {
-            case 'Exists':
-            case 'DoesNotExist':
-              set(item, 'values', undefined)
-              break
-          }
-        }}
-      />
+      </div>
       {labelValuesMap ? (
         <ItemContext.Consumer>
           {(item: IExpression) => {
@@ -122,8 +126,8 @@ export function MatchExpressionSummary(props: { expression: IExpression }) {
   }
 
   return (
-    <div>
-      {expression?.key} {operator} {expression?.values?.map((value) => value).join(', ')}
-    </div>
+    <Label>
+      {expression?.key} {operator} {expression?.values?.join(', ')}
+    </Label>
   )
 }

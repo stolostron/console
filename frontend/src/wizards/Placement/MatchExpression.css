@@ -1,0 +1,9 @@
+.match-expression-field .pf-v6-c-menu-toggle:not(.pf-m-typeahead) {
+  height: calc(
+    var(--pf-t--global--font--size--body--default) * var(--pf-t--global--font--line-height--body) + 2 *
+      var(--pf-t--global--spacer--control--vertical--default)
+  );
+  padding-block: 0;
+  display: flex;
+  align-items: center;
+}

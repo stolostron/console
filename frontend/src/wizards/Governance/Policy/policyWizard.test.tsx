@@ -10,6 +10,7 @@ import {
 } from '../../../routes/Governance/governance.sharedMocks'
 
 import { IResource } from '@patternfly-labs/react-form-wizard'
+import { ReactNode } from 'react'
 import { BrowserRouter as Router } from 'react-router-dom-v5-compat'
 import { waitForText } from '../../../lib/test-util'
 import { Policy } from '../../../resources'
@@ -28,7 +29,7 @@ describe('ExistingTemplateName', () => {
   })
 })
 
-function TestPolicyWizard() {
+function TestPolicyWizard(props?: { yamlEditor?: () => ReactNode }) {
   return (
     <Router>
       <PolicyWizard
@@ -41,6 +42,7 @@ function TestPolicyWizard() {
         clusterSetBindings={[mockClusterSetBinding]}
         onSubmit={() => new Promise(() => {})}
         onCancel={() => {}}
+        yamlEditor={props?.yamlEditor}
       />
     </Router>
   )
@@ -284,5 +286,67 @@ describe('Policy wizard', () => {
 
     expect(input).toHaveTextContent('subscription: namespace: my-namespace')
     expect(input).not.toHaveTextContent('operatorGroup: targetNamespaces: - my-namespace')
+  })
+
+  test('default tolerations are set when creating new placement', async () => {
+    render(<TestPolicyWizard yamlEditor={() => <WizardSyncEditor />} />)
+
+    const nameTextbox = screen.getByRole('textbox', { name: /name/i })
+    userEvent.type(nameTextbox, 'test-policy')
+    screen.getByPlaceholderText(/select namespace/i).click()
+    screen.getByRole('option', { name: /argo-server-1/i }).click()
+
+    screen.getByRole('button', { name: /placement/i }).click()
+    screen.getByRole('button', { name: /new placement/i }).click()
+    await waitFor(() => screen.getByPlaceholderText(/select the cluster sets/i))
+
+    const yamlCheckBox = screen.getByRole('switch', { name: /yaml/i }) as HTMLInputElement
+    if (!yamlCheckBox.checked) {
+      userEvent.click(yamlCheckBox)
+    }
+
+    await waitFor(() => {
+      const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
+      expect(input).not.toHaveValue('')
+    })
+
+    const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
+    expect(input).toHaveTextContent('key: cluster.open-cluster-management.io/unreachable')
+    expect(input).toHaveTextContent('key: cluster.open-cluster-management.io/unavailable')
+    expect(input).toHaveTextContent('operator: Exists')
+  })
+
+  test('default tolerations persist after switching to existing and back to new placement', async () => {
+    render(<TestPolicyWizard yamlEditor={() => <WizardSyncEditor />} />)
+
+    const nameTextbox = screen.getByRole('textbox', { name: /name/i })
+    userEvent.type(nameTextbox, 'test-policy')
+    screen.getByPlaceholderText(/select namespace/i).click()
+    screen.getByRole('option', { name: /argo-server-1/i }).click()
+
+    screen.getByRole('button', { name: /placement/i }).click()
+    screen.getByRole('button', { name: /new placement/i }).click()
+    await waitFor(() => screen.getByPlaceholderText(/select the cluster sets/i))
+
+    screen.getByRole('button', { name: /existing placement/i }).click()
+    await waitFor(() => screen.getByPlaceholderText(/select the placement/i))
+
+    screen.getByRole('button', { name: /new placement/i }).click()
+    await waitFor(() => screen.getByPlaceholderText(/select the cluster sets/i))
+
+    const yamlCheckBox = screen.getByRole('switch', { name: /yaml/i }) as HTMLInputElement
+    if (!yamlCheckBox.checked) {
+      userEvent.click(yamlCheckBox)
+    }
+
+    await waitFor(() => {
+      const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
+      expect(input).not.toHaveValue('')
+    })
+
+    const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
+    expect(input).toHaveTextContent('key: cluster.open-cluster-management.io/unreachable')
+    expect(input).toHaveTextContent('key: cluster.open-cluster-management.io/unavailable')
+    expect(input).toHaveTextContent('operator: Exists')
   })
 })

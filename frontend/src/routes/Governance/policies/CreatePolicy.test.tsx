@@ -92,7 +92,7 @@ describe('Create Policy Page', () => {
 
     // new placement
     screen.getByRole('button', { name: 'New placement' }).click()
-    screen.getByRole('button', { name: /action/i }).click()
+    screen.getAllByRole('button', { name: /action/i })[0].click()
     screen.getByPlaceholderText(/select the label/i).click()
     screen.getByRole('option', { name: /cloud/i }).click()
     screen.getByPlaceholderText(/select the values/i).click()

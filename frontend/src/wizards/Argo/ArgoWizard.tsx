@@ -913,6 +913,17 @@ function ArgoWizardPlacementSection(props: {
                           kind: PlacementKind,
                           metadata: { name: '', namespace: '' },
                           spec: {
+                            tolerations: [
+                              {
+                                key: 'cluster.open-cluster-management.io/unreachable',
+                                operator: 'Exists',
+                              },
+                              {
+                                key: 'cluster.open-cluster-management.io/unavailable',
+                                operator: 'Exists',
+                              },
+                            ],
+                            numberOfClusters: 1,
                             predicates: [
                               {
                                 // ArgoCD pull model doesn't support the hub cluster
@@ -935,7 +946,19 @@ function ArgoWizardPlacementSection(props: {
                           apiVersion: PlacementApiVersion,
                           kind: PlacementKind,
                           metadata: { name: '', namespace: '' },
-                          spec: {},
+                          spec: {
+                            tolerations: [
+                              {
+                                key: 'cluster.open-cluster-management.io/unreachable',
+                                operator: 'Exists',
+                              },
+                              {
+                                key: 'cluster.open-cluster-management.io/unavailable',
+                                operator: 'Exists',
+                              },
+                            ],
+                            numberOfClusters: 1,
+                          },
                         } as IResource)
                   )
                   update(newResources)

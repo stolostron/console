@@ -23,6 +23,7 @@ import {
   PlacementApiVersion,
   PlacementKind,
   PlacementSpec,
+  Toleration,
 } from '../common/resources/IPlacement'
 import { PlacementBindingKind, PlacementBindingType } from '../common/resources/IPlacementBinding'
 import { Placement, Placements } from './Placement'
@@ -269,7 +270,14 @@ export function PlacementSelector(props: {
                 apiVersion: PlacementApiVersion,
                 kind: PlacementKind,
                 metadata: { name: placementName, namespace },
-                spec: props.defaultPlacementSpec ?? {},
+                spec: {
+                  ...props.defaultPlacementSpec,
+                  tolerations: deduplicateTolerations([
+                    { key: 'cluster.open-cluster-management.io/unreachable', operator: 'Exists' },
+                    { key: 'cluster.open-cluster-management.io/unavailable', operator: 'Exists' },
+                    ...(props.defaultPlacementSpec?.tolerations ?? []),
+                  ]),
+                },
               } as IResource)
 
               newResources.push({
@@ -360,4 +368,14 @@ function uniqueResourceName(name: string | undefined, resources: IResource[]) {
     newName = name + '-' + (counter++).toString()
   }
   return newName
+}
+
+function deduplicateTolerations(tolerations: Toleration[]): Toleration[] {
+  const seen = new Set<string>()
+  return tolerations.filter((t) => {
+    const key = `${t.key}::${t.operator ?? ''}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
 }
