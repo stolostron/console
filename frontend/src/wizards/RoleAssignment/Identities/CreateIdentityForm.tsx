@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ActionGroup, ActionList, ActionListGroup, ActionListItem, Button } from '@patternfly/react-core'
+import { ActionList, ActionListGroup, ActionListItem, Button } from '@patternfly/react-core'
 import { useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { createGroup, createUser, Group, User } from '../../../resources/rbac'
