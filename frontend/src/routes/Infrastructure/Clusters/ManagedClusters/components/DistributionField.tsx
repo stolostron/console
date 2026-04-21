@@ -57,7 +57,7 @@ export function DistributionField(props: {
     return props.cluster?.distribution?.displayVersion
   }, [props.resource, props.nodepool?.status?.version, props.cluster?.distribution?.displayVersion])
 
-  const hypershiftAvailableUpdates = useHypershiftAvailableUpdates(props?.cluster)
+  const hypershiftAvailableUpdates = useHypershiftAvailableUpdates(props?.cluster, props?.hostedCluster)
 
   const isUpdateAvailable: boolean = useMemo(() => {
     //if nodepool table

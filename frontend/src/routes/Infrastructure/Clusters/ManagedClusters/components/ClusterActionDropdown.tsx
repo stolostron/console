@@ -72,8 +72,11 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
   const localHubName = useLocalHubName()
 
   const { cluster } = props
+  const hostedCluster = hostedClusters.find(
+    (hc) => hc.metadata?.name === cluster.name && hc.metadata?.namespace === cluster.namespace
+  ) as HostedClusterK8sResource
 
-  const hypershiftAvailableUpdates = useHypershiftAvailableUpdates(cluster)
+  const hypershiftAvailableUpdates = useHypershiftAvailableUpdates(cluster, hostedCluster)
 
   const isHypershiftUpdateAvailable: boolean = useMemo(() => {
     //if managed cluster page - cluster, cluster curator and hosted cluster
@@ -533,11 +536,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         close={() => setShowHypershiftUpgradeModal(!showHypershiftUpgradeModal)}
         agents={agents}
         agentMachines={agentMachines}
-        hostedCluster={
-          hostedClusters.find(
-            (hc) => hc.metadata?.name === cluster.name && hc.metadata?.namespace === cluster.namespace
-          ) as HostedClusterK8sResource
-        }
+        hostedCluster={hostedCluster}
         availableUpdates={hypershiftAvailableUpdates}
       />
     </>
