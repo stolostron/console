@@ -12,6 +12,7 @@ export function PasteInputButton(props: {
   return (
     <Tooltip content={pasteButtonTooltip}>
       <Button
+        aria-label={pasteButtonTooltip}
         icon={<PasteIcon />}
         variant="control"
         onClick={() => {

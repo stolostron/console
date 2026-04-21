@@ -1514,6 +1514,7 @@ function PasteInputButton(props: { setValue: (value: string) => void; setShowSec
   return (
     <Tooltip content={t('Paste')}>
       <Button
+        aria-label={t('Paste')}
         icon={<PasteIcon />}
         variant="control"
         onClick={() => {
