@@ -44,6 +44,14 @@ export function WizLabelSelect(props: WizLabelSelectProps) {
   // String options for InputSelect (uses labels for display)
   const stringOptions = useMemo(() => normalizedOptions.map((opt) => opt.label), [normalizedOptions])
 
+  const labelToValue = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const opt of normalizedOptions) {
+      map.set(opt.label, opt.value)
+    }
+    return map
+  }, [normalizedOptions])
+
   useEffect(() => {
     setFilteredOptions(stringOptions)
   }, [stringOptions])
@@ -61,11 +69,8 @@ export function WizLabelSelect(props: WizLabelSelectProps) {
         setOpen(false)
         return
       }
-      // Map the display label back to the stored value
-      const match = normalizedOptions.find((opt) => opt.label === selectedLabel)
-      const selectedValue = match?.value ?? selectedLabel
+      const selectedValue = labelToValue.get(selectedLabel) ?? selectedLabel
 
-      // If the same value is clicked (via the pill close button), clear it
       if (selectedValue === value) {
         setValue(undefined)
       } else {
@@ -73,7 +78,7 @@ export function WizLabelSelect(props: WizLabelSelectProps) {
       }
       setOpen(false)
     },
-    [setValue, value, normalizedOptions]
+    [setValue, value, labelToValue]
   )
 
   const handleSetOptions = useCallback(

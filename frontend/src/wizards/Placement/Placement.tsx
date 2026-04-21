@@ -10,7 +10,6 @@ import {
   WizMultiSelect,
   WizNumberInput,
   WizTextInput,
-  WizSingleSelect,
   WizLabelSelect,
 } from '@patternfly-labs/react-form-wizard'
 import { Button, Divider, ExpandableSection, Label } from '@patternfly/react-core'
@@ -172,12 +171,15 @@ export function Placement(props: {
           collapsedPlaceholder={t('Expand to edit')}
         >
           <WizTextInput id="toleration-key" path="key" label={t('Key')} placeholder={t('Enter the key')} required />
-          <WizSingleSelect
+          <WizLabelSelect
             id="toleration-operator"
             path="operator"
             label={t('Operator')}
             placeholder={t('Select the operator')}
-            options={['Exists', 'Equal']}
+            options={[
+              { label: t('Exists'), value: 'Exists' },
+              { label: t('Equal'), value: 'Equal' },
+            ]}
             required
           />
           <WizTextInput
@@ -198,7 +200,11 @@ export function Placement(props: {
             path="effect"
             label={t('Effect')}
             placeholder={t('Select the effect')}
-            options={['NoSelect', 'PreferNoSelect', 'NoSelectIfNew']}
+            options={[
+              { label: t('NoSelect'), value: 'NoSelect' },
+              { label: t('PreferNoSelect'), value: 'PreferNoSelect' },
+              { label: t('NoSelectIfNew'), value: 'NoSelectIfNew' },
+            ]}
             helperText={t('Leave empty for all effects')}
           />
           <WizNumberInput
