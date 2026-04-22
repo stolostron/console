@@ -11,7 +11,6 @@ import useResizeObserver from '@react-hook/resize-observer'
 export type WizTextAreaProps = InputCommonProps<string> & {
   label: string
   placeholder?: string
-  secret?: boolean
   canPaste?: boolean
 }
 
