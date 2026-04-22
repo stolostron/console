@@ -10,7 +10,10 @@ import { NavigationPath } from '../NavigationPath'
 
 const contentWrapperClass = css({
   position: 'relative',
-  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+  flex: 1,
+  minHeight: 0,
 })
 
 export const LoadPluginData = (props: { children?: ReactNode }) => {
