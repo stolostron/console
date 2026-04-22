@@ -47,7 +47,12 @@ export function WizLabelSelect(props: WizLabelSelectProps) {
   const labelToValue = useMemo(() => {
     const map = new Map<string, string>()
     for (const opt of normalizedOptions) {
-      map.set(opt.label, opt.value)
+      if (process.env.NODE_ENV !== 'production' && map.has(opt.label)) {
+        console.error(`WizLabelSelect: duplicate label "${opt.label}" — only the first mapping will be used`)
+      }
+      if (!map.has(opt.label)) {
+        map.set(opt.label, opt.value)
+      }
     }
     return map
   }, [normalizedOptions])

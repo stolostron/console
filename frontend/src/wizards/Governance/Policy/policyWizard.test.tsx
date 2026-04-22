@@ -311,9 +311,12 @@ describe('Policy wizard', () => {
     })
 
     const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
-    expect(input).toHaveTextContent('key: cluster.open-cluster-management.io/unreachable')
-    expect(input).toHaveTextContent('key: cluster.open-cluster-management.io/unavailable')
-    expect(input).toHaveTextContent('operator: Exists')
+    const yamlContent = input.textContent ?? ''
+    expect(yamlContent).toContain('key: cluster.open-cluster-management.io/unreachable')
+    expect(yamlContent).toContain('key: cluster.open-cluster-management.io/unavailable')
+    expect(yamlContent).toContain('operator: Exists')
+    const tolerationMatches = yamlContent.match(/- key: cluster\.open-cluster-management\.io\//g)
+    expect(tolerationMatches).toHaveLength(2)
   })
 
   test('default tolerations persist after switching to existing and back to new placement', async () => {
@@ -345,8 +348,11 @@ describe('Policy wizard', () => {
     })
 
     const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
-    expect(input).toHaveTextContent('key: cluster.open-cluster-management.io/unreachable')
-    expect(input).toHaveTextContent('key: cluster.open-cluster-management.io/unavailable')
-    expect(input).toHaveTextContent('operator: Exists')
+    const yamlContent = input.textContent ?? ''
+    expect(yamlContent).toContain('key: cluster.open-cluster-management.io/unreachable')
+    expect(yamlContent).toContain('key: cluster.open-cluster-management.io/unavailable')
+    expect(yamlContent).toContain('operator: Exists')
+    const tolerationMatches = yamlContent.match(/- key: cluster\.open-cluster-management\.io\//g)
+    expect(tolerationMatches).toHaveLength(2)
   })
 })
