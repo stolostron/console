@@ -698,6 +698,9 @@ function formatReviewValue(value: unknown): ReactNode {
   if (typeof value === 'string') return value
   if (value === true) return ''
   if (typeof value === 'number' || typeof value === 'boolean') return String(value)
+  if (Array.isArray(value) && value.every((item) => typeof item === 'string')) {
+    return value.join(', ')
+  }
   try {
     return JSON.stringify(value)
   } catch {
