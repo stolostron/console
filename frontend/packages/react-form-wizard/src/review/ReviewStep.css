@@ -158,6 +158,10 @@
   outline-width: 0;
 }
 
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .wizard-review-edit-target-highlight {
+  outline-color: rgba(255, 190, 140, 0.28) !important;
+}
+
 .wizard-review-edit-target-highlight.wizard-review-edit-target-highlight--visible {
   outline-width: 15px;
   transition: outline-width 0.2s ease-in;
@@ -177,6 +181,10 @@
 /* Review find (fuse) match segments */
 .wizard-review-find-match {
   background-color: rgba(255, 190, 140, 0.38);
+}
+
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .wizard-review-find-match {
+  background-color: rgba(255, 190, 140, 0.28) !important;
 }
 
 /* One flex child so .wizard-review-inline-value gap does not sit between each match span */
