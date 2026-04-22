@@ -936,10 +936,7 @@ function renderReviewInputRows(nodes: readonly WizardInputDomNode[], ctx: Review
             ) : (
               <>
                 <DescriptionListTerm>{termContent}</DescriptionListTerm>
-                <DescriptionListDescription
-                  id={inputNode.id ?? ''}
-                  style={inputNode.secret && !inputNode.error ? { whiteSpace: 'pre-wrap' } : undefined}
-                >
+                <DescriptionListDescription id={inputNode.id ?? ''} style={{ whiteSpace: 'pre-wrap' }}>
                   {inputNode.secret && !inputNode.error ? (
                     valueContent
                   ) : (

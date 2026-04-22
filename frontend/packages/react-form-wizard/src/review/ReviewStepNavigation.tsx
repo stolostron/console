@@ -364,7 +364,7 @@ export function ReviewPenHoverZone({
       onKeyDown={zoneClickable ? onZoneKeyDown : undefined}
     >
       <DescriptionListTerm>{descriptionListTerm}</DescriptionListTerm>
-      <DescriptionListDescription id={descriptionListDescriptionId ?? ''}>
+      <DescriptionListDescription id={descriptionListDescriptionId ?? ''} style={{ whiteSpace: 'pre-wrap' }}>
         <span className="wizard-review-inline-value">
           <span className="wizard-review-inline-value-body">{children}</span>
           {controls}

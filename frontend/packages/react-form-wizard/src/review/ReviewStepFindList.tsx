@@ -443,7 +443,7 @@ export function ReviewStepFindList(props: ReviewStepFindListProps) {
                     ) : (
                       <>
                         <DescriptionListTerm>{termBase}</DescriptionListTerm>
-                        <DescriptionListDescription id={row.node.id ?? ''}>
+                        <DescriptionListDescription id={row.node.id ?? ''} style={{ whiteSpace: 'pre-wrap' }}>
                           <span className="wizard-review-inline-value">{valueContent}</span>
                         </DescriptionListDescription>
                       </>
