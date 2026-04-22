@@ -466,7 +466,10 @@ function renderCollapsedBadgesFromNodes(
       const collapsedInputContent = child.error ? (
         child.label ?? child.path
       ) : child.value === true ? (
-        <CheckIcon aria-hidden />
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+          <CheckIcon aria-hidden />
+          {reviewBooleanCheckCompanionText(child)}
+        </span>
       ) : (
         renderReviewInputDescriptionContent(child)
       )
@@ -710,6 +713,39 @@ function isReviewValueUnset(value: unknown): boolean {
   if (typeof value === 'string' && value === '') return true
   if (Array.isArray(value) && value.length === 0) return true
   return false
+}
+
+/** Collapsed review badge only: text beside the checkmark for boolean or unset inputs (short label, else path-derived). */
+function reviewBooleanCheckCompanionText(node: WizardInputDomNode): string {
+  const { path, label, value } = node
+  if (!(typeof value === 'boolean' || isReviewValueUnset(value))) {
+    return label ?? path
+  }
+  if (label && label.length < 32) {
+    return label
+  }
+  if (!path) {
+    return label ?? ''
+  }
+  const hashKeyMatch = path.match(/#\[([^=]+)=([^\]]+)\]\s*$/)
+  if (hashKeyMatch) {
+    return hashKeyMatch[1]!
+  }
+  const semicolonIdMatch = path.match(/;([^;=]+)=([^;]+)$/)
+  if (semicolonIdMatch) {
+    return semicolonIdMatch[2]!
+  }
+  const segments = path.split('.')
+  const lastSeg = segments[segments.length - 1] ?? path
+  if (lastSeg === 'enabled' || lastSeg === 'disabled') {
+    const parent = segments.length >= 2 ? segments[segments.length - 2]! : ''
+    const valuePart = typeof value === 'boolean' ? String(value) : ''
+    if (parent) {
+      return valuePart ? `${parent}.${lastSeg} = ${valuePart}` : `${parent}.${lastSeg}`
+    }
+    return valuePart ? `${lastSeg} = ${valuePart}` : lastSeg
+  }
+  return lastSeg
 }
 
 /** True when the review row should be omitted: no user-visible value (still show rows with errors). */
