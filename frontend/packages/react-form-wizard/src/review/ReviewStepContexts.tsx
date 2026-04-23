@@ -44,6 +44,8 @@ export type InputReviewStepMeta =
       value: unknown
       label?: string
       type: InputReviewMeta.ARRAY_INSTANCE
+      /** Nearest enclosing wizard step `id` (set when building the review DOM tree). */
+      stepId?: string
     }
   | {
       id: string
@@ -78,7 +80,11 @@ export type WizardDomTreeNode =
       children?: WizardDomTreeNode[]
     })
   | (Omit<InputOrArrayInputMeta, 'type'> & { type: InputReviewMeta.ARRAY_INPUT; children?: WizardDomTreeNode[] })
-  | (Extract<InputReviewStepMeta, { type: InputReviewMeta.ARRAY_INSTANCE }> & { children?: WizardDomTreeNode[] })
+  | (Omit<Extract<InputReviewStepMeta, { type: InputReviewMeta.ARRAY_INSTANCE }>, 'type' | 'stepId'> & {
+      type: InputReviewMeta.ARRAY_INSTANCE
+      stepId: string
+      children?: WizardDomTreeNode[]
+    })
   | (Extract<InputReviewStepMeta, { type: InputReviewMeta.GROUP }> & { children?: WizardDomTreeNode[] })
   | { children?: WizardDomTreeNode[] }
 

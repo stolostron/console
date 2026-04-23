@@ -40,7 +40,7 @@ export function buildTree(
  * `stepInputMap`. Elements without metadata are skipped as nodes; their descendants are still
  * visited so nested registered controls are not lost.
  *
- * `parentStepId` is threaded so INPUT nodes can be associated with the enclosing wizard step.
+ * `parentStepId` is threaded so INPUT and ARRAY_INSTANCE nodes can be associated with the enclosing wizard step.
  * `reviewPathPrefixSegments` accumulates ARRAY_INPUT field paths and ARRAY_INSTANCE index segments
  * along the DOM path (in order); registration code uses this for array-aware review paths.
  */
@@ -87,8 +87,8 @@ function buildReviewSubtree(
       /* ARRAY_INSTANCE: repeat-group row or similar; `path` often carries the instance index segment. */
       return [
         hasChildren
-          ? { ...props, type: InputReviewMeta.ARRAY_INSTANCE, children }
-          : { ...props, type: InputReviewMeta.ARRAY_INSTANCE },
+          ? { ...props, type: InputReviewMeta.ARRAY_INSTANCE, stepId: parentStepId, children }
+          : { ...props, type: InputReviewMeta.ARRAY_INSTANCE, stepId: parentStepId },
       ]
     }
   }

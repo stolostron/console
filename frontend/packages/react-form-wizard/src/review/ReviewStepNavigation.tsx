@@ -62,6 +62,12 @@ function isReviewInputNode(node: WizardDomTreeNode): node is WizardInputDomNode 
   return 'type' in node && node.type === InputReviewMeta.INPUT
 }
 
+function isReviewArrayInstanceNode(
+  node: WizardDomTreeNode
+): node is Extract<WizardDomTreeNode, { type: InputReviewMeta.ARRAY_INSTANCE }> {
+  return 'type' in node && node.type === InputReviewMeta.ARRAY_INSTANCE
+}
+
 /** Dot-path for `get-value` on a resource object (strip leading `kind.` when it matches the object). */
 function resourceGetPathForGetValue(target: object, normalized: string): string {
   const ik = (target as { kind?: unknown }).kind
@@ -146,9 +152,12 @@ function getReviewNodeYamlHighlightPath(node: WizardDomTreeNode): string | undef
   return node.path.replace(/;id=[^;]*$/u, '')
 }
 
-/** Wizard step id for navigating from review: explicit on INPUT / SECTION, else first descendant INPUT's `stepId`. */
+/** Wizard step id for navigating from review: explicit on INPUT / ARRAY_INSTANCE / SECTION, else first descendant INPUT's `stepId`. */
 function getReviewNodeStepId(node: WizardDomTreeNode): string | undefined {
   if (isReviewInputNode(node)) {
+    return node.stepId && node.stepId !== '' ? node.stepId : undefined
+  }
+  if (isReviewArrayInstanceNode(node)) {
     return node.stepId && node.stepId !== '' ? node.stepId : undefined
   }
   if (isReviewSectionNode(node)) {
