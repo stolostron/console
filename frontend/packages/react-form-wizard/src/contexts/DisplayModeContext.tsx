@@ -4,6 +4,7 @@ import { createContext, useContext } from 'react'
 export enum DisplayMode {
   Step,
   StepsHidden,
+  Details,
 }
 
 export const DisplayModeContext = createContext<DisplayMode>(DisplayMode.Step)

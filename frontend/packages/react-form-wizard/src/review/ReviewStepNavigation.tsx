@@ -355,6 +355,8 @@ export function ReviewPenHoverZone({
   onArrowClick,
   descriptionListTerm,
   descriptionListDescriptionId,
+  /** Rendered inside the trailing control cluster, immediately before the pen / arrow buttons. */
+  beforePenControls,
   zoneClickable = true,
 }: {
   as?: 'div' | 'span'
@@ -372,6 +374,7 @@ export function ReviewPenHoverZone({
   descriptionListTerm?: ReactNode
   /** `id` on the value cell (scroll target); same as non-pen description rows. */
   descriptionListDescriptionId?: string
+  beforePenControls?: ReactNode
   /**
    * When false, only the pen / arrow buttons activate edit; the wrapper is not clickable.
    * Use beside controls that need their own click targets (e.g. an expandable toggle).
@@ -409,8 +412,8 @@ export function ReviewPenHoverZone({
     [onPenClick]
   )
 
-  const controls = (
-    <span className="wizard-review-pen-controls">
+  const editButtons = (
+    <>
       <Button
         type="button"
         variant="plain"
@@ -438,6 +441,13 @@ export function ReviewPenHoverZone({
           <ArrowRightIcon />
         </Button>
       ) : null}
+    </>
+  )
+
+  const controls = (
+    <span className="wizard-review-pen-controls">
+      {beforePenControls}
+      {editButtons}
     </span>
   )
 
@@ -451,9 +461,9 @@ export function ReviewPenHoverZone({
       onKeyDown={zoneClickable ? onZoneKeyDown : undefined}
     >
       <DescriptionListTerm>{descriptionListTerm}</DescriptionListTerm>
-      <DescriptionListDescription id={descriptionListDescriptionId ?? ''}>
+      <DescriptionListDescription id={descriptionListDescriptionId ?? ''} style={{ whiteSpace: 'pre-wrap' }}>
         <span className="wizard-review-inline-value">
-          {children}
+          <span className="wizard-review-inline-value-body">{children}</span>
           {controls}
         </span>
       </DescriptionListDescription>

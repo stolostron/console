@@ -48,6 +48,7 @@ import {
   useStepShowValidation,
 } from './contexts/StepShowValidationProvider'
 import { StepValidationProvider, useStepHasValidationError } from './contexts/StepValidationProvider'
+import { FooterContentProvider, useFooterContent } from './contexts/FooterContentProvider'
 import { defaultStrings, StringContext, useStringContext, WizardStrings } from './contexts/StringContext'
 import {
   EditorValidationStatus,
@@ -107,29 +108,31 @@ export function Wizard(props: WizardProps & { showHeader?: boolean; showYaml?: b
                     <ShowValidationProvider>
                       <ValidationProvider>
                         <HighlightEditorPathProvider>
-                          <Drawer isExpanded={drawerExpanded} isInline>
-                            <DrawerContent panelContent={<WizardDrawer yamlEditor={props.yamlEditor} />}>
-                              <DrawerContentBody>
-                                <ItemContext.Provider value={data}>
-                                  <StringContext.Provider value={wizardStrings || defaultStrings}>
-                                    <WizardInternal
-                                      id={props.id}
-                                      reviewStorageKey={props.reviewStorageKey}
-                                      showYaml={props.showYaml}
-                                      onSubmit={props.onSubmit}
-                                      onCancel={props.onCancel}
-                                      hasButtons={props.hasButtons}
-                                      submitButtonText={props.submitButtonText}
-                                      submittingButtonText={props.submittingButtonText}
-                                      isLoading={props.isLoading}
-                                    >
-                                      {props.children}
-                                    </WizardInternal>
-                                  </StringContext.Provider>
-                                </ItemContext.Provider>
-                              </DrawerContentBody>
-                            </DrawerContent>
-                          </Drawer>
+                          <FooterContentProvider>
+                            <Drawer isExpanded={drawerExpanded} isInline>
+                              <DrawerContent panelContent={<WizardDrawer yamlEditor={props.yamlEditor} />}>
+                                <DrawerContentBody>
+                                  <ItemContext.Provider value={data}>
+                                    <StringContext.Provider value={wizardStrings || defaultStrings}>
+                                      <WizardInternal
+                                        id={props.id}
+                                        reviewStorageKey={props.reviewStorageKey}
+                                        showYaml={props.showYaml}
+                                        onSubmit={props.onSubmit}
+                                        onCancel={props.onCancel}
+                                        hasButtons={props.hasButtons}
+                                        submitButtonText={props.submitButtonText}
+                                        submittingButtonText={props.submittingButtonText}
+                                        isLoading={props.isLoading}
+                                      >
+                                        {props.children}
+                                      </WizardInternal>
+                                    </StringContext.Provider>
+                                  </ItemContext.Provider>
+                                </DrawerContentBody>
+                              </DrawerContent>
+                            </Drawer>
+                          </FooterContentProvider>
                         </HighlightEditorPathProvider>
                       </ValidationProvider>
                     </ShowValidationProvider>
@@ -344,6 +347,8 @@ function MyFooter(props: WizardFooterProps) {
     nextButtonText,
   } = useStringContext()
 
+  const footerContent = useFooterContent()
+
   if (isLastStep) {
     return (
       <div className="pf-v6-u-box-shadow-sm-top">
@@ -405,6 +410,7 @@ function MyFooter(props: WizardFooterProps) {
         <Alert title={fixValidationErrorsMsg} isInline variant="danger" />
       )}
       <WizardFooterWrapper>
+        {footerContent}
         <ActionList>
           <ActionListGroup>
             <ActionListItem>

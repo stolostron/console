@@ -1,21 +1,25 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
+  DisplayMode,
   EditMode,
   useData,
+  useDisplayMode,
   useEditMode,
   useItem,
+  useSetFooterContent,
   WizArrayInput,
   WizCheckbox,
+  WizCustomWrapper,
   WizKeyValue,
+  WizLabelSelect,
   WizMultiSelect,
   WizNumberInput,
   WizTextInput,
-  WizLabelSelect,
 } from '@patternfly-labs/react-form-wizard'
-import { Button, Divider, ExpandableSection, Label } from '@patternfly/react-core'
+import { Alert, Button, ButtonVariant, Divider, ExpandableSection, Flex, Label, Tooltip } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import get from 'get-value'
-import { Fragment, ReactNode, useMemo, useState } from 'react'
+import { Fragment, ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import set from 'set-value'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useValidation } from '../../hooks/useValidation'
@@ -24,6 +28,9 @@ import { IPlacement, PlacementKind, PlacementType, Predicate, Toleration } from 
 import { IResource } from '../common/resources/IResource'
 import { useLabelValuesMap } from '../common/useLabelValuesMap'
 import { MatchExpression, MatchExpressionCollapsed, MatchExpressionSummary } from './MatchExpression'
+import './MatchExpression.css'
+import { MatchedClustersModal } from './MatchedClustersModal'
+import { PlacementDebugState, usePlacementDebug } from './usePlacementDebug'
 
 function TolerationCollapsed() {
   const toleration = useItem() as Toleration
@@ -40,6 +47,7 @@ export function Placements(props: {
   clusters: IResource[]
   createClusterSetCallback?: () => void
   alertTitle?: string
+  showPlacementPreview?: boolean
 }) {
   const editMode = useEditMode()
   const resources = useItem() as IResource[]
@@ -82,6 +90,7 @@ export function Placements(props: {
         clusters={props.clusters}
         createClusterSetCallback={props.createClusterSetCallback}
         alertTitle={props.alertTitle}
+        showPlacementPreview={props.showPlacementPreview}
       />
     </WizArrayInput>
   )
@@ -94,17 +103,94 @@ export function Placement(props: {
   createClusterSetCallback?: () => void
   alertTitle?: string
   alertContent?: ReactNode
+  showPlacementPreview?: boolean
+  placementDebugState?: PlacementDebugState
 }) {
   const placement = useItem() as IPlacement
+  const isClusterSet = placement.spec?.clusterSets?.length
   const editMode = useEditMode()
+  const displayMode = useDisplayMode()
   const { update } = useData()
+  const [isMatchedClustersModalOpen, setIsMatchedClustersModalOpen] = useState(false)
   const [isTolerationsExpanded, setIsTolerationsExpanded] = useState(true)
+  const featureEnabled = props.showPlacementPreview === true
+  const ownsDebugUI = featureEnabled && !props.placementDebugState
+  const ownDebugState = usePlacementDebug(placement, ownsDebugUI)
+  const { matched, notMatched, totalClusters, matchedCount, error } = props.placementDebugState ?? ownDebugState
 
   const { t } = useTranslation()
   const { validateKubernetesResourceName } = useValidation()
 
+  const matchedLabel =
+    matchedCount === undefined
+      ? '-'
+      : t('{{matched}} of {{total}} clusters', { matched: matchedCount, total: totalClusters })
+
+  const setFooterContent = useSetFooterContent()
+  const openMatchedModal = useCallback(() => setIsMatchedClustersModalOpen(true), [])
+
+  useEffect(() => {
+    if (!ownsDebugUI) return
+    if (displayMode === DisplayMode.Step) {
+      setFooterContent(
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '1rem' }}>
+          <span>{t('Matched by Placement')}:</span>{' '}
+          {error ? (
+            <Tooltip content={error.message || t('An unknown error occurred.')}>
+              <Alert variant="warning" isInline isPlain title={t('Unable to determine cluster matches.')} />
+            </Tooltip>
+          ) : (
+            <Button variant={ButtonVariant.link} isInline onClick={openMatchedModal} style={{ padding: 0 }}>
+              {matchedLabel}
+            </Button>
+          )}
+        </div>
+      )
+    } else {
+      setFooterContent(undefined)
+    }
+    return () => setFooterContent(undefined)
+  }, [ownsDebugUI, displayMode, matchedLabel, error, setFooterContent, openMatchedModal, t])
+
   return (
     <Fragment>
+      {featureEnabled && (
+        <WizCustomWrapper
+          path="placement-matched-clusters"
+          label={t('Matched by Placement')}
+          value={
+            error ? (
+              t('Unable to determine cluster matches.')
+            ) : matchedCount === undefined ? (
+              '-'
+            ) : matchedCount > 0 ? (
+              <span>
+                {t('Matched by Placement')}:{' '}
+                <Button
+                  variant={ButtonVariant.link}
+                  isInline
+                  onClick={() => setIsMatchedClustersModalOpen(true)}
+                  style={{ padding: 0 }}
+                >
+                  {totalClusters === 1
+                    ? t('{{matched}} of {{total}} cluster', { matched: matchedCount, total: totalClusters })
+                    : t('{{matched}} of {{total}} clusters', { matched: matchedCount, total: totalClusters })}
+                </Button>
+              </span>
+            ) : (
+              t(
+                'No clusters match the current placement criteria. To identify available clusters, check your label expressions, tolerations, or limits.'
+              )
+            )
+          }
+          nonEditable
+          alertVariant={
+            error ? 'warning' : matchedCount === undefined ? undefined : matchedCount > 0 ? 'info' : 'warning'
+          }
+        >
+          <Fragment />
+        </WizCustomWrapper>
+      )}
       {!props.hideName && (
         <WizTextInput
           id="name"
@@ -119,6 +205,12 @@ export function Placement(props: {
           validation={validateKubernetesResourceName}
         />
       )}
+
+      {!isClusterSet && !props.namespaceClusterSetNames.length && props.alertTitle ? (
+        <Alert variant="warning" title={props.alertTitle}>
+          {props.alertContent}
+        </Alert>
+      ) : null}
 
       <WizMultiSelect
         label={t('Cluster sets')}
@@ -170,43 +262,53 @@ export function Placement(props: {
           defaultCollapsed={editMode !== EditMode.Create}
           collapsedPlaceholder={t('Expand to edit')}
         >
-          <WizTextInput id="toleration-key" path="key" label={t('Key')} placeholder={t('Enter the key')} required />
-          <WizLabelSelect
-            id="toleration-operator"
-            path="operator"
-            label={t('Operator')}
-            placeholder={t('Select the operator')}
-            options={[
-              { label: t('Exists'), value: 'Exists' },
-              { label: t('Equal'), value: 'Equal' },
-            ]}
-            required
-          />
-          <WizTextInput
-            id="toleration-value"
-            path="value"
-            label={t('Value')}
-            placeholder={t('Enter the value')}
-            hidden={(toleration) => toleration?.operator !== 'Equal'}
-            validation={(value, item: any) => {
-              if (item?.operator === 'Equal' && !value) {
-                return t('Value is required when operator is Equal')
-              }
-              return undefined
-            }}
-          />
-          <WizLabelSelect
-            id="toleration-effect"
-            path="effect"
-            label={t('Effect')}
-            placeholder={t('Select the effect')}
-            options={[
-              { label: t('NoSelect'), value: 'NoSelect' },
-              { label: t('PreferNoSelect'), value: 'PreferNoSelect' },
-              { label: t('NoSelectIfNew'), value: 'NoSelectIfNew' },
-            ]}
-            helperText={t('Leave empty for all effects')}
-          />
+          <Flex style={{ rowGap: 16 }}>
+            <div className="match-expression-field" style={{ maxWidth: 200 }}>
+              <WizTextInput id="toleration-key" path="key" label={t('Key')} placeholder={t('Enter the key')} required />
+            </div>
+            <div className="match-expression-field" style={{ maxWidth: 200 }}>
+              <WizLabelSelect
+                id="toleration-operator"
+                path="operator"
+                label={t('Operator')}
+                placeholder={t('Select the operator')}
+                options={[
+                  { label: t('Exists'), value: 'Exists' },
+                  { label: t('Equal'), value: 'Equal' },
+                ]}
+                required
+              />
+            </div>
+            <div className="match-expression-field" style={{ maxWidth: 200 }}>
+              <WizTextInput
+                id="toleration-value"
+                path="value"
+                label={t('Value')}
+                placeholder={t('Enter the value')}
+                hidden={(toleration) => toleration?.operator !== 'Equal'}
+                validation={(value, item: any) => {
+                  if (item?.operator === 'Equal' && !value) {
+                    return t('Value is required when operator is Equal')
+                  }
+                  return undefined
+                }}
+              />
+            </div>
+            <div className="match-expression-field" style={{ maxWidth: 200 }}>
+              <WizLabelSelect
+                id="toleration-effect"
+                path="effect"
+                label={t('Effect')}
+                placeholder={t('Select the effect')}
+                options={[
+                  { label: t('NoSelect'), value: 'NoSelect' },
+                  { label: t('PreferNoSelect'), value: 'PreferNoSelect' },
+                  { label: t('NoSelectIfNew'), value: 'NoSelectIfNew' },
+                ]}
+                helperText={t('Leave empty for all effects')}
+              />
+            </div>
+          </Flex>
           <WizNumberInput
             id="toleration-seconds"
             path="tolerationSeconds"
@@ -233,9 +335,19 @@ export function Placement(props: {
       />
       <WizNumberInput
         hidden={(placement) => placement.spec?.numberOfClusters === undefined}
-        label={t('Number of clusters')}
+        label={t('Limit the number of clusters selected')}
         path="spec.numberOfClusters"
       />
+
+      {featureEnabled && (
+        <MatchedClustersModal
+          isOpen={isMatchedClustersModalOpen}
+          onClose={() => setIsMatchedClustersModalOpen(false)}
+          matchedClusters={matched}
+          notMatchedClusters={notMatched}
+          totalClusters={totalClusters}
+        />
+      )}
     </Fragment>
   )
 }

@@ -9,7 +9,6 @@ import { WizFormGroup } from './WizFormGroup'
 
 export type WizTextInputProps = InputCommonProps<string> & {
   placeholder?: string
-  secret?: boolean
   canPaste?: boolean
 }
 

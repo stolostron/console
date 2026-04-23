@@ -12,6 +12,7 @@ import {
 import { IResource } from '@patternfly-labs/react-form-wizard'
 import { ReactNode } from 'react'
 import { BrowserRouter as Router } from 'react-router-dom-v5-compat'
+import { RecoilRoot } from 'recoil'
 import { waitForText } from '../../../lib/test-util'
 import { Policy } from '../../../resources'
 import { WizardSyncEditor } from '../../../routes/Governance/policies/CreatePolicy'
@@ -31,20 +32,22 @@ describe('ExistingTemplateName', () => {
 
 function TestPolicyWizard(props?: { yamlEditor?: () => ReactNode }) {
   return (
-    <Router>
-      <PolicyWizard
-        title="Testing the policy wizard"
-        namespaces={['argo-server-1']}
-        policies={[mockPolicy as IResource]}
-        placements={[mockPlacements as IResource]}
-        clusters={mockManagedClusters}
-        clusterSets={[mockClusterSet]}
-        clusterSetBindings={[mockClusterSetBinding]}
-        onSubmit={() => new Promise(() => {})}
-        onCancel={() => {}}
-        yamlEditor={props?.yamlEditor}
-      />
-    </Router>
+    <RecoilRoot>
+      <Router>
+        <PolicyWizard
+          title="Testing the policy wizard"
+          namespaces={['argo-server-1']}
+          policies={[mockPolicy as IResource]}
+          placements={[mockPlacements as IResource]}
+          clusters={mockManagedClusters}
+          clusterSets={[mockClusterSet]}
+          clusterSetBindings={[mockClusterSetBinding]}
+          onSubmit={() => new Promise(() => {})}
+          onCancel={() => {}}
+          yamlEditor={props?.yamlEditor}
+        />
+      </Router>
+    </RecoilRoot>
   )
 }
 
@@ -70,20 +73,22 @@ function TestPolicyWizardGK() {
   ]
 
   return (
-    <Router>
-      <PolicyWizard
-        title="Testing the policy wizard"
-        namespaces={['argo-server-1']}
-        policies={[mockPolicyGK as IResource]}
-        placements={[mockPlacements as IResource]}
-        clusters={mockManagedClusters}
-        clusterSets={[mockClusterSet]}
-        clusterSetBindings={[mockClusterSetBinding]}
-        onSubmit={() => new Promise(() => {})}
-        onCancel={() => {}}
-        resources={[mockPolicyGK as IResource]}
-      />
-    </Router>
+    <RecoilRoot>
+      <Router>
+        <PolicyWizard
+          title="Testing the policy wizard"
+          namespaces={['argo-server-1']}
+          policies={[mockPolicyGK as IResource]}
+          placements={[mockPlacements as IResource]}
+          clusters={mockManagedClusters}
+          clusterSets={[mockClusterSet]}
+          clusterSetBindings={[mockClusterSetBinding]}
+          onSubmit={() => new Promise(() => {})}
+          onCancel={() => {}}
+          resources={[mockPolicyGK as IResource]}
+        />
+      </Router>
+    </RecoilRoot>
   )
 }
 
@@ -101,21 +106,23 @@ function TestPolicyWizardOperatorPolicy() {
   ]
 
   return (
-    <Router>
-      <PolicyWizard
-        title="Testing the policy wizard"
-        namespaces={['argo-server-1']}
-        policies={[mockPolicyOperatorPlc as IResource]}
-        placements={[mockPlacements as IResource]}
-        clusters={mockManagedClusters}
-        clusterSets={[mockClusterSet]}
-        clusterSetBindings={[mockClusterSetBinding]}
-        onSubmit={() => new Promise(() => {})}
-        onCancel={() => {}}
-        resources={[mockPolicyOperatorPlc as IResource]}
-        yamlEditor={() => <WizardSyncEditor />}
-      />
-    </Router>
+    <RecoilRoot>
+      <Router>
+        <PolicyWizard
+          title="Testing the policy wizard"
+          namespaces={['argo-server-1']}
+          policies={[mockPolicyOperatorPlc as IResource]}
+          placements={[mockPlacements as IResource]}
+          clusters={mockManagedClusters}
+          clusterSets={[mockClusterSet]}
+          clusterSetBindings={[mockClusterSetBinding]}
+          onSubmit={() => new Promise(() => {})}
+          onCancel={() => {}}
+          resources={[mockPolicyOperatorPlc as IResource]}
+          yamlEditor={() => <WizardSyncEditor />}
+        />
+      </Router>
+    </RecoilRoot>
   )
 }
 

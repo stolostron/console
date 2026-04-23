@@ -16,6 +16,7 @@ import {
   useItem,
 } from '@patternfly-labs/react-form-wizard'
 import { useValidation } from '~/hooks/useValidation'
+import { useRecoilValue, useSharedAtoms } from '~/shared-recoil'
 import { IClusterSetBinding } from '~/wizards/common/resources/IClusterSetBinding'
 import { IPlacement, PlacementKind, PlacementType } from '~/wizards/common/resources/IPlacement'
 import { NavigationPath } from '~/NavigationPath'
@@ -123,6 +124,8 @@ function PlacementStepContent(props: {
   clusters: IResource[]
 }) {
   const { t } = useTranslation()
+  const { settingsState } = useSharedAtoms()
+  const settings = useRecoilValue(settingsState)
   const placement = useItem() as IPlacement
   const namespace = placement?.metadata?.namespace
 
@@ -143,6 +146,7 @@ function PlacementStepContent(props: {
         'ClusterSets failed to load. Verify that there is at least one ClusterSet bound to your selected namespace.'
       )}
       hideName
+      showPlacementPreview={settings.enhancedPlacement === 'enabled'}
       alertContent={
         <Button variant="link" onClick={() => window.open(NavigationPath.clusterSets)} style={{ padding: '0' }}>
           {t('Add cluster set')}

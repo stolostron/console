@@ -1,6 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
+  Alert,
   Badge,
+  Button,
   DescriptionList,
   DescriptionListDescription,
   DescriptionListGroup,
@@ -17,10 +19,11 @@ import {
 } from '@patternfly/react-core'
 import { css } from '@patternfly/react-styles'
 import titleStyles from '@patternfly/react-styles/css/components/Title/title'
-import { CheckIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
+import { CheckIcon, ExclamationCircleIcon, EyeIcon, EyeSlashIcon } from '@patternfly/react-icons'
 import {
   Fragment,
   type ComponentProps,
+  isValidElement,
   type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
@@ -349,7 +352,7 @@ function ReviewCollapsedValueBadge(props: {
   showYaml?: boolean
 }) {
   const { content, error, inputNode, onReviewEdit, showYaml } = props
-  const editable = onReviewEdit != null && inputNode != null
+  const editable = onReviewEdit != null && inputNode != null && !('nonEditable' in inputNode && inputNode.nonEditable)
   const yamlVisible = showYaml !== false
   const activateEdit = () => {
     if (inputNode != null && onReviewEdit != null) {
@@ -471,7 +474,10 @@ function renderCollapsedBadgesFromNodes(
       const collapsedInputContent = child.error ? (
         child.label ?? child.path
       ) : child.value === true ? (
-        <CheckIcon aria-hidden />
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+          <CheckIcon aria-hidden />
+          {reviewBooleanCheckCompanionText(child)}
+        </span>
       ) : (
         renderReviewInputDescriptionContent(child)
       )
@@ -703,6 +709,9 @@ function formatReviewValue(value: unknown): ReactNode {
   if (typeof value === 'string') return value
   if (value === true) return ''
   if (typeof value === 'number' || typeof value === 'boolean') return String(value)
+  if (Array.isArray(value) && value.every((item) => typeof item === 'string')) {
+    return value.join(', ')
+  }
   try {
     return JSON.stringify(value)
   } catch {
@@ -715,6 +724,39 @@ function isReviewValueUnset(value: unknown): boolean {
   if (typeof value === 'string' && value === '') return true
   if (Array.isArray(value) && value.length === 0) return true
   return false
+}
+
+/** Collapsed review badge only: text beside the checkmark for boolean or unset inputs (short label, else path-derived). */
+function reviewBooleanCheckCompanionText(node: WizardInputDomNode): string {
+  const { path, label, value } = node
+  if (!(typeof value === 'boolean' || isReviewValueUnset(value))) {
+    return label ?? path
+  }
+  if (label && label.length < 32) {
+    return label
+  }
+  if (!path) {
+    return label ?? ''
+  }
+  const hashKeyMatch = path.match(/#\[([^=]+)=([^\]]+)\]\s*$/)
+  if (hashKeyMatch) {
+    return hashKeyMatch[1]!
+  }
+  const semicolonIdMatch = path.match(/;([^;=]+)=([^;]+)$/)
+  if (semicolonIdMatch) {
+    return semicolonIdMatch[2]!
+  }
+  const segments = path.split('.')
+  const lastSeg = segments[segments.length - 1] ?? path
+  if (lastSeg === 'enabled' || lastSeg === 'disabled') {
+    const parent = segments.length >= 2 ? segments[segments.length - 2]! : ''
+    const valuePart = typeof value === 'boolean' ? String(value) : ''
+    if (parent) {
+      return valuePart ? `${parent}.${lastSeg} = ${valuePart}` : `${parent}.${lastSeg}`
+    }
+    return valuePart ? `${lastSeg} = ${valuePart}` : lastSeg
+  }
+  return lastSeg
 }
 
 /** True when the review row should be omitted: no user-visible value (still show rows with errors). */
@@ -731,6 +773,62 @@ function renderReviewInputDescriptionContent(node: WizardInputDomNode): ReactNod
     return formatReviewValue(node.value)
   }
   return <></>
+}
+
+function useReviewSecretMaskState(value: unknown) {
+  const [showSecrets, setShowSecrets] = useState(() => isReviewValueUnset(value))
+  const hasValue = !isReviewValueUnset(value)
+  const masked = !showSecrets && hasValue
+  const displayContent = formatReviewValue(value)
+  const maskedText = masked ? '****************' : displayContent
+  const revealButton = hasValue ? (
+    <Button
+      type="button"
+      className="wizard-review-edit-btn"
+      icon={showSecrets ? <EyeSlashIcon /> : <EyeIcon />}
+      variant="plain"
+      aria-label={showSecrets ? 'Hide secret value' : 'Show secret value'}
+      aria-pressed={showSecrets}
+      onClick={(e) => {
+        e.stopPropagation()
+        setShowSecrets((s) => !s)
+      }}
+    />
+  ) : null
+  return { maskedText, revealButton }
+}
+
+function ReviewSecretMaskedValue(props: { value: unknown }) {
+  const { maskedText, revealButton } = useReviewSecretMaskState(props.value)
+  return (
+    <Split>
+      <SplitItem isFilled>{maskedText}</SplitItem>
+      {revealButton ? <SplitItem>{revealButton}</SplitItem> : null}
+    </Split>
+  )
+}
+
+function ReviewSecretPenHoverInputRow(props: {
+  inputNode: WizardInputDomNode
+  termContent: ReactNode
+  yamlVisible: boolean
+  onReviewEdit: OnReviewEditHandler
+}) {
+  const { inputNode, termContent, yamlVisible, onReviewEdit } = props
+  const { maskedText, revealButton } = useReviewSecretMaskState(inputNode.value)
+  return (
+    <ReviewPenHoverZone
+      ariaLabel="Edit"
+      descriptionListTerm={termContent}
+      descriptionListDescriptionId={inputNode.id}
+      onPenClick={() => onReviewEdit(inputNode, yamlVisible ? 'highlight' : 'navigate')}
+      onPenIconClick={() => onReviewEdit(inputNode, 'navigate')}
+      onArrowClick={yamlVisible ? () => onReviewEdit(inputNode, 'highlight') : undefined}
+      beforePenControls={revealButton}
+    >
+      <span style={{ whiteSpace: 'pre-wrap' }}>{maskedText}</span>
+    </ReviewPenHoverZone>
+  )
 }
 
 /** Base margin 32px; each nested ARRAY_INPUT adds 2px. */
@@ -875,28 +973,43 @@ function renderReviewInputRows(nodes: readonly WizardInputDomNode[], ctx: Review
             {renderReviewInputDescriptionContent(inputNode)}
             <ExclamationCircleIcon color={REVIEW_ERROR_TEXT_COLOR} />
           </span>
+        ) : inputNode.secret ? (
+          <ReviewSecretMaskedValue value={inputNode.value} />
         ) : (
           renderReviewInputDescriptionContent(inputNode)
         )
         const yamlVisible = ctx.showYaml !== false
         return (
           <DescriptionListGroup key={inputNode.path} style={{ marginLeft: ctx.inputGroupMarginLeft }}>
-            {onReviewEdit != null ? (
-              <ReviewPenHoverZone
-                ariaLabel="Edit"
-                descriptionListTerm={termContent}
-                descriptionListDescriptionId={inputNode.id}
-                onPenClick={() => onReviewEdit(inputNode, yamlVisible ? 'highlight' : 'navigate')}
-                onPenIconClick={() => onReviewEdit(inputNode, 'navigate')}
-                onArrowClick={yamlVisible ? () => onReviewEdit(inputNode, 'highlight') : undefined}
-              >
-                {valueContent}
-              </ReviewPenHoverZone>
+            {onReviewEdit != null && !inputNode.nonEditable ? (
+              inputNode.secret && !inputNode.error ? (
+                <ReviewSecretPenHoverInputRow
+                  inputNode={inputNode}
+                  termContent={termContent}
+                  yamlVisible={yamlVisible}
+                  onReviewEdit={onReviewEdit}
+                />
+              ) : (
+                <ReviewPenHoverZone
+                  ariaLabel="Edit"
+                  descriptionListTerm={termContent}
+                  descriptionListDescriptionId={inputNode.id}
+                  onPenClick={() => onReviewEdit(inputNode, yamlVisible ? 'highlight' : 'navigate')}
+                  onPenIconClick={() => onReviewEdit(inputNode, 'navigate')}
+                  onArrowClick={yamlVisible ? () => onReviewEdit(inputNode, 'highlight') : undefined}
+                >
+                  {valueContent}
+                </ReviewPenHoverZone>
+              )
             ) : (
               <>
                 <DescriptionListTerm>{termContent}</DescriptionListTerm>
-                <DescriptionListDescription id={inputNode.id ?? ''}>
-                  <span className="wizard-review-inline-value">{valueContent}</span>
+                <DescriptionListDescription id={inputNode.id ?? ''} style={{ whiteSpace: 'pre-wrap' }}>
+                  {inputNode.secret && !inputNode.error ? (
+                    valueContent
+                  ) : (
+                    <span className="wizard-review-inline-value">{valueContent}</span>
+                  )}
                 </DescriptionListDescription>
               </>
             )}
@@ -918,8 +1031,25 @@ function renderReviewNodeSequence(
   while (i < nodes.length) {
     const n = nodes[i]!
     if (isReviewInputNode(n)) {
+      // Alert-variant inputs render as standalone Alerts, not description-list rows
+      if (n.alertVariant) {
+        const title =
+          typeof n.value === 'string' ? n.value : isValidElement(n.value) ? n.value : formatReviewValue(n.value)
+        out.push(
+          <Alert
+            key={`alert-${n.path}`}
+            variant={n.alertVariant}
+            title={title}
+            isInline
+            style={{ marginLeft: ctx.inputGroupMarginLeft }}
+          />
+        )
+        precedingDlGroup = false
+        i++
+        continue
+      }
       const run: WizardInputDomNode[] = []
-      while (i < nodes.length && isReviewInputNode(nodes[i]!)) {
+      while (i < nodes.length && isReviewInputNode(nodes[i]!) && !(nodes[i] as WizardInputDomNode).alertVariant) {
         run.push(nodes[i] as WizardInputDomNode)
         i++
       }

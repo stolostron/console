@@ -11,22 +11,25 @@ import {
 import { PolicySetWizard } from './PolicySetWizard'
 import { IResource } from '@patternfly-labs/react-form-wizard'
 import { BrowserRouter as Router } from 'react-router-dom-v5-compat'
+import { RecoilRoot } from 'recoil'
 
 function TestPolicySetWizard() {
   return (
-    <Router>
-      <PolicySetWizard
-        title="Testing the policy set wizard"
-        namespaces={['argo-server-1']}
-        policies={[mockPolicy as IResource]}
-        placements={[mockPlacements as IResource]}
-        clusters={mockManagedClusters}
-        clusterSets={[mockClusterSet]}
-        clusterSetBindings={[mockClusterSetBinding]}
-        onSubmit={() => new Promise(() => {})}
-        onCancel={() => {}}
-      />
-    </Router>
+    <RecoilRoot>
+      <Router>
+        <PolicySetWizard
+          title="Testing the policy set wizard"
+          namespaces={['argo-server-1']}
+          policies={[mockPolicy as IResource]}
+          placements={[mockPlacements as IResource]}
+          clusters={mockManagedClusters}
+          clusterSets={[mockClusterSet]}
+          clusterSetBindings={[mockClusterSetBinding]}
+          onSubmit={() => new Promise(() => {})}
+          onCancel={() => {}}
+        />
+      </Router>
+    </RecoilRoot>
   )
 }
 

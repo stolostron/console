@@ -26,6 +26,10 @@ export type WizCustomWrapperInputProps = WizCustomWrapperBase & {
   id?: string
   label?: string
   value: ReactNode
+  /** When true, the review row omits the edit pen — used for computed / read-only values. */
+  nonEditable?: boolean
+  /** When set, the review row renders as a PatternFly Alert instead of a description-list entry. */
+  alertVariant?: 'info' | 'warning' | 'danger' | 'success'
   inputValueToPathValue?: (inputValue: unknown, pathValue: unknown) => unknown
 }
 
@@ -42,6 +46,8 @@ export function WizCustomWrapper(props: WizCustomWrapperProps) {
   const isGroup = props.type === InputReviewMeta.GROUP
   const { path, id: idProp, label, children } = props
   const value = isGroup ? undefined : props.value
+  const nonEditable = isGroup ? undefined : props.nonEditable
+  const alertVariant = isGroup ? undefined : props.alertVariant
   const inputValueToPathValue = isGroup ? undefined : props.inputValueToPathValue
 
   const hidden = useInputHidden(props)
@@ -82,11 +88,25 @@ export function WizCustomWrapper(props: WizCustomWrapperProps) {
         label,
         error: undefined,
         type: InputReviewMeta.INPUT,
+        nonEditable,
+        alertVariant,
       })
     }
     bumpReviewDomTree?.()
     return () => stepInputsRegistry.unregister(id)
-  }, [stepInputsRegistry, currentStepId, hidden, id, registrationPath, value, label, bumpReviewDomTree, isGroup])
+  }, [
+    stepInputsRegistry,
+    currentStepId,
+    hidden,
+    id,
+    registrationPath,
+    value,
+    label,
+    nonEditable,
+    alertVariant,
+    bumpReviewDomTree,
+    isGroup,
+  ])
 
   return <div id={id}>{children}</div>
 }

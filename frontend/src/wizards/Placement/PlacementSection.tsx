@@ -1,6 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Button, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import {
+  Alert,
+  Button,
+  ButtonVariant,
+  Label,
+  LabelGroup,
+  ToggleGroup,
+  ToggleGroupItem,
+  Tooltip,
+} from '@patternfly/react-core'
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import {
   WizDetailsHidden,
   EditMode,
@@ -13,6 +22,9 @@ import {
   useItem,
   useValidate,
   Sync,
+  useSetFooterContent,
+  DisplayMode,
+  useDisplayMode,
 } from '@patternfly-labs/react-form-wizard'
 
 import { IResource } from '../common/resources/IResource'
@@ -30,6 +42,9 @@ import { Placement, Placements } from './Placement'
 import { PlacementBindings } from './PlacementBinding'
 import { useTranslation } from '../../lib/acm-i18next'
 import { NavigationPath } from '../../NavigationPath'
+import { usePlacementDebug } from './usePlacementDebug'
+import { MatchedClustersModal } from './MatchedClustersModal'
+import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 
 export function PlacementSection(props: {
   bindingSubjectKind: string
@@ -47,6 +62,10 @@ export function PlacementSection(props: {
   const { update } = useData()
   const resources = useItem() as IResource[]
   const editMode = useEditMode()
+  const displayMode = useDisplayMode()
+  const { settingsState } = useSharedAtoms()
+  const settings = useRecoilValue(settingsState)
+  const [isMatchedClustersModalOpen, setIsMatchedClustersModalOpen] = useState(false)
 
   const [placementCount, setPlacementCount] = useState(0)
   const [placementBindingCount, setPlacementBindingCount] = useState(0)
@@ -141,6 +160,60 @@ export function PlacementSection(props: {
     setHasInputs()
   }, [setHasInputs])
 
+  // Calculate matched clusters for the current placement
+  const currentPlacement = useMemo(() => {
+    return resources?.find((resource) => resource.kind === PlacementKind) as IPlacement | undefined
+  }, [resources])
+
+  const debugState = usePlacementDebug(currentPlacement, settings.enhancedPlacement === 'enabled')
+  const { matched, notMatched, matchedCount, totalClusters, error } = debugState
+
+  const setFooterContent = useSetFooterContent()
+  const openMatchedModal = useCallback(() => setIsMatchedClustersModalOpen(true), [])
+
+  useEffect(() => {
+    if (
+      settings.enhancedPlacement === 'enabled' &&
+      placementCount === 1 &&
+      currentPlacement &&
+      displayMode === DisplayMode.Step
+    ) {
+      const matchedLabel =
+        matchedCount === undefined
+          ? '-'
+          : t('{{matched}} of {{total}} clusters', { matched: matchedCount, total: totalClusters })
+
+      setFooterContent(
+        <div style={{ padding: '0 1rem 1rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+          <span>{t('Matched by Placement')}:</span>{' '}
+          {error ? (
+            <Tooltip content={error.message || t('An unknown error occurred.')}>
+              <Alert variant="warning" isInline isPlain title={t('Unable to determine cluster matches.')} />
+            </Tooltip>
+          ) : (
+            <Button variant={ButtonVariant.link} isInline onClick={openMatchedModal} style={{ padding: 0 }}>
+              {matchedLabel}
+            </Button>
+          )}
+        </div>
+      )
+    } else {
+      setFooterContent(undefined)
+    }
+    return () => setFooterContent(undefined)
+  }, [
+    settings.enhancedPlacement,
+    placementCount,
+    currentPlacement,
+    displayMode,
+    matchedCount,
+    totalClusters,
+    error,
+    setFooterContent,
+    openMatchedModal,
+    t,
+  ])
+
   if (isAdvanced) {
     return (
       <Fragment>
@@ -150,6 +223,7 @@ export function PlacementSection(props: {
             clusterSetBindings={props.existingClusterSetBindings}
             bindingKind={props.bindingSubjectKind}
             clusters={props.clusters}
+            showPlacementPreview={settings.enhancedPlacement === 'enabled'}
           />
         ) : null}
         <PlacementBindings
@@ -211,6 +285,8 @@ export function PlacementSection(props: {
                   {t('Add cluster set')}
                 </Button>
               }
+              showPlacementPreview={settings.enhancedPlacement === 'enabled'}
+              placementDebugState={debugState}
             />
           </WizItemSelector>
         </Fragment>
@@ -226,6 +302,94 @@ export function PlacementSection(props: {
           />
         </WizItemSelector>
       )}
+
+      {/* Review step content */}
+      {settings.enhancedPlacement === 'enabled' &&
+        displayMode !== DisplayMode.Step &&
+        placementCount === 1 &&
+        currentPlacement && (
+          <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {/* Placement info alert */}
+            {error ? (
+              <Tooltip content={error.message || t('An unknown error occurred.')}>
+                <Alert variant="warning" isInline isPlain title={t('Unable to determine cluster matches.')} />
+              </Tooltip>
+            ) : (
+              matchedCount !== undefined && (
+                <Alert
+                  variant={matchedCount > 0 ? 'info' : 'warning'}
+                  isInline
+                  title={
+                    matchedCount > 0
+                      ? t('{{matched}} of {{total}} clusters matched by placement', {
+                          matched: matchedCount,
+                          total: totalClusters,
+                        })
+                      : t(
+                          'No clusters match the current placement criteria. To identify available clusters, check your label expressions, tolerations, or limits.'
+                        )
+                  }
+                />
+              )
+            )}
+
+            {/* Label expressions and tolerations */}
+            {(currentPlacement.spec?.predicates?.[0]?.requiredClusterSelector?.labelSelector?.matchExpressions
+              ?.length ||
+              currentPlacement.spec?.tolerations?.length) && (
+              <div>
+                <h4 style={{ marginBottom: '0.5rem' }}>{t('Label expressions and tolerations')}</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {/* Label expressions */}
+                  {currentPlacement.spec?.predicates?.[0]?.requiredClusterSelector?.labelSelector?.matchExpressions
+                    ?.length && (
+                    <div>
+                      <strong>{t('Label expressions')}:</strong>
+                      <LabelGroup style={{ marginTop: '0.25rem' }}>
+                        {currentPlacement.spec.predicates[0].requiredClusterSelector.labelSelector.matchExpressions.map(
+                          (expr, idx) => (
+                            <Fragment key={idx}>
+                              <Label>{`${expr.key} ${expr.operator}`}</Label>
+                              {expr.values && expr.values.length > 0 && <Label>{expr.values.join(', ')}</Label>}
+                            </Fragment>
+                          )
+                        )}
+                      </LabelGroup>
+                    </div>
+                  )}
+
+                  {/* Tolerations */}
+                  {currentPlacement.spec?.tolerations?.length && (
+                    <div>
+                      <strong>{t('Tolerations')}:</strong>
+                      <LabelGroup style={{ marginTop: '0.25rem' }}>
+                        {currentPlacement.spec.tolerations.map((toleration, idx) => (
+                          <Fragment key={idx}>
+                            <Label>{toleration.key}</Label>
+                            <Label>{toleration.operator || t('Exists')}</Label>
+                            {toleration.value && <Label>{toleration.value}</Label>}
+                            {toleration.effect && <Label>{toleration.effect}</Label>}
+                            {toleration.tolerationSeconds != null && (
+                              <Label>{`${toleration.tolerationSeconds}s`}</Label>
+                            )}
+                          </Fragment>
+                        ))}
+                      </LabelGroup>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+      <MatchedClustersModal
+        isOpen={isMatchedClustersModalOpen}
+        onClose={() => setIsMatchedClustersModalOpen(false)}
+        matchedClusters={matched}
+        notMatchedClusters={notMatched}
+        totalClusters={totalClusters}
+      />
     </Section>
   )
 }

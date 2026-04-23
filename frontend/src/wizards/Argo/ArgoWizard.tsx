@@ -30,7 +30,7 @@ import { useValidation } from '../../hooks/useValidation'
 import { useWizardStrings } from '../../lib/wizardStrings'
 import { NavigationPath } from '../../NavigationPath'
 import { ApplicationSetKind, GitOpsCluster, Secret } from '../../resources'
-import { useSharedSelectors } from '../../shared-recoil'
+import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../shared-recoil'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
 import { IPlacement, PlacementApiVersion, PlacementKind, PlacementType } from '../common/resources/IPlacement'
 import { IResource } from '../common/resources/IResource'
@@ -871,6 +871,8 @@ function ArgoWizardPlacementSection(props: {
   isPullModel?: boolean
 }) {
   const { t } = useTranslation()
+  const { settingsState } = useSharedAtoms()
+  const settings = useRecoilValue(settingsState)
   const resources = useItem() as IResource[]
   const editMode = useEditMode()
   const hasPlacement = resources.find((r) => r.kind === PlacementKind) !== undefined
@@ -991,6 +993,7 @@ function ArgoWizardPlacementSection(props: {
                 {t('Add cluster set')}
               </Button>
             }
+            showPlacementPreview={settings.enhancedPlacement === 'enabled'}
           />
         </WizItemSelector>
       ) : (
