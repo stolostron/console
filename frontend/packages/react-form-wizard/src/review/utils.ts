@@ -145,3 +145,30 @@ export function horizontalTermWidthModifierForInputRun(
   }
   return maxLen < 64 ? REVIEW_HORIZONTAL_TERM_WIDTH_COMPACT : REVIEW_HORIZONTAL_TERM_WIDTH_WIDE
 }
+
+/** For each whitespace-delimited word in `label`, if it contains `/`, drop the prefix through the first `/`. */
+function simplifyLabelWordSlashes(label: string): string {
+  return label.replace(/\S+/g, (word) => {
+    const i = word.indexOf('/')
+    if (i === -1) return word
+    return word.slice(i + 1)
+  })
+}
+
+/**
+ * Returns a deep copy of `roots` with the same shape, but every `label` simplified per
+ * {@link simplifyLabelWordSlashes}. Does not mutate the input trees.
+ */
+export function simplifyLabels(roots: readonly WizardDomTreeNode[]): WizardDomTreeNode[] {
+  return roots.map(simplifyLabelsInNode)
+}
+
+function simplifyLabelsInNode(node: WizardDomTreeNode): WizardDomTreeNode {
+  const children = node.children?.map(simplifyLabelsInNode)
+  const next = children !== undefined ? { ...node, children } : node
+
+  if ('label' in next && next.label !== undefined) {
+    return { ...next, label: simplifyLabelWordSlashes(next.label) }
+  }
+  return next
+}

@@ -238,21 +238,28 @@ const scrollToChangeDecoration = (editor: editorTypes.IStandaloneCodeEditor, err
         editor.revealLineInCenter(errorLine)
       })
     } else if (decorations.length) {
-      // if visible range doesn't show any scroll-to decorations, scroll to the first one
-      const scrollToDecorations = decorations.filter(
-        (decoration) =>
-          decoration.options.linesDecorationsClassName === 'insertedLineDecoration' ||
-          decoration.options.className === 'syncEditorYamlHighlight'
+      const yamlHighlightDecorations = decorations.filter(
+        (decoration) => decoration.options.className === 'syncEditorYamlHighlight'
       )
-      if (
-        scrollToDecorations.length &&
-        !scrollToDecorations.some((decoration) => {
-          return visibleRange.containsPosition(decoration?.range.getStartPosition())
-        })
-      ) {
+      if (yamlHighlightDecorations.length) {
         setTimeout(() => {
-          editor.revealLineInCenter(scrollToDecorations[0]?.range.getStartPosition()?.lineNumber)
+          editor.revealLineInCenter(yamlHighlightDecorations[0]?.range.getStartPosition()?.lineNumber)
         })
+      } else {
+        // if visible range doesn't show any inserted-line decorations, scroll to the first one
+        const insertedLineDecorations = decorations.filter(
+          (decoration) => decoration.options.linesDecorationsClassName === 'insertedLineDecoration'
+        )
+        if (
+          insertedLineDecorations.length &&
+          !insertedLineDecorations.some((decoration) => {
+            return visibleRange.containsPosition(decoration?.range.getStartPosition())
+          })
+        ) {
+          setTimeout(() => {
+            editor.revealLineInCenter(insertedLineDecorations[0]?.range.getStartPosition()?.lineNumber)
+          })
+        }
       }
     }
   }

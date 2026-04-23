@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Button, DescriptionListDescription, DescriptionListTerm, useWizardContext } from '@patternfly/react-core'
 import { ArrowRightIcon, PenIcon } from '@patternfly/react-icons'
+import get from 'get-value'
 import {
   type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
@@ -10,6 +11,7 @@ import {
 } from 'react'
 import { useHighlightEditorPath } from './ReviewStepContexts'
 import { InputReviewMeta, type WizardDomTreeNode } from './ReviewStepContexts'
+import { useItem } from '../contexts/ItemContext'
 
 /** Pen / row click: go to step and scroll; arrow: set YAML editor highlight path only. */
 export type ReviewEditIntent = 'navigate' | 'highlight'
@@ -28,22 +30,31 @@ const REVIEW_EDIT_TARGET_HIGHLIGHT_AUTO_DISMISS_MS = 2000
 
 const reviewEditHighlightTeardownByEl = new WeakMap<Element, () => void>()
 
+/** Trailing wizard path annotation, e.g. `…#["CreateNamespace=true"]` (see ReviewStepFindList display notes). */
+const YAML_PATH_HASH_BRACKET_SUFFIX = /#\["([^"]*)"\]$/u
+
 export function useReviewEditHandler(): OnReviewEditHandler {
+  const resources = useItem()
   const { goToStepById } = useWizardContext()
   const { setHighlightEditorPath } = useHighlightEditorPath()
   return useCallback<OnReviewEditHandler>(
     (node, intent = 'navigate') => {
-      const yamlPath = getReviewNodeYamlHighlightPath(node)
+      // highlight yaml in editor
       if (intent === 'highlight') {
-        if (yamlPath !== undefined) setHighlightEditorPath(yamlPath)
-        return
+        const yamlPath = getReviewNodeYamlHighlightPath(node)
+        if (yamlPath !== undefined && yamlPathBelongsToItem(yamlPath, resources)) {
+          setHighlightEditorPath(yamlPath)
+          return
+        }
+        // if highlight yaml fails, do link back to controls
       }
+      // link back to controls
       const stepId = getReviewNodeStepId(node)
       const domId = getReviewScrollTargetDomId(node)
       if (stepId) goToStepById(stepId)
       if (domId) scrollReviewEditTargetIntoView(domId)
     },
-    [goToStepById, setHighlightEditorPath]
+    [goToStepById, resources, setHighlightEditorPath]
   )
 }
 
@@ -51,10 +62,82 @@ function isReviewInputNode(node: WizardDomTreeNode): node is WizardInputDomNode 
   return 'type' in node && node.type === InputReviewMeta.INPUT
 }
 
+/** Dot-path for `get-value` on a resource object (strip leading `kind.` when it matches the object). */
+function resourceGetPathForGetValue(target: object, normalized: string): string {
+  const ik = (target as { kind?: unknown }).kind
+  if (ik == null || String(ik) === '') return normalized
+  const k = String(ik)
+  if (normalized === k) return ''
+  if (normalized.startsWith(`${k}.`)) return normalized.slice(k.length + 1)
+  return normalized
+}
+
+function bracketAnnotationKey(inner: string): string {
+  const eq = inner.indexOf('=')
+  return eq >= 0 ? inner.slice(0, eq) : inner
+}
+
+const NON_ALPHANUMERIC = /[^a-zA-Z0-9]/u
+
+/** `value` is `key` or `key` followed by a boundary (next char not alphanumeric). */
+function arrayStringStartsWithKeyAtNonAlphanumericBoundary(value: string, key: string): boolean {
+  if (!value.startsWith(key)) return false
+  if (value.length === key.length) return true
+  return NON_ALPHANUMERIC.test(value[key.length]!)
+}
+
+function yamlPathValueBelongsToTarget(target: object, normalized: string): boolean {
+  const resourcePath = resourceGetPathForGetValue(target, normalized)
+  if (resourcePath === '') return true
+
+  const m = resourcePath.match(YAML_PATH_HASH_BRACKET_SUFFIX)
+  const pathWasAppended = m !== null
+  const basePath = pathWasAppended ? resourcePath.slice(0, m.index) : resourcePath
+
+  const got = get(target, basePath)
+  if (got === undefined) return false
+
+  if (pathWasAppended && Array.isArray(got)) {
+    const key = bracketAnnotationKey(m[1])
+    if (key === '') return false
+    return got.some((el) => typeof el === 'string' && arrayStringStartsWithKeyAtNonAlphanumericBoundary(el, key))
+  }
+
+  return true
+}
+
 function isReviewSectionNode(
   node: WizardDomTreeNode
 ): node is Extract<WizardDomTreeNode, { type: InputReviewMeta.SECTION }> {
   return 'type' in node && node.type === InputReviewMeta.SECTION
+}
+
+/**
+ * Whether `yamlPath` targets the current item / one of its resources.
+ * Aligns with SyncEditor highlight parsing: first `.` segment is resource `kind` when present.
+ */
+function yamlPathBelongsToItem(yamlPath: string, item: unknown): boolean {
+  const clean = yamlPath.replace(/;id=[^;]*$/u, '').trim()
+  if (!clean) return false
+  const normalized = clean.replace(/\\\./g, '.')
+  const firstDot = normalized.indexOf('.')
+  const kindHead = firstDot === -1 ? normalized : normalized.slice(0, firstDot)
+
+  let target: unknown = item
+  if (Array.isArray(item)) {
+    target = item.find((res) => {
+      if (!res || typeof res !== 'object') return false
+      const rk = (res as { kind?: unknown }).kind
+      return rk != null && String(rk) !== '' && String(rk) === kindHead
+    })
+    if (!target) return false
+  }
+
+  if (target && typeof target === 'object') {
+    return yamlPathValueBelongsToTarget(target as object, normalized)
+  }
+
+  return false
 }
 
 /** Dot path for YAML editor highlight: matches review registration path without `;id=` suffix. */
