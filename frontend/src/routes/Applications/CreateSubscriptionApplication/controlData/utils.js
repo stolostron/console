@@ -16,7 +16,6 @@ import { getGitChannelBranches, getGitChannelPaths } from '../../../../resources
 import { getControlByID } from '../../../../lib/temptifly-utils'
 import SharedResourceWarning, { RESOURCE_TYPES } from '../components/SharedResourceWarning'
 
-const existingRuleCheckbox = 'existingrule-checkbox'
 const specPathname = 'spec.pathname'
 
 export const getUniqueChannelName = (channelPath, groupControlData) => {
@@ -101,7 +100,7 @@ export const findOriginalChannelControl = (globalControl, channelName, nameContr
 export const updateChannelControls = (urlControl, globalControl, setLoadingState) => {
   getGitBranches(_.get(urlControl, 'groupControlData'), setLoadingState)
 
-  //update existing placement rule section when user changes the namespace
+  // update existing placement section when the user changes the namespace
   const nsControl = globalControl.find(({ id: idCtrl }) => idCtrl === 'namespace')
   const { active, availableData, groupControlData } = urlControl
   const pathData = availableData && availableData[active]
@@ -227,37 +226,38 @@ export const updateChannelControls = (urlControl, globalControl, setLoadingState
   return globalControl
 }
 
-// when namespace changes, need to go through all placement rule sections to unset
-// any control set to an existing placement rule since it might not exist in new namespace
+// when namespace changes, clear any existing placement selections because
+// they might not exist in the new namespace
 export const updateControlsForNS = (initiatingControl, nsControl, globalControl) => {
   // for every radio group of placement selections
   const controlList = getExistingPRControlsSection(initiatingControl, globalControl)
   controlList.forEach((control) => {
-    // if user selected an existing rule
-    const existingRuleControl = _.get(control, 'placementrulecombo')
-    const existingruleCheckbox = _.get(control, existingRuleCheckbox)
-    const selectedRuleNameControl = _.get(control, 'selectedRuleName')
-    if (existingruleCheckbox && existingruleCheckbox.active) {
-      // unselect existing radio
-      _.set(existingruleCheckbox, 'active', true)
+    // if the user selected an existing placement
+    const existingRuleControl = _.get(control, 'placementcombo')
+    const existingPlacementCheckboxControl = _.get(control, 'existing-placement-checkbox')
+    const selectedPlacementNameControl = _.get(control, 'selectedPlacementName')
+    if (existingPlacementCheckboxControl && existingPlacementCheckboxControl.active) {
+      // clear existing placement selection and return to label-based placement mode
+      _.set(existingPlacementCheckboxControl, 'active', false)
       _.set(existingRuleControl, 'active', '')
-      if (selectedRuleNameControl) {
-        _.set(selectedRuleNameControl, 'active', '')
+      if (selectedPlacementNameControl) {
+        _.set(selectedPlacementNameControl, 'active', '')
       }
-      _.set(existingRuleControl, 'opaque', false)
+      _.set(existingRuleControl, 'opaque', true)
+      _.set(existingRuleControl, 'validation.required', false)
 
       // select labels instead
       const clusterSelectorControl = _.get(control, 'clusterSelector')
-      _.set(clusterSelectorControl, 'active.mode', false)
+      _.set(clusterSelectorControl, 'active.mode', true)
       clusterSelectorControl.active.clusterLabelsListID = 1
       clusterSelectorControl.active.clusterLabelsList = [{ id: 0, labelName: '', labelValue: '', validValue: false }]
       clusterSelectorControl.showData = []
     }
 
-    // also tell placement rule combo to load existing rules for this namespace
-    const existingPlacementRuleCombo = _.get(control, 'placementrulecombo')
-    if (existingPlacementRuleCombo) {
-      _.set(existingPlacementRuleCombo, 'isLoaded', false)
+    // also tell the placement combo to reload existing placements for this namespace
+    const existingPlacementCombo = _.get(control, 'placementcombo')
+    if (existingPlacementCombo) {
+      _.set(existingPlacementCombo, 'isLoaded', false)
     }
   })
 
@@ -344,7 +344,7 @@ export const getGitBranches = async (groupControlData, setLoadingState) => {
 }
 
 export const getExistingPRControlsSection = (initiatingControl, control) => {
-  //returns the existing placement rule options for the channel selection
+  // returns the existing placement options for the channel selection
   const result = []
 
   if (_.get(initiatingControl, 'groupControlData')) {
@@ -386,8 +386,8 @@ export const channelSimplified = (value, control) => {
   return (mappedData && _.get(mappedData, specPathname)) || value
 }
 
-export const getSharedPlacementRuleWarning = (control) => (
-  <SharedResourceWarning resourceType={RESOURCE_TYPES.HCM_PLACEMENT_RULES} control={control} />
+export const getSharedPlacementWarning = (control) => (
+  <SharedResourceWarning resourceType={RESOURCE_TYPES.HCM_PLACEMENTS} control={control} />
 )
 
 export const getSharedSubscriptionWarning = (control) => (

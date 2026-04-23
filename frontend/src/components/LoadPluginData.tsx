@@ -1,14 +1,24 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ReactNode, useContext, useEffect } from 'react'
+import { css } from '@emotion/css'
 import { PluginContext } from '../lib/PluginContext'
 import { LostChangesProvider } from './LostChanges'
 import { LoadingPage } from './LoadingPage'
+import { StreamStatusOverlay } from './StreamStatusOverlay'
 import { useLocation } from 'react-router-dom-v5-compat'
 import { NavigationPath } from '../NavigationPath'
 
+const contentWrapperClass = css({
+  position: 'relative',
+  display: 'flex',
+  flexDirection: 'column',
+  flex: 1,
+  minHeight: 0,
+})
+
 export const LoadPluginData = (props: { children?: ReactNode }) => {
   const { dataContext } = useContext(PluginContext)
-  const { load, loadStarted, loadCompleted } = useContext(dataContext)
+  const { load, loadStarted, loadCompleted, isStreamIdle, isReconnecting, mount, unmount } = useContext(dataContext)
   const location = useLocation()
   // some pages are loaded fast by sending it's events first
   // which means these pages can appear immediately
@@ -57,6 +67,12 @@ export const LoadPluginData = (props: { children?: ReactNode }) => {
       NavigationPath.identitiesGroups,
     ] as string[]
   ).includes(location.pathname.replace(/\/$/, ''))
+
+  useEffect(() => {
+    mount()
+    return unmount
+  }, [mount, unmount])
+
   useEffect(() => {
     if (!loadStarted) {
       load()
@@ -64,7 +80,11 @@ export const LoadPluginData = (props: { children?: ReactNode }) => {
   }, [load, loadStarted])
 
   return (fastLoadPage && loadStarted) || loadCompleted ? (
-    <LostChangesProvider>{props.children}</LostChangesProvider>
+    <div className={contentWrapperClass}>
+      {isStreamIdle && <StreamStatusOverlay variant="idle" />}
+      {isReconnecting && <StreamStatusOverlay variant="reconnecting" />}
+      <LostChangesProvider>{props.children}</LostChangesProvider>
+    </div>
   ) : (
     <LoadingPage />
   )

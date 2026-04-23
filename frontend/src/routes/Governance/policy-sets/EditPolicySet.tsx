@@ -64,7 +64,6 @@ export function EditPolicySet() {
     managedClustersState,
     namespacesState,
     placementBindingsState,
-    placementRulesState,
     placementsState,
     policySetsState,
     usePolicies,
@@ -73,7 +72,6 @@ export function EditPolicySet() {
   const policySets = useRecoilValue(policySetsState)
   const namespaces = useRecoilValue(namespacesState)
   const placements = useRecoilValue(placementsState)
-  const placementRules = useRecoilValue(placementRulesState)
   const managedClusters = useRecoilValue(managedClustersState)
   const placementBindings = useRecoilValue(placementBindingsState)
   const clusterSets = useRecoilValue(managedClusterSetsState)
@@ -93,9 +91,8 @@ export function EditPolicySet() {
     }
     const policySetPlacementBindings = getPlacementBindingsForResource(policySet, placementBindings)
     const policySetPlacements = getPlacementsForResource(policySet, policySetPlacementBindings, placements)
-    const policySetPlacementRules = getPlacementsForResource(policySet, policySetPlacementBindings, placementRules)
-    setExistingResources([policySet, ...policySetPlacements, ...policySetPlacementRules, ...policySetPlacementBindings])
-  }, [navigate, name, namespace, placementBindings, placementRules, placements, policySets])
+    setExistingResources([policySet, ...policySetPlacements, ...policySetPlacementBindings])
+  }, [navigate, name, namespace, placementBindings, placements, policySets])
 
   const { cancelForm, submitForm } = useContext(LostChangesContext)
 
@@ -111,7 +108,6 @@ export function EditPolicySet() {
       placements={placements}
       namespaces={namespaceNames}
       breadcrumb={[{ text: t('Policy sets'), to: NavigationPath.policySets }, { text: name }]}
-      placementRules={placementRules}
       clusterSets={clusterSets}
       clusterSetBindings={clusterSetBindings}
       yamlEditor={getWizardSyncEditor}

@@ -18,7 +18,6 @@ import { editor as editorTypes } from 'monaco-editor'
 import { loader, Monaco } from '@monaco-editor/react'
 import { Schema } from 'ajv'
 import { defineThemes, getTheme, mountTheme, dismountTheme } from '../theme'
-import { rangeForHighlightPath } from './decorate'
 
 // loader can be null in tests
 loader?.config({ monaco })
@@ -70,8 +69,11 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     onClose,
     highlightEditorPath,
   } = props
+  const [editorHighlightPath, setEditorHighlightPath] = useState(() => highlightEditorPath ?? '')
+  useEffect(() => {
+    setEditorHighlightPath(highlightEditorPath ?? '')
+  }, [highlightEditorPath])
   const pageRef = useRef<HTMLDivElement>(null)
-  const highlightDecorationIdsRef = useRef<string[]>([])
   const [editor, setEditor] = useState<editorTypes.IStandaloneCodeEditor | null>(null)
   const [monaco, setMonaco] = useState<Monaco | null>(null)
   if (mock) {
@@ -460,7 +462,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             change,
             remainingEdits,
             protectedRanges,
-            filteredRows
+            filteredRows,
+            editorHighlightPath
           )
           setSquigglyTooltips(squigglyTooltips)
           setLastFormComparison(formComparison)
@@ -489,6 +492,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
       changeStack,
       editor,
       monaco,
+      editorHighlightPath,
       // eslint-disable-next-line react-hooks/exhaustive-deps
       JSON.stringify(immutables),
     ]
@@ -576,7 +580,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             change,
             lastUserEdits,
             protectedRanges,
-            filteredRows
+            filteredRows,
+            editorHighlightPath
           )
           setSquigglyTooltips(squigglyTooltips)
           setUserEdits(changes)
@@ -619,6 +624,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
       showSecrets,
       syncs,
       xreferences,
+      editorHighlightPath,
       onStatusChange,
     ]
   )
@@ -736,44 +742,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     copiedCopy,
     defaultCopy,
   ])
-
-  useEffect(() => {
-    if (!editor || !monaco) return
-    const prev = highlightDecorationIdsRef.current
-    if (!highlightEditorPath?.trim()) {
-      if (prev.length) {
-        editor.deltaDecorations(prev, [])
-        highlightDecorationIdsRef.current = []
-      }
-      return
-    }
-    const paths = (lastChange as { paths?: Record<string, unknown> } | undefined)?.paths
-    const range = rangeForHighlightPath(monaco, paths as never, lastChange?.mappings, highlightEditorPath)
-    if (!range) {
-      if (prev.length) {
-        editor.deltaDecorations(prev, [])
-        highlightDecorationIdsRef.current = []
-      }
-      return
-    }
-    editor.revealRangeInCenter(range)
-    highlightDecorationIdsRef.current = editor.deltaDecorations(prev, [
-      {
-        range,
-        options: {
-          className: 'syncEditorYamlHighlight',
-          isWholeLine: range.startLineNumber !== range.endLineNumber,
-        },
-      },
-    ])
-    return () => {
-      const ids = highlightDecorationIdsRef.current
-      if (ids.length) {
-        editor.deltaDecorations(ids, [])
-        highlightDecorationIdsRef.current = []
-      }
-    }
-  }, [highlightEditorPath, editor, monaco, lastChange])
 
   useResizeObserver(pageRef, () => {
     layoutEditor(editor)

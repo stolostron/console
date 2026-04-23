@@ -369,17 +369,6 @@ export const appSubDeployable: TopologyNodeWithStatus = {
   type: 'application',
 }
 
-export const placementsDeployable: TopologyNodeWithStatus = {
-  id: 'member--member--deployable--member--clusters--cluster1--default--appSet1--placements--placementrule1',
-  uid: 'member--member--deployable--member--clusters--cluster1--default--appSet1--placements--placementrule1',
-  name: 'placementrule1',
-  namespace: 'default',
-  specs: {
-    placementsModel: [],
-  },
-  type: 'placements',
-}
-
 export const placementDeployable: TopologyNodeWithStatus = {
   id: 'member--member--deployable--member--clusters--cluster1--default--appSet1--placement--placement1',
   uid: 'member--member--deployable--member--clusters--cluster1--default--appSet1--placement--placement1',
@@ -2810,32 +2799,6 @@ export const packageNodeOrange: TopologyNodeWithStatus = {
   },
 }
 
-export const ruleNodeRed: TopologyNodeWithStatus = {
-  name: 'mortgage-app-deploy',
-  namespace: 'default',
-  cluster: undefined,
-  clusterName: null,
-  type: 'placements',
-  specs: {},
-}
-
-export const ruleNodeGreen2: TopologyNodeWithStatus = {
-  name: 'mortgage-app-deploy2',
-  namespace: 'default',
-  cluster: undefined,
-  clusterName: null,
-  type: 'placements',
-  specs: {
-    raw: {
-      status: {
-        decisions: {
-          cls1: {},
-        },
-      },
-    },
-  },
-}
-
 export const appNoChannelRed: TopologyNodeWithStatus = {
   name: 'mortgage-app-deploy',
   cluster: undefined,
@@ -3316,61 +3279,6 @@ export const QuerySubscriptionList: Record<string, any> = {
   ],
 }
 
-export const QueryPlacementRuleList: Record<string, any> = {
-  status: 'DONE',
-  page: 1,
-  search: 'aa',
-  sortDirection: 'asc',
-  sortColumn: 1,
-  mutateStatus: 'DONE',
-  deleteStatus: 'DONE',
-  deleteMsg: 'app123',
-  items: [
-    {
-      _uid: 'local-cluster/29bd08d9-c33f-4bd1-a820-f399020f66d5',
-      name: 'app123-placement-0',
-      selfLink: '/apis/apps.open-cluster-management.io/v1/namespaces/ansible/placementrules/app123-placement-0',
-      namespace: 'ansible',
-      clusterCount: { localCount: 0, remoteCount: 2 },
-      replicas: null,
-      created: '2019-09-28T20:03:59Z',
-      __typename: 'PlacementRule',
-    },
-    {
-      _uid: 'local-cluster/6c133c4c-749d-4649-8208-442f07309649',
-      name: 'app123-placement-0',
-      selfLink: '/apis/apps.open-cluster-management.io/v1/namespaces/ns-sub-1/placementrules/app123-placement-0',
-      namespace: 'ns-sub-1',
-      clusterCount: { localCount: 0, remoteCount: 2 },
-      replicas: null,
-      created: '2019-09-28T16:31:51Z',
-      __typename: 'PlacementRule',
-    },
-    {
-      _uid: 'local-cluster/e10c41ac-3d0f-43f9-8187-ea864b0fcdbf',
-      name: 'cassandra-app-placement',
-      selfLink:
-        '/apis/apps.open-cluster-management.io/v1/namespaces/cassandra-app-ns/placementrules/cassandra-app-placement',
-      namespace: 'cassandra-app-ns',
-      clusterCount: { localCount: 0, remoteCount: 2 },
-      replicas: 2,
-      created: '2019-09-24T21:34:33Z',
-      __typename: 'PlacementRule',
-    },
-    {
-      _uid: 'local-cluster/31cc3d22-18ce-43c9-9b47-056a0a16e1b1',
-      name: 'demo-saude-digital',
-      selfLink:
-        '/apis/apps.open-cluster-management.io/v1/namespaces/demo-saude-digital/placementrules/demo-saude-digital',
-      namespace: 'demo-saude-digital',
-      clusterCount: { localCount: 0, remoteCount: 2 },
-      replicas: 2,
-      created: '2019-09-24T21:34:35Z',
-      __typename: 'PlacementRule',
-    },
-  ],
-}
-
 export const QueryChannelList: Record<string, any> = {
   status: 'DONE',
   page: 1,
@@ -3742,22 +3650,22 @@ export const HCMApplicationList: Record<string, any> = {
         {
           items: [
             {
-              apigroup: 'apps.open-cluster-management.io',
-              apiversion: 'v1',
+              apigroup: 'cluster.open-cluster-management.io',
+              apiversion: 'v1beta1',
               cluster: 'local-cluster',
               created: '2018-08-13T19:23:00Z',
-              kind: 'placementrule',
+              kind: 'placement',
               label: 'app=mortgage-app-mortgage',
               name: 'mortgage-app-placement',
               namespace: 'default',
               selfLink:
-                '/apis/apps.open-cluster-management.io/v1/namespaces/default/placementrules/mortgage-app-placement',
+                '/apis/cluster.open-cluster-management.io/v1beta1/namespaces/default/placements/mortgage-app-placement',
               _hubClusterResource: 'true',
-              _rbac: 'default_apps.open-cluster-management.io_placementrules',
+              _rbac: 'default_cluster.open-cluster-management.io_placements',
               _uid: 'local-cluster/0533baf0-e272-4db6-ae00-b99f1d4e2e1c',
             },
           ],
-          kind: 'placementrule',
+          kind: 'placement',
           __typename: 'SearchRelatedResult',
         },
         {
@@ -3838,18 +3746,19 @@ export const HCMSubscriptionList: Record<string, any> = {
       label: 'app=mortgage-app-mortgage; chart=mortgage-1.0.3; heritage=Tiller; release=mortgage-app',
       related: [
         {
-          kind: 'placementrule',
+          kind: 'placement',
           items: [
             {
-              kind: 'placementrule',
-              name: 'guestbook-placementrule',
+              kind: 'placement',
+              name: 'guestbook-placement',
               namespace: 'kube-system',
-              selfLink: '/apis/app.ibm.com/v1alpha1/namespaces/kube-system/placementrules/guestbook-placementrule',
+              selfLink:
+                '/apis/cluster.open-cluster-management.io/v1beta1/namespaces/kube-system/placements/guestbook-placement',
               created: '2019-02-11T23:26:17Z',
               cluster: 'local-cluster',
-              apigroup: 'app.ibm.com',
-              apiversion: 'v1alpha1',
-              _rbac: 'kube-system_app.ibm.com_placementrules',
+              apigroup: 'cluster.open-cluster-management.io',
+              apiversion: 'v1beta1',
+              _rbac: 'kube-system_cluster.open-cluster-management.io_placements',
               _hubClusterResource: 'true',
               _uid: 'local-cluster/e72e6c06-4d25-11ea-a229-00000a102d26',
               label: 'app=subscribed-guestbook-application',
@@ -4029,18 +3938,19 @@ export const HCMSubscriptionList: Record<string, any> = {
           __typename: 'SearchRelatedResult',
         },
         {
-          kind: 'placementrule',
+          kind: 'placement',
           items: [
             {
-              kind: 'placementrule',
-              name: 'guestbook-placementrule',
+              kind: 'placement',
+              name: 'guestbook-placement',
               namespace: 'kube-system',
-              selfLink: '/apis/app.ibm.com/v1alpha1/namespaces/kube-system/placementrules/guestbook-placementrule',
+              selfLink:
+                '/apis/cluster.open-cluster-management.io/v1beta1/namespaces/kube-system/placements/guestbook-placement',
               created: '2019-02-11T23:26:17Z',
               cluster: 'local-cluster',
-              apigroup: 'app.ibm.com',
-              apiversion: 'v1alpha1',
-              _rbac: 'kube-system_app.ibm.com_placementrules',
+              apigroup: 'cluster.open-cluster-management.io',
+              apiversion: 'v1beta1',
+              _rbac: 'kube-system_cluster.open-cluster-management.io_placements',
               _hubClusterResource: 'true',
               _uid: 'local-cluster/e72e6c06-4d25-11ea-a229-00000a102d26',
               label: 'app=subscribed-guestbook-application',
@@ -4051,18 +3961,6 @@ export const HCMSubscriptionList: Record<string, any> = {
       ],
     },
   ],
-}
-
-export const HCMPlacementRuleList: Record<string, any> = {
-  items: [],
-  page: 1,
-  search: '',
-  sortDirection: 'asc',
-  status: 'INCEPTION',
-  putErrorMsg: '',
-  postErrorMsg: '',
-  pendingActions: [],
-  forceReload: false,
 }
 
 export const topologyNoChannel: Record<string, any> = {
@@ -4293,13 +4191,13 @@ export const topologyNoChannel: Record<string, any> = {
         isDesign: true,
         pulse: 'green',
         raw: {
-          apiVersion: 'apps.open-cluster-management.io/v1',
-          kind: 'PlacementRule',
+          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+          kind: 'Placement',
         },
         row: 34,
       },
       topology: null,
-      type: 'placements',
+      type: 'placementDecision',
       uid: 'member--rules--default--mortgage-app-placement--0',
       __typename: 'Resource',
     },
@@ -4682,13 +4580,13 @@ export const topology: Record<string, any> = {
         isDesign: true,
         pulse: 'green',
         raw: {
-          apiVersion: 'apps.open-cluster-management.io/v1',
-          kind: 'PlacementRule',
+          apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+          kind: 'Placement',
         },
         row: 34,
       },
       topology: null,
-      type: 'placements',
+      type: 'placementDecision',
       uid: 'member--rules--default--mortgage-app-placement--0',
       __typename: 'Resource',
     },
@@ -4921,15 +4819,15 @@ export const prObjectForEdit: Record<string, any> = {
         metadata: {
           resourceVersion: '1487949',
           creationTimestamp: '2019-03-18T20:06:46Z',
-          kind: 'placementrule',
+          kind: 'subscription',
           name: 'mortgage-channel-subscr',
           namespace: 'default',
-          selfLink: '/apis/app.ibm.com/v1alpha1/namespaces/default/subscriptions/mortgage-subscr',
+          selfLink: '/apis/apps.open-cluster-management.io/v1/namespaces/default/subscriptions/mortgage-subscr',
           created: '2019-02-18T23:56:15Z',
           cluster: 'local-cluster',
-          apigroup: 'app.ibm.com',
-          apiversion: 'v1alpha1',
-          _rbac: 'default_app.ibm.com_channels',
+          apigroup: 'apps.open-cluster-management.io',
+          apiversion: 'v1',
+          _rbac: 'default_apps.open-cluster-management.io_subscriptions',
           _hubClusterResource: 'true',
           uid: 'local-cluster/3fc2a87a-52aa-11ea-bf05-00000a102d26',
           pathname: 'default',
@@ -4991,115 +4889,6 @@ export const controlData: Record<string, any>[] = [
 export const createAppStore: Record<string, any> = {
   controlData: controlData,
   portals: portals,
-}
-
-export const reduxStoreAppPipeline: Record<string, any> = {
-  AppDeployments: {
-    displaySubscriptionModal: false,
-    subscriptionModalHeaderInfo: {
-      application: 'app',
-      deployable: 'depp',
-    },
-  },
-  resourceFilters: {
-    filters: {},
-    selectedFilters: {},
-  },
-  secondaryHeader: secondaryHeader,
-  QueryApplicationList: QueryApplicationList,
-  QuerySubscriptionList: QuerySubscriptionList,
-  QueryPlacementRuleList: QueryPlacementRuleList,
-  QueryChannelList: QueryChannelList,
-  HCMChannelList: HCMChannelList,
-  HCMSubscriptionList: HCMSubscriptionList,
-  HCMPlacementRuleList: HCMPlacementRuleList,
-  AppOverview: AppOverview,
-}
-
-export const reduxStoreAppPipelineWithCEM: Record<string, any> = {
-  AppDeployments: {
-    displaySubscriptionModal: false,
-  },
-  resourceFilters: {
-    filters: {},
-    selectedFilters: {},
-  },
-  secondaryHeader: secondaryHeader,
-  QueryApplicationList: QueryApplicationList,
-  HCMApplicationList: HCMApplicationList,
-  HCMChannelList: HCMChannelList,
-  HCMSubscriptionList: HCMSubscriptionList,
-  HCMPlacementRuleList: HCMPlacementRuleList,
-  AppOverview: AppOverviewWithCEM,
-  topology: topology,
-  role: {
-    role: 'ClusterAdministrator',
-  },
-}
-
-export const reduxStoreAppPipelineWithCEM_Inception: Record<string, any> = {
-  AppDeployments: {
-    displaySubscriptionModal: false,
-  },
-  topology: topology,
-  resourceFilters: {
-    filters: {},
-    selectedFilters: {},
-  },
-  secondaryHeader: secondaryHeader,
-  HCMApplicationList: HCMApplicationList,
-  QueryApplicationList: QueryApplicationList_INCEPTION,
-  HCMChannelList: HCMChannelList,
-  HCMSubscriptionList: HCMSubscriptionList,
-  HCMPlacementRuleList: HCMPlacementRuleList,
-  AppOverview: AppOverviewWithCEM,
-  role: {
-    role: 'ClusterAdministrator',
-  },
-}
-
-export const reduxStoreAllAppsPipeline: Record<string, any> = {
-  AppDeployments: {
-    displaySubscriptionModal: false,
-  },
-  location: {
-    pathname: '/multicloud/applications/',
-  },
-  resourceFilters: {
-    filters: {},
-    selectedFilters: {},
-  },
-  secondaryHeader: secondaryHeaderAllApps,
-  QueryApplicationList: QueryApplicationList,
-  QuerySubscriptionList: QuerySubscriptionList,
-  QueryPlacementRuleList: QueryPlacementRuleList,
-  QueryChannelList: QueryChannelList,
-  HCMChannelList: HCMChannelList,
-  HCMSubscriptionList: HCMSubscriptionList,
-  HCMPlacementRuleList: HCMPlacementRuleList,
-  AppOverview: AppOverview,
-}
-
-export const reduxStoreAllAppsPipelineNoChannels: Record<string, any> = {
-  AppDeployments: {
-    displaySubscriptionModal: false,
-  },
-  secondaryHeader: secondaryHeaderAllApps,
-  QueryApplicationList: QueryApplicationList,
-  HCMChannelList: HCMChannelListEmpty,
-  HCMSubscriptionList: HCMSubscriptionList,
-  HCMPlacementRuleList: HCMPlacementRuleList,
-}
-
-export const reduxStoreAppPipelineNoChannels: Record<string, any> = {
-  AppDeployments: {
-    displaySubscriptionModal: false,
-  },
-  secondaryHeader: secondaryHeader,
-  QueryApplicationList: QueryApplicationList,
-  HCMChannelList: HCMChannelListEmpty,
-  HCMSubscriptionList: HCMSubscriptionList,
-  HCMPlacementRuleList: HCMPlacementRuleList,
 }
 
 export const staticResourceData: Record<string, any> = {

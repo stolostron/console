@@ -189,8 +189,7 @@ export function CreateSubscriptionApplication({
   const navigate = useNavigate()
   const { t } = useTranslation()
   const [createdResource, setCreatedResource] = useState<any>()
-  const { applicationsState, channelsState, placementRulesState, secretsState, subscriptionsState, placementsState } =
-    useSharedAtoms()
+  const { applicationsState, channelsState, secretsState, subscriptionsState, placementsState } = useSharedAtoms()
   const toastContext = useContext(AcmToastContext)
   const secrets = useRecoilValue(secretsState)
   const providerConnections = secrets.map(unpackProviderConnection)
@@ -283,9 +282,6 @@ export function CreateSubscriptionApplication({
                 break
               case 'Subscription':
                 resourceVersion = getResourceVersion(subscriptions, name, namespace)
-                break
-              case 'PlacementRule':
-                resourceVersion = getResourceVersion(placementRules, name, namespace)
                 break
               case 'Placement':
                 resourceVersion = getResourceVersion(placements, name, namespace)
@@ -380,7 +376,6 @@ export function CreateSubscriptionApplication({
   const applications = useRecoilValue(applicationsState)
   const subscriptions = useRecoilValue(subscriptionsState)
   const channels = useRecoilValue(channelsState)
-  const placementRules = useRecoilValue(placementRulesState)
   const placements = useRecoilValue(placementsState)
   const location = useLocation()
   const editApplication = getEditApplication(location)
@@ -420,7 +415,6 @@ export function CreateSubscriptionApplication({
           applications,
           subscriptions,
           channels,
-          placementRules,
           placements,
         })
 

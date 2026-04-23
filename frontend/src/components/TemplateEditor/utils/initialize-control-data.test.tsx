@@ -19,7 +19,7 @@ const mockValidatebranch = jest.fn()
 const mockUpdategitbranchfolders = jest.fn()
 const mockUpdatesubreconcilerate = jest.fn()
 const mockReversesubreconcilerate = jest.fn()
-const mockGetsharedplacementrulewarning = jest.fn()
+const mockGetsharedplacementwarning = jest.fn()
 const mockUpdateplacementcontrols = jest.fn()
 const mockSummarizeonline = jest.fn()
 const mockReverseexistingrule = jest.fn()
@@ -284,13 +284,13 @@ const initializeControlData = {
                   subgroup: true,
                   collapsable: true,
                   collapsed: false,
-                  info: mockGetsharedplacementrulewarning,
+                  info: mockGetsharedplacementwarning,
                   editing: {
                     editMode: true,
                   },
                 },
                 {
-                  id: 'existingrule-checkbox',
+                  id: 'existing-placement-checkbox',
                   type: 'radio',
                   name: 'Select an existing placement configuration',
                   tooltip:
@@ -300,7 +300,7 @@ const initializeControlData = {
                   summarize: mockSummarizeonline,
                 },
                 {
-                  id: 'placementrulecombo',
+                  id: 'placementcombo',
                   type: 'combobox',
                   opaque: false,
                   placeholder: 'Select an existing placement configuration',
@@ -308,7 +308,7 @@ const initializeControlData = {
                   fetchAvailable: {
                     query: mockQuery,
                     variables: mockVariables,
-                    loadingDesc: 'Loading placement rules...',
+                    loadingDesc: 'Loading placements...',
                     setAvailable: mockSetavailablerules,
                   },
                   onSelect: mockUpdatenewrulecontrols,
@@ -316,7 +316,7 @@ const initializeControlData = {
                   summarize: mockSummarize,
                 },
                 {
-                  id: 'selectedRuleName',
+                  id: 'selectedPlacementName',
                   type: 'hidden',
                   reverse: mockReverseexistingrule,
                 },
@@ -354,7 +354,7 @@ const initializeControlData = {
                   available: [],
                   reverse: [
                     'Subscription[0].spec.placement.local',
-                    'PlacementRule[0].spec.clusterSelector.matchLabels.local-cluster',
+                    'Placement[0].spec.predicates[0].requiredClusterSelector.labelSelector.matchLabels.local-cluster',
                   ],
                   summarize: mockSummarize,
                 },
@@ -538,13 +538,13 @@ const initializeControlData = {
                   subgroup: true,
                   collapsable: true,
                   collapsed: false,
-                  info: mockGetsharedplacementrulewarning,
+                  info: mockGetsharedplacementwarning,
                   editing: {
                     editMode: true,
                   },
                 },
                 {
-                  id: 'existingrule-checkbox',
+                  id: 'existing-placement-checkbox',
                   type: 'radio',
                   name: 'Select an existing placement configuration',
                   tooltip:
@@ -554,7 +554,7 @@ const initializeControlData = {
                   summarize: mockSummarizeonline,
                 },
                 {
-                  id: 'placementrulecombo',
+                  id: 'placementcombo',
                   type: 'combobox',
                   opaque: false,
                   placeholder: 'Select an existing placement configuration',
@@ -562,7 +562,7 @@ const initializeControlData = {
                   fetchAvailable: {
                     query: mockQuery,
                     variables: mockVariables,
-                    loadingDesc: 'Loading placement rules...',
+                    loadingDesc: 'Loading placements...',
                     setAvailable: mockSetavailablerules,
                   },
                   onSelect: mockUpdatenewrulecontrols,
@@ -570,7 +570,7 @@ const initializeControlData = {
                   summarize: mockSummarize,
                 },
                 {
-                  id: 'selectedRuleName',
+                  id: 'selectedPlacementName',
                   type: 'hidden',
                   reverse: mockReverseexistingrule,
                 },
@@ -608,7 +608,7 @@ const initializeControlData = {
                   available: [],
                   reverse: [
                     'Subscription[0].spec.placement.local',
-                    'PlacementRule[0].spec.clusterSelector.matchLabels.local-cluster',
+                    'Placement[0].spec.predicates[0].requiredClusterSelector.labelSelector.matchLabels.local-cluster',
                   ],
                   summarize: mockSummarize,
                 },
@@ -744,13 +744,13 @@ const initializeControlData = {
                   subgroup: true,
                   collapsable: true,
                   collapsed: false,
-                  info: mockGetsharedplacementrulewarning,
+                  info: mockGetsharedplacementwarning,
                   editing: {
                     editMode: true,
                   },
                 },
                 {
-                  id: 'existingrule-checkbox',
+                  id: 'existing-placement-checkbox',
                   type: 'radio',
                   name: 'Select an existing placement configuration',
                   tooltip:
@@ -760,7 +760,7 @@ const initializeControlData = {
                   summarize: mockSummarizeonline,
                 },
                 {
-                  id: 'placementrulecombo',
+                  id: 'placementcombo',
                   type: 'combobox',
                   opaque: false,
                   placeholder: 'Select an existing placement configuration',
@@ -768,7 +768,7 @@ const initializeControlData = {
                   fetchAvailable: {
                     query: mockQuery,
                     variables: mockVariables,
-                    loadingDesc: 'Loading placement rules...',
+                    loadingDesc: 'Loading placements...',
                     setAvailable: mockSetavailablerules,
                   },
                   onSelect: mockUpdatenewrulecontrols,
@@ -776,7 +776,7 @@ const initializeControlData = {
                   summarize: mockSummarize,
                 },
                 {
-                  id: 'selectedRuleName',
+                  id: 'selectedPlacementName',
                   type: 'hidden',
                   reverse: mockReverseexistingrule,
                 },
@@ -814,7 +814,7 @@ const initializeControlData = {
                   available: [],
                   reverse: [
                     'Subscription[0].spec.placement.local',
-                    'PlacementRule[0].spec.clusterSelector.matchLabels.local-cluster',
+                    'Placement[0].spec.predicates[0].requiredClusterSelector.labelSelector.matchLabels.local-cluster',
                   ],
                   summarize: mockSummarize,
                 },
@@ -881,13 +881,13 @@ const initializeControlData = {
                   subgroup: true,
                   collapsable: true,
                   collapsed: false,
-                  info: mockGetsharedplacementrulewarning,
+                  info: mockGetsharedplacementwarning,
                   editing: {
                     editMode: true,
                   },
                 },
                 {
-                  id: 'existingrule-checkbox',
+                  id: 'existing-placement-checkbox',
                   type: 'radio',
                   name: 'Select an existing placement configuration',
                   tooltip:
@@ -897,7 +897,7 @@ const initializeControlData = {
                   summarize: mockSummarizeonline,
                 },
                 {
-                  id: 'placementrulecombo',
+                  id: 'placementcombo',
                   type: 'combobox',
                   opaque: false,
                   placeholder: 'Select an existing placement configuration',
@@ -905,7 +905,7 @@ const initializeControlData = {
                   fetchAvailable: {
                     query: mockQuery,
                     variables: mockVariables,
-                    loadingDesc: 'Loading placement rules...',
+                    loadingDesc: 'Loading placements...',
                     setAvailable: mockSetavailablerules,
                   },
                   onSelect: mockUpdatenewrulecontrols,
@@ -913,7 +913,7 @@ const initializeControlData = {
                   summarize: mockSummarize,
                 },
                 {
-                  id: 'selectedRuleName',
+                  id: 'selectedPlacementName',
                   type: 'hidden',
                   reverse: mockReverseexistingrule,
                 },
@@ -951,7 +951,7 @@ const initializeControlData = {
                   available: [],
                   reverse: [
                     'Subscription[0].spec.placement.local',
-                    'PlacementRule[0].spec.clusterSelector.matchLabels.local-cluster',
+                    'Placement[0].spec.predicates[0].requiredClusterSelector.labelSelector.matchLabels.local-cluster',
                   ],
                   summarize: mockSummarize,
                 },
@@ -1265,14 +1265,14 @@ const initializeControlData = {
                 subgroup: true,
                 collapsable: true,
                 collapsed: false,
-                info: mockGetsharedplacementrulewarning,
+                info: mockGetsharedplacementwarning,
                 editing: {
                   editMode: true,
                 },
                 isInitialized: true,
               },
               {
-                id: 'existingrule-checkbox',
+                id: 'existing-placement-checkbox',
                 type: 'radio',
                 name: 'Select an existing placement configuration',
                 tooltip:
@@ -1283,7 +1283,7 @@ const initializeControlData = {
                 isInitialized: true,
               },
               {
-                id: 'placementrulecombo',
+                id: 'placementcombo',
                 type: 'combobox',
                 opaque: false,
                 placeholder: 'Select an existing placement configuration',
@@ -1291,7 +1291,7 @@ const initializeControlData = {
                 fetchAvailable: {
                   query: mockQuery,
                   variables: mockVariables,
-                  loadingDesc: 'Loading placement rules...',
+                  loadingDesc: 'Loading placements...',
                   setAvailable: mockSetavailablerules,
                 },
                 onSelect: mockUpdatenewrulecontrols,
@@ -1300,7 +1300,7 @@ const initializeControlData = {
                 isInitialized: true,
               },
               {
-                id: 'selectedRuleName',
+                id: 'selectedPlacementName',
                 type: 'hidden',
                 reverse: mockReverseexistingrule,
                 isInitialized: true,
@@ -1342,7 +1342,7 @@ const initializeControlData = {
                 available: [],
                 reverse: [
                   'Subscription[0].spec.placement.local',
-                  'PlacementRule[0].spec.clusterSelector.matchLabels.local-cluster',
+                  'Placement[0].spec.predicates[0].requiredClusterSelector.labelSelector.matchLabels.local-cluster',
                 ],
                 summarize: mockSummarize,
                 isInitialized: true,
@@ -1542,14 +1542,14 @@ const initializeControlData = {
                 subgroup: true,
                 collapsable: true,
                 collapsed: false,
-                info: mockGetsharedplacementrulewarning,
+                info: mockGetsharedplacementwarning,
                 editing: {
                   editMode: true,
                 },
                 isInitialized: true,
               },
               {
-                id: 'existingrule-checkbox',
+                id: 'existing-placement-checkbox',
                 type: 'radio',
                 name: 'Select an existing placement configuration',
                 tooltip:
@@ -1560,7 +1560,7 @@ const initializeControlData = {
                 isInitialized: true,
               },
               {
-                id: 'placementrulecombo',
+                id: 'placementcombo',
                 type: 'combobox',
                 opaque: false,
                 placeholder: 'Select an existing placement configuration',
@@ -1568,7 +1568,7 @@ const initializeControlData = {
                 fetchAvailable: {
                   query: mockQuery,
                   variables: mockVariables,
-                  loadingDesc: 'Loading placement rules...',
+                  loadingDesc: 'Loading placements...',
                   setAvailable: mockSetavailablerules,
                 },
                 onSelect: mockUpdatenewrulecontrols,
@@ -1577,7 +1577,7 @@ const initializeControlData = {
                 isInitialized: true,
               },
               {
-                id: 'selectedRuleName',
+                id: 'selectedPlacementName',
                 type: 'hidden',
                 reverse: mockReverseexistingrule,
                 isInitialized: true,
@@ -1619,7 +1619,7 @@ const initializeControlData = {
                 available: [],
                 reverse: [
                   'Subscription[0].spec.placement.local',
-                  'PlacementRule[0].spec.clusterSelector.matchLabels.local-cluster',
+                  'Placement[0].spec.predicates[0].requiredClusterSelector.labelSelector.matchLabels.local-cluster',
                 ],
                 summarize: mockSummarize,
                 isInitialized: true,
@@ -1767,14 +1767,14 @@ const initializeControlData = {
                 subgroup: true,
                 collapsable: true,
                 collapsed: false,
-                info: mockGetsharedplacementrulewarning,
+                info: mockGetsharedplacementwarning,
                 editing: {
                   editMode: true,
                 },
                 isInitialized: true,
               },
               {
-                id: 'existingrule-checkbox',
+                id: 'existing-placement-checkbox',
                 type: 'radio',
                 name: 'Select an existing placement configuration',
                 tooltip:
@@ -1785,7 +1785,7 @@ const initializeControlData = {
                 isInitialized: true,
               },
               {
-                id: 'placementrulecombo',
+                id: 'placementcombo',
                 type: 'combobox',
                 opaque: false,
                 placeholder: 'Select an existing placement configuration',
@@ -1793,7 +1793,7 @@ const initializeControlData = {
                 fetchAvailable: {
                   query: mockQuery,
                   variables: mockVariables,
-                  loadingDesc: 'Loading placement rules...',
+                  loadingDesc: 'Loading placements...',
                   setAvailable: mockSetavailablerules,
                 },
                 onSelect: mockUpdatenewrulecontrols,
@@ -1802,7 +1802,7 @@ const initializeControlData = {
                 isInitialized: true,
               },
               {
-                id: 'selectedRuleName',
+                id: 'selectedPlacementName',
                 type: 'hidden',
                 reverse: mockReverseexistingrule,
                 isInitialized: true,
@@ -1844,7 +1844,7 @@ const initializeControlData = {
                 available: [],
                 reverse: [
                   'Subscription[0].spec.placement.local',
-                  'PlacementRule[0].spec.clusterSelector.matchLabels.local-cluster',
+                  'Placement[0].spec.predicates[0].requiredClusterSelector.labelSelector.matchLabels.local-cluster',
                 ],
                 summarize: mockSummarize,
                 isInitialized: true,
@@ -1918,14 +1918,14 @@ const initializeControlData = {
                 subgroup: true,
                 collapsable: true,
                 collapsed: false,
-                info: mockGetsharedplacementrulewarning,
+                info: mockGetsharedplacementwarning,
                 editing: {
                   editMode: true,
                 },
                 isInitialized: true,
               },
               {
-                id: 'existingrule-checkbox',
+                id: 'existing-placement-checkbox',
                 type: 'radio',
                 name: 'Select an existing placement configuration',
                 tooltip:
@@ -1936,7 +1936,7 @@ const initializeControlData = {
                 isInitialized: true,
               },
               {
-                id: 'placementrulecombo',
+                id: 'placementcombo',
                 type: 'combobox',
                 opaque: false,
                 placeholder: 'Select an existing placement configuration',
@@ -1944,7 +1944,7 @@ const initializeControlData = {
                 fetchAvailable: {
                   query: mockQuery,
                   variables: mockVariables,
-                  loadingDesc: 'Loading placement rules...',
+                  loadingDesc: 'Loading placements...',
                   setAvailable: mockSetavailablerules,
                 },
                 onSelect: mockUpdatenewrulecontrols,
@@ -1953,7 +1953,7 @@ const initializeControlData = {
                 isInitialized: true,
               },
               {
-                id: 'selectedRuleName',
+                id: 'selectedPlacementName',
                 type: 'hidden',
                 reverse: mockReverseexistingrule,
                 isInitialized: true,
@@ -1995,7 +1995,7 @@ const initializeControlData = {
                 available: [],
                 reverse: [
                   'Subscription[0].spec.placement.local',
-                  'PlacementRule[0].spec.clusterSelector.matchLabels.local-cluster',
+                  'Placement[0].spec.predicates[0].requiredClusterSelector.labelSelector.matchLabels.local-cluster',
                 ],
                 summarize: mockSummarize,
                 isInitialized: true,

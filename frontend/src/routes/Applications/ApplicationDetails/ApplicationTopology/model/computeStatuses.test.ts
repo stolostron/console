@@ -38,7 +38,7 @@ import {
   getShapeTypeForSubscription,
 } from './computeStatuses'
 import { setAppSetDeployStatus } from './NodeDetailsProviderStatuses'
-import { setPlacementRuleDeployStatus } from './NodeDetailsProviderStatuses'
+import { setPlacementDeployStatus } from './NodeDetailsProviderStatuses'
 import { setApplicationDeployStatus } from './NodeDetailsProviderStatuses'
 import { setSubscriptionDeployStatus } from './NodeDetailsProviderStatuses'
 import { setPodDeployStatus } from './NodeDetailsProviderStatuses'
@@ -65,10 +65,7 @@ import {
   packageNodeOrange,
   persVolumePendingStateGreen,
   persVolumePendingStateYellow,
-  placementsDeployable,
   placementDeployable,
-  ruleNodeGreen2,
-  ruleNodeRed,
   subscriptionGreenNotPlacedYellow,
   subscriptionInputNotPlaced,
   subscriptionInputRed,
@@ -310,20 +307,6 @@ describe('setPodDeployStatus', () => {
   })
 })
 
-describe('setPlacementRuleDeployStatus', () => {
-  it('setPlacementRuleDeployStatus rule node green2', () => {
-    const result = setPlacementRuleDeployStatus(ruleNodeGreen2, [], t)
-    expect(result).toEqual(expect.arrayContaining([]))
-  })
-})
-
-describe('setPlacementRuleDeployStatus', () => {
-  it('setPlacementRuleDeployStatus rule node red', () => {
-    const result = setPlacementRuleDeployStatus(ruleNodeRed, [], t)
-    expect(result).toEqual(expect.arrayContaining([]))
-  })
-})
-
 describe('setApplicationDeployStatus', () => {
   it('setApplicationDeployStatus app no channel green', () => {
     const result = setApplicationDeployStatus(appNoChannelGreen, [], t, 'local-cluster')
@@ -358,13 +341,6 @@ describe('setAppSetDeployStatus', () => {
     setAppSetDeployStatus(appSetDesignFalse, [], t, 'local-cluster')
     // setAppSetDeployStatus returns void, so we just test that it doesn't throw
     expect(true).toBe(true)
-  })
-})
-
-describe('setApplicationDeployStatus', () => {
-  it('setApplicationDeployStatus placements deployable', () => {
-    const result = setApplicationDeployStatus(placementsDeployable, [], t, 'local-cluster')
-    expect(result).toEqual(expect.arrayContaining([]))
   })
 })
 
@@ -499,11 +475,11 @@ describe('computeNodeStatus node type variations', () => {
 
   it('should handle placements node type with no decisions', () => {
     const node = {
-      type: 'placements',
+      type: 'placementDecision',
       specs: {
         pulse: 'green',
         isDesign: true,
-        raw: { status: {} },
+        raw: { status: { numberOfSelectedClusters: 0 } },
       },
       name: 'test-placement',
       namespace: 'test-ns',
@@ -869,53 +845,53 @@ describe('setPodDeployStatus comprehensive tests', () => {
   })
 })
 
-// Tests for setPlacementRuleDeployStatus
-describe('setPlacementRuleDeployStatus comprehensive tests', () => {
+// Tests for setPlacementDeployStatus
+describe('setPlacementDeployStatus comprehensive tests', () => {
   it('should return details unchanged for non-placements node type', () => {
     const node = {
       type: 'application',
       specs: {},
     } as any
     const details: any[] = []
-    const result = setPlacementRuleDeployStatus(node, details, t)
+    const result = setPlacementDeployStatus(node, details, t)
     expect(result).toEqual(details)
   })
 
   it('should return details unchanged for placement node (not placement rule)', () => {
     const node = {
-      type: 'placements',
+      type: 'placementDecision',
       isPlacement: true,
       specs: {},
     } as any
     const details: any[] = []
-    const result = setPlacementRuleDeployStatus(node, details, t)
+    const result = setPlacementDeployStatus(node, details, t)
     expect(result).toEqual(details)
   })
 
-  it('should show error when placement rule has no decisions', () => {
+  it('should show error when placement has no selected clusters', () => {
     const node = {
-      type: 'placements',
-      isPlacement: false,
+      type: 'placementDecision',
+      isPlacement: true,
       specs: {
-        raw: { status: { decisions: [] } },
+        raw: { status: { numberOfSelectedClusters: 0 } },
       },
     } as any
     const details: any[] = []
-    const result = setPlacementRuleDeployStatus(node, details, t)
+    const result = setPlacementDeployStatus(node, details, t)
     expect(result.length).toBeGreaterThan(0)
     expect(result.some((detail) => detail.status === 'failure')).toBe(true)
   })
 
-  it('should not show error when placement rule has decisions', () => {
+  it('should not show error when placement has selected clusters', () => {
     const node = {
-      type: 'placements',
-      isPlacement: false,
+      type: 'placementDecision',
+      isPlacement: true,
       specs: {
-        raw: { status: { decisions: [{ clusterName: 'test-cluster' }] } },
+        raw: { status: { numberOfSelectedClusters: 1 } },
       },
     } as any
     const details: any[] = []
-    const result = setPlacementRuleDeployStatus(node, details, t)
+    const result = setPlacementDeployStatus(node, details, t)
     expect(result).toEqual(details)
   })
 })
@@ -1168,15 +1144,16 @@ describe('Integration tests', () => {
     expect(result.length).toBeGreaterThan(0)
   })
 
-  it('should handle complete placement rule workflow', () => {
+  it('should handle complete placement workflow', () => {
     const node = {
-      type: 'placements',
+      type: 'placementDecision',
+      isPlacement: true,
       specs: {
         pulse: 'green',
         isDesign: true,
-        raw: { status: { decisions: [] } },
+        raw: { status: { numberOfSelectedClusters: 0 } },
       },
-      name: 'test-placement-rule',
+      name: 'test-placement',
       namespace: 'test-ns',
       id: 'test-id',
     } as any
@@ -1187,7 +1164,7 @@ describe('Integration tests', () => {
 
     // Set placement rule deployment status
     const details: DetailItem[] = []
-    const result = setPlacementRuleDeployStatus(node, details, t)
+    const result = setPlacementDeployStatus(node, details, t)
 
     expect(result.length).toBeGreaterThan(0)
     expect(result.some((detail) => detail.status === 'failure')).toBe(true)
@@ -1424,11 +1401,6 @@ describe('computeStatuses exported helpers', () => {
       specs: { isDesign: true, appSetApps: [] },
     } as any
     expect(computeNodeStatus(node, true, t, 'local-cluster')).toEqual('red')
-  })
-
-  it('computeNodeStatus routes deployable placements through generic node logic', () => {
-    const pulse = computeNodeStatus(placementsDeployable, true, t, 'local-cluster')
-    expect(pulse).toBeDefined()
   })
 
   it('computeNodeStatus treats deployable placementDecision without model as green', () => {

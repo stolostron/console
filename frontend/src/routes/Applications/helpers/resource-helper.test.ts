@@ -9,7 +9,6 @@ import {
   ArgoApplicationDefinition,
   ArgoApplicationKind,
 } from '../../../resources'
-import { mockPlacementRules } from '../../Governance/governance.sharedMocks'
 import { mockApplication0, mockApplications, mockChannels, mockSubscriptions } from '../Application.sharedmocks'
 import {
   getAppChildResources,
@@ -264,15 +263,7 @@ describe('getEditLink', () => {
 describe('getAppChildResources', () => {
   it('should get the child resources', () => {
     expect(
-      getAppChildResources(
-        mockApplication0,
-        mockApplications,
-        mockSubscriptions,
-        mockPlacementRules,
-        [],
-        mockChannels,
-        'local-cluster'
-      )
+      getAppChildResources(mockApplication0, mockApplications, mockSubscriptions, [], mockChannels, 'local-cluster')
     ).toEqual([
       [
         {

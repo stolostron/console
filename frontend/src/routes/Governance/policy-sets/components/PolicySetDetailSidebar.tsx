@@ -96,17 +96,10 @@ function renderDonutChart(
 export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
   const { policySet } = props
   const { t } = useTranslation()
-  const {
-    managedClustersState,
-    placementBindingsState,
-    placementDecisionsState,
-    placementRulesState,
-    placementsState,
-  } = useSharedAtoms()
+  const { managedClustersState, placementBindingsState, placementDecisionsState, placementsState } = useSharedAtoms()
   const managedClusters = useRecoilValue(managedClustersState)
   const policies = useAddRemediationPolicies()
   const placements = useRecoilValue(placementsState)
-  const placementRules = useRecoilValue(placementRulesState)
   const placementBindings = useRecoilValue(placementBindingsState)
   const placementDecisions = useRecoilValue(placementDecisionsState)
   const localHubName = useLocalHubName()
@@ -125,7 +118,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
       policies,
       placementDecisions,
       placementBindings,
-      [...placements, ...placementRules]
+      placements
     )
     const psClusterCompliance: {
       compliant: string[]
@@ -149,7 +142,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
       policySetClusters: psClusters,
       policySetClusterCompliance: psClusterCompliance,
     }
-  }, [policySet, policies, placementDecisions, placementBindings, placementRules, placements])
+  }, [policySet, policies, placementDecisions, placementBindings, placements])
 
   const clusterViolationSummaryMap = useClusterViolationSummaryMap(
     policies.filter(
@@ -225,12 +218,8 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
   )
 
   const decision = useMemo(
-    () =>
-      getPlacementDecisionsForResource(policySet, placementDecisions, placementBindings, [
-        ...placements,
-        ...placementRules,
-      ]),
-    [policySet, placementDecisions, placementBindings, placements, placementRules]
+    () => getPlacementDecisionsForResource(policySet, placementDecisions, placementBindings, placements),
+    [policySet, placementDecisions, placementBindings, placements]
   )
 
   const getClusterContext = useCallback(

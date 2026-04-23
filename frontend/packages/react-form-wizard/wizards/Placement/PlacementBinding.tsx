@@ -10,19 +10,16 @@ import {
   PlacementBindingKind,
   PlacementBindingType,
 } from '../common/resources/IPlacementBinding'
-import { PlacementRuleKind } from '../common/resources/IPlacementRule'
 import { PolicyApiGroup } from '../common/resources/IPolicy'
 import { PolicySetApiGroup } from '../common/resources/IPolicySet'
 import { isValidKubernetesResourceName } from '../common/validation'
 
 export function PlacementBindings(props: {
   placementCount: number
-  placementRuleCount: number
   placementBindingCount: number
   bindingSubjectKind: string
   bindingSubjectApiGroup?: string
   existingPlacements: IResource[]
-  existingPlacementRules: IResource[]
 }) {
   return (
     <WizArrayInput
@@ -39,7 +36,6 @@ export function PlacementBindings(props: {
       newValue={{
         ...PlacementBindingType,
         metadata: {},
-        // TODO default? - Placement vs PlacementRule
         placementRef: { apiGroup: PlacementApiGroup, kind: PlacementKind, name: '' },
         subjects: [{ apiGroup: props.bindingSubjectApiGroup, kind: props.bindingSubjectKind, name: '' }],
       }}
@@ -64,45 +60,13 @@ function PlacementBinding(props: { bindingSubjectKind: string; bindingSubjectApi
         helperText="The placement binding name must be unique to the namespace."
         validation={isValidKubernetesResourceName}
       />
-      <WizSelect
-        path="placementRef.kind"
-        label="Placement kind"
-        helperText="The placement rule used to select clusters for placement."
-        required
-        options={['Placement', PlacementRuleKind]}
-      />
       <WizTextInput
         path="placementRef.name"
         label="Placement name"
         required
-        hidden={(binding) => binding.placementRef?.kind !== PlacementKind}
         helperText="The placement name should match the name of a placement in this namespace.."
         validation={isValidKubernetesResourceName}
       />
-      <WizTextInput
-        path="placementRef.name"
-        label="Placement rule name"
-        required
-        hidden={(binding) => binding.placementRef?.kind !== PlacementRuleKind}
-        helperText="The placement rule name should match the name of a placement rule in this namespace."
-        validation={isValidKubernetesResourceName}
-      />
-      {/* <Select
-        path="placementRef.name"
-        label="Placement"
-        helperText="The placement used to select clusters."
-        required
-        hidden={(binding) => binding.placementRef?.kind !== PlacementKind}
-        options={props.existingPlacements.map((placement) => placement.metadata?.name ?? '')}
-    />
-    <Select
-        path="placementRef.name"
-        label="Placement rule"
-        helperText="The placement rule used to select clusters for placement."
-        required
-        hidden={(binding) => binding.placementRef?.kind !== PlacementRuleKind}
-        options={props.existingPlacementRules.map((placement) => placement.metadata?.name ?? '')}
-    /> */}
       <WizArrayInput
         path="subjects"
         label="Subjects"

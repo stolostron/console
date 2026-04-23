@@ -1,9 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Flex } from '@patternfly/react-core'
-import { Fragment } from 'react'
 import set from 'set-value'
 import { WizSelect, WizMultiSelect, WizSingleSelect, WizStringsInput, WizTextInput } from '../../src'
-import { DisplayMode, useDisplayMode } from '../../src/contexts/DisplayModeContext'
 import { ItemContext, useItem } from '../../src/contexts/ItemContext'
 import { IExpression } from '../common/resources/IMatchExpression'
 
@@ -108,10 +106,7 @@ export function MatchExpressionSummary(props: { expression: IExpression }) {
       break
   }
 
-  const displayMode = useDisplayMode()
-
   if (!expression?.key) {
-    if (displayMode === DisplayMode.Details) return <Fragment />
     return <div>Expand to enter expression</div>
   }
 

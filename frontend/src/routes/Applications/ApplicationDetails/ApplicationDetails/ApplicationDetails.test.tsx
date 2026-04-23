@@ -6,7 +6,6 @@ import {
   channelsState,
   managedClustersState,
   namespacesState,
-  placementRulesState,
   settingsState,
   subscriptionsState,
 } from '../../../../atoms'
@@ -29,9 +28,6 @@ import {
   Namespace,
   NamespaceApiVersion,
   NamespaceKind,
-  PlacementRule,
-  PlacementRuleApiVersion,
-  PlacementRuleKind,
   Subscription,
   SubscriptionApiVersion,
   SubscriptionKind,
@@ -53,7 +49,7 @@ const mockSubscription1: Subscription = {
     channel: 'ggithubcom-app-samples-ns/ggithubcom-app-samples',
     placement: {
       placementRef: {
-        kind: PlacementRuleKind,
+        kind: 'Placement',
         name: 'helloworld-simple-placement-1',
       },
     },
@@ -71,7 +67,7 @@ const mockSubscription2: Subscription = {
     channel: 'ggithubcom-app-samples-ns/ggithubcom-app-samples',
     placement: {
       placementRef: {
-        kind: PlacementRuleKind,
+        kind: 'Placement',
         name: 'helloworld-simple-placement-2',
       },
     },
@@ -88,34 +84,6 @@ const mockChannel0: Channel = {
   spec: {
     pathname: 'https://test.com/test.git',
     type: 'Git',
-  },
-}
-
-const mockPlacementrule0: PlacementRule = {
-  apiVersion: PlacementRuleApiVersion,
-  kind: PlacementRuleKind,
-  metadata: {
-    name: 'placementrule-0',
-    namespace: 'namespace-0',
-    labels: {
-      app: 'application-0-app',
-    },
-  },
-  spec: {
-    clusterReplicas: 1,
-    clusterSelector: {
-      matchLabels: {
-        name: 'local-cluster',
-      },
-    },
-  },
-  status: {
-    decisions: [
-      {
-        clusterName: 'local-cluster',
-        clusterNamespace: 'local-cluster',
-      },
-    ],
   },
 }
 
@@ -517,8 +485,6 @@ const mockNamespaces: Namespace[] = ['namespace1', 'namespace2', 'namespace3'].m
 const mockSubscriptions = [mockSubscription1, mockSubscription2]
 const mockChannels: Channel[] = [mockChannel0]
 
-const mockPlacementrules: PlacementRule[] = [mockPlacementrule0]
-
 const mockManagedClusters: ManagedCluster[] = [mockManagedCluster0]
 
 //////////////// Test /////////////////
@@ -545,7 +511,6 @@ describe('Overview Tab', () => {
         initializeState={(snapshot) => {
           snapshot.set(subscriptionsState, mockSubscriptions)
           snapshot.set(channelsState, mockChannels)
-          snapshot.set(placementRulesState, mockPlacementrules)
           snapshot.set(managedClustersState, mockManagedClusters)
           snapshot.set(namespacesState, mockNamespaces)
         }}
@@ -578,7 +543,6 @@ describe('Overview Tab', () => {
         initializeState={(snapshot) => {
           snapshot.set(subscriptionsState, mockSubscriptions)
           snapshot.set(channelsState, mockChannels)
-          snapshot.set(placementRulesState, mockPlacementrules)
           snapshot.set(managedClustersState, mockManagedClusters)
           snapshot.set(namespacesState, mockNamespaces)
         }}
@@ -612,7 +576,6 @@ describe('Overview Tab', () => {
         initializeState={(snapshot) => {
           snapshot.set(subscriptionsState, mockSubscriptions)
           snapshot.set(channelsState, mockChannels)
-          snapshot.set(placementRulesState, mockPlacementrules)
           snapshot.set(managedClustersState, mockManagedClusters)
         }}
       >
@@ -693,7 +656,6 @@ describe('Overview Tab', () => {
         initializeState={(snapshot) => {
           snapshot.set(subscriptionsState, mockSubscriptions)
           snapshot.set(channelsState, mockChannels)
-          snapshot.set(placementRulesState, mockPlacementrules)
           snapshot.set(managedClustersState, mockManagedClusters)
           snapshot.set(settingsState, {
             enhancedPlacement: 'enabled',
@@ -1259,7 +1221,6 @@ describe('Overview Tab RBAC', () => {
         initializeState={(snapshot) => {
           snapshot.set(subscriptionsState, mockSubscriptions)
           snapshot.set(channelsState, mockChannels)
-          snapshot.set(placementRulesState, mockPlacementrules)
           snapshot.set(managedClustersState, mockManagedClusters)
           snapshot.set(namespacesState, mockNamespaces)
         }}
@@ -1300,7 +1261,6 @@ describe('Overview Tab RBAC', () => {
         initializeState={(snapshot) => {
           snapshot.set(subscriptionsState, mockSubscriptions)
           snapshot.set(channelsState, mockChannels)
-          snapshot.set(placementRulesState, mockPlacementrules)
           snapshot.set(managedClustersState, mockManagedClusters)
           snapshot.set(namespacesState, mockNamespaces)
         }}
@@ -1341,7 +1301,6 @@ describe('Overview Tab RBAC', () => {
         initializeState={(snapshot) => {
           snapshot.set(subscriptionsState, mockSubscriptions)
           snapshot.set(channelsState, mockChannels)
-          snapshot.set(placementRulesState, mockPlacementrules)
           snapshot.set(managedClustersState, mockManagedClusters)
           snapshot.set(namespacesState, mockNamespaces)
         }}

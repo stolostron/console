@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import get from 'lodash/get'
-import { Fragment, ReactNode, useContext, useEffect, useMemo, useState } from 'react'
+import { Fragment, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { SetterOrUpdater, useRecoilValue, useSetRecoilState } from 'recoil'
 import { tokenExpired } from '../logout'
@@ -86,8 +86,6 @@ import {
   PlacementDecisionApiVersion,
   PlacementDecisionKind,
   PlacementKind,
-  PlacementRuleApiVersion,
-  PlacementRuleKind,
   PolicyApiVersion,
   PolicyAutomationApiVersion,
   PolicyAutomationKind,
@@ -165,7 +163,6 @@ import {
   nodePoolsState,
   placementBindingsState,
   placementDecisionsState,
-  placementRulesState,
   placementsState,
   policiesState,
   policyAutomationState,
@@ -175,6 +172,8 @@ import {
   secretsState,
   ServerSideEventData,
   settingsState,
+  useEventStreamIdleGracePeriod,
+  useEventStreamIdleTimeout,
   servicesState,
   storageClassState,
   submarinerConfigsState,
@@ -189,10 +188,22 @@ import { PluginDataContext } from '../lib/PluginDataContext'
 import { useQuery } from '../lib/useQuery'
 import { MultiClusterHubComponent } from '../resources/multi-cluster-hub-component'
 import { ClaimMappings } from '~/resources/authentication'
+import { usePageActivity } from '../lib/usePageActivity'
 
 export function LoadData(props: { children?: ReactNode }) {
-  const { loadCompleted, setLoadStarted, setLoadCompleted } = useContext(PluginDataContext)
+  const { loadCompleted, setLoadStarted, setLoadCompleted, setIsStreamIdle, setIsReconnecting, mounted } =
+    useContext(PluginDataContext)
   const [eventsLoaded, setEventsLoaded] = useState(false)
+  const idleTimeoutMs = useEventStreamIdleTimeout()
+  const gracePeriodMs = useEventStreamIdleGracePeriod()
+  const { isActive } = usePageActivity(idleTimeoutMs, mounted)
+  const wasActiveRef = useRef(true)
+  const isReconnectingRef = useRef(false)
+  const streamStoppedRef = useRef(false)
+  const graceTimerRef = useRef<ReturnType<typeof setTimeout>>()
+  const eventSourceRef = useRef<EventSource>()
+  const processIntervalRef = useRef<ReturnType<typeof setInterval>>()
+  const [restartKey, setRestartKey] = useState(0)
 
   const setAgentClusterInstalls = useSetRecoilState(agentClusterInstallsState)
   const setAgentMachinesState = useSetRecoilState(agentMachinesState)
@@ -241,7 +252,6 @@ export function LoadData(props: { children?: ReactNode }) {
   const setNodePoolsState = useSetRecoilState(nodePoolsState)
   const setPlacementBindingsState = useSetRecoilState(placementBindingsState)
   const setPlacementDecisionsState = useSetRecoilState(placementDecisionsState)
-  const setPlacementRulesState = useSetRecoilState(placementRulesState)
   const setPlacementsState = useSetRecoilState(placementsState)
   const setPoliciesState = useSetRecoilState(policiesState)
   const setPolicyAutomationState = useSetRecoilState(policyAutomationState)
@@ -337,7 +347,6 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(PlacementApiVersionAlpha, PlacementKind, setPlacementsState)
     addSetter(PlacementBindingApiVersion, PlacementBindingKind, setPlacementBindingsState)
     addSetter(PlacementDecisionApiVersion, PlacementDecisionKind, setPlacementDecisionsState)
-    addSetter(PlacementRuleApiVersion, PlacementRuleKind, setPlacementRulesState)
     addSetter(PolicyApiVersion, PolicyKind, setPoliciesState)
     addSetter(PolicyAutomationApiVersion, PolicyAutomationKind, setPolicyAutomationState)
     addSetter(PolicyReportApiVersion, PolicyReportKind, setPolicyReports)
@@ -397,7 +406,6 @@ export function LoadData(props: { children?: ReactNode }) {
     setNodePoolsState,
     setPlacementBindingsState,
     setPlacementDecisionsState,
-    setPlacementRulesState,
     setPlacementsState,
     setPoliciesState,
     setPolicyAutomationState,
@@ -413,6 +421,50 @@ export function LoadData(props: { children?: ReactNode }) {
     setSubscriptionsState,
     setUsers,
   ])
+
+  const stopStream = useCallback(() => {
+    streamStoppedRef.current = true
+    eventSourceRef.current?.close()
+    eventSourceRef.current = undefined
+    if (processIntervalRef.current) {
+      clearInterval(processIntervalRef.current)
+      processIntervalRef.current = undefined
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!isActive && wasActiveRef.current) {
+      wasActiveRef.current = false
+      setIsStreamIdle(true)
+      if (gracePeriodMs <= 0) {
+        // No grace period: stop stream immediately
+        stopStream()
+      } else {
+        // Start grace timer (stream keeps running during grace period)
+        graceTimerRef.current = setTimeout(stopStream, gracePeriodMs)
+      }
+    } else if (isActive && !wasActiveRef.current) {
+      wasActiveRef.current = true
+      if (graceTimerRef.current) {
+        clearTimeout(graceTimerRef.current)
+        graceTimerRef.current = undefined
+      }
+      if (streamStoppedRef.current) {
+        // stopped → reconnecting: stream was killed, need full reload
+        streamStoppedRef.current = false
+        setIsStreamIdle(false)
+        isReconnectingRef.current = true
+        setIsReconnecting(true)
+        resetCaches(caches)
+        resetMapperCaches(mappers)
+        setEventsLoaded(false)
+        setRestartKey((k) => k + 1)
+      } else {
+        // idle → active: returned during grace period, just hide overlay
+        setIsStreamIdle(false)
+      }
+    }
+  }, [isActive, gracePeriodMs, caches, mappers, stopStream, setIsStreamIdle, setIsReconnecting])
 
   useEffect(() => {
     const eventQueue: WatchEvent[] = []
@@ -440,58 +492,34 @@ export function LoadData(props: { children?: ReactNode }) {
           if (watchEvents) {
             const setter = setters[groupVersion]?.[kind]
             if (setter) {
-              setter(() => {
-                const cache = caches[groupVersion]?.[kind]
-                for (const watchEvent of watchEvents) {
-                  const key = `${watchEvent.object.metadata.namespace}/${watchEvent.object.metadata.name}`
-                  switch (watchEvent.type) {
-                    case 'ADDED':
-                    case 'MODIFIED':
-                      cache[key] = watchEvent.object
-                      break
-                    case 'DELETED':
-                      delete cache[key]
-                      break
-                  }
-                }
-                return Object.values(cache)
-              })
+              updateSetterCache(caches, groupVersion, kind, watchEvents)
+              if (!isReconnectingRef.current) {
+                setter(Object.values(caches[groupVersion]?.[kind]))
+              }
             } else {
               const mapper = mappers[groupVersion]?.[kind]
               if (mapper) {
-                const { setter, mcaches, keyBy } = mapper
-                setter(() => {
-                  const map = mcaches[groupVersion]?.[kind]
-                  for (const watchEvent of watchEvents) {
-                    const key = keyBy
-                      .reduce((keys, partKey) => {
-                        keys.push(get(watchEvent.object, partKey))
-                        return keys
-                      }, [] as string[])
-                      .join('/')
-                    map[key] = [...(map[key] || [])]
-                    const arr = map[key]
-                    const index = arr.findIndex(
-                      (resource) =>
-                        resource.metadata?.name === watchEvent.object.metadata.name &&
-                        resource.metadata?.namespace === watchEvent.object.metadata.namespace
-                    )
-                    switch (watchEvent.type) {
-                      case 'ADDED':
-                      case 'MODIFIED':
-                        if (index !== -1) arr[index] = watchEvent.object
-                        else arr.push(watchEvent.object)
-                        break
-                      case 'DELETED':
-                        if (index !== -1) arr.splice(index, 1)
-                        break
-                    }
-                  }
-                  return { ...map }
-                })
+                updateMapperCache(mapper, groupVersion, kind, watchEvents)
+                if (!isReconnectingRef.current) {
+                  mapper.setter({ ...mapper.mcaches[groupVersion]?.[kind] })
+                }
               }
             }
           }
+        }
+      }
+    }
+
+    function flushCachesToRecoil() {
+      for (const groupVersion in setters) {
+        for (const kind in setters[groupVersion]) {
+          setters[groupVersion][kind](Object.values(caches[groupVersion]?.[kind]))
+        }
+      }
+      for (const groupVersion in mappers) {
+        for (const kind in mappers[groupVersion]) {
+          const { setter, mcaches } = mappers[groupVersion][kind]
+          setter({ ...mcaches[groupVersion]?.[kind] })
         }
       }
     }
@@ -514,18 +542,19 @@ export function LoadData(props: { children?: ReactNode }) {
             // tables show skeleton until firs packet is received
             // then list grows as subsequent packets packets are received
             case 'EOP': // END OF A PACKET
-              setLoadStarted(() => {
-                processEventQueue()
-                return true
-              })
+              processEventQueue()
+              if (!isReconnectingRef.current) {
+                setLoadStarted(true)
+              }
               break
             case 'LOADED':
-              setEventsLoaded((eventsLoaded) => {
-                if (!eventsLoaded) {
-                  processEventQueue()
-                }
-                return true
-              })
+              processEventQueue()
+              if (isReconnectingRef.current) {
+                flushCachesToRecoil()
+                isReconnectingRef.current = false
+                setIsReconnecting(false)
+              }
+              setEventsLoaded(true)
               break
             case 'SETTINGS':
               setSettings(data.settings)
@@ -540,9 +569,11 @@ export function LoadData(props: { children?: ReactNode }) {
     let evtSource: EventSource | undefined
     function startWatch() {
       evtSource = new EventSource(`${getBackendUrl()}/events`, { withCredentials: true })
+      eventSourceRef.current = evtSource
       evtSource.onmessage = processMessage
       evtSource.onerror = function () {
         console.log('EventSource', 'error', 'readyState', evtSource?.readyState)
+        if (streamStoppedRef.current) return
         switch (evtSource?.readyState) {
           case EventSource.CLOSED:
             setTimeout(() => {
@@ -555,14 +586,14 @@ export function LoadData(props: { children?: ReactNode }) {
     startWatch()
 
     const timeout = setInterval(processEventQueue, 500)
+    processIntervalRef.current = timeout
     return () => {
       clearInterval(timeout)
       if (evtSource) evtSource.close()
+      eventSourceRef.current = undefined
+      processIntervalRef.current = undefined
     }
-    // this effect must only run once--it sets up the call to /events on the backend
-    // which should only ever be called once
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [caches, mappers, restartKey, setIsReconnecting, setLoadStarted, setSettings, setters])
 
   const {
     data: globalHubRes,
@@ -668,6 +699,99 @@ export function LoadData(props: { children?: ReactNode }) {
   const children = useMemo(() => <Fragment>{props.children}</Fragment>, [props.children])
 
   return children
+}
+
+function resetCaches(caches: Record<string, Record<string, Record<string, IResource>>>) {
+  for (const groupVersion in caches) {
+    for (const kind in caches[groupVersion]) {
+      caches[groupVersion][kind] = {}
+    }
+  }
+}
+
+function resetMapperCaches(
+  mappers: Record<
+    string,
+    Record<
+      string,
+      {
+        setter: SetterOrUpdater<Record<string, any[]>>
+        mcaches: Record<string, Record<string, Record<string, IResource[]>>>
+        keyBy: string[]
+      }
+    >
+  >
+) {
+  for (const groupVersion in mappers) {
+    for (const kind in mappers[groupVersion]) {
+      const { mcaches } = mappers[groupVersion][kind]
+      for (const gv in mcaches) {
+        for (const k in mcaches[gv]) {
+          mcaches[gv][k] = {}
+        }
+      }
+    }
+  }
+}
+
+function updateSetterCache(
+  caches: Record<string, Record<string, Record<string, IResource>>>,
+  groupVersion: string,
+  kind: string,
+  watchEvents: WatchEvent[]
+) {
+  const cache = caches[groupVersion]?.[kind]
+  for (const watchEvent of watchEvents) {
+    const key = `${watchEvent.object.metadata.namespace}/${watchEvent.object.metadata.name}`
+    switch (watchEvent.type) {
+      case 'ADDED':
+      case 'MODIFIED':
+        cache[key] = watchEvent.object
+        break
+      case 'DELETED':
+        delete cache[key]
+        break
+    }
+  }
+}
+
+function updateMapperCache(
+  mapper: {
+    setter: SetterOrUpdater<Record<string, any[]>>
+    mcaches: Record<string, Record<string, Record<string, IResource[]>>>
+    keyBy: string[]
+  },
+  groupVersion: string,
+  kind: string,
+  watchEvents: WatchEvent[]
+) {
+  const { mcaches, keyBy } = mapper
+  const map = mcaches[groupVersion]?.[kind]
+  for (const watchEvent of watchEvents) {
+    const key = keyBy
+      .reduce((keys, partKey) => {
+        keys.push(get(watchEvent.object, partKey))
+        return keys
+      }, [] as string[])
+      .join('/')
+    map[key] = [...(map[key] || [])]
+    const arr = map[key]
+    const index = arr.findIndex(
+      (resource) =>
+        resource.metadata?.name === watchEvent.object.metadata.name &&
+        resource.metadata?.namespace === watchEvent.object.metadata.namespace
+    )
+    switch (watchEvent.type) {
+      case 'ADDED':
+      case 'MODIFIED':
+        if (index !== -1) arr[index] = watchEvent.object
+        else arr.push(watchEvent.object)
+        break
+      case 'DELETED':
+        if (index !== -1) arr.splice(index, 1)
+        break
+    }
+  }
 }
 
 // Query for GlobalHub check and name

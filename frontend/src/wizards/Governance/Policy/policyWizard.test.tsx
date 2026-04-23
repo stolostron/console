@@ -10,7 +10,9 @@ import {
 } from '../../../routes/Governance/governance.sharedMocks'
 
 import { IResource } from '@patternfly-labs/react-form-wizard'
+import { ReactNode } from 'react'
 import { BrowserRouter as Router } from 'react-router-dom-v5-compat'
+import { RecoilRoot } from 'recoil'
 import { waitForText } from '../../../lib/test-util'
 import { Policy } from '../../../resources'
 import { WizardSyncEditor } from '../../../routes/Governance/policies/CreatePolicy'
@@ -28,22 +30,24 @@ describe('ExistingTemplateName', () => {
   })
 })
 
-function TestPolicyWizard() {
+function TestPolicyWizard(props?: { yamlEditor?: () => ReactNode }) {
   return (
-    <Router>
-      <PolicyWizard
-        title="Testing the policy wizard"
-        namespaces={['argo-server-1']}
-        policies={[mockPolicy as IResource]}
-        placements={[mockPlacements as IResource]}
-        placementRules={[]}
-        clusters={mockManagedClusters}
-        clusterSets={[mockClusterSet]}
-        clusterSetBindings={[mockClusterSetBinding]}
-        onSubmit={() => new Promise(() => {})}
-        onCancel={() => {}}
-      />
-    </Router>
+    <RecoilRoot>
+      <Router>
+        <PolicyWizard
+          title="Testing the policy wizard"
+          namespaces={['argo-server-1']}
+          policies={[mockPolicy as IResource]}
+          placements={[mockPlacements as IResource]}
+          clusters={mockManagedClusters}
+          clusterSets={[mockClusterSet]}
+          clusterSetBindings={[mockClusterSetBinding]}
+          onSubmit={() => new Promise(() => {})}
+          onCancel={() => {}}
+          yamlEditor={props?.yamlEditor}
+        />
+      </Router>
+    </RecoilRoot>
   )
 }
 
@@ -69,21 +73,22 @@ function TestPolicyWizardGK() {
   ]
 
   return (
-    <Router>
-      <PolicyWizard
-        title="Testing the policy wizard"
-        namespaces={['argo-server-1']}
-        policies={[mockPolicyGK as IResource]}
-        placements={[mockPlacements as IResource]}
-        placementRules={[]}
-        clusters={mockManagedClusters}
-        clusterSets={[mockClusterSet]}
-        clusterSetBindings={[mockClusterSetBinding]}
-        onSubmit={() => new Promise(() => {})}
-        onCancel={() => {}}
-        resources={[mockPolicyGK as IResource]}
-      />
-    </Router>
+    <RecoilRoot>
+      <Router>
+        <PolicyWizard
+          title="Testing the policy wizard"
+          namespaces={['argo-server-1']}
+          policies={[mockPolicyGK as IResource]}
+          placements={[mockPlacements as IResource]}
+          clusters={mockManagedClusters}
+          clusterSets={[mockClusterSet]}
+          clusterSetBindings={[mockClusterSetBinding]}
+          onSubmit={() => new Promise(() => {})}
+          onCancel={() => {}}
+          resources={[mockPolicyGK as IResource]}
+        />
+      </Router>
+    </RecoilRoot>
   )
 }
 
@@ -101,22 +106,23 @@ function TestPolicyWizardOperatorPolicy() {
   ]
 
   return (
-    <Router>
-      <PolicyWizard
-        title="Testing the policy wizard"
-        namespaces={['argo-server-1']}
-        policies={[mockPolicyOperatorPlc as IResource]}
-        placements={[mockPlacements as IResource]}
-        placementRules={[]}
-        clusters={mockManagedClusters}
-        clusterSets={[mockClusterSet]}
-        clusterSetBindings={[mockClusterSetBinding]}
-        onSubmit={() => new Promise(() => {})}
-        onCancel={() => {}}
-        resources={[mockPolicyOperatorPlc as IResource]}
-        yamlEditor={() => <WizardSyncEditor />}
-      />
-    </Router>
+    <RecoilRoot>
+      <Router>
+        <PolicyWizard
+          title="Testing the policy wizard"
+          namespaces={['argo-server-1']}
+          policies={[mockPolicyOperatorPlc as IResource]}
+          placements={[mockPlacements as IResource]}
+          clusters={mockManagedClusters}
+          clusterSets={[mockClusterSet]}
+          clusterSetBindings={[mockClusterSetBinding]}
+          onSubmit={() => new Promise(() => {})}
+          onCancel={() => {}}
+          resources={[mockPolicyOperatorPlc as IResource]}
+          yamlEditor={() => <WizardSyncEditor />}
+        />
+      </Router>
+    </RecoilRoot>
   )
 }
 
@@ -287,5 +293,73 @@ describe('Policy wizard', () => {
 
     expect(input).toHaveTextContent('subscription: namespace: my-namespace')
     expect(input).not.toHaveTextContent('operatorGroup: targetNamespaces: - my-namespace')
+  })
+
+  test('default tolerations are set when creating new placement', async () => {
+    render(<TestPolicyWizard yamlEditor={() => <WizardSyncEditor />} />)
+
+    const nameTextbox = screen.getByRole('textbox', { name: /name/i })
+    userEvent.type(nameTextbox, 'test-policy')
+    screen.getByPlaceholderText(/select namespace/i).click()
+    screen.getByRole('option', { name: /argo-server-1/i }).click()
+
+    screen.getByRole('button', { name: /placement/i }).click()
+    screen.getByRole('button', { name: /new placement/i }).click()
+    await waitFor(() => screen.getByPlaceholderText(/select the cluster sets/i))
+
+    const yamlCheckBox = screen.getByRole('switch', { name: /yaml/i }) as HTMLInputElement
+    if (!yamlCheckBox.checked) {
+      userEvent.click(yamlCheckBox)
+    }
+
+    await waitFor(() => {
+      const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
+      expect(input).not.toHaveValue('')
+    })
+
+    const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
+    const yamlContent = input.textContent ?? ''
+    expect(yamlContent).toContain('key: cluster.open-cluster-management.io/unreachable')
+    expect(yamlContent).toContain('key: cluster.open-cluster-management.io/unavailable')
+    expect(yamlContent).toContain('operator: Exists')
+    const tolerationMatches = yamlContent.match(/- key: cluster\.open-cluster-management\.io\//g)
+    expect(tolerationMatches).toHaveLength(2)
+  })
+
+  test('default tolerations persist after switching to existing and back to new placement', async () => {
+    render(<TestPolicyWizard yamlEditor={() => <WizardSyncEditor />} />)
+
+    const nameTextbox = screen.getByRole('textbox', { name: /name/i })
+    userEvent.type(nameTextbox, 'test-policy')
+    screen.getByPlaceholderText(/select namespace/i).click()
+    screen.getByRole('option', { name: /argo-server-1/i }).click()
+
+    screen.getByRole('button', { name: /placement/i }).click()
+    screen.getByRole('button', { name: /new placement/i }).click()
+    await waitFor(() => screen.getByPlaceholderText(/select the cluster sets/i))
+
+    screen.getByRole('button', { name: /existing placement/i }).click()
+    await waitFor(() => screen.getByPlaceholderText(/select the placement/i))
+
+    screen.getByRole('button', { name: /new placement/i }).click()
+    await waitFor(() => screen.getByPlaceholderText(/select the cluster sets/i))
+
+    const yamlCheckBox = screen.getByRole('switch', { name: /yaml/i }) as HTMLInputElement
+    if (!yamlCheckBox.checked) {
+      userEvent.click(yamlCheckBox)
+    }
+
+    await waitFor(() => {
+      const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
+      expect(input).not.toHaveValue('')
+    })
+
+    const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
+    const yamlContent = input.textContent ?? ''
+    expect(yamlContent).toContain('key: cluster.open-cluster-management.io/unreachable')
+    expect(yamlContent).toContain('key: cluster.open-cluster-management.io/unavailable')
+    expect(yamlContent).toContain('operator: Exists')
+    const tolerationMatches = yamlContent.match(/- key: cluster\.open-cluster-management\.io\//g)
+    expect(tolerationMatches).toHaveLength(2)
   })
 })

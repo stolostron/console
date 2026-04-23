@@ -14,25 +14,24 @@
 // seems to be an issue with this rule and redux
 
 import TimeWindow, { reverse as reverseTimeWindow, summarize as summarizeTimeWindow } from '../components/TimeWindow'
-import PlacementRuleDeprecationAlert from '../../../../components/PlacementRuleDeprecationAlert'
 import ClusterSelector, { summarize as summarizeClusterSelector } from '../components/ClusterSelector'
-import { getSharedPlacementRuleWarning, getSharedSubscriptionWarning } from './utils'
+import { getSharedSubscriptionWarning } from './utils'
 import { getSourcePath } from '../../../../components/TemplateEditor'
-import { listPlacementRules, listPlacements, PlacementRuleKind } from '../../../../resources'
+import { listPlacements } from '../../../../resources'
 import { getControlByID } from '../../../../lib/temptifly-utils'
 import _ from 'lodash'
 
 const clusterSelectorCheckbox = 'clusterSelector'
-const existingRuleCheckbox = 'existingrule-checkbox'
+const existingRuleCheckbox = 'existing-placement-checkbox'
 const unavailable = '-unavailable-'
 const nameIndex = 'metadata.name'
 
-export const loadExistingPlacementRules = (t) => {
+export const loadExistingPlacements = (t) => {
   let nsControl = undefined
 
   return {
     query: () => {
-      return Promise.all([listPlacementRules(nsControl.active).promise, listPlacements(nsControl.active).promise])
+      return listPlacements(nsControl.active).promise
     },
     variables: (control, globalControl) => {
       nsControl = globalControl.find(({ id: idCtrl }) => idCtrl === 'namespace')
@@ -67,86 +66,58 @@ export const getMatchLabels = (clusterSelector) => {
 const setAvailableRules = (control, result) => {
   const { loading } = result
   const { data, i18n } = result
-  const placementRules = data && data[0]
-  const placements = data && data[1]
+  const placements = data
   control.isLoading = false
-  const error = placementRules ? null : result.error
+  const error = placements ? null : result.error
   if (!control.available) {
     control.available = []
     control.availableData = []
   }
-  if (error || placementRules) {
+  if (error || placements) {
     if (error) {
       control.isFailed = true
       control.isLoaded = true
-    } else if (placementRules) {
+    } else if (placements) {
       control.isLoaded = true
 
       control.availableInfo = {}
       const { groupControlData } = control
-      const enableHubSelfManagement = getControlByID(groupControlData, 'enableHubSelfManagement')
 
       const placementKeyFn = (placement) => {
         let selector = unavailable
         const placementName = _.get(placement, nameIndex, '')
-        const clusterSelector = _.get(placement, 'spec.predicates[0].requiredClusterSelector.labelSelector')
-        if (clusterSelector) {
+        const predicateSelector = _.get(placement, 'spec.predicates[0].requiredClusterSelector.labelSelector')
+        const clusterSelector = predicateSelector || _.get(placement, 'spec.clusterSelector')
+        if (_.get(clusterSelector, 'matchExpressions.length', 0) > 0) {
           selector = i18n('creation.app.clusters.expressions', [
             placement.kind,
             placementName,
             getLabels(clusterSelector),
+          ])
+        } else if (_.get(clusterSelector, 'matchLabels')) {
+          selector = i18n('creation.app.clusters.matching', [
+            placement.kind,
+            placementName,
+            getMatchLabels(clusterSelector),
           ])
         }
         control.availableInfo[placementName] = selector
         return placementName
       }
 
-      const keyFn = (rule) => {
-        const ruleName = _.get(rule, nameIndex, '')
-        const clusterSelector = _.get(rule, 'spec.clusterSelector')
-        const clusterConditions = _.get(rule, 'spec.clusterConditions')
-        let selector = enableHubSelfManagement?.active
-          ? i18n('creation.app.local.clusters.only', [rule.kind, ruleName])
-          : unavailable
-        if (clusterSelector?.matchExpressions?.length > 0) {
-          if (clusterSelector.matchExpressions[0]?.key !== control.hubClusterName) {
-            selector = i18n('creation.app.clusters.expressions', [rule.kind, ruleName, getLabels(clusterSelector)])
-          }
-        } else if (clusterConditions && clusterConditions[0]?.type === 'ManagedClusterConditionAvailable') {
-          selector = enableHubSelfManagement?.active
-            ? i18n('creation.app.clusters.all.online', [rule.kind, ruleName])
-            : i18n('creation.app.clusters.only.online', [rule.kind, ruleName])
-        } else if (clusterSelector.matchLabels) {
-          if (!clusterSelector.matchLabels[control.hubClusterName]) {
-            selector = i18n('creation.app.clusters.matching', [rule.kind, ruleName, getMatchLabels(clusterSelector)])
-          }
-        }
-        control.availableInfo[ruleName] = selector
-        return ruleName
-      }
-
-      let placementRulesAvailableData = {}
-      let placementRulesAvailable = []
       let placementsAvailableData = {}
       let placementsAvailable = []
-
-      if (placementRules.length) {
-        placementRulesAvailableData = _.keyBy(placementRules, keyFn)
-        placementRulesAvailable = _.map(Object.values(placementRulesAvailableData), keyFn)
-          .filter((ruleName) => control.availableInfo[ruleName] !== unavailable)
-          .sort()
-      }
       if (placements.length) {
         placementsAvailableData = _.keyBy(placements, placementKeyFn)
         placementsAvailable = _.map(Object.values(placementsAvailableData), placementKeyFn)
           .filter((placementName) => control.availableInfo[placementName] !== unavailable)
           .sort()
       }
-      control.availableData = { ...placementsAvailableData, ...placementRulesAvailableData }
-      control.available = [...placementsAvailable, ...placementRulesAvailable]
+      control.availableData = placementsAvailableData
+      control.available = placementsAvailable
       control.info = ''
 
-      // if no existing placement rules & placements
+      // if there are no existing placements available
       const existingRuleControl = getControlByID(groupControlData, existingRuleCheckbox)
       existingRuleControl.disabled = control.available.length === 0
       if (control.available.length === 0) {
@@ -155,11 +126,18 @@ const setAvailableRules = (control, result) => {
         clusterSelectorControl.onSelect()
       } else {
         control.placeholder = i18n('creation.app.settings.existingRule')
-        existingRuleControl.onSelect()
+        const selectedPlacementNameControl = getControlByID(groupControlData, 'selectedPlacementName')
+        const hasExistingSelection = !!control.active || !!selectedPlacementNameControl?.active
+        if (hasExistingSelection) {
+          existingRuleControl.onSelect()
+        } else {
+          const clusterSelectorControl = getControlByID(groupControlData, clusterSelectorCheckbox)
+          clusterSelectorControl.onSelect()
+        }
       }
 
-      //remove default placement rule name if this is not on the list of available placements
-      //in that case the name was set by the reverse function on control initialization
+      // remove the default placement name if it is not in the available placements list
+      // in that case the name was set by the reverse function on control initialization
       if (control.active) {
         if (!control.available.includes(control.active)) {
           control.active = null
@@ -191,7 +169,7 @@ export const updatePlacementControls = (control) => {
   }
 
   // opaque the existing rules combobox
-  const selectedRuleComboControl = groupControlData.find(({ id }) => id === 'placementrulecombo')
+  const selectedRuleComboControl = groupControlData.find(({ id }) => id === 'placementcombo')
 
   if (existingRuleControl.active) {
     _.set(selectedRuleComboControl, 'validation.required', true)
@@ -204,35 +182,35 @@ export const updatePlacementControls = (control) => {
   if (id !== existingRuleCheckbox) {
     selectedRuleComboControl.active = ''
     selectedRuleComboControl.info = ''
-    const selectedRuleNameControl = groupControlData.find(({ id }) => id === 'selectedRuleName')
-    if (selectedRuleNameControl) {
-      _.set(selectedRuleNameControl, 'active', '')
+    const selectedPlacementNameControl = groupControlData.find(({ id }) => id === 'selectedPlacementName')
+    if (selectedPlacementNameControl) {
+      _.set(selectedPlacementNameControl, 'active', '')
     }
   }
 
   return groupControlData
 }
 
-// existing placement rule combo box changed -- update hidden value used in temptlate
-export const updateNewRuleControls = (control) => {
+// existing placement combo box changed; update hidden value used in the template
+export const updateSelectedPlacementControls = (control) => {
   const { availableData, availableInfo, groupControlData } = control
   const active = availableData[control.active]
   const kind = _.get(active, 'kind')
   control.info = availableInfo ? availableInfo[control?.active] : ''
-  const selectedRuleNameControl = groupControlData.find(({ id }) => id === 'selectedRuleName')
-  const isDeprecatedPR = groupControlData.find(({ id }) => id === 'isDeprecatedPR')
-  const deprecatedRule = groupControlData.find(({ id }) => id === 'deprecated-rule')
+  const selectedPlacementNameControl = groupControlData.find(({ id }) => id === 'selectedPlacementName')
+  const existingRuleControl = groupControlData.find(({ id }) => id === existingRuleCheckbox)
+  const clusterSelectorControl = groupControlData.find(({ id }) => id === clusterSelectorCheckbox)
   if (kind) {
-    if (isDeprecatedPR) {
-      _.set(isDeprecatedPR, 'active', kind === PlacementRuleKind)
+    if (existingRuleControl) {
+      _.set(existingRuleControl, 'active', true)
     }
-    if (deprecatedRule) {
-      _.set(deprecatedRule, 'active', '')
+    if (clusterSelectorControl) {
+      _.set(clusterSelectorControl, 'active.mode', false)
     }
   }
 
-  if (selectedRuleNameControl) {
-    _.set(selectedRuleNameControl, 'active', _.get(active, nameIndex))
+  if (selectedPlacementNameControl) {
+    _.set(selectedPlacementNameControl, 'active', _.get(active, nameIndex))
   }
 }
 
@@ -243,7 +221,7 @@ export const updateNewRuleControls = (control) => {
 //when loading an existing app, pass to the control the placement value that is currently stored by the app
 //the reverse() function retrieves this the value out of the existing app template
 //the editor needs the existing value to know whether or not the user changed that value
-export const reverseExistingRule = (control, templateObject) => {
+export const reverseExistingPlacement = (control, templateObject) => {
   const { groupControlData } = control
   const existingRuleControl = groupControlData.find(({ id }) => id === existingRuleCheckbox)
   const active = _.get(templateObject, getSourcePath('Subscription[0].spec.placement.placementRef.name'))
@@ -254,16 +232,20 @@ export const reverseExistingRule = (control, templateObject) => {
 }
 
 export const reverseOnline = (control, templateObject) => {
-  const active = _.get(templateObject, getSourcePath('PlacementRule[0].spec.clusterConditions[0].type'))
-  if (active) {
-    control.active = !_.isEmpty(active)
+  const legacyActive = _.get(templateObject, getSourcePath('Placement[0].spec.clusterConditions[0].type'))
+  const predicateActive = _.get(
+    templateObject,
+    getSourcePath('Placement[0].spec.predicates[0].requiredClusterSelector.labelSelector.matchExpressions[0].key')
+  )
+  if (legacyActive || predicateActive?.$v === 'cluster.open-cluster-management.io/condition-available') {
+    control.active = true
   }
 }
 
 export const summarizeOnline = (control, _globalControlData, summary) => {
   const clusterSelectorControl = getControlByID(control.groupControlData, clusterSelectorCheckbox)
   const existingRuleControl = getControlByID(control.groupControlData, existingRuleCheckbox)
-  const existingRuleCombo = getControlByID(control.groupControlData, 'placementrulecombo')
+  const existingRuleCombo = getControlByID(control.groupControlData, 'placementcombo')
 
   if (_.get(existingRuleControl, 'active', false) === true) {
     summary.push(existingRuleCombo.info)
@@ -291,13 +273,7 @@ const placementData = (isLocalCluster, t) => {
       subgroup: true,
       collapsable: true,
       collapsed: false,
-      info: getSharedPlacementRuleWarning,
       editing: { editMode: true },
-    },
-    {
-      id: 'deprecationWarning',
-      type: 'custom',
-      component: <PlacementRuleDeprecationAlert />,
     },
     {
       id: existingRuleCheckbox,
@@ -309,43 +285,28 @@ const placementData = (isLocalCluster, t) => {
       summarize: summarizeOnline,
     },
     {
-      id: 'isDeprecatedPR',
-      type: 'hidden',
-      active: '',
-    },
-    {
-      id: 'deprecated-rule',
-      type: 'hidden',
-      active: '',
-    },
-    {
-      id: 'placementrulecombo',
+      id: 'placementcombo',
       type: 'combobox',
       opaque: false,
       placeholder: t('creation.app.settings.existingRule'),
-      reverse: reverseExistingRule,
-      fetchAvailable: loadExistingPlacementRules(t),
-      onSelect: updateNewRuleControls,
+      reverse: reverseExistingPlacement,
+      fetchAvailable: loadExistingPlacements(t),
+      onSelect: updateSelectedPlacementControls,
       validation: {
-        notification: t('You must select an existing placement or placement rule.'),
-        required: true,
+        notification: t('You must select an existing placement.'),
+        required: false,
       },
       summarize: () => {},
     },
     {
-      id: 'selectedRuleName',
+      id: 'selectedPlacementName',
       type: 'hidden',
-      reverse: reverseExistingRule,
+      reverse: reverseExistingPlacement,
     },
     {
       id: 'enableHubSelfManagement',
       type: 'hidden',
       active: isLocalCluster,
-    },
-    {
-      id: 'placementRuleDeprecated',
-      type: 'hidden',
-      deprecated: { path: 'PlacementRule[*].kind' },
     },
     {
       type: 'custom',

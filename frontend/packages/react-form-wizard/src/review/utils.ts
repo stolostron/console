@@ -79,6 +79,11 @@ function buildReviewSubtree(
             : { ...props, type: InputReviewMeta.ARRAY_INPUT },
         ]
       }
+      if (props.type === InputReviewMeta.GROUP) {
+        return [
+          hasChildren ? { ...props, type: InputReviewMeta.GROUP, children } : { ...props, type: InputReviewMeta.GROUP },
+        ]
+      }
       /* ARRAY_INSTANCE: repeat-group row or similar; `path` often carries the instance index segment. */
       return [
         hasChildren

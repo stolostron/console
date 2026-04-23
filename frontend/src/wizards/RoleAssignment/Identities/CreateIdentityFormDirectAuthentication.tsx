@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ActionGroup, ActionList, ActionListGroup, ActionListItem, Button } from '@patternfly/react-core'
+import { ActionList, ActionListGroup, ActionListItem, Button } from '@patternfly/react-core'
 import { useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -116,20 +116,18 @@ export function CreateIdentityFormDirectAuthentication({
         isRequired
       />
 
-      <ActionGroup>
-        <ActionList>
-          <ActionListGroup>
-            <ActionListItem>
-              <AcmSubmit label={saveButtonText} processingLabel={t('Saving...')} onClick={handleSubmit} />
-            </ActionListItem>
-            <ActionListItem>
-              <Button variant="link" onClick={onCancel}>
-                {cancelButtonText}
-              </Button>
-            </ActionListItem>
-          </ActionListGroup>
-        </ActionList>
-      </ActionGroup>
+      <ActionList>
+        <ActionListGroup>
+          <ActionListItem>
+            <AcmSubmit label={saveButtonText} processingLabel={t('Saving...')} onClick={handleSubmit} />
+          </ActionListItem>
+          <ActionListItem>
+            <Button variant="link" onClick={onCancel}>
+              {cancelButtonText}
+            </Button>
+          </ActionListItem>
+        </ActionListGroup>
+      </ActionList>
     </AcmForm>
   )
 }

@@ -25,6 +25,7 @@ import { operatorCheck } from './routes/operatorCheck'
 import { proxy } from './routes/proxy'
 import { readiness } from './routes/readiness'
 import { search } from './routes/search'
+import { placementDebug } from './routes/placementDebug'
 import { serveHandler } from './routes/serve'
 import { upgradeRiskPredictions } from './routes/upgrade-risks-prediction'
 import { username } from './routes/username'
@@ -66,6 +67,7 @@ if (eventsEnabled) {
   router.get('/events', events)
 }
 router.post('/proxy/search', search)
+router.post('/placement-debug', placementDebug)
 router.get('/authenticated', authenticated)
 router.post('/ansibletower', ansibleTower)
 router.get('/username', username)

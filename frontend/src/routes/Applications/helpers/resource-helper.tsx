@@ -22,8 +22,6 @@ import {
   JobKind,
   Placement,
   PlacementKind,
-  PlacementRule,
-  PlacementRuleKind,
   StatefulSetKind,
   Subscription,
   SubscriptionApiVersion,
@@ -304,7 +302,6 @@ export const getAppChildResources = (
   app: IResource,
   applications: Application[],
   subscriptions: Subscription[],
-  placementRules: PlacementRule[],
   placements: Placement[],
   channels: Channel[],
   hubClusterName: string
@@ -360,22 +357,17 @@ export const getAppChildResources = (
       }
     })
 
-    // Find PRs referenced/deployed by this sub
-    let subWithPR
-    const referencedPR = currentSub ? (currentSub as Subscription).spec.placement?.placementRef : undefined
-    let targetPlacements: any[] = []
-    if (referencedPR?.kind === PlacementRuleKind) {
-      targetPlacements = placementRules
-    } else if (referencedPR?.kind === PlacementKind) {
-      targetPlacements = placements
-    }
+    // Find placements referenced/deployed by this sub
+    let subWithPlacement
+    const referencedPlacement = currentSub ? (currentSub as Subscription).spec.placement?.placementRef : undefined
+    const targetPlacements = referencedPlacement?.kind === PlacementKind ? placements : []
     targetPlacements?.forEach((item) => {
       if (
-        referencedPR &&
-        referencedPR.name === item.metadata.name &&
+        referencedPlacement &&
+        referencedPlacement.name === item.metadata.name &&
         currentSub?.metadata?.namespace === item.metadata.namespace
       ) {
-        subWithPR = { ...currentSub, rule: item }
+        subWithPlacement = { ...currentSub, rule: item }
       }
       const prHostingSubAnnotation = getAnnotation(item, hostingSubAnnotationStr)
 
@@ -394,7 +386,7 @@ export const getAppChildResources = (
     })
 
     if (siblingApps.length === 0) {
-      removableSubs.push(subWithPR || currentSub)
+      removableSubs.push(subWithPlacement || currentSub)
       children.push({
         id: `subscriptions-${subDetails[0]}-${subDetails[1]}`,
         name: subDetails[1],

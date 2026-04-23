@@ -677,22 +677,22 @@ export const setSubscriptionDeployStatus = (
     details.push({
       labelValue: t('Remote subscriptions'),
       value: t(
-        'This subscription was not added to a managed cluster. If this status does not change after waiting for initial creation, ensure the Placement Rule resource is valid and exists in the {{0}} namespace and that the application-manager pod runs on the managed clusters.',
+        'This subscription was not added to a managed cluster. If this status does not change after waiting for initial creation, ensure the Placement resource is valid and exists in the {{0}} namespace and that the application-manager pod runs on the managed clusters.',
         [node.namespace]
       ),
       status: failureStatus,
     })
 
     if (isSearchAvailable()) {
-      const ruleSearchLink = `/multicloud/search?filters={"textsearch":"kind%3Aplacementrule%20namespace%3A${node.namespace}%20cluster%3A${hubClusterName}"}`
+      const placementSearchLink = `/multicloud/search?filters={"textsearch":"kind%3Aplacement%20namespace%3A${node.namespace}%20cluster%3A${hubClusterName}"}`
       details.push({
         type: 'link',
         value: {
-          label: t('View all placement rules in {{0}} namespace', [node.namespace]),
+          label: t('View all placements in {{0}} namespace', [node.namespace]),
           id: `${node.id}-subscrSearch`,
           data: {
             action: 'open_link',
-            targetLink: ruleSearchLink,
+            targetLink: placementSearchLink,
           },
         },
       })
@@ -783,45 +783,13 @@ export const setApplicationDeployStatus = (
   }
 
   return details
-} ///////////////////////////////////////////////////////////
-//////////////////// RULE /////////////////////////
+}
 ///////////////////////////////////////////////////////////
-/**
- * Sets deployment status details for placement rule nodes.
- *
- * @param node - The placement rule node
- * @param details - Array to add detail items to
- * @param t - Translation function
- * @returns Updated details array
- */
-
-export const setPlacementRuleDeployStatus = (
-  node: TopologyNodeWithStatus,
-  details: DetailItem[],
-  t: TFunction
-): DetailItem[] => {
-  if (safeGet<string>(node, 'type', '') !== 'placements' || node.isPlacement) {
-    return details
-  }
-
-  const clusterStatus = safeGet(node, 'specs.raw.status.decisions', []) as unknown[]
-  if (clusterStatus.length === 0) {
-    details.push({
-      labelValue: t('Error'),
-      value: t(
-        'This Placement Rule does not match any remote clusters. Make sure the clusterSelector and clusterConditions properties, when used, are valid and match your clusters. If using the clusterReplicas property make sure is being set to a positive value.'
-      ),
-      status: failureStatus,
-    })
-  }
-
-  return details
-} ///////////////////////////////////////////////////////////
 //////////////////// CLUSTER /////////////////////////
 ///////////////////////////////////////////////////////////
 /**
  * Sets cluster status details showing all clusters associated with a node
- * and any clusters not selected by placement rules.
+ * and any clusters not selected by placement data.
  *
  * @param node - The cluster node
  * @param details - Array to add detail items to
@@ -866,7 +834,7 @@ export const setClusterStatus = (
     }
   })
 
-  // Find zombie clusters (found by search but not selected by placement rule)
+  // Find zombie clusters discovered by search but not selected by placement
   const zombieClusters: string[] = []
   clustersNames.forEach((searchCls: string) => {
     if (
@@ -894,14 +862,14 @@ export const setClusterStatus = (
     },
   })
 
-  // Show clusters not selected by placement rule
+  // Show clusters not selected by placement
   if (zombieClusters.length > 0) {
     details.push({
       type: 'spacer',
     })
     details.push({
       type: 'label',
-      labelValue: `${t('Not selected by placement rule')} (${zombieClusters.length})`,
+      labelValue: `${t('Not selected by placement')} (${zombieClusters.length})`,
     })
     zombieClusters.forEach((cls) => {
       details.push({
@@ -912,7 +880,8 @@ export const setClusterStatus = (
   }
 
   return details
-} /**
+}
+/**
  * Sets deployment status details for placement nodes.
  *
  * @param node - The placement node
@@ -920,9 +889,13 @@ export const setClusterStatus = (
  * @param t - Translation function
  */
 
-export const setPlacementDeployStatus = (node: TopologyNodeWithStatus, details: DetailItem[], t: TFunction): void => {
-  if (node.type !== 'placements' || !node.isPlacement) {
-    return
+export const setPlacementDeployStatus = (
+  node: TopologyNodeWithStatus,
+  details: DetailItem[],
+  t: TFunction
+): DetailItem[] => {
+  if ((node.type !== 'placement' && node.type !== 'placementDecision') || !node.isPlacement) {
+    return details
   }
 
   const placementStatus = safeGet(node, 'specs.raw.status') as { numberOfSelectedClusters?: number } | undefined
@@ -945,6 +918,7 @@ export const setPlacementDeployStatus = (node: TopologyNodeWithStatus, details: 
       status: failureStatus,
     })
   }
+  return details
 }
 ///////////////////////////////////////////////////////////
 //////////////////// ARGO APPLICATION /////////////////////////

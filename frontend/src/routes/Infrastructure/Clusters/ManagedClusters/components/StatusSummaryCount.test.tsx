@@ -249,7 +249,7 @@ const mockPolicies: Policy[] = [
       placement: [
         {
           placementBinding: 'binding-policy-role',
-          placementRule: 'placement-policy-role',
+          placement: 'placement-policy-role',
         },
       ],
       status: [

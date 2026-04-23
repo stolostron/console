@@ -389,7 +389,10 @@ export const getResourcesClustersForApp = (
   if (nodes && nodes.length > 0) {
     const placementNodes = nodes.filter((node: unknown) => {
       const nodeObj = node as NodeLike
-      return nodeObj.type === 'placements' && String(nodeObj.id ?? '').indexOf('deployable') === -1
+      return (
+        (nodeObj.type === 'placement' || nodeObj.type === 'placementDecision') &&
+        String(nodeObj.id ?? '').indexOf('deployable') === -1
+      )
     })
     if (placementNodes.length > 0) {
       const localClusterRuleFn = (decision: any) => decision.clusterName === hubClusterName

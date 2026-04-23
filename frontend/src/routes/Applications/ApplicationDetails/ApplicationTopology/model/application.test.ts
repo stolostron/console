@@ -806,7 +806,6 @@ const appData2: TestAppData = {
         },
       },
     ],
-    placementRules: [],
     subscriptions: [
       {
         apiVersion: 'apps.open-cluster-management.io/v1',
@@ -1182,7 +1181,7 @@ const appData2: TestAppData = {
           namespace: 'feng-multi',
           ownerReferences: [
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
               blockOwnerDeletion: true,
               controller: true,
               kind: 'Subscription',
@@ -1233,7 +1232,7 @@ const appData2: TestAppData = {
           namespace: 'feng-multi',
           ownerReferences: [
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
               blockOwnerDeletion: true,
               controller: true,
               kind: 'Subscription',
@@ -1354,7 +1353,7 @@ const appData2: TestAppData = {
           namespace: 'magchen-multiple-ns',
           ownerReferences: [
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
               blockOwnerDeletion: true,
               controller: true,
               kind: 'Subscription',
@@ -19400,7 +19399,7 @@ const appData2: TestAppData = {
           namespace: 'magchen-multiple-ns',
           ownerReferences: [
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
               blockOwnerDeletion: true,
               controller: true,
               kind: 'Subscription',
@@ -22082,44 +22081,6 @@ const appData3: TestAppData = {
         },
       },
     ],
-    placementRules: [
-      {
-        apiVersion: 'apps.open-cluster-management.io/v1',
-        kind: 'PlacementRule',
-        metadata: {
-          annotations: {
-            'kubectl.kubernetes.io/last-applied-configuration':
-              '{"apiVersion":"apps.open-cluster-management.io/v1","kind":"PlacementRule","metadata":{"annotations":{},"labels":{"app":"test"},"name":"test-placement-1","namespace":"default"},"spec":{"clusterSelector":{"matchLabels":{"local-cluster":"true"}}}}\n',
-            'open-cluster-management.io/user-group': 'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
-            'open-cluster-management.io/user-identity': 'a3ViZTphZG1pbg==',
-          },
-          creationTimestamp: '2023-08-10T16:50:35Z',
-          generation: 1,
-          labels: {
-            app: 'test',
-          },
-          name: 'test-placement-1',
-          namespace: 'default',
-          resourceVersion: '76425269',
-          uid: 'ce7113c0-3276-410f-8871-aafe2730e7b5',
-        },
-        spec: {
-          clusterSelector: {
-            matchLabels: {
-              'local-cluster': 'true',
-            },
-          },
-        },
-        status: {
-          decisions: [
-            {
-              clusterName: 'local-cluster',
-              clusterNamespace: 'local-cluster',
-            },
-          ],
-        },
-      },
-    ],
     subscriptions: [],
     subscriptionReports: [
       {
@@ -22254,16 +22215,16 @@ const appData3: TestAppData = {
           creationTimestamp: '2023-08-10T16:59:09Z',
           generation: 1,
           labels: {
-            'cluster.open-cluster-management.io/placementrule': 'test-placement-1',
+            'cluster.open-cluster-management.io/placement': 'test-placement-1',
           },
           name: 'test-placement-1-decision-1',
           namespace: 'default',
           ownerReferences: [
             {
-              apiVersion: 'apps.open-cluster-management.io/v1',
+              apiVersion: 'cluster.open-cluster-management.io/v1beta1',
               blockOwnerDeletion: true,
               controller: true,
-              kind: 'PlacementRule',
+              kind: 'Placement',
               name: 'test-placement-1',
               uid: 'ce7113c0-3276-410f-8871-aafe2730e7b5',
             },

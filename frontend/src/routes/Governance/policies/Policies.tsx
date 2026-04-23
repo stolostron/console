@@ -1007,31 +1007,23 @@ export function AddToPolicySetModal(
 
 export function DeletePolicyModal(props: Readonly<{ item: PolicyTableItem; onClose: () => void }>) {
   const { t } = useTranslation()
-  const { placementBindingsState, placementRulesState, placementsState } = useSharedAtoms()
+  const { placementBindingsState, placementsState } = useSharedAtoms()
   const [deletePlacements, setDeletePlacements] = useState(true)
   const [deletePlacementBindings, setDeletePlacementBindings] = useState(true)
   const placements = useRecoilValue(placementsState)
-  const placementRules = useRecoilValue(placementRulesState)
   const placementBindings = useRecoilValue(placementBindingsState)
   const [isDeleting, setIsDeleting] = useState(false)
   const [error, setError] = useState('')
 
   const policyBindings = getPlacementBindingsForResource(props.item.policy, placementBindings)
   const policyPlacements = getPlacementsForResource(props.item.policy, policyBindings, placements)
-  const policyPlacementRules = getPlacementsForResource(props.item.policy, policyBindings, placementRules)
 
   const onConfirm = useCallback(async () => {
     setIsDeleting(true)
     try {
       setError('')
-      await deletePolicy(
-        props.item.policy,
-        policyPlacements,
-        policyPlacementRules,
-        policyBindings,
-        deletePlacements,
-        deletePlacementBindings
-      ).promise
+      await deletePolicy(props.item.policy, policyPlacements, policyBindings, deletePlacements, deletePlacementBindings)
+        .promise
       props.onClose()
     } catch (err) {
       if (err instanceof Error) {
@@ -1041,7 +1033,7 @@ export function DeletePolicyModal(props: Readonly<{ item: PolicyTableItem; onClo
       }
       setIsDeleting(false)
     }
-  }, [props, policyPlacements, policyPlacementRules, policyBindings, deletePlacements, deletePlacementBindings, t])
+  }, [props, policyPlacements, policyBindings, deletePlacements, deletePlacementBindings, t])
 
   const reusedBindings = policyBindings.filter((binding) =>
     binding.subjects?.find(
@@ -1049,9 +1041,9 @@ export function DeletePolicyModal(props: Readonly<{ item: PolicyTableItem; onClo
     )
   )
 
-  // Find all the instances where the Policy's Placements/PlacementRules are in a PlacementBinding that doesn't bind
-  // the Policy itself. This logic excludes those Placements/PlacementRules covered by reusedBindings.
-  const reusedPlacements = [...policyPlacements, ...policyPlacementRules].filter((placement) =>
+  // Find all the instances where the Policy's Placements are in a PlacementBinding that doesn't bind
+  // the Policy itself. This logic excludes those Placements covered by reusedBindings.
+  const reusedPlacements = policyPlacements.filter((placement) =>
     placementBindings.find(
       (binding) =>
         binding.metadata.namespace === props.item.policy.metadata.namespace &&
@@ -1110,7 +1102,7 @@ export function DeletePolicyModal(props: Readonly<{ item: PolicyTableItem; onClo
           <StackItem>
             <AcmAlert
               variant="warning"
-              title={t('policy.modal.message.reused', { kind: 'Placements/PlacementRules' })}
+              title={t('policy.modal.message.reused', { kind: 'Placements' })}
               message={reusedPlacements.map((placement) => placement.metadata.name).join(', ')}
               noClose={true}
               isInline

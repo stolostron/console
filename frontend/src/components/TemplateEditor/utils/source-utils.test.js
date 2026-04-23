@@ -33,7 +33,7 @@ const getDecorationRows = {
         decorationType: 'IMMUTABLE',
       },
       {
-        path: 'PlacementRule[*].kind',
+        path: 'Placement[*].kind',
         decorationType: 'DEPRECATED',
       },
       {
@@ -42,7 +42,7 @@ const getDecorationRows = {
         decorationType: 'IMMUTABLE',
       },
       {
-        path: 'PlacementRule[*].kind',
+        path: 'Placement[*].kind',
         decorationType: 'DEPRECATED',
       },
     ],
@@ -191,7 +191,7 @@ const getDecorationRows = {
       Subscription: [
         {
           $raw: {
-            apiVersion: 'apps.open-cluster-management.io/v1',
+            apiVersion: 'cluster.open-cluster-management.io/v1beta1',
             kind: 'Subscription',
             metadata: {
               annotations: {
@@ -210,18 +210,18 @@ const getDecorationRows = {
               channel: 'ggithubcom-fxiang1-app-samples-ns/',
               placement: {
                 placementRef: {
-                  kind: 'PlacementRule',
+                  kind: 'Placement',
                   name: 'old-3-placement-1',
                 },
               },
             },
           },
-          $yml: 'apiVersion: apps.open-cluster-management.io/v1\nkind: Subscription\nmetadata:\n  annotations:\n    apps.open-cluster-management.io/git-branch: main\n    apps.open-cluster-management.io/git-path: \n    apps.open-cluster-management.io/reconcile-option: merge\n  labels:\n    app: old-3\n  name: old-3-subscription-4\n  namespace: old-prs\n  selfLink: /namespaces/old-prs/subscriptions/old-3-subscription-1\nspec:\n  channel: ggithubcom-fxiang1-app-samples-ns/\n  placement:\n    placementRef:\n      kind: PlacementRule\n      name: old-3-placement-1',
+          $yml: 'apiVersion: apps.open-cluster-management.io/v1\nkind: Subscription\nmetadata:\n  annotations:\n    apps.open-cluster-management.io/git-branch: main\n    apps.open-cluster-management.io/git-path: \n    apps.open-cluster-management.io/reconcile-option: merge\n  labels:\n    app: old-3\n  name: old-3-subscription-4\n  namespace: old-prs\n  selfLink: /namespaces/old-prs/subscriptions/old-3-subscription-1\nspec:\n  channel: ggithubcom-fxiang1-app-samples-ns/\n  placement:\n    placementRef:\n      kind: Placement\n      name: old-3-placement-1',
           $synced: {
             apiVersion: {
               $r: 18,
               $l: 1,
-              $v: 'apps.open-cluster-management.io/v1',
+              $v: 'cluster.open-cluster-management.io/v1beta1',
             },
             kind: {
               $r: 19,
@@ -301,7 +301,7 @@ const getDecorationRows = {
                         kind: {
                           $r: 34,
                           $l: 1,
-                          $v: 'PlacementRule',
+                          $v: 'Placement',
                         },
                         name: {
                           $r: 35,
@@ -320,7 +320,7 @@ const getDecorationRows = {
         },
         {
           $raw: {
-            apiVersion: 'apps.open-cluster-management.io/v1',
+            apiVersion: 'cluster.open-cluster-management.io/v1beta1',
             kind: 'Subscription',
             metadata: {
               annotations: {
@@ -339,18 +339,18 @@ const getDecorationRows = {
               channel: 'ggithubcom-fxiang1-app-samples-ns/',
               placement: {
                 placementRef: {
-                  kind: 'PlacementRule',
+                  kind: 'Placement',
                   name: 'old-3-placement-2',
                 },
               },
             },
           },
-          $yml: 'apiVersion: apps.open-cluster-management.io/v1\nkind: Subscription\nmetadata:\n  annotations:\n    apps.open-cluster-management.io/git-branch: val-b1\n    apps.open-cluster-management.io/git-path: resources-roke\n    apps.open-cluster-management.io/reconcile-option: merge\n  labels:\n    app: old-3\n  name: old-3-subscription-5\n  namespace: old-prs\n  selfLink: /namespaces/old-prs/subscriptions/old-3-subscription-2\nspec:\n  channel: ggithubcom-fxiang1-app-samples-ns/\n  placement:\n    placementRef:\n      kind: PlacementRule\n      name: old-3-placement-2',
+          $yml: 'apiVersion: apps.open-cluster-management.io/v1\nkind: Subscription\nmetadata:\n  annotations:\n    apps.open-cluster-management.io/git-branch: val-b1\n    apps.open-cluster-management.io/git-path: resources-roke\n    apps.open-cluster-management.io/reconcile-option: merge\n  labels:\n    app: old-3\n  name: old-3-subscription-5\n  namespace: old-prs\n  selfLink: /namespaces/old-prs/subscriptions/old-3-subscription-2\nspec:\n  channel: ggithubcom-fxiang1-app-samples-ns/\n  placement:\n    placementRef:\n      kind: Placement\n      name: old-3-placement-2',
           $synced: {
             apiVersion: {
               $r: 53,
               $l: 1,
-              $v: 'apps.open-cluster-management.io/v1',
+              $v: 'cluster.open-cluster-management.io/v1beta1',
             },
             kind: {
               $r: 54,
@@ -430,7 +430,7 @@ const getDecorationRows = {
                         kind: {
                           $r: 69,
                           $l: 1,
-                          $v: 'PlacementRule',
+                          $v: 'Placement',
                         },
                         name: {
                           $r: 70,
@@ -448,11 +448,11 @@ const getDecorationRows = {
           },
         },
       ],
-      PlacementRule: [
+      Placement: [
         {
           $raw: {
-            apiVersion: 'apps.open-cluster-management.io/v1',
-            kind: 'PlacementRule',
+            apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+            kind: 'Placement',
             metadata: {
               annotations: {
                 'open-cluster-management.io/user-group': 'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
@@ -473,17 +473,17 @@ const getDecorationRows = {
               },
             },
           },
-          $yml: 'apiVersion: apps.open-cluster-management.io/v1\nkind: PlacementRule\nmetadata:\n  annotations:\n    open-cluster-management.io/user-group: c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk\n    open-cluster-management.io/user-identity: a3ViZTphZG1pbg==\n  labels:\n    app: old-3\n  name: old-3-placement-1\n  namespace: old-prs\nspec:\n  clusterConditions:\n    "0":\n      status: "True"\n      type: ManagedClusterConditionAvailable',
+          $yml: 'apiVersion: cluster.open-cluster-management.io/v1beta1\nkind: Placement\nmetadata:\n  annotations:\n    open-cluster-management.io/user-group: c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk\n    open-cluster-management.io/user-identity: a3ViZTphZG1pbg==\n  labels:\n    app: old-3\n  name: old-3-placement-1\n  namespace: old-prs\nspec:\n  clusterConditions:\n    "0":\n      status: "True"\n      type: ManagedClusterConditionAvailable',
           $synced: {
             apiVersion: {
               $r: 37,
               $l: 1,
-              $v: 'apps.open-cluster-management.io/v1',
+              $v: 'cluster.open-cluster-management.io/v1beta1',
             },
             kind: {
               $r: 38,
               $l: 1,
-              $v: 'PlacementRule',
+              $v: 'Placement',
             },
             metadata: {
               $r: 39,
@@ -562,8 +562,8 @@ const getDecorationRows = {
         },
         {
           $raw: {
-            apiVersion: 'apps.open-cluster-management.io/v1',
-            kind: 'PlacementRule',
+            apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+            kind: 'Placement',
             metadata: {
               annotations: {
                 'open-cluster-management.io/user-group': 'c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk',
@@ -583,17 +583,17 @@ const getDecorationRows = {
               },
             },
           },
-          $yml: 'apiVersion: apps.open-cluster-management.io/v1\nkind: PlacementRule\nmetadata:\n  annotations:\n    open-cluster-management.io/user-group: c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk\n    open-cluster-management.io/user-identity: a3ViZTphZG1pbg==\n  labels:\n    app: old-3\n  name: old-3-placement-2\n  namespace: old-prs\nspec:\n  clusterSelector:\n    matchLabels:\n      local-cluster: "true"',
+          $yml: 'apiVersion: cluster.open-cluster-management.io/v1beta1\nkind: Placement\nmetadata:\n  annotations:\n    open-cluster-management.io/user-group: c3lzdGVtOmNsdXN0ZXItYWRtaW5zLHN5c3RlbTphdXRoZW50aWNhdGVk\n    open-cluster-management.io/user-identity: a3ViZTphZG1pbg==\n  labels:\n    app: old-3\n  name: old-3-placement-2\n  namespace: old-prs\nspec:\n  clusterSelector:\n    matchLabels:\n      local-cluster: "true"',
           $synced: {
             apiVersion: {
               $r: 72,
               $l: 1,
-              $v: 'apps.open-cluster-management.io/v1',
+              $v: 'cluster.open-cluster-management.io/v1beta1',
             },
             kind: {
               $r: 73,
               $l: 1,
-              $v: 'PlacementRule',
+              $v: 'Placement',
             },
             metadata: {
               $r: 74,
@@ -686,25 +686,25 @@ const getDecorationRows = {
     {
       $r: 38,
       $l: 1,
-      $v: 'PlacementRule',
+      $v: 'Placement',
       decorationType: 'DEPRECATED',
     },
     {
       $r: 73,
       $l: 1,
-      $v: 'PlacementRule',
+      $v: 'Placement',
       decorationType: 'DEPRECATED',
     },
     {
       $r: 38,
       $l: 1,
-      $v: 'PlacementRule',
+      $v: 'Placement',
       decorationType: 'DEPRECATED',
     },
     {
       $r: 73,
       $l: 1,
-      $v: 'PlacementRule',
+      $v: 'Placement',
       decorationType: 'DEPRECATED',
     },
   ],

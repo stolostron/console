@@ -52,9 +52,9 @@ const propsPlain = {
 }
 
 const propsMulti = {
-  controlId: 'placementrulecombo',
+  controlId: 'placementcombo',
   control: {
-    id: 'placementrulecombo',
+    id: 'placementcombo',
     type: 'combobox',
     opaque: false,
     placeholder: 'Select an existing placement configuration',
@@ -67,14 +67,14 @@ const propsMulti = {
     fetchAvailable: jest.fn(),
     availableData: {
       'test-placement-1': {
-        apiVersion: 'apps.open-cluster-management.io/v1',
-        kind: 'PlacementRule',
+        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+        kind: 'Placement',
         metadata: [Object],
         spec: [Object],
         status: [Object],
       },
     },
-    controlId: 'placementrulecombo',
+    controlId: 'placementcombo',
     isLoaded: true,
     availableInfo: { 'test-placement-1': 'test-placement-1 deploys only to local cluster' },
     info: '',

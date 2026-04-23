@@ -2,7 +2,6 @@
 
 import { setPlacementDeployStatus } from './NodeDetailsProviderStatuses'
 import { setClusterStatus } from './NodeDetailsProviderStatuses'
-import { setPlacementRuleDeployStatus } from './NodeDetailsProviderStatuses'
 import { setApplicationDeployStatus } from './NodeDetailsProviderStatuses'
 import { setSubscriptionDeployStatus } from './NodeDetailsProviderStatuses'
 import { setPodDeployStatus } from './NodeDetailsProviderStatuses'
@@ -391,7 +390,7 @@ function addK8Details(
     getNodePropery(node, ['specs', 'raw', 'spec', 'clusterReplicas'], t('Cluster Replicas'))
   )
 
-  if (type === 'placements' || type === 'placement' || type === 'placementDecision') {
+  if (type === 'placement' || type === 'placementDecision') {
     const specNbOfClustersTarget = node?.specs?.raw?.status?.numberOfSelectedClusters ?? 0
 
     // placementDecision
@@ -439,9 +438,6 @@ function addK8Details(
 
   //subscriptions status
   setSubscriptionDeployStatus(node, details, activeFilters, t, hubClusterName)
-
-  //placement rule details
-  setPlacementRuleDeployStatus(node, details, t)
 
   //placement status
   setPlacementDeployStatus(node, details, t)

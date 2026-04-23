@@ -12,20 +12,14 @@ import {
   nockIgnoreApiPaths,
   nockIgnoreOperatorCheck,
 } from '../../lib/nock-util'
-import {
-  createClusterVersionMock,
-  clickByRole,
-  clickByText,
-  typeByRole,
-  waitForNocks,
-  waitForText,
-} from '../../lib/test-util'
+import { createClusterVersionMock } from '../../lib/test-util'
 
 const mockUseClusterVersion = createClusterVersionMock()
 jest.mock('../../hooks/use-cluster-version', () => ({
   useClusterVersion: () => mockUseClusterVersion(),
 }))
 
+import { clickByRole, clickByText, typeByRole, waitForNocks, waitForText } from '../../lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
 import {
   GitOpsClusterApiVersion,
@@ -224,13 +218,11 @@ describe('ArgoWizard tests', () => {
     //                      placement page
     //=====================================================================
     await clickByText('New placement')
-    await clickByRole('button', { name: 'Action' })
+    await clickByRole('button', { name: 'Action' }, 0)
     await clickByRole('combobox', { name: 'Select the label' })
     await clickByRole('option', { name: /cloud/i })
 
-    await clickByRole('combobox', {
-      name: /select the operator/i,
-    })
+    await clickByText('equals any of')
     await clickByRole('option', { name: /does not equal any of/i })
 
     await clickByRole('combobox', {
@@ -337,13 +329,11 @@ describe('ArgoWizard tests', () => {
     //                      placement page
     //=====================================================================
     await clickByText('New placement')
-    await clickByRole('button', { name: 'Action' })
+    await clickByRole('button', { name: 'Action' }, 0)
     await clickByRole('combobox', { name: 'Select the label' })
     await clickByRole('option', { name: /cloud/i })
 
-    await clickByRole('combobox', {
-      name: /select the operator/i,
-    })
+    await clickByText('equals any of')
     await clickByRole('option', { name: /does not equal any of/i })
 
     await clickByRole('combobox', {
@@ -823,6 +813,17 @@ const submittedGit = [
       namespace: 'http://argoserver.com',
     },
     spec: {
+      tolerations: [
+        {
+          key: 'cluster.open-cluster-management.io/unreachable',
+          operator: 'Exists',
+        },
+        {
+          key: 'cluster.open-cluster-management.io/unavailable',
+          operator: 'Exists',
+        },
+      ],
+      numberOfClusters: 1,
       predicates: [
         {
           requiredClusterSelector: {

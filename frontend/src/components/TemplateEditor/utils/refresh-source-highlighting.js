@@ -229,7 +229,7 @@ export const highlightAllChanges = (editors, oldYAML, newYAML, otherYAMLTabs, se
   }
 }
 
-export const highlightDecorations = (editors, decorationRows, i18n) => {
+export const highlightDecorations = (editors, decorationRows) => {
   if (editors.length > 0) {
     const editor = editors[0]
     const decorationList = []
@@ -241,14 +241,6 @@ export const highlightDecorations = (editors, decorationRows, i18n) => {
       .forEach((obj) => {
         const options = {}
         switch (obj.decorationType) {
-          case DecorationType.DEPRECATED:
-            options.glyphMarginClassName = 'infoDecoration'
-            options.glyphMarginHoverMessage = {
-              value: '```html\n' + i18n('creation.deprecated.placementrule') + ' \n```',
-            }
-            options.overviewRuler = { color: '#2B9AF3' }
-            options.minimap = { color: '#2B9AF360' }
-            break
           case DecorationType.IMMUTABLE:
             options.inlineClassName = 'protectedDecoration'
             break

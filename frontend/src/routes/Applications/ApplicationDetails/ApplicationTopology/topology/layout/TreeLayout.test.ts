@@ -241,7 +241,7 @@ const calculateNodeOffsets1 = {
             activeChannel: '__ALL__/__ALL__//__ALL__/__ALL__',
             allSubscriptions: [
               {
-                apiVersion: 'apps.open-cluster-management.io/v1',
+                apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                 kind: 'Subscription',
                 metadata: {
                   annotations: {
@@ -264,7 +264,7 @@ const calculateNodeOffsets1 = {
                   channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
                   placement: {
                     placementRef: {
-                      kind: 'PlacementRule',
+                      kind: 'Placement',
                       name: 'test-placement-1',
                     },
                   },
@@ -277,7 +277,7 @@ const calculateNodeOffsets1 = {
                 prehooks: [],
                 channels: [
                   {
-                    apiVersion: 'apps.open-cluster-management.io/v1',
+                    apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                     kind: 'Channel',
                     metadata: {
                       annotations: {
@@ -307,7 +307,7 @@ const calculateNodeOffsets1 = {
                     namespace: 'test',
                     ownerReferences: [
                       {
-                        apiVersion: 'apps.open-cluster-management.io/v1',
+                        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                         blockOwnerDeletion: true,
                         controller: true,
                         kind: 'Subscription',
@@ -356,7 +356,7 @@ const calculateNodeOffsets1 = {
                 },
               },
               {
-                apiVersion: 'apps.open-cluster-management.io/v1',
+                apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                 kind: 'Subscription',
                 metadata: {
                   annotations: {
@@ -379,7 +379,7 @@ const calculateNodeOffsets1 = {
                   channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
                   placement: {
                     placementRef: {
-                      kind: 'PlacementRule',
+                      kind: 'Placement',
                       name: 'test-placement-2',
                     },
                   },
@@ -403,7 +403,7 @@ const calculateNodeOffsets1 = {
                     namespace: 'test',
                     ownerReferences: [
                       {
-                        apiVersion: 'apps.open-cluster-management.io/v1',
+                        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                         blockOwnerDeletion: true,
                         controller: true,
                         kind: 'Subscription',
@@ -866,7 +866,7 @@ const calculateNodeOffsets1 = {
                 },
               },
               {
-                apiVersion: 'apps.open-cluster-management.io/v1',
+                apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                 kind: 'Subscription',
                 metadata: {
                   annotations: {
@@ -889,7 +889,7 @@ const calculateNodeOffsets1 = {
                   channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
                   placement: {
                     placementRef: {
-                      kind: 'PlacementRule',
+                      kind: 'Placement',
                       name: 'test-placement-3',
                     },
                   },
@@ -913,7 +913,7 @@ const calculateNodeOffsets1 = {
                     namespace: 'test',
                     ownerReferences: [
                       {
-                        apiVersion: 'apps.open-cluster-management.io/v1',
+                        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                         blockOwnerDeletion: true,
                         controller: true,
                         kind: 'Subscription',
@@ -4069,7 +4069,7 @@ const calculateNodeOffsets2 = {
             activeChannel: '__ALL__/__ALL__//__ALL__/__ALL__',
             allSubscriptions: [
               {
-                apiVersion: 'apps.open-cluster-management.io/v1',
+                apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                 kind: 'Subscription',
                 metadata: {
                   annotations: {
@@ -4092,7 +4092,7 @@ const calculateNodeOffsets2 = {
                   channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
                   placement: {
                     placementRef: {
-                      kind: 'PlacementRule',
+                      kind: 'Placement',
                       name: 'test3-placement-1',
                     },
                   },
@@ -4105,7 +4105,7 @@ const calculateNodeOffsets2 = {
                 prehooks: [],
                 channels: [
                   {
-                    apiVersion: 'apps.open-cluster-management.io/v1',
+                    apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                     kind: 'Channel',
                     metadata: {
                       annotations: {
@@ -4125,8 +4125,8 @@ const calculateNodeOffsets2 = {
                 ],
                 rules: [
                   {
-                    apiVersion: 'apps.open-cluster-management.io/v1',
-                    kind: 'PlacementRule',
+                    apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+                    kind: 'Placement',
                     metadata: {
                       annotations: {
                         'open-cluster-management.io/user-group':
@@ -4167,7 +4167,7 @@ const calculateNodeOffsets2 = {
                     namespace: 'test',
                     ownerReferences: [
                       {
-                        apiVersion: 'apps.open-cluster-management.io/v1',
+                        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                         blockOwnerDeletion: true,
                         controller: true,
                         kind: 'Subscription',
@@ -4203,7 +4203,7 @@ const calculateNodeOffsets2 = {
                 },
               },
               {
-                apiVersion: 'apps.open-cluster-management.io/v1',
+                apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                 kind: 'Subscription',
                 metadata: {
                   annotations: {
@@ -4226,7 +4226,7 @@ const calculateNodeOffsets2 = {
                   channel: 'ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
                   placement: {
                     placementRef: {
-                      kind: 'PlacementRule',
+                      kind: 'Placement',
                       name: 'test3-placement-2',
                     },
                   },
@@ -4240,8 +4240,8 @@ const calculateNodeOffsets2 = {
                 channels: [null],
                 rules: [
                   {
-                    apiVersion: 'apps.open-cluster-management.io/v1',
-                    kind: 'PlacementRule',
+                    apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+                    kind: 'Placement',
                     metadata: {
                       annotations: {
                         'open-cluster-management.io/user-group':
@@ -4282,7 +4282,7 @@ const calculateNodeOffsets2 = {
                     namespace: 'test',
                     ownerReferences: [
                       {
-                        apiVersion: 'apps.open-cluster-management.io/v1',
+                        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
                         blockOwnerDeletion: true,
                         controller: true,
                         kind: 'Subscription',

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import i18next from 'i18next'
-import { PlacementRuleKind, Subscription, SubscriptionApiVersion, SubscriptionKind } from '../../../resources'
+import { Subscription, SubscriptionApiVersion, SubscriptionKind } from '../../../resources'
 import { SyncResourceModal, ISyncResourceModalProps } from './SyncResourceModal'
 
 //////////////// Set up /////////////////
@@ -36,8 +36,8 @@ const mockSubscription0: Subscription = {
     channel: 'ch-namespace-0/channel-0',
     placement: {
       placementRef: {
-        kind: PlacementRuleKind,
-        name: 'placementrule-0',
+        kind: 'Placement',
+        name: 'placement-0',
       },
     },
   },

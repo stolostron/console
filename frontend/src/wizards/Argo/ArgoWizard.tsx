@@ -30,7 +30,7 @@ import { useValidation } from '../../hooks/useValidation'
 import { useWizardStrings } from '../../lib/wizardStrings'
 import { NavigationPath } from '../../NavigationPath'
 import { ApplicationSetKind, GitOpsCluster, Secret } from '../../resources'
-import { useSharedSelectors } from '../../shared-recoil'
+import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../shared-recoil'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
 import { IPlacement, PlacementApiVersion, PlacementKind, PlacementType } from '../common/resources/IPlacement'
 import { IResource } from '../common/resources/IResource'
@@ -871,6 +871,8 @@ function ArgoWizardPlacementSection(props: {
   isPullModel?: boolean
 }) {
   const { t } = useTranslation()
+  const { settingsState } = useSharedAtoms()
+  const settings = useRecoilValue(settingsState)
   const resources = useItem() as IResource[]
   const editMode = useEditMode()
   const hasPlacement = resources.find((r) => r.kind === PlacementKind) !== undefined
@@ -913,6 +915,17 @@ function ArgoWizardPlacementSection(props: {
                           kind: PlacementKind,
                           metadata: { name: '', namespace: '' },
                           spec: {
+                            tolerations: [
+                              {
+                                key: 'cluster.open-cluster-management.io/unreachable',
+                                operator: 'Exists',
+                              },
+                              {
+                                key: 'cluster.open-cluster-management.io/unavailable',
+                                operator: 'Exists',
+                              },
+                            ],
+                            numberOfClusters: 1,
                             predicates: [
                               {
                                 // ArgoCD pull model doesn't support the hub cluster
@@ -935,7 +948,19 @@ function ArgoWizardPlacementSection(props: {
                           apiVersion: PlacementApiVersion,
                           kind: PlacementKind,
                           metadata: { name: '', namespace: '' },
-                          spec: {},
+                          spec: {
+                            tolerations: [
+                              {
+                                key: 'cluster.open-cluster-management.io/unreachable',
+                                operator: 'Exists',
+                              },
+                              {
+                                key: 'cluster.open-cluster-management.io/unavailable',
+                                operator: 'Exists',
+                              },
+                            ],
+                            numberOfClusters: 1,
+                          },
                         } as IResource)
                   )
                   update(newResources)
@@ -968,6 +993,7 @@ function ArgoWizardPlacementSection(props: {
                 {t('Add cluster set')}
               </Button>
             }
+            showPlacementPreview={settings.enhancedPlacement === 'enabled'}
           />
         </WizItemSelector>
       ) : (

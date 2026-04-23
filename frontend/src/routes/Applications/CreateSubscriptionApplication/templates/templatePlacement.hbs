@@ -6,15 +6,11 @@
 
   placement:
     placementRef:
-    {{#if isDeprecatedPR}}
-      kind: PlacementRule
-    {{else}}
       kind: Placement
-    {{/if}}
-{{#if selectedRuleName}}
-      name: {{{selectedRuleName}}}
+{{#if selectedPlacementName}}
+      name: {{{selectedPlacementName}}}
 {{else}}
-    {{#unless existingrule-checkbox}}       
+    {{#unless existing-placement-checkbox}}       
       name: {{{@root.name}}}-placement-{{uniqueGroupID}}
     {{else}}
       name:
@@ -37,11 +33,7 @@
     {{/if}}
 {{/if}}
 
-{{#if isDeprecatedPR}}
----
-{{{deprecated-rule}}}
-{{else}}
-{{#unless existingrule-checkbox}} 
+{{#unless existing-placement-checkbox}}
 ---
 apiVersion: cluster.open-cluster-management.io/v1beta1
 kind: Placement
@@ -51,9 +43,9 @@ metadata:
   name: {{{@root.name}}}-placement-{{uniqueGroupID}}
   namespace: {{{@root.namespace}}}
   {{#if selfLinks}}
-  selfLink: {{{selfLinks.PlacementRule}}}
+  selfLink: {{{selfLinks.Placement}}}
   {{/if}}
-{{#if clusterSelector.mode}}  
+{{#if clusterSelector.mode}}
 spec:
   predicates:
     - requiredClusterSelector:
@@ -64,13 +56,13 @@ spec:
             - key: '{{{labelName}}}'
               operator: '{{{operatorValue}}}'
               {{#if labelValue}}
-              values: 
+              values:
                 {{#each labelValue}}
                 - '{{{ this }}}'
                 {{/each}}
               {{/if}}
             {{/if}}
-            {{/each}} 
+            {{/each}}
   clusterSets:
     {{#each clusterSelector.clusterSetsList}}
     - {{{clusterSetName}}}
@@ -78,19 +70,26 @@ spec:
 {{else}}
   {{#if online-cluster-only-checkbox}}
 spec:
-  clusterConditions:
-    - type: ManagedClusterConditionAvailable
-      status: "True"
+  predicates:
+    - requiredClusterSelector:
+        labelSelector:
+          matchExpressions:
+            - key: 'cluster.open-cluster-management.io/condition-available'
+              operator: 'In'
+              values:
+                - 'True'
   {{/if}}
   {{#if local-cluster-checkbox}}
 spec:
-  clusterSelector:
-    matchLabels:
-      'local-cluster': 'true'
+  predicates:
+    - requiredClusterSelector:
+        labelSelector:
+          matchLabels:
+            'local-cluster': 'true'
   {{/if}}
 {{/if}}
 {{#each clusterSelector.clusterSetsList}}
-{{#unless existManagedClusterSetBinding}} 
+{{#unless existManagedClusterSetBinding}}
 ---
 apiVersion: cluster.open-cluster-management.io/v1beta2
 kind: ManagedClusterSetBinding
@@ -99,7 +98,6 @@ metadata:
   name: {{{clusterSetName}}}
 spec:
   clusterSet: {{{clusterSetName}}}
-{{/unless}}  
+{{/unless}}
 {{/each}}
-{{/unless}}  
-{{/if}}
+{{/unless}}

@@ -3,15 +3,7 @@ import { useHistory } from 'react-router-dom'
 import { EditMode } from '../../src'
 import { YamlToObject } from '../../src/components/YamlEditor'
 import { Catalog } from '../Catalog'
-import {
-  clusters,
-  clusterSetBindings,
-  clusterSets,
-  namespaces,
-  placementRules,
-  placements,
-  policies,
-} from '../common/test-data'
+import { clusters, clusterSetBindings, clusterSets, namespaces, placements, policies } from '../common/test-data'
 import { onSubmit } from '../common/utils'
 import { RouteE } from '../Routes'
 import { PolicyWizard } from './PolicyWizard'
@@ -166,7 +158,6 @@ export function CreatePolicy() {
       namespaces={namespaces}
       policies={policies}
       placements={placements}
-      placementRules={placementRules}
       clusters={clusters}
       clusterSets={clusterSets}
       clusterSetBindings={clusterSetBindings}
@@ -185,7 +176,6 @@ export function EditPolicy(props: { yaml: string }) {
       clusterSets={clusterSets}
       clusterSetBindings={clusterSetBindings}
       placements={placements}
-      placementRules={placementRules}
       title="Edit policy"
       onSubmit={onSubmit}
       onCancel={() => onCancel(history)}

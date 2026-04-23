@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
+  Alert,
   Badge,
   Button,
   DescriptionList,
@@ -22,6 +23,7 @@ import { CheckIcon, ExclamationCircleIcon, EyeIcon, EyeSlashIcon } from '@patter
 import {
   Fragment,
   type ComponentProps,
+  isValidElement,
   type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
@@ -345,7 +347,7 @@ function ReviewCollapsedValueBadge(props: {
   showYaml?: boolean
 }) {
   const { content, error, inputNode, onReviewEdit, showYaml } = props
-  const editable = onReviewEdit != null && inputNode != null
+  const editable = onReviewEdit != null && inputNode != null && !('nonEditable' in inputNode && inputNode.nonEditable)
   const yamlVisible = showYaml !== false
   const activateEdit = () => {
     if (inputNode != null && onReviewEdit != null) {
@@ -467,7 +469,10 @@ function renderCollapsedBadgesFromNodes(
       const collapsedInputContent = child.error ? (
         child.label ?? child.path
       ) : child.value === true ? (
-        <CheckIcon aria-hidden />
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+          <CheckIcon aria-hidden />
+          {reviewBooleanCheckCompanionText(child)}
+        </span>
       ) : (
         renderReviewInputDescriptionContent(child)
       )
@@ -505,6 +510,10 @@ function renderCollapsedBadgesFromNodes(
       continue
     }
     if (isReviewSectionNode(child) || !('type' in child)) {
+      out.push(...renderCollapsedBadgesFromNodes(child.children ?? [], onReviewEdit, showYaml))
+      continue
+    }
+    if (isReviewGroupNode(child)) {
       out.push(...renderCollapsedBadgesFromNodes(child.children ?? [], onReviewEdit, showYaml))
       continue
     }
@@ -551,6 +560,12 @@ function isReviewArrayInstanceNode(
   return 'type' in node && node.type === InputReviewMeta.ARRAY_INSTANCE
 }
 
+function isReviewGroupNode(
+  node: WizardDomTreeNode
+): node is Extract<WizardDomTreeNode, { type: InputReviewMeta.GROUP }> {
+  return 'type' in node && node.type === InputReviewMeta.GROUP
+}
+
 /** Top-level review sections: either `{ children: [...] }` from multiple roots, or a single tree node. */
 function getWizardDomTreeRootChildren(root: WizardDomTreeNode | null): WizardDomTreeNode[] {
   if (!root || Object.keys(root).length === 0) return []
@@ -586,6 +601,8 @@ function reviewNodeLabel(node: WizardDomTreeNode): string {
       return formatReviewPathOrIdLabel(node.path)
     case InputReviewMeta.ARRAY_INSTANCE:
       return formatReviewPathOrIdLabel(node.path ?? '')
+    case InputReviewMeta.GROUP:
+      return node.label && node.label !== '' ? node.label : formatReviewPathOrIdLabel(node.path)
     default:
       return ''
   }
@@ -602,6 +619,8 @@ function reviewNodeKey(node: WizardDomTreeNode, index: number): string {
       return `array-${node.path}`
     case InputReviewMeta.ARRAY_INSTANCE:
       return `inst-${node.path ?? index}`
+    case InputReviewMeta.GROUP:
+      return `group-${node.id}`
     default:
       return `node-${index}`
   }
@@ -623,7 +642,7 @@ function getReviewSectionBodyNodes(node: WizardDomTreeNode): WizardDomTreeNode[]
   return [node]
 }
 
-/** Storage keys for {@link ReviewTopLevelArrayInstanceExpandable} — same `sections` map as review step expandables. */
+/** Storage keys for top-level {@link ReviewTopLevelArrayInstanceExpandable} and {@link renderReviewGroupContainer} — same `sections` map as review step expandables. */
 function collectTopLevelArrayInstanceExpandableKeys(root: WizardDomTreeNode | null): string[] {
   const out: string[] = []
   if (!root) return out
@@ -654,6 +673,14 @@ function collectTopLevelArrayInstanceExpandableKeys(root: WizardDomTreeNode | nu
         i++
         continue
       }
+      if (isReviewGroupNode(n)) {
+        if (arrayInputNesting === 0) {
+          out.push(reviewNodeKey(n, i))
+        }
+        walkSequence(n.children ?? [], arrayInputNesting)
+        i++
+        continue
+      }
       if (isReviewArrayInstanceNode(n)) {
         if (arrayInputNesting === 0) {
           out.push(reviewNodeKey(n, i))
@@ -677,6 +704,9 @@ function formatReviewValue(value: unknown): ReactNode {
   if (typeof value === 'string') return value
   if (value === true) return ''
   if (typeof value === 'number' || typeof value === 'boolean') return String(value)
+  if (Array.isArray(value) && value.every((item) => typeof item === 'string')) {
+    return value.join(', ')
+  }
   try {
     return JSON.stringify(value)
   } catch {
@@ -689,6 +719,39 @@ function isReviewValueUnset(value: unknown): boolean {
   if (typeof value === 'string' && value === '') return true
   if (Array.isArray(value) && value.length === 0) return true
   return false
+}
+
+/** Collapsed review badge only: text beside the checkmark for boolean or unset inputs (short label, else path-derived). */
+function reviewBooleanCheckCompanionText(node: WizardInputDomNode): string {
+  const { path, label, value } = node
+  if (!(typeof value === 'boolean' || isReviewValueUnset(value))) {
+    return label ?? path
+  }
+  if (label && label.length < 32) {
+    return label
+  }
+  if (!path) {
+    return label ?? ''
+  }
+  const hashKeyMatch = path.match(/#\[([^=]+)=([^\]]+)\]\s*$/)
+  if (hashKeyMatch) {
+    return hashKeyMatch[1]!
+  }
+  const semicolonIdMatch = path.match(/;([^;=]+)=([^;]+)$/)
+  if (semicolonIdMatch) {
+    return semicolonIdMatch[2]!
+  }
+  const segments = path.split('.')
+  const lastSeg = segments[segments.length - 1] ?? path
+  if (lastSeg === 'enabled' || lastSeg === 'disabled') {
+    const parent = segments.length >= 2 ? segments[segments.length - 2]! : ''
+    const valuePart = typeof value === 'boolean' ? String(value) : ''
+    if (parent) {
+      return valuePart ? `${parent}.${lastSeg} = ${valuePart}` : `${parent}.${lastSeg}`
+    }
+    return valuePart ? `${lastSeg} = ${valuePart}` : lastSeg
+  }
+  return lastSeg
 }
 
 /** True when the review row should be omitted: no user-visible value (still show rows with errors). */
@@ -913,7 +976,7 @@ function renderReviewInputRows(nodes: readonly WizardInputDomNode[], ctx: Review
         const yamlVisible = ctx.showYaml !== false
         return (
           <DescriptionListGroup key={inputNode.path} style={{ marginLeft: ctx.inputGroupMarginLeft }}>
-            {onReviewEdit != null ? (
+            {onReviewEdit != null && !inputNode.nonEditable ? (
               inputNode.secret && !inputNode.error ? (
                 <ReviewSecretPenHoverInputRow
                   inputNode={inputNode}
@@ -963,8 +1026,25 @@ function renderReviewNodeSequence(
   while (i < nodes.length) {
     const n = nodes[i]!
     if (isReviewInputNode(n)) {
+      // Alert-variant inputs render as standalone Alerts, not description-list rows
+      if (n.alertVariant) {
+        const title =
+          typeof n.value === 'string' ? n.value : isValidElement(n.value) ? n.value : formatReviewValue(n.value)
+        out.push(
+          <Alert
+            key={`alert-${n.path}`}
+            variant={n.alertVariant}
+            title={title}
+            isInline
+            style={{ marginLeft: ctx.inputGroupMarginLeft }}
+          />
+        )
+        precedingDlGroup = false
+        i++
+        continue
+      }
       const run: WizardInputDomNode[] = []
-      while (i < nodes.length && isReviewInputNode(nodes[i]!)) {
+      while (i < nodes.length && isReviewInputNode(nodes[i]!) && !(nodes[i] as WizardInputDomNode).alertVariant) {
         run.push(nodes[i] as WizardInputDomNode)
         i++
       }
@@ -974,6 +1054,12 @@ function renderReviewNodeSequence(
     }
     if (isReviewArrayInputNode(n)) {
       out.push(renderReviewArrayInputSection(n, ctx, precedingDlGroup))
+      precedingDlGroup = false
+      i++
+      continue
+    }
+    if (isReviewGroupNode(n)) {
+      out.push(renderReviewGroupContainer(n, ctx, precedingDlGroup, i))
       precedingDlGroup = false
       i++
       continue
@@ -999,6 +1085,67 @@ function renderReviewNodeSequence(
     i++
   }
   return out
+}
+
+/** Review block for {@link InputReviewMeta.GROUP}: PatternFly {@link ExpandableSection} (collapsed summary + body when expanded). */
+function renderReviewGroupContainer(
+  node: Extract<WizardDomTreeNode, { type: InputReviewMeta.GROUP }>,
+  ctx: ReviewRenderCtx,
+  addTopMarginAfterDl: boolean,
+  groupIndex = 0
+): ReactNode {
+  const marginLeft = reviewArrayInstanceMarginLeft(ctx.arrayInputNesting)
+  const innerCtx: ReviewRenderCtx = {
+    inputGroupMarginLeft: 8,
+    arrayInputNesting: ctx.arrayInputNesting + 1,
+    onReviewEdit: ctx.onReviewEdit,
+    showYaml: ctx.showYaml,
+    getTopLevelArrayInstanceExpanded: ctx.getTopLevelArrayInstanceExpanded,
+    onTopLevelArrayInstanceExpandedChange: ctx.onTopLevelArrayInstanceExpandedChange,
+  }
+  const key = reviewNodeKey(node, groupIndex)
+  const childNodes = node.children ?? []
+  const toggleLabel = node.label && node.label !== '' ? node.label : reviewNodeLabel(node) || `Group ${groupIndex + 1}`
+
+  const paddedBody = <div style={{ paddingLeft: 12 }}>{renderReviewNodeSequence(childNodes, innerCtx, false)}</div>
+
+  const isTopLevelInSection = ctx.arrayInputNesting === 0
+  const expandableBody = isTopLevelInSection ? (
+    <TopLevelArrayInstancePenWrap
+      storageKey={key}
+      toggleLabel={toggleLabel}
+      instanceNode={node}
+      onReviewEdit={ctx.onReviewEdit}
+      showYaml={ctx.showYaml}
+      getTopLevelArrayInstanceExpanded={ctx.getTopLevelArrayInstanceExpanded}
+      onTopLevelArrayInstanceExpandedChange={ctx.onTopLevelArrayInstanceExpandedChange}
+    >
+      {paddedBody}
+    </TopLevelArrayInstancePenWrap>
+  ) : (
+    <ReviewTopLevelArrayInstanceExpandable
+      toggleLabel={toggleLabel}
+      instanceNode={node}
+      onReviewEdit={ctx.onReviewEdit}
+      showYaml={ctx.showYaml}
+    >
+      {paddedBody}
+    </ReviewTopLevelArrayInstanceExpandable>
+  )
+
+  return (
+    <ReviewDomTreeNodeShell key={key}>
+      <div
+        style={{
+          marginLeft,
+          marginBottom: 16,
+          marginTop: addTopMarginAfterDl ? 24 : undefined,
+        }}
+      >
+        {expandableBody}
+      </div>
+    </ReviewDomTreeNodeShell>
+  )
 }
 
 function renderReviewArrayInputSection(

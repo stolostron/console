@@ -72,7 +72,6 @@ export function EditPolicy() {
     managedClustersState,
     namespacesState,
     placementBindingsState,
-    placementRulesState,
     placementsState,
     subscriptionsState,
     usePolicies,
@@ -80,7 +79,6 @@ export function EditPolicy() {
   const policies = usePolicies()
   const namespaces = useRecoilValue(namespacesState)
   const placements = useRecoilValue(placementsState)
-  const placementRules = useRecoilValue(placementRulesState)
   const managedClusters = useRecoilValue(managedClustersState)
   const placementBindings = useRecoilValue(placementBindingsState)
   const clusterSets = useRecoilValue(managedClusterSetsState)
@@ -110,7 +108,6 @@ export function EditPolicy() {
     }
     const policyPlacementBindings = getPlacementBindingsForResource(policy, placementBindings)
     const policyPlacements = getPlacementsForResource(policy, policyPlacementBindings, placements)
-    const policyPlacementRules = getPlacementsForResource(policy, policyPlacementBindings, placementRules)
 
     const isExternal = resolveExternalStatus(policy)
     if (isExternal) {
@@ -118,7 +115,7 @@ export function EditPolicy() {
       setGitSource(policySource?.pathName ?? '')
     }
 
-    setExistingResources([policy, ...policyPlacements, ...policyPlacementRules, ...policyPlacementBindings])
+    setExistingResources([policy, ...policyPlacements, ...policyPlacementBindings])
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -136,7 +133,6 @@ export function EditPolicy() {
       placements={placements}
       yamlEditor={getWizardSyncEditor}
       namespaces={namespaceNames}
-      placementRules={placementRules}
       clusterSets={clusterSets}
       clusterSetBindings={clusterSetBindings}
       breadcrumb={[{ text: t('Policies'), to: NavigationPath.policies }, { text: name }]}

@@ -50,7 +50,7 @@ import {
   useItem,
   Wizard,
   WizItemSelector,
-  WizCustomInputWrapper,
+  WizCustomWrapper,
   WizSingleSelect,
   WizTextArea,
   WizTextInput,
@@ -748,7 +748,7 @@ const AdditionalLabels = (props: { state: State; dispatch: Dispatch<Action> }) =
   const path = process.env.NODE_ENV === 'test' ? controlId : 'ManagedCluster.metadata.labels'
   const controlLabel = t('import.form.labels.label')
   return (
-    <WizCustomInputWrapper
+    <WizCustomWrapper
       path={path}
       label={controlLabel}
       value={
@@ -765,7 +765,7 @@ const AdditionalLabels = (props: { state: State; dispatch: Dispatch<Action> }) =
         onChange={(labels) => onChangeAdditionalLabels(labels as Labels)}
         placeholder={t('labels.edit.placeholder')}
       />
-    </WizCustomInputWrapper>
+    </WizCustomWrapper>
   )
 }
 
@@ -919,7 +919,7 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
   const namespaceLabel = t('discoveryConfig.namespaces.label')
   return (
     <>
-      <WizCustomInputWrapper
+      <WizCustomWrapper
         path="importMode"
         id={controlId}
         label={controlLabel}
@@ -944,8 +944,8 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
             })}
           </AcmSelect>
         </AcmFormInputAdapter>
-      </WizCustomInputWrapper>
-      <WizCustomInputWrapper
+      </WizCustomWrapper>
+      <WizCustomWrapper
         path="discoveryNamespace"
         id={namespaceControlId}
         label={namespaceLabel}
@@ -976,8 +976,8 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
             })}
           </AcmSelect>
         </AcmFormInputAdapter>
-      </WizCustomInputWrapper>
-      <WizCustomInputWrapper
+      </WizCustomWrapper>
+      <WizCustomWrapper
         path="discoveryCredential"
         id={credentialControlId}
         label={credentialLabel}
@@ -1008,7 +1008,7 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
             })}
           </AcmSelect>
         </AcmFormInputAdapter>
-      </WizCustomInputWrapper>
+      </WizCustomWrapper>
       <Sync kind={ManagedClusterKind} path="metadata.name" targetKind={SecretKind} targetPath="metadata.namespace" />
       <Sync kind={ManagedClusterKind} path="metadata.name" targetKind={ClusterCuratorKind} targetPath="metadata.name" />
       <Sync
@@ -1156,7 +1156,7 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
   const controlLabel = t('template.clusterCreate.name')
   return (
     <>
-      <WizCustomInputWrapper path="templateName" id={controlId} label={controlLabel} value={templateName}>
+      <WizCustomWrapper path="templateName" id={controlId} label={controlLabel} value={templateName}>
         <AcmFormInputAdapter>
           <AcmSelect
             id={controlId}
@@ -1197,7 +1197,7 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
             })}
           </AcmSelect>
         </AcmFormInputAdapter>
-      </WizCustomInputWrapper>
+      </WizCustomWrapper>
       <TemplateLinkOut templateCurator={selectedTemplateName} />
       <TemplateSummaryExpandable clusterCurator={resources.find((r) => r.kind === ClusterCuratorKind)} />
     </>

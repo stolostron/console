@@ -70,7 +70,7 @@ describe('DeleteResourceModal', () => {
 
     const selected: any[] = [
       {
-        apiVersion: 'apps.open-cluster-management.io/v1',
+        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
         id: 'subscriptions-feng-feng-mortgagers-subscription',
         kind: 'Subscription',
         label: 'feng-mortgagers-subscription [Subscription]',
@@ -79,10 +79,10 @@ describe('DeleteResourceModal', () => {
         subChildResources: [],
       },
       {
-        apiVersion: 'apps.open-cluster-management.io/v1',
+        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
         id: 'rules-feng-mortgagers-placement',
-        kind: 'PlacementRule',
-        label: 'mortgagers-placement [PlacementRule]',
+        kind: 'Placement',
+        label: 'mortgagers-placement [Placement]',
         name: 'mortgagers-placement',
         namespace: 'feng',
       },
@@ -114,7 +114,7 @@ describe('DeleteResourceModal', () => {
     userEvent.click(screen.getAllByRole('checkbox')[0])
     expect(screen.getAllByRole('checkbox')[0]).toBeChecked()
     expect(getByText('feng-mortgagers-subscription [Subscription]')).toBeTruthy()
-    expect(getByText('mortgagers-placement [PlacementRule]')).toBeTruthy()
+    expect(getByText('mortgagers-placement [Placement]')).toBeTruthy()
     expect(screen.getByRole('button', { name: /cancel/i })).toBeTruthy()
     nockIgnoreApiPaths()
     userEvent.click(screen.getByRole('button', { name: /cancel/i }))
@@ -132,7 +132,7 @@ describe('DeleteResourceModal', () => {
 
     const selected: any[] = [
       {
-        apiVersion: 'apps.open-cluster-management.io/v1',
+        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
         id: 'subscriptions-feng-feng-mortgagers-subscription',
         kind: 'Subscription',
         label: 'feng-mortgagers-subscription [Subscription]',
@@ -141,10 +141,10 @@ describe('DeleteResourceModal', () => {
         subChildResources: [],
       },
       {
-        apiVersion: 'apps.open-cluster-management.io/v1',
+        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
         id: 'rules-feng-mortgagers-placement',
-        kind: 'PlacementRule',
-        label: 'mortgagers-placement [PlacementRule]',
+        kind: 'Placement',
+        label: 'mortgagers-placement [Placement]',
         name: 'mortgagers-placement',
         namespace: 'feng',
       },
@@ -153,7 +153,7 @@ describe('DeleteResourceModal', () => {
     const shared: any[] = [
       {
         id: 'rules-feng-mortgagers-placement-2',
-        label: 'mortgagers-placement-2 [PlacementRule]',
+        label: 'mortgagers-placement-2 [Placement]',
         siblingSubs: ['feng-temp-app-subscription'],
       },
     ]
@@ -181,7 +181,7 @@ describe('DeleteResourceModal', () => {
     )
 
     expect(getByText('This application uses the following shared resources, which are not removable:')).toBeTruthy()
-    expect(getByText('mortgagers-placement-2 [PlacementRule]')).toBeTruthy()
+    expect(getByText('mortgagers-placement-2 [Placement]')).toBeTruthy()
     expect(getByText('Shared with:')).toBeTruthy()
     expect(getByText('feng-temp-app-subscription')).toBeTruthy()
   })
@@ -198,7 +198,7 @@ describe('DeleteResourceModal', () => {
 
     const selected: any[] = [
       {
-        apiVersion: 'apps.open-cluster-management.io/v1',
+        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
         id: 'subscriptions-feng-feng-mortgagers-subscription',
         kind: 'Subscription',
         label: 'feng-mortgagers-subscription [Subscription]',
@@ -212,10 +212,10 @@ describe('DeleteResourceModal', () => {
         ],
       },
       {
-        apiVersion: 'apps.open-cluster-management.io/v1',
+        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
         id: 'rules-feng-mortgagers-placement',
-        kind: 'PlacementRule',
-        label: 'mortgagers-placement [PlacementRule]',
+        kind: 'Placement',
+        label: 'mortgagers-placement [Placement]',
         name: 'mortgagers-placement',
         namespace: 'feng',
       },

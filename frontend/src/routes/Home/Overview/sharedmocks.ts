@@ -1206,7 +1206,7 @@ export const policies: Policy[] = [
     },
     status: {
       compliant: 'NonCompliant',
-      placement: [{ placementBinding: 'binding-amazon-role', placementRule: 'placement-amazon-role' }],
+      placement: [{ placementBinding: 'binding-amazon-role', placement: 'placement-amazon-role' }],
       status: [{ clustername: 'local-cluster', clusternamespace: 'local-cluster', compliant: 'NonCompliant' }],
     },
   },
@@ -1229,7 +1229,7 @@ export const policies: Policy[] = [
       disabled: false,
       remediationAction: 'inform',
     },
-    status: { placement: [{ placementBinding: 'binding-policy-role', placementRule: 'placement-policy-role' }] },
+    status: { placement: [{ placementBinding: 'binding-policy-role', placement: 'placement-policy-role' }] },
   },
 ]
 

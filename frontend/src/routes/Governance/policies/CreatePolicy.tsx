@@ -57,7 +57,6 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
     managedClusterSetsState,
     managedClustersState,
     namespacesState,
-    placementRulesState,
     placementsState,
     usePolicies,
   } = useSharedAtoms()
@@ -66,7 +65,6 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
   const policies = usePolicies()
   const namespaces = useRecoilValue(namespacesState)
   const placements = useRecoilValue(placementsState)
-  const placementRules = useRecoilValue(placementRulesState)
   const managedClusters = useRecoilValue(managedClustersState)
   const clusterSets = useRecoilValue(managedClusterSetsState)
   const clusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
@@ -122,7 +120,6 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
       resources={props.initialResources}
       namespaces={namespaceNames}
       placements={placements}
-      placementRules={placementRules}
       clusterSets={clusterSets}
       clusterSetBindings={clusterSetBindings}
       breadcrumb={[{ text: t('Policies'), to: NavigationPath.policies }, { text: t('Create policy') }]}

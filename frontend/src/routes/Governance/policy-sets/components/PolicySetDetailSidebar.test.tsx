@@ -7,7 +7,7 @@ import {
   managedClustersState,
   placementBindingsState,
   placementDecisionsState,
-  placementRulesState,
+  placementsState,
   policiesState,
 } from '../../../../atoms'
 import {
@@ -18,9 +18,9 @@ import {
   getCSVDownloadLink,
 } from '../../../../lib/test-util'
 import {
+  Placement,
   PlacementBinding,
   PlacementDecision,
-  PlacementRule,
   Policy,
   PolicySet,
   REMEDIATION_ACTION,
@@ -86,7 +86,7 @@ const mockPolicy: Policy = {
     placement: [
       {
         placementBinding: 'policy-set-with-1-placement-rule',
-        placementRule: 'policy-set-with-1-placement-rule',
+        placement: 'policy-set-with-1-placement-rule',
         policySet: 'policy-set-with-1-placement-rule',
       },
     ],
@@ -202,7 +202,7 @@ const mockPolicyPending: Policy = {
     placement: [
       {
         placementBinding: 'policy-set-with-1-placement-rule',
-        placementRule: 'policy-set-with-1-placement-rule',
+        placement: 'policy-set-with-1-placement-rule',
         policySet: 'policy-set-with-1-placement-rule',
       },
     ],
@@ -217,42 +217,6 @@ const mockPolicyPending: Policy = {
 }
 const mockPolicies: Policy[] = [mockPolicy, mockPolicy0]
 
-const mockPlacementRule: PlacementRule = {
-  apiVersion: 'apps.open-cluster-management.io/v1',
-  kind: 'PlacementRule',
-  metadata: {
-    name: 'policy-set-with-1-placement-rule',
-    namespace: 'test',
-    uid: 'ff9f446b-c3e2-49ff-9305-b8385344070b',
-  },
-  spec: {
-    clusterConditions: [
-      {
-        status: 'True',
-        type: 'ManagedClusterConditionAvailable',
-      },
-    ],
-    clusterSelector: {
-      matchExpressions: [
-        {
-          key: 'local-cluster',
-          operator: 'In',
-          values: ['true'],
-        },
-      ],
-    },
-  },
-  status: {
-    decisions: [
-      {
-        clusterName: 'local-cluster',
-        clusterNamespace: 'local-cluster',
-      },
-    ],
-  },
-}
-const mockPlacementRules: PlacementRule[] = [mockPlacementRule]
-
 const mockPlacementBinding: PlacementBinding = {
   apiVersion: 'policy.open-cluster-management.io/v1',
   kind: 'PlacementBinding',
@@ -266,8 +230,8 @@ const mockPlacementBinding: PlacementBinding = {
     uid: '2c3359ea-b9b6-451e-981d-8107a1060281',
   },
   placementRef: {
-    apiGroup: 'apps.open-cluster-management.io',
-    kind: 'PlacementRule',
+    apiGroup: 'cluster.open-cluster-management.io',
+    kind: 'Placement',
     name: 'policy-set-with-1-placement-rule',
   },
   subjects: [
@@ -285,19 +249,45 @@ const mockPlacementDecision: PlacementDecision = {
     namespace: 'test',
     ownerReferences: [
       {
-        apiVersion: 'apps.open-cluster-management.io/v1',
+        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
         blockOwnerDeletion: true,
         controller: true,
-        kind: 'PlacementRule',
+        kind: 'Placement',
         name: 'policy-set-with-1-placement-rule',
         uid: 'ff9f446b-c3e2-49ff-9305-b8385344070b',
       },
     ],
-    labels: { 'cluster.open-cluster-management.io/placementrule': 'policy-set-with-1-placement-rule' },
+    labels: { 'cluster.open-cluster-management.io/placement': 'policy-set-with-1-placement-rule' },
   },
   status: { decisions: [{ clusterName: 'local-cluster', reason: '' }] },
 }
 const mockPlacementDecisions: PlacementDecision[] = [mockPlacementDecision]
+
+const mockPlacement: Placement = {
+  apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+  kind: 'Placement',
+  metadata: {
+    name: 'policy-set-with-1-placement-rule',
+    namespace: 'test',
+    uid: 'ff9f446b-c3e2-49ff-9305-b8385344070b',
+  },
+  spec: {
+    predicates: [
+      {
+        requiredClusterSelector: {
+          labelSelector: {
+            matchExpressions: [],
+          },
+        },
+      },
+    ],
+  },
+  status: {
+    numberOfSelectedClusters: 1,
+    conditions: [],
+  },
+}
+const mockPlacements: Placement[] = [mockPlacement]
 
 describe('PolicySets Page', () => {
   test('Should render PolicySet page correctly', async () => {
@@ -309,7 +299,7 @@ describe('PolicySets Page', () => {
         namespace: 'test',
       },
       spec: {
-        description: 'Policy set with a single PlacementRule and PlacementBinding.',
+        description: 'Policy set with a single Placement and PlacementBinding.',
         policies: ['policy-set-with-1-placement-rule-policy-1'],
       },
       status: {
@@ -317,7 +307,7 @@ describe('PolicySets Page', () => {
         placement: [
           {
             placementBinding: 'policy-set-with-1-placement-rule',
-            placementRule: 'policy-set-with-1-placement-rule',
+            placement: 'policy-set-with-1-placement-rule',
           },
         ],
       },
@@ -328,9 +318,9 @@ describe('PolicySets Page', () => {
         initializeState={(snapshot) => {
           snapshot.set(policiesState, mockPolicies)
           snapshot.set(managedClustersState, mockManagedClusters)
-          snapshot.set(placementRulesState, mockPlacementRules)
           snapshot.set(placementBindingsState, mockPlacementBindings)
           snapshot.set(placementDecisionsState, mockPlacementDecisions)
+          snapshot.set(placementsState, mockPlacements)
         }}
       >
         <MemoryRouter>
@@ -339,10 +329,10 @@ describe('PolicySets Page', () => {
       </RecoilRoot>
     )
 
-    // Check clusters Violation count
-    await waitForText('0 Clusters with policy violations')
+    // Check clusters Violation count - chart legend text may be split across elements
+    await waitForText(/0\s+Clusters?\s+with policy violations/i, true)
     // Check policies Violation count
-    await waitForText('1 Cluster without policy violations')
+    await waitForText(/1\s+Cluster\s+without policy violations/i, true)
 
     // Find the cluster names iin table
     await waitForText(mockLocalCluster.metadata.name!)
@@ -369,7 +359,7 @@ describe('PolicySets Page with Pending policyset', () => {
         namespace: 'test',
       },
       spec: {
-        description: 'Policy set with a single PlacementRule and PlacementBinding.',
+        description: 'Policy set with a single Placement and PlacementBinding.',
         policies: ['policy-set-with-1-placement-rule-policy-1'],
       },
       status: {
@@ -377,7 +367,7 @@ describe('PolicySets Page with Pending policyset', () => {
         placement: [
           {
             placementBinding: 'policy-set-with-1-placement-rule',
-            placementRule: 'policy-set-with-1-placement-rule',
+            placement: 'policy-set-with-1-placement-rule',
           },
         ],
       },
@@ -388,9 +378,9 @@ describe('PolicySets Page with Pending policyset', () => {
         initializeState={(snapshot) => {
           snapshot.set(policiesState, [mockPolicyPending])
           snapshot.set(managedClustersState, mockManagedClusters)
-          snapshot.set(placementRulesState, mockPlacementRules)
           snapshot.set(placementBindingsState, mockPlacementBindings)
           snapshot.set(placementDecisionsState, mockPlacementDecisions)
+          snapshot.set(placementsState, mockPlacements)
         }}
       >
         <MemoryRouter>
@@ -399,8 +389,8 @@ describe('PolicySets Page with Pending policyset', () => {
       </RecoilRoot>
     )
 
-    // Check policies Violation count
-    await waitForText('1 Cluster with pending policies')
+    // Check policies Violation count - chart legend text may be split across elements
+    await waitForText(/1\s+Cluster\s+with pending policies/i, true)
 
     // Find the cluster names iin table
     await waitForText(mockLocalCluster.metadata.name!)
@@ -422,7 +412,7 @@ describe('Export from policy details results table', () => {
         namespace: 'test',
       },
       spec: {
-        description: 'Policy set with a single PlacementRule and PlacementBinding.',
+        description: 'Policy set with a single Placement and PlacementBinding.',
         policies: ['policy-set-with-1-placement-rule-policy-1'],
       },
       status: {
@@ -430,7 +420,7 @@ describe('Export from policy details results table', () => {
         placement: [
           {
             placementBinding: 'policy-set-with-1-placement-rule',
-            placementRule: 'policy-set-with-1-placement-rule',
+            placement: 'policy-set-with-1-placement-rule',
           },
         ],
       },
@@ -441,9 +431,9 @@ describe('Export from policy details results table', () => {
         initializeState={(snapshot) => {
           snapshot.set(policiesState, [mockPolicyPending])
           snapshot.set(managedClustersState, mockManagedClusters)
-          snapshot.set(placementRulesState, mockPlacementRules)
           snapshot.set(placementBindingsState, mockPlacementBindings)
           snapshot.set(placementDecisionsState, mockPlacementDecisions)
+          snapshot.set(placementsState, mockPlacements)
         }}
       >
         <MemoryRouter>
@@ -452,8 +442,8 @@ describe('Export from policy details results table', () => {
       </RecoilRoot>
     )
 
-    // Check policies with violation count
-    await waitForText('1 Cluster with pending policies')
+    // Check policies with violation count - chart legend text may be split across elements
+    await waitForText(/1\s+Cluster\s+with pending policies/i, true)
 
     window.URL.createObjectURL = jest.fn()
     window.URL.revokeObjectURL = jest.fn()

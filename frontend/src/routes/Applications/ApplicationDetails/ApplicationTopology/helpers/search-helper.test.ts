@@ -15,7 +15,7 @@ import type { SearchQuery } from '../types'
 describe('convertStringToQuery', () => {
   const string1: string = 'kind:subscription name:test'
   const string2: string = 'kind:channel name:test'
-  const string3: string = 'kind:placementrule name:test'
+  const string3: string = 'kind:placement name:test'
 
   const result1: SearchQuery = {
     filters: [
@@ -29,7 +29,7 @@ describe('convertStringToQuery', () => {
       },
     ],
     keywords: [],
-    relatedKinds: ['placementrule', 'deployable', 'application', 'subscription', 'channel'],
+    relatedKinds: ['placement', 'deployable', 'application', 'subscription', 'channel'],
   }
 
   const result2: SearchQuery = {
@@ -42,7 +42,7 @@ describe('convertStringToQuery', () => {
   }
   const result3: SearchQuery = {
     filters: [
-      { property: 'kind', values: ['placementrule'] },
+      { property: 'kind', values: ['placement'] },
       { property: 'name', values: ['test'] },
     ],
     keywords: [],

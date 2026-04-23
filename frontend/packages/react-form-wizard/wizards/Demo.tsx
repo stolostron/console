@@ -39,14 +39,7 @@ import AWSIcon from './Credentials/icons/AWSIcon'
 import { HomeWizard } from './Home/HomeWizard'
 import { AmazonHypershiftWizardExample } from './Hypershift/AWSHypershiftWizardExample'
 import { InputsWizard } from './Inputs/InputsWizard'
-import {
-  CreatePlacement,
-  CreatePlacementRule,
-  EditPlacement,
-  EditPlacementRule,
-  EditPlacements,
-  PlacementExamples,
-} from './Placement/PlacementExamples'
+import { CreatePlacement, EditPlacement, EditPlacements, PlacementExamples } from './Placement/PlacementExamples'
 import {
   CreatePolicy,
   EditPolicyCertificate,
@@ -75,12 +68,7 @@ import {
   CreatePolicySet,
   EditPolicySet1,
   EditPolicySet2,
-  EditPolicySet3,
-  EditPolicySet4,
-  EditPolicySet5,
   EditPolicySet6,
-  EditPolicySet7,
-  EditPolicySet8,
   PolicySetExamples,
 } from './PolicySet/PolicySetExamples'
 import { RosaExample } from './ROSA/RosaExample'
@@ -325,12 +313,8 @@ export function DemoRouter(): JSX.Element {
       return <PlacementExamples />
     case RouteE.CreatePlacement:
       return <CreatePlacement />
-    case RouteE.CreatePlacementRule:
-      return <CreatePlacementRule />
     case RouteE.EditPlacement:
       return <EditPlacement />
-    case RouteE.EditPlacementRule:
-      return <EditPlacementRule />
     case RouteE.EditPlacements:
       return <EditPlacements />
     case RouteE.PolicySet:
@@ -341,18 +325,8 @@ export function DemoRouter(): JSX.Element {
       return <EditPolicySet1 />
     case RouteE.EditPolicySet2:
       return <EditPolicySet2 />
-    case RouteE.EditPolicySet3:
-      return <EditPolicySet3 />
-    case RouteE.EditPolicySet4:
-      return <EditPolicySet4 />
-    case RouteE.EditPolicySet5:
-      return <EditPolicySet5 />
     case RouteE.EditPolicySet6:
       return <EditPolicySet6 />
-    case RouteE.EditPolicySet7:
-      return <EditPolicySet7 />
-    case RouteE.EditPolicySet8:
-      return <EditPolicySet8 />
     case RouteE.ROSA:
       return <RosaExample />
     case RouteE.Inputs:

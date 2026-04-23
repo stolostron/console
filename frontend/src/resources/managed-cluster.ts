@@ -23,6 +23,7 @@ export interface ManagedCluster extends IResource {
     hubAcceptsClient: boolean
     leaseDurationSeconds?: number
     managedClusterClientConfigs?: any[]
+    taints?: ManagedClusterTaint[]
   }
   status?: {
     allocatable: {
@@ -39,6 +40,13 @@ export interface ManagedCluster extends IResource {
     }
     clusterClaims: { name: string; value: string }[]
   }
+}
+
+export interface ManagedClusterTaint {
+  key: string
+  value?: string
+  effect: 'NoSelect' | 'PreferNoSelect' | 'NoSelectIfNew'
+  timeAdded?: string
 }
 
 export const createManagedCluster = (data: {

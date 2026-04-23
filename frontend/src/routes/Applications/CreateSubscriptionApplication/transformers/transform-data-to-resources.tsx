@@ -22,7 +22,7 @@ const filter = (value: unknown) => {
 
 export const isFiltered = (key: string, parentObj: any) => {
   if (key === 'status' && parentObj && _.get(parentObj, 'type', '') === 'ManagedClusterConditionAvailable') {
-    // for placement rule online option keep the status
+    // keep ManagedClusterConditionAvailable status data used by placement health checks
     return false
   }
   if (kube.includes(key)) {

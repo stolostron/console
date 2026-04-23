@@ -11,23 +11,25 @@ import {
 import { PolicySetWizard } from './PolicySetWizard'
 import { IResource } from '@patternfly-labs/react-form-wizard'
 import { BrowserRouter as Router } from 'react-router-dom-v5-compat'
+import { RecoilRoot } from 'recoil'
 
 function TestPolicySetWizard() {
   return (
-    <Router>
-      <PolicySetWizard
-        title="Testing the policy set wizard"
-        namespaces={['argo-server-1']}
-        policies={[mockPolicy as IResource]}
-        placements={[mockPlacements as IResource]}
-        placementRules={[]}
-        clusters={mockManagedClusters}
-        clusterSets={[mockClusterSet]}
-        clusterSetBindings={[mockClusterSetBinding]}
-        onSubmit={() => new Promise(() => {})}
-        onCancel={() => {}}
-      />
-    </Router>
+    <RecoilRoot>
+      <Router>
+        <PolicySetWizard
+          title="Testing the policy set wizard"
+          namespaces={['argo-server-1']}
+          policies={[mockPolicy as IResource]}
+          placements={[mockPlacements as IResource]}
+          clusters={mockManagedClusters}
+          clusterSets={[mockClusterSet]}
+          clusterSetBindings={[mockClusterSetBinding]}
+          onSubmit={() => new Promise(() => {})}
+          onCancel={() => {}}
+        />
+      </Router>
+    </RecoilRoot>
   )
 }
 
@@ -35,8 +37,11 @@ describe('PolicySetWizard wizard', () => {
   test('can show correct cluster sets dropdown', async () => {
     const { container } = render(<TestPolicySetWizard />)
 
-    const nameTextbox = screen.getByRole('textbox', { name: /name/i })
-    userEvent.type(nameTextbox, 'test-policy')
+    // Name fields no longer get an accessible name from the label via role=textbox; use the policy
+    // set details step scope so we do not match the placement name (same placeholder and id="name").
+    const nameTextbox = container.querySelector('#details-step #name-form-group input#name')
+    expect(nameTextbox).toBeInstanceOf(HTMLInputElement)
+    userEvent.type(nameTextbox as HTMLInputElement, 'test-policy')
     screen.getByPlaceholderText(/select the namespace/i).click()
     screen.getByRole('option', { name: /argo-server-1/i }).click()
 

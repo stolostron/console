@@ -12,7 +12,6 @@ import {
   managedClustersState,
   namespacesState,
   placementDecisionsState,
-  placementRulesState,
   subscriptionsState,
 } from '../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../../lib/nock-util'
@@ -20,7 +19,7 @@ import { defaultPlugin, PluginContext } from '../../../lib/PluginContext'
 import { waitForText } from '../../../lib/test-util'
 import { ActionExtensionProps } from '../../../plugin-extensions/properties'
 import { AcmExtension } from '../../../plugin-extensions/types'
-import { GetMessagesDocument, SearchSchemaDocument } from '../../Search/search-sdk/search-sdk'
+import { SearchSchemaDocument } from '../../Search/search-sdk/search-sdk'
 import {
   mockApplication0,
   mockApplications,
@@ -28,7 +27,6 @@ import {
   mockManagedClusterInfos,
   mockManagedClusters,
   mockNamespaces,
-  mockPlacementrules,
   mockPlacementsDecisions,
   mockSubscriptions,
 } from '../Application.sharedmocks'
@@ -337,16 +335,6 @@ describe('Applications Page', () => {
           },
         },
       },
-      {
-        request: {
-          query: GetMessagesDocument,
-        },
-        result: {
-          data: {
-            messages: [],
-          },
-        },
-      },
     ]
     render(
       <RecoilRoot
@@ -354,7 +342,6 @@ describe('Applications Page', () => {
           snapshot.set(applicationsState, mockApplications)
           snapshot.set(subscriptionsState, mockSubscriptions)
           snapshot.set(channelsState, mockChannels)
-          snapshot.set(placementRulesState, mockPlacementrules)
           snapshot.set(placementDecisionsState, mockPlacementsDecisions)
           snapshot.set(managedClustersState, mockManagedClusters)
           snapshot.set(managedClusterInfosState, mockManagedClusterInfos)

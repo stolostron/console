@@ -23,7 +23,6 @@ import {
   Placement,
   PlacementBinding,
   PlacementDecision,
-  PlacementRule,
   NamespaceApiVersion,
   NamespaceKind,
   Namespace,
@@ -623,27 +622,6 @@ const placement1: Placement = {
 }
 
 // ******
-// PLACEMENTRULE
-// ******
-
-const placementRule1: PlacementRule = {
-  apiVersion: 'apps.open-cluster-management.io/v1',
-  kind: 'PlacementRule',
-  metadata: { name: 'policy1-placement', namespace: 'test' },
-  spec: {
-    clusterSelector: { matchExpressions: [{ key: 'cloud', operator: 'In', values: ['Amazon'] }] },
-    clusterConditions: [],
-  },
-}
-const placementRule2: PlacementRule = {
-  apiVersion: 'apps.open-cluster-management.io/v1',
-  kind: 'PlacementRule',
-  metadata: { name: 'policy-set-with-1-placement-placement', namespace: 'test' },
-  spec: {
-    clusterSelector: { matchExpressions: [{ key: 'cloud', operator: 'In', values: ['Amazon'] }] },
-    clusterConditions: [],
-  },
-}
 // ******
 // PLACEMENTBINDING
 // ******
@@ -651,7 +629,7 @@ const placementBinding1: PlacementBinding = {
   apiVersion: 'policy.open-cluster-management.io/v1',
   kind: 'PlacementBinding',
   metadata: { name: 'policy1-placement', namespace: 'test' },
-  placementRef: { apiGroup: 'apps.open-cluster-management.io', kind: 'PlacementRule', name: 'policy1-placement' },
+  placementRef: { apiGroup: 'cluster.open-cluster-management.io', kind: 'Placement', name: 'policy1-placement' },
   subjects: [{ apiGroup: 'policy.open-cluster-management.io', kind: 'Policy', name: 'policy1' }],
 }
 
@@ -683,7 +661,7 @@ const placementBinding3: PlacementBinding = {
   metadata: { name: 'policy-set-with-1-placement-placement', namespace: 'test' },
   placementRef: {
     apiGroup: 'apps.open-cluster-management.io',
-    kind: 'PlacementRule',
+    kind: 'Placement',
     name: 'policy-set-with-1-placement-placement',
   },
   subjects: [{ apiGroup: 'policy.open-cluster-management.io', kind: 'PolicySet', name: 'policy-set-with-1-placement' }],
@@ -889,7 +867,6 @@ export const mockPolicyNoStatus: Policy = policyWithoutStatus
 export const mockEmptyPolicySet: PolicySet[] = []
 export const mockPolicySets: PolicySet[] = [policySet0, policySet1, policySet2]
 export const mockPlacements: Placement[] = [placement1]
-export const mockPlacementRules: PlacementRule[] = [placementRule1, placementRule2]
 export const mockPlacementBindings: PlacementBinding[] = [placementBinding1, placementBinding2, placementBinding3]
 export const mockPlacementDecision: PlacementDecision[] = [placementDecision]
 

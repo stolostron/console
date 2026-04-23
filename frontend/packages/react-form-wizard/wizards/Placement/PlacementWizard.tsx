@@ -9,7 +9,6 @@ export function PlacementWizard(props: {
   namespaces: string[]
   policies: IResource[]
   placements: IResource[]
-  placementRules: IResource[]
   clusters: IResource[]
   clusterSets: IResource[]
   clusterSetBindings: IClusterSetBinding[]
@@ -19,7 +18,7 @@ export function PlacementWizard(props: {
   onCancel: WizardCancel
   bindingSubjectKind: string
   bindingSubjectApiGroup: string
-  defaultPlacementType: 'Placement' | 'PlacementRule'
+  defaultPlacementType?: 'Placement'
 }) {
   return (
     <WizardPage
@@ -33,12 +32,10 @@ export function PlacementWizard(props: {
       <Step label="Placement" id="placement">
         <PlacementSection
           existingPlacements={props.placements}
-          existingPlacementRules={props.placementRules}
           existingClusterSets={props.clusterSets}
           existingClusterSetBindings={props.clusterSetBindings}
           bindingSubjectKind={props.bindingSubjectKind}
           bindingSubjectApiGroup={props.bindingSubjectApiGroup}
-          defaultPlacementKind={props.defaultPlacementType}
           clusters={props.clusters}
         />
       </Step>

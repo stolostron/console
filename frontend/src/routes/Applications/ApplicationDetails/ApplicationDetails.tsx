@@ -104,7 +104,6 @@ export default function ApplicationDetailsPage() {
   const {
     applicationsState,
     channelsState,
-    placementRulesState,
     placementsState,
     placementDecisionsState,
     subscriptionReportsState,
@@ -146,7 +145,6 @@ export default function ApplicationDetailsPage() {
   const servicesGetter = useRecoilValueGetter(servicesState)
   const channelsGetter = useRecoilValueGetter(channelsState)
   const placementsGetter = useRecoilValueGetter(placementsState)
-  const placementRulesGetter = useRecoilValueGetter(placementRulesState)
   const subscriptionsGetter = useRecoilValueGetter(subscriptionsState)
   const subscriptionReportsGetter = useRecoilValueGetter(subscriptionReportsState)
   const placementDecisionsGetter = useRecoilValueGetter(placementDecisionsState)
@@ -156,7 +154,6 @@ export default function ApplicationDetailsPage() {
       applications: applicationsGetter(),
       channels: channelsGetter(),
       placements: placementsGetter(),
-      placementRules: placementRulesGetter(),
       subscriptions: subscriptionsGetter(),
       subscriptionReports: subscriptionReportsGetter(),
       placementDecisions: placementDecisionsGetter(),
@@ -166,7 +163,6 @@ export default function ApplicationDetailsPage() {
       applicationsGetter,
       channelsGetter,
       placementDecisionsGetter,
-      placementRulesGetter,
       placementsGetter,
       subscriptionReportsGetter,
       subscriptionsGetter,
@@ -245,7 +241,6 @@ export default function ApplicationDetailsPage() {
                   selectedApp,
                   recoilStates.applications,
                   recoilStates.subscriptions,
-                  recoilStates.placementRules,
                   recoilStates.placements,
                   recoilStates.channels,
                   hubCluster

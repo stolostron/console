@@ -7,7 +7,6 @@ import {
   namespacesState,
   managedClustersState,
   placementsState,
-  placementRulesState,
   managedClusterSetBindingsState,
   managedClusterSetsState,
 } from '../../../atoms'
@@ -23,7 +22,6 @@ import {
   mockManagedClusters,
   mockNamespaces,
   mockPlacements,
-  mockPlacementRules,
   mockPolicy,
 } from '../governance.sharedMocks'
 import { ResourceError, ResourceErrorCode } from '../../../resources/utils/resource-request'
@@ -116,7 +114,6 @@ function TestCreatePolicyPage({
         snapshot.set(namespacesState, mockNamespaces)
         snapshot.set(managedClustersState, mockManagedClusters)
         snapshot.set(placementsState, mockPlacements)
-        snapshot.set(placementRulesState, mockPlacementRules)
         snapshot.set(managedClusterSetsState, [mockClusterSet])
         snapshot.set(managedClusterSetBindingsState, [mockClusterSetBinding])
       }}

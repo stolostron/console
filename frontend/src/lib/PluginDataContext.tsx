@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { createContext, useState, useMemo, Dispatch, SetStateAction } from 'react'
+import { createContext, useState, useMemo, useCallback, Dispatch, SetStateAction } from 'react'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import * as atoms from '../atoms'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
@@ -22,8 +22,15 @@ export type PluginData = {
   loadCompleted: boolean
   loadStarted: boolean
   startLoading: boolean
+  isStreamIdle: boolean
+  isReconnecting: boolean
   setLoadCompleted: Dispatch<SetStateAction<boolean>>
   setLoadStarted: Dispatch<SetStateAction<boolean>>
+  setIsStreamIdle: Dispatch<SetStateAction<boolean>>
+  setIsReconnecting: Dispatch<SetStateAction<boolean>>
+  mounted: boolean
+  mount: () => void
+  unmount: () => void
   load: () => void
 }
 
@@ -36,8 +43,15 @@ export const defaultContext = {
   loadCompleted: process.env.NODE_ENV === 'test',
   loadStarted: process.env.NODE_ENV === 'test',
   startLoading: false,
+  isStreamIdle: false,
+  isReconnecting: false,
   setLoadCompleted: () => {},
   setLoadStarted: () => {},
+  setIsStreamIdle: () => {},
+  setIsReconnecting: () => {},
+  mounted: false,
+  mount: () => {},
+  unmount: () => {},
   load: () => {},
 }
 
@@ -47,7 +61,13 @@ export const usePluginDataContextValue = () => {
   const [loadStarted, setLoadStarted] = useState(process.env.NODE_ENV === 'test')
   const [loadCompleted, setLoadCompleted] = useState(process.env.NODE_ENV === 'test')
   const [startLoading, setStartLoading] = useState(false)
+  const [isStreamIdle, setIsStreamIdle] = useState(false)
+  const [isReconnecting, setIsReconnecting] = useState(false)
+  const [mountCount, setMountCount] = useState(0)
   const backendUrl = getBackendUrl()
+
+  const mount = useCallback(() => setMountCount((c) => c + 1), [])
+  const unmount = useCallback(() => setMountCount((c) => Math.max(0, c - 1)), [])
 
   const contextValue = useMemo(
     () => ({
@@ -59,11 +79,18 @@ export const usePluginDataContextValue = () => {
       loadCompleted,
       loadStarted,
       startLoading,
+      isStreamIdle,
+      isReconnecting,
       setLoadCompleted,
       setLoadStarted,
+      setIsStreamIdle,
+      setIsReconnecting,
+      mounted: mountCount > 0,
+      mount,
+      unmount,
       load: () => setStartLoading(true),
     }),
-    [backendUrl, loadStarted, loadCompleted, startLoading]
+    [backendUrl, loadStarted, loadCompleted, startLoading, isStreamIdle, isReconnecting, mountCount, mount, unmount]
   )
   return contextValue
 }

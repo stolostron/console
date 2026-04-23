@@ -30,9 +30,6 @@ import {
   PlacementDecision,
   PlacementDefinition,
   PlacementKind,
-  PlacementRuleApiVersion,
-  PlacementRuleDefinition,
-  PlacementRuleKind,
   Subscription,
   SubscriptionApiVersion,
   SubscriptionDefinition,
@@ -64,7 +61,6 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
     channelsState,
     placementsState,
     placementDecisionsState,
-    placementRulesState,
     subscriptionsState,
     settingsState,
   } = useSharedAtoms()
@@ -72,7 +68,6 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
   const applications = useRecoilValue(applicationsState)
   const channels = useRecoilValue(channelsState)
   const placements = useRecoilValue(placementsState)
-  const placementrules = useRecoilValue(placementRulesState)
   const placementDecisions = useRecoilValue(placementDecisionsState)
   const subscriptions = useRecoilValue(subscriptionsState)
   const settings = useRecoilValue(settingsState)
@@ -87,10 +82,8 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
   const [canDeleteSubscription, setCanDeleteSubscription] = useState<boolean>(false)
   const [canDeleteChannel, setCanDeleteChannel] = useState<boolean>(false)
   const [canDeletePlacement, setCanDeletePlacement] = useState<boolean>(false)
-  const [canDeletePlacementRule, setCanDeletePlacementRule] = useState<boolean>(false)
   const ChanneltableItems: IResource[] = []
   const SubscriptiontableItems: IResource[] = []
-  const PlacementRuleTableItems: IResource[] = []
   const PlacementTableItems: IResource[] = []
 
   const localHubName = useLocalHubName()
@@ -117,14 +110,6 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
       .then((result) => setCanDeletePlacement(result.status?.allowed!))
       .catch((err) => console.error(err))
     return () => canDeletePlacementPromise.abort()
-  }, [])
-
-  useEffect(() => {
-    const canDeletePlacementRulePromise = canUser('delete', PlacementRuleDefinition)
-    canDeletePlacementRulePromise.promise
-      .then((result) => setCanDeletePlacementRule(result.status?.allowed!))
-      .catch((err) => console.error(err))
-    return () => canDeletePlacementRulePromise.abort()
   }, [])
 
   const editLink = useCallback(
@@ -264,7 +249,6 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
         }
         break
       }
-      case 'PlacementRule':
       case 'Placement': {
         clusterCount = getPlacementDecisionClusterCount(tableItem, clusterCount, placementDecisions, localHubName)
         const clusterString = getClusterCountString(t, clusterCount)
@@ -282,14 +266,10 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
   subscriptionsWithoutLocal.forEach((subscription) => {
     SubscriptiontableItems.push(generateTransformData(subscription))
   })
-  placementrules.forEach((placementrule) => {
-    PlacementRuleTableItems.push(generateTransformData(placementrule))
-  })
-
   placements.forEach((placement) => PlacementTableItems.push(generateTransformData(placement)))
 
   const getRowActionResolver = (item: IResource) => {
-    const kind = _.get(item, 'kind') == 'PlacementRule' ? 'placement rule' : _.get(item, 'kind').toLowerCase()
+    const kind = _.get(item, 'kind').toLowerCase()
     const actions: IAcmRowAction<any>[] = []
 
     let canDeleteResource = false
@@ -315,12 +295,6 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
         editActionLabel = t('Edit placement')
         searchActionLabel = t('Search placement')
         deleteActionLabel = t('Delete placement')
-        break
-      case PlacementRuleKind:
-        canDeleteResource = canDeletePlacementRule
-        editActionLabel = t('Edit placement rule')
-        searchActionLabel = t('Search placement rule')
-        deleteActionLabel = t('Delete placement rule')
         break
     }
 
@@ -728,70 +702,6 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
           },
         }
       : {}),
-    placementrules: {
-      columns: useMemo<IAcmTableColumn<IResource>[]>(
-        () => [
-          {
-            header: t('Name'),
-            cell: (resource) => {
-              return editLink({
-                resource,
-                kind: 'PlacementRule',
-                apiversion: _.get(resource, 'apiVersion') || PlacementRuleApiVersion,
-              })
-            },
-            sort: 'metadata.name',
-            search: 'metadata.name',
-            exportContent: (resource) => resource.metadata?.name,
-          },
-          {
-            header: t('Namespace'),
-            cell: 'metadata.namespace',
-            sort: 'metadata.namespace',
-            exportContent: (resource) => resource.metadata?.namespace,
-          },
-          {
-            header: t('Clusters'),
-            cell: 'transformed.clusterCount',
-            sort: 'transformed.clusterCount',
-            tooltip: t(
-              'Displays the number of remote and local clusters where resources are deployed because of the placement rule.'
-            ),
-            exportContent: (resource) => {
-              const clusters = _.get(resource, 'transformed.clusterCount')
-              return clusters
-            },
-          },
-          {
-            header: t('Replicas'),
-            cell: 'spec.clusterReplicas',
-            sort: 'spec.clusterReplicas',
-            tooltip: t(
-              'Displays the desired number of clusters to which subscriptions that use this placement rule should be propagated.'
-            ),
-            exportContent: (resource) => {
-              const clusterReplicas = _.get(resource, 'spec.clusterReplicas')
-              return clusterReplicas
-            },
-          },
-          {
-            header: t('Created'),
-            cell: (resource) => {
-              return <span>{getResourceTimestamp(resource, 'metadata.creationTimestamp')}</span>
-            },
-            sort: 'metadata.creationTimestamp',
-            exportContent: (resource) => {
-              if (resource.metadata?.creationTimestamp) {
-                return getISOStringTimestamp(resource.metadata?.creationTimestamp)
-              }
-            },
-          },
-        ],
-        [t, editLink]
-      ),
-      items: PlacementRuleTableItems,
-      rowActionResolver: getRowActionResolver,
-    },
   }
 
   const keyFn = useCallback(
@@ -832,12 +742,6 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
               )}
             />
           )}
-          <TerminologyCard
-            title={<DeprecatedTitle title={t('Placement rules')} />}
-            description={t(
-              'Placement rules define the target clusters where subscriptions are delivered. This is done by cluster name, cluster resource annotation(s), or cluster resource label(s).'
-            )}
-          />
         </Split>
         <Content>
           <Content

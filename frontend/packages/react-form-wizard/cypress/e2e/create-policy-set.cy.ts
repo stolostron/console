@@ -2,7 +2,7 @@
 /// <reference types="cypress" />
 import YAML from 'yaml'
 import { PlacementBindingType } from '../../wizards/common/resources/IPlacementBinding'
-import { PlacementRuleApiGroup, PlacementRuleKind, PlacementRuleType } from '../../wizards/common/resources/IPlacementRule'
+import { PlacementApiGroup, PlacementKind, PlacementType } from '../../wizards/common/resources/IPlacement'
 import { PolicySetApiGroup, PolicySetKind, PolicySetType } from '../../wizards/common/resources/IPolicySet'
 import { RouteE } from '../../wizards/Routes'
 
@@ -27,9 +27,9 @@ describe('create policy set', () => {
     })
 
     it('placement', () => {
-        cy.get('#add-button').click()
+        cy.contains('New placement').click()
 
-        // set label expression label
+        // set label expression key
         cy.get('#key').click()
         cy.get('#region').click()
 
@@ -48,19 +48,24 @@ describe('create policy set', () => {
                 spec: { description: '', policies: ['my-policy-1', 'my-policy-2'] },
             },
             {
-                ...PlacementRuleType,
+                ...PlacementType,
                 metadata: { name: 'my-policy-set-placement', namespace: 'my-namespace-1' },
                 spec: {
-                    clusterSelector: {
-                        matchExpressions: [{ key: 'region', operator: 'In', values: ['us-east-1'] }],
-                    },
-                    clusterConditions: [],
+                    predicates: [
+                        {
+                            requiredClusterSelector: {
+                                labelSelector: {
+                                    matchExpressions: [{ key: 'region', operator: 'In', values: ['us-east-1'] }],
+                                },
+                            },
+                        },
+                    ],
                 },
             },
             {
                 ...PlacementBindingType,
                 metadata: { name: 'my-policy-set-placement', namespace: 'my-namespace-1' },
-                placementRef: { apiGroup: PlacementRuleApiGroup, kind: PlacementRuleKind, name: 'my-policy-set-placement' },
+                placementRef: { apiGroup: PlacementApiGroup, kind: PlacementKind, name: 'my-policy-set-placement' },
                 subjects: [{ apiGroup: PolicySetApiGroup, kind: PolicySetKind, name: 'my-policy-set' }],
             },
         ]

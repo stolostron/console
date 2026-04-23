@@ -132,6 +132,24 @@ EOF
   echo SEARCH_API_URL=$SEARCH_API_URL >> ./backend/.env
 fi
 
+# Create route to the placement debug service for local development.
+oc apply -f - << EOF
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: cluster-manager-placement
+  namespace: open-cluster-management-hub
+spec:
+  to:
+    kind: Service
+    name: cluster-manager-placement
+  tls:
+    termination: reencrypt
+    insecureEdgeTerminationPolicy: Redirect
+EOF
+PLACEMENT_DEBUG_URL=https://$(oc get route cluster-manager-placement -n open-cluster-management-hub -o="jsonpath={.status.ingress[0].host}")/debug/placements/
+echo PLACEMENT_DEBUG_URL=$PLACEMENT_DEBUG_URL >> ./backend/.env
+
 CLUSTER_PROXY_ADDON_USER_HOST=$(oc get route cluster-proxy-addon-user -n $INSTALLATION_NAMESPACE_MCE -o="jsonpath={.status.ingress[0].host}")
 echo CLUSTER_PROXY_ADDON_USER_HOST=$CLUSTER_PROXY_ADDON_USER_HOST >> ./backend/.env
 CLUSTER_PROXY_ADDON_USER_ROUTE=https://$CLUSTER_PROXY_ADDON_USER_HOST

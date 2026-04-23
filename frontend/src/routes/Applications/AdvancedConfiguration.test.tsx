@@ -8,7 +8,7 @@ import {
   managedClustersState,
   namespacesState,
   placementDecisionsState,
-  placementRulesState,
+  placementsState,
   settingsState,
   subscriptionsState,
 } from '../../atoms'
@@ -36,17 +36,16 @@ import {
   Namespace,
   NamespaceApiVersion,
   NamespaceKind,
+  Placement,
   PlacementDecision,
   PlacementDecisionApiVersion,
   PlacementDecisionKind,
   PlacementKind,
-  PlacementRule,
-  PlacementRuleKind,
+  PlacementApiVersionBeta,
   Subscription,
   SubscriptionApiVersion,
   SubscriptionKind,
 } from '../../resources'
-import { PlacementApiVersion } from '../../wizards/common/resources/IPlacement'
 import AdvancedConfiguration, { getPlacementDecisionClusterCount } from './AdvancedConfiguration'
 import {
   mockSearchQueryArgoApps,
@@ -70,7 +69,7 @@ const mockSubscription1: Subscription = {
     channel: 'ggithubcom-app-samples-ns/ggithubcom-app-samples',
     placement: {
       placementRef: {
-        kind: 'PlacementRule',
+        kind: 'Placement',
         name: 'helloworld-simple-placement-1',
       },
     },
@@ -89,7 +88,7 @@ const mockSubscription2: Subscription = {
     channel: 'ggithubcom-app-samples-ns/ggithubcom-app-samples',
     placement: {
       placementRef: {
-        kind: 'PlacementRule',
+        kind: 'Placement',
         name: 'helloworld-simple-placement-2',
       },
     },
@@ -190,11 +189,11 @@ const mockApplication: Application = {
   },
 }
 
-const placementRule: PlacementRule = {
-  kind: PlacementRuleKind,
-  apiVersion: 'apps.open-cluster-management.io/v1',
+const placement: Placement = {
+  kind: PlacementKind,
+  apiVersion: PlacementApiVersionBeta,
   metadata: {
-    name: 'test-placementRule',
+    name: 'test-placement',
     namespace: 'default',
     labels: {
       app: 'helloworld-application-3',
@@ -207,16 +206,12 @@ const placementRule: PlacementRule = {
         environment: 'Dev',
       },
     },
-    clusterReplicas: 1,
+    numberOfClusters: 1,
   },
 
   status: {
-    decisions: [
-      {
-        clusterName: 'local-cluster',
-        clusterNamespace: 'local-cluster',
-      },
-    ],
+    numberOfSelectedClusters: 1,
+    conditions: [],
   },
 }
 
@@ -233,7 +228,7 @@ const hubCluster: ManagedCluster = {
 }
 
 const placementDecisions: PlacementDecision[] = [mockPlacementDecision]
-const placementRules: PlacementRule[] = [placementRule]
+const placements = [placement]
 
 const mockNamespaces: Namespace[] = ['namespace1', 'namespace2', 'namespace3'].map((name) => ({
   apiVersion: NamespaceApiVersion,
@@ -256,7 +251,7 @@ function TestAdvancedConfigurationPage(props: { defaultToggleOption?: Applicatio
         snapshot.set(channelsState, mockChannels)
         snapshot.set(placementDecisionsState, placementDecisions)
         snapshot.set(applicationsState, mockApplications)
-        snapshot.set(placementRulesState, placementRules)
+        snapshot.set(placementsState, placements)
         snapshot.set(managedClustersState, mockClusters)
       }}
     >
@@ -304,16 +299,16 @@ describe('advanced configuration page', () => {
     await clickByTestId('channels')
   })
 
-  test('should click placement rule option', async () => {
+  test('should click placement option', async () => {
     render(<TestAdvancedConfigurationPage />)
-    await clickByTestId('placementrules')
+    await clickByTestId('placements')
   })
 })
 
 describe('getPlacementDecisionClusterCount', () => {
   const resource: IResource = {
     kind: PlacementKind,
-    apiVersion: PlacementApiVersion,
+    apiVersion: PlacementApiVersionBeta,
     metadata: {
       name: 'test-placement',
     },
@@ -430,22 +425,20 @@ describe('Export from application tables', () => {
     )
   })
 
-  test('export button should produce a file for download for placement rules', async () => {
-    render(<TestAdvancedConfigurationPage defaultToggleOption="placementrules" />)
+  test('export button should produce a file for download for placements', async () => {
+    render(<TestAdvancedConfigurationPage defaultToggleOption="placements" />)
     const { blobConstructorSpy, createElementSpy } = getCSVExportSpies()
 
-    //download for placementrules
+    //download for placements
     await clickByLabel('export-search-result')
     await clickByText('Export all to CSV')
 
     expect(blobConstructorSpy).toHaveBeenCalledWith(
-      [
-        'Name,Namespace,Clusters,Replicas,Created\n"test-placementRule","default","Local","1","2024-06-28T03:18:48.000Z"',
-      ],
+      ['Name,Namespace,Clusters,Created\n"test-placement","default","None","2024-06-28T03:18:48.000Z"'],
       { type: 'text/csv' }
     )
     expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(
-      /^applicationadvancedconfiguration-placementrules-[\d]+\.csv$/
+      /^applicationadvancedconfiguration-placements-[\d]+\.csv$/
     )
   })
 })

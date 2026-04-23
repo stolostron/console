@@ -5,7 +5,6 @@ import {
   setApplicationDeployStatus,
   setClusterStatus,
   setPlacementDeployStatus,
-  setPlacementRuleDeployStatus,
   setPodDeployStatus,
   setResourceDeployStatus,
   setSubscriptionDeployStatus,
@@ -18,9 +17,8 @@ jest.mock('./NodeDetailsProviderStatuses', () => ({
   setPodDeployStatus: jest.fn(),
   setSubscriptionDeployStatus: jest.fn(),
   setApplicationDeployStatus: jest.fn(),
-  setPlacementRuleDeployStatus: jest.fn(),
-  setClusterStatus: jest.fn(),
   setPlacementDeployStatus: jest.fn(),
+  setClusterStatus: jest.fn(),
 }))
 
 jest.mock('../helpers/diagram-helpers', () => {
@@ -351,7 +349,6 @@ describe('NodeDetailsProvider', () => {
 
       expect(setApplicationDeployStatus).toHaveBeenCalled()
       expect(setSubscriptionDeployStatus).toHaveBeenCalled()
-      expect(setPlacementRuleDeployStatus).toHaveBeenCalled()
       expect(setPlacementDeployStatus).toHaveBeenCalled()
       expect(setResourceDeployStatus).toHaveBeenCalled()
       expect(setPodDeployStatus).toHaveBeenCalled()

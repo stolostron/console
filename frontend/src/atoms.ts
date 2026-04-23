@@ -49,7 +49,6 @@ import {
   Placement,
   PlacementBinding,
   PlacementDecision,
-  PlacementRule,
   Policy,
   PolicyAutomation,
   PolicyReport,
@@ -116,7 +115,6 @@ export const nmStateConfigsState = AtomArray<NMStateK8sResource>()
 export const nodePoolsState = AtomArray<NodePoolK8sResource>()
 export const placementBindingsState = AtomArray<PlacementBinding>()
 export const placementDecisionsState = AtomArray<PlacementDecision>()
-export const placementRulesState = AtomArray<PlacementRule>()
 export const placementsState = AtomArray<Placement>()
 export const policiesState = AtomArray<Policy>()
 export const policyAutomationState = AtomArray<PolicyAutomation>()
@@ -171,6 +169,8 @@ export interface Settings {
   SEARCH_RESULT_LIMIT?: string
   SEARCH_AUTOCOMPLETE_LIMIT?: string
   VIRTUAL_MACHINE_ACTIONS?: 'enabled' | 'disabled'
+  EVENT_STREAM_IDLE_TIMEOUT?: string
+  EVENT_STREAM_IDLE_GRACE_PERIOD?: string
 
   ansibleIntegration?: 'enabled' | 'disabled'
   singleNodeOpenshift?: 'enabled' | 'disabled'
@@ -215,6 +215,34 @@ export function useIsObservabilityInstalled() {
   return useMemo(() => {
     return clusterManagementAddons.filter((cma) => cma.metadata.name === 'observability-controller').length > 0
   }, [clusterManagementAddons])
+}
+
+const DEFAULT_EVENT_STREAM_IDLE_TIMEOUT_MINUTES = 30
+
+export function useEventStreamIdleTimeout(): number {
+  const settings = useRecoilValue(settingsState)
+  return useMemo(() => {
+    const raw = settings.EVENT_STREAM_IDLE_TIMEOUT
+    if (raw === undefined || raw === '') return DEFAULT_EVENT_STREAM_IDLE_TIMEOUT_MINUTES * 60 * 1000
+    const minutes = Number.parseFloat(raw)
+    if (Number.isNaN(minutes)) return DEFAULT_EVENT_STREAM_IDLE_TIMEOUT_MINUTES * 60 * 1000
+    if (minutes <= 0) return 0
+    return minutes * 60 * 1000
+  }, [settings])
+}
+
+const DEFAULT_EVENT_STREAM_IDLE_GRACE_PERIOD_MINUTES = 2
+
+export function useEventStreamIdleGracePeriod(): number {
+  const settings = useRecoilValue(settingsState)
+  return useMemo(() => {
+    const raw = settings.EVENT_STREAM_IDLE_GRACE_PERIOD
+    if (raw === undefined || raw === '') return DEFAULT_EVENT_STREAM_IDLE_GRACE_PERIOD_MINUTES * 60 * 1000
+    const minutes = Number.parseFloat(raw)
+    if (Number.isNaN(minutes)) return DEFAULT_EVENT_STREAM_IDLE_GRACE_PERIOD_MINUTES * 60 * 1000
+    if (minutes <= 0) return 0
+    return minutes * 60 * 1000
+  }, [settings])
 }
 
 export function useSavedSearchLimit() {

@@ -297,7 +297,7 @@ function AddUsersModal(props: { isOpen: boolean; onClose: () => void }) {
 
   return (
     <AcmModal variant={ModalVariant.large} title={t('access.add.title')} isOpen={props.isOpen} onClose={reset}>
-      <AcmForm style={{ gap: 0 }}>
+      <AcmForm>
         <AcmAlertContext.Consumer>
           {(alertContext) => (
             <>
@@ -327,7 +327,7 @@ function AddUsersModal(props: { isOpen: boolean; onClose: () => void }) {
                   ))}
               </AcmSelect>
               <AcmAlertGroup isInline canClose />
-              <ActionGroup>
+              <ActionGroup style={{ marginTop: 0 }}>
                 <AcmSubmit
                   id="add-access"
                   variant="primary"

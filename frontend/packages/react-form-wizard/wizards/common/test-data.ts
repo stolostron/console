@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { IPlacement, PlacementType } from '../common/resources/IPlacement'
-import { IPlacementRule, PlacementRuleType } from '../common/resources/IPlacementRule'
 import { IResource } from '../../src/common/resource'
 import { ClusterSetBindingType, IClusterSetBinding } from './resources/IClusterSetBinding'
 import { PolicyType } from './resources/IPolicy'
@@ -76,13 +75,6 @@ export const placements: IPlacement[] = [
   { ...PlacementType, metadata: { name: 'my-placement-4', namespace: 'my-namespace-2' } },
   { ...PlacementType, metadata: { name: 'my-placement-5', namespace: 'server-1' } },
   { ...PlacementType, metadata: { name: 'my-placement-6', namespace: 'server-1' } },
-]
-
-export const placementRules: IPlacementRule[] = [
-  { ...PlacementRuleType, metadata: { name: 'my-placement-rule-1', namespace: 'my-namespace-1' } },
-  { ...PlacementRuleType, metadata: { name: 'my-placement-rule-2', namespace: 'my-namespace-1' } },
-  { ...PlacementRuleType, metadata: { name: 'my-placement-rule-3', namespace: 'my-namespace-2' } },
-  { ...PlacementRuleType, metadata: { name: 'my-placement-rule-4', namespace: 'my-namespace-2' } },
 ]
 
 const ClusterType = {

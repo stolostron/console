@@ -4,7 +4,7 @@ metadata:
     name: policy-set-with-1-placement-rule
     namespace: test
 spec:
-    description: Policy set with a single PlacementRule and PlacementBinding.
+    description: Policy set with a single Placement and PlacementBinding.
     policies:
         - policy-set-with-1-placement-rule-policy-1
         - policy-set-with-1-placement-rule-policy-2
@@ -16,28 +16,27 @@ metadata:
     namespace: test
 placementRef:
     name: policy-set-with-1-placement-rule
-    kind: PlacementRule
-    apiGroup: apps.open-cluster-management.io
+    kind: Placement
+    apiGroup: cluster.open-cluster-management.io
 subjects:
     - name: policy-set-with-1-placement-rule
       kind: PolicySet
       apiGroup: policy.open-cluster-management.io
 ---
-apiVersion: apps.open-cluster-management.io/v1
-kind: PlacementRule
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
 metadata:
     name: policy-set-with-1-placement-rule
     namespace: test
 spec:
-    clusterConditions:
-        - status: 'True'
-          type: ManagedClusterConditionAvailable
-    clusterSelector:
-        matchExpressions:
-            - key: local-cluster
-              operator: In
-              values:
-                  - 'true'
+    predicates:
+        - requiredClusterSelector:
+              labelSelector:
+                  matchExpressions:
+                      - key: local-cluster
+                        operator: In
+                        values:
+                            - 'true'
 ---
 apiVersion: policy.open-cluster-management.io/v1
 kind: Policy

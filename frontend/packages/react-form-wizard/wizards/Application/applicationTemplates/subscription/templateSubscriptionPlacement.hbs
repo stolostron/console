@@ -5,12 +5,12 @@
 {{! ========================================================== }}
   placement:
     placementRef:
-      kind: PlacementRule
-{{#if selectedRuleName}}
-      name: {{{selectedRuleName}}}
-{{else}}       
+      kind: Placement
+{{#if selectedPlacementName}}
+      name: {{{selectedPlacementName}}}
+{{else}}
       name: {{{@root.name}}}-placement-{{{@root.uniqueGroupID}}}
-{{/if}} 
+{{/if}}
 {{#if deployment}}
 {{#if_ne deployment.window 'always'}}
   timewindow:
@@ -26,41 +26,37 @@
   {{/if}}
 {{/if_ne}}
 {{/if}}
-
-{{#unless existingrule-checkbox}} 
+{{#unless existing-placement-checkbox}}
 ---
-apiVersion: apps.open-cluster-management.io/v1
-kind: PlacementRule
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
 metadata:
   labels:
     app: {{{@root.name}}}
   name: {{{@root.name}}}-placement-{{{@root.uniqueGroupID}}}
   namespace: {{{@root.namespace}}}
   {{#if selfLinks}}
-  selfLink: {{{selfLinks.PlacementRule}}}
+  selfLink: {{{selfLinks.Placement}}}
   {{/if}}
-{{#if clusterSelector.mode}}  
+{{#if clusterSelector.mode}}
 spec:
-  clusterSelector:
-    matchLabels:
-      {{#each clusterSelector.clusterLabelsList}}
-      {{#if validValue}}
-      '{{{labelName}}}': '{{{labelValue}}}'
-      {{/if}}
-      {{/each}} 
+  predicates:
+    - requiredClusterSelector:
+        labelSelector:
+          matchLabels:
+            {{#each clusterSelector.clusterLabelsList}}
+            {{#if validValue}}
+            '{{{labelName}}}': '{{{labelValue}}}'
+            {{/if}}
+            {{/each}}
 {{else}}
-  {{#if online-cluster-only-checkbox}}
 spec:
-  clusterConditions:
-    - type: ManagedClusterConditionAvailable
-      status: "True"
-  {{/if}}
   {{#if local-cluster-checkbox}}
-spec:
-  clusterSelector:
-    matchLabels:
-      'local-cluster': 'true'
+  predicates:
+    - requiredClusterSelector:
+        labelSelector:
+          matchLabels:
+            'local-cluster': 'true'
   {{/if}}
 {{/if}}
 {{/unless}}
-

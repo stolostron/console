@@ -81,6 +81,7 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         'process.env.MODE': JSON.stringify('plugin'),
         'process.env.PLUGIN_PROXY_PATH': JSON.stringify(`/api/proxy/plugin/${env.plugin}/console`),
         'process.env.TRANSLATION_NAMESPACE': JSON.stringify(`plugin__${env.plugin}`),
+        'process.env.DEBUG_EVENT_STREAM_IDLE': JSON.stringify(process.env.DEBUG_EVENT_STREAM_IDLE ?? ''),
       }) as unknown as webpack.WebpackPluginInstance,
       new webpack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'], process: 'process' }),
       new MonacoWebpackPlugin({ languages: ['yaml'] }),

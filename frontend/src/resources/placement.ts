@@ -2,6 +2,7 @@
 import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
 import { Selector } from './selector'
+import { listResources } from './utils/resource-request'
 
 export const PlacementApiVersionAlpha = 'cluster.open-cluster-management.io/v1alpha1'
 export type PlacementApiVersionAlphaType = 'cluster.open-cluster-management.io/v1alpha1'
@@ -61,4 +62,27 @@ export interface PlacementStatus {
     type: string
   }>
   numberOfSelectedClusters?: number
+}
+
+export function listPlacements(namespace: string) {
+  if (!namespace) {
+    return {
+      promise: Promise.resolve([]),
+      abort: () => {},
+    }
+  }
+  const result = listResources<Placement>({
+    apiVersion: PlacementApiVersionBeta,
+    kind: PlacementKind,
+    metadata: {
+      namespace,
+    },
+  })
+
+  return {
+    promise: result.promise.then((placements) => {
+      return placements
+    }),
+    abort: result.abort,
+  }
 }

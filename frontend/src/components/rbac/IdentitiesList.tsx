@@ -103,10 +103,10 @@ export function IdentitiesList({ onUserSelect, onGroupSelect, initialSelectedIde
         id: 'create-pre-authorized-user',
         title: isDirectAuthenticationEnabled ? t('Add user') : t('Create user'),
         click: () => setShowCreatePreAuthorizedUser(true),
-        variant: ButtonVariant.primary,
+        variant: users.length > 0 ? ButtonVariant.secondary : ButtonVariant.primary,
       },
     ],
-    [isDirectAuthenticationEnabled, t]
+    [isDirectAuthenticationEnabled, t, users]
   )
 
   const groupTableActionButtons = useMemo<IAcmTableButtonAction[]>(
@@ -115,10 +115,10 @@ export function IdentitiesList({ onUserSelect, onGroupSelect, initialSelectedIde
         id: 'create-pre-authorized-group',
         title: isDirectAuthenticationEnabled ? t('Add group') : t('Create group'),
         click: () => setShowCreatePreAuthorizedGroup(true),
-        variant: ButtonVariant.primary,
+        variant: groups.length > 0 ? ButtonVariant.secondary : ButtonVariant.primary,
       },
     ],
-    [isDirectAuthenticationEnabled, t]
+    [isDirectAuthenticationEnabled, t, groups]
   )
 
   return (

@@ -286,8 +286,8 @@ export const getUniqueName = (name, nameSet) => {
   return name
 }
 
-// convert this: PlacementRule[0].spec.clusterConditions[0].type
-// to this:      PlacementRule[0].$synced.spec.$v.clusterConditions.$v[0].$v.type.$v
+// convert this: Placement[0].spec.predicates[0].requiredClusterSelector
+// to this:      Placement[0].$synced.spec.$v.predicates.$v[0].$v.requiredClusterSelector.$v
 export const getSourcePath = (path) => {
   let sourcePath = path.split(/\.(?=(?:[^"]*"[^"]*")*[^"]*$)/)
   const pathBase = sourcePath.shift() + '.$synced'

@@ -95,9 +95,9 @@ export default function WelcomePage() {
         ),
       },
       {
-        title: t('Cluster labels and placement rules'),
+        title: t('Cluster labels and placements'),
         description: t(
-          'Use cluster labels and application placement rules to easily move workloads across clusters, even between multiple cloud providers.'
+          'Use cluster labels and application placements to easily move workloads across clusters, even between multiple cloud providers.'
         ),
       },
     ],
