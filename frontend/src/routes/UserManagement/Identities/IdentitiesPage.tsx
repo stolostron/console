@@ -20,7 +20,6 @@ export default function IdentitiesPage() {
           description={t(
             'Manage all identities including users, groups, and service accounts in one place. Assign access individually or by group, with users automatically inheriting group permissions.'
           )}
-          breadcrumb={[{ text: t('User management') }, { text: t('Identities') }]}
           navigation={
             <AcmSecondaryNav
               navItems={[

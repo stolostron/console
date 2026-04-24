@@ -23,11 +23,10 @@ describe('IdentitiesPage', () => {
     render(<Component />)
 
     await waitFor(() => {
-      expect(screen.getAllByText('Identities')).toHaveLength(2)
+      expect(screen.getByText('Identities')).toBeInTheDocument()
     })
 
-    expect(screen.getAllByText('Identities')).toHaveLength(2)
-    expect(screen.getByText('User management')).toBeInTheDocument()
+    expect(screen.getByText('Identities')).toBeInTheDocument()
 
     expect(screen.getByText('Users')).toBeInTheDocument()
     expect(screen.getByText('Groups')).toBeInTheDocument()
@@ -54,7 +53,7 @@ describe('IdentitiesPage', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getAllByText('Identities')).toHaveLength(2)
+      expect(screen.getByText('Identities')).toBeInTheDocument()
     })
 
     const activeLink = screen.getByRole('tab', { name: activeTab })

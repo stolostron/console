@@ -23,15 +23,7 @@ const RolesPage = () => {
   const { t } = useTranslation()
 
   return (
-    <AcmPage
-      header={
-        <AcmPageHeader
-          title={t('Roles')}
-          description={t('Manage roles and permissions')}
-          breadcrumb={[{ text: t('User management') }, { text: t('Roles') }]}
-        />
-      }
-    >
+    <AcmPage header={<AcmPageHeader title={t('Roles')} description={t('Manage roles and permissions')} />}>
       <AcmPageContent id="roles">
         <PageSection hasBodyWrapper={false}>
           <AcmTableStateProvider localStorageKey={'user-mgmt-roles-table-state'}>
