@@ -152,10 +152,11 @@ const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
     setDrawerContent?.('Close', false, true, true, true, undefined, true)
   }
 
-  const onDelete = (type: string, id: string) => {
+  const onDelete = (type: string, id: string | { key: string; node: unknown }) => {
+    const itemKey = typeof id === 'object' && id !== null && 'key' in id ? id.key : id
     const config = filterConfigs.find((c) => c.key === type)
     if (config) {
-      config.setActive(config.activeItems?.filter((item) => item !== id))
+      config.setActive(config.activeItems?.filter((item) => item !== itemKey))
     } else {
       filterConfigs.forEach((c) => c.setActive(undefined))
     }
@@ -188,7 +189,9 @@ const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
           <ToolbarFilter
             key={config.key}
             labels={config.activeItems?.map((item) => ({ key: item, node: item }))}
-            deleteLabel={(category, label) => onDelete(category as string, label as string)}
+            deleteLabel={(category, label) =>
+              onDelete(category as string, label as string | { key: string; node: unknown })
+            }
             deleteLabelGroup={(category) => onDeleteGroup(category as string)}
             categoryName={config.key}
           >
