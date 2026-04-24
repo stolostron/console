@@ -14,6 +14,10 @@
 .pf-topology-connector-arrow {
   fill: #808080;
 }
+
+.pf-topology__node__label {
+  user-select: none;
+}
 .pf-v5-c-drawer__body:last-child {
   height: 100%;
 }
