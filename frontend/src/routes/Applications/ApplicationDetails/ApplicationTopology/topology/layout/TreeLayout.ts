@@ -116,7 +116,7 @@ export function calculateNodeOffsets(elements: { nodes: any[]; links: any[] }, o
     setRowX(metrics, nodeOffsetMap, options)
     placePairedNodes(metrics, nodeOffsetMap, pairedNodes, options)
   }
-  return { nodeOffsetMap, layoutType: 'TreeLayout' }
+  return { nodeOffsetMap, layout: 'TreeLayout' }
 }
 
 function groupNodesByConnections(elements: { nodes: any[]; links: any[] }) {
