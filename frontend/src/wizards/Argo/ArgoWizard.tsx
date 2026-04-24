@@ -695,6 +695,26 @@ function syncOptionsToBoolean(key: string) {
   }
 }
 
+function inputValueToPathString(key: string) {
+  return (value: unknown) => {
+    if (typeof value === 'boolean') {
+      return `#${JSON.stringify([`${key}=${value.toString()}`])}`
+    }
+    if (typeof value === 'string') {
+      return `#${JSON.stringify([`${key}=${value}`])}`
+    }
+    return `#${JSON.stringify([`${key}=${String(value)}`])}`
+  }
+}
+
+/** Matches `checkboxPrunePropagationPolicyToSyncOptions`: enabled state adds `PrunePropagationPolicy=background`. */
+function prunePropagationPolicyCheckboxToPathString(value: unknown) {
+  if (value === true) {
+    return `#${JSON.stringify(['PrunePropagationPolicy=background'])}`
+  }
+  return `#${JSON.stringify([])}`
+}
+
 function checkboxPrunePropagationPolicyToSyncOptions(value: unknown, array: unknown) {
   let newArray: unknown[]
   if (Array.isArray(array)) {
@@ -773,6 +793,7 @@ function ArgoSyncPolicySection() {
         label={t('Delete resources that are no longer defined in the source repository at the end of a sync operation')}
         path="spec.template.spec.syncPolicy.syncOptions"
         inputValueToPathValue={booleanToSyncOptions('PruneLast')}
+        inputValueToPathString={inputValueToPathString('PruneLast')}
         pathValueToInputValue={syncOptionsToBoolean('PruneLast')}
       />
       <WizCheckbox
@@ -780,6 +801,7 @@ function ArgoSyncPolicySection() {
         label={t('Replace resources instead of applying changes from the source repository')}
         path="spec.template.spec.syncPolicy.syncOptions"
         inputValueToPathValue={booleanToSyncOptions('Replace')}
+        inputValueToPathString={inputValueToPathString('Replace')}
         pathValueToInputValue={syncOptionsToBoolean('Replace')}
       />
       <WizCheckbox
@@ -787,6 +809,7 @@ function ArgoSyncPolicySection() {
         label={t('Only synchronize out-of-sync resources')}
         path="spec.template.spec.syncPolicy.syncOptions"
         inputValueToPathValue={booleanToSyncOptions('ApplyOutOfSyncOnly')}
+        inputValueToPathString={inputValueToPathString('ApplyOutOfSyncOnly')}
         pathValueToInputValue={syncOptionsToBoolean('ApplyOutOfSyncOnly')}
       />
       <WizCheckbox
@@ -794,6 +817,7 @@ function ArgoSyncPolicySection() {
         label={t('Automatically create namespace if it does not exist')}
         path="spec.template.spec.syncPolicy.syncOptions"
         inputValueToPathValue={booleanToSyncOptions('CreateNamespace')}
+        inputValueToPathString={inputValueToPathString('CreateNamespace')}
         pathValueToInputValue={syncOptionsToBoolean('CreateNamespace')}
       />
       <WizCheckbox
@@ -801,6 +825,7 @@ function ArgoSyncPolicySection() {
         label={t('Disable kubectl validation')}
         path="spec.template.spec.syncPolicy.syncOptions"
         inputValueToPathValue={booleanToSyncOptions('Validate')}
+        inputValueToPathString={inputValueToPathString('Validate')}
         pathValueToInputValue={syncOptionsToBoolean('Validate')}
       />
       <WizCheckbox
@@ -808,6 +833,7 @@ function ArgoSyncPolicySection() {
         label={t('Prune propagation policy')}
         path="spec.template.spec.syncPolicy.syncOptions"
         inputValueToPathValue={checkboxPrunePropagationPolicyToSyncOptions}
+        inputValueToPathString={prunePropagationPolicyCheckboxToPathString}
         pathValueToInputValue={checkboxSyncOptionsToPrunePropagationPolicy}
       >
         <WizSelect
@@ -819,6 +845,7 @@ function ArgoSyncPolicySection() {
           ]}
           path="spec.template.spec.syncPolicy.syncOptions"
           inputValueToPathValue={prunePropagationPolicyToSyncOptions}
+          inputValueToPathString={inputValueToPathString('PrunePropagationPolicy')}
           pathValueToInputValue={syncOptionsToPrunePropagationPolicy}
           required
         />

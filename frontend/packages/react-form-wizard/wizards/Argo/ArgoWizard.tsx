@@ -484,6 +484,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
               label="Delete resources that are no longer defined in the source repository at the end of a sync operation"
               path="spec.template.spec.syncPolicy.syncOptions"
               inputValueToPathValue={booleanToSyncOptions('PruneLast')}
+              inputValueToPathString={inputValueToPathString('PruneLast')}
               pathValueToInputValue={syncOptionsToBoolean('PruneLast')}
             />
             <WizCheckbox
@@ -491,6 +492,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
               label="Replace resources instead of applying changes from the source repository"
               path="spec.template.spec.syncPolicy.syncOptions"
               inputValueToPathValue={booleanToSyncOptions('Replace')}
+              inputValueToPathString={inputValueToPathString('Replace')}
               pathValueToInputValue={syncOptionsToBoolean('Replace')}
             />
 
@@ -503,6 +505,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
               label="Only synchronize out-of-sync resources"
               path="spec.template.spec.syncPolicy.syncOptions"
               inputValueToPathValue={booleanToSyncOptions('ApplyOutOfSyncOnly')}
+              inputValueToPathString={inputValueToPathString('ApplyOutOfSyncOnly')}
               pathValueToInputValue={syncOptionsToBoolean('ApplyOutOfSyncOnly')}
             />
             <WizCheckbox
@@ -514,6 +517,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
               label="Automatically create namespace if it does not exist"
               path="spec.template.spec.syncPolicy.syncOptions"
               inputValueToPathValue={booleanToSyncOptions('CreateNamespace')}
+              inputValueToPathString={inputValueToPathString('CreateNamespace')}
               pathValueToInputValue={syncOptionsToBoolean('CreateNamespace')}
             />
             <WizCheckbox
@@ -521,6 +525,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
               label="Disable kubectl validation"
               path="spec.template.spec.syncPolicy.syncOptions"
               inputValueToPathValue={booleanToSyncOptions('Validate')}
+              inputValueToPathString={inputValueToPathString('Validate')}
               pathValueToInputValue={syncOptionsToBoolean('Validate')}
             />
             <WizCheckbox
@@ -528,6 +533,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
               label="Prune propagation policy"
               path="spec.template.spec.syncPolicy.syncOptions"
               inputValueToPathValue={checkboxPrunePropagationPolicyToSyncOptions}
+              inputValueToPathString={prunePropagationPolicyCheckboxToPathString}
               pathValueToInputValue={checkboxSyncOptionsToPrunePropagationPolicy}
             >
               <WizSelect
@@ -535,6 +541,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
                 options={['foreground', 'background', 'orphan']}
                 path="spec.template.spec.syncPolicy.syncOptions"
                 inputValueToPathValue={prunePropagationPolicyToSyncOptions}
+                inputValueToPathString={inputValueToPathString('PrunePropagationPolicy')}
                 pathValueToInputValue={syncOptionsToPrunePropagationPolicy}
                 required
               />
@@ -730,6 +737,25 @@ function syncOptionsToBoolean(key: string) {
     if (Array.isArray(array)) return array?.includes(`${key}=true`)
     return false
   }
+}
+
+function inputValueToPathString(key: string) {
+  return (value: unknown) => {
+    if (typeof value === 'boolean') {
+      return `#${JSON.stringify([`${key}=${value.toString()}`])}`
+    }
+    if (typeof value === 'string') {
+      return `#${JSON.stringify([`${key}=${value}`])}`
+    }
+    return `#${JSON.stringify([`${key}=${String(value)}`])}`
+  }
+}
+
+function prunePropagationPolicyCheckboxToPathString(value: unknown) {
+  if (value === true) {
+    return `#${JSON.stringify(['PrunePropagationPolicy=background'])}`
+  }
+  return `#${JSON.stringify([])}`
 }
 
 function checkboxPrunePropagationPolicyToSyncOptions(value: unknown, array: unknown) {

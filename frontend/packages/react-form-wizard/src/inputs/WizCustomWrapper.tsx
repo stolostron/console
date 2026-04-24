@@ -30,7 +30,6 @@ export type WizCustomWrapperInputProps = WizCustomWrapperBase & {
   nonEditable?: boolean
   /** When set, the review row renders as a PatternFly Alert instead of a description-list entry. */
   alertVariant?: 'info' | 'warning' | 'danger' | 'success'
-  inputValueToPathValue?: (inputValue: unknown, pathValue: unknown) => unknown
 }
 
 export type WizCustomWrapperGroupProps = WizCustomWrapperBase & {
@@ -48,7 +47,6 @@ export function WizCustomWrapper(props: WizCustomWrapperProps) {
   const value = isGroup ? undefined : props.value
   const nonEditable = isGroup ? undefined : props.nonEditable
   const alertVariant = isGroup ? undefined : props.alertVariant
-  const inputValueToPathValue = isGroup ? undefined : props.inputValueToPathValue
 
   const hidden = useInputHidden(props)
   const item = useContext(ItemContext)
@@ -58,10 +56,6 @@ export function WizCustomWrapper(props: WizCustomWrapperProps) {
   const bumpReviewDomTree = useBumpReviewDomTree()
 
   let registrationPath = buildReviewInputRegistrationPath(reviewPathPrefixSegments, path, item)
-  if (!isGroup && inputValueToPathValue) {
-    const transformed = inputValueToPathValue(true, false)
-    registrationPath = `${registrationPath}#${JSON.stringify(transformed)}`
-  }
 
   if (idProp) {
     registrationPath = `${registrationPath};id=${idProp}`

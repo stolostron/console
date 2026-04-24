@@ -43,6 +43,8 @@ export type InputCommonProps<ValueT = any> = {
   secret?: boolean
 
   inputValueToPathValue?: (inputValue: unknown, pathValue: unknown) => unknown
+  /** When set with a shared `path`, appends a stable review-registration suffix from the current input value (e.g. sync option key). */
+  inputValueToPathString?: (value: unknown) => string
   pathValueToInputValue?: (pathValue: unknown) => unknown
   onValueChange?: (value: unknown, item?: any) => void
 }
@@ -161,9 +163,8 @@ export function useInput(props: InputCommonProps, options?: { isArrayInput?: boo
     props.path,
     item
   )
-  if (props.inputValueToPathValue) {
-    const transformed = props.inputValueToPathValue(true, false)
-    registrationPath = `${registrationPath}#${JSON.stringify(transformed)}`
+  if (props.inputValueToPathString) {
+    registrationPath = `${registrationPath}${props.inputValueToPathString(value)}`
   }
 
   if (props.id) {
