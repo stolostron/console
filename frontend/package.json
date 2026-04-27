@@ -54,7 +54,7 @@
     "@openshift-assisted/ui-lib": "2.18.1-cim",
     "@patternfly/patternfly": "^6.4.0",
     "@patternfly/react-charts": "^8.4.1",
-    "@patternfly/react-code-editor": "^6.4.1",
+    "@patternfly/react-code-editor": "^6.4.3",
     "@patternfly/react-core": "^6.4.1",
     "@patternfly/react-drag-drop": "^6.4.1",
     "@patternfly/react-icons": "^6.4.0",
