@@ -53,7 +53,7 @@ export async function upgradeRiskPredictions(req: Http2ServerRequest, res: Http2
         // https://github.com/RedHatInsights/insights-results-smart-proxy/blob/master/server/router_utils.go#L168
         const userAgent = 'acm-operator/v2.10.0 cluster/acm-hub'
         const insightsPath =
-          process.env.UPGRADE_RISKS_PREDICTION_URL ??
+          process.env.UPGRADE_RISKS_PREDICTION_URL ||
           'https://console.redhat.com/api/insights-results-aggregator/v2/upgrade-risks-prediction'
 
         // create array of clusterIds with length of 100

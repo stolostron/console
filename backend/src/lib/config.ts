@@ -45,11 +45,16 @@ export async function loadConfigSettings(): Promise<string[]> {
       } else if (key === 'globalSearchFeatureFlag') {
         // Global search tech-preview requires feature flag toggle (2.11)
         process.env[key] = settings[key]
+      } else if (key === 'UPGRADE_RISKS_PREDICTION_URL') {
+        process.env[key] = settings[key]
       }
     }
     if (process.env['globalSearchFeatureFlag'] && !settings['globalSearchFeatureFlag']) {
       // If globalSearchFeatureFlag is set but has been removed from config settings -> removing env var.
       delete process.env['globalSearchFeatureFlag']
+    }
+    if (process.env['UPGRADE_RISKS_PREDICTION_URL'] && !settings['UPGRADE_RISKS_PREDICTION_URL']) {
+      delete process.env['UPGRADE_RISKS_PREDICTION_URL']
     }
     if (settings.LOG_LEVEL) {
       logger.level = settings.LOG_LEVEL
