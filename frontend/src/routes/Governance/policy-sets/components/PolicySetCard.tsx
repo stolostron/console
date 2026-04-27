@@ -218,7 +218,7 @@ export default function PolicySetCard(props: {
         </CardHeader>
         <CardBody>
           <Stack hasGutter>
-            {policySet.spec.description && <div>{policySet.spec.description ?? ''}</div>}
+            {policySet.spec.description && <div style={{ whiteSpace: 'pre-wrap' }}>{policySet.spec.description}</div>}
             <DescriptionList>
               {(policySet.status?.compliant || policySet.status?.statusMessage) && (
                 <DescriptionListGroup>
