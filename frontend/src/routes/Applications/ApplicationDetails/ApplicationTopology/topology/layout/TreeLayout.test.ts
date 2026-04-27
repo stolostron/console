@@ -7808,6 +7808,6 @@ const calculateNodeOffsets2 = {
         dy: -270,
       },
     },
-    layout: 'ColaTreeLayout',
+    layout: 'TreeLayout',
   },
 }

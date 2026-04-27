@@ -29,9 +29,9 @@ const defaultOperation = {
 }
 
 /** Ignore pointer movement until Chebyshev distance from drag start exceeds this many pixels. */
-const DEFAULT_MIN_DRAG_PX = 4
+const DEFAULT_THRESHOLD_PX = 4
 
-export const withDragNodeMinDistance =
+export const withDragNodeAfterThreshold =
   <
     DragObject extends DragObjectWithType = DragObjectWithType,
     DropResult = any,
@@ -44,13 +44,13 @@ export const withDragNodeMinDistance =
     > & {
       item?: DragObject
     },
-    minDragPx: number = DEFAULT_MIN_DRAG_PX
+    thresholdPx: number = DEFAULT_THRESHOLD_PX
   ) =>
   <P extends WithDragNodeProps & CollectedProps & Props>(WrappedComponent: ComponentType<P>) => {
     const Component: FunctionComponent<Omit<P, keyof WithDragNodeProps>> = (props) => {
       const element = useContext(ElementContext)
       if (!isNode(element)) {
-        throw new Error('withDragNodeMinDistance must wrap a component used within the scope of a Node')
+        throw new Error('withDragNodeAfterThreshold must wrap a component used within the scope of a Node')
       }
       const elementRef = useRef(element)
       elementRef.current = element
@@ -93,7 +93,7 @@ export const withDragNodeMinDistance =
             },
             drag: (event: DragEvent, monitor, p) => {
               const { initialX, initialY, x, y, dx, dy } = event
-              if (Math.max(Math.abs(x - initialX), Math.abs(y - initialY)) <= minDragPx) {
+              if (Math.max(Math.abs(x - initialX), Math.abs(y - initialY)) <= thresholdPx) {
                 return
               }
 
@@ -168,6 +168,6 @@ export const withDragNodeMinDistance =
       )
       return <WrappedComponent {...(props as any)} dragNodeRef={dragNodeRef} {...dragNodeProps} />
     }
-    Component.displayName = `withDragNodeMinDistance(${WrappedComponent.displayName || WrappedComponent.name})`
+    Component.displayName = `withDragNodeAfterThreshold(${WrappedComponent.displayName || WrappedComponent.name})`
     return observer(Component)
   }

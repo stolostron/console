@@ -11,7 +11,7 @@ import {
 } from '@patternfly/react-topology'
 
 import StyledNode from './StyledNode'
-import { withDragNodeMinDistance } from './withDragNodeMinDistance'
+import { withDragNodeAfterThreshold } from '../contexts/withDragNodeAfterThreshold'
 import StyledEdge from './StyledEdge'
 
 const defaultComponentFactory: ComponentFactory = (
@@ -23,7 +23,7 @@ const defaultComponentFactory: ComponentFactory = (
       // @ts-ignore: Fixed in next pf topology
       return withPanZoom()(GraphComponent)
     case ModelKind.node:
-      return withDragNodeMinDistance()(withSelection()(StyledNode as any as ComponentType<WithSelectionProps>))
+      return withDragNodeAfterThreshold()(withSelection()(StyledNode as any as ComponentType<WithSelectionProps>))
     case ModelKind.edge:
       return StyledEdge as any as ComponentType<{ element: GraphElement }>
     default:
