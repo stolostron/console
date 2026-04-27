@@ -105,14 +105,14 @@ export function NodesPoolsTable() {
   } catch {
     grafanaLink = undefined
   }
-  // accelerator_card_info metric link for all managed cluster GPU data
-  const observabilityLink = `${grafanaLink}/explore?schemaVersion=1&panes={"jjq":{"queries":[{"expr":"accelerator_card_info"}]}}&orgId=1`
+  // node_accelerator_card_info metric link for all managed cluster GPU data
+  const observabilityLink = `${grafanaLink}/explore?schemaVersion=1&panes={"jjq":{"queries":[{"expr":"node_accelerator_card_info"}]}}&orgId=1`
   const nodes: NodeInfo[] = cluster?.nodes?.nodeList ?? []
 
   // polling metric every 1min
   const [gpuData, gpuDataError, gpuDataLoading] = useMetricsPoll({
     endpoint: ObservabilityEndpoint.QUERY,
-    query: 'accelerator_card_info',
+    query: 'node_accelerator_card_info',
     skip: !isObservabilityInstalled,
   })
   // parse metric and return Record in format: { [nodeID]: 0 }
@@ -230,7 +230,7 @@ export function NodesPoolsTable() {
               tooltip: (
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   {t(
-                    'The count of GPUs on a Node is gathered from the "accelerator_card_info" metric, which is present only when Red Hat Advanced Cluster Management Observability is installed.'
+                    'The count of GPUs on a Node is gathered from the "node_accelerator_card_info" metric, which is present only when Red Hat Advanced Cluster Management Observability is installed.'
                   )}
                   {grafanaLink && (
                     <AcmButton

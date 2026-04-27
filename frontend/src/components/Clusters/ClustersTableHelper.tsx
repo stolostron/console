@@ -505,13 +505,13 @@ export function useGPUCountColumn(): IAcmTableColumn<Cluster> {
   } catch {
     grafanaLink = undefined
   }
-  // accelerator_card_info metric link for all managed cluster GPU data
-  const link = `${grafanaLink}/explore?schemaVersion=1&panes={"jjq":{"queries":[{"expr":"accelerator_card_info"}]}}&orgId=1`
+  // node_accelerator_card_info metric link for all managed cluster GPU data
+  const link = `${grafanaLink}/explore?schemaVersion=1&panes={"jjq":{"queries":[{"expr":"node_accelerator_card_info"}]}}&orgId=1`
 
   // polling metric every 1min
   const [gpuData, gpuDataError, gpuDataLoading] = useMetricsPoll({
     endpoint: ObservabilityEndpoint.QUERY,
-    query: 'accelerator_card_info',
+    query: 'node_accelerator_card_info',
     skip: !isObservabilityInstalled,
   })
 
@@ -533,7 +533,7 @@ export function useGPUCountColumn(): IAcmTableColumn<Cluster> {
     tooltip: (
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         {t(
-          'The count of GPUs on the managed cluster is gathered from the "accelerator_card_info" metric, which is present only when Red Hat Advanced Cluster Management Observability is installed.'
+          'The count of GPUs on the managed cluster is gathered from the "node_accelerator_card_info" metric, which is present only when Red Hat Advanced Cluster Management Observability is installed.'
         )}
         {grafanaLink && (
           // Only show link if it is defined
