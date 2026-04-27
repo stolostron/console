@@ -128,10 +128,10 @@ export function resetArgoApplicationState() {
   for (const key in appStatusByNameMap) {
     delete appStatusByNameMap[key]
   }
-  hubClusterName = undefined as unknown as string
-  clusters = undefined as unknown as Cluster[]
-  localCluster = undefined as unknown as Cluster
-  placementDecisions = undefined as unknown as IResource[]
+  hubClusterName = undefined
+  clusters = undefined
+  localCluster = undefined
+  placementDecisions = undefined
   ocpArgoAppFilter.clear()
   argoPageChunks.length = 0
   for (const key in oldResourceUidSets) {

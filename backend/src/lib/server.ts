@@ -54,7 +54,7 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
       server = createSecureServer({ cert, key, allowHTTP1: true, ecdhCurve, ...options }, options.requestHandler)
     } else {
       logger.info({ msg: `server start`, secure: false })
-      server = createServer(options.requestHandler as (req: Http2ServerRequest, res: Http2ServerResponse) => void)
+      server = createServer(options.requestHandler)
     }
     return new Promise((resolve, reject) => {
       server

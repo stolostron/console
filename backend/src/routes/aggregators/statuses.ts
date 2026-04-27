@@ -7,7 +7,6 @@ import {
   type ApplicationStatusMap,
   getStatusFilterKey,
   type ICompressedResource,
-  type ITransformedResource,
   TransformColumns,
 } from './applications'
 import { systemAppNamespacePrefixes } from './utils'
@@ -45,12 +44,7 @@ export function requestAggregatedStatuses(
       })
     }
     // filter by rbac
-    const authorizedItems = (await getAuthorizedResources(
-      token,
-      items,
-      0,
-      items.length
-    )) as unknown as ITransformedResource[]
+    const authorizedItems = await getAuthorizedResources(token, items, 0, items.length)
 
     // count filter entries
     const filterCounts: FilterCounts = { type: {}, cluster: {}, podStatuses: {}, healthStatus: {}, syncStatus: {} }

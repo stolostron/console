@@ -82,7 +82,7 @@ export async function placementDebug(req: Http2ServerRequest, res: Http2ServerRe
     res.writeHead(response.statusCode ?? 500, {
       'content-type': 'application/json',
     })
-    response.pipe(res as unknown as NodeJS.WritableStream)
+    response.pipe(res)
   })
 
   upstream.on('error', (err) => {

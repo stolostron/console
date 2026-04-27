@@ -111,7 +111,7 @@ export class FifoSet<T> {
 const bigStrings: FifoSet<string> = new FifoSet(200)
 
 export async function deflateResource(resource: IResource, dictionary: Dictionary): Promise<Buffer> {
-  const res = compressResource(resource as UncompressedResourceType, dictionary)
+  const res = compressResource(resource, dictionary)
   let buffer
   try {
     buffer = await promisify(deflateRaw)(JSON.stringify(res))

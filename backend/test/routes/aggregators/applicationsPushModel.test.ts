@@ -126,11 +126,7 @@ describe('applicationsPushModel', () => {
       expect(entry.targetCluster).toBe('remote-1')
 
       expect(query.variables.input).toHaveLength(1)
-      const input = query.variables.input[0] as {
-        filters: Array<{ property: string; values: string[] }>
-        relatedKinds: string[]
-        limit: number
-      }
+      const input = query.variables.input[0]
       expect(input.filters).toEqual([
         { property: 'kind', values: ['Deployment', 'StatefulSet'] },
         { property: 'name', values: ['web-server'] },
@@ -268,7 +264,7 @@ describe('applicationsPushModel', () => {
     })
 
     it('should skip apps whose destination resolves to undefined', async () => {
-      mockGetArgoDestinationCluster.mockResolvedValue(undefined as unknown as string)
+      mockGetArgoDestinationCluster.mockResolvedValue(undefined)
       mockGetAppSetAppsMap.mockReturnValue({
         'my-appset': [
           makeArgoApp(

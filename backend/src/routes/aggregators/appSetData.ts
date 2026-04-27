@@ -66,7 +66,7 @@ export function requestAggregatedAppSetData(req: Http2ServerRequest, res: Http2S
     const isClusterListEmpty = clusterList.length === 0
     let placement: IResource | undefined
     let placementDecision: IPlacementDecision | undefined
-    const placementName = getPlacementNameFromAppSetSpec(appset.spec as Record<string, unknown>)
+    const placementName = getPlacementNameFromAppSetSpec(appset.spec)
     if (placementName) {
       const placements = await getKubeResources('Placement', 'cluster.open-cluster-management.io/v1beta1')
       const placementDecisions = await getKubeResources(

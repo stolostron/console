@@ -1160,7 +1160,7 @@ describe('aggregators utils', () => {
     })
 
     it('should return undefined when service is missing', () => {
-      const result = getClusterProxyServiceURL(undefined as unknown as IService, 'my-cluster')
+      const result = getClusterProxyServiceURL(undefined, 'my-cluster')
 
       expect(result).toBeUndefined()
     })

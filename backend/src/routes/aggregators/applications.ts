@@ -296,29 +296,30 @@ export function getStatusFilterKey(item: ICompressedResource, index: AppColumns)
   }
 }
 
+const stringCompareColumns = new Set<AppColumns>([
+  AppColumns.name,
+  AppColumns.namespace,
+  AppColumns.clusters,
+  AppColumns.created,
+])
+
+const scoreCompareColumns = new Set<AppColumns>([AppColumns.health, AppColumns.synced, AppColumns.deployed])
+
 export function sortApplications(sortBy: ISortBy, items: ICompressedResource[]) {
-  const index = sortBy.index as AppColumns
+  const index = sortBy.index
   items = items.sort((a, b) => {
-    switch (sortBy.index as AppColumns) {
-      case AppColumns.name:
-      case AppColumns.namespace:
-      case AppColumns.clusters:
-      case AppColumns.created: {
-        const aValue = a.transform[sortBy.index]
-        const bValue = b.transform[sortBy.index]
-        if (!aValue || !bValue) return 0
-        return (aValue[0] as string).localeCompare(bValue[0] as string)
-      }
-      case AppColumns.health:
-      case AppColumns.synced:
-      case AppColumns.deployed: {
-        const aScore = (a.transform[TransformColumns.scores] as ApplicationScoresMap[])[0][index]
-        const bScore = (b.transform[TransformColumns.scores] as ApplicationScoresMap[])[0][index]
-        return bScore - aScore
-      }
-      default:
-        return 0
+    if (stringCompareColumns.has(index)) {
+      const aValue = a.transform[index]
+      const bValue = b.transform[index]
+      if (!aValue || !bValue) return 0
+      return (aValue[0] as string).localeCompare(bValue[0] as string)
     }
+    if (scoreCompareColumns.has(index)) {
+      const aScore = (a.transform[TransformColumns.scores] as ApplicationScoresMap[])[0][index]
+      const bScore = (b.transform[TransformColumns.scores] as ApplicationScoresMap[])[0][index]
+      return bScore - aScore
+    }
+    return 0
   })
   if (sortBy.direction === 'desc') {
     items = items.reverse()
@@ -338,9 +339,7 @@ export async function addUIData(items: ITransformedResource[]) {
         clusterList: item?.transform?.[AppColumns.clusters] || [],
         appClusterStatuses: item?.transform?.[TransformColumns.statuses] || [],
         appSetPlacementData:
-          item.kind === ApplicationSetKind
-            ? getAppSetPlacementData(item as IApplicationSet, argoAppSets as IApplicationSet[])
-            : ['', []],
+          item.kind === ApplicationSetKind ? getAppSetPlacementData(item, argoAppSets as IApplicationSet[]) : ['', []],
         appSetApps:
           item.kind === ApplicationSetKind
             ? appSetAppsMap[item.metadata.name]?.map((app) => app.metadata.name) || []

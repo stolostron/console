@@ -131,12 +131,7 @@ export function paginate(
     }
 
     // because rbac is expensive. perform it only on the resources the user wants to see
-    let authorizedItems = (await getAuthorizedResources(
-      token,
-      items,
-      startIndex,
-      endIndex
-    )) as unknown as ITransformedResource[]
+    let authorizedItems = await getAuthorizedResources(token, items, startIndex, endIndex)
 
     // add data required by ui
     authorizedItems = await addUIData(authorizedItems)

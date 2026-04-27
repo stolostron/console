@@ -225,7 +225,7 @@ describe('applications aggregateRemoteApplications', () => {
                 [AppColumns.health]: 0,
                 [AppColumns.synced]: 0,
                 [AppColumns.deployed]: 0,
-              } as ApplicationScoresMap,
+              },
             ], // scores
             ['2024-01-01'], // created
           ],
@@ -243,7 +243,7 @@ describe('applications aggregateRemoteApplications', () => {
                 [AppColumns.health]: 0,
                 [AppColumns.synced]: 0,
                 [AppColumns.deployed]: 0,
-              } as ApplicationScoresMap,
+              },
             ], // scores
             ['2024-01-01'], // created
           ],
@@ -274,7 +274,7 @@ describe('applications aggregateRemoteApplications', () => {
                 [AppColumns.health]: 0,
                 [AppColumns.synced]: 0,
                 [AppColumns.deployed]: 0,
-              } as ApplicationScoresMap,
+              },
             ], // scores
             ['2024-01-01'], // created
           ],
@@ -292,7 +292,7 @@ describe('applications aggregateRemoteApplications', () => {
                 [AppColumns.health]: 0,
                 [AppColumns.synced]: 0,
                 [AppColumns.deployed]: 0,
-              } as ApplicationScoresMap,
+              },
             ], // scores
             ['2024-01-01'], // created
           ],
@@ -325,7 +325,7 @@ describe('applications aggregateRemoteApplications', () => {
                 [AppColumns.health]: 0,
                 [AppColumns.synced]: 0,
                 [AppColumns.deployed]: 0,
-              } as ApplicationScoresMap,
+              },
             ], // scores
             ['2024-01-01'], // created
           ],
@@ -343,7 +343,7 @@ describe('applications aggregateRemoteApplications', () => {
                 [AppColumns.health]: 0,
                 [AppColumns.synced]: 0,
                 [AppColumns.deployed]: 0,
-              } as ApplicationScoresMap,
+              },
             ], // scores
             ['2024-01-01'], // created
           ],
@@ -370,7 +370,7 @@ describe('applications aggregateRemoteApplications', () => {
                 [AppColumns.health]: 0,
                 [AppColumns.synced]: 0,
                 [AppColumns.deployed]: 0,
-              } as ApplicationScoresMap,
+              },
             ], // scores
             ['2024-01-01'], // created
           ],
@@ -388,7 +388,7 @@ describe('applications aggregateRemoteApplications', () => {
                 [AppColumns.health]: 0,
                 [AppColumns.synced]: 0,
                 [AppColumns.deployed]: 0,
-              } as ApplicationScoresMap,
+              },
             ], // scores
             ['2024-01-01'], // created
           ],
@@ -415,7 +415,7 @@ describe('applications aggregateRemoteApplications', () => {
                 [AppColumns.health]: 0,
                 [AppColumns.synced]: 0,
                 [AppColumns.deployed]: 0,
-              } as ApplicationScoresMap,
+              },
             ], // scores - healthy (low score)
             ['2024-01-01'], // created
           ],
@@ -433,7 +433,7 @@ describe('applications aggregateRemoteApplications', () => {
                 [AppColumns.health]: 1000,
                 [AppColumns.synced]: 0,
                 [AppColumns.deployed]: 0,
-              } as ApplicationScoresMap,
+              },
             ], // scores - unhealthy (high score)
             ['2024-01-01'], // created
           ],
@@ -459,7 +459,7 @@ describe('applications aggregateRemoteApplications', () => {
           ['default'], // namespace
           ['cluster1'], // clusters
           [{}], // statuses
-          [{ [AppColumns.health]: 500, [AppColumns.synced]: 0, [AppColumns.deployed]: 0 } as ApplicationScoresMap], // scores
+          [{ [AppColumns.health]: 500, [AppColumns.synced]: 0, [AppColumns.deployed]: 0 }], // scores
           ['2024-01-01'], // created
         ],
       }
@@ -477,7 +477,7 @@ describe('applications aggregateRemoteApplications', () => {
           ['default'], // namespace
           ['cluster1'], // clusters
           [{}], // statuses
-          [{ [AppColumns.health]: 1500, [AppColumns.synced]: 0, [AppColumns.deployed]: 0 } as ApplicationScoresMap], // scores
+          [{ [AppColumns.health]: 1500, [AppColumns.synced]: 0, [AppColumns.deployed]: 0 }], // scores
           ['2024-01-01'], // created
         ],
       }
@@ -495,7 +495,7 @@ describe('applications aggregateRemoteApplications', () => {
           ['default'], // namespace
           ['cluster1'], // clusters
           [{}], // statuses
-          [{ [AppColumns.health]: 0, [AppColumns.synced]: 500, [AppColumns.deployed]: 0 } as ApplicationScoresMap], // scores
+          [{ [AppColumns.health]: 0, [AppColumns.synced]: 500, [AppColumns.deployed]: 0 }], // scores
           ['2024-01-01'], // created
         ],
       }
@@ -513,7 +513,7 @@ describe('applications aggregateRemoteApplications', () => {
           ['default'], // namespace
           ['cluster1'], // clusters
           [{}], // statuses
-          [{ [AppColumns.health]: 0, [AppColumns.synced]: 1500, [AppColumns.deployed]: 0 } as ApplicationScoresMap], // scores
+          [{ [AppColumns.health]: 0, [AppColumns.synced]: 1500, [AppColumns.deployed]: 0 }], // scores
           ['2024-01-01'], // created
         ],
       }
@@ -531,7 +531,7 @@ describe('applications aggregateRemoteApplications', () => {
           ['default'], // namespace
           ['cluster1'], // clusters
           [{}], // statuses
-          [{ [AppColumns.health]: 0, [AppColumns.synced]: 0, [AppColumns.deployed]: 500 } as ApplicationScoresMap], // scores
+          [{ [AppColumns.health]: 0, [AppColumns.synced]: 0, [AppColumns.deployed]: 500 }], // scores
           ['2024-01-01'], // created
         ],
       }
@@ -549,7 +549,7 @@ describe('applications aggregateRemoteApplications', () => {
           ['default'], // namespace
           ['cluster1'], // clusters
           [{}], // statuses
-          [{ [AppColumns.health]: 0, [AppColumns.synced]: 0, [AppColumns.deployed]: 1500 } as ApplicationScoresMap], // scores
+          [{ [AppColumns.health]: 0, [AppColumns.synced]: 0, [AppColumns.deployed]: 1500 }], // scores
           ['2024-01-01'], // created
         ],
       }
