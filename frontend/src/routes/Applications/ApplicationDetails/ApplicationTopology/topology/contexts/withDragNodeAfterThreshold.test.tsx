@@ -163,18 +163,10 @@ describe('withDragNodeAfterThreshold', () => {
 
     lastSpec.begin!(monitor, {})
 
-    lastSpec.drag!(
-      { initialX: 0, initialY: 0, x: 3, y: 3, dx: 3, dy: 3 } as DragEvent,
-      monitor,
-      {}
-    )
+    lastSpec.drag!({ initialX: 0, initialY: 0, x: 3, y: 3, dx: 3, dy: 3 } as DragEvent, monitor, {})
     expect(node.setPosition).not.toHaveBeenCalled()
 
-    lastSpec.drag!(
-      { initialX: 0, initialY: 0, x: 5, y: 0, dx: 5, dy: 0 } as DragEvent,
-      monitor,
-      {}
-    )
+    lastSpec.drag!({ initialX: 0, initialY: 0, x: 5, y: 0, dx: 5, dy: 0 } as DragEvent, monitor, {})
     expect(node.setPosition).toHaveBeenCalled()
   })
 
@@ -187,11 +179,7 @@ describe('withDragNodeAfterThreshold', () => {
     } as unknown as DragSourceMonitor
     lastSpec.begin!(monitor, {})
 
-    lastSpec.drag!(
-      { initialX: 0, initialY: 0, x: 10, y: 0, dx: 10, dy: 0 } as DragEvent,
-      monitor,
-      {}
-    )
+    lastSpec.drag!({ initialX: 0, initialY: 0, x: 10, y: 0, dx: 10, dy: 0 } as DragEvent, monitor, {})
 
     expect(node.getController().fireEvent).toHaveBeenCalledWith(DRAG_NODE_EVENT, node, expect.anything(), 'op')
   })
@@ -221,11 +209,7 @@ describe('withDragNodeAfterThreshold', () => {
     } as unknown as DragSourceMonitor
 
     lastSpec.begin!(monitor, {})
-    lastSpec.drag!(
-      { initialX: 0, initialY: 0, x: 5, y: 0, dx: 5, dy: 0 } as DragEvent,
-      monitor,
-      {}
-    )
+    lastSpec.drag!({ initialX: 0, initialY: 0, x: 5, y: 0, dx: 5, dy: 0 } as DragEvent, monitor, {})
     ;(node.getController().fireEvent as jest.Mock).mockClear()
 
     await lastSpec.end!(undefined, monitor, {})
