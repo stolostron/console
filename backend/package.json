@@ -59,7 +59,7 @@
     "nock": "13.5.6",
     "nodemon": "^3.1.14",
     "pino-zen": "2.0.8",
-    "prettier": "^3.8.1",
+    "prettier": "^3.8.3",
     "rollup": "2.80.0",
     "ts-jest": "^29.4.9",
     "ts-node": "^10.9.2",
