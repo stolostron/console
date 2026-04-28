@@ -4,6 +4,7 @@ import { RecoilRoot } from 'recoil'
 import HostsForm, { getControlSummary } from './HostsForm'
 import { render } from '@testing-library/react'
 import i18next from 'i18next'
+import { normalizeGeneratedOuiaIds } from '../../../../../../../../lib/test-util'
 
 describe('HostForm', () => {
   const handleChange = jest.fn()
@@ -48,6 +49,7 @@ describe('HostForm', () => {
 
   test('it renders', async () => {
     const { container } = render(<Component />)
+    normalizeGeneratedOuiaIds(container)
     expect(container).toMatchSnapshot()
   })
 

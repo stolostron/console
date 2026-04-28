@@ -47,7 +47,7 @@ exports[`DetailsForm it renders 1`] = `
               <input
                 aria-describedby="form-input-name-field-helper"
                 aria-invalid="false"
-                data-ouia-component-id="OUIA-Generated-TextInputBase-1"
+                data-ouia-component-id="OUIA-Generated-TextInputBase-0"
                 data-ouia-component-type="PF6/TextInput"
                 data-ouia-safe="true"
                 id="form-input-name-field"
@@ -92,7 +92,7 @@ exports[`DetailsForm it renders 1`] = `
             <button
               aria-label="More info"
               class="pf-v6-c-button pf-m-plain pf-v6-c-form__group-label-help"
-              data-ouia-component-id="OUIA-Generated-Button-plain-1"
+              data-ouia-component-id="OUIA-Generated-Button-plain-0"
               data-ouia-component-type="PF6/Button"
               data-ouia-safe="true"
               id="managedClusterSet-label-help-button"
@@ -126,7 +126,7 @@ exports[`DetailsForm it renders 1`] = `
           aria-expanded="false"
           aria-label="Cluster set"
           class="pf-v6-c-menu-toggle pf-m-disabled css-jyl7bb"
-          data-ouia-component-id="OUIA-Generated-MenuToggle-default-1"
+          data-ouia-component-id="OUIA-Generated-MenuToggle-default-0"
           data-ouia-component-type="PF6/MenuToggle"
           data-ouia-safe="true"
           disabled=""
@@ -155,7 +155,7 @@ exports[`DetailsForm it renders 1`] = `
                 <button
                   aria-label="Clear input value"
                   class="pf-v6-c-button pf-m-plain"
-                  data-ouia-component-id="OUIA-Generated-Button-plain-2"
+                  data-ouia-component-id="OUIA-Generated-Button-plain-0"
                   data-ouia-component-type="PF6/Button"
                   data-ouia-safe="true"
                   style="padding-inline-start: 0;"
@@ -228,7 +228,7 @@ exports[`DetailsForm it renders 1`] = `
                   >
                     <small
                       class="pf-v6-c-content--small"
-                      data-ouia-component-id="OUIA-Generated-Content-1"
+                      data-ouia-component-id="OUIA-Generated-Content-0"
                       data-ouia-component-type="PF6/Content"
                       data-ouia-safe="true"
                       data-pf-content="true"
@@ -288,7 +288,7 @@ exports[`DetailsForm it renders 1`] = `
               <input
                 aria-describedby="form-input-baseDnsDomain-field-helper"
                 aria-invalid="false"
-                data-ouia-component-id="OUIA-Generated-TextInputBase-2"
+                data-ouia-component-id="OUIA-Generated-TextInputBase-0"
                 data-ouia-component-type="PF6/TextInput"
                 data-ouia-safe="true"
                 id="form-input-baseDnsDomain-field"
@@ -365,7 +365,7 @@ exports[`DetailsForm it renders 1`] = `
         <button
           aria-expanded="false"
           class="pf-v6-c-menu-toggle pf-m-full-width pf-v6-u-w-100"
-          data-ouia-component-id="OUIA-Generated-MenuToggle-1"
+          data-ouia-component-id="OUIA-Generated-MenuToggle-0"
           data-ouia-component-type="PF6/MenuToggle"
           data-ouia-safe="true"
           data-testid="openshift-version-dropdown-toggle"
@@ -435,7 +435,7 @@ exports[`DetailsForm it renders 1`] = `
           >
             <button
               class="pf-v6-c-button pf-m-plain pf-v6-c-form__group-label-help pf-v6-u-p-0"
-              data-ouia-component-id="OUIA-Generated-Button-plain-3"
+              data-ouia-component-id="OUIA-Generated-Button-plain-0"
               data-ouia-component-type="PF6/Button"
               data-ouia-safe="true"
               type="button"

@@ -4,7 +4,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { NavigationPath } from '../../../../../../../../NavigationPath'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockList } from '../../../../../../../../lib/nock-util'
-import { waitForNocks, waitForText } from '../../../../../../../../lib/test-util'
+import { normalizeGeneratedOuiaIds, waitForNocks, waitForText } from '../../../../../../../../lib/test-util'
 import { clusterImageSet, mockClusterImageSet } from '../../../CreateCluster.sharedmocks'
 import { IResource } from '../../../../../../../../resources'
 
@@ -69,6 +69,7 @@ describe('DetailsForm', () => {
     const { container } = render(<Component />)
     await waitForNocks(initialNocks)
     await waitForText('ai:Cluster name')
+    normalizeGeneratedOuiaIds(container)
     expect(container).toMatchSnapshot()
   })
 })
