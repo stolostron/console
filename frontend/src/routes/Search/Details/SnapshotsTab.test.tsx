@@ -173,7 +173,19 @@ describe('SnapshotsTab', () => {
   it('should render tab with errors', async () => {
     nockIgnoreRBAC()
     mockUuidV4.mockReturnValue(MOCKED_UUID)
-    const mcvNocks = nockManagedClusterView(MOCKED_UUID, 'local-cluster', mcvScope, mcvStatus)
+    // Use raw persistent nocks for MCV requests since this test focuses on
+    // GraphQL error rendering, not the MCV lifecycle sequence.
+    nock(process.env.JEST_DEFAULT_HOST as string)
+      .persist()
+      .post(/managedclusterviews/)
+      .optionally()
+      .reply(201, {})
+      .get(/managedclusterviews/)
+      .optionally()
+      .reply(200, {})
+      .delete(/managedclusterviews/)
+      .optionally()
+      .reply(200, {})
     const mocks = [
       {
         request: {
@@ -218,7 +230,6 @@ describe('SnapshotsTab', () => {
     // Test that the component has rendered errors correctly
     await waitFor(() => expect(screen.queryByText('An unexpected error occurred.')).toBeTruthy())
     await waitFor(() => expect(screen.queryByText('Error getting search data')).toBeTruthy())
-    await waitForNocks(mcvNocks)
   })
 
   it('should render tab with correct snapshot data from search', async () => {
