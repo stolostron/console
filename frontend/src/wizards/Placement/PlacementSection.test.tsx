@@ -141,8 +141,8 @@ describe('PlacementSection', () => {
     expect(screen.getByTestId('placement-bindings')).toBeInTheDocument()
   })
 
-  it('passes showPlacementPreview when enhancedPlacement is enabled', () => {
-    mockSettings = { enhancedPlacement: 'enabled' }
+  it('passes showPlacementPreview', () => {
+    mockSettings = {}
     mockResources = [
       {
         kind: PlacementKind,
@@ -345,8 +345,8 @@ describe('PlacementSection', () => {
     expect(screen.getByTestId('placement-component')).toBeInTheDocument()
   })
 
-  it('sets footer content when enhancedPlacement is enabled with single placement', () => {
-    mockSettings = { enhancedPlacement: 'enabled' }
+  it('sets footer content with single placement', () => {
+    mockSettings = {}
     mockResources = [
       {
         kind: PlacementKind,
@@ -366,8 +366,8 @@ describe('PlacementSection', () => {
     expect(mockSetFooterContent).toHaveBeenCalled()
   })
 
-  it('renders review step content when displayMode is not Step and enhancedPlacement enabled', () => {
-    mockSettings = { enhancedPlacement: 'enabled' }
+  it('renders review step content when displayMode is not Step', () => {
+    mockSettings = {}
     mockDisplayMode = 1
     mockResources = [
       {
@@ -389,7 +389,7 @@ describe('PlacementSection', () => {
   })
 
   it('renders review step with label expressions and tolerations', () => {
-    mockSettings = { enhancedPlacement: 'enabled' }
+    mockSettings = {}
     mockDisplayMode = 1
     mockResources = [
       {
@@ -445,7 +445,7 @@ describe('PlacementSection', () => {
   })
 
   it('renders review step error alert when debug has error', () => {
-    mockSettings = { enhancedPlacement: 'enabled' }
+    mockSettings = {}
     mockDisplayMode = 1
     mockResources = [
       {

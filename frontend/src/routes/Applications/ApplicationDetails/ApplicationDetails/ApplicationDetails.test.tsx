@@ -2,13 +2,7 @@
 import { render } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import {
-  channelsState,
-  managedClustersState,
-  namespacesState,
-  settingsState,
-  subscriptionsState,
-} from '../../../../atoms'
+import { channelsState, managedClustersState, namespacesState, subscriptionsState } from '../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '../../../../lib/nock-util'
 import { clickByText, waitForNock, waitForText } from '../../../../lib/test-util'
 
@@ -657,9 +651,6 @@ describe('Overview Tab', () => {
           snapshot.set(subscriptionsState, mockSubscriptions)
           snapshot.set(channelsState, mockChannels)
           snapshot.set(managedClustersState, mockManagedClusters)
-          snapshot.set(settingsState, {
-            enhancedPlacement: 'enabled',
-          })
         }}
       >
         <MemoryRouter>
