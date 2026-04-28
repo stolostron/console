@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { render, screen } from '@testing-library/react'
-import type { DragEvent, DragSourceMonitor } from '@patternfly/react-topology'
+import type { DragEvent, DragSourceMonitor, WithDragNodeProps } from '@patternfly/react-topology'
 import {
   ElementContext,
   ModelKind,
@@ -64,9 +64,7 @@ function createMockNode(): Node {
 }
 
 /** Avoid spreading drag props onto the DOM; collected props can override JSX children. */
-const Inner: React.FC<{ dragNodeRef?: React.Ref<unknown> } & Record<string, unknown>> = () => (
-  <div id="inner-node">inner</div>
-)
+const Inner: React.FC<WithDragNodeProps> = () => <div id="inner-node">inner</div>
 
 function renderWrapped(spec?: Parameters<typeof withDragNodeAfterThreshold>[0], thresholdPx?: number, node?: Node) {
   const Wrapped = withDragNodeAfterThreshold(spec, thresholdPx)(Inner)
