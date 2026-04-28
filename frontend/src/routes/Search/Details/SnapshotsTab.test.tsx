@@ -6,10 +6,12 @@ import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { v4 as uuidv4 } from 'uuid'
 import { isFineGrainedRbacEnabledState, Settings, settingsState } from '../../../atoms'
+import nock from 'nock'
 import {
   nockCreate,
   nockIgnoreApiPaths,
   nockIgnoreClusterVersion,
+  nockIgnoreRBAC,
   nockManagedClusterView,
   nockRequest,
 } from '../../../lib/nock-util'
@@ -110,10 +112,21 @@ describe('SnapshotsTab', () => {
     })
   })
   it('should render tab in loading state', async () => {
-    // create the nocks but do not wait for them below to trigger the loading state.
-    nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
+    nockIgnoreRBAC()
     mockUuidV4.mockReturnValue(MOCKED_UUID)
-    nockManagedClusterView(MOCKED_UUID, 'local-cluster', mcvScope, mcvStatus)
+    // Use raw nock (untracked by window.pendingNocks) so that MCV requests
+    // fired by the component don't cause "unused nock" failures in afterEach.
+    nock(process.env.JEST_DEFAULT_HOST as string)
+      .persist()
+      .post(/managedclusterviews/)
+      .optionally()
+      .reply(201, {})
+      .get(/managedclusterviews/)
+      .optionally()
+      .reply(200, {})
+      .delete(/managedclusterviews/)
+      .optionally()
+      .reply(200, {})
     const mocks = [
       {
         request: {
@@ -158,7 +171,7 @@ describe('SnapshotsTab', () => {
   })
 
   it('should render tab with errors', async () => {
-    const getCanCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
+    nockIgnoreRBAC()
     mockUuidV4.mockReturnValue(MOCKED_UUID)
     const mcvNocks = nockManagedClusterView(MOCKED_UUID, 'local-cluster', mcvScope, mcvStatus)
     const mocks = [
@@ -205,7 +218,7 @@ describe('SnapshotsTab', () => {
     // Test that the component has rendered errors correctly
     await waitFor(() => expect(screen.queryByText('An unexpected error occurred.')).toBeTruthy())
     await waitFor(() => expect(screen.queryByText('Error getting search data')).toBeTruthy())
-    await waitForNocks([getCanCreateMCVNock, ...mcvNocks])
+    await waitForNocks(mcvNocks)
   })
 
   it('should render tab with correct snapshot data from search', async () => {
