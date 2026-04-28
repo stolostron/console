@@ -348,6 +348,7 @@ describe('ArgoWizard tests', () => {
       //                      review page
       //=====================================================================
       await clickByRole('button', { name: 'Submit' })
+      await waitFor(() => expect(mockOnsubmit).toHaveBeenCalled())
 
       const submitted = mockOnsubmit.mock.calls[0][0]
       expect(submitted[0].spec.template.spec.syncPolicy.automated).toEqual({

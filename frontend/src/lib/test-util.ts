@@ -503,7 +503,7 @@ export function normalizeGeneratedOuiaIds(root: HTMLElement) {
   root.querySelectorAll<HTMLElement>('[data-ouia-component-id]').forEach((el) => {
     const id = el.dataset.ouiaComponentId
     if (id) {
-      el.dataset.ouiaComponentId = id.replace(/(OUIA-Generated-\S+?)-\d+/, '$1-0')
+      el.dataset.ouiaComponentId = id.replace(/^(OUIA-Generated-\S+?)-\d+$/, '$1-0')
     }
   })
 }
