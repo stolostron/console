@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { clickByTestId, isCardEnabled, waitForNocks } from '../../../../../lib/test-util'
@@ -58,8 +58,8 @@ describe('CreateControlPlane', () => {
     await waitForNocks([hypershiftStatusNock])
 
     const card = getByTestId('hosted')
+    await waitFor(() => expect(card).toHaveTextContent('Hosted control plane operator must be enabled'))
     expect(isCardEnabled(card)).toBe(false)
-    expect(card).toHaveTextContent('Hosted control plane operator must be enabled')
   })
 
   test('Hosted control plane card should be disabled when there are no infrastructure environments', async () => {
@@ -69,8 +69,8 @@ describe('CreateControlPlane', () => {
     await waitForNocks([hypershiftStatusNock])
 
     const card = getByTestId('hosted')
+    await waitFor(() => expect(card).toHaveTextContent('No infrastructure environments found'))
     expect(isCardEnabled(card)).toBe(false)
-    expect(card).toHaveTextContent('No infrastructure environments found')
     expect(card).toHaveTextContent(
       'To use hosted control plane, create an infrastructure environment in the Host inventory'
     )
