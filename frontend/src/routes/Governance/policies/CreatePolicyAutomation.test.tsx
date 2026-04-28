@@ -64,17 +64,18 @@ describe('Create Policy Automation Wizard', () => {
       nockAnsibleTower(mockAnsibleCredentialWorkflow, mockTemplateWorkflowList)
       render(<CreatePolicyAutomationTest subscriptions={[mockSubscriptionOperator]} />)
 
-      await waitForNotText('The Ansible Automation Platform Operator is required to use automation templates.')
+      await waitForNotText('The Ansible Automation Platform Operator is required to use policy automations.')
       await waitForText('Create policy automation', true)
 
       // select ansible credential
       screen.getByPlaceholderText('Select the Ansible credential').click()
       await clickByText(mockSecret.metadata.name!)
-      await new Promise((resolve) => setTimeout(resolve, 2000))
 
-      // select ansible job
-      screen.getByPlaceholderText('Select the ansible job').click()
-      screen.getByRole('option', { name: 'test-job-pre-install' }).click()
+      // select ansible job (options load asynchronously after credential selection)
+      const jobDropdown = await screen.findByPlaceholderText('Select the ansible job')
+      jobDropdown.click()
+      const jobOption = await screen.findByRole('option', { name: 'test-job-pre-install' })
+      jobOption.click()
       screen.getByPlaceholderText(/select the schedule/i).click()
       screen.getByRole('option', { name: 'Disabled' }).click()
       screen
