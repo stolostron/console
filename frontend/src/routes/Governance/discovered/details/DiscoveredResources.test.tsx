@@ -1,4 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
+jest.mock('../discoveredPoliciesWorker.factory')
+
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { generatePath, MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'

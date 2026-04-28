@@ -1,18 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Discovered policy grouping runs in a Webpack-bundled Web Worker (see `discoveredPolicies.worker.ts`) for UI performance; Jest uses a main-thread fallback. Covered by e2e (Cypress) tests.
 import { useEffect, useState } from 'react'
-import { grouping } from './grouping'
+import { LabelMap } from '../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
-import { SearchInput, useSearchResultItemsAndRelatedItemsQuery } from '../../Search/search-sdk/search-sdk'
 import { searchClient } from '../../Search/search-sdk/search-client'
+import { SearchInput, useSearchResultItemsAndRelatedItemsQuery } from '../../Search/search-sdk/search-sdk'
 import {
+  getSourceText,
   parseDiscoveredPolicies,
   parseDiscoveredPolicyLabels,
-  resolveSource,
-  getSourceText,
   parseStringMap,
+  resolveSource,
 } from '../common/util'
-import { LabelMap } from '../../../resources/utils'
+import { createBundledDiscoveredPoliciesWorker } from './discoveredPoliciesWorker.factory'
+import { grouping } from './grouping'
 export interface ISourceType {
   type: string //ex: 'Policy' | 'Git' | 'Multiple'
   parentNs: string
@@ -251,8 +252,7 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
       )
       return
     }
-    // Bundled worker chunk (same origin as the app) — CSP-safe vs blob: workers.
-    const worker = new Worker(new URL('./discoveredPolicies.worker.ts', import.meta.url))
+    const worker = createBundledDiscoveredPoliciesWorker()
 
     worker.onmessage = (e: MessageEvent<{ policyItems: unknown[]; relatedResources: unknown[] }>) => {
       applyWorkerResult(e.data)

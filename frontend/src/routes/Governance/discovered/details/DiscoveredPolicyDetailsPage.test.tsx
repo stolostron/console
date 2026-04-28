@@ -1,13 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import * as useFetchPolicies from '../useFetchPolicies'
+jest.mock('../discoveredPoliciesWorker.factory')
+
+import { ApolloError } from '@apollo/client'
 import { render, screen } from '@testing-library/react'
 import { generatePath, MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
-import { NavigationPath } from '../../../../NavigationPath'
-import { DiscoveredPolicyDetailsPage } from './DiscoveredPolicyDetailsPage'
-import { waitForText } from '../../../../lib/test-util'
 import { RecoilRoot } from 'recoil'
 import { channelsState, helmReleaseState, subscriptionsState } from '../../../../atoms'
-import { ApolloError } from '@apollo/client'
+import { waitForText } from '../../../../lib/test-util'
+import { NavigationPath } from '../../../../NavigationPath'
+import * as useFetchPolicies from '../useFetchPolicies'
+import { DiscoveredPolicyDetailsPage } from './DiscoveredPolicyDetailsPage'
 
 describe('DiscoveredPolicyDetailsPage', () => {
   test('Should render the heading and tabs', async () => {

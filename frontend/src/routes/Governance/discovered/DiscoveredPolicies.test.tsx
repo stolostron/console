@@ -1,4 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
+jest.mock('./discoveredPoliciesWorker.factory')
+
 import * as useFetchPolicies from './useFetchPolicies'
 import DiscoveredPolicies from './DiscoveredPolicies'
 import { getSourceFilterOptions } from './details/common'

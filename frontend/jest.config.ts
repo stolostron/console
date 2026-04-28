@@ -45,6 +45,10 @@ const config: Config.InitialOptions = {
   modulePathIgnorePatterns: ['<rootDir>/plugins'],
   ci: true,
   collectCoverage: true,
+  coveragePathIgnorePatterns: [
+    '<rootDir>/src/routes/Governance/discovered/discoveredPoliciesWorker.factory.ts',
+    '<rootDir>/src/routes/Governance/discovered/discoveredPolicies.worker.ts',
+  ],
   coverageDirectory: './coverage',
   coverageReporters: ['text-summary', 'html', ['lcov', { projectRoot: '../' }]],
   collectCoverageFrom: [
