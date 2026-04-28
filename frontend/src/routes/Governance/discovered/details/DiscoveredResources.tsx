@@ -15,7 +15,7 @@ import { AcmTable, AcmTableStateProvider, compareStrings, IAcmTableColumn } from
 import { DiffModal } from '../../components/DiffModal'
 
 import { fleetResourceRequest } from '../../../../resources/utils/fleet-resource-request'
-import { emptyResources } from '../../common/util'
+import { emptyResources, preserveWhitespace } from '../../common/util'
 import { flexKyvernoMessages } from '../../policies/policy-details/PolicyTemplateDetail/KyvernoTable'
 import { useDiscoveredDetailsContext } from './DiscoveredPolicyDetailsPage'
 
@@ -266,7 +266,7 @@ export function DiscoveredResources() {
                 ?.split('\n')
                 .filter((m: string) => m.startsWith(item.name))
                 .join('\n')
-              return <span style={{ whiteSpace: 'pre-wrap' }}>{message}</span>
+              return preserveWhitespace(message)
             }
           }
 
