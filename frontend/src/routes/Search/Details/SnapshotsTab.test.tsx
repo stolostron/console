@@ -201,11 +201,11 @@ describe('SnapshotsTab', () => {
       </RecoilRoot>
     )
     // Wait for managed cluster view requests to finish
-    await waitForNocks([getCanCreateMCVNock, ...mcvNocks])
     await wait()
     // Test that the component has rendered errors correctly
     await waitFor(() => expect(screen.queryByText('An unexpected error occurred.')).toBeTruthy())
     await waitFor(() => expect(screen.queryByText('Error getting search data')).toBeTruthy())
+    await waitForNocks([getCanCreateMCVNock, ...mcvNocks])
   })
 
   it('should render tab with correct snapshot data from search', async () => {
@@ -290,11 +290,11 @@ describe('SnapshotsTab', () => {
       </RecoilRoot>
     )
     // Wait for managed cluster view requests to finish
-    await waitForNocks([getCanCreateMCVNock, ...mcvNocks])
     await wait()
     // Test that the component has rendered correctly with data
     await waitFor(() => expect(screen.queryByText('centos-stream9-snapshot-20250327135448211')).toBeTruthy())
     await waitFor(() => expect(screen.queryByText('centos-stream9-snapshot-20250325211107690')).toBeTruthy())
+    await waitForNocks([getCanCreateMCVNock, ...mcvNocks])
   })
 
   it('should render tab with correct snapshot data using fine-grained RBAC', async () => {
@@ -385,10 +385,10 @@ describe('SnapshotsTab', () => {
       </RecoilRoot>
     )
     // Wait for vm requests to finish
-    await waitForNocks([getVMNock])
     await wait()
     // Test that the component has rendered correctly with data
     await waitFor(() => expect(screen.queryByText('centos-stream9-snapshot-20250327135448211')).toBeTruthy())
     await waitFor(() => expect(screen.queryByText('centos-stream9-snapshot-20250325211107690')).toBeTruthy())
+    await waitForNocks([getVMNock])
   })
 })
