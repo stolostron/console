@@ -128,7 +128,7 @@ export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClust
               label={t('clusterSetBinding.edit.select.label')}
               placeholder={t('clusterSetBinding.edit.select.placeholder')}
               value={selectedNamespaces}
-              menuAppendTo="parent"
+              menuAppendTo={() => document.body}
               maxHeight="18em"
               onChange={(namespaces) => setSelectedNamespaces(namespaces)}
               isLoading={!loaded}
