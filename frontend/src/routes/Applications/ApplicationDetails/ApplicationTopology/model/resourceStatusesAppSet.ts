@@ -4,6 +4,7 @@ import { searchClient } from '../../../../Search/search-sdk/search-client'
 import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
 import { getQueryStringForResource } from '../model/topologyUtils'
 import { getArgoSecret } from './resourceStatusesArgo'
+import { fleetResourceRequest } from '../../../../../resources/utils/fleet-resource-request'
 import {
   AppSetApplicationModel,
   AppSetApplicationData,
@@ -22,6 +23,9 @@ import {
  * It handles both namespaced and cluster-scoped resources, and retrieves Argo secrets
  * for authentication purposes.
  *
+ * For pull-model ApplicationSets, hub Application CRs may not have status.resources populated.
+ * In that case, this function fetches the remote Application CRs to get the expected resource list.
+ *
  * @param application - The ApplicationSet application model containing metadata and app/cluster lists
  * @param appData - Application data structure that will be populated with search results and target namespaces
  * @returns Promise resolving to an object containing the resource statuses from the search query
@@ -38,8 +42,11 @@ export async function getAppSetResourceStatuses(
     appSetClustersList.push(cls.name)
   })
 
+  // For pull-model, hub apps may lack status.resources; fetch from remote clusters if needed
+  const appsWithResources = await ensureAppResources(appSetApps, namespace, appSetClustersList)
+
   // Get resource statuses by querying the search API
-  const resourceStatuses = await getResourceStatuses(name, namespace, appSetApps, appData, appSetClustersList)
+  const resourceStatuses = await getResourceStatuses(name, namespace, appsWithResources, appData, appSetClustersList)
 
   // Retrieve Argo secrets for authentication, if available
   const secret = await getArgoSecret(appData, resourceStatuses as Record<string, unknown>)
@@ -49,6 +56,61 @@ export async function getAppSetResourceStatuses(
   }
 
   return { resourceStatuses }
+}
+
+/**
+ * Ensures that the Application list has status.resources populated.
+ * For pull-model, the hub Application CRs often lack status.resources because ArgoCD
+ * runs on the managed cluster. This function fetches the remote Application CRs to get
+ * the expected resource list for cluster-scoped resources (CRDs, StorageClasses, etc.).
+ */
+async function ensureAppResources(
+  appSetApps: AppSetApplication[],
+  namespace: string,
+  clusterNames: string[]
+): Promise<AppSetApplication[]> {
+  const hasResources = appSetApps.some((app: any) => app?.status?.resources?.length > 0)
+  if (hasResources || appSetApps.length === 0 || clusterNames.length === 0) {
+    return appSetApps
+  }
+
+  // Hub apps lack status.resources — fetch from remote clusters
+  const enrichedApps: AppSetApplication[] = [...appSetApps]
+
+  const fetchPromises = appSetApps.map(async (app: AppSetApplication, index: number) => {
+    const appName = app.metadata?.name
+    if (!appName) return
+
+    for (const clusterName of clusterNames) {
+      try {
+        const result = await fleetResourceRequest('GET', clusterName, {
+          apiVersion: 'argoproj.io/v1alpha1',
+          kind: 'Application',
+          name: appName,
+          namespace,
+        })
+
+        if ('errorMessage' in result) continue
+
+        const resources = (result as any)?.status?.resources
+        if (Array.isArray(resources) && resources.length > 0) {
+          enrichedApps[index] = {
+            ...app,
+            status: {
+              ...app.status,
+              resources,
+            },
+          } as AppSetApplication
+          return
+        }
+      } catch {
+        // Continue to next cluster on failure
+      }
+    }
+  })
+
+  await Promise.allSettled(fetchPromises)
+  return enrichedApps
 }
 
 /**

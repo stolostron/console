@@ -6,6 +6,7 @@ import i18next, { TFunction } from 'i18next'
 import type { ApplicationModel, ExtendedTopology } from '../types'
 import type { ToolbarControl } from '../topology/components/TopologyToolbar'
 import { searchClient } from '../../../../Search/search-sdk/search-client'
+import { fleetResourceRequest } from '../../../../../resources/utils/fleet-resource-request'
 
 const t: TFunction = i18next.t.bind(i18next)
 
@@ -44,6 +45,11 @@ jest.mock('../../../../../resources/utils', () => ({
       },
     ]),
   })),
+}))
+
+// Mock fleet-resource-request
+jest.mock('../../../../../resources/utils/fleet-resource-request', () => ({
+  fleetResourceRequest: jest.fn(() => Promise.resolve({ errorMessage: 'not available' })),
 }))
 
 // Mock window.open
@@ -641,6 +647,154 @@ describe('getAppSetTopology', () => {
     const appSetNode = result.nodes.find((n) => n.type === 'applicationset') as any
     expect(appSetNode).toBeDefined()
     expect(appSetNode.isArgoCDPullModelTargetLocalCluster).toBe(true)
+  })
+
+  it('should include cluster-scoped resources from remote Application status.resources for pull model', async () => {
+    const mockFleetResourceRequest = fleetResourceRequest as jest.MockedFunction<typeof fleetResourceRequest>
+    mockFleetResourceRequest.mockResolvedValueOnce({
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: 'Application',
+      metadata: { name: 'test-pullmodel-crd-managed-cluster-1', namespace: 'openshift-gitops' },
+      status: {
+        resources: [
+          { kind: 'Deployment', name: 'my-app', namespace: 'default', version: 'v1', group: 'apps', health: { status: 'Healthy' } },
+          { kind: 'CustomResourceDefinition', name: 'widgets.example.com', version: 'v1', group: 'apiextensions.k8s.io', health: { status: 'Healthy' } },
+          { kind: 'StorageClass', name: 'fast-storage', version: 'v1', group: 'storage.k8s.io', health: { status: 'Healthy' } },
+        ],
+      },
+    } as any)
+
+    // Search returns only the Deployment as a related resource (CRD and StorageClass don't exist yet)
+    mockSearchClient.query.mockResolvedValueOnce({
+      data: {
+        searchResult: [
+          {
+            items: [
+              {
+                _uid: 'app-uid-1',
+                name: 'test-pullmodel-crd-managed-cluster-1',
+                namespace: 'openshift-gitops',
+                cluster: 'managed-cluster-1',
+                kind: 'Application',
+                apigroup: 'argoproj.io',
+              },
+            ],
+            related: [
+              {
+                kind: 'Deployment',
+                items: [
+                  {
+                    _uid: 'deploy-uid-1',
+                    _relatedUids: ['app-uid-1'],
+                    name: 'my-app',
+                    namespace: 'default',
+                    kind: 'Deployment',
+                    cluster: 'managed-cluster-1',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    })
+
+    const application: ApplicationModel = {
+      name: 'test-pullmodel-crd',
+      namespace: 'openshift-gitops',
+      app: {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'ApplicationSet',
+        metadata: { name: 'test-pullmodel-crd', namespace: 'openshift-gitops' },
+        spec: { generators: [{}] },
+      },
+      isArgoApp: false,
+      isAppSet: true,
+      isOCPApp: false,
+      isFluxApp: false,
+      isAppSetPullModel: true,
+      appSetClusters: [{ name: 'managed-cluster-1' }],
+      appSetApps: [{ metadata: { name: 'test-pullmodel-crd-managed-cluster-1' }, spec: {} }] as any,
+    }
+
+    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
+
+    // The Deployment found via search should be in topology
+    const deployNode = result.nodes.find((n) => n.type === 'deployment' && n.name === 'my-app')
+    expect(deployNode).toBeDefined()
+
+    // The CRD from status.resources should also be in topology even though not found in search
+    const crdNode = result.nodes.find((n) => n.type === 'customresourcedefinition' && n.name === 'widgets.example.com')
+    expect(crdNode).toBeDefined()
+
+    // The StorageClass from status.resources should also be in topology
+    const scNode = result.nodes.find((n) => n.type === 'storageclass' && n.name === 'fast-storage')
+    expect(scNode).toBeDefined()
+  })
+
+  it('should show resources with healthy status as running for pull model', async () => {
+    const mockFleetResourceRequest = fleetResourceRequest as jest.MockedFunction<typeof fleetResourceRequest>
+    mockFleetResourceRequest.mockResolvedValueOnce({
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: 'Application',
+      metadata: { name: 'test-pullmodel-status-managed-cluster-1', namespace: 'openshift-gitops' },
+      status: {
+        resources: [
+          { kind: 'StorageClass', name: 'fast-storage', version: 'v1', group: 'storage.k8s.io', health: { status: 'Healthy' } },
+          { kind: 'CustomResourceDefinition', name: 'missing.example.com', version: 'v1', group: 'apiextensions.k8s.io', health: { status: 'Missing' } },
+        ],
+      },
+    } as any)
+
+    // Search returns no related resources (nothing exists yet)
+    mockSearchClient.query.mockResolvedValueOnce({
+      data: {
+        searchResult: [
+          {
+            items: [
+              {
+                _uid: 'app-uid-2',
+                name: 'test-pullmodel-status-managed-cluster-1',
+                namespace: 'openshift-gitops',
+                cluster: 'managed-cluster-1',
+                kind: 'Application',
+                apigroup: 'argoproj.io',
+              },
+            ],
+            related: [],
+          },
+        ],
+      },
+    })
+
+    const application: ApplicationModel = {
+      name: 'test-pullmodel-status',
+      namespace: 'openshift-gitops',
+      app: {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'ApplicationSet',
+        metadata: { name: 'test-pullmodel-status', namespace: 'openshift-gitops' },
+        spec: { generators: [{}] },
+      },
+      isArgoApp: false,
+      isAppSet: true,
+      isOCPApp: false,
+      isFluxApp: false,
+      isAppSetPullModel: true,
+      appSetClusters: [{ name: 'managed-cluster-1' }],
+      appSetApps: [{ metadata: { name: 'test-pullmodel-status-managed-cluster-1' }, spec: {} }] as any,
+    }
+
+    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
+
+    // Healthy StorageClass should appear with 'running' status mapped from health.status
+    const scNode = result.nodes.find((n) => n.type === 'storageclass' && n.name === 'fast-storage')
+    expect(scNode).toBeDefined()
+    expect((scNode as any)?.specs?.raw?.status).toBe('running')
+
+    // Missing CRD should appear in topology (will be shown as pending)
+    const crdNode = result.nodes.find((n) => n.type === 'customresourcedefinition' && n.name === 'missing.example.com')
+    expect(crdNode).toBeDefined()
   })
 
   it('should filter by active clusters when provided', async () => {

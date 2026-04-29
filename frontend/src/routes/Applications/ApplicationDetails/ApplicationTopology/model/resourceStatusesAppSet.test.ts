@@ -4,6 +4,11 @@ import { getAppSetResourceStatuses } from './resourceStatusesAppSet'
 import { waitFor } from '@testing-library/react'
 import { nockSearch } from '../../../../../lib/nock-util'
 import { AppSetApplicationData, AppSetApplicationModel, SearchQuery } from '../types'
+import { fleetResourceRequest } from '../../../../../resources/utils/fleet-resource-request'
+
+jest.mock('../../../../../resources/utils/fleet-resource-request', () => ({
+  fleetResourceRequest: jest.fn(() => Promise.resolve({ errorMessage: 'not available' })),
+}))
 
 describe('getAppSetResourceStatuses', () => {
   it('getAppSetResourceStatuses returns resourceStatuses', async () => {
@@ -11,6 +16,80 @@ describe('getAppSetResourceStatuses', () => {
     await waitFor(() => expect(search.isDone()).toBeTruthy())
     const result = await getAppSetResourceStatuses(application, appData)
     expect(result).toStrictEqual({ resourceStatuses: mockSearchResponse })
+  })
+
+  it('fetches remote Application CRs for pull-model apps without status.resources', async () => {
+    const mockFleetResourceRequest = fleetResourceRequest as jest.MockedFunction<typeof fleetResourceRequest>
+    mockFleetResourceRequest.mockResolvedValueOnce({
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: 'Application',
+      metadata: { name: 'pull-app-managed-1', namespace: 'openshift-gitops' },
+      status: {
+        resources: [
+          { kind: 'CustomResourceDefinition', name: 'widgets.example.com', version: 'v1', group: 'apiextensions.k8s.io' },
+          { kind: 'Deployment', name: 'my-app', namespace: 'default', version: 'v1', group: 'apps' },
+        ],
+      },
+    } as any)
+
+    const pullModelApp: AppSetApplicationModel = {
+      name: 'pull-app',
+      namespace: 'openshift-gitops',
+      appSetApps: [
+        {
+          metadata: { name: 'pull-app-managed-1', namespace: 'openshift-gitops' },
+          spec: { destination: { namespace: 'default', server: 'https://managed-1.example.com' } },
+        },
+      ],
+      appSetClusters: [{ name: 'managed-1', namespace: 'managed-1', status: 'ok', created: '2024-01-01' }],
+    }
+
+    const pullAppData: AppSetApplicationData = {
+      relatedKinds: ['deployment', 'customresourcedefinition'],
+      targetNamespaces: [],
+    }
+
+    const pullSearchQuery = {
+      operationName: 'searchResultItemsAndRelatedItems',
+      variables: {
+        input: [
+          {
+            keywords: [],
+            filters: [
+              { property: 'kind', values: ['deployment'] },
+              { property: 'namespace', values: ['default'] },
+              { property: 'cluster', values: ['managed-1'] },
+            ],
+            relatedKinds: ['cluster', 'pod', 'replicaset', 'replicationcontroller'],
+          },
+          {
+            keywords: [],
+            filters: [
+              { property: 'kind', values: ['customresourcedefinition'] },
+              { property: 'name', values: ['widgets.example.com'] },
+            ],
+            relatedKinds: [],
+          },
+        ],
+      },
+      query:
+        'query searchResultItemsAndRelatedItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    related {\n      kind\n      items\n      __typename\n    }\n    __typename\n  }\n}',
+    }
+
+    const pullSearchResponse = {
+      data: { searchResult: [{ __typename: 'SearchResult', items: [], related: null }] },
+    }
+
+    const search = nockSearch(pullSearchQuery, pullSearchResponse)
+    await waitFor(() => expect(search.isDone()).toBeTruthy())
+    const result = await getAppSetResourceStatuses(pullModelApp, pullAppData)
+    expect(result.resourceStatuses).toBeDefined()
+    expect(mockFleetResourceRequest).toHaveBeenCalledWith('GET', 'managed-1', {
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: 'Application',
+      name: 'pull-app-managed-1',
+      namespace: 'openshift-gitops',
+    })
   })
 })
 

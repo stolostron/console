@@ -410,15 +410,28 @@ async function getAppSetResources(application: ApplicationModel) {
         relatedResult && !excludedKinds.has(relatedResult.kind.toLowerCase())
     )
 
+    // Fetch remote Application CRs to get status.resources for cluster-scoped resources
+    // that may not appear in search "related" results when they don't exist yet
+    const remoteAppResources = await fetchPullModelAppResources(applications, namespace, allClusterNames)
+
     applications?.forEach((application: ResourceItem) => {
       const applicationUid = application._uid as string
+      const applicationCluster = application.cluster as string
 
-      // Find related resources for this application on this cluster
-      const resourceList =
+      // Find related resources for this application on this cluster (resources that exist)
+      const searchRelatedList =
         relatedResults?.flatMap(
           (relatedResult: SearchRelatedResult | null) =>
             relatedResult?.items?.filter((item: ResourceItem) => item._relatedUids?.includes(applicationUid)) ?? []
         ) ?? []
+
+      // Get status.resources from the remote Application CR (the expected resources)
+      const appKey = `${application.name}/${applicationCluster}`
+      const expectedResources = remoteAppResources.get(appKey)
+
+      // Merge: use expected resources as the base, enriching with search data when available
+      const resourceList = mergeExpectedWithSearchResults(expectedResources, searchRelatedList, applicationCluster)
+
       mapRelatedResources(application.name, resourceList)
     })
   } else {
@@ -434,6 +447,111 @@ async function getAppSetResources(application: ApplicationModel) {
     applicationResourceMap,
     applicationNames: [...applicationNameSet] as string[],
   }
+}
+
+/**
+ * Fetches remote Application CRs for pull-model ApplicationSets to get their status.resources.
+ * This provides the list of expected resources regardless of whether they currently exist on the cluster.
+ *
+ * @returns Map keyed by "appName/clusterName" → array of resources from status.resources
+ */
+async function fetchPullModelAppResources(
+  applications: ResourceItem[] | undefined,
+  namespace: string,
+  allClusterNames: string[]
+): Promise<Map<string, ResourceItem[]>> {
+  const resourceMap = new Map<string, ResourceItem[]>()
+  if (!applications || applications.length === 0) {
+    return resourceMap
+  }
+
+  const fetchPromises = applications.map(async (application: ResourceItem) => {
+    const clusterName = application.cluster as string
+    if (!clusterName || !allClusterNames.includes(clusterName)) return
+
+    try {
+      const result = await fleetResourceRequest('GET', clusterName, {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'Application',
+        name: application.name as string,
+        namespace: namespace,
+      })
+
+      if ('errorMessage' in result) return
+
+      const resources = (result as any)?.status?.resources
+      if (Array.isArray(resources)) {
+        resourceMap.set(`${application.name}/${clusterName}`, resources)
+      }
+    } catch {
+      // If fleet request fails, fall back to search-only results
+    }
+  })
+
+  await Promise.allSettled(fetchPromises)
+  return resourceMap
+}
+
+/**
+ * Merges expected resources from the Application's status.resources with resources
+ * found via search. Resources in status.resources that aren't in search results
+ * are included as "expected" entries so they appear in topology regardless of
+ * their current existence on the cluster.
+ *
+ * Resources found in search are enriched with actual cluster data.
+ * Resources only in status.resources are synthesized with the target cluster,
+ * using health.status from the Application CR to determine deployed state.
+ */
+function mergeExpectedWithSearchResults(
+  expectedResources: ResourceItem[] | undefined,
+  searchRelatedList: ResourceItem[],
+  clusterName: string
+): ResourceItem[] {
+  if (!expectedResources || expectedResources.length === 0) {
+    return searchRelatedList
+  }
+
+  // Build a lookup of resources found by search (keyed by kind/name/namespace)
+  const searchResourceKeys = new Set<string>()
+  searchRelatedList.forEach((item: ResourceItem) => {
+    const key = `${(item.kind || '').toLowerCase()}/${item.name || ''}/${item.namespace || ''}`
+    searchResourceKeys.add(key)
+  })
+
+  // Start with all search-found resources (these are confirmed to exist)
+  const merged: ResourceItem[] = [...searchRelatedList]
+
+  // Add expected resources that don't exist in search results
+  expectedResources.forEach((resource: ResourceItem) => {
+    const kind = (resource.kind || '').toLowerCase()
+    const key = `${kind}/${resource.name || ''}/${resource.namespace || ''}`
+    if (!searchResourceKeys.has(key)) {
+      const healthStatus = resource.health?.status?.toLowerCase() || ''
+      // Map ArgoCD health status to search-compatible status for topology display:
+      // Healthy → running (green), Missing → not deployed (pending), Degraded → err (red)
+      let mappedStatus = ''
+      if (healthStatus === 'healthy') {
+        mappedStatus = 'running'
+      } else if (healthStatus === 'degraded') {
+        mappedStatus = 'err'
+      } else if (healthStatus === 'progressing' || healthStatus === 'suspended') {
+        mappedStatus = 'pending'
+      }
+
+      merged.push({
+        name: resource.name,
+        namespace: resource.namespace,
+        kind: resource.kind,
+        version: resource.version,
+        group: resource.group,
+        cluster: clusterName,
+        status: mappedStatus,
+        _hubCell: '',
+      })
+    }
+  })
+
+  return merged
 }
 
 /**
