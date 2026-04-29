@@ -223,7 +223,6 @@ export const processMultiples = (
       }
     }
   })
-  return resources
 }
 
 // Resource types that typically have pods as children
