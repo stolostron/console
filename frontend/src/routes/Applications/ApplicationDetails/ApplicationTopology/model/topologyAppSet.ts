@@ -588,8 +588,12 @@ function processResources(
     })
   }
 
+  // Deduplicate cluster-scoped resources (no namespace) that appear on multiple clusters.
+  // They should become a single node with all target clusters in clustersNames.
+  const deduplicatedResources = deduplicateClusterScopedResources(allResources)
+
   // create nodes for each resource
-  processMultiples(allResources).forEach((deployable: Record<string, unknown>) => {
+  processMultiples(deduplicatedResources).forEach((deployable: Record<string, unknown>) => {
     const typedDeployable = deployable as unknown as ProcessedDeployableResource
     const {
       name: deployableName,
@@ -607,8 +611,9 @@ function processResources(
       (deployableResources as any)?.[0]?.cluster ??
       getClusterName(parentId, hubClusterName)
 
-    // Generate unique member ID for the deployable resource
-    const memberId = `member--member--deployable--member--clusters--${deployableCluster}--${type}--${deployableNamespace}--${deployableName}`
+    // For cluster-scoped resources, use a stable ID without cluster to prevent duplicates
+    const clusterInId = deployableNamespace ? deployableCluster : parentClusterNames[0] || deployableCluster
+    const memberId = `member--member--deployable--member--clusters--${clusterInId}--${type}--${deployableNamespace}--${deployableName}`
 
     // Create raw resource object with metadata
     const raw: any = {
@@ -628,6 +633,11 @@ function processResources(
       raw.apiVersion = apiVersion
     }
 
+    // For cluster-scoped resources, use all target clusters; for namespaced, use parent clusters
+    const nodeClusters = deployableNamespace
+      ? parentClusterNames
+      : (typedDeployable as any)._targetClusters || parentClusterNames
+
     // Create deployable resource node
     let deployableObj: TopologyNode = {
       name: deployableName,
@@ -638,12 +648,12 @@ function processResources(
       specs: {
         isDesign: false,
         raw,
-        clustersNames: parentClusterNames,
+        clustersNames: nodeClusters,
         parent: {
           clusterId: parentId,
         },
         resources: deployableResources,
-        resourceCount: resourceCount || parentClusterNames.length,
+        resourceCount: resourceCount || nodeClusters.length,
       },
     }
 
@@ -663,6 +673,38 @@ function processResources(
     // Create virtual machine instance child nodes (for KubeVirt)
     createVirtualMachineInstance(deployableObj, parentClusterNames || [], activeTypes, links, nodes)
   })
+}
+
+/**
+ * Deduplicates cluster-scoped resources (those without a namespace) that appear
+ * multiple times for different clusters. Combines them into a single entry with
+ * _targetClusters containing all clusters where the resource should be deployed.
+ * Namespaced resources are returned unchanged.
+ */
+function deduplicateClusterScopedResources(resources: ResourceItem[]): ResourceItem[] {
+  const clusterScoped: Map<string, ResourceItem> = new Map()
+  const namespaced: ResourceItem[] = []
+
+  resources.forEach((resource: ResourceItem) => {
+    if (resource.namespace) {
+      namespaced.push(resource)
+    } else {
+      const key = `${(resource.kind || '').toLowerCase()}/${resource.name || ''}`
+      const existing = clusterScoped.get(key)
+      if (existing) {
+        const clusters = (existing as any)._targetClusters || [existing.cluster]
+        if (resource.cluster && !clusters.includes(resource.cluster)) {
+          clusters.push(resource.cluster)
+        }
+        ;(existing as any)._targetClusters = clusters
+      } else {
+        const entry = { ...resource, _targetClusters: resource.cluster ? [resource.cluster] : [] }
+        clusterScoped.set(key, entry)
+      }
+    }
+  })
+
+  return [...namespaced, ...Array.from(clusterScoped.values())]
 }
 
 /**

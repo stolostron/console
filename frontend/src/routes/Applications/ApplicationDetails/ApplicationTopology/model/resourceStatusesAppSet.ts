@@ -213,10 +213,12 @@ async function getResourceStatuses(
     appSetClusters.toString()
   )
 
-  // Build separate queries for each cluster-scoped resource
+  // Build separate queries for each cluster-scoped resource, scoped to the target clusters
   if (kindsNotNamespaceScoped.length > 0) {
     kindsNotNamespaceScoped.forEach((item: string, i: number) => {
-      queryNotNamespaceScoped.push(getQueryStringForResource([item], kindsNotNamespaceScopedNames[i], '', ''))
+      queryNotNamespaceScoped.push(
+        getQueryStringForResource([item], kindsNotNamespaceScopedNames[i], '', appSetClusters.toString())
+      )
     })
   }
 

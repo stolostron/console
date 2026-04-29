@@ -67,6 +67,7 @@ describe('getAppSetResourceStatuses', () => {
             filters: [
               { property: 'kind', values: ['customresourcedefinition'] },
               { property: 'name', values: ['widgets.example.com'] },
+              { property: 'cluster', values: ['managed-1'] },
             ],
             relatedKinds: [],
           },
@@ -376,6 +377,10 @@ const mockSearchQuery: MockSearchQuery = {
             property: 'name',
             values: ['application-menu-rh-developer-blog'],
           },
+          {
+            property: 'cluster',
+            values: ['local-cluster', 'dyna1203'],
+          },
         ],
         relatedKinds: [],
       },
@@ -389,6 +394,10 @@ const mockSearchQuery: MockSearchQuery = {
           {
             property: 'name',
             values: ['ocp100'],
+          },
+          {
+            property: 'cluster',
+            values: ['local-cluster', 'dyna1203'],
           },
         ],
         relatedKinds: [],

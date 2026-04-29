@@ -456,6 +456,69 @@ describe('getAppSetTopology', () => {
     expect(mockToolbarControl.setAllClusters).toHaveBeenCalledWith(['local-cluster', 'managed-cluster-1'])
   })
 
+  it('should not duplicate cluster-scoped resources when deployed to multiple clusters', async () => {
+    // Push model with cluster-scoped resources (CRDs) deployed to two clusters
+    mockSearchClient.query.mockResolvedValue({
+      loading: false,
+      networkStatus: 7,
+      data: { searchResult: [] },
+    })
+
+    const application: ApplicationModel = {
+      name: 'test-appset-crd-dedup',
+      namespace: 'openshift-gitops',
+      app: {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'ApplicationSet',
+        metadata: { name: 'test-appset-crd-dedup', namespace: 'openshift-gitops' },
+        spec: { generators: [{}] },
+      },
+      isArgoApp: false,
+      isAppSet: true,
+      isOCPApp: false,
+      isFluxApp: false,
+      isAppSetPullModel: false,
+      appSetClusters: [{ name: 'local-cluster' }, { name: 'managed-cluster-1' }],
+      appSetApps: [
+        {
+          metadata: { name: 'test-appset-crd-dedup-local-cluster' },
+          spec: {},
+          status: {
+            resources: [
+              { kind: 'CustomResourceDefinition', name: 'widgets.example.com', version: 'v1', group: 'apiextensions.k8s.io' },
+              { kind: 'Deployment', name: 'my-app', namespace: 'default', version: 'v1', group: 'apps' },
+            ],
+          },
+        },
+        {
+          metadata: { name: 'test-appset-crd-dedup-managed-cluster-1' },
+          spec: {},
+          status: {
+            resources: [
+              { kind: 'CustomResourceDefinition', name: 'widgets.example.com', version: 'v1', group: 'apiextensions.k8s.io' },
+              { kind: 'Deployment', name: 'my-app', namespace: 'default', version: 'v1', group: 'apps' },
+            ],
+          },
+        },
+      ] as any,
+    }
+
+    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
+
+    // CRD should appear exactly once (deduplicated across clusters)
+    const crdNodes = result.nodes.filter((n) => n.type === 'customresourcedefinition' && n.name === 'widgets.example.com')
+    expect(crdNodes).toHaveLength(1)
+
+    // The single CRD node should have both clusters in clustersNames
+    const crdNode = crdNodes[0]
+    expect((crdNode as any).specs.clustersNames).toContain('local-cluster')
+    expect((crdNode as any).specs.clustersNames).toContain('managed-cluster-1')
+
+    // Namespaced Deployment should still have separate entries per cluster (concatenated into allResources)
+    const deployNodes = result.nodes.filter((n) => n.type === 'deployment' && n.name === 'my-app')
+    expect(deployNodes.length).toBeGreaterThanOrEqual(1)
+  })
+
   it('should handle ApplicationSet with app status information', async () => {
     const application: ApplicationModel = {
       name: 'test-appset-status',
