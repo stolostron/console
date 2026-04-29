@@ -902,9 +902,10 @@ describe('getAppSetTopology', () => {
     expect(scNode).toBeDefined()
     expect((scNode as any)?.specs?.raw?.status).toBe('running')
 
-    // Missing CRD should appear in topology (will be shown as pending)
+    // Missing CRD should appear in topology with pending status
     const crdNode = result.nodes.find((n) => n.type === 'customresourcedefinition' && n.name === 'missing.example.com')
     expect(crdNode).toBeDefined()
+    expect((crdNode as any)?.specs?.raw?.status).toBe('pending')
   })
 
   it('should filter by active clusters when provided', async () => {

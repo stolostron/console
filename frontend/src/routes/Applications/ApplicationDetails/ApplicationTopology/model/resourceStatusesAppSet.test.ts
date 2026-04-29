@@ -87,8 +87,8 @@ describe('getAppSetResourceStatuses', () => {
     }
 
     const search = nockSearch(pullSearchQuery, pullSearchResponse)
-    await waitFor(() => expect(search.isDone()).toBeTruthy())
     const result = await getAppSetResourceStatuses(pullModelApp, pullAppData)
+    await waitFor(() => expect(search.isDone()).toBeTruthy())
     expect(result.resourceStatuses).toBeDefined()
     expect(mockFleetResourceRequest).toHaveBeenCalledWith('GET', 'managed-1', {
       apiVersion: 'argoproj.io/v1alpha1',

@@ -612,7 +612,7 @@ function mergeExpectedWithSearchResults(
         mappedStatus = 'running'
       } else if (healthStatus === 'degraded') {
         mappedStatus = 'err'
-      } else if (healthStatus === 'progressing' || healthStatus === 'suspended') {
+      } else if (healthStatus === 'missing' || healthStatus === 'progressing' || healthStatus === 'suspended') {
         mappedStatus = 'pending'
       }
 
