@@ -760,6 +760,8 @@ describe('getAppSetTopology', () => {
 
     // Search returns only the Deployment as a related resource (CRD and StorageClass don't exist yet)
     mockSearchClient.query.mockResolvedValueOnce({
+      loading: false,
+      networkStatus: 7,
       data: {
         searchResult: [
           {
@@ -854,6 +856,8 @@ describe('getAppSetTopology', () => {
 
     // Search returns no related resources (nothing exists yet)
     mockSearchClient.query.mockResolvedValueOnce({
+      loading: false,
+      networkStatus: 7,
       data: {
         searchResult: [
           {
