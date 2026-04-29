@@ -63,20 +63,43 @@ export async function getAppSetResourceStatuses(
  * For pull-model, the hub Application CRs often lack status.resources because ArgoCD
  * runs on the managed cluster. This function fetches the remote Application CRs to get
  * the expected resource list for cluster-scoped resources (CRDs, StorageClasses, etc.).
+ *
+ * Optimization: Checks whether all apps share the same source spec (repoURL + path +
+ * targetRevision). If uniform, one fetch suffices for all apps. If sources differ
+ * (matrix/merge generator), each app is fetched individually.
  */
 async function ensureAppResources(
   appSetApps: AppSetApplication[],
   namespace: string,
   clusterNames: string[]
 ): Promise<AppSetApplication[]> {
-  const hasResources = appSetApps.some((app: any) => app?.status?.resources?.length > 0)
-  if (hasResources || appSetApps.length === 0 || clusterNames.length === 0) {
+  if (appSetApps.length === 0 || clusterNames.length === 0) {
     return appSetApps
   }
 
-  // Hub apps lack status.resources — fetch from remote clusters
-  const enrichedApps: AppSetApplication[] = [...appSetApps]
+  // Check if any hub app already has status.resources (e.g. hub is also a target cluster)
+  const localResources = appSetApps.find((app) => (app.status?.resources?.length ?? 0) > 0)?.status?.resources
 
+  const uniform = areAppSetSourcesUniform(appSetApps)
+
+  if (uniform) {
+    // All apps deploy the same manifests — use local data if available, otherwise one fleet request
+    const sampleResources = localResources ?? (await fetchFirstAvailableResources(appSetApps, namespace, clusterNames))
+    if (!sampleResources) return appSetApps
+
+    return appSetApps.map((app: AppSetApplication) => {
+      if (app.status?.resources?.length) return app
+      return { ...app, status: { ...app.status, resources: sampleResources } } as AppSetApplication
+    })
+  }
+
+  // If we already have all resources populated, no need to fetch
+  if (localResources && appSetApps.every((app) => (app.status?.resources?.length ?? 0) > 0)) {
+    return appSetApps
+  }
+
+  // Sources differ — fetch each app individually
+  const enrichedApps: AppSetApplication[] = [...appSetApps]
   const fetchPromises = appSetApps.map(async (app: AppSetApplication, index: number) => {
     const appName = app.metadata?.name
     if (!appName) return
@@ -89,28 +112,67 @@ async function ensureAppResources(
           name: appName,
           namespace,
         })
-
         if ('errorMessage' in result) continue
 
         const resources = (result as any)?.status?.resources
         if (Array.isArray(resources) && resources.length > 0) {
-          enrichedApps[index] = {
-            ...app,
-            status: {
-              ...app.status,
-              resources,
-            },
-          } as AppSetApplication
+          enrichedApps[index] = { ...app, status: { ...app.status, resources } } as AppSetApplication
           return
         }
       } catch {
-        // Continue to next cluster on failure
+        // Continue to next cluster
       }
     }
   })
-
   await Promise.allSettled(fetchPromises)
   return enrichedApps
+}
+
+/** Determines if all apps share the same source configuration. */
+function areAppSetSourcesUniform(appSetApps: AppSetApplication[]): boolean {
+  if (appSetApps.length <= 1) return true
+
+  const getSourceKey = (app: AppSetApplication): string => {
+    const source = app.spec?.source
+    const sources = (app.spec as any)?.sources
+    if (Array.isArray(sources)) {
+      return JSON.stringify(sources.map((s: any) => ({ r: s.repoURL, p: s.path, t: s.targetRevision, c: s.chart })))
+    }
+    return `${source?.repoURL || ''}|${source?.path || ''}|${source?.targetRevision || ''}|${source?.chart || ''}`
+  }
+
+  const firstKey = getSourceKey(appSetApps[0])
+  return appSetApps.every((app) => getSourceKey(app) === firstKey)
+}
+
+/** Fetches status.resources from the first reachable remote Application CR. */
+async function fetchFirstAvailableResources(
+  appSetApps: AppSetApplication[],
+  namespace: string,
+  clusterNames: string[]
+): Promise<any[] | null> {
+  for (const app of appSetApps) {
+    const appName = app.metadata?.name
+    if (!appName) continue
+
+    for (const clusterName of clusterNames) {
+      try {
+        const result = await fleetResourceRequest('GET', clusterName, {
+          apiVersion: 'argoproj.io/v1alpha1',
+          kind: 'Application',
+          name: appName,
+          namespace,
+        })
+        if ('errorMessage' in result) continue
+
+        const resources = (result as any)?.status?.resources
+        if (Array.isArray(resources) && resources.length > 0) return resources
+      } catch {
+        // Continue to next cluster
+      }
+    }
+  }
+  return null
 }
 
 /**

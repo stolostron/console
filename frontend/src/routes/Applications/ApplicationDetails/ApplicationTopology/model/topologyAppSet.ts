@@ -412,7 +412,12 @@ async function getAppSetResources(application: ApplicationModel) {
 
     // Fetch remote Application CRs to get status.resources for cluster-scoped resources
     // that may not appear in search "related" results when they don't exist yet
-    const remoteAppResources = await fetchPullModelAppResources(applications, namespace, allClusterNames)
+    const remoteAppResources = await fetchPullModelAppResources(
+      applications,
+      namespace,
+      allClusterNames,
+      appSetApps as ResourceItem[]
+    )
 
     applications?.forEach((application: ResourceItem) => {
       const applicationUid = application._uid as string
@@ -453,43 +458,116 @@ async function getAppSetResources(application: ApplicationModel) {
  * Fetches remote Application CRs for pull-model ApplicationSets to get their status.resources.
  * This provides the list of expected resources regardless of whether they currently exist on the cluster.
  *
+ * Optimization: Determines whether all apps deploy the same manifests by comparing the
+ * source specs of the hub Application CRs (appSetApps). If all sources are identical,
+ * only one fleet request is made and the result is reused for all apps. If sources differ
+ * (matrix/merge generator varying paths), each app is fetched individually.
+ *
  * @returns Map keyed by "appName/clusterName" → array of resources from status.resources
  */
 async function fetchPullModelAppResources(
   applications: ResourceItem[] | undefined,
   namespace: string,
-  allClusterNames: string[]
+  allClusterNames: string[],
+  appSetApps: ResourceItem[] = []
 ): Promise<Map<string, ResourceItem[]>> {
   const resourceMap = new Map<string, ResourceItem[]>()
   if (!applications || applications.length === 0) {
     return resourceMap
   }
 
-  const fetchPromises = applications.map(async (application: ResourceItem) => {
-    const clusterName = application.cluster as string
-    if (!clusterName || !allClusterNames.includes(clusterName)) return
+  // Only fetch from clusters where search found an Application
+  const validApps = applications.filter(
+    (app: ResourceItem) => app.cluster && allClusterNames.includes(app.cluster as string)
+  )
+  if (validApps.length === 0) return resourceMap
 
-    try {
-      const result = await fleetResourceRequest('GET', clusterName, {
-        apiVersion: 'argoproj.io/v1alpha1',
-        kind: 'Application',
-        name: application.name as string,
-        namespace: namespace,
-      })
+  const uniform = areAppSourcesUniform(appSetApps)
 
-      if ('errorMessage' in result) return
-
-      const resources = (result as any)?.status?.resources
-      if (Array.isArray(resources)) {
-        resourceMap.set(`${application.name}/${clusterName}`, resources)
+  if (uniform) {
+    // All apps deploy the same manifests — try hub data first, then one fleet request
+    const resources = getLocalAppResources(appSetApps) ?? (await fetchFirstAvailableAppResources(validApps, namespace))
+    if (resources) {
+      for (const app of validApps) {
+        resourceMap.set(`${app.name}/${app.cluster}`, resources)
       }
-    } catch {
-      // If fleet request fails, fall back to search-only results
     }
-  })
+  } else {
+    // Sources differ across apps — must fetch each individually
+    const fetchPromises = validApps.map(async (application: ResourceItem) => {
+      const resources = await fetchSingleAppResources(application, namespace)
+      if (resources) {
+        resourceMap.set(`${application.name}/${application.cluster}`, resources)
+      }
+    })
+    await Promise.allSettled(fetchPromises)
+  }
 
-  await Promise.allSettled(fetchPromises)
   return resourceMap
+}
+
+/**
+ * Determines whether all Application CRs in the ApplicationSet deploy the same manifests
+ * by comparing their source specifications. If all apps have identical source (repoURL + path +
+ * targetRevision + chart), they will produce the same resources regardless of which cluster
+ * they target.
+ */
+function areAppSourcesUniform(appSetApps: ResourceItem[]): boolean {
+  if (appSetApps.length <= 1) return true
+
+  const getSourceKey = (app: ResourceItem): string => {
+    const spec = (app as any).spec || (app as any).metadata?.spec || {}
+    const source = spec.source || {}
+    const sources = spec.sources
+    if (Array.isArray(sources)) {
+      return JSON.stringify(sources.map((s: any) => ({ r: s.repoURL, p: s.path, t: s.targetRevision, c: s.chart })))
+    }
+    return `${source.repoURL || ''}|${source.path || ''}|${source.targetRevision || ''}|${source.chart || ''}`
+  }
+
+  const firstKey = getSourceKey(appSetApps[0])
+  return appSetApps.every((app) => getSourceKey(app) === firstKey)
+}
+
+/**
+ * Returns status.resources from a local hub Application CR if available.
+ * When the hub is also a target cluster, the local ArgoCD populates status.resources
+ * directly on the hub app — no fleet request needed.
+ */
+function getLocalAppResources(appSetApps: ResourceItem[]): ResourceItem[] | null {
+  for (const app of appSetApps) {
+    const resources = (app as any).status?.resources
+    if (Array.isArray(resources) && resources.length > 0) return resources
+  }
+  return null
+}
+
+/** Attempts to fetch status.resources from the first reachable Application. */
+async function fetchFirstAvailableAppResources(
+  validApps: ResourceItem[],
+  namespace: string
+): Promise<ResourceItem[] | null> {
+  for (const app of validApps) {
+    const resources = await fetchSingleAppResources(app, namespace)
+    if (resources) return resources
+  }
+  return null
+}
+
+async function fetchSingleAppResources(application: ResourceItem, namespace: string): Promise<ResourceItem[] | null> {
+  try {
+    const result = await fleetResourceRequest('GET', application.cluster as string, {
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: 'Application',
+      name: application.name as string,
+      namespace,
+    })
+    if ('errorMessage' in result) return null
+    const resources = (result as any)?.status?.resources
+    return Array.isArray(resources) ? resources : null
+  } catch {
+    return null
+  }
 }
 
 /**
