@@ -113,6 +113,7 @@ describe('ArgoWizard tests', () => {
 
   test('should have danger alert', async () => {
     nockIgnoreOperatorCheck(true)
+    nockIgnorePlacementDebug()
     render(
       <RecoilRoot>
         <MemoryRouter initialEntries={[NavigationPath.createApplicationArgo]}>

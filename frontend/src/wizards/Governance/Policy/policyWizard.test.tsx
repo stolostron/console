@@ -17,6 +17,7 @@ import { waitForText } from '../../../lib/test-util'
 import { Policy } from '../../../resources'
 import { WizardSyncEditor } from '../../../routes/Governance/policies/CreatePolicy'
 import { isExistingTemplateName, PolicyWizard } from './PolicyWizard'
+import { nockIgnorePlacementDebug } from '~/lib/nock-util'
 
 describe('ExistingTemplateName', () => {
   test('should return false for non-existing name', () => {
@@ -128,6 +129,7 @@ function TestPolicyWizardOperatorPolicy() {
 
 describe('Policy wizard', () => {
   test('can show correct cluster sets dropdown', async () => {
+    nockIgnorePlacementDebug()
     const { container } = render(<TestPolicyWizard />)
 
     const nameTextbox = screen.getByRole('textbox', { name: /name/i })
@@ -296,6 +298,7 @@ describe('Policy wizard', () => {
   })
 
   test('default tolerations are set when creating new placement', async () => {
+    nockIgnorePlacementDebug()
     render(<TestPolicyWizard yamlEditor={() => <WizardSyncEditor />} />)
 
     const nameTextbox = screen.getByRole('textbox', { name: /name/i })
