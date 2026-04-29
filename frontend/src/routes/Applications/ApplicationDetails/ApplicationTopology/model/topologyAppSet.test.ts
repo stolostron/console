@@ -988,6 +988,337 @@ describe('getAppSetTopology', () => {
     expect(toolbarWithActiveTypes.setAllTypes).toHaveBeenCalled()
   })
 
+  it('should fetch resources individually for pull model with non-uniform sources (matrix generator)', async () => {
+    const mockFleetResourceRequest = fleetResourceRequest as jest.MockedFunction<typeof fleetResourceRequest>
+    // Two different apps fetched individually due to non-uniform sources
+    mockFleetResourceRequest
+      .mockResolvedValueOnce({
+        status: {
+          resources: [
+            { kind: 'Deployment', name: 'app-a', namespace: 'default', version: 'v1', group: 'apps' },
+            {
+              kind: 'CustomResourceDefinition',
+              name: 'crds-a.example.com',
+              version: 'v1',
+              group: 'apiextensions.k8s.io',
+              health: { status: 'Healthy' },
+            },
+          ],
+        },
+      } as any)
+      .mockResolvedValueOnce({
+        status: {
+          resources: [
+            { kind: 'Deployment', name: 'app-b', namespace: 'other', version: 'v1', group: 'apps' },
+            {
+              kind: 'StorageClass',
+              name: 'sc-b',
+              version: 'v1',
+              group: 'storage.k8s.io',
+              health: { status: 'Healthy' },
+            },
+          ],
+        },
+      } as any)
+
+    mockSearchClient.query.mockResolvedValueOnce({
+      loading: false,
+      networkStatus: 7,
+      data: {
+        searchResult: [
+          {
+            items: [
+              {
+                _uid: 'uid-1',
+                name: 'matrix-app-cluster-1',
+                namespace: 'openshift-gitops',
+                cluster: 'cluster-1',
+                kind: 'Application',
+                apigroup: 'argoproj.io',
+              },
+              {
+                _uid: 'uid-2',
+                name: 'matrix-app-cluster-2',
+                namespace: 'openshift-gitops',
+                cluster: 'cluster-2',
+                kind: 'Application',
+                apigroup: 'argoproj.io',
+              },
+            ],
+            related: [],
+          },
+        ],
+      },
+    })
+
+    const application: ApplicationModel = {
+      name: 'matrix-app',
+      namespace: 'openshift-gitops',
+      app: {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'ApplicationSet',
+        metadata: { name: 'matrix-app', namespace: 'openshift-gitops' },
+        spec: { generators: [{}] },
+      },
+      isArgoApp: false,
+      isAppSet: true,
+      isOCPApp: false,
+      isFluxApp: false,
+      isAppSetPullModel: true,
+      appSetClusters: [{ name: 'cluster-1' }, { name: 'cluster-2' }],
+      appSetApps: [
+        {
+          metadata: { name: 'matrix-app-cluster-1' },
+          spec: { source: { repoURL: 'https://git.io/repo', path: 'path-a', targetRevision: 'main' } },
+        },
+        {
+          metadata: { name: 'matrix-app-cluster-2' },
+          spec: { source: { repoURL: 'https://git.io/repo', path: 'path-b', targetRevision: 'main' } },
+        },
+      ] as any,
+    }
+
+    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
+
+    // Both apps should have been fetched individually since sources differ
+    expect(mockFleetResourceRequest).toHaveBeenCalledTimes(2)
+    // Resources from both apps should appear in topology
+    const crdNode = result.nodes.find((n) => n.type === 'customresourcedefinition' && n.name === 'crds-a.example.com')
+    expect(crdNode).toBeDefined()
+    const scNode = result.nodes.find((n) => n.type === 'storageclass' && n.name === 'sc-b')
+    expect(scNode).toBeDefined()
+  })
+
+  it('should handle pull model when fleet request fails and no local resources available', async () => {
+    const mockFleetResourceRequest = fleetResourceRequest as jest.MockedFunction<typeof fleetResourceRequest>
+    mockFleetResourceRequest.mockResolvedValueOnce({ errorMessage: 'cluster unavailable' } as any)
+
+    mockSearchClient.query.mockResolvedValueOnce({
+      loading: false,
+      networkStatus: 7,
+      data: {
+        searchResult: [
+          {
+            items: [
+              {
+                _uid: 'uid-fail',
+                name: 'fail-app-cluster-1',
+                namespace: 'openshift-gitops',
+                cluster: 'cluster-1',
+                kind: 'Application',
+                apigroup: 'argoproj.io',
+              },
+            ],
+            related: [],
+          },
+        ],
+      },
+    })
+
+    const application: ApplicationModel = {
+      name: 'fail-app',
+      namespace: 'openshift-gitops',
+      app: {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'ApplicationSet',
+        metadata: { name: 'fail-app', namespace: 'openshift-gitops' },
+        spec: { generators: [{}] },
+      },
+      isArgoApp: false,
+      isAppSet: true,
+      isOCPApp: false,
+      isFluxApp: false,
+      isAppSetPullModel: true,
+      appSetClusters: [{ name: 'cluster-1' }],
+      appSetApps: [
+        {
+          metadata: { name: 'fail-app-cluster-1' },
+          spec: { source: { repoURL: 'https://git.io/r', path: 'p', targetRevision: 'main' } },
+        },
+      ] as any,
+    }
+
+    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
+
+    // Should still produce a valid topology (just without the expected resources from fleet)
+    expect(result.nodes).toBeDefined()
+    expect(result.links).toBeDefined()
+  })
+
+  it('should handle pull model with no appSetApps gracefully', async () => {
+    const application: ApplicationModel = {
+      name: 'empty-app',
+      namespace: 'openshift-gitops',
+      app: {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'ApplicationSet',
+        metadata: { name: 'empty-app', namespace: 'openshift-gitops' },
+        spec: { generators: [{}] },
+      },
+      isArgoApp: false,
+      isAppSet: true,
+      isOCPApp: false,
+      isFluxApp: false,
+      isAppSetPullModel: true,
+      appSetClusters: [{ name: 'cluster-1' }],
+      appSetApps: [] as any,
+    }
+
+    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
+
+    expect(result.nodes).toBeDefined()
+    expect(result.links).toBeDefined()
+  })
+
+  it('should use local hub app resources without fleet request when hub has status.resources', async () => {
+    const mockFleetResourceRequest = fleetResourceRequest as jest.MockedFunction<typeof fleetResourceRequest>
+    mockFleetResourceRequest.mockClear()
+
+    mockSearchClient.query.mockResolvedValueOnce({
+      loading: false,
+      networkStatus: 7,
+      data: {
+        searchResult: [
+          {
+            items: [
+              {
+                _uid: 'uid-hub',
+                name: 'hub-app-managed-1',
+                namespace: 'openshift-gitops',
+                cluster: 'managed-1',
+                kind: 'Application',
+                apigroup: 'argoproj.io',
+              },
+            ],
+            related: [],
+          },
+        ],
+      },
+    })
+
+    const application: ApplicationModel = {
+      name: 'hub-app',
+      namespace: 'openshift-gitops',
+      app: {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'ApplicationSet',
+        metadata: { name: 'hub-app', namespace: 'openshift-gitops' },
+        spec: { generators: [{}] },
+      },
+      isArgoApp: false,
+      isAppSet: true,
+      isOCPApp: false,
+      isFluxApp: false,
+      isAppSetPullModel: true,
+      appSetClusters: [{ name: 'managed-1' }],
+      appSetApps: [
+        {
+          metadata: { name: 'hub-app-managed-1' },
+          spec: { source: { repoURL: 'https://git.io/repo', path: 'deploy', targetRevision: 'main' } },
+          status: {
+            resources: [
+              {
+                kind: 'StorageClass',
+                name: 'local-sc',
+                version: 'v1',
+                group: 'storage.k8s.io',
+                health: { status: 'Healthy' },
+              },
+            ],
+          },
+        },
+      ] as any,
+    }
+
+    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
+
+    // No fleet request needed — local hub data was used
+    expect(mockFleetResourceRequest).not.toHaveBeenCalled()
+    const scNode = result.nodes.find((n) => n.type === 'storageclass' && n.name === 'local-sc')
+    expect(scNode).toBeDefined()
+  })
+
+  it('should handle pull model with sources array in spec for uniformity check', async () => {
+    const mockFleetResourceRequest = fleetResourceRequest as jest.MockedFunction<typeof fleetResourceRequest>
+    mockFleetResourceRequest.mockResolvedValueOnce({
+      status: {
+        resources: [
+          {
+            kind: 'Deployment',
+            name: 'multi-src-deploy',
+            namespace: 'default',
+            version: 'v1',
+            group: 'apps',
+            health: { status: 'Healthy' },
+          },
+        ],
+      },
+    } as any)
+
+    mockSearchClient.query.mockResolvedValueOnce({
+      loading: false,
+      networkStatus: 7,
+      data: {
+        searchResult: [
+          {
+            items: [
+              {
+                _uid: 'uid-ms1',
+                name: 'multi-src-cluster-1',
+                namespace: 'openshift-gitops',
+                cluster: 'cluster-1',
+                kind: 'Application',
+                apigroup: 'argoproj.io',
+              },
+              {
+                _uid: 'uid-ms2',
+                name: 'multi-src-cluster-2',
+                namespace: 'openshift-gitops',
+                cluster: 'cluster-2',
+                kind: 'Application',
+                apigroup: 'argoproj.io',
+              },
+            ],
+            related: [],
+          },
+        ],
+      },
+    })
+
+    const application: ApplicationModel = {
+      name: 'multi-src',
+      namespace: 'openshift-gitops',
+      app: {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'ApplicationSet',
+        metadata: { name: 'multi-src', namespace: 'openshift-gitops' },
+        spec: { generators: [{}] },
+      },
+      isArgoApp: false,
+      isAppSet: true,
+      isOCPApp: false,
+      isFluxApp: false,
+      isAppSetPullModel: true,
+      appSetClusters: [{ name: 'cluster-1' }, { name: 'cluster-2' }],
+      appSetApps: [
+        {
+          metadata: { name: 'multi-src-cluster-1' },
+          spec: { sources: [{ repoURL: 'https://git.io/repo', path: 'deploy', targetRevision: 'main' }] },
+        },
+        {
+          metadata: { name: 'multi-src-cluster-2' },
+          spec: { sources: [{ repoURL: 'https://git.io/repo', path: 'deploy', targetRevision: 'main' }] },
+        },
+      ] as any,
+    }
+
+    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
+
+    // Uniform sources array — only one fleet request needed
+    expect(mockFleetResourceRequest).toHaveBeenCalledTimes(1)
+    expect(result.nodes.find((n) => n.type === 'deployment' && n.name === 'multi-src-deploy')).toBeDefined()
+  })
+
   it('should filter by active applications when provided', async () => {
     mockSearchClient.query.mockResolvedValue({
       loading: false,

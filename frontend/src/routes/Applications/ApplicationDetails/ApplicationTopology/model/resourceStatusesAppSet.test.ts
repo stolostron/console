@@ -97,6 +97,229 @@ describe('getAppSetResourceStatuses', () => {
       namespace: 'openshift-gitops',
     })
   })
+
+  it('fetches each app individually when sources differ (non-uniform/matrix)', async () => {
+    const mockFleetResourceRequest = fleetResourceRequest as jest.MockedFunction<typeof fleetResourceRequest>
+    mockFleetResourceRequest
+      .mockResolvedValueOnce({
+        status: {
+          resources: [{ kind: 'Deployment', name: 'deploy-a', namespace: 'ns-a', version: 'v1', group: 'apps' }],
+        },
+      } as any)
+      .mockResolvedValueOnce({
+        status: {
+          resources: [{ kind: 'Deployment', name: 'deploy-b', namespace: 'ns-b', version: 'v1', group: 'apps' }],
+        },
+      } as any)
+
+    const matrixApp: AppSetApplicationModel = {
+      name: 'matrix-app',
+      namespace: 'openshift-gitops',
+      appSetApps: [
+        {
+          metadata: { name: 'matrix-app-cluster-1', namespace: 'openshift-gitops' },
+          spec: {
+            destination: { namespace: 'ns-a' },
+            source: { repoURL: 'https://git.io/repo', path: 'path-a', targetRevision: 'main' },
+          },
+        },
+        {
+          metadata: { name: 'matrix-app-cluster-2', namespace: 'openshift-gitops' },
+          spec: {
+            destination: { namespace: 'ns-b' },
+            source: { repoURL: 'https://git.io/repo', path: 'path-b', targetRevision: 'main' },
+          },
+        },
+      ],
+      appSetClusters: [
+        { name: 'cluster-1', namespace: 'cluster-1', status: 'ok', created: '2024-01-01' },
+        { name: 'cluster-2', namespace: 'cluster-2', status: 'ok', created: '2024-01-01' },
+      ],
+    }
+
+    const matrixAppData: AppSetApplicationData = {
+      relatedKinds: ['deployment'],
+      targetNamespaces: [],
+    }
+
+    const matrixSearchQuery = {
+      operationName: 'searchResultItemsAndRelatedItems',
+      variables: {
+        input: [
+          {
+            keywords: [],
+            filters: [
+              { property: 'kind', values: ['deployment'] },
+              { property: 'namespace', values: ['ns-a', 'ns-b'] },
+              { property: 'cluster', values: ['cluster-1', 'cluster-2'] },
+            ],
+            relatedKinds: ['cluster', 'pod', 'replicaset', 'replicationcontroller'],
+          },
+        ],
+      },
+      query:
+        'query searchResultItemsAndRelatedItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    related {\n      kind\n      items\n      __typename\n    }\n    __typename\n  }\n}',
+    }
+
+    const matrixSearchResponse = {
+      data: { searchResult: [{ __typename: 'SearchResult', items: [], related: null }] },
+    }
+
+    const search = nockSearch(matrixSearchQuery, matrixSearchResponse)
+    await waitFor(() => expect(search.isDone()).toBeTruthy())
+    const result = await getAppSetResourceStatuses(matrixApp, matrixAppData)
+    expect(result.resourceStatuses).toBeDefined()
+    // Both apps should have been fetched individually
+    expect(mockFleetResourceRequest).toHaveBeenCalledTimes(2)
+  })
+
+  it('returns early when all apps already have resources populated (non-uniform)', async () => {
+    const mockFleetResourceRequest = fleetResourceRequest as jest.MockedFunction<typeof fleetResourceRequest>
+    mockFleetResourceRequest.mockClear()
+
+    const prePopulatedApp: AppSetApplicationModel = {
+      name: 'prepop-app',
+      namespace: 'openshift-gitops',
+      appSetApps: [
+        {
+          metadata: { name: 'prepop-app-cluster-1', namespace: 'openshift-gitops' },
+          spec: {
+            destination: { namespace: 'default' },
+            source: { repoURL: 'https://git.io/repo', path: 'path-a', targetRevision: 'main' },
+          },
+          status: {
+            resources: [{ kind: 'Deployment', name: 'deploy-a', namespace: 'default', version: 'v1', group: 'apps' }],
+          },
+        },
+        {
+          metadata: { name: 'prepop-app-cluster-2', namespace: 'openshift-gitops' },
+          spec: {
+            destination: { namespace: 'other' },
+            source: { repoURL: 'https://git.io/repo', path: 'path-b', targetRevision: 'main' },
+          },
+          status: {
+            resources: [{ kind: 'Deployment', name: 'deploy-b', namespace: 'other', version: 'v1', group: 'apps' }],
+          },
+        },
+      ],
+      appSetClusters: [
+        { name: 'cluster-1', namespace: 'cluster-1', status: 'ok', created: '2024-01-01' },
+        { name: 'cluster-2', namespace: 'cluster-2', status: 'ok', created: '2024-01-01' },
+      ],
+    }
+
+    const prePopAppData: AppSetApplicationData = {
+      relatedKinds: ['deployment'],
+      targetNamespaces: [],
+    }
+
+    const prePopSearchQuery = {
+      operationName: 'searchResultItemsAndRelatedItems',
+      variables: {
+        input: [
+          {
+            keywords: [],
+            filters: [
+              { property: 'kind', values: ['deployment'] },
+              { property: 'namespace', values: ['default', 'other'] },
+              { property: 'cluster', values: ['cluster-1', 'cluster-2'] },
+            ],
+            relatedKinds: ['cluster', 'pod', 'replicaset', 'replicationcontroller'],
+          },
+        ],
+      },
+      query:
+        'query searchResultItemsAndRelatedItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    related {\n      kind\n      items\n      __typename\n    }\n    __typename\n  }\n}',
+    }
+
+    const prePopSearchResponse = {
+      data: { searchResult: [{ __typename: 'SearchResult', items: [], related: null }] },
+    }
+
+    const search = nockSearch(prePopSearchQuery, prePopSearchResponse)
+    await waitFor(() => expect(search.isDone()).toBeTruthy())
+    const result = await getAppSetResourceStatuses(prePopulatedApp, prePopAppData)
+    expect(result.resourceStatuses).toBeDefined()
+    // No fleet requests since all apps already have resources
+    expect(mockFleetResourceRequest).not.toHaveBeenCalled()
+  })
+
+  it('handles sources array in spec for uniformity check', async () => {
+    const mockFleetResourceRequest = fleetResourceRequest as jest.MockedFunction<typeof fleetResourceRequest>
+    mockFleetResourceRequest.mockResolvedValueOnce({
+      status: {
+        resources: [
+          { kind: 'Deployment', name: 'multi-src-deploy', namespace: 'default', version: 'v1', group: 'apps' },
+        ],
+      },
+    } as any)
+
+    const multiSourceApp: AppSetApplicationModel = {
+      name: 'multi-src',
+      namespace: 'openshift-gitops',
+      appSetApps: [
+        {
+          metadata: { name: 'multi-src-managed-1', namespace: 'openshift-gitops' },
+          spec: {
+            destination: { namespace: 'default', server: 'https://managed-1.example.com' },
+            sources: [
+              { repoURL: 'https://git.io/repo', path: 'deploy', targetRevision: 'main' },
+              { repoURL: 'https://git.io/charts', chart: 'my-chart', targetRevision: '1.0.0' },
+            ],
+          } as any,
+        },
+        {
+          metadata: { name: 'multi-src-managed-2', namespace: 'openshift-gitops' },
+          spec: {
+            destination: { namespace: 'default', server: 'https://managed-2.example.com' },
+            sources: [
+              { repoURL: 'https://git.io/repo', path: 'deploy', targetRevision: 'main' },
+              { repoURL: 'https://git.io/charts', chart: 'my-chart', targetRevision: '1.0.0' },
+            ],
+          } as any,
+        },
+      ],
+      appSetClusters: [
+        { name: 'managed-1', namespace: 'managed-1', status: 'ok', created: '2024-01-01' },
+        { name: 'managed-2', namespace: 'managed-2', status: 'ok', created: '2024-01-01' },
+      ],
+    }
+
+    const multiSrcAppData: AppSetApplicationData = {
+      relatedKinds: ['deployment'],
+      targetNamespaces: [],
+    }
+
+    const multiSrcSearchQuery = {
+      operationName: 'searchResultItemsAndRelatedItems',
+      variables: {
+        input: [
+          {
+            keywords: [],
+            filters: [
+              { property: 'kind', values: ['deployment'] },
+              { property: 'namespace', values: ['default'] },
+              { property: 'cluster', values: ['managed-1', 'managed-2'] },
+            ],
+            relatedKinds: ['cluster', 'pod', 'replicaset', 'replicationcontroller'],
+          },
+        ],
+      },
+      query:
+        'query searchResultItemsAndRelatedItems($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n    related {\n      kind\n      items\n      __typename\n    }\n    __typename\n  }\n}',
+    }
+
+    const multiSrcSearchResponse = {
+      data: { searchResult: [{ __typename: 'SearchResult', items: [], related: null }] },
+    }
+
+    const search = nockSearch(multiSrcSearchQuery, multiSrcSearchResponse)
+    await waitFor(() => expect(search.isDone()).toBeTruthy())
+    const result = await getAppSetResourceStatuses(multiSourceApp, multiSrcAppData)
+    expect(result.resourceStatuses).toBeDefined()
+    // Uniform sources array — only one fleet request
+    expect(mockFleetResourceRequest).toHaveBeenCalledTimes(1)
+  })
 })
 
 interface TestAppSetApplicationData extends AppSetApplicationData {
