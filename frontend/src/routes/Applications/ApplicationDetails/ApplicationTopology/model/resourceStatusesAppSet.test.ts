@@ -26,7 +26,12 @@ describe('getAppSetResourceStatuses', () => {
       metadata: { name: 'pull-app-managed-1', namespace: 'openshift-gitops' },
       status: {
         resources: [
-          { kind: 'CustomResourceDefinition', name: 'widgets.example.com', version: 'v1', group: 'apiextensions.k8s.io' },
+          {
+            kind: 'CustomResourceDefinition',
+            name: 'widgets.example.com',
+            version: 'v1',
+            group: 'apiextensions.k8s.io',
+          },
           { kind: 'Deployment', name: 'my-app', namespace: 'default', version: 'v1', group: 'apps' },
         ],
       },

@@ -485,7 +485,12 @@ describe('getAppSetTopology', () => {
           spec: {},
           status: {
             resources: [
-              { kind: 'CustomResourceDefinition', name: 'widgets.example.com', version: 'v1', group: 'apiextensions.k8s.io' },
+              {
+                kind: 'CustomResourceDefinition',
+                name: 'widgets.example.com',
+                version: 'v1',
+                group: 'apiextensions.k8s.io',
+              },
               { kind: 'Deployment', name: 'my-app', namespace: 'default', version: 'v1', group: 'apps' },
             ],
           },
@@ -495,7 +500,12 @@ describe('getAppSetTopology', () => {
           spec: {},
           status: {
             resources: [
-              { kind: 'CustomResourceDefinition', name: 'widgets.example.com', version: 'v1', group: 'apiextensions.k8s.io' },
+              {
+                kind: 'CustomResourceDefinition',
+                name: 'widgets.example.com',
+                version: 'v1',
+                group: 'apiextensions.k8s.io',
+              },
               { kind: 'Deployment', name: 'my-app', namespace: 'default', version: 'v1', group: 'apps' },
             ],
           },
@@ -506,7 +516,9 @@ describe('getAppSetTopology', () => {
     const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
 
     // CRD should appear exactly once (deduplicated across clusters)
-    const crdNodes = result.nodes.filter((n) => n.type === 'customresourcedefinition' && n.name === 'widgets.example.com')
+    const crdNodes = result.nodes.filter(
+      (n) => n.type === 'customresourcedefinition' && n.name === 'widgets.example.com'
+    )
     expect(crdNodes).toHaveLength(1)
 
     // The single CRD node should have both clusters in clustersNames
@@ -720,9 +732,28 @@ describe('getAppSetTopology', () => {
       metadata: { name: 'test-pullmodel-crd-managed-cluster-1', namespace: 'openshift-gitops' },
       status: {
         resources: [
-          { kind: 'Deployment', name: 'my-app', namespace: 'default', version: 'v1', group: 'apps', health: { status: 'Healthy' } },
-          { kind: 'CustomResourceDefinition', name: 'widgets.example.com', version: 'v1', group: 'apiextensions.k8s.io', health: { status: 'Healthy' } },
-          { kind: 'StorageClass', name: 'fast-storage', version: 'v1', group: 'storage.k8s.io', health: { status: 'Healthy' } },
+          {
+            kind: 'Deployment',
+            name: 'my-app',
+            namespace: 'default',
+            version: 'v1',
+            group: 'apps',
+            health: { status: 'Healthy' },
+          },
+          {
+            kind: 'CustomResourceDefinition',
+            name: 'widgets.example.com',
+            version: 'v1',
+            group: 'apiextensions.k8s.io',
+            health: { status: 'Healthy' },
+          },
+          {
+            kind: 'StorageClass',
+            name: 'fast-storage',
+            version: 'v1',
+            group: 'storage.k8s.io',
+            health: { status: 'Healthy' },
+          },
         ],
       },
     } as any)
@@ -803,8 +834,20 @@ describe('getAppSetTopology', () => {
       metadata: { name: 'test-pullmodel-status-managed-cluster-1', namespace: 'openshift-gitops' },
       status: {
         resources: [
-          { kind: 'StorageClass', name: 'fast-storage', version: 'v1', group: 'storage.k8s.io', health: { status: 'Healthy' } },
-          { kind: 'CustomResourceDefinition', name: 'missing.example.com', version: 'v1', group: 'apiextensions.k8s.io', health: { status: 'Missing' } },
+          {
+            kind: 'StorageClass',
+            name: 'fast-storage',
+            version: 'v1',
+            group: 'storage.k8s.io',
+            health: { status: 'Healthy' },
+          },
+          {
+            kind: 'CustomResourceDefinition',
+            name: 'missing.example.com',
+            version: 'v1',
+            group: 'apiextensions.k8s.io',
+            health: { status: 'Missing' },
+          },
         ],
       },
     } as any)
