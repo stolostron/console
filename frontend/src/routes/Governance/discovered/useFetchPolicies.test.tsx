@@ -5,6 +5,7 @@ import { waitFor } from '@testing-library/react'
 import { useFetchPolicies } from './useFetchPolicies'
 import { renderHook } from '@testing-library/react-hooks'
 import { RecoilRoot } from 'recoil'
+import { useSearchResultItemsAndRelatedItemsQuery } from '../../Search/search-sdk/search-sdk'
 
 /** Stable identity — a new `data` object every render can make Apollo re-render until OOM. */
 const mockSearchQueryResult = {
@@ -86,6 +87,10 @@ jest.mock('../../Search/search-sdk/search-sdk', () => ({
 }))
 
 describe('useFetchPolicies custom hook', () => {
+  afterEach(() => {
+    ;(useSearchResultItemsAndRelatedItemsQuery as jest.Mock).mockReturnValue(mockSearchQueryResult)
+  })
+
   test('Should parse discovered policy labels', async () => {
     const { result } = renderHook(() => useFetchPolicies(), { wrapper: RecoilRoot })
 
@@ -94,6 +99,53 @@ describe('useFetchPolicies custom hook', () => {
     })
 
     expect(JSON.stringify(result.current.labelData)).toEqual(JSON.stringify(labelData))
+  })
+
+  test('stays in fetching state while search is loading', async () => {
+    ;(useSearchResultItemsAndRelatedItemsQuery as jest.Mock).mockReturnValue({
+      data: undefined,
+      loading: true,
+      error: undefined,
+    })
+
+    const { result } = renderHook(() => useFetchPolicies(), { wrapper: RecoilRoot })
+
+    await waitFor(() => {
+      expect(result.current.isFetching).toBe(true)
+    })
+    expect(result.current.policyItems).toBeUndefined()
+  })
+
+  test('sets isFetching to false and exposes the error when search returns an error', async () => {
+    ;(useSearchResultItemsAndRelatedItemsQuery as jest.Mock).mockReturnValue({
+      data: undefined,
+      loading: false,
+      error: new Error('search failed'),
+    })
+
+    const { result } = renderHook(() => useFetchPolicies(), { wrapper: RecoilRoot })
+
+    await waitFor(() => {
+      expect(result.current.isFetching).toBe(false)
+    })
+    expect(result.current.err).toEqual(new Error('search failed'))
+    expect(result.current.policyItems).toBeUndefined()
+  })
+
+  test('sets policyItems and relatedResources to empty arrays when search returns no results', async () => {
+    ;(useSearchResultItemsAndRelatedItemsQuery as jest.Mock).mockReturnValue({
+      data: { searchResult: [] },
+      loading: false,
+      error: undefined,
+    })
+
+    const { result } = renderHook(() => useFetchPolicies(), { wrapper: RecoilRoot })
+
+    await waitFor(() => {
+      expect(result.current.isFetching).toBe(false)
+    })
+    expect(result.current.policyItems).toEqual([])
+    expect(result.current.relatedResources).toEqual([])
   })
 })
 
