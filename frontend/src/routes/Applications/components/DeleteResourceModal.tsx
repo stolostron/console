@@ -59,7 +59,7 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
     } else if (
       props.resource.kind === ApplicationSetKind &&
       removeAppSetResource &&
-      props.appSetsSharingPlacement?.length === 0
+      !props.appSetsSharingPlacement?.length
     ) {
       childResources = [
         {
