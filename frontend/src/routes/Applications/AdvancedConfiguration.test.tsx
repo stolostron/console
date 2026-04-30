@@ -37,11 +37,11 @@ import {
   NamespaceApiVersion,
   NamespaceKind,
   Placement,
+  PlacementApiVersionBeta,
   PlacementDecision,
   PlacementDecisionApiVersion,
   PlacementDecisionKind,
   PlacementKind,
-  PlacementApiVersionBeta,
   Subscription,
   SubscriptionApiVersion,
   SubscriptionKind,
@@ -285,7 +285,7 @@ describe('advanced configuration page', () => {
       </RecoilRoot>
     )
     await waitForText(
-      'This page will be removed in a future release. Placements will move to a central location under Infrastructure > Clusters > Placements. You can also view placement details directly within individual applications or policies.'
+      'This page will be removed in a future release. Placements are now managed under Infrastructure > Clusters > Placements. You can also view placement details directly within individual applications or policies.'
     )
   })
 
