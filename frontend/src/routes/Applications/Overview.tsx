@@ -1054,7 +1054,6 @@ export default function ApplicationsOverview() {
               open: true,
               canRemove: resource.kind === ApplicationSetKind ? canDeleteApplicationSet : canDeleteApplication,
               resource: resource,
-              errors: undefined,
               warnings: modalWarnings,
               loading: false,
               selected: appChildResources[0], // children

@@ -346,7 +346,6 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
           open: true,
           canRemove: canDeleteResource,
           resource: item,
-          errors: undefined,
           loading: false,
           appKind: item.kind,
           close: () => {
