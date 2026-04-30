@@ -1327,7 +1327,7 @@
   "Edit policy set": "정책 세트 편집",
   "Edit role assignment": "역할 할당 편집",
   "Edit subscription": "서브스크립션 편집",
-  "Edit the disk or contact your cluster admin for further details._0": "자세한 내용은 디스크를 편집하거나 클러스터 관리자에게 문의하십시오.",
+  "Edit the disk or contact your cluster admin for further details.": "자세한 내용은 디스크를 편집하거나 클러스터 관리자에게 문의하십시오.",
   "Edit time window": "시간 창 편집",
   "Edit VirtualMachine": "VirtualMachine 편집",
   "Edit VirtualMachineSnapshot": "VirtualMachineSnapshot 편집",
