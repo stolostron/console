@@ -768,18 +768,13 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
             isInline
             variant="warning"
             actionLinks={
-              <AlertActionLink
-                component="a"
-                target="_blank"
-                rel="noreferrer"
-                href={DOC_LINKS.APPLICATIONS_ADVANCED_CONFIGURATION}
-              >
+              <AlertActionLink component="a" target="_blank" rel="noreferrer" href={DOC_LINKS.DEPRECATIONS_ACM}>
                 {t('Learn more')}
               </AlertActionLink>
             }
           >
             {t(
-              'This page will be removed in a future release. Placements will move to a central location under Infrastructure > Clusters > Placements. You can also view placement details directly within individual applications or policies.'
+              'This page will be removed in a future release. Placements are now managed under Infrastructure > Clusters > Placements. You can also view placement details directly within individual applications or policies.'
             )}
           </Alert>
         )}
