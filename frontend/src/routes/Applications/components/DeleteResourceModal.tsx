@@ -83,7 +83,15 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
       })
       .catch((err: unknown) => {
         setIsDeleting(false)
-        setDeleteResourceError(err instanceof Error ? err.message : props.t('An unknown error occurred.'))
+        let message: string
+        if (err instanceof Error) {
+          message = err.message
+        } else if (typeof err === 'string') {
+          message = err
+        } else {
+          message = props.t('An unknown error occurred.')
+        }
+        setDeleteResourceError(message)
       })
   }
 
