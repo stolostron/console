@@ -303,6 +303,7 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
         <Button
           key="cancel"
           variant="link"
+          isDisabled={isDeleting}
           onClick={() => {
             setRemoveAppResources(false)
             setRemoveAppSetResource(false)
