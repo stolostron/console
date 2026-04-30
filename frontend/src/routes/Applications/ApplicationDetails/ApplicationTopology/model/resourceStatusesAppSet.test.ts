@@ -43,7 +43,7 @@ describe('getAppSetResourceStatuses', () => {
       appSetApps: [
         {
           metadata: { name: 'pull-app-managed-1', namespace: 'openshift-gitops' },
-          spec: { destination: { namespace: 'default', server: 'https://managed-1.example.com' } },
+          spec: { destination: { namespace: 'default', name: 'managed-1' } },
         },
       ],
       appSetClusters: [{ name: 'managed-1', namespace: 'managed-1', status: 'ok', created: '2024-01-01' }],
@@ -119,14 +119,14 @@ describe('getAppSetResourceStatuses', () => {
         {
           metadata: { name: 'matrix-app-cluster-1', namespace: 'openshift-gitops' },
           spec: {
-            destination: { namespace: 'ns-a' },
+            destination: { namespace: 'ns-a', name: 'cluster-1' },
             source: { repoURL: 'https://git.io/repo', path: 'path-a', targetRevision: 'main' },
           },
         },
         {
           metadata: { name: 'matrix-app-cluster-2', namespace: 'openshift-gitops' },
           spec: {
-            destination: { namespace: 'ns-b' },
+            destination: { namespace: 'ns-b', name: 'cluster-2' },
             source: { repoURL: 'https://git.io/repo', path: 'path-b', targetRevision: 'main' },
           },
         },
@@ -261,7 +261,7 @@ describe('getAppSetResourceStatuses', () => {
         {
           metadata: { name: 'multi-src-managed-1', namespace: 'openshift-gitops' },
           spec: {
-            destination: { namespace: 'default', server: 'https://managed-1.example.com' },
+            destination: { namespace: 'default', name: 'managed-1' },
             sources: [
               { repoURL: 'https://git.io/repo', path: 'deploy', targetRevision: 'main' },
               { repoURL: 'https://git.io/charts', chart: 'my-chart', targetRevision: '1.0.0' },
@@ -271,7 +271,7 @@ describe('getAppSetResourceStatuses', () => {
         {
           metadata: { name: 'multi-src-managed-2', namespace: 'openshift-gitops' },
           spec: {
-            destination: { namespace: 'default', server: 'https://managed-2.example.com' },
+            destination: { namespace: 'default', name: 'managed-2' },
             sources: [
               { repoURL: 'https://git.io/repo', path: 'deploy', targetRevision: 'main' },
               { repoURL: 'https://git.io/charts', chart: 'my-chart', targetRevision: '1.0.0' },

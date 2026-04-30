@@ -23,13 +23,14 @@ import {
 import {
   addClusters,
   addTopologyNode,
+  areSourcesUniform,
   createControllerRevisionChild,
   createDataVolumeChild,
   createReplicaChild,
   createVirtualMachineInstance,
+  fetchArgoAppStatusResources,
   getClusterName,
   getResourceTypes,
-  processMultiples,
 } from './topologyUtils'
 import { PlacementDecision } from '../../../../../resources/placement-decision'
 import { Placement } from '../../../../../resources/placement'
@@ -482,92 +483,56 @@ async function fetchPullModelAppResources(
   )
   if (validApps.length === 0) return resourceMap
 
-  const uniform = areAppSourcesUniform(appSetApps)
+  const uniform = areSourcesUniform(appSetApps, (app: ResourceItem) => {
+    const spec = (app as any).spec || (app as any).metadata?.spec || {}
+    return { source: spec.source, sources: spec.sources }
+  })
+  const appResources = await fetchAppResources(validApps, namespace, uniform)
 
-  if (uniform) {
-    // All apps deploy the same manifests — try hub data first, then one fleet request
-    const resources = getLocalAppResources(appSetApps) ?? (await fetchFirstAvailableAppResources(validApps, namespace))
+  for (const app of validApps) {
+    const resources = appResources.get(`${app.name}/${app.cluster}`)
     if (resources) {
-      for (const app of validApps) {
-        resourceMap.set(`${app.name}/${app.cluster}`, resources)
-      }
+      resourceMap.set(`${app.name}/${app.cluster}`, resources)
     }
-  } else {
-    // Sources differ across apps — must fetch each individually
-    const fetchPromises = validApps.map(async (application: ResourceItem) => {
-      const resources = await fetchSingleAppResources(application, namespace)
-      if (resources) {
-        resourceMap.set(`${application.name}/${application.cluster}`, resources)
-      }
-    })
-    await Promise.allSettled(fetchPromises)
   }
 
   return resourceMap
 }
 
 /**
- * Determines whether all Application CRs in the ApplicationSet deploy the same manifests
- * by comparing their source specifications. If all apps have identical source (repoURL + path +
- * targetRevision + chart), they will produce the same resources regardless of which cluster
- * they target.
+ * Fetches status.resources from remote Application CRs.
+ * When uniform is true, fetches once and reuses the result for all apps.
+ * When uniform is false, fetches each app individually in parallel.
  */
-function areAppSourcesUniform(appSetApps: ResourceItem[]): boolean {
-  if (appSetApps.length <= 1) return true
+async function fetchAppResources(
+  apps: ResourceItem[],
+  namespace: string,
+  uniform: boolean
+): Promise<Map<string, ResourceItem[]>> {
+  const resourceMap = new Map<string, ResourceItem[]>()
 
-  const getSourceKey = (app: ResourceItem): string => {
-    const spec = (app as any).spec || (app as any).metadata?.spec || {}
-    const source = spec.source || {}
-    const sources = spec.sources
-    if (Array.isArray(sources)) {
-      return JSON.stringify(sources.map((s: any) => ({ r: s.repoURL, p: s.path, t: s.targetRevision, c: s.chart })))
+  if (uniform) {
+    let sharedResources: ResourceItem[] | null = null
+    for (const app of apps) {
+      sharedResources = await fetchArgoAppStatusResources(app.cluster as string, app.name as string, namespace)
+      if (sharedResources) break
     }
-    return `${source.repoURL || ''}|${source.path || ''}|${source.targetRevision || ''}|${source.chart || ''}`
-  }
-
-  const firstKey = getSourceKey(appSetApps[0])
-  return appSetApps.every((app) => getSourceKey(app) === firstKey)
-}
-
-/**
- * Returns status.resources from a local hub Application CR if available.
- * When the hub is also a target cluster, the local ArgoCD populates status.resources
- * directly on the hub app — no fleet request needed.
- */
-function getLocalAppResources(appSetApps: ResourceItem[]): ResourceItem[] | null {
-  for (const app of appSetApps) {
-    const resources = (app as any).status?.resources
-    if (Array.isArray(resources) && resources.length > 0) return resources
-  }
-  return null
-}
-
-/** Attempts to fetch status.resources from the first reachable Application. */
-async function fetchFirstAvailableAppResources(
-  validApps: ResourceItem[],
-  namespace: string
-): Promise<ResourceItem[] | null> {
-  for (const app of validApps) {
-    const resources = await fetchSingleAppResources(app, namespace)
-    if (resources) return resources
-  }
-  return null
-}
-
-async function fetchSingleAppResources(application: ResourceItem, namespace: string): Promise<ResourceItem[] | null> {
-  try {
-    const result = await fleetResourceRequest('GET', application.cluster as string, {
-      apiVersion: 'argoproj.io/v1alpha1',
-      kind: 'Application',
-      name: application.name as string,
-      namespace,
+    if (sharedResources) {
+      for (const app of apps) {
+        resourceMap.set(`${app.name}/${app.cluster}`, sharedResources)
+      }
+    }
+  } else {
+    const fetchPromises = apps.map(async (app: ResourceItem) => {
+      const resources = await fetchArgoAppStatusResources(app.cluster as string, app.name as string, namespace)
+      if (resources) {
+        resourceMap.set(`${app.name}/${app.cluster}`, resources)
+      }
     })
-    if ('errorMessage' in result) return null
-    const resources = (result as any)?.status?.resources
-    return Array.isArray(resources) ? resources : null
-  } catch {
-    return null
+    await Promise.allSettled(fetchPromises)
   }
+
+  return resourceMap
 }
 
 /**
@@ -671,7 +636,7 @@ function processResources(
   const deduplicatedResources = deduplicateClusterScopedResources(allResources)
 
   // create nodes for each resource
-  processMultiples(deduplicatedResources).forEach((deployable: Record<string, unknown>) => {
+  deduplicatedResources.forEach((deployable: Record<string, unknown>) => {
     const typedDeployable = deployable as unknown as ProcessedDeployableResource
     const {
       name: deployableName,

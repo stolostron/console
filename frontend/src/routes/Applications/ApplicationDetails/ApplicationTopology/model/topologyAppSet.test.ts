@@ -1173,9 +1173,25 @@ describe('getAppSetTopology', () => {
     expect(result.links).toBeDefined()
   })
 
-  it('should use local hub app resources without fleet request when hub has status.resources', async () => {
+  it('should fetch resources via fleet request for uniform pull-model apps', async () => {
     const mockFleetResourceRequest = fleetResourceRequest as jest.MockedFunction<typeof fleetResourceRequest>
     mockFleetResourceRequest.mockClear()
+    mockFleetResourceRequest.mockResolvedValueOnce({
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: 'Application',
+      metadata: { name: 'hub-app-managed-1', namespace: 'openshift-gitops' },
+      status: {
+        resources: [
+          {
+            kind: 'StorageClass',
+            name: 'local-sc',
+            version: 'v1',
+            group: 'storage.k8s.io',
+            health: { status: 'Healthy' },
+          },
+        ],
+      },
+    } as any)
 
     mockSearchClient.query.mockResolvedValueOnce({
       loading: false,
@@ -1218,25 +1234,13 @@ describe('getAppSetTopology', () => {
         {
           metadata: { name: 'hub-app-managed-1' },
           spec: { source: { repoURL: 'https://git.io/repo', path: 'deploy', targetRevision: 'main' } },
-          status: {
-            resources: [
-              {
-                kind: 'StorageClass',
-                name: 'local-sc',
-                version: 'v1',
-                group: 'storage.k8s.io',
-                health: { status: 'Healthy' },
-              },
-            ],
-          },
         },
       ] as any,
     }
 
     const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
 
-    // No fleet request needed — local hub data was used
-    expect(mockFleetResourceRequest).not.toHaveBeenCalled()
+    expect(mockFleetResourceRequest).toHaveBeenCalledTimes(1)
     const scNode = result.nodes.find((n) => n.type === 'storageclass' && n.name === 'local-sc')
     expect(scNode).toBeDefined()
   })

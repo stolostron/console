@@ -2,9 +2,13 @@
 
 import { searchClient } from '../../../../Search/search-sdk/search-client'
 import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
-import { getQueryStringForResource } from '../model/topologyUtils'
+import {
+  areSourcesUniform,
+  fetchArgoAppStatusResources,
+  getAppTargetCluster,
+  getQueryStringForResource,
+} from '../model/topologyUtils'
 import { getArgoSecret } from './resourceStatusesArgo'
-import { fleetResourceRequest } from '../../../../../resources/utils/fleet-resource-request'
 import {
   AppSetApplicationModel,
   AppSetApplicationData,
@@ -23,7 +27,7 @@ import {
  * It handles both namespaced and cluster-scoped resources, and retrieves Argo secrets
  * for authentication purposes.
  *
- * For pull-model ApplicationSets, hub Application CRs may not have status.resources populated.
+ * For pull-model ApplicationSets, hub Application CRs will not have status.resources populated.
  * In that case, this function fetches the remote Application CRs to get the expected resource list.
  *
  * @param application - The ApplicationSet application model containing metadata and app/cluster lists
@@ -42,8 +46,8 @@ export async function getAppSetResourceStatuses(
     appSetClustersList.push(cls.name)
   })
 
-  // For pull-model, hub apps may lack status.resources; fetch from remote clusters if needed
-  const appsWithResources = await ensureAppResources(appSetApps, namespace, appSetClustersList)
+  // For pull-model, hub apps lack status.resources; fetch from remote clusters
+  const appsWithResources = await ensureAppResources(appSetApps, namespace, appSetClusters)
 
   // Get resource statuses by querying the search API
   const resourceStatuses = await getResourceStatuses(name, namespace, appsWithResources, appData, appSetClustersList)
@@ -60,7 +64,7 @@ export async function getAppSetResourceStatuses(
 
 /**
  * Ensures that the Application list has status.resources populated.
- * For pull-model, the hub Application CRs often lack status.resources because ArgoCD
+ * For pull-model, the hub Application CRs lack status.resources because ArgoCD
  * runs on the managed cluster. This function fetches the remote Application CRs to get
  * the expected resource list for cluster-scoped resources (CRDs, StorageClasses, etc.).
  *
@@ -71,108 +75,60 @@ export async function getAppSetResourceStatuses(
 async function ensureAppResources(
   appSetApps: AppSetApplication[],
   namespace: string,
-  clusterNames: string[]
+  clusters: AppSetClusterInfo[]
 ): Promise<AppSetApplication[]> {
-  if (appSetApps.length === 0 || clusterNames.length === 0) {
+  if (
+    appSetApps.length === 0 ||
+    clusters.length === 0 ||
+    appSetApps.every((app) => (app.status?.resources?.length ?? 0) > 0)
+  ) {
+    // if there are no appSets/clusters or we already have all resources populated, no need to fetch
     return appSetApps
   }
 
-  // Check if any hub app already has status.resources (e.g. hub is also a target cluster)
-  const localResources = appSetApps.find((app) => (app.status?.resources?.length ?? 0) > 0)?.status?.resources
+  const sharedResources = areSourcesUniform(appSetApps, (app: AppSetApplication) => ({
+    source: app.spec?.source,
+    sources: (app.spec as any)?.sources,
+  }))
+    ? fetchFirstAvailableResources(appSetApps, namespace, clusters)
+    : undefined
 
-  const uniform = areAppSetSourcesUniform(appSetApps)
-
-  if (uniform) {
-    // All apps deploy the same manifests — use local data if available, otherwise one fleet request
-    const sampleResources = localResources ?? (await fetchFirstAvailableResources(appSetApps, namespace, clusterNames))
-    if (!sampleResources) return appSetApps
-
-    return appSetApps.map((app: AppSetApplication) => {
+  return Promise.all(
+    appSetApps.map(async (app: AppSetApplication) => {
       if (app.status?.resources?.length) return app
-      return { ...app, status: { ...app.status, resources: sampleResources } } as AppSetApplication
+      const resources = await (sharedResources ?? fetchSingleAppResources(app, namespace, clusters))
+      if (!resources) return app
+      return { ...app, status: { ...app.status, resources } } as AppSetApplication
     })
-  }
-
-  // If we already have all resources populated, no need to fetch
-  if (localResources && appSetApps.every((app) => (app.status?.resources?.length ?? 0) > 0)) {
-    return appSetApps
-  }
-
-  // Sources differ — fetch each app individually
-  const enrichedApps: AppSetApplication[] = [...appSetApps]
-  const fetchPromises = appSetApps.map(async (app: AppSetApplication, index: number) => {
-    const appName = app.metadata?.name
-    if (!appName) return
-
-    for (const clusterName of clusterNames) {
-      try {
-        const result = await fleetResourceRequest('GET', clusterName, {
-          apiVersion: 'argoproj.io/v1alpha1',
-          kind: 'Application',
-          name: appName,
-          namespace,
-        })
-        if ('errorMessage' in result) continue
-
-        const resources = (result as any)?.status?.resources
-        if (Array.isArray(resources) && resources.length > 0) {
-          enrichedApps[index] = { ...app, status: { ...app.status, resources } } as AppSetApplication
-          return
-        }
-      } catch {
-        // Continue to next cluster
-      }
-    }
-  })
-  await Promise.allSettled(fetchPromises)
-  return enrichedApps
+  )
 }
 
-/** Determines if all apps share the same source configuration. */
-function areAppSetSourcesUniform(appSetApps: AppSetApplication[]): boolean {
-  if (appSetApps.length <= 1) return true
-
-  const getSourceKey = (app: AppSetApplication): string => {
-    const source = app.spec?.source
-    const sources = (app.spec as any)?.sources
-    if (Array.isArray(sources)) {
-      return JSON.stringify(sources.map((s: any) => ({ r: s.repoURL, p: s.path, t: s.targetRevision, c: s.chart })))
-    }
-    return `${source?.repoURL || ''}|${source?.path || ''}|${source?.targetRevision || ''}|${source?.chart || ''}`
-  }
-
-  const firstKey = getSourceKey(appSetApps[0])
-  return appSetApps.every((app) => getSourceKey(app) === firstKey)
-}
-
-/** Fetches status.resources from the first reachable remote Application CR. */
+/** Tries each app in order, returning resources from the first reachable one. */
 async function fetchFirstAvailableResources(
   appSetApps: AppSetApplication[],
   namespace: string,
-  clusterNames: string[]
+  clusters: AppSetClusterInfo[]
 ): Promise<any[] | null> {
   for (const app of appSetApps) {
-    const appName = app.metadata?.name
-    if (!appName) continue
-
-    for (const clusterName of clusterNames) {
-      try {
-        const result = await fleetResourceRequest('GET', clusterName, {
-          apiVersion: 'argoproj.io/v1alpha1',
-          kind: 'Application',
-          name: appName,
-          namespace,
-        })
-        if ('errorMessage' in result) continue
-
-        const resources = (result as any)?.status?.resources
-        if (Array.isArray(resources) && resources.length > 0) return resources
-      } catch {
-        // Continue to next cluster
-      }
-    }
+    const resources = await fetchSingleAppResources(app, namespace, clusters)
+    if (resources) return resources
   }
   return null
+}
+
+/** Resolves the app's target cluster from its destination and fetches status.resources. */
+async function fetchSingleAppResources(
+  app: AppSetApplication,
+  namespace: string,
+  clusters: AppSetClusterInfo[]
+): Promise<any[] | null> {
+  const appName = app.metadata?.name
+  if (!appName) return null
+
+  const clusterName = getAppTargetCluster(app.spec.destination, clusters)
+  if (!clusterName) return null
+
+  return fetchArgoAppStatusResources(clusterName, appName, namespace)
 }
 
 /**
