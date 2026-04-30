@@ -23,4 +23,15 @@ export default defineConfig([
       },
     },
   },
+  {
+    // Node tooling: not in root tsconfig (strict app); use dedicated tsconfig for type-aware lint
+    files: ['i18n-scripts/**/*.ts'],
+    languageOptions: {
+      parserOptions: {
+        projectService: false,
+        tsconfigRootDir: __dirname,
+        project: ['./i18n-scripts/tsconfig.json'],
+      },
+    },
+  },
 ])
