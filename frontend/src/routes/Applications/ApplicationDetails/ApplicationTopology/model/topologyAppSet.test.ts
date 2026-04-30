@@ -526,9 +526,11 @@ describe('getAppSetTopology', () => {
     expect((crdNode as any).specs.clustersNames).toContain('local-cluster')
     expect((crdNode as any).specs.clustersNames).toContain('managed-cluster-1')
 
-    // Namespaced Deployment should still have separate entries per cluster (concatenated into allResources)
+    // Namespaced Deployment should still have separate entries per cluster
     const deployNodes = result.nodes.filter((n) => n.type === 'deployment' && n.name === 'my-app')
-    expect(deployNodes.length).toBeGreaterThanOrEqual(1)
+    expect(deployNodes).toHaveLength(2)
+    const deployIds = deployNodes.map((n) => n.id)
+    expect(deployIds[0]).not.toEqual(deployIds[1])
   })
 
   it('should handle ApplicationSet with app status information', async () => {
