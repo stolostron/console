@@ -144,8 +144,12 @@ describe('openRouteURL', () => {
 })
 
 describe('getAppSetTopology', () => {
+  const mockFleetResourceRequest = fleetResourceRequest as jest.MockedFunction<typeof fleetResourceRequest>
+
   beforeEach(() => {
-    jest.clearAllMocks()
+    mockFleetResourceRequest.mockReset()
+    mockSearchClient.query.mockReset()
+    mockFleetResourceRequest.mockResolvedValue({ errorMessage: 'not available' } as any)
     mockSearchClient.query.mockResolvedValue({
       loading: false,
       networkStatus: 7,
@@ -727,7 +731,6 @@ describe('getAppSetTopology', () => {
   })
 
   it('should include cluster-scoped resources from remote Application status.resources for pull model', async () => {
-    const mockFleetResourceRequest = fleetResourceRequest as jest.MockedFunction<typeof fleetResourceRequest>
     mockFleetResourceRequest.mockResolvedValueOnce({
       apiVersion: 'argoproj.io/v1alpha1',
       kind: 'Application',
@@ -831,7 +834,6 @@ describe('getAppSetTopology', () => {
   })
 
   it('should show resources with healthy status as running for pull model', async () => {
-    const mockFleetResourceRequest = fleetResourceRequest as jest.MockedFunction<typeof fleetResourceRequest>
     mockFleetResourceRequest.mockResolvedValueOnce({
       apiVersion: 'argoproj.io/v1alpha1',
       kind: 'Application',
@@ -992,7 +994,6 @@ describe('getAppSetTopology', () => {
   })
 
   it('should fetch resources individually for pull model with non-uniform sources (matrix generator)', async () => {
-    const mockFleetResourceRequest = fleetResourceRequest as jest.MockedFunction<typeof fleetResourceRequest>
     // Two different apps fetched individually due to non-uniform sources
     mockFleetResourceRequest
       .mockResolvedValueOnce({
@@ -1093,7 +1094,6 @@ describe('getAppSetTopology', () => {
   })
 
   it('should handle pull model when fleet request fails and no local resources available', async () => {
-    const mockFleetResourceRequest = fleetResourceRequest as jest.MockedFunction<typeof fleetResourceRequest>
     mockFleetResourceRequest.mockResolvedValueOnce({ errorMessage: 'cluster unavailable' } as any)
 
     mockSearchClient.query.mockResolvedValueOnce({
@@ -1174,8 +1174,6 @@ describe('getAppSetTopology', () => {
   })
 
   it('should fetch resources via fleet request for uniform pull-model apps', async () => {
-    const mockFleetResourceRequest = fleetResourceRequest as jest.MockedFunction<typeof fleetResourceRequest>
-    mockFleetResourceRequest.mockClear()
     mockFleetResourceRequest.mockResolvedValueOnce({
       apiVersion: 'argoproj.io/v1alpha1',
       kind: 'Application',
@@ -1246,7 +1244,6 @@ describe('getAppSetTopology', () => {
   })
 
   it('should handle pull model with sources array in spec for uniformity check', async () => {
-    const mockFleetResourceRequest = fleetResourceRequest as jest.MockedFunction<typeof fleetResourceRequest>
     mockFleetResourceRequest.mockResolvedValueOnce({
       status: {
         resources: [
