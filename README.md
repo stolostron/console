@@ -51,7 +51,7 @@ A number of the core NPM package dependencies are published from other repositor
 | console branch                           | patternfly-labs/react-form-wizard | stolostron/react-data-view |
 | ---------------------------------------- | --------------------------------- | -------------------------- |
 | main<br/>release-5.0<br/>backplane-5.0<br/>release-5.1<br/>backplane-5.1 | N/A                               | main                       |
-| release-2.17<br/>backplane-2.17          | N/A                               | TBD                        |
+| release-2.17<br/>backplane-2.17          | N/A                               | v3.4.z                     |
 | release-2.16<br/>backplane-2.11          | N/A                               | v2.6.z                     |
 | release-2.15<br/>backplane-2.10          | no longer used, now integrated    | v2.5.z                     |
 | release-2.14<br/>backplane-2.9           | v2.7.z                            | v2.4.z                     |
