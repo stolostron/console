@@ -193,7 +193,6 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
       open: openBrowser,
       historyApiFallback: true,
       compress: true,
-      https: true,
       server: {
         type: 'https',
       },
