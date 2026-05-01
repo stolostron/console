@@ -23,6 +23,7 @@ import {
   getClustersSummaryForPolicySet,
   getPlacementDecisionsForResource,
   getPolicySetPolicies,
+  preserveWhitespace,
 } from '../../common/util'
 import { ClusterPolicyViolationIcons2 } from '../../components/ClusterPolicyViolations'
 import {
@@ -362,7 +363,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
             </SplitItem>
           </Split>
         </Content>
-        <Content component={ContentVariants.p}>{policySet.spec.description}</Content>
+        <Content component={ContentVariants.p}>{preserveWhitespace(policySet.spec.description)}</Content>
       </Content>
       <div>{policySetClusters.length > 0 && renderDonutChart(policySetClusterCompliance, t)}</div>
       <Split>

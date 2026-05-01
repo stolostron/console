@@ -174,11 +174,7 @@ const UnsupportedVolumesAlert: React.FC<{
               ))}
             </Stack>
           </StackItem>
-          <StackItem>
-            {t('Edit the disk or contact your cluster admin for further details.', {
-              count: unsupportedVolumes?.length,
-            })}
-          </StackItem>
+          <StackItem>{t('Edit the disk or contact your cluster admin for further details.')}</StackItem>
           <StackItem>
             <a href={DOC_LINKS.VM_SNAPSHOT} rel="noreferrer" target="_blank">
               {t('Learn more about snapshots')}

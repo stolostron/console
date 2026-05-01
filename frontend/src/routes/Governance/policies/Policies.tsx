@@ -47,7 +47,7 @@ import {
 import { getResourceLabel } from '../../Applications/helpers/resource-helper'
 import { useAddRemediationPolicies } from '../common/useCustom'
 import {
-  formatDescriptionForDropdown,
+  preserveWhitespace,
   getPlacementBindingsForResource,
   getPlacementsForResource,
   getPolicySource,
@@ -653,7 +653,7 @@ export default function PoliciesPage() {
           const controls = item.policy.metadata.annotations?.['policy.open-cluster-management.io/controls']
           const categories = item.policy.metadata.annotations?.['policy.open-cluster-management.io/categories']
           const desc = item.policy.metadata.annotations?.['policy.open-cluster-management.io/description']
-          const formattedDescription = formatDescriptionForDropdown(desc as string)
+          const formattedDescription = preserveWhitespace(desc as string)
           return [
             {
               cells: [
@@ -665,7 +665,7 @@ export default function PoliciesPage() {
                           <DescriptionListGroup>
                             <DescriptionListTerm>{t('Description')}</DescriptionListTerm>
                             <DescriptionListDescription>
-                              {formattedDescription.length > 0 ? (
+                              {formattedDescription ? (
                                 formattedDescription
                               ) : (
                                 <Button

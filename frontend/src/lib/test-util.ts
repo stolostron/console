@@ -495,6 +495,19 @@ export async function clickDropdownAction(actionText: string, buttonLabel = 'Act
   await clickByText(actionText)
 }
 
+/**
+ * Normalizes PatternFly's auto-generated OUIA component IDs so that snapshots
+ * are deterministic regardless of test execution order within a Jest worker.
+ */
+export function normalizeGeneratedOuiaIds(root: HTMLElement) {
+  root.querySelectorAll<HTMLElement>('[data-ouia-component-id]').forEach((el) => {
+    const id = el.dataset.ouiaComponentId
+    if (id) {
+      el.dataset.ouiaComponentId = id.replace(/^(OUIA-Generated-\S+?)-\d+$/, '$1-0')
+    }
+  })
+}
+
 export const CLUSTER_VERSION_MOCK_DEFAULT = {
   version: '4.20',
   isLoading: false,

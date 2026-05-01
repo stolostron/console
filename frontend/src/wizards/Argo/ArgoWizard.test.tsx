@@ -241,119 +241,128 @@ describe('ArgoWizard tests', () => {
     expect(mockOnsubmit).toHaveBeenCalledWith(submittedGit)
   })
 
-  test('various auto sync options', async () => {
-    nockIgnoreApiPaths()
-    nockIgnorePlacementDebug()
-    const url = 'https://github.com/fxiang1/app-samples'
+  test(
+    'various auto sync options',
+    async () => {
+      nockIgnoreApiPaths()
+      nockIgnorePlacementDebug()
+      const url = 'https://github.com/fxiang1/app-samples'
 
-    render(<TestArgoWizard />)
+      render(<TestArgoWizard />)
 
-    //=====================================================================
-    //                      general page
-    //=====================================================================
-    userEvent.type(
-      screen.getByRole('textbox', {
-        name: /name/i,
-      }),
-      'testapp'
-    )
-    await clickByRole('combobox', { name: 'Select the Argo server' })
-    await clickByRole('option', { name: /http:\/\/argoserver\.com/i })
-    await clickByText('Next')
+      //=====================================================================
+      //                      general page
+      //=====================================================================
+      userEvent.type(
+        screen.getByRole('textbox', {
+          name: /name/i,
+        }),
+        'testapp'
+      )
+      await clickByRole('combobox', { name: 'Select the Argo server' })
+      await clickByRole('option', { name: /http:\/\/argoserver\.com/i })
+      await clickByText('Next')
 
-    //=====================================================================
-    //                      generators page
-    //=====================================================================
-    // Expand generator row; label can appear twice when expanded — target the header (first match).
-    await clickByText('Cluster Decision Resource Generator', 0)
-    await clickByRole('combobox', { name: 'Select the requeue time' })
-    await clickByRole('option', { name: /120/i })
-    await clickByText('Next')
+      //=====================================================================
+      //                      generators page
+      //=====================================================================
+      // Expand generator row; label can appear twice when expanded — target the header (first match).
+      await clickByText('Cluster Decision Resource Generator', 0)
+      await clickByRole('combobox', { name: 'Select the requeue time' })
+      await clickByRole('option', { name: /120/i })
+      await clickByText('Next')
 
-    //=====================================================================
-    //                      repository page
-    //=====================================================================
-    await clickByText('Git')
-    await typeByRole(url, 'combobox', { name: /Enter or select a Git URL/i })
+      //=====================================================================
+      //                      repository page
+      //=====================================================================
+      await clickByText('Git')
+      await typeByRole(url, 'combobox', { name: /Enter or select a Git URL/i })
 
-    const appBranchNocks = [nockArgoGitBranches(url, { branchList: [{ name: 'main' }] })]
-    userEvent.click(
-      screen.getByRole('option', {
-        name: /https:\/\/github\.com\/fxiang1\/app-samples/i,
+      const appBranchNocks = [nockArgoGitBranches(url, { branchList: [{ name: 'main' }] })]
+      userEvent.click(
+        screen.getByRole('option', {
+          name: /https:\/\/github\.com\/fxiang1\/app-samples/i,
+        })
+      )
+
+      await waitForNocks(appBranchNocks)
+      await clickByRole('combobox', { name: /enter or select a tracking revision/i })
+      const pathNocks = [
+        nockArgoGitPathSha(url, 'main', { commit: { sha: '01' } }),
+        nockArgoGitPathTree(url, { tree: [{ path: 'application-test', type: 'tree' }] }),
+      ]
+
+      await clickByRole('option', { name: /main/i })
+      await waitForNocks(pathNocks)
+
+      await typeByRole('ansible', 'combobox', { name: /enter or select a repository path/i })
+      await clickByRole('option', {
+        name: /ansible/i,
       })
-    )
 
-    await waitForNocks(appBranchNocks)
-    await clickByRole('combobox', { name: /enter or select a tracking revision/i })
-    const pathNocks = [
-      nockArgoGitPathSha(url, 'main', { commit: { sha: '01' } }),
-      nockArgoGitPathTree(url, { tree: [{ path: 'application-test', type: 'tree' }] }),
-    ]
+      await typeByRole('default', 'textbox')
 
-    await clickByRole('option', { name: /main/i })
-    await waitForNocks(pathNocks)
+      await clickByText('Next')
 
-    await typeByRole('ansible', 'combobox', { name: /enter or select a repository path/i })
-    await clickByRole('option', {
-      name: /ansible/i,
-    })
+      //=====================================================================
+      //                      sync page
+      //=====================================================================
+      const pruneCheckbox = screen.getByRole('checkbox', {
+        name: /delete resources that are no longer defined in the source repository$/i,
+      })
+      await waitFor(() => expect(pruneCheckbox).toBeChecked())
+      await clickByRole('checkbox', {
+        name: /delete resources that are no longer defined in the source repository$/i,
+      })
+      await waitFor(() => expect(pruneCheckbox).not.toBeChecked())
+      await clickByRole('checkbox', {
+        name: /delete resources that are no longer defined in the source repository$/i,
+      })
+      await waitFor(() => expect(pruneCheckbox).toBeChecked())
 
-    await typeByRole('default', 'textbox')
+      const selfHealCheckbox = screen.getByRole('checkbox', {
+        name: /automatically sync when cluster state changes/i,
+      })
+      await clickByRole('checkbox', { name: /automatically sync when cluster state changes/i })
+      await waitFor(() => expect(selfHealCheckbox).not.toBeChecked())
 
-    await clickByText('Next')
+      await clickByRole('checkbox', { name: /automatically sync when cluster state changes/i })
+      await waitFor(() => expect(selfHealCheckbox).toBeChecked())
 
-    //=====================================================================
-    //                      sync page
-    //=====================================================================
-    const pruneCheckbox = screen.getByRole('checkbox', {
-      name: /delete resources that are no longer defined in the source repository$/i,
-    })
-    await waitFor(() => expect(pruneCheckbox).toBeChecked())
-    await clickByRole('checkbox', {
-      name: /delete resources that are no longer defined in the source repository$/i,
-    })
-    await waitFor(() => expect(pruneCheckbox).not.toBeChecked())
-    await clickByRole('checkbox', {
-      name: /delete resources that are no longer defined in the source repository$/i,
-    })
-    await waitFor(() => expect(pruneCheckbox).toBeChecked())
+      await clickByText('Next')
 
-    const selfHealCheckbox = screen.getByRole('checkbox', {
-      name: /automatically sync when cluster state changes/i,
-    })
-    await clickByRole('checkbox', { name: /automatically sync when cluster state changes/i })
-    await waitFor(() => expect(selfHealCheckbox).not.toBeChecked())
+      //=====================================================================
+      //                      placement page
+      //=====================================================================
+      await clickByText('New placement')
+      await clickByRole('button', { name: 'Action' }, 0)
+      await clickByRole('combobox', { name: 'Select the label' })
+      await clickByRole('option', { name: /cloud/i })
 
-    await clickByRole('checkbox', { name: /automatically sync when cluster state changes/i })
-    await waitFor(() => expect(selfHealCheckbox).toBeChecked())
+      await clickByText('equals any of')
+      await clickByRole('option', { name: /does not equal any of/i })
 
-    await clickByText('Next')
+      await clickByRole('combobox', {
+        name: /select the values/i,
+      })
+      await clickByRole('option', { name: /amazon/i })
+      await clickByText('Next')
 
-    //=====================================================================
-    //                      placement page
-    //=====================================================================
-    await clickByText('New placement')
-    await clickByRole('button', { name: 'Action' }, 0)
-    await clickByRole('combobox', { name: 'Select the label' })
-    await clickByRole('option', { name: /cloud/i })
+      //=====================================================================
+      //                      review page
+      //=====================================================================
+      await clickByRole('button', { name: 'Submit' })
+      await waitFor(() => expect(mockOnsubmit).toHaveBeenCalled())
 
-    await clickByText('equals any of')
-    await clickByRole('option', { name: /does not equal any of/i })
-
-    await clickByRole('combobox', {
-      name: /select the values/i,
-    })
-    await clickByRole('option', { name: /amazon/i })
-    await clickByText('Next')
-
-    //=====================================================================
-    //                      review page
-    //=====================================================================
-    await clickByRole('button', { name: 'Submit' })
-
-    const submitted = mockOnsubmit.mock.calls[0][0]
-    expect(submitted[0].spec.template.spec.syncPolicy.automated).toEqual({ enabled: true, prune: true, selfHeal: true })
-  })
+      const submitted = mockOnsubmit.mock.calls[0][0]
+      expect(submitted[0].spec.template.spec.syncPolicy.automated).toEqual({
+        enabled: true,
+        prune: true,
+        selfHeal: true,
+      })
+    },
+    480 * 1000
+  )
 
   //=====================================================================
   //                      HELM

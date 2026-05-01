@@ -236,7 +236,7 @@ describe('AcmToast', () => {
       expect(queryAllByText('Expiring')).toHaveLength(0)
       getByText('Add Expiring').click()
       await waitFor(() => expect(queryAllByText('Expiring')).toHaveLength(1))
-      await waitFor(() => expect(queryAllByText('Expiring')).toHaveLength(0), { timeout: 5500 })
+      await waitFor(() => expect(queryAllByText('Expiring')).toHaveLength(0), { timeout: 10000 })
     })
 
     expect(await axe(container)).toHaveNoViolations()

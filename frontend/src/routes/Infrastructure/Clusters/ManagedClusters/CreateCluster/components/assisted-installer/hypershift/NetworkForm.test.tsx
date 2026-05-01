@@ -3,6 +3,7 @@ import { render } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { NavigationPath } from '../../../../../../../../NavigationPath'
+import { normalizeGeneratedOuiaIds } from '../../../../../../../../lib/test-util'
 
 import NetworkForm, { getDefaultNetworkFormValues } from './NetworkForm'
 
@@ -94,7 +95,7 @@ describe('NetworkForm', () => {
 
   test('it renders', async () => {
     const { container } = render(<Component />)
-    // waitForText('ai:API server publishing strategy')
+    normalizeGeneratedOuiaIds(container)
     expect(container).toMatchSnapshot()
   })
 })

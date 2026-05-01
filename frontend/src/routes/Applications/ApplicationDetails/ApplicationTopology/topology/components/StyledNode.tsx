@@ -210,7 +210,7 @@ const renderCountDecorator = (element: Node, resourceCount: number): React.React
   const y = height / 2
 
   return (
-    <g className="pf-topology__node__decorator">
+    <g className="pf-topology__node__decorator" style={{ userSelect: 'none', pointerEvents: 'none' }}>
       <g transform={`translate(${x}, ${y})`}>
         <g transform={`translate(-16, -12)`}>
           <use href={'#nodeStatusIcon_clusterCount'} width={32} height={24} className={'resourceCountIcon'} />

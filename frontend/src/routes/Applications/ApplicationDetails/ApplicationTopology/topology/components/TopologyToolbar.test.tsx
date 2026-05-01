@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen, waitFor, act } from '@testing-library/react'
+import { render, screen, waitFor, act, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import TopologyToolbar, { useToolbarControl, ToolbarControl } from './TopologyToolbar'
 import { TopologyProps } from '../Topology'
@@ -379,6 +379,93 @@ describe('TopologyToolbar tests', () => {
       // The toolbar renders with clearAllFilters callback which is connected to the Toolbar component
       // Verify the toolbar is rendered with the filter groups
       expect(container.querySelector('.pf-m-toggle-group-container')).toBeInTheDocument()
+    })
+
+    test('Clear all filters resets cluster, application, and type filters', async () => {
+      const setActiveClusters = jest.fn()
+      const setActiveApplications = jest.fn()
+      const setActiveTypes = jest.fn()
+      const setDrawerContent = jest.fn()
+      const props = createMockTopologyProps({
+        setDrawerContent,
+        toolbarControl: createMockToolbarControl({
+          allClusters: ['c1', 'c2'],
+          activeClusters: ['c1'],
+          setActiveClusters,
+          allApplications: ['a1'],
+          activeApplications: ['a1'],
+          setActiveApplications,
+          allTypes: ['Deployment'],
+          activeTypes: ['Deployment'],
+          setActiveTypes,
+        }),
+      })
+      render(<TopologyToolbar {...props} />)
+
+      const clearAll = screen.getByRole('button', { name: 'Clear all filters' })
+      await userEvent.click(clearAll)
+
+      expect(setActiveClusters).toHaveBeenCalledWith(undefined)
+      expect(setActiveApplications).toHaveBeenCalledWith(undefined)
+      expect(setActiveTypes).toHaveBeenCalledWith(undefined)
+      expect(setDrawerContent).toHaveBeenCalledWith('Close', false, true, true, true, undefined, true)
+    })
+  })
+
+  describe('Filter selection edge cases', () => {
+    /** MenuToggle for the cluster filter (label text "Clusters" also appears in the static "Clusters (n):" caption). */
+    function getClusterFilterToggle() {
+      const row = document.getElementById('row1')
+      expect(row).toBeTruthy()
+      const buttons = within(row as HTMLElement).getAllByRole('button')
+      const toggle = buttons.find(
+        (b) =>
+          b.getAttribute('aria-label') === 'Clusters' ||
+          b.textContent === 'Clusters' ||
+          /^Clusters\d*$/.test((b.textContent || '').replace(/\s/g, ''))
+      )
+      expect(toggle).toBeTruthy()
+      return toggle as HTMLElement
+    }
+
+    test('selecting "All clusters" clears active cluster filter', async () => {
+      const setActiveClusters = jest.fn()
+      const props = createMockTopologyProps({
+        toolbarControl: createMockToolbarControl({
+          allClusters: ['cluster1', 'cluster2'],
+          activeClusters: ['cluster1'],
+          setActiveClusters,
+        }),
+      })
+      render(<TopologyToolbar {...props} />)
+
+      await userEvent.click(getClusterFilterToggle())
+      await waitFor(() => {
+        expect(screen.getByRole('menu')).toBeInTheDocument()
+      })
+      await userEvent.click(within(screen.getByRole('menu')).getByText('All clusters'))
+
+      expect(setActiveClusters).toHaveBeenCalledWith(undefined)
+    })
+
+    test('deselecting a cluster removes it from active filters', async () => {
+      const setActiveClusters = jest.fn()
+      const props = createMockTopologyProps({
+        toolbarControl: createMockToolbarControl({
+          allClusters: ['cluster1', 'cluster2'],
+          activeClusters: ['cluster1'],
+          setActiveClusters,
+        }),
+      })
+      render(<TopologyToolbar {...props} />)
+
+      await userEvent.click(getClusterFilterToggle())
+      await waitFor(() => {
+        expect(screen.getByRole('menu')).toBeInTheDocument()
+      })
+      await userEvent.click(within(screen.getByRole('menu')).getByText('cluster1'))
+
+      expect(setActiveClusters).toHaveBeenCalledWith(undefined)
     })
   })
 

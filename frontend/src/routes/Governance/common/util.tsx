@@ -568,7 +568,7 @@ export function getPolicyDescription(policy: Policy | undefined) {
 
   const annotations = policy.metadata.annotations
   if (annotations && annotations['policy.open-cluster-management.io/description']) {
-    return formatDescriptionForDropdown(annotations['policy.open-cluster-management.io/description'])
+    return preserveWhitespace(annotations['policy.open-cluster-management.io/description'])
   }
 
   return '-'
@@ -627,16 +627,8 @@ export function handlePolicyAutomationSubmit(
   })
 }
 
-export function formatDescriptionForDropdown(desc: string) {
-  const formattedDescription = []
-  if (desc) {
-    const descLines = desc.split(/\r?\n/)
-    for (let i = 0; i < descLines.length; i++) {
-      formattedDescription.push(<p>{descLines[i]}</p>)
-    }
-  }
-
-  return formattedDescription
+export function preserveWhitespace(desc?: string) {
+  return desc ? <span style={{ whiteSpace: 'pre-wrap' }}>{desc}</span> : undefined
 }
 
 export function hasInformOnlyPolicies(items: Array<PolicyTableItem>): boolean {

@@ -473,7 +473,7 @@ describe('BatchUpgradeModal', () => {
     // Wait for prometheus nocks to finish
     await waitForNocks([getUpgradeRisksPredictionsNock])
     expect(getByText('Update')).toBeTruthy()
-    expect(getByText('No risks found')).toBeTruthy()
+    await waitFor(() => expect(getByText('No risks found')).toBeTruthy())
   })
 
   describe('version-specific upgrade risks', () => {

@@ -28,7 +28,7 @@ import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { AcmDrawerContext, AcmDrawerProps } from '../../../../ui-components'
 import { PolicySetDetailSidebar } from '../components/PolicySetDetailSidebar'
 import { PolicyCardDropdown } from './PolicyCardDropdown'
-import { getPlacementsForResource } from '../../common/util'
+import { getPlacementsForResource, preserveWhitespace } from '../../common/util'
 
 function PolicySetDrawerTitle(props: { policySet: PolicySet }) {
   const { policySet } = props
@@ -217,7 +217,7 @@ export default function PolicySetCard(props: {
         </CardHeader>
         <CardBody>
           <Stack hasGutter>
-            {policySet.spec.description && <div>{policySet.spec.description ?? ''}</div>}
+            {preserveWhitespace(policySet.spec.description)}
             <DescriptionList>
               {(policySet.status?.compliant || policySet.status?.statusMessage) && (
                 <DescriptionListGroup>

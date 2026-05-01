@@ -1,15 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import {
-  ColaGroup,
-  ColaLayout,
-  ColaLink,
-  ColaNode,
-  Graph,
-  LayoutNode,
-  NodeModel,
-  ColaLayoutOptions,
-  LayoutOptions,
-} from '@patternfly/react-topology'
+import { Graph, ColaLayout, LayoutNode, NodeModel, ColaLayoutOptions, LayoutOptions } from '@patternfly/react-topology'
 import get from 'lodash/get'
 import chunk from 'lodash/chunk'
 import uniqBy from 'lodash/uniqBy'
@@ -109,29 +99,6 @@ class TreeLayout extends ColaLayout {
       super.startLayout(graph, initialRun, addingNodes)
     }
   }
-
-  protected getConstraints(nodes: ColaNode[], groups: ColaGroup[], edges: ColaLink[]): any[] {
-    const constraints = super.getConstraints(nodes, groups, edges)
-    if (!this.treeOptions.useCola) {
-      return constraints
-    }
-    edges.forEach((edge) => {
-      const target = edge.target as ColaNode
-      const source = edge.source as ColaNode
-      const specs = target.element.getData()?.specs as { isPairedInLayoutWithParent?: boolean } | undefined
-      if (specs?.isPairedInLayoutWithParent) {
-        constraints.push({
-          type: 'alignment',
-          axis: 'y',
-          offsets: [
-            { node: source.index, offset: 0 },
-            { node: target.index, offset: PAIRED_LAYOUT_DY_OFFSET_FROM_PARENT },
-          ],
-        })
-      }
-    })
-    return constraints
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -140,7 +107,6 @@ class TreeLayout extends ColaLayout {
 export function calculateNodeOffsets(elements: { nodes: any[]; links: any[] }, options: TreeLayoutOptions) {
   const nodeOffsetMap: NodeOffsetMapType = {}
   const _elements = cloneDeep(elements)
-  let layout = 'TreeLayout'
   if (_elements.nodes.length) {
     const metrics: MetricsType = groupNodesByConnections(_elements)
     addRootsLeavesToConnectedGroups(metrics)
@@ -149,11 +115,8 @@ export function calculateNodeOffsets(elements: { nodes: any[]; links: any[] }, o
     setRowY(metrics, nodeOffsetMap, options)
     setRowX(metrics, nodeOffsetMap, options)
     placePairedNodes(metrics, nodeOffsetMap, pairedNodes, options)
-    if (pairedNodes.length > 1) {
-      layout = 'ColaTreeLayout'
-    }
   }
-  return { nodeOffsetMap, layout }
+  return { nodeOffsetMap, layout: 'TreeLayout' }
 }
 
 function groupNodesByConnections(elements: { nodes: any[]; links: any[] }) {

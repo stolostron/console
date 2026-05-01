@@ -21,7 +21,7 @@ import {
   IAcmTableColumn,
   ListItems,
 } from '../../../../../ui-components'
-import { emptyResources, getEngineWithSvg } from '../../../common/util'
+import { emptyResources, getEngineWithSvg, preserveWhitespace } from '../../../common/util'
 import { DiffModal } from '../../../components/DiffModal'
 import { isUserDefinedPolicyLabel } from '../../../utils/label-utils'
 import { KyvernoRelatedResources } from './KyvernoRelatedResources'
@@ -133,7 +133,7 @@ export function PolicyTemplateDetails() {
                 namespace: ns,
               },
             },
-            reason: <div style={{ whiteSpace: 'pre-wrap' }}>{message}</div>,
+            reason: preserveWhitespace(message),
           })
         }
       }

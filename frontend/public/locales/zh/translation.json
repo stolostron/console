@@ -1327,7 +1327,7 @@
   "Edit policy set": "编辑策略集",
   "Edit role assignment": "编辑角色分配",
   "Edit subscription": "编辑订阅",
-  "Edit the disk or contact your cluster admin for further details._0": "编辑该磁盘或者联系您的集群管理员以获取更多详细信息。",
+  "Edit the disk or contact your cluster admin for further details.": "编辑该磁盘或者联系您的集群管理员以获取更多详细信息。",
   "Edit time window": "编辑时间窗",
   "Edit VirtualMachine": "编辑 VirtualMachine",
   "Edit VirtualMachineSnapshot": "编辑 VirtualMachineSnapshot",

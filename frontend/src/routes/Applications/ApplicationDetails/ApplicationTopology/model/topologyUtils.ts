@@ -200,33 +200,29 @@ export const processMultiples = (
   numOfDeployedClusters: number = 0
 ): Array<Record<string, unknown>> => {
   // Need to multiply the number of success clusters
-  const rCount = numOfDeployedClusters > 0 ? resources.length * numOfDeployedClusters : resources.length
-  if (rCount > 5) {
-    const groupByKind: Record<string, Array<Record<string, unknown>>> = {}
-    resources.forEach((resource) => {
-      const kind = resource.kind as string
-      if (!groupByKind[kind]) {
-        groupByKind[kind] = []
+  const groupByKind: Record<string, Array<Record<string, unknown>>> = {}
+  resources.forEach((resource) => {
+    const kind = resource.kind as string
+    if (!groupByKind[kind]) {
+      groupByKind[kind] = []
+    }
+    groupByKind[kind].push(resource)
+  })
+  return Object.entries(groupByKind).map(([kind, resourcesGroup]) => {
+    const typedResourcesGroup = resourcesGroup as Array<Record<string, unknown>>
+    if (typedResourcesGroup.length === 1) {
+      return typedResourcesGroup[0]
+    } else {
+      return {
+        kind,
+        name: '',
+        namespace: '',
+        resources: typedResourcesGroup,
+        resourceCount:
+          numOfDeployedClusters > 0 ? typedResourcesGroup.length * numOfDeployedClusters : typedResourcesGroup.length,
       }
-      groupByKind[kind].push(resource)
-    })
-    return Object.entries(groupByKind).map(([kind, resourcesGroup]) => {
-      const typedResourcesGroup = resourcesGroup as Array<Record<string, unknown>>
-      if (typedResourcesGroup.length === 1) {
-        return typedResourcesGroup[0]
-      } else {
-        return {
-          kind,
-          name: '',
-          namespace: '',
-          resources: typedResourcesGroup,
-          resourceCount:
-            numOfDeployedClusters > 0 ? typedResourcesGroup.length * numOfDeployedClusters : typedResourcesGroup.length,
-        }
-      }
-    })
-  }
-  return resources
+    }
+  })
 }
 
 // Resource types that typically have pods as children

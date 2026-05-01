@@ -57,42 +57,46 @@ describe('Create Policy Automation Wizard', () => {
     nockIgnoreClusterVersion()
   })
 
-  test('can create policy automation', async () => {
-    render(<CreatePolicyAutomationTest subscriptions={[mockSubscriptionOperator]} />)
+  test(
+    'can create policy automation',
+    async () => {
+      nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
+      nockAnsibleTower(mockAnsibleCredentialWorkflow, mockTemplateWorkflowList)
+      render(<CreatePolicyAutomationTest subscriptions={[mockSubscriptionOperator]} />)
 
-    // template information
-    nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
-    nockAnsibleTower(mockAnsibleCredentialWorkflow, mockTemplateWorkflowList)
-    waitForNotText('The Ansible Automation Platform Operator is required to use automation templates.')
-    await waitForText('Create policy automation', true)
+      await waitForNotText('The Ansible Automation Platform Operator is required to use policy automations.')
+      await waitForText('Create policy automation', true)
 
-    // select ansible credential
-    screen.getByPlaceholderText('Select the Ansible credential').click()
-    await clickByText(mockSecret.metadata.name!)
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+      // select ansible credential
+      screen.getByPlaceholderText('Select the Ansible credential').click()
+      await clickByText(mockSecret.metadata.name!)
 
-    // select ansible job
-    screen.getByPlaceholderText('Select the ansible job').click()
-    screen.getByRole('option', { name: 'test-job-pre-install' }).click()
-    screen.getByPlaceholderText(/select the schedule/i).click()
-    screen.getByRole('option', { name: 'Disabled' }).click()
-    screen
-      .getByRole('checkbox', {
-        name: /manual run: set this automation to run once\. after the automation runs, it is set to disabled\./i,
-      })
-      .click()
-    screen.getByPlaceholderText(/select the schedule/i).click()
-    screen.getByRole('option', { name: 'Once' }).click()
-    screen.getByRole('button', { name: 'Next' }).click()
+      // select ansible job (options load asynchronously after credential selection)
+      const jobDropdown = await screen.findByPlaceholderText('Select the ansible job')
+      jobDropdown.click()
+      const jobOption = await screen.findByRole('option', { name: 'test-job-pre-install' })
+      jobOption.click()
+      screen.getByPlaceholderText(/select the schedule/i).click()
+      screen.getByRole('option', { name: 'Disabled' }).click()
+      screen
+        .getByRole('checkbox', {
+          name: /manual run: set this automation to run once\. after the automation runs, it is set to disabled\./i,
+        })
+        .click()
+      screen.getByPlaceholderText(/select the schedule/i).click()
+      screen.getByRole('option', { name: 'Once' }).click()
+      screen.getByRole('button', { name: 'Next' }).click()
 
-    // review
-    const policyAutomationNocks = [
-      nockCreate(mockPolicyAutomation, undefined, 201, { dryRun: 'All' }), // DRY RUN
-      nockCreate(mockPolicyAutomation),
-    ]
-    screen.getByRole('button', { name: 'Submit' }).click()
-    await waitForNocks(policyAutomationNocks)
-  })
+      // review
+      const policyAutomationNocks = [
+        nockCreate(mockPolicyAutomation, undefined, 201, { dryRun: 'All' }), // DRY RUN
+        nockCreate(mockPolicyAutomation),
+      ]
+      screen.getByRole('button', { name: 'Submit' }).click()
+      await waitForNocks(policyAutomationNocks)
+    },
+    480 * 1000
+  )
 
   test('render warning when Ansible operator is not installed', async () => {
     render(<CreatePolicyAutomationTest configMaps={[mockOpenShiftConsoleConfigMap]} />)

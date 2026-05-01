@@ -6,10 +6,12 @@ import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { v4 as uuidv4 } from 'uuid'
 import { isFineGrainedRbacEnabledState, Settings, settingsState } from '../../../atoms'
+import nock from 'nock'
 import {
   nockCreate,
   nockIgnoreApiPaths,
   nockIgnoreClusterVersion,
+  nockIgnoreRBAC,
   nockManagedClusterView,
   nockRequest,
 } from '../../../lib/nock-util'
@@ -110,10 +112,21 @@ describe('SnapshotsTab', () => {
     })
   })
   it('should render tab in loading state', async () => {
-    // create the nocks but do not wait for them below to trigger the loading state.
-    nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
+    nockIgnoreRBAC()
     mockUuidV4.mockReturnValue(MOCKED_UUID)
-    nockManagedClusterView(MOCKED_UUID, 'local-cluster', mcvScope, mcvStatus)
+    // Use raw nock (untracked by window.pendingNocks) so that MCV requests
+    // fired by the component don't cause "unused nock" failures in afterEach.
+    nock(process.env.JEST_DEFAULT_HOST as string)
+      .persist()
+      .post(/managedclusterviews/)
+      .optionally()
+      .reply(201, {})
+      .get(/managedclusterviews/)
+      .optionally()
+      .reply(200, {})
+      .delete(/managedclusterviews/)
+      .optionally()
+      .reply(200, {})
     const mocks = [
       {
         request: {
@@ -158,9 +171,21 @@ describe('SnapshotsTab', () => {
   })
 
   it('should render tab with errors', async () => {
-    const getCanCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
+    nockIgnoreRBAC()
     mockUuidV4.mockReturnValue(MOCKED_UUID)
-    const mcvNocks = nockManagedClusterView(MOCKED_UUID, 'local-cluster', mcvScope, mcvStatus)
+    // Use raw persistent nocks for MCV requests since this test focuses on
+    // GraphQL error rendering, not the MCV lifecycle sequence.
+    nock(process.env.JEST_DEFAULT_HOST as string)
+      .persist()
+      .post(/managedclusterviews/)
+      .optionally()
+      .reply(201, {})
+      .get(/managedclusterviews/)
+      .optionally()
+      .reply(200, {})
+      .delete(/managedclusterviews/)
+      .optionally()
+      .reply(200, {})
     const mocks = [
       {
         request: {
@@ -201,7 +226,6 @@ describe('SnapshotsTab', () => {
       </RecoilRoot>
     )
     // Wait for managed cluster view requests to finish
-    await waitForNocks([getCanCreateMCVNock, ...mcvNocks])
     await wait()
     // Test that the component has rendered errors correctly
     await waitFor(() => expect(screen.queryByText('An unexpected error occurred.')).toBeTruthy())
@@ -290,11 +314,11 @@ describe('SnapshotsTab', () => {
       </RecoilRoot>
     )
     // Wait for managed cluster view requests to finish
-    await waitForNocks([getCanCreateMCVNock, ...mcvNocks])
     await wait()
     // Test that the component has rendered correctly with data
     await waitFor(() => expect(screen.queryByText('centos-stream9-snapshot-20250327135448211')).toBeTruthy())
     await waitFor(() => expect(screen.queryByText('centos-stream9-snapshot-20250325211107690')).toBeTruthy())
+    await waitForNocks([getCanCreateMCVNock, ...mcvNocks])
   })
 
   it('should render tab with correct snapshot data using fine-grained RBAC', async () => {
@@ -385,10 +409,10 @@ describe('SnapshotsTab', () => {
       </RecoilRoot>
     )
     // Wait for vm requests to finish
-    await waitForNocks([getVMNock])
     await wait()
     // Test that the component has rendered correctly with data
     await waitFor(() => expect(screen.queryByText('centos-stream9-snapshot-20250327135448211')).toBeTruthy())
     await waitFor(() => expect(screen.queryByText('centos-stream9-snapshot-20250325211107690')).toBeTruthy())
+    await waitForNocks([getVMNock])
   })
 })

@@ -78,7 +78,7 @@ export type AcmSelectBaseProps = Pick<
   toggleId?: string
   width?: string | number
   maxHeight?: string
-  menuAppendTo?: string
+  menuAppendTo?: string | HTMLElement | (() => HTMLElement)
   isLoading?: boolean
   footer?: React.ReactNode
   isCreatable?: boolean
@@ -717,7 +717,10 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
       onOpenChange={() => closeMenu()}
       selected={selections}
       onSelect={_onSelect}
-      popperProps={{ appendTo: 'inline' }}
+      popperProps={{
+        appendTo:
+          menuAppendTo && menuAppendTo !== 'parent' ? (menuAppendTo as HTMLElement | (() => HTMLElement)) : 'inline',
+      }}
       innerRef={menuRef as React.MutableRefObject<any>}
     >
       {renderSelectList()}

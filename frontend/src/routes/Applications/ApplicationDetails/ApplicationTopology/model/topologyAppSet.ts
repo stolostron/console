@@ -34,6 +34,9 @@ import {
 import { PlacementDecision } from '../../../../../resources/placement-decision'
 import { Placement } from '../../../../../resources/placement'
 
+/** Window after ApplicationSet creation during which `isCreating` is true on the topology node. */
+const APP_SET_CREATION_GRACE_PERIOD_MS = 5 * 60 * 1000
+
 /**
  * Generates topology data for ApplicationSet applications
  * Creates nodes and links representing the application structure including:
@@ -67,6 +70,10 @@ export async function getAppSetTopology(
   const { activeTypes, activeClusters, activeApplications } = toolbarControl
   const clusterNames = activeClusters && activeClusters.length > 0 ? activeClusters : allClusterNames
 
+  const creationTimestamp = application.app?.metadata?.creationTimestamp
+  const createdAt = creationTimestamp ? new Date(creationTimestamp).getTime() : NaN
+  const isCreating = Number.isFinite(createdAt) && Date.now() - createdAt < APP_SET_CREATION_GRACE_PERIOD_MS
+
   /////////////////////////////////////////////
   ////  APPLICATION SET NODE /////////////////
   /////////////////////////////////////////////
@@ -80,6 +87,7 @@ export async function getAppSetTopology(
     specs: {
       isDesign: true,
       raw: application.app,
+      isCreating,
       allClusters: {
         isLocal: allClusterNames.includes(hubClusterName),
         remoteCount: allClusterNames.includes(hubClusterName) ? allClusterNames.length - 1 : allClusterNames.length,
