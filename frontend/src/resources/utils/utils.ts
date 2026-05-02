@@ -52,7 +52,10 @@ export function exportObjectString(object: Record<string, string>) {
 }
 
 export function returnCSVSafeString(exportValue: string | ReactNode) {
-  return `"${typeof exportValue === 'string' ? exportValue.replaceAll('"', '""') : exportValue}"`
+  if (typeof exportValue !== 'string') {
+    return '"-"'
+  }
+  return `"${exportValue.replaceAll('"', '""')}"`
 }
 
 export const getISOStringTimestamp = (timestamp: string) => {
