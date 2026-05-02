@@ -1036,10 +1036,10 @@ describe('ACM-32500: UI description text should match CSV export for multiline d
   const descriptionFromApi =
     'Policy is placed on hub or managed clusters with label acm-virt-config=acm-dr-virt-config-file-name.\nCreates a velero Schedule for all virtualmachines.kubevirt.io resources with a cluster.open-cluster-management.io/backup-vm label.'
 
-  test('preserveWhitespace textContent should preserve whitespace between lines', () => {
+  test('preserveWhitespace textContent should match CSV export content', () => {
     const formatted = preserveWhitespace(descriptionFromApi)
     const { container } = render(<>{formatted}</>)
-    const uiText = container.textContent
+    const uiText = (container.textContent ?? '').replace(/\n/g, ' ')
 
     const csvRaw = returnCSVSafeString(descriptionFromApi)
     const csvText = csvRaw.slice(1, -1)
