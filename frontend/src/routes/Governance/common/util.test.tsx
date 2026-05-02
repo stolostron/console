@@ -1036,18 +1036,15 @@ describe('ACM-32500: UI description text should match CSV export for multiline d
   const descriptionFromApi =
     'Policy is placed on hub or managed clusters with label acm-virt-config=acm-dr-virt-config-file-name.\nCreates a velero Schedule for all virtualmachines.kubevirt.io resources with a cluster.open-cluster-management.io/backup-vm label.'
 
-  test('DOM textContent should include CSV export value (mirrors Cypress include.text assertion)', () => {
-    // Simulate UI: render description with preserveWhitespace, extract textContent
+  test('preserveWhitespace textContent should equal CSV export value', () => {
     const formatted = preserveWhitespace(descriptionFromApi)
     const { container } = render(<>{formatted}</>)
     const uiText = container.textContent
 
-    // Simulate CSV: returnCSVSafeString wraps in quotes, strip them to get the raw CSV cell value
     const csvRaw = returnCSVSafeString(descriptionFromApi)
     const csvText = csvRaw.slice(1, -1)
 
-    // Cypress uses: .should('include.text', value) — a substring match via jQuery .text()
-    expect(uiText).toContain(csvText)
+    expect(uiText).toEqual(csvText)
   })
 
   test('preserveWhitespace returns undefined for empty input', () => {
