@@ -1039,7 +1039,7 @@ describe('ACM-32500: UI description text should match CSV export for multiline d
   test('preserveWhitespace textContent should match CSV export content', () => {
     const formatted = preserveWhitespace(descriptionFromApi)
     const { container } = render(<>{formatted}</>)
-    const uiText = (container.textContent ?? '').replace(/\n/g, ' ')
+    const uiText = container.textContent
 
     const csvRaw = returnCSVSafeString(descriptionFromApi)
     const csvText = csvRaw.slice(1, -1)
