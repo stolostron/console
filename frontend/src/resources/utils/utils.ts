@@ -51,7 +51,10 @@ export function exportObjectString(object: Record<string, string>) {
   return keyValueMap.toString()
 }
 
-export function returnCSVSafeString(exportValue: string | ReactNode) {
+export function returnCSVSafeString(exportValue: string | number | ReactNode) {
+  if (typeof exportValue === 'number') {
+    return `"${exportValue}"`
+  }
   if (typeof exportValue !== 'string') {
     return '"-"'
   }
