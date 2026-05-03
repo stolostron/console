@@ -1042,7 +1042,7 @@ describe('ACM-32500: UI description text should match CSV export for multiline d
     const uiText = container.textContent
 
     const csvRaw = returnCSVSafeString(descriptionFromApi)
-    const csvText = csvRaw.slice(1, -1)
+    const csvText = csvRaw.slice(1, -1).replace(/""/g, '"')
 
     expect(uiText).toEqual(csvText)
   })
