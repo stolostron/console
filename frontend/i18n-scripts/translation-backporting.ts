@@ -267,7 +267,7 @@ async function run(): Promise<void> {
   }
 
   // --- PRINT BACKPORT SUMMARY / OPTIONAL DETAIL ---
-  printBackportKeyCountsTable(backportMap, backportEnMap)
+  printBackportKeyCountsTable(backportMap, backportEnMap, releaseRef)
   const detailChoice = await promptBackportDetailsChoice()
   if (detailChoice === 'q') {
     process.exit(0)
@@ -289,6 +289,11 @@ async function run(): Promise<void> {
       await git.stash(['push', '-m', 'WIP: translation backporting'])
     }
   }
+
+  // -- CREATE BRANCH ON THIS RELEASE --
+  const branchName = backportTranslationsBranchName(releaseRef)
+  console.log(chalk.cyan(`\nCreating branch ${branchName} from ${releaseRef} (--no-track)...\n`))
+  await git.raw(['checkout', '-q', '-b', branchName, '--no-track', releaseRef])
 
   // --- SAVE CHANGES ---
   if (payloadMap) {
@@ -312,7 +317,15 @@ async function run(): Promise<void> {
 }
 
 /** Per-language summary: full name; **Backports** is locale diff count, or English EN-diff count on the English row only. */
-function printBackportKeyCountsTable(backportMap: LangRefPairMap, backportEnMap: LangRefPairMap): void {
+function printBackportKeyCountsTable(
+  backportMap: LangRefPairMap,
+  backportEnMap: LangRefPairMap,
+  releaseRef: string
+): void {
+  console.log()
+  console.log()
+  console.log(chalk.magenta.bold(`\nNumber of strings to be`))
+  console.log(chalk.magenta.bold(`backported to ${releaseRef}\n`))
   const langs = new Set([...Object.keys(backportMap), ...Object.keys(backportEnMap)])
   const rowsWithCount = [...langs].map((code) => {
     const nMap = backportMap[code] ? Object.keys(backportMap[code]).length : 0
@@ -330,12 +343,10 @@ function printBackportKeyCountsTable(backportMap: LangRefPairMap, backportEnMap:
   const col1Header = 'Backports'
   const w0 = Math.max(col0Header.length, ...rows.map((r) => r.language.length), 1)
   const w1 = Math.max(col1Header.length, ...rows.map((r) => r.backports.length), 1)
-  console.log()
-  console.log()
   console.log(`${col0Header.padEnd(w0)}  ${col1Header}`)
   console.log(`${''.padEnd(w0, '-')}  ${''.padEnd(w1, '-')}`)
   for (const r of rows) {
-    console.log(`${r.language.padEnd(w0)}  ${r.backports}`)
+    console.log(`${r.language.padEnd(w0)}  ${chalk.magenta(r.backports.padEnd(w1))}`)
   }
 }
 
@@ -530,6 +541,17 @@ function parseReleaseVersion(ref: string): [number, number] | null {
   const m = ref.match(/release-(\d+)\.(\d+)/)
   if (!m) return null
   return [Number.parseInt(m[1], 10), Number.parseInt(m[2], 10)]
+}
+
+/** Local branch name: `backport-translations-to-<release>-<date-time>`; `<release>` omits the `upstream/` prefix. */
+function backportTranslationsBranchName(releaseRef: string): string {
+  const releaseSegment = releaseRef.startsWith(`${UPSTREAM_NAME}/`)
+    ? releaseRef.slice(UPSTREAM_NAME.length + 1)
+    : releaseRef.replace(/\//g, '-')
+  const d = new Date()
+  const z = (n: number) => String(n).padStart(2, '0')
+  const dateTime = `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}_${z(d.getHours())}${z(d.getMinutes())}${z(d.getSeconds())}`
+  return `backport-translations-to-${releaseSegment}-${dateTime}`
 }
 
 /** First positional CLI argument (skips tokens starting with `-`, including `--`). */
