@@ -17,11 +17,15 @@ const INTERACTIVE_RELEASE_PICK_LIMIT = 8
 /** Language code → `translation.json` key/value pairs from the given release ref. */
 type TranslationMap = Record<string, Record<string, string>>
 
-/** Per-language key → old/new pair (e.g. older release vs newer release). */
-type LangDiffMap = Record<string, Record<string, { old: string; new: string }>>
+/** Per-language, per-lookup-key: string values keyed by git ref (e.g. `upstream/release-2.16`); optional numeric `similarity` for EN diffs. */
+type LangRefPairMap = Record<string, Record<string, Record<string, string | number>>>
 
-/** Per-language, per-lookup-key: string values keyed by git ref (e.g. `upstream/release-2.16`). */
-type LangRefPairMap = Record<string, Record<string, Record<string, string>>>
+const SIMILARITY_KEY = 'similarity' as const
+
+/** `similarity` line: green when score is strictly greater than this. */
+const SIMILARITY_COLOR_GREEN_ABOVE = 0.8
+/** `similarity` line: yellow when score is strictly greater than this and not green; else red. */
+const SIMILARITY_COLOR_YELLOW_ABOVE = 0.5
 
 const DISPLAY_LINE_MAX = 100
 
@@ -36,13 +40,17 @@ const BACKPORT_CLIP_MAX_OTHER = 132
 
 const PROMPT_LINES = [
   'This utility will backport translations from the main branch to the selected release branch.',
-  'If the selected release branch is up to date, it will exit with a message.',
-  'Otherwise, it will create a new branch and backport the translations.',
   'The new branch will be named "backport-translations-to-<release>-<date-time>"',
-  'The new branch will be created on the selected release branch.\n',
   'Note: You can also use a command line argument to specify the release branch.',
-  'Example: npm run i18n-backporting release-2.17\n',
+  '   Example: npm run i18n-backporting release-2.17\n',
 ].join('\n')
+
+/** Shown once before interactive English backports when any diff is below the auto-accept similarity threshold. */
+const EN_LOW_SIMILARITY_EXPLAINER = (releaseRef: string): string =>
+  [
+    `English string changes have been detected. Answer yes or no to each question`,
+    `whether to backport each of these new English strings to the target release ${releaseRef}`,
+  ].join('\n')
 
 void run().catch((err: unknown) => {
   console.error(err instanceof Error ? err.message : String(err))
@@ -138,7 +146,7 @@ async function run(): Promise<void> {
     .filter((d) => d.isDirectory())
     .map((d) => d.name)
 
-  const maybeMap: LangDiffMap = {}
+  const backportEnMap: LangRefPairMap = {}
   const backportMap: LangRefPairMap = {}
 
   const selectedIdx = releaseList.indexOf(releaseRef)
@@ -153,7 +161,9 @@ async function run(): Promise<void> {
   }
 
   let payloadMap: TranslationMap | undefined
+  let printedLowSimilarityEnExplainer = false
 
+  // --- BACKPORTING ---
   for (let i = 0; i < orderedReleases.length - 1; i++) {
     const currentRef = orderedReleases[i]
     const nextRef = orderedReleases[i + 1]
@@ -169,6 +179,15 @@ async function run(): Promise<void> {
       continue
     }
 
+    if (
+      !printedLowSimilarityEnExplainer &&
+      process.stdin.isTTY &&
+      enDiffHasAnyBelowGreenSimilarity(currentEn, nextMap)
+    ) {
+      console.log(`\n\n${chalk.magentaBright(EN_LOW_SIMILARITY_EXPLAINER(releaseRef))}`)
+      printedLowSimilarityEnExplainer = true
+    }
+
     for (const key of Object.keys(nextMap)) {
       if (!Object.prototype.hasOwnProperty.call(currentEn, key)) {
         continue
@@ -176,11 +195,45 @@ async function run(): Promise<void> {
       const nextEnVal = nextMap[key]
       const currentEnVal = currentEn[key]
       if (currentEnVal !== nextEnVal) {
-        if (!maybeMap['en']) {
-          maybeMap['en'] = {}
+        if (!backportEnMap['en']) {
+          backportEnMap['en'] = {}
         }
-        maybeMap['en'][key] = { old: currentEnVal, new: nextEnVal }
-        continue
+        const similarity = getStringSimilarity(currentEnVal, nextEnVal)
+        backportEnMap['en'][key] = {
+          [releaseRef]: currentEnVal,
+          [nextRef]: nextEnVal,
+          [SIMILARITY_KEY]: similarity,
+        }
+
+        let acceptNewerEn = similarity >= SIMILARITY_COLOR_GREEN_ABOVE
+        if (!acceptNewerEn) {
+          if (!process.stdin.isTTY) {
+            console.log(chalk.dim(`English differs for "${key}"; no TTY — skipping newer EN backport.`))
+            continue
+          }
+          const choice = await promptBackportNewerEnToRelease({
+            key,
+            releaseRef,
+            nextRef,
+            currentEnVal,
+            nextEnVal,
+            similarity,
+          })
+          if (choice === 'q') {
+            process.exit(0)
+          }
+          if (choice === 'n') {
+            continue
+          }
+          acceptNewerEn = true
+        }
+
+        if (acceptNewerEn && payloadMap && currentRef === releaseRef) {
+          if (!payloadMap['en']) {
+            payloadMap['en'] = {}
+          }
+          payloadMap['en'][key] = nextEnVal
+        }
       }
 
       for (const lang of localeLangs) {
@@ -213,15 +266,189 @@ async function run(): Promise<void> {
     }
   }
 
-  printBackportMapFormatted(backportMap, releaseRef)
-  // console.log('maybeMap', maybeMap)
+  // --- PRINT BACKPORT SUMMARY / OPTIONAL DETAIL ---
+  printBackportKeyCountsTable(backportMap, backportEnMap)
+  const detailChoice = await promptBackportDetailsChoice()
+  if (detailChoice === 'q') {
+    process.exit(0)
+  }
+  if (detailChoice === 'y') {
+    printBackportMapFormatted(backportMap, releaseRef)
+    printBackportMapFormatted(backportEnMap, releaseRef)
+  }
 
+  // --- STASH UNCOMMITTED CHANGES ---
   const status = await git.status()
   if (!status.isClean()) {
-    console.log(chalk.yellow('\nStashing uncommitted changes...\n'))
-    // await git.stash(['push', '-m', 'WIP: translation backporting'])  // TOTOTOTOTDO
+    const stashChoice = await promptStashUncommittedChoice()
+    if (stashChoice === 'q') {
+      process.exit(0)
+    }
+    if (stashChoice === 'y') {
+      console.log(chalk.yellow('\nStashing uncommitted changes...\n'))
+      await git.stash(['push', '-m', 'WIP: translation backporting'])
+    }
   }
+
+  // --- SAVE CHANGES ---
+  if (payloadMap) {
+    console.log(chalk.yellow('\nSaving backported changes...\n'))
+    for (const lang of Object.keys(payloadMap)) {
+      const entry = payloadMap[lang]
+      const outDir = path.join(LOCALES_DIR, lang)
+      fs.mkdirSync(outDir, { recursive: true })
+      const outPath = path.join(outDir, 'translation.json')
+      fs.writeFileSync(outPath, `${JSON.stringify(entry, null, 2)}\n`, 'utf8')
+    }
+    console.log(chalk.dim(`Saved ${Object.keys(payloadMap).length} locale file(s) under ${LOCALES_DIR}.`))
+  }
+
+  // --- COMMIT AND PUSH ---
+  console.log(chalk.yellow('\nCommitting and pushing...\n'))
+  // await git.commit(['-m', 'Translation backporting'])
+  // await git.push()
+
   process.exit(0)
+}
+
+/** Per-language summary: full name; **Backports** is locale diff count, or English EN-diff count on the English row only. */
+function printBackportKeyCountsTable(backportMap: LangRefPairMap, backportEnMap: LangRefPairMap): void {
+  const langs = new Set([...Object.keys(backportMap), ...Object.keys(backportEnMap)])
+  const rowsWithCount = [...langs].map((code) => {
+    const nMap = backportMap[code] ? Object.keys(backportMap[code]).length : 0
+    const nEn = backportEnMap[code] ? Object.keys(backportEnMap[code]).length : 0
+    const count = code === 'en' ? nEn : nMap
+    const language = localeCodeToFullLanguageName(code)
+    return { language, count }
+  })
+  rowsWithCount.sort((a, b) => b.count - a.count || a.language.localeCompare(b.language))
+  const rows = rowsWithCount.map(({ language, count }) => ({
+    language,
+    backports: String(count),
+  }))
+  const col0Header = 'Language'
+  const col1Header = 'Backports'
+  const w0 = Math.max(col0Header.length, ...rows.map((r) => r.language.length), 1)
+  const w1 = Math.max(col1Header.length, ...rows.map((r) => r.backports.length), 1)
+  console.log()
+  console.log()
+  console.log(`${col0Header.padEnd(w0)}  ${col1Header}`)
+  console.log(`${''.padEnd(w0, '-')}  ${''.padEnd(w1, '-')}`)
+  for (const r of rows) {
+    console.log(`${r.language.padEnd(w0)}  ${r.backports}`)
+  }
+}
+
+type BackportDetailsChoice = 'y' | 'n' | 'q'
+
+type StashUncommittedChoice = 'y' | 'n' | 'q'
+
+/** Ask whether to stash dirty working tree before continuing; non-TTY returns `n`. */
+async function promptStashUncommittedChoice(): Promise<StashUncommittedChoice> {
+  if (!process.stdin.isTTY) {
+    return 'n'
+  }
+  const { choice } = await inquirer.prompt<{ choice: string }>([
+    {
+      type: 'input',
+      name: 'choice',
+      message: 'Workspace has uncommitted changes. Would you like to stash them? (y/n/q)',
+      validate: (input: string) => {
+        const c = input.trim().toLowerCase()
+        if (c.length !== 1) {
+          return 'Enter a single character: y, n, or q'
+        }
+        if (c === 'y' || c === 'n' || c === 'q') {
+          return true
+        }
+        return 'Enter y, n, or q'
+      },
+    },
+  ])
+  return choice.trim().toLowerCase() as StashUncommittedChoice
+}
+
+/** Ask whether to print full backport diff; non-TTY returns `n`. */
+async function promptBackportDetailsChoice(): Promise<BackportDetailsChoice> {
+  if (!process.stdin.isTTY) {
+    return 'n'
+  }
+  const { choice } = await inquirer.prompt<{ choice: string }>([
+    {
+      type: 'input',
+      name: 'choice',
+      message: 'Show details? (y/n/q)',
+      validate: (input: string) => {
+        const c = input.trim().toLowerCase()
+        if (c.length !== 1) {
+          return 'Enter a single character: y, n, or q'
+        }
+        if (c === 'y' || c === 'n' || c === 'q') {
+          return true
+        }
+        return 'Enter y, n, or q'
+      },
+    },
+  ])
+  return choice.trim().toLowerCase() as BackportDetailsChoice
+}
+
+// --- PRINT BACKPORT MAP ---
+/** Prints each locale section: blue banner for the language name; keys and ref/value lines in dim white (releaseRef first). */
+function printBackportMapFormatted(backportMap: LangRefPairMap, releaseRef: string): void {
+  for (const lang of Object.keys(backportMap).sort()) {
+    const lineMax = isJapaneseChineseKoreanLocale(lang) ? BACKPORT_CLIP_MAX_CJK : BACKPORT_CLIP_MAX_OTHER
+    const byKey = backportMap[lang]
+    if (!byKey) {
+      continue
+    }
+    const totalKeys = Object.keys(byKey).length
+    const fullName = localeCodeToFullLanguageName(lang)
+    console.log(chalk.bgBlue.white.bold(`\n       ${fullName} (${totalKeys})      \n`))
+    const keysSorted = Object.keys(byKey).sort()
+    for (let ki = 0; ki < keysSorted.length; ki++) {
+      const lookupKey = keysSorted[ki]
+      console.log(chalk.white(clipDisplayLine(`${INDENT}${formatLookupKeyLineIndex(ki + 1)}${lookupKey}`, lineMax)))
+      const pair = byKey[lookupKey]!
+      const refOrder: string[] = []
+      if (Object.prototype.hasOwnProperty.call(pair, releaseRef)) {
+        refOrder.push(releaseRef)
+      }
+      for (const ref of Object.keys(pair).sort()) {
+        if (ref !== releaseRef && ref !== SIMILARITY_KEY) {
+          refOrder.push(ref)
+        }
+      }
+      for (const ref of refOrder) {
+        const raw = pair[ref]
+        if (typeof raw !== 'string') {
+          continue
+        }
+        const valThis = raw.replace(/\s+/g, ' ').trim()
+        const linePrefix = `${INDENT}${INDENT}${ref}: `
+        console.log(chalk.dim.white(clipDisplayLine(linePrefix + valThis, lineMax)))
+      }
+      const sim = pair[SIMILARITY_KEY]
+      if (typeof sim === 'number') {
+        const simLine = `${INDENT}${INDENT}${SIMILARITY_KEY}: ${sim.toFixed(4)}`
+        const simColor =
+          sim > SIMILARITY_COLOR_GREEN_ABOVE
+            ? chalk.green
+            : sim > SIMILARITY_COLOR_YELLOW_ABOVE
+              ? chalk.yellow
+              : chalk.red
+        console.log(simColor(simLine))
+      }
+      if (ki < keysSorted.length - 1) {
+        console.log()
+      }
+    }
+  }
+}
+
+/** 1-based key index prefix, e.g. `【57】 `. */
+function formatLookupKeyLineIndex(oneBased: number): string {
+  return `【${oneBased}】 `
 }
 
 function clipDisplayLine(s: string, maxLen: number = DISPLAY_LINE_MAX): string {
@@ -241,48 +468,30 @@ function localeCodeToFullLanguageName(code: string): string {
   }
 }
 
-/** Prints each locale section: blue banner for the language name; keys and ref/value lines in dim white (releaseRef first). */
-function printBackportMapFormatted(backportMap: LangRefPairMap, releaseRef: string): void {
-  for (const lang of Object.keys(backportMap).sort()) {
-    const lineMax = isJapaneseChineseKoreanLocale(lang) ? BACKPORT_CLIP_MAX_CJK : BACKPORT_CLIP_MAX_OTHER
-    const fullName = localeCodeToFullLanguageName(lang)
-    console.log(chalk.bgBlue.white.bold(`\n       ${fullName}      \n`))
-    const byKey = backportMap[lang]
-    if (!byKey) {
-      continue
-    }
-    const keysSorted = Object.keys(byKey).sort()
-    for (let ki = 0; ki < keysSorted.length; ki++) {
-      const lookupKey = keysSorted[ki]
-      console.log(chalk.dim.white(clipDisplayLine(`${INDENT}${lookupKey}`, lineMax)))
-      const pair = byKey[lookupKey]!
-      const refOrder: string[] = []
-      if (Object.prototype.hasOwnProperty.call(pair, releaseRef)) {
-        refOrder.push(releaseRef)
-      }
-      for (const ref of Object.keys(pair).sort()) {
-        if (ref !== releaseRef) {
-          refOrder.push(ref)
-        }
-      }
-      for (const ref of refOrder) {
-        const valThis = pair[ref].replace(/\s+/g, ' ').trim()
-        const linePrefix = `${INDENT}${INDENT}${ref}: `
-        console.log(chalk.dim.white(clipDisplayLine(linePrefix + valThis, lineMax)))
-      }
-      if (ki < keysSorted.length - 1) {
-        console.log()
-      }
-    }
-  }
-}
-
 function cloneTranslationMap(map: TranslationMap): TranslationMap {
   const out: TranslationMap = {}
   for (const [lang, entries] of Object.entries(map)) {
     out[lang] = { ...entries }
   }
   return out
+}
+
+/** True if some shared EN key differs across refs and similarity is below the auto-accept threshold. */
+function enDiffHasAnyBelowGreenSimilarity(currentEn: Record<string, string>, nextMap: Record<string, string>): boolean {
+  for (const key of Object.keys(nextMap)) {
+    if (!Object.prototype.hasOwnProperty.call(currentEn, key)) {
+      continue
+    }
+    const nextEnVal = nextMap[key]
+    const currentEnVal = currentEn[key]
+    if (currentEnVal === nextEnVal) {
+      continue
+    }
+    if (getStringSimilarity(currentEnVal, nextEnVal) < SIMILARITY_COLOR_GREEN_ABOVE) {
+      return true
+    }
+  }
+  return false
 }
 
 function isJapaneseChineseKoreanLocale(lang: string): boolean {
@@ -405,6 +614,48 @@ async function pickReleaseBranch(releaseList: string[]): Promise<string | undefi
   return releaseRef
 }
 
+type BackportNewerEnChoice = 'y' | 'n' | 'q'
+
+/** Ask whether to use the newer ref’s English string on the backport branch. */
+async function promptBackportNewerEnToRelease(args: {
+  key: string
+  releaseRef: string
+  nextRef: string
+  currentEnVal: string
+  nextEnVal: string
+  similarity: number
+}): Promise<BackportNewerEnChoice> {
+  const { key, releaseRef, nextRef, currentEnVal, nextEnVal, similarity } = args
+  const valueLineColor =
+    similarity > SIMILARITY_COLOR_GREEN_ABOVE
+      ? chalk.white
+      : similarity > SIMILARITY_COLOR_YELLOW_ABOVE
+        ? chalk.yellow
+        : chalk.red
+  console.log()
+  console.log(chalk.greenBright.bold(`For key: ${key}`))
+  console.log(valueLineColor(clipDisplayLine(`${releaseRef}: ${currentEnVal}`, DISPLAY_LINE_MAX)))
+  console.log(valueLineColor(clipDisplayLine(`${nextRef}: ${nextEnVal}`, DISPLAY_LINE_MAX)))
+  const { choice } = await inquirer.prompt<{ choice: string }>([
+    {
+      type: 'input',
+      name: 'choice',
+      message: 'Backport? (y/n/q)',
+      validate: (input: string) => {
+        const c = input.trim().toLowerCase()
+        if (c.length !== 1) {
+          return 'Enter a single character: y, n, or q'
+        }
+        if (c === 'y' || c === 'n' || c === 'q') {
+          return true
+        }
+        return 'Enter y, n, or q'
+      },
+    },
+  ])
+  return choice.trim().toLowerCase() as BackportNewerEnChoice
+}
+
 /** Yes/no for the chosen ref; non-TTY runs skip the prompt and proceed. */
 async function confirmReleaseBranch(releaseRef: string): Promise<boolean> {
   if (!process.stdin.isTTY) {
@@ -419,4 +670,40 @@ async function confirmReleaseBranch(releaseRef: string): Promise<boolean> {
     },
   ])
   return confirmed
+}
+
+/** Dice-coefficient–style similarity from overlapping character n-grams (default bigrams). */
+export const getStringSimilarity = (
+  str1: string,
+  str2: string,
+  substringLength: number = 2,
+  caseSensitive: boolean = false
+): number => {
+  let a = str1
+  let b = str2
+  if (!caseSensitive) {
+    a = a.toLowerCase()
+    b = b.toLowerCase()
+  }
+  if (a.length < substringLength || b.length < substringLength) {
+    return 0
+  }
+
+  const map = new Map<string, number>()
+  for (let i = 0; i < a.length - (substringLength - 1); i++) {
+    const substr1 = a.slice(i, i + substringLength)
+    map.set(substr1, (map.get(substr1) ?? 0) + 1)
+  }
+
+  let match = 0
+  for (let j = 0; j < b.length - (substringLength - 1); j++) {
+    const substr2 = b.slice(j, j + substringLength)
+    const count = map.get(substr2) ?? 0
+    if (count > 0) {
+      map.set(substr2, count - 1)
+      match++
+    }
+  }
+
+  return (match * 2) / (a.length + b.length - (substringLength - 1) * 2)
 }
