@@ -2,7 +2,7 @@
 import chalk from 'chalk'
 import fs from 'node:fs'
 import path from 'node:path'
-import { execSync } from 'node:child_process'
+import { execFileSync } from 'node:child_process'
 import inquirer from 'inquirer'
 import { simpleGit, type SimpleGit } from 'simple-git'
 
@@ -299,14 +299,14 @@ async function run(): Promise<void> {
   const worktreeAbsPath = path.join(gitRoot, ...worktreeRelPath.split('/'))
   const branchName = backportTranslationsBranchName(releaseRef)
 
-  const runCmd = (cmd: string, cwd: string): string => {
-    return execSync(cmd, { cwd, stdio: 'inherit', encoding: 'utf8' })
+  const runCmd = (file: string, args: readonly string[], cwd: string): void => {
+    execFileSync(file, args, { cwd, stdio: 'inherit' })
   }
 
   // STEP 2: create a new worktree
   console.log(chalk.yellow('\nSTEP 2: Create a new worktree.\n'))
   // git worktree add frontend/i18n-scripts/temp (remove first if this path is already in use)
-  const worktreeListOut = execSync('git worktree list', { cwd: gitRoot, encoding: 'utf8' })
+  const worktreeListOut = execFileSync('git', ['worktree', 'list'], { cwd: gitRoot, encoding: 'utf8' })
   const resolvedWorktreePath = path.resolve(worktreeAbsPath)
   const worktreeAlreadyExists = worktreeListOut.split('\n').some((line) => {
     const trimmed = line.trim()
@@ -317,12 +317,12 @@ async function run(): Promise<void> {
   if (worktreeAlreadyExists) {
     console.log(chalk.dim('Worktree already exists; removing it before add.'))
     // git worktree remove --force frontend/i18n-scripts/temp
-    runCmd(`git worktree remove --force ${worktreeRelPath}`, gitRoot)
+    runCmd('git', ['worktree', 'remove', '--force', worktreeRelPath], gitRoot)
   } else if (fs.existsSync(worktreeAbsPath)) {
     // Leftover path on disk (not registered) would make `git worktree add` fail
     fs.rmSync(worktreeAbsPath, { recursive: true, force: true })
   }
-  runCmd(`git worktree add ${worktreeRelPath}`, gitRoot)
+  runCmd('git', ['worktree', 'add', worktreeRelPath], gitRoot)
 
   // STEP 3: change cwd to the new worktree and show pwd
   console.log(chalk.yellow('\nSTEP 3: Change cwd to the new worktree.\n'))
@@ -330,13 +330,13 @@ async function run(): Promise<void> {
   // pwd
   const originalCwd = process.cwd()
   process.chdir(worktreeAbsPath)
-  runCmd(`pwd`, process.cwd())
+  console.log(process.cwd())
 
   try {
     // STEP 4: create a new branch
     console.log(chalk.yellow('\nSTEP 4: Create a new branch.\n'))
     // git checkout -q -b ${branchName} --no-track upstream/${releaseRef}
-    runCmd(`git checkout -q -b ${branchName} --no-track ${releaseRef}`, process.cwd())
+    runCmd('git', ['checkout', '-q', '-b', branchName, '--no-track', releaseRef], process.cwd())
 
     // STEP 5: save payload to LOCALES_DIR in worktree
     console.log(chalk.yellow('\nSTEP 5: Save backported locale files.\n'))
@@ -358,25 +358,29 @@ async function run(): Promise<void> {
     console.log(chalk.yellow('\nSTEP 6: Stage changes.\n'))
     // git add frontend/public/locales/*
     // git diff --staged --name-only
-    runCmd(`git add frontend/public/locales/*`, process.cwd())
-    runCmd(`git diff --staged --name-only`, process.cwd())
+    runCmd('git', ['add', path.join('frontend', 'public', 'locales')], process.cwd())
+    runCmd('git', ['diff', '--staged', '--name-only'], process.cwd())
 
     // STEP 7: commit staged changes
     console.log(chalk.yellow('\nSTEP 7: Commit staged changes.\n'))
     // git commit --signoff --no-verify -m "chore(i18n): backport translations to ${releaseRef}"
-    runCmd(`git commit --signoff --no-verify -m "chore(i18n): backport translations to ${releaseRef}"`, process.cwd())
+    runCmd(
+      'git',
+      ['commit', '--signoff', '--no-verify', '-m', `chore(i18n): backport translations to ${releaseRef}`],
+      process.cwd()
+    )
 
     // STEP 8: push changes
     console.log(chalk.yellow('\nSTEP 8: Push branch.\n'))
     // git push --set-upstream origin ${branchName}
-    runCmd(`git push --set-upstream origin ${branchName}`, process.cwd())
+    runCmd('git', ['push', '--set-upstream', 'origin', branchName], process.cwd())
 
     // STEP 9: if gh exists, create a PR
     console.log(chalk.yellow('\nSTEP 9: Create PR (if gh is available).\n'))
     // gh pr create --base release-2.15 --title "chore(i18n): backport translations to ${releaseRef}" --body-file .github/pull_request_template.md
     let hasGh = false
     try {
-      execSync('command -v gh', { stdio: 'ignore' })
+      execFileSync('gh', ['--version'], { stdio: 'ignore' })
       hasGh = true
     } catch {
       hasGh = false
@@ -386,7 +390,17 @@ async function run(): Promise<void> {
         ? releaseRef.slice(UPSTREAM_NAME.length + 1)
         : releaseRef.replace(/\//g, '-')
       runCmd(
-        `gh pr create --base ${base} --title "chore(i18n): backport translations to ${releaseRef}" --body-file .github/pull_request_template.md`,
+        'gh',
+        [
+          'pr',
+          'create',
+          '--base',
+          base,
+          '--title',
+          `chore(i18n): backport translations to ${releaseRef}`,
+          '--body-file',
+          path.join('.github', 'pull_request_template.md'),
+        ],
         process.cwd()
       )
     } else {
@@ -396,14 +410,14 @@ async function run(): Promise<void> {
     // STEP 10: remove the worktree
     console.log(chalk.yellow('\nSTEP 10: Remove the worktree.\n'))
     // git worktree remove frontend/i18n-scripts/temp
-    runCmd(`git worktree remove ${worktreeRelPath}`, gitRoot)
+    runCmd('git', ['worktree', 'remove', worktreeRelPath], gitRoot)
 
     // STEP 11: return to the original cwd and show pwd
     console.log(chalk.yellow('\nSTEP 11: Return to original cwd.\n'))
     // popd
     // pwd
     process.chdir(originalCwd)
-    runCmd(`pwd`, process.cwd())
+    console.log(process.cwd())
   }
 
   process.exit(0)
@@ -593,8 +607,13 @@ async function retrieveTranslations(
       throw new Error(`Locale file ${translationPath} is outside git root ${gitRoot}`)
     }
     const spec = `${releaseRef}:${gitPath}`
-    const raw = await git.show(spec)
-    translationMap[lang] = JSON.parse(raw) as Record<string, string>
+    try {
+      const raw = await git.show(spec)
+      translationMap[lang] = JSON.parse(raw) as Record<string, string>
+    } catch (err: unknown) {
+      const detail = err instanceof Error ? err.message : String(err)
+      throw new Error(`Failed to read translations for locale "${lang}" (${spec}): ${detail}`, { cause: err })
+    }
   }
 
   return translationMap
@@ -693,7 +712,7 @@ async function pickReleaseBranch(releaseList: string[]): Promise<string | undefi
   const pickChoices = releaseList.slice(0, INTERACTIVE_RELEASE_PICK_LIMIT)
   const { releaseRef } = await inquirer.prompt<{ releaseRef: string }>([
     {
-      type: 'select',
+      type: 'list',
       name: 'releaseRef',
       message: 'Pick release branch:',
       choices: pickChoices.map((ref) => ({ name: ref, value: ref })),
