@@ -1,6 +1,7 @@
 import chalk from 'chalk'
 import fs from 'node:fs'
 import path from 'node:path'
+import { execSync } from 'node:child_process'
 import inquirer from 'inquirer'
 // import readline from 'node:readline'
 // import tty from 'node:tty'
@@ -161,10 +162,14 @@ async function run(): Promise<void> {
   }
 
   let payloadMap: TranslationMap | undefined
+  let payloadChanged = false
   let printedLowSimilarityEnExplainer = false
 
   // --- BACKPORTING ---
   for (let i = 0; i < orderedReleases.length - 1; i++) {
+    if (i === 0) {
+      console.log(chalk.yellow('\nSTEP 1: Searching for changes to backport\n'))
+    }
     const currentRef = orderedReleases[i]
     const nextRef = orderedReleases[i + 1]
     console.log(chalk.yellow(`Backporting from ${nextRef} into ${releaseRef}...`))
@@ -232,7 +237,10 @@ async function run(): Promise<void> {
           if (!payloadMap['en']) {
             payloadMap['en'] = {}
           }
-          payloadMap['en'][key] = nextEnVal
+          if (payloadMap['en'][key] !== nextEnVal) {
+            payloadChanged = true
+            payloadMap['en'][key] = nextEnVal
+          }
         }
       }
 
@@ -259,7 +267,11 @@ async function run(): Promise<void> {
             if (!payloadMap[lang]) {
               payloadMap[lang] = {}
             }
-            payloadMap[lang][lookupKey] = nxtLoc ?? ''
+            const nextVal = nxtLoc ?? ''
+            if (payloadMap[lang][lookupKey] !== nextVal) {
+              payloadChanged = true
+              payloadMap[lang][lookupKey] = nextVal
+            }
           }
         }
       }
@@ -273,45 +285,127 @@ async function run(): Promise<void> {
     process.exit(0)
   }
   if (detailChoice === 'y') {
-    printBackportMapFormatted(backportMap, releaseRef)
     printBackportMapFormatted(backportEnMap, releaseRef)
+    printBackportMapFormatted(backportMap, releaseRef)
   }
-
-  // --- STASH UNCOMMITTED CHANGES ---
-  const status = await git.status()
-  if (!status.isClean()) {
-    const stashChoice = await promptStashUncommittedChoice()
-    if (stashChoice === 'q') {
-      process.exit(0)
-    }
-    if (stashChoice === 'y') {
-      console.log(chalk.yellow('\nStashing uncommitted changes...\n'))
-      await git.stash(['push', '-m', 'WIP: translation backporting'])
-    }
-  }
-
-  // -- CREATE BRANCH ON THIS RELEASE --
-  const branchName = backportTranslationsBranchName(releaseRef)
-  console.log(chalk.cyan(`\nCreating branch ${branchName} from ${releaseRef} (--no-track)...\n`))
-  await git.raw(['checkout', '-q', '-b', branchName, '--no-track', releaseRef])
-
-  // --- SAVE CHANGES ---
-  if (payloadMap) {
-    console.log(chalk.yellow('\nSaving backported changes...\n'))
-    for (const lang of Object.keys(payloadMap)) {
-      const entry = payloadMap[lang]
-      const outDir = path.join(LOCALES_DIR, lang)
-      fs.mkdirSync(outDir, { recursive: true })
-      const outPath = path.join(outDir, 'translation.json')
-      fs.writeFileSync(outPath, `${JSON.stringify(entry, null, 2)}\n`, 'utf8')
-    }
-    console.log(chalk.dim(`Saved ${Object.keys(payloadMap).length} locale file(s) under ${LOCALES_DIR}.`))
-  }
-
   // --- COMMIT AND PUSH ---
-  console.log(chalk.yellow('\nCommitting and pushing...\n'))
-  // await git.commit(['-m', 'Translation backporting'])
-  // await git.push()
+
+  if (!payloadChanged) {
+    console.log('No changes to backport...')
+    process.exit(0)
+  }
+
+  const gitRoot = (await git.revparse(['--show-toplevel'])).trim()
+  const worktreeRelPath = 'frontend/i18n-scripts/temp'
+  const worktreeAbsPath = path.join(gitRoot, ...worktreeRelPath.split('/'))
+  const branchName = backportTranslationsBranchName(releaseRef)
+
+  const runCmd = (cmd: string, cwd: string): string => {
+    return execSync(cmd, { cwd, stdio: 'inherit', encoding: 'utf8' })
+  }
+
+  // STEP 2: create a new worktree
+  console.log(chalk.yellow('\nSTEP 2: Create a new worktree.\n'))
+  // git worktree add frontend/i18n-scripts/temp (remove first if this path is already in use)
+  const worktreeListOut = execSync('git worktree list', { cwd: gitRoot, encoding: 'utf8' })
+  const resolvedWorktreePath = path.resolve(worktreeAbsPath)
+  const worktreeAlreadyExists = worktreeListOut.split('\n').some((line) => {
+    const trimmed = line.trim()
+    if (!trimmed) return false
+    const listedPath = trimmed.split(/\s+/)[0]
+    return listedPath ? path.resolve(listedPath) === resolvedWorktreePath : false
+  })
+  if (worktreeAlreadyExists) {
+    console.log(chalk.dim('Worktree already exists; removing it before add.'))
+    // git worktree remove --force frontend/i18n-scripts/temp
+    runCmd(`git worktree remove --force ${worktreeRelPath}`, gitRoot)
+  } else if (fs.existsSync(worktreeAbsPath)) {
+    // Leftover path on disk (not registered) would make `git worktree add` fail
+    fs.rmSync(worktreeAbsPath, { recursive: true, force: true })
+  }
+  runCmd(`git worktree add ${worktreeRelPath}`, gitRoot)
+
+  // STEP 3: change cwd to the new worktree and show pwd
+  console.log(chalk.yellow('\nSTEP 3: Change cwd to the new worktree.\n'))
+  // pushd frontend/i18n-scripts/temp
+  // pwd
+  const originalCwd = process.cwd()
+  process.chdir(worktreeAbsPath)
+  runCmd(`pwd`, process.cwd())
+
+  try {
+    // STEP 4: create a new branch
+    console.log(chalk.yellow('\nSTEP 4: Create a new branch.\n'))
+    // git checkout -q -b ${branchName} --no-track upstream/${releaseRef}
+    runCmd(`git checkout -q -b ${branchName} --no-track ${releaseRef}`, process.cwd())
+
+    // STEP 5: save payload to LOCALES_DIR in worktree
+    console.log(chalk.yellow('\nSTEP 5: Save backported locale files.\n'))
+    // Save payload to LOCALES_DIR in worktree.
+    const worktreeLocalesDir = path.join(process.cwd(), 'frontend', 'public', 'locales')
+    if (payloadMap) {
+      console.log(chalk.yellow('\nSaving backported changes...\n'))
+      for (const lang of Object.keys(payloadMap)) {
+        const entry = payloadMap[lang]
+        const outDir = path.join(worktreeLocalesDir, lang)
+        fs.mkdirSync(outDir, { recursive: true })
+        const outPath = path.join(outDir, 'translation.json')
+        fs.writeFileSync(outPath, `${JSON.stringify(entry, null, 2)}\n`, 'utf8')
+      }
+      console.log(chalk.dim(`Saved ${Object.keys(payloadMap).length} locale file(s) under ${worktreeLocalesDir}.`))
+    }
+
+    // STEP 6: stage changes and list staged files
+    console.log(chalk.yellow('\nSTEP 6: Stage changes.\n'))
+    // git add frontend/public/locales/*
+    // git diff --staged --name-only
+    runCmd(`git add frontend/public/locales/*`, process.cwd())
+    runCmd(`git diff --staged --name-only`, process.cwd())
+
+    // STEP 7: commit staged changes
+    console.log(chalk.yellow('\nSTEP 7: Commit staged changes.\n'))
+    // git commit --signoff --no-verify -m "chore(i18n): backport translations to ${releaseRef}"
+    runCmd(`git commit --signoff --no-verify -m "chore(i18n): backport translations to ${releaseRef}"`, process.cwd())
+
+    // STEP 8: push changes
+    console.log(chalk.yellow('\nSTEP 8: Push branch.\n'))
+    // git push --set-upstream origin ${branchName}
+    runCmd(`git push --set-upstream origin ${branchName}`, process.cwd())
+
+    // STEP 9: if gh exists, create a PR
+    console.log(chalk.yellow('\nSTEP 9: Create PR (if gh is available).\n'))
+    // gh pr create --base release-2.15 --title "chore(i18n): backport translations to ${releaseRef}" --body-file .github/pull_request_template.md
+    let hasGh = false
+    try {
+      execSync('command -v gh', { stdio: 'ignore' })
+      hasGh = true
+    } catch {
+      hasGh = false
+    }
+    if (hasGh) {
+      const base = releaseRef.startsWith(`${UPSTREAM_NAME}/`)
+        ? releaseRef.slice(UPSTREAM_NAME.length + 1)
+        : releaseRef.replace(/\//g, '-')
+      runCmd(
+        `gh pr create --base ${base} --title "chore(i18n): backport translations to ${releaseRef}" --body-file .github/pull_request_template.md`,
+        process.cwd()
+      )
+    } else {
+      console.log(chalk.dim('gh not found; skipping PR creation step.'))
+    }
+  } finally {
+    // STEP 10: remove the worktree
+    console.log(chalk.yellow('\nSTEP 10: Remove the worktree.\n'))
+    // git worktree remove frontend/i18n-scripts/temp
+    runCmd(`git worktree remove ${worktreeRelPath}`, gitRoot)
+
+    // STEP 11: return to the original cwd and show pwd
+    console.log(chalk.yellow('\nSTEP 11: Return to original cwd.\n'))
+    // popd
+    // pwd
+    process.chdir(originalCwd)
+    runCmd(`pwd`, process.cwd())
+  }
 
   process.exit(0)
 }
@@ -351,33 +445,6 @@ function printBackportKeyCountsTable(
 }
 
 type BackportDetailsChoice = 'y' | 'n' | 'q'
-
-type StashUncommittedChoice = 'y' | 'n' | 'q'
-
-/** Ask whether to stash dirty working tree before continuing; non-TTY returns `n`. */
-async function promptStashUncommittedChoice(): Promise<StashUncommittedChoice> {
-  if (!process.stdin.isTTY) {
-    return 'n'
-  }
-  const { choice } = await inquirer.prompt<{ choice: string }>([
-    {
-      type: 'input',
-      name: 'choice',
-      message: 'Workspace has uncommitted changes. Would you like to stash them? (y/n/q)',
-      validate: (input: string) => {
-        const c = input.trim().toLowerCase()
-        if (c.length !== 1) {
-          return 'Enter a single character: y, n, or q'
-        }
-        if (c === 'y' || c === 'n' || c === 'q') {
-          return true
-        }
-        return 'Enter y, n, or q'
-      },
-    },
-  ])
-  return choice.trim().toLowerCase() as StashUncommittedChoice
-}
 
 /** Ask whether to print full backport diff; non-TTY returns `n`. */
 async function promptBackportDetailsChoice(): Promise<BackportDetailsChoice> {
