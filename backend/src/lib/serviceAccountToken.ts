@@ -101,6 +101,28 @@ export function getCACertificate(onChange?: () => void): Certificates {
   return ca_cert
 }
 
+let placement_debug_ca: Certificates | undefined
+export function getPlacementDebugCACertificate(onChange?: () => void): Certificates | undefined {
+  const caPath = process.env.PLACEMENT_CA_BUNDLE_PATH
+  if (!caPath) return undefined
+
+  if (placement_debug_ca === undefined) {
+    if (process.env.NODE_ENV !== 'development') {
+      watchFile(caPath, () => {
+        placement_debug_ca = undefined
+        onChange?.()
+      })
+    }
+    try {
+      placement_debug_ca = readFileSync(caPath, 'utf-8')
+    } catch {
+      logger.warn({ msg: 'PLACEMENT_CA_BUNDLE_PATH set but file not found', path: caPath })
+      return undefined
+    }
+  }
+  return placement_debug_ca
+}
+
 let service_ca_cert: Certificates
 export function getServiceCACertificate(onChange?: () => void): Certificates {
   if (service_ca_cert === undefined) {

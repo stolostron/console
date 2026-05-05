@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import type { AgentOptions } from 'node:https'
 import { Agent } from 'node:https'
-import { getCACertificate, getServiceCACertificate } from './serviceAccountToken'
+import { getCACertificate, getPlacementDebugCACertificate, getServiceCACertificate } from './serviceAccountToken'
 import { HttpsProxyAgent } from 'https-proxy-agent'
 
 const COMMON_AGENT_OPTIONS: Partial<AgentOptions> = {
@@ -34,6 +34,23 @@ export function getServiceAgent() {
     })
   }
   return serviceAgent
+}
+
+let placementDebugAgent: Agent | undefined
+export function getPlacementDebugAgent(): Agent {
+  const ocmCA = getPlacementDebugCACertificate(() => {
+    placementDebugAgent = undefined
+  })
+
+  if (!ocmCA) return getServiceAgent()
+
+  if (!placementDebugAgent) {
+    placementDebugAgent = new Agent({
+      ca: ocmCA,
+      ...COMMON_AGENT_OPTIONS,
+    })
+  }
+  return placementDebugAgent
 }
 
 let proxyAgent: HttpsProxyAgent<string>
