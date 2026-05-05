@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import {
@@ -37,11 +37,11 @@ import {
   NamespaceApiVersion,
   NamespaceKind,
   Placement,
+  PlacementApiVersionBeta,
   PlacementDecision,
   PlacementDecisionApiVersion,
   PlacementDecisionKind,
   PlacementKind,
-  PlacementApiVersionBeta,
   Subscription,
   SubscriptionApiVersion,
   SubscriptionKind,
@@ -284,8 +284,8 @@ describe('advanced configuration page', () => {
         </MemoryRouter>
       </RecoilRoot>
     )
-    await waitForText(
-      'This page will be removed in a future release. Placements will move to a central location under Infrastructure > Clusters > Placements. You can also view placement details directly within individual applications or policies.'
+    await screen.getByText(
+      /placements are managed from the tab of the page\. select > > \. you can also view placement details directly within individual applications or policies\./i
     )
   })
 

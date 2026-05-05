@@ -18,7 +18,7 @@ import _ from 'lodash'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom-v5-compat'
 import { useLocalHubName } from '../../hooks/use-local-hub'
-import { useTranslation } from '../../lib/acm-i18next'
+import { Trans, useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'
 import { canUser } from '../../lib/rbac-util'
 import {
@@ -767,19 +767,15 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
             isInline
             variant="warning"
             actionLinks={
-              <AlertActionLink
-                component="a"
-                target="_blank"
-                rel="noreferrer"
-                href={DOC_LINKS.APPLICATIONS_ADVANCED_CONFIGURATION}
-              >
+              <AlertActionLink component="a" target="_blank" rel="noreferrer" href={DOC_LINKS.DEPRECATIONS_ACM}>
                 {t('Learn more')}
               </AlertActionLink>
             }
           >
-            {t(
-              'This page will be removed in a future release. Placements will move to a central location under Infrastructure > Clusters > Placements. You can also view placement details directly within individual applications or policies.'
-            )}
+            <Trans
+              i18nKey="<bold>Deprecated:</bold> Placements are managed from the <italic>Placements</italic> tab of the <italic>Infrastructure</italic> page. Select <bold>Infrastructure</bold> > <bold>Clusters</bold> > <bold>Placements</bold>. You can also view placement details directly within individual applications or policies."
+              components={{ bold: <strong />, italic: <em /> }}
+            />
           </Alert>
         )}
         <StackItem>
