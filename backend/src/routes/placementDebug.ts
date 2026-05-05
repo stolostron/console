@@ -4,7 +4,7 @@ import { constants } from 'node:http2'
 import type { RequestOptions } from 'node:https'
 import { request } from 'node:https'
 import { URL } from 'node:url'
-import { getServiceAgent } from '../lib/agent'
+import { getPlacementDebugAgent } from '../lib/agent'
 import { logger } from '../lib/logger'
 import { respondInternalServerError } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'
@@ -74,7 +74,7 @@ export async function placementDebug(req: Http2ServerRequest, res: Http2ServerRe
     path: url.pathname,
     method: 'POST',
     headers,
-    agent: getServiceAgent(),
+    agent: getPlacementDebugAgent(),
   }
 
   const upstream = request(options, (response) => {
