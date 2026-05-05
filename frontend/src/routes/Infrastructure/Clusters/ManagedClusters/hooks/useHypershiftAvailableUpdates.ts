@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 import { Cluster } from '../../../../../resources/utils/get-cluster'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { getCPUArchFromReleaseImage, getVersionFromReleaseImage } from '../utils/utils'
+import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 
 const isUpdateVersionAcceptable = (currentVersion: string, newVersion: string) => {
   const currentVersionParts = currentVersion.split('.')
@@ -28,11 +29,12 @@ const isUpdateVersionAcceptable = (currentVersion: string, newVersion: string) =
   return false
 }
 
-export const useHypershiftAvailableUpdates = (cluster?: Cluster) => {
+export const useHypershiftAvailableUpdates = (cluster?: Cluster, hostedCluster?: HostedClusterK8sResource) => {
   const { clusterImageSetsState } = useSharedAtoms()
   const clusterImageSets = useRecoilValue(clusterImageSetsState)
   const image = cluster?.distribution?.ocp?.desired?.image
-  const archType = getCPUArchFromReleaseImage(image) ?? 'multi'
+  const archType =
+    getCPUArchFromReleaseImage(image) ?? getCPUArchFromReleaseImage(hostedCluster?.spec?.release?.image) ?? 'multi'
 
   const hypershiftAvailableUpdates: Record<string, string> = useMemo(() => {
     if (!(cluster?.isHypershift || cluster?.isHostedCluster)) {
