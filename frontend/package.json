@@ -79,6 +79,7 @@
     "fuse.js": "6.6.2",
     "get-value": "3.0.1",
     "graphql": "16.13.2",
+    "graphql-ws": "^6.0.8",
     "handlebars": "4.7.9",
     "highlight.js": "^11.11.1",
     "i18next": "21.10.0",

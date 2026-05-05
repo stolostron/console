@@ -6,8 +6,9 @@ import type { Http2Server, Http2ServerRequest, Http2ServerResponse } from 'node:
 import { constants, createSecureServer, createServer } from 'node:http2'
 import type { Socket } from 'node:net'
 import type { TLSSocket } from 'node:tls'
-import { logger } from './logger'
 import { managedClusterProxy } from '../routes/managedClusterProxy'
+import { searchWebSocket } from '../routes/search'
+import { logger } from './logger'
 
 // Explicitly set ECDH curves to enable PQC (X25519MLKEM768).
 // The default image crypto policy (/etc/crypto-policies/config) does not include them.
@@ -84,6 +85,10 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
           })
         })
         .on('upgrade', (req: Http2ServerRequest, socket: TLSSocket, head: Buffer) => {
+          if (req.url.startsWith('/multicloud/proxy/search')) {
+            req.url = req.url.substring(11)
+            return searchWebSocket(req, socket, head)
+          }
           if (req.url.startsWith('/multicloud/managedclusterproxy')) {
             req.url = req.url.substring(11)
             return managedClusterProxy(req, socket, head)
