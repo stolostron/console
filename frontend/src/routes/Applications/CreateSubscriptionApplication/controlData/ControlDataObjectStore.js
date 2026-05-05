@@ -41,6 +41,7 @@ const objectstoreChannelData = (isLocalCluster, t) => {
       active: '',
       placeholder: t('app.enter.select.objectstore.url'),
       available: [],
+      creatable: true,
       validation: getURLValidator(t),
       reverse: 'Channel[0].spec.pathname',
       onSelect: updateChannelControls,

@@ -101,7 +101,7 @@ const ControlPanelSingleSelect = (props: {
                 }}
                 placeholder={placeholder}
                 isDisabled={disabled}
-                data-testid={`select-${controlId}`}
+                inputProps={{ 'data-testid': `select-${controlId}` }}
                 footer={footer}
               >
                 {available.map((item: any, inx: React.Key) => {

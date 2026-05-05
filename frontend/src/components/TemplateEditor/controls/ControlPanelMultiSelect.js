@@ -95,7 +95,7 @@ class ControlPanelMultiSelect extends React.Component {
                 }}
                 placeholderText={placeholder}
                 isDisabled={disabled}
-                data-testid={`multi-${controlId}`}
+                inputProps={{ 'data-testid': `multi-${controlId}` }}
               >
                 {this.options}
               </AcmSelectBase>

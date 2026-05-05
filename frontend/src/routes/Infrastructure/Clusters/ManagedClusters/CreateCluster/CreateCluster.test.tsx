@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
@@ -26,6 +26,7 @@ import {
 } from '../../../../../lib/nock-util'
 import { defaultPlugin, PluginContext } from '../../../../../lib/PluginContext'
 import {
+  clickByRole,
   clickByPlaceholderText,
   clickByTestId,
   clickByText,
@@ -84,6 +85,12 @@ import {
 import userEvent from '@testing-library/user-event'
 
 //const awsProjectNamespace = 'test-aws-namespace'
+
+const commitComboBoxByTestId = async (id: string, value: string) => {
+  const input = await screen.findByTestId(id)
+  fireEvent.change(input, { target: { value } })
+  fireEvent.keyDown(input, { key: 'Enter', code: 'Enter', charCode: 13 })
+}
 
 ///////////////////////////////// FILL FORM //////////////////////////////////////////////////
 
@@ -837,7 +844,7 @@ describe('CreateCluster AWS', () => {
     const initialNocks = [nockList(clusterImageSetAws, mockClusterImageSetAws)]
 
     // create the form
-    const { container } = render(<Component />)
+    render(<Component />)
 
     await new Promise((resolve) => setTimeout(resolve, 500))
 
@@ -848,8 +855,7 @@ describe('CreateCluster AWS', () => {
 
     // step 1 -- cluster details
     await typeByTestId('eman', clusterName!)
-    await typeByTestId('imageSet', clusterImageSetAws!.spec!.releaseImage!)
-    container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
+    await commitComboBoxByTestId('imageSet', clusterImageSetAws!.spec!.releaseImage!)
     await clickByText('Next')
 
     // step 2 -- node pools
@@ -916,7 +922,7 @@ describe('CreateCluster AWS', () => {
     const initialNocks = [nockList(clusterImageSetAws, mockClusterImageSetAws)]
 
     // create the form
-    const { container } = render(<Component subscriptions={[subscriptionOperator]} />)
+    render(<Component subscriptions={[subscriptionOperator]} />)
 
     await new Promise((resolve) => setTimeout(resolve, 500))
 
@@ -928,8 +934,7 @@ describe('CreateCluster AWS', () => {
 
     // step 1 -- cluster details
     await typeByTestId('eman', clusterName!)
-    await typeByTestId('imageSet', clusterImageSetAws!.spec!.releaseImage!)
-    container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
+    await commitComboBoxByTestId('imageSet', clusterImageSetAws!.spec!.releaseImage!)
     await clickByText('Next')
 
     // step 2 -- node pools
@@ -986,7 +991,7 @@ describe('CreateCluster AWS', () => {
     const initialNocks = [nockList(clusterImageSetAws, mockClusterImageSetAws)]
 
     // create the form
-    const { container } = render(<Component />)
+    render(<Component />)
 
     await new Promise((resolve) => setTimeout(resolve, 500))
 
@@ -997,8 +1002,7 @@ describe('CreateCluster AWS', () => {
 
     // step 1 -- cluster details
     await typeByTestId('eman', clusterName!)
-    await typeByTestId('imageSet', clusterImageSetAws!.spec!.releaseImage!)
-    container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
+    await commitComboBoxByTestId('imageSet', clusterImageSetAws!.spec!.releaseImage!)
     await clickByText('Next')
 
     // step 2 -- node pools
@@ -1056,7 +1060,7 @@ describe('CreateCluster AWS', () => {
     const initialNocks = [nockList(clusterImageSetAws, mockClusterImageSetAws)]
 
     // create the form
-    const { container } = render(
+    render(
       <PluginContext.Provider value={{ ...defaultPlugin, isACMAvailable: false }}>
         <Component />
       </PluginContext.Provider>
@@ -1071,8 +1075,7 @@ describe('CreateCluster AWS', () => {
 
     // step 1 -- cluster details
     await typeByTestId('eman', clusterName!)
-    await typeByTestId('imageSet', clusterImageSetAws!.spec!.releaseImage!)
-    container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
+    await commitComboBoxByTestId('imageSet', clusterImageSetAws!.spec!.releaseImage!)
     await clickByText('Next')
 
     // step 2 -- node pools
@@ -1517,7 +1520,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     // step 1 -- cluster details
     await typeByTestId('clusterName', clusterName)
     await clickByPlaceholderText('Select or enter a release image')
-    await clickByText('OpenShift 4.15.36')
+    await clickByRole('option', { name: /OpenShift 4\.15\.36/i })
 
     const inputElement = screen.getByTestId('emanspace')
     expect(inputElement).toHaveValue('clusters')
@@ -1969,7 +1972,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     // step 1 -- cluster details
     await typeByTestId('clusterName', clusterName)
     await clickByPlaceholderText('Select or enter a release image')
-    await clickByText('OpenShift 4.15.36')
+    await clickByRole('option', { name: /OpenShift 4\.15\.36/i })
 
     const inputField = await waitFor(() => screen.getByTestId('emanspace'))
     expect(inputField).toHaveValue('clusters')
@@ -2510,7 +2513,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     await typeByTestId('clusterName', clusterName)
 
     await clickByPlaceholderText('Select or enter a release image')
-    await clickByText('OpenShift 4.15.36')
+    await clickByRole('option', { name: /OpenShift 4\.15\.36/i })
 
     const inputField = await waitFor(() => screen.getByTestId('emanspace'))
     expect(inputField).toHaveValue('clusters')
@@ -3011,7 +3014,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     await typeByTestId('clusterName', clusterName)
 
     await clickByPlaceholderText('Select or enter a release image')
-    await clickByText('OpenShift 4.15.36')
+    await clickByRole('option', { name: /OpenShift 4\.15\.36/i })
     const inputElement = screen.getByTestId('emanspace')
     expect(inputElement).toHaveValue('clusters')
     await typeByTestId('additionalLabels', 'myLabelKey=myValue')
@@ -3497,13 +3500,15 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     await typeByTestId('clusterName', clusterName)
 
     await clickByPlaceholderText('Select or enter a release image')
-    await clickByText('OpenShift 4.15.36')
+    await clickByRole('option', { name: /OpenShift 4\.15\.36/i })
 
     const inputElement = screen.getByTestId('emanspace')
     expect(inputElement).toHaveValue('clusters')
 
-    const clearButtons = screen.getAllByRole('button', { name: /clear selected item/i })
-    fireEvent.click(clearButtons[0])
+    const clearButton = within(inputElement.closest('.pf-v6-c-menu-toggle') as HTMLElement).getByRole('button', {
+      name: /clear input value/i,
+    })
+    fireEvent.click(clearButton)
     expect(inputElement).toHaveValue('')
 
     await clickByTestId('emanspace')
@@ -3520,7 +3525,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
       expect(screen.getByText('The namespace cannot be the same as the cluster name.')).toBeInTheDocument()
     })
 
-    fireEvent.click(clearButtons[0])
+    fireEvent.click(clearButton)
     userEvent.type(inputField, 'test-namespace{enter}')
 
     await typeByTestId('additionalLabels', 'myLabelKey=myValue')
@@ -4049,13 +4054,15 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     await typeByTestId('clusterName', clusterName)
 
     await clickByPlaceholderText('Select or enter a release image')
-    await clickByText('OpenShift 4.15.36')
+    await clickByRole('option', { name: /OpenShift 4\.15\.36/i })
 
     const inputElement = screen.getByTestId('emanspace')
     expect(inputElement).toHaveValue('clusters')
 
-    const clearButtons = screen.getAllByRole('button', { name: /clear selected item/i })
-    fireEvent.click(clearButtons[0])
+    const clearButton = within(inputElement.closest('.pf-v6-c-menu-toggle') as HTMLElement).getByRole('button', {
+      name: /clear input value/i,
+    })
+    fireEvent.click(clearButton)
     expect(inputElement).toHaveValue('')
 
     await clickByTestId('emanspace')
@@ -4072,7 +4079,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
       expect(screen.getByText('The namespace cannot be the same as the cluster name.')).toBeInTheDocument()
     })
 
-    fireEvent.click(clearButtons[0])
+    fireEvent.click(clearButton)
     userEvent.type(inputField, 'test-namespace{enter}')
 
     await typeByTestId('additionalLabels', 'myLabelKey=myValue')

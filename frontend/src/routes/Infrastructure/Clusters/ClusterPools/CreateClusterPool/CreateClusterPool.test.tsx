@@ -20,7 +20,7 @@ import {
   SecretApiVersion,
   SecretKind,
 } from '../../../../../resources'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { managedClusterSetsState, namespacesState, secretsState, Settings, settingsState } from '../../../../../atoms'
@@ -42,6 +42,12 @@ import { CLUSTER_POOL_INFRA_TYPE_PARAM } from '../ClusterPoolInfrastructureType'
 import { createProviderConnection } from '../../../../../test-helpers/createProviderConnection'
 
 const clusterName = 'test'
+
+const commitComboBoxByTestId = async (id: string, value: string) => {
+  const input = await screen.findByTestId(id)
+  fireEvent.change(input, { target: { value } })
+  fireEvent.keyDown(input, { key: 'Enter', code: 'Enter', charCode: 13 })
+}
 
 ///////////////////////////////// FILL FORM //////////////////////////////////////////////////
 
@@ -280,7 +286,7 @@ describe('CreateClusterPool AWS', () => {
     )
 
     // create the form
-    const { container } = render(<Component />)
+    render(<Component />)
 
     // wait for tables/combos to fill in
     await waitForNocks(initialNocks)
@@ -308,8 +314,7 @@ describe('CreateClusterPool AWS', () => {
     // step 2 -- the name, namespace and imageset
     await typeByTestId('eman', clusterName!)
     await typeByTestId('emanspace', mockCreateProject.metadata.name!)
-    await typeByTestId('imageSet', clusterImageSet!.spec!.releaseImage!)
-    container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
+    await commitComboBoxByTestId('imageSet', clusterImageSet!.spec!.releaseImage!)
     await clickByText('Next')
 
     // skip AWS private config
@@ -351,7 +356,7 @@ describe('CreateClusterPool AWS', () => {
     )
 
     // create the form
-    const { container } = render(<Component />)
+    render(<Component />)
 
     // wait for tables/combos to fill in
     await waitForNocks(initialNocks)
@@ -373,8 +378,7 @@ describe('CreateClusterPool AWS', () => {
     // step 2 -- the name, namespace and imageset
     await typeByTestId('eman', clusterName!)
     await typeByTestId('emanspace', mockCreateProject.metadata.name!)
-    await typeByTestId('imageSet', clusterImageSet!.spec!.releaseImage!)
-    container.querySelector<HTMLButtonElement>('.tf--list-box__menu-item')?.click()
+    await commitComboBoxByTestId('imageSet', clusterImageSet!.spec!.releaseImage!)
     await clickByText('Next')
     await clickByText('Next')
     await clickByText('Next')
