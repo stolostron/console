@@ -1,14 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
+jest.mock('../discoveredPoliciesWorker.factory')
+
+import { ApolloError } from '@apollo/client'
 import { render, screen, within } from '@testing-library/react'
 import { generatePath, MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
-import { NavigationPath } from '../../../../NavigationPath'
-import { DiscoveredDetailsContext } from './DiscoveredPolicyDetailsPage'
-import { waitForNotText, waitForText } from '../../../../lib/test-util'
 import { RecoilRoot } from 'recoil'
 import { channelsState, helmReleaseState, subscriptionsState } from '../../../../atoms'
-import { ApolloError } from '@apollo/client'
-import DiscoveredByCluster from './DiscoveredByCluster'
+import { waitForNotText, waitForText } from '../../../../lib/test-util'
+import { NavigationPath } from '../../../../NavigationPath'
 import { matchesSelectedLabels } from '../../utils/label-utils'
+import DiscoveredByCluster from './DiscoveredByCluster'
+import { DiscoveredDetailsContext } from './DiscoveredPolicyDetailsPage'
 
 describe('DiscoveredByCluster', () => {
   test('Should render DiscoveredByCluster for ConfigurationPolicy', async () => {

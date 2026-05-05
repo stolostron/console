@@ -56,7 +56,7 @@ import {
   getAllClusterTypesFromGroups,
 } from '../DiscoveryConfig/discoveryConfigFilters'
 
-const discoveryVersions = ['4.20', '4.21', '4.22', '4.23']
+const discoveryVersions = ['4.22', '4.23', '5.0', '5.1']
 
 export default function DiscoveryConfigPage() {
   const { t } = useTranslation()

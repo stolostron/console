@@ -1258,10 +1258,10 @@ describe('AcmTable', () => {
 })
 
 describe('returnCSVSafeString', () => {
-  test('returns a csv safe string replacing new line with space', () => {
+  test('returns a csv safe string preserving newlines', () => {
     const content = 'testing for multiline\ndescription'
     const exportContent = returnCSVSafeString(content)
-    expect(exportContent).toEqual('"testing for multiline description"')
+    expect(exportContent).toEqual('"testing for multiline\ndescription"')
   })
 
   test('returns a csv safe string escaping double quotes', () => {

@@ -6,7 +6,7 @@ source ./port-defaults.sh
 source ./oauth-client-name.sh
 source ./backend/.env
 
-CONSOLE_VERSION=${CONSOLE_VERSION:=4.20}
+CONSOLE_VERSION=${CONSOLE_VERSION:=4.22}
 KUBEVIRT_PORT=${KUBEVIRT_PORT:=""}
 ODF_PORT=${ODF_PORT:=""}
 GITOPS_PORT=${GITOPS_PORT:=""}

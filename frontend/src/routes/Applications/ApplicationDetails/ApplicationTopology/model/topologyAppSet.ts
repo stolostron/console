@@ -23,13 +23,14 @@ import {
 import {
   addClusters,
   addTopologyNode,
+  areSourcesUniform,
   createControllerRevisionChild,
   createDataVolumeChild,
   createReplicaChild,
   createVirtualMachineInstance,
+  fetchArgoAppStatusResources,
   getClusterName,
   getResourceTypes,
-  processMultiples,
 } from './topologyUtils'
 import { PlacementDecision } from '../../../../../resources/placement-decision'
 import { Placement } from '../../../../../resources/placement'
@@ -410,15 +411,33 @@ async function getAppSetResources(application: ApplicationModel) {
         relatedResult && !excludedKinds.has(relatedResult.kind.toLowerCase())
     )
 
+    // Fetch remote Application CRs to get status.resources for cluster-scoped resources
+    // that may not appear in search "related" results when they don't exist yet
+    const remoteAppResources = await fetchPullModelAppResources(
+      applications,
+      namespace,
+      allClusterNames,
+      appSetApps as ResourceItem[]
+    )
+
     applications?.forEach((application: ResourceItem) => {
       const applicationUid = application._uid as string
+      const applicationCluster = application.cluster as string
 
-      // Find related resources for this application on this cluster
-      const resourceList =
+      // Find related resources for this application on this cluster (resources that exist)
+      const searchRelatedList =
         relatedResults?.flatMap(
           (relatedResult: SearchRelatedResult | null) =>
             relatedResult?.items?.filter((item: ResourceItem) => item._relatedUids?.includes(applicationUid)) ?? []
         ) ?? []
+
+      // Get status.resources from the remote Application CR (the expected resources)
+      const appKey = `${application.name}/${applicationCluster}`
+      const expectedResources = remoteAppResources.get(appKey)
+
+      // Merge: use expected resources as the base, enriching with search data when available
+      const resourceList = mergeExpectedWithSearchResults(expectedResources, searchRelatedList, applicationCluster)
+
       mapRelatedResources(application.name, resourceList)
     })
   } else {
@@ -434,6 +453,148 @@ async function getAppSetResources(application: ApplicationModel) {
     applicationResourceMap,
     applicationNames: [...applicationNameSet] as string[],
   }
+}
+
+/**
+ * Fetches remote Application CRs for pull-model ApplicationSets to get their status.resources.
+ * This provides the list of expected resources regardless of whether they currently exist on the cluster.
+ *
+ * Optimization: Determines whether all apps deploy the same manifests by comparing the
+ * source specs of the hub Application CRs (appSetApps). If all sources are identical,
+ * only one fleet request is made and the result is reused for all apps. If sources differ
+ * (matrix/merge generator varying paths), each app is fetched individually.
+ *
+ * @returns Map keyed by "appName/clusterName" → array of resources from status.resources
+ */
+async function fetchPullModelAppResources(
+  applications: ResourceItem[] | undefined,
+  namespace: string,
+  allClusterNames: string[],
+  appSetApps: ResourceItem[] = []
+): Promise<Map<string, ResourceItem[]>> {
+  const resourceMap = new Map<string, ResourceItem[]>()
+  if (!applications || applications.length === 0) {
+    return resourceMap
+  }
+
+  // Only fetch from clusters where search found an Application
+  const validApps = applications.filter(
+    (app: ResourceItem) => app.cluster && allClusterNames.includes(app.cluster as string)
+  )
+  if (validApps.length === 0) return resourceMap
+
+  const uniform = areSourcesUniform(appSetApps, (app: ResourceItem) => {
+    const spec = (app as any).spec || (app as any).metadata?.spec || {}
+    return { source: spec.source, sources: spec.sources }
+  })
+  const appResources = await fetchAppResources(validApps, namespace, uniform)
+
+  for (const app of validApps) {
+    const resources = appResources.get(`${app.name}/${app.cluster}`)
+    if (resources) {
+      resourceMap.set(`${app.name}/${app.cluster}`, resources)
+    }
+  }
+
+  return resourceMap
+}
+
+/**
+ * Fetches status.resources from remote Application CRs.
+ * When uniform is true, fetches once and reuses the result for all apps.
+ * When uniform is false, fetches each app individually in parallel.
+ */
+async function fetchAppResources(
+  apps: ResourceItem[],
+  namespace: string,
+  uniform: boolean
+): Promise<Map<string, ResourceItem[]>> {
+  const resourceMap = new Map<string, ResourceItem[]>()
+
+  if (uniform) {
+    let sharedResources: ResourceItem[] | null = null
+    for (const app of apps) {
+      sharedResources = await fetchArgoAppStatusResources(app.cluster as string, app.name as string, namespace)
+      if (sharedResources) break
+    }
+    if (sharedResources) {
+      for (const app of apps) {
+        resourceMap.set(`${app.name}/${app.cluster}`, sharedResources)
+      }
+    }
+  } else {
+    const fetchPromises = apps.map(async (app: ResourceItem) => {
+      const resources = await fetchArgoAppStatusResources(app.cluster as string, app.name as string, namespace)
+      if (resources) {
+        resourceMap.set(`${app.name}/${app.cluster}`, resources)
+      }
+    })
+    await Promise.allSettled(fetchPromises)
+  }
+
+  return resourceMap
+}
+
+/**
+ * Merges expected resources from the Application's status.resources with resources
+ * found via search. Resources in status.resources that aren't in search results
+ * are included as "expected" entries so they appear in topology regardless of
+ * their current existence on the cluster.
+ *
+ * Resources found in search are enriched with actual cluster data.
+ * Resources only in status.resources are synthesized with the target cluster,
+ * using health.status from the Application CR to determine deployed state.
+ */
+function mergeExpectedWithSearchResults(
+  expectedResources: ResourceItem[] | undefined,
+  searchRelatedList: ResourceItem[],
+  clusterName: string
+): ResourceItem[] {
+  if (!expectedResources || expectedResources.length === 0) {
+    return searchRelatedList
+  }
+
+  // Build a lookup of resources found by search (keyed by kind/name/namespace)
+  const searchResourceKeys = new Set<string>()
+  searchRelatedList.forEach((item: ResourceItem) => {
+    const key = `${(item.kind || '').toLowerCase()}/${item.name || ''}/${item.namespace || ''}`
+    searchResourceKeys.add(key)
+  })
+
+  // Start with all search-found resources (these are confirmed to exist)
+  const merged: ResourceItem[] = [...searchRelatedList]
+
+  // Add expected resources that don't exist in search results
+  expectedResources.forEach((resource: ResourceItem) => {
+    const kind = (resource.kind || '').toLowerCase()
+    const key = `${kind}/${resource.name || ''}/${resource.namespace || ''}`
+    if (!searchResourceKeys.has(key)) {
+      const healthStatus = resource.health?.status?.toLowerCase() || ''
+      // Map ArgoCD health status to search-compatible status for topology display:
+      // Healthy → running (green), Missing → not deployed (pending), Degraded → err (red)
+      let mappedStatus = ''
+      if (healthStatus === 'healthy') {
+        mappedStatus = 'running'
+      } else if (healthStatus === 'degraded') {
+        mappedStatus = 'err'
+      } else if (healthStatus === 'missing' || healthStatus === 'progressing' || healthStatus === 'suspended') {
+        mappedStatus = 'pending'
+      }
+
+      merged.push({
+        name: resource.name,
+        namespace: resource.namespace,
+        kind: resource.kind,
+        version: resource.version,
+        group: resource.group,
+        cluster: clusterName,
+        status: mappedStatus,
+        _hubCell: '',
+      })
+    }
+  })
+
+  return merged
 }
 
 /**
@@ -470,8 +631,12 @@ function processResources(
     })
   }
 
+  // Deduplicate cluster-scoped resources (no namespace) that appear on multiple clusters.
+  // They should become a single node with all target clusters in clustersNames.
+  const deduplicatedResources = deduplicateClusterScopedResources(allResources)
+
   // create nodes for each resource
-  processMultiples(allResources).forEach((deployable: Record<string, unknown>) => {
+  deduplicatedResources.forEach((deployable: Record<string, unknown>) => {
     const typedDeployable = deployable as unknown as ProcessedDeployableResource
     const {
       name: deployableName,
@@ -489,8 +654,9 @@ function processResources(
       (deployableResources as any)?.[0]?.cluster ??
       getClusterName(parentId, hubClusterName)
 
-    // Generate unique member ID for the deployable resource
-    const memberId = `member--member--deployable--member--clusters--${deployableCluster}--${type}--${deployableNamespace}--${deployableName}`
+    // For cluster-scoped resources, use a stable ID without cluster to prevent duplicates
+    const clusterInId = deployableNamespace ? deployableCluster : parentClusterNames[0] || deployableCluster
+    const memberId = `member--member--deployable--member--clusters--${clusterInId}--${type}--${deployableNamespace}--${deployableName}`
 
     // Create raw resource object with metadata
     const raw: any = {
@@ -510,6 +676,11 @@ function processResources(
       raw.apiVersion = apiVersion
     }
 
+    // For cluster-scoped resources, use all target clusters; for namespaced, use parent clusters
+    const nodeClusters = deployableNamespace
+      ? parentClusterNames
+      : (typedDeployable as any)._targetClusters || parentClusterNames
+
     // Create deployable resource node
     let deployableObj: TopologyNode = {
       name: deployableName,
@@ -520,12 +691,12 @@ function processResources(
       specs: {
         isDesign: false,
         raw,
-        clustersNames: parentClusterNames,
+        clustersNames: nodeClusters,
         parent: {
           clusterId: parentId,
         },
         resources: deployableResources,
-        resourceCount: resourceCount || parentClusterNames.length,
+        resourceCount: resourceCount || nodeClusters.length,
       },
     }
 
@@ -545,6 +716,38 @@ function processResources(
     // Create virtual machine instance child nodes (for KubeVirt)
     createVirtualMachineInstance(deployableObj, parentClusterNames || [], activeTypes, links, nodes)
   })
+}
+
+/**
+ * Deduplicates cluster-scoped resources (those without a namespace) that appear
+ * multiple times for different clusters. Combines them into a single entry with
+ * _targetClusters containing all clusters where the resource should be deployed.
+ * Namespaced resources are returned unchanged.
+ */
+function deduplicateClusterScopedResources(resources: ResourceItem[]): ResourceItem[] {
+  const clusterScoped: Map<string, ResourceItem> = new Map()
+  const namespaced: ResourceItem[] = []
+
+  resources.forEach((resource: ResourceItem) => {
+    if (resource.namespace) {
+      namespaced.push(resource)
+    } else {
+      const key = `${(resource.kind || '').toLowerCase()}/${resource.name || ''}`
+      const existing = clusterScoped.get(key)
+      if (existing) {
+        const clusters = (existing as any)._targetClusters || [existing.cluster]
+        if (resource.cluster && !clusters.includes(resource.cluster)) {
+          clusters.push(resource.cluster)
+        }
+        ;(existing as any)._targetClusters = clusters
+      } else {
+        const entry = { ...resource, _targetClusters: resource.cluster ? [resource.cluster] : [] }
+        clusterScoped.set(key, entry)
+      }
+    }
+  })
+
+  return [...namespaced, ...Array.from(clusterScoped.values())]
 }
 
 /**

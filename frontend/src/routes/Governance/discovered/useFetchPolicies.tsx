@@ -1,18 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
-// This react hook will be tested in e2e test(Cypress) due to its use of workers and blobs.
+// Discovered policy grouping runs in a Webpack-bundled Web Worker (see `discoveredPolicies.worker.ts`) for UI performance; Jest uses a main-thread fallback. Covered by e2e (Cypress) tests.
 import { useEffect, useState } from 'react'
-import { grouping } from './grouping'
+import { LabelMap } from '../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
-import { SearchInput, useSearchResultItemsAndRelatedItemsQuery } from '../../Search/search-sdk/search-sdk'
 import { searchClient } from '../../Search/search-sdk/search-client'
+import { SearchInput, useSearchResultItemsAndRelatedItemsQuery } from '../../Search/search-sdk/search-sdk'
 import {
+  getSourceText,
   parseDiscoveredPolicies,
   parseDiscoveredPolicyLabels,
-  resolveSource,
-  getSourceText,
   parseStringMap,
+  resolveSource,
 } from '../common/util'
-import { LabelMap } from '../../../resources/utils'
+import { createBundledDiscoveredPoliciesWorker } from './discoveredPoliciesWorker.factory'
+import { grouping } from './grouping'
 export interface ISourceType {
   type: string //ex: 'Policy' | 'Git' | 'Multiple'
   parentNs: string
@@ -201,46 +202,66 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
   })
 
   useEffect(() => {
-    if (searchErr && !searchLoading) {
+    if (searchLoading) return
+
+    if (searchErr) {
       setIsFetching(false)
+      return
     }
 
-    if (searchData?.searchResult?.length == 0 && !searchErr && !searchLoading) {
+    if (!searchData?.searchResult?.length) {
       setPolicyItems([])
       setRelatedResources([])
       setIsFetching(false)
+      return
     }
 
-    if (searchData?.searchResult?.length !== 0 && !searchErr && !searchLoading) {
-      const dataObj = '(' + grouping + ')();'
-      // for firefox
-      const blob = new Blob([dataObj.replace('"use strict";', '')], { type: 'application/javascript' })
-      const blobURL = (window.URL ? URL : webkitURL).createObjectURL(blob)
-      // Worker for discovered policies table
-      const worker = new Worker(blobURL)
+    const payload = {
+      data: searchData,
+      subscriptions,
+      helmReleases,
+      channels,
+      resolveSourceStr: resolveSource.toString(),
+      getSourceTextStr: getSourceText.toString(),
+      parseStringMapStr: parseStringMap.toString(),
+      parseDiscoveredPoliciesStr: parseDiscoveredPolicies.toString(),
+    }
 
-      worker.onmessage = (e: MessageEvent<any>) => {
-        const parsedData = parseDiscoveredPolicies(e.data.policyItems) as DiscoveredPolicyTableItem[]
-        setPolicyItems(parsedData)
-        setRelatedResources(e.data.relatedResources)
-        setLabelData(parseDiscoveredPolicyLabels(parsedData))
-        setIsFetching(false)
-      }
+    const applyWorkerResult = (result: { policyItems: unknown[]; relatedResources: unknown[] }) => {
+      const parsedData = parseDiscoveredPolicies(result.policyItems) as DiscoveredPolicyTableItem[]
+      setPolicyItems(parsedData)
+      setRelatedResources(result.relatedResources)
+      setLabelData(parseDiscoveredPolicyLabels(parsedData))
+      setIsFetching(false)
+    }
 
-      worker.postMessage({
-        data: searchData,
-        subscriptions,
-        helmReleases,
-        channels,
-        resolveSourceStr: resolveSource.toString(),
-        getSourceTextStr: getSourceText.toString(),
-        parseStringMapStr: parseStringMap.toString(),
-        parseDiscoveredPoliciesStr: parseDiscoveredPolicies.toString(),
-      })
+    // Jest / environments without Worker: run grouping on the main thread.
+    if (typeof Worker === 'undefined' || process.env.NODE_ENV === 'test') {
+      const { createMessage } = grouping()
+      applyWorkerResult(
+        createMessage(
+          searchData,
+          helmReleases,
+          channels,
+          subscriptions,
+          payload.resolveSourceStr,
+          payload.getSourceTextStr,
+          payload.parseStringMapStr,
+          payload.parseDiscoveredPoliciesStr
+        )
+      )
+      return
+    }
+    const worker = createBundledDiscoveredPoliciesWorker()
 
-      return () => {
-        worker.terminate()
-      }
+    worker.onmessage = (e: MessageEvent<{ policyItems: unknown[]; relatedResources: unknown[] }>) => {
+      applyWorkerResult(e.data)
+    }
+
+    worker.postMessage(payload)
+
+    return () => {
+      worker.terminate()
     }
   }, [
     channelsState,

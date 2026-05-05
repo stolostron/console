@@ -2,7 +2,12 @@
 
 import { searchClient } from '../../../../Search/search-sdk/search-client'
 import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
-import { getQueryStringForResource } from '../model/topologyUtils'
+import {
+  areSourcesUniform,
+  fetchArgoAppStatusResources,
+  getAppTargetCluster,
+  getQueryStringForResource,
+} from '../model/topologyUtils'
 import { getArgoSecret } from './resourceStatusesArgo'
 import {
   AppSetApplicationModel,
@@ -22,6 +27,9 @@ import {
  * It handles both namespaced and cluster-scoped resources, and retrieves Argo secrets
  * for authentication purposes.
  *
+ * For pull-model ApplicationSets, hub Application CRs will not have status.resources populated.
+ * In that case, this function fetches the remote Application CRs to get the expected resource list.
+ *
  * @param application - The ApplicationSet application model containing metadata and app/cluster lists
  * @param appData - Application data structure that will be populated with search results and target namespaces
  * @returns Promise resolving to an object containing the resource statuses from the search query
@@ -38,8 +46,11 @@ export async function getAppSetResourceStatuses(
     appSetClustersList.push(cls.name)
   })
 
+  // For pull-model, hub apps lack status.resources; fetch from remote clusters
+  const appsWithResources = await ensureAppResources(appSetApps, namespace, appSetClusters)
+
   // Get resource statuses by querying the search API
-  const resourceStatuses = await getResourceStatuses(name, namespace, appSetApps, appData, appSetClustersList)
+  const resourceStatuses = await getResourceStatuses(name, namespace, appsWithResources, appData, appSetClustersList)
 
   // Retrieve Argo secrets for authentication, if available
   const secret = await getArgoSecret(appData, resourceStatuses as Record<string, unknown>)
@@ -49,6 +60,75 @@ export async function getAppSetResourceStatuses(
   }
 
   return { resourceStatuses }
+}
+
+/**
+ * Ensures that the Application list has status.resources populated.
+ * For pull-model, the hub Application CRs lack status.resources because ArgoCD
+ * runs on the managed cluster. This function fetches the remote Application CRs to get
+ * the expected resource list for cluster-scoped resources (CRDs, StorageClasses, etc.).
+ *
+ * Optimization: Checks whether all apps share the same source spec (repoURL + path +
+ * targetRevision). If uniform, one fetch suffices for all apps. If sources differ
+ * (matrix/merge generator), each app is fetched individually.
+ */
+async function ensureAppResources(
+  appSetApps: AppSetApplication[],
+  namespace: string,
+  clusters: AppSetClusterInfo[]
+): Promise<AppSetApplication[]> {
+  if (
+    appSetApps.length === 0 ||
+    clusters.length === 0 ||
+    appSetApps.every((app) => (app.status?.resources?.length ?? 0) > 0)
+  ) {
+    // if there are no appSets/clusters or we already have all resources populated, no need to fetch
+    return appSetApps
+  }
+
+  const sharedResources = areSourcesUniform(appSetApps, (app: AppSetApplication) => ({
+    source: app.spec?.source,
+    sources: (app.spec as any)?.sources,
+  }))
+    ? fetchFirstAvailableResources(appSetApps, namespace, clusters)
+    : undefined
+
+  return Promise.all(
+    appSetApps.map(async (app: AppSetApplication) => {
+      if (app.status?.resources?.length) return app
+      const resources = await (sharedResources ?? fetchSingleAppResources(app, namespace, clusters))
+      if (!resources) return app
+      return { ...app, status: { ...app.status, resources } } as AppSetApplication
+    })
+  )
+}
+
+/** Tries each app in order, returning resources from the first reachable one. */
+async function fetchFirstAvailableResources(
+  appSetApps: AppSetApplication[],
+  namespace: string,
+  clusters: AppSetClusterInfo[]
+): Promise<any[] | null> {
+  for (const app of appSetApps) {
+    const resources = await fetchSingleAppResources(app, namespace, clusters)
+    if (resources) return resources
+  }
+  return null
+}
+
+/** Resolves the app's target cluster from its destination and fetches status.resources. */
+async function fetchSingleAppResources(
+  app: AppSetApplication,
+  namespace: string,
+  clusters: AppSetClusterInfo[]
+): Promise<any[] | null> {
+  const appName = app.metadata?.name
+  if (!appName) return null
+
+  const clusterName = getAppTargetCluster(app.spec.destination, clusters)
+  if (!clusterName) return null
+
+  return fetchArgoAppStatusResources(clusterName, appName, namespace)
 }
 
 /**
@@ -151,10 +231,12 @@ async function getResourceStatuses(
     appSetClusters.toString()
   )
 
-  // Build separate queries for each cluster-scoped resource
+  // Build separate queries for each cluster-scoped resource, scoped to the target clusters
   if (kindsNotNamespaceScoped.length > 0) {
     kindsNotNamespaceScoped.forEach((item: string, i: number) => {
-      queryNotNamespaceScoped.push(getQueryStringForResource([item], kindsNotNamespaceScopedNames[i], '', ''))
+      queryNotNamespaceScoped.push(
+        getQueryStringForResource([item], kindsNotNamespaceScopedNames[i], '', appSetClusters.toString())
+      )
     })
   }
 

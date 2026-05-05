@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Button, Checkbox } from '@patternfly/react-core'
+import { Button, Checkbox, Stack, StackItem } from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmAlert, AcmModal } from '../../../ui-components'
@@ -16,7 +16,6 @@ export interface IDeleteResourceModalProps {
   open: boolean
   canRemove: boolean
   resource: IResource
-  errors: ReactNode
   warnings?: ReactNode
   loading: boolean
   selected?: any[]
@@ -34,6 +33,8 @@ export interface IDeleteResourceModalProps {
 export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: false }) {
   const [removeAppResources, setRemoveAppResources] = useState<boolean>(false)
   const [removeAppSetResource, setRemoveAppSetResource] = useState<boolean>(false)
+  const [deleteResourceError, setDeleteResourceError] = useState<string | undefined>(undefined)
+  const [isDeleting, setIsDeleting] = useState<boolean>(false)
   const navigate = useNavigate()
 
   if (props.open === false) {
@@ -49,37 +50,49 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
   }
 
   const handleSubmit = () => {
-    setRemoveAppResources(false)
-    setRemoveAppSetResource(false)
-    props.close()
-    if (props.redirect) {
-      navigate(props.redirect)
+    setDeleteResourceError(undefined)
+    setIsDeleting(true)
+
+    let childResources: any[] = []
+    if (props.resource.kind === ApplicationKind && removeAppResources && props.selected) {
+      childResources = props.selected
+    } else if (
+      props.resource.kind === ApplicationSetKind &&
+      removeAppSetResource &&
+      !props.appSetsSharingPlacement?.length
+    ) {
+      childResources = [
+        {
+          apiVersion: PlacementApiVersionBeta,
+          kind: 'Placement',
+          name: props.appSetPlacement,
+          namespace: props.resource.metadata?.namespace,
+        },
+      ]
     }
 
-    if (props.resource.kind === ApplicationKind) {
-      /* istanbul ignore next */
-      return deleteApplication(props.resource, removeAppResources ? props.selected : [], props.deleted)
-    }
-
-    if (props.resource.kind === ApplicationSetKind) {
-      return deleteApplication(
-        props.resource,
-        /* istanbul ignore next */
-        props.appSetsSharingPlacement?.length === 0 && removeAppSetResource
-          ? [
-              {
-                apiVersion: PlacementApiVersionBeta, // replace when placement type is available
-                kind: 'Placement',
-                name: props.appSetPlacement,
-                namespace: props.resource.metadata?.namespace,
-              },
-            ]
-          : [],
-        props.deleted
-      )
-    }
-    /* istanbul ignore next */
-    return deleteApplication(props.resource, [], props.deleted)
+    deleteApplication(props.resource, childResources, props.deleted)
+      .promise.then(() => {
+        setIsDeleting(false)
+        setRemoveAppResources(false)
+        setRemoveAppSetResource(false)
+        props.close()
+        if (props.redirect) {
+          navigate(props.redirect)
+        }
+      })
+      .catch((err: unknown) => {
+        setIsDeleting(false)
+        let message: string
+        if (err instanceof Error) {
+          message = err.message
+        } else if (typeof err === 'string') {
+          message = err
+        } else {
+          message = props.t('An unknown error occurred.')
+        }
+        setDeleteResourceError(message)
+      })
   }
 
   const renderConfirmCheckbox = () => {
@@ -276,20 +289,33 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
       title={modalTitle}
       aria-label={modalTitle}
       showClose={true}
-      onClose={props.close}
+      onClose={() => {
+        setRemoveAppResources(false)
+        setRemoveAppSetResource(false)
+        setDeleteResourceError(undefined)
+        props.close()
+      }}
       variant={ModalVariant.medium}
       titleIconVariant="warning"
       position="top"
       actions={[
-        <Button key="confirm" variant="danger" isDisabled={!props.canRemove} onClick={() => handleSubmit()}>
+        <Button
+          key="confirm"
+          variant="danger"
+          isDisabled={!props.canRemove || isDeleting}
+          isLoading={isDeleting}
+          onClick={() => handleSubmit()}
+        >
           {props.t('Delete')}
         </Button>,
         <Button
           key="cancel"
           variant="link"
+          isDisabled={isDeleting}
           onClick={() => {
             setRemoveAppResources(false)
             setRemoveAppSetResource(false)
+            setDeleteResourceError(undefined)
             props.close()
           }}
         >
@@ -297,11 +323,25 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
         </Button>,
       ]}
     >
-      <div className="delete-app-modal-alert">
-        {props.errors !== undefined ? <AcmAlert variant="danger" title={props.errors} isInline noClose /> : null}
-        {props.warnings !== undefined ? <AcmAlert variant="warning" title={props.warnings} isInline /> : null}
-      </div>
-      {modalBody()}
+      <Stack hasGutter>
+        {props.warnings && (
+          <StackItem>
+            <AcmAlert variant="warning" title={props.warnings} isInline />
+          </StackItem>
+        )}
+        {deleteResourceError && (
+          <StackItem>
+            <AcmAlert
+              data-testid={'delete-resource-error'}
+              variant="danger"
+              title={deleteResourceError}
+              isInline
+              noClose
+            />
+          </StackItem>
+        )}
+        <StackItem>{modalBody()}</StackItem>
+      </Stack>
     </AcmModal>
   )
 }

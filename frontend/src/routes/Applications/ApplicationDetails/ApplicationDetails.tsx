@@ -252,7 +252,6 @@ export default function ApplicationDetailsPage() {
             open: true,
             canRemove: selectedApp.kind === ApplicationSetKind ? canDeleteApplicationSet : canDeleteApplication,
             resource: selectedApp,
-            errors: undefined,
             loading: false,
             selected: appChildResources[0], // children
             shared: appChildResources[1], // shared children

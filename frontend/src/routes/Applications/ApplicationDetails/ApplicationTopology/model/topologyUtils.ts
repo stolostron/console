@@ -3,7 +3,16 @@
 
 import { nodeMustHavePods } from '../helpers/diagram-helpers-utils'
 import { convertStringToQuery } from '../helpers/search-helper'
-import type { ApplicationData, ManagedCluster, SearchQuery, Topology, TopologyLink, TopologyNode } from '../types'
+import { fleetResourceRequest } from '../../../../../resources/utils/fleet-resource-request'
+import type {
+  AppSetClusterInfo,
+  ApplicationData,
+  ManagedCluster,
+  SearchQuery,
+  Topology,
+  TopologyLink,
+  TopologyNode,
+} from '../types'
 import { deepClone } from '../utils'
 
 /**
@@ -476,4 +485,102 @@ export const addTopologyNode = (
     return node
   }
   return { ...node, id: parentId }
+}
+
+/**
+ * Fetches status.resources from a remote ArgoCD Application CR via fleet request.
+ * Used by both topology and resource-status code paths to retrieve the expected
+ * resource list from a managed cluster's ArgoCD instance.
+ */
+export async function fetchArgoAppStatusResources(
+  clusterName: string,
+  appName: string,
+  namespace: string
+): Promise<any[] | null> {
+  try {
+    const result = await fleetResourceRequest('GET', clusterName, {
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: 'Application',
+      name: appName,
+      namespace,
+    })
+    if ('errorMessage' in result) return null
+    const resources = (result as any)?.status?.resources
+    return Array.isArray(resources) && resources.length > 0 ? resources : null
+  } catch {
+    return null
+  }
+}
+
+interface SourceSpec {
+  repoURL?: string
+  path?: string
+  targetRevision?: string
+  chart?: string
+}
+
+/**
+ * Determines whether all items share the same ArgoCD source specification.
+ * When sources are uniform, a single fleet request can supply the resource list
+ * for every item. The caller provides getSourceSpec to extract the source/sources
+ * from its own item type.
+ */
+export function areSourcesUniform<T>(
+  items: T[],
+  getSourceSpec: (item: T) => { source?: SourceSpec; sources?: SourceSpec[] }
+): boolean {
+  if (items.length <= 1) return true
+
+  const getKey = (item: T): string => {
+    const { source, sources } = getSourceSpec(item)
+    if (Array.isArray(sources)) {
+      return JSON.stringify(sources.map((s) => ({ r: s.repoURL, p: s.path, t: s.targetRevision, c: s.chart })))
+    }
+    return `${source?.repoURL || ''}|${source?.path || ''}|${source?.targetRevision || ''}|${source?.chart || ''}`
+  }
+
+  const firstKey = getKey(items[0])
+  return items.every((item) => getKey(item) === firstKey)
+}
+
+/**
+ * Resolves the target cluster name for an ArgoCD Application from its destination spec.
+ *
+ * Mirrors the logic in getArgoDestinationCluster (topologyArgo.ts / backend utils.ts):
+ *  - destination.name → direct match against cluster names (handles "in-cluster" → hub)
+ *  - destination.server → resolves via kubernetes.default.svc, cluster-proxy URL, or raw kube API URL
+ */
+export function getAppTargetCluster(
+  destination: { name?: string; server?: string },
+  clusters: AppSetClusterInfo[]
+): string | null {
+  if (destination.name) {
+    const name = destination.name === 'in-cluster' ? 'local-cluster' : destination.name
+    return findClusterByName(clusters, name)
+  }
+  if (destination.server) {
+    return resolveClusterFromServer(destination.server, clusters)
+  }
+  return null
+}
+
+function findClusterByName(clusters: AppSetClusterInfo[], name: string): string | null {
+  const match = clusters.find((c) => c.name === name)
+  return match ? match.name : null
+}
+
+const PROXY_URL_PATTERN = /\.svc\.cluster\.local:\d+\/(.+)$/
+
+function resolveClusterFromServer(server: string, clusters: AppSetClusterInfo[]): string | null {
+  if (server === 'https://kubernetes.default.svc') {
+    return findClusterByName(clusters, 'local-cluster')
+  }
+  // Cluster proxy URL: https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:<port>/<cluster>
+  const proxyMatch = PROXY_URL_PATTERN.exec(server)
+  if (proxyMatch) {
+    return findClusterByName(clusters, proxyMatch[1])
+  }
+  // Raw kube API server URL — match against server or url fields
+  const match = clusters.find((c) => c.server === server || (c as any).url === server)
+  return match ? match.name : null
 }

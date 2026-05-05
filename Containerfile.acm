@@ -36,7 +36,7 @@ USER 1001
 CMD ["node", "backend.mjs"]
 
 LABEL com.redhat.component="console-container" \
-      cpe="cpe:/a:redhat:acm:2.17::el9" \
+      cpe="cpe:/a:redhat:acm:5.0::el9" \
       url="https://github.com/stolostron/console" \
       name="rhacm2/console-rhel9" \
       summary="console" \

@@ -1,152 +1,153 @@
 /* Copyright Contributors to the Open Cluster Management project */
+jest.mock('./discoveredPoliciesWorker.factory')
+
+import { waitFor } from '@testing-library/react'
 import { useFetchPolicies } from './useFetchPolicies'
 import { renderHook } from '@testing-library/react-hooks'
 import { RecoilRoot } from 'recoil'
+import { useSearchResultItemsAndRelatedItemsQuery } from '../../Search/search-sdk/search-sdk'
 
-//
-// mock useSearchResultItemsAndRelatedItemsQuery
+/** Stable identity — a new `data` object every render can make Apollo re-render until OOM. */
+const mockSearchQueryResult = {
+  data: {
+    searchResult: [
+      {
+        items: [
+          {
+            _hubClusterResource: false,
+            _uid: 'jes1/45fa130d-abff-4426-9cd8-fef1cf460080',
+            apigroup: 'policy.open-cluster-management.io',
+            apiversion: 'v1',
+            cluster: 'jes1',
+            compliant: 'Compliant',
+            created: '2024-12-17T15:34:18Z',
+            disabled: false,
+            kind: 'CertificatePolicy',
+            kind_plural: 'certificatepolicies',
+            label:
+              'cluster-name=jes1; cluster-namespace=jes1; governance=all; policy.open-cluster-management.io/cluster-name=jes1; policy.open-cluster-management.io/cluster-namespace=jes1; policy.open-cluster-management.io/policy=open-cluster-management-global-set.policy-with-labels3',
+            name: 'policy-certificate-1',
+            namespace: 'jes1',
+            remediationAction: 'inform',
+            severity: 'low',
+            _isExternal: false,
+            annotation: '',
+          },
+          {
+            _hubClusterResource: false,
+            _uid: 'jes2/54c2bc0f-0703-460a-8e98-d3ebf25cfb32',
+            apigroup: 'policy.open-cluster-management.io',
+            apiversion: 'v1',
+            cluster: 'jes2',
+            compliant: 'Compliant',
+            created: '2024-12-17T15:34:18Z',
+            disabled: false,
+            kind: 'CertificatePolicy',
+            kind_plural: 'certificatepolicies',
+            label:
+              'cluster-name=jes2; cluster-namespace=jes2; governance=all; policy.open-cluster-management.io/cluster-name=jes2; policy.open-cluster-management.io/cluster-namespace=jes2; policy.open-cluster-management.io/policy=open-cluster-management-global-set.policy-with-labels3',
+            name: 'policy-certificate-1',
+            namespace: 'jes2',
+            remediationAction: 'inform',
+            severity: 'low',
+            _isExternal: false,
+            annotation: '',
+          },
+          {
+            _hubClusterResource: true,
+            _uid: 'local-cluster/4d1381b2-1d18-4982-8b63-cc5c99b7863f',
+            apigroup: 'policy.open-cluster-management.io',
+            apiversion: 'v1',
+            cluster: 'local-cluster',
+            compliant: 'Compliant',
+            created: '2024-12-17T15:34:18Z',
+            disabled: false,
+            kind: 'CertificatePolicy',
+            kind_plural: 'certificatepolicies',
+            label:
+              'cluster-name=local-cluster; cluster-namespace=local-cluster; governance=all; policy.open-cluster-management.io/cluster-name=local-cluster; policy.open-cluster-management.io/cluster-namespace=local-cluster; policy.open-cluster-management.io/policy=open-cluster-management-global-set.policy-with-labels3',
+            name: 'policy-certificate-1',
+            namespace: 'local-cluster',
+            remediationAction: 'inform',
+            severity: 'low',
+            _isExternal: false,
+            annotation: '',
+          },
+        ],
+        related: [],
+      },
+    ],
+  },
+  loading: false,
+  error: undefined,
+}
+
 jest.mock('../../Search/search-sdk/search-sdk', () => ({
-  useSearchResultItemsAndRelatedItemsQuery: jest.fn(() => {
-    return {
-      // This is obviously not a real search result, but it matches the format
-      // of the data after the worker would be done with it. It currently passes
-      // unchanged to `worker.postMessage` as a quirk.
-      data: { policyItems: items },
-      loading: false,
-    }
-  }),
+  useSearchResultItemsAndRelatedItemsQuery: jest.fn(() => mockSearchQueryResult),
 }))
 
-//
-// mock worker
-global.URL.createObjectURL = jest.fn()
-type MessageHandler = (msg: string) => void
-let onceIsEnough = false
-
-class Worker {
-  url: string
-  terminate: () => void
-  onmessage: MessageHandler
-  constructor(stringUrl: string) {
-    this.url = stringUrl
-    this.onmessage = () => {}
-    this.terminate = () => {}
-  }
-  postMessage(msg: string): void {
-    if (!onceIsEnough) {
-      onceIsEnough = true
-      this.onmessage(msg)
-    }
-  }
-}
-Object.defineProperty(window, 'Worker', {
-  writable: true,
-  value: Worker,
-})
-
-//
-// test
 describe('useFetchPolicies custom hook', () => {
-  beforeEach(() => {
-    onceIsEnough = false
+  afterEach(() => {
+    ;(useSearchResultItemsAndRelatedItemsQuery as jest.Mock).mockReturnValue(mockSearchQueryResult)
   })
 
   test('Should parse discovered policy labels', async () => {
     const { result } = renderHook(() => useFetchPolicies(), { wrapper: RecoilRoot })
+
+    await waitFor(() => {
+      expect(result.current.labelData).toBeDefined()
+    })
+
     expect(JSON.stringify(result.current.labelData)).toEqual(JSON.stringify(labelData))
   })
-})
 
-const items = [
-  {
-    id: 'policy-certificate-1CertificatePolicypolicy.open-cluster-management.io',
-    apigroup: 'policy.open-cluster-management.io',
-    name: 'policy-certificate-1',
-    kind: 'CertificatePolicy',
-    severity: 'low',
-    responseAction: 'inform',
-    policies: [
-      {
-        _isExternal: false,
-        _uid: 'jes1/45fa130d-abff-4226-9cd8-fef1cf460080',
-        apigroup: 'policy.open-cluster-management.io',
-        apiversion: 'v1',
-        cluster: 'jes1',
-        compliant: 'Compliant',
-        created: '2024-12-17T15:34:18Z',
-        disabled: false,
-        kind: 'CertificatePolicy',
-        kind_plural: 'certificatepolicies',
-        label:
-          'cluster-name=jes1; cluster-namespace=jes1; governance=all; policy.open-cluster-management.io/cluster-name=jes1; policy.open-cluster-management.io/cluster-namespace=jes1; policy.open-cluster-management.io/policy=open-cluster-management-global-set.policy-with-labels3',
-        name: 'policy-certificate-1',
-        namespace: 'jes1',
-        remediationAction: 'inform',
-        severity: 'low',
-        source: {
-          type: 'Policy',
-          parentNs: 'open-cluster-management-global-set',
-          parentName: 'policy-with-labels3',
-        },
-        responseAction: 'inform',
-      },
-      {
-        _isExternal: false,
-        _uid: 'jes2/54c2bc0f-0703-460a-8e98-d3ebf25cfb32',
-        apigroup: 'policy.open-cluster-management.io',
-        apiversion: 'v1',
-        cluster: 'jes2',
-        compliant: 'Compliant',
-        created: '2024-12-17T15:34:18Z',
-        disabled: false,
-        kind: 'CertificatePolicy',
-        kind_plural: 'certificatepolicies',
-        label:
-          'cluster-name=jes2; cluster-namespace=jes2; governance=all; policy.open-cluster-management.io/cluster-name=jes2; policy.open-cluster-management.io/cluster-namespace=jes2; policy.open-cluster-management.io/policy=open-cluster-management-global-set.policy-with-labels3',
-        name: 'policy-certificate-1',
-        namespace: 'jes2',
-        remediationAction: 'inform',
-        severity: 'low',
-        source: {
-          type: 'Policy',
-          parentNs: 'open-cluster-management-global-set',
-          parentName: 'policy-with-labels3',
-        },
-        responseAction: 'inform',
-      },
-      {
-        _hubClusterResource: true,
-        _isExternal: false,
-        _uid: 'local-cluster/4d1381b2-1d18-4982-8b63-cc5c99b7863f',
-        apigroup: 'policy.open-cluster-management.io',
-        apiversion: 'v1',
-        cluster: 'local-cluster',
-        compliant: 'Compliant',
-        created: '2024-12-17T15:34:18Z',
-        disabled: false,
-        kind: 'CertificatePolicy',
-        kind_plural: 'certificatepolicies',
-        label:
-          'cluster-name=local-cluster; cluster-namespace=local-cluster; governance=all; policy.open-cluster-management.io/cluster-name=local-cluster; policy.open-cluster-management.io/cluster-namespace=local-cluster; policy.open-cluster-management.io/policy=open-cluster-management-global-set.policy-with-labels3',
-        name: 'policy-certificate-1',
-        namespace: 'local-cluster',
-        remediationAction: 'inform',
-        severity: 'low',
-        source: {
-          type: 'Policy',
-          parentNs: 'open-cluster-management-global-set',
-          parentName: 'policy-with-labels3',
-        },
-        responseAction: 'inform',
-      },
-    ],
-    source: {
-      type: 'Policy',
-      parentNs: 'open-cluster-management-global-set',
-      parentName: 'policy-with-labels3',
-    },
-  },
-]
+  test('stays in fetching state while search is loading', async () => {
+    ;(useSearchResultItemsAndRelatedItemsQuery as jest.Mock).mockReturnValue({
+      data: undefined,
+      loading: true,
+      error: undefined,
+    })
+
+    const { result } = renderHook(() => useFetchPolicies(), { wrapper: RecoilRoot })
+
+    await waitFor(() => {
+      expect(result.current.isFetching).toBe(true)
+    })
+    expect(result.current.policyItems).toBeUndefined()
+  })
+
+  test('sets isFetching to false and exposes the error when search returns an error', async () => {
+    ;(useSearchResultItemsAndRelatedItemsQuery as jest.Mock).mockReturnValue({
+      data: undefined,
+      loading: false,
+      error: new Error('search failed'),
+    })
+
+    const { result } = renderHook(() => useFetchPolicies(), { wrapper: RecoilRoot })
+
+    await waitFor(() => {
+      expect(result.current.isFetching).toBe(false)
+    })
+    expect(result.current.err).toEqual(new Error('search failed'))
+    expect(result.current.policyItems).toBeUndefined()
+  })
+
+  test('sets policyItems and relatedResources to empty arrays when search returns no results', async () => {
+    ;(useSearchResultItemsAndRelatedItemsQuery as jest.Mock).mockReturnValue({
+      data: { searchResult: [] },
+      loading: false,
+      error: undefined,
+    })
+
+    const { result } = renderHook(() => useFetchPolicies(), { wrapper: RecoilRoot })
+
+    await waitFor(() => {
+      expect(result.current.isFetching).toBe(false)
+    })
+    expect(result.current.policyItems).toEqual([])
+    expect(result.current.relatedResources).toEqual([])
+  })
+})
 
 const labelData = {
   labelMap: {

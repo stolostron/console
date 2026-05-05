@@ -149,7 +149,7 @@ export function AcmDonutChart(props: {
                   fill: 'var(--pf-t--global--text--color--regular)', // title color
                 },
                 {
-                  fill: 'var(--pf-v5-chart-donut--label--subtitle--Fill)', // subtitle color
+                  fill: 'var(--pf-t--global--text--color--regular)', // subtitle color
                 },
               ]}
             />

@@ -180,18 +180,22 @@ export function grouping(): {
         // except for gatekeeper constraints which only report noncompliant resources
         const isGatekeeperConstraint = polInfo?.apigroup === 'constraints.gatekeeper.sh'
 
-        item.compliant = isGatekeeperConstraint ? 'noncompliant' : 'compliant'
-        item.groupversion = groupversion
-        item.templateInfo = {
-          clusterName: cluster,
-          apiVersion: polInfo?.apiversion,
-          apiGroup: polInfo?.apigroup,
-          kind: polInfo?.kind,
-          templateName: polInfo?.name,
-          templateNamespace: templateNamespace.get(cluster),
+        // Apollo results can be frozen/non-extensible; never mutate `item` in-place.
+        const editedItem = {
+          ...item,
+          compliant: isGatekeeperConstraint ? 'noncompliant' : 'compliant',
+          groupversion,
+          templateInfo: {
+            clusterName: cluster,
+            apiVersion: polInfo?.apiversion,
+            apiGroup: polInfo?.apigroup,
+            kind: polInfo?.kind,
+            templateName: polInfo?.name,
+            templateNamespace: templateNamespace.get(cluster),
+          },
         }
 
-        resources.set(`${cluster}:${groupversion}:${kind}:${namespace}:${name}`, item)
+        resources.set(`${cluster}:${groupversion}:${kind}:${namespace}:${name}`, editedItem)
       })
     }
 
@@ -220,7 +224,7 @@ export function grouping(): {
         const obj = expandResource(miniObj)
         const key = `${cluster}:${obj.groupversion}:${obj.kind}:${obj.namespace}:${obj.name}`
         if (resources.has(key)) {
-          resources.get(key).compliant = 'noncompliant'
+          resources.set(key, { ...resources.get(key), compliant: 'noncompliant' })
         }
       })
     }
@@ -256,7 +260,7 @@ export function grouping(): {
       })
     })
 
-    const relatedResources = Array.from(resources.values())
+    let relatedResources = Array.from(resources.values())
 
     if (searchDataItems?.length === 0) {
       return {
@@ -287,17 +291,22 @@ export function grouping(): {
         }
       })
 
-      relatedResources.forEach((item) => {
+      relatedResources = relatedResources.map((item) => {
         const report = reportMap[item._uid]
-        if (report) {
-          item.policyReport = report
+        if (!report) return item
 
-          report?._policyViolationCounts.split('; ').forEach((violation: string) => {
-            const violationInfo = violation.split('=', 2)
-            if (violationInfo[0] === templateName && Number(violationInfo[1]) > 0) {
-              item.compliant = 'noncompliant'
-            }
-          })
+        let compliant = item.compliant
+        report?._policyViolationCounts.split('; ').forEach((violation: string) => {
+          const violationInfo = violation.split('=', 2)
+          if (violationInfo[0] === templateName && Number(violationInfo[1]) > 0) {
+            compliant = 'noncompliant'
+          }
+        })
+
+        return {
+          ...item,
+          policyReport: report,
+          compliant,
         }
       })
     }
@@ -439,32 +448,6 @@ export function grouping(): {
       relatedResources,
       kyvernoPolicyReports,
     }
-  }
-
-  self.onmessage = (e: MessageEvent<any>) => {
-    const {
-      data: searchData,
-      helmReleases,
-      channels,
-      subscriptions,
-      resolveSourceStr,
-      getSourceTextStr,
-      parseStringMapStr,
-      parseDiscoveredPoliciesStr,
-    } = e.data
-
-    self.postMessage(
-      createMessage(
-        searchData,
-        helmReleases,
-        channels,
-        subscriptions,
-        resolveSourceStr,
-        getSourceTextStr,
-        parseStringMapStr,
-        parseDiscoveredPoliciesStr
-      )
-    )
   }
 
   // Return for unit test
