@@ -29,6 +29,7 @@ import {
   cloneElement,
   isValidElement,
   ReactElement,
+  InputHTMLAttributes,
   ReactNode,
   Ref,
   useCallback,
@@ -55,6 +56,7 @@ export enum SelectVariant {
 }
 type SelectionsType = string | SelectOptionObject | (string | SelectOptionObject)[]
 type OptionsType = { id: string; value?: string; text?: string }[]
+type AcmInputProps = InputHTMLAttributes<HTMLInputElement> & { 'data-testid'?: string }
 
 export type AcmSelectBaseProps = Pick<
   SelectProps,
@@ -82,6 +84,8 @@ export type AcmSelectBaseProps = Pick<
   isLoading?: boolean
   footer?: React.ReactNode
   isCreatable?: boolean
+  inputProps?: AcmInputProps
+  onTypeaheadInputCommit?: (value: string) => void
 }
 
 const NO_RESULTS = 'no results'
@@ -147,10 +151,11 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
     } else if (children.length > 0) {
       initialFilteredOptions = children.map((child) => {
         const props = (child as React.ReactElement).props
-        const { value, children } = props
+        const { value, children, description } = props
         return {
           value: value ?? '',
           children: children ?? value,
+          description,
         }
       })
     } else {
@@ -199,6 +204,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
   const [activeItemId, setActiveItemId] = useState<string | null>(null)
   const menuRef = useRef<HTMLDivElement>()
   const textInputRef = useRef<HTMLInputElement>()
+  const skipBlurCommitRef = useRef(false)
   const {
     value,
     isDisabled,
@@ -213,8 +219,16 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
     variant = SelectVariant.single,
     children,
     footer,
+    id,
+    inputProps,
+    onTypeaheadInputCommit,
     ...selectProps
   } = props
+
+  const resolvedInputProps = {
+    ...inputProps,
+    ...(id && { id }),
+  }
   const selectedItem = !Array.isArray(selections) ? (selections as string) : undefined
   const selectedItems = Array.isArray(selections) ? (selections as string[]) : []
 
@@ -253,7 +267,12 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
   const createItemId = (value: any) => `select-typeahead-${value.replace(' ', '-')}`
   const selectToggleId = toggleId ?? `pf-select-toggle-id-${currentId++}`
 
-  const closeMenu = () => {
+  const resetActiveAndFocusedItem = useCallback(() => {
+    setFocusedItemIndex(null)
+    setActiveItemId(null)
+  }, [])
+
+  const closeMenu = useCallback(() => {
     setIsOpen(false)
     if (
       variant === SelectVariant.checkbox ||
@@ -265,7 +284,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
       setFilterValue('')
     }
     resetActiveAndFocusedItem()
-  }
+  }, [resetActiveAndFocusedItem, variant])
 
   const onTextInputChange = (_event: React.FormEvent<HTMLInputElement>, value: string) => {
     setInputValue(value)
@@ -273,6 +292,15 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
 
     resetActiveAndFocusedItem()
   }
+
+  const commitTypeaheadInput = useCallback(
+    (value?: string) => {
+      if (!onTypeaheadInputCommit) return
+      onTypeaheadInputCommit(value ?? inputValue)
+      closeMenu()
+    },
+    [closeMenu, inputValue, onTypeaheadInputCommit]
+  )
 
   const handleMenuArrowKeys = (key: string) => {
     let indexToFocus = 0
@@ -329,12 +357,20 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
       case 'Enter':
         if (isOpen && focusedItem && focusedItem.value !== NO_RESULTS && !focusedItem.isAriaDisabled) {
           selectOption(focusedItem.value, focusedItem.children as string)
+        } else if (onTypeaheadInputCommit) {
+          event.preventDefault()
+          commitTypeaheadInput(event.currentTarget.value)
         }
 
-        if (!isOpen) {
+        if (!isOpen && !onTypeaheadInputCommit) {
           setIsOpen(true)
         }
 
+        break
+      case 'Tab':
+        if (onTypeaheadInputCommit && inputValue !== selectedItem) {
+          commitTypeaheadInput(event.currentTarget.value)
+        }
         break
       case 'ArrowUp':
       case 'ArrowDown':
@@ -409,11 +445,6 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
     setActiveItemId(createItemId(focusedItem.value))
   }
 
-  const resetActiveAndFocusedItem = () => {
-    setFocusedItemIndex(null)
-    setActiveItemId(null)
-  }
-
   const onToggleClick = () => {
     setIsOpen(!isOpen)
   }
@@ -445,6 +476,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
   }
 
   const selectOption = (value: string | number, content: string | number) => {
+    skipBlurCommitRef.current = true
     if (variant === SelectVariant.typeahead) {
       setInputValue(String(content))
     }
@@ -481,7 +513,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
         if (textInputRef?.current) textInputRef.current.style.width = 'auto'
       }
     },
-    [filterValue.length, onClear, onSelect, props.width, variant]
+    [filterValue.length, onClear, onSelect, props.width, resetActiveAndFocusedItem, variant]
   )
 
   const renderCheckboxes = (children: ReactNode, selectedItems: string | any[]): any => {
@@ -525,7 +557,12 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
         )
       default:
         return (
-          <SelectList style={{ maxHeight: maxHeight, overflowY: 'auto' }}>
+          <SelectList
+            style={{ maxHeight: maxHeight, overflowY: 'auto' }}
+            onMouseDownCapture={() => {
+              skipBlurCommitRef.current = true
+            }}
+          >
             {filteredOptions.map((option, index) => (
               <SelectOption
                 key={option.value ?? option.children}
@@ -640,6 +677,9 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
           <Button
             icon={<TimesIcon aria-hidden />}
             variant="plain"
+            onMouseDown={() => {
+              skipBlurCommitRef.current = true
+            }}
             onClick={(e) => {
               onClearSelection()
               e.stopPropagation()
@@ -664,9 +704,20 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
           onClick={onInputClick}
           onChange={onTextInputChange}
           onKeyDown={onInputKeyDown}
+          onBlur={(event) => {
+            if (skipBlurCommitRef.current) {
+              skipBlurCommitRef.current = false
+              return
+            }
+            if (onTypeaheadInputCommit && event.currentTarget.value !== selectedItem) {
+              commitTypeaheadInput(event.currentTarget.value)
+            }
+          }}
           autoComplete="off"
           innerRef={textInputRef}
           placeholder={placeholder}
+          inputId={id}
+          inputProps={resolvedInputProps}
           {...(activeItemId && { 'aria-activedescendant': activeItemId })}
           role="combobox"
           aria-label={ariaLabel}
@@ -695,6 +746,9 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
           <Button
             icon={<TimesIcon aria-hidden />}
             variant="plain"
+            onMouseDown={() => {
+              skipBlurCommitRef.current = true
+            }}
             onClick={() => onClearSelection()}
             aria-label={t('Clear input value')}
           />

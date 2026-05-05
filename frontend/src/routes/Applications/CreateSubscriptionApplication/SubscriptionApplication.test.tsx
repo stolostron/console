@@ -419,6 +419,12 @@ describe('Create Subscription Application page', () => {
     userEvent.click(container.querySelector('#git') as HTMLElement)
   }
 
+  const commitComboBoxByTestId = async (id: string, value: string) => {
+    const input = await screen.findByTestId(id)
+    fireEvent.change(input, { target: { value } })
+    fireEvent.keyDown(input, { key: 'Enter', code: 'Enter', charCode: 13 })
+  }
+
   const Component = () => {
     return (
       <RecoilRoot
@@ -482,9 +488,9 @@ describe('Create Subscription Application page', () => {
     await waitForNocks(placementNocks)
     // Wait for git form to render
     await screen.findByTestId('githubURL')
-    await typeByTestId('githubURL', gitLink)
-    userEvent.type(screen.getByLabelText(/branch/i), 'test-branch')
-    userEvent.type(screen.getByLabelText(/path/i), 'test-path')
+    await commitComboBoxByTestId('githubURL', gitLink)
+    await commitComboBoxByTestId('githubBranch', 'test-branch')
+    await commitComboBoxByTestId('githubPath', 'test-path')
 
     // create placement
     await waitForText('Select an existing placement configuration', true)
@@ -554,10 +560,10 @@ describe('Create Subscription Application page', () => {
     await clickGitCard(container)
     await waitForNocks(placementNocks)
     // Wait for git form to render
-    const githubURL = await screen.findByLabelText(/url/i, {}, { timeout: 3000 })
-    userEvent.type(githubURL, gitLink)
-    userEvent.type(screen.getByLabelText(/branch/i), 'test-branch')
-    userEvent.type(screen.getByLabelText(/path/i), 'test-path')
+    await screen.findByTestId('githubURL')
+    await commitComboBoxByTestId('githubURL', gitLink)
+    await commitComboBoxByTestId('githubBranch', 'test-branch')
+    await commitComboBoxByTestId('githubPath', 'test-path')
 
     const ansibleSecretName = screen.getByPlaceholderText(/select an existing secret from the list./i)
 
@@ -692,9 +698,9 @@ describe('Create Subscription Application page', () => {
     await waitForNocks(placementNocks)
     // Wait for git form to render from the existing subscription data
     await screen.findByTestId('githubURL')
-    await typeByTestId('githubURL', gitLink)
-    userEvent.type(screen.getByLabelText(/branch/i), 'test-branch')
-    userEvent.type(screen.getByLabelText(/path/i), 'test-path2')
+    await commitComboBoxByTestId('githubURL', gitLink)
+    await commitComboBoxByTestId('githubBranch', 'test-branch')
+    await commitComboBoxByTestId('githubPath', 'test-path2')
     await new Promise((resolve) => setTimeout(resolve, 500))
 
     // pick existing Placement

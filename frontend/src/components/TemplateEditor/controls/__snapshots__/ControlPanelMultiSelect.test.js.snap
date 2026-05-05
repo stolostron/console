@@ -84,6 +84,7 @@ exports[`ControlPanelMultiSelect component renders as expected 1`] = `
                     aria-expanded="false"
                     aria-label="Options menu"
                     class="pf-v6-c-text-input-group__text-input"
+                    data-testid="multi-controlId"
                     placeholder="None"
                     role="combobox"
                     type="text"
