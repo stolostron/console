@@ -115,8 +115,12 @@ export function getPlacementDebugCACertificate(onChange?: () => void): Certifica
     }
     try {
       placement_debug_ca = readFileSync(caPath, 'utf-8')
-    } catch {
-      logger.warn({ msg: 'PLACEMENT_CA_BUNDLE_PATH set but file not found', path: caPath })
+    } catch (err) {
+      logger.warn({
+        msg: 'PLACEMENT_CA_BUNDLE_PATH set but file not found',
+        path: caPath,
+        error: err instanceof Error ? err.message : String(err),
+      })
       return undefined
     }
   }
