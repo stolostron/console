@@ -14,7 +14,7 @@
   "{{count}} cluster cannot be edited _plural": "{{count}} clusters cannot be edited ",
   "{{count}} clusters with unknown status": "{{count}} cluster with unknown status",
   "{{count}} clusters with unknown status_plural": "{{count}} clusters with unknown status",
-  "{{count}} clusters with unsatisfied dependencies": "{{count}} cluster with unsatisfied dependencies",
+  "{{count}} clusters withllll. unsatisfied dependencies": "{{count}} cluster with unsatisfied dependencies",
   "{{count}} clusters with unsatisfied dependencies_plural": "{{count}} clusters with unsatisfied dependencies",
   "{{count}} clusters with violations": "{{count}} cluster with violations",
   "{{count}} clusters with violations_plural": "{{count}} clusters with violations",
