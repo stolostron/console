@@ -44,10 +44,10 @@
 .temptifly-controls-labels-container,
 .creation-view-controls-labels-container {
   border-style: solid;
-  border-width: var(--pf-v5-global--BorderWidth--sm);
-  border-top-color: var(--pf-v5-global--BorderColor--300);
-  border-right-color: var(--pf-v5-global--BorderColor--300);
-  border-bottom-color: var(--pf-v5-global--BorderColor--200);
-  border-left-color: var(--pf-v5-global--BorderColor--300);
+  border-width: var(--pf-t--global--border--width--regular);
+  border-top-color: var(--pf-t--global--border--color--default);
+  border-right-color: var(--pf-t--global--border--color--default);
+  border-bottom-color: var(--pf-t--global--border--color--default);
+  border-left-color: var(--pf-t--global--border--color--default);
   box-shadow: unset !important;
 }
