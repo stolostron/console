@@ -1,10 +1,9 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import chalk from 'chalk'
 import fs from 'node:fs'
 import path from 'node:path'
 import { execSync } from 'node:child_process'
 import inquirer from 'inquirer'
-// import readline from 'node:readline'
-// import tty from 'node:tty'
 import { simpleGit, type SimpleGit } from 'simple-git'
 
 /** Resolved from repo `frontend/` (see `npm run i18n-backporting`). */
