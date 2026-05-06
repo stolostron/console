@@ -55,7 +55,7 @@ class ControlPanelCheckbox extends React.Component {
               controlId={controlId}
               control={control}
               controlData={controlData}
-              disableHelperText={true}
+              omitHelperText={true}
             />
           </div>
           <ControlPanelHelperText control={control} controlData={controlData} controlId={controlId} i18n={i18n} />

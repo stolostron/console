@@ -12,11 +12,11 @@ const ControlPanelFormGroup = (props: {
   control: any
   controlData: any
   controlId: string
-  disableHelperText?: boolean
+  omitHelperText?: boolean
   i18n: TFunction
   hideLabel?: boolean
 }) => {
-  const { controlId, control, controlData, disableHelperText = false, children, i18n, hideLabel } = props
+  const { controlId, control, controlData, omitHelperText = false, children, i18n, hideLabel } = props
   const { name, opaque, tooltip, validation = {}, icon } = control
   return (
     <React.Fragment>
@@ -48,7 +48,7 @@ const ControlPanelFormGroup = (props: {
           }
         >
           {children}
-          {!disableHelperText && (
+          {!omitHelperText && (
             <ControlPanelHelperText control={control} controlData={controlData} controlId={controlId} i18n={i18n} />
           )}
         </FormGroup>
