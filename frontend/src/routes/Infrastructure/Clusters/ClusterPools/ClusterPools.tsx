@@ -424,7 +424,6 @@ export function ClusterPoolsTable(props: {
           {
             header: '',
             cellTransforms: [fitContent],
-            isActionCol: true,
             cell: (clusterPool: ClusterPool) => {
               if (!isClusterPoolDeleting(clusterPool)) {
                 return (
@@ -735,7 +734,6 @@ export function ClusterPoolClaimsTable(props: { claims: ClusterClaim[] }) {
           {
             header: '',
             cellTransforms: [fitContent],
-            isActionCol: true,
             cell: (claim: ClusterClaim) => {
               return (
                 <AcmButton
