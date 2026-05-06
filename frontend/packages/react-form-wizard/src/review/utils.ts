@@ -125,11 +125,11 @@ const REVIEW_HORIZONTAL_TERM_WIDTH_COMPACT: HorizontalTermWidthModifier = {
 }
 
 const REVIEW_HORIZONTAL_TERM_WIDTH_WIDE: HorizontalTermWidthModifier = {
-  default: '24ch',
-  sm: '30ch',
-  md: '40ch',
-  lg: '56ch',
-  xl: '60ch',
+  default: '12ch',
+  sm: '15ch',
+  md: '20ch',
+  lg: '28ch',
+  xl: '30ch',
   '2xl': '70ch',
 }
 
