@@ -173,10 +173,16 @@ export function RbacButton(props: RbacButtonProps) {
       initialRbac.map(async (rbac) => {
         return await createSubjectAccessReview(rbac).promise
       })
-    ).then((results) => {
-      const isDisabled = !results.every((result) => result?.status?.allowed)
-      setIsDisabled(isDisabled)
-    })
+    )
+      .then((results) => {
+        const isDisabled = !results.every((result) => result?.status?.allowed)
+        setIsDisabled(isDisabled)
+      })
+      .catch(() => {
+        // On error, enable the button so that a problem with permission checking does not block functionality
+        // Backend action will still fail if the user does not have permission
+        setIsDisabled(false)
+      })
   }, [initialRbac])
 
   return (
