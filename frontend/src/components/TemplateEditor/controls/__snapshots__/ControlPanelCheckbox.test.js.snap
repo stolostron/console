@@ -85,9 +85,6 @@ exports[`ControlPanelCheckbox component renders as expected 1`] = `
         </div>
       </div>
     </div>
-    <div
-      style="font-size: 14px; font-weight: normal;"
-    />
   </div>
 </DocumentFragment>
 `;
