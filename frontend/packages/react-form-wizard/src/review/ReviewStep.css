@@ -120,7 +120,65 @@
   grid-column: 1 / -1;
   grid-template-columns: subgrid;
   grid-template-rows: auto;
+  row-gap: var(--pf-v6-c-description-list__group--RowGap);
   align-items: baseline;
+}
+
+.wizard-review-pen-hover-zone--dl-group-row > .pf-v6-c-description-list__term {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.wizard-review-pen-hover-zone--dl-group-row > .pf-v6-c-description-list__description {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+}
+
+/* Stacked duplicate: full-width row under the term + value row (shown only in narrow groups via @container). */
+.wizard-review-pen-hover-zone--dl-group-row > .wizard-review-pen-controls--dl-stacked {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: none;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: flex-end;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Wide: value + inline pen cluster in the dd; narrow: hide inline cluster and show stacked row. */
+.pf-v6-c-description-list__group:has(> .wizard-review-pen-hover-zone--dl-group-row:not(.wizard-review-dl-empty-value)) {
+  container-type: inline-size;
+  container-name: wizard-review-pen-dl-group;
+}
+
+/* Empty string value: inline pen cluster can stay until a wider breakpoint (less dead space in the value cell). */
+.pf-v6-c-description-list__group:has(> .wizard-review-pen-hover-zone--dl-group-row.wizard-review-dl-empty-value) {
+  container-type: inline-size;
+  container-name: wizard-review-pen-dl-group-empty;
+}
+
+@container wizard-review-pen-dl-group (max-width: 28rem) {
+  .wizard-review-pen-controls--dl-inline {
+    display: none !important;
+  }
+
+  .wizard-review-pen-hover-zone--dl-group-row > .wizard-review-pen-controls--dl-stacked {
+    display: flex !important;
+    justify-content: flex-start;
+  }
+}
+
+@container wizard-review-pen-dl-group-empty (max-width: 48rem) {
+  .wizard-review-pen-controls--dl-inline {
+    display: none !important;
+  }
+
+  .wizard-review-pen-hover-zone--dl-group-row > .wizard-review-pen-controls--dl-stacked {
+    display: flex !important;
+    justify-content: flex-start;
+  }
 }
 
 .wizard-review-inline-value {
@@ -130,30 +188,46 @@
   gap: var(--pf-t--global--spacer--xs, 0.25rem);
 }
 
+/* Description-list pen row: duplicate inline cluster (wide); must beat .wizard-review-inline-value alone. */
+.wizard-review-inline-value.wizard-review-dl-pen-inline-row {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  min-width: 0;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--pf-t--global--spacer--xs, 0.25rem);
+}
+
+.wizard-review-inline-value.wizard-review-dl-pen-inline-row .wizard-review-dl-pen-value {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--pf-t--global--spacer--xs, 0.25rem);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 /* Value text grows so trailing controls (reveal / pen / YAML) stay on the right. */
 .wizard-review-inline-value-body {
   flex: 1 1 auto;
   min-width: 0;
 }
 
-/* Full width of the value cell so pen controls can sit at the far right. */
-.wizard-review-pen-hover-zone.wizard-review-inline-value,
-.wizard-review-pen-hover-zone--dl-group-row .wizard-review-inline-value {
+/* Full width of the value cell so pen controls sit at the far end on one line (space-between). */
+.wizard-review-pen-hover-zone.wizard-review-inline-value {
   display: flex;
+  flex-wrap: wrap;
   width: 100%;
   min-width: 0;
-}
-
-/* Match description-list term baseline; keep reveal + pen + arrow on one typographic line. */
-.wizard-review-pen-hover-zone--dl-group-row .wizard-review-inline-value {
-  align-items: baseline;
+  justify-content: space-between;
 }
 
 .wizard-review-pen-controls {
   display: inline-flex;
   align-items: baseline;
   flex-shrink: 0;
-  margin-left: auto;
   gap: var(--pf-t--global--spacer--xs, 0.25rem);
 }
 
@@ -202,7 +276,9 @@
 .wizard-review-inline-value > .wizard-review-find-inline-body,
 .wizard-review-inline-value > .wizard-review-find-value-with-trailing-icon,
 .wizard-review-inline-value-body > .wizard-review-find-inline-body,
-.wizard-review-inline-value-body > .wizard-review-find-value-with-trailing-icon {
+.wizard-review-inline-value-body > .wizard-review-find-value-with-trailing-icon,
+.wizard-review-dl-pen-value > .wizard-review-find-inline-body,
+.wizard-review-dl-pen-value > .wizard-review-find-value-with-trailing-icon {
   flex: 1 1 auto;
   min-width: 0;
 }

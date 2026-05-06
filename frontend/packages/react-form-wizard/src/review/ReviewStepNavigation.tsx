@@ -3,6 +3,8 @@ import { Button, DescriptionListDescription, DescriptionListTerm, useWizardConte
 import { ArrowRightIcon, PenIcon } from '@patternfly/react-icons'
 import get from 'get-value'
 import {
+  cloneElement,
+  isValidElement,
   type CSSProperties,
   type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
@@ -385,6 +387,7 @@ export function ReviewPenHoverZone({
   const zoneClassName = [
     'wizard-review-pen-hover-zone',
     descriptionListTerm != null ? 'wizard-review-pen-hover-zone--dl-group-row' : 'wizard-review-inline-value',
+    descriptionListTerm != null && children === '' ? 'wizard-review-dl-empty-value' : null,
     zoneClickable ? null : 'wizard-review-pen-hover-zone--controls-only',
   ]
     .filter(Boolean)
@@ -412,42 +415,56 @@ export function ReviewPenHoverZone({
     [onPenClick]
   )
 
-  const editButtons = (
-    <>
-      <Button
-        type="button"
-        variant="plain"
-        className="wizard-review-edit-btn"
-        aria-label={ariaLabel}
-        onClick={(e) => {
-          e.stopPropagation()
-          const handler = onPenIconClick ?? onPenClick
-          handler(e)
-        }}
-      >
-        <PenIcon />
-      </Button>
-      {onArrowClick ? (
+  const renderEditButtons = useCallback(
+    () => (
+      <>
         <Button
           type="button"
           variant="plain"
           className="wizard-review-edit-btn"
-          aria-label={arrowAriaLabel}
+          aria-label={ariaLabel}
           onClick={(e) => {
             e.stopPropagation()
-            onArrowClick(e)
+            const handler = onPenIconClick ?? onPenClick
+            handler(e)
           }}
         >
-          <ArrowRightIcon />
+          <PenIcon />
         </Button>
-      ) : null}
-    </>
+        {onArrowClick ? (
+          <Button
+            type="button"
+            variant="plain"
+            className="wizard-review-edit-btn"
+            aria-label={arrowAriaLabel}
+            onClick={(e) => {
+              e.stopPropagation()
+              onArrowClick(e)
+            }}
+          >
+            <ArrowRightIcon />
+          </Button>
+        ) : null}
+      </>
+    ),
+    [ariaLabel, arrowAriaLabel, onArrowClick, onPenClick, onPenIconClick]
   )
+
+  const [beforePenControlsInline, beforePenControlsStacked] = (() => {
+    if (beforePenControls == null) return [null, null] as const
+    if (isValidElement(beforePenControls)) {
+      return [
+        cloneElement(beforePenControls, { key: 'wizard-review-pen-bc-inline' }),
+        cloneElement(beforePenControls, { key: 'wizard-review-pen-bc-stacked' }),
+      ] as const
+    }
+    return [beforePenControls, beforePenControls] as const
+  })()
 
   const controls = (
     <span className="wizard-review-pen-controls">
       {beforePenControls}
-      {editButtons}
+      {renderEditButtons()}
     </span>
   )
 
@@ -462,11 +479,18 @@ export function ReviewPenHoverZone({
     >
       <DescriptionListTerm>{descriptionListTerm}</DescriptionListTerm>
       <DescriptionListDescription id={descriptionListDescriptionId ?? ''} style={{ whiteSpace: 'pre-wrap' }}>
-        <span className="wizard-review-inline-value">
-          <span className="wizard-review-inline-value-body">{children}</span>
-          {controls}
+        <span className="wizard-review-inline-value wizard-review-dl-pen-inline-row">
+          <span className="wizard-review-dl-pen-value">{children}</span>
+          <span className="wizard-review-pen-controls wizard-review-pen-controls--dl-inline">
+            {beforePenControlsInline}
+            {renderEditButtons()}
+          </span>
         </span>
       </DescriptionListDescription>
+      <span className="wizard-review-pen-controls wizard-review-pen-controls--dl-stacked">
+        {beforePenControlsStacked}
+        {renderEditButtons()}
+      </span>
     </div>
   ) : (
     <Comp className={zoneClassName} style={style} onClick={zoneClickable ? onZoneClick : undefined}>
