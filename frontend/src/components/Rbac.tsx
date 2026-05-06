@@ -165,22 +165,23 @@ type RbacButtonProps = Parameters<typeof AcmButton>[0] & {
 export function RbacButton(props: RbacButtonProps) {
   const { t } = useTranslation()
   const [isDisabled, setIsDisabled] = useState<boolean>(true)
-  const [rbac] = useState<ResourceAttributes[] | Promise<ResourceAttributes>[]>(props.rbac)
+  const { rbac, ...otherProps } = props
+  const [initialRbac] = useState<ResourceAttributes[] | Promise<ResourceAttributes>[]>(rbac)
 
   useEffect(() => {
     Promise.all(
-      rbac.map(async (rbac) => {
+      initialRbac.map(async (rbac) => {
         return await createSubjectAccessReview(rbac).promise
       })
     ).then((results) => {
       const isDisabled = !results.every((result) => result?.status?.allowed)
       setIsDisabled(isDisabled)
     })
-  }, [rbac])
+  }, [initialRbac])
 
   return (
     <AcmButton
-      {...props}
+      {...otherProps}
       isDisabled={isDisabled}
       tooltip={isDisabled ? t('rbac.unauthorized') : ''}
       className={css({
