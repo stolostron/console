@@ -142,7 +142,6 @@ const githubChannelData = (isLocalCluster, handleModalToggle, t) => {
       active: '',
       placeholder: t('app.enter.select.github.url'),
       available: [],
-      creatable: true,
       validation: getURLValidator(t),
       reverse: 'Channel[0].spec.pathname',
       onSelect: updateChannelControls,
