@@ -5,6 +5,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { Checkbox, Radio } from '@patternfly/react-core'
 import ControlPanelFormGroup from './ControlPanelFormGroup'
+import { ControlPanelHelperText } from './ControlPanelHelperText'
 
 class ControlPanelCheckbox extends React.Component {
   static propTypes = {
@@ -25,7 +26,7 @@ class ControlPanelCheckbox extends React.Component {
 
   render() {
     const { controlId, control, controlData, handleChange, i18n } = this.props
-    const { name, active, type, tip, disabled = false } = control
+    const { name, active, type, disabled = false } = control
 
     const onChange = () => {
       control.active = !active
@@ -54,10 +55,10 @@ class ControlPanelCheckbox extends React.Component {
               controlId={controlId}
               control={control}
               controlData={controlData}
-              showTip={false}
+              omitHelperText={true}
             />
           </div>
-          <div style={{ fontSize: '14px', fontWeight: 'normal' }}>{tip}</div>
+          <ControlPanelHelperText control={control} controlData={controlData} controlId={controlId} i18n={i18n} />
         </div>
       </React.Fragment>
     )

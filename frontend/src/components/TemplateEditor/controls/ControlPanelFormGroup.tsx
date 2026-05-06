@@ -4,22 +4,20 @@
 import React, { ReactNode } from 'react'
 import { Button, FormGroup, Popover } from '@patternfly/react-core'
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
-import { useDynamicPropertyValues } from '../helpers/dynamicProperties'
 import { TFunction } from 'react-i18next'
-import { AcmHelperText } from '../../../ui-components/AcmHelperText/AcmHelperText'
+import { ControlPanelHelperText } from './ControlPanelHelperText'
 
 const ControlPanelFormGroup = (props: {
   children: ReactNode
   control: any
   controlData: any
   controlId: string
-  showTip?: boolean
+  omitHelperText?: boolean
   i18n: TFunction
   hideLabel?: boolean
 }) => {
-  const { controlId, control, controlData, showTip, children, i18n, hideLabel } = props
-  const { name, exception, opaque, tooltip, tip, validation = {}, icon } = control
-  const { info } = useDynamicPropertyValues(control, controlData, i18n, ['info'])
+  const { controlId, control, controlData, omitHelperText = false, children, i18n, hideLabel } = props
+  const { name, opaque, tooltip, validation = {}, icon } = control
   return (
     <React.Fragment>
       <div style={opaque ? { pointerEvents: 'none', opacity: 0.7 } : {}}>
@@ -50,13 +48,9 @@ const ControlPanelFormGroup = (props: {
           }
         >
           {children}
-          {(showTip === undefined || showTip === true) && tip && <div style={{ fontSize: '14px' }}>{tip}</div>}
-          <AcmHelperText
-            controlId={controlId}
-            helperText={info}
-            validated={exception ? 'error' : info ? 'default' : undefined}
-            error={exception}
-          />
+          {!omitHelperText && (
+            <ControlPanelHelperText control={control} controlData={controlData} controlId={controlId} i18n={i18n} />
+          )}
         </FormGroup>
       </div>
     </React.Fragment>
