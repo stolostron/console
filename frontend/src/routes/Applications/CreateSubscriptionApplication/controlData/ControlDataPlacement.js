@@ -292,6 +292,7 @@ const placementData = (isLocalCluster, t) => {
       reverse: reverseExistingPlacement,
       fetchAvailable: loadExistingPlacements(t),
       onSelect: updateSelectedPlacementControls,
+      creatable: false,
       validation: {
         notification: t('You must select an existing placement.'),
         required: false,

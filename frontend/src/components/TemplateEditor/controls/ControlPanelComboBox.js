@@ -31,7 +31,7 @@ const ControlPanelComboBox = (props) => {
     availableMap = {},
     availableInfo = {},
     simplified,
-    creatable = false,
+    creatable = true,
   } = control
 
   const onChange = useCallback(
