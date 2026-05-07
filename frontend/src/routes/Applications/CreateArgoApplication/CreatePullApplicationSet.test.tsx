@@ -302,7 +302,6 @@ const placementGit: Placement = {
     namespace: gitOpsCluster.metadata.namespace,
   },
   spec: {
-    numberOfClusters: 1,
     tolerations: [
       {
         key: 'cluster.open-cluster-management.io/unreachable',
@@ -340,7 +339,6 @@ const placementHelm: Placement = {
     namespace: gitOpsCluster.metadata.namespace,
   },
   spec: {
-    numberOfClusters: 1,
     tolerations: [
       {
         key: 'cluster.open-cluster-management.io/unreachable',
