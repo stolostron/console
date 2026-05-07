@@ -1099,7 +1099,6 @@ const submittedGitPullModel = [
           operator: 'Exists',
         },
       ],
-      numberOfClusters: 1,
       predicates: [
         {
           requiredClusterSelector: {
