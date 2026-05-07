@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import type { Cluster, IResource } from '../../resources/resource'
 import { getHubClusterName } from '../events'
-import { type IArgoApplication, type IQuery, SEARCH_QUERY_LIMIT } from './applications'
+import { SEARCH_QUERY_LIMIT, type IArgoApplication, type IQuery } from './applications'
 import { getAppSetAppsMap } from './applicationsArgo'
-import { getClusters, getArgoDestinationCluster } from './utils'
+import { getArgoDestinationCluster, getClusters } from './utils'
 
 export interface PushModelResourceEntry {
   appSetKey: string
@@ -89,7 +89,7 @@ export async function addPushModelPodQueryInputs(query: IQuery): Promise<PushMod
         { property: 'name', values: Array.from(deploymentNames) },
         { property: 'cluster', values: Array.from(clusterFilters) },
       ],
-      relatedKinds: ['pod', 'replicaset'],
+      relatedKinds: ['Pod', 'ReplicaSet'],
       limit: SEARCH_QUERY_LIMIT,
     })
   }

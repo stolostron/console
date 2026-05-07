@@ -4,7 +4,7 @@
 import { transformBrowserUrlToSearchString, updateBrowserUrl } from './urlQuery'
 
 test('Correctly returns transformBrowserUrlToSearchString', () => {
-  const testString = 'filters={"textsearch":"kind%3Adeployment%20name%3Asearch-prod-df8fa-search-api"}&showrelated=pod'
+  const testString = 'filters={"textsearch":"kind%3ADeployment%20name%3Asearch-prod-df8fa-search-api"}&showrelated=pod'
   const result = transformBrowserUrlToSearchString(testString)
   expect(result).toMatchSnapshot()
 })

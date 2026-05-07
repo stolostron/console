@@ -1,60 +1,60 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { TFunction } from 'react-i18next'
+import AcmTimestamp from '../../../../../lib/AcmTimestamp'
+import { ArgoApplication } from '../../../../../resources'
 import { showAnsibleJobDetails } from '../helpers/ansible-task'
 import {
-  createEditLink,
-  addOCPRouteLocation,
-  addNodeServiceLocation,
   addDetails,
+  addNodeServiceLocation,
+  addOCPRouteLocation,
   addPropertyToList,
+  createEditLink,
   getNodePropery,
 } from '../helpers/diagram-helpers'
 import {
-  isDeployableResource,
-  getActiveFilterCodes,
-  nodeMustHavePods,
-  getClusterName,
-  showMissingClusterDetails,
-  getTargetNsForNode,
   filterSubscriptionObject,
+  getActiveFilterCodes,
+  getClusterName,
+  getTargetNsForNode,
+  isDeployableResource,
+  nodeMustHavePods,
+  showMissingClusterDetails,
 } from '../helpers/diagram-helpers-utils'
+import { isSearchAvailable } from '../helpers/search-helper'
+import type {
+  ActiveFilters,
+  ArgoApp,
+  ArgoHealthStatus,
+  ClusterInfo,
+  DetailItem,
+  PodInfo,
+  ResourceItem,
+  StateNames,
+  StatusType,
+  SubscriptionItem,
+  TopologyNodeWithStatus,
+  WindowStatusArray,
+} from '../types'
+import { safeGet } from '../utils'
 import {
-  getOnlineClusters,
-  showResourceYaml,
-  checkmarkStatus,
-  pendingStatus,
-  resErrorStates,
-  failureStatus,
-  warningStatus,
-  checkmarkCode,
-  pendingCode,
-  warningCode,
   apiVersionPath,
-  failureCode,
-  metadataName,
   argoAppHealthyStatus,
   argoAppProgressingStatus,
   argoAppUnknownStatus,
+  checkmarkCode,
+  checkmarkStatus,
+  failureCode,
+  failureStatus,
+  getOnlineClusters,
+  metadataName,
+  pendingCode,
+  pendingStatus,
+  resErrorStates,
+  showResourceYaml,
+  warningCode,
+  warningStatus,
 } from './computeStatuses'
-import type {
-  TopologyNodeWithStatus,
-  DetailItem,
-  ActiveFilters,
-  ResourceItem,
-  StatusType,
-  PodInfo,
-  SubscriptionItem,
-  WindowStatusArray,
-  ClusterInfo,
-  ArgoApp,
-  ArgoHealthStatus,
-  StateNames,
-} from '../types'
-import { safeGet } from '../utils'
-import { isSearchAvailable } from '../helpers/search-helper'
-import AcmTimestamp from '../../../../../lib/AcmTimestamp'
-import { ArgoApplication } from '../../../../../resources'
 
 const specIsDesign = 'specs.isDesign'
 
@@ -684,7 +684,7 @@ export const setSubscriptionDeployStatus = (
     })
 
     if (isSearchAvailable()) {
-      const placementSearchLink = `/multicloud/search?filters={"textsearch":"kind%3Aplacement%20namespace%3A${node.namespace}%20cluster%3A${hubClusterName}"}`
+      const placementSearchLink = `/multicloud/search?filters={"textsearch":"kind%3APlacement%20namespace%3A${node.namespace}%20cluster%3A${hubClusterName}"}`
       details.push({
         type: 'link',
         value: {
@@ -767,7 +767,7 @@ export const setApplicationDeployStatus = (
         status: failureStatus,
       })
 
-      const subscrSearchLink = `/multicloud/search?filters={"textsearch":"kind%3Asubscription%20namespace%3A${appNS}%20cluster%3A${hubClusterName}"}`
+      const subscrSearchLink = `/multicloud/search?filters={"textsearch":"kind%3ASubscription%20namespace%3A${appNS}%20cluster%3A${hubClusterName}"}`
       details.push({
         type: 'link',
         value: {

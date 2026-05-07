@@ -71,7 +71,7 @@ const getQuery = (resourceType, name, namespace, hubClusterName) => {
       { property: 'namespace', values: [namespace] },
     ],
     // For subscriptions, check for any affected application resources
-    relatedKinds: kind === 'subscription' ? CHILD_RESOURCE_TYPES.map((t) => t.toLowerCase()) : ['application'],
+    relatedKinds: kind === 'subscription' ? CHILD_RESOURCE_TYPES : ['Application'],
   }
 }
 

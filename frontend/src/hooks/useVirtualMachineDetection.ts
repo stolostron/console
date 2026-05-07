@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useMemo } from 'react'
-import { useSearchResultItemsQuery } from '../routes/Search/search-sdk/search-sdk'
 import { searchClient } from '../routes/Search/search-sdk/search-client'
+import { useSearchResultItemsQuery } from '../routes/Search/search-sdk/search-sdk'
 
 interface UseVirtualMachineDetectionOptions {
   /** Optional cluster name to scope the search to a specific cluster */
@@ -45,7 +45,7 @@ export function useVirtualMachineDetection(
     const filters = [
       {
         property: 'kind',
-        values: ['virtualmachine'],
+        values: ['VirtualMachine'],
       },
     ]
 

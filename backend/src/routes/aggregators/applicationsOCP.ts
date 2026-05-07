@@ -1,24 +1,26 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { logger } from '../../lib/logger'
 import type { IResource, ISearchResource, SearchResult } from '../../resources/resource'
-import { getKubeResources, getHubClusterName } from '../events'
+import { getHubClusterName, getKubeResources } from '../events'
 import {
   AppColumns,
+  ScoreColumnSize,
+  SEARCH_QUERY_LIMIT,
   type ApplicationCacheType,
   type ApplicationClusterStatusMap,
   type ApplicationStatuses,
   type IQuery,
-  ScoreColumnSize,
-  SEARCH_QUERY_LIMIT,
 } from './applications'
-import { appOwnerLabels, computeDeployedPodStatuses, getAppNameFromLabel } from './utils'
 import {
-  transform,
-  getClusterMap,
-  type ApplicationPageChunk,
-  getNextApplicationPageChunk,
+  appOwnerLabels,
   cacheRemoteApps,
+  computeDeployedPodStatuses,
   getApplicationType,
+  getAppNameFromLabel,
+  getClusterMap,
+  getNextApplicationPageChunk,
+  transform,
+  type ApplicationPageChunk,
 } from './utils'
 
 // getting system apps by its cluster name in cluster chunks
@@ -59,7 +61,7 @@ export function addOCPQueryInputs(applicationCache: ApplicationCacheType, query:
   }
   query.variables.input.push({
     filters,
-    relatedKinds: ['pod', 'replicaset', 'statefulset'],
+    relatedKinds: ['Pod', 'ReplicaSet', 'StatefulSet'],
     limit: SEARCH_QUERY_LIMIT,
   })
 }
@@ -85,7 +87,7 @@ export async function addSystemQueryInputs(applicationCache: ApplicationCacheTyp
         values: clusterNameChunk,
       },
     ],
-    relatedKinds: ['pod', 'replicaset', 'statefulset'],
+    relatedKinds: ['Pod', 'ReplicaSet', 'StatefulSet'],
     limit: SEARCH_QUERY_LIMIT,
   })
 }

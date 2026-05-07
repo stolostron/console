@@ -166,7 +166,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
               properties: {
                 name: subscriptionName,
                 namespace,
-                kind: 'subscription',
+                kind: 'Subscription',
               },
               showRelated: 'cluster',
             })
@@ -327,7 +327,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
           properties: {
             name: item.metadata?.name,
             namespace: item.metadata?.namespace,
-            kind: item.kind.toLowerCase(),
+            kind: item.kind,
             apigroup,
             apiversion,
           },
@@ -461,7 +461,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
                   properties: {
                     name,
                     namespace,
-                    kind: 'channel',
+                    kind: 'Channel',
                     apigroup,
                     apiversion,
                   },
@@ -495,7 +495,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
                     properties: {
                       name,
                       namespace,
-                      kind: 'subscription',
+                      kind: 'Subscription',
                       apigroup,
                       apiversion,
                     },
@@ -644,7 +644,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
                     properties: {
                       name,
                       namespace,
-                      kind: 'channel',
+                      kind: 'Channel',
                     },
                     showRelated: 'subscription',
                   })

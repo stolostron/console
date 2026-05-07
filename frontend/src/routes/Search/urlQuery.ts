@@ -17,7 +17,7 @@ export function updateBrowserUrl(navigate: any, currentQuery: string) {
 // This function handles navigation to search page with a predefined searchquery in browsers url
 export function transformBrowserUrlToSearchString(urlQuery: string) {
   // Example browser url string:
-  // .../multicloud/search?filters={"textsearch":"kind%3Adeployment%20name%3Asearch-prod-df8fa-search-api"}&showrelated=pod
+  // .../multicloud/search?filters={"textsearch":"kind%3ADeployment%20name%3Asearch-prod-df8fa-search-api"}&showrelated=pod
   const presetSearchQuery = ''
   const preSelectedRelatedResources: string[] = []
   if (urlQuery !== '') {

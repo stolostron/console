@@ -52,10 +52,10 @@ function useClustersWithVirtualMachines() {
           filters: [
             {
               property: 'kind',
-              values: ['virtualmachine'],
+              values: ['VirtualMachine'],
             },
           ],
-          relatedKinds: ['cluster'],
+          relatedKinds: ['Cluster'],
         },
       ],
     },

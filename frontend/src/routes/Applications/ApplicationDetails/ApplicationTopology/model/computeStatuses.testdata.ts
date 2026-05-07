@@ -1,6 +1,6 @@
 // Copyright Contributors to the Open Cluster Management project
 
-import { TopologyNodeWithStatus, ResourceItemWithStatus, DetailItem } from '../types'
+import { DetailItem, ResourceItemWithStatus, TopologyNodeWithStatus } from '../types'
 
 export const genericNodeYellowNotDefined: TopologyNodeWithStatus = {
   id: 'member--member--service--member--clusters--feng, cluster1, cluster2--default--mortgage-app-deployable--deployment--mortgage-app-deploy',
@@ -140,7 +140,7 @@ export const persVolumePendingStatePendingRes: DetailItem[] = [
         action: 'show_resource_yaml',
         cluster: 'feng',
         editLink:
-          '/multicloud/search/resources/yaml?apiversion=v1&cluster=feng&kind=persistentvolumeclaim&name=minio&namespace=default',
+          '/multicloud/search/resources/yaml?apiversion=v1&cluster=feng&kind=PersistentVolumeClaim&name=minio&namespace=default',
       },
       label: 'View resource YAML',
     },
@@ -178,7 +178,7 @@ export const persVolumePendingStateGreenRes: DetailItem[] = [
         action: 'show_resource_yaml',
         cluster: 'feng',
         editLink:
-          '/multicloud/search/resources/yaml?apiversion=v1&cluster=feng&kind=persistentvolumeclaim&name=minio&namespace=default',
+          '/multicloud/search/resources/yaml?apiversion=v1&cluster=feng&kind=PersistentVolumeClaim&name=minio&namespace=default',
       },
       label: 'View resource YAML',
     },
@@ -2218,7 +2218,7 @@ export const deploymentNodeNoPODS: TopologyNodeWithStatus = {
       {
         name: 'Deployment',
         value: 'mortgage-app-deploy',
-        href: "/multicloud/search?filters={'textsearch':'kind:deployment name:mortgage-app-deploy'}",
+        href: "/multicloud/search?filters={'textsearch':'kind:Deployment name:mortgage-app-deploy'}",
       },
     ],
     x: 151.5,
@@ -2370,7 +2370,7 @@ export const deploymentNodeNoPODSNoRes: TopologyNodeWithStatus = {
       {
         name: 'Deployment',
         value: 'mortgage-app-deploy',
-        href: "/multicloud/search?filters={'textsearch':'kind:deployment name:mortgage-app-deploy'}",
+        href: "/multicloud/search?filters={'textsearch':'kind:Deployment name:mortgage-app-deploy'}",
       },
     ],
     x: 151.5,
@@ -2570,7 +2570,7 @@ export const deploymentNodeRed3: TopologyNodeWithStatus = {
       {
         name: 'Deployment',
         value: 'mortgage-app-deploy',
-        href: "/multicloud/search?filters={'textsearch':'kind:deployment name:mortgage-app-deploy'}",
+        href: "/multicloud/search?filters={'textsearch':'kind:Deployment name:mortgage-app-deploy'}",
       },
     ],
     x: 151.5,

@@ -528,7 +528,7 @@ function renderCardsSection(props: IRenderCardsSectionProps) {
       properties: {
         name: resource.metadata?.name,
         namespace: resource.metadata?.namespace,
-        kind: resource.kind.toLowerCase(),
+        kind: resource.kind,
         apigroup,
         apiversion,
       },
@@ -757,7 +757,7 @@ function getSearchLinkForArgoApplications(resource: IResource, isArgoApp: boolea
   const [apigroup, apiversion] = resource.apiVersion.split('/')
   return getSearchLink({
     properties: {
-      kind: ApplicationKind.toLowerCase(),
+      kind: ApplicationKind,
       path: path || pathList,
       chart: chart || chartList,
       repoURL: repoURL || repoURLList,

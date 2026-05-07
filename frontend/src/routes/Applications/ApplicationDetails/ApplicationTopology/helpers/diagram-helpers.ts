@@ -1,20 +1,20 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { openArgoCDURL, openRouteURL } from '../model/topologyAppSet'
-import { isSearchAvailable } from './search-helper'
 import queryString from 'query-string'
+import { openArgoCDURL, openRouteURL } from '../model/topologyAppSet'
 import type {
-  DetailsList,
-  NodeLike,
-  ResourceAction,
-  Translator,
-  PulseColor,
-  URLSearchData,
-  EditLinkParams,
   DetailItem,
+  DetailsList,
+  EditLinkParams,
+  NodeLike,
+  PulseColor,
+  ResourceAction,
   StatusType,
+  Translator,
+  URLSearchData,
 } from '../types'
 import { getNestedProperty } from '../utils'
+import { isSearchAvailable } from './search-helper'
 
 const showResourceYaml = 'show_resource_yaml'
 const apiVersionPath = 'specs.raw.apiVersion'
@@ -111,8 +111,8 @@ export const createEditLink = (
     apiVersion = overrideApiVersion
   }
 
-  kind = kind ? kind.toLowerCase() : undefined
-  if (kind === 'subscriptionstatus') {
+  kind = kind ? kind : undefined
+  if (kind?.toLowerCase() === 'subscriptionstatus') {
     kind = 'SubscriptionStatus'
   }
 
@@ -284,7 +284,7 @@ export const parseApplicationNodeName = (id: string): string => {
  */
 export const createResourceURL = (node: NodeLike, _t: Translator, isLogURL = false): string => {
   const cluster = getNestedProperty(node, 'cluster', '') as string
-  const type = node.type === 'git' || node.type === 'chart' ? 'applicationset' : node.type
+  const type = node.type === 'git' || node.type === 'chart' ? 'ApplicationSet' : node.type
   const apiVersion = getNestedProperty(node, 'specs.raw.apiVersion', '') as string
   const namespace = getNestedProperty(node, 'namespace', '') as string
   const name = getNestedProperty(node, 'name', '') as string

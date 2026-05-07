@@ -8,16 +8,16 @@ import {
   getAppTargetCluster,
   getQueryStringForResource,
 } from '../model/topologyUtils'
-import { getArgoSecret } from './resourceStatusesArgo'
 import {
-  AppSetApplicationModel,
-  AppSetApplicationData,
-  AppSetResourceStatusResult,
   AppSetApplication,
+  AppSetApplicationData,
+  AppSetApplicationModel,
   AppSetClusterInfo,
-  SearchQuery,
+  AppSetResourceStatusResult,
   ArgoAppResource,
+  SearchQuery,
 } from '../types'
+import { getArgoSecret } from './resourceStatusesArgo'
 
 /**
  * Retrieves resource statuses for ApplicationSet applications.
@@ -194,7 +194,7 @@ async function getResourceStatuses(
       if (!rscKind || !rscName) {
         return
       }
-      const normalizedKind = rscKind.toLowerCase() === 'project' ? 'namespace' : rscKind.toLowerCase()
+      const normalizedKind = rscKind.toLowerCase() === 'project' ? 'Namespace' : rscKind
       const pairKey = `${normalizedKind}::${rscName}`
       if (clusterScopedPairs.has(pairKey)) {
         return
@@ -202,7 +202,7 @@ async function getResourceStatuses(
       clusterScopedPairs.add(pairKey)
       if (normalizedKind === 'namespace') {
         // OpenShift Project resources are represented as Namespace resources in search
-        kindsNotNamespaceScoped.push('namespace')
+        kindsNotNamespaceScoped.push('Namespace')
       } else {
         kindsNotNamespaceScoped.push(normalizedKind)
       }
@@ -245,7 +245,7 @@ async function getResourceStatuses(
   // - pod: for workload status
   // - replicaset: for deployment status
   // - replicationcontroller: for legacy deployment status
-  query.relatedKinds.push('cluster', 'pod', 'replicaset', 'replicationcontroller')
+  query.relatedKinds.push('Cluster', 'Pod', 'ReplicaSet', 'ReplicationController')
 
   // Execute the search query with both namespaced and cluster-scoped resource queries
   return searchClient.query({

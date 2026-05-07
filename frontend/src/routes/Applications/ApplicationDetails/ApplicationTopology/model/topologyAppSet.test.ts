@@ -81,7 +81,7 @@ describe('openArgoCDEditor remote cluster', () => {
         {
           keywords: [],
           filters: [
-            { property: 'kind', values: ['route'] },
+            { property: 'kind', values: ['Route'] },
             { property: 'namespace', values: ['app1-ns'] },
             { property: 'cluster', values: ['cluster1'] },
             { property: 'label', values: ['app.kubernetes.io/part-of=argocd'] },

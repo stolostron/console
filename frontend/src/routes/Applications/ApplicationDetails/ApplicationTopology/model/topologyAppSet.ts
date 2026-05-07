@@ -2,6 +2,8 @@
 
 // Lodash imports removed - using native TypeScript equivalents
 import { TFunction } from 'react-i18next'
+import { Placement } from '../../../../../resources/placement'
+import { PlacementDecision } from '../../../../../resources/placement-decision'
 import { getResource, listNamespacedResources } from '../../../../../resources/utils'
 import { fleetResourceRequest } from '../../../../../resources/utils/fleet-resource-request'
 import { searchClient } from '../../../../Search/search-sdk/search-client'
@@ -32,8 +34,6 @@ import {
   getClusterName,
   getResourceTypes,
 } from './topologyUtils'
-import { PlacementDecision } from '../../../../../resources/placement-decision'
-import { Placement } from '../../../../../resources/placement'
 
 /** Window after ApplicationSet creation during which `isCreating` is true on the topology node. */
 const APP_SET_CREATION_GRACE_PERIOD_MS = 5 * 60 * 1000
@@ -951,7 +951,7 @@ const getArgoRouteFromSearch = async (
 ): Promise<void> => {
   // Build search query for Argo CD routes
   const query: SearchQuery = convertStringToQuery(
-    `kind:route namespace:${appNamespace} cluster:${cluster} label:app.kubernetes.io/part-of=argocd`
+    `kind:Route namespace:${appNamespace} cluster:${cluster} label:app.kubernetes.io/part-of=argocd`
   )
 
   try {

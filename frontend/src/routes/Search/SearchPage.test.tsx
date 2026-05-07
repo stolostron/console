@@ -291,10 +291,10 @@ describe('SearchPage', () => {
     userEvent.type(searchbar, 'kind ')
     expect(screen.queryByText('kind:')).toBeTruthy()
     expect(screen.getByLabelText('Search input')).toBeTruthy()
-    userEvent.type(searchbar, 'deployment ')
+    userEvent.type(searchbar, 'Deployment ')
 
     // check searchbar updated properly
-    await waitFor(() => expect(screen.queryByText('kind:deployment')).toBeTruthy())
+    await waitFor(() => expect(screen.queryByText('kind:Deployment')).toBeTruthy())
   })
   it('should render SearchPage with predefined query', async () => {
     nockIgnoreOperatorCheck()

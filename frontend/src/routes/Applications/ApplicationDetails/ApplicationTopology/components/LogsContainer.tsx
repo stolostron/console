@@ -1,14 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { PageSection, SelectOption } from '@patternfly/react-core'
-import { AcmAlert, AcmLoadingPage, AcmLogWindow, AcmSelect } from '../../../../../ui-components'
-import { TFunction } from 'react-i18next'
 import { ReactNode, useEffect, useState } from 'react'
+import { TFunction } from 'react-i18next'
+import { useLocalHubName } from '../../../../../hooks/use-local-hub'
 import { fetchRetry, getBackendUrl } from '../../../../../resources/utils'
 import { fleetLogsRequest } from '../../../../../resources/utils/fleet-logs-request'
+import { AcmAlert, AcmLoadingPage, AcmLogWindow, AcmSelect } from '../../../../../ui-components'
 import { createResourceURL } from '../helpers/diagram-helpers'
 import './LogsContainer.css'
-import { useLocalHubName } from '../../../../../hooks/use-local-hub'
 
 export interface ILogsContainerProps {
   node: any
@@ -192,7 +192,7 @@ export function LogsContainer(props: ILogsContainerProps) {
             createResourceURL(
               {
                 cluster: selectedPodData.cluster,
-                type: 'pod',
+                type: 'Pod',
                 namespace: selectedPodData.namespace,
                 name: value,
                 specs: {

@@ -1,10 +1,10 @@
 // Copyright Contributors to the Open Cluster Management project
 
-import { getAppSetResourceStatuses } from './resourceStatusesAppSet'
 import { waitFor } from '@testing-library/react'
 import { nockSearch } from '../../../../../lib/nock-util'
-import { AppSetApplicationData, AppSetApplicationModel, SearchQuery } from '../types'
 import { fleetResourceRequest } from '../../../../../resources/utils/fleet-resource-request'
+import { AppSetApplicationData, AppSetApplicationModel, SearchQuery } from '../types'
+import { getAppSetResourceStatuses } from './resourceStatusesAppSet'
 
 jest.mock('../../../../../resources/utils/fleet-resource-request', () => ({
   fleetResourceRequest: jest.fn(() => Promise.resolve({ errorMessage: 'not available' })),
@@ -50,7 +50,7 @@ describe('getAppSetResourceStatuses', () => {
     }
 
     const pullAppData: AppSetApplicationData = {
-      relatedKinds: ['deployment', 'customresourcedefinition'],
+      relatedKinds: ['Deployment', 'CustomResourceDefinition'],
       targetNamespaces: [],
     }
 
@@ -61,16 +61,16 @@ describe('getAppSetResourceStatuses', () => {
           {
             keywords: [],
             filters: [
-              { property: 'kind', values: ['deployment'] },
+              { property: 'kind', values: ['Deployment'] },
               { property: 'namespace', values: ['default'] },
               { property: 'cluster', values: ['managed-1'] },
             ],
-            relatedKinds: ['cluster', 'pod', 'replicaset', 'replicationcontroller'],
+            relatedKinds: ['Cluster', 'Pod', 'ReplicaSet', 'ReplicationController'],
           },
           {
             keywords: [],
             filters: [
-              { property: 'kind', values: ['customresourcedefinition'] },
+              { property: 'kind', values: ['CustomResourceDefinition'] },
               { property: 'name', values: ['widgets.example.com'] },
               { property: 'cluster', values: ['managed-1'] },
             ],
@@ -138,7 +138,7 @@ describe('getAppSetResourceStatuses', () => {
     }
 
     const matrixAppData: AppSetApplicationData = {
-      relatedKinds: ['deployment'],
+      relatedKinds: ['Deployment'],
       targetNamespaces: [],
     }
 
@@ -149,11 +149,11 @@ describe('getAppSetResourceStatuses', () => {
           {
             keywords: [],
             filters: [
-              { property: 'kind', values: ['deployment'] },
+              { property: 'kind', values: ['Deployment'] },
               { property: 'namespace', values: ['ns-a', 'ns-b'] },
               { property: 'cluster', values: ['cluster-1', 'cluster-2'] },
             ],
-            relatedKinds: ['cluster', 'pod', 'replicaset', 'replicationcontroller'],
+            relatedKinds: ['Cluster', 'Pod', 'ReplicaSet', 'ReplicationController'],
           },
         ],
       },
@@ -209,7 +209,7 @@ describe('getAppSetResourceStatuses', () => {
     }
 
     const prePopAppData: AppSetApplicationData = {
-      relatedKinds: ['deployment'],
+      relatedKinds: ['Deployment'],
       targetNamespaces: [],
     }
 
@@ -220,11 +220,11 @@ describe('getAppSetResourceStatuses', () => {
           {
             keywords: [],
             filters: [
-              { property: 'kind', values: ['deployment'] },
+              { property: 'kind', values: ['Deployment'] },
               { property: 'namespace', values: ['default', 'other'] },
               { property: 'cluster', values: ['cluster-1', 'cluster-2'] },
             ],
-            relatedKinds: ['cluster', 'pod', 'replicaset', 'replicationcontroller'],
+            relatedKinds: ['Cluster', 'Pod', 'ReplicaSet', 'ReplicationController'],
           },
         ],
       },
@@ -286,7 +286,7 @@ describe('getAppSetResourceStatuses', () => {
     }
 
     const multiSrcAppData: AppSetApplicationData = {
-      relatedKinds: ['deployment'],
+      relatedKinds: ['Deployment'],
       targetNamespaces: [],
     }
 
@@ -297,11 +297,11 @@ describe('getAppSetResourceStatuses', () => {
           {
             keywords: [],
             filters: [
-              { property: 'kind', values: ['deployment'] },
+              { property: 'kind', values: ['Deployment'] },
               { property: 'namespace', values: ['default'] },
               { property: 'cluster', values: ['managed-1', 'managed-2'] },
             ],
-            relatedKinds: ['cluster', 'pod', 'replicaset', 'replicationcontroller'],
+            relatedKinds: ['Cluster', 'Pod', 'ReplicaSet', 'ReplicationController'],
           },
         ],
       },
@@ -340,7 +340,7 @@ interface MockSearchResponse {
 
 const appData: TestAppSetApplicationData = {
   subscription: null,
-  relatedKinds: ['applicationset', 'placementDecision', 'cluster', 'consolelink'],
+  relatedKinds: ['ApplicationSet', 'PlacementDecision', 'Cluster', 'ConsoleLink'],
   targetNamespaces: ['cluster-configs-rhacm'],
   argoAppsLabelNames: [
     'app.kubernetes.io/instance=mock-app-local-cluster',
@@ -581,7 +581,7 @@ const mockSearchQuery: MockSearchQuery = {
         filters: [
           {
             property: 'kind',
-            values: ['applicationset', 'placementDecision', 'cluster'],
+            values: ['ApplicationSet', 'PlacementDecision', 'Cluster'],
           },
           {
             property: 'namespace',
@@ -592,14 +592,14 @@ const mockSearchQuery: MockSearchQuery = {
             values: ['local-cluster', 'dyna1203'],
           },
         ],
-        relatedKinds: ['cluster', 'pod', 'replicaset', 'replicationcontroller'],
+        relatedKinds: ['Cluster', 'Pod', 'ReplicaSet', 'ReplicationController'],
       },
       {
         keywords: [],
         filters: [
           {
             property: 'kind',
-            values: ['consolelink'],
+            values: ['ConsoleLink'],
           },
           {
             property: 'name',
@@ -617,7 +617,7 @@ const mockSearchQuery: MockSearchQuery = {
         filters: [
           {
             property: 'kind',
-            values: ['consolelink'],
+            values: ['ConsoleLink'],
           },
           {
             property: 'name',

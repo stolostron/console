@@ -10,9 +10,9 @@
 
 import { render, screen } from '@testing-library/react'
 import { waitForText } from '../../../../../lib/test-util'
-import DetailsView from './DetailsView'
-import { TopologyNodeWithStatus, ActiveFilters, MockTranslationFunction } from '../types'
 import { ArgoAppDetailsContainerData, ClusterDetailsContainerData } from '../ApplicationTopology'
+import { ActiveFilters, MockTranslationFunction, TopologyNodeWithStatus } from '../types'
+import DetailsView from './DetailsView'
 
 const t: MockTranslationFunction = (string: string): string => {
   return string
@@ -95,12 +95,12 @@ describe('DetailsView no components', () => {
           {
             name: 'Application',
             value: 'mortgage-app',
-            href: "/multicloud/search?filters={'textsearch':'kind:application name:mortgage-app'}",
+            href: "/multicloud/search?filters={'textsearch':'kind:Application name:mortgage-app'}",
           },
           {
             name: 'Namespace',
             value: 'default',
-            href: "/multicloud/search?filters={'textsearch':'kind:namespace name:default'}",
+            href: "/multicloud/search?filters={'textsearch':'kind:Namespace name:default'}",
           },
         ],
         x: 76.5,
@@ -270,12 +270,12 @@ const mockLaidoutNodes: { laidoutNodes: TopologyNodeWithStatus[] } = {
           {
             name: 'Application',
             value: 'mortgage-app',
-            href: "/multicloud/search?filters={'textsearch':'kind:application name:mortgage-app'}",
+            href: "/multicloud/search?filters={'textsearch':'kind:Application name:mortgage-app'}",
           },
           {
             name: 'Namespace',
             value: 'default',
-            href: "/multicloud/search?filters={'textsearch':'kind:namespace name:default'}",
+            href: "/multicloud/search?filters={'textsearch':'kind:Namespace name:default'}",
           },
         ],
         x: 76.5,
@@ -319,12 +319,12 @@ const mockLaidoutNodes: { laidoutNodes: TopologyNodeWithStatus[] } = {
           {
             name: 'Subscription',
             value: 'mortgage-app-subscription',
-            href: "/multicloud/search?filters={'textsearch':'kind:subscription name:mortgage-app-subscription'}",
+            href: "/multicloud/search?filters={'textsearch':'kind:Subscription name:mortgage-app-subscription'}",
           },
           {
             name: 'Namespace',
             value: 'default',
-            href: "/multicloud/search?filters={'textsearch':'kind:namespace name:default'}",
+            href: "/multicloud/search?filters={'textsearch':'kind:Namespace name:default'}",
           },
         ],
         x: 76.5,
@@ -366,12 +366,12 @@ const mockLaidoutNodes: { laidoutNodes: TopologyNodeWithStatus[] } = {
           {
             name: 'Placements',
             value: 'mortgage-app-placement',
-            href: "/multicloud/search?filters={'textsearch':'kind:placement name:mortgage-app-placement'}",
+            href: "/multicloud/search?filters={'textsearch':'kind:Placement name:mortgage-app-placement'}",
           },
           {
             name: 'Namespace',
             value: 'default',
-            href: "/multicloud/search?filters={'textsearch':'kind:namespace name:default'}",
+            href: "/multicloud/search?filters={'textsearch':'kind:Namespace name:default'}",
           },
         ],
         x: 226.5,
@@ -459,7 +459,7 @@ const mockLaidoutNodes: { laidoutNodes: TopologyNodeWithStatus[] } = {
           {
             name: 'Cluster',
             value: 'localcluster',
-            href: "/multicloud/search?filters={'textsearch':'kind:cluster name:localcluster'}",
+            href: "/multicloud/search?filters={'textsearch':'kind:Cluster name:localcluster'}",
           },
         ],
         x: 76.5,
@@ -502,12 +502,12 @@ const mockLaidoutNodes: { laidoutNodes: TopologyNodeWithStatus[] } = {
           {
             name: 'Deployable',
             value: 'mortgage-app-deployable',
-            href: "/multicloud/search?filters={'textsearch':'kind:deployable name:mortgage-app-deployable'}",
+            href: "/multicloud/search?filters={'textsearch':'kind:Deployable name:mortgage-app-deployable'}",
           },
           {
             name: 'Namespace',
             value: 'default',
-            href: "/multicloud/search?filters={'textsearch':'kind:namespace name:default'}",
+            href: "/multicloud/search?filters={'textsearch':'kind:Namespace name:default'}",
           },
         ],
         x: 151.5,
@@ -558,7 +558,7 @@ const mockLaidoutNodes: { laidoutNodes: TopologyNodeWithStatus[] } = {
           {
             name: 'Deployment',
             value: 'mortgage-app-deploy',
-            href: "/multicloud/search?filters={'textsearch':'kind:deployment name:mortgage-app-deploy'}",
+            href: "/multicloud/search?filters={'textsearch':'kind:Deployment name:mortgage-app-deploy'}",
           },
         ],
         x: 151.5,
@@ -636,7 +636,7 @@ const mockLaidoutNodes: { laidoutNodes: TopologyNodeWithStatus[] } = {
           {
             name: 'Pod',
             value: 'mortgage-app-deploy',
-            href: "/multicloud/search?filters={'textsearch':'kind:deployment name:mortgage-app-deploy'}&showrelated=pod",
+            href: "/multicloud/search?filters={'textsearch':'kind:Deployment name:mortgage-app-deploy'}&showrelated=pod",
           },
         ],
         x: 151.5,
@@ -670,12 +670,12 @@ const mockLaidoutNodes: { laidoutNodes: TopologyNodeWithStatus[] } = {
           {
             name: 'Deployable',
             value: 'mortgage-app-svc',
-            href: "/multicloud/search?filters={'textsearch':'kind:deployable name:mortgage-app-svc'}",
+            href: "/multicloud/search?filters={'textsearch':'kind:Deployable name:mortgage-app-svc'}",
           },
           {
             name: 'Namespace',
             value: 'default',
-            href: "/multicloud/search?filters={'textsearch':'kind:namespace name:default'}",
+            href: "/multicloud/search?filters={'textsearch':'kind:Namespace name:default'}",
           },
         ],
         x: 1.5,
@@ -717,7 +717,7 @@ const mockLaidoutNodes: { laidoutNodes: TopologyNodeWithStatus[] } = {
           {
             name: 'Service',
             value: 'mortgage-app-svc',
-            href: "/multicloud/search?filters={'textsearch':'kind:service name:mortgage-app-svc'}",
+            href: "/multicloud/search?filters={'textsearch':'kind:Service name:mortgage-app-svc'}",
           },
         ],
         x: 1.5,

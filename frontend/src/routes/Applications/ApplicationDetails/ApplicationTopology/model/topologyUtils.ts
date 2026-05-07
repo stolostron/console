@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint no-param-reassign: "error" */
 
+import { fleetResourceRequest } from '../../../../../resources/utils/fleet-resource-request'
 import { nodeMustHavePods } from '../helpers/diagram-helpers-utils'
 import { convertStringToQuery } from '../helpers/search-helper'
-import { fleetResourceRequest } from '../../../../../resources/utils/fleet-resource-request'
 import type {
-  AppSetClusterInfo,
   ApplicationData,
+  AppSetClusterInfo,
   ManagedCluster,
   SearchQuery,
   Topology,
@@ -40,13 +40,13 @@ export const getQueryStringForResource = (
   if (resourcename) {
     switch (resourcename) {
       case 'Subscription':
-        resource = 'kind:subscription '
+        resource = 'kind:Subscription '
         break
       case 'Application':
-        resource = 'kind:application'
+        resource = 'kind:Application'
         break
       default:
-        resource = `kind:${resourcename} `
+        resource = `kind:${Array.isArray(resourcename) ? resourcename.join(',') : resourcename} `
     }
   }
 
@@ -160,7 +160,7 @@ export const getApplicationData = (nodes: TopologyNode[] | undefined, hubCluster
   }
   nodes?.forEach((node) => {
     const type = (node.type ?? '') as string
-    const nodeType = type === 'project' ? 'namespace' : type
+    const nodeType = type === 'project' ? 'Namespace' : type
     if (!(isArgoApp && ['cluster'].includes(nodeType))) {
       nodeTypes.push(nodeType) // ask for this related object type
     }
@@ -175,7 +175,7 @@ export const getApplicationData = (nodes: TopologyNode[] | undefined, hubCluster
   })
 
   if (resourceMustHavePods) {
-    nodeTypes.push('pod')
+    nodeTypes.push('Pod')
   }
 
   // if only one subscription, ask for resources only related to that subscription

@@ -1,6 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { render } from '@testing-library/react'
 import i18next from 'i18next'
+import React from 'react'
 import {
   ApplicationSetApiVersionType,
   ApplicationSetKindType,
@@ -9,6 +11,7 @@ import {
   ArgoApplicationDefinition,
   ArgoApplicationKind,
 } from '../../../resources'
+import { Cluster, ClusterStatus } from '../../../resources/utils/get-cluster'
 import { mockApplication0, mockApplications, mockChannels, mockSubscriptions } from '../Application.sharedmocks'
 import {
   getAppChildResources,
@@ -25,9 +28,6 @@ import {
   isArgoPullModel,
   normalizeRepoType,
 } from './resource-helper'
-import { Cluster, ClusterStatus } from '../../../resources/utils/get-cluster'
-import { render } from '@testing-library/react'
-import React from 'react'
 
 const t = i18next.t.bind(i18next)
 
@@ -211,8 +211,8 @@ describe('getSearchLink', () => {
   })
 
   it('should work with multiple props', () => {
-    expect(getSearchLink({ properties: { name: 'testing', kind: 'resource' } })).toEqual(
-      '/multicloud/search?filters=%7B%22textsearch%22%3A%22name%3Atesting%20kind%3Aresource%22%7D'
+    expect(getSearchLink({ properties: { name: 'testing', kind: 'Resource' } })).toEqual(
+      '/multicloud/search?filters=%7B%22textsearch%22%3A%22name%3Atesting%20kind%3AResource%22%7D'
     )
   })
 
@@ -231,13 +231,13 @@ describe('getSearchLink', () => {
         properties: {
           name: ['helloworld-local', 'helloworld-remote'],
           namespace: ['argocd', 'openshift-gitops'],
-          kind: 'application',
+          kind: 'Application',
           apigroup: 'argoproj.io',
         },
         showRelated: 'cluster',
       })
     ).toEqual(
-      '/multicloud/search?filters=%7B%22textsearch%22%3A%22name%3Ahelloworld-local%2Chelloworld-remote%20namespace%3Aargocd%2Copenshift-gitops%20kind%3Aapplication%20apigroup%3Aargoproj.io%22%7D&showrelated=cluster'
+      '/multicloud/search?filters=%7B%22textsearch%22%3A%22name%3Ahelloworld-local%2Chelloworld-remote%20namespace%3Aargocd%2Copenshift-gitops%20kind%3AApplication%20apigroup%3Aargoproj.io%22%7D&showrelated=cluster'
     )
   })
 })

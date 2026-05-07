@@ -5,6 +5,6 @@ exports[`Correctly returns transformBrowserUrlToSearchString 1`] = `
   "preSelectedRelatedResources": [
     "pod",
   ],
-  "presetSearchQuery": "kind:deployment name:search-prod-df8fa-search-api",
+  "presetSearchQuery": "kind:Deployment name:search-prod-df8fa-search-api",
 }
 `;

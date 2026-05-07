@@ -3,22 +3,22 @@
 'use strict'
 
 import {
-  getClusterName,
-  nodeMustHavePods,
-  isDeployableResource,
-  getRouteNameWithoutIngressHash,
-  getActiveFilterCodes,
-  filterSubscriptionObject,
-  getClusterHost,
-  fixMissingStateOptions,
-  namespaceMatchTargetServer,
-  updateAppClustersMatchingSearch,
-  getTargetNsForNode,
-  getResourcesClustersForApp,
   allClustersAreOnline,
-  getNameWithoutVolumePostfix,
+  filterSubscriptionObject,
+  fixMissingStateOptions,
+  getActiveFilterCodes,
+  getClusterHost,
+  getClusterName,
   getNameWithoutVMTypeHash,
+  getNameWithoutVolumePostfix,
+  getResourcesClustersForApp,
+  getRouteNameWithoutIngressHash,
+  getTargetNsForNode,
   getVMNameWithoutPodHash,
+  isDeployableResource,
+  namespaceMatchTargetServer,
+  nodeMustHavePods,
+  updateAppClustersMatchingSearch,
 } from './diagram-helpers-utils'
 
 import { getOnlineClusters, getPulseStatusForSubscription } from '../model/computeStatuses'
@@ -26,15 +26,15 @@ import { getOnlineClusters, getPulseStatusForSubscription } from '../model/compu
 import { syncControllerRevisionPodStatusMap } from '../model/topologyDetails'
 
 import type {
+  ClusterInfo,
   NodeLike,
   ResourceItem,
-  ResourceMap,
-  ClusterInfo,
-  TopologyNode,
-  SubscriptionItem,
   ResourceItemWithStatus,
-  TopologyNodeWithStatus,
+  ResourceMap,
   ResourceMapObject,
+  SubscriptionItem,
+  TopologyNode,
+  TopologyNodeWithStatus,
 } from '../types'
 
 describe('allClustersAreOnline', () => {
@@ -1175,7 +1175,7 @@ describe('namespaceMatchTargetServer', () => {
     apiversion: 'v1',
     cluster: 'ui-dev-remote',
     created: '2021-02-10T02:32:02Z',
-    kind: 'route',
+    kind: 'Route',
     label: 'app.kubernetes.io/instance=helloworld-remote; app=helloworld-app',
     name: 'helloworld-app-route',
     namespace: 'argo-helloworld',

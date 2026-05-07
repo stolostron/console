@@ -14,11 +14,11 @@ jest.mock('../../../src/routes/aggregators/utils', () => ({
   getArgoDestinationCluster: jest.fn(() => Promise.resolve('unknown')),
 }))
 
-import { addPushModelPodQueryInputs } from '../../../src/routes/aggregators/applicationsPushModel'
+import { SEARCH_QUERY_LIMIT, type IArgoApplication, type IQuery } from '../../../src/routes/aggregators/applications'
 import { getAppSetAppsMap } from '../../../src/routes/aggregators/applicationsArgo'
+import { addPushModelPodQueryInputs } from '../../../src/routes/aggregators/applicationsPushModel'
+import { getArgoDestinationCluster, getClusters } from '../../../src/routes/aggregators/utils'
 import { getHubClusterName } from '../../../src/routes/events'
-import { getClusters, getArgoDestinationCluster } from '../../../src/routes/aggregators/utils'
-import { type IArgoApplication, type IQuery, SEARCH_QUERY_LIMIT } from '../../../src/routes/aggregators/applications'
 
 const mockGetAppSetAppsMap = getAppSetAppsMap as jest.MockedFunction<typeof getAppSetAppsMap>
 const mockGetHubClusterName = getHubClusterName as jest.MockedFunction<typeof getHubClusterName>
@@ -132,7 +132,7 @@ describe('applicationsPushModel', () => {
         { property: 'name', values: ['web-server'] },
         { property: 'cluster', values: ['remote-1'] },
       ])
-      expect(input.relatedKinds).toEqual(['pod', 'replicaset'])
+      expect(input.relatedKinds).toEqual(['Pod', 'ReplicaSet'])
       expect(input.limit).toBe(SEARCH_QUERY_LIMIT)
     })
 

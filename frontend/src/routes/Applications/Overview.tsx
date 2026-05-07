@@ -1005,7 +1005,7 @@ export default function ApplicationsOverview() {
                 properties: {
                   name: resourceName ? resourceName : resource.metadata?.name,
                   namespace: resource.metadata?.namespace,
-                  kind: resource.kind.toLowerCase(),
+                  kind: resource.kind,
                   apigroup,
                   apiversion,
                   cluster: resource.status?.cluster ? resource.status?.cluster : localCluster,

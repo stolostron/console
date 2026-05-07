@@ -2,10 +2,10 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
-import { getArgoResourceStatuses } from './resourceStatusesArgo'
 import { waitFor } from '@testing-library/react'
 import { nockSearch } from '../../../../../lib/nock-util'
 import { ApplicationModel, SearchQuery, Topology } from '../types'
+import { getArgoResourceStatuses } from './resourceStatusesArgo'
 
 interface MockSearchQuery {
   operationName: string
@@ -24,7 +24,7 @@ const mockSearchQuery: MockSearchQuery = {
         filters: [
           {
             property: 'kind',
-            values: ['service', 'deployment', 'replicaset', 'pod', 'route'],
+            values: ['Service', 'Deployment', 'ReplicaSet', 'Pod', 'Route'],
           },
           {
             property: 'namespace',
@@ -35,7 +35,7 @@ const mockSearchQuery: MockSearchQuery = {
             values: ['local-cluster'],
           },
         ],
-        relatedKinds: ['cluster', 'pod', 'replicaset', 'replicationcontroller'],
+        relatedKinds: ['Cluster', 'Pod', 'ReplicaSet', 'ReplicationController'],
       },
     ],
   },
@@ -52,7 +52,7 @@ const mockSearchQuery2: MockSearchQuery = {
         filters: [
           {
             property: 'kind',
-            values: ['application'],
+            values: ['Application'],
           },
           {
             property: 'apigroup',
@@ -88,7 +88,7 @@ const mockSearchQuery3: MockSearchQuery = {
         filters: [
           {
             property: 'kind',
-            values: ['application'],
+            values: ['Application'],
           },
           {
             property: 'apigroup',
@@ -131,14 +131,14 @@ const mockSearchQuery4: MockSearchQuery = {
             values: ['local-cluster'],
           },
         ],
-        relatedKinds: ['cluster', 'pod', 'replicaset', 'replicationcontroller'],
+        relatedKinds: ['Cluster', 'Pod', 'ReplicaSet', 'ReplicationController'],
       },
       {
         keywords: [],
         filters: [
           {
             property: 'kind',
-            values: ['namespace'],
+            values: ['Namespace'],
           },
           {
             property: 'name',
@@ -156,7 +156,7 @@ const mockSearchQuery4: MockSearchQuery = {
         filters: [
           {
             property: 'kind',
-            values: ['customresourcedefinition'],
+            values: ['CustomResourceDefinition'],
           },
           {
             property: 'name',
@@ -174,7 +174,7 @@ const mockSearchQuery4: MockSearchQuery = {
         filters: [
           {
             property: 'kind',
-            values: ['consolelink'],
+            values: ['ConsoleLink'],
           },
           {
             property: 'name',
@@ -192,7 +192,7 @@ const mockSearchQuery4: MockSearchQuery = {
         filters: [
           {
             property: 'kind',
-            values: ['namespace'],
+            values: ['Namespace'],
           },
           {
             property: 'name',
@@ -210,7 +210,7 @@ const mockSearchQuery4: MockSearchQuery = {
         filters: [
           {
             property: 'kind',
-            values: ['clusterrole'],
+            values: ['ClusterRole'],
           },
           {
             property: 'name',
@@ -228,7 +228,7 @@ const mockSearchQuery4: MockSearchQuery = {
         filters: [
           {
             property: 'kind',
-            values: ['clusterrolebinding'],
+            values: ['ClusterRoleBinding'],
           },
           {
             property: 'name',
@@ -256,7 +256,7 @@ const mockSearchQuery5: MockSearchQuery = {
         filters: [
           {
             property: 'kind',
-            values: ['secret'],
+            values: ['Secret'],
           },
           {
             property: 'namespace',
@@ -14453,7 +14453,7 @@ describe('getResourceStatuses', () => {
       targetRevision: 'HEAD',
     },
     subscription: null,
-    relatedKinds: ['service', 'deployment', 'replicaset', 'pod', 'route'],
+    relatedKinds: ['Service', 'Deployment', 'ReplicaSet', 'Pod', 'Route'],
   }
   const application = {
     name: 'feng-argo',
@@ -15843,7 +15843,7 @@ describe('getResourceStatuses cluster scoped resources', () => {
       targetRevision: 'HEAD',
     },
     subscription: null,
-    relatedKinds: ['namespace', 'customresourcedefinition', 'consolelink', 'clusterrole', 'clusterrolebinding'],
+    relatedKinds: ['Namespace', 'CustomResourceDefinition', 'ConsoleLink', 'ClusterRole', 'ClusterRoleBinding'],
   }
 
   const application = {

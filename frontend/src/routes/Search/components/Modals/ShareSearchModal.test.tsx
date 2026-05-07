@@ -8,12 +8,12 @@ import { ShareSearchModal } from './ShareSearchModal'
 test('renders share modal with searchText', () => {
   const { getByText } = render(
     <ShareSearchModal
-      shareSearch={{ id: '123', name: 'test-saved-search', searchText: 'kind:pod name:testPod' }}
+      shareSearch={{ id: '123', name: 'test-saved-search', searchText: 'kind:Pod name:testPod' }}
       onClose={() => {}}
     />
   )
   expect(getByText('Share search')).toBeInTheDocument()
   expect(
-    screen.getByDisplayValue(/http:\/\/localhost\/\?filters=\{"textsearch":"kind%3apod%20name%3atestpod"\}/i)
+    screen.getByDisplayValue(/http:\/\/localhost\/\?filters=\{"textsearch":"kind%3aPod%20name%3atestpod"\}/i)
   ).toBeInTheDocument()
 })

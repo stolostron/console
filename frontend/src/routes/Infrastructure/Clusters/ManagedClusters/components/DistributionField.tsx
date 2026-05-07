@@ -1,7 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { HostedClusterK8sResourceWithChannel } from '../../../../../resources/hosted-cluster'
-import { compareVersions } from './utils/version-utils'
 import { Button, ButtonVariant } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExclamationTriangleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
@@ -19,6 +17,7 @@ import {
   HostedClusterDefinition,
   NodePool,
 } from '../../../../../resources'
+import { HostedClusterK8sResourceWithChannel } from '../../../../../resources/hosted-cluster'
 import { Cluster, ClusterStatus, CuratorCondition } from '../../../../../resources/utils'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { AcmButton, AcmInlineStatus, Provider, StatusType } from '../../../../../ui-components'
@@ -29,6 +28,7 @@ import { BatchChannelSelectModal } from './BatchChannelSelectModal'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 import { HypershiftUpgradeModal } from './HypershiftUpgradeModal'
 import { getNodepoolStatus } from './NodePoolsTable'
+import { compareVersions } from './utils/version-utils'
 
 export function DistributionField(props: {
   cluster?: Cluster
@@ -405,7 +405,7 @@ export function DistributionField(props: {
       properties: {
         name: props.cluster?.name,
         namespace: props.cluster?.namespace,
-        kind: 'clustercurator',
+        kind: 'ClusterCurator',
         apigroup,
         apiversion,
       },

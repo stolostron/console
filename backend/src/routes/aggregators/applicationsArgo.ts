@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import get from 'get-value'
+import { deflateResource } from '../../lib/compression'
 import { logger } from '../../lib/logger'
 import {
   ApplicationKind,
@@ -11,37 +12,37 @@ import {
   type ISearchResource,
   type SearchResult,
 } from '../../resources/resource'
-import { getKubeResources, getHubClusterName } from '../events'
+import type { IWatchOptions } from '../../resources/watch-options'
+import { getHubClusterName, getKubeResources } from '../events'
 import {
   applicationCache,
-  type ApplicationCacheType,
-  type ApplicationClusterStatusMap,
-  type ApplicationStatuses,
   getAppDict,
-  type IArgoApplication,
-  type IQuery,
-  type ITransformedResource,
   ScoreColumn,
   ScoreColumnSize,
   SEARCH_QUERY_LIMIT,
   StatusColumn,
+  type ApplicationCacheType,
+  type ApplicationClusterStatusMap,
+  type ApplicationStatuses,
+  type IArgoApplication,
+  type IQuery,
+  type ITransformedResource,
 } from './applications'
 import type { PushModelResourceEntry, PushModelResourceMap } from './applicationsPushModel'
 import {
   cacheRemoteApps,
-  getClusters,
-  getNextApplicationPageChunk,
-  type ApplicationPageChunk,
-  transform,
-  getApplicationType,
-  getApplicationClusters,
-  getTransform,
+  computeAppHealthStatus,
+  computeAppSyncStatus,
   computeDeployedPodStatuses,
   computePodStatus,
+  getApplicationClusters,
+  getApplicationType,
+  getClusters,
+  getNextApplicationPageChunk,
+  getTransform,
+  transform,
+  type ApplicationPageChunk,
 } from './utils'
-import { deflateResource } from '../../lib/compression'
-import type { IWatchOptions } from '../../resources/watch-options'
-import { computeAppHealthStatus, computeAppSyncStatus } from './utils'
 
 interface IArgoAppStatusResource {
   group?: string
@@ -172,7 +173,7 @@ export function addArgoQueryInputs(applicationCache: ApplicationCacheType, query
   }
   query.variables.input.push({
     filters,
-    relatedKinds: ['pod', 'replicaset', 'deployment', 'statefulset'],
+    relatedKinds: ['Pod', 'ReplicaSet', 'Deployment', 'StatefulSet'],
     limit: SEARCH_QUERY_LIMIT,
   })
 }

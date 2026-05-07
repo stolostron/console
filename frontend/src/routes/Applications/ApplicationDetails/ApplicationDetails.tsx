@@ -193,7 +193,7 @@ export default function ApplicationDetailsPage() {
                   properties: {
                     name: applicationData?.application.app.metadata?.name,
                     namespace: applicationData?.application.app.metadata?.namespace,
-                    kind: applicationData?.application.app.kind.toLowerCase(),
+                    kind: applicationData?.application.app.kind,
                     apigroup: apigroup as string,
                     apiversion: apiversion as string,
                   },

@@ -64,7 +64,7 @@ export async function getArgoResourceStatuses(
 async function getArgoSource(application: ApplicationModel, appData: ArgoApplicationData): Promise<ArgoSource> {
   // Get all Argo applications with the same source repo as this one
   const { namespace } = application
-  const query = convertStringToQuery('kind:application apigroup:argoproj.io')
+  const query = convertStringToQuery('kind:Application apigroup:argoproj.io')
 
   if (appData.applicationSet) {
     // ApplicationSet name is only unique within cluster and namespace
@@ -198,9 +198,9 @@ async function getResourceStatuses(
       if (!rscNS) {
         if (rscKind && rscKind.toLowerCase() === 'project') {
           // OpenShift Projects are represented as Namespaces in search
-          kindsNotNamespaceScoped.push('namespace')
+          kindsNotNamespaceScoped.push('Namespace')
         } else if (rscKind) {
-          kindsNotNamespaceScoped.push(rscKind.toLowerCase())
+          kindsNotNamespaceScoped.push(rscKind)
         }
         if (rscName) {
           kindsNotNamespaceScopedNames.push(rscName)
@@ -268,7 +268,7 @@ async function getResourceStatuses(
 
     // Always ask for related pods, replicasets, and replicationcontrollers because they are tagged by the app instance
     // We'll get them if any are linked to the objects returned above
-    query.relatedKinds.push('cluster', 'pod', 'replicaset', 'replicationcontroller')
+    query.relatedKinds.push('Cluster', 'Pod', 'ReplicaSet', 'ReplicationController')
   }
 
   return searchClient.query({
@@ -364,7 +364,7 @@ export const getArgoSecret = (
 
     if (argoAppNS.length > 0) {
       const query = convertStringToQuery(
-        `kind:secret namespace:${argoAppNS.join()} label:apps.open-cluster-management.io/acm-cluster='true'`
+        `kind:Secret namespace:${argoAppNS.join()} label:apps.open-cluster-management.io/acm-cluster='true'`
       )
 
       return searchClient.query({

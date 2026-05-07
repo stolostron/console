@@ -1,27 +1,27 @@
 // Copyright Contributors to the Open Cluster Management project
 
+import type { SearchQuery } from '../types'
 import {
   convertStringToQuery,
   formatNumber,
-  searchFailure,
-  searchError,
-  searchSuccess,
-  shouldTrySearch,
   isSearchAvailable,
   isYAMLEditAvailable,
+  searchError,
+  searchFailure,
+  searchSuccess,
+  shouldTrySearch,
 } from './search-helper'
-import type { SearchQuery } from '../types'
 
 describe('convertStringToQuery', () => {
-  const string1: string = 'kind:subscription name:test'
-  const string2: string = 'kind:channel name:test'
-  const string3: string = 'kind:placement name:test'
+  const string1: string = 'kind:Subscription name:test'
+  const string2: string = 'kind:Channel name:test'
+  const string3: string = 'kind:Placement name:test'
 
   const result1: SearchQuery = {
     filters: [
       {
         property: 'kind',
-        values: ['subscription'],
+        values: ['Subscription'],
       },
       {
         property: 'name',
@@ -29,24 +29,24 @@ describe('convertStringToQuery', () => {
       },
     ],
     keywords: [],
-    relatedKinds: ['placement', 'deployable', 'application', 'subscription', 'channel'],
+    relatedKinds: ['Placement', 'Deployable', 'Application', 'Subscription', 'Channel'],
   }
 
   const result2: SearchQuery = {
     filters: [
-      { property: 'kind', values: ['channel'] },
+      { property: 'kind', values: ['Channel'] },
       { property: 'name', values: ['test'] },
     ],
     keywords: [],
-    relatedKinds: ['subscription'],
+    relatedKinds: ['Subscription'],
   }
   const result3: SearchQuery = {
     filters: [
-      { property: 'kind', values: ['placement'] },
+      { property: 'kind', values: ['Placement'] },
       { property: 'name', values: ['test'] },
     ],
     keywords: [],
-    relatedKinds: ['subscription'],
+    relatedKinds: ['Subscription'],
   }
   it('convert string to query', () => {
     expect(convertStringToQuery(string1)).toEqual(result1)

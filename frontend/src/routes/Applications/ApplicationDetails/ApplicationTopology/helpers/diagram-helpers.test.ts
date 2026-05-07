@@ -3,6 +3,8 @@
 
 import i18n from 'i18next'
 import { v4 as uuidv4 } from 'uuid'
+import { nockIgnoreApiPaths, nockList, nockOff } from '../../../../../lib/nock-util'
+import type { DetailItem, DetailsList, HelmReleaseDetector, NodeLike, ResourceAction, Translator } from '../types'
 import {
   addIngressNodeInfo,
   addNodeInfoPerCluster,
@@ -21,8 +23,6 @@ import {
   processResourceActionLink,
   removeReleaseGeneratedSuffix,
 } from './diagram-helpers'
-import { nockIgnoreApiPaths, nockList, nockOff } from '../../../../../lib/nock-util'
-import type { NodeLike, Translator, DetailItem, DetailsList, HelmReleaseDetector, ResourceAction } from '../types'
 
 // Mock UUID v4 to return predictable values during testing
 jest.mock('uuid', () => ({
@@ -1296,12 +1296,12 @@ describe('addNodeServiceLocationForCluster 1', () => {
 describe('processResourceActionLink search view2', () => {
   const openSearchView: ResourceAction = {
     action: 'show_search',
-    kind: 'service',
+    kind: 'Service',
     name: 'frontend',
     namespace: 'open-cluster-management',
   }
   const result =
-    '/multicloud/search?filters={"textsearch":"kind:service namespace:open-cluster-management name:frontend"}'
+    '/multicloud/search?filters={"textsearch":"kind:Service namespace:open-cluster-management name:frontend"}'
 
   it('processResourceActionLink opens search view2', () => {
     expect(processResourceActionLink(openSearchView, () => {}, t, 'local-cluster')).toEqual(result)
@@ -1870,7 +1870,7 @@ describe('createEditLink subscriptionstatus', () => {
 
 describe('createEditLink deployment', () => {
   const node: NodeLike = {
-    kind: 'deployment',
+    kind: 'Deployment',
     apigroup: 'apps',
     apiversion: 'v1',
     cluster: 'local-cluster',
@@ -1879,7 +1879,7 @@ describe('createEditLink deployment', () => {
   }
   it('returns deployment link', () => {
     expect(createEditLink(node, 'local-cluster')).toEqual(
-      '/multicloud/search/resources/yaml?apiversion=apps%2Fv1&cluster=local-cluster&kind=deployment&name=mydeploy&namespace=default'
+      '/multicloud/search/resources/yaml?apiversion=apps%2Fv1&cluster=local-cluster&kind=Deployment&name=mydeploy&namespace=default'
     )
   })
 })

@@ -119,15 +119,15 @@ const mockApplicationDataSubscription: ApplicationDataType = {
   appData: {
     isArgoApp: false,
     relatedKinds: [
-      'application',
-      'subscription',
-      'placements',
-      'cluster',
-      'service',
-      'deployment',
-      'replicaset',
-      'configmap',
-      'pod',
+      'Application',
+      'Subscription',
+      'Placements',
+      'Cluster',
+      'Service',
+      'Deployment',
+      'ReplicaSet',
+      'ConfigMap',
+      'Pod',
     ],
     subscription: 'demo-etherpad',
   },
@@ -231,15 +231,15 @@ const mockApplicationDataSubscriptionTimewindow: ApplicationDataType = {
   appData: {
     isArgoApp: false,
     relatedKinds: [
-      'application',
-      'subscription',
-      'placements',
-      'cluster',
-      'service',
-      'deployment',
-      'replicaset',
-      'configmap',
-      'pod',
+      'Application',
+      'Subscription',
+      'Placements',
+      'Cluster',
+      'Service',
+      'Deployment',
+      'ReplicaSet',
+      'ConfigMap',
+      'Pod',
     ],
     subscription: 'demo-etherpad',
   },
@@ -348,7 +348,7 @@ const mockApplicationDataSubscriptionTimewindow: ApplicationDataType = {
 const mockApplicationDataArgo: ApplicationDataType = {
   refreshTime: 1648135176039,
   appData: {
-    relatedKinds: ['applicationset', 'placement', 'cluster', 'service', 'deployment', 'replicaset', 'pod', 'route'],
+    relatedKinds: ['ApplicationSet', 'Placement', 'Cluster', 'Service', 'Deployment', 'ReplicaSet', 'Pod', 'Route'],
     subscription: null,
   },
   application: {
@@ -428,7 +428,7 @@ const mockApplicationDataArgo: ApplicationDataType = {
 const mockApplicationDataArgoApp: ApplicationDataType = {
   refreshTime: 1648135176039,
   appData: {
-    relatedKinds: ['application', 'placement', 'cluster', 'service', 'deployment', 'replicaset', 'pod', 'route'],
+    relatedKinds: ['Application', 'Placement', 'Cluster', 'Service', 'Deployment', 'ReplicaSet', 'Pod', 'Route'],
     subscription: null,
   },
   application: {
@@ -687,7 +687,7 @@ describe('Overview Tab', () => {
     const mockArgoAppWithSource: ApplicationDataType = {
       refreshTime: 1648135176039,
       appData: {
-        relatedKinds: ['application'],
+        relatedKinds: ['Application'],
         subscription: null,
       },
       application: {
@@ -755,7 +755,7 @@ describe('Overview Tab', () => {
     const mockArgoAppWithSources: ApplicationDataType = {
       refreshTime: 1648135176039,
       appData: {
-        relatedKinds: ['application'],
+        relatedKinds: ['Application'],
         subscription: null,
       },
       application: {
@@ -832,7 +832,7 @@ describe('Overview Tab', () => {
     const mockAppSetWithSource: ApplicationDataType = {
       refreshTime: 1648135176039,
       appData: {
-        relatedKinds: ['applicationset'],
+        relatedKinds: ['ApplicationSet'],
         subscription: null,
       },
       application: {
@@ -906,7 +906,7 @@ describe('Overview Tab', () => {
     const mockAppSetWithSources: ApplicationDataType = {
       refreshTime: 1648135176039,
       appData: {
-        relatedKinds: ['applicationset'],
+        relatedKinds: ['ApplicationSet'],
         subscription: null,
       },
       application: {
@@ -989,7 +989,7 @@ describe('Overview Tab', () => {
     const mockAppSetWithSearchData: ApplicationDataType = {
       refreshTime: 1648135176039,
       appData: {
-        relatedKinds: ['applicationset'],
+        relatedKinds: ['ApplicationSet'],
         subscription: null,
       },
       application: {
@@ -1073,7 +1073,7 @@ describe('Overview Tab', () => {
     const mockArgoAppNoSource: ApplicationDataType = {
       refreshTime: 1648135176039,
       appData: {
-        relatedKinds: ['application'],
+        relatedKinds: ['Application'],
         subscription: null,
       },
       application: {
@@ -1133,7 +1133,7 @@ describe('Overview Tab', () => {
     const mockAppSetNoSource: ApplicationDataType = {
       refreshTime: 1648135176039,
       appData: {
-        relatedKinds: ['applicationset'],
+        relatedKinds: ['ApplicationSet'],
         subscription: null,
       },
       application: {

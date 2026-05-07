@@ -14,13 +14,13 @@ export const DonutChart = () => {
       key: 'Compliant',
       value: 1,
       isPrimary: true,
-      link: '/search?filters={"textsearch":"kind%3Apolicy%20compliant%3Acompliant"}',
+      link: '/search?filters={"textsearch":"kind%3APolicy%20compliant%3Acompliant"}',
     },
     {
       key: 'Non-compliant',
       value: 1,
       isDanger: true,
-      link: '/search?filters={"textsearch":"kind%3Apolicy%20compliant%3Anoncompliant"}',
+      link: '/search?filters={"textsearch":"kind%3APolicy%20compliant%3Anoncompliant"}',
     },
   ]
   const podData = [
@@ -28,7 +28,7 @@ export const DonutChart = () => {
       key: 'Running',
       value: 90,
       isPrimary: true,
-      link: '/search?filters={"textsearch":"kind%3Apod%20status%3ARunning"}',
+      link: '/search?filters={"textsearch":"kind%3APod%20status%3ARunning"}',
     },
     { key: 'Pending', value: 8 },
     { key: 'Failed', value: 2, isDanger: true },

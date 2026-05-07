@@ -229,7 +229,7 @@ const getSearchPromise = (
   const query: RelatedResourcesSearchQuery = {
     keywords: [],
     filters: [
-      { property: 'kind', values: [kind.toLowerCase()] },
+      { property: 'kind', values: [kind] },
       { property: 'name', values: [name] },
       { property: 'namespace', values: [namespace] },
     ],
@@ -270,10 +270,10 @@ const getQueryStringForResource = (resourcename: string, name: string, namespace
   if (resourcename) {
     switch (resourcename) {
       case 'Subscription':
-        resource = 'kind:subscription '
+        resource = 'kind:Subscription '
         break
       case 'Application':
-        resource = 'kind:application'
+        resource = 'kind:Application'
         break
       default:
         resource = `kind:${resourcename} `
