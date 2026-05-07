@@ -6,7 +6,7 @@ import { AcmDrawerContext } from '../../../../ui-components'
 import { waitForText } from '../../../../lib/test-util'
 import { PolicySet, Placement, PlacementBinding } from '../../../../resources'
 import PolicySetCard from './PolicySetCard'
-import { placementBindingsState, placementsState, settingsState } from '../../../../atoms'
+import { placementBindingsState, placementsState } from '../../../../atoms'
 
 const cardID = 'policyset-test-policy-set-with-1-placement'
 
@@ -361,7 +361,6 @@ describe('Policy Set Card drawer behavior (onSelect vs onViewDetails)', () => {
         initializeState={(snapshot) => {
           snapshot.set(placementsState, mockPlacements)
           snapshot.set(placementBindingsState, mockPlacementBindings)
-          snapshot.set(settingsState, { enhancedPlacement: 'enabled' })
         }}
       >
         <MemoryRouter>
@@ -391,7 +390,6 @@ describe('Policy Set Card drawer behavior (onSelect vs onViewDetails)', () => {
         initializeState={(snapshot) => {
           snapshot.set(placementsState, mockPlacements)
           snapshot.set(placementBindingsState, mockPlacementBindings)
-          snapshot.set(settingsState, { enhancedPlacement: 'enabled' })
         }}
       >
         <MemoryRouter>{drawerProps.title}</MemoryRouter>

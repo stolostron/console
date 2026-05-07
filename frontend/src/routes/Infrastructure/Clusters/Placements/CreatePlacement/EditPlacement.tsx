@@ -1,6 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { EditorValidationStatus, useData, useEditorValidationStatus, useItem } from '@patternfly-labs/react-form-wizard'
+import {
+  EditorValidationStatus,
+  useData,
+  useEditorValidationStatus,
+  useHighlightEditorPath,
+  useItem,
+} from '@patternfly-labs/react-form-wizard'
 import { SyncEditor, ValidationStatus } from '~/components/SyncEditor/SyncEditor'
 import { useTranslation } from '~/lib/acm-i18next'
 import schema from './schema.json'
@@ -22,6 +28,7 @@ export function WizardSyncEditor() {
   const resources = useItem()
   const { update } = useData()
   const { setEditorValidationStatus } = useEditorValidationStatus()
+  const { highlightEditorPath } = useHighlightEditorPath()
   const { t } = useTranslation()
 
   return (
@@ -39,6 +46,7 @@ export function WizardSyncEditor() {
       editableUidSiblings={true}
       filters={['*.metadata.managedFields']}
       immutables={['*.metadata']}
+      highlightEditorPath={highlightEditorPath}
     />
   )
 }

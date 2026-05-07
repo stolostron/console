@@ -10,7 +10,7 @@ import {
   managedClusterSetBindingsState,
   managedClusterSetsState,
 } from '../../../atoms'
-import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
+import { nockCreate, nockIgnoreApiPaths, nockIgnorePlacementDebug, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { clickByText, waitForNocks, waitForNotText, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { CreatePolicy } from './CreatePolicy'
@@ -54,6 +54,7 @@ describe('Create Policy Page', () => {
   beforeEach(async () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
+    nockIgnorePlacementDebug()
   })
 
   test('can create policy', async () => {

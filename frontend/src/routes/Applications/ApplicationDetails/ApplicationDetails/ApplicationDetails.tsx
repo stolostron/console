@@ -72,11 +72,10 @@ const clusterResourceStatusTooltipOther = (t: TFunction) => t('Status of resourc
 export function ApplicationDetailsPageContent() {
   const { applicationData } = useApplicationDetailsContext()
   const { t } = useTranslation()
-  const { channelsState, namespacesState, subscriptionsState, settingsState } = useSharedAtoms()
+  const { channelsState, namespacesState, subscriptionsState } = useSharedAtoms()
   const channels = useRecoilValue(channelsState)
   const subscriptions = useRecoilValue(subscriptionsState)
   const namespaces = useRecoilValue(namespacesState)
-  const settings = useRecoilValue(settingsState)
   const localCluster = useLocalHubName()
   const [modalProps, setModalProps] = useState<ISyncResourceModalProps | { open: false }>({
     open: false,
@@ -282,14 +281,10 @@ export function ApplicationDetailsPageContent() {
             </Flex>
           ),
         },
-        ...(settings.enhancedPlacement === 'enabled'
-          ? [
-              {
-                key: t('Placement'),
-                value: <PlacementLinkList placementsForCluster={getPlacementsForApplicationSet(applicationData)} />,
-              },
-            ]
-          : []),
+        {
+          key: t('Placement'),
+          value: <PlacementLinkList placementsForCluster={getPlacementsForApplicationSet(applicationData)} />,
+        },
       ]
     } else {
       /////////////////////////// subscription items //////////////////////////////////////////////

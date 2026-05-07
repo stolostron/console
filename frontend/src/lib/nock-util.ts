@@ -398,6 +398,14 @@ export function nockIgnoreOperatorCheck(noAnsible?: boolean) {
     .reply(200, noAnsible ? mockOperatorCheckResponseNoAnsible : mockOperatorCheckResponse)
 }
 
+export function nockIgnorePlacementDebug() {
+  return nocked(process.env.JEST_DEFAULT_HOST as string)
+    .persist()
+    .post('/placement-debug')
+    .optionally()
+    .reply(200, { aggregatedScores: [], filteredPipelineResults: [] })
+}
+
 export function nockIgnoreClusterVersion(version = '4.20.0') {
   return nocked(process.env.JEST_DEFAULT_HOST as string)
     .persist()

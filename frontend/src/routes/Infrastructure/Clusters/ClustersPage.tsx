@@ -6,7 +6,7 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../../ui-components'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+
 export const PageContext = createContext<{
   readonly actions: null | ReactNode
   setActions: (actions: null | ReactNode) => void
@@ -41,9 +41,6 @@ export function ClustersPage() {
   const [actions, setActions] = useState<undefined | ReactNode>(undefined)
   const location = useLocation()
   const { t } = useTranslation()
-  const { settingsState } = useSharedAtoms()
-  const settings = useRecoilValue(settingsState) // featureflag to be removed
-
   const tabs: any[] = [
     {
       key: 'infra-cluster-list',
@@ -69,17 +66,13 @@ export function ClustersPage() {
       isActive: location.pathname.startsWith(NavigationPath.discoveredClusters),
       to: NavigationPath.discoveredClusters,
     },
-  ]
-
-  if (settings.enhancedPlacement === 'enabled') {
-    // TODO: remove feature flag
-    tabs.push({
+    {
       key: 'infra-placements',
       title: t('Placements'),
       isActive: location.pathname.startsWith(NavigationPath.placements),
       to: NavigationPath.placements,
-    })
-  }
+    },
+  ]
 
   return (
     <AcmPage

@@ -46,16 +46,6 @@ describe('usePlacementDebug', () => {
     jest.useRealTimers()
   })
 
-  it('returns empty state when disabled', () => {
-    const { result } = renderHook(() => usePlacementDebug(mockPlacement, false))
-
-    expect(result.current.matchedCount).toBeUndefined()
-    expect(result.current.loading).toBe(false)
-    expect(result.current.matched).toEqual([])
-    expect(result.current.notMatched).toEqual([])
-    expect(result.current.error).toBeUndefined()
-  })
-
   it('returns empty state when placement is undefined', () => {
     const { result } = renderHook(() => usePlacementDebug(undefined))
 
@@ -72,7 +62,7 @@ describe('usePlacementDebug', () => {
       abort: jest.fn(),
     })
 
-    const { result } = renderHook(() => usePlacementDebug(mockPlacement, true))
+    const { result } = renderHook(() => usePlacementDebug(mockPlacement))
 
     // After render but before debounce fires, should be loading
     expect(result.current.loading).toBe(true)
@@ -101,7 +91,7 @@ describe('usePlacementDebug', () => {
       abort: jest.fn(),
     })
 
-    const { result } = renderHook(() => usePlacementDebug(mockPlacement, true))
+    const { result } = renderHook(() => usePlacementDebug(mockPlacement))
 
     act(() => {
       jest.advanceTimersByTime(500)
@@ -130,7 +120,7 @@ describe('usePlacementDebug', () => {
       abort: jest.fn(),
     })
 
-    const { result } = renderHook(() => usePlacementDebug(mockPlacement, true))
+    const { result } = renderHook(() => usePlacementDebug(mockPlacement))
 
     act(() => {
       jest.advanceTimersByTime(500)
@@ -153,7 +143,7 @@ describe('usePlacementDebug', () => {
       abort: jest.fn(),
     })
 
-    const { result } = renderHook(() => usePlacementDebug(mockPlacement, true))
+    const { result } = renderHook(() => usePlacementDebug(mockPlacement))
 
     act(() => {
       jest.advanceTimersByTime(500)
@@ -181,7 +171,7 @@ describe('usePlacementDebug', () => {
       abort: jest.fn(),
     })
 
-    const { result } = renderHook(() => usePlacementDebug(mockPlacement, true))
+    const { result } = renderHook(() => usePlacementDebug(mockPlacement))
 
     act(() => {
       jest.advanceTimersByTime(500)
@@ -202,7 +192,7 @@ describe('usePlacementDebug', () => {
       abort: jest.fn(),
     })
 
-    const { result: first, unmount } = renderHook(() => usePlacementDebug(mockPlacement, true))
+    const { result: first, unmount } = renderHook(() => usePlacementDebug(mockPlacement))
 
     act(() => {
       jest.advanceTimersByTime(500)
@@ -215,7 +205,7 @@ describe('usePlacementDebug', () => {
     expect(first.current.matched).toEqual(['cluster1', 'cluster2'])
     unmount()
 
-    const { result: second } = renderHook(() => usePlacementDebug(mockPlacement, true))
+    const { result: second } = renderHook(() => usePlacementDebug(mockPlacement))
 
     expect(second.current.matched).toEqual(['cluster1', 'cluster2'])
     expect(second.current.matchedCount).toBe(2)
@@ -228,7 +218,7 @@ describe('usePlacementDebug', () => {
       abort: jest.fn(),
     })
 
-    const { result, rerender } = renderHook(({ placement }) => usePlacementDebug(placement, true), {
+    const { result, rerender } = renderHook(({ placement }) => usePlacementDebug(placement), {
       initialProps: { placement: mockPlacement },
     })
 
@@ -258,7 +248,7 @@ describe('usePlacementDebug', () => {
       abort: jest.fn(),
     })
 
-    const { result, rerender } = renderHook(({ placement }) => usePlacementDebug(placement, true), {
+    const { result, rerender } = renderHook(({ placement }) => usePlacementDebug(placement), {
       initialProps: { placement: mockPlacement },
     })
 

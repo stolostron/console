@@ -33,10 +33,9 @@ import { getPlacementsForResource, preserveWhitespace } from '../../common/util'
 function PolicySetDrawerTitle(props: { policySet: PolicySet }) {
   const { policySet } = props
   const { t } = useTranslation()
-  const { placementBindingsState, placementsState, settingsState } = useSharedAtoms()
+  const { placementBindingsState, placementsState } = useSharedAtoms()
   const placements = useRecoilValue(placementsState)
   const placementBindings = useRecoilValue(placementBindingsState)
-  const settings = useRecoilValue(settingsState)
 
   const policySetPlacements = useMemo(
     () => getPlacementsForResource(policySet, placementBindings, placements),
@@ -49,7 +48,7 @@ function PolicySetDrawerTitle(props: { policySet: PolicySet }) {
       <div style={{ fontSize: 'smaller', opacity: 0.6, fontWeight: 'normal' }}>
         {`${t('Namespace')}: ${policySet.metadata.namespace}`}
       </div>
-      {settings.enhancedPlacement === 'enabled' && policySetPlacements.length > 0 && (
+      {policySetPlacements.length > 0 && (
         <div style={{ fontSize: 'smaller', opacity: 0.6, fontWeight: 'normal' }}>
           {`${t('Placement')}: `}
           {policySetPlacements

@@ -11,6 +11,7 @@ import {
   nockArgoGitPathTree,
   nockIgnoreApiPaths,
   nockIgnoreOperatorCheck,
+  nockIgnorePlacementDebug,
 } from '../../lib/nock-util'
 import { createClusterVersionMock } from '../../lib/test-util'
 
@@ -112,6 +113,7 @@ describe('ArgoWizard tests', () => {
 
   test('should have danger alert', async () => {
     nockIgnoreOperatorCheck(true)
+    nockIgnorePlacementDebug()
     render(
       <RecoilRoot>
         <MemoryRouter initialEntries={[NavigationPath.createApplicationArgo]}>
@@ -130,6 +132,7 @@ describe('ArgoWizard tests', () => {
   //=====================================================================
   test('create git', async () => {
     nockIgnoreApiPaths()
+    nockIgnorePlacementDebug()
     const url = 'https://github.com/fxiang1/app-samples'
 
     render(<TestArgoWizard />)
@@ -242,6 +245,7 @@ describe('ArgoWizard tests', () => {
     'various auto sync options',
     async () => {
       nockIgnoreApiPaths()
+      nockIgnorePlacementDebug()
       const url = 'https://github.com/fxiang1/app-samples'
 
       render(<TestArgoWizard />)
@@ -364,6 +368,7 @@ describe('ArgoWizard tests', () => {
   //                      HELM
   //=====================================================================
   test('create helm', async () => {
+    nockIgnorePlacementDebug()
     render(<TestArgoWizard />)
 
     //=====================================================================
@@ -463,6 +468,7 @@ describe('ArgoWizard tests', () => {
   //=====================================================================
   test('create git pull model', async () => {
     nockIgnoreApiPaths()
+    nockIgnorePlacementDebug()
     const url = 'https://github.com/fxiang1/app-samples'
 
     render(<TestArgoWizardPullModel />)
@@ -545,6 +551,7 @@ describe('ArgoWizard tests', () => {
   describe('gitGeneratorRepos extraction from applicationSets', () => {
     test('extracts git generator URLs, versions, and paths from regular git generators', async () => {
       nockIgnoreApiPaths()
+      nockIgnorePlacementDebug()
       render(<TestArgoWizardWithGitGeneratorAppSets applicationSets={[mockAppSetWithGitGenerator]} />)
 
       // Navigate to general page
@@ -567,6 +574,7 @@ describe('ArgoWizard tests', () => {
 
     test('extracts git generator info from matrix generators', async () => {
       nockIgnoreApiPaths()
+      nockIgnorePlacementDebug()
       render(<TestArgoWizardWithGitGeneratorAppSets applicationSets={[mockAppSetWithMatrixGitGenerator]} />)
 
       // Navigate to general page
@@ -589,6 +597,7 @@ describe('ArgoWizard tests', () => {
 
     test('deduplicates URLs, versions, and paths from multiple applicationSets', async () => {
       nockIgnoreApiPaths()
+      nockIgnorePlacementDebug()
       // Include both an appset and one with duplicate values
       render(
         <TestArgoWizardWithGitGeneratorAppSets
@@ -618,6 +627,7 @@ describe('ArgoWizard tests', () => {
 
     test('combines git info from multiple applicationSets', async () => {
       nockIgnoreApiPaths()
+      nockIgnorePlacementDebug()
       render(
         <TestArgoWizardWithGitGeneratorAppSets
           applicationSets={[mockAppSetWithGitGenerator, mockAppSetWithMatrixGitGenerator]}

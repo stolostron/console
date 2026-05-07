@@ -12,6 +12,7 @@ import { PolicySetWizard } from './PolicySetWizard'
 import { IResource } from '@patternfly-labs/react-form-wizard'
 import { BrowserRouter as Router } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
+import { nockIgnorePlacementDebug } from '../../../lib/nock-util'
 
 function TestPolicySetWizard() {
   return (
@@ -34,6 +35,10 @@ function TestPolicySetWizard() {
 }
 
 describe('PolicySetWizard wizard', () => {
+  beforeEach(() => {
+    nockIgnorePlacementDebug()
+  })
+
   test('can show correct cluster sets dropdown', async () => {
     const { container } = render(<TestPolicySetWizard />)
 
