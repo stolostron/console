@@ -315,6 +315,9 @@ describe('validation', () => {
     test.each([
       ['should allow a valid https URL', 'https://example.com', undefined],
       ['should allow a valid http URL', 'http://example.com', undefined],
+      ['should allow a Git SSH URL', 'git@github.com:argoproj/argocd-example-apps.git', undefined],
+      ['should allow a Git SSH URL without .git suffix', 'git@github.com:argoproj/argocd-example-apps', undefined],
+      ['should allow a Git SSH URL with different host', 'git@gitlab.com:org/repo.git', undefined],
       ['should not allow URL without protocol', 'example.com', 'The URL is not valid.'],
       ['should not allow ftp URL', 'ftp://example.com', 'The URL is not valid.'],
       ['should not allow plain string', 'not-a-url', 'The URL is not valid.'],
