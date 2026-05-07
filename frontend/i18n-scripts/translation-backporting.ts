@@ -751,7 +751,7 @@ async function pickReleaseBranch(releaseList: string[]): Promise<string | undefi
   const pickChoices = releaseList.slice(0, INTERACTIVE_RELEASE_PICK_LIMIT)
   const { releaseRef } = await inquirer.prompt<{ releaseRef: string }>([
     {
-      type: 'list',
+      type: 'select',
       name: 'releaseRef',
       message: 'Pick release branch:',
       choices: pickChoices.map((ref) => ({ name: ref, value: ref })),
