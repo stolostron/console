@@ -60,7 +60,6 @@ export function PlacementWizard(props: PlacementWizardProps) {
               operator: 'Exists',
             },
           ],
-          numberOfClusters: 1,
         },
       },
     ]
