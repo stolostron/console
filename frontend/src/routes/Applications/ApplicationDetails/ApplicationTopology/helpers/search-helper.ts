@@ -14,12 +14,13 @@ let searchErrorCount = 0
  */
 export const convertStringToQuery = (searchText: string): SearchQuery => {
   let relatedKinds: string[] = []
+  const normalized = searchText.toLowerCase()
 
-  if (searchText.indexOf('kind:Subscription') >= 0) {
+  if (normalized.indexOf('kind:subscription') >= 0) {
     relatedKinds = ['Placement', 'Deployable', 'Application', 'Subscription', 'Channel']
-  } else if (searchText.indexOf('kind:Channel') >= 0) {
+  } else if (normalized.indexOf('kind:channel') >= 0) {
     relatedKinds = ['Subscription']
-  } else if (searchText.indexOf('kind:Placement') >= 0) {
+  } else if (normalized.indexOf('kind:placement') >= 0) {
     relatedKinds = ['Subscription']
   }
 

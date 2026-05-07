@@ -121,7 +121,7 @@ const mockApplicationDataSubscription: ApplicationDataType = {
     relatedKinds: [
       'Application',
       'Subscription',
-      'Placements',
+      'Placement',
       'Cluster',
       'Service',
       'Deployment',
@@ -233,7 +233,7 @@ const mockApplicationDataSubscriptionTimewindow: ApplicationDataType = {
     relatedKinds: [
       'Application',
       'Subscription',
-      'Placements',
+      'Placement',
       'Cluster',
       'Service',
       'Deployment',

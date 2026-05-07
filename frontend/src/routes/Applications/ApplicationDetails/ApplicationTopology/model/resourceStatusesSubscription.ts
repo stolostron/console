@@ -126,11 +126,11 @@ async function getRelatedResources(reports: ResourceReport[]): Promise<RelatedRe
         switch (kind) {
           case 'Deployment':
             // For deployments, fetch related ReplicaSets and Pods
-            promises.push(getSearchPromise(cluster, kind, name, namespace, ['replicaset', 'pod']))
+            promises.push(getSearchPromise(cluster, kind, name, namespace, ['ReplicaSet', 'Pod']))
             break
           case 'DeploymentConfig':
             // For deployment configs, fetch related ReplicationControllers and Pods (OpenShift specific)
-            promises.push(getSearchPromise(cluster, kind, name, namespace, ['replicationcontroller', 'pod']))
+            promises.push(getSearchPromise(cluster, kind, name, namespace, ['ReplicationController', 'Pod']))
             break
           case 'Route':
             // For routes, fetch the actual Route resource (OpenShift specific)
