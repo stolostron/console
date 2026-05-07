@@ -494,7 +494,7 @@ describe('ClusterOverview channel display for hypershift clusters', () => {
     // Verify cluster name is shown
     await waitForText(mockHypershiftClusterWithOCPVersion.name)
     // Verify channel displays "-" when no channel is defined
-    await waitForText('-')
+    await waitForText('-', true)
   })
 
   it('should display channel when it is defined for hypershift cluster', async () => {

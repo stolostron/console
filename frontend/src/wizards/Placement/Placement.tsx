@@ -115,7 +115,7 @@ export function Placement(props: {
   const [isTolerationsExpanded, setIsTolerationsExpanded] = useState(true)
   const featureEnabled = props.showPlacementPreview === true
   const ownsDebugUI = featureEnabled && !props.placementDebugState
-  const ownDebugState = usePlacementDebug(placement, ownsDebugUI)
+  const ownDebugState = usePlacementDebug(ownsDebugUI ? placement : undefined)
   const { matched, notMatched, totalClusters, matchedCount, error } = props.placementDebugState ?? ownDebugState
 
   const { t } = useTranslation()

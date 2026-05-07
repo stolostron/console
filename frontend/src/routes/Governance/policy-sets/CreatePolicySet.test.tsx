@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
 import { managedClustersState, namespacesState, policiesState, policySetsState } from '../../../atoms'
-import { nockIgnoreRBAC, nockCreate, nockIgnoreApiPaths } from '../../../lib/nock-util'
+import { nockIgnoreRBAC, nockCreate, nockIgnoreApiPaths, nockIgnorePlacementDebug } from '../../../lib/nock-util'
 import { waitForNocks, waitForText } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { CreatePolicySet } from './CreatePolicySet'
@@ -34,6 +34,7 @@ describe('Create Policy Page', () => {
   beforeEach(async () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
+    nockIgnorePlacementDebug()
   })
 
   test('can create policy set', async () => {

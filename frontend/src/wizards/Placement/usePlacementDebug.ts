@@ -65,11 +65,11 @@ function mapDebugResult(result: PlacementDebugResult): PlacementDebugState {
   }
 }
 
-export function usePlacementDebug(placement: IPlacement | undefined, enabled = true): PlacementDebugState {
+export function usePlacementDebug(placement: IPlacement | undefined): PlacementDebugState {
   const specKey = placement ? JSON.stringify({ metadata: placement.metadata, spec: placement.spec }) : undefined
 
   const [state, setState] = useState<PlacementDebugState>(() => {
-    if (enabled && specKey && specKey === cachedSpecKey && cachedState) {
+    if (specKey && specKey === cachedSpecKey && cachedState) {
       return cachedState
     }
     return EMPTY_STATE
@@ -111,7 +111,7 @@ export function usePlacementDebug(placement: IPlacement | undefined, enabled = t
 
   useEffect(() => {
     const debouncedFetch = debouncedFetchRef.current
-    if (!enabled || !specKey || !placement) {
+    if (!specKey || !placement) {
       setState(EMPTY_STATE)
       return
     }
@@ -131,7 +131,7 @@ export function usePlacementDebug(placement: IPlacement | undefined, enabled = t
     // placement is intentionally omitted — specKey is derived from it and
     // serves as the sole cache/identity key. Including placement would cause
     // spurious re-fetches on every render due to referential inequality.
-  }, [specKey, enabled]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [specKey]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return state
 }

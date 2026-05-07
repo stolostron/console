@@ -44,7 +44,6 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { NavigationPath } from '../../NavigationPath'
 import { usePlacementDebug } from './usePlacementDebug'
 import { MatchedClustersModal } from './MatchedClustersModal'
-import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 
 export function PlacementSection(props: {
   bindingSubjectKind: string
@@ -63,8 +62,6 @@ export function PlacementSection(props: {
   const resources = useItem() as IResource[]
   const editMode = useEditMode()
   const displayMode = useDisplayMode()
-  const { settingsState } = useSharedAtoms()
-  const settings = useRecoilValue(settingsState)
   const [isMatchedClustersModalOpen, setIsMatchedClustersModalOpen] = useState(false)
 
   const [placementCount, setPlacementCount] = useState(0)
@@ -165,19 +162,14 @@ export function PlacementSection(props: {
     return resources?.find((resource) => resource.kind === PlacementKind) as IPlacement | undefined
   }, [resources])
 
-  const debugState = usePlacementDebug(currentPlacement, settings.enhancedPlacement === 'enabled')
+  const debugState = usePlacementDebug(currentPlacement)
   const { matched, notMatched, matchedCount, totalClusters, error } = debugState
 
   const setFooterContent = useSetFooterContent()
   const openMatchedModal = useCallback(() => setIsMatchedClustersModalOpen(true), [])
 
   useEffect(() => {
-    if (
-      settings.enhancedPlacement === 'enabled' &&
-      placementCount === 1 &&
-      currentPlacement &&
-      displayMode === DisplayMode.Step
-    ) {
+    if (placementCount === 1 && currentPlacement && displayMode === DisplayMode.Step) {
       const matchedLabel =
         matchedCount === undefined
           ? '-'
@@ -202,7 +194,6 @@ export function PlacementSection(props: {
     }
     return () => setFooterContent(undefined)
   }, [
-    settings.enhancedPlacement,
     placementCount,
     currentPlacement,
     displayMode,
@@ -223,7 +214,7 @@ export function PlacementSection(props: {
             clusterSetBindings={props.existingClusterSetBindings}
             bindingKind={props.bindingSubjectKind}
             clusters={props.clusters}
-            showPlacementPreview={settings.enhancedPlacement === 'enabled'}
+            showPlacementPreview
           />
         ) : null}
         <PlacementBindings
@@ -285,7 +276,7 @@ export function PlacementSection(props: {
                   {t('Add cluster set')}
                 </Button>
               }
-              showPlacementPreview={settings.enhancedPlacement === 'enabled'}
+              showPlacementPreview
               placementDebugState={debugState}
             />
           </WizItemSelector>
@@ -304,84 +295,79 @@ export function PlacementSection(props: {
       )}
 
       {/* Review step content */}
-      {settings.enhancedPlacement === 'enabled' &&
-        displayMode !== DisplayMode.Step &&
-        placementCount === 1 &&
-        currentPlacement && (
-          <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {/* Placement info alert */}
-            {error ? (
-              <Tooltip content={error.message || t('An unknown error occurred.')}>
-                <Alert variant="warning" isInline isPlain title={t('Unable to determine cluster matches.')} />
-              </Tooltip>
-            ) : (
-              matchedCount !== undefined && (
-                <Alert
-                  variant={matchedCount > 0 ? 'info' : 'warning'}
-                  isInline
-                  title={
-                    matchedCount > 0
-                      ? t('{{matched}} of {{total}} clusters matched by placement', {
-                          matched: matchedCount,
-                          total: totalClusters,
-                        })
-                      : t(
-                          'No clusters match the current placement criteria. To identify available clusters, check your label expressions, tolerations, or limits.'
-                        )
-                  }
-                />
-              )
-            )}
+      {displayMode !== DisplayMode.Step && placementCount === 1 && currentPlacement && (
+        <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {/* Placement info alert */}
+          {error ? (
+            <Tooltip content={error.message || t('An unknown error occurred.')}>
+              <Alert variant="warning" isInline isPlain title={t('Unable to determine cluster matches.')} />
+            </Tooltip>
+          ) : (
+            matchedCount !== undefined && (
+              <Alert
+                variant={matchedCount > 0 ? 'info' : 'warning'}
+                isInline
+                title={
+                  matchedCount > 0
+                    ? t('{{matched}} of {{total}} clusters matched by placement', {
+                        matched: matchedCount,
+                        total: totalClusters,
+                      })
+                    : t(
+                        'No clusters match the current placement criteria. To identify available clusters, check your label expressions, tolerations, or limits.'
+                      )
+                }
+              />
+            )
+          )}
 
-            {/* Label expressions and tolerations */}
-            {(currentPlacement.spec?.predicates?.[0]?.requiredClusterSelector?.labelSelector?.matchExpressions
-              ?.length ||
-              currentPlacement.spec?.tolerations?.length) && (
-              <div>
-                <h4 style={{ marginBottom: '0.5rem' }}>{t('Label expressions and tolerations')}</h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  {/* Label expressions */}
-                  {currentPlacement.spec?.predicates?.[0]?.requiredClusterSelector?.labelSelector?.matchExpressions
-                    ?.length && (
-                    <div>
-                      <strong>{t('Label expressions')}:</strong>
-                      <LabelGroup style={{ marginTop: '0.25rem' }}>
-                        {currentPlacement.spec.predicates[0].requiredClusterSelector.labelSelector.matchExpressions.map(
-                          (expr, idx) => (
-                            <Fragment key={idx}>
-                              <Label>{`${expr.key} ${expr.operator}`}</Label>
-                              {expr.values && expr.values.length > 0 && <Label>{expr.values.join(', ')}</Label>}
-                            </Fragment>
-                          )
-                        )}
-                      </LabelGroup>
-                    </div>
-                  )}
-
-                  {/* Tolerations */}
-                  {currentPlacement.spec?.tolerations?.length && (
-                    <div>
-                      <strong>{t('Tolerations')}:</strong>
-                      <LabelGroup style={{ marginTop: '0.25rem' }}>
-                        {currentPlacement.spec.tolerations.map((toleration, idx) => (
+          {/* Label expressions and tolerations */}
+          {(!!currentPlacement.spec?.predicates?.[0]?.requiredClusterSelector?.labelSelector?.matchExpressions
+            ?.length ||
+            (currentPlacement.spec?.tolerations && currentPlacement.spec.tolerations.length > 0)) && (
+            <div>
+              <h4 style={{ marginBottom: '0.5rem' }}>{t('Label expressions and tolerations')}</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {/* Label expressions */}
+                {!!currentPlacement.spec?.predicates?.[0]?.requiredClusterSelector?.labelSelector?.matchExpressions
+                  ?.length && (
+                  <div>
+                    <strong>{t('Label expressions')}:</strong>
+                    <LabelGroup style={{ marginTop: '0.25rem' }}>
+                      {currentPlacement.spec.predicates[0].requiredClusterSelector.labelSelector.matchExpressions.map(
+                        (expr, idx) => (
                           <Fragment key={idx}>
-                            <Label>{toleration.key}</Label>
-                            <Label>{toleration.operator || t('Exists')}</Label>
-                            {toleration.value && <Label>{toleration.value}</Label>}
-                            {toleration.effect && <Label>{toleration.effect}</Label>}
-                            {toleration.tolerationSeconds != null && (
-                              <Label>{`${toleration.tolerationSeconds}s`}</Label>
-                            )}
+                            <Label>{`${expr.key} ${expr.operator}`}</Label>
+                            {expr.values && expr.values.length > 0 && <Label>{expr.values.join(', ')}</Label>}
                           </Fragment>
-                        ))}
-                      </LabelGroup>
-                    </div>
-                  )}
-                </div>
+                        )
+                      )}
+                    </LabelGroup>
+                  </div>
+                )}
+
+                {/* Tolerations */}
+                {currentPlacement.spec?.tolerations && currentPlacement.spec.tolerations.length > 0 && (
+                  <div>
+                    <strong>{t('Tolerations')}:</strong>
+                    <LabelGroup style={{ marginTop: '0.25rem' }}>
+                      {currentPlacement.spec.tolerations.map((toleration, idx) => (
+                        <Fragment key={idx}>
+                          <Label>{toleration.key}</Label>
+                          <Label>{toleration.operator || t('Exists')}</Label>
+                          {toleration.value && <Label>{toleration.value}</Label>}
+                          {toleration.effect && <Label>{toleration.effect}</Label>}
+                          {toleration.tolerationSeconds != null && <Label>{`${toleration.tolerationSeconds}s`}</Label>}
+                        </Fragment>
+                      ))}
+                    </LabelGroup>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
+      )}
 
       <MatchedClustersModal
         isOpen={isMatchedClustersModalOpen}

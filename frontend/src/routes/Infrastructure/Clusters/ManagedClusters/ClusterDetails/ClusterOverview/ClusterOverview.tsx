@@ -86,8 +86,7 @@ export function ClusterOverviewPageContent() {
   const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
   const [curatorSummaryModalIsOpen, setCuratorSummaryModalIsOpen] = useState<boolean>(false)
   const { projects } = useProjects()
-  const { settingsState, placementsState, placementDecisionsState } = useSharedAtoms()
-  const settings = useRecoilValue(settingsState)
+  const { placementsState, placementDecisionsState } = useSharedAtoms()
   const placements = useRecoilValue(placementsState)
   const placementDecisions = useRecoilValue(placementDecisionsState)
   const placementsForCluster = useMemo(() => {
@@ -387,7 +386,7 @@ export function ClusterOverviewPageContent() {
             ? [clusterProperties.automationTemplate]
             : []),
         ]),
-    ...(settings.enhancedPlacement === 'enabled' ? [clusterProperties.placements] : []),
+    clusterProperties.placements,
   ]
 
   const [isModalOpen, setIsModalOpen] = useState(false)

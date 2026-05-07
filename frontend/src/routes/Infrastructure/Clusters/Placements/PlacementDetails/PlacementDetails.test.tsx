@@ -3,7 +3,7 @@
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, generatePath } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { placementsState, settingsState } from '../../../../../atoms'
+import { placementsState } from '../../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockList } from '../../../../../lib/nock-util'
 import { waitForText } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
@@ -41,7 +41,6 @@ function PlacementDetailsComponent({ placements = [mockPlacement] }: { placement
     <RecoilRoot
       initializeState={(snapshot) => {
         snapshot.set(placementsState, placements)
-        snapshot.set(settingsState, { enhancedPlacement: 'enabled' })
       }}
     >
       <MemoryRouter initialEntries={[initialPath]}>

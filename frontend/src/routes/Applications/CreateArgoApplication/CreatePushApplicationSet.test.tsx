@@ -20,6 +20,7 @@ import {
   nockGet,
   nockIgnoreApiPaths,
   nockIgnoreOperatorCheck,
+  nockIgnorePlacementDebug,
   nockList,
 } from '~/lib/nock-util'
 import {
@@ -328,6 +329,7 @@ describe('Create Argo Application Set', () => {
   beforeEach(() => {
     nockIgnoreApiPaths()
     nockIgnoreOperatorCheck()
+    nockIgnorePlacementDebug()
   })
   const AddApplicationSet = () => {
     return (

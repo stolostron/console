@@ -9,7 +9,6 @@ import {
   placementsState,
   policiesState,
   policySetsState,
-  settingsState,
 } from '../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import { waitForText } from '../../../../lib/test-util'
@@ -56,7 +55,6 @@ describe('Policy Details Results', () => {
           snapshot.set(placementBindingsState, mockPlacementBindings)
           snapshot.set(placementDecisionsState, mockPlacementDecision)
           snapshot.set(policiesState, [mockPolicy[1]])
-          snapshot.set(settingsState, { enhancedPlacement: 'enabled' })
         }}
       >
         <MemoryRouter>
@@ -100,7 +98,6 @@ describe('Policy Details Results', () => {
             snapshot.set(placementBindingsState, mockPlacementBindings)
             snapshot.set(placementDecisionsState, mockPlacementDecision)
             snapshot.set(policiesState, propagatedPolicies)
-            snapshot.set(settingsState, { enhancedPlacement: 'enabled' })
           }}
         >
           <MemoryRouter>
@@ -127,7 +124,6 @@ describe('Policy Details Results', () => {
           snapshot.set(policySetsState, [mockPolicySets[0]])
           snapshot.set(placementBindingsState, mockPlacementBindings)
           snapshot.set(placementDecisionsState, mockPlacementDecision)
-          snapshot.set(settingsState, { enhancedPlacement: 'enabled' })
         }}
       >
         <MemoryRouter>
@@ -156,7 +152,6 @@ describe('Policy Details Results', () => {
           snapshot.set(policySetsState, [mockPolicySets[0]])
           snapshot.set(placementBindingsState, mockPlacementBindings)
           snapshot.set(placementDecisionsState, mockPlacementDecision)
-          snapshot.set(settingsState, { enhancedPlacement: 'enabled' })
         }}
       >
         <MemoryRouter>
@@ -174,43 +169,6 @@ describe('Policy Details Results', () => {
 
     // verify pending status with new format
     await waitForText(/Pending on \d+ cluster/)
-  })
-
-  test('Should render Policy Details Page with placement table when feature flag is disabled', async () => {
-    const context: PolicyDetailsContext = { policy: mockPolicy[0] }
-    const { container } = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(placementsState, mockPlacements)
-          snapshot.set(policySetsState, [mockPolicySets[0]])
-          snapshot.set(placementBindingsState, mockPlacementBindings)
-          snapshot.set(placementDecisionsState, mockPlacementDecision)
-          snapshot.set(policiesState, [mockPolicy[1]])
-          // Feature flag disabled - should show old UI with placement table
-          snapshot.set(settingsState, { enhancedPlacement: 'disabled' })
-        }}
-      >
-        <MemoryRouter>
-          <Routes>
-            <Route element={<Outlet context={context} />}>
-              <Route path="*" element={<PolicyDetailsOverview />} />
-            </Route>
-          </Routes>
-        </MemoryRouter>
-      </RecoilRoot>
-    )
-
-    // wait page load
-    await waitForText('policy-set-with-1-placement-policy')
-
-    // verify old UI with placement table is rendered
-    // Check for table column headers which are unique to the table
-    const tableHeaders = container.querySelectorAll('th')
-    const headerTexts = Array.from(tableHeaders).map((th) => th.textContent)
-    expect(headerTexts).toContain('Name')
-    expect(headerTexts).toContain('Kind')
-    expect(headerTexts).toContain('Clusters')
-    expect(headerTexts).toContain('Violations')
   })
 
   test('Should expand cluster violations when clicking "show more" button', async () => {
@@ -235,7 +193,6 @@ describe('Policy Details Results', () => {
           snapshot.set(policySetsState, [mockPolicySets[0]])
           snapshot.set(placementBindingsState, mockPlacementBindings)
           snapshot.set(placementDecisionsState, mockPlacementDecision)
-          snapshot.set(settingsState, { enhancedPlacement: 'enabled' })
         }}
       >
         <MemoryRouter>
@@ -295,7 +252,6 @@ describe('Policy Details Results', () => {
           snapshot.set(policySetsState, [mockPolicySets[0]])
           snapshot.set(placementBindingsState, mockPlacementBindings)
           snapshot.set(placementDecisionsState, mockPlacementDecision)
-          snapshot.set(settingsState, { enhancedPlacement: 'enabled' })
         }}
       >
         <MemoryRouter>
@@ -370,7 +326,6 @@ describe('Policy Details Results', () => {
           snapshot.set(policySetsState, [])
           snapshot.set(placementBindingsState, [mockPlacementBindingForRule])
           snapshot.set(placementDecisionsState, [])
-          snapshot.set(settingsState, { enhancedPlacement: 'enabled' })
         }}
       >
         <MemoryRouter>
@@ -399,7 +354,6 @@ describe('Policy Details Results', () => {
           snapshot.set(policySetsState, [])
           snapshot.set(placementBindingsState, [])
           snapshot.set(placementDecisionsState, [])
-          snapshot.set(settingsState, { enhancedPlacement: 'enabled' })
         }}
       >
         <MemoryRouter>
@@ -439,7 +393,6 @@ describe('Policy Details Results', () => {
           snapshot.set(policySetsState, [mockPolicySets[0]])
           snapshot.set(placementBindingsState, mockPlacementBindings)
           snapshot.set(placementDecisionsState, mockPlacementDecision)
-          snapshot.set(settingsState, { enhancedPlacement: 'enabled' })
         }}
       >
         <MemoryRouter>
@@ -468,7 +421,6 @@ describe('Policy Details Results', () => {
           snapshot.set(policySetsState, [mockPolicySets[0]])
           snapshot.set(placementBindingsState, mockPlacementBindings)
           snapshot.set(placementDecisionsState, mockPlacementDecision)
-          snapshot.set(settingsState, { enhancedPlacement: 'enabled' })
         }}
       >
         <MemoryRouter>

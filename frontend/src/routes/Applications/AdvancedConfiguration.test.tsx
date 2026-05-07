@@ -9,7 +9,6 @@ import {
   namespacesState,
   placementDecisionsState,
   placementsState,
-  settingsState,
   subscriptionsState,
 } from '../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
@@ -272,13 +271,7 @@ describe('advanced configuration page', () => {
 
   test('should render deprecation Alert', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(settingsState, {
-            enhancedPlacement: 'enabled',
-          })
-        }}
-      >
+      <RecoilRoot>
         <MemoryRouter initialEntries={[NavigationPath.advancedConfiguration]}>
           <AdvancedConfiguration />
         </MemoryRouter>
@@ -297,11 +290,6 @@ describe('advanced configuration page', () => {
   test('should click channel option', async () => {
     render(<TestAdvancedConfigurationPage />)
     await clickByTestId('channels')
-  })
-
-  test('should click placement option', async () => {
-    render(<TestAdvancedConfigurationPage />)
-    await clickByTestId('placements')
   })
 })
 
@@ -422,23 +410,6 @@ describe('Export from application tables', () => {
     )
     expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(
       /^applicationadvancedconfiguration-channels-[\d]+\.csv$/
-    )
-  })
-
-  test('export button should produce a file for download for placements', async () => {
-    render(<TestAdvancedConfigurationPage defaultToggleOption="placements" />)
-    const { blobConstructorSpy, createElementSpy } = getCSVExportSpies()
-
-    //download for placements
-    await clickByLabel('export-search-result')
-    await clickByText('Export all to CSV')
-
-    expect(blobConstructorSpy).toHaveBeenCalledWith(
-      ['Name,Namespace,Clusters,Created\n"test-placement","default","None","2024-06-28T03:18:48.000Z"'],
-      { type: 'text/csv' }
-    )
-    expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(
-      /^applicationadvancedconfiguration-placements-[\d]+\.csv$/
     )
   })
 })
