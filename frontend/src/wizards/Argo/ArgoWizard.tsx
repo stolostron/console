@@ -349,7 +349,6 @@ export function ArgoWizard(props: ArgoWizardProps) {
                   operator: 'Exists',
                 },
               ],
-              numberOfClusters: 1,
               predicates: [
                 {
                   // ArgoCD pull model doesn't support the hub cluster
@@ -425,7 +424,6 @@ export function ArgoWizard(props: ArgoWizardProps) {
                   operator: 'Exists',
                 },
               ],
-              numberOfClusters: 1,
             },
           },
         ]
