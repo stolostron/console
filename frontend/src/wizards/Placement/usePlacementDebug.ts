@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useEffect, useRef, useState } from 'react'
 import debounce from 'debounce'
-import { IPlacement } from '../common/resources/IPlacement'
+import { IPlacement, Toleration } from '../common/resources/IPlacement'
+import { IExpression } from '../common/resources/IMatchExpression'
 import { postPlacementDebug, PlacementDebugResult } from '../../resources/placement-debug'
 import { isRequestAbortedError, ResourceError } from '../../resources/utils/resource-request'
 
@@ -12,6 +13,37 @@ export interface PlacementDebugState {
   matchedCount: number | undefined
   loading: boolean
   error: Error | undefined
+}
+
+function isCompleteExpression(expr: IExpression): boolean {
+  if (!expr.key) return false
+  if (!expr.operator) return false
+  if (expr.operator === 'In' || expr.operator === 'NotIn') {
+    return Array.isArray(expr.values) && expr.values.some((v) => v !== undefined && v !== null && v !== '')
+  }
+  return true
+}
+
+function isCompleteToleration(tol: Toleration): boolean {
+  if (!tol.key) return false
+  if (!tol.operator) return false
+  if (tol.operator === 'Equal' && !tol.value) return false
+  return true
+}
+
+export function placementHasIncompleteEntries(placement: IPlacement): boolean {
+  for (const predicate of placement.spec?.predicates ?? []) {
+    for (const expr of predicate.requiredClusterSelector?.labelSelector?.matchExpressions ?? []) {
+      if (!isCompleteExpression(expr)) return true
+    }
+    for (const expr of predicate.requiredClusterSelector?.claimSelector?.matchExpressions ?? []) {
+      if (!isCompleteExpression(expr)) return true
+    }
+  }
+  for (const tol of placement.spec?.tolerations ?? []) {
+    if (!isCompleteToleration(tol)) return true
+  }
+  return false
 }
 
 const EMPTY_STATE: PlacementDebugState = {
@@ -66,7 +98,9 @@ function mapDebugResult(result: PlacementDebugResult): PlacementDebugState {
 }
 
 export function usePlacementDebug(placement: IPlacement | undefined): PlacementDebugState {
-  const specKey = placement ? JSON.stringify({ metadata: placement.metadata, spec: placement.spec }) : undefined
+  const isReady = placement ? !placementHasIncompleteEntries(placement) : false
+  const specKey =
+    isReady && placement ? JSON.stringify({ metadata: placement.metadata, spec: placement.spec }) : undefined
 
   const [state, setState] = useState<PlacementDebugState>(() => {
     if (specKey && specKey === cachedSpecKey && cachedState) {
@@ -111,9 +145,16 @@ export function usePlacementDebug(placement: IPlacement | undefined): PlacementD
 
   useEffect(() => {
     const debouncedFetch = debouncedFetchRef.current
-    if (!specKey || !placement) {
-      setState(EMPTY_STATE)
-      return
+
+    if (!specKey) {
+      if (!placement) {
+        setState(EMPTY_STATE)
+      }
+      // Placement exists but has incomplete entries — freeze current state
+      return () => {
+        debouncedFetch.clear()
+        abortRef.current?.()
+      }
     }
 
     if (specKey === cachedSpecKey && cachedState) {
@@ -122,7 +163,7 @@ export function usePlacementDebug(placement: IPlacement | undefined): PlacementD
     }
 
     setState({ ...EMPTY_STATE, loading: true })
-    debouncedFetch(placement, specKey)
+    debouncedFetch(placement!, specKey)
 
     return () => {
       debouncedFetch.clear()
