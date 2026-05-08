@@ -206,7 +206,7 @@ export function useValidation() {
         validator.isURL(url, {
           require_protocol: true,
           require_valid_protocol: true,
-          protocols: ['http', 'https'],
+          protocols: ['http', 'https', 'oci'],
           require_host: true,
         })
       )
