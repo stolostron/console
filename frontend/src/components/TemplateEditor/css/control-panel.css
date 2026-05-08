@@ -24,7 +24,7 @@
   display: flex;
   flex-direction: column;
   row-gap: 0;
-  padding: var(--pf-v5-global--spacer--lg);
+  padding: var(--pf-t--global--spacer--lg);
 }
 .temptifly .showWizard .creation-view-controls,
 .creation-view .creation-view-controls {
@@ -345,16 +345,17 @@
 .creation-view-controls-combobox .tf--list-box .tf--list-box__menu,
 .temptifly-controls-treeselect .tf--list-box .tf--list-box__menu,
 .creation-view-controls-treeselect .tf--list-box .tf--list-box__menu {
-  box-shadow: var(--pf-v5-global--BoxShadow--md);
+  box-shadow: var(--pf-t--global--box-shadow--md);
   position: absolute;
   left: 0;
   right: 0;
   top: 2.5rem;
   width: 100%;
   overflow-y: auto;
-  background-color: var(--pf-v5-global--BackgroundColor--100);
+  background-color: var(--pf-t--global--background--color--100);
   z-index: 500;
   cursor: pointer;
+  padding: 10px;
 }
 .temptifly-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-container,
 .creation-view-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-container,
