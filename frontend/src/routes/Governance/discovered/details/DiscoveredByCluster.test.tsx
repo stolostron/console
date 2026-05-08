@@ -1101,17 +1101,17 @@ describe('DiscoveredByCluster', () => {
     // Test the filter logic programmatically using the shared predicate
     const policies = context.policyItems![0].policies
 
-    // Scenario 1: Filter with env=prod AND !team=backend
+    // Scenario 1: Filter with env=prod AND team!=backend
     // Should show cluster-prod-frontend only (has env=prod but NOT team=backend)
-    const filter1 = ['env=prod', '!team=backend']
+    const filter1 = ['env=prod', 'team!=backend']
     const result1 = policies.filter((policy) => matchesSelectedLabels(filter1, policy))
 
     expect(result1.length).toBe(1)
     expect(result1[0].cluster).toBe('cluster-prod-frontend')
 
-    // Scenario 2: Filter with only !team=backend
+    // Scenario 2: Filter with only team!=backend
     // Should show cluster-prod-frontend (not cluster-prod-backend or cluster-dev-backend)
-    const filter2 = ['!team=backend']
+    const filter2 = ['team!=backend']
     const result2 = policies.filter((policy) => matchesSelectedLabels(filter2, policy))
 
     expect(result2.length).toBe(1)
