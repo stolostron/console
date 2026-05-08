@@ -211,6 +211,7 @@ export function useValidation() {
         })
       )
         return undefined
+      if (/^[\w.-]+@[\w.-]+:[\w./?#@~-]+(\.git)?$/.test(url)) return undefined
       return t('The URL is not valid.')
     }
 
