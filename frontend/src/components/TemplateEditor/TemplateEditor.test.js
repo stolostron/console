@@ -82,8 +82,8 @@ describe('TemplateEditor component', () => {
       'testing'
     )
     userEvent.click(screen.getByText(/channel\.type\.git/i))
-    userEvent.type(screen.getByLabelText(/creation\.app\.github\.url \*/i), 'https://github.com/fxiang1/app-samples')
-    userEvent.type(screen.getByLabelText(/creation\.app\.github\.path/i), 'ansible')
+    userEvent.type(screen.getByTestId('githubURL'), 'https://github.com/fxiang1/app-samples')
+    userEvent.type(screen.getByTestId('githubPath'), 'ansible')
     userEvent.click(
       screen.getByRole('radio', {
         name: /creation\.app\.settings\.localclusters/i,

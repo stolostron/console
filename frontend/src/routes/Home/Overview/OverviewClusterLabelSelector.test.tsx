@@ -58,23 +58,16 @@ describe('OverviewClusterLabelSelector', () => {
   }
 
   test('Renders selection correctly', async () => {
-    const { getAllByText, getByText } = render(<RenderOverviewClusterLabelSelector />)
+    const { getAllByText } = render(<RenderOverviewClusterLabelSelector />)
 
     // pick the label key - cloud
-    screen
-      .getAllByRole('combobox', {
-        name: 'Type to filter',
-      })[0]
-      .click()
-    await waitFor(() => expect(getByText('cloud')).toBeTruthy())
-    userEvent.click(getByText('cloud'))
+    userEvent.click(screen.getByPlaceholderText('Select cluster label'))
+    await waitFor(() => expect(screen.getByRole('option', { name: 'cloud' })).toBeTruthy())
+    userEvent.click(screen.getByRole('option', { name: 'cloud' }))
 
     // pick the label value - Amazon
-    screen
-      .getAllByRole('combobox', {
-        name: 'Type to filter',
-      })[1]
-      .click()
+    await waitFor(() => expect(screen.getByPlaceholderText('Select label value')).toBeTruthy())
+    userEvent.click(screen.getByPlaceholderText('Select label value'))
     await waitFor(() => expect(screen.getByText('Amazon')).toBeTruthy())
     userEvent.click(screen.getByText('Amazon'))
 
