@@ -14,7 +14,7 @@ jobs:
             - uses: actions/checkout@v2
               with:
                   token: ${{ secrets.GH_TOKEN }}
-            - uses: actions/setup-node@v2
+            - uses: actions/setup-node@v6
               with:
                   node-version: '14'
             - run: npx npm-check-updates --doctor --upgrade --target minor --reject $SKIP
