@@ -9,8 +9,6 @@ import { simpleGit, type SimpleGit } from 'simple-git'
 /** Resolved from repo `frontend/` (see `npm run i18n-backporting`). */
 const LOCALES_DIR = path.resolve(process.cwd(), 'public', 'locales')
 
-const UPSTREAM_NAME = 'upstream'
-
 /** Max release refs shown in the interactive picker (list is newest-first). */
 const INTERACTIVE_RELEASE_PICK_LIMIT = 8
 
@@ -45,12 +43,63 @@ const PROMPT_LINES = [
   '   Example: npm run i18n-backporting release-2.17\n',
 ].join('\n')
 
-/** Shown once before interactive English backports when any diff is below the auto-accept similarity threshold. */
-const EN_LOW_SIMILARITY_EXPLAINER = (releaseRef: string): string =>
-  [
-    `English string changes have been detected. Answer yes or no to each question`,
-    `whether to backport each of these new English strings to the target release ${releaseRef}`,
-  ].join('\n')
+const STOLOSTRON_CONSOLE_REPO_PATH = 'stolostron/console'
+
+/** Map a `git remote -v` fetch URL to `org/repo` when it is a github.com clone URL. */
+function githubRepoPathFromRemoteUrl(url: string): string | undefined {
+  const trimmed = url.trim().replace(/\.git$/i, '')
+  const httpsMatch = /^https:\/\/github\.com\/([^/]+\/[^/]+)$/i.exec(trimmed)
+  if (httpsMatch) return httpsMatch[1].toLowerCase()
+  const sshMatch = /^git@github\.com:([^/]+\/[^/]+)$/i.exec(trimmed)
+  if (sshMatch) return sshMatch[1].toLowerCase()
+  return undefined
+}
+
+/** Name of the remote whose `(fetch)` URL points at https://github.com/stolostron/console.git (or SSH equivalent). */
+function resolveStolostronUpstreamRemoteName(cwd: string): string {
+  const out = execFileSync('git', ['remote', '-v'], { cwd, encoding: 'utf8' })
+  for (const line of out.split('\n')) {
+    const trimmed = line.trim()
+    if (!trimmed) continue
+    const match = /^(\S+)\s+(\S+)\s+\(fetch\)$/.exec(trimmed)
+    if (!match) continue
+    const [, name, fetchUrl] = match
+    if (githubRepoPathFromRemoteUrl(fetchUrl) === STOLOSTRON_CONSOLE_REPO_PATH) {
+      return name
+    }
+  }
+  throw new Error(
+    `No git remote with fetch URL https://github.com/${STOLOSTRON_CONSOLE_REPO_PATH}.git (git@github.com:${STOLOSTRON_CONSOLE_REPO_PATH}.git is also accepted). Add one, e.g.: git remote add upstream https://github.com/${STOLOSTRON_CONSOLE_REPO_PATH}.git`
+  )
+}
+
+/** Remote names whose `(fetch)` URL is not the stolostron/console upstream (forks and other clones). */
+function listNonStolostronUpstreamRemoteNames(cwd: string): string[] {
+  const out = execFileSync('git', ['remote', '-v'], { cwd, encoding: 'utf8' })
+  const seen = new Set<string>()
+  const names: string[] = []
+  for (const line of out.split('\n')) {
+    const trimmed = line.trim()
+    if (!trimmed) continue
+    const match = /^(\S+)\s+(\S+)\s+\(fetch\)$/.exec(trimmed)
+    if (!match) continue
+    const [, name, fetchUrl] = match
+    if (githubRepoPathFromRemoteUrl(fetchUrl) === STOLOSTRON_CONSOLE_REPO_PATH) {
+      continue
+    }
+    if (!seen.has(name)) {
+      seen.add(name)
+      names.push(name)
+    }
+  }
+  return names.sort((a, b) => {
+    if (a === 'origin' && b !== 'origin') return -1
+    if (b === 'origin' && a !== 'origin') return 1
+    return a.localeCompare(b)
+  })
+}
+
+const UPSTREAM_NAME = resolveStolostronUpstreamRemoteName(process.cwd())
 
 void run().catch((err: unknown) => {
   console.error(err instanceof Error ? err.message : String(err))
@@ -60,7 +109,8 @@ void run().catch((err: unknown) => {
 async function run(): Promise<void> {
   console.log(chalk.bgBlue.white.bold('\n       Translation Backporting v1.0.0      \n'))
   console.log(chalk.cyan(PROMPT_LINES))
-  const git = simpleGit(process.cwd())
+  const gitRoot = execFileSync('git', ['rev-parse', '--show-toplevel'], { cwd: process.cwd(), encoding: 'utf8' }).trim()
+  const git = simpleGit(gitRoot)
 
   //  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   //  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -77,7 +127,7 @@ async function run(): Promise<void> {
 
   // --- FETCH FROM GIT ---
   try {
-    console.log(chalk.dim('Fetching from upstream...'))
+    console.log(chalk.dim(`Fetching from ${UPSTREAM_NAME}...`))
     await git.fetch([UPSTREAM_NAME])
   } catch (e: unknown) {
     console.log(e instanceof Error ? e.message : String(e))
@@ -122,9 +172,7 @@ async function run(): Promise<void> {
     }
   } else {
     console.log(
-      chalk.yellow(
-        `No release in releaseList is at or behind ${UPSTREAM_NAME}/main (every tip has commits not in main).`
-      )
+      chalk.yellow(`No release branch is at or behind ${UPSTREAM_NAME}/main (every tip has commits not in main).`)
     )
   }
 
@@ -159,7 +207,6 @@ async function run(): Promise<void> {
     .filter((d) => d.isDirectory())
     .map((d) => d.name)
 
-  const backportEnMap: LangRefPairMap = {}
   const backportMap: LangRefPairMap = {}
 
   const selectedIdx = releaseList.indexOf(releaseRef)
@@ -175,7 +222,6 @@ async function run(): Promise<void> {
 
   let payloadMap: TranslationMap | undefined
   let payloadChanged = false
-  let printedLowSimilarityEnExplainer = false
 
   //  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   //  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -210,15 +256,6 @@ async function run(): Promise<void> {
       continue
     }
 
-    if (
-      !printedLowSimilarityEnExplainer &&
-      process.stdin.isTTY &&
-      enDiffHasAnyBelowGreenSimilarity(currentEn, nextMap)
-    ) {
-      console.log(`\n\n${chalk.magentaBright(EN_LOW_SIMILARITY_EXPLAINER(releaseRef))}`)
-      printedLowSimilarityEnExplainer = true
-    }
-
     for (const key of Object.keys(nextMap)) {
       if (!Object.prototype.hasOwnProperty.call(currentEn, key)) {
         continue
@@ -226,48 +263,7 @@ async function run(): Promise<void> {
       const nextEnVal = nextMap[key]
       const currentEnVal = currentEn[key]
       if (currentEnVal !== nextEnVal) {
-        if (!backportEnMap['en']) {
-          backportEnMap['en'] = {}
-        }
-        const similarity = getStringSimilarity(currentEnVal, nextEnVal)
-        backportEnMap['en'][key] = {
-          [releaseRef]: currentEnVal,
-          [nextRef]: nextEnVal,
-          [SIMILARITY_KEY]: similarity,
-        }
-
-        let acceptNewerEn = similarity >= SIMILARITY_COLOR_GREEN_ABOVE
-        if (!acceptNewerEn) {
-          if (!process.stdin.isTTY) {
-            console.log(chalk.dim(`English differs for "${key}"; no TTY — skipping newer EN backport.`))
-            continue
-          }
-          const choice = await promptBackportNewerEnToRelease({
-            key,
-            releaseRef,
-            nextRef,
-            currentEnVal,
-            nextEnVal,
-            similarity,
-          })
-          if (choice === 'q') {
-            process.exit(0)
-          }
-          if (choice === 'n') {
-            continue
-          }
-          acceptNewerEn = true
-        }
-
-        if (acceptNewerEn && payloadMap && currentRef === releaseRef) {
-          if (!payloadMap['en']) {
-            payloadMap['en'] = {}
-          }
-          if (payloadMap['en'][key] !== nextEnVal) {
-            payloadChanged = true
-            payloadMap['en'][key] = nextEnVal
-          }
-        }
+        continue
       }
 
       for (const lang of localeLangs) {
@@ -305,13 +301,12 @@ async function run(): Promise<void> {
   }
 
   // --- PRINT BACKPORT SUMMARY / OPTIONAL DETAIL ---
-  printBackportKeyCountsTable(backportMap, backportEnMap, releaseRef)
+  printBackportKeyCountsTable(backportMap, releaseRef)
   const detailChoice = await promptBackportDetailsChoice()
   if (detailChoice === 'q') {
     process.exit(0)
   }
   if (detailChoice === 'y') {
-    printBackportMapFormatted(backportEnMap, releaseRef)
     printBackportMapFormatted(backportMap, releaseRef)
   }
 
@@ -333,10 +328,14 @@ async function run(): Promise<void> {
     process.exit(0)
   }
 
-  const gitRoot = (await git.revparse(['--show-toplevel'])).trim()
   const worktreeRelPath = 'frontend/i18n-scripts/temp'
   const worktreeAbsPath = path.join(gitRoot, ...worktreeRelPath.split('/'))
   const branchName = backportTranslationsBranchName(releaseRef)
+
+  const createBranchChoice = await promptCreateBackportBranchYq(releaseRef)
+  if (createBranchChoice === 'q') {
+    process.exit(0)
+  }
 
   const runCmd = (file: string, args: readonly string[], cwd: string): void => {
     execFileSync(file, args, { cwd, stdio: 'inherit' })
@@ -411,8 +410,14 @@ async function run(): Promise<void> {
 
     // STEP 8: push changes
     console.log(chalk.yellow('\nSTEP 8: Push branch.\n'))
-    // git push --set-upstream origin ${branchName}
-    runCmd('git', ['push', '--set-upstream', 'origin', branchName], process.cwd())
+    const pushRemoteCandidates = listNonStolostronUpstreamRemoteNames(process.cwd())
+    const pushRemote = await pickOriginBranch(pushRemoteCandidates)
+    if (!pushRemote) {
+      console.log(chalk.yellow('No push remote selected; skipping push and PR steps.'))
+    } else {
+      // git push --set-upstream <remote> ${branchName}
+      runCmd('git', ['push', '--set-upstream', pushRemote, branchName], process.cwd())
+    }
 
     // STEP 9: if gh exists, create a PR
     console.log(chalk.yellow('\nSTEP 9: Create PR (if gh is available).\n'))
@@ -424,24 +429,33 @@ async function run(): Promise<void> {
     } catch {
       hasGh = false
     }
-    if (hasGh) {
-      const base = releaseRef.startsWith(`${UPSTREAM_NAME}/`)
-        ? releaseRef.slice(UPSTREAM_NAME.length + 1)
-        : releaseRef.replace(/\//g, '-')
-      runCmd(
-        'gh',
-        [
-          'pr',
-          'create',
-          '--base',
-          base,
-          '--title',
-          `chore(i18n): backport translations to ${releaseRef}`,
-          '--body-file',
-          path.join('.github', 'pull_request_template.md'),
-        ],
-        process.cwd()
-      )
+    if (pushRemote && hasGh) {
+      const createPr = await promptCreatePrYn(releaseRef)
+      if (createPr === 'y') {
+        const base = releaseRef.startsWith(`${UPSTREAM_NAME}/`)
+          ? releaseRef.slice(UPSTREAM_NAME.length + 1)
+          : releaseRef.replace(/\//g, '-')
+        // So gh pr create targets the stolostron/console repo (not the fork default).
+        runCmd('gh', ['repo', 'set-default', UPSTREAM_NAME], process.cwd())
+        runCmd(
+          'gh',
+          [
+            'pr',
+            'create',
+            '--base',
+            base,
+            '--title',
+            `chore(i18n): backport translations to ${releaseRef}`,
+            '--body-file',
+            path.join('.github', 'pull_request_template.md'),
+          ],
+          process.cwd()
+        )
+      } else {
+        console.log(chalk.dim('Skipping PR creation.'))
+      }
+    } else if (!pushRemote) {
+      console.log(chalk.dim('Push was skipped; skipping PR creation step.'))
     } else {
       console.log(chalk.dim('gh not found; skipping PR creation step.'))
     }
@@ -463,20 +477,15 @@ async function run(): Promise<void> {
 }
 
 /** Per-language summary: full name; **Backports** is locale diff count, or English EN-diff count on the English row only. */
-function printBackportKeyCountsTable(
-  backportMap: LangRefPairMap,
-  backportEnMap: LangRefPairMap,
-  releaseRef: string
-): void {
+function printBackportKeyCountsTable(backportMap: LangRefPairMap, releaseRef: string): void {
   console.log()
   console.log()
   console.log(chalk.magenta.bold(`\nNumber of strings to be`))
   console.log(chalk.magenta.bold(`backported to ${releaseRef}\n`))
-  const langs = new Set([...Object.keys(backportMap), ...Object.keys(backportEnMap)])
+  const langs = new Set([...Object.keys(backportMap)])
   const rowsWithCount = [...langs].map((code) => {
     const nMap = backportMap[code] ? Object.keys(backportMap[code]).length : 0
-    const nEn = backportEnMap[code] ? Object.keys(backportEnMap[code]).length : 0
-    const count = code === 'en' ? nEn : nMap
+    const count = nMap
     const language = localeCodeToFullLanguageName(code)
     return { language, count }
   })
@@ -498,16 +507,82 @@ function printBackportKeyCountsTable(
 
 type BackportDetailsChoice = 'y' | 'n' | 'q'
 
+type BackportBranchChoice = 'y' | 'q'
+
+type YesNoChoice = 'y' | 'n'
+
+/** Ask whether to open a PR targeting `releaseRef`; non-TTY returns `y`. */
+async function promptCreatePrYn(releaseRef: string): Promise<YesNoChoice> {
+  if (!process.stdin.isTTY) {
+    return 'y'
+  }
+  return promptYn(`Create a PR for this branch to ${releaseRef}? (y/n)`)
+}
+
+async function promptYn(message: string): Promise<YesNoChoice> {
+  const { choice } = await inquirer.prompt<{ choice: string }>([
+    {
+      type: 'input',
+      name: 'choice',
+      message,
+      validate: (input: string) => {
+        const c = input.trim().toLowerCase()
+        if (c.length !== 1) {
+          return 'Enter a single character: y or n'
+        }
+        if (c === 'y' || c === 'n') {
+          return true
+        }
+        return 'Enter y or n'
+      },
+    },
+  ])
+  return choice.trim().toLowerCase() as YesNoChoice
+}
+
 /** Ask whether to print full backport diff; non-TTY returns `n`. */
 async function promptBackportDetailsChoice(): Promise<BackportDetailsChoice> {
   if (!process.stdin.isTTY) {
     return 'n'
   }
+  return promptYnq('Show details? (y/n/q)')
+}
+
+/** Proceed with backport branch or quit; non-TTY returns `y`. */
+async function promptCreateBackportBranchYq(releaseRef: string): Promise<BackportBranchChoice> {
+  if (!process.stdin.isTTY) {
+    return 'y'
+  }
+  return promptYq(`\nCreate branch on ${releaseRef} for this backport? (y/q)`)
+}
+
+async function promptYq(message: string): Promise<BackportBranchChoice> {
   const { choice } = await inquirer.prompt<{ choice: string }>([
     {
       type: 'input',
       name: 'choice',
-      message: 'Show details? (y/n/q)',
+      message,
+      validate: (input: string) => {
+        const c = input.trim().toLowerCase()
+        if (c.length !== 1) {
+          return 'Enter a single character: y or q'
+        }
+        if (c === 'y' || c === 'q') {
+          return true
+        }
+        return 'Enter y or q'
+      },
+    },
+  ])
+  return choice.trim().toLowerCase() as BackportBranchChoice
+}
+
+async function promptYnq(message: string): Promise<BackportDetailsChoice> {
+  const { choice } = await inquirer.prompt<{ choice: string }>([
+    {
+      type: 'input',
+      name: 'choice',
+      message,
       validate: (input: string) => {
         const c = input.trim().toLowerCase()
         if (c.length !== 1) {
@@ -604,24 +679,6 @@ function cloneTranslationMap(map: TranslationMap): TranslationMap {
     out[lang] = { ...entries }
   }
   return out
-}
-
-/** True if some shared EN key differs across refs and similarity is below the auto-accept threshold. */
-function enDiffHasAnyBelowGreenSimilarity(currentEn: Record<string, string>, nextMap: Record<string, string>): boolean {
-  for (const key of Object.keys(nextMap)) {
-    if (!Object.prototype.hasOwnProperty.call(currentEn, key)) {
-      continue
-    }
-    const nextEnVal = nextMap[key]
-    const currentEnVal = currentEn[key]
-    if (currentEnVal === nextEnVal) {
-      continue
-    }
-    if (getStringSimilarity(currentEnVal, nextEnVal) < SIMILARITY_COLOR_GREEN_ABOVE) {
-      return true
-    }
-  }
-  return false
 }
 
 function isJapaneseChineseKoreanLocale(lang: string): boolean {
@@ -753,53 +810,56 @@ async function pickReleaseBranch(releaseList: string[]): Promise<string | undefi
     {
       type: 'select',
       name: 'releaseRef',
-      message: 'Pick release branch:',
+      message: 'Pick target release branch:',
       choices: pickChoices.map((ref) => ({ name: ref, value: ref })),
     },
   ])
   return releaseRef
 }
 
-type BackportNewerEnChoice = 'y' | 'n' | 'q'
+/**
+ * Pick the git remote for `git push --set-upstream` (must not be the stolostron/console fetch remote).
+ * Non-interactive: set `I18N_BACKPORT_PUSH_REMOTE` to a name from `listNonStolostronUpstreamRemoteNames`.
+ */
+async function pickOriginBranch(pushRemoteNames: string[]): Promise<string | undefined> {
+  if (pushRemoteNames.length === 0) {
+    console.log(
+      chalk.yellow(
+        `No remotes found whose fetch URL is not https://github.com/${STOLOSTRON_CONSOLE_REPO_PATH}.git. Add a fork remote (e.g. git remote add origin https://github.com/<you>/console.git).`
+      )
+    )
+    return undefined
+  }
 
-/** Ask whether to use the newer ref’s English string on the backport branch. */
-async function promptBackportNewerEnToRelease(args: {
-  key: string
-  releaseRef: string
-  nextRef: string
-  currentEnVal: string
-  nextEnVal: string
-  similarity: number
-}): Promise<BackportNewerEnChoice> {
-  const { key, releaseRef, nextRef, currentEnVal, nextEnVal, similarity } = args
-  const valueLineColor =
-    similarity > SIMILARITY_COLOR_GREEN_ABOVE
-      ? chalk.white
-      : similarity > SIMILARITY_COLOR_YELLOW_ABOVE
-        ? chalk.yellow
-        : chalk.red
-  console.log()
-  console.log(chalk.greenBright.bold(`For key: ${key}`))
-  console.log(valueLineColor(clipDisplayLine(`${releaseRef}: ${currentEnVal}`, DISPLAY_LINE_MAX)))
-  console.log(valueLineColor(clipDisplayLine(`${nextRef}: ${nextEnVal}`, DISPLAY_LINE_MAX)))
-  const { choice } = await inquirer.prompt<{ choice: string }>([
+  const fromEnv = process.env.I18N_BACKPORT_PUSH_REMOTE?.trim()
+  if (fromEnv) {
+    if (pushRemoteNames.includes(fromEnv)) {
+      console.log(chalk.dim(`Using I18N_BACKPORT_PUSH_REMOTE=${fromEnv}`))
+      return fromEnv
+    }
+    console.log(chalk.red(`I18N_BACKPORT_PUSH_REMOTE=${fromEnv} is not a non-upstream remote name in this clone.`))
+    console.log(chalk.dim(pushRemoteNames.join('\n')))
+    return undefined
+  }
+
+  if (!process.stdin.isTTY) {
+    console.log(
+      chalk.yellow(
+        `No TTY: set I18N_BACKPORT_PUSH_REMOTE to one of: ${pushRemoteNames.join(', ')} for a non-interactive run.`
+      )
+    )
+    return undefined
+  }
+
+  const { remoteName } = await inquirer.prompt<{ remoteName: string }>([
     {
-      type: 'input',
-      name: 'choice',
-      message: 'Backport? (y/n/q)',
-      validate: (input: string) => {
-        const c = input.trim().toLowerCase()
-        if (c.length !== 1) {
-          return 'Enter a single character: y, n, or q'
-        }
-        if (c === 'y' || c === 'n' || c === 'q') {
-          return true
-        }
-        return 'Enter y, n, or q'
-      },
+      type: 'select',
+      name: 'remoteName',
+      message: `Pick name of remote on which this branch will be pushed (it cannot be ${UPSTREAM_NAME}):`,
+      choices: pushRemoteNames.map((name) => ({ name, value: name })),
     },
   ])
-  return choice.trim().toLowerCase() as BackportNewerEnChoice
+  return remoteName
 }
 
 /** Yes/no for the chosen ref; non-TTY runs skip the prompt and proceed. */
@@ -816,40 +876,4 @@ async function confirmReleaseBranch(releaseRef: string): Promise<boolean> {
     },
   ])
   return confirmed
-}
-
-/** Dice-coefficient–style similarity from overlapping character n-grams (default bigrams). */
-export const getStringSimilarity = (
-  str1: string,
-  str2: string,
-  substringLength: number = 2,
-  caseSensitive: boolean = false
-): number => {
-  let a = str1
-  let b = str2
-  if (!caseSensitive) {
-    a = a.toLowerCase()
-    b = b.toLowerCase()
-  }
-  if (a.length < substringLength || b.length < substringLength) {
-    return 0
-  }
-
-  const map = new Map<string, number>()
-  for (let i = 0; i < a.length - (substringLength - 1); i++) {
-    const substr1 = a.slice(i, i + substringLength)
-    map.set(substr1, (map.get(substr1) ?? 0) + 1)
-  }
-
-  let match = 0
-  for (let j = 0; j < b.length - (substringLength - 1); j++) {
-    const substr2 = b.slice(j, j + substringLength)
-    const count = map.get(substr2) ?? 0
-    if (count > 0) {
-      map.set(substr2, count - 1)
-      match++
-    }
-  }
-
-  return (match * 2) / (a.length + b.length - (substringLength - 1) * 2)
 }
