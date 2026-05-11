@@ -28,8 +28,8 @@
 }
 .temptifly .showWizard .creation-view-controls,
 .creation-view .creation-view-controls {
-  padding: var(--pf-v5-c-wizard__main-body--PaddingTop) var(--pf-v5-c-wizard__main-body--PaddingRight)
-    var(--pf-v5-c-wizard__main-body--PaddingBottom) var(--pf-v5-c-wizard__main-body--PaddingLeft);
+  padding: var(--pf-v6-c-wizard__main-body--PaddingBlockStart) var(--pf-v6-c-wizard__main-body--PaddingInlineEnd)
+    var(--pf-v6-c-wizard__main-body--PaddingBlockEnd) var(--pf-v6-c-wizard__main-body--PaddingInlineStart);
 }
 .temptifly .creation-view-controls div:focus,
 .creation-view .creation-view-controls div:focus {
