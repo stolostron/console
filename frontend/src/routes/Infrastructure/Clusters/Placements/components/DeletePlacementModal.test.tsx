@@ -137,33 +137,33 @@ describe('DeletePlacementModal', () => {
 
   test('does not show related resources when lists are empty', () => {
     renderModal()
-    expect(screen.queryByText(/following resources are using/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/following resource\(s\) reference/)).not.toBeInTheDocument()
   })
 
-  test('displays related ApplicationSets', () => {
+  test('displays related ApplicationSets with impact message', () => {
     renderModal({ relatedAppSets: [mockAppSet] })
-    expect(screen.getByText(/following resources are using/)).toBeInTheDocument()
-    expect(screen.getByText(/my-appset/)).toBeInTheDocument()
-    expect(screen.getByText(/ApplicationSet/)).toBeInTheDocument()
+    expect(screen.getByText(/following resource\(s\) reference/)).toBeInTheDocument()
+    expect(screen.getByText(/ApplicationSets - will stop generating applications/)).toBeInTheDocument()
+    expect(screen.getByText('my-appset')).toBeInTheDocument()
   })
 
-  test('displays related Policies', () => {
+  test('displays related Policies with impact message', () => {
     renderModal({ relatedPolicies: [mockPolicy] })
-    expect(screen.getByText(/my-policy/)).toBeInTheDocument()
-    expect(screen.getByText(/Policy/)).toBeInTheDocument()
+    expect(screen.getByText(/Policies - will no longer be distributed/)).toBeInTheDocument()
+    expect(screen.getByText('my-policy')).toBeInTheDocument()
   })
 
-  test('displays related PolicySets', () => {
+  test('displays related PolicySets with impact message', () => {
     renderModal({ relatedPolicySets: [mockPolicySet] })
-    expect(screen.getByText(/following resources are using/)).toBeInTheDocument()
-    expect(screen.getByText(/my-policyset/)).toBeInTheDocument()
-    expect(screen.getByText(/PolicySet/)).toBeInTheDocument()
+    expect(screen.getByText(/following resource\(s\) reference/)).toBeInTheDocument()
+    expect(screen.getByText(/PolicySets - will no longer be distributed/)).toBeInTheDocument()
+    expect(screen.getByText('my-policyset')).toBeInTheDocument()
   })
 
-  test('displays related GitOpsClusters', () => {
+  test('displays related GitOpsClusters with impact message', () => {
     renderModal({ relatedGitOpsClusters: [mockGitOpsCluster] })
-    expect(screen.getByText(/my-gitops/)).toBeInTheDocument()
-    expect(screen.getByText(/GitOpsCluster/)).toBeInTheDocument()
+    expect(screen.getByText(/GitOpsClusters - will no longer register/)).toBeInTheDocument()
+    expect(screen.getByText('my-gitops')).toBeInTheDocument()
   })
 
   test('displays all related resource types together', () => {
@@ -173,10 +173,14 @@ describe('DeletePlacementModal', () => {
       relatedPolicySets: [mockPolicySet],
       relatedGitOpsClusters: [mockGitOpsCluster],
     })
-    expect(screen.getByText(/my-appset/)).toBeInTheDocument()
-    expect(screen.getByText(/my-policy \[Policy\]/)).toBeInTheDocument()
-    expect(screen.getByText(/my-policyset \[PolicySet\]/)).toBeInTheDocument()
-    expect(screen.getByText(/my-gitops/)).toBeInTheDocument()
+    expect(screen.getByText(/ApplicationSets - will stop generating/)).toBeInTheDocument()
+    expect(screen.getByText('my-appset')).toBeInTheDocument()
+    expect(screen.getByText(/Policies - will no longer be distributed/)).toBeInTheDocument()
+    expect(screen.getByText('my-policy')).toBeInTheDocument()
+    expect(screen.getByText(/PolicySets - will no longer be distributed/)).toBeInTheDocument()
+    expect(screen.getByText('my-policyset')).toBeInTheDocument()
+    expect(screen.getByText(/GitOpsClusters - will no longer register/)).toBeInTheDocument()
+    expect(screen.getByText('my-gitops')).toBeInTheDocument()
   })
 
   test('calls deleteApplication and closes on successful delete', async () => {
