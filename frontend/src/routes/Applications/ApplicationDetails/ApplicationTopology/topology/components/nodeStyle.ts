@@ -56,6 +56,9 @@ function getLabel(type: string | undefined, specs: any) {
     case 'application':
       return specs?.applicationName ? specs.applicationName : 'Application'
     case 'applicationset':
+      if (specs?.raw?.isChild) {
+        return 'Application Set'
+      }
       return `${specs?.isAppSetPullModel ? 'Pull' : 'Push'} Application Set`
     case 'git':
     case 'chart':
