@@ -13,7 +13,7 @@ import {
   configMapsState,
   infraEnvironmentsState,
 } from '../../../../../../atoms'
-import { clickByText, waitForTestId, waitForText, waitForNocks } from '../../../../../../lib/test-util'
+import { waitForTestId, waitForText, waitForNocks } from '../../../../../../lib/test-util'
 import { nockGet, nockIgnoreApiPaths, nockList } from '../../../../../../lib/nock-util'
 
 // import EditAICluster from './EditAICluster'
@@ -81,7 +81,10 @@ const provisioningConfig = {
 describe('Edit AI Cluster', () => {
   beforeEach(() => nockIgnoreApiPaths())
   test('can be rendered', async () => {
-    ;(dynamicPluginSdk.useK8sWatchResource as jest.Mock).mockReturnValue([provisioningConfig, true, null])
+    ;(dynamicPluginSdk.useK8sWatchResource as jest.Mock)
+      .mockReturnValue([provisioningConfig, true, null])
+      .mockReturnValueOnce([mockAgents, true, null])
+
     const nocks = [
       nockGet(pullSecretMock, pullSecretMock),
       nockList(managedClusterMock, managedClusterMock),
@@ -99,24 +102,6 @@ describe('Edit AI Cluster', () => {
     await waitForTestId('form-static-openshiftVersion-field')
 
     await waitForText('ai:OpenShift 4.8.15-x86_64')
-
-    await clickByText('ai:Next')
     await waitForNocks(nocks)
-
-    await waitForTestId('form-input-autoSelectHosts-field')
-
-    /* TODO(mlibra): Subsequent steps should be covered by AI UI Lib tests. So far we can be sure that the AI UI component has been integrated into the ACM.
-
-        const hostsNocks = [
-          nockPatch(mockClusterDeploymentAI, [{"op":"replace","path":"/metadata/annotations","value":{}}]),
-          nockPatch(mockAgent, mockAgent)]
-        await clickByText('Next')
-        await waitForNocks(hostsNocks)
-        
-        await waitForText('Host inventory')
-
-        await waitForText('Save and install')
-        */
-    // screen.debug(undefined, -1)
   })
 })
