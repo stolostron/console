@@ -1,71 +1,115 @@
-.hypershift-diagram-majorRectStyle {
+/* Layout */
+.hypershift-diagram {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.hypershift-diagram-column {
+  flex: 1 1 300px;
+  min-width: 0;
   background-color: var(--pf-t--global--background--color--primary--default);
   padding: 24px;
-  width: 50%;
 }
 
-.hypershift-diagram-middleRectStyle {
-  background-color: #f3f3f3;
+.hypershift-diagram-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.hypershift-diagram-row > * {
+  flex: 1 1 140px;
+  min-width: 0;
+}
+
+/* Text — font-size determined by parent container */
+.hypershift-diagram-heading {
+  font-weight: bold;
+  display: block;
+}
+
+.hypershift-diagram-subtext {
+  display: block;
+  padding-bottom: 20px;
+  color: var(--pf-t--global--text--color--subtle);
+}
+
+.hypershift-diagram-column > .hypershift-diagram-heading,
+.hypershift-diagram-column > .hypershift-diagram-subtext {
+  font-size: 18px;
+}
+
+.hypershift-diagram-panel > .hypershift-diagram-heading,
+.hypershift-diagram-panel > .hypershift-diagram-subtext {
+  font-size: 16px;
+}
+
+.hypershift-diagram-cell > .hypershift-diagram-heading,
+.hypershift-diagram-cell > .hypershift-diagram-subtext {
+  font-size: 14px;
+}
+
+.hypershift-diagram-label {
+  display: block;
+  padding-bottom: 20px;
+}
+
+/* Containers */
+.hypershift-diagram-panel {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--pf-t--global--background--color--secondary--default);
   padding: 20px;
 }
 
-:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .hypershift-diagram-middleRectStyle {
-  background-color: #3f3f3f;
-  padding: 20px;
-}
-
-.hypershift-diagram-minorRectStyle {
+.hypershift-diagram-bordered {
+  flex: 1;
   background-color: var(--pf-t--global--background--color--primary--default);
   border: 2px solid #0e5ecd;
   padding: 18px;
 }
 
-:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .hypershift-diagram-minorRectStyle {
+:where(.pf-v6-theme-dark) .hypershift-diagram-bordered {
   background-color: #4e4e4e;
-  border: 2px solid #0e5ecd;
+}
+
+.hypershift-diagram-cell {
+  background-color: var(--pf-t--global--background--color--secondary--default);
   padding: 18px;
 }
 
-.hypershift-diagram-blueBlockStyle {
+/* Blocks */
+.hypershift-diagram-block {
+  text-align: center;
+  padding: 12px;
+  font-weight: bold;
+}
+
+.hypershift-diagram-block + .hypershift-diagram-block {
+  margin-top: 10px;
+}
+
+.hypershift-diagram-block > span {
+  display: block;
+}
+
+.hypershift-diagram-block--blue {
   background-color: #d9e8f6;
-  text-align: center;
-  padding: 12px 24px 12px 24px;
 }
 
-:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .hypershift-diagram-blueBlockStyle {
+:where(.pf-v6-theme-dark) .hypershift-diagram-block--blue {
   background-color: #003f79;
-  text-align: center;
-  padding: 12px 24px 12px 24px;
 }
 
-.hypershift-diagram-blueBlockStyle-noTextAlign {
-  background-color: #d9e8f6;
-  padding: 12px 24px 12px 24px;
-}
-
-:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .hypershift-diagram-blueBlockStyle-noTextAlign {
-  background-color: #003f79;
-  padding: 12px 24px 12px 24px;
-}
-
-.hypershift-diagram-greenBlockStyle {
+.hypershift-diagram-block--green {
   background-color: #dfebc1;
-  text-align: center;
-  padding: 12px 24px 12px 24px;
 }
 
-:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .hypershift-diagram-greenBlockStyle {
+:where(.pf-v6-theme-dark) .hypershift-diagram-block--green {
   background-color: #435e00;
-  text-align: center;
-  padding: 12px 24px 12px 24px;
 }
 
-.hypershift-diagram-greenBlockStyle-noTextAlign {
-  background-color: #dfebc1;
-  padding: 12px 24px 12px 24px;
-}
-
-:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .hypershift-diagram-greenBlockStyle-noTextAlign {
-  background-color: #435e00;
-  padding: 12px 24px 12px 24px;
+.hypershift-diagram-block--neutral {
+  background-color: var(--pf-t--global--background--color--secondary--default);
 }
