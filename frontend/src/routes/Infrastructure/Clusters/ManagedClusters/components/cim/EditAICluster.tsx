@@ -177,7 +177,6 @@ const EditAICluster: React.FC = () => {
                 clusterImages={clusterImageSets as ClusterImageSetK8sResource[]}
                 clusterDeployment={clusterDeployment}
                 agentClusterInstall={agentClusterInstall}
-                agents={agents}
                 bareMetalHosts={bareMetalHosts}
                 usedClusterNames={[] /* We are in Edit flow - cluster name can not be changed. */}
                 onClose={() => navigate(-1)}
