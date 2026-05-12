@@ -101,33 +101,62 @@ export function DeletePlacementModal(props: IDeletePlacementModalProps | { open:
           relatedPolicySets.length > 0 ||
           relatedGitOpsClusters.length > 0) && (
           <div className="delete-placement-related-resources">
-            {t('The following resources are using this placement and will be affected:')}
-            <List className="delete-placement-related-resources-list">
-              {relatedAppSets.map((appSet) => (
-                <ListItem key={appSet.metadata.uid ?? `${appSet.metadata.namespace}-${appSet.metadata.name}`}>
-                  {appSet.metadata.name} [ApplicationSet]
-                </ListItem>
-              ))}
-              {relatedPolicies.map((policy) => (
-                <ListItem key={policy.metadata.uid ?? `${policy.metadata.namespace}-${policy.metadata.name}`}>
-                  {policy.metadata.name} [Policy]
-                </ListItem>
-              ))}
-              {relatedPolicySets.map((policySet) => (
-                <ListItem key={policySet.metadata.uid ?? `${policySet.metadata.namespace}-${policySet.metadata.name}`}>
-                  {policySet.metadata.name} [PolicySet]
-                </ListItem>
-              ))}
-              {relatedGitOpsClusters.map((gitOpsCluster) => (
-                <ListItem
-                  key={
-                    gitOpsCluster.metadata.uid ?? `${gitOpsCluster.metadata.namespace}-${gitOpsCluster.metadata.name}`
-                  }
-                >
-                  {gitOpsCluster.metadata.name} [GitOpsCluster]
-                </ListItem>
-              ))}
-            </List>
+            {t('The following resource(s) reference this placement and will be impacted:')}
+            {relatedAppSets.length > 0 && (
+              <div className="delete-placement-resource-group">
+                <strong>{t('ApplicationSets - will stop generating applications for clusters:')}</strong>
+                <List className="delete-placement-related-resources-list">
+                  {relatedAppSets.map((appSet) => (
+                    <ListItem key={appSet.metadata.uid ?? `${appSet.metadata.namespace}-${appSet.metadata.name}`}>
+                      {appSet.metadata.name}
+                    </ListItem>
+                  ))}
+                </List>
+              </div>
+            )}
+            {relatedPolicies.length > 0 && (
+              <div className="delete-placement-resource-group">
+                <strong>{t('Policies - will no longer be distributed to managed clusters:')}</strong>
+                <List className="delete-placement-related-resources-list">
+                  {relatedPolicies.map((policy) => (
+                    <ListItem key={policy.metadata.uid ?? `${policy.metadata.namespace}-${policy.metadata.name}`}>
+                      {policy.metadata.name}
+                    </ListItem>
+                  ))}
+                </List>
+              </div>
+            )}
+            {relatedPolicySets.length > 0 && (
+              <div className="delete-placement-resource-group">
+                <strong>{t('PolicySets - will no longer be distributed to managed clusters:')}</strong>
+                <List className="delete-placement-related-resources-list">
+                  {relatedPolicySets.map((policySet) => (
+                    <ListItem
+                      key={policySet.metadata.uid ?? `${policySet.metadata.namespace}-${policySet.metadata.name}`}
+                    >
+                      {policySet.metadata.name}
+                    </ListItem>
+                  ))}
+                </List>
+              </div>
+            )}
+            {relatedGitOpsClusters.length > 0 && (
+              <div className="delete-placement-resource-group">
+                <strong>{t('GitOpsClusters - will no longer register managed clusters with ArgoCD:')}</strong>
+                <List className="delete-placement-related-resources-list">
+                  {relatedGitOpsClusters.map((gitOpsCluster) => (
+                    <ListItem
+                      key={
+                        gitOpsCluster.metadata.uid ??
+                        `${gitOpsCluster.metadata.namespace}-${gitOpsCluster.metadata.name}`
+                      }
+                    >
+                      {gitOpsCluster.metadata.name}
+                    </ListItem>
+                  ))}
+                </List>
+              </div>
+            )}
           </div>
         )}
       </div>
