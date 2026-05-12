@@ -313,6 +313,10 @@ export function Placement(props: {
             label={t('Toleration seconds')}
             placeholder={t('Enter toleration seconds')}
             helperText={t('TolerationSeconds represents the period of time the toleration tolerates the taint.')}
+            labelHelp={t(
+              'At T=0s, the cluster goes down and the unreachable taint is applied. Between T=1s and T=299s, the toleration causes the Placement to ignore this taint. Although the workload is down, it is not moved yet. At T=300s, the toleration expires, the Placement recognizes the taint, and triggers a failover to a healthy cluster.'
+            )}
+            labelHelpTitle={t('Example with TolerationSeconds=300')}
           />
         </WizArrayInput>
       </ExpandableSection>
