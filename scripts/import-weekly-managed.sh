@@ -1,63 +1,87 @@
-# Copyright Contributors to the Open Cluster Management project
 #!/usr/bin/env bash
+# Copyright Contributors to the Open Cluster Management project
+
 set -euo pipefail
 
-#############################################
-# Dynamic RHACM Cluster Import Script
-#
-# This script:
-#   1. Finds cluster namespaces from ClusterClaims
-#   2. Retrieves *-admin-kubeconfig secrets
-#   3. Generates temporary kubeconfig files
-#   4. Imports managed cluster into RHACM hub
-#
-# Requirements:
-#   - Script runs on a cluster with access to both claims
-#   - ServiceAccount must be able to:
-#       get/list clusterclaims
-#       get/list secrets
-#       manage managedclusters
-#
-# ** Note: If running this script from Console repo **
-#   you will need to oc login to collective cluster. The script will switch kubeconfigs automatically
-#############################################
-
-# Config
-HUB_CLUSTER_NAME="${HUB_CLUSTER_NAME:-weekly}"
-MANAGED_CLUSTER_NAME="${MANAGED_CLUSTER_NAME:-weekly-managed}"
-CONSOLE_NAMESPACE="${CONSOLE_NAMESPACE:-console-squad}"
-WORKDIR="/tmp/rhacm-import"
-HUB_KUBECONFIG="${WORKDIR}/hub-kubeconfig"
-MANAGED_KUBECONFIG="${WORKDIR}/managed-kubeconfig"
-mkdir -p "${WORKDIR}"
-
+########################################
 # Helpers
+########################################
+
 log() {
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"
 }
+
 fail() {
   echo "ERROR: $*" >&2
   exit 1
 }
 
-# Get Cluster Namespace From ClusterClaim
-get_cluster_namespace() {
-local CLAIM_NAME="$1"
-oc get -n "${CONSOLE_NAMESPACE}" clusterclaim.hive "${CLAIM_NAME}" \
-  -o jsonpath='{.spec.namespace}' 2>/dev/null
+cleanup() {
+  rm -rf "${WORKDIR}"
 }
 
-# Find Admin Kubeconfig Secret
+trap cleanup EXIT
+
+########################################
+# Config
+########################################
+
+WORKDIR="/tmp/rhacm-import"
+HUB_CLUSTER_NAME="${HUB_CLUSTER_NAME:-weekly}"
+MANAGED_CLUSTER_NAME="${MANAGED_CLUSTER_NAME:-weekly-managed}"
+CONSOLE_NAMESPACE="${CONSOLE_NAMESPACE:-console-squad}"
+CLUSTERPOOL_NAME="${CLUSTERPOOL_NAME:-cs-aws-422}"
+CLUSTERPOOL_TARGET_NAMESPACE="${CLUSTERPOOL_TARGET_NAMESPACE:-$CONSOLE_NAMESPACE}"
+CLUSTERCLAIM_NAME="${CLUSTERCLAIM_NAME:-$MANAGED_CLUSTER_NAME}"
+CLUSTERCLAIM_LIFETIME="${CLUSTERCLAIM_LIFETIME:-164h}"
+HUB_KUBECONFIG="${WORKDIR}/hub-kubeconfig"
+MANAGED_KUBECONFIG="${WORKDIR}/managed-kubeconfig"
+mkdir -p "${WORKDIR}"
+
+########################################
+# Display Variables
+########################################
+
+log "Starting RHACM managed cluster import workflow"
+log "HUB_CLUSTER_NAME=${HUB_CLUSTER_NAME}"
+log "MANAGED_CLUSTER_NAME=${MANAGED_CLUSTER_NAME}"
+log "CONSOLE_NAMESPACE=${CONSOLE_NAMESPACE}"
+log "CLUSTERPOOL_NAME=${CLUSTERPOOL_NAME}"
+log "CLUSTERPOOL_TARGET_NAMESPACE=${CLUSTERPOOL_TARGET_NAMESPACE}"
+log "CLUSTERCLAIM_NAME=${CLUSTERCLAIM_NAME}"
+log "CLUSTERCLAIM_LIFETIME=${CLUSTERCLAIM_LIFETIME}"
+
+########################################
+# Verify Dependencies
+########################################
+
+command -v oc >/dev/null 2>&1 \
+  || fail "oc CLI not installed"
+
+########################################
+# Helpers
+########################################
+
+get_cluster_namespace() {
+  local CLAIM_NAME="$1"
+
+  oc get clusterclaim.hive "${CLAIM_NAME}" \
+    -n "${CLUSTERPOOL_TARGET_NAMESPACE}" \
+    -o jsonpath='{.spec.namespace}' \
+    2>/dev/null || true
+}
+
 find_admin_kubeconfig_secret() {
   local NAMESPACE="$1"
-  oc get secrets -n "${NAMESPACE}" \
+
+  oc get secrets \
+    -n "${NAMESPACE}" \
     --no-headers \
     -o custom-columns="NAME:.metadata.name" | \
     grep '\-admin-kubeconfig$' | \
     head -n 1
 }
 
-# Extract Kubeconfig Secret
 extract_kubeconfig() {
   local NAMESPACE="$1"
   local SECRET_NAME="$2"
@@ -69,41 +93,149 @@ extract_kubeconfig() {
     base64 -d > "${OUTPUT_FILE}"
 
   [[ -s "${OUTPUT_FILE}" ]] \
-    || fail "Failed to create kubeconfig: ${OUTPUT_FILE}"
+    || fail "Failed to create kubeconfig ${OUTPUT_FILE}"
 }
 
-# Discover Cluster Namespaces
-log "Looking up ClusterClaim: ${HUB_CLUSTER_NAME}"
+copy_pull_secret() {
+  log "Copying pull-secret to managed cluster"
+
+  oc --kubeconfig="${HUB_KUBECONFIG}" \
+    get secret pull-secret \
+    -n openshift-config \
+    -o yaml > "${WORKDIR}/pull-secret.yaml"
+
+  oc --kubeconfig="${MANAGED_KUBECONFIG}" \
+    apply -f "${WORKDIR}/pull-secret.yaml"
+}
+
+copy_image_digest_mirror_set() {
+  log "Copying ImageDigestMirrorSets"
+
+  oc --kubeconfig="${HUB_KUBECONFIG}" \
+    get imagedigestmirrorsets.config.openshift.io \
+    -o yaml > "${WORKDIR}/idms.yaml" || true
+
+  if [[ -s "${WORKDIR}/idms.yaml" ]]; then
+    oc --kubeconfig="${MANAGED_KUBECONFIG}" \
+      apply -f "${WORKDIR}/idms.yaml" || true
+  fi
+}
+
+cleanup_old_klusterlet() {
+  log "Cleaning old klusterlet resources"
+
+  oc --kubeconfig="${MANAGED_KUBECONFIG}" \
+    delete namespace open-cluster-management-agent \
+    --ignore-not-found=true
+
+  oc --kubeconfig="${MANAGED_KUBECONFIG}" \
+    delete namespace open-cluster-management-agent-addon \
+    --ignore-not-found=true
+
+  oc --kubeconfig="${MANAGED_KUBECONFIG}" \
+    delete klusterlet klusterlet \
+    --ignore-not-found=true || true
+
+  sleep 20
+}
+
+########################################
+# Verify Hub Access
+########################################
+
+log "Verifying hub cluster access"
+
+oc whoami >/dev/null 2>&1 \
+  || fail "Not logged into hub cluster"
+
+########################################
+# Create ClusterClaim
+########################################
+
+if oc get clusterclaim.hive "${CLUSTERCLAIM_NAME}" \
+  -n "${CLUSTERPOOL_TARGET_NAMESPACE}" >/dev/null 2>&1; then
+
+  log "ClusterClaim already exists"
+else
+  log "Creating ClusterClaim ${CLUSTERCLAIM_NAME}"
+
+  cat <<EOF | oc apply -f -
+apiVersion: hive.openshift.io/v1
+kind: ClusterClaim
+metadata:
+  name: ${CLUSTERCLAIM_NAME}
+  namespace: ${CLUSTERPOOL_TARGET_NAMESPACE}
+  annotations:
+    cluster.open-cluster-management.io/createmanagedcluster: 'false'
+  labels:
+    cluster.open-cluster-management.io/clusterset: console-squad
+spec:
+  clusterPoolName: ${CLUSTERPOOL_NAME}
+  lifetime: ${CLUSTERCLAIM_LIFETIME}
+EOF
+fi
+
+########################################
+# Wait For ClusterClaim Fulfillment
+########################################
+
+log "Waiting for ClusterClaim fulfillment"
+
+MANAGED_NAMESPACE=""
+
+for i in {1..90}; do
+  MANAGED_NAMESPACE=$(get_cluster_namespace "${CLUSTERCLAIM_NAME}")
+
+  if [[ -n "${MANAGED_NAMESPACE}" ]]; then
+    break
+  fi
+
+  sleep 20
+done
+
+[[ -n "${MANAGED_NAMESPACE}" ]] \
+  || fail "ClusterClaim was not fulfilled"
+
+log "Managed cluster namespace: ${MANAGED_NAMESPACE}"
+
+########################################
+# Discover Hub Namespace
+########################################
+
+log "Looking up hub cluster namespace"
+
 HUB_NAMESPACE=$(get_cluster_namespace "${HUB_CLUSTER_NAME}")
-log "ClusterClaim namespace result: ${HUB_NAMESPACE:-<empty>}"
-log "Looking up ClusterClaim: ${MANAGED_CLUSTER_NAME}"
-MANAGED_NAMESPACE=$(get_cluster_namespace "${MANAGED_CLUSTER_NAME}")
-log "ClusterClaim namespace result: ${MANAGED_NAMESPACE:-<empty>}"
 
 [[ -n "${HUB_NAMESPACE}" ]] \
   || fail "Unable to find namespace for ${HUB_CLUSTER_NAME}"
 
-[[ -n "${MANAGED_NAMESPACE}" ]] \
-  || fail "Unable to find namespace for ${MANAGED_CLUSTER_NAME}"
-
 log "Hub namespace: ${HUB_NAMESPACE}"
-log "Managed namespace: ${MANAGED_NAMESPACE}"
 
+########################################
 # Find Kubeconfig Secrets
-log "Finding kubeconfig secrets..."
+########################################
+
+log "Finding admin kubeconfig secrets"
+
 HUB_SECRET=$(find_admin_kubeconfig_secret "${HUB_NAMESPACE}")
+
 MANAGED_SECRET=$(find_admin_kubeconfig_secret "${MANAGED_NAMESPACE}")
 
 [[ -n "${HUB_SECRET}" ]] \
-  || fail "No admin kubeconfig secret found in ${HUB_NAMESPACE}"
+  || fail "Hub kubeconfig secret not found"
 
 [[ -n "${MANAGED_SECRET}" ]] \
-  || fail "No admin kubeconfig secret found in ${MANAGED_NAMESPACE}"
+  || fail "Managed kubeconfig secret not found"
 
 log "Hub kubeconfig secret: ${HUB_SECRET}"
 log "Managed kubeconfig secret: ${MANAGED_SECRET}"
 
+########################################
 # Extract Kubeconfigs
+########################################
+
+log "Extracting kubeconfigs"
+
 extract_kubeconfig \
   "${HUB_NAMESPACE}" \
   "${HUB_SECRET}" \
@@ -114,39 +246,85 @@ extract_kubeconfig \
   "${MANAGED_SECRET}" \
   "${MANAGED_KUBECONFIG}"
 
-# Connect To Hub Cluster
-log "Connecting to hub cluster..."
-export KUBECONFIG="${HUB_KUBECONFIG}"
-oc whoami >/dev/null \
-  || fail "Failed to authenticate to hub cluster"
-log "Connected to hub cluster"
+########################################
+# Verify Cluster Connectivity
+########################################
 
-# Create Namespace
-log "Ensuring namespace exists..."
-oc get namespace "${MANAGED_CLUSTER_NAME}" >/dev/null 2>&1 || \
-  oc create namespace "${MANAGED_CLUSTER_NAME}"
+log "Verifying hub connectivity"
 
-# Check if ManagedCluster exists in hub
-if oc get managedcluster "${MANAGED_CLUSTER_NAME}" >/dev/null 2>&1; then
+oc --kubeconfig="${HUB_KUBECONFIG}" \
+  whoami >/dev/null \
+  || fail "Failed to connect to hub cluster"
+
+log "Verifying managed cluster connectivity"
+
+oc --kubeconfig="${MANAGED_KUBECONFIG}" \
+  cluster-info >/dev/null \
+  || fail "Failed to connect to managed cluster"
+
+########################################
+# Copy Pull Secret
+########################################
+
+copy_pull_secret
+
+########################################
+# Copy ImageDigestMirrorSets
+########################################
+
+copy_image_digest_mirror_set
+
+########################################
+# Cleanup Old Klusterlet
+########################################
+
+cleanup_old_klusterlet
+
+########################################
+# Ensure Namespace Exists On Hub
+########################################
+
+log "Ensuring managed cluster namespace exists on hub"
+
+oc --kubeconfig="${HUB_KUBECONFIG}" \
+  get namespace "${MANAGED_CLUSTER_NAME}" >/dev/null 2>&1 || \
+  oc --kubeconfig="${HUB_KUBECONFIG}" \
+    create namespace "${MANAGED_CLUSTER_NAME}"
+
+########################################
+# Check Existing ManagedCluster
+########################################
+
+if oc --kubeconfig="${HUB_KUBECONFIG}" \
+  get managedcluster "${MANAGED_CLUSTER_NAME}" >/dev/null 2>&1; then
+
   JOINED_STATUS=$(
-    oc get managedcluster "${MANAGED_CLUSTER_NAME}" \
+    oc --kubeconfig="${HUB_KUBECONFIG}" \
+      get managedcluster "${MANAGED_CLUSTER_NAME}" \
       -o jsonpath='{.status.conditions[?(@.type=="ManagedClusterJoined")].status}' \
       2>/dev/null || true
   )
+
   AVAILABLE_STATUS=$(
-    oc get managedcluster "${MANAGED_CLUSTER_NAME}" \
+    oc --kubeconfig="${HUB_KUBECONFIG}" \
+      get managedcluster "${MANAGED_CLUSTER_NAME}" \
       -o jsonpath='{.status.conditions[?(@.type=="ManagedClusterConditionAvailable")].status}' \
       2>/dev/null || true
   )
+
   if [[ "${JOINED_STATUS}" == "True" && "${AVAILABLE_STATUS}" == "True" ]]; then
-    log "Cluster already imported and available"
+    log "Managed cluster already imported and available"
     exit 0
   fi
 fi
 
+########################################
 # Create ManagedCluster
-log "Creating ManagedCluster..."
-cat <<EOF | oc apply -f -
+########################################
+
+log "Creating ManagedCluster"
+
+cat <<EOF | oc --kubeconfig="${HUB_KUBECONFIG}" apply -f -
 apiVersion: cluster.open-cluster-management.io/v1
 kind: ManagedCluster
 metadata:
@@ -158,9 +336,13 @@ spec:
   hubAcceptsClient: true
 EOF
 
+########################################
 # Create KlusterletAddonConfig
-log "Creating KlusterletAddonConfig..."
-cat <<EOF | oc apply -f -
+########################################
+
+log "Creating KlusterletAddonConfig"
+
+cat <<EOF | oc --kubeconfig="${HUB_KUBECONFIG}" apply -f -
 apiVersion: agent.open-cluster-management.io/v1
 kind: KlusterletAddonConfig
 metadata:
@@ -183,61 +365,102 @@ spec:
     enabled: true
 EOF
 
+########################################
 # Wait For Import Secret
+########################################
+
 IMPORT_SECRET="${MANAGED_CLUSTER_NAME}-import"
-log "Waiting for import secret..."
-for i in {1..60}; do
-  if oc get secret "${IMPORT_SECRET}" \
+
+log "Waiting for import secret"
+
+for i in {1..90}; do
+  if oc --kubeconfig="${HUB_KUBECONFIG}" \
+    get secret "${IMPORT_SECRET}" \
     -n "${MANAGED_CLUSTER_NAME}" >/dev/null 2>&1; then
     break
   fi
+
   sleep 10
 done
 
-oc get secret "${IMPORT_SECRET}" \
+oc --kubeconfig="${HUB_KUBECONFIG}" \
+  get secret "${IMPORT_SECRET}" \
   -n "${MANAGED_CLUSTER_NAME}" >/dev/null 2>&1 \
   || fail "Import secret not found"
 
+########################################
 # Extract Import YAML
+########################################
+
 IMPORT_YAML="${WORKDIR}/import.yaml"
 CRDS_YAML="${WORKDIR}/crds.yaml"
 
-log "Extracting import manifests..."
-oc get secret "${IMPORT_SECRET}" \
+log "Extracting import manifests"
+
+oc --kubeconfig="${HUB_KUBECONFIG}" \
+  get secret "${IMPORT_SECRET}" \
   -n "${MANAGED_CLUSTER_NAME}" \
   -o jsonpath='{.data.import\.yaml}' | \
   base64 -d > "${IMPORT_YAML}"
 
-if oc get secret "${IMPORT_SECRET}" \
-  -n "${MANAGED_CLUSTER_NAME}" \
-  -o jsonpath='{.data.crds\.yaml}' >/dev/null 2>&1; then
-
-  oc get secret "${IMPORT_SECRET}" \
+CRDS_DATA=$(
+  oc --kubeconfig="${HUB_KUBECONFIG}" \
+    get secret "${IMPORT_SECRET}" \
     -n "${MANAGED_CLUSTER_NAME}" \
-    -o jsonpath='{.data.crds\.yaml}' | \
-    base64 -d > "${CRDS_YAML}"
+    -o jsonpath='{.data.crds\.yaml}' \
+    2>/dev/null || true
+)
+
+if [[ -n "${CRDS_DATA}" ]]; then
+  echo "${CRDS_DATA}" | base64 -d > "${CRDS_YAML}"
 fi
 
-# Connect To Managed Cluster
-log "Connecting to managed cluster..."
-export KUBECONFIG="${MANAGED_KUBECONFIG}"
-oc cluster-info >/dev/null \
-  || fail "Failed to connect to managed cluster"
-
-# TODO: Find and delete and persisting klusterlet addons
-
+########################################
 # Apply Import Manifests
+########################################
+
 if [[ -f "${CRDS_YAML}" ]]; then
-  log "Applying CRDs..."
-  oc apply -f "${CRDS_YAML}"
+  log "Applying CRDs"
+
+  oc --kubeconfig="${MANAGED_KUBECONFIG}" \
+    apply -f "${CRDS_YAML}"
 fi
 
-log "Applying import manifest..."
-oc apply -f "${IMPORT_YAML}"
+log "Applying import manifest"
 
-# Final Verification
-sleep 15
-log "Switching back to hub cluster..."
-export KUBECONFIG="${HUB_KUBECONFIG}"
-oc get managedcluster "${MANAGED_CLUSTER_NAME}" || true
-log "Import workflow completed successfully"
+oc --kubeconfig="${MANAGED_KUBECONFIG}" \
+  apply -f "${IMPORT_YAML}"
+
+########################################
+# Wait For ManagedCluster Join
+########################################
+
+log "Waiting for managed cluster to become available"
+
+for i in {1..60}; do
+
+  JOINED=$(
+    oc --kubeconfig="${HUB_KUBECONFIG}" \
+      get managedcluster "${MANAGED_CLUSTER_NAME}" \
+      -o jsonpath='{.status.conditions[?(@.type=="ManagedClusterJoined")].status}' \
+      2>/dev/null || true
+  )
+
+  AVAILABLE=$(
+    oc --kubeconfig="${HUB_KUBECONFIG}" \
+      get managedcluster "${MANAGED_CLUSTER_NAME}" \
+      -o jsonpath='{.status.conditions[?(@.type=="ManagedClusterConditionAvailable")].status}' \
+      2>/dev/null || true
+  )
+
+  log "ManagedCluster Joined=${JOINED} Available=${AVAILABLE}"
+
+  if [[ "${JOINED}" == "True" && "${AVAILABLE}" == "True" ]]; then
+    log "Managed cluster successfully imported"
+    exit 0
+  fi
+
+  sleep 20
+done
+
+fail "Managed cluster failed to become available"
