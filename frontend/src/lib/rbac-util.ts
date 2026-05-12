@@ -248,6 +248,8 @@ export function useIsAnyNamespaceAuthorized(resourceAttributes: Promise<Resource
   const namespaces = useRecoilValue(namespacesState)
   const [someNamespaceIsAuthorized, setSomeNamespaceIsAuthorized] = useState(false)
 
+  const resourceAttributesAsString = JSON.stringify(resourceAttributes)
+
   useEffect(() => {
     const result = (someNamespaceIsAuthorized ? areAllNamespacesUnauthorized : isAnyNamespaceAuthorized)(
       resourceAttributes,
@@ -259,8 +261,9 @@ export function useIsAnyNamespaceAuthorized(resourceAttributes: Promise<Resource
 
     return () => result.abort?.()
     // exclude someNamespaceIsAuthorized from dependency list to avoid update loop
+    // use resourceAttributesAsString instead of resourceAttributes because the object is currently created on every render
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resourceAttributes, namespaces])
+  }, [resourceAttributesAsString, namespaces])
 
   return someNamespaceIsAuthorized
 }
