@@ -59,7 +59,7 @@ export function MatchedClustersModal(props: MatchedClustersModalProps) {
             onClear={() => setSearchTerm('')}
           />
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', maxHeight: '400px', overflowY: 'auto' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', maxHeight: '400px', overflowY: 'auto' }}>
             {hasLimit && filteredMatched.length > 0 && (
               <div>
                 <h4 style={{ marginBottom: '0.5rem', fontWeight: 'bold' }}>
@@ -77,7 +77,7 @@ export function MatchedClustersModal(props: MatchedClustersModalProps) {
             )}
 
             {hasLimit && filteredNotMatched.length > 0 && (
-              <div>
+              <div style={filteredMatched.length > 0 ? { marginTop: '1rem' } : undefined}>
                 <h4 style={{ marginBottom: '0.5rem', fontWeight: 'bold' }}>
                   {t('Not matched')}{' '}
                   <Tooltip
