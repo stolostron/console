@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import fetch, { RequestInfo, RequestInit, Response } from 'node-fetch'
+import type { RequestInfo, RequestInit, Response } from 'node-fetch'
+import fetch from 'node-fetch'
 import { getDefaultAgent } from './agent'
 
 export function fetchRetry(url: RequestInfo, init?: RequestInit, retry?: number): Promise<Response> {

@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
-import { FilterCounts } from '../../lib/pagination'
+import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
+import type { FilterCounts } from '../../lib/pagination'
 import { getAuthorizedResources } from '../events'
 import {
   AppColumns,
-  ApplicationStatusMap,
+  type ApplicationStatusMap,
   getStatusFilterKey,
-  ICompressedResource,
-  ITransformedResource,
+  type ICompressedResource,
+  type ITransformedResource,
   TransformColumns,
 } from './applications'
 import { systemAppNamespacePrefixes } from './utils'

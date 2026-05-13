@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import get from 'get-value'
 import { getKubeResources, getHubClusterName, getEventCache, getEventDict } from '../events'
-import {
+import type {
   Cluster,
   IResource,
   ManagedClusterInfo,
@@ -18,25 +18,25 @@ import {
 } from '../../resources/resource'
 import {
   AppColumns,
-  ApplicationCache,
-  ApplicationCacheType,
-  ApplicationClusterStatusMap,
+  type ApplicationCache,
+  type ApplicationCacheType,
+  type ApplicationClusterStatusMap,
   ScoreColumn,
-  ApplicationStatuses,
-  ApplicationStatusMap,
+  type ApplicationStatuses,
+  type ApplicationStatusMap,
   getAppDict,
-  ICompressedResource,
-  ITransformedResource,
-  Transform,
+  type ICompressedResource,
+  type ITransformedResource,
+  type Transform,
   StatusColumn,
-  ApplicationStatusEntry,
+  type ApplicationStatusEntry,
   ScoreColumnSize,
 } from './applications'
 import { logger } from '../../lib/logger'
 import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
 import { getMultiClusterEngine } from '../../lib/multi-cluster-engine'
 import { ServerSideEvents } from '../../lib/server-side-events'
-import { getPulledAppSetMap, getPushedAppSetMap, IArgoAppRemoteResource } from './applicationsArgo'
+import { getPulledAppSetMap, getPushedAppSetMap, type IArgoAppRemoteResource } from './applicationsArgo'
 import { deflateResource, inflateApp } from '../../lib/compression'
 
 //////////////////////////////////////////////////////////////////

@@ -18,7 +18,7 @@ import {
   sizeOf,
 } from '../../../src/routes/aggregators/utils'
 import { cacheResource, getEventCache } from '../../../src/routes/events'
-import {
+import type {
   IResource,
   IArgoApplication,
   ManagedCluster,
@@ -27,7 +27,7 @@ import {
   ISearchResource,
   Cluster,
 } from '../../../src/resources/resource'
-import { ApplicationClusterStatusMap, ITransformedResource } from '../../../src/routes/aggregators/applications'
+import type { ApplicationClusterStatusMap, ITransformedResource } from '../../../src/routes/aggregators/applications'
 import { ServerSideEvents } from '../../../src/lib/server-side-events'
 
 describe('aggregators utils', () => {
