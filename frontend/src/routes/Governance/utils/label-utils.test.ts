@@ -152,14 +152,14 @@ describe('label-utils', () => {
       const item = createMockItem('env=prod; team=backend')
 
       // Has team=backend, so exclude
-      expect(matchesSelectedLabels(['!team=backend'], item)).toBe(false)
+      expect(matchesSelectedLabels(['team!=backend'], item)).toBe(false)
 
       // Does not have team=frontend, so include
-      expect(matchesSelectedLabels(['!team=frontend'], item)).toBe(true)
+      expect(matchesSelectedLabels(['team!=frontend'], item)).toBe(true)
 
       // Multiple inequality - all must pass
-      expect(matchesSelectedLabels(['!team=frontend', '!env=staging'], item)).toBe(true)
-      expect(matchesSelectedLabels(['!team=backend', '!env=staging'], item)).toBe(false)
+      expect(matchesSelectedLabels(['team!=frontend', 'env!=staging'], item)).toBe(true)
+      expect(matchesSelectedLabels(['team!=backend', 'env!=staging'], item)).toBe(false)
     })
 
     test('should handle combined equality and inequality filters', () => {
@@ -167,8 +167,8 @@ describe('label-utils', () => {
       const item2 = createMockItem('env=prod; team=frontend')
       const item3 = createMockItem('env=dev; team=backend')
 
-      // env=prod AND !team=backend
-      const filters = ['env=prod', '!team=backend']
+      // env=prod AND team!=backend
+      const filters = ['env=prod', 'team!=backend']
       expect(matchesSelectedLabels(filters, item1)).toBe(false) // has env=prod but also has team=backend
       expect(matchesSelectedLabels(filters, item2)).toBe(true) // has env=prod, not team=backend
       expect(matchesSelectedLabels(filters, item3)).toBe(false) // doesn't have env=prod
@@ -181,7 +181,7 @@ describe('label-utils', () => {
       // No labels on item
       const noLabelsItem = createMockItem('')
       expect(matchesSelectedLabels(['env=prod'], noLabelsItem)).toBe(false)
-      expect(matchesSelectedLabels(['!env=prod'], noLabelsItem)).toBe(true)
+      expect(matchesSelectedLabels(['env!=prod'], noLabelsItem)).toBe(true)
 
       // System labels are filtered before matching
       const itemWithSystemLabels = createMockItem('env=prod; cluster-name=local-cluster')

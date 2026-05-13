@@ -64,23 +64,25 @@ export const matchesSelectedLabels = (selectedValues: string[], item: Discovered
   let hasEqualityFilter = false
 
   for (const selectedValue of selectedValues) {
-    const isInequality = selectedValue.startsWith('!')
-    const value = isInequality ? selectedValue.substring(1) : selectedValue
+    const inequalityIndex = selectedValue.indexOf('!=')
+    const isInequality = inequalityIndex !== -1
 
-    // Split only on first '=' to preserve values containing '='
-    const firstEquals = value.indexOf('=')
-    if (firstEquals === -1) continue // No '=' found, skip this filter
-
-    const key = value.slice(0, firstEquals).trim()
-    const val = value.slice(firstEquals + 1).trim()
+    let key: string, val: string
+    if (isInequality) {
+      key = selectedValue.slice(0, inequalityIndex).trim()
+      val = selectedValue.slice(inequalityIndex + 2).trim()
+    } else {
+      const firstEquals = selectedValue.indexOf('=')
+      if (firstEquals === -1) continue
+      key = selectedValue.slice(0, firstEquals).trim()
+      val = selectedValue.slice(firstEquals + 1).trim()
+    }
 
     if (isInequality) {
-      // Inequality: label should NOT match - reject immediately if it does
       if (itemLabels[key] === val) {
         return false
       }
     } else {
-      // Equality: track that we have equality filters and if any matched
       hasEqualityFilter = true
       if (itemLabels[key] === val) {
         equalityMatched = true
@@ -88,7 +90,5 @@ export const matchesSelectedLabels = (selectedValues: string[], item: Discovered
     }
   }
 
-  // If there are equality filters, at least one must have matched
-  // If there are only inequality filters, all must have passed (which they did if we got here)
   return hasEqualityFilter ? equalityMatched : true
 }
