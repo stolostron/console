@@ -64,8 +64,30 @@ export function MatchedClustersModal(props: MatchedClustersModalProps) {
               <div>
                 <h4 style={{ marginBottom: '0.5rem', fontWeight: 'bold' }}>
                   {t('Matched')}{' '}
-                  <Tooltip content={t('Clusters currently targeted for deployment.')}>
-                    <OutlinedQuestionCircleIcon style={{ cursor: 'pointer' }} />
+                  <Tooltip
+                    trigger="click"
+                    content={
+                      <>
+                        {t(
+                          'These clusters met your requirements and had the highest placement scores. They were selected for stability (maintaining existing placements), resource balancing, and custom scores.'
+                        )}{' '}
+                        <a
+                          href="https://www.redhat.com/en/blog/using-the-open-cluster-management-placement-for-multicluster-scheduling"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {t('Learn more about placement matching.')}
+                        </a>
+                      </>
+                    }
+                  >
+                    <button
+                      type="button"
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                      aria-label={t('Show matched clusters information')}
+                    >
+                      <OutlinedQuestionCircleIcon />
+                    </button>
                   </Tooltip>
                 </h4>
                 {filteredMatched.map((name) => (
@@ -81,11 +103,29 @@ export function MatchedClustersModal(props: MatchedClustersModalProps) {
                 <h4 style={{ marginBottom: '0.5rem', fontWeight: 'bold' }}>
                   {t('Not matched')}{' '}
                   <Tooltip
-                    content={t(
-                      'These clusters match your label expressions and tolerations, but are not currently assigned due to placement limit or prioritization.'
-                    )}
+                    trigger="click"
+                    content={
+                      <>
+                        {t(
+                          "These clusters meet your requirements but weren't selected due to the placement limit. Existing placements are prioritized for stability, followed by resource balancing, and custom scores."
+                        )}{' '}
+                        <a
+                          href="https://www.redhat.com/en/blog/using-the-open-cluster-management-placement-for-multicluster-scheduling"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {t('Learn more about placement matching.')}
+                        </a>
+                      </>
+                    }
                   >
-                    <OutlinedQuestionCircleIcon style={{ cursor: 'pointer' }} />
+                    <button
+                      type="button"
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                      aria-label={t('Show not matched clusters information')}
+                    >
+                      <OutlinedQuestionCircleIcon />
+                    </button>
                   </Tooltip>
                 </h4>
                 {filteredNotMatched.map((name) => (
