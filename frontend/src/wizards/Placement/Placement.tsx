@@ -121,10 +121,13 @@ export function Placement(props: {
   const { t } = useTranslation()
   const { validateKubernetesResourceName } = useValidation()
 
+  const hasLimit = placement.spec?.numberOfClusters !== undefined
   const matchedLabel =
     matchedCount === undefined
       ? '-'
-      : t('{{matched}} of {{total}} clusters', { matched: matchedCount, total: totalClusters })
+      : hasLimit
+        ? t('{{matched}} of {{total}} clusters', { matched: matchedCount, total: totalClusters })
+        : t('{{count}} cluster', { count: matchedCount })
 
   const setFooterContent = useSetFooterContent()
   const openMatchedModal = useCallback(() => setIsMatchedClustersModalOpen(true), [])
@@ -172,7 +175,9 @@ export function Placement(props: {
                   onClick={() => setIsMatchedClustersModalOpen(true)}
                   style={{ padding: 0 }}
                 >
-                  {t('{{matched}} of {{total}} clusters', { matched: matchedCount, total: totalClusters })}
+                  {hasLimit
+                    ? t('{{matched}} of {{total}} clusters', { matched: matchedCount, total: totalClusters })
+                    : t('{{count}} cluster', { count: matchedCount })}
                 </Button>
               </span>
             ) : (
