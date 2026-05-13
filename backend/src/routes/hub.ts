@@ -1,14 +1,49 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import { jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { respondInternalServerError } from '../lib/respond'
 import { getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
-import { IResource } from '../resources/resource'
-import { ResourceList } from '../resources/resource-list'
+import type { IResource } from '../resources/resource'
+import type { ResourceList } from '../resources/resource-list'
 import { getHubClusterName, getIsHubSelfManaged, getIsObservabilityInstalled } from './events'
+
+interface AuthenticationResource {
+  spec?: {
+    type?: string
+    oidcProviders?: Array<{
+      claimMappings?: {
+        username?: { claim?: string; prefix?: { prefixString?: string }; prefixPolicy?: string }
+        groups?: { claim?: string; prefix?: string }
+      }
+    }>
+  }
+}
+
+export function buildAuthentication(resources: IResource[]) {
+  const clusterAuth = resources.find((r) => r.metadata?.name === 'cluster') as AuthenticationResource | undefined
+  const isDirectAuthenticationEnabled = clusterAuth?.spec?.type === 'OIDC'
+
+  const oidcClaimMappings = clusterAuth?.spec?.oidcProviders?.[0]?.claimMappings
+  return {
+    isDirectAuthenticationEnabled,
+    ...(oidcClaimMappings && {
+      claimMappings: {
+        username: {
+          claim: oidcClaimMappings.username?.claim,
+          prefix: oidcClaimMappings.username?.prefix,
+          prefixPolicy: oidcClaimMappings.username?.prefixPolicy,
+        },
+        groups: {
+          claim: oidcClaimMappings.groups?.claim,
+          prefix: oidcClaimMappings.groups?.prefix,
+        },
+      },
+    }),
+  }
+}
 
 export async function hub(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   const token = await getAuthenticatedToken(req, res)

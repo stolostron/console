@@ -2,7 +2,7 @@
 
 jest.mock('../../../src/routes/events', () => ({
   getHubClusterName: jest.fn(() => 'local-cluster'),
-  getKubeResources: jest.fn(() => []),
+  getKubeResources: jest.fn((): unknown[] => []),
 }))
 
 jest.mock('../../../src/routes/aggregators/applicationsArgo', () => ({
@@ -14,19 +14,19 @@ jest.mock('../../../src/routes/aggregators/utils', () => ({
   getArgoDestinationCluster: jest.fn(() => Promise.resolve('unknown')),
 }))
 
-import { addPushModelPodQueryInputs, PushModelResourceMap } from '../../../src/routes/aggregators/applicationsPushModel'
+import { addPushModelPodQueryInputs } from '../../../src/routes/aggregators/applicationsPushModel'
 import { getAppSetAppsMap } from '../../../src/routes/aggregators/applicationsArgo'
 import { getHubClusterName } from '../../../src/routes/events'
 import { getClusters, getArgoDestinationCluster } from '../../../src/routes/aggregators/utils'
-import { IArgoApplication, SEARCH_QUERY_LIMIT } from '../../../src/routes/aggregators/applications'
+import { type IArgoApplication, type IQuery, SEARCH_QUERY_LIMIT } from '../../../src/routes/aggregators/applications'
 
 const mockGetAppSetAppsMap = getAppSetAppsMap as jest.MockedFunction<typeof getAppSetAppsMap>
 const mockGetHubClusterName = getHubClusterName as jest.MockedFunction<typeof getHubClusterName>
 const mockGetClusters = getClusters as jest.MockedFunction<typeof getClusters>
 const mockGetArgoDestinationCluster = getArgoDestinationCluster as jest.MockedFunction<typeof getArgoDestinationCluster>
 
-function makeQuery() {
-  return { variables: { input: [] as unknown[] } }
+function makeQuery(): IQuery {
+  return { operationName: 'searchResult', variables: { input: [] }, query: '' }
 }
 
 function makeArgoApp(

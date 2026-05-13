@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { getKubeResources } from '../events'
 import { addOCPQueryInputs, addSystemQueryInputs, cacheOCPApplications } from './applicationsOCP'
-import { ApplicationSetKind, IApplicationSet, IResource, SearchResult } from '../../resources/resource'
-import { FilterSelections, ISortBy } from '../../lib/pagination'
+import { ApplicationSetKind, type IApplicationSet, type IResource, type SearchResult } from '../../resources/resource'
+import type { FilterSelections, ISortBy } from '../../lib/pagination'
 import { logger } from '../../lib/logger'
 import {
   discoverSystemAppNamespacePrefixes,
@@ -10,7 +10,7 @@ import {
   logApplicationCountChanges,
   transform,
 } from './utils'
-import { getSearchResults, ISearchResult, pingSearchAPI } from '../../lib/search'
+import { getSearchResults, type ISearchResult, pingSearchAPI } from '../../lib/search'
 import {
   addArgoQueryInputs,
   cacheArgoApplications,
@@ -18,10 +18,10 @@ import {
   getAppSetAppsMap,
   getAppSetPlacementData,
 } from './applicationsArgo'
-import { addPushModelPodQueryInputs, PushModelResourceMap } from './applicationsPushModel'
+import { addPushModelPodQueryInputs, type PushModelResourceMap } from './applicationsPushModel'
 import { getGiganticApps } from '../../lib/gigantic'
 import { createDictionary, inflateApps } from '../../lib/compression'
-import { IWatchOptions } from '../../resources/watch-options'
+import type { IWatchOptions } from '../../resources/watch-options'
 
 export enum AppColumns {
   'name' = 0,

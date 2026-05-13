@@ -5,42 +5,43 @@ import {
   ApplicationKind,
   ArgoApplicationApiVersion,
   ArgoApplicationKind,
-  Cluster,
-  IApplicationSet,
-  IResource,
-  ISearchResource,
-  SearchResult,
+  type Cluster,
+  type IApplicationSet,
+  type IResource,
+  type ISearchResource,
+  type SearchResult,
 } from '../../resources/resource'
 import { getKubeResources, getHubClusterName } from '../events'
 import {
   applicationCache,
-  ApplicationCacheType,
-  ApplicationClusterStatusMap,
-  ApplicationStatuses,
+  type ApplicationCacheType,
+  type ApplicationClusterStatusMap,
+  type ApplicationStatuses,
   getAppDict,
-  IArgoApplication,
-  IQuery,
-  ITransformedResource,
+  type IArgoApplication,
+  type IQuery,
+  type ITransformedResource,
   ScoreColumn,
   ScoreColumnSize,
   SEARCH_QUERY_LIMIT,
   StatusColumn,
 } from './applications'
-import { PushModelResourceEntry, PushModelResourceMap } from './applicationsPushModel'
+import type { PushModelResourceEntry, PushModelResourceMap } from './applicationsPushModel'
 import {
   cacheRemoteApps,
   getClusters,
   getNextApplicationPageChunk,
-  ApplicationPageChunk,
+  type ApplicationPageChunk,
   transform,
   getApplicationType,
   getApplicationClusters,
   getTransform,
   computeDeployedPodStatuses,
+  computePodStatus,
 } from './utils'
 import { deflateResource } from '../../lib/compression'
-import { IWatchOptions } from '../../resources/watch-options'
-import { computeAppHealthStatus, computeAppSyncStatus, computePodStatus } from './utils'
+import type { IWatchOptions } from '../../resources/watch-options'
+import { computeAppHealthStatus, computeAppSyncStatus } from './utils'
 
 interface IArgoAppStatusResource {
   group?: string

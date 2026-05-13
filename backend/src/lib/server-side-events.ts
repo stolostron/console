@@ -1,8 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
-import { Transform } from 'stream'
-import { clearInterval } from 'timers'
-import { Zlib } from 'zlib'
+import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
+import { constants } from 'node:http2'
+import type { Transform } from 'node:stream'
+import { clearInterval } from 'node:timers'
+import type { Zlib } from 'node:zlib'
 import { getEncodeStream, inflateEvent } from './compression'
 import { setCookie } from './cookies'
 import { logger } from './logger'

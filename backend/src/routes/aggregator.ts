@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import { notFound, unauthorized } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'
 import { paginate } from '../lib/pagination'
@@ -14,8 +14,8 @@ import {
 } from './aggregators/applications'
 import { requestAggregatedStatuses } from './aggregators/statuses'
 import { requestAggregatedAppSetData } from './aggregators/appSetData'
-import { IResource } from '../resources/resource'
-import { IWatchOptions } from '../resources/watch-options'
+import type { IResource } from '../resources/resource'
+import type { IWatchOptions } from '../resources/watch-options'
 
 export function startAggregating(): void {
   void startAggregatingApplications()

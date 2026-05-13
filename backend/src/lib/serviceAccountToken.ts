@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { readFileSync } from 'fs'
+import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { rootCertificates } from 'tls'
+import { rootCertificates } from 'node:tls'
 import { logger } from './logger'
 import { watchFile } from './fileWatch'
 
