@@ -1,5 +1,21 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
+  DisplayMode,
+  EditMode,
+  Section,
+  Sync,
+  useData,
+  useDisplayMode,
+  useEditMode,
+  useItem,
+  useSetFooterContent,
+  useSetHasInputs,
+  useValidate,
+  WizDetailsHidden,
+  WizItemSelector,
+  WizSingleSelect,
+} from '@patternfly-labs/react-form-wizard'
+import {
   Alert,
   Button,
   ButtonVariant,
@@ -10,24 +26,9 @@ import {
   Tooltip,
 } from '@patternfly/react-core'
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
-import {
-  WizDetailsHidden,
-  EditMode,
-  WizItemSelector,
-  Section,
-  WizSingleSelect,
-  useData,
-  useEditMode,
-  useSetHasInputs,
-  useItem,
-  useValidate,
-  Sync,
-  useSetFooterContent,
-  DisplayMode,
-  useDisplayMode,
-} from '@patternfly-labs/react-form-wizard'
-
-import { IResource } from '../common/resources/IResource'
+import { PlacementBinding } from '~/resources/placement-binding'
+import { useTranslation } from '../../lib/acm-i18next'
+import { NavigationPath } from '../../NavigationPath'
 import { IClusterSetBinding } from '../common/resources/IClusterSetBinding'
 import {
   IPlacement,
@@ -38,12 +39,11 @@ import {
   Toleration,
 } from '../common/resources/IPlacement'
 import { PlacementBindingKind, PlacementBindingType } from '../common/resources/IPlacementBinding'
+import { IResource } from '../common/resources/IResource'
+import { MatchedClustersModal } from './MatchedClustersModal'
 import { Placement, Placements } from './Placement'
 import { PlacementBindings } from './PlacementBinding'
-import { useTranslation } from '../../lib/acm-i18next'
-import { NavigationPath } from '../../NavigationPath'
 import { usePlacementDebug } from './usePlacementDebug'
-import { MatchedClustersModal } from './MatchedClustersModal'
 
 export function PlacementSection(props: {
   bindingSubjectKind: string
@@ -151,6 +151,18 @@ export function PlacementSection(props: {
         .map((clusterSetBinding) => clusterSetBinding.spec?.clusterSet ?? '') ?? []
     )
   }, [props.bindingSubjectKind, props.existingClusterSetBindings, props.existingClusterSets, resources])
+
+  const doesInitAssignedPlacementExist = useMemo(() => {
+    const namespacedPlacementNames = namespacedPlacements.map((placement) => placement.metadata?.name ?? '')
+    const selectedPlacement = resources.find((res) => res.kind === PlacementBindingKind)
+    if (selectedPlacement) {
+      return (
+        (selectedPlacement as PlacementBinding).placementRef.name === '' ||
+        namespacedPlacementNames.includes((selectedPlacement as PlacementBinding).placementRef.name)
+      )
+    }
+    return true
+  }, [namespacedPlacements, resources])
 
   const setHasInputs = useSetHasInputs()
   useEffect(() => {
@@ -282,16 +294,29 @@ export function PlacementSection(props: {
           </WizItemSelector>
         </Fragment>
       )}
+      {/* Add alert here if placement no logner exists */}
       {placementCount === 0 && placementBindingCount === 1 && (
-        <WizItemSelector selectKey="kind" selectValue={PlacementBindingKind}>
-          <WizSingleSelect
-            path="placementRef.name"
-            label={t('Placement')}
-            placeholder={t('Select the placement')}
-            required
-            options={namespacedPlacements.map((placement) => placement.metadata?.name ?? '')}
-          />
-        </WizItemSelector>
+        <>
+          {!doesInitAssignedPlacementExist && (
+            <Alert
+              variant="warning"
+              isInline
+              isPlain
+              title={t(
+                'The placement assigned to this resource no longer exists. Select a new placement from the list.'
+              )}
+            />
+          )}
+          <WizItemSelector selectKey="kind" selectValue={PlacementBindingKind}>
+            <WizSingleSelect
+              path="placementRef.name"
+              label={t('Placement')}
+              placeholder={t('Select the placement')}
+              required
+              options={namespacedPlacements.map((placement) => placement.metadata?.name ?? '')}
+            />
+          </WizItemSelector>
+        </>
       )}
 
       {/* Review step content */}
