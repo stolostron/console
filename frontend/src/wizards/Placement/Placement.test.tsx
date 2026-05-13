@@ -18,10 +18,14 @@ let mockEditMode = 'create'
 jest.mock('../../lib/acm-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, opts?: Record<string, unknown>) => {
-      if (opts) {
-        return Object.entries(opts).reduce((s, [k, v]) => s.replace(`{{${k}}}`, String(v)), key)
+      let resolved = key
+      if (opts && typeof opts.count === 'number' && opts.count !== 1) {
+        resolved = key.replace(/\bcluster\b/, 'clusters')
       }
-      return key
+      if (opts) {
+        return Object.entries(opts).reduce((s, [k, v]) => s.replace(`{{${k}}}`, String(v)), resolved)
+      }
+      return resolved
     },
   }),
 }))
@@ -194,7 +198,25 @@ describe('Placement', () => {
     expect(screen.getByTestId('custom-wrapper-value')).toHaveTextContent('-')
   })
 
-  it('shows matched count when placementDebugState has matches', () => {
+  it('shows matched count without limit format when no numberOfClusters', () => {
+    const debugState: PlacementDebugState = {
+      matched: ['c1', 'c2'],
+      notMatched: ['c3'],
+      totalClusters: 3,
+      matchedCount: 2,
+      loading: false,
+      error: undefined,
+    }
+
+    render(
+      <Placement namespaceClusterSetNames={[]} clusters={[]} showPlacementPreview placementDebugState={debugState} />
+    )
+
+    expect(screen.getByTestId('custom-wrapper-value')).toHaveTextContent('Matched by Placement: 2 clusters')
+  })
+
+  it('shows "n of n clusters" format when numberOfClusters is set', () => {
+    mockPlacement.spec = { numberOfClusters: 2 }
     const debugState: PlacementDebugState = {
       matched: ['c1', 'c2'],
       notMatched: ['c3'],
@@ -209,6 +231,23 @@ describe('Placement', () => {
     )
 
     expect(screen.getByTestId('custom-wrapper-value')).toHaveTextContent('Matched by Placement: 2 of 3 clusters')
+  })
+
+  it('shows singular "cluster" when matchedCount is 1 and no limit', () => {
+    const debugState: PlacementDebugState = {
+      matched: ['c1'],
+      notMatched: [],
+      totalClusters: 1,
+      matchedCount: 1,
+      loading: false,
+      error: undefined,
+    }
+
+    render(
+      <Placement namespaceClusterSetNames={[]} clusters={[]} showPlacementPreview placementDebugState={debugState} />
+    )
+
+    expect(screen.getByTestId('custom-wrapper-value')).toHaveTextContent('Matched by Placement: 1 cluster')
   })
 
   it('shows no-match message when matchedCount is 0', () => {

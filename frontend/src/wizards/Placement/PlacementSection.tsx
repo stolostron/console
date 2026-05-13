@@ -170,10 +170,13 @@ export function PlacementSection(props: {
 
   useEffect(() => {
     if (placementCount === 1 && currentPlacement && displayMode === DisplayMode.Step) {
+      const hasLimit = currentPlacement?.spec?.numberOfClusters !== undefined
       const matchedLabel =
         matchedCount === undefined
           ? '-'
-          : t('{{matched}} of {{total}} clusters', { matched: matchedCount, total: totalClusters })
+          : hasLimit
+            ? t('{{matched}} of {{total}} clusters', { matched: matchedCount, total: totalClusters })
+            : t('{{count}} cluster', { count: matchedCount })
 
       setFooterContent(
         <div style={{ padding: '0 1rem 1rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
@@ -309,10 +312,12 @@ export function PlacementSection(props: {
                 isInline
                 title={
                   matchedCount > 0
-                    ? t('{{matched}} of {{total}} clusters matched by placement', {
-                        matched: matchedCount,
-                        total: totalClusters,
-                      })
+                    ? currentPlacement?.spec?.numberOfClusters !== undefined
+                      ? t('{{matched}} of {{total}} clusters matched by placement', {
+                          matched: matchedCount,
+                          total: totalClusters,
+                        })
+                      : t('{{count}} cluster matched by placement', { count: matchedCount })
                     : t(
                         'No clusters match the current placement criteria. To identify available clusters, check your label expressions, tolerations, or limits.'
                       )
