@@ -322,7 +322,7 @@ export async function getAppSetTopology(
       }
       const types = getResourceTypes(resources as Record<string, unknown>[])
       types.forEach((type) => allApplicationTypes.add(type))
-      resources.forEach((r: any) => allResourcesForApp.push({ ...r, cluster: clusterName }))
+      resources.forEach((r: any) => allResourcesForApp.push({ ...r, cluster: clusterName, isChild: true }))
     })
     processResources(allResourcesForApp, parentNodeId, appClusterNames, hubClusterName, activeTypes ?? [], links, nodes)
   })
