@@ -2771,6 +2771,7 @@
   "Session paused due to inactivity": "Session paused due to inactivity",
   "Set a limit on the number of clusters selected": "Set a limit on the number of clusters selected",
   "Set time window": "Set time window",
+  "Set toleration seconds": "Set toleration seconds",
   "set.delete": "Delete cluster set",
   "set.edit-bindings": "Edit namespace bindings",
   "set.manage-resources": "Manage resource assignments",

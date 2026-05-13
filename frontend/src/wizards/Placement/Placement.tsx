@@ -312,6 +312,13 @@ export function Placement(props: {
               />
             </div>
           </Flex>
+          <WizCheckbox
+            id="toleration-seconds-checkbox"
+            label={t('Set toleration seconds')}
+            path="tolerationSeconds"
+            pathValueToInputValue={(value) => value !== undefined && value !== ''}
+            inputValueToPathValue={(checked) => (checked ? 0 : undefined)}
+          />
           <WizNumberInput
             id="toleration-seconds"
             path="tolerationSeconds"
@@ -322,6 +329,7 @@ export function Placement(props: {
               'At T=0s, the cluster goes down and the unreachable taint is applied. Between T=1s and T=299s, the toleration causes the Placement to ignore this taint. Although the workload is down, it is not moved yet. At T=300s, the toleration expires, the Placement recognizes the taint, and triggers a failover to a healthy cluster.'
             )}
             labelHelpTitle={t('Example with TolerationSeconds=300')}
+            hidden={(item: any) => item.tolerationSeconds === undefined}
           />
         </WizArrayInput>
       </ExpandableSection>
