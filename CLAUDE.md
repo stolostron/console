@@ -81,8 +81,8 @@ All ports are customizable via environment variables defined in `port-defaults.s
 - `FRONTEND_PORT` (default 3000) - Standalone console
 - `BACKEND_PORT` (default 4000) - Backend APIs
 - `CONSOLE_PORT` (default 9000) - OpenShift console
-- `ACM_PORT` (default 3001) - ACM plugin
-- `MCE_PORT` (default 3002) - MCE plugin
+- `MCE_PORT` (default 3001) - MCE plugin
+- `ACM_PORT` (default 3002) - ACM plugin
 
 ### Authentication Flow
 1. Frontend uses `acm-access-token-cookie` for user tokens

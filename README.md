@@ -196,6 +196,53 @@ Enabling this feature will allow the user to create a cluster that only contains
 
 ## Development
 
+### Testing
+
+```bash
+npm test                  # Run all tests (frontend + backend)
+npm run test:frontend     # Run frontend tests only
+npm run test:backend      # Run backend tests only
+npm test -- <pattern>     # Run tests matching a file pattern
+```
+
+### Linting and Formatting
+
+```bash
+npm run check             # Run linting, formatting, and type checking
+npm run check:fix         # Auto-fix all linting and formatting issues
+npm run lint              # Lint frontend and backend code
+npm run lint:fix          # Auto-fix linting issues
+```
+
+### Building
+
+```bash
+npm run build             # Production build for frontend and backend
+```
+
+### Internationalization
+
+```bash
+npm run i18n              # Validate i18n translation files
+npm run i18n:fix          # Auto-fix i18n issues
+```
+
+### Commit Requirements
+
+All commits must include a `Signed-off-by` trailer. This is enforced by a Husky pre-commit hook — commits without it will be rejected.
+
+Add it automatically with the `-s` flag:
+
+```bash
+git commit -s -m "Your commit message"
+```
+
+This produces a trailer in the format:
+
+```text
+Signed-off-by: Your Name <your.email@example.com>
+```
+
 ### Feature Flags
 
 It is possible to enable/disable certain features by changing `spec.overrides.components[*].enabled` values from the ACM MultiClusterHub. In order to take a particular flag into account just add a new entry to `FEATURE_FLAGS` from `frontend/src/utils/flags/consts.ts` file, meaning the key as the name for the feature flag on console application side, and the value as the `spec.overrides.components[*].name`.
