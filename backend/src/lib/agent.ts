@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Agent, AgentOptions } from 'node:https'
+import type { AgentOptions } from 'node:https'
+import { Agent } from 'node:https'
 import { getCACertificate, getServiceCACertificate } from './serviceAccountToken'
 import { HttpsProxyAgent } from 'https-proxy-agent'
 

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import get from 'get-value'
 import { getKubeResources, getHubClusterName, getEventCache, getEventDict } from '../events'
-import {
+import type {
   Cluster,
   IResource,
   ManagedClusterInfo,
@@ -16,11 +16,11 @@ import {
 } from '../../resources/resource'
 import {
   AppColumns,
-  ApplicationCache,
-  ApplicationCacheType,
+  type ApplicationCache,
+  type ApplicationCacheType,
   getAppDict,
-  ICompressedResource,
-  ITransformedResource,
+  type ICompressedResource,
+  type ITransformedResource,
 } from './applications'
 import { logger } from '../../lib/logger'
 import { getMultiClusterHub } from '../../lib/multi-cluster-hub'

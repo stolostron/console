@@ -1,6 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { constants, Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders } from 'node:http2'
-import { request, RequestOptions } from 'node:https'
+import type { Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders } from 'node:http2'
+import { constants } from 'node:http2'
+import type { RequestOptions } from 'node:https'
+import { request } from 'node:https'
 import { pipeline } from 'node:stream'
 import { URL } from 'node:url'
 import { getServiceAgent } from '../lib/agent'

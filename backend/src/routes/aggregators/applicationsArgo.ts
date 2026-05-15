@@ -5,25 +5,25 @@ import {
   ApplicationKind,
   ArgoApplicationApiVersion,
   ArgoApplicationKind,
-  Cluster,
-  IApplicationSet,
-  IResource,
+  type Cluster,
+  type IApplicationSet,
+  type IResource,
 } from '../../resources/resource'
 import { getKubeResources, getHubClusterName } from '../events'
 import {
   applicationCache,
-  ApplicationCacheType,
+  type ApplicationCacheType,
   getAppDict,
-  IArgoApplication,
-  IQuery,
-  ITransformedResource,
+  type IArgoApplication,
+  type IQuery,
+  type ITransformedResource,
   SEARCH_QUERY_LIMIT,
 } from './applications'
 import {
   cacheRemoteApps,
   getClusters,
   getNextApplicationPageChunk,
-  ApplicationPageChunk,
+  type ApplicationPageChunk,
   transform,
   getApplicationsHelper,
   getApplicationType,
@@ -31,7 +31,7 @@ import {
   getTransform,
 } from './utils'
 import { deflateResource } from '../../lib/compression'
-import { IWatchOptions } from '../../resources/watch-options'
+import type { IWatchOptions } from '../../resources/watch-options'
 
 interface IArgoAppLocalResource extends IResource {
   spec: {

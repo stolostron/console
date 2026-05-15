@@ -27,7 +27,7 @@ import {
   listAndWatch,
   stopWatching,
 } from '../../src/routes/events'
-import { IArgoApplication, IResource } from '../../src/resources/resource'
+import type { IArgoApplication, IResource } from '../../src/resources/resource'
 import { ServerSideEvents } from '../../src/lib/server-side-events'
 
 describe('events Route', () => {

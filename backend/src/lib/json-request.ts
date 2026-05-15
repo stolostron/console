@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { constants } from 'http2'
-import { Agent } from 'https'
-import { HeadersInit } from 'node-fetch'
+import { constants } from 'node:http2'
+import type { Agent } from 'node:https'
+import type { HeadersInit } from 'node-fetch'
 import { fetchRetry } from './fetch-retry'
 
 const { HTTP2_HEADER_CONTENT_TYPE, HTTP2_HEADER_AUTHORIZATION, HTTP2_HEADER_ACCEPT, HTTP2_HEADER_USER_AGENT } =
