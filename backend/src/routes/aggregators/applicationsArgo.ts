@@ -1,9 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { logger } from '../../lib/logger'
-import { Cluster, IResource } from '../../resources/resource'
+import type { Cluster, IResource } from '../../resources/resource'
 import { getKubeResources, getHubClusterName } from '../events'
-import { ApplicationCacheType, IQuery, SEARCH_QUERY_LIMIT } from './applications'
-import { cacheRemoteApps, getClusters, getNextApplicationPageChunk, ApplicationPageChunk, transform } from './utils'
+import { type ApplicationCacheType, type IQuery, SEARCH_QUERY_LIMIT } from './applications'
+import {
+  cacheRemoteApps,
+  getClusters,
+  getNextApplicationPageChunk,
+  type ApplicationPageChunk,
+  transform,
+} from './utils'
 
 interface IArgoAppLocalResource extends IResource {
   spec: {

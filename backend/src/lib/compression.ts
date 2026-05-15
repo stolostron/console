@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { pipeline, Readable, Transform } from 'stream'
+import type { Readable, Transform } from 'node:stream'
+import { pipeline } from 'node:stream'
 import {
   createBrotliCompress,
   createBrotliDecompress,
@@ -7,7 +8,7 @@ import {
   createGunzip,
   createGzip,
   createInflate,
-  Zlib,
+  type Zlib,
 } from 'zlib'
 import { logger } from './logger'
 

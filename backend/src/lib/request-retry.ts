@@ -1,8 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { IncomingMessage, OutgoingHttpHeaders } from 'http'
-import { constants } from 'http2'
-import { request, RequestOptions } from 'https'
-import { AbortSignal } from 'node-fetch/externals'
+import type { IncomingMessage, OutgoingHttpHeaders } from 'node:http'
+import { constants } from 'node:http2'
+import type { RequestOptions } from 'node:https'
+import { request } from 'node:https'
+import type { AbortSignal } from 'node-fetch/externals'
 import { logger } from './logger'
 import { getDefaultAgent } from './agent'
 
