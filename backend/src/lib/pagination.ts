@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import Fuse from 'fuse.js'
-import { IResource } from '../resources/resource'
+import type { IResource } from '../resources/resource'
 import { getAuthorizedResources } from '../routes/events'
-import { AppColumns, ICompressedResource, ITransformedResource } from '../routes/aggregators/applications'
+import { AppColumns, type ICompressedResource, type ITransformedResource } from '../routes/aggregators/applications'
 
 export type FilterSelections = {
   [filter: string]: string[]

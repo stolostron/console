@@ -1,6 +1,6 @@
-import { IResource } from './../resources/resource'
 /* Copyright Contributors to the Open Cluster Management project */
-import { pipeline, Readable, Transform } from 'stream'
+import type { Readable, Transform } from 'node:stream'
+import { pipeline } from 'node:stream'
 import {
   createBrotliCompress,
   createBrotliDecompress,
@@ -10,13 +10,14 @@ import {
   createInflate,
   inflateRaw,
   deflateRaw,
-  Zlib,
+  type Zlib,
 } from 'node:zlib'
 import { logger } from './logger'
-import { ServerSideEvent, WatchEvent } from './server-side-events'
+import type { ServerSideEvent, WatchEvent } from './server-side-events'
 import { getEventDict } from '../routes/events'
-import { getAppDict, ICompressedResource, ITransformedResource } from '../routes/aggregators/applications'
+import { getAppDict, type ICompressedResource, type ITransformedResource } from '../routes/aggregators/applications'
 import { promisify } from 'node:util'
+import type { IResource } from './../resources/resource'
 
 type Dictionary = {
   arr: string[]
