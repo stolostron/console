@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
-import { FilterCounts, ITransformedResource } from '../../lib/pagination'
+import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
+import type { FilterCounts, ITransformedResource } from '../../lib/pagination'
 import { getAuthorizedResources } from '../events'
 import { AppColumns } from './applications'
 import { systemAppNamespacePrefixes } from './applicationsOCP'

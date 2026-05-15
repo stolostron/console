@@ -4,17 +4,17 @@
 import eventStream from 'event-stream'
 import get from 'get-value'
 import got, { CancelError, HTTPError, TimeoutError } from 'got'
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import pluralize from 'pluralize'
 import { Stream } from 'stream'
 import { promisify } from 'util'
 import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
-import { ITransformedResource } from '../lib/pagination'
-import { ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
+import type { ITransformedResource } from '../lib/pagination'
+import { type ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
 import { getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
-import { IResource } from '../resources/resource'
+import type { IResource } from '../resources/resource'
 
 const { map, split } = eventStream
 const pipeline = promisify(Stream.pipeline)

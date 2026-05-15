@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { logger } from '../../lib/logger'
 import { getPagedSearchResources } from '../../lib/search'
-import { Cluster, IResource } from '../../resources/resource'
+import type { Cluster, IResource } from '../../resources/resource'
 import { getKubeResources } from '../events'
-import { ApplicationCacheType, generateTransforms, getArgoDestinationCluster } from './applications'
+import { type ApplicationCacheType, generateTransforms, getArgoDestinationCluster } from './applications'
 
 // query limit per letter
 const ARGO_APP_QUERY_LIMIT = 20000

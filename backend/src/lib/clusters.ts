@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { IResource } from '../resources/resource'
+import type { IResource } from '../resources/resource'
 import { getKubeResources } from '../routes/events'
 
 export type ClusterMapType = {

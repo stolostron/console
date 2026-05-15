@@ -1,10 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { OutgoingHttpHeaders } from 'http2'
-import { RequestOptions, request } from 'https'
+import type { OutgoingHttpHeaders } from 'http2'
+import type { RequestOptions } from 'node:https'
+import { request } from 'https'
 import { URL } from 'url'
 import { getMultiClusterHub } from '../lib/multi-cluster-hub'
 import { getNamespace, getServiceAccountToken, getServiceCACertificate } from '../lib/serviceAccountToken'
-import { IResource } from '../resources/resource'
+import type { IResource } from '../resources/resource'
 import { logger } from './logger'
 
 export type ISearchResult = {
