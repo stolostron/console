@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import Prometheus, { register } from 'prom-client'
 import { catchInternalServerError } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'
