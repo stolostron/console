@@ -378,18 +378,39 @@ export const createControllerRevisionChild = (
   clustersNames: string[],
   activeTypes: string[] | undefined,
   links: TopologyLink[],
-  nodes: TopologyNode[]
+  nodes: TopologyNode[],
+  vmControllerRevisions?: Map<string, string[]>
 ): TopologyNode | undefined => {
   const parentType = parentNode?.type || ''
-  if (parentType === 'daemonset' || parentType === 'statefulset' || parentType === 'virtualmachine') {
-    const pNode = createChildNode(parentNode, clustersNames, 'controllerrevision', activeTypes, links, nodes)
 
-    // Create pod children for non-virtual machine types
-    if (parentType !== 'virtualmachine') {
-      return createChildNode(pNode, clustersNames, 'pod', activeTypes, links, nodes)
-    }
-    return pNode
+  if (parentType === 'daemonset' || parentType === 'statefulset') {
+    const pNode = createChildNode(parentNode, clustersNames, 'controllerrevision', activeTypes, links, nodes)
+    return createChildNode(pNode, clustersNames, 'pod', activeTypes, links, nodes)
   }
+
+  if (parentType === 'virtualmachine') {
+    if (vmControllerRevisions) {
+      const rawUid = (parentNode.specs as any)?.raw?._uid as string | undefined
+      const k8sUid = rawUid?.includes('/') ? rawUid.split('/').pop() : rawUid
+      const revisionNames = k8sUid ? vmControllerRevisions.get(k8sUid) : undefined
+      if (revisionNames && revisionNames.length > 0) {
+        let lastNode: TopologyNode | undefined
+        for (const revName of revisionNames) {
+          lastNode = createChildNode(
+            { ...parentNode, name: revName },
+            clustersNames,
+            'controllerrevision',
+            activeTypes,
+            links,
+            nodes
+          )
+        }
+        return lastNode
+      }
+    }
+    return createChildNode(parentNode, clustersNames, 'controllerrevision', activeTypes, links, nodes)
+  }
+
   return undefined
 }
 
@@ -549,23 +570,44 @@ export function areSourcesUniform<T>(
  * Mirrors the logic in getArgoDestinationCluster (topologyArgo.ts / backend utils.ts):
  *  - destination.name → direct match against cluster names (handles "in-cluster" → hub)
  *  - destination.server → resolves via kubernetes.default.svc, cluster-proxy URL, or raw kube API URL
+ *
+ * For pull-model ApplicationSets, hub placeholder Application CRs have
+ * destination.server set to "https://kubernetes.default.svc" which represents the
+ * spoke cluster (not the hub). When normal resolution fails, the function falls back
+ * to extracting the cluster name from the application name.
+ *
+ * @param appName - Optional application name used as fallback for cluster resolution.
+ *   ApplicationSet-generated names typically embed the target cluster name.
  */
 export function getAppTargetCluster(
   destination: { name?: string; server?: string },
-  clusters: AppSetClusterInfo[]
+  clusters: AppSetClusterInfo[],
+  appName?: string
 ): string | null {
   if (destination.name) {
     const name = destination.name === 'in-cluster' ? 'local-cluster' : destination.name
     return findClusterByName(clusters, name)
   }
   if (destination.server) {
-    return resolveClusterFromServer(destination.server, clusters)
+    const resolved = resolveClusterFromServer(destination.server, clusters)
+    if (resolved) return resolved
+  }
+  if (appName && clusters.length > 0) {
+    return findClusterInAppName(appName, clusters)
   }
   return null
 }
 
 function findClusterByName(clusters: AppSetClusterInfo[], name: string): string | null {
   const match = clusters.find((c) => c.name === name)
+  return match ? match.name : null
+}
+
+function findClusterInAppName(appName: string, clusters: AppSetClusterInfo[]): string | null {
+  const sorted = [...clusters].sort((a, b) => b.name.length - a.name.length)
+  const match = sorted.find(
+    (c) => appName === c.name || appName.includes(`-${c.name}`) || appName.includes(`${c.name}-`)
+  )
   return match ? match.name : null
 }
 

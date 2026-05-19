@@ -125,7 +125,7 @@ async function fetchSingleAppResources(
   const appName = app.metadata?.name
   if (!appName) return null
 
-  const clusterName = getAppTargetCluster(app.spec.destination, clusters)
+  const clusterName = getAppTargetCluster(app.spec.destination, clusters, appName)
   if (!clusterName) return null
 
   return fetchArgoAppStatusResources(clusterName, appName, namespace)
