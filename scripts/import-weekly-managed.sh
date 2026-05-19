@@ -4,6 +4,23 @@
 set -euo pipefail
 
 ########################################
+# Config
+########################################
+
+WORKDIR="/tmp/rhacm-import"
+HUB_CLUSTER_NAME="${HUB_CLUSTER_NAME:-weekly}"
+MANAGED_CLUSTER_NAME="${MANAGED_CLUSTER_NAME:-layne-managed}"
+CLUSTERPOOL_NAME="${CLUSTERPOOL_NAME:-cs-aws-420}" # should be alternated via cronjob args
+CLUSTERPOOL_TARGET_NAMESPACE="${CLUSTERPOOL_TARGET_NAMESPACE:-console-squad}"
+CLUSTERCLAIM_NAME="${CLUSTERCLAIM_NAME:-$MANAGED_CLUSTER_NAME}"
+CLUSTERCLAIM_LIFETIME="${CLUSTERCLAIM_LIFETIME:-164h}"
+
+HUB_KUBECONFIG="${WORKDIR}/hub-kubeconfig"
+MANAGED_KUBECONFIG="${WORKDIR}/managed-kubeconfig"
+
+mkdir -p "${WORKDIR}"
+
+########################################
 # Helpers
 ########################################
 
@@ -17,26 +34,10 @@ fail() {
 }
 
 cleanup() {
-  rm -rf "${WORKDIR}"
+  rm -rf "${WORKDIR:-}"
 }
 
 trap cleanup EXIT
-
-########################################
-# Config
-########################################
-
-WORKDIR="/tmp/rhacm-import"
-unmask 077 # umask 077 sets your file-creation mode mask to be highly restrictive, ensuring that only the file owner has access to any newly created files or directories.
-HUB_CLUSTER_NAME="${HUB_CLUSTER_NAME:-weekly}"
-MANAGED_CLUSTER_NAME="${MANAGED_CLUSTER_NAME:-layne-managed}"
-CLUSTERPOOL_NAME="${CLUSTERPOOL_NAME:-cs-aws-420}" # this should be set in cronjob args to alternate each week
-CLUSTERPOOL_TARGET_NAMESPACE="${CLUSTERPOOL_TARGET_NAMESPACE:-console-squad}"
-CLUSTERCLAIM_NAME="${CLUSTERCLAIM_NAME:-$MANAGED_CLUSTER_NAME}"
-CLUSTERCLAIM_LIFETIME="${CLUSTERCLAIM_LIFETIME:-164h}"
-HUB_KUBECONFIG="${WORKDIR}/hub-kubeconfig"
-MANAGED_KUBECONFIG="${WORKDIR}/managed-kubeconfig"
-mkdir -p "${WORKDIR}"
 
 ########################################
 # Display Variables
@@ -58,7 +59,7 @@ command -v oc >/dev/null 2>&1 \
   || fail "oc CLI not installed"
 
 ########################################
-# Helpers
+# Helper Functions
 ########################################
 
 get_cluster_namespace() {
@@ -98,7 +99,8 @@ extract_kubeconfig() {
 copy_pull_secret() {
   log "Patching managed cluster pull-secret with hub cluster dockerconfigjson"
 
-  # Get the hub cluster pull-secret dockerconfigjson
+  local HUB_DOCKERCONFIGJSON
+
   HUB_DOCKERCONFIGJSON=$(
     oc --kubeconfig="${HUB_KUBECONFIG}" \
       get secret pull-secret \
@@ -106,7 +108,6 @@ copy_pull_secret() {
       -o jsonpath='{.data.\.dockerconfigjson}'
   )
 
-  # Patch the managed cluster pull-secret
   oc --kubeconfig="${MANAGED_KUBECONFIG}" \
     patch secret pull-secret \
     -n openshift-config \
@@ -117,13 +118,16 @@ copy_pull_secret() {
 copy_image_digest_mirror_set() {
   log "Copying ImageDigestMirrorSets"
 
-  oc --kubeconfig="${HUB_KUBECONFIG}" \
-    get imagedigestmirrorsets.config.openshift.io \
-    -o yaml > "${WORKDIR}/idms.yaml" || true
+  local IDMS_FILE="${WORKDIR}/idms.yaml"
 
-  if [[ -s "${WORKDIR}/idms.yaml" ]]; then
-    oc --kubeconfig="${MANAGED_KUBECONFIG}" \
-      apply -f "${WORKDIR}/idms.yaml" || true
+  if oc --kubeconfig="${HUB_KUBECONFIG}" \
+    get imagedigestmirrorsets.config.openshift.io \
+    -o yaml > "${IDMS_FILE}"; then
+
+    if [[ -s "${IDMS_FILE}" ]]; then
+      oc --kubeconfig="${MANAGED_KUBECONFIG}" \
+        apply -f "${IDMS_FILE}"
+    fi
   fi
 }
 
@@ -140,7 +144,7 @@ cleanup_old_klusterlet() {
 
   oc --kubeconfig="${MANAGED_KUBECONFIG}" \
     delete klusterlet klusterlet \
-    --ignore-not-found=true || true
+    --ignore-not-found=true
 
   sleep 20
 }
@@ -160,6 +164,7 @@ oc whoami >/dev/null 2>&1 \
 
 if oc get clusterclaim.hive "${CLUSTERCLAIM_NAME}" \
   -n "${CLUSTERPOOL_TARGET_NAMESPACE}" >/dev/null 2>&1; then
+
   log "ClusterClaim ${CLUSTERCLAIM_NAME} already exists. Exiting."
   exit 0
 fi
@@ -170,14 +175,20 @@ INIT_POOL_SIZE=$(
     "${CLUSTERPOOL_NAME}" \
     -o jsonpath='{.spec.size}'
 )
-if ((INIT_POOL_SIZE < 1)); then
-  log "ClusterPool "${CLUSTERPOOL_NAME}" does not meet the minimum of 1. Increasing the size of the pool."
-  oc scale clusterpool.hive "${CLUSTERPOOL_NAME}" -n "${CLUSTERPOOL_TARGET_NAMESPACE}" --replicas="1"
+
+if (( INIT_POOL_SIZE < 1 )); then
+  log "ClusterPool ${CLUSTERPOOL_NAME} does not meet the minimum of 1. Increasing the size of the pool."
+
+  oc scale clusterpool.hive "${CLUSTERPOOL_NAME}" \
+    -n "${CLUSTERPOOL_TARGET_NAMESPACE}" \
+    --replicas="1"
 fi
-# Note ClusterPools are scaled down daily via collective cluster CronJob. We can leave the clean up to that scal down job.
+
+# ClusterPools are scaled down daily via separate cleanup automation.
 
 log "Creating ClusterClaim ${CLUSTERCLAIM_NAME}"
-  cat <<EOF | oc apply -f -
+
+cat <<EOF | oc apply -f -
 apiVersion: hive.openshift.io/v1
 kind: ClusterClaim
 metadata:
@@ -199,9 +210,8 @@ spec:
       name: console
     - apiGroup: rbac.authorization.k8s.io
       kind: Group
-      name: 'system:serviceaccounts:${CLUSTERPOOL_TARGET_NAMESPACE}'
+      name: system:serviceaccounts:${CLUSTERPOOL_TARGET_NAMESPACE}
 EOF
-fi
 
 ########################################
 # Wait For ClusterClaim Fulfillment
@@ -210,8 +220,10 @@ fi
 log "Polling for ClusterClaim fulfillment (60min)"
 
 MANAGED_NAMESPACE=""
+
 for i in {1..120}; do
   log "ClusterClaim check ${i}/120"
+
   MANAGED_NAMESPACE=$(get_cluster_namespace "${CLUSTERCLAIM_NAME}")
 
   if [[ -n "${MANAGED_NAMESPACE}" ]]; then
@@ -246,7 +258,6 @@ log "Hub namespace: ${HUB_NAMESPACE}"
 log "Finding admin kubeconfig secrets"
 
 HUB_SECRET=$(find_admin_kubeconfig_secret "${HUB_NAMESPACE}")
-
 MANAGED_SECRET=$(find_admin_kubeconfig_secret "${MANAGED_NAMESPACE}")
 
 [[ -n "${HUB_SECRET}" ]] \
