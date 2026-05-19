@@ -11,7 +11,7 @@ import { HelperText, HelperTextItem, Title } from '@patternfly/react-core'
 import get from 'get-value'
 import set from 'set-value'
 import { klona } from 'klona/json'
-import { MutableRefObject, useContext, useEffect, useMemo, useRef } from 'react'
+import { MutableRefObject, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import {
   useEditMode,
   ItemContext,
@@ -24,10 +24,16 @@ import {
   useData,
   WizTextInput,
   WizMultiSelect,
+  useDisplayMode,
+  DisplayMode,
+  useSetFooterContent,
 } from '@patternfly-labs/react-form-wizard'
+import { Alert, Button, ButtonVariant, Tooltip } from '@patternfly/react-core'
 import { IResource } from '../common/resources/IResource'
 import { useTranslation } from '../../lib/acm-i18next'
 import { Channel } from './ArgoWizard'
+import { usePlacementDebug } from '../Placement/usePlacementDebug'
+import { MatchedClustersModal } from '../Placement/MatchedClustersModal'
 import { useValidation } from '../../hooks/useValidation'
 import { GitRevisionSelect } from './common/GitRevisionSelect'
 import { IPlacement } from '../common/resources/IPlacement'
@@ -378,18 +384,89 @@ export function ExistingPlacementSelect(props: { placements: IPlacement[] }) {
   const { t } = useTranslation()
   const item = useContext(ItemContext)
   const path = getCDRPlacementPath(item)
+  const displayMode = useDisplayMode()
+  const [isMatchedClustersModalOpen, setIsMatchedClustersModalOpen] = useState(false)
+
+  const selectedPlacementName = useMemo(
+    () => (path && item ? (get(item, path) as string | undefined) : undefined),
+    [path, item]
+  )
+
+  const selectedPlacement = useMemo(
+    () =>
+      selectedPlacementName ? props.placements.find((p) => p.metadata?.name === selectedPlacementName) : undefined,
+    [selectedPlacementName, props.placements]
+  )
+
+  const debugState = usePlacementDebug(selectedPlacement)
+  const { matched, notMatched, matchedCount, totalClusters, error, loading } = debugState
+
+  const setFooterContent = useSetFooterContent()
+  const openMatchedModal = useCallback(() => setIsMatchedClustersModalOpen(true), [])
+
+  useEffect(() => {
+    if (displayMode === DisplayMode.Step) {
+      const hasLimit = selectedPlacement?.spec?.numberOfClusters !== undefined
+      const matchedLabel =
+        !selectedPlacement || !selectedPlacementName || matchedCount === undefined
+          ? '-'
+          : hasLimit
+            ? t('{{matched}} of {{total}} clusters', { matched: matchedCount, total: totalClusters })
+            : t('{{count}} cluster', { count: matchedCount })
+
+      setFooterContent(
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '1rem' }}>
+          <span>{t('Matched by Placement')}:</span>{' '}
+          {error ? (
+            <Tooltip content={error.message || t('An unknown error occurred.')}>
+              <Alert variant="warning" isInline isPlain title={t('Unable to determine cluster matches.')} />
+            </Tooltip>
+          ) : matchedLabel === '-' ? (
+            <span>{matchedLabel}</span>
+          ) : (
+            <Button variant={ButtonVariant.link} isInline onClick={openMatchedModal} style={{ padding: 0 }}>
+              {matchedLabel}
+            </Button>
+          )}
+        </div>
+      )
+    } else {
+      setFooterContent(undefined)
+    }
+    return () => setFooterContent(undefined)
+  }, [
+    displayMode,
+    selectedPlacement,
+    selectedPlacementName,
+    loading,
+    matchedCount,
+    totalClusters,
+    error,
+    setFooterContent,
+    openMatchedModal,
+    t,
+  ])
 
   if (!path) {
     return null
   }
 
   return (
-    <WizSelect
-      path={path}
-      label={t('Existing placement')}
-      placeholder={t('Select the existing placement')}
-      options={props.placements.map((placement) => placement.metadata?.name ?? '')}
-    />
+    <>
+      <WizSelect
+        path={path}
+        label={t('Existing placement')}
+        placeholder={t('Select the existing placement')}
+        options={props.placements.map((placement) => placement.metadata?.name ?? '')}
+      />
+      <MatchedClustersModal
+        isOpen={isMatchedClustersModalOpen}
+        onClose={() => setIsMatchedClustersModalOpen(false)}
+        matchedClusters={matched}
+        notMatchedClusters={notMatched}
+        totalClusters={totalClusters}
+      />
+    </>
   )
 }
 
