@@ -73,13 +73,16 @@ get_cluster_namespace() {
 
 find_admin_kubeconfig_secret() {
   local NAMESPACE="$1"
-
-  oc get secrets \
-    -n "${NAMESPACE}" \
+  local SECRET_NAME
+  SECRET_NAME=$(oc get secrets -n "${NAMESPACE}" \
     --no-headers \
     -o custom-columns="NAME:.metadata.name" | \
     grep '\-admin-kubeconfig$' | \
-    head -n 1
+    head -n 1 || true)
+  if [[ -z "${SECRET_NAME}" ]]; then
+    fail "No admin kubeconfig secret found in namespace ${NAMESPACE}"
+  fi
+  echo "${SECRET_NAME}"
 }
 
 extract_kubeconfig() {
@@ -116,19 +119,19 @@ copy_pull_secret() {
 }
 
 copy_image_digest_mirror_set() {
-  log "Copying ImageDigestMirrorSets"
+  log "Replacing ImageDigestMirrorSet spec"
 
-  local IDMS_FILE="${WORKDIR}/idms.yaml"
+  SPEC=$(
+    oc --kubeconfig="${HUB_KUBECONFIG}" \
+      get imagedigestmirrorset image-mirror-custom \
+      -o jsonpath='{.spec}' | \
+      jq -c .
+  )
 
-  if oc --kubeconfig="${HUB_KUBECONFIG}" \
-    get imagedigestmirrorsets.config.openshift.io \
-    -o yaml > "${IDMS_FILE}"; then
-
-    if [[ -s "${IDMS_FILE}" ]]; then
-      oc --kubeconfig="${MANAGED_KUBECONFIG}" \
-        apply -f "${IDMS_FILE}"
-    fi
-  fi
+  oc --kubeconfig="${MANAGED_KUBECONFIG}" \
+    patch imagedigestmirrorset image-mirror-custom \
+    --type merge \
+    -p "{\"spec\":${SPEC}}"
 }
 
 cleanup_old_klusterlet() {
@@ -142,9 +145,13 @@ cleanup_old_klusterlet() {
     delete namespace open-cluster-management-agent-addon \
     --ignore-not-found=true
 
-  oc --kubeconfig="${MANAGED_KUBECONFIG}" \
-    delete klusterlet klusterlet \
-    --ignore-not-found=true
+  if oc --kubeconfig="${MANAGED_KUBECONFIG}" \
+    api-resources | grep -q '^klusterlets'; then
+
+    oc --kubeconfig="${MANAGED_KUBECONFIG}" \
+      delete klusterlet klusterlet \
+      --ignore-not-found=true
+  fi
 
   sleep 20
 }
