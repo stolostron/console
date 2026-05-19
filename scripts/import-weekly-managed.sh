@@ -27,11 +27,11 @@ trap cleanup EXIT
 ########################################
 
 WORKDIR="/tmp/rhacm-import"
+unmask 077 # umask 077 sets your file-creation mode mask to be highly restrictive, ensuring that only the file owner has access to any newly created files or directories.
 HUB_CLUSTER_NAME="${HUB_CLUSTER_NAME:-weekly}"
-MANAGED_CLUSTER_NAME="${MANAGED_CLUSTER_NAME:-weekly-managed}"
-CONSOLE_NAMESPACE="${CONSOLE_NAMESPACE:-console-squad}"
+MANAGED_CLUSTER_NAME="${MANAGED_CLUSTER_NAME:-layne-managed}"
 CLUSTERPOOL_NAME="${CLUSTERPOOL_NAME:-cs-aws-420}" # this should be set in cronjob args to alternate each week
-CLUSTERPOOL_TARGET_NAMESPACE="${CLUSTERPOOL_TARGET_NAMESPACE:-$CONSOLE_NAMESPACE}"
+CLUSTERPOOL_TARGET_NAMESPACE="${CLUSTERPOOL_TARGET_NAMESPACE:-console-squad}"
 CLUSTERCLAIM_NAME="${CLUSTERCLAIM_NAME:-$MANAGED_CLUSTER_NAME}"
 CLUSTERCLAIM_LIFETIME="${CLUSTERCLAIM_LIFETIME:-164h}"
 HUB_KUBECONFIG="${WORKDIR}/hub-kubeconfig"
@@ -45,7 +45,6 @@ mkdir -p "${WORKDIR}"
 log "Starting RHACM managed cluster import workflow"
 log "HUB_CLUSTER_NAME=${HUB_CLUSTER_NAME}"
 log "MANAGED_CLUSTER_NAME=${MANAGED_CLUSTER_NAME}"
-log "CONSOLE_NAMESPACE=${CONSOLE_NAMESPACE}"
 log "CLUSTERPOOL_NAME=${CLUSTERPOOL_NAME}"
 log "CLUSTERPOOL_TARGET_NAMESPACE=${CLUSTERPOOL_TARGET_NAMESPACE}"
 log "CLUSTERCLAIM_NAME=${CLUSTERCLAIM_NAME}"
@@ -161,18 +160,23 @@ oc whoami >/dev/null 2>&1 \
 
 if oc get clusterclaim.hive "${CLUSTERCLAIM_NAME}" \
   -n "${CLUSTERPOOL_TARGET_NAMESPACE}" >/dev/null 2>&1; then
+  log "ClusterClaim ${CLUSTERCLAIM_NAME} already exists. Exiting."
+  exit 0
+fi
 
-  log "ClusterClaim already exists"
-else
-  log "Creating ClusterClaim ${CLUSTERCLAIM_NAME}"
-
-INIT_POOL_SIZE=$(oc get clusterpool.hive -n "${CLUSTERPOOL_TARGET_NAMESPACE}" "${CLUSTERPOOL_NAME}" -o jsonpath='{.spec.size}')
+INIT_POOL_SIZE=$(
+  oc get clusterpool.hive \
+    -n "${CLUSTERPOOL_TARGET_NAMESPACE}" \
+    "${CLUSTERPOOL_NAME}" \
+    -o jsonpath='{.spec.size}'
+)
 if ((INIT_POOL_SIZE < 1)); then
   log "ClusterPool "${CLUSTERPOOL_NAME}" does not meet the minimum of 1. Increasing the size of the pool."
   oc scale clusterpool.hive "${CLUSTERPOOL_NAME}" -n "${CLUSTERPOOL_TARGET_NAMESPACE}" --replicas="1"
 fi
 # Note ClusterPools are scaled down daily via collective cluster CronJob. We can leave the clean up to that scal down job.
 
+log "Creating ClusterClaim ${CLUSTERCLAIM_NAME}"
   cat <<EOF | oc apply -f -
 apiVersion: hive.openshift.io/v1
 kind: ClusterClaim
@@ -182,20 +186,20 @@ metadata:
   annotations:
     cluster.open-cluster-management.io/createmanagedcluster: 'false'
   labels:
-    cluster.open-cluster-management.io/clusterset: console-squad
+    cluster.open-cluster-management.io/clusterset: ${CLUSTERPOOL_TARGET_NAMESPACE}
 spec:
   clusterPoolName: ${CLUSTERPOOL_NAME}
   lifetime: ${CLUSTERCLAIM_LIFETIME}
   subjects:
     - kind: ServiceAccount
       name: kevinfcormier
-      namespace: console-squad
+      namespace: ${CLUSTERPOOL_TARGET_NAMESPACE}
     - apiGroup: rbac.authorization.k8s.io
       kind: Group
       name: console
     - apiGroup: rbac.authorization.k8s.io
       kind: Group
-      name: 'system:serviceaccounts:console-squad'
+      name: 'system:serviceaccounts:${CLUSTERPOOL_TARGET_NAMESPACE}'
 EOF
 fi
 
@@ -426,6 +430,9 @@ oc --kubeconfig="${HUB_KUBECONFIG}" \
   -n "${MANAGED_CLUSTER_NAME}" \
   -o jsonpath='{.data.import\.yaml}' | \
   base64 -d > "${IMPORT_YAML}"
+
+[[ -s "${IMPORT_YAML}" ]] \
+  || fail "Import manifest is empty"
 
 CRDS_DATA=$(
   oc --kubeconfig="${HUB_KUBECONFIG}" \
