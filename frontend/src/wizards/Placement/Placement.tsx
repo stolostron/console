@@ -1,12 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
-  DisplayMode,
   EditMode,
   useData,
-  useDisplayMode,
   useEditMode,
   useItem,
-  useSetFooterContent,
   WizArrayInput,
   WizCheckbox,
   WizCustomWrapper,
@@ -19,7 +16,7 @@ import {
 import { Alert, Button, ButtonVariant, Divider, ExpandableSection, Flex, Label } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import get from 'get-value'
-import { Fragment, ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import { Fragment, ReactNode, useMemo, useState } from 'react'
 import set from 'set-value'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useValidation } from '../../hooks/useValidation'
