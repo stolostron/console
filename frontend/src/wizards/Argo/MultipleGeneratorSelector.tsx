@@ -11,7 +11,7 @@ import { HelperText, HelperTextItem, Title } from '@patternfly/react-core'
 import get from 'get-value'
 import set from 'set-value'
 import { klona } from 'klona/json'
-import { MutableRefObject, useContext, useEffect, useMemo, useRef } from 'react'
+import { MutableRefObject, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import {
   useEditMode,
   ItemContext,
@@ -28,6 +28,9 @@ import {
 import { IResource } from '../common/resources/IResource'
 import { useTranslation } from '../../lib/acm-i18next'
 import { Channel } from './ArgoWizard'
+import { PlacementMatchFooter } from '../Placement/PlacementMatchFooter'
+import { MatchedClustersModal } from '../Placement/MatchedClustersModal'
+import { usePlacementDebug } from '../Placement/usePlacementDebug'
 import { useValidation } from '../../hooks/useValidation'
 import { GitRevisionSelect } from './common/GitRevisionSelect'
 import { IPlacement } from '../common/resources/IPlacement'
@@ -378,18 +381,48 @@ export function ExistingPlacementSelect(props: { placements: IPlacement[] }) {
   const { t } = useTranslation()
   const item = useContext(ItemContext)
   const path = getCDRPlacementPath(item)
+  const [isMatchedClustersModalOpen, setIsMatchedClustersModalOpen] = useState(false)
+
+  const selectedPlacementName = useMemo(
+    () => (path && item ? (get(item, path) as string | undefined) : undefined),
+    [path, item]
+  )
+
+  const selectedPlacement = useMemo(
+    () =>
+      selectedPlacementName ? props.placements.find((p) => p.metadata?.name === selectedPlacementName) : undefined,
+    [selectedPlacementName, props.placements]
+  )
+
+  const debugState = usePlacementDebug(selectedPlacement)
+  const { matched, notMatched, totalClusters } = debugState
 
   if (!path) {
     return null
   }
 
   return (
-    <WizSelect
-      path={path}
-      label={t('Existing placement')}
-      placeholder={t('Select the existing placement')}
-      options={props.placements.map((placement) => placement.metadata?.name ?? '')}
-    />
+    <>
+      <WizSelect
+        path={path}
+        label={t('Existing placement')}
+        placeholder={t('Select the existing placement')}
+        options={props.placements.map((placement) => placement.metadata?.name ?? '')}
+      />
+      <PlacementMatchFooter
+        placement={selectedPlacement}
+        placementName={selectedPlacementName}
+        debugState={debugState}
+        onOpenModal={() => setIsMatchedClustersModalOpen(true)}
+      />
+      <MatchedClustersModal
+        isOpen={isMatchedClustersModalOpen}
+        onClose={() => setIsMatchedClustersModalOpen(false)}
+        matchedClusters={matched}
+        notMatchedClusters={notMatched}
+        totalClusters={totalClusters}
+      />
+    </>
   )
 }
 

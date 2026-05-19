@@ -1,12 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
-  DisplayMode,
   EditMode,
   useData,
-  useDisplayMode,
   useEditMode,
   useItem,
-  useSetFooterContent,
   WizArrayInput,
   WizCheckbox,
   WizCustomWrapper,
@@ -16,10 +13,10 @@ import {
   WizNumberInput,
   WizTextInput,
 } from '@patternfly-labs/react-form-wizard'
-import { Alert, Button, ButtonVariant, Divider, ExpandableSection, Flex, Label, Tooltip } from '@patternfly/react-core'
+import { Alert, Button, ButtonVariant, Divider, ExpandableSection, Flex, Label } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import get from 'get-value'
-import { Fragment, ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import { Fragment, ReactNode, useMemo, useState } from 'react'
 import set from 'set-value'
 import { useTranslation } from '../../lib/acm-i18next'
 import { useValidation } from '../../hooks/useValidation'
@@ -31,6 +28,7 @@ import { MatchExpression, MatchExpressionCollapsed, MatchExpressionSummary } fro
 import './MatchExpression.css'
 import { MatchedClustersModal } from './MatchedClustersModal'
 import { PlacementDebugState, usePlacementDebug } from './usePlacementDebug'
+import { PlacementMatchFooter } from './PlacementMatchFooter'
 
 function TolerationCollapsed() {
   const toleration = useItem() as Toleration
@@ -109,51 +107,18 @@ export function Placement(props: {
   const placement = useItem() as IPlacement
   const isClusterSet = placement.spec?.clusterSets?.length
   const editMode = useEditMode()
-  const displayMode = useDisplayMode()
   const { update } = useData()
   const [isMatchedClustersModalOpen, setIsMatchedClustersModalOpen] = useState(false)
   const [isTolerationsExpanded, setIsTolerationsExpanded] = useState(true)
   const featureEnabled = props.showPlacementPreview === true
-  const ownsDebugUI = featureEnabled && !props.placementDebugState
-  const ownDebugState = usePlacementDebug(ownsDebugUI ? placement : undefined)
-  const { matched, notMatched, totalClusters, matchedCount, error } = props.placementDebugState ?? ownDebugState
+  const ownDebugState = usePlacementDebug(featureEnabled && !props.placementDebugState ? placement : undefined)
+  const debugState = props.placementDebugState ?? ownDebugState
+  const { matched, notMatched, totalClusters, matchedCount, error } = debugState
 
   const { t } = useTranslation()
   const { validateKubernetesResourceName } = useValidation()
 
   const hasLimit = placement.spec?.numberOfClusters !== undefined
-  const matchedLabel =
-    matchedCount === undefined
-      ? '-'
-      : hasLimit
-        ? t('{{matched}} of {{total}} clusters', { matched: matchedCount, total: totalClusters })
-        : t('{{count}} cluster', { count: matchedCount })
-
-  const setFooterContent = useSetFooterContent()
-  const openMatchedModal = useCallback(() => setIsMatchedClustersModalOpen(true), [])
-
-  useEffect(() => {
-    if (!ownsDebugUI) return
-    if (displayMode === DisplayMode.Step) {
-      setFooterContent(
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '1rem' }}>
-          <span>{t('Matched by Placement')}:</span>{' '}
-          {error ? (
-            <Tooltip content={error.message || t('An unknown error occurred.')}>
-              <Alert variant="warning" isInline isPlain title={t('Unable to determine cluster matches.')} />
-            </Tooltip>
-          ) : (
-            <Button variant={ButtonVariant.link} isInline onClick={openMatchedModal} style={{ padding: 0 }}>
-              {matchedLabel}
-            </Button>
-          )}
-        </div>
-      )
-    } else {
-      setFooterContent(undefined)
-    }
-    return () => setFooterContent(undefined)
-  }, [ownsDebugUI, displayMode, matchedLabel, error, setFooterContent, openMatchedModal, t])
 
   return (
     <Fragment>
@@ -354,6 +319,14 @@ export function Placement(props: {
         path="spec.numberOfClusters"
       />
 
+      {featureEnabled && !props.placementDebugState && (
+        <PlacementMatchFooter
+          placement={placement}
+          placementName={placement.metadata?.name}
+          debugState={debugState}
+          onOpenModal={() => setIsMatchedClustersModalOpen(true)}
+        />
+      )}
       {featureEnabled && (
         <MatchedClustersModal
           isOpen={isMatchedClustersModalOpen}
