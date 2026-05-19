@@ -30,7 +30,7 @@ WORKDIR="/tmp/rhacm-import"
 HUB_CLUSTER_NAME="${HUB_CLUSTER_NAME:-weekly}"
 MANAGED_CLUSTER_NAME="${MANAGED_CLUSTER_NAME:-weekly-managed}"
 CONSOLE_NAMESPACE="${CONSOLE_NAMESPACE:-console-squad}"
-CLUSTERPOOL_NAME="${CLUSTERPOOL_NAME:-cs-aws-422}"
+CLUSTERPOOL_NAME="${CLUSTERPOOL_NAME:-cs-aws-420}" # this should be set in cronjob args to alternate each week
 CLUSTERPOOL_TARGET_NAMESPACE="${CLUSTERPOOL_TARGET_NAMESPACE:-$CONSOLE_NAMESPACE}"
 CLUSTERCLAIM_NAME="${CLUSTERCLAIM_NAME:-$MANAGED_CLUSTER_NAME}"
 CLUSTERCLAIM_LIFETIME="${CLUSTERCLAIM_LIFETIME:-164h}"
@@ -97,15 +97,22 @@ extract_kubeconfig() {
 }
 
 copy_pull_secret() {
-  log "Copying pull-secret to managed cluster"
+  log "Patching managed cluster pull-secret with hub cluster dockerconfigjson"
 
-  oc --kubeconfig="${HUB_KUBECONFIG}" \
-    get secret pull-secret \
-    -n openshift-config \
-    -o yaml > "${WORKDIR}/pull-secret.yaml"
+  # Get the hub cluster pull-secret dockerconfigjson
+  HUB_DOCKERCONFIGJSON=$(
+    oc --kubeconfig="${HUB_KUBECONFIG}" \
+      get secret pull-secret \
+      -n openshift-config \
+      -o jsonpath='{.data.\.dockerconfigjson}'
+  )
 
+  # Patch the managed cluster pull-secret
   oc --kubeconfig="${MANAGED_KUBECONFIG}" \
-    apply -f "${WORKDIR}/pull-secret.yaml"
+    patch secret pull-secret \
+    -n openshift-config \
+    --type='merge' \
+    -p "{\"data\":{\".dockerconfigjson\":\"${HUB_DOCKERCONFIGJSON}\"}}"
 }
 
 copy_image_digest_mirror_set() {
@@ -159,6 +166,13 @@ if oc get clusterclaim.hive "${CLUSTERCLAIM_NAME}" \
 else
   log "Creating ClusterClaim ${CLUSTERCLAIM_NAME}"
 
+INIT_POOL_SIZE=$(oc get clusterpool.hive -n "${CLUSTERPOOL_TARGET_NAMESPACE}" "${CLUSTERPOOL_NAME}" -o jsonpath='{.spec.size}')
+if ((INIT_POOL_SIZE < 1)); then
+  log "ClusterPool "${CLUSTERPOOL_NAME}" does not meet the minimum of 1. Increasing the size of the pool."
+  oc scale clusterpool.hive "${CLUSTERPOOL_NAME}" -n "${CLUSTERPOOL_TARGET_NAMESPACE}" --replicas="1"
+fi
+# Note ClusterPools are scaled down daily via collective cluster CronJob. We can leave the clean up to that scal down job.
+
   cat <<EOF | oc apply -f -
 apiVersion: hive.openshift.io/v1
 kind: ClusterClaim
@@ -172,6 +186,16 @@ metadata:
 spec:
   clusterPoolName: ${CLUSTERPOOL_NAME}
   lifetime: ${CLUSTERCLAIM_LIFETIME}
+  subjects:
+    - kind: ServiceAccount
+      name: kevinfcormier
+      namespace: console-squad
+    - apiGroup: rbac.authorization.k8s.io
+      kind: Group
+      name: console
+    - apiGroup: rbac.authorization.k8s.io
+      kind: Group
+      name: 'system:serviceaccounts:console-squad'
 EOF
 fi
 
@@ -179,18 +203,18 @@ fi
 # Wait For ClusterClaim Fulfillment
 ########################################
 
-log "Waiting for ClusterClaim fulfillment"
+log "Polling for ClusterClaim fulfillment (60min)"
 
 MANAGED_NAMESPACE=""
-
-for i in {1..90}; do
+for i in {1..120}; do
+  log "ClusterClaim check ${i}/120"
   MANAGED_NAMESPACE=$(get_cluster_namespace "${CLUSTERCLAIM_NAME}")
 
   if [[ -n "${MANAGED_NAMESPACE}" ]]; then
     break
   fi
 
-  sleep 20
+  sleep 30
 done
 
 [[ -n "${MANAGED_NAMESPACE}" ]] \
