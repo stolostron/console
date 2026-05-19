@@ -394,7 +394,8 @@ export function ExistingPlacementSelect(props: { placements: IPlacement[] }) {
     [selectedPlacementName, props.placements]
   )
 
-  const { matched, notMatched, totalClusters } = usePlacementDebug(selectedPlacement)
+  const debugState = usePlacementDebug(selectedPlacement)
+  const { matched, notMatched, totalClusters } = debugState
 
   if (!path) {
     return null
@@ -411,6 +412,7 @@ export function ExistingPlacementSelect(props: { placements: IPlacement[] }) {
       <PlacementMatchFooter
         placement={selectedPlacement}
         placementName={selectedPlacementName}
+        debugState={debugState}
         onOpenModal={() => setIsMatchedClustersModalOpen(true)}
       />
       <MatchedClustersModal
