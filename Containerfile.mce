@@ -1,5 +1,5 @@
 # Copyright Contributors to the Open Cluster Management project
-ARG NODE_BASE=registry.redhat.io/ubi9/nodejs-24-minimal@sha256:920a22bf794c1e3806b1279a26337ba02d18af7370df18045f5ffd5bf5d54dbc
+ARG NODE_BASE=registry.redhat.io/ubi9/nodejs-24-minimal@sha256:db6b235ed5ff08db78a85979377ba4e5241d032b375c945b1b1746d7a7fd9e24
 
 FROM ${NODE_BASE} as build-base
 USER root
