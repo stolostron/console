@@ -119,19 +119,44 @@ copy_pull_secret() {
 }
 
 copy_image_digest_mirror_set() {
-  log "Replacing ImageDigestMirrorSet spec"
+  log "Syncing ImageDigestMirrorSet spec"
 
+  local IDMS_NAME="image-mirror-custom"
+  # Get the spec from hub cluster
+  local SPEC
   SPEC=$(
     oc --kubeconfig="${HUB_KUBECONFIG}" \
-      get imagedigestmirrorset image-mirror-custom \
-      -o jsonpath='{.spec}' | \
-      jq -c .
+      get imagedigestmirrorset "${IDMS_NAME}" \
+      -o json | jq -c '.spec'
   )
 
-  oc --kubeconfig="${MANAGED_KUBECONFIG}" \
-    patch imagedigestmirrorset image-mirror-custom \
-    --type merge \
-    -p "{\"spec\":${SPEC}}"
+  if [[ -z "${SPEC}" || "${SPEC}" == "null" ]]; then
+    log "Failed to retrieve ImageDigestMirrorSet spec from hub cluster"
+    return 1
+  fi
+
+  # Check if the resource exists on the managed cluster
+  if oc --kubeconfig="${MANAGED_KUBECONFIG}" \
+      get imagedigestmirrorset "${IDMS_NAME}" >/dev/null 2>&1; then
+
+    log "Patching existing ImageDigestMirrorSet ${IDMS_NAME}"
+    oc --kubeconfig="${MANAGED_KUBECONFIG}" \
+      patch imagedigestmirrorset "${IDMS_NAME}" \
+      --type merge \
+      -p "{\"spec\":${SPEC}}"
+
+  else
+    log "Creating ImageDigestMirrorSet ${IDMS_NAME}"
+
+    cat <<EOF | oc --kubeconfig="${MANAGED_KUBECONFIG}" apply -f -
+apiVersion: config.openshift.io/v1
+kind: ImageDigestMirrorSet
+metadata:
+  name: ${IDMS_NAME}
+spec: ${SPEC}
+EOF
+
+  fi
 }
 
 cleanup_old_klusterlet() {
