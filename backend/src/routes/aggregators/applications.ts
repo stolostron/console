@@ -2,8 +2,8 @@
 import { getKubeResources } from '../events'
 import { getOCPApps, isSystemApp, discoverSystemAppNamespacePrefixes } from './applicationsOCP'
 import { getArgoApps } from './applicationsArgo'
-import { Cluster, ClusterDeployment, IResource, ManagedClusterInfo } from '../../resources/resource'
-import { FilterSelections, ITransformedResource } from '../../lib/pagination'
+import type { Cluster, ClusterDeployment, IResource, ManagedClusterInfo } from '../../resources/resource'
+import type { FilterSelections, ITransformedResource } from '../../lib/pagination'
 import { logger } from '../../lib/logger'
 import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
 

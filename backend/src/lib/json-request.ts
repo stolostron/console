@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { constants } from 'http2'
-import { Agent } from 'https'
+import { constants } from 'node:http2'
+import { Agent } from 'node:https'
 import { HttpsProxyAgent } from 'https-proxy-agent'
-import { HeadersInit } from 'node-fetch'
+import type { HeadersInit } from 'node-fetch'
 import { fetchRetry } from './fetch-retry'
 import { getCACertificate } from './serviceAccountToken'
 
