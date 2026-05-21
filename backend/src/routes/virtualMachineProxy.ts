@@ -1,13 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { constants, Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders } from 'http2'
+import type { Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders } from 'node:http2'
+import { constants } from 'node:http2'
 import { jsonPut, jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { respond, respondInternalServerError } from '../lib/respond'
 import { getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
-import { ResourceList } from '../resources/resource-list'
-import { Route } from '../resources/route'
-import { Secret } from '../resources/secret'
+import type { ResourceList } from '../resources/resource-list'
+import type { Route } from '../resources/route'
+import type { Secret } from '../resources/secret'
 import { canAccess } from './events'
 
 const { HTTP_STATUS_INTERNAL_SERVER_ERROR } = constants
@@ -105,7 +106,7 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
                 res.end(JSON.stringify(results.body))
               }
             })
-            .catch((err: Error) => {
+            .catch((err: Error): undefined => {
               logger.error({ msg: 'Error on VirtualMachine action request', error: err.message })
               respondInternalServerError(req, res)
               return undefined

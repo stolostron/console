@@ -3,13 +3,13 @@ import {
   constants,
   Http2ServerRequest,
   Http2ServerResponse,
-  IncomingHttpHeaders,
-  OutgoingHttpHeaders,
-  ServerHttp2Stream,
-  ServerStreamResponseOptions,
-} from 'http2'
+  type IncomingHttpHeaders,
+  type OutgoingHttpHeaders,
+  type ServerHttp2Stream,
+  type ServerStreamResponseOptions,
+} from 'node:http2'
 import nock from 'nock'
-import { Duplex } from 'stream'
+import { Duplex } from 'node:stream'
 import { requestHandler, stop } from '../src/app'
 
 export async function request(

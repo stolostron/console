@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { config } from 'dotenv'
-import { cpus, totalmem } from 'os'
+import { cpus, totalmem } from 'node:os'
 import { start, stop } from '../app'
 import { logger } from './logger'
 

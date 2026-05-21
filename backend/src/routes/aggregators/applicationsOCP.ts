@@ -4,9 +4,9 @@ import { logger } from '../../lib/logger'
 import { getMultiClusterEngine } from '../../lib/multi-cluster-engine'
 import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
 import { getPagedSearchResources } from '../../lib/search'
-import { IResource } from '../../resources/resource'
+import type { IResource } from '../../resources/resource'
 import { getKubeResources } from '../events'
-import { AppColumns, ApplicationCacheType, generateTransforms, MODE } from './applications'
+import { AppColumns, type ApplicationCacheType, generateTransforms, MODE } from './applications'
 
 // query limit per letter group
 const OCP_APP_QUERY_LIMIT = 20000

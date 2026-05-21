@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import { HttpsProxyAgent } from 'https-proxy-agent'
 import { jsonPost, jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { respondInternalServerError } from '../lib/respond'
 import { getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
-import { ResourceList } from '../resources/resource-list'
-import { Secret } from '../resources/secret'
+import type { ResourceList } from '../resources/resource-list'
+import type { Secret } from '../resources/secret'
 interface Credential {
   auths: {
     'cloud.openshift.com': {
