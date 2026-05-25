@@ -10,11 +10,17 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
+const requiredEnvVars = ['RHACM_URL', 'OCP_USERNAME', 'OCP_PASSWORD'] as const
+const missingVars = requiredEnvVars.filter((key) => !process.env[key])
+if (missingVars.length > 0) {
+  throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`)
+}
+
 const RHACM_URL = process.env.RHACM_URL!
 const OCP_USERNAME = process.env.OCP_USERNAME!
 const OCP_PASSWORD = process.env.OCP_PASSWORD!
 
-async function loginToOCP(page: Page) {
+async function loginToOCP(page: Page): Promise<void> {
   await page.goto(RHACM_URL, { waitUntil: 'networkidle' })
 
   // OCP OAuth login page — may redirect through an identity provider.
