@@ -119,7 +119,7 @@ export async function getOCPApps(
         .split(';')
         .map((label: string) => {
           const [annotation, value] = label.split('=')
-          return { annotation, value } as { annotation: string; value: string }
+          return { annotation, value }
         })
 
       const { itemLabel, isManagedByHelm, argoInstanceLabelValue } = getValues(labels)

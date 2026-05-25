@@ -1,10 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import type { Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders } from 'http2'
+import type { Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders } from 'node:http2'
 import { constants } from 'node:http2'
-import type { RequestOptions } from 'https'
-import { Agent, request } from 'node:https'
+import { Agent, request, type RequestOptions } from 'node:https'
 import { pipeline } from 'node:stream'
-import { URL } from 'url'
+import { URL } from 'node:url'
 import { logger } from '../lib/logger'
 import { notFound, respondInternalServerError, unauthorized } from '../lib/respond'
 import { getServiceCACertificate } from '../lib/serviceAccountToken'

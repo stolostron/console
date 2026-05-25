@@ -139,7 +139,7 @@ export function paginate(
     }
 
     // because rbac is expensive. perform it only on the resources the user wants to see
-    items = (await getAuthorizedResources(token, items, startIndex, endIndex)) as unknown as ITransformedResource[]
+    items = await getAuthorizedResources(token, items, startIndex, endIndex)
 
     // remove the transform work attribute
     items = items.map(({ transform, remoteClusters, ...keepAttrs }) => keepAttrs)

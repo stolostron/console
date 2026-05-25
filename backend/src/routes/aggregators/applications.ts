@@ -319,7 +319,7 @@ function getApplicationClusters(
       break
     case 'appset': //(also argo)
       if ('spec' in resource) {
-        return getAppSetCluster(resource, placementDecisions as IArgoApplication[])
+        return getAppSetCluster(resource, placementDecisions)
       }
       break
     case 'subscription':

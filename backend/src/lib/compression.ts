@@ -9,7 +9,7 @@ import {
   createGzip,
   createInflate,
   type Zlib,
-} from 'zlib'
+} from 'node:zlib'
 import { logger } from './logger'
 
 export function getDecodeStream(stream: Readable, contentEncoding?: string | string[]): Readable {

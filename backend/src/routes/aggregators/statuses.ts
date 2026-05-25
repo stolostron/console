@@ -43,7 +43,7 @@ export function requestAggregatedStatuses(
       })
     }
     // filter by rbac
-    items = (await getAuthorizedResources(token, items, 0, items.length)) as unknown as ITransformedResource[]
+    items = await getAuthorizedResources(token, items, 0, items.length)
 
     // count types
     const filterCounts: FilterCounts = { type: {}, cluster: {} }
