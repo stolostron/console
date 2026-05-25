@@ -3,7 +3,7 @@ import type { Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders } fro
 import { constants } from 'node:http2'
 import { request, type RequestOptions } from 'node:https'
 import { pipeline } from 'node:stream'
-import { URL } from 'url'
+import { URL } from 'node:url'
 import { logger } from '../lib/logger'
 import { getMultiClusterHub } from '../lib/multi-cluster-hub'
 import { notFound } from '../lib/respond'

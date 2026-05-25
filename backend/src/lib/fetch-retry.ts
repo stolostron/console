@@ -78,7 +78,7 @@ export function fetchRetry(url: RequestInfo, init?: RequestInit, retry?: number)
               break
           }
         } else {
-          reject(Error(String(err)))
+          reject(new Error(String(err)))
         }
       } finally {
         if (delay === 0) delay = 100
