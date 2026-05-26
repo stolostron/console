@@ -197,30 +197,29 @@ oc whoami >/dev/null 2>&1 \
 if oc get clusterclaim.hive "${CLUSTERCLAIM_NAME}" \
   -n "${CLUSTERPOOL_TARGET_NAMESPACE}" >/dev/null 2>&1; then
 
-  log "ClusterClaim ${CLUSTERCLAIM_NAME} already exists. Exiting."
-  exit 0
-fi
+  log "ClusterClaim ${CLUSTERCLAIM_NAME} already exists. Skipping creation."
+else
 
-INIT_POOL_SIZE=$(
-  oc get clusterpool.hive \
-    -n "${CLUSTERPOOL_TARGET_NAMESPACE}" \
-    "${CLUSTERPOOL_NAME}" \
-    -o jsonpath='{.spec.size}'
-)
+  INIT_POOL_SIZE=$(
+    oc get clusterpool.hive \
+      -n "${CLUSTERPOOL_TARGET_NAMESPACE}" \
+      "${CLUSTERPOOL_NAME}" \
+      -o jsonpath='{.spec.size}'
+  )
 
-if (( INIT_POOL_SIZE < 1 )); then
-  log "ClusterPool ${CLUSTERPOOL_NAME} does not meet the minimum of 1. Increasing the size of the pool."
+  if (( INIT_POOL_SIZE < 1 )); then
+    log "ClusterPool ${CLUSTERPOOL_NAME} does not meet the minimum of 1. Increasing the size of the pool."
 
-  oc scale clusterpool.hive "${CLUSTERPOOL_NAME}" \
-    -n "${CLUSTERPOOL_TARGET_NAMESPACE}" \
-    --replicas="1"
-fi
+    oc scale clusterpool.hive "${CLUSTERPOOL_NAME}" \
+      -n "${CLUSTERPOOL_TARGET_NAMESPACE}" \
+      --replicas="1"
+  fi
 
-# ClusterPools are scaled down daily via separate cleanup automation.
+  # ClusterPools are scaled down daily via separate cleanup automation.
 
-log "Creating ClusterClaim ${CLUSTERCLAIM_NAME}"
+  log "Creating ClusterClaim ${CLUSTERCLAIM_NAME}"
 
-cat <<EOF | oc apply -f -
+  cat <<EOF | oc apply -f -
 apiVersion: hive.openshift.io/v1
 kind: ClusterClaim
 metadata:
@@ -244,6 +243,8 @@ spec:
       kind: Group
       name: system:serviceaccounts:${CLUSTERPOOL_TARGET_NAMESPACE}
 EOF
+
+fi
 
 ########################################
 # Wait For ClusterClaim Fulfillment
