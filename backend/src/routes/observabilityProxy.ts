@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { constants, Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders } from 'http2'
-import { request, RequestOptions } from 'https'
+import type { Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders } from 'node:http2'
+import { constants } from 'node:http2'
+import { request, type RequestOptions } from 'node:https'
 import { pipeline } from 'stream'
 import { URL } from 'url'
 import { jsonRequest } from '../lib/json-request'
@@ -8,7 +9,7 @@ import { logger } from '../lib/logger'
 import { notFound, unauthorized } from '../lib/respond'
 import { getCACertificate } from '../lib/serviceAccountToken'
 import { getToken } from '../lib/token'
-import { IResource } from '../resources/resource'
+import type { IResource } from '../resources/resource'
 
 const proxyHeaders = [
   constants.HTTP2_HEADER_ACCEPT,

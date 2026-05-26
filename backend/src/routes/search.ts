@@ -1,8 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { constants, Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders } from 'http2'
-import { request, RequestOptions } from 'https'
-import { pipeline } from 'stream'
-import { URL } from 'url'
+import type { Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders } from 'node:http2'
+import { constants } from 'node:http2'
+import { request, type RequestOptions } from 'node:https'
+import { pipeline } from 'node:stream'
+import { URL } from 'node:url'
 import { logger } from '../lib/logger'
 import { getMultiClusterHub } from '../lib/multi-cluster-hub'
 import { notFound } from '../lib/respond'

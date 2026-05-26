@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { readFileSync } from 'fs'
-import { rootCertificates } from 'tls'
+import { readFileSync } from 'node:fs'
+import { rootCertificates } from 'node:tls'
 import { logger } from './logger'
 
 function readServiceAccountFile(name: string, defaultValue: string, exitOnError?: boolean): string {

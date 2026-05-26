@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
-import { Agent } from 'https'
+import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
+import { constants } from 'node:http2'
+import { Agent } from 'node:https'
 import { FetchError } from 'node-fetch'
 import { fetchRetry } from '../lib/fetch-retry'
 import { logger } from '../lib/logger'
