@@ -81,11 +81,28 @@ function reviewValuesEqualAtPath(a: unknown, b: unknown): boolean {
   if (typeof a !== 'object' || typeof b !== 'object') {
     return a === b
   }
-  try {
-    return JSON.stringify(a) === JSON.stringify(b)
-  } catch {
-    return false
+  return stableDeepEqual(a, b)
+}
+
+function stableDeepEqual(a: unknown, b: unknown): boolean {
+  if (Object.is(a, b)) return true
+  if (Array.isArray(a) && Array.isArray(b)) {
+    return a.length === b.length && a.every((value, index) => stableDeepEqual(value, b[index]))
   }
+  if (a && b && typeof a === 'object' && typeof b === 'object') {
+    const aRecord = a as Record<string, unknown>
+    const bRecord = b as Record<string, unknown>
+    const aKeys = Object.keys(aRecord).sort()
+    const bKeys = Object.keys(bRecord).sort()
+    return (
+      aKeys.length === bKeys.length &&
+      aKeys.every(
+        (key, index) => key === bKeys[index] && stableDeepEqual(aRecord[key], bRecord[key])
+      )
+    )
+  }
+  return false
+}
 }
 
 function isReviewInputNode(node: WizardDomTreeNode): node is WizardInputDomNode {

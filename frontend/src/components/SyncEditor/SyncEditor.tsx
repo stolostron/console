@@ -232,7 +232,12 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           }
 
           // when user is pasting in a complete yaml, do we need to make sure the resource has a namespace
-          if (selection?.startColumn === 1 && selection?.endLineNumber === model?.getLineCount()) {
+          if (
+            selection?.startLineNumber === 1 &&
+            selection?.startColumn === 1 &&
+            selection?.endLineNumber === model?.getLineCount() &&
+            selection?.endColumn === (model?.getLineMaxColumn(model.getLineCount() || 1) ?? selection?.endColumn)
+          ) {
             if (autoCreateNs) {
               let nameInx
               let hasMetadata = false
@@ -375,7 +380,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   // if editor loses focus, do form changes immediately
   useEffect(() => {
     if (activeEditor) {
-      activeEditor.onDidBlurEditorWidget(() => {
+      const handle = activeEditor.onDidBlurEditorWidget(() => {
         const editorHasFocus = !!document.querySelector('.monaco-editor.focused')
         const activeId = document.activeElement?.id as string
         if (
@@ -388,6 +393,9 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           setEditorHasFocus(false)
         }
       })
+      return () => {
+        handle?.dispose()
+      }
     }
   }, [activeEditor, setClickedOnFilteredLine, setEditorHasFocus])
 
@@ -696,7 +704,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           // decorate errors, changes
           const squigglyTooltips = decorate(
             true,
-            editorHasFocus,
+            editorHasFocus || diffEditorHasFocus,
             activeEditor,
             activeMonaco,
             [...allErrors, ...customErrors],
