@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ITransformedResource } from './pagination'
-import { ServerSideEvent } from './server-side-events'
+import type { ITransformedResource } from './pagination'
+import type { ServerSideEvent } from './server-side-events'
 
 export function getGiganticEvents(): ServerSideEvent[] {
   const MOCK_CLUSTERS = Number(process.env.MOCK_CLUSTERS)

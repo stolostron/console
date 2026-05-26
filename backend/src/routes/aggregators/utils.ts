@@ -1,9 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { getKubeResources, getHubClusterName } from '../events'
-import { IApplicationSet, Cluster, ClusterDeployment, IResource, ManagedClusterInfo } from '../../resources/resource'
-import { ITransformedResource } from '../../lib/pagination'
-import {
-  AppColumns,
+import type {
+  IApplicationSet,
+  Cluster,
+  ClusterDeployment,
+  IResource,
+  ManagedClusterInfo,
+} from '../../resources/resource'
+import type { ITransformedResource } from '../../lib/pagination'
+import type {
   ApplicationCache,
   ApplicationCacheType,
   IArgoApplication,
@@ -11,6 +16,7 @@ import {
   IOCPApplication,
   ISubscription,
 } from './applications'
+import { AppColumns } from './applications'
 import { logger } from '../../lib/logger'
 import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
 import { getMultiClusterEngine } from '../../lib/multi-cluster-engine'

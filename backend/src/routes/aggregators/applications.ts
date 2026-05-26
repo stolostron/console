@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { getKubeResources } from '../events'
 import { addOCPQueryInputs, addSystemQueryInputs, cacheOCPApplications } from './applicationsOCP'
-import { IResource } from '../../resources/resource'
-import { FilterSelections, ITransformedResource } from '../../lib/pagination'
+import type { IResource } from '../../resources/resource'
+import type { FilterSelections, ITransformedResource } from '../../lib/pagination'
 import { logger } from '../../lib/logger'
 import { discoverSystemAppNamespacePrefixes, logApplicationCountChanges, transform } from './utils'
-import { getSearchResults, ISearchResult, pingSearchAPI } from '../../lib/search'
+import { getSearchResults, type ISearchResult, pingSearchAPI } from '../../lib/search'
 import { addArgoQueryInputs, cacheArgoApplications } from './applicationsArgo'
 import { getGiganticApps } from '../../lib/gigantic'
 

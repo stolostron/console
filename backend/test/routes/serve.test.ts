@@ -1,13 +1,13 @@
-import { createBrotliCompress, createGzip } from 'zlib'
-import { createReadStream, createWriteStream } from 'fs'
+import { createBrotliCompress, createGzip } from 'node:zlib'
+import { createReadStream, createWriteStream } from 'node:fs'
 
 /* Copyright Contributors to the Open Cluster Management project */
-import { constants } from 'http2'
+import { constants } from 'node:http2'
 import { getDecodeStream } from '../../src/lib/compression'
-import { pipeline } from 'stream'
+import { pipeline } from 'node:stream'
 import rawBody from 'raw-body'
 import { request } from '../mock-request'
-import { unlink } from 'fs/promises'
+import { unlink } from 'node:fs/promises'
 
 describe(`serve Route`, function () {
   it(`serves index.html with correct headers`, async function () {

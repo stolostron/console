@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { constants, Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders } from 'http2'
+import type { Http2ServerRequest, Http2ServerResponse, OutgoingHttpHeaders } from 'node:http2'
+import { constants } from 'node:http2'
 import { jsonPut, jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { getMultiClusterEngine } from '../lib/multi-cluster-engine'
@@ -7,8 +8,8 @@ import { respond, respondInternalServerError } from '../lib/respond'
 import { getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getServiceAgent } from '../lib/agent'
 import { getAuthenticatedToken } from '../lib/token'
-import { ResourceList } from '../resources/resource-list'
-import { Secret } from '../resources/secret'
+import type { ResourceList } from '../resources/resource-list'
+import type { Secret } from '../resources/secret'
 import { canAccess } from './events'
 
 const { HTTP_STATUS_INTERNAL_SERVER_ERROR } = constants
