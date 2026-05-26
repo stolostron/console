@@ -2,7 +2,7 @@
 import { Http2ServerRequest, Http2ServerResponse } from 'http2'
 import { applicationCache } from './applications'
 import { getApplicationClusters, getApplicationsHelper, getApplicationType, getClusters } from './utils'
-import { Cluster, IApplicationSet, IResource, IUIData } from '../../resources/resource'
+import type { Cluster, IApplicationSet, IResource, IUIData } from '../../resources/resource'
 import { getHubClusterName, getKubeResources } from '../events'
 import { getAppSetAppsMap, getAppSetRelatedResources } from './applicationsArgo'
 import { inflateApps } from '../../lib/compression'

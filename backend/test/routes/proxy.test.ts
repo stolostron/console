@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { request } from '../mock-request'
 import nock from 'nock'
-import { constants, Http2ServerRequest, Http2ServerResponse, ServerHttp2Stream } from 'http2'
-import { Duplex } from 'stream'
+import { constants, Http2ServerRequest, Http2ServerResponse, type ServerHttp2Stream } from 'node:http2'
+import { Duplex } from 'node:stream'
 import { requestHandler } from '../../src/app'
 
 // Helper function to create requests without default authorization header

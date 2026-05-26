@@ -1,9 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { logger } from '../../lib/logger'
-import { IResource } from '../../resources/resource'
+import type { IResource } from '../../resources/resource'
 import { getKubeResources, getHubClusterName } from '../events'
-import { AppColumns, ApplicationCacheType, IQuery, SEARCH_QUERY_LIMIT } from './applications'
-import { transform, getClusterMap, ApplicationPageChunk, getNextApplicationPageChunk, cacheRemoteApps } from './utils'
+import { AppColumns, type ApplicationCacheType, type IQuery, SEARCH_QUERY_LIMIT } from './applications'
+import {
+  transform,
+  getClusterMap,
+  type ApplicationPageChunk,
+  getNextApplicationPageChunk,
+  cacheRemoteApps,
+} from './utils'
 
 // getting system apps by its cluster name in cluster chunks
 const REMOTE_CLUSTER_CHUNKS = 10
