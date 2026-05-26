@@ -199,24 +199,6 @@ if oc get clusterclaim.hive "${CLUSTERCLAIM_NAME}" \
 
   log "ClusterClaim ${CLUSTERCLAIM_NAME} already exists. Skipping creation."
 else
-
-  INIT_POOL_SIZE=$(
-    oc get clusterpool.hive \
-      -n "${CLUSTERPOOL_TARGET_NAMESPACE}" \
-      "${CLUSTERPOOL_NAME}" \
-      -o jsonpath='{.spec.size}'
-  )
-
-  if (( INIT_POOL_SIZE < 1 )); then
-    log "ClusterPool ${CLUSTERPOOL_NAME} does not meet the minimum of 1. Increasing the size of the pool."
-
-    oc scale clusterpool.hive "${CLUSTERPOOL_NAME}" \
-      -n "${CLUSTERPOOL_TARGET_NAMESPACE}" \
-      --replicas="1"
-  fi
-
-  # ClusterPools are scaled down daily via separate cleanup automation.
-
   log "Creating ClusterClaim ${CLUSTERCLAIM_NAME}"
 
   cat <<EOF | oc apply -f -
