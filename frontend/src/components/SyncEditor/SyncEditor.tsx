@@ -1,26 +1,26 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { HTMLProps, ReactNode, useRef, useEffect, useState, useCallback, useMemo } from 'react'
 import useResizeObserver from '@react-hook/resize-observer'
-import { CodeEditor, CodeEditorControl, Language } from '@patternfly/react-code-editor'
-import { RedoIcon, UndoIcon, SearchIcon, EyeIcon, EyeSlashIcon, CloseIcon } from '@patternfly/react-icons'
-import { ClipboardCopyButton } from '@patternfly/react-core'
-import { debounce, noop, isEqual, cloneDeep } from 'lodash'
-import { processForm, processUser, ProcessedType } from './process'
+import { CodeEditor, Language } from '@patternfly/react-code-editor'
+import { debounce, isEqual, cloneDeep } from 'lodash'
+import { processForm, processUser, ProcessedType, stringify, normalize } from './process'
+import { SyncEditorDiff, SyncEditorDiffHandle } from './SyncEditorDiff'
+import { SyncEditorToolbar, readShowChangesPreference } from './SyncEditorToolbar'
 import { compileAjvSchemas } from './validation'
 import { getFormChanges, getUserChanges } from './changes'
-import { decorate, getResourceEditorDecorations } from './decorate'
+import { decorate, toModelDeltaDecorations } from './decorate'
 import { setFormValues, updateReferences } from './synchronize'
 import './SyncEditor.css'
 import { useTranslation } from '../../lib/acm-i18next'
 import { ChangeHandler } from 'react-monaco-editor'
-import * as monaco from 'monaco-editor'
+import * as monacoEditor from 'monaco-editor'
 import { editor as editorTypes } from 'monaco-editor'
 import { loader, Monaco } from '@monaco-editor/react'
 import { Schema } from 'ajv'
 import { defineThemes, getTheme, mountTheme, dismountTheme } from '../theme'
 
 // loader can be null in tests
-loader?.config({ monaco })
+loader?.config({ monaco: monacoEditor })
 
 export enum ValidationStatus {
   success = 'success',
@@ -44,9 +44,12 @@ export interface SyncEditorProps extends HTMLProps<HTMLPreElement> {
   autoCreateNs?: boolean
   onClose?: () => void
   onStatusChange?: (status: ValidationStatus) => void
-  onEditorChange?: (editorResources: any) => void
+  /** Second argument is true when the user replaced the full document (paste-all); wizards should pass it to {@link IDataContext.update}. */
+  onEditorChange?: (editorResources: any, resetDefaultSnapshot?: boolean) => void
   /** Wizard review / form dot path used to scroll and highlight the matching YAML region. */
   highlightEditorPath?: string
+  /** Initial wizard resources; when set with variant "toolbar", enables compare-to-default diff view. */
+  defaultResources?: unknown
 }
 
 export function SyncEditor(props: SyncEditorProps): JSX.Element {
@@ -68,14 +71,18 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     onEditorChange,
     onClose,
     highlightEditorPath,
+    defaultResources,
   } = props
   const [editorHighlightPath, setEditorHighlightPath] = useState(() => highlightEditorPath ?? '')
   useEffect(() => {
     setEditorHighlightPath(highlightEditorPath ?? '')
   }, [highlightEditorPath])
   const pageRef = useRef<HTMLDivElement>(null)
+  const syncEditorDiffRef = useRef<SyncEditorDiffHandle>(null)
   const [editor, setEditor] = useState<editorTypes.IStandaloneCodeEditor | null>(null)
   const [monaco, setMonaco] = useState<Monaco | null>(null)
+  const [activeEditor, setActiveEditor] = useState<editorTypes.IStandaloneCodeEditor | null>(null)
+  const [activeMonaco, setActiveMonaco] = useState<Monaco | null>(null)
   if (mock) {
     if (!monaco) {
       setMonaco({
@@ -98,6 +105,9 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   }
   const { t } = useTranslation()
   const editorHadFocus = useRef(false)
+  const diffHadFocus = useRef(false)
+  /** Set before full-document YAML paste; consumed once by {@link reportResourceChanges}. */
+  const resetDefaultSnapshotOnNextReportRef = useRef(false)
   const defaultCopy = useMemo<ReactNode>(() => <span style={{ wordBreak: 'keep-all' }}>{t('Copy')}</span>, [t])
   const copiedCopy = useMemo<ReactNode>(
     () => <span style={{ wordBreak: 'keep-all' }}>{t('Selection copied')}</span>,
@@ -125,10 +135,20 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   const [showFiltered, setShowFiltered] = useState<boolean>(false)
   const [clickedOnFilteredLine, setClickedOnFilteredLine] = useState<boolean>(false)
   const [editorHasFocus, setEditorHasFocus] = useState<boolean>(false)
+  const [diffEditorHasFocus, setDiffEditorHasFocus] = useState<boolean>(false)
   const [editorHasErrors, setEditorHasErrors] = useState<boolean>(false)
   const [showCondensed, setShowCondensed] = useState<boolean>(false)
   const [hasUndo, setHasUndo] = useState<boolean>(false)
   const [hasRedo, setHasRedo] = useState<boolean>(false)
+  const [showChanges, setShowChanges] = useState<boolean>(readShowChangesPreference)
+  const [diffEditorInstanceEpoch, setDiffEditorInstanceEpoch] = useState(0)
+  const onDiffEditorInstanceChange = useCallback(() => setDiffEditorInstanceEpoch((n) => n + 1), [])
+
+  useEffect(() => {
+    if (!(showChanges && defaultResources !== undefined && !mock)) {
+      setDiffEditorHasFocus(false)
+    }
+  }, [showChanges, defaultResources, mock])
 
   // compile schema(s) just once
   const validationRef = useRef<unknown>()
@@ -179,48 +199,46 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         })
       }
     )
-
     window.getEditorValue = () => editor.getValue()
     setEditor(editor)
     setMonaco(monaco)
     layoutEditor(editor)
   }
 
+  const activeEditorContainerDomNode = activeEditor?.getContainerDomNode() ?? null
+
   useEffect(() => {
-    if (editor && monaco) {
+    if (activeEditor && activeMonaco && activeEditorContainerDomNode) {
       // if user is pasting a certificate, fix the indent
-      const domNode = editor.getDomNode()
-      domNode?.addEventListener(
-        'paste',
-        (event: ClipboardEvent) => {
-          const selection = editor.getSelection()
-          const pasteText = event.clipboardData?.getData('text/plain').trim()
+      const domNode = activeEditorContainerDomNode
+      const onPaste = (event: ClipboardEvent) => {
+        const selection = activeEditor.getSelection()
+        const pasteText = event.clipboardData?.getData('text/plain').trim()
 
-          if (selection && pasteText) {
-            const model = editor.getModel()
-            const lines = pasteText?.split(/\r?\n/)
-            if (selection.selectionStartLineNumber - 1 > 0 && pasteText?.startsWith('-----BEGIN')) {
-              event.stopPropagation()
-              event.preventDefault()
-              const lines = pasteText.split(/\r?\n/)
-              const spaces = (model?.getLineContent(selection.selectionStartLineNumber - 1)?.search(/\S/) ?? 0) + 2
-              const leadSpaces = spaces - selection.selectionStartColumn + 1
-              const lead = ' '.repeat(leadSpaces < 0 ? spaces : leadSpaces)
-              const spacer = ' '.repeat(spaces)
-              const joint = `\r\n${spacer}`
-              const text = `${lead}${lines.map((line: string) => line.trim()).join(joint)}\r\n`
-              editor.executeEdits('my-source', [{ range: selection, text: text, forceMoveMarkers: true }])
-            }
+        if (selection && pasteText) {
+          const model = activeEditor.getModel()
+          const lines = pasteText?.split(/\r?\n/)
+          if (selection.selectionStartLineNumber - 1 > 0 && pasteText?.startsWith('-----BEGIN')) {
+            event.stopPropagation()
+            event.preventDefault()
+            const lines = pasteText.split(/\r?\n/)
+            const spaces = (model?.getLineContent(selection.selectionStartLineNumber - 1)?.search(/\S/) ?? 0) + 2
+            const leadSpaces = spaces - selection.selectionStartColumn + 1
+            const lead = ' '.repeat(leadSpaces < 0 ? spaces : leadSpaces)
+            const spacer = ' '.repeat(spaces)
+            const joint = `\r\n${spacer}`
+            const text = `${lead}${lines.map((line: string) => line.trim()).join(joint)}\r\n`
+            activeEditor.executeEdits('my-source', [{ range: selection, text: text, forceMoveMarkers: true }])
+          }
 
-            // when user is pasting in a complete yaml, do we need to make sure the resource has a namespace
-            if (
-              autoCreateNs && // make sure resource has namespace
-              selection?.startColumn === 1 &&
-              selection?.endLineNumber === model?.getLineCount()
-            ) {
+          // when user is pasting in a complete yaml, do we need to make sure the resource has a namespace
+          if (selection?.startColumn === 1 && selection?.endLineNumber === model?.getLineCount()) {
+            if (autoCreateNs) {
               let nameInx
               let hasMetadata = false
               let hasNamespace = false
+              event.stopPropagation()
+              event.preventDefault()
               for (let i = 0; i < lines.length; i++) {
                 if (lines[i].startsWith('metadata:')) {
                   hasMetadata = true
@@ -239,23 +257,24 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
               }
               if (nameInx && !hasNamespace) {
                 // add missing namespace
-                event.stopPropagation()
-                event.preventDefault()
                 lines.splice(nameInx + 1, 0, '  namespace: ""')
-                const text = lines.join('\r\n')
-                editor.executeEdits('my-source', [{ range: selection, text: text, forceMoveMarkers: true }])
               }
             }
+            const text = lines.join('\r\n')
+            resetDefaultSnapshotOnNextReportRef.current = true
+            activeEditor.executeEdits('my-source', [{ range: selection, text: text, forceMoveMarkers: true }])
           }
-        },
-        true
-      )
-      // clear our the getEditorValue method
+        }
+      }
+
+      domNode?.addEventListener('paste', onPaste, true)
+
       return () => {
+        domNode?.removeEventListener('paste', onPaste, true)
         window.getEditorValue = undefined
       }
     }
-  }, [autoCreateNs, editor, monaco])
+  }, [autoCreateNs, activeEditor, activeMonaco, activeEditorContainerDomNode, diffEditorInstanceEpoch])
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const onMouseDown = useCallback(
@@ -274,18 +293,18 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     [filteredRows, showFiltered]
   )
   useEffect(() => {
-    if (editor) {
-      const handle = editor.onMouseDown(onMouseDown)
+    if (activeEditor) {
+      const handle = activeEditor.onMouseDown(onMouseDown)
       return () => {
         handle?.dispose()
       }
     }
-  }, [filteredRows, showFiltered, editor, onMouseDown])
+  }, [filteredRows, showFiltered, activeEditor, onMouseDown])
 
   // show tooltips over errors
   useEffect(() => {
-    if (monaco) {
-      const handle = monaco.languages.registerHoverProvider('yaml', {
+    if (activeMonaco) {
+      const handle = activeMonaco.languages.registerHoverProvider('yaml', {
         provideHover: (_model: any, position: any) => {
           return new Promise((resolve) => {
             squigglyTooltips.forEach((tip: { range: { containsPosition: (arg0: any) => any }; message: string }) => {
@@ -301,12 +320,12 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         handle?.dispose()
       }
     }
-  }, [squigglyTooltips, monaco])
+  }, [squigglyTooltips, activeMonaco])
 
   // prevent user from changing protected text
   useEffect(() => {
-    if (editor) {
-      const handle = editor.onKeyDown(
+    if (activeEditor) {
+      const handle = activeEditor.onKeyDown(
         (e: {
           code: string
           ctrlKey: boolean
@@ -314,8 +333,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           stopPropagation: () => void
           preventDefault: () => void
         }) => {
-          const selections = editor.getSelections()
-          const model = editor.getModel()
+          const selections = activeEditor.getSelections()
+          const model = activeEditor.getModel()
           const isAllSelected =
             selections?.length === 1 &&
             selections[0].startColumn === 1 &&
@@ -323,7 +342,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           // if user presses enter, add new key: below this line
           let endOfLineEnter = false
           if (e.code === 'Enter') {
-            const pos = editor.getPosition()
+            const pos = activeEditor.getPosition()
             if (model && pos) {
               const thisLine = model.getLineContent(pos.lineNumber)
               endOfLineEnter = thisLine.length < pos.column
@@ -351,21 +370,39 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         handle?.dispose()
       }
     }
-  }, [prohibited, editor])
+  }, [prohibited, activeEditor])
 
   // if editor loses focus, do form changes immediately
   useEffect(() => {
-    if (editor) {
-      editor.onDidBlurEditorWidget(() => {
+    if (activeEditor) {
+      activeEditor.onDidBlurEditorWidget(() => {
         const editorHasFocus = !!document.querySelector('.monaco-editor.focused')
         const activeId = document.activeElement?.id as string
-        if (!editorHasFocus && ['undo-button', 'redo-button'].indexOf(activeId) === -1) {
+        if (
+          !editorHasFocus &&
+          ['undo-button', 'redo-button', 'compare-changes-button', 'diff-prev-button', 'diff-next-button'].indexOf(
+            activeId
+          ) === -1
+        ) {
           setClickedOnFilteredLine(false)
           setEditorHasFocus(false)
         }
       })
     }
-  }, [editor, setClickedOnFilteredLine, setEditorHasFocus])
+  }, [activeEditor, setClickedOnFilteredLine, setEditorHasFocus])
+
+  //  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  //  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  //  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  //
+  // ██    ██ ██████  ██████   █████  ████████ ███████     ███████  ██████  ██████  ███    ███
+  // ██    ██ ██   ██ ██   ██ ██   ██    ██    ██          ██      ██    ██ ██   ██ ████  ████
+  // ██    ██ ██████  ██   ██ ███████    ██    █████       █████   ██    ██ ██████  ██ ████ ██
+  // ██    ██ ██      ██   ██ ██   ██    ██    ██          ██      ██    ██ ██   ██ ██  ██  ██
+  //  ██████  ██      ██████  ██   ██    ██    ███████     ██       ██████  ██   ██ ██      ██
+  // //  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  //  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  //  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   // react to changes from form
   useEffect(
@@ -375,17 +412,37 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
       // if editor loses focus, update form immediately
       // otherwise if form already had focus, no need to call formChange
 
-      const model = editor?.getModel()
+      const activeModel = activeEditor?.getModel() ?? null
 
-      // if editor didn't have focus before and now it does, ignore form change
-      if (!editorHadFocus.current && editorHasFocus) {
+      // If focus just moved into the main editor or the diff, skip this run so we do not fight the caret.
+      // When neither surface has focus, always allow the effect (e.g. form/resources changed after blur).
+      if (editorHasFocus || diffEditorHasFocus) {
         // ignore
-      } else if (editor && monaco && model) {
+      } else if (activeEditor && activeMonaco && activeModel) {
         // debounce changes from form
         const formChange = () => {
-          if (editorHasFocus || editorHasErrors) {
+          if (editorHasErrors) {
             return
           }
+          // Main editor: defer while typing. Diff compare: apply to the modified pane (not the hidden standalone editor).
+          if (!diffEditorHasFocus && editorHasFocus) {
+            return
+          }
+          if (!activeEditor || !activeModel) {
+            return
+          }
+          let activeResources: unknown = resources
+          let comparedResources: any[] | undefined
+          const showDiffView = showChanges && defaultResources !== undefined && !mock
+          if (showDiffView) {
+            const { original, current } = normalize(
+              Array.isArray(defaultResources) ? defaultResources : [defaultResources],
+              Array.isArray(resources) ? resources : [resources]
+            )
+            activeResources = current
+            comparedResources = original
+          }
+          const cmpYaml = comparedResources !== undefined ? stringify(comparedResources) : undefined
           // parse/validate/secrets
           const {
             yaml,
@@ -397,9 +454,9 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             unredactedChange,
             xreferences,
           } = processForm(
-            monaco,
+            activeMonaco,
             code,
-            resources,
+            activeResources,
             changeStack,
             showSecrets ? undefined : secrets,
             showFiltered,
@@ -408,7 +465,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             readonly === true,
             userEdits,
             validationRef.current,
-            model?.getValue() ?? '',
+            activeModel.getValue() ?? '',
             editableUidSiblings
           )
           setProhibited(protectedRanges)
@@ -426,22 +483,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             lastFormComparison
           )
 
-          // update yaml in editor
-          //model.resources = cloneDeep(change.resources)
-          const saveDecorations = getResourceEditorDecorations(editor, false)
-          const viewState = editor.saveViewState()
-          // instead of setValue, it's more robust to create a new text model
-          // but fall back to setValue for test environments where createModel may not be available
-          if (typeof monaco.editor.createModel === 'function') {
-            editor.getModel()?.dispose?.()
-            editor.setModel(monaco.editor.createModel(yaml, 'yaml'))
-          } else {
-            model.setValue(yaml)
-          }
-          if (viewState) {
-            editor.restoreViewState(viewState)
-          }
-          editor.deltaDecorations([], saveDecorations)
+          refreshModels(yaml, showDiffView, cmpYaml)
           setHasRedo(false)
           setHasUndo(false)
 
@@ -454,9 +496,9 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           // decorate errors, changes
           const squigglyTooltips = decorate(
             false,
-            editorHasFocus,
-            editor,
-            monaco,
+            editorHasFocus || diffEditorHasFocus,
+            activeEditor,
+            activeMonaco,
             [...allErrors, ...customValidationErrors],
             yamlChanges,
             change,
@@ -472,9 +514,13 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         }
         // if form changed, and editor doesn't have focus (user isn't typing) process form change immediately
         // if form changed, and editor has focus (user is typing) process form with debounce of 1 s to allow user to type
-        changeTimeoutId = setTimeout(formChange, !clickedOnFilteredLine && editorHasFocus ? 1000 : 100)
+        changeTimeoutId = setTimeout(
+          formChange,
+          !clickedOnFilteredLine && (editorHasFocus || diffEditorHasFocus) ? 1000 : 100
+        )
       }
       editorHadFocus.current = editorHasFocus
+      diffHadFocus.current = diffEditorHasFocus
 
       return () => {
         clearTimeout(changeTimeoutId)
@@ -488,19 +534,82 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
       showSecrets,
       showFiltered,
       editorHasFocus,
+      diffEditorHasFocus,
       clickedOnFilteredLine,
       changeStack,
-      editor,
-      monaco,
+      activeEditor,
+      activeMonaco,
       editorHighlightPath,
+      mock,
+      diffEditorInstanceEpoch,
+      showChanges,
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      JSON.stringify(defaultResources),
       // eslint-disable-next-line react-hooks/exhaustive-deps
       JSON.stringify(immutables),
     ]
   )
 
+  const refreshModels = (yaml: string, showDiffView: boolean, cmpYaml: string | undefined) => {
+    const diffEditor = showDiffView && cmpYaml !== undefined ? syncEditorDiffRef.current?.getDiffEditor() ?? null : null
+    const modifiedEditor = diffEditor?.getModifiedEditor() ?? activeEditor
+    if (!modifiedEditor || !activeMonaco) {
+      return
+    }
+    const originalEditor = diffEditor?.getOriginalEditor() ?? null
+    const modifiedModel = modifiedEditor.getModel()
+    const savedModifiedDecorations = toModelDeltaDecorations(modifiedModel ? modifiedModel.getAllDecorations() : [])
+    const modifiedViewState = modifiedEditor.saveViewState()
+    if (typeof activeMonaco.editor.createModel === 'function') {
+      modifiedEditor.getModel()?.dispose?.()
+      modifiedEditor.setModel(activeMonaco.editor.createModel(yaml, 'yaml'))
+      if (originalEditor && cmpYaml !== undefined) {
+        originalEditor.getModel()?.dispose?.()
+        originalEditor.setModel(activeMonaco.editor.createModel(cmpYaml, 'yaml'))
+      }
+      if (modifiedViewState) {
+        modifiedEditor.restoreViewState(modifiedViewState)
+      }
+      if (savedModifiedDecorations.length) {
+        modifiedEditor.deltaDecorations([], savedModifiedDecorations)
+      }
+    } else {
+      // test version (no createModel)
+      modifiedEditor.getModel()?.setValue(yaml)
+      if (originalEditor && cmpYaml !== undefined) {
+        originalEditor.getModel()?.setValue(cmpYaml)
+      }
+      if (modifiedViewState) {
+        modifiedEditor.restoreViewState(modifiedViewState)
+      }
+    }
+    if (showDiffView && diffEditor) {
+      refreshDiffEditorDecorations(diffEditor, () => {
+        if (modifiedViewState) {
+          modifiedEditor.restoreViewState(modifiedViewState)
+        }
+        if (savedModifiedDecorations.length) {
+          modifiedEditor.deltaDecorations([], savedModifiedDecorations)
+        }
+      })
+    }
+  }
+
+  /** Recompute diff line decorations after child editor models change (e.g. form sync). */
+  function refreshDiffEditorDecorations(
+    diffEditor: editorTypes.IStandaloneDiffEditor,
+    afterSetModel?: () => void
+  ): void {
+    const model = diffEditor.getModel()
+    if (model?.original && model?.modified) {
+      diffEditor.setModel({ original: model.original, modified: model.modified })
+      afterSetModel?.()
+    }
+  }
+
   // report resource changes to form
   const reportResourceChanges = useCallback(
-    (resourceChanges: ProcessedType) => {
+    (resourceChanges: ProcessedType, resetDefaultSnapshot?: boolean) => {
       if (resourceChanges) {
         const isArr = Array.isArray(resources)
         const _resources = isArr ? resources : [resources]
@@ -508,18 +617,32 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           const editChanges = {
             resources: isArr ? resourceChanges.resources : resourceChanges.resources[0],
           }
-          onEditorChange(editChanges)
+          onEditorChange(editChanges, resetDefaultSnapshot)
         }
       }
     },
     [onEditorChange, resources]
   )
+  //  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  //  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  //  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  //
+  //  ███████ ██████  ██ ████████  ██████  ██████      ████████ ██    ██ ██████  ██ ███    ██  ██████
+  //  ██      ██   ██ ██    ██    ██    ██ ██   ██        ██     ██  ██  ██   ██ ██ ████   ██ ██
+  //  █████   ██   ██ ██    ██    ██    ██ ██████         ██      ████   ██████  ██ ██ ██  ██ ██   ███
+  //  ██      ██   ██ ██    ██    ██    ██ ██   ██        ██       ██    ██      ██ ██  ██ ██ ██    ██
+  //  ███████ ██████  ██    ██     ██████  ██   ██        ██       ██    ██      ██ ██   ████  ██████
+  // //  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  //  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  //  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   // react to changes from user editing yaml
   const editorChanged = useCallback(
-    (value: string, e: { isFlush: any }) => {
-      if (editor && monaco) {
+    (value: string, e: editorTypes.IModelContentChangedEvent) => {
+      const activeModel = activeEditor?.getModel() ?? null
+      if (activeEditor && activeMonaco) {
         if (!e.isFlush) {
+          const resetDefaultSnapshot = resetDefaultSnapshotOnNextReportRef.current
           // parse/validate/secrets
           const {
             protectedRanges,
@@ -529,7 +652,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             change,
             unredactedChange,
           } = processUser(
-            monaco,
+            activeMonaco,
             value,
             showSecrets ? undefined : secrets,
             lastUnredactedChange?.hiddenSecretsValues,
@@ -562,9 +685,14 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           let customErrors = []
           if (!editorHasErrors) {
             const clonedUnredactedChange = cloneDeep(unredactedChange)
-            reportResourceChanges(clonedUnredactedChange)
+            reportResourceChanges(clonedUnredactedChange, resetDefaultSnapshot)
             customErrors = setFormValues(syncs, clonedUnredactedChange) || []
             setCustomValidationErrors(customErrors)
+          }
+          if (resetDefaultSnapshot) {
+            resetDefaultSnapshotOnNextReportRef.current = false
+            const showDiffView = showChanges && defaultResources !== undefined && !mock
+            refreshModels(value, showDiffView, value)
           }
           setEditorHasErrors(editorHasErrors)
           onStatusChange?.(allErrors.length === 0 ? ValidationStatus.success : ValidationStatus.failure)
@@ -573,8 +701,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           const squigglyTooltips = decorate(
             true,
             editorHasFocus,
-            editor,
-            monaco,
+            activeEditor,
+            activeMonaco,
             [...allErrors, ...customErrors],
             [],
             change,
@@ -597,35 +725,38 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           }
 
           // undo/redo enable
-          const model = editor.getModel()
-          if (model) {
-            setHasRedo((model as any).canRedo())
-            setHasUndo((model as any).canUndo())
+          if (activeModel) {
+            setHasRedo((activeModel as any).canRedo())
+            setHasUndo((activeModel as any).canUndo())
           }
         }
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refreshModels is defined in this component body
     [
-      changeStack?.baseResources,
-      editableUidSiblings,
-      editor,
-      editorHasFocus,
+      activeEditor,
+      activeMonaco,
+      showSecrets,
+      secrets,
+      lastUnredactedChange?.hiddenSecretsValues,
+      lastUnredactedChange?.hiddenFilteredValues,
+      showFiltered,
       filters,
       immutables,
-      lastChange,
-      lastUnredactedChange?.hiddenFilteredValues,
-      lastUnredactedChange?.hiddenSecretsValues,
-      lastUserEdits,
-      monaco,
       readonly,
-      reportResourceChanges,
-      secrets,
-      showFiltered,
-      showSecrets,
-      syncs,
+      editableUidSiblings,
+      lastUserEdits,
+      lastChange,
       xreferences,
-      editorHighlightPath,
       onStatusChange,
+      editorHasFocus,
+      editorHighlightPath,
+      reportResourceChanges,
+      syncs,
+      changeStack?.baseResources,
+      showChanges,
+      defaultResources,
+      mock,
     ]
   )
 
@@ -637,115 +768,67 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     [editorChanged, onStatusChange]
   )
 
+  const onDiffPrevious = useCallback(() => {
+    syncEditorDiffRef.current?.previous()
+  }, [])
+
+  const onDiffNext = useCallback(() => {
+    syncEditorDiffRef.current?.next()
+  }, [])
+
   const toolbarControls = useMemo(() => {
     return (
-      <>
-        <div className="sy-c-code-editor__title">{editorTitle || 'YAML'}</div>
-        <div className="sy-toolbar-buttons" style={{ display: 'flex' }}>
-          {/* undo */}
-          {!readonly && (
-            <CodeEditorControl
-              id="undo-button"
-              icon={<UndoIcon />}
-              aria-label={t('Undo')}
-              tooltipProps={{ content: t('Undo') }}
-              isDisabled={!hasUndo}
-              onClick={() => {
-                editor?.trigger('source', 'undo', undefined)
-              }}
-            />
-          )}
-          {/* redo */}
-          {!readonly && (
-            <CodeEditorControl
-              id="redo-button"
-              icon={<RedoIcon />}
-              aria-label={t('Redo')}
-              tooltipProps={{ content: t('Redo') }}
-              isDisabled={!hasRedo}
-              onClick={() => {
-                editor?.trigger('source', 'redo', undefined)
-              }}
-            />
-          )}
-          {/* search */}
-          <CodeEditorControl
-            id="search-button"
-            icon={<SearchIcon />}
-            aria-label={t('Find')}
-            tooltipProps={{ content: t('Find') }}
-            onClick={() => {
-              editor?.trigger('source', 'actions.find', undefined)
-            }}
-          />
-          {/* secrets */}
-          {secrets && (
-            <CodeEditorControl
-              id="secret-button"
-              icon={showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
-              aria-label={t('Show Secrets')}
-              tooltipProps={{ content: t('Show Secrets') }}
-              onClick={() => {
-                setShowSecrets(!showSecrets)
-              }}
-            />
-          )}
-          {/* copy */}
-          <ClipboardCopyButton
-            id="copy-button"
-            textId="code-content"
-            aria-label={t('Copy to clipboard')}
-            disabled={false}
-            onClick={() => {
-              if (editor && editor.getModel()) {
-                const model = editor.getModel()
-                const selection = editor.getSelection()
-                if (model && selection) {
-                  const selectedText = model.getValueInRange(selection)
-                  navigator.clipboard.writeText(selectedText || lastUnredactedChange?.yaml || '')
-                  setCopyHint(selectedText.length === 0 ? allCopiedCopy : copiedCopy)
-                  setTimeout(() => {
-                    setCopyHint(defaultCopy)
-                  }, 800)
-                }
-              }
-            }}
-            exitDelay={600}
-            variant="plain"
-          >
-            {copyHint}
-          </ClipboardCopyButton>
-          {!!onClose && (
-            <CodeEditorControl
-              icon={<CloseIcon />}
-              aria-label={t('Close')}
-              tooltipProps={{ content: t('Close') }}
-              onClick={onClose || noop}
-            />
-          )}
-        </div>
-      </>
+      <SyncEditorToolbar
+        editorTitle={editorTitle}
+        readonly={readonly}
+        hasUndo={hasUndo}
+        hasRedo={hasRedo}
+        secrets={secrets}
+        showSecrets={showSecrets}
+        setShowSecrets={setShowSecrets}
+        showCompareButton={defaultResources !== undefined}
+        showChanges={showChanges}
+        setShowChanges={setShowChanges}
+        onDiffPrevious={onDiffPrevious}
+        onDiffNext={onDiffNext}
+        copyHint={copyHint}
+        setCopyHint={setCopyHint}
+        onClose={onClose}
+        editor={editor}
+        syncEditorDiffRef={syncEditorDiffRef}
+        lastUnredactedYaml={lastUnredactedChange?.yaml}
+        allCopiedCopy={allCopiedCopy}
+        copiedCopy={copiedCopy}
+        defaultCopy={defaultCopy}
+        t={t}
+      />
     )
   }, [
     editorTitle,
     readonly,
-    t,
     hasUndo,
     hasRedo,
     secrets,
     showSecrets,
+    defaultResources,
+    showChanges,
+    onDiffPrevious,
+    onDiffNext,
     copyHint,
     onClose,
     editor,
+    syncEditorDiffRef,
     lastUnredactedChange?.yaml,
     allCopiedCopy,
     copiedCopy,
     defaultCopy,
+    t,
   ])
 
   useResizeObserver(pageRef, () => {
-    layoutEditor(editor)
+    layoutEditor(activeEditor)
   })
+
   const layoutEditor = useCallback(
     (editor: any) => {
       if (pageRef.current && editor) {
@@ -770,33 +853,66 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     [editorHasErrors, variant]
   )
 
+  // if showChanges is true, set activeEditor,activeMonaco to DiffEditor
+  // else set the actives to the regular editor/monanco
+  const syncActiveInstances = useCallback(() => {
+    const showDiffView = showChanges && defaultResources !== undefined && !mock
+    if (showDiffView) {
+      setActiveEditor(syncEditorDiffRef.current?.getModifiedEditor() ?? null)
+      setActiveMonaco(syncEditorDiffRef.current?.getDiffEditorMonaco() ?? null)
+    } else {
+      setActiveEditor(editor)
+      setActiveMonaco(monaco)
+    }
+  }, [showChanges, defaultResources, mock, editor, monaco])
+
+  useEffect(() => {
+    syncActiveInstances()
+  }, [syncActiveInstances, diffEditorInstanceEpoch])
+
   return (
     <div ref={pageRef} className="sync-editor__container">
-      <CodeEditor
-        isLineNumbersVisible={true}
-        isReadOnly={readonly}
-        isMinimapVisible={true}
-        onChange={editorChange}
-        language={Language.yaml}
-        customControls={variant === 'toolbar' ? toolbarControls : undefined}
-        onEditorDidMount={onEditorDidMount}
-        options={{
-          theme: getTheme(),
-          wordWrap: 'wordWrapColumn',
-          wordWrapColumn: showCondensed ? 512 : 256,
-          scrollBeyondLastLine: true,
-          smoothScrolling: true,
-          glyphMargin: true,
-          tabSize: 2,
-          scrollbar: {
-            verticalScrollbarSize: 17,
-            horizontalScrollbarSize: 17,
-          },
-          minimap: {
-            enabled: false,
-          },
-        }}
-      />
+      <div className="sync-editor__stack">
+        <CodeEditor
+          isLineNumbersVisible={true}
+          isReadOnly={readonly}
+          isMinimapVisible={true}
+          onChange={editorChange}
+          language={Language.yaml}
+          customControls={variant === 'toolbar' ? toolbarControls : undefined}
+          onEditorDidMount={onEditorDidMount}
+          showEditor={!(showChanges && defaultResources !== undefined && !mock)}
+          options={{
+            theme: getTheme(),
+            wordWrap: 'wordWrapColumn',
+            wordWrapColumn: showCondensed ? 512 : 256,
+            scrollBeyondLastLine: true,
+            smoothScrolling: true,
+            glyphMargin: true,
+            tabSize: 2,
+            scrollbar: {
+              verticalScrollbarSize: 17,
+              horizontalScrollbarSize: 17,
+            },
+            minimap: {
+              enabled: false,
+            },
+          }}
+        />
+        <SyncEditorDiff
+          ref={syncEditorDiffRef}
+          showChanges={showChanges}
+          defaultResources={defaultResources}
+          resources={resources}
+          mock={mock}
+          diffEditorHasFocus={diffEditorHasFocus}
+          onDiffEditorFocusChange={setDiffEditorHasFocus}
+          onDiffEditorInstanceChange={onDiffEditorInstanceChange}
+          onActiveInstancesChange={syncActiveInstances}
+          resizeRootRef={pageRef}
+          onChange={editorChange}
+        />
+      </div>
     </div>
   )
 }

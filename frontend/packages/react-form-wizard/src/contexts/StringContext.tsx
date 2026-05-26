@@ -34,6 +34,7 @@ export interface WizardStrings {
   reviewExpandAllTooltip: string
   reviewCollapseAllTooltip: string
   reviewSearchDetailsPlaceholder: string
+  reviewShowChangesOnlyLabel: string
   reviewBooleanTrue: string
   reviewBooleanFalse: string
   reviewBooleanNotSet: string
@@ -78,6 +79,7 @@ export const defaultStrings: WizardStrings = {
   reviewExpandAllTooltip: 'Expand all',
   reviewCollapseAllTooltip: 'Collapse all',
   reviewSearchDetailsPlaceholder: 'Search review details',
+  reviewShowChangesOnlyLabel: 'Show changes',
   reviewBooleanTrue: 'True',
   reviewBooleanFalse: 'False',
   reviewBooleanNotSet: 'Not set',

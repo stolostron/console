@@ -1,11 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Button, Flex, FlexItem, SearchInput, Toolbar, ToolbarContent } from '@patternfly/react-core'
+import { Button, Checkbox, Flex, FlexItem, SearchInput, Toolbar, ToolbarContent } from '@patternfly/react-core'
 import { type Dispatch, type SetStateAction, useCallback } from 'react'
 import { useStringContext } from '../contexts/StringContext'
 
 export interface ReviewStepToolbarProps {
   reviewSearchValue: string
   onReviewSearchChange: (value: string) => void
+  showChangesOnly: boolean
+  onShowChangesOnlyChange: (value: boolean) => void
   onExpandAll: () => void
   onCollapseAll: () => void
   showExpand: boolean
@@ -13,7 +15,12 @@ export interface ReviewStepToolbarProps {
 }
 
 export function ReviewStepToolbar(props: ReviewStepToolbarProps) {
-  const { reviewExpandAllTooltip, reviewCollapseAllTooltip, reviewSearchDetailsPlaceholder } = useStringContext()
+  const {
+    reviewExpandAllTooltip,
+    reviewCollapseAllTooltip,
+    reviewSearchDetailsPlaceholder,
+    reviewShowChangesOnlyLabel,
+  } = useStringContext()
   const toolbarItems = (
     <Flex direction={{ default: 'row' }} style={{ width: '100%' }} alignItems={{ default: 'alignItemsCenter' }}>
       <FlexItem>
@@ -23,6 +30,14 @@ export function ReviewStepToolbar(props: ReviewStepToolbarProps) {
           onChange={(_event, value) => props.onReviewSearchChange(value)}
           onClear={() => props.onReviewSearchChange('')}
           style={{ minWidth: 220, maxWidth: 360 }}
+        />
+      </FlexItem>
+      <FlexItem>
+        <Checkbox
+          id="wizard-review-changes-only"
+          label={reviewShowChangesOnlyLabel}
+          isChecked={props.showChangesOnly}
+          onChange={(_event, checked) => props.onShowChangesOnlyChange(checked)}
         />
       </FlexItem>
       <FlexItem flex={{ default: 'flex_1' }} />

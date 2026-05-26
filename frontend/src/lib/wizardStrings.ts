@@ -41,6 +41,7 @@ export const useWizardStrings = (
       reviewExpandAllTooltip: t('Expand all'),
       reviewCollapseAllTooltip: t('Collapse all'),
       reviewSearchDetailsPlaceholder: t('Search review details'),
+      reviewShowChangesOnlyLabel: t('Show changes'),
       reviewBooleanTrue: t('True'),
       reviewBooleanFalse: t('False'),
       reviewBooleanNotSet: t('Not set'),

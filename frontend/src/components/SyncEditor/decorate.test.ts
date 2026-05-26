@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { decorate, getResourceEditorDecorations, rangeForHighlightPath } from './decorate'
+import { decorate, getResourceEditorDecorations, rangeForHighlightPath, toModelDeltaDecorations } from './decorate'
 import { ErrorType } from './validation'
 import type { Monaco } from '@monaco-editor/react'
 import type { editor as editorTypes } from 'monaco-editor'
@@ -131,6 +131,14 @@ describe('rangeForHighlightPath', () => {
   })
 })
 
+describe('toModelDeltaDecorations', () => {
+  it('maps saved decorations to range and options for deltaDecorations', () => {
+    const range = { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 5 }
+    const options = { className: 'insertLineDecoration' }
+    expect(toModelDeltaDecorations([{ id: 'a', ownerId: 0, range, options } as never])).toEqual([{ range, options }])
+  })
+})
+
 describe('getResourceEditorDecorations', () => {
   it('returns empty when editor has no model', () => {
     const editor = { getModel: () => null } as unknown as editorTypes.IStandaloneCodeEditor
@@ -141,8 +149,8 @@ describe('getResourceEditorDecorations', () => {
     const decorations = [
       { options: { className: 'squiggly-error' } },
       { options: { className: 'syncEditorYamlHighlight' } },
-      { options: { linesDecorationsClassName: 'insertedLineDecoration' } },
-      { options: { linesDecorationsClassName: 'customLineDecoration' } },
+      { options: { className: 'insertLineDecoration' } },
+      { options: { className: 'customLineDecoration' } },
       { options: { glyphMarginClassName: 'errorDecoration', inlineClassName: 'other' } },
       { options: { inlineClassName: 'protectedDecoration' } },
     ]
@@ -252,8 +260,8 @@ describe('decorate', () => {
       mappings: { 'metadata.name': { $r: 4, $l: 1, $s: false } },
     } as unknown as DecorateChangeArg
     decorate(false, true, editor, monaco, [], [{ $t: 'C', $a: 'metadata.name', $f: 'short' }], change, [], [], [], '')
-    const applied = deltaDecorations.mock.calls[0][1] as { options: { linesDecorationsClassName?: string } }[]
-    expect(applied.some((d) => d.options.linesDecorationsClassName === 'insertedLineDecoration')).toBe(true)
+    const applied = deltaDecorations.mock.calls[0][1] as { options: { className?: string } }[]
+    expect(applied.some((d) => d.options.className === 'insertLineDecoration')).toBe(true)
   })
 
   it('adds preserved user edits as custom line decorations', () => {
@@ -263,8 +271,8 @@ describe('decorate', () => {
       mappings: { x: { $r: 2, $l: 1 } },
     } as unknown as DecorateChangeArg
     decorate(false, true, editor, monaco, [], [], change, [{ $t: 'N', $a: 'x', $f: null }], [], [], '')
-    const applied = deltaDecorations.mock.calls[0][1] as { options: { linesDecorationsClassName?: string } }[]
-    expect(applied.some((d) => d.options.linesDecorationsClassName === 'customLineDecoration')).toBe(true)
+    const applied = deltaDecorations.mock.calls[0][1] as { options: { className?: string } }[]
+    expect(applied.some((d) => d.options.className === 'customLineDecoration')).toBe(true)
   })
 
   it('adds protected and filtered row decorations', () => {

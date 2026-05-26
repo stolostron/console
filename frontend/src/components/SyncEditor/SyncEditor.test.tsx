@@ -1293,10 +1293,8 @@ const protectedDecorators = [
       startColumn: 0,
     },
     options: {
+      className: 'customLineDecoration',
       isWholeLine: true,
-      linesDecorationsClassName: 'customLineDecoration',
-      overviewRuler: { color: '#0000ff', position: 1 },
-      minimap: { color: '#0000ff', position: 2 },
       description: 'resource-editor',
     },
   },

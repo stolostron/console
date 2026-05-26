@@ -8,6 +8,8 @@ const startCase = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
+const LINE_DECORATION_CLASS_NAMES = ['insertLineDecoration', 'customLineDecoration'] as const
+
 export const decorate = (
   isCustomEdit: boolean,
   editorHasFocus: boolean,
@@ -169,6 +171,7 @@ const addHighlightDecorations = (
     options: {
       className: 'syncEditorYamlHighlight',
       isWholeLine: range.startLineNumber !== range.endLineNumber,
+      stackOrder: 3,
     },
   })
 }
@@ -190,11 +193,10 @@ const addChangeDecorations = (
       decorations.push({
         range: new monaco.Range(obj.$r, 0, obj.$r + ($t === 'N' ? obj.$l - 1 : 0), 0),
         options: {
+          className: isCustomEdit ? 'customLineDecoration' : 'insertLineDecoration',
           isWholeLine: true,
-          linesDecorationsClassName: isCustomEdit ? 'customLineDecoration' : 'insertedLineDecoration',
-          overviewRuler: isCustomEdit ? { color: '#0000ff', position: 1 } : {},
-          minimap: { color: isCustomEdit ? '#0000ff' : '#c0c0ff', position: 2 },
           description: 'resource-editor',
+          zIndex: 1000,
         },
       })
       if ($f != null && $f.toString().length < 132 && !obj.$s) {
@@ -210,6 +212,10 @@ const addChangeDecorations = (
   })
 }
 
+export const toModelDeltaDecorations = (
+  decorations: Pick<editorTypes.IModelDecoration, 'range' | 'options'>[]
+): editorTypes.IModelDeltaDecoration[] => decorations.map(({ range, options }) => ({ range, options }))
+
 export const getResourceEditorDecorations = (editor: editorTypes.IStandaloneCodeEditor, hasErrors: boolean) => {
   // clear resource-editor decorations
   // don't filter protectedDecoration if there are errors because parser doesn't know where protected
@@ -220,7 +226,7 @@ export const getResourceEditorDecorations = (editor: editorTypes.IStandaloneCode
     return (
       options?.className?.startsWith('squiggly-') ||
       options?.className === 'syncEditorYamlHighlight' ||
-      ['customLineDecoration', 'insertedLineDecoration'].includes(options?.linesDecorationsClassName ?? '') ||
+      LINE_DECORATION_CLASS_NAMES.includes(options?.className as (typeof LINE_DECORATION_CLASS_NAMES)[number]) ||
       (!!options?.glyphMarginClassName && (options?.inlineClassName !== 'protectedDecoration' || !hasErrors))
     )
   })
@@ -248,14 +254,9 @@ const scrollToChangeDecoration = (editor: editorTypes.IStandaloneCodeEditor, err
       } else {
         // if visible range doesn't show any inserted-line decorations, scroll to the first one
         const insertedLineDecorations = decorations.filter(
-          (decoration) => decoration.options.linesDecorationsClassName === 'insertedLineDecoration'
+          (decoration) => decoration.options.className === 'insertLineDecoration'
         )
-        if (
-          insertedLineDecorations.length &&
-          !insertedLineDecorations.some((decoration) => {
-            return visibleRange.containsPosition(decoration?.range.getStartPosition())
-          })
-        ) {
+        if (insertedLineDecorations.length) {
           setTimeout(() => {
             editor.revealLineInCenter(insertedLineDecorations[0]?.range.getStartPosition()?.lineNumber)
           })

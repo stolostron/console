@@ -258,6 +258,15 @@
   transition: outline-width 0.4s ease-out;
 }
 
+.wizard-review-find-list--changes-only {
+  padding: 10px;
+  background-color: rgba(21, 128, 61, 0.09);
+}
+
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .wizard-review-find-list--changes-only {
+  background-color: rgba(110, 193, 115, 0.16);
+}
+
 .wizard-review-find-list--empty {
   color: var(--pf-t--global--text--color--subtle);
   padding-block: var(--pf-t--global--spacer--md);

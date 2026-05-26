@@ -9,12 +9,17 @@ import {
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import Fuse from 'fuse.js'
 import { Fragment, type ReactNode, useMemo } from 'react'
+import { useDefaultItem } from '../contexts/DefaultDataContext'
+import { useItem } from '../contexts/ItemContext'
 import { useStringContext } from '../contexts/StringContext'
 import { InputReviewMeta, type WizardDomTreeNode } from './ReviewStepContexts'
 import { ReviewPenHoverZone, type OnReviewEditHandler } from './ReviewStepNavigation'
-import { horizontalTermWidthModifierForInputRun, REVIEW_ERROR_TEXT_COLOR } from './utils'
+import { getItemValue, horizontalTermWidthModifierForInputRun, REVIEW_ERROR_TEXT_COLOR } from './utils'
 
 type WizardInputDomNode = Extract<WizardDomTreeNode, { type: InputReviewMeta.INPUT }>
+type WizardArrayInputDomNode = Extract<WizardDomTreeNode, { type: InputReviewMeta.ARRAY_INPUT }>
+/** Inputs plus array-input containers when surfaced for errors (find list). */
+type ReviewFindListDomNode = WizardInputDomNode | WizardArrayInputDomNode
 
 const FUSE_LV: Fuse.IFuseOptions<ReviewFindRow> = {
   keys: ['searchLabel', 'searchValue'],
@@ -33,7 +38,7 @@ const FUSE_PATH: Fuse.IFuseOptions<ReviewFindRow> = {
 }
 
 type ReviewFindRow = {
-  node: WizardInputDomNode
+  node: ReviewFindListDomNode
   stepLabel: string
   searchLabel: string
   searchValue: string
@@ -44,8 +49,43 @@ type ReviewFindRow = {
 export interface ReviewStepFindListProps {
   sectionRoots: WizardDomTreeNode[]
   searchQuery: string
+  showChangesOnly: boolean
   onReviewEdit?: OnReviewEditHandler
   showYaml?: boolean
+}
+
+// when only showing changes in  Review page, filter out all key/value pairs where the values are equual
+// when values aren't equal they will appear in Review page
+function rowMatchesChangesOnlyFilter(row: ReviewFindRow, item: object, defaultItem: object): boolean {
+  const path = row.node.path
+  if (!path) {
+    return Boolean(row.node.error)
+  }
+  if (row.node.error) return true
+  const currentVal = getItemValue(item, path)
+  const defaultVal = getItemValue(defaultItem, path)
+  return !reviewValuesEqualAtPath(currentVal, defaultVal)
+}
+
+function reviewValuesEqualAtPath(a: unknown, b: unknown): boolean {
+  if (Object.is(a, b)) return true
+  if (typeof a === 'boolean' && typeof b === 'boolean') {
+    return a === b
+  }
+  if (b === undefined && a === false) {
+    return true
+  }
+  if (a === null || b === null || a === undefined || b === undefined) {
+    return a === b
+  }
+  if (typeof a !== 'object' || typeof b !== 'object') {
+    return a === b
+  }
+  try {
+    return JSON.stringify(a) === JSON.stringify(b)
+  } catch {
+    return false
+  }
 }
 
 function isReviewInputNode(node: WizardDomTreeNode): node is WizardInputDomNode {
@@ -157,7 +197,7 @@ type ReviewFindBooleanStrings = {
   reviewBooleanNotSet: string
 }
 
-function formatReviewFindSearchValue(node: WizardInputDomNode, labels: ReviewFindBooleanStrings): string {
+function formatReviewFindSearchValue(node: ReviewFindListDomNode, labels: ReviewFindBooleanStrings): string {
   if (node.error) return node.error
   if (typeof node.value === 'boolean') {
     return node.value ? labels.reviewBooleanTrue : labels.reviewBooleanFalse
@@ -166,13 +206,16 @@ function formatReviewFindSearchValue(node: WizardInputDomNode, labels: ReviewFin
   return formatReviewValueString(node.value)
 }
 
-function collectVisibleInputsInOrder(nodes: WizardDomTreeNode[], out: WizardInputDomNode[]): void {
+function collectVisibleInputsInOrder(nodes: WizardDomTreeNode[], out: ReviewFindListDomNode[]): void {
   for (const n of nodes) {
     if (isReviewInputNode(n)) {
       out.push(n)
       continue
     }
     if (isReviewArrayInputNode(n)) {
+      if (n.error) {
+        out.push(n)
+      }
       for (const inst of n.children ?? []) {
         collectVisibleInputsInOrder(inst.children ?? [], out)
       }
@@ -275,7 +318,7 @@ function indicesForKey(
 }
 
 function renderFindValueContent(
-  node: WizardInputDomNode,
+  node: ReviewFindListDomNode,
   searchValue: string,
   valueIndices: readonly Fuse.RangeTuple[] | undefined
 ): ReactNode {
@@ -298,22 +341,28 @@ type FindListModel = {
 function buildFindListModel(
   sectionRoots: WizardDomTreeNode[],
   q: string,
-  booleanStrings: ReviewFindBooleanStrings
+  booleanStrings: ReviewFindBooleanStrings,
+  showChangesOnly: boolean,
+  item: object,
+  defaultItem: object
 ): FindListModel {
   const sections: { stepLabel: string; rows: ReviewFindRow[] }[] = []
   const allRows: ReviewFindRow[] = []
 
   for (const root of sectionRoots) {
     const stepLabel = reviewNodeLabel(root)
-    const ordered: WizardInputDomNode[] = []
+    const ordered: ReviewFindListDomNode[] = []
     collectVisibleInputsInOrder(getReviewSectionBodyNodes(root), ordered)
-    const rows: ReviewFindRow[] = ordered.map((node) => ({
+    let rows: ReviewFindRow[] = ordered.map((node) => ({
       node,
       stepLabel,
       searchLabel: node.label ?? node.path,
       searchValue: formatReviewFindSearchValue(node, booleanStrings),
       pathLast: pathLastSegment(node.path),
     }))
+    if (showChangesOnly) {
+      rows = rows.filter((row) => rowMatchesChangesOnlyFilter(row, item, defaultItem))
+    }
     sections.push({ stepLabel, rows })
     allRows.push(...rows)
   }
@@ -340,7 +389,9 @@ function buildFindListModel(
 }
 
 export function ReviewStepFindList(props: ReviewStepFindListProps) {
-  const { sectionRoots, searchQuery, onReviewEdit, showYaml } = props
+  const { sectionRoots, searchQuery, showChangesOnly, onReviewEdit, showYaml } = props
+  const item = useItem<object>()
+  const defaultItem = useDefaultItem<object>()
   const { noResults, reviewBooleanTrue, reviewBooleanFalse, reviewBooleanNotSet } = useStringContext()
   const q = searchQuery.trim()
 
@@ -350,111 +401,126 @@ export function ReviewStepFindList(props: ReviewStepFindListProps) {
   )
 
   const { sections, lvByPath, pathByPath } = useMemo(
-    () => buildFindListModel(sectionRoots, q, booleanStrings),
-    [sectionRoots, q, booleanStrings]
+    () => buildFindListModel(sectionRoots, q, booleanStrings, showChangesOnly, item, defaultItem),
+    [sectionRoots, q, booleanStrings, showChangesOnly, item, defaultItem]
   )
 
   const yamlVisible = showYaml !== false
 
   const hasAnyRows = sections.some((s) => s.rows.length > 0)
+
   if (!hasAnyRows) {
-    return <div className="wizard-review-find-list wizard-review-find-list--empty">{noResults}</div>
+    const emptyClassName = [
+      'wizard-review-find-list',
+      showChangesOnly && 'wizard-review-find-list--changes-only',
+      'wizard-review-find-list--empty',
+    ]
+      .filter(Boolean)
+      .join(' ')
+    return <div className={emptyClassName}>{noResults}</div>
   }
 
   return (
     <div className="wizard-review-find-list">
-      {sections.map((section, sectionIndex) => {
-        if (section.rows.length === 0) return null
-        const mod = horizontalTermWidthModifierForInputRun(section.rows.map((r) => r.node))
+      <div className={showChangesOnly ? 'wizard-review-find-list--changes-only' : undefined}>
+        {sections.map((section, sectionIndex) => {
+          if (section.rows.length === 0) return null
+          const mod = horizontalTermWidthModifierForInputRun(section.rows.map((r) => r.node))
 
-        return (
-          <Fragment key={`review-find-section-${sectionIndex}`}>
-            <Title
-              headingLevel="h2"
-              style={{
-                color: 'var(--pf-t--global--text--color--regular)',
-                marginBottom: 12,
-              }}
-            >
-              {section.stepLabel}
-            </Title>
-            <DescriptionList isHorizontal horizontalTermWidthModifier={mod} style={{ rowGap: 0, marginBottom: 24 }}>
-              {section.rows.map((row) => {
-                const lv = lvByPath.get(row.node.path)
-                const pr = pathByPath.get(row.node.path)
-                const pathOnly = lv === undefined && pr !== undefined
-                const labelIndices = indicesForKey(lv ?? pr, 'searchLabel')
-                const valueIndices = indicesForKey(lv ?? pr, 'searchValue')
-                const pathIndices = indicesForKey(pr, 'pathLast')
+          return (
+            <Fragment key={`review-find-section-${sectionIndex}`}>
+              <Title
+                headingLevel="h2"
+                style={{
+                  color: 'var(--pf-t--global--text--color--regular)',
+                  marginBottom: 12,
+                }}
+              >
+                {section.stepLabel}
+              </Title>
+              <DescriptionList isHorizontal horizontalTermWidthModifier={mod} style={{ rowGap: 0, marginBottom: 24 }}>
+                {section.rows.map((row) => {
+                  const lv = lvByPath.get(row.node.path)
+                  const pr = pathByPath.get(row.node.path)
+                  const pathOnly = lv === undefined && pr !== undefined
+                  const labelIndices = indicesForKey(lv ?? pr, 'searchLabel')
+                  const valueIndices = indicesForKey(lv ?? pr, 'searchValue')
+                  const pathIndices = indicesForKey(pr, 'pathLast')
 
-                const termText = row.node.label ?? row.node.path
-                const valueText = row.searchValue
-                const pathLastRaw = row.pathLast
-                const pathDisplay = formatPathLastSegmentForDisplay(pathLastRaw)
-                const rowExact = rowHasExactSubstringMatch(q, termText, valueText, pathLastRaw)
+                  const termText = row.node.label ?? row.node.path
+                  const valueText = row.searchValue
+                  const pathLastRaw = row.pathLast
+                  const pathDisplay = formatPathLastSegmentForDisplay(pathLastRaw)
+                  const rowExact = rowHasExactSubstringMatch(q, termText, valueText, pathLastRaw)
 
-                const labelHighlight = pickHighlightIndices(termText, q, pathOnly ? undefined : labelIndices, rowExact)
-                const valueHighlight = pickHighlightIndices(valueText, q, valueIndices, rowExact)
-                const pathHighlight =
-                  pathDisplay === pathLastRaw
-                    ? pickHighlightIndices(pathLastRaw, q, pathIndices, rowExact)
-                    : pickHighlightIndices(pathDisplay, q, undefined, rowExact)
+                  const labelHighlight = pickHighlightIndices(
+                    termText,
+                    q,
+                    pathOnly ? undefined : labelIndices,
+                    rowExact
+                  )
+                  const valueHighlight = pickHighlightIndices(valueText, q, valueIndices, rowExact)
+                  const pathHighlight =
+                    pathDisplay === pathLastRaw
+                      ? pickHighlightIndices(pathLastRaw, q, pathIndices, rowExact)
+                      : pickHighlightIndices(pathDisplay, q, undefined, rowExact)
 
-                const termBase = (
-                  <>
-                    {renderHighlighted(termText, labelHighlight)}
-                    {pathOnly ? (
-                      <>
-                        {' '}
-                        <span className="wizard-review-find-path-suffix">
-                          ({renderHighlighted(pathDisplay, pathHighlight)})
-                        </span>
-                      </>
-                    ) : null}
-                  </>
-                )
+                  const termBase = (
+                    <>
+                      {renderHighlighted(termText, labelHighlight)}
+                      {pathOnly ? (
+                        <>
+                          {' '}
+                          <span className="wizard-review-find-path-suffix">
+                            ({renderHighlighted(pathDisplay, pathHighlight)})
+                          </span>
+                        </>
+                      ) : null}
+                    </>
+                  )
 
-                const valueContent = row.node.error ? (
-                  <span className="wizard-review-find-value-with-trailing-icon">
+                  const valueContent = row.node.error ? (
+                    <span className="wizard-review-find-value-with-trailing-icon">
+                      <span className="wizard-review-find-inline-body">
+                        {renderFindValueContent(row.node, row.searchValue, valueHighlight)}
+                      </span>
+                      <ExclamationCircleIcon color={REVIEW_ERROR_TEXT_COLOR} />
+                    </span>
+                  ) : (
                     <span className="wizard-review-find-inline-body">
                       {renderFindValueContent(row.node, row.searchValue, valueHighlight)}
                     </span>
-                    <ExclamationCircleIcon color={REVIEW_ERROR_TEXT_COLOR} />
-                  </span>
-                ) : (
-                  <span className="wizard-review-find-inline-body">
-                    {renderFindValueContent(row.node, row.searchValue, valueHighlight)}
-                  </span>
-                )
+                  )
 
-                return (
-                  <DescriptionListGroup key={row.node.path} style={{ marginLeft: 32 }}>
-                    {onReviewEdit != null ? (
-                      <ReviewPenHoverZone
-                        ariaLabel="Edit"
-                        descriptionListTerm={termBase}
-                        descriptionListDescriptionId={row.node.id}
-                        onPenClick={() => onReviewEdit(row.node, yamlVisible ? 'highlight' : 'navigate')}
-                        onPenIconClick={() => onReviewEdit(row.node, 'navigate')}
-                        onArrowClick={yamlVisible ? () => onReviewEdit(row.node, 'highlight') : undefined}
-                      >
-                        {valueContent}
-                      </ReviewPenHoverZone>
-                    ) : (
-                      <>
-                        <DescriptionListTerm>{termBase}</DescriptionListTerm>
-                        <DescriptionListDescription id={row.node.id ?? ''} style={{ whiteSpace: 'pre-wrap' }}>
-                          <span className="wizard-review-inline-value">{valueContent}</span>
-                        </DescriptionListDescription>
-                      </>
-                    )}
-                  </DescriptionListGroup>
-                )
-              })}
-            </DescriptionList>
-          </Fragment>
-        )
-      })}
+                  return (
+                    <DescriptionListGroup key={row.node.path} style={{ marginLeft: 32 }}>
+                      {onReviewEdit != null ? (
+                        <ReviewPenHoverZone
+                          ariaLabel="Edit"
+                          descriptionListTerm={termBase}
+                          descriptionListDescriptionId={row.node.id}
+                          onPenClick={() => onReviewEdit(row.node, yamlVisible ? 'highlight' : 'navigate')}
+                          onPenIconClick={() => onReviewEdit(row.node, 'navigate')}
+                          onArrowClick={yamlVisible ? () => onReviewEdit(row.node, 'highlight') : undefined}
+                        >
+                          {valueContent}
+                        </ReviewPenHoverZone>
+                      ) : (
+                        <>
+                          <DescriptionListTerm>{termBase}</DescriptionListTerm>
+                          <DescriptionListDescription id={row.node.id ?? ''} style={{ whiteSpace: 'pre-wrap' }}>
+                            <span className="wizard-review-inline-value">{valueContent}</span>
+                          </DescriptionListDescription>
+                        </>
+                      )}
+                    </DescriptionListGroup>
+                  )
+                })}
+              </DescriptionList>
+            </Fragment>
+          )
+        })}
+      </div>
     </div>
   )
 }
