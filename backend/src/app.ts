@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import Router from 'find-my-way'
-import { Http2Server, Http2ServerRequest, Http2ServerResponse } from 'http2'
+import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import { authenticated } from './lib/authenticated'
 import { loadSettings, stopSettingsWatch } from './lib/config'
 import { cors } from './lib/cors'
@@ -99,7 +99,7 @@ export async function requestHandler(req: Http2ServerRequest, res: Http2ServerRe
   }
 }
 
-export function start(): Promise<Http2Server | undefined> {
+export function start() {
   loadSettings()
   if (eventsEnabled) {
     startWatching()

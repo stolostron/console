@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import fetch, { RequestInfo, RequestInit, Response } from 'node-fetch'
+import type { RequestInfo, RequestInit, Response } from 'node-fetch'
+import fetch from 'node-fetch'
 
 export function fetchRetry(url: RequestInfo, init?: RequestInit, retry?: number): Promise<Response> {
   let retries: number
@@ -77,7 +78,7 @@ export function fetchRetry(url: RequestInfo, init?: RequestInit, retry?: number)
               break
           }
         } else {
-          reject(err)
+          reject(new Error(String(err)))
         }
       } finally {
         if (delay === 0) delay = 100

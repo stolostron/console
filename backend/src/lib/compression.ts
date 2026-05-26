@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { pipeline, Readable, Transform } from 'stream'
+import type { Readable, Transform } from 'node:stream'
+import { pipeline } from 'node:stream'
 import {
   createBrotliCompress,
   createBrotliDecompress,
@@ -7,8 +8,8 @@ import {
   createGunzip,
   createGzip,
   createInflate,
-  Zlib,
-} from 'zlib'
+  type Zlib,
+} from 'node:zlib'
 import { logger } from './logger'
 
 export function getDecodeStream(stream: Readable, contentEncoding?: string | string[]): Readable {

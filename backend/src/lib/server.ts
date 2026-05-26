@@ -1,16 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
-import { readFileSync } from 'fs'
-import {
-  constants,
-  createSecureServer,
-  createServer,
-  Http2Server,
-  Http2ServerRequest,
-  Http2ServerResponse,
-} from 'http2'
-import { Socket } from 'net'
-import { TLSSocket } from 'tls'
+import { readFileSync } from 'node:fs'
+import type { Http2Server, Http2ServerRequest, Http2ServerResponse } from 'node:http2'
+import { constants, createSecureServer, createServer } from 'node:http2'
+import type { Socket } from 'node:net'
+import type { TLSSocket } from 'node:tls'
 import { logger } from './logger'
 
 let server: Http2Server | undefined
@@ -43,13 +37,10 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
   try {
     if (cert && key) {
       logger.debug({ msg: `server start`, secure: true })
-      server = createSecureServer(
-        { cert, key, allowHTTP1: true },
-        options.requestHandler as (req: Http2ServerRequest, res: Http2ServerResponse) => void
-      )
+      server = createSecureServer({ cert, key, allowHTTP1: true }, options.requestHandler)
     } else {
       logger.debug({ msg: `server start`, secure: false })
-      server = createServer(options.requestHandler as (req: Http2ServerRequest, res: Http2ServerResponse) => void)
+      server = createServer(options.requestHandler)
     }
     return new Promise((resolve, reject) => {
       server
@@ -136,7 +127,7 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
               error: 'address already in use',
               port: Number(process.env.PORT),
             })
-            reject(undefined)
+            reject(new Error('address already in use'))
           } else {
             logger.error({ msg: `server error`, error: err.message })
           }

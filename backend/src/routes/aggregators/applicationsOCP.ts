@@ -4,9 +4,9 @@ import { logger } from '../../lib/logger'
 import { getMultiClusterEngine } from '../../lib/multi-cluster-engine'
 import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
 import { getPagedSearchResources } from '../../lib/search'
-import { IResource } from '../../resources/resource'
+import type { IResource } from '../../resources/resource'
 import { getKubeResources } from '../events'
-import { AppColumns, ApplicationCacheType, generateTransforms, MODE } from './applications'
+import { AppColumns, type ApplicationCacheType, generateTransforms, MODE } from './applications'
 
 // query limit per letter group
 const OCP_APP_QUERY_LIMIT = 20000
@@ -119,7 +119,7 @@ export async function getOCPApps(
         .split(';')
         .map((label: string) => {
           const [annotation, value] = label.split('=')
-          return { annotation, value } as { annotation: string; value: string }
+          return { annotation, value }
         })
 
       const { itemLabel, isManagedByHelm, argoInstanceLabelValue } = getValues(labels)
@@ -267,23 +267,22 @@ function getValues(labels: { annotation: any; value: any }[]) {
   let argoInstanceLabelValue = ''
   let isManagedByHelm
 
-  labels &&
-    labels.forEach(({ annotation, value }) => {
-      value = value as string
-      if (annotation === 'app') {
+  labels?.forEach(({ annotation, value }) => {
+    value = value as string
+    if (annotation === 'app') {
+      itemLabel = value as string
+    } else if (annotation === 'app.kubernetes.io/part-of') {
+      if (!itemLabel) {
         itemLabel = value as string
-      } else if (annotation === 'app.kubernetes.io/part-of') {
-        if (!itemLabel) {
-          itemLabel = value as string
-        }
       }
-      if (annotation === 'app.kubernetes.io/instance') {
-        argoInstanceLabelValue = value as string
-      }
-      if (annotation === 'app.kubernetes.io/managed-by' && value === 'Helm') {
-        isManagedByHelm = true
-      }
-    })
+    }
+    if (annotation === 'app.kubernetes.io/instance') {
+      argoInstanceLabelValue = value as string
+    }
+    if (annotation === 'app.kubernetes.io/managed-by' && value === 'Helm') {
+      isManagedByHelm = true
+    }
+  })
   return {
     itemLabel,
     isManagedByHelm,

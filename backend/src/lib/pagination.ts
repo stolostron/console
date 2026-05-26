@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Http2ServerRequest, Http2ServerResponse } from 'http2'
+import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import Fuse from 'fuse.js'
-import { IResource } from '../resources/resource'
+import type { IResource } from '../resources/resource'
 import { getAuthorizedResources } from '../routes/events'
 import { AppColumns } from '../routes/aggregators/applications'
 
@@ -139,7 +139,7 @@ export function paginate(
     }
 
     // because rbac is expensive. perform it only on the resources the user wants to see
-    items = (await getAuthorizedResources(token, items, startIndex, endIndex)) as unknown as ITransformedResource[]
+    items = await getAuthorizedResources(token, items, startIndex, endIndex)
 
     // remove the transform work attribute
     items = items.map(({ transform, remoteClusters, ...keepAttrs }) => keepAttrs)

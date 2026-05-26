@@ -1,8 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { constants, Http2ServerRequest, Http2ServerResponse } from 'http2'
-import { Transform } from 'stream'
-import { clearInterval } from 'timers'
-import { Zlib } from 'zlib'
+import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
+import { constants } from 'node:http2'
+import type { Transform } from 'node:stream'
+import { clearInterval } from 'node:timers'
+import type { Zlib } from 'node:zlib'
 import { getEncodeStream } from './compression'
 import { parseCookies, setCookie } from './cookies'
 import { logger } from './logger'
@@ -199,8 +200,8 @@ export class ServerSideEvents {
 
   public static handleRequest(token: string, req: Http2ServerRequest, res: Http2ServerResponse): ServerSideEventClient {
     const [writableStream, compressionStream, encoding] = getEncodeStream(
-      res as unknown as NodeJS.WritableStream,
-      req.headers[HTTP2_HEADER_ACCEPT_ENCODING] as string,
+      res,
+      req.headers[HTTP2_HEADER_ACCEPT_ENCODING],
       process.env.DISABLE_STREAM_COMPRESSION === 'true'
     )
 
@@ -307,7 +308,7 @@ export class ServerSideEvents {
       }
     }
   }
-  private static intervalTimer: NodeJS.Timer | undefined = setInterval(() => {
+  private static intervalTimer: NodeJS.Timeout | undefined = setInterval(() => {
     ServerSideEvents.keepAlivePing()
   }, 10 * 1000)
 }

@@ -1,11 +1,13 @@
-import { Http2ServerRequest, Http2ServerResponse, constants } from 'http2'
+import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
+import { constants } from 'node:http2'
 /* Copyright Contributors to the Open Cluster Management project */
-import { Stats, createReadStream } from 'fs'
+import type { Stats } from 'node:fs'
+import { createReadStream } from 'node:fs'
 
-import { extname } from 'path'
+import { extname } from 'node:path'
 import { logger } from '../lib/logger'
-import { pipeline } from 'stream'
-import { stat } from 'fs/promises'
+import { pipeline } from 'node:stream'
+import { stat } from 'node:fs/promises'
 import { catchInternalServerError } from '../lib/respond'
 
 const cacheControl = process.env.NODE_ENV === 'production' ? 'public, max-age=604800' : 'no-store'
