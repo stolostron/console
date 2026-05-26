@@ -8,7 +8,7 @@ import { SyncEditorDiff, SyncEditorDiffHandle } from './SyncEditorDiff'
 import { SyncEditorToolbar, readShowChangesPreference } from './SyncEditorToolbar'
 import { compileAjvSchemas } from './validation'
 import { getFormChanges, getUserChanges } from './changes'
-import { decorate, toModelDeltaDecorations } from './decorate'
+import { decorate, getModelDecorations } from './decorate'
 import { setFormValues, updateReferences } from './synchronize'
 import './SyncEditor.css'
 import { useTranslation } from '../../lib/acm-i18next'
@@ -557,8 +557,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
       return
     }
     const originalEditor = diffEditor?.getOriginalEditor() ?? null
-    const modifiedModel = modifiedEditor.getModel()
-    const savedModifiedDecorations = toModelDeltaDecorations(modifiedModel ? modifiedModel.getAllDecorations() : [])
+    const savedModifiedDecorations = getModelDecorations(modifiedEditor, editorHasErrors)
     const modifiedViewState = modifiedEditor.saveViewState()
     if (typeof activeMonaco.editor.createModel === 'function') {
       modifiedEditor.getModel()?.dispose?.()
@@ -584,7 +583,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
       }
     }
     if (showDiffView && diffEditor) {
-      refreshDiffEditorDecorations(diffEditor, () => {
+      setDiffEditorModels(diffEditor, () => {
         if (modifiedViewState) {
           modifiedEditor.restoreViewState(modifiedViewState)
         }
@@ -595,11 +594,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     }
   }
 
-  /** Recompute diff line decorations after child editor models change (e.g. form sync). */
-  function refreshDiffEditorDecorations(
-    diffEditor: editorTypes.IStandaloneDiffEditor,
-    afterSetModel?: () => void
-  ): void {
+  /** Re-attach original/modified models on the diff editor (e.g. after form sync updates models). */
+  function setDiffEditorModels(diffEditor: editorTypes.IStandaloneDiffEditor, afterSetModel?: () => void): void {
     const model = diffEditor.getModel()
     if (model?.original && model?.modified) {
       diffEditor.setModel({ original: model.original, modified: model.modified })
@@ -871,7 +867,10 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   }, [syncActiveInstances, diffEditorInstanceEpoch])
 
   return (
-    <div ref={pageRef} className="sync-editor__container">
+    <div
+      ref={pageRef}
+      className={`sync-editor__container${showChanges ? ' sync-editor__container--show-changes' : ''}`}
+    >
       <div className="sync-editor__stack">
         <CodeEditor
           isLineNumbersVisible={true}

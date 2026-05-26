@@ -213,6 +213,17 @@
   background: url("data:image/svg+xml;utf8, <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' width='14' height='14'><g fill='white'><circle cx='3.9' cy='3.4' r='3.4'/><g transform='translate(4.000000, 4.000000)'><path fill='%23C9190B' d='M0,4c2.2,0,4-1.8,4-4c0-2.2-1.8-4-4-4s-4,1.8-4,4C-4,2.2-2.2,4,0,4z M0.4,0.5h-0.8 c-0.1,0-0.2-0.1-0.2-0.2l-0.1-2.2c0-0.1,0.1-0.2,0.2-0.2h1c0.1,0,0.2,0.1,0.2,0.2L0.6,0.3C0.6,0.4,0.5,0.5,0.4,0.5z M0,2.3 c-0.4,0-0.7-0.3-0.7-0.7S-0.4,0.8,0,0.8s0.7,0.3,0.7,0.7S0.4,2.3,0,2.3z'/></g></g></svg>");
 }
 
+.insertLineDecoration {
+  background: #87d4ecab;
+  width: 6px !important;
+  margin-left: 4px;
+  pointer-events: none;
+}
+
+.sync-editor__container--show-changes .insertLineDecoration {
+  background: #ff00ffab;
+}
+
 .monaco-diff-editor .line-insert {
   background-color: #eef3e2 !important;
 }
@@ -244,13 +255,13 @@
 :root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .monaco-diff-editor .char-delete {
   background-color: rgba(154, 78, 78, 0.41) !important;
 }
-.insertLineDecoration {
+/* .insertLineDecoration {
   background-color: rgba(159, 255, 223, 0.6) !important;
-}
-
+} */
+/* 
 :root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .insertLineDecoration {
   background-color: rgba(107, 139, 123, 0.55) !important;
-}
+} */
 
 .customLineDecoration {
   background-color: rgba(135, 212, 236, 0.35) !important;

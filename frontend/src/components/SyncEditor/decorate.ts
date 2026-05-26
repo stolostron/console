@@ -52,7 +52,7 @@ export const decorate = (
 
   // add decorations to editor
   const hasErrors = errors.length > 0
-  const handles = getResourceEditorDecorations(editor, hasErrors).map((decoration: { id: any }) => decoration.id)
+  const handles = filterResourceEditorDecorations(editor, hasErrors).map((decoration) => decoration.id)
   editor.deltaDecorations(handles, decorations)
 
   // scroll to best line to show
@@ -171,7 +171,6 @@ const addHighlightDecorations = (
     options: {
       className: 'syncEditorYamlHighlight',
       isWholeLine: range.startLineNumber !== range.endLineNumber,
-      stackOrder: 3,
     },
   })
 }
@@ -193,7 +192,8 @@ const addChangeDecorations = (
       decorations.push({
         range: new monaco.Range(obj.$r, 0, obj.$r + ($t === 'N' ? obj.$l - 1 : 0), 0),
         options: {
-          className: isCustomEdit ? 'customLineDecoration' : 'insertLineDecoration',
+          linesDecorationsClassName: isCustomEdit ? 'customLineDecoration' : 'insertLineDecoration',
+          overviewRuler: isCustomEdit ? { color: '#0000ff', position: 1 } : {},
           isWholeLine: true,
           description: 'resource-editor',
           zIndex: 1000,
@@ -212,25 +212,30 @@ const addChangeDecorations = (
   })
 }
 
-export const toModelDeltaDecorations = (
-  decorations: Pick<editorTypes.IModelDecoration, 'range' | 'options'>[]
-): editorTypes.IModelDeltaDecoration[] => decorations.map(({ range, options }) => ({ range, options }))
+export const getModelDecorations = (
+  editor: editorTypes.IStandaloneCodeEditor,
+  hasErrors: boolean
+): editorTypes.IModelDeltaDecoration[] =>
+  filterResourceEditorDecorations(editor, hasErrors).map(({ range, options }) => ({ range, options }))
 
-export const getResourceEditorDecorations = (editor: editorTypes.IStandaloneCodeEditor, hasErrors: boolean) => {
+const filterResourceEditorDecorations = (
+  editor: editorTypes.IStandaloneCodeEditor,
+  hasErrors: boolean
+): editorTypes.IModelDecoration[] => {
   // clear resource-editor decorations
   // don't filter protectedDecoration if there are errors because parser doesn't know where protected
   // areas are so only previous decorations do
   const model = editor?.getModel()
   let decorations = model ? model.getAllDecorations() : []
   decorations = decorations.filter(({ options }) => {
+    const lineDecorationClass = options?.className ?? options?.linesDecorationsClassName
     return (
       options?.className?.startsWith('squiggly-') ||
       options?.className === 'syncEditorYamlHighlight' ||
-      LINE_DECORATION_CLASS_NAMES.includes(options?.className as (typeof LINE_DECORATION_CLASS_NAMES)[number]) ||
+      LINE_DECORATION_CLASS_NAMES.includes(lineDecorationClass as (typeof LINE_DECORATION_CLASS_NAMES)[number]) ||
       (!!options?.glyphMarginClassName && (options?.inlineClassName !== 'protectedDecoration' || !hasErrors))
     )
   })
-  // these are the handles that are removed before adding new decorators
   return decorations
 }
 
@@ -254,7 +259,9 @@ const scrollToChangeDecoration = (editor: editorTypes.IStandaloneCodeEditor, err
       } else {
         // if visible range doesn't show any inserted-line decorations, scroll to the first one
         const insertedLineDecorations = decorations.filter(
-          (decoration) => decoration.options.className === 'insertLineDecoration'
+          (decoration) =>
+            decoration.options.className === 'insertLineDecoration' ||
+            decoration.options.linesDecorationsClassName === 'insertLineDecoration'
         )
         if (insertedLineDecorations.length) {
           setTimeout(() => {
