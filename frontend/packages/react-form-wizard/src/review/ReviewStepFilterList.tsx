@@ -96,13 +96,10 @@ function stableDeepEqual(a: unknown, b: unknown): boolean {
     const bKeys = Object.keys(bRecord).sort()
     return (
       aKeys.length === bKeys.length &&
-      aKeys.every(
-        (key, index) => key === bKeys[index] && stableDeepEqual(aRecord[key], bRecord[key])
-      )
+      aKeys.every((key, index) => key === bKeys[index] && stableDeepEqual(aRecord[key], bRecord[key]))
     )
   }
   return false
-}
 }
 
 function isReviewInputNode(node: WizardDomTreeNode): node is WizardInputDomNode {
