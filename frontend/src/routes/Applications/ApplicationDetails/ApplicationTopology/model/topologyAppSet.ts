@@ -33,6 +33,7 @@ import {
   fetchArgoAppStatusResources,
   getClusterName,
   getResourceTypes,
+  processMultiples,
 } from './topologyUtils'
 
 /** Window after ApplicationSet creation during which `isCreating` is true on the topology node. */
@@ -658,7 +659,7 @@ function processResources(
   })
 
   // create nodes for each resource
-  deduplicatedResources.forEach((deployable: Record<string, unknown>) => {
+  processMultiples(deduplicatedResources).forEach((deployable: Record<string, unknown>) => {
     const typedDeployable = deployable as unknown as ProcessedDeployableResource
     const {
       name: deployableName,
