@@ -632,34 +632,37 @@ function processResources(
     })
   }
 
-  // Deduplicate cluster-scoped resources (no namespace) that appear on multiple clusters.
-  // They should become a single node with all target clusters in clustersNames.
-  const deduplicatedResources = deduplicateClusterScopedResources(allResources)
-
   // Map of VM UID -> ControllerRevision name for VM-owned controller revisions
   const vmControllerRevisions = new Map<string, string[]>()
+  const vmOwnedCrNames = new Set<string>()
 
   // pre-emptively find controller revisions that are owned by a VirtualMachine
-  deduplicatedResources.forEach((deployable: Record<string, unknown>) => {
+  allResources.forEach((deployable: Record<string, unknown>) => {
     const typedDeployable = deployable as unknown as ProcessedDeployableResource
     const { name: deployableName, kind } = typedDeployable
     const type = kind.toLowerCase()
 
-    // ControllerRevision resources owned by a VirtualMachine are already
-    // represented as child nodes created by createControllerRevisionChild —
-    // skip them to avoid duplicates. Detected via the
-    // "revision-start-vm-<vmUid>-<rev>" naming convention.
     if (type === 'controllerrevision') {
       const uidMatch = deployableName.match(/.+-vm-([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})-\d+$/)
       if (uidMatch) {
         vmControllerRevisions.set(uidMatch[1], [...(vmControllerRevisions.get(uidMatch[1]) || []), deployableName])
-        return
+        vmOwnedCrNames.add(deployableName)
       }
     }
   })
 
+  // Filter out VM-owned ControllerRevisions before processMultiples merges them
+  // into a single entry (which loses individual names and breaks the skip logic).
+  const resourcesToProcess = allResources.filter((deployable: Record<string, unknown>) => {
+    const typedDeployable = deployable as unknown as ProcessedDeployableResource
+    if (typedDeployable.kind.toLowerCase() === 'controllerrevision' && vmOwnedCrNames.has(typedDeployable.name)) {
+      return false
+    }
+    return true
+  })
+
   // create nodes for each resource
-  processMultiples(deduplicatedResources).forEach((deployable: Record<string, unknown>) => {
+  processMultiples(resourcesToProcess).forEach((deployable: Record<string, unknown>) => {
     const typedDeployable = deployable as unknown as ProcessedDeployableResource
     const {
       name: deployableName,
@@ -678,13 +681,6 @@ function processResources(
     if (type === 'virtualmachineinstance') {
       const labelStr: string = (deployable as any).label || ''
       if (labelStr.split(';').some((entry: string) => entry.trim().startsWith('kubevirt.io/vm='))) {
-        return
-      }
-    }
-
-    if (type === 'controllerrevision') {
-      const uidMatch = deployableName.match(/.+-vm-([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})-\d+$/)
-      if (uidMatch) {
         return
       }
     }
@@ -717,10 +713,7 @@ function processResources(
       raw.apiVersion = apiVersion
     }
 
-    // For cluster-scoped resources, use all target clusters; for namespaced, use parent clusters
-    const nodeClusters = deployableNamespace
-      ? parentClusterNames
-      : (typedDeployable as any)._targetClusters || parentClusterNames
+    const nodeClusters = parentClusterNames
 
     // Create deployable resource node
     let deployableObj: TopologyNode = {
@@ -764,38 +757,6 @@ function processResources(
     // Create virtual machine instance child nodes (for KubeVirt)
     createVirtualMachineInstance(deployableObj, parentClusterNames || [], activeTypes, links, nodes)
   })
-}
-
-/**
- * Deduplicates cluster-scoped resources (those without a namespace) that appear
- * multiple times for different clusters. Combines them into a single entry with
- * _targetClusters containing all clusters where the resource should be deployed.
- * Namespaced resources are returned unchanged.
- */
-function deduplicateClusterScopedResources(resources: ResourceItem[]): ResourceItem[] {
-  const clusterScoped: Map<string, ResourceItem> = new Map()
-  const namespaced: ResourceItem[] = []
-
-  resources.forEach((resource: ResourceItem) => {
-    if (resource.namespace) {
-      namespaced.push(resource)
-    } else {
-      const key = `${(resource.kind || '').toLowerCase()}/${resource.name || ''}`
-      const existing = clusterScoped.get(key)
-      if (existing) {
-        const clusters = (existing as any)._targetClusters || [existing.cluster]
-        if (resource.cluster && !clusters.includes(resource.cluster)) {
-          clusters.push(resource.cluster)
-        }
-        ;(existing as any)._targetClusters = clusters
-      } else {
-        const entry = { ...resource, _targetClusters: resource.cluster ? [resource.cluster] : [] }
-        clusterScoped.set(key, entry)
-      }
-    }
-  })
-
-  return [...namespaced, ...Array.from(clusterScoped.values())]
 }
 
 /**
