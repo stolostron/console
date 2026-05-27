@@ -56,7 +56,8 @@ interface MockModel {
   setValue: (value: string) => void
   getLineContent: (line: number) => string
   getAllDecorations: () => any[]
-  getLineCount: () => void
+  getLineCount: () => number
+  getLineMaxColumn: (lineNumber: number) => number
   getFullModelRange: () => void
   getValueInRange: () => string
   canUndo: () => boolean
@@ -75,6 +76,7 @@ interface MockEditor {
   onDidBlurEditorWidget: () => void
   changeViewZones: () => void
   getDomNode: () => HTMLElement
+  getContainerDomNode: () => HTMLElement
   addCommand: () => void
   getSelection: () => void
   setSelection: () => void
@@ -107,7 +109,7 @@ const MonacoEditor = (props: {
 }) => {
   const editorMockRef = React.useRef<any | null>(null)
   if (!editorMockRef.current) {
-    editorMockRef.current = {}
+    editorMockRef.current = { container: document.createElement('div') }
     editorMockRef.current.lastTypeInx = -1
     editorMockRef.current.undoStack = [props.value]
     editorMockRef.current.redoStack = []
@@ -120,7 +122,14 @@ const MonacoEditor = (props: {
       forceTokenization: () => {},
       getLineCount: () => {
         const text = editorMockRef.current.editorContent
-        return text.trim().split('\n').length
+        if (!text) {
+          return 1
+        }
+        return text.split('\n').length
+      },
+      getLineMaxColumn: (lineNumber: number) => {
+        const line = editorMockRef.current.editorContent.split('\n')[lineNumber - 1] ?? ''
+        return line.length + 1
       },
       getFullModelRange: () => {},
       canUndo: () => true,
@@ -182,15 +191,18 @@ const MonacoEditor = (props: {
       getDomNode: () => {
         return editorMockRef.current.textArea
       },
+      getContainerDomNode: () => {
+        return editorMockRef.current.container
+      },
       getSelection: () => {
         const ta = editorMockRef.current.textArea
         const value = ta.value
         const startLines = value.slice(0, ta.selectionStart).split('\n')
-        const startLineNumber = startLines.length - 1
-        const startColumn = startLines[startLineNumber].length + 1
+        const startLineNumber = startLines.length
+        const startColumn = startLines[startLines.length - 1].length + 1
         const endLines = value.slice(0, ta.selectionEnd).split('\n')
-        const endLineNumber = endLines.length - 1
-        const endColumn = ta.selectionEnd - startLines.join('').length
+        const endLineNumber = endLines.length
+        const endColumn = endLines[endLines.length - 1].length + 1
         return new Selection(startLineNumber, startColumn, endLineNumber, endColumn)
       },
       setSelection: () => {},
@@ -213,8 +225,12 @@ const MonacoEditor = (props: {
         const { text } = edits[0]
         const ta = editorMockRef.current.textArea
         const v = editorMockRef.current.textArea.value
-        editorMockRef.current.textArea.value =
-          v.substring(0, ta.selectionStart) + text + v.substring(ta.selectionEnd, v.length)
+        const newValue = v.substring(0, ta.selectionStart) + text + v.substring(ta.selectionEnd, v.length)
+        editorMockRef.current.editorContent = newValue
+        if (ta) {
+          ta.value = newValue
+        }
+        props.onChange(newValue, { target: { value: newValue } })
       },
     }
     editorMockRef.current.mockMonaco = {
@@ -228,6 +244,11 @@ const MonacoEditor = (props: {
     props.onMount(editorMockRef.current.mockEditor, editorMockRef.current.mockMonaco)
   }
   return (
+    <div
+      ref={(ref) => {
+        if (ref) editorMockRef.current.container = ref
+      }}
+    >
     <textarea
       aria-label="monaco"
       data-auto={props.wrapperClassName}
@@ -272,7 +293,13 @@ const MonacoEditor = (props: {
       }}
       value={editorMockRef.current.editorContent}
     ></textarea>
+    </div>
   )
 }
+
+export const Editor = MonacoEditor
+export const DiffEditor = MonacoEditor
+export const loader = { config: () => undefined }
+export const useMonaco = () => [null, () => undefined] as const
 
 export default MonacoEditor
