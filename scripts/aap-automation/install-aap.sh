@@ -432,6 +432,25 @@ if [ -n "$ROUTE_URL" ] && [ -n "$ADMIN_PASSWORD" ]; then
             --from-literal=host="$ROUTE_URL" \
             --dry-run=client -o yaml | oc apply -f -
         log_info "Token stored in secret: ${PLATFORM_NAME}-oauth-token"
+
+        # Create ACM Ansible credential so AAP is usable from ACM immediately
+        ACM_CREDENTIAL_NAME="aap-shared-credential"
+        log_info "Creating ACM Ansible credential: ${ACM_CREDENTIAL_NAME}"
+        cat <<CREDENTIAL_EOF | oc apply -f -
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: ${ACM_CREDENTIAL_NAME}
+  namespace: ${AAP_NAMESPACE}
+  labels:
+    cluster.open-cluster-management.io/type: "ans"
+    cluster.open-cluster-management.io/credentials: ""
+stringData:
+  host: "${AAP_URL}"
+  token: "${OAUTH_TOKEN}"
+CREDENTIAL_EOF
+        log_info "ACM credential created in namespace: ${AAP_NAMESPACE}"
     else
         log_warn "Failed to generate OAuth token"
     fi
@@ -451,6 +470,7 @@ log_info "Username:         admin"
 log_info "Password:         (retrieve via command below)"
 if [ -n "$OAUTH_TOKEN" ]; then
     log_info "OAuth Secret:     ${PLATFORM_NAME}-oauth-token"
+    log_info "ACM Credential:   ${ACM_CREDENTIAL_NAME} (namespace: ${AAP_NAMESPACE})"
 fi
 echo ""
 log_info "Deployed Components:"
@@ -470,6 +490,8 @@ echo ""
 log_info "To retrieve the password later, run:"
 log_info "  oc get secret ${PLATFORM_NAME}-admin-password -n $AAP_NAMESPACE -o jsonpath='{.data.password}' | base64 -d"
 if [ -n "$OAUTH_TOKEN" ]; then
-    log_info "To retrieve the OAuth token later, run:"
-    log_info "  oc get secret ${PLATFORM_NAME}-oauth-token -n $AAP_NAMESPACE -o jsonpath='{.data.token}'"
+    log_info "To retrieve the OAuth token, run:"
+    log_info "  oc get secret ${PLATFORM_NAME}-oauth-token -n $AAP_NAMESPACE -o jsonpath='{.data.token}' | base64 -d"
+    log_info "To retrieve the ACM credential secret, run:"
+    log_info "  oc get secret ${ACM_CREDENTIAL_NAME} -n $AAP_NAMESPACE -o yaml"
 fi
