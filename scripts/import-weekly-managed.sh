@@ -10,9 +10,9 @@ set -euo pipefail
 WORKDIR="/tmp/rhacm-import"
 HUB_CLUSTER_NAME="${HUB_CLUSTER_NAME:-weekly}"
 MANAGED_CLUSTER_NAME="${MANAGED_CLUSTER_NAME:-weekly-managed}"
-CLUSTERPOOL_NAME="${CLUSTERPOOL_NAME:-cs-aws-420}" # should be alternated via cronjob args
+CLUSTERPOOL_NAME="${CLUSTERPOOL_NAME:-cs-aws-422}" # should be alternated via cronjob args
 CLUSTERPOOL_TARGET_NAMESPACE="${CLUSTERPOOL_TARGET_NAMESPACE:-console-squad}"
-CLUSTERCLAIM_NAME="${CLUSTERCLAIM_NAME:-$MANAGED_CLUSTER_NAME}"
+CLUSTERCLAIM_NAME="$MANAGED_CLUSTER_NAME" # always the same as the managed cluster name
 CLUSTERCLAIM_LIFETIME="${CLUSTERCLAIM_LIFETIME:-164h}"
 
 HUB_KUBECONFIG="${WORKDIR}/hub-kubeconfig"
