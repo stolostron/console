@@ -133,6 +133,9 @@ EOF
 fi
 
 # Create route to the placement debug service for local development.
+# The service uses an OCM self-signed CA, so destinationCACertificate is required
+# for the router to trust the backend TLS certificate.
+PLACEMENT_DEBUG_CA=$(oc get configmap ca-bundle-configmap -n open-cluster-management-hub -o jsonpath='{.data.ca-bundle\.crt}' 2>/dev/null || true)
 oc apply -f - << EOF
 apiVersion: route.openshift.io/v1
 kind: Route
@@ -146,6 +149,8 @@ spec:
   tls:
     termination: reencrypt
     insecureEdgeTerminationPolicy: Redirect
+    destinationCACertificate: |
+$(echo "$PLACEMENT_DEBUG_CA" | sed 's/^/      /')
 EOF
 PLACEMENT_DEBUG_URL=https://$(oc get route cluster-manager-placement -n open-cluster-management-hub -o="jsonpath={.status.ingress[0].host}")/debug/placements/
 echo PLACEMENT_DEBUG_URL=$PLACEMENT_DEBUG_URL >> ./backend/.env
