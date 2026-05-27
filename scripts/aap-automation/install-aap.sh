@@ -491,7 +491,7 @@ log_info "To retrieve the password later, run:"
 log_info "  oc get secret ${PLATFORM_NAME}-admin-password -n $AAP_NAMESPACE -o jsonpath='{.data.password}' | base64 -d"
 if [ -n "$OAUTH_TOKEN" ]; then
     log_info "To retrieve the OAuth token, run:"
-    log_info "  oc get secret ${PLATFORM_NAME}-oauth-token -n $AAP_NAMESPACE -o jsonpath='{.data.token}'"
+    log_info "  oc get secret ${PLATFORM_NAME}-oauth-token -n $AAP_NAMESPACE -o jsonpath='{.data.token}' | base64 -d"
     log_info "To retrieve the ACM credential secret, run:"
     log_info "  oc get secret ${ACM_CREDENTIAL_NAME} -n $AAP_NAMESPACE -o yaml"
 fi
