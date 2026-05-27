@@ -10,13 +10,13 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-const requiredEnvVars = ['RHACM_URL', 'OCP_USERNAME', 'OCP_PASSWORD'] as const
+const requiredEnvVars = ['OCP_USERNAME', 'OCP_PASSWORD'] as const
 const missingVars = requiredEnvVars.filter((key) => !process.env[key])
 if (missingVars.length > 0) {
   throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`)
 }
 
-const RHACM_URL = process.env.RHACM_URL!
+const RHACM_URL = process.env.RHACM_URL || 'http://localhost:9000'
 const OCP_USERNAME = process.env.OCP_USERNAME!
 const OCP_PASSWORD = process.env.OCP_PASSWORD!
 
