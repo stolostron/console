@@ -7,7 +7,7 @@ import { pipeline } from 'node:stream'
 import { URL } from 'node:url'
 import { getPlacementDebugAgent } from '../lib/agent'
 import { logger } from '../lib/logger'
-import { respondInternalServerError } from '../lib/respond'
+import { respond, respondInternalServerError } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'
 
 const proxyHeaders = [
@@ -39,6 +39,12 @@ export async function placementDebug(req: Http2ServerRequest, res: Http2ServerRe
     if (req.headers[header]) headers[header] = req.headers[header]
   }
 
+  const agent = getPlacementDebugAgent()
+  if (!agent) {
+    logger.error({ msg: 'placement debug unavailable — OCM CA bundle not configured (PLACEMENT_CA_BUNDLE_PATH)' })
+    return respond(res, { error: 'Placement debug service unavailable — OCM CA bundle not configured' }, 503)
+  }
+
   const url = new URL(process.env.PLACEMENT_DEBUG_URL || defaultPlacementDebugUrl)
   headers.host = url.hostname
 
@@ -49,7 +55,7 @@ export async function placementDebug(req: Http2ServerRequest, res: Http2ServerRe
     path: url.pathname,
     method: 'POST',
     headers,
-    agent: getPlacementDebugAgent(),
+    agent,
   }
 
   pipeline(
@@ -62,7 +68,9 @@ export async function placementDebug(req: Http2ServerRequest, res: Http2ServerRe
       }
       responseHeaders['content-type'] = 'application/json'
       res.writeHead(response.statusCode ?? 500, responseHeaders)
-      pipeline(response, res as unknown as NodeJS.WritableStream, () => logger.error)
+      pipeline(response, res as unknown as NodeJS.WritableStream, (err) => {
+        if (err) logger.error({ msg: 'placement debug response pipeline error', error: err.message })
+      })
     }),
     (err) => {
       if (err) {

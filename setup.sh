@@ -136,6 +136,9 @@ fi
 # The service uses an OCM self-signed CA, so destinationCACertificate is required
 # for the router to trust the backend TLS certificate.
 PLACEMENT_DEBUG_CA=$(oc get configmap ca-bundle-configmap -n open-cluster-management-hub -o jsonpath='{.data.ca-bundle\.crt}' 2>/dev/null || true)
+if [[ -z "$PLACEMENT_DEBUG_CA" ]]; then
+  echo "WARNING: OCM CA bundle not found — placement debug route will lack destinationCACertificate (is the PlacementDebugServer feature gate enabled?)"
+fi
 oc apply -f - << EOF
 apiVersion: route.openshift.io/v1
 kind: Route

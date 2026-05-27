@@ -1,8 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import path from 'node:path'
 import { request } from '../mock-request'
 import nock from 'nock'
 
 const upstreamHost = 'https://cluster-manager-placement.open-cluster-management-hub.svc.cluster.local:9443'
+
+beforeAll(() => {
+  process.env.PLACEMENT_CA_BUNDLE_PATH = path.resolve(__dirname, '../../certs/tls.crt')
+})
+afterAll(() => {
+  delete process.env.PLACEMENT_CA_BUNDLE_PATH
+})
 
 function nockAuth(status = 200) {
   nock(process.env.CLUSTER_API_URL).get('/apis').reply(status, { status })

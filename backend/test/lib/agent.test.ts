@@ -37,13 +37,12 @@ describe('getPlacementDebugAgent', () => {
     getServiceAgent = agentModule.getServiceAgent
   })
 
-  it('falls back to service agent when PLACEMENT_CA_BUNDLE_PATH is not configured', () => {
+  it('returns undefined when PLACEMENT_CA_BUNDLE_PATH is not configured', () => {
     mockGetPlacementDebugCA.mockReturnValue(undefined)
 
     const agent = getPlacementDebugAgent()
-    const serviceAgent = getServiceAgent()
 
-    expect(agent).toBe(serviceAgent)
+    expect(agent).toBeUndefined()
   })
 
   it('returns a dedicated agent when OCM CA is available', () => {
@@ -84,14 +83,13 @@ describe('getPlacementDebugAgent', () => {
     expect(second).not.toBe(first)
   })
 
-  it('transitions from service agent to dedicated agent when CA becomes available', () => {
+  it('transitions from undefined to dedicated agent when CA becomes available', () => {
     mockGetPlacementDebugCA.mockReturnValue(undefined)
     const withoutCA = getPlacementDebugAgent()
-    expect(withoutCA).toBe(getServiceAgent())
+    expect(withoutCA).toBeUndefined()
 
     mockGetPlacementDebugCA.mockReturnValue('ocm-ca-bundle-cert')
     const withCA = getPlacementDebugAgent()
-    expect(withCA).not.toBe(withoutCA)
     expect(withCA).toBeInstanceOf(Agent)
   })
 })

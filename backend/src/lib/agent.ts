@@ -37,12 +37,12 @@ export function getServiceAgent() {
 }
 
 let placementDebugAgent: Agent | undefined
-export function getPlacementDebugAgent(): Agent {
+export function getPlacementDebugAgent(): Agent | undefined {
   const ocmCA = getPlacementDebugCACertificate(() => {
     placementDebugAgent = undefined
   })
 
-  if (!ocmCA) return getServiceAgent()
+  if (!ocmCA) return undefined
 
   if (!placementDebugAgent) {
     placementDebugAgent = new Agent({
