@@ -1,0 +1,25 @@
+# Copyright Contributors to the Open Cluster Management project
+#
+# Job image for the import-weekly-managed CronJob.
+# Standalone image — does not depend on the production console image.
+#
+# Build & Push:
+#   podman build -f Containerfile.import-weekly-managed \
+#     -t quay.io/zlayne/console-import-weekly-managed:latest .
+#   podman push quay.io/zlayne/console-import-weekly-managed:latest
+
+# ose-cli is RHEL 8 (el8) — jq must come from ubi8, not ubi9, for glibc compatibility
+FROM registry.redhat.io/ubi8/ubi-minimal AS jq
+RUN microdnf install -y jq && microdnf clean all
+
+FROM registry.redhat.io/openshift4/ose-cli:latest
+USER root
+WORKDIR /app
+COPY --from=jq /usr/bin/jq /usr/bin/jq
+COPY --from=jq /usr/lib64/libjq.so.1 /usr/lib64/libjq.so.1
+COPY --from=jq /usr/lib64/libonig.so.* /usr/lib64/
+COPY scripts/import-weekly-managed.sh ./scripts/import-weekly-managed.sh
+RUN chmod +x ./scripts/import-weekly-managed.sh \
+  && oc version --client \
+  && jq --version
+USER 1001
