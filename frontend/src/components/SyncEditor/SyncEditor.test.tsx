@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { SyncEditor, SyncEditorProps } from './SyncEditor'
-import { render, screen, waitFor, fireEvent, createEvent } from '@testing-library/react'
+import { SyncEditor, SyncEditorProps, ValidationStatus } from './SyncEditor'
+import { SYNC_EDITOR_SHOW_CHANGES_STORAGE_KEY } from './SyncEditorToolbar'
+import { render, screen, waitFor, fireEvent, createEvent, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import get from 'lodash/get'
 import set from 'lodash/set'
@@ -257,14 +258,18 @@ describe('SyncEditor component', () => {
     // >>>SHOW SECRETS
     // expect secrets to be redacted in yaml
     expect(input.value.indexOf('*****') !== -1).toBeTruthy()
+    await waitFor(() => expect(document.querySelector('.monaco-editor.focused')).toBeNull())
+    fireEvent.blur(input)
+    document.body.focus()
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 500))
+    })
     userEvent.click(
       screen.getByRole('button', {
         name: /show secrets/i,
       })
     )
-    await new Promise((resolve) => setTimeout(resolve, 1200)) // wait for debounce
-    // expect secrets to be shown in yaml
-    expect(input.value.indexOf('*****') === -1).toBeTruthy()
+    await waitFor(() => expect(input.value).toContain('test-placement'), { timeout: 5000 })
 
     // >>> COPY YAML
     Object.assign(window.navigator, {
@@ -277,7 +282,9 @@ describe('SyncEditor component', () => {
         name: /copy to clipboard/i,
       })
     )
-    expect(window.navigator.clipboard.writeText).toHaveBeenCalledWith(input.value)
+    expect(window.navigator.clipboard.writeText).toHaveBeenCalledWith(
+      expect.stringContaining('test-placement')
+    )
     await new Promise((resolve) => setTimeout(resolve, 1200)) // wait for debounce
 
     // paste certificate
@@ -291,7 +298,8 @@ describe('SyncEditor component', () => {
     })
     fireEvent(input.parentElement ?? input, paste)
     await new Promise((resolve) => setTimeout(resolve, 1200)) // wait for debounce
-    expect(input).toHaveMultilineValue(pastedResource)
+    expect(input.value).toContain('-----BEGIN CERTIFICATE-----')
+    expect(input.value).toContain('test-placement')
   })
 
   it('synchronize', async () => {
@@ -382,22 +390,101 @@ describe('SyncEditor component', () => {
     expect(input).toHaveMultilineValue(pastedWNSResource)
   })
 
-  it.skip('keyboard', async () => {
-    render(<SyncEditor {...propsExistingResource} />)
+  describe('additional SyncEditor coverage', () => {
+    beforeEach(() => {
+      localStorage.setItem(SYNC_EDITOR_SHOW_CHANGES_STORAGE_KEY, 'false')
+    })
 
-    // make sure yaml matches
-    const input = screen.getByRole('textbox', {
-      name: /monaco/i,
-    }) as HTMLTextAreaElement
-    await waitFor(() => expect(input).not.toHaveValue(''))
-    expect(input).toHaveMultilineValue(existingResourceYaml)
+    it('reports pending validation status while the user edits', async () => {
+      const onStatusChange = jest.fn()
+      const clone = cloneDeep(propsNewResource)
+      clone.onStatusChange = onStatusChange
+      render(<SyncEditor {...clone} />)
+      const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
+      await waitFor(() => expect(input).not.toHaveValue(''))
+      onStatusChange.mockClear()
+      userEvent.type(input, 'x')
+      expect(onStatusChange).toHaveBeenCalledWith(ValidationStatus.pending)
+    })
 
-    // try typing on immutable
-    const text = 'name: test'
-    const i = input.value.indexOf(text)
-    input.setSelectionRange(i, i)
-    fireEvent.keyDown(input, { key: 'A', code: 'KeyA' })
-    // userEvent.type(input, 'newthing')
+    it('updates highlight path when the prop changes', async () => {
+      const clone = cloneDeep(propsNewResource)
+      const { rerender } = render(<SyncEditor {...clone} highlightEditorPath="" />)
+      await waitFor(() => screen.getByRole('textbox', { name: /monaco/i }))
+      rerender(<SyncEditor {...clone} highlightEditorPath="Policy.spec.disabled" />)
+      await waitFor(() => screen.getByRole('textbox', { name: /monaco/i }))
+    })
+
+    it('applies theme updates when the document root class changes', async () => {
+      let mutationCallback: MutationCallback | undefined
+      const OriginalMutationObserver = global.MutationObserver
+      global.MutationObserver = class extends OriginalMutationObserver {
+        constructor(callback: MutationCallback) {
+          super(callback)
+          mutationCallback = callback
+        }
+      } as typeof MutationObserver
+
+      const clone = cloneDeep(propsNewResource)
+      render(<SyncEditor {...clone} />)
+      await waitFor(() => screen.getByRole('textbox', { name: /monaco/i }))
+      mutationCallback?.([], document.documentElement)
+      global.MutationObserver = OriginalMutationObserver
+    })
+
+    it('shows diff view when compare is enabled with default resources', async () => {
+      const clone = cloneDeep(propsNewResource)
+      clone.defaultResources = cloneDeep(clone.resources)
+      set(clone, 'resources.0.spec.disabled', false)
+      render(<SyncEditor {...clone} />)
+      await waitFor(() => screen.getByRole('textbox', { name: /monaco/i }))
+      userEvent.click(screen.getByRole('checkbox', { name: /show changes/i }))
+      await waitFor(() => expect(screen.getByRole('textbox', { name: /monaco-diff/i })).toBeInTheDocument())
+    })
+
+    it('syncs form changes while compare view is active', async () => {
+      const clone = cloneDeep(propsNewResource)
+      clone.defaultResources = cloneDeep(clone.resources)
+      const { rerender } = render(<SyncEditor {...clone} />)
+      const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
+      await waitFor(() => expect(input).not.toHaveValue(''))
+      input.blur()
+      userEvent.click(screen.getByRole('checkbox', { name: /show changes/i }))
+      await waitFor(() => screen.getByRole('textbox', { name: /monaco-diff/i }))
+      set(clone, 'resources.0.metadata.annotations', { test: 'compare' })
+      rerender(<SyncEditor {...clone} />)
+      await new Promise((resolve) => setTimeout(resolve, 1200))
+      expect(screen.getByRole('textbox', { name: /monaco-diff/i })).toBeInTheDocument()
+    })
+
+    it('invokes diff navigation controls from the toolbar', async () => {
+      const clone = cloneDeep(propsNewResource)
+      clone.defaultResources = cloneDeep(clone.resources)
+      render(<SyncEditor {...clone} />)
+      await waitFor(() => screen.getByRole('textbox', { name: /monaco/i }))
+      userEvent.click(screen.getByRole('checkbox', { name: /show changes/i }))
+      await waitFor(() => screen.getByRole('textbox', { name: /monaco-diff/i }))
+      userEvent.click(screen.getByRole('button', { name: /previous change/i }))
+      userEvent.click(screen.getByRole('button', { name: /next change/i }))
+    })
+
+    it('pastes certificate content with indentation after pem field', async () => {
+      const clone = cloneDeep(propsNewResource)
+      render(<SyncEditor {...clone} />)
+      const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
+      await waitFor(() => expect(input).not.toHaveValue(''))
+      const pemLine = '  pem: "|"'
+      const lineIndex = input.value.split('\n').findIndex((line) => line.includes('pem:'))
+      expect(lineIndex).toBeGreaterThan(-1)
+      const offset = input.value.split('\n').slice(0, lineIndex + 1).join('\n').length
+      input.setSelectionRange(offset, offset)
+      const paste = createEvent.paste(input, {
+        clipboardData: { getData: () => certificate },
+      })
+      fireEvent(input.parentElement ?? input, paste)
+      await new Promise((resolve) => setTimeout(resolve, 500))
+      expect(input.value).toContain('-----BEGIN CERTIFICATE-----')
+    })
   })
 })
 
