@@ -200,7 +200,10 @@ const MonacoEditor = (props: {
         editorMockRef.current.onDidBlurEditorWidget = handler
         return mockDisposable()
       },
-      onDidFocusEditorWidget: () => mockDisposable(),
+      onDidFocusEditorWidget: (handler: () => void) => {
+        editorMockRef.current.onDidFocusEditorWidget = handler
+        return mockDisposable()
+      },
       onDidChangeModel: () => mockDisposable(),
       onDidChangeModelContent: () => mockDisposable(),
       getVisibleRanges: () => [],
@@ -402,7 +405,10 @@ const buildMockEditor = (props: { onChange?: (value: string, e: any) => void; in
       editorMockRef.current.onDidBlurEditorWidget = handler
       return mockDisposable()
     },
-    onDidFocusEditorWidget: () => mockDisposable(),
+    onDidFocusEditorWidget: (handler: () => void) => {
+      editorMockRef.current.onDidFocusEditorWidget = handler
+      return mockDisposable()
+    },
     onDidChangeModel: () => mockDisposable(),
     getVisibleRanges: () => [],
     addCommand: () => {},
@@ -521,6 +527,14 @@ const MockDiffEditor = (props: {
         className="monaco-editor"
         ref={(ref) => {
           editorMockRef.current.textArea = ref
+        }}
+        onFocus={() => {
+          editorMockRef.current.textArea?.classList.add('focused')
+          editorMockRef.current.onDidFocusEditorWidget?.()
+        }}
+        onBlur={() => {
+          editorMockRef.current.textArea?.classList.remove('focused')
+          editorMockRef.current.onDidBlurEditorWidget?.()
         }}
         onChange={(e) => {
           editorMockRef.current.editorContent = e.target.value
