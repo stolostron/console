@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { createRef } from 'react'
+import { createRef, type Ref } from 'react'
 import { render, screen, waitFor, fireEvent, act } from '@testing-library/react'
 import { SyncEditorDiff, type SyncEditorDiffHandle, type SyncEditorDiffProps } from './SyncEditorDiff'
 
@@ -24,7 +24,7 @@ const currentResource = {
   data: { key: 'updated' },
 }
 
-function renderSyncEditorDiff(overrides: Partial<SyncEditorDiffProps> = {}, ref?: React.RefObject<SyncEditorDiffHandle | null>) {
+function renderSyncEditorDiff(overrides: Partial<SyncEditorDiffProps> = {}, ref?: Ref<SyncEditorDiffHandle>) {
   const resizeRootRef = { current: document.createElement('div') }
   const onDiffEditorFocusChange = jest.fn()
   const onDiffEditorInstanceChange = jest.fn()
