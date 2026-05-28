@@ -282,9 +282,7 @@ describe('SyncEditor component', () => {
         name: /copy to clipboard/i,
       })
     )
-    expect(window.navigator.clipboard.writeText).toHaveBeenCalledWith(
-      expect.stringContaining('test-placement')
-    )
+    expect(window.navigator.clipboard.writeText).toHaveBeenCalledWith(expect.stringContaining('test-placement'))
     await new Promise((resolve) => setTimeout(resolve, 1200)) // wait for debounce
 
     // paste certificate
@@ -428,7 +426,7 @@ describe('SyncEditor component', () => {
       const clone = cloneDeep(propsNewResource)
       render(<SyncEditor {...clone} />)
       await waitFor(() => screen.getByRole('textbox', { name: /monaco/i }))
-      mutationCallback?.([], document.documentElement)
+      mutationCallback?.([], { disconnect: () => {}, observe: () => {}, takeRecords: () => [] } as MutationObserver)
       global.MutationObserver = OriginalMutationObserver
     })
 
@@ -473,10 +471,12 @@ describe('SyncEditor component', () => {
       render(<SyncEditor {...clone} />)
       const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
       await waitFor(() => expect(input).not.toHaveValue(''))
-      const pemLine = '  pem: "|"'
       const lineIndex = input.value.split('\n').findIndex((line) => line.includes('pem:'))
       expect(lineIndex).toBeGreaterThan(-1)
-      const offset = input.value.split('\n').slice(0, lineIndex + 1).join('\n').length
+      const offset = input.value
+        .split('\n')
+        .slice(0, lineIndex + 1)
+        .join('\n').length
       input.setSelectionRange(offset, offset)
       const paste = createEvent.paste(input, {
         clipboardData: { getData: () => certificate },
@@ -796,9 +796,6 @@ const certificate =
   'FakeCertificateContentsForTestingPurposesNotRealDataAtAllAndMore\r\n' +
   'FakeCertificateContentsFinalLine==\r\n' +
   '-----END CERTIFICATE-----'
-
-const pastedResource =
-  'apiVersion: policy.open-cluster-management.io/v1\nkind: Policy\nmetadata:\n  name: test\n  namespace: default\n  annotations:\n    policy.open-cluster-management.io/categories: AC Access Control\n    policy.open-cluster-management.io/controls: AC-3 Access Enforcement\n    policy.open-cluster-management.io/standards: NIST SP 800-53\n  pem: "|"\n  -----BEGIN CERTIFICATE-----\n  FakeCertificateContentsForTestingPurposesNotRealDataAtAllJustFun\n  FakeCertificateContentsForTestingPurposesNotRealDataAtAllAndMore\n  FakeCertificateContentsFinalLine==\n  -----END CERTIFICATE-----\nspec:\n  disabled: true\n  policy-templates:\n    - objectDefinition:\n        apiVersion: policy.open-cluster-management.io/v1\n        kind: IamPolicy\n        metadata:\n          name: policy-limitclusteradmin\n        spec:\n          maxClusterRoleBindingUsers: 5\n          remediationAction: inform\n          severity: medium\n---\napiVersion: cluster.open-cluster-management.io/v1beta1\nkind: Placement\nmetadata:\n  name: test-placement\n  namespace: default\nspec:\n  predicates:\n    - requiredClusterSelector:\n        labelSelector:\n          matchExpressions:\n            - key: name\n              operator: In\n              values:\n                - local-cluster\n---\napiVersion: policy.open-cluster-management.io/v1\nkind: PlacementBinding\nmetadata:\n  name: test-placement\n  namespace: default\nplacementRef:\n  name: test-placement\n  apiGroup: cluster.open-cluster-management.io\n  kind: Placement\nsubjects:\n  - name: test\n    apiGroup: policy.open-cluster-management.io\n    kind: Policy\n'
 
 const pastedWONSResource =
   'apiVersion: policy.open-cluster-management.io/v1\nkind: Policy\nmetadata:\n  name: test\nspec:\n  disabled: false'

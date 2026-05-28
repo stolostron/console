@@ -1,8 +1,22 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { processForm, processUser, stringify, normalize } from './process'
+import { processForm, processUser, stringify, normalize, type CachedValuesType } from './process'
 import { compileAjvSchemas } from './validation'
+import type { ChangeType } from './changes'
 import type { Monaco } from '@monaco-editor/react'
+
+type ProcessUserOverrides = {
+  secrets?: (string | string[])[]
+  cachedSecrets?: CachedValuesType[]
+  showFilters?: boolean
+  filters?: (string | string[])[]
+  cacheFiltered?: CachedValuesType[]
+  immutables?: (string | string[])[]
+  readonly?: boolean
+  validators?: unknown
+  currentEditorValue?: string
+  editableUidSiblings?: boolean
+}
 
 class MockRange {
   startLineNumber: number
@@ -115,21 +129,7 @@ describe('normalize', () => {
 describe('processUser', () => {
   const monaco = createMonaco()
 
-  const processUserDefaults = (
-    yaml: string,
-    overrides: Partial<Parameters<typeof processUser>[2]> & {
-      secrets?: (string | string[])[]
-      cachedSecrets?: { path: string; value: string }[]
-      showFilters?: boolean
-      filters?: (string | string[])[]
-      cacheFiltered?: { path: string; value: string }[]
-      immutables?: (string | string[])[]
-      readonly?: boolean
-      validators?: unknown
-      currentEditorValue?: string
-      editableUidSiblings?: boolean
-    } = {}
-  ) => {
+  const processUserDefaults = (yaml: string, overrides: ProcessUserOverrides = {}) => {
     const {
       secrets = [],
       cachedSecrets = [],
@@ -187,11 +187,14 @@ describe('processUser', () => {
   })
 
   it('restores cached secret values into parsed state before redacting', () => {
-    const redacted = processUserDefaults('apiVersion: v1\nkind: Secret\nmetadata:\n  name: c\nstringData:\n  password: "***"\n', {
-      secrets: ['Secret.0.stringData.password'],
-      cachedSecrets: [{ path: ['Secret', 0, 'stringData', 'password'], value: 'restored' }],
-    })
-    expect(redacted.unredactedChange.hiddenSecretsValues[0]?.value).toBe('restored')
+    const redacted = processUserDefaults(
+      'apiVersion: v1\nkind: Secret\nmetadata:\n  name: c\nstringData:\n  password: "***"\n',
+      {
+        secrets: ['Secret.0.stringData.password'],
+        cachedSecrets: [{ path: 'Secret.0.stringData.password', value: 'restored' }],
+      }
+    )
+    expect(redacted.unredactedChange.hiddenSecretsValues?.[0]?.value).toBe('restored')
   })
 
   it('records hiddenFilteredValues and filtered rows when filters are hidden', () => {
@@ -207,7 +210,7 @@ describe('processUser', () => {
       showFilters: false,
     })
     expect(filteredRows.length).toBeGreaterThan(0)
-    expect(unredactedChange.hiddenFilteredValues.length).toBeGreaterThan(0)
+    expect(unredactedChange.hiddenFilteredValues?.length).toBeGreaterThan(0)
   })
 
   it('keeps filtered paths visible when showFilters is true', () => {
@@ -241,8 +244,8 @@ describe('processUser', () => {
 
   it('restores cached secrets and filters when syntax or validation errors exist', () => {
     const invalidYaml = 'apiVersion: v1\nkind: Policy\nmetadata\n  name: broken'
-    const cachedSecrets = [{ path: ['Secret', 0, 'stringData', 'password'], value: 'cached' }]
-    const cacheFiltered = [{ path: ['ConfigMap', 0, 'metadata', 'managedFields'], value: [] }]
+    const cachedSecrets: CachedValuesType[] = [{ path: 'Secret.0.stringData.password', value: 'cached' }]
+    const cacheFiltered: CachedValuesType[] = [{ path: 'ConfigMap.0.metadata.managedFields', value: '[]' }]
     const { unredactedChange, errors } = processUserDefaults(invalidYaml, {
       cachedSecrets,
       cacheFiltered,
@@ -342,11 +345,11 @@ describe('processForm', () => {
       baseResources: [cloneResource(base)],
       customResources: [cloneResource({ ...base, data: { key: 'user-edit' } })],
     }
-    const userEdits = [
+    const userEdits: ChangeType[] = [
       {
         $t: 'E',
         $a: 'ConfigMap.0.data.key',
-        $p: ['ConfigMap', 0, 'data', 'key'],
+        $p: ['ConfigMap', '0', 'data', 'key'],
         $u: 'user-edit',
       },
     ]
