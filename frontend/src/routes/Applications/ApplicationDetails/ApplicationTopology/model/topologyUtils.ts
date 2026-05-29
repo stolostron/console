@@ -378,18 +378,39 @@ export const createControllerRevisionChild = (
   clustersNames: string[],
   activeTypes: string[] | undefined,
   links: TopologyLink[],
-  nodes: TopologyNode[]
+  nodes: TopologyNode[],
+  vmControllerRevisions?: Map<string, string[]>
 ): TopologyNode | undefined => {
   const parentType = parentNode?.type || ''
-  if (parentType === 'daemonset' || parentType === 'statefulset' || parentType === 'virtualmachine') {
-    const pNode = createChildNode(parentNode, clustersNames, 'controllerrevision', activeTypes, links, nodes)
 
-    // Create pod children for non-virtual machine types
-    if (parentType !== 'virtualmachine') {
-      return createChildNode(pNode, clustersNames, 'pod', activeTypes, links, nodes)
-    }
-    return pNode
+  if (parentType === 'daemonset' || parentType === 'statefulset') {
+    const pNode = createChildNode(parentNode, clustersNames, 'controllerrevision', activeTypes, links, nodes)
+    return createChildNode(pNode, clustersNames, 'pod', activeTypes, links, nodes)
   }
+
+  if (parentType === 'virtualmachine') {
+    if (vmControllerRevisions) {
+      const rawUid = (parentNode.specs as any)?.raw?._uid as string | undefined
+      const k8sUid = rawUid?.includes('/') ? rawUid.split('/').pop() : rawUid
+      const revisionNames = k8sUid ? vmControllerRevisions.get(k8sUid) : undefined
+      if (revisionNames && revisionNames.length > 0) {
+        let lastNode: TopologyNode | undefined
+        for (const revName of revisionNames) {
+          lastNode = createChildNode(
+            { ...parentNode, name: revName },
+            clustersNames,
+            'controllerrevision',
+            activeTypes,
+            links,
+            nodes
+          )
+        }
+        return lastNode
+      }
+    }
+    return createChildNode(parentNode, clustersNames, 'controllerrevision', activeTypes, links, nodes)
+  }
+
   return undefined
 }
 
