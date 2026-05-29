@@ -817,15 +817,17 @@ const getImageSetVersion = (control) => {
   return control?.active ? control?.availableMap?.[control.active]?.replacements?.releaseImageVersion : undefined
 }
 
-export const isHidden_lt_OCP48 = (control, controlData) => {
+export const isHidden_SNO_FF = (control, controlData) => {
   const singleNodeFeatureFlag = getControlByID(controlData, 'singleNodeFeatureFlag')
   if (singleNodeFeatureFlag && singleNodeFeatureFlag.active) {
     const version = getImageSetVersion(getControlByID(controlData, 'imageSet'))
     if (version) {
       return !versionGreater(version, 4, 7)
+    } else {
+      return false // assume OCP version is 4.8 or higher if version cannot be found
     }
   }
-  return false // assume OCP version is 4.8 or higher
+  return true // always hidden unless the feature flag is enabled
 }
 
 export const isHidden_lt_OCP47 = (control, controlData) => {
@@ -838,7 +840,7 @@ export const isHidden_lt_OCP47 = (control, controlData) => {
 
 export const isHidden_SNO = (control, controlData) => {
   const singleNode = getControlByID(controlData, 'singleNode')
-  return singleNode && singleNode.active && !isHidden_lt_OCP48(control, controlData)
+  return singleNode && singleNode.active && !isHidden_SNO_FF(control, controlData)
 }
 
 export const onChangeSNO = (control, controlData) => {
