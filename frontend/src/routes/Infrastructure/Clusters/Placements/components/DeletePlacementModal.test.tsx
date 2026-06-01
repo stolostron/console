@@ -162,7 +162,7 @@ describe('DeletePlacementModal', () => {
 
   test('displays related GitOpsClusters with impact message', () => {
     renderModal({ relatedGitOpsClusters: [mockGitOpsCluster] })
-    expect(screen.getByText(/GitOpsClusters: stops register managed clusters with ArgoCD:/)).toBeInTheDocument()
+    expect(screen.getByText(/GitOpsClusters: stops registering managed clusters with ArgoCD:/)).toBeInTheDocument()
     expect(screen.getByText('my-gitops')).toBeInTheDocument()
   })
 
@@ -179,7 +179,7 @@ describe('DeletePlacementModal', () => {
     expect(screen.getByText('my-policy')).toBeInTheDocument()
     expect(screen.getByText(/PolicySets: stops distributing to managed clusters:/)).toBeInTheDocument()
     expect(screen.getByText('my-policyset')).toBeInTheDocument()
-    expect(screen.getByText(/GitOpsClusters: stops register managed clusters with ArgoCD:/)).toBeInTheDocument()
+    expect(screen.getByText(/GitOpsClusters: stops registering managed clusters with ArgoCD:/)).toBeInTheDocument()
     expect(screen.getByText('my-gitops')).toBeInTheDocument()
   })
 

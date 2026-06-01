@@ -142,7 +142,7 @@ export function DeletePlacementModal(props: IDeletePlacementModalProps | { open:
             )}
             {relatedGitOpsClusters.length > 0 && (
               <div className="delete-placement-resource-group">
-                <strong>{t('GitOpsClusters: stops register managed clusters with ArgoCD:')}</strong>
+                <strong>{t('GitOpsClusters: stops registering managed clusters with ArgoCD:')}</strong>
                 <List className="delete-placement-related-resources-list">
                   {relatedGitOpsClusters.map((gitOpsCluster) => (
                     <ListItem

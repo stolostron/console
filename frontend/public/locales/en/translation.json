@@ -1634,7 +1634,7 @@
   "Git tag": "Git tag",
   "GitOpsCluster created": "GitOpsCluster created",
   "GitOpsCluster YAML": "GitOpsCluster YAML",
-  "GitOpsClusters: stops register managed clusters with ArgoCD:": "GitOpsClusters: stops register managed clusters with ArgoCD:",
+  "GitOpsClusters: stops registering managed clusters with ArgoCD:": "GitOpsClusters: stops registering managed clusters with ArgoCD:",
   "Global access": "Global access",
   "Global search": "Global search",
   "Global search is enabled. Resources across all your managed hubs and clusters will be shown.": "Global search is enabled. Resources across all your managed hubs and clusters will be shown.",
