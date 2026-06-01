@@ -394,7 +394,7 @@ export default function SearchResults(
                   'Related Kubernetes resources can be displayed to help aid in the correlation of data from one object to another.'
                 )}
               >
-                <OutlinedQuestionCircleIcon color={'var(--pf-t--global--text--color--200)'} />
+                <OutlinedQuestionCircleIcon color={'var(--pf-t--global--text--color--subtle)'} />
               </Tooltip>
             </div>
             {isRelatedSectionOpen && (
