@@ -16,7 +16,7 @@ console/
 │       ├── react-form-wizard/  # @patternfly-labs/react-form-wizard
 │       ├── eslint-config/      # @stolostron/eslint-config
 │       └── prettier-config/    # @stolostron/prettier-config
-├── backend/                  # Node.js 20+ ESM proxy server
+├── backend/                  # Node.js ESM proxy server
 ├── docs/                     # Architecture documentation
 ├── scripts/                  # Build and development scripts
 └── resources/                # Sample K8s YAML fixtures
@@ -24,7 +24,7 @@ console/
 
 ## Prerequisites
 
-- **Node.js 20** (see `.nvmrc`) and **npm 9**
+- **Node.js** (version pinned in `.nvmrc` and `.tool-versions`) and **npm**
 - **OpenShift 4.x cluster** with ACM or MCE installed for full functionality
 - **openssl** for certificate generation
 
@@ -88,9 +88,7 @@ Use `npm run plugins` for development; it matches the production deployment mode
 
 ## Branch Strategy
 
-Pull requests should target the first branch in each release line. The project uses automatic fast-forwarding between release branches:
-
-- `main → release-2.16 → backplane-2.11` (the current active line starts with `main`)
+The same codebase builds images for ACM (`release-*` branches) and MCE (`backplane-*` branches). The build system automatically fast-forwards commits between paired branches. See the "Active Release Branches" section in `README.md` for the current branch chains. Pull requests should target the first branch in each chain, which is `main` for the current release. Never open a PR directly against a `backplane-*` branch. 
 
 ## Feature Flags
 
@@ -99,5 +97,5 @@ Features can be enabled/disabled via the `console-config` ConfigMap in the insta
 ## Troubleshooting
 
 - **Certificate errors** — Remove `backend/certs/` and run `npm run ci:backend` to regenerate
-- **Module resolution errors** — Verify Node.js 20 and npm 9; version mismatches break ESM resolution
+- **Module resolution errors** — Verify Node.js and npm versions match `.nvmrc` / `.tool-versions`; version mismatches break ESM resolution
 - **Missing `.env`** — Run `npm run setup` to generate `backend/.env` with cluster connection details

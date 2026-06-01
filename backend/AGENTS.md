@@ -1,6 +1,6 @@
 # Backend
 
-Node.js 20+ ESM proxy server. Sits between the browser and the hub cluster API server, handling authentication, RBAC enforcement, resource watching, and API proxying.
+Node.js ESM proxy server. Sits between the browser and the hub cluster API server, handling authentication, RBAC enforcement, resource watching, and API proxying.
 
 ## Key Technologies
 
@@ -10,7 +10,7 @@ Node.js 20+ ESM proxy server. Sits between the browser and the hub cluster API s
 - **Logging**: Pino with structured JSON output (use `pino-zen` for dev formatting)
 - **Metrics**: `prom-client` for Prometheus integration
 - **HTTP Client**: `got` for outbound requests
-- **WebSocket**: `ws` for event streaming
+- **WebSocket**: upgrade handler routes to search (bidirectional relay via `ws` with token injection) and managed cluster proxy (via `http2-proxy`)
 
 ## Source Layout
 

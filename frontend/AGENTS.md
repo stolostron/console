@@ -5,7 +5,7 @@ React 18+ SPA with TypeScript in strict mode. Serves as both the standalone cons
 ## Key Technologies
 
 - **UI Framework**: PatternFly 6+ (Red Hat's design system)
-- **State Management**: Recoil atoms for global state, Redux Toolkit where needed
+- **State Management**: Recoil atoms for global state
 - **Data Fetching**: React Query, Apollo/GraphQL for search
 - **Routing**: React Router with v5 compatibility layer
 - **Build**: Webpack 5 with module federation for dynamic plugins
@@ -62,11 +62,15 @@ Run from the `frontend/` directory, or use the `npm run *:frontend` variants fro
 - Properly mock and isolate dependencies
 - Async tests must handle promises correctly (await, act())
 
-## Authentication Flow
+## Authentication Flow (Standalone Mode Only)
+
+When running as a standalone app (`npm start`), the frontend handles its own authentication:
 
 1. Frontend uses `acm-access-token-cookie` for user tokens
 2. On 401 responses, OAuth flow starts via `/login` endpoint
 3. Backend proxies to cluster OAuth and sets the cookie on success
+
+When running as dynamic plugins (the recommended dev mode via `npm run plugins`), OpenShift Console handles authentication and the plugins inherit the user's session.
 
 ## Dynamic Plugins
 
@@ -75,4 +79,4 @@ Plugin builds use module federation. Each plugin has:
 - `console-plugin-metadata.ts` — Plugin metadata
 - `webpack.plugin.ts` — Plugin-specific webpack config
 
-The ACM plugin exposes the full feature set; MCE is a subset.
+MCE (MultiCluster Engine) is a prerequisite for ACM. The MCE plugin provides the base multicluster management features, and the ACM plugin adds additional capabilities on top (governance, applications, etc.).
