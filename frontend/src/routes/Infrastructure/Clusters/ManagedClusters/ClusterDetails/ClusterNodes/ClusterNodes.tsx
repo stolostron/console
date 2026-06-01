@@ -121,7 +121,7 @@ export function NodesPoolsTable() {
     if (isObservabilityInstalled && !gpuDataLoading && !gpuDataError) {
       const resultData = gpuData?.data?.result ?? []
       resultData.forEach((data) => {
-        const metricNodeName = data.metric.instance.split(':')[0]
+        const metricNodeName = data.metric?.instance.split(':')[0]
         // increase count by 1 for each gpu metric instance
         counts[metricNodeName] = (counts[metricNodeName] ?? 0) + 1
       })

@@ -522,7 +522,7 @@ export function useGPUCountColumn(): IAcmTableColumn<Cluster> {
       const resultData = gpuData?.data?.result ?? []
       resultData.forEach((data) => {
         // increase count by 1 for each gpu metric instance
-        counts[data.metric.clusterID] = (counts[data.metric.clusterID] ?? 0) + 1
+        counts[data.metric?.clusterID] = (counts[data.metric?.clusterID] ?? 0) + 1
       })
     }
     return counts
