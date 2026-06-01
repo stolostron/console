@@ -46,11 +46,21 @@ Run from the `frontend/` directory, or use the `npm run *:frontend` variants fro
 | `npm run i18n` | Validate i18n translation files |
 | `npm run storybook` | Launch Storybook for component development |
 
+## Conventions
+
+- All user-facing strings must use `useTranslation()` or `<Trans />` from `src/lib/acm-i18next` — never hardcode display text
+- Use PatternFly components following their [design guidelines](https://www.patternfly.org/); prefer PatternFly over custom UI
+- Never use `dangerouslySetInnerHTML` or `innerHTML`
+- Use proper error boundaries and error handling in components
+
 ## Testing
 
 - Test files live alongside source files as `*.test.ts` / `*.test.tsx`
 - Run a single test: `npm test -- <pattern>`
 - Jest config is in `jest.config.ts`; mocks are in `__mocks__/`
+- Tests should meaningfully cover behavior, not just achieve coverage metrics
+- Properly mock and isolate dependencies
+- Async tests must handle promises correctly (await, act())
 
 ## Authentication Flow
 

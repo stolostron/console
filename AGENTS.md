@@ -6,7 +6,7 @@
 
 ## Monorepo Structure
 
-```
+```text
 console/
 ├── frontend/                 # React 18+ SPA with TypeScript (npm workspaces root)
 │   ├── src/                  # Main application source

@@ -40,13 +40,27 @@ Run from the `backend/` directory, or use the `npm run *:backend` variants from 
 
 ## Architecture
 
-```
+```text
 Browser → Backend (HTTP/2 proxy) → Hub Cluster API Server
                 ↓
           Watches resources via service account
           Enforces RBAC via user token + SubjectAccessReview
           Streams events to frontend via SSE
 ```
+
+## Security
+
+- Never log sensitive data (tokens, passwords, credentials)
+- Validate and sanitize all inputs
+- Guard against injection vulnerabilities (command injection, path traversal)
+- Ensure proper authentication and authorization checks on all routes
+
+## Testing
+
+- Test files are in `test/`
+- Tests should meaningfully cover behavior, not just achieve coverage metrics
+- Properly mock and isolate dependencies
+- Async tests must handle promises correctly
 
 ## Environment
 
