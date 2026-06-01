@@ -1,140 +1,103 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+# AGENTS.md
 
 ## Project Overview
 
-@stolostron/console is the user interface for Red Hat Advanced Cluster Management (ACM) for Kubernetes and Red Hat MultiCluster Engine (MCE). It's a sophisticated multi-cluster management console that can run both as a standalone application (for development purposes) and as OpenShift Console dynamic plugins.
+`@stolostron/console` is the UI for Red Hat Advanced Cluster Management (ACM) for Kubernetes and Red Hat MultiCluster Engine (MCE). It runs as a standalone application for development and as OpenShift Console dynamic plugins in production.
+
+## Monorepo Structure
+
+```
+console/
+├── frontend/                 # React 18+ SPA with TypeScript (npm workspaces root)
+│   ├── src/                  # Main application source
+│   ├── plugins/              # ACM and MCE dynamic plugin builds
+│   └── packages/             # Workspace packages:
+│       ├── multicluster-sdk/   # @stolostron/multicluster-sdk
+│       ├── react-form-wizard/  # @patternfly-labs/react-form-wizard
+│       ├── eslint-config/      # @stolostron/eslint-config
+│       └── prettier-config/    # @stolostron/prettier-config
+├── backend/                  # Node.js 20+ ESM proxy server
+├── docs/                     # Architecture documentation
+├── scripts/                  # Build and development scripts
+└── resources/                # Sample K8s YAML fixtures
+```
+
+## Prerequisites
+
+- **Node.js 20** (see `.nvmrc`) and **npm 9**
+- **OpenShift 4.x cluster** with ACM or MCE installed for full functionality
+- **openssl** for certificate generation
+
+## Setup
+
+```bash
+npm run setup   # Configure cluster connection (creates backend/.env)
+npm ci          # Install dependencies for frontend and backend
+```
 
 ## Development Commands
 
-### Essential Commands
-- `npm ci` - Install dependencies for both frontend and backend
-- `npm start` - Start both frontend and backend in development mode
-- `npm run plugins` - Run as OpenShift Console plugins with OCP console (requires cluster setup)
-- `npm test` - Run comprehensive test suite for both frontend and backend
-- `npm run check` - Run linting, formatting, and type checking across the entire project
-- `npm run build` - Production build for both frontend and backend
+| Command | Purpose |
+|---------|---------|
+| `npm start` | Start frontend + backend in standalone mode |
+| `npm run plugins` | Run as dynamic plugins with local OCP console (**recommended dev mode**) |
+| `npm test` | Run all tests (frontend + backend) |
+| `npm run check` | Run lint, format, and type checking across the entire project |
+| `npm run build` | Production build for frontend and backend |
+| `npm run lint` | Lint both frontend and backend |
+| `npm run lint:fix` | Auto-fix linting issues |
+| `npm run i18n` | Validate internationalization files |
+| `npm run clean` | Clean build artifacts |
 
-### Setup and Environment
-- `npm run setup` - Configure environment for cluster connection (creates backend/.env)
-- `npm run clean` - Clean build artifacts from both frontend and backend
+### Scoped Commands
 
-### Quality Assurance
-- `npm run lint` - Lint both frontend and backend code
-- `npm run lint:fix` - Auto-fix linting issues
-- `npm run i18n` - Validate internationalization files
-- `npm run i18n:fix` - Fix i18n issues
+Run checks against only one side of the monorepo:
 
-### Testing
-- `npm run test:frontend` - Run frontend tests only
-- `npm run test:backend` - Run backend tests only
-- Individual test files: `npm test -- <test-file-pattern>`
-
-## Architecture
-
-### Monorepo Structure
-```
-console/
-├── frontend/          # React application with TypeScript
-├── backend/           # Node.js ESM backend service
-├── docs/              # Architecture documentation
-└── scripts/           # Build and development scripts
-```
-
-### Frontend Architecture
-- **Framework**: React 18+ with TypeScript in strict mode
-- **State Management**: Recoil for global state, Redux Toolkit for complex scenarios
-- **UI Framework**: PatternFly 6+ (Red Hat's design system)
-- **Routing**: React Router with v5 compatibility layer
-- **Build**: Webpack 5 with module federation for dynamic plugins
-- **Testing**: Jest with React Testing Library
-
-### Backend Architecture
-- **Runtime**: Node.js 20+ with ESM modules
-- **Server**: Custom HTTP/2 proxy server using find-my-way router
-- **Authentication**: OAuth flow with cookie-based token management
-- **Logging**: Pino structured logging with development formatting
-- **Metrics**: Prometheus client integration
-
-### Multi-Modal Deployment
-The console supports three deployment modes:
-1. **Standalone**: Independent web application
-2. **ACM Dynamic Plugin**: Integrated into OpenShift Console for ACM features
-3. **MCE Dynamic Plugin**: Integrated into OpenShift Console for MCE features
-
-### Key Technologies
-- **Frontend**: React, TypeScript, PatternFly, Recoil, Monaco Editor, React Query
-- **Backend**: Node.js ESM, HTTP/2 proxy, Pino logging, Prometheus metrics
-- **Development**: Webpack 5, Jest, ESLint, Prettier, Husky pre-commit hooks
-
-## Development Prerequisites
-
-1. **Node.js 20** and **npm 9** are required
-2. **OpenShift 4.x cluster** with ACM or MCE installed for full functionality
-3. **openssl** for certificate generation
-
-## Common Development Patterns
+- `npm run test:frontend` / `npm run test:backend`
+- `npm run check:frontend` / `npm run check:backend`
+- `npm run lint:frontend` / `npm run lint:backend`
 
 ### Port Configuration
-All ports are customizable via environment variables defined in `port-defaults.sh`:
-- `FRONTEND_PORT` (default 3000) - Standalone console
-- `BACKEND_PORT` (default 4000) - Backend APIs
-- `CONSOLE_PORT` (default 9000) - OpenShift console
-- `MCE_PORT` (default 3001) - MCE plugin
-- `ACM_PORT` (default 3002) - ACM plugin
 
-### Authentication Flow
-1. Frontend uses `acm-access-token-cookie` for user tokens
-2. On 401 responses, OAuth flow starts via `/login` endpoint
-3. Backend proxies to cluster OAuth and sets cookie on success
+Ports are customizable via environment variables defined in `port-defaults.sh`:
 
-### Working with Dynamic Plugins
-- Use `npm run plugins` to develop with OpenShift Console integration
-- Plugin code is in `frontend/plugins/` directory
-- ACM and MCE plugins are built separately and served on different ports
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `FRONTEND_PORT` | 3000 | Standalone console |
+| `BACKEND_PORT` | 4000 | Backend APIs |
+| `CONSOLE_PORT` | 9000 | OpenShift console |
+| `MCE_PORT` | 3001 | MCE plugin |
+| `ACM_PORT` | 3002 | ACM plugin |
 
-### Multicluster SDK
-The `@stolostron/multicluster-sdk` package provides:
-- Fleet-wide resource management across multiple clusters
-- Multicluster-aware React hooks and components
-- Search capabilities across managed clusters
+## Deployment Modes
+
+1. **Standalone** — Independent web application (`npm start`)
+2. **ACM Dynamic Plugin** — Integrated into OpenShift Console for ACM features
+3. **MCE Dynamic Plugin** — Integrated into OpenShift Console for MCE features
+
+Use `npm run plugins` for development; it matches the production deployment model.
 
 ## Code Quality Standards
 
-### TypeScript
-- Strict mode enabled across the project
-- No implicit any allowed
-- Comprehensive type checking required before commits
-
-### Testing
-- Jest with React Testing Library for frontend
-- Node.js native test runner for backend
-- Coverage requirements enforced
-
-### Linting and Formatting
-- ESLint with TypeScript rules
-- Prettier for code formatting
-- Husky pre-commit hook enforces Signed-off-by line on commits
-
-## Feature Flags
-
-Features can be enabled/disabled via the `console-config` ConfigMap in the installation namespace. Feature flags are defined in `frontend/src/utils/flags/consts.ts`.
-
-## Troubleshooting
-
-### Certificate Issues
-If experiencing proxy errors, remove `backend/certs` folder and run `npm run ci:backend` to regenerate certificates.
-
-### Module Resolution Errors
-Ensure Node.js 20 and npm 9 are being used. Version mismatches cause ESM module resolution failures.
-
-### Missing .env File
-Run `npm run setup` to generate the required `backend/.env` file with cluster connection details.
+- TypeScript strict mode, no implicit `any`
+- ESLint with `@stolostron/eslint-config` (flat config)
+- Prettier with `@stolostron/prettier-config` (120 char width, no semicolons, single quotes)
+- Husky pre-commit hook runs `lint-staged` and enforces `Signed-off-by` line on commits
+- `lint-staged` applies copyright headers, ESLint fixes, and i18n validation on staged files
+- Run `npm run check` before submitting PRs
 
 ## Branch Strategy
 
-The project uses automatic fast-forwarding between release branches:
-- Pull requests should target the first branch in each release line
-- `main → release-2.16 → backplane-2.11` (current active release branch will begin with `main`)
-- Multiple release lines are maintained for different product versions
+Pull requests should target the first branch in each release line. The project uses automatic fast-forwarding between release branches:
+
+- `main → release-2.16 → backplane-2.11` (the current active line starts with `main`)
+
+## Feature Flags
+
+Features can be enabled/disabled via the `console-config` ConfigMap in the installation namespace. Flags are defined in `frontend/src/utils/flags/consts.ts`.
+
+## Troubleshooting
+
+- **Certificate errors** — Remove `backend/certs/` and run `npm run ci:backend` to regenerate
+- **Module resolution errors** — Verify Node.js 20 and npm 9; version mismatches break ESM resolution
+- **Missing `.env`** — Run `npm run setup` to generate `backend/.env` with cluster connection details
