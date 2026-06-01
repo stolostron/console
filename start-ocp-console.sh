@@ -43,6 +43,7 @@ BRIDGE_CA_FILE="/tmp/ca.crt"
 BRIDGE_K8S_MODE_OFF_CLUSTER_SERVICE_ACCOUNT_BEARER_TOKEN_FILE="/tmp/token"
 BRIDGE_K8S_MODE_OFF_CLUSTER_SKIP_VERIFY_TLS=true
 BRIDGE_K8S_MODE_OFF_CLUSTER_ENDPOINT=$(oc whoami --show-server)
+BRIDGE_RELEASE_VERSION="${CONSOLE_VERSION}"
 
 # The monitoring operator is not always installed (e.g. for local OpenShift). Tolerate missing config maps.
 set +e
