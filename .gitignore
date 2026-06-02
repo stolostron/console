@@ -21,3 +21,9 @@ coverage/
 frontend/packages/react-form-wizard/lib/
 .nyc_output/
 .DS_Store
+
+#ai related files
+.claude
+test-results
+playwright.config.ts
+.env
