@@ -91,8 +91,13 @@ async function listPlacementDebugCA(
       items: ConfigMap[]
     }>()
 
-  if (response.items?.length > 0) {
-    applyIfChanged(response.items[0].data?.[CA_BUNDLE_KEY], onCAChange)
+  const ca = response.items?.[0]?.data?.[CA_BUNDLE_KEY]
+  if (ca) {
+    applyIfChanged(ca, onCAChange)
+  } else if (currentCA !== undefined) {
+    logger.info({ msg: 'placement debug CA bundle removed' })
+    currentCA = undefined
+    onCAChange()
   }
 
   return { resourceVersion: response.metadata.resourceVersion }
