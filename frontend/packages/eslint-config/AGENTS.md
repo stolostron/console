@@ -4,8 +4,7 @@
 
 ## Structure
 
-- `index.mjs` — Primary config (ESLint flat config format)
-- `index.js` — Legacy CJS wrapper
+- `index.mjs` — ESLint flat config, used by the frontend and workspace packages
 
 ## Plugins Included
 

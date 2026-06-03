@@ -79,12 +79,28 @@ Use `npm run plugins` for development; it matches the production deployment mode
 
 ## Code Quality Standards
 
-- TypeScript strict mode, no implicit `any`
+- TypeScript strict mode in frontend; backend uses `noImplicitAny` but not full strict mode
 - ESLint with `@stolostron/eslint-config` (flat config)
 - Prettier with `@stolostron/prettier-config` (120 char width, no semicolons, single quotes)
-- Husky pre-commit hook runs `lint-staged` and enforces `Signed-off-by` line on commits
-- `lint-staged` applies copyright headers, ESLint fixes, and i18n validation on staged files
+- Husky `commit-msg` hook enforces a `Signed-off-by` line on every commit
+- `lint-staged` is available via `npm run lint-staged` and applies copyright headers, ESLint fixes, and i18n validation on staged files
 - Run `npm run check` before submitting PRs
+
+### File Headers
+
+All source files must start with the copyright header:
+
+```typescript
+/* Copyright Contributors to the Open Cluster Management project */
+```
+
+### Naming Conventions
+
+- **Files**: Match the file name with the default exported component or function name
+- **Components**: PascalCase (e.g., `ClusterList`, `PolicyWizard`)
+- **Functions/variables**: camelCase with descriptive names — avoid abbreviations
+- **Constants**: `UPPER_SNAKE_CASE` for truly constant values (e.g., `MAX_RETRY_ATTEMPTS`)
+- **Reusable UI components**: Prefix with `Acm` (e.g., `AcmTable`, `AcmButton`) — these live in `frontend/src/ui-components/`
 
 ## Branch Strategy
 

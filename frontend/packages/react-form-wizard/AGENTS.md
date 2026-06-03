@@ -14,7 +14,7 @@
 | Command | Purpose |
 |---------|---------|
 | `npm run build` | TypeScript compile + copy SVG/CSS/YAML/HBS assets to `lib/` |
-| `npm run watch` | Dev rebuild loop for `src/` changes |
+| `npm run watch` | Dev rebuild loop for `src/` and `wizards/` changes |
 | `npm run start` | Webpack dev server for the demo app |
 | `npm test` | Run tsc, lint, prettier, Cypress, and pages build concurrently |
 | `npm run lint` | ESLint check on `src/` and `wizards/` |
