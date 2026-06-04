@@ -77,7 +77,7 @@ describe('SummaryCard', () => {
 
     await waitFor(() => expect(getByText('Cluster recommendations')).toBeTruthy())
     await waitFor(() => expect(getByText('1 cluster affected')).toBeTruthy())
-    await waitFor(() => expect(getByText('Powered by Lightspeed')).toBeTruthy())
+    await waitFor(() => expect(getByText('Powered by Red Hat Lightspeed')).toBeTruthy())
     await waitFor(() => expect(getByText('11')).toBeTruthy())
   })
 
@@ -85,7 +85,7 @@ describe('SummaryCard', () => {
     const { queryByText } = render(<ValidSummaryCardWithButton />)
 
     await waitFor(() => expect(queryByText('Cluster recommendations')).toBeTruthy())
-    await waitFor(() => expect(queryByText('Powered by Lightspeed')).toBeFalsy())
+    await waitFor(() => expect(queryByText('Powered by Red Hat Lightspeed')).toBeFalsy())
     await waitFor(() => expect(queryByText('5')).toBeTruthy())
   })
 
