@@ -5,7 +5,7 @@ import type { RequestOptions } from 'node:https'
 import { request } from 'node:https'
 import { pipeline } from 'node:stream'
 import { URL } from 'node:url'
-import { getPlacementDebugAgent, getServiceAgent } from '../lib/agent'
+import { getPlacementDebugAgent } from '../lib/agent'
 import { logger } from '../lib/logger'
 import { notFound, respond, respondInternalServerError } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'
@@ -27,13 +27,11 @@ const proxyResponseHeaders = [
 const defaultServiceHost = 'cluster-manager-placement.open-cluster-management-hub.svc.cluster.local'
 const defaultPlacementDebugUrl = `https://${defaultServiceHost}:9443/debug/placements/`
 
-const isProduction = process.env.NODE_ENV === 'production'
-
 export async function placementDebug(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   const token = await getAuthenticatedToken(req, res)
   if (!token) return
 
-  const agent = isProduction ? getPlacementDebugAgent() : getServiceAgent()
+  const agent = getPlacementDebugAgent()
   if (!agent) {
     return respond(res, { error: 'Placement debug service unavailable — OCM CA bundle not configured' }, 503)
   }

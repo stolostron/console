@@ -39,9 +39,9 @@ export function getServiceAgent() {
 
 let placementDebugAgent: Agent | undefined
 export function getPlacementDebugAgent(): Agent | undefined {
-  const ca = getPlacementDebugCA()
-  if (!ca) return undefined
   if (!placementDebugAgent) {
+    const ca = getPlacementDebugCA()
+    if (!ca) return undefined
     placementDebugAgent = new Agent({ ca, ...COMMON_AGENT_OPTIONS })
   }
   return placementDebugAgent

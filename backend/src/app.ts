@@ -124,11 +124,9 @@ export async function start() {
     startWatching()
     startAggregating()
   }
-  if (isProduction) {
-    stopPlacementDebugCAWatch = watchPlacementDebugCA(() => {
-      invalidatePlacementDebugAgent()
-    })
-  }
+  stopPlacementDebugCAWatch = watchPlacementDebugCA(() => {
+    invalidatePlacementDebugAgent()
+  })
   stopTLSProfileWatch = watchTLSSecurityProfile(async (options) => {
     try {
       await stopServer()
