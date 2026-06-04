@@ -1589,6 +1589,8 @@
   "Find by name": "Find by name",
   "Find clusters": "Find clusters",
   "Find the Amazon Web Services (AWS) STS credential and role ARN that you used to create your hosted cluster. The STS credential by default expires in 12 hours so a new one may be needed.": "Find the Amazon Web Services (AWS) STS credential and role ARN that you used to create your hosted cluster. The STS credential by default expires in 12 hours so a new one may be needed.",
+  "Find the Azure credentials file that you used to create your hosted cluster. You will need the path to your credentials file, your managed resource group name, and your DNS zone resource group name.": "Find the Azure credentials file that you used to create your hosted cluster. You will need the path to your credentials file, your managed resource group name, and your DNS zone resource group name.",
+  "Find the credentials that you used to create your hosted cluster. Use the help command below to determine the required parameters for your platform.": "Find the credentials that you used to create your hosted cluster. Use the help command below to determine the required parameters for your platform.",
   "find.label": "Find",
   "Fit to Screen": "Fit to Screen",
   "Fix editor syntax errors": "Fix editor syntax errors",
