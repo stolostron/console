@@ -4,7 +4,7 @@ import { ItemContext, useData, useItem, WizAsyncSelect } from '@patternfly-labs/
 import { useCallback, useContext } from 'react'
 import set from 'set-value'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { Channel, getGitPathList } from '../ArgoWizard'
+import { Channel, GitSourceCache, getGitPathList, sortWithCachedFirst } from '../ArgoWizard'
 import { getGitChannelPaths } from '../../../resources'
 import { usePrevious } from '../../../components/usePrevious'
 import { Secret } from '../../../resources'
@@ -12,9 +12,10 @@ import { Secret } from '../../../resources'
 type GitPathSelectProps = {
   channels: Channel[]
   secrets: Secret[]
+  gitSourceCache?: GitSourceCache
 }
 
-export const GitPathSelect = ({ channels, secrets }: GitPathSelectProps) => {
+export const GitPathSelect = ({ channels, secrets, gitSourceCache }: GitPathSelectProps) => {
   const { t } = useTranslation()
   const repoURL = useItem('repoURL')
   const revision = useItem('targetRevision')
@@ -30,6 +31,7 @@ export const GitPathSelect = ({ channels, secrets }: GitPathSelectProps) => {
       return Promise.resolve([])
     }
 
+    const cachedPaths = gitSourceCache?.pathsByRepoURLAndRevision[repoURL]?.[revision] ?? []
     const channel = channels?.find((channel) => channel?.spec?.pathname === repoURL)
     const secret = secrets?.find((secret) => {
       if (!repoURL) {
@@ -57,7 +59,12 @@ export const GitPathSelect = ({ channels, secrets }: GitPathSelectProps) => {
           user: Buffer.from(secret.data?.username ?? '', 'base64').toString(),
           accessToken: Buffer.from(secret.data?.password ?? '', 'base64').toString(),
         }
-      ).then((paths) => (paths ?? []).filter((p): p is string => p !== undefined))
+      ).then((paths) =>
+        sortWithCachedFirst(
+          cachedPaths,
+          (paths ?? []).filter((p): p is string => p !== undefined)
+        )
+      )
     }
     return getGitPathList(
       {
@@ -73,8 +80,8 @@ export const GitPathSelect = ({ channels, secrets }: GitPathSelectProps) => {
       revision,
       getGitChannelPaths,
       repoURL
-    )
-  }, [channels, repoURL, revision, secrets])
+    ).then((paths) => sortWithCachedFirst(cachedPaths, paths))
+  }, [channels, gitSourceCache, repoURL, revision, secrets])
 
   // Clear path when repoURL or revision changes (update during render)
   const repoChanged = previousRepoURL !== repoURL && previousRepoURL !== undefined

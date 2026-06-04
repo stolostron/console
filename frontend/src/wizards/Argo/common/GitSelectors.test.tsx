@@ -21,6 +21,7 @@ jest.mock('../../../resources', () => ({
 }))
 
 jest.mock('../ArgoWizard', () => ({
+  ...jest.requireActual('../ArgoWizard'),
   getGitBranchList: jest.fn((channel: any, getGitChannelBranches: any) =>
     getGitChannelBranches(channel).then((branches: string[]) => branches)
   ),

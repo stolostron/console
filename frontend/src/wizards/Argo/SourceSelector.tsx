@@ -5,7 +5,7 @@ import { GitAltIcon } from '@patternfly/react-icons'
 import { Fragment } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 import { ApplicationSet, Secret } from '../../resources'
-import { Channel } from './ArgoWizard'
+import { Channel, GitSourceCache } from './ArgoWizard'
 import { RepoURL } from './common'
 import { GitPathSelect } from './common/GitPathSelect'
 import { GitRevisionSelect } from './common/GitRevisionSelect'
@@ -45,10 +45,11 @@ export interface SourceSelectorProps {
   channels: Channel[] | undefined
   helmChannels: string[]
   secrets: Secret[]
+  gitSourceCache?: GitSourceCache
 }
 
 export function SourceSelector(props: SourceSelectorProps) {
-  const { gitChannels, helmChannels, channels, secrets } = props
+  const { gitChannels, helmChannels, channels, secrets, gitSourceCache } = props
   const data = useItem<ApplicationSet>()
   const { t } = useTranslation()
   return (
@@ -78,8 +79,8 @@ export function SourceSelector(props: SourceSelectorProps) {
         <WizHidden hidden={(data) => data.path === undefined}>
           <RepoURL name="git" channels={gitChannels} secrets={secrets} />
           <WizHidden hidden={(data) => data.repoURL === ''}>
-            <GitRevisionSelect channels={channels ?? []} secrets={secrets} />
-            <GitPathSelect channels={channels ?? []} secrets={secrets} />
+            <GitRevisionSelect channels={channels ?? []} secrets={secrets} gitSourceCache={gitSourceCache} />
+            <GitPathSelect channels={channels ?? []} secrets={secrets} gitSourceCache={gitSourceCache} />
           </WizHidden>
         </WizHidden>
         {/* Helm repo */}
