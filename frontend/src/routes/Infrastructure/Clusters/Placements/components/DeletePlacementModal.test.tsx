@@ -143,26 +143,26 @@ describe('DeletePlacementModal', () => {
   test('displays related ApplicationSets with impact message', () => {
     renderModal({ relatedAppSets: [mockAppSet] })
     expect(screen.getByText(/following resource\(s\) reference/)).toBeInTheDocument()
-    expect(screen.getByText(/ApplicationSets - will stop generating applications/)).toBeInTheDocument()
+    expect(screen.getByText(/ApplicationSets: stops generating applications for clusters:/)).toBeInTheDocument()
     expect(screen.getByText('my-appset')).toBeInTheDocument()
   })
 
   test('displays related Policies with impact message', () => {
     renderModal({ relatedPolicies: [mockPolicy] })
-    expect(screen.getByText(/Policies - will no longer be distributed/)).toBeInTheDocument()
+    expect(screen.getByText(/Policies: stops distributing to managed clusters:/)).toBeInTheDocument()
     expect(screen.getByText('my-policy')).toBeInTheDocument()
   })
 
   test('displays related PolicySets with impact message', () => {
     renderModal({ relatedPolicySets: [mockPolicySet] })
     expect(screen.getByText(/following resource\(s\) reference/)).toBeInTheDocument()
-    expect(screen.getByText(/PolicySets - will no longer be distributed/)).toBeInTheDocument()
+    expect(screen.getByText(/PolicySets: stops distributing to managed clusters:/)).toBeInTheDocument()
     expect(screen.getByText('my-policyset')).toBeInTheDocument()
   })
 
   test('displays related GitOpsClusters with impact message', () => {
     renderModal({ relatedGitOpsClusters: [mockGitOpsCluster] })
-    expect(screen.getByText(/GitOpsClusters - will no longer register/)).toBeInTheDocument()
+    expect(screen.getByText(/GitOpsClusters: stops registering managed clusters with ArgoCD:/)).toBeInTheDocument()
     expect(screen.getByText('my-gitops')).toBeInTheDocument()
   })
 
@@ -173,13 +173,13 @@ describe('DeletePlacementModal', () => {
       relatedPolicySets: [mockPolicySet],
       relatedGitOpsClusters: [mockGitOpsCluster],
     })
-    expect(screen.getByText(/ApplicationSets - will stop generating/)).toBeInTheDocument()
+    expect(screen.getByText(/ApplicationSets: stops generating applications for clusters:/)).toBeInTheDocument()
     expect(screen.getByText('my-appset')).toBeInTheDocument()
-    expect(screen.getByText(/Policies - will no longer be distributed/)).toBeInTheDocument()
+    expect(screen.getByText(/Policies: stops distributing to managed clusters:/)).toBeInTheDocument()
     expect(screen.getByText('my-policy')).toBeInTheDocument()
-    expect(screen.getByText(/PolicySets - will no longer be distributed/)).toBeInTheDocument()
+    expect(screen.getByText(/PolicySets: stops distributing to managed clusters:/)).toBeInTheDocument()
     expect(screen.getByText('my-policyset')).toBeInTheDocument()
-    expect(screen.getByText(/GitOpsClusters - will no longer register/)).toBeInTheDocument()
+    expect(screen.getByText(/GitOpsClusters: stops registering managed clusters with ArgoCD:/)).toBeInTheDocument()
     expect(screen.getByText('my-gitops')).toBeInTheDocument()
   })
 

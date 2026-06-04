@@ -104,7 +104,7 @@ export function DeletePlacementModal(props: IDeletePlacementModalProps | { open:
             {t('The following resource(s) reference this placement and will be impacted:')}
             {relatedAppSets.length > 0 && (
               <div className="delete-placement-resource-group">
-                <strong>{t('ApplicationSets - will stop generating applications for clusters:')}</strong>
+                <strong>{t('ApplicationSets: stops generating applications for clusters:')}</strong>
                 <List className="delete-placement-related-resources-list">
                   {relatedAppSets.map((appSet) => (
                     <ListItem key={appSet.metadata.uid ?? `${appSet.metadata.namespace}-${appSet.metadata.name}`}>
@@ -116,7 +116,7 @@ export function DeletePlacementModal(props: IDeletePlacementModalProps | { open:
             )}
             {relatedPolicies.length > 0 && (
               <div className="delete-placement-resource-group">
-                <strong>{t('Policies - will no longer be distributed to managed clusters:')}</strong>
+                <strong>{t('Policies: stops distributing to managed clusters:')}</strong>
                 <List className="delete-placement-related-resources-list">
                   {relatedPolicies.map((policy) => (
                     <ListItem key={policy.metadata.uid ?? `${policy.metadata.namespace}-${policy.metadata.name}`}>
@@ -128,7 +128,7 @@ export function DeletePlacementModal(props: IDeletePlacementModalProps | { open:
             )}
             {relatedPolicySets.length > 0 && (
               <div className="delete-placement-resource-group">
-                <strong>{t('PolicySets - will no longer be distributed to managed clusters:')}</strong>
+                <strong>{t('PolicySets: stops distributing to managed clusters:')}</strong>
                 <List className="delete-placement-related-resources-list">
                   {relatedPolicySets.map((policySet) => (
                     <ListItem
@@ -142,7 +142,7 @@ export function DeletePlacementModal(props: IDeletePlacementModalProps | { open:
             )}
             {relatedGitOpsClusters.length > 0 && (
               <div className="delete-placement-resource-group">
-                <strong>{t('GitOpsClusters - will no longer register managed clusters with ArgoCD:')}</strong>
+                <strong>{t('GitOpsClusters: stops registering managed clusters with ArgoCD:')}</strong>
                 <List className="delete-placement-related-resources-list">
                   {relatedGitOpsClusters.map((gitOpsCluster) => (
                     <ListItem
