@@ -506,6 +506,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         open={showDestroyHostedModal}
         close={() => setShowDestroyHostedModal(false)}
         clusterName={cluster.name}
+        provider={cluster.provider}
       />
       <UpdateAutomationModal
         clusters={[cluster]}
