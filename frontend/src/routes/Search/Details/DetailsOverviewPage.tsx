@@ -195,7 +195,7 @@ export function ResourceConditions(props: { conditions: ResourceCondition[] }) {
     <Fragment>
       <Divider />
       <PageSection hasBodyWrapper={false}>
-        <Content style={{ fontSize: '1.25rem', fontFamily: 'RedHatDisplay' }} component={'h2'}>
+        <Content style={{ fontSize: '1.25rem' }} component={'h2'}>
           {t('Conditions')}
         </Content>
         {conditions.length ? (
@@ -379,7 +379,7 @@ export default function DetailsOverviewPage() {
       <PageSection hasBodyWrapper={false}>
         <PageSection hasBodyWrapper={false}>
           <Stack hasGutter>
-            <Content style={{ fontSize: '1.25rem', fontFamily: 'RedHatDisplay' }} component={'h2'}>
+            <Content style={{ fontSize: '1.25rem' }} component={'h2'}>
               {t('search.resource.details', { resource: resource.kind })}
             </Content>
             <DescriptionList
