@@ -383,7 +383,7 @@
   padding-top: 0.5rem;
 }
 .topologyDetails .link {
-  font-family: 'RedHatText';
+  font-family: 'Red Hat Text';
   font-weight: 600;
   font-size: 14px;
   color: var(--pf-v5-global--link--Color);

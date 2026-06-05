@@ -597,7 +597,7 @@ class ClusterDetailsContainer extends Component<ClusterDetailsContainerProps, Cl
       // Namespace label styling
       const namespaceStyle: React.CSSProperties = {
         color: '#5A6872',
-        fontFamily: 'RedHatText',
+        fontFamily: 'Red Hat Text',
         fontSize: '12px',
         lineHeight: '21px',
         textAlign: 'left',
