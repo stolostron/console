@@ -4,22 +4,37 @@ import {
   DescriptionListDescription,
   DescriptionListGroup,
   DescriptionListTerm,
+  Label,
   Title,
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import Fuse from 'fuse.js'
-import { Fragment, type ReactNode, useMemo } from 'react'
+import { klona } from 'klona/json'
+import { Fragment, type CSSProperties, type ReactNode, useMemo } from 'react'
 import { useDefaultItem } from '../contexts/DefaultDataContext'
 import { useItem } from '../contexts/ItemContext'
 import { useStringContext } from '../contexts/StringContext'
-import { InputReviewMeta, type WizardDomTreeNode } from './ReviewStepContexts'
+import {
+  ArrayInstanceDiffType,
+  InputReviewMeta,
+  type DefaultArrayInputRegister,
+  type WizardDomTreeNode,
+  useDefaultArrayInputRegister,
+} from './ReviewStepContexts'
 import { ReviewPenHoverZone, type OnReviewEditHandler } from './ReviewStepNavigation'
 import { getItemValue, horizontalTermWidthModifierForInputRun, REVIEW_ERROR_TEXT_COLOR } from './utils'
 
 type WizardInputDomNode = Extract<WizardDomTreeNode, { type: InputReviewMeta.INPUT }>
 type WizardArrayInputDomNode = Extract<WizardDomTreeNode, { type: InputReviewMeta.ARRAY_INPUT }>
+type WizardArrayInstanceDomNode = Extract<WizardDomTreeNode, { type: InputReviewMeta.ARRAY_INSTANCE }>
+type WizardArrayInstanceDifferenceDomNode = Extract<
+  WizardDomTreeNode,
+  {
+    type: ArrayInstanceDiffType.DELETED | ArrayInstanceDiffType.ADDED | ArrayInstanceDiffType.UNCHANGED
+  }
+>
 /** Inputs plus array-input containers when surfaced for errors (find list). */
-type ReviewFindListDomNode = WizardInputDomNode | WizardArrayInputDomNode
+type ReviewFindListDomNode = WizardInputDomNode | WizardArrayInputDomNode | WizardArrayInstanceDifferenceDomNode
 
 const FUSE_LV: Fuse.IFuseOptions<ReviewFindRow> = {
   keys: ['searchLabel', 'searchValue'],
@@ -57,25 +72,33 @@ export interface ReviewStepFindListProps {
 // when only showing changes in  Review page, filter out all key/value pairs where the values are equual
 // when values aren't equal they will appear in Review page
 function rowMatchesChangesOnlyFilter(row: ReviewFindRow, item: object, defaultItem: object): boolean {
+  if (isReviewArrayInstanceDifferenceNode(row.node)) {
+    return true
+  }
+  if (!isReviewInputNode(row.node) && !isReviewArrayInputNode(row.node)) {
+    return false
+  }
   const path = row.node.path
   if (!path) {
     return Boolean(row.node.error)
   }
   if (row.node.error) return true
   const currentVal = getItemValue(item, path)
-  const defaultVal = getItemValue(defaultItem, path)
+  const defaultVal =
+    isReviewInputNode(row.node) && row.node.defaultValue !== undefined
+      ? row.node.defaultValue
+      : getItemValue(defaultItem, path)
   return !reviewValuesEqualAtPath(currentVal, defaultVal)
+}
+
+function isReviewUnsetValue(value: unknown): boolean {
+  return value === null || value === undefined || value === '' || value === false
 }
 
 function reviewValuesEqualAtPath(a: unknown, b: unknown): boolean {
   if (Object.is(a, b)) return true
+  if (isReviewUnsetValue(a) && isReviewUnsetValue(b)) return true
   if (typeof a === 'boolean' && typeof b === 'boolean') {
-    return a === b
-  }
-  if (b === undefined && a === false) {
-    return true
-  }
-  if (a === null || b === null || a === undefined || b === undefined) {
     return a === b
   }
   if (typeof a !== 'object' || typeof b !== 'object') {
@@ -118,10 +141,345 @@ function isReviewSectionNode(
   return 'type' in node && node.type === InputReviewMeta.SECTION
 }
 
-function isReviewArrayInstanceNode(
-  node: WizardDomTreeNode
-): node is Extract<WizardDomTreeNode, { type: InputReviewMeta.ARRAY_INSTANCE }> {
+function isReviewArrayInstanceNode(node: WizardDomTreeNode): node is WizardArrayInstanceDomNode {
   return 'type' in node && node.type === InputReviewMeta.ARRAY_INSTANCE
+}
+
+function isReviewArrayInstanceDifferenceNode(node: WizardDomTreeNode): node is WizardArrayInstanceDifferenceDomNode {
+  return (
+    'type' in node &&
+    (node.type === ArrayInstanceDiffType.DELETED ||
+      node.type === ArrayInstanceDiffType.ADDED ||
+      node.type === ArrayInstanceDiffType.UNCHANGED)
+  )
+}
+
+function arrayInstanceNodesFromChildren(children: WizardDomTreeNode[]): WizardArrayInstanceDomNode[] {
+  return children.filter(isReviewArrayInstanceNode)
+}
+
+/** Strips only the first numeric path segment (array-instance index) for matching. */
+function pathIgnoringNumericSegments(path: string): string {
+  const segments = path.split('.').filter((segment) => segment !== '')
+  const firstNumericIndex = segments.findIndex((segment) => /^\d+$/.test(segment))
+  if (firstNumericIndex === -1) return segments.join('.')
+  return [...segments.slice(0, firstNumericIndex), ...segments.slice(firstNumericIndex + 1)].join('.')
+}
+
+function arrayInstanceValuesMatch(a: unknown, b: unknown): boolean {
+  return Object.is(a, b) || stableDeepEqual(a, b)
+}
+
+function inputPathForMatch(node: WizardInputDomNode): string {
+  return pathIgnoringNumericSegments(pathWithoutSemicolonIdSuffix(node.path))
+}
+
+function collectReviewInputNodes(nodes: readonly WizardDomTreeNode[]): WizardInputDomNode[] {
+  const inputs: WizardInputDomNode[] = []
+  for (const node of nodes) {
+    if (isReviewInputNode(node)) {
+      inputs.push(node)
+    }
+    if (node.children?.length) {
+      inputs.push(...collectReviewInputNodes(node.children))
+    }
+  }
+  return inputs
+}
+
+function findMatchingReviewInputIndex(
+  currentInput: WizardInputDomNode,
+  defaultInputs: readonly WizardInputDomNode[],
+  matchValue: boolean
+): number {
+  const currentPath = inputPathForMatch(currentInput)
+  for (let i = 0; i < defaultInputs.length; i++) {
+    const defaultInput = defaultInputs[i]!
+    if (inputPathForMatch(defaultInput) !== currentPath) continue
+    if (matchValue && !arrayInstanceValuesMatch(currentInput.value, defaultInput.value)) continue
+    return i
+  }
+  return -1
+}
+
+function matchedInstanceInputSubtreesMatch(
+  current: WizardArrayInstanceDomNode,
+  defaultInstance: WizardArrayInstanceDomNode,
+  matchValue: boolean
+): boolean {
+  const currentInputs = collectReviewInputNodes(current.children ?? [])
+  const defaultInputs = collectReviewInputNodes(defaultInstance.children ?? [])
+  if (currentInputs.length !== defaultInputs.length) return false
+
+  const remainingDefaults = [...defaultInputs]
+  for (const currentInput of currentInputs) {
+    const matchIndex = findMatchingReviewInputIndex(currentInput, remainingDefaults, matchValue)
+    if (matchIndex === -1) return false
+    remainingDefaults.splice(matchIndex, 1)
+  }
+  return true
+}
+
+type ProcessingDefaultArrayInstance = WizardArrayInstanceDomNode & { claimed?: boolean }
+
+function findMatchingDefaultInstanceIndex(
+  child: WizardArrayInstanceDomNode,
+  processingDefaultInputs: readonly ProcessingDefaultArrayInstance[],
+  matchValue: boolean
+): number {
+  for (let i = 0; i < processingDefaultInputs.length; i++) {
+    const defaultInstance = processingDefaultInputs[i]!
+    if (defaultInstance.claimed) continue
+    if (child.label !== defaultInstance.label) continue
+    if (matchedInstanceInputSubtreesMatch(child, defaultInstance, matchValue)) {
+      return i
+    }
+  }
+  return -1
+}
+
+function defaultArrayInstanceNodesFromRegister(
+  defaultArrayInputs: DefaultArrayInputRegister,
+  arrayInputPath: string
+): ProcessingDefaultArrayInstance[] {
+  const defaultArrayInputNodes = defaultArrayInputs.get(arrayInputPath) ?? []
+  const instances: ProcessingDefaultArrayInstance[] = []
+  for (const defaultArrayInputNode of defaultArrayInputNodes) {
+    for (const child of defaultArrayInputNode.children ?? []) {
+      if (isReviewArrayInstanceNode(child)) {
+        instances.push(klona(child))
+      }
+    }
+  }
+  return instances
+}
+
+function domNodePathKey(node: WizardDomTreeNode): string | undefined {
+  if ('path' in node && typeof node.path === 'string' && node.path !== '') {
+    return pathIgnoringNumericSegments(pathWithoutSemicolonIdSuffix(node.path))
+  }
+  if ('id' in node && typeof node.id === 'string' && node.id !== '') {
+    return pathIgnoringNumericSegments(pathWithoutSemicolonIdSuffix(node.id))
+  }
+  return undefined
+}
+
+function findMatchingDefaultNodeAmongChildren(
+  currentNode: WizardDomTreeNode,
+  defaultChildren: readonly WizardDomTreeNode[]
+): WizardDomTreeNode | undefined {
+  const key = domNodePathKey(currentNode)
+  if (!key) return undefined
+  for (const defaultNode of defaultChildren) {
+    if (domNodePathKey(defaultNode) === key) return defaultNode
+  }
+  return undefined
+}
+
+/** Recursively walks paired instance subtrees and copies default input values onto current inputs. */
+function applyDefaultValuesFromMatchedInstance(
+  currentChildren: WizardDomTreeNode[] | undefined,
+  defaultChildren: WizardDomTreeNode[] | undefined
+): WizardDomTreeNode[] | undefined {
+  if (!currentChildren) return undefined
+
+  return currentChildren.map((currentNode) => {
+    const matchingDefaultNode = findMatchingDefaultNodeAmongChildren(currentNode, defaultChildren ?? [])
+
+    if (isReviewInputNode(currentNode) && matchingDefaultNode && isReviewInputNode(matchingDefaultNode)) {
+      return { ...klona(currentNode), defaultValue: matchingDefaultNode.value }
+    }
+
+    const cloned = klona(currentNode)
+    if (cloned.children?.length) {
+      return {
+        ...cloned,
+        children: applyDefaultValuesFromMatchedInstance(cloned.children, matchingDefaultNode?.children),
+      }
+    }
+    return cloned
+  })
+}
+
+type NormalizedArrayInstances = {
+  unchangedArray: WizardArrayInstanceDifferenceDomNode[]
+  deletedArray: WizardArrayInstanceDifferenceDomNode[]
+  addedArray: WizardArrayInstanceDifferenceDomNode[]
+}
+
+function labelWithParentArrayInstancePrefixes(
+  label: string | undefined,
+  parentArrayInstanceLabels: readonly string[]
+): string | undefined {
+  if (parentArrayInstanceLabels.length === 0) return label
+  const prefix = parentArrayInstanceLabels.join('/')
+  if (!label) return prefix
+  return `${prefix}/${label}`
+}
+
+function normalizeArrayInstances(
+  arrayInputNode: WizardArrayInputDomNode,
+  defaultArrayInputs: DefaultArrayInputRegister
+): NormalizedArrayInstances {
+  const arrayInputPath = arrayInputNode.path
+  const processingDefaultInputs = arrayInputPath
+    ? defaultArrayInstanceNodesFromRegister(defaultArrayInputs, arrayInputPath)
+    : []
+
+  const unchangedArray: WizardArrayInstanceDifferenceDomNode[] = []
+  const deletedArray: WizardArrayInstanceDifferenceDomNode[] = []
+  const addedArray: WizardArrayInstanceDifferenceDomNode[] = []
+
+  for (const child of arrayInstanceNodesFromChildren(arrayInputNode.children ?? [])) {
+    let matchIndex = findMatchingDefaultInstanceIndex(child, processingDefaultInputs, true)
+    if (matchIndex === -1) {
+      matchIndex = findMatchingDefaultInstanceIndex(child, processingDefaultInputs, false)
+    }
+
+    if (matchIndex === -1) {
+      addedArray.push({
+        ...klona(child),
+        type: ArrayInstanceDiffType.ADDED,
+        children: child.children,
+      })
+      continue
+    }
+
+    const matchedDefault = processingDefaultInputs[matchIndex]!
+    matchedDefault.claimed = true
+    unchangedArray.push({
+      ...klona(child),
+      type: ArrayInstanceDiffType.UNCHANGED,
+      children: applyDefaultValuesFromMatchedInstance(child.children, matchedDefault.children),
+    })
+  }
+
+  for (const remaining of processingDefaultInputs) {
+    if (remaining.claimed) continue
+    if (!remaining.children?.length) continue
+    deletedArray.push({
+      ...klona(remaining),
+      type: ArrayInstanceDiffType.DELETED,
+      children: undefined,
+    })
+  }
+
+  return { unchangedArray, deletedArray, addedArray }
+}
+
+const DIFFERENCE_TITLE_PREFIX_WIDTH = '1.25ch'
+
+const REVIEW_DIFFERENCE_ADDED_COLOR = 'var(--pf-t--global--icon--color--status--success--default)'
+const REVIEW_DIFFERENCE_DELETED_COLOR = 'var(--pf-t--global--icon--color--status--danger--default)'
+
+type ReviewDifferenceTitleStrings = {
+  reviewArrayInstanceAdded: string
+  reviewArrayInstanceDeleted: string
+}
+
+function renderDifferenceTitle(
+  node: WizardArrayInstanceDifferenceDomNode,
+  addTopPadding: boolean,
+  labels: ReviewDifferenceTitleStrings
+): ReactNode {
+  const displayName = node.label ?? ''
+  let prefixChar: string | undefined
+  let titleStyle: CSSProperties
+  let nameStyle: CSSProperties = {}
+  let statusLabel: ReactNode | null = null
+
+  if (node.type === ArrayInstanceDiffType.ADDED) {
+    prefixChar = '+'
+    titleStyle = { color: REVIEW_DIFFERENCE_ADDED_COLOR }
+    nameStyle = { color: REVIEW_DIFFERENCE_ADDED_COLOR }
+    statusLabel = (
+      <Label color="green" isCompact>
+        {labels.reviewArrayInstanceAdded}
+      </Label>
+    )
+  } else if (node.type === ArrayInstanceDiffType.DELETED) {
+    prefixChar = '-'
+    titleStyle = { color: REVIEW_DIFFERENCE_DELETED_COLOR }
+    nameStyle = { color: REVIEW_DIFFERENCE_DELETED_COLOR }
+    statusLabel = (
+      <Label color="red" isCompact>
+        {labels.reviewArrayInstanceDeleted}
+      </Label>
+    )
+  } else {
+    titleStyle = { color: 'var(--pf-t--global--text--color--regular)' }
+  }
+
+  if (addTopPadding) {
+    titleStyle = { ...titleStyle, paddingTop: 16 }
+  }
+
+  return (
+    <DescriptionListGroup
+      className="wizard-review-find-difference-title"
+      style={{ marginLeft: 32, gridColumn: '1 / -1' }}
+    >
+      <DescriptionListTerm>
+        <Title headingLevel="h4" style={titleStyle}>
+          {prefixChar != null ? (
+            <span style={{ display: 'inline-block', width: DIFFERENCE_TITLE_PREFIX_WIDTH, marginRight: '0.25ch' }}>
+              {prefixChar}
+            </span>
+          ) : null}
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            {statusLabel}
+            <span style={nameStyle}>{displayName}</span>
+          </span>
+        </Title>
+      </DescriptionListTerm>
+    </DescriptionListGroup>
+  )
+}
+
+function filterDifferenceTitlesWithoutFollowingRows(rows: ReviewFindRow[]): ReviewFindRow[] {
+  return rows.filter((row, index) => {
+    if (!isReviewArrayInstanceDifferenceNode(row.node)) return true
+    if (row.node.type === ArrayInstanceDiffType.DELETED) return true
+    for (let i = index + 1; i < rows.length; i++) {
+      if (isReviewArrayInstanceDifferenceNode(rows[i]!.node)) break
+      return true
+    }
+    return false
+  })
+}
+
+function computeRowsAfterDifferenceTitlePadding(rows: ReviewFindRow[]): boolean[] {
+  const pad = rows.map(() => false)
+  let afterDifferenceTitle = false
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i]!
+    if (isReviewArrayInstanceDifferenceNode(row.node)) {
+      afterDifferenceTitle = true
+    } else if (afterDifferenceTitle) {
+      pad[i] = true
+    }
+  }
+  return pad
+}
+
+function computeRowsAfterDifferenceTitleTermColor(rows: ReviewFindRow[]): (string | undefined)[] {
+  const colors = rows.map((): string | undefined => undefined)
+  let currentColor: string | undefined
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i]!
+    if (isReviewArrayInstanceDifferenceNode(row.node)) {
+      if (row.node.type === ArrayInstanceDiffType.ADDED) {
+        currentColor = REVIEW_DIFFERENCE_ADDED_COLOR
+      } else if (row.node.type === ArrayInstanceDiffType.DELETED) {
+        currentColor = REVIEW_DIFFERENCE_DELETED_COLOR
+      } else {
+        currentColor = undefined
+      }
+    } else if (currentColor !== undefined) {
+      colors[i] = currentColor
+    }
+  }
+  return colors
 }
 
 function getReviewSectionBodyNodes(node: WizardDomTreeNode): WizardDomTreeNode[] {
@@ -211,7 +569,10 @@ type ReviewFindBooleanStrings = {
   reviewBooleanNotSet: string
 }
 
-function formatReviewFindSearchValue(node: ReviewFindListDomNode, labels: ReviewFindBooleanStrings): string {
+function formatReviewFindSearchValue(
+  node: WizardInputDomNode | WizardArrayInputDomNode,
+  labels: ReviewFindBooleanStrings
+): string {
   if (node.error) return node.error
   if (typeof node.value === 'boolean') {
     return node.value ? labels.reviewBooleanTrue : labels.reviewBooleanFalse
@@ -220,7 +581,27 @@ function formatReviewFindSearchValue(node: ReviewFindListDomNode, labels: Review
   return formatReviewValueString(node.value)
 }
 
-function collectVisibleInputsInOrder(nodes: WizardDomTreeNode[], out: ReviewFindListDomNode[]): void {
+function ownArrayInstanceLabel(node: { label?: string; id?: string; path?: string }): string {
+  if (node.label) return node.label
+  if ('path' in node && node.path) return formatReviewPathOrIdLabel(node.path)
+  if (node.id) return formatReviewPathOrIdLabel(node.id)
+  return ''
+}
+
+function nestedParentArrayInstanceLabels(
+  parentArrayInstanceLabels: readonly string[],
+  instanceLabel: string
+): readonly string[] {
+  return instanceLabel ? [...parentArrayInstanceLabels, instanceLabel] : parentArrayInstanceLabels
+}
+
+function collectVisibleInputsInOrder(
+  nodes: WizardDomTreeNode[],
+  out: ReviewFindListDomNode[],
+  item: object,
+  defaultArrayInputs: DefaultArrayInputRegister,
+  parentArrayInstanceLabels: readonly string[] = []
+): void {
   for (const n of nodes) {
     if (isReviewInputNode(n)) {
       out.push(n)
@@ -230,17 +611,37 @@ function collectVisibleInputsInOrder(nodes: WizardDomTreeNode[], out: ReviewFind
       if (n.error) {
         out.push(n)
       }
-      for (const inst of n.children ?? []) {
-        collectVisibleInputsInOrder(inst.children ?? [], out)
+
+      const { unchangedArray, deletedArray, addedArray } = normalizeArrayInstances(n, defaultArrayInputs)
+      for (const diffNode of [...unchangedArray, ...addedArray, ...deletedArray]) {
+        const ownLabel = ownArrayInstanceLabel(diffNode)
+        out.push({
+          ...diffNode,
+          label: labelWithParentArrayInstancePrefixes(ownLabel, parentArrayInstanceLabels),
+        })
+        collectVisibleInputsInOrder(
+          diffNode.children ?? [],
+          out,
+          item,
+          defaultArrayInputs,
+          nestedParentArrayInstanceLabels(parentArrayInstanceLabels, ownLabel)
+        )
       }
       continue
     }
     if (isReviewSectionNode(n) || !('type' in n)) {
-      collectVisibleInputsInOrder(n.children ?? [], out)
+      collectVisibleInputsInOrder(n.children ?? [], out, item, defaultArrayInputs, parentArrayInstanceLabels)
       continue
     }
     if (isReviewArrayInstanceNode(n)) {
-      collectVisibleInputsInOrder(n.children ?? [], out)
+      const instanceLabel = ownArrayInstanceLabel(n)
+      collectVisibleInputsInOrder(
+        n.children ?? [],
+        out,
+        item,
+        defaultArrayInputs,
+        nestedParentArrayInstanceLabels(parentArrayInstanceLabels, instanceLabel)
+      )
       continue
     }
   }
@@ -332,7 +733,7 @@ function indicesForKey(
 }
 
 function renderFindValueContent(
-  node: ReviewFindListDomNode,
+  node: WizardInputDomNode | WizardArrayInputDomNode,
   searchValue: string,
   valueIndices: readonly Fuse.RangeTuple[] | undefined
 ): ReactNode {
@@ -352,13 +753,19 @@ type FindListModel = {
   pathByPath: Map<string, Fuse.FuseResult<ReviewFindRow>>
 }
 
+function reviewFindRowKey(node: ReviewFindListDomNode): string {
+  if ('path' in node && node.path) return node.path
+  return node.id
+}
+
 function buildFindListModel(
   sectionRoots: WizardDomTreeNode[],
   q: string,
   booleanStrings: ReviewFindBooleanStrings,
   showChangesOnly: boolean,
   item: object,
-  defaultItem: object
+  defaultItem: object,
+  defaultArrayInputs: DefaultArrayInputRegister
 ): FindListModel {
   const sections: { stepLabel: string; rows: ReviewFindRow[] }[] = []
   const allRows: ReviewFindRow[] = []
@@ -366,17 +773,20 @@ function buildFindListModel(
   for (const root of sectionRoots) {
     const stepLabel = reviewNodeLabel(root)
     const ordered: ReviewFindListDomNode[] = []
-    collectVisibleInputsInOrder(getReviewSectionBodyNodes(root), ordered)
+    collectVisibleInputsInOrder(getReviewSectionBodyNodes(root), ordered, item, defaultArrayInputs)
     let rows: ReviewFindRow[] = ordered.map((node) => ({
       node,
       stepLabel,
-      searchLabel: node.label ?? node.path,
-      searchValue: formatReviewFindSearchValue(node, booleanStrings),
-      pathLast: pathLastSegment(node.path),
+      searchLabel: isReviewArrayInstanceDifferenceNode(node) ? node.label ?? '' : node.label ?? node.path,
+      searchValue: isReviewArrayInstanceDifferenceNode(node)
+        ? node.label ?? ''
+        : formatReviewFindSearchValue(node, booleanStrings),
+      pathLast: 'path' in node && node.path ? pathLastSegment(node.path) : node.label ?? node.id,
     }))
     if (showChangesOnly) {
       rows = rows.filter((row) => rowMatchesChangesOnlyFilter(row, item, defaultItem))
     }
+    rows = filterDifferenceTitlesWithoutFollowingRows(rows)
     sections.push({ stepLabel, rows })
     allRows.push(...rows)
   }
@@ -388,14 +798,15 @@ function buildFindListModel(
     const fuseLv = new Fuse(allRows, FUSE_LV)
     const fusePath = new Fuse(allRows, FUSE_PATH)
     for (const r of fuseLv.search(q)) {
-      lvByPath.set(r.item.node.path, r)
+      lvByPath.set(reviewFindRowKey(r.item.node), r)
     }
     for (const r of fusePath.search(q)) {
-      pathByPath.set(r.item.node.path, r)
+      pathByPath.set(reviewFindRowKey(r.item.node), r)
     }
     const matched = new Set<string>([...lvByPath.keys(), ...pathByPath.keys()])
     for (const s of sections) {
-      s.rows = s.rows.filter((row) => matched.has(row.node.path))
+      s.rows = s.rows.filter((row) => matched.has(reviewFindRowKey(row.node)))
+      s.rows = filterDifferenceTitlesWithoutFollowingRows(s.rows)
     }
   }
 
@@ -406,8 +817,21 @@ export function ReviewStepFindList(props: ReviewStepFindListProps) {
   const { sectionRoots, searchQuery, showChangesOnly, onReviewEdit, showYaml } = props
   const item = useItem<object>()
   const defaultItem = useDefaultItem<object>()
-  const { noResults, reviewBooleanTrue, reviewBooleanFalse, reviewBooleanNotSet } = useStringContext()
+  const defaultArrayInputs = useDefaultArrayInputRegister()
+  const {
+    noResults,
+    reviewBooleanTrue,
+    reviewBooleanFalse,
+    reviewBooleanNotSet,
+    reviewArrayInstanceAdded,
+    reviewArrayInstanceDeleted,
+  } = useStringContext()
   const q = searchQuery.trim()
+
+  const differenceTitleStrings = useMemo(
+    () => ({ reviewArrayInstanceAdded, reviewArrayInstanceDeleted }),
+    [reviewArrayInstanceAdded, reviewArrayInstanceDeleted]
+  )
 
   const booleanStrings = useMemo(
     () => ({ reviewBooleanTrue, reviewBooleanFalse, reviewBooleanNotSet }),
@@ -415,8 +839,8 @@ export function ReviewStepFindList(props: ReviewStepFindListProps) {
   )
 
   const { sections, lvByPath, pathByPath } = useMemo(
-    () => buildFindListModel(sectionRoots, q, booleanStrings, showChangesOnly, item, defaultItem),
-    [sectionRoots, q, booleanStrings, showChangesOnly, item, defaultItem]
+    () => buildFindListModel(sectionRoots, q, booleanStrings, showChangesOnly, item, defaultItem, defaultArrayInputs),
+    [sectionRoots, q, booleanStrings, showChangesOnly, item, defaultItem, defaultArrayInputs]
   )
 
   const yamlVisible = showYaml !== false
@@ -439,7 +863,13 @@ export function ReviewStepFindList(props: ReviewStepFindListProps) {
       <div className={showChangesOnly ? 'wizard-review-find-list--changes-only' : undefined}>
         {sections.map((section, sectionIndex) => {
           if (section.rows.length === 0) return null
-          const mod = horizontalTermWidthModifierForInputRun(section.rows.map((r) => r.node))
+          const inputRows = section.rows.filter(
+            (r): r is ReviewFindRow & { node: WizardInputDomNode | WizardArrayInputDomNode } =>
+              isReviewInputNode(r.node) || isReviewArrayInputNode(r.node)
+          )
+          const mod = horizontalTermWidthModifierForInputRun(inputRows.map((r) => r.node))
+          const afterDifferenceTitlePad = computeRowsAfterDifferenceTitlePadding(section.rows)
+          const afterDifferenceTitleTermColor = computeRowsAfterDifferenceTitleTermColor(section.rows)
 
           return (
             <Fragment key={`review-find-section-${sectionIndex}`}>
@@ -453,9 +883,17 @@ export function ReviewStepFindList(props: ReviewStepFindListProps) {
                 {section.stepLabel}
               </Title>
               <DescriptionList isHorizontal horizontalTermWidthModifier={mod} style={{ rowGap: 0, marginBottom: 24 }}>
-                {section.rows.map((row) => {
-                  const lv = lvByPath.get(row.node.path)
-                  const pr = pathByPath.get(row.node.path)
+                {section.rows.map((row, rowIndex) => {
+                  if (isReviewArrayInstanceDifferenceNode(row.node)) {
+                    return (
+                      <Fragment key={row.node.id}>
+                        {renderDifferenceTitle(row.node, rowIndex > 0, differenceTitleStrings)}
+                      </Fragment>
+                    )
+                  }
+
+                  const lv = lvByPath.get(reviewFindRowKey(row.node))
+                  const pr = pathByPath.get(reviewFindRowKey(row.node))
                   const pathOnly = lv === undefined && pr !== undefined
                   const labelIndices = indicesForKey(lv ?? pr, 'searchLabel')
                   const valueIndices = indicesForKey(lv ?? pr, 'searchValue')
@@ -492,6 +930,9 @@ export function ReviewStepFindList(props: ReviewStepFindListProps) {
                       ) : null}
                     </>
                   )
+                  const termColor = afterDifferenceTitleTermColor[rowIndex]
+                  const termContent =
+                    termColor !== undefined ? <span style={{ color: termColor }}>{termBase}</span> : termBase
 
                   const valueContent = row.node.error ? (
                     <span className="wizard-review-find-value-with-trailing-icon">
@@ -507,11 +948,14 @@ export function ReviewStepFindList(props: ReviewStepFindListProps) {
                   )
 
                   return (
-                    <DescriptionListGroup key={row.node.path} style={{ marginLeft: 32 }}>
+                    <DescriptionListGroup
+                      key={reviewFindRowKey(row.node)}
+                      style={{ marginLeft: 32 + (afterDifferenceTitlePad[rowIndex] ? 16 : 0) }}
+                    >
                       {onReviewEdit != null ? (
                         <ReviewPenHoverZone
                           ariaLabel="Edit"
-                          descriptionListTerm={termBase}
+                          descriptionListTerm={termContent}
                           descriptionListDescriptionId={row.node.id}
                           onPenClick={() => onReviewEdit(row.node, yamlVisible ? 'highlight' : 'navigate')}
                           onPenIconClick={() => onReviewEdit(row.node, 'navigate')}
@@ -521,7 +965,7 @@ export function ReviewStepFindList(props: ReviewStepFindListProps) {
                         </ReviewPenHoverZone>
                       ) : (
                         <>
-                          <DescriptionListTerm>{termBase}</DescriptionListTerm>
+                          <DescriptionListTerm>{termContent}</DescriptionListTerm>
                           <DescriptionListDescription id={row.node.id ?? ''} style={{ whiteSpace: 'pre-wrap' }}>
                             <span className="wizard-review-inline-value">{valueContent}</span>
                           </DescriptionListDescription>

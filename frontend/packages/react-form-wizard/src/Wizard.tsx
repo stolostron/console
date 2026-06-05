@@ -40,6 +40,7 @@ import { ItemContext, useItem } from './contexts/ItemContext'
 import { ShowValidationProvider, useSetShowValidation, useShowValidation } from './contexts/ShowValidationProvider'
 import { StepHasInputsProvider } from './contexts/StepHasInputsProvider'
 import {
+  DefaultArrayInputRegisterProvider,
   HighlightEditorPathProvider,
   ReviewDomTreeSyncProvider,
   StepInputsRegistryProvider,
@@ -115,49 +116,51 @@ export function Wizard(props: WizardProps & { showHeader?: boolean; showYaml?: b
     <EditModeContext.Provider value={props.editMode === undefined ? EditMode.Create : props.editMode}>
       <StepHasInputsProvider>
         <StepInputsRegistryProvider>
-          <StepShowValidationProvider>
-            <StepValidationProvider>
-              <DisplayModeContext.Provider value={displayMode}>
-                <DataContext.Provider value={{ update }}>
-                  <ItemContext.Provider value={data}>
-                    <ShowValidationProvider>
-                      <ValidationProvider>
-                        <HighlightEditorPathProvider>
-                          <FooterContentProvider>
-                            <Drawer isExpanded={drawerExpanded} isInline>
-                              <DefaultDataContext.Provider value={defaultDataSnapshot}>
-                                <DrawerContent panelContent={<WizardDrawer yamlEditor={props.yamlEditor} />}>
-                                  <DrawerContentBody>
-                                    <ItemContext.Provider value={data}>
-                                      <StringContext.Provider value={wizardStrings || defaultStrings}>
-                                        <WizardInternal
-                                          id={props.id}
-                                          reviewStorageKey={props.reviewStorageKey}
-                                          showYaml={props.showYaml}
-                                          onSubmit={props.onSubmit}
-                                          onCancel={props.onCancel}
-                                          hasButtons={props.hasButtons}
-                                          submitButtonText={props.submitButtonText}
-                                          submittingButtonText={props.submittingButtonText}
-                                          isLoading={props.isLoading}
-                                        >
-                                          {props.children}
-                                        </WizardInternal>
-                                      </StringContext.Provider>
-                                    </ItemContext.Provider>
-                                  </DrawerContentBody>
-                                </DrawerContent>
-                              </DefaultDataContext.Provider>
-                            </Drawer>
-                          </FooterContentProvider>
-                        </HighlightEditorPathProvider>
-                      </ValidationProvider>
-                    </ShowValidationProvider>
-                  </ItemContext.Provider>
-                </DataContext.Provider>
-              </DisplayModeContext.Provider>
-            </StepValidationProvider>
-          </StepShowValidationProvider>
+          <DefaultArrayInputRegisterProvider defaultDataSnapshot={defaultDataSnapshot}>
+            <StepShowValidationProvider>
+              <StepValidationProvider>
+                <DisplayModeContext.Provider value={displayMode}>
+                  <DataContext.Provider value={{ update }}>
+                    <ItemContext.Provider value={data}>
+                      <ShowValidationProvider>
+                        <ValidationProvider>
+                          <HighlightEditorPathProvider>
+                            <FooterContentProvider>
+                              <Drawer isExpanded={drawerExpanded} isInline>
+                                <DefaultDataContext.Provider value={defaultDataSnapshot}>
+                                  <DrawerContent panelContent={<WizardDrawer yamlEditor={props.yamlEditor} />}>
+                                    <DrawerContentBody>
+                                      <ItemContext.Provider value={data}>
+                                        <StringContext.Provider value={wizardStrings || defaultStrings}>
+                                          <WizardInternal
+                                            id={props.id}
+                                            reviewStorageKey={props.reviewStorageKey}
+                                            showYaml={props.showYaml}
+                                            onSubmit={props.onSubmit}
+                                            onCancel={props.onCancel}
+                                            hasButtons={props.hasButtons}
+                                            submitButtonText={props.submitButtonText}
+                                            submittingButtonText={props.submittingButtonText}
+                                            isLoading={props.isLoading}
+                                          >
+                                            {props.children}
+                                          </WizardInternal>
+                                        </StringContext.Provider>
+                                      </ItemContext.Provider>
+                                    </DrawerContentBody>
+                                  </DrawerContent>
+                                </DefaultDataContext.Provider>
+                              </Drawer>
+                            </FooterContentProvider>
+                          </HighlightEditorPathProvider>
+                        </ValidationProvider>
+                      </ShowValidationProvider>
+                    </ItemContext.Provider>
+                  </DataContext.Provider>
+                </DisplayModeContext.Provider>
+              </StepValidationProvider>
+            </StepShowValidationProvider>
+          </DefaultArrayInputRegisterProvider>
         </StepInputsRegistryProvider>
       </StepHasInputsProvider>
     </EditModeContext.Provider>

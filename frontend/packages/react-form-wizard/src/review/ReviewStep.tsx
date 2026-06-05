@@ -39,7 +39,7 @@ import { InputReviewMeta, useStepRegister, type WizardDomTreeNode } from './Revi
 import { ReviewPenHoverZone, useReviewEditHandler, type OnReviewEditHandler } from './ReviewStepNavigation'
 import { ReviewStepFindList } from './ReviewStepFilterList'
 import { ReviewStepToolbar, useReviewExpandCollapseHandlers, type ReviewToolbarAction } from './ReviewStepToolbar'
-import { horizontalTermWidthModifierForInputRun, REVIEW_ERROR_TEXT_COLOR, simplifyLabels } from './utils'
+import { horizontalTermWidthModifierForInputRun, REVIEW_ERROR_TEXT_COLOR } from './utils'
 import { Step } from '../Step'
 import './ReviewStep.css'
 
@@ -118,7 +118,7 @@ export function ReviewStep({ reviewStorageKey = 'default', showYaml }: ReviewSte
     for (const step of registered) {
       roots.push(...getWizardDomTreeRootChildren(step.tree))
     }
-    return simplifyLabels(roots)
+    return roots
   }, [stepRegister, steps])
 
   const wizardDomTree = useMemo((): WizardDomTreeNode | null => {

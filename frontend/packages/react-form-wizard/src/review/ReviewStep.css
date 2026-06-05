@@ -307,3 +307,26 @@
   flex: 1 1 auto;
   min-width: 0;
 }
+
+/* Difference title rows span the full horizontal description list width. */
+.wizard-review-find-difference-title {
+  display: grid;
+  grid-template-columns: subgrid;
+}
+
+.wizard-review-find-difference-title > :is(.pf-v6-c-description-list__term, .pf-v5-c-description-list__term) {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.wizard-review-find-difference-modified-label:is(.pf-v6-c-label, .pf-v5-c-label) {
+  --pf-v6-c-label--BackgroundColor: color-mix(in srgb, color-mix(in srgb, #6a6e73 50%, white) 75%, white);
+  --pf-v5-c-label--BackgroundColor: color-mix(in srgb, color-mix(in srgb, #6a6e73 50%, white) 75%, white);
+  --pf-v6-c-label__content--Color: var(--pf-t--global--text--color--regular);
+  --pf-v5-c-label__content--Color: var(--pf-t--global--text--color--regular);
+}
+
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .wizard-review-find-difference-modified-label:is(.pf-v6-c-label, .pf-v5-c-label) {
+  --pf-v6-c-label--BackgroundColor: color-mix(in srgb, color-mix(in srgb, #525860 50%, white) 75%, white);
+  --pf-v5-c-label--BackgroundColor: color-mix(in srgb, color-mix(in srgb, #525860 50%, white) 75%, white);
+}

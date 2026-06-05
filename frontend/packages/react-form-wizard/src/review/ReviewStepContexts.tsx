@@ -5,10 +5,12 @@ import {
   type ReactNode,
   useCallback,
   useContext,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
 } from 'react'
+import { klona } from 'klona/json'
 
 /** DOM nodes that carry wizard input metadata (e.g. for review / focus helpers). */
 export enum InputReviewMeta {
@@ -17,6 +19,13 @@ export enum InputReviewMeta {
   GROUP = 'group',
   ARRAY_INPUT = 'arrayInput',
   ARRAY_INSTANCE = 'arrayInstance',
+}
+
+/** Keeps track of type of array instance node in a difference list. */
+export enum ArrayInstanceDiffType {
+  DELETED = 'arrayInstanceDeleted',
+  ADDED = 'arrayInstanceAdded',
+  UNCHANGED = 'arrayInstanceUnchanged',
 }
 /** DOM metadata for review / focus: wizard step container vs. individual inputs. */
 export type InputReviewStepMeta =
@@ -88,11 +97,18 @@ export type WizardDomTreeNode =
       nonEditable?: boolean
       /** When set, the review row renders as a PatternFly Alert instead of a description-list entry. */
       alertVariant?: 'info' | 'warning' | 'danger' | 'success'
+      /** Default snapshot value from the matched array-instance template. */
+      defaultValue?: unknown
       children?: WizardDomTreeNode[]
     })
   | (Omit<InputOrArrayInputMeta, 'type'> & { type: InputReviewMeta.ARRAY_INPUT; children?: WizardDomTreeNode[] })
   | (Omit<Extract<InputReviewStepMeta, { type: InputReviewMeta.ARRAY_INSTANCE }>, 'type' | 'stepId'> & {
       type: InputReviewMeta.ARRAY_INSTANCE
+      stepId: string
+      children?: WizardDomTreeNode[]
+    })
+  | (Omit<Extract<InputReviewStepMeta, { type: InputReviewMeta.ARRAY_INSTANCE }>, 'type' | 'stepId'> & {
+      type: ArrayInstanceDiffType.DELETED | ArrayInstanceDiffType.ADDED | ArrayInstanceDiffType.UNCHANGED
       stepId: string
       children?: WizardDomTreeNode[]
     })
@@ -152,6 +168,82 @@ export function StepInputsRegistryProvider(props: { children: ReactNode }) {
 
 export function useStepInputsRegistry(): StepInputsRegistry | null {
   return useContext(StepInputsRegistryContext)
+}
+
+function collectArrayInputNodesByPath(node: WizardDomTreeNode, byPath: Map<string, WizardDomTreeNode[]>): void {
+  if ('type' in node && node.type === InputReviewMeta.ARRAY_INPUT && 'path' in node && node.path) {
+    const cloned = klona(node)
+    const existing = byPath.get(node.path)
+    if (existing) {
+      existing.push(cloned)
+    } else {
+      byPath.set(node.path, [cloned])
+    }
+  }
+  const children = node.children
+  if (children?.length) {
+    for (const child of children) {
+      collectArrayInputNodesByPath(child, byPath)
+    }
+  }
+}
+
+function buildDefaultArrayInputRegisterFromStepTrees(
+  stepTrees: readonly WizardDomTreeNode[]
+): DefaultArrayInputRegister {
+  const byPath = new Map<string, WizardDomTreeNode[]>()
+  for (const tree of stepTrees) {
+    collectArrayInputNodesByPath(tree, byPath)
+  }
+  return byPath
+}
+
+function isNonEmptyWizardDomTree(tree: WizardDomTreeNode): boolean {
+  if ('type' in tree) return true
+  return (tree.children?.length ?? 0) > 0
+}
+
+// --- Default array-input register: cloned ARRAY_INPUT subtrees keyed by path (from defaultDataSnapshot) ---
+
+/** Path → cloned {@link InputReviewMeta.ARRAY_INPUT} DOM subtrees captured from the default-data layout. */
+export type DefaultArrayInputRegister = ReadonlyMap<string, readonly WizardDomTreeNode[]>
+
+const DefaultArrayInputRegisterContext = createContext<DefaultArrayInputRegister>(new Map())
+DefaultArrayInputRegisterContext.displayName = 'DefaultArrayInputRegisterContext'
+
+export function useDefaultArrayInputRegister(): DefaultArrayInputRegister {
+  return useContext(DefaultArrayInputRegisterContext)
+}
+
+/**
+ * After wizard steps finish layout, recursively walks step DOM trees (built from
+ * {@link StepInputsRegistryContext}) for {@link InputReviewMeta.ARRAY_INPUT} nodes, clones them,
+ * and stores them by path. Runs on first render and whenever `defaultDataSnapshot` changes.
+ */
+export function DefaultArrayInputRegisterProvider(props: { defaultDataSnapshot: object; children: ReactNode }) {
+  const stepRegister = useStepRegister()
+  const stepInputsRegistry = useStepInputsRegistry()
+  const [register, setRegister] = useState<DefaultArrayInputRegister>(() => new Map())
+  const lastCapturedSnapshotRef = useRef<object | null>(null)
+
+  useLayoutEffect(() => {
+    if (!stepRegister || !stepInputsRegistry) return
+    if (lastCapturedSnapshotRef.current === props.defaultDataSnapshot) return
+
+    const steps = stepRegister.getSteps()
+    if (steps.length === 0) return
+    if (!steps.every((step) => isNonEmptyWizardDomTree(step.tree))) return
+
+    const trees = steps.map((step) => step.tree)
+    setRegister(buildDefaultArrayInputRegisterFromStepTrees(trees))
+    lastCapturedSnapshotRef.current = props.defaultDataSnapshot
+  }, [stepRegister, stepRegister?.version, stepInputsRegistry, props.defaultDataSnapshot])
+
+  return (
+    <DefaultArrayInputRegisterContext.Provider value={register}>
+      {props.children}
+    </DefaultArrayInputRegisterContext.Provider>
+  )
 }
 
 // --- Step register: per-step DOM review trees (`getSteps` defines iteration order) ---

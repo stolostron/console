@@ -38,6 +38,9 @@ export interface WizardStrings {
   reviewBooleanTrue: string
   reviewBooleanFalse: string
   reviewBooleanNotSet: string
+  reviewArrayInstanceAdded: string
+  reviewArrayInstanceDeleted: string
+  reviewArrayInstanceModified: string
   selectNoItems: string
   selected: (count: number) => string
   selectPageItems: (count: number) => string
@@ -83,6 +86,9 @@ export const defaultStrings: WizardStrings = {
   reviewBooleanTrue: 'True',
   reviewBooleanFalse: 'False',
   reviewBooleanNotSet: 'Not set',
+  reviewArrayInstanceAdded: 'Added',
+  reviewArrayInstanceDeleted: 'Removed',
+  reviewArrayInstanceModified: 'Modified',
   selectNoItems: 'Select none (0 items)',
   selected: (count) => `${count} selected`,
   selectPageItems: (count) => `Select page (${count} items)`,
