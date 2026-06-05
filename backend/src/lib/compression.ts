@@ -88,6 +88,19 @@ type CompressedResourceType = Record<number, any> | Record<number, any[]> | stri
 const NUMBER_MARKER = '#!%'
 const JSON_MARKER = '#!&'
 
+// Detects ISO 8601 timestamps to avoid permanently indexing unique time values.
+// Covers: "2026-05-27T20:18:12Z" (20), "2026-05-27T20:18:12.000Z" (24), "2026-05-27T20:18:12+05:30" (25)
+export function isTimestamp(s: string): boolean {
+  return (
+    (s.length === 20 || s.length === 24 || s.length === 25) &&
+    s[4] === '-' &&
+    s[7] === '-' &&
+    s[10] === 'T' &&
+    s[13] === ':' &&
+    (s.endsWith('Z') || s[19] === '+' || s[19] === '-')
+  )
+}
+
 export class FifoSet<T> {
   private readonly values: T[] = []
   private readonly membership: Set<T> = new Set()
@@ -186,6 +199,10 @@ function compressResource(resource: UncompressedResourceType, dictionary: Dictio
         }
       }
       if (resource.length < 32 && !resource.endsWith('=')) {
+        // skip indexing of all timestamps
+        if (isTimestamp(resource)) {
+          return resource
+        }
         // index short strings that aren't a base64
         return dictionary.add(resource)
       }
