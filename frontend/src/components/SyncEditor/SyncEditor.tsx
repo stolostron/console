@@ -874,6 +874,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     syncActiveInstances()
   }, [syncActiveInstances, diffEditorInstanceEpoch])
 
+  const showDiffView = showChanges && defaultResources !== undefined && !mock
+
   return (
     <div
       ref={pageRef}
@@ -881,7 +883,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     >
       <div className="sync-editor__stack">
         <CodeEditor
-          isFullHeight
+          isFullHeight={!showDiffView}
           isLineNumbersVisible={true}
           isReadOnly={readonly}
           isMinimapVisible={true}
@@ -889,7 +891,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           language={Language.yaml}
           customControls={variant === 'toolbar' ? toolbarControls : undefined}
           onEditorDidMount={onEditorDidMount}
-          showEditor={!(showChanges && defaultResources !== undefined && !mock)}
+          showEditor={!showDiffView}
           options={{
             theme: getTheme(),
             wordWrap: 'wordWrapColumn',
