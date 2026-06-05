@@ -4,7 +4,7 @@ import { ItemContext, useData, useItem, WizAsyncSelect } from '@patternfly-labs/
 import { useCallback, useContext } from 'react'
 import set from 'set-value'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { Channel, getGitBranchList } from '../ArgoWizard'
+import { Channel, getGitBranchList, GitSourceCache, sortWithCachedFirst } from '../ArgoWizard'
 import { getGitChannelBranches } from '../../../resources'
 import { usePrevious } from '../../../components/usePrevious'
 import { Secret } from '../../../resources'
@@ -15,11 +15,19 @@ type GitRevisionSelectProps = {
   revisions?: string[]
   channels: Channel[]
   secrets: Secret[]
+  gitSourceCache?: GitSourceCache
 }
 
 type WizardItem = Record<string, unknown>
 
-export const GitRevisionSelect = ({ channels, path, target, revisions, secrets }: GitRevisionSelectProps) => {
+export const GitRevisionSelect = ({
+  channels,
+  path,
+  target,
+  revisions,
+  secrets,
+  gitSourceCache,
+}: GitRevisionSelectProps) => {
   const { t } = useTranslation()
   const repoURL = useItem(path ?? 'repoURL')
   const targetRevision = useItem(target ?? 'targetRevision')
@@ -29,6 +37,7 @@ export const GitRevisionSelect = ({ channels, path, target, revisions, secrets }
   const previousRepoURL = usePrevious(repoURL)
 
   const gitRevisionsAsyncCallback = useCallback(() => {
+    const cachedRevisions = gitSourceCache?.revisionsByRepoURL[repoURL] ?? revisions ?? []
     const channel = channels?.find((channel) => channel.spec.pathname === repoURL)
     const secret = secrets?.find((secret) => {
       if (!repoURL) {
@@ -53,7 +62,7 @@ export const GitRevisionSelect = ({ channels, path, target, revisions, secrets }
           user: Buffer.from(secret.data?.username ?? '', 'base64').toString(),
           accessToken: Buffer.from(secret.data?.password ?? '', 'base64').toString(),
         }
-      ).then((branches) => [...(revisions ?? []), ...(branches ?? [])])
+      ).then((branches) => sortWithCachedFirst(cachedRevisions, branches ?? []))
     } else {
       return getGitBranchList(
         {
@@ -64,9 +73,9 @@ export const GitRevisionSelect = ({ channels, path, target, revisions, secrets }
           spec: { pathname: repoURL, type: 'git' },
         },
         getGitChannelBranches
-      ).then((branches) => [...(revisions ?? []), ...branches])
+      ).then((branches) => sortWithCachedFirst(cachedRevisions, branches))
     }
-  }, [channels, repoURL, revisions, secrets])
+  }, [channels, gitSourceCache, repoURL, revisions, secrets])
 
   // Clear targetRevision and path when repoURL changes (update during render)
   if (previousRepoURL !== repoURL && previousRepoURL !== undefined) {

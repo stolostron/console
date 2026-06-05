@@ -125,7 +125,7 @@ export function SummaryClustersCard(props: {
   }, [chartData, chartLabel?.subTitle, chartLabel?.title, colorScale, isPieChart, title, shouldPlaceSubtitleAtBottom])
 
   const FONT_SIZE = 12
-  const FONT_FAMILY = 'RedHatText'
+  const FONT_FAMILY = 'Red Hat Text'
   const ITEMS_PER_COLUMN = 6
   const GUTTER = 16
   const ROW_GUTTER = -5

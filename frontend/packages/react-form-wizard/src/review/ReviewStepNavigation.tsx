@@ -54,7 +54,9 @@ export function useReviewEditHandler(): OnReviewEditHandler {
       const stepId = getReviewNodeStepId(node)
       const domId = getReviewScrollTargetDomId(node)
       if (stepId) goToStepById(stepId)
-      if (domId) scrollReviewEditTargetIntoView(domId)
+      if (domId) {
+        scrollReviewEditTargetIntoView(domId)
+      }
     },
     [goToStepById, resources, setHighlightEditorPath]
   )
@@ -135,108 +137,200 @@ function getReviewScrollTargetDomId(node: WizardDomTreeNode): string | undefined
   return undefined
 }
 
+function isElementHiddenInCollapsedContainer(el: HTMLElement): boolean {
+  let node: HTMLElement | null = el
+  while (node) {
+    if (node.hasAttribute('hidden')) return true
+    if (window.getComputedStyle(node).display === 'none') return true
+    node = node.parentElement
+  }
+  return false
+}
+
+function findCollapsedContainerToExpand(el: HTMLElement): HTMLElement | null {
+  let node: HTMLElement | null = el
+  while (node && node !== document.body) {
+    const style = window.getComputedStyle(node)
+    if (node.hasAttribute('hidden') || style.display === 'none') {
+      let owner: HTMLElement | null = node
+      while (owner) {
+        if (owner.classList.contains('pf-v6-c-expandable-section') && !owner.classList.contains('pf-m-expanded')) {
+          return owner
+        }
+        if (owner.classList.contains('input-field-group') && !owner.classList.contains('pf-m-expanded')) {
+          return owner
+        }
+        if (owner.tagName === 'SECTION' && owner.classList.contains('pf-v6-c-form__section')) {
+          return owner
+        }
+        owner = owner.parentElement
+      }
+      return null
+    }
+    node = node.parentElement
+  }
+  return null
+}
+
+function clickToExpandContainer(container: HTMLElement): boolean {
+  if (container.classList.contains('pf-v6-c-expandable-section')) {
+    const button = container.querySelector<HTMLButtonElement>(
+      '.pf-v6-c-expandable-section__toggle button[aria-expanded="false"]'
+    )
+    if (button) {
+      button.click()
+      return true
+    }
+    return false
+  }
+  if (container.classList.contains('input-field-group')) {
+    const button = container.querySelector<HTMLButtonElement>(
+      '.pf-v6-c-form__field-group-toggle button[aria-expanded="false"]'
+    )
+    if (button) {
+      button.click()
+      return true
+    }
+    return false
+  }
+  if (container.tagName === 'SECTION' && container.classList.contains('pf-v6-c-form__section')) {
+    const header = container.querySelector<HTMLElement>(':scope > .pf-v6-l-split')
+    if (header) {
+      header.click()
+      return true
+    }
+  }
+  return false
+}
+
+/** Expand every collapsed ancestor section / field group hiding `el`. */
+function expandCollapsedSectionsContaining(el: HTMLElement): boolean {
+  let expanded = false
+  for (let attempt = 0; attempt < 16 && isElementHiddenInCollapsedContainer(el); attempt++) {
+    const container = findCollapsedContainerToExpand(el)
+    if (!container || !clickToExpandContainer(container)) break
+    expanded = true
+  }
+  return expanded
+}
+
+function focusReviewEditTarget(el: HTMLElement) {
+  const inputTarget = resolveReviewEditInputTarget(el)
+  const highlightEl = reviewEditHighlightTarget(el)
+  highlightEl.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' })
+  if (inputTarget instanceof HTMLInputElement && isSelectableTextInput(inputTarget)) {
+    inputTarget.focus()
+    inputTarget.select()
+  }
+  clearReviewEditHighlight(highlightEl)
+  highlightEl.classList.add(REVIEW_EDIT_TARGET_HIGHLIGHT_CLASS)
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      highlightEl.classList.add(REVIEW_EDIT_TARGET_HIGHLIGHT_VISIBLE_CLASS)
+      autoDismissId = setTimeout(() => {
+        autoDismissId = undefined
+        dismiss()
+      }, REVIEW_EDIT_TARGET_HIGHLIGHT_AUTO_DISMISS_MS)
+    })
+  })
+
+  let easeOutFallbackId: ReturnType<typeof setTimeout> | undefined
+  let autoDismissId: ReturnType<typeof setTimeout> | undefined
+
+  const finishHighlight = () => {
+    if (autoDismissId !== undefined) {
+      clearTimeout(autoDismissId)
+      autoDismissId = undefined
+    }
+    if (easeOutFallbackId !== undefined) {
+      clearTimeout(easeOutFallbackId)
+      easeOutFallbackId = undefined
+    }
+    highlightEl.removeEventListener('transitionend', onTransitionEnd)
+    highlightEl.classList.remove(
+      REVIEW_EDIT_TARGET_HIGHLIGHT_CLASS,
+      REVIEW_EDIT_TARGET_HIGHLIGHT_VISIBLE_CLASS,
+      REVIEW_EDIT_TARGET_HIGHLIGHT_EASE_OUT_CLASS
+    )
+    reviewEditHighlightTeardownByEl.delete(highlightEl)
+  }
+
+  const onTransitionEnd = (e: TransitionEvent) => {
+    if (e.target !== highlightEl || e.propertyName !== 'outline-width') return
+    if (!highlightEl.classList.contains(REVIEW_EDIT_TARGET_HIGHLIGHT_EASE_OUT_CLASS)) return
+    finishHighlight()
+  }
+
+  function dismiss() {
+    if (autoDismissId !== undefined) {
+      clearTimeout(autoDismissId)
+      autoDismissId = undefined
+    }
+    highlightEl.removeEventListener('focusout', onHighlightFocusOut)
+    window.removeEventListener('blur', onWindowBlur)
+    document.removeEventListener('visibilitychange', onVisibilityChange)
+    highlightEl.addEventListener('transitionend', onTransitionEnd)
+    easeOutFallbackId = setTimeout(finishHighlight, REVIEW_EDIT_HIGHLIGHT_EASE_OUT_MS)
+    highlightEl.classList.add(REVIEW_EDIT_TARGET_HIGHLIGHT_EASE_OUT_CLASS)
+  }
+
+  function onHighlightFocusOut(e: FocusEvent) {
+    const next = e.relatedTarget
+    if (next instanceof Node && highlightEl.contains(next)) return
+    dismiss()
+  }
+
+  function onWindowBlur() {
+    dismiss()
+  }
+  function onVisibilityChange() {
+    if (document.visibilityState === 'hidden') dismiss()
+  }
+
+  function abort() {
+    if (autoDismissId !== undefined) {
+      clearTimeout(autoDismissId)
+      autoDismissId = undefined
+    }
+    if (easeOutFallbackId !== undefined) {
+      clearTimeout(easeOutFallbackId)
+      easeOutFallbackId = undefined
+    }
+    highlightEl.removeEventListener('focusout', onHighlightFocusOut)
+    window.removeEventListener('blur', onWindowBlur)
+    document.removeEventListener('visibilitychange', onVisibilityChange)
+    highlightEl.removeEventListener('transitionend', onTransitionEnd)
+    highlightEl.classList.remove(
+      REVIEW_EDIT_TARGET_HIGHLIGHT_CLASS,
+      REVIEW_EDIT_TARGET_HIGHLIGHT_VISIBLE_CLASS,
+      REVIEW_EDIT_TARGET_HIGHLIGHT_EASE_OUT_CLASS
+    )
+    reviewEditHighlightTeardownByEl.delete(highlightEl)
+  }
+
+  window.addEventListener('blur', onWindowBlur)
+  document.addEventListener('visibilitychange', onVisibilityChange)
+  highlightEl.addEventListener('focusout', onHighlightFocusOut)
+  reviewEditHighlightTeardownByEl.set(highlightEl, abort)
+}
+
 function scrollReviewEditTargetIntoView(domId: string) {
+  const finish = () => {
+    const el = document.getElementById(domId) as HTMLElement | null
+    if (el) focusReviewEditTarget(el)
+  }
+
   const run = () => {
     const el = document.getElementById(domId) as HTMLElement | null
     if (!el) return
-    const inputTarget = resolveReviewEditInputTarget(el)
-    const highlightEl = reviewEditHighlightTarget(el)
-    highlightEl.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' })
-    if (inputTarget instanceof HTMLInputElement && isSelectableTextInput(inputTarget)) {
-      inputTarget.focus()
-      inputTarget.select()
+    const didExpand = expandCollapsedSectionsContaining(el)
+    if (didExpand) {
+      requestAnimationFrame(() => requestAnimationFrame(finish))
+      return
     }
-    clearReviewEditHighlight(highlightEl)
-    highlightEl.classList.add(REVIEW_EDIT_TARGET_HIGHLIGHT_CLASS)
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        highlightEl.classList.add(REVIEW_EDIT_TARGET_HIGHLIGHT_VISIBLE_CLASS)
-        autoDismissId = setTimeout(() => {
-          autoDismissId = undefined
-          dismiss()
-        }, REVIEW_EDIT_TARGET_HIGHLIGHT_AUTO_DISMISS_MS)
-      })
-    })
-
-    let easeOutFallbackId: ReturnType<typeof setTimeout> | undefined
-    let autoDismissId: ReturnType<typeof setTimeout> | undefined
-
-    const finishHighlight = () => {
-      if (autoDismissId !== undefined) {
-        clearTimeout(autoDismissId)
-        autoDismissId = undefined
-      }
-      if (easeOutFallbackId !== undefined) {
-        clearTimeout(easeOutFallbackId)
-        easeOutFallbackId = undefined
-      }
-      highlightEl.removeEventListener('transitionend', onTransitionEnd)
-      highlightEl.classList.remove(
-        REVIEW_EDIT_TARGET_HIGHLIGHT_CLASS,
-        REVIEW_EDIT_TARGET_HIGHLIGHT_VISIBLE_CLASS,
-        REVIEW_EDIT_TARGET_HIGHLIGHT_EASE_OUT_CLASS
-      )
-      reviewEditHighlightTeardownByEl.delete(highlightEl)
-    }
-
-    const onTransitionEnd = (e: TransitionEvent) => {
-      if (e.target !== highlightEl || e.propertyName !== 'outline-width') return
-      if (!highlightEl.classList.contains(REVIEW_EDIT_TARGET_HIGHLIGHT_EASE_OUT_CLASS)) return
-      finishHighlight()
-    }
-
-    function dismiss() {
-      if (autoDismissId !== undefined) {
-        clearTimeout(autoDismissId)
-        autoDismissId = undefined
-      }
-      highlightEl.removeEventListener('focusout', onHighlightFocusOut)
-      window.removeEventListener('blur', onWindowBlur)
-      document.removeEventListener('visibilitychange', onVisibilityChange)
-      highlightEl.addEventListener('transitionend', onTransitionEnd)
-      easeOutFallbackId = setTimeout(finishHighlight, REVIEW_EDIT_HIGHLIGHT_EASE_OUT_MS)
-      highlightEl.classList.add(REVIEW_EDIT_TARGET_HIGHLIGHT_EASE_OUT_CLASS)
-    }
-
-    function onHighlightFocusOut(e: FocusEvent) {
-      const next = e.relatedTarget
-      if (next instanceof Node && highlightEl.contains(next)) return
-      dismiss()
-    }
-
-    function onWindowBlur() {
-      dismiss()
-    }
-    function onVisibilityChange() {
-      if (document.visibilityState === 'hidden') dismiss()
-    }
-
-    function abort() {
-      if (autoDismissId !== undefined) {
-        clearTimeout(autoDismissId)
-        autoDismissId = undefined
-      }
-      if (easeOutFallbackId !== undefined) {
-        clearTimeout(easeOutFallbackId)
-        easeOutFallbackId = undefined
-      }
-      highlightEl.removeEventListener('focusout', onHighlightFocusOut)
-      window.removeEventListener('blur', onWindowBlur)
-      document.removeEventListener('visibilitychange', onVisibilityChange)
-      highlightEl.removeEventListener('transitionend', onTransitionEnd)
-      highlightEl.classList.remove(
-        REVIEW_EDIT_TARGET_HIGHLIGHT_CLASS,
-        REVIEW_EDIT_TARGET_HIGHLIGHT_VISIBLE_CLASS,
-        REVIEW_EDIT_TARGET_HIGHLIGHT_EASE_OUT_CLASS
-      )
-      reviewEditHighlightTeardownByEl.delete(highlightEl)
-    }
-
-    window.addEventListener('blur', onWindowBlur)
-    document.addEventListener('visibilitychange', onVisibilityChange)
-    highlightEl.addEventListener('focusout', onHighlightFocusOut)
-    reviewEditHighlightTeardownByEl.set(highlightEl, abort)
+    finish()
   }
+
   requestAnimationFrame(() => {
     requestAnimationFrame(run)
   })

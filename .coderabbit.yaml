@@ -92,31 +92,12 @@ reviews:
   #
   # Instructions like "Attempt to verify PatternFly components are used correctly" will likely prompt a websearch from coderabbit;
   # this is not necessarily a bad thing, but because we dont control the websearch results, outcomes may vary in quality.
+  # Most coding conventions are in AGENTS.md files (auto-detected by CodeRabbit).
+  # path_instructions below cover review-specific guidance only.
   path_instructions:
-    # Frontend TypeScript/React files
-    - path: 'frontend/src/**/*.{ts,tsx}'
-      instructions: |
-        - Ensure all user-facing strings use useTranslation() or <Trans /> from src/lib/acm-i18next.
-        - Check for proper error boundaries and error handling
-        - Attempt to verify PatternFly components are used correctly, based on their respective design-guidelines
-        - Flag any security-sensitive operations (dangerouslySetInnerHTML, innerHTML)
-
-    # Backend Node.js ESM files
-    - path: 'backend/src/**/*.ts'
-      instructions: |
-        - Check for proper error handling and logging
-        - Ensure sensitive data (tokens, passwords) are not logged
-        - Verify input validation and sanitization
-        - Check for SQL injection, command injection vulnerabilities
-        - Ensure proper authentication/authorization checks
-
-    # Test files
+    # Test files — review-specific verification
     - path: '**/*.test.{ts,tsx}'
       instructions: |
-        - Verify test coverage is meaningful, not just for metrics
-        - Check that tests actually test the described behavior
-        - Ensure proper mocking and isolation
-        - Verify async tests handle promises correctly
         - Before claiming what the code under test does or allows, confirm it from the actual source (e.g. config, implementation); do not infer behavior from test names or comments alone
 
     # README and documentation (limit scope to avoid content critique and wrong suggestions)

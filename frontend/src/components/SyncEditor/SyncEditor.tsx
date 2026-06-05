@@ -881,6 +881,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     >
       <div className="sync-editor__stack">
         <CodeEditor
+          isFullHeight
           isLineNumbersVisible={true}
           isReadOnly={readonly}
           isMinimapVisible={true}

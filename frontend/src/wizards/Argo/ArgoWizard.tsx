@@ -192,6 +192,8 @@ export function ArgoWizard(props: ArgoWizardProps) {
     return [...(sourceGitChannels ?? []), ...(gitArgoAppSetRepoURLs ?? [])].filter(onlyUnique)
   }, [props.applicationSets, sourceGitChannels])
 
+  const gitSourceCache = useMemo(() => buildGitSourceCache(props.applicationSets), [props.applicationSets])
+
   const gitGeneratorRepos = useMemo(() => {
     const urls: string[] = []
     const versions: string[] = []
@@ -571,6 +573,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
                   channels={props.channels}
                   helmChannels={helmChannels}
                   secrets={props.repoSecrets ?? []}
+                  gitSourceCache={gitSourceCache}
                 />
               ) : (
                 <MultipleSourcesSelector
@@ -578,6 +581,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
                   gitChannels={gitChannels}
                   helmChannels={helmChannels}
                   secrets={props.repoSecrets ?? []}
+                  gitSourceCache={gitSourceCache}
                 />
               )}
             </Section>
@@ -1055,4 +1059,81 @@ export function setRepositoryTypeForSources(resources: any[] | undefined): any[]
     }
     return resource
   })
+}
+
+export type GitSourceCache = {
+  revisionsByRepoURL: Record<string, string[]>
+  pathsByRepoURLAndRevision: Record<string, Record<string, string[]>>
+}
+
+function addTimedEntry(entries: Map<string, string>, value: string, lastTransitionTime: string) {
+  const existing = entries.get(value)
+  if (!existing || lastTransitionTime.localeCompare(existing) > 0) {
+    entries.set(value, lastTransitionTime)
+  }
+}
+
+function sortTimedEntries(entries: Map<string, string>): string[] {
+  return [...entries.entries()].sort(([, timeA], [, timeB]) => timeB.localeCompare(timeA)).map(([value]) => value)
+}
+
+export function sortWithCachedFirst(cached: string[], items: string[]): string[] {
+  const cachedSet = new Set(cached)
+  const remaining = items.filter((item) => !cachedSet.has(item))
+  return [...cached, ...remaining]
+}
+
+export function buildGitSourceCache(applicationSets?: ApplicationSet[]): GitSourceCache {
+  const revisionsByRepoURL: Record<string, Map<string, string>> = {}
+  const pathsByRepoURLAndRevision: Record<string, Record<string, Map<string, string>>> = {}
+
+  const processSource = (source: RepositoryProps, lastTransitionTime: string) => {
+    if (source.chart || !source.repoURL) {
+      return
+    }
+    const { repoURL, targetRevision, path } = source
+
+    if (targetRevision) {
+      if (!revisionsByRepoURL[repoURL]) {
+        revisionsByRepoURL[repoURL] = new Map()
+      }
+      addTimedEntry(revisionsByRepoURL[repoURL], targetRevision, lastTransitionTime)
+    }
+
+    if (targetRevision && path) {
+      if (!pathsByRepoURLAndRevision[repoURL]) {
+        pathsByRepoURLAndRevision[repoURL] = {}
+      }
+      if (!pathsByRepoURLAndRevision[repoURL][targetRevision]) {
+        pathsByRepoURLAndRevision[repoURL][targetRevision] = new Map()
+      }
+      addTimedEntry(pathsByRepoURLAndRevision[repoURL][targetRevision], path, lastTransitionTime)
+    }
+  }
+
+  applicationSets?.forEach((appset) => {
+    const lastTransitionTime = get(appset, 'status.conditions[0].lastTransitionTime') ?? ''
+    const source = get(appset, 'spec.template.spec.source') as RepositoryProps | undefined
+    const sources = get(appset, 'spec.template.spec.sources') as RepositoryProps[] | undefined
+
+    if (sources) {
+      sources.forEach((src) => processSource(src, lastTransitionTime))
+    } else if (source) {
+      processSource(source, lastTransitionTime)
+    }
+  })
+
+  return {
+    revisionsByRepoURL: Object.fromEntries(
+      Object.entries(revisionsByRepoURL).map(([repoURL, entries]) => [repoURL, sortTimedEntries(entries)])
+    ),
+    pathsByRepoURLAndRevision: Object.fromEntries(
+      Object.entries(pathsByRepoURLAndRevision).map(([repoURL, revisions]) => [
+        repoURL,
+        Object.fromEntries(
+          Object.entries(revisions).map(([targetRevision, paths]) => [targetRevision, sortTimedEntries(paths)])
+        ),
+      ])
+    ),
+  }
 }

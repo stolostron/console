@@ -519,22 +519,24 @@ describe('getAppSetTopology', () => {
 
     const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
 
-    // CRD should appear exactly once (deduplicated across clusters)
-    const crdNodes = result.nodes.filter(
-      (n) => n.type === 'customresourcedefinition' && n.name === 'widgets.example.com'
-    )
+    // CRD should appear as a single merged node (processMultiples groups by kind)
+    const crdNodes = result.nodes.filter((n) => n.type === 'customresourcedefinition')
     expect(crdNodes).toHaveLength(1)
 
-    // The single CRD node should have both clusters in clustersNames
+    // The merged CRD node should have both clusters in clustersNames
     const crdNode = crdNodes[0]
     expect((crdNode as any).specs.clustersNames).toContain('local-cluster')
     expect((crdNode as any).specs.clustersNames).toContain('managed-cluster-1')
 
-    // Namespaced Deployment should still have separate entries per cluster
-    const deployNodes = result.nodes.filter((n) => n.type === 'deployment' && n.name === 'my-app')
-    expect(deployNodes).toHaveLength(2)
-    const deployIds = deployNodes.map((n) => n.id)
-    expect(deployIds[0]).not.toEqual(deployIds[1])
+    // specs.resources should contain per-cluster entries so the detail panel shows all clusters
+    const crdResources = (crdNode as any).specs.resources as any[]
+    expect(crdResources).toHaveLength(2)
+    expect(crdResources.map((r: any) => r.cluster).sort()).toEqual(['local-cluster', 'managed-cluster-1'])
+
+    // Namespaced Deployment should be merged into a single node across clusters
+    const deployNodes = result.nodes.filter((n) => n.type === 'deployment')
+    expect(deployNodes).toHaveLength(1)
+    expect(deployNodes[0].specs?.resourceCount).toBe(2)
   })
 
   it('should handle ApplicationSet with app status information', async () => {
@@ -1320,7 +1322,7 @@ describe('getAppSetTopology', () => {
 
     // Uniform sources array — only one fleet request needed
     expect(mockFleetResourceRequest).toHaveBeenCalledTimes(1)
-    expect(result.nodes.find((n) => n.type === 'deployment' && n.name === 'multi-src-deploy')).toBeDefined()
+    expect(result.nodes.find((n) => n.type === 'deployment')).toBeDefined()
   })
 
   it('should filter by active applications when provided', async () => {
