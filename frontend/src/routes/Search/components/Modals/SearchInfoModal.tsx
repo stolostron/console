@@ -8,7 +8,7 @@ import { AcmChip, AcmChipGroup, AcmModal } from '../../../../ui-components'
 
 const root = css({
   '& h1, h2': {
-    fontFamily: 'RedHatDisplay',
+    fontFamily: 'Red Hat Display',
   },
   '& hr': {
     width: 'calc(100% + 50px)',

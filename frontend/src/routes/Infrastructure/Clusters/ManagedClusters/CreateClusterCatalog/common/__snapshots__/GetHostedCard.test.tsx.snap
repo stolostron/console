@@ -9,7 +9,9 @@ exports[`GetHostedCard Return card data - Hypershift enabled 1`] = `
   >
     View documentation
      
-    <ExternalLinkAltIcon />
+    <ExternalLinkAltIcon
+      noDefaultStyle={false}
+    />
   </a>,
   "alertTitle": undefined,
   "alertVariant": "info",
@@ -23,7 +25,9 @@ exports[`GetHostedCard Return card data - Hypershift enabled 1`] = `
       "icon": <Icon
         status="success"
       >
-        <CheckIcon />
+        <CheckIcon
+          noDefaultStyle={false}
+        />
       </Icon>,
       "items": [
         {

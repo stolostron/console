@@ -77,7 +77,9 @@ exports[`Cluster creation control data for AI generates correctly 1`] = `
     "onSelect": [Function],
     "placeholder": "Select an automation template",
     "prompts": {
-      "icon": <ExternalLinkAltIcon />,
+      "icon": <ExternalLinkAltIcon
+        noDefaultStyle={false}
+      />,
       "id": "add-automation-template",
       "positionBottomRight": true,
       "prompt": "Add automation template",
@@ -243,7 +245,9 @@ exports[`Cluster creation control data for AI generates correctly for MCE 1`] = 
     "onSelect": [Function],
     "placeholder": "Select an automation template",
     "prompts": {
-      "icon": <ExternalLinkAltIcon />,
+      "icon": <ExternalLinkAltIcon
+        noDefaultStyle={false}
+      />,
       "id": "add-automation-template",
       "positionBottomRight": true,
       "prompt": "Add automation template",

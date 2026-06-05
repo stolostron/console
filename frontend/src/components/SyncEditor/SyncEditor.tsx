@@ -773,6 +773,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   return (
     <div ref={pageRef} className="sync-editor__container">
       <CodeEditor
+        isFullHeight
         isLineNumbersVisible={true}
         isReadOnly={readonly}
         isMinimapVisible={true}
