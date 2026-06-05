@@ -19,21 +19,30 @@ import { getEventDict } from '../routes/events'
 import { getAppDict, type ICompressedResource, type ITransformedResource } from '../routes/aggregators/applications'
 import { promisify } from 'node:util'
 
+const MAX_RECENTLY_ADDED = 200
+
 type Dictionary = {
   arr: string[]
   map: Record<string, string>
   add: (key: string) => string
   get: (inx: number) => string
   has: (key: string) => string
+  recentlyAdded: string[]
+  snapshotSize: () => number
+  drainRecentlyAdded: () => string[]
 }
 
 export function createDictionary(): Dictionary {
   const arr: string[] = []
   const map: Record<string, string> = {}
+  const recentlyAdded: string[] = []
   const add = (key: string): string => {
     if (!(key in map)) {
       map[key] = `${arr.length}`
       arr.push(key)
+      if (logger.isLevelEnabled('debug') && recentlyAdded.length < MAX_RECENTLY_ADDED) {
+        recentlyAdded.push(key)
+      }
     }
     return map[key]
   }
@@ -43,12 +52,17 @@ export function createDictionary(): Dictionary {
   const has = (key: string) => {
     return map[key]
   }
+  const snapshotSize = () => arr.length
+  const drainRecentlyAdded = () => recentlyAdded.splice(0)
   return {
     arr,
     map,
     add,
     get,
     has,
+    recentlyAdded,
+    snapshotSize,
+    drainRecentlyAdded,
   }
 }
 
