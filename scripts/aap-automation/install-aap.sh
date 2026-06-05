@@ -8,7 +8,7 @@ set -e
 # Configuration variables
 AAP_NAMESPACE=${AAP_NAMESPACE:-"ansible-automation-platform"}
 PLATFORM_NAME=${PLATFORM_NAME:-"aap-platform"}
-OPERATOR_CHANNEL=${OPERATOR_CHANNEL:-"stable-2.5-cluster-scoped"}
+OPERATOR_CHANNEL=${OPERATOR_CHANNEL:-""}
 OPERATOR_SOURCE=${OPERATOR_SOURCE:-"redhat-operators"}
 RH_OFFLINE_TOKEN=${RH_OFFLINE_TOKEN:-""}
 AAP_MODE=${AAP_MODE:-"platform"}  # "platform" (AnsibleAutomationPlatform) or "controller" (AutomationController)
@@ -118,6 +118,27 @@ log_info "Starting AAP installation on OpenShift cluster: $(oc whoami --show-ser
 # Create namespace
 log_info "Creating namespace: $AAP_NAMESPACE"
 oc create namespace "$AAP_NAMESPACE" --dry-run=client -o yaml | oc apply -f -
+
+# Auto-detect operator channel if not explicitly set
+if [ -z "$OPERATOR_CHANNEL" ]; then
+    log_info "Detecting available AAP operator channels..."
+    AVAILABLE_CHANNELS=$(oc get packagemanifest ansible-automation-platform-operator \
+        -n openshift-marketplace -o jsonpath='{range .status.channels[*]}{.name}{"\n"}{end}' 2>/dev/null)
+
+    if [ -z "$AVAILABLE_CHANNELS" ]; then
+        log_error "AAP operator not found in OperatorHub catalog"
+        exit 1
+    fi
+
+    OPERATOR_CHANNEL=$(echo "$AVAILABLE_CHANNELS" | grep '^stable-' | grep -v 'cluster-scoped' \
+        | sort -t. -k2 -n | tail -1)
+
+    if [ -z "$OPERATOR_CHANNEL" ]; then
+        OPERATOR_CHANNEL=$(echo "$AVAILABLE_CHANNELS" | sort -t. -k2 -n | tail -1)
+    fi
+
+    log_info "Auto-detected operator channel: $OPERATOR_CHANNEL"
+fi
 
 # Install AAP Operator
 log_info "Installing AAP Operator via OperatorHub"
@@ -309,17 +330,29 @@ elif [ -n "$RH_OFFLINE_TOKEN" ]; then
         if [ -z "$ACCESS_TOKEN" ] || [ "$ACCESS_TOKEN" = "null" ]; then
             log_warn "Failed to obtain access token - skipping subscription setup"
         else
-            # Check for existing allocation by name, or create new one
-            ALLOCATION_UUID=$(curl "${CURL_OPTS[@]}" -H "Authorization: Bearer ${ACCESS_TOKEN}" \
-                "${RHSM_API}/allocations" | jq -r --arg name "$ALLOCATION_NAME" \
+            # Check for existing allocation: first by name, then reuse any with entitlements
+            ALLOCATIONS_RESPONSE=$(curl "${CURL_OPTS[@]}" -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+                "${RHSM_API}/allocations")
+            ALLOCATION_UUID=$(echo "$ALLOCATIONS_RESPONSE" | jq -r --arg name "$ALLOCATION_NAME" \
                 '[.body[] | select(.name == $name)][0].uuid // empty')
+
+            if [ -z "$ALLOCATION_UUID" ]; then
+                log_info "No allocation named '$ALLOCATION_NAME', checking for any existing allocation with entitlements..."
+                ALLOCATION_UUID=$(echo "$ALLOCATIONS_RESPONSE" | jq -r \
+                    '[.body[] | select(.entitlementQuantity > 0)][0].uuid // empty')
+                if [ -n "$ALLOCATION_UUID" ]; then
+                    REUSED_NAME=$(echo "$ALLOCATIONS_RESPONSE" | jq -r --arg uuid "$ALLOCATION_UUID" \
+                        '[.body[] | select(.uuid == $uuid)][0].name')
+                    log_info "Reusing existing allocation: $REUSED_NAME ($ALLOCATION_UUID)"
+                fi
+            fi
 
             if [ -z "$ALLOCATION_UUID" ]; then
                 log_info "Creating new subscription allocation: $ALLOCATION_NAME"
                 ALLOCATION_UUID=$(curl "${CURL_OPTS[@]}" -X POST \
                     -H "Authorization: Bearer ${ACCESS_TOKEN}" \
                     -H "Content-Type: application/json" \
-                    -d "{\"name\":\"${ALLOCATION_NAME}\",\"type\":\"Satellite\",\"version\":\"6.11\"}" \
+                    -d "{\"name\":\"${ALLOCATION_NAME}\",\"type\":\"SAM\",\"version\":\"1.4\"}" \
                     "${RHSM_API}/allocations" | jq -r '.body.uuid // empty')
 
                 if [ -n "$ALLOCATION_UUID" ]; then
@@ -350,24 +383,45 @@ elif [ -n "$RH_OFFLINE_TOKEN" ]; then
 
             if [ -n "$ALLOCATION_UUID" ]; then
                 log_info "Downloading subscription manifest..."
-                # Export API may be async — check for redirect href
+                # RHSM export is async with multi-hop: /export -> /exportJob/{id} -> /export/{id}
                 EXPORT_RESPONSE=$(curl "${CURL_OPTS[@]}" -H "Authorization: Bearer ${ACCESS_TOKEN}" \
                     "${RHSM_API}/allocations/${ALLOCATION_UUID}/export")
                 EXPORT_HREF=$(echo "$EXPORT_RESPONSE" | jq -r '.body.href // empty' 2>/dev/null)
 
                 if [ -n "$EXPORT_HREF" ]; then
-                    log_info "Export is async, downloading from redirect..."
-                    DOWNLOAD_HTTP=$(curl "${CURL_OPTS[@]}" -H "Authorization: Bearer ${ACCESS_TOKEN}" \
-                        "$EXPORT_HREF" -o "${MANIFEST_FILE}" -w "%{http_code}")
+                    log_info "Export job started, following async chain..."
+                    EXPORT_ATTEMPTS=0
+                    while [ $EXPORT_ATTEMPTS -lt 10 ]; do
+                        sleep 3
+                        HOP_RESPONSE=$(curl "${CURL_OPTS[@]}" -H "Authorization: Bearer ${ACCESS_TOKEN}" \
+                            "$EXPORT_HREF" -o "${MANIFEST_FILE}" -w "\nHTTP_CODE:%{http_code}")
+                        HOP_HTTP=$(echo "$HOP_RESPONSE" | grep "HTTP_CODE:" | cut -d: -f2)
+
+                        if file "$MANIFEST_FILE" 2>/dev/null | grep -q "Zip archive"; then
+                            log_info "Manifest downloaded ($(wc -c < "$MANIFEST_FILE" | tr -d ' ') bytes)"
+                            break
+                        fi
+
+                        NEXT_HREF=$(jq -r '.body.href // empty' "$MANIFEST_FILE" 2>/dev/null)
+                        if [ -n "$NEXT_HREF" ]; then
+                            EXPORT_HREF="$NEXT_HREF"
+                            log_info "Following export redirect..."
+                        fi
+                        EXPORT_ATTEMPTS=$((EXPORT_ATTEMPTS + 1))
+                    done
+
+                    if ! file "$MANIFEST_FILE" 2>/dev/null | grep -q "Zip archive"; then
+                        log_warn "Export did not produce a valid ZIP after $EXPORT_ATTEMPTS attempts"
+                        rm -f "$MANIFEST_FILE"
+                    fi
                 else
                     DOWNLOAD_HTTP=$(curl "${CURL_OPTS[@]}" -H "Authorization: Bearer ${ACCESS_TOKEN}" \
                         "${RHSM_API}/allocations/${ALLOCATION_UUID}/export" \
                         -o "${MANIFEST_FILE}" -w "%{http_code}")
-                fi
-
-                if [ "$DOWNLOAD_HTTP" != "200" ]; then
-                    log_warn "Manifest download returned HTTP $DOWNLOAD_HTTP"
-                    rm -f "$MANIFEST_FILE"
+                    if [ "$DOWNLOAD_HTTP" != "200" ]; then
+                        log_warn "Manifest download returned HTTP $DOWNLOAD_HTTP"
+                        rm -f "$MANIFEST_FILE"
+                    fi
                 fi
 
                 if [ -f "$MANIFEST_FILE" ] && [ -s "$MANIFEST_FILE" ]; then
@@ -376,8 +430,8 @@ elif [ -n "$RH_OFFLINE_TOKEN" ]; then
                     UPLOAD_RESPONSE=$(curl "${CURL_OPTS[@]}" -X POST \
                         -u "admin:${ADMIN_PASSWORD}" \
                         -H "Content-Type: application/json" \
-                        -d "{\"manifest\":\"${MANIFEST_B64}\",\"eula\":true}" \
-                        "${API_BASE}/config/subscriptions/" \
+                        -d "{\"manifest\":\"${MANIFEST_B64}\",\"eula_accepted\":true}" \
+                        "${API_BASE}/config/" \
                         -w "\nHTTP_CODE:%{http_code}")
 
                     HTTP_CODE=$(echo "$UPLOAD_RESPONSE" | grep "HTTP_CODE:" | cut -d: -f2)
@@ -418,8 +472,18 @@ if [ -n "$ROUTE_URL" ] && [ -n "$ADMIN_PASSWORD" ]; then
             -u "admin:${ADMIN_PASSWORD}" \
             -H "Content-Type: application/json" \
             -d '{"scope":"write"}' \
-            "${API_BASE}/tokens/")
-        OAUTH_TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.token // empty')
+            "${AAP_URL}/api/gateway/v1/tokens/" 2>/dev/null)
+        OAUTH_TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.token // empty' 2>/dev/null)
+
+        if [ -z "$OAUTH_TOKEN" ]; then
+            log_info "Gateway token endpoint unavailable, trying controller endpoint..."
+            TOKEN_RESPONSE=$(curl "${CURL_OPTS[@]}" -X POST \
+                -u "admin:${ADMIN_PASSWORD}" \
+                -H "Content-Type: application/json" \
+                -d '{"scope":"write"}' \
+                "${API_BASE}/tokens/" 2>/dev/null)
+            OAUTH_TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r '.token // empty' 2>/dev/null)
+        fi
     else
         log_warn "AAP API not ready (HTTP ${API_STATUS}) - skipping token generation"
     fi
