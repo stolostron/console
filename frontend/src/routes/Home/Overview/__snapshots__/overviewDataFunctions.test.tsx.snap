@@ -155,7 +155,9 @@ exports[`Correctly returns getNodeSummary 1`] = `
       "icon": <Icon
         status="success"
       >
-        <CheckCircleIcon />
+        <CheckCircleIcon
+          noDefaultStyle={false}
+        />
       </Icon>,
       "link": "/multicloud/infrastructure/clusters/managed?nodes=healthy",
       "title": "Ready",
@@ -165,14 +167,18 @@ exports[`Correctly returns getNodeSummary 1`] = `
       "icon": <Icon
         status="danger"
       >
-        <ExclamationCircleIcon />
+        <ExclamationCircleIcon
+          noDefaultStyle={false}
+        />
       </Icon>,
       "link": undefined,
       "title": "Unhealthy",
     },
     {
       "count": 0,
-      "icon": <UnknownIcon />,
+      "icon": <UnknownIcon
+        noDefaultStyle={false}
+      />,
       "link": undefined,
       "title": "Unknown",
     },
@@ -203,7 +209,9 @@ exports[`Correctly returns getPolicySummary 1`] = `
       "icon": <Icon
         status="success"
       >
-        <CheckCircleIcon />
+        <CheckCircleIcon
+          noDefaultStyle={false}
+        />
       </Icon>,
       "link": "/multicloud/governance/policies?enabled=True&violations=no-violations",
       "title": "With no violations",
@@ -213,14 +221,18 @@ exports[`Correctly returns getPolicySummary 1`] = `
       "icon": <Icon
         status="danger"
       >
-        <ExclamationCircleIcon />
+        <ExclamationCircleIcon
+          noDefaultStyle={false}
+        />
       </Icon>,
       "link": "/multicloud/governance/policies?enabled=True&violations=violations",
       "title": "With violations",
     },
     {
       "count": 1,
-      "icon": <UnknownIcon />,
+      "icon": <UnknownIcon
+        noDefaultStyle={false}
+      />,
       "link": "/multicloud/governance/policies?enabled=True&violations=no-status",
       "title": "No status",
     },
@@ -241,7 +253,9 @@ exports[`Correctly returns getPolicySummary with filtered clusters 1`] = `
       "icon": <Icon
         status="success"
       >
-        <CheckCircleIcon />
+        <CheckCircleIcon
+          noDefaultStyle={false}
+        />
       </Icon>,
       "link": "/multicloud/governance/policies?enabled=True&violations=no-violations",
       "title": "With no violations",
@@ -251,14 +265,18 @@ exports[`Correctly returns getPolicySummary with filtered clusters 1`] = `
       "icon": <Icon
         status="danger"
       >
-        <ExclamationCircleIcon />
+        <ExclamationCircleIcon
+          noDefaultStyle={false}
+        />
       </Icon>,
       "link": "/multicloud/governance/policies?enabled=True&violations=violations",
       "title": "With violations",
     },
     {
       "count": 0,
-      "icon": <UnknownIcon />,
+      "icon": <UnknownIcon
+        noDefaultStyle={false}
+      />,
       "link": "/multicloud/governance/policies?enabled=True&violations=no-status",
       "title": "No status",
     },
