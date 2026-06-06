@@ -326,7 +326,8 @@
   --pf-v5-c-label__content--Color: var(--pf-t--global--text--color--regular);
 }
 
-:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .wizard-review-find-difference-modified-label:is(.pf-v6-c-label, .pf-v5-c-label) {
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark)
+  .wizard-review-find-difference-modified-label:is(.pf-v6-c-label, .pf-v5-c-label) {
   --pf-v6-c-label--BackgroundColor: color-mix(in srgb, color-mix(in srgb, #525860 50%, white) 75%, white);
   --pf-v5-c-label--BackgroundColor: color-mix(in srgb, color-mix(in srgb, #525860 50%, white) 75%, white);
 }
