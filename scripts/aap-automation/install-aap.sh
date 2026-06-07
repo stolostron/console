@@ -120,16 +120,20 @@ log_info "Creating namespace: $AAP_NAMESPACE"
 oc create namespace "$AAP_NAMESPACE" --dry-run=client -o yaml | oc apply -f -
 
 # Auto-detect operator channel if not set or if the requested channel is unavailable
+OC_PKG_STDERR=$(mktemp)
 AVAILABLE_CHANNELS=$(oc get packagemanifest ansible-automation-platform-operator \
-    -n openshift-marketplace -o jsonpath='{range .status.channels[*]}{.name}{"\n"}{end}' 2>/dev/null)
+    -n openshift-marketplace -o jsonpath='{range .status.channels[*]}{.name}{"\n"}{end}' 2>"$OC_PKG_STDERR")
 
 if [ -z "$AVAILABLE_CHANNELS" ]; then
-    log_error "AAP operator not found in OperatorHub catalog"
+    OC_ERR=$(cat "$OC_PKG_STDERR")
+    rm -f "$OC_PKG_STDERR"
+    log_error "AAP operator not found in OperatorHub catalog (oc get packagemanifest failed: ${OC_ERR:-no output})"
     exit 1
 fi
+rm -f "$OC_PKG_STDERR"
 
 if [ -n "$OPERATOR_CHANNEL" ] && ! echo "$AVAILABLE_CHANNELS" | grep -qx "$OPERATOR_CHANNEL"; then
-    log_warn "Requested channel '$OPERATOR_CHANNEL' not available, auto-detecting..."
+    log_warn "Requested channel '$OPERATOR_CHANNEL' not available — will auto-select the latest stable-* channel"
     OPERATOR_CHANNEL=""
 fi
 
