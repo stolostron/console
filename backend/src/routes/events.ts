@@ -184,29 +184,29 @@ let accessCacheCleanupTimer: NodeJS.Timeout | undefined
 export function cleanupAccessCache() {
   const now = Date.now()
   const cutoffTime = now - ACCESS_CACHE_TTL
-  const tokenStats: Array<{ token: string; oldestTime: number }> = []
+  const tokenStats: Array<{ token: string; newestTime: number }> = []
 
   for (const token in accessCache) {
     const tokenCache = accessCache[token]
-    let oldestTime = now
+    let newestTime = 0
 
     for (const key in tokenCache) {
       if (tokenCache[key].time < cutoffTime) {
         delete tokenCache[key]
-      } else if (tokenCache[key].time < oldestTime) {
-        oldestTime = tokenCache[key].time
+      } else if (tokenCache[key].time > newestTime) {
+        newestTime = tokenCache[key].time
       }
     }
 
     if (Object.keys(tokenCache).length === 0) {
       delete accessCache[token]
     } else {
-      tokenStats.push({ token, oldestTime })
+      tokenStats.push({ token, newestTime })
     }
   }
 
   if (tokenStats.length > ACCESS_CACHE_MAX_TOKENS) {
-    tokenStats.sort((a, b) => a.oldestTime - b.oldestTime)
+    tokenStats.sort((a, b) => a.newestTime - b.newestTime)
     const tokensToRemove = tokenStats.length - ACCESS_CACHE_MAX_TOKENS
 
     for (let i = 0; i < tokensToRemove; i++) {
