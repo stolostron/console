@@ -133,7 +133,7 @@ fi
 rm -f "$OC_PKG_STDERR"
 
 if [ -n "$OPERATOR_CHANNEL" ] && ! echo "$AVAILABLE_CHANNELS" | grep -qx "$OPERATOR_CHANNEL"; then
-    log_warn "Requested channel '$OPERATOR_CHANNEL' not available — will auto-select the latest stable-* channel"
+    log_warn "Requested channel '$OPERATOR_CHANNEL' not available — will auto-select the latest stable-* channel, or the latest available channel if none match"
     OPERATOR_CHANNEL=""
 fi
 
