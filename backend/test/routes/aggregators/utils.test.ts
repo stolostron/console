@@ -16,8 +16,9 @@ import {
   getArgoDestinationCluster,
   keyBy,
   sizeOf,
+  logApplicationCountChanges,
 } from '../../../src/routes/aggregators/utils'
-import { cacheResource, getEventCache } from '../../../src/routes/events'
+import { cacheResource, getEventCache, getEventDict } from '../../../src/routes/events'
 import type {
   IResource,
   IArgoApplication,
@@ -28,7 +29,9 @@ import type {
   Cluster,
 } from '../../../src/resources/resource'
 import type { ApplicationClusterStatusMap, ITransformedResource } from '../../../src/routes/aggregators/applications'
+import { getAppDict } from '../../../src/routes/aggregators/applications'
 import { ServerSideEvents } from '../../../src/lib/server-side-events'
+import { logger } from '../../../src/lib/logger'
 
 describe('aggregators utils', () => {
   beforeEach(() => {
@@ -1138,6 +1141,47 @@ describe('aggregators utils', () => {
 
       expect(clusters).toHaveLength(1)
       expect(clusters[0]).toBe('local-cluster')
+    })
+  })
+
+  describe('logApplicationCountChanges', () => {
+    it('logs memory usage and dictionary growth at debug level', () => {
+      const isLevelEnabledSpy = jest.spyOn(logger, 'isLevelEnabled').mockReturnValue(true)
+      const debugSpy = jest.spyOn(logger, 'debug').mockImplementation(() => {})
+      const infoSpy = jest.spyOn(logger, 'info').mockImplementation(() => {})
+
+      const appDict = getAppDict()
+      appDict.add('test-app-key-for-coverage')
+      const eventDict = getEventDict()
+      eventDict.add('test-event-key-for-coverage')
+
+      logApplicationCountChanges({}, 1)
+
+      expect(infoSpy).toHaveBeenCalledWith(expect.objectContaining({ msg: 'memory' }))
+      expect(debugSpy).toHaveBeenCalledWith(expect.objectContaining({ msg: 'appDict growth' }))
+      expect(debugSpy).toHaveBeenCalledWith(expect.objectContaining({ msg: 'eventDict growth' }))
+
+      isLevelEnabledSpy.mockRestore()
+      debugSpy.mockRestore()
+      infoSpy.mockRestore()
+    })
+
+    it('does not log dictionary growth when there are no new entries', () => {
+      const isLevelEnabledSpy = jest.spyOn(logger, 'isLevelEnabled').mockReturnValue(true)
+      const debugSpy = jest.spyOn(logger, 'debug').mockImplementation(() => {})
+      const infoSpy = jest.spyOn(logger, 'info').mockImplementation(() => {})
+
+      const appDict = getAppDict()
+      appDict.drainRecentlyAdded()
+
+      logApplicationCountChanges({}, 50)
+
+      expect(infoSpy).toHaveBeenCalledWith(expect.objectContaining({ msg: 'memory' }))
+      expect(debugSpy).not.toHaveBeenCalledWith(expect.objectContaining({ msg: 'appDict growth' }))
+
+      isLevelEnabledSpy.mockRestore()
+      debugSpy.mockRestore()
+      infoSpy.mockRestore()
     })
   })
 })
