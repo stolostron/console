@@ -25,7 +25,7 @@ export interface ResultsTableData {
   kind: string
   status: string
   message: string
-  timestamp: string | number | Date | undefined
+  timestamp: string | undefined
   policyName: string
   policyNamespace: string
   remediationAction: string

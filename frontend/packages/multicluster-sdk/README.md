@@ -1215,7 +1215,7 @@ This extension allows plugins to customize the route used for resources of the g
 
 | Type | Type |
 | ---------- | ---------- |
-| `ResourceRoute` | `ExtensionDeclaration<typeof RESOURCE_ROUTE_TYPE, ResourceRouteProps>` |
+| `ResourceRoute` | `Extension<typeof RESOURCE_ROUTE_TYPE, ResourceRouteProps>` |
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/extensions/resource.ts#L28)
 

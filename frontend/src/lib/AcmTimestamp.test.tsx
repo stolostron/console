@@ -8,7 +8,7 @@ import { PluginContext } from './PluginContext'
 import { PluginDataContext } from './PluginDataContext'
 
 interface TimestampProps {
-  timestamp: string | number | Date
+  timestamp: string | undefined
   simple?: boolean
   omitSuffix?: boolean
   className?: string
@@ -115,26 +115,6 @@ describe('AcmTimestamp', () => {
       </PluginContext.Provider>
     )
     expect(screen.getByText(timestamp)).toBeInTheDocument()
-  })
-
-  test('renders with a Date object timestamp', () => {
-    const dateTimestamp = new Date('2025-01-03T18:53:00')
-    render(
-      <PluginContext.Provider value={mockPluginContextValue}>
-        <AcmTimestamp timestamp={dateTimestamp} />
-      </PluginContext.Provider>
-    )
-    expect(screen.getByText(String(dateTimestamp))).toBeInTheDocument()
-  })
-
-  test('renders with a numeric timestamp', () => {
-    const numericTimestamp = 1735732380000
-    render(
-      <PluginContext.Provider value={mockPluginContextValue}>
-        <AcmTimestamp timestamp={numericTimestamp} />
-      </PluginContext.Provider>
-    )
-    expect(screen.getByText(String(numericTimestamp))).toBeInTheDocument()
   })
 
   test('renders with empty string timestamp', () => {
