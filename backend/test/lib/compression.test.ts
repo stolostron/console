@@ -1,9 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { jest } from '@jest/globals'
 import { createDictionary, deflateResource, inflateResource, isTimestamp } from '../../src/lib/compression'
 import type { IResource } from '../../src/resources/resource'
+import { logger } from '../../src/lib/logger'
+import { ServerSideEvents } from '../../src/lib/server-side-events'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const asResource = (obj: Record<string, any>) => obj as unknown as IResource
+
+afterAll(async () => {
+  await ServerSideEvents.dispose()
+})
 
 describe('isTimestamp', () => {
   it('detects UTC timestamps with Z suffix', () => {
@@ -33,6 +40,38 @@ describe('isTimestamp', () => {
 
   it('rejects empty string', () => {
     expect(isTimestamp('')).toBe(false)
+  })
+})
+
+describe('dictionary tracking', () => {
+  beforeEach(() => {
+    jest.spyOn(logger, 'isLevelEnabled').mockReturnValue(true)
+  })
+
+  afterEach(() => {
+    jest.restoreAllMocks()
+  })
+
+  it('tracks recently added entries and exposes snapshot size', () => {
+    const dict = createDictionary()
+    dict.add('alpha')
+    dict.add('beta')
+    dict.add('alpha')
+
+    expect(dict.snapshotSize()).toBe(2)
+    expect(dict.recentlyAdded).toContain('alpha')
+    expect(dict.recentlyAdded).toContain('beta')
+  })
+
+  it('drains recently added entries', () => {
+    const dict = createDictionary()
+    dict.add('one')
+    dict.add('two')
+
+    const drained = dict.drainRecentlyAdded()
+    expect(drained).toEqual(['one', 'two'])
+    expect(dict.recentlyAdded).toHaveLength(0)
+    expect(dict.snapshotSize()).toBe(2)
   })
 })
 
