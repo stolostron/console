@@ -14,7 +14,7 @@ import {
   useLocation,
   useMatch,
   useNavigate,
-} from 'react-router-dom-v5-compat'
+} from 'react-router-dom'
 import { LostChangesContext } from './components/LostChanges'
 import { Cluster } from './resources/utils'
 

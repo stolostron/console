@@ -13,7 +13,7 @@ import {
   SubscriptionOperatorKind,
 } from '../../../resources'
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { clusterCuratorsState, secretsState, subscriptionOperatorsState } from '../../../atoms'
 import {
@@ -46,8 +46,8 @@ import AnsibleAutomationsPage from './AnsibleAutomations'
 
 const mockedUsedNavigate = jest.fn()
 
-jest.mock('react-router-dom-v5-compat', () => {
-  const originalModule = jest.requireActual('react-router-dom-v5-compat')
+jest.mock('react-router-dom', () => {
+  const originalModule = jest.requireActual('react-router-dom')
   return {
     __esModule: true,
     ...originalModule,

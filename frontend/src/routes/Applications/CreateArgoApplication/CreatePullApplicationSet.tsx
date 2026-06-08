@@ -10,7 +10,7 @@ import {
 import { ArgoWizard, setRepositoryTypeForSources } from '~/wizards/Argo/ArgoWizard'
 import { AcmToastContext } from '~/ui-components'
 import { useContext, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { useNavigate } from 'react-router-dom'
 import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '~/shared-recoil'
 import { SyncEditor, ValidationStatus } from '~/components/SyncEditor/SyncEditor'
 import { useTranslation } from '~/lib/acm-i18next'

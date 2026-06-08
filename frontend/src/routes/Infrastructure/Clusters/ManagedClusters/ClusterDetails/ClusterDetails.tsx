@@ -8,7 +8,7 @@ import {
 } from '@openshift-assisted/ui-lib/cim'
 import keyBy from 'lodash/keyBy'
 import { Fragment, Suspense, useEffect, useMemo, useState } from 'react'
-import { generatePath, Outlet, useMatch, useNavigate, useOutletContext, useParams } from 'react-router-dom-v5-compat'
+import { generatePath, Outlet, useMatch, useNavigate, useOutletContext, useParams } from 'react-router-dom'
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { KubevirtProviderAlert } from '../../../../../components/KubevirtProviderAlert'
 import { usePrevious } from '../../../../../components/usePrevious'

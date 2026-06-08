@@ -2,7 +2,7 @@
 
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { namespacesState } from '../../atoms'
 import {
@@ -30,7 +30,7 @@ import { createProviderConnection, mockNamespaces } from '../../test-helpers/cre
 import { Provider, AcmToastContext } from '../../ui-components'
 import { CreateCredentialsFormPage, ViewEditCredentialsFormPage } from './CredentialsForm'
 import { CredentialsType } from './CredentialsType'
-import { Route, Routes } from 'react-router-dom-v5-compat'
+import { Route, Routes } from 'react-router-dom'
 
 describe('add credentials page', () => {
   beforeEach(() => {

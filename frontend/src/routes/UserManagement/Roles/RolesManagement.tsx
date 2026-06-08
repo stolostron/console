@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Navigate, Route, Routes } from 'react-router-dom-v5-compat'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { NavigationPath, createRoutePathFunction } from '../../../NavigationPath'
 import { RolesPage } from './RolesPage'
 import { RolePage } from './Role/RolePage'

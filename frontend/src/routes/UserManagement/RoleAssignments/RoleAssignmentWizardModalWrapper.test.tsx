@@ -2,7 +2,7 @@
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RecoilRoot } from 'recoil'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { MemoryRouter } from 'react-router-dom'
 import { RoleAssignmentWizardModalWrapper } from './RoleAssignmentWizardModalWrapper'
 import { AcmToastContext } from '../../../ui-components'
 import { UserKind } from '../../../resources'

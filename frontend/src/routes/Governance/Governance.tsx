@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Route, Routes } from 'react-router-dom-v5-compat'
+import { Route, Routes } from 'react-router-dom'
 import GovernancePage from './GovernancePage'
 import { CreatePolicy } from './policies/CreatePolicy'
 import { CreatePolicyAutomation } from './policies/CreatePolicyAutomation'

@@ -2,7 +2,7 @@
 
 import { render } from '@testing-library/react'
 import { axe } from 'jest-axe'
-import { BrowserRouter } from 'react-router-dom-v5-compat'
+import { BrowserRouter } from 'react-router-dom'
 import { AcmSecondaryNav } from './AcmSecondaryNav'
 
 describe('AcmSecondaryNav', () => {

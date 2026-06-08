@@ -22,7 +22,7 @@ import {
 } from './common'
 import { getLabelFilterOptions, matchesSelectedLabels } from '../../utils/label-utils'
 import { useMemo } from 'react'
-import { useLocation } from 'react-router-dom-v5-compat'
+import { useLocation } from 'react-router-dom'
 import { useDiscoveredDetailsContext } from './DiscoveredPolicyDetailsPage'
 import { EmptyState, PageSection, Spinner } from '@patternfly/react-core'
 

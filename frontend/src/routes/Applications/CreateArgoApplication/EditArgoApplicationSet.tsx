@@ -9,7 +9,7 @@ import {
 } from '@patternfly-labs/react-form-wizard'
 import { ArgoWizard } from '~/wizards/Argo/ArgoWizard'
 import { useContext, useEffect, useState } from 'react'
-import { useParams, useNavigate, PathParam, generatePath } from 'react-router-dom-v5-compat'
+import { useParams, useNavigate, PathParam, generatePath } from 'react-router-dom'
 import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '~/shared-recoil'
 import { LoadingPage } from '~/components/LoadingPage'
 import { SyncEditor, ValidationStatus } from '~/components/SyncEditor/SyncEditor'

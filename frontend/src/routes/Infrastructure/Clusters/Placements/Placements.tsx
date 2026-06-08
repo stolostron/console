@@ -16,7 +16,7 @@ import {
 } from '../../../../ui-components'
 import { ButtonVariant, PageSection } from '@patternfly/react-core'
 import { navigateToBackCancelLocation } from '../../../../NavigationPath'
-import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
+import { generatePath, useNavigate } from 'react-router-dom'
 import { NavigationPath } from '../../../../NavigationPath'
 import { HighlightSearchText } from '../../../../components/HighlightSearchText'
 import { canUser } from '~/lib/rbac-util'

@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import HostsForm, { getControlSummary } from './HostsForm'
 import { render } from '@testing-library/react'

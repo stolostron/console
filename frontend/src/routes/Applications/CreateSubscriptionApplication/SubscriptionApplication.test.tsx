@@ -2,7 +2,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Scope } from 'nock/types'
-import { generatePath, MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
+import { generatePath, MemoryRouter, Route, Routes } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import {
   applicationsState,

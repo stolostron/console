@@ -4,7 +4,7 @@ import { Stack, StackItem, ToggleGroup, ToggleGroupItem } from '@patternfly/reac
 import _ from 'lodash'
 import queryString from 'query-string'
 import { TFunction } from 'react-i18next'
-import { Link, useNavigate } from 'react-router-dom-v5-compat'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { DOC_LINKS, ViewDocumentationLink } from '../../../lib/doc-util'
 import { rbacCreate, useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'

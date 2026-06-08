@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useContext, useMemo } from 'react'
-import { generatePath, Outlet, useLocation, useParams } from 'react-router-dom-v5-compat'
+import { generatePath, Outlet, useLocation, useParams } from 'react-router-dom'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { NavigationPath } from '../../../../../NavigationPath'

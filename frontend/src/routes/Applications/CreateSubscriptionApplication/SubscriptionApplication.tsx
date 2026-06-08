@@ -16,7 +16,7 @@ import 'monaco-editor/esm/vs/editor/editor.all.js'
 import { Dispatch, SetStateAction, useCallback, useContext, useEffect, useState } from 'react'
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
-import { useLocation, useNavigate, Location, generatePath } from 'react-router-dom-v5-compat'
+import { useLocation, useNavigate, Location, generatePath } from 'react-router-dom'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import TemplateEditor from '../../../components/TemplateEditor'
 import { getErrorInfo } from '../../../components/ErrorPage'

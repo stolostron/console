@@ -16,7 +16,7 @@ import {
 import { cellWidth } from '@patternfly/react-table'
 import _ from 'lodash'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom-v5-compat'
+import { Link, useNavigate } from 'react-router-dom'
 import { useLocalHubName } from '../../hooks/use-local-hub'
 import { Trans, useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../lib/doc-util'

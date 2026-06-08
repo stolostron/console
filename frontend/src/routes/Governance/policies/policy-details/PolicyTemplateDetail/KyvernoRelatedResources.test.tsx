@@ -2,7 +2,7 @@
 
 import { render, screen, waitFor } from '@testing-library/react'
 import { KyvernoRelatedResources } from './KyvernoRelatedResources'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { MemoryRouter } from 'react-router-dom'
 import * as KyvernoTable from './KyvernoTable'
 
 describe('Kyverno Related Resources table Test', () => {

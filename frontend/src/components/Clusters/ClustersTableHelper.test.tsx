@@ -123,15 +123,6 @@ jest.mock('../../routes/Infrastructure/helpers/table-row-helpers', () => ({
   }),
 }))
 
-// Mock React Router v5 compat
-jest.mock('react-router-dom-v5-compat', () => ({
-  Link: ({ children, to, ...props }: { children: React.ReactNode; to: string }) => (
-    <a href={to} {...props}>
-      {children}
-    </a>
-  ),
-}))
-
 // Mock search utils
 jest.mock('../../lib/search-utils', () => ({
   handleStandardComparison: jest.fn(() => true),

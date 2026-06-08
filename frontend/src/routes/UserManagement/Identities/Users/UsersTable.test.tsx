@@ -2,7 +2,7 @@
 
 import { render, screen, waitFor } from '@testing-library/react'
 import { ButtonVariant } from '@patternfly/react-core'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { MulticlusterRoleAssignment } from '../../../../resources/multicluster-role-assignment'
 import { User } from '../../../../resources/rbac'

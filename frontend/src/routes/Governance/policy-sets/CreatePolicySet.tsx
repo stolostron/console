@@ -9,7 +9,7 @@ import {
 import { PolicySetWizard } from '../../../wizards/Governance/PolicySet/PolicySetWizard'
 import { AcmToastContext } from '../../../ui-components'
 import { useContext, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { useNavigate } from 'react-router-dom'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { SyncEditor, ValidationStatus } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'

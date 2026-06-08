@@ -3,7 +3,7 @@
 import { PageSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { ReactNode, useCallback, useContext, useMemo } from 'react'
-import { Link } from 'react-router-dom-v5-compat'
+import { Link } from 'react-router-dom'
 import { ObservabilityEndpoint, useMetricsPoll } from '~/lib/useMetricsPoll'
 import { useRecoilValue, useSharedAtoms } from '~/shared-recoil'
 import { useTranslation } from '../../../../../../lib/acm-i18next'

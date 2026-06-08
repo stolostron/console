@@ -2,7 +2,7 @@
 
 import { render } from '@testing-library/react'
 import { ProviderProps } from 'react'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { MemoryRouter } from 'react-router-dom'
 import { nockRequest } from '../lib/nock-util'
 import { defaultContext, PluginData } from '../lib/PluginDataContext'
 import { waitForText } from '../lib/test-util'

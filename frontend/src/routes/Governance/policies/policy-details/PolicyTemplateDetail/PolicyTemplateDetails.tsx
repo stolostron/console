@@ -9,7 +9,7 @@ import {
 import { ReactNode, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 
-import { useParams } from 'react-router-dom-v5-compat'
+import { useParams } from 'react-router-dom'
 import { NavigationPath } from '../../../../../NavigationPath'
 import {
   AcmAlert,

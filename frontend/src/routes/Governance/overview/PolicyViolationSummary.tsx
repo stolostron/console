@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Card } from '@patternfly/react-core'
-import { useLocation } from 'react-router-dom-v5-compat'
+import { useLocation } from 'react-router-dom'
 import { AcmDonutChart, colorThemes } from '../../../ui-components'
 import { useMemo } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'

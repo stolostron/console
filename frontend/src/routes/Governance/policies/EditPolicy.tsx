@@ -9,7 +9,7 @@ import {
 } from '@patternfly-labs/react-form-wizard'
 import { PolicyWizard } from '../../../wizards/Governance/Policy/PolicyWizard'
 import { useContext, useEffect, useMemo, useState } from 'react'
-import { useParams, useNavigate, generatePath } from 'react-router-dom-v5-compat'
+import { useParams, useNavigate, generatePath } from 'react-router-dom'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { SyncEditor, ValidationStatus } from '../../../components/SyncEditor/SyncEditor'

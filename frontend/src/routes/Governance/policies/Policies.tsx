@@ -17,7 +17,7 @@ import {
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { fitContent } from '@patternfly/react-table'
 import { ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
+import { generatePath, useNavigate } from 'react-router-dom'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { deletePolicy } from '../../../lib/delete-policy'

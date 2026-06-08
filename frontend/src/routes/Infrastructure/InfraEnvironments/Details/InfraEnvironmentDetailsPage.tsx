@@ -20,7 +20,7 @@ import {
   useNavigate,
   useOutletContext,
   useParams,
-} from 'react-router-dom-v5-compat'
+} from 'react-router-dom'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_VERSION } from '../../../../lib/doc-util'

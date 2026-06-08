@@ -114,22 +114,6 @@ jest.mock('../../NavigationPath', () => ({
   },
 }))
 
-// Mock React Router hooks
-jest.mock('react-router-dom-v5-compat', () => ({
-  useLocation: () => ({
-    pathname: '/clusters',
-    search: '',
-    hash: '',
-    state: null,
-  }),
-  useNavigate: () => jest.fn(),
-  Link: ({ children, to, ...props }: { children: React.ReactNode; to: string }) => (
-    <a href={to} {...props}>
-      {children}
-    </a>
-  ),
-}))
-
 // Mock local hub hook
 jest.mock('../../hooks/use-local-hub', () => ({
   useLocalHubName: () => 'local-cluster',

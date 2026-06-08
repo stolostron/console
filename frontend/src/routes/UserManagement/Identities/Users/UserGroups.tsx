@@ -7,7 +7,7 @@ import { cellWidth } from '@patternfly/react-table'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
 import { getISOStringTimestamp } from '../../../../resources/utils'
 import { NavigationPath } from '../../../../NavigationPath'
-import { Link, generatePath } from 'react-router-dom-v5-compat'
+import { Link, generatePath } from 'react-router-dom'
 import { useFilters } from '../IdentityTableHelper'
 import { useUserGroups } from './useUserGroups'
 
