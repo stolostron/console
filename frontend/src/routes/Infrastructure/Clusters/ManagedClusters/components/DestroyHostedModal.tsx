@@ -40,7 +40,7 @@ hcp destroy cluster azure \
       return {
         destroyCode: String.raw`# Set environment variables
 export CLUSTER_NAME="example"
-export STS_CREDS="example-sts-creds.json"  # The credential name from step 1.
+export STS_CREDS="/path/to/example-sts-creds.json"  # The credential name from step 1.
 export ROLE_ARN="example-role-arn" # Role ARN from step 1
 
 hcp destroy cluster aws \
