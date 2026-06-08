@@ -153,6 +153,80 @@ export function getEventDict() {
 
 const accessCache: Record<string, Record<string, { time: number; promise: Promise<boolean> }>> = {}
 
+/** Clear all cached RBAC access checks. Used for test isolation. */
+export function resetAccessCache() {
+  for (const key in accessCache) {
+    delete accessCache[key]
+  }
+}
+
+export function getAccessCache() {
+  return accessCache
+}
+
+export const ACCESS_CACHE_TTL = 60 * 1000 // 60 seconds
+export const ACCESS_CACHE_CLEANUP_INTERVAL = 90 * 1000 // 90 seconds
+export const ACCESS_CACHE_MAX_TOKENS = 1000 // Maximum number of token entries to keep
+
+let accessCacheCleanupTimer: NodeJS.Timeout | undefined
+
+export function cleanupAccessCache() {
+  const now = Date.now()
+  const cutoffTime = now - ACCESS_CACHE_TTL
+  const tokenStats: Array<{ token: string; newestTime: number }> = []
+
+  for (const token in accessCache) {
+    const tokenCache = accessCache[token]
+    let newestTime = 0
+
+    for (const key in tokenCache) {
+      if (tokenCache[key].time < cutoffTime) {
+        delete tokenCache[key]
+      } else if (tokenCache[key].time > newestTime) {
+        newestTime = tokenCache[key].time
+      }
+    }
+
+    if (Object.keys(tokenCache).length === 0) {
+      delete accessCache[token]
+    } else {
+      tokenStats.push({ token, newestTime })
+    }
+  }
+
+  if (tokenStats.length > ACCESS_CACHE_MAX_TOKENS) {
+    tokenStats.sort((a, b) => a.newestTime - b.newestTime)
+    const tokensToRemove = tokenStats.length - ACCESS_CACHE_MAX_TOKENS
+
+    for (let i = 0; i < tokensToRemove; i++) {
+      delete accessCache[tokenStats[i].token]
+    }
+  }
+}
+
+function startAccessCacheCleanup() {
+  if (accessCacheCleanupTimer) return
+
+  accessCacheCleanupTimer = setInterval(() => {
+    try {
+      cleanupAccessCache()
+    } catch (err: unknown) {
+      logger.error({ msg: 'accessCache cleanup failed', error: err })
+    }
+  }, ACCESS_CACHE_CLEANUP_INTERVAL)
+
+  accessCacheCleanupTimer.unref()
+  logger.info({ msg: 'accessCache cleanup started', interval: ACCESS_CACHE_CLEANUP_INTERVAL })
+}
+
+function stopAccessCacheCleanup() {
+  if (accessCacheCleanupTimer) {
+    clearInterval(accessCacheCleanupTimer)
+    accessCacheCleanupTimer = undefined
+    logger.info({ msg: 'accessCache cleanup stopped' })
+  }
+}
+
 const definitions: IWatchOptions[] = [
   { kind: 'ClusterManagementAddOn', apiVersion: 'addon.open-cluster-management.io/v1alpha1' },
   { kind: 'ManagedClusterAddOn', apiVersion: 'addon.open-cluster-management.io/v1alpha1' },
@@ -249,6 +323,7 @@ const definitions: IWatchOptions[] = [
 
 export function startWatching(): void {
   ServerSideEvents.eventFilter = eventFilter
+  startAccessCacheCleanup()
 
   for (const definition of definitions) {
     void listAndWatch(definition)
@@ -837,12 +912,12 @@ export function canAccess(
   verb: 'get' | 'list' | 'create',
   token: string
 ): Promise<boolean> {
-  // TODO make sure old cache items get cleaned up
+  // Cache is cleaned up periodically by cleanupAccessCache() to prevent unbounded memory growth
 
   const key = `${resource.kind}:${resource.metadata?.namespace}:${resource.metadata?.name}`
   if (!accessCache[token]) accessCache[token] = {}
   const existing = accessCache[token][key]
-  if (existing && existing.time > Date.now() - 60 * 1000) {
+  if (existing && existing.time > Date.now() - ACCESS_CACHE_TTL) {
     return existing.promise
   }
 
@@ -888,6 +963,7 @@ export function canAccess(
 let stopping = false
 export function stopWatching(): void {
   stopping = true
+  stopAccessCacheCleanup()
   for (const request of requests) {
     request.cancel()
   }
