@@ -54,8 +54,8 @@ jest.mock('../../../../shared-recoil', () => ({
 }))
 
 // Mock React Router hooks
-jest.mock('react-router-dom-v5-compat', () => ({
-  ...jest.requireActual('react-router-dom-v5-compat'),
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
   useLocation: () => ({
     pathname: '/clusters',
     search: '',

@@ -18,7 +18,7 @@ import {
 import { ExternalLinkAltIcon, GlobeAmericasIcon, PencilAltIcon, SearchIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import { Fragment, useEffect, useMemo, useState } from 'react'
-import { generatePath, Link, useNavigate } from 'react-router-dom-v5-compat'
+import { generatePath, Link, useNavigate } from 'react-router-dom'
 import { findResourceFieldLineNumber } from '../../../components/YamlEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { canUser } from '../../../lib/rbac-util'

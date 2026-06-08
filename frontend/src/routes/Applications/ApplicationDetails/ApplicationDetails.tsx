@@ -15,7 +15,7 @@ import {
   useState,
 } from 'react'
 import { TFunction } from 'react-i18next'
-import { generatePath, Outlet, useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom-v5-compat'
+import { generatePath, Outlet, useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { RbacDropdown } from '../../../components/Rbac'
 import { useLocalHubName } from '../../../hooks/use-local-hub'

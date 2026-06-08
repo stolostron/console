@@ -3,7 +3,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RecoilRoot } from 'recoil'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { MemoryRouter } from 'react-router-dom'
 import { AutomationDetailsSidebar } from './AutomationDetailsSidebar'
 import { AnsibleJob, Policy, PolicyAutomation, Secret } from '../../../resources'
 import { enableMapSet } from 'immer'
@@ -20,8 +20,8 @@ jest.mock('../../../resources/utils', () => ({
 
 // Mock the navigate function
 const mockNavigate = jest.fn()
-jest.mock('react-router-dom-v5-compat', () => {
-  const actual = jest.requireActual('react-router-dom-v5-compat')
+jest.mock('react-router-dom', () => {
+  const actual = jest.requireActual('react-router-dom')
   return {
     ...actual,
     useNavigate: () => mockNavigate,

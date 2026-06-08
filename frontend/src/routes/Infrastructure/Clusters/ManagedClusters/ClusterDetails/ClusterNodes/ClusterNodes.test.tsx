@@ -13,7 +13,7 @@ var clusterNodesTestState: {
 }
 
 import { render, screen, within } from '@testing-library/react'
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { defaultPlugin, PluginContext } from '../../../../../../lib/PluginContext'
 import { ClusterDetailsContext } from '../ClusterDetails'

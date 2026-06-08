@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { PolicyTemplateDetails } from './PolicyTemplateDetails'
 import { TemplateDetailsContext } from './PolicyTemplateDetailsPage'

@@ -9,7 +9,7 @@ import { waitForNocks } from '../../../../../lib/test-util'
 import { ClusterCuratorDefinition } from '../../../../../resources'
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { MemoryRouter } from 'react-router-dom'
 const mockClusterNoAvailable: Cluster = {
   name: 'cluster-0-no-available',
   displayName: 'cluster-0-no-available',

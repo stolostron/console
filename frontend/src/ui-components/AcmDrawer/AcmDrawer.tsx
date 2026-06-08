@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useRef, useState, useContext, useEffect, createContext } from 'react'
-import { useLocation } from 'react-router-dom-v5-compat'
+import { useLocation } from 'react-router-dom'
 import {
   Drawer,
   DrawerPanelContent,

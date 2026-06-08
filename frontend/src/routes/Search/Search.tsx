@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useEffect } from 'react'
-import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom-v5-compat'
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { createRoutePathFunction, NavigationPath } from '../../NavigationPath'
 import { SearchAlertGroupProvider } from './components/SearchAlertGroup'
 import DetailsOverviewPage from './Details/DetailsOverviewPage'

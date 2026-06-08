@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, waitFor } from '@testing-library/react'
-import { BrowserRouter } from 'react-router-dom-v5-compat'
+import { BrowserRouter } from 'react-router-dom'
 import { SummaryClustersCard } from './SummaryClustersCard'
 
 describe('SummaryClustersCard', () => {

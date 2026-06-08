@@ -2,7 +2,7 @@
 
 import { Label } from '@patternfly/react-core'
 import { useMemo, useState } from 'react'
-import { generatePath, Link } from 'react-router-dom-v5-compat'
+import { generatePath, Link } from 'react-router-dom'
 import { useTranslation } from '~/lib/acm-i18next'
 import { NavigationPath } from '~/NavigationPath'
 import { Placement, PlacementDecision } from '~/resources'

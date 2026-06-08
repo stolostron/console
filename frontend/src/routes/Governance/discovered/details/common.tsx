@@ -4,7 +4,7 @@ import { DiscoveredPolicyItem, DiscoveredPolicyTableItem, ISourceType } from '..
 import { compareStrings, IAcmTableColumn, ITableFilter, AcmLabels } from '../../../../ui-components'
 import { TFunction } from 'react-i18next'
 import { getPolicySource } from '../../common/util'
-import { generatePath, Link } from 'react-router-dom-v5-compat'
+import { generatePath, Link } from 'react-router-dom'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Channel, HelmRelease, Subscription } from '../../../../resources'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'

@@ -11,7 +11,7 @@ import {
 
 import { IResource } from '@patternfly-labs/react-form-wizard'
 import { ReactNode } from 'react'
-import { BrowserRouter as Router } from 'react-router-dom-v5-compat'
+import { BrowserRouter as Router } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { waitForText } from '../../../lib/test-util'
 import { Policy } from '../../../resources'

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { createContext, ElementType, Fragment, ReactNode, Suspense, useContext, useEffect, useState } from 'react'
-import { Outlet, useLocation } from 'react-router-dom-v5-compat'
+import { Outlet, useLocation } from 'react-router-dom'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { NavigationPath } from '../../../NavigationPath'

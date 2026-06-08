@@ -17,7 +17,7 @@ import {
 import { ExclamationCircleIcon, InfoCircleIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { useNavigate } from 'react-router-dom'
 
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PluginContext } from '../../../lib/PluginContext'

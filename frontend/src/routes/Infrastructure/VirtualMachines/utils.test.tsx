@@ -5,8 +5,8 @@ import { getVirtualMachineRowActions, getVMSnapshotActions } from './utils'
 
 const mockHistoryPush = jest.fn()
 describe('VirtualMachines utils', () => {
-  jest.mock('react-router-dom-v5-compat', () => ({
-    ...jest.requireActual('react-router-dom-v5-compat'),
+  jest.mock('react-router-dom', () => ({
+    ...jest.requireActual('react-router-dom'),
     useHistory: () => ({
       push: mockHistoryPush,
     }),

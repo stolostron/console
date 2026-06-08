@@ -9,7 +9,7 @@ import {
   ApplicationSetKind,
   IResource,
 } from '../../../resources'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { MemoryRouter } from 'react-router-dom'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './DeleteResourceModal'
 import { nockIgnoreApiPaths } from '../../../lib/nock-util'
 import { clickByRole, waitForText } from '../../../lib/test-util'
@@ -22,8 +22,8 @@ jest.mock('../../../lib/delete-application', () => ({
 }))
 
 const mockNavigate = jest.fn()
-jest.mock('react-router-dom-v5-compat', () => ({
-  ...jest.requireActual('react-router-dom-v5-compat'),
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
   useNavigate: () => mockNavigate,
 }))
 

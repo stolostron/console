@@ -3,7 +3,7 @@
 import { ChartDonut, ChartLabel, ChartLegend, ChartPie } from '@patternfly/react-charts/victory'
 import { Card, CardTitle } from '@patternfly/react-core'
 import { useMemo } from 'react'
-import { Link } from 'react-router-dom-v5-compat'
+import { Link } from 'react-router-dom'
 import { Truncate } from '../../../../components/Truncate'
 import { getTextWidth } from '../../../../ui-components/utils'
 

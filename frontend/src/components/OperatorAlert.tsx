@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Alert, AlertVariant, Button } from '@patternfly/react-core'
 import { useTranslation } from '../lib/acm-i18next'
-import { Link } from 'react-router-dom-v5-compat'
+import { Link } from 'react-router-dom'
 
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { ReactNode } from 'react'

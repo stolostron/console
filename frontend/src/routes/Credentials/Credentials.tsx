@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Routes, Route, Navigate } from 'react-router-dom-v5-compat'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { CreateCredentialsPage } from './CreateCredentials'
 import { CreateCredentialsAWS } from './CreateCredentialsType/CreateCredentialsAWS'
 import { ViewEditCredentialsFormPage } from './CredentialsForm'

@@ -20,7 +20,7 @@ import {
 } from '@patternfly/react-core'
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode } from 'react'
-import { Link } from 'react-router-dom-v5-compat'
+import { Link } from 'react-router-dom'
 import { AcmAlertContext, AcmAlertGroup, AcmAlertProvider } from '../AcmAlert/AcmAlert'
 import { AcmDrawer, AcmDrawerProvider } from '../AcmDrawer/AcmDrawer'
 import { AcmErrorBoundary } from '../AcmErrorBoundary/AcmErrorBoundary'

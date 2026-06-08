@@ -4,7 +4,7 @@ import { ManagedClusterSetDefinition, isGlobalClusterSet } from '../../../../../
 import { AcmEmptyState, AcmPageContent, AcmTableStateProvider } from '../../../../../../ui-components'
 import { PageSection } from '@patternfly/react-core'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
-import { Link, generatePath } from 'react-router-dom-v5-compat'
+import { Link, generatePath } from 'react-router-dom'
 import { RbacButton } from '../../../../../../components/Rbac'
 import { rbacCreate } from '../../../../../../lib/rbac-util'
 import { NavigationPath, SubRoutesRedirect } from '../../../../../../NavigationPath'

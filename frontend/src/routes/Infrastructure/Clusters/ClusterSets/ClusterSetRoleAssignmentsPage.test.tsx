@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import ClusterSetRoleAssignmentsPage from './ClusterSetRoleAssignmentsPage'
 import { useRecoilValue } from '../../../../shared-recoil'

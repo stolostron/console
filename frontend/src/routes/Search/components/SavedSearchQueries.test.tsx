@@ -4,7 +4,7 @@
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { Settings, settingsState } from '../../../atoms'
 import { nockSearch } from '../../../lib/nock-util'

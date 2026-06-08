@@ -9,7 +9,7 @@ import {
 } from './common'
 import { waitForText } from '../../../../lib/test-util'
 import i18next from 'i18next'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { MemoryRouter } from 'react-router-dom'
 
 describe('ByCluster common component test', () => {
   test('Compliant should be 2 and others should be 0', async () => {

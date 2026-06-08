@@ -15,7 +15,7 @@ import { OutlinedQuestionCircleIcon, SyncAltIcon } from '@patternfly/react-icons
 import { cloneDeep } from 'lodash'
 import { Fragment, useEffect, useState } from 'react'
 import { TFunction } from 'react-i18next'
-import { generatePath, Link } from 'react-router-dom-v5-compat'
+import { generatePath, Link } from 'react-router-dom'
 import { getPlacementsForApplicationSet, PlacementLinkList } from '~/routes/Infrastructure/Clusters/Placements/utils'
 import { useLocalHubName } from '../../../../hooks/use-local-hub'
 import { useTranslation } from '../../../../lib/acm-i18next'

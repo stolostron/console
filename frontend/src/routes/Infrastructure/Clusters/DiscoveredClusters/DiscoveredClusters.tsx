@@ -15,7 +15,7 @@ import { ActionList, ActionListItem, Bullseye, ButtonVariant, PageSection } from
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, useCallback, useMemo } from 'react'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
-import { Link, useNavigate } from 'react-router-dom-v5-compat'
+import { Link, useNavigate } from 'react-router-dom'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
 import { navigateToBackCancelLocation, NavigationPath } from '../../../../NavigationPath'
 import { DiscoveredCluster, DiscoveryConfig, ProviderConnection, unpackProviderConnection } from '../../../../resources'

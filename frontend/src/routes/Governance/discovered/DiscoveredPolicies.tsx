@@ -2,7 +2,7 @@
 import { EmptyState, PageSection, Spinner } from '@patternfly/react-core'
 import { isEqual } from 'lodash'
 import { ReactNode, useMemo } from 'react'
-import { generatePath, Link } from 'react-router-dom-v5-compat'
+import { generatePath, Link } from 'react-router-dom'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { exportObjectString, filterLabelFn } from '../../../resources/utils'

@@ -21,7 +21,7 @@ import {
   SecretKind,
 } from '../../../../../resources'
 import { fireEvent, render, screen } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { managedClusterSetsState, namespacesState, secretsState, Settings, settingsState } from '../../../../../atoms'
 import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC, nockList, nockReplace } from '../../../../../lib/nock-util'

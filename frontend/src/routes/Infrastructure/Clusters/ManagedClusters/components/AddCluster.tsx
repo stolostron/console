@@ -3,7 +3,7 @@ import { AcmButton, AcmDropdown } from '../../../../../ui-components'
 import { ActionList, ActionListItem, Bullseye } from '@patternfly/react-core'
 import { useEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { Link, useNavigate } from 'react-router-dom-v5-compat'
+import { Link, useNavigate } from 'react-router-dom'
 import { canUser } from '../../../../../lib/rbac-util'
 import {
   getBackCancelLocationLinkProps,

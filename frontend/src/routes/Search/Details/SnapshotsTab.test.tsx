@@ -2,7 +2,7 @@
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
 import { GraphQLError } from 'graphql'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { MemoryRouter } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import { v4 as uuidv4 } from 'uuid'
 import { isFineGrainedRbacEnabledState, Settings, settingsState } from '../../../atoms'

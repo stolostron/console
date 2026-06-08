@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
 import { Fragment, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
-import { generatePath, Outlet, useOutletContext, useParams } from 'react-router-dom-v5-compat'
+import { generatePath, Outlet, useOutletContext, useParams } from 'react-router-dom'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { fleetResourceRequest } from '../../../../../resources/utils/fleet-resource-request'

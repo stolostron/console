@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, act } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { RecoilRoot, useSetRecoilState } from 'recoil'
 import {
   policiesState,
@@ -33,8 +33,8 @@ jest.mock('../../../resources/utils', () => ({
 }))
 
 const mockNavigate = jest.fn()
-jest.mock('react-router-dom-v5-compat', () => ({
-  ...jest.requireActual('react-router-dom-v5-compat'),
+jest.mock('react-router-dom', () => ({
+  ...jest.requireActual('react-router-dom'),
   useNavigate: () => mockNavigate,
 }))
 

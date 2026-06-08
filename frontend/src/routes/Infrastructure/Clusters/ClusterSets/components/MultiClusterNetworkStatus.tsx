@@ -4,7 +4,7 @@ import { ManagedClusterAddOn, ManagedClusterSet } from '../../../../../resources
 import { AcmButton, AcmInlineStatus, StatusType } from '../../../../../ui-components'
 import { Popover } from '@patternfly/react-core'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { Link, generatePath } from 'react-router-dom-v5-compat'
+import { Link, generatePath } from 'react-router-dom'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { submarinerHealthCheck, SubmarinerStatus } from '../ClusterSetDetails/ClusterSetSubmariner/ClusterSetSubmariner'

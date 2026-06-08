@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
 import { useMemo } from 'react'
-import { useParams } from 'react-router-dom-v5-compat'
+import { useParams } from 'react-router-dom'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { AcmPage, AcmPageContent, AcmPageHeader, AcmTableStateProvider } from '../../../ui-components'

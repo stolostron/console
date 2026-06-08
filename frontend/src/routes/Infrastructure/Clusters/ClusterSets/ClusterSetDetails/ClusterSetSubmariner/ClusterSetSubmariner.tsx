@@ -23,7 +23,7 @@ import {
   StatusType,
 } from '../../../../../../ui-components'
 import { useContext, useEffect, useState } from 'react'
-import { Link, generatePath, useNavigate } from 'react-router-dom-v5-compat'
+import { Link, generatePath, useNavigate } from 'react-router-dom'
 import { useRecoilValue, useSharedAtoms } from '../../../../../../shared-recoil'
 import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../../../components/BulkActionModal'
 import { RbacButton, RbacDropdown } from '../../../../../../components/Rbac'

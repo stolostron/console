@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ButtonVariant, Content, ContentVariants, PageSection, Stack, StackItem } from '@patternfly/react-core'
 import { useCallback, useContext, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { useNavigate } from 'react-router-dom'
 import { ClustersTable } from '../../../../components/Clusters/ClustersTable'
 import { KubevirtProviderAlert } from '../../../../components/KubevirtProviderAlert'
 import { useLocalHubName } from '../../../../hooks/use-local-hub'

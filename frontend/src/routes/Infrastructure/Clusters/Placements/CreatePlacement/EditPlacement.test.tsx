@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor } from '@testing-library/react'
-import { generatePath, MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
+import { generatePath, MemoryRouter, Route, Routes } from 'react-router-dom'
 import { RecoilRoot } from 'recoil'
 import {
   namespacesState,
