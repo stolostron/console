@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import {
   Radio,
   Section,
@@ -24,9 +24,9 @@ import {
 import { onCancel, onSubmit } from '../common/utils'
 
 export function InputsWizard() {
-  const history = useHistory()
+  const navigate = useNavigate()
   return (
-    <WizardPage id="inputs-wizard" title="Inputs" onSubmit={onSubmit} onCancel={() => onCancel(history)}>
+    <WizardPage id="inputs-wizard" title="Inputs" onSubmit={onSubmit} onCancel={() => onCancel(navigate)}>
       <Step label="Text Input" id="text-input">
         <Section label="Text Input">
           <WizTextInput label="Text input" path="textInput.text" />

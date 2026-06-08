@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import {
   WizKeyValue,
   WizMultiSelect,
@@ -17,7 +17,7 @@ import {
 } from '../../src'
 
 export function ClusterForm() {
-  const history = useHistory()
+  const navigate = useNavigate()
   return (
     <WizardPage
       id="cluster-form-wizard"
@@ -25,7 +25,7 @@ export function ClusterForm() {
       // template={YamlTemplate}
       breadcrumb={[{ label: 'Managed clusters', to: '.' }]}
       onSubmit={() => Promise.resolve(undefined)}
-      onCancel={() => history.push('./?route=wizards')}
+      onCancel={() => navigate('./?route=wizards')}
     >
       <Step label="Infrastructure provider" id="infrastructure-provider">
         <Section label="Infrastructure provider" prompt="Select the infrastructure for the cluster">

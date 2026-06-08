@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { EditMode } from '../../src'
 import { Catalog } from '../Catalog'
 import { IResource } from '../../src/common/resource'
@@ -11,12 +11,12 @@ import { onSubmit } from '../common/utils'
 import { RouteE } from '../Routes'
 import { PlacementWizard } from './PlacementWizard'
 
-export function onCancel(history: { push: (location: string) => void }) {
-  history.push(`./${RouteE.Placement}`)
+export function onCancel(navigate: (path: string) => void) {
+  navigate(`./${RouteE.Placement}`)
 }
 
 export function PlacementExamples() {
-  const history = useHistory()
+  const navigate = useNavigate()
   return (
     <Catalog
       title="Placement Examples"
@@ -25,26 +25,26 @@ export function PlacementExamples() {
         {
           title: 'Create placement',
           descriptions: ['Create a new placement.'],
-          onClick: () => history.push(RouteE.CreatePlacement),
+          onClick: () => navigate(RouteE.CreatePlacement),
         },
         {
           title: 'Edit placement',
           featureGroups: [{ title: 'Features', features: ['Placement', 'Placement binding'] }],
-          onClick: () => history.push(RouteE.EditPlacement),
+          onClick: () => navigate(RouteE.EditPlacement),
         },
         {
           title: 'Edit placements',
           featureGroups: [{ title: 'Features', features: ['2 placements', '2 placement bindings'] }],
-          onClick: () => history.push(RouteE.EditPlacements),
+          onClick: () => navigate(RouteE.EditPlacements),
         },
       ]}
-      onBack={() => history.push(RouteE.Wizards)}
+      onBack={() => navigate(RouteE.Wizards)}
     />
   )
 }
 
 export function CreatePlacement() {
-  const history = useHistory()
+  const navigate = useNavigate()
   return (
     <PlacementWizard
       title="Create placement"
@@ -54,7 +54,7 @@ export function CreatePlacement() {
       clusterSets={clusterSets}
       clusterSetBindings={clusterSetBindings}
       onSubmit={onSubmit}
-      onCancel={() => onCancel(history)}
+      onCancel={() => onCancel(navigate)}
       defaultPlacementType={PlacementKind}
       bindingSubjectKind={PolicySetKind}
       bindingSubjectApiGroup={PolicySetApiGroup}
@@ -65,7 +65,7 @@ export function CreatePlacement() {
 }
 
 export function EditPlacement() {
-  const history = useHistory()
+  const navigate = useNavigate()
   return (
     <PlacementWizard
       namespaces={namespaces}
@@ -75,7 +75,7 @@ export function EditPlacement() {
       placements={placements}
       title="Edit placement"
       onSubmit={onSubmit}
-      onCancel={() => onCancel(history)}
+      onCancel={() => onCancel(navigate)}
       editMode={EditMode.Edit}
       resources={[...placement1Resources]}
       defaultPlacementType={PlacementKind}
@@ -87,7 +87,7 @@ export function EditPlacement() {
 }
 
 export function EditPlacements() {
-  const history = useHistory()
+  const navigate = useNavigate()
   return (
     <PlacementWizard
       namespaces={namespaces}
@@ -97,7 +97,7 @@ export function EditPlacements() {
       placements={placements}
       title="Edit placements"
       onSubmit={onSubmit}
-      onCancel={() => onCancel(history)}
+      onCancel={() => onCancel(navigate)}
       editMode={EditMode.Edit}
       resources={[...placement1Resources, ...placement2Resources]}
       defaultPlacementType={PlacementKind}

@@ -2,7 +2,7 @@
 
 import { CodeBlock, Icon, List, ListItem, Stack } from '@patternfly/react-core'
 import { CheckIcon, CloseIcon } from '@patternfly/react-icons'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import {
   Section,
   WizSelect,
@@ -87,7 +87,7 @@ interface AWSHypershiftWizardProps {
 }
 
 export function AmazonHypershiftWizard(props: AWSHypershiftWizardProps) {
-  const history = useHistory()
+  const navigate = useNavigate()
   const clusterSets = props.clusterSets.map((clusterSet) => clusterSet.metadata?.name) as string[]
   return (
     <WizardPage
@@ -95,7 +95,7 @@ export function AmazonHypershiftWizard(props: AWSHypershiftWizardProps) {
       title="Create cluster"
       breadcrumb={[{ label: 'Managed clusters', to: '.' }]}
       onSubmit={() => Promise.resolve(undefined)}
-      onCancel={() => history.push('./?route=wizards')}
+      onCancel={() => navigate('./?route=wizards')}
       defaultData={[
         defaultData,
         {

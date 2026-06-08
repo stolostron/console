@@ -8,18 +8,18 @@ import {
   List,
   ListItem,
 } from '@patternfly/react-core'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Section, Step, WizardPage } from '../../src'
 import { Indented } from '../../src/components/Indented'
 
 export function HomeWizard() {
-  const history = useHistory()
+  const navigate = useNavigate()
   return (
     <WizardPage
       id="home-wizard"
       title="Welcome"
       onSubmit={() => Promise.resolve(undefined)}
-      onCancel={() => history.push('.')}
+      onCancel={() => navigate('.')}
       yaml={false}
       hasButtons={false}
     >
