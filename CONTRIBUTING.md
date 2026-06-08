@@ -1,8 +1,9 @@
-[comment]: # ( Copyright Contributors to the Open Cluster Management project )
+[comment]: # " Copyright Contributors to the Open Cluster Management project "
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+**Table of Contents** _generated with [DocToc](https://github.com/thlorenz/doctoc)_
 
 - [Contributions](#contributions)
 - [Certificate of Origin](#certificate-of-origin)
@@ -32,6 +33,7 @@ contribution. See the [DCO](DCO) file for details.
 1. Submit an issue describing your proposed change to the repo in question.
 1. The [repo owners](OWNERS) will respond to your issue promptly.
 1. Fork the desired repo, develop and test your code changes.
+1. Ensure all commits include a `Signed-off-by` trailer (use `git commit -s`).
 1. Submit a pull request.
 
 ## Issue and Pull Request Management
@@ -48,23 +50,36 @@ Repo maintainers can assign you an issue or pull request by leaving a
 After your PR is ready to commit, please run following commands to check your code.
 
 ```bash
+npm run check
 npm test
 ```
 
 ### Testing your change
 
 Make sure your `kubectl` context is set to your target cluster and have Red Hat Advanced Cluster Management installed on the target cluster.
-This will run the code locally:
 
-#### Start local version of console
+#### Recommended: Run as OpenShift Console plugins
 
-*WARNING: Running this script will update some parts of the cluster specified in your `KUBECONFIG` context.*
+This is the production deployment model. **Always test in this mode before submitting a PR.**
+
+```bash
+npm run setup
+npm run plugins
+```
+
+Access the console at **http://localhost:9000**
+
+#### Alternative: Run standalone console
+
+For rapid iteration on features that don't depend on OpenShift Console integration.
+
+_WARNING: Running this script will update some parts of the cluster specified in your `KUBECONFIG` context._
 
 ```bash
 npm run setup
 npm start
 ```
 
-A new console will launch and after approximately 30 seconds you will see the RHACM console.
+A new console will launch and after approximately 30 seconds you will see the RHACM console at **https://localhost:3000**
 
 Now, you can follow the [getting started guide](./README.md#getting-started) to work with the stolostron cluster-curator-controller repository.
