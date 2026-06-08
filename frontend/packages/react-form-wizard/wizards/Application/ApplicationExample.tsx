@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useMemo } from 'react'
-import { useHistory } from 'react-router'
+import { useNavigate } from 'react-router-dom'
 import { onCancel, onSubmit } from '../common/utils'
 import { ApplicationWizard } from './ApplicationWizard'
 
 export function ApplicationExample() {
-  const history = useHistory()
+  const navigate = useNavigate()
   const namespaces = useMemo(() => ['default', 'namespace-1', 'namespace-2'], [])
   const servers = useMemo(() => ['default', 'server-1', 'server-2'], [])
   const ansibleCredentials = useMemo(() => ['credential1', 'credential2'], [])
@@ -39,7 +39,7 @@ export function ApplicationExample() {
       argoServers={servers}
       namespaces={namespaces}
       onSubmit={onSubmit}
-      onCancel={() => onCancel(history)}
+      onCancel={() => onCancel(navigate)}
       placements={placements}
       channels={channels}
       timeZones={timeZones}

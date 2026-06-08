@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { onCancel, onSubmit } from '../common/utils'
 import { CredentialsWizard } from './CredentialsWizard'
 
 export function CredentialsExample() {
-  const history = useHistory()
-  return <CredentialsWizard onSubmit={onSubmit} onCancel={() => onCancel(history)} />
+  const navigate = useNavigate()
+  return <CredentialsWizard onSubmit={onSubmit} onCancel={() => onCancel(navigate)} />
 }

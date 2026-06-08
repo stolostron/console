@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Icon, Stack } from '@patternfly/react-core'
 import { ServerIcon, VirtualMachineIcon } from '@patternfly/react-icons'
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import {
   WizHidden,
   ItemContext,
@@ -25,7 +25,7 @@ import AZURE from './icons/azure.svg'
 import GOOGLE from './icons/google-cloud.svg'
 
 export function ProviderCatalog() {
-  const history = useHistory()
+  const navigate = useNavigate()
   return (
     <Catalog
       title="Provider"
@@ -36,14 +36,14 @@ export function ProviderCatalog() {
           title: 'ALIBABA',
           descriptions: ['Create and manage your clusters through ALIBABA cloud.'],
           featureGroups: [{ title: 'Available Control Planes', features: ['Standalone'] }],
-          onClick: () => history.push(RouteE.ControlPlane),
+          onClick: () => navigate(RouteE.ControlPlane),
         },
         {
           icon: <AWS />,
           title: 'Amazon Web Services',
           descriptions: ['Create and manage your clusters through Amazon cloud.'],
           featureGroups: [{ title: 'Available Control Planes', features: ['Hosted', 'Standalone', 'Managed'] }],
-          onClick: () => history.push(RouteE.ControlPlane),
+          onClick: () => navigate(RouteE.ControlPlane),
         },
         {
           icon: (
@@ -54,21 +54,21 @@ export function ProviderCatalog() {
           title: 'Bare Metal',
           descriptions: ['Create and manage your clusters on your bare metal machines.'],
           featureGroups: [{ title: 'Available Control Planes', features: ['Hosted', 'Standalone'] }],
-          onClick: () => history.push(RouteE.ControlPlane),
+          onClick: () => navigate(RouteE.ControlPlane),
         },
         {
           icon: <GOOGLE />,
           title: 'Google Cloud',
           descriptions: ['Create and manage your clusters through Google cloud.'],
           featureGroups: [{ title: 'Available Control Planes', features: ['Standalone'] }],
-          onClick: () => history.push(RouteE.ControlPlane),
+          onClick: () => navigate(RouteE.ControlPlane),
         },
         {
           icon: <AZURE />,
           title: 'Microsoft Azure',
           descriptions: ['Create and manage your clusters through Azure cloud.'],
           featureGroups: [{ title: 'Available Control Planes', features: ['Standalone', 'Managed'] }],
-          onClick: () => history.push(RouteE.ControlPlane),
+          onClick: () => navigate(RouteE.ControlPlane),
         },
         {
           icon: (
@@ -79,7 +79,7 @@ export function ProviderCatalog() {
           title: 'VIRT',
           descriptions: ['Create and manage your clusters on virtual machines.'],
           featureGroups: [{ title: 'Available Control Planes', features: ['VSphere', 'RHV', 'OpenStack'] }],
-          onClick: () => history.push(RouteE.ControlPlane),
+          onClick: () => navigate(RouteE.ControlPlane),
         },
       ]}
     />
@@ -87,7 +87,7 @@ export function ProviderCatalog() {
 }
 
 export function ControlPlaneCatalog() {
-  const history = useHistory()
+  const navigate = useNavigate()
   return (
     <Catalog
       title="Control Plane Type"
@@ -112,7 +112,7 @@ export function ControlPlaneCatalog() {
               features: ['Hosted cluster'],
             },
           ],
-          onClick: () => history.push(RouteE.CreateCluster),
+          onClick: () => navigate(RouteE.CreateCluster),
         },
         {
           title: 'Standalone',
@@ -133,13 +133,13 @@ export function ControlPlaneCatalog() {
           ],
         },
       ]}
-      onBack={() => history.push(RouteE.Provider)}
+      onBack={() => navigate(RouteE.Provider)}
     />
   )
 }
 
 export function HostsCatalog() {
-  const history = useHistory()
+  const navigate = useNavigate()
   return (
     <Catalog
       title="Hosts"
@@ -161,13 +161,13 @@ export function HostsCatalog() {
           title: 'IPI existing?',
         },
       ]}
-      onBack={() => history.push(RouteE.Provider)}
+      onBack={() => navigate(RouteE.Provider)}
     />
   )
 }
 
 export function CreateCluster() {
-  const history = useHistory()
+  const navigate = useNavigate()
   return (
     <WizardPage
       id="cluster-provider-wizard"
@@ -178,7 +178,7 @@ export function CreateCluster() {
         { label: 'Create cluster' },
       ]}
       onSubmit={() => Promise.resolve(undefined)}
-      onCancel={() => history.push(RouteE.ControlPlane)}
+      onCancel={() => navigate(RouteE.ControlPlane)}
       defaultData={{ clusterSet: 'default', hostingCluster: 'local-cluster' }}
     >
       <Step label="Details" id="cluster-details-step">
