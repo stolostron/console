@@ -35,6 +35,8 @@ import { managedClusterProxy } from './routes/managedClusterProxy'
 import { hypershiftStatus } from './routes/hypershift-status'
 import { clusterVersion } from './routes/clusterVersion'
 import { watchTLSSecurityProfile } from './lib/tlsProfileWatch'
+import { watchPlacementDebugCA } from './lib/placementDebugCAWatch'
+import { invalidatePlacementDebugAgent } from './lib/agent'
 
 const isProduction = process.env.NODE_ENV === 'production'
 const isDevelopment = process.env.NODE_ENV === 'development'
@@ -115,12 +117,16 @@ export async function requestHandler(req: Http2ServerRequest, res: Http2ServerRe
 }
 
 let stopTLSProfileWatch: (() => void) | undefined
+let stopPlacementDebugCAWatch: (() => void) | undefined
 export async function start() {
   await loadSettings()
   if (eventsEnabled) {
     startWatching()
     startAggregating()
   }
+  stopPlacementDebugCAWatch = watchPlacementDebugCA(() => {
+    invalidatePlacementDebugAgent()
+  })
   stopTLSProfileWatch = watchTLSSecurityProfile(async (options) => {
     try {
       await stopServer()
@@ -145,6 +151,7 @@ export async function stop(): Promise<void> {
   await ServerSideEvents.dispose()
   stopWatching()
   stopAggregating()
+  stopPlacementDebugCAWatch?.()
   stopTLSProfileWatch?.()
   await stopServer()
   stopLogger()

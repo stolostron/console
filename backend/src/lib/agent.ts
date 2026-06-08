@@ -2,6 +2,7 @@
 import type { AgentOptions } from 'node:https'
 import { Agent } from 'node:https'
 import { getCACertificate, getServiceCACertificate } from './serviceAccountToken'
+import { getPlacementDebugCA } from './placementDebugCAWatch'
 import { HttpsProxyAgent } from 'https-proxy-agent'
 
 const COMMON_AGENT_OPTIONS: Partial<AgentOptions> = {
@@ -34,6 +35,20 @@ export function getServiceAgent() {
     })
   }
   return serviceAgent
+}
+
+let placementDebugAgent: Agent | undefined
+export function getPlacementDebugAgent(): Agent | undefined {
+  if (!placementDebugAgent) {
+    const ca = getPlacementDebugCA()
+    if (!ca) return undefined
+    placementDebugAgent = new Agent({ ca, ...COMMON_AGENT_OPTIONS })
+  }
+  return placementDebugAgent
+}
+
+export function invalidatePlacementDebugAgent(): void {
+  placementDebugAgent = undefined
 }
 
 let proxyAgent: HttpsProxyAgent<string>
