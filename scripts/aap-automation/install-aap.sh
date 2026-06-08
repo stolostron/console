@@ -119,17 +119,26 @@ log_info "Starting AAP installation on OpenShift cluster: $(oc whoami --show-ser
 log_info "Creating namespace: $AAP_NAMESPACE"
 oc create namespace "$AAP_NAMESPACE" --dry-run=client -o yaml | oc apply -f -
 
-# Auto-detect operator channel if not explicitly set
+# Auto-detect operator channel if not set or if the requested channel is unavailable
+OC_PKG_STDERR=$(mktemp)
+AVAILABLE_CHANNELS=$(oc get packagemanifest ansible-automation-platform-operator \
+    -n openshift-marketplace -o jsonpath='{range .status.channels[*]}{.name}{"\n"}{end}' 2>"$OC_PKG_STDERR")
+
+if [ -z "$AVAILABLE_CHANNELS" ]; then
+    OC_ERR=$(cat "$OC_PKG_STDERR")
+    rm -f "$OC_PKG_STDERR"
+    log_error "AAP operator not found in OperatorHub catalog (oc get packagemanifest failed: ${OC_ERR:-no output})"
+    exit 1
+fi
+rm -f "$OC_PKG_STDERR"
+
+if [ -n "$OPERATOR_CHANNEL" ] && ! echo "$AVAILABLE_CHANNELS" | grep -qx "$OPERATOR_CHANNEL"; then
+    log_warn "Requested channel '$OPERATOR_CHANNEL' not available — will auto-select the latest stable-* channel, or the latest available channel if none match"
+    OPERATOR_CHANNEL=""
+fi
+
 if [ -z "$OPERATOR_CHANNEL" ]; then
     log_info "Detecting available AAP operator channels..."
-    AVAILABLE_CHANNELS=$(oc get packagemanifest ansible-automation-platform-operator \
-        -n openshift-marketplace -o jsonpath='{range .status.channels[*]}{.name}{"\n"}{end}' 2>/dev/null)
-
-    if [ -z "$AVAILABLE_CHANNELS" ]; then
-        log_error "AAP operator not found in OperatorHub catalog"
-        exit 1
-    fi
-
     OPERATOR_CHANNEL=$(echo "$AVAILABLE_CHANNELS" | grep '^stable-' | grep -v 'cluster-scoped' \
         | sort -t. -k2 -n | tail -1)
 
