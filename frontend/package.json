@@ -113,8 +113,8 @@
     "@babel/preset-react": "^7.29.7",
     "@babel/preset-typescript": "^7.29.7",
     "@kubernetes/client-node": "^1.4.0",
-    "@openshift-console/dynamic-plugin-sdk": "^4.19.1",
-    "@openshift-console/dynamic-plugin-sdk-webpack": "4.19.0",
+    "@openshift-console/dynamic-plugin-sdk": "^4.22.0",
+    "@openshift-console/dynamic-plugin-sdk-webpack": "^4.22.0",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.6.2",
     "@sentry/browser": "6.19.7",
     "@storybook/addon-a11y": "8.0.9",
@@ -217,6 +217,11 @@
     "webpack-bundle-analyzer": "4.10.2",
     "webpack-cli": "4.10.0",
     "webpack-dev-server": "^4.15.2"
+  },
+  "overrides": {
+    "@openshift-assisted/ui-lib": {
+      "@openshift-console/dynamic-plugin-sdk": "4.22.0"
+    }
   },
   "browserslist": {
     "production": [

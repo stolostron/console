@@ -38,7 +38,7 @@
     "check-doc:fix": "npm run generate-doc"
   },
   "peerDependencies": {
-    "@openshift-console/dynamic-plugin-sdk": ">=1.0.0 || >=4.19.0-prerelease"
+    "@openshift-console/dynamic-plugin-sdk": ">=4.22.0"
   },
   "devDependencies": {
     "@kubernetes/client-node": "^1.4.0",

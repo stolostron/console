@@ -144,7 +144,7 @@ const item: ResultsTableData = {
   kind: 'ConfigurationPolicy',
   status: 'status',
   message: 'message',
-  timestamp: 1,
+  timestamp: '',
   policyName: 'policy-set-with-1-placement-policy-1',
   policyNamespace: 'test-cluster',
   remediationAction: 'inform',

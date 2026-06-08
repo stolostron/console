@@ -24,7 +24,7 @@ export const pluginMetadata: ConsolePluginBuildMetadata = {
     acmResourceRoutes: '../../src/plugin-extensions/acmResourceRoutes.ts',
   },
   dependencies: {
-    '@console/pluginAPI': '>=4.19.0',
+    '@console/pluginAPI': '>=4.22.0',
     mce: '>=5.0',
   },
 }
