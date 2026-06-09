@@ -348,9 +348,7 @@
     grid-template-columns: minmax(0, 1fr) !important;
   }
 
-  .wizard-review-find-list
-    .wizard-review-find-dl-group
-    > .wizard-review-pen-hover-zone--dl-group-row {
+  .wizard-review-find-list .wizard-review-find-dl-group > .wizard-review-pen-hover-zone--dl-group-row {
     display: grid !important;
     grid-template-columns: minmax(0, 1fr) !important;
     grid-template-rows: auto auto auto !important;
