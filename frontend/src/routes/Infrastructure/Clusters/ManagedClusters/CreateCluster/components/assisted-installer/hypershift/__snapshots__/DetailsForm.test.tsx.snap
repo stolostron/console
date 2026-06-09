@@ -258,6 +258,7 @@ exports[`DetailsForm it renders 1`] = `
                       data-pf-content="true"
                     >
                       <a
+                        data-discover="true"
                         href="/multicloud/infrastructure/clusters/sets"
                       >
                         Manage cluster sets
