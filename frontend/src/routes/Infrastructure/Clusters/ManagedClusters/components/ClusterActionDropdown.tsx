@@ -406,6 +406,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                   ignoreClusterDeploymentNotFound: false,
                   infraEnvs,
                   deletePullSecret: !!options?.deletePullSecret,
+                  preserveOnDelete: !!options?.preserveOnDelete,
                 }),
               close: () => {
                 setModalProps({ open: false })
@@ -415,6 +416,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
               confirmText: cluster.displayName,
               isValidError: errorIsNot([ResourceErrorCode.NotFound]),
               enableDeletePullSecret: true,
+              enablePreserveOnDelete: true,
             })
           },
           isAriaDisabled: true,

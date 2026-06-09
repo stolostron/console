@@ -51,6 +51,7 @@ export type BulkActionModalProps<T = undefined> = {
   processing: string
   title: string
   enableDeletePullSecret?: boolean
+  enablePreserveOnDelete?: boolean
 } & Required<Pick<AcmTableProps<T>, 'items'>> &
   Partial<Pick<AcmTableProps<T>, 'columns'>> & // Policy automation and cluster claim deletion modals omit columns prop to avoid showing a table
   Omit<AcmTableProps<T>, 'columns'>
@@ -72,6 +73,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
   const [confirm, setConfirm] = useState('')
   const [errors, setErrors] = useState<ItemError<T>[] | undefined>()
   const [deletePullSecret, setDeletePullSecret] = useState(true)
+  const [preserveOnDelete, setPreserveOnDelete] = useState(false)
 
   useEffect(() => {
     setConfirm('')
@@ -79,6 +81,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
     setProgress(0)
     setProgressCount(1)
     setDeletePullSecret(true)
+    setPreserveOnDelete(false)
   }, [props.open])
 
   if (props.open === false) {
@@ -105,6 +108,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
     processing,
     title,
     enableDeletePullSecret,
+    enablePreserveOnDelete,
     ...tableProps
   } = props
 
@@ -129,7 +133,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
 
   async function runSequential(items: T[], errors: ItemError<T>[]) {
     for (const item of items) {
-      const { promise } = actionFn(item, { deletePullSecret })
+      const { promise } = actionFn(item, { deletePullSecret, preserveOnDelete })
       try {
         await promise
       } catch (err) {
@@ -141,7 +145,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
 
   async function runParallel(items: T[], errors: ItemError<T>[]) {
     const promises = items.map((resource) => {
-      const r = actionFn(resource, { deletePullSecret })
+      const r = actionFn(resource, { deletePullSecret, preserveOnDelete })
       return { promise: r.promise.finally(incrementProgress), abort: r.abort }
     })
     const requestResult = resultsSettled(promises)
@@ -200,6 +204,17 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
                     label={t('Delete pull-secret resource', { count: columns?.length })}
                     isChecked={deletePullSecret}
                     onChange={(_event, val) => setDeletePullSecret(val)}
+                    isDisabled={progress > 0}
+                  />
+                </StackItem>
+              )}
+              {enablePreserveOnDelete && (
+                <StackItem>
+                  <Checkbox
+                    id="preserve-on-delete"
+                    label={t('Preserve cluster infrastructure on delete')}
+                    isChecked={preserveOnDelete}
+                    onChange={(_event, val) => setPreserveOnDelete(val)}
                     isDisabled={progress > 0}
                   />
                 </StackItem>

@@ -1197,6 +1197,7 @@
   "Delete placement": "Delete placement",
   "Delete pull-secret resource": "Delete pull-secret resource",
   "Delete pull-secret resource_plural": "Delete pull-secret resources",
+  "Preserve cluster infrastructure on delete": "Preserve cluster infrastructure on delete",
   "Delete resources that are no longer defined in the source repository": "Delete resources that are no longer defined in the source repository",
   "Delete resources that are no longer defined in the source repository at the end of a sync operation": "Delete resources that are no longer defined in the source repository at the end of a sync operation",
   "Delete role assignment": "Delete role assignment",
