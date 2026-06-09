@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter, Routes, Route } from 'react-router-dom'
+import { MemoryRouter, Routes, Route } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { Group, User } from '../../../../resources/rbac'
 import { GroupPage } from './GroupPage'

@@ -2,7 +2,7 @@
 
 import { ISortBy, SortByDirection } from '@patternfly/react-table'
 import { createContext, ReactNode, useCallback, useMemo, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router'
 
 export const DEFAULT_PAGE = 1
 export const DEFAULT_ITEMS_PER_PAGE = 10

@@ -5,7 +5,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import _ from 'lodash'
 import cloneDeep from 'lodash/cloneDeep'
 import { Scope } from 'nock/types'
-import { generatePath, MemoryRouter, Route, Routes } from 'react-router-dom'
+import { generatePath, MemoryRouter, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import {
   agentClusterInstallsState,

@@ -7,7 +7,7 @@ import { RecoilRoot } from 'recoil'
 import { mockBadRequestStatus, nockGet, nockIgnoreApiPaths } from '../../../../../lib/nock-util'
 import { ClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { ImportCommandContainer } from './ImportCommand'
-import { MemoryRouter, Routes, Route, Outlet } from 'react-router-dom'
+import { MemoryRouter, Routes, Route, Outlet } from 'react-router'
 
 const mockSecretResponse: Secret = {
   apiVersion: SecretApiVersion,

@@ -5,7 +5,7 @@ import { PluginContext } from '../lib/PluginContext'
 import { LostChangesProvider } from './LostChanges'
 import { LoadingPage } from './LoadingPage'
 import { StreamStatusOverlay } from './StreamStatusOverlay'
-import { useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router'
 import { NavigationPath } from '../NavigationPath'
 
 const contentWrapperClass = css({

@@ -9,7 +9,7 @@ import NodePoolsProgress, { getNodePoolsStatus, getNodePoolStatus } from './Node
 import { ClusterImageSetApiVersion, ClusterImageSetKind } from '../../../../../resources'
 import userEvent from '@testing-library/user-event'
 import { ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom'
+import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 
 const t = (string: string) => {
   return string

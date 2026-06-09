@@ -10,13 +10,13 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'r
 import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader, Provider } from '../../../../../ui-components'
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
-import { generatePath, useNavigate } from 'react-router-dom'
+import { generatePath, useNavigate } from 'react-router'
 import TemplateEditor from '../../../../../components/TemplateEditor'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { createCluster } from '../../../../../lib/create-cluster'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { PluginContext } from '../../../../../lib/PluginContext'
-import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
+import { NavigationPath, UNKNOWN_NAMESPACE, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { ClusterCurator, createClusterCurator, IResource, ProviderConnection, Secret } from '../../../../../resources'
 import { createResource as createResourceTool } from '../../../../../resources/utils'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../ClusterSets/components/useCanJoinClusterSets'
@@ -310,7 +310,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
         if (status === 'DONE') {
           const finishMessage = completedMsg ? [completedMsg] : []
           setCreationStatus({ status, messages: finishMessage })
-          const namespace = cluster?.metadata?.namespace ?? null
+          const namespace = cluster?.metadata?.namespace ?? UNKNOWN_NAMESPACE
           if (!noRedirect && clusterName && clusterNamespace) {
             setTimeout(() => {
               navigate(

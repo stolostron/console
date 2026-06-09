@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router'
 
 import { NavigationPath } from '../../../../../../NavigationPath'
 
@@ -33,8 +33,8 @@ import { ClusterDeployment } from '../../../../../../resources'
 import * as dynamicPluginSdk from '@openshift-console/dynamic-plugin-sdk'
 import EditAICluster from './EditAICluster'
 
-jest.mock('react-router-dom', () => {
-  const originalModule = jest.requireActual('react-router-dom')
+jest.mock('react-router', () => {
+  const originalModule = jest.requireActual('react-router')
   return {
     __esModule: true,
     ...originalModule,

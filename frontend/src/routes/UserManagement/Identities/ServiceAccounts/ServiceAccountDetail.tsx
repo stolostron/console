@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
-import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { AcmPage, AcmPageContent, AcmPageHeader } from '../../../../ui-components'
 

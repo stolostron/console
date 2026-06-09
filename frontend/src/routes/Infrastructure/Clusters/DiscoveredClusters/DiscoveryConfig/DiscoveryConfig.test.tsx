@@ -2,7 +2,7 @@
 
 import { AcmToastProvider, AcmToastGroup } from '../../../../../ui-components'
 import { render, waitFor, screen } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { discoveryConfigState, secretsState } from '../../../../../atoms'
 import {

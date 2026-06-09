@@ -3,7 +3,7 @@
 import { CriticalRiskIcon } from '@patternfly/react-icons'
 import { render, waitFor } from '@testing-library/react'
 import { axe } from 'jest-axe'
-import { BrowserRouter } from 'react-router-dom'
+import { BrowserRouter } from 'react-router'
 import SummaryCard, { LoadingCard } from './SummaryCard'
 
 describe('SummaryCard', () => {

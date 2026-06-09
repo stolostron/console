@@ -3,7 +3,7 @@
 import { List, ListItem, PageSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useContext, useEffect, useState } from 'react'
-import { generatePath, Link, useNavigate } from 'react-router-dom'
+import { generatePath, Link, useNavigate } from 'react-router'
 import { AcmDataFormPage } from '../../../../../../components/AcmDataForm'
 import { FormData, Section } from '../../../../../../components/AcmFormData'
 import { RbacButton } from '../../../../../../components/Rbac'

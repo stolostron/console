@@ -17,7 +17,7 @@ import {
 } from '../../../../../../resources'
 import { testMapClusters } from '../../../../../../resources/utils'
 import { render } from '@testing-library/react'
-import { MemoryRouter, Outlet, Route, Routes, generatePath } from 'react-router-dom'
+import { MemoryRouter, Outlet, Route, Routes, generatePath } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import {
   certificateSigningRequestsState,

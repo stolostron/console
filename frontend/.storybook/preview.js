@@ -16,7 +16,7 @@ import '@patternfly/react-core/dist/styles/base.css'
 import React, { Suspense, useEffect } from 'react'
 import { I18nextProvider } from 'react-i18next'
 import i18n from '../src/lib/i18n.ts'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router'
 
 // wrap stories in the I18nextProvider component
 const withI18next = (Story, context) => {

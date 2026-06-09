@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { generatePath, Outlet, useLocation, useParams } from 'react-router-dom'
+import { generatePath, Outlet, useLocation, useParams } from 'react-router'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'

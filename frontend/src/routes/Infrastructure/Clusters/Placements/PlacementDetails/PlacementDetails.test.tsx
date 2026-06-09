@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
-import { MemoryRouter, Route, Routes, generatePath } from 'react-router-dom'
+import { MemoryRouter, Route, Routes, generatePath } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { placementsState } from '../../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockList } from '../../../../../lib/nock-util'

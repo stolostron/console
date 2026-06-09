@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { ButtonVariant } from '@patternfly/react-core'
 import { ClustersTable } from './ClustersTable'

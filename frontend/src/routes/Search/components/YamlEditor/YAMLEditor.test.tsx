@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router'
 import { PluginContext, defaultPlugin } from '../../../../lib/PluginContext'
 import YAMLEditor from './YAMLEditor'
 
@@ -60,8 +60,8 @@ jest.mock('@patternfly/react-code-editor', () => ({
 }))
 
 const mockNavigate = jest.fn()
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+jest.mock('react-router', () => ({
+  ...jest.requireActual('react-router'),
   useNavigate: () => mockNavigate,
 }))
 

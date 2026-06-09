@@ -17,7 +17,7 @@ import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { render, screen } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { RecoilRoot } from 'recoil'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router'
 import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC, nockPatch, nockRBAC } from '../../../../../lib/nock-util'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../../lib/rbac-util'
 import {

@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router'
 import AnsibleAutomationsPage from './AnsibleAutomations'
 import AnsibleAutomationsFormPage from './AnsibleAutomationsForm'
 import { NavigationPath, createRoutePathFunction } from '../../../NavigationPath'

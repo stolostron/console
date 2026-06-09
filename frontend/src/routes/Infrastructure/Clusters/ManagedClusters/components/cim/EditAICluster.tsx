@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useState, useMemo } from 'react'
-import { PathParam, generatePath, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { PathParam, generatePath, useLocation, useNavigate, useParams } from 'react-router'
 import {
   ACM_ENABLED_FEATURES,
   AgentK8sResource,

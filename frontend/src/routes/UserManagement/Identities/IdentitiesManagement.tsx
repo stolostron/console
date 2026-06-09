@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router'
 import { NavigationPath, createRoutePathFunction } from '../../../NavigationPath'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import IdentitiesPage from './IdentitiesPage'

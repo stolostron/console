@@ -2,7 +2,7 @@
 
 import { render } from '@testing-library/react'
 import { axe } from 'jest-axe'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router'
 import { AcmDonutChart } from './AcmDonutChart'
 
 const complianceData = [

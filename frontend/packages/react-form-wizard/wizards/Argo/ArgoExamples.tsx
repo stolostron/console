@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import ArgoIcon from '../Argo/logos/ArgoIcon.svg'
 import { Catalog } from '../Catalog'
 import { IResource } from '../../src/common/resource'

@@ -2,7 +2,7 @@
 import { get } from 'lodash'
 import queryString from 'query-string'
 import { TFunction } from 'react-i18next'
-import { generatePath, NavigateFunction } from 'react-router-dom'
+import { generatePath, NavigateFunction } from 'react-router'
 import { NavigationPath } from '../../../NavigationPath'
 import { Cluster } from '../../../resources/utils'
 import { compareStrings, IAlertContext } from '../../../ui-components'

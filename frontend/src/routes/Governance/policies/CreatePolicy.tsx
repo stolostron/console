@@ -8,7 +8,7 @@ import {
   useItem,
 } from '@patternfly-labs/react-form-wizard'
 import { useContext, useEffect, useMemo, useState } from 'react'
-import { generatePath, useNavigate } from 'react-router-dom'
+import { generatePath, useNavigate } from 'react-router'
 import { LostChangesContext } from '../../../components/LostChanges'
 import { SyncEditor, ValidationStatus } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'

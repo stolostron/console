@@ -3,7 +3,7 @@
 
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom'
+import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { SearchResultRelatedItemsDocument } from '../search-sdk/search-sdk'

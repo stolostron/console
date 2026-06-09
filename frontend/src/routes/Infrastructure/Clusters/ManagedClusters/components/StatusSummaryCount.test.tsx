@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { act, render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom'
+import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { policiesState, policyreportState } from '../../../../../atoms'
 import { nockAggegateRequest, nockSearch } from '../../../../../lib/nock-util'
@@ -28,8 +28,8 @@ import { ClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 const queryClient = new QueryClient()
 
 const push = jest.fn()
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'), // use actual for all non-hook parts
+jest.mock('react-router', () => ({
+  ...jest.requireActual('react-router'), // use actual for all non-hook parts
   useNavigate: () => push,
 }))
 

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import { onCancel, onSubmit } from '../common/utils'
 import { AnsibleWizard } from './AnsibleWizard'
 

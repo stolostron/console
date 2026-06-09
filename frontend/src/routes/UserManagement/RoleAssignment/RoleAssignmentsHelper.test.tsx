@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 // Mock react-router-dom-v5-compat
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+jest.mock('react-router', () => ({
+  ...jest.requireActual('react-router'),
   generatePath: jest.fn((path: string, params: Record<string, string>) => {
     let result = path
     Object.entries(params).forEach(([key, value]) => {
@@ -102,7 +102,7 @@ jest.mock('./RoleAssignmentActionDropdown', () => ({
 }))
 
 import { render } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router'
 import { FlattenedRoleAssignment } from '../../../resources/clients/model/flattened-role-assignment'
 import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
 import { RoleAssignmentCallbackReason } from './RoleAssignmentStatusComponent'

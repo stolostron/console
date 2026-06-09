@@ -22,15 +22,15 @@ jest.mock('@patternfly/react-core', () => ({
 jest.resetModules()
 
 import { render, screen, fireEvent } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router'
 import '@testing-library/jest-dom'
 
 // mock functions
 const mockUseHubClusterName = jest.fn()
 
 // mock react-router-dom-v5-compat
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+jest.mock('react-router', () => ({
+  ...jest.requireActual('react-router'),
   Link: ({ children, to, ...props }: any) => (
     <a href={to} data-testid="fleet-link" {...props}>
       {children}

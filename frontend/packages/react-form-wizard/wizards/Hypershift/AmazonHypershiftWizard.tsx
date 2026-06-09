@@ -2,7 +2,7 @@
 
 import { CodeBlock, Icon, List, ListItem, Stack } from '@patternfly/react-core'
 import { CheckIcon, CloseIcon } from '@patternfly/react-icons'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import {
   Section,
   WizSelect,

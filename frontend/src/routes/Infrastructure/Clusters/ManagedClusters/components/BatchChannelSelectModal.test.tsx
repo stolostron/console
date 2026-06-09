@@ -8,7 +8,7 @@ import userEvent from '@testing-library/user-event'
 import { act } from 'react-dom/test-utils'
 import { nockCreate, nockIgnoreApiPaths, nockPatch } from '../../../../../lib/nock-util'
 import { BatchChannelSelectModal } from './BatchChannelSelectModal'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router'
 const mockClusterNoAvailable: Cluster = {
   name: 'cluster-0-no-available',
   displayName: 'cluster-0-no-available',

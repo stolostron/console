@@ -29,7 +29,7 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router'
 import { useTranslation } from '../../lib/acm-i18next'
 import { FilterCounts } from '../../lib/useAggregates'
 import { matchesFilterValue, parseLabel } from '../../resources/utils'

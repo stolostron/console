@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Meta, StoryFn } from '@storybook/react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router'
 import { AcmVisitedLink } from './AcmVisitedLink'
 import { setItemWithExpiration } from '../AcmTable/AcmTableStateProvider'
 

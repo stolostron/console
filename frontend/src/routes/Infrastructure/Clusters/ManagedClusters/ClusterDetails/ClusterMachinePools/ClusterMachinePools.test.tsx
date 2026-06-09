@@ -21,7 +21,7 @@ import {
   mockMachinePoolManual,
   mockMachinePoolOther,
 } from '../ClusterDetails.sharedmocks'
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom'
+import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 
 describe('ClusterMachinePools', () => {
   beforeEach(() => {

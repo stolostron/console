@@ -4,7 +4,7 @@ import * as dynamicPluginSdk from '@openshift-console/dynamic-plugin-sdk'
 import { render, screen, waitFor } from '@testing-library/react'
 import { cloneDeep } from 'lodash'
 import set from 'lodash/set'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { infraEnvironmentsState, nmStateConfigsState } from '../../../../atoms'
 import { nockGet, nockIgnoreApiPaths, nockPatch } from '../../../../lib/nock-util'
@@ -31,8 +31,8 @@ const mockNMStateConfigInfraEnv = cloneDeep(mockNMStateConfig)
 mockNMStateConfigInfraEnv.metadata.name = infraEnvName
 mockNMStateConfigInfraEnv.metadata.namespace = infraEnvName
 
-jest.mock('react-router-dom', () => {
-  const originalModule = jest.requireActual('react-router-dom')
+jest.mock('react-router', () => {
+  const originalModule = jest.requireActual('react-router')
   return {
     __esModule: true,
     ...originalModule,

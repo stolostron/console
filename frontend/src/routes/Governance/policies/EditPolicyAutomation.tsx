@@ -11,7 +11,7 @@ import {
 import { PolicyAutomationWizard } from '../../../wizards/Governance/PolicyAutomation/PolicyAutomationWizard'
 import { AcmToastContext } from '../../../ui-components'
 import { useContext, useMemo } from 'react'
-import { useParams, useNavigate, generatePath, PathParam, useLocation } from 'react-router-dom'
+import { useParams, useNavigate, generatePath, PathParam, useLocation } from 'react-router'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { SyncEditor, ValidationStatus } from '../../../components/SyncEditor/SyncEditor'

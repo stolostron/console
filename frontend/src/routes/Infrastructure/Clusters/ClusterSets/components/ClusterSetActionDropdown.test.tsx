@@ -23,7 +23,7 @@ import {
   waitForText,
 } from '../../../../../lib/test-util'
 import { ClusterSetActionDropdown } from './ClusterSetActionDropdown'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router'
 
 const firstNamespace: Namespace = {
   apiVersion: NamespaceApiVersion,

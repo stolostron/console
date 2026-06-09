@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Fragment, ReactNode, Suspense, useState } from 'react'
-import { Outlet, useLocation } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router'
 import { useTranslation } from '../../lib/acm-i18next'
 import { NavigationPath } from '../../NavigationPath'
 import { AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../ui-components'

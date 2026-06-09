@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import {
   WizKeyValue,
   WizMultiSelect,

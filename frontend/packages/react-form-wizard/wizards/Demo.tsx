@@ -25,7 +25,7 @@ import {
   RedhatIcon,
 } from '@patternfly/react-icons'
 import { ReactNode } from 'react'
-import { BrowserRouter, Link, useLocation, useNavigate } from 'react-router-dom'
+import { BrowserRouter, Link, useLocation, useNavigate } from 'react-router'
 import { AnsibleExample } from './Ansible/AnsibleExample'
 import { ApplicationExample } from './Application/ApplicationExample'
 import { AppExample } from './AppWizard/AppExample'

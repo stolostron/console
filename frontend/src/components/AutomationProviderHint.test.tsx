@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { clusterCuratorsState, subscriptionOperatorsState } from '../atoms'
 import { createClusterVersionMock, waitForNotText, waitForText } from '../lib/test-util'
@@ -15,8 +15,8 @@ import {
 import { AutomationProviderHint } from './AutomationProviderHint'
 import { nockIgnoreOperatorCheck } from '../lib/nock-util'
 
-jest.mock('react-router-dom', () => {
-  const originalModule = jest.requireActual('react-router-dom')
+jest.mock('react-router', () => {
+  const originalModule = jest.requireActual('react-router')
   return {
     __esModule: true,
     ...originalModule,

@@ -28,7 +28,7 @@ jest.mock('react-i18next', () => ({
 }))
 
 // mock router
-jest.mock('react-router-dom', () => ({
+jest.mock('react-router', () => ({
   Link: ({ children, to }: { children: React.ReactNode; to: string }) => <a href={to}>{children}</a>,
 }))
 

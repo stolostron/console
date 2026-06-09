@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useMemo, useState, useEffect, useContext } from 'react'
-import { generatePath } from 'react-router-dom'
+import { generatePath } from 'react-router'
 import { isEqual } from 'lodash'
 import {
   getAnnotationsFromAgentSelector,

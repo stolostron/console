@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { generatePath, NavigateFunction } from 'react-router-dom'
+import { generatePath, NavigateFunction } from 'react-router'
 import { NavigationPath } from '~/NavigationPath'
 import { ApplicationSetKind, IResource, PlacementKind } from '~/resources'
 import { createResources } from '~/resources/utils'

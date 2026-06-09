@@ -14,7 +14,7 @@ import {
   ProviderLongTextMap,
 } from '../../ui-components'
 import { Fragment, useMemo, useState } from 'react'
-import { Link, generatePath, useNavigate } from 'react-router-dom'
+import { Link, generatePath, useNavigate } from 'react-router'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { BulkActionModal, BulkActionModalProps } from '../../components/BulkActionModal'
 import { RbacDropdown } from '../../components/Rbac'

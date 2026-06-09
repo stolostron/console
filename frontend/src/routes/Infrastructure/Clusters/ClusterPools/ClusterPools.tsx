@@ -19,7 +19,7 @@ import {
   ProviderLongTextMap,
 } from '../../../../ui-components'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../components/BulkActionModal'
 import { RbacButton, RbacDropdown } from '../../../../components/Rbac'

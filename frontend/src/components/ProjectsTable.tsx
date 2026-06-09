@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Label, LabelGroup } from '@patternfly/react-core'
 import { useCallback, useMemo } from 'react'
-import { generatePath, Link } from 'react-router-dom'
+import { generatePath, Link } from 'react-router'
 import { useTranslation } from '../lib/acm-i18next'
 import { NavigationPath } from '../NavigationPath'
 import type { Cluster } from '../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'

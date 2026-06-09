@@ -4,7 +4,7 @@
 
 import React from 'react'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { isFineGrainedRbacEnabledState, settingsState } from '../../../atoms'
 import { nockGet, nockIgnoreApiPaths, nockIgnoreRBAC, nockIgnoreClusterVersion } from '../../../lib/nock-util'
@@ -104,8 +104,8 @@ describe('DetailsPage', () => {
   })
 
   it('should render local-cluster resource details correctly', async () => {
-    jest.mock('react-router-dom', () => {
-      const originalModule = jest.requireActual('react-router-dom')
+    jest.mock('react-router', () => {
+      const originalModule = jest.requireActual('react-router')
       return {
         __esModule: true,
         ...originalModule,
@@ -201,8 +201,8 @@ describe('DetailsPage', () => {
   })
 
   it('should render VirtualMachine resource details correctly', async () => {
-    jest.mock('react-router-dom', () => {
-      const originalModule = jest.requireActual('react-router-dom')
+    jest.mock('react-router', () => {
+      const originalModule = jest.requireActual('react-router')
       return {
         __esModule: true,
         ...originalModule,
@@ -286,8 +286,8 @@ describe('DetailsPage', () => {
   })
 
   it('should render VirtualMachineSnapshot resource details correctly', async () => {
-    jest.mock('react-router-dom', () => {
-      const originalModule = jest.requireActual('react-router-dom')
+    jest.mock('react-router', () => {
+      const originalModule = jest.requireActual('react-router')
       return {
         __esModule: true,
         ...originalModule,
@@ -412,8 +412,8 @@ describe('DetailsPage', () => {
         }
       }),
     }))
-    jest.mock('react-router-dom', () => {
-      const originalModule = jest.requireActual('react-router-dom')
+    jest.mock('react-router', () => {
+      const originalModule = jest.requireActual('react-router')
       return {
         __esModule: true,
         ...originalModule,

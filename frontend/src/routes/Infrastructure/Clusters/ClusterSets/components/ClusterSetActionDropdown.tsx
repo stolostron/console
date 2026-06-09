@@ -4,7 +4,7 @@ import { ManagedClusterSet, ManagedClusterSetDefinition, isGlobalClusterSet } fr
 import { deleteResource, ResourceErrorCode } from '../../../../../resources/utils'
 import { useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { generatePath, useNavigate } from 'react-router-dom'
+import { generatePath, useNavigate } from 'react-router'
 import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../../components/BulkActionModal'
 import { RbacDropdown } from '../../../../../components/Rbac'
 import { rbacCreate, rbacDelete } from '../../../../../lib/rbac-util'

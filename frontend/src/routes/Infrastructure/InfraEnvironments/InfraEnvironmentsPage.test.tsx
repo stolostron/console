@@ -2,7 +2,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { AgentK8sResource, AgentServiceConfigK8sResource, InfraEnvK8sResource } from '@openshift-assisted/ui-lib/cim'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 
 import { infraEnvironmentsState } from '../../../atoms'
@@ -25,8 +25,8 @@ import InfraEnvironmentsPage, {
 import { infraEnvName, mockInfraEnv1 } from '../../../test-helpers/infraEnvName'
 
 const mockNavigate = jest.fn()
-jest.mock('react-router-dom', () => {
-  const originalModule = jest.requireActual('react-router-dom')
+jest.mock('react-router', () => {
+  const originalModule = jest.requireActual('react-router')
   return {
     __esModule: true,
     ...originalModule,

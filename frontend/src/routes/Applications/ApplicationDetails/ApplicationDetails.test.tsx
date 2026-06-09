@@ -3,7 +3,7 @@
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import {
   applicationsState,
@@ -305,8 +305,8 @@ const mockSearchResponse = {
   },
 }
 
-jest.mock('react-router-dom', () => {
-  const originalModule = jest.requireActual('react-router-dom')
+jest.mock('react-router', () => {
+  const originalModule = jest.requireActual('react-router')
   return {
     __esModule: true,
     ...originalModule,

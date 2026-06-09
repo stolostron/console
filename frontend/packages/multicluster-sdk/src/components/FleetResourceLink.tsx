@@ -6,7 +6,7 @@ import classNames from 'classnames'
 import { getURLSearchParam } from '../internal/search/searchPaths'
 import { useHubClusterName } from '../api/useHubClusterName'
 import { useIsFleetAvailable } from '../api/useIsFleetAvailable'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { getExtensionResourcePath, isResourceRoute } from '../internal/resourceRouteUtils'
 
 /**

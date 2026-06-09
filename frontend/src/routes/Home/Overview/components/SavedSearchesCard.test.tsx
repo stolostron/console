@@ -3,7 +3,7 @@
 import { MockedProvider } from '@apollo/client/testing'
 import { render, waitFor } from '@testing-library/react'
 import { GraphQLError } from 'graphql'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { Settings, settingsState } from '../../../../atoms'
 import { nockIgnoreApiPaths } from '../../../../lib/nock-util'

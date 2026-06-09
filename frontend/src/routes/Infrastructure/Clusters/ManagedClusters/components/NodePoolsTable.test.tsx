@@ -3,7 +3,7 @@
 import { ClusterImageSetK8sResource, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom'
+import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { namespacesState } from '../../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../lib/nock-util'

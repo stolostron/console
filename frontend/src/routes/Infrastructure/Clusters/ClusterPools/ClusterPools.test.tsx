@@ -15,7 +15,7 @@ import { Cluster, ClusterStatus } from '../../../../resources/utils'
 
 import { render, screen } from '@testing-library/react'
 import { Scope } from 'nock/types'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { clusterClaimsState, clusterImageSetsState, clusterPoolsState } from '../../../../atoms'
 import {

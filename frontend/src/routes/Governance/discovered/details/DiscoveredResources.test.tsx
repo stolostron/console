@@ -3,7 +3,7 @@ jest.mock('../discoveredPoliciesWorker.factory')
 
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { generatePath, MemoryRouter, Outlet, Route, Routes } from 'react-router-dom'
+import { generatePath, MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { v4 as uuidv4 } from 'uuid'
 import { channelsState, helmReleaseState, subscriptionsState } from '../../../../atoms'

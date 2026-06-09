@@ -8,7 +8,7 @@ import {
   List,
   ListItem,
 } from '@patternfly/react-core'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import { Section, Step, WizardPage } from '../../src'
 import { Indented } from '../../src/components/Indented'
 

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { generatePath } from 'react-router-dom'
+import { generatePath } from 'react-router'
 import queryString from 'query-string'
 import { ResourceRouteHandler } from '@stolostron/multicluster-sdk'
 import { NavigationPath } from '../NavigationPath'

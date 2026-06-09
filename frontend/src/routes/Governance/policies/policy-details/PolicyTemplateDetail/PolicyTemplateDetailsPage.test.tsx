@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor, within } from '@testing-library/react'
-import { generatePath, MemoryRouter, Route, Routes } from 'react-router-dom'
+import { generatePath, MemoryRouter, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { v4 as uuidv4 } from 'uuid'
 import { managedClusterAddonsState } from '../../../../../atoms'

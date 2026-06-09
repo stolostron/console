@@ -4,7 +4,7 @@ import { ItemContext } from '@patternfly-labs/react-form-wizard/lib/src/contexts
 import { Drawer, DrawerContent, Wizard, WizardHeader, WizardStep } from '@patternfly/react-core'
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { useTranslation } from '../../lib/acm-i18next'
 import { DOC_LINKS } from '../../lib/doc-util'
 import { GlobalPlacementName, GroupKind, ManagedClusterSet, UserKind } from '../../resources'

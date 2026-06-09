@@ -3,7 +3,7 @@
 import { TFunction } from 'react-i18next'
 import _ from 'lodash'
 import queryString from 'query-string'
-import { generatePath, Link } from 'react-router-dom'
+import { generatePath, Link } from 'react-router'
 import { NavigationPath } from '../../../NavigationPath'
 import {
   Application,

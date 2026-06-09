@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Alert, PageSection, Stack } from '@patternfly/react-core'
 import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { IResource } from '../../../resources'
 import { fleetResourceRequest } from '../../../resources/utils/fleet-resource-request'

@@ -6,7 +6,7 @@ import { set, isEqual, debounce } from 'lodash'
 
 import { TFunction } from 'react-i18next'
 import { Content, SelectOption } from '@patternfly/react-core'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { NavigationPath } from '../../../../../../../NavigationPath'
 import { Secret, ManagedClusterSet, getClusterImageSetVersion } from '../../../../../../../resources'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../../../ClusterSets/components/useCanJoinClusterSets'

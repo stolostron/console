@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Tab, Tabs, TabTitleText } from '@patternfly/react-core'
 import React, { ReactNode } from 'react'
-import { Path, useNavigate } from 'react-router-dom'
+import { Path, useNavigate } from 'react-router'
 import { useTranslation } from '../../lib/acm-i18next'
 
 export function AcmSecondaryNav(props: {

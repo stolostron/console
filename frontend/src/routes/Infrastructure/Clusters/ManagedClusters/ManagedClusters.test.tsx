@@ -7,7 +7,7 @@
  */
 
 import { cleanup, render } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import {
   certificateSigningRequestsState,
@@ -147,8 +147,8 @@ jest.mock('./components/OnboardingModal', () => ({
 }))
 
 // Mock navigation
-jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
+jest.mock('react-router', () => ({
+  ...jest.requireActual('react-router'),
   useNavigate: () => jest.fn(),
 }))
 

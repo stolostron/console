@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router'
 import { useFindRoleAssignments } from '../../../../../../resources/clients/multicluster-role-assignment-client'
 import { RoleAssignments } from '../../../../../UserManagement/RoleAssignment/RoleAssignments'
 

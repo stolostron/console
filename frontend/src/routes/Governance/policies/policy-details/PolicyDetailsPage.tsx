@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Fragment, ReactNode, Suspense, useMemo, useState } from 'react'
-import { generatePath, Outlet, useLocation, useNavigate, useOutletContext, useParams } from 'react-router-dom'
+import { generatePath, Outlet, useLocation, useNavigate, useOutletContext, useParams } from 'react-router'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'

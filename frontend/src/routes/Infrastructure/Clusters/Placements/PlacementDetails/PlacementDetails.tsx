@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useParams, useNavigate, Outlet, generatePath, useMatch, useOutletContext } from 'react-router-dom'
+import { useParams, useNavigate, Outlet, generatePath, useMatch, useOutletContext } from 'react-router'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { ErrorPage } from '../../../../../components/ErrorPage'

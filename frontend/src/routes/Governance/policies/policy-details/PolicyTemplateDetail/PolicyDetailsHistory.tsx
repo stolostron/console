@@ -9,7 +9,7 @@ import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { AcmEmptyState, AcmTable, AcmTableStateProvider, compareStrings } from '../../../../../ui-components'
 import { getISOStringTimestamp } from '../../../../../resources/utils'
 import AcmTimestamp from '../../../../../lib/AcmTimestamp'
-import { useParams } from 'react-router-dom'
+import { useParams } from 'react-router'
 import { useTemplateDetailsContext } from './PolicyTemplateDetailsPage'
 
 interface HistoryTableData {

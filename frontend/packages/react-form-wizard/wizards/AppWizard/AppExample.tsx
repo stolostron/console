@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import { onCancel, onSubmit } from '../common/utils'
 import { AppWizard } from './AppWizard'
 

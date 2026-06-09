@@ -7,7 +7,7 @@ import { mockBadRequestStatus, nockGet, nockIgnoreApiPaths } from '../../../../.
 import { waitForNock, waitForNocks, waitForNotText } from '../../../../../lib/test-util'
 import { ClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { LoginCredentials } from './LoginCredentials'
-import { MemoryRouter, Routes, Route, Outlet } from 'react-router-dom'
+import { MemoryRouter, Routes, Route, Outlet } from 'react-router'
 
 const mockCluster: Cluster = {
   name: 'test-cluster',

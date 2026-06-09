@@ -4,7 +4,7 @@ import { css } from '@emotion/css'
 import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts/victory'
 import { Badge, Card, CardTitle, Skeleton } from '@patternfly/react-core'
 
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { getTextWidth } from '../../utils'
 import { useViewport } from '../AcmChartGroup'
 

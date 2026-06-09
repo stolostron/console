@@ -14,7 +14,7 @@ import {
   Split,
   SplitItem,
 } from '@patternfly/react-core'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 
 const cardBody = css({ borderTop: '1px solid rgba(0,0,0,0.1)' })
 const divider = css({ marginBottom: '6px' })

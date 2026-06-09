@@ -6,7 +6,7 @@ import { Button, Checkbox, PageSection, SelectOption, Tooltip } from '@patternfl
 import { CompressIcon, DownloadIcon, ExpandIcon, OutlinedWindowRestoreIcon } from '@patternfly/react-icons'
 import { LogViewer } from '@patternfly/react-log-viewer'
 import { Dispatch, MutableRefObject, ReactNode, SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router'
 import screenfull from 'screenfull'
 import { AcmSelectBase, SelectOptionObject, SelectVariant } from '../../../components/AcmSelectBase'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'

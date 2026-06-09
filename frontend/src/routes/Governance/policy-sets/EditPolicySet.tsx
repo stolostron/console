@@ -9,7 +9,7 @@ import {
   useItem,
 } from '@patternfly-labs/react-form-wizard'
 import { IResource, PolicySetKind } from '../../../resources'
-import { PathParam, useNavigate, useParams } from 'react-router-dom'
+import { PathParam, useNavigate, useParams } from 'react-router'
 import { getPlacementBindingsForResource, getPlacementsForResource } from '../common/util'
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'

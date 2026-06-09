@@ -3,7 +3,7 @@
 // Copyright Contributors to the Open Cluster Management project
 import { PageSection } from '@patternfly/react-core'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { SavedSearch, UserPreference } from '../../../resources/userpreference'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'

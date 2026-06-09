@@ -13,7 +13,7 @@ import {
   SubscriptionOperatorKind,
 } from '../../../resources'
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { clusterCuratorsState, secretsState, subscriptionOperatorsState } from '../../../atoms'
 import {

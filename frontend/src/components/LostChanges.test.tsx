@@ -5,12 +5,12 @@ import { clickByRole, waitForNotText, waitForText } from '../lib/test-util'
 import { LostChangesContext, LostChangesPrompt, LostChangesProvider } from './LostChanges'
 import { Button } from '@patternfly/react-core'
 import { useContext, useState } from 'react'
-import { MemoryRouter, Route, useNavigate } from 'react-router-dom'
+import { MemoryRouter, Route, useNavigate } from 'react-router'
 
 const originalData = 'originalData'
 const innerDiscard = jest.fn()
-jest.mock('react-router-dom', () => {
-  const originalModule = jest.requireActual('react-router-dom')
+jest.mock('react-router', () => {
+  const originalModule = jest.requireActual('react-router')
   return {
     __esModule: true,
     ...originalModule,

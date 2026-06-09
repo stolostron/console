@@ -3,7 +3,7 @@
 import { render, waitFor } from '@testing-library/react'
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Route, Routes, generatePath } from 'react-router-dom'
+import { MemoryRouter, Route, Routes, generatePath } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { clickByText, waitForNocks, waitForTestId, waitForText } from '../../../../../../lib/test-util'

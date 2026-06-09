@@ -3,7 +3,7 @@
 import { PolicyAutomation, PolicySet } from '../../../resources'
 import { PolicyTableItem } from './Policies'
 import { NavigationPath } from '../../../NavigationPath'
-import { Link, generatePath } from 'react-router-dom'
+import { Link, generatePath } from 'react-router'
 import { PolicySetList } from '../common/util'
 import { PolicyActionDropdown } from '../components/PolicyActionDropdown'
 import { AcmButton } from '../../../ui-components/AcmButton'

@@ -2,7 +2,7 @@
 import { Provider } from '../../ui-components'
 import { render, screen } from '@testing-library/react'
 import { Scope } from 'nock/types'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { discoveryConfigState, secretsState } from '../../atoms'
 import {

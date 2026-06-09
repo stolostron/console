@@ -3,7 +3,7 @@
 import { Button, ButtonVariant } from '@patternfly/react-core'
 import { ArrowCircleUpIcon, ExclamationTriangleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link } from 'react-router'
 import { RbacButton } from '../../../../../components/Rbac'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { rbacCreate, rbacPatch } from '../../../../../lib/rbac-util'

@@ -11,7 +11,7 @@ import {
   Tooltip,
 } from '@patternfly/react-core'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { Outlet, useLocation, useNavigate, useOutletContext } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate, useOutletContext } from 'react-router'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PluginContext } from '../../../lib/PluginContext'
 import { NavigationPath } from '../../../NavigationPath'

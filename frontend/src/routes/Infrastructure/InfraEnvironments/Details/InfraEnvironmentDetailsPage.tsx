@@ -12,15 +12,7 @@ import {
 } from '@openshift-assisted/ui-lib/cim'
 import { isMatch } from 'lodash'
 import { Fragment, Suspense, useMemo } from 'react'
-import {
-  generatePath,
-  Outlet,
-  PathParam,
-  useLocation,
-  useNavigate,
-  useOutletContext,
-  useParams,
-} from 'react-router-dom'
+import { generatePath, Outlet, PathParam, useLocation, useNavigate, useOutletContext, useParams } from 'react-router'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_VERSION } from '../../../../lib/doc-util'

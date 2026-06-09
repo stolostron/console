@@ -7,7 +7,7 @@ import { ButtonVariant, EmptyState, EmptyStateBody, PageSection, Stack, StackIte
 import { ExclamationCircleIcon, ExternalLinkAltIcon, InfoCircleIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router'
 import { KubevirtProviderAlert } from '../../components/KubevirtProviderAlert'
 import { useTranslation } from '../../lib/acm-i18next'
 import { NavigationPath } from '../../NavigationPath'

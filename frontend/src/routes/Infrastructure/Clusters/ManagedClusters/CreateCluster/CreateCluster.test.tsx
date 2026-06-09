@@ -3,7 +3,7 @@
 import { ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { Scope } from 'nock/types'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import {
   clusterCuratorsState,

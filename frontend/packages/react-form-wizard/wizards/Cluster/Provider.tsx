@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Icon, Stack } from '@patternfly/react-core'
 import { ServerIcon, VirtualMachineIcon } from '@patternfly/react-icons'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import {
   WizHidden,
   ItemContext,

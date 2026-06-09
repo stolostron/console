@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Fragment, Suspense, useEffect, useMemo, useState } from 'react'
-import { Outlet, useNavigate, useOutletContext, useParams } from 'react-router-dom'
+import { Outlet, useNavigate, useOutletContext, useParams } from 'react-router'
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { usePrevious } from '../../../../../components/usePrevious'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
