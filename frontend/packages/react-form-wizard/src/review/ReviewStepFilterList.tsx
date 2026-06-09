@@ -957,6 +957,7 @@ export function ReviewStepFindList(props: ReviewStepFindListProps) {
                   return (
                     <DescriptionListGroup
                       key={reviewFindRowKey(row.node)}
+                      className="wizard-review-find-dl-group"
                       style={{ marginLeft: 32 + (afterDifferenceTitlePad[rowIndex] ? 16 : 0) }}
                     >
                       {onReviewEdit != null ? (
