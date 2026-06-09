@@ -17,6 +17,7 @@ import { useStringContext } from '../contexts/StringContext'
 import {
   ArrayInstanceDiffType,
   InputReviewMeta,
+  arrayInputRegisterKey,
   type DefaultArrayInputRegister,
   type WizardDomTreeNode,
   useDefaultArrayInputRegister,
@@ -30,7 +31,7 @@ type WizardArrayInstanceDomNode = Extract<WizardDomTreeNode, { type: InputReview
 type WizardArrayInstanceDifferenceDomNode = Extract<
   WizardDomTreeNode,
   {
-    type: ArrayInstanceDiffType.DELETED | ArrayInstanceDiffType.ADDED | ArrayInstanceDiffType.UNCHANGED
+    type: ArrayInstanceDiffType.DELETED | ArrayInstanceDiffType.ADDED | ArrayInstanceDiffType.MATCHED
   }
 >
 /** Inputs plus array-input containers when surfaced for errors (find list). */
@@ -150,7 +151,7 @@ function isReviewArrayInstanceDifferenceNode(node: WizardDomTreeNode): node is W
     'type' in node &&
     (node.type === ArrayInstanceDiffType.DELETED ||
       node.type === ArrayInstanceDiffType.ADDED ||
-      node.type === ArrayInstanceDiffType.UNCHANGED)
+      node.type === ArrayInstanceDiffType.MATCHED)
   )
 }
 
@@ -171,7 +172,7 @@ function arrayInstanceValuesMatch(a: unknown, b: unknown): boolean {
 }
 
 function inputPathForMatch(node: WizardInputDomNode): string {
-  return pathIgnoringNumericSegments(pathWithoutSemicolonIdSuffix(node.path))
+  return arrayInputRegisterKey(node.label, node.path)
 }
 
 function collectReviewInputNodes(nodes: readonly WizardDomTreeNode[]): WizardInputDomNode[] {
@@ -224,11 +225,11 @@ type ProcessingDefaultArrayInstance = WizardArrayInstanceDomNode & { claimed?: b
 
 function findMatchingDefaultInstanceIndex(
   child: WizardArrayInstanceDomNode,
-  processingDefaultInputs: readonly ProcessingDefaultArrayInstance[],
+  defaultInstanceArray: readonly ProcessingDefaultArrayInstance[],
   matchValue: boolean
 ): number {
-  for (let i = 0; i < processingDefaultInputs.length; i++) {
-    const defaultInstance = processingDefaultInputs[i]!
+  for (let i = 0; i < defaultInstanceArray.length; i++) {
+    const defaultInstance = defaultInstanceArray[i]!
     if (defaultInstance.claimed) continue
     if (child.label !== defaultInstance.label) continue
     if (matchedInstanceInputSubtreesMatch(child, defaultInstance, matchValue)) {
@@ -240,9 +241,10 @@ function findMatchingDefaultInstanceIndex(
 
 function defaultArrayInstanceNodesFromRegister(
   defaultArrayInputs: DefaultArrayInputRegister,
+  arrayInputLabel: string | undefined,
   arrayInputPath: string
 ): ProcessingDefaultArrayInstance[] {
-  const defaultArrayInputNodes = defaultArrayInputs.get(arrayInputPath) ?? []
+  const defaultArrayInputNodes = defaultArrayInputs.get(arrayInputRegisterKey(arrayInputLabel, arrayInputPath)) ?? []
   const instances: ProcessingDefaultArrayInstance[] = []
   for (const defaultArrayInputNode of defaultArrayInputNodes) {
     for (const child of defaultArrayInputNode.children ?? []) {
@@ -256,7 +258,8 @@ function defaultArrayInstanceNodesFromRegister(
 
 function domNodePathKey(node: WizardDomTreeNode): string | undefined {
   if ('path' in node && typeof node.path === 'string' && node.path !== '') {
-    return pathIgnoringNumericSegments(pathWithoutSemicolonIdSuffix(node.path))
+    const label = 'label' in node ? node.label : undefined
+    return arrayInputRegisterKey(label, node.path)
   }
   if ('id' in node && typeof node.id === 'string' && node.id !== '') {
     return pathIgnoringNumericSegments(pathWithoutSemicolonIdSuffix(node.id))
@@ -302,7 +305,7 @@ function applyDefaultValuesFromMatchedInstance(
 }
 
 type NormalizedArrayInstances = {
-  unchangedArray: WizardArrayInstanceDifferenceDomNode[]
+  matchedArray: WizardArrayInstanceDifferenceDomNode[]
   deletedArray: WizardArrayInstanceDifferenceDomNode[]
   addedArray: WizardArrayInstanceDifferenceDomNode[]
 }
@@ -317,44 +320,48 @@ function labelWithParentArrayInstancePrefixes(
   return `${prefix}/${label}`
 }
 
-function normalizeArrayInstances(
+function findMatchingDefaultNodes(
   arrayInputNode: WizardArrayInputDomNode,
   defaultArrayInputs: DefaultArrayInputRegister
 ): NormalizedArrayInstances {
   const arrayInputPath = arrayInputNode.path
-  const processingDefaultInputs = arrayInputPath
-    ? defaultArrayInstanceNodesFromRegister(defaultArrayInputs, arrayInputPath)
+  const defaultArrayInputsByPath = arrayInputPath
+    ? defaultArrayInstanceNodesFromRegister(defaultArrayInputs, arrayInputNode.label, arrayInputPath)
     : []
 
-  const unchangedArray: WizardArrayInstanceDifferenceDomNode[] = []
+  const matchedArray: WizardArrayInstanceDifferenceDomNode[] = []
   const deletedArray: WizardArrayInstanceDifferenceDomNode[] = []
   const addedArray: WizardArrayInstanceDifferenceDomNode[] = []
 
   for (const child of arrayInstanceNodesFromChildren(arrayInputNode.children ?? [])) {
-    let matchIndex = findMatchingDefaultInstanceIndex(child, processingDefaultInputs, true)
+    let matchIndex = findMatchingDefaultInstanceIndex(child, defaultArrayInputsByPath, true)
     if (matchIndex === -1) {
-      matchIndex = findMatchingDefaultInstanceIndex(child, processingDefaultInputs, false)
+      matchIndex = findMatchingDefaultInstanceIndex(child, defaultArrayInputsByPath, false)
     }
 
-    if (matchIndex === -1) {
-      addedArray.push({
+    let matchedDefault: WizardArrayInstanceDomNode | undefined
+    if (matchIndex !== -1) {
+      const matchedFromPath = defaultArrayInputsByPath[matchIndex]!
+      matchedFromPath.claimed = true
+      matchedDefault = matchedFromPath
+    }
+    if (matchedDefault) {
+      matchedArray.push({
         ...klona(child),
-        type: ArrayInstanceDiffType.ADDED,
-        children: child.children,
+        type: ArrayInstanceDiffType.MATCHED,
+        children: applyDefaultValuesFromMatchedInstance(child.children, matchedDefault.children),
       })
       continue
     }
 
-    const matchedDefault = processingDefaultInputs[matchIndex]!
-    matchedDefault.claimed = true
-    unchangedArray.push({
+    addedArray.push({
       ...klona(child),
-      type: ArrayInstanceDiffType.UNCHANGED,
-      children: applyDefaultValuesFromMatchedInstance(child.children, matchedDefault.children),
+      type: ArrayInstanceDiffType.ADDED,
+      children: child.children,
     })
   }
 
-  for (const remaining of processingDefaultInputs) {
+  for (const remaining of defaultArrayInputsByPath) {
     if (remaining.claimed) continue
     if (!remaining.children?.length) continue
     deletedArray.push({
@@ -364,7 +371,7 @@ function normalizeArrayInstances(
     })
   }
 
-  return { unchangedArray, deletedArray, addedArray }
+  return { matchedArray, deletedArray, addedArray }
 }
 
 const DIFFERENCE_TITLE_PREFIX_WIDTH = '1.25ch'
@@ -612,8 +619,8 @@ function collectVisibleInputsInOrder(
         out.push(n)
       }
 
-      const { unchangedArray, deletedArray, addedArray } = normalizeArrayInstances(n, defaultArrayInputs)
-      for (const diffNode of [...unchangedArray, ...addedArray, ...deletedArray]) {
+      const { matchedArray, deletedArray, addedArray } = findMatchingDefaultNodes(n, defaultArrayInputs)
+      for (const diffNode of [...matchedArray, ...addedArray, ...deletedArray]) {
         const ownLabel = ownArrayInstanceLabel(diffNode)
         out.push({
           ...diffNode,

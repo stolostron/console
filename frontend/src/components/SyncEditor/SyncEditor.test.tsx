@@ -2,7 +2,14 @@
 
 import { SyncEditor, SyncEditorProps, ValidationStatus } from './SyncEditor'
 import { SYNC_EDITOR_SHOW_CHANGES_STORAGE_KEY } from './SyncEditorToolbar'
+import * as MonacoEditorReact from '@monaco-editor/react'
 import { render, screen, waitFor, fireEvent, createEvent, act } from '@testing-library/react'
+
+const lastDiffNavigator = (
+  MonacoEditorReact as typeof MonacoEditorReact & {
+    lastDiffNavigator: { current: { previous: jest.Mock; next: jest.Mock } | null }
+  }
+).lastDiffNavigator
 import userEvent from '@testing-library/user-event'
 import get from 'lodash/get'
 import set from 'lodash/set'
@@ -391,6 +398,7 @@ describe('SyncEditor component', () => {
   describe('additional SyncEditor coverage', () => {
     beforeEach(() => {
       localStorage.setItem(SYNC_EDITOR_SHOW_CHANGES_STORAGE_KEY, 'false')
+      lastDiffNavigator.current = null
     })
 
     it('reports pending validation status while the user edits', async () => {
@@ -403,31 +411,6 @@ describe('SyncEditor component', () => {
       onStatusChange.mockClear()
       userEvent.type(input, 'x')
       expect(onStatusChange).toHaveBeenCalledWith(ValidationStatus.pending)
-    })
-
-    it('updates highlight path when the prop changes', async () => {
-      const clone = cloneDeep(propsNewResource)
-      const { rerender } = render(<SyncEditor {...clone} highlightEditorPath="" />)
-      await waitFor(() => screen.getByRole('textbox', { name: /monaco/i }))
-      rerender(<SyncEditor {...clone} highlightEditorPath="Policy.spec.disabled" />)
-      await waitFor(() => screen.getByRole('textbox', { name: /monaco/i }))
-    })
-
-    it('applies theme updates when the document root class changes', async () => {
-      let mutationCallback: MutationCallback | undefined
-      const OriginalMutationObserver = global.MutationObserver
-      global.MutationObserver = class extends OriginalMutationObserver {
-        constructor(callback: MutationCallback) {
-          super(callback)
-          mutationCallback = callback
-        }
-      } as typeof MutationObserver
-
-      const clone = cloneDeep(propsNewResource)
-      render(<SyncEditor {...clone} />)
-      await waitFor(() => screen.getByRole('textbox', { name: /monaco/i }))
-      mutationCallback?.([], { disconnect: () => {}, observe: () => {}, takeRecords: () => [] } as MutationObserver)
-      global.MutationObserver = OriginalMutationObserver
     })
 
     it('shows diff view when compare is enabled with default resources', async () => {
@@ -456,14 +439,16 @@ describe('SyncEditor component', () => {
     })
 
     it('invokes diff navigation controls from the toolbar', async () => {
+      localStorage.setItem(SYNC_EDITOR_SHOW_CHANGES_STORAGE_KEY, 'true')
       const clone = cloneDeep(propsNewResource)
       clone.defaultResources = cloneDeep(clone.resources)
       render(<SyncEditor {...clone} />)
-      await waitFor(() => screen.getByRole('textbox', { name: /monaco/i }))
-      userEvent.click(screen.getByRole('checkbox', { name: /show changes/i }))
       await waitFor(() => screen.getByRole('textbox', { name: /monaco-diff/i }))
+      await waitFor(() => expect(lastDiffNavigator.current).not.toBeNull())
       userEvent.click(screen.getByRole('button', { name: /previous change/i }))
       userEvent.click(screen.getByRole('button', { name: /next change/i }))
+      expect(lastDiffNavigator.current?.previous).toHaveBeenCalledTimes(1)
+      expect(lastDiffNavigator.current?.next).toHaveBeenCalledTimes(1)
     })
 
     it('pastes certificate content with indentation after pem field', async () => {

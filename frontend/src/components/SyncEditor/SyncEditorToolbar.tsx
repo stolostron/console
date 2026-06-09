@@ -53,7 +53,7 @@ export interface SyncEditorToolbarProps {
   t: (key: string) => string
 }
 
-export function SyncEditorToolbar(props: SyncEditorToolbarProps): JSX.Element {
+export function SyncEditorToolbar(props: Readonly<SyncEditorToolbarProps>): JSX.Element {
   const {
     editorTitle,
     readonly,
@@ -91,7 +91,7 @@ export function SyncEditorToolbar(props: SyncEditorToolbarProps): JSX.Element {
       <div className="sy-toolbar-buttons">
         {showCompareButton && (
           <div className="sy-toolbar-compare-group">
-            <div className="sy-toolbar-separator" role="separator" aria-orientation="vertical" />
+            <hr className="sy-toolbar-separator" aria-orientation="vertical" />
             {showChanges && (
               <div className="sy-toolbar-diff-nav">
                 <CodeEditorControl
@@ -129,7 +129,7 @@ export function SyncEditorToolbar(props: SyncEditorToolbarProps): JSX.Element {
                 }}
               />
             </div>
-            <div className="sy-toolbar-separator" role="separator" aria-orientation="vertical" />
+            <hr className="sy-toolbar-separator" aria-orientation="vertical" />
           </div>
         )}
         {/* undo */}
@@ -158,7 +158,7 @@ export function SyncEditorToolbar(props: SyncEditorToolbarProps): JSX.Element {
             }}
           />
         )}
-        {!readonly && <div className="sy-toolbar-separator" role="separator" aria-orientation="vertical" />}
+        {!readonly && <hr className="sy-toolbar-separator" aria-orientation="vertical" />}
         {/* search */}
         <CodeEditorControl
           id="search-button"
@@ -184,18 +184,17 @@ export function SyncEditorToolbar(props: SyncEditorToolbarProps): JSX.Element {
         {/* copy */}
         <ClipboardCopyButton
           id="copy-button"
-          textId="code-content"
           aria-label={t('Copy to clipboard')}
           disabled={false}
           onClick={() => {
             const diffModifiedEditor = showChanges ? syncEditorDiffRef?.current?.getModifiedEditor() ?? null : null
             const targetEditor = diffModifiedEditor ?? editor
-            if (targetEditor && targetEditor.getModel()) {
+            if (targetEditor?.getModel()) {
               const model = targetEditor.getModel()
               const selection = targetEditor.getSelection()
               if (model && selection) {
                 const selectedText = model.getValueInRange(selection)
-                const fallbackFull = diffModifiedEditor != null ? model.getValue() : lastUnredactedYaml || ''
+                const fallbackFull = diffModifiedEditor ? model.getValue() : lastUnredactedYaml || ''
                 navigator.clipboard.writeText(selectedText || fallbackFull)
                 setCopyHint(selectedText.length === 0 ? allCopiedCopy : copiedCopy)
                 setTimeout(() => {

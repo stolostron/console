@@ -19,11 +19,6 @@ const defaultResource = {
   data: { key: 'value' },
 }
 
-const currentResource = {
-  ...defaultResource,
-  data: { key: 'updated' },
-}
-
 function renderSyncEditorDiff(overrides: Partial<SyncEditorDiffProps> = {}, ref?: Ref<SyncEditorDiffHandle>) {
   const resizeRootRef = { current: document.createElement('div') }
   const onDiffEditorFocusChange = jest.fn()
@@ -34,8 +29,6 @@ function renderSyncEditorDiff(overrides: Partial<SyncEditorDiffProps> = {}, ref?
   const props: SyncEditorDiffProps = {
     showChanges: true,
     defaultResources: defaultResource,
-    resources: currentResource,
-    diffEditorHasFocus: false,
     onDiffEditorFocusChange,
     resizeRootRef,
     onChange,

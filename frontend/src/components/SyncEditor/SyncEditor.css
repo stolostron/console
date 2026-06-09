@@ -75,14 +75,18 @@
   row-gap: var(--pf-t--global--spacer--xs);
 }
 
-/* Toolbar: single text/icon baseline across controls, copy, and checkbox. */
+/* Toolbar: baseline-aligned controls; separators stretch the full row height. */
 .sync-editor__container .sy-toolbar-buttons {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: stretch;
   flex: 1 1 auto;
   min-width: 0;
   justify-content: flex-end;
+}
+
+.sync-editor__container .sy-toolbar-buttons > :not(.sy-toolbar-separator) {
+  align-self: baseline;
 }
 
 .sync-editor__container .sy-toolbar-buttons .sy-toolbar-separator {
@@ -91,10 +95,13 @@
   align-self: stretch;
   width: 1px;
   min-width: 1px;
+  height: auto;
   min-height: var(--pf-v6-c-button--MinHeight, 2.25rem);
   margin-block: 0;
   margin-inline: var(--pf-t--global--spacer--xs);
+  padding: 0;
   border: 0;
+  overflow: hidden;
   background-color: var(--pf-t--global--border--color--default, var(--pf-v5-global--BorderColor--200, #c7c7c7));
 }
 
@@ -102,15 +109,18 @@
 .sync-editor__container .sy-toolbar-compare-group {
   display: inline-flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: stretch;
   column-gap: 0;
 }
 
-.sync-editor__container .sy-toolbar-compare-group .sy-toolbar-separator {
+.sync-editor__container .sy-toolbar-compare-group > :not(.sy-toolbar-separator) {
   align-self: baseline;
-  min-height: 1lh;
-  height: 1lh;
-  margin-block: 0.125em 0;
+}
+
+.sync-editor__container .sy-toolbar-compare-group .sy-toolbar-separator {
+  align-self: stretch;
+  height: auto;
+  margin-block: 0;
 }
 
 .sync-editor__container .sy-toolbar-diff-nav {

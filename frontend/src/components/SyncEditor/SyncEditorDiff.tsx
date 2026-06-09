@@ -32,10 +32,7 @@ export interface SyncEditorDiffProps {
   showChanges: boolean
   /** Initial wizard resources for the left (original) diff pane. */
   defaultResources?: unknown
-  resources: unknown
   mock?: boolean
-  /** When true, external resource updates must not reset diff models (see blur to flush). */
-  diffEditorHasFocus: boolean
   /** Notifies parent when either diff pane gains or loses text focus. */
   onDiffEditorFocusChange: (focused: boolean) => void
   /** Observed for layout when the editor page resizes. */
@@ -179,7 +176,7 @@ export const SyncEditorDiff = forwardRef<SyncEditorDiffHandle, SyncEditorDiffPro
             return
           }
           const activeId = document.activeElement?.id as string
-          if (TOOLBAR_IDS_SKIP_DIFF_BLUR.indexOf(activeId as (typeof TOOLBAR_IDS_SKIP_DIFF_BLUR)[number]) !== -1) {
+          if (TOOLBAR_IDS_SKIP_DIFF_BLUR.includes(activeId as (typeof TOOLBAR_IDS_SKIP_DIFF_BLUR)[number])) {
             return
           }
           onDiffEditorFocusChangeRef.current(false)

@@ -456,7 +456,7 @@ const isEmptyComparisonValue = (v: unknown): boolean => {
   if (Array.isArray(v)) {
     return v.length === 0 || (v.length === 1 && isEmptyComparisonValue(v[0]))
   }
-  if (typeof v === 'object') return Object.keys(v as object).length === 0
+  if (typeof v === 'object') return Object.keys(v).length === 0
   return false
 }
 

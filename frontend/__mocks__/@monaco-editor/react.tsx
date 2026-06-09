@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { jest } from '@jest/globals'
 import React from 'react'
 import { fireEvent } from '@testing-library/react'
 
@@ -40,6 +41,20 @@ class Range {
 }
 
 const mockDisposable = () => ({ dispose: () => {} })
+
+export const lastDiffNavigator = {
+  current: null as { dispose: () => void; previous: jest.Mock; next: jest.Mock } | null,
+}
+
+const createMockDiffNavigator = () => {
+  const navigator = {
+    dispose: () => {},
+    previous: jest.fn(),
+    next: jest.fn(),
+  }
+  lastDiffNavigator.current = navigator
+  return navigator
+}
 class Selection {
   startLineNumber: number | undefined
   selectionStartLineNumber: number | undefined
@@ -104,12 +119,23 @@ interface MockEditor {
 }
 
 interface MockMonaco {
-  editor: { setModelLanguage: () => void; defineTheme: () => void; setTheme: () => void }
-  languages: { registerHoverProvider: () => void }
+  editor: {
+    setModelLanguage: () => void
+    defineTheme: () => void
+    setTheme: () => void
+    createModel?: (value: string) => { dispose: () => void; getValue: () => string; setValue: () => void }
+    createDiffNavigator?: () => { dispose: () => void; previous: () => void; next: () => void }
+  }
+  languages: {
+    registerHoverProvider: (
+      _language: string,
+      provider: { provideHover: (model: unknown, position: unknown) => unknown }
+    ) => { dispose: () => void }
+  }
   KeyMod: any
   KeyCode: any
-  Range: Range
-  Selection: Selection
+  Range: typeof Range
+  Selection: typeof Selection
 }
 
 const MonacoEditor = (props: {
@@ -205,7 +231,6 @@ const MonacoEditor = (props: {
         return mockDisposable()
       },
       onDidChangeModel: () => mockDisposable(),
-      onDidChangeModelContent: () => mockDisposable(),
       getVisibleRanges: () => [],
       addCommand: () => {},
       changeViewZones: () => {},
@@ -234,6 +259,7 @@ const MonacoEditor = (props: {
       revealLineInCenter: () => {},
       onDidChangeModelContent: (cb: any) => {
         editorMockRef.current.changeModelCallback = cb
+        return mockDisposable()
       },
       deltaDecorations: (_oldDecorations: string[], newDecorations: any[]) => {
         editorMockRef.current.newDecorations = JSON.stringify(newDecorations)
@@ -275,11 +301,7 @@ const MonacoEditor = (props: {
           getValue: () => value,
           setValue: jest.fn(),
         }),
-        createDiffNavigator: () => ({
-          dispose: () => {},
-          previous: jest.fn(),
-          next: jest.fn(),
-        }),
+        createDiffNavigator: createMockDiffNavigator,
       },
       languages: {
         registerHoverProvider: (_language: string, provider: { provideHover: (model: unknown, position: unknown) => unknown }) => {
@@ -474,11 +496,7 @@ const buildMockEditor = (props: { onChange?: (value: string, e: any) => void; in
         getValue: () => value,
         setValue: jest.fn(),
       }),
-      createDiffNavigator: () => ({
-        dispose: () => {},
-        previous: jest.fn(),
-        next: jest.fn(),
-      }),
+      createDiffNavigator: createMockDiffNavigator,
     },
     languages: {
       registerHoverProvider: (_language: string, provider: { provideHover: (model: unknown, position: unknown) => unknown }) => {

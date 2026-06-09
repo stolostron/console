@@ -385,9 +385,9 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         const activeId = document.activeElement?.id as string
         if (
           !editorHasFocus &&
-          ['undo-button', 'redo-button', 'compare-changes-button', 'diff-prev-button', 'diff-next-button'].indexOf(
+          !['undo-button', 'redo-button', 'compare-changes-button', 'diff-prev-button', 'diff-next-button'].includes(
             activeId
-          ) === -1
+          )
         ) {
           setClickedOnFilteredLine(false)
           setEditorHasFocus(false)
@@ -436,7 +436,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           if (!diffEditorHasFocus && editorHasFocus) {
             return
           }
-          if (!activeEditor || !activeModel) {
+          if (!activeEditor) {
             return
           }
           let activeResources: unknown = resources
@@ -450,7 +450,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             activeResources = current
             comparedResources = original
           }
-          const cmpYaml = comparedResources !== undefined ? stringify(comparedResources) : undefined
+          const cmpYaml = comparedResources === undefined ? undefined : stringify(comparedResources)
           // parse/validate/secrets
           const {
             yaml,
@@ -913,9 +913,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           ref={syncEditorDiffRef}
           showChanges={showChanges}
           defaultResources={defaultResources}
-          resources={resources}
           mock={mock}
-          diffEditorHasFocus={diffEditorHasFocus}
           onDiffEditorFocusChange={setDiffEditorHasFocus}
           onDiffEditorInstanceChange={onDiffEditorInstanceChange}
           onActiveInstancesChange={syncActiveInstances}
