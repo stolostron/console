@@ -68,7 +68,7 @@ export function PolicyWizard(props: {
           {
             ...PolicyType,
             metadata: { name: '', namespace: '' },
-            spec: { disabled: false },
+            spec: { disabled: false, 'policy-templates': [] },
           },
         ]
       }
