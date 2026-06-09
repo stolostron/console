@@ -44,18 +44,6 @@ jest.mock('../../../hooks/use-cluster-version', () => ({
 import { NavigationPath } from '../../../NavigationPath'
 import AnsibleAutomationsPage from './AnsibleAutomations'
 
-const mockedUsedNavigate = jest.fn()
-
-jest.mock('react-router-dom', () => {
-  const originalModule = jest.requireActual('react-router-dom')
-  return {
-    __esModule: true,
-    ...originalModule,
-    useLocation: () => mockedUsedNavigate,
-    //useNavigate: () => mockedUsedNavigate,
-  }
-})
-
 const mockAnsibleConnection1: ProviderConnection = {
   apiVersion: ProviderConnectionApiVersion,
   kind: ProviderConnectionKind,

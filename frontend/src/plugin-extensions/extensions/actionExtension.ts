@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
+import type { Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
 import { ActionExtensionProps } from '../properties'
 
 export type ApplicationAction = Extension<'acm.application/action', ActionExtensionProps>

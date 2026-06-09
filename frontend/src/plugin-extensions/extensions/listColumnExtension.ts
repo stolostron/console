@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
+import type { Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
 import { ListColumnExtensionProps } from '../properties'
 
 export type ApplicationListColumn = Extension<'acm.application/list/column', ListColumnExtensionProps>

@@ -10,7 +10,7 @@ import { RouteE } from '../Routes'
 import { ArgoWizard } from './ArgoWizard'
 
 function onCancel(navigate: (path: string) => void) {
-  navigate(`./${RouteE.ArgoCD}`)
+  navigate(`${RouteE.ArgoCD}`)
 }
 
 export function ApplicationSetExamples() {
