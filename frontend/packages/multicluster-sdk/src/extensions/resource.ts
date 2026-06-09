@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { CodeRef, Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
-import { ExtensionK8sGroupKindModel, ExtensionK8sModel } from '@openshift-console/dynamic-plugin-sdk'
-import { FleetK8sResourceCommon } from '../types/fleet'
+import type { CodeRef, Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
+import type { ExtensionK8sGroupKindModel, ExtensionK8sModel } from '@openshift-console/dynamic-plugin-sdk'
+import type { FleetK8sResourceCommon } from '../types/fleet'
 import { RESOURCE_ROUTE_TYPE } from '../api/constants'
 
 export type ResourceRouteHandler = (props: {

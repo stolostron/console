@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Context } from 'react'
-import { CodeRef, Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
+import type { CodeRef, Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
 
 /** Enables sharing of a React context across plugins. */
-export type SharedContext<T = any> = Extension<
+export type SharedContext<T = unknown> = Extension<
   'acm.shared-context',
   {
     /** Unique identifier for this item. */
