@@ -40,14 +40,3 @@
 .creation-view-controls-treeselect .tf--list-box {
   box-shadow: unset !important;
 }
-
-.temptifly-controls-labels-container,
-.creation-view-controls-labels-container {
-  border-style: solid;
-  border-width: var(--pf-v5-global--BorderWidth--sm);
-  border-top-color: var(--pf-v5-global--BorderColor--300);
-  border-right-color: var(--pf-v5-global--BorderColor--300);
-  border-bottom-color: var(--pf-v5-global--BorderColor--200);
-  border-left-color: var(--pf-v5-global--BorderColor--300);
-  box-shadow: unset !important;
-}
