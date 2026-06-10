@@ -11,7 +11,7 @@ import {
 } from '@patternfly/react-core'
 import _ from 'lodash'
 import { Fragment, useCallback, useContext, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { useNavigate } from 'react-router'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PluginContext } from '../../../lib/PluginContext'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'

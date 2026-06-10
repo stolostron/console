@@ -13,7 +13,7 @@ import {
 } from '../../../../../resources'
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { render } from '@testing-library/react'
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { ansibleJobState, clusterCuratorsState } from '../../../../../atoms'
 import { clickByTestId, clickByText, waitForCalled, waitForNocks, waitForText } from '../../../../../lib/test-util'

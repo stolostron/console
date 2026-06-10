@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useEffect, useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom-v5-compat'
+import { useParams } from 'react-router'
 import { useTemplateDetailsContext } from './PolicyTemplateDetailsPage'
 import { searchClient } from '../../../../Search/search-sdk/search-client'
 import {

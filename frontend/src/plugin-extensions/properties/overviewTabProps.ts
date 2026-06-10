@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { CodeRef } from '@openshift-console/dynamic-plugin-sdk/lib/types'
+import type { CodeRef } from '@openshift-console/dynamic-plugin-sdk/lib/types'
 import * as React from 'react'
 
 export type OverviewTabProps = {

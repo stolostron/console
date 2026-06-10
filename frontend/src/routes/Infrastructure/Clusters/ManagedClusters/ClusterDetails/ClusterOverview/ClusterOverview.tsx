@@ -9,7 +9,7 @@ import { AlertVariant, ButtonVariant, PageSection, Popover } from '@patternfly/r
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { ExternalLinkAltIcon, OutlinedQuestionCircleIcon, PencilAltIcon } from '@patternfly/react-icons'
 import { Fragment, useMemo, useState } from 'react'
-import { generatePath, Link } from 'react-router-dom-v5-compat'
+import { generatePath, Link } from 'react-router'
 import { getControlPlaneString } from '../../../../../../components/Clusters'
 import { RbacButton } from '../../../../../../components/Rbac'
 import TemplateSummaryModal from '../../../../../../components/TemplateSummaryModal'

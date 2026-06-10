@@ -26,7 +26,7 @@ import {
 import { CaretDownIcon } from '@patternfly/react-icons'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import React, { lazy, ReactNode, Suspense, useEffect, useLayoutEffect, useMemo, useState } from 'react'
-import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from 'react-router-dom-v5-compat'
+import { BrowserRouter, Link, Navigate, Route, Routes, useLocation } from 'react-router'
 import './App.css'
 import { LoadingPage } from './components/LoadingPage'
 import { LoadPluginData } from './components/LoadPluginData'

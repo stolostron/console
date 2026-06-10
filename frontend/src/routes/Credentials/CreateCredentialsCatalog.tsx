@@ -7,7 +7,7 @@ import { DOC_LINKS } from '../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../NavigationPath'
 import { AcmIcon, AcmPage, AcmPageHeader, Provider, ProviderIconMap, ProviderLongTextMap } from '../../ui-components'
 import { CredentialsType, CREDENTIALS_TYPE_PARAM } from './CredentialsType'
-import { To } from 'react-router-dom-v5-compat'
+import type { To } from 'react-router'
 
 export const getTypedCreateCredentialsPath = (type: CredentialsType): To => ({
   pathname: NavigationPath.addCredentials,

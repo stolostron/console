@@ -11,7 +11,7 @@ import {
   mockMachinePoolManual,
 } from '../ClusterDetails/ClusterDetails.sharedmocks'
 import { ScaleClusterAlert } from './ScaleClusterAlert'
-import { MemoryRouter, Routes, Route, Outlet } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Routes, Route, Outlet } from 'react-router'
 
 const Component = () => {
   const context: Partial<ClusterDetailsContext> = { cluster: mockCluster }

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { CodeRef, ExtensionDeclaration } from '@openshift-console/dynamic-plugin-sdk/lib/types'
-import { ExtensionK8sGroupKindModel, ExtensionK8sModel } from '@openshift-console/dynamic-plugin-sdk'
-import { FleetK8sResourceCommon } from '../types/fleet'
+import type { CodeRef, Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
+import type { ExtensionK8sGroupKindModel, ExtensionK8sModel } from '@openshift-console/dynamic-plugin-sdk'
+import type { FleetK8sResourceCommon } from '../types/fleet'
 import { RESOURCE_ROUTE_TYPE } from '../api/constants'
 
 export type ResourceRouteHandler = (props: {
@@ -25,4 +25,4 @@ export type ResourceRouteProps = {
 }
 
 /** This extension allows plugins to customize the route used for resources of the given kind. Search results and resource links will direct to the route returned by the implementing function. */
-export type ResourceRoute = ExtensionDeclaration<typeof RESOURCE_ROUTE_TYPE, ResourceRouteProps>
+export type ResourceRoute = Extension<typeof RESOURCE_ROUTE_TYPE, ResourceRouteProps>

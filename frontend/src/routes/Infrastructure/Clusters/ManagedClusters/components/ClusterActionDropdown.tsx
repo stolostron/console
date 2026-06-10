@@ -3,7 +3,7 @@
 import { Content, ContentVariants } from '@patternfly/react-core'
 import { AcmInlineProvider, AcmToastContext } from '../../../../../ui-components'
 import { useCallback, useContext, useMemo, useState } from 'react'
-import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
+import { generatePath, useNavigate } from 'react-router'
 import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../../components/BulkActionModal'
 import { RbacDropdown } from '../../../../../components/Rbac'
 import { useTranslation } from '../../../../../lib/acm-i18next'

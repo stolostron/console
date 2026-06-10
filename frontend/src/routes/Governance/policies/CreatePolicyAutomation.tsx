@@ -10,7 +10,7 @@ import {
 import { PolicyAutomationWizard } from '../../../wizards/Governance/PolicyAutomation/PolicyAutomationWizard'
 import { AcmToastContext } from '../../../ui-components'
 import { useContext, useMemo } from 'react'
-import { useParams, useNavigate, PathParam, useLocation, generatePath } from 'react-router-dom-v5-compat'
+import { useParams, useNavigate, type PathParam, useLocation, generatePath } from 'react-router'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { SyncEditor, ValidationStatus } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'

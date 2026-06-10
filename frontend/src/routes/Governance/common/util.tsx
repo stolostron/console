@@ -2,7 +2,7 @@
 import { Label } from '@patternfly/react-core'
 import { useMemo, useState } from 'react'
 import { TFunction } from 'react-i18next'
-import { Link, NavigateFunction, To } from 'react-router-dom-v5-compat'
+import { Link, NavigateFunction, To } from 'react-router'
 import { LostChangesContext } from '../../../components/LostChanges'
 import { useTranslation } from '../../../lib/acm-i18next'
 import GatekeeperSvg from '../../../logos/gatekeeper.svg'

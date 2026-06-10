@@ -3,7 +3,7 @@
 
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { BrowserRouter as Router } from 'react-router-dom-v5-compat'
+import { BrowserRouter as Router } from 'react-router'
 import TemplateEditor from './TemplateEditor'
 // loads mocked monaco from __mocks__
 import MonacoEditor from 'react-monaco-editor'

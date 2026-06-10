@@ -7,14 +7,11 @@ import {
   Location,
   Navigate,
   NavigateFunction,
-  ParamParseKey,
-  PathMatch,
-  PathParam,
   To,
   useLocation,
   useMatch,
   useNavigate,
-} from 'react-router-dom-v5-compat'
+} from 'react-router'
 import { LostChangesContext } from './components/LostChanges'
 import { Cluster } from './resources/utils'
 
@@ -294,22 +291,12 @@ export function SubRoutesRedirect<B extends NavigationPath, M extends ChildPath<
 }) {
   const { search } = useLocation()
 
-  const pathMatch = useMatch(`${matchPath}/*`) as unknown as PathMatch<ParamParseKey<M>>
-  type GeneratePathParams = {
-    [key in PathParam<T>]: string | null
-  }
-  const params = pathMatch
-    ? (Object.keys(pathMatch.params) as PathParam<M>[]).reduce((params, key) => {
-        const originalValue = pathMatch.params[key]
-        params[key as unknown as PathParam<T>] = originalValue ?? null
-        return params
-      }, {} as GeneratePathParams)
-    : undefined
+  const pathMatch = useMatch(`${matchPath}/*`)
 
   return (
     <Navigate
       to={{
-        pathname: generatePath(targetPath, params),
+        pathname: generatePath<string>(targetPath, pathMatch?.params),
         search,
       }}
       replace

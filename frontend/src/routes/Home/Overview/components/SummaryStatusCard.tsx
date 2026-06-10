@@ -2,7 +2,7 @@
 
 import { Card, CardBody, CardTitle, Skeleton } from '@patternfly/react-core'
 import { ReactNode } from 'react'
-import { Link } from 'react-router-dom-v5-compat'
+import { Link } from 'react-router'
 
 export interface Data {
   mainSection: {

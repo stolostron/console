@@ -25,7 +25,7 @@ import {
   RedhatIcon,
 } from '@patternfly/react-icons'
 import { ReactNode } from 'react'
-import { BrowserRouter, Link, useHistory, useLocation } from 'react-router-dom'
+import { BrowserRouter, Link, useLocation, useNavigate } from 'react-router'
 import { AnsibleExample } from './Ansible/AnsibleExample'
 import { ApplicationExample } from './Application/ApplicationExample'
 import { AppExample } from './AppWizard/AppExample'
@@ -345,7 +345,7 @@ export function DemoRouter(): JSX.Element {
 }
 
 function ExampleWizards() {
-  const history = useHistory()
+  const navigate = useNavigate()
 
   return (
     <Catalog
@@ -364,7 +364,7 @@ function ExampleWizards() {
         descriptions: wizard.description ? [wizard.description] : undefined,
         labels: wizard.labels,
         badge: wizard.state,
-        onClick: () => history.push(wizard.route),
+        onClick: () => navigate(wizard.route),
       }))}
     />
   )

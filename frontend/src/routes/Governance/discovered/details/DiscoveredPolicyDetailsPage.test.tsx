@@ -3,7 +3,7 @@ jest.mock('../discoveredPoliciesWorker.factory')
 
 import { ApolloError } from '@apollo/client'
 import { render, screen } from '@testing-library/react'
-import { generatePath, MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
+import { generatePath, MemoryRouter, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { channelsState, helmReleaseState, subscriptionsState } from '../../../../atoms'
 import { waitForText } from '../../../../lib/test-util'

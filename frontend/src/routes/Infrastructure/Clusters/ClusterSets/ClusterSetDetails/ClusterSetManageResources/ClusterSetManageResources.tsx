@@ -17,7 +17,7 @@ import {
 import { ActionGroup, PageSection, Title } from '@patternfly/react-core'
 import { useState, useMemo } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
-import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
+import { generatePath, useNavigate } from 'react-router'
 import { useRecoilValue, useSharedAtoms } from '../../../../../../shared-recoil'
 import { BulkActionModal, errorIsNot } from '../../../../../../components/BulkActionModal'
 import { patchClusterSetLabel } from '../../../../../../lib/patch-cluster'

@@ -19,7 +19,7 @@ import {
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { generatePath, Link, useNavigate } from 'react-router-dom-v5-compat'
+import { generatePath, Link, useNavigate } from 'react-router'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { deletePolicySet } from '../../../../lib/delete-policyset'
 import { NavigationPath } from '../../../../NavigationPath'

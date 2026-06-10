@@ -12,7 +12,7 @@ import { AcmTable } from './AcmTable'
 import { AcmTableStateProvider, setItemWithExpiration } from './AcmTableStateProvider'
 import { AcmTableProps, ExportableIRow, ITableAdvancedFilter } from './AcmTableTypes'
 
-import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Route, Routes } from 'react-router'
 import { handleStandardComparison } from '../../lib/search-utils'
 import { getCSVDownloadLink, getCSVExportSpies } from '../../lib/test-util'
 import { exportObjectString, returnCSVSafeString } from '../../resources/utils'

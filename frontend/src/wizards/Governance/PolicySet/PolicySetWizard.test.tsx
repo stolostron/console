@@ -10,7 +10,7 @@ import {
 } from '../../../routes/Governance/governance.sharedMocks'
 import { PolicySetWizard } from './PolicySetWizard'
 import { IResource } from '@patternfly-labs/react-form-wizard'
-import { BrowserRouter as Router } from 'react-router-dom-v5-compat'
+import { BrowserRouter as Router } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { nockIgnorePlacementDebug } from '../../../lib/nock-util'
 

@@ -4,7 +4,7 @@ import { Cluster, ClusterStatus, getClusterStatusLabel, getClusterStatusType } f
 import { AcmButton, AcmInlineStatus, Provider } from '../../../../../ui-components'
 import { ExternalLinkAltIcon, DownloadIcon } from '@patternfly/react-icons'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
-import { Link, generatePath, useLocation } from 'react-router-dom-v5-compat'
+import { Link, generatePath, useLocation } from 'react-router'
 import { getClusterNavPath, NavigationPath } from '../../../../../NavigationPath'
 import { ClusterStatusMessageAlert } from './ClusterStatusMessageAlert'
 import { launchLogs, launchToYaml } from './HiveNotification'

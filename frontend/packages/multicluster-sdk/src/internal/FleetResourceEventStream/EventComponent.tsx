@@ -6,7 +6,7 @@ import { css } from '@patternfly/react-styles'
 import { Trans, useTranslation } from 'react-i18next'
 import { getFirstTime, getLastTime, NodeModel, referenceFor, resourcePathFromModel, typeFilter } from './utils'
 import { FC, useEffect } from 'react'
-import { Link } from 'react-router-dom-v5-compat'
+import { Link } from 'react-router'
 
 import { EventComponentProps } from './EventStreamList'
 

@@ -2,7 +2,7 @@
 
 import { Button, ButtonProps } from '@patternfly/react-core'
 import { TooltipWrapper } from '../utils'
-import { LinkProps } from 'react-router-dom-v5-compat'
+import { LinkProps } from 'react-router'
 
 export function AcmButton(
   props: ButtonProps & {

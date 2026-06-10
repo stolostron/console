@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { MemoryRouter, Routes, Route, Link } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Routes, Route, Link } from 'react-router'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'

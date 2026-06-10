@@ -3,7 +3,7 @@ import { ActionGroup, Button, Flex, FlexItem, FormGroup, Label, Radio, SelectOpt
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import get from 'lodash/get'
 import { Fragment, SetStateAction, useCallback, useContext, useEffect, useState } from 'react'
-import { useMatch, useNavigate, useParams } from 'react-router-dom-v5-compat'
+import { useMatch, useNavigate, useParams } from 'react-router'
 import { AcmDataFormPage } from '../../../components/AcmDataForm'
 import { FormData, LinkType, Section } from '../../../components/AcmFormData'
 import { SelectVariant } from '../../../components/AcmSelectBase'

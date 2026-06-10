@@ -9,7 +9,7 @@ import AcmTimestamp from '../../../../lib/AcmTimestamp'
 import { getISOStringTimestamp } from '../../../../resources/utils'
 import { useGroupDetailsContext } from './GroupPage'
 import { NavigationPath } from '../../../../NavigationPath'
-import { Link, generatePath } from 'react-router-dom-v5-compat'
+import { Link, generatePath } from 'react-router'
 import { useFilters } from '../IdentityTableHelper'
 
 const renderUserNameCell = (user: User) => {

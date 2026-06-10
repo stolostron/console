@@ -4,6 +4,7 @@ exports[`renders with Global Search link 1`] = `
 <body>
   <div>
     <a
+      data-discover="true"
       href="/multicloud/search"
     >
       <button
@@ -57,6 +58,7 @@ exports[`renders with default Search link 1`] = `
 <body>
   <div>
     <a
+      data-discover="true"
       href="/multicloud/search"
     >
       <button

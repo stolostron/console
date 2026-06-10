@@ -2,7 +2,7 @@
 
 import { Dispatch, SetStateAction } from 'react'
 import { TFunction } from 'react-i18next'
-import { NavigateFunction } from 'react-router-dom-v5-compat'
+import type { NavigateFunction } from 'react-router'
 import { NavigationPath } from '../../../NavigationPath'
 import { ActionExtensionProps, ListColumnExtensionProps } from '../../../plugin-extensions/properties'
 import { IResourceDefinition } from '../../../resources'

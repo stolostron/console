@@ -2,7 +2,7 @@
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { render } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { MemoryRouter } from 'react-router'
 import { NavigationPath } from '../../../../NavigationPath'
 import { PolicyDetailsPage } from './PolicyDetailsPage'
 import { waitForText } from '../../../../lib/test-util'

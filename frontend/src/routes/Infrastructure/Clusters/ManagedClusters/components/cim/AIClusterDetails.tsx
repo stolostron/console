@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useMemo, useEffect, useState } from 'react'
-import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
+import { generatePath, useNavigate } from 'react-router'
 import { AcmExpandableCard } from '../../../../../../ui-components'
 import { Button, ButtonVariant, Stack, StackItem } from '@patternfly/react-core'
 import { useClusterDetailsContext } from '../../ClusterDetails/ClusterDetails'

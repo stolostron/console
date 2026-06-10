@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { MemoryRouter } from 'react-router'
 import i18next from 'i18next'
 import { I18nextProvider } from 'react-i18next'
 import { ProjectsTable, ProjectTableData } from './ProjectsTable'

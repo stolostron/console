@@ -2,7 +2,7 @@
 import { Button, ButtonVariant, Icon, PageSection } from '@patternfly/react-core'
 import { BellIcon, CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { ReactNode, useCallback, useContext, useMemo, useState } from 'react'
-import { generatePath, Link } from 'react-router-dom-v5-compat'
+import { generatePath, Link } from 'react-router'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
 import { rbacCreate, rbacUpdate, useIsAnyNamespaceAuthorized } from '../../../../lib/rbac-util'
