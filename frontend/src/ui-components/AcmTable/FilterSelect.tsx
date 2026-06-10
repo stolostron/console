@@ -15,7 +15,14 @@ import { useMemo, useState } from 'react'
 import { HighlightSearchText } from '../../components/HighlightSearchText'
 import { useTranslation } from '../../lib/acm-i18next'
 import { IValidFilters, TableFilterOptions } from './AcmTableTypes'
-import { filterLabelMargin, filterOption, filterOptionBadge } from './filterStyles'
+import {
+  filterLabelMargin,
+  filterOption,
+  filterOptionBadge,
+  filterSearchInput,
+  filterSearchInputOuterWrapper,
+  filterSearchInputWrapper,
+} from './filterStyles'
 
 type FilterSelectProps = {
   label?: string
@@ -98,7 +105,18 @@ export const FilterSelect = ({
       popperProps={{ appendTo: 'inline' }}
     >
       <SelectList>
-        {hasFilter && <TextInput aria-label={t('Search')} onChange={(_event, value) => setFilterValue(value)} />}
+        {hasFilter && (
+          <div className={filterSearchInputOuterWrapper}>
+            <div className={filterSearchInputWrapper}>
+              <TextInput
+                className={filterSearchInput}
+                aria-label={t('Filter...')}
+                placeholder={t('Filter...')}
+                onChange={(_event, value) => setFilterValue(value)}
+              />
+            </div>
+          </div>
+        )}
         {filteredValidFilters.length === 0 && <SelectOption>{t('No results found')}</SelectOption>}
         {filteredValidFilters.map((filter) => (
           <SelectGroup key={filter.filter.id} label={filter.filter.label}>
