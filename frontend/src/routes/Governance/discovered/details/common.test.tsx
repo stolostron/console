@@ -3,6 +3,7 @@ import { render } from '@testing-library/react'
 import { DiscoveredPolicyItem } from '../useFetchPolicies'
 import {
   convertYesNoCell,
+  getResponseActionFilter,
   getTotalViolationsCompliance,
   DiscoveredViolationsCard,
   policyViolationSummary,
@@ -160,6 +161,126 @@ describe('getTotalViolationsCompliance', () => {
     expect(getTotalViolationsCompliance(0)).toEqual('compliant')
     expect(getTotalViolationsCompliance(1)).toEqual('noncompliant')
     expect(getTotalViolationsCompliance(undefined)).toEqual('-')
+  })
+})
+
+describe('policyViolationSummary with policies.kyverno.io types', () => {
+  test('should count violations for new ValidatingPolicy type via totalViolations', () => {
+    const mockData: DiscoveredPolicyItem[] = [
+      {
+        _hubClusterResource: true,
+        _uid: 'local-cluster/aaa',
+        apigroup: 'policies.kyverno.io',
+        apiversion: 'v1',
+        cluster: 'local-cluster',
+        created: '2026-06-01T10:00:00Z',
+        kind: 'ValidatingPolicy',
+        kind_plural: 'validatingpolicies',
+        name: 'check-team-label',
+        responseAction: 'Audit',
+        severity: 'low',
+        disabled: false,
+        totalViolations: 3,
+      },
+      {
+        _hubClusterResource: true,
+        _uid: 'local-cluster/bbb',
+        apigroup: 'policies.kyverno.io',
+        apiversion: 'v1',
+        cluster: 'managed1',
+        created: '2026-06-01T10:00:00Z',
+        kind: 'ValidatingPolicy',
+        kind_plural: 'validatingpolicies',
+        name: 'deny-privileged',
+        responseAction: 'Deny',
+        severity: 'critical',
+        disabled: false,
+        totalViolations: 0,
+      },
+    ]
+
+    const summary = policyViolationSummary(mockData)
+    expect(summary.noncompliant).toBe(1)
+    expect(summary.compliant).toBe(1)
+    expect(summary.pending).toBe(0)
+    expect(summary.unknown).toBe(0)
+  })
+
+  test('should deduplicate NamespacedValidatingPolicy by cluster:name', () => {
+    const mockData: DiscoveredPolicyItem[] = [
+      {
+        _hubClusterResource: true,
+        _uid: 'local-cluster/ccc',
+        apigroup: 'policies.kyverno.io',
+        apiversion: 'v1',
+        cluster: 'local-cluster',
+        created: '2026-06-01T10:00:00Z',
+        kind: 'NamespacedValidatingPolicy',
+        kind_plural: 'namespacedvalidatingpolicies',
+        name: 'require-limits',
+        namespace: 'default',
+        responseAction: 'Audit',
+        severity: 'medium',
+        disabled: false,
+        totalViolations: 1,
+      },
+      {
+        _hubClusterResource: true,
+        _uid: 'local-cluster/ddd',
+        apigroup: 'policies.kyverno.io',
+        apiversion: 'v1',
+        cluster: 'local-cluster',
+        created: '2026-06-01T10:00:00Z',
+        kind: 'NamespacedValidatingPolicy',
+        kind_plural: 'namespacedvalidatingpolicies',
+        name: 'require-limits',
+        namespace: 'kube-system',
+        responseAction: 'Audit',
+        severity: 'medium',
+        disabled: false,
+        totalViolations: 0,
+      },
+    ]
+
+    const summary = policyViolationSummary(mockData)
+    expect(summary.noncompliant).toBe(1)
+    expect(summary.compliant).toBe(0)
+    expect(summary.pending).toBe(0)
+    expect(summary.unknown).toBe(0)
+  })
+})
+
+describe('getResponseActionFilter with Kyverno Deny', () => {
+  test('should include Kyverno Deny option', () => {
+    const t = i18next.t.bind(i18next)
+    const filter = getResponseActionFilter(t)
+    const denyOption = filter.options.find((o: any) => o.value === 'Deny')
+    expect(denyOption).toBeDefined()
+    expect(denyOption?.label).toBe('Kyverno Deny')
+  })
+
+  test('should match policies.kyverno.io items with Deny filter', () => {
+    const t = i18next.t.bind(i18next)
+    const filter = getResponseActionFilter(t)
+    const item = {
+      apigroup: 'policies.kyverno.io',
+      responseAction: 'Deny',
+    } as any
+
+    expect(filter.tableFilterFn(['Deny'], item)).toBe(true)
+    expect(filter.tableFilterFn(['Audit'], item)).toBe(false)
+  })
+
+  test('should match kyverno.io items with Audit filter', () => {
+    const t = i18next.t.bind(i18next)
+    const filter = getResponseActionFilter(t)
+    const item = {
+      apigroup: 'kyverno.io',
+      responseAction: 'Audit',
+    } as any
+
+    expect(filter.tableFilterFn(['Audit'], item)).toBe(true)
+    expect(filter.tableFilterFn(['Deny'], item)).toBe(false)
   })
 })
 

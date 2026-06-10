@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { EmptyState, PageSection, Spinner } from '@patternfly/react-core'
+import { EmptyState, Label, PageSection, Spinner, Split, SplitItem } from '@patternfly/react-core'
+import { ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { isEqual } from 'lodash'
 import { ReactNode, useMemo } from 'react'
 import { generatePath, Link } from 'react-router'
@@ -15,7 +16,7 @@ import {
   IAcmTableColumn,
   ITableFilter,
 } from '../../../ui-components'
-import { getEngineString, getEngineWithSvg } from '../common/util'
+import { getEngineString, getEngineWithSvg, isKyvernoApiGroup, isLegacyKyvernoApiGroup } from '../common/util'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
 import {
   discoveredSourceCell,
@@ -29,9 +30,9 @@ import {
 } from './details/common'
 import { DiscoveredPolicyTableItem, useFetchPolicies } from './useFetchPolicies'
 
-function nameCell(item: DiscoveredPolicyTableItem): ReactNode {
+function nameCell(item: DiscoveredPolicyTableItem, t: (key: string) => string): ReactNode {
   const destination = NavigationPath.discoveredResources
-  return (
+  const link = (
     <Link
       to={generatePath(destination, {
         kind: item.kind,
@@ -46,6 +47,21 @@ function nameCell(item: DiscoveredPolicyTableItem): ReactNode {
       {item.name}
     </Link>
   )
+
+  if (isLegacyKyvernoApiGroup(item.apigroup)) {
+    return (
+      <Split hasGutter>
+        <SplitItem>{link}</SplitItem>
+        <SplitItem>
+          <Label icon={<ExclamationTriangleIcon />} color="orange" isCompact>
+            {t('deprecated')}
+          </Label>
+        </SplitItem>
+      </Split>
+    )
+  }
+
+  return link
 }
 
 function clusterCell(item: DiscoveredPolicyTableItem): ReactNode | string {
@@ -89,8 +105,7 @@ export default function DiscoveredPolicies() {
     () => [
       {
         header: t('Name'),
-        cell: nameCell,
-        // Policy name
+        cell: (item: DiscoveredPolicyTableItem) => nameCell(item, t),
         sort: 'name',
         search: 'name',
         id: 'name',
@@ -226,6 +241,14 @@ export default function DiscoveredPolicies() {
           { label: 'ValidatingAdmissionPolicyBinding', value: 'ValidatingAdmissionPolicyBinding' },
           { label: 'Kyverno ClusterPolicy', value: 'ClusterPolicy' },
           { label: 'Kyverno Policy', value: 'Policy' },
+          { label: 'Kyverno ValidatingPolicy', value: 'ValidatingPolicy' },
+          { label: 'Kyverno MutatingPolicy', value: 'MutatingPolicy' },
+          { label: 'Kyverno GeneratingPolicy', value: 'GeneratingPolicy' },
+          { label: 'Kyverno ImageValidatingPolicy', value: 'ImageValidatingPolicy' },
+          { label: 'Kyverno NamespacedValidatingPolicy', value: 'NamespacedValidatingPolicy' },
+          { label: 'Kyverno NamespacedMutatingPolicy', value: 'NamespacedMutatingPolicy' },
+          { label: 'Kyverno NamespacedGeneratingPolicy', value: 'NamespacedGeneratingPolicy' },
+          { label: 'Kyverno NamespacedImageValidatingPolicy', value: 'NamespacedImageValidatingPolicy' },
         ],
         tableFilterFn: (selectedValues, item) => {
           if (item.apigroup === 'constraints.gatekeeper.sh') {
@@ -236,13 +259,8 @@ export default function DiscoveredPolicies() {
             return selectedValues.includes('Gatekeeper Mutations')
           }
 
-          if (item.apigroup === 'kyverno.io') {
-            if (selectedValues.includes('ClusterPolicy') && item.kind === 'ClusterPolicy') {
-              return true
-            }
-            if (selectedValues.includes('Policy') && item.kind === 'Policy') {
-              return true
-            }
+          if (isKyvernoApiGroup(item.apigroup)) {
+            return selectedValues.includes(item.kind)
           }
 
           return selectedValues.includes(item.kind)
