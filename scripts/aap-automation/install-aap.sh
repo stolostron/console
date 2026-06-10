@@ -38,6 +38,75 @@ log_info() { echo -e "${GREEN}[INFO]${NC} $1"; }
 log_warn() { echo -e "${YELLOW}[WARN]${NC} $1"; }
 log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
+# Download subscription manifest from RHSM via async export chain.
+# The RHSM export API is a 3-hop async flow:
+#   POST /allocations/{uuid}/export       → exportJob URL
+#   GET  /allocations/{uuid}/exportJob/id  → export download URL
+#   GET  /allocations/{uuid}/export/id     → ZIP manifest
+# Each hop returns JSON with body.href pointing to the next URL,
+# except the final hop which returns the binary ZIP.
+# Returns 0 on success (manifest written to $3), 1 on failure.
+download_rhsm_manifest() {
+    local allocation_uuid="$1"
+    local access_token="$2"
+    local manifest_file="$3"
+    local rhsm_api="$4"
+    local max_attempts=15
+
+    local export_response http_code current_url
+    export_response=$(curl "${CURL_OPTS[@]}" -H "Authorization: Bearer ${access_token}" \
+        "${rhsm_api}/allocations/${allocation_uuid}/export" \
+        -w "\nHTTP_CODE:%{http_code}")
+
+    http_code=$(echo "$export_response" | grep "HTTP_CODE:" | cut -d: -f2)
+    if [ "$http_code" != "200" ]; then
+        log_warn "Export request returned HTTP $http_code"
+        return 1
+    fi
+
+    current_url=$(echo "$export_response" | grep -v "HTTP_CODE:" | jq -r '.body.href // empty' 2>/dev/null)
+    if [ -z "$current_url" ]; then
+        log_warn "Export response did not contain a job URL"
+        return 1
+    fi
+
+    log_info "Export job started, following async chain..."
+    local attempt=0
+    while [ $attempt -lt $max_attempts ]; do
+        sleep 3
+
+        local hop_http
+        hop_http=$(curl "${CURL_OPTS[@]}" -H "Authorization: Bearer ${access_token}" \
+            "$current_url" -o "$manifest_file" -w "%{http_code}")
+
+        if [ "$hop_http" != "200" ]; then
+            log_info "Export hop returned HTTP $hop_http, retrying... (attempt $((attempt + 1))/$max_attempts)"
+            attempt=$((attempt + 1))
+            continue
+        fi
+
+        if [ "$(head -c 2 "$manifest_file" 2>/dev/null)" = "PK" ]; then
+            log_info "Manifest downloaded ($(wc -c < "$manifest_file" | tr -d ' ') bytes)"
+            return 0
+        fi
+
+        local next_url
+        if next_url=$(jq -r '.body.href // empty' "$manifest_file" 2>/dev/null); then
+            if [ -n "$next_url" ]; then
+                current_url="$next_url"
+                log_info "Following export redirect..."
+            fi
+        else
+            log_info "Waiting for export to complete... (attempt $((attempt + 1))/$max_attempts)"
+        fi
+
+        attempt=$((attempt + 1))
+    done
+
+    log_warn "Export did not produce a valid manifest after $max_attempts attempts"
+    return 1
+}
+
 # Check prerequisites
 for cmd in oc curl jq base64; do
     if ! command -v "$cmd" &> /dev/null; then
@@ -311,7 +380,7 @@ elif [ -n "$RH_OFFLINE_TOKEN" ]; then
 
     # Wait for API readiness before attempting subscription upload
     log_info "Waiting for AAP API to accept requests..."
-    API_TIMEOUT=600
+    API_TIMEOUT=1200
     API_ELAPSED=0
     while [ $API_ELAPSED -lt $API_TIMEOUT ]; do
         API_STATUS=$(curl "${CURL_OPTS[@]}" -o /dev/null -w "%{http_code}" \
@@ -324,6 +393,113 @@ elif [ -n "$RH_OFFLINE_TOKEN" ]; then
         API_ELAPSED=$((API_ELAPSED + 15))
         log_info "Waiting for API... (${API_ELAPSED}/${API_TIMEOUT}s) - HTTP ${API_STATUS}"
     done
+
+    # The gateway GET ping passes before the controller backend is fully ready.
+    # The manifest upload is a POST proxied to the controller — it will 502
+    # until the controller-web pods are running. Wait for them explicitly.
+    if [ "$API_STATUS" = "200" ]; then
+        log_info "=== Pre-upload diagnostics ==="
+
+        # 1. Show all AAP pods and their states
+        log_info "AAP pod status:"
+        oc get pods -n "$AAP_NAMESPACE" --no-headers 2>/dev/null | while read -r line; do
+            log_info "  $line"
+        done
+
+        # 2. Check controller migration completion
+        log_info "Checking controller migration status..."
+        MIGRATION_POD=$(oc get pods -n "$AAP_NAMESPACE" --no-headers 2>/dev/null | grep "controller-migration" | head -1)
+        if [ -n "$MIGRATION_POD" ]; then
+            MIGRATION_POD_NAME=$(echo "$MIGRATION_POD" | awk '{print $1}')
+            MIGRATION_STATUS=$(echo "$MIGRATION_POD" | awk '{print $3}')
+            log_info "  Migration pod: $MIGRATION_POD_NAME status: $MIGRATION_STATUS"
+            if [ "$MIGRATION_STATUS" != "Completed" ]; then
+                log_info "  Waiting for controller migration to complete..."
+                oc wait --for=condition=Complete "pod/$MIGRATION_POD_NAME" -n "$AAP_NAMESPACE" --timeout=300s 2>/dev/null \
+                    | while read -r line; do log_info "  $line"; done || true
+            fi
+        else
+            log_info "  No migration pod found"
+        fi
+
+        # 3. Wait for controller-web pods with container-level detail
+        log_info "Waiting for controller-web pods to be ready..."
+        CTL_TIMEOUT=900
+        CTL_ELAPSED=0
+        while [ $CTL_ELAPSED -lt $CTL_TIMEOUT ]; do
+            CTL_POD_LINE=$(oc get pods -n "$AAP_NAMESPACE" -l app.kubernetes.io/name=${PLATFORM_NAME}-controller-web \
+                --no-headers 2>/dev/null | head -1)
+            if [ -n "$CTL_POD_LINE" ]; then
+                CTL_POD_NAME=$(echo "$CTL_POD_LINE" | awk '{print $1}')
+                CTL_POD_READY=$(echo "$CTL_POD_LINE" | awk '{print $2}')
+                CTL_POD_STATUS=$(echo "$CTL_POD_LINE" | awk '{print $3}')
+                CONTAINERS_MATCH=$(echo "$CTL_POD_READY" | awk -F/ '{if($1==$2 && $1>0) print "yes"; else print "no"}')
+                if [ "$CONTAINERS_MATCH" = "yes" ] && [ "$CTL_POD_STATUS" = "Running" ]; then
+                    log_info "Controller-web is ready: $CTL_POD_READY ($CTL_POD_STATUS)"
+                    break
+                fi
+                log_info "Waiting for controller-web... (${CTL_ELAPSED}/${CTL_TIMEOUT}s) ready=$CTL_POD_READY status=$CTL_POD_STATUS"
+            else
+                log_info "Waiting for controller-web... (${CTL_ELAPSED}/${CTL_TIMEOUT}s) pod=not-found"
+            fi
+            sleep 15
+            CTL_ELAPSED=$((CTL_ELAPSED + 15))
+        done
+
+        if [ $CTL_ELAPSED -ge $CTL_TIMEOUT ]; then
+            log_warn "Controller-web pods not ready after ${CTL_TIMEOUT}s — manifest upload may fail"
+        fi
+
+        # 4. Check controller-web container readiness and envoy sidecar
+        if [ -n "$CTL_POD_NAME" ]; then
+            log_info "Controller-web pod containers:"
+            oc get pod "$CTL_POD_NAME" -n "$AAP_NAMESPACE" -o jsonpath='{range .status.containerStatuses[*]}  {.name}: ready={.ready} started={.started} restarts={.restartCount}{"\n"}{end}' 2>/dev/null \
+                | while read -r line; do log_info "$line"; done
+        fi
+
+        # 5. Check services and endpoints
+        log_info "Controller service endpoints:"
+        CTL_SVC=$(oc get svc -n "$AAP_NAMESPACE" --no-headers 2>/dev/null | grep "controller-service" | head -1)
+        if [ -n "$CTL_SVC" ]; then
+            CTL_SVC_NAME=$(echo "$CTL_SVC" | awk '{print $1}')
+            ENDPOINTS=$(oc get endpoints "$CTL_SVC_NAME" -n "$AAP_NAMESPACE" -o jsonpath='{.subsets[*].addresses[*].ip}' 2>/dev/null)
+            log_info "  $CTL_SVC_NAME endpoints: ${ENDPOINTS:-none}"
+        fi
+
+        # 6. Network connectivity tests
+        log_info "Network connectivity checks:"
+        ROUTE_HOST=$(oc get route "${PLATFORM_NAME}" -n "$AAP_NAMESPACE" -o jsonpath='{.spec.host}' 2>/dev/null)
+        GET_STATUS=$(curl "${CURL_OPTS[@]}" -o /dev/null -w "%{http_code}" \
+            -u "admin:${ADMIN_PASSWORD}" "https://${ROUTE_HOST}${API_PING_PATH}" 2>/dev/null)
+        log_info "  GET  ${API_PING_PATH} via route: HTTP $GET_STATUS"
+        POST_STATUS=$(curl "${CURL_OPTS[@]}" -X POST -o /dev/null -w "%{http_code}" \
+            -u "admin:${ADMIN_PASSWORD}" -H "Content-Type: application/json" \
+            -d '{}' "https://${ROUTE_HOST}${API_PING_PATH}" 2>/dev/null)
+        log_info "  POST ${API_PING_PATH} via route (empty): HTTP $POST_STATUS"
+
+        # 7. Test via internal service (bypasses OpenShift router)
+        INTERNAL_GET=$(curl -s -o /dev/null -w "%{http_code}" \
+            -u "admin:${ADMIN_PASSWORD}" \
+            "http://${PLATFORM_NAME}.${AAP_NAMESPACE}.svc.cluster.local:80${API_PING_PATH}" 2>/dev/null || echo "000")
+        log_info "  GET  ${API_PING_PATH} via internal svc: HTTP $INTERNAL_GET"
+        INTERNAL_POST=$(curl -s -X POST -o /dev/null -w "%{http_code}" \
+            -u "admin:${ADMIN_PASSWORD}" -H "Content-Type: application/json" \
+            -d '{}' "http://${PLATFORM_NAME}.${AAP_NAMESPACE}.svc.cluster.local:80${API_PING_PATH}" 2>/dev/null || echo "000")
+        log_info "  POST ${API_PING_PATH} via internal svc (empty): HTTP $INTERNAL_POST"
+
+        # 8. Test POST with small manifest-like payload via both paths
+        SMALL_MANIFEST='{"manifest":"dGVzdA==","eula_accepted":true}'
+        ROUTE_MANIFEST_STATUS=$(curl "${CURL_OPTS[@]}" -X POST -o /dev/null -w "%{http_code}" \
+            -u "admin:${ADMIN_PASSWORD}" -H "Content-Type: application/json" \
+            -d "$SMALL_MANIFEST" "https://${ROUTE_HOST}${API_PING_PATH}" 2>/dev/null || echo "000")
+        log_info "  POST ${API_PING_PATH} via route (small manifest): HTTP $ROUTE_MANIFEST_STATUS"
+        SVC_MANIFEST_STATUS=$(curl -s -X POST -o /dev/null -w "%{http_code}" \
+            -u "admin:${ADMIN_PASSWORD}" -H "Content-Type: application/json" \
+            -d "$SMALL_MANIFEST" "http://${PLATFORM_NAME}.${AAP_NAMESPACE}.svc.cluster.local:80${API_PING_PATH}" 2>/dev/null || echo "000")
+        log_info "  POST ${API_PING_PATH} via internal svc (small manifest): HTTP $SVC_MANIFEST_STATUS"
+
+        log_info "=== End pre-upload diagnostics ==="
+    fi
 
     if [ "$API_STATUS" != "200" ]; then
         log_warn "AAP API not responding (HTTP ${API_STATUS}) - skipping subscription setup"
@@ -391,66 +567,91 @@ elif [ -n "$RH_OFFLINE_TOKEN" ]; then
             fi
 
             if [ -n "$ALLOCATION_UUID" ]; then
-                log_info "Downloading subscription manifest..."
-                # RHSM export is async with multi-hop: /export -> /exportJob/{id} -> /export/{id}
-                EXPORT_RESPONSE=$(curl "${CURL_OPTS[@]}" -H "Authorization: Bearer ${ACCESS_TOKEN}" \
-                    "${RHSM_API}/allocations/${ALLOCATION_UUID}/export")
-                EXPORT_HREF=$(echo "$EXPORT_RESPONSE" | jq -r '.body.href // empty' 2>/dev/null)
-
-                if [ -n "$EXPORT_HREF" ]; then
-                    log_info "Export job started, following async chain..."
-                    EXPORT_ATTEMPTS=0
-                    while [ $EXPORT_ATTEMPTS -lt 10 ]; do
-                        sleep 3
-                        HOP_RESPONSE=$(curl "${CURL_OPTS[@]}" -H "Authorization: Bearer ${ACCESS_TOKEN}" \
-                            "$EXPORT_HREF" -o "${MANIFEST_FILE}" -w "\nHTTP_CODE:%{http_code}")
-                        HOP_HTTP=$(echo "$HOP_RESPONSE" | grep "HTTP_CODE:" | cut -d: -f2)
-
-                        if file "$MANIFEST_FILE" 2>/dev/null | grep -q "Zip archive"; then
-                            log_info "Manifest downloaded ($(wc -c < "$MANIFEST_FILE" | tr -d ' ') bytes)"
-                            break
-                        fi
-
-                        NEXT_HREF=$(jq -r '.body.href // empty' "$MANIFEST_FILE" 2>/dev/null)
-                        if [ -n "$NEXT_HREF" ]; then
-                            EXPORT_HREF="$NEXT_HREF"
-                            log_info "Following export redirect..."
-                        fi
-                        EXPORT_ATTEMPTS=$((EXPORT_ATTEMPTS + 1))
-                    done
-
-                    if ! file "$MANIFEST_FILE" 2>/dev/null | grep -q "Zip archive"; then
-                        log_warn "Export did not produce a valid ZIP after $EXPORT_ATTEMPTS attempts"
-                        rm -f "$MANIFEST_FILE"
-                    fi
-                else
-                    DOWNLOAD_HTTP=$(curl "${CURL_OPTS[@]}" -H "Authorization: Bearer ${ACCESS_TOKEN}" \
-                        "${RHSM_API}/allocations/${ALLOCATION_UUID}/export" \
-                        -o "${MANIFEST_FILE}" -w "%{http_code}")
-                    if [ "$DOWNLOAD_HTTP" != "200" ]; then
-                        log_warn "Manifest download returned HTTP $DOWNLOAD_HTTP"
-                        rm -f "$MANIFEST_FILE"
-                    fi
-                fi
-
-                if [ -f "$MANIFEST_FILE" ] && [ -s "$MANIFEST_FILE" ]; then
+                if download_rhsm_manifest "$ALLOCATION_UUID" "$ACCESS_TOKEN" "$MANIFEST_FILE" "$RHSM_API"; then
                     log_info "Uploading manifest to AAP..."
                     MANIFEST_B64=$(base64 < "${MANIFEST_FILE}")
-                    UPLOAD_RESPONSE=$(curl "${CURL_OPTS[@]}" -X POST \
-                        -u "admin:${ADMIN_PASSWORD}" \
-                        -H "Content-Type: application/json" \
-                        -d "{\"manifest\":\"${MANIFEST_B64}\",\"eula_accepted\":true}" \
-                        "${API_BASE}/config/" \
-                        -w "\nHTTP_CODE:%{http_code}")
+                    UPLOAD_OK=false
 
-                    HTTP_CODE=$(echo "$UPLOAD_RESPONSE" | grep "HTTP_CODE:" | cut -d: -f2)
-                    if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "201" ]; then
-                        log_info "Subscription manifest uploaded successfully"
+                    # Primary: upload via oc exec into a pod on the target cluster.
+                    # Curls the gateway's internal ClusterIP service, bypassing the
+                    # external route and HAProxy while keeping gateway-managed auth.
+                    EXEC_POD=$(oc get pods -n "$AAP_NAMESPACE" -l app.kubernetes.io/name=${PLATFORM_NAME}-controller-web \
+                        --no-headers 2>/dev/null | awk '$3=="Running"{print $1}' | head -1)
+                    if [ -n "$EXEC_POD" ]; then
+                        log_info "Uploading via oc exec into pod $EXEC_POD..."
+                        GW_SVC=$(oc get svc -n "$AAP_NAMESPACE" -l app.kubernetes.io/component=aap \
+                            -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+                        if [ -z "$GW_SVC" ]; then
+                            log_warn "Could not discover gateway service, falling back to ${PLATFORM_NAME}"
+                            GW_SVC="$PLATFORM_NAME"
+                        fi
+                        GW_INTERNAL="http://${GW_SVC}.${AAP_NAMESPACE}.svc.cluster.local/api/controller/v2/config/"
+                        log_info "Gateway internal URL: $GW_INTERNAL"
+
+                        PAYLOAD_FILE=$(mktemp /tmp/manifest-payload-XXXXXX.json)
+                        printf '{"manifest":"%s","eula_accepted":true}' "$MANIFEST_B64" > "$PAYLOAD_FILE"
+                        PAYLOAD_SIZE=$(wc -c < "$PAYLOAD_FILE" | tr -d ' ')
+                        log_info "Manifest payload size: $PAYLOAD_SIZE bytes"
+
+                        if oc exec -i "$EXEC_POD" -n "$AAP_NAMESPACE" \
+                            -c "${PLATFORM_NAME}-controller-web" -- \
+                            sh -c 'cat > /tmp/manifest-payload.json' < "$PAYLOAD_FILE" 2>/dev/null; then
+                            log_info "Payload written into pod via stdin, executing upload..."
+                            EXEC_RESPONSE=$(oc exec "$EXEC_POD" -n "$AAP_NAMESPACE" \
+                                -c "${PLATFORM_NAME}-controller-web" -- \
+                                curl -s -X POST \
+                                -u "admin:${ADMIN_PASSWORD}" \
+                                -H "Content-Type: application/json" \
+                                -d @/tmp/manifest-payload.json \
+                                "$GW_INTERNAL" \
+                                -w "\nHTTP_CODE:%{http_code}" 2>/dev/null || echo "HTTP_CODE:000")
+                            EXEC_HTTP=$(echo "$EXEC_RESPONSE" | grep "HTTP_CODE:" | cut -d: -f2)
+                            log_info "Upload via exec returned HTTP $EXEC_HTTP"
+
+                            if [ "$EXEC_HTTP" = "200" ] || [ "$EXEC_HTTP" = "201" ]; then
+                                log_info "Subscription manifest uploaded successfully (via exec)"
+                                UPLOAD_OK=true
+                            else
+                                log_info "Exec response: $(echo "$EXEC_RESPONSE" | grep -v "HTTP_CODE:" | head -3)"
+                            fi
+
+                            oc exec "$EXEC_POD" -n "$AAP_NAMESPACE" \
+                                -c "${PLATFORM_NAME}-controller-web" -- rm -f /tmp/manifest-payload.json 2>/dev/null || true
+                        else
+                            log_warn "Failed to write payload into pod via stdin"
+                        fi
+                        rm -f "$PAYLOAD_FILE"
                     else
-                        log_warn "Manifest upload returned HTTP $HTTP_CODE (AAP 2.5 with SCA may not require it)"
+                        log_warn "No running controller-web pod found for exec upload"
+                    fi
+
+                    # Fallback: upload via external route with retry
+                    if [ "$UPLOAD_OK" = "false" ]; then
+                        log_info "Trying upload via external route (fallback)..."
+                        for UPLOAD_ATTEMPT in $(seq 1 20); do
+                            UPLOAD_RESPONSE=$(curl "${CURL_OPTS[@]}" -X POST \
+                                -u "admin:${ADMIN_PASSWORD}" \
+                                -H "Content-Type: application/json" \
+                                -d "{\"manifest\":\"${MANIFEST_B64}\",\"eula_accepted\":true}" \
+                                "${API_BASE}/config/" \
+                                -w "\nHTTP_CODE:%{http_code}")
+
+                            HTTP_CODE=$(echo "$UPLOAD_RESPONSE" | grep "HTTP_CODE:" | cut -d: -f2)
+                            if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "201" ]; then
+                                log_info "Subscription manifest uploaded successfully (via route)"
+                                UPLOAD_OK=true
+                                break
+                            fi
+                            log_info "Route upload returned HTTP $HTTP_CODE, retrying... (attempt ${UPLOAD_ATTEMPT}/20)"
+                            sleep 15
+                        done
+                    fi
+
+                    if [ "$UPLOAD_OK" = "false" ]; then
+                        log_warn "Manifest upload failed via both exec and route"
                     fi
                 else
-                    log_warn "Failed to download manifest"
+                    log_warn "Failed to download subscription manifest — skipping upload"
                 fi
             fi
         fi
