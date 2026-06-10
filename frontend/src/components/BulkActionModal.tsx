@@ -212,7 +212,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
                 <StackItem>
                   <Checkbox
                     id="preserve-on-delete"
-                    label={t('Preserve cluster infrastructure on delete')}
+                    label={t('Preserve cluster resources on delete')}
                     isChecked={preserveOnDelete}
                     onChange={(_event, val) => setPreserveOnDelete(val)}
                     isDisabled={progress > 0}

@@ -24,8 +24,6 @@ frontend/packages/react-form-wizard/lib/
 
 #ai related files
 .claude
-_specs/
-_plan/
 test-results
 playwright.config.ts
 .env
