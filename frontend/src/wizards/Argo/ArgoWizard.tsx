@@ -533,6 +533,13 @@ export function ArgoWizard(props: ArgoWizardProps) {
                 }}
               />
             </Section>
+            <Section label={t('ApplicationSet Sync Policy')}>
+              <WizCheckbox
+                path="spec.syncPolicy.preserveResourcesOnDeletion"
+                label={t('Do not delete resources created by child Applications when the ApplicationSet is deleted')}
+                id="preserveResourcesOnDeletion"
+              />
+            </Section>
           </WizItemSelector>
         </Step>
         <Step id="generators" label={t('Generators')}>
