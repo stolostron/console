@@ -657,16 +657,40 @@ export function logApplicationCountChanges(applicationCache: ApplicationCacheTyp
       .toString()
       .replace(/\B(?=(\d{3})+(?!\d))/g, ',')} KB`
   }
+
+  const appDictObj = getAppDict()
+  const eventDictObj = getEventDict()
+
   logger.info({
     msg: 'memory',
     caches: {
       clients: Object.keys(ServerSideEvents.getClients()).length,
       appCache: memUsed(applicationCache),
-      appDict: memUsed(getAppDict()),
+      appDict: memUsed(appDictObj),
       eventCache: memUsed(getEventCache()),
-      eventDict: memUsed(getEventDict()),
+      eventDict: memUsed(eventDictObj),
     },
   })
+  if (logger.isLevelEnabled('debug')) {
+    const recentAppDict = appDictObj.drainRecentlyAdded()
+    const recentEventDict = eventDictObj.drainRecentlyAdded()
+    if (recentAppDict.length > 0) {
+      logger.debug({
+        msg: 'appDict growth',
+        appDictEntries: appDictObj.snapshotSize(),
+        newEntries: recentAppDict.length,
+        sample: recentAppDict.slice(0, 50),
+      })
+    }
+    if (recentEventDict.length > 0) {
+      logger.debug({
+        msg: 'eventDict growth',
+        eventDictEntries: eventDictObj.snapshotSize(),
+        newEntries: recentEventDict.length,
+        sample: recentEventDict.slice(0, 50),
+      })
+    }
+  }
 }
 
 export function sizeOf(data: unknown) {
