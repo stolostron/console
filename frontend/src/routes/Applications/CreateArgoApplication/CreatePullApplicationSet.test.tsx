@@ -173,6 +173,9 @@ const argoAppSetGit: ApplicationSet = {
     namespace: 'argo-server-1',
   },
   spec: {
+    syncPolicy: {
+      preserveResourcesOnDeletion: false,
+    },
     generators: [
       {
         clusterDecisionResource: {
@@ -232,6 +235,9 @@ const argoAppSetHelm: ApplicationSet = {
     namespace: 'argo-server-1',
   },
   spec: {
+    syncPolicy: {
+      preserveResourcesOnDeletion: false,
+    },
     generators: [
       {
         clusterDecisionResource: {

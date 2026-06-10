@@ -1048,6 +1048,9 @@ const submittedGitPullModel = [
           },
         },
       ],
+      syncPolicy: {
+        preserveResourcesOnDeletion: false,
+      },
       template: {
         metadata: {
           annotations: {
