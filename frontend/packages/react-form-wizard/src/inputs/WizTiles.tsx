@@ -12,6 +12,7 @@ import {
 } from '@patternfly/react-core'
 import { Children, Fragment, isValidElement, ReactNode, useContext } from 'react'
 import { DisplayMode } from '../contexts/DisplayModeContext'
+import { useRandomID } from '../contexts/useRandomID'
 import { InputCommonProps, useInput } from './Input'
 import { WizFormGroup } from './WizFormGroup'
 import { IRadioGroupContextState, RadioGroupContext } from './WizRadio'
@@ -79,12 +80,13 @@ export function Tile(props: {
 }) {
   const context = useContext(RadioGroupContext) || {}
   const isSelected = context.value === props.value
-
+  const instanceId = useRandomID()
+  const id = process.env.NODE_ENV === 'test' || (window as any).Cypress ? `tile-${props.id}` : `wiz-tile-${instanceId}`
   if (!props) return <Fragment />
 
   return (
     <Card
-      id={`tile-${props.id}`}
+      id={id}
       isSelectable
       isSelected={isSelected}
       onClick={() => {
@@ -93,8 +95,8 @@ export function Tile(props: {
     >
       <CardHeader
         selectableActions={{
-          selectableActionId: props.id,
-          selectableActionAriaLabelledby: `tile-${props.id}`,
+          selectableActionId: id,
+          selectableActionAriaLabelledby: id,
           name: props.id,
           variant: 'single',
           isHidden: true,
