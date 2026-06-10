@@ -394,10 +394,12 @@ elif [ -n "$RH_OFFLINE_TOKEN" ]; then
         log_info "Waiting for API... (${API_ELAPSED}/${API_TIMEOUT}s) - HTTP ${API_STATUS}"
     done
 
-    # The gateway GET ping passes before the controller backend is fully ready.
-    # The manifest upload is a POST proxied to the controller — it will 502
-    # until the controller-web pods are running. Wait for them explicitly.
-    if [ "$API_STATUS" = "200" ]; then
+    # In platform mode the gateway GET ping passes before the controller
+    # backend is fully ready. The manifest upload is a POST proxied to the
+    # controller — it will 502 until the controller-web pods are running.
+    # In controller mode the API ping already hits the controller directly,
+    # and there are no controller-web pods or gateway services.
+    if [ "$API_STATUS" = "200" ] && [ "$AAP_MODE" != "controller" ]; then
         log_info "Waiting for controller-web pods to be ready..."
         CTL_TIMEOUT=900
         CTL_ELAPSED=0
@@ -496,57 +498,61 @@ elif [ -n "$RH_OFFLINE_TOKEN" ]; then
                     MANIFEST_B64=$(base64 < "${MANIFEST_FILE}")
                     UPLOAD_OK=false
 
-                    # Primary: upload via oc exec into a pod on the target cluster.
-                    # Curls the gateway's internal ClusterIP service, bypassing the
-                    # external route and HAProxy while keeping gateway-managed auth.
-                    EXEC_POD=$(oc get pods -n "$AAP_NAMESPACE" -l app.kubernetes.io/name=${PLATFORM_NAME}-controller-web \
-                        --no-headers 2>/dev/null | awk '$3=="Running"{print $1}' | head -1)
-                    if [ -n "$EXEC_POD" ]; then
-                        log_info "Uploading via oc exec into pod $EXEC_POD..."
-                        GW_SVC=$(oc get svc -n "$AAP_NAMESPACE" -l app.kubernetes.io/component=aap \
-                            -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
-                        if [ -z "$GW_SVC" ]; then
-                            log_warn "Could not discover gateway service, falling back to ${PLATFORM_NAME}"
-                            GW_SVC="$PLATFORM_NAME"
-                        fi
-                        GW_INTERNAL="http://${GW_SVC}.${AAP_NAMESPACE}.svc.cluster.local/api/controller/v2/config/"
-                        log_info "Gateway internal URL: $GW_INTERNAL"
-
-                        PAYLOAD_FILE=$(mktemp /tmp/manifest-payload-XXXXXX.json)
-                        printf '{"manifest":"%s","eula_accepted":true}' "$MANIFEST_B64" > "$PAYLOAD_FILE"
-                        PAYLOAD_SIZE=$(wc -c < "$PAYLOAD_FILE" | tr -d ' ')
-                        log_info "Manifest payload size: $PAYLOAD_SIZE bytes"
-
-                        if oc exec -i "$EXEC_POD" -n "$AAP_NAMESPACE" \
-                            -c "${PLATFORM_NAME}-controller-web" -- \
-                            sh -c 'cat > /tmp/manifest-payload.json' < "$PAYLOAD_FILE" 2>/dev/null; then
-                            log_info "Payload written into pod via stdin, executing upload..."
-                            EXEC_RESPONSE=$(oc exec "$EXEC_POD" -n "$AAP_NAMESPACE" \
-                                -c "${PLATFORM_NAME}-controller-web" -- \
-                                curl -s -X POST \
-                                -u "admin:${ADMIN_PASSWORD}" \
-                                -H "Content-Type: application/json" \
-                                -d @/tmp/manifest-payload.json \
-                                "$GW_INTERNAL" \
-                                -w "\nHTTP_CODE:%{http_code}" 2>/dev/null || echo "HTTP_CODE:000")
-                            EXEC_HTTP=$(echo "$EXEC_RESPONSE" | grep "HTTP_CODE:" | cut -d: -f2)
-                            log_info "Upload via exec returned HTTP $EXEC_HTTP"
-
-                            if [ "$EXEC_HTTP" = "200" ] || [ "$EXEC_HTTP" = "201" ]; then
-                                log_info "Subscription manifest uploaded successfully (via exec)"
-                                UPLOAD_OK=true
-                            else
-                                log_info "Exec response: $(echo "$EXEC_RESPONSE" | grep -v "HTTP_CODE:" | head -3)"
+                    # Primary (platform mode only): upload via oc exec into a
+                    # controller-web pod, curling the gateway's internal ClusterIP
+                    # service. Bypasses the external route and HAProxy while
+                    # keeping gateway-managed auth. Skipped in controller mode
+                    # where there is no gateway or controller-web deployment.
+                    if [ "$AAP_MODE" != "controller" ]; then
+                        EXEC_POD=$(oc get pods -n "$AAP_NAMESPACE" -l app.kubernetes.io/name=${PLATFORM_NAME}-controller-web \
+                            --no-headers 2>/dev/null | awk '$3=="Running"{print $1}' | head -1)
+                        if [ -n "$EXEC_POD" ]; then
+                            log_info "Uploading via oc exec into pod $EXEC_POD..."
+                            GW_SVC=$(oc get svc -n "$AAP_NAMESPACE" -l app.kubernetes.io/component=aap \
+                                -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+                            if [ -z "$GW_SVC" ]; then
+                                log_warn "Could not discover gateway service, falling back to ${PLATFORM_NAME}"
+                                GW_SVC="$PLATFORM_NAME"
                             fi
+                            GW_INTERNAL="http://${GW_SVC}.${AAP_NAMESPACE}.svc.cluster.local/api/controller/v2/config/"
+                            log_info "Gateway internal URL: $GW_INTERNAL"
 
-                            oc exec "$EXEC_POD" -n "$AAP_NAMESPACE" \
-                                -c "${PLATFORM_NAME}-controller-web" -- rm -f /tmp/manifest-payload.json 2>/dev/null || true
+                            PAYLOAD_FILE=$(mktemp /tmp/manifest-payload-XXXXXX.json)
+                            printf '{"manifest":"%s","eula_accepted":true}' "$MANIFEST_B64" > "$PAYLOAD_FILE"
+                            PAYLOAD_SIZE=$(wc -c < "$PAYLOAD_FILE" | tr -d ' ')
+                            log_info "Manifest payload size: $PAYLOAD_SIZE bytes"
+
+                            if oc exec -i "$EXEC_POD" -n "$AAP_NAMESPACE" \
+                                -c "${PLATFORM_NAME}-controller-web" -- \
+                                sh -c 'cat > /tmp/manifest-payload.json' < "$PAYLOAD_FILE" 2>/dev/null; then
+                                log_info "Payload written into pod via stdin, executing upload..."
+                                EXEC_RESPONSE=$(oc exec "$EXEC_POD" -n "$AAP_NAMESPACE" \
+                                    -c "${PLATFORM_NAME}-controller-web" -- \
+                                    curl -s -X POST \
+                                    -u "admin:${ADMIN_PASSWORD}" \
+                                    -H "Content-Type: application/json" \
+                                    -d @/tmp/manifest-payload.json \
+                                    "$GW_INTERNAL" \
+                                    -w "\nHTTP_CODE:%{http_code}" 2>/dev/null || echo "HTTP_CODE:000")
+                                EXEC_HTTP=$(echo "$EXEC_RESPONSE" | grep "HTTP_CODE:" | cut -d: -f2)
+                                log_info "Upload via exec returned HTTP $EXEC_HTTP"
+
+                                if [ "$EXEC_HTTP" = "200" ] || [ "$EXEC_HTTP" = "201" ]; then
+                                    log_info "Subscription manifest uploaded successfully (via exec)"
+                                    UPLOAD_OK=true
+                                else
+                                    log_info "Exec response: $(echo "$EXEC_RESPONSE" | grep -v "HTTP_CODE:" | head -3)"
+                                fi
+
+                                oc exec "$EXEC_POD" -n "$AAP_NAMESPACE" \
+                                    -c "${PLATFORM_NAME}-controller-web" -- rm -f /tmp/manifest-payload.json 2>/dev/null || true
+                            else
+                                log_warn "Failed to write payload into pod via stdin"
+                            fi
+                            rm -f "$PAYLOAD_FILE"
                         else
-                            log_warn "Failed to write payload into pod via stdin"
+                            log_warn "No running controller-web pod found for exec upload"
                         fi
-                        rm -f "$PAYLOAD_FILE"
-                    else
-                        log_warn "No running controller-web pod found for exec upload"
                     fi
 
                     # Fallback: upload via external route with retry
