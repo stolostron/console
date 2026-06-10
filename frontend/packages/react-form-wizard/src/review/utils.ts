@@ -270,9 +270,9 @@ export function horizontalTermWidthModifierForInputRun(
   let longCount = 0
   for (const n of nodes) {
     const termText = n.label ?? n.path
-    if (termText.length > 64) {
+    if (termText.length > 32) {
       longCount++
     }
   }
-  return longCount / nodes.length > 0.8 ? REVIEW_HORIZONTAL_TERM_WIDTH_WIDE : REVIEW_HORIZONTAL_TERM_WIDTH_COMPACT
+  return longCount / nodes.length >= 0.6 ? REVIEW_HORIZONTAL_TERM_WIDTH_WIDE : REVIEW_HORIZONTAL_TERM_WIDTH_COMPACT
 }

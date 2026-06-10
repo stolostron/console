@@ -297,6 +297,9 @@ export function ArgoWizard(props: ArgoWizardProps) {
             kind: 'ApplicationSet',
             metadata: { name: '', namespace: '' },
             spec: {
+              syncPolicy: {
+                preserveResourcesOnDeletion: false,
+              },
               generators: [
                 {
                   clusterDecisionResource: {
