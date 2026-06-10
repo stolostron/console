@@ -58,8 +58,6 @@ npm test
 
 Make sure your `kubectl` context is set to your target cluster and have Red Hat Advanced Cluster Management installed on the target cluster.
 
-_WARNING: Running this script will update some parts of the cluster specified in your `KUBECONFIG` context._
-
 #### Recommended: Run as OpenShift Console plugins
 
 This is the production deployment model. **Always test in this mode before submitting a PR.**
@@ -68,6 +66,8 @@ This is the production deployment model. **Always test in this mode before submi
 npm run setup
 npm run plugins
 ```
+
+_WARNING: Running this script will update some parts of the cluster specified in your `KUBECONFIG` context._
 
 Access the console at **http://localhost:9000**
 
