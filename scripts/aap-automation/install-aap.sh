@@ -398,31 +398,6 @@ elif [ -n "$RH_OFFLINE_TOKEN" ]; then
     # The manifest upload is a POST proxied to the controller — it will 502
     # until the controller-web pods are running. Wait for them explicitly.
     if [ "$API_STATUS" = "200" ]; then
-        log_info "=== Pre-upload diagnostics ==="
-
-        # 1. Show all AAP pods and their states
-        log_info "AAP pod status:"
-        oc get pods -n "$AAP_NAMESPACE" --no-headers 2>/dev/null | while read -r line; do
-            log_info "  $line"
-        done
-
-        # 2. Check controller migration completion
-        log_info "Checking controller migration status..."
-        MIGRATION_POD=$(oc get pods -n "$AAP_NAMESPACE" --no-headers 2>/dev/null | grep "controller-migration" | head -1)
-        if [ -n "$MIGRATION_POD" ]; then
-            MIGRATION_POD_NAME=$(echo "$MIGRATION_POD" | awk '{print $1}')
-            MIGRATION_STATUS=$(echo "$MIGRATION_POD" | awk '{print $3}')
-            log_info "  Migration pod: $MIGRATION_POD_NAME status: $MIGRATION_STATUS"
-            if [ "$MIGRATION_STATUS" != "Completed" ]; then
-                log_info "  Waiting for controller migration to complete..."
-                oc wait --for=condition=Complete "pod/$MIGRATION_POD_NAME" -n "$AAP_NAMESPACE" --timeout=300s 2>/dev/null \
-                    | while read -r line; do log_info "  $line"; done || true
-            fi
-        else
-            log_info "  No migration pod found"
-        fi
-
-        # 3. Wait for controller-web pods with container-level detail
         log_info "Waiting for controller-web pods to be ready..."
         CTL_TIMEOUT=900
         CTL_ELAPSED=0
@@ -430,7 +405,6 @@ elif [ -n "$RH_OFFLINE_TOKEN" ]; then
             CTL_POD_LINE=$(oc get pods -n "$AAP_NAMESPACE" -l app.kubernetes.io/name=${PLATFORM_NAME}-controller-web \
                 --no-headers 2>/dev/null | head -1)
             if [ -n "$CTL_POD_LINE" ]; then
-                CTL_POD_NAME=$(echo "$CTL_POD_LINE" | awk '{print $1}')
                 CTL_POD_READY=$(echo "$CTL_POD_LINE" | awk '{print $2}')
                 CTL_POD_STATUS=$(echo "$CTL_POD_LINE" | awk '{print $3}')
                 CONTAINERS_MATCH=$(echo "$CTL_POD_READY" | awk -F/ '{if($1==$2 && $1>0) print "yes"; else print "no"}')
@@ -449,56 +423,6 @@ elif [ -n "$RH_OFFLINE_TOKEN" ]; then
         if [ $CTL_ELAPSED -ge $CTL_TIMEOUT ]; then
             log_warn "Controller-web pods not ready after ${CTL_TIMEOUT}s — manifest upload may fail"
         fi
-
-        # 4. Check controller-web container readiness and envoy sidecar
-        if [ -n "$CTL_POD_NAME" ]; then
-            log_info "Controller-web pod containers:"
-            oc get pod "$CTL_POD_NAME" -n "$AAP_NAMESPACE" -o jsonpath='{range .status.containerStatuses[*]}  {.name}: ready={.ready} started={.started} restarts={.restartCount}{"\n"}{end}' 2>/dev/null \
-                | while read -r line; do log_info "$line"; done
-        fi
-
-        # 5. Check services and endpoints
-        log_info "Controller service endpoints:"
-        CTL_SVC=$(oc get svc -n "$AAP_NAMESPACE" --no-headers 2>/dev/null | grep "controller-service" | head -1)
-        if [ -n "$CTL_SVC" ]; then
-            CTL_SVC_NAME=$(echo "$CTL_SVC" | awk '{print $1}')
-            ENDPOINTS=$(oc get endpoints "$CTL_SVC_NAME" -n "$AAP_NAMESPACE" -o jsonpath='{.subsets[*].addresses[*].ip}' 2>/dev/null)
-            log_info "  $CTL_SVC_NAME endpoints: ${ENDPOINTS:-none}"
-        fi
-
-        # 6. Network connectivity tests
-        log_info "Network connectivity checks:"
-        ROUTE_HOST=$(oc get route "${PLATFORM_NAME}" -n "$AAP_NAMESPACE" -o jsonpath='{.spec.host}' 2>/dev/null)
-        GET_STATUS=$(curl "${CURL_OPTS[@]}" -o /dev/null -w "%{http_code}" \
-            -u "admin:${ADMIN_PASSWORD}" "https://${ROUTE_HOST}${API_PING_PATH}" 2>/dev/null)
-        log_info "  GET  ${API_PING_PATH} via route: HTTP $GET_STATUS"
-        POST_STATUS=$(curl "${CURL_OPTS[@]}" -X POST -o /dev/null -w "%{http_code}" \
-            -u "admin:${ADMIN_PASSWORD}" -H "Content-Type: application/json" \
-            -d '{}' "https://${ROUTE_HOST}${API_PING_PATH}" 2>/dev/null)
-        log_info "  POST ${API_PING_PATH} via route (empty): HTTP $POST_STATUS"
-
-        # 7. Test via internal service (bypasses OpenShift router)
-        INTERNAL_GET=$(curl -s -o /dev/null -w "%{http_code}" \
-            -u "admin:${ADMIN_PASSWORD}" \
-            "http://${PLATFORM_NAME}.${AAP_NAMESPACE}.svc.cluster.local:80${API_PING_PATH}" 2>/dev/null || echo "000")
-        log_info "  GET  ${API_PING_PATH} via internal svc: HTTP $INTERNAL_GET"
-        INTERNAL_POST=$(curl -s -X POST -o /dev/null -w "%{http_code}" \
-            -u "admin:${ADMIN_PASSWORD}" -H "Content-Type: application/json" \
-            -d '{}' "http://${PLATFORM_NAME}.${AAP_NAMESPACE}.svc.cluster.local:80${API_PING_PATH}" 2>/dev/null || echo "000")
-        log_info "  POST ${API_PING_PATH} via internal svc (empty): HTTP $INTERNAL_POST"
-
-        # 8. Test POST with small manifest-like payload via both paths
-        SMALL_MANIFEST='{"manifest":"dGVzdA==","eula_accepted":true}'
-        ROUTE_MANIFEST_STATUS=$(curl "${CURL_OPTS[@]}" -X POST -o /dev/null -w "%{http_code}" \
-            -u "admin:${ADMIN_PASSWORD}" -H "Content-Type: application/json" \
-            -d "$SMALL_MANIFEST" "https://${ROUTE_HOST}${API_PING_PATH}" 2>/dev/null || echo "000")
-        log_info "  POST ${API_PING_PATH} via route (small manifest): HTTP $ROUTE_MANIFEST_STATUS"
-        SVC_MANIFEST_STATUS=$(curl -s -X POST -o /dev/null -w "%{http_code}" \
-            -u "admin:${ADMIN_PASSWORD}" -H "Content-Type: application/json" \
-            -d "$SMALL_MANIFEST" "http://${PLATFORM_NAME}.${AAP_NAMESPACE}.svc.cluster.local:80${API_PING_PATH}" 2>/dev/null || echo "000")
-        log_info "  POST ${API_PING_PATH} via internal svc (small manifest): HTTP $SVC_MANIFEST_STATUS"
-
-        log_info "=== End pre-upload diagnostics ==="
     fi
 
     if [ "$API_STATUS" != "200" ]; then
