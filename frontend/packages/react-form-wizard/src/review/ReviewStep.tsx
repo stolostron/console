@@ -487,7 +487,7 @@ function renderCollapsedBadgesFromNodes(
         child.label ?? child.path
       ) : child.value === true ? (
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-          <CheckIcon aria-hidden />
+          <CheckIcon aria-hidden style={{ flexShrink: 0 }} />
           {reviewBooleanCheckCompanionText(child)}
         </span>
       ) : (
@@ -974,7 +974,7 @@ function renderReviewInputRows(nodes: readonly WizardInputDomNode[], ctx: Review
         const termContent =
           !inputNode.error && inputNode.value === true ? (
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-              <CheckIcon aria-hidden />
+              <CheckIcon aria-hidden style={{ flexShrink: 0 }} />
               {termText}
             </span>
           ) : (
