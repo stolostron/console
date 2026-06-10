@@ -285,7 +285,9 @@ export function ArgoWizard(props: ArgoWizardProps) {
 
   let defaultData
 
+  let editMode = EditMode.Create
   if (resources && resources.length > 0) {
+    editMode = EditMode.Edit
     defaultData = resources
   } else {
     defaultData = isPullModel
@@ -460,7 +462,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
         }
         yamlEditor={props.yamlEditor}
         defaultData={defaultData}
-        editMode={resources ? EditMode.Edit : EditMode.Create}
+        editMode={editMode}
         onCancel={props.onCancel}
         onSubmit={props.onSubmit}
       >
@@ -473,7 +475,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
           />
           <WizItemSelector selectKey="kind" selectValue="ApplicationSet">
             <GitOpsOperatorAlert
-              editMode={!!resources}
+              editMode={editMode === EditMode.Edit}
               showAlert={showAlert}
               isPullModel={isPullModel}
               className={gitOpsAlertInReviewClass}
@@ -486,14 +488,14 @@ export function ArgoWizard(props: ArgoWizardProps) {
                 required
                 id="name"
                 validation={validateAppSetName}
-                disabled={disableForm}
+                disabled={disableForm || editMode === EditMode.Edit}
               />
               <WizSelect
                 id="namespace"
                 path="metadata.namespace"
                 label={t('Argo server')}
                 placeholder={t('Select the Argo server')}
-                disabled={disableForm}
+                disabled={disableForm || editMode === EditMode.Edit}
                 labelHelp={
                   <Fragment>
                     <Content component="p">

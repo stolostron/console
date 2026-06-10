@@ -37,9 +37,9 @@ import {
 import { useStringContext } from '../contexts/StringContext'
 import { InputReviewMeta, useStepRegister, type WizardDomTreeNode } from './ReviewStepContexts'
 import { ReviewPenHoverZone, useReviewEditHandler, type OnReviewEditHandler } from './ReviewStepNavigation'
-import { ReviewStepFindList } from './ReviewStepFindList'
+import { ReviewStepFindList } from './ReviewStepFilterList'
 import { ReviewStepToolbar, useReviewExpandCollapseHandlers, type ReviewToolbarAction } from './ReviewStepToolbar'
-import { horizontalTermWidthModifierForInputRun, REVIEW_ERROR_TEXT_COLOR, simplifyLabels } from './utils'
+import { horizontalTermWidthModifierForInputRun, REVIEW_ERROR_TEXT_COLOR } from './utils'
 import { Step } from '../Step'
 import './ReviewStep.css'
 
@@ -88,6 +88,7 @@ type ReviewRenderCtx = {
 type ReviewExpandableStored = {
   sections: Record<string, boolean>
   lastToolbar: ReviewToolbarAction
+  showChangesOnly?: boolean
 }
 
 // --- Constants & module scope ---
@@ -117,7 +118,7 @@ export function ReviewStep({ reviewStorageKey = 'default', showYaml }: ReviewSte
     for (const step of registered) {
       roots.push(...getWizardDomTreeRootChildren(step.tree))
     }
-    return simplifyLabels(roots)
+    return roots
   }, [stepRegister, steps])
 
   const wizardDomTree = useMemo((): WizardDomTreeNode | null => {
@@ -136,6 +137,7 @@ export function ReviewStep({ reviewStorageKey = 'default', showYaml }: ReviewSte
   const [lastToolbarAction, setLastToolbarAction] = useState<ReviewToolbarAction>('expand')
   const [sectionExpanded, setSectionExpanded] = useState<Record<string, boolean>>({})
   const [reviewSearch, setReviewSearch] = useState('')
+  const [showChangesOnly, setShowChangesOnly] = useState(false)
 
   useLayoutEffect(() => {
     const stored = readReviewExpandableStorage(reviewStorageKey)
@@ -143,6 +145,7 @@ export function ReviewStep({ reviewStorageKey = 'default', showYaml }: ReviewSte
     if (bucketChanged) {
       prevStorageBucketRef.current = reviewStorageKey
       setLastToolbarAction(stored.lastToolbar)
+      setShowChangesOnly(stored.showChangesOnly === true)
     }
     if (sectionKeys.length === 0 && topLevelArrayInstanceKeys.length === 0) return
 
@@ -176,8 +179,8 @@ export function ReviewStep({ reviewStorageKey = 'default', showYaml }: ReviewSte
 
   useEffect(() => {
     if (sectionKeys.length === 0 && topLevelArrayInstanceKeys.length === 0) return
-    writeReviewExpandableStorage(reviewStorageKey, sectionExpanded, lastToolbarAction)
-  }, [reviewStorageKey, sectionExpanded, lastToolbarAction, sectionKeys, topLevelArrayInstanceKeys])
+    writeReviewExpandableStorage(reviewStorageKey, sectionExpanded, lastToolbarAction, showChangesOnly)
+  }, [reviewStorageKey, sectionExpanded, lastToolbarAction, showChangesOnly, sectionKeys, topLevelArrayInstanceKeys])
 
   const onSectionExpandedChange = useCallback((key: string, expanded: boolean) => {
     setSectionExpanded((p) => ({ ...p, [key]: expanded }))
@@ -193,6 +196,7 @@ export function ReviewStep({ reviewStorageKey = 'default', showYaml }: ReviewSte
   const showExpandToolbarButton = sectionKeys.some((k) => sectionExpanded[k] === false)
   const showCollapseToolbarButton = sectionKeys.some((k) => sectionExpanded[k] !== false)
   const reviewFindActive = reviewSearch.trim().length > 0
+  const reviewFilterListActive = reviewFindActive || showChangesOnly
 
   return (
     <Step label={reviewLabel} id="review">
@@ -200,16 +204,19 @@ export function ReviewStep({ reviewStorageKey = 'default', showYaml }: ReviewSte
         <ReviewStepToolbar
           reviewSearchValue={reviewSearch}
           onReviewSearchChange={setReviewSearch}
+          showChangesOnly={showChangesOnly}
+          onShowChangesOnlyChange={setShowChangesOnly}
           onExpandAll={onExpandAll}
           onCollapseAll={onCollapseAll}
-          showExpand={showExpandToolbarButton && !reviewFindActive}
-          showCollapse={showCollapseToolbarButton && !reviewFindActive}
+          showExpand={showExpandToolbarButton && !reviewFilterListActive}
+          showCollapse={showCollapseToolbarButton && !reviewFilterListActive}
         />
         <Divider />
-        {reviewFindActive ? (
+        {reviewFilterListActive ? (
           <ReviewStepFindList
             sectionRoots={sectionRoots}
             searchQuery={reviewSearch}
+            showChangesOnly={showChangesOnly}
             onReviewEdit={handleReviewEdit}
             showYaml={showYaml}
           />
@@ -274,7 +281,8 @@ function readReviewExpandableStorage(reviewStorageKey: string): ReviewExpandable
     }
     const lastToolbar =
       'lastToolbar' in parsed && parsed.lastToolbar === 'collapse' ? 'collapse' : ('expand' as ReviewToolbarAction)
-    return { sections, lastToolbar }
+    const showChangesOnly = 'showChangesOnly' in parsed && parsed.showChangesOnly === true
+    return { sections, lastToolbar, showChangesOnly }
   } catch {
     return { sections: {}, lastToolbar: 'expand' }
   }
@@ -283,11 +291,15 @@ function readReviewExpandableStorage(reviewStorageKey: string): ReviewExpandable
 function writeReviewExpandableStorage(
   reviewStorageKey: string,
   sections: Record<string, boolean>,
-  lastToolbar: ReviewToolbarAction
+  lastToolbar: ReviewToolbarAction,
+  showChangesOnly: boolean
 ): void {
   if (typeof localStorage === 'undefined') return
   try {
-    localStorage.setItem(reviewExpandableStorageKey(reviewStorageKey), JSON.stringify({ sections, lastToolbar }))
+    localStorage.setItem(
+      reviewExpandableStorageKey(reviewStorageKey),
+      JSON.stringify({ sections, lastToolbar, showChangesOnly })
+    )
   } catch {
     /* ignore quota / private mode */
   }

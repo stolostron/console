@@ -3,6 +3,7 @@
 import {
   EditorValidationStatus,
   useData,
+  useDefaultItem,
   useEditorValidationStatus,
   useHighlightEditorPath,
   useItem,
@@ -48,6 +49,7 @@ export function GetGitOpsClusters(gitOpsClusters: GitOpsCluster[]) {
 
 export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
+  const defaultItem = useDefaultItem()
   const { update } = useData() // Wizard framework sets this context
   const { setEditorValidationStatus } = useEditorValidationStatus()
   const { highlightEditorPath } = useHighlightEditorPath()
@@ -57,11 +59,12 @@ export function WizardSyncEditor() {
       editorTitle={t('Application set YAML')}
       variant="toolbar"
       resources={resources}
+      defaultResources={defaultItem}
       schema={schema}
       filters={['*.metadata.managedFields']}
       highlightEditorPath={highlightEditorPath}
-      onEditorChange={(changes: { resources: any[] }): void => {
-        update(setRepositoryTypeForSources(changes?.resources))
+      onEditorChange={(changes, resetDefaultSnapshot): void => {
+        update(setRepositoryTypeForSources(changes?.resources), resetDefaultSnapshot)
       }}
       onStatusChange={(editorStatus: ValidationStatus): void => {
         setEditorValidationStatus(editorStatus as unknown as EditorValidationStatus)

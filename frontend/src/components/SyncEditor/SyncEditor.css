@@ -6,15 +6,37 @@
 }
 
 .sy-c-code-editor__title {
-  display: flex;
-  align-items: center;
-  padding: 0 12px;
+  flex: 0 1 auto;
+  min-width: 0;
+  padding: 0 12px 0 0;
+  line-height: var(--pf-v6-global--LineHeight--md, 1.5);
 }
 
 .sync-editor__container {
   width: 100%;
   height: 100%;
   overflow: hidden;
+}
+
+.sync-editor__stack {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.sync-editor__stack > .pf-v6-c-code-editor {
+  flex: 1;
+  min-height: 0;
+}
+
+.sync-editor__stack:has(.sync-editor__diff-host) > .pf-v6-c-code-editor {
+  flex: 0 0 auto;
+}
+
+.sync-editor__diff-host {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
 }
 
 .sync-editor__container .pf-v6-c-code-editor__header {
@@ -36,6 +58,109 @@
 
 .sync-editor__container .pf-v6-c-code-editor__controls .pf-v6-c-button.pf-m-control {
   background-color: var(--pf-v5-c-page__main-section--BackgroundColor);
+}
+
+.sync-editor__container .monaco-diff-editor .codicon-light-bulb {
+  display: none !important;
+}
+
+/* Title + controls share one typographic baseline in the code editor header. */
+.sync-editor__container .sy-toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  width: 100%;
+  column-gap: var(--pf-t--global--spacer--md);
+  row-gap: var(--pf-t--global--spacer--xs);
+}
+
+/* Toolbar: baseline-aligned controls; separators stretch the full row height. */
+.sync-editor__container .sy-toolbar-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: flex-end;
+}
+
+.sync-editor__container .sy-toolbar-buttons > :not(.sy-toolbar-separator) {
+  align-self: baseline;
+}
+
+.sync-editor__container .sy-toolbar-buttons .sy-toolbar-separator {
+  box-sizing: content-box;
+  flex: 0 0 auto;
+  align-self: stretch;
+  width: 1px;
+  min-width: 1px;
+  height: auto;
+  min-height: var(--pf-v6-c-button--MinHeight, 2.25rem);
+  margin-block: 0;
+  margin-inline: var(--pf-t--global--spacer--xs);
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  background-color: var(--pf-t--global--border--color--default, var(--pf-v5-global--BorderColor--200, #c7c7c7));
+}
+
+/* Compare controls: diff nav, checkbox label, and separators on one baseline. */
+.sync-editor__container .sy-toolbar-compare-group {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  column-gap: 0;
+}
+
+.sync-editor__container .sy-toolbar-compare-group > :not(.sy-toolbar-separator) {
+  align-self: baseline;
+}
+
+.sync-editor__container .sy-toolbar-compare-group .sy-toolbar-separator {
+  align-self: stretch;
+  height: auto;
+  margin-block: 0;
+}
+
+.sync-editor__container .sy-toolbar-diff-nav {
+  display: inline-flex;
+  align-items: baseline;
+  column-gap: 0;
+}
+
+.sync-editor__container .sy-toolbar-diff-nav > * {
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.sync-editor__container .sy-toolbar-diff-nav .pf-v6-c-button.pf-m-plain {
+  align-self: baseline;
+  min-height: 0;
+  line-height: var(--pf-v6-global--LineHeight--md, 1.5);
+}
+
+.sync-editor__container .sy-toolbar-buttons .sy-toolbar-checkbox-wrap {
+  display: inline-flex;
+  align-items: baseline;
+  padding-inline: var(--pf-t--global--spacer--xs);
+}
+
+.sync-editor__container .sy-toolbar-checkbox-wrap .pf-v6-c-check {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--pf-t--global--spacer--gap--text-to-element--default);
+  margin: 0;
+  line-height: var(--pf-v6-global--LineHeight--md, 1.5);
+}
+
+.sync-editor__container .sy-toolbar-checkbox-wrap .pf-v6-c-check__input {
+  align-self: baseline;
+  transform: none;
+}
+
+.sync-editor__container .sy-toolbar-checkbox-wrap .pf-v6-c-check__label {
+  line-height: inherit;
 }
 
 .sync-editor__container .sy-toolbar-buttons .pf-v6-c-button.pf-m-plain,
@@ -98,16 +223,61 @@
   background: url("data:image/svg+xml;utf8, <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' width='14' height='14'><g fill='white'><circle cx='3.9' cy='3.4' r='3.4'/><g transform='translate(4.000000, 4.000000)'><path fill='%23C9190B' d='M0,4c2.2,0,4-1.8,4-4c0-2.2-1.8-4-4-4s-4,1.8-4,4C-4,2.2-2.2,4,0,4z M0.4,0.5h-0.8 c-0.1,0-0.2-0.1-0.2-0.2l-0.1-2.2c0-0.1,0.1-0.2,0.2-0.2h1c0.1,0,0.2,0.1,0.2,0.2L0.6,0.3C0.6,0.4,0.5,0.5,0.4,0.5z M0,2.3 c-0.4,0-0.7-0.3-0.7-0.7S-0.4,0.8,0,0.8s0.7,0.3,0.7,0.7S0.4,2.3,0,2.3z'/></g></g></svg>");
 }
 
-.insertedLineDecoration {
+.insertLineDecoration {
   background: #87d4ecab;
   width: 6px !important;
   margin-left: 4px;
   pointer-events: none;
 }
 
+.sync-editor__container--show-changes .insertLineDecoration {
+  background: #ff00ffab;
+}
+
+/* Diff insert/delete backgrounds stay translucent so selection highlights show through. */
+.monaco-diff-editor .line-insert {
+  background-color: rgba(238, 243, 226, 0.38) !important;
+}
+
+.monaco-diff-editor .char-insert {
+  background-color: rgba(221, 238, 184, 0.48) !important;
+}
+
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .monaco-diff-editor .line-insert {
+  background-color: rgba(86, 91, 74, 0.32) !important;
+}
+
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .monaco-diff-editor .char-insert {
+  background-color: rgba(86, 94, 67, 0.38) !important;
+}
+
+.monaco-diff-editor .line-delete {
+  background-color: rgba(255, 217, 217, 0.38) !important;
+}
+
+.monaco-diff-editor .char-delete {
+  background-color: rgba(255, 197, 197, 0.48) !important;
+}
+
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .monaco-diff-editor .line-delete {
+  background-color: rgba(121, 82, 82, 0.32) !important;
+}
+
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .monaco-diff-editor .char-delete {
+  background-color: rgba(154, 78, 78, 0.38) !important;
+}
+/* .insertLineDecoration {
+  background-color: rgba(159, 255, 223, 0.6) !important;
+} */
+/* 
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .insertLineDecoration {
+  background-color: rgba(107, 139, 123, 0.55) !important;
+} */
+
 .customLineDecoration {
-  background: blue;
-  width: 6px !important;
-  margin-left: 4px;
-  pointer-events: none;
+  background-color: rgba(135, 212, 236, 0.35) !important;
+}
+
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .customLineDecoration {
+  background-color: rgba(65, 100, 120, 0.45) !important;
 }

@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { jest } from '@jest/globals'
 import React from 'react'
 import { fireEvent } from '@testing-library/react'
 
@@ -28,6 +29,31 @@ class Range {
     }
     return true
   }
+  intersectRanges(other: Range) {
+    if (
+      (other.endLineNumber ?? 0) < (this.startLineNumber ?? 0) ||
+      (other.startLineNumber ?? 0) > (this.endLineNumber ?? 0)
+    ) {
+      return null
+    }
+    return new Range(this.startLineNumber, this.startColumn, this.endLineNumber, this.endColumn)
+  }
+}
+
+const mockDisposable = () => ({ dispose: () => {} })
+
+export const lastDiffNavigator = {
+  current: null as { dispose: () => void; previous: jest.Mock; next: jest.Mock } | null,
+}
+
+const createMockDiffNavigator = () => {
+  const navigator = {
+    dispose: () => {},
+    previous: jest.fn(),
+    next: jest.fn(),
+  }
+  lastDiffNavigator.current = navigator
+  return navigator
 }
 class Selection {
   startLineNumber: number | undefined
@@ -56,7 +82,8 @@ interface MockModel {
   setValue: (value: string) => void
   getLineContent: (line: number) => string
   getAllDecorations: () => any[]
-  getLineCount: () => void
+  getLineCount: () => number
+  getLineMaxColumn: (lineNumber: number) => number
   getFullModelRange: () => void
   getValueInRange: () => string
   canUndo: () => boolean
@@ -75,6 +102,7 @@ interface MockEditor {
   onDidBlurEditorWidget: () => void
   changeViewZones: () => void
   getDomNode: () => HTMLElement
+  getContainerDomNode: () => HTMLElement
   addCommand: () => void
   getSelection: () => void
   setSelection: () => void
@@ -91,12 +119,23 @@ interface MockEditor {
 }
 
 interface MockMonaco {
-  editor: { setModelLanguage: () => void; defineTheme: () => void; setTheme: () => void }
-  languages: { registerHoverProvider: () => void }
+  editor: {
+    setModelLanguage: () => void
+    defineTheme: () => void
+    setTheme: () => void
+    createModel?: (value: string) => { dispose: () => void; getValue: () => string; setValue: () => void }
+    createDiffNavigator?: () => { dispose: () => void; previous: () => void; next: () => void }
+  }
+  languages: {
+    registerHoverProvider: (
+      _language: string,
+      provider: { provideHover: (model: unknown, position: unknown) => unknown }
+    ) => { dispose: () => void }
+  }
   KeyMod: any
   KeyCode: any
-  Range: Range
-  Selection: Selection
+  Range: typeof Range
+  Selection: typeof Selection
 }
 
 const MonacoEditor = (props: {
@@ -107,12 +146,13 @@ const MonacoEditor = (props: {
 }) => {
   const editorMockRef = React.useRef<any | null>(null)
   if (!editorMockRef.current) {
-    editorMockRef.current = {}
+    editorMockRef.current = { container: document.createElement('div') }
     editorMockRef.current.lastTypeInx = -1
     editorMockRef.current.undoStack = [props.value]
     editorMockRef.current.redoStack = []
     editorMockRef.current.editorContent = props.value
-    const model: MockModel = {
+    const model: MockModel & { dispose: () => void } = {
+      dispose: () => {},
       _commandManager: {
         future: ['future'],
         past: ['past'],
@@ -120,7 +160,14 @@ const MonacoEditor = (props: {
       forceTokenization: () => {},
       getLineCount: () => {
         const text = editorMockRef.current.editorContent
-        return text.trim().split('\n').length
+        if (!text) {
+          return 1
+        }
+        return text.split('\n').length
+      },
+      getLineMaxColumn: (lineNumber: number) => {
+        const line = editorMockRef.current.editorContent.split('\n')[lineNumber - 1] ?? ''
+        return line.length + 1
       },
       getFullModelRange: () => {},
       canUndo: () => true,
@@ -168,29 +215,40 @@ const MonacoEditor = (props: {
       },
       onKeyDown: (handler) => {
         editorMockRef.current.onKeyDown = handler
+        return mockDisposable()
       },
       onClick: () => {},
       onMouseDown: (handler) => {
         editorMockRef.current.onMouseDown = handler
+        return mockDisposable()
       },
       onDidBlurEditorWidget: (handler) => {
         editorMockRef.current.onDidBlurEditorWidget = handler
+        return mockDisposable()
       },
+      onDidFocusEditorWidget: (handler: () => void) => {
+        editorMockRef.current.onDidFocusEditorWidget = handler
+        return mockDisposable()
+      },
+      onDidChangeModel: () => mockDisposable(),
       getVisibleRanges: () => [],
       addCommand: () => {},
       changeViewZones: () => {},
       getDomNode: () => {
         return editorMockRef.current.textArea
       },
+      getContainerDomNode: () => {
+        return editorMockRef.current.container
+      },
       getSelection: () => {
         const ta = editorMockRef.current.textArea
         const value = ta.value
         const startLines = value.slice(0, ta.selectionStart).split('\n')
-        const startLineNumber = startLines.length - 1
-        const startColumn = startLines[startLineNumber].length + 1
+        const startLineNumber = startLines.length
+        const startColumn = startLines[startLines.length - 1].length + 1
         const endLines = value.slice(0, ta.selectionEnd).split('\n')
-        const endLineNumber = endLines.length - 1
-        const endColumn = ta.selectionEnd - startLines.join('').length
+        const endLineNumber = endLines.length
+        const endColumn = endLines[endLines.length - 1].length + 1
         return new Selection(startLineNumber, startColumn, endLineNumber, endColumn)
       },
       setSelection: () => {},
@@ -201,6 +259,7 @@ const MonacoEditor = (props: {
       revealLineInCenter: () => {},
       onDidChangeModelContent: (cb: any) => {
         editorMockRef.current.changeModelCallback = cb
+        return mockDisposable()
       },
       deltaDecorations: (_oldDecorations: string[], newDecorations: any[]) => {
         editorMockRef.current.newDecorations = JSON.stringify(newDecorations)
@@ -209,17 +268,47 @@ const MonacoEditor = (props: {
       getValue: () => {
         return editorMockRef.current.editorContent
       },
+      setModel: (nextModel: { getValue: () => string; dispose?: () => void }) => {
+        editorMockRef.current.editorContent = nextModel.getValue()
+        if (editorMockRef.current.textArea) {
+          editorMockRef.current.textArea.value = editorMockRef.current.editorContent
+        }
+      },
+      hasTextFocus: () => !!editorMockRef.current.textArea?.classList.contains('focused'),
+      getPosition: () => ({ lineNumber: 1, column: 1 }),
+      getSelections() {
+        return [editorMockRef.current.mockEditor.getSelection()]
+      },
       executeEdits: (id, edits) => {
         const { text } = edits[0]
         const ta = editorMockRef.current.textArea
         const v = editorMockRef.current.textArea.value
-        editorMockRef.current.textArea.value =
-          v.substring(0, ta.selectionStart) + text + v.substring(ta.selectionEnd, v.length)
+        const newValue = v.substring(0, ta.selectionStart) + text + v.substring(ta.selectionEnd, v.length)
+        editorMockRef.current.editorContent = newValue
+        if (ta) {
+          ta.value = newValue
+        }
+        props.onChange(newValue, { target: { value: newValue } })
       },
     }
     editorMockRef.current.mockMonaco = {
-      editor: { setModelLanguage: () => {}, defineTheme: () => {}, setTheme: () => {} },
-      languages: { registerHoverProvider: () => {} },
+      editor: {
+        setModelLanguage: () => {},
+        defineTheme: () => {},
+        setTheme: () => {},
+        createModel: (value: string) => ({
+          dispose: () => {},
+          getValue: () => value,
+          setValue: jest.fn(),
+        }),
+        createDiffNavigator: createMockDiffNavigator,
+      },
+      languages: {
+        registerHoverProvider: (_language: string, provider: { provideHover: (model: unknown, position: unknown) => unknown }) => {
+          editorMockRef.current.hoverProvider = provider
+          return { dispose: () => {} }
+        },
+      },
       KeyMod: {},
       KeyCode: {},
       Range: Range,
@@ -228,6 +317,11 @@ const MonacoEditor = (props: {
     props.onMount(editorMockRef.current.mockEditor, editorMockRef.current.mockMonaco)
   }
   return (
+    <div
+      ref={(ref) => {
+        if (ref) editorMockRef.current.container = ref
+      }}
+    >
     <textarea
       aria-label="monaco"
       data-auto={props.wrapperClassName}
@@ -255,6 +349,15 @@ const MonacoEditor = (props: {
         editorMockRef.current.textArea.classList.remove('focused')
         editorMockRef.current.onDidBlurEditorWidget()
       }}
+      onKeyDown={(e) => {
+        editorMockRef.current.onKeyDown?.({
+          code: e.code,
+          ctrlKey: e.ctrlKey,
+          metaKey: e.metaKey,
+          stopPropagation: () => e.stopPropagation(),
+          preventDefault: () => e.preventDefault(),
+        })
+      }}
       onChange={(e) => {
         if (editorMockRef.current.undoRedo === true) {
           editorMockRef.current.undoRedo = false
@@ -272,7 +375,199 @@ const MonacoEditor = (props: {
       }}
       value={editorMockRef.current.editorContent}
     ></textarea>
+    </div>
   )
 }
+
+const buildMockEditor = (props: { onChange?: (value: string, e: any) => void; initialValue?: string }) => {
+  const editorMockRef: { current: any } = { current: { container: document.createElement('div'), editorContent: props.initialValue ?? '' } }
+  editorMockRef.current.lastTypeInx = -1
+  editorMockRef.current.undoStack = [editorMockRef.current.editorContent]
+  editorMockRef.current.redoStack = []
+  const model: MockModel & { dispose: () => void } = {
+    dispose: () => {},
+    _commandManager: { future: ['future'], past: ['past'] },
+    forceTokenization: () => {},
+    getLineCount: () => {
+      const text = editorMockRef.current.editorContent
+      return text ? text.split('\n').length : 1
+    },
+    getLineMaxColumn: (lineNumber: number) => {
+      const line = editorMockRef.current.editorContent.split('\n')[lineNumber - 1] ?? ''
+      return line.length + 1
+    },
+    getFullModelRange: () => {},
+    canUndo: () => true,
+    canRedo: () => true,
+    getValue: () => editorMockRef.current.editorContent,
+    setValue: (value: string) => {
+      editorMockRef.current.editorContent = value
+      editorMockRef.current.undoStack = [value]
+    },
+    getLineContent: (line: number) => editorMockRef.current.editorContent.split('\n')[line],
+    getAllDecorations: () => [],
+    getValueInRange: () => '',
+    onDidChangeContent: () => {},
+    findMatches: () => [],
+  }
+  const mockEditor = {
+    layout: () => {},
+    focus: () => {},
+    trigger: () => {},
+    onKeyDown: (handler: (e: unknown) => void) => {
+      editorMockRef.current.onKeyDown = handler
+      return mockDisposable()
+    },
+    onClick: () => {},
+    onMouseDown: (handler: (e: unknown) => void) => {
+      editorMockRef.current.onMouseDown = handler
+      return mockDisposable()
+    },
+    onDidBlurEditorWidget: (handler: () => void) => {
+      editorMockRef.current.onDidBlurEditorWidget = handler
+      return mockDisposable()
+    },
+    onDidFocusEditorWidget: (handler: () => void) => {
+      editorMockRef.current.onDidFocusEditorWidget = handler
+      return mockDisposable()
+    },
+    onDidChangeModel: () => mockDisposable(),
+    getVisibleRanges: () => [],
+    addCommand: () => {},
+    changeViewZones: (fn: (accessor: { addZone: (zone: unknown) => void }) => void) => {
+      fn({ addZone: () => {} })
+    },
+    getDomNode: () => editorMockRef.current.textArea,
+    getContainerDomNode: () => editorMockRef.current.container,
+    getSelection: () => {
+      const ta = editorMockRef.current.textArea
+      const value = ta?.value ?? editorMockRef.current.editorContent
+      const startLines = value.slice(0, ta?.selectionStart ?? 0).split('\n')
+      const startLineNumber = startLines.length
+      const startColumn = startLines[startLines.length - 1].length + 1
+      const endLines = value.slice(0, ta?.selectionEnd ?? value.length).split('\n')
+      const endLineNumber = endLines.length
+      const endColumn = endLines[endLines.length - 1].length + 1
+      return new Selection(startLineNumber, startColumn, endLineNumber, endColumn)
+    },
+    setSelection: () => {},
+    setSelections: () => {},
+    saveViewState: () => null,
+    setTheme: () => null,
+    restoreViewState: () => {},
+    revealLineInCenter: () => {},
+    onDidChangeModelContent: (cb: (e: unknown) => void) => {
+      editorMockRef.current.changeModelCallback = cb
+      return mockDisposable()
+    },
+    deltaDecorations: (_old: string[], newDecorations: unknown[]) => {
+      editorMockRef.current.newDecorations = JSON.stringify(newDecorations)
+    },
+    getModel: () => model,
+    getValue: () => editorMockRef.current.editorContent,
+    setModel: (nextModel: { getValue: () => string }) => {
+      editorMockRef.current.editorContent = nextModel.getValue()
+      if (editorMockRef.current.textArea) {
+        editorMockRef.current.textArea.value = editorMockRef.current.editorContent
+      }
+    },
+    executeEdits: (_id: string, edits: [{ text: string }]) => {
+      const { text } = edits[0]
+      const ta = editorMockRef.current.textArea
+      const v = ta?.value ?? editorMockRef.current.editorContent
+      const newValue = v.substring(0, ta?.selectionStart ?? 0) + text + v.substring(ta?.selectionEnd ?? v.length, v.length)
+      editorMockRef.current.editorContent = newValue
+      if (ta) ta.value = newValue
+      props.onChange?.(newValue, { target: { value: newValue }, isFlush: false })
+    },
+    hasTextFocus: () => !!editorMockRef.current.textArea?.classList.contains('focused'),
+    getPosition: () => ({ lineNumber: 1, column: 1 }),
+    getSelections() {
+      return [mockEditor.getSelection()]
+    },
+  }
+  const mockMonaco = {
+    editor: {
+      setModelLanguage: () => {},
+      defineTheme: () => {},
+      setTheme: () => {},
+      createModel: (value: string) => ({
+        dispose: () => {},
+        getValue: () => value,
+        setValue: jest.fn(),
+      }),
+      createDiffNavigator: createMockDiffNavigator,
+    },
+    languages: {
+      registerHoverProvider: (_language: string, provider: { provideHover: (model: unknown, position: unknown) => unknown }) => {
+        editorMockRef.current.hoverProvider = provider
+        return { dispose: () => {} }
+      },
+    },
+    KeyMod: {},
+    KeyCode: {},
+    Range: Range,
+    Selection: Selection,
+  }
+  return { editorMockRef, mockEditor, mockMonaco, model }
+}
+
+const MockDiffEditor = (props: {
+  onMount?: (diffEditor: unknown, monaco: MockMonaco) => void
+  beforeMount?: (monaco: MockMonaco) => void
+  onChange?: (value: string, e: unknown) => void
+}) => {
+  const setupRef = React.useRef<ReturnType<typeof buildMockEditor> | null>(null)
+  if (!setupRef.current) {
+    const built = buildMockEditor({ onChange: props.onChange })
+    props.beforeMount?.(built.mockMonaco)
+    const diffEditor = {
+      getOriginalEditor: () => built.mockEditor,
+      getModifiedEditor: () => built.mockEditor,
+      getModel: () => ({ original: built.model, modified: built.model }),
+      setModel: jest.fn(),
+      updateOptions: jest.fn(),
+      layout: jest.fn(),
+      focus: jest.fn(),
+    }
+    props.onMount?.(diffEditor, built.mockMonaco)
+    setupRef.current = built
+  }
+  const { editorMockRef, mockEditor } = setupRef.current
+  return (
+    <div
+      ref={(ref) => {
+        if (ref) editorMockRef.current.container = ref
+      }}
+    >
+      <textarea
+        aria-label="monaco-diff"
+        className="monaco-editor"
+        ref={(ref) => {
+          editorMockRef.current.textArea = ref
+        }}
+        onFocus={() => {
+          editorMockRef.current.textArea?.classList.add('focused')
+          editorMockRef.current.onDidFocusEditorWidget?.()
+        }}
+        onBlur={() => {
+          editorMockRef.current.textArea?.classList.remove('focused')
+          editorMockRef.current.onDidBlurEditorWidget?.()
+        }}
+        onChange={(e) => {
+          editorMockRef.current.editorContent = e.target.value
+          props.onChange?.(e.target.value, { isFlush: false })
+          editorMockRef.current.changeModelCallback?.({ isFlush: false })
+        }}
+        value={editorMockRef.current.editorContent}
+      />
+    </div>
+  )
+}
+
+export const Editor = MonacoEditor
+export const DiffEditor = MockDiffEditor
+export const loader = { config: () => undefined }
+export const useMonaco = () => [null, () => undefined] as const
 
 export default MonacoEditor

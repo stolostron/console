@@ -179,7 +179,7 @@ export function useInput(props: InputCommonProps, options?: { isArrayInput?: boo
       id,
       path: registrationPath,
       value,
-      label: props.label,
+      label: isArrayInput ? getArrayInputLabel(props.label, registrationPath) : props.label,
       error: error ?? undefined,
       secret: props.secret,
       type: isArrayInput ? InputReviewMeta.ARRAY_INPUT : InputReviewMeta.INPUT,
@@ -249,6 +249,22 @@ export function getCollapsedPlaceholder(props: { collapsedPlaceholder?: ReactNod
 
 export function getAddPlaceholder(props: { placeholder?: string }) {
   return props.placeholder ?? 'Add'
+}
+
+function registrationPathLastSegment(registrationPath: string): string {
+  const withoutIdSuffix = registrationPath.replace(/;id=.*$/, '')
+  const segments = withoutIdSuffix.split('.').filter((s) => s !== '')
+  return segments.length > 0 ? segments[segments.length - 1]! : ''
+}
+
+/** Review label for {@link InputReviewMeta.ARRAY_INPUT}: explicit `label`, else last path segment with first letter uppercased. */
+export function getArrayInputLabel(label: string | undefined, registrationPath: string): string | undefined {
+  if (label != null && label !== '') {
+    return label
+  }
+  const last = registrationPathLastSegment(registrationPath)
+  if (!last) return undefined
+  return last.charAt(0).toUpperCase() + last.slice(1)
 }
 
 /** Full dot-path for review registration: `prefixSegments` (array field + index segments) + `path`, with resource `kind` prepended when `item` has one. */
