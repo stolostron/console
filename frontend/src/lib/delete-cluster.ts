@@ -23,6 +23,14 @@ import { clusterDestroyable } from '../routes/Infrastructure/Clusters/ManagedClu
 import { deleteResources } from './delete-resources'
 import { Provider } from '../ui-components'
 
+/**
+ * Deletes an ACM-provisioned cluster and its associated resources.
+ *
+ * When `preserveOnDelete` is true, patches the ClusterDeployment with
+ * `spec.preserveOnDelete: true` before issuing any deletes. If the patch
+ * fails the deletion is aborted and the returned promise rejects — no
+ * cluster resources are removed.
+ */
 export function deleteCluster({
   cluster,
   ignoreClusterDeploymentNotFound,

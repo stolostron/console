@@ -66,6 +66,14 @@ export interface ItemError<T> {
 const COMPLETE_DELAY_MS = 200
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
+/**
+ * Generic confirmation modal for bulk actions (delete, destroy, detach, etc.).
+ *
+ * Supports optional checkboxes via `enableDeletePullSecret` and
+ * `enablePreserveOnDelete` props. Checkbox state is forwarded to `actionFn`
+ * through the `options` argument so callers can adjust their behaviour without
+ * needing separate modal variants.
+ */
 export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { open: false }) {
   const { t } = useTranslation()
   const [progress, setProgress] = useState(0)
