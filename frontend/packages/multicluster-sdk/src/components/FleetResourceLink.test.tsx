@@ -28,7 +28,7 @@ import '@testing-library/jest-dom'
 // mock functions
 const mockUseHubClusterName = jest.fn()
 
-// mock react-router-dom-v5-compat
+// mock react-router
 jest.mock('react-router', () => ({
   ...jest.requireActual('react-router'),
   Link: ({ children, to, ...props }: any) => (

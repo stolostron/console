@@ -3,14 +3,7 @@
 import i18next from 'i18next'
 import { getVirtualMachineRowActions, getVMSnapshotActions } from './utils'
 
-const mockHistoryPush = jest.fn()
 describe('VirtualMachines utils', () => {
-  jest.mock('react-router', () => ({
-    ...jest.requireActual('react-router'),
-    useHistory: () => ({
-      push: mockHistoryPush,
-    }),
-  }))
   const t = i18next.t.bind(i18next)
   const navigate = jest.fn()
   jest.mock('../../Search/SearchResults/utils', () => ({
