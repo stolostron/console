@@ -1,17 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { request } from '../mock-request'
-import nock from 'nock'
-import { apiServerPing } from '../../src/routes/liveness'
+import { setReady } from '../../src/routes/readiness'
 
 describe(`readiness Route`, function () {
-  it(`GET /readinessProbe should return status code 200`, async function () {
-    const res = await request('GET', '/readinessProbe')
-    expect(res.statusCode).toEqual(200)
-  })
-  it(`GET /readinessProbe should return status code 500 if dead`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(401)
-    await apiServerPing()
+  it(`GET /readinessProbe should return status code 500 if not ready`, async function () {
     const res = await request('GET', '/readinessProbe')
     expect(res.statusCode).toEqual(500)
+  })
+  it(`GET /readinessProbe should return status code 200 after setReady`, async function () {
+    setReady()
+    const res = await request('GET', '/readinessProbe')
+    expect(res.statusCode).toEqual(200)
   })
 })

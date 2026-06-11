@@ -17,8 +17,10 @@ import { requestAggregatedAppSetData } from './aggregators/appSetData'
 import type { IResource } from '../resources/resource'
 import type { IWatchOptions } from '../resources/watch-options'
 
-export function startAggregating(): void {
-  void startAggregatingApplications()
+export function startAggregating(): Promise<void> {
+  return new Promise<void>((resolve) => {
+    void startAggregatingApplications(resolve)
+  })
 }
 
 export function stopAggregating(): void {
