@@ -194,9 +194,9 @@ export const promiseTimeout = <T>(promise: Promise<T>, delay: number) => {
 // //////////////////////////////////////////////////////////////////////////////////
 // //////////////////////////////////////////////////////////////////////////////////
 // //////////////////////////////////////////////////////////////////////////////////
-export async function startAggregatingApplications() {
+export async function startAggregatingApplications(onFirstPassComplete?: () => void) {
   await discoverSystemAppNamespacePrefixes()
-  void searchLoop()
+  void searchLoop(onFirstPassComplete)
 }
 
 let stopping = false
@@ -350,7 +350,7 @@ export async function addUIData(items: ITransformedResource[]) {
   return items
 }
 
-export async function searchLoop() {
+export async function searchLoop(onFirstPassComplete?: () => void) {
   let pass = 1
   let searchAPIMissing = false
   while (!stopping) {
@@ -369,6 +369,10 @@ export async function searchLoop() {
         if (!searchAPIMissing) {
           logger.error('search API missing')
           searchAPIMissing = true
+          if (onFirstPassComplete) {
+            onFirstPassComplete()
+            onFirstPassComplete = undefined
+          }
         }
         await new Promise((r) => setTimeout(r, 5 * 60 * 1000))
       }
@@ -389,6 +393,11 @@ export async function searchLoop() {
     }
     pass++
     logApplicationCountChanges(applicationCache, pass)
+
+    if (onFirstPassComplete) {
+      onFirstPassComplete()
+      onFirstPassComplete = undefined
+    }
 
     // process every APP_SEARCH_INTERVAL seconds
     /* istanbul ignore if */

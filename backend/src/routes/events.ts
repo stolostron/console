@@ -18,6 +18,14 @@ import type { IWatchOptions } from '../resources/watch-options'
 import { polledAggregation } from './aggregator'
 import { getAppDict, type ICompressedResource, type ITransformedResource } from './aggregators/applications'
 
+function createDeferredSignal(): { promise: Promise<void>; resolve: () => void } {
+  let resolve: () => void
+  const promise = new Promise<void>((r) => {
+    resolve = r
+  })
+  return { promise, resolve }
+}
+
 export async function events(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   const token = await getAuthenticatedToken(req, res)
   if (token) {
@@ -337,20 +345,32 @@ const definitions: IWatchOptions[] = [
   },
 ]
 
-export function startWatching(): void {
+export function startWatching(): Promise<void> {
   ServerSideEvents.eventFilter = eventFilter
   startAccessCacheCleanup()
 
+  const listPromises: Promise<void>[] = []
   for (const definition of definitions) {
-    void listAndWatch(definition)
+    const { promise, resolve } = createDeferredSignal()
+    listPromises.push(promise)
+    void listAndWatch(definition, resolve)
   }
+  return Promise.all(listPromises).then(() => {
+    logger.info('all initial resource lists complete')
+  })
 }
+
 // https://kubernetes.io/docs/reference/using-api/api-concepts/
-export async function listAndWatch(options: IWatchOptions) {
+export async function listAndWatch(options: IWatchOptions, onFirstListComplete?: () => void) {
   const serviceAccountToken = getServiceAccountToken()
+  let firstListDone = false
   while (!stopping) {
     try {
       const { resourceVersion } = await listKubernetesObjects(serviceAccountToken, options)
+      if (!firstListDone) {
+        firstListDone = true
+        onFirstListComplete?.()
+      }
       if (options.isPolled) {
         await pollKubernetesObjects(serviceAccountToken, options)
       } else {
