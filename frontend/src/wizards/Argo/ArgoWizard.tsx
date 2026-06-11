@@ -297,6 +297,9 @@ export function ArgoWizard(props: ArgoWizardProps) {
             kind: 'ApplicationSet',
             metadata: { name: '', namespace: '' },
             spec: {
+              syncPolicy: {
+                preserveResourcesOnDeletion: false,
+              },
               generators: [
                 {
                   clusterDecisionResource: {
@@ -531,6 +534,13 @@ export function ArgoWizard(props: ArgoWizardProps) {
                     item.metadata.namespace = value.metadata.namespace
                   }
                 }}
+              />
+            </Section>
+            <Section label={t('ApplicationSet Sync Policy')}>
+              <WizCheckbox
+                path="spec.syncPolicy.preserveResourcesOnDeletion"
+                label={t('Do not delete resources created by child Applications when the ApplicationSet is deleted')}
+                id="preserveResourcesOnDeletion"
               />
             </Section>
           </WizItemSelector>

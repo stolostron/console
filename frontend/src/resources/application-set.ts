@@ -17,6 +17,10 @@ export const ApplicationSetDefinition: IResourceDefinition = {
 
 type AppSetPlacementDataType = (string | string[])[]
 
+export interface ApplicationSetSyncPolicy {
+  preserveResourcesOnDeletion?: boolean
+}
+
 export interface AppSetGenerator {
   clusterDecisionResource?: {
     configMapRef?: string
@@ -37,6 +41,7 @@ export interface ApplicationSet extends IResource {
   metadata: Metadata
   spec: {
     generators?: AppSetGenerator[]
+    syncPolicy?: ApplicationSetSyncPolicy
     template?: {
       metadata?: Metadata
       spec?: {

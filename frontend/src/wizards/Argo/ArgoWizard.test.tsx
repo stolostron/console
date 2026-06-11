@@ -148,6 +148,9 @@ describe('ArgoWizard tests', () => {
     )
     await clickByRole('combobox', { name: 'Select the Argo server' })
     await clickByRole('option', { name: /http:\/\/argoserver\.com/i })
+    await clickByRole('checkbox', {
+      name: /do not delete resources created by child applications when the applicationset is deleted/i,
+    })
     await clickByText('Next')
 
     //=====================================================================
@@ -783,6 +786,9 @@ const submittedGit = [
           },
         },
       ],
+      syncPolicy: {
+        preserveResourcesOnDeletion: true,
+      },
       template: {
         metadata: {
           labels: {
@@ -1042,6 +1048,9 @@ const submittedGitPullModel = [
           },
         },
       ],
+      syncPolicy: {
+        preserveResourcesOnDeletion: false,
+      },
       template: {
         metadata: {
           annotations: {

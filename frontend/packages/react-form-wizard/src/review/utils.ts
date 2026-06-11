@@ -264,10 +264,15 @@ export const REVIEW_ERROR_TEXT_COLOR = 'var(--pf-t--global--text--color--status-
 export function horizontalTermWidthModifierForInputRun(
   nodes: readonly { label?: string; path: string }[]
 ): HorizontalTermWidthModifier {
-  let maxLen = 0
+  if (nodes.length === 0) {
+    return REVIEW_HORIZONTAL_TERM_WIDTH_COMPACT
+  }
+  let longCount = 0
   for (const n of nodes) {
     const termText = n.label ?? n.path
-    maxLen = Math.max(maxLen, termText.length)
+    if (termText.length > 32) {
+      longCount++
+    }
   }
-  return maxLen < 64 ? REVIEW_HORIZONTAL_TERM_WIDTH_COMPACT : REVIEW_HORIZONTAL_TERM_WIDTH_WIDE
+  return longCount / nodes.length >= 0.6 ? REVIEW_HORIZONTAL_TERM_WIDTH_WIDE : REVIEW_HORIZONTAL_TERM_WIDTH_COMPACT
 }
