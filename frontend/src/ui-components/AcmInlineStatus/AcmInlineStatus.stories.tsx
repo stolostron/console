@@ -3,6 +3,7 @@
 import { Card, CardBody } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { AcmInlineStatus, StatusType } from './AcmInlineStatus'
+import { AcmButton } from '../AcmButton'
 
 export default {
   title: 'InlineStatus',
@@ -36,10 +37,18 @@ export const InlineStatusWithPopover = () => {
             headerContent: 'Status header',
             bodyContent: 'Some information about the status here.',
             footerContent: (
-              // eslint-disable-next-line jsx-a11y/anchor-is-valid
-              <a href="#">
-                Status link <ExternalLinkAltIcon />
-              </a>
+              <AcmButton
+                variant="link"
+                component="a"
+                href="#"
+                target="_blank"
+                rel="noreferrer"
+                isInline
+                icon={<ExternalLinkAltIcon />}
+                iconPosition="left"
+              >
+                Status link
+              </AcmButton>
             ),
           }}
         />
