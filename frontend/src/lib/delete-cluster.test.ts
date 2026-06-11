@@ -564,6 +564,59 @@ describe('deleteCluster', () => {
 
     await waitForNocks(deleteNocks)
   })
+
+  it('preserveOnDelete - patches ClusterDeployment before deleting', async () => {
+    const patchNock = nockPatch(
+      {
+        apiVersion: ClusterDeploymentApiVersion,
+        kind: ClusterDeploymentKind,
+        metadata: { name: mockCluster3.name, namespace: mockCluster3.namespace },
+      },
+      { spec: { preserveOnDelete: true } }
+    )
+    const deleteNocks = deleteClusterNocks()
+    deleteCluster({
+      cluster: mockCluster3,
+      deletePullSecret: false,
+      infraEnvs: [],
+      ignoreClusterDeploymentNotFound: false,
+      preserveOnDelete: true,
+    })
+    await waitForNocks([patchNock, ...deleteNocks])
+  })
+
+  it('preserveOnDelete - aborts deletion when patch fails', async () => {
+    nockPatch(
+      {
+        apiVersion: ClusterDeploymentApiVersion,
+        kind: ClusterDeploymentKind,
+        metadata: { name: mockCluster3.name, namespace: mockCluster3.namespace },
+      },
+      { spec: { preserveOnDelete: true } },
+      undefined,
+      500
+    )
+    const { promise } = deleteCluster({
+      cluster: mockCluster3,
+      deletePullSecret: false,
+      infraEnvs: [],
+      ignoreClusterDeploymentNotFound: false,
+      preserveOnDelete: true,
+    })
+    await expect(promise).rejects.toBeDefined()
+  })
+
+  it('preserveOnDelete false - skips patch and deletes normally', async () => {
+    const nocks = deleteClusterNocks()
+    deleteCluster({
+      cluster: mockCluster3,
+      deletePullSecret: false,
+      infraEnvs: [],
+      ignoreClusterDeploymentNotFound: false,
+      preserveOnDelete: false,
+    })
+    await waitForNocks(nocks)
+  })
 })
 
 const deleteHostedClusterNocks = () => [

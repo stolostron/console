@@ -2489,6 +2489,7 @@
   "Pre-authorized user created": "Pre-authorized user created",
   "PreferNoSelect": "PreferNoSelect",
   "Prerequisites and Configuration": "Prerequisites and Configuration",
+  "Preserve cluster resources on delete": "Preserve cluster resources on delete",
   "Press space or enter to begin dragging, and use the arrow keys to navigate up or down. Press enter to confirm the drag, or any other key to cancel the drag operation.": "Press space or enter to begin dragging, and use the arrow keys to navigate up or down. Press enter to confirm the drag, or any other key to cancel the drag operation.",
   "preview.clusterPools": "<bold>Technology Preview</bold>: For more information, <a>view documentation</a> on Cluster pools",
   "Previous change": "Previous change",
