@@ -27,3 +27,5 @@ frontend/packages/react-form-wizard/lib/
 test-results
 playwright.config.ts
 .env
+e2e-template/*.test.ts
+e2e-template/*.spec.ts
