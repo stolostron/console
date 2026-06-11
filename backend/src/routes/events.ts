@@ -6,6 +6,7 @@ import { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import pluralize from 'pluralize'
 import { pipeline } from 'node:stream/promises'
 import { Transform } from 'node:stream'
+import { batchPromiseAll } from '../lib/batch-promise-all'
 import { createDictionary, deflateResource, inflateResource } from '../lib/compression'
 import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
@@ -16,6 +17,14 @@ import type { IResource } from '../resources/resource'
 import type { IWatchOptions } from '../resources/watch-options'
 import { polledAggregation } from './aggregator'
 import { getAppDict, type ICompressedResource, type ITransformedResource } from './aggregators/applications'
+
+function createDeferredSignal(): { promise: Promise<void>; resolve: () => void } {
+  let resolve: () => void
+  const promise = new Promise<void>((r) => {
+    resolve = r
+  })
+  return { promise, resolve }
+}
 
 export async function events(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   const token = await getAuthenticatedToken(req, res)
@@ -41,10 +50,9 @@ let requests: { cancel: () => void }[] = []
 export async function getKubeResources(kind: string, apiVersion: string) {
   const option = { apiVersion, kind }
   const apiVersionPlural = apiVersionPluralFn(option)
-  return await Promise.all(
-    Object.values(resourceCache[apiVersionPlural] || {}).map((event) => {
-      return event.compressed.then((compressed) => inflateResource(compressed, eventDict))
-    })
+  const entries = Object.values(resourceCache[apiVersionPlural] || {})
+  return batchPromiseAll(entries, (event) =>
+    event.compressed.then((compressed) => inflateResource(compressed, eventDict))
   )
 }
 
@@ -336,26 +344,42 @@ const definitions: IWatchOptions[] = [
   },
 ]
 
-export function startWatching(): void {
+export function startWatching(): Promise<void> {
   ServerSideEvents.eventFilter = eventFilter
   startAccessCacheCleanup()
 
+  const listPromises: Promise<void>[] = []
   for (const definition of definitions) {
-    void listAndWatch(definition)
+    const { promise, resolve } = createDeferredSignal()
+    listPromises.push(promise)
+    void listAndWatch(definition, resolve)
   }
+  return Promise.all(listPromises).then(() => {
+    logger.info('all initial resource lists complete')
+  })
 }
+
 // https://kubernetes.io/docs/reference/using-api/api-concepts/
-export async function listAndWatch(options: IWatchOptions) {
+export async function listAndWatch(options: IWatchOptions, onFirstListComplete?: () => void) {
   const serviceAccountToken = getServiceAccountToken()
+  let firstListDone = false
   while (!stopping) {
     try {
       const { resourceVersion } = await listKubernetesObjects(serviceAccountToken, options)
+      if (!firstListDone) {
+        firstListDone = true
+        onFirstListComplete?.()
+      }
       if (options.isPolled) {
         await pollKubernetesObjects(serviceAccountToken, options)
       } else {
         await watchKubernetesObjects(serviceAccountToken, options, resourceVersion)
       }
     } catch (err: unknown) {
+      if (!firstListDone) {
+        firstListDone = true
+        onFirstListComplete?.()
+      }
       if (err instanceof SyntaxError) {
         // Happens when the response body is not JSON
         // Such as the case when the resource version if too old
@@ -437,7 +461,7 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
     return { size: itemCount }
   }
 
-  await Promise.all(items.map((item) => cacheResource(item)))
+  await batchPromiseAll(items, (item) => cacheResource(item))
 
   // Remove items that are no longer in kubernetes
   const apiVersionPlural = apiVersionPluralFn(options)
@@ -458,7 +482,7 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
       removeResources.push(resource)
     }
   }
-  await Promise.all(removeResources.map((resource) => deleteResource(resource)))
+  await batchPromiseAll(removeResources, (resource) => deleteResource(resource))
 
   return { resourceVersion, size: items.length }
 }

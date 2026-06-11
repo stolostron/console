@@ -11,6 +11,7 @@ import { startLoggingMemory } from './lib/memory'
 import { notFound, respondInternalServerError, respondOK } from './lib/respond'
 import { startServer, stopServer } from './lib/server'
 import { ServerSideEvents } from './lib/server-side-events'
+import { setReady } from './routes/readiness'
 import { aggregate, startAggregating, stopAggregating } from './routes/aggregator'
 import { ansibleTower } from './routes/ansibletower'
 import { apiPaths } from './routes/apiPaths'
@@ -116,8 +117,13 @@ export async function requestHandler(req: Http2ServerRequest, res: Http2ServerRe
 export async function start() {
   await loadSettings()
   if (eventsEnabled) {
-    startWatching()
-    startAggregating()
+    const watchingReady: Promise<void> = startWatching()
+    const aggregatingReady: Promise<void> = startAggregating()
+    void Promise.all([watchingReady, aggregatingReady]).then(() => {
+      setReady()
+    })
+  } else {
+    setReady()
   }
   return startServer({ requestHandler })
 }
