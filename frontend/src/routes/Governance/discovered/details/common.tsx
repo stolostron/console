@@ -33,6 +33,8 @@ export const policyViolationSummary = (discoveredPolicyItems: DiscoveredPolicyIt
   const kyvernoPolicyViolations: IKyvernoPolicyViolation = {}
 
   for (const policy of discoveredPolicyItems) {
+    if (policy.disabled) continue
+
     const compliance = getCompliance(policy)
 
     const isNamespacedKyverno =
@@ -43,7 +45,7 @@ export const policyViolationSummary = (discoveredPolicyItems: DiscoveredPolicyIt
       continue
     }
 
-    if (policy.disabled || !compliance) continue
+    if (!compliance) continue
     switch (compliance) {
       case 'compliant':
         compliant++
