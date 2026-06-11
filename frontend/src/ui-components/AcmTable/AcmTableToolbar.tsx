@@ -669,7 +669,7 @@ function TableColumnFilters<T>(
 
   return (
     <ToolbarItem>
-      <div style={{ display: 'flex' }}>
+      <div style={{ display: 'flex', gap: '4px' }}>
         {filterSelectGroups.map(({ groupFilters, validFilters }, inx) => {
           return groupFilters.reduce(
             (acc, current) => (
