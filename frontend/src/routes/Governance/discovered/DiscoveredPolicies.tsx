@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { EmptyState, Label, PageSection, Spinner, Split, SplitItem } from '@patternfly/react-core'
-import { ExclamationTriangleIcon } from '@patternfly/react-icons'
+import { EmptyState, PageSection, Spinner } from '@patternfly/react-core'
 import { isEqual } from 'lodash'
 import { ReactNode, useMemo } from 'react'
 import { generatePath, Link } from 'react-router'
@@ -17,6 +16,7 @@ import {
   ITableFilter,
 } from '../../../ui-components'
 import { getEngineString, getEngineWithSvg, isKyvernoApiGroup, isLegacyKyvernoApiGroup } from '../common/util'
+import { DeprecatedTitle } from '../../Applications/components/DeprecatedTitle'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
 import {
   discoveredSourceCell,
@@ -30,7 +30,7 @@ import {
 } from './details/common'
 import { DiscoveredPolicyTableItem, useFetchPolicies } from './useFetchPolicies'
 
-function nameCell(item: DiscoveredPolicyTableItem, t: (key: string) => string): ReactNode {
+function nameCell(item: DiscoveredPolicyTableItem): ReactNode {
   const destination = NavigationPath.discoveredResources
   const link = (
     <Link
@@ -49,16 +49,7 @@ function nameCell(item: DiscoveredPolicyTableItem, t: (key: string) => string): 
   )
 
   if (isLegacyKyvernoApiGroup(item.apigroup)) {
-    return (
-      <Split hasGutter>
-        <SplitItem>{link}</SplitItem>
-        <SplitItem>
-          <Label icon={<ExclamationTriangleIcon />} color="orange" isCompact>
-            {t('deprecated')}
-          </Label>
-        </SplitItem>
-      </Split>
-    )
+    return <DeprecatedTitle title={link} />
   }
 
   return link
@@ -105,7 +96,7 @@ export default function DiscoveredPolicies() {
     () => [
       {
         header: t('Name'),
-        cell: (item: DiscoveredPolicyTableItem) => nameCell(item, t),
+        cell: nameCell,
         sort: 'name',
         search: 'name',
         id: 'name',
