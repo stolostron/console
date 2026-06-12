@@ -151,6 +151,8 @@ export function CreateClusterCatalog() {
     (provider: CardProvider) => {
       if (provider === Provider.aws) {
         return nextStep(NavigationPath.createAWSControlPlane)
+      } else if (provider === Provider.azure) {
+        return nextStep(NavigationPath.createAzureControlPlane)
       } else if (provider === Provider.kubevirt) {
         return nextStep(NavigationPath.createKubeVirtControlPlane)
       } else if (provider === Provider.hostinventory) {

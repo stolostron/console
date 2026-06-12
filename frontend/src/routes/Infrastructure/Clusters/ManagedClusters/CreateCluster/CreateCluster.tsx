@@ -156,6 +156,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   const controlPlaneBreadCrumbBM = generateBreadCrumb('Host Inventory', NavigationPath.createBMControlPlane)
   const controlPlaneBreadCrumbNutanix = generateBreadCrumb('Nutanix', NavigationPath.createCluster)
   const controlPlaneBreadCrumbAWS = generateBreadCrumb('AWS', NavigationPath.createAWSControlPlane)
+  const controlPlaneBreadCrumbAzure = generateBreadCrumb('Azure', NavigationPath.createAzureControlPlane)
 
   const hostsBreadCrumb = { text: t('Hosts'), to: NavigationPath.createDiscoverHost }
 
@@ -551,6 +552,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
       )
       break
     case Provider.azure:
+      breadcrumbs.push(controlPlaneBreadCrumbAzure)
       controlData = getControlDataAZR(
         t,
         handleModalToggle,
