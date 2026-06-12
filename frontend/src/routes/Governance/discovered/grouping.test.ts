@@ -731,6 +731,109 @@ describe('OnMessage test', () => {
     ])
   })
 
+  test('Should create totalViolations for new policies.kyverno.io ValidatingPolicy', () => {
+    const mock = [
+      {
+        _hubClusterResource: 'true',
+        _isExternal: 'false',
+        _uid: 'local-cluster/aaa-bbb-ccc',
+        apigroup: 'policies.kyverno.io',
+        apiversion: 'v1',
+        cluster: 'local-cluster',
+        created: '2026-06-01T10:00:00Z',
+        kind: 'ValidatingPolicy',
+        kind_plural: 'validatingpolicies',
+        name: 'check-team-label',
+        severity: 'low',
+        validationFailureAction: 'Audit',
+      },
+      {
+        _hubClusterResource: 'true',
+        _isExternal: 'false',
+        _uid: 'local-cluster/ddd-eee-fff',
+        apigroup: 'policies.kyverno.io',
+        apiversion: 'v1',
+        cluster: 'local-cluster',
+        created: '2026-06-01T10:00:00Z',
+        kind: 'NamespacedValidatingPolicy',
+        kind_plural: 'namespacedvalidatingpolicies',
+        name: 'require-limits',
+        namespace: 'default',
+        severity: 'medium',
+        validationFailureAction: 'Deny',
+      },
+    ]
+
+    const relatedMock: any[] = [
+      {
+        _hubClusterResource: 'true',
+        _relatedUids: ['local-cluster/aaa-bbb-ccc'],
+        _uid: 'local-cluster/report-111',
+        apigroup: 'wgpolicyk8s.io',
+        apiversion: 'v1beta1',
+        cluster: 'local-cluster',
+        created: '2026-06-01T10:05:00Z',
+        kind: 'ClusterPolicyReport',
+        kind_plural: 'clusterpolicyreports',
+        label: 'app.kubernetes.io/managed-by=kyverno',
+        name: 'report-for-check-team',
+        _policyViolationCounts: 'check-team-label=3',
+        rules: 'check-team-label',
+      },
+      {
+        _hubClusterResource: 'true',
+        _relatedUids: ['local-cluster/ddd-eee-fff'],
+        _uid: 'local-cluster/report-222',
+        apigroup: 'wgpolicyk8s.io',
+        apiversion: 'v1beta1',
+        cluster: 'local-cluster',
+        created: '2026-06-01T10:05:00Z',
+        kind: 'PolicyReport',
+        kind_plural: 'policyreports',
+        label: 'app.kubernetes.io/managed-by=kyverno',
+        name: 'report-for-limits',
+        namespace: 'default',
+        _policyViolationCounts: 'default/require-limits=2',
+        rules: 'default/require-limits',
+      },
+    ]
+
+    const result = createMessage(
+      {
+        searchResult: [
+          {
+            items: mock,
+            related: [
+              { kind: 'ClusterPolicyReport', items: [relatedMock[0]] },
+              { kind: 'PolicyReport', items: [relatedMock[1]] },
+            ],
+          },
+        ],
+      },
+      helmRelease,
+      channels,
+      subscriptions,
+      resolveSource.toString(),
+      getSourceText.toString(),
+      parseStringMap.toString(),
+      parseDiscoveredPolicies.toString()
+    )
+
+    expect(result.policyItems).toHaveLength(2)
+
+    const validatingPolicy = result.policyItems.find((p: any) => p.kind === 'ValidatingPolicy')
+    expect(validatingPolicy).toBeDefined()
+    expect(validatingPolicy.apigroup).toBe('policies.kyverno.io')
+    expect(validatingPolicy.responseAction).toBe('Audit')
+    expect(validatingPolicy.policies[0].totalViolations).toBe(3)
+
+    const namespacedPolicy = result.policyItems.find((p: any) => p.kind === 'NamespacedValidatingPolicy')
+    expect(namespacedPolicy).toBeDefined()
+    expect(namespacedPolicy.apigroup).toBe('policies.kyverno.io')
+    expect(namespacedPolicy.responseAction).toBe('Deny')
+    expect(namespacedPolicy.policies[0].totalViolations).toBe(2)
+  })
+
   test('Should create multiple _policyViolationCounts for kyverno policies', () => {
     const mock = [
       {

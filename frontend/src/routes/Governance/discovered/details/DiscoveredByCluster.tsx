@@ -20,6 +20,7 @@ import {
   getTotalViolationsCompliance,
   policyViolationSummary,
 } from './common'
+import { isKyvernoApiGroup } from '../../common/util'
 import { getLabelFilterOptions, matchesSelectedLabels } from '../../utils/label-utils'
 import { useMemo } from 'react'
 import { useLocation } from 'react-router'
@@ -62,7 +63,10 @@ export default function DiscoveredByCluster() {
           exportContent: (item: DiscoveredPolicyItem) => convertYesNoCell(item.upgradeAvailable, t),
         },
       ]
-    } else if (apiGroup === 'kyverno.io' && policyKind === 'Policy') {
+    } else if (
+      (apiGroup === 'kyverno.io' && policyKind === 'Policy') ||
+      (apiGroup === 'policies.kyverno.io' && policyKind.startsWith('Namespaced'))
+    ) {
       extraColumns = [
         {
           header: t('Namespace'),
@@ -155,7 +159,7 @@ export default function DiscoveredByCluster() {
               ],
               tableFilterFn: (selectedValues: string[], item: DiscoveredPolicyItem): boolean => {
                 let compliant: string
-                if (['constraints.gatekeeper.sh', 'kyverno.io'].includes(item.apigroup)) {
+                if (item.apigroup === 'constraints.gatekeeper.sh' || isKyvernoApiGroup(item.apigroup)) {
                   compliant = getTotalViolationsCompliance(item?.totalViolations)
                 } else {
                   compliant = item?.compliant?.toLowerCase() ?? ''
