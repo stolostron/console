@@ -9,7 +9,9 @@ import DiscoveryConfigPage from './DiscoveredClusters/DiscoveryConfig/DiscoveryC
 import ClusterDetailsPage from './ManagedClusters/ClusterDetails/ClusterDetails'
 import EditAICluster from './ManagedClusters/components/cim/EditAICluster'
 import { HypershiftAWSCLI } from './ManagedClusters/CreateCluster/components/assisted-installer/hypershift/HypershiftAWSCLI'
+import { HypershiftAzureCLI } from './ManagedClusters/CreateCluster/components/assisted-installer/hypershift/HypershiftAzureCLI'
 import { CreateAWSControlPlane } from './ManagedClusters/CreateClusterCatalog/CreateAWSControlPlane'
+import { CreateAzureControlPlane } from './ManagedClusters/CreateClusterCatalog/CreateAzureControlPlane'
 import { CreateControlPlane } from './ManagedClusters/CreateClusterCatalog/CreateControlPlane'
 import { CreateDiscoverHost } from './ManagedClusters/CreateClusterCatalog/CreateDiscoverHost'
 import { CreateKubeVirtControlPlane } from './ManagedClusters/CreateClusterCatalog/CreateKubeVirtControlPlane'
@@ -51,6 +53,8 @@ export default function Clusters() {
         element={<CreateKubeVirtControlPlane />}
       />
       <Route path={clustersChildPath(NavigationPath.createAWSCLI)} element={<HypershiftAWSCLI />} />
+      <Route path={clustersChildPath(NavigationPath.createAzureControlPlane)} element={<CreateAzureControlPlane />} />
+      <Route path={clustersChildPath(NavigationPath.createAzureCLI)} element={<HypershiftAzureCLI />} />
       <Route path={clustersChildPath(NavigationPath.createDiscoverHost)} element={<CreateDiscoverHost />} />
       <Route path={clustersChildPath(NavigationPath.createCluster)} element={<CreateClusterPage />} />
       <Route path={clustersChildPath(NavigationPath.importCluster)} element={<ImportClusterPage />} />

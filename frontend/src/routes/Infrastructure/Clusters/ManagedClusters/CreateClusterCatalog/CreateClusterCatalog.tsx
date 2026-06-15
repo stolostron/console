@@ -155,6 +155,8 @@ export function CreateClusterCatalog() {
         return nextStep(NavigationPath.createKubeVirtControlPlane)
       } else if (provider === Provider.hostinventory) {
         return clusterImageSets.length ? nextStep(NavigationPath.createBMControlPlane) : undefined
+      } else if (provider === Provider.azure) {
+        return nextStep(NavigationPath.createAzureControlPlane)
       } else if (provider === Provider.nutanix) {
         return hasClusterImageSetWithArch(clusterImageSets, ['x86_64', 'x86-64']).length
           ? nextStep({

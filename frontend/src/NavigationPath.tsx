@@ -84,6 +84,8 @@ export enum NavigationPath {
   createDiscoverHost = '/multicloud/infrastructure/clusters/create/discover-host',
   createCluster = '/multicloud/infrastructure/clusters/create',
   createAWSCLI = '/multicloud/infrastructure/clusters/create/aws/cli',
+  createAzureControlPlane = '/multicloud/infrastructure/clusters/create/azure/control-plane',
+  createAzureCLI = '/multicloud/infrastructure/clusters/create/azure/cli',
   createKubeVirt = '/multicloud/infrastructure/clusters/create/kubevirt',
   editCluster = '/multicloud/infrastructure/clusters/edit/:namespace/:name',
   clusterDetails = '/multicloud/infrastructure/clusters/details/:namespace/:name',
