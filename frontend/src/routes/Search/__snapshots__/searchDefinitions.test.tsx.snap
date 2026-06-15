@@ -168,6 +168,7 @@ exports[`Correctly returns CreateApplicationTopologyLink 1`] = `
 <body>
   <div>
     <a
+      data-discover="true"
       href="/multicloud/applications/details/testNamespace/testApp/topology?apiVersion=application.app.k8s.io"
     >
       View topology
@@ -180,6 +181,7 @@ exports[`Correctly returns CreateDetailsLink - ACM-Application 1`] = `
 <body>
   <div>
     <a
+      data-discover="true"
       href="/multicloud/applications/details/testApplicationNamespace/testApplicationName/details?apiVersion=application.app.k8s.io&cluster=cluster"
     >
       testApplicationName
@@ -192,6 +194,7 @@ exports[`Correctly returns CreateDetailsLink - Cluster 1`] = `
 <body>
   <div>
     <a
+      data-discover="true"
       href="/multicloud/infrastructure/clusters/details/testClusterName/testClusterName/overview"
     >
       testClusterName
@@ -204,6 +207,7 @@ exports[`Correctly returns CreateDetailsLink - Default 1`] = `
 <body>
   <div>
     <a
+      data-discover="true"
       href="/multicloud/search/resources?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestPodNamespace%26name%3DtestPodName"
     >
       testPodName
@@ -216,6 +220,7 @@ exports[`Correctly returns CreateDetailsLink - HUB-Policy 1`] = `
 <body>
   <div>
     <a
+      data-discover="true"
       href="/multicloud/governance/policies/details/testPolicyNamespace/testPolicyName"
     >
       testPolicyName
@@ -228,6 +233,7 @@ exports[`Correctly returns CreateDetailsLink - Managed-Policy 1`] = `
 <body>
   <div>
     <a
+      data-discover="true"
       href="/multicloud/search/resources?cluster%3DtestCluster%26kind%3DPolicy%26namespace%3DtestPolicyNamespace%26name%3DtestPolicyName"
     >
       testPolicyName
@@ -240,6 +246,7 @@ exports[`Correctly returns CreateDetailsLink - NON-Application 1`] = `
 <body>
   <div>
     <a
+      data-discover="true"
       href="/multicloud/search/resources?cluster%3DtestCluster%26kind%3DApplication%26namespace%3DtestApplicationNamespace%26name%3DtestApplicationName"
     >
       testApplicationName
@@ -252,6 +259,7 @@ exports[`Correctly returns CreateDetailsLink - PolicyReport 1`] = `
 <body>
   <div>
     <a
+      data-discover="true"
       href="/multicloud/infrastructure/clusters/details/testPolicyReportNamespace/testPolicyReportNamespace/overview?showClusterIssues%3Dtrue"
     >
       testPolicyReport
@@ -434,6 +442,7 @@ exports[`Correctly returns CreateGlobalSearchDetailsLink managed cluster Policy 
 <body>
   <div>
     <a
+      data-discover="true"
       href="/multicloud/governance/policies/details/default/global-policy"
     >
       global-policy
@@ -546,6 +555,7 @@ exports[`Correctly returns CreateGlobalSearchDetailsLink managed hub Application
 <body>
   <div>
     <a
+      data-discover="true"
       href="/multicloud/applications/details/testClusterNamespace/testClusterName/details?apiVersion=application.app.k8s.io"
     >
       testClusterName
@@ -558,6 +568,7 @@ exports[`Correctly returns CreateGlobalSearchDetailsLink managed hub Cluster res
 <body>
   <div>
     <a
+      data-discover="true"
       href="/multicloud/infrastructure/clusters/details/testClusterName/testClusterName/overview"
     >
       testClusterName
@@ -620,6 +631,7 @@ exports[`Correctly returns CreateGlobalSearchDetailsLink managed hub PolicyRepor
 <body>
   <div>
     <a
+      data-discover="true"
       href="/multicloud/infrastructure/clusters/details/testClusterNamespace/testClusterNamespace/overview?showClusterIssues%3Dtrue"
     >
       local-cluster-policyreport
@@ -632,6 +644,7 @@ exports[`Correctly returns CreateGlobalSearchDetailsLink managed hub default res
 <body>
   <div>
     <a
+      data-discover="true"
       href="/multicloud/search/resources?cluster%3DtestCluster%26kind%3DPod%26namespace%3DtestPodNamespace%26name%3DtestPodName"
     >
       testPodName

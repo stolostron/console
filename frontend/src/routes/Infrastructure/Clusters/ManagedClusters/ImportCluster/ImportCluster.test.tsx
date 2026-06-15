@@ -35,7 +35,7 @@ import {
 } from '../../../../../resources'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Route, Routes } from 'react-router'
 import { RecoilRoot, useSetRecoilState } from 'recoil'
 import {
   clusterCuratorsState,
@@ -668,8 +668,8 @@ const subscriptionOperator: SubscriptionOperator = {
 const mockClusterCurators = [clusterCurator]
 
 const mockNavigate = jest.fn()
-jest.mock('react-router-dom-v5-compat', () => {
-  const actual = jest.requireActual('react-router-dom-v5-compat')
+jest.mock('react-router', () => {
+  const actual = jest.requireActual('react-router')
   return {
     ...actual,
     useNavigate: () => {

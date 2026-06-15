@@ -8,6 +8,6 @@ export async function onSubmit(_data: unknown) {
   return Promise.reject(new Error('No backend connected'))
 }
 
-export function onCancel(history: { push: (location: string) => void }) {
-  history.push(`./${RouteE.Wizards}`)
+export function onCancel(navigate: (path: string) => void) {
+  navigate(`./${RouteE.Wizards}`)
 }

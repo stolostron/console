@@ -17,7 +17,7 @@ import { clickByTestId, waitForNock, waitForNotTestId, waitForTestId, waitForTex
 import { ClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { HiveNotification, launchToYaml } from './HiveNotification'
 import { Provider } from '../../../../../ui-components'
-import { MemoryRouter, Routes, Route, Outlet } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Routes, Route, Outlet } from 'react-router'
 
 const mockCluster: Cluster = {
   name: 'test-cluster',

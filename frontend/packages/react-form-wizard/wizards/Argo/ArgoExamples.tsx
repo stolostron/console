@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useMemo } from 'react'
-import { useHistory } from 'react-router'
+import { useNavigate } from 'react-router'
 import ArgoIcon from '../Argo/logos/ArgoIcon.svg'
 import { Catalog } from '../Catalog'
 import { IResource } from '../../src/common/resource'
@@ -9,12 +9,12 @@ import { onSubmit } from '../common/utils'
 import { RouteE } from '../Routes'
 import { ArgoWizard } from './ArgoWizard'
 
-function onCancel(history: { push: (location: string) => void }) {
-  history.push(`./${RouteE.ArgoCD}`)
+function onCancel(navigate: (path: string) => void) {
+  navigate(`${RouteE.ArgoCD}`)
 }
 
 export function ApplicationSetExamples() {
-  const history = useHistory()
+  const navigate = useNavigate()
   return (
     <Catalog
       title="Application Set Wizard Examples"
@@ -27,21 +27,21 @@ export function ApplicationSetExamples() {
             'Argo CD is a declarative, GitOps continuous delivery tool for Kubernetes.',
             "The application set is a sub-project of Argo CD which adds Application automation, and seeks to improve multi-cluster support and cluster multitenant support within Argo CD. Argo CD Applications may be templated from multiple different sources, including from Git or Argo CD's own defined cluster list",
           ],
-          onClick: () => history.push(RouteE.CreateArgoCD),
+          onClick: () => navigate(RouteE.CreateArgoCD),
         },
         {
           icon: <ArgoIcon />,
           title: 'Edit application set',
-          onClick: () => history.push(RouteE.EditArgoCD),
+          onClick: () => navigate(RouteE.EditArgoCD),
         },
       ]}
-      onBack={() => history.push(RouteE.Wizards)}
+      onBack={() => navigate(RouteE.Wizards)}
     />
   )
 }
 
 export function CreateApplicationSet() {
-  const history = useHistory()
+  const navigate = useNavigate()
   const namespaces = useMemo(() => ['default', 'namespace-1', 'namespace-2'], [])
   const servers = useMemo(
     () => [
@@ -87,7 +87,7 @@ export function CreateApplicationSet() {
       argoServers={servers}
       namespaces={namespaces}
       onSubmit={onSubmit}
-      onCancel={() => onCancel(history)}
+      onCancel={() => onCancel(navigate)}
       placements={placements}
       channels={channels}
       timeZones={timeZones}
@@ -107,7 +107,7 @@ export function CreateApplicationSet() {
 }
 
 export function EditApplicationSet() {
-  const history = useHistory()
+  const navigate = useNavigate()
   const namespaces = useMemo(() => ['default', 'namespace-1', 'namespace-2'], [])
   const servers = useMemo(
     () => [
@@ -154,7 +154,7 @@ export function EditApplicationSet() {
       argoServers={servers}
       namespaces={namespaces}
       onSubmit={onSubmit}
-      onCancel={() => onCancel(history)}
+      onCancel={() => onCancel(navigate)}
       placements={placements}
       channels={channels}
       timeZones={timeZones}

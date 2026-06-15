@@ -12,7 +12,7 @@ import {
 import { SelectVariant } from '../../../../../components/AcmSelectBase'
 import { cloneDeep, get, groupBy, isEqual, pick } from 'lodash'
 import { Dispatch, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useReducer, useState } from 'react'
-import { Link, generatePath, useNavigate } from 'react-router-dom-v5-compat'
+import { Link, generatePath, useNavigate } from 'react-router'
 import { SyncEditor, ValidationStatus } from '../../../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
@@ -47,6 +47,7 @@ import {
   Step,
   Sync,
   useData,
+  useDefaultItem,
   useItem,
   Wizard,
   WizItemSelector,
@@ -505,6 +506,7 @@ export default function ImportClusterPage() {
 
   function WizardSyncEditor() {
     const resources = useItem() // Wizard framework sets this context
+    const defaultItem = useDefaultItem()
     const { setEditorValidationStatus } = useEditorValidationStatus()
     const { highlightEditorPath } = useHighlightEditorPath()
     const { update } = useData() // Wizard framework sets this context
@@ -516,6 +518,7 @@ export default function ImportClusterPage() {
         id="code-content"
         schema={isACMAvailable ? acmSchema : schema}
         resources={resources}
+        defaultResources={defaultItem}
         highlightEditorPath={highlightEditorPath}
         secrets={[
           'Secret.*.stringData.token',
@@ -524,8 +527,8 @@ export default function ImportClusterPage() {
           'Secret.*.stringData.client_secret',
         ]}
         syncs={syncs}
-        onEditorChange={(changes: { resources: any[] }): void => {
-          update(changes?.resources)
+        onEditorChange={(changes, resetDefaultSnapshot): void => {
+          update(changes?.resources, resetDefaultSnapshot)
         }}
         onStatusChange={(editorStatus: ValidationStatus): void => {
           setEditorValidationStatus(editorStatus as unknown as EditorValidationStatus)

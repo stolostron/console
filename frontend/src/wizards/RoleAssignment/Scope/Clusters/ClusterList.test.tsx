@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { ClusterList } from './ClusterList'
 import { Cluster, ClusterStatus } from '../../../../resources/utils'
@@ -54,8 +54,8 @@ jest.mock('../../../../shared-recoil', () => ({
 }))
 
 // Mock React Router hooks
-jest.mock('react-router-dom-v5-compat', () => ({
-  ...jest.requireActual('react-router-dom-v5-compat'),
+jest.mock('react-router', () => ({
+  ...jest.requireActual('react-router'),
   useLocation: () => ({
     pathname: '/clusters',
     search: '',

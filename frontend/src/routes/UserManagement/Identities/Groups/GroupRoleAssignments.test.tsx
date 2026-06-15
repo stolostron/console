@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { MemoryRouter, Routes, Route } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Routes, Route } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { Group } from '../../../../resources/rbac'
 import { GroupRoleAssignments } from './GroupRoleAssignments'

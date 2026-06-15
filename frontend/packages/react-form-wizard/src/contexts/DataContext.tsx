@@ -2,7 +2,7 @@
 import { createContext, useContext } from 'react'
 
 export interface IDataContext {
-  update: (data?: any) => void
+  update: (data?: any, resetDefaultSnapshot?: boolean) => void
 }
 
 export const DataContext = createContext<IDataContext>({ update: () => null })

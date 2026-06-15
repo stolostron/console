@@ -2,7 +2,7 @@
 
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { MemoryRouter } from 'react-router'
 import { DOC_HOME } from '../../../../../lib/doc-util'
 import { defaultPlugin, PluginContext } from '../../../../../lib/PluginContext'
 import { clickByText, createClusterVersionMock, waitForText } from '../../../../../lib/test-util'

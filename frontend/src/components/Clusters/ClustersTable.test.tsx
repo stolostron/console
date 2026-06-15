@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { ButtonVariant } from '@patternfly/react-core'
 import { ClustersTable } from './ClustersTable'
@@ -112,22 +112,6 @@ jest.mock('../../NavigationPath', () => ({
   NavigationPath: {
     clusterDetails: 'clusterDetails',
   },
-}))
-
-// Mock React Router hooks
-jest.mock('react-router-dom-v5-compat', () => ({
-  useLocation: () => ({
-    pathname: '/clusters',
-    search: '',
-    hash: '',
-    state: null,
-  }),
-  useNavigate: () => jest.fn(),
-  Link: ({ children, to, ...props }: { children: React.ReactNode; to: string }) => (
-    <a href={to} {...props}>
-      {children}
-    </a>
-  ),
 }))
 
 // Mock local hub hook

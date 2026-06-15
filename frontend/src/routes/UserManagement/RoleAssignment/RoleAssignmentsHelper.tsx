@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { generatePath, Link } from 'react-router-dom-v5-compat'
+import { generatePath, Link } from 'react-router'
 import { BulkActionModalProps } from '../../../components/BulkActionModal'
 import AcmTimestamp from '../../../lib/AcmTimestamp'
 import { NavigationPath } from '../../../NavigationPath'

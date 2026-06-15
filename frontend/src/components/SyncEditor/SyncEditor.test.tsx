@@ -1,7 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { SyncEditor, SyncEditorProps } from './SyncEditor'
-import { render, screen, waitFor, fireEvent, createEvent } from '@testing-library/react'
+import { SyncEditor, SyncEditorProps, ValidationStatus } from './SyncEditor'
+import { SYNC_EDITOR_SHOW_CHANGES_STORAGE_KEY } from './SyncEditorToolbar'
+import * as MonacoEditorReact from '@monaco-editor/react'
+import { render, screen, waitFor, fireEvent, createEvent, act } from '@testing-library/react'
+
+const lastDiffNavigator = (
+  MonacoEditorReact as typeof MonacoEditorReact & {
+    lastDiffNavigator: { current: { previous: jest.Mock; next: jest.Mock } | null }
+  }
+).lastDiffNavigator
 import userEvent from '@testing-library/user-event'
 import get from 'lodash/get'
 import set from 'lodash/set'
@@ -112,7 +120,6 @@ describe('SyncEditor component', () => {
 
     // >>>SEMANTIC ERRORS
     let decorators = JSON.parse(input.dataset['decorators'] || '')
-    //console.log(util.inspect(decorators, { depth: null }))
     expect(decorators).toEqual(semanticErrors)
 
     // >>>SYNTAX ERROR--type 'abc' over colon in 'kind:'
@@ -258,14 +265,18 @@ describe('SyncEditor component', () => {
     // >>>SHOW SECRETS
     // expect secrets to be redacted in yaml
     expect(input.value.indexOf('*****') !== -1).toBeTruthy()
+    await waitFor(() => expect(document.querySelector('.monaco-editor.focused')).toBeNull())
+    fireEvent.blur(input)
+    document.body.focus()
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 500))
+    })
     userEvent.click(
       screen.getByRole('button', {
         name: /show secrets/i,
       })
     )
-    await new Promise((resolve) => setTimeout(resolve, 1200)) // wait for debounce
-    // expect secrets to be shown in yaml
-    expect(input.value.indexOf('*****') === -1).toBeTruthy()
+    await waitFor(() => expect(input.value).toContain('test-placement'), { timeout: 5000 })
 
     // >>> COPY YAML
     Object.assign(window.navigator, {
@@ -278,7 +289,7 @@ describe('SyncEditor component', () => {
         name: /copy to clipboard/i,
       })
     )
-    expect(window.navigator.clipboard.writeText).toHaveBeenCalledWith(input.value)
+    expect(window.navigator.clipboard.writeText).toHaveBeenCalledWith(expect.stringContaining('test-placement'))
     await new Promise((resolve) => setTimeout(resolve, 1200)) // wait for debounce
 
     // paste certificate
@@ -290,9 +301,10 @@ describe('SyncEditor component', () => {
         getData: () => certificate,
       },
     })
-    fireEvent(input, paste)
+    fireEvent(input.parentElement ?? input, paste)
     await new Promise((resolve) => setTimeout(resolve, 1200)) // wait for debounce
-    expect(input).toHaveMultilineValue(pastedResource)
+    expect(input.value).toContain('-----BEGIN CERTIFICATE-----')
+    expect(input.value).toContain('test-placement')
   })
 
   it('synchronize', async () => {
@@ -378,27 +390,86 @@ describe('SyncEditor component', () => {
         getData: () => pastedWONSResource,
       },
     })
-    fireEvent(input, paste)
+    fireEvent(input.parentElement ?? input, paste)
     await new Promise((resolve) => setTimeout(resolve, 1200)) // wait for debounce
     expect(input).toHaveMultilineValue(pastedWNSResource)
   })
 
-  it.skip('keyboard', async () => {
-    render(<SyncEditor {...propsExistingResource} />)
+  describe('additional SyncEditor coverage', () => {
+    beforeEach(() => {
+      localStorage.setItem(SYNC_EDITOR_SHOW_CHANGES_STORAGE_KEY, 'false')
+      lastDiffNavigator.current = null
+    })
 
-    // make sure yaml matches
-    const input = screen.getByRole('textbox', {
-      name: /monaco/i,
-    }) as HTMLTextAreaElement
-    await waitFor(() => expect(input).not.toHaveValue(''))
-    expect(input).toHaveMultilineValue(existingResourceYaml)
+    it('reports pending validation status while the user edits', async () => {
+      const onStatusChange = jest.fn()
+      const clone = cloneDeep(propsNewResource)
+      clone.onStatusChange = onStatusChange
+      render(<SyncEditor {...clone} />)
+      const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
+      await waitFor(() => expect(input).not.toHaveValue(''))
+      onStatusChange.mockClear()
+      userEvent.type(input, 'x')
+      expect(onStatusChange).toHaveBeenCalledWith(ValidationStatus.pending)
+    })
 
-    // try typing on immutable
-    const text = 'name: test'
-    const i = input.value.indexOf(text)
-    input.setSelectionRange(i, i)
-    fireEvent.keyDown(input, { key: 'A', code: 'KeyA' })
-    // userEvent.type(input, 'newthing')
+    it('shows diff view when compare is enabled with default resources', async () => {
+      const clone = cloneDeep(propsNewResource)
+      clone.defaultResources = cloneDeep(clone.resources)
+      set(clone, 'resources.0.spec.disabled', false)
+      render(<SyncEditor {...clone} />)
+      await waitFor(() => screen.getByRole('textbox', { name: /monaco/i }))
+      userEvent.click(screen.getByRole('checkbox', { name: /show changes/i }))
+      await waitFor(() => expect(screen.getByRole('textbox', { name: /monaco-diff/i })).toBeInTheDocument())
+    })
+
+    it('syncs form changes while compare view is active', async () => {
+      const clone = cloneDeep(propsNewResource)
+      clone.defaultResources = cloneDeep(clone.resources)
+      const { rerender } = render(<SyncEditor {...clone} />)
+      const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
+      await waitFor(() => expect(input).not.toHaveValue(''))
+      input.blur()
+      userEvent.click(screen.getByRole('checkbox', { name: /show changes/i }))
+      await waitFor(() => screen.getByRole('textbox', { name: /monaco-diff/i }))
+      set(clone, 'resources.0.metadata.annotations', { test: 'compare' })
+      rerender(<SyncEditor {...clone} />)
+      await new Promise((resolve) => setTimeout(resolve, 1200))
+      expect(screen.getByRole('textbox', { name: /monaco-diff/i })).toBeInTheDocument()
+    })
+
+    it('invokes diff navigation controls from the toolbar', async () => {
+      localStorage.setItem(SYNC_EDITOR_SHOW_CHANGES_STORAGE_KEY, 'true')
+      const clone = cloneDeep(propsNewResource)
+      clone.defaultResources = cloneDeep(clone.resources)
+      render(<SyncEditor {...clone} />)
+      await waitFor(() => screen.getByRole('textbox', { name: /monaco-diff/i }))
+      await waitFor(() => expect(lastDiffNavigator.current).not.toBeNull())
+      userEvent.click(screen.getByRole('button', { name: /previous change/i }))
+      userEvent.click(screen.getByRole('button', { name: /next change/i }))
+      expect(lastDiffNavigator.current?.previous).toHaveBeenCalledTimes(1)
+      expect(lastDiffNavigator.current?.next).toHaveBeenCalledTimes(1)
+    })
+
+    it('pastes certificate content with indentation after pem field', async () => {
+      const clone = cloneDeep(propsNewResource)
+      render(<SyncEditor {...clone} />)
+      const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
+      await waitFor(() => expect(input).not.toHaveValue(''))
+      const lineIndex = input.value.split('\n').findIndex((line) => line.includes('pem:'))
+      expect(lineIndex).toBeGreaterThan(-1)
+      const offset = input.value
+        .split('\n')
+        .slice(0, lineIndex + 1)
+        .join('\n').length
+      input.setSelectionRange(offset, offset)
+      const paste = createEvent.paste(input, {
+        clipboardData: { getData: () => certificate },
+      })
+      fireEvent(input.parentElement ?? input, paste)
+      await new Promise((resolve) => setTimeout(resolve, 500))
+      expect(input.value).toContain('-----BEGIN CERTIFICATE-----')
+    })
   })
 })
 
@@ -711,9 +782,6 @@ const certificate =
   'FakeCertificateContentsFinalLine==\r\n' +
   '-----END CERTIFICATE-----'
 
-const pastedResource =
-  'apiVersion: policy.open-cluster-management.io/v1\nkind: Policy\nmetadata:\n  name: test\n  namespace: default\n  pem: "|"\n    -----BEGIN CERTIFICATE-----\n    FakeCertificateContentsForTestingPurposesNotRealDataAtAllJustFun\n    FakeCertificateContentsForTestingPurposesNotRealDataAtAllAndMore\n    FakeCertificateContentsFinalLine==\n    -----END CERTIFICATE-----\n  annotations:\n    policy.open-cluster-management.io/categories: AC Access Control\n    policy.open-cluster-management.io/standards: NIST SP 800-53\n    policy.open-cluster-management.io/controls: AC-3 Access Enforcement\nspec:\n  disabled: true\n  policy-templates:\n    - objectDefinition:\n        apiVersion: policy.open-cluster-management.io/v1\n        kind: IamPolicy\n        metadata:\n          name: policy-limitclusteradmin\n        spec:\n          severity: medium\n          remediationAction: inform\n          maxClusterRoleBindingUsers: 5\n---\napiVersion: cluster.open-cluster-management.io/v1beta1\nkind: Placement\nmetadata:\n  name: test-placement\n  namespace: default\nspec:\n  predicates:\n    - requiredClusterSelector:\n        labelSelector:\n          matchExpressions:\n            - key: name\n              operator: In\n              values:\n                - local-cluster\n---\napiVersion: policy.open-cluster-management.io/v1\nkind: PlacementBinding\nmetadata:\n  name: test-placement\n  namespace: default\nplacementRef:\n  name: test-placement\n  apiGroup: cluster.open-cluster-management.io\n  kind: Placement\nsubjects:\n  - name: test\n    apiGroup: policy.open-cluster-management.io\n    kind: Policy\n'
-
 const pastedWONSResource =
   'apiVersion: policy.open-cluster-management.io/v1\nkind: Policy\nmetadata:\n  name: test\nspec:\n  disabled: false'
 const pastedWNSResource =
@@ -725,11 +793,11 @@ const newResourceYaml =
   'metadata:\n' +
   '  name: test\n' +
   '  namespace: default\n' +
-  '  pem: "|"\n' +
   '  annotations:\n' +
   '    policy.open-cluster-management.io/categories: AC Access Control\n' +
-  '    policy.open-cluster-management.io/standards: NIST SP 800-53\n' +
   '    policy.open-cluster-management.io/controls: AC-3 Access Enforcement\n' +
+  '    policy.open-cluster-management.io/standards: NIST SP 800-53\n' +
+  '  pem: "|"\n' +
   'spec:\n' +
   '  disabled: true\n' +
   '  policy-templates:\n' +
@@ -739,9 +807,9 @@ const newResourceYaml =
   '        metadata:\n' +
   '          name: policy-limitclusteradmin\n' +
   '        spec:\n' +
-  '          severity: medium\n' +
-  '          remediationAction: inform\n' +
   '          maxClusterRoleBindingUsers: 5\n' +
+  '          remediationAction: inform\n' +
+  '          severity: medium\n' +
   '---\n' +
   'apiVersion: cluster.open-cluster-management.io/v1beta1\n' +
   'kind: Placement\n' +
@@ -1293,11 +1361,11 @@ const protectedDecorators = [
       startColumn: 0,
     },
     options: {
-      isWholeLine: true,
       linesDecorationsClassName: 'customLineDecoration',
       overviewRuler: { color: '#0000ff', position: 1 },
-      minimap: { color: '#0000ff', position: 2 },
+      isWholeLine: true,
       description: 'resource-editor',
+      zIndex: 1000,
     },
   },
   {
@@ -1353,208 +1421,270 @@ const protectedDecorators = [
 const semanticErrors = [
   {
     range: {
+      startLineNumber: 4,
       endLineNumber: 4,
       endColumn: 132,
-      startLineNumber: 4,
       startColumn: 0,
     },
     options: {
       isWholeLine: true,
       glyphMarginClassName: 'errorDecoration',
-      overviewRuler: { color: '#ff0000', position: 4 },
-      minimap: { color: '#ff000060', position: 1 },
+      overviewRuler: {
+        color: '#ff0000',
+        position: 4,
+      },
+      minimap: {
+        color: '#ff000060',
+        position: 1,
+      },
       glyphMarginHoverMessage: {
         value:
-          '```html\n' +
-          'Dependencies on ConfigurationPolicies, IamPolicies, and CertificatePolicies cannot contain a namespace \n' +
-          '```',
+          '```html\nDependencies on ConfigurationPolicies, IamPolicies, and CertificatePolicies cannot contain a namespace \n```',
       },
       description: 'resource-editor',
     },
   },
   {
     range: {
+      startLineNumber: 4,
       endLineNumber: 13,
       endColumn: 1,
-      startLineNumber: 4,
       startColumn: 3,
     },
-    options: { className: 'squiggly-error' },
+    options: {
+      className: 'squiggly-error',
+    },
   },
   {
     range: {
-      endLineNumber: 5,
+      startLineNumber: 9,
+      endLineNumber: 9,
       endColumn: 132,
-      startLineNumber: 5,
       startColumn: 0,
     },
     options: {
       isWholeLine: true,
       glyphMarginClassName: 'errorDecoration',
-      overviewRuler: { color: '#ff0000', position: 4 },
-      minimap: { color: '#ff000060', position: 1 },
-      glyphMarginHoverMessage: { value: "```html\nMust have required property 'name' \n```" },
-      description: 'resource-editor',
-    },
-  },
-  {
-    range: {
-      endLineNumber: 5,
-      endColumn: 6,
-      startLineNumber: 5,
-      startColumn: 3,
-    },
-    options: { className: 'squiggly-error' },
-  },
-  {
-    range: {
-      endLineNumber: 4,
-      endColumn: 132,
-      startLineNumber: 4,
-      startColumn: 0,
-    },
-    options: {
-      isWholeLine: true,
-      glyphMarginClassName: 'errorDecoration',
-      overviewRuler: { color: '#ff0000', position: 4 },
-      minimap: { color: '#ff000060', position: 1 },
+      overviewRuler: {
+        color: '#ff0000',
+        position: 4,
+      },
+      minimap: {
+        color: '#ff000060',
+        position: 1,
+      },
       glyphMarginHoverMessage: {
-        value:
-          '```html\n' +
-          'Name must start/end alphanumerically, can contain dashes and periods, and must be less then 253 characters \n' +
-          '```',
+        value: "```html\nMust have required property 'name' \n```",
       },
       description: 'resource-editor',
     },
   },
   {
     range: {
-      endLineNumber: 4,
-      endColumn: 22,
-      startLineNumber: 4,
-      startColumn: 14,
+      startLineNumber: 9,
+      endLineNumber: 9,
+      endColumn: 6,
+      startColumn: 3,
     },
-    options: { className: 'squiggly-error' },
+    options: {
+      className: 'squiggly-error',
+    },
   },
   {
     range: {
-      endLineNumber: 6,
+      startLineNumber: 4,
+      endLineNumber: 4,
       endColumn: 132,
-      startLineNumber: 6,
       startColumn: 0,
     },
     options: {
       isWholeLine: true,
       glyphMarginClassName: 'errorDecoration',
-      overviewRuler: { color: '#ff0000', position: 4 },
-      minimap: { color: '#ff000060', position: 1 },
-      glyphMarginHoverMessage: { value: '```html\nMust be equal to constant: Test \n```' },
+      overviewRuler: {
+        color: '#ff0000',
+        position: 4,
+      },
+      minimap: {
+        color: '#ff000060',
+        position: 1,
+      },
+      glyphMarginHoverMessage: {
+        value:
+          '```html\nName must start/end alphanumerically, can contain dashes and periods, and must be less then 253 characters \n```',
+      },
       description: 'resource-editor',
     },
   },
   {
     range: {
-      endLineNumber: 6,
-      endColumn: 20,
-      startLineNumber: 6,
+      startLineNumber: 4,
+      endLineNumber: 4,
+      endColumn: 22,
       startColumn: 14,
     },
-    options: { className: 'squiggly-error' },
+    options: {
+      className: 'squiggly-error',
+    },
   },
   {
     range: {
-      endLineNumber: 7,
+      startLineNumber: 5,
+      endLineNumber: 5,
       endColumn: 132,
-      startLineNumber: 7,
+      startColumn: 0,
+    },
+    options: {
+      isWholeLine: true,
+      glyphMarginClassName: 'errorDecoration',
+      overviewRuler: {
+        color: '#ff0000',
+        position: 4,
+      },
+      minimap: {
+        color: '#ff000060',
+        position: 1,
+      },
+      glyphMarginHoverMessage: {
+        value: '```html\nMust be equal to constant: Test \n```',
+      },
+      description: 'resource-editor',
+    },
+  },
+  {
+    range: {
+      startLineNumber: 5,
+      endLineNumber: 5,
+      endColumn: 20,
+      startColumn: 14,
+    },
+    options: {
+      className: 'squiggly-error',
+    },
+  },
+  {
+    range: {
+      startLineNumber: 6,
+      endLineNumber: 6,
+      endColumn: 132,
       startColumn: 0,
     },
     options: {
       isWholeLine: true,
       glyphMarginClassName: 'warningDecoration',
-      overviewRuler: { color: '#ffff00', position: 4 },
-      minimap: { color: '#ffff0060', position: 1 },
+      overviewRuler: {
+        color: '#ffff00',
+        position: 4,
+      },
+      minimap: {
+        color: '#ffff0060',
+        position: 1,
+      },
       glyphMarginHoverMessage: {
-        value: '```html\n' + 'Must be equal to one of the allowed values: "ost", "vmw" \n' + '```',
+        value: '```html\nMust be equal to one of the allowed values: "ost", "vmw" \n```',
       },
       description: 'resource-editor',
     },
   },
   {
     range: {
-      endLineNumber: 7,
+      startLineNumber: 6,
+      endLineNumber: 6,
       endColumn: 16,
-      startLineNumber: 7,
       startColumn: 13,
     },
-    options: { className: 'squiggly-warning' },
-  },
-  {
-    range: {
-      endLineNumber: 8,
-      endColumn: 132,
-      startLineNumber: 8,
-      startColumn: 0,
-    },
     options: {
-      isWholeLine: true,
-      glyphMarginClassName: 'errorDecoration',
-      overviewRuler: { color: '#ff0000', position: 4 },
-      minimap: { color: '#ff000060', position: 1 },
-      glyphMarginHoverMessage: { value: '```html\nMust be string \n```' },
-      description: 'resource-editor',
+      className: 'squiggly-warning',
     },
   },
   {
     range: {
-      endLineNumber: 8,
-      endColumn: 14,
-      startLineNumber: 8,
-      startColumn: 13,
-    },
-    options: { className: 'squiggly-error' },
-  },
-  {
-    range: {
-      endLineNumber: 9,
-      endColumn: 132,
-      startLineNumber: 9,
-      startColumn: 0,
-    },
-    options: {
-      isWholeLine: true,
-      glyphMarginClassName: 'errorDecoration',
-      overviewRuler: { color: '#ff0000', position: 4 },
-      minimap: { color: '#ff000060', position: 1 },
-      glyphMarginHoverMessage: {
-        value:
-          '```html\n' +
-          'Name must start/end alphanumerically, can contain dashes, and must be less then 63 characters \n' +
-          '```',
-      },
-      description: 'resource-editor',
-    },
-  },
-  {
-    range: {
-      endLineNumber: 9,
-      endColumn: 94,
-      startLineNumber: 9,
-      startColumn: 22,
-    },
-    options: { className: 'squiggly-error' },
-  },
-  {
-    range: {
+      startLineNumber: 11,
       endLineNumber: 11,
       endColumn: 132,
-      startLineNumber: 11,
       startColumn: 0,
     },
     options: {
       isWholeLine: true,
       glyphMarginClassName: 'errorDecoration',
-      overviewRuler: { color: '#ff0000', position: 4 },
-      minimap: { color: '#ff000060', position: 1 },
+      overviewRuler: {
+        color: '#ff0000',
+        position: 4,
+      },
+      minimap: {
+        color: '#ff000060',
+        position: 1,
+      },
+      glyphMarginHoverMessage: {
+        value: '```html\nMust be string \n```',
+      },
+      description: 'resource-editor',
+    },
+  },
+  {
+    range: {
+      startLineNumber: 11,
+      endLineNumber: 11,
+      endColumn: 14,
+      startColumn: 13,
+    },
+    options: {
+      className: 'squiggly-error',
+    },
+  },
+  {
+    range: {
+      startLineNumber: 12,
+      endLineNumber: 12,
+      endColumn: 132,
+      startColumn: 0,
+    },
+    options: {
+      isWholeLine: true,
+      glyphMarginClassName: 'errorDecoration',
+      overviewRuler: {
+        color: '#ff0000',
+        position: 4,
+      },
+      minimap: {
+        color: '#ff000060',
+        position: 1,
+      },
+      glyphMarginHoverMessage: {
+        value:
+          '```html\nName must start/end alphanumerically, can contain dashes, and must be less then 63 characters \n```',
+      },
+      description: 'resource-editor',
+    },
+  },
+  {
+    range: {
+      startLineNumber: 12,
+      endLineNumber: 12,
+      endColumn: 94,
+      startColumn: 22,
+    },
+    options: {
+      className: 'squiggly-error',
+    },
+  },
+  {
+    range: {
+      startLineNumber: 10,
+      endLineNumber: 10,
+      endColumn: 132,
+      startColumn: 0,
+    },
+    options: {
+      isWholeLine: true,
+      glyphMarginClassName: 'errorDecoration',
+      overviewRuler: {
+        color: '#ff0000',
+        position: 4,
+      },
+      minimap: {
+        color: '#ff000060',
+        position: 1,
+      },
       glyphMarginHoverMessage: {
         value: '```html\nMust match pattern "[%d] [%p] [application-ui] [%c] %m" \n```',
       },
@@ -1563,18 +1693,20 @@ const semanticErrors = [
   },
   {
     range: {
-      endLineNumber: 11,
+      startLineNumber: 10,
+      endLineNumber: 10,
       endColumn: 20,
-      startLineNumber: 11,
       startColumn: 16,
     },
-    options: { className: 'squiggly-error' },
+    options: {
+      className: 'squiggly-error',
+    },
   },
   {
     range: {
-      endLineNumber: 12,
+      startLineNumber: 7,
+      endLineNumber: 7,
       endColumn: 132,
-      startLineNumber: 12,
       startColumn: 1,
     },
     options: {

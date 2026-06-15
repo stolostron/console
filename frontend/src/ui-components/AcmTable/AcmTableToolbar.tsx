@@ -29,7 +29,7 @@ import {
   useMemo,
   useState,
 } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom-v5-compat'
+import { useLocation, useNavigate } from 'react-router'
 import { useTranslation } from '../../lib/acm-i18next'
 import { FilterCounts } from '../../lib/useAggregates'
 import { matchesFilterValue, parseLabel } from '../../resources/utils'
@@ -669,7 +669,7 @@ function TableColumnFilters<T>(
 
   return (
     <ToolbarItem>
-      <div style={{ display: 'flex' }}>
+      <div style={{ display: 'flex', gap: '4px' }}>
         {filterSelectGroups.map(({ groupFilters, validFilters }, inx) => {
           return groupFilters.reduce(
             (acc, current) => (

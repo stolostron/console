@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { fireEvent, render, screen } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { AcmDrawerContext } from '../../../../ui-components'
 import { waitForText } from '../../../../lib/test-util'

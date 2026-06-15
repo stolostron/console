@@ -16,7 +16,7 @@ import { sizeOf } from '../routes/aggregators/utils'
 
 // If a client hasn't finished receiving a broadcast in PURGE_CLIENT_TIMEOUT
 // assume the browser has been refreshed or closed
-const PURGE_CLIENT_TIMEOUT = 4 * 60 * 60 * 1000
+const PURGE_CLIENT_TIMEOUT = 30 * 60 * 1000
 
 const instanceID = randomString(8)
 

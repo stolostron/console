@@ -2,6 +2,7 @@
 import {
   EditorValidationStatus,
   useData,
+  useDefaultItem,
   useEditorValidationStatus,
   useHighlightEditorPath,
   useItem,
@@ -15,13 +16,14 @@ import { useRecoilValue, useSharedAtoms } from '~/shared-recoil'
 import { isType } from '~/lib/is-type'
 import { LostChangesContext } from '~/components/LostChanges'
 import { useContext, useEffect, useState } from 'react'
-import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
+import { generatePath, useNavigate } from 'react-router'
 import { reconcileResources } from '~/resources/utils'
 import { AcmToastContext } from '~/ui-components'
 import { IResource, Placement } from '~/resources'
 
 export function WizardSyncEditor() {
   const resources = useItem()
+  const defaultItem = useDefaultItem()
   const { update } = useData()
   const { setEditorValidationStatus } = useEditorValidationStatus()
   const { highlightEditorPath } = useHighlightEditorPath()
@@ -32,10 +34,11 @@ export function WizardSyncEditor() {
       editorTitle={t('Placement YAML')}
       variant="toolbar"
       resources={resources}
+      defaultResources={defaultItem}
       schema={schema}
       highlightEditorPath={highlightEditorPath}
-      onEditorChange={(changes: { resources: any[] }): void => {
-        update(changes?.resources)
+      onEditorChange={(changes, resetDefaultSnapshot): void => {
+        update(changes?.resources, resetDefaultSnapshot)
       }}
       onStatusChange={(editorStatus: ValidationStatus): void => {
         setEditorValidationStatus(editorStatus as unknown as EditorValidationStatus)

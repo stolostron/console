@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Extension, ExtensionDeclaration } from '@openshift-console/dynamic-plugin-sdk/lib/types'
+import type { Extension } from '@openshift-console/dynamic-plugin-sdk/lib/types'
 import { OverviewTabProps } from '../properties'
 
 /** This extension allows plugins to contribute a tab to Overview page */
-export type OverviewTab = ExtensionDeclaration<'acm.overview/tab', OverviewTabProps>
+export type OverviewTab = Extension<'acm.overview/tab', OverviewTabProps>
 
 // Type guards
 

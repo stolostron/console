@@ -4,7 +4,7 @@ import { SortByDirection } from '@patternfly/react-table'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useContext } from 'react'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { MemoryRouter } from 'react-router'
 import {
   AcmTableStateContext,
   AcmTableStateProvider,

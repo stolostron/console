@@ -16,10 +16,12 @@ const config: Config.InitialOptions = {
     '\\.(css|less|jpg|jpeg|png|gif|eot|otf|webp|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
       '<rootDir>/src/file.mock.js',
     'monaco-editor': '<rootDir>/node_modules/react-monaco-editor',
+    '@monaco-editor/react': '<rootDir>/__mocks__/@monaco-editor/react.tsx',
     '@console/*': '<rootDir>/__mocks__/dummy.ts',
     '@openshift-assisted/ui-lib/cim': '<rootDir>/node_modules/@openshift-assisted/ui-lib/build/cjs/cim',
     '@openshift-assisted/locales/([a-z]{2,3}/translation.json)':
       '<rootDir>/node_modules/@openshift-assisted/locales/lib/$1/translation.json',
+    '^react-router-dom-v5-compat$': '<rootDir>/node_modules/react-router',
   },
   watchAll: false,
   slowTestThreshold: 30,

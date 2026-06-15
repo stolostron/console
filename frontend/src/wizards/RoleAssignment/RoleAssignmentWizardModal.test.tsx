@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { MemoryRouter } from 'react-router'
 import { RoleAssignmentWizardModal } from './RoleAssignmentWizardModal'
 import React from 'react'
 import { ManagedClusterSet } from '../../resources'

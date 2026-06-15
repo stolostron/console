@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import { EditMode } from '../../src'
 import { YamlToObject } from '../../src/components/YamlEditor'
 import { Catalog } from '../Catalog'
@@ -23,12 +23,12 @@ import editPolicyPsp from './stable/SC-System-and-Communications-Protection/poli
 import editPolicyScc from './stable/SC-System-and-Communications-Protection/policy-scc.yaml'
 import editPolicyImageManifestVuln from './stable/SI-System-and-Information-Integrity/policy-imagemanifestvuln.yaml'
 
-export function onCancel(history: { push: (location: string) => void }) {
-  history.push(`./${RouteE.Policy}`)
+export function onCancel(navigate: (path: string) => void) {
+  navigate(`./${RouteE.Policy}`)
 }
 
 export function PolicyExamples() {
-  const history = useHistory()
+  const navigate = useNavigate()
   return (
     <Catalog
       title="Policy Wizard Examples"
@@ -52,106 +52,106 @@ export function PolicyExamples() {
           descriptions: [
             'A policy generates reports and validates cluster compliance based on specified security standards, categories, and controls',
           ],
-          onClick: () => history.push(RouteE.CreatePolicy),
+          onClick: () => navigate(RouteE.CreatePolicy),
         },
         {
           title: 'Limit Cluster Admin Policy',
           featureGroups: [{ title: 'Policies', features: ['Limit Cluster Admin'] }],
           labels: ['Access Control'],
-          onClick: () => history.push(RouteE.EditPolicyLimitClusterAdmin),
+          onClick: () => navigate(RouteE.EditPolicyLimitClusterAdmin),
         },
         {
           title: 'Role Policy',
           featureGroups: [{ title: 'Policies', features: ['Role'] }],
           labels: ['Access Control'],
-          onClick: () => history.push(RouteE.EditPolicyRole),
+          onClick: () => navigate(RouteE.EditPolicyRole),
         },
         {
           title: 'Role Binding Policy',
           featureGroups: [{ title: 'Policies', features: ['Role Binding'] }],
           labels: ['Access Control'],
-          onClick: () => history.push(RouteE.EditPolicyRoleBinding),
+          onClick: () => navigate(RouteE.EditPolicyRoleBinding),
         },
         {
           title: 'Compliance Operator Install Policy',
           featureGroups: [{ title: 'Policies', features: ['Compliance Operator Install'] }],
           labels: ['Security Assessment and Authorization'],
-          onClick: () => history.push(RouteE.EditPolicyComplianceOperatorInstall),
+          onClick: () => navigate(RouteE.EditPolicyComplianceOperatorInstall),
         },
         {
           title: 'Compliance Operator Cis Scan Policy',
           featureGroups: [{ title: 'Policies', features: ['Compliance Operator Cis Scan'] }],
           labels: ['Configuration Management'],
-          onClick: () => history.push(RouteE.EditPolicyComplianceOperatorCisScan),
+          onClick: () => navigate(RouteE.EditPolicyComplianceOperatorCisScan),
         },
         {
           title: 'Compliance Operator E8 Scan Policy',
           featureGroups: [{ title: 'Policies', features: ['Compliance Operator E8 Scan'] }],
           labels: ['Configuration Management'],
-          onClick: () => history.push(RouteE.EditPolicyComplianceOperatorE8Scan),
+          onClick: () => navigate(RouteE.EditPolicyComplianceOperatorE8Scan),
         },
         {
           title: 'Gatekeeper Operator Downstream Policy',
           featureGroups: [{ title: 'Policies', features: ['Gatekeeper Operator Downstream'] }],
           labels: ['Configuration Management'],
-          onClick: () => history.push(RouteE.EditPolicyGatekeeperOperatorDownstream),
+          onClick: () => navigate(RouteE.EditPolicyGatekeeperOperatorDownstream),
         },
         {
           title: 'Namespace Policy',
           featureGroups: [{ title: 'Policies', features: ['Namespace'] }],
           labels: ['Configuration Management'],
-          onClick: () => history.push(RouteE.EditPolicyNamespace),
+          onClick: () => navigate(RouteE.EditPolicyNamespace),
         },
         {
           title: 'Pod Policy',
           featureGroups: [{ title: 'Policies', features: ['Pod'] }],
           labels: ['Configuration Management'],
-          onClick: () => history.push(RouteE.EditPolicyPod),
+          onClick: () => navigate(RouteE.EditPolicyPod),
         },
         {
           title: 'Certificate Policy',
           featureGroups: [{ title: 'Policies', features: ['Certificate'] }],
           labels: ['System and Communications Protection'],
-          onClick: () => history.push(RouteE.EditPolicyCertificate),
+          onClick: () => navigate(RouteE.EditPolicyCertificate),
         },
         {
           title: 'Etcd Encryption Policy',
           featureGroups: [{ title: 'Policies', features: ['Etcd Encryption'] }],
           labels: ['System and Communications Protection'],
-          onClick: () => history.push(RouteE.EditPolicyEtcdEncryption),
+          onClick: () => navigate(RouteE.EditPolicyEtcdEncryption),
         },
         {
           title: 'Limit Memory Policy',
           featureGroups: [{ title: 'Policies', features: ['Limit Memory'] }],
           labels: ['System and Communications Protection'],
-          onClick: () => history.push(RouteE.EditPolicyLimitMemory),
+          onClick: () => navigate(RouteE.EditPolicyLimitMemory),
         },
         {
           title: 'Psp Policy',
           featureGroups: [{ title: 'Policies', features: ['Psp'] }],
           labels: ['System and Communications Protection'],
-          onClick: () => history.push(RouteE.EditPolicyPsp),
+          onClick: () => navigate(RouteE.EditPolicyPsp),
         },
         {
           title: 'Security Context Constraints Policy',
           featureGroups: [{ title: 'Policies', features: ['Security Context Constraints'] }],
           labels: ['System and Communications Protection'],
-          onClick: () => history.push(RouteE.EditPolicyScc),
+          onClick: () => navigate(RouteE.EditPolicyScc),
         },
         {
           title: 'Image Manifest Vuln Policy',
           featureGroups: [{ title: 'Policies', features: ['Image Manifest Vuln'] }],
           labels: ['System and Information Integrity'],
-          onClick: () => history.push(RouteE.EditPolicyImageManifestVuln),
+          onClick: () => navigate(RouteE.EditPolicyImageManifestVuln),
         },
       ]}
-      onBack={() => history.push(RouteE.Wizards)}
+      onBack={() => navigate(RouteE.Wizards)}
     />
   )
 }
 
 export function CreatePolicy() {
-  const history = useHistory()
+  const navigate = useNavigate()
   return (
     <PolicyWizard
       title="Create policy"
@@ -162,13 +162,13 @@ export function CreatePolicy() {
       clusterSets={clusterSets}
       clusterSetBindings={clusterSetBindings}
       onSubmit={onSubmit}
-      onCancel={() => onCancel(history)}
+      onCancel={() => onCancel(navigate)}
     />
   )
 }
 
 export function EditPolicy(props: { yaml: string }) {
-  const history = useHistory()
+  const navigate = useNavigate()
   return (
     <PolicyWizard
       namespaces={namespaces}
@@ -178,7 +178,7 @@ export function EditPolicy(props: { yaml: string }) {
       placements={placements}
       title="Edit policy"
       onSubmit={onSubmit}
-      onCancel={() => onCancel(history)}
+      onCancel={() => onCancel(navigate)}
       editMode={EditMode.Edit}
       resources={YamlToObject(props.yaml, true)}
       gitSource="http://example.com"

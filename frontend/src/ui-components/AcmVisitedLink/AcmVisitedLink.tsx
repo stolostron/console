@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import React from 'react'
-import { Link, LinkProps } from 'react-router-dom-v5-compat'
+import { Link, LinkProps } from 'react-router'
 import { css } from '@emotion/css'
 import { getItemWithExpiration, setItemWithExpiration } from '../AcmTable/AcmTableStateProvider'
 

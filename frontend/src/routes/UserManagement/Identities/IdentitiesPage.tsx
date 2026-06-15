@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Outlet, useLocation } from 'react-router-dom-v5-compat'
+import { Outlet, useLocation } from 'react-router'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../../ui-components'

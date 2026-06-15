@@ -8,7 +8,7 @@ import { PencilAltIcon } from '@patternfly/react-icons'
 import '../css/TimeWindowLabels.css'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { Link, useParams, generatePath } from 'react-router-dom-v5-compat'
+import { Link, useParams, generatePath } from 'react-router'
 
 export interface ITimeWindowLabelsProps {
   subName: string

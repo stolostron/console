@@ -12,7 +12,7 @@ import {
 } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { useMemo, useState } from 'react'
-import { generatePath, useNavigate } from 'react-router-dom-v5-compat'
+import { generatePath, useNavigate } from 'react-router'
 import { AutomationProviderHint } from '../../../components/AutomationProviderHint'
 import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
 import { Trans, useTranslation } from '../../../lib/acm-i18next'

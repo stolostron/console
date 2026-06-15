@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreRBAC } from '../../../lib/nock-util'
 import IdentitiesManagement from './IdentitiesManagement'

@@ -67,7 +67,7 @@
     "@react-hook/resize-observer": "1.2.6",
     "@redhat-cloud-services/rule-components": "^4.4.2",
     "@reduxjs/toolkit": "1.9.x",
-    "@stolostron/react-data-view": "^3.5.0",
+    "@stolostron/react-data-view": "^3.9.0",
     "@tanstack/react-query": "^4.44.0",
     "ajv": "8.20.0",
     "axios": "^1.16.1",
@@ -94,6 +94,7 @@
     "parse-url": "^9.2.0",
     "react-error-boundary": "3.1.4",
     "react-monaco-editor": "^0.51.0",
+    "react-router": "^7.17.0",
     "screenfull": "^6.0.2",
     "semver": "^7.8.1",
     "set-value": "^4.1.0",
@@ -112,8 +113,8 @@
     "@babel/preset-react": "^7.29.7",
     "@babel/preset-typescript": "^7.29.7",
     "@kubernetes/client-node": "^1.4.0",
-    "@openshift-console/dynamic-plugin-sdk": "^4.19.1",
-    "@openshift-console/dynamic-plugin-sdk-webpack": "4.19.0",
+    "@openshift-console/dynamic-plugin-sdk": "^4.22.0",
+    "@openshift-console/dynamic-plugin-sdk-webpack": "^4.22.0",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.6.2",
     "@sentry/browser": "6.19.7",
     "@storybook/addon-a11y": "8.0.9",
@@ -188,7 +189,6 @@
     "react-redux": "7.2.9",
     "react-refresh": "^0.18.0",
     "react-refresh-typescript": "^2.0.12",
-    "react-router-dom-v5-compat": "^6.30.4",
     "react-tagsinput": "3.20.x",
     "recoil": "0.7.7",
     "redux": "^4.2.1",
@@ -217,6 +217,11 @@
     "webpack-bundle-analyzer": "4.10.2",
     "webpack-cli": "4.10.0",
     "webpack-dev-server": "^4.15.2"
+  },
+  "overrides": {
+    "@openshift-assisted/ui-lib": {
+      "@openshift-console/dynamic-plugin-sdk": "4.22.0"
+    }
   },
   "browserslist": {
     "production": [

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import {
   channelsState,
@@ -173,6 +173,9 @@ const argoAppSetGit: ApplicationSet = {
     namespace: 'argo-server-1',
   },
   spec: {
+    syncPolicy: {
+      preserveResourcesOnDeletion: false,
+    },
     generators: [
       {
         clusterDecisionResource: {
@@ -232,6 +235,9 @@ const argoAppSetHelm: ApplicationSet = {
     namespace: 'argo-server-1',
   },
   spec: {
+    syncPolicy: {
+      preserveResourcesOnDeletion: false,
+    },
     generators: [
       {
         clusterDecisionResource: {
@@ -380,8 +386,8 @@ const hubCluster: ManagedCluster = {
   },
 }
 
-jest.mock('react-router-dom-v5-compat', () => {
-  const originalModule = jest.requireActual('react-router-dom-v5-compat')
+jest.mock('react-router', () => {
+  const originalModule = jest.requireActual('react-router')
   return {
     __esModule: true,
     ...originalModule,

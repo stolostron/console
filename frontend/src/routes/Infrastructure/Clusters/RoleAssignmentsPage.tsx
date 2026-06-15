@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
-import { Navigate, useParams, generatePath } from 'react-router-dom-v5-compat'
+import { Navigate, useParams, generatePath } from 'react-router'
 import { useSharedAtoms, useRecoilValue } from '../../../shared-recoil'
 import { NavigationPath } from '../../../NavigationPath'
 import { ClusterRoleAssignments } from './ClusterRoleAssignments'

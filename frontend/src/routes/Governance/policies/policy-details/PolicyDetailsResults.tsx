@@ -3,7 +3,7 @@ import { Icon, PageSection, Title, Tooltip } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmEmptyState, AcmTable, AcmTableStateProvider, compareStrings } from '../../../../ui-components'
 import { ReactNode, useMemo } from 'react'
-import { Link, generatePath, useLocation } from 'react-router-dom-v5-compat'
+import { Link, generatePath, useLocation } from 'react-router'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { rbacCreate, useIsAnyNamespaceAuthorized } from '../../../../lib/rbac-util'
@@ -25,7 +25,7 @@ export interface ResultsTableData {
   kind: string
   status: string
   message: string
-  timestamp: string | number | Date | undefined
+  timestamp: string | undefined
   policyName: string
   policyNamespace: string
   remediationAction: string

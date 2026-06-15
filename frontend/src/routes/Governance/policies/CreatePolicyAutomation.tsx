@@ -2,6 +2,7 @@
 import {
   EditorValidationStatus,
   useData,
+  useDefaultItem,
   useEditorValidationStatus,
   useHighlightEditorPath,
   useItem,
@@ -9,7 +10,7 @@ import {
 import { PolicyAutomationWizard } from '../../../wizards/Governance/PolicyAutomation/PolicyAutomationWizard'
 import { AcmToastContext } from '../../../ui-components'
 import { useContext, useMemo } from 'react'
-import { useParams, useNavigate, PathParam, useLocation, generatePath } from 'react-router-dom-v5-compat'
+import { useParams, useNavigate, type PathParam, useLocation, generatePath } from 'react-router'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import { SyncEditor, ValidationStatus } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -22,6 +23,7 @@ import { LostChangesContext } from '../../../components/LostChanges'
 
 export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
+  const defaultItem = useDefaultItem()
   const { update } = useData() // Wizard framework sets this context
   const { setEditorValidationStatus } = useEditorValidationStatus()
   const { highlightEditorPath } = useHighlightEditorPath()
@@ -31,10 +33,11 @@ export function WizardSyncEditor() {
       editorTitle={t('Automation YAML')}
       variant="toolbar"
       resources={resources}
+      defaultResources={defaultItem}
       schema={schema}
       highlightEditorPath={highlightEditorPath}
-      onEditorChange={(changes: { resources: any[] }): void => {
-        update(changes?.resources)
+      onEditorChange={(changes, resetDefaultSnapshot): void => {
+        update(changes?.resources, resetDefaultSnapshot)
       }}
       onStatusChange={(editorStatus: ValidationStatus): void => {
         setEditorValidationStatus(editorStatus as unknown as EditorValidationStatus)

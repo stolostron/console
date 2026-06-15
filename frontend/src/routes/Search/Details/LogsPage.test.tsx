@@ -4,7 +4,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React, { useRef, useState } from 'react'
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { managedClustersState } from '../../../atoms'
 import { nockOff, nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../lib/nock-util'

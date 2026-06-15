@@ -8,7 +8,7 @@ import {
   Stack,
   Title,
 } from '@patternfly/react-core'
-import { useNavigate } from 'react-router-dom-v5-compat'
+import { useNavigate } from 'react-router'
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'

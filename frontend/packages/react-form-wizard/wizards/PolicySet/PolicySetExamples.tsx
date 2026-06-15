@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import { EditMode } from '../../src'
 import { Catalog } from '../Catalog'
 import { IResource } from '../../src/common/resource'
@@ -11,12 +11,12 @@ import { onSubmit } from '../common/utils'
 import { RouteE } from '../Routes'
 import { PolicySetWizard } from './PolicySetWizard'
 
-export function onCancel(history: { push: (location: string) => void }) {
-  history.push(`./${RouteE.PolicySet}`)
+export function onCancel(navigate: (path: string) => void) {
+  navigate(`./${RouteE.PolicySet}`)
 }
 
 export function PolicySetExamples() {
-  const history = useHistory()
+  const navigate = useNavigate()
   return (
     <Catalog
       title="Policy Set Wizard Examples"
@@ -34,34 +34,34 @@ export function PolicySetExamples() {
           descriptions: ['Create a new policy set.'],
           // featureGroups: [{ title: 'Features', features: ['Create a new policy set.'] }],
           labels: ['Placement'],
-          onClick: () => history.push(RouteE.CreatePolicySet),
+          onClick: () => navigate(RouteE.CreatePolicySet),
         },
         {
           title: 'Edit policy set with single placement',
           featureGroups: [{ title: 'Features', features: ['Single placement'] }],
           labels: ['Placement'],
-          onClick: () => history.push(RouteE.EditPolicySet1),
+          onClick: () => navigate(RouteE.EditPolicySet1),
         },
         {
           title: 'Edit policy set with two placements',
           featureGroups: [{ title: 'Features', features: ['Two placements'] }],
           labels: ['Placement'],
-          onClick: () => history.push(RouteE.EditPolicySet2),
+          onClick: () => navigate(RouteE.EditPolicySet2),
         },
         // {
         //     title: 'Edit policy set with placement binding',
         //     featureGroups: [{ title: 'Features', features: ['Placement binding'] }],
         //     labels: ['Placement Binding'],
-        //     onClick: () => history.push(RouteE.EditPolicySet6),
+        //     onClick: () => navigate(RouteE.EditPolicySet6),
         // },
       ]}
-      onBack={() => history.push(RouteE.Wizards)}
+      onBack={() => navigate(RouteE.Wizards)}
     />
   )
 }
 
 export function CreatePolicySet() {
-  const history = useHistory()
+  const navigate = useNavigate()
   return (
     <PolicySetWizard
       breadcrumb={[
@@ -76,14 +76,14 @@ export function CreatePolicySet() {
       clusterSets={clusterSets}
       clusterSetBindings={clusterSetBindings}
       onSubmit={onSubmit}
-      onCancel={() => onCancel(history)}
+      onCancel={() => onCancel(navigate)}
       clusters={clusters}
     />
   )
 }
 
 export function EditPolicySet1() {
-  const history = useHistory()
+  const navigate = useNavigate()
   return (
     <PolicySetWizard
       namespaces={namespaces}
@@ -93,7 +93,7 @@ export function EditPolicySet1() {
       placements={placements}
       title="Edit policy set"
       onSubmit={onSubmit}
-      onCancel={() => onCancel(history)}
+      onCancel={() => onCancel(navigate)}
       editMode={EditMode.Edit}
       resources={policySetWithSinglePlacementResources}
       clusters={clusters}
@@ -102,7 +102,7 @@ export function EditPolicySet1() {
 }
 
 export function EditPolicySet2() {
-  const history = useHistory()
+  const navigate = useNavigate()
   return (
     <PolicySetWizard
       namespaces={namespaces}
@@ -112,7 +112,7 @@ export function EditPolicySet2() {
       placements={placements}
       title="Edit policy set"
       onSubmit={onSubmit}
-      onCancel={() => onCancel(history)}
+      onCancel={() => onCancel(navigate)}
       editMode={EditMode.Edit}
       resources={policySetWithTwoPlacementResources}
       clusters={clusters}
@@ -121,7 +121,7 @@ export function EditPolicySet2() {
 }
 
 export function EditPolicySet6() {
-  const history = useHistory()
+  const navigate = useNavigate()
   return (
     <PolicySetWizard
       namespaces={namespaces}
@@ -131,7 +131,7 @@ export function EditPolicySet6() {
       placements={placements}
       title="Edit policy set"
       onSubmit={onSubmit}
-      onCancel={() => onCancel(history)}
+      onCancel={() => onCancel(navigate)}
       editMode={EditMode.Edit}
       resources={policySetWithPlacementBindingResources}
       clusters={clusters}

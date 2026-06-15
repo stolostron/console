@@ -3,12 +3,13 @@ import {
   EditMode,
   EditorValidationStatus,
   useData,
+  useDefaultItem,
   useEditorValidationStatus,
   useHighlightEditorPath,
   useItem,
 } from '@patternfly-labs/react-form-wizard'
 import { IResource, PolicySetKind } from '../../../resources'
-import { PathParam, useNavigate, useParams } from 'react-router-dom-v5-compat'
+import { PathParam, useNavigate, useParams } from 'react-router'
 import { getPlacementBindingsForResource, getPlacementsForResource } from '../common/util'
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
@@ -26,6 +27,7 @@ import { localeCompare } from '../../../utils/localeCompare'
 
 export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
+  const defaultItem = useDefaultItem()
   const { update } = useData() // Wizard framework sets this context
   const { setEditorValidationStatus } = useEditorValidationStatus()
   const { highlightEditorPath } = useHighlightEditorPath()
@@ -35,12 +37,13 @@ export function WizardSyncEditor() {
       editorTitle={t('Policy set YAML')}
       variant="toolbar"
       resources={resources}
+      defaultResources={defaultItem}
       schema={schema}
       filters={['*.metadata.managedFields']}
       highlightEditorPath={highlightEditorPath}
       immutables={['PlacementBinding.0.*']}
-      onEditorChange={(changes: { resources: any[] }): void => {
-        update(changes?.resources)
+      onEditorChange={(changes, resetDefaultSnapshot): void => {
+        update(changes?.resources, resetDefaultSnapshot)
       }}
       onStatusChange={(editorStatus: ValidationStatus): void => {
         setEditorValidationStatus(editorStatus as unknown as EditorValidationStatus)

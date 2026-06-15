@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useHistory } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import { EditMode } from '../../src'
 import { Catalog } from '../Catalog'
 import { IPolicyAutomation, PolicyAutomationType } from '../common/resources/IPolicyAutomation'
@@ -7,12 +7,12 @@ import { onSubmit } from '../common/utils'
 import { RouteE } from '../Routes'
 import { PolicyAutomationWizard } from './PolicyAutomationWizard'
 
-export function onCancel(history: { push: (location: string) => void }) {
-  history.push(`./${RouteE.Wizards}`)
+export function onCancel(navigate: (path: string) => void) {
+  navigate(`./${RouteE.Wizards}`)
 }
 
 export function PolicyAutomationExamples() {
-  const history = useHistory()
+  const navigate = useNavigate()
   return (
     <Catalog
       title="Policy Automation Examples"
@@ -21,21 +21,21 @@ export function PolicyAutomationExamples() {
         {
           title: 'Create policy automation',
           descriptions: ['Create a new policy automation.'],
-          onClick: () => history.push(RouteE.CreatePolicyAutomation),
+          onClick: () => navigate(RouteE.CreatePolicyAutomation),
         },
         {
           title: 'Edit policy automation',
           descriptions: ['Edit a policy automation.'],
-          onClick: () => history.push(RouteE.EditPolicyAutomation),
+          onClick: () => navigate(RouteE.EditPolicyAutomation),
         },
       ]}
-      onBack={() => history.push(RouteE.Wizards)}
+      onBack={() => navigate(RouteE.Wizards)}
     />
   )
 }
 
 export function CreatePolicyAutomation() {
-  const history = useHistory()
+  const navigate = useNavigate()
   return (
     <PolicyAutomationWizard
       breadcrumb={[
@@ -45,7 +45,7 @@ export function CreatePolicyAutomation() {
       ]}
       title="Create policy automation"
       onSubmit={onSubmit}
-      onCancel={() => onCancel(history)}
+      onCancel={() => onCancel(navigate)}
       policy={{
         metadata: { name: 'my-policy', namespace: 'my-namespace' },
       }}
@@ -95,7 +95,7 @@ export function CreatePolicyAutomation() {
 }
 
 export function EditPolicyAutomation() {
-  const history = useHistory()
+  const navigate = useNavigate()
   return (
     <PolicyAutomationWizard
       breadcrumb={[
@@ -106,7 +106,7 @@ export function EditPolicyAutomation() {
       editMode={EditMode.Edit}
       title="Edit policy automation"
       onSubmit={onSubmit}
-      onCancel={() => onCancel(history)}
+      onCancel={() => onCancel(navigate)}
       policy={{
         metadata: { name: 'my-policy', namespace: 'my-namespace' },
       }}

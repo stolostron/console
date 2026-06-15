@@ -6,7 +6,7 @@ import DiscoveredPolicies from './DiscoveredPolicies'
 import { getSourceFilterOptions } from './details/common'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { waitForText, waitForNotText, getCSVExportSpies, getCSVDownloadLink } from '../../../lib/test-util'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { MemoryRouter } from 'react-router'
 import { ApolloError } from '@apollo/client'
 
 /** Filter UI state for `acm-table-filter.discoveredPolicyTable` — must not be returned for column keys (`*SavedCols`). */

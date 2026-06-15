@@ -9,7 +9,7 @@ import {
   useContext,
   Dispatch,
 } from 'react'
-import { useNavigate, Location } from 'react-router-dom-v5-compat'
+import { useNavigate, Location } from 'react-router'
 import { Button } from '@patternfly/react-core'
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import isEqual from 'lodash/isEqual'

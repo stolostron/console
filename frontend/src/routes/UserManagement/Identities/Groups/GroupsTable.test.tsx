@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor } from '@testing-library/react'
 import { ButtonVariant } from '@patternfly/react-core'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { MulticlusterRoleAssignment } from '../../../../resources/multicluster-role-assignment'
 import { Group } from '../../../../resources/rbac'

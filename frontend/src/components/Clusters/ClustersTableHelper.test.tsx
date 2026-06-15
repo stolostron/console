@@ -13,7 +13,7 @@ var gpuColumnTestState: {
 }
 
 import { render, screen, within } from '@testing-library/react'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { Cluster, ClusterStatus } from '../../resources/utils'
 import { Provider } from '../../ui-components'
@@ -121,15 +121,6 @@ jest.mock('../../routes/Infrastructure/helpers/table-row-helpers', () => ({
   getDateTimeCell: (timestamp: string) => ({
     sortableValue: timestamp === '-' ? 0 : new Date(timestamp).getTime(),
   }),
-}))
-
-// Mock React Router v5 compat
-jest.mock('react-router-dom-v5-compat', () => ({
-  Link: ({ children, to, ...props }: { children: React.ReactNode; to: string }) => (
-    <a href={to} {...props}>
-      {children}
-    </a>
-  ),
 }))
 
 // Mock search utils

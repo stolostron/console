@@ -258,6 +258,15 @@
   transition: outline-width 0.4s ease-out;
 }
 
+.wizard-review-find-list--changes-only {
+  padding: 10px;
+  background-color: rgba(21, 128, 61, 0.09);
+}
+
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .wizard-review-find-list--changes-only {
+  background-color: rgba(110, 193, 115, 0.16);
+}
+
 .wizard-review-find-list--empty {
   color: var(--pf-t--global--text--color--subtle);
   padding-block: var(--pf-t--global--spacer--md);
@@ -297,4 +306,89 @@
 .wizard-review-find-value-with-trailing-icon .wizard-review-find-inline-body {
   flex: 1 1 auto;
   min-width: 0;
+}
+
+/* Difference title rows span the full horizontal description list width. */
+.wizard-review-find-difference-title {
+  display: grid;
+  grid-template-columns: subgrid;
+}
+
+.wizard-review-find-difference-title > :is(.pf-v6-c-description-list__term, .pf-v5-c-description-list__term) {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+/* Find list: measure the review column (narrows when the YAML drawer is open). */
+.wizard-review-find-list {
+  container-type: inline-size;
+  container-name: wizard-review-find-list;
+  min-width: 0;
+}
+
+.wizard-review-find-list .wizard-review-find-dl-group {
+  min-width: 0;
+}
+
+.wizard-review-find-list
+  .wizard-review-find-dl-group:has(> .wizard-review-pen-hover-zone--dl-group-row:not(.wizard-review-dl-empty-value)) {
+  container-type: inline-size;
+  container-name: wizard-review-pen-dl-group, wizard-review-find-list;
+}
+
+.wizard-review-find-list
+  .wizard-review-find-dl-group:has(> .wizard-review-pen-hover-zone--dl-group-row.wizard-review-dl-empty-value) {
+  container-type: inline-size;
+  container-name: wizard-review-pen-dl-group-empty, wizard-review-find-list;
+}
+
+/* Stack value under term; subgrid only exposes one row so replace it with an explicit grid. */
+@container wizard-review-find-list (max-width: 48rem) {
+  .wizard-review-find-list .wizard-review-find-dl-group {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .wizard-review-find-list .wizard-review-find-dl-group > .wizard-review-pen-hover-zone--dl-group-row {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: auto auto auto !important;
+    grid-column: 1 / -1;
+  }
+
+  .wizard-review-find-list
+    .wizard-review-find-dl-group
+    > .wizard-review-pen-hover-zone--dl-group-row
+    > :is(.pf-v6-c-description-list__term, .pf-v5-c-description-list__term) {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+  }
+
+  .wizard-review-find-list
+    .wizard-review-find-dl-group
+    > .wizard-review-pen-hover-zone--dl-group-row
+    > :is(.pf-v6-c-description-list__description, .pf-v5-c-description-list__description) {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+  }
+
+  .wizard-review-find-list
+    .wizard-review-find-dl-group
+    > .wizard-review-pen-hover-zone--dl-group-row
+    > .wizard-review-pen-controls--dl-stacked {
+    grid-column: 1 !important;
+    grid-row: 3 !important;
+  }
+}
+
+.wizard-review-find-difference-modified-label:is(.pf-v6-c-label, .pf-v5-c-label) {
+  --pf-v6-c-label--BackgroundColor: color-mix(in srgb, color-mix(in srgb, #6a6e73 50%, white) 75%, white);
+  --pf-v5-c-label--BackgroundColor: color-mix(in srgb, color-mix(in srgb, #6a6e73 50%, white) 75%, white);
+  --pf-v6-c-label__content--Color: var(--pf-t--global--text--color--regular);
+  --pf-v5-c-label__content--Color: var(--pf-t--global--text--color--regular);
+}
+
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark)
+  .wizard-review-find-difference-modified-label:is(.pf-v6-c-label, .pf-v5-c-label) {
+  --pf-v6-c-label--BackgroundColor: color-mix(in srgb, color-mix(in srgb, #525860 50%, white) 75%, white);
+  --pf-v5-c-label--BackgroundColor: color-mix(in srgb, color-mix(in srgb, #525860 50%, white) 75%, white);
 }

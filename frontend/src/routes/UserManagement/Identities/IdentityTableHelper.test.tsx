@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import { renderHook } from '@testing-library/react-hooks'
-import { MemoryRouter } from 'react-router-dom-v5-compat'
+import { MemoryRouter } from 'react-router'
 import { Group, User } from '../../../resources/rbac'
 import {
   COLUMN_CELLS,

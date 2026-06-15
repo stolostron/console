@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 // mock react-router-dom-v5-compat
-jest.mock('react-router-dom-v5-compat', () => ({
+jest.mock('react-router', () => ({
   generatePath: jest.fn(),
 }))
 
@@ -12,7 +12,7 @@ jest.mock('query-string', () => ({
 
 import { acmResourceRouteHandler } from './acmResourceRoutes'
 import { NavigationPath } from '../NavigationPath'
-import { generatePath } from 'react-router-dom-v5-compat'
+import { generatePath } from 'react-router'
 import * as queryString from 'query-string'
 
 // get the mocked functions

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { decorate, getResourceEditorDecorations, rangeForHighlightPath } from './decorate'
+import { decorate, getModelDecorations, rangeForHighlightPath } from './decorate'
 import { ErrorType } from './validation'
 import type { Monaco } from '@monaco-editor/react'
 import type { editor as editorTypes } from 'monaco-editor'
@@ -131,38 +131,58 @@ describe('rangeForHighlightPath', () => {
   })
 })
 
-describe('getResourceEditorDecorations', () => {
+describe('getModelDecorations', () => {
+  const range = { startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 5 }
+
   it('returns empty when editor has no model', () => {
     const editor = { getModel: () => null } as unknown as editorTypes.IStandaloneCodeEditor
-    expect(getResourceEditorDecorations(editor, false)).toEqual([])
+    expect(getModelDecorations(editor, false)).toEqual([])
+  })
+
+  it('maps filtered resource-editor decorations to range and options for deltaDecorations', () => {
+    const options = { className: 'insertLineDecoration' }
+    const editor = {
+      getModel: () => ({
+        getAllDecorations: () => [{ id: 'a', ownerId: 0, range, options }],
+      }),
+    } as unknown as editorTypes.IStandaloneCodeEditor
+    expect(getModelDecorations(editor, false)).toEqual([{ range, options }])
+  })
+
+  it('keeps line decorations from linesDecorationsClassName', () => {
+    const editor = {
+      getModel: () => ({
+        getAllDecorations: () => [{ range, options: { linesDecorationsClassName: 'insertLineDecoration' } }],
+      }),
+    } as unknown as editorTypes.IStandaloneCodeEditor
+    expect(getModelDecorations(editor, false)).toHaveLength(1)
   })
 
   it('keeps squiggly, yaml highlight, line decorations, and glyph margin except protected when no errors', () => {
     const decorations = [
-      { options: { className: 'squiggly-error' } },
-      { options: { className: 'syncEditorYamlHighlight' } },
-      { options: { linesDecorationsClassName: 'insertedLineDecoration' } },
-      { options: { linesDecorationsClassName: 'customLineDecoration' } },
-      { options: { glyphMarginClassName: 'errorDecoration', inlineClassName: 'other' } },
-      { options: { inlineClassName: 'protectedDecoration' } },
+      { range, options: { className: 'squiggly-error' } },
+      { range, options: { className: 'syncEditorYamlHighlight' } },
+      { range, options: { className: 'insertLineDecoration' } },
+      { range, options: { className: 'customLineDecoration' } },
+      { range, options: { glyphMarginClassName: 'errorDecoration', inlineClassName: 'other' } },
+      { range, options: { inlineClassName: 'protectedDecoration' } },
     ]
     const editor = {
       getModel: () => ({
         getAllDecorations: () => decorations,
       }),
     } as unknown as editorTypes.IStandaloneCodeEditor
-    const result = getResourceEditorDecorations(editor, false)
-    expect(result).toHaveLength(5)
+    expect(getModelDecorations(editor, false)).toHaveLength(5)
   })
 
   it('does not match standalone protected inline (filter requires squiggly, lines, highlight, or glyph rule)', () => {
-    const decorations = [{ options: { inlineClassName: 'protectedDecoration' } }]
+    const decorations = [{ range, options: { inlineClassName: 'protectedDecoration' } }]
     const editor = {
       getModel: () => ({
         getAllDecorations: () => decorations,
       }),
     } as unknown as editorTypes.IStandaloneCodeEditor
-    expect(getResourceEditorDecorations(editor, true)).toHaveLength(0)
+    expect(getModelDecorations(editor, true)).toHaveLength(0)
   })
 })
 
@@ -253,7 +273,7 @@ describe('decorate', () => {
     } as unknown as DecorateChangeArg
     decorate(false, true, editor, monaco, [], [{ $t: 'C', $a: 'metadata.name', $f: 'short' }], change, [], [], [], '')
     const applied = deltaDecorations.mock.calls[0][1] as { options: { linesDecorationsClassName?: string } }[]
-    expect(applied.some((d) => d.options.linesDecorationsClassName === 'insertedLineDecoration')).toBe(true)
+    expect(applied.some((d) => d.options.linesDecorationsClassName === 'insertLineDecoration')).toBe(true)
   })
 
   it('adds preserved user edits as custom line decorations', () => {

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Skeleton } from '@patternfly/react-core'
 import { ListItems } from '../../../../../ui-components'
-import { generatePath, Link } from 'react-router-dom-v5-compat'
+import { generatePath, Link } from 'react-router'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { TFunction } from 'react-i18next'

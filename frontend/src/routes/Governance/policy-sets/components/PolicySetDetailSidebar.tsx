@@ -13,7 +13,7 @@ import {
 } from '../../../../ui-components'
 import { TFunction } from 'react-i18next'
 import { useCallback, useMemo, useState } from 'react'
-import { Link, generatePath } from 'react-router-dom-v5-compat'
+import { Link, generatePath } from 'react-router'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'

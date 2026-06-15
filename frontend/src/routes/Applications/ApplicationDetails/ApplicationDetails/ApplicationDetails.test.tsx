@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
+import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { channelsState, managedClustersState, namespacesState, subscriptionsState } from '../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '../../../../lib/nock-util'
@@ -483,8 +483,8 @@ const mockManagedClusters: ManagedCluster[] = [mockManagedCluster0]
 
 //////////////// Test /////////////////
 
-jest.mock('react-router-dom-v5-compat', () => ({
-  ...jest.requireActual('react-router-dom-v5-compat'), // use actual for all non-hook parts
+jest.mock('react-router', () => ({
+  ...jest.requireActual('react-router'), // use actual for all non-hook parts
   useParams: () => ({
     namespace: 'demo-etherpad',
     name: 'demo-etherpad',

@@ -34,9 +34,13 @@ export interface WizardStrings {
   reviewExpandAllTooltip: string
   reviewCollapseAllTooltip: string
   reviewSearchDetailsPlaceholder: string
+  reviewShowChangesOnlyLabel: string
   reviewBooleanTrue: string
   reviewBooleanFalse: string
   reviewBooleanNotSet: string
+  reviewArrayInstanceAdded: string
+  reviewArrayInstanceDeleted: string
+  reviewArrayInstanceModified: string
   selectNoItems: string
   selected: (count: number) => string
   selectPageItems: (count: number) => string
@@ -78,9 +82,13 @@ export const defaultStrings: WizardStrings = {
   reviewExpandAllTooltip: 'Expand all',
   reviewCollapseAllTooltip: 'Collapse all',
   reviewSearchDetailsPlaceholder: 'Search review details',
+  reviewShowChangesOnlyLabel: 'Show changes',
   reviewBooleanTrue: 'True',
   reviewBooleanFalse: 'False',
   reviewBooleanNotSet: 'Not set',
+  reviewArrayInstanceAdded: 'Added',
+  reviewArrayInstanceDeleted: 'Removed',
+  reviewArrayInstanceModified: 'Modified',
   selectNoItems: 'Select none (0 items)',
   selected: (count) => `${count} selected`,
   selectPageItems: (count) => `Select page (${count} items)`,

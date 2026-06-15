@@ -2,7 +2,7 @@
 import { Button, Label, Popover, Tooltip } from '@patternfly/react-core'
 import { ExternalLinkAltIcon, InfoCircleIcon } from '@patternfly/react-icons'
 import { useMemo } from 'react'
-import { Link } from 'react-router-dom-v5-compat'
+import { Link } from 'react-router'
 import { useClusterVersion } from '../hooks/use-cluster-version'
 import { useLocalHubName } from '../hooks/use-local-hub'
 import { useTranslation } from '../lib/acm-i18next'
