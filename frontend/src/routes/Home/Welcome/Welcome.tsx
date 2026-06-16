@@ -54,7 +54,7 @@ export default function WelcomePage() {
         icon: <SearchIcon />,
         title: t('Search'),
         description: t(
-          'Search all environment resources in all clusters using predefined search parameters, or saveable custom search parameters. Searches return links to resource details including editable YAMLs and topologies when available.'
+          'Search all environment resources in all clusters using predefined search parameters, or savable custom search parameters. Searches return links to resource details including editable YAMLs and topologies when available.'
         ),
         link: NavigationPath.search,
       },
