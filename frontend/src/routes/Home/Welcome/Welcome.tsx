@@ -9,7 +9,7 @@ import OverviewIcon from './graphics/welcome-card-1-icon.svg'
 import InfrastructureIcon from './graphics/welcome-card-2-icon.svg'
 import ApplicationsIcon from './graphics/welcome-card-3-icon.svg'
 import GovernanceIcon from './graphics/welcome-card-4-icon.svg'
-import NetworkingIcon from './graphics/welcome-card-5-icon.svg'
+import SearchIcon from './graphics/welcome-card-5-icon.svg'
 import CommunityIcon from './graphics/welcome-community-icon.svg'
 import HeaderGraphic from './graphics/Welcome-page-header.png'
 import SupportIcon from './graphics/welcome-support-icon.svg'
@@ -51,12 +51,12 @@ export default function WelcomePage() {
         link: NavigationPath.governance,
       },
       {
-        icon: <NetworkingIcon />,
-        title: t('Multicluster networking'),
+        icon: <SearchIcon />,
+        title: t('Search'),
         description: t(
-          'Enable direct networking connection between different on-premises or cloud-hosted Kubernetes clusters by grouping them in cluster sets and enabling the Submariner add-on.'
+          'Search all environment resources in all clusters using predefined search parameters, or savable custom search parameters. Searches return links to resource details including editable YAMLs and topologies when available.'
         ),
-        link: NavigationPath.clusterSets,
+        link: NavigationPath.search,
       },
     ],
     [t]
@@ -110,7 +110,7 @@ export default function WelcomePage() {
         icon: <CommunityIcon />,
         title: t('Technical community'),
         description: t('Want more information? Check out the developer community.'),
-        link: 'https://www.redhat.com/en/technologies/management/advanced-cluster-management',
+        link: 'https://open-cluster-management.io',
       },
       // {
       //     icon: <SlackIcon />,
