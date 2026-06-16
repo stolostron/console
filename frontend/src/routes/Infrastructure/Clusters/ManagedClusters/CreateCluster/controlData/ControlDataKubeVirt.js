@@ -14,6 +14,7 @@ import {
   getSimplifiedImageName,
   LOAD_ETCD_CLASSES,
   LOAD_OCP_IMAGES,
+  automationControlData,
   numberedControlNameFunction,
   onChangeConnection,
   onImageChange,
@@ -71,6 +72,7 @@ const filterOCPImages = (loadOCPImages, hypershiftSupportedVersions) => {
 export const getControlDataKubeVirt = (
   t,
   handleModalToggle,
+  includeAutomation = true,
   warning,
   includeKlusterletAddonConfig = true,
   localCluster,
@@ -469,6 +471,9 @@ export const getControlDataKubeVirt = (
       ],
     },
   ]
+  if (includeAutomation) {
+    controlData.push(...automationControlData(t))
+  }
   appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
   if (warning) {
     appendWarning(warning, controlData)
