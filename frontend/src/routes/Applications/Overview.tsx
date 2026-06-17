@@ -254,6 +254,7 @@ const renderPopoverContent = (
   resource: IResource,
   counts: number[],
   type: 'health' | 'synced' | 'deployed',
+  t: TFunction,
   messages?: Record<string, string>[]
 ) => {
   return (
@@ -277,20 +278,25 @@ const renderPopoverContent = (
         </div>
       ) : (
         <div key={`${resource.metadata?.name}-${type}-status`} style={{ marginBottom: '0.5rem' }}>
-          <strong>Status</strong> {counts[0] > 0 && counts.slice(1).every((count) => count === 0) ? 'OK' : 'Error'}
+          <strong>{t('Status')}</strong>{' '}
+          {counts[0] > 0 && counts.slice(1).every((count) => count === 0) ? t('OK') : t('Error')}
         </div>
       )}
     </div>
   )
 }
 
-export function renderApplicationStatusGroup(resource: IResource, type: 'health' | 'synced' | 'deployed') {
+export function renderApplicationStatusGroup(
+  resource: IResource,
+  type: 'health' | 'synced' | 'deployed',
+  t: TFunction
+) {
   const { counts, messages } = getApplicationStatuses(resource, type)
   if (counts.some((count) => count > 0)) {
     return (
       <Popover
         id={'labels-popover'}
-        bodyContent={renderPopoverContent(resource, counts, type, messages)}
+        bodyContent={renderPopoverContent(resource, counts, type, t, messages)}
         position={PopoverPosition.bottom}
         flipBehavior={['bottom', 'top-end', 'top-end']}
         hasAutoWidth
@@ -693,7 +699,7 @@ export default function ApplicationsOverview() {
       {
         header: t('Health Status'),
         cell: (resource) => {
-          return renderApplicationStatusGroup(resource, 'health')
+          return renderApplicationStatusGroup(resource, 'health', t)
         },
         tooltip: t('Health status for ArgoCD applications.'),
         sort: (itemA, itemB) => {
@@ -710,7 +716,7 @@ export default function ApplicationsOverview() {
       {
         header: t('Sync Status'),
         cell: (resource) => {
-          return renderApplicationStatusGroup(resource, 'synced')
+          return renderApplicationStatusGroup(resource, 'synced', t)
         },
         tooltip: t('Sync status for ArgoCD applications.'),
         sort: (itemA, itemB) => {
@@ -727,7 +733,7 @@ export default function ApplicationsOverview() {
       {
         header: t('Pod Status'),
         cell: (resource) => {
-          return renderApplicationStatusGroup(resource, 'deployed')
+          return renderApplicationStatusGroup(resource, 'deployed', t)
         },
         tooltip: t('Status of pods deployed by the application.'),
         sort: (itemA, itemB) => {

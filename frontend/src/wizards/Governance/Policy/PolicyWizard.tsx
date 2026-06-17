@@ -378,7 +378,7 @@ export function PolicyWizardTemplates(props: { policies: IResource[] }) {
         {/* CertificatePolicy */}
         <WizHidden hidden={(template: any) => template?.objectDefinition?.kind !== 'CertificatePolicy'}>
           <div>
-            <Title headingLevel="h6">Certificate Policy</Title>
+            <Title headingLevel="h6">{t('Certificate Policy')}</Title>
           </div>
 
           <WizTextInput

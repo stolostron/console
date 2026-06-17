@@ -98,7 +98,7 @@ export default function DiscoveredPolicies() {
       },
       {
         header: t('Engine'),
-        cell: (item: DiscoveredPolicyTableItem) => getEngineWithSvg(item.apigroup),
+        cell: (item: DiscoveredPolicyTableItem) => getEngineWithSvg(item.apigroup, t),
         sort: (a: DiscoveredPolicyTableItem, b: DiscoveredPolicyTableItem) =>
           compareStrings(getEngineString(a.apigroup), getEngineString(b.apigroup)),
         search: (item: DiscoveredPolicyTableItem) => getEngineString(item.apigroup),

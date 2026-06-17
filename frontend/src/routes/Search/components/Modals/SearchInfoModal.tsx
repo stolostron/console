@@ -76,6 +76,7 @@ export const SearchInfoModal = (props: any) => {
             <AcmChipGroup aria-label={t('Type')}>
               <AcmChip>{t('Type')}</AcmChip>
             </AcmChipGroup>
+            {/* eslint-disable-next-line i18next/no-literal-string -- Search query syntax example */}
             <p>status:failed,pending</p>
           </div>
           <div className={exampleRow}>
