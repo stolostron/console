@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import type { IResource } from './../resources/resource'
 import type { Readable, Transform } from 'node:stream'
 import { pipeline } from 'node:stream'
+import { promisify } from 'node:util'
 import type { Zlib } from 'node:zlib'
 import {
   createBrotliCompress,
@@ -10,14 +10,14 @@ import {
   createGunzip,
   createGzip,
   createInflate,
-  inflateRaw,
   deflateRaw,
+  inflateRaw,
 } from 'node:zlib'
+import { getAppDict, type ICompressedResource, type ITransformedResource } from '../routes/aggregators/applications'
+import { getEventDict } from '../routes/events'
+import type { IResource } from './../resources/resource'
 import { logger } from './logger'
 import type { ServerSideEvent, WatchEvent } from './server-side-events'
-import { getEventDict } from '../routes/events'
-import { getAppDict, type ICompressedResource, type ITransformedResource } from '../routes/aggregators/applications'
-import { promisify } from 'node:util'
 
 type Dictionary = {
   arr: string[]
@@ -148,8 +148,9 @@ function compressResource(resource: UncompressedResourceType, dictionary: Dictio
             res[dictionary.add(key)] = resource[key]
           } else {
             const inx = dictionary.add(key)
-            if (valueInDictionaryKeys.has(key)) {
-              res[inx] = dictionary.add(resource[key] as string)
+            // Guard against non-string values (e.g. nested CRD OpenAPI schema objects) corrupting the shared dictionary.
+            if (valueInDictionaryKeys.has(key) && typeof resource[key] === 'string') {
+              res[inx] = dictionary.add(resource[key])
             } else {
               res[inx] = compressResource(resource[key] as UncompressedResourceType, dictionary)
             }
@@ -246,6 +247,8 @@ function decompressResource(resource: CompressedResourceType, dictionary: Dictio
       for (const inx in resource) {
         if (Object.prototype.hasOwnProperty.call(resource, inx)) {
           const key = dictionary.get(Number(inx))
+          // Dictionary corruption would produce a non-string key; skip rather than crashing on key.includes().
+          if (typeof key !== 'string') continue
           if (
             valueAsIsKeys.has(key) ||
             (key === 'message' && inx in resource && !Number.isInteger(Number(resource[inx]))) ||
