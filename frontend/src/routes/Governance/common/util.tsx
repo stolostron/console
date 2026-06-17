@@ -711,7 +711,7 @@ export function getEngineString(apiGroup: string): string {
   }
 }
 
-export function getEngineWithSvg(apiGroup: string): JSX.Element {
+export function getEngineWithSvg(apiGroup: string, t: TFunction): JSX.Element {
   let logo: JSX.Element
   const engine = getEngineString(apiGroup)
 
@@ -729,7 +729,7 @@ export function getEngineWithSvg(apiGroup: string): JSX.Element {
       logo = <KyvernoSvg />
       break
     default:
-      return <>Unknown</>
+      return <>{t('Unknown')}</>
   }
 
   return (

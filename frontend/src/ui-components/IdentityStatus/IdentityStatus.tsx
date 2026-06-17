@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Label } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon } from '@patternfly/react-icons'
+import { useTranslation } from '../../lib/acm-i18next'
 import { Group, ServiceAccount, User } from '../../resources/rbac'
 
 export interface IdentityStatusProps {
@@ -24,6 +25,7 @@ export function isIdentityActive(identity: User | Group | ServiceAccount): boole
 }
 
 export const IdentityStatus = ({ identity }: IdentityStatusProps) => {
+  const { t } = useTranslation()
   const isActive = isIdentityActive(identity)
 
   if (isActive) {
@@ -36,7 +38,7 @@ export const IdentityStatus = ({ identity }: IdentityStatusProps) => {
             }}
           />
         </span>
-        Active
+        {t('Active')}
       </Label>
     )
   } else {
@@ -45,7 +47,7 @@ export const IdentityStatus = ({ identity }: IdentityStatusProps) => {
         <span style={{ paddingRight: '8px' }}>
           <ExclamationCircleIcon color="var(--pf-t--global--icon--color--status--danger--default)" />
         </span>
-        Inactive
+        {t('Inactive')}
       </Label>
     )
   }

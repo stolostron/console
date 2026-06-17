@@ -88,7 +88,9 @@ export const ReviewStepContent = ({
                     case 'Global access':
                       return (
                         <div>
-                          <div style={{ marginTop: '8px' }}>Global / Applies to all resources registered in ACM</div>
+                          <div style={{ marginTop: '8px' }}>
+                            {t('Global / Applies to all resources registered in ACM')}
+                          </div>
                         </div>
                       )
                     case 'Select cluster sets':

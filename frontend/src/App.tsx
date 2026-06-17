@@ -137,9 +137,11 @@ function UserDropdown() {
       isOpen={userIsOpen}
       isPlain={true}
     >
+      {/* eslint-disable-next-line i18next/no-literal-string -- Only used in the standalone development console */}
       <DropdownItem key="user_configure" onClick={configureClient}>
         Configure client
       </DropdownItem>
+      {/* eslint-disable-next-line i18next/no-literal-string -- Only used in the standalone development console */}
       <DropdownItem key="user_logout" onClick={logout}>
         Logout
       </DropdownItem>
@@ -333,6 +335,7 @@ function AppHeader() {
             <MastheadLogo>
               <div style={{ display: 'flex', gap: 8, alignItems: 'start' }}>
                 <div>
+                  {/* eslint-disable-next-line i18next/no-literal-string -- Only used in the standalone development console */}
                   <Title headingLevel="h4" style={{ fontWeight: 'bold', lineHeight: 1.2 }}>
                     @stolostron/console
                   </Title>

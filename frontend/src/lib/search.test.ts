@@ -5,7 +5,6 @@ import { renderHook } from '@testing-library/react-hooks'
 import { useQuerySearchDisabledManagedClusters } from './search'
 import * as utils from '../resources/utils'
 import * as useLocalHub from '../hooks/use-local-hub'
-// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { RecoilRoot } from 'recoil'
 
 // Mock the dependencies

@@ -18,4 +18,11 @@ export default defineConfig([
       'i18n-json/identical-keys': 'off',
     },
   },
+  {
+    files: ['wizards/**'],
+
+    rules: {
+      'i18next/no-literal-string': 'off',
+    },
+  },
 ])

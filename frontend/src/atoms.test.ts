@@ -2,9 +2,7 @@
 
 import { renderHook } from '@testing-library/react-hooks'
 import React, { ReactNode } from 'react'
-// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { MutableSnapshot, RecoilRoot } from 'recoil'
-// eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { settingsState, useEventStreamIdleTimeout, useEventStreamIdleGracePeriod } from './atoms'
 
 function wrapper(settings: Record<string, string> = {}) {

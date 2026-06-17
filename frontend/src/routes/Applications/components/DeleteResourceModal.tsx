@@ -190,7 +190,9 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
       props.appSetPlacement && (
         <Fragment>
           {renderConfirmCheckbox()}
-          <div className="remove-app-modal-content-data">{props.appSetPlacement} [Placement]</div>
+          <div className="remove-app-modal-content-data">
+            {props.t('{{placement}} [Placement]', { placement: props.appSetPlacement })}
+          </div>
         </Fragment>
       )
     )

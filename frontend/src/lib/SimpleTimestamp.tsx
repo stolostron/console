@@ -1,16 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import React from 'react'
+import { useTranslation } from './acm-i18next'
 
 interface SimpleTimestampProps {
   timestamp: string | number | Date
 }
 
 export const SimpleTimestamp: React.FC<SimpleTimestampProps> = ({ timestamp }) => {
+  const { t } = useTranslation()
   const date = new Date(timestamp)
 
   if (Number.isNaN(date.getTime())) {
-    return <>Invalid Date</>
+    return <>{t('Invalid Date')}</>
   }
 
   const day = date.getDate()

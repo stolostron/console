@@ -83,7 +83,7 @@ export function DiscoveredPolicyDetailsPage() {
               <Grid item>{policyName}</Grid>
               <Grid item>
                 <Box fontWeight={300} fontSize={14}>
-                  {getEngineWithSvg(apiGroup)}{' '}
+                  {getEngineWithSvg(apiGroup, t)}{' '}
                 </Box>
               </Grid>
             </Grid>

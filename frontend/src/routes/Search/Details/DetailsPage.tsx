@@ -440,11 +440,11 @@ export default function DetailsPage() {
               <div>
                 {name}
                 <Content component="small">
-                  <span style={{ padding: '0 .5rem 0 0' }}>Cluster:</span>
+                  <span style={{ padding: '0 .5rem 0 0' }}>{t('Cluster:')}</span>
                   <span style={{ fontWeight: 700 }}>{cluster}</span>
                   {namespace && (
                     <>
-                      <span style={{ padding: '0 .5rem 0 1rem' }}>Namespace:</span>
+                      <span style={{ padding: '0 .5rem 0 1rem' }}>{t('Namespace:')}</span>
                       <span style={{ fontWeight: 700 }}>{namespace}</span>
                     </>
                   )}

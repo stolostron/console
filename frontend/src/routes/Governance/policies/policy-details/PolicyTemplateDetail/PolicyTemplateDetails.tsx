@@ -167,7 +167,7 @@ export function PolicyTemplateDetails() {
       },
       {
         key: t('Engine'),
-        value: kind ? getEngineWithSvg(apiGroup) : '-',
+        value: kind ? getEngineWithSvg(apiGroup, t) : '-',
       },
       {
         key: t('Cluster'),
