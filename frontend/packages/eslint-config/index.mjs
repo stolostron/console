@@ -4,6 +4,7 @@ import { FlatCompat } from '@eslint/eslintrc'
 import js from '@eslint/js'
 import tsParser from '@typescript-eslint/parser'
 import i18nJson from 'eslint-plugin-i18n-json'
+import i18next from 'eslint-plugin-i18next'
 import prettier from 'eslint-plugin-prettier'
 import react from 'eslint-plugin-react'
 import unicorn from 'eslint-plugin-unicorn'
@@ -41,6 +42,7 @@ export default [
       // Plugins already loaded by compat.extends: @typescript-eslint, jest, react-hooks, jsx-a11y
       // Only define plugins not loaded via compat.extends
       'i18n-json': fixupPluginRules(i18nJson),
+      i18next,
       prettier,
       react,
       unicorn,
@@ -135,6 +137,14 @@ export default [
         },
       ],
 
+      'i18next/no-literal-string': [
+        'error',
+        {
+          'jsx-components': {
+            exclude: ['Trans', 'title'],
+          },
+        },
+      ],
       'jest/expect-expect': 'off',
       'jest/no-disabled-tests': 'off',
       'jest/no-export': 'off',
@@ -149,10 +159,18 @@ export default [
     },
   },
   {
-    files: ['**/*.test.ts?'],
+    files: ['**/*.test.ts?', '**/*.test.tsx'],
 
     rules: {
       '@typescript-eslint/no-restricted-imports': 'off',
+      'i18next/no-literal-string': 'off',
+    },
+  },
+  {
+    files: ['**/*.stories.ts?', '**/*.stories.tsx'],
+
+    rules: {
+      'i18next/no-literal-string': 'off',
     },
   },
 ]
