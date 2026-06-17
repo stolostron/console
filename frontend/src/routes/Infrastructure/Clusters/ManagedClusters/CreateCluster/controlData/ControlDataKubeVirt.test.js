@@ -2,6 +2,7 @@
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
 
+import { render, screen } from '@testing-library/react'
 import i18next from 'i18next'
 import { Warning } from '../Warning'
 import { setAvailableStorageClasses } from './ControlDataHelpers'
@@ -10,8 +11,43 @@ import { useOperatorCatalog } from '../../../../../../lib/operator-catalog-utils
 
 jest.mock('../../../../../../lib/operator-catalog-utils')
 
+const mockOcpImages = [
+  {
+    metadata: { name: 'img-415' },
+    spec: { releaseImage: 'quay.io/openshift-release-dev/ocp-release:4.15.36-multi' },
+  },
+  {
+    metadata: { name: 'img-414' },
+    spec: { releaseImage: 'quay.io/openshift-release-dev/ocp-release:4.14.10-multi' },
+  },
+  {
+    metadata: { name: 'img-416' },
+    spec: { releaseImage: 'quay.io/openshift-release-dev/ocp-release:4.16.0-x86_64' },
+  },
+  {
+    metadata: { name: 'img-415rc' },
+    spec: { releaseImage: 'quay.io/openshift-release-dev/ocp-release:4.15-rc.1-multi' },
+  },
+]
+
+jest.mock('./ControlDataHelpers', () => {
+  const actual = jest.requireActual('./ControlDataHelpers')
+  return {
+    ...actual,
+    LOAD_OCP_IMAGES: jest.fn((provider, translate) => {
+      const original = actual.LOAD_OCP_IMAGES(provider, translate)
+      return {
+        ...original,
+        query: jest.fn().mockResolvedValue(mockOcpImages),
+      }
+    }),
+  }
+})
+
 const t = i18next.t.bind(i18next)
 const handleModalToggle = jest.fn()
+
+const findControl = (controlData, id) => controlData.find((control) => control.id === id)
 
 describe('Cluster creation control data for KubeVirt', () => {
   beforeEach(() => {
@@ -65,6 +101,75 @@ describe('Cluster creation control data for KubeVirt', () => {
   it('generates correctly for MCE', () => {
     expect(getControlDataKubeVirt(t, handleModalToggle, true, <Warning />, false, localCluster, [])).toMatchSnapshot()
   })
+
+  it('omits automation controls when includeAutomation is false', () => {
+    const controlData = getControlDataKubeVirt(t, handleModalToggle, false, null, true, {}, [])
+    expect(findControl(controlData, 'automationStep')).toBeUndefined()
+    expect(findControl(controlData, 'templateName')).toBeUndefined()
+  })
+
+  it('omits warning control when warning is not provided', () => {
+    const controlData = getControlDataKubeVirt(t, handleModalToggle, true, null, true, {}, [])
+    expect(findControl(controlData, 'warning')).toBeUndefined()
+  })
+
+  it('includes klusterlet addon config when enabled', () => {
+    const controlData = getControlDataKubeVirt(t, handleModalToggle, true, null, true, {}, [])
+    expect(findControl(controlData, 'includeKlusterletAddonConfig')?.active).toBe(true)
+  })
+
+  it('disables klusterlet addon config for MCE', () => {
+    const controlData = getControlDataKubeVirt(t, handleModalToggle, true, null, false, localCluster, [])
+    expect(findControl(controlData, 'includeKlusterletAddonConfig')?.active).toBe(false)
+  })
+
+  it('includes hosted cluster wizard steps and storage mapping groups', () => {
+    const controlData = getControlDataKubeVirt(t, handleModalToggle, true, null, true, {}, [])
+    expect(findControl(controlData, 'kubevirtDetailStep')?.title).toBe('Cluster details')
+    expect(findControl(controlData, 'nodepoolsStep')?.title).toBe('Node pools')
+    expect(findControl(controlData, 'storageMappingsStep')?.title).toBe('Storage mapping')
+    expect(findControl(controlData, 'storageClassMapping')?.startWithNone).toBe(true)
+    expect(findControl(controlData, 'volumeSnapshotClassMapping')?.startWithNone).toBe(true)
+    expect(findControl(controlData, 'connection')?.providerId).toBe('kubevirt')
+  })
+
+  it('filters release images by hypershift supported versions', async () => {
+    const controlData = getControlDataKubeVirt(t, handleModalToggle, true, null, true, {}, ['4.15', '4.16'])
+    const releaseImage = findControl(controlData, 'releaseImage')
+    const filtered = await releaseImage.fetchAvailable.query()
+    expect(filtered.map((image) => image.metadata.name)).toEqual(['img-415', 'img-416'])
+  })
+
+  it('returns no release images when hypershift supported versions is empty', async () => {
+    const controlData = getControlDataKubeVirt(t, handleModalToggle, true, null, true, {}, [])
+    const releaseImage = findControl(controlData, 'releaseImage')
+    const filtered = await releaseImage.fetchAvailable.query()
+    expect(filtered).toHaveLength(0)
+  })
+
+  it('OperatorAlert links to operator catalog when console URL is available', () => {
+    const controlData = getControlDataKubeVirt(t, handleModalToggle, true, null, true, localCluster, [])
+    const operatorAlert = findControl(controlData, 'kubevirt-operator-alert')
+    render(operatorAlert.component)
+    expect(screen.getByText('Operator required')).toBeInTheDocument()
+    expect(
+      screen.getByText('OpenShift Virtualization operator is required to create a cluster.')
+    ).toBeInTheDocument()
+    const installLink = screen.getByRole('link', { name: /install operator/i })
+    expect(installLink).toHaveAttribute(
+      'href',
+      `${localCluster.consoleURL}/catalog/all-namespaces?keyword=${encodeURIComponent('Openshift Virtualization')}`
+    )
+  })
+
+  it('OperatorAlert has empty install link when console URL is missing', () => {
+    const controlData = getControlDataKubeVirt(t, handleModalToggle, true, null, true, {}, [])
+    const operatorAlert = findControl(controlData, 'kubevirt-operator-alert')
+    render(operatorAlert.component)
+    const installLink = screen.getByRole('link', { name: /install operator/i })
+    expect(installLink).toHaveAttribute('href', '')
+  })
+
   it('Correctly sets available storage classes', () => {
     const control = {
       controlId: 'storageClassName',
