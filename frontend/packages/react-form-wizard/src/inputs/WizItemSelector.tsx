@@ -2,6 +2,7 @@
 import get from 'get-value'
 import { Fragment, ReactNode, useContext } from 'react'
 import { ItemContext } from '../contexts/ItemContext'
+import { useStringContext } from '../contexts/StringContext'
 
 export function wizardSelectorItem(props: any, item: any[]) {
   return item.find((i) => {
@@ -16,7 +17,8 @@ export function WizItemSelector(props: {
   empty?: ReactNode
 }) {
   const item = useContext(ItemContext)
-  if (!Array.isArray(item)) return <Fragment>Input must be an array!</Fragment>
+  const strings = useStringContext()
+  if (!Array.isArray(item)) return <Fragment>{strings.inputMustBeArray}</Fragment>
 
   const newItem = wizardSelectorItem(props, item)
   if (newItem === undefined) {

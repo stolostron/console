@@ -47,6 +47,7 @@ export interface WizardStrings {
   selectAllItems: (count: number) => string
   noResults: string
   createOption: string
+  inputMustBeArray: string
 }
 
 export const defaultStrings: WizardStrings = {
@@ -95,6 +96,7 @@ export const defaultStrings: WizardStrings = {
   selectAllItems: (count) => `Select all (${count} items)`,
   noResults: 'No results found',
   createOption: 'Create new option',
+  inputMustBeArray: 'Input must be an array.',
 }
 
 export const StringContext = createContext<WizardStrings>(defaultStrings)

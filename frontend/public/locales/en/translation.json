@@ -1866,6 +1866,7 @@
   "Initiate sync for ArgoCD application": "Initiate sync for ArgoCD application",
   "Initiate synchronization of all applications in the ApplicationSet with their source repositories.": "Initiate synchronization of all applications in the ApplicationSet with their source repositories.",
   "Initiate synchronization of application resources with the source repository.": "Initiate synchronization of application resources with the source repository.",
+  "Input must be an array.": "Input must be an array.",
   "Input parameters": "Input parameters",
   "Insights": "Insights",
   "install": "Install",
