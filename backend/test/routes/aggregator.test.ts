@@ -229,9 +229,9 @@ const uidata = {
         namespace: 'openshift-gitops',
         ownerReferences: [
           {
-            name: 'argoapplicationset-1',
             apiVersion: '',
             kind: 'ApplicationSet',
+            name: 'argoapplicationset-1',
           },
         ],
         uid: 'cc84e62f-edb9-413b-8bd7-38a32a21ce79',

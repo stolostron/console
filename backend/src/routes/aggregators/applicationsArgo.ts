@@ -30,8 +30,22 @@ import {
   getApplicationClusters,
   getTransform,
 } from './utils'
-import { deflateResource } from '../../lib/compression'
+import { deflateResource, inflateApp, inflateApps } from '../../lib/compression'
 import type { IWatchOptions } from '../../resources/watch-options'
+
+/** Compressed ApplicationSet child app — full resource is deflated; cluster fields kept for transforms. */
+export interface IAppSetAppCompressed {
+  uid: string
+  name: string
+  signature: string
+  destination: {
+    name?: string
+    namespace: string
+    server?: string
+  }
+  statusCluster?: string
+  compressed: Buffer
+}
 
 interface IArgoAppLocalResource extends IResource {
   spec: {
@@ -42,7 +56,8 @@ interface IArgoAppLocalResource extends IResource {
     }
   }
   status?: {
-    resources: [{ namespace: string }]
+    resources?: [{ namespace: string }]
+    cluster?: string
   }
 }
 
@@ -68,8 +83,8 @@ interface IArgoAppRemoteResource {
 export function getAppSetAppsMap() {
   return appSetAppsMap || {}
 }
-let appSetAppsMap: Record<string, IArgoApplication[]> = {}
-let tempAppSetAppsMap: Record<string, IArgoApplication[]> = {}
+let appSetAppsMap: Record<string, IAppSetAppCompressed[]> = {}
+let tempAppSetAppsMap: Record<string, IAppSetAppCompressed[]> = {}
 
 let argoPageChunk: ApplicationPageChunk
 const argoPageChunks: ApplicationPageChunk[] = []
@@ -83,9 +98,27 @@ export function resetArgoApplicationState() {
   localCluster = undefined as unknown as Cluster
   placementDecisions = undefined as unknown as IResource[]
   argoPageChunks.length = 0
+  localArgoAppSet.clear()
+  appSetAppsMap = {}
+  tempAppSetAppsMap = {}
   for (const key in oldResourceUidSets) {
     delete oldResourceUidSets[key]
   }
+}
+
+export function appSetAppRefToArgoApplication(ref: IAppSetAppCompressed): IArgoApplication {
+  return {
+    apiVersion: ArgoApplicationApiVersion,
+    kind: ArgoApplicationKind,
+    metadata: { name: ref.name, uid: ref.uid },
+    spec: { destination: ref.destination },
+    status: ref.statusCluster ? { cluster: ref.statusCluster } : undefined,
+  } as IArgoApplication
+}
+
+export async function inflateAppSetApps(appSetName: string): Promise<IArgoApplication[]> {
+  const entries = appSetAppsMap[appSetName] || []
+  return Promise.all(entries.map(async (entry) => (await inflateApp(entry)) as IArgoApplication))
 }
 
 export function addArgoQueryInputs(applicationCache: ApplicationCacheType, query: IQuery) {
@@ -118,10 +151,13 @@ export function addArgoQueryInputs(applicationCache: ApplicationCacheType, query
 }
 
 export async function cacheArgoApplications(applicationCache: ApplicationCacheType, remoteArgoApps: IResource[]) {
-  const argoAppSet = localArgoAppSet
   const hubClusterName = getHubClusterName()
   const clusters: Cluster[] = await getClusters()
   const localCluster = clusters.find((cls) => cls.name === hubClusterName)
+
+  await rebuildLocalArgoAppSet(applicationCache, clusters)
+
+  const argoAppSet = localArgoAppSet
 
   if (applicationCache['localArgoApps']?.resourceUidMap) {
     try {
@@ -179,11 +215,14 @@ export async function polledArgoApplicationAggregation(
     clusters = await getClusters()
     localCluster = clusters.find((cls) => cls.name === hubClusterName)
     placementDecisions = await getKubeResources('PlacementDecision', 'cluster.open-cluster-management.io/v1beta1')
+    if (kind === ApplicationKind) {
+      localArgoAppSet.clear()
+    }
   }
 
   // filter out apps that belong to an appset
   if (kind === ApplicationKind) {
-    items = filterArgoApps(items, clusters, localArgoAppSet, tempAppSetAppsMap)
+    items = await filterArgoApps(items, clusters, localArgoAppSet, tempAppSetAppsMap)
   }
 
   // add uidata transforms
@@ -213,47 +252,93 @@ export async function polledArgoApplicationAggregation(
     // the real one will be used while a new temp map is being created
     // this fixes the problem where the argo app moves to a new appset of the same name in a new cluster
     if (kind === ApplicationKind) {
-      appSetAppsMap = tempAppSetAppsMap
+      for (const key of Object.keys(appSetAppsMap)) {
+        if (!(key in tempAppSetAppsMap)) {
+          delete appSetAppsMap[key]
+        }
+      }
+      Object.assign(appSetAppsMap, tempAppSetAppsMap)
       tempAppSetAppsMap = {}
     }
   }
 }
 
-function filterArgoApps(
+function getLocalArgoAppSignature(argoApp: IArgoAppLocalResource, clusters: Cluster[]): string {
+  const resources = argoApp.status ? argoApp.status.resources : undefined
+  const definedNamespace = resources?.[0]?.namespace
+  return `${argoApp.metadata.name}-${
+    definedNamespace ?? argoApp.spec.destination.namespace
+  }-${getArgoDestinationCluster(argoApp.spec.destination, clusters, getHubClusterName())}`
+}
+
+async function rebuildLocalArgoAppSet(applicationCache: ApplicationCacheType, clusters: Cluster[]) {
+  localArgoAppSet.clear()
+
+  const appsMap = oldResourceUidSets['localArgoApps'] ? tempAppSetAppsMap : appSetAppsMap
+  for (const apps of Object.values(appsMap)) {
+    for (const entry of apps) {
+      localArgoAppSet.add(entry.signature)
+    }
+  }
+
+  if (applicationCache['localArgoApps']?.resourceUidMap) {
+    const localApps = await inflateApps(Object.values(applicationCache['localArgoApps'].resourceUidMap))
+    for (const app of localApps) {
+      localArgoAppSet.add(getLocalArgoAppSignature(app as IArgoAppLocalResource, clusters))
+    }
+  }
+}
+
+async function createAppSetAppEntry(app: IArgoAppLocalResource, clusters: Cluster[]): Promise<IAppSetAppCompressed> {
+  const signature = getLocalArgoAppSignature(app, clusters)
+  const uid = app.metadata?.uid
+  const name = app.metadata?.name
+  if (!uid || !name) {
+    throw new Error('Argo application missing metadata uid or name')
+  }
+  return {
+    uid,
+    name,
+    signature,
+    destination: app.spec.destination,
+    statusCluster: app.status?.cluster,
+    compressed: await deflateResource(app, getAppDict()),
+  }
+}
+
+async function filterArgoApps(
   items: IResource[],
   clusters: Cluster[],
   localArgoAppSet: Set<string>,
-  appSetAppsMap: Record<string, IResource[]>
+  appSetAppsMap: Record<string, IAppSetAppCompressed[]>
 ) {
-  return items.filter((app) => {
+  const filtered: IResource[] = []
+  for (const app of items) {
     const argoApp = app as IArgoAppLocalResource
-    const resources = argoApp.status ? argoApp.status.resources : undefined
-    const definedNamespace = resources?.[0].namespace
 
     // cache Argo app signature for filtering OCP apps later
-    localArgoAppSet.add(
-      `${argoApp.metadata.name}-${
-        definedNamespace ?? argoApp.spec.destination.namespace
-      }-${getArgoDestinationCluster(argoApp.spec.destination, clusters, getHubClusterName())}`
-    )
+    localArgoAppSet.add(getLocalArgoAppSignature(argoApp, clusters))
+
     const isChildOfAppset =
-      argoApp.metadata.ownerReferences && argoApp.metadata?.ownerReferences[0].kind === 'ApplicationSet'
-    if (!argoApp.metadata.ownerReferences || !isChildOfAppset) {
-      return true
+      argoApp.metadata?.ownerReferences && argoApp.metadata.ownerReferences[0].kind === 'ApplicationSet'
+    if (!argoApp.metadata?.ownerReferences || !isChildOfAppset) {
+      filtered.push(app)
+      continue
     }
     const appSetName = get(argoApp, ['metadata', 'ownerReferences', '0', 'name']) as string
     let apps = appSetAppsMap[appSetName]
     if (!apps) {
       apps = appSetAppsMap[appSetName] = []
     }
-    const inx = apps.findIndex((itm) => itm.metadata.uid === app.metadata.uid)
+    const entry = await createAppSetAppEntry(argoApp, clusters)
+    const inx = apps.findIndex((itm) => itm.uid === entry.uid)
     if (inx !== -1) {
-      apps[inx] = app
+      apps[inx] = entry
     } else {
-      apps.push(app)
+      apps.push(entry)
     }
-    return false
-  })
+  }
+  return filtered
 }
 
 function getRemoteArgoApps(argoAppSet: Set<string>, remoteArgoApps: IResource[]) {

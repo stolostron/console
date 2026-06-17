@@ -26,7 +26,7 @@ import { logger } from '../../lib/logger'
 import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
 import { getMultiClusterEngine } from '../../lib/multi-cluster-engine'
 import { ServerSideEvents } from '../../lib/server-side-events'
-import { getAppSetAppsMap } from './applicationsArgo'
+import { getAppSetAppsMap, appSetAppRefToArgoApplication } from './applicationsArgo'
 import { deflateResource, inflateApp } from '../../lib/compression'
 
 //////////////////////////////////////////////////////////////////
@@ -172,7 +172,7 @@ export function getApplicationClusters(
           return getArgoPullModelClusterList(resource as IApplicationSet, placementDecisions)
         } else {
           const apps = getAppSetAppsMap()[resource.metadata?.name] || []
-          return getArgoPushModelClusterList(apps, localCluster, clusters)
+          return getArgoPushModelClusterList(apps.map(appSetAppRefToArgoApplication), localCluster, clusters)
         }
       }
       break

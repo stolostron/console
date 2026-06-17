@@ -221,7 +221,6 @@ export function filterApplications(filters: FilterSelections, items: ICompressed
 // w/o downloading all the appsets, apps, etc
 export async function addUIData(items: ITransformedResource[]) {
   const argoAppSets = await inflateApps(getApplicationsHelper(applicationCache, ['appset']))
-  const appSetAppsMap = getAppSetAppsMap()
   items = items.map((item) => {
     return {
       ...item,
@@ -232,9 +231,7 @@ export async function addUIData(items: ITransformedResource[]) {
             ? getAppSetRelatedResources(item, argoAppSets as IApplicationSet[])
             : ['', []],
         appSetApps:
-          item.kind === ApplicationSetKind
-            ? appSetAppsMap[item.metadata.name]?.map((app) => app.metadata.name) || []
-            : [],
+          item.kind === ApplicationSetKind ? getAppSetAppsMap()[item.metadata.name]?.map((app) => app.name) ?? [] : [],
       },
     }
   })
