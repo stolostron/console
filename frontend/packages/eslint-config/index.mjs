@@ -159,7 +159,7 @@ export default [
     },
   },
   {
-    files: ['**/*.test.ts?', '**/*.test.tsx'],
+    files: ['**/*.test.{ts,tsx}'],
 
     rules: {
       '@typescript-eslint/no-restricted-imports': 'off',
@@ -167,7 +167,7 @@ export default [
     },
   },
   {
-    files: ['**/*.stories.ts?', '**/*.stories.tsx'],
+    files: ['**/*.stories.{ts,tsx}'],
 
     rules: {
       'i18next/no-literal-string': 'off',
