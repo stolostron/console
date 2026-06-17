@@ -29,3 +29,4 @@ playwright.config.ts
 .env
 e2e-template/*.test.ts
 e2e-template/*.spec.ts
+.omo
