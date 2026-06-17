@@ -89,6 +89,7 @@ export function LoginCredentials(props: { canGetSecret?: boolean }) {
   if (cluster?.kubeadmin) {
     return (
       <Fragment>
+        {/* eslint-disable-next-line i18next/no-literal-string -- Bullet characters used as a password mask */}
         {!isVisible && <div>&#8226;&#8226;&#8226;&#8226;&#8226; / &#8226;&#8226;&#8226;&#8226;&#8226;</div>}
         {isVisible && (
           <div className={classes.credentialsContainer}>

@@ -55,6 +55,7 @@ export const SearchInfoModal = (props: any) => {
             <AcmChipGroup aria-label={t('Type')}>
               <AcmChip>{t('Type')}</AcmChip>
             </AcmChipGroup>
+            {/* eslint-disable-next-line i18next/no-literal-string -- product name; does not need translation */}
             <p>OpenShift</p>
           </div>
           <div className={exampleRow}>
