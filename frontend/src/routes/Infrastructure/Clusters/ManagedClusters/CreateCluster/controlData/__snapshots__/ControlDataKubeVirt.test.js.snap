@@ -445,6 +445,92 @@ exports[`Cluster creation control data for KubeVirt generates correctly 1`] = `
     "type": "group",
   },
   {
+    "id": "automationStep",
+    "title": "Automation",
+    "type": "step",
+  },
+  {
+    "id": "chooseTemplate",
+    "info": "Optional: Choose an automation template to run Ansible jobs at different stages of the cluster lifecycle.",
+    "type": "title",
+  },
+  {
+    "component": <AutomationProviderHint
+      className="creation-view-controls-hint"
+      component="hint"
+    />,
+    "id": "automationProviderHint",
+    "type": "custom",
+  },
+  {
+    "id": "templateName",
+    "name": "Automation template",
+    "onSelect": [Function],
+    "placeholder": "Select an automation template",
+    "prompts": {
+      "icon": <ExternalLinkAltIcon
+        noDefaultStyle={false}
+      />,
+      "id": "add-automation-template",
+      "positionBottomRight": true,
+      "prompt": "Add automation template",
+      "type": "link",
+      "url": "/multicloud/infrastructure/automations/add",
+    },
+    "tooltip": "Only templates with valid Ansible Automation Platform credentials are listed.",
+    "type": "singleselect",
+    "validation": {
+      "required": false,
+    },
+  },
+  {
+    "component": <TemplateLinkOutControl />,
+    "id": "curatorLinkOut",
+    "type": "custom",
+  },
+  {
+    "component": <TemplateSummaryControl />,
+    "id": "curatorSummary",
+    "type": "custom",
+  },
+  {
+    "active": "",
+    "id": "clusterCuratorSpec",
+    "reverse": [Function],
+    "type": "hidden",
+  },
+  {
+    "active": [],
+    "hidden": true,
+    "id": "supportedCurations",
+    "type": "values",
+  },
+  {
+    "active": "",
+    "id": "toweraccess-install",
+    "type": "hidden",
+  },
+  {
+    "active": "",
+    "id": "toweraccess-upgrade",
+    "type": "hidden",
+  },
+  {
+    "active": "",
+    "id": "toweraccess-scale",
+    "type": "hidden",
+  },
+  {
+    "active": "",
+    "id": "toweraccess-destroy",
+    "type": "hidden",
+  },
+  {
+    "active": "",
+    "id": "reconcilePause",
+    "type": "hidden",
+  },
+  {
     "active": true,
     "id": "includeKlusterletAddonConfig",
     "type": "hidden",
@@ -911,6 +997,92 @@ exports[`Cluster creation control data for KubeVirt generates correctly for MCE 
     "startWithNone": true,
     "tooltip": "Map infrastructure volume snapshot classes to guest cluster volume snapshot classes. These mappings cannot be changed after cluster creation.",
     "type": "group",
+  },
+  {
+    "id": "automationStep",
+    "title": "Automation",
+    "type": "step",
+  },
+  {
+    "id": "chooseTemplate",
+    "info": "Optional: Choose an automation template to run Ansible jobs at different stages of the cluster lifecycle.",
+    "type": "title",
+  },
+  {
+    "component": <AutomationProviderHint
+      className="creation-view-controls-hint"
+      component="hint"
+    />,
+    "id": "automationProviderHint",
+    "type": "custom",
+  },
+  {
+    "id": "templateName",
+    "name": "Automation template",
+    "onSelect": [Function],
+    "placeholder": "Select an automation template",
+    "prompts": {
+      "icon": <ExternalLinkAltIcon
+        noDefaultStyle={false}
+      />,
+      "id": "add-automation-template",
+      "positionBottomRight": true,
+      "prompt": "Add automation template",
+      "type": "link",
+      "url": "/multicloud/infrastructure/automations/add",
+    },
+    "tooltip": "Only templates with valid Ansible Automation Platform credentials are listed.",
+    "type": "singleselect",
+    "validation": {
+      "required": false,
+    },
+  },
+  {
+    "component": <TemplateLinkOutControl />,
+    "id": "curatorLinkOut",
+    "type": "custom",
+  },
+  {
+    "component": <TemplateSummaryControl />,
+    "id": "curatorSummary",
+    "type": "custom",
+  },
+  {
+    "active": "",
+    "id": "clusterCuratorSpec",
+    "reverse": [Function],
+    "type": "hidden",
+  },
+  {
+    "active": [],
+    "hidden": true,
+    "id": "supportedCurations",
+    "type": "values",
+  },
+  {
+    "active": "",
+    "id": "toweraccess-install",
+    "type": "hidden",
+  },
+  {
+    "active": "",
+    "id": "toweraccess-upgrade",
+    "type": "hidden",
+  },
+  {
+    "active": "",
+    "id": "toweraccess-scale",
+    "type": "hidden",
+  },
+  {
+    "active": "",
+    "id": "toweraccess-destroy",
+    "type": "hidden",
+  },
+  {
+    "active": "",
+    "id": "reconcilePause",
+    "type": "hidden",
   },
   {
     "active": false,
