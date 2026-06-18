@@ -611,11 +611,11 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
       controlData = getControlDataKubeVirt(
         t,
         handleModalToggle,
-        true,
         <Warning />,
-        isACMAvailable,
         localCluster,
-        hypershiftSupportedVersions
+        hypershiftSupportedVersions,
+        true,
+        isACMAvailable
       )
       breadcrumbs.push(controlPlaneBreadCrumbKubeVirt)
       break

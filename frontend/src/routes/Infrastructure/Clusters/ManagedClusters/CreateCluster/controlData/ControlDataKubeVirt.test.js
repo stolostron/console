@@ -96,35 +96,35 @@ describe('Cluster creation control data for KubeVirt', () => {
   }
 
   it('generates correctly', () => {
-    expect(getControlDataKubeVirt(t, handleModalToggle, true, <Warning />, true, {}, [])).toMatchSnapshot()
+    expect(getControlDataKubeVirt(t, handleModalToggle, <Warning />, {}, [])).toMatchSnapshot()
   })
   it('generates correctly for MCE', () => {
-    expect(getControlDataKubeVirt(t, handleModalToggle, true, <Warning />, false, localCluster, [])).toMatchSnapshot()
+    expect(getControlDataKubeVirt(t, handleModalToggle, <Warning />, localCluster, [], true, false)).toMatchSnapshot()
   })
 
   it('omits automation controls when includeAutomation is false', () => {
-    const controlData = getControlDataKubeVirt(t, handleModalToggle, false, null, true, {}, [])
+    const controlData = getControlDataKubeVirt(t, handleModalToggle, null, {}, [], false)
     expect(findControl(controlData, 'automationStep')).toBeUndefined()
     expect(findControl(controlData, 'templateName')).toBeUndefined()
   })
 
   it('omits warning control when warning is not provided', () => {
-    const controlData = getControlDataKubeVirt(t, handleModalToggle, true, null, true, {}, [])
+    const controlData = getControlDataKubeVirt(t, handleModalToggle, null, {}, [])
     expect(findControl(controlData, 'warning')).toBeUndefined()
   })
 
   it('includes klusterlet addon config when enabled', () => {
-    const controlData = getControlDataKubeVirt(t, handleModalToggle, true, null, true, {}, [])
+    const controlData = getControlDataKubeVirt(t, handleModalToggle, null, {}, [])
     expect(findControl(controlData, 'includeKlusterletAddonConfig')?.active).toBe(true)
   })
 
   it('disables klusterlet addon config for MCE', () => {
-    const controlData = getControlDataKubeVirt(t, handleModalToggle, true, null, false, localCluster, [])
+    const controlData = getControlDataKubeVirt(t, handleModalToggle, null, localCluster, [], true, false)
     expect(findControl(controlData, 'includeKlusterletAddonConfig')?.active).toBe(false)
   })
 
   it('includes hosted cluster wizard steps and storage mapping groups', () => {
-    const controlData = getControlDataKubeVirt(t, handleModalToggle, true, null, true, {}, [])
+    const controlData = getControlDataKubeVirt(t, handleModalToggle, null, {}, [])
     expect(findControl(controlData, 'kubevirtDetailStep')?.title).toBe('Cluster details')
     expect(findControl(controlData, 'nodepoolsStep')?.title).toBe('Node pools')
     expect(findControl(controlData, 'storageMappingsStep')?.title).toBe('Storage mapping')
@@ -134,21 +134,21 @@ describe('Cluster creation control data for KubeVirt', () => {
   })
 
   it('filters release images by hypershift supported versions', async () => {
-    const controlData = getControlDataKubeVirt(t, handleModalToggle, true, null, true, {}, ['4.15', '4.16'])
+    const controlData = getControlDataKubeVirt(t, handleModalToggle, null, {}, ['4.15', '4.16'])
     const releaseImage = findControl(controlData, 'releaseImage')
     const filtered = await releaseImage.fetchAvailable.query()
     expect(filtered.map((image) => image.metadata.name)).toEqual(['img-415', 'img-416'])
   })
 
   it('returns no release images when hypershift supported versions is empty', async () => {
-    const controlData = getControlDataKubeVirt(t, handleModalToggle, true, null, true, {}, [])
+    const controlData = getControlDataKubeVirt(t, handleModalToggle, null, {}, [])
     const releaseImage = findControl(controlData, 'releaseImage')
     const filtered = await releaseImage.fetchAvailable.query()
     expect(filtered).toHaveLength(0)
   })
 
   it('OperatorAlert links to operator catalog when console URL is available', () => {
-    const controlData = getControlDataKubeVirt(t, handleModalToggle, true, null, true, localCluster, [])
+    const controlData = getControlDataKubeVirt(t, handleModalToggle, null, localCluster, [])
     const operatorAlert = findControl(controlData, 'kubevirt-operator-alert')
     render(operatorAlert.component)
     expect(screen.getByText('Operator required')).toBeInTheDocument()
@@ -161,7 +161,7 @@ describe('Cluster creation control data for KubeVirt', () => {
   })
 
   it('OperatorAlert has empty install link when console URL is missing', () => {
-    const controlData = getControlDataKubeVirt(t, handleModalToggle, true, null, true, {}, [])
+    const controlData = getControlDataKubeVirt(t, handleModalToggle, null, {}, [])
     const operatorAlert = findControl(controlData, 'kubevirt-operator-alert')
     render(operatorAlert.component)
     const installLink = screen.getByRole('link', { name: /install operator/i })

@@ -72,11 +72,11 @@ const filterOCPImages = (loadOCPImages, hypershiftSupportedVersions) => {
 export const getControlDataKubeVirt = (
   t,
   handleModalToggle,
-  includeAutomation = true,
   warning,
-  includeKlusterletAddonConfig = true,
   localCluster,
-  hypershiftSupportedVersions
+  hypershiftSupportedVersions,
+  includeAutomation = true,
+  includeKlusterletAddonConfig = true
 ) => {
   const controlData = [
     //////////////////////////////////  AI form  //////////////////////////////////
