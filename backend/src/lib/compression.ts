@@ -19,31 +19,45 @@ import { getAppDict, type ICompressedResource, type ITransformedResource } from 
 import { promisify } from 'node:util'
 import type { IResource } from './../resources/resource'
 
+const MAX_RECENTLY_ADDED = 200
+
 type Dictionary = {
   arr: string[]
   map: Record<string, string>
   add: (key: string) => string
   get: (inx: number) => string
+  recentlyAdded: string[]
+  snapshotSize: () => number
+  drainRecentlyAdded: () => string[]
 }
 
 export function createDictionary(): Dictionary {
   const arr: string[] = []
   const map: Record<string, string> = {}
+  const recentlyAdded: string[] = []
   const add = (key: string): string => {
     if (!(key in map)) {
       map[key] = `${arr.length}`
       arr.push(key)
+      if (logger.isLevelEnabled('debug') && recentlyAdded.length < MAX_RECENTLY_ADDED) {
+        recentlyAdded.push(key)
+      }
     }
     return map[key]
   }
   const get = (inx: number) => {
     return arr[inx]
   }
+  const snapshotSize = () => arr.length
+  const drainRecentlyAdded = () => recentlyAdded.splice(0)
   return {
     arr,
     map,
     add,
     get,
+    recentlyAdded,
+    snapshotSize,
+    drainRecentlyAdded,
   }
 }
 
@@ -67,6 +81,19 @@ type UncompressedResourceType = Record<string, any> | Record<string, any[]> | st
 type CompressedResourceType = Record<number, any> | Record<number, any[]> | string | number
 
 const NUMBER_MARKER = '#!%'
+
+// Detects ISO 8601 timestamps to avoid permanently indexing unique time values.
+// Covers: "2026-05-27T20:18:12Z" (20), "2026-05-27T20:18:12.000Z" (24), "2026-05-27T20:18:12+05:30" (25)
+export function isTimestamp(s: string): boolean {
+  return (
+    (s.length === 20 || s.length === 24 || s.length === 25) &&
+    s[4] === '-' &&
+    s[7] === '-' &&
+    s[10] === 'T' &&
+    s[13] === ':' &&
+    (s.endsWith('Z') || s[19] === '+' || s[19] === '-')
+  )
+}
 
 export async function deflateResource(resource: IResource, dictionary: Dictionary): Promise<Buffer> {
   const res = compressResource(resource as UncompressedResourceType, dictionary)
@@ -118,6 +145,10 @@ function compressResource(resource: UncompressedResourceType, dictionary: Dictio
       return res
     } else if (typeof resource === 'string') {
       if (resource.length < 32 && !resource.endsWith('==')) {
+        // skip indexing of all timestamps
+        if (isTimestamp(resource)) {
+          return resource
+        }
         // index short strings that aren't a base64
         return dictionary.add(resource)
       }
