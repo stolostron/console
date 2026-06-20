@@ -15,7 +15,7 @@ import { AcmTable, AcmTableStateProvider, compareStrings, IAcmTableColumn } from
 import { DiffModal } from '../../components/DiffModal'
 
 import { fleetResourceRequest } from '../../../../resources/utils/fleet-resource-request'
-import { emptyResources, preserveWhitespace } from '../../common/util'
+import { emptyResources, isKyvernoApiGroup, preserveWhitespace } from '../../common/util'
 import { flexKyvernoMessages } from '../../policies/policy-details/PolicyTemplateDetail/KyvernoTable'
 import { useDiscoveredDetailsContext } from './DiscoveredPolicyDetailsPage'
 
@@ -215,14 +215,14 @@ export function DiscoveredResources() {
 
     if (
       apiGroup === 'policy.open-cluster-management.io' ||
-      apiGroup === 'kyverno.io' ||
+      isKyvernoApiGroup(apiGroup) ||
       apiGroup === 'constraints.gatekeeper.sh'
     ) {
       return {
         header: t('Reason'),
         cell: (item: any) => {
           const tmpl: any =
-            apiGroup === 'kyverno.io' && item.policyReport
+            isKyvernoApiGroup(apiGroup) && item.policyReport
               ? {
                   ...item.policyReport,
                   clusterName: item.policyReport.cluster,
@@ -240,7 +240,7 @@ export function DiscoveredResources() {
           if (foundReasons === undefined) {
             resetReasonCacheForTemplate(tmplKey, tmpl)
           } else if (foundReasons.loading === false) {
-            if (apiGroup === 'kyverno.io' && foundReasons?.kyvernoMessages) {
+            if (isKyvernoApiGroup(apiGroup) && foundReasons?.kyvernoMessages) {
               return flexKyvernoMessages(foundReasons.kyvernoMessages)
             } else if (
               policyKind === 'ConfigurationPolicy' ||
