@@ -8,7 +8,7 @@ jobs:
         if: (github.event_name == 'schedule' && github.repository == 'stolostron/console') || (github.event_name != 'schedule')
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v6
+            - uses: actions/checkout@v7
               with:
                   token: ${{ secrets.GH_TOKEN }}
             - uses: actions/setup-node@v6
