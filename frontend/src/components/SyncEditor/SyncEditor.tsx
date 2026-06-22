@@ -559,7 +559,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   )
 
   const refreshModels = (yaml: string, showDiffView: boolean, cmpYaml: string | undefined) => {
-    const diffEditor = showDiffView && cmpYaml !== undefined ? syncEditorDiffRef.current?.getDiffEditor() ?? null : null
+    const diffEditor =
+      showDiffView && cmpYaml !== undefined ? (syncEditorDiffRef.current?.getDiffEditor() ?? null) : null
     const modifiedEditor = diffEditor?.getModifiedEditor() ?? activeEditor
     if (!modifiedEditor || !activeMonaco) {
       return

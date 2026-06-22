@@ -139,7 +139,11 @@ const SnapshotSupportedVolumeList: React.FC<{
           onClick={() => setIsExpanded((prev) => !prev)}
           toggleText={volumeCountMsg}
         >
-          <Stack>{supportedVolumes?.map((vol) => <StackItem key={vol.name}>{vol.name}</StackItem>)}</Stack>
+          <Stack>
+            {supportedVolumes?.map((vol) => (
+              <StackItem key={vol.name}>{vol.name}</StackItem>
+            ))}
+          </Stack>
         </ExpandableSection>
       ) : (
         <b>{volumeCountMsg}</b>

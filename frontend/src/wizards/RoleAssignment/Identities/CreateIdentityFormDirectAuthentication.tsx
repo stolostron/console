@@ -27,7 +27,7 @@ function getPlaceholder(
 ): string {
   if (subjectKind === 'User') {
     const prefix =
-      claimMappings?.username?.prefixPolicy === 'Prefix' ? claimMappings.username.prefix?.prefixString ?? '' : ''
+      claimMappings?.username?.prefixPolicy === 'Prefix' ? (claimMappings.username.prefix?.prefixString ?? '') : ''
     return prefix ? `${prefix}username` : t('user@company.com or username')
   }
   const groupPrefix = claimMappings?.groups?.prefix ?? ''

@@ -726,7 +726,7 @@ export function getProvider({
   let providerLabel = (
     hivePlatformLabel && hivePlatformLabel !== 'unknown'
       ? hivePlatformLabel
-      : cloudLabel ?? platformClusterClaim?.value ?? ''
+      : (cloudLabel ?? platformClusterClaim?.value ?? '')
   ).toUpperCase()
 
   // Hosted clusters imported from a managed MCE cluster will not have provider set

@@ -251,7 +251,7 @@ export default function PolicyDetailsOverview() {
       },
       {
         key: t('Status'),
-        value: policy.spec.disabled ? t('Disabled') : t('Enabled') ?? '-',
+        value: policy.spec.disabled ? t('Disabled') : (t('Enabled') ?? '-'),
       },
       {
         key: t('Remediation'),
