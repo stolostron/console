@@ -484,7 +484,7 @@ function renderCollapsedBadgesFromNodes(
         continue
       }
       const collapsedInputContent = child.error ? (
-        child.label ?? child.path
+        (child.label ?? child.path)
       ) : child.value === true ? (
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
           <CheckIcon aria-hidden style={{ flexShrink: 0 }} />
