@@ -75,8 +75,6 @@ describe('Create Policy Automation Wizard', () => {
       const jobDropdown = await screen.findByPlaceholderText('Select the ansible job')
       jobDropdown.click()
       await new Promise((resolve) => setTimeout(resolve, 500))
-      screen.logTestingPlaygroundURL()
-
       const jobOption = await screen.findByRole('option', { name: 'test-job-pre-install' })
       jobOption.click()
       screen.getByPlaceholderText(/select the schedule/i).click()
