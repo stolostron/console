@@ -155,7 +155,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
 
   const getVersion = (versionName = '') => {
     const clusterImage = clusterImageSets.find((clusterImageSet) => clusterImageSet.metadata?.name == versionName)
-    return clusterImage ? getClusterImageSetVersion(clusterImage) ?? versionName : versionName
+    return clusterImage ? (getClusterImageSetVersion(clusterImage) ?? versionName) : versionName
   }
 
   useEffect(() => {

@@ -121,7 +121,9 @@ export default function OverviewClusterLabelSelector(props: {
             placeholderText={t('Select label value')}
             aria-labelledby={'cluster-label-value'}
           >
-            {allClusterLabels[selectedClusterLabel ?? '']?.map((label) => <SelectOption key={label} value={label} />)}
+            {allClusterLabels[selectedClusterLabel ?? '']?.map((label) => (
+              <SelectOption key={label} value={label} />
+            ))}
           </AcmSelectBase>
         </div>
         {Object.values(selectedClusterLabels).length > 0 && (

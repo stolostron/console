@@ -106,7 +106,7 @@ export function RenderItemContent(
   const firstRelatedItem = relatedResultItems[0]
   const tableIDSuffix = firstRelatedItem?.apigroup
     ? `${firstRelatedItem.apigroup}-${firstRelatedItem.apiversion}`
-    : firstRelatedItem?.apiversion ?? 'unknown'
+    : (firstRelatedItem?.apiversion ?? 'unknown')
 
   if (error && !hasFederatedError) {
     return (

@@ -17,7 +17,7 @@ import { GetUrlSearchParam } from '../../Search/searchDefinitions'
 import { ClosedVMActionModalProps, IVMActionModalProps } from './modals/VMActionModal'
 
 export function isResourceTypeOf(item: any, resourceType: IResourceDefinition | IResourceDefinition[]) {
-  const apiVersion = item?.apigroup ? `${item.apigroup}/${item.apiversion}` : item?.apiversion ?? item?.apiVersion
+  const apiVersion = item?.apigroup ? `${item.apigroup}/${item.apiversion}` : (item?.apiversion ?? item?.apiVersion)
 
   return Array.isArray(resourceType)
     ? resourceType.some((rt) => rt.apiVersion === apiVersion && rt.kind === item.kind)
