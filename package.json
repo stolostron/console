@@ -61,7 +61,7 @@
     "podman:run": "npm run podman:build && podman run --arch amd64 --rm --name console -p 3000:3000 -e PORT=3000 -v $PWD/backend/certs:/app/certs -v $PWD/backend/config:/app/config --env-file=backend/.env console | ./backend/node_modules/.bin/pino-zen -i time && podman rm -f console",
     "podman:deploy": "npm run podman:build && podman tag console quay.io/$USER/console:latest && podman push quay.io/$USER/console:latest && ./scripts/patch-deployment.sh latest quay.io/$USER/console",
     "podman:deploy:mce": "npm run podman:build:mce && podman tag console-mce quay.io/$USER/console-mce:latest && podman push quay.io/$USER/console-mce:latest && ./scripts/patch-deployment.sh latest quay.io/$USER/console-mce",
-    "test:playwright:sanity": "npx playwright test --config e2e-template/playwright-sanity.config.ts",
+    "playwright:sanity": "npx playwright test --config e2e-template/playwright-sanity.config.ts",
     "setup": "./setup.sh",
     "prepare": "husky install"
   },

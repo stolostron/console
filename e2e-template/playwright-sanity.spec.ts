@@ -4,7 +4,7 @@
  * functional after install or version bump. This does NOT require a running
  * application; it exercises Playwright's core capabilities in isolation.
  *
- * Run via: npm run test:playwright:sanity
+ * Run via: npm run playwright:sanity
  */
 import { test, expect } from '@playwright/test'
 

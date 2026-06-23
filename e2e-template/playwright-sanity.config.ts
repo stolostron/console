@@ -3,7 +3,7 @@ import { defineConfig } from '@playwright/test'
 
 /**
  * Minimal Playwright config for sanity-checking the @playwright/test package.
- * Run via: npm run test:playwright:sanity
+ * Run via: npm run playwright:sanity
  */
 export default defineConfig({
   testDir: '.',
