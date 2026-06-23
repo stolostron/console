@@ -694,6 +694,14 @@ export function getPolicySource(
   return source
 }
 
+export function isKyvernoApiGroup(apiGroup: string): boolean {
+  return apiGroup === 'kyverno.io' || apiGroup === 'policies.kyverno.io'
+}
+
+export function isLegacyKyvernoApiGroup(apiGroup: string): boolean {
+  return apiGroup === 'kyverno.io'
+}
+
 export function getEngineString(apiGroup: string): string {
   switch (apiGroup) {
     case 'policy.open-cluster-management.io':
@@ -705,6 +713,7 @@ export function getEngineString(apiGroup: string): string {
     case 'admissionregistration.k8s.io':
       return 'Kubernetes'
     case 'kyverno.io':
+    case 'policies.kyverno.io':
       return 'Kyverno'
     default:
       return 'Unknown'

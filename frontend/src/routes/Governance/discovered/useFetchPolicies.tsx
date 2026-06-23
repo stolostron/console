@@ -7,6 +7,7 @@ import { searchClient } from '../../Search/search-sdk/search-client'
 import { SearchInput, useSearchResultItemsAndRelatedItemsQuery } from '../../Search/search-sdk/search-sdk'
 import {
   getSourceText,
+  isKyvernoApiGroup,
   parseDiscoveredPolicies,
   parseDiscoveredPolicyLabels,
   parseStringMap,
@@ -49,7 +50,7 @@ export interface DiscoveredPolicyItem {
   policyName?: string
   _ownedByGatekeeper?: boolean
   validationActions?: string
-  // Kyverno resources: ClusterPolicy, Policy
+  // Kyverno resources: ClusterPolicy, Policy (kyverno.io) and ValidatingPolicy, MutatingPolicy, etc. (policies.kyverno.io)
   validationFailureAction?: string
   _missingResources?: string
   _nonCompliantResources?: string
@@ -83,7 +84,7 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
   let searchQuery: SearchInput[]
 
   const discoveredRelatedKinds = (apiGroup: string, kind: string) => {
-    if (apiGroup === 'kyverno.io') {
+    if (isKyvernoApiGroup(apiGroup)) {
       if (policyName) {
         return [] // All resources when the page is specific to one kyverno policy
       } else {
@@ -183,6 +184,29 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
           {
             property: 'kind',
             values: ['ClusterPolicy', 'Policy'],
+          },
+        ],
+        relatedKinds: ['ClusterPolicyReport', 'PolicyReport'],
+        limit: 100000,
+      },
+      {
+        filters: [
+          {
+            property: 'apigroup',
+            values: ['policies.kyverno.io'],
+          },
+          {
+            property: 'kind',
+            values: [
+              'ValidatingPolicy',
+              'MutatingPolicy',
+              'GeneratingPolicy',
+              'ImageValidatingPolicy',
+              'NamespacedValidatingPolicy',
+              'NamespacedMutatingPolicy',
+              'NamespacedGeneratingPolicy',
+              'NamespacedImageValidatingPolicy',
+            ],
           },
         ],
         relatedKinds: ['ClusterPolicyReport', 'PolicyReport'],

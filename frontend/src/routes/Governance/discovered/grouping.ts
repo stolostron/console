@@ -106,6 +106,11 @@ export function grouping(): {
     return (parseStringMap(policy.annotation)['policy.open-cluster-management.io/severity'] ?? '').toLowerCase()
   }
 
+  // Duplicated from common/util — Web Worker cannot import from that module
+  const isKyvernoApiGroup = (apiGroup: string): boolean => {
+    return apiGroup === 'kyverno.io' || apiGroup === 'policies.kyverno.io'
+  }
+
   const getResponseAction = (policy: any): string | null => {
     if (policy?.remediationAction) {
       return policy.remediationAction.toLowerCase()
@@ -122,7 +127,7 @@ export function grouping(): {
           .sort() //NOSONAR
           .join('/')
       }
-    } else if (policy.apigroup === 'kyverno.io') {
+    } else if (isKyvernoApiGroup(policy.apigroup)) {
       return policy.validationFailureAction
     }
 
@@ -169,7 +174,7 @@ export function grouping(): {
             return
           case 'wgpolicyk8s.io:PolicyReport':
           case 'wgpolicyk8s.io:ClusterPolicyReport':
-            if (polInfo?.apigroup === 'kyverno.io') return
+            if (isKyvernoApiGroup(polInfo?.apigroup)) return
             break
           case 'admissionregistration.k8s.io:ValidatingAdmissionPolicy':
             if (polInfo?.apigroup === 'admissionregistration.k8s.io') return
@@ -235,7 +240,7 @@ export function grouping(): {
       const polInfo = result?.items?.[0] // useful for most template information
       templateName = polInfo?.namespace ? polInfo.namespace + '/' + polInfo?.name : polInfo?.name
 
-      if (polInfo?.apigroup === 'kyverno.io') {
+      if (isKyvernoApiGroup(polInfo?.apigroup)) {
         result.related?.forEach((related: any) => {
           if (['PolicyReport', 'ClusterPolicyReport'].includes(related?.kind ?? ''))
             kyvernoPolicyReports = kyvernoPolicyReports.concat(related?.items || [])
@@ -334,7 +339,7 @@ export function grouping(): {
           ),
         }
         // Add violation to kyverno
-        if (policy.apigroup === 'kyverno.io') {
+        if (isKyvernoApiGroup(policy.apigroup)) {
           const nsName = policy.namespace ? policy.namespace + '/' + policy.name : policy.name
           const key = policy.cluster + '/' + nsName
           return {

@@ -666,7 +666,7 @@ describe('useFetchPolicies custom hook', () => {
 
     expect(
       screen.getByRole('row', {
-        name: /require-owner-labels Kyverno ClusterPolicy - Audit Medium 1 Local/,
+        name: /require-owner-labels Deprecated Kyverno ClusterPolicy - Audit Medium 1 Local/,
       })
     ).toBeInTheDocument()
 

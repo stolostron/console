@@ -58,7 +58,9 @@ const ReasonFooter = ({
   const isMissingNamespaces = isMissingNamespacesMessage(roleAssignment.status?.reason, roleAssignment.status?.message)
   const callback: (roleAssignment: FlattenedRoleAssignment) => void =
     callbackMap[
-      isMissingNamespaces ? 'MissingNamespaces' : roleAssignment.status?.reason ?? ('' as RoleAssignmentCallbackReason)
+      isMissingNamespaces
+        ? 'MissingNamespaces'
+        : (roleAssignment.status?.reason ?? ('' as RoleAssignmentCallbackReason))
     ]
 
   return isMissingNamespaces ? (

@@ -3,7 +3,7 @@ import { ViolationsCard, ViolationSummary } from '../../overview/PolicyViolation
 import { DiscoveredPolicyItem, DiscoveredPolicyTableItem, ISourceType } from '../useFetchPolicies'
 import { compareStrings, IAcmTableColumn, ITableFilter, AcmLabels } from '../../../../ui-components'
 import { TFunction } from 'react-i18next'
-import { getPolicySource } from '../../common/util'
+import { getPolicySource, isKyvernoApiGroup, isLegacyKyvernoApiGroup } from '../../common/util'
 import { generatePath, Link } from 'react-router'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Channel, HelmRelease, Subscription } from '../../../../resources'
@@ -33,14 +33,19 @@ export const policyViolationSummary = (discoveredPolicyItems: DiscoveredPolicyIt
   const kyvernoPolicyViolations: IKyvernoPolicyViolation = {}
 
   for (const policy of discoveredPolicyItems) {
+    if (policy.disabled) continue
+
     const compliance = getCompliance(policy)
 
-    if (policy.apigroup === 'kyverno.io' && policy.kind === 'Policy') {
+    const isNamespacedKyverno =
+      (isLegacyKyvernoApiGroup(policy.apigroup) && policy.kind === 'Policy') ||
+      (policy.apigroup === 'policies.kyverno.io' && policy.kind.startsWith('Namespaced'))
+    if (isNamespacedKyverno) {
       addComplianceToKyvernoPolicyViolations(policy, compliance, kyvernoPolicyViolations)
       continue
     }
 
-    if (policy.disabled || !compliance) continue
+    if (!compliance) continue
     switch (compliance) {
       case 'compliant':
         compliant++
@@ -85,7 +90,7 @@ const addComplianceToKyvernoPolicyViolations = (
 
 const getCompliance = (policy: DiscoveredPolicyItem) => {
   // Kyverno resources also use the totalViolations field
-  if (['constraints.gatekeeper.sh', 'kyverno.io'].includes(policy.apigroup)) {
+  if (policy.apigroup === 'constraints.gatekeeper.sh' || isKyvernoApiGroup(policy.apigroup)) {
     return getTotalViolationsCompliance(policy?.totalViolations)
   }
   return policy?.compliant?.toLowerCase() ?? ''
@@ -195,7 +200,7 @@ export const byClusterCols = (
           tooltip: t('discoveredPolicies.tooltip.clusterViolation'),
           cell: (item: DiscoveredPolicyItem) => {
             let compliant: string
-            if (['constraints.gatekeeper.sh', 'kyverno.io'].includes(item.apigroup)) {
+            if (item.apigroup === 'constraints.gatekeeper.sh' || isKyvernoApiGroup(item.apigroup)) {
               compliant = getTotalViolationsCompliance(item?.totalViolations)
             } else {
               compliant = item?.compliant?.toLowerCase() ?? ''
@@ -254,7 +259,7 @@ export const byClusterCols = (
           sort: 'compliant',
           id: 'violations',
           exportContent: (item: DiscoveredPolicyItem) => {
-            if (['constraints.gatekeeper.sh', 'kyverno.io'].includes(item.apigroup)) {
+            if (item.apigroup === 'constraints.gatekeeper.sh' || isKyvernoApiGroup(item.apigroup)) {
               const compliant = getTotalViolationsCompliance(item?.totalViolations)
 
               if (compliant === 'noncompliant') {
@@ -398,6 +403,7 @@ export function getResponseActionFilter(t: TFunction): ITableFilter<DiscoveredPo
       { label: 'audit', value: 'audit' },
       { label: 'Kyverno Audit', value: 'Audit' },
       { label: 'Kyverno Enforce', value: 'Enforce' },
+      { label: 'Kyverno Deny', value: 'Deny' },
     ],
     tableFilterFn: (selectedValues, item) => {
       for (const selectedValue of selectedValues) {
@@ -405,11 +411,14 @@ export function getResponseActionFilter(t: TFunction): ITableFilter<DiscoveredPo
           return false
         }
 
-        if (item.apigroup === 'kyverno.io') {
+        if (isKyvernoApiGroup(item.apigroup)) {
           if (selectedValues.includes('Audit') && item.responseAction.includes('Audit')) {
             return true
           }
           if (selectedValues.includes('Enforce') && item.responseAction.includes('Enforce')) {
+            return true
+          }
+          if (selectedValues.includes('Deny') && item.responseAction.includes('Deny')) {
             return true
           }
         }

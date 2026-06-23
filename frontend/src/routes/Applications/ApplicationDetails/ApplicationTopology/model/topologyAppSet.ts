@@ -237,7 +237,7 @@ export async function getAppSetTopology(
   const source =
     templateSourcePath !== '{{path}}'
       ? templateSourcePath
-      : (Object.values((application.app as any)?.spec?.generators?.[0] ?? {})[0] as any)?.directories?.[0]?.path ?? ''
+      : ((Object.values((application.app as any)?.spec?.generators?.[0] ?? {})[0] as any)?.directories?.[0]?.path ?? '')
 
   const clusterId = addClusters(
     clusterParentId,

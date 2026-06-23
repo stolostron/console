@@ -4,7 +4,10 @@
 import { render } from '@testing-library/react'
 import {
   hasInformOnlyPolicies,
+  getEngineString,
   getPolicyRemediation,
+  isKyvernoApiGroup,
+  isLegacyKyvernoApiGroup,
   resolveExternalStatus,
   parseStringMap,
   policyHasDeletePruneBehavior,
@@ -1029,6 +1032,44 @@ describe('Test policyHasDeletePruneBehavior', () => {
     const policy = cloneDeep(basePolicy)
     delete policy.spec['policy-templates']
     expect(policyHasDeletePruneBehavior(policy)).toBe(false)
+  })
+})
+
+describe('isKyvernoApiGroup', () => {
+  test.each([
+    ['kyverno.io', true],
+    ['policies.kyverno.io', true],
+    ['constraints.gatekeeper.sh', false],
+    ['policy.open-cluster-management.io', false],
+    ['admissionregistration.k8s.io', false],
+    ['', false],
+  ])('isKyvernoApiGroup(%s) should be %s', (apiGroup, expected) => {
+    expect(isKyvernoApiGroup(apiGroup)).toBe(expected)
+  })
+})
+
+describe('isLegacyKyvernoApiGroup', () => {
+  test.each([
+    ['kyverno.io', true],
+    ['policies.kyverno.io', false],
+    ['constraints.gatekeeper.sh', false],
+    ['', false],
+  ])('isLegacyKyvernoApiGroup(%s) should be %s', (apiGroup, expected) => {
+    expect(isLegacyKyvernoApiGroup(apiGroup)).toBe(expected)
+  })
+})
+
+describe('getEngineString for Kyverno API groups', () => {
+  test.each([
+    ['kyverno.io', 'Kyverno'],
+    ['policies.kyverno.io', 'Kyverno'],
+    ['policy.open-cluster-management.io', 'Open Cluster Management'],
+    ['constraints.gatekeeper.sh', 'Gatekeeper'],
+    ['mutations.gatekeeper.sh', 'Gatekeeper'],
+    ['admissionregistration.k8s.io', 'Kubernetes'],
+    ['unknown.api.group', 'Unknown'],
+  ])('getEngineString(%s) should return %s', (apiGroup, expected) => {
+    expect(getEngineString(apiGroup)).toBe(expected)
   })
 })
 

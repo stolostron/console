@@ -282,7 +282,7 @@ export function getArgoDestinationCluster(
         // Find managed cluster by matching server URL
         server = managedClusters.find((cls) => cls.kubeApiServer === serverApi)
       }
-      clusterName = server ? server.name ?? '' : 'unknown'
+      clusterName = server ? (server.name ?? '') : 'unknown'
     }
   } else {
     // Target destination was set using the name property
