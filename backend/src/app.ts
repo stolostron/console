@@ -28,6 +28,7 @@ import { search } from './routes/search'
 import { placementDebug } from './routes/placementDebug'
 import { serveHandler } from './routes/serve'
 import { upgradeRiskPredictions } from './routes/upgrade-risks-prediction'
+import { policyAnalysis } from './routes/policy-analysis'
 import { username } from './routes/username'
 import { userpreference } from './routes/userpreference'
 import { virtualMachineGETProxy, virtualMachineProxy, vmResourceUsageProxy } from './routes/virtualMachineProxy'
@@ -76,6 +77,7 @@ router.get('/hub', hub)
 router.get('/hypershift-status', hypershiftStatus)
 router.get('/cluster-version', clusterVersion)
 router.post('/upgrade-risks-prediction', upgradeRiskPredictions)
+router.post('/policy-analysis', policyAnalysis)
 router.post('/aggregate/*', aggregate)
 router.get('/virtualmachines/get/*', virtualMachineGETProxy)
 router.all('/virtualmachines/*', virtualMachineProxy)
