@@ -3,8 +3,10 @@
 import {
   Alert,
   Button,
-  Stack,
   Content,
+  Flex,
+  FlexItem,
+  Stack,
   Title,
   FormFieldGroupHeader,
   Form,
@@ -56,6 +58,8 @@ import { PlacementSection } from '../../Placement/PlacementSection'
 import { Specifications } from './specifications'
 import { useWizardStrings } from '../../../lib/wizardStrings'
 import { useTranslation } from '../../../lib/acm-i18next'
+import { PolicyAnalysisModal } from '../../../routes/Governance/components/PolicyAnalysisModal'
+import type { IResource as ModalIResource } from '../../../resources'
 
 export function PolicyWizard(props: {
   title: string
@@ -103,6 +107,7 @@ export function PolicyWizard(props: {
       editMode={props.editMode}
       defaultData={defaultData}
       isLoading={props.isSaving}
+      reviewExtra={<PolicyWizardAnalysis />}
     >
       <Step label={t('Details')} id="details">
         {props.editMode !== EditMode.Edit && (
@@ -260,6 +265,38 @@ export function PolicyWizard(props: {
         </WizItemSelector>
       </Step>
     </WizardPage>
+  )
+}
+
+function PolicyWizardAnalysis() {
+  const { t } = useTranslation()
+  const resources = useItem() as IResource[]
+  const policy = useMemo(
+    () => (Array.isArray(resources) ? resources.find((r) => r.kind === PolicyKind) : resources),
+    [resources]
+  ) as IResource | undefined
+  const [analysisOpen, setAnalysisOpen] = useState(false)
+
+  if (!policy) return null
+
+  return (
+    <Flex alignItems={{ default: 'alignItemsCenter' }} style={{ marginBottom: '16px' }}>
+      <FlexItem>
+        <Button variant="secondary" size="sm" onClick={() => setAnalysisOpen(true)}>
+          {t('Validate with Lightspeed')}
+        </Button>
+      </FlexItem>
+      <FlexItem>
+        <Content component="small">
+          {t('Run a pre-deployment validation to detect syntax errors, deprecated APIs, and policy anti-patterns.')}
+        </Content>
+      </FlexItem>
+      <PolicyAnalysisModal
+        resources={(Array.isArray(resources) ? resources : [resources]) as ModalIResource[]}
+        isOpen={analysisOpen}
+        onClose={() => setAnalysisOpen(false)}
+      />
+    </Flex>
   )
 }
 

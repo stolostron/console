@@ -83,6 +83,7 @@ export interface WizardProps {
   submitButtonText?: string
   submittingButtonText?: string
   isLoading?: boolean
+  reviewExtra?: ReactNode
 }
 
 export type WizardSubmit = (data: unknown) => Promise<void>
@@ -142,6 +143,7 @@ export function Wizard(props: WizardProps & { showHeader?: boolean; showYaml?: b
                                             submitButtonText={props.submitButtonText}
                                             submittingButtonText={props.submittingButtonText}
                                             isLoading={props.isLoading}
+                                            reviewExtra={props.reviewExtra}
                                           >
                                             {props.children}
                                           </WizardInternal>
@@ -189,6 +191,7 @@ type WizardInternalProps = Omit<WizardFooterProps, 'steps'> & {
   onCancel: WizardCancel
   hasButtons?: boolean
   isLoading?: boolean
+  reviewExtra?: ReactNode
 }
 
 const MAX_REVIEW_STORAGE_KEY_LEN = 96
@@ -215,6 +218,7 @@ function WizardInternal({
   submitButtonText,
   submittingButtonText,
   isLoading,
+  reviewExtra,
 }: WizardInternalProps) {
   const { reviewLabel, stepsAriaLabel, contentAriaLabel } = useStringContext()
   const resolvedReviewStorageKey = reviewStorageKey ?? defaultReviewStorageKeyFromId(id ?? '')
@@ -227,9 +231,14 @@ function WizardInternal({
     () => ({
       id: 'review-step',
       name: reviewLabel,
-      component: <ReviewStep reviewStorageKey={resolvedReviewStorageKey} showYaml={showYaml} />,
+      component: (
+        <Fragment>
+          {reviewExtra}
+          <ReviewStep reviewStorageKey={resolvedReviewStorageKey} showYaml={showYaml} />
+        </Fragment>
+      ),
     }),
-    [reviewLabel, resolvedReviewStorageKey, showYaml]
+    [reviewLabel, resolvedReviewStorageKey, showYaml, reviewExtra]
   )
 
   const showValidation = useShowValidation()
