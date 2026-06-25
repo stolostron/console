@@ -15,7 +15,17 @@ import {
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import get from 'get-value'
 import { klona } from 'klona/json'
-import { Fragment, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import {
+  createContext,
+  Fragment,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import set from 'set-value'
 import {
   EditMode,
@@ -59,7 +69,20 @@ import { Specifications } from './specifications'
 import { useWizardStrings } from '../../../lib/wizardStrings'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PolicyAnalysisModal } from '../../../routes/Governance/components/PolicyAnalysisModal'
+import {
+  type PolicyAnalysisResponse,
+  usePolicyAnalysisCache,
+} from '../../../routes/Governance/components/usePolicyAnalysis'
 import type { IResource as ModalIResource } from '../../../resources'
+
+interface PolicyAnalysisContextType {
+  setCachedAnalysis: (result: PolicyAnalysisResponse, resources: ModalIResource[]) => void
+  getCachedResult: (resources: ModalIResource[]) => PolicyAnalysisResponse | null
+  ensureAnalysis: (resources: ModalIResource[]) => Promise<PolicyAnalysisResponse>
+  isAnalyzing: boolean
+}
+
+const PolicyAnalysisContext = createContext<PolicyAnalysisContextType | null>(null)
 
 export function PolicyWizard(props: {
   title: string
@@ -92,179 +115,239 @@ export function PolicyWizard(props: {
     },
   ]
 
+  const analysisCache = usePolicyAnalysisCache()
+  const lastValidationFailHashRef = useRef<string | null>(null)
+  const { onSubmit } = props
+
+  const wrappedOnSubmit = useCallback(
+    async (data: unknown) => {
+      const resources = data as ModalIResource[]
+      const resourcesKey = JSON.stringify(resources)
+
+      if (lastValidationFailHashRef.current === resourcesKey) {
+        lastValidationFailHashRef.current = null
+        return onSubmit(data)
+      }
+
+      let result: PolicyAnalysisResponse
+      try {
+        result = await analysisCache.ensureAnalysis(resources)
+      } catch {
+        lastValidationFailHashRef.current = resourcesKey
+        throw new Error(
+          t(
+            'Policy validation could not be completed. Click Create again to override, or click "Validate with Lightspeed" for details.'
+          )
+        )
+      }
+
+      if (result.error || result.readyToDeploy === false) {
+        lastValidationFailHashRef.current = resourcesKey
+        const reason = result.error ?? result.diagnosis?.rootCause ?? result.diagnosis?.summary ?? ''
+        throw new Error(
+          t(
+            'Policy is not ready to deploy: {{reason}}. Click Create again to override, or click "Validate with Lightspeed" for details.',
+            { reason }
+          )
+        )
+      }
+
+      lastValidationFailHashRef.current = null
+      return onSubmit(data)
+    },
+    [analysisCache, onSubmit, t]
+  )
+
+  const analysisContextValue = useMemo<PolicyAnalysisContextType>(
+    () => ({
+      setCachedAnalysis: analysisCache.setCachedAnalysis,
+      getCachedResult: analysisCache.getCachedResult,
+      ensureAnalysis: analysisCache.ensureAnalysis,
+      isAnalyzing: analysisCache.isAnalyzing,
+    }),
+    [
+      analysisCache.setCachedAnalysis,
+      analysisCache.getCachedResult,
+      analysisCache.ensureAnalysis,
+      analysisCache.isAnalyzing,
+    ]
+  )
+
   return (
-    <WizardPage
-      id="policy-wizard"
-      wizardStrings={translatedWizardStrings}
-      title={props.title}
-      breadcrumb={props.breadcrumb}
-      description={t(
-        'A policy generates reports and validates cluster violations based on specified security standards, categories, and controls.'
-      )}
-      yamlEditor={props.yamlEditor}
-      onSubmit={props.onSubmit}
-      onCancel={props.onCancel}
-      editMode={props.editMode}
-      defaultData={defaultData}
-      isLoading={props.isSaving}
-      reviewExtra={<PolicyWizardAnalysis />}
-    >
-      <Step label={t('Details')} id="details">
-        {props.editMode !== EditMode.Edit && (
-          <Fragment>
-            <Sync kind={PolicyKind} path="metadata.namespace" />
-            <Sync kind={PolicyKind} path="metadata.name" suffix="-placement" />
-            <Sync
-              kind={PolicyKind}
-              path="metadata.name"
-              targetKind={PlacementBindingKind}
-              targetPath="subjects.0.name"
-            />
-          </Fragment>
+    <PolicyAnalysisContext.Provider value={analysisContextValue}>
+      <WizardPage
+        id="policy-wizard"
+        wizardStrings={translatedWizardStrings}
+        title={props.title}
+        breadcrumb={props.breadcrumb}
+        description={t(
+          'A policy generates reports and validates cluster violations based on specified security standards, categories, and controls.'
         )}
+        yamlEditor={props.yamlEditor}
+        onSubmit={wrappedOnSubmit}
+        onCancel={props.onCancel}
+        editMode={props.editMode}
+        defaultData={defaultData}
+        isLoading={props.isSaving}
+        reviewExtra={<PolicyWizardAnalysis />}
+      >
+        <Step label={t('Details')} id="details">
+          {props.editMode !== EditMode.Edit && (
+            <Fragment>
+              <Sync kind={PolicyKind} path="metadata.namespace" />
+              <Sync kind={PolicyKind} path="metadata.name" suffix="-placement" />
+              <Sync
+                kind={PolicyKind}
+                path="metadata.name"
+                targetKind={PlacementBindingKind}
+                targetPath="subjects.0.name"
+              />
+            </Fragment>
+          )}
 
-        <Sync kind={PolicyKind} path="metadata.namespace" />
-        <WizItemSelector selectKey="kind" selectValue={PolicyKind}>
-          <Section label={t('Details')} prompt={t('Enter the details for the policy')}>
-            {props.gitSource && (
-              <WizDetailsHidden>
-                <Alert title={t('This policy is managed externally')} variant="warning" isInline>
+          <Sync kind={PolicyKind} path="metadata.namespace" />
+          <WizItemSelector selectKey="kind" selectValue={PolicyKind}>
+            <Section label={t('Details')} prompt={t('Enter the details for the policy')}>
+              {props.gitSource && (
+                <WizDetailsHidden>
+                  <Alert title={t('This policy is managed externally')} variant="warning" isInline>
+                    <Fragment>
+                      <p>{t('Any changes made here may be overridden by the content of an upstream repository.')}</p>
+                      <Button
+                        icon={<ExternalLinkAltIcon />}
+                        isInline
+                        variant="link"
+                        component="a"
+                        href={props.gitSource}
+                        target="_blank"
+                      >
+                        {props.gitSource}
+                      </Button>
+                    </Fragment>
+                  </Alert>
+                </WizDetailsHidden>
+              )}
+
+              <ItemContext.Consumer>
+                {() => (
                   <Fragment>
-                    <p>{t('Any changes made here may be overridden by the content of an upstream repository.')}</p>
-                    <Button
-                      icon={<ExternalLinkAltIcon />}
-                      isInline
-                      variant="link"
-                      component="a"
-                      href={props.gitSource}
-                      target="_blank"
-                    >
-                      {props.gitSource}
-                    </Button>
+                    <WizTextInput
+                      id="name"
+                      path="metadata.name"
+                      label={t('Name')}
+                      placeholder={t('Enter the name')}
+                      required
+                      validation={validatePolicyName}
+                      readonly={props.editMode === EditMode.Edit}
+                    />
+                    <WizTextArea
+                      id="description"
+                      path={`metadata.annotations.policy\\.open-cluster-management\\.io/description`}
+                      label={t('Description')}
+                      placeholder={t('Enter the description')}
+                    />
+                    <WizSingleSelect
+                      id="namespace"
+                      path="metadata.namespace"
+                      label={t('Namespace')}
+                      placeholder={t('Select namespace')}
+                      helperText={t('The namespace on the hub cluster where the policy resources will be created.')}
+                      options={props.namespaces}
+                      required
+                      readonly={props.editMode === EditMode.Edit}
+                    />
                   </Fragment>
-                </Alert>
-              </WizDetailsHidden>
-            )}
-
-            <ItemContext.Consumer>
-              {() => (
-                <Fragment>
-                  <WizTextInput
-                    id="name"
-                    path="metadata.name"
-                    label={t('Name')}
-                    placeholder={t('Enter the name')}
-                    required
-                    validation={validatePolicyName}
-                    readonly={props.editMode === EditMode.Edit}
-                  />
-                  <WizTextArea
-                    id="description"
-                    path={`metadata.annotations.policy\\.open-cluster-management\\.io/description`}
-                    label={t('Description')}
-                    placeholder={t('Enter the description')}
-                  />
-                  <WizSingleSelect
-                    id="namespace"
-                    path="metadata.namespace"
-                    label={t('Namespace')}
-                    placeholder={t('Select namespace')}
-                    helperText={t('The namespace on the hub cluster where the policy resources will be created.')}
-                    options={props.namespaces}
-                    required
-                    readonly={props.editMode === EditMode.Edit}
-                  />
-                </Fragment>
-              )}
-            </ItemContext.Consumer>
-            <WizCheckbox
-              path="spec.disabled"
-              label={t('Disable policy')}
-              helperText={t('Select to disable the policy from being propagated to managed clusters.')}
-            />
-          </Section>
-        </WizItemSelector>
-      </Step>
-      <Step label={t('Policy templates')} id="templates">
-        <WizItemSelector selectKey="kind" selectValue={PolicyKind}>
-          <PolicyWizardTemplates policies={props.policies} />
-        </WizItemSelector>
-      </Step>
-      <Step label={t('Placement')} id="placement">
-        <PolicyPolicySets />
-        <PlacementSection
-          existingPlacements={props.placements}
-          createClusterSetCallback={() => open(NavigationPath.clusterSets, '_blank')}
-          existingClusterSets={props.clusterSets}
-          existingClusterSetBindings={props.clusterSetBindings}
-          bindingSubjectKind={PolicyKind}
-          bindingSubjectApiGroup={PolicyApiGroup}
-          clusters={props.clusters}
-          defaultPlacementSpec={{
-            tolerations: [
-              {
-                key: 'cluster.open-cluster-management.io/unreachable',
-                operator: 'Exists',
-              },
-              {
-                key: 'cluster.open-cluster-management.io/unavailable',
-                operator: 'Exists',
-              },
-            ],
-          }}
-          allowNoPlacement
-          withoutOnlineClusterCondition
-        />
-      </Step>
-      <Step label={t('Policy annotations')} id="security-groups">
-        <WizItemSelector selectKey="kind" selectValue={PolicyKind}>
-          <Section label={t('Policy annotations')}>
-            <StringsMapInput
-              id="standards"
-              path={`metadata.annotations.policy\\.open-cluster-management\\.io/standards`}
-              label={t('Standards')}
-              map={(value: string | undefined) => {
-                return value !== undefined ? value.split(',').map((v) => v.trimStart()) : []
-              }}
-              unmap={(values: string[]) => values.join(', ')}
-              labelHelp={t(
-                'The name or names of security standards the policy is related to. For example, National Institute of Standards and Technology (NIST) and Payment Card Industry (PCI).'
-              )}
-              placeholder={t('Add')}
-              inputTextPlaceholder={t('Enter the standard')}
-            />
-            <StringsMapInput
-              id="categories"
-              path={`metadata.annotations.policy\\.open-cluster-management\\.io/categories`}
-              label={t('Categories')}
-              map={(value: string | undefined) => {
-                return value !== undefined ? value.split(',').map((v) => v.trimStart()) : []
-              }}
-              unmap={(values: string[]) => values.join(', ')}
-              labelHelp={t(
-                'A security control category represent specific requirements for one or more standards. For example, a System and Information Integrity category might indicate that your policy contains a data transfer protocol to protect personal information, as required by the HIPAA and PCI standards.'
-              )}
-              placeholder={t('Add')}
-              inputTextPlaceholder={t('Enter the category')}
-            />
-            <StringsMapInput
-              id="controls"
-              path={`metadata.annotations.policy\\.open-cluster-management\\.io/controls`}
-              label={t('Controls')}
-              map={(value: string | undefined) => {
-                return value !== undefined ? value.split(',').map((v) => v.trimStart()) : []
-              }}
-              unmap={(values: string[]) => values.join(', ')}
-              labelHelp={t(
-                'The name of the security control that is being checked. For example, the certificate policy controller.'
-              )}
-              placeholder={t('Add')}
-              inputTextPlaceholder={t('Enter the control')}
-            />
-          </Section>
-        </WizItemSelector>
-      </Step>
-    </WizardPage>
+                )}
+              </ItemContext.Consumer>
+              <WizCheckbox
+                path="spec.disabled"
+                label={t('Disable policy')}
+                helperText={t('Select to disable the policy from being propagated to managed clusters.')}
+              />
+            </Section>
+          </WizItemSelector>
+        </Step>
+        <Step label={t('Policy templates')} id="templates">
+          <WizItemSelector selectKey="kind" selectValue={PolicyKind}>
+            <PolicyWizardTemplates policies={props.policies} />
+          </WizItemSelector>
+        </Step>
+        <Step label={t('Placement')} id="placement">
+          <PolicyPolicySets />
+          <PlacementSection
+            existingPlacements={props.placements}
+            createClusterSetCallback={() => open(NavigationPath.clusterSets, '_blank')}
+            existingClusterSets={props.clusterSets}
+            existingClusterSetBindings={props.clusterSetBindings}
+            bindingSubjectKind={PolicyKind}
+            bindingSubjectApiGroup={PolicyApiGroup}
+            clusters={props.clusters}
+            defaultPlacementSpec={{
+              tolerations: [
+                {
+                  key: 'cluster.open-cluster-management.io/unreachable',
+                  operator: 'Exists',
+                },
+                {
+                  key: 'cluster.open-cluster-management.io/unavailable',
+                  operator: 'Exists',
+                },
+              ],
+            }}
+            allowNoPlacement
+            withoutOnlineClusterCondition
+          />
+        </Step>
+        <Step label={t('Policy annotations')} id="security-groups">
+          <WizItemSelector selectKey="kind" selectValue={PolicyKind}>
+            <Section label={t('Policy annotations')}>
+              <StringsMapInput
+                id="standards"
+                path={`metadata.annotations.policy\\.open-cluster-management\\.io/standards`}
+                label={t('Standards')}
+                map={(value: string | undefined) => {
+                  return value !== undefined ? value.split(',').map((v) => v.trimStart()) : []
+                }}
+                unmap={(values: string[]) => values.join(', ')}
+                labelHelp={t(
+                  'The name or names of security standards the policy is related to. For example, National Institute of Standards and Technology (NIST) and Payment Card Industry (PCI).'
+                )}
+                placeholder={t('Add')}
+                inputTextPlaceholder={t('Enter the standard')}
+              />
+              <StringsMapInput
+                id="categories"
+                path={`metadata.annotations.policy\\.open-cluster-management\\.io/categories`}
+                label={t('Categories')}
+                map={(value: string | undefined) => {
+                  return value !== undefined ? value.split(',').map((v) => v.trimStart()) : []
+                }}
+                unmap={(values: string[]) => values.join(', ')}
+                labelHelp={t(
+                  'A security control category represent specific requirements for one or more standards. For example, a System and Information Integrity category might indicate that your policy contains a data transfer protocol to protect personal information, as required by the HIPAA and PCI standards.'
+                )}
+                placeholder={t('Add')}
+                inputTextPlaceholder={t('Enter the category')}
+              />
+              <StringsMapInput
+                id="controls"
+                path={`metadata.annotations.policy\\.open-cluster-management\\.io/controls`}
+                label={t('Controls')}
+                map={(value: string | undefined) => {
+                  return value !== undefined ? value.split(',').map((v) => v.trimStart()) : []
+                }}
+                unmap={(values: string[]) => values.join(', ')}
+                labelHelp={t(
+                  'The name of the security control that is being checked. For example, the certificate policy controller.'
+                )}
+                placeholder={t('Add')}
+                inputTextPlaceholder={t('Enter the control')}
+              />
+            </Section>
+          </WizItemSelector>
+        </Step>
+      </WizardPage>
+    </PolicyAnalysisContext.Provider>
   )
 }
 
@@ -276,6 +359,7 @@ function PolicyWizardAnalysis() {
     [resources]
   ) as IResource | undefined
   const [analysisOpen, setAnalysisOpen] = useState(false)
+  const analysisContext = useContext(PolicyAnalysisContext)
 
   if (!policy) return null
 
@@ -295,6 +379,8 @@ function PolicyWizardAnalysis() {
         resources={(Array.isArray(resources) ? resources : [resources]) as ModalIResource[]}
         isOpen={analysisOpen}
         onClose={() => setAnalysisOpen(false)}
+        onAnalysisComplete={analysisContext?.setCachedAnalysis}
+        getCachedResult={analysisContext?.getCachedResult}
       />
     </Flex>
   )
