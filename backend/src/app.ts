@@ -114,6 +114,7 @@ export async function requestHandler(req: Http2ServerRequest, res: Http2ServerRe
 }
 
 export async function start() {
+  logger.warn('TEST FIX BUILD - NOT FOR PRODUCTION USE')
   await loadSettings()
   if (eventsEnabled) {
     startWatching()
