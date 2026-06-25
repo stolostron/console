@@ -1,0 +1,93 @@
+# ACM Policy Validation Proposal — analysis only, no changes applied.
+# Validates ACM policy YAML for correctness by checking syntax, API versions,
+# field references, and cluster prerequisites.
+#
+# Tested: 2026-06-13 on sno-4xlarge-421-m2qmg
+# Result: Passed — agent validated policy, confirmed ACM CRDs installed,
+#         local-cluster registered, namespace exists. Flagged deprecated PlacementRule.
+#
+# Prerequisites:
+#   - Agentic operator installed (hack/quickstart/install.sh)
+#   - LLMProvider + Agent configured
+#   - ACM installed with local-cluster registered
+#
+# Usage:
+#   oc apply -f proposals/validate-acm-policy.yaml
+#   oc get proposals validate-acm-policy -n openshift-lightspeed -w
+#   RESULT=$(oc get proposal validate-acm-policy -n openshift-lightspeed \
+#     -o jsonpath='{.status.steps.analysis.results[0].name}')
+#   oc get analysisresult "$RESULT" -n openshift-lightspeed \
+#     -o jsonpath='{.status.options[0].diagnosis.summary}'
+apiVersion: agentic.openshift.io/v1alpha1
+kind: Proposal
+metadata:
+  name: validate-acm-policy
+  namespace: openshift-lightspeed
+spec:
+  request: |
+    Validate the following ACM Policy YAML for correctness. Do NOT apply it.
+    Check for: syntax errors, correct API versions, proper field references,
+    valid placement targeting local-cluster, and whether the policy logic
+    correctly checks for the existence of the openshift-lightspeed namespace.
+
+    ```yaml
+    apiVersion: policy.open-cluster-management.io/v1
+    kind: Policy
+    metadata:
+      name: check-namespace-exists
+      namespace: open-cluster-management
+    spec:
+      disabled: false
+      remediationAction: inform
+      policy-templates:
+        - objectDefinition:
+            apiVersion: policy.open-cluster-management.io/v1
+            kind: ConfigurationPolicy
+            metadata:
+              name: check-openshift-lightspeed-ns
+            spec:
+              remediationAction: inform
+              severity: high
+              object-templates:
+                - complianceType: musthave
+                  objectDefinition:
+                    apiVersion: v1
+                    kind: Namespace
+                    metadata:
+                      name: openshift-lightspeed
+    ---
+    apiVersion: apps.open-cluster-management.io/v1
+    kind: PlacementRule
+    metadata:
+      name: check-namespace-exists-placement
+      namespace: open-cluster-management
+    spec:
+      clusterSelector:
+        matchExpressions:
+          - key: name
+            operator: In
+            values:
+              - local-cluster
+    ---
+    apiVersion: policy.open-cluster-management.io/v1
+    kind: PlacementBinding
+    metadata:
+      name: check-namespace-exists-binding
+      namespace: open-cluster-management
+    spec:
+      placementRef:
+        apiGroup: apps.open-cluster-management.io
+        kind: PlacementRule
+        name: check-namespace-exists-placement
+      subjects:
+        - apiGroup: policy.open-cluster-management.io
+          kind: Policy
+          name: check-namespace-exists
+    ```
+
+    Also verify:
+    - Is local-cluster registered as a managed cluster?
+    - Does the open-cluster-management namespace exist?
+    - Are the ACM Policy CRDs installed on this cluster?
+  analysis:
+    agent: default
