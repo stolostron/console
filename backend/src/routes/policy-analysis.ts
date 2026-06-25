@@ -9,8 +9,6 @@ import { getAuthenticatedToken } from '../lib/token'
 
 const AGENTIC_NAMESPACE = 'openshift-lightspeed'
 const AGENTIC_API_VERSION = 'agentic.openshift.io/v1alpha1'
-const POLL_INTERVAL_MS = 3000
-const POLL_TIMEOUT_MS = 120_000
 const MAX_BODY_BYTES = 1024 * 1024
 
 const REQUEST_PREFIX = `Validate the following ACM Policy resources for correctness. Do NOT apply them.
@@ -151,17 +149,6 @@ function analysisResultUrl(name: string): string {
   return `${process.env.CLUSTER_API_URL}/apis/${AGENTIC_API_VERSION}/namespaces/${AGENTIC_NAMESPACE}/analysisresults/${name}`
 }
 
-async function pollProposal(name: string, token: string): Promise<ProposalResource> {
-  const deadline = Date.now() + POLL_TIMEOUT_MS
-  while (Date.now() < deadline) {
-    const proposal = await jsonRequest<ProposalResource>(proposalUrl(name), token)
-    const phase = derivePhase(proposal.status?.conditions ?? [])
-    if (TERMINAL_PHASES.has(phase)) return proposal
-    await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS))
-  }
-  throw new Error('Analysis timed out — the agentic operator did not complete within 120 seconds')
-}
-
 async function deleteProposal(name: string, token: string): Promise<void> {
   try {
     await fetchRetry(proposalUrl(name), {
@@ -181,7 +168,7 @@ interface PolicyAnalysisBody {
   resources: unknown[]
 }
 
-export async function policyAnalysis(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
+export async function policyAnalysisCreate(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   const token = await getAuthenticatedToken(req, res)
   if (token) {
     const chunks: string[] = []
@@ -198,15 +185,11 @@ export async function policyAnalysis(req: Http2ServerRequest, res: Http2ServerRe
     })
     req.on('end', async () => {
       if (aborted) {
-        respond(res, { phase: 'Failed', readyToDeploy: false, error: 'Request body too large' }, 413)
+        respond(res, { error: 'Request body too large' }, 413)
         return
       }
 
-      let proposalName: string | undefined
-
       try {
-        logger.info({ msg: 'policy-analysis: request received' })
-
         let parsedBody: unknown
         try {
           parsedBody = JSON.parse(chunks.join(''))
@@ -243,75 +226,86 @@ export async function policyAnalysis(req: Http2ServerRequest, res: Http2ServerRe
           logger.error({ msg: 'Failed to create Proposal CR', statusCode: createResult.statusCode })
           respond(
             res,
-            {
-              phase: 'Failed',
-              readyToDeploy: false,
-              error: `Failed to create analysis request (HTTP ${createResult.statusCode})`,
-            },
+            { error: `Failed to create analysis request (HTTP ${createResult.statusCode})` },
             createResult.statusCode
           )
           return
         }
 
-        proposalName = createResult.body?.metadata?.name
+        const proposalName = createResult.body?.metadata?.name
         if (!proposalName) {
-          logger.error({
-            msg: 'policy-analysis: no proposal name in create response',
-            responseKind: createResult.body?.kind,
-          })
           respondInternalServerError(req, res)
           return
         }
+
         logger.info({ msg: 'policy-analysis: proposal created', proposalName })
-
-        const proposal = await pollProposal(proposalName, token)
-        const phase = derivePhase(proposal.status?.conditions ?? [])
-        logger.info({ msg: 'policy-analysis: poll complete', proposalName, phase })
-
-        if (phase === 'Proposed' || phase === 'Completed') {
-          const resultRefName = proposal.status?.steps?.analysis?.results?.at(-1)?.name
-          logger.info({
-            msg: 'policy-analysis: looking for analysis result',
-            resultRefName,
-            resultCount: proposal.status?.steps?.analysis?.results?.length ?? 0,
-          })
-          if (resultRefName) {
-            const analysisResult = await jsonRequest<AnalysisResultResource>(analysisResultUrl(resultRefName), token)
-            const firstOption = analysisResult.status?.options?.[0]
-            const readyToDeploy = firstOption?.components?.readyToDeploy ?? false
-            await deleteProposal(proposalName, token)
-            respond(res, {
-              phase,
-              readyToDeploy,
-              optionTitle: firstOption?.title,
-              diagnosis: firstOption?.diagnosis,
-            })
-            return
-          }
-        }
-
-        const failedCondition = proposal.status?.conditions?.find((c) => c.status === 'False' && c.message)
-        await deleteProposal(proposalName, token)
-        respond(res, {
-          phase,
-          readyToDeploy: false,
-          error: failedCondition?.message ?? `Analysis ended with phase: ${phase}`,
-        })
+        respond(res, { proposalName, phase: 'Analyzing' })
       } catch (err) {
-        if (proposalName) await deleteProposal(proposalName, token)
-        logger.error({ msg: 'Policy analysis failed', error: err instanceof Error ? err.message : String(err) })
+        logger.error({ msg: 'Policy analysis create failed', error: err instanceof Error ? err.message : String(err) })
         if (!res.headersSent) {
-          respond(
-            res,
-            {
-              phase: 'Failed',
-              readyToDeploy: false,
-              error: err instanceof Error ? err.message : 'Internal server error',
-            },
-            500
-          )
+          respond(res, { error: err instanceof Error ? err.message : 'Internal server error' }, 500)
         }
       }
     })
+  }
+}
+
+export async function policyAnalysisStatus(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
+  const token = await getAuthenticatedToken(req, res)
+  if (!token) return
+
+  const parsedUrl = new URL(req.url ?? '', 'http://localhost')
+  const name = parsedUrl.searchParams.get('name')
+  if (!name) {
+    respondBadRequest(req, res)
+    return
+  }
+
+  try {
+    const proposal = await jsonRequest<ProposalResource>(proposalUrl(name), token)
+    const phase = derivePhase(proposal.status?.conditions ?? [])
+
+    if (!TERMINAL_PHASES.has(phase)) {
+      respond(res, { phase })
+      return
+    }
+
+    if (phase === 'Proposed' || phase === 'Completed') {
+      const resultRefName = proposal.status?.steps?.analysis?.results?.at(-1)?.name
+      if (resultRefName) {
+        const analysisResult = await jsonRequest<AnalysisResultResource>(analysisResultUrl(resultRefName), token)
+        const firstOption = analysisResult.status?.options?.[0]
+        const readyToDeploy = firstOption?.components?.readyToDeploy ?? false
+        await deleteProposal(name, token)
+        respond(res, {
+          phase,
+          readyToDeploy,
+          optionTitle: firstOption?.title,
+          diagnosis: firstOption?.diagnosis,
+        })
+        return
+      }
+    }
+
+    const failedCondition = proposal.status?.conditions?.find((c) => c.status === 'False' && c.message)
+    await deleteProposal(name, token)
+    respond(res, {
+      phase,
+      readyToDeploy: false,
+      error: failedCondition?.message ?? `Analysis ended with phase: ${phase}`,
+    })
+  } catch (err) {
+    logger.error({
+      msg: 'Policy analysis status check failed',
+      name,
+      error: err instanceof Error ? err.message : String(err),
+    })
+    if (!res.headersSent) {
+      respond(
+        res,
+        { phase: 'Failed', readyToDeploy: false, error: err instanceof Error ? err.message : 'Internal server error' },
+        500
+      )
+    }
   }
 }

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useCallback, useRef, useState } from 'react'
-import { getBackendUrl, postRequest } from '../../../resources/utils'
+import { fetchGet, fetchPost, getBackendUrl } from '../../../resources/utils'
 import type { IResource } from '../../../resources'
 
 export interface DiagnosisResult {
@@ -32,12 +32,52 @@ function computeResourcesHash(resources: IResource[]): string {
   return hash.toString(36)
 }
 
+const POLL_INTERVAL_MS = 3000
+const POLL_TIMEOUT_MS = 120_000
+
 export function runPolicyAnalysis(resources: IResource[]): {
   promise: Promise<PolicyAnalysisResponse>
   abort: () => void
 } {
-  const url = getBackendUrl() + '/policy-analysis'
-  return postRequest<{ resources: IResource[] }, PolicyAnalysisResponse>(url, { resources })
+  const baseUrl = getBackendUrl() + '/policy-analysis'
+  const abortController = new AbortController()
+  let pollTimer: ReturnType<typeof setTimeout> | null = null
+
+  const promise = (async () => {
+    const createResult = await fetchPost<{ proposalName: string; phase: string }>(
+      baseUrl,
+      { resources },
+      abortController.signal
+    )
+    const proposalName = createResult.data?.proposalName
+    if (!proposalName) throw new Error('Failed to create analysis request')
+
+    const statusUrl = `${baseUrl}?name=${encodeURIComponent(proposalName)}`
+    const deadline = Date.now() + POLL_TIMEOUT_MS
+
+    while (Date.now() < deadline) {
+      if (abortController.signal.aborted) throw new Error('Analysis was cancelled')
+      await new Promise<void>((resolve) => {
+        pollTimer = setTimeout(resolve, POLL_INTERVAL_MS)
+      })
+      if (abortController.signal.aborted) throw new Error('Analysis was cancelled')
+
+      const statusResult = await fetchGet<PolicyAnalysisResponse>(statusUrl, abortController.signal)
+      const data = statusResult.data
+      if (data.phase !== 'Analyzing' && data.phase !== 'Pending') {
+        return data
+      }
+    }
+    throw new Error('Analysis timed out')
+  })()
+
+  return {
+    promise,
+    abort: () => {
+      abortController.abort()
+      if (pollTimer) clearTimeout(pollTimer)
+    },
+  }
 }
 
 export function usePolicyAnalysisCache() {
