@@ -101,11 +101,10 @@ export function EditPolicyAutomation() {
         handlePolicyAutomationSubmit(submitForm, data, secrets, history, toast, t, currentPolicyAutomation)
       }
       getAnsibleJobsCallback={async (credential: any) => {
-        const host = Buffer.from(credential.data.host || '', 'base64').toString('ascii')
-        const token = Buffer.from(credential.data.token || '', 'base64').toString('ascii')
+        const secretRef = { namespace: credential.metadata.namespace, name: credential.metadata.name }
 
         return new Promise((resolve, reject) => {
-          const ansibleJobs = listAnsibleTowerJobs(host, token)
+          const ansibleJobs = listAnsibleTowerJobs(secretRef)
           ansibleJobs.promise
             .then((response) => {
               if (response) {

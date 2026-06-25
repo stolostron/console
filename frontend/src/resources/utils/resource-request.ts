@@ -469,25 +469,25 @@ export function listNamespacedResources<Resource extends IResource>(
   }
 }
 
+interface AnsibleSecretRef {
+  namespace: string
+  name: string
+}
+
 async function getAnsibleTemplates(
   backendURLPath: string,
-  ansibleHostUrl: string,
-  token: string,
+  secretRef: AnsibleSecretRef,
   abortController: AbortController
 ) {
   const ansibleJobs: AnsibleTowerJobTemplate[] = []
 
   for (const path of ansiblePaths) {
-    let jobUrl: string = ansibleHostUrl + path
-    while (jobUrl) {
-      const result = await fetchGetAnsibleJobs(backendURLPath, jobUrl, token, abortController.signal)
+    let ansiblePath: string = path
+    while (ansiblePath) {
+      const result = await fetchGetAnsibleJobs(backendURLPath, secretRef, ansiblePath, abortController.signal)
       result.data.results && ansibleJobs.push(...result.data.results)
       const { next } = result.data
-      if (next) {
-        jobUrl = ansibleHostUrl + next
-      } else {
-        jobUrl = ''
-      }
+      ansiblePath = next ? next : ''
     }
   }
 
@@ -502,16 +502,15 @@ async function getAnsibleTemplates(
     }),
   }
 }
-// TODO: validation for URL input
-// Code assumes protocol is present & ansiblehosturl ends without a /
-export function listAnsibleTowerJobs(
-  ansibleHostUrl: string,
-  token: string
-): IRequestResult<AnsibleTowerJobTemplateList> {
+
+// The backend resolves the tower host + token from the credential Secret using the
+// caller's bearer token (kube-apiserver enforces RBAC), so callers pass only a
+// reference to the Secret and the allow-listed AAP API path — never a raw URL.
+export function listAnsibleTowerJobs(secretRef: AnsibleSecretRef): IRequestResult<AnsibleTowerJobTemplateList> {
   const backendURLPath = getBackendUrl() + '/ansibletower'
   const abortController = new AbortController()
   return {
-    promise: getAnsibleTemplates(backendURLPath, ansibleHostUrl, token, abortController).then((item) => {
+    promise: getAnsibleTemplates(backendURLPath, secretRef, abortController).then((item) => {
       return item as AnsibleTowerJobTemplateList
     }),
     abort: () => abortController.abort(),
@@ -520,8 +519,8 @@ export function listAnsibleTowerJobs(
 
 export function fetchGetAnsibleJobs(
   backendUrlPath: string,
-  ansibleJobsUrl: string,
-  token: string,
+  secretRef: AnsibleSecretRef,
+  ansiblePath: string,
   signal: AbortSignal
 ) {
   return fetchRetry<AnsibleTowerJobTemplateList>({
@@ -529,8 +528,9 @@ export function fetchGetAnsibleJobs(
     url: backendUrlPath,
     signal,
     data: {
-      towerHost: ansibleJobsUrl,
-      token: token,
+      secretNamespace: secretRef.namespace,
+      secretName: secretRef.name,
+      ansiblePath,
     },
     retries: process.env.NODE_ENV === 'production' ? 2 : 0,
     disableRedirectUnauthorizedLogin: true,
@@ -539,13 +539,11 @@ export function fetchGetAnsibleJobs(
 
 async function getAnsibleInventories(
   backendURLPath: string,
-  ansibleHostUrl: string,
-  token: string,
+  secretRef: AnsibleSecretRef,
   abortController: AbortController
 ) {
   const ansibleInventories: AnsibleTowerInventory[] = []
-  const inventoryUrl: string = ansibleHostUrl + '/api/v2/inventories/'
-  const result = await fetchGetAnsibleInventories(backendURLPath, inventoryUrl, token, abortController.signal)
+  const result = await fetchGetAnsibleInventories(backendURLPath, secretRef, abortController.signal)
   result.data.results && ansibleInventories.push(...result.data.results)
 
   return {
@@ -562,33 +560,26 @@ async function getAnsibleInventories(
   }
 }
 
-export function listAnsibleTowerInventories(
-  ansibleHostUrl: string,
-  token: string
-): IRequestResult<AnsibleTowerInventoryList> {
+export function listAnsibleTowerInventories(secretRef: AnsibleSecretRef): IRequestResult<AnsibleTowerInventoryList> {
   const backendURLPath = getBackendUrl() + '/ansibletower'
   const abortController = new AbortController()
   return {
-    promise: getAnsibleInventories(backendURLPath, ansibleHostUrl, token, abortController).then((item) => {
+    promise: getAnsibleInventories(backendURLPath, secretRef, abortController).then((item) => {
       return item as AnsibleTowerInventoryList
     }),
     abort: () => abortController.abort(),
   }
 }
 
-export function fetchGetAnsibleInventories(
-  backendUrlPath: string,
-  ansibleInventoriesUrl: string,
-  token: string,
-  signal: AbortSignal
-) {
+export function fetchGetAnsibleInventories(backendUrlPath: string, secretRef: AnsibleSecretRef, signal: AbortSignal) {
   return fetchRetry<AnsibleTowerInventoryList>({
     method: 'POST',
     url: backendUrlPath,
     signal,
     data: {
-      towerHost: ansibleInventoriesUrl,
-      token: token,
+      secretNamespace: secretRef.namespace,
+      secretName: secretRef.name,
+      ansiblePath: '/api/v2/inventories/',
     },
     retries: process.env.NODE_ENV === 'production' ? 2 : 0,
     disableRedirectUnauthorizedLogin: true,

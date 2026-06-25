@@ -114,17 +114,20 @@ const mockClusterCurator: ClusterCurator = {
 }
 
 const mockAnsibleCredential = {
-  towerHost: 'https://ansible-tower-web-svc-tower.com/api/v2/job_templates/',
-  token: 'abcd',
+  secretNamespace: 'namespace-1',
+  secretName: 'ansible-test-secret',
+  ansiblePath: '/api/v2/job_templates/',
 }
 const mockAnsibleCredentialWorkflow = {
-  towerHost: 'https://ansible-tower-web-svc-tower.com/api/v2/workflow_job_templates/',
-  token: 'abcd',
+  secretNamespace: 'namespace-1',
+  secretName: 'ansible-test-secret',
+  ansiblePath: '/api/v2/workflow_job_templates/',
 }
 
 const mockAnsibleCredentialInventory = {
-  towerHost: 'https://ansible-tower-web-svc-tower.com/api/v2/inventories/',
-  token: 'abcd',
+  secretNamespace: 'namespace-1',
+  secretName: 'ansible-test-secret',
+  ansiblePath: '/api/v2/inventories/',
 }
 
 const mockTemplateList: AnsibleTowerJobTemplateList = {

@@ -5,13 +5,23 @@ import type { RequestOptions } from 'node:https'
 import { request } from 'node:https'
 import { pipeline } from 'node:stream'
 import { URL } from 'node:url'
+import { jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { catchInternalServerError, notFound, respond, respondBadRequest } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'
 
-interface AnsibleCredential {
-  towerHost: string
-  token: string
+interface AnsibleTowerRequest {
+  // Reference to the Ansible credential Secret. The backend reads it with the
+  // caller's bearer token so kube-apiserver enforces RBAC; the tower host and
+  // token are derived server-side and never accepted from the request body.
+  secretNamespace: string
+  secretName: string
+  // Allow-listed AAP API path (optionally with query string for pagination).
+  ansiblePath: string
+}
+
+interface AnsibleSecret {
+  data?: { host?: string; token?: string }
 }
 
 // must match ansiblePaths in frontend/src/resources/utils/resource-request.ts
@@ -19,53 +29,80 @@ export const ansiblePaths = ['/api/v2/job_templates/', '/api/v2/workflow_job_tem
 
 export function ansibleTower(req: Http2ServerRequest, res: Http2ServerResponse): void {
   getAuthenticatedToken(req, res)
-    .then(() => {
+    .then((userToken) => {
       const chucks: string[] = []
-      let ansibleCredential: AnsibleCredential
-
       req.on('data', (chuck: string) => {
         chucks.push(chuck)
       })
       req.on('end', () => {
-        const body = chucks.join()
-        ansibleCredential = JSON.parse(body) as AnsibleCredential
-        let towerUrl = null
+        let body: AnsibleTowerRequest
         try {
-          towerUrl = new URL(ansibleCredential.towerHost.toString())
+          body = JSON.parse(chucks.join('')) as AnsibleTowerRequest
         } catch (err) {
           return respondBadRequest(req, res)
         }
-
-        // allow list of apis our ui calls
-        if (!ansiblePaths.includes(towerUrl.pathname)) {
+        if (
+          typeof body.secretNamespace !== 'string' ||
+          typeof body.secretName !== 'string' ||
+          typeof body.ansiblePath !== 'string'
+        ) {
           return respondBadRequest(req, res)
         }
 
-        const options: RequestOptions = {
-          protocol: towerUrl.protocol,
-          hostname: towerUrl.hostname,
-          path: `${towerUrl.pathname}${towerUrl.search ? towerUrl.search : ''}`,
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${ansibleCredential.token}`,
-          },
-          rejectUnauthorized: false, // NOSONAR - AAP connects insecurely by default
-        }
-
-        const towerReq = request(options, (response) => {
-          if (!response) return notFound(req, res)
-          res.writeHead(response.statusCode ?? 500, response.headers)
-          pipeline(response, res as unknown as NodeJS.WritableStream, (err) => {
-            if (err) {
-              logger.error(err)
+        // Resolve the tower host + token from the credential Secret using the
+        // caller's own token. A 401/403 from kube-apiserver means the caller
+        // is not authorized for this credential; never proxy in that case.
+        const secretPath =
+          process.env.CLUSTER_API_URL +
+          `/api/v1/namespaces/${encodeURIComponent(body.secretNamespace)}/secrets/${encodeURIComponent(body.secretName)}`
+        jsonRequest<AnsibleSecret>(secretPath, userToken, 0)
+          .then((secret) => {
+            const host = secret?.data?.host ? Buffer.from(secret.data.host, 'base64').toString('utf8') : ''
+            const token = secret?.data?.token ? Buffer.from(secret.data.token, 'base64').toString('utf8') : ''
+            if (!host || !token) {
+              return respondBadRequest(req, res)
             }
+
+            let towerUrl: URL
+            try {
+              towerUrl = new URL(body.ansiblePath, host)
+            } catch (err) {
+              return respondBadRequest(req, res)
+            }
+
+            // allow list of apis our ui calls
+            if (!ansiblePaths.includes(towerUrl.pathname)) {
+              return respondBadRequest(req, res)
+            }
+
+            const options: RequestOptions = {
+              protocol: towerUrl.protocol,
+              hostname: towerUrl.hostname,
+              port: towerUrl.port,
+              path: `${towerUrl.pathname}${towerUrl.search ? towerUrl.search : ''}`,
+              method: 'GET',
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+              rejectUnauthorized: false, // NOSONAR - AAP connects insecurely by default
+            }
+
+            const towerReq = request(options, (response) => {
+              if (!response) return notFound(req, res)
+              res.writeHead(response.statusCode ?? 500, response.headers)
+              pipeline(response, res as unknown as NodeJS.WritableStream, (err) => {
+                if (err) {
+                  logger.error(err)
+                }
+              })
+            })
+            towerReq.on('error', (e) => {
+              logger.error(e)
+              respond(res, JSON.stringify(e.message), constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
+            })
+            towerReq.end()
           })
-        })
-        towerReq.on('error', (e) => {
-          logger.error(e)
-          respond(res, JSON.stringify(e.message), constants.HTTP_STATUS_INTERNAL_SERVER_ERROR)
-        })
-        towerReq.end()
+          .catch(catchInternalServerError(res))
       })
     })
     .catch(catchInternalServerError(res))
