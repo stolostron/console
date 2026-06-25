@@ -5,25 +5,67 @@ import { ansiblePaths } from '../../src/routes/ansibletower'
 import nock from 'nock'
 
 const TOWER_HOST = 'https://ansible-tower.com'
+const SECRET_NS = 'app-team'
+const SECRET_NAME = 'tower-cred'
+
+function nockCredentialSecret(host: string) {
+  return nock(process.env.CLUSTER_API_URL)
+    .get(`/api/v1/namespaces/${SECRET_NS}/secrets/${SECRET_NAME}`)
+    .reply(200, {
+      kind: 'Secret',
+      apiVersion: 'v1',
+      metadata: { name: SECRET_NAME, namespace: SECRET_NS },
+      data: {
+        host: Buffer.from(host).toString('base64'),
+        token: Buffer.from('12345').toString('base64'),
+      },
+    })
+}
 
 describe(`ansibletower Route`, function () {
   it(`should list Ansible Automation controller Jobs`, async function () {
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nockCredentialSecret(TOWER_HOST)
     nock(TOWER_HOST).get(ansiblePaths[0]).reply(200, response)
     const res = await request('POST', '/ansibletower', {
-      towerHost: TOWER_HOST + ansiblePaths[0],
-      token: '12345',
+      secretNamespace: SECRET_NS,
+      secretName: SECRET_NAME,
+      ansiblePath: ansiblePaths[0],
     })
     expect(res.statusCode).toEqual(200)
     expect(JSON.stringify(await parsePipedJsonBody(res))).toEqual(JSON.stringify(response))
   })
 
+  it(`should reject body-supplied tower hostname`, async function () {
+    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    const res = await request('POST', '/ansibletower', {
+      towerHost: TOWER_HOST + ansiblePaths[0],
+      token: '12345',
+    })
+    expect(res.statusCode).toEqual(400)
+  })
+
+  it(`should fail closed when caller cannot read the credential secret`, async function () {
+    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL)
+      .get(`/api/v1/namespaces/${SECRET_NS}/secrets/${SECRET_NAME}`)
+      .reply(403, { kind: 'Status', apiVersion: 'v1', status: 'Failure', reason: 'Forbidden', code: 403 })
+    const res = await request('POST', '/ansibletower', {
+      secretNamespace: SECRET_NS,
+      secretName: SECRET_NAME,
+      ansiblePath: ansiblePaths[0],
+    })
+    expect(res.statusCode).toEqual(400)
+  })
+
   it(`when bad things happen to Ansible Automation controller Jobs 1`, async function () {
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nockCredentialSecret(TOWER_HOST)
     nock(TOWER_HOST).get(ansiblePaths[0]).reply(200, response)
     const res = await request('POST', '/ansibletower', {
-      towerHost: TOWER_HOST + '/badPath',
-      token: '12345',
+      secretNamespace: SECRET_NS,
+      secretName: SECRET_NAME,
+      ansiblePath: '/badPath',
     })
     expect(res.statusCode).toEqual(400)
     expect(JSON.stringify(await parsePipedJsonBody(res))).toEqual(JSON.stringify({}))
@@ -31,9 +73,12 @@ describe(`ansibletower Route`, function () {
 
   it(`when bad things happen to Ansible Automation controller Jobs 2`, async function () {
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nockCredentialSecret(TOWER_HOST)
     nock(TOWER_HOST).get(ansiblePaths[0]).reply(200, response)
     const res = await request('POST', '/ansibletower', {
-      token: '12345',
+      secretNamespace: SECRET_NS,
+      secretName: SECRET_NAME,
+      ansiblePath: '/badPath',
     })
     expect(JSON.stringify(await parsePipedJsonBody(res))).toEqual(JSON.stringify({}))
   })
