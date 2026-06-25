@@ -2,9 +2,8 @@
 # Validates ACM policy YAML for correctness by checking syntax, API versions,
 # field references, and cluster prerequisites.
 #
-# Tested: 2026-06-13 on sno-4xlarge-421-m2qmg
-# Result: Passed — agent validated policy, confirmed ACM CRDs installed,
-#         local-cluster registered, namespace exists. Flagged deprecated PlacementRule.
+# This file is kept for reference. The backend constructs the Proposal CR
+# programmatically — see policy-analysis.ts.
 #
 # Prerequisites:
 #   - Agentic operator installed (hack/quickstart/install.sh)
@@ -25,68 +24,29 @@ metadata:
   namespace: openshift-lightspeed
 spec:
   request: |
-    Validate the following ACM Policy YAML for correctness. Do NOT apply it.
+    Validate the following ACM Policy resources for correctness. Do NOT apply them.
     Check for: syntax errors, correct API versions, proper field references,
     valid placement targeting, and whether the policy logic correctly matches
     the resources and intent expressed in the submitted policy.
 
-    ```yaml
-    apiVersion: policy.open-cluster-management.io/v1
-    kind: Policy
-    metadata:
-      name: check-namespace-exists
-      namespace: open-cluster-management
-    spec:
-      disabled: false
-      remediationAction: inform
-      policy-templates:
-        - objectDefinition:
-            apiVersion: policy.open-cluster-management.io/v1
-            kind: ConfigurationPolicy
-            metadata:
-              name: check-openshift-lightspeed-ns
-            spec:
-              remediationAction: inform
-              severity: high
-              object-templates:
-                - complianceType: musthave
-                  objectDefinition:
-                    apiVersion: v1
-                    kind: Namespace
-                    metadata:
-                      name: openshift-lightspeed
-    ---
-    apiVersion: apps.open-cluster-management.io/v1
-    kind: PlacementRule
-    metadata:
-      name: check-namespace-exists-placement
-      namespace: open-cluster-management
-    spec:
-      clusterSelector:
-        matchExpressions:
-          - key: name
-            operator: In
-            values:
-              - local-cluster
-    ---
-    apiVersion: policy.open-cluster-management.io/v1
-    kind: PlacementBinding
-    metadata:
-      name: check-namespace-exists-binding
-      namespace: open-cluster-management
-    spec:
-      placementRef:
-        apiGroup: apps.open-cluster-management.io
-        kind: PlacementRule
-        name: check-namespace-exists-placement
-      subjects:
-        - apiGroup: policy.open-cluster-management.io
-          kind: Policy
-          name: check-namespace-exists
-    ```
-
     Also verify:
     - Do referenced managed clusters, placements, placement rules, and namespaces exist?
     - Are the ACM Policy CRDs installed on this cluster?
+
+    Policy resources:
+    ```json
+    [... policy resources inserted here at runtime ...]
+    ```
+  analysisOutput:
+    schema:
+      type: object
+      required:
+        - readyToDeploy
+      properties:
+        readyToDeploy:
+          type: boolean
+          description: >-
+            Whether this policy is safe to deploy. Check for: syntax errors,
+            correct API versions, proper field references, valid placement targeting.
   analysis:
     agent: default

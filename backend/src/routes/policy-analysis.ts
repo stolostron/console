@@ -13,89 +13,17 @@ const POLL_INTERVAL_MS = 3000
 const POLL_TIMEOUT_MS = 120_000
 const MAX_BODY_BYTES = 1024 * 1024
 
-// Inlined from validate-acm-policy.yaml — the Rollup build bundles everything into a single
-// backend.mjs, so filesystem reads for co-located files don't work in the production image.
-const PROPOSAL_TEMPLATE = `apiVersion: agentic.openshift.io/v1alpha1
-kind: Proposal
-metadata:
-  name: validate-acm-policy
-  namespace: openshift-lightspeed
-spec:
-  request: |
-    Validate the following ACM Policy YAML for correctness. Do NOT apply it.
-    Check for: syntax errors, correct API versions, proper field references,
-    valid placement targeting, and whether the policy logic correctly matches
-    the resources and intent expressed in the submitted policy.
+const REQUEST_PREFIX = `Validate the following ACM Policy resources for correctness. Do NOT apply them.
+Check for: syntax errors, correct API versions, proper field references,
+valid placement targeting, and whether the policy logic correctly matches
+the resources and intent expressed in the submitted policy.
 
-    \`\`\`yaml
-    apiVersion: policy.open-cluster-management.io/v1
-    kind: Policy
-    metadata:
-      name: check-namespace-exists
-      namespace: open-cluster-management
-    spec:
-      disabled: false
-      remediationAction: inform
-      policy-templates:
-        - objectDefinition:
-            apiVersion: policy.open-cluster-management.io/v1
-            kind: ConfigurationPolicy
-            metadata:
-              name: check-openshift-lightspeed-ns
-            spec:
-              remediationAction: inform
-              severity: high
-              object-templates:
-                - complianceType: musthave
-                  objectDefinition:
-                    apiVersion: v1
-                    kind: Namespace
-                    metadata:
-                      name: openshift-lightspeed
-    ---
-    apiVersion: apps.open-cluster-management.io/v1
-    kind: PlacementRule
-    metadata:
-      name: check-namespace-exists-placement
-      namespace: open-cluster-management
-    spec:
-      clusterSelector:
-        matchExpressions:
-          - key: name
-            operator: In
-            values:
-              - local-cluster
-    ---
-    apiVersion: policy.open-cluster-management.io/v1
-    kind: PlacementBinding
-    metadata:
-      name: check-namespace-exists-binding
-      namespace: open-cluster-management
-    spec:
-      placementRef:
-        apiGroup: apps.open-cluster-management.io
-        kind: PlacementRule
-        name: check-namespace-exists-placement
-      subjects:
-        - apiGroup: policy.open-cluster-management.io
-          kind: Policy
-          name: check-namespace-exists
-    \`\`\`
+Also verify:
+- Do referenced managed clusters, placements, placement rules, and namespaces exist?
+- Are the ACM Policy CRDs installed on this cluster?
 
-    Also verify:
-    - Do referenced managed clusters, placements, placement rules, and namespaces exist?
-    - Are the ACM Policy CRDs installed on this cluster?
-  analysis:
-    agent: default
+Policy resources:
 `
-
-function extractRequestFromTemplate(template: string): string {
-  const requestMatch = template.match(/^\s+request:\s*\|\s*\n([\s\S]*?)\n\s+analysis:/m)
-  if (!requestMatch) throw new Error('Could not extract request from proposal template')
-  const lines = requestMatch[1].split('\n')
-  const indent = lines[0].match(/^(\s*)/)?.[1].length ?? 0
-  return lines.map((line) => line.slice(indent)).join('\n')
-}
 
 interface KubeCondition {
   type: string
@@ -126,10 +54,15 @@ interface DiagnosisResult {
   rootCause: string
 }
 
+interface PolicyValidationComponents {
+  readyToDeploy: boolean
+}
+
 interface RemediationOption {
   title: string
   summary?: string
   diagnosis?: DiagnosisResult
+  components?: PolicyValidationComponents
 }
 
 interface AnalysisResultResource {
@@ -137,6 +70,18 @@ interface AnalysisResultResource {
   kind: string
   metadata: { name: string; namespace: string }
   status?: { options?: RemediationOption[]; failureReason?: string }
+}
+
+const ANALYSIS_OUTPUT_SCHEMA = {
+  type: 'object',
+  required: ['readyToDeploy'],
+  properties: {
+    readyToDeploy: {
+      type: 'boolean',
+      description:
+        'Whether this policy is safe to deploy. Check for: syntax errors, correct API versions, proper field references, valid placement targeting.',
+    },
+  },
 }
 
 type ProposalPhase =
@@ -253,7 +198,7 @@ export async function policyAnalysis(req: Http2ServerRequest, res: Http2ServerRe
     })
     req.on('end', async () => {
       if (aborted) {
-        respond(res, { phase: 'Failed', error: 'Request body too large' }, 413)
+        respond(res, { phase: 'Failed', readyToDeploy: false, error: 'Request body too large' }, 413)
         return
       }
 
@@ -277,8 +222,7 @@ export async function policyAnalysis(req: Http2ServerRequest, res: Http2ServerRe
         }
 
         const policyJson = JSON.stringify(body.resources, undefined, 2)
-        const templateRequest = extractRequestFromTemplate(PROPOSAL_TEMPLATE)
-        const request = templateRequest.replace(/```yaml[\s\S]*?```/, '```json\n' + policyJson + '\n```')
+        const request = REQUEST_PREFIX + '```json\n' + policyJson + '\n```'
 
         const createResult = await jsonPost<ProposalResource>(
           proposalUrl(),
@@ -286,7 +230,11 @@ export async function policyAnalysis(req: Http2ServerRequest, res: Http2ServerRe
             apiVersion: AGENTIC_API_VERSION,
             kind: 'Proposal',
             metadata: { generateName: 'policy-validation-', namespace: AGENTIC_NAMESPACE },
-            spec: { request, analysis: { agent: 'default' } },
+            spec: {
+              request,
+              analysisOutput: { schema: ANALYSIS_OUTPUT_SCHEMA },
+              analysis: { agent: 'default' },
+            },
           },
           token
         )
@@ -295,7 +243,11 @@ export async function policyAnalysis(req: Http2ServerRequest, res: Http2ServerRe
           logger.error({ msg: 'Failed to create Proposal CR', statusCode: createResult.statusCode })
           respond(
             res,
-            { phase: 'Failed', error: `Failed to create analysis request (HTTP ${createResult.statusCode})` },
+            {
+              phase: 'Failed',
+              readyToDeploy: false,
+              error: `Failed to create analysis request (HTTP ${createResult.statusCode})`,
+            },
             createResult.statusCode
           )
           return
@@ -326,9 +278,11 @@ export async function policyAnalysis(req: Http2ServerRequest, res: Http2ServerRe
           if (resultRefName) {
             const analysisResult = await jsonRequest<AnalysisResultResource>(analysisResultUrl(resultRefName), token)
             const firstOption = analysisResult.status?.options?.[0]
+            const readyToDeploy = firstOption?.components?.readyToDeploy ?? false
             await deleteProposal(proposalName, token)
             respond(res, {
               phase,
+              readyToDeploy,
               optionTitle: firstOption?.title,
               diagnosis: firstOption?.diagnosis,
             })
@@ -340,13 +294,22 @@ export async function policyAnalysis(req: Http2ServerRequest, res: Http2ServerRe
         await deleteProposal(proposalName, token)
         respond(res, {
           phase,
+          readyToDeploy: false,
           error: failedCondition?.message ?? `Analysis ended with phase: ${phase}`,
         })
       } catch (err) {
         if (proposalName) await deleteProposal(proposalName, token)
         logger.error({ msg: 'Policy analysis failed', error: err instanceof Error ? err.message : String(err) })
         if (!res.headersSent) {
-          respond(res, { phase: 'Failed', error: err instanceof Error ? err.message : 'Internal server error' }, 500)
+          respond(
+            res,
+            {
+              phase: 'Failed',
+              readyToDeploy: false,
+              error: err instanceof Error ? err.message : 'Internal server error',
+            },
+            500
+          )
         }
       }
     })
