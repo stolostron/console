@@ -193,49 +193,46 @@ export function AnsibleAutomationsForm(props: {
 
     if (ansibleSelection) {
       const selectedCred = ansibleCredentials.find((credential) => credential.metadata.name === ansibleSelection)
+      const secretRef = { namespace: selectedCred?.metadata?.namespace!, name: selectedCred?.metadata?.name! }
       const inventoryList: { name: string; description?: string; id: string }[] | undefined = []
       const jobList: { name: string; description?: string; id: string }[] = []
       const workflowList: { name: string; description?: string; id: string }[] = []
       Promise.all([
-        listAnsibleTowerJobs(selectedCred?.stringData?.host!, selectedCred?.stringData?.token!).promise.then(
-          (response) => {
-            if (response) {
-              response.results.forEach((template) => {
-                if (template.type === 'job_template' && template.name) {
-                  jobList.push({
-                    name: template.name,
-                    description: template.description,
-                    id: template.id,
-                  })
-                } else if (template.type === 'workflow_job_template' && template.name) {
-                  workflowList.push({
-                    name: template.name,
-                    description: template.description,
-                    id: template.id,
-                  })
-                }
-              })
-              setAnsibleTowerJobTemplateList(jobList)
-              setAnsibleTowerWorkflowTemplateList(workflowList)
-            }
+        listAnsibleTowerJobs(secretRef).promise.then((response) => {
+          if (response) {
+            response.results.forEach((template) => {
+              if (template.type === 'job_template' && template.name) {
+                jobList.push({
+                  name: template.name,
+                  description: template.description,
+                  id: template.id,
+                })
+              } else if (template.type === 'workflow_job_template' && template.name) {
+                workflowList.push({
+                  name: template.name,
+                  description: template.description,
+                  id: template.id,
+                })
+              }
+            })
+            setAnsibleTowerJobTemplateList(jobList)
+            setAnsibleTowerWorkflowTemplateList(workflowList)
           }
-        ),
-        listAnsibleTowerInventories(selectedCred?.stringData?.host!, selectedCred?.stringData?.token!).promise.then(
-          (response) => {
-            if (response) {
-              response.results.forEach((inventory) => {
-                if (inventory.name) {
-                  inventoryList.push({
-                    name: inventory.name,
-                    description: inventory?.description,
-                    id: inventory.id,
-                  })
-                }
-              })
-              setAnsibleTowerInventoryList(inventoryList)
-            }
+        }),
+        listAnsibleTowerInventories(secretRef).promise.then((response) => {
+          if (response) {
+            response.results.forEach((inventory) => {
+              if (inventory.name) {
+                inventoryList.push({
+                  name: inventory.name,
+                  description: inventory?.description,
+                  id: inventory.id,
+                })
+              }
+            })
+            setAnsibleTowerInventoryList(inventoryList)
           }
-        ),
+        }),
       ]).catch((err) => {
         setAnsibleTowerAuthError(
           err.code === ResourceErrorCode.InternalServerError && err.reason
