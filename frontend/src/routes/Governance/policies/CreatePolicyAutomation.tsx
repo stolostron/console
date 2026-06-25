@@ -114,10 +114,9 @@ export function CreatePolicyAutomation() {
         handlePolicyAutomationSubmit(submitForm, data, secrets, navigate, destination, toast, t)
       }
       getAnsibleJobsCallback={async (credential: any) => {
-        const host = Buffer.from(credential.data.host || '', 'base64').toString('ascii')
-        const token = Buffer.from(credential.data.token || '', 'base64').toString('ascii')
+        const secretRef = { namespace: credential.metadata.namespace, name: credential.metadata.name }
 
-        return listAnsibleTowerJobs(host, token).promise.then((response) => {
+        return listAnsibleTowerJobs(secretRef).promise.then((response) => {
           let templateList: { name: string; description?: string; id: string }[] = []
           if (response?.results) {
             templateList = response.results!.map((job) => ({

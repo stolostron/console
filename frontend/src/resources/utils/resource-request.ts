@@ -511,11 +511,9 @@ export function listNamespacedResources<Resource extends IResource>(
   }
 }
 
-export function isAnsibleGatewayURL(ansibleHostUrl: string): boolean {
-  const firstLabel = ansibleHostUrl.split('.')[0] ?? ''
-
-  if (/^.+-controller-.+$/.test(firstLabel)) return false
-  return true
+interface AnsibleSecretRef {
+  namespace: string
+  name: string
 }
 
 interface AnsiblePaginatedResponse<T> {
@@ -529,8 +527,8 @@ interface AnsiblePaginatedResponse<T> {
  */
 function fetchAnsibleResource<T>(
   backendUrlPath: string,
-  ansibleResourceUrl: string,
-  token: string,
+  secretRef: AnsibleSecretRef,
+  ansiblePath: string,
   signal: AbortSignal
 ) {
   return fetchRetry<AnsiblePaginatedResponse<T>>({
@@ -538,8 +536,9 @@ function fetchAnsibleResource<T>(
     url: backendUrlPath,
     signal,
     data: {
-      towerHost: ansibleResourceUrl,
-      token: token,
+      secretNamespace: secretRef.namespace,
+      secretName: secretRef.name,
+      ansiblePath,
     },
     retries: process.env.NODE_ENV === 'production' ? 2 : 0,
     disableRedirectUnauthorizedLogin: true,
@@ -554,8 +553,7 @@ function fetchAnsibleResource<T>(
  */
 async function getAnsibleResourcesWithPagination<T>(
   backendURLPath: string,
-  ansibleHostUrl: string,
-  token: string,
+  secretRef: AnsibleSecretRef,
   abortController: AbortController,
   paths: string[]
 ): Promise<T[]> {
@@ -564,12 +562,12 @@ async function getAnsibleResourcesWithPagination<T>(
   let anyPathSucceeded = false
 
   for (const path of paths) {
-    let resourceUrl: string = ansibleHostUrl + path
+    let ansiblePath = path
     let isFirstRequest = true
 
-    while (resourceUrl) {
+    while (ansiblePath) {
       try {
-        const result = await fetchAnsibleResource<T>(backendURLPath, resourceUrl, token, abortController.signal)
+        const result = await fetchAnsibleResource<T>(backendURLPath, secretRef, ansiblePath, abortController.signal)
 
         if (result.data.results) {
           resources.push(...result.data.results)
@@ -579,14 +577,14 @@ async function getAnsibleResourcesWithPagination<T>(
         anyPathSucceeded = true
         isFirstRequest = false
         const { next } = result.data
-        resourceUrl = next ? ansibleHostUrl + next : ''
+        ansiblePath = next ?? ''
       } catch (error) {
         if (error instanceof ResourceError && error.code === ResourceErrorCode.NotFound) {
           // Only treat 404 as "path doesn't exist" on the first request
           // Later-page 404s are real errors (path exists but page is missing)
           if (isFirstRequest) {
             first404Error = error
-            resourceUrl = ''
+            ansiblePath = ''
           } else {
             // 404 on pagination - this is a real error, re-throw
             throw error
@@ -625,8 +623,7 @@ async function withAnsiblePathFallback<T>(primaryFn: () => Promise<T>, fallbackF
 
 async function getAnsibleTemplates(
   backendURLPath: string,
-  ansibleHostUrl: string,
-  token: string,
+  secretRef: AnsibleSecretRef,
   abortController: AbortController
 ) {
   // Try gateway paths first (AAP 2.5+), then fall back to controller paths (AAP 2.4 and earlier)
@@ -634,16 +631,14 @@ async function getAnsibleTemplates(
     () =>
       getAnsibleResourcesWithPagination<AnsibleTowerJobTemplate>(
         backendURLPath,
-        ansibleHostUrl,
-        token,
+        secretRef,
         abortController,
         ansibleGatewayPaths
       ),
     () =>
       getAnsibleResourcesWithPagination<AnsibleTowerJobTemplate>(
         backendURLPath,
-        ansibleHostUrl,
-        token,
+        secretRef,
         abortController,
         ansibleControllerPaths
       )
@@ -657,14 +652,11 @@ async function getAnsibleTemplates(
 
 // TODO: validation for URL input
 // Code assumes protocol is present & ansiblehosturl ends without a /
-export function listAnsibleTowerJobs(
-  ansibleHostUrl: string,
-  token: string
-): IRequestResult<AnsibleTowerJobTemplateList> {
+export function listAnsibleTowerJobs(secretRef: AnsibleSecretRef): IRequestResult<AnsibleTowerJobTemplateList> {
   const backendURLPath = getBackendUrl() + '/ansibletower'
   const abortController = new AbortController()
   return {
-    promise: getAnsibleTemplates(backendURLPath, ansibleHostUrl, token, abortController).then((item) => {
+    promise: getAnsibleTemplates(backendURLPath, secretRef, abortController).then((item) => {
       return item as AnsibleTowerJobTemplateList
     }),
     abort: () => abortController.abort(),
@@ -673,18 +665,17 @@ export function listAnsibleTowerJobs(
 
 async function getAnsibleInventories(
   backendURLPath: string,
-  ansibleHostUrl: string,
-  token: string,
+  secretRef: AnsibleSecretRef,
   abortController: AbortController
 ) {
   // Try gateway path first (AAP 2.5+), then fall back to controller path (AAP 2.4 and earlier)
   const ansibleInventories = await withAnsiblePathFallback(
     () =>
-      getAnsibleResourcesWithPagination<AnsibleTowerInventory>(backendURLPath, ansibleHostUrl, token, abortController, [
+      getAnsibleResourcesWithPagination<AnsibleTowerInventory>(backendURLPath, secretRef, abortController, [
         '/api/controller/v2/inventories/',
       ]),
     () =>
-      getAnsibleResourcesWithPagination<AnsibleTowerInventory>(backendURLPath, ansibleHostUrl, token, abortController, [
+      getAnsibleResourcesWithPagination<AnsibleTowerInventory>(backendURLPath, secretRef, abortController, [
         '/api/v2/inventories/',
       ])
   )
@@ -695,14 +686,11 @@ async function getAnsibleInventories(
   }
 }
 
-export function listAnsibleTowerInventories(
-  ansibleHostUrl: string,
-  token: string
-): IRequestResult<AnsibleTowerInventoryList> {
+export function listAnsibleTowerInventories(secretRef: AnsibleSecretRef): IRequestResult<AnsibleTowerInventoryList> {
   const backendURLPath = getBackendUrl() + '/ansibletower'
   const abortController = new AbortController()
   return {
-    promise: getAnsibleInventories(backendURLPath, ansibleHostUrl, token, abortController).then((item) => {
+    promise: getAnsibleInventories(backendURLPath, secretRef, abortController).then((item) => {
       return item as AnsibleTowerInventoryList
     }),
     abort: () => abortController.abort(),
