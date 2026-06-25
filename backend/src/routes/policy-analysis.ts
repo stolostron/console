@@ -1,9 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import { constants } from 'node:http2'
-import { readFileSync } from 'node:fs'
-import { join, dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { fetchRetry } from '../lib/fetch-retry'
 import { jsonPost, jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
@@ -15,8 +12,82 @@ const AGENTIC_API_VERSION = 'agentic.openshift.io/v1alpha1'
 const POLL_INTERVAL_MS = 3000
 const POLL_TIMEOUT_MS = 120_000
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-const PROPOSAL_TEMPLATE = readFileSync(join(__dirname, 'validate-acm-policy.yaml'), 'utf8')
+// Inlined from validate-acm-policy.yaml — the Rollup build bundles everything into a single
+// backend.mjs, so filesystem reads for co-located files don't work in the production image.
+const PROPOSAL_TEMPLATE = `apiVersion: agentic.openshift.io/v1alpha1
+kind: Proposal
+metadata:
+  name: validate-acm-policy
+  namespace: openshift-lightspeed
+spec:
+  request: |
+    Validate the following ACM Policy YAML for correctness. Do NOT apply it.
+    Check for: syntax errors, correct API versions, proper field references,
+    valid placement targeting local-cluster, and whether the policy logic
+    correctly checks for the existence of the openshift-lightspeed namespace.
+
+    \`\`\`yaml
+    apiVersion: policy.open-cluster-management.io/v1
+    kind: Policy
+    metadata:
+      name: check-namespace-exists
+      namespace: open-cluster-management
+    spec:
+      disabled: false
+      remediationAction: inform
+      policy-templates:
+        - objectDefinition:
+            apiVersion: policy.open-cluster-management.io/v1
+            kind: ConfigurationPolicy
+            metadata:
+              name: check-openshift-lightspeed-ns
+            spec:
+              remediationAction: inform
+              severity: high
+              object-templates:
+                - complianceType: musthave
+                  objectDefinition:
+                    apiVersion: v1
+                    kind: Namespace
+                    metadata:
+                      name: openshift-lightspeed
+    ---
+    apiVersion: apps.open-cluster-management.io/v1
+    kind: PlacementRule
+    metadata:
+      name: check-namespace-exists-placement
+      namespace: open-cluster-management
+    spec:
+      clusterSelector:
+        matchExpressions:
+          - key: name
+            operator: In
+            values:
+              - local-cluster
+    ---
+    apiVersion: policy.open-cluster-management.io/v1
+    kind: PlacementBinding
+    metadata:
+      name: check-namespace-exists-binding
+      namespace: open-cluster-management
+    spec:
+      placementRef:
+        apiGroup: apps.open-cluster-management.io
+        kind: PlacementRule
+        name: check-namespace-exists-placement
+      subjects:
+        - apiGroup: policy.open-cluster-management.io
+          kind: Policy
+          name: check-namespace-exists
+    \`\`\`
+
+    Also verify:
+    - Is local-cluster registered as a managed cluster?
+    - Does the open-cluster-management namespace exist?
+    - Are the ACM Policy CRDs installed on this cluster?
+  analysis:
+    agent: default
+`
 
 function extractRequestFromTemplate(template: string): string {
   const requestMatch = template.match(/^\s+request:\s*\|\s*\n([\s\S]*?)\n\s+analysis:/m)
