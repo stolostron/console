@@ -27,8 +27,8 @@ spec:
   request: |
     Validate the following ACM Policy YAML for correctness. Do NOT apply it.
     Check for: syntax errors, correct API versions, proper field references,
-    valid placement targeting local-cluster, and whether the policy logic
-    correctly checks for the existence of the openshift-lightspeed namespace.
+    valid placement targeting, and whether the policy logic correctly matches
+    the resources and intent expressed in the submitted policy.
 
     ```yaml
     apiVersion: policy.open-cluster-management.io/v1
@@ -86,8 +86,7 @@ spec:
     ```
 
     Also verify:
-    - Is local-cluster registered as a managed cluster?
-    - Does the open-cluster-management namespace exist?
+    - Do referenced managed clusters, placements, placement rules, and namespaces exist?
     - Are the ACM Policy CRDs installed on this cluster?
   analysis:
     agent: default

@@ -11,6 +11,7 @@ const AGENTIC_NAMESPACE = 'openshift-lightspeed'
 const AGENTIC_API_VERSION = 'agentic.openshift.io/v1alpha1'
 const POLL_INTERVAL_MS = 3000
 const POLL_TIMEOUT_MS = 120_000
+const MAX_BODY_BYTES = 1024 * 1024
 
 // Inlined from validate-acm-policy.yaml — the Rollup build bundles everything into a single
 // backend.mjs, so filesystem reads for co-located files don't work in the production image.
@@ -23,8 +24,8 @@ spec:
   request: |
     Validate the following ACM Policy YAML for correctness. Do NOT apply it.
     Check for: syntax errors, correct API versions, proper field references,
-    valid placement targeting local-cluster, and whether the policy logic
-    correctly checks for the existence of the openshift-lightspeed namespace.
+    valid placement targeting, and whether the policy logic correctly matches
+    the resources and intent expressed in the submitted policy.
 
     \`\`\`yaml
     apiVersion: policy.open-cluster-management.io/v1
@@ -82,8 +83,7 @@ spec:
     \`\`\`
 
     Also verify:
-    - Is local-cluster registered as a managed cluster?
-    - Does the open-cluster-management namespace exist?
+    - Do referenced managed clusters, placements, placement rules, and namespaces exist?
     - Are the ACM Policy CRDs installed on this cluster?
   analysis:
     agent: default
@@ -240,14 +240,38 @@ export async function policyAnalysis(req: Http2ServerRequest, res: Http2ServerRe
   const token = await getAuthenticatedToken(req, res)
   if (token) {
     const chunks: string[] = []
-    req.on('data', (chunk: string) => chunks.push(chunk))
+    let bodyBytes = 0
+    let aborted = false
+    req.on('data', (chunk: string) => {
+      bodyBytes += Buffer.byteLength(chunk)
+      if (bodyBytes > MAX_BODY_BYTES) {
+        aborted = true
+        req.destroy()
+        return
+      }
+      chunks.push(chunk)
+    })
     req.on('end', async () => {
+      if (aborted) {
+        respond(res, { phase: 'Failed', error: 'Request body too large' }, 413)
+        return
+      }
+
       let proposalName: string | undefined
 
       try {
         logger.info({ msg: 'policy-analysis: request received' })
-        const body = JSON.parse(chunks.join('')) as PolicyAnalysisBody
-        if (!body.resources || !Array.isArray(body.resources) || body.resources.length === 0) {
+
+        let parsedBody: unknown
+        try {
+          parsedBody = JSON.parse(chunks.join(''))
+        } catch {
+          respondBadRequest(req, res)
+          return
+        }
+
+        const body = parsedBody as Partial<PolicyAnalysisBody> | null
+        if (!body || typeof body !== 'object' || !Array.isArray(body.resources) || body.resources.length === 0) {
           respondBadRequest(req, res)
           return
         }
@@ -279,7 +303,10 @@ export async function policyAnalysis(req: Http2ServerRequest, res: Http2ServerRe
 
         proposalName = createResult.body?.metadata?.name
         if (!proposalName) {
-          logger.error({ msg: 'policy-analysis: no proposal name in create response', body: createResult.body })
+          logger.error({
+            msg: 'policy-analysis: no proposal name in create response',
+            responseKind: createResult.body?.kind,
+          })
           respondInternalServerError(req, res)
           return
         }
@@ -294,7 +321,7 @@ export async function policyAnalysis(req: Http2ServerRequest, res: Http2ServerRe
           logger.info({
             msg: 'policy-analysis: looking for analysis result',
             resultRefName,
-            steps: JSON.stringify(proposal.status?.steps),
+            resultCount: proposal.status?.steps?.analysis?.results?.length ?? 0,
           })
           if (resultRefName) {
             const analysisResult = await jsonRequest<AnalysisResultResource>(analysisResultUrl(resultRefName), token)
