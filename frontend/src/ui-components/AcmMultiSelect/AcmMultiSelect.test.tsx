@@ -4,6 +4,7 @@ import { SelectOption } from '@patternfly/react-core'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
+import { SelectVariant } from '../../components/AcmSelectBase'
 import { AcmForm, AcmSubmit } from '../AcmForm/AcmForm'
 import { AcmMultiSelect } from './AcmMultiSelect'
 
@@ -195,5 +196,50 @@ describe('AcmMultiSelect', () => {
     const { getByTestId, getByText } = render(<VisibleSelect />)
     expect(getByTestId('acm-select-label')).toBeVisible()
     expect(getByText('ACM select')).toBeInTheDocument()
+  })
+
+  test('typeaheadMulti variant does not constrain toggle height so chips can wrap (ACM-34394)', async () => {
+    const namespaces = Array.from({ length: 10 }, (_, i) => `namespace-${i}`)
+    const TypeaheadMultiSelect = () => {
+      const [value, setValue] = useState<string[]>(namespaces)
+      return (
+        <AcmMultiSelect
+          id="ns-select"
+          label="Namespaces"
+          value={value}
+          onChange={(v) => setValue(v ?? [])}
+          variant={SelectVariant.typeaheadMulti}
+        >
+          {namespaces.map((ns) => (
+            <SelectOption key={ns} value={ns}>
+              {ns}
+            </SelectOption>
+          ))}
+        </AcmMultiSelect>
+      )
+    }
+    const { container } = render(<TypeaheadMultiSelect />)
+
+    const toggle = container.querySelector<HTMLElement>('.pf-v6-c-menu-toggle')
+    expect(toggle).toBeInTheDocument()
+    expect(toggle!.style.maxHeight).not.toBe('36px')
+  })
+
+  test('checkbox variant retains maxHeight constraint on toggle', () => {
+    const CheckboxSelect = () => {
+      const [value, setValue] = useState<string[]>()
+      return (
+        <AcmMultiSelect id="cb-select" label="Colors" value={value} onChange={setValue}>
+          <SelectOption key="red" value="red">
+            Red
+          </SelectOption>
+        </AcmMultiSelect>
+      )
+    }
+    const { container } = render(<CheckboxSelect />)
+
+    const toggle = container.querySelector<HTMLElement>('.pf-v6-c-menu-toggle')
+    expect(toggle).toBeInTheDocument()
+    expect(toggle!.style.maxHeight).toBe('36px')
   })
 })

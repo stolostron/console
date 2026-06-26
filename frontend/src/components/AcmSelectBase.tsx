@@ -657,7 +657,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
         style={
           {
             width: width ?? '100%',
-            maxHeight: '36px',
+            ...(variant !== SelectVariant.typeaheadMulti && { maxHeight: '36px' }),
           } as React.CSSProperties
         }
       >
