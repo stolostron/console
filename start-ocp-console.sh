@@ -82,6 +82,10 @@ function getBridgePlugins {
         plugins="${plugins},gitops-plugin=http://${host}:${GITOPS_PORT}"
     fi
 
+    if [ -n "$PIPELINES_PORT" ]; then
+        plugins="${plugins},pipelines-console-plugin=http://${host}:${PIPELINES_PORT}"
+    fi
+
     echo "mce=http://${host}:${MCE_PORT},acm=http://${host}:${ACM_PORT}${plugins}"
 }
 
