@@ -279,7 +279,12 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
     }
 
     case 'StorageClass.storage.k8s.io':
-      setIfDefined(resource, 'allowVolumeExpansion', item.allowVolumeExpansion)
+      setIfDefined(
+        resource,
+        'allowVolumeExpansion',
+        item.allowVolumeExpansion,
+        convertToBoolean(item.allowVolumeExpansion)
+      )
       setIfDefined(resource, 'provisioner', item.provisioner)
       setIfDefined(resource, 'reclaimPolicy', item.reclaimPolicy)
       setIfDefined(resource, 'volumeBindingMode', item.volumeBindingMode)
@@ -428,7 +433,7 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
 
     case 'VirtualMachineRestore.snapshot.kubevirt.io':
       setIfDefined(resource, 'status.restoreTime', item.restoreTime)
-      setIfDefined(resource, 'status.complete', item.complete)
+      setIfDefined(resource, 'status.complete', item.complete, convertToBoolean(item.complete))
       setIfDefined(resource, 'spec.target.apiGroup', item.targetApiGroup)
       setIfDefined(resource, 'spec.target.kind', item.targetKind)
       setIfDefined(resource, 'spec.target.name', item.targetName)
