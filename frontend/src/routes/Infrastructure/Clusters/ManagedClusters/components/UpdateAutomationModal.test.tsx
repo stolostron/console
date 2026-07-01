@@ -373,6 +373,24 @@ const clusterCuratorReady1 = {
   },
 }
 
+const clusterCuratorHosted = {
+  apiVersion: ClusterCuratorDefinition.apiVersion,
+  kind: ClusterCuratorDefinition.kind,
+  metadata: {
+    name: 'cluster-5-hosted',
+    namespace: 'cluster-5-hosted',
+  },
+}
+
+const mockSecretHosted = {
+  apiVersion: ProviderConnectionApiVersion,
+  kind: ProviderConnectionKind,
+  metadata: {
+    namespace: 'cluster-5-hosted',
+    name: 'toweraccess-install',
+  },
+}
+
 const clusterCuratorPatch = {
   spec: {
     install: {
@@ -424,7 +442,7 @@ describe('UpdateAutomationModal', () => {
     render(<Component />)
 
     // Show alert with automation support message
-    await waitForText('5 clusters cannot be edited')
+    await waitForText('4 clusters cannot be edited')
     await waitFor(() =>
       expect(screen.getByText('View selected template').getAttribute('aria-disabled')).not.toEqual('false')
     )
@@ -444,6 +462,7 @@ describe('UpdateAutomationModal', () => {
     render(<Component />)
     await waitForNotText('cluster-0-no-available')
     await waitForText('cluster-1-ready')
+    await waitForText('cluster-5-hosted')
     await waitForNotText('cluster-2-NonOCP')
     await waitForNotText('cluster-3-pending')
     await waitForNotText('cluster-4-roks')
@@ -452,6 +471,8 @@ describe('UpdateAutomationModal', () => {
   test('should select curator and patch', async () => {
     const mockSecretUpdate = nockPatch(mockSecret, secretPatch)
     const mockCuratorUpdate = nockPatch(clusterCuratorReady1, clusterCuratorPatch)
+    const mockSecretHostedUpdate = nockPatch(mockSecretHosted, secretPatch)
+    const mockCuratorHostedUpdate = nockPatch(clusterCuratorHosted, clusterCuratorPatch)
     render(<Component />)
     // select dropdown
     await waitForText('Select a template', false)
@@ -463,6 +484,6 @@ describe('UpdateAutomationModal', () => {
     expect(submitButton).toBeTruthy()
     userEvent.click(submitButton)
 
-    await waitForNocks([mockCuratorUpdate, mockSecretUpdate])
+    await waitForNocks([mockCuratorUpdate, mockSecretUpdate, mockCuratorHostedUpdate, mockSecretHostedUpdate])
   })
 })

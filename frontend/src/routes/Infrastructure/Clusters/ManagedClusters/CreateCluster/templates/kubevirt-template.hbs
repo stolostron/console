@@ -206,6 +206,9 @@ metadata:
   name: '{{{clusterName}}}'
 spec:
   hubAcceptsClient: true
+  {{#if reconcilePause}}
+  pausedUntil: '{{{reconcilePause}}}'
+  {{/if}}
 {{>clusterCurator}}
 {{#if includeKlusterletAddonConfig}}
 ---
