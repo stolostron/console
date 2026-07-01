@@ -31,6 +31,7 @@ import {
   SecretApiVersion,
   SecretKind,
 } from '../../../../../../resources'
+import { ClusterStatus } from '../../../../../../resources/utils'
 import { HypershiftImportCommand } from '../../components/HypershiftImportCommand'
 import {
   mockAWSHostedCluster,
@@ -911,5 +912,94 @@ describe('ClusterOverview automation template', () => {
 
     await waitForText(mockCluster.name)
     expect(screen.queryByText('View template')).not.toBeInTheDocument()
+  })
+})
+
+describe('ClusterOverview hypershift hook status', () => {
+  const hypershiftClusterCurator: ClusterCurator = {
+    apiVersion: ClusterCuratorApiVersion,
+    kind: ClusterCuratorKind,
+    metadata: {
+      name: mockAWSHypershiftCluster.name,
+      namespace: mockAWSHypershiftCluster.namespace,
+    },
+    spec: {
+      desiredCuration: 'install',
+      install: {
+        prehook: [{ name: 'prehook-ansible-job', extra_vars: {} }],
+        posthook: [{ name: 'posthook-ansible-job', extra_vars: {} }],
+        towerAuthSecret: 'ansible-cred',
+      },
+    },
+  }
+
+  const renderHypershiftOverview = (cluster: typeof mockAWSHypershiftCluster, clusterCurator?: ClusterCurator) => {
+    const context: Partial<ClusterDetailsContext> = {
+      cluster,
+      hostedCluster: mockAWSHostedCluster,
+      clusterCurator,
+      canGetSecret: true,
+    }
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policyreportState, [])
+          snapshot.set(managedClustersState, [])
+          snapshot.set(clusterDeploymentsState, [])
+          snapshot.set(managedClusterInfosState, [])
+          snapshot.set(certificateSigningRequestsState, [])
+          snapshot.set(managedClusterAddonsState, {})
+          snapshot.set(clusterManagementAddonsState, [])
+          snapshot.set(clusterClaimsState, [])
+          snapshot.set(clusterCuratorsState, clusterCurator ? [clusterCurator] : [])
+          snapshot.set(agentClusterInstallsState, [])
+          snapshot.set(agentsState, [])
+          snapshot.set(infraEnvironmentsState, [])
+          snapshot.set(hostedClustersState, [mockAWSHostedCluster])
+          snapshot.set(nodePoolsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ClusterOverviewPageContent />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+  }
+
+  beforeEach(() => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+  })
+
+  it('should display provision hook progress for hypershift clusters', async () => {
+    const clusterWithPrehook = {
+      ...mockAWSHypershiftCluster,
+      status: ClusterStatus.prehookjob,
+      hasAutomationTemplate: true,
+      isCurator: true,
+    }
+    renderHypershiftOverview(clusterWithPrehook, hypershiftClusterCurator)
+
+    await waitForText('Creating cluster')
+    expect(screen.getAllByText('Prehook').length).toBeGreaterThan(0)
+    await waitForText('Control plane status')
+  })
+
+  it('should display automation template for hypershift clusters with automation', async () => {
+    nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
+    const clusterWithAutomation = {
+      ...mockAWSHypershiftCluster,
+      hasAutomationTemplate: true,
+      isCurator: true,
+    }
+    renderHypershiftOverview(clusterWithAutomation, hypershiftClusterCurator)
+
+    await waitForText(mockAWSHypershiftCluster.name)
+    await waitForText('Automation template')
+    await waitForText('View template')
   })
 })
