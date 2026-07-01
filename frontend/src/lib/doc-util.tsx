@@ -14,6 +14,9 @@ export const OCP_DOC = 'https://docs.redhat.com/en/documentation/openshift_conta
 const OCP_DOC_HOME = `https://docs.redhat.com/en/documentation/openshift_container_platform/${OCP_DOC_VERSION}`
 const OCP_DOC_BASE_PATH = `${OCP_DOC_HOME}/html-single`
 
+const ROSA_DOCS_BASE = 'https://docs.redhat.com/en/documentation/red_hat_openshift_service_on_aws/4/html'
+const ROSA_CP_DOCS_BASE = 'https://access.redhat.com/documentation/en-us/red_hat_openshift_service_on_aws/4/html'
+
 export const DOC_LINKS = {
   CLUSTERS: `${DOC_BASE_PATH}/clusters/index#cluster-intro`,
   CREATE_CONNECTION: `${DOC_BASE_PATH}/clusters/index#credentials`,
@@ -74,6 +77,25 @@ export const DOC_LINKS = {
   VM_SNAPSHOT: `${OCP_DOC_BASE_PATH}/storage/using-container-storage-interface-csi#persistent-storage-csi-snapshots`,
   // AI doc links
   NUTANIX_POST_INSTALL: `https://docs.redhat.com/en/documentation/assisted_installer_for_openshift_container_platform/2024/html/installing_openshift_container_platform_with_the_assisted_installer/assembly_installing-on-nutanix#nutanix-post-installation-configuration_installing-on-nutanix`,
+  // ROSA HCP WIZARD
+  WHAT_IS_ROSA: 'https://www.redhat.com/en/technologies/cloud-computing/openshift/aws',
+  ROSA_COMMUNITY_SLACK: 'https://red.ht/rosa-slack',
+  ROSA_AWS_FEDRAMP: `${ROSA_DOCS_BASE}/getting_started_with_rosa_govcloud/index`,
+  FEDRAMP_ACCESS_REQUEST_FORM: 'https://console.redhat.com/openshift/create/rosa/govcloud',
+  AWS_CONSOLE_ROSA_HOME_GET_STARTED: 'https://console.aws.amazon.com/rosa/home#/get-started',
+  AWS_ROSA_GET_STARTED: 'https://docs.aws.amazon.com/ROSA/latest/userguide/getting-started.html',
+  ROSA_CLI_DOCS: `${ROSA_CP_DOCS_BASE}/rosa_cli/rosa-get-started-cli`,
+  AWS_CLI: 'https://aws.amazon.com/cli/',
+  AWS_CLI_CONFIGURATION_INSTRUCTIONS: 'https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html',
+  ROSA_SERVICE_ACCOUNT: 'https://console.redhat.com/iam/service-accounts',
+  LEARN_MORE_SSO_ROSA: `${ROSA_DOCS_BASE}/cli_tools/rosa-cli#rosa-login-sso_rosa-getting-started-cli`,
+  AWS_CLI_GETTING_STARTED_MANUAL: 'https://docs.aws.amazon.com/ROSA/latest/userguide/getting-started-sts-manual.html',
+  ROSA_CREATE_NETWORK: `https://access.redhat.com/articles/7096266`,
+  CREATE_VPC_WAYS: `https://docs.aws.amazon.com/rosa/latest/userguide/getting-started-hcp.html#create-vpc-hcp`,
+  ROSA_HCP_CLI_URL: `${ROSA_DOCS_BASE}/install_clusters/rosa-hcp-sts-creating-a-cluster-quickly`,
+  TERRAFORM_ROSA_HCP_URL: `${ROSA_DOCS_BASE}/install_clusters/creating-a-rosa-cluster-using-terraform`,
+  TERRAFORM_REGISTRY_ROSA_HCP:
+    'https://registry.terraform.io/providers/terraform-redhat/rhcs/latest/docs/guides/hosted-control-planes',
 }
 
 export function ViewDocumentationLink(props: { doclink: string }): JSX.Element {
