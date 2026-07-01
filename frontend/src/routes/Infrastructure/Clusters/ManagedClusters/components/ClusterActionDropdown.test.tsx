@@ -26,7 +26,6 @@ import {
   clickByText,
   waitForNock,
   waitForNocks,
-  waitForNotText,
   waitForText,
 } from '../../../../../lib/test-util'
 import { ClusterActionDropdown } from './ClusterActionDropdown'
