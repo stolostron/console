@@ -582,7 +582,7 @@ export function createArgoStatusMap(searchResult: SearchResult, clusters: Cluste
       appKey = `appset/${appName}`
     } else if (app.applicationSet) {
       // don't count the placeholder app on the hub for this pulled appset
-      if (!app.label.includes('apps.open-cluster-management.io/pull-to-ocm-managed-cluster=true')) {
+      if (!app.label?.includes('apps.open-cluster-management.io/pull-to-ocm-managed-cluster=true')) {
         appName = `${app.namespace}/${app.applicationSet}`
         appKey = `appset/${appName}`
         const namePart = app.name.startsWith(app.applicationSet)
