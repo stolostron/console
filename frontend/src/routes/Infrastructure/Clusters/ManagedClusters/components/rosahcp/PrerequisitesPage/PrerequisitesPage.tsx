@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import React, { useMemo, useState } from 'react'
 import {
   Button,

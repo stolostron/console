@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { Alert, List, ListComponent, ListItem, OrderType, Title } from '@patternfly/react-core'
 import { useTranslation } from '../../../../../../../lib/acm-i18next'
 import InstructionCommand from './InstructionCommand'

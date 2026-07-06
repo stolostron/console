@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import React from 'react'
 
 export interface SVGIconProps extends Omit<React.HTMLProps<SVGElement>, 'ref'> {

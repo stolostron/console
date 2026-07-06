@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { Card, CardBody, CardTitle, Content, ContentVariants, Stack, StackItem, Title } from '@patternfly/react-core'
 import TerraformLogo from './TerraformLogo'
 import { useTranslation } from '../../../../../../../lib/acm-i18next'

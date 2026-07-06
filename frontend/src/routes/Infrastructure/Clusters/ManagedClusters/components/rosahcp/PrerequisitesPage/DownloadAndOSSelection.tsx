@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import React, { useState } from 'react'
 
 import { Button, FormSelect, FormSelectOption, Grid, GridItem } from '@patternfly/react-core'

@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { useMemo } from 'react'
 import { useRecoilValue, useSharedAtoms } from '~/shared-recoil'
 

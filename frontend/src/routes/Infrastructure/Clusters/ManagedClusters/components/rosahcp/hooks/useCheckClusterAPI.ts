@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { useRecoilValue, useSharedAtoms } from '~/shared-recoil'
 
 export const useCheckClusterAPI = () => {

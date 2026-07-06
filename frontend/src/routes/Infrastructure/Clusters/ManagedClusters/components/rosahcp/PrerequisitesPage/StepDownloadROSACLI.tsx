@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { Content, ContentVariants } from '@patternfly/react-core'
 
 import { DOC_LINKS } from '../../../../../../../lib/doc-util'

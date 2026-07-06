@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { ClipboardCopy, clipboardCopyFunc, Content } from '@patternfly/react-core'
 
 type Props = {
