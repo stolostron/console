@@ -11,6 +11,7 @@ KUBEVIRT_PORT=${KUBEVIRT_PORT:=""}
 ODF_PORT=${ODF_PORT:=""}
 GITOPS_PORT=${GITOPS_PORT:=""}
 CONSOLE_IMAGE="quay.io/openshift/origin-console:${CONSOLE_VERSION}"
+PIPELINES_PORT=${PIPELINES_PORT:=""}
 
 mkdir -p ocp-console
 oc extract secret/off-cluster-token -n openshift-console --to ocp-console --confirm
