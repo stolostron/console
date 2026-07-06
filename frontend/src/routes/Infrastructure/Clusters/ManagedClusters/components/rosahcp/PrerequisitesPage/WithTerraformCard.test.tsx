@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
+import { axe } from 'jest-axe'
 import { WithTerraFormCard } from './WithTerraformCard'
 
 describe('WithTerraFormCard', () => {
@@ -28,5 +29,11 @@ describe('WithTerraFormCard', () => {
 
     expect(screen.getByText('visit the Terraform registry')).toBeInTheDocument()
     expect(screen.getByText('visit the Terraform registry').closest('a')).toHaveAttribute('target', '_blank')
+  })
+
+  test('should have no accessibility violations', async () => {
+    const { container } = render(<WithTerraFormCard />)
+
+    expect(await axe(container)).toHaveNoViolations()
   })
 })

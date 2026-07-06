@@ -2,6 +2,7 @@
 
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { axe } from 'jest-axe'
 import { WithWizardCard } from './WithWizardCard'
 
 describe('WithWizardCard', () => {
@@ -38,5 +39,11 @@ describe('WithWizardCard', () => {
     await userEvent.click(button)
 
     expect(mockSetModalIsOpen).toHaveBeenCalledWith(true)
+  })
+
+  test('should have no accessibility violations', async () => {
+    const { container } = render(<WithWizardCard setModalIsOpen={mockSetModalIsOpen} />)
+
+    expect(await axe(container)).toHaveNoViolations()
   })
 })

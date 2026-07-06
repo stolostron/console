@@ -2,6 +2,7 @@
 
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { axe } from 'jest-axe'
 import DownloadAndOSSelection from './DownloadAndOSSelection'
 
 describe('DownloadAndOSSelection', () => {
@@ -51,5 +52,11 @@ describe('DownloadAndOSSelection', () => {
 
     const downloadLink = screen.getByText('Download the ROSA CLI').closest('a')
     expect(downloadLink).toHaveAttribute('href', expect.stringContaining('rosa-linux.tar.gz'))
+  })
+
+  test('should have no accessibility violations', async () => {
+    const { container } = render(<DownloadAndOSSelection />)
+
+    expect(await axe(container)).toHaveNoViolations()
   })
 })

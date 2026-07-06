@@ -2,6 +2,7 @@
 
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { axe } from 'jest-axe'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { secretsState } from '../../../../../../../atoms'
@@ -86,5 +87,11 @@ describe('RosaHCPModal', () => {
 
     expect(screen.getByText('Missing a service account?')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Add one' })).toBeInTheDocument()
+  })
+
+  test('should have no accessibility violations', async () => {
+    const { container } = render(<Component />)
+
+    expect(await axe(container)).toHaveNoViolations()
   })
 })

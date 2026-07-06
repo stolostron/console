@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
+import { axe } from 'jest-axe'
 import { StepCreateAWSAccountRoles } from './StepCreateAwsAccountRoles'
 
 describe('StepCreateAWSAccountRoles', () => {
@@ -55,5 +56,11 @@ describe('StepCreateAWSAccountRoles', () => {
 
     expect(screen.getByText('these instructions')).toBeInTheDocument()
     expect(screen.getByText('these instructions').closest('a')).toHaveAttribute('target', '_blank')
+  })
+
+  test('should have no accessibility violations', async () => {
+    const { container } = render(<StepCreateAWSAccountRoles />)
+
+    expect(await axe(container)).toHaveNoViolations()
   })
 })

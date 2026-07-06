@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
+import { axe } from 'jest-axe'
 import { StepDownloadROSAClI } from './StepDownloadROSACLI'
 
 describe('StepDownloadROSAClI', () => {
@@ -47,5 +48,11 @@ describe('StepDownloadROSAClI', () => {
     render(<StepDownloadROSAClI />)
 
     expect(screen.getByLabelText('Select operating system')).toBeInTheDocument()
+  })
+
+  test('should have no accessibility violations', async () => {
+    const { container } = render(<StepDownloadROSAClI />)
+
+    expect(await axe(container)).toHaveNoViolations()
   })
 })

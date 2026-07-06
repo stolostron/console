@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
+import { axe } from 'jest-axe'
 import { MemoryRouter } from 'react-router'
 import { ServiceAccountSteps } from './ServiceAccountSteps'
 
@@ -46,5 +47,11 @@ describe('ServiceAccountSteps', () => {
         exact: false,
       })
     ).toBeInTheDocument()
+  })
+
+  test('should have no accessibility violations', async () => {
+    const { container } = render(<Component />)
+
+    expect(await axe(container)).toHaveNoViolations()
   })
 })

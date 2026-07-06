@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
+import { axe } from 'jest-axe'
 import { StepCreateNetwork } from './StepCreateNetwork'
 
 describe('StepCreateNetwork', () => {
@@ -39,5 +40,11 @@ describe('StepCreateNetwork', () => {
     render(<StepCreateNetwork />)
 
     expect(screen.getByText('create a VPC')).toBeInTheDocument()
+  })
+
+  test('should have no accessibility violations', async () => {
+    const { container } = render(<StepCreateNetwork />)
+
+    expect(await axe(container)).toHaveNoViolations()
   })
 })

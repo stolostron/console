@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
+import { axe } from 'jest-axe'
 import { WithCLICard } from './WithCLICard'
 
 describe('WithCLICard', () => {
@@ -29,5 +30,11 @@ describe('WithCLICard', () => {
 
     expect(screen.getByText('deploy ROSA clusters with the ROSA CLI')).toBeInTheDocument()
     expect(screen.getByText('deploy ROSA clusters with the ROSA CLI').closest('a')).toHaveAttribute('target', '_blank')
+  })
+
+  test('should have no accessibility violations', async () => {
+    const { container } = render(<WithCLICard />)
+
+    expect(await axe(container)).toHaveNoViolations()
   })
 })

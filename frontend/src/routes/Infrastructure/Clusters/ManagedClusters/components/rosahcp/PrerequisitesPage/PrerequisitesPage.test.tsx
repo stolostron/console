@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
+import { axe } from 'jest-axe'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { secretsState, multiClusterEnginesState } from '../../../../../../../atoms'
@@ -73,5 +74,11 @@ describe('PrerequisitesPage', () => {
 
     expect(screen.getByText('Deploy the cluster and set up access')).toBeInTheDocument()
     expect(screen.getByText('Select a deployment method')).toBeInTheDocument()
+  })
+
+  test('should have no accessibility violations', async () => {
+    const { container } = render(<Component />)
+
+    expect(await axe(container)).toHaveNoViolations()
   })
 })

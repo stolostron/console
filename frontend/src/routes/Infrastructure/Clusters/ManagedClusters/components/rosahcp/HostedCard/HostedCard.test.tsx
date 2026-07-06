@@ -2,6 +2,7 @@
 
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { axe } from 'jest-axe'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { multiClusterEnginesState } from '../../../../../../../atoms'
@@ -75,5 +76,11 @@ describe('HostedCard', () => {
     render(<Component />)
 
     expect(screen.getByText('View ROSA prerequisites')).toBeInTheDocument()
+  })
+
+  test('should have no accessibility violations', async () => {
+    const { container } = render(<Component />)
+
+    expect(await axe(container)).toHaveNoViolations()
   })
 })

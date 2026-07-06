@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
+import { axe } from 'jest-axe'
 import TerraformLogo from './TerraformLogo'
 
 describe('TerraformLogo', () => {
@@ -30,5 +31,11 @@ describe('TerraformLogo', () => {
 
     const svg = container.querySelector('svg')
     expect(svg).toBeInTheDocument()
+  })
+
+  test('should have no accessibility violations', async () => {
+    const { container } = render(<TerraformLogo />)
+
+    expect(await axe(container)).toHaveNoViolations()
   })
 })

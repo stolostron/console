@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
+import { axe } from 'jest-axe'
 import InstructionCommand from './InstructionCommand'
 
 describe('InstructionCommand', () => {
@@ -34,5 +35,11 @@ describe('InstructionCommand', () => {
 
     const input = screen.getByDisplayValue('test command')
     expect(input).toHaveAttribute('readonly')
+  })
+
+  test('should have no accessibility violations', async () => {
+    const { container } = render(<InstructionCommand>test command</InstructionCommand>)
+
+    expect(await axe(container)).toHaveNoViolations()
   })
 })
