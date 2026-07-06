@@ -40,7 +40,7 @@ export function CreateAWSControlPlane() {
   const { settingsState } = useSharedAtoms()
   const settings = useRecoilValue(settingsState)
 
-  const areCapiCapaEnabled = isCapaEnabled && isCapiEnabled && settings.rosaHcpWizard
+  const areCapiCapaEnabled = isCapaEnabled && isCapiEnabled && settings.rosaHcpWizard === 'enabled'
   const [selectedSecret, setSelectedSecret] = React.useState<Secret[] | undefined>(undefined)
 
   const onDiagramToggle = (isExpanded: boolean) => {
