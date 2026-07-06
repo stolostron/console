@@ -23,6 +23,7 @@ import { HostedCard } from '../components/rosahcp/HostedCard/HostedCard'
 import { RosaHCPModal } from '../components/rosahcp/RosaHCPModal/RosaHCPModal'
 import { Secret } from '~/resources'
 import React from 'react'
+import { useRecoilValue, useSharedAtoms } from '~/shared-recoil'
 
 export function CreateAWSControlPlane() {
   const [t] = useTranslation()
@@ -36,7 +37,10 @@ export function CreateAWSControlPlane() {
   const withCliClick = nextStep(NavigationPath.createAWSCLI)
 
   const { isCapaEnabled, isCapiEnabled } = useCheckClusterAPI()
-  const areCapiCapaEnabled = !isCapaEnabled && !isCapiEnabled
+  const { settingsState } = useSharedAtoms()
+  const settings = useRecoilValue(settingsState)
+
+  const areCapiCapaEnabled = isCapaEnabled && isCapiEnabled && settings.rosaHcpWizard
   const [selectedSecret, setSelectedSecret] = React.useState<Secret[] | undefined>(undefined)
 
   const onDiagramToggle = (isExpanded: boolean) => {

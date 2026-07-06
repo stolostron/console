@@ -14,6 +14,7 @@ import {
   CardFooter,
 } from '@patternfly/react-core'
 import { Link } from 'react-router'
+import { DevPreviewLabel } from '~/components/TechPreviewAlert'
 import { useTranslation } from '~/lib/acm-i18next'
 import { NavigationPath } from '~/NavigationPath'
 
@@ -33,6 +34,7 @@ export const HostedCard = (props: HostedCardProps) => {
       <FlexItem flex={{ default: 'flex_1' }}>
         <Card isFullHeight>
           <CardTitle>
+            <DevPreviewLabel />
             <Content component={ContentVariants.h4}>{t('ROSA')}</Content>
             <Content component={ContentVariants.p}>{t('Managed by Red Hat')}</Content>
           </CardTitle>
