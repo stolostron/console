@@ -4,25 +4,19 @@ import { render, screen } from '@testing-library/react'
 import { axe } from 'jest-axe'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
-import { secretsState, multiClusterEnginesState } from '../../../../../../../atoms'
 import { PrerequisitesPage } from './PrerequisitesPage'
+
+jest.mock('~/shared-recoil', () => ({
+  useSharedAtoms: jest.fn(() => ({
+    secretsState: 'secretsState',
+    multiClusterEnginesState: 'multiClusterEnginesState',
+  })),
+  useRecoilValue: jest.fn(() => []),
+}))
 
 describe('PrerequisitesPage', () => {
   const Component = () => (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(secretsState, [] as any)
-        snapshot.set(multiClusterEnginesState, [
-          {
-            spec: {
-              overrides: {
-                components: [],
-              },
-            },
-          },
-        ] as any)
-      }}
-    >
+    <RecoilRoot>
       <MemoryRouter>
         <PrerequisitesPage />
       </MemoryRouter>
