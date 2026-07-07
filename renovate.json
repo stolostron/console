@@ -12,6 +12,7 @@
   ],
   "schedule": ["every weekend"],
   "timezone": "America/New_York",
+  "rangeStrategy": "bump",
   "lockFileMaintenance": {
     "enabled": false
   },
