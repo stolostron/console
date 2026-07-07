@@ -73,16 +73,14 @@ const Inner: FC<EventComponentProps> = ({ event, cache, list, index }) => {
                 t('public~Generated from {{ sourceComponent }}', {
                   sourceComponent: component,
                 })}
-              {component === 'kubelet' &&
-                canGetNodes &&
-                (<Trans
+              {component === 'kubelet' && canGetNodes && (
+                <Trans
                   ns="public"
                   defaults="Generated from {{sourceComponent}} on <0>{{sourceHost}}</0>"
                   values={{ sourceComponent: component, sourceHost: source.host }}
-                  components={[
-                    <Link key="host" to={resourcePathFromModel(NodeModel, source.host)} />,
-                  ]}
-                />)}
+                  components={[<Link key="host" to={resourcePathFromModel(NodeModel, source.host)} />]}
+                />
+              )}
               {component === 'kubelet' &&
                 !canGetNodes &&
                 t('public~Generated from {{ sourceComponent }} on {{ sourceHost }}', {
@@ -107,9 +105,7 @@ const Inner: FC<EventComponentProps> = ({ event, cache, list, index }) => {
                   ns="public"
                   defaults="<0>{{eventCount}} times</0>"
                   values={{ eventCount: count }}
-                  components={[
-                    <small key="count" className="co-sysevent__count pf-v6-u-text-color-subtle" />,
-                  ]}
+                  components={[<small key="count" className="co-sysevent__count pf-v6-u-text-color-subtle" />]}
                 />
               )}
             </div>
