@@ -4,7 +4,7 @@
 import LegendView from './LegendView'
 import { render, screen } from '@testing-library/react'
 import { waitForText } from '../../../../../lib/test-util'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 
 const t: TFunction = (s: string): string => {
   return s

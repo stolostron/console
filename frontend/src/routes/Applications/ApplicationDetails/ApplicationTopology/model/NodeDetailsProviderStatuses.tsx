@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import AcmTimestamp from '../../../../../lib/AcmTimestamp'
 import { ArgoApplication } from '../../../../../resources'
 import { showAnsibleJobDetails } from '../helpers/ansible-task'

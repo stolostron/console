@@ -29,7 +29,7 @@ import { getLatest } from './utils'
 import { AddonStatus, mapAddons } from './get-addons'
 import { AgentClusterInstallKind } from '../agent-cluster-install'
 import semver from 'semver'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { ClusterManagementAddOn, DiscoveredCluster, ManagedClusterAddOn } from '../'
 import { HypershiftCloudPlatformType } from './constants'
 import {

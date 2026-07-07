@@ -21,7 +21,7 @@ import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import _ from 'lodash'
 import './style.css'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import Tooltip from '../../../../../components/TemplateEditor/components/Tooltip'
 import { ManagedClusterSet, ManagedClusterSetBindingKind } from '../../../../../resources'
 import { getTemplateValue } from '../../../../Infrastructure/Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'

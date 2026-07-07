@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Dispatch, SetStateAction } from 'react'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import type { NavigateFunction } from 'react-router'
 import { NavigationPath } from '../../../NavigationPath'
 import { ActionExtensionProps, ListColumnExtensionProps } from '../../../plugin-extensions/properties'

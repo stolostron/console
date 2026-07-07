@@ -2,7 +2,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { Link } from 'react-router'
 import { NavigationPath } from '../../NavigationPath'
 import { SearchAlertProps } from './components/SearchAlertGroup'

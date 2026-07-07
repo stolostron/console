@@ -20,7 +20,7 @@ import type {
   NodeLike,
   ArgoApp,
 } from '../types'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 
 /**
  * ArgoAppDetailsContainer component provides a detailed view of Argo applications

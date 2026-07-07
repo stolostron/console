@@ -9,7 +9,7 @@ import {
   setResourceDeployStatus,
   setSubscriptionDeployStatus,
 } from './NodeDetailsProviderStatuses'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 
 // Mock the dependencies (NodeDetailsProvider imports status helpers from NodeDetailsProviderStatuses)
 jest.mock('./NodeDetailsProviderStatuses', () => ({

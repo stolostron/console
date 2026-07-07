@@ -15,7 +15,7 @@ import {
 } from '../helpers/diagram-helpers'
 import { getLabels, getMatchLabels } from '../../../CreateSubscriptionApplication/controlData/ControlDataPlacement'
 import { PlacementKind } from '../../../../../resources'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 
 const resName = 'resource.name'
 const unknonwnApiVersion = 'unknown'

@@ -19,7 +19,7 @@ import {
   ClusterStatusIcon,
   ResourceAction,
 } from '../types'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 
 /**
  * ClusterDetailsContainer component displays detailed information about clusters

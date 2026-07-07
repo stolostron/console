@@ -4,7 +4,7 @@
 import { ButtonVariant } from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { useContext, useEffect, useState } from 'react'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { IResource } from '../../../../resources'
 import { fetchRetry, getBackendUrl, getRequest } from '../../../../resources/utils'

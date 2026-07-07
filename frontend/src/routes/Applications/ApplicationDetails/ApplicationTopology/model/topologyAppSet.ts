@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 // Lodash imports removed - using native TypeScript equivalents
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { Placement } from '../../../../../resources/placement'
 import { PlacementDecision } from '../../../../../resources/placement-decision'
 import { getResource, listNamespacedResources } from '../../../../../resources/utils'

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Label } from '@patternfly/react-core'
 import { useMemo, useState } from 'react'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { Link, NavigateFunction, To } from 'react-router'
 import { LostChangesContext } from '../../../components/LostChanges'
 import { useTranslation } from '../../../lib/acm-i18next'

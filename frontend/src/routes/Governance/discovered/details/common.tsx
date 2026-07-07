@@ -2,7 +2,7 @@
 import { ViolationsCard, ViolationSummary } from '../../overview/PolicyViolationSummary'
 import { DiscoveredPolicyItem, DiscoveredPolicyTableItem, ISourceType } from '../useFetchPolicies'
 import { compareStrings, IAcmTableColumn, ITableFilter, AcmLabels } from '../../../../ui-components'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { getPolicySource, isKyvernoApiGroup, isLegacyKyvernoApiGroup } from '../../common/util'
 import { generatePath, Link } from 'react-router'
 import { NavigationPath } from '../../../../NavigationPath'
