@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk'
 import { Fleet } from './fleet'
+export type { Event as FleetSearchEvent, SearchInput } from '../internal/search/search-sdk'
 
 export type SearchResult<R extends K8sResourceCommon | K8sResourceCommon[]> = R extends (infer T)[]
   ? Fleet<T>[]

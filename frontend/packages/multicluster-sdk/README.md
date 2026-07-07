@@ -57,10 +57,37 @@ Setup depends on your usage scenarios.
 - [useFleetK8sWatchResource](#gear-usefleetk8swatchresource)
 - [useFleetK8sWatchResources](#gear-usefleetk8swatchresources)
 - [useFleetPrometheusPoll](#gear-usefleetprometheuspoll)
+- [useFleetSearch](#gear-usefleetsearch)
 - [useFleetSearchPoll](#gear-usefleetsearchpoll)
+- [useFleetSearchSubscription](#gear-usefleetsearchsubscription)
+- [useGetMessagesLazyQuery](#gear-usegetmessageslazyquery)
+- [useGetMessagesQuery](#gear-usegetmessagesquery)
+- [useGetMessagesSuspenseQuery](#gear-usegetmessagessuspensequery)
 - [useHubClusterName](#gear-usehubclustername)
 - [useIsFleetAvailable](#gear-useisfleetavailable)
 - [useIsFleetObservabilityInstalled](#gear-useisfleetobservabilityinstalled)
+- [useSearchCompleteLazyQuery](#gear-usesearchcompletelazyquery)
+- [useSearchCompleteQuery](#gear-usesearchcompletequery)
+- [useSearchCompleteSuspenseQuery](#gear-usesearchcompletesuspensequery)
+- [useSearchResultCountLazyQuery](#gear-usesearchresultcountlazyquery)
+- [useSearchResultCountQuery](#gear-usesearchresultcountquery)
+- [useSearchResultCountSuspenseQuery](#gear-usesearchresultcountsuspensequery)
+- [useSearchResultItemsAndRelatedItemsLazyQuery](#gear-usesearchresultitemsandrelateditemslazyquery)
+- [useSearchResultItemsAndRelatedItemsQuery](#gear-usesearchresultitemsandrelateditemsquery)
+- [useSearchResultItemsAndRelatedItemsSuspenseQuery](#gear-usesearchresultitemsandrelateditemssuspensequery)
+- [useSearchResultItemsLazyQuery](#gear-usesearchresultitemslazyquery)
+- [useSearchResultItemsQuery](#gear-usesearchresultitemsquery)
+- [useSearchResultItemsSuspenseQuery](#gear-usesearchresultitemssuspensequery)
+- [useSearchResultRelatedCountLazyQuery](#gear-usesearchresultrelatedcountlazyquery)
+- [useSearchResultRelatedCountQuery](#gear-usesearchresultrelatedcountquery)
+- [useSearchResultRelatedCountSuspenseQuery](#gear-usesearchresultrelatedcountsuspensequery)
+- [useSearchResultRelatedItemsLazyQuery](#gear-usesearchresultrelateditemslazyquery)
+- [useSearchResultRelatedItemsQuery](#gear-usesearchresultrelateditemsquery)
+- [useSearchResultRelatedItemsSuspenseQuery](#gear-usesearchresultrelateditemssuspensequery)
+- [useSearchSchemaLazyQuery](#gear-usesearchschemalazyquery)
+- [useSearchSchemaQuery](#gear-usesearchschemaquery)
+- [useSearchSchemaSuspenseQuery](#gear-usesearchschemasuspensequery)
+- [useSearchSubscription](#gear-usesearchsubscription)
 
 ### :gear: fleetK8sCreate
 
@@ -861,6 +888,72 @@ if (error) {
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetPrometheusPoll.ts#L86)
 
+### :gear: useFleetSearch
+
+A React hook that provides fleet-wide search functionality using the ACM search API,
+with optional real-time updates via a GraphQL WebSocket subscription.
+
+When `subscriptionEnabled` is `false` (the default), the hook issues a one-shot
+GraphQL query and returns the results. When `subscriptionEnabled` is `true`, the
+hook additionally opens a WebSocket subscription and patches the locally-held
+results as INSERT, UPDATE, and DELETE events arrive — keeping the data always
+up to date without polling.
+
+Pagination is supported by setting `limit` and `offset` on the `SearchInput`
+object. The caller is responsible for constructing those values.
+
+| Function | Type |
+| ---------- | ---------- |
+| `useFleetSearch` | `<T extends K8sResourceCommon or K8sResourceCommon[]>(input: SearchInput or undefined, subscriptionEnabled?: boolean or undefined) => [SearchResult<T> or undefined, boolean, Error or undefined, () => void]` |
+
+Parameters:
+
+* `input`: - The search input object (filters, keywords, limit, offset, etc.).
+Pass `undefined` to skip the query entirely.
+* `subscriptionEnabled`: - When `true`, a WebSocket subscription is opened
+and the local result set is kept current via incremental event patches.
+Defaults to `false`.
+
+
+Returns:
+
+A tuple of:
+- `data` — The current search results mapped through
+{@link convertSearchItemToResource }, or `undefined` before the first
+response arrives.
+- `loaded` — `true` once the initial query has completed (regardless of
+whether the subscription is active).
+- `error` — Any query or subscription error, or `undefined` on success.
+- `refetch` — A stable callback that re-executes the base query and resets
+the local state to the fresh result.
+
+Examples:
+
+```typescript
+// Basic query — no real-time updates
+const [pods, loaded, error, refetch] = useFleetSearch<K8sResourceCommon[]>({
+  filters: [
+    { property: 'kind', values: ['Pod'] },
+    { property: 'namespace', values: ['default'] },
+  ],
+  limit: 100,
+})
+
+// With real-time subscription — results update automatically
+const [pods, loaded, error, refetch] = useFleetSearch<K8sResourceCommon[]>(
+  {
+    filters: [
+      { property: 'kind', values: ['Pod'] },
+      { property: 'namespace', values: ['default'] },
+    ],
+  },
+  true,
+)
+```
+
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearch.ts#L65)
+
 ### :gear: useFleetSearchPoll
 
 A React hook that provides fleet-wide search functionality using the ACM search API.
@@ -929,6 +1022,102 @@ const [services, loaded, error] = useFleetSearchPoll({
 
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearchPoll.ts#L81)
+
+### :gear: useFleetSearchSubscription
+
+A React hook that opens a GraphQL WebSocket subscription to the ACM search API
+and streams real-time change events for resources matching the given input.
+
+Events are pushed by the server over a WebSocket connection managed by the
+Apollo client's `graphql-ws` split link. Apollo re-renders the hook with the
+latest event on each push. Only the **most recent** event is returned — callers
+that need to react to each event should use a `useEffect` watching `latestEvent`.
+
+| Function | Type |
+| ---------- | ---------- |
+| `useFleetSearchSubscription` | `(input: SearchInput or undefined) => [Event or undefined, boolean, Error or undefined]` |
+
+Parameters:
+
+* `input`: - The search input filters that define which resources to watch.
+Pass `undefined` to skip opening the WebSocket connection entirely.
+
+
+Returns:
+
+A tuple of:
+- `latestEvent` — the most recent {@link FleetSearchEvent } received from the
+WebSocket stream, or `undefined` before the first event arrives or when
+`input` is `undefined`.
+- `loading` — `true` until the WebSocket connection is established and the
+subscription is active.
+- `error` — any Apollo subscription error, or `undefined` on success.
+
+Examples:
+
+```typescript
+// Watch for changes to all Pods in the default namespace
+const [latestEvent, loading, error] = useFleetSearchSubscription({
+  filters: [
+    { property: 'kind', values: ['Pod'] },
+    { property: 'namespace', values: ['default'] },
+  ],
+})
+
+useEffect(() => {
+  if (!latestEvent) return
+  console.log(`${latestEvent.operation} on uid ${latestEvent.uid}`)
+}, [latestEvent])
+
+// Skip the subscription entirely
+const [latestEvent, loading, error] = useFleetSearchSubscription(undefined)
+```
+
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearchSubscription.ts#L46)
+
+### :gear: useGetMessagesLazyQuery
+
+| Function | Type |
+| ---------- | ---------- |
+| `useGetMessagesLazyQuery` | `(baseOptions?: LazyQueryHookOptions<GetMessagesQuery, Exact<{ [key: string]: never; }>> or undefined) => LazyQueryResultTuple<GetMessagesQuery, Exact<...>>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L721)
+
+### :gear: useGetMessagesQuery
+
+__useGetMessagesQuery__
+
+To run a query within a React component, call `useGetMessagesQuery` and pass it any options that fit your needs.
+When your component renders, `useGetMessagesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+you can use to render your UI.
+
+| Function | Type |
+| ---------- | ---------- |
+| `useGetMessagesQuery` | `(baseOptions?: QueryHookOptions<GetMessagesQuery, Exact<{ [key: string]: never; }>> or undefined) => InteropQueryResult<GetMessagesQuery, Exact<...>>` |
+
+Parameters:
+
+* `baseOptions`: options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+
+
+Examples:
+
+const { data, loading, error } = useGetMessagesQuery({
+  variables: {
+  },
+});
+
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L715)
+
+### :gear: useGetMessagesSuspenseQuery
+
+| Function | Type |
+| ---------- | ---------- |
+| `useGetMessagesSuspenseQuery` | `(baseOptions?: unique symbol or SuspenseQueryHookOptions<GetMessagesQuery, Exact<{ [key: string]: never; }>> or undefined) => UseSuspenseQueryResult<...>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L727)
 
 ### :gear: useHubClusterName
 
@@ -1000,11 +1189,366 @@ if (error) {
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useIsFleetObservabilityInstalled.ts#L38)
 
+### :gear: useSearchCompleteLazyQuery
+
+| Function | Type |
+| ---------- | ---------- |
+| `useSearchCompleteLazyQuery` | `(baseOptions?: LazyQueryHookOptions<SearchCompleteQuery, Exact<{ property: string; query?: InputMaybe<SearchInput> or undefined; limit?: InputMaybe<number> or undefined; }>> or undefined) => LazyQueryResultTuple<...>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L357)
+
+### :gear: useSearchCompleteQuery
+
+__useSearchCompleteQuery__
+
+To run a query within a React component, call `useSearchCompleteQuery` and pass it any options that fit your needs.
+When your component renders, `useSearchCompleteQuery` returns an object from Apollo Client that contains loading, error, and data properties
+you can use to render your UI.
+
+| Function | Type |
+| ---------- | ---------- |
+| `useSearchCompleteQuery` | `(baseOptions: QueryHookOptions<SearchCompleteQuery, Exact<{ property: string; query?: InputMaybe<SearchInput> or undefined; limit?: InputMaybe<number> or undefined; }>> and ({ ...; } or { ...; })) => InteropQueryResult<...>` |
+
+Parameters:
+
+* `baseOptions`: options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+
+
+Examples:
+
+const { data, loading, error } = useSearchCompleteQuery({
+  variables: {
+     property: // value for 'property'
+     query: // value for 'query'
+     limit: // value for 'limit'
+  },
+});
+
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L350)
+
+### :gear: useSearchCompleteSuspenseQuery
+
+| Function | Type |
+| ---------- | ---------- |
+| `useSearchCompleteSuspenseQuery` | `(baseOptions?: unique symbol or SuspenseQueryHookOptions<SearchCompleteQuery, Exact<{ property: string; query?: InputMaybe<SearchInput> or undefined; limit?: InputMaybe<number> or undefined; }>> or undefined) => UseSuspenseQueryResult<...>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L363)
+
+### :gear: useSearchResultCountLazyQuery
+
+| Function | Type |
+| ---------- | ---------- |
+| `useSearchResultCountLazyQuery` | `(baseOptions?: LazyQueryHookOptions<SearchResultCountQuery, Exact<{ input?: InputMaybe<InputMaybe<SearchInput> or InputMaybe<SearchInput>[]> or undefined; }>> or undefined) => LazyQueryResultTuple<...>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L457)
+
+### :gear: useSearchResultCountQuery
+
+__useSearchResultCountQuery__
+
+To run a query within a React component, call `useSearchResultCountQuery` and pass it any options that fit your needs.
+When your component renders, `useSearchResultCountQuery` returns an object from Apollo Client that contains loading, error, and data properties
+you can use to render your UI.
+
+| Function | Type |
+| ---------- | ---------- |
+| `useSearchResultCountQuery` | `(baseOptions?: QueryHookOptions<SearchResultCountQuery, Exact<{ input?: InputMaybe<InputMaybe<SearchInput> or InputMaybe<SearchInput>[]> or undefined; }>> or undefined) => InteropQueryResult<...>` |
+
+Parameters:
+
+* `baseOptions`: options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+
+
+Examples:
+
+const { data, loading, error } = useSearchResultCountQuery({
+  variables: {
+     input: // value for 'input'
+  },
+});
+
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L451)
+
+### :gear: useSearchResultCountSuspenseQuery
+
+| Function | Type |
+| ---------- | ---------- |
+| `useSearchResultCountSuspenseQuery` | `(baseOptions?: unique symbol or SuspenseQueryHookOptions<SearchResultCountQuery, Exact<{ input?: InputMaybe<InputMaybe<SearchInput> or InputMaybe<SearchInput>[]> or undefined; }>> or undefined) => UseSuspenseQueryResult<...>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L466)
+
+### :gear: useSearchResultItemsAndRelatedItemsLazyQuery
+
+| Function | Type |
+| ---------- | ---------- |
+| `useSearchResultItemsAndRelatedItemsLazyQuery` | `(baseOptions?: LazyQueryHookOptions<SearchResultItemsAndRelatedItemsQuery, Exact<{ input?: InputMaybe<InputMaybe<SearchInput> or InputMaybe<SearchInput>[]> or undefined; }>> or undefined) => LazyQueryResultTuple<...>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L586)
+
+### :gear: useSearchResultItemsAndRelatedItemsQuery
+
+__useSearchResultItemsAndRelatedItemsQuery__
+
+To run a query within a React component, call `useSearchResultItemsAndRelatedItemsQuery` and pass it any options that fit your needs.
+When your component renders, `useSearchResultItemsAndRelatedItemsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+you can use to render your UI.
+
+| Function | Type |
+| ---------- | ---------- |
+| `useSearchResultItemsAndRelatedItemsQuery` | `(baseOptions?: QueryHookOptions<SearchResultItemsAndRelatedItemsQuery, Exact<{ input?: InputMaybe<InputMaybe<SearchInput> or InputMaybe<SearchInput>[]> or undefined; }>> or undefined) => InteropQueryResult<...>` |
+
+Parameters:
+
+* `baseOptions`: options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+
+
+Examples:
+
+const { data, loading, error } = useSearchResultItemsAndRelatedItemsQuery({
+  variables: {
+     input: // value for 'input'
+  },
+});
+
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L574)
+
+### :gear: useSearchResultItemsAndRelatedItemsSuspenseQuery
+
+| Function | Type |
+| ---------- | ---------- |
+| `useSearchResultItemsAndRelatedItemsSuspenseQuery` | `(baseOptions?: unique symbol or SuspenseQueryHookOptions<SearchResultItemsAndRelatedItemsQuery, Exact<{ input?: InputMaybe<InputMaybe<SearchInput> or InputMaybe<...>[]> or undefined; }>> or undefined) => UseSuspenseQueryResult<...>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L598)
+
+### :gear: useSearchResultItemsLazyQuery
+
+| Function | Type |
+| ---------- | ---------- |
+| `useSearchResultItemsLazyQuery` | `(baseOptions?: LazyQueryHookOptions<SearchResultItemsQuery, Exact<{ input?: InputMaybe<InputMaybe<SearchInput> or InputMaybe<SearchInput>[]> or undefined; }>> or undefined) => LazyQueryResultTuple<...>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L403)
+
+### :gear: useSearchResultItemsQuery
+
+__useSearchResultItemsQuery__
+
+To run a query within a React component, call `useSearchResultItemsQuery` and pass it any options that fit your needs.
+When your component renders, `useSearchResultItemsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+you can use to render your UI.
+
+| Function | Type |
+| ---------- | ---------- |
+| `useSearchResultItemsQuery` | `(baseOptions?: QueryHookOptions<SearchResultItemsQuery, Exact<{ input?: InputMaybe<InputMaybe<SearchInput> or InputMaybe<SearchInput>[]> or undefined; }>> or undefined) => InteropQueryResult<...>` |
+
+Parameters:
+
+* `baseOptions`: options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+
+
+Examples:
+
+const { data, loading, error } = useSearchResultItemsQuery({
+  variables: {
+     input: // value for 'input'
+  },
+});
+
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L397)
+
+### :gear: useSearchResultItemsSuspenseQuery
+
+| Function | Type |
+| ---------- | ---------- |
+| `useSearchResultItemsSuspenseQuery` | `(baseOptions?: unique symbol or SuspenseQueryHookOptions<SearchResultItemsQuery, Exact<{ input?: InputMaybe<InputMaybe<SearchInput> or InputMaybe<SearchInput>[]> or undefined; }>> or undefined) => UseSuspenseQueryResult<...>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L412)
+
+### :gear: useSearchResultRelatedCountLazyQuery
+
+| Function | Type |
+| ---------- | ---------- |
+| `useSearchResultRelatedCountLazyQuery` | `(baseOptions?: LazyQueryHookOptions<SearchResultRelatedCountQuery, Exact<{ input?: InputMaybe<InputMaybe<SearchInput> or InputMaybe<SearchInput>[]> or undefined; }>> or undefined) => LazyQueryResultTuple<...>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L517)
+
+### :gear: useSearchResultRelatedCountQuery
+
+__useSearchResultRelatedCountQuery__
+
+To run a query within a React component, call `useSearchResultRelatedCountQuery` and pass it any options that fit your needs.
+When your component renders, `useSearchResultRelatedCountQuery` returns an object from Apollo Client that contains loading, error, and data properties
+you can use to render your UI.
+
+| Function | Type |
+| ---------- | ---------- |
+| `useSearchResultRelatedCountQuery` | `(baseOptions?: QueryHookOptions<SearchResultRelatedCountQuery, Exact<{ input?: InputMaybe<InputMaybe<SearchInput> or InputMaybe<SearchInput>[]> or undefined; }>> or undefined) => InteropQueryResult<...>` |
+
+Parameters:
+
+* `baseOptions`: options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+
+
+Examples:
+
+const { data, loading, error } = useSearchResultRelatedCountQuery({
+  variables: {
+     input: // value for 'input'
+  },
+});
+
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L508)
+
+### :gear: useSearchResultRelatedCountSuspenseQuery
+
+| Function | Type |
+| ---------- | ---------- |
+| `useSearchResultRelatedCountSuspenseQuery` | `(baseOptions?: unique symbol or SuspenseQueryHookOptions<SearchResultRelatedCountQuery, Exact<{ input?: InputMaybe<InputMaybe<SearchInput> or InputMaybe<SearchInput>[]> or undefined; }>> or undefined) => UseSuspenseQueryResult<...>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L526)
+
+### :gear: useSearchResultRelatedItemsLazyQuery
+
+| Function | Type |
+| ---------- | ---------- |
+| `useSearchResultRelatedItemsLazyQuery` | `(baseOptions?: LazyQueryHookOptions<SearchResultRelatedItemsQuery, Exact<{ input?: InputMaybe<InputMaybe<SearchInput> or InputMaybe<SearchInput>[]> or undefined; }>> or undefined) => LazyQueryResultTuple<...>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L661)
+
+### :gear: useSearchResultRelatedItemsQuery
+
+__useSearchResultRelatedItemsQuery__
+
+To run a query within a React component, call `useSearchResultRelatedItemsQuery` and pass it any options that fit your needs.
+When your component renders, `useSearchResultRelatedItemsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+you can use to render your UI.
+
+| Function | Type |
+| ---------- | ---------- |
+| `useSearchResultRelatedItemsQuery` | `(baseOptions?: QueryHookOptions<SearchResultRelatedItemsQuery, Exact<{ input?: InputMaybe<InputMaybe<SearchInput> or InputMaybe<SearchInput>[]> or undefined; }>> or undefined) => InteropQueryResult<...>` |
+
+Parameters:
+
+* `baseOptions`: options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+
+
+Examples:
+
+const { data, loading, error } = useSearchResultRelatedItemsQuery({
+  variables: {
+     input: // value for 'input'
+  },
+});
+
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L652)
+
+### :gear: useSearchResultRelatedItemsSuspenseQuery
+
+| Function | Type |
+| ---------- | ---------- |
+| `useSearchResultRelatedItemsSuspenseQuery` | `(baseOptions?: unique symbol or SuspenseQueryHookOptions<SearchResultRelatedItemsQuery, Exact<{ input?: InputMaybe<InputMaybe<SearchInput> or InputMaybe<SearchInput>[]> or undefined; }>> or undefined) => UseSuspenseQueryResult<...>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L670)
+
+### :gear: useSearchSchemaLazyQuery
+
+| Function | Type |
+| ---------- | ---------- |
+| `useSearchSchemaLazyQuery` | `(baseOptions?: LazyQueryHookOptions<SearchSchemaQuery, Exact<{ query?: InputMaybe<SearchInput> or undefined; }>> or undefined) => LazyQueryResultTuple<...>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L310)
+
+### :gear: useSearchSchemaQuery
+
+__useSearchSchemaQuery__
+
+To run a query within a React component, call `useSearchSchemaQuery` and pass it any options that fit your needs.
+When your component renders, `useSearchSchemaQuery` returns an object from Apollo Client that contains loading, error, and data properties
+you can use to render your UI.
+
+| Function | Type |
+| ---------- | ---------- |
+| `useSearchSchemaQuery` | `(baseOptions?: QueryHookOptions<SearchSchemaQuery, Exact<{ query?: InputMaybe<SearchInput> or undefined; }>> or undefined) => InteropQueryResult<...>` |
+
+Parameters:
+
+* `baseOptions`: options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+
+
+Examples:
+
+const { data, loading, error } = useSearchSchemaQuery({
+  variables: {
+     query: // value for 'query'
+  },
+});
+
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L304)
+
+### :gear: useSearchSchemaSuspenseQuery
+
+| Function | Type |
+| ---------- | ---------- |
+| `useSearchSchemaSuspenseQuery` | `(baseOptions?: unique symbol or SuspenseQueryHookOptions<SearchSchemaQuery, Exact<{ query?: InputMaybe<SearchInput> or undefined; }>> or undefined) => UseSuspenseQueryResult<...>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L316)
+
+### :gear: useSearchSubscription
+
+__useSearchSubscription__
+
+To run a query within a React component, call `useSearchSubscription` and pass it any options that fit your needs.
+When your component renders, `useSearchSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+you can use to render your UI.
+
+| Function | Type |
+| ---------- | ---------- |
+| `useSearchSubscription` | `(baseOptions?: SubscriptionHookOptions<SearchSubscriptionSubscription, Exact<{ input?: InputMaybe<SearchInput> or undefined; }>> or undefined) => { ...; }` |
+
+Parameters:
+
+* `baseOptions`: options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+
+
+Examples:
+
+const { data, loading, error } = useSearchSubscription({
+  variables: {
+     input: // value for 'input'
+  },
+});
+
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L765)
+
 
 ## :wrench: Constants
 
+- [GetMessagesDocument](#gear-getmessagesdocument)
 - [REQUIRED_PROVIDER_FLAG](#gear-required_provider_flag)
 - [RESOURCE_ROUTE_TYPE](#gear-resource_route_type)
+- [SearchCompleteDocument](#gear-searchcompletedocument)
+- [SearchResultCountDocument](#gear-searchresultcountdocument)
+- [SearchResultItemsAndRelatedItemsDocument](#gear-searchresultitemsandrelateditemsdocument)
+- [SearchResultItemsDocument](#gear-searchresultitemsdocument)
+- [SearchResultRelatedCountDocument](#gear-searchresultrelatedcountdocument)
+- [SearchResultRelatedItemsDocument](#gear-searchresultrelateditemsdocument)
+- [SearchSchemaDocument](#gear-searchschemadocument)
+- [SearchSubscriptionDocument](#gear-searchsubscriptiondocument)
+
+### :gear: GetMessagesDocument
+
+| Constant | Type |
+| ---------- | ---------- |
+| `GetMessagesDocument` | `DocumentNode` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L690)
 
 ### :gear: REQUIRED_PROVIDER_FLAG
 
@@ -1022,12 +1566,78 @@ if (error) {
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/constants.ts#L3)
 
+### :gear: SearchCompleteDocument
+
+| Constant | Type |
+| ---------- | ---------- |
+| `SearchCompleteDocument` | `DocumentNode` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L326)
+
+### :gear: SearchResultCountDocument
+
+| Constant | Type |
+| ---------- | ---------- |
+| `SearchResultCountDocument` | `DocumentNode` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L427)
+
+### :gear: SearchResultItemsAndRelatedItemsDocument
+
+| Constant | Type |
+| ---------- | ---------- |
+| `SearchResultItemsAndRelatedItemsDocument` | `DocumentNode` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L546)
+
+### :gear: SearchResultItemsDocument
+
+| Constant | Type |
+| ---------- | ---------- |
+| `SearchResultItemsDocument` | `DocumentNode` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L373)
+
+### :gear: SearchResultRelatedCountDocument
+
+| Constant | Type |
+| ---------- | ---------- |
+| `SearchResultRelatedCountDocument` | `DocumentNode` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L481)
+
+### :gear: SearchResultRelatedItemsDocument
+
+| Constant | Type |
+| ---------- | ---------- |
+| `SearchResultRelatedItemsDocument` | `DocumentNode` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L625)
+
+### :gear: SearchSchemaDocument
+
+| Constant | Type |
+| ---------- | ---------- |
+| `SearchSchemaDocument` | `DocumentNode` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L282)
+
+### :gear: SearchSubscriptionDocument
+
+| Constant | Type |
+| ---------- | ---------- |
+| `SearchSubscriptionDocument` | `DocumentNode` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L737)
+
 
 
 ## :cocktail: Types
 
 - [AdvancedSearchFilter](#gear-advancedsearchfilter)
 - [ClusterSetData](#gear-clustersetdata)
+- [Event](#gear-event)
+- [Exact](#gear-exact)
 - [Fleet](#gear-fleet)
 - [FleetAccessReviewResourceAttributes](#gear-fleetaccessreviewresourceattributes)
 - [FleetClusterNamesOptions](#gear-fleetclusternamesoptions)
@@ -1045,10 +1655,80 @@ if (error) {
 - [FleetWatchK8sResult](#gear-fleetwatchk8sresult)
 - [FleetWatchK8sResults](#gear-fleetwatchk8sresults)
 - [FleetWatchK8sResultsObject](#gear-fleetwatchk8sresultsobject)
+- [GetMessagesLazyQueryHookResult](#gear-getmessageslazyqueryhookresult)
+- [GetMessagesQuery](#gear-getmessagesquery)
+- [GetMessagesQueryHookResult](#gear-getmessagesqueryhookresult)
+- [GetMessagesQueryResult](#gear-getmessagesqueryresult)
+- [GetMessagesQueryVariables](#gear-getmessagesqueryvariables)
+- [GetMessagesSuspenseQueryHookResult](#gear-getmessagessuspensequeryhookresult)
+- [Incremental](#gear-incremental)
+- [InputMaybe](#gear-inputmaybe)
+- [MakeEmpty](#gear-makeempty)
+- [MakeMaybe](#gear-makemaybe)
+- [MakeOptional](#gear-makeoptional)
+- [Maybe](#gear-maybe)
+- [Message](#gear-message)
+- [Query](#gear-query)
+- [QuerySearchArgs](#gear-querysearchargs)
+- [QuerySearchCompleteArgs](#gear-querysearchcompleteargs)
+- [QuerySearchSchemaArgs](#gear-querysearchschemaargs)
 - [ResourceRoute](#gear-resourceroute)
 - [ResourceRouteHandler](#gear-resourceroutehandler)
 - [ResourceRouteProps](#gear-resourcerouteprops)
+- [Scalars](#gear-scalars)
+- [SearchCompleteLazyQueryHookResult](#gear-searchcompletelazyqueryhookresult)
+- [SearchCompleteQuery](#gear-searchcompletequery)
+- [SearchCompleteQueryHookResult](#gear-searchcompletequeryhookresult)
+- [SearchCompleteQueryResult](#gear-searchcompletequeryresult)
+- [SearchCompleteQueryVariables](#gear-searchcompletequeryvariables)
+- [SearchCompleteSuspenseQueryHookResult](#gear-searchcompletesuspensequeryhookresult)
+- [SearchFilter](#gear-searchfilter)
+- [SearchInput](#gear-searchinput)
+- [SearchRelatedResult](#gear-searchrelatedresult)
 - [SearchResult](#gear-searchresult)
+- [SearchResult](#gear-searchresult)
+- [SearchResultCountLazyQueryHookResult](#gear-searchresultcountlazyqueryhookresult)
+- [SearchResultCountQuery](#gear-searchresultcountquery)
+- [SearchResultCountQueryHookResult](#gear-searchresultcountqueryhookresult)
+- [SearchResultCountQueryResult](#gear-searchresultcountqueryresult)
+- [SearchResultCountQueryVariables](#gear-searchresultcountqueryvariables)
+- [SearchResultCountSuspenseQueryHookResult](#gear-searchresultcountsuspensequeryhookresult)
+- [SearchResultItemsAndRelatedItemsLazyQueryHookResult](#gear-searchresultitemsandrelateditemslazyqueryhookresult)
+- [SearchResultItemsAndRelatedItemsQuery](#gear-searchresultitemsandrelateditemsquery)
+- [SearchResultItemsAndRelatedItemsQueryHookResult](#gear-searchresultitemsandrelateditemsqueryhookresult)
+- [SearchResultItemsAndRelatedItemsQueryResult](#gear-searchresultitemsandrelateditemsqueryresult)
+- [SearchResultItemsAndRelatedItemsQueryVariables](#gear-searchresultitemsandrelateditemsqueryvariables)
+- [SearchResultItemsAndRelatedItemsSuspenseQueryHookResult](#gear-searchresultitemsandrelateditemssuspensequeryhookresult)
+- [SearchResultItemsLazyQueryHookResult](#gear-searchresultitemslazyqueryhookresult)
+- [SearchResultItemsQuery](#gear-searchresultitemsquery)
+- [SearchResultItemsQueryHookResult](#gear-searchresultitemsqueryhookresult)
+- [SearchResultItemsQueryResult](#gear-searchresultitemsqueryresult)
+- [SearchResultItemsQueryVariables](#gear-searchresultitemsqueryvariables)
+- [SearchResultItemsSuspenseQueryHookResult](#gear-searchresultitemssuspensequeryhookresult)
+- [SearchResultRelatedCountLazyQueryHookResult](#gear-searchresultrelatedcountlazyqueryhookresult)
+- [SearchResultRelatedCountQuery](#gear-searchresultrelatedcountquery)
+- [SearchResultRelatedCountQueryHookResult](#gear-searchresultrelatedcountqueryhookresult)
+- [SearchResultRelatedCountQueryResult](#gear-searchresultrelatedcountqueryresult)
+- [SearchResultRelatedCountQueryVariables](#gear-searchresultrelatedcountqueryvariables)
+- [SearchResultRelatedCountSuspenseQueryHookResult](#gear-searchresultrelatedcountsuspensequeryhookresult)
+- [SearchResultRelatedItemsLazyQueryHookResult](#gear-searchresultrelateditemslazyqueryhookresult)
+- [SearchResultRelatedItemsQuery](#gear-searchresultrelateditemsquery)
+- [SearchResultRelatedItemsQueryHookResult](#gear-searchresultrelateditemsqueryhookresult)
+- [SearchResultRelatedItemsQueryResult](#gear-searchresultrelateditemsqueryresult)
+- [SearchResultRelatedItemsQueryVariables](#gear-searchresultrelateditemsqueryvariables)
+- [SearchResultRelatedItemsSuspenseQueryHookResult](#gear-searchresultrelateditemssuspensequeryhookresult)
+- [SearchSchemaLazyQueryHookResult](#gear-searchschemalazyqueryhookresult)
+- [SearchSchemaQuery](#gear-searchschemaquery)
+- [SearchSchemaQueryHookResult](#gear-searchschemaqueryhookresult)
+- [SearchSchemaQueryResult](#gear-searchschemaqueryresult)
+- [SearchSchemaQueryVariables](#gear-searchschemaqueryvariables)
+- [SearchSchemaSuspenseQueryHookResult](#gear-searchschemasuspensequeryhookresult)
+- [SearchSubscriptionSubscription](#gear-searchsubscriptionsubscription)
+- [SearchSubscriptionSubscriptionHookResult](#gear-searchsubscriptionsubscriptionhookresult)
+- [SearchSubscriptionSubscriptionResult](#gear-searchsubscriptionsubscriptionresult)
+- [SearchSubscriptionSubscriptionVariables](#gear-searchsubscriptionsubscriptionvariables)
+- [Subscription](#gear-subscription)
+- [SubscriptionWatchArgs](#gear-subscriptionwatchargs)
 
 ### :gear: AdvancedSearchFilter
 
@@ -1056,7 +1736,7 @@ if (error) {
 | ---------- | ---------- |
 | `AdvancedSearchFilter` | `{ property: string; values: string[] }[]` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L9)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L10)
 
 ### :gear: ClusterSetData
 
@@ -1070,6 +1750,24 @@ The "global" key is a special set that contains all clusters (when includeGlobal
 | `ClusterSetData` | `Record<string, string[]>` |
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L96)
+
+### :gear: Event
+
+Event represents a changed resource in the search index.
+
+| Type | Type |
+| ---------- | ---------- |
+| `Event` | `{ /** New data recorded on the search index. */ newData?: Maybe<Scalars['Map']['output']> /** Previous resource data from the search index. */ oldData?: Maybe<Scalars['Map']['output']> /** Values: INSERT, UPDATE, or DELETE */ operation: Scalars['String']['output'] /** * Time the change event is registered in the search index. * Note there's a delay from the time the resource changed in kubernetes. */ timestamp: Scalars['Date']['output'] /** Kubernetes resource UID. */ uid: Scalars['ID']['output'] }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L24)
+
+### :gear: Exact
+
+| Type | Type |
+| ---------- | ---------- |
+| `Exact` | `{ [K in keyof T]: T[K] }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L6)
 
 ### :gear: Fleet
 
@@ -1209,6 +1907,152 @@ Options for advanced cluster name retrieval with cluster set organization.
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L26)
 
+### :gear: GetMessagesLazyQueryHookResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `GetMessagesLazyQueryHookResult` | `ReturnType<typeof useGetMessagesLazyQuery>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L734)
+
+### :gear: GetMessagesQuery
+
+| Type | Type |
+| ---------- | ---------- |
+| `GetMessagesQuery` | `{ messages?: Array<{ id: string; kind?: string or null; description?: string or null } or null> or null }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L264)
+
+### :gear: GetMessagesQueryHookResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `GetMessagesQueryHookResult` | `ReturnType<typeof useGetMessagesQuery>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L733)
+
+### :gear: GetMessagesQueryResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `GetMessagesQueryResult` | `Apollo.QueryResult<GetMessagesQuery, GetMessagesQueryVariables>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L736)
+
+### :gear: GetMessagesQueryVariables
+
+| Type | Type |
+| ---------- | ---------- |
+| `GetMessagesQueryVariables` | `Exact<{ [key: string]: never }>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L262)
+
+### :gear: GetMessagesSuspenseQueryHookResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `GetMessagesSuspenseQueryHookResult` | `ReturnType<typeof useGetMessagesSuspenseQuery>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L735)
+
+### :gear: Incremental
+
+| Type | Type |
+| ---------- | ---------- |
+| `Incremental` | `T or { [P in keyof T]?: P extends ' $fragmentName' or '__typename' ? T[P] : never }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L10)
+
+### :gear: InputMaybe
+
+| Type | Type |
+| ---------- | ---------- |
+| `InputMaybe` | `Maybe<T>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L5)
+
+### :gear: MakeEmpty
+
+| Type | Type |
+| ---------- | ---------- |
+| `MakeEmpty` | `{ [_ in K]?: never }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L9)
+
+### :gear: MakeMaybe
+
+| Type | Type |
+| ---------- | ---------- |
+| `MakeMaybe` | `Omit<T, K> and { [SubKey in K]: Maybe<T[SubKey]> }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L8)
+
+### :gear: MakeOptional
+
+| Type | Type |
+| ---------- | ---------- |
+| `MakeOptional` | `Omit<T, K> and { [SubKey in K]?: Maybe<T[SubKey]> }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L7)
+
+### :gear: Maybe
+
+| Type | Type |
+| ---------- | ---------- |
+| `Maybe` | `T or null` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L4)
+
+### :gear: Message
+
+A message is used to communicate conditions detected while executing a query on the server.
+
+| Type | Type |
+| ---------- | ---------- |
+| `Message` | `{ /** Message text. */ description?: Maybe<Scalars['String']['output']> /** Unique identifier to be used by clients to process the message independently of locale or grammatical changes. */ id: Scalars['String']['output'] /** * Message type. * **Values:** information, warning, error. */ kind?: Maybe<Scalars['String']['output']> }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L41)
+
+### :gear: Query
+
+Queries supported by the Search Query API.
+
+| Type | Type |
+| ---------- | ---------- |
+| `Query` | `{ /** * Additional information about the service status or conditions found while processing the query. * This is similar to the errors query, but without implying that there was a problem processing the query. */ messages?: Maybe<Array<Maybe<Message>>> /** * Search for resources and their relationships. * *[PLACEHOLDER] Results only include kubernetes resources for which the authenticated user has list permission.* * * For more information see the feature spec. */ search?: Maybe<Array<Maybe<SearchResult>>> /** * Query all values for the given property. * Optionally, a query can be included to filter the results. * For example, if we want to get the names of all resources in the namespace foo, we can pass a query with the filter `{property: namespace, values:['foo']}` * * **Default limit is** 1,000 * A value of -1 will remove the limit. Use carefully because it may impact the service. */ searchComplete?: Maybe<Array<Maybe<Scalars['String']['output']>>> /** * Returns all fields from resources currently in the index. * Optionally, a query can be included to filter the results. * For example, if we want to only get fields for Pod resources, we can pass in a query with the filter `{property: kind, values:['Pod']}` */ searchSchema?: Maybe<Scalars['Map']['output']> }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L54)
+
+### :gear: QuerySearchArgs
+
+Queries supported by the Search Query API.
+
+| Type | Type |
+| ---------- | ---------- |
+| `QuerySearchArgs` | `{ input?: InputMaybe<Array<InputMaybe<SearchInput>>> }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L85)
+
+### :gear: QuerySearchCompleteArgs
+
+Queries supported by the Search Query API.
+
+| Type | Type |
+| ---------- | ---------- |
+| `QuerySearchCompleteArgs` | `{ limit?: InputMaybe<Scalars['Int']['input']> property: Scalars['String']['input'] query?: InputMaybe<SearchInput> }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L90)
+
+### :gear: QuerySearchSchemaArgs
+
+Queries supported by the Search Query API.
+
+| Type | Type |
+| ---------- | ---------- |
+| `QuerySearchSchemaArgs` | `{ query?: InputMaybe<SearchInput> }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L97)
+
 ### :gear: ResourceRoute
 
 This extension allows plugins to customize the route used for resources of the given kind. Search results and resource links will direct to the route returned by the implementing function.
@@ -1235,13 +2079,452 @@ This extension allows plugins to customize the route used for resources of the g
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/extensions/resource.ts#L20)
 
+### :gear: Scalars
+
+All built-in and custom scalars, mapped to their actual values
+
+| Type | Type |
+| ---------- | ---------- |
+| `Scalars` | `{ ID: { input: string; output: string } String: { input: string; output: string } Boolean: { input: boolean; output: boolean } Int: { input: number; output: number } Float: { input: number; output: number } Date: { input: any; output: any } Map: { input: any; output: any } }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L13)
+
+### :gear: SearchCompleteLazyQueryHookResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchCompleteLazyQueryHookResult` | `ReturnType<typeof useSearchCompleteLazyQuery>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L370)
+
+### :gear: SearchCompleteQuery
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchCompleteQuery` | `{ searchComplete?: Array<string or null> or null }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L219)
+
+### :gear: SearchCompleteQueryHookResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchCompleteQueryHookResult` | `ReturnType<typeof useSearchCompleteQuery>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L369)
+
+### :gear: SearchCompleteQueryResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchCompleteQueryResult` | `Apollo.QueryResult<SearchCompleteQuery, SearchCompleteQueryVariables>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L372)
+
+### :gear: SearchCompleteQueryVariables
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchCompleteQueryVariables` | `Exact<{ property: Scalars['String']['input'] query?: InputMaybe<SearchInput> limit?: InputMaybe<Scalars['Int']['input']> }>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L213)
+
+### :gear: SearchCompleteSuspenseQueryHookResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchCompleteSuspenseQueryHookResult` | `ReturnType<typeof useSearchCompleteSuspenseQuery>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L371)
+
+### :gear: SearchFilter
+
+Defines a key/value to filter results.
+When multiple values are provided for a property, it is interpreted as an OR operation.
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchFilter` | `{ /** Name of the property (key). */ property: Scalars['String']['input'] /** * Values for the property. Multiple values per property are interpreted as an OR operation. * Optionally one of these operations `=,!,!=,>,>=,<,<=` can be included at the beginning of the value. * By default the equality operation is used. * The values available for datetime fields (Ex: `created`, `startedAt`) are `hour`, `day`, `week`, `month` and `year`. * Property `kind`, if included in the filter, will be matched using a case-insensitive comparison. * For example, `kind:Pod` and `kind:pod` will bring up all pods. This is to maintain compatibility with Search V1. * * Wildcard matching: the `*` character can be used as a wildcard to match any sequence of characters. * For example, a filter with property `name` and value `nginx-*` matches any resource whose name starts with `nginx-`. * Similarly, property `namespace` with value `prod*` matches any namespace starting with `prod`. * Wildcard matches are case-sensitive. */ values: Array<InputMaybe<Scalars['String']['input']>> }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L105)
+
+### :gear: SearchInput
+
+Input options to the search query.
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchInput` | `{ /** * List of SearchFilter, which is a key(property) and values. * When multiple filters are provided, results will match all filters (AND operation). */ filters?: InputMaybe<Array<InputMaybe<SearchFilter>>> /** * List of strings to match resources. * Will match resources containing any of the keywords in any text field. * When multiple keywords are provided, it is interpreted as an AND operation. * Matches are case insensitive. */ keywords?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>> /** * Max number of results returned by the query. * **Default is** 10,000 * A value of -1 will remove the limit. Use carefully because it may impact the service. */ limit?: InputMaybe<Scalars['Int']['input']> /** * Number of results to skip before returning results. * Used in combination with limit to implement pagination. * **Default is** 0 */ offset?: InputMaybe<Scalars['Int']['input']> /** * Order results by a property and direction. * Format: "property_name asc" or "property_name desc" * Example: "name desc" or "created asc" */ orderBy?: InputMaybe<Scalars['String']['input']> /** * Filter relationships to the specified kinds. * If empty, all relationships will be included. * This filter is used with the 'related' field on SearchResult. */ relatedKinds?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>> }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L125)
+
+### :gear: SearchRelatedResult
+
+Resources related to the items resolved from the search query.
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchRelatedResult` | `{ /** * Total number of related resources. * **NOTE:** Should not use count in combination with items. If items are requested, the count is simply the size of items. */ count?: Maybe<Scalars['Int']['output']> /** Resources matched by the query. */ items?: Maybe<Array<Maybe<Scalars['Map']['output']>>> kind: Scalars['String']['output'] }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L165)
+
+### :gear: SearchResult
+
+Data returned by the search query.
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResult` | `{ /** * Total number of resources matching the query. * **NOTE:** Should not use count in combination with items. If items are requested, the count is simply the size of items. */ count?: Maybe<Scalars['Int']['output']> /** Resources matching the search query. */ items?: Maybe<Array<Maybe<Scalars['Map']['output']>>> /** * Resources related to the query results (items). * For example, if searching for deployments, this will return the related pod resources. */ related?: Maybe<Array<Maybe<SearchRelatedResult>>> }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L177)
+
 ### :gear: SearchResult
 
 | Type | Type |
 | ---------- | ---------- |
 | `SearchResult` | `R extends (infer T)[] ? Fleet<T>[] : Fleet<R>` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L5)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L6)
+
+### :gear: SearchResultCountLazyQueryHookResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultCountLazyQueryHookResult` | `ReturnType<typeof useSearchResultCountLazyQuery>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L478)
+
+### :gear: SearchResultCountQuery
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultCountQuery` | `{ searchResult?: Array<{ count?: number or null } or null> or null }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L231)
+
+### :gear: SearchResultCountQueryHookResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultCountQueryHookResult` | `ReturnType<typeof useSearchResultCountQuery>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L477)
+
+### :gear: SearchResultCountQueryResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultCountQueryResult` | `Apollo.QueryResult<SearchResultCountQuery, SearchResultCountQueryVariables>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L480)
+
+### :gear: SearchResultCountQueryVariables
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultCountQueryVariables` | `Exact<{ input?: InputMaybe<Array<InputMaybe<SearchInput>> or InputMaybe<SearchInput>> }>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L227)
+
+### :gear: SearchResultCountSuspenseQueryHookResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultCountSuspenseQueryHookResult` | `ReturnType<typeof useSearchResultCountSuspenseQuery>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L479)
+
+### :gear: SearchResultItemsAndRelatedItemsLazyQueryHookResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultItemsAndRelatedItemsLazyQueryHookResult` | `ReturnType< typeof useSearchResultItemsAndRelatedItemsLazyQuery >` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L615)
+
+### :gear: SearchResultItemsAndRelatedItemsQuery
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultItemsAndRelatedItemsQuery` | `{ searchResult?: Array<{ items?: Array<any or null> or null related?: Array<{ kind: string; items?: Array<any or null> or null } or null> or null } or null> or null }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L245)
+
+### :gear: SearchResultItemsAndRelatedItemsQueryHookResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultItemsAndRelatedItemsQueryHookResult` | `ReturnType< typeof useSearchResultItemsAndRelatedItemsQuery >` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L612)
+
+### :gear: SearchResultItemsAndRelatedItemsQueryResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultItemsAndRelatedItemsQueryResult` | `Apollo.QueryResult< SearchResultItemsAndRelatedItemsQuery, SearchResultItemsAndRelatedItemsQueryVariables >` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L621)
+
+### :gear: SearchResultItemsAndRelatedItemsQueryVariables
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultItemsAndRelatedItemsQueryVariables` | `Exact<{ input?: InputMaybe<Array<InputMaybe<SearchInput>> or InputMaybe<SearchInput>> }>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L241)
+
+### :gear: SearchResultItemsAndRelatedItemsSuspenseQueryHookResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultItemsAndRelatedItemsSuspenseQueryHookResult` | `ReturnType< typeof useSearchResultItemsAndRelatedItemsSuspenseQuery >` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L618)
+
+### :gear: SearchResultItemsLazyQueryHookResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultItemsLazyQueryHookResult` | `ReturnType<typeof useSearchResultItemsLazyQuery>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L424)
+
+### :gear: SearchResultItemsQuery
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultItemsQuery` | `{ searchResult?: Array<{ items?: Array<any or null> or null } or null> or null }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L225)
+
+### :gear: SearchResultItemsQueryHookResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultItemsQueryHookResult` | `ReturnType<typeof useSearchResultItemsQuery>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L423)
+
+### :gear: SearchResultItemsQueryResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultItemsQueryResult` | `Apollo.QueryResult<SearchResultItemsQuery, SearchResultItemsQueryVariables>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L426)
+
+### :gear: SearchResultItemsQueryVariables
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultItemsQueryVariables` | `Exact<{ input?: InputMaybe<Array<InputMaybe<SearchInput>> or InputMaybe<SearchInput>> }>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L221)
+
+### :gear: SearchResultItemsSuspenseQueryHookResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultItemsSuspenseQueryHookResult` | `ReturnType<typeof useSearchResultItemsSuspenseQuery>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L425)
+
+### :gear: SearchResultRelatedCountLazyQueryHookResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultRelatedCountLazyQueryHookResult` | `ReturnType<typeof useSearchResultRelatedCountLazyQuery>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L538)
+
+### :gear: SearchResultRelatedCountQuery
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultRelatedCountQuery` | `{ searchResult?: Array<{ related?: Array<{ kind: string; count?: number or null } or null> or null } or null> or null }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L237)
+
+### :gear: SearchResultRelatedCountQueryHookResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultRelatedCountQueryHookResult` | `ReturnType<typeof useSearchResultRelatedCountQuery>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L537)
+
+### :gear: SearchResultRelatedCountQueryResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultRelatedCountQueryResult` | `Apollo.QueryResult< SearchResultRelatedCountQuery, SearchResultRelatedCountQueryVariables >` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L542)
+
+### :gear: SearchResultRelatedCountQueryVariables
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultRelatedCountQueryVariables` | `Exact<{ input?: InputMaybe<Array<InputMaybe<SearchInput>> or InputMaybe<SearchInput>> }>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L233)
+
+### :gear: SearchResultRelatedCountSuspenseQueryHookResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultRelatedCountSuspenseQueryHookResult` | `ReturnType< typeof useSearchResultRelatedCountSuspenseQuery >` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L539)
+
+### :gear: SearchResultRelatedItemsLazyQueryHookResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultRelatedItemsLazyQueryHookResult` | `ReturnType<typeof useSearchResultRelatedItemsLazyQuery>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L682)
+
+### :gear: SearchResultRelatedItemsQuery
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultRelatedItemsQuery` | `{ searchResult?: Array<{ related?: Array<{ kind: string; items?: Array<any or null> or null } or null> or null } or null> or null }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L256)
+
+### :gear: SearchResultRelatedItemsQueryHookResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultRelatedItemsQueryHookResult` | `ReturnType<typeof useSearchResultRelatedItemsQuery>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L681)
+
+### :gear: SearchResultRelatedItemsQueryResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultRelatedItemsQueryResult` | `Apollo.QueryResult< SearchResultRelatedItemsQuery, SearchResultRelatedItemsQueryVariables >` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L686)
+
+### :gear: SearchResultRelatedItemsQueryVariables
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultRelatedItemsQueryVariables` | `Exact<{ input?: InputMaybe<Array<InputMaybe<SearchInput>> or InputMaybe<SearchInput>> }>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L252)
+
+### :gear: SearchResultRelatedItemsSuspenseQueryHookResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchResultRelatedItemsSuspenseQueryHookResult` | `ReturnType< typeof useSearchResultRelatedItemsSuspenseQuery >` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L683)
+
+### :gear: SearchSchemaLazyQueryHookResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchSchemaLazyQueryHookResult` | `ReturnType<typeof useSearchSchemaLazyQuery>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L323)
+
+### :gear: SearchSchemaQuery
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchSchemaQuery` | `{ searchSchema?: any or null }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L211)
+
+### :gear: SearchSchemaQueryHookResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchSchemaQueryHookResult` | `ReturnType<typeof useSearchSchemaQuery>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L322)
+
+### :gear: SearchSchemaQueryResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchSchemaQueryResult` | `Apollo.QueryResult<SearchSchemaQuery, SearchSchemaQueryVariables>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L325)
+
+### :gear: SearchSchemaQueryVariables
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchSchemaQueryVariables` | `Exact<{ query?: InputMaybe<SearchInput> }>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L207)
+
+### :gear: SearchSchemaSuspenseQueryHookResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchSchemaSuspenseQueryHookResult` | `ReturnType<typeof useSearchSchemaSuspenseQuery>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L324)
+
+### :gear: SearchSubscriptionSubscription
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchSubscriptionSubscription` | `{ searchSubscription?: { uid: string operation: string newData?: any or null oldData?: any or null timestamp: any } or null }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L272)
+
+### :gear: SearchSubscriptionSubscriptionHookResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchSubscriptionSubscriptionHookResult` | `ReturnType<typeof useSearchSubscription>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L774)
+
+### :gear: SearchSubscriptionSubscriptionResult
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchSubscriptionSubscriptionResult` | `Apollo.SubscriptionResult<SearchSubscriptionSubscription>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L775)
+
+### :gear: SearchSubscriptionSubscriptionVariables
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchSubscriptionSubscriptionVariables` | `Exact<{ input?: InputMaybe<SearchInput> }>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L268)
+
+### :gear: Subscription
+
+Subscriptions implemented by the Search Query API.
+
+| Type | Type |
+| ---------- | ---------- |
+| `Subscription` | `{ /** * Watch changes to the data in the search index. An event is generated for each change * matching the input filters. User's permissions (RBAC) are applied to each event resource. * Events are generated from the search index and don't match the changes on Kubernetes. */ watch?: Maybe<Event> }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L193)
+
+### :gear: SubscriptionWatchArgs
+
+Subscriptions implemented by the Search Query API.
+
+| Type | Type |
+| ---------- | ---------- |
+| `SubscriptionWatchArgs` | `{ input?: InputMaybe<SearchInput> }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L203)
 
 
 <!-- TSDOC_END -->
