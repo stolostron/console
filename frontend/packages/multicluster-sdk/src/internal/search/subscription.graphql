@@ -1,0 +1,9 @@
+subscription searchSubscription($input: SearchInput) {
+  searchSubscription: watch(input: $input) {
+    uid
+    operation
+    newData
+    oldData
+    timestamp
+  }
+}
