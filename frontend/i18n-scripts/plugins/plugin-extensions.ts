@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import type { Plugin, ExtractedKeysMap } from 'i18next-cli'
-import { readFileSync, readdirSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
 /**
@@ -15,6 +15,9 @@ import { join } from 'node:path'
 
 function findConsoleExtensionsFiles(dir: string): string[] {
   const results: string[] = []
+  if (!existsSync(dir)) {
+    return results
+  }
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const fullPath = join(dir, entry.name)
     if (entry.isDirectory()) {

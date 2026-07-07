@@ -11,6 +11,7 @@ import { test, expect, type Page } from '@playwright/test'
 import https from 'node:https'
 import http from 'node:http'
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import dotenv from 'dotenv'
 
@@ -26,7 +27,8 @@ const RHACM_URL = process.env.RHACM_URL || 'http://localhost:9000'
 const OCP_API_URL = process.env.OCP_API_URL
 const OCP_USERNAME = process.env.OCP_USERNAME!
 const OCP_PASSWORD = process.env.OCP_PASSWORD!
-const AUTH_STATE_PATH = path.join(__dirname, '.auth-state.json')
+const AUTH_STATE_PATH =
+  process.env.PLAYWRIGHT_AUTH_STATE_PATH || path.join(os.tmpdir(), 'acm-e2e-i18n-v4-plurals.auth-state.json')
 const AUTH_STATE_MAX_AGE_MS = 30 * 60 * 1000
 
 const CONSOLE_SIDEBAR = '#page-sidebar, [data-test="nav"], .pf-v5-c-page__sidebar, .pf-c-page__sidebar'
@@ -244,20 +246,13 @@ test.describe('ACM-33546: i18next v4 plural format migration', () => {
       }
     })
 
-    // If i18next isn't exposed globally, verify the page rendered without raw keys instead
-    if (pluralResult) {
-      expect(pluralResult.singular).toBe('1 cluster')
-      expect(pluralResult.plural).toBe('5 clusters')
-      expect(pluralResult.hasLegacyPlural).toBe(false)
-      expect(pluralResult.hasV4One).toBe(true)
-      expect(pluralResult.hasV4Other).toBe(true)
-    } else {
-      // Fallback: verify no raw translation keys are visible on the page
-      const bodyText = await page.locator('body').innerText()
-      expect(bodyText).not.toContain('_plural')
-      expect(bodyText).not.toContain('{{count}} cluster_one')
-      expect(bodyText).not.toContain('{{count}} cluster_other')
-    }
+    expect(pluralResult, 'Expected the runtime i18next instance to be exposed for plural validation').not.toBeNull()
+    if (!pluralResult) throw new Error('Runtime i18next instance was not available')
+    expect(pluralResult.singular).toBe('1 cluster')
+    expect(pluralResult.plural).toBe('5 clusters')
+    expect(pluralResult.hasLegacyPlural).toBe(false)
+    expect(pluralResult.hasV4One).toBe(true)
+    expect(pluralResult.hasV4Other).toBe(true)
   })
 
   test('Governance page renders without translation errors', async ({ page }) => {
@@ -278,7 +273,6 @@ test.describe('ACM-33546: i18next v4 plural format migration', () => {
     // Check that no visible text contains the _one or _other suffix pattern
     // (which would indicate the key is being displayed instead of the translation)
     const bodyText = await page.locator('body').innerText()
-    expect(bodyText).not.toContain('_one}}')
-    expect(bodyText).not.toContain('_other}}')
+    expect(bodyText).not.toMatch(/\b[\w.:-]+_(one|other)\b/)
   })
 })
