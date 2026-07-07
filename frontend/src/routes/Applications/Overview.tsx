@@ -105,14 +105,14 @@ const TABLE_ID = 'applicationTable'
 const filterId = 'type'
 
 export enum AppColumns {
-  'name' = 0,
-  'type',
-  'namespace',
-  'clusters',
-  'health',
-  'synced',
-  'deployed',
-  'created',
+  name = 0,
+  type,
+  namespace,
+  clusters,
+  health,
+  synced,
+  deployed,
+  created,
 }
 
 enum ScoreColumn {

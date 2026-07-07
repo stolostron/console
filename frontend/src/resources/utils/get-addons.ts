@@ -13,10 +13,10 @@ export type Addon = {
 }
 
 export enum AddonStatus {
-  'Available' = 'Available',
-  'Progressing' = 'Progressing',
-  'Degraded' = 'Degraded',
-  'Unknown' = 'Unknown',
+  Available = 'Available',
+  Progressing = 'Progressing',
+  Degraded = 'Degraded',
+  Unknown = 'Unknown',
 }
 
 export type LaunchLink = {
