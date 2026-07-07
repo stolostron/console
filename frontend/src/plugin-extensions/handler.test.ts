@@ -11,11 +11,7 @@ import { useAcmExtension } from './handler'
 import { renderHook } from '@testing-library/react-hooks'
 
 let mockExtensions: (
-  | ApplicationAction
-  | VirtualMachineAction
-  | ApplicationListColumn
-  | VirtualMachineListColumn
-  | OverviewTab
+  ApplicationAction | VirtualMachineAction | ApplicationListColumn | VirtualMachineListColumn | OverviewTab
 )[] = []
 
 jest.mock('@console/dynamic-plugin-sdk/src/api/useResolvedExtensions', () => ({
