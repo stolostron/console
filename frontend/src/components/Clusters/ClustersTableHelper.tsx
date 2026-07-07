@@ -98,6 +98,20 @@ export function useClusterNameColumn(areLinksDisplayed: boolean = true): IAcmTab
           ) : (
             <HighlightSearchText text={cluster.displayName} searchText={search} useFuzzyHighlighting />
           )}
+          {cluster.consoleURL && (
+            <Tooltip content={t('cluster.openConsole')}>
+              <a
+                href={cluster.consoleURL}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={t('cluster.openConsole')}
+                style={{ marginLeft: '0.25rem', display: 'inline-flex', verticalAlign: 'middle' }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <ExternalLinkAltIcon />
+              </a>
+            </Tooltip>
+          )}
         </span>
         {cluster.hive.clusterClaimName && (
           <Content>
