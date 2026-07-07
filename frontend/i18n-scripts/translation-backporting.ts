@@ -267,7 +267,7 @@ async function run(): Promise<void> {
       }
 
       for (const lang of localeLangs) {
-        if (lang === 'en' || (isJapaneseChineseKoreanLocale(lang) && key.endsWith('_plural'))) {
+        if (lang === 'en' || (isJapaneseChineseKoreanLocale(lang) && (key.endsWith('_one') || key.endsWith('_other')))) {
           continue
         }
         const curLangMap = currentTranslationMap[lang]
@@ -276,7 +276,7 @@ async function run(): Promise<void> {
         let curLoc = curLangMap?.[lookupKey]
         let nxtLoc = nxtLangMap?.[lookupKey]
         if (!curLoc && isJapaneseChineseKoreanLocale(lang)) {
-          lookupKey = `${key}_0`
+          lookupKey = `${key}_other`
           curLoc = curLangMap?.[lookupKey]
           nxtLoc = nxtLangMap?.[lookupKey]
         }
