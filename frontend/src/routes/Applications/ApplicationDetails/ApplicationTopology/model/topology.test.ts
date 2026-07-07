@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { getTopology, getDiagramElements, processNodeData, evaluateSingleAnd, getTopologyElements } from './topology'
+import type { TFunction } from 'i18next'
 import type {
   Topology,
   TopologyNode,
@@ -124,7 +125,7 @@ const mockResourceStatuses: ResourceStatuses = {
   },
 }
 
-const mockTranslator = (key: string) => key
+const mockTranslator = ((key: string) => key) as unknown as TFunction
 
 describe('topology', () => {
   beforeEach(() => {

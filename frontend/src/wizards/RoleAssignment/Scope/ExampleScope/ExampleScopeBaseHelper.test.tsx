@@ -2,10 +2,11 @@
 
 import React from 'react'
 import { render } from '@testing-library/react'
+import type { TFunction } from 'i18next'
 import { getExampleTitle, getExampleTreeData } from './ExampleScopeBaseHelper'
 
 // Mock translation function
-const mockT = (key: string) => key
+const mockT = ((key: string) => key) as unknown as TFunction
 
 describe('ExampleScopeBaseHelper', () => {
   describe('getExampleTitle', () => {
@@ -255,7 +256,7 @@ describe('ExampleScopeBaseHelper', () => {
     })
 
     it('handles translation function correctly', () => {
-      const mockTranslate = jest.fn((key: string) => `translated-${key}`)
+      const mockTranslate = jest.fn((key: string) => `translated-${key}`) as unknown as TFunction
       getExampleTreeData(0, mockTranslate)
 
       expect(mockTranslate).toHaveBeenCalledWith('Cluster set')

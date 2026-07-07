@@ -2,7 +2,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { render } from '@testing-library/react'
-import i18next from 'i18next'
+import i18next, { type TFunction } from 'i18next'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { clusterManagementAddonsState, configMapsState, managedClusterInfosState } from '../../atoms'
@@ -554,7 +554,7 @@ test('Correctly returns all resource definitions', () => {
     selfLink: '/apigroup/cluster/name',
     created: '2021-01-01T00:00:00Z',
   }
-  const searchDefinitions = getSearchDefinitions((key) => key)
+  const searchDefinitions = getSearchDefinitions(((key: string) => key) as unknown as TFunction)
   const defKeys = Object.keys(searchDefinitions) as (keyof typeof searchDefinitions)[]
   defKeys.forEach((key) => {
     const definition = searchDefinitions[key].columns.map((col: any) => {
@@ -577,7 +577,7 @@ test('Correctly returns Cluster resource definitions in global search', () => {
     label: 'testLabel=label; testLabel1=label1',
     created: '2021-01-01T00:00:00Z',
   }
-  const searchDefinitions = getSearchDefinitions((key) => key, true)
+  const searchDefinitions = getSearchDefinitions(((key: string) => key) as unknown as TFunction, true)
   const definition = searchDefinitions['cluster'].columns.map((col: any) => {
     if (typeof col.cell === 'function') {
       col.cell = col.cell(testItem)
@@ -596,7 +596,7 @@ test('Correctly returns resource with managedHub column', () => {
     name: 'node.1',
   }
 
-  const nodeDefinition = getSearchDefinitions((key) => key).node
+  const nodeDefinition = getSearchDefinitions(((key: string) => key) as unknown as TFunction).node
   const definition = nodeDefinition.columns.map((col: any) => {
     if (typeof col.cell === 'function') {
       col.cell = col.cell(testItem)

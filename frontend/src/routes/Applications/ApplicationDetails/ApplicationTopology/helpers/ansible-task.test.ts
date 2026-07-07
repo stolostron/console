@@ -7,11 +7,12 @@ import {
   getStatusFromPulse,
   showAnsibleJobDetails,
 } from './ansible-task'
-import { AnsibleCondition, AnsibleJobStatus, NodeLike, Translator, PulseColor } from '../types'
+import type { TFunction } from 'i18next'
+import { AnsibleCondition, AnsibleJobStatus, NodeLike, PulseColor } from '../types'
 
-const t: Translator = (string: string): string => {
+const t = ((string: string): string => {
   return string
-}
+}) as unknown as TFunction
 
 describe('getInfoForAnsibleTask', () => {
   const condition1: AnsibleCondition[] = [

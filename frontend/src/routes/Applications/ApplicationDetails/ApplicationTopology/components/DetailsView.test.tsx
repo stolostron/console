@@ -9,14 +9,15 @@
 // Copyright Contributors to the Open Cluster Management project
 
 import { render, screen } from '@testing-library/react'
+import type { TFunction } from 'i18next'
 import { waitForText } from '../../../../../lib/test-util'
 import { ArgoAppDetailsContainerData, ClusterDetailsContainerData } from '../ApplicationTopology'
-import { ActiveFilters, MockTranslationFunction, TopologyNodeWithStatus } from '../types'
+import { ActiveFilters, TopologyNodeWithStatus } from '../types'
 import DetailsView from './DetailsView'
 
-const t: MockTranslationFunction = (string: string): string => {
+const t = ((string: string): string => {
   return string
-}
+}) as unknown as TFunction
 
 class MockViewContainer {
   getBoundingClientRect(): Map<any, any> {

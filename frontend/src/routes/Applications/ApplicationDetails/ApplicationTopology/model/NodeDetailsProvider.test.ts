@@ -43,7 +43,7 @@ jest.mock('../../../../../resources', () => ({
 }))
 
 describe('NodeDetailsProvider', () => {
-  const mockT: TFunction = jest.fn((key: string) => key)
+  const mockT = jest.fn((key: string) => key) as unknown as TFunction
   const mockActiveFilters = {}
   const mockHubClusterName = 'hub-cluster'
 

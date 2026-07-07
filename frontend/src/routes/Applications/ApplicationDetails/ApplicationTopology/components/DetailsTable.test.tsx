@@ -2,12 +2,13 @@
 
 import DetailsTable from './DetailsTable'
 import { render, screen } from '@testing-library/react'
+import type { TFunction } from 'i18next'
 import { waitForText } from '../../../../../lib/test-util'
-import { DetailsTableNode, DetailsTableResourceItem, Translator } from '../types'
+import { DetailsTableNode, DetailsTableResourceItem } from '../types'
 
-const t: Translator = (string: string): string => {
+const t = ((string: string): string => {
   return string
-}
+}) as unknown as TFunction
 
 describe('DetailsTable', () => {
   const node: DetailsTableNode = {

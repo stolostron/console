@@ -68,7 +68,7 @@ const ClusterSelector = (props: {
           if (labelNameSet.has(labelName)) {
             exceptions.push({
               row: 1,
-              text: i18n('creation.duplicate.clusterSelector.label', [labelName]),
+              text: i18n('creation.duplicate.clusterSelector.label', { 0: labelName }),
               type: 'error',
               controlId: `labelName-${id}`,
             })

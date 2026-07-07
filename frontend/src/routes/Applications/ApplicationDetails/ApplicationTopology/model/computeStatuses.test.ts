@@ -77,11 +77,12 @@ import {
   ansibleSuccess,
 } from './computeStatuses.testdata'
 
-import type { ActiveFilters, Translator, DetailItem } from '../types'
+import type { TFunction } from 'i18next'
+import type { ActiveFilters, DetailItem } from '../types'
 
-const t: Translator = (string: string): string => {
+const t = ((string: string): string => {
   return string
-}
+}) as unknown as TFunction
 
 // Provide an empty implementation for window.open
 window.open = jest.fn()

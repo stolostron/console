@@ -6,9 +6,9 @@ import { render, screen } from '@testing-library/react'
 import { waitForText } from '../../../../../lib/test-util'
 import type { TFunction } from 'i18next'
 
-const t: TFunction = (s: string): string => {
+const t = ((s: string): string => {
   return s
-}
+}) as unknown as TFunction
 
 describe('LegendView', () => {
   beforeEach(async () => {

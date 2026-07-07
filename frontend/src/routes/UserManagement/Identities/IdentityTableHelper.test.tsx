@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import type { TFunction } from 'i18next'
 import { render } from '@testing-library/react'
 import { renderHook } from '@testing-library/react-hooks'
 import { MemoryRouter } from 'react-router'
@@ -82,7 +83,7 @@ const mockGroupWithoutUsers: Group = {
 }
 
 describe('IdentityTableHelper', () => {
-  const mockT = (key: string) => key
+  const mockT = ((key: string) => key) as unknown as TFunction
 
   describe('COLUMN_CELLS', () => {
     describe('USER_NAME', () => {

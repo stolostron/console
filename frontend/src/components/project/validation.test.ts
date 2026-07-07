@@ -1,9 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import type { TFunction } from 'i18next'
 import { validateName } from './validation'
 
 // Mock translation function
-const mockT = (key: string) => key
+const mockT = ((key: string) => key) as unknown as TFunction
 
 describe('Project validation functions', () => {
   describe('validateName', () => {

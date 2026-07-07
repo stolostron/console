@@ -1000,7 +1000,7 @@ const getArgoRouteFromSearch = async (
       }
 
       if (!route) {
-        const errMsg = t('No Argo route found for namespace {0} on cluster {1}', [appNamespace, cluster])
+        const errMsg = t('No Argo route found for namespace {0} on cluster {1}', { 0: appNamespace, 1: cluster })
         console.log(errMsg)
         return
       }

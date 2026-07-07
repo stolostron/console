@@ -36,7 +36,7 @@ const ControlPanelTextInput = (props: {
   // if placeholder missing, create one
   let { placeholder } = control
   if (!placeholder) {
-    placeholder = i18n('creation.ocp.cluster.enter.value', [name ? name.toLowerCase() : ''])
+    placeholder = i18n('creation.ocp.cluster.enter.value', { 0: name ? name.toLowerCase() : '' })
   }
 
   const validated = exception ? 'error' : undefined

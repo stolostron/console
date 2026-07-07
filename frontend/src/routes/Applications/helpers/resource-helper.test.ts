@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
-import i18next from 'i18next'
+import i18next, { type TFunction } from 'i18next'
 import React from 'react'
 import {
   ApplicationSetApiVersionType,
@@ -140,23 +140,25 @@ describe('getResourceType', () => {
 
 describe('getResourceLabel', () => {
   it('should work with git', () => {
-    expect(getResourceLabel('git', 2, (t) => t)).toEqual('Git (2)')
+    expect(getResourceLabel('git', 2, ((t: string) => t) as unknown as TFunction)).toEqual('Git (2)')
   })
 
   it('should work with helmrepo', () => {
-    expect(getResourceLabel('helmrepo', 2, (t) => t)).toEqual('Helm (2)')
+    expect(getResourceLabel('helmrepo', 2, ((t: string) => t) as unknown as TFunction)).toEqual('Helm (2)')
   })
 
   it('should work with namespace', () => {
-    expect(getResourceLabel('namespace', 2, (t) => t)).toEqual('Namespace (2)')
+    expect(getResourceLabel('namespace', 2, ((t: string) => t) as unknown as TFunction)).toEqual('Namespace (2)')
   })
 
   it('should work with objectbucket', () => {
-    expect(getResourceLabel('objectbucket', 2, (t) => t)).toEqual('Object storage (2)')
+    expect(getResourceLabel('objectbucket', 2, ((t: string) => t) as unknown as TFunction)).toEqual(
+      'Object storage (2)'
+    )
   })
 
   it('should work with undefined', () => {
-    expect(getResourceLabel('', 2, (t) => t)).toEqual('- (2)')
+    expect(getResourceLabel('', 2, ((t: string) => t) as unknown as TFunction)).toEqual('- (2)')
   })
 })
 

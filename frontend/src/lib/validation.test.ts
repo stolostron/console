@@ -1,9 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint-disable jest/no-conditional-expect */
 
+import type { TFunction } from 'i18next'
 import { validateHttpsURL, validateNoProxy } from './validation'
 
-const t = (key: string) => key
+const t = ((key: string) => key) as unknown as TFunction
 describe('validation', () => {
   describe('validateHttpsURL', () => {
     test.each([

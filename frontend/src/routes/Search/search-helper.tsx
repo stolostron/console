@@ -38,7 +38,7 @@ export function formatSearchbarSuggestions(
     // Get a list of duplicate values to remove from suggestions dropdown
     const searchTokens = searchQuery.split(' ')
     const searchCompleteFilter = searchTokens.at(-1)?.substring(0, searchTokens.at(-1)?.indexOf(':'))
-    labelTag.name = t('{{0}} values', [searchCompleteFilter])
+    labelTag.name = t('{{0}} values', { 0: searchCompleteFilter })
     const query = convertStringToQuery(searchQuery, limit)
     query.filters.forEach((filter) => {
       valuesToRemoveFromSuggestions.push(...(filter.property === searchCompleteFilter ? filter.values : []))
@@ -85,7 +85,7 @@ export function formatSearchbarSuggestions(
       })
       suggestions.unshift({
         id: 'id-filter-label',
-        name: t('{{0}} within the last:', [searchCompleteFilter]),
+        name: t('{{0}} within the last:', { 0: searchCompleteFilter }),
         kind: 'label',
         disabled: true,
       })

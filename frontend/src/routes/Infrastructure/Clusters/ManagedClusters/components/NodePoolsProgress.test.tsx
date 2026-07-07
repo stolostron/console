@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
+import type { TFunction } from 'i18next'
 import { Icon, Spinner } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { render, screen } from '@testing-library/react'
@@ -10,6 +10,10 @@ import { ClusterImageSetApiVersion, ClusterImageSetKind } from '../../../../../r
 import userEvent from '@testing-library/user-event'
 import { ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
+
+const t = ((string: string) => {
+  return string
+}) as unknown as TFunction
 
 const mockClusterImageSet0: ClusterImageSetK8sResource = {
   apiVersion: ClusterImageSetApiVersion,

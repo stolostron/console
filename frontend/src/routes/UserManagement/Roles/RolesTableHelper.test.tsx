@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import type { TFunction } from 'i18next'
 import { render, screen } from '@testing-library/react'
 import React from 'react'
 import { Role, rolesTableColumns } from './RolesTableHelper'
@@ -37,7 +38,7 @@ describe('RolesTableHelper', () => {
     uid: 'test-uid',
   }
 
-  const mockT = (key: string) => key
+  const mockT = ((key: string) => key) as unknown as TFunction
 
   describe('rolesTableColumns', () => {
     it('creates columns with links when areLinksDisplayed is true', () => {

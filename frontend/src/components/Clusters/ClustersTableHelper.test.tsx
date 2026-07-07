@@ -13,6 +13,7 @@ var gpuColumnTestState: {
 }
 
 import { render, screen, within } from '@testing-library/react'
+import type { TFunction } from 'i18next'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { Cluster, ClusterStatus } from '../../resources/utils'
@@ -228,7 +229,7 @@ describe('ClustersTableHelper', () => {
   })
 
   describe('getControlPlaneString', () => {
-    const mockT = (key: string) => key
+    const mockT = ((key: string) => key) as unknown as TFunction
 
     it('should return "Hub, Hosted" for hub and hosted cluster', () => {
       const cluster = {

@@ -26,7 +26,7 @@ export interface AnsibleJobStatus {
   url?: string | null
 }
 
-export type Translator = (key: string) => string
+export type Translator = TFunction
 export type DetailsList = Array<Record<string, unknown>>
 export type NodeLike = Record<string, any>
 

@@ -2,12 +2,13 @@
 // Copyright Contributors to the Open Cluster Management project
 
 import { render, screen, waitFor } from '@testing-library/react'
+import type { TFunction } from 'i18next'
 import ClusterDetailsContainer from './ClusterDetailsContainer'
 import { ClusterDetailsContainerControl, ClusterData } from '../types'
 
-const t = (string: string): string => {
+const t = ((string: string): string => {
   return string
-}
+}) as unknown as TFunction
 
 window.open = () => null // provide an empty implementation for window.open
 

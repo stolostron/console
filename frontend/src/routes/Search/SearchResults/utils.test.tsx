@@ -1,6 +1,6 @@
 // Copyright (c) 2023 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import i18next from 'i18next'
+import i18next, { type TFunction } from 'i18next'
 import { ClusterStatus } from '../../../resources/utils'
 import { getSearchDefinitions } from '../searchDefinitions'
 import { generateSearchResultExport, getRowActions } from './utils'
@@ -12,7 +12,7 @@ jest.mock('react-router', () => ({
     push: mockHistoryPush,
   }),
 }))
-const t = i18next.t.bind(i18next)
+const t = i18next.t.bind(i18next) as unknown as TFunction<string, undefined>
 const navigate = jest.fn()
 
 jest.mock('../../../resources', () => ({
@@ -239,7 +239,7 @@ test('generateSearchResultExport - Correctly generates and triggers csv download
   const toastContextMock: any = {
     addAlert: jest.fn(),
   }
-  const t = (key: string) => key
+  const t = ((key: string) => key) as unknown as TFunction<string, undefined>
   window.URL.createObjectURL = jest.fn()
 
   const searchResultDataMock = {
@@ -268,7 +268,7 @@ test('generateSearchResultExport - Correctly generates and triggers csv download
     ],
   }
 
-  const searchDefinitions = getSearchDefinitions((key) => key)
+  const searchDefinitions = getSearchDefinitions(((key: string) => key) as unknown as TFunction)
   generateSearchResultExport('test-search-export', searchResultDataMock, searchDefinitions, toastContextMock, t)
 
   expect(toastContextMock.addAlert).toHaveBeenCalledWith({
@@ -288,7 +288,7 @@ test('generateSearchResultExport - Correctly generates and triggers csv download
   const toastContextMock: any = {
     addAlert: jest.fn(),
   }
-  const t = (key: string) => key
+  const t = ((key: string) => key) as unknown as TFunction
   window.URL.createObjectURL = jest.fn()
 
   const searchResultDataMock = {
@@ -356,7 +356,7 @@ test('generateSearchResultExport - Correctly generates and triggers csv download
     ],
   }
 
-  const searchDefinitions = getSearchDefinitions((key) => key)
+  const searchDefinitions = getSearchDefinitions(((key: string) => key) as unknown as TFunction)
   generateSearchResultExport('test-search-export', searchResultDataMock, searchDefinitions, toastContextMock, t)
 
   expect(toastContextMock.addAlert).toHaveBeenCalledWith({
