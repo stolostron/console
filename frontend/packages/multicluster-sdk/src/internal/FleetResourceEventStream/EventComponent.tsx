@@ -77,7 +77,7 @@ const Inner: FC<EventComponentProps> = ({ event, cache, list, index }) => {
                 canGetNodes &&
                 (<Trans
                   ns="public"
-                  defaults="Generated from <bold>{{sourceComponent}}</bold> on <0>{{sourceHost}}</0>"
+                  defaults="Generated from {{sourceComponent}} on <0>{{sourceHost}}</0>"
                   values={{ sourceComponent: component, sourceHost: source.host }}
                   components={[
                     <Link key="host" to={resourcePathFromModel(NodeModel, source.host)} />,
