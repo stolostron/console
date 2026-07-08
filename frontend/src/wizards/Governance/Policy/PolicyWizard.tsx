@@ -933,8 +933,8 @@ function PolicyPolicySets() {
         >
           <p>
             {policySets.length === 1
-              ? t('This policy is placed by the policy set: ')
-              : t('This policy is placed by the policy sets: ')}
+              ? t('This policy is placed by the policy set:')
+              : t('This policy is placed by the policy sets:')}
             <b>{policySets.join(', ')}</b>
           </p>
           <p className="pf-v6-c-form__helper-text">

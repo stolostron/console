@@ -615,7 +615,7 @@ export default function ApplicationsOverview() {
         sort: 'kind',
         tooltip: (
           <span>
-            {t('Displays the type of the application. ')}
+            {t('Displays the type of the application.')}
             <Content>
               <Content
                 component={ContentVariants.a}
