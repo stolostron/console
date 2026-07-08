@@ -46,7 +46,7 @@ function getStatusLabel(statusType: string, t: ReturnType<typeof useTranslation>
     case 'warning':
       return t('Warning')
     case 'updating':
-      return t('Updating')
+      return t('updating')
     case 'pending':
       return t('Pending')
     case 'ok':
