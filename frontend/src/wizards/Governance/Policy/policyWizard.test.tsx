@@ -330,6 +330,7 @@ describe('Policy wizard', () => {
   })
 
   test('default tolerations persist after switching to existing and back to new placement', async () => {
+    nockIgnorePlacementDebug()
     render(<TestPolicyWizard yamlEditor={() => <WizardSyncEditor />} />)
 
     const nameTextbox = screen.getByRole('textbox', { name: /name/i })
