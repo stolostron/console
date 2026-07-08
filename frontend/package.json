@@ -29,7 +29,7 @@
     "prettier:all": "npm run prettier --workspaces --include-workspace-root --if-present",
     "prettier:fix": "prettier --write src public plugins",
     "prettier:fix:all": "npm run prettier:fix --workspaces --include-workspace-root --if-present",
-    "i18n": "i18next-cli extract --ci",
+    "i18n": "i18next-cli extract --ci && git diff --exit-code public/locales/en/translation.json",
     "i18n:fix": "i18next-cli extract",
     "i18n-generate": "rm -rf public/locales/upload && MODE=generate i18next-cli extract",
     "i18n-upload": "i18n-scripts/memsource-upload.sh",

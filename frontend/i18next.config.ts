@@ -28,6 +28,7 @@ export default defineConfig({
     sort: true,
     indentation: 2,
     removeUnusedKeys: true,
+    warnOnConflicts: 'error',
 
     primaryLanguage: 'en',
     defaultValue: (key: string, _namespace: string, language: string) => {
