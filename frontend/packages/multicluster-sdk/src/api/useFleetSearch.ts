@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useSearchResultItemsQuery } from '../internal/search/search-sdk'
-import { searchClient } from '../internal/search/search-client'
 import { convertSearchItemToResource } from '../internal/search/convertSearchItemToResource'
+import { searchClient } from '../internal/search/search-client'
+import { useSearchResultItemsQuery } from '../internal/search/search-sdk'
 import { SearchInput, SearchResult } from '../types/search'
 import { useFleetSearchSubscription } from './useFleetSearchSubscription'
 
@@ -121,21 +121,29 @@ export function useFleetSearch<T extends K8sResourceCommon | K8sResourceCommon[]
       switch (latestEvent.operation) {
         case 'INSERT': {
           if (!latestEvent.newData) return prev
+          const cluster = latestEvent.uid.split('/')[0]
+          latestEvent.newData.cluster = cluster
+          latestEvent.newData._uid = latestEvent.uid
           const newResource = convertSearchItemToResource<T>(latestEvent.newData)
-          const newUid = (newResource as K8sResourceCommon).metadata?.uid
+          const newK8sUid = (newResource as K8sResourceCommon).metadata?.uid
           // Avoid duplicate insertions.
-          if (newUid && current.some((r) => r.metadata?.uid === newUid)) return prev
+          if (newK8sUid && current.some((r) => r.metadata?.uid === newK8sUid)) return prev
           return [...current, newResource] as unknown as SearchResult<T>
         }
         case 'UPDATE': {
           if (!latestEvent.newData) return prev
+          const cluster = latestEvent.uid.split('/')[0]
+          latestEvent.newData.cluster = cluster
+          latestEvent.newData._uid = latestEvent.uid
           const updatedResource = convertSearchItemToResource<T>(latestEvent.newData)
+          const updatedK8sUid = (updatedResource as K8sResourceCommon).metadata?.uid
           return current.map((r) =>
-            r.metadata?.uid === latestEvent.uid ? updatedResource : r
+            r.metadata?.uid === updatedK8sUid ? updatedResource : r
           ) as unknown as SearchResult<T>
         }
         case 'DELETE': {
-          return current.filter((r) => r.metadata?.uid !== latestEvent.uid) as unknown as SearchResult<T>
+          const deletedK8sUid = latestEvent.uid.split('/').pop()
+          return current.filter((r) => r.metadata?.uid !== deletedK8sUid) as unknown as SearchResult<T>
         }
         default:
           return prev
