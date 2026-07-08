@@ -55,7 +55,7 @@ import { MatchExpression, MatchExpressionCollapsed } from '../../Placement/Match
 import { PlacementSection } from '../../Placement/PlacementSection'
 import { Specifications } from './specifications'
 import { useWizardStrings } from '../../../lib/wizardStrings'
-import { useTranslation } from '../../../lib/acm-i18next'
+import { Trans, useTranslation } from '../../../lib/acm-i18next'
 
 export function PolicyWizard(props: {
   title: string
@@ -932,10 +932,19 @@ function PolicyPolicySets() {
           variant="warning"
         >
           <p>
-            {policySets.length === 1
-              ? t('This policy is placed by the policy set:')
-              : t('This policy is placed by the policy sets:')}
-            <b>{policySets.join(', ')}</b>
+            {policySets.length === 1 ? (
+              <Trans
+                i18nKey="This policy is placed by the policy set: <0>{{policySets}}</0>"
+                values={{ policySets: policySets.join(', ') }}
+                components={[<b key="sets" />]}
+              />
+            ) : (
+              <Trans
+                i18nKey="This policy is placed by the policy sets: <0>{{policySets}}</0>"
+                values={{ policySets: policySets.join(', ') }}
+                components={[<b key="sets" />]}
+              />
+            )}
           </p>
           <p className="pf-v6-c-form__helper-text">
             {t(
