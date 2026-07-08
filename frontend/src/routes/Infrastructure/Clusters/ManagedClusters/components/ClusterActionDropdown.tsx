@@ -216,6 +216,11 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     () =>
       [
         {
+          id: ClusterAction.OpenConsole,
+          text: t('managed.openConsole'),
+          click: (cluster: Cluster) => window.open(cluster.consoleURL, '_blank', 'noopener,noreferrer'),
+        },
+        {
           id: ClusterAction.UpdateAutomationTemplate,
           text: t('Update automation template'),
           click: () => setShowUpdateAutomationModal(true),
@@ -236,11 +241,6 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
             rbacDelete(ClusterCuratorDefinition, cluster.namespace),
             rbacDelete(SecretDefinition, cluster.namespace),
           ],
-        },
-        {
-          id: ClusterAction.OpenConsole,
-          text: t('managed.openConsole'),
-          click: (cluster: Cluster) => window.open(cluster.consoleURL, '_blank', 'noopener,noreferrer'),
         },
         {
           id: ClusterAction.EditLabels,
