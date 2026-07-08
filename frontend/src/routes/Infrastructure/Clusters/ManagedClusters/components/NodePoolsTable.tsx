@@ -1,11 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ButtonVariant, Icon, Stack, StackItem } from '@patternfly/react-core'
-import { CheckCircleIcon, InProgressIcon } from '@patternfly/react-icons'
+import { ButtonVariant, Flex, FlexItem, Icon, List, ListItem, Stack, StackItem } from '@patternfly/react-core'
+import { CheckCircleIcon, ExclamationCircleIcon, UnknownIcon } from '@patternfly/react-icons'
 import { useCallback, useContext, useMemo, useState } from 'react'
-import { ClusterImageSetK8sResource, NodePoolK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { AcmButton, AcmEmptyState, AcmTable, IAcmRowAction, IAcmTableColumn } from '../../../../../ui-components'
-import { NodePool, NodePoolDefinition } from '../../../../../resources'
+import {
+  AcmButton,
+  AcmEmptyState,
+  AcmInlineStatus,
+  AcmTable,
+  IAcmRowAction,
+  IAcmTableColumn,
+  StatusType,
+} from '../../../../../ui-components'
+import { getNodePoolStatus, NodePool, NodePoolCondition, NodePoolDefinition } from '../../../../../resources'
 import { HypershiftCloudPlatformType } from '../../../../../resources/utils'
 import { get } from 'lodash'
 import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
@@ -22,15 +30,69 @@ type NodePoolsTableProps = {
   clusterImages: ClusterImageSetK8sResource[]
 }
 
-export const getNodepoolStatus = (nodepool: NodePool | NodePoolK8sResource) => {
-  const conditions = nodepool.status?.conditions || []
+const STATUS_TYPE_MAP: Record<string, StatusType> = {
+  error: StatusType.danger,
+  warning: StatusType.warning,
+  updating: StatusType.progress,
+  pending: StatusType.progress,
+  ok: StatusType.healthy,
+}
 
-  for (const condition of conditions) {
-    if (condition.type === 'Ready') {
-      return condition.status === 'True' ? 'Ready' : 'Pending'
-    }
+const STATUS_LABEL_MAP: Record<string, string> = {
+  error: 'Error',
+  warning: 'Warning',
+  updating: 'Updating',
+  pending: 'Pending',
+  ok: 'Ready',
+}
+
+function ConditionIcon({ status }: { status: string }) {
+  if (status === 'True') {
+    return (
+      <Icon status="success" size="sm">
+        <CheckCircleIcon />
+      </Icon>
+    )
   }
-  return 'Pending'
+  if (status === 'False') {
+    return (
+      <Icon status="danger" size="sm">
+        <ExclamationCircleIcon />
+      </Icon>
+    )
+  }
+  return (
+    <Icon size="sm">
+      <UnknownIcon />
+    </Icon>
+  )
+}
+
+function NodePoolConditionsList({ conditions }: { conditions: NodePoolCondition[] }) {
+  if (conditions.length === 0) {
+    return null
+  }
+  return (
+    <List isPlain>
+      {conditions.map((c) => (
+        <ListItem key={c.type}>
+          <Flex
+            spaceItems={{ default: 'spaceItemsXs' }}
+            alignItems={{ default: 'alignItemsCenter' }}
+            flexWrap={{ default: 'nowrap' }}
+          >
+            <FlexItem>
+              <ConditionIcon status={c.status} />
+            </FlexItem>
+            <FlexItem>
+              <strong>{c.type}</strong>
+              {c.message ? `: ${c.message}` : ''}
+            </FlexItem>
+          </Flex>
+        </ListItem>
+      ))}
+    </List>
+  )
 }
 
 const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.Element => {
@@ -57,25 +119,25 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
 
   const renderNodepoolStatus = useCallback(
     (nodepool: NodePool) => {
-      const status = getNodepoolStatus(nodepool)
+      const status = getNodePoolStatus(nodepool)
+      const acmStatusType = STATUS_TYPE_MAP[status.type] ?? StatusType.unknown
+      const label = t(STATUS_LABEL_MAP[status.type] ?? 'Unknown')
+      const hasConditions = status.conditions.length > 0
 
-      if (status === 'Ready') {
-        return (
-          <span>
-            <Icon status="success">
-              <CheckCircleIcon />
-            </Icon>{' '}
-            {t('Ready')}
-          </span>
-        )
-      }
-      if (status === 'Pending') {
-        return (
-          <span>
-            <InProgressIcon /> {t('Pending')}
-          </span>
-        )
-      }
+      return (
+        <AcmInlineStatus
+          type={acmStatusType}
+          status={label}
+          popover={
+            hasConditions
+              ? {
+                  headerContent: status.type !== 'ok' ? status.statusText : t('Conditions'),
+                  bodyContent: <NodePoolConditionsList conditions={status.conditions} />,
+                }
+              : undefined
+          }
+        />
+      )
     },
     [t]
   )
@@ -237,7 +299,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
     (nodepool: NodePool) => {
       const transformedObject = {
         transformed: {
-          status: getNodepoolStatus(nodepool),
+          status: STATUS_LABEL_MAP[getNodePoolStatus(nodepool).type] ?? 'Unknown',
           autoscaling: getAutoscaling(nodepool),
         },
       }
