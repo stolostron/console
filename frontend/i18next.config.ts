@@ -38,7 +38,16 @@ export default defineConfig({
       if (!enTranslations) {
         enTranslations = JSON.parse(readFileSync('public/locales/en/translation.json', 'utf-8'))
       }
-      return enTranslations?.[key] ?? ''
+      if (enTranslations?.[key] !== undefined) {
+        return enTranslations[key]
+      }
+      // For CLDR plural categories that don't exist in English (e.g. _many),
+      // fall back to the _other form since it's the closest equivalent.
+      if (key.endsWith('_many')) {
+        const otherKey = key.replace(/_many$/, '_other')
+        return enTranslations?.[otherKey] ?? ''
+      }
+      return ''
     },
   },
 
