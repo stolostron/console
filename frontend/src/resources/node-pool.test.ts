@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { getNodePoolStatus, NodePoolConditionType } from './node-pool'
+import { getNodePoolStatus, hasReadyNodePoolWithUpdate, NodePoolConditionType } from './node-pool'
 
 function makeNodePool(conditions: { type: string; status: string; reason?: string; message?: string }[]) {
   return { status: { conditions } }
@@ -72,6 +72,7 @@ describe('getNodePoolStatus', () => {
     const errorConditions = [
       NodePoolConditionType.ValidGeneratedPayload,
       NodePoolConditionType.ValidReleaseImage,
+      NodePoolConditionType.ValidPlatformImage,
       NodePoolConditionType.ValidMachineConfig,
       NodePoolConditionType.ValidArchPlatform,
       NodePoolConditionType.ValidPlatformConfig,
@@ -410,5 +411,73 @@ describe('getNodePoolStatus', () => {
       )
       expect(result.type).toBe('ok')
     })
+  })
+})
+
+describe('hasReadyNodePoolWithUpdate', () => {
+  function makePoolWithVersion(version: string | undefined, ready: boolean) {
+    return {
+      status: {
+        conditions: [{ type: 'Ready', status: ready ? 'True' : 'False' }],
+        version,
+      },
+    }
+  }
+
+  it('returns false when nodePools is undefined', () => {
+    expect(hasReadyNodePoolWithUpdate(undefined, '4.15.0')).toBe(false)
+  })
+
+  it('returns false when nodePools is empty', () => {
+    expect(hasReadyNodePoolWithUpdate([], '4.15.0')).toBe(false)
+  })
+
+  it('returns false when targetVersion is undefined', () => {
+    expect(hasReadyNodePoolWithUpdate([makePoolWithVersion('4.14.0', true)], undefined)).toBe(false)
+  })
+
+  it('returns false when no pools are ready', () => {
+    const pools = [makePoolWithVersion('4.13.0', false), makePoolWithVersion('4.12.0', false)]
+    expect(hasReadyNodePoolWithUpdate(pools, '4.15.0')).toBe(false)
+  })
+
+  it('returns true when a ready pool has an older version than target', () => {
+    const pools = [makePoolWithVersion('4.14.0', true)]
+    expect(hasReadyNodePoolWithUpdate(pools, '4.15.0')).toBe(true)
+  })
+
+  it('returns false when a ready pool has the same version as target', () => {
+    const pools = [makePoolWithVersion('4.15.0', true)]
+    expect(hasReadyNodePoolWithUpdate(pools, '4.15.0')).toBe(false)
+  })
+
+  it('returns false when a ready pool has a newer version than target', () => {
+    const pools = [makePoolWithVersion('4.16.0', true)]
+    expect(hasReadyNodePoolWithUpdate(pools, '4.15.0')).toBe(false)
+  })
+
+  it('returns false when pool version is undefined', () => {
+    const pools = [makePoolWithVersion(undefined, true)]
+    expect(hasReadyNodePoolWithUpdate(pools, '4.15.0')).toBe(false)
+  })
+
+  it('returns true when mixed pools have one qualifying ready older version', () => {
+    const pools = [
+      makePoolWithVersion('4.15.0', true),
+      makePoolWithVersion('4.13.0', false),
+      makePoolWithVersion('4.14.2', true),
+    ]
+    expect(hasReadyNodePoolWithUpdate(pools, '4.15.0')).toBe(true)
+  })
+
+  it('compares versions numerically, not lexicographically', () => {
+    const pools = [makePoolWithVersion('4.9.0', true)]
+    expect(hasReadyNodePoolWithUpdate(pools, '4.10.0')).toBe(true)
+  })
+
+  it('handles two-part versions correctly', () => {
+    const pools = [makePoolWithVersion('4.14', true)]
+    expect(hasReadyNodePoolWithUpdate(pools, '4.15')).toBe(true)
+    expect(hasReadyNodePoolWithUpdate(pools, '4.14')).toBe(false)
   })
 })

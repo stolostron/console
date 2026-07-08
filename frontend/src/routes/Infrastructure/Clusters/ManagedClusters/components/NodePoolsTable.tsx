@@ -13,7 +13,8 @@ import {
   IAcmTableColumn,
   StatusType,
 } from '../../../../../ui-components'
-import { getNodePoolStatus, NodePool, NodePoolCondition, NodePoolDefinition } from '../../../../../resources'
+import { getNodePoolStatus, NodePoolDefinition } from '../../../../../resources'
+import type { NodePool, NodePoolCondition } from '../../../../../resources'
 import { HypershiftCloudPlatformType } from '../../../../../resources/utils'
 import { get } from 'lodash'
 import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
@@ -38,12 +39,21 @@ const STATUS_TYPE_MAP: Record<string, StatusType> = {
   ok: StatusType.healthy,
 }
 
-const STATUS_LABEL_MAP: Record<string, string> = {
-  error: 'Error',
-  warning: 'Warning',
-  updating: 'Updating',
-  pending: 'Pending',
-  ok: 'Ready',
+function getStatusLabel(statusType: string, t: ReturnType<typeof useTranslation>['t']): string {
+  switch (statusType) {
+    case 'error':
+      return t('Error')
+    case 'warning':
+      return t('Warning')
+    case 'updating':
+      return t('Updating')
+    case 'pending':
+      return t('Pending')
+    case 'ok':
+      return t('Ready')
+    default:
+      return t('Unknown')
+  }
 }
 
 function ConditionIcon({ status }: { status: string }) {
@@ -121,7 +131,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
     (nodepool: NodePool) => {
       const status = getNodePoolStatus(nodepool)
       const acmStatusType = STATUS_TYPE_MAP[status.type] ?? StatusType.unknown
-      const label = t(STATUS_LABEL_MAP[status.type] ?? 'Unknown')
+      const label = getStatusLabel(status.type, t)
       const hasConditions = status.conditions.length > 0
 
       return (
@@ -299,14 +309,14 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
     (nodepool: NodePool) => {
       const transformedObject = {
         transformed: {
-          status: STATUS_LABEL_MAP[getNodePoolStatus(nodepool).type] ?? 'Unknown',
+          status: getStatusLabel(getNodePoolStatus(nodepool).type, t),
           autoscaling: getAutoscaling(nodepool),
         },
       }
 
       return { ...nodepool, ...transformedObject }
     },
-    [getAutoscaling]
+    [getAutoscaling, t]
   )
 
   const addNodePoolStatusMessage = useMemo(() => {
