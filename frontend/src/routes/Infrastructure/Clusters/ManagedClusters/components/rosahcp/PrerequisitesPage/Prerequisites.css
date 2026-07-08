@@ -1,11 +1,11 @@
 .acm-c-wizard-get-started--card-icon {
   display: block;
   color: var(--pf-t--global--icon--color--brand--default);
-  margin-bottom: 10px;
+  margin-bottom: var(--pf-t--global--spacer--sm);
 }
 
 .acm-c-wizard-get-started-terraform--card-icon {
   display: block;
   color: var(--pf-t--global--icon--color--brand--default);
-  margin-bottom: 2px;
+  margin-bottom: var(--pf-t--global--spacer--sm);
 }

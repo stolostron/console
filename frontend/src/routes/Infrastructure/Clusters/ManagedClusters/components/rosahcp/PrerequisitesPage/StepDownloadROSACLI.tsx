@@ -9,7 +9,7 @@ import { useTranslation } from '~/lib/acm-i18next'
 export const StepDownloadROSAClI = () => {
   const [t] = useTranslation()
   return (
-    <div style={{ marginTop: '20px' }}>
+    <div style={{ marginTop: 'var(--pf-t--global--spacer--md)' }}>
       <Content component="h5">
         {t('Download and install the ROSA and AWS command line tools (CLI) and add it to your <code>PATH</code>.')}
       </Content>

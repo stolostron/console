@@ -36,6 +36,7 @@ import { WithCLICard } from './WithCLICard'
 import { StepCreateAWSAccountRoles } from './StepCreateAwsAccountRoles'
 import { StepCreateNetwork } from './StepCreateNetwork'
 import { ServiceAccountSteps } from './ServiceAccountSteps'
+import ExternalLinkButton from '@patternfly/react-component-groups/dist/dynamic/ExternalLinkButton'
 
 import './Prerequisites.css'
 
@@ -76,25 +77,15 @@ export const PrerequisitesPage = () => {
               <StackItem>
                 <Flex>
                   <FlexItem>
-                    <a
-                      href={DOC_LINKS.WHAT_IS_ROSA}
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{ display: 'block', marginTop: '4px' }}
-                    >
+                    <ExternalLinkButton isInline target="_blank" variant="link" href={DOC_LINKS.WHAT_IS_ROSA}>
                       {t('Learn more about ROSA')}
-                    </a>
+                    </ExternalLinkButton>
                   </FlexItem>
                   <FlexItem>{t('or')}</FlexItem>
                   <FlexItem>
-                    <a
-                      href={DOC_LINKS.ROSA_COMMUNITY_SLACK}
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{ display: 'block', marginTop: '4px' }}
-                    >
+                    <ExternalLinkButton isInline target="_blank" variant="link" href={DOC_LINKS.ROSA_COMMUNITY_SLACK}>
                       {t('Slack us')}
-                    </a>
+                    </ExternalLinkButton>
                   </FlexItem>
                 </Flex>
               </StackItem>
@@ -172,14 +163,9 @@ export const PrerequisitesPage = () => {
                       <Title headingLevel="h2">{t('Complete ROSA prerequisites')}</Title>
                     </SplitItem>
                     <SplitItem>
-                      <a
-                        href={DOC_LINKS.AWS_ROSA_GET_STARTED}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{ display: 'block', marginTop: '4px' }}
-                      >
+                      <ExternalLinkButton isInline variant="link" href={DOC_LINKS.AWS_ROSA_GET_STARTED} target="_blank">
                         {t(' More information on ROSA setup')}
-                      </a>
+                      </ExternalLinkButton>
                     </SplitItem>
                   </Split>
 
