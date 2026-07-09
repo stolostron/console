@@ -2,8 +2,8 @@ import { useMemo } from 'react'
 import { queryClient } from '~/components/PluginDataContextProvider'
 import { getWizardAWSAccountIds } from '~/lib/rosa-hcp-api'
 import { SelectedSecret } from '../constants/types'
-import { ROSA_HCP_WIZARD_QUERY_KEY } from '../constants/constants'
 import { useSharedReactQuery } from '~/hooks/shared-react-query'
+import { rosaWizardKeys } from './queryKeyFactory'
 
 const extractAWSID = (arn: string): string => {
   // Ex: arn = 'arn:aws:iam::268733382466:role/ManagedOpenShift-OCM-Role-15212158'
@@ -19,7 +19,7 @@ const getAWSIDsFromARNs = (arns: string[]): string[] => {
 
 export const invalidateAWSAccountIDs = () => {
   queryClient.invalidateQueries({
-    queryKey: [ROSA_HCP_WIZARD_QUERY_KEY, 'aws-account-ids-fetch'],
+    queryKey: rosaWizardKeys.awsInfrastructureAccounts(),
   })
 }
 
@@ -35,7 +35,7 @@ type Label = {
 export const useFetchAwsAccountIDs = (selectedSecret: SelectedSecret) => {
   const { useQuery } = useSharedReactQuery()
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: [ROSA_HCP_WIZARD_QUERY_KEY, 'aws-account-ids-fetch'],
+    queryKey: rosaWizardKeys.awsInfrastructureAccounts(),
     queryFn: async () => {
       const response = await getWizardAWSAccountIds(selectedSecret.client_id, selectedSecret.client_secret)
 

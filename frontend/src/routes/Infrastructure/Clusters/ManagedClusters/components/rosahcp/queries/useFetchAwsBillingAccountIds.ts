@@ -1,8 +1,8 @@
 import { getWizardAwsBillingAccounts } from '~/lib/rosa-hcp-api'
 import { SelectedSecret } from '../constants/types'
-import { ROSA_HCP_WIZARD_QUERY_KEY } from '../constants/constants'
 import { queryClient } from '~/components/PluginDataContextProvider'
 import { useSharedReactQuery } from '~/hooks/shared-react-query'
+import { rosaWizardKeys } from './queryKeyFactory'
 
 type CloudAccount = {
   cloud_account_id: string
@@ -30,14 +30,14 @@ const getAwsBillingAccountsFromQuota = (items?: CloudProvider[]) => {
 
 export const invalidateAWSBillingAccountIDs = () => {
   queryClient.invalidateQueries({
-    queryKey: [ROSA_HCP_WIZARD_QUERY_KEY, 'fetch-aws-billing'],
+    queryKey: rosaWizardKeys.awsBillingAccounts(),
   })
 }
 
 export const useFetchOrganizationQuota = (secret: SelectedSecret) => {
   const { useQuery } = useSharedReactQuery()
   const { isLoading, data, isError, error, isFetching, refetch } = useQuery({
-    queryKey: [ROSA_HCP_WIZARD_QUERY_KEY, 'fetch-aws-billing'],
+    queryKey: rosaWizardKeys.awsBillingAccounts(),
     queryFn: async () => {
       const organizationQuota = await getWizardAwsBillingAccounts(secret.client_id, secret.client_secret)
       return organizationQuota
