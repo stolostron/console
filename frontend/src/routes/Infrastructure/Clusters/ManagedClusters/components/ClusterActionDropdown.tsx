@@ -217,7 +217,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
       [
         {
           id: ClusterAction.OpenConsole,
-          text: t('managed.openConsole'),
+          text: t('cluster.openConsole'),
           click: (cluster: Cluster) => window.open(cluster.consoleURL, '_blank', 'noopener,noreferrer'),
         },
         {

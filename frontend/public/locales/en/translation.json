@@ -2042,7 +2042,6 @@
   "managed.hibernate.plural": "Hibernate clusters",
   "managed.import": "Import cluster",
   "managed.importCluster": "Import cluster",
-  "managed.openConsole": "Open cluster console",
   "managed.resume": "Resume cluster",
   "managed.resume.plural": "Resume clusters",
   "managed.search": "Search cluster",
