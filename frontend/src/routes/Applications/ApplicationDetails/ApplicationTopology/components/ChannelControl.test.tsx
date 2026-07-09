@@ -10,13 +10,9 @@
 
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import type { TFunction } from 'i18next'
+import { t as t } from '~/lib/test-helpers'
 import ChannelController from './ChannelControl'
 import { MockChannelControlData, MockSetDrawerContent } from '../types'
-
-const t = ((string: string): string => {
-  return string
-}) as unknown as TFunction
 
 const channelControllerNoAllChannels: MockChannelControlData = {
   activeChannel: '__ALL__/__ALL__//__ALL__/__ALL__',

@@ -7,12 +7,9 @@ import {
   getStatusFromPulse,
   showAnsibleJobDetails,
 } from './ansible-task'
-import type { TFunction } from 'i18next'
-import { AnsibleCondition, AnsibleJobStatus, NodeLike, PulseColor } from '../types'
 
-const t = ((string: string): string => {
-  return string
-}) as unknown as TFunction
+import { AnsibleCondition, AnsibleJobStatus, NodeLike, PulseColor } from '../types'
+import { t as t } from '~/lib/test-helpers'
 
 describe('getInfoForAnsibleTask', () => {
   const condition1: AnsibleCondition[] = [
@@ -280,7 +277,7 @@ describe('showAnsibleJobDetails', () => {
       type: 'spacer',
     },
     {
-      labelValue: 'description.ansible.task.status',
+      labelValue: 'AnsibleJob Initialization status',
       status: 'checkmark',
       value: 'Successful: Test 1',
     },
@@ -288,7 +285,7 @@ describe('showAnsibleJobDetails', () => {
       type: 'spacer',
     },
     {
-      labelValue: 'description.ansible.job.status',
+      labelValue: 'Ansible Automation controller Job status',
       status: 'checkmark',
       value: 'successful',
     },

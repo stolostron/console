@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { t } from '~/lib/test-helpers'
 import { nodeDetailsProvider, kubeNaming, typeToShapeMap } from './NodeDetailsProvider'
 import {
   setApplicationDeployStatus,
@@ -9,7 +10,6 @@ import {
   setResourceDeployStatus,
   setSubscriptionDeployStatus,
 } from './NodeDetailsProviderStatuses'
-import type { TFunction } from 'i18next'
 
 // Mock the dependencies (NodeDetailsProvider imports status helpers from NodeDetailsProviderStatuses)
 jest.mock('./NodeDetailsProviderStatuses', () => ({
@@ -43,7 +43,6 @@ jest.mock('../../../../../resources', () => ({
 }))
 
 describe('NodeDetailsProvider', () => {
-  const mockT = jest.fn((key: string) => key) as unknown as TFunction
   const mockActiveFilters = {}
   const mockHubClusterName = 'hub-cluster'
 
@@ -60,12 +59,12 @@ describe('NodeDetailsProvider', () => {
 
   describe('nodeDetailsProvider', () => {
     it('should return empty array when node is null', () => {
-      const result = nodeDetailsProvider(null, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(null, mockActiveFilters, t, mockHubClusterName)
       expect(result).toEqual([])
     })
 
     it('should return empty array when node is undefined', () => {
-      const result = nodeDetailsProvider(undefined, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(undefined, mockActiveFilters, t, mockHubClusterName)
       expect(result).toEqual([])
     })
 
@@ -75,7 +74,7 @@ describe('NodeDetailsProvider', () => {
         labels: [],
       }
 
-      const result = nodeDetailsProvider(clusterNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(clusterNode, mockActiveFilters, t, mockHubClusterName)
 
       expect(result).toHaveLength(3) // spacer, label, spacer (setClusterStatus is mocked)
       expect(result[0]).toEqual({ type: 'spacer' })
@@ -99,7 +98,7 @@ describe('NodeDetailsProvider', () => {
         },
       }
 
-      const result = nodeDetailsProvider(packageNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(packageNode, mockActiveFilters, t, mockHubClusterName)
 
       expect(result.length).toBeGreaterThan(3)
       expect(result[0]).toEqual({ type: 'spacer' })
@@ -114,8 +113,8 @@ describe('NodeDetailsProvider', () => {
 
     it('should call setClusterStatus for cluster type nodes', () => {
       const clusterNode = { type: 'cluster', labels: [] }
-      nodeDetailsProvider(clusterNode, mockActiveFilters, mockT, mockHubClusterName)
-      expect(setClusterStatus).toHaveBeenCalledWith(clusterNode, expect.any(Array), mockT, mockHubClusterName)
+      nodeDetailsProvider(clusterNode, mockActiveFilters, t, mockHubClusterName)
+      expect(setClusterStatus).toHaveBeenCalledWith(clusterNode, expect.any(Array), t, mockHubClusterName)
     })
 
     it('should render git ApplicationSet source rows, sync policy (automated + sync options), and labels', () => {
@@ -147,7 +146,7 @@ describe('NodeDetailsProvider', () => {
         },
       }
 
-      const result = nodeDetailsProvider(gitNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(gitNode, mockActiveFilters, t, mockHubClusterName)
 
       expect(detail(result, 'Repository', 'https://git.example/repo')).toBe(true)
       expect(detail(result, 'Chart name', ' my-chart ')).toBe(true)
@@ -176,7 +175,7 @@ describe('NodeDetailsProvider', () => {
           raw: { spec: { template: { spec: {} } } },
         },
       }
-      const result = nodeDetailsProvider(chartNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(chartNode, mockActiveFilters, t, mockHubClusterName)
       expect(detail(result, 'Repository', 'oci://quay.io/chart')).toBe(true)
     })
 
@@ -186,7 +185,7 @@ describe('NodeDetailsProvider', () => {
         labels: [],
         specs: { resources: { not: 'array' } as unknown as unknown[] },
       }
-      const result = nodeDetailsProvider(gitNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(gitNode, mockActiveFilters, t, mockHubClusterName)
       expect(result.filter((d) => (d as { labelValue?: string }).labelValue === 'Repository')).toHaveLength(0)
     })
 
@@ -213,7 +212,7 @@ describe('NodeDetailsProvider', () => {
           },
         },
       }
-      const result = nodeDetailsProvider(gitNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(gitNode, mockActiveFilters, t, mockHubClusterName)
       expect(result.filter((d) => (d as { labelValue?: string }).labelValue === 'Prune').length).toBeGreaterThanOrEqual(
         1
       )
@@ -240,7 +239,7 @@ describe('NodeDetailsProvider', () => {
           },
         },
       }
-      const result = nodeDetailsProvider(gitNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(gitNode, mockActiveFilters, t, mockHubClusterName)
       expect(
         result.some(
           (d) =>
@@ -270,7 +269,7 @@ describe('NodeDetailsProvider', () => {
           },
         },
       }
-      const result = nodeDetailsProvider(gitNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(gitNode, mockActiveFilters, t, mockHubClusterName)
       expect(detail(result, 'Enabled', 'true')).toBe(true)
       expect(detail(result, 'Self-heal', 'false')).toBe(true)
       expect(detail(result, 'Prune', 'false')).toBe(true)
@@ -295,7 +294,7 @@ describe('NodeDetailsProvider', () => {
           },
         },
       }
-      const result = nodeDetailsProvider(gitNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(gitNode, mockActiveFilters, t, mockHubClusterName)
       expect(detail(result, 'Allow empty', 'true')).toBe(true)
     })
 
@@ -308,7 +307,7 @@ describe('NodeDetailsProvider', () => {
           raw: { spec: { template: { spec: { syncPolicy: {} } } } },
         },
       }
-      const result = nodeDetailsProvider(gitNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(gitNode, mockActiveFilters, t, mockHubClusterName)
       expect(
         result.some(
           (d) =>
@@ -345,7 +344,7 @@ describe('NodeDetailsProvider', () => {
         },
       }
 
-      nodeDetailsProvider(deploymentNode, mockActiveFilters, mockT, mockHubClusterName)
+      nodeDetailsProvider(deploymentNode, mockActiveFilters, t, mockHubClusterName)
 
       expect(setApplicationDeployStatus).toHaveBeenCalled()
       expect(setSubscriptionDeployStatus).toHaveBeenCalled()
@@ -374,7 +373,7 @@ describe('NodeDetailsProvider', () => {
         },
       }
 
-      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, t, mockHubClusterName)
       expect(detail(result, 'API Version', 'apps/v1')).toBe(true)
     })
 
@@ -399,7 +398,7 @@ describe('NodeDetailsProvider', () => {
         },
       }
 
-      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, t, mockHubClusterName)
       expect(detail(result, 'Namespace', 'fallback-ns')).toBe(true)
     })
 
@@ -416,7 +415,7 @@ describe('NodeDetailsProvider', () => {
         },
       }
 
-      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, t, mockHubClusterName)
       expect(detail(result, 'Labels', 'No labels')).toBe(true)
     })
 
@@ -439,7 +438,7 @@ describe('NodeDetailsProvider', () => {
         },
       }
 
-      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, t, mockHubClusterName)
       expect(result.find((d) => (d as { labelValue?: string }).labelValue === 'Labels')).toEqual(
         expect.objectContaining({ type: 'label', labelValue: 'Labels', value: 'a,b' })
       )
@@ -461,7 +460,7 @@ describe('NodeDetailsProvider', () => {
         },
       }
 
-      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, t, mockHubClusterName)
       expect(detail(result, 'Labels', 'No labels')).toBe(true)
     })
 
@@ -491,7 +490,7 @@ describe('NodeDetailsProvider', () => {
         },
       }
 
-      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, t, mockHubClusterName)
       expect(
         result.some(
           (d) =>
@@ -540,7 +539,7 @@ describe('NodeDetailsProvider', () => {
         },
       }
 
-      nodeDetailsProvider(placementNode, mockActiveFilters, mockT, mockHubClusterName)
+      nodeDetailsProvider(placementNode, mockActiveFilters, t, mockHubClusterName)
       expect(mockGetLabels).toHaveBeenCalled()
       expect(mockGetMatchLabels).not.toHaveBeenCalled()
     })
@@ -573,7 +572,7 @@ describe('NodeDetailsProvider', () => {
         },
       }
 
-      nodeDetailsProvider(placementNode, mockActiveFilters, mockT, mockHubClusterName)
+      nodeDetailsProvider(placementNode, mockActiveFilters, t, mockHubClusterName)
       expect(mockGetMatchLabels).toHaveBeenCalled()
     })
   })

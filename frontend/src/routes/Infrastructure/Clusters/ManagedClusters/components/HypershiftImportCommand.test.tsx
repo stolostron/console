@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import type { TFunction } from 'i18next'
+import { t as t } from '~/lib/test-helpers'
+
 import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { importHostedControlPlaneCluster } from './HypershiftImportCommand'
 import { nockIgnoreApiPaths, nockPostRequest } from '../../../../../lib/nock-util'
@@ -232,10 +233,6 @@ const mockHostedCluster: HostedClusterK8sResource = {
     },
   },
 }
-
-const t = ((string: string) => {
-  return string
-}) as unknown as TFunction
 
 const toastContextMock: any = {
   addAlert: jest.fn(),

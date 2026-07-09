@@ -9,16 +9,11 @@
 // Copyright Contributors to the Open Cluster Management project
 
 import { render, screen } from '@testing-library/react'
-import type { TFunction } from 'i18next'
+import { t as t } from '~/lib/test-helpers'
 import { waitForText } from '../../../../../lib/test-util'
 import { ArgoAppDetailsContainerData, ClusterDetailsContainerData } from '../ApplicationTopology'
 import { ActiveFilters, TopologyNodeWithStatus } from '../types'
 import DetailsView from './DetailsView'
-
-const t = ((string: string): string => {
-  return string
-}) as unknown as TFunction
-
 class MockViewContainer {
   getBoundingClientRect(): Map<any, any> {
     return new Map()

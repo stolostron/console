@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen, waitFor } from '@testing-library/react'
-import type { TFunction } from 'i18next'
+import { t } from '~/lib/test-helpers'
 import { getResource } from '../../../../../resources/utils'
 import { fleetResourceRequest } from '../../../../../resources/utils/fleet-resource-request'
 import { YAMLContainer } from './YAMLContainer'
@@ -23,8 +23,6 @@ jest.mock('../../../../../components/SyncEditor/SyncEditor', () => ({
     </div>
   ),
 }))
-
-const t: TFunction = ((key: string) => key) as TFunction
 
 const mockResource = {
   apiVersion: 'v1',

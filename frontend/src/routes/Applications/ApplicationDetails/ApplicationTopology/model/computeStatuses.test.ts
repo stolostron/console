@@ -43,7 +43,6 @@ import { setApplicationDeployStatus } from './NodeDetailsProviderStatuses'
 import { setSubscriptionDeployStatus } from './NodeDetailsProviderStatuses'
 import { setPodDeployStatus } from './NodeDetailsProviderStatuses'
 import { setResourceDeployStatus } from './NodeDetailsProviderStatuses'
-
 import {
   appNoChannelGreen,
   appNoChannelRed,
@@ -76,13 +75,8 @@ import {
   ansibleErrorAllClusters,
   ansibleSuccess,
 } from './computeStatuses.testdata'
-
-import type { TFunction } from 'i18next'
 import type { ActiveFilters, DetailItem } from '../types'
-
-const t = ((string: string): string => {
-  return string
-}) as unknown as TFunction
+import { t as t } from '~/lib/test-helpers'
 
 // Provide an empty implementation for window.open
 window.open = jest.fn()

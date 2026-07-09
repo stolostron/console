@@ -2,13 +2,10 @@
 // Copyright Contributors to the Open Cluster Management project
 
 import { render, screen, waitFor } from '@testing-library/react'
-import type { TFunction } from 'i18next'
+import { t as t } from '~/lib/test-helpers'
 import ArgoAppDetailsContainer from './ArgoAppDetailsContainer'
 import type { ArgoApp, ArgoAppDetailsContainerControl } from '../types'
 
-const t = ((string: string): string => {
-  return string
-}) as unknown as TFunction
 window.open = (): Window | null => null // provide an empty implementation for window.open
 
 describe('ArgoAppDetailsContainer with no apps', () => {

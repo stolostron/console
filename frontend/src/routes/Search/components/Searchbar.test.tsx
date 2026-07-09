@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2022 Red Hat, Inc.
 
-import type { TFunction } from 'i18next'
 import { MockedProvider } from '@apollo/client/testing'
+import { t as t } from '~/lib/test-helpers'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useMemo, useState } from 'react'
@@ -18,7 +18,6 @@ jest.mock('../SearchResults/utils')
 const toastContextMock: any = {
   addAlert: jest.fn(),
 }
-const t = ((key: string) => key) as unknown as TFunction
 
 export const BlankSearchbar = () => {
   const [currentQuery, setCurrentQuery] = useState('')
