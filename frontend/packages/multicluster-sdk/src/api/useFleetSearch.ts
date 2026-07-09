@@ -83,7 +83,7 @@ export function useFleetSearch<T extends K8sResourceCommon | K8sResourceCommon[]
   const queryData = useMemo<SearchResult<T> | undefined>(() => {
     const items = queryResult?.searchResult?.[0]?.items
     if (!items) return undefined
-    return items.map(convertSearchItemToResource<T>) as unknown as SearchResult<T>
+    return items.map((item) => convertSearchItemToResource<T>(item)) as unknown as SearchResult<T>
   }, [queryResult])
 
   // ── Local state (patched by subscription events) ───────────────────────────
@@ -122,9 +122,8 @@ export function useFleetSearch<T extends K8sResourceCommon | K8sResourceCommon[]
         case 'INSERT': {
           if (!latestEvent.newData) return prev
           const cluster = latestEvent.uid.split('/')[0]
-          latestEvent.newData.cluster = cluster
-          latestEvent.newData._uid = latestEvent.uid
-          const newResource = convertSearchItemToResource<T>(latestEvent.newData)
+          const patchedNewData = { ...latestEvent.newData, cluster, _uid: latestEvent.uid }
+          const newResource = convertSearchItemToResource<T>(patchedNewData)
           const newK8sUid = (newResource as K8sResourceCommon).metadata?.uid
           // Avoid duplicate insertions.
           if (newK8sUid && current.some((r) => r.metadata?.uid === newK8sUid)) return prev
@@ -133,9 +132,8 @@ export function useFleetSearch<T extends K8sResourceCommon | K8sResourceCommon[]
         case 'UPDATE': {
           if (!latestEvent.newData) return prev
           const cluster = latestEvent.uid.split('/')[0]
-          latestEvent.newData.cluster = cluster
-          latestEvent.newData._uid = latestEvent.uid
-          const updatedResource = convertSearchItemToResource<T>(latestEvent.newData)
+          const patchedNewData = { ...latestEvent.newData, cluster, _uid: latestEvent.uid }
+          const updatedResource = convertSearchItemToResource<T>(patchedNewData)
           const updatedK8sUid = (updatedResource as K8sResourceCommon).metadata?.uid
           return current.map((r) =>
             r.metadata?.uid === updatedK8sUid ? updatedResource : r
