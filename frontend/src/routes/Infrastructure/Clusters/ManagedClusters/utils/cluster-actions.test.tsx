@@ -2,7 +2,7 @@
 
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { Provider } from '../../../../../ui-components'
-import { clusterDestroyable } from './cluster-actions'
+import { ClusterAction, clusterDestroyable, clusterSupportsAction } from './cluster-actions'
 
 describe('ClusterDestroyable', () => {
   test('hive clusters should return true', () => {
@@ -194,5 +194,61 @@ describe('ClusterDestroyable', () => {
       isRegionalHubCluster: false,
     }
     expect(clusterDestroyable(mockHostedAWSCluster)).toBe(false)
+  })
+})
+
+describe('clusterSupportsAction - OpenConsole', () => {
+  const baseCluster: Cluster = {
+    name: 'test-cluster',
+    displayName: 'test-cluster',
+    namespace: 'test-cluster',
+    uid: 'test-cluster-uid',
+    status: ClusterStatus.ready,
+    distribution: {
+      k8sVersion: '1.19',
+      ocp: {
+        version: '4.6',
+        availableUpdates: [],
+        desiredVersion: '4.6',
+        upgradeFailed: false,
+      },
+      displayVersion: '4.6',
+      isManagedOpenShift: false,
+    },
+    labels: undefined,
+    nodes: undefined,
+    kubeApiServer: '',
+    consoleURL: '',
+    hasAutomationTemplate: false,
+    hive: {
+      isHibernatable: true,
+      clusterPool: undefined,
+      secrets: { installConfig: '' },
+    },
+    isHive: true,
+    isManaged: true,
+    isCurator: false,
+    isHostedCluster: false,
+    isSNOCluster: false,
+    owner: {},
+    kubeconfig: '',
+    kubeadmin: '',
+    isHypershift: false,
+    isRegionalHubCluster: false,
+  }
+
+  test('returns true when consoleURL is set', () => {
+    const cluster: Cluster = { ...baseCluster, consoleURL: 'https://console.example.com' }
+    expect(clusterSupportsAction(cluster, ClusterAction.OpenConsole)).toBe(true)
+  })
+
+  test('returns false when consoleURL is empty string', () => {
+    const cluster: Cluster = { ...baseCluster, consoleURL: '' }
+    expect(clusterSupportsAction(cluster, ClusterAction.OpenConsole)).toBe(false)
+  })
+
+  test('returns false when consoleURL is undefined', () => {
+    const cluster: Cluster = { ...baseCluster, consoleURL: undefined }
+    expect(clusterSupportsAction(cluster, ClusterAction.OpenConsole)).toBe(false)
   })
 })

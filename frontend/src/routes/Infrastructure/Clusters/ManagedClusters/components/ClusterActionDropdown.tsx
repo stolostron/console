@@ -207,6 +207,11 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     () =>
       [
         {
+          id: ClusterAction.OpenConsole,
+          text: t('cluster.openConsole'),
+          click: (cluster: Cluster) => window.open(cluster.consoleURL, '_blank', 'noopener,noreferrer'),
+        },
+        {
           id: ClusterAction.UpdateAutomationTemplate,
           text: t('Update automation template'),
           click: () => setShowUpdateAutomationModal(true),

@@ -335,6 +335,34 @@ describe('ClustersTableHelper', () => {
       expect(screen.getByText('Test Cluster')).toBeInTheDocument()
     })
 
+    it('should render console URL launch icon when consoleURL is set', () => {
+      const clusterWithConsole = { ...mockCluster, consoleURL: 'https://console.example.com' }
+      const column = useClusterNameColumn(true)
+      renderWithProviders(<TestColumnComponent column={column} cluster={clusterWithConsole} />)
+
+      const consoleLink = screen.getByRole('link', { name: 'cluster.openConsole' })
+      expect(consoleLink).toBeInTheDocument()
+      expect(consoleLink).toHaveAttribute('href', 'https://console.example.com')
+      expect(consoleLink).toHaveAttribute('target', '_blank')
+      expect(consoleLink).toHaveAttribute('rel', 'noopener noreferrer')
+    })
+
+    it('should not render console URL launch icon when consoleURL is empty', () => {
+      const clusterNoConsole = { ...mockCluster, consoleURL: '' }
+      const column = useClusterNameColumn(true)
+      renderWithProviders(<TestColumnComponent column={column} cluster={clusterNoConsole} />)
+
+      expect(screen.queryByRole('link', { name: 'cluster.openConsole' })).not.toBeInTheDocument()
+    })
+
+    it('should not render console URL launch icon when consoleURL is undefined', () => {
+      const clusterNoConsole = { ...mockCluster, consoleURL: undefined }
+      const column = useClusterNameColumn(true)
+      renderWithProviders(<TestColumnComponent column={column} cluster={clusterNoConsole} />)
+
+      expect(screen.queryByRole('link', { name: 'cluster.openConsole' })).not.toBeInTheDocument()
+    })
+
     it('should render cluster status column', () => {
       const column = useClusterStatusColumn()
       renderWithProviders(<TestColumnComponent column={column} cluster={mockCluster} />)
