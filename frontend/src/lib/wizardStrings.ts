@@ -54,6 +54,7 @@ export const useWizardStrings = (
       selectAllItems: (count: number) => t('Select all ({{count}} items)', { count }),
       noResults: t('No results found'),
       createOption: t('Create new option'),
+      inputMustBeArray: t('Input must be an array.'),
     }),
     [wizardSpecificStrings, t]
   )

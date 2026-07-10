@@ -433,6 +433,20 @@ describe('ClusterActionDropdown', () => {
     await clickByLabel('Actions')
     await waitForText('Update automation template')
   })
+
+  test('Open cluster console action is shown when consoleURL is set', async () => {
+    const cluster: Cluster = { ...mockCluster, consoleURL: 'https://console.example.com' }
+    render(<Component cluster={cluster} />)
+    await clickByLabel('Actions')
+    await waitForText('Open cluster console')
+  })
+
+  test('Open cluster console action is not shown when consoleURL is empty', async () => {
+    const cluster: Cluster = { ...mockCluster, consoleURL: '' }
+    render(<Component cluster={cluster} />)
+    await clickByLabel('Actions')
+    await waitForNotText('Open cluster console')
+  })
 })
 
 describe('ClusterActionDropdown', () => {

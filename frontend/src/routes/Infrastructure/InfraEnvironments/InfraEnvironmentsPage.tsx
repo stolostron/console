@@ -358,12 +358,12 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
                 <FlexItem>{HostsStatusGroupCell}</FlexItem>
                 <FlexItem align={{ default: 'alignRight' }}>
                   <Popover
-                    aria-label="Infraenv cannot be deleted popover"
-                    headerContent={<div>Cannot be deleted</div>}
+                    aria-label={t('Cannot be deleted')}
+                    headerContent={<div>{t('Cannot be deleted')}</div>}
                     bodyContent={<div>{t('infraEnv.rowAction.delete.desc')}</div>}
                   >
                     <Button variant="link" icon={<InfoCircleIcon color={blueInfoColor.value} />}>
-                      Cannot be deleted
+                      {t('Cannot be deleted')}
                     </Button>
                   </Popover>
                 </FlexItem>

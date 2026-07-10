@@ -27,7 +27,7 @@ import { useHypershiftAvailableUpdates } from '../hooks/useHypershiftAvailableUp
 import { BatchChannelSelectModal } from './BatchChannelSelectModal'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 import { HypershiftUpgradeModal } from './HypershiftUpgradeModal'
-import { getNodepoolStatus } from './NodePoolsTable'
+import { getNodePoolStatus, hasReadyNodePoolWithUpdate } from '../../../../../resources'
 import { compareVersions } from './utils/version-utils'
 
 export function DistributionField(props: {
@@ -69,7 +69,7 @@ export function DistributionField(props: {
     //if nodepool table
     if (props.resource != null && props.resource === 'nodepool' && props.nodepool) {
       if (
-        getNodepoolStatus(props.nodepool) == 'Ready' &&
+        getNodePoolStatus(props.nodepool).isReady &&
         compareVersions(props.nodepool?.status?.version, props.cluster?.distribution?.ocp?.version) < 0
       ) {
         return true
@@ -79,28 +79,17 @@ export function DistributionField(props: {
 
     //if managed cluster page - cluster, cluster curator and hosted cluster
     if (props.resource != null && props.resource === 'managedclusterpage') {
-      let updateAvailable = false
-      if (props.cluster?.hypershift?.nodePools && props.cluster?.hypershift?.nodePools.length > 0) {
-        for (let i = 0; i < props.cluster?.hypershift?.nodePools.length; i++) {
-          if (
-            getNodepoolStatus(props.cluster?.hypershift?.nodePools[i]) == 'Ready' &&
-            compareVersions(
-              props.cluster?.hypershift?.nodePools[i].status?.version,
-              props.cluster.distribution?.ocp?.version
-            ) < 0
-          ) {
-            updateAvailable = true
-            break
-          }
-        }
-      }
+      const nodePoolUpdateAvailable = hasReadyNodePoolWithUpdate(
+        props.cluster?.hypershift?.nodePools,
+        props.cluster?.distribution?.ocp?.version
+      )
 
       //if no nodepool has updates, still check if hcp has updates
-      if (!updateAvailable) {
+      if (!nodePoolUpdateAvailable) {
         return Object.keys(hypershiftAvailableUpdates).length > 0
       }
 
-      return updateAvailable
+      return nodePoolUpdateAvailable
     } else if (props.resource != null && props.resource === 'hostedcluster') {
       //if hosted cluster progress - cluster and hostedcluster
       return Object.keys(hypershiftAvailableUpdates).length > 0

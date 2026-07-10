@@ -58,7 +58,9 @@ const ReasonFooter = ({
   const isMissingNamespaces = isMissingNamespacesMessage(roleAssignment.status?.reason, roleAssignment.status?.message)
   const callback: (roleAssignment: FlattenedRoleAssignment) => void =
     callbackMap[
-      isMissingNamespaces ? 'MissingNamespaces' : roleAssignment.status?.reason ?? ('' as RoleAssignmentCallbackReason)
+      isMissingNamespaces
+        ? 'MissingNamespaces'
+        : (roleAssignment.status?.reason ?? ('' as RoleAssignmentCallbackReason))
     ]
 
   return isMissingNamespaces ? (
@@ -136,13 +138,13 @@ const StatusTooltip = ({
   areActionButtonsDisabled?: boolean
 }) => {
   const { t } = useTranslation()
-  const reason = roleAssignment.status?.reason ?? t('Not available')
+  const reason = roleAssignment.status?.reason
   const message = roleAssignment.status?.message ?? t('Not available')
 
   return (
     <Popover
       triggerAction="hover"
-      headerContent={<ReasonString reason={reason} />}
+      headerContent={reason ? <ReasonString reason={reason} /> : t('Not available')}
       bodyContent={bodyContent ?? <div style={{ maxHeight: '150px', overflowY: 'auto' }}>{message}</div>}
       footerContent={
         footerContent ?? (

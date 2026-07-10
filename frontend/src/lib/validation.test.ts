@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint-disable jest/no-conditional-expect */
 
+import { t as t } from '~/lib/test-helpers'
 import { validateHttpsURL, validateNoProxy } from './validation'
 
-const t = (key: string) => key
 describe('validation', () => {
   describe('validateHttpsURL', () => {
     test.each([

@@ -8,7 +8,7 @@ export const getClusterImageSet = (clusterImageSets: any[], versionName = '') =>
 
 export const getClusterImageVersion = (clusterImageSets: any[], versionName = '') => {
   const clusterImage = getClusterImageSet(clusterImageSets, versionName)
-  return clusterImage ? getClusterImageSetVersionWithArch(clusterImage) ?? versionName : versionName
+  return clusterImage ? (getClusterImageSetVersionWithArch(clusterImage) ?? versionName) : versionName
 }
 
 export const getDefaultNetworkType = (

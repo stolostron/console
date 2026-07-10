@@ -28,4 +28,7 @@ test-results
 playwright.config.ts
 .env
 e2e-template/*.test.ts
-e2e-template/*.spec.ts
+e2e-template/.auth-state.json
+.omo
+.playwright-mcp
+e2e-scratch/

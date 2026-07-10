@@ -81,7 +81,7 @@ export function SyncEditorToolbar(props: Readonly<SyncEditorToolbarProps>): JSX.
 
   /** Diff mounts in a child useEffect, so getModifiedEditor() can be null on the render that toggles showChanges. */
   const getActiveEditor = () => {
-    const diffModified = showChanges ? syncEditorDiffRef?.current?.getModifiedEditor() ?? null : null
+    const diffModified = showChanges ? (syncEditorDiffRef?.current?.getModifiedEditor() ?? null) : null
     return diffModified ?? editor
   }
 
@@ -187,7 +187,7 @@ export function SyncEditorToolbar(props: Readonly<SyncEditorToolbarProps>): JSX.
           aria-label={t('Copy to clipboard')}
           disabled={false}
           onClick={() => {
-            const diffModifiedEditor = showChanges ? syncEditorDiffRef?.current?.getModifiedEditor() ?? null : null
+            const diffModifiedEditor = showChanges ? (syncEditorDiffRef?.current?.getModifiedEditor() ?? null) : null
             const targetEditor = diffModifiedEditor ?? editor
             if (targetEditor?.getModel()) {
               const model = targetEditor.getModel()

@@ -6,8 +6,7 @@ import { Link } from 'react-router'
 import { createContext, useContext } from 'react'
 
 export type WarningContextType =
-  | { title: string; text: string; linkTo?: string; linkText?: string; isExternalLink?: boolean }
-  | undefined
+  { title: string; text: string; linkTo?: string; linkText?: string; isExternalLink?: boolean } | undefined
 
 export const WarningContext = createContext<WarningContextType>(undefined)
 

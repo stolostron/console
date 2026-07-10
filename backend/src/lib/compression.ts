@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import type { IResource } from './../resources/resource'
 import type { Readable, Transform } from 'node:stream'
 import { pipeline } from 'node:stream'
+import { promisify } from 'node:util'
 import type { Zlib } from 'node:zlib'
 import {
   createBrotliCompress,
@@ -10,14 +10,16 @@ import {
   createGunzip,
   createGzip,
   createInflate,
-  inflateRaw,
   deflateRaw,
+  inflateRaw,
 } from 'node:zlib'
+import { getAppDict, type ICompressedResource, type ITransformedResource } from '../routes/aggregators/applications'
+import { getEventDict } from '../routes/events'
+import type { IResource } from './../resources/resource'
 import { logger } from './logger'
 import type { ServerSideEvent, WatchEvent } from './server-side-events'
-import { getEventDict } from '../routes/events'
-import { getAppDict, type ICompressedResource, type ITransformedResource } from '../routes/aggregators/applications'
-import { promisify } from 'node:util'
+
+const MAX_RECENTLY_ADDED = 200
 
 type Dictionary = {
   arr: string[]
@@ -25,15 +27,22 @@ type Dictionary = {
   add: (key: string) => string
   get: (inx: number) => string
   has: (key: string) => string
+  recentlyAdded: string[]
+  snapshotSize: () => number
+  drainRecentlyAdded: () => string[]
 }
 
 export function createDictionary(): Dictionary {
   const arr: string[] = []
   const map: Record<string, string> = {}
+  const recentlyAdded: string[] = []
   const add = (key: string): string => {
     if (!(key in map)) {
       map[key] = `${arr.length}`
       arr.push(key)
+      if (logger.isLevelEnabled('debug') && recentlyAdded.length < MAX_RECENTLY_ADDED) {
+        recentlyAdded.push(key)
+      }
     }
     return map[key]
   }
@@ -43,12 +52,17 @@ export function createDictionary(): Dictionary {
   const has = (key: string) => {
     return map[key]
   }
+  const snapshotSize = () => arr.length
+  const drainRecentlyAdded = () => recentlyAdded.splice(0)
   return {
     arr,
     map,
     add,
     get,
     has,
+    recentlyAdded,
+    snapshotSize,
+    drainRecentlyAdded,
   }
 }
 
@@ -73,6 +87,19 @@ type CompressedResourceType = Record<number, any> | Record<number, any[]> | stri
 
 const NUMBER_MARKER = '#!%'
 const JSON_MARKER = '#!&'
+
+// Detects ISO 8601 timestamps to avoid permanently indexing unique time values.
+// Covers: "2026-05-27T20:18:12Z" (20), "2026-05-27T20:18:12.000Z" (24), "2026-05-27T20:18:12+05:30" (25)
+export function isTimestamp(s: string): boolean {
+  return (
+    (s.length === 20 || s.length === 24 || s.length === 25) &&
+    s[4] === '-' &&
+    s[7] === '-' &&
+    s[10] === 'T' &&
+    s[13] === ':' &&
+    (s.endsWith('Z') || s[19] === '+' || s[19] === '-')
+  )
+}
 
 export class FifoSet<T> {
   private readonly values: T[] = []
@@ -148,8 +175,9 @@ function compressResource(resource: UncompressedResourceType, dictionary: Dictio
             res[dictionary.add(key)] = resource[key]
           } else {
             const inx = dictionary.add(key)
-            if (valueInDictionaryKeys.has(key)) {
-              res[inx] = dictionary.add(resource[key] as string)
+            // Guard against non-string values (e.g. nested CRD OpenAPI schema objects) corrupting the shared dictionary.
+            if (valueInDictionaryKeys.has(key) && typeof resource[key] === 'string') {
+              res[inx] = dictionary.add(resource[key])
             } else {
               res[inx] = compressResource(resource[key] as UncompressedResourceType, dictionary)
             }
@@ -171,6 +199,10 @@ function compressResource(resource: UncompressedResourceType, dictionary: Dictio
         }
       }
       if (resource.length < 32 && !resource.endsWith('=')) {
+        // skip indexing of all timestamps
+        if (isTimestamp(resource)) {
+          return resource
+        }
         // index short strings that aren't a base64
         return dictionary.add(resource)
       }
@@ -246,6 +278,8 @@ function decompressResource(resource: CompressedResourceType, dictionary: Dictio
       for (const inx in resource) {
         if (Object.prototype.hasOwnProperty.call(resource, inx)) {
           const key = dictionary.get(Number(inx))
+          // Dictionary corruption would produce a non-string key; skip rather than crashing on key.includes().
+          if (typeof key !== 'string') continue
           if (
             valueAsIsKeys.has(key) ||
             (key === 'message' && inx in resource && !Number.isInteger(Number(resource[inx]))) ||

@@ -11,6 +11,7 @@ KUBEVIRT_PORT=${KUBEVIRT_PORT:=""}
 ODF_PORT=${ODF_PORT:=""}
 GITOPS_PORT=${GITOPS_PORT:=""}
 CONSOLE_IMAGE="quay.io/openshift/origin-console:${CONSOLE_VERSION}"
+PIPELINES_PORT=${PIPELINES_PORT:=""}
 
 mkdir -p ocp-console
 oc extract secret/off-cluster-token -n openshift-console --to ocp-console --confirm
@@ -80,6 +81,10 @@ function getBridgePlugins {
 
     if [ -n "$GITOPS_PORT" ]; then
         plugins="${plugins},gitops-plugin=http://${host}:${GITOPS_PORT}"
+    fi
+
+    if [ -n "$PIPELINES_PORT" ]; then
+        plugins="${plugins},pipelines-console-plugin=http://${host}:${PIPELINES_PORT}"
     fi
 
     echo "mce=http://${host}:${MCE_PORT},acm=http://${host}:${ACM_PORT}${plugins}"

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Label } from '@patternfly/react-core'
 import { useMemo, useState } from 'react'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { Link, NavigateFunction, To } from 'react-router'
 import { LostChangesContext } from '../../../components/LostChanges'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -694,6 +694,14 @@ export function getPolicySource(
   return source
 }
 
+export function isKyvernoApiGroup(apiGroup: string): boolean {
+  return apiGroup === 'kyverno.io' || apiGroup === 'policies.kyverno.io'
+}
+
+export function isLegacyKyvernoApiGroup(apiGroup: string): boolean {
+  return apiGroup === 'kyverno.io'
+}
+
 export function getEngineString(apiGroup: string): string {
   switch (apiGroup) {
     case 'policy.open-cluster-management.io':
@@ -705,13 +713,14 @@ export function getEngineString(apiGroup: string): string {
     case 'admissionregistration.k8s.io':
       return 'Kubernetes'
     case 'kyverno.io':
+    case 'policies.kyverno.io':
       return 'Kyverno'
     default:
       return 'Unknown'
   }
 }
 
-export function getEngineWithSvg(apiGroup: string): JSX.Element {
+export function getEngineWithSvg(apiGroup: string, t: TFunction): JSX.Element {
   let logo: JSX.Element
   const engine = getEngineString(apiGroup)
 
@@ -729,7 +738,7 @@ export function getEngineWithSvg(apiGroup: string): JSX.Element {
       logo = <KyvernoSvg />
       break
     default:
-      return <>Unknown</>
+      return <>{t('Unknown')}</>
   }
 
   return (

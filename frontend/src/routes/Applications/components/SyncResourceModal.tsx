@@ -3,7 +3,7 @@
 import { Button } from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { AcmModal, AcmToastContext } from '../../../ui-components'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { useContext } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { IResource, Subscription } from '../../../resources'

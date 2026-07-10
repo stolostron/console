@@ -104,8 +104,10 @@ Follow this general grouping (flexibility allowed):
 ## Internationalization
 
 - Import `useTranslation` and `Trans` from `../lib/acm-i18next` only (ESLint enforced)
-- All user-facing strings must be externalized — no hardcoded display text
-- Translations are stored in `public/locales/en/translation.json`
+- All user-facing strings must be externalized — no hardcoded display text (ESLint enforced)
+- Translations are stored in `public/locales/en/translation.json` and automatically updated by running `npm run i18n:fix`
+- You only need to edit `public/locales/en/translation.json` when you are not using the value as the key (recommended for very long strings)
+- Do not edit translation files for other languages - we have translation services provided by an external team
 - Use i18next pluralization (`t('key', { count })`) and interpolation (`t('key', { name })`)
 
 ## RBAC

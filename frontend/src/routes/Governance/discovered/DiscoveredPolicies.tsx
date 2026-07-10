@@ -15,7 +15,8 @@ import {
   IAcmTableColumn,
   ITableFilter,
 } from '../../../ui-components'
-import { getEngineString, getEngineWithSvg } from '../common/util'
+import { getEngineString, getEngineWithSvg, isKyvernoApiGroup, isLegacyKyvernoApiGroup } from '../common/util'
+import { DeprecatedTitle } from '../../Applications/components/DeprecatedTitle'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
 import {
   discoveredSourceCell,
@@ -31,7 +32,7 @@ import { DiscoveredPolicyTableItem, useFetchPolicies } from './useFetchPolicies'
 
 function nameCell(item: DiscoveredPolicyTableItem): ReactNode {
   const destination = NavigationPath.discoveredResources
-  return (
+  const link = (
     <Link
       to={generatePath(destination, {
         kind: item.kind,
@@ -46,6 +47,12 @@ function nameCell(item: DiscoveredPolicyTableItem): ReactNode {
       {item.name}
     </Link>
   )
+
+  if (isLegacyKyvernoApiGroup(item.apigroup)) {
+    return <DeprecatedTitle title={link} />
+  }
+
+  return link
 }
 
 function clusterCell(item: DiscoveredPolicyTableItem): ReactNode | string {
@@ -90,7 +97,6 @@ export default function DiscoveredPolicies() {
       {
         header: t('Name'),
         cell: nameCell,
-        // Policy name
         sort: 'name',
         search: 'name',
         id: 'name',
@@ -98,7 +104,7 @@ export default function DiscoveredPolicies() {
       },
       {
         header: t('Engine'),
-        cell: (item: DiscoveredPolicyTableItem) => getEngineWithSvg(item.apigroup),
+        cell: (item: DiscoveredPolicyTableItem) => getEngineWithSvg(item.apigroup, t),
         sort: (a: DiscoveredPolicyTableItem, b: DiscoveredPolicyTableItem) =>
           compareStrings(getEngineString(a.apigroup), getEngineString(b.apigroup)),
         search: (item: DiscoveredPolicyTableItem) => getEngineString(item.apigroup),
@@ -226,6 +232,14 @@ export default function DiscoveredPolicies() {
           { label: 'ValidatingAdmissionPolicyBinding', value: 'ValidatingAdmissionPolicyBinding' },
           { label: 'Kyverno ClusterPolicy', value: 'ClusterPolicy' },
           { label: 'Kyverno Policy', value: 'Policy' },
+          { label: 'Kyverno ValidatingPolicy', value: 'ValidatingPolicy' },
+          { label: 'Kyverno MutatingPolicy', value: 'MutatingPolicy' },
+          { label: 'Kyverno GeneratingPolicy', value: 'GeneratingPolicy' },
+          { label: 'Kyverno ImageValidatingPolicy', value: 'ImageValidatingPolicy' },
+          { label: 'Kyverno NamespacedValidatingPolicy', value: 'NamespacedValidatingPolicy' },
+          { label: 'Kyverno NamespacedMutatingPolicy', value: 'NamespacedMutatingPolicy' },
+          { label: 'Kyverno NamespacedGeneratingPolicy', value: 'NamespacedGeneratingPolicy' },
+          { label: 'Kyverno NamespacedImageValidatingPolicy', value: 'NamespacedImageValidatingPolicy' },
         ],
         tableFilterFn: (selectedValues, item) => {
           if (item.apigroup === 'constraints.gatekeeper.sh') {
@@ -236,13 +250,8 @@ export default function DiscoveredPolicies() {
             return selectedValues.includes('Gatekeeper Mutations')
           }
 
-          if (item.apigroup === 'kyverno.io') {
-            if (selectedValues.includes('ClusterPolicy') && item.kind === 'ClusterPolicy') {
-              return true
-            }
-            if (selectedValues.includes('Policy') && item.kind === 'Policy') {
-              return true
-            }
+          if (isKyvernoApiGroup(item.apigroup)) {
+            return selectedValues.includes(item.kind)
           }
 
           return selectedValues.includes(item.kind)

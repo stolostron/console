@@ -14,7 +14,8 @@ import {
 } from '@patternfly/react-core'
 import { ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { css } from '@emotion/css'
-import { Component } from 'react'
+import { Component, ReactNode } from 'react'
+import { useTranslation } from '../../lib/acm-i18next'
 
 const card = css({
   margin: '24px',
@@ -28,7 +29,7 @@ const emptyState = css({
     maxWidth: 'unset',
   },
 })
-const actions = css({
+const actionsStyle = css({
   marginBottom: '12px',
 })
 const emptyStateBody = css({
@@ -44,87 +45,92 @@ const sectionTitle = css({
   marginBottom: '8px',
 })
 
-type ErrorBoundaryState = {
+interface ErrorBoundaryProps {
+  children: ReactNode | ReactNode[]
+  actions?: ReactNode
+}
+
+interface ErrorBoundaryState {
   hasError: boolean
   error: Error
-  errorInfo: ErrorInfo
+  errorInfo: { componentStack: string }
 }
 
-type ErrorInfo = {
-  componentStack: string
+function ErrorFallback({
+  error,
+  errorInfo,
+  actions,
+}: Readonly<{
+  error: Error
+  errorInfo: { componentStack: string }
+  actions?: ReactNode
+}>) {
+  const { t } = useTranslation()
+
+  return (
+    <Card className={card}>
+      <EmptyState
+        headingLevel="h4"
+        icon={ExclamationTriangleIcon}
+        titleText={t('Uh oh, something went wrong...')}
+        className={emptyState}
+        variant={EmptyStateVariant.lg}
+      >
+        <EmptyStateBody className={emptyStateBody}>
+          <Bullseye className={actionsStyle}>{actions}</Bullseye>
+          <ExpandableSection toggleText={t('See error details...')}>
+            <div className={errorTitle}>
+              <Title headingLevel="h5" size={TitleSizes.xl}>
+                {error.name}
+              </Title>
+            </div>
+
+            <div className={section}>
+              <Title headingLevel="h6" size={TitleSizes.lg} className={sectionTitle}>
+                {t('Description:')}
+              </Title>
+              <p>{error.message}</p>
+            </div>
+
+            <div className={section}>
+              <Title headingLevel="h6" size={TitleSizes.lg} className={sectionTitle}>
+                {t('Component trace:')}
+              </Title>
+              <ClipboardCopy isReadOnly isCode isExpanded variant={ClipboardCopyVariant.expansion}>
+                {errorInfo.componentStack}
+              </ClipboardCopy>
+            </div>
+
+            <div className={section}>
+              <Title headingLevel="h6" size={TitleSizes.lg} className={sectionTitle}>
+                {t('Stack trace:')}
+              </Title>
+              <ClipboardCopy isReadOnly isCode isExpanded variant={ClipboardCopyVariant.expansion}>
+                {error.stack ?? ''}
+              </ClipboardCopy>
+            </div>
+          </ExpandableSection>
+        </EmptyStateBody>
+      </EmptyState>
+    </Card>
+  )
 }
 
-export class AcmErrorBoundary extends Component<
-  { children: React.ReactNode | React.ReactNode[]; actions?: React.ReactNode },
-  ErrorBoundaryState
-> {
-  state = {
+export class AcmErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  state: ErrorBoundaryState = {
     hasError: false,
-    error: {
-      message: '',
-      stack: '',
-      name: '',
-    },
-    errorInfo: {
-      componentStack: '',
-    },
+    error: { message: '', stack: '', name: '' },
+    errorInfo: { componentStack: '' },
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  componentDidCatch(error: Error, errorInfo: { componentStack: string }) {
     this.setState({ error, errorInfo, hasError: true })
   }
 
   render() {
     if (this.state.hasError) {
-      return (
-        <Card className={card}>
-          <EmptyState
-            headingLevel="h4"
-            icon={ExclamationTriangleIcon}
-            titleText="Uh oh, something went wrong..."
-            className={emptyState}
-            variant={EmptyStateVariant.lg}
-          >
-            <EmptyStateBody className={emptyStateBody}>
-              <Bullseye className={actions}>{this.props.actions}</Bullseye>
-              <ExpandableSection toggleText="See error details...">
-                <div className={errorTitle}>
-                  <Title headingLevel="h5" size={TitleSizes.xl}>
-                    {this.state.error.name}
-                  </Title>
-                </div>
-
-                <div className={section}>
-                  <Title headingLevel="h6" size={TitleSizes.lg} className={sectionTitle}>
-                    Description:
-                  </Title>
-                  <p>{this.state.error.message}</p>
-                </div>
-
-                <div className={section}>
-                  <Title headingLevel="h6" size={TitleSizes.lg} className={sectionTitle}>
-                    Component trace:
-                  </Title>
-                  <ClipboardCopy isReadOnly isCode isExpanded variant={ClipboardCopyVariant.expansion}>
-                    {this.state.errorInfo.componentStack}
-                  </ClipboardCopy>
-                </div>
-
-                <div className={section}>
-                  <Title headingLevel="h6" size={TitleSizes.lg} className={sectionTitle}>
-                    Stack trace:
-                  </Title>
-                  <ClipboardCopy isReadOnly isCode isExpanded variant={ClipboardCopyVariant.expansion}>
-                    {this.state.error.stack}
-                  </ClipboardCopy>
-                </div>
-              </ExpandableSection>
-            </EmptyStateBody>
-          </EmptyState>
-        </Card>
-      )
+      return <ErrorFallback error={this.state.error} errorInfo={this.state.errorInfo} actions={this.props.actions} />
     }
-
     return this.props.children
   }
 }

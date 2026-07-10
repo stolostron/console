@@ -5,6 +5,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { AcmForm, AcmSubmit } from '../AcmForm/AcmForm'
+import { SelectVariant } from '../../components/AcmSelectBase'
 import { AcmMultiSelect } from './AcmMultiSelect'
 
 describe('AcmMultiSelect', () => {
@@ -195,5 +196,35 @@ describe('AcmMultiSelect', () => {
     const { getByTestId, getByText } = render(<VisibleSelect />)
     expect(getByTestId('acm-select-label')).toBeVisible()
     expect(getByText('ACM select')).toBeInTheDocument()
+  })
+
+  test('does not apply maxHeight on MenuToggle for typeaheadMulti variant', () => {
+    const TypeaheadMultiSelect = () => {
+      const [value, setValue] = useState<string[] | undefined>(['red', 'green'])
+      return (
+        <AcmMultiSelect
+          id="acm-select-typeahead"
+          label="ACM select typeahead"
+          value={value}
+          onChange={setValue}
+          variant={SelectVariant.typeaheadMulti}
+        >
+          <SelectOption key="red" value="red">
+            Red
+          </SelectOption>
+          <SelectOption key="green" value="green">
+            Green
+          </SelectOption>
+        </AcmMultiSelect>
+      )
+    }
+
+    render(<TypeaheadMultiSelect />)
+
+    const menuToggle = screen.getByRole('combobox', {
+      name: /ACM select typeahead/i,
+    })
+    expect(menuToggle).toBeInTheDocument()
+    expect(menuToggle).not.toHaveStyle('max-height: 36px')
   })
 })

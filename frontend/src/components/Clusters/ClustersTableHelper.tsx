@@ -6,7 +6,7 @@ import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { fitContent, nowrap } from '@patternfly/react-table'
 import keyBy from 'lodash/keyBy'
 import { useMemo } from 'react'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { Link } from 'react-router'
 import { ObservabilityEndpoint, useMetricsPoll } from '~/lib/useMetricsPoll'
 import { useTranslation } from '../../lib/acm-i18next'
@@ -97,6 +97,20 @@ export function useClusterNameColumn(areLinksDisplayed: boolean = true): IAcmTab
             </AcmVisitedLink>
           ) : (
             <HighlightSearchText text={cluster.displayName} searchText={search} useFuzzyHighlighting />
+          )}
+          {cluster.consoleURL && (
+            <Tooltip content={t('cluster.openConsole')}>
+              <a
+                href={cluster.consoleURL}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={t('cluster.openConsole')}
+                style={{ marginLeft: '0.25rem', display: 'inline-flex', verticalAlign: 'middle' }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <ExternalLinkAltIcon />
+              </a>
+            </Tooltip>
           )}
         </span>
         {cluster.hive.clusterClaimName && (

@@ -37,10 +37,7 @@ const CreateInfraEnv: React.FC = () => {
   Handlebars.registerHelper('checkNtpSources', (enable, sources) => enable && sources?.length > 0)
   const navigate = useNavigate()
   const { t } = useTranslation()
-  const { t: tEditor } = useTranslation()
-  const i18n = (key: any, arg: any) => {
-    return tEditor(key, arg)
-  }
+  const { t: i18n } = useTranslation()
 
   const switches = (
     <div className="switch-controls">

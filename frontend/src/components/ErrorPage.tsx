@@ -13,7 +13,7 @@ import {
   EmptyStateFooter,
 } from '@patternfly/react-core'
 import { ReactNode, useContext } from 'react'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { useTranslation } from '../lib/acm-i18next'
 import { LoadingPage } from './LoadingPage'
 import { PluginContext } from '../lib/PluginContext'

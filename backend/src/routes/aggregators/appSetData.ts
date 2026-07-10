@@ -90,8 +90,7 @@ export function requestAggregatedAppSetData(req: Http2ServerRequest, res: Http2S
       }
 
       const decisionOwnerReference = get(placementDecision, ['metadata', 'ownerReferences'], undefined) as
-        | Array<{ kind?: string; name?: string; namespace?: string }>
-        | undefined
+        Array<{ kind?: string; name?: string; namespace?: string }> | undefined
 
       if (decisionOwnerReference && decisionOwnerReference[0]) {
         const owner0 = decisionOwnerReference[0]

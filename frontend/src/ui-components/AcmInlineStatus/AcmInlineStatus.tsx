@@ -13,7 +13,7 @@ import {
   RunningIcon,
   UnknownIcon,
 } from '@patternfly/react-icons'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 
 import { AcmIcon, AcmIconVariant } from '../AcmIcons/AcmIcons'
 
@@ -30,17 +30,17 @@ const button = css({
 })
 
 export enum StatusType {
-  'healthy' = 'healthy',
-  'danger' = 'danger',
-  'warning' = 'warning',
-  'progress' = 'progress',
-  'detached' = 'detached',
-  'pending' = 'pending',
-  'unknown' = 'unknown',
-  'sleep' = 'sleep',
-  'empty' = 'empty',
-  'draft' = 'draft',
-  'running' = 'running',
+  healthy = 'healthy',
+  danger = 'danger',
+  warning = 'warning',
+  progress = 'progress',
+  detached = 'detached',
+  pending = 'pending',
+  unknown = 'unknown',
+  sleep = 'sleep',
+  empty = 'empty',
+  draft = 'draft',
+  running = 'running',
 }
 
 export const getStatusLabel = (status: StatusType, t: TFunction) => {

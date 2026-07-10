@@ -21,7 +21,7 @@ import {
 import { CopyIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment, useEffect, useState } from 'react'
 import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
 

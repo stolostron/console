@@ -167,7 +167,7 @@ export function PolicyTemplateDetails() {
       },
       {
         key: t('Engine'),
-        value: kind ? getEngineWithSvg(apiGroup) : '-',
+        value: kind ? getEngineWithSvg(apiGroup, t) : '-',
       },
       {
         key: t('Cluster'),
@@ -214,7 +214,7 @@ export function PolicyTemplateDetails() {
 
     addRowsForConstraint(cols, clusterName, apiGroup, kind)
 
-    addRowsForHasVapb(cols, hasVapb, vapb.loading, vapb.vapbItems, apiGroup, clusterName, name)
+    addRowsForHasVapb(cols, hasVapb, vapb.loading, vapb.vapbItems, clusterName)
 
     addRowsForOperatorPolicy(cols, template, kind, t)
 

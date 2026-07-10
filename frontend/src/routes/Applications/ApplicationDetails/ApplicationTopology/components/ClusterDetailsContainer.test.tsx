@@ -2,12 +2,9 @@
 // Copyright Contributors to the Open Cluster Management project
 
 import { render, screen, waitFor } from '@testing-library/react'
+import { t as t } from '~/lib/test-helpers'
 import ClusterDetailsContainer from './ClusterDetailsContainer'
 import { ClusterDetailsContainerControl, ClusterData } from '../types'
-
-const t = (string: string): string => {
-  return string
-}
 
 window.open = () => null // provide an empty implementation for window.open
 

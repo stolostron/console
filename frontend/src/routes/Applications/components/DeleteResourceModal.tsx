@@ -4,7 +4,7 @@ import { Button, Checkbox, Stack, StackItem } from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmAlert, AcmModal } from '../../../ui-components'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { Fragment, ReactNode, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Trans } from '../../../lib/acm-i18next'
@@ -190,7 +190,9 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
       props.appSetPlacement && (
         <Fragment>
           {renderConfirmCheckbox()}
-          <div className="remove-app-modal-content-data">{props.appSetPlacement} [Placement]</div>
+          <div className="remove-app-modal-content-data">
+            {props.t('{{placement}} [Placement]', { placement: props.appSetPlacement })}
+          </div>
         </Fragment>
       )
     )

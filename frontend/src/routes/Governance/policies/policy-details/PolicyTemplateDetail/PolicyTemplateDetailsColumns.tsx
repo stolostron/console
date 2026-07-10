@@ -4,16 +4,14 @@ import { ListItems } from '../../../../../ui-components'
 import { generatePath, Link } from 'react-router'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 // Any resources that are related to Vapb then add these rows
 export const addRowsForHasVapb = (
   cols: ListItems[],
   hasVapb: boolean,
   loading: boolean,
   vapbItems: any[] | null | undefined,
-  apiGroup: string,
-  clusterName: string,
-  name: string
+  clusterName: string
 ) => {
   if (!hasVapb) {
     return cols
@@ -25,7 +23,7 @@ export const addRowsForHasVapb = (
       value: <Skeleton width="100%" screenreaderText="Fetching ValidatingAdmissionPolicyBinding" />,
     })
   } else if (vapbItems && vapbItems.length > 0 && !loading) {
-    const vapbName = apiGroup === 'constraints.gatekeeper.sh' ? `gatekeeper-${name}` : name + '-binding'
+    const vapbName = vapbItems[0].name
     cols.push({
       key: 'Validating Admission Policy Binding',
       value: (

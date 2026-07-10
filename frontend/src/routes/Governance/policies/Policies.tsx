@@ -964,7 +964,7 @@ export function AddToPolicySetModal(
                 title={t('No policy set in given namespace')}
                 message={t(
                   'To add a policy to a policy set, they both must be in the same namespace.  There are no policy sets in "{{0}}" namespace.',
-                  [namespace]
+                  { 0: namespace }
                 )}
                 isInline
               />

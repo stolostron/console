@@ -1,6 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { getTopology, getDiagramElements, processNodeData, evaluateSingleAnd, getTopologyElements } from './topology'
+import { t } from '~/lib/test-helpers'
+
 import type {
   Topology,
   TopologyNode,
@@ -123,8 +125,6 @@ const mockResourceStatuses: ResourceStatuses = {
     ],
   },
 }
-
-const mockTranslator = (key: string) => key
 
 describe('topology', () => {
   beforeEach(() => {
@@ -327,7 +327,7 @@ describe('topology', () => {
 
   describe('getDiagramElements', () => {
     it('should return diagram elements with nodes and links', () => {
-      const result = getDiagramElements(mockTopology, null, false, mockTranslator)
+      const result = getDiagramElements(mockTopology, null, false, t)
 
       expect(result).toBeDefined()
       expect(result.nodes).toBeDefined()
@@ -353,7 +353,7 @@ describe('topology', () => {
         hubClusterName: 'local-cluster',
       }
 
-      const result = getDiagramElements(topologyWithChannels, null, false, mockTranslator)
+      const result = getDiagramElements(topologyWithChannels, null, false, t)
 
       expect(result.channels).toEqual(['ns1/channel1//path1', 'ns2/channel2//path2'])
       expect(result.activeChannel).toBe('ns1/channel1//path1')
@@ -377,7 +377,7 @@ describe('topology', () => {
         hubClusterName: 'local-cluster',
       }
 
-      const result = getDiagramElements(topologyWithoutActiveChannel, null, false, mockTranslator)
+      const result = getDiagramElements(topologyWithoutActiveChannel, null, false, t)
 
       expect(result.activeChannel).toBe('channel1')
     })
@@ -400,13 +400,13 @@ describe('topology', () => {
         hubClusterName: 'local-cluster',
       }
 
-      const result = getDiagramElements(topologyWithAllChannel, null, false, mockTranslator)
+      const result = getDiagramElements(topologyWithAllChannel, null, false, t)
 
       expect(result.activeChannel).toBe('channel1')
     })
 
     it('should call addDiagramDetails and computeNodeStatus when resourceStatuses provided', () => {
-      const result = getDiagramElements(mockTopology, mockResourceStatuses, true, mockTranslator)
+      const result = getDiagramElements(mockTopology, mockResourceStatuses, true, t)
 
       expect(addDiagramDetails).toHaveBeenCalled()
       expect(computeNodeStatus).toHaveBeenCalled()
@@ -414,7 +414,7 @@ describe('topology', () => {
     })
 
     it('should not call status functions when resourceStatuses is null', () => {
-      const result = getDiagramElements(mockTopology, null, false, mockTranslator)
+      const result = getDiagramElements(mockTopology, null, false, t)
 
       expect(addDiagramDetails).not.toHaveBeenCalled()
       expect(computeNodeStatus).not.toHaveBeenCalled()

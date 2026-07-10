@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Dispatch, SetStateAction } from 'react'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import type { NavigateFunction } from 'react-router'
 import { NavigationPath } from '../../../NavigationPath'
 import { ActionExtensionProps, ListColumnExtensionProps } from '../../../plugin-extensions/properties'
@@ -17,7 +17,7 @@ import { GetUrlSearchParam } from '../../Search/searchDefinitions'
 import { ClosedVMActionModalProps, IVMActionModalProps } from './modals/VMActionModal'
 
 export function isResourceTypeOf(item: any, resourceType: IResourceDefinition | IResourceDefinition[]) {
-  const apiVersion = item?.apigroup ? `${item.apigroup}/${item.apiversion}` : item?.apiversion ?? item?.apiVersion
+  const apiVersion = item?.apigroup ? `${item.apigroup}/${item.apiversion}` : (item?.apiversion ?? item?.apiVersion)
 
   return Array.isArray(resourceType)
     ? resourceType.some((rt) => rt.apiVersion === apiVersion && rt.kind === item.kind)

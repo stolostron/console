@@ -784,11 +784,11 @@ function buildFindListModel(
     let rows: ReviewFindRow[] = ordered.map((node) => ({
       node,
       stepLabel,
-      searchLabel: isReviewArrayInstanceDifferenceNode(node) ? node.label ?? '' : node.label ?? node.path,
+      searchLabel: isReviewArrayInstanceDifferenceNode(node) ? (node.label ?? '') : (node.label ?? node.path),
       searchValue: isReviewArrayInstanceDifferenceNode(node)
-        ? node.label ?? ''
+        ? (node.label ?? '')
         : formatReviewFindSearchValue(node, booleanStrings),
-      pathLast: 'path' in node && node.path ? pathLastSegment(node.path) : node.label ?? node.id,
+      pathLast: 'path' in node && node.path ? pathLastSegment(node.path) : (node.label ?? node.id),
     }))
     if (showChangesOnly) {
       rows = rows.filter((row) => rowMatchesChangesOnlyFilter(row, item, defaultItem))

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import AcmTimestamp from '../../../../../lib/AcmTimestamp'
 import { ArgoApplication } from '../../../../../resources'
 import { showAnsibleJobDetails } from '../helpers/ansible-task'
@@ -422,7 +422,7 @@ export const setPodDeployStatus = (
 
       details.push({
         type: 'label',
-        labelValue: t('Pod details for {{0}}', [clusterName]),
+        labelValue: t('Pod details for {{0}}', { 0: clusterName }),
       })
 
       clusterDetails.forEach((podDetail) => {
@@ -576,11 +576,11 @@ export const setSubscriptionDeployStatus = (
           const emptyStatusErrorMsg = subscription._hubClusterResource
             ? t(
                 'This subscription has no status. If the status does not change to {{0}} after waiting for initial creation, verify that the multicluster-operators-hub-subscription pod is running on hub',
-                ['Propagated']
+                { 0: 'Propagated' }
               )
             : t(
                 'This subscription has no status. If the status does not change to {{0}} after waiting for initial creation, verify that the application-manager pod is running on the remote cluster.',
-                ['Subscribed']
+                { 0: 'Subscribed' }
               )
 
           const subscriptionStatus = safeGet<string>(subscription, 'status', emptyStatusErrorMsg)
@@ -678,7 +678,7 @@ export const setSubscriptionDeployStatus = (
       labelValue: t('Remote subscriptions'),
       value: t(
         'This subscription was not added to a managed cluster. If this status does not change after waiting for initial creation, ensure the Placement resource is valid and exists in the {{0}} namespace and that the application-manager pod runs on the managed clusters.',
-        [node.namespace]
+        { 0: node.namespace }
       ),
       status: failureStatus,
     })
@@ -688,7 +688,7 @@ export const setSubscriptionDeployStatus = (
       details.push({
         type: 'link',
         value: {
-          label: t('View all placements in {{0}} namespace', [node.namespace]),
+          label: t('View all placements in {{0}} namespace', { 0: node.namespace }),
           id: `${node.id}-subscrSearch`,
           data: {
             action: 'open_link',
@@ -762,7 +762,7 @@ export const setApplicationDeployStatus = (
         labelValue: t('Error'),
         value: t(
           'This application has no matched subscription. Make sure the subscription match selector spec.selector.matchExpressions exists and matches a Subscription resource created in the {{0}} namespace.',
-          [appNS]
+          { 0: appNS }
         ),
         status: failureStatus,
       })
@@ -771,7 +771,7 @@ export const setApplicationDeployStatus = (
       details.push({
         type: 'link',
         value: {
-          label: t('View all subscriptions in {{0}} namespace', [appNS]),
+          label: t('View all subscriptions in {{0}} namespace', { 0: appNS }),
           id: `${node.id}-subscrSearch`,
           data: {
             action: 'open_link',
@@ -950,7 +950,7 @@ export const setArgoApplicationDeployStatus = (
       labelValue: t('Health status'),
       value: t(
         'The health status for application {{0}} is {{1}}. Use the Launch Argo editor action below to view the application details.',
-        [safeGet(node, 'name', ''), appHealth]
+        { 0: safeGet(node, 'name', ''), 1: appHealth }
       ),
       status: failureStatus,
     })
@@ -959,7 +959,7 @@ export const setArgoApplicationDeployStatus = (
   // Related Argo apps section
   details.push({
     type: 'label',
-    labelValue: t('Related applications ({{0}})', [relatedArgoApps.length]),
+    labelValue: t('Related applications ({{0}})', { 0: relatedArgoApps.length }),
   })
 
   details.push({
