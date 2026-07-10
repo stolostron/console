@@ -15,7 +15,7 @@ import { ActionGroup } from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { useCallback, useEffect, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../../../lib/acm-i18next'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 
 export type ScaleMachinePoolModalProps = {
   machinePool?: MachinePool

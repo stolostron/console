@@ -6,7 +6,7 @@ import { Spinner, SelectOption } from '@patternfly/react-core'
 import { AcmSelectBase, SelectVariant, SelectOptionObject } from '../../AcmSelectBase'
 import ControlPanelFormGroup from './ControlPanelFormGroup'
 import get from 'lodash/get'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { useDynamicPropertyValues } from '../helpers/dynamicProperties'
 
 const ControlPanelSingleSelect = (props: {

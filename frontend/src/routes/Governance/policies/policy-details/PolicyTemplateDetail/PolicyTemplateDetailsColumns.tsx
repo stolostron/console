@@ -4,7 +4,7 @@ import { ListItems } from '../../../../../ui-components'
 import { generatePath, Link } from 'react-router'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 // Any resources that are related to Vapb then add these rows
 export const addRowsForHasVapb = (
   cols: ListItems[],

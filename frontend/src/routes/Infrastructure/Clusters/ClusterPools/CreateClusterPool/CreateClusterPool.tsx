@@ -234,7 +234,7 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
                   return pool?.metadata?.name === active && pool?.metadata?.namespace === namespace
                 }) !== -1
               ) {
-                return t('clusterPool.creation.validation.unique.name', [namespace])
+                return t('clusterPool.creation.validation.unique.name', { 0: namespace })
               }
             }
           }

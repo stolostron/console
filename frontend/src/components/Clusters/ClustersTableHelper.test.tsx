@@ -13,6 +13,7 @@ var gpuColumnTestState: {
 }
 
 import { render, screen, within } from '@testing-library/react'
+import { t } from '~/lib/test-helpers'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { Cluster, ClusterStatus } from '../../resources/utils'
@@ -228,19 +229,17 @@ describe('ClustersTableHelper', () => {
   })
 
   describe('getControlPlaneString', () => {
-    const mockT = (key: string) => key
-
     it('should return "Hub, Hosted" for hub and hosted cluster', () => {
       const cluster = {
         ...mockCluster,
         isHostedCluster: true,
       }
-      const result = getControlPlaneString(cluster, 'test-cluster', mockT)
+      const result = getControlPlaneString(cluster, 'test-cluster', t)
       expect(result).toBe('Hub, Hosted')
     })
 
     it('should return "Hub" for hub cluster', () => {
-      const result = getControlPlaneString(mockCluster, 'test-cluster', mockT)
+      const result = getControlPlaneString(mockCluster, 'test-cluster', t)
       expect(result).toBe('Hub')
     })
 
@@ -250,7 +249,7 @@ describe('ClustersTableHelper', () => {
         name: 'other-cluster',
         isHostedCluster: true,
       }
-      const result = getControlPlaneString(cluster, 'test-cluster', mockT)
+      const result = getControlPlaneString(cluster, 'test-cluster', t)
       expect(result).toBe('Hosted')
     })
 
@@ -259,7 +258,7 @@ describe('ClustersTableHelper', () => {
         ...mockCluster,
         name: 'other-cluster',
       }
-      const result = getControlPlaneString(cluster, 'test-cluster', mockT)
+      const result = getControlPlaneString(cluster, 'test-cluster', t)
       expect(result).toBe('Standalone')
     })
 
@@ -269,7 +268,7 @@ describe('ClustersTableHelper', () => {
         name: 'other-cluster',
         isRegionalHubCluster: true,
       }
-      const result = getControlPlaneString(cluster, 'test-cluster', mockT)
+      const result = getControlPlaneString(cluster, 'test-cluster', t)
       expect(result).toBe('Hub')
     })
   })

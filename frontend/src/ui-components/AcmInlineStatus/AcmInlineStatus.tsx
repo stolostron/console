@@ -13,7 +13,7 @@ import {
   RunningIcon,
   UnknownIcon,
 } from '@patternfly/react-icons'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 
 import { AcmIcon, AcmIconVariant } from '../AcmIcons/AcmIcons'
 

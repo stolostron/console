@@ -14,7 +14,7 @@ import {
   TextInput,
   ContentVariants,
 } from '@patternfly/react-core'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { PlusCircleIcon, TrashIcon } from '@patternfly/react-icons'
 import ControlPanelFormGroup from './ControlPanelFormGroup'
 

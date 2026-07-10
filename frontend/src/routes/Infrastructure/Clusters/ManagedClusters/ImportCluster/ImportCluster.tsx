@@ -603,7 +603,7 @@ export default function ImportClusterPage() {
               }
             }
             toastContext.addAlert({
-              title: t('success.create.created', [state.clusterName]),
+              title: t('success.create.created', { 0: state.clusterName }),
               type: 'success',
               autoClose: true,
             })

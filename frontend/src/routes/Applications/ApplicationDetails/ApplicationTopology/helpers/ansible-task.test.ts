@@ -7,11 +7,9 @@ import {
   getStatusFromPulse,
   showAnsibleJobDetails,
 } from './ansible-task'
-import { AnsibleCondition, AnsibleJobStatus, NodeLike, Translator, PulseColor } from '../types'
 
-const t: Translator = (string: string): string => {
-  return string
-}
+import { AnsibleCondition, AnsibleJobStatus, NodeLike, PulseColor } from '../types'
+import { t as t } from '~/lib/test-helpers'
 
 describe('getInfoForAnsibleTask', () => {
   const condition1: AnsibleCondition[] = [
@@ -279,7 +277,7 @@ describe('showAnsibleJobDetails', () => {
       type: 'spacer',
     },
     {
-      labelValue: 'description.ansible.task.status',
+      labelValue: 'AnsibleJob Initialization status',
       status: 'checkmark',
       value: 'Successful: Test 1',
     },
@@ -287,7 +285,7 @@ describe('showAnsibleJobDetails', () => {
       type: 'spacer',
     },
     {
-      labelValue: 'description.ansible.job.status',
+      labelValue: 'Ansible Automation controller Job status',
       status: 'checkmark',
       value: 'successful',
     },
