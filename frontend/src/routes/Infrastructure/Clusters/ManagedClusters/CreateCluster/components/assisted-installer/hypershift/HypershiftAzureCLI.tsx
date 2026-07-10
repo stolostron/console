@@ -213,7 +213,7 @@ hcp create cluster azure \\
           <CodeBlock actions={Actions(createClusterCode, 'code-command')}>
             <CodeBlockCode id="code-content">{createClusterCode}</CodeBlockCode>
           </CodeBlock>
-          <Content component="p" style={{ marginTop: '1em' }}>
+          <Content component={ContentVariants.p} style={{ marginTop: '1em' }}>
             {t('Use the following command to get a list of available parameters: ')}
           </Content>
           <CodeBlock actions={Actions(helperCommand, 'helper-command')}>
@@ -229,6 +229,7 @@ hcp create cluster azure \\
     <DocPage
       listItems={listItems}
       breadcrumbs={breadcrumbs}
+      docLink={DOC_LINKS.HYPERSHIFT_DEPLOY_AZURE}
       onBack={back(NavigationPath.createAzureControlPlane)}
       onCancel={cancel(NavigationPath.managedClusters)}
     />

@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
+import { configureAxe } from 'jest-axe'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { nockGet, nockIgnoreApiPaths } from '../../../../../../../../lib/nock-util'
@@ -7,6 +8,13 @@ import { mockOpenShiftConsoleConfigMap } from '../../../../../../../../lib/test-
 import { waitForNocks, waitForTestId, waitForText } from '../../../../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../../../../NavigationPath'
 import { HypershiftAzureCLI } from './HypershiftAzureCLI'
+
+const axe = configureAxe({
+  rules: {
+    'button-name': { enabled: false },
+    'heading-order': { enabled: false },
+  },
+})
 
 describe('HypershiftAzureCLI', () => {
   const Component = () => {
@@ -24,7 +32,7 @@ describe('HypershiftAzureCLI', () => {
   test('should show all the steps', async () => {
     nockIgnoreApiPaths()
     const initialNocks = [nockGet(mockOpenShiftConsoleConfigMap)]
-    render(<Component />)
+    const { container } = render(<Component />)
     await waitForNocks(initialNocks)
     await waitForText('Prerequisites')
     await waitForText('Prepare environment variables')
@@ -37,5 +45,6 @@ describe('HypershiftAzureCLI', () => {
     await waitForTestId('code-content')
     await waitForTestId('helper-command')
     await waitForText('Copy login command')
+    expect(await axe(container)).toHaveNoViolations()
   })
 })

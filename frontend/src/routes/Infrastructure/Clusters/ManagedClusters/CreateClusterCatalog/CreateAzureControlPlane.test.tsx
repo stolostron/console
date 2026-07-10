@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
+import { configureAxe } from 'jest-axe'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { clickByTestId, isCardEnabled, waitForNocks } from '../../../../../lib/test-util'
@@ -13,6 +14,13 @@ import {
   mockMultiClusterEngine,
   mockMultiClusterEngineWithHypershiftDisabled,
 } from './sharedMocks'
+
+const axe = configureAxe({
+  rules: {
+    'definition-list': { enabled: false },
+    'nested-interactive': { enabled: false },
+  },
+})
 
 describe('CreateAzureControlPlane', () => {
   beforeEach(() => {
@@ -64,5 +72,14 @@ describe('CreateAzureControlPlane', () => {
     await waitForNocks([hypershiftStatusNock])
 
     await clickByTestId('standalone')
+  })
+
+  test('has no accessibility violations', async () => {
+    const hypershiftStatusNock = nockHypershiftStatus(true)
+
+    const { container } = render(<Component />)
+    await waitForNocks([hypershiftStatusNock])
+
+    expect(await axe(container)).toHaveNoViolations()
   })
 })

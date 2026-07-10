@@ -59,20 +59,22 @@ export function CreateAzureControlPlane() {
           },
         ],
         onClick: isHypershiftEnabled ? nextStep(NavigationPath.createAzureCLI) : undefined,
-        alertTitle: (() => {
-          if (!loaded || isHypershiftEnabled) return undefined
-          return t('Hosted control plane operator must be enabled in order to continue')
-        })(),
+        alertTitle:
+          !loaded || isHypershiftEnabled
+            ? undefined
+            : t('Hosted control plane operator must be enabled in order to continue'),
         alertVariant: 'info',
-        alertContent: (() => {
-          if (!loaded || isHypershiftEnabled) return undefined
-          return (
+        alertContent:
+          !loaded || isHypershiftEnabled ? undefined : (
             <a href={DOC_LINKS.HOSTED_ENABLE_FEATURE_AZURE} target="_blank" rel="noopener noreferrer">
               {t('View documentation')} <ExternalLinkAltIcon />
             </a>
-          )
-        })(),
+          ),
         badgeList: [
+          {
+            badge: t('Technical preview'),
+            badgeColor: CatalogColor.orange,
+          },
           {
             badge: t('CLI-based'),
             badgeColor: CatalogColor.purple,
