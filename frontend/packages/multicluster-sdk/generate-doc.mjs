@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { readFileSync, writeFileSync, existsSync } from 'fs'
+import { existsSync, readFileSync, writeFileSync } from 'fs'
 import { dirname, extname, resolve } from 'path'
 import { buildDocumentation, documentationToMarkdown } from 'tsdoc-markdown'
 import ts from 'typescript'
@@ -110,7 +110,7 @@ export function getAllReferencedFiles(startFile, baseDir = process.cwd()) {
         if (ts.isExportDeclaration(node) && node.moduleSpecifier) {
           const modulePath = node.moduleSpecifier.text
           const resolvedPath = resolveModulePath(modulePath, absolutePath)
-          if (resolvedPath) {
+          if (resolvedPath && !resolvedPath.includes(`${resolve(baseDir, 'src/internal/search')}`)) { // avoid adding search-sdk exports into readme - not all functions are used.
             analyzeFile(resolvedPath)
           }
         }

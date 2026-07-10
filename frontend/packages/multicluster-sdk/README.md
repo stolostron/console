@@ -860,37 +860,47 @@ if (error) {
 }
 ```
 
+
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetPrometheusPoll.ts#L86)
 
 ### :gear: useFleetSearch
 
-A React hook that provides fleet-wide search functionality using the ACM search API, with optional real-time updates via a GraphQL WebSocket subscription.
+A React hook that provides fleet-wide search functionality using the ACM search API,
+with optional real-time updates via a GraphQL WebSocket subscription.
 
-When `subscriptionEnabled` is `false` (the default), the hook issues a one-shot GraphQL query and returns the results. When `subscriptionEnabled` is `true`, the hook additionally opens a WebSocket subscription and patches the locally-held results as INSERT, UPDATE, and DELETE events arrive — keeping the data always up to date without polling.
+When `subscriptionEnabled` is `false` (the default), the hook issues a one-shot
+GraphQL query and returns the results. When `subscriptionEnabled` is `true`, the
+hook additionally opens a WebSocket subscription and patches the locally-held
+results as INSERT, UPDATE, and DELETE events arrive — keeping the data always
+up to date without polling.
 
-Pagination is supported by setting `limit` and `offset` on the `SearchInput` object. The caller is responsible for constructing those values.
+Pagination is supported by setting `limit` and `offset` on the `SearchInput`
+object. The caller is responsible for constructing those values.
 
-| Function         | Type                                                                                                                                                                                              |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `useFleetSearch` | `<T extends K8sResourceCommon or K8sResourceCommon[]>(input: SearchInput or undefined, subscriptionEnabled?: boolean) => [SearchResult<T> or undefined, boolean, Error or undefined, () => void]` |
+| Function | Type |
+| ---------- | ---------- |
+| `useFleetSearch` | `<T extends K8sResourceCommon or K8sResourceCommon[]>(input: SearchInput or undefined, subscriptionEnabled?: boolean or undefined) => [SearchResult<T> or undefined, boolean, Error or undefined, () => void]` |
 
 Parameters:
 
-- `input`: The search input object (filters, keywords, limit, offset, etc.). Pass `undefined` to skip the query entirely.
-- `input.filters`: List of `SearchFilter` objects (property + values). Multiple filters are ANDed together.
-- `input.keywords`: List of strings to match across any text field (AND operation, case-insensitive).
-- `input.limit`: Maximum results returned. Defaults to 10,000; use `-1` for no limit.
-- `input.offset`: Number of results to skip; used with `limit` for pagination.
-- `subscriptionEnabled`: When `true`, a WebSocket subscription is opened and the local result set is kept current via incremental event patches. Defaults to `false`.
+* `input`: - The search input object (filters, keywords, limit, offset, etc.).
+Pass `undefined` to skip the query entirely.
+* `subscriptionEnabled`: - When `true`, a WebSocket subscription is opened
+and the local result set is kept current via incremental event patches.
+Defaults to `false`.
+
 
 Returns:
 
-A tuple containing:
-
-- `data`: The current search results mapped to Kubernetes resources, or `undefined` before the first response arrives.
-- `loaded`: `true` once the initial query has completed (regardless of whether the subscription is active).
-- `error`: Any query or subscription error, or `undefined` on success.
-- `refetch`: A stable callback that re-executes the base query and resets the local state to the fresh result.
+A tuple of:
+- `data` — The current search results mapped through
+{@link convertSearchItemToResource }, or `undefined` before the first
+response arrives.
+- `loaded` — `true` once the initial query has completed (regardless of
+whether the subscription is active).
+- `error` — Any query or subscription error, or `undefined` on success.
+- `refetch` — A stable callback that re-executes the base query and resets
+the local state to the fresh result.
 
 Examples:
 
@@ -912,57 +922,12 @@ const [pods, loaded, error, refetch] = useFleetSearch<K8sResourceCommon[]>(
       { property: 'namespace', values: ['default'] },
     ],
   },
-  true
+  true,
 )
 ```
 
+
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearch.ts#L65)
-
-### :gear: useFleetSearchSubscription
-
-A React hook that opens a GraphQL WebSocket subscription to the ACM search API and streams real-time change events for resources matching the given input.
-
-Events are pushed by the server over a WebSocket connection managed by the Apollo client's `graphql-ws` split link. Apollo re-renders the hook with the latest event on each push. Only the **most recent** event is returned — callers that need to react to each event should use a `useEffect` watching `latestEvent`.
-
-| Function                     | Type                                                                                                |
-| ---------------------------- | --------------------------------------------------------------------------------------------------- |
-| `useFleetSearchSubscription` | `(input: SearchInput or undefined) => [FleetSearchEvent or undefined, boolean, Error or undefined]` |
-
-Parameters:
-
-- `input`: The search input filters that define which resources to watch. Pass `undefined` to skip opening the WebSocket connection entirely.
-- `input.filters`: List of `SearchFilter` objects (property + values). Multiple filters are ANDed together.
-- `input.keywords`: List of strings to match across any text field (AND operation, case-insensitive).
-
-Returns:
-
-A tuple containing:
-
-- `latestEvent`: The most recent [`FleetSearchEvent`](#gear-fleetsearchevent) received from the WebSocket stream, or `undefined` before the first event arrives or when `input` is `undefined`.
-- `loading`: `true` until the WebSocket connection is established and the subscription is active.
-- `error`: Any Apollo subscription error, or `undefined` on success.
-
-Examples:
-
-```typescript
-// Watch for changes to all Pods in the default namespace
-const [latestEvent, loading, error] = useFleetSearchSubscription({
-  filters: [
-    { property: 'kind', values: ['Pod'] },
-    { property: 'namespace', values: ['default'] },
-  ],
-})
-
-useEffect(() => {
-  if (!latestEvent) return
-  console.log(`${latestEvent.operation} on uid ${latestEvent.uid}`)
-}, [latestEvent])
-
-// Skip the subscription entirely
-const [latestEvent, loading, error] = useFleetSearchSubscription(undefined)
-```
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearchSubscription.ts#L46)
 
 ### :gear: useFleetSearchPoll
 
@@ -1032,6 +997,59 @@ const [services, loaded, error] = useFleetSearchPoll({
 
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearchPoll.ts#L81)
+
+### :gear: useFleetSearchSubscription
+
+A React hook that opens a GraphQL WebSocket subscription to the ACM search API
+and streams real-time change events for resources matching the given input.
+
+Events are pushed by the server over a WebSocket connection managed by the
+Apollo client's `graphql-ws` split link. Apollo re-renders the hook with the
+latest event on each push. Only the **most recent** event is returned — callers
+that need to react to each event should use a `useEffect` watching `latestEvent`.
+
+| Function | Type |
+| ---------- | ---------- |
+| `useFleetSearchSubscription` | `(input: SearchInput or undefined) => [Event or undefined, boolean, Error or undefined]` |
+
+Parameters:
+
+* `input`: - The search input filters that define which resources to watch.
+Pass `undefined` to skip opening the WebSocket connection entirely.
+
+
+Returns:
+
+A tuple of:
+- `latestEvent` — the most recent {@link FleetSearchEvent } received from the
+WebSocket stream, or `undefined` before the first event arrives or when
+`input` is `undefined`.
+- `loading` — `true` until the WebSocket connection is established and the
+subscription is active.
+- `error` — any Apollo subscription error, or `undefined` on success.
+
+Examples:
+
+```typescript
+// Watch for changes to all Pods in the default namespace
+const [latestEvent, loading, error] = useFleetSearchSubscription({
+  filters: [
+    { property: 'kind', values: ['Pod'] },
+    { property: 'namespace', values: ['default'] },
+  ],
+})
+
+useEffect(() => {
+  if (!latestEvent) return
+  console.log(`${latestEvent.operation} on uid ${latestEvent.uid}`)
+}, [latestEvent])
+
+// Skip the subscription entirely
+const [latestEvent, loading, error] = useFleetSearchSubscription(undefined)
+```
+
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearchSubscription.ts#L46)
 
 ### :gear: useHubClusterName
 
@@ -1143,7 +1161,6 @@ if (error) {
 - [FleetResourceEventStreamProps](#gear-fleetresourceeventstreamprops)
 - [FleetResourceLinkProps](#gear-fleetresourcelinkprops)
 - [FleetResourcesObject](#gear-fleetresourcesobject)
-- [FleetSearchEvent](#gear-fleetsearchevent)
 - [FleetWatchK8sResource](#gear-fleetwatchk8sresource)
 - [FleetWatchK8sResources](#gear-fleetwatchk8sresources)
 - [FleetWatchK8sResult](#gear-fleetwatchk8sresult)
@@ -1152,7 +1169,6 @@ if (error) {
 - [ResourceRoute](#gear-resourceroute)
 - [ResourceRouteHandler](#gear-resourceroutehandler)
 - [ResourceRouteProps](#gear-resourcerouteprops)
-- [SearchInput](#gear-searchinput)
 - [SearchResult](#gear-searchresult)
 
 ### :gear: AdvancedSearchFilter
@@ -1161,7 +1177,7 @@ if (error) {
 | ---------- | ---------- |
 | `AdvancedSearchFilter` | `{ property: string; values: string[] }[]` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L9)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L10)
 
 ### :gear: ClusterSetData
 
@@ -1274,24 +1290,6 @@ Options for advanced cluster name retrieval with cluster set organization.
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L25)
 
-### :gear: FleetSearchEvent
-
-An event object pushed by the server over the WebSocket subscription opened by [`useFleetSearchSubscription`](#gear-usefleetsearchsubscription). Represents a single change detected in the ACM search index.
-
-| Type               | Type                                                                                                                                |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `FleetSearchEvent` | `{ newData?: Record<string, any> \| null; oldData?: Record<string, any> \| null; operation: string; timestamp: Date; uid: string }` |
-
-Fields:
-
-- `newData`: New resource data recorded in the search index (present for INSERT and UPDATE events).
-- `oldData`: Previous resource data from the search index (present for UPDATE and DELETE events).
-- `operation`: The type of change — one of `"INSERT"`, `"UPDATE"`, or `"DELETE"`.
-- `timestamp`: Time the change event was registered in the search index (may lag behind the actual Kubernetes change).
-- `uid`: The Kubernetes resource UID.
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L24)
-
 ### :gear: FleetWatchK8sResource
 
 | Type | Type |
@@ -1358,31 +1356,13 @@ This extension allows plugins to customize the route used for resources of the g
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/extensions/resource.ts#L20)
 
-### :gear: SearchInput
-
-Input object for ACM search queries and subscriptions. Used by [`useFleetSearch`](#gear-usefleetsearch), [`useFleetSearchSubscription`](#gear-usefleetsearchsubscription), and [`useFleetSearchPoll`](#gear-usefleetsearchpoll).
-
-| Type          | Type                                                                                                                                            |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `SearchInput` | `{ filters?: SearchFilter[] \| null; keywords?: string[] \| null; limit?: number \| null; offset?: number \| null; sortBy?: string[] \| null }` |
-
-Fields:
-
-- `filters`: List of `SearchFilter` objects (property + values). Multiple filters are combined with AND logic.
-- `keywords`: List of strings to match against any text field (AND logic, case-insensitive).
-- `limit`: Maximum number of results returned. Defaults to 10,000; use `-1` for no limit.
-- `offset`: Number of results to skip before returning; used with `limit` for pagination. Defaults to 0.
-- `sortBy`: Order results by a property and direction, e.g. `["name asc"]` or `["created desc"]`.
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/internal/search/search-sdk.ts#L125)
-
 ### :gear: SearchResult
 
 | Type | Type |
 | ---------- | ---------- |
 | `SearchResult` | `R extends (infer T)[] ? Fleet<T>[] : Fleet<R>` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L5)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L6)
 
 
 <!-- TSDOC_END -->
