@@ -66,7 +66,7 @@ const DownloadAndOSSelection: React.FC<RosaDownloadProps> = ({ onDownloadClick }
         <FormSelect
           value={selectedOS}
           onChange={handleOSChange}
-          aria-label="Select operating system"
+          aria-label={t('Select operating system')}
           data-testid="os-dropdown-rosa"
         >
           {operatingSystemOptions.map(({ value, label }) => (

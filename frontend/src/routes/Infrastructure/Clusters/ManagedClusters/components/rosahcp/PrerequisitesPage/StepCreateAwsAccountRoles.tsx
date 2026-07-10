@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Alert, List, ListComponent, ListItem, OrderType, Title } from '@patternfly/react-core'
-import { useTranslation } from '../../../../../../../lib/acm-i18next'
+import { Trans, useTranslation } from '../../../../../../../lib/acm-i18next'
 import InstructionCommand from './InstructionCommand'
 import { DOC_LINKS } from '../../../../../../../lib/doc-util'
 
@@ -38,15 +38,16 @@ export const StepCreateAWSAccountRoles = () => {
             isInline
             isPlain
             title={
-              <>
-                {t(
-                  'If you would prefer to manually create the required roles and policies within your AWS account, follow'
-                )}{' '}
-                <a target="_blank" rel="noreferrer" href={DOC_LINKS.AWS_CLI_GETTING_STARTED_MANUAL}>
-                  {t('these instructions')}
-                </a>
-                .
-              </>
+              <Trans
+                i18nKey="If you would prefer to manually create the required roles and policies within your AWS account, follow <instructionsLink>these instructions</instructionsLink>."
+                components={{
+                  instructionsLink: (
+                    <a target="_blank" href={DOC_LINKS.AWS_CLI_GETTING_STARTED_MANUAL}>
+                      {}
+                    </a>
+                  ),
+                }}
+              />
             }
           />
         </ListItem>

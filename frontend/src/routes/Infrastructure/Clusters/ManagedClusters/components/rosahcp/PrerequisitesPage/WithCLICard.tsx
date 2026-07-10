@@ -12,7 +12,7 @@ import {
   Title,
 } from '@patternfly/react-core'
 import { CodeIcon } from '@patternfly/react-icons/dist/esm/icons/code-icon'
-import { useTranslation } from '../../../../../../../lib/acm-i18next'
+import { Trans, useTranslation } from '../../../../../../../lib/acm-i18next'
 import InstructionCommand from './InstructionCommand'
 import { DOC_LINKS } from '../../../../../../../lib/doc-util'
 
@@ -43,10 +43,16 @@ export const WithCLICard = () => {
       </CardBody>
 
       <CardFooter>
-        {t('Learn how to')}{' '}
-        <a target="_blank" rel="noreferrer" href={DOC_LINKS.ROSA_HCP_CLI_URL}>
-          {t('deploy ROSA clusters with the ROSA CLI')}
-        </a>
+        <Trans
+          i18nKey="Learn how to <deployLink>deploy ROSA clusters with the ROSA CLI</deployLink>"
+          components={{
+            deployLink: (
+              <a target="_blank" href={DOC_LINKS.ROSA_HCP_CLI_URL}>
+                {}
+              </a>
+            ),
+          }}
+        />
       </CardFooter>
     </Card>
   )

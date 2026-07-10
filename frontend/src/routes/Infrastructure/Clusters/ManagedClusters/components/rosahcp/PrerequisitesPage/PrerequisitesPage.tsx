@@ -13,6 +13,9 @@ import {
   FlexItem,
   Grid,
   GridItem,
+  List,
+  ListComponent,
+  ListItem,
   PageSection,
   Split,
   SplitItem,
@@ -24,7 +27,7 @@ import {
 import { Secret } from '~/resources'
 
 import { AcmExpandableSection, AcmPage, AcmPageHeader } from '../../../../../../../ui-components'
-import { useTranslation } from '../../../../../../../lib/acm-i18next'
+import { Trans, useTranslation } from '../../../../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../../../../NavigationPath'
 import { DOC_LINKS } from '../../../../../../../lib/doc-util'
 import { RosaHCPModal } from '../RosaHCPModal/RosaHCPModal'
@@ -75,19 +78,21 @@ export const PrerequisitesPage = () => {
                 )}
               </StackItem>
               <StackItem>
-                <Flex>
-                  <FlexItem>
-                    <ExternalLinkButton isInline target="_blank" variant="link" href={DOC_LINKS.WHAT_IS_ROSA}>
-                      {t('Learn more about ROSA')}
-                    </ExternalLinkButton>
-                  </FlexItem>
-                  <FlexItem>{t('or')}</FlexItem>
-                  <FlexItem>
-                    <ExternalLinkButton isInline target="_blank" variant="link" href={DOC_LINKS.ROSA_COMMUNITY_SLACK}>
-                      {t('Slack us')}
-                    </ExternalLinkButton>
-                  </FlexItem>
-                </Flex>
+                <Trans
+                  i18nKey="<learnMoreRosaLink>Learn more about ROSA</learnMoreRosaLink> or <slackUsLink>Slack us</slackUsLink>"
+                  components={{
+                    learnMoreRosaLink: (
+                      <ExternalLinkButton isInline target="_blank" variant="link" href={DOC_LINKS.WHAT_IS_ROSA}>
+                        {}
+                      </ExternalLinkButton>
+                    ),
+                    slackUsLink: (
+                      <ExternalLinkButton isInline target="_blank" variant="link" href={DOC_LINKS.ROSA_COMMUNITY_SLACK}>
+                        {}
+                      </ExternalLinkButton>
+                    ),
+                  }}
+                />
               </StackItem>
             </Stack>
           }
@@ -122,20 +127,21 @@ export const PrerequisitesPage = () => {
 
                   <Grid hasGutter span={10}>
                     <GridItem span={4}>
-                      <Content component="ul">
-                        <Content component="li">{t('Enable AWS')}</Content>
-                        <Content component="li">{t('Configure Elastic Load Balancer (ELB)')}</Content>
-                      </Content>
+                      <List component={ListComponent.ul}>
+                        <ListItem>{t('Enable AWS')}</ListItem>
+                        <ListItem>{t('Configure Elastic Load Balancer (ELB)')}</ListItem>
+                      </List>
                     </GridItem>
 
                     <GridItem span={6}>
-                      <Content component="ul">
-                        <Content component="li">
-                          {t(`Set up a VPC for ROSA hosted control plane architecture (HCP) clusters
-                      (optional for ROSA classic architecture clusters)`)}
-                        </Content>
-                        <Content component="li">{t('Verify your quotas on AWS console')}</Content>
-                      </Content>
+                      <List component={ListComponent.ul}>
+                        <ListItem>
+                          {t(
+                            'Set up a VPC for ROSA hosted control plane architecture (HCP) clusters (optional for ROSA classic architecture clusters)'
+                          )}
+                        </ListItem>
+                        <ListItem>{t('Verify your quotas on AWS console')}</ListItem>
+                      </List>
                     </GridItem>
                   </Grid>
 

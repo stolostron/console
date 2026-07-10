@@ -11,7 +11,6 @@ import {
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useDataViewStrings } from '../../../../../lib/dataViewStrings'
-import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { AcmPage, AcmPageHeader, Provider } from '../../../../../ui-components'
 import { getTypedCreateClusterPath } from '../ClusterInfrastructureType'
@@ -24,6 +23,7 @@ import { RosaHCPModal } from '../components/rosahcp/RosaHCPModal/RosaHCPModal'
 import { Secret } from '~/resources'
 import React from 'react'
 import { useRecoilValue, useSharedAtoms } from '~/shared-recoil'
+import { DOC_LINKS } from '~/lib/doc-util'
 
 export function CreateAWSControlPlane() {
   const [t] = useTranslation()
@@ -39,8 +39,9 @@ export function CreateAWSControlPlane() {
   const { isCapaEnabled, isCapiEnabled } = useCheckClusterAPI()
   const { settingsState } = useSharedAtoms()
   const settings = useRecoilValue(settingsState)
+  const rosaHcpWizardFeatureFlag = settings.rosaHcpWizard === 'enabled'
 
-  const areCapiCapaEnabled = isCapaEnabled && isCapiEnabled && settings.rosaHcpWizard === 'enabled'
+  const areCapiCapaEnabled = isCapaEnabled && isCapiEnabled
   const [selectedSecret, setSelectedSecret] = React.useState<Secret[] | undefined>(undefined)
 
   const onDiagramToggle = (isExpanded: boolean) => {
@@ -55,15 +56,20 @@ export function CreateAWSControlPlane() {
   }
 
   const rosaHcpCard = useMemo(() => {
-    return areCapiCapaEnabled
+    return rosaHcpWizardFeatureFlag
       ? {
           type: CatalogCardItemType.Description,
           description: (
-            <HostedCard withCliClick={isHypershiftEnabled ? withCliClick : undefined} setIsModalOpen={setModalIsOpen} />
+            <HostedCard
+              isHypershiftEnabled={isHypershiftEnabled}
+              areCapiCapaEnabled={areCapiCapaEnabled}
+              withCliClick={isHypershiftEnabled ? withCliClick : undefined}
+              setIsModalOpen={setModalIsOpen}
+            />
           ) as unknown as string,
         }
       : null
-  }, [areCapiCapaEnabled, isHypershiftEnabled, withCliClick])
+  }, [areCapiCapaEnabled, isHypershiftEnabled, withCliClick, rosaHcpWizardFeatureFlag])
 
   const cards = useMemo(() => {
     const newCards: ICatalogCard[] = [
@@ -94,21 +100,31 @@ export function CreateAWSControlPlane() {
           },
           ...(rosaHcpCard ? [rosaHcpCard as unknown as ICatalogCardDescription] : []),
         ],
-        onClick: isHypershiftEnabled && !areCapiCapaEnabled ? nextStep(NavigationPath.createAWSCLI) : undefined,
+        onClick: rosaHcpWizardFeatureFlag
+          ? () => {}
+          : isHypershiftEnabled && loaded
+            ? nextStep(NavigationPath.createAWSCLI)
+            : undefined,
         alertTitle: (() => {
-          if (!loaded || isHypershiftEnabled) return undefined
-          return t('Hosted control plane operator must be enabled in order to continue')
+          if (rosaHcpWizardFeatureFlag && loaded && !isHypershiftEnabled && !areCapiCapaEnabled) {
+            return t('You must enable either CAPI/CAPA or Hypershift to proceed')
+          }
+          if (!rosaHcpWizardFeatureFlag && loaded && !isHypershiftEnabled) {
+            return t('Hosted control plane operator must be enabled in order to continue')
+          }
+          return undefined
         })(),
         alertVariant: 'info',
         alertContent: (() => {
-          if (!loaded || isHypershiftEnabled) return undefined
-          return (
-            <a href={DOC_LINKS.HOSTED_ENABLE_FEATURE_AWS} target="_blank" rel="noopener noreferrer">
-              {t('View documentation')} <ExternalLinkAltIcon />
-            </a>
-          )
+          if (!rosaHcpWizardFeatureFlag && loaded && !isHypershiftEnabled)
+            return (
+              <a href={DOC_LINKS.HOSTED_ENABLE_FEATURE_AWS} target="_blank" rel="noopener noreferrer">
+                {t('View documentation')} <ExternalLinkAltIcon />
+              </a>
+            )
+          return undefined
         })(),
-        badgeList: !areCapiCapaEnabled
+        badgeList: !rosaHcpWizardFeatureFlag
           ? [
               {
                 badge: t('CLI-based'),
@@ -150,7 +166,7 @@ export function CreateAWSControlPlane() {
       },
     ]
     return newCards
-  }, [nextStep, t, isHypershiftEnabled, loaded, areCapiCapaEnabled, rosaHcpCard])
+  }, [nextStep, t, isHypershiftEnabled, loaded, areCapiCapaEnabled, rosaHcpCard, rosaHcpWizardFeatureFlag])
 
   const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { List, ListComponent, ListItem, OrderType, Title } from '@patternfly/react-core'
-import { useTranslation } from '../../../../../../../lib/acm-i18next'
+import { Trans, useTranslation } from '../../../../../../../lib/acm-i18next'
 import InstructionCommand from './InstructionCommand'
 import { DOC_LINKS } from '../../../../../../../lib/doc-util'
 
@@ -24,8 +24,21 @@ export const StepCreateNetwork = () => {
         </ListItem>
       </List>
       <div className="pf-v6-u-mt-md">
-        {t('Learn more about the')} <a href={DOC_LINKS.ROSA_CREATE_NETWORK}>{t('create network command')}</a>{' '}
-        {t('and other ways to')} <a href={DOC_LINKS.CREATE_VPC_WAYS}>{t('create a VPC')}</a>
+        <Trans
+          i18nKey="Learn more about the <createNetworkLink>create network command</createNetworkLink> and other ways to <createVPCLink>create a VPC</createVPCLink>"
+          components={{
+            createNetworkLink: (
+              <a target="_blank" href={DOC_LINKS.ROSA_CREATE_NETWORK}>
+                {}
+              </a>
+            ),
+            createVPCLink: (
+              <a target="_blank" href={DOC_LINKS.CREATE_VPC_WAYS}>
+                {}
+              </a>
+            ),
+          }}
+        />
       </div>
     </>
   )

@@ -2,7 +2,7 @@
 
 import { Card, CardBody, CardTitle, Content, ContentVariants, Stack, StackItem, Title } from '@patternfly/react-core'
 import TerraformLogo from './TerraformLogo'
-import { useTranslation } from '../../../../../../../lib/acm-i18next'
+import { Trans, useTranslation } from '../../../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../../../lib/doc-util'
 
 export const WithTerraFormCard = () => {
@@ -26,14 +26,21 @@ export const WithTerraFormCard = () => {
           {t('Create a ROSA HCP cluster using Terraform')}
         </Content>
         <Content component={ContentVariants.p} className="pf-v6-u-mb-sm">
-          {t('Learn how to')}{' '}
-          <a target="_blank" href={DOC_LINKS.TERRAFORM_ROSA_HCP_URL}>
-            {t('deploy a ROSA HCP cluster')}
-          </a>{' '}
-          {t('or')}{' '}
-          <a target="_blank" href={DOC_LINKS.TERRAFORM_REGISTRY_ROSA_HCP}>
-            {t('visit the Terraform registry')}
-          </a>
+          <Trans
+            i18nKey="Learn how to <deployLink>deploy a ROSA HCP cluster</deployLink> or <registryLink>visit the Terraform registry</registryLink>"
+            components={{
+              deployLink: (
+                <a target="_blank" href={DOC_LINKS.TERRAFORM_ROSA_HCP_URL}>
+                  {}
+                </a>
+              ),
+              registryLink: (
+                <a target="_blank" href={DOC_LINKS.TERRAFORM_REGISTRY_ROSA_HCP}>
+                  {}
+                </a>
+              ),
+            }}
+          />
         </Content>
       </CardBody>
     </Card>

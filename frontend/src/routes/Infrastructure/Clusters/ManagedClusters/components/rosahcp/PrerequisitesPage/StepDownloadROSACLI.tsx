@@ -4,14 +4,19 @@ import { Content, ContentVariants } from '@patternfly/react-core'
 
 import { DOC_LINKS } from '../../../../../../../lib/doc-util'
 import DownloadAndOSSelection from './DownloadAndOSSelection'
-import { useTranslation } from '~/lib/acm-i18next'
+import { Trans, useTranslation } from '~/lib/acm-i18next'
 
 export const StepDownloadROSAClI = () => {
   const [t] = useTranslation()
   return (
     <div style={{ marginTop: 'var(--pf-t--global--spacer--md)' }}>
       <Content component="h5">
-        {t('Download and install the ROSA and AWS command line tools (CLI) and add it to your <code>PATH</code>.')}
+        <Trans
+          i18nKey="Download and install the ROSA and AWS command line tools (CLI) and add it to your <codeTag>PATH</codeTag>."
+          components={{
+            codeTag: <code />,
+          }}
+        />
       </Content>
       <Content component="ol">
         <Content component="li" className="pf-v6-u-mb-lg">
@@ -28,15 +33,21 @@ export const StepDownloadROSAClI = () => {
         <Content component="li">
           <Content component={ContentVariants.p}>{t('Download, setup and configure the AWS CLI version 2')}</Content>
           <Content component={ContentVariants.p} className="pf-v6-u-mt-lg">
-            {t('Learn more about')}{' '}
-            <a target="_blank" rel="noreferrer" href={DOC_LINKS.AWS_CLI}>
-              {t('installing')}
-            </a>{' '}
-            {t('and')}{' '}
-            <a target="_blank" rel="noreferrer" href={DOC_LINKS.AWS_CLI_CONFIGURATION_INSTRUCTIONS}>
-              {t('configuring')}
-            </a>{' '}
-            {t('the AWS CLI.')}
+            <Trans
+              i18nKey="Learn more about <installingLink>installing</installingLink> and <configuringLink>configuring</configuringLink> the AWS CLI."
+              components={{
+                installingLink: (
+                  <a target="_blank" href={DOC_LINKS.AWS_CLI}>
+                    {}
+                  </a>
+                ),
+                configuringLink: (
+                  <a target="_blank" href={DOC_LINKS.AWS_CLI_CONFIGURATION_INSTRUCTIONS}>
+                    {}
+                  </a>
+                ),
+              }}
+            />
           </Content>
         </Content>
       </Content>

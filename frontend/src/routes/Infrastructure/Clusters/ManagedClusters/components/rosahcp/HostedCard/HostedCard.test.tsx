@@ -12,7 +12,13 @@ describe('HostedCard', () => {
   const mockSetIsModalOpen = jest.fn()
   const mockWithCliClick = jest.fn()
 
-  const Component = () => (
+  const Component = ({
+    areCapiCapaEnabled = true,
+    isHypershiftEnabled = true,
+  }: {
+    areCapiCapaEnabled?: boolean
+    isHypershiftEnabled?: boolean
+  } = {}) => (
     <RecoilRoot
       initializeState={(snapshot) => {
         snapshot.set(multiClusterEnginesState, [
@@ -27,7 +33,12 @@ describe('HostedCard', () => {
       }}
     >
       <MemoryRouter>
-        <HostedCard setIsModalOpen={mockSetIsModalOpen} withCliClick={mockWithCliClick} />
+        <HostedCard
+          setIsModalOpen={mockSetIsModalOpen}
+          withCliClick={mockWithCliClick}
+          areCapiCapaEnabled={areCapiCapaEnabled}
+          isHypershiftEnabled={isHypershiftEnabled}
+        />
       </MemoryRouter>
     </RecoilRoot>
   )
@@ -55,7 +66,7 @@ describe('HostedCard', () => {
   })
 
   test('should call setIsModalOpen when Deploy with web interface button is clicked', async () => {
-    render(<Component />)
+    render(<Component areCapiCapaEnabled={true} isHypershiftEnabled={true} />)
 
     const deployButton = screen.getByRole('button', { name: 'Deploy with web interface' })
     await userEvent.click(deployButton)
@@ -64,7 +75,7 @@ describe('HostedCard', () => {
   })
 
   test('should call withCliClick when Deploy with CLI button is clicked', async () => {
-    render(<Component />)
+    render(<Component areCapiCapaEnabled={true} isHypershiftEnabled={true} />)
 
     const cliButton = screen.getByRole('button', { name: 'Deploy with CLI' })
     await userEvent.click(cliButton)

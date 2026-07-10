@@ -12,7 +12,7 @@ import {
   StackItem,
   Title,
 } from '@patternfly/react-core'
-import { useTranslation } from '../../../../../../../lib/acm-i18next'
+import { Trans, useTranslation } from '../../../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../../../lib/doc-util'
 import { getTypedCreateCredentialsPath } from '../../../../../../Credentials/CreateCredentialsCatalog'
 import { Provider } from '../../../../../../../ui-components'
@@ -31,14 +31,19 @@ export const ServiceAccountSteps = () => {
           <StackItem>
             <List component={ListComponent.ol} type={OrderType.number}>
               <ListItem className="pf-v6-u-mb-lg">
-                {t('To create a ROSA HCP cluster, a Red Hat service account is required. ')}
-                <a target="_blank" rel="noreferrer" href={DOC_LINKS.ROSA_SERVICE_ACCOUNT}>
-                  {t('Create a service account')}
-                </a>{' '}
-                {t('before starting cluster creation.')}
+                <Trans
+                  i18nKey="To create a ROSA HCP cluster, a Red Hat service account is required. <serviceAccountLink>Create a service account</serviceAccountLink> before starting cluster creation."
+                  components={{
+                    serviceAccountLink: (
+                      <a target="_blank" href={DOC_LINKS.ROSA_SERVICE_ACCOUNT}>
+                        {}
+                      </a>
+                    ),
+                  }}
+                />
               </ListItem>
               <ListItem className="pf-v6-u-mb-lg">
-                {t('After creating a service account, please add it to your Advanced Cluser Manager credentials. ')}
+                {t('After creating a service account, please add it to your Advanced Cluser Manager credentials.')}
                 <Link to={getTypedCreateCredentialsPath(Provider.redhatcloud)}>{t('Add credentials')}</Link>
               </ListItem>
             </List>
