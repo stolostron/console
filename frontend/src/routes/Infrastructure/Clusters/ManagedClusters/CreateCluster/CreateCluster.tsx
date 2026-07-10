@@ -25,7 +25,13 @@ import {
   HypershiftAgentContext,
   useHypershiftContextValues,
 } from './components/assisted-installer/hypershift/HypershiftAgentContext'
-import { append, arrayItemHasKey, getName, setAvailableConnections } from './controlData/ControlDataHelpers'
+import {
+  append,
+  arrayItemHasKey,
+  getName,
+  getNamespace,
+  setAvailableConnections,
+} from './controlData/ControlDataHelpers'
 import aiTemplate from './templates/assisted-installer/ai-template.hbs'
 import cimTemplate from './templates/assisted-installer/cim-template.hbs'
 import hypershiftTemplate from './templates/assisted-installer/hypershift-template.hbs'
@@ -338,6 +344,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   Handlebars.registerHelper('arrayItemHasKey', arrayItemHasKey)
   Handlebars.registerHelper('append', append)
   Handlebars.registerHelper('getName', getName)
+  Handlebars.registerHelper('getNamespace', getNamespace)
   Handlebars.registerHelper('escapeYAML', (value) => jsyaml.dump(Array.isArray(value) ? value[0] : value))
 
   const { canJoinClusterSets } = useCanJoinClusterSets()
