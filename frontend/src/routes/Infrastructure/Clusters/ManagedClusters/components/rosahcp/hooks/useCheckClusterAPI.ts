@@ -1,6 +1,7 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { useMultiClusterEngineComponents } from '~/hooks/use-multi-cluster-engine-components'
 
-/* Copyright Contributors to the Open Cluster Management project */
 export const useCheckClusterAPI = () => {
   const { components, loaded } = useMultiClusterEngineComponents()
   const isCapiEnabled = components.some((component) => component.name === 'cluster-api' && component.enabled)
