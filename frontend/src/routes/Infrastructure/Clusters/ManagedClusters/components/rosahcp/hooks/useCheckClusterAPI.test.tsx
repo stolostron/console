@@ -1,72 +1,81 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { renderHook } from '@testing-library/react-hooks'
-import { RecoilRoot } from 'recoil'
-import { multiClusterEnginesState } from '../../../../../../../atoms'
+import { renderHook, act } from '@testing-library/react-hooks'
+import nock from 'nock'
 import { useCheckClusterAPI } from './useCheckClusterAPI'
 
-describe('useCheckClusterAPI', () => {
-  const createWrapper =
-    (mceComponents: { name: string; enabled: boolean }[] = []) =>
-    ({ children }: { children: React.ReactNode }) => (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(multiClusterEnginesState, [
-            {
-              spec: {
-                overrides: {
-                  components: mceComponents,
-                },
-              },
-            },
-          ] as any)
-        }}
-      >
-        {children}
-      </RecoilRoot>
-    )
+function nockMceComponents(components: { name: string; enabled: boolean }[]) {
+  return nock(process.env.JEST_DEFAULT_HOST as string)
+    .get('/multiclusterengine/components')
+    .reply(200, components)
+}
 
-  test('should return isCapiEnabled true when cluster-api component is enabled', () => {
-    const wrapper = createWrapper([{ name: 'cluster-api', enabled: true }])
-    const { result } = renderHook(() => useCheckClusterAPI(), { wrapper })
+describe('useCheckClusterAPI', () => {
+  beforeEach(() => {
+    nock.cleanAll()
+  })
+
+  test('should return isCapiEnabled true when cluster-api component is enabled', async () => {
+    nockMceComponents([{ name: 'cluster-api', enabled: true }])
+    const { result, waitForNextUpdate } = renderHook(() => useCheckClusterAPI())
+
+    await act(async () => {
+      await waitForNextUpdate()
+    })
 
     expect(result.current.isCapiEnabled).toBe(true)
     expect(result.current.isCapaEnabled).toBe(false)
   })
 
-  test('should return isCapaEnabled true when cluster-api-provider-aws component is enabled', () => {
-    const wrapper = createWrapper([{ name: 'cluster-api-provider-aws', enabled: true }])
-    const { result } = renderHook(() => useCheckClusterAPI(), { wrapper })
+  test('should return isCapaEnabled true when cluster-api-provider-aws component is enabled', async () => {
+    nockMceComponents([{ name: 'cluster-api-provider-aws', enabled: true }])
+    const { result, waitForNextUpdate } = renderHook(() => useCheckClusterAPI())
+
+    await act(async () => {
+      await waitForNextUpdate()
+    })
 
     expect(result.current.isCapiEnabled).toBe(false)
     expect(result.current.isCapaEnabled).toBe(true)
   })
 
-  test('should return both false when no components are enabled', () => {
-    const wrapper = createWrapper([])
-    const { result } = renderHook(() => useCheckClusterAPI(), { wrapper })
+  test('should return both false when no components are enabled', async () => {
+    nockMceComponents([])
+    const { result, waitForNextUpdate } = renderHook(() => useCheckClusterAPI())
+
+    await act(async () => {
+      await waitForNextUpdate()
+    })
 
     expect(result.current.isCapiEnabled).toBe(false)
     expect(result.current.isCapaEnabled).toBe(false)
   })
 
-  test('should return both true when both components are enabled', () => {
-    const wrapper = createWrapper([
+  test('should return both true when both components are enabled', async () => {
+    nockMceComponents([
       { name: 'cluster-api', enabled: true },
       { name: 'cluster-api-provider-aws', enabled: true },
     ])
-    const { result } = renderHook(() => useCheckClusterAPI(), { wrapper })
+    const { result, waitForNextUpdate } = renderHook(() => useCheckClusterAPI())
+
+    await act(async () => {
+      await waitForNextUpdate()
+    })
 
     expect(result.current.isCapiEnabled).toBe(true)
     expect(result.current.isCapaEnabled).toBe(true)
   })
 
-  test('should return false when components exist but are disabled', () => {
-    const wrapper = createWrapper([
+  test('should return false when components exist but are disabled', async () => {
+    nockMceComponents([
       { name: 'cluster-api', enabled: false },
       { name: 'cluster-api-provider-aws', enabled: false },
     ])
-    const { result } = renderHook(() => useCheckClusterAPI(), { wrapper })
+    const { result, waitForNextUpdate } = renderHook(() => useCheckClusterAPI())
+
+    await act(async () => {
+      await waitForNextUpdate()
+    })
 
     expect(result.current.isCapiEnabled).toBe(false)
     expect(result.current.isCapaEnabled).toBe(false)
