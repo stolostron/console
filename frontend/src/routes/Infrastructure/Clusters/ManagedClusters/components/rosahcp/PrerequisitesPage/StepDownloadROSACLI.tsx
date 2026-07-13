@@ -12,7 +12,7 @@ export const StepDownloadROSAClI = () => {
     <div style={{ marginTop: 'var(--pf-t--global--spacer--md)' }}>
       <Content component="h5">
         <Trans
-          i18nKey="Download and install the ROSA and AWS command line tools (CLI) and add it to your <codeTag>PATH</codeTag>."
+          i18nKey="Download and install the ROSA and AWS command line tools (CLI) and add them to your <codeTag>PATH</codeTag>."
           components={{
             codeTag: <code />,
           }}

@@ -43,8 +43,12 @@ export const ServiceAccountSteps = () => {
                 />
               </ListItem>
               <ListItem className="pf-v6-u-mb-lg">
-                {t('After creating a service account, please add it to your Advanced Cluser Manager credentials.')}
-                <Link to={getTypedCreateCredentialsPath(Provider.redhatcloud)}>{t('Add credentials')}</Link>
+                <Trans
+                  i18nKey="After creating a service account, please add it to your Advanced Cluster Manager credentials. <addCredentialLink>Add credential.</addCredentialLink>"
+                  components={{
+                    addCredentialLink: <Link to={getTypedCreateCredentialsPath(Provider.redhatcloud)}>{}</Link>,
+                  }}
+                />
               </ListItem>
             </List>
           </StackItem>

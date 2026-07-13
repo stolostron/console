@@ -56,7 +56,7 @@ export const HostedCard = (props: HostedCardProps) => {
                 <Stack hasGutter>
                   <StackItem>
                     <Tooltip
-                      content={t('Enable Cluster API and Cluster API for AWS to continue')}
+                      content={t('Enable Cluster API and Cluster API for AWS in order to continue')}
                       trigger={areCapiCapaEnabled ? 'manual' : 'mouseenter focus'}
                     >
                       <span tabIndex={areCapiCapaEnabled ? undefined : 0}>

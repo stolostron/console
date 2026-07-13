@@ -36,16 +36,19 @@ describe('ServiceAccountSteps', () => {
   test('should render the Add credentials link', () => {
     render(<Component />)
 
-    expect(screen.getByText('Add credentials')).toBeInTheDocument()
+    expect(screen.getByText('Add credential.')).toBeInTheDocument()
   })
 
   test('should render the add credentials instruction text', () => {
     render(<Component />)
 
     expect(
-      screen.getByText('After creating a service account, please add it to your Advanced Cluser Manager credentials.', {
-        exact: false,
-      })
+      screen.getByText(
+        'After creating a service account, please add it to your Advanced Cluster Manager credentials.',
+        {
+          exact: false,
+        }
+      )
     ).toBeInTheDocument()
   })
 

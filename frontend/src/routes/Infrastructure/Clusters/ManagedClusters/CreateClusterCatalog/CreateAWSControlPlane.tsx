@@ -107,7 +107,9 @@ export function CreateAWSControlPlane() {
             : undefined,
         alertTitle: (() => {
           if (rosaHcpWizardFeatureFlag && loaded && !isHypershiftEnabled && !areCapiCapaEnabled) {
-            return t('You must enable either CAPI/CAPA or Hypershift to proceed')
+            return t(
+              'You must enable either Cluster API and Cluster API for AWS or Hosted control planes in order to continue'
+            )
           }
           if (!rosaHcpWizardFeatureFlag && loaded && !isHypershiftEnabled) {
             return t('Hosted control plane operator must be enabled in order to continue')
