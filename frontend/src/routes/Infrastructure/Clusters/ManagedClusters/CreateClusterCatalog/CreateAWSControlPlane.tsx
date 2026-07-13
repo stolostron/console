@@ -5,18 +5,25 @@ import {
   CatalogColor,
   DataViewStringContext,
   ICatalogCard,
+  ICatalogCardDescription,
   ItemView,
 } from '@stolostron/react-data-view'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useDataViewStrings } from '../../../../../lib/dataViewStrings'
-import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { AcmPage, AcmPageHeader, Provider } from '../../../../../ui-components'
 import { getTypedCreateClusterPath } from '../ClusterInfrastructureType'
 import { useIsHypershiftEnabled } from '../../../../../hooks/use-hypershift-enabled'
 import { HypershiftDiagramExpand } from './common/HypershiftDiagramExpand'
 import { Icon } from '@patternfly/react-core'
+import { useCheckClusterAPI } from '../components/rosahcp/hooks/useCheckClusterAPI'
+import { HostedCard } from '../components/rosahcp/HostedCard/HostedCard'
+import { RosaHCPModal } from '../components/rosahcp/RosaHCPModal/RosaHCPModal'
+import { Secret } from '~/resources'
+import React from 'react'
+import { useRecoilValue, useSharedAtoms } from '~/shared-recoil'
+import { DOC_LINKS } from '~/lib/doc-util'
 
 export function CreateAWSControlPlane() {
   const [t] = useTranslation()
@@ -25,11 +32,45 @@ export function CreateAWSControlPlane() {
   const [isMouseOverControlPlaneLink, setIsMouseOverControlPlaneLink] = useState(false)
   const [isHypershiftEnabled, loaded] = useIsHypershiftEnabled()
 
+  const [modalIsOpen, setModalIsOpen] = useState(false)
+
+  const withCliClick = nextStep(NavigationPath.createAWSCLI)
+
+  const { isCapaEnabled, isCapiEnabled } = useCheckClusterAPI()
+  const { settingsState } = useSharedAtoms()
+  const settings = useRecoilValue(settingsState)
+  const rosaHcpWizardFeatureFlag = settings.rosaHcpWizard === 'enabled'
+
+  const areCapiCapaEnabled = isCapaEnabled && isCapiEnabled
+  const [selectedSecret, setSelectedSecret] = React.useState<Secret[] | undefined>(undefined)
+
   const onDiagramToggle = (isExpanded: boolean) => {
     if (!isMouseOverControlPlaneLink) {
       setIsDiagramExpanded(isExpanded)
     }
   }
+
+  const close = () => {
+    setSelectedSecret(undefined)
+    setModalIsOpen(false)
+  }
+
+  const rosaHcpCard = useMemo(() => {
+    return rosaHcpWizardFeatureFlag
+      ? {
+          type: CatalogCardItemType.Description,
+          description: (
+            <HostedCard
+              isHypershiftEnabled={isHypershiftEnabled}
+              areCapiCapaEnabled={areCapiCapaEnabled}
+              withCliClick={isHypershiftEnabled ? withCliClick : undefined}
+              setIsModalOpen={setModalIsOpen}
+            />
+          ) as unknown as string,
+        }
+      : null
+  }, [areCapiCapaEnabled, isHypershiftEnabled, withCliClick, rosaHcpWizardFeatureFlag])
+
   const cards = useMemo(() => {
     const newCards: ICatalogCard[] = [
       {
@@ -57,27 +98,42 @@ export function CreateAWSControlPlane() {
               { text: t('Quickly provisions clusters.') },
             ],
           },
+          ...(rosaHcpCard ? [rosaHcpCard as unknown as ICatalogCardDescription] : []),
         ],
-        onClick: isHypershiftEnabled ? nextStep(NavigationPath.createAWSCLI) : undefined,
+        onClick: rosaHcpWizardFeatureFlag
+          ? () => {}
+          : isHypershiftEnabled && loaded
+            ? nextStep(NavigationPath.createAWSCLI)
+            : undefined,
         alertTitle: (() => {
-          if (!loaded || isHypershiftEnabled) return undefined
-          return t('Hosted control plane operator must be enabled in order to continue')
+          if (rosaHcpWizardFeatureFlag && loaded && !isHypershiftEnabled && !areCapiCapaEnabled) {
+            return t(
+              'You must enable either Cluster API and Cluster API for AWS or Hosted control planes in order to continue'
+            )
+          }
+          if (!rosaHcpWizardFeatureFlag && loaded && !isHypershiftEnabled) {
+            return t('Hosted control plane operator must be enabled in order to continue')
+          }
+          return undefined
         })(),
         alertVariant: 'info',
         alertContent: (() => {
-          if (!loaded || isHypershiftEnabled) return undefined
-          return (
-            <a href={DOC_LINKS.HOSTED_ENABLE_FEATURE_AWS} target="_blank" rel="noopener noreferrer">
-              {t('View documentation')} <ExternalLinkAltIcon />
-            </a>
-          )
+          if (!rosaHcpWizardFeatureFlag && loaded && !isHypershiftEnabled)
+            return (
+              <a href={DOC_LINKS.HOSTED_ENABLE_FEATURE_AWS} target="_blank" rel="noopener noreferrer">
+                {t('View documentation')} <ExternalLinkAltIcon />
+              </a>
+            )
+          return undefined
         })(),
-        badgeList: [
-          {
-            badge: t('CLI-based'),
-            badgeColor: CatalogColor.purple,
-          },
-        ],
+        badgeList: !rosaHcpWizardFeatureFlag
+          ? [
+              {
+                badge: t('CLI-based'),
+                badgeColor: CatalogColor.purple,
+              },
+            ]
+          : undefined,
       },
       {
         id: 'standalone',
@@ -112,7 +168,7 @@ export function CreateAWSControlPlane() {
       },
     ]
     return newCards
-  }, [nextStep, t, isHypershiftEnabled, loaded])
+  }, [nextStep, t, isHypershiftEnabled, loaded, areCapiCapaEnabled, rosaHcpCard, rosaHcpWizardFeatureFlag])
 
   const keyFn = useCallback((card: ICatalogCard) => card.id, [])
 
@@ -154,6 +210,12 @@ export function CreateAWSControlPlane() {
           }
         />
       </DataViewStringContext.Provider>
+      <RosaHCPModal
+        isModalOpen={modalIsOpen}
+        close={close}
+        selectedSecret={selectedSecret}
+        setSelectedSecret={setSelectedSecret}
+      />
     </AcmPage>
   )
 }

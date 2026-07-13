@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { clickByTestId, isCardEnabled, waitForNocks } from '../../../../../lib/test-util'
@@ -7,6 +7,7 @@ import { NavigationPath } from '../../../../../NavigationPath'
 import { CreateAWSControlPlane } from './CreateAWSControlPlane'
 import { nockIgnoreApiPaths } from '../../../../../lib/nock-util'
 import { nockHypershiftStatus } from '../../../../../lib/nock-hypershift-status'
+import { nockMultiClusterEngineComponents } from '../../../../../lib/nock-mce-components'
 import { managedClusterAddonsState, multiClusterEnginesState } from '../../../../../atoms'
 import {
   mockManagedClusterAddOn,
@@ -17,6 +18,7 @@ import {
 describe('CreateAWSControlPlane', () => {
   beforeEach(() => {
     nockIgnoreApiPaths()
+    nockMultiClusterEngineComponents()
   })
 
   const Component = ({ enableHypershift = true }: { enableHypershift?: boolean }) => {
@@ -44,7 +46,7 @@ describe('CreateAWSControlPlane', () => {
     const { getByTestId } = render(<Component />)
     await waitForNocks([hypershiftStatusNock])
 
-    expect(isCardEnabled(getByTestId('hosted'))).toBe(true)
+    await waitFor(() => expect(isCardEnabled(getByTestId('hosted'))).toBe(true))
   })
 
   test('Hosted should be disabled when hypershift is disabled', async () => {
@@ -53,7 +55,7 @@ describe('CreateAWSControlPlane', () => {
     const { getByTestId } = render(<Component enableHypershift={false} />)
     await waitForNocks([hypershiftStatusNock])
 
-    expect(isCardEnabled(getByTestId('hosted'))).toBe(false)
+    await waitFor(() => expect(isCardEnabled(getByTestId('hosted'))).toBe(false))
     await clickByTestId('hosted')
   })
 

@@ -37,6 +37,7 @@ import { clusterVersion } from './routes/clusterVersion'
 import { watchTLSSecurityProfile } from './lib/tlsProfileWatch'
 import { watchPlacementDebugCA } from './lib/placementDebugCAWatch'
 import { invalidatePlacementDebugAgent } from './lib/agent'
+import { multiClusterEngineComponents } from './routes/multiClusterEngineComponents'
 
 const isProduction = process.env.NODE_ENV === 'production'
 const isDevelopment = process.env.NODE_ENV === 'development'
@@ -87,6 +88,7 @@ router.all('/virtualmachinesnapshots/*', virtualMachineProxy)
 router.all('/virtualmachinerestores', virtualMachineProxy)
 router.get('/vmResourceUsage/cluster/:cluster/namespace/:namespace', vmResourceUsageProxy)
 router.get('/multiclusterhub/components', multiClusterHubComponents)
+router.get('/multiclusterengine/components', multiClusterEngineComponents)
 router.all('/managedclusterproxy/*', managedClusterProxy)
 router.get('/*', serveHandler)
 
