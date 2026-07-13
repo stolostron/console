@@ -52,9 +52,9 @@
     "yaml": "1.10.3"
   },
   "devDependencies": {
-    "@babel/core": "^7.29.0",
-    "@babel/preset-react": "^7.28.5",
-    "@babel/preset-typescript": "^7.28.5",
+    "@babel/core": "^7.29.7",
+    "@babel/preset-react": "^7.29.7",
+    "@babel/preset-typescript": "^7.29.7",
     "@cypress/code-coverage": "^3.14.4",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.6.2",
     "@react-hook/resize-observer": "1.2.6",
