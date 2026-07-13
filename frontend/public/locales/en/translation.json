@@ -1701,7 +1701,6 @@
   "hibernate": "Hibernate",
   "hibernating": "Stopping",
   "hibernating.tooltip": "This action is currently unavailable because the cluster is powered down.",
-  "Hide card": "Hide card",
   "Hide related resources": "Hide related resources",
   "Hide secret": "Hide secret",
   "high": "high",
