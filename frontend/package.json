@@ -51,8 +51,8 @@
     "@mui/material": "^5.18.0",
     "@octokit/rest": "19.0.13",
     "@octokit/types": "6.41.0",
-    "@openshift-assisted/locales": "5.0.0-cim",
-    "@openshift-assisted/ui-lib": "5.0.0-cim",
+    "@openshift-assisted/locales": "5.0.1-cim",
+    "@openshift-assisted/ui-lib": "5.0.1-cim",
     "@patternfly/patternfly": "^6.5.2",
     "@patternfly/react-charts": "^8.5.1",
     "@patternfly/react-code-editor": "^6.5.1",
@@ -217,11 +217,6 @@
     "webpack-bundle-analyzer": "4.10.2",
     "webpack-cli": "4.10.0",
     "webpack-dev-server": "^4.15.2"
-  },
-  "overrides": {
-    "@openshift-assisted/ui-lib": {
-      "@openshift-console/dynamic-plugin-sdk": "4.22.0"
-    }
   },
   "browserslist": {
     "production": [
