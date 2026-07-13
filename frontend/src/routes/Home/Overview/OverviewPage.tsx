@@ -7,17 +7,13 @@ import {
   CardTitle,
   ContentVariants,
   Divider,
-  Dropdown,
-  DropdownItem,
   Gallery,
   GalleryItem,
-  MenuToggle,
-  MenuToggleElement,
   PageSection,
   Popover,
   Skeleton,
 } from '@patternfly/react-core'
-import { AngleDownIcon, AngleUpIcon, EllipsisVIcon, ExternalLinkAltIcon, HelpIcon } from '@patternfly/react-icons'
+import { AngleDownIcon, AngleUpIcon, ExternalLinkAltIcon, HelpIcon } from '@patternfly/react-icons'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AcmDynamicGrid } from '../../../components/AcmDynamicGrid'
 import { KubevirtProviderAlert } from '../../../components/KubevirtProviderAlert'
@@ -62,11 +58,6 @@ import {
   parseUpgradeRiskPredictions,
 } from './overviewDataFunctions'
 
-interface WidgetLayout {
-  visible: boolean
-  position: number
-}
-
 export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Record<string, string[]> }>) {
   const { selectedClusterLabels } = props
   const { t } = useTranslation()
@@ -76,15 +67,6 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
   const allAddons = useClusterAddons()
   const policyReports = useRecoilValue(policyreportState)
   const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
-  const [isOpen, setIsOpen] = useState(false)
-  const [summarySectionWidgetToggle, setSummarySectionWidgetToggle] = useState<Record<string, WidgetLayout>>({
-    clusterProvider: { visible: true, position: 0 },
-    appType: { visible: true, position: 1 },
-    policies: { visible: true, position: 2 },
-    clusterVersion: { visible: true, position: 3 },
-    nodes: { visible: true, position: 4 },
-    coreCount: { visible: true, position: 5 },
-  })
   const [isInsightsSectionOpen, setIsInsightsSectionOpen] = useState<boolean>(
     localStorage.getItem('insights-section-toggle') ? localStorage.getItem('insights-section-toggle') === 'true' : true
   )
@@ -380,47 +362,12 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
           <SummaryStatusCard key={'policies-status-summary'} title={t('Policies')} data={policySummary} />
           <SummaryClustersCard isPieChart title={t('Cluster version')} data={clusterVersionSummary} />
           <SummaryStatusCard key={'node-summary'} title={t('Nodes')} data={nodeSummary} />
-          {summarySectionWidgetToggle['coreCount'].visible && (
-            <Card style={{ height: '200px' }}>
-              <CardTitle style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                {t('Worker core count')}
-                <Dropdown
-                  onSelect={() => setIsOpen(!isOpen)}
-                  toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
-                    <MenuToggle
-                      ref={toggleRef}
-                      onClick={() => {
-                        setIsOpen(!isOpen)
-                      }}
-                      variant="plain"
-                      isExpanded={isOpen}
-                    >
-                      <EllipsisVIcon />
-                    </MenuToggle>
-                  )}
-                  isOpen={isOpen}
-                  isPlain={true}
-                >
-                  <DropdownItem
-                    key="action"
-                    onClick={() =>
-                      setSummarySectionWidgetToggle({
-                        clusterProvider: { visible: true, position: 0 },
-                        appType: { visible: true, position: 1 },
-                        policies: { visible: true, position: 2 },
-                        clusterVersion: { visible: true, position: 3 },
-                        nodes: { visible: true, position: 4 },
-                        coreCount: { visible: false, position: 5 },
-                      })
-                    }
-                  >
-                    {t('Hide card')}
-                  </DropdownItem>
-                </Dropdown>
-              </CardTitle>
-              <CardBody isFilled={false}>{workerCoreCardContent}</CardBody>
-            </Card>
-          )}
+          <Card style={{ height: '200px' }}>
+            <CardTitle style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              {t('Worker core count')}
+            </CardTitle>
+            <CardBody isFilled={false}>{workerCoreCardContent}</CardBody>
+          </Card>
         </AcmDynamicGrid>
       </PageSection>
 
