@@ -58,11 +58,6 @@ export default function Overview() {
               usePageInsets
               aria-label={t('Overview page navigation tabs')}
               role="region"
-              style={{
-                // match page section padding inset
-                paddingInlineStart:
-                  'calc(var(--pf-v6-c-page__main-section--PaddingInlineStart) - var(--pf-v6-c-page__main-container--BorderWidth))',
-              }}
             >
               {tabItems.map((tab) => (
                 <Tab
