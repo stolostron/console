@@ -67,7 +67,7 @@ export const RosaHCPModal = (props: RosaHCPModalProps) => {
         <Title headingLevel="h3">{t('Select service account')}</Title>
         <Content component={ContentVariants.p}>
           {t(
-            'To create a ROSA cluster, select a service account credential. This establishes the connection between Advanced Cluster Manager (ACM) and OpenShift Cluster Manager (OCM).'
+            'To create a ROSA cluster, select a service account credential. This establishes the connection between Red Hat Advanced Cluster Management for Kubernetes and Red Hat OpenShift Cluster Manager.'
           )}
         </Content>
       </ModalHeader>
@@ -81,7 +81,7 @@ export const RosaHCPModal = (props: RosaHCPModalProps) => {
               labelHelp={
                 <Popover
                   bodyContent={t(
-                    'The service account credential used to connect Advanced Cluster Manager (ACM) to OpenShift Cluster Manager (OCM).'
+                    'The service account credential used to connect Red Hat Advanced Cluster Management for Kubernetes to Red Hat OpenShift Cluster Manager.'
                   )}
                 >
                   <Button

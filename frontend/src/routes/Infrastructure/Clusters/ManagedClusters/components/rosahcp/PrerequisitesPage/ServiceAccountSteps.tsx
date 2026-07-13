@@ -44,7 +44,7 @@ export const ServiceAccountSteps = () => {
               </ListItem>
               <ListItem className="pf-v6-u-mb-lg">
                 <Trans
-                  i18nKey="After creating a service account, please add it to your Advanced Cluster Manager credentials. <addCredentialLink>Add credential.</addCredentialLink>"
+                  i18nKey="After creating a service account, please add it to your Red Hat Advanced Cluster Management for Kubernetes credentials. <addCredentialLink>Add credential.</addCredentialLink>"
                   components={{
                     addCredentialLink: <Link to={getTypedCreateCredentialsPath(Provider.redhatcloud)}>{}</Link>,
                   }}

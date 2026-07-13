@@ -44,7 +44,7 @@ describe('ServiceAccountSteps', () => {
 
     expect(
       screen.getByText(
-        'After creating a service account, please add it to your Advanced Cluster Manager credentials.',
+        'After creating a service account, please add it to your Red Hat Advanced Cluster Management for Kubernetes credentials.',
         {
           exact: false,
         }

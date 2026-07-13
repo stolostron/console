@@ -170,7 +170,7 @@ export const PrerequisitesPage = () => {
                     </SplitItem>
                     <SplitItem>
                       <ExternalLinkButton isInline variant="link" href={DOC_LINKS.AWS_ROSA_GET_STARTED} target="_blank">
-                        {t(' More information on ROSA setup')}
+                        {t('More information on ROSA setup')}
                       </ExternalLinkButton>
                     </SplitItem>
                   </Split>

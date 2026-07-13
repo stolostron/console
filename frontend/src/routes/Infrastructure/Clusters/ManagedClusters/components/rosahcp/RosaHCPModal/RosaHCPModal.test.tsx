@@ -61,7 +61,7 @@ describe('RosaHCPModal', () => {
     expect(screen.getByRole('heading', { name: 'Select service account' })).toBeInTheDocument()
     expect(
       screen.getByText(
-        'To create a ROSA cluster, select a service account credential. This establishes the connection between Advanced Cluster Manager (ACM) and OpenShift Cluster Manager (OCM).'
+        'To create a ROSA cluster, select a service account credential. This establishes the connection between Red Hat Advanced Cluster Management for Kubernetes and Red Hat OpenShift Cluster Manager.'
       )
     ).toBeInTheDocument()
   })
