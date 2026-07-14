@@ -800,7 +800,8 @@ export const architectureData = (t) => {
   ]
 }
 
-export const getName = ({ data }) => data.root.ai?.name ?? data.root.name
+export const getName = ({ data }) => data.root.ai?.name ?? data.root.clusterName ?? data.root.name
+export const getNamespace = ({ data }) => data.root.ai?.name ?? data.root.namespace
 
 const versionRegex = /([\d]{1,5})\.([\d]{1,5})\.([\d]{1,5})/
 function versionGreater(version, x, y) {

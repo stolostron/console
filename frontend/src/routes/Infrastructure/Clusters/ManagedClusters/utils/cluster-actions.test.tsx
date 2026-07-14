@@ -197,6 +197,67 @@ describe('ClusterDestroyable', () => {
   })
 })
 
+describe('clusterSupportsAction UpdateAutomationTemplate', () => {
+  const baseCluster: Cluster = {
+    name: 'test-cluster',
+    displayName: 'test-cluster',
+    namespace: 'test-cluster',
+    uid: 'test-cluster-uid',
+    status: ClusterStatus.ready,
+    distribution: {
+      ocp: {
+        version: '4.13',
+        availableUpdates: [],
+        desiredVersion: '4.13',
+        upgradeFailed: false,
+      },
+      isManagedOpenShift: false,
+      upgradeInfo: {
+        upgradeFailed: false,
+        isUpgrading: false,
+        isReadyUpdates: false,
+        isReadySelectChannels: false,
+        availableUpdates: [],
+        currentVersion: '4.13',
+        desiredVersion: '4.13',
+        latestJob: {},
+      },
+    },
+    labels: { cloud: 'aws' },
+    kubeApiServer: '',
+    consoleURL: '',
+    hasAutomationTemplate: false,
+    hive: { isHibernatable: false, secrets: {} },
+    isHive: false,
+    isManaged: true,
+    isCurator: false,
+    isHostedCluster: false,
+    isSNOCluster: false,
+    owner: {},
+    kubeadmin: '',
+    kubeconfig: '',
+    isHypershift: false,
+    isRegionalHubCluster: false,
+  }
+
+  test('standalone OCP cluster should support update automation template', () => {
+    expect(clusterSupportsAction(baseCluster, ClusterAction.UpdateAutomationTemplate)).toBe(true)
+  })
+
+  test('HCP cluster should support update automation template regardless of platform', () => {
+    const providers = [Provider.aws, Provider.kubevirt, Provider.hostinventory, Provider.azure]
+    providers.forEach((provider) => {
+      const hcpCluster: Cluster = {
+        ...baseCluster,
+        provider,
+        isHostedCluster: true,
+        isHypershift: true,
+      }
+      expect(clusterSupportsAction(hcpCluster, ClusterAction.UpdateAutomationTemplate)).toBe(true)
+    })
+  })
+})
+
 describe('clusterSupportsAction - OpenConsole', () => {
   const baseCluster: Cluster = {
     name: 'test-cluster',
