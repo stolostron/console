@@ -11,7 +11,7 @@ import { ReactNode, useEffect, useMemo, useState } from 'react'
 import { generatePath, Link } from 'react-router'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { AcmTable, AcmTableStateProvider, compareStrings, IAcmTableColumn } from '../../../../ui-components'
+import { AcmButton, AcmTable, AcmTableStateProvider, compareStrings, IAcmTableColumn } from '../../../../ui-components'
 import { DiffModal } from '../../components/DiffModal'
 
 import { fleetResourceRequest } from '../../../../resources/utils/fleet-resource-request'
@@ -124,14 +124,18 @@ export function DiscoveredResources() {
           const hubArg = _hubClusterResource ? `&_hubClusterResource=true` : ''
           policyReportLink = (
             <div>
-              <a
-                target="_blank"
-                rel="noopener noreferrer"
+              <AcmButton
+                variant="link"
+                component="a"
                 href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apigroupArg}${apiversion}&name=${name}${namespaceArg}${hubArg}`}
+                target="_blank"
+                rel="noreferrer"
+                isInline
+                icon={<ExternalLinkAltIcon />}
+                iconPosition="right"
               >
                 {t('View report')}
-                <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
-              </a>
+              </AcmButton>
             </div>
           )
         }
@@ -290,13 +294,18 @@ export function DiscoveredResources() {
           if (created && cluster && kind && groupversion && name && name != '-') {
             const namespaceArg = namespace ? `&namespace=${namespace}` : ''
             return (
-              <a
-                target="_blank"
-                rel="noopener noreferrer"
+              <AcmButton
+                variant="link"
+                component="a"
                 href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${groupversion}&name=${name}${namespaceArg}`}
+                target="_blank"
+                rel="noreferrer"
+                isInline
+                icon={<ExternalLinkAltIcon />}
+                iconPosition="right"
               >
-                {name} <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
-              </a>
+                {name}
+              </AcmButton>
             )
           }
           return name
