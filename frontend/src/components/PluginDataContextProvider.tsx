@@ -8,7 +8,7 @@ import { PluginData, PluginDataContext } from '../lib/PluginDataContext'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-export const queryClient = new QueryClient()
+const queryClient = new QueryClient()
 
 export const PluginDataContextProvider = (props: ProviderProps<PluginData>) => {
   return (
