@@ -45,7 +45,6 @@ export async function getAwsAccountIds(req: Http2ServerRequest, res: Http2Server
         const getOrg = (await jsonRequest(orgPath, accessTokenSSO).catch((err: Error) => {
           logger.error({ msg: 'Error gettting account info', error: err.message })
         })) as OrgType
-        console.log('getOrgID', getOrg)
         const orgId = getOrg.organization.id
         const accountPath = `${API_URL}/api/accounts_mgmt/v1/organizations/${orgId}/labels`
 
