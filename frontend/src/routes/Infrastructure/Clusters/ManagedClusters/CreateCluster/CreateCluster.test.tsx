@@ -132,7 +132,7 @@ const mockClusterCuratorInstall: ClusterCurator = {
   kind: ClusterCuratorKind,
   metadata: {
     name: clusterName,
-    namespace: clusterName,
+    namespace: null as unknown as string,
     labels: {
       'open-cluster-management': 'curator',
     },
@@ -177,12 +177,13 @@ const providerConnectionAnsible: ProviderConnection = {
   type: 'Opaque',
 }
 
-const mockProviderConnectionAnsibleCopied: ProviderConnection = {
-  apiVersion: ProviderConnectionApiVersion,
-  kind: ProviderConnectionKind,
+const mockProviderConnectionAnsibleCopied: Secret = {
+  apiVersion: 'v1',
+  kind: 'Secret',
+  type: 'Opaque',
   metadata: {
     name: 'toweraccess-install',
-    namespace: clusterName,
+    namespace: null as unknown as string,
     labels: {
       'cluster.open-cluster-management.io/type': 'ans',
       'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ii',
@@ -194,15 +195,15 @@ const mockProviderConnectionAnsibleCopied: ProviderConnection = {
     host: 'test',
     token: 'test',
   },
-  type: 'Opaque',
 }
 
-const mockProviderConnectionAnsibleCopiedUpgrade: ProviderConnection = {
-  apiVersion: ProviderConnectionApiVersion,
-  kind: ProviderConnectionKind,
+const mockProviderConnectionAnsibleCopiedUpgrade: Secret = {
+  apiVersion: 'v1',
+  kind: 'Secret',
+  type: 'Opaque',
   metadata: {
     name: 'toweraccess-upgrade',
-    namespace: clusterName,
+    namespace: null as unknown as string,
     labels: {
       'cluster.open-cluster-management.io/type': 'ans',
       'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ii',
@@ -214,7 +215,6 @@ const mockProviderConnectionAnsibleCopiedUpgrade: ProviderConnection = {
     host: 'test',
     token: 'test',
   },
-  type: 'Opaque',
 }
 
 const mockClusterCurators = [clusterCurator]

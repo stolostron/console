@@ -16,6 +16,9 @@ spec:
   {{#if releaseImageChannel}}
   channel: {{{releaseImageChannel}}}
   {{/if}}
+  {{#if reconcilePause}}
+  pausedUntil: '{{{reconcilePause}}}'
+  {{/if}}
   etcd:
     managed:
       storage:
@@ -206,9 +209,6 @@ metadata:
   name: '{{{clusterName}}}'
 spec:
   hubAcceptsClient: true
-  {{#if reconcilePause}}
-  pausedUntil: '{{{reconcilePause}}}'
-  {{/if}}
 {{>clusterCurator}}
 {{#if includeKlusterletAddonConfig}}
 ---
