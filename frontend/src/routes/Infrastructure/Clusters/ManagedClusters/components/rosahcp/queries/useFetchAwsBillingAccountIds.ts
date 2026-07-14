@@ -1,6 +1,5 @@
 import { getWizardAwsBillingAccounts } from '~/lib/rosa-hcp-api'
 import { SelectedSecret } from '../constants/types'
-import { queryClient } from '~/components/PluginDataContextProvider'
 import { useSharedReactQuery } from '~/hooks/shared-react-query'
 import { rosaWizardKeys } from './queryKeyFactory'
 
@@ -26,12 +25,6 @@ const getAwsBillingAccountsFromQuota = (items?: CloudProvider[]) => {
   }))
 
   return billingAccountDropdown
-}
-
-export const invalidateAWSBillingAccountIDs = () => {
-  queryClient.invalidateQueries({
-    queryKey: rosaWizardKeys.awsBillingAccounts(),
-  })
 }
 
 export const useFetchOrganizationQuota = (secret: SelectedSecret) => {

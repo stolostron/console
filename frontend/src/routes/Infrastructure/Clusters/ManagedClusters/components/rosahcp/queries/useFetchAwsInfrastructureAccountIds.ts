@@ -1,5 +1,4 @@
 import { useMemo } from 'react'
-import { queryClient } from '~/components/PluginDataContextProvider'
 import { getWizardAWSAccountIds } from '~/lib/rosa-hcp-api'
 import { SelectedSecret } from '../constants/types'
 import { useSharedReactQuery } from '~/hooks/shared-react-query'
@@ -15,12 +14,6 @@ const extractAWSID = (arn: string): string => {
 const getAWSIDsFromARNs = (arns: string[]): string[] => {
   const ids = arns.map(extractAWSID)
   return [...new Set(ids)] // convert to Set to remove duplicates, spread to convert back to array
-}
-
-export const invalidateAWSAccountIDs = () => {
-  queryClient.invalidateQueries({
-    queryKey: rosaWizardKeys.awsInfrastructureAccounts(),
-  })
 }
 
 type Label = {
