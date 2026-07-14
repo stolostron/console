@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 import { getWizardAwsBillingAccounts } from '~/lib/rosa-hcp-api'
 import { SelectedSecret } from '../constants/types'
 import { useSharedReactQuery } from '~/hooks/shared-react-query'

@@ -1,3 +1,4 @@
+/* Copyright Contributors to the Open Cluster Management project */
 export const ROSA_HCP_WIZARD_QUERY_KEY = 'rosa-hcp-wizard-query-key'
 
 export const rosaWizardKeys = {
