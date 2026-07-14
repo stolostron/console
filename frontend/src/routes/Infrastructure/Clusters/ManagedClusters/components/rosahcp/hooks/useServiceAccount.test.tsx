@@ -1,10 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { renderHook } from '@testing-library/react-hooks'
-import { RecoilRoot } from 'recoil'
-import { secretsState } from '../../../../../../../atoms'
+import { useRecoilValue, useSharedAtoms } from '~/shared-recoil'
 import { useRhocmSecrets } from './useServiceAccount'
-import { Secret } from '../../../../../../../resources'
+import type { Secret } from '~/resources'
+
+jest.mock('~/shared-recoil', () => ({
+  useRecoilValue: jest.fn(),
+  useSharedAtoms: jest.fn(),
+}))
+
+const mockUseRecoilValue = useRecoilValue as jest.MockedFunction<typeof useRecoilValue>
+const mockUseSharedAtoms = useSharedAtoms as jest.MockedFunction<typeof useSharedAtoms>
+const secretsAtom = Symbol('secretsState')
 
 const mockRhocmSecret: Secret = {
   apiVersion: 'v1',
@@ -42,29 +50,27 @@ const mockNoLabelsSecret: Secret = {
 }
 
 describe('useRhocmSecrets', () => {
-  const createWrapper =
-    (secrets: Secret[]) =>
-    ({ children }: { children: React.ReactNode }) => (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(secretsState, secrets as any)
-        }}
-      >
-        {children}
-      </RecoilRoot>
-    )
+  beforeEach(() => {
+    mockUseSharedAtoms.mockReturnValue({ secretsState: secretsAtom } as unknown as ReturnType<typeof useSharedAtoms>)
+  })
+
+  afterEach(() => {
+    jest.clearAllMocks()
+  })
 
   test('should return only secrets with rhocm type and credentials label', () => {
-    const wrapper = createWrapper([mockRhocmSecret, mockAwsSecret, mockNoLabelsSecret])
-    const { result } = renderHook(() => useRhocmSecrets(), { wrapper })
+    mockUseRecoilValue.mockReturnValue([mockRhocmSecret, mockAwsSecret, mockNoLabelsSecret])
+
+    const { result } = renderHook(() => useRhocmSecrets())
 
     expect(result.current).toHaveLength(1)
     expect(result.current[0].metadata!.name).toBe('my-rhocm-credential')
   })
 
   test('should return empty array when no matching secrets exist', () => {
-    const wrapper = createWrapper([mockAwsSecret, mockNoLabelsSecret])
-    const { result } = renderHook(() => useRhocmSecrets(), { wrapper })
+    mockUseRecoilValue.mockReturnValue([mockAwsSecret, mockNoLabelsSecret])
+
+    const { result } = renderHook(() => useRhocmSecrets())
 
     expect(result.current).toHaveLength(0)
   })
@@ -77,15 +83,17 @@ describe('useRhocmSecrets', () => {
         name: 'second-rhocm-credential',
       },
     }
-    const wrapper = createWrapper([mockRhocmSecret, secondRhocmSecret])
-    const { result } = renderHook(() => useRhocmSecrets(), { wrapper })
+    mockUseRecoilValue.mockReturnValue([mockRhocmSecret, secondRhocmSecret])
+
+    const { result } = renderHook(() => useRhocmSecrets())
 
     expect(result.current).toHaveLength(2)
   })
 
   test('should return empty array when secrets state is empty', () => {
-    const wrapper = createWrapper([])
-    const { result } = renderHook(() => useRhocmSecrets(), { wrapper })
+    mockUseRecoilValue.mockReturnValue([])
+
+    const { result } = renderHook(() => useRhocmSecrets())
 
     expect(result.current).toHaveLength(0)
   })
@@ -102,9 +110,19 @@ describe('useRhocmSecrets', () => {
         },
       },
     }
-    const wrapper = createWrapper([secretWithTypeOnly])
-    const { result } = renderHook(() => useRhocmSecrets(), { wrapper })
+    mockUseRecoilValue.mockReturnValue([secretWithTypeOnly])
+
+    const { result } = renderHook(() => useRhocmSecrets())
 
     expect(result.current).toHaveLength(0)
+  })
+
+  test('should call useSharedAtoms to get secretsState atom', () => {
+    mockUseRecoilValue.mockReturnValue([])
+
+    renderHook(() => useRhocmSecrets())
+
+    expect(mockUseSharedAtoms).toHaveBeenCalled()
+    expect(mockUseRecoilValue).toHaveBeenCalledWith(secretsAtom)
   })
 })

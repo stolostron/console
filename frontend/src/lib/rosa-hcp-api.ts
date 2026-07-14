@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { fetchRetry, getBackendUrl } from '~/resources/utils'
 
 export function getWizardData(client_id: string, client_secret: string, url: string, additionalData?: any) {

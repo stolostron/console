@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import type { HeadersInit } from 'node-fetch'
 import { constants } from 'node:http2'
 const { HTTP2_HEADER_CONTENT_TYPE, HTTP2_HEADER_ACCEPT } = constants
