@@ -2,7 +2,7 @@
 
 import { MockedProvider } from '@apollo/client/testing'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
@@ -42,16 +42,6 @@ import {
 } from '../../Applications/Application.sharedmocks'
 import { SearchResultCountDocument } from '../../Search/search-sdk/search-sdk'
 import OverviewPage from './OverviewPage'
-
-// Mock the useVirtualMachineDetection hook
-jest.mock('../../../hooks/useVirtualMachineDetection', () => ({
-  useVirtualMachineDetection: jest.fn(() => ({
-    hasVirtualMachines: false,
-    isLoading: false,
-    error: undefined,
-    virtualMachines: [],
-  })),
-}))
 import {
   managedClusterInfos,
   managedClusters,
@@ -64,6 +54,16 @@ import {
   policies,
   policyReports,
 } from './sharedmocks'
+
+// Mock the useVirtualMachineDetection hook
+jest.mock('../../../hooks/useVirtualMachineDetection', () => ({
+  useVirtualMachineDetection: jest.fn(() => ({
+    hasVirtualMachines: false,
+    isLoading: false,
+    error: undefined,
+    virtualMachines: [],
+  })),
+}))
 
 const queryClient = new QueryClient()
 
@@ -462,27 +462,21 @@ it('should show AngleUpIcon when section is expanded and AngleDownIcon when coll
   })
 
   // Collapse the Insights section — toggle must switch to AngleDownIcon (↓)
-  const insightsToggle = container.querySelector('#insights-section-toggle')
-  expect(insightsToggle).toBeTruthy()
-  await userEvent.click(insightsToggle as Element)
+  await userEvent.click(screen.getByRole('button', { name: 'Toggle Insights section' }))
 
   await waitFor(() => {
     expect(getToggleIconPath(container, 'insights-section-toggle')).toBe(ANGLE_DOWN_PATH)
   })
 
   // Collapse the Cluster health section — toggle must switch to AngleDownIcon (↓)
-  const clusterToggle = container.querySelector('#cluster-section-toggle')
-  expect(clusterToggle).toBeTruthy()
-  await userEvent.click(clusterToggle as Element)
+  await userEvent.click(screen.getByRole('button', { name: 'Toggle Cluster health section' }))
 
   await waitFor(() => {
     expect(getToggleIconPath(container, 'cluster-section-toggle')).toBe(ANGLE_DOWN_PATH)
   })
 
   // Collapse the Your view section — toggle must switch to AngleDownIcon (↓)
-  const savedSearchToggle = container.querySelector('#saved-search-section-toggle')
-  expect(savedSearchToggle).toBeTruthy()
-  await userEvent.click(savedSearchToggle as Element)
+  await userEvent.click(screen.getByRole('button', { name: 'Toggle Your view section' }))
 
   await waitFor(() => {
     expect(getToggleIconPath(container, 'saved-search-section-toggle')).toBe(ANGLE_DOWN_PATH)

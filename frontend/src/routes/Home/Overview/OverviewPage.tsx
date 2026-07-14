@@ -466,6 +466,7 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
 
               <Button
                 id={'insights-section-toggle'}
+                aria-label={t('Toggle Insights section')}
                 onClick={() => {
                   localStorage.setItem('insights-section-toggle', `${!isInsightsSectionOpen}`)
                   setIsInsightsSectionOpen(!isInsightsSectionOpen)
@@ -669,6 +670,7 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
               {t('Cluster health')}
               <Button
                 id={'cluster-section-toggle'}
+                aria-label={t('Toggle Cluster health section')}
                 onClick={() => {
                   localStorage.setItem('cluster-section-toggle', `${!isClusterSectionOpen}`)
                   setIsClusterSectionOpen(!isClusterSectionOpen)
@@ -717,6 +719,7 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
               {t('Your view')}
               <Button
                 id={'saved-search-section-toggle'}
+                aria-label={t('Toggle Your view section')}
                 onClick={() => {
                   localStorage.setItem('saved-search-section-toggle', `${!isCustomizationSectionOpen}`)
                   setIsCustomizationSectionOpen(!isCustomizationSectionOpen)
