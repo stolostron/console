@@ -9,7 +9,7 @@ export function useRhocmSecrets(): Secret[] {
   return useMemo(
     () =>
       secrets.filter(
-        (secret: any) =>
+        (secret) =>
           secret?.metadata?.labels?.['cluster.open-cluster-management.io/credentials'] !== undefined &&
           secret.metadata.labels?.['cluster.open-cluster-management.io/type'] === 'rhocm'
       ),
