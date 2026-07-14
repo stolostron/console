@@ -470,7 +470,7 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
                   localStorage.setItem('insights-section-toggle', `${!isInsightsSectionOpen}`)
                   setIsInsightsSectionOpen(!isInsightsSectionOpen)
                 }}
-                icon={isInsightsSectionOpen ? <AngleDownIcon /> : <AngleUpIcon />}
+                icon={isInsightsSectionOpen ? <AngleUpIcon /> : <AngleDownIcon />}
                 variant={'plain'}
               />
             </div>
@@ -673,7 +673,7 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
                   localStorage.setItem('cluster-section-toggle', `${!isClusterSectionOpen}`)
                   setIsClusterSectionOpen(!isClusterSectionOpen)
                 }}
-                icon={isClusterSectionOpen ? <AngleDownIcon /> : <AngleUpIcon />}
+                icon={isClusterSectionOpen ? <AngleUpIcon /> : <AngleDownIcon />}
                 variant={'plain'}
               />
             </div>
@@ -721,7 +721,7 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
                   localStorage.setItem('saved-search-section-toggle', `${!isCustomizationSectionOpen}`)
                   setIsCustomizationSectionOpen(!isCustomizationSectionOpen)
                 }}
-                icon={isCustomizationSectionOpen ? <AngleDownIcon /> : <AngleUpIcon />}
+                icon={isCustomizationSectionOpen ? <AngleUpIcon /> : <AngleDownIcon />}
                 variant={'plain'}
               />
             </div>

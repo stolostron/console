@@ -354,3 +354,135 @@ it('should toggle card sections correctly', async () => {
   expect(window.localStorage.setItem).toHaveBeenCalledWith('cluster-section-toggle', 'false')
   expect(window.localStorage.setItem).toHaveBeenCalledWith('saved-search-section-toggle', 'false')
 })
+
+// Regression test for ACM-37147: Overview page expandable sections had inverted toggle icons.
+// When expanded the toggle must show AngleUpIcon (↑), when collapsed AngleDownIcon (↓).
+const ANGLE_UP_PATH = 'M177 159.7l136 136c9.4 9.4 9.4 24.6 0 33.9l-22.6 22.6c-9.4 9.4-24.6 9.4-33.9 0L160 255.9l-96.4 96.4c-9.4 9.4-24.6 9.4-33.9 0L7 329.7c-9.4-9.4-9.4-24.6 0-33.9l136-136c9.4-9.5 24.6-9.5 34-.1z'
+const ANGLE_DOWN_PATH = 'M143 352.3L7 216.3c-9.4-9.4-9.4-24.6 0-33.9l22.6-22.6c9.4-9.4 24.6-9.4 33.9 0l96.4 96.4 96.4-96.4c9.4-9.4 24.6-9.4 33.9 0l22.6 22.6c9.4 9.4 9.4 24.6 0 33.9l-136 136c-9.2 9.4-24.4 9.4-33.8 0z'
+
+function getToggleIconPath(container: HTMLElement, toggleId: string): string | null {
+  const toggle = container.querySelector(`#${toggleId}`)
+  if (!toggle) return null
+  const path = toggle.querySelector('svg path')
+  return path ? path.getAttribute('d') : null
+}
+
+it('should show AngleUpIcon when section is expanded and AngleDownIcon when collapsed (ACM-37147)', async () => {
+  nockIgnoreApiPaths()
+  nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
+  nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
+  nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
+  nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
+  nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
+  const mockAlertMetricsNock = nockRequest('/observability/query?query=ALERTS', mockAlertMetrics)
+  const mockOperatorMetricsNock = nockRequest(
+    '/observability/query?query=cluster_operator_conditions',
+    mockOperatorMetrics
+  )
+  const mockWorkerCoreCountMetricsNock = nockRequest(
+    '/prometheus/query?query=acm_managed_cluster_worker_cores',
+    mockWorkerCoreCountMetrics
+  )
+  const getUserPreferenceNock = nockRequest('/userpreference', mockUserPreference)
+  const getUpgradeRisksPredictionsNock = nockUpgradeRiskRequest(
+    '/upgrade-risks-prediction',
+    { clusterIds: ['1234-abcd'] },
+    mockUpgradeRisksPredictions
+  )
+
+  const { container } = render(
+    <RecoilRoot
+      initializeState={(snapshot) => {
+        snapshot.set(applicationsState, mockApplications)
+        snapshot.set(managedClustersState, managedClusters)
+        snapshot.set(managedClusterInfosState, [
+          ...managedClusterInfos,
+          {
+            apiVersion: 'internal.open-cluster-management.io/v1beta1',
+            kind: 'ManagedClusterInfo',
+            metadata: {
+              labels: {
+                cloud: 'Amazon',
+                env: 'dev',
+                name: 'managed-2',
+                vendor: 'OpenShift',
+                clusterID: '1234-abcd',
+              },
+              name: 'managed-2',
+              namespace: 'managed-2',
+            },
+            status: {
+              cloudVendor: 'Amazon',
+              kubeVendor: 'OpenShift',
+              loggingPort: { name: 'https', port: 443, protocol: 'TCP' },
+              version: 'v1.26.5+7d22122',
+            },
+          } as ManagedClusterInfo,
+        ])
+        snapshot.set(policiesState, policies)
+        snapshot.set(policyreportState, policyReports)
+        snapshot.set(managedClusterAddonsState, mockManagedClusterAddons)
+        snapshot.set(clusterManagementAddonsState, mockClusterManagementAddons)
+        snapshot.set(placementDecisionsState, placementDecisions)
+        snapshot.set(helmReleaseState, [])
+        snapshot.set(subscriptionsState, [])
+        snapshot.set(settingsState, mockSettings)
+      }}
+    >
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter>
+          <MockedProvider mocks={savedSearchesMock}>
+            <OverviewPage selectedClusterLabels={{}} />
+          </MockedProvider>
+        </MemoryRouter>
+      </QueryClientProvider>
+    </RecoilRoot>
+  )
+
+  await waitForNocks([
+    mockAlertMetricsNock,
+    mockOperatorMetricsNock,
+    mockWorkerCoreCountMetricsNock,
+    getUserPreferenceNock,
+    getUpgradeRisksPredictionsNock,
+  ])
+
+  // Sections are expanded by default — toggles must show AngleUpIcon (↑)
+  await waitFor(() => {
+    expect(getToggleIconPath(container, 'insights-section-toggle')).toBe(ANGLE_UP_PATH)
+    expect(getToggleIconPath(container, 'cluster-section-toggle')).toBe(ANGLE_UP_PATH)
+    expect(getToggleIconPath(container, 'saved-search-section-toggle')).toBe(ANGLE_UP_PATH)
+  })
+
+  Object.defineProperty(window, 'localStorage', {
+    value: { getItem: jest.fn(), setItem: jest.fn() },
+    writable: true,
+  })
+
+  // Collapse the Insights section — toggle must switch to AngleDownIcon (↓)
+  const insightsToggle = container.querySelector('#insights-section-toggle')
+  expect(insightsToggle).toBeTruthy()
+  await userEvent.click(insightsToggle as Element)
+
+  await waitFor(() => {
+    expect(getToggleIconPath(container, 'insights-section-toggle')).toBe(ANGLE_DOWN_PATH)
+  })
+
+  // Collapse the Cluster health section — toggle must switch to AngleDownIcon (↓)
+  const clusterToggle = container.querySelector('#cluster-section-toggle')
+  expect(clusterToggle).toBeTruthy()
+  await userEvent.click(clusterToggle as Element)
+
+  await waitFor(() => {
+    expect(getToggleIconPath(container, 'cluster-section-toggle')).toBe(ANGLE_DOWN_PATH)
+  })
+
+  // Collapse the Your view section — toggle must switch to AngleDownIcon (↓)
+  const savedSearchToggle = container.querySelector('#saved-search-section-toggle')
+  expect(savedSearchToggle).toBeTruthy()
+  await userEvent.click(savedSearchToggle as Element)
+
+  await waitFor(() => {
+    expect(getToggleIconPath(container, 'saved-search-section-toggle')).toBe(ANGLE_DOWN_PATH)
+  })
+})
