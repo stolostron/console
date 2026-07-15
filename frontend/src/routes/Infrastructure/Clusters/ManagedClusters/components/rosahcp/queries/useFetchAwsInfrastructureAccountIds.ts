@@ -36,6 +36,7 @@ export const useFetchAwsAccountIDs = (selectedSecret: SelectedSecret) => {
 
       return response
     },
+    retry: false,
     enabled: !!selectedSecret,
   })
   const awsAccountIDs = useMemo(() => {

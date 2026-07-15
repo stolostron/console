@@ -36,6 +36,7 @@ export const useFetchOrganizationQuota = (secret: SelectedSecret) => {
       const organizationQuota = await getWizardAwsBillingAccounts(secret.client_id, secret.client_secret, signal)
       return organizationQuota
     },
+    retry: false,
     enabled: !!secret,
   })
 
