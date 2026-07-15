@@ -32,8 +32,8 @@ export const useFetchOrganizationQuota = (secret: SelectedSecret) => {
   const { useQuery } = useSharedReactQuery()
   const { isLoading, data, isError, error, isFetching, refetch } = useQuery({
     queryKey: rosaWizardKeys.awsBillingAccounts(),
-    queryFn: async () => {
-      const organizationQuota = await getWizardAwsBillingAccounts(secret.client_id, secret.client_secret)
+    queryFn: async ({ signal }) => {
+      const organizationQuota = await getWizardAwsBillingAccounts(secret.client_id, secret.client_secret, signal)
       return organizationQuota
     },
     enabled: !!secret,

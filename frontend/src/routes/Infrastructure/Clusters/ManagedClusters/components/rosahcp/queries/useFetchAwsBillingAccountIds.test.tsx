@@ -146,7 +146,7 @@ describe('useFetchOrganizationQuota', () => {
 
     expect(mockUseQuery).toHaveBeenCalledWith(
       expect.objectContaining({
-        queryKey: ['rosa-hcp-wizard-query-key', 'aws-billing-ids-fetch'],
+        queryKey: ['rosa-hcp-wizard-query-key', 'aws-billing-ids'],
         enabled: true,
       })
     )

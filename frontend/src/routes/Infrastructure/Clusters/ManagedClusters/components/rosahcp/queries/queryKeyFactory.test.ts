@@ -13,12 +13,12 @@ describe('queryKeyFactory', () => {
 
   test('rosaWizardKeys.awsInfrastructureAccounts should extend the base key', () => {
     const key = rosaWizardKeys.awsInfrastructureAccounts()
-    expect(key).toEqual([ROSA_HCP_WIZARD_QUERY_KEY, 'aws-account-ids-fetch'])
+    expect(key).toEqual([ROSA_HCP_WIZARD_QUERY_KEY, 'aws-account-ids'])
   })
 
   test('rosaWizardKeys.awsBillingAccounts should extend the base key', () => {
     const key = rosaWizardKeys.awsBillingAccounts()
-    expect(key).toEqual([ROSA_HCP_WIZARD_QUERY_KEY, 'aws-billing-ids-fetch'])
+    expect(key).toEqual([ROSA_HCP_WIZARD_QUERY_KEY, 'aws-billing-ids'])
   })
 
   test('each key factory call should return a new array instance', () => {

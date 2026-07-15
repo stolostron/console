@@ -8,8 +8,9 @@ import { rosaWizardKeys } from './queryKeyFactory'
 const extractAWSID = (arn: string): string => {
   // Ex: arn = 'arn:aws:iam::268733382466:role/ManagedOpenShift-OCM-Role-15212158'
   // '268733382466' above ^^ is an example AWS account ID
-  const arnSegment = arn.substr(arn.indexOf('::') + 2)
-  return arnSegment.substr(0, arnSegment.indexOf(':'))
+  const startIndex = arn.indexOf('::') + 2
+  const arnSegment = arn.slice(startIndex)
+  return arnSegment.slice(0, arnSegment.indexOf(':'))
 }
 
 const getAWSIDsFromARNs = (arns: string[]): string[] => {
@@ -30,8 +31,8 @@ export const useFetchAwsAccountIDs = (selectedSecret: SelectedSecret) => {
   const { useQuery } = useSharedReactQuery()
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: rosaWizardKeys.awsInfrastructureAccounts(),
-    queryFn: async () => {
-      const response = await getWizardAWSAccountIds(selectedSecret.client_id, selectedSecret.client_secret)
+    queryFn: async ({ signal }) => {
+      const response = await getWizardAWSAccountIds(selectedSecret.client_id, selectedSecret.client_secret, signal)
 
       return response
     },

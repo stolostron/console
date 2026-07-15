@@ -36,7 +36,7 @@ describe('rosa-hcp-api', () => {
     test('should merge additionalData into the request body', async () => {
       mockFetchRetry.mockResolvedValue({ data: { items: [] } })
 
-      await getWizardData('client-id', 'client-secret', '/test-url', { extra_field: 'value' })
+      await getWizardData('client-id', 'client-secret', '/test-url', undefined, { extra_field: 'value' })
 
       expect(mockFetchRetry).toHaveBeenCalledWith(
         expect.objectContaining({

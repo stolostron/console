@@ -1,23 +1,34 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { AwsAccountIdsResponse, OrganizationQuotaResponse, WizardBasePayload, WizardErrorResponse } from '~/resources'
 import { fetchRetry, getBackendUrl } from '~/resources/utils'
 
-export function getWizardData(client_id: string, client_secret: string, url: string, additionalData?: any) {
+function isWizardError(data: unknown): data is WizardErrorResponse {
+  const d = data as WizardErrorResponse
+  return d?.kind === 'Error' || d?.body?.kind === 'Error'
+}
+
+export function getWizardData<TResponse, TPayload extends Record<string, unknown> = Record<string, never>>(
+  client_id: string,
+  client_secret: string,
+  url: string,
+  signal?: AbortSignal,
+  additionalData?: TPayload
+): Promise<TResponse> {
   const backendURLPath = getBackendUrl() + url
-  const abortController = new AbortController()
-  return fetchRetry<any>({
+  return fetchRetry<TResponse>({
     method: 'POST',
     url: backendURLPath,
     data: {
       service_account_id: client_id,
       service_account_secret: client_secret,
       ...additionalData,
-    },
-    signal: abortController.signal,
+    } as WizardBasePayload & TPayload,
+    signal,
     retries: process.env.NODE_ENV === 'production' ? 2 : 0,
     disableRedirectUnauthorizedLogin: true,
   }).then((res) => {
-    if (res.data?.kind === 'Error' || res.data?.body?.kind === 'Error') {
+    if (isWizardError(res.data)) {
       const errorBody = res.data?.body ?? res.data
       throw new Error(errorBody.reason ?? 'Unknown error')
     }
@@ -25,7 +36,30 @@ export function getWizardData(client_id: string, client_secret: string, url: str
   })
 }
 
-export const getWizardAWSAccountIds = (client_id: string, client_secret: string, additionalData?: any) =>
-  getWizardData(client_id, client_secret, '/aws-account-ids', additionalData)
-export const getWizardAwsBillingAccounts = (client_id: string, client_secret: string, additionalData?: any) =>
-  getWizardData(client_id, client_secret, '/aws-billing-accounts', additionalData)
+export const getWizardAWSAccountIds = (
+  client_id: string,
+  client_secret: string,
+  signal?: AbortSignal,
+  additionalData?: Record<string, unknown>
+): Promise<AwsAccountIdsResponse> =>
+  getWizardData<AwsAccountIdsResponse, Record<string, unknown>>(
+    client_id,
+    client_secret,
+    '/aws-account-ids',
+    signal,
+    additionalData
+  )
+
+export const getWizardAwsBillingAccounts = (
+  client_id: string,
+  client_secret: string,
+  signal?: AbortSignal,
+  additionalData?: Record<string, unknown>
+): Promise<OrganizationQuotaResponse> =>
+  getWizardData<OrganizationQuotaResponse, Record<string, unknown>>(
+    client_id,
+    client_secret,
+    '/aws-billing-accounts',
+    signal,
+    additionalData
+  )

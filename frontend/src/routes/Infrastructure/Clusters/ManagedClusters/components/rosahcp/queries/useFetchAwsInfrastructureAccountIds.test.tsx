@@ -157,7 +157,7 @@ describe('useFetchAwsAccountIDs', () => {
 
     expect(mockUseQuery).toHaveBeenCalledWith(
       expect.objectContaining({
-        queryKey: ['rosa-hcp-wizard-query-key', 'aws-account-ids-fetch'],
+        queryKey: ['rosa-hcp-wizard-query-key', 'aws-account-ids'],
         enabled: true,
       })
     )
