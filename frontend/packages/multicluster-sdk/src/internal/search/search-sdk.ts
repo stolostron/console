@@ -411,8 +411,7 @@ export function useSearchResultItemsLazyQuery(
 }
 export function useSearchResultItemsSuspenseQuery(
   baseOptions?:
-    | Apollo.SkipToken
-    | Apollo.SuspenseQueryHookOptions<SearchResultItemsQuery, SearchResultItemsQueryVariables>
+    Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<SearchResultItemsQuery, SearchResultItemsQueryVariables>
 ) {
   const options = baseOptions === Apollo.skipToken ? baseOptions : { ...defaultOptions, ...baseOptions }
   return Apollo.useSuspenseQuery<SearchResultItemsQuery, SearchResultItemsQueryVariables>(
@@ -465,8 +464,7 @@ export function useSearchResultCountLazyQuery(
 }
 export function useSearchResultCountSuspenseQuery(
   baseOptions?:
-    | Apollo.SkipToken
-    | Apollo.SuspenseQueryHookOptions<SearchResultCountQuery, SearchResultCountQueryVariables>
+    Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<SearchResultCountQuery, SearchResultCountQueryVariables>
 ) {
   const options = baseOptions === Apollo.skipToken ? baseOptions : { ...defaultOptions, ...baseOptions }
   return Apollo.useSuspenseQuery<SearchResultCountQuery, SearchResultCountQueryVariables>(

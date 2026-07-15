@@ -59,7 +59,6 @@ Setup depends on your usage scenarios.
 - [useFleetPrometheusPoll](#gear-usefleetprometheuspoll)
 - [useFleetSearch](#gear-usefleetsearch)
 - [useFleetSearchPoll](#gear-usefleetsearchpoll)
-- [useFleetSearchSubscription](#gear-usefleetsearchsubscription)
 - [useHubClusterName](#gear-usehubclustername)
 - [useIsFleetAvailable](#gear-useisfleetavailable)
 - [useIsFleetObservabilityInstalled](#gear-useisfleetobservabilityinstalled)
@@ -998,59 +997,6 @@ const [services, loaded, error] = useFleetSearchPoll({
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearchPoll.ts#L81)
 
-### :gear: useFleetSearchSubscription
-
-A React hook that opens a GraphQL WebSocket subscription to the ACM search API
-and streams real-time change events for resources matching the given input.
-
-Events are pushed by the server over a WebSocket connection managed by the
-Apollo client's `graphql-ws` split link. Apollo re-renders the hook with the
-latest event on each push. Only the **most recent** event is returned — callers
-that need to react to each event should use a `useEffect` watching `latestEvent`.
-
-| Function | Type |
-| ---------- | ---------- |
-| `useFleetSearchSubscription` | `(input: SearchInput or undefined) => [Event or undefined, boolean, Error or undefined]` |
-
-Parameters:
-
-* `input`: - The search input filters that define which resources to watch.
-Pass `undefined` to skip opening the WebSocket connection entirely.
-
-
-Returns:
-
-A tuple of:
-- `latestEvent` — the most recent {@link FleetSearchEvent } received from the
-WebSocket stream, or `undefined` before the first event arrives or when
-`input` is `undefined`.
-- `loading` — `true` until the WebSocket connection is established and the
-subscription is active.
-- `error` — any Apollo subscription error, or `undefined` on success.
-
-Examples:
-
-```typescript
-// Watch for changes to all Pods in the default namespace
-const [latestEvent, loading, error] = useFleetSearchSubscription({
-  filters: [
-    { property: 'kind', values: ['Pod'] },
-    { property: 'namespace', values: ['default'] },
-  ],
-})
-
-useEffect(() => {
-  if (!latestEvent) return
-  console.log(`${latestEvent.operation} on uid ${latestEvent.uid}`)
-}, [latestEvent])
-
-// Skip the subscription entirely
-const [latestEvent, loading, error] = useFleetSearchSubscription(undefined)
-```
-
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearchSubscription.ts#L46)
-
 ### :gear: useHubClusterName
 
 Hook that provides hub cluster name.
@@ -1166,9 +1112,14 @@ if (error) {
 - [FleetWatchK8sResult](#gear-fleetwatchk8sresult)
 - [FleetWatchK8sResults](#gear-fleetwatchk8sresults)
 - [FleetWatchK8sResultsObject](#gear-fleetwatchk8sresultsobject)
+- [InputMaybe](#gear-inputmaybe)
+- [Maybe](#gear-maybe)
 - [ResourceRoute](#gear-resourceroute)
 - [ResourceRouteHandler](#gear-resourceroutehandler)
 - [ResourceRouteProps](#gear-resourcerouteprops)
+- [Scalars](#gear-scalars)
+- [SearchFilter](#gear-searchfilter)
+- [SearchInput](#gear-searchinput)
 - [SearchResult](#gear-searchresult)
 
 ### :gear: AdvancedSearchFilter
@@ -1177,7 +1128,7 @@ if (error) {
 | ---------- | ---------- |
 | `AdvancedSearchFilter` | `{ property: string; values: string[] }[]` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L10)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L87)
 
 ### :gear: ClusterSetData
 
@@ -1330,6 +1281,22 @@ Options for advanced cluster name retrieval with cluster set organization.
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L26)
 
+### :gear: InputMaybe
+
+| Type | Type |
+| ---------- | ---------- |
+| `InputMaybe` | `Maybe<T>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L6)
+
+### :gear: Maybe
+
+| Type | Type |
+| ---------- | ---------- |
+| `Maybe` | `T or null` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L5)
+
 ### :gear: ResourceRoute
 
 This extension allows plugins to customize the route used for resources of the given kind. Search results and resource links will direct to the route returned by the implementing function.
@@ -1356,13 +1323,44 @@ This extension allows plugins to customize the route used for resources of the g
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/extensions/resource.ts#L20)
 
+### :gear: Scalars
+
+All built-in and custom scalars, mapped to their actual values
+
+| Type | Type |
+| ---------- | ---------- |
+| `Scalars` | `{ ID: { input: string; output: string } String: { input: string; output: string } Boolean: { input: boolean; output: boolean } Int: { input: number; output: number } Float: { input: number; output: number } Date: { input: any; output: any } Map: { input: any; output: any } }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L8)
+
+### :gear: SearchFilter
+
+Defines a key/value to filter results.
+When multiple values are provided for a property, it is interpreted as an OR operation.
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchFilter` | `{ /** Name of the property (key). */ property: Scalars['String']['input'] /** * Values for the property. Multiple values per property are interpreted as an OR operation. * Optionally one of these operations `=,!,!=,>,>=,<,<=` can be included at the beginning of the value. * By default the equality operation is used. * The values available for datetime fields (Ex: `created`, `startedAt`) are `hour`, `day`, `week`, `month` and `year`. * Property `kind`, if included in the filter, will be matched using a case-insensitive comparison. * For example, `kind:Pod` and `kind:pod` will bring up all pods. This is to maintain compatibility with Search V1. * * Wildcard matching: the `*` character can be used as a wildcard to match any sequence of characters. * For example, a filter with property `name` and value `nginx-*` matches any resource whose name starts with `nginx-`. * Similarly, property `namespace` with value `prod*` matches any namespace starting with `prod`. * Wildcard matches are case-sensitive. */ values: Array<InputMaybe<Scalars['String']['input']>> }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L23)
+
+### :gear: SearchInput
+
+Input options to the search query.
+
+| Type | Type |
+| ---------- | ---------- |
+| `SearchInput` | `{ /** * List of SearchFilter, which is a key(property) and values. * When multiple filters are provided, results will match all filters (AND operation). */ filters?: InputMaybe<Array<InputMaybe<SearchFilter>>> /** * List of strings to match resources. * Will match resources containing any of the keywords in any text field. * When multiple keywords are provided, it is interpreted as an AND operation. * Matches are case insensitive. */ keywords?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>> /** * Max number of results returned by the query. * **Default is** 10,000 * A value of -1 will remove the limit. Use carefully because it may impact the service. */ limit?: InputMaybe<Scalars['Int']['input']> /** * Number of results to skip before returning results. * Used in combination with limit to implement pagination. * **Default is** 0 */ offset?: InputMaybe<Scalars['Int']['input']> /** * Order results by a property and direction. * Format: "property_name asc" or "property_name desc" * Example: "name desc" or "created asc" */ orderBy?: InputMaybe<Scalars['String']['input']> /** * Filter relationships to the specified kinds. * If empty, all relationships will be included. * This filter is used with the 'related' field on SearchResult. */ relatedKinds?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>> }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L44)
+
 ### :gear: SearchResult
 
 | Type | Type |
 | ---------- | ---------- |
 | `SearchResult` | `R extends (infer T)[] ? Fleet<T>[] : Fleet<R>` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L6)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L83)
 
 
 <!-- TSDOC_END -->

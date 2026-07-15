@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useSearchSubscription } from '../internal/search/search-sdk'
 import { searchClient } from '../internal/search/search-client'
-import { FleetSearchEvent, SearchInput } from '../types/search'
+import { Event as FleetSearchEvent, useSearchSubscription } from '../internal/search/search-sdk'
+import { SearchInput } from '../types/search'
 
 /**
  * A React hook that opens a GraphQL WebSocket subscription to the ACM search API

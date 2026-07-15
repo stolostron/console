@@ -18,22 +18,21 @@ const result = buildDocumentation({
 
 const sortedResult = result.sort((a, b) => a.name.localeCompare(b.name))
 
-const markdown = documentationToMarkdown({ entries: sortedResult });
+const markdown = documentationToMarkdown({ entries: sortedResult })
 
-const regex = /(<!-- TSDOC_START -->)[\s\S]*?(<!-- TSDOC_END -->)$/gm;
-const replace = `<!-- TSDOC_START -->\n\n${markdown}\n<!-- TSDOC_END -->`;
+const regex = /(<!-- TSDOC_START -->)[\s\S]*?(<!-- TSDOC_END -->)$/gm
+const replace = `<!-- TSDOC_START -->\n\n${markdown}\n<!-- TSDOC_END -->`
 
-const outputFile = './README.md';
-const fileContent = readFileSync(outputFile, 'utf-8');
-writeFileSync(outputFile, fileContent.replace(regex, replace), 'utf-8');
-
+const outputFile = './README.md'
+const fileContent = readFileSync(outputFile, 'utf-8')
+writeFileSync(outputFile, fileContent.replace(regex, replace), 'utf-8')
 
 /**
  * Get all files referenced by a starting file, recursively (following only export chains)
  * This function only follows files that are actually exported, not just imported internally.
  * For example, if index.ts exports { foo } from './module', it will include './module',
  * but if './module' imports './helper' without exporting it, './helper' won't be included.
- * 
+ *
  * @param {string} startFile - The starting file path
  * @param {string} baseDir - Base directory for resolving relative paths
  * @returns {string[]} Array of all referenced file paths
@@ -110,7 +109,7 @@ export function getAllReferencedFiles(startFile, baseDir = process.cwd()) {
         if (ts.isExportDeclaration(node) && node.moduleSpecifier) {
           const modulePath = node.moduleSpecifier.text
           const resolvedPath = resolveModulePath(modulePath, absolutePath)
-          if (resolvedPath && !resolvedPath.includes(`${resolve(baseDir, 'src/internal/search')}`)) { // avoid adding search-sdk exports into readme - not all functions are used.
+          if (resolvedPath) {
             analyzeFile(resolvedPath)
           }
         }
@@ -129,7 +128,6 @@ export function getAllReferencedFiles(startFile, baseDir = process.cwd()) {
       }
 
       visit(sourceFile)
-
     } catch (error) {
       console.error(`Error analyzing ${absolutePath}:`, error.message)
     }

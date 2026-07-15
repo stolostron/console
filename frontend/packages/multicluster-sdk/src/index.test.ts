@@ -27,7 +27,6 @@ describe('package index', () => {
       'useFleetPrometheusPoll',
       'useFleetSearch',
       'useFleetSearchPoll',
-      'useFleetSearchSubscription',
       'useHubClusterName',
       'useIsFleetAvailable',
       'useIsFleetObservabilityInstalled',
