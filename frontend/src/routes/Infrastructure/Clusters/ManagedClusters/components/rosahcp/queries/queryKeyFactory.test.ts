@@ -27,9 +27,15 @@ describe('queryKeyFactory', () => {
     expect(key1).not.toEqual(key2)
   })
 
+
   test('rosaWizardKeys.oidcConfigs should extend the base key with client id and aws account id', () => {
     const key = rosaWizardKeys.oidcConfigs('test-client-id', '123456789012')
     expect(key).toEqual([ROSA_HCP_WIZARD_QUERY_KEY, 'test-client-id', '123456789012', 'oidc-configs'])
+  })
+
+  test('rosaWizardKeys.regions should extend the base key', () => {
+    const key = rosaWizardKeys.regions()
+    expect(key).toEqual([ROSA_HCP_WIZARD_QUERY_KEY, 'regions'])
   })
 
   test('each key factory call should return a new array instance', () => {

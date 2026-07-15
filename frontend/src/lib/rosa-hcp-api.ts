@@ -4,6 +4,7 @@ import {
   AwsAccountIdsResponse,
   AwsAccountPayload,
   OIDCConfigResponse,
+  CloudProviderResponse,
   OrganizationQuotaResponse,
   WizardBasePayload,
   WizardErrorResponse,
@@ -71,7 +72,7 @@ export const getWizardAwsBillingAccounts = (
     additionalData
   )
 
-export const getWizardOIDCConfigs = (
+  export const getWizardOIDCConfigs = (
   client_id: string,
   client_secret: string,
   signal?: AbortSignal,
@@ -81,6 +82,20 @@ export const getWizardOIDCConfigs = (
     client_id,
     client_secret,
     '/oidc-configs',
+    signal,
+    additionalData
+  )
+
+export const getWizardRegions = (
+  client_id: string,
+  client_secret: string,
+  signal?: AbortSignal,
+  additionalData?: Record<string, unknown>
+): Promise<CloudProviderResponse> =>
+  getWizardData<CloudProviderResponse, Record<string, unknown>>(
+    client_id,
+    client_secret,
+    '/regions',
     signal,
     additionalData
   )
