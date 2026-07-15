@@ -18,15 +18,6 @@ const getAWSIDsFromARNs = (arns: string[]): string[] => {
   return [...new Set(ids)] // convert to Set to remove duplicates, spread to convert back to array
 }
 
-type Label = {
-  id: string
-  internal: boolean
-  key: string
-  organization_id: string
-  type: string
-  value: string
-}
-
 export const useFetchAwsAccountIDs = (selectedSecret: SelectedSecret) => {
   const { useQuery } = useSharedReactQuery()
   const { data, isLoading, isError, error, refetch } = useQuery({
@@ -41,7 +32,7 @@ export const useFetchAwsAccountIDs = (selectedSecret: SelectedSecret) => {
   })
   const awsAccountIDs = useMemo(() => {
     if (!data?.items) return []
-    const stsOCMRoleLabel = data.items.filter((label: Label) => label.key === 'sts_ocm_role')
+    const stsOCMRoleLabel = data.items.filter((label) => label.key === 'sts_ocm_role')
     const stsOCMRoleValue: string = stsOCMRoleLabel[0]?.value ?? ''
     const arns = stsOCMRoleValue === '' ? [] : stsOCMRoleValue.split(',')
     return getAWSIDsFromARNs(arns)
