@@ -575,6 +575,60 @@ describe('NodeDetailsProvider', () => {
       nodeDetailsProvider(placementNode, mockActiveFilters, t, mockHubClusterName)
       expect(mockGetMatchLabels).toHaveBeenCalled()
     })
+
+    it('should show numberOfSelectedClusters for placement nodes without decisions (ACM-37230)', () => {
+      const placementNode = {
+        type: 'placement',
+        name: 'appset-placement',
+        clusterName: 'hub',
+        layout: { type: 'placement' },
+        labels: [],
+        specs: {
+          isDesign: true,
+          raw: {
+            apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+            kind: 'Placement',
+            metadata: { name: 'appset-placement' },
+            status: { numberOfSelectedClusters: 3 },
+          },
+        },
+        placement: {
+          kind: 'Placement',
+          spec: { clusterSets: ['dev'] },
+        },
+      }
+
+      const result = nodeDetailsProvider(placementNode, mockActiveFilters, t, mockHubClusterName)
+      expect(detail(result, 'Matched Clusters', 3)).toBe(true)
+    })
+
+    it('should show decisions length for placementDecision nodes (ACM-37230)', () => {
+      const placementDecisionNode = {
+        type: 'placementDecision',
+        name: 'appset-placement-decision',
+        clusterName: 'hub',
+        layout: { type: 'placementDecision' },
+        labels: [],
+        specs: {
+          isDesign: true,
+          raw: {
+            apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+            kind: 'PlacementDecision',
+            metadata: { name: 'appset-placement-decision' },
+            status: {
+              decisions: [{ clusterName: 'c1' }, { clusterName: 'c2' }],
+            },
+          },
+        },
+        placementDecision: {
+          kind: 'PlacementDecision',
+          spec: { clusterSelector: { matchLabels: { env: 'prod' } } },
+        },
+      }
+
+      const result = nodeDetailsProvider(placementDecisionNode, mockActiveFilters, t, mockHubClusterName)
+      expect(detail(result, 'Matched Clusters', 2)).toBe(true)
+    })
   })
 
   describe('kubeNaming', () => {
