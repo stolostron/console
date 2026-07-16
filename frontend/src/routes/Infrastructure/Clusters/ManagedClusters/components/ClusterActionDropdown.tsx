@@ -357,7 +357,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
               processing: t('detaching'),
               items: [cluster],
               emptyState: undefined, // there is always 1 item supplied
-              description: t('bulk.message.detach'),
+              description: t('bulk.message.detach.single'),
               columns: modalColumns,
               keyFn: (cluster) => cluster.name as string,
               actionFn: (cluster) => detachCluster(cluster),
@@ -393,7 +393,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
               processing: t('destroying'),
               items: [cluster],
               emptyState: undefined, // there is always 1 item supplied
-              description: t('bulk.message.destroy'),
+              description: t('bulk.message.destroy.single'),
               columns: modalColumns,
               keyFn: (cluster) => cluster.name as string,
               actionFn: (cluster, options) =>
@@ -402,6 +402,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                   ignoreClusterDeploymentNotFound: false,
                   infraEnvs,
                   deletePullSecret: !!options?.deletePullSecret,
+                  preserveOnDelete: !!options?.preserveOnDelete,
                 }),
               close: () => {
                 setModalProps({ open: false })
@@ -411,6 +412,8 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
               confirmText: cluster.displayName,
               isValidError: errorIsNot([ResourceErrorCode.NotFound]),
               enableDeletePullSecret: true,
+              enablePreserveOnDelete: !cluster.hive?.clusterPool,
+              actionWhenPreserve: t('Destroy and preserve infrastructure'),
             })
           },
           isAriaDisabled: true,

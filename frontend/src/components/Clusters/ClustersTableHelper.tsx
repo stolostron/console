@@ -706,7 +706,7 @@ export function useTableActions(
               message={t('None of the selected clusters can be detached.')}
             />
           ),
-          description: t('bulk.message.detach'),
+          description: t('bulk.message.detach.bulk'),
           columns: modalColumns,
           keyFn: (cluster) => cluster.name,
           actionFn: (cluster) => detachCluster(cluster),
@@ -755,7 +755,7 @@ export function useTableActions(
               message={t('None of the selected clusters can be destroyed or detached.')}
             />
           ),
-          description: t('bulk.message.destroy'),
+          description: t('bulk.message.destroy.bulk'),
           columns: modalColumns,
           keyFn: (cluster) => cluster.name,
           actionFn: (cluster, options) =>
@@ -764,6 +764,7 @@ export function useTableActions(
               ignoreClusterDeploymentNotFound: true,
               infraEnvs,
               deletePullSecret: !!options?.deletePullSecret,
+              preserveOnDelete: !!options?.preserveOnDelete,
             }),
           close: () => setModalProps({ open: false }),
           isDanger: true,
@@ -771,6 +772,8 @@ export function useTableActions(
           confirmText: t('confirm'),
           isValidError: errorIsNot([ResourceErrorCode.NotFound]),
           enableDeletePullSecret: true,
+          enablePreserveOnDelete: true,
+          actionWhenPreserve: t('Destroy and preserve infrastructure'),
         })
       },
       variant: 'bulk-action',

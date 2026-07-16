@@ -600,6 +600,60 @@ const deleteHostedClusterNocks = () => [
   }),
 ]
 
+describe('deleteCluster with preserveOnDelete', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    nockIgnoreApiPaths()
+  })
+
+  it('patches ClusterDeployment with preserveOnDelete before deleting Hive cluster', async () => {
+    const patchNock = nockPatch(
+      {
+        apiVersion: ClusterDeploymentApiVersion,
+        kind: ClusterDeploymentKind,
+        metadata: { name: mockCluster3.name, namespace: mockCluster3.namespace },
+      },
+      { spec: { preserveOnDelete: true } }
+    )
+    const deleteNocks = deleteClusterNocks()
+    deleteCluster({
+      cluster: mockCluster3,
+      deletePullSecret: false,
+      infraEnvs: [],
+      ignoreClusterDeploymentNotFound: true,
+      preserveOnDelete: true,
+    })
+
+    await waitForNocks([patchNock, ...deleteNocks])
+  })
+
+  it('does not patch when preserveOnDelete is false', async () => {
+    const deleteNocks = deleteClusterNocks()
+    deleteCluster({
+      cluster: mockCluster3,
+      deletePullSecret: false,
+      infraEnvs: [],
+      ignoreClusterDeploymentNotFound: true,
+      preserveOnDelete: false,
+    })
+
+    await waitForNocks(deleteNocks)
+  })
+
+  it('does not patch hypershift clusters even when preserveOnDelete is true', async () => {
+    const deleteNocks = deleteHostedClusterNocks()
+    deleteCluster({
+      cluster: mockHostedCluster,
+      deletePullSecret: false,
+      infraEnvs: [],
+      ignoreClusterDeploymentNotFound: true,
+      preserveOnDelete: true,
+    })
+
+    await waitForNocks(deleteNocks)
+  })
+})
+
 describe('deleteCluster hostedcluster', () => {
   beforeEach(() => {
     jest.clearAllMocks()
