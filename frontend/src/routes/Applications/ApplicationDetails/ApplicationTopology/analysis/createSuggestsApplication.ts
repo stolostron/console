@@ -74,10 +74,7 @@ const isFailedSyncMessage = (message: string): boolean =>
 const normalizeNamespaceNotFoundSyncMessage = (message: string): string =>
   message
     .replace(/Failed last sync attempt to \[[^\]]*\]/i, 'Failed last sync attempt to []')
-    .replace(
-      /one or more objects failed to apply/i,
-      'one or more synchronization tasks completed unsuccessfully'
-    )
+    .replace(/one or more objects failed to apply/i, 'one or more synchronization tasks completed unsuccessfully')
     .replace(/reason: namespaces "[^"]+" not found/i, 'reason: namespaces "NAMESPACE" not found')
     .replace(/\s+/g, ' ')
     .trim()

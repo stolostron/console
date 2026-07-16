@@ -139,12 +139,15 @@ const formatKindList = (kinds: string[], t: TFunction): string => {
   return t('Kinds: {{kinds}}{{suffix}}', { kinds: displayed, suffix })
 }
 
+const RED_HEALTH_SYNC_KEYS = ['Degraded', 'Unknown', 'Missing']
+const ORANGE_HEALTH_SYNC_KEYS = ['Progressing', 'OutOfSync']
+
 const getConsolidatedSyncStatus = (healthSyncKeys: string[]): PulseColor => {
   let status: PulseColor = 'yellow'
   healthSyncKeys.forEach((key) => {
-    if (key.includes('Degraded') || key.includes('Unknown')) {
+    if (RED_HEALTH_SYNC_KEYS.some((token) => key.includes(token))) {
       status = 'red'
-    } else if ((key.includes('Progressing') || key.includes('OutOfSync')) && status !== 'red') {
+    } else if (ORANGE_HEALTH_SYNC_KEYS.some((token) => key.includes(token)) && status !== 'red') {
       status = 'orange'
     }
   })
