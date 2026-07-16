@@ -44,7 +44,7 @@ describe('useFetchRegions', () => {
 
     expect(mockUseQuery).toHaveBeenCalledWith(
       expect.objectContaining({
-        queryKey: ['rosa-hcp-wizard-query-key', 'regions'],
+        queryKey: ['rosa-hcp-wizard-query-key', 'test-client-id', 'regions'],
         enabled: true,
       })
     )

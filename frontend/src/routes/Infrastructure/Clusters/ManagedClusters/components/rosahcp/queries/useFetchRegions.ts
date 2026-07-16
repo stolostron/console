@@ -20,7 +20,7 @@ const hcpCloudProvidersAndRegions = (cloudProvidersResponse: CloudProviderRespon
 export const useFetchRegions = (selectedSecret: SelectedSecret) => {
   const { useQuery } = useSharedReactQuery()
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: rosaWizardKeys.regions(),
+    queryKey: rosaWizardKeys.regions(selectedSecret?.client_id),
     queryFn: async ({ signal }) => {
       const response = await getWizardRegions(selectedSecret.client_id, selectedSecret.client_secret, signal)
 

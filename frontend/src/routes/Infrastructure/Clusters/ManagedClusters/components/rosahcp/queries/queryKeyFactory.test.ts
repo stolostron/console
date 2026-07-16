@@ -34,8 +34,8 @@ describe('queryKeyFactory', () => {
   })
 
   test('rosaWizardKeys.regions should extend the base key', () => {
-    const key = rosaWizardKeys.regions()
-    expect(key).toEqual([ROSA_HCP_WIZARD_QUERY_KEY, 'regions'])
+    const key = rosaWizardKeys.regions('test-client-id')
+    expect(key).toEqual([ROSA_HCP_WIZARD_QUERY_KEY, 'test-client-id', 'regions'])
   })
 
   test('each key factory call should return a new array instance', () => {
