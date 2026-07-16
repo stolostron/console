@@ -5,7 +5,7 @@ import ApplicationsPage from './ApplicationsPage'
 import Overview from './Overview'
 import AdvancedConfiguration from './AdvancedConfiguration'
 import { CreatePushApplicationSet } from './CreateArgoApplication/CreatePushApplicationSet'
-import { EditArgoApplicationSet } from './CreateArgoApplication/EditArgoApplicationSet'
+import { EditApplicationSetPage } from './CreateArgoApplication/EditApplicationSetPage'
 import { CreatePullApplicationSet } from './CreateArgoApplication/CreatePullApplicationSet'
 import CreateSubscriptionApplicationPage from './CreateSubscriptionApplication/SubscriptionApplication'
 import { MatchType, NavigationPath, SubRoutesRedirect, createRoutePathFunction } from '../../NavigationPath'
@@ -21,7 +21,7 @@ export default function Applications() {
         path={applicationsChildPath(NavigationPath.createApplicationArgo)}
         element={<CreatePushApplicationSet />}
       />
-      <Route path={applicationsChildPath(NavigationPath.editApplicationArgo)} element={<EditArgoApplicationSet />} />
+      <Route path={applicationsChildPath(NavigationPath.editApplicationArgo)} element={<EditApplicationSetPage />} />
       <Route
         path={applicationsChildPath(NavigationPath.createApplicationArgoPullModel)}
         element={<CreatePullApplicationSet />}

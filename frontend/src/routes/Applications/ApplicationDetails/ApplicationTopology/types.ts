@@ -1,4 +1,5 @@
 import { Dispatch, SetStateAction } from 'react'
+import type { TopologyAlert } from './analysis/analyzeTopology'
 import {
   AnsibleJob,
   Application,
@@ -662,6 +663,12 @@ export interface DiagramElements {
   channels: string[]
   links: TopologyLink[]
   nodes: TopologyNode[]
+  alerts: TopologyAlert[]
+}
+
+export interface GetDiagramElementsResult {
+  diagramElements: DiagramElements
+  alertsPromise?: Promise<TopologyAlert[]>
 }
 
 // Argo data structure passed to getArgoTopology
@@ -1067,10 +1074,12 @@ export interface DetailsViewProps {
   /** ID of the currently selected node */
   selectedNodeId: string
   nodeDetailsProvider?: (node: any, activeFilters: Record<string, any>, t: TFunction, hubClusterName: string) => any
-  /** Active tab key for tab navigation */
-  activeTabKey?: number
   /** Hub cluster name for multi-cluster scenarios */
   hubClusterName?: string
+  /** Opens the YAML editor modal for the selected resource */
+  onEditYaml?: (node: TopologyNodeWithStatus) => void
+  /** Opens the logs modal for the selected resource */
+  onViewLogs?: (node: TopologyNodeWithStatus) => void
 }
 
 // State interface for DetailsView component
@@ -1079,8 +1088,6 @@ export interface DetailsViewState {
   isLoading: boolean
   /** ID of the currently loading link */
   linkID: string
-  /** Currently active tab key */
-  activeTabKey: number
   /** Filtered node when viewing specific resource details */
   filteredNode?: TopologyNodeWithStatus
 }
@@ -1199,6 +1206,8 @@ export interface ArgoAppResource extends Record<string, unknown> {
   group?: string
   /** Resource status */
   status?: string
+  /** When true, the resource is out of sync and marked for pruning */
+  requiresPruning?: boolean
   /** Health status */
   health?: {
     status?: string
@@ -1588,6 +1597,8 @@ export interface ProcessedDeployableResource {
   resourceCount?: number
   /** Array of individual resource instances */
   resources?: AppSetApplicationResource[]
+  /** When true, the resource is out of sync and marked for pruning by Argo CD */
+  requiresPruning?: boolean
 }
 
 /**

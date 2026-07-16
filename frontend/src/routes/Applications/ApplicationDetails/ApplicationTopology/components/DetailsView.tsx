@@ -1,14 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React, { Component, Fragment, KeyboardEvent, MouseEvent } from 'react'
+import React, { Component, Fragment, KeyboardEvent } from 'react'
 import classNames from 'classnames'
-import { Button, Spinner, Tabs, Tab, TabTitleText } from '@patternfly/react-core'
-import { createResourceSearchLink, createResourceURL, getFilteredNode } from '../helpers/diagram-helpers'
+import { Button, Spinner, Toolbar, ToolbarContent, ToolbarGroup, ToolbarItem, Tooltip } from '@patternfly/react-core'
+import { OutlinedListAltIcon, PencilAltIcon } from '@patternfly/react-icons'
+import { createResourceSearchLink, getFilteredNode } from '../helpers/diagram-helpers'
 import ClusterDetailsContainer from './ClusterDetailsContainer'
 import ArgoAppDetailsContainer from './ArgoAppDetailsContainer'
 import DetailsTable from './DetailsTable'
-import { LogsContainer } from './LogsContainer'
-import { YAMLContainer } from './YAMLContainer'
 import {
   DetailsViewProps,
   DetailsViewState,
@@ -17,7 +16,6 @@ import {
   LinkValue,
   TopologyNodeWithStatus,
   StatusType,
-  ResourceAction,
 } from '../types'
 import { typeToShapeMap } from '../model/NodeDetailsProvider'
 import type { TFunction } from 'i18next'
@@ -39,7 +37,7 @@ const DetailsViewDecorator: React.FC<DetailsViewDecoratorProps> = ({ shape, clas
 
 /**
  * DetailsView component displays detailed information about a selected topology node
- * Supports multiple tabs for different views (Details, Logs, YAML)
+ * Supports a details toolbar with actions to view logs and edit YAML
  * Handles both single resource and table views for multiple resources
  */
 class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
@@ -48,12 +46,10 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
 
     // Bind methods to maintain proper 'this' context
     this.toggleLinkLoading = this.toggleLinkLoading.bind(this)
-    this.handleTabClick = this.handleTabClick.bind(this)
 
     this.state = {
       isLoading: false,
       linkID: '',
-      activeTabKey: this.props.activeTabKey || 0,
       filteredNode: undefined,
     }
   }
@@ -101,61 +97,14 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
   }
 
   /**
-   * Handles tab click events to switch between different views
-   * Updates the active tab in component state
-   */
-  handleTabClick = (_event: MouseEvent, tabIndex: number): void => {
-    this.setState({
-      activeTabKey: tabIndex,
-    })
-  }
-
-  /**
-   * Lifecycle method to reset tab when selected node changes
-   * Ensures consistent UX when navigating between different nodes
+   * Lifecycle method to reset filtered node when selected node changes
    */
   componentDidUpdate(prevProps: DetailsViewProps): void {
     if (prevProps.selectedNodeId !== this.props.selectedNodeId) {
       this.setState({
-        activeTabKey: 0,
+        filteredNode: undefined,
       })
     }
-  }
-
-  /**
-   * Renders a resource URL link that opens in Search details
-   * Supports both log and YAML viewing modes
-   */
-  renderResourceURLLink = (resource: { data: ResourceAction }, t: TFunction, isLogURL = false): JSX.Element => {
-    return (
-      <div>
-        <div className="spacer" />
-        <span
-          className="link sectionLabel"
-          id="linkForNodeAction"
-          tabIndex={0}
-          role="button"
-          onClick={() => this.processActionLink(resource as LinkValue)}
-          onKeyDown={(e) => this.handleKeyPress(resource as LinkValue, e)}
-          style={{ padding: '10px' }}
-        >
-          {isLogURL && t('View logs in Search details')}
-          {!isLogURL && t('View YAML in Search details')}
-          <svg width="12px" height="12px" style={{ marginLeft: '8px', stroke: '#0066CC' }}>
-            <use href="#drawerShapes_carbonLaunch" className="label-icon" />
-          </svg>
-        </span>
-        <div className="spacer" />
-      </div>
-    )
-  }
-
-  /**
-   * Legacy lifecycle method - resets filtered node state
-   * @deprecated This method is unsafe and should be replaced with componentDidUpdate
-   */
-  UNSAFE_componentWillReceiveProps(): void {
-    this.setState({ filteredNode: undefined })
   }
 
   /**
@@ -163,7 +112,7 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
    * Determines whether to show table view or tabbed view based on resource count
    */
   render(): JSX.Element {
-    const { filteredNode, activeTabKey } = this.state
+    const { filteredNode } = this.state
     const { getLayoutNodes, selectedNodeId, nodes, t } = this.props
 
     // Get the current node from layout or nodes array
@@ -199,7 +148,7 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
     const searchLink = createResourceSearchLink(currentNode, t)
 
     return (
-      <div className="topologyDetails" style={{ overflow: activeTabKey !== 2 ? 'auto' : 'hidden' }}>
+      <div className="topologyDetails" style={{ overflow: 'auto' }}>
         <div className="detailsHeader">
           {/* Back button when viewing filtered node details */}
           {filteredNode && (
@@ -228,13 +177,14 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
             </div>
           </div>
 
-          {/* Tabs for single resource view */}
-          {!isTableView && this.renderTabs(currentNode)}
+          {/* Toolbar for single resource view */}
+          {!isTableView && this.renderToolbar(currentNode)}
         </div>
 
-        {/* Content area - either table or tabbed content */}
-        <section style={{ height: activeTabKey !== 2 ? undefined : '100%' }}>
-          {isTableView ? this.renderTableContents(currentUpdatedNode!) : this.renderTabContents(currentUpdatedNode!)}
+        <section>
+          {isTableView
+            ? this.renderTableContents(currentUpdatedNode!)
+            : this.renderDetailsContents(currentUpdatedNode!)}
         </section>
       </div>
     )
@@ -250,30 +200,53 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
   }
 
   /**
-   * Renders the tab navigation for single resource view
-   * Shows/hides tabs based on resource type capabilities
+   * Renders the details toolbar with actions to view logs and edit YAML
    */
-  renderTabs(node: TopologyNodeWithStatus): JSX.Element {
-    const { t } = this.props
+  renderToolbar(node: TopologyNodeWithStatus): JSX.Element {
+    const { t, onEditYaml, onViewLogs } = this.props
 
-    // Determine which tabs should be hidden based on resource type
-    const isLogTabHidden = node.type !== 'pod'
-    const isYAMLTabHidden = node.type === 'cluster' || node.type === 'ocpapplication' || node.type === 'fluxapplication'
-    const { activeTabKey } = this.state
+    const isLogHidden = node.type !== 'pod'
+    const isYamlHidden = node.type === 'cluster' || node.type === 'ocpapplication' || node.type === 'fluxapplication'
+    const showToolbarButtons = !isLogHidden || !isYamlHidden
 
     return (
-      <Tabs
-        activeKey={activeTabKey}
-        onSelect={(_event, eventKey) =>
-          this.handleTabClick(_event, typeof eventKey === 'number' ? eventKey : Number(eventKey))
-        }
-        mountOnEnter={true}
-        unmountOnExit={true}
-      >
-        <Tab eventKey={0} title={<TabTitleText>{t('Details')}</TabTitleText>} isHidden={false} />
-        <Tab eventKey={1} title={<TabTitleText>{t('Logs')}</TabTitleText>} isHidden={isLogTabHidden} />
-        <Tab eventKey={2} title={<TabTitleText>{t('YAML')}</TabTitleText>} isHidden={isYAMLTabHidden} />
-      </Tabs>
+      <Toolbar id="details-view-toolbar" className="details-view-toolbar" colorVariant="secondary">
+        <ToolbarContent alignItems="baseline">
+          <ToolbarItem variant="label">{t('Details')}</ToolbarItem>
+          {showToolbarButtons && (
+            <ToolbarGroup
+              variant="action-group-plain"
+              align={{ default: 'alignEnd' }}
+              alignItems="stretch"
+              alignSelf="stretch"
+            >
+              <ToolbarItem variant="separator" />
+              {!isLogHidden && (
+                <Tooltip content={t('Logs')}>
+                  <Button
+                    id="details-view-logs-button"
+                    variant="plain"
+                    icon={<OutlinedListAltIcon />}
+                    aria-label={t('Logs')}
+                    onClick={() => onViewLogs?.(node)}
+                  />
+                </Tooltip>
+              )}
+              {!isYamlHidden && (
+                <Tooltip content={t('Edit YAML')}>
+                  <Button
+                    id="details-view-edit-yaml-button"
+                    variant="plain"
+                    icon={<PencilAltIcon />}
+                    aria-label={t('Edit YAML')}
+                    onClick={() => onEditYaml?.(node)}
+                  />
+                </Tooltip>
+              )}
+            </ToolbarGroup>
+          )}
+        </ToolbarContent>
+      </Toolbar>
     )
   }
 
@@ -301,42 +274,17 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
   }
 
   /**
-   * Renders tab contents based on the currently active tab
-   * Switches between Details, Logs, and YAML views
+   * Renders details content for the selected resource
    */
-  renderTabContents(node: TopologyNodeWithStatus): JSX.Element | JSX.Element[] {
+  renderDetailsContents(node: TopologyNodeWithStatus): JSX.Element[] {
     const { activeFilters, t, hubClusterName, nodeDetailsProvider } = this.props
-    const selectedNodeId = node.id
 
-    // Get detailed information for the node
     const details =
       nodeDetailsProvider && typeof nodeDetailsProvider === 'function'
         ? nodeDetailsProvider(node, activeFilters, t, hubClusterName as string)
         : ([] as DetailItemExtended[])
-    const name = node.type === 'cluster' ? '' : node.name
-    const yamlURL = createResourceURL(node, t)
-    const { namespace, type } = node
-    const { activeTabKey } = this.state
 
-    // Render content based on active tab
-    switch (activeTabKey) {
-      case 0: // Details tab
-      default:
-        return details.map((detail: DetailItemExtended) => this.renderDetail(detail, t)) as JSX.Element[]
-
-      case 1: // Logs tab
-        return <LogsContainer node={node} t={t} renderResourceURLLink={this.renderResourceURLLink} />
-
-      case 2: // YAML tab
-        {
-          // Render the resource URL link for YAML viewing
-          this.renderResourceURLLink(
-            { data: { action: 'open_link', targetLink: yamlURL, name, namespace, kind: type } },
-            t
-          )
-        }
-        return <YAMLContainer key={selectedNodeId} node={node} t={t} hubClusterName={hubClusterName as string} />
-    }
+    return details.map((detail: DetailItemExtended) => this.renderDetail(detail, t)) as JSX.Element[]
   }
 
   /**
@@ -546,7 +494,6 @@ export const getLegendTitle = (type: string) => {
     .replace('stream', ' Stream')
     .replace('channel', ' Channel')
     .replace('controller', 'Controller')
-  //}
 }
 
 export default DetailsView

@@ -2,18 +2,31 @@
 
 import { AcmDrawerContext } from '~/ui-components'
 import cloneDeep from 'lodash/cloneDeep'
-import { useCallback, useContext, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { Topology } from './topology/Topology'
 import { useTranslation } from '~/lib/acm-i18next'
 import { useApplicationDetailsContext } from '~/routes/Applications/ApplicationDetails/ApplicationDetails'
 import { ISyncArgoCDModalProps, SyncArgoCDModal } from '~/routes/Applications/components/SyncArgoCDModal'
+import { EditAppSetModal, IEditAppSetModalProps } from './modals/EditAppSetModal'
+import { EditYamlModal, IEditYamlModalProps } from './modals/EditYamlModal'
+import { ILogsModalProps, LogsModal } from './modals/LogsModal'
 import { processResourceActionLink } from './helpers/diagram-helpers'
 import { getDiagramElements } from './model/topology'
+import type { TopologyAlert } from './analysis/analyzeTopology'
+import type { TopologyNode } from './types'
 import { DrawerShapes } from './components/DrawerShapes'
 import './ApplicationTopology.css'
 import './topology/css/Drawer.css'
 import { ArgoApp, ClusterDetailsContainerControl } from './types'
 import { nodeDetailsProvider } from './model/NodeDetailsProvider'
+
+type ProcessingSaveState = {
+  isProcessingSave: boolean
+  nodeId?: string
+  start?: number
+}
+
+const ANALYZING_ALERT_THRESHOLD_MS = 1000
 
 export type ArgoAppDetailsContainerData = {
   page: number
@@ -49,7 +62,7 @@ export function ApplicationTopologyPageContent() {
     toolbarControl,
   } = useApplicationDetailsContext()
   const { t } = useTranslation()
-  const { refreshTime, topology, statuses } = applicationData
+  const { refreshTime, topology, statuses, application } = applicationData
   let hubClusterName = ''
   if (topology) {
     hubClusterName = topology.hubClusterName
@@ -59,6 +72,15 @@ export function ApplicationTopologyPageContent() {
     nodes: any[]
     links: any[]
   }>({ nodes: [], links: [] })
+  const [alertsState, setAlertsState] = useState<TopologyAlert[]>([])
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [processingSave, setProcessingSave] = useState<ProcessingSaveState>({ isProcessingSave: false })
+  const hasShownAnalyzingAlertRef = useRef(false)
+  const applicationKey = application?.metadata?.uid ?? application?.metadata?.name ?? ''
+
+  useEffect(() => {
+    hasShownAnalyzingAlertRef.current = false
+  }, [applicationKey])
 
   const [argoAppDetailsContainerData, setArgoAppDetailsContainerData] = useState<ArgoAppDetailsContainerData>({
     page: 1,
@@ -126,21 +148,160 @@ export function ApplicationTopologyPageContent() {
     handleClusterDetailsContainerUpdate: setClusterDetailsContainerData,
   }
 
-  const processActionLink = (resource: any, toggleLoading: () => void, hubClusterName: string) => {
-    processResourceActionLink(resource, toggleLoading, t, hubClusterName)
-  }
+  const processActionLink = useCallback(
+    (resource: any, toggleLoading: () => void, hubClusterName: string) => {
+      processResourceActionLink(resource, toggleLoading, t, hubClusterName)
+    },
+    [t]
+  )
 
   const canUpdateStatuses = !!statuses
   useEffect(() => {
-    if (topology) {
-      setElements(cloneDeep(getDiagramElements(cloneDeep(topology), statuses, canUpdateStatuses, t)))
+    if (!topology) {
+      return
+    }
+
+    let isCancelled = false
+    let analyzingTimer: ReturnType<typeof setTimeout> | undefined
+    const { diagramElements, alertsPromise } = getDiagramElements(cloneDeep(topology), statuses, canUpdateStatuses, t)
+
+    if (isCancelled) {
+      return
+    }
+
+    setElements({ nodes: diagramElements.nodes, links: diagramElements.links })
+
+    if (alertsPromise) {
+      if (!hasShownAnalyzingAlertRef.current) {
+        analyzingTimer = setTimeout(() => {
+          if (!isCancelled) {
+            setIsAnalyzing(true)
+          }
+        }, ANALYZING_ALERT_THRESHOLD_MS)
+      }
+
+      void alertsPromise
+        .then((alerts) => {
+          if (isCancelled) {
+            return
+          }
+          setAlertsState(alerts)
+        })
+        .finally(() => {
+          if (!isCancelled) {
+            if (analyzingTimer) {
+              clearTimeout(analyzingTimer)
+            }
+            setIsAnalyzing(false)
+            hasShownAnalyzingAlertRef.current = true
+          }
+        })
+    } else {
+      setIsAnalyzing(false)
+      setAlertsState([])
+    }
+
+    return () => {
+      isCancelled = true
+      if (analyzingTimer) {
+        clearTimeout(analyzingTimer)
+      }
+      setIsAnalyzing(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [startup, refreshTime])
 
+  const handleResourceUpdateSuccess = useCallback((nodeId: string) => {
+    setProcessingSave({
+      isProcessingSave: true,
+      nodeId,
+      start: Date.now(),
+    })
+  }, [])
+
+  const clearProcessingSave = useCallback(() => {
+    setProcessingSave({ isProcessingSave: false })
+  }, [])
+
   const [syncArgoCDModalProps, setSyncArgoCDModalProps] = useState<ISyncArgoCDModalProps | { open: false }>({
     open: false,
   })
+  const [editAppSetModalProps, setEditAppSetModalProps] = useState<IEditAppSetModalProps | { open: false }>({
+    open: false,
+  })
+  const [editYamlModalProps, setEditYamlModalProps] = useState<IEditYamlModalProps | { open: false }>({
+    open: false,
+  })
+  const [logsModalProps, setLogsModalProps] = useState<ILogsModalProps | { open: false }>({
+    open: false,
+  })
+
+  const handleEditAppSet = useCallback(
+    (node: TopologyNode, showWizardInput?: string) => {
+      setEditAppSetModalProps({
+        open: true,
+        close: () => setEditAppSetModalProps({ open: false }),
+        node,
+        showWizardInput,
+        onUpdateSuccess: handleResourceUpdateSuccess,
+      })
+    },
+    [handleResourceUpdateSuccess]
+  )
+
+  const handleEditYaml = useCallback(
+    (node: TopologyNode, highlightEditorPath?: string) => {
+      setEditYamlModalProps({
+        open: true,
+        close: () => setEditYamlModalProps({ open: false }),
+        node,
+        hubClusterName,
+        highlightEditorPath,
+        onUpdateSuccess: handleResourceUpdateSuccess,
+      })
+    },
+    [hubClusterName, handleResourceUpdateSuccess]
+  )
+
+  const handleViewLogs = useCallback(
+    (node: TopologyNode) => {
+      setLogsModalProps({
+        open: true,
+        close: () => setLogsModalProps({ open: false }),
+        node,
+        hubClusterName,
+        processActionLink,
+      })
+    },
+    [hubClusterName, processActionLink]
+  )
+
+  const handleSyncResources = useCallback((node: TopologyNode) => {
+    setSyncArgoCDModalProps({
+      open: true,
+      close: () => setSyncArgoCDModalProps({ open: false }),
+      appOrAppSet: {
+        metadata: { name: node.name },
+        appSetApps: node.specs.appSetApps,
+      },
+    })
+  }, [])
+
+  const handleLaunchArgo = useCallback(
+    (node: TopologyNode) => {
+      processActionLink(
+        {
+          action: 'open_argo_editor',
+          name: node.name,
+          namespace: node.namespace,
+          cluster: hubClusterName,
+        },
+        () => {},
+        hubClusterName
+      )
+    },
+    [hubClusterName, processActionLink]
+  )
 
   const refreshResources = useCallback(() => {
     const app = applicationData?.application
@@ -156,9 +317,17 @@ export function ApplicationTopologyPageContent() {
   return (
     <>
       <SyncArgoCDModal {...syncArgoCDModalProps} />
+      <EditAppSetModal {...editAppSetModalProps} />
+      <EditYamlModal {...editYamlModalProps} />
+      <LogsModal {...logsModalProps} />
       <DrawerShapes />
       <Topology
         elements={elements}
+        alerts={alertsState}
+        isAnalyzing={isAnalyzing}
+        isProcessingSave={processingSave.isProcessingSave}
+        processingSaveStart={processingSave.start}
+        onClearProcessingSave={clearProcessingSave}
         processActionLink={processActionLink}
         canUpdateStatuses={canUpdateStatuses}
         argoAppDetailsContainerControl={argoAppDetailsContainerControl}
@@ -169,6 +338,11 @@ export function ApplicationTopologyPageContent() {
         setDrawerContent={setDrawerContent}
         hubClusterName={hubClusterName}
         onRefreshResources={refreshResources}
+        onEditAppSet={handleEditAppSet}
+        onEditYaml={handleEditYaml}
+        onViewLogs={handleViewLogs}
+        onSyncResources={handleSyncResources}
+        onLaunchArgo={handleLaunchArgo}
       />
     </>
   )

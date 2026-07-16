@@ -22,7 +22,7 @@ jest.mock('@patternfly/react-topology', () => ({
   },
 }))
 
-import MultiEllipseAnchor from './MultiEllipseAnchor'
+import CustomEllipseAnchor from './CustomEllipseAnchor'
 import { Node, NodeModel, Point } from '@patternfly/react-topology'
 
 const createMockOwner = (isEmpty: boolean) =>
@@ -35,7 +35,7 @@ const createMockOwner = (isEmpty: boolean) =>
     }),
   }) as unknown as Node<NodeModel>
 
-describe('MultiEllipseAnchor tests', () => {
+describe('CustomEllipseAnchor tests', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
@@ -43,7 +43,7 @@ describe('MultiEllipseAnchor tests', () => {
   test('returns center when bounds are empty', () => {
     const mockOwner = createMockOwner(true)
 
-    const anchor = new MultiEllipseAnchor(mockOwner, 0)
+    const anchor = new CustomEllipseAnchor(mockOwner, 0)
     const reference = new Point(200, 200)
     const result = anchor.getLocation(reference)
 
@@ -57,7 +57,7 @@ describe('MultiEllipseAnchor tests', () => {
     // Mock anchor point that would be on the right side (angle ~0 degrees)
     mockGetEllipseAnchorPoint.mockReturnValue(new Point(140, 100))
 
-    const anchor = new MultiEllipseAnchor(mockOwner, 0)
+    const anchor = new CustomEllipseAnchor(mockOwner, 0)
     const reference = new Point(200, 100)
     const result = anchor.getLocation(reference)
 
@@ -86,7 +86,7 @@ describe('MultiEllipseAnchor tests', () => {
 
     mockGetEllipseAnchorPoint.mockReturnValue(new Point(anchorX, anchorY))
 
-    const anchor = new MultiEllipseAnchor(mockOwner, 0)
+    const anchor = new CustomEllipseAnchor(mockOwner, 0)
     const reference = new Point(50, 150) // reference in lower-left direction
     const result = anchor.getLocation(reference)
 
@@ -105,7 +105,7 @@ describe('MultiEllipseAnchor tests', () => {
     mockGetEllipseAnchorPoint.mockReturnValue(new Point(150, 100))
 
     const offset = 5
-    const anchor = new MultiEllipseAnchor(mockOwner, offset)
+    const anchor = new CustomEllipseAnchor(mockOwner, offset)
     const reference = new Point(200, 100)
     anchor.getLocation(reference)
 
@@ -128,7 +128,7 @@ describe('MultiEllipseAnchor tests', () => {
 
     mockGetEllipseAnchorPoint.mockReturnValue(new Point(anchorX, anchorY))
 
-    const anchor = new MultiEllipseAnchor(mockOwner, 0)
+    const anchor = new CustomEllipseAnchor(mockOwner, 0)
     const reference = new Point(150, 50) // upper-right direction
     const result = anchor.getLocation(reference)
 
@@ -146,7 +146,7 @@ describe('MultiEllipseAnchor tests', () => {
 
     mockGetEllipseAnchorPoint.mockReturnValue(new Point(anchorX, anchorY))
 
-    const anchor = new MultiEllipseAnchor(mockOwner, 0)
+    const anchor = new CustomEllipseAnchor(mockOwner, 0)
     const reference = new Point(50, 110)
     const result = anchor.getLocation(reference)
 
@@ -164,7 +164,7 @@ describe('MultiEllipseAnchor tests', () => {
 
     mockGetEllipseAnchorPoint.mockReturnValue(new Point(anchorX, anchorY))
 
-    const anchor = new MultiEllipseAnchor(mockOwner, 0)
+    const anchor = new CustomEllipseAnchor(mockOwner, 0)
     const reference = new Point(50, 150)
     const result = anchor.getLocation(reference)
 

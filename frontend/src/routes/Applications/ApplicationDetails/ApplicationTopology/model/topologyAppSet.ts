@@ -653,8 +653,12 @@ function processResources(
 
   // Filter out VM-owned ControllerRevisions before processMultiples merges them
   // into a single entry (which loses individual names and breaks the skip logic).
+  // Also filter out resources that are marked for pruning.
   const resourcesToProcess = allResources.filter((deployable: Record<string, unknown>) => {
     const typedDeployable = deployable as unknown as ProcessedDeployableResource
+    if (typedDeployable.requiresPruning === true) {
+      return false
+    }
     if (typedDeployable.kind.toLowerCase() === 'controllerrevision' && vmOwnedCrNames.has(typedDeployable.name)) {
       return false
     }
@@ -729,7 +733,7 @@ function processResources(
         parent: {
           clusterId: parentId,
         },
-        resources: deployableResources,
+        resources: deployableResources || [deployable as unknown as ResourceItem],
         resourceCount: resourceCount || nodeClusters.length,
       },
     }

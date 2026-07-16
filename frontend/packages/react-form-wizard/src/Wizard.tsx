@@ -83,6 +83,7 @@ export interface WizardProps {
   submitButtonText?: string
   submittingButtonText?: string
   isLoading?: boolean
+  height?: number | string
 }
 
 export type WizardSubmit = (data: unknown) => Promise<void>
@@ -142,6 +143,7 @@ export function Wizard(props: WizardProps & { showHeader?: boolean; showYaml?: b
                                             submitButtonText={props.submitButtonText}
                                             submittingButtonText={props.submittingButtonText}
                                             isLoading={props.isLoading}
+                                            height={props.height}
                                           >
                                             {props.children}
                                           </WizardInternal>
@@ -189,6 +191,7 @@ type WizardInternalProps = Omit<WizardFooterProps, 'steps'> & {
   onCancel: WizardCancel
   hasButtons?: boolean
   isLoading?: boolean
+  height?: number | string
 }
 
 const MAX_REVIEW_STORAGE_KEY_LEN = 96
@@ -215,6 +218,7 @@ function WizardInternal({
   submitButtonText,
   submittingButtonText,
   isLoading,
+  height,
 }: WizardInternalProps) {
   const { reviewLabel, stepsAriaLabel, contentAriaLabel } = useStringContext()
   const resolvedReviewStorageKey = reviewStorageKey ?? defaultReviewStorageKeyFromId(id ?? '')
@@ -263,6 +267,7 @@ function WizardInternal({
       <PFWizard
         navAriaLabel={`${stepsAriaLabel}`}
         aria-label={`${contentAriaLabel}`}
+        height={height}
         footer={
           <MyFooter
             onSubmit={onSubmit}

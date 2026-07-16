@@ -21,6 +21,35 @@
 .topologyDetails .detailsHeader .innerDetailsHeader .detailsIconContainer {
   margin: 20px 16px 20px 20px;
 }
+
+.topologyDetails .details-view-toolbar {
+  margin-inline: var(--pf-t--global--spacer--md);
+  margin-block-end: 0;
+  --pf-v6-c-toolbar--PaddingBlockStart: var(--pf-t--global--spacer--md);
+  --pf-v6-c-toolbar--PaddingBlockEnd: var(--pf-t--global--spacer--md);
+  --pf-v6-c-toolbar--PaddingInlineStart: var(--pf-t--global--spacer--md);
+  --pf-v6-c-toolbar--PaddingInlineEnd: var(--pf-t--global--spacer--md);
+  border: 1px solid var(--pf-v5-global--BorderColor--100);
+  border-radius: var(--pf-t--global--border--radius--medium, 8px);
+  overflow: hidden;
+}
+
+.topologyDetails .details-view-toolbar .pf-v6-c-toolbar__content {
+  margin: 0 6px;
+}
+
+.topologyDetails
+  .details-view-toolbar
+  .pf-v6-c-toolbar__group.pf-m-action-group-plain
+  > .pf-v6-c-divider.pf-m-vertical {
+  align-self: stretch;
+  height: auto;
+}
+
+.topologyDetails .details-view-toolbar .pf-v6-c-toolbar__group.pf-m-action-group-plain > .pf-v6-c-button {
+  align-self: baseline;
+}
+
 .topologyDetails .detailsHeader .innerDetailsHeader .detailsIcon {
   border-top: 0;
   stroke-width: 3px;

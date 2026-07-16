@@ -4,7 +4,6 @@ const mockUseHover = jest.fn()
 const mockDefaultNode = jest.fn()
 
 jest.mock('@patternfly/react-topology', () => ({
-  Ellipse: jest.fn(() => null),
   Decorator: jest.fn(({ x, y, radius, icon }) => (
     <g data-testid="decorator" data-x={x} data-y={y} data-radius={radius}>
       {icon}
@@ -35,13 +34,13 @@ jest.mock('@patternfly/react-topology', () => ({
   useHover: mockUseHover,
 }))
 
-jest.mock('./MultiEllipse', () => jest.fn(() => null))
+jest.mock('./CustomEllipse', () => jest.fn(() => null))
 
 import * as React from 'react'
 import { render } from '@testing-library/react'
 import StyledNode from './StyledNode'
-import { Node, Ellipse } from '@patternfly/react-topology'
-import MultiEllipse from './MultiEllipse'
+import { Node } from '@patternfly/react-topology'
+import CustomEllipse from './CustomEllipse'
 
 const createMockElement = (
   overrides: {
@@ -367,8 +366,8 @@ describe('StyledNode tests', () => {
     })
   })
 
-  describe('MultiEllipse shape', () => {
-    test('uses MultiEllipse when resourceCount > 1', () => {
+  describe('CustomEllipse shape', () => {
+    test('passes isMulti=true when resourceCount > 1', () => {
       const element = createMockElement({
         data: {
           specs: { resourceCount: 2 },
@@ -377,11 +376,13 @@ describe('StyledNode tests', () => {
       render(<StyledNode element={element} />)
 
       const calledProps = mockDefaultNode.mock.calls[0][0]
-      const customShape = calledProps.getCustomShape()
-      expect(customShape).toBe(MultiEllipse)
+      const CustomShape = calledProps.getCustomShape()
+      render(<CustomShape element={element} width={100} height={80} />)
+
+      expect(CustomEllipse).toHaveBeenCalledWith(expect.objectContaining({ isMulti: true }), expect.anything())
     })
 
-    test('uses Ellipse when resourceCount is 1', () => {
+    test('passes isMulti=false when resourceCount is 1', () => {
       const element = createMockElement({
         data: {
           specs: { resourceCount: 1 },
@@ -390,19 +391,53 @@ describe('StyledNode tests', () => {
       render(<StyledNode element={element} />)
 
       const calledProps = mockDefaultNode.mock.calls[0][0]
-      const customShape = calledProps.getCustomShape()
-      expect(customShape).toBe(Ellipse)
+      const CustomShape = calledProps.getCustomShape()
+      render(<CustomShape element={element} width={100} height={80} />)
+
+      expect(CustomEllipse).toHaveBeenCalledWith(expect.objectContaining({ isMulti: false }), expect.anything())
     })
 
-    test('uses Ellipse when resourceCount is undefined', () => {
+    test('passes isMulti=false when resourceCount is undefined', () => {
       const element = createMockElement({
         data: {},
       })
       render(<StyledNode element={element} />)
 
       const calledProps = mockDefaultNode.mock.calls[0][0]
-      const customShape = calledProps.getCustomShape()
-      expect(customShape).toBe(Ellipse)
+      const CustomShape = calledProps.getCustomShape()
+      render(<CustomShape element={element} width={100} height={80} />)
+
+      expect(CustomEllipse).toHaveBeenCalledWith(expect.objectContaining({ isMulti: false }), expect.anything())
+    })
+
+    test('passes shouldPulse=true when status is danger', () => {
+      const element = createMockElement({
+        data: {
+          status: 'danger',
+        },
+      })
+      render(<StyledNode element={element} />)
+
+      const calledProps = mockDefaultNode.mock.calls[0][0]
+      const CustomShape = calledProps.getCustomShape()
+      render(<CustomShape element={element} width={100} height={80} />)
+
+      expect(CustomEllipse).toHaveBeenCalledWith(expect.objectContaining({ shouldPulse: true }), expect.anything())
+    })
+
+    test('passes shouldPulse=false when status is not danger', () => {
+      const element = createMockElement({
+        data: {
+          status: 'warning',
+        },
+      })
+      render(<StyledNode element={element} />)
+
+      const calledProps = mockDefaultNode.mock.calls[0][0]
+      const CustomShape = calledProps.getCustomShape()
+      render(<CustomShape element={element} width={100} height={80} />)
+
+      expect(CustomEllipse).toHaveBeenCalledWith(expect.objectContaining({ shouldPulse: false }), expect.anything())
     })
   })
 
