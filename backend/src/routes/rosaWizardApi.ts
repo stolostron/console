@@ -19,6 +19,7 @@ type OrgType = {
   }
   service_account: boolean
   username: string
+  id: string
 }
 
 type Payload = {
@@ -221,6 +222,131 @@ export async function getClusterNameCheck(req: Http2ServerRequest, res: Http2Ser
             accessTokenSSO
           ).catch((err: Error) => {
             logger.error({ msg: 'Error getting account info', error: err.message })
+          })
+
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify(accReq))
+        } catch (err) {
+          logger.error(err)
+          respondInternalServerError(req, res)
+        }
+      })
+    } catch (err) {
+      logger.error(err)
+      respondInternalServerError(req, res)
+    }
+  }
+}
+
+export async function getRoleARNs(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
+  const token = await getAuthenticatedToken(req, res)
+  if (token) {
+    try {
+      let data: string = undefined
+      const chucks: string[] = []
+      req.on('data', (chuck: string) => {
+        chucks.push(chuck)
+      })
+
+      req.on('end', async () => {
+        try {
+          data = chucks.join()
+          const body = JSON.parse(data) as WithAwsAccount
+
+          const accessTokenSSO = await getOcmServiceToken(body.service_account_id, body.service_account_secret)
+
+          const accountPath = `${API_URL}/api/clusters_mgmt/v1/aws_inquiries/sts_account_roles`
+
+          const requestBody = {
+            account_id: body.aws_account_id,
+          }
+          const accReq = await jsonPost(accountPath, requestBody, accessTokenSSO).catch((err: Error) => {
+            logger.error({ msg: 'Error gettting account info', error: err.message })
+          })
+
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify(accReq))
+        } catch (err) {
+          logger.error(err)
+          respondInternalServerError(req, res)
+        }
+      })
+    } catch (err) {
+      logger.error(err)
+      respondInternalServerError(req, res)
+    }
+  }
+}
+
+export async function getOCMRoleARN(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
+  const token = await getAuthenticatedToken(req, res)
+  if (token) {
+    try {
+      let data: string = undefined
+      const chucks: string[] = []
+      req.on('data', (chuck: string) => {
+        chucks.push(chuck)
+      })
+
+      req.on('end', async () => {
+        try {
+          data = chucks.join()
+          const body = JSON.parse(data) as WithAwsAccount
+
+          const accessTokenSSO = await getOcmServiceToken(body.service_account_id, body.service_account_secret)
+
+          const accountPath = `${API_URL}/api/clusters_mgmt/v1/aws_inquiries/sts_ocm_role`
+
+          const requestBody = {
+            account_id: body.aws_account_id,
+          }
+          const accReq = await jsonPost(accountPath, requestBody, accessTokenSSO).catch((err: Error) => {
+            logger.error({ msg: 'Error gettting account info', error: err.message })
+          })
+
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify(accReq))
+        } catch (err) {
+          logger.error(err)
+          respondInternalServerError(req, res)
+        }
+      })
+    } catch (err) {
+      logger.error(err)
+      respondInternalServerError(req, res)
+    }
+  }
+}
+
+export async function getUserRole(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
+  const token = await getAuthenticatedToken(req, res)
+  if (token) {
+    try {
+      let data: string = undefined
+      const chucks: string[] = []
+      req.on('data', (chuck: string) => {
+        chucks.push(chuck)
+      })
+
+      req.on('end', async () => {
+        try {
+          data = chucks.join()
+          const body = JSON.parse(data) as Payload
+
+          const accessTokenSSO = await getOcmServiceToken(body.service_account_id, body.service_account_secret)
+
+          // get current account and ID
+          const accountPath = `${API_URL}/api/accounts_mgmt/v1/current_account`
+          const request = (await jsonRequest(accountPath, accessTokenSSO).catch((err: Error) => {
+            logger.error({ msg: 'Failed to fetch account', error: err.message })
+            return { error: err.message }
+          })) as OrgType
+
+          const userRolesPath = `${API_URL}/api/accounts_mgmt/v1/accounts/${request.id}/labels/sts_user_role
+`
+
+          const accReq = await jsonRequest(userRolesPath, accessTokenSSO).catch((err: Error) => {
+            logger.error({ msg: 'Error gettting account info', error: err.message })
           })
 
           res.setHeader('Content-Type', 'application/json')

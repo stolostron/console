@@ -105,3 +105,45 @@ export interface ClusterNameUniquenessResponse {
   total: number
   items: ROSAHCPCluster[]
 }
+export interface AccountRoleARN {
+  arn: string
+  type: string
+  isAdmin: boolean
+  roleVersion: string
+  managedPolicies: boolean
+  hcpManagedPolicies: boolean
+}
+
+export interface AccountRole {
+  prefix: string
+  kind: string
+  items: AccountRoleARN[]
+}
+
+export interface RoleARNsResponse {
+  kind: string
+  aws_account_id: string
+  items: AccountRole[]
+  page: number
+  size: number
+  total: number
+}
+
+export interface OCMRoleResponse {
+  arn: string
+  type: string
+  isAdmin: boolean
+  profile: string
+  roleVersion: string
+  managedPolicies: boolean
+  hcpManagedPolicies: boolean
+}
+
+export interface UserRoleResponse {
+  account_id: string
+  id: string
+  internal: boolean
+  key: string
+  kind: string
+  value: string
+}

@@ -7,4 +7,7 @@ export const rosaWizardKeys = {
   awsBillingAccounts: (id: string) => [...rosaWizardKeys.all, id, 'aws-billing-ids'],
   oidcConfigs: (id: string, aws_account_id?: string) => [...rosaWizardKeys.all, id, aws_account_id, 'oidc-configs'],
   regions: (id: string) => [...rosaWizardKeys.all, id, 'regions'],
+  rolesArns: (id: string, awsAccountId?: string) => [...rosaWizardKeys.all, id, awsAccountId, 'roles-arns'],
+  ocmRoleArn: (id: string, awsAccountId?: string) => [...rosaWizardKeys.all, id, awsAccountId, 'ocm-role-arn'],
+  userRoleArn: (id: string) => [...rosaWizardKeys.all, id, 'user-role-arn'],
 }

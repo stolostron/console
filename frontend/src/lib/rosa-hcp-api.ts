@@ -8,6 +8,9 @@ import {
   ClusterNameCheckPayload,
   ClusterNameUniquenessResponse,
   OrganizationQuotaResponse,
+  OCMRoleResponse,
+  RoleARNsResponse,
+  UserRoleResponse,
   WizardBasePayload,
   WizardErrorResponse,
 } from '~/resources'
@@ -112,6 +115,48 @@ export const getWizardClusterNameUniqueness = (
     client_id,
     client_secret,
     '/cluster-name-check',
+    signal,
+    additionalData
+  )
+
+export const getWizardRoleARNs = (
+  client_id: string,
+  client_secret: string,
+  signal?: AbortSignal,
+  additionalData?: Record<string, unknown>
+): Promise<RoleARNsResponse> =>
+  getWizardData<RoleARNsResponse, Record<string, unknown>>(
+    client_id,
+    client_secret,
+    '/sts-role-arns',
+    signal,
+    additionalData
+  )
+
+export const getWizardOCMRoleARN = (
+  client_id: string,
+  client_secret: string,
+  signal?: AbortSignal,
+  additionalData?: Record<string, unknown>
+): Promise<OCMRoleResponse> =>
+  getWizardData<OCMRoleResponse, Record<string, unknown>>(
+    client_id,
+    client_secret,
+    '/sts-ocm-role',
+    signal,
+    additionalData
+  )
+
+export const getWizardUserRoleARN = (
+  client_id: string,
+  client_secret: string,
+  signal?: AbortSignal,
+  additionalData?: Record<string, unknown>
+): Promise<UserRoleResponse> =>
+  getWizardData<UserRoleResponse, Record<string, unknown>>(
+    client_id,
+    client_secret,
+    '/sts-user-role',
     signal,
     additionalData
   )
