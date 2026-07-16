@@ -110,6 +110,7 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
           async: true,
           typescript: {
             configFile: isDevelopment ? 'tsconfig.dev.json' : 'tsconfig.json',
+            memoryLimit: 8192,
           },
         }),
       new MonacoWebpackPlugin({ languages: ['yaml'] }),

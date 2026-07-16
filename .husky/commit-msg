@@ -3,12 +3,27 @@
 
 RED=""
 NORMAL=""
-if command -v tput >/dev/null 2>&1 && [ $(tput colors) -ge 8 ]; then
-    RED=$(tput setaf 1)
-    NORMAL=$(tput sgr0)
+# Guard tput: IDE git (Cursor/VS Code) often has no $TERM, which makes tput error.
+if command -v tput >/dev/null 2>&1 && [ "$(tput colors 2>/dev/null || echo 0)" -ge 8 ]; then
+    RED=$(tput setaf 1 2>/dev/null || true)
+    NORMAL=$(tput sgr0 2>/dev/null || true)
 fi
 
-if [ "1" != "$(grep -c '^Signed-off-by: ' "$1")" ]; then
-    printf >&2 "%sMissing or extra Signed-off-by lines%s\n" "$RED" "$NORMAL"
+# Require at least one author Signed-off-by. Cursor agent trailers are allowed and ignored:
+#   Co-authored-by: Cursor <cursoragent@cursor.com>
+#   Signed-off-by: Cursor <cursoragent@cursor.com>
+# "At least one" (not exactly one): Cursor often appends Co-authored-by and may also
+# duplicate Signed-off-by when committing with -s.
+author_sob=$(
+    grep '^Signed-off-by: ' "$1" 2>/dev/null \
+        | grep -v 'cursoragent@cursor.com' \
+        | wc -l \
+        | tr -d '[:space:]'
+)
+
+if [ "${author_sob:-0}" -lt 1 ]; then
+    printf >&2 "%sMissing Signed-off-by line%s\n" "$RED" "$NORMAL"
+    printf >&2 "Add: Signed-off-by: Your Name <you@example.com>\n"
+    printf >&2 "Co-authored-by: Cursor <cursoragent@cursor.com> is allowed and does not replace Signed-off-by.\n"
     exit 1
 fi
