@@ -18,7 +18,7 @@ const result = buildDocumentation({
 
 const sortedResult = result.sort((a, b) => a.name.localeCompare(b.name))
 
-const markdown = documentationToMarkdown({ entries: sortedResult })
+const markdown = prettifyObjectTypes(documentationToMarkdown({ entries: sortedResult }))
 
 const regex = /(<!-- TSDOC_START -->)[\s\S]*?(<!-- TSDOC_END -->)$/gm
 const replace = `<!-- TSDOC_START -->\n\n${markdown}\n<!-- TSDOC_END -->`
@@ -137,4 +137,116 @@ export function getAllReferencedFiles(startFile, baseDir = process.cwd()) {
   analyzeFile(startFile)
 
   return allFiles
+}
+
+/**
+ * Simplify internal GraphQL scalar and nullable wrapper types to plain TypeScript equivalents.
+ * Replacements are ordered most-specific first so nested wrappers collapse correctly.
+ *
+ * @param {string} typeStr
+ * @returns {string}
+ */
+function simplifyType(typeStr) {
+  return typeStr
+    .replace(/Scalars\['String'\]\['(?:input|output)'\]/g, 'string')
+    .replace(/Scalars\['Int'\]\['(?:input|output)'\]/g, 'number')
+    .replace(/Scalars\['Float'\]\['(?:input|output)'\]/g, 'number')
+    .replace(/Scalars\['Boolean'\]\['(?:input|output)'\]/g, 'boolean')
+    .replace(/Scalars\['ID'\]\['(?:input|output)'\]/g, 'string')
+    .replace(/Scalars\['Date'\]\['(?:input|output)'\]/g, 'Date')
+    .replace(/Scalars\['Map'\]\['(?:input|output)'\]/g, 'Record<string, unknown>')
+    .replace(/InputMaybe<Array<InputMaybe<([^>]+)>>>/g, '$1[]')
+    .replace(/Array<InputMaybe<([^>]+)>>/g, '$1[]')
+    .replace(/InputMaybe<Array<([^>]+)>>/g, '$1[]')
+    .replace(/InputMaybe<([^>]+)>/g, '$1')
+}
+
+/**
+ * Parse an inline object type string as emitted by tsdoc-markdown — where each property
+ * is preceded by a collapsed JSDoc block (/** ... *\/) — and format it as a readable
+ * TypeScript type definition block.
+ *
+ * @param {string} typeName
+ * @param {string} typeStr - raw object type, e.g. "{ /** comment *\/ prop?: Type ... }"
+ * @returns {string}
+ */
+function formatObjectType(typeName, typeStr) {
+  // Strip surrounding braces
+  const inner = typeStr.slice(1, -1).trim()
+
+  // Split on the start of each JSDoc block so each segment = one property
+  const segments = inner.split(/(?=\/\*\*)/)
+
+  const lines = [`type ${typeName} = {`]
+
+  for (const segment of segments) {
+    const trimmed = segment.trim()
+    if (!trimmed) continue
+
+    let comment = ''
+    let propDef = trimmed
+
+    const commentMatch = trimmed.match(/^\/\*\*([\s\S]*?)\*\/\s*(.*)$/)
+    if (commentMatch) {
+      // Collapse multi-line JSDoc continuation markers into a single-line comment.
+      // Only strip " * " patterns that act as line-continuation markers (i.e. whitespace
+      // on both sides), not inline * characters inside backtick spans or words.
+      comment = commentMatch[1]
+        .replace(/\s+\*\s+\*\s+/g, ' ') // collapse blank JSDoc paragraph separators " * * "
+        .replace(/\s+\*\s+/g, ' ') // collapse regular line-continuation " * " markers
+        .replace(/\s+/g, ' ')
+        .trim()
+      propDef = commentMatch[2].trim()
+    }
+
+    if (!propDef) continue
+
+    const colonIdx = propDef.indexOf(':')
+    if (colonIdx === -1) continue
+
+    const propName = propDef.slice(0, colonIdx).trim()
+    const propType = simplifyType(propDef.slice(colonIdx + 1).trim())
+
+    if (comment) lines.push(`  /** ${comment} */`)
+    lines.push(`  ${propName}: ${propType}`)
+  }
+
+  lines.push('}')
+  return lines.join('\n')
+}
+
+/**
+ * Post-process generated markdown to replace unreadable inline object type strings
+ * (as produced by tsdoc-markdown) with formatted TypeScript code blocks.
+ *
+ * tsdoc-markdown emits type aliases as a two-column table:
+ *
+ *   | Type      | Type      |
+ *   | --------- | --------- |
+ *   | `TypeName` | `{ /** comment *\/ prop?: Type ... }` |
+ *
+ * When the type cell contains embedded JSDoc markers (/** ... *\/), the type is a
+ * multi-property object that is completely unreadable inline. This function replaces
+ * those table rows with a formatted TypeScript code block.
+ *
+ * The second cell is matched greedily to the LAST backtick on the line, which correctly
+ * captures type strings that contain backtick characters inside JSDoc comment text.
+ *
+ * @param {string} markdown
+ * @returns {string}
+ */
+function prettifyObjectTypes(markdown) {
+  return markdown.replace(
+    // Match the three-line table tsdoc-markdown emits for type aliases:
+    //   | Type   | Type   |
+    //   | ------ | ------ |
+    //   | `Name` | `{ ... }` |
+    // Greedy .+ in the type cell matches to the LAST backtick on the line, correctly
+    // handling type strings that contain backtick characters inside JSDoc text.
+    /\| Type +\| Type +\|\n\| [^\n]+ \|\n\| `([^`]+)` \| `(.+)` \|$/gm,
+    (match, typeName, typeStr) => {
+      if (!typeStr.startsWith('{') || !typeStr.endsWith('}') || !typeStr.includes('/**')) return match
+      return '```typescript\n' + formatObjectType(typeName, typeStr) + '\n```'
+    }
+  )
 }

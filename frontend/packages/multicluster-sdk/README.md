@@ -878,7 +878,7 @@ object. The caller is responsible for constructing those values.
 
 | Function | Type |
 | ---------- | ---------- |
-| `useFleetSearch` | `<T extends K8sResourceCommon or K8sResourceCommon[]>(input: SearchInput or undefined, subscriptionEnabled?: boolean or undefined) => [SearchResult<T> or undefined, boolean, Error or undefined, () => void]` |
+| `useFleetSearch` | `<T extends K8sResourceCommon>(input: SearchInput or undefined, subscriptionEnabled?: boolean or undefined) => [Fleet<T>[] or undefined, boolean, Error or undefined, () => void]` |
 
 Parameters:
 
@@ -905,7 +905,7 @@ Examples:
 
 ```typescript
 // Basic query — no real-time updates
-const [pods, loaded, error, refetch] = useFleetSearch<K8sResourceCommon[]>({
+const [pods, loaded, error, refetch] = useFleetSearch<K8sResourceCommon>({
   filters: [
     { property: 'kind', values: ['Pod'] },
     { property: 'namespace', values: ['default'] },
@@ -914,7 +914,7 @@ const [pods, loaded, error, refetch] = useFleetSearch<K8sResourceCommon[]>({
 })
 
 // With real-time subscription — results update automatically
-const [pods, loaded, error, refetch] = useFleetSearch<K8sResourceCommon[]>(
+const [pods, loaded, error, refetch] = useFleetSearch<K8sResourceCommon>(
   {
     filters: [
       { property: 'kind', values: ['Pod'] },
@@ -926,7 +926,7 @@ const [pods, loaded, error, refetch] = useFleetSearch<K8sResourceCommon[]>(
 ```
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearch.ts#L65)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearch.ts#L66)
 
 ### :gear: useFleetSearchPoll
 
@@ -1163,9 +1163,16 @@ The "global" key is a special set that contains all clusters (when includeGlobal
 
 Options for advanced cluster name retrieval with cluster set organization.
 
-| Type | Type |
-| ---------- | ---------- |
-| `FleetClusterNamesOptions` | `{ /** Whether to return all clusters regardless of availability status. Defaults to false. */ returnAllClusters?: boolean /** Specific cluster set names to include. If not specified, includes all cluster sets including "default". Should not include "global" - use includeGlobal instead. */ clusterSets?: string[] /** Whether to include a special "global" set containing all clusters. Defaults to false. */ includeGlobal?: boolean }` |
+```typescript
+type FleetClusterNamesOptions = {
+  /** Whether to return all clusters regardless of availability status. Defaults to false. */
+  returnAllClusters?: boolean
+  /** Specific cluster set names to include. If not specified, includes all cluster sets including "default". Should not include "global" - use includeGlobal instead. */
+  clusterSets?: string[]
+  /** Whether to include a special "global" set containing all clusters. Defaults to false. */
+  includeGlobal?: boolean
+}
+```
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L101)
 
@@ -1317,9 +1324,14 @@ This extension allows plugins to customize the route used for resources of the g
 
 ### :gear: ResourceRouteProps
 
-| Type | Type |
-| ---------- | ---------- |
-| `ResourceRouteProps` | `{ /** The model for which this resource route should be used. */ model: ExtensionK8sGroupKindModel /** The handler function that returns the route path for the resource. */ handler: CodeRef<ResourceRouteHandler> }` |
+```typescript
+type ResourceRouteProps = {
+  /** The model for which this resource route should be used. */
+  model: ExtensionK8sGroupKindModel
+  /** The handler function that returns the route path for the resource. */
+  handler: CodeRef<ResourceRouteHandler>
+}
+```
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/extensions/resource.ts#L20)
 
@@ -1338,9 +1350,14 @@ All built-in and custom scalars, mapped to their actual values
 Defines a key/value to filter results.
 When multiple values are provided for a property, it is interpreted as an OR operation.
 
-| Type | Type |
-| ---------- | ---------- |
-| `SearchFilter` | `{ /** Name of the property (key). */ property: Scalars['String']['input'] /** * Values for the property. Multiple values per property are interpreted as an OR operation. * Optionally one of these operations `=,!,!=,>,>=,<,<=` can be included at the beginning of the value. * By default the equality operation is used. * The values available for datetime fields (Ex: `created`, `startedAt`) are `hour`, `day`, `week`, `month` and `year`. * Property `kind`, if included in the filter, will be matched using a case-insensitive comparison. * For example, `kind:Pod` and `kind:pod` will bring up all pods. This is to maintain compatibility with Search V1. * * Wildcard matching: the `*` character can be used as a wildcard to match any sequence of characters. * For example, a filter with property `name` and value `nginx-*` matches any resource whose name starts with `nginx-`. * Similarly, property `namespace` with value `prod*` matches any namespace starting with `prod`. * Wildcard matches are case-sensitive. */ values: Array<InputMaybe<Scalars['String']['input']>> }` |
+```typescript
+type SearchFilter = {
+  /** Name of the property (key). */
+  property: string
+  /** Values for the property. Multiple values per property are interpreted as an OR operation. Optionally one of these operations `=,!,!=,>,>=,<,<=` can be included at the beginning of the value. By default the equality operation is used. The values available for datetime fields (Ex: `created`, `startedAt`) are `hour`, `day`, `week`, `month` and `year`. Property `kind`, if included in the filter, will be matched using a case-insensitive comparison. For example, `kind:Pod` and `kind:pod` will bring up all pods. This is to maintain compatibility with Search V1. Wildcard matching: the `*` character can be used as a wildcard to match any sequence of characters. For example, a filter with property `name` and value `nginx-*` matches any resource whose name starts with `nginx-`. Similarly, property `namespace` with value `prod*` matches any namespace starting with `prod`. Wildcard matches are case-sensitive. */
+  values: string[]
+}
+```
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L23)
 
@@ -1348,9 +1365,22 @@ When multiple values are provided for a property, it is interpreted as an OR ope
 
 Input options to the search query.
 
-| Type | Type |
-| ---------- | ---------- |
-| `SearchInput` | `{ /** * List of SearchFilter, which is a key(property) and values. * When multiple filters are provided, results will match all filters (AND operation). */ filters?: InputMaybe<Array<InputMaybe<SearchFilter>>> /** * List of strings to match resources. * Will match resources containing any of the keywords in any text field. * When multiple keywords are provided, it is interpreted as an AND operation. * Matches are case insensitive. */ keywords?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>> /** * Max number of results returned by the query. * **Default is** 10,000 * A value of -1 will remove the limit. Use carefully because it may impact the service. */ limit?: InputMaybe<Scalars['Int']['input']> /** * Number of results to skip before returning results. * Used in combination with limit to implement pagination. * **Default is** 0 */ offset?: InputMaybe<Scalars['Int']['input']> /** * Order results by a property and direction. * Format: "property_name asc" or "property_name desc" * Example: "name desc" or "created asc" */ orderBy?: InputMaybe<Scalars['String']['input']> /** * Filter relationships to the specified kinds. * If empty, all relationships will be included. * This filter is used with the 'related' field on SearchResult. */ relatedKinds?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>> }` |
+```typescript
+type SearchInput = {
+  /** List of SearchFilter, which is a key(property) and values. When multiple filters are provided, results will match all filters (AND operation). */
+  filters?: SearchFilter[]
+  /** List of strings to match resources. Will match resources containing any of the keywords in any text field. When multiple keywords are provided, it is interpreted as an AND operation. Matches are case insensitive. */
+  keywords?: string[]
+  /** Max number of results returned by the query. **Default is** 10,000 A value of -1 will remove the limit. Use carefully because it may impact the service. */
+  limit?: number
+  /** Number of results to skip before returning results. Used in combination with limit to implement pagination. **Default is** 0 */
+  offset?: number
+  /** Order results by a property and direction. Format: "property_name asc" or "property_name desc" Example: "name desc" or "created asc" */
+  orderBy?: string
+  /** Filter relationships to the specified kinds. If empty, all relationships will be included. This filter is used with the 'related' field on SearchResult. */
+  relatedKinds?: string[]
+}
+```
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L44)
 
