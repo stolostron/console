@@ -24,7 +24,7 @@ const uniqueNameResponse: ClusterNameUniquenessResponse = {
   page: 1,
   size: 0,
   total: 0,
-  items: {} as ClusterNameUniquenessResponse['items'],
+  items: [],
 }
 
 const takenNameResponse: ClusterNameUniquenessResponse = {
@@ -32,13 +32,13 @@ const takenNameResponse: ClusterNameUniquenessResponse = {
   page: 1,
   size: 1,
   total: 1,
-  items: {
+  items: [{
     kind: 'Cluster',
     id: 'cluster-123',
     name: 'taken-cluster',
     external_id: 'ext-123',
     display_name: 'taken-cluster',
-  },
+  }],
 }
 
 describe('useClusterNameUniquenessCheck', () => {
