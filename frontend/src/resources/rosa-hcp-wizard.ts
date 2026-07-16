@@ -63,6 +63,11 @@ export interface WizardBasePayload {
   service_account_secret: string
 }
 
+export type ClusterNameCheckPayload = {
+  cluster_name: string
+  region?: string
+}
+
 export interface WizardErrorResponse {
   kind?: string
   reason?: string
@@ -85,4 +90,18 @@ export interface OIDCConfigResponse {
 
 export type AwsAccountPayload = {
   aws_account_id: string
+}
+interface ROSAHCPCluster {
+  kind: string
+  id: string
+  name: string
+  external_id: string
+  display_name: string
+}
+export interface ClusterNameUniquenessResponse {
+  kind: string
+  page: number
+  size: number
+  total: number
+  items: ROSAHCPCluster[]
 }

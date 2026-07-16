@@ -5,6 +5,8 @@ import {
   AwsAccountPayload,
   OIDCConfigResponse,
   CloudProviderResponse,
+  ClusterNameCheckPayload,
+  ClusterNameUniquenessResponse,
   OrganizationQuotaResponse,
   WizardBasePayload,
   WizardErrorResponse,
@@ -24,6 +26,8 @@ export function getWizardData<TResponse, TPayload extends Record<string, unknown
   additionalData?: TPayload
 ): Promise<TResponse> {
   const backendURLPath = getBackendUrl() + url
+  const abortController = new AbortController()
+  const abortSignal = signal ? signal : abortController.signal
   return fetchRetry<TResponse>({
     method: 'POST',
     url: backendURLPath,
@@ -32,7 +36,7 @@ export function getWizardData<TResponse, TPayload extends Record<string, unknown
       service_account_secret: client_secret,
       ...additionalData,
     } as WizardBasePayload & TPayload,
-    signal,
+    signal: abortSignal,
     retries: process.env.NODE_ENV === 'production' ? 2 : 0,
     disableRedirectUnauthorizedLogin: true,
   }).then((res) => {
@@ -97,5 +101,18 @@ export const getWizardRegions = (
     client_secret,
     '/regions',
     signal,
+    additionalData
+  )
+
+export const getWizardClusterNameUniqueness = (
+  client_id: string,
+  client_secret: string,
+  additionalData?: ClusterNameCheckPayload
+): Promise<ClusterNameUniquenessResponse> =>
+  getWizardData<ClusterNameUniquenessResponse, ClusterNameCheckPayload>(
+    client_id,
+    client_secret,
+    '/cluster-name-check',
+    undefined,
     additionalData
   )

@@ -109,6 +109,70 @@ describe('rosaWizardApi routes', () => {
     })
   })
 
+  describe('POST /cluster-name-check', () => {
+    const clusterNamePayload = {
+      ...mockPayload,
+      cluster_name: 'my-rosa-cluster',
+    }
+
+    test('should return cluster search results when name is unique', async () => {
+      const clusterSearchBody = {
+        kind: 'ClusterList',
+        page: 1,
+        size: 0,
+        total: 0,
+        items: [] as unknown[],
+      }
+
+      nockAuth()
+      nockSsoToken()
+      nock(API_HOST)
+        .post('/api/clusters_mgmt/v1/clusters?method=get', {
+          size: 1,
+          search: "name = 'my-rosa-cluster'",
+        })
+        .reply(200, clusterSearchBody)
+
+      const res = await request('POST', '/cluster-name-check', clusterNamePayload)
+      expect(res.statusCode).toEqual(200)
+
+      const body = await parsePipedJsonBody(res)
+      expect(body).toEqual({ statusCode: 200, body: clusterSearchBody })
+    })
+
+    test('should return results when cluster name already exists', async () => {
+      const clusterSearchBody = {
+        kind: 'ClusterList',
+        page: 1,
+        size: 1,
+        total: 1,
+        items: [{ id: 'cluster-123', name: 'my-rosa-cluster' }],
+      }
+
+      nockAuth()
+      nockSsoToken()
+      nock(API_HOST)
+        .post('/api/clusters_mgmt/v1/clusters?method=get', {
+          size: 1,
+          search: "name = 'my-rosa-cluster'",
+        })
+        .reply(200, clusterSearchBody)
+
+      const res = await request('POST', '/cluster-name-check', clusterNamePayload)
+      expect(res.statusCode).toEqual(200)
+
+      const body = await parsePipedJsonBody(res)
+      expect(body).toEqual({ statusCode: 200, body: clusterSearchBody })
+    })
+
+    test('should return 401 when not authenticated', async () => {
+      nock(process.env.CLUSTER_API_URL).get('/apis').reply(401)
+
+      const res = await request('POST', '/cluster-name-check', clusterNamePayload)
+      expect(res.statusCode).toEqual(401)
+    })
+  })
+
   describe('POST /oidc-configs', () => {
     const oidcPayload = {
       ...mockPayload,
