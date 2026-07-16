@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk'
 import { act, renderHook } from '@testing-library/react-hooks'
 import { useSearchResultItemsQuery } from '../internal/search/search-sdk'
 import { SearchInput } from '../types/search'
@@ -81,13 +80,13 @@ describe('useFleetSearch', () => {
         refetch: jest.fn(),
       } as any)
 
-      const { result } = renderHook(() => useFleetSearch<K8sResourceCommon[]>(mockInput))
+      const { result } = renderHook(() => useFleetSearch(mockInput))
 
       const [data, loaded, error] = result.current
       expect(loaded).toBe(true)
       expect(error).toBeUndefined()
       expect(data).toHaveLength(1)
-      expect((data as K8sResourceCommon[])[0].metadata?.name).toBe('test-pod')
+      expect(data![0].metadata?.name).toBe('test-pod')
     })
 
     it('should return undefined data and report error when query fails', () => {
@@ -258,11 +257,11 @@ describe('useFleetSearch', () => {
       } as any)
       mockUseFleetSearchSubscription.mockReturnValue([insertEvent as any, false, undefined])
 
-      const { result } = renderHook(() => useFleetSearch<K8sResourceCommon[]>(mockInput, true))
+      const { result } = renderHook(() => useFleetSearch(mockInput, true))
 
       const [data] = result.current
-      expect((data as K8sResourceCommon[]).length).toBe(2)
-      expect((data as K8sResourceCommon[]).map((r) => r.metadata?.name)).toContain('new-pod')
+      expect(data).toHaveLength(2)
+      expect(data!.map((r) => r.metadata?.name)).toContain('new-pod')
     })
 
     it('should not duplicate on INSERT if uid already exists', () => {
@@ -283,10 +282,10 @@ describe('useFleetSearch', () => {
       } as any)
       mockUseFleetSearchSubscription.mockReturnValue([insertEvent as any, false, undefined])
 
-      const { result } = renderHook(() => useFleetSearch<K8sResourceCommon[]>(mockInput, true))
+      const { result } = renderHook(() => useFleetSearch(mockInput, true))
 
       const [data] = result.current
-      expect((data as K8sResourceCommon[]).length).toBe(1)
+      expect(data).toHaveLength(1)
     })
   })
 
@@ -310,11 +309,11 @@ describe('useFleetSearch', () => {
       } as any)
       mockUseFleetSearchSubscription.mockReturnValue([updateEvent as any, false, undefined])
 
-      const { result } = renderHook(() => useFleetSearch<K8sResourceCommon[]>(mockInput, true))
+      const { result } = renderHook(() => useFleetSearch(mockInput, true))
 
       const [data] = result.current
-      expect((data as K8sResourceCommon[]).length).toBe(1)
-      expect((data as K8sResourceCommon[])[0].metadata?.name).toBe('updated-pod')
+      expect(data).toHaveLength(1)
+      expect(data![0].metadata?.name).toBe('updated-pod')
     })
   })
 
@@ -337,10 +336,10 @@ describe('useFleetSearch', () => {
       } as any)
       mockUseFleetSearchSubscription.mockReturnValue([deleteEvent as any, false, undefined])
 
-      const { result } = renderHook(() => useFleetSearch<K8sResourceCommon[]>(mockInput, true))
+      const { result } = renderHook(() => useFleetSearch(mockInput, true))
 
       const [data] = result.current
-      expect((data as K8sResourceCommon[]).length).toBe(0)
+      expect(data).toHaveLength(0)
     })
 
     it('should be a no-op DELETE when uid does not match any resource', () => {
@@ -361,10 +360,10 @@ describe('useFleetSearch', () => {
       } as any)
       mockUseFleetSearchSubscription.mockReturnValue([deleteEvent as any, false, undefined])
 
-      const { result } = renderHook(() => useFleetSearch<K8sResourceCommon[]>(mockInput, true))
+      const { result } = renderHook(() => useFleetSearch(mockInput, true))
 
       const [data] = result.current
-      expect((data as K8sResourceCommon[]).length).toBe(1)
+      expect(data).toHaveLength(1)
     })
   })
 
@@ -391,12 +390,12 @@ describe('useFleetSearch', () => {
       mockUseFleetSearchSubscription.mockReturnValue([insertEvent as any, false, undefined])
 
       const { result, rerender } = renderHook(
-        ({ enabled }: { enabled: boolean }) => useFleetSearch<K8sResourceCommon[]>(mockInput, enabled),
+        ({ enabled }: { enabled: boolean }) => useFleetSearch(mockInput, enabled),
         { initialProps: { enabled: true } }
       )
 
       // With subscription on, we should have 2 items (original + inserted)
-      expect((result.current[0] as K8sResourceCommon[]).length).toBe(2)
+      expect(result.current[0]).toHaveLength(2)
 
       // Disable subscription — subscription hook now returns no event
       mockUseFleetSearchSubscription.mockReturnValue([undefined, false, undefined])
@@ -406,7 +405,7 @@ describe('useFleetSearch', () => {
       })
 
       // Should reset to the base query data (1 item)
-      expect((result.current[0] as K8sResourceCommon[]).length).toBe(1)
+      expect(result.current[0]).toHaveLength(1)
     })
   })
 

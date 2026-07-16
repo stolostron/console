@@ -878,7 +878,7 @@ object. The caller is responsible for constructing those values.
 
 | Function | Type |
 | ---------- | ---------- |
-| `useFleetSearch` | `<T extends K8sResourceCommon>(input: SearchInput or undefined, subscriptionEnabled?: boolean or undefined) => [Fleet<T>[] or undefined, boolean, Error or undefined, () => void]` |
+| `useFleetSearch` | `(input: SearchInput or undefined, subscriptionEnabled?: boolean or undefined) => [any[] or undefined, boolean, Error or undefined, () => void]` |
 
 Parameters:
 
@@ -905,7 +905,7 @@ Examples:
 
 ```typescript
 // Basic query — no real-time updates
-const [pods, loaded, error, refetch] = useFleetSearch<K8sResourceCommon>({
+const [resources, loaded, error, refetch] = useFleetSearch({
   filters: [
     { property: 'kind', values: ['Pod'] },
     { property: 'namespace', values: ['default'] },
@@ -914,7 +914,7 @@ const [pods, loaded, error, refetch] = useFleetSearch<K8sResourceCommon>({
 })
 
 // With real-time subscription — results update automatically
-const [pods, loaded, error, refetch] = useFleetSearch<K8sResourceCommon>(
+const [resources, loaded, error, refetch] = useFleetSearch(
   {
     filters: [
       { property: 'kind', values: ['Pod'] },
@@ -923,10 +923,26 @@ const [pods, loaded, error, refetch] = useFleetSearch<K8sResourceCommon>(
   },
   true,
 )
+
+// With subscription enabled and pagination/ordering — page 2 of 20 results sorted by name
+const PAGE_SIZE = 20
+const [page, setPage] = useState(1)
+const [resources, loaded, error, refetch] = useFleetSearch(
+  {
+    filters: [
+      { property: 'kind', values: ['Pod'] },
+      { property: 'namespace', values: ['default'] },
+    ],
+    limit: PAGE_SIZE,
+    offset: (page - 1) * PAGE_SIZE,
+    orderBy: 'name asc',
+  },
+  true,
+)
 ```
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearch.ts#L66)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearch.ts#L79)
 
 ### :gear: useFleetSearchPoll
 

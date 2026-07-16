@@ -21,9 +21,6 @@ import { useFleetSearchSubscription } from './useFleetSearchSubscription'
  * Pagination is supported by setting `limit` and `offset` on the `SearchInput`
  * object. The caller is responsible for constructing those values.
  *
- * @template T - The type of a single Kubernetes resource in the result set, extending `K8sResourceCommon`.
- *   The hook always returns an array (`Fleet<T>[]`).
- *
  * @param input - The search input object (filters, keywords, limit, offset, etc.).
  *   Pass `undefined` to skip the query entirely.
  * @param subscriptionEnabled - When `true`, a WebSocket subscription is opened
@@ -43,7 +40,7 @@ import { useFleetSearchSubscription } from './useFleetSearchSubscription'
  * @example
  * ```typescript
  * // Basic query — no real-time updates
- * const [pods, loaded, error, refetch] = useFleetSearch<K8sResourceCommon>({
+ * const [resources, loaded, error, refetch] = useFleetSearch({
  *   filters: [
  *     { property: 'kind', values: ['Pod'] },
  *     { property: 'namespace', values: ['default'] },
@@ -52,7 +49,7 @@ import { useFleetSearchSubscription } from './useFleetSearchSubscription'
  * })
  *
  * // With real-time subscription — results update automatically
- * const [pods, loaded, error, refetch] = useFleetSearch<K8sResourceCommon>(
+ * const [resources, loaded, error, refetch] = useFleetSearch(
  *   {
  *     filters: [
  *       { property: 'kind', values: ['Pod'] },
@@ -61,12 +58,28 @@ import { useFleetSearchSubscription } from './useFleetSearchSubscription'
  *   },
  *   true,
  * )
+ *
+ * // With subscription enabled and pagination/ordering — page 2 of 20 results sorted by name
+ * const PAGE_SIZE = 20
+ * const [page, setPage] = useState(1)
+ * const [resources, loaded, error, refetch] = useFleetSearch(
+ *   {
+ *     filters: [
+ *       { property: 'kind', values: ['Pod'] },
+ *       { property: 'namespace', values: ['default'] },
+ *     ],
+ *     limit: PAGE_SIZE,
+ *     offset: (page - 1) * PAGE_SIZE,
+ *     orderBy: 'name asc',
+ *   },
+ *   true,
+ * )
  * ```
  */
-export function useFleetSearch<T extends K8sResourceCommon>(
+export function useFleetSearch(
   input: SearchInput | undefined,
   subscriptionEnabled?: boolean
-): [Fleet<T>[] | undefined, boolean, Error | undefined, () => void] {
+): [Fleet<K8sResourceCommon>[] | undefined, boolean, Error | undefined, () => void] {
   // ── Base query ─────────────────────────────────────────────────────────────
 
   const {
@@ -81,15 +94,15 @@ export function useFleetSearch<T extends K8sResourceCommon>(
   })
 
   // Derive the converted resource list from the raw query response.
-  const queryData = useMemo<Fleet<T>[] | undefined>(() => {
+  const queryData = useMemo<Fleet<K8sResourceCommon>[] | undefined>(() => {
     const items = queryResult?.searchResult?.[0]?.items
     if (!items) return undefined
-    return items.map((item) => convertSearchItemToResource<T>(item)) as Fleet<T>[]
+    return items.map((item) => convertSearchItemToResource<K8sResourceCommon>(item))
   }, [queryResult])
 
   // ── Local state (patched by subscription events) ───────────────────────────
 
-  const [localData, setLocalData] = useState<Fleet<T>[] | undefined>(queryData)
+  const [localData, setLocalData] = useState<Fleet<K8sResourceCommon>[] | undefined>(queryData)
 
   // When the base query returns fresh data (initial load or after refetch),
   // reset local state to match.
@@ -124,23 +137,23 @@ export function useFleetSearch<T extends K8sResourceCommon>(
           if (!latestEvent.newData) return prev
           const cluster = latestEvent.uid.split('/')[0]
           const patchedNewData = { ...latestEvent.newData, cluster, _uid: latestEvent.uid }
-          const newResource = convertSearchItemToResource<T>(patchedNewData)
-          const newK8sUid = (newResource as K8sResourceCommon).metadata?.uid
+          const newResource = convertSearchItemToResource<K8sResourceCommon>(patchedNewData)
+          const newK8sUid = newResource.metadata?.uid
           // Avoid duplicate insertions.
           if (newK8sUid && current.some((r) => r.metadata?.uid === newK8sUid)) return prev
-          return [...current, newResource] as Fleet<T>[]
+          return [...current, newResource]
         }
         case 'UPDATE': {
           if (!latestEvent.newData) return prev
           const cluster = latestEvent.uid.split('/')[0]
           const patchedNewData = { ...latestEvent.newData, cluster, _uid: latestEvent.uid }
-          const updatedResource = convertSearchItemToResource<T>(patchedNewData)
-          const updatedK8sUid = (updatedResource as K8sResourceCommon).metadata?.uid
-          return current.map((r) => (r.metadata?.uid === updatedK8sUid ? updatedResource : r)) as Fleet<T>[]
+          const updatedResource = convertSearchItemToResource<K8sResourceCommon>(patchedNewData)
+          const updatedK8sUid = updatedResource.metadata?.uid
+          return current.map((r) => (r.metadata?.uid === updatedK8sUid ? updatedResource : r))
         }
         case 'DELETE': {
           const deletedK8sUid = latestEvent.uid.split('/').pop()
-          return current.filter((r) => r.metadata?.uid !== deletedK8sUid) as Fleet<T>[]
+          return current.filter((r) => r.metadata?.uid !== deletedK8sUid)
         }
         default:
           return prev
