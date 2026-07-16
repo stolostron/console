@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { t } from '~/lib/test-helpers'
 import type { Placement } from '~/resources'
+import type { TopologyNode } from '../types'
 import { analyzeTopologyAppSet } from './analyzeTopologyAppSet'
 import type { TopologyAlert } from './utils'
 import {
@@ -33,7 +34,7 @@ describe('analyzeTopologyAppSet', () => {
       },
     })
     const placement = createPlacementNode('No ManagedCluster matches any of the cluster predicate')
-    const cluster = {
+    const cluster: TopologyNode = {
       name: 'local-cluster',
       namespace: 'openshift-gitops',
       type: 'cluster',

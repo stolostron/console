@@ -89,9 +89,7 @@ describe('analysis/utils', () => {
       expect(errors).toHaveLength(1)
       expect(errors[0].kind).toBe('Placement')
       expect(errors[0].name).toBe('p1')
-      expect(errors[0].errors[0].firstError.message).toBe(
-        'No ManagedCluster matches any of the cluster predicate'
-      )
+      expect(errors[0].errors[0].firstError.message).toBe('No ManagedCluster matches any of the cluster predicate')
     })
 
     it('creates per-resource errors when message is shared by a subset of resources', () => {

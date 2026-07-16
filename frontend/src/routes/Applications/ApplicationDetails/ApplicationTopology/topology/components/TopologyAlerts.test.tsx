@@ -60,7 +60,9 @@ describe('TopologyAlerts', () => {
     const longMessage = 'x'.repeat(320)
     render(
       <TopologyAlerts
-        alerts={[createAlert({ description: { message: longMessage, bullets: [{ title: 'YAML', content: ['a: 1'] }] } })]}
+        alerts={[
+          createAlert({ description: { message: longMessage, bullets: [{ title: 'YAML', content: ['a: 1'] }] } }),
+        ]}
         currentAlertsKey="1"
       />
     )

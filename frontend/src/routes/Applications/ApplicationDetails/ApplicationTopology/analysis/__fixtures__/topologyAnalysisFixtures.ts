@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import type { TopologyNode } from '../types'
-import type { IFilteredConditionError, IResourcesWithStatus } from './utils'
+import type { TopologyNode } from '../../types'
+import type { IFilteredConditionError, IResourcesWithStatus } from '../utils'
 
 export const APPSET_NAME = 'test-appset'
 export const NAMESPACE = 'openshift-gitops'
@@ -43,11 +43,9 @@ export const createFilteredError = (
     otherErrors: { message: string; reason: string; type: string }[]
   }> = {}
 ): IFilteredConditionError => {
-  const resource = createResourceWithConditions(
-    overrides.kind ?? 'Placement',
-    overrides.name ?? 'test-resource',
-    [createCondition({ message, reason: overrides.reason, type: overrides.type })]
-  )
+  const resource = createResourceWithConditions(overrides.kind ?? 'Placement', overrides.name ?? 'test-resource', [
+    createCondition({ message, reason: overrides.reason, type: overrides.type }),
+  ])
   return {
     name: overrides.name ?? 'test-resource',
     namespace: overrides.namespace ?? NAMESPACE,

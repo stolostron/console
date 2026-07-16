@@ -64,12 +64,7 @@ describe('analyzeTopologyClusters', () => {
     const appSet = createAppSetNode({
       specs: {
         isAppSetPullModel: true,
-        appSetClusters: [
-          { name: 'c1' },
-          { name: 'c2' },
-          { name: 'c3' },
-          { name: 'c4' },
-        ],
+        appSetClusters: [{ name: 'c1' }, { name: 'c2' }, { name: 'c3' }, { name: 'c4' }],
       },
     })
 

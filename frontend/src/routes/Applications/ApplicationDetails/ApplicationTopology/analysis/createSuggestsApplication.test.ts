@@ -71,9 +71,7 @@ describe('createSuggestsApplication', () => {
     )
 
     expect(alerts).toHaveLength(1)
-    expect(alerts[0].description?.message).toBe(
-      'Sync failed: insufficient permissions to create resources in demo'
-    )
+    expect(alerts[0].description?.message).toBe('Sync failed: insufficient permissions to create resources in demo')
     expect(alerts[0].actions).toEqual([])
   })
 
@@ -90,9 +88,7 @@ describe('createSuggestsApplication', () => {
     )
 
     expect(alerts).toHaveLength(1)
-    expect(alerts[0].description?.message).toBe(
-      'Failed to generate manifests: GitOps manifest service unavailable'
-    )
+    expect(alerts[0].description?.message).toBe('Failed to generate manifests: GitOps manifest service unavailable')
   })
 
   it('adds sync and argo actions for generic failed sync messages', () => {
