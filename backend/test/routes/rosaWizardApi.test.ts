@@ -112,7 +112,7 @@ describe('rosaWizardApi routes', () => {
   describe('POST /oidc-configs', () => {
     const oidcPayload = {
       ...mockPayload,
-      aws_account_id: 123456789012,
+      aws_account_id: '123456789012',
     }
 
     test('should return OIDC configs for given AWS account', async () => {
@@ -130,7 +130,8 @@ describe('rosaWizardApi routes', () => {
       nockAuth()
       nockSsoToken()
       nock(API_HOST)
-        .get("/api/clusters_mgmt/v1/oidc_configs?search=aws.account_id=123456789012 or aws.account_id=''")
+        .get('/api/clusters_mgmt/v1/oidc_configs')
+        .query({ search: "aws.account_id=123456789012 or aws.account_id=''" })
         .reply(200, oidcResponse)
 
       const res = await request('POST', '/oidc-configs', oidcPayload)
@@ -144,7 +145,8 @@ describe('rosaWizardApi routes', () => {
       nockAuth()
       nockSsoToken()
       nock(API_HOST)
-        .get("/api/clusters_mgmt/v1/oidc_configs?search=aws.account_id=123456789012 or aws.account_id=''")
+        .get('/api/clusters_mgmt/v1/oidc_configs')
+        .query({ search: "aws.account_id=123456789012 or aws.account_id=''" })
         .replyWithError('connection refused')
 
       const res = await request('POST', '/oidc-configs', oidcPayload)

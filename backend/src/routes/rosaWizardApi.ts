@@ -26,8 +26,8 @@ type Payload = {
   service_account_secret: string
 }
 
-type OIDCConfigReq = Payload & {
-  aws_account_id: number
+type WithAwsAccount = Payload & {
+  aws_account_id: string
 }
 
 export async function getAwsAccountIds(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
@@ -114,7 +114,7 @@ export async function getWizardOIDCConfigs(req: Http2ServerRequest, res: Http2Se
       req.on('end', async () => {
         try {
           data = chucks.join()
-          const body = JSON.parse(data) as OIDCConfigReq
+          const body = JSON.parse(data) as WithAwsAccount
 
           const accessTokenSSO = await getOcmServiceToken(body.service_account_id, body.service_account_secret)
 

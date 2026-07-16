@@ -9,7 +9,7 @@ export const useFetchOIDCConfigs = (selectedSecret: SelectedSecret) => {
   const { useQuery } = useSharedReactQuery()
   const [awsAccountId, setAwsAccountId] = useState<string | undefined>()
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: rosaWizardKeys.oidcConfigs(selectedSecret.client_id, awsAccountId ?? ''),
+    queryKey: rosaWizardKeys.oidcConfigs(selectedSecret.client_id, awsAccountId),
     queryFn: async ({ signal }) => {
       const response = await getWizardOIDCConfigs(selectedSecret.client_id, selectedSecret.client_secret, signal, {
         aws_account_id: awsAccountId,
