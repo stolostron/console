@@ -41,6 +41,23 @@ describe('createSuggestsApplication', () => {
     expect(alerts[0].actions?.map((action) => action.type)).toContain(TopologyAlertActionType.launchArgo)
   })
 
+  it('rewrites objects-failed-to-apply namespace-not-found sync failures', () => {
+    const alerts: TopologyAlert[] = []
+    createSuggestsApplication(
+      createAppSetNode(),
+      createFilteredError(
+        'Failed last sync attempt to [5e2f094b7e4e80195e91c8118813352dd4efd327]: one or more objects failed to apply, reason: namespaces "ansible" not found (retried 5 times).',
+        { kind: 'Application' }
+      ),
+      alerts,
+      t
+    )
+
+    expect(alerts).toHaveLength(1)
+    expect(alerts[0].description?.message).toBe('Sync failed: namespace ansible not found')
+    expect(alerts[0].actions?.map((action) => action.type)).toContain(TopologyAlertActionType.launchArgo)
+  })
+
   it('creates forbidden sync alerts without actions', () => {
     const alerts: TopologyAlert[] = []
     createSuggestsApplication(

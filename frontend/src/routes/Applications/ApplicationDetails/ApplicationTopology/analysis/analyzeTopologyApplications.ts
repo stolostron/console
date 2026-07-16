@@ -48,7 +48,7 @@ const formatClusterListContent = (clusters: string[], t: TFunction): string[] =>
 
 const buildHealthSyncKey = (healthStatus: string | undefined, syncStatus: string | undefined): string => {
   const parts: string[] = []
-  if (syncStatus && syncStatus !== 'Synced') {
+  if (syncStatus && syncStatus !== 'Synced' && healthStatus !== 'Progressing') {
     parts.push(syncStatus)
   }
   if (healthStatus && healthStatus !== 'Healthy') {
@@ -142,7 +142,7 @@ const formatKindList = (kinds: string[], t: TFunction): string => {
 const getConsolidatedSyncStatus = (healthSyncKeys: string[]): PulseColor => {
   let status: PulseColor = 'yellow'
   healthSyncKeys.forEach((key) => {
-    if (key.includes('Degraded')) {
+    if (key.includes('Degraded') || key.includes('Unknown')) {
       status = 'red'
     } else if ((key.includes('Progressing') || key.includes('OutOfSync')) && status !== 'red') {
       status = 'orange'

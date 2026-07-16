@@ -19,6 +19,7 @@ import './ApplicationTopology.css'
 import './topology/css/Drawer.css'
 import { ArgoApp, ClusterDetailsContainerControl } from './types'
 import { nodeDetailsProvider } from './model/NodeDetailsProvider'
+import { useSharedAtoms, useRecoilValue } from '~/shared-recoil'
 
 type ProcessingSaveState = {
   isProcessingSave: boolean
@@ -62,6 +63,8 @@ export function ApplicationTopologyPageContent() {
     toolbarControl,
   } = useApplicationDetailsContext()
   const { t } = useTranslation()
+  const { placementsState } = useSharedAtoms()
+  const placements = useRecoilValue(placementsState)
   const { refreshTime, topology, statuses, application } = applicationData
   let hubClusterName = ''
   if (topology) {
@@ -163,7 +166,13 @@ export function ApplicationTopologyPageContent() {
 
     let isCancelled = false
     let analyzingTimer: ReturnType<typeof setTimeout> | undefined
-    const { diagramElements, alertsPromise } = getDiagramElements(cloneDeep(topology), statuses, canUpdateStatuses, t)
+    const { diagramElements, alertsPromise } = getDiagramElements(
+      cloneDeep(topology),
+      statuses,
+      canUpdateStatuses,
+      t,
+      placements
+    )
 
     if (isCancelled) {
       return

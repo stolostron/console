@@ -25,7 +25,7 @@ import type {
   OCPFluxApplicationModel,
 } from '../types'
 import { ToolbarControl } from '../topology/components/TopologyToolbar'
-import { Service } from '../../../../../resources'
+import { Service, type Placement } from '../../../../../resources'
 import { analyzeTopology } from '../analysis/analyzeTopology'
 import type { TopologyAlert } from '../analysis/analyzeTopology'
 
@@ -183,11 +183,14 @@ export const getDiagramElements = (
   topology: Topology,
   resourceStatuses: ResourceStatuses | null,
   canUpdateStatuses: boolean,
-  t: Translator
+  t: Translator,
+  placements: Placement[] = []
 ): GetDiagramElementsResult => {
   const diagramElements = buildDiagramElements(topology, resourceStatuses, canUpdateStatuses, t)
 
-  const alertsPromise = resourceStatuses ? analyzeTopology(diagramElements.nodes, t) : undefined
+  const alertsPromise = resourceStatuses
+    ? analyzeTopology(diagramElements.nodes, t, placements, (topology.hubClusterName as string) ?? '')
+    : undefined
 
   return { diagramElements, alertsPromise }
 }

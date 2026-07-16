@@ -1,8 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { t } from '~/lib/test-helpers'
+import type { Placement } from '~/resources'
 import { analyzeTopologyAppSet } from './analyzeTopologyAppSet'
 import type { TopologyAlert } from './utils'
 import {
+  APPSET_NAME,
+  NAMESPACE,
   createAppSetNode,
   createCondition,
   createPlacementNode,
@@ -83,5 +86,127 @@ describe('analyzeTopologyAppSet', () => {
       'Make sure the placement referenced in the ApplicationSet generator exists'
     )
     expect(appSet.specs.pulse).toBe('red')
+  })
+
+  it('creates a missing placement alert when no placement node and referenced placement is absent', async () => {
+    const alerts: TopologyAlert[] = []
+    const placementName = `${APPSET_NAME}-placement`
+    const appSet = createAppSetNode({
+      specs: {
+        raw: {
+          apiVersion: 'argoproj.io/v1alpha1',
+          kind: 'ApplicationSet',
+          metadata: { name: APPSET_NAME, namespace: NAMESPACE },
+          spec: {
+            generators: [
+              {
+                clusterDecisionResource: {
+                  configMapRef: 'acm-placement',
+                  labelSelector: {
+                    matchLabels: {
+                      'cluster.open-cluster-management.io/placement': placementName,
+                    },
+                  },
+                },
+              },
+            ],
+            template: { spec: { destination: { namespace: 'default' } } },
+          },
+          status: { conditions: [] },
+        },
+      },
+    })
+
+    await analyzeTopologyAppSet(appSet, [appSet], alerts, t, [], 'local-cluster')
+
+    expect(alerts).toHaveLength(1)
+    expect(alerts[0].title).toBe('Placement Missing')
+    expect(alerts[0].description?.message).toBe(`Cannot find '${placementName}' on local-cluster`)
+    expect(appSet.specs.pulse).toBe('red')
+  })
+
+  it('creates a missing placement alert for matrix nested clusterDecisionResource', async () => {
+    const alerts: TopologyAlert[] = []
+    const placementName = 'appset-perf-40009-placement'
+    const appSet = createAppSetNode({
+      specs: {
+        raw: {
+          apiVersion: 'argoproj.io/v1alpha1',
+          kind: 'ApplicationSet',
+          metadata: { name: APPSET_NAME, namespace: NAMESPACE },
+          spec: {
+            generators: [
+              {
+                matrix: {
+                  generators: [
+                    {
+                      clusterDecisionResource: {
+                        configMapRef: 'acm-placement',
+                        labelSelector: {
+                          matchLabels: {
+                            'cluster.open-cluster-management.io/placement': placementName,
+                          },
+                        },
+                      },
+                    },
+                  ],
+                },
+              },
+            ],
+            template: { spec: { destination: { namespace: 'default' } } },
+          },
+          status: { conditions: [] },
+        },
+      },
+    })
+
+    await analyzeTopologyAppSet(appSet, [appSet], alerts, t, [], 'local-cluster')
+
+    expect(alerts).toHaveLength(1)
+    expect(alerts[0].title).toBe('Placement Missing')
+    expect(alerts[0].actions?.[1].highlightEditorPath).toBe(
+      'ApplicationSet.spec.generators.0.matrix.generators.0.clusterDecisionResource.labelSelector.matchLabels.cluster.open-cluster-management.io/placement'
+    )
+  })
+
+  it('does not create a missing placement alert when the referenced placement exists', async () => {
+    const alerts: TopologyAlert[] = []
+    const placementName = `${APPSET_NAME}-placement`
+    const appSet = createAppSetNode({
+      specs: {
+        raw: {
+          apiVersion: 'argoproj.io/v1alpha1',
+          kind: 'ApplicationSet',
+          metadata: { name: APPSET_NAME, namespace: NAMESPACE },
+          spec: {
+            generators: [
+              {
+                clusterDecisionResource: {
+                  labelSelector: {
+                    matchLabels: {
+                      'cluster.open-cluster-management.io/placement': placementName,
+                    },
+                  },
+                },
+              },
+            ],
+            template: { spec: { destination: { namespace: 'default' } } },
+          },
+          status: { conditions: [] },
+        },
+      },
+    })
+    const placements: Placement[] = [
+      {
+        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+        kind: 'Placement',
+        metadata: { name: placementName, namespace: NAMESPACE },
+        spec: {},
+      },
+    ]
+
+    await analyzeTopologyAppSet(appSet, [appSet], alerts, t, placements, 'local-cluster')
+
+    expect(alerts.some((alert) => alert.title === 'Placement Missing')).toBe(false)
   })
 })
