@@ -1,6 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AwsAccountIdsResponse, OrganizationQuotaResponse, WizardBasePayload, WizardErrorResponse } from '~/resources'
+import {
+  AwsAccountIdsResponse,
+  OIDCConfigResponse,
+  OrganizationQuotaResponse,
+  WizardBasePayload,
+  WizardErrorResponse,
+} from '~/resources'
 import { fetchRetry, getBackendUrl } from '~/resources/utils'
 
 function isWizardError(data: unknown): data is WizardErrorResponse {
@@ -60,6 +66,20 @@ export const getWizardAwsBillingAccounts = (
     client_id,
     client_secret,
     '/aws-billing-accounts',
+    signal,
+    additionalData
+  )
+
+export const getWizardOIDCConfigs = (
+  client_id: string,
+  client_secret: string,
+  signal?: AbortSignal,
+  additionalData?: Record<string, unknown>
+): Promise<OIDCConfigResponse> =>
+  getWizardData<OIDCConfigResponse, Record<string, unknown>>(
+    client_id,
+    client_secret,
+    '/oidc-configs',
     signal,
     additionalData
   )

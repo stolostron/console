@@ -38,7 +38,7 @@ import { watchTLSSecurityProfile } from './lib/tlsProfileWatch'
 import { watchPlacementDebugCA } from './lib/placementDebugCAWatch'
 import { invalidatePlacementDebugAgent } from './lib/agent'
 import { multiClusterEngineComponents } from './routes/multiClusterEngineComponents'
-import { getAwsAccountIds, getAwsBillingAccountIds } from './routes/rosaWizardApi'
+import { getAwsAccountIds, getAwsBillingAccountIds, getWizardOIDCConfigs } from './routes/rosaWizardApi'
 
 const isProduction = process.env.NODE_ENV === 'production'
 const isDevelopment = process.env.NODE_ENV === 'development'
@@ -95,6 +95,7 @@ router.all('/managedclusterproxy/*', managedClusterProxy)
 // rosa wizard routes
 router.post('/aws-account-ids', getAwsAccountIds)
 router.post('/aws-billing-accounts', getAwsBillingAccountIds)
+router.post('/oidc-configs', getWizardOIDCConfigs)
 router.get('/*', serveHandler)
 
 export async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {

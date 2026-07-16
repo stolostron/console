@@ -108,4 +108,58 @@ describe('rosaWizardApi routes', () => {
       expect(res.statusCode).toEqual(401)
     })
   })
+
+  describe('POST /oidc-configs', () => {
+    const oidcPayload = {
+      ...mockPayload,
+      aws_account_id: 123456789012,
+    }
+
+    test('should return OIDC configs for given AWS account', async () => {
+      const oidcResponse = {
+        items: [
+          {
+            id: 'oidc-config-1',
+            href: '/api/clusters_mgmt/v1/oidc_configs/oidc-config-1',
+            managed: false,
+            installer_role_arn: 'arn:aws:iam::123456789012:role/Installer',
+          },
+        ],
+      }
+
+      nockAuth()
+      nockSsoToken()
+      nock(API_HOST)
+        .get("/api/clusters_mgmt/v1/oidc_configs?search=aws.account_id=123456789012 or aws.account_id=''")
+        .reply(200, oidcResponse)
+
+      const res = await request('POST', '/oidc-configs', oidcPayload)
+      expect(res.statusCode).toEqual(200)
+
+      const body = await parsePipedJsonBody(res)
+      expect(body).toEqual(oidcResponse)
+    })
+
+    test('should return error object when OIDC API call fails', async () => {
+      nockAuth()
+      nockSsoToken()
+      nock(API_HOST)
+        .get("/api/clusters_mgmt/v1/oidc_configs?search=aws.account_id=123456789012 or aws.account_id=''")
+        .replyWithError('connection refused')
+
+      const res = await request('POST', '/oidc-configs', oidcPayload)
+      expect(res.statusCode).toEqual(200)
+
+      const body = await parsePipedJsonBody<{ error: string }>(res)
+      expect(body).toEqual({ error: expect.stringContaining('connection refused') as string })
+    })
+
+    test('should return 500 when SSO token request fails', async () => {
+      nockAuth()
+      nock(SSO_HOST).post(SSO_PATH).replyWithError('SSO unavailable')
+
+      const res = await request('POST', '/oidc-configs', oidcPayload)
+      expect(res.statusCode).toEqual(500)
+    })
+  })
 })

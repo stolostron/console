@@ -37,3 +37,17 @@ export interface WizardErrorResponse {
   reason?: string
   body?: { kind?: string; reason?: string }
 }
+
+interface OIDCConfig {
+  id: string
+  organization_id: string
+  issuer_url: string
+  managed: boolean
+  reusable: boolean
+}
+export interface OIDCConfigResponse {
+  page: number
+  size: number
+  total: number
+  items: OIDCConfig[]
+}
