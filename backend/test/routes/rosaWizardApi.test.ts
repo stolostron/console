@@ -164,4 +164,57 @@ describe('rosaWizardApi routes', () => {
       expect(res.statusCode).toEqual(500)
     })
   })
+
+  describe('POST /regions', () => {
+    test('should return cloud providers with regions', async () => {
+      const cloudProvidersResponse = {
+        kind: 'CloudProviderList',
+        items: [
+          {
+            id: 'aws',
+            name: 'AWS',
+            regions: {
+              items: [
+                { id: 'us-east-1', name: 'US East (N. Virginia)' },
+                { id: 'eu-west-1', name: 'EU (Ireland)' },
+              ],
+            },
+          },
+        ],
+      }
+
+      nockAuth()
+      nockSsoToken()
+      nock(API_HOST)
+        .get('/api/clusters_mgmt/v1/cloud_providers?size=-1&fetchRegions=true')
+        .reply(200, cloudProvidersResponse)
+
+      const res = await request('POST', '/regions', mockPayload)
+      expect(res.statusCode).toEqual(200)
+
+      const body = await parsePipedJsonBody(res)
+      expect(body).toEqual(cloudProvidersResponse)
+    })
+
+    test('should return error object when cloud providers request fails', async () => {
+      nockAuth()
+      nockSsoToken()
+      nock(API_HOST)
+        .get('/api/clusters_mgmt/v1/cloud_providers?size=-1&fetchRegions=true')
+        .replyWithError('Connection refused')
+
+      const res = await request('POST', '/regions', mockPayload)
+      expect(res.statusCode).toEqual(200)
+
+      const body = await parsePipedJsonBody<{ error: string }>(res)
+      expect(body.error).toContain('Connection refused')
+    })
+
+    test('should return 401 when not authenticated', async () => {
+      nock(process.env.CLUSTER_API_URL).get('/apis').reply(401)
+
+      const res = await request('POST', '/regions', mockPayload)
+      expect(res.statusCode).toEqual(401)
+    })
+  })
 })
