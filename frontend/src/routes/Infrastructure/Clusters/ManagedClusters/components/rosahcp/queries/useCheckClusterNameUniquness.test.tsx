@@ -32,13 +32,15 @@ const takenNameResponse: ClusterNameUniquenessResponse = {
   page: 1,
   size: 1,
   total: 1,
-  items: [{
-    kind: 'Cluster',
-    id: 'cluster-123',
-    name: 'taken-cluster',
-    external_id: 'ext-123',
-    display_name: 'taken-cluster',
-  }],
+  items: [
+    {
+      kind: 'Cluster',
+      id: 'cluster-123',
+      name: 'taken-cluster',
+      external_id: 'ext-123',
+      display_name: 'taken-cluster',
+    },
+  ],
 }
 
 describe('useClusterNameUniquenessCheck', () => {
