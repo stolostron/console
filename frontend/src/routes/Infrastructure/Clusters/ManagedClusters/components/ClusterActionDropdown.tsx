@@ -412,7 +412,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
               confirmText: cluster.displayName,
               isValidError: errorIsNot([ResourceErrorCode.NotFound]),
               enableDeletePullSecret: true,
-              enablePreserveOnDelete: !cluster.hive?.clusterPool,
+              enablePreserveOnDelete: cluster.isHive && !cluster.isHypershift && !cluster.isHostedCluster,
               actionWhenPreserve: t('Destroy and preserve infrastructure'),
             })
           },

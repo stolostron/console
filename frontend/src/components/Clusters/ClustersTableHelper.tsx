@@ -772,7 +772,9 @@ export function useTableActions(
           confirmText: t('confirm'),
           isValidError: errorIsNot([ResourceErrorCode.NotFound]),
           enableDeletePullSecret: true,
-          enablePreserveOnDelete: true,
+          enablePreserveOnDelete: clusters.some(
+            (cluster) => cluster.isHive && !cluster.isHypershift && !cluster.isHostedCluster
+          ),
           actionWhenPreserve: t('Destroy and preserve infrastructure'),
         })
       },
