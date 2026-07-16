@@ -198,25 +198,30 @@ export async function getClusterNameCheck(req: Http2ServerRequest, res: Http2Ser
       })
 
       req.on('end', async () => {
-        data = chucks.join()
-        const body = JSON.parse(data) as ClusterNameCheck
+        try {
+          data = chucks.join()
+          const body = JSON.parse(data) as ClusterNameCheck
 
-        const accessTokenSSO = await getOcmServiceToken(body.service_account_id, body.service_account_secret)
-        const accountPath = `${API_URL}/api/clusters_mgmt/v1/clusters?method=get`
+          const accessTokenSSO = await getOcmServiceToken(body.service_account_id, body.service_account_secret)
+          const accountPath = `${API_URL}/api/clusters_mgmt/v1/clusters?method=get`
 
-        const accReq = await jsonPost(
-          accountPath,
-          {
-            size: 1,
-            search: `name = '${body.cluster_name}'`,
-          },
-          accessTokenSSO
-        ).catch((err: Error) => {
-          logger.error({ msg: 'Error gettting account info', error: err.message })
-        })
+          const accReq = await jsonPost(
+            accountPath,
+            {
+              size: 1,
+              search: `name = '${body.cluster_name}'`,
+            },
+            accessTokenSSO
+          ).catch((err: Error) => {
+            logger.error({ msg: 'Error gettting account info', error: err.message })
+          })
 
-        res.setHeader('Content-Type', 'application/json')
-        res.end(JSON.stringify(accReq))
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify(accReq))
+        } catch (err) {
+          logger.error(err)
+          respondInternalServerError(req, res)
+        }
       })
     } catch (err) {
       logger.error(err)
