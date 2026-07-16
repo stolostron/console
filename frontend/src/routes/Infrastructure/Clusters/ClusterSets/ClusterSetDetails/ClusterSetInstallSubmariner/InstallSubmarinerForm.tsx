@@ -264,7 +264,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
           setProviderSecretMap(map)
         })
     }
-  }, [availableClusters, providerSecretMap, fetchSecrets])
+  }, [availableClusters, fetchSecrets])
 
   useEffect(() => {
     const name = defaultBrokerName
