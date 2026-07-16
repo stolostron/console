@@ -21,7 +21,7 @@ const getAWSIDsFromARNs = (arns: string[]): string[] => {
 export const useFetchAwsAccountIDs = (selectedSecret: SelectedSecret) => {
   const { useQuery } = useSharedReactQuery()
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: rosaWizardKeys.awsInfrastructureAccounts(),
+    queryKey: rosaWizardKeys.awsInfrastructureAccounts(selectedSecret.client_id),
     queryFn: async ({ signal }) => {
       const response = await getWizardAWSAccountIds(selectedSecret.client_id, selectedSecret.client_secret, signal)
 

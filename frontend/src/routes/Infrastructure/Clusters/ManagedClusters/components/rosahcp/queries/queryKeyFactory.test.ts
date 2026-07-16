@@ -11,19 +11,25 @@ describe('queryKeyFactory', () => {
     expect(rosaWizardKeys.all).toEqual([ROSA_HCP_WIZARD_QUERY_KEY])
   })
 
-  test('rosaWizardKeys.awsInfrastructureAccounts should extend the base key', () => {
-    const key = rosaWizardKeys.awsInfrastructureAccounts()
-    expect(key).toEqual([ROSA_HCP_WIZARD_QUERY_KEY, 'aws-account-ids'])
+  test('rosaWizardKeys.awsInfrastructureAccounts should extend the base key with client id', () => {
+    const key = rosaWizardKeys.awsInfrastructureAccounts('test-client-id')
+    expect(key).toEqual([ROSA_HCP_WIZARD_QUERY_KEY, 'test-client-id', 'aws-account-ids'])
   })
 
-  test('rosaWizardKeys.awsBillingAccounts should extend the base key', () => {
-    const key = rosaWizardKeys.awsBillingAccounts()
-    expect(key).toEqual([ROSA_HCP_WIZARD_QUERY_KEY, 'aws-billing-ids'])
+  test('rosaWizardKeys.awsBillingAccounts should extend the base key with client id', () => {
+    const key = rosaWizardKeys.awsBillingAccounts('test-client-id')
+    expect(key).toEqual([ROSA_HCP_WIZARD_QUERY_KEY, 'test-client-id', 'aws-billing-ids'])
+  })
+
+  test('different client ids should produce different keys', () => {
+    const key1 = rosaWizardKeys.awsInfrastructureAccounts('client-a')
+    const key2 = rosaWizardKeys.awsInfrastructureAccounts('client-b')
+    expect(key1).not.toEqual(key2)
   })
 
   test('each key factory call should return a new array instance', () => {
-    const key1 = rosaWizardKeys.awsInfrastructureAccounts()
-    const key2 = rosaWizardKeys.awsInfrastructureAccounts()
+    const key1 = rosaWizardKeys.awsInfrastructureAccounts('test-client-id')
+    const key2 = rosaWizardKeys.awsInfrastructureAccounts('test-client-id')
     expect(key1).toEqual(key2)
     expect(key1).not.toBe(key2)
   })

@@ -3,6 +3,6 @@ export const ROSA_HCP_WIZARD_QUERY_KEY = 'rosa-hcp-wizard-query-key'
 
 export const rosaWizardKeys = {
   all: [ROSA_HCP_WIZARD_QUERY_KEY],
-  awsInfrastructureAccounts: () => [...rosaWizardKeys.all, 'aws-account-ids'],
-  awsBillingAccounts: () => [...rosaWizardKeys.all, 'aws-billing-ids'],
+  awsInfrastructureAccounts: (id: string) => [...rosaWizardKeys.all, id, 'aws-account-ids'],
+  awsBillingAccounts: (id: string) => [...rosaWizardKeys.all, id, 'aws-billing-ids'],
 }
