@@ -110,6 +110,12 @@ const menuToggleClass = css`
   }
 `
 
+const typeaheadMultiToggleClass = css`
+  &::before {
+    border-radius: 6px !important;
+  }
+`
+
 interface ICheckboxChildren {
   hasCheckbox?: boolean
   isSelected?: boolean
@@ -653,7 +659,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
           )
         }
         isExpanded={isOpen}
-        className={menuToggleClass}
+        className={`${menuToggleClass}${variant === SelectVariant.typeaheadMulti ? ` ${typeaheadMultiToggleClass}` : ''}`}
         style={
           {
             width: width ?? '100%',
@@ -698,7 +704,10 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
         ? initialFilteredOptions.find((option) => option.value === selectedItem)?.children
         : inputValue
     return (
-      <TextInputGroup isPlain>
+      <TextInputGroup
+        isPlain
+        style={variant === SelectVariant.typeaheadMulti && selectedItems.length > 0 ? { padding: '4px' } : undefined}
+      >
         <TextInputGroupMain
           value={value}
           onClick={onInputClick}
