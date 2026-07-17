@@ -55,7 +55,7 @@ describe('useFetchOIDCConfigs', () => {
     renderHook(() => useFetchOIDCConfigs(mockSecret))
     expect(mockUseQuery).toHaveBeenCalledWith(
       expect.objectContaining({
-        queryKey: ['rosa-hcp-wizard-query-key', 'test-client-id', '', 'oidc-configs'],
+        queryKey: ['rosa-hcp-wizard-query-key', 'test-client-id', undefined, 'oidc-configs'],
         enabled: false,
       })
     )
