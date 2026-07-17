@@ -4,8 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { convertSearchItemToResource } from '../internal/search/convertSearchItemToResource'
 import { searchClient } from '../internal/search/search-client'
 import { useSearchResultItemsQuery } from '../internal/search/search-sdk'
-import { Fleet } from '../types/fleet'
-import { SearchInput } from '../types/search'
+import { SearchInput, SearchResult } from '../types/search'
 import { useFleetSearchSubscription } from './useFleetSearchSubscription'
 
 /**
@@ -76,10 +75,10 @@ import { useFleetSearchSubscription } from './useFleetSearchSubscription'
  * )
  * ```
  */
-export function useFleetSearch(
+export function useFleetSearch<T extends K8sResourceCommon[]>(
   input: SearchInput | undefined,
   subscriptionEnabled?: boolean
-): [Fleet<K8sResourceCommon>[] | undefined, boolean, Error | undefined, () => void] {
+): [SearchResult<T> | undefined, boolean, Error | undefined, () => void] {
   // ── Base query ─────────────────────────────────────────────────────────────
 
   const {
@@ -94,15 +93,15 @@ export function useFleetSearch(
   })
 
   // Derive the converted resource list from the raw query response.
-  const queryData = useMemo<Fleet<K8sResourceCommon>[] | undefined>(() => {
+  const queryData = useMemo<SearchResult<T> | undefined>(() => {
     const items = queryResult?.searchResult?.[0]?.items
     if (!items) return undefined
-    return items.map((item) => convertSearchItemToResource<K8sResourceCommon>(item))
+    return items.map((item) => convertSearchItemToResource<T>(item)) as unknown as SearchResult<T>
   }, [queryResult])
 
   // ── Local state (patched by subscription events) ───────────────────────────
 
-  const [localData, setLocalData] = useState<Fleet<K8sResourceCommon>[] | undefined>(queryData)
+  const [localData, setLocalData] = useState<SearchResult<T> | undefined>(queryData)
 
   // When the base query returns fresh data (initial load or after refetch),
   // reset local state to match.
@@ -141,7 +140,7 @@ export function useFleetSearch(
           const newK8sUid = newResource.metadata?.uid
           // Avoid duplicate insertions.
           if (newK8sUid && current.some((r) => r.metadata?.uid === newK8sUid)) return prev
-          return [...current, newResource]
+          return [...current, newResource] as SearchResult<T>
         }
         case 'UPDATE': {
           if (!latestEvent.newData) return prev
@@ -149,11 +148,11 @@ export function useFleetSearch(
           const patchedNewData = { ...latestEvent.newData, cluster, _uid: latestEvent.uid }
           const updatedResource = convertSearchItemToResource<K8sResourceCommon>(patchedNewData)
           const updatedK8sUid = updatedResource.metadata?.uid
-          return current.map((r) => (r.metadata?.uid === updatedK8sUid ? updatedResource : r))
+          return current.map((r) => (r.metadata?.uid === updatedK8sUid ? updatedResource : r)) as SearchResult<T>
         }
         case 'DELETE': {
           const deletedK8sUid = latestEvent.uid.split('/').pop()
-          return current.filter((r) => r.metadata?.uid !== deletedK8sUid)
+          return current.filter((r) => r.metadata?.uid !== deletedK8sUid) as SearchResult<T>
         }
         default:
           return prev
