@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { useCallback, useRef, useState } from 'react'
 import { useSharedReactQuery } from '~/hooks/shared-react-query'
 import { NormalizedAccountRole, SelectedSecret, WizardAccountRole } from '../constants/types'
