@@ -391,7 +391,12 @@ function addK8Details(
   )
 
   if (type === 'placement' || type === 'placementDecision') {
-    const specNbOfClustersTarget = node?.specs?.raw?.status?.decisions?.length ?? 0
+    const rawStatus = node?.specs?.raw?.status
+    const specNbOfClustersTarget =
+      rawStatus?.decisions?.length ??
+      rawStatus?.numberOfSelectedClusters ??
+      node?.placementDecision?.status?.decisions?.length ??
+      0
 
     // placementDecision
     const clusterSets = node?.placementDecision?.spec?.clusterSets
