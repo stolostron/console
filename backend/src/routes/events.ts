@@ -449,6 +449,7 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
   const removeResources = (
     await batchPromiseAll(cacheUids, async (uid) => {
       const existing = cache[uid]
+      if (!existing) return undefined
       const resource = await existing.compressed.then((compressed) => inflateResource(compressed, eventDict))
       if (options.fieldSelector && !matchesSelector(resource, options.fieldSelector)) {
         return undefined
