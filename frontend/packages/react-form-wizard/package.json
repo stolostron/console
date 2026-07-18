@@ -61,7 +61,7 @@
     "@svgr/webpack": "^8.1.0",
     "@types/get-value": "3.0.5",
     "@types/html-webpack-plugin": "3.2.9",
-    "@types/node": "^24.13.2",
+    "@types/node": "^24.13.3",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
     "@types/set-value": "4.0.3",
