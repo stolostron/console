@@ -28,7 +28,7 @@
     "get-value": "3.0.1",
     "got": "^12.6.1",
     "http2-proxy": "^5.0.53",
-    "https-proxy-agent": "^7.0.4",
+    "https-proxy-agent": "^7.0.6",
     "node-fetch": "2.7.0",
     "node-localstorage": "^3.0.5",
     "object-sizeof": "^2.6.5",
