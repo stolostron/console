@@ -444,22 +444,24 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
   // Remove items that are no longer in kubernetes
   const apiVersionPlural = apiVersionPluralFn(options)
   const cache = resourceCache[apiVersionPlural]
-  const removeResources: IResource[] = []
-  for (const uid in cache) {
-    const existing = cache[uid]
-    const resource = await existing.compressed.then((compressed) => inflateResource(compressed, eventDict))
-    if (options.fieldSelector && !matchesSelector(resource, options.fieldSelector)) {
-      // skip as this object would not be in the items result for this list operation
-      continue
-    }
-    if (options.labelSelector && !matchesSelector(resource.metadata?.labels, options.labelSelector)) {
-      // skip as this object would not be in the items result for this list operation
-      continue
-    }
-    if (!items.find((resource) => resource.metadata.uid === uid)) {
-      removeResources.push(resource)
-    }
-  }
+  const itemUids = new Set(items.map((item) => item.metadata.uid))
+  const cacheUids = Object.keys(cache ?? {})
+  const removeResources = (
+    await batchPromiseAll(cacheUids, async (uid) => {
+      const existing = cache[uid]
+      const resource = await existing.compressed.then((compressed) => inflateResource(compressed, eventDict))
+      if (options.fieldSelector && !matchesSelector(resource, options.fieldSelector)) {
+        return undefined
+      }
+      if (options.labelSelector && !matchesSelector(resource.metadata?.labels, options.labelSelector)) {
+        return undefined
+      }
+      if (!itemUids.has(uid)) {
+        return resource
+      }
+      return undefined
+    })
+  ).filter((r): r is IResource => r !== undefined)
   await batchPromiseAll(removeResources, (resource) => deleteResource(resource, forward))
 
   return { resourceVersion, size: items.length }
