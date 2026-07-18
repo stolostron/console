@@ -16,7 +16,7 @@ jobs:
                   token: ${{ secrets.GH_TOKEN }}
             - uses: actions/setup-node@v6
               with:
-                  node-version: '24'
+                  node-version: '24.18.0'
             - run: npx npm-check-updates --doctor --upgrade --target minor --reject $SKIP
               env:
                   SKIP: '@openshift-console/dynamic-plugin-sdk,@openshift-console/dynamic-plugin-sdk-webpack,@apollo/client'
