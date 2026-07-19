@@ -866,8 +866,6 @@ async function deleteResource(
     if (eventID > 0) ServerSideEvents.removeEvent(eventID)
   }
 
-  if (expectedCacheEntry && cache[uid] !== expectedCacheEntry) return
-
   if (forwardEventsToClients) {
     const deletedID = await ServerSideEvents.pushEvent({
       data: {
