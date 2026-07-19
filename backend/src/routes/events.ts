@@ -448,6 +448,10 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
   const cacheUids = Object.keys(cache ?? {})
   const removeCandidates = (
     await batchPromiseAll(cacheUids, async (uid) => {
+      // Fast path: resource exists in K8s response → skip inflation entirely
+      if (itemUids.has(uid)) return undefined
+
+      // Slow path: only inflate resources NOT in K8s response
       const existing = cache[uid]
       if (!existing) return undefined
       const resource = await existing.compressed.then((compressed) => inflateResource(compressed, eventDict))
