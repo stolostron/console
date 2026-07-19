@@ -446,7 +446,7 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
   const cache = resourceCache[apiVersionPlural]
   const itemUids = new Set(items.map((item) => item.metadata.uid))
   const cacheUids = Object.keys(cache ?? {})
-  const removeResources = (
+  const removeCandidates = (
     await batchPromiseAll(cacheUids, async (uid) => {
       const existing = cache[uid]
       if (!existing) return undefined
@@ -458,12 +458,15 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
         return undefined
       }
       if (!itemUids.has(uid)) {
-        return resource
+        return { resource, cacheEntry: existing }
       }
       return undefined
     })
-  ).filter((r): r is IResource => r !== undefined)
-  await batchPromiseAll(removeResources, (resource) => deleteResource(resource, forward))
+  ).filter(
+    (r): r is { resource: IResource; cacheEntry: { compressed: Promise<Buffer>; eventID: Promise<number> } } =>
+      r !== undefined
+  )
+  await batchPromiseAll(removeCandidates, ({ resource, cacheEntry }) => deleteResource(resource, forward, cacheEntry))
 
   return { resourceVersion, size: items.length }
 }
@@ -843,18 +846,27 @@ export async function cacheResource(resource: IResource, forwardEventsToClients 
   }
 }
 
-async function deleteResource(resource: IResource, forwardEventsToClients = true) {
+async function deleteResource(
+  resource: IResource,
+  forwardEventsToClients = true,
+  expectedCacheEntry?: { compressed: Promise<Buffer>; eventID: Promise<number> }
+) {
   const apiVersionPlural = apiVersionPluralFn(resource)
   const cache = resourceCache[apiVersionPlural]
   if (!cache) return
 
   const uid = resource.metadata.uid
 
+  if (expectedCacheEntry && cache[uid] !== expectedCacheEntry) return
+
   const existing = cache[uid]
   if (existing) {
     const eventID = await existing.eventID
+    if (expectedCacheEntry && cache[uid] !== expectedCacheEntry) return
     if (eventID > 0) ServerSideEvents.removeEvent(eventID)
   }
+
+  if (expectedCacheEntry && cache[uid] !== expectedCacheEntry) return
 
   if (forwardEventsToClients) {
     const deletedID = await ServerSideEvents.pushEvent({
@@ -870,6 +882,7 @@ async function deleteResource(resource: IResource, forwardEventsToClients = true
     // after deletion has been broadcast to current clients, no need to retain
     ServerSideEvents.removeEvent(deletedID)
   }
+  if (expectedCacheEntry && cache[uid] !== expectedCacheEntry) return
   delete cache[uid]
 }
 
