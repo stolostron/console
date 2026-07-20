@@ -849,7 +849,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           height -= 75
         }
 
-        if (height <= 0) return
+        if (width <= 0 || height <= 0) return
 
         const prev = lastLayoutSize.current
         const sameEditor = lastLayoutEditor.current === editor
