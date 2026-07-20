@@ -254,6 +254,7 @@ export type Cluster = {
   microshiftDistribution?: MicroshiftDistributionInfo
   addons?: Addons
   labels?: Record<string, string>
+  annotations?: Record<string, string>
   nodes?: Nodes
   kubeApiServer?: string
   consoleURL?: string
@@ -582,6 +583,7 @@ export function getCluster({
     acmConsoleURL: getACMConsoleURL(acmDistribution.version, consoleURL),
     addons: getAddons(managedClusterAddOns, clusterManagementAddOns),
     labels: managedCluster?.metadata.labels ?? managedClusterInfo?.metadata.labels,
+    annotations: managedCluster?.metadata.annotations ?? managedClusterInfo?.metadata.annotations,
     nodes: getNodes(managedClusterInfo),
     kubeApiServer: getKubeApiServer(clusterDeployment, managedClusterInfo, agentClusterInstall),
     consoleURL: consoleURL,
