@@ -878,7 +878,7 @@ object. The caller is responsible for constructing those values.
 
 | Function | Type |
 | ---------- | ---------- |
-| `useFleetSearch` | `<T extends K8sResourceCommon[]>(input: SearchInput or undefined, subscriptionEnabled?: boolean or undefined) => [SearchResult<T> or undefined, boolean, Error or undefined, () => void]` |
+| `useFleetSearch` | `(input: SearchInput or undefined, subscriptionEnabled?: boolean or undefined) => [any[] or undefined, boolean, Error or undefined, () => void]` |
 
 Parameters:
 
@@ -942,7 +942,7 @@ const [resources, loaded, error, refetch] = useFleetSearch(
 ```
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearch.ts#L78)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearch.ts#L119)
 
 ### :gear: useFleetSearchPoll
 

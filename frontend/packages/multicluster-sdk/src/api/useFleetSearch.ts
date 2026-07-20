@@ -8,6 +8,45 @@ import { Fleet } from '../types/fleet'
 import { SearchInput } from '../types/search'
 import { useFleetSearchSubscription } from './useFleetSearchSubscription'
 
+/** A flat search result item as returned by the search API. */
+type SearchItem = Record<string, unknown>
+
+// ── Pagination helpers ─────────────────────────────────────────────────────
+
+/**
+ * Return a new array sorted according to a search-API `orderBy` string
+ * ("fieldName asc" or "fieldName desc").
+ * Fields are read directly from the flat SearchItem, so the sort is always
+ * reliable regardless of resource kind.
+ */
+function sortByOrderBy(items: SearchItem[], orderBy: string | null | undefined): SearchItem[] {
+  if (!orderBy) return items
+  const [field, dir] = orderBy.trim().split(/\s+/)
+  const descending = dir?.toLowerCase() === 'desc'
+  return [...items].sort((a, b) => {
+    const cmp = String(a[field] ?? '').localeCompare(String(b[field] ?? ''))
+    return descending ? -cmp : cmp
+  })
+}
+
+/**
+ * Insert `newItem` into `items` at the position dictated by `orderBy`, or
+ * append it at the end when `orderBy` is absent.
+ */
+function insertSorted(items: SearchItem[], newItem: SearchItem, orderBy: string | null | undefined): SearchItem[] {
+  if (!orderBy) return [...items, newItem]
+  const [field, dir] = orderBy.trim().split(/\s+/)
+  const descending = dir?.toLowerCase() === 'desc'
+  const newVal = String(newItem[field] ?? '')
+  // Find the first existing item that newItem should sort before.
+  const insertIdx = items.findIndex((item) => {
+    const cmp = newVal.localeCompare(String(item[field] ?? ''))
+    return descending ? cmp > 0 : cmp < 0
+  })
+  if (insertIdx === -1) return [...items, newItem]
+  return [...items.slice(0, insertIdx), newItem, ...items.slice(insertIdx)]
+}
+
 /**
  * A React hook that provides fleet-wide search functionality using the ACM search API,
  * with optional real-time updates via a GraphQL WebSocket subscription.
@@ -76,44 +115,6 @@ import { useFleetSearchSubscription } from './useFleetSearchSubscription'
  * )
  * ```
  */
-/** A flat search result item as returned by the search API. */
-type SearchItem = Record<string, unknown>
-
-// ── Pagination helpers ─────────────────────────────────────────────────────
-
-/**
- * Return a new array sorted according to a search-API `orderBy` string
- * ("fieldName asc" or "fieldName desc").
- * Fields are read directly from the flat SearchItem, so the sort is always
- * reliable regardless of resource kind.
- */
-function sortByOrderBy(items: SearchItem[], orderBy: string | null | undefined): SearchItem[] {
-  if (!orderBy) return items
-  const [field, dir] = orderBy.trim().split(/\s+/)
-  const descending = dir?.toLowerCase() === 'desc'
-  return [...items].sort((a, b) => {
-    const cmp = String(a[field] ?? '').localeCompare(String(b[field] ?? ''))
-    return descending ? -cmp : cmp
-  })
-}
-
-/**
- * Insert `newItem` into `items` at the position dictated by `orderBy`, or
- * append it at the end when `orderBy` is absent.
- */
-function insertSorted(items: SearchItem[], newItem: SearchItem, orderBy: string | null | undefined): SearchItem[] {
-  if (!orderBy) return [...items, newItem]
-  const [field, dir] = orderBy.trim().split(/\s+/)
-  const descending = dir?.toLowerCase() === 'desc'
-  const newVal = String(newItem[field] ?? '')
-  // Find the first existing item that newItem should sort before.
-  const insertIdx = items.findIndex((item) => {
-    const cmp = newVal.localeCompare(String(item[field] ?? ''))
-    return descending ? cmp > 0 : cmp < 0
-  })
-  if (insertIdx === -1) return [...items, newItem]
-  return [...items.slice(0, insertIdx), newItem, ...items.slice(insertIdx)]
-}
 
 export function useFleetSearch(
   input: SearchInput | undefined,
