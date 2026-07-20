@@ -494,6 +494,8 @@ export const analyzeTopologyApplications = async (
       alerts,
       t
     )
+  } else {
+    appSet.specs.pulse = 'green'
   }
 
   return appSetAppsErrors

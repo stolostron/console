@@ -203,9 +203,8 @@ export function TopologyAlerts({
       addedIds.add(alertId)
     })
 
-    setVisibleAlerts((prev) => {
-      const kept = prev.filter((a) => incoming.some((i) => i.id === a.id))
-      return sortAlerts(kept)
+    setVisibleAlerts(() => {
+      return sortAlerts(incoming)
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortedInputAlerts])

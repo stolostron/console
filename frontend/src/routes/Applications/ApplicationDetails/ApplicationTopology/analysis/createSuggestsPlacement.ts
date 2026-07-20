@@ -99,7 +99,7 @@ export const createSuggestsPlacement = (
               node,
             },
             {
-              label: t('Edit predicate'),
+              label: t('Edit YAML'),
               type: TopologyAlertActionType.editYaml,
               node,
               highlightEditorPath: 'Placement.spec.predicates',
@@ -129,7 +129,7 @@ export const createSuggestsPlacement = (
               node,
             },
             {
-              label: t('Edit clustersets'),
+              label: t('Edit YAML'),
               type: TopologyAlertActionType.editYaml,
               node,
               highlightEditorPath: 'Placement.spec.clusterSets',
@@ -153,7 +153,7 @@ export const createSuggestsPlacement = (
               node,
             },
             {
-              label: t('Edit placement'),
+              label: t('Edit YAML'),
               type: TopologyAlertActionType.editYaml,
               node,
             },

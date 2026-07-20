@@ -47,13 +47,13 @@ export const createSuggestsAppset = (
               node,
             },
             {
-              label: t('Edit generators'),
+              label: t('Edit YAML'),
               type: TopologyAlertActionType.editYaml,
               node,
               highlightEditorPath: 'ApplicationSet.spec.generators',
             },
             {
-              label: t('Edit destinations'),
+              label: t('Edit YAML'),
               type: TopologyAlertActionType.editYaml,
               node,
               highlightEditorPath: 'ApplicationSet.spec.template.spec.destination',
@@ -79,7 +79,7 @@ export const createSuggestsAppset = (
               node,
             },
             {
-              label: t('Edit destinations'),
+              label: t('Edit YAML'),
               type: TopologyAlertActionType.editYaml,
               node,
               highlightEditorPath: 'ApplicationSet.spec.template.spec.destination',
