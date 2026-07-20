@@ -549,9 +549,7 @@ describe('SyncEditor component', () => {
       const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
       await waitFor(() => expect(input).not.toHaveValue(''))
       const calls = lastEditorLayout.current!.mock.calls
-      const hasPositiveDimensions = calls.some(
-        (args: any[]) => args[0] && args[0].width > 0 && args[0].height > 0
-      )
+      const hasPositiveDimensions = calls.some((args: any[]) => args[0] && args[0].width > 0 && args[0].height > 0)
       expect(hasPositiveDimensions).toBe(false)
     })
 
