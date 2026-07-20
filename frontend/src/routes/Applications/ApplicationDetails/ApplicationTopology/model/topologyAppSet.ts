@@ -25,6 +25,7 @@ import {
 import {
   addClusters,
   addTopologyNode,
+  areDestinationNamespacesUniform,
   areSourcesUniform,
   createControllerRevisionChild,
   createDataVolumeChild,
@@ -461,9 +462,10 @@ async function getAppSetResources(application: ApplicationModel) {
  * This provides the list of expected resources regardless of whether they currently exist on the cluster.
  *
  * Optimization: Determines whether all apps deploy the same manifests by comparing the
- * source specs of the hub Application CRs (appSetApps). If all sources are identical,
- * only one fleet request is made and the result is reused for all apps. If sources differ
- * (matrix/merge generator varying paths), each app is fetched individually.
+ * source specs and destination namespaces of the hub Application CRs (appSetApps). If all
+ * sources and destination namespaces are identical, only one fleet request is made and the
+ * result is reused for all apps. If either differs (matrix/merge generator varying paths
+ * or namespaces), each app is fetched individually.
  *
  * @returns Map keyed by "appName/clusterName" → array of resources from status.resources
  */
@@ -484,10 +486,12 @@ async function fetchPullModelAppResources(
   )
   if (validApps.length === 0) return resourceMap
 
-  const uniform = areSourcesUniform(appSetApps, (app: ResourceItem) => {
-    const spec = (app as any).spec || (app as any).metadata?.spec || {}
-    return { source: spec.source, sources: spec.sources }
-  })
+  const getAppSpec = (app: ResourceItem) => (app as any).spec || (app as any).metadata?.spec || {}
+  const uniform =
+    areSourcesUniform(appSetApps, (app: ResourceItem) => {
+      const spec = getAppSpec(app)
+      return { source: spec.source, sources: spec.sources }
+    }) && areDestinationNamespacesUniform(appSetApps, (app: ResourceItem) => getAppSpec(app).destination?.namespace)
   const appResources = await fetchAppResources(validApps, namespace, uniform)
 
   for (const app of validApps) {

@@ -7,7 +7,7 @@ import { analyzeTopologyClusters } from './analyzeTopologyClusters'
 import type { IFilteredConditionError, IResourcesWithStatus, TopologyAlert } from './analyzeTopology'
 import { createSuggestsAppset } from './createSuggestsAppset'
 import { createSuggestsPlacement, missingPlacementAlert, PLACEMENT_MATCH_LABEL } from './createSuggestsPlacement'
-import { extractConditionsErrors, setNodePulseForTypes } from './utils'
+import { createTopologyAlert, extractConditionsErrors, setNodePulseForTypes, TopologyAlertActionType } from './utils'
 
 const collectReferencedPlacements = (
   generators: AppSetGenerator[] | undefined
@@ -108,6 +108,40 @@ export const analyzeTopologyAppSet = async (
       })
 
       appSet.specs.pulse = 'red'
+    }
+  }
+
+  if (appSet.isArgoCDPullModelTargetLocalCluster) {
+    const actionNode = placement ?? appSet
+    const alert = createTopologyAlert(
+      t('Warning'),
+      'yellow',
+      {
+        message: t(
+          'The ArgoCD pull model does not support the hub cluster as a destination cluster. Filter out the hub cluster from the placement resource.'
+        ),
+        bullets: [
+          {
+            title: t('Add predicate to exclude the local-cluster'),
+          },
+        ],
+      },
+      [
+        {
+          label: t('Edit application'),
+          type: TopologyAlertActionType.editAppSet,
+          node: actionNode,
+        },
+        {
+          label: t('Edit YAML'),
+          type: TopologyAlertActionType.editYaml,
+          node: actionNode,
+          highlightEditorPath: 'Placement.spec.predicates',
+        },
+      ]
+    )
+    if (!alerts.some((existingAlert) => existingAlert.id === alert.id)) {
+      alerts.push(alert)
     }
   }
 

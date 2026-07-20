@@ -1,12 +1,22 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { GitOpsClusterApiVersion, GitOpsClusterKind } from '~/resources/gitops-cluster'
+import { getResource } from '~/resources/utils'
 import type { TFunction } from 'i18next'
 import { fleetResourceRequest } from '../../../../../resources/utils/fleet-resource-request'
 import type { AppSetCluster, TopologyNode } from '../types'
-import type { TopologyAlert } from './analyzeTopology'
-import { createTopologyAlert } from './utils'
+import type { IFilteredConditionError, IResourcesWithStatus, TopologyAlert } from './analyzeTopology'
+import { createSuggestsAppset } from './createSuggestsAppset'
+import {
+  createTopologyAlert,
+  extractConditionsErrors,
+  type IBulletDescription,
+  type TopologyAlertDescription,
+} from './utils'
 
 const MAX_PULL_CLUSTER_FETCHES = 3
-// const MANAGED_CLUSTER_REGISTRATION_ERROR_PREFIX = 'Failed to register managed clusters with ArgoCD'
+const GITOPS_CLUSTER_NAME = 'gitops'
+const GITOPS_NAMESPACE = 'openshift-gitops'
+const MANAGED_CLUSTER_REGISTRATION_ERROR_PREFIX = 'Failed to register managed clusters with ArgoCD'
 const GITOPS_OPERATOR_SUBSCRIPTION = {
   apiVersion: 'operators.coreos.com/v1alpha1',
   kind: 'Subscription',
@@ -14,17 +24,17 @@ const GITOPS_OPERATOR_SUBSCRIPTION = {
   namespace: 'openshift-gitops-operator',
 }
 
-// const fetchHubGitOpsCluster = async (): Promise<IResourcesWithStatus | undefined> => {
-//   try {
-//     return (await getResource({
-//       apiVersion: GitOpsClusterApiVersion,
-//       kind: GitOpsClusterKind,
-//       metadata: { name: GITOPS_CLUSTER_NAME, namespace: GITOPS_NAMESPACE },
-//     }).promise) as IResourcesWithStatus
-//   } catch {
-//     return undefined
-//   }
-// }
+const fetchHubGitOpsCluster = async (): Promise<IResourcesWithStatus | undefined> => {
+  try {
+    return (await getResource({
+      apiVersion: GitOpsClusterApiVersion,
+      kind: GitOpsClusterKind,
+      metadata: { name: GITOPS_CLUSTER_NAME, namespace: GITOPS_NAMESPACE },
+    }).promise) as IResourcesWithStatus
+  } catch {
+    return undefined
+  }
+}
 
 const verifyPullClusterGitOps = async (
   appSet: TopologyNode,
@@ -62,39 +72,39 @@ const verifyPullClusterGitOps = async (
   )
 }
 
-// const getConditionErrorMessages = (error: IFilteredConditionError): string[] =>
-//   error.errors.flatMap((filtered) => [
-//     filtered.firstError.message,
-//     ...filtered.otherErrors.map((conditionError) => conditionError.message),
-//   ])
+const getConditionErrorMessages = (error: IFilteredConditionError): string[] =>
+  error.errors.flatMap((filtered) => [
+    filtered.firstError.message,
+    ...filtered.otherErrors.map((conditionError) => conditionError.message),
+  ])
 
-// const findManagedClusterRegistrationMessage = (errors: IFilteredConditionError[]): string | undefined => {
-//   for (const gitopsError of errors) {
-//     for (const message of getConditionErrorMessages(gitopsError)) {
-//       if (message.includes(MANAGED_CLUSTER_REGISTRATION_ERROR_PREFIX) && message.includes('all options')) {
-//         return message
-//       }
-//     }
-//   }
-//   return undefined
-// }
+const findManagedClusterRegistrationMessage = (errors: IFilteredConditionError[]): string | undefined => {
+  for (const gitopsError of errors) {
+    for (const message of getConditionErrorMessages(gitopsError)) {
+      if (message.includes(MANAGED_CLUSTER_REGISTRATION_ERROR_PREFIX) && message.includes('all options')) {
+        return message
+      }
+    }
+  }
+  return undefined
+}
 
-// const buildGitOpsOperatorIssuesDescription = (message: string): TopologyAlertDescription => {
-//   const allOptionsIndex = message.indexOf('all options')
-//   const mainMessage = message.slice(0, allOptionsIndex).trimEnd().replace(/:\s*$/, '')
+const buildGitOpsOperatorIssuesDescription = (message: string): TopologyAlertDescription => {
+  const allOptionsIndex = message.indexOf('all options')
+  const mainMessage = message.slice(0, allOptionsIndex).trimEnd().replace(/:\s*$/, '')
 
-//   const bullets: IBulletDescription[] = message
-//     .slice(allOptionsIndex)
-//     .split(/\n(?=all options)/)
-//     .map((segment) => segment.trim())
-//     .filter((segment) => segment.startsWith('all options'))
-//     .map((title) => ({ title, content: [] }))
+  const bullets: IBulletDescription[] = message
+    .slice(allOptionsIndex)
+    .split(/\n(?=all options)/)
+    .map((segment) => segment.trim())
+    .filter((segment) => segment.startsWith('all options'))
+    .map((title) => ({ title, content: [] }))
 
-//   return {
-//     message: mainMessage,
-//     bullets: bullets.length > 0 ? bullets : undefined,
-//   }
-// }
+  return {
+    message: mainMessage,
+    bullets: bullets.length > 0 ? bullets : undefined,
+  }
+}
 
 /**
  * Analyzes cluster topology nodes for GitOpsCluster condition errors.
@@ -112,29 +122,29 @@ export const analyzeTopologyClusters = async (
     await verifyPullClusterGitOps(appSet, appSetClusters, alerts, t)
   }
 
-  // const hubGitOpsCluster = await fetchHubGitOpsCluster()
-  // if (!hubGitOpsCluster) {
-  //   return
-  // }
+  const hubGitOpsCluster = await fetchHubGitOpsCluster()
+  if (!hubGitOpsCluster) {
+    return
+  }
 
-  // const gitopsErrors = extractConditionsErrors([hubGitOpsCluster])
+  const gitopsErrors = extractConditionsErrors([hubGitOpsCluster], t)
 
-  // if (gitopsErrors.length > 0) {
-  //   const managedClusterRegistrationMessage = findManagedClusterRegistrationMessage(gitopsErrors)
+  if (gitopsErrors.length > 0) {
+    const managedClusterRegistrationMessage = findManagedClusterRegistrationMessage(gitopsErrors)
 
-  //   if (managedClusterRegistrationMessage) {
-  //     const alert = createTopologyAlert(
-  //       'OpenShift GitOps Operator issues',
-  //       'orange',
-  //       buildGitOpsOperatorIssuesDescription(managedClusterRegistrationMessage)
-  //     )
-  //     if (!alerts.some((existingAlert) => existingAlert.id === alert.id)) {
-  //       alerts.push(alert)
-  //     }
-  //   } else {
-  //     gitopsErrors.forEach((appsetError) => {
-  //       createSuggestsAppset(appSet, appsetError, alerts)
-  //     })
-  //   }
-  // }
+    if (managedClusterRegistrationMessage) {
+      const alert = createTopologyAlert(
+        'OpenShift GitOps Operator issues',
+        'orange',
+        buildGitOpsOperatorIssuesDescription(managedClusterRegistrationMessage)
+      )
+      if (!alerts.some((existingAlert) => existingAlert.id === alert.id)) {
+        alerts.push(alert)
+      }
+    } else {
+      gitopsErrors.forEach((appsetError) => {
+        createSuggestsAppset(appSet, appsetError, alerts, t)
+      })
+    }
+  }
 }
