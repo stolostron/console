@@ -47,10 +47,10 @@ describe('aggregators utils', () => {
 
     // Clear ServerSideEvents to prevent async issues
     const events = ServerSideEvents.getEvents()
-    for (const key in events) {
-      if (key !== '1' && key !== '2') {
+    for (const [key] of events) {
+      if (key !== 1 && key !== 2) {
         // Keep START and LOADED events
-        delete events[key]
+        events.delete(key)
       }
     }
   })
@@ -64,9 +64,9 @@ describe('aggregators utils', () => {
 
     // Clear all events except base events
     const events = ServerSideEvents.getEvents()
-    for (const key in events) {
-      if (key !== '1' && key !== '2') {
-        delete events[key]
+    for (const [key] of events) {
+      if (key !== 1 && key !== 2) {
+        events.delete(key)
       }
     }
 

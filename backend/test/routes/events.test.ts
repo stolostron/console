@@ -161,10 +161,10 @@ describe('events Route', () => {
 
       // Clear ServerSideEvents
       const events = ServerSideEvents.getEvents()
-      for (const key in events) {
-        if (key !== '1' && key !== '2') {
+      for (const [key] of events) {
+        if (key !== 1 && key !== 2) {
           // Keep START and LOADED events
-          delete events[key]
+          events.delete(key)
         }
       }
     })
@@ -360,7 +360,7 @@ describe('events Route', () => {
       ServerSideEvents.reset()
 
       // Snapshot event IDs BEFORE our concurrent calls (should only be START=1 and LOADED=2)
-      const eventIdsBefore = new Set(Object.keys(ServerSideEvents.getEvents()).map(Number))
+      const eventIdsBefore = new Set(ServerSideEvents.getEvents().keys())
 
       // Start all 4 cache operations concurrently WITHOUT awaiting first.
       // This simulates the race where multiple callers can interleave around deflateResource.
@@ -374,13 +374,13 @@ describe('events Route', () => {
 
       // Snapshot event IDs AFTER our concurrent calls
       const events = ServerSideEvents.getEvents()
-      const eventIdsAfter = new Set(Object.keys(events).map(Number))
+      const eventIdsAfter = new Set(events.keys())
 
       // Find NEW MODIFIED events created during this test
       const newModifiedEventIds = [...eventIdsAfter]
         .filter((id) => !eventIdsBefore.has(id))
         .filter((id) => {
-          const event = events[id]
+          const event = events.get(id)
           return event && (event.data as { type: string }).type === 'MODIFIED'
         })
 
@@ -470,7 +470,7 @@ describe('events Route', () => {
     })
 
     it('should create events in ServerSideEvents when caching', async () => {
-      const eventsBefore = Object.keys(ServerSideEvents.getEvents()).length
+      const eventsBefore = ServerSideEvents.getEvents().size
 
       const resource: IResource = {
         kind: 'Namespace',
@@ -487,7 +487,7 @@ describe('events Route', () => {
       const apiVersionPlural = '/v1/namespaces'
       await cache[apiVersionPlural]['namespace-uid'].eventID
 
-      const eventsAfter = Object.keys(ServerSideEvents.getEvents()).length
+      const eventsAfter = ServerSideEvents.getEvents().size
 
       // Should have created at least one new event (MODIFIED event + LOADED event)
       expect(eventsAfter).toBeGreaterThan(eventsBefore)

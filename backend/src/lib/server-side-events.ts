@@ -61,10 +61,10 @@ export interface ServerSideEventClient {
 export class ServerSideEvents {
   private static eventID = 2
   private static lastLoadedID = 2
-  private static events: Record<number, ServerSideEvent> = {
-    1: { id: '1', data: { type: 'START' } },
-    2: { id: '2', data: { type: 'LOADED' } },
-  }
+  private static events: Map<number, ServerSideEvent> = new Map([
+    [1, { id: '1', data: { type: 'START' } }],
+    [2, { id: '2', data: { type: 'LOADED' } }],
+  ])
   private static clients: Record<string, ServerSideEventClient> = {}
 
   public static eventFilter: (clientID: string, event: Readonly<ServerSideEvent>) => Promise<boolean>
@@ -90,10 +90,10 @@ export class ServerSideEvents {
   public static reset(): void {
     this.eventID = 2
     this.lastLoadedID = 2
-    this.events = {
-      1: { id: '1', data: { type: 'START' } },
-      2: { id: '2', data: { type: 'LOADED' } },
-    }
+    this.events = new Map([
+      [1, { id: '1', data: { type: 'START' } }],
+      [2, { id: '2', data: { type: 'LOADED' } }],
+    ])
     this.clients = {}
     // Re-initialize interval timer if it was disposed
     this.intervalTimer ??= setInterval(() => {
@@ -104,7 +104,7 @@ export class ServerSideEvents {
   public static async pushEvent(event: ServerSideEvent): Promise<number> {
     const eventID = ++this.eventID
     event.id = eventID.toString()
-    this.events[eventID] = event
+    this.events.set(eventID, event)
     await this.broadcastEvent(event)
 
     this.removeEvent(this.lastLoadedID)
@@ -113,7 +113,7 @@ export class ServerSideEvents {
       id: this.lastLoadedID.toString(),
       data: { type: 'LOADED' },
     }
-    this.events[this.lastLoadedID] = loadedEvent
+    this.events.set(this.lastLoadedID, loadedEvent)
     await this.broadcastEvent(loadedEvent)
 
     return eventID
@@ -226,7 +226,7 @@ export class ServerSideEvents {
   }
 
   public static removeEvent(eventID: number): void {
-    delete this.events[eventID]
+    this.events.delete(eventID)
   }
 
   public static getClients() {
@@ -312,7 +312,7 @@ export class ServerSideEvents {
     // SORT EVENTS INTO SMALLER PACKETS
     // SO THAT BROWSER PAGE LOADS QUICKER
     // uncompress and split events into packets
-    const values = Object.values(this.events)
+    const values = Array.from(this.events.values())
     const compressed = sizeOf(values)
     let parts = await batchPromiseAll(values, (event) => inflateEvent(event))
 
