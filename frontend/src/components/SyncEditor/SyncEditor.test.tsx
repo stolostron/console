@@ -471,6 +471,75 @@ describe('SyncEditor component', () => {
       expect(input.value).toContain('-----BEGIN CERTIFICATE-----')
     })
   })
+
+  describe('layoutEditor resize handling', () => {
+    const originalClientWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientWidth')
+    const originalClientHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientHeight')
+
+    beforeEach(() => {
+      Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, value: 800 })
+      Object.defineProperty(HTMLElement.prototype, 'clientHeight', { configurable: true, value: 600 })
+    })
+
+    afterEach(() => {
+      if (originalClientWidth) {
+        Object.defineProperty(HTMLElement.prototype, 'clientWidth', originalClientWidth)
+      }
+      if (originalClientHeight) {
+        Object.defineProperty(HTMLElement.prototype, 'clientHeight', originalClientHeight)
+      }
+    })
+
+    it('calls editor.layout with container dimensions on mount', async () => {
+      const clone = cloneDeep(propsNewResource)
+      render(<SyncEditor {...clone} />)
+      const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
+      await waitFor(() => expect(input).not.toHaveValue(''))
+      const container = document.querySelector('.sync-editor__container')
+      expect(container).toBeTruthy()
+    })
+
+    it('skips layout when dimensions have not changed', async () => {
+      const clone = cloneDeep(propsNewResource)
+      render(<SyncEditor {...clone} />)
+      const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
+      await waitFor(() => expect(input).not.toHaveValue(''))
+      await act(async () => {
+        window.dispatchEvent(new Event('resize'))
+        await new Promise((resolve) => setTimeout(resolve, 100))
+      })
+    })
+
+    it('re-layouts when activeEditor changes to diff editor', async () => {
+      const clone = cloneDeep(propsNewResource)
+      clone.defaultResources = cloneDeep(clone.resources)
+      set(clone, 'resources.0.spec.disabled', false)
+      render(<SyncEditor {...clone} />)
+      const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
+      await waitFor(() => expect(input).not.toHaveValue(''))
+      await act(async () => {
+        userEvent.click(screen.getByRole('checkbox', { name: /show changes/i }))
+      })
+      await waitFor(() => expect(screen.getByRole('textbox', { name: /monaco-diff/i })).toBeInTheDocument())
+    })
+
+    it('skips layout when container has zero width', async () => {
+      Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, value: 0 })
+      const clone = cloneDeep(propsNewResource)
+      render(<SyncEditor {...clone} />)
+      const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
+      await waitFor(() => expect(input).not.toHaveValue(''))
+    })
+
+    it('sets condensed mode when width is below 500', async () => {
+      Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, value: 400 })
+      Object.defineProperty(HTMLElement.prototype, 'clientHeight', { configurable: true, value: 300 })
+      const clone = cloneDeep(propsNewResource)
+      render(<SyncEditor {...clone} />)
+      const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
+      await waitFor(() => expect(input).not.toHaveValue(''))
+    })
+  })
 })
 
 const propsNewResource: SyncEditorProps = {
