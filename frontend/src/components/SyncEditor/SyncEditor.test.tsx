@@ -10,6 +10,11 @@ const lastDiffNavigator = (
     lastDiffNavigator: { current: { previous: jest.Mock; next: jest.Mock } | null }
   }
 ).lastDiffNavigator
+const lastEditorLayout = (
+  MonacoEditorReact as typeof MonacoEditorReact & {
+    lastEditorLayout: { current: jest.Mock | null }
+  }
+).lastEditorLayout
 import userEvent from '@testing-library/user-event'
 import get from 'lodash/get'
 import set from 'lodash/set'
@@ -475,13 +480,22 @@ describe('SyncEditor component', () => {
   describe('layoutEditor resize handling', () => {
     const originalClientWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientWidth')
     const originalClientHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientHeight')
+    let resizeCallback: (() => void) | null = null
 
     beforeEach(() => {
       Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, value: 800 })
       Object.defineProperty(HTMLElement.prototype, 'clientHeight', { configurable: true, value: 600 })
+      resizeCallback = null
+      lastEditorLayout.current = null
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const mod = require('@react-hook/resize-observer')
+      jest.spyOn(mod, 'default').mockImplementation((_ref: any, cb: any) => {
+        resizeCallback = cb
+      })
     })
 
     afterEach(() => {
+      jest.restoreAllMocks()
       if (originalClientWidth) {
         Object.defineProperty(HTMLElement.prototype, 'clientWidth', originalClientWidth)
       }
@@ -495,19 +509,20 @@ describe('SyncEditor component', () => {
       render(<SyncEditor {...clone} />)
       const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
       await waitFor(() => expect(input).not.toHaveValue(''))
-      const container = document.querySelector('.sync-editor__container')
-      expect(container).toBeTruthy()
+      expect(lastEditorLayout.current).toHaveBeenCalledWith({ width: 800, height: 564 })
     })
 
-    it('skips layout when dimensions have not changed', async () => {
+    it('skips layout when resize fires but dimensions have not changed', async () => {
       const clone = cloneDeep(propsNewResource)
       render(<SyncEditor {...clone} />)
       const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
       await waitFor(() => expect(input).not.toHaveValue(''))
+      lastEditorLayout.current!.mockClear()
       await act(async () => {
-        window.dispatchEvent(new Event('resize'))
-        await new Promise((resolve) => setTimeout(resolve, 100))
+        resizeCallback?.()
+        await new Promise((resolve) => requestAnimationFrame(resolve))
       })
+      expect(lastEditorLayout.current).not.toHaveBeenCalled()
     })
 
     it('re-layouts when activeEditor changes to diff editor', async () => {
@@ -517,10 +532,13 @@ describe('SyncEditor component', () => {
       render(<SyncEditor {...clone} />)
       const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
       await waitFor(() => expect(input).not.toHaveValue(''))
+      const originalLayoutMock = lastEditorLayout.current!
+      expect(originalLayoutMock).toHaveBeenCalledWith({ width: 800, height: 564 })
       await act(async () => {
         userEvent.click(screen.getByRole('checkbox', { name: /show changes/i }))
       })
       await waitFor(() => expect(screen.getByRole('textbox', { name: /monaco-diff/i })).toBeInTheDocument())
+      expect(lastEditorLayout.current).not.toBe(originalLayoutMock)
     })
 
     it('skips layout when container has zero width', async () => {
