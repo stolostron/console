@@ -242,7 +242,7 @@ describe('useFleetSearch', () => {
       const existingItem = { ...mockSearchItem, name: 'existing-pod', _uid: 'test-cluster/uid-existing' }
       const newItem = { ...mockSearchItem, name: 'new-pod', _uid: 'test-cluster/uid-new' }
       const insertEvent = {
-        uid: 'uid-new',
+        uid: 'test-cluster/uid-new',
         operation: 'INSERT',
         newData: newItem,
         oldData: null,
@@ -267,7 +267,7 @@ describe('useFleetSearch', () => {
     it('should not duplicate on INSERT if uid already exists', () => {
       const item = { ...mockSearchItem, _uid: 'test-cluster/uid-1' }
       const insertEvent = {
-        uid: 'uid-1',
+        uid: 'test-cluster/uid-1',
         operation: 'INSERT',
         newData: item,
         oldData: null,
@@ -287,14 +287,73 @@ describe('useFleetSearch', () => {
       const [data] = result.current
       expect(data).toHaveLength(1)
     })
+
+    it('should insert at the correct sorted position when orderBy is set', () => {
+      const appleItem = { ...mockSearchItem, name: 'apple', _uid: 'test-cluster/uid-apple' }
+      const mangoItem = { ...mockSearchItem, name: 'mango', _uid: 'test-cluster/uid-mango' }
+      const figItem = { ...mockSearchItem, name: 'fig', _uid: 'test-cluster/uid-fig' }
+      const insertEvent = {
+        uid: 'test-cluster/uid-fig',
+        operation: 'INSERT',
+        newData: figItem,
+        oldData: null,
+        timestamp: new Date(),
+      }
+      const inputWithOrderBy: SearchInput = { ...mockInput, orderBy: 'name asc' }
+
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: { searchResult: [{ items: [appleItem, mangoItem] }] },
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+      mockUseFleetSearchSubscription.mockReturnValue([insertEvent as any, false, undefined])
+
+      const { result } = renderHook(() => useFleetSearch(inputWithOrderBy, true))
+
+      const [data] = result.current
+      expect(data).toHaveLength(3)
+      expect(data!.map((r) => r.metadata?.name)).toEqual(['apple', 'fig', 'mango'])
+    })
+
+    it('should drop the last item when an INSERT causes the page to exceed its limit', () => {
+      const appleItem = { ...mockSearchItem, name: 'apple', _uid: 'test-cluster/uid-apple' }
+      const mangoItem = { ...mockSearchItem, name: 'mango', _uid: 'test-cluster/uid-mango' }
+      const figItem = { ...mockSearchItem, name: 'fig', _uid: 'test-cluster/uid-fig' }
+      const insertEvent = {
+        uid: 'test-cluster/uid-fig',
+        operation: 'INSERT',
+        newData: figItem,
+        oldData: null,
+        timestamp: new Date(),
+      }
+      // limit: 2 means at most 2 items should be kept on the page
+      const inputWithLimit: SearchInput = { ...mockInput, limit: 2, orderBy: 'name asc' }
+
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: { searchResult: [{ items: [appleItem, mangoItem] }] },
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+      mockUseFleetSearchSubscription.mockReturnValue([insertEvent as any, false, undefined])
+
+      const { result } = renderHook(() => useFleetSearch(inputWithLimit, true))
+
+      const [data] = result.current
+      // 'fig' sorts between 'apple' and 'mango'; 'mango' is bumped off the page
+      expect(data).toHaveLength(2)
+      expect(data!.map((r) => r.metadata?.name)).toEqual(['apple', 'fig'])
+    })
   })
 
   describe('UPDATE event', () => {
-    it('should replace the matching resource on UPDATE', () => {
-      const originalItem = { ...mockSearchItem, name: 'original-pod', _uid: 'test-cluster/uid-1' }
-      const updatedItem = { ...mockSearchItem, name: 'updated-pod', _uid: 'test-cluster/uid-1' }
+    it('should merge updated fields on UPDATE — e.g. adding a label', () => {
+      const originalItem = { ...mockSearchItem, _uid: 'test-cluster/uid-1' }
+      // Simulate a label being added: label field uses "key=value" format
+      const updatedItem = { ...mockSearchItem, _uid: 'test-cluster/uid-1', label: 'abc=123' }
       const updateEvent = {
-        uid: 'uid-1',
+        uid: 'test-cluster/uid-1',
         operation: 'UPDATE',
         newData: updatedItem,
         oldData: originalItem,
@@ -313,7 +372,44 @@ describe('useFleetSearch', () => {
 
       const [data] = result.current
       expect(data).toHaveLength(1)
-      expect(data![0].metadata?.name).toBe('updated-pod')
+      // Name is unchanged (K8s names are immutable)
+      expect(data![0].metadata?.name).toBe('test-pod')
+      // New label should be present after conversion
+      expect(data![0].metadata?.labels).toEqual({ abc: '123' })
+    })
+
+    it('should re-sort the page after an UPDATE when orderBy is set', () => {
+      // Use `status` as the sort field — it can legitimately change (e.g. Pending → Running)
+      const pendingItem = { ...mockSearchItem, name: 'pod-a', status: 'Pending', _uid: 'test-cluster/uid-a' }
+      const runningItem = { ...mockSearchItem, name: 'pod-b', status: 'Running', _uid: 'test-cluster/uid-b' }
+      // pod-a transitions from Pending to Terminated, which sorts after Running
+      const updatedItem = { ...pendingItem, status: 'Terminated', label: 'abc=123' }
+      const updateEvent = {
+        uid: 'test-cluster/uid-a',
+        operation: 'UPDATE',
+        newData: updatedItem,
+        oldData: pendingItem,
+        timestamp: new Date(),
+      }
+      const inputWithOrderBy: SearchInput = { ...mockInput, orderBy: 'status asc' }
+
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: { searchResult: [{ items: [pendingItem, runningItem] }] },
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+      mockUseFleetSearchSubscription.mockReturnValue([updateEvent as any, false, undefined])
+
+      const { result } = renderHook(() => useFleetSearch(inputWithOrderBy, true))
+
+      const [data] = result.current
+      expect(data).toHaveLength(2)
+      // 'Running' < 'Terminated' alphabetically → pod-b sorts first
+      expect(data![0].metadata?.name).toBe('pod-b')
+      expect(data![1].metadata?.name).toBe('pod-a')
+      // Confirm the label was also applied to pod-a
+      expect(data![1].metadata?.labels).toEqual({ abc: '123' })
     })
   })
 
@@ -321,7 +417,7 @@ describe('useFleetSearch', () => {
     it('should remove the matching resource on DELETE', () => {
       const item = { ...mockSearchItem, _uid: 'test-cluster/uid-1' }
       const deleteEvent = {
-        uid: 'uid-1',
+        uid: 'test-cluster/uid-1',
         operation: 'DELETE',
         newData: null,
         oldData: item,
@@ -374,7 +470,7 @@ describe('useFleetSearch', () => {
       const item = { ...mockSearchItem, _uid: 'test-cluster/uid-1' }
       // Provide an INSERT event so local state diverges from query data
       const insertEvent = {
-        uid: 'uid-new',
+        uid: 'test-cluster/uid-new',
         operation: 'INSERT',
         newData: { ...mockSearchItem, name: 'extra-pod', _uid: 'test-cluster/uid-new' },
         oldData: null,

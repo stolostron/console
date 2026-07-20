@@ -1,10 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { convertSearchItemToResource } from '../internal/search/convertSearchItemToResource'
 import { searchClient } from '../internal/search/search-client'
 import { useSearchResultItemsQuery } from '../internal/search/search-sdk'
-import { SearchInput, SearchResult } from '../types/search'
+import { Fleet } from '../types/fleet'
+import { SearchInput } from '../types/search'
 import { useFleetSearchSubscription } from './useFleetSearchSubscription'
 
 /**
@@ -75,10 +76,49 @@ import { useFleetSearchSubscription } from './useFleetSearchSubscription'
  * )
  * ```
  */
-export function useFleetSearch<T extends K8sResourceCommon[]>(
+/** A flat search result item as returned by the search API. */
+type SearchItem = Record<string, unknown>
+
+// ── Pagination helpers ─────────────────────────────────────────────────────
+
+/**
+ * Return a new array sorted according to a search-API `orderBy` string
+ * ("fieldName asc" or "fieldName desc").
+ * Fields are read directly from the flat SearchItem, so the sort is always
+ * reliable regardless of resource kind.
+ */
+function sortByOrderBy(items: SearchItem[], orderBy: string | null | undefined): SearchItem[] {
+  if (!orderBy) return items
+  const [field, dir] = orderBy.trim().split(/\s+/)
+  const descending = dir?.toLowerCase() === 'desc'
+  return [...items].sort((a, b) => {
+    const cmp = String(a[field] ?? '').localeCompare(String(b[field] ?? ''))
+    return descending ? -cmp : cmp
+  })
+}
+
+/**
+ * Insert `newItem` into `items` at the position dictated by `orderBy`, or
+ * append it at the end when `orderBy` is absent.
+ */
+function insertSorted(items: SearchItem[], newItem: SearchItem, orderBy: string | null | undefined): SearchItem[] {
+  if (!orderBy) return [...items, newItem]
+  const [field, dir] = orderBy.trim().split(/\s+/)
+  const descending = dir?.toLowerCase() === 'desc'
+  const newVal = String(newItem[field] ?? '')
+  // Find the first existing item that newItem should sort before.
+  const insertIdx = items.findIndex((item) => {
+    const cmp = newVal.localeCompare(String(item[field] ?? ''))
+    return descending ? cmp > 0 : cmp < 0
+  })
+  if (insertIdx === -1) return [...items, newItem]
+  return [...items.slice(0, insertIdx), newItem, ...items.slice(insertIdx)]
+}
+
+export function useFleetSearch(
   input: SearchInput | undefined,
   subscriptionEnabled?: boolean
-): [SearchResult<T> | undefined, boolean, Error | undefined, () => void] {
+): [Fleet<K8sResourceCommon>[] | undefined, boolean, Error | undefined, () => void] {
   // ── Base query ─────────────────────────────────────────────────────────────
 
   const {
@@ -92,16 +132,17 @@ export function useFleetSearch<T extends K8sResourceCommon[]>(
     variables: { input: [input!] },
   })
 
-  // Derive the converted resource list from the raw query response.
-  const queryData = useMemo<SearchResult<T> | undefined>(() => {
+  // Derive the raw item list from the query response — conversion to K8s
+  // resources happens once at return time via useMemo.
+  const queryData = useMemo<SearchItem[] | undefined>(() => {
     const items = queryResult?.searchResult?.[0]?.items
     if (!items) return undefined
-    return items.map((item) => convertSearchItemToResource<T>(item)) as unknown as SearchResult<T>
+    return items.filter(Boolean) as SearchItem[]
   }, [queryResult])
 
   // ── Local state (patched by subscription events) ───────────────────────────
 
-  const [localData, setLocalData] = useState<SearchResult<T> | undefined>(queryData)
+  const [localData, setLocalData] = useState<SearchItem[] | undefined>(queryData)
 
   // When the base query returns fresh data (initial load or after refetch),
   // reset local state to match.
@@ -120,6 +161,16 @@ export function useFleetSearch<T extends K8sResourceCommon[]>(
 
   // ── Subscription layer ─────────────────────────────────────────────────────
 
+  // Keep a ref to the latest input so the event-patch effect can always read
+  // the current orderBy / limit without being listed as a dependency.  Adding
+  // `input` to the effect's dep array would cause stale events to be replayed
+  // whenever the query input changes (e.g. page/sort update), because the
+  // queryData reset effect and this effect would both fire in the same cycle.
+  const inputRef = useRef(input)
+  useEffect(() => {
+    inputRef.current = input
+  })
+
   // Pass undefined as input when subscription is disabled so the inner hook
   // skips the WebSocket connection entirely.
   const [latestEvent, , subscriptionError] = useFleetSearchSubscription(subscriptionEnabled ? input : undefined)
@@ -129,30 +180,35 @@ export function useFleetSearch<T extends K8sResourceCommon[]>(
     if (!latestEvent) return
 
     setLocalData((prev) => {
-      const current = (Array.isArray(prev) ? prev : []) as K8sResourceCommon[]
+      const current: SearchItem[] = Array.isArray(prev) ? prev : []
 
       switch (latestEvent.operation) {
         case 'INSERT': {
           if (!latestEvent.newData) return prev
           const cluster = latestEvent.uid.split('/')[0]
-          const patchedNewData = { ...latestEvent.newData, cluster, _uid: latestEvent.uid }
-          const newResource = convertSearchItemToResource<K8sResourceCommon>(patchedNewData)
-          const newK8sUid = newResource.metadata?.uid
+          const patchedItem: SearchItem = { ...latestEvent.newData, cluster, _uid: latestEvent.uid }
           // Avoid duplicate insertions.
-          if (newK8sUid && current.some((r) => r.metadata?.uid === newK8sUid)) return prev
-          return [...current, newResource] as SearchResult<T>
+          if (current.some((item) => item._uid === patchedItem._uid)) return prev
+          // Insert at the position dictated by orderBy.
+          const inserted = insertSorted(current, patchedItem, inputRef.current?.orderBy)
+          // Honour the page limit: if the page is now over capacity, drop the last item.
+          const limit = inputRef.current?.limit
+          if (limit != null && limit > 0 && inserted.length > limit) {
+            return inserted.slice(0, limit)
+          }
+          return inserted
         }
         case 'UPDATE': {
           if (!latestEvent.newData) return prev
           const cluster = latestEvent.uid.split('/')[0]
-          const patchedNewData = { ...latestEvent.newData, cluster, _uid: latestEvent.uid }
-          const updatedResource = convertSearchItemToResource<K8sResourceCommon>(patchedNewData)
-          const updatedK8sUid = updatedResource.metadata?.uid
-          return current.map((r) => (r.metadata?.uid === updatedK8sUid ? updatedResource : r)) as SearchResult<T>
+          const patchedItem: SearchItem = { ...latestEvent.newData, cluster, _uid: latestEvent.uid }
+          const updated = current.map((item) => (item._uid === patchedItem._uid ? patchedItem : item))
+          // Re-sort after the update in case the sort-key field changed.
+          return inputRef.current?.orderBy ? sortByOrderBy(updated, inputRef.current.orderBy) : updated
         }
         case 'DELETE': {
-          const deletedK8sUid = latestEvent.uid.split('/').pop()
-          return current.filter((r) => r.metadata?.uid !== deletedK8sUid) as SearchResult<T>
+          // Match directly on the search _uid — no K8s resource conversion needed.
+          return current.filter((item) => item._uid !== latestEvent.uid)
         }
         default:
           return prev
@@ -168,7 +224,13 @@ export function useFleetSearch<T extends K8sResourceCommon[]>(
 
   // ── Return ─────────────────────────────────────────────────────────────────
 
+  // Convert the raw SearchItems to K8s resources once, only when localData changes.
+  const data = useMemo<Fleet<K8sResourceCommon>[] | undefined>(() => {
+    if (!localData) return undefined
+    return localData.map((item) => convertSearchItemToResource<K8sResourceCommon>(item))
+  }, [localData])
+
   const error = queryError ?? subscriptionError
 
-  return [localData, !loading, error, triggerRefetch]
+  return [data, !loading, error, triggerRefetch]
 }
