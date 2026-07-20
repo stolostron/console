@@ -4,10 +4,11 @@ import type { ApplicationSet, AppSetGenerator, Placement } from '~/resources'
 import type { TopologyNode } from '../types'
 import { analyzeTopologyApplications } from './analyzeTopologyApplications'
 import { analyzeTopologyClusters } from './analyzeTopologyClusters'
+import { analyzeTopologyDeployments, DEPLOYMENT_NODE_EXCLUDED_TYPES } from './analyzeTopologyDeployments'
 import type { IFilteredConditionError, IResourcesWithStatus, TopologyAlert } from './analyzeTopology'
 import { createSuggestsAppset } from './createSuggestsAppset'
 import { createSuggestsPlacement, missingPlacementAlert, PLACEMENT_MATCH_LABEL } from './createSuggestsPlacement'
-import { createTopologyAlert, extractConditionsErrors, setNodePulseForTypes, TopologyAlertActionType } from './utils'
+import { extractConditionsErrors, setNodePulseForTypes } from './utils'
 
 const collectReferencedPlacements = (
   generators: AppSetGenerator[] | undefined
@@ -75,6 +76,7 @@ export const analyzeTopologyAppSet = async (
   }
 
   const hasPlacementIssues = placementErrors.length > 0 || hasMissingPlacement
+  const deploymentNodes = nodes.filter((node) => !DEPLOYMENT_NODE_EXCLUDED_TYPES.has(node.type))
 
   if (placementErrors.length > 0) {
     placementErrors.forEach((placementError) => {
@@ -93,7 +95,7 @@ export const analyzeTopologyAppSet = async (
   // Analyzing Application Set Applications
   /////////////////////////////////////////////
   if (!hasPlacementIssues) {
-    appSetAppsErrors = await analyzeTopologyApplications(appSet, nodes, alerts, t)
+    appSetAppsErrors = await analyzeTopologyApplications(appSet, deploymentNodes, alerts, t)
   }
 
   /////////////////////////////////////////////
@@ -111,39 +113,13 @@ export const analyzeTopologyAppSet = async (
     }
   }
 
-  if (appSet.isArgoCDPullModelTargetLocalCluster) {
-    const actionNode = placement ?? appSet
-    const alert = createTopologyAlert(
-      t('Warning'),
-      'yellow',
-      {
-        message: t(
-          'The ArgoCD pull model does not support the hub cluster as a destination cluster. Filter out the hub cluster from the placement resource.'
-        ),
-        bullets: [
-          {
-            title: t('Add predicate to exclude the local-cluster'),
-          },
-        ],
-      },
-      [
-        {
-          label: t('Edit application'),
-          type: TopologyAlertActionType.editAppSet,
-          node: actionNode,
-        },
-        {
-          label: t('Edit YAML'),
-          type: TopologyAlertActionType.editYaml,
-          node: actionNode,
-          highlightEditorPath: 'Placement.spec.predicates',
-        },
-      ]
-    )
-    if (!alerts.some((existingAlert) => existingAlert.id === alert.id)) {
-      alerts.push(alert)
-    }
-  }
-
+  /////////////////////////////////////////////
+  // Analyzing Clusters
+  /////////////////////////////////////////////
   await analyzeTopologyClusters(appSet, nodes, alerts, t)
+
+  /////////////////////////////////////////////
+  // Analyzing Deployments
+  /////////////////////////////////////////////
+  analyzeTopologyDeployments(appSet, deploymentNodes, alerts, t)
 }

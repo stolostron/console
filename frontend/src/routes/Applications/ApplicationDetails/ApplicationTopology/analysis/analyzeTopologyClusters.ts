@@ -9,6 +9,7 @@ import { createSuggestsAppset } from './createSuggestsAppset'
 import {
   createTopologyAlert,
   extractConditionsErrors,
+  TopologyAlertActionType,
   type IBulletDescription,
   type TopologyAlertDescription,
 } from './utils'
@@ -116,35 +117,83 @@ export const analyzeTopologyClusters = async (
   t: TFunction
 ): Promise<void> => {
   const isAppSetPullModel = Boolean(appSet.specs.isAppSetPullModel)
-  const appSetClusters = ((appSet.specs.appSetClusters ?? []) as AppSetCluster[]).map((cluster) => cluster.name)
-  void nodes
+  const appSetClusters = (appSet.specs.appSetClusters ?? []) as AppSetCluster[]
+  const placement = nodes.find((node) => node.type === 'placement')
+
   if (isAppSetPullModel) {
-    await verifyPullClusterGitOps(appSet, appSetClusters, alerts, t)
+    await verifyPullClusterGitOps(
+      appSet,
+      appSetClusters.map((cluster) => cluster.name),
+      alerts,
+      t
+    )
   }
 
-  const hubGitOpsCluster = await fetchHubGitOpsCluster()
-  if (!hubGitOpsCluster) {
-    return
-  }
+  /////////////////////////////////////////////
+  // Hub GitOpsCluster errors (push model only when placement expects more clusters than found)
+  /////////////////////////////////////////////
+  const numberOfClusters = (placement?.specs?.raw as { spec?: { numberOfClusters?: number } } | undefined)?.spec
+    ?.numberOfClusters
+  if (!isAppSetPullModel && numberOfClusters !== undefined && numberOfClusters > appSetClusters.length) {
+    const hubGitOpsCluster = await fetchHubGitOpsCluster()
+    if (hubGitOpsCluster) {
+      const gitopsErrors = extractConditionsErrors([hubGitOpsCluster], t)
 
-  const gitopsErrors = extractConditionsErrors([hubGitOpsCluster], t)
+      if (gitopsErrors.length > 0) {
+        const managedClusterRegistrationMessage = findManagedClusterRegistrationMessage(gitopsErrors)
 
-  if (gitopsErrors.length > 0) {
-    const managedClusterRegistrationMessage = findManagedClusterRegistrationMessage(gitopsErrors)
-
-    if (managedClusterRegistrationMessage) {
-      const alert = createTopologyAlert(
-        'OpenShift GitOps Operator issues',
-        'orange',
-        buildGitOpsOperatorIssuesDescription(managedClusterRegistrationMessage)
-      )
-      if (!alerts.some((existingAlert) => existingAlert.id === alert.id)) {
-        alerts.push(alert)
+        if (managedClusterRegistrationMessage) {
+          const alert = createTopologyAlert(
+            'OpenShift GitOps Operator issues',
+            'orange',
+            buildGitOpsOperatorIssuesDescription(managedClusterRegistrationMessage)
+          )
+          if (!alerts.some((existingAlert) => existingAlert.id === alert.id)) {
+            alerts.push(alert)
+          }
+        } else {
+          gitopsErrors.forEach((appsetError) => {
+            createSuggestsAppset(appSet, appsetError, alerts, t)
+          })
+        }
       }
-    } else {
-      gitopsErrors.forEach((appsetError) => {
-        createSuggestsAppset(appSet, appsetError, alerts, t)
-      })
+    }
+  }
+
+  /////////////////////////////////////////////
+  // Pull model targeting hub/local cluster
+  /////////////////////////////////////////////
+  if (appSet.isArgoCDPullModelTargetLocalCluster) {
+    const actionNode = placement ?? appSet
+    const alert = createTopologyAlert(
+      t('Warning'),
+      'yellow',
+      {
+        message: t(
+          'The ArgoCD pull model does not support the hub cluster as a destination cluster. Filter out the hub cluster from the placement resource.'
+        ),
+        bullets: [
+          {
+            title: t('Add predicate to exclude the local-cluster'),
+          },
+        ],
+      },
+      [
+        {
+          label: t('Edit application'),
+          type: TopologyAlertActionType.editAppSet,
+          node: actionNode,
+        },
+        {
+          label: t('Edit YAML'),
+          type: TopologyAlertActionType.editYaml,
+          node: actionNode,
+          highlightEditorPath: 'Placement.spec.predicates',
+        },
+      ]
+    )
+    if (!alerts.some((existingAlert) => existingAlert.id === alert.id)) {
+      alerts.push(alert)
     }
   }
 }

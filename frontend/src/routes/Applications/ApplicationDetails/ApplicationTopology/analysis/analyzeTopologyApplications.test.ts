@@ -35,7 +35,7 @@ describe('analyzeTopologyApplications', () => {
       },
     ])
 
-    const errors = await analyzeTopologyApplications(appSet, [appSet, deployment], alerts, t)
+    const errors = await analyzeTopologyApplications(appSet, [deployment], alerts, t)
 
     expect(errors).toEqual([])
     expect(alerts).toEqual([])
@@ -79,7 +79,7 @@ describe('analyzeTopologyApplications', () => {
       1
     )
 
-    const errors = await analyzeTopologyApplications(appSet, [appSet, deployment], alerts, t)
+    const errors = await analyzeTopologyApplications(appSet, [deployment], alerts, t)
 
     expect(errors).toEqual([])
     expect(alerts).toHaveLength(1)
@@ -127,7 +127,7 @@ describe('analyzeTopologyApplications', () => {
       1
     )
 
-    await analyzeTopologyApplications(appSet, [appSet, deployment], alerts, t)
+    await analyzeTopologyApplications(appSet, [deployment], alerts, t)
 
     expect(alerts).toEqual([])
   })
@@ -161,7 +161,7 @@ describe('analyzeTopologyApplications', () => {
       },
     })
 
-    await analyzeTopologyApplications(appSet, [appSet], alerts, t)
+    await analyzeTopologyApplications(appSet, [], alerts, t)
 
     expect(mockFleetResourceRequest).toHaveBeenCalledWith('GET', CLUSTER_NAME, {
       apiVersion: 'argoproj.io/v1alpha1',
@@ -193,7 +193,7 @@ describe('analyzeTopologyApplications', () => {
       },
     })
 
-    await analyzeTopologyApplications(appSet, [appSet], alerts, t)
+    await analyzeTopologyApplications(appSet, [], alerts, t)
 
     expect(mockFleetResourceRequest).toHaveBeenCalledTimes(3)
   })
@@ -242,7 +242,7 @@ describe('analyzeTopologyApplications', () => {
       },
     ])
 
-    const errors = await analyzeTopologyApplications(appSet, [appSet, deployment], alerts, t)
+    const errors = await analyzeTopologyApplications(appSet, [deployment], alerts, t)
 
     expect(errors.length).toBeGreaterThan(0)
     expect(alerts.some((alert) => alert.title.includes('Application'))).toBe(true)

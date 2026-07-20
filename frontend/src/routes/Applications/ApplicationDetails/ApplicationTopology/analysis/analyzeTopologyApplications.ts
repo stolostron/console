@@ -13,17 +13,6 @@ import {
   type TopologyAlertDescription,
 } from './utils'
 
-const DEPLOYMENT_NODE_EXCLUDED_TYPES = new Set([
-  'application',
-  'applicationset',
-  'placement',
-  'placementDecision',
-  'cluster',
-  'git',
-  'chart',
-  'subscription',
-])
-
 const MAX_PULL_APP_FETCHES = 3
 const MAX_CONDITION_ERROR_ALERTS = 3
 
@@ -288,7 +277,7 @@ const pushSyncAlert = (
  */
 export const analyzeTopologyApplications = async (
   appSet: TopologyNode,
-  nodes: TopologyNode[],
+  deploymentNodes: TopologyNode[],
   alerts: TopologyAlert[],
   t: TFunction
 ): Promise<IFilteredConditionError[]> => {
@@ -337,7 +326,6 @@ export const analyzeTopologyApplications = async (
   // get list of clusters on where app resources haven't deployed correctly
   /////////////////////////////////////////////
   const badDeploySet = new Set<string>()
-  const deploymentNodes = nodes.filter((node) => !DEPLOYMENT_NODE_EXCLUDED_TYPES.has(node.type))
 
   for (const deploymentNode of deploymentNodes) {
     const resources = (deploymentNode.specs?.resources ?? []) as ArgoAppResource[]
