@@ -11,7 +11,6 @@ import { logger } from './logger'
 import { randomString } from './random-string'
 import { getGiganticEvents } from './gigantic'
 
-
 // TODO - RESET EVENT
 // TODO BOOKMARK EVENT
 
