@@ -148,7 +148,7 @@ export async function getWizardOIDCConfigs(req: Http2ServerRequest, res: Http2Se
   }
 }
 
-export async function getWizardCloudProviders(req: Http2ServerRequest, res: Http2ServerResponse) {
+export async function getWizardCloudProviders(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   const token = await getAuthenticatedToken(req, res)
   if (token) {
     try {
