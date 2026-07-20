@@ -10,7 +10,7 @@ import { setCookie } from './cookies'
 import { logger } from './logger'
 import { randomString } from './random-string'
 import { getGiganticEvents } from './gigantic'
-import { sizeOf } from '../routes/aggregators/utils'
+
 
 // TODO - RESET EVENT
 // TODO BOOKMARK EVENT
@@ -313,7 +313,6 @@ export class ServerSideEvents {
     // SO THAT BROWSER PAGE LOADS QUICKER
     // uncompress and split events into packets
     const values = Array.from(this.events.values())
-    const compressed = sizeOf(values)
     let parts = await batchPromiseAll(values, (event) => inflateEvent(event))
 
     // mock a large environment
@@ -431,9 +430,7 @@ export class ServerSideEvents {
         return promise
       })
     )
-    const uncompressed = sizeOf(sending)
-
-    logger.info({ msg: 'event stream start', events: sentCount, compression: 100 - (compressed / uncompressed) * 100 })
+    logger.info({ msg: 'event stream start', events: sentCount })
 
     return eventClient
   }
