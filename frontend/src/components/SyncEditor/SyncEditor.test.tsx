@@ -541,12 +541,18 @@ describe('SyncEditor component', () => {
       expect(lastEditorLayout.current).not.toBe(originalLayoutMock)
     })
 
-    it('skips layout when container has zero width', async () => {
+    it('skips layout when container has zero dimensions', async () => {
       Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, value: 0 })
+      Object.defineProperty(HTMLElement.prototype, 'clientHeight', { configurable: true, value: 0 })
       const clone = cloneDeep(propsNewResource)
       render(<SyncEditor {...clone} />)
       const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
       await waitFor(() => expect(input).not.toHaveValue(''))
+      const calls = lastEditorLayout.current!.mock.calls
+      const hasPositiveDimensions = calls.some(
+        (args: any[]) => args[0] && args[0].width > 0 && args[0].height > 0
+      )
+      expect(hasPositiveDimensions).toBe(false)
     })
 
     it('sets condensed mode when width is below 500', async () => {
