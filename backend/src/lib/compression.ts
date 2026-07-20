@@ -198,26 +198,26 @@ function compressResource(resource: UncompressedResourceType, dictionary: Dictio
           // drop thru
         }
       }
-      if (resource.length < 32 && !resource.endsWith('=')) {
-        // skip indexing of all timestamps
-        if (isTimestamp(resource)) {
-          return resource
-        }
-        // index short strings that aren't a base64
-        return dictionary.add(resource)
-      }
       // if already in dictionary, return the index
       const exists = dictionary.has(resource)
       if (exists) {
         return exists
       }
-      // if the string is not in the dictionary, add it to the bigStrings set
-      if (!bigStrings.has(resource)) {
+      if (resource.length < 32 && !resource.endsWith('=')) {
+        if (isTimestamp(resource)) {
+          return resource
+        }
+        // numeric-looking strings must be indexed immediately to prevent the
+        // decompressor from misinterpreting them as dictionary indices
+        if (Number.isInteger(Number(resource))) {
+          return dictionary.add(resource)
+        }
+        if (bigStrings.has(resource)) {
+          bigStrings.delete(resource)
+          return dictionary.add(resource)
+        }
         bigStrings.add(resource)
-      } else {
-        // if we've seen this string, add to the dictionary
-        bigStrings.delete(resource)
-        return dictionary.add(resource)
+        return resource
       }
     } else if (typeof resource === 'number' && Number.isInteger(resource)) {
       // to differentiate between an index and a value that is actually a number

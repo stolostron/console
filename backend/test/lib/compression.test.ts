@@ -106,7 +106,7 @@ describe('compressResource timestamp handling', () => {
     expect(dictEntries).not.toContain('2026-05-27T20:18:10Z')
   })
 
-  it('still adds non-timestamp short strings to the dictionary', async () => {
+  it('indexes non-timestamp short strings only after they are seen twice', async () => {
     const dict = createDictionary()
     const resource = asResource({
       apiVersion: 'argoproj.io/v1alpha1',
@@ -126,10 +126,13 @@ describe('compressResource timestamp handling', () => {
     })
 
     await deflateResource(resource, dict)
-    const dictEntries = dict.arr
+    expect(dict.arr).not.toContain('Healthy')
+    expect(dict.arr).not.toContain('Synced')
 
-    expect(dictEntries).toContain('Healthy')
-    expect(dictEntries).toContain('Synced')
+    // Second encounter promotes them to the dictionary
+    await deflateResource(resource, dict)
+    expect(dict.arr).toContain('Healthy')
+    expect(dict.arr).toContain('Synced')
   })
 
   it('round-trips resources with timestamp values correctly', async () => {
