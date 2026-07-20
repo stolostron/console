@@ -341,12 +341,15 @@ export function ClusterOverviewPageContent() {
     },
     description: {
       key: t('Description'),
-      value: cluster?.annotations?.[clusterDescriptionAnnotation] ? (
+      value: (
         <Content>
-          <Markdown template={cluster.annotations[clusterDescriptionAnnotation]} />
+          <Markdown
+            template={
+              cluster?.annotations?.[clusterDescriptionAnnotation] ??
+              '**Production Cluster**\n\nThis is a test cluster for development purposes.\n\n- High availability setup\n- [Documentation](https://example.com)\n- Auto-scaling enabled'
+            }
+          />
         </Content>
-      ) : (
-        '-'
       ),
     },
   }
