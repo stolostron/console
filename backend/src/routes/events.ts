@@ -6,7 +6,7 @@ import { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import pluralize from 'pluralize'
 import { pipeline } from 'node:stream/promises'
 import { Transform } from 'node:stream'
-import { batchPromiseAll } from '../lib/batch-promise-all'
+import { batchPromiseAll, BATCH_SIZE } from '../lib/batch-promise-all'
 import { createDictionary, deflateResource, inflateResource } from '../lib/compression'
 import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
@@ -445,31 +445,27 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
   const apiVersionPlural = apiVersionPluralFn(options)
   const cache = resourceCache[apiVersionPlural]
   const itemUids = new Set(items.map((item) => item.metadata.uid))
-  const cacheUids = Object.keys(cache ?? {})
-  const removeCandidates = (
-    await batchPromiseAll(cacheUids, async (uid) => {
-      // Fast path: resource exists in K8s response → skip inflation entirely
-      if (itemUids.has(uid)) return undefined
-
-      // Slow path: only inflate resources NOT in K8s response
-      const existing = cache[uid]
-      if (!existing) return undefined
-      const resource = await existing.compressed.then((compressed) => inflateResource(compressed, eventDict))
-      if (options.fieldSelector && !matchesSelector(resource, options.fieldSelector)) {
-        return undefined
-      }
-      if (options.labelSelector && !matchesSelector(resource.metadata?.labels, options.labelSelector)) {
-        return undefined
-      }
-      if (!itemUids.has(uid)) {
-        return { resource, cacheEntry: existing }
-      }
-      return undefined
-    })
-  ).filter(
-    (r): r is { resource: IResource; cacheEntry: { compressed: Promise<Buffer>; eventID: Promise<number> } } =>
-      r !== undefined
-  )
+  const removeCandidates: {
+    resource: IResource
+    cacheEntry: { compressed: Promise<Buffer>; eventID: Promise<number> }
+  }[] = []
+  let iterations = 0
+  for (const uid in cache) {
+    if (++iterations % BATCH_SIZE === 0) {
+      await new Promise((resolve) => setImmediate(resolve))
+    }
+    if (itemUids.has(uid)) continue
+    const existing = cache[uid]
+    if (!existing) continue
+    const resource = await existing.compressed.then((compressed) => inflateResource(compressed, eventDict))
+    if (options.fieldSelector && !matchesSelector(resource, options.fieldSelector)) {
+      continue
+    }
+    if (options.labelSelector && !matchesSelector(resource.metadata?.labels, options.labelSelector)) {
+      continue
+    }
+    removeCandidates.push({ resource, cacheEntry: existing })
+  }
   await batchPromiseAll(removeCandidates, ({ resource, cacheEntry }) => deleteResource(resource, forward, cacheEntry))
 
   return { resourceVersion, size: items.length }
