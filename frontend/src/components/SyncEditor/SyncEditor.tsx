@@ -833,6 +833,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   ])
 
   const lastLayoutSize = useRef<{ width: number; height: number }>({ width: 0, height: 0 })
+  const lastLayoutEditor = useRef<unknown>(null)
   const rafId = useRef<number>(0)
 
   const layoutEditor = useCallback(
@@ -851,15 +852,24 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         if (height <= 0) return
 
         const prev = lastLayoutSize.current
-        if (prev.width === width && prev.height === height) return
+        const sameEditor = lastLayoutEditor.current === editor
+        if (sameEditor && prev.width === width && prev.height === height) return
 
         lastLayoutSize.current = { width, height }
+        lastLayoutEditor.current = editor
         editor.layout({ width, height })
         setShowCondensed(width < 500)
       }
     },
     [editorHasErrors, variant]
   )
+
+  useEffect(() => {
+    cancelAnimationFrame(rafId.current)
+    if (activeEditor) {
+      layoutEditor(activeEditor)
+    }
+  }, [activeEditor, layoutEditor])
 
   useResizeObserver(pageRef, () => {
     cancelAnimationFrame(rafId.current)
