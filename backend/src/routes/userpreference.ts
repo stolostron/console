@@ -80,7 +80,7 @@ export async function userpreference<T = unknown>(req: Http2ServerRequest, res: 
               chucks.push(chuck)
             })
             req.on('end', async () => {
-              data = chucks.join()
+              data = chucks.join('')
 
               const body =
                 req.method === 'POST'

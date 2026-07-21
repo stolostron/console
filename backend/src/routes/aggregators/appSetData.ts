@@ -33,7 +33,7 @@ export function requestAggregatedAppSetData(req: Http2ServerRequest, res: Http2S
   req.on('end', async () => {
     const token = getToken(req)
     if (!token) return unauthorized(req, res)
-    const body = chunks.join()
+    const body = chunks.join('')
     let appset: IApplicationSet
     let isAppSetPullModel = false
     try {

@@ -64,7 +64,7 @@ export function paginate(
     chucks.push(chuck)
   })
   req.on('end', async () => {
-    const body = chucks.join()
+    const body = chucks.join('')
 
     const request = JSON.parse(body) as IRequestListView
     const { search, sortBy, filters } = request
