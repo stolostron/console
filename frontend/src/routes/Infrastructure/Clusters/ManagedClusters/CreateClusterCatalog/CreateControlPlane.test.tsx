@@ -3,6 +3,7 @@ import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { clickByTestId, isCardEnabled, waitForNocks } from '../../../../../lib/test-util'
+import { nockIgnoreApiPaths } from '../../../../../lib/nock-util'
 import { nockHypershiftStatus } from '../../../../../lib/nock-hypershift-status'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { CreateControlPlane } from './CreateControlPlane'
@@ -22,6 +23,10 @@ import {
 import userEvent from '@testing-library/user-event'
 
 describe('CreateControlPlane', () => {
+  beforeEach(() => {
+    nockIgnoreApiPaths()
+  })
+
   const Component = ({
     infraEnvsMock,
     agentsMock,
@@ -54,11 +59,11 @@ describe('CreateControlPlane', () => {
   test('Hosted control plane card should be disabled when hypershift is disabled', async () => {
     const hypershiftStatusNock = nockHypershiftStatus(false)
 
-    const { getByTestId } = render(<Component enableHypershift={false} />)
+    const { getByTestId, findByText } = render(<Component enableHypershift={false} />)
     await waitForNocks([hypershiftStatusNock])
 
+    await findByText(/Hosted control plane operator must be enabled/)
     const card = getByTestId('hosted')
-    await waitFor(() => expect(card).toHaveTextContent('Hosted control plane operator must be enabled'))
     expect(isCardEnabled(card)).toBe(false)
   })
 

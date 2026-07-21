@@ -80,7 +80,7 @@ describe('createSuggestsPlacement', () => {
 
     expect(alerts).toHaveLength(1)
     expect(alerts[0].description?.bullets?.[0].title).toBe('Current specification')
-    expect(alerts[0].actions?.[1].label).toBe('Edit placement')
+    expect(alerts[0].actions?.[1].label).toBe('Edit YAML')
   })
 })
 
