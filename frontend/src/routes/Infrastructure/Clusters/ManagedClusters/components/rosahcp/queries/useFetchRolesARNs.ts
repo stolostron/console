@@ -123,9 +123,7 @@ export const useFetchRoleARNs = (selectedSecret: SelectedSecret) => {
         await Promise.all([fetch(accountId), rolesQuery.refetch(), ocmRoleQuery.refetch(), userRoleQuery.refetch()])
       }
     },
-    // Does not need anything else
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [rolesQuery.refetch, ocmRoleQuery.refetch, userRoleQuery.refetch]
+    [awsAccountId, fetch, rolesQuery.refetch, ocmRoleQuery.refetch, userRoleQuery.refetch]
   )
 
   const ocmRoleError = ocmRoleQuery.error instanceof Error ? ocmRoleQuery.error.message : null
