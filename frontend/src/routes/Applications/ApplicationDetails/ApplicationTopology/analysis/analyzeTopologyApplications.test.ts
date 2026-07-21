@@ -122,6 +122,7 @@ describe('analyzeTopologyApplications', () => {
           cluster: CLUSTER_NAME,
           status: 'OutOfSync',
           health: { status: 'Degraded' },
+          requiresPruning: true,
         },
       ],
       1

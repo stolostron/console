@@ -12,6 +12,7 @@ import {
   TopologyAlertActionType,
   type TopologyAlertDescription,
 } from './utils'
+import { DOC_LINKS } from '~/lib/doc-util'
 
 const MAX_PULL_APP_FETCHES = 3
 const MAX_CONDITION_ERROR_ALERTS = 3
@@ -44,6 +45,32 @@ const buildHealthSyncKey = (healthStatus: string | undefined, syncStatus: string
     parts.push(healthStatus)
   }
   return parts.join('/')
+}
+
+const capitalizeKind = (kind: string): string => (kind ? `${kind.charAt(0).toUpperCase()}${kind.slice(1)}` : '')
+
+const recordHealthSyncIssue = (
+  kind: string,
+  healthStatus: string | undefined,
+  syncStatus: string | undefined,
+  clusterName: string,
+  mapKey: string,
+  badResourceMap: Record<string, Record<string, string[]>>,
+  syncAlerts: SyncAlertEntry[]
+): void => {
+  const healthSyncKey = buildHealthSyncKey(healthStatus, syncStatus)
+  if (!healthSyncKey) {
+    return
+  }
+
+  if (!badResourceMap[kind]) {
+    badResourceMap[kind] = {}
+  }
+  if (!badResourceMap[kind][healthSyncKey]) {
+    badResourceMap[kind][healthSyncKey] = []
+  }
+  badResourceMap[kind][healthSyncKey].push(mapKey)
+  syncAlerts.push({ kind, healthSyncKey, clusterName })
 }
 
 const parseCompositeAppName = (
@@ -79,10 +106,6 @@ const getClustersFromBadResourceMap = (badResourceMap: Record<string, Record<str
     })
   })
   return clusters
-}
-
-const getAppForCluster = (appMap: Record<string, IResource>, clusterName: string): IResource | undefined => {
-  return Object.entries(appMap).find(([key]) => key.startsWith(`${clusterName}/`))?.[1]
 }
 
 const isBadDeployResourceHealth = (resource: ArgoAppResource): boolean => {
@@ -162,7 +185,7 @@ const getSyncAlertSuggestionBullets = (isPullModel: boolean, t: TFunction): IBul
     : [
         { title: t('Wait a few minutes for syncing to complete'), content: [] },
         { title: t('You can also try resyncing resources'), content: [] },
-        { title: t('If the problem persists, try editing the appset in Argo CD'), content: [] },
+        { title: t('If the problem persists, try editing the Application in Argo CD'), content: [] },
       ]
 
 const dedupeAppSetAppsErrorsByReason = (errors: IFilteredConditionError[]): IFilteredConditionError[] => {
@@ -265,6 +288,11 @@ const pushSyncAlert = (
       type: TopologyAlertActionType.launchArgo,
       node: appSet,
     },
+    {
+      label: t('View documentation'),
+      type: TopologyAlertActionType.openUrl,
+      action: { url: DOC_LINKS.GITOPS_REGISTER },
+    },
   ]
   const alert = createTopologyAlert(title, status, description, actions)
   if (!alerts.some((existingAlert) => existingAlert.id === alert.id)) {
@@ -293,7 +321,7 @@ export const analyzeTopologyApplications = async (
   const isAppSetPullModel = Boolean(appSet.specs.isAppSetPullModel)
 
   /////////////////////////////////////////////
-  // create alert for unhealthy/unsynced applications
+  // create alert for unhealthy/unsynced applications and deployment resources
   /////////////////////////////////////////////
   appSetApps.forEach((app) => {
     const compositeName = app.metadata?.name ?? ''
@@ -305,21 +333,39 @@ export const analyzeTopologyApplications = async (
     const mapKey = `${clusterName}/${appName}`
     appMap[mapKey] = app
 
-    const syncStatus = (app.status as { sync?: { status?: string } } | undefined)?.sync?.status
-    const healthStatus = (app.status as { health?: { status?: string } } | undefined)?.health?.status
-    const healthSyncKey = buildHealthSyncKey(healthStatus, syncStatus)
+    recordHealthSyncIssue(
+      'Application',
+      (app.status as { health?: { status?: string } } | undefined)?.health?.status,
+      (app.status as { sync?: { status?: string } } | undefined)?.sync?.status,
+      clusterName,
+      mapKey,
+      badResourceMap,
+      syncAlerts
+    )
+  })
 
-    if (healthSyncKey) {
-      if (!badResourceMap.Application) {
-        badResourceMap.Application = {}
-      }
-      if (!badResourceMap.Application[healthSyncKey]) {
-        badResourceMap.Application[healthSyncKey] = []
-      }
-      badResourceMap.Application[healthSyncKey].push(mapKey)
-
-      syncAlerts.push({ kind: 'Application', healthSyncKey, clusterName })
+  deploymentNodes.forEach((deploymentNode) => {
+    const resources = deploymentNode.specs?.resources as ArgoAppResource[] | undefined
+    if (!resources) {
+      return
     }
+
+    resources.forEach((resource) => {
+      const clusterName = resource.cluster as string | undefined
+      if (!clusterName || resource.requiresPruning === true) {
+        return
+      }
+
+      recordHealthSyncIssue(
+        capitalizeKind(resource.kind),
+        resource.health?.status,
+        resource.status,
+        clusterName,
+        `${clusterName}/${resource.name}`,
+        badResourceMap,
+        syncAlerts
+      )
+    })
   })
 
   /////////////////////////////////////////////
@@ -352,7 +398,7 @@ export const analyzeTopologyApplications = async (
   }
 
   const hasApplicationIssues = Boolean(badResourceMap.Application && Object.keys(badResourceMap.Application).length > 0)
-  if (!hasApplicationIssues && badDeploySet.size === 0) {
+  if (!hasApplicationIssues && badDeploySet.size === 0 && syncAlerts.length === 0) {
     return []
   }
 
@@ -446,31 +492,6 @@ export const analyzeTopologyApplications = async (
   /////////////////////////////////////////////
   // create alert for unhealthy/unsynced deployments
   /////////////////////////////////////////////
-  badDeploySet.forEach((clusterName) => {
-    const app = getAppForCluster(appMap, clusterName)
-    const resources = ((app?.status as { resources?: ArgoAppResource[] } | undefined)?.resources ??
-      []) as ArgoAppResource[]
-
-    resources.forEach((resource) => {
-      const healthStatus = resource.health?.status
-      const syncStatus = resource.status
-      if (healthStatus === 'Healthy' && syncStatus === 'Synced') {
-        return
-      }
-
-      if (resource.requiresPruning === true) {
-        return
-      }
-
-      const healthSyncKey = buildHealthSyncKey(healthStatus, syncStatus)
-      if (!healthSyncKey) {
-        return
-      }
-
-      syncAlerts.push({ kind: resource.kind, healthSyncKey, clusterName })
-    })
-  })
-
   if (syncAlerts.length > 0) {
     const healthSyncKeys = [...new Set(syncAlerts.map((entry) => entry.healthSyncKey))]
     setPartialUnhealthyDeploymentNodePulses(deploymentNodes, appsetClusters)

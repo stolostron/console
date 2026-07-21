@@ -57,6 +57,7 @@ export const DOC_LINKS = {
   MANAGED_NETWORK_CONFIG: `${DOC_BASE_PATH}/networking/networking#managed-network-config`,
   POLICIES_OVERVIEW: `${DOC_BASE_PATH}/governance/index#hub-policy-framework`,
   GITOPS_CONFIG: `${DOC_BASE_PATH}/gitops/gitops-overview`,
+  GITOPS_REGISTER: `${DOC_BASE_PATH}/gitops/index#gitops-push-pull`,
   DEPRECATIONS_ACM: `${DOC_BASE_PATH}/release_notes/release-notes#deprecations-removals-acm`,
   ENABLE_OBSERVABILITY: `${DOC_BASE_PATH}/observability/observing-environments-intro#enabling-observability-service`,
   ACCESSING_CONSOLE: `${DOC_BASE_PATH}/web_console/web-console#accessing-your-console`,

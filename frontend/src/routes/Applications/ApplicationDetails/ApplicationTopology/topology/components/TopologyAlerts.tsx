@@ -305,7 +305,13 @@ export function TopologyAlerts({
                     ) : null
                   case TopologyAlertActionType.openUrl:
                     return action.action?.url ? (
-                      <AlertActionLink key={actionKey} component="a" href={action.action.url}>
+                      <AlertActionLink
+                        key={actionKey}
+                        component="a"
+                        href={action.action.url}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
                         {action.label}
                       </AlertActionLink>
                     ) : null

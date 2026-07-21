@@ -2,6 +2,7 @@
 import type { TFunction } from 'i18next'
 import jsYaml from 'js-yaml'
 import stringSimilarity from 'string-similarity'
+import { DOC_LINKS } from '~/lib/doc-util'
 import type { ApplicationSet } from '~/resources'
 import type { TopologyNode } from '../types'
 import type { IFilteredConditionError, TopologyAlert } from './analyzeTopology'
@@ -359,7 +360,19 @@ export const createSuggestsApplication = (
             title: t('Grant the GitOps controller service account RBAC access to the target namespace'),
           },
         ]
-        createTopologyErrorAlert(suggestions, [], alerts, forbiddenError, t)
+        createTopologyErrorAlert(
+          suggestions,
+          [
+            {
+              label: t('View documentation'),
+              type: TopologyAlertActionType.openUrl,
+              action: { url: DOC_LINKS.GITOPS_REGISTER },
+            },
+          ],
+          alerts,
+          forbiddenError,
+          t
+        )
         break
       }
       case isSourceRequiredMessage(message): {

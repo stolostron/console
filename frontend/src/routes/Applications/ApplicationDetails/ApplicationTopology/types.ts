@@ -663,7 +663,6 @@ export interface DiagramElements {
   channels: string[]
   links: TopologyLink[]
   nodes: TopologyNode[]
-  alerts: TopologyAlert[]
 }
 
 export interface GetDiagramElementsResult {

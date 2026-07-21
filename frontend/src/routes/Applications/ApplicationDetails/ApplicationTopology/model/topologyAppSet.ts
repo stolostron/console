@@ -326,7 +326,16 @@ export async function getAppSetTopology(
       types.forEach((type) => allApplicationTypes.add(type))
       resources.forEach((r: any) => allResourcesForApp.push({ ...r, cluster: clusterName, isChild: true }))
     })
-    processResources(allResourcesForApp, parentNodeId, appClusterNames, hubClusterName, activeTypes ?? [], links, nodes)
+    processResources(
+      allResourcesForApp,
+      parentNodeId,
+      appName,
+      appClusterNames,
+      hubClusterName,
+      activeTypes ?? [],
+      links,
+      nodes
+    )
   })
 
   // Set all resource types in toolbar
@@ -613,10 +622,12 @@ function mergeExpectedWithSearchResults(
  * @param activeTypes - Active resource types from toolbar filter
  * @param links - Array to add topology links to
  * @param nodes - Array to add topology nodes to
+ * @param appName - Application name used to uniquify deployable member IDs
  */
 function processResources(
   resources: ResourceItem[],
   parentId: string,
+  appName: string,
   parentClusterNames: string[],
   hubClusterName: string,
   activeTypes: string[],
@@ -701,7 +712,7 @@ function processResources(
 
     // For cluster-scoped resources, use a stable ID without cluster to prevent duplicates
     const clusterInId = deployableNamespace ? deployableCluster : parentClusterNames[0] || deployableCluster
-    const memberId = `member--member--deployable--member--clusters--${clusterInId}--${type}--${deployableNamespace}--${deployableName}`
+    const memberId = `member--member--deployable--member--clusters--${clusterInId}--${appName}--${type}--${deployableNamespace}--${deployableName}`
 
     // Create raw resource object with metadata
     const raw: any = {
