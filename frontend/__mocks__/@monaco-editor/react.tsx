@@ -46,6 +46,10 @@ export const lastDiffNavigator = {
   current: null as { dispose: () => void; previous: jest.Mock; next: jest.Mock } | null,
 }
 
+export const lastEditorLayout = {
+  current: null as jest.Mock | null,
+}
+
 const createMockDiffNavigator = () => {
   const navigator = {
     dispose: () => {},
@@ -189,8 +193,10 @@ const MonacoEditor = (props: {
         return find === 'that' ? [{ range: new Range(0, 0, 0, 1) }, { range: new Range(0, 1, 0, 2) }] : []
       },
     }
+    const layoutMock = jest.fn()
+    lastEditorLayout.current = layoutMock
     editorMockRef.current.mockEditor = {
-      layout: () => {},
+      layout: layoutMock,
       focus: () => {},
       trigger: (_source, action) => {
         switch (action) {
@@ -410,8 +416,10 @@ const buildMockEditor = (props: { onChange?: (value: string, e: any) => void; in
     onDidChangeContent: () => {},
     findMatches: () => [],
   }
+  const layoutMockFn = jest.fn()
+  lastEditorLayout.current = layoutMockFn
   const mockEditor = {
-    layout: () => {},
+    layout: layoutMockFn,
     focus: () => {},
     trigger: () => {},
     onKeyDown: (handler: (e: unknown) => void) => {
