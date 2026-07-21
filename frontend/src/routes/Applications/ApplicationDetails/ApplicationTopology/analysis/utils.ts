@@ -101,11 +101,15 @@ export const isErrorCondition = (condition: IResourceCondition): boolean => {
   const typeLower = condition.type.toLowerCase()
   const reasonLower = condition.reason?.toLowerCase()
   const errorKeywords = ['error', 'failed']
-  const matchText = reasonLower ?? typeLower
-  const hasErrorInTypeOrReason = errorKeywords.some((keyword) => matchText.includes(keyword))
+  // Negative types (e.g. ErrorOccurred): True = error, False = healthy success message
+  const typeIsNegative = errorKeywords.some((keyword) => typeLower.includes(keyword))
+  if (typeIsNegative) {
+    return condition.status !== 'False'
+  }
+  const reasonIndicatesError = errorKeywords.some((keyword) => reasonLower?.includes(keyword))
   const positiveStatusTypes = ['satisfied', 'uptodate', 'generated']
   const typeHasPositiveStatus = positiveStatusTypes.some((keyword) => typeLower.includes(keyword))
-  return hasErrorInTypeOrReason || (condition.status === 'False' && typeHasPositiveStatus)
+  return reasonIndicatesError || (condition.status === 'False' && typeHasPositiveStatus)
 }
 
 /** Sets pulse color on all nodes matching the given types. */

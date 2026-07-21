@@ -161,6 +161,9 @@ export function ApplicationTopologyPageContent() {
   const canUpdateStatuses = !!statuses
   useEffect(() => {
     if (!topology) {
+      setElements({ nodes: [], links: [] })
+      setAlertsState([])
+      setIsAnalyzing(false)
       return
     }
 
@@ -195,6 +198,11 @@ export function ApplicationTopologyPageContent() {
             return
           }
           setAlertsState(alerts)
+        })
+        .catch(() => {
+          if (!isCancelled) {
+            setAlertsState([])
+          }
         })
         .finally(() => {
           if (!isCancelled) {
@@ -333,6 +341,7 @@ export function ApplicationTopologyPageContent() {
       <Topology
         elements={elements}
         alerts={alertsState}
+        currentAlertsKey={applicationKey}
         isAnalyzing={isAnalyzing}
         isProcessingSave={processingSave.isProcessingSave}
         processingSaveStart={processingSave.start}

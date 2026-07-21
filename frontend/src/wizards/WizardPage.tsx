@@ -2,8 +2,10 @@
 
 import useResizeObserver from '@react-hook/resize-observer'
 import { PageSection, Switch } from '@patternfly/react-core'
-import { Children, cloneElement, isValidElement, ReactElement, ReactNode, useCallback, useRef, useState } from 'react'
-import { Step, Wizard, WizardProps } from '@patternfly-labs/react-form-wizard'
+import { Children, cloneElement, isValidElement, useCallback, useRef, useState } from 'react'
+import type { ReactElement, ReactNode } from 'react'
+import { Step, Wizard } from '@patternfly-labs/react-form-wizard'
+import type { WizardProps } from '@patternfly-labs/react-form-wizard'
 import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader } from '../ui-components'
 import './WizardPage.css'
 import { LostChangesMonitor, LostChangesPrompt } from '../components/LostChanges'

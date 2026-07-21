@@ -13,7 +13,7 @@ import type {
   ResourceMap,
   TopologyNode,
 } from '~/routes/Applications/ApplicationDetails/ApplicationTopology/types'
-import { fetchRetry, getBackendUrl } from '~/resources/utils'
+import { fetchRetry, getBackendUrl, isRequestAbortedError } from '~/resources/utils'
 import { fleetLogsRequest } from '~/resources/utils/fleet-logs-request'
 import { useRecoilValue, useSharedAtoms } from '~/shared-recoil'
 import { AcmAlert, AcmLoadingPage, AcmModal, AcmSelect } from '~/ui-components'
@@ -187,23 +187,18 @@ function TopologyLogsViewer({
   }, [containers, cluster, name])
 
   useEffect(() => {
+    const handleChange = () => setIsFullscreen(screenfull.isFullscreen)
+    const handleError = () => setIsFullscreen(false)
+
     if (screenfull.isEnabled) {
-      screenfull.on('change', () => {
-        setIsFullscreen(screenfull.isFullscreen)
-      })
-      screenfull.on('error', () => {
-        setIsFullscreen(false)
-      })
+      screenfull.on('change', handleChange)
+      screenfull.on('error', handleError)
     }
 
     return () => {
       if (screenfull.isEnabled) {
-        screenfull.off('change', () => {
-          setIsFullscreen(false)
-        })
-        screenfull.off('error', () => {
-          setIsFullscreen(false)
-        })
+        screenfull.off('change', handleChange)
+        screenfull.off('error', handleError)
       }
     }
   }, [])
@@ -218,10 +213,23 @@ function TopologyLogsViewer({
   }, [selectedPodName, container, previousLogs])
 
   useEffect(() => {
-    if (!isHubClusterResource && container !== '') {
-      setIsLoadingLogs(true)
-      const abortController = new AbortController()
+    if (container === '') {
+      return
+    }
 
+    setIsLoadingLogs(true)
+    const abortController = new AbortController()
+    const { signal } = abortController
+
+    const applyIfCurrent = (update: () => void) => {
+      if (signal.aborted) {
+        return
+      }
+      update()
+      setIsLoadingLogs(false)
+    }
+
+    if (!isHubClusterResource) {
       fleetLogsRequest({
         cluster,
         namespace,
@@ -229,52 +237,57 @@ function TopologyLogsViewer({
         container,
         tailLines: 1000,
         previous: previousLogs,
-        signal: abortController.signal,
+        signal,
       })
         .then((result) => {
-          if (result.errorMessage) {
-            setLogsError(result.errorMessage)
-          } else {
-            setLogs(result.data)
-          }
-          setIsLoadingLogs(false)
+          applyIfCurrent(() => {
+            if (result.errorMessage) {
+              setLogsError(result.errorMessage)
+            } else {
+              setLogs(result.data)
+            }
+          })
         })
         .catch((err) => {
-          if (err.code === 400) {
-            setLogsError(<Trans i18nKey="acm.logs.error" components={{ code: <code /> }} />)
-          } else {
-            setLogsError(err.message)
+          if (signal.aborted || isRequestAbortedError(err)) {
+            return
           }
-          setIsLoadingLogs(false)
+          applyIfCurrent(() => {
+            if (err.code === 400) {
+              setLogsError(<Trans i18nKey="acm.logs.error" components={{ code: <code /> }} />)
+            } else {
+              setLogsError(err.message)
+            }
+          })
         })
-
-      return () => abortController.abort()
-    } else if (isHubClusterResource && container !== '') {
-      setIsLoadingLogs(true)
-      const abortController = new AbortController()
-      const logsResult = fetchRetry({
+    } else {
+      fetchRetry({
         method: 'GET',
         url:
           getBackendUrl() +
           `/api/v1/namespaces/${namespace}/pods/${name}/log?container=${container}&tailLines=1000${
             previousLogs ? '&previous=true' : ''
           }`,
-        signal: abortController.signal,
+        signal,
         retries: process.env.NODE_ENV === 'production' ? 2 : 0,
         headers: { Accept: '*/*' },
       })
-      logsResult
         .then((result) => {
-          setLogs((result.data as string) ?? '')
-          setIsLoadingLogs(false)
+          applyIfCurrent(() => {
+            setLogs((result.data as string) ?? '')
+          })
         })
         .catch((err) => {
-          setLogsError(err.message)
-          setIsLoadingLogs(false)
+          if (signal.aborted || isRequestAbortedError(err)) {
+            return
+          }
+          applyIfCurrent(() => {
+            setLogsError(err.message)
+          })
         })
-
-      return () => abortController.abort()
     }
+
+    return () => abortController.abort()
   }, [cluster, container, managedClusters, name, namespace, previousLogs, isHubClusterResource])
 
   const linesLength = useMemo(() => logs?.split('\n').length - 1, [logs])
@@ -315,74 +328,6 @@ function TopologyLogsViewer({
     )
   }
 
-  if (logsError) {
-    return (
-      <>
-        {renderResourceURLLink(
-          {
-            data: {
-              action: 'open_link',
-              targetLink: currentPodURL,
-              name,
-              namespace,
-              kind: 'pod',
-            },
-          },
-          true
-        )}
-        <AcmAlert
-          noClose={true}
-          variant={'danger'}
-          isInline={true}
-          title={`${t('Error querying resource logs:')} ${name}`}
-          subtitle={logsError}
-        />
-      </>
-    )
-  }
-
-  if (!logsError && isLoadingLogs) {
-    return (
-      <>
-        {renderResourceURLLink(
-          {
-            data: {
-              action: 'open_link',
-              targetLink: currentPodURL,
-              name,
-              namespace,
-              kind: 'pod',
-            },
-          },
-          true
-        )}
-        <span style={{ display: 'block', paddingLeft: '0.5rem', fontSize: '1rem' }}>{t('Select pod')}</span>
-        <AcmSelect
-          id={'pod-select'}
-          label={''}
-          value={selectedPodName}
-          isRequired={true}
-          onChange={(value) => {
-            const pod = pods.find((item) => item.name === value)
-            const podContainers = parseContainers(pod?.container as string | undefined)
-            setSelectedPodName(value as string)
-            setPreviousLogs(false)
-            setContainer(podContainers[0] ?? '')
-          }}
-        >
-          {pods.map((pod) => {
-            return (
-              <SelectOption key={pod.name} value={pod.name}>
-                {pod.name}
-              </SelectOption>
-            )
-          })}
-        </AcmSelect>
-        <AcmLoadingPage />
-      </>
-    )
-  }
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       {renderResourceURLLink(
@@ -420,13 +365,8 @@ function TopologyLogsViewer({
         })}
       </AcmSelect>
       <div ref={resourceLogRef} style={{ flex: 1, minHeight: 0, marginTop: '0.5rem' }}>
-        <LogViewer
-          ref={logViewerRef}
-          height={'calc(70vh - 200px)'}
-          data={logs}
-          theme="dark"
-          isTextWrapped={wrapLines}
-          toolbar={
+        {logsError ? (
+          <>
             <LogsToolbar
               logs={logs}
               name={name}
@@ -442,18 +382,52 @@ function TopologyLogsViewer({
               previousLogs={previousLogs}
               setPreviousLogs={setPreviousLogs}
             />
-          }
-          header={<LogsHeader cluster={cluster} namespace={namespace} linesLength={linesLength} />}
-          scrollToRow={linesLength}
-          onScroll={onScroll}
-          footer={
-            <LogsFooterButton
-              logViewerRef={logViewerRef}
-              showJumpToBottomBtn={showJumpToBottomBtn}
-              setShowJumpToBottomBtn={setShowJumpToBottomBtn}
+            <AcmAlert
+              noClose={true}
+              variant={'danger'}
+              isInline={true}
+              title={`${t('Error querying resource logs:')} ${name}`}
+              subtitle={logsError}
             />
-          }
-        />
+          </>
+        ) : isLoadingLogs ? (
+          <AcmLoadingPage />
+        ) : (
+          <LogViewer
+            ref={logViewerRef}
+            height={'calc(70vh - 200px)'}
+            data={logs}
+            theme="dark"
+            isTextWrapped={wrapLines}
+            toolbar={
+              <LogsToolbar
+                logs={logs}
+                name={name}
+                container={container}
+                containers={containers}
+                setContainer={setContainer}
+                cluster={cluster}
+                toggleWrapLines={setWrapLines}
+                wrapLines={wrapLines}
+                toggleFullscreen={toggleFullscreen}
+                isFullscreen={isFullscreen}
+                containerHasPreviousLogs={containerHasPreviousLogs}
+                previousLogs={previousLogs}
+                setPreviousLogs={setPreviousLogs}
+              />
+            }
+            header={<LogsHeader cluster={cluster} namespace={namespace} linesLength={linesLength} />}
+            scrollToRow={linesLength}
+            onScroll={onScroll}
+            footer={
+              <LogsFooterButton
+                logViewerRef={logViewerRef}
+                showJumpToBottomBtn={showJumpToBottomBtn}
+                setShowJumpToBottomBtn={setShowJumpToBottomBtn}
+              />
+            }
+          />
+        )}
       </div>
     </div>
   )

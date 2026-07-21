@@ -46,7 +46,7 @@ export const analyzeTopologyDeployments = (
         const cluster = resourceItem.cluster ?? ''
         const status = resourceItem.status ?? resourceItem.resStatus ?? ''
         const title = t('{{status}} on {{cluster}}', { status, cluster })
-        const message = `${t('Resource did not deploy')}: ${kind}/${name}`
+        const message = t('Resource did not deploy: {{kind}}/{{name}}', { kind, name })
         const actionNode = getFilteredNode(node, {
           name,
           namespace: resourceItem.namespace ?? node.namespace,

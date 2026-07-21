@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useCallback } from 'react'
-import { useParams, useNavigate, PathParam, generatePath } from 'react-router'
+import { useParams, useNavigate, generatePath } from 'react-router'
+import type { PathParam } from 'react-router'
 import { useSearchParams } from '~/lib/search'
 import { NavigationPath } from '~/NavigationPath'
 import type { ApplicationSet } from '~/resources'

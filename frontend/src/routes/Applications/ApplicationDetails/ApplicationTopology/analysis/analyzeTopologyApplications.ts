@@ -109,9 +109,7 @@ const getClustersFromBadResourceMap = (badResourceMap: Record<string, Record<str
 }
 
 const isBadDeployResourceHealth = (resource: ArgoAppResource): boolean => {
-  const health = resource.health?.status
-  const sync = resource.status
-  return health !== 'Healthy' && sync !== 'Synced'
+  return buildHealthSyncKey(resource.health?.status, resource.status) !== ''
 }
 
 const isDeploymentNodeUnhealthy = (deploymentNode: TopologyNode, appsetClusters: string[]): boolean => {

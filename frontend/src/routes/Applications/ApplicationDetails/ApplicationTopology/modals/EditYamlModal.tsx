@@ -396,6 +396,9 @@ function EditYamlModalContent({
                   id="update-resource-button"
                   isDisabled={
                     readOnly ||
+                    resources.length === 0 ||
+                    resourceError.message !== '' ||
+                    isReloading ||
                     editorValidationStatus === EditorValidationStatus.failure ||
                     editorValidationStatus === EditorValidationStatus.pending
                   }

@@ -24,8 +24,19 @@ describe('analysis/utils', () => {
       expect(isErrorCondition(createCondition({ reason: 'SyncFailed', type: 'Synced' }))).toBe(true)
     })
 
-    it('returns true when type contains error and reason is absent', () => {
+    it('returns true when type contains error and status is True', () => {
       expect(isErrorCondition({ type: 'ErrorOccurred', message: 'failed', status: 'True' })).toBe(true)
+    })
+
+    it('returns false when ErrorOccurred status is False (healthy ApplicationSet message)', () => {
+      expect(
+        isErrorCondition({
+          type: 'ErrorOccurred',
+          reason: 'ApplicationSetUpToDate',
+          message: 'All applications have been generated successfully',
+          status: 'False',
+        })
+      ).toBe(false)
     })
 
     it('returns true when status is False for a positive status type', () => {

@@ -210,43 +210,45 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
     const showToolbarButtons = !isLogHidden || !isYamlHidden
 
     return (
-      <Toolbar id="details-view-toolbar" className="details-view-toolbar" colorVariant="secondary">
-        <ToolbarContent alignItems="baseline">
-          <ToolbarItem variant="label">{t('Details')}</ToolbarItem>
-          {showToolbarButtons && (
-            <ToolbarGroup
-              variant="action-group-plain"
-              align={{ default: 'alignEnd' }}
-              alignItems="stretch"
-              alignSelf="stretch"
-            >
-              <ToolbarItem variant="separator" />
-              {!isLogHidden && (
-                <Tooltip content={t('Logs')}>
-                  <Button
-                    id="details-view-logs-button"
-                    variant="plain"
-                    icon={<OutlinedListAltIcon />}
-                    aria-label={t('Logs')}
-                    onClick={() => onViewLogs?.(node)}
-                  />
-                </Tooltip>
-              )}
-              {!isYamlHidden && (
-                <Tooltip content={t('Edit YAML')}>
-                  <Button
-                    id="details-view-edit-yaml-button"
-                    variant="plain"
-                    icon={<PencilAltIcon />}
-                    aria-label={t('Edit YAML')}
-                    onClick={() => onEditYaml?.(node)}
-                  />
-                </Tooltip>
-              )}
-            </ToolbarGroup>
-          )}
-        </ToolbarContent>
-      </Toolbar>
+      <div className="details-view-toolbar">
+        <Toolbar id="details-view-toolbar" colorVariant="secondary" inset={{ default: 'insetMd' }}>
+          <ToolbarContent alignItems="baseline">
+            <ToolbarItem variant="label">{t('Details')}</ToolbarItem>
+            {showToolbarButtons && (
+              <ToolbarGroup
+                variant="action-group-plain"
+                align={{ default: 'alignEnd' }}
+                alignItems="stretch"
+                alignSelf="stretch"
+              >
+                <ToolbarItem variant="separator" />
+                {!isLogHidden && (
+                  <Tooltip content={t('Logs')}>
+                    <Button
+                      id="details-view-logs-button"
+                      variant="plain"
+                      icon={<OutlinedListAltIcon />}
+                      aria-label={t('Logs')}
+                      onClick={() => onViewLogs?.(node)}
+                    />
+                  </Tooltip>
+                )}
+                {!isYamlHidden && (
+                  <Tooltip content={t('Edit YAML')}>
+                    <Button
+                      id="details-view-edit-yaml-button"
+                      variant="plain"
+                      icon={<PencilAltIcon />}
+                      aria-label={t('Edit YAML')}
+                      onClick={() => onEditYaml?.(node)}
+                    />
+                  </Tooltip>
+                )}
+              </ToolbarGroup>
+            )}
+          </ToolbarContent>
+        </Toolbar>
+      </div>
     )
   }
 

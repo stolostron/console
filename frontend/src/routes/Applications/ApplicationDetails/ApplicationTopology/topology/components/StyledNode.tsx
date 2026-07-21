@@ -75,6 +75,14 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
   const isMulti = passedData?.specs?.resourceCount > 1
   const shouldPulse = data.status === 'danger'
   const { width, height } = element.getDimensions()
+
+  const getCustomShape = (): React.FunctionComponent<ShapeProps> => {
+    const CustomShape: React.FunctionComponent<ShapeProps> = (props) => (
+      <CustomEllipse {...props} isMulti={isMulti} shouldPulse={shouldPulse} />
+    )
+    return CustomShape
+  }
+
   return (
     <DefaultNode
       element={element}
@@ -87,12 +95,7 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
       showStatusDecorator={detailsLevel === ScaleDetailsLevel.high && passedData.showStatusDecorator}
       {...rest}
       {...passedData}
-      getCustomShape={() => {
-        const CustomShape: React.FunctionComponent<ShapeProps> = (props) => (
-          <CustomEllipse {...props} isMulti={isMulti} shouldPulse={shouldPulse} />
-        )
-        return CustomShape
-      }}
+      getCustomShape={getCustomShape}
       dragging={dragging}
       regrouping={regrouping}
       onContextMenu={data.showContextMenu ? onContextMenu : undefined}

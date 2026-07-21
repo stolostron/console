@@ -1,31 +1,30 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-  EditorValidationStatus,
   useData,
   useDefaultItem,
   useEditorValidationStatus,
   useHighlightEditorPath,
   useItem,
 } from '@patternfly-labs/react-form-wizard'
+import type { EditorValidationStatus } from '@patternfly-labs/react-form-wizard'
 import { ArgoWizard } from '~/wizards/Argo/ArgoWizard'
 import { useContext, useEffect, useState } from 'react'
 import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '~/shared-recoil'
 import { LoadingPage } from '~/components/LoadingPage'
-import { SyncEditor, ValidationStatus } from '~/components/SyncEditor/SyncEditor'
+import { SyncEditor } from '~/components/SyncEditor/SyncEditor'
+import type { ValidationStatus } from '~/components/SyncEditor/SyncEditor'
 import { useTranslation } from '~/lib/acm-i18next'
 import { isType } from '~/lib/is-type'
 import { NavigationPath } from '~/NavigationPath'
 import {
-  ApplicationSet,
   ApplicationSetApiVersion,
   ApplicationSetKind,
   getGitChannelBranches,
   getGitChannelPaths,
-  IResource,
-  Placement,
   PlacementKind,
 } from '~/resources'
+import type { ApplicationSet, IResource, Placement } from '~/resources'
 import { listResources, reconcileResources } from '~/resources/utils'
 import { AcmToastContext } from '~/ui-components'
 import pushmodelschema from './pushmodelschema.json'
@@ -139,6 +138,11 @@ export function EditArgoApplicationSet({
         (policySet) => policySet.metadata.namespace == namespace && policySet.metadata.name === name
       )
 
+      if (applicationSet === undefined) {
+        onApplicationSetNotFound()
+        return
+      }
+
       if (
         applicationSet?.spec.template?.metadata?.annotations?.['apps.open-cluster-management.io/ocm-managed-cluster']
       ) {
@@ -168,10 +172,6 @@ export function EditArgoApplicationSet({
         set(copyOfAppSet, 'spec.template.spec.sources', sources)
       }
 
-      if (applicationSet === undefined) {
-        onApplicationSetNotFound()
-        return
-      }
       const applicationSetPlacements = placements.filter((placement) =>
         isPlacementUsedByApplicationSet(applicationSet, placement)
       )

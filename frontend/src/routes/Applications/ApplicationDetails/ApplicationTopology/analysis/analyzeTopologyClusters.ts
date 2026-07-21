@@ -144,7 +144,7 @@ export const analyzeTopologyClusters = async (
 
         if (managedClusterRegistrationMessage) {
           const alert = createTopologyAlert(
-            'OpenShift GitOps Operator issues',
+            t('OpenShift GitOps Operator issues'),
             'orange',
             buildGitOpsOperatorIssuesDescription(managedClusterRegistrationMessage)
           )

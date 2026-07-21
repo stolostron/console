@@ -166,6 +166,64 @@ describe('TopologyAlerts', () => {
     expect(screen.queryByText('Alert title')).not.toBeInTheDocument()
   })
 
+  it('shows a previously dismissed alert again when currentAlertsKey changes', async () => {
+    const alert = createAlert({ id: 'shared-id::message', title: 'Shared alert' })
+    const { rerender } = render(<TopologyAlerts alerts={[alert]} currentAlertsKey="app-a" />)
+
+    await act(async () => {
+      jest.advanceTimersByTime(150)
+    })
+
+    await userEvent.click(screen.getByRole('button', { name: /close/i }))
+
+    await act(async () => {
+      jest.advanceTimersByTime(600)
+    })
+
+    expect(screen.queryByText('Shared alert')).not.toBeInTheDocument()
+
+    rerender(<TopologyAlerts alerts={[alert]} currentAlertsKey="app-b" />)
+
+    await act(async () => {
+      jest.advanceTimersByTime(150)
+    })
+
+    expect(screen.getByText('Shared alert')).toBeInTheDocument()
+  })
+
+  it('does not re-add alerts from cancelled stagger timers after alerts are cleared', async () => {
+    const alert = createAlert({ id: 'stagger::msg', title: 'Stagger alert' })
+    const { rerender } = render(<TopologyAlerts alerts={[alert]} currentAlertsKey="stagger" />)
+
+    rerender(<TopologyAlerts alerts={[]} currentAlertsKey="stagger" />)
+
+    await act(async () => {
+      jest.advanceTimersByTime(1000)
+    })
+
+    expect(screen.queryByText('Stagger alert')).not.toBeInTheDocument()
+  })
+
+  it('cancels pending dismissal when alerts input changes', async () => {
+    const alert = createAlert({ id: 'dismiss::msg', title: 'Dismiss alert' })
+    const { rerender } = render(<TopologyAlerts alerts={[alert]} currentAlertsKey="dismiss" />)
+
+    await act(async () => {
+      jest.advanceTimersByTime(150)
+    })
+
+    await userEvent.click(screen.getByRole('button', { name: /close/i }))
+
+    // Change inputs before the 500ms dismissal timer completes
+    rerender(<TopologyAlerts alerts={[alert]} currentAlertsKey="dismiss-next" />)
+
+    await act(async () => {
+      jest.advanceTimersByTime(600)
+    })
+
+    expect(screen.getByText('Dismiss alert')).toBeInTheDocument()
+  })
+
   it('has no accessibility violations', async () => {
     jest.useRealTimers()
     const { container } = render(

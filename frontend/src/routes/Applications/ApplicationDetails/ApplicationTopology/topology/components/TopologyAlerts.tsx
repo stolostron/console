@@ -130,6 +130,7 @@ export interface TopologyAlertsProps {
 
 export function TopologyAlerts({
   alerts,
+  currentAlertsKey,
   isAnalyzing,
   isProcessingSave,
   onEditAppSet,
@@ -147,6 +148,10 @@ export function TopologyAlerts({
   const [hasScrollbar, setHasScrollbar] = useState(false)
   const [processingAlertDismissed, setProcessingAlertDismissed] = useState(false)
   const [analyzingAlertDismissed, setAnalyzingAlertDismissed] = useState(false)
+
+  useEffect(() => {
+    dismissedIdsRef.current = new Set()
+  }, [currentAlertsKey])
 
   useEffect(() => {
     if (!isProcessingSave) {
@@ -169,29 +174,43 @@ export function TopologyAlerts({
   }, [])
 
   const sortedInputAlerts = useMemo(() => sortAlerts(alerts), [alerts])
+  const dismissTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
 
   useEffect(() => {
+    const timers: ReturnType<typeof setTimeout>[] = []
+    let cancelled = false
+
+    const schedule = (fn: () => void, ms: number) => {
+      const timer = setTimeout(() => {
+        if (!cancelled) {
+          fn()
+        }
+      }, ms)
+      timers.push(timer)
+    }
+
     const incoming = sortedInputAlerts.filter((alert) => !dismissedIdsRef.current.has(alert.id))
     const existingIds = new Set(visibleAlerts.map((a) => a.id))
     const toAdd = incoming.filter((alert) => !existingIds.has(alert.id))
 
     if (toAdd.length === 0) {
       setVisibleAlerts(incoming)
-      return
+      return () => {
+        cancelled = true
+        timers.forEach(clearTimeout)
+      }
     }
 
     let delay = 0
-    const addedIds = new Set<string>()
-
     toAdd.forEach((alert) => {
       const alertId = alert.id
-      setTimeout(() => {
+      schedule(() => {
         setVisibleAlerts((prev) => {
           if (prev.some((a) => a.id === alertId)) return prev
           return sortAlerts([...prev, alert])
         })
         setNewAlertIds((prev) => new Set(prev).add(alertId))
-        setTimeout(() => {
+        schedule(() => {
           setNewAlertIds((prev) => {
             const next = new Set(prev)
             next.delete(alertId)
@@ -200,14 +219,26 @@ export function TopologyAlerts({
         }, 300)
       }, delay)
       delay += 100
-      addedIds.add(alertId)
     })
 
-    setVisibleAlerts(() => {
-      return sortAlerts(incoming)
-    })
+    setVisibleAlerts(() => sortAlerts(incoming))
+
+    return () => {
+      cancelled = true
+      timers.forEach(clearTimeout)
+      setNewAlertIds(new Set())
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sortedInputAlerts])
+  }, [sortedInputAlerts, currentAlertsKey])
+
+  useEffect(() => {
+    const dismissTimers = dismissTimersRef.current
+    return () => {
+      dismissTimers.forEach(clearTimeout)
+      dismissTimers.clear()
+      setRemovingIds(new Set())
+    }
+  }, [sortedInputAlerts, currentAlertsKey])
 
   useEffect(() => {
     const el = containerRef.current
@@ -219,8 +250,14 @@ export function TopologyAlerts({
   }, [visibleAlerts, newAlertIds])
 
   const closeAction = useCallback((alertId: string) => {
+    const existingTimer = dismissTimersRef.current.get(alertId)
+    if (existingTimer) {
+      clearTimeout(existingTimer)
+    }
+
     setRemovingIds((prev) => new Set(prev).add(alertId))
-    setTimeout(() => {
+    const timer = setTimeout(() => {
+      dismissTimersRef.current.delete(alertId)
       dismissedIdsRef.current.add(alertId)
       setVisibleAlerts((prev) => prev.filter((a) => a.id !== alertId))
       setRemovingIds((prev) => {
@@ -229,6 +266,7 @@ export function TopologyAlerts({
         return next
       })
     }, 500)
+    dismissTimersRef.current.set(alertId, timer)
   }, [])
 
   const maxHeight = '66vh'
