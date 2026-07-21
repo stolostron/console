@@ -3,14 +3,14 @@ import {
   Card,
   CardBody,
   CardTitle,
+  Content,
+  ContentVariants,
   Divider,
   EmptyState,
   EmptyStateBody,
   FlexItem,
   Label,
   Skeleton,
-  Content,
-  ContentVariants,
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import { ReactNode } from 'react'
@@ -64,7 +64,7 @@ export default function SummaryCard(props: {
             </div>
             {insights && (
               <Label color={'orange'} style={{ fontWeight: 400 }} isCompact>
-                {t('Powered by Insights')}
+                {t('Powered by Red Hat Lightspeed')}
               </Label>
             )}
           </div>
