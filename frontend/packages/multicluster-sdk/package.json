@@ -68,7 +68,7 @@
     "@apollo/client": "3.14.1",
     "@patternfly/react-core": "^6.5.1",
     "@patternfly/react-styles": "^6.5.1",
-    "graphql": "^16.9.0",
+    "graphql": "^16.14.2",
     "react-i18next": "15.6.1",
     "react-transition-group": "^4.4.5",
     "react-virtualized": "^9.22.6",
