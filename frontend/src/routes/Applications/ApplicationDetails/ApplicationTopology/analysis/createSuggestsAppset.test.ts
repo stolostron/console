@@ -27,7 +27,6 @@ describe('createSuggestsAppset', () => {
     expect(alerts[0].actions?.map((action) => action.type)).toEqual([
       TopologyAlertActionType.editAppSet,
       TopologyAlertActionType.editYaml,
-      TopologyAlertActionType.editYaml,
     ])
     expect(alerts[0].actions?.[1].highlightEditorPath).toBe('ApplicationSet.spec.generators')
   })

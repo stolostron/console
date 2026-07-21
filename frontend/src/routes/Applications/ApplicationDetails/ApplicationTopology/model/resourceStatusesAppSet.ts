@@ -92,8 +92,7 @@ async function ensureAppResources(
     areSourcesUniform(appSetApps, (app: AppSetApplication) => ({
       source: app.spec?.source,
       sources: (app.spec as any)?.sources,
-    })) &&
-    areDestinationNamespacesUniform(appSetApps, (app: AppSetApplication) => app.spec?.destination?.namespace)
+    })) && areDestinationNamespacesUniform(appSetApps, (app: AppSetApplication) => app.spec?.destination?.namespace)
       ? fetchFirstAvailableResources(appSetApps, namespace, clusters)
       : undefined
 

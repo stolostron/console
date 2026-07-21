@@ -24,6 +24,8 @@ export interface TopologyAlertAction {
 export interface IBulletDescription {
   title: string
   content?: string[]
+  /** Optional trailing link rendered after the title (e.g. documentation). */
+  link?: { label: string; url: string }
 }
 
 export interface TopologyAlertDescription {

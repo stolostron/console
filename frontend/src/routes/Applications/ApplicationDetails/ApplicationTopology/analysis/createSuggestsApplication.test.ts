@@ -58,7 +58,7 @@ describe('createSuggestsApplication', () => {
     expect(alerts[0].actions?.map((action) => action.type)).toContain(TopologyAlertActionType.launchArgo)
   })
 
-  it('creates forbidden sync alerts without actions', () => {
+  it('creates forbidden sync alerts without actions for push model', () => {
     const alerts: TopologyAlert[] = []
     createSuggestsApplication(
       createAppSetNode(),
@@ -73,6 +73,22 @@ describe('createSuggestsApplication', () => {
     expect(alerts).toHaveLength(1)
     expect(alerts[0].description?.message).toBe('Sync failed: insufficient permissions to create resources in demo')
     expect(alerts[0].actions).toEqual([])
+  })
+
+  it('adds view documentation action for forbidden sync alerts on pull model', () => {
+    const alerts: TopologyAlert[] = []
+    createSuggestsApplication(
+      createAppSetNode({ specs: { isAppSetPullModel: true } }),
+      createFilteredError(
+        'Failed last sync attempt to [abc]: one or more objects failed to apply, reason: secrets is forbidden: User "system:serviceaccount:openshift-gitops:argocd" cannot create resource "secrets" in API group "" in the namespace "demo" (retried 5 times).',
+        { kind: 'Application' }
+      ),
+      alerts,
+      t
+    )
+
+    expect(alerts).toHaveLength(1)
+    expect(alerts[0].actions?.map((action) => action.type)).toEqual([TopologyAlertActionType.openUrl])
   })
 
   it('rewrites manifest generation RPC unavailable errors', () => {

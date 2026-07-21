@@ -52,12 +52,6 @@ export const createSuggestsAppset = (
               node,
               highlightEditorPath: 'ApplicationSet.spec.generators',
             },
-            {
-              label: t('Edit YAML'),
-              type: TopologyAlertActionType.editYaml,
-              node,
-              highlightEditorPath: 'ApplicationSet.spec.template.spec.destination',
-            },
           ],
           alerts,
           singleError,

@@ -171,9 +171,10 @@ const getSyncAlertSuggestionBullets = (isPullModel: boolean, t: TFunction): IBul
     ? [
         {
           title: t(
-            'Because this is a pull application, make sure the application has permissions to create namespaces on the target cluster'
+            'Because this is a pull application, make sure the application has permissions to create namespaces on the target cluster.'
           ),
           content: [],
+          link: { label: t('View documentation'), url: DOC_LINKS.GITOPS_REGISTER },
         },
         {
           title: t(
@@ -287,11 +288,6 @@ const pushSyncAlert = (
       label: t('Launch Argo editor'),
       type: TopologyAlertActionType.launchArgo,
       node: appSet,
-    },
-    {
-      label: t('View documentation'),
-      type: TopologyAlertActionType.openUrl,
-      action: { url: DOC_LINKS.GITOPS_REGISTER },
     },
   ]
   const alert = createTopologyAlert(title, status, description, actions)

@@ -367,6 +367,14 @@ export function TopologyAlerts({
                             <p className={bulletTitle}>
                               <span className={bulletMarker}>{'\u25CF'}</span>
                               {bullet.title}
+                              {bullet.link ? (
+                                <>
+                                  {' '}
+                                  <a href={bullet.link.url} target="_blank" rel="noreferrer">
+                                    {bullet.link.label}
+                                  </a>
+                                </>
+                              ) : null}
                             </p>
                             {bullet.content && bullet.content.length > 0 ? (
                               <div className={bulletContent}>

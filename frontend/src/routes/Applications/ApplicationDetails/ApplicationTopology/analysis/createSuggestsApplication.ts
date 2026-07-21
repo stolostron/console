@@ -363,11 +363,15 @@ export const createSuggestsApplication = (
         createTopologyErrorAlert(
           suggestions,
           [
-            {
-              label: t('View documentation'),
-              type: TopologyAlertActionType.openUrl,
-              action: { url: DOC_LINKS.GITOPS_REGISTER },
-            },
+            ...(node.specs.isAppSetPullModel
+              ? [
+                  {
+                    label: t('View documentation'),
+                    type: TopologyAlertActionType.openUrl,
+                    action: { url: DOC_LINKS.GITOPS_REGISTER },
+                  },
+                ]
+              : []),
           ],
           alerts,
           forbiddenError,
