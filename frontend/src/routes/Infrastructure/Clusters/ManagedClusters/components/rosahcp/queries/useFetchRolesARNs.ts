@@ -115,15 +115,19 @@ export const useFetchRoleARNs = (selectedSecret: SelectedSecret) => {
     setAwsAccountId(accountId)
   }, [])
 
+  const { refetch: refetchRoles } = rolesQuery
+  const { refetch: refetchOcmRole } = ocmRoleQuery
+  const { refetch: refetchUserRole } = userRoleQuery
+
   const refetchAll = useCallback(
     async (accountId: string) => {
       if (accountId !== awsAccountId) {
         fetch(accountId)
       } else {
-        await Promise.all([fetch(accountId), rolesQuery.refetch(), ocmRoleQuery.refetch(), userRoleQuery.refetch()])
+        await Promise.all([fetch(accountId), refetchRoles(), refetchOcmRole(), refetchUserRole()])
       }
     },
-    [awsAccountId, fetch, rolesQuery.refetch, ocmRoleQuery.refetch, userRoleQuery.refetch]
+    [awsAccountId, fetch, refetchRoles, refetchOcmRole, refetchUserRole]
   )
 
   const ocmRoleError = ocmRoleQuery.error instanceof Error ? ocmRoleQuery.error.message : null
