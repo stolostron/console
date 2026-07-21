@@ -59,7 +59,7 @@ export function mockResponse(resolve: (value: Http2ServerResponse) => void): Htt
 beforeAll(nock.disableNetConnect)
 afterAll(stop)
 
-function createReadWriteStream() {
+export function createReadWriteStream() {
   const chunks: unknown[] = []
   let destroy = false
   let write = false
@@ -93,6 +93,36 @@ function createReadWriteStream() {
     },
   })
   return stream
+}
+
+export async function requestMultiChunk(
+  method: 'GET' | 'PUT' | 'POST' | 'DELETE',
+  path: string,
+  body: Record<string, unknown>,
+  extraHeaders?: IncomingHttpHeaders
+): Promise<Http2ServerResponse> {
+  const stream = createReadWriteStream()
+  const headers: IncomingHttpHeaders = {
+    ...extraHeaders,
+    [constants.HTTP2_HEADER_METHOD]: method,
+    [constants.HTTP2_HEADER_PATH]: path,
+    [constants.HTTP2_HEADER_AUTHORIZATION]: 'Bearer <token>',
+  }
+  headers[constants.HTTP2_HEADER_CONTENT_TYPE] = 'application/json'
+
+  const result = new Promise<Http2ServerResponse>((resolve) => {
+    const req = new Http2ServerRequest(stream as ServerHttp2Stream, headers, {}, [])
+    const res = mockResponse(resolve)
+    void requestHandler(req, res)
+  })
+
+  const bodyBuffer = Buffer.from(JSON.stringify(body))
+  const mid = Math.floor(bodyBuffer.length / 2)
+  stream.write(bodyBuffer.subarray(0, mid))
+  stream.write(bodyBuffer.subarray(mid))
+  stream.end()
+
+  return result
 }
 
 export async function waitUntil(callback: () => Promise<boolean> | boolean): Promise<void> {

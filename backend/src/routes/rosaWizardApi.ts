@@ -37,7 +37,7 @@ export async function getAwsAccountIds(req: Http2ServerRequest, res: Http2Server
       })
 
       req.on('end', async () => {
-        data = chucks.join()
+        data = chucks.join('')
         const body: Payload = JSON.parse(data) as Payload
 
         const accessTokenSSO = await getOcmServiceToken(body.service_account_id, body.service_account_secret)
@@ -73,7 +73,7 @@ export async function getAwsBillingAccountIds(req: Http2ServerRequest, res: Http
       })
 
       req.on('end', async () => {
-        data = chucks.join()
+        data = chucks.join('')
         const body = JSON.parse(data) as Payload
 
         const accessTokenSSO = await getOcmServiceToken(body.service_account_id, body.service_account_secret)

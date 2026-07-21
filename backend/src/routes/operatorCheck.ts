@@ -41,7 +41,7 @@ export function operatorCheck(req: Http2ServerRequest, res: Http2ServerResponse)
       })
       req.on('end', () => {
         let operatorCheckRequest: unknown
-        const data = chunks.join()
+        const data = chunks.join('')
         try {
           operatorCheckRequest = JSON.parse(data) as unknown
         } catch (err) {
