@@ -7,8 +7,8 @@ import {
   CloudProviderResponse,
   ClusterNameCheckPayload,
   ClusterNameUniquenessResponse,
-  OrganizationQuotaResponse,
   OCMRoleResponse,
+  OrganizationQuotaResponse,
   RoleARNsResponse,
   UserRoleResponse,
   WizardBasePayload,
@@ -52,30 +52,16 @@ export function getWizardData<TResponse, TPayload extends Record<string, unknown
 export const getWizardAWSAccountIds = (
   client_id: string,
   client_secret: string,
-  signal?: AbortSignal,
-  additionalData?: Record<string, unknown>
+  signal?: AbortSignal
 ): Promise<AwsAccountIdsResponse> =>
-  getWizardData<AwsAccountIdsResponse, Record<string, unknown>>(
-    client_id,
-    client_secret,
-    '/aws-account-ids',
-    signal,
-    additionalData
-  )
+  getWizardData<AwsAccountIdsResponse>(client_id, client_secret, '/aws-account-ids', signal)
 
 export const getWizardAwsBillingAccounts = (
   client_id: string,
   client_secret: string,
-  signal?: AbortSignal,
-  additionalData?: Record<string, unknown>
+  signal?: AbortSignal
 ): Promise<OrganizationQuotaResponse> =>
-  getWizardData<OrganizationQuotaResponse, Record<string, unknown>>(
-    client_id,
-    client_secret,
-    '/aws-billing-accounts',
-    signal,
-    additionalData
-  )
+  getWizardData<OrganizationQuotaResponse>(client_id, client_secret, '/aws-billing-accounts', signal)
 
 export const getWizardOIDCConfigs = (
   client_id: string,
@@ -123,40 +109,20 @@ export const getWizardRoleARNs = (
   client_id: string,
   client_secret: string,
   signal?: AbortSignal,
-  additionalData?: Record<string, unknown>
+  additionalData?: AwsAccountPayload
 ): Promise<RoleARNsResponse> =>
-  getWizardData<RoleARNsResponse, Record<string, unknown>>(
-    client_id,
-    client_secret,
-    '/sts-role-arns',
-    signal,
-    additionalData
-  )
+  getWizardData<RoleARNsResponse, AwsAccountPayload>(client_id, client_secret, '/sts-role-arns', signal, additionalData)
 
 export const getWizardOCMRoleARN = (
   client_id: string,
   client_secret: string,
   signal?: AbortSignal,
-  additionalData?: Record<string, unknown>
+  additionalData?: AwsAccountPayload
 ): Promise<OCMRoleResponse> =>
-  getWizardData<OCMRoleResponse, Record<string, unknown>>(
-    client_id,
-    client_secret,
-    '/sts-ocm-role',
-    signal,
-    additionalData
-  )
+  getWizardData<OCMRoleResponse, AwsAccountPayload>(client_id, client_secret, '/sts-ocm-role', signal, additionalData)
 
 export const getWizardUserRoleARN = (
   client_id: string,
   client_secret: string,
-  signal?: AbortSignal,
-  additionalData?: Record<string, unknown>
-): Promise<UserRoleResponse> =>
-  getWizardData<UserRoleResponse, Record<string, unknown>>(
-    client_id,
-    client_secret,
-    '/sts-user-role',
-    signal,
-    additionalData
-  )
+  signal?: AbortSignal
+): Promise<UserRoleResponse> => getWizardData<UserRoleResponse>(client_id, client_secret, '/sts-user-role', signal)

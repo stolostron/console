@@ -147,3 +147,7 @@ export interface UserRoleResponse {
   kind: string
   value: string
 }
+
+export type AwsAccountPayload = {
+  aws_account_id: string
+}

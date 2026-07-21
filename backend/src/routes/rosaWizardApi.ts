@@ -250,7 +250,7 @@ export async function getRoleARNs(req: Http2ServerRequest, res: Http2ServerRespo
 
       req.on('end', async () => {
         try {
-          data = chucks.join()
+          data = chucks.join('')
           const body = JSON.parse(data) as WithAwsAccount
 
           const accessTokenSSO = await getOcmServiceToken(body.service_account_id, body.service_account_secret)
@@ -290,7 +290,7 @@ export async function getOCMRoleARN(req: Http2ServerRequest, res: Http2ServerRes
 
       req.on('end', async () => {
         try {
-          data = chucks.join()
+          data = chucks.join('')
           const body = JSON.parse(data) as WithAwsAccount
 
           const accessTokenSSO = await getOcmServiceToken(body.service_account_id, body.service_account_secret)
@@ -330,20 +330,23 @@ export async function getUserRole(req: Http2ServerRequest, res: Http2ServerRespo
 
       req.on('end', async () => {
         try {
-          data = chucks.join()
+          data = chucks.join('')
           const body = JSON.parse(data) as Payload
 
           const accessTokenSSO = await getOcmServiceToken(body.service_account_id, body.service_account_secret)
 
           // get current account and ID
           const accountPath = `${API_URL}/api/accounts_mgmt/v1/current_account`
-          const request = (await jsonRequest(accountPath, accessTokenSSO).catch((err: Error) => {
-            logger.error({ msg: 'Failed to fetch account', error: err.message })
-            return { error: err.message }
-          })) as OrgType
+          let request: OrgType
+          try {
+            request = await jsonRequest(accountPath, accessTokenSSO)
+          } catch (err) {
+            logger.error({ msg: 'Failed to fetch account', error: (err as Error).message })
+            respondInternalServerError(req, res)
+            return
+          }
 
-          const userRolesPath = `${API_URL}/api/accounts_mgmt/v1/accounts/${request.id}/labels/sts_user_role
-`
+          const userRolesPath = `${API_URL}/api/accounts_mgmt/v1/accounts/${request.id}/labels/sts_user_role`
 
           const accReq = await jsonRequest(userRolesPath, accessTokenSSO).catch((err: Error) => {
             logger.error({ msg: 'Error gettting account info', error: err.message })

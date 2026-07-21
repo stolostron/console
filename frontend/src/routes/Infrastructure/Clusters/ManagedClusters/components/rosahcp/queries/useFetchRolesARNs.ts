@@ -19,9 +19,9 @@ const toWizardRoles = (normalizedRoles: NormalizedAccountRole[]): WizardAccountR
   }))
 }
 
-const normalizedAWSAccountRole = (arrayOfRoleItems: AccountRoleARN[], prefix: any): NormalizedAccountRole =>
+const normalizedAWSAccountRole = (arrayOfRoleItems: AccountRoleARN[], prefix: string): NormalizedAccountRole =>
   arrayOfRoleItems.reduce(
-    (roleObj: NormalizedAccountRole, { type, arn, roleVersion, ...otherRoleAttributes }: any) => ({
+    (roleObj: NormalizedAccountRole, { type, arn, roleVersion, ...otherRoleAttributes }) => ({
       ...roleObj,
       ...otherRoleAttributes,
       version: roleVersion,
