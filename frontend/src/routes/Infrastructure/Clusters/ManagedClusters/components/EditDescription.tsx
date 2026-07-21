@@ -1,7 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { IResource } from '../../../../../resources'
 import { patchResource } from '../../../../../resources/utils'
-import { AcmAlertContext, AcmAlertGroup, AcmForm, AcmModal, AcmSubmit } from '../../../../../ui-components'
+import {
+  AcmAlertContext,
+  AcmAlertGroup,
+  AcmForm,
+  AcmModal,
+  AcmSubmit,
+  IAlertContext,
+} from '../../../../../ui-components'
 import {
   ActionGroup,
   Button,
@@ -33,6 +40,52 @@ export function EditDescription(props: { resource?: IResource; displayName?: str
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen])
+
+  const handleSave = (alertContext: IAlertContext) => {
+    alertContext.clearAlerts()
+    const resource: IResource = {
+      apiVersion: props.resource!.apiVersion,
+      kind: props.resource!.kind,
+      metadata: {
+        name: props.resource!.metadata!.name,
+        namespace: props.resource!.metadata?.namespace,
+      },
+    }
+
+    const patch: { op: string; path: string; value?: unknown }[] = []
+    const key = CLUSTER_DESCRIPTION_ANNOTATION.replaceAll('/', '~1')
+
+    if (props.resource?.metadata?.annotations?.[CLUSTER_DESCRIPTION_ANNOTATION]) {
+      patch.push({
+        op: 'remove',
+        path: `/metadata/annotations/${key}`,
+      })
+    }
+
+    if (description.trim()) {
+      patch.push({
+        op: 'add',
+        path: `/metadata/annotations/${key}`,
+        value: description.trim(),
+      })
+    }
+
+    if (description.trim() && !props.resource?.metadata?.annotations) {
+      patch.unshift({
+        op: 'add',
+        path: '/metadata/annotations',
+        value: {},
+      })
+    }
+
+    return patchResource(resource, patch)
+      .promise.then(() => {
+        props.close()
+      })
+      .catch((err) => {
+        alertContext.addAlert(getErrorInfo(err, t))
+      })
+  }
 
   const insertMarkdown = (prefix: string, suffix: string = prefix) => {
     const textarea = textAreaRef.current
@@ -111,50 +164,7 @@ export function EditDescription(props: { resource?: IResource; displayName?: str
               <AcmSubmit
                 id="save-description"
                 variant="primary"
-                onClick={() => {
-                  alertContext.clearAlerts()
-                  const resource: IResource = {
-                    apiVersion: props.resource!.apiVersion,
-                    kind: props.resource!.kind,
-                    metadata: {
-                      name: props.resource!.metadata!.name,
-                      namespace: props.resource!.metadata?.namespace,
-                    },
-                  }
-
-                  const patch: { op: string; path: string; value?: unknown }[] = []
-
-                  if (props.resource?.metadata?.annotations?.[CLUSTER_DESCRIPTION_ANNOTATION]) {
-                    const key = CLUSTER_DESCRIPTION_ANNOTATION.replaceAll('/', '~1')
-                    patch.push({
-                      op: 'remove',
-                      path: `/metadata/annotations/${key}`,
-                    })
-                  }
-                  if (description.trim()) {
-                    const key = CLUSTER_DESCRIPTION_ANNOTATION.replaceAll('/', '~1')
-                    patch.push({
-                      op: 'add',
-                      path: `/metadata/annotations/${key}`,
-                      value: description,
-                    })
-                    if (!props.resource?.metadata?.annotations) {
-                      patch.unshift({
-                        op: 'add',
-                        path: '/metadata/annotations',
-                        value: {},
-                      })
-                    }
-                  }
-
-                  return patchResource(resource, patch)
-                    .promise.then(() => {
-                      props.close()
-                    })
-                    .catch((err) => {
-                      alertContext.addAlert(getErrorInfo(err, t))
-                    })
-                }}
+                onClick={() => handleSave(alertContext)}
                 label={t('save')}
                 processingLabel={t('saving')}
               />
