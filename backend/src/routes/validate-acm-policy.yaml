@@ -1,0 +1,52 @@
+# ACM Policy Validation Proposal — analysis only, no changes applied.
+# Validates ACM policy YAML for correctness by checking syntax, API versions,
+# field references, and cluster prerequisites.
+#
+# This file is kept for reference. The backend constructs the Proposal CR
+# programmatically — see policy-analysis.ts.
+#
+# Prerequisites:
+#   - Agentic operator installed (hack/quickstart/install.sh)
+#   - LLMProvider + Agent configured
+#   - ACM installed with local-cluster registered
+#
+# Usage:
+#   oc apply -f proposals/validate-acm-policy.yaml
+#   oc get proposals validate-acm-policy -n openshift-lightspeed -w
+#   RESULT=$(oc get proposal validate-acm-policy -n openshift-lightspeed \
+#     -o jsonpath='{.status.steps.analysis.results[0].name}')
+#   oc get analysisresult "$RESULT" -n openshift-lightspeed \
+#     -o jsonpath='{.status.options[0].diagnosis.summary}'
+apiVersion: agentic.openshift.io/v1alpha1
+kind: Proposal
+metadata:
+  name: validate-acm-policy
+  namespace: openshift-lightspeed
+spec:
+  request: |
+    Validate the following ACM Policy resources for correctness. Do NOT apply them.
+    Check for: syntax errors, correct API versions, proper field references,
+    valid placement targeting, and whether the policy logic correctly matches
+    the resources and intent expressed in the submitted policy.
+
+    Also verify:
+    - Do referenced managed clusters, placements, placement rules, and namespaces exist?
+    - Are the ACM Policy CRDs installed on this cluster?
+
+    Policy resources:
+    ```json
+    [... policy resources inserted here at runtime ...]
+    ```
+  analysisOutput:
+    schema:
+      type: object
+      required:
+        - readyToDeploy
+      properties:
+        readyToDeploy:
+          type: boolean
+          description: >-
+            Whether this policy is safe to deploy. Check for: syntax errors,
+            correct API versions, proper field references, valid placement targeting.
+  analysis:
+    agent: default
