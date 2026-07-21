@@ -10,6 +10,11 @@ const lastDiffNavigator = (
     lastDiffNavigator: { current: { previous: jest.Mock; next: jest.Mock } | null }
   }
 ).lastDiffNavigator
+const lastEditorLayout = (
+  MonacoEditorReact as typeof MonacoEditorReact & {
+    lastEditorLayout: { current: jest.Mock | null }
+  }
+).lastEditorLayout
 import userEvent from '@testing-library/user-event'
 import get from 'lodash/get'
 import set from 'lodash/set'
@@ -469,6 +474,92 @@ describe('SyncEditor component', () => {
       fireEvent(input.parentElement ?? input, paste)
       await new Promise((resolve) => setTimeout(resolve, 500))
       expect(input.value).toContain('-----BEGIN CERTIFICATE-----')
+    })
+  })
+
+  describe('layoutEditor resize handling', () => {
+    const originalClientWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientWidth')
+    const originalClientHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'clientHeight')
+    let resizeCallback: (() => void) | null = null
+
+    beforeEach(() => {
+      Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, value: 800 })
+      Object.defineProperty(HTMLElement.prototype, 'clientHeight', { configurable: true, value: 600 })
+      resizeCallback = null
+      lastEditorLayout.current = null
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const mod = require('@react-hook/resize-observer')
+      jest.spyOn(mod, 'default').mockImplementation((_ref: any, cb: any) => {
+        resizeCallback = cb
+      })
+    })
+
+    afterEach(() => {
+      jest.restoreAllMocks()
+      if (originalClientWidth) {
+        Object.defineProperty(HTMLElement.prototype, 'clientWidth', originalClientWidth)
+      }
+      if (originalClientHeight) {
+        Object.defineProperty(HTMLElement.prototype, 'clientHeight', originalClientHeight)
+      }
+    })
+
+    it('calls editor.layout with container dimensions on mount', async () => {
+      const clone = cloneDeep(propsNewResource)
+      render(<SyncEditor {...clone} />)
+      const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
+      await waitFor(() => expect(input).not.toHaveValue(''))
+      expect(lastEditorLayout.current).toHaveBeenCalledWith({ width: 800, height: 564 })
+    })
+
+    it('skips layout when resize fires but dimensions have not changed', async () => {
+      const clone = cloneDeep(propsNewResource)
+      render(<SyncEditor {...clone} />)
+      const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
+      await waitFor(() => expect(input).not.toHaveValue(''))
+      lastEditorLayout.current!.mockClear()
+      await act(async () => {
+        resizeCallback?.()
+        await new Promise((resolve) => requestAnimationFrame(resolve))
+      })
+      expect(lastEditorLayout.current).not.toHaveBeenCalled()
+    })
+
+    it('re-layouts when activeEditor changes to diff editor', async () => {
+      const clone = cloneDeep(propsNewResource)
+      clone.defaultResources = cloneDeep(clone.resources)
+      set(clone, 'resources.0.spec.disabled', false)
+      render(<SyncEditor {...clone} />)
+      const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
+      await waitFor(() => expect(input).not.toHaveValue(''))
+      const originalLayoutMock = lastEditorLayout.current!
+      expect(originalLayoutMock).toHaveBeenCalledWith({ width: 800, height: 564 })
+      await act(async () => {
+        userEvent.click(screen.getByRole('checkbox', { name: /show changes/i }))
+      })
+      await waitFor(() => expect(screen.getByRole('textbox', { name: /monaco-diff/i })).toBeInTheDocument())
+      expect(lastEditorLayout.current).not.toBe(originalLayoutMock)
+    })
+
+    it('skips layout when container has zero dimensions', async () => {
+      Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, value: 0 })
+      Object.defineProperty(HTMLElement.prototype, 'clientHeight', { configurable: true, value: 0 })
+      const clone = cloneDeep(propsNewResource)
+      render(<SyncEditor {...clone} />)
+      const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
+      await waitFor(() => expect(input).not.toHaveValue(''))
+      const calls = lastEditorLayout.current!.mock.calls
+      const hasPositiveDimensions = calls.some((args: any[]) => args[0] && args[0].width > 0 && args[0].height > 0)
+      expect(hasPositiveDimensions).toBe(false)
+    })
+
+    it('sets condensed mode when width is below 500', async () => {
+      Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, value: 400 })
+      Object.defineProperty(HTMLElement.prototype, 'clientHeight', { configurable: true, value: 300 })
+      const clone = cloneDeep(propsNewResource)
+      render(<SyncEditor {...clone} />)
+      const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
+      await waitFor(() => expect(input).not.toHaveValue(''))
     })
   })
 })

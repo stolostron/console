@@ -36,7 +36,7 @@ export function ansibleTower(req: Http2ServerRequest, res: Http2ServerResponse):
         chucks.push(chuck)
       })
       req.on('end', () => {
-        const body = chucks.join()
+        const body = chucks.join('')
         ansibleCredential = JSON.parse(body) as AnsibleCredential
         let towerUrl = null
         try {
