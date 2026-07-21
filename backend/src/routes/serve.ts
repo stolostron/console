@@ -81,6 +81,7 @@ export async function serve(req: Http2ServerRequest, res: Http2ServerResponse): 
     // Don't send content for cache revalidation
     if (req.headers['if-modified-since'] === modificationTime) {
       res.writeHead(constants.HTTP_STATUS_NOT_MODIFIED).end()
+      return
     }
 
     if (/\bbr\b/.test(acceptEncoding)) {

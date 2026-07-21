@@ -64,6 +64,8 @@ export function respondInternalServerError(_req: Http2ServerRequest, res: Http2S
 export function catchInternalServerError(res: Http2ServerResponse): (err: unknown) => void {
   return (err) => {
     logger.error(err)
-    respondInternalServerError(undefined, res)
+    if (!res.headersSent) {
+      respondInternalServerError(undefined, res)
+    }
   }
 }
