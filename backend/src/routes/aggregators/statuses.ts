@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
+import { parseRequestJsonBody } from '../../lib/body-parser'
 import type { FilterCounts } from '../../lib/pagination'
 import { getAuthorizedResources } from '../events'
 import {
@@ -10,6 +11,8 @@ import {
   TransformColumns,
 } from './applications'
 import { systemAppNamespacePrefixes } from './utils'
+import { respondInternalServerError } from '../../lib/respond'
+import { logger } from '../../lib/logger'
 
 export interface IRequestStatuses {
   clusters?: string[]
@@ -28,45 +31,45 @@ export function requestAggregatedStatuses(
   token: string,
   getItems: () => Promise<ICompressedResource[]>
 ): void {
-  const chucks: string[] = []
-  req.on('data', (chuck: string) => {
-    chucks.push(chuck)
-  })
-  req.on('end', async () => {
-    const body = chucks.join('')
-    const { clusters = [] } = JSON.parse(body) as IRequestStatuses
-    let items = await getItems()
+  void parseRequestJsonBody<IRequestStatuses>(req)
+    .then(async (parsedBody) => {
+      const { clusters = [] } = parsedBody
+      let items = await getItems()
 
-    // should we filter count by provided cluster names
-    if (clusters.length) {
-      items = items.filter((item) => {
-        return clusters.some((value: string) => item.transform[AppColumns.clusters].indexOf(value) !== -1)
-      })
-    }
-    // filter by rbac
-    const authorizedItems = await getAuthorizedResources(token, items, 0, items.length)
-
-    // count filter entries
-    const filterCounts: FilterCounts = { type: {}, cluster: {}, podStatuses: {}, healthStatus: {}, syncStatus: {} }
-    authorizedItems.forEach((item) => {
-      if (item.transform) {
-        incFilterCounts(filterCounts, 'type', item.transform[TransformColumns.type] as string[])
-        incFilterCounts(filterCounts, 'cluster', item.transform[TransformColumns.clusters] as string[])
-        incStatusCounts(filterCounts, 'healthStatus', item as unknown as ICompressedResource, AppColumns.health)
-        incStatusCounts(filterCounts, 'syncStatus', item as unknown as ICompressedResource, AppColumns.synced)
-        incStatusCounts(filterCounts, 'podStatuses', item as unknown as ICompressedResource, AppColumns.deployed)
+      // should we filter count by provided cluster names
+      if (clusters.length) {
+        items = items.filter((item) => {
+          return clusters.some((value: string) => item.transform[AppColumns.clusters].indexOf(value) !== -1)
+        })
       }
-    })
+      // filter by rbac
+      const authorizedItems = await getAuthorizedResources(token, items, 0, items.length)
 
-    const results: IResultStatuses = {
-      itemCount: authorizedItems.length.toString(),
-      filterCounts,
-      systemAppNSPrefixes: systemAppNamespacePrefixes,
-      loading: false,
-    }
-    res.setHeader('Content-Type', 'application/json')
-    res.end(JSON.stringify(results))
-  })
+      // count filter entries
+      const filterCounts: FilterCounts = { type: {}, cluster: {}, podStatuses: {}, healthStatus: {}, syncStatus: {} }
+      authorizedItems.forEach((item) => {
+        if (item.transform) {
+          incFilterCounts(filterCounts, 'type', item.transform[TransformColumns.type] as string[])
+          incFilterCounts(filterCounts, 'cluster', item.transform[TransformColumns.clusters] as string[])
+          incStatusCounts(filterCounts, 'healthStatus', item as unknown as ICompressedResource, AppColumns.health)
+          incStatusCounts(filterCounts, 'syncStatus', item as unknown as ICompressedResource, AppColumns.synced)
+          incStatusCounts(filterCounts, 'podStatuses', item as unknown as ICompressedResource, AppColumns.deployed)
+        }
+      })
+
+      const results: IResultStatuses = {
+        itemCount: authorizedItems.length.toString(),
+        filterCounts,
+        systemAppNSPrefixes: systemAppNamespacePrefixes,
+        loading: false,
+      }
+      res.setHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify(results))
+    })
+    .catch((err: unknown) => {
+      logger.error(err)
+      respondInternalServerError(req, res)
+    })
 }
 
 // add to filters count that appears in filter dropdown
