@@ -111,13 +111,17 @@ export const useFetchRoleARNs = (selectedSecret: SelectedSecret) => {
       },
     ],
   })
-  const fetch = useCallback(async (accountId: string): Promise<void> => {
+  const fetch = useCallback(async (accountId: string) => {
     setAwsAccountId(accountId)
   }, [])
 
   const refetchAll = useCallback(
     async (accountId: string) => {
-      await Promise.all([fetch(accountId), rolesQuery.refetch(), ocmRoleQuery.refetch(), userRoleQuery.refetch()])
+      if (accountId !== awsAccountId) {
+        fetch(accountId)
+      } else {
+        await Promise.all([fetch(accountId), rolesQuery.refetch(), ocmRoleQuery.refetch(), userRoleQuery.refetch()])
+      }
     },
     // Does not need anything else
     // eslint-disable-next-line react-hooks/exhaustive-deps
