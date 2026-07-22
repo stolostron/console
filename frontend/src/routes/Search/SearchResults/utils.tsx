@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { get } from 'lodash'
 import queryString from 'query-string'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { generatePath, NavigateFunction } from 'react-router'
 import { NavigationPath } from '../../../NavigationPath'
 import { Cluster } from '../../../resources/utils'

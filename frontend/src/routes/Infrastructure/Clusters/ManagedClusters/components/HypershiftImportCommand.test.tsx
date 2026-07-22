@@ -1,4 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { t as t } from '~/lib/test-helpers'
+
 import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { importHostedControlPlaneCluster } from './HypershiftImportCommand'
 import { nockIgnoreApiPaths, nockPostRequest } from '../../../../../lib/nock-util'
@@ -230,10 +232,6 @@ const mockHostedCluster: HostedClusterK8sResource = {
       observedGeneration: 2,
     },
   },
-}
-
-const t = (string: string) => {
-  return string
 }
 
 const toastContextMock: any = {

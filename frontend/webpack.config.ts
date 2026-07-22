@@ -110,6 +110,7 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
           async: true,
           typescript: {
             configFile: isDevelopment ? 'tsconfig.dev.json' : 'tsconfig.json',
+            memoryLimit: 8192,
           },
         }),
       new MonacoWebpackPlugin({ languages: ['yaml'] }),
@@ -183,8 +184,12 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         '/multicloud/virtualmachinesnapshots',
         '/multicloud/virtualmachinerestores',
         '/multicloud/multiclusterhub/components',
+        '/multicloud/multiclusterengine/components',
+        '/multicloud/hypershift-status',
         '/multicloud/vmResourceUsage',
         '/multicloud/managedclusterproxy',
+        '/multicloud/aws-account-ids',
+        '/multicloud/aws-billing-accounts'
       ].map((backendPath) => ({
         path: backendPath,
         target: `https://localhost:${process.env.BACKEND_PORT}`,

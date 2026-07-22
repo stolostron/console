@@ -11,9 +11,12 @@ KUBEVIRT_PORT=${KUBEVIRT_PORT:=""}
 ODF_PORT=${ODF_PORT:=""}
 GITOPS_PORT=${GITOPS_PORT:=""}
 CONSOLE_IMAGE="quay.io/openshift/origin-console:${CONSOLE_VERSION}"
+PIPELINES_PORT=${PIPELINES_PORT:=""}
 
 mkdir -p ocp-console
 oc extract secret/off-cluster-token -n openshift-console --to ocp-console --confirm
+# Console image runs as UID 1001; oc extract writes 0600 so the container cannot read the mount.
+chmod a+r ocp-console/*
 
 if [ -n "${OIDC_ISSUER_URL:-}" ]; then
     BRIDGE_USER_AUTH="oidc"
@@ -23,10 +26,12 @@ if [ -n "${OIDC_ISSUER_URL:-}" ]; then
     # AES requires exactly 16, 24, or 32 bytes; HMAC accepts 32 or 64 bytes
     openssl rand 32 > ocp-console/cookie-encryption-key
     openssl rand 64 > ocp-console/cookie-authentication-key
+    chmod a+r ocp-console/cookie-encryption-key ocp-console/cookie-authentication-key
     BRIDGE_COOKIE_ENCRYPTION_KEY_FILE="/tmp/cookie-encryption-key"
     BRIDGE_COOKIE_AUTHENTICATION_KEY_FILE="/tmp/cookie-authentication-key"
 else
     oc get oauthclient "$OAUTH_CLIENT_NAME" -o jsonpath='{.secret}' > ocp-console/console-client-secret
+    chmod a+r ocp-console/console-client-secret
     BRIDGE_USER_AUTH="openshift"
     BRIDGE_USER_AUTH_OIDC_CLIENT_ID="$OAUTH_CLIENT_NAME"
     BRIDGE_USER_AUTH_OIDC_CLIENT_SECRET_FILE="/tmp/console-client-secret"

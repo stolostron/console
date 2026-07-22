@@ -23,6 +23,7 @@ frontend/packages/react-form-wizard/lib/
 .DS_Store
 
 #ai related files
+.cursor/
 .claude
 test-results
 playwright.config.ts
@@ -31,3 +32,4 @@ e2e-template/*.test.ts
 e2e-template/.auth-state.json
 .omo
 .playwright-mcp
+e2e-scratch/

@@ -116,7 +116,7 @@ hcp create cluster aws \\
             <CodeBlockCode id="code-content">{code}</CodeBlockCode>
           </CodeBlock>
           <Content component="p" style={{ marginTop: '1em' }}>
-            {t('Use the following command to get a list of available parameters: ')}
+            {t('Use the following command to get a list of available parameters:')}
           </Content>
           <CodeBlock actions={Actions(helperCommand, 'helper-command')}>
             <CodeBlockCode id="helper-command">{helperCommand}</CodeBlockCode>

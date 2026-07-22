@@ -14,6 +14,7 @@ import {
   getSimplifiedImageName,
   LOAD_ETCD_CLASSES,
   LOAD_OCP_IMAGES,
+  automationControlData,
   numberedControlNameFunction,
   onChangeConnection,
   onImageChange,
@@ -72,9 +73,10 @@ export const getControlDataKubeVirt = (
   t,
   handleModalToggle,
   warning,
-  includeKlusterletAddonConfig = true,
   localCluster,
-  hypershiftSupportedVersions
+  hypershiftSupportedVersions,
+  includeAutomation = true,
+  includeKlusterletAddonConfig = true
 ) => {
   const controlData = [
     //////////////////////////////////  AI form  //////////////////////////////////
@@ -469,6 +471,9 @@ export const getControlDataKubeVirt = (
       ],
     },
   ]
+  if (includeAutomation) {
+    controlData.push(...automationControlData(t))
+  }
   appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
   if (warning) {
     appendWarning(warning, controlData)

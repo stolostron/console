@@ -11,13 +11,18 @@ import {
   Stack,
   StackItem,
 } from '@patternfly/react-core'
-import { CheckCircleIcon, InProgressIcon, PenIcon } from '@patternfly/react-icons'
+import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon, PenIcon } from '@patternfly/react-icons'
 import { NodePoolK8sResource, ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { TFunction } from 'react-i18next'
 import NodePoolsTable from './NodePoolsTable'
 import './HypershiftClusterInstallProgress.css'
-import { NodePool, NodePoolDefinition } from '../../../../../resources/node-pool'
+import {
+  getNodePoolStatus,
+  NodePool,
+  NodePoolDefinition,
+  type NodePoolStatus,
+  type NodePoolStatusType,
+} from '../../../../../resources/node-pool'
 import { AcmButton } from '../../../../../ui-components'
 import { AddNodePoolModal } from './AddNodePoolModal'
 import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
@@ -25,58 +30,47 @@ import { HypershiftCloudPlatformType } from '../../../../../resources/utils/cons
 import { rbacCreate, useIsAnyNamespaceAuthorized } from '../../../../../lib/rbac-util'
 import { onToggle } from '../utils/utils'
 
-export type NodePoolStatus = {
-  type: 'error' | 'pending' | 'ok' | 'warning'
-  text: string
-  icon: React.ReactNode
-}
+export { getNodePoolStatus }
+export type { NodePoolStatus, NodePoolStatusType }
 
-export const getNodePoolStatus = (nodePool: NodePoolK8sResource, t: TFunction): NodePoolStatus => {
-  return nodePool.status?.conditions?.find(({ type }: { type: string }) => type === 'Ready')?.status === 'True'
-    ? {
-        type: 'ok',
-        icon: (
-          <Icon status="success">
-            <CheckCircleIcon />
-          </Icon>
-        ),
-        text: t('Ready'),
-      }
-    : {
-        type: 'pending',
-        icon: <InProgressIcon />,
-        text: t('Not ready'),
-      }
-}
+export const getNodePoolsStatus = (nodePools: NodePoolK8sResource[]): ReactNode => {
+  let worstType: NodePoolStatusType = 'ok'
 
-export const getNodePoolsStatus = (nodePools: NodePoolK8sResource[], t: TFunction): ReactNode => {
-  const nodePoolMap = nodePools.reduce<{
-    [key: string]: { status: NodePoolStatus }
-  }>((acc, np) => {
-    const status = getNodePoolStatus(np, t)
-    acc[np.metadata?.uid || ''] = {
-      status,
+  for (const np of nodePools) {
+    const status = getNodePoolStatus(np)
+    if (status.type === 'error') {
+      return (
+        <Icon status="danger">
+          <ExclamationCircleIcon />
+        </Icon>
+      )
     }
-    return acc
-  }, {})
+    if (status.type === 'warning' && worstType !== 'warning') {
+      worstType = 'warning'
+    } else if (status.type === 'updating' && worstType === 'ok') {
+      worstType = 'updating'
+    } else if (status.type === 'pending' && worstType === 'ok') {
+      worstType = 'pending'
+    }
+  }
 
-  const nodePoolsStatus: { type: string; icon: ReactNode } = {
-    type: 'ok',
-    icon: (
-      <Icon status="success">
-        <CheckCircleIcon />
+  if (worstType === 'warning') {
+    return (
+      <Icon status="warning">
+        <ExclamationTriangleIcon />
       </Icon>
-    ),
+    )
   }
 
-  for (const property in nodePoolMap) {
-    const { status } = nodePoolMap[property]
-    if (status.type === 'pending') {
-      nodePoolsStatus.type = 'pending'
-      nodePoolsStatus.icon = <Spinner size="md" />
-    }
+  if (worstType === 'updating' || worstType === 'pending') {
+    return <Spinner size="md" />
   }
-  return nodePoolsStatus.icon
+
+  return (
+    <Icon status="success">
+      <CheckCircleIcon />
+    </Icon>
+  )
 }
 
 type NodePoolsProgressProps = {
@@ -111,7 +105,7 @@ const NodePoolsProgress = ({ nodePools, ...rest }: NodePoolsProgressProps) => {
   }, [hostedCluster?.spec?.platform?.type, cluster?.hypershift?.isUpgrading, t])
 
   return (
-    <ProgressStep icon={getNodePoolsStatus(nodePools, t)}>
+    <ProgressStep icon={getNodePoolsStatus(nodePools)}>
       <AddNodePoolModal
         cluster={cluster}
         open={openAddNodepoolModal}

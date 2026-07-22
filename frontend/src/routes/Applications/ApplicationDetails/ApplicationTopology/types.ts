@@ -11,7 +11,7 @@ import {
   Subscription,
   IResource,
 } from '../../../../resources'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { ArgoAppDetailsContainerData, ClusterDetailsContainerData } from './ApplicationTopology'
 
 /* Copyright Contributors to the Open Cluster Management project */
@@ -26,7 +26,7 @@ export interface AnsibleJobStatus {
   url?: string | null
 }
 
-export type Translator = (key: string) => string
+export type Translator = TFunction
 export type DetailsList = Array<Record<string, unknown>>
 export type NodeLike = Record<string, any>
 

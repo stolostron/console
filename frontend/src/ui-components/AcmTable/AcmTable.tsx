@@ -1066,11 +1066,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         </PageSection>
       ) : items.length === 0 && !emptyResult ? (
         props.emptyState && (
-          <PageSection
-            hasBodyWrapper={false}
-            variant={props.extraToolbarControls ? 'secondary' : 'default'}
-            padding={{ default: 'noPadding' }}
-          >
+          <PageSection hasBodyWrapper={false} variant="default" padding={{ default: 'noPadding' }}>
             {props.emptyState}
           </PageSection>
         )

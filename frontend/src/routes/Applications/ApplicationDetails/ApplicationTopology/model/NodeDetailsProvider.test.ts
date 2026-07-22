@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { t } from '~/lib/test-helpers'
 import { nodeDetailsProvider, kubeNaming, typeToShapeMap } from './NodeDetailsProvider'
 import {
   setApplicationDeployStatus,
@@ -9,7 +10,6 @@ import {
   setResourceDeployStatus,
   setSubscriptionDeployStatus,
 } from './NodeDetailsProviderStatuses'
-import { TFunction } from 'react-i18next'
 
 // Mock the dependencies (NodeDetailsProvider imports status helpers from NodeDetailsProviderStatuses)
 jest.mock('./NodeDetailsProviderStatuses', () => ({
@@ -43,7 +43,6 @@ jest.mock('../../../../../resources', () => ({
 }))
 
 describe('NodeDetailsProvider', () => {
-  const mockT: TFunction = jest.fn((key: string) => key)
   const mockActiveFilters = {}
   const mockHubClusterName = 'hub-cluster'
 
@@ -60,12 +59,12 @@ describe('NodeDetailsProvider', () => {
 
   describe('nodeDetailsProvider', () => {
     it('should return empty array when node is null', () => {
-      const result = nodeDetailsProvider(null, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(null, mockActiveFilters, t, mockHubClusterName)
       expect(result).toEqual([])
     })
 
     it('should return empty array when node is undefined', () => {
-      const result = nodeDetailsProvider(undefined, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(undefined, mockActiveFilters, t, mockHubClusterName)
       expect(result).toEqual([])
     })
 
@@ -75,7 +74,7 @@ describe('NodeDetailsProvider', () => {
         labels: [],
       }
 
-      const result = nodeDetailsProvider(clusterNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(clusterNode, mockActiveFilters, t, mockHubClusterName)
 
       expect(result).toHaveLength(3) // spacer, label, spacer (setClusterStatus is mocked)
       expect(result[0]).toEqual({ type: 'spacer' })
@@ -99,7 +98,7 @@ describe('NodeDetailsProvider', () => {
         },
       }
 
-      const result = nodeDetailsProvider(packageNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(packageNode, mockActiveFilters, t, mockHubClusterName)
 
       expect(result.length).toBeGreaterThan(3)
       expect(result[0]).toEqual({ type: 'spacer' })
@@ -114,8 +113,8 @@ describe('NodeDetailsProvider', () => {
 
     it('should call setClusterStatus for cluster type nodes', () => {
       const clusterNode = { type: 'cluster', labels: [] }
-      nodeDetailsProvider(clusterNode, mockActiveFilters, mockT, mockHubClusterName)
-      expect(setClusterStatus).toHaveBeenCalledWith(clusterNode, expect.any(Array), mockT, mockHubClusterName)
+      nodeDetailsProvider(clusterNode, mockActiveFilters, t, mockHubClusterName)
+      expect(setClusterStatus).toHaveBeenCalledWith(clusterNode, expect.any(Array), t, mockHubClusterName)
     })
 
     it('should render git ApplicationSet source rows, sync policy (automated + sync options), and labels', () => {
@@ -147,7 +146,7 @@ describe('NodeDetailsProvider', () => {
         },
       }
 
-      const result = nodeDetailsProvider(gitNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(gitNode, mockActiveFilters, t, mockHubClusterName)
 
       expect(detail(result, 'Repository', 'https://git.example/repo')).toBe(true)
       expect(detail(result, 'Chart name', ' my-chart ')).toBe(true)
@@ -176,7 +175,7 @@ describe('NodeDetailsProvider', () => {
           raw: { spec: { template: { spec: {} } } },
         },
       }
-      const result = nodeDetailsProvider(chartNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(chartNode, mockActiveFilters, t, mockHubClusterName)
       expect(detail(result, 'Repository', 'oci://quay.io/chart')).toBe(true)
     })
 
@@ -186,7 +185,7 @@ describe('NodeDetailsProvider', () => {
         labels: [],
         specs: { resources: { not: 'array' } as unknown as unknown[] },
       }
-      const result = nodeDetailsProvider(gitNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(gitNode, mockActiveFilters, t, mockHubClusterName)
       expect(result.filter((d) => (d as { labelValue?: string }).labelValue === 'Repository')).toHaveLength(0)
     })
 
@@ -213,7 +212,7 @@ describe('NodeDetailsProvider', () => {
           },
         },
       }
-      const result = nodeDetailsProvider(gitNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(gitNode, mockActiveFilters, t, mockHubClusterName)
       expect(result.filter((d) => (d as { labelValue?: string }).labelValue === 'Prune').length).toBeGreaterThanOrEqual(
         1
       )
@@ -240,7 +239,7 @@ describe('NodeDetailsProvider', () => {
           },
         },
       }
-      const result = nodeDetailsProvider(gitNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(gitNode, mockActiveFilters, t, mockHubClusterName)
       expect(
         result.some(
           (d) =>
@@ -270,7 +269,7 @@ describe('NodeDetailsProvider', () => {
           },
         },
       }
-      const result = nodeDetailsProvider(gitNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(gitNode, mockActiveFilters, t, mockHubClusterName)
       expect(detail(result, 'Enabled', 'true')).toBe(true)
       expect(detail(result, 'Self-heal', 'false')).toBe(true)
       expect(detail(result, 'Prune', 'false')).toBe(true)
@@ -295,7 +294,7 @@ describe('NodeDetailsProvider', () => {
           },
         },
       }
-      const result = nodeDetailsProvider(gitNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(gitNode, mockActiveFilters, t, mockHubClusterName)
       expect(detail(result, 'Allow empty', 'true')).toBe(true)
     })
 
@@ -308,7 +307,7 @@ describe('NodeDetailsProvider', () => {
           raw: { spec: { template: { spec: { syncPolicy: {} } } } },
         },
       }
-      const result = nodeDetailsProvider(gitNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(gitNode, mockActiveFilters, t, mockHubClusterName)
       expect(
         result.some(
           (d) =>
@@ -345,7 +344,7 @@ describe('NodeDetailsProvider', () => {
         },
       }
 
-      nodeDetailsProvider(deploymentNode, mockActiveFilters, mockT, mockHubClusterName)
+      nodeDetailsProvider(deploymentNode, mockActiveFilters, t, mockHubClusterName)
 
       expect(setApplicationDeployStatus).toHaveBeenCalled()
       expect(setSubscriptionDeployStatus).toHaveBeenCalled()
@@ -374,7 +373,7 @@ describe('NodeDetailsProvider', () => {
         },
       }
 
-      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, t, mockHubClusterName)
       expect(detail(result, 'API Version', 'apps/v1')).toBe(true)
     })
 
@@ -399,7 +398,7 @@ describe('NodeDetailsProvider', () => {
         },
       }
 
-      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, t, mockHubClusterName)
       expect(detail(result, 'Namespace', 'fallback-ns')).toBe(true)
     })
 
@@ -416,7 +415,7 @@ describe('NodeDetailsProvider', () => {
         },
       }
 
-      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, t, mockHubClusterName)
       expect(detail(result, 'Labels', 'No labels')).toBe(true)
     })
 
@@ -439,7 +438,7 @@ describe('NodeDetailsProvider', () => {
         },
       }
 
-      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, t, mockHubClusterName)
       expect(result.find((d) => (d as { labelValue?: string }).labelValue === 'Labels')).toEqual(
         expect.objectContaining({ type: 'label', labelValue: 'Labels', value: 'a,b' })
       )
@@ -461,7 +460,7 @@ describe('NodeDetailsProvider', () => {
         },
       }
 
-      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, t, mockHubClusterName)
       expect(detail(result, 'Labels', 'No labels')).toBe(true)
     })
 
@@ -491,7 +490,7 @@ describe('NodeDetailsProvider', () => {
         },
       }
 
-      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, mockT, mockHubClusterName)
+      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, t, mockHubClusterName)
       expect(
         result.some(
           (d) =>
@@ -540,7 +539,7 @@ describe('NodeDetailsProvider', () => {
         },
       }
 
-      nodeDetailsProvider(placementNode, mockActiveFilters, mockT, mockHubClusterName)
+      nodeDetailsProvider(placementNode, mockActiveFilters, t, mockHubClusterName)
       expect(mockGetLabels).toHaveBeenCalled()
       expect(mockGetMatchLabels).not.toHaveBeenCalled()
     })
@@ -573,8 +572,279 @@ describe('NodeDetailsProvider', () => {
         },
       }
 
-      nodeDetailsProvider(placementNode, mockActiveFilters, mockT, mockHubClusterName)
+      nodeDetailsProvider(placementNode, mockActiveFilters, t, mockHubClusterName)
       expect(mockGetMatchLabels).toHaveBeenCalled()
+    })
+
+    it('should show numberOfSelectedClusters for placement nodes without decisions (ACM-37230)', () => {
+      const placementNode = {
+        type: 'placement',
+        name: 'appset-placement',
+        clusterName: 'hub',
+        layout: { type: 'placement' },
+        labels: [],
+        specs: {
+          isDesign: true,
+          raw: {
+            apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+            kind: 'Placement',
+            metadata: { name: 'appset-placement' },
+            status: { numberOfSelectedClusters: 3 },
+          },
+        },
+        placement: {
+          kind: 'Placement',
+          spec: { clusterSets: ['dev'] },
+        },
+      }
+
+      const result = nodeDetailsProvider(placementNode, mockActiveFilters, t, mockHubClusterName)
+      expect(detail(result, 'Matched Clusters', 3)).toBe(true)
+    })
+
+    it('should show decisions length for placementDecision nodes (ACM-37230)', () => {
+      const placementDecisionNode = {
+        type: 'placementDecision',
+        name: 'appset-placement-decision',
+        clusterName: 'hub',
+        layout: { type: 'placementDecision' },
+        labels: [],
+        specs: {
+          isDesign: true,
+          raw: {
+            apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+            kind: 'PlacementDecision',
+            metadata: { name: 'appset-placement-decision' },
+            status: {
+              decisions: [{ clusterName: 'c1' }, { clusterName: 'c2' }],
+            },
+          },
+        },
+        placementDecision: {
+          kind: 'PlacementDecision',
+          spec: { clusterSelector: { matchLabels: { env: 'prod' } } },
+        },
+      }
+
+      const result = nodeDetailsProvider(placementDecisionNode, mockActiveFilters, t, mockHubClusterName)
+      expect(detail(result, 'Matched Clusters', 2)).toBe(true)
+    })
+
+    it('should default labels to empty when node.labels is omitted', () => {
+      const clusterNode = { type: 'cluster' }
+      const result = nodeDetailsProvider(clusterNode, mockActiveFilters, t, mockHubClusterName)
+      expect(result).toHaveLength(3)
+      expect(
+        result.some(
+          (d) =>
+            (d as { type?: string; labelValue?: string }).type === 'label' &&
+            (d as { labelValue: string }).labelValue === 'Labels'
+        )
+      ).toBe(false)
+    })
+
+    it('should use empty package name when metadata.name is missing', () => {
+      const packageNode = {
+        type: 'package',
+        labels: [],
+        specs: { raw: { metadata: {} } },
+      }
+      const result = nodeDetailsProvider(packageNode, mockActiveFilters, t, mockHubClusterName)
+      expect(result).toContainEqual({
+        type: 'label',
+        labelValue: 'resource.name',
+        value: '',
+      })
+    })
+
+    it('should default layout to empty object and fall back Type to node type', () => {
+      const deploymentNode = {
+        type: 'deployment',
+        name: 'd1',
+        namespace: 'ns1',
+        // no layout — exercises layout = {}
+        labels: [],
+        specs: {
+          isDesign: true,
+          raw: { metadata: { name: 'd1' } },
+        },
+      }
+      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, t, mockHubClusterName)
+      expect(detail(result, 'Type', 'Deployment')).toBe(true)
+    })
+
+    it('should join multiple namespaces from the kind model', () => {
+      const deploymentNode = {
+        type: 'deployment',
+        name: 'd1',
+        clusterName: 'c1',
+        layout: { type: 'deployment' },
+        labels: [],
+        specs: {
+          isDesign: true,
+          raw: { apiVersion: 'apps/v1', metadata: { name: 'd1' } },
+          deploymentModel: {
+            a: [{ namespace: 'ns-a' }],
+            b: [{ namespace: 'ns-b' }],
+          },
+        },
+      }
+      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, t, mockHubClusterName)
+      expect(detail(result, 'Namespace', 'ns-a,ns-b')).toBe(true)
+    })
+
+    it('should fall back to github-branch and github-path annotation keys', () => {
+      const subscriptionNode = {
+        type: 'subscription',
+        name: 's1',
+        clusterName: 'c1',
+        layout: { type: 'subscription' },
+        labels: [],
+        specs: {
+          isDesign: true,
+          raw: {
+            apiVersion: 'apps.open-cluster-management.io/v1',
+            metadata: {
+              name: 's1',
+              annotations: {
+                'apps.open-cluster-management.io/github-branch': 'legacy-branch',
+                'apps.open-cluster-management.io/github-path': 'legacy-path',
+              },
+            },
+          },
+          subscriptionModel: {},
+        },
+      }
+      const result = nodeDetailsProvider(subscriptionNode, mockActiveFilters, t, mockHubClusterName)
+      expect(
+        result.some(
+          (d) =>
+            (d as { labelValue?: string; value?: unknown }).labelValue === 'Git branch' &&
+            String((d as { value?: unknown }).value).includes('legacy-branch')
+        )
+      ).toBe(true)
+      expect(
+        result.some(
+          (d) =>
+            (d as { labelValue?: string; value?: unknown }).labelValue === 'Git path' &&
+            String((d as { value?: unknown }).value).includes('legacy-path')
+        )
+      ).toBe(true)
+    })
+
+    it('should resolve unknown apiVersion from apiversion alone when apigroup is absent', () => {
+      const deploymentNode = {
+        type: 'deployment',
+        name: 'd1',
+        clusterName: 'c1',
+        layout: { type: 'deployment' },
+        labels: [],
+        specs: {
+          isDesign: true,
+          raw: {
+            apiVersion: 'unknown',
+            kind: 'Deployment',
+            metadata: { name: 'd1' },
+          },
+          deploymentModel: {
+            key: [{ namespace: 'ns1', apiversion: 'v1' }],
+          },
+        },
+      }
+      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, t, mockHubClusterName)
+      expect(detail(result, 'API Version', 'v1')).toBe(true)
+    })
+
+    it('should omit API Version and Cluster when they are missing', () => {
+      const deploymentNode = {
+        type: 'deployment',
+        name: 'd1',
+        namespace: 'ns1',
+        layout: { type: 'deployment' },
+        labels: [],
+        specs: {
+          isDesign: true,
+          raw: { metadata: { name: 'd1' } },
+        },
+      }
+      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, t, mockHubClusterName)
+      // addDetails drops rows whose value is undefined
+      expect(result.find((d) => (d as { labelValue?: string }).labelValue === 'API Version')).toBeUndefined()
+      expect(result.find((d) => (d as { labelValue?: string }).labelValue === 'Cluster')).toBeUndefined()
+      expect(detail(result, 'Type', 'Deployment')).toBe(true)
+      expect(detail(result, 'Namespace', 'ns1')).toBe(true)
+    })
+
+    it('should treat empty resource model as No labels when not design', () => {
+      const deploymentNode = {
+        type: 'deployment',
+        name: 'd1',
+        clusterName: 'c1',
+        layout: { type: 'deployment' },
+        labels: [],
+        specs: {
+          isDesign: false,
+          raw: { apiVersion: 'apps/v1', metadata: { name: 'd1' } },
+          deploymentModel: {},
+        },
+      }
+      const result = nodeDetailsProvider(deploymentNode, mockActiveFilters, t, mockHubClusterName)
+      expect(detail(result, 'Labels', 'No labels')).toBe(true)
+    })
+
+    it('should fall back to placementDecision.status.decisions for Matched Clusters (ACM-37230)', () => {
+      const placementNode = {
+        type: 'placement',
+        name: 'p1',
+        clusterName: 'hub',
+        layout: { type: 'placement' },
+        labels: [],
+        specs: {
+          isDesign: true,
+          raw: {
+            apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+            kind: 'Placement',
+            metadata: { name: 'p1' },
+            status: {},
+          },
+        },
+        placementDecision: {
+          kind: 'PlacementDecision',
+          status: {
+            decisions: [{ clusterName: 'remote-1' }, { clusterName: 'remote-2' }, { clusterName: 'remote-3' }],
+          },
+          spec: { clusterSelector: { matchLabels: { env: 'prod' } } },
+        },
+      }
+      const result = nodeDetailsProvider(placementNode, mockActiveFilters, t, mockHubClusterName)
+      expect(detail(result, 'Matched Clusters', 3)).toBe(true)
+    })
+
+    it('should show Matched Clusters as 0 when no decisions or numberOfSelectedClusters exist (ACM-37230)', () => {
+      const placementNode = {
+        type: 'placement',
+        name: 'p1',
+        clusterName: 'hub',
+        layout: { type: 'placement' },
+        labels: [],
+        specs: {
+          isDesign: true,
+          raw: {
+            apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+            kind: 'Placement',
+            metadata: { name: 'p1' },
+            status: {},
+          },
+        },
+        placementDecision: {
+          kind: 'PlacementDecision',
+          status: {},
+          spec: {},
+        },
+      }
+      const result = nodeDetailsProvider(placementNode, mockActiveFilters, t, mockHubClusterName)
+      expect(detail(result, 'Matched Clusters', 0)).toBe(true)
+      expect(detail(result, 'ClusterSet', 'Not defined')).toBe(true)
     })
   })
 

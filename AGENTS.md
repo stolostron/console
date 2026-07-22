@@ -106,6 +106,10 @@ All source files must start with the copyright header:
 
 The same codebase builds images for ACM (`release-*` branches) and MCE (`backplane-*` branches). The build system automatically fast-forwards commits between paired branches. See the "Active Release Branches" section in `README.md` for the current branch chains. Pull requests should target the first branch in each chain, which is `main` for the current release. Never open a PR directly against a `backplane-*` branch. 
 
+## Best practices
+
+- **Import shorthand** — When adding an import, use ~/ instead of ../../
+
 ## Feature Flags
 
 Features can be enabled/disabled via the `console-config` ConfigMap in the installation namespace. Flags are defined in `frontend/src/utils/flags/consts.ts`.

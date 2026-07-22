@@ -63,9 +63,9 @@ type RouteAgentConnectionDegradedType = 'RouteAgentConnectionDegraded'
 const RouteAgentConnectionDegraded: RouteAgentConnectionDegradedType = 'RouteAgentConnectionDegraded'
 
 export enum SubmarinerStatus {
-  'progressing' = 'progressing',
-  'healthy' = 'healthy',
-  'degraded' = 'degraded',
+  progressing = 'progressing',
+  healthy = 'healthy',
+  degraded = 'degraded',
 }
 
 export const submarinerHealthCheck = (mca: ManagedClusterAddOn) => {

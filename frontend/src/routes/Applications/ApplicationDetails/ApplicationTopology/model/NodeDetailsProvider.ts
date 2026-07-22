@@ -15,7 +15,7 @@ import {
 } from '../helpers/diagram-helpers'
 import { getLabels, getMatchLabels } from '../../../CreateSubscriptionApplication/controlData/ControlDataPlacement'
 import { PlacementKind } from '../../../../../resources'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 
 const resName = 'resource.name'
 const unknonwnApiVersion = 'unknown'
@@ -391,7 +391,12 @@ function addK8Details(
   )
 
   if (type === 'placement' || type === 'placementDecision') {
-    const specNbOfClustersTarget = node?.specs?.raw?.status?.decisions?.length ?? 0
+    const rawStatus = node?.specs?.raw?.status
+    const specNbOfClustersTarget =
+      rawStatus?.decisions?.length ??
+      rawStatus?.numberOfSelectedClusters ??
+      node?.placementDecision?.status?.decisions?.length ??
+      0
 
     // placementDecision
     const clusterSets = node?.placementDecision?.spec?.clusterSets

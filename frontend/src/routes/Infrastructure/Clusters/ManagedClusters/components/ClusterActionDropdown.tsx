@@ -43,7 +43,7 @@ import { importHostedControlPlaneCluster } from './HypershiftImportCommand'
 import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { HostedClusterK8sResourceWithChannel } from '../../../../../resources/hosted-cluster'
 import { HypershiftUpgradeModal } from './HypershiftUpgradeModal'
-import { getNodepoolStatus } from './NodePoolsTable'
+import { hasReadyNodePoolWithUpdate } from '../../../../../resources'
 import { useLocalHubName } from '../../../../../hooks/use-local-hub'
 import { useHypershiftAvailableUpdates } from '../hooks/useHypershiftAvailableUpdates'
 
@@ -77,26 +77,17 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
   const hypershiftAvailableUpdates = useHypershiftAvailableUpdates(cluster)
 
   const isHypershiftUpdateAvailable: boolean = useMemo(() => {
-    //if managed cluster page - cluster, cluster curator and hosted cluster
-    let updateAvailable = false
-    if (cluster?.hypershift?.nodePools && cluster?.hypershift?.nodePools.length > 0) {
-      for (let i = 0; i < cluster?.hypershift?.nodePools.length; i++) {
-        if (
-          getNodepoolStatus(cluster?.hypershift?.nodePools[i]) == 'Ready' &&
-          (cluster?.hypershift?.nodePools[i].status?.version || '') < (cluster.distribution?.ocp?.version || '')
-        ) {
-          updateAvailable = true
-          break
-        }
-      }
-    }
+    const nodePoolUpdateAvailable = hasReadyNodePoolWithUpdate(
+      cluster?.hypershift?.nodePools,
+      cluster?.distribution?.ocp?.version
+    )
 
     //if no nodepool has updates, still check if hcp has updates
-    if (!updateAvailable) {
+    if (!nodePoolUpdateAvailable) {
       return Object.keys(hypershiftAvailableUpdates).length > 0
     }
 
-    return updateAvailable
+    return nodePoolUpdateAvailable
   }, [cluster?.distribution?.ocp?.version, cluster?.hypershift?.nodePools, hypershiftAvailableUpdates])
 
   // Find the hosted cluster resource for this cluster to check if channel is set
@@ -215,6 +206,11 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
   const actions = useMemo(
     () =>
       [
+        {
+          id: ClusterAction.OpenConsole,
+          text: t('cluster.openConsole'),
+          click: (cluster: Cluster) => window.open(cluster.consoleURL, '_blank', 'noopener,noreferrer'),
+        },
         {
           id: ClusterAction.UpdateAutomationTemplate,
           text: t('Update automation template'),

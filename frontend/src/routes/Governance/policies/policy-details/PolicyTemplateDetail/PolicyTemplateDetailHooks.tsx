@@ -14,6 +14,7 @@ import { parseStringMap } from '../../../common/util'
 export function useFetchVapb() {
   const urlParams = useParams()
   const name = urlParams.templateName ?? '-'
+  const kind = urlParams.kind ?? ''
   const apiGroup = urlParams.apiGroup ?? ''
   const { clusterName, template, templateLoading } = useTemplateDetailsContext()
   const [getVapb, { loading, error, data }] = useSearchResultItemsLazyQuery({
@@ -31,7 +32,13 @@ export function useFetchVapb() {
       !data &&
       !error
     ) {
-      const vapbName = apiGroup === 'constraints.gatekeeper.sh' ? `gatekeeper-${name}` : name + '-binding'
+      let vapbNames: string[]
+      if (apiGroup === 'constraints.gatekeeper.sh') {
+        vapbNames = [`gatekeeper-${kind.toLowerCase()}-${name}`]
+      } else {
+        const prefix = kind === 'ClusterPolicy' ? 'cpol' : 'pol'
+        vapbNames = [`${prefix}-${name}-binding`, `${name}-binding`]
+      }
 
       getVapb({
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
@@ -49,7 +56,7 @@ export function useFetchVapb() {
                 },
                 {
                   property: 'name',
-                  values: [vapbName],
+                  values: vapbNames,
                 },
                 {
                   property: 'cluster',
@@ -62,7 +69,7 @@ export function useFetchVapb() {
         },
       })
     }
-  }, [apiGroup, clusterName, name, template, templateLoading, data, loading, error, getVapb])
+  }, [apiGroup, clusterName, name, kind, template, templateLoading, data, loading, error, getVapb])
 
   return { vapbItems: data?.searchResult?.[0]?.items, loading, err: error?.message }
 }

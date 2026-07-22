@@ -2,12 +2,9 @@
 
 import DetailsTable from './DetailsTable'
 import { render, screen } from '@testing-library/react'
+import { t as t } from '~/lib/test-helpers'
 import { waitForText } from '../../../../../lib/test-util'
-import { DetailsTableNode, DetailsTableResourceItem, Translator } from '../types'
-
-const t: Translator = (string: string): string => {
-  return string
-}
+import { DetailsTableNode, DetailsTableResourceItem } from '../types'
 
 describe('DetailsTable', () => {
   const node: DetailsTableNode = {

@@ -66,11 +66,10 @@
     "prepare": "husky install"
   },
   "devDependencies": {
-    "@playwright/test": "^1.61.0",
-    "@types/node": "^24.13.2",
-    "concurrently": "9.2.3",
+    "@playwright/test": "^1.61.1",
+    "@types/node": "^24.13.3",
+    "concurrently": "9.2.4",
     "dotenv": "^17.4.2",
-    "eslint-plugin-i18next": "^6.1.4",
     "husky": "7.0.4",
     "lint-staged": "^13.3.0",
     "ts-node": "^10.9.2",

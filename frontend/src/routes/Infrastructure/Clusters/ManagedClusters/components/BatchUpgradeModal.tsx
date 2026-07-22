@@ -248,7 +248,7 @@ export function BatchUpgradeModal(props: {
                           target="_blank"
                           style={{ padding: 0, fontSize: '14px' }}
                         >
-                          {t('update.table.update.risk.link', [insightsRiskCount])}
+                          {t('update.table.update.risk.link', { 0: insightsRiskCount })}
                           <ExternalLinkAltIcon style={{ marginLeft: '8px' }} />
                         </AcmButton>
                       </div>
@@ -257,7 +257,7 @@ export function BatchUpgradeModal(props: {
                 }
               >
                 <Button variant="link" isInline style={{ padding: 0, fontSize: '14px' }}>
-                  {t('update.table.update.risk.link', [totalRiskCount])}
+                  {t('update.table.update.risk.link', { 0: totalRiskCount })}
                 </Button>
               </Popover>
             )

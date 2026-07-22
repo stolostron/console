@@ -79,6 +79,8 @@ export enum NavigationPath {
   clusters = '/multicloud/infrastructure/clusters',
   managedClusters = '/multicloud/infrastructure/clusters/managed',
   createAWSControlPlane = '/multicloud/infrastructure/clusters/create/aws/control-plane',
+  prerequisites = '/multicloud/infrastructure/clusters/create/prerequisites',
+  createROSAHCP = '/multicloud/infrastructure/clusters/create/aws/hcp',
   createBMControlPlane = '/multicloud/infrastructure/clusters/create/hostinventory/control-plane',
   createKubeVirtControlPlane = '/multicloud/infrastructure/clusters/create/kubevirt/control-plane',
   createDiscoverHost = '/multicloud/infrastructure/clusters/create/discover-host',

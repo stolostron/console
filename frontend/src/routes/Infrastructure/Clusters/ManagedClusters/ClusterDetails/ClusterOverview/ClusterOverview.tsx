@@ -380,9 +380,8 @@ export function ClusterOverviewPageContent() {
       ? getAIClusterProperties(clusterDeployment, agentClusterInstall)
       : [
           ...clusterClaimedBySetPool,
-          ...(!cluster?.isHypershift &&
-          (cluster?.hasAutomationTemplate ||
-            (cluster && clusterSupportsAction(cluster, ClusterAction.UpdateAutomationTemplate)))
+          ...(cluster?.hasAutomationTemplate ||
+          (cluster && clusterSupportsAction(cluster, ClusterAction.UpdateAutomationTemplate))
             ? [clusterProperties.automationTemplate]
             : []),
         ]),
@@ -404,11 +403,25 @@ export function ClusterOverviewPageContent() {
 
   let details = <ProgressStepBar />
   if (cluster?.isHypershift) {
-    details = <HypershiftClusterDetails handleModalToggle={handleModalToggle} />
+    // ProgressStepBar shows ClusterCurator install pre/post hook status (pending, running, succeeded,
+    // failed) and log links—the same visibility standalone OCP clusters already have. HypershiftClusterDetails
+    // only covers control plane and node pool progress. ProgressStepBar renders null when not in an install
+    // hook flow, so ready clusters are unaffected. Upgrade hook status is shown in DistributionField.
+    details = (
+      <>
+        <ProgressStepBar />
+        <HypershiftClusterDetails handleModalToggle={handleModalToggle} />
+      </>
+    )
   }
   if (cluster?.provider && [Provider.hostinventory, Provider.nutanix].includes(cluster.provider)) {
     if (cluster.isHypershift) {
-      details = <AIHypershiftClusterDetails />
+      details = (
+        <>
+          <ProgressStepBar />
+          <AIHypershiftClusterDetails />
+        </>
+      )
     } else if (clusterDeployment) {
       // Do not display alert or AIClusterDetails for imported Nutanix clusters (will not have a ClusterDeployment)
       if (!agentClusterInstall) {

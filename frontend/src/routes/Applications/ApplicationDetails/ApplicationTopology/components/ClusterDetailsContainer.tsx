@@ -19,7 +19,7 @@ import {
   ClusterStatusIcon,
   ResourceAction,
 } from '../types'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 
 /**
  * ClusterDetailsContainer component displays detailed information about clusters
@@ -414,7 +414,7 @@ class ClusterDetailsContainer extends Component<ClusterDetailsContainerProps, Cl
           onClick={() => this.processActionLink(resource)}
           onKeyDown={(event) => this.handleKeyPress(resource, event)}
         >
-          {t('Open cluster console')}
+          {t('cluster.openConsole')}
           <svg width="12px" height="12px" style={{ marginLeft: '8px', stroke: '#0066CC' }}>
             <use href="#drawerShapes_carbonLaunch" className="label-icon" />
           </svg>
