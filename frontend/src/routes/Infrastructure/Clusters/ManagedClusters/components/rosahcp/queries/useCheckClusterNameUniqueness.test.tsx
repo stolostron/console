@@ -72,7 +72,7 @@ describe('useClusterNameUniquenessCheck', () => {
       error: null,
       isFetching: false,
     })
-    expect(mockGetWizardClusterNameUniqueness).toHaveBeenCalledWith('test-client-id', 'test-client-secret', {
+    expect(mockGetWizardClusterNameUniqueness).toHaveBeenCalledWith('test-client-id', 'test-client-secret', undefined, {
       cluster_name: 'unique-cluster',
       region: undefined,
     })
@@ -104,7 +104,7 @@ describe('useClusterNameUniquenessCheck', () => {
       await result.current.checkClusterNameUniqueness('my-cluster', 'us-east-1')
     })
 
-    expect(mockGetWizardClusterNameUniqueness).toHaveBeenCalledWith('test-client-id', 'test-client-secret', {
+    expect(mockGetWizardClusterNameUniqueness).toHaveBeenCalledWith('test-client-id', 'test-client-secret', undefined, {
       cluster_name: 'my-cluster',
       region: 'us-east-1',
     })
