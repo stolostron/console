@@ -124,7 +124,7 @@ export const useFetchRoleARNs = (selectedSecret: SelectedSecret) => {
       if (accountId !== awsAccountId) {
         fetch(accountId)
       } else {
-        await Promise.all([fetch(accountId), refetchRoles(), refetchOcmRole(), refetchUserRole()])
+        await Promise.all([refetchRoles(), refetchOcmRole(), refetchUserRole()])
       }
     },
     [awsAccountId, fetch, refetchRoles, refetchOcmRole, refetchUserRole]
