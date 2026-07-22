@@ -1,5 +1,36 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+export interface CloudRegion {
+  kind?: string
+  id?: string
+  href?: string
+  ccs_only?: boolean
+  kms_location_id?: string
+  kms_location_name?: string
+  cloud_provider?: CloudProvider
+  display_name?: string
+  enabled?: boolean
+  govcloud?: boolean
+  name?: string
+  supports_hypershift?: boolean
+  supports_multi_az?: boolean
+}
+
+export interface CloudProvider {
+  kind?: string
+  id?: string
+  href?: string
+  display_name?: string
+  name?: string
+  regions?: CloudRegion[]
+}
+
+export interface CloudProviderResponse {
+  items?: CloudProvider[]
+  page?: number
+  size?: number
+  total?: number
+}
 export interface OrganizationLabel {
   id: string
   internal: boolean

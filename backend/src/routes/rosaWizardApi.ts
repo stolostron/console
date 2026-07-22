@@ -41,23 +41,28 @@ export async function getAwsAccountIds(req: Http2ServerRequest, res: Http2Server
       })
 
       req.on('end', async () => {
-        data = chucks.join('')
-        const body: Payload = JSON.parse(data) as Payload
+        try {
+          data = chucks.join('')
+          const body: Payload = JSON.parse(data) as Payload
 
-        const accessTokenSSO = await getOcmServiceToken(body.service_account_id, body.service_account_secret)
-        const orgPath = `${API_URL}/api/accounts_mgmt/v1/current_account`
-        const getOrg = (await jsonRequest(orgPath, accessTokenSSO).catch((err: Error) => {
-          logger.error({ msg: 'Error gettting account info', error: err.message })
-        })) as OrgType
-        const orgId = getOrg.organization.id
-        const accountPath = `${API_URL}/api/accounts_mgmt/v1/organizations/${orgId}/labels`
+          const accessTokenSSO = await getOcmServiceToken(body.service_account_id, body.service_account_secret)
+          const orgPath = `${API_URL}/api/accounts_mgmt/v1/current_account`
+          const getOrg = (await jsonRequest(orgPath, accessTokenSSO).catch((err: Error) => {
+            logger.error({ msg: 'Error gettting account info', error: err.message })
+          })) as OrgType
+          const orgId = getOrg.organization.id
+          const accountPath = `${API_URL}/api/accounts_mgmt/v1/organizations/${orgId}/labels`
 
-        const accReq = await jsonRequest(accountPath, accessTokenSSO).catch((err: Error) => {
-          logger.error({ msg: 'Error gettting account info', error: err.message })
-        })
+          const accReq = await jsonRequest(accountPath, accessTokenSSO).catch((err: Error) => {
+            logger.error({ msg: 'Error gettting account info', error: err.message })
+          })
 
-        res.setHeader('Content-Type', 'application/json')
-        res.end(JSON.stringify(accReq))
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify(accReq))
+        } catch (err) {
+          logger.error(err)
+          respondInternalServerError(req, res)
+        }
       })
     } catch (err) {
       logger.error(err)
@@ -77,22 +82,27 @@ export async function getAwsBillingAccountIds(req: Http2ServerRequest, res: Http
       })
 
       req.on('end', async () => {
-        data = chucks.join('')
-        const body = JSON.parse(data) as Payload
+        try {
+          data = chucks.join('')
+          const body = JSON.parse(data) as Payload
 
-        const accessTokenSSO = await getOcmServiceToken(body.service_account_id, body.service_account_secret)
-        const orgPath = `${API_URL}/api/accounts_mgmt/v1/current_account`
-        const getOrgID = (await jsonRequest(orgPath, accessTokenSSO).catch((err: Error) => {
-          logger.error({ msg: 'Error gettting account info', error: err.message })
-        })) as OrgType
-        const accountPath = `${API_URL}/api/accounts_mgmt/v1/organizations/${getOrgID.organization.id}/quota_cost?fetchRelatedResources=true&fetchCloudAccounts=true`
+          const accessTokenSSO = await getOcmServiceToken(body.service_account_id, body.service_account_secret)
+          const orgPath = `${API_URL}/api/accounts_mgmt/v1/current_account`
+          const getOrgID = (await jsonRequest(orgPath, accessTokenSSO).catch((err: Error) => {
+            logger.error({ msg: 'Error gettting account info', error: err.message })
+          })) as OrgType
+          const accountPath = `${API_URL}/api/accounts_mgmt/v1/organizations/${getOrgID.organization.id}/quota_cost?fetchRelatedResources=true&fetchCloudAccounts=true`
 
-        const accReq = await jsonRequest(accountPath, accessTokenSSO).catch((err: Error) => {
-          logger.error({ msg: 'Error gettting account info', error: err.message })
-        })
+          const accReq = await jsonRequest(accountPath, accessTokenSSO).catch((err: Error) => {
+            logger.error({ msg: 'Error gettting account info', error: err.message })
+          })
 
-        res.setHeader('Content-Type', 'application/json')
-        res.end(JSON.stringify(accReq))
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify(accReq))
+        } catch (err) {
+          logger.error(err)
+          respondInternalServerError(req, res)
+        }
       })
     } catch (err) {
       logger.error(err)
@@ -124,6 +134,41 @@ export async function getWizardOIDCConfigs(req: Http2ServerRequest, res: Http2Se
             return { error: err.message }
           })
 
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify(request))
+        } catch (err) {
+          logger.error(err)
+          respondInternalServerError(req, res)
+        }
+      })
+    } catch (err) {
+      logger.error(err)
+      respondInternalServerError(req, res)
+    }
+  }
+}
+
+export async function getWizardCloudProviders(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
+  const token = await getAuthenticatedToken(req, res)
+  if (token) {
+    try {
+      let data: string = undefined
+      const chucks: string[] = []
+      req.on('data', (chuck: string) => {
+        chucks.push(chuck)
+      })
+
+      req.on('end', async () => {
+        try {
+          data = chucks.join('')
+          const body = JSON.parse(data) as Payload
+          const accessTokenSSO = await getOcmServiceToken(body.service_account_id, body.service_account_secret)
+
+          const cloudProvidersPath = `${API_URL}/api/clusters_mgmt/v1/cloud_providers?size=-1&fetchRegions=true`
+          const request = await jsonRequest(cloudProvidersPath, accessTokenSSO).catch((err: Error) => {
+            logger.error({ msg: 'Failed to fetch regions', error: err.message })
+            return { error: err.message }
+          })
           res.setHeader('Content-Type', 'application/json')
           res.end(JSON.stringify(request))
         } catch (err) {

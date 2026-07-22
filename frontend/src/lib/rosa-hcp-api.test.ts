@@ -5,6 +5,7 @@ import {
   getWizardAWSAccountIds,
   getWizardAwsBillingAccounts,
   getWizardOIDCConfigs,
+  getWizardRegions,
 } from './rosa-hcp-api'
 
 const mockFetchRetry = jest.fn()
@@ -181,6 +182,20 @@ describe('rosa-hcp-api', () => {
       })
 
       await expect(getWizardOIDCConfigs('client-id', 'client-secret')).rejects.toThrow('Service account not authorized')
+    })
+  })
+
+  describe('getWizardRegions', () => {
+    test('should call getWizardData with /regions path', async () => {
+      mockFetchRetry.mockResolvedValue({ data: { items: [] } })
+
+      await getWizardRegions('client-id', 'client-secret')
+
+      expect(mockFetchRetry).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: 'https://localhost:4000/regions',
+        })
+      )
     })
   })
 })

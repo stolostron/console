@@ -190,7 +190,8 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         '/multicloud/managedclusterproxy',
         '/multicloud/aws-account-ids',
         '/multicloud/aws-billing-accounts',
-        '/multicloud/oidc-configs'
+        '/multicloud/oidc-configs',
+        '/multicloud/regions'
       ].map((backendPath) => ({
         path: backendPath,
         target: `https://localhost:${process.env.BACKEND_PORT}`,
