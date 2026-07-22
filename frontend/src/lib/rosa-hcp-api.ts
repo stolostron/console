@@ -27,7 +27,7 @@ export function getWizardData<TResponse, TPayload extends Record<string, unknown
 ): Promise<TResponse> {
   const backendURLPath = getBackendUrl() + url
   const abortController = new AbortController()
-  const abortSignal = signal ? signal : abortController.signal
+  const abortSignal = signal ?? abortController.signal
   return fetchRetry<TResponse>({
     method: 'POST',
     url: backendURLPath,

@@ -199,7 +199,7 @@ export async function getClusterNameCheck(req: Http2ServerRequest, res: Http2Ser
 
       req.on('end', async () => {
         try {
-          data = chucks.join()
+          data = chucks.join('')
           const body = JSON.parse(data) as ClusterNameCheck
 
           const accessTokenSSO = await getOcmServiceToken(body.service_account_id, body.service_account_secret)
