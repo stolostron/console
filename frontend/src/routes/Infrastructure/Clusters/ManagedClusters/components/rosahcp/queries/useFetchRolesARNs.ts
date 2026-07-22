@@ -105,6 +105,8 @@ export const useFetchRoleARNs = (selectedSecret: SelectedSecret) => {
           const response = await getWizardUserRoleARN(secret.client_id, secret.client_secret, signal)
           return response
         },
+        // user roles should not be fetched if awsAccountId does not exist, but they do not rely on it.
+        // They only return a check informing users to create user roles using rosa cli.
         enabled: !!selectedSecret && !!awsAccountId,
         retry: false,
       },
