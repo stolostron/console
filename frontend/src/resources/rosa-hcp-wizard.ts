@@ -51,3 +51,7 @@ export interface OIDCConfigResponse {
   total: number
   items: OIDCConfig[]
 }
+
+export type AwsAccountPayload = {
+  aws_account_id: string
+}

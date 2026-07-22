@@ -2,6 +2,7 @@
 
 import {
   AwsAccountIdsResponse,
+  AwsAccountPayload,
   OIDCConfigResponse,
   OrganizationQuotaResponse,
   WizardBasePayload,
@@ -74,9 +75,9 @@ export const getWizardOIDCConfigs = (
   client_id: string,
   client_secret: string,
   signal?: AbortSignal,
-  additionalData?: Record<string, unknown>
+  additionalData?: AwsAccountPayload
 ): Promise<OIDCConfigResponse> =>
-  getWizardData<OIDCConfigResponse, Record<string, unknown>>(
+  getWizardData<OIDCConfigResponse, AwsAccountPayload>(
     client_id,
     client_secret,
     '/oidc-configs',

@@ -113,7 +113,7 @@ export async function getWizardOIDCConfigs(req: Http2ServerRequest, res: Http2Se
 
       req.on('end', async () => {
         try {
-          data = chucks.join()
+          data = chucks.join('')
           const body = JSON.parse(data) as WithAwsAccount
 
           const accessTokenSSO = await getOcmServiceToken(body.service_account_id, body.service_account_secret)

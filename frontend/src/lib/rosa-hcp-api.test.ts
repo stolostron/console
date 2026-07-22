@@ -132,14 +132,14 @@ describe('rosa-hcp-api', () => {
     test('should pass additionalData to the request body', async () => {
       mockFetchRetry.mockResolvedValue({ data: { items: [] } })
 
-      await getWizardOIDCConfigs('client-id', 'client-secret', undefined, { aws_account_id: 123456789012 })
+      await getWizardOIDCConfigs('client-id', 'client-secret', undefined, { aws_account_id: '123456789012' })
 
       expect(mockFetchRetry).toHaveBeenCalledWith(
         expect.objectContaining({
           data: {
             service_account_id: 'client-id',
             service_account_secret: 'client-secret',
-            aws_account_id: 123456789012,
+            aws_account_id: '123456789012',
           },
         })
       )
