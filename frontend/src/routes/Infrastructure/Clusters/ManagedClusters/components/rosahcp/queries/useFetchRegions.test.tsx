@@ -82,8 +82,8 @@ describe('useFetchRegions', () => {
     expect(result.current.isLoading).toBe(true)
   })
 
-  test('should stringify error when isError is true', () => {
-    const mockError = { message: 'Network error', status: 500 }
+  test('should return error string when isError is true', () => {
+    const mockError = { message: 'Unknown error', status: 500 }
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: false,
@@ -95,7 +95,7 @@ describe('useFetchRegions', () => {
     const { result } = renderHook(() => useFetchRegions(mockSecret))
 
     expect(result.current.isError).toBe(true)
-    expect(result.current.error).toBe(JSON.stringify(mockError))
+    expect(result.current.error).toBe(mockError.message)
   })
 
   test('should return null error when isError is false', () => {

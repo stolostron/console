@@ -10,7 +10,7 @@ const hcpCloudProvidersAndRegions = (cloudProvidersResponse: CloudProviderRespon
   const awsProvider = cloudProvidersResponse.items?.find((provider) => provider.id === 'aws')
   if (!awsProvider?.regions) return []
   return awsProvider.regions
-    .filter((region) => region.supports_hypershift === true)
+    .filter((region) => region.supports_hypershift)
     .map((region) => ({
       value: region.id ?? '',
       label: `${region.id}, ${region.display_name}`,
@@ -24,7 +24,7 @@ export const useFetchRegions = (selectedSecret: SelectedSecret) => {
     queryFn: async ({ signal }) => {
       const response = await getWizardRegions(selectedSecret.client_id, selectedSecret.client_secret, signal)
 
-      return response ?? []
+      return response
     },
     enabled: !!selectedSecret,
     retry: false,
@@ -35,7 +35,7 @@ export const useFetchRegions = (selectedSecret: SelectedSecret) => {
     data,
     isLoading,
     isError,
-    error: isError ? JSON.stringify(error) : null,
+    error: isError ? (error instanceof Error ? error.message : 'Unknown error') : null,
     refetch,
   }
 }
