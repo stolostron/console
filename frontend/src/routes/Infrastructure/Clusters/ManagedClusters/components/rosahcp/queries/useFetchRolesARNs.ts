@@ -132,10 +132,9 @@ export const useFetchRoleARNs = (selectedSecret: SelectedSecret) => {
 
   const ocmRoleError = ocmRoleQuery.error instanceof Error ? ocmRoleQuery.error.message : null
   const userRoleError =
-    userRoleQuery.error instanceof Error
-      ? userRoleQuery.error.message === "AccountLabel with key='sts_user_role' not found"
-        ? 'User role was not found'
-        : null
+    userRoleQuery.error instanceof Error &&
+    userRoleQuery.error.message === "AccountLabel with key='sts_user_role' not found"
+      ? 'User role was not found'
       : null
   const rolesError = rolesQuery.data?.error ?? (rolesQuery.error instanceof Error ? rolesQuery.error.message : null)
 
