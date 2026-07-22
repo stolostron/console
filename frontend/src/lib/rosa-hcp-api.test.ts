@@ -122,7 +122,7 @@ describe('rosa-hcp-api', () => {
     test('should call getWizardData with /cluster-name-check path', async () => {
       mockFetchRetry.mockResolvedValue({ data: { kind: 'ClusterList', total: 0, size: 0, page: 1, items: [] } })
 
-      await getWizardClusterNameUniqueness('client-id', 'client-secret', { cluster_name: 'my-cluster' })
+      await getWizardClusterNameUniqueness('client-id', 'client-secret', undefined, { cluster_name: 'my-cluster' })
 
       expect(mockFetchRetry).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -139,7 +139,7 @@ describe('rosa-hcp-api', () => {
     test('should include region in request body when provided', async () => {
       mockFetchRetry.mockResolvedValue({ data: { kind: 'ClusterList', total: 0, size: 0, page: 1, items: [] } })
 
-      await getWizardClusterNameUniqueness('client-id', 'client-secret', {
+      await getWizardClusterNameUniqueness('client-id', 'client-secret', undefined, {
         cluster_name: 'my-cluster',
         region: 'us-east-1',
       })

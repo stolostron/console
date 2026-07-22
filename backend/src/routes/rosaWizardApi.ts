@@ -202,9 +202,16 @@ export async function getClusterNameCheck(req: Http2ServerRequest, res: Http2Ser
           data = chucks.join('')
           const body = JSON.parse(data) as ClusterNameCheck
 
+          const clusterNameRegex = /^[a-z]([a-z0-9-]*[a-z0-9])?$/
+          if (!body.cluster_name || !clusterNameRegex.test(body.cluster_name)) {
+            res.setHeader('Content-Type', 'application/json')
+            res.writeHead(400)
+            res.end(JSON.stringify({ error: 'Invalid cluster name format' }))
+            return
+          }
+
           const accessTokenSSO = await getOcmServiceToken(body.service_account_id, body.service_account_secret)
           const accountPath = `${API_URL}/api/clusters_mgmt/v1/clusters?method=get`
-
           const accReq = await jsonPost(
             accountPath,
             {
@@ -213,7 +220,7 @@ export async function getClusterNameCheck(req: Http2ServerRequest, res: Http2Ser
             },
             accessTokenSSO
           ).catch((err: Error) => {
-            logger.error({ msg: 'Error gettting account info', error: err.message })
+            logger.error({ msg: 'Error getting account info', error: err.message })
           })
 
           res.setHeader('Content-Type', 'application/json')

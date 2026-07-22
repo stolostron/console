@@ -22,7 +22,7 @@ export function useClusterNameUniquenessCheck(secret: SelectedSecret): {
     async (name, region) => {
       setClusterNameValidation({ error: null, isFetching: true })
       try {
-        const response = await getWizardClusterNameUniqueness(secret.client_id, secret.client_secret, {
+        const response = await getWizardClusterNameUniqueness(secret.client_id, secret.client_secret, undefined, {
           cluster_name: name,
           region,
         })

@@ -171,6 +171,42 @@ describe('rosaWizardApi routes', () => {
       const res = await request('POST', '/cluster-name-check', clusterNamePayload)
       expect(res.statusCode).toEqual(401)
     })
+
+    test('should return 400 when cluster_name is missing', async () => {
+      nockAuth()
+
+      const res = await request('POST', '/cluster-name-check', mockPayload)
+      expect(res.statusCode).toEqual(400)
+
+      const body = await parsePipedJsonBody(res)
+      expect(body).toEqual({ error: 'Invalid cluster name format' })
+    })
+
+    test('should return 400 when cluster_name contains special characters', async () => {
+      nockAuth()
+
+      const res = await request('POST', '/cluster-name-check', {
+        ...mockPayload,
+        cluster_name: "my-cluster'; DROP TABLE clusters--",
+      })
+      expect(res.statusCode).toEqual(400)
+
+      const body = await parsePipedJsonBody(res)
+      expect(body).toEqual({ error: 'Invalid cluster name format' })
+    })
+
+    test('should return 400 when cluster_name contains uppercase letters', async () => {
+      nockAuth()
+
+      const res = await request('POST', '/cluster-name-check', {
+        ...mockPayload,
+        cluster_name: 'MyCluster',
+      })
+      expect(res.statusCode).toEqual(400)
+
+      const body = await parsePipedJsonBody(res)
+      expect(body).toEqual({ error: 'Invalid cluster name format' })
+    })
   })
 
   describe('POST /oidc-configs', () => {
