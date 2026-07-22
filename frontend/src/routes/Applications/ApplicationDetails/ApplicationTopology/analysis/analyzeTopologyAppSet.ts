@@ -2,9 +2,10 @@
 import type { TFunction } from 'i18next'
 import type { ApplicationSet, AppSetGenerator, Placement } from '~/resources'
 import type { TopologyNode } from '../types'
+import { checkOpenshiftGitops } from './checkOpenshiftGitops'
 import { analyzeTopologyApplications } from './analyzeTopologyApplications'
-import { analyzeTopologyClusters } from './analyzeTopologyClusters'
 import { analyzeTopologyDeployments, DEPLOYMENT_NODE_EXCLUDED_TYPES } from './analyzeTopologyDeployments'
+import { analyzeTopologyHealth, createSuggestsHealth } from './analyzeTopologyHealth'
 import type { IFilteredConditionError, IResourcesWithStatus, TopologyAlert } from './analyzeTopology'
 import { createSuggestsAppset } from './createSuggestsAppset'
 import { createSuggestsPlacement, missingPlacementAlert, PLACEMENT_MATCH_LABEL } from './createSuggestsPlacement'
@@ -92,16 +93,29 @@ export const analyzeTopologyAppSet = async (
   }
 
   /////////////////////////////////////////////
+  // Analyzing OpenShift GitOps
+  /////////////////////////////////////////////
+  let health: ReturnType<typeof analyzeTopologyHealth> | undefined
+  let hasGitopsIssues = false
+  if (!hasPlacementIssues) {
+    health = analyzeTopologyHealth(appSet, deploymentNodes)
+    hasGitopsIssues = await checkOpenshiftGitops(appSet, nodes, health, alerts, t)
+  }
+
+  /////////////////////////////////////////////
   // Analyzing Application Set Applications
   /////////////////////////////////////////////
-  if (!hasPlacementIssues) {
-    appSetAppsErrors = await analyzeTopologyApplications(appSet, deploymentNodes, alerts, t)
+  if (!hasPlacementIssues && !hasGitopsIssues && health) {
+    appSetAppsErrors = await analyzeTopologyApplications(appSet, deploymentNodes, alerts, t, health)
+    if (appSetAppsErrors.length === 0) {
+      createSuggestsHealth(appSet, deploymentNodes, health, alerts, t)
+    }
   }
 
   /////////////////////////////////////////////
   // Analyzing Application Set
   /////////////////////////////////////////////
-  if (!hasPlacementIssues && appSetAppsErrors.length === 0) {
+  if (!hasPlacementIssues && !hasGitopsIssues && appSetAppsErrors.length === 0) {
     appsetErrors = extractConditionsErrors([appSet.specs.raw as IResourcesWithStatus], t)
 
     if (appsetErrors.length > 0) {
@@ -112,11 +126,6 @@ export const analyzeTopologyAppSet = async (
       appSet.specs.pulse = 'red'
     }
   }
-
-  /////////////////////////////////////////////
-  // Analyzing Clusters
-  /////////////////////////////////////////////
-  await analyzeTopologyClusters(appSet, nodes, alerts, t)
 
   /////////////////////////////////////////////
   // Analyzing Deployments

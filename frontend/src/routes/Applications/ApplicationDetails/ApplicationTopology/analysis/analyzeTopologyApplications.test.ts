@@ -2,6 +2,7 @@
 import { t } from '~/lib/test-helpers'
 import { fleetResourceRequest } from '../../../../../resources/utils/fleet-resource-request'
 import { analyzeTopologyApplications } from './analyzeTopologyApplications'
+import { analyzeTopologyHealth, createSuggestsHealth } from './analyzeTopologyHealth'
 import type { TopologyAlert } from './utils'
 import {
   APPSET_NAME,
@@ -16,6 +17,19 @@ jest.mock('../../../../../resources/utils/fleet-resource-request', () => ({
 }))
 
 const mockFleetResourceRequest = fleetResourceRequest as jest.MockedFunction<typeof fleetResourceRequest>
+
+const analyzeApplicationsWithHealth = async (
+  appSet: ReturnType<typeof createAppSetNode>,
+  deploymentNodes: ReturnType<typeof createDeploymentNode>[],
+  alerts: TopologyAlert[]
+) => {
+  const health = analyzeTopologyHealth(appSet, deploymentNodes)
+  const errors = await analyzeTopologyApplications(appSet, deploymentNodes, alerts, t, health)
+  if (errors.length === 0) {
+    createSuggestsHealth(appSet, deploymentNodes, health, alerts, t)
+  }
+  return errors
+}
 
 describe('analyzeTopologyApplications', () => {
   beforeEach(() => {
@@ -35,7 +49,7 @@ describe('analyzeTopologyApplications', () => {
       },
     ])
 
-    const errors = await analyzeTopologyApplications(appSet, [deployment], alerts, t)
+    const errors = await analyzeApplicationsWithHealth(appSet, [deployment], alerts)
 
     expect(errors).toEqual([])
     expect(alerts).toEqual([])
@@ -79,7 +93,7 @@ describe('analyzeTopologyApplications', () => {
       1
     )
 
-    const errors = await analyzeTopologyApplications(appSet, [deployment], alerts, t)
+    const errors = await analyzeApplicationsWithHealth(appSet, [deployment], alerts)
 
     expect(errors).toEqual([])
     expect(alerts).toHaveLength(1)
@@ -128,7 +142,7 @@ describe('analyzeTopologyApplications', () => {
       1
     )
 
-    await analyzeTopologyApplications(appSet, [deployment], alerts, t)
+    await analyzeApplicationsWithHealth(appSet, [deployment], alerts)
 
     expect(alerts).toEqual([])
   })
@@ -162,7 +176,7 @@ describe('analyzeTopologyApplications', () => {
       },
     })
 
-    await analyzeTopologyApplications(appSet, [], alerts, t)
+    await analyzeApplicationsWithHealth(appSet, [], alerts)
 
     expect(mockFleetResourceRequest).toHaveBeenCalledWith('GET', CLUSTER_NAME, {
       apiVersion: 'argoproj.io/v1alpha1',
@@ -194,7 +208,7 @@ describe('analyzeTopologyApplications', () => {
       },
     })
 
-    await analyzeTopologyApplications(appSet, [], alerts, t)
+    await analyzeApplicationsWithHealth(appSet, [], alerts)
 
     expect(mockFleetResourceRequest).toHaveBeenCalledTimes(3)
   })
@@ -243,7 +257,7 @@ describe('analyzeTopologyApplications', () => {
       },
     ])
 
-    const errors = await analyzeTopologyApplications(appSet, [deployment], alerts, t)
+    const errors = await analyzeApplicationsWithHealth(appSet, [deployment], alerts)
 
     expect(errors.length).toBeGreaterThan(0)
     expect(alerts.some((alert) => alert.title.includes('Application'))).toBe(true)
