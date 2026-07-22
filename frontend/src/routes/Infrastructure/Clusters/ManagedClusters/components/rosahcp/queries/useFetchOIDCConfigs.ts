@@ -12,7 +12,7 @@ export const useFetchOIDCConfigs = (selectedSecret: SelectedSecret) => {
     queryKey: rosaWizardKeys.oidcConfigs(selectedSecret.client_id, awsAccountId),
     queryFn: async ({ signal }) => {
       const response = await getWizardOIDCConfigs(selectedSecret.client_id, selectedSecret.client_secret, signal, {
-        aws_account_id: awsAccountId,
+        aws_account_id: awsAccountId as string,
       })
       return (
         response.items?.map((item) => ({
