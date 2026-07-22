@@ -36,7 +36,7 @@ import { TopologyRefreshContext } from './contexts/TopologyRefreshContext'
 const PROCESSING_SAVE_TIMEOUT_MS = 60 * 1000
 
 const getAlertsTitlesKey = (alerts: TopologyAlert[] | undefined): string =>
-  [...new Set((alerts ?? []).map((alert) => alert.title))].sort().join('\0')
+  [...new Set((alerts ?? []).map((alert) => alert.title))].sort((a, b) => a.localeCompare(b)).join('\0')
 
 export interface TopologyProps {
   elements: {

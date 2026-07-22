@@ -43,7 +43,7 @@ function EditYamlModalContent({
   hubClusterName,
   highlightEditorPath,
   onUpdateSuccess,
-}: IEditYamlModalProps) {
+}: Readonly<Omit<IEditYamlModalProps, 'open'>>) {
   const { t } = useTranslation()
   const node = topologyNode as any
   const {
@@ -98,7 +98,7 @@ function EditYamlModalContent({
     namespace,
     name,
   ]
-    .filter((part) => part)
+    .filter(Boolean)
     .join(' > ')
 
   const [resource, setResource] = useState<any>(undefined)

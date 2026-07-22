@@ -52,7 +52,12 @@ export function EditAppSetModal(props: IEditAppSetModalProps | { open: false }) 
   return <EditAppSetModalContent {...props} />
 }
 
-function EditAppSetModalContent({ close, node, showWizardInput, onUpdateSuccess }: Readonly<IEditAppSetModalProps>) {
+function EditAppSetModalContent({
+  close,
+  node,
+  showWizardInput,
+  onUpdateSuccess,
+}: Readonly<Omit<IEditAppSetModalProps, 'open'>>) {
   const { applicationData } = useApplicationDetailsContext()
   const { name, namespace } = topologyNodeToAppSetParams(node, applicationData?.application)
   const handleClose = useCallback(() => close(), [close])
