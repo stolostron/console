@@ -51,9 +51,14 @@ export function exportObjectString(object: Record<string, string>) {
   return keyValueMap.toString()
 }
 
-export function returnCSVSafeString(exportValue: string | ReactNode) {
-  // extract newlines
-  return `"${typeof exportValue === 'string' ? exportValue.split('\n').join(' ').replaceAll('"', '""') : exportValue}"`
+export function returnCSVSafeString(exportValue: string | number | ReactNode) {
+  if (typeof exportValue === 'number') {
+    return `"${exportValue}"`
+  }
+  if (typeof exportValue !== 'string') {
+    return '"-"'
+  }
+  return `"${exportValue.replaceAll('"', '""')}"`
 }
 
 export const getISOStringTimestamp = (timestamp: string) => {
