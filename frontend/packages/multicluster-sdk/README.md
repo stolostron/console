@@ -878,7 +878,7 @@ object. The caller is responsible for constructing those values.
 
 | Function | Type |
 | ---------- | ---------- |
-| `useFleetSearch` | `(input: SearchInput or undefined, subscriptionEnabled?: boolean or undefined) => [any[] or undefined, boolean, Error or undefined, () => void]` |
+| `useFleetSearch` | `<T extends K8sResourceCommon = K8sResourceCommon>(input: SearchInput or undefined, subscriptionEnabled?: boolean or undefined) => [Fleet<T>[] or undefined, boolean, Error or undefined, () => void]` |
 
 Parameters:
 

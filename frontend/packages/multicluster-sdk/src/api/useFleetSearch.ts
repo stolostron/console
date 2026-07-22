@@ -116,10 +116,10 @@ function insertSorted(items: SearchItem[], newItem: SearchItem, orderBy: string 
  * ```
  */
 
-export function useFleetSearch(
+export function useFleetSearch<T extends K8sResourceCommon = K8sResourceCommon>(
   input: SearchInput | undefined,
   subscriptionEnabled?: boolean
-): [Fleet<K8sResourceCommon>[] | undefined, boolean, Error | undefined, () => void] {
+): [Fleet<T>[] | undefined, boolean, Error | undefined, () => void] {
   // ── Base query ─────────────────────────────────────────────────────────────
 
   const {
@@ -226,9 +226,9 @@ export function useFleetSearch(
   // ── Return ─────────────────────────────────────────────────────────────────
 
   // Convert the raw SearchItems to K8s resources once, only when localData changes.
-  const data = useMemo<Fleet<K8sResourceCommon>[] | undefined>(() => {
+  const data = useMemo<Fleet<T>[] | undefined>(() => {
     if (!localData) return undefined
-    return localData.map((item) => convertSearchItemToResource<K8sResourceCommon>(item))
+    return localData.map((item) => convertSearchItemToResource<T>(item)) as Fleet<T>[]
   }, [localData])
 
   const error = queryError ?? subscriptionError
