@@ -72,7 +72,7 @@ export const getWizardAwsBillingAccounts = (
     additionalData
   )
 
-  export const getWizardOIDCConfigs = (
+export const getWizardOIDCConfigs = (
   client_id: string,
   client_secret: string,
   signal?: AbortSignal,

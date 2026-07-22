@@ -38,7 +38,12 @@ import { watchTLSSecurityProfile } from './lib/tlsProfileWatch'
 import { watchPlacementDebugCA } from './lib/placementDebugCAWatch'
 import { invalidatePlacementDebugAgent } from './lib/agent'
 import { multiClusterEngineComponents } from './routes/multiClusterEngineComponents'
-import { getAwsAccountIds, getAwsBillingAccountIds, getWizardOIDCConfigs, getWizardCloudProviders } from './routes/rosaWizardApi'
+import {
+  getAwsAccountIds,
+  getAwsBillingAccountIds,
+  getWizardOIDCConfigs,
+  getWizardCloudProviders,
+} from './routes/rosaWizardApi'
 
 const isProduction = process.env.NODE_ENV === 'production'
 const isDevelopment = process.env.NODE_ENV === 'development'
