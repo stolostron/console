@@ -43,6 +43,7 @@ import {
   getAwsBillingAccountIds,
   getWizardOIDCConfigs,
   getWizardCloudProviders,
+  getClusterNameCheck,
 } from './routes/rosaWizardApi'
 
 const isProduction = process.env.NODE_ENV === 'production'
@@ -102,6 +103,7 @@ router.post('/aws-account-ids', getAwsAccountIds)
 router.post('/aws-billing-accounts', getAwsBillingAccountIds)
 router.post('/oidc-configs', getWizardOIDCConfigs)
 router.post('/regions', getWizardCloudProviders)
+router.post('/cluster-name-check', getClusterNameCheck)
 router.get('/*', serveHandler)
 
 export async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {

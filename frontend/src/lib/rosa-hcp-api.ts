@@ -5,6 +5,8 @@ import {
   AwsAccountPayload,
   OIDCConfigResponse,
   CloudProviderResponse,
+  ClusterNameCheckPayload,
+  ClusterNameUniquenessResponse,
   OrganizationQuotaResponse,
   WizardBasePayload,
   WizardErrorResponse,
@@ -96,6 +98,20 @@ export const getWizardRegions = (
     client_id,
     client_secret,
     '/regions',
+    signal,
+    additionalData
+  )
+
+export const getWizardClusterNameUniqueness = (
+  client_id: string,
+  client_secret: string,
+  signal?: AbortSignal,
+  additionalData?: ClusterNameCheckPayload
+): Promise<ClusterNameUniquenessResponse> =>
+  getWizardData<ClusterNameUniquenessResponse, ClusterNameCheckPayload>(
+    client_id,
+    client_secret,
+    '/cluster-name-check',
     signal,
     additionalData
   )

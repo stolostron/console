@@ -6,6 +6,7 @@ import {
   getWizardAwsBillingAccounts,
   getWizardOIDCConfigs,
   getWizardRegions,
+  getWizardClusterNameUniqueness,
 } from './rosa-hcp-api'
 
 const mockFetchRetry = jest.fn()
@@ -112,6 +113,45 @@ describe('rosa-hcp-api', () => {
       expect(mockFetchRetry).toHaveBeenCalledWith(
         expect.objectContaining({
           url: 'https://localhost:4000/aws-billing-accounts',
+        })
+      )
+    })
+  })
+
+  describe('getWizardClusterNameUniqueness', () => {
+    test('should call getWizardData with /cluster-name-check path', async () => {
+      mockFetchRetry.mockResolvedValue({ data: { kind: 'ClusterList', total: 0, size: 0, page: 1, items: [] } })
+
+      await getWizardClusterNameUniqueness('client-id', 'client-secret', undefined, { cluster_name: 'my-cluster' })
+
+      expect(mockFetchRetry).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: 'https://localhost:4000/cluster-name-check',
+          data: {
+            service_account_id: 'client-id',
+            service_account_secret: 'client-secret',
+            cluster_name: 'my-cluster',
+          },
+        })
+      )
+    })
+
+    test('should include region in request body when provided', async () => {
+      mockFetchRetry.mockResolvedValue({ data: { kind: 'ClusterList', total: 0, size: 0, page: 1, items: [] } })
+
+      await getWizardClusterNameUniqueness('client-id', 'client-secret', undefined, {
+        cluster_name: 'my-cluster',
+        region: 'us-east-1',
+      })
+
+      expect(mockFetchRetry).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: {
+            service_account_id: 'client-id',
+            service_account_secret: 'client-secret',
+            cluster_name: 'my-cluster',
+            region: 'us-east-1',
+          },
         })
       )
     })
