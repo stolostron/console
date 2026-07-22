@@ -110,7 +110,7 @@ export const SyncEditorDiff = forwardRef<SyncEditorDiffHandle, SyncEditorDiffPro
     const { width, height } = diffContainerRef.current.getBoundingClientRect()
     if (width <= 0 || height <= 0) return
 
-    const sideBySide = renderSideBySideProp === undefined ? width > SIDE_BY_SIDE_BREAKPOINT_PX : renderSideBySideProp
+    const sideBySide = renderSideBySideProp ?? width > SIDE_BY_SIDE_BREAKPOINT_PX
     setRenderSideBySide((prev) => {
       if (prev !== sideBySide) {
         diffEditorRef.current?.updateOptions({ renderSideBySide: sideBySide })

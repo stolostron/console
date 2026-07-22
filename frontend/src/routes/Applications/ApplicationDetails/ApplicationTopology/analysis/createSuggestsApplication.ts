@@ -90,7 +90,7 @@ const isNamespaceNotFoundSyncMessage = (message: string): boolean =>
   ) > SIMILARITY_THRESHOLD
 
 const getNamespaceNotFoundSyncNamespace = (message: string): string | undefined => {
-  const match = message.match(/namespaces "([^"]+)" not found/i)
+  const match = /namespaces "([^"]+)" not found/i.exec(message)
   return match?.[1]
 }
 
@@ -114,7 +114,7 @@ const isForbiddenSyncMessage = (message: string): boolean =>
   ) > SIMILARITY_THRESHOLD
 
 const getForbiddenSyncNamespace = (message: string): string | undefined => {
-  const match = message.match(/in the namespace "([^"]+)"/)
+  const match = /in the namespace "([^"]+)"/.exec(message)
   return match?.[1]
 }
 

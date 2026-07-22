@@ -211,7 +211,7 @@ interface ParsedAppName {
 }
 
 const formatClusterListContent = (clusters: string[], t: TFunction): string[] => {
-  const sorted = [...clusters].sort()
+  const sorted = [...clusters].sort((a, b) => a.localeCompare(b))
   if (sorted.length <= 3) {
     return sorted
   }
@@ -375,7 +375,7 @@ const buildConsolidatedSyncDescription = (
     entry.clusters.add(clusterName)
   })
 
-  const sortedKeys = [...byHealthSyncKey.keys()].sort()
+  const sortedKeys = [...byHealthSyncKey.keys()].sort((a, b) => a.localeCompare(b))
 
   if (sortedKeys.length === 1) {
     const healthSyncKey = sortedKeys[0]

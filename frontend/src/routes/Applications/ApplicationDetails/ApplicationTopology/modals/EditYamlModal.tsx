@@ -18,7 +18,7 @@ import { onReload, onSave } from '~/routes/Search/components/YamlEditor/utils'
 import { useRecoilValue, useSharedAtoms } from '~/shared-recoil'
 import { AcmAlert, AcmLoadingPage, AcmModal } from '~/ui-components'
 
-const typesWithoutDefaultName = ['replicaset', 'pod', 'replicationcontroller', 'controllerrevision']
+const typesWithoutDefaultName = new Set(['replicaset', 'pod', 'replicationcontroller', 'controllerrevision'])
 
 export interface IEditYamlModalProps {
   close: () => void
@@ -67,7 +67,7 @@ function EditYamlModalContent({
   if (type === 'project') {
     apiVersion = 'project.openshift.io/v1'
   }
-  if (typesWithoutDefaultName.includes(type)) {
+  if (typesWithoutDefaultName.has(type)) {
     const typeModel = node?.specs?.[`${kind}Model`]
     if (typeModel && Object.keys(typeModel).length > 0) {
       const modelArray = typeModel[Object.keys(typeModel)[0]]
