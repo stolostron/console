@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from 'react'
 import { useSharedReactQuery } from '~/hooks/shared-react-query'
-import { NormalizedAccountRole, SelectedSecret, WizardAccountRole } from '../constants/types'
+import { NormalizedAccountRole, RoleType, SelectedSecret, WizardAccountRole } from '../constants/types'
 import { AccountRole, AccountRoleARN, RoleARNsResponse } from '~/resources'
 import { getWizardOCMRoleARN, getWizardRoleARNs, getWizardUserRoleARN } from '~/lib/rosa-hcp-api'
 import { rosaWizardKeys } from './queryKeyFactory'
@@ -10,26 +10,25 @@ import { rosaWizardKeys } from './queryKeyFactory'
 const toWizardRoles = (normalizedRoles: NormalizedAccountRole[]): WizardAccountRole[] => {
   return normalizedRoles.map((role) => ({
     installerRole: {
-      label: role.Installer ?? '',
-      value: role.Installer ?? '',
+      label: role.roleArns.Installer ?? '',
+      value: role.roleArns.Installer ?? '',
       roleVersion: role.version ?? '',
     },
-    supportRole: role.Support ? [{ label: role.Support, value: role.Support }] : [],
-    workerRole: role.Worker ? [{ label: role.Worker, value: role.Worker }] : [],
+    supportRole: role.roleArns.Support ? [{ label: role.roleArns.Support, value: role.roleArns.Support }] : [],
+    workerRole: role.roleArns.Worker ? [{ label: role.roleArns.Worker, value: role.roleArns.Worker }] : [],
   }))
 }
 
 const normalizedAWSAccountRole = (arrayOfRoleItems: AccountRoleARN[], prefix: string): NormalizedAccountRole =>
-  arrayOfRoleItems.reduce(
-    (roleObj: NormalizedAccountRole, { type, arn, roleVersion, ...otherRoleAttributes }) => ({
+  arrayOfRoleItems.reduce<NormalizedAccountRole>(
+    (roleObj, { type, arn, roleVersion, managedPolicies, hcpManagedPolicies }) => ({
       ...roleObj,
-      ...otherRoleAttributes,
       version: roleVersion,
-      [type]: arn,
+      managedPolicies: roleObj.managedPolicies || managedPolicies,
+      hcpManagedPolicies: roleObj.hcpManagedPolicies || hcpManagedPolicies,
+      roleArns: { ...roleObj.roleArns, [type as RoleType]: arn },
     }),
-    {
-      prefix,
-    } as NormalizedAccountRole
+    { prefix, version: '', roleArns: {} }
   )
 
 export const normalizeAWSAccountRoles = (accountRoles: RoleARNsResponse): NormalizedAccountRole[] => {

@@ -78,8 +78,8 @@ describe('normalizeAWSAccountRoles', () => {
 
     expect(result).toHaveLength(1)
     expect(result[0].prefix).toBe('ManagedOpenShift')
-    expect(result[0].Installer).toBe('arn:aws:iam::123:role/Installer')
-    expect(result[0].Support).toBe('arn:aws:iam::123:role/Support')
+    expect(result[0].roleArns.Installer).toBe('arn:aws:iam::123:role/Installer')
+    expect(result[0].roleArns.Support).toBe('arn:aws:iam::123:role/Support')
   })
 
   test('should skip account roles with only 1 item', () => {
@@ -158,8 +158,8 @@ describe('normalizeAWSAccountRoles', () => {
     const result = normalizeAWSAccountRoles(response)
 
     expect(result).toHaveLength(2)
-    expect(result[0].Installer).toBe('arn:managed-installer')
-    expect(result[1].Support).toBe('arn:unmanaged-support')
+    expect(result[0].roleArns.Installer).toBe('arn:managed-installer')
+    expect(result[1].roleArns.Support).toBe('arn:unmanaged-support')
   })
 
   test('should preserve roleVersion as version in normalized output', () => {

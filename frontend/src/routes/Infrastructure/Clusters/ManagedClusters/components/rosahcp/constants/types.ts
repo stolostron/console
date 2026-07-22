@@ -19,6 +19,8 @@ export interface WizardAccountRole {
   supportRole: RoleOption[]
   workerRole: RoleOption[]
 }
+
+export type RoleType = 'Installer' | 'Support' | 'Worker' | 'Control plane'
 export interface NormalizedAccountRole {
   prefix: string
   version: string
@@ -28,5 +30,5 @@ export interface NormalizedAccountRole {
   'Control plane'?: string
   hcpManagedPolicies?: boolean
   managedPolicies?: boolean
-  [type: string]: string | boolean | undefined
+  roleArns: Partial<Record<RoleType, string>>
 }
