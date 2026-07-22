@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import type { IncomingMessage } from 'node:http'
+import type { Readable } from 'node:stream'
 import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import { constants } from 'node:http2'
 import rawBody from 'raw-body'
@@ -78,4 +79,54 @@ export async function parsePipedJsonBody<T = Promise<Record<string, unknown>>>(r
     encoding: true,
   })
   return JSON.parse(bodyString || '{}') as T
+}
+
+/** Maximum request body size accepted by readRequestBody (1 MiB, matching raw-body callers). */
+const REQUEST_BODY_LIMIT = 1 * 1024 * 1024
+
+/** Error thrown when the incoming body exceeds REQUEST_BODY_LIMIT. */
+export class RequestBodyTooLargeError extends Error {
+  constructor() {
+    super(`Request body exceeds the ${REQUEST_BODY_LIMIT}-byte limit`)
+    this.name = 'RequestBodyTooLargeError'
+  }
+}
+
+/**
+ * Read the full request body as a UTF-8 string.
+ *
+ * Calls `setEncoding('utf8')` on the request stream so that Node's internal
+ * StringDecoder handles multi-byte character boundaries across chunks safely.
+ * Rejects with {@link RequestBodyTooLargeError} if the accumulated body
+ * exceeds 1 MiB.
+ */
+export function readRequestBody(req: Readable): Promise<string> {
+  return new Promise((resolve, reject) => {
+    req.setEncoding('utf8')
+    const chunks: string[] = []
+    let byteLength = 0
+    req.on('data', (chunk: string) => {
+      byteLength += Buffer.byteLength(chunk, 'utf8')
+      if (byteLength > REQUEST_BODY_LIMIT) {
+        req.destroy()
+        reject(new RequestBodyTooLargeError())
+        return
+      }
+      chunks.push(chunk)
+    })
+    req.on('end', () => {
+      resolve(chunks.join(''))
+    })
+    req.on('error', reject)
+  })
+}
+
+/**
+ * Read the full request body and parse it as JSON.
+ *
+ * Uses `readRequestBody` for safe UTF-8 decoding, then `JSON.parse`.
+ */
+export async function parseRequestJsonBody<T>(req: Readable): Promise<T> {
+  const body = await readRequestBody(req)
+  return JSON.parse(body) as T
 }

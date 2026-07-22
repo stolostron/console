@@ -2,6 +2,7 @@
 
 import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import { constants } from 'node:http2'
+import { readRequestBody } from '../lib/body-parser'
 import type { HeadersInit } from 'node-fetch'
 import { fetchRetry } from '../lib/fetch-retry'
 import { jsonPost, jsonRequest } from '../lib/json-request'
@@ -74,46 +75,44 @@ export async function userpreference<T = unknown>(req: Http2ServerRequest, res: 
             res.setHeader('Content-Type', 'application/json')
             res.end(JSON.stringify(getResponse))
           } else {
-            let data: string = undefined
-            const chucks: string[] = []
-            req.on('data', (chuck: string) => {
-              chucks.push(chuck)
-            })
-            req.on('end', async () => {
-              data = chucks.join('')
+            void readRequestBody(req)
+              .then(async (data) => {
+                const body =
+                  req.method === 'POST'
+                    ? JSON.stringify({
+                        apiVersion: 'console.open-cluster-management.io/v1',
+                        kind: 'UserPreference',
+                        metadata: {
+                          name: name,
+                        },
+                        spec: {
+                          savedSearches: JSON.parse(data) as SavedSearch[],
+                        },
+                      })
+                    : data
 
-              const body =
-                req.method === 'POST'
-                  ? JSON.stringify({
-                      apiVersion: 'console.open-cluster-management.io/v1',
-                      kind: 'UserPreference',
-                      metadata: {
-                        name: name,
-                      },
-                      spec: {
-                        savedSearches: JSON.parse(data) as SavedSearch[],
-                      },
-                    })
-                  : data
-
-              const fetchResponse = await fetchRetry(path, {
-                method: req.method,
-                headers,
-                body,
-                compress: true,
-              })
-                .then((response) => response.json() as unknown)
-                .catch((err: Error): undefined => {
-                  logger.error({
-                    msg: req.method === 'POST' ? 'Error creating UserPreference' : 'Error updating UserPreference',
-                    error: err.message,
-                  })
-                  return undefined
+                const fetchResponse = await fetchRetry(path, {
+                  method: req.method,
+                  headers,
+                  body,
+                  compress: true,
                 })
+                  .then((response) => response.json() as unknown)
+                  .catch((err: Error): undefined => {
+                    logger.error({
+                      msg: req.method === 'POST' ? 'Error creating UserPreference' : 'Error updating UserPreference',
+                      error: err.message,
+                    })
+                    return undefined
+                  })
 
-              res.setHeader('Content-Type', 'application/json')
-              res.end(JSON.stringify(fetchResponse))
-            })
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify(fetchResponse))
+              })
+              .catch((err: unknown) => {
+                logger.error(err)
+                respondInternalServerError(req, res)
+              })
           }
         } else {
           logger.error(`Error getting username to preform UserPreference ${req.method} request`)

@@ -2,6 +2,7 @@
 import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import { constants } from 'node:http2'
 import type { HeadersInit } from 'node-fetch'
+import { readRequestBody } from '../lib/body-parser'
 import { getServiceAgent } from '../lib/agent'
 import { fetchRetry } from '../lib/fetch-retry'
 import { jsonRequest } from '../lib/json-request'
@@ -122,101 +123,102 @@ export async function virtualMachineProxy(req: Http2ServerRequest, res: Http2Ser
         )?.enabled ?? false
       const proxyURL = await getProxyUrl()
 
-      const chucks: string[] = []
-      req.on('data', (chuck: string) => {
-        chucks.push(chuck)
-      })
-      req.on('end', async () => {
-        let body = {} as ActionBody
-        try {
-          body = JSON.parse(chucks.join('')) as ActionBody
-        } catch (err) {
-          logger.error(err)
-        }
-        const action = req.url.split('/')[2]
-        const path = `${proxyURL}/${body.managedCluster}${getKubeVirtAPI(req.url, body.vmName, body.vmNamespace, action)}`
-        const reqBody = JSON.stringify(body.reqBody)
-
-        if (!isFineGrainedRbacEnabled) {
-          // Fine grained RBAC not enabled - need to get managed cluster vm-actor token for proxy
-          const serviceAccountToken = getServiceAccountToken()
-          // If user is not able to create an MCA in the managed cluster namespace -> they aren't authorized to trigger actions.
-          const hasAuth = await canAccess(
-            {
-              kind: 'ManagedClusterAction',
-              apiVersion: 'action.open-cluster-management.io/v1beta1',
-              metadata: { namespace: body.managedCluster },
-            },
-            'create',
-            token
-          ).then((allowed) => allowed)
-
-          if (hasAuth) {
-            // console-mce ClusterRole does not allow for GET on secrets. Have to list in a namespace
-            const secretPath = process.env.CLUSTER_API_URL + `/api/v1/namespaces/${body.managedCluster}/secrets`
-            token = await jsonRequest(secretPath, serviceAccountToken)
-              .then((response: ResourceList<Secret>) => {
-                const secret = response.items.find((secret) => secret.metadata.name === 'vm-actor')
-                const proxyToken = secret.data?.token ?? ''
-                return Buffer.from(proxyToken, 'base64').toString('ascii')
-              })
-              .catch((err: Error): undefined => {
-                logger.error({ msg: `Error getting secret in namespace ${body.managedCluster}`, error: err.message })
-                return undefined
-              })
+      void readRequestBody(req)
+        .then(async (bodyStr) => {
+          let body = {} as ActionBody
+          try {
+            body = JSON.parse(bodyStr) as ActionBody
+          } catch (err) {
+            logger.error(err)
           }
-        }
+          const action = req.url.split('/')[2]
+          const path = `${proxyURL}/${body.managedCluster}${getKubeVirtAPI(req.url, body.vmName, body.vmNamespace, action)}`
+          const reqBody = JSON.stringify(body.reqBody)
 
-        let headers: HeadersInit = {}
-        switch (req.url) {
-          // start, stop, restart, pause, unpause all require */* for accept and content-type headers
-          case '/virtualmachines/start':
-          case '/virtualmachines/stop':
-          case '/virtualmachines/restart':
-          case '/virtualmachineinstances/pause':
-          case '/virtualmachineinstances/unpause':
-            headers = {
-              [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${token}`,
-            }
-            break
-          default:
-            headers = {
-              [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${token}`,
-              [HTTP2_HEADER_ACCEPT]: 'application/json',
-              [HTTP2_HEADER_CONTENT_TYPE]: 'application/json',
-            }
-        }
+          if (!isFineGrainedRbacEnabled) {
+            // Fine grained RBAC not enabled - need to get managed cluster vm-actor token for proxy
+            const serviceAccountToken = getServiceAccountToken()
+            // If user is not able to create an MCA in the managed cluster namespace -> they aren't authorized to trigger actions.
+            const hasAuth = await canAccess(
+              {
+                kind: 'ManagedClusterAction',
+                apiVersion: 'action.open-cluster-management.io/v1beta1',
+                metadata: { namespace: body.managedCluster },
+              },
+              'create',
+              token
+            ).then((allowed) => allowed)
 
-        await fetchRetry(path, {
-          method: req.method,
-          headers,
-          agent: getServiceAgent(),
-          body: reqBody,
-          compress: true,
-        })
-          .then(async (response) => {
-            let responseBody = undefined
-            const responseContentType = response.headers.get('content-type')
-            if (responseContentType && responseContentType.includes('application/json')) {
-              responseBody = (await response.json()) as unknown
-            } else {
-              responseBody = await response.text()
+            if (hasAuth) {
+              // console-mce ClusterRole does not allow for GET on secrets. Have to list in a namespace
+              const secretPath = process.env.CLUSTER_API_URL + `/api/v1/namespaces/${body.managedCluster}/secrets`
+              token = await jsonRequest(secretPath, serviceAccountToken)
+                .then((response: ResourceList<Secret>) => {
+                  const secret = response.items.find((secret) => secret.metadata.name === 'vm-actor')
+                  const proxyToken = secret.data?.token ?? ''
+                  return Buffer.from(proxyToken, 'base64').toString('ascii')
+                })
+                .catch((err: Error): undefined => {
+                  logger.error({ msg: `Error getting secret in namespace ${body.managedCluster}`, error: err.message })
+                  return undefined
+                })
             }
+          }
 
-            const contentType = typeof responseBody === 'string' ? 'text/plain' : 'application/json'
-            res.setHeader('Content-Type', contentType)
-            res.writeHead(response.status ?? HTTP_STATUS_INTERNAL_SERVER_ERROR)
-            res.end(JSON.stringify(responseBody))
+          let headers: HeadersInit = {}
+          switch (req.url) {
+            // start, stop, restart, pause, unpause all require */* for accept and content-type headers
+            case '/virtualmachines/start':
+            case '/virtualmachines/stop':
+            case '/virtualmachines/restart':
+            case '/virtualmachineinstances/pause':
+            case '/virtualmachineinstances/unpause':
+              headers = {
+                [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${token}`,
+              }
+              break
+            default:
+              headers = {
+                [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${token}`,
+                [HTTP2_HEADER_ACCEPT]: 'application/json',
+                [HTTP2_HEADER_CONTENT_TYPE]: 'application/json',
+              }
+          }
+
+          await fetchRetry(path, {
+            method: req.method,
+            headers,
+            agent: getServiceAgent(),
+            body: reqBody,
+            compress: true,
           })
-          .catch((err: Error): undefined => {
-            logger.error({
-              msg: 'Error in VirtualMachine action request (fine grained RBAC)',
-              error: err.message,
+            .then(async (response) => {
+              let responseBody = undefined
+              const responseContentType = response.headers.get('content-type')
+              if (responseContentType && responseContentType.includes('application/json')) {
+                responseBody = (await response.json()) as unknown
+              } else {
+                responseBody = await response.text()
+              }
+
+              const contentType = typeof responseBody === 'string' ? 'text/plain' : 'application/json'
+              res.setHeader('Content-Type', contentType)
+              res.writeHead(response.status ?? HTTP_STATUS_INTERNAL_SERVER_ERROR)
+              res.end(JSON.stringify(responseBody))
             })
-            respondInternalServerError(req, res)
-            return undefined
-          })
-      })
+            .catch((err: Error): undefined => {
+              logger.error({
+                msg: 'Error in VirtualMachine action request (fine grained RBAC)',
+                error: err.message,
+              })
+              respondInternalServerError(req, res)
+              return undefined
+            })
+        })
+        .catch((err: unknown) => {
+          logger.error(err)
+          respondInternalServerError(req, res)
+        })
     } catch (err) {
       logger.error(err)
       respondInternalServerError(req, res)

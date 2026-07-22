@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
+import { parseRequestJsonBody } from '../lib/body-parser'
 import { jsonPost, jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { respondInternalServerError } from '../lib/respond'
@@ -40,47 +41,44 @@ export async function upgradeRiskPredictions(req: Http2ServerRequest, res: Http2
           return undefined
         })
 
-      let data: string = undefined
-      const chucks: string[] = []
-      req.on('data', (chuck: string) => {
-        chucks.push(chuck)
-      })
-      req.on('end', async () => {
-        data = chucks.join('')
-        const body = JSON.parse(data) as UpgradeRiskBody
+      void parseRequestJsonBody<UpgradeRiskBody>(req)
+        .then(async (body) => {
+          // acm-operator version in User-Agent header doesn't matter - CCX only uses the 'acm-operator' string to identify the product initiating the req
+          // https://github.com/RedHatInsights/insights-results-smart-proxy/blob/master/server/router_utils.go#L168
+          const userAgent = 'acm-operator/v2.10.0 cluster/acm-hub'
+          const insightsPath =
+            process.env.UPGRADE_RISKS_PREDICTION_URL ||
+            'https://console.redhat.com/api/insights-results-aggregator/v2/upgrade-risks-prediction'
 
-        // acm-operator version in User-Agent header doesn't matter - CCX only uses the 'acm-operator' string to identify the product initiating the req
-        // https://github.com/RedHatInsights/insights-results-smart-proxy/blob/master/server/router_utils.go#L168
-        const userAgent = 'acm-operator/v2.10.0 cluster/acm-hub'
-        const insightsPath =
-          process.env.UPGRADE_RISKS_PREDICTION_URL ||
-          'https://console.redhat.com/api/insights-results-aggregator/v2/upgrade-risks-prediction'
-
-        // create array of clusterIds with length of 100
-        const clusterIds = body.clusterIds.reduce((resultArray: string[][], item, index) => {
-          const chunkIndex = Math.floor(index / 100)
-          if (!resultArray[chunkIndex]) {
-            resultArray[chunkIndex] = [] // start a new chunk
-          }
-          resultArray[chunkIndex].push(item)
-          return resultArray
-        }, [])
-
-        // Create req for each 100 id chunk
-        const reqs = clusterIds.map((idChunk: string[]) => {
-          return jsonPost(insightsPath, { clusters: idChunk }, crcToken, userAgent, getProxyAgent()).catch(
-            (err: Error) => {
-              logger.error({ msg: 'Error getting cluster upgrade risk predictions', error: err.message })
-              return { error: err.message }
+          // create array of clusterIds with length of 100
+          const clusterIds = body.clusterIds.reduce((resultArray: string[][], item, index) => {
+            const chunkIndex = Math.floor(index / 100)
+            if (!resultArray[chunkIndex]) {
+              resultArray[chunkIndex] = [] // start a new chunk
             }
-          )
-        })
+            resultArray[chunkIndex].push(item)
+            return resultArray
+          }, [])
 
-        await Promise.all(reqs).then((results) => {
-          res.setHeader('Content-Type', 'application/json')
-          res.end(JSON.stringify(results))
+          // Create req for each 100 id chunk
+          const reqs = clusterIds.map((idChunk: string[]) => {
+            return jsonPost(insightsPath, { clusters: idChunk }, crcToken, userAgent, getProxyAgent()).catch(
+              (err: Error) => {
+                logger.error({ msg: 'Error getting cluster upgrade risk predictions', error: err.message })
+                return { error: err.message }
+              }
+            )
+          })
+
+          await Promise.all(reqs).then((results) => {
+            res.setHeader('Content-Type', 'application/json')
+            res.end(JSON.stringify(results))
+          })
         })
-      })
+        .catch((err: unknown) => {
+          logger.error(err)
+          respondInternalServerError(req, res)
+        })
     } catch (err) {
       logger.error(err)
       respondInternalServerError(req, res)
