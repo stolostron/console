@@ -43,7 +43,7 @@ export function EditDescription(props: { resource?: IResource; displayName?: str
 
   const handleSave = (alertContext: IAlertContext) => {
     alertContext.clearAlerts()
-    const resource: IResource = {
+    const resourceToPatch: IResource = {
       apiVersion: props.resource!.apiVersion,
       kind: props.resource!.kind,
       metadata: {
@@ -52,33 +52,15 @@ export function EditDescription(props: { resource?: IResource; displayName?: str
       },
     }
 
-    const patch: { op: string; path: string; value?: unknown }[] = []
-    const key = CLUSTER_DESCRIPTION_ANNOTATION.replaceAll('/', '~1')
-
-    if (props.resource?.metadata?.annotations?.[CLUSTER_DESCRIPTION_ANNOTATION]) {
-      patch.push({
-        op: 'remove',
-        path: `/metadata/annotations/${key}`,
-      })
+    const patch = {
+      metadata: {
+        annotations: {
+          [CLUSTER_DESCRIPTION_ANNOTATION]: description.trim() || null,
+        },
+      },
     }
 
-    if (description.trim()) {
-      patch.push({
-        op: 'add',
-        path: `/metadata/annotations/${key}`,
-        value: description.trim(),
-      })
-    }
-
-    if (description.trim() && !props.resource?.metadata?.annotations) {
-      patch.unshift({
-        op: 'add',
-        path: '/metadata/annotations',
-        value: {},
-      })
-    }
-
-    return patchResource(resource, patch)
+    return patchResource(resourceToPatch, patch)
       .promise.then(() => {
         props.close()
       })
@@ -155,7 +137,7 @@ export function EditDescription(props: { resource?: IResource; displayName?: str
                 onChange={(_event, value) => setDescription(value)}
                 rows={10}
                 resizeOrientation="none"
-                placeholder={t('Enter cluster description (markdown supported)')}
+                placeholder={t('Enter cluster description')}
                 aria-label={t('Description')}
               />
             </FormGroup>
