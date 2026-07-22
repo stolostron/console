@@ -49,12 +49,7 @@ export function LogsModal(props: ILogsModalProps | { open: false }) {
   return <LogsModalContent {...props} />
 }
 
-function LogsModalContent({
-  close,
-  node,
-  processActionLink,
-  hubClusterName,
-}: Readonly<Omit<ILogsModalProps, 'open'>>) {
+function LogsModalContent({ close, node, processActionLink, hubClusterName }: Readonly<Omit<ILogsModalProps, 'open'>>) {
   const { t } = useTranslation()
 
   const renderResourceURLLink = (resource: { data: ResourceAction }, isLogURL = false) => {
