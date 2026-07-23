@@ -1,5 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { OpenshiftVersion } from "~/routes/Infrastructure/Clusters/ManagedClusters/components/rosahcp/constants/types"
+
 export interface CloudRegion {
   kind?: string
   id?: string
@@ -143,6 +145,14 @@ export interface UserRoleResponse {
   key: string
   kind: string
   value: string
+}
+
+export interface OpenshiftVersionResponse {
+  kind: string;
+  page: number;
+  size: number;
+  total: number;
+  items: OpenshiftVersion[]
 }
 
 export type AwsAccountPayload = {

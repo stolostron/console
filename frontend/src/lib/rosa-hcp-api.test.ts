@@ -10,6 +10,7 @@ import {
   getWizardRegions,
   getWizardClusterNameUniqueness,
   getWizardOIDCConfigs,
+  getWizardVersions,
 } from './rosa-hcp-api'
 
 const mockFetchRetry = jest.fn()
@@ -328,6 +329,68 @@ describe('rosa-hcp-api', () => {
           url: 'https://localhost:4000/regions',
         })
       )
+    })
+  })
+
+  describe('getWizardVersions', () => {
+    test('should call getWizardData with /openshift-versions path', async () => {
+      mockFetchRetry.mockResolvedValue({ data: { items: [] } })
+
+      await getWizardVersions('client-id', 'client-secret')
+
+      expect(mockFetchRetry).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: 'https://localhost:4000/openshift-versions',
+        })
+      )
+    })
+
+    test('should pass abort signal to the request', async () => {
+      mockFetchRetry.mockResolvedValue({ data: { items: [] } })
+      const controller = new AbortController()
+
+      await getWizardVersions('client-id', 'client-secret', controller.signal)
+
+      expect(mockFetchRetry).toHaveBeenCalledWith(
+        expect.objectContaining({
+          signal: controller.signal,
+        })
+      )
+    })
+
+    test('should return versions list on success', async () => {
+      const versionsResponse = {
+        kind: 'VersionList',
+        items: [
+          {
+            id: 'openshift-v4.14.10',
+            raw_id: '4.14.10',
+            channel_group: 'stable',
+            rosa_enabled: true,
+            hosted_control_plane_enabled: true,
+          },
+          {
+            id: 'openshift-v4.13.25',
+            raw_id: '4.13.25',
+            channel_group: 'eus',
+            rosa_enabled: true,
+            hosted_control_plane_enabled: true,
+          },
+        ],
+      }
+      mockFetchRetry.mockResolvedValue({ data: versionsResponse })
+
+      const result = await getWizardVersions('client-id', 'client-secret')
+
+      expect(result).toEqual(versionsResponse)
+    })
+
+    test('should throw error when response contains Error kind', async () => {
+      mockFetchRetry.mockResolvedValue({
+        data: { kind: 'Error', reason: 'Service account not authorized' },
+      })
+
+      await expect(getWizardVersions('client-id', 'client-secret')).rejects.toThrow('Service account not authorized')
     })
   })
 })
