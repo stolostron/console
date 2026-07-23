@@ -91,8 +91,8 @@ export const useFetchHCPVersions = (secrets: SelectedSecret) => {
   const { useQuery } = useSharedReactQuery()
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: rosaWizardKeys.openshiftVersions(client_id),
-    queryFn: async () => {
-      const response = await getWizardVersions(client_id, client_secret)
+    queryFn: async ({signal}) => {
+      const response = await getWizardVersions(client_id, client_secret, signal)
       return response.items ?? []
     },
     select: transformToVersionsData,
