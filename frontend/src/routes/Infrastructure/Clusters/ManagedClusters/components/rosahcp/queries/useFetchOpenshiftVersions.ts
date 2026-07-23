@@ -1,3 +1,5 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
 import { useSharedReactQuery } from '~/hooks/shared-react-query'
 import { getWizardVersions } from '~/lib/rosa-hcp-api'
 import { rosaWizardKeys } from './queryKeyFactory'
