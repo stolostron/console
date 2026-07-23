@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { OpenshiftVersion } from "~/routes/Infrastructure/Clusters/ManagedClusters/components/rosahcp/constants/types"
+import { OpenshiftVersion } from '~/routes/Infrastructure/Clusters/ManagedClusters/components/rosahcp/constants/types'
 
 export interface CloudRegion {
   kind?: string
@@ -148,10 +148,10 @@ export interface UserRoleResponse {
 }
 
 export interface OpenshiftVersionResponse {
-  kind: string;
-  page: number;
-  size: number;
-  total: number;
+  kind: string
+  page: number
+  size: number
+  total: number
   items: OpenshiftVersion[]
 }
 

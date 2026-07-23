@@ -128,5 +128,9 @@ export const getWizardUserRoleARN = (
   signal?: AbortSignal
 ): Promise<UserRoleResponse> => getWizardData<UserRoleResponse>(client_id, client_secret, '/sts-user-role', signal)
 
-export const getWizardVersions = (client_id: string, client_secret: string, signal?: AbortSignal): Promise<OpenshiftVersionResponse> =>
+export const getWizardVersions = (
+  client_id: string,
+  client_secret: string,
+  signal?: AbortSignal
+): Promise<OpenshiftVersionResponse> =>
   getWizardData<OpenshiftVersionResponse>(client_id, client_secret, '/openshift-versions', signal)
