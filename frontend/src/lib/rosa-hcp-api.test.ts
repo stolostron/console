@@ -4,9 +4,12 @@ import {
   getWizardData,
   getWizardAWSAccountIds,
   getWizardAwsBillingAccounts,
-  getWizardOIDCConfigs,
+  getWizardRoleARNs,
+  getWizardOCMRoleARN,
+  getWizardUserRoleARN,
   getWizardRegions,
   getWizardClusterNameUniqueness,
+  getWizardOIDCConfigs,
 } from './rosa-hcp-api'
 
 const mockFetchRetry = jest.fn()
@@ -113,6 +116,95 @@ describe('rosa-hcp-api', () => {
       expect(mockFetchRetry).toHaveBeenCalledWith(
         expect.objectContaining({
           url: 'https://localhost:4000/aws-billing-accounts',
+        })
+      )
+    })
+  })
+
+  describe('getWizardRoleARNs', () => {
+    test('should call getWizardData with /sts-role-arns path', async () => {
+      mockFetchRetry.mockResolvedValue({ data: { items: [] } })
+
+      await getWizardRoleARNs('client-id', 'client-secret')
+
+      expect(mockFetchRetry).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: 'https://localhost:4000/sts-role-arns',
+        })
+      )
+    })
+
+    test('should pass additionalData to the request body', async () => {
+      mockFetchRetry.mockResolvedValue({ data: { items: [] } })
+
+      await getWizardRoleARNs('client-id', 'client-secret', undefined, { aws_account_id: '123456789012' })
+
+      expect(mockFetchRetry).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: {
+            service_account_id: 'client-id',
+            service_account_secret: 'client-secret',
+            aws_account_id: '123456789012',
+          },
+        })
+      )
+    })
+  })
+
+  describe('getWizardOCMRoleARN', () => {
+    test('should call getWizardData with /sts-ocm-role path', async () => {
+      mockFetchRetry.mockResolvedValue({ data: { arn: 'arn:ocm-role' } })
+
+      await getWizardOCMRoleARN('client-id', 'client-secret')
+
+      expect(mockFetchRetry).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: 'https://localhost:4000/sts-ocm-role',
+        })
+      )
+    })
+
+    test('should pass additionalData to the request body', async () => {
+      mockFetchRetry.mockResolvedValue({ data: { arn: 'arn:ocm-role' } })
+
+      await getWizardOCMRoleARN('client-id', 'client-secret', undefined, { aws_account_id: '123456789012' })
+
+      expect(mockFetchRetry).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: {
+            service_account_id: 'client-id',
+            service_account_secret: 'client-secret',
+            aws_account_id: '123456789012',
+          },
+        })
+      )
+    })
+  })
+
+  describe('getWizardUserRoleARN', () => {
+    test('should call getWizardData with /sts-user-role path', async () => {
+      mockFetchRetry.mockResolvedValue({ data: { value: 'arn:user-role' } })
+
+      await getWizardUserRoleARN('client-id', 'client-secret')
+
+      expect(mockFetchRetry).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: 'https://localhost:4000/sts-user-role',
+        })
+      )
+    })
+
+    test('should pass additionalData to the request body', async () => {
+      mockFetchRetry.mockResolvedValue({ data: { value: 'arn:user-role' } })
+
+      await getWizardUserRoleARN('client-id', 'client-secret', undefined)
+
+      expect(mockFetchRetry).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: {
+            service_account_id: 'client-id',
+            service_account_secret: 'client-secret',
+          },
         })
       )
     })

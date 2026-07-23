@@ -317,4 +317,127 @@ describe('rosaWizardApi routes', () => {
       expect(res.statusCode).toEqual(401)
     })
   })
+
+  describe('POST /sts-role-arns', () => {
+    const payloadWithAccount = {
+      ...mockPayload,
+      aws_account_id: '720424066366',
+    }
+
+    test('should return STS account roles', async () => {
+      const rolesResponse = {
+        statusCode: 200,
+        body: {
+          kind: 'AccountRoleList',
+          items: [
+            {
+              prefix: 'ManagedOpenShift',
+              kind: 'AccountRole',
+              items: [
+                { arn: 'arn:aws:iam::720424066366:role/Installer', type: 'Installer' },
+                { arn: 'arn:aws:iam::720424066366:role/Support', type: 'Support' },
+              ],
+            },
+          ],
+        },
+      }
+
+      nockAuth()
+      nockSsoToken()
+      nock(API_HOST).post('/api/clusters_mgmt/v1/aws_inquiries/sts_account_roles').reply(200, rolesResponse.body)
+
+      const res = await request('POST', '/sts-role-arns', payloadWithAccount)
+      expect(res.statusCode).toEqual(200)
+
+      const body = await parsePipedJsonBody(res)
+      expect(body).toEqual({ statusCode: 200, body: rolesResponse.body })
+    })
+
+    test('should return 401 when not authenticated', async () => {
+      nock(process.env.CLUSTER_API_URL).get('/apis').reply(401)
+
+      const res = await request('POST', '/sts-role-arns', payloadWithAccount)
+      expect(res.statusCode).toEqual(401)
+    })
+  })
+
+  describe('POST /sts-ocm-role', () => {
+    const payloadWithAccount = {
+      ...mockPayload,
+      aws_account_id: '720424066366',
+    }
+
+    test('should return OCM role ARN', async () => {
+      const ocmRoleResponse = {
+        arn: 'arn:aws:iam::720424066366:role/ManagedOpenShift-OCM-Role',
+        type: 'OCM',
+        isAdmin: true,
+        profile: 'default',
+        roleVersion: '4.14',
+        managedPolicies: true,
+        hcpManagedPolicies: true,
+      }
+
+      nockAuth()
+      nockSsoToken()
+      nock(API_HOST).post('/api/clusters_mgmt/v1/aws_inquiries/sts_ocm_role').reply(200, ocmRoleResponse)
+
+      const res = await request('POST', '/sts-ocm-role', payloadWithAccount)
+      expect(res.statusCode).toEqual(200)
+
+      const body = await parsePipedJsonBody(res)
+      expect(body).toEqual({ statusCode: 200, body: ocmRoleResponse })
+    })
+
+    test('should handle 403 error from OCM API', async () => {
+      const errorResponse = {
+        kind: 'Error',
+        id: '403',
+        reason: 'Organization is not authorized to access AWS Account',
+      }
+
+      nockAuth()
+      nockSsoToken()
+      nock(API_HOST).post('/api/clusters_mgmt/v1/aws_inquiries/sts_ocm_role').reply(403, errorResponse)
+
+      const res = await request('POST', '/sts-ocm-role', payloadWithAccount)
+      expect(res.statusCode).toEqual(200)
+
+      const body = await parsePipedJsonBody(res)
+      expect(body).toEqual({ statusCode: 403, body: errorResponse })
+    })
+  })
+
+  describe('POST /sts-user-role', () => {
+    test('should return user role label', async () => {
+      const userRoleResponse = {
+        account_id: 'account-1',
+        id: 'label-1',
+        internal: false,
+        key: 'sts_user_role',
+        kind: 'AccountLabel',
+        value: 'arn:aws:iam::720424066366:role/User-Role',
+      }
+
+      nockAuth()
+      nockSsoToken()
+      nock(API_HOST).get('/api/accounts_mgmt/v1/current_account').reply(200, { id: 'account-1' })
+      nock(API_HOST)
+        .get(/\/api\/accounts_mgmt\/v1\/accounts\/account-1\/labels\/sts_user_role/)
+        .reply(200, userRoleResponse)
+
+      const res = await request('POST', '/sts-user-role', mockPayload)
+      expect(res.statusCode).toEqual(200)
+
+      const body = await parsePipedJsonBody(res)
+      expect(body).toEqual(userRoleResponse)
+    })
+
+    test('should return 401 when not authenticated', async () => {
+      nock(process.env.CLUSTER_API_URL).get('/apis').reply(401)
+
+      const res = await request('POST', '/sts-user-role', mockPayload)
+      expect(res.statusCode).toEqual(401)
+    })
+  })
 })

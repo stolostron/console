@@ -36,6 +36,18 @@ describe('queryKeyFactory', () => {
     const key = rosaWizardKeys.regions('test-client-id')
     expect(key).toEqual([ROSA_HCP_WIZARD_QUERY_KEY, 'test-client-id', 'regions'])
   })
+  test('rosaWizardKeys.rolesArns should extend the base key with client id and aws account id', () => {
+    const key = rosaWizardKeys.rolesArns('test-client-id', '123456789012')
+    expect(key).toEqual([ROSA_HCP_WIZARD_QUERY_KEY, 'test-client-id', '123456789012', 'roles-arns'])
+  })
+  test('rosaWizardKeys.ocmRoleArn should extend the base key with client id and aws account id', () => {
+    const key = rosaWizardKeys.ocmRoleArn('test-client-id', '123456789012')
+    expect(key).toEqual([ROSA_HCP_WIZARD_QUERY_KEY, 'test-client-id', '123456789012', 'ocm-role-arn'])
+  })
+  test('rosaWizardKeys.userRoleArn should extend the base key with client id', () => {
+    const key = rosaWizardKeys.userRoleArn('test-client-id')
+    expect(key).toEqual([ROSA_HCP_WIZARD_QUERY_KEY, 'test-client-id', 'user-role-arn'])
+  })
 
   test('each key factory call should return a new array instance', () => {
     const key1 = rosaWizardKeys.awsInfrastructureAccounts('test-client-id')

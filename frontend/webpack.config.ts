@@ -193,6 +193,9 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         '/multicloud/oidc-configs',
         '/multicloud/regions',
         '/multicloud/cluster-name-check',
+        '/multicloud/sts-ocm-role',
+        '/multicloud/sts-role-arns',
+        '/multicloud/sts-user-role',
       ].map((backendPath) => ({
         path: backendPath,
         target: `https://localhost:${process.env.BACKEND_PORT}`,
