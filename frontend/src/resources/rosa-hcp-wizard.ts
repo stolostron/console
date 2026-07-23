@@ -88,9 +88,6 @@ export interface OIDCConfigResponse {
   items: OIDCConfig[]
 }
 
-export type AwsAccountPayload = {
-  aws_account_id: string
-}
 interface ROSAHCPCluster {
   kind: string
   id: string
