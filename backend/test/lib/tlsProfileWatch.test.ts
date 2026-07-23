@@ -4,8 +4,13 @@ import nock from 'nock'
 import type { SecureContextOptions } from 'node:tls'
 import { watchTLSSecurityProfile } from '../../src/lib/tlsProfileWatch'
 import * as serviceAccountTokenModule from '../../src/lib/serviceAccountToken'
+import * as crypto from 'node:crypto'
 
 jest.mock('../../src/lib/serviceAccountToken')
+jest.mock('node:crypto', () => {
+  const actual = jest.requireActual<typeof crypto>('node:crypto')
+  return { ...actual, getFips: jest.fn(() => 0) }
+})
 
 type ProfileChangeHandler = (opts: SecureContextOptions) => Promise<void>
 
@@ -15,6 +20,7 @@ const mockedGetServiceAccountToken = serviceAccountTokenModule.getServiceAccount
 const mockedGetCACertificate = serviceAccountTokenModule.getCACertificate as jest.MockedFunction<
   typeof serviceAccountTokenModule.getCACertificate
 >
+const mockedGetFips = crypto.getFips as jest.MockedFunction<typeof crypto.getFips>
 
 function createProfileChangeMock(): jest.MockedFunction<ProfileChangeHandler> {
   return jest.fn<Promise<void>, [SecureContextOptions]>().mockResolvedValue(undefined)
@@ -22,12 +28,18 @@ function createProfileChangeMock(): jest.MockedFunction<ProfileChangeHandler> {
 
 const API_PATH = '/apis/config.openshift.io/v1/apiservers'
 
-function makeAPIServerList(resourceVersion: string, profileType?: string, minTLSVersion?: string, ciphers?: string[]) {
+function makeAPIServerList(
+  resourceVersion: string,
+  profileType?: string,
+  minTLSVersion?: string,
+  ciphers?: string[],
+  groups?: string[]
+) {
   const spec: Record<string, unknown> = {}
   if (profileType) {
     const profile: Record<string, unknown> = { type: profileType }
     if (profileType === 'Custom') {
-      profile.custom = { minTLSVersion, ciphers }
+      profile.custom = { minTLSVersion, ciphers, groups }
     }
     spec.tlsSecurityProfile = profile
   }
@@ -51,12 +63,16 @@ function makeWatchEvent(
   resourceVersion: string,
   profileType?: string,
   minTLSVersion?: string,
-  extra?: Record<string, unknown>
+  extra?: Record<string, unknown>,
+  groups?: string[],
+  ciphers?: string[]
 ) {
   const spec: Record<string, unknown> = {}
   if (profileType) {
     spec.tlsSecurityProfile = { type: profileType }
-    if (minTLSVersion) {
+    if (profileType === 'Custom') {
+      ;(spec.tlsSecurityProfile as Record<string, unknown>).custom = { minTLSVersion, ciphers, groups }
+    } else if (minTLSVersion) {
       ;(spec.tlsSecurityProfile as Record<string, unknown>).custom = { minTLSVersion }
     }
   }
@@ -97,6 +113,7 @@ describe('tlsProfileWatch', () => {
     process.env.CLUSTER_API_URL = 'https://api.test-cluster.com:6443'
     mockedGetServiceAccountToken.mockReturnValue('mock-token')
     mockedGetCACertificate.mockReturnValue(undefined)
+    mockedGetFips.mockReturnValue(0)
   })
 
   afterEach(async () => {
@@ -549,5 +566,451 @@ describe('tlsProfileWatch', () => {
     expect(onProfileChange.mock.calls[0][0].minVersion).toBe('TLSv1.2')
     expect(onProfileChange.mock.calls[1][0].minVersion).toBe('TLSv1.3')
     expect(onProfileChange.mock.calls[2][0].minVersion).toBe('TLSv1')
+  })
+
+  describe('groups/ecdhCurve', () => {
+    it('should include default groups for Intermediate profile', async () => {
+      const onProfileChange = createProfileChangeMock()
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query(true)
+        .reply(200, makeAPIServerList('1000', 'Intermediate'))
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query((q) => q.watch !== undefined)
+        .delay(60000)
+        .reply(200, '')
+
+      stopWatch = watchTLSSecurityProfile(onProfileChange)
+
+      await waitForCalls(onProfileChange, 1)
+
+      expect(onProfileChange.mock.calls[0][0].ecdhCurve).toBe('X25519MLKEM768:X25519:secp256r1:secp384r1')
+    })
+
+    it('should include default groups for Old profile', async () => {
+      const onProfileChange = createProfileChangeMock()
+
+      nock('https://api.test-cluster.com:6443').get(API_PATH).query(true).reply(200, makeAPIServerList('1000', 'Old'))
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query((q) => q.watch !== undefined)
+        .delay(60000)
+        .reply(200, '')
+
+      stopWatch = watchTLSSecurityProfile(onProfileChange)
+
+      await waitForCalls(onProfileChange, 1)
+
+      expect(onProfileChange.mock.calls[0][0].ecdhCurve).toBe('X25519MLKEM768:X25519:secp256r1:secp384r1')
+    })
+
+    it('should include default groups for Modern profile', async () => {
+      const onProfileChange = createProfileChangeMock()
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query(true)
+        .reply(200, makeAPIServerList('1000', 'Modern'))
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query((q) => q.watch !== undefined)
+        .delay(60000)
+        .reply(200, '')
+
+      stopWatch = watchTLSSecurityProfile(onProfileChange)
+
+      await waitForCalls(onProfileChange, 1)
+
+      expect(onProfileChange.mock.calls[0][0].ecdhCurve).toBe('X25519MLKEM768:X25519:secp256r1:secp384r1')
+    })
+
+    it('should use explicit groups from Custom profile', async () => {
+      const onProfileChange = createProfileChangeMock()
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query(true)
+        .reply(
+          200,
+          makeAPIServerList('1000', 'Custom', 'VersionTLS12', ['ECDHE-RSA-AES128-GCM-SHA256'], ['X25519', 'secp256r1'])
+        )
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query((q) => q.watch !== undefined)
+        .delay(60000)
+        .reply(200, '')
+
+      stopWatch = watchTLSSecurityProfile(onProfileChange)
+
+      await waitForCalls(onProfileChange, 1)
+
+      expect(onProfileChange.mock.calls[0][0].ecdhCurve).toBe('X25519:secp256r1')
+    })
+
+    it('should fall back to Intermediate groups when Custom profile has no groups', async () => {
+      const onProfileChange = createProfileChangeMock()
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query(true)
+        .reply(200, makeAPIServerList('1000', 'Custom', 'VersionTLS12', ['ECDHE-RSA-AES128-GCM-SHA256']))
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query((q) => q.watch !== undefined)
+        .delay(60000)
+        .reply(200, '')
+
+      stopWatch = watchTLSSecurityProfile(onProfileChange)
+
+      await waitForCalls(onProfileChange, 1)
+
+      expect(onProfileChange.mock.calls[0][0].ecdhCurve).toBe('X25519MLKEM768:X25519:secp256r1:secp384r1')
+    })
+
+    it('should include PQC hybrid groups in Custom profile when specified', async () => {
+      const onProfileChange = createProfileChangeMock()
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query(true)
+        .reply(
+          200,
+          makeAPIServerList('1000', 'Custom', 'VersionTLS13', undefined, [
+            'X25519MLKEM768',
+            'SecP256r1MLKEM768',
+            'X25519',
+            'secp256r1',
+          ])
+        )
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query((q) => q.watch !== undefined)
+        .delay(60000)
+        .reply(200, '')
+
+      stopWatch = watchTLSSecurityProfile(onProfileChange)
+
+      await waitForCalls(onProfileChange, 1)
+
+      expect(onProfileChange.mock.calls[0][0].ecdhCurve).toBe('X25519MLKEM768:SecP256r1MLKEM768:X25519:secp256r1')
+    })
+
+    it('should include secp521r1 when specified in Custom profile', async () => {
+      const onProfileChange = createProfileChangeMock()
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query(true)
+        .reply(
+          200,
+          makeAPIServerList(
+            '1000',
+            'Custom',
+            'VersionTLS12',
+            ['ECDHE-RSA-AES128-GCM-SHA256'],
+            ['X25519', 'secp256r1', 'secp384r1', 'secp521r1']
+          )
+        )
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query((q) => q.watch !== undefined)
+        .delay(60000)
+        .reply(200, '')
+
+      stopWatch = watchTLSSecurityProfile(onProfileChange)
+
+      await waitForCalls(onProfileChange, 1)
+
+      expect(onProfileChange.mock.calls[0][0].ecdhCurve).toBe('X25519:secp256r1:secp384r1:secp521r1')
+    })
+
+    it('should trigger onProfileChange when only groups change via watch', async () => {
+      const onProfileChange = createProfileChangeMock()
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query(true)
+        .reply(
+          200,
+          makeAPIServerList('1000', 'Custom', 'VersionTLS12', ['ECDHE-RSA-AES128-GCM-SHA256'], ['X25519', 'secp256r1'])
+        )
+
+      const watchBody =
+        makeWatchEvent(
+          'MODIFIED',
+          '1001',
+          'Custom',
+          'VersionTLS12',
+          undefined,
+          ['X25519', 'secp256r1', 'secp384r1'],
+          ['ECDHE-RSA-AES128-GCM-SHA256']
+        ) + '\n'
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query((q) => q.watch !== undefined)
+        .reply(200, watchBody)
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query((q) => q.watch !== undefined)
+        .delay(60000)
+        .reply(200, '')
+
+      stopWatch = watchTLSSecurityProfile(onProfileChange)
+
+      await waitForCalls(onProfileChange, 2)
+
+      expect(onProfileChange).toHaveBeenCalledTimes(2)
+      expect(onProfileChange.mock.calls[0][0].ecdhCurve).toBe('X25519:secp256r1')
+      expect(onProfileChange.mock.calls[1][0].ecdhCurve).toBe('X25519:secp256r1:secp384r1')
+    })
+
+    it('should not trigger onProfileChange when groups are unchanged', async () => {
+      const onProfileChange = createProfileChangeMock()
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query(true)
+        .reply(
+          200,
+          makeAPIServerList('1000', 'Custom', 'VersionTLS12', ['ECDHE-RSA-AES128-GCM-SHA256'], ['X25519', 'secp256r1'])
+        )
+
+      const watchBody =
+        makeWatchEvent(
+          'MODIFIED',
+          '1001',
+          'Custom',
+          'VersionTLS12',
+          undefined,
+          ['X25519', 'secp256r1'],
+          ['ECDHE-RSA-AES128-GCM-SHA256']
+        ) + '\n'
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query((q) => q.watch !== undefined)
+        .reply(200, watchBody)
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query((q) => q.watch !== undefined)
+        .delay(60000)
+        .reply(200, '')
+
+      stopWatch = watchTLSSecurityProfile(onProfileChange)
+
+      await waitForCalls(onProfileChange, 1)
+      await new Promise((resolve) => setTimeout(resolve, 300))
+
+      expect(onProfileChange).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('FIPS mode', () => {
+    beforeEach(() => {
+      mockedGetFips.mockReturnValue(1)
+    })
+
+    it('should exclude X25519 and X25519MLKEM768 from built-in profiles in FIPS mode', async () => {
+      const onProfileChange = createProfileChangeMock()
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query(true)
+        .reply(200, makeAPIServerList('1000', 'Intermediate'))
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query((q) => q.watch !== undefined)
+        .delay(60000)
+        .reply(200, '')
+
+      stopWatch = watchTLSSecurityProfile(onProfileChange)
+
+      await waitForCalls(onProfileChange, 1)
+
+      expect(onProfileChange.mock.calls[0][0].ecdhCurve).toBe('secp256r1:secp384r1')
+    })
+
+    it('should exclude X25519 and X25519MLKEM768 from Custom profile groups in FIPS mode', async () => {
+      const onProfileChange = createProfileChangeMock()
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query(true)
+        .reply(
+          200,
+          makeAPIServerList(
+            '1000',
+            'Custom',
+            'VersionTLS12',
+            ['ECDHE-RSA-AES128-GCM-SHA256'],
+            ['X25519MLKEM768', 'X25519', 'secp256r1', 'secp384r1']
+          )
+        )
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query((q) => q.watch !== undefined)
+        .delay(60000)
+        .reply(200, '')
+
+      stopWatch = watchTLSSecurityProfile(onProfileChange)
+
+      await waitForCalls(onProfileChange, 1)
+
+      expect(onProfileChange.mock.calls[0][0].ecdhCurve).toBe('secp256r1:secp384r1')
+    })
+
+    it('should allow FIPS-approved PQC hybrids in FIPS mode', async () => {
+      const onProfileChange = createProfileChangeMock()
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query(true)
+        .reply(
+          200,
+          makeAPIServerList(
+            '1000',
+            'Custom',
+            'VersionTLS12',
+            ['ECDHE-RSA-AES128-GCM-SHA256'],
+            ['SecP256r1MLKEM768', 'SecP384r1MLKEM1024', 'secp256r1', 'secp384r1']
+          )
+        )
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query((q) => q.watch !== undefined)
+        .delay(60000)
+        .reply(200, '')
+
+      stopWatch = watchTLSSecurityProfile(onProfileChange)
+
+      await waitForCalls(onProfileChange, 1)
+
+      expect(onProfileChange.mock.calls[0][0].ecdhCurve).toBe(
+        'SecP256r1MLKEM768:SecP384r1MLKEM1024:secp256r1:secp384r1'
+      )
+    })
+
+    it('should allow secp521r1 in FIPS mode', async () => {
+      const onProfileChange = createProfileChangeMock()
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query(true)
+        .reply(
+          200,
+          makeAPIServerList(
+            '1000',
+            'Custom',
+            'VersionTLS12',
+            ['ECDHE-RSA-AES128-GCM-SHA256'],
+            ['secp256r1', 'secp384r1', 'secp521r1']
+          )
+        )
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query((q) => q.watch !== undefined)
+        .delay(60000)
+        .reply(200, '')
+
+      stopWatch = watchTLSSecurityProfile(onProfileChange)
+
+      await waitForCalls(onProfileChange, 1)
+
+      expect(onProfileChange.mock.calls[0][0].ecdhCurve).toBe('secp256r1:secp384r1:secp521r1')
+    })
+
+    it('should result in empty ecdhCurve when only non-FIPS groups are specified', async () => {
+      const onProfileChange = createProfileChangeMock()
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query(true)
+        .reply(
+          200,
+          makeAPIServerList(
+            '1000',
+            'Custom',
+            'VersionTLS12',
+            ['ECDHE-RSA-AES128-GCM-SHA256'],
+            ['X25519MLKEM768', 'X25519']
+          )
+        )
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query((q) => q.watch !== undefined)
+        .delay(60000)
+        .reply(200, '')
+
+      stopWatch = watchTLSSecurityProfile(onProfileChange)
+
+      await waitForCalls(onProfileChange, 1)
+
+      expect(onProfileChange.mock.calls[0][0].ecdhCurve).toBe('')
+    })
+  })
+
+  describe('Custom profile with TLS 1.3', () => {
+    it('should use Modern ciphers when Custom profile has TLS 1.3 and no ciphers', async () => {
+      const onProfileChange = createProfileChangeMock()
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query(true)
+        .reply(200, makeAPIServerList('1000', 'Custom', 'VersionTLS13', undefined, ['X25519MLKEM768', 'X25519']))
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query((q) => q.watch !== undefined)
+        .delay(60000)
+        .reply(200, '')
+
+      stopWatch = watchTLSSecurityProfile(onProfileChange)
+
+      await waitForCalls(onProfileChange, 1)
+
+      const opts = onProfileChange.mock.calls[0][0]
+      expect(opts.minVersion).toBe('TLSv1.3')
+      expect(opts.ecdhCurve).toBe('X25519MLKEM768:X25519')
+      // Should contain TLS 1.3 ciphers from Modern profile
+      expect(opts.ciphers).toContain('TLS_AES_128_GCM_SHA256')
+    })
+
+    it('should use explicit groups with TLS 1.3 Custom profile', async () => {
+      const onProfileChange = createProfileChangeMock()
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query(true)
+        .reply(200, makeAPIServerList('1000', 'Custom', 'VersionTLS13', undefined, ['X25519MLKEM768']))
+
+      nock('https://api.test-cluster.com:6443')
+        .get(API_PATH)
+        .query((q) => q.watch !== undefined)
+        .delay(60000)
+        .reply(200, '')
+
+      stopWatch = watchTLSSecurityProfile(onProfileChange)
+
+      await waitForCalls(onProfileChange, 1)
+
+      expect(onProfileChange.mock.calls[0][0].ecdhCurve).toBe('X25519MLKEM768')
+    })
   })
 })
