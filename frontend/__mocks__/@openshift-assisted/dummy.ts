@@ -43,8 +43,6 @@ export const ClusterInstallationError = (): any => null
 export const EventsModal = (): any => null
 export const PostInstallAlert = (): any => null
 export const ACMClusterDeploymentDetailsStep = (): any => null
-export const ACMFeatureSupportLevelProvider = ({ children }: any): any => children
-export const FeatureGateContextProvider = ({ children }: any): any => children
 export const ClusterDeploymentWizard = (): any => null
 export const EditAgentModal = (): any => null
 export const HostedClusterHostsStep = (): any => null
@@ -103,6 +101,5 @@ export type FetchSecret = any
 
 // Constants
 export const AGENT_LOCATION_LABEL_KEY = 'agentclusterinstalls.extensions.hive.openshift.io/location'
-export const ACM_ENABLED_FEATURES = 'ACM_ENABLED_FEATURES'
 export const AGENT_BMH_NAME_LABEL_KEY = 'bmac.agent-install.openshift.io/bmh'
 export const BMH_HOSTNAME_ANNOTATION = 'bmac.agent-install.openshift.io/hostname'
