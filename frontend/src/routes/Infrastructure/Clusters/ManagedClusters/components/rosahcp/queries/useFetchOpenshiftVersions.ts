@@ -3,7 +3,7 @@
 import { useSharedReactQuery } from '~/hooks/shared-react-query'
 import { getWizardVersions } from '~/lib/rosa-hcp-api'
 import { rosaWizardKeys } from './queryKeyFactory'
-import { DropdownType, OpenshiftVersion, SelectedSecret } from '../constants/types'
+import type { DropdownType, OpenshiftVersion, SelectedSecret } from '../constants/types'
 
 export const versionRegEx = /(?<major>\d+).(?<minor>\d+).(?<revision>\d+)(?:-(rc|fc).(?<patch>\d+))?/
 
@@ -73,8 +73,8 @@ const transformToVersionsData = (versions: OpenshiftVersion[]) => {
     })
 
   return {
-    default: defaultVersion ? { label: defaultVersion.raw_id ?? '', value: defaultVersion.raw_id ?? '' } : undefined,
-    latest: latestVersion ? { label: latestVersion.raw_id ?? '', value: latestVersion.raw_id ?? '' } : undefined,
+    default: defaultVersion ? { label: defaultVersion.raw_id ?? defaultVersion.id ?? '', value: defaultVersion.raw_id ?? defaultVersion.id ?? '' } : undefined,
+    latest: latestVersion ? { label: latestVersion.raw_id ?? latestVersion.id ?? '', value: latestVersion.raw_id ?? latestVersion.id ?? '' } : undefined,
     releases,
   }
 }
