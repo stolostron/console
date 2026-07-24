@@ -5,7 +5,7 @@ import {
   ClusterDeploymentK8sResource,
   getClusterProperties,
 } from '@openshift-assisted/ui-lib/cim'
-import { AlertVariant, ButtonVariant, Content, PageSection, Popover } from '@patternfly/react-core'
+import { AlertVariant, ButtonVariant, PageSection, Popover } from '@patternfly/react-core'
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { ExternalLinkAltIcon, OutlinedQuestionCircleIcon, PencilAltIcon } from '@patternfly/react-icons'
 import { Markdown } from '@redhat-cloud-services/rule-components/Markdown'
@@ -47,6 +47,7 @@ import AIClusterDetails from '../../components/cim/AIClusterDetails'
 import AIHypershiftClusterDetails from '../../components/cim/AIHypershiftClusterDetails'
 import { ClusterStatusMessageAlert } from '../../components/ClusterStatusMessageAlert'
 import { DistributionField } from '../../components/DistributionField'
+import { EditDescription } from '../../components/EditDescription'
 import { EditLabels } from '../../components/EditLabels'
 import { HiveNotification } from '../../components/HiveNotification'
 import HypershiftClusterDetails from '../../components/HypershiftClusterDetails'
@@ -85,6 +86,7 @@ export function ClusterOverviewPageContent() {
   const localHubName = useLocalHubName()
   const clusterDescriptionAnnotation = 'console.open-cluster-management.io/description'
   const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
+  const [showEditDescription, setShowEditDescription] = useState<boolean>(false)
   const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
   const [curatorSummaryModalIsOpen, setCuratorSummaryModalIsOpen] = useState<boolean>(false)
   const { projects } = useProjects()
@@ -342,11 +344,19 @@ export function ClusterOverviewPageContent() {
     description: {
       key: t('Description'),
       value: cluster?.annotations?.[clusterDescriptionAnnotation] ? (
-        <Content>
-          <Markdown template={cluster.annotations[clusterDescriptionAnnotation]} />
-        </Content>
+        <Markdown template={cluster.annotations[clusterDescriptionAnnotation]} />
       ) : (
         '-'
+      ),
+      keyAction: cluster?.isManaged && (
+        <RbacButton
+          onClick={() => setShowEditDescription(true)}
+          variant={ButtonVariant.plain}
+          aria-label={t('Edit cluster description')}
+          rbac={[rbacPatch(ManagedClusterDefinition, undefined, cluster?.name)]}
+        >
+          <PencilAltIcon />
+        </RbacButton>
       ),
     },
   }
@@ -505,6 +515,18 @@ export function ClusterOverviewPageContent() {
           }
           displayName={cluster.displayName}
           close={() => setShowEditLabels(false)}
+        />
+        <EditDescription
+          resource={
+            showEditDescription
+              ? {
+                  ...ManagedClusterDefinition,
+                  metadata: { name: cluster.name, annotations: cluster.annotations },
+                }
+              : undefined
+          }
+          displayName={cluster.displayName}
+          close={() => setShowEditDescription(false)}
         />
         {details}
         <AcmDescriptionList
