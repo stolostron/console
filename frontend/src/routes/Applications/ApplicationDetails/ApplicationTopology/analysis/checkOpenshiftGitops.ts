@@ -91,6 +91,7 @@ interface ArgoCDSearchResource {
   cluster?: string
   kind?: string
   status?: string
+  restarts?: number | string
   _uid?: string
   _relatedUids?: string[]
 }
@@ -141,7 +142,8 @@ interface PodTerminatedContainerStatus {
 }
 
 /**
- * Fetches full Pod resources for pods that are not Running and creates alerts for terminated containers.
+ * Fetches full Pod resources for pods that are not Running or have restarts > 3,
+ * and creates alerts for terminated containers.
  * @returns true when one or more alerts were added
  */
 const checkNonRunningArgoCDPods = async (
@@ -149,7 +151,9 @@ const checkNonRunningArgoCDPods = async (
   alerts: TopologyAlert[],
   t: TFunction
 ): Promise<boolean> => {
-  const nonRunningPods = pods.filter((pod) => pod.name && pod.cluster && pod.namespace && pod.status !== 'Running')
+  const nonRunningPods = pods.filter(
+    (pod) => pod.name && pod.cluster && pod.namespace && (pod.status !== 'Running' || Number(pod.restarts ?? 0) > 3)
+  )
   let hasGitopsIssues = false
 
   await Promise.all(
@@ -171,12 +175,22 @@ const checkNonRunningArgoCDPods = async (
           return
         }
 
-        const alert = createTopologyAlert(t('OpenShift GitOps Operator issue'), 'red', {
-          message: t('The ArgoCD instance on {{cluster}} is not running. The reason is {{reason}}', {
-            cluster: pod.cluster,
+        const alert = createTopologyAlert(
+          t('{{reason}} on {{cluster}} cluster', {
             reason,
+            cluster: pod.cluster,
           }),
-        })
+          'red',
+          {
+            message: t(
+              'The OpenShift GitOps operator is having this issue with the {{podName}} pod. The pod has restarted {{restarts}} times.',
+              {
+                podName: pod.name,
+                restarts: Number(pod.restarts ?? 0),
+              }
+            ),
+          }
+        )
         if (!alerts.some((existingAlert) => existingAlert.id === alert.id)) {
           alerts.push(alert)
           hasGitopsIssues = true
