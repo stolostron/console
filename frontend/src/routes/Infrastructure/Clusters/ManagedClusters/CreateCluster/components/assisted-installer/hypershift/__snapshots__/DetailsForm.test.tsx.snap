@@ -376,7 +376,7 @@ exports[`DetailsForm it renders 1`] = `
           <span
             class="pf-v6-c-menu-toggle__text"
           >
-            OpenShift 4.19.16-x86_64
+            ai:OpenShift 4.19.16-x86_64
           </span>
           <span
             class="pf-v6-c-menu-toggle__controls"
