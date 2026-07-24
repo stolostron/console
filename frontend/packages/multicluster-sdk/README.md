@@ -57,6 +57,7 @@ Setup depends on your usage scenarios.
 - [useFleetK8sWatchResource](#gear-usefleetk8swatchresource)
 - [useFleetK8sWatchResources](#gear-usefleetk8swatchresources)
 - [useFleetPrometheusPoll](#gear-usefleetprometheuspoll)
+- [useFleetSearch](#gear-usefleetsearch)
 - [useFleetSearchPoll](#gear-usefleetsearchpoll)
 - [useHubClusterName](#gear-usehubclustername)
 - [useIsFleetAvailable](#gear-useisfleetavailable)
@@ -861,6 +862,88 @@ if (error) {
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetPrometheusPoll.ts#L86)
 
+### :gear: useFleetSearch
+
+A React hook that provides fleet-wide search functionality using the ACM search API,
+with optional real-time updates via a GraphQL WebSocket subscription.
+
+When `subscriptionEnabled` is `false` (the default), the hook issues a one-shot
+GraphQL query and returns the results. When `subscriptionEnabled` is `true`, the
+hook additionally opens a WebSocket subscription and patches the locally-held
+results as INSERT, UPDATE, and DELETE events arrive — keeping the data always
+up to date without polling.
+
+Pagination is supported by setting `limit` and `offset` on the `SearchInput`
+object. The caller is responsible for constructing those values.
+
+| Function | Type |
+| ---------- | ---------- |
+| `useFleetSearch` | `<T extends K8sResourceCommon = K8sResourceCommon>(input: SearchInput or undefined, subscriptionEnabled?: boolean or undefined) => [Fleet<T>[] or undefined, boolean, Error or undefined, () => void]` |
+
+Parameters:
+
+* `input`: - The search input object (filters, keywords, limit, offset, etc.).
+Pass `undefined` to skip the query entirely.
+* `subscriptionEnabled`: - When `true`, a WebSocket subscription is opened
+and the local result set is kept current via incremental event patches.
+Defaults to `false`.
+
+
+Returns:
+
+A tuple of:
+- `data` — The current search results mapped through
+{@link convertSearchItemToResource }, or `undefined` before the first
+response arrives.
+- `loaded` — `true` once the initial query has completed (regardless of
+whether the subscription is active).
+- `error` — Any query or subscription error, or `undefined` on success.
+- `refetch` — A stable callback that re-executes the base query and resets
+the local state to the fresh result.
+
+Examples:
+
+```typescript
+// Basic query — no real-time updates
+const [resources, loaded, error, refetch] = useFleetSearch({
+  filters: [
+    { property: 'kind', values: ['Pod'] },
+    { property: 'namespace', values: ['default'] },
+  ],
+  limit: 100,
+})
+
+// With real-time subscription — results update automatically
+const [resources, loaded, error, refetch] = useFleetSearch(
+  {
+    filters: [
+      { property: 'kind', values: ['Pod'] },
+      { property: 'namespace', values: ['default'] },
+    ],
+  },
+  true,
+)
+
+// With subscription enabled and pagination/ordering — page 2 of 20 results sorted by name
+const PAGE_SIZE = 20
+const [page, setPage] = useState(1)
+const [resources, loaded, error, refetch] = useFleetSearch(
+  {
+    filters: [
+      { property: 'kind', values: ['Pod'] },
+      { property: 'namespace', values: ['default'] },
+    ],
+    limit: PAGE_SIZE,
+    offset: (page - 1) * PAGE_SIZE,
+    orderBy: 'name asc',
+  },
+  true,
+)
+```
+
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearch.ts#L119)
+
 ### :gear: useFleetSearchPoll
 
 A React hook that provides fleet-wide search functionality using the ACM search API.
@@ -1045,9 +1128,14 @@ if (error) {
 - [FleetWatchK8sResult](#gear-fleetwatchk8sresult)
 - [FleetWatchK8sResults](#gear-fleetwatchk8sresults)
 - [FleetWatchK8sResultsObject](#gear-fleetwatchk8sresultsobject)
+- [InputMaybe](#gear-inputmaybe)
+- [Maybe](#gear-maybe)
 - [ResourceRoute](#gear-resourceroute)
 - [ResourceRouteHandler](#gear-resourceroutehandler)
 - [ResourceRouteProps](#gear-resourcerouteprops)
+- [Scalars](#gear-scalars)
+- [SearchFilter](#gear-searchfilter)
+- [SearchInput](#gear-searchinput)
 - [SearchResult](#gear-searchresult)
 
 ### :gear: AdvancedSearchFilter
@@ -1056,7 +1144,7 @@ if (error) {
 | ---------- | ---------- |
 | `AdvancedSearchFilter` | `{ property: string; values: string[] }[]` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L9)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L87)
 
 ### :gear: ClusterSetData
 
@@ -1091,9 +1179,16 @@ The "global" key is a special set that contains all clusters (when includeGlobal
 
 Options for advanced cluster name retrieval with cluster set organization.
 
-| Type | Type |
-| ---------- | ---------- |
-| `FleetClusterNamesOptions` | `{ /** Whether to return all clusters regardless of availability status. Defaults to false. */ returnAllClusters?: boolean /** Specific cluster set names to include. If not specified, includes all cluster sets including "default". Should not include "global" - use includeGlobal instead. */ clusterSets?: string[] /** Whether to include a special "global" set containing all clusters. Defaults to false. */ includeGlobal?: boolean }` |
+```typescript
+type FleetClusterNamesOptions = {
+  /** Whether to return all clusters regardless of availability status. Defaults to false. */
+  returnAllClusters?: boolean
+  /** Specific cluster set names to include. If not specified, includes all cluster sets including "default". Should not include "global" - use includeGlobal instead. */
+  clusterSets?: string[]
+  /** Whether to include a special "global" set containing all clusters. Defaults to false. */
+  includeGlobal?: boolean
+}
+```
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L101)
 
@@ -1209,6 +1304,22 @@ Options for advanced cluster name retrieval with cluster set organization.
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/fleet.ts#L26)
 
+### :gear: InputMaybe
+
+| Type | Type |
+| ---------- | ---------- |
+| `InputMaybe` | `Maybe<T>` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L6)
+
+### :gear: Maybe
+
+| Type | Type |
+| ---------- | ---------- |
+| `Maybe` | `T or null` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L5)
+
 ### :gear: ResourceRoute
 
 This extension allows plugins to customize the route used for resources of the given kind. Search results and resource links will direct to the route returned by the implementing function.
@@ -1229,11 +1340,65 @@ This extension allows plugins to customize the route used for resources of the g
 
 ### :gear: ResourceRouteProps
 
-| Type | Type |
-| ---------- | ---------- |
-| `ResourceRouteProps` | `{ /** The model for which this resource route should be used. */ model: ExtensionK8sGroupKindModel /** The handler function that returns the route path for the resource. */ handler: CodeRef<ResourceRouteHandler> }` |
+```typescript
+type ResourceRouteProps = {
+  /** The model for which this resource route should be used. */
+  model: ExtensionK8sGroupKindModel
+  /** The handler function that returns the route path for the resource. */
+  handler: CodeRef<ResourceRouteHandler>
+}
+```
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/extensions/resource.ts#L20)
+
+### :gear: Scalars
+
+All built-in and custom scalars, mapped to their actual values
+
+| Type | Type |
+| ---------- | ---------- |
+| `Scalars` | `{ ID: { input: string; output: string } String: { input: string; output: string } Boolean: { input: boolean; output: boolean } Int: { input: number; output: number } Float: { input: number; output: number } Date: { input: any; output: any } Map: { input: any; output: any } }` |
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L8)
+
+### :gear: SearchFilter
+
+Defines a key/value to filter results.
+When multiple values are provided for a property, it is interpreted as an OR operation.
+
+```typescript
+type SearchFilter = {
+  /** Name of the property (key). */
+  property: string
+  /** Values for the property. Multiple values per property are interpreted as an OR operation. Optionally one of these operations `=,!,!=,>,>=,<,<=` can be included at the beginning of the value. By default the equality operation is used. The values available for datetime fields (Ex: `created`, `startedAt`) are `hour`, `day`, `week`, `month` and `year`. Property `kind`, if included in the filter, will be matched using a case-insensitive comparison. For example, `kind:Pod` and `kind:pod` will bring up all pods. This is to maintain compatibility with Search V1. Wildcard matching: the `*` character can be used as a wildcard to match any sequence of characters. For example, a filter with property `name` and value `nginx-*` matches any resource whose name starts with `nginx-`. Similarly, property `namespace` with value `prod*` matches any namespace starting with `prod`. Wildcard matches are case-sensitive. */
+  values: string[]
+}
+```
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L23)
+
+### :gear: SearchInput
+
+Input options to the search query.
+
+```typescript
+type SearchInput = {
+  /** List of SearchFilter, which is a key(property) and values. When multiple filters are provided, results will match all filters (AND operation). */
+  filters?: SearchFilter[]
+  /** List of strings to match resources. Will match resources containing any of the keywords in any text field. When multiple keywords are provided, it is interpreted as an AND operation. Matches are case insensitive. */
+  keywords?: string[]
+  /** Max number of results returned by the query. **Default is** 10,000 A value of -1 will remove the limit. Use carefully because it may impact the service. */
+  limit?: number
+  /** Number of results to skip before returning results. Used in combination with limit to implement pagination. **Default is** 0 */
+  offset?: number
+  /** Order results by a property and direction. Format: "property_name asc" or "property_name desc" Example: "name desc" or "created asc" */
+  orderBy?: string
+  /** Filter relationships to the specified kinds. If empty, all relationships will be included. This filter is used with the 'related' field on SearchResult. */
+  relatedKinds?: string[]
+}
+```
+
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L44)
 
 ### :gear: SearchResult
 
@@ -1241,7 +1406,7 @@ This extension allows plugins to customize the route used for resources of the g
 | ---------- | ---------- |
 | `SearchResult` | `R extends (infer T)[] ? Fleet<T>[] : Fleet<R>` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L5)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L83)
 
 
 <!-- TSDOC_END -->

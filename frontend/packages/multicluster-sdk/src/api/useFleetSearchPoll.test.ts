@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { renderHook } from '@testing-library/react-hooks'
-import { useFleetSearchPoll } from './useFleetSearchPoll'
-import { useSearchResultItemsQuery } from '../internal/search/search-sdk'
 import { K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk'
+import { renderHook } from '@testing-library/react-hooks'
+import { useSearchResultItemsQuery } from '../internal/search/search-sdk'
 import { FleetWatchK8sResource } from '../types'
+import { useFleetSearchPoll } from './useFleetSearchPoll'
 
 // Mock the search-sdk hook
 jest.mock('../internal/search/search-sdk', () => ({
