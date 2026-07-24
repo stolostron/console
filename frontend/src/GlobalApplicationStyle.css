@@ -10,5 +10,5 @@
 
 /* Fix for bold icons when running as plugin in OCP 4.22 - PatternFly 6.5+ dual icon rendering incompatibility */
 .pf-v6-svg .pf-v6-icon-rh-ui {
-  display: none !important;
+  display: none;
 }
