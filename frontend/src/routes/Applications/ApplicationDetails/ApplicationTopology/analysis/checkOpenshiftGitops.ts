@@ -59,7 +59,7 @@ export const checkOpenshiftGitops = async (
         ),
         bullets: [
           {
-            title: t('Add predicate to exclude the local-cluster'),
+            title: t('Add predicate to exclude the local hub cluster'),
           },
         ],
       },

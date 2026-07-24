@@ -57,12 +57,15 @@ const containerBase = css`
   width: 650px;
   max-width: 33%;
   z-index: 10;
-  overflow-y: auto;
 `
 
 const containerWithBorder = css`
   border: 1px solid #bee1f4;
   border-radius: var(--pf-t--global--border--radius--medium);
+`
+
+const containerScrollable = css`
+  overflow-y: auto;
 `
 
 const containerHiddenOverflow = css`
@@ -242,12 +245,37 @@ export function TopologyAlerts({
 
   useEffect(() => {
     const el = containerRef.current
-    if (!el || newAlertIds.size > 0) {
+    if (!el) {
       setHasScrollbar(false)
       return
     }
-    setHasScrollbar(el.scrollHeight > el.clientHeight)
-  }, [visibleAlerts, newAlertIds])
+
+    const updateHasScrollbar = () => {
+      if (newAlertIds.size > 0) {
+        setHasScrollbar(false)
+        return
+      }
+      // Subpixel rounding can leave scrollHeight 1px over clientHeight
+      setHasScrollbar(el.scrollHeight > el.clientHeight + 1)
+    }
+
+    updateHasScrollbar()
+
+    if (typeof ResizeObserver === 'undefined') {
+      return
+    }
+
+    // Observe the container and its content so we detect overflow when
+    // children grow while the container is already at max-height.
+    const content = el.firstElementChild
+    const observer = new ResizeObserver(updateHasScrollbar)
+    observer.observe(el)
+    if (content) {
+      observer.observe(content)
+    }
+
+    return () => observer.disconnect()
+  }, [visibleAlerts, newAlertIds, removingIds])
 
   const closeAction = useCallback((alertId: string) => {
     const existingTimer = dismissTimersRef.current.get(alertId)
@@ -274,7 +302,7 @@ export function TopologyAlerts({
 
   if (isProcessingSave && !processingAlertDismissed) {
     return (
-      <div ref={containerRef} className={containerBase} style={{ maxHeight }}>
+      <div ref={containerRef} className={`${containerBase} ${containerScrollable}`} style={{ maxHeight }}>
         <AlertGroup>
           <Alert
             variant="info"
@@ -289,7 +317,7 @@ export function TopologyAlerts({
 
   if (isAnalyzing && !analyzingAlertDismissed) {
     return (
-      <div ref={containerRef} className={containerBase} style={{ maxHeight }}>
+      <div ref={containerRef} className={`${containerBase} ${containerScrollable}`} style={{ maxHeight }}>
         <AlertGroup>
           <Alert
             variant="info"
@@ -309,7 +337,9 @@ export function TopologyAlerts({
   return (
     <div
       ref={containerRef}
-      className={`${containerBase} ${isFadingIn ? containerHiddenOverflow : ''} ${hasScrollbar ? containerWithBorder : ''}`}
+      className={`${containerBase} ${
+        isFadingIn ? containerHiddenOverflow : containerScrollable
+      } ${hasScrollbar ? containerWithBorder : ''}`}
       style={{ maxHeight }}
     >
       <AlertGroup>

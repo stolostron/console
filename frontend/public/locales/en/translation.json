@@ -429,7 +429,7 @@
   "Add placement binding": "Add placement binding",
   "Add placement subject": "Add placement subject",
   "Add policy template": "Add policy template",
-  "Add predicate to exclude the local-cluster": "Add predicate to exclude the local hub cluster",
+  "Add predicate to exclude the local hub cluster": "Add predicate to exclude the local hub cluster",
   "Add rule": "Add rule",
   "Add service account": "Add service account",
   "Add storage class mapping": "Add storage class mapping",
