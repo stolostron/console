@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
+import { getInsightsAgent, getProxyAgent } from '../lib/agent'
 import { jsonPost, jsonRequest } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import { respondInternalServerError } from '../lib/respond'
@@ -7,7 +8,6 @@ import { getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
 import type { ResourceList } from '../resources/resource-list'
 import type { Secret } from '../resources/secret'
-import { getProxyAgent } from '../lib/agent'
 interface Credential {
   auths: {
     'cloud.openshift.com': {
@@ -68,12 +68,16 @@ export async function upgradeRiskPredictions(req: Http2ServerRequest, res: Http2
 
         // Create req for each 100 id chunk
         const reqs = clusterIds.map((idChunk: string[]) => {
-          return jsonPost(insightsPath, { clusters: idChunk }, crcToken, userAgent, getProxyAgent()).catch(
-            (err: Error) => {
-              logger.error({ msg: 'Error getting cluster upgrade risk predictions', error: err.message })
-              return { error: err.message }
-            }
-          )
+          return jsonPost(
+            insightsPath,
+            { clusters: idChunk },
+            crcToken,
+            userAgent,
+            getProxyAgent() ?? getInsightsAgent()
+          ).catch((err: Error) => {
+            logger.error({ msg: 'Error getting cluster upgrade risk predictions', error: err.message })
+            return { error: err.message }
+          })
         })
 
         await Promise.all(reqs).then((results) => {
