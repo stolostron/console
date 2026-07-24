@@ -13,6 +13,7 @@ import {
   UserRoleResponse,
   WizardBasePayload,
   WizardErrorResponse,
+  OpenshiftVersionResponse,
 } from '~/resources'
 import { fetchRetry, getBackendUrl } from '~/resources/utils'
 
@@ -126,3 +127,10 @@ export const getWizardUserRoleARN = (
   client_secret: string,
   signal?: AbortSignal
 ): Promise<UserRoleResponse> => getWizardData<UserRoleResponse>(client_id, client_secret, '/sts-user-role', signal)
+
+export const getWizardVersions = (
+  client_id: string,
+  client_secret: string,
+  signal?: AbortSignal
+): Promise<OpenshiftVersionResponse> =>
+  getWizardData<OpenshiftVersionResponse>(client_id, client_secret, '/openshift-versions', signal)

@@ -25,4 +25,5 @@ export const rosaWizardKeys = {
     'ocm-role-arn',
   ],
   userRoleArn: (client_id: string) => [...rosaWizardKeys.all, client_id, 'user-role-arn'],
+  openshiftVersions: (client_id: string) => [...rosaWizardKeys.all, client_id, 'openshift-versions'],
 }
