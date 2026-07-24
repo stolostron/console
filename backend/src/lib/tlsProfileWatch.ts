@@ -6,6 +6,7 @@ import { pipeline } from 'node:stream/promises'
 import { Transform } from 'node:stream'
 import { logger } from './logger'
 import { getCACertificate, getServiceAccountToken } from './serviceAccountToken'
+import { getFips } from 'node:crypto'
 
 type TLSProfileType = 'Old' | 'Intermediate' | 'Modern' | 'Custom'
 type TLSVersionValue = 'VersionTLS10' | 'VersionTLS11' | 'VersionTLS12' | 'VersionTLS13'
@@ -20,6 +21,7 @@ const TLS_VERSION_MAP: Record<TLSVersionValue, SecureVersion> = {
 type TLSProfileSpec = {
   minTLSVersion?: TLSVersionValue
   ciphers?: string[]
+  groups?: string[]
 }
 
 type TLSSecurityProfile = {
@@ -44,6 +46,18 @@ type APIServer = {
   spec: APIServerSpec
 }
 
+// In FIPS mode, X25519MLKEM768 and X25519 are not approved and must be excluded.
+const ALL_ECDH_CURVES = [
+  'X25519',
+  'secp256r1',
+  'secp384r1',
+  'secp521r1',
+  'X25519MLKEM768',
+  'SecP256r1MLKEM768',
+  'SecP384r1MLKEM1024',
+]
+const FIPS_ECDH_CURVES = ['secp256r1', 'secp384r1', 'secp521r1', 'SecP256r1MLKEM768', 'SecP384r1MLKEM1024']
+
 /**
  * Built-in TLS security profiles for OpenShift API servers.
  * List of ciphers and minimum TLS version for each built-inprofile can be obtained from the following command:
@@ -51,7 +65,7 @@ type APIServer = {
  * oc explain apiserver.spec.tlsSecurityProfile.<lowercase-profile-name>
  * ```
  */
-const BUILTIN_SPECS: Record<string, { minTLSVersion: TLSVersionValue; ciphers: string[] }> = {
+const BUILTIN_SPECS: Record<string, { minTLSVersion: TLSVersionValue; ciphers: string[]; groups: string[] }> = {
   Old: {
     minTLSVersion: 'VersionTLS10',
     ciphers: [
@@ -85,6 +99,7 @@ const BUILTIN_SPECS: Record<string, { minTLSVersion: TLSVersionValue; ciphers: s
       'AES256-SHA',
       'DES-CBC3-SHA',
     ],
+    groups: ['X25519MLKEM768', 'X25519', 'secp256r1', 'secp384r1'],
   },
   Intermediate: {
     minTLSVersion: 'VersionTLS12',
@@ -101,10 +116,12 @@ const BUILTIN_SPECS: Record<string, { minTLSVersion: TLSVersionValue; ciphers: s
       'DHE-RSA-AES128-GCM-SHA256',
       'DHE-RSA-AES256-GCM-SHA384',
     ],
+    groups: ['X25519MLKEM768', 'X25519', 'secp256r1', 'secp384r1'],
   },
   Modern: {
     minTLSVersion: 'VersionTLS13',
     ciphers: ['TLS_AES_128_GCM_SHA256', 'TLS_AES_256_GCM_SHA384', 'TLS_CHACHA20_POLY1305_SHA256'],
+    groups: ['X25519MLKEM768', 'X25519', 'secp256r1', 'secp384r1'],
   },
 }
 
@@ -115,12 +132,19 @@ function toNodeTLSOptions(spec?: TLSSecurityProfile): SecureContextOptions {
       : (BUILTIN_SPECS[spec?.type ?? 'Intermediate'] ?? BUILTIN_SPECS['Intermediate'])
   const minVersion = TLS_VERSION_MAP[securityProfileSpec.minTLSVersion ?? 'VersionTLS12']
   const supportedCiphers = getCiphers()
-  // If the profile is custom and the minimum TLS version is TLSv1.3, custom ciphers are currently not allowed
+  // Per OpenShift API: if the profile is custom and the minimum TLS version is TLSv1.3, custom ciphers are not allowed
   // Use the modern ciphers if none are set.
   const defaultCiphers = spec?.type === 'Custom' && minVersion === 'TLSv1.3' ? BUILTIN_SPECS['Modern'].ciphers : []
   const potentialCiphers = securityProfileSpec.ciphers?.length > 0 ? securityProfileSpec.ciphers : defaultCiphers
   const ciphers = potentialCiphers?.filter((c) => supportedCiphers.includes(c.toLowerCase())).join(':')
-  return { minVersion, ciphers }
+  // If no groups are set, explicitly set ECDH curves to enable PQC (X25519MLKEM768).
+  // The default image crypto policy (/etc/crypto-policies/config) does not include them
+  const potentialGroups =
+    securityProfileSpec.groups?.length > 0 ? securityProfileSpec.groups : BUILTIN_SPECS['Intermediate'].groups
+  const ecdhCurve = potentialGroups
+    ?.filter((g) => (getFips() !== 0 ? FIPS_ECDH_CURVES : ALL_ECDH_CURVES).includes(g))
+    .join(':')
+  return { minVersion, ciphers, ecdhCurve }
 }
 
 const API_PATH = '/apis/config.openshift.io/v1/apiservers'
@@ -308,11 +332,25 @@ async function applyIfChanged(
   opts: SecureContextOptions,
   onProfileChange: (opts: SecureContextOptions) => Promise<void>
 ): Promise<void> {
-  if (currentTLSOptions?.minVersion === opts.minVersion && currentTLSOptions?.ciphers === opts.ciphers) {
-    logger.debug({ msg: 'TLS security profile unchanged', minVersion: opts.minVersion })
+  if (
+    currentTLSOptions?.minVersion === opts.minVersion &&
+    currentTLSOptions?.ciphers === opts.ciphers &&
+    currentTLSOptions?.ecdhCurve === opts.ecdhCurve
+  ) {
+    logger.debug({
+      msg: 'TLS security profile unchanged',
+      minVersion: opts.minVersion,
+      ciphers: opts.ciphers,
+      ecdhCurve: opts.ecdhCurve,
+    })
     return
   }
-  logger.info({ msg: 'TLS security profile changed', minVersion: opts.minVersion })
+  logger.info({
+    msg: 'TLS security profile changed',
+    minVersion: opts.minVersion,
+    ciphers: opts.ciphers,
+    ecdhCurve: opts.ecdhCurve,
+  })
   currentTLSOptions = opts
   await onProfileChange(opts)
 }

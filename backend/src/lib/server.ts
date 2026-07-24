@@ -1,24 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
-import { getFips } from 'node:crypto'
-import { readFileSync } from 'node:fs'
 import type { Http2Server, Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import { constants, createSecureServer, createServer } from 'node:http2'
+
 import type { Socket } from 'node:net'
 import type { TLSSocket } from 'node:tls'
-import { managedClusterProxy } from '../routes/managedClusterProxy'
-import { searchWebSocket } from '../routes/search'
 import { logger } from './logger'
-
-// Explicitly set ECDH curves to enable PQC (X25519MLKEM768).
-// The default image crypto policy (/etc/crypto-policies/config) does not include them.
-// In FIPS mode, X25519MLKEM768 and X25519 are not approved and must be excluded.
-const ALL_ECDH_CURVES = ['X25519MLKEM768', 'X25519', 'P-256', 'P-384']
-const FIPS_ECDH_CURVES = ['SecP256r1MLKEM768', 'SecP384r1MLKEM1024', 'P-256', 'P-384']
-
-function getEcdhCurves(fipsEnabled: boolean): string {
-  return (fipsEnabled ? FIPS_ECDH_CURVES : ALL_ECDH_CURVES).join(':')
-}
+import { managedClusterProxy } from '../routes/managedClusterProxy'
+import { readFileSync } from 'node:fs'
+import { searchWebSocket } from '../routes/search'
 
 let server: Http2Server | undefined
 
@@ -50,9 +40,8 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
 
   try {
     if (cert && key) {
-      const ecdhCurve = getEcdhCurves(getFips() !== 0)
       logger.info({ msg: `server start`, secure: true, options })
-      server = createSecureServer({ cert, key, allowHTTP1: true, ecdhCurve, ...options }, options.requestHandler)
+      server = createSecureServer({ cert, key, allowHTTP1: true, ...options }, options.requestHandler)
     } else {
       logger.info({ msg: `server start`, secure: false })
       server = createServer(options.requestHandler)
