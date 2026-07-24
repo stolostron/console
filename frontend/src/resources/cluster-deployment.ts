@@ -46,6 +46,7 @@ export interface ClusterDeployment {
       }
     }
     powerState?: 'Running' | 'Hibernating'
+    preserveOnDelete?: boolean
     provisioning: {
       imageSetRef: {
         name: string

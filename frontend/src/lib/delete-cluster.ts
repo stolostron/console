@@ -28,11 +28,13 @@ export function deleteCluster({
   ignoreClusterDeploymentNotFound,
   infraEnvs,
   deletePullSecret,
+  preserveOnDelete,
 }: {
   cluster: Cluster
   ignoreClusterDeploymentNotFound: boolean
   infraEnvs: InfraEnvK8sResource[]
   deletePullSecret: boolean
+  preserveOnDelete?: boolean
 }) {
   let resources: IResource[] = []
 
@@ -143,30 +145,54 @@ export function deleteCluster({
     }
   }
 
-  const deleteResourcesResult = deleteResources(resources)
-  return {
-    promise: new Promise((resolve, reject) => {
-      deleteResourcesResult.promise.then((promisesSettledResult) => {
-        if (promisesSettledResult[0]?.status === 'rejected') {
-          const error = promisesSettledResult[0].reason
-          if (error instanceof ResourceError) {
-            if (ignoreClusterDeploymentNotFound && error.code === ResourceErrorCode.NotFound) {
-              // DO NOTHING
-            } else {
-              reject(promisesSettledResult[0].reason)
-              return
+  function resolveDeleteResult(deleteResourcesResult: ReturnType<typeof deleteResources>) {
+    return {
+      promise: new Promise((resolve, reject) => {
+        deleteResourcesResult.promise.then((promisesSettledResult) => {
+          if (promisesSettledResult[0]?.status === 'rejected') {
+            const error = promisesSettledResult[0].reason
+            if (error instanceof ResourceError) {
+              if (ignoreClusterDeploymentNotFound && error.code === ResourceErrorCode.NotFound) {
+                // DO NOTHING
+              } else {
+                reject(promisesSettledResult[0].reason)
+                return
+              }
             }
           }
-        }
-        if (promisesSettledResult[1]?.status === 'rejected') {
-          reject(promisesSettledResult[1].reason)
-          return
-        }
-        resolve(promisesSettledResult)
-      })
-    }),
-    abort: deleteResourcesResult.abort,
+          if (promisesSettledResult[1]?.status === 'rejected') {
+            reject(promisesSettledResult[1].reason)
+            return
+          }
+          resolve(promisesSettledResult)
+        })
+      }),
+      abort: deleteResourcesResult.abort,
+    }
   }
+
+  if (preserveOnDelete && !(cluster.isHypershift || cluster.isHostedCluster) && cluster.isHive) {
+    const patchResult = patchResource(
+      {
+        apiVersion: ClusterDeploymentApiVersion,
+        kind: ClusterDeploymentKind,
+        metadata: { name: cluster.name!, namespace: cluster.namespace! },
+      } as IResource,
+      { spec: { preserveOnDelete: true } }
+    )
+    let abortFn = patchResult.abort
+    return {
+      promise: patchResult.promise.then(() => {
+        const deleteResult = deleteResources(resources)
+        abortFn = deleteResult.abort
+        return resolveDeleteResult(deleteResult).promise
+      }),
+      abort: () => abortFn(),
+    }
+  }
+
+  const deleteResourcesResult = deleteResources(resources)
+  return resolveDeleteResult(deleteResourcesResult)
 }
 
 export function detachCluster(cluster: Cluster) {

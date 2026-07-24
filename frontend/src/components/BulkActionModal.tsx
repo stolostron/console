@@ -19,6 +19,7 @@ import {
   DescriptionListDescription,
   DescriptionListGroup,
   DescriptionListTerm,
+  Popover,
   Progress,
   ProgressMeasureLocation,
   Stack,
@@ -26,6 +27,7 @@ import {
   Checkbox,
   AlertProps,
 } from '@patternfly/react-core'
+import { HelpIcon } from '@patternfly/react-icons'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import { Fragment, useEffect, useState } from 'react'
@@ -51,6 +53,8 @@ export type BulkActionModalProps<T = undefined> = {
   processing: string
   title: string
   enableDeletePullSecret?: boolean
+  enablePreserveOnDelete?: boolean
+  actionWhenPreserve?: string
 } & Required<Pick<AcmTableProps<T>, 'items'>> &
   Partial<Pick<AcmTableProps<T>, 'columns'>> & // Policy automation and cluster claim deletion modals omit columns prop to avoid showing a table
   Omit<AcmTableProps<T>, 'columns'>
@@ -72,6 +76,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
   const [confirm, setConfirm] = useState('')
   const [errors, setErrors] = useState<ItemError<T>[] | undefined>()
   const [deletePullSecret, setDeletePullSecret] = useState(true)
+  const [preserveOnDelete, setPreserveOnDelete] = useState(false)
 
   useEffect(() => {
     setConfirm('')
@@ -79,6 +84,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
     setProgress(0)
     setProgressCount(1)
     setDeletePullSecret(true)
+    setPreserveOnDelete(false)
   }, [props.open])
 
   if (props.open === false) {
@@ -105,6 +111,8 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
     processing,
     title,
     enableDeletePullSecret,
+    enablePreserveOnDelete,
+    actionWhenPreserve,
     ...tableProps
   } = props
 
@@ -129,7 +137,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
 
   async function runSequential(items: T[], errors: ItemError<T>[]) {
     for (const item of items) {
-      const { promise } = actionFn(item, { deletePullSecret })
+      const { promise } = actionFn(item, { deletePullSecret, preserveOnDelete })
       try {
         await promise
       } catch (err) {
@@ -141,7 +149,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
 
   async function runParallel(items: T[], errors: ItemError<T>[]) {
     const promises = items.map((resource) => {
-      const r = actionFn(resource, { deletePullSecret })
+      const r = actionFn(resource, { deletePullSecret, preserveOnDelete })
       return { promise: r.promise.finally(incrementProgress), abort: r.abort }
     })
     const requestResult = resultsSettled(promises)
@@ -201,6 +209,45 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
                     isChecked={deletePullSecret}
                     onChange={(_event, val) => setDeletePullSecret(val)}
                     isDisabled={progress > 0}
+                  />
+                </StackItem>
+              )}
+              {enablePreserveOnDelete && (
+                <StackItem>
+                  <Checkbox
+                    id="preserve-cluster-infrastructure"
+                    label={
+                      <span>
+                        {t('Preserve cluster infrastructure')}{' '}
+                        <Popover
+                          bodyContent={t(
+                            'preserve.cluster.infrastructure.tooltip',
+                            'Removes the cluster from the hub without deprovisioning OpenShift or cloud provider resources. Useful for backup, restore, or disaster recovery workflows.'
+                          )}
+                        >
+                          <Button variant="plain" isInline style={{ padding: 0 }}>
+                            <HelpIcon />
+                          </Button>
+                        </Popover>
+                      </span>
+                    }
+                    isChecked={preserveOnDelete}
+                    onChange={(_event, val) => setPreserveOnDelete(val)}
+                    isDisabled={progress > 0}
+                  />
+                </StackItem>
+              )}
+              {enablePreserveOnDelete && preserveOnDelete && (
+                <StackItem>
+                  <AcmAlert
+                    isInline
+                    noClose
+                    variant="warning"
+                    title={t('preserve.cluster.infrastructure.warning.title', 'Cloud charges will continue')}
+                    message={t(
+                      'preserve.cluster.infrastructure.warning',
+                      'The cluster will be removed from management on the hub, but OpenShift and cloud resources will not be deprovisioned, so they will continue to incur charges. You must manually delete the remaining infrastructure when you no longer need it.'
+                    )}
                   />
                 </StackItem>
               )}
@@ -316,7 +363,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
                     setErrors(errors)
                     if (errors.length === 0) close()
                   }}
-                  label={action}
+                  label={preserveOnDelete && actionWhenPreserve ? actionWhenPreserve : action}
                   processingLabel={processing}
                 />,
                 <Button variant="link" onClick={onCancel ?? close} key="cancel-bulk-action">
