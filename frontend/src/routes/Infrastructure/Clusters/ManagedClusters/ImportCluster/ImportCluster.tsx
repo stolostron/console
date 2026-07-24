@@ -1180,9 +1180,10 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
                         'add-automation-template'
                       )
                     }
+                    icon={<ExternalLinkAltIcon />}
+                    iconPosition="right"
                   >
                     {t('creation.ocp.cloud.add.template')}
-                    <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
                   </AcmButton>
                 </SplitItem>
               </Split>

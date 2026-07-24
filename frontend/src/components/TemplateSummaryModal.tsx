@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { css } from '@emotion/css'
-import { Button, ButtonVariant, ExpandableSection } from '@patternfly/react-core'
+import { ButtonVariant, ExpandableSection } from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Table, Tbody, Td, Th, Thead, Tr } from '@patternfly/react-table'
@@ -9,7 +9,7 @@ import { generatePath } from 'react-router'
 import { useTranslation } from '../lib/acm-i18next'
 import { NavigationPath } from '../NavigationPath'
 import { ClusterCurator, ClusterCuratorAnsibleJob, Curation, CuratorAction, curatorActionHasJobs } from '../resources'
-import { AcmModal } from '../ui-components'
+import { AcmButton, AcmModal } from '../ui-components'
 
 export interface ITemplateSummaryModalProps {
   curatorTemplate: ClusterCurator
@@ -19,7 +19,6 @@ export interface ITemplateSummaryModalProps {
 
 const expandableSection = css({ paddingTop: '20px' })
 const linkOut = css({ paddingBottom: '15px' })
-const externalLinkIcon = css({ marginLeft: '4px', verticalAlign: 'middle' })
 
 export function TemplateSummaryControl(props: { control?: any }) {
   const { control } = props
@@ -185,25 +184,22 @@ export function TemplateLinkOut(props: { templateCurator?: ClusterCurator }) {
   }
   return (
     <div>
-      <Button
-        icon={
-          <ExternalLinkAltIcon style={{ marginLeft: '6px', verticalAlign: 'middle' }} className={externalLinkIcon} />
-        }
-        isInline
+      <AcmButton
         variant={ButtonVariant.link}
+        component="a"
+        href={generatePath(NavigationPath.editAnsibleAutomation, {
+          namespace: templateCurator.metadata?.namespace!,
+          name: templateCurator.metadata?.name!,
+        })}
+        target="_blank"
+        rel="noreferrer"
+        isInline
+        icon={<ExternalLinkAltIcon />}
+        iconPosition="right"
+        style={{ fontSize: '14px' }}
       >
-        <a
-          target="_blank"
-          rel="noopener noreferrer"
-          href={generatePath(NavigationPath.editAnsibleAutomation, {
-            namespace: templateCurator.metadata?.namespace!,
-            name: templateCurator.metadata?.name!,
-          })}
-          style={{ fontSize: '14px' }}
-        >
-          {t('View {{templateName}}', { templateName: templateCurator.metadata.name })}
-        </a>
-      </Button>
+        {t('View {{templateName}}', { templateName: templateCurator.metadata.name })}
+      </AcmButton>
     </div>
   )
 }
