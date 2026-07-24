@@ -10,7 +10,7 @@ jest.mock('../../src/lib/placementDebugCAWatch', () => ({
 }))
 
 function nockAuth(status = 200) {
-  nock(process.env.CLUSTER_API_URL).get('/apis').reply(status, { status })
+  nock(process.env.CLUSTER_API_URL).head('/api').reply(status, { status })
 }
 
 describe(`placementDebug Route`, function () {

@@ -28,10 +28,16 @@ export function getToken(req: Http2ServerRequest): string | undefined {
   return token
 }
 
-export async function isAuthenticated(token: string) {
-  return fetchRetry(process.env.CLUSTER_API_URL + '/apis', {
+// HEAD /api returns headers only — no response body — so no drain is needed and
+// the payload is ~200 bytes regardless of how many CRDs are registered.
+// Returns the HTTP status so callers can distinguish 401 (invalid token) from
+// 403 (valid token, insufficient permission) and 5xx (transient upstream error).
+export async function isAuthenticated(token: string): Promise<number> {
+  const response = await fetchRetry(process.env.CLUSTER_API_URL + '/api', {
+    method: 'HEAD',
     headers: { [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${token}` },
   })
+  return response.status
 }
 
 export const isHttp2ServerResponse = (
@@ -51,22 +57,19 @@ export async function getAuthenticatedToken(
   const token = getToken(req)
 
   if (token) {
-    const authResponse = await isAuthenticated(token)
+    const status = await isAuthenticated(token)
     /* istanbul ignore if */
-    if (authResponse.status === constants.HTTP_STATUS_OK) {
+    if (status === constants.HTTP_STATUS_OK) {
       if (process.env.NODE_ENV === 'development') {
         const localStorage = new LocalStorage(LOCAL_STORAGE)
         localStorage.setItem(ADMIN_TOKEN, token)
       }
       return token
+    }
+    if (isHttp2ServerResponse(resOrSocket)) {
+      resOrSocket.writeHead(status).end()
     } else {
-      if (isHttp2ServerResponse(resOrSocket)) {
-        resOrSocket.writeHead(authResponse.status).end()
-      } else {
-        resOrSocket.destroy()
-      }
-
-      void authResponse.blob()
+      resOrSocket.destroy()
     }
   } else if (isHttp2ServerResponse(resOrSocket)) {
     unauthorized(req, resOrSocket)
