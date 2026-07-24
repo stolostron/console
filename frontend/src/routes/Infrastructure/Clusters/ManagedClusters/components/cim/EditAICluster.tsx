@@ -3,7 +3,6 @@
 import { useState, useMemo } from 'react'
 import { PathParam, generatePath, useLocation, useNavigate, useParams } from 'react-router'
 import {
-  ACM_ENABLED_FEATURES,
   AgentK8sResource,
   BareMetalHostK8sResource,
   ClusterDeploymentDetailsValues,
@@ -11,7 +10,6 @@ import {
   ClusterDeploymentWizardStepsType,
   ClusterImageSetK8sResource,
   EditAgentModal,
-  FeatureGateContextProvider,
   LoadingState,
   getAgentsHostsNames,
   isAgentOfInfraEnv,
@@ -171,68 +169,62 @@ const EditAICluster: React.FC = () => {
         <AcmPageContent id="edit-cluster">
           <PageSection hasBodyWrapper={false} type="wizard" isFilled>
             <BulkActionModal<AgentK8sResource | BareMetalHostK8sResource> {...bulkModalProps} />
-            <FeatureGateContextProvider features={ACM_ENABLED_FEATURES}>
-              <ClusterDeploymentWizard
-                className="cluster-deployment-wizard"
-                clusterImages={clusterImageSets as ClusterImageSetK8sResource[]}
-                clusterDeployment={clusterDeployment}
-                agentClusterInstall={agentClusterInstall}
-                bareMetalHosts={bareMetalHosts}
-                usedClusterNames={[] /* We are in Edit flow - cluster name can not be changed. */}
-                onClose={() => navigate(-1)}
-                onSaveDetails={onSaveDetails}
-                onSaveNetworking={(values) => onSaveNetworking(agentClusterInstall, values)}
-                onSaveHostsSelection={(values) =>
-                  onHostsNext({ values, clusterDeployment, agents, agentClusterInstall })
-                }
-                onApproveAgent={onApproveAgent}
-                onChangeHostname={onChangeHostname}
-                onChangeBMHHostname={onChangeBMHHostname}
-                onSaveBMH={onSaveBMH}
-                onCreateBMH={
-                  infraEnv ? getOnCreateBMH(infraEnv) : undefined
-                } /* AI Flow specific. Not called for CIM. */
-                onSaveISOParams={
-                  infraEnv ? getOnSaveISOParams(infraEnv) : undefined /* AI Flow specific. Not called for CIM. */
-                }
-                onSaveHostsDiscovery={() =>
-                  onDiscoveryHostsNext({
-                    clusterDeployment,
-                    agents: agentsOfSingleInfraEnvCluster,
-                    agentClusterInstall,
-                  })
-                }
-                fetchSecret={fetchSecret}
-                infraNMStates={infraNMStates}
-                getClusterDeploymentLink={getClusterDeploymentLink}
-                hostActions={hostActions}
-                onFinish={async () => {
-                  const aci = await onEditFinish(agentClusterInstall, clusterCurator)
-                  navigate(generatePath(NavigationPath.clusterDetails, { name, namespace }))
-                  return aci
-                }}
-                aiConfigMap={aiConfigMap}
-                infraEnv={infraEnv}
-                initialStep={(searchParams.get('initialStep') as ClusterDeploymentWizardStepsType) || undefined}
-                fetchInfraEnv={fetchInfraEnv}
-                isPreviewOpen={isPreviewOpen}
-                setPreviewOpen={setPreviewOpen}
-                fetchManagedClusters={fetchManagedClusters}
-                fetchKlusterletAddonConfig={fetchKlusterletAddonConfig}
-                onCreateBmcByYaml={importYaml}
-                docVersion={DOC_VERSION}
-                provisioningConfigResult={provisioningConfigResult}
-                isNutanix={isNutanix}
+            <ClusterDeploymentWizard
+              className="cluster-deployment-wizard"
+              clusterImages={clusterImageSets as ClusterImageSetK8sResource[]}
+              clusterDeployment={clusterDeployment}
+              agentClusterInstall={agentClusterInstall}
+              bareMetalHosts={bareMetalHosts}
+              usedClusterNames={[] /* We are in Edit flow - cluster name can not be changed. */}
+              onClose={() => navigate(-1)}
+              onSaveDetails={onSaveDetails}
+              onSaveNetworking={(values) => onSaveNetworking(agentClusterInstall, values)}
+              onSaveHostsSelection={(values) => onHostsNext({ values, clusterDeployment, agents, agentClusterInstall })}
+              onApproveAgent={onApproveAgent}
+              onChangeHostname={onChangeHostname}
+              onChangeBMHHostname={onChangeBMHHostname}
+              onSaveBMH={onSaveBMH}
+              onCreateBMH={infraEnv ? getOnCreateBMH(infraEnv) : undefined} /* AI Flow specific. Not called for CIM. */
+              onSaveISOParams={
+                infraEnv ? getOnSaveISOParams(infraEnv) : undefined /* AI Flow specific. Not called for CIM. */
+              }
+              onSaveHostsDiscovery={() =>
+                onDiscoveryHostsNext({
+                  clusterDeployment,
+                  agents: agentsOfSingleInfraEnvCluster,
+                  agentClusterInstall,
+                })
+              }
+              fetchSecret={fetchSecret}
+              infraNMStates={infraNMStates}
+              getClusterDeploymentLink={getClusterDeploymentLink}
+              hostActions={hostActions}
+              onFinish={async () => {
+                const aci = await onEditFinish(agentClusterInstall, clusterCurator)
+                navigate(generatePath(NavigationPath.clusterDetails, { name, namespace }))
+                return aci
+              }}
+              aiConfigMap={aiConfigMap}
+              infraEnv={infraEnv}
+              initialStep={(searchParams.get('initialStep') as ClusterDeploymentWizardStepsType) || undefined}
+              fetchInfraEnv={fetchInfraEnv}
+              isPreviewOpen={isPreviewOpen}
+              setPreviewOpen={setPreviewOpen}
+              fetchManagedClusters={fetchManagedClusters}
+              fetchKlusterletAddonConfig={fetchKlusterletAddonConfig}
+              onCreateBmcByYaml={importYaml}
+              docVersion={DOC_VERSION}
+              provisioningConfigResult={provisioningConfigResult}
+              isNutanix={isNutanix}
+            />
+            {editAgent && (
+              <EditAgentModal
+                agent={editAgent}
+                usedHostnames={usedHostnames}
+                onClose={() => setEditAgent(undefined)}
+                onSave={onAgentChangeHostname([editAgent], bareMetalHosts, onChangeHostname, onChangeBMHHostname)}
               />
-              {editAgent && (
-                <EditAgentModal
-                  agent={editAgent}
-                  usedHostnames={usedHostnames}
-                  onClose={() => setEditAgent(undefined)}
-                  onSave={onAgentChangeHostname([editAgent], bareMetalHosts, onChangeHostname, onChangeBMHHostname)}
-                />
-              )}
-            </FeatureGateContextProvider>
+            )}
           </PageSection>
         </AcmPageContent>
       </AcmErrorBoundary>
