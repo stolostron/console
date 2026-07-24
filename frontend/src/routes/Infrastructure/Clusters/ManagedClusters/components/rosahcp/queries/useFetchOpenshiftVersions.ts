@@ -73,8 +73,15 @@ const transformToVersionsData = (versions: OpenshiftVersion[]) => {
     })
 
   return {
-    default: defaultVersion ? { label: defaultVersion.raw_id ?? defaultVersion.id ?? '', value: defaultVersion.raw_id ?? defaultVersion.id ?? '' } : undefined,
-    latest: latestVersion ? { label: latestVersion.raw_id ?? latestVersion.id ?? '', value: latestVersion.raw_id ?? latestVersion.id ?? '' } : undefined,
+    default: defaultVersion
+      ? {
+          label: defaultVersion.raw_id ?? defaultVersion.id ?? '',
+          value: defaultVersion.raw_id ?? defaultVersion.id ?? '',
+        }
+      : undefined,
+    latest: latestVersion
+      ? { label: latestVersion.raw_id ?? latestVersion.id ?? '', value: latestVersion.raw_id ?? latestVersion.id ?? '' }
+      : undefined,
     releases,
   }
 }
