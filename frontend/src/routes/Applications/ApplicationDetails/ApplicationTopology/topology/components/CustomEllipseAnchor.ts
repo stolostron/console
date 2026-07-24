@@ -2,7 +2,7 @@
 import { AbstractAnchor, getEllipseAnchorPoint, Point } from '@patternfly/react-topology'
 
 const SHIFT_AMOUNT = 7
-export default class MultiEllipseAnchor extends AbstractAnchor {
+export default class CustomEllipseAnchor extends AbstractAnchor {
   getLocation(reference: Point): Point {
     const r = this.owner.getBounds()
     if (r.isEmpty()) {

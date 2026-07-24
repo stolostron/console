@@ -25,6 +25,7 @@ import {
 import {
   addClusters,
   addTopologyNode,
+  areDestinationNamespacesUniform,
   areSourcesUniform,
   createControllerRevisionChild,
   createDataVolumeChild,
@@ -325,7 +326,16 @@ export async function getAppSetTopology(
       types.forEach((type) => allApplicationTypes.add(type))
       resources.forEach((r: any) => allResourcesForApp.push({ ...r, cluster: clusterName, isChild: true }))
     })
-    processResources(allResourcesForApp, parentNodeId, appClusterNames, hubClusterName, activeTypes ?? [], links, nodes)
+    processResources(
+      allResourcesForApp,
+      parentNodeId,
+      appName,
+      appClusterNames,
+      hubClusterName,
+      activeTypes ?? [],
+      links,
+      nodes
+    )
   })
 
   // Set all resource types in toolbar
@@ -461,9 +471,10 @@ async function getAppSetResources(application: ApplicationModel) {
  * This provides the list of expected resources regardless of whether they currently exist on the cluster.
  *
  * Optimization: Determines whether all apps deploy the same manifests by comparing the
- * source specs of the hub Application CRs (appSetApps). If all sources are identical,
- * only one fleet request is made and the result is reused for all apps. If sources differ
- * (matrix/merge generator varying paths), each app is fetched individually.
+ * source specs and destination namespaces of the hub Application CRs (appSetApps). If all
+ * sources and destination namespaces are identical, only one fleet request is made and the
+ * result is reused for all apps. If either differs (matrix/merge generator varying paths
+ * or namespaces), each app is fetched individually.
  *
  * @returns Map keyed by "appName/clusterName" → array of resources from status.resources
  */
@@ -484,10 +495,12 @@ async function fetchPullModelAppResources(
   )
   if (validApps.length === 0) return resourceMap
 
-  const uniform = areSourcesUniform(appSetApps, (app: ResourceItem) => {
-    const spec = (app as any).spec || (app as any).metadata?.spec || {}
-    return { source: spec.source, sources: spec.sources }
-  })
+  const getAppSpec = (app: ResourceItem) => (app as any).spec || (app as any).metadata?.spec || {}
+  const uniform =
+    areSourcesUniform(appSetApps, (app: ResourceItem) => {
+      const spec = getAppSpec(app)
+      return { source: spec.source, sources: spec.sources }
+    }) && areDestinationNamespacesUniform(appSetApps, (app: ResourceItem) => getAppSpec(app).destination?.namespace)
   const appResources = await fetchAppResources(validApps, namespace, uniform)
 
   for (const app of validApps) {
@@ -609,10 +622,12 @@ function mergeExpectedWithSearchResults(
  * @param activeTypes - Active resource types from toolbar filter
  * @param links - Array to add topology links to
  * @param nodes - Array to add topology nodes to
+ * @param appName - Application name used to uniquify deployable member IDs
  */
 function processResources(
   resources: ResourceItem[],
   parentId: string,
+  appName: string,
   parentClusterNames: string[],
   hubClusterName: string,
   activeTypes: string[],
@@ -653,8 +668,12 @@ function processResources(
 
   // Filter out VM-owned ControllerRevisions before processMultiples merges them
   // into a single entry (which loses individual names and breaks the skip logic).
+  // Also filter out resources that are marked for pruning.
   const resourcesToProcess = allResources.filter((deployable: Record<string, unknown>) => {
     const typedDeployable = deployable as unknown as ProcessedDeployableResource
+    if (typedDeployable.requiresPruning === true) {
+      return false
+    }
     if (typedDeployable.kind.toLowerCase() === 'controllerrevision' && vmOwnedCrNames.has(typedDeployable.name)) {
       return false
     }
@@ -693,7 +712,7 @@ function processResources(
 
     // For cluster-scoped resources, use a stable ID without cluster to prevent duplicates
     const clusterInId = deployableNamespace ? deployableCluster : parentClusterNames[0] || deployableCluster
-    const memberId = `member--member--deployable--member--clusters--${clusterInId}--${type}--${deployableNamespace}--${deployableName}`
+    const memberId = `member--member--deployable--member--clusters--${clusterInId}--${appName}--${type}--${deployableNamespace}--${deployableName}`
 
     // Create raw resource object with metadata
     const raw: any = {
@@ -729,7 +748,7 @@ function processResources(
         parent: {
           clusterId: parentId,
         },
-        resources: deployableResources,
+        resources: deployableResources || [deployable as unknown as ResourceItem],
         resourceCount: resourceCount || nodeClusters.length,
       },
     }

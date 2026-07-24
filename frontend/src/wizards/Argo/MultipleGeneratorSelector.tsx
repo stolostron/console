@@ -562,7 +562,7 @@ export function CrossGeneratorSync(props: CrossGeneratorSyncProps) {
       const newPlacementName = `${appName}-placement`
       const existingPlacementName = get(currentPlacement as IResource, 'metadata.name') || '-placement'
       if (newPlacementName !== existingPlacementName) {
-        if (editMode === EditMode.Create) {
+        if (editMode === EditMode.Create || existingPlacementName.startsWith('-')) {
           // placement name is appname with -placement suffix
           fix(currentPlacement, 'metadata.name', newPlacementName)
         }

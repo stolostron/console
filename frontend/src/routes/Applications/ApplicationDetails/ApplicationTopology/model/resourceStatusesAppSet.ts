@@ -3,6 +3,7 @@
 import { searchClient } from '../../../../Search/search-sdk/search-client'
 import { SearchResultItemsAndRelatedItemsDocument } from '../../../../Search/search-sdk/search-sdk'
 import {
+  areDestinationNamespacesUniform,
   areSourcesUniform,
   fetchArgoAppStatusResources,
   getAppTargetCluster,
@@ -69,8 +70,9 @@ export async function getAppSetResourceStatuses(
  * the expected resource list for cluster-scoped resources (CRDs, StorageClasses, etc.).
  *
  * Optimization: Checks whether all apps share the same source spec (repoURL + path +
- * targetRevision). If uniform, one fetch suffices for all apps. If sources differ
- * (matrix/merge generator), each app is fetched individually.
+ * targetRevision) and destination namespace. If uniform, one fetch suffices for all apps.
+ * If sources or destination namespaces differ (matrix/merge generator), each app is
+ * fetched individually.
  */
 async function ensureAppResources(
   appSetApps: AppSetApplication[],
@@ -86,12 +88,13 @@ async function ensureAppResources(
     return appSetApps
   }
 
-  const sharedResources = areSourcesUniform(appSetApps, (app: AppSetApplication) => ({
-    source: app.spec?.source,
-    sources: (app.spec as any)?.sources,
-  }))
-    ? fetchFirstAvailableResources(appSetApps, namespace, clusters)
-    : undefined
+  const sharedResources =
+    areSourcesUniform(appSetApps, (app: AppSetApplication) => ({
+      source: app.spec?.source,
+      sources: (app.spec as any)?.sources,
+    })) && areDestinationNamespacesUniform(appSetApps, (app: AppSetApplication) => app.spec?.destination?.namespace)
+      ? fetchFirstAvailableResources(appSetApps, namespace, clusters)
+      : undefined
 
   return Promise.all(
     appSetApps.map(async (app: AppSetApplication) => {

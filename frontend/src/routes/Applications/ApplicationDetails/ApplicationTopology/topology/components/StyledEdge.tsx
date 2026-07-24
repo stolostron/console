@@ -10,7 +10,6 @@ import {
   observer,
   DefaultConnectorTerminal,
   EdgeTerminalType,
-  NodeStatus,
 } from '@patternfly/react-topology'
 
 type EdgeProps = {
@@ -20,17 +19,10 @@ type EdgeProps = {
   WithTargetDragProps &
   WithRemoveConnectorProps
 
-/** Default is used for spinner, orange (pending), and sync — only dash edges for loading/pending, not git/chart sync. */
-function isPendingEdgeEndpoint(data: { status?: NodeStatus; specs?: { pulse?: string } } | undefined): boolean {
-  return data?.status === NodeStatus.default && data.specs?.pulse !== 'sync'
-}
-
 const StyledEdge: React.FunctionComponent<EdgeProps> = ({ element, dragging }) => {
   const startPoint = element.getStartPoint()
   const endPoint = element.getEndPoint()
-  const sourceData = element.getSource().getData()
   const targetData = element.getTarget().getData()
-  const isPending = isPendingEdgeEndpoint(targetData) || isPendingEdgeEndpoint(sourceData)
   const isReversed = targetData?.specs?.isPairedInLayoutWithParent === true
 
   // Create path: straight line if horizontally aligned, otherwise curved
@@ -105,18 +97,7 @@ const StyledEdge: React.FunctionComponent<EdgeProps> = ({ element, dragging }) =
           fill="none"
           markerStart={isReversed ? `url(#${markerIdStart})` : undefined}
           markerEnd={isReversed ? undefined : `url(#${markerId})`}
-          strokeDasharray={isPending ? '8 8' : undefined}
-        >
-          {isPending && (
-            <animate
-              attributeName="stroke-dashoffset"
-              values={isReversed ? '0;16' : '16;0'}
-              dur="0.6s"
-              calcMode="linear"
-              repeatCount="indefinite"
-            />
-          )}
-        </path>
+        />
       </Layer>
     </>
   )
