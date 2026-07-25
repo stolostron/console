@@ -14,7 +14,8 @@ import {
   mockPolicy,
   mockPolicyNoStatus,
 } from '../governance.sharedMocks'
-import GovernanceOverview from './Overview'
+import GovernanceOverview, { SecurityGroupViolations } from './Overview'
+import { SecurityGroupPolicySummarySidebar } from './SecurityGroupPolicySummarySidebar'
 import userEvent from '@testing-library/user-event'
 import { defaultContext, PluginDataContext } from '../../../lib/PluginDataContext'
 import { Policy, PolicyApiVersion, PolicyKind } from '../../../resources'
@@ -224,5 +225,61 @@ describe('Overview Page', () => {
     // standard (one from the untrimmed " NIST SP 800-53" split token).
     expect(screen.getAllByText('NIST SP 800-53').length).toBe(1)
     expect(screen.getAllByText('PCI-DSS 4.0').length).toBe(1)
+  })
+
+  test('SecurityGroupPolicySummarySidebar should match policies by trimmed annotation value', async () => {
+    // Regression test for the sidebar drill-down: a policy whose standard is not
+    // the first item in its comma-separated annotation must still match the
+    // clicked-on violation, which is keyed by the trimmed value.
+    const policyWithStandardLastInList: Policy = {
+      apiVersion: PolicyApiVersion,
+      kind: PolicyKind,
+      metadata: {
+        name: 'policy-standards-last-sidebar',
+        namespace: 'test',
+        uid: 'standards-test-uid-3',
+        annotations: {
+          'policy.open-cluster-management.io/standards': 'CIS OpenShift Benchmark, PCI-DSS 4.0, NIST SP 800-53',
+        },
+      },
+      spec: {
+        disabled: false,
+        'policy-templates': [],
+        remediationAction: 'inform',
+      },
+      status: {
+        compliant: 'Compliant',
+      },
+    }
+    const violation: SecurityGroupViolations = {
+      name: 'NIST SP 800-53',
+      compliant: 1,
+      noncompliant: 0,
+      pending: 0,
+    }
+
+    const pluginData = {
+      ...defaultContext,
+      loadStarted: true,
+      loadCompleted: true,
+    }
+    render(
+      <PluginDataContext.Provider value={pluginData}>
+        <RecoilRoot
+          initializeState={(snapshot) => {
+            snapshot.set(policiesState, [policyWithStandardLastInList])
+          }}
+        >
+          <MemoryRouter>
+            <SecurityGroupPolicySummarySidebar violation={violation} secGroupName="standards" compliance="compliant" />
+          </MemoryRouter>
+        </RecoilRoot>
+      </PluginDataContext.Provider>
+    )
+
+    // Before the fix, the sidebar's filter compared the untrimmed " NIST SP 800-53"
+    // split token against violation.name ("NIST SP 800-53") and never matched,
+    // so the policy would not appear in this list.
+    expect(await screen.findByText('policy-standards-last-sidebar')).toBeInTheDocument()
   })
 })
