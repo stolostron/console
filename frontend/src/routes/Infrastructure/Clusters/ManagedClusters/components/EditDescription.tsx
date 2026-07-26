@@ -18,6 +18,7 @@ import {
   ToolbarContent,
   ToolbarGroup,
   ToolbarItem,
+  Tooltip,
 } from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { BoldIcon, ItalicIcon, LinkIcon, ListIcon } from '@patternfly/react-icons'
@@ -102,29 +103,42 @@ export function EditDescription(props: { resource?: IResource; displayName?: str
       <AcmAlertContext.Consumer>
         {(alertContext) => (
           <AcmForm style={{ gap: 0 }}>
-            <FormGroup label={t('Description')} fieldId="description-input">
+            <div style={{ marginBottom: 16 }}>
+              {t(
+                'Add links and notes your team uses for this cluster. Use Markdown to format text; formatting is applied when you save.'
+              )}
+            </div>
+            <FormGroup fieldId="description-input">
               <Toolbar>
                 <ToolbarContent>
                   <ToolbarGroup>
                     <ToolbarItem>
-                      <Button variant="plain" aria-label={t('Bold')} onClick={() => insertMarkdown('**')}>
-                        <BoldIcon />
-                      </Button>
+                      <Tooltip content={t('Bold')}>
+                        <Button variant="plain" aria-label={t('Bold')} onClick={() => insertMarkdown('**')}>
+                          <BoldIcon />
+                        </Button>
+                      </Tooltip>
                     </ToolbarItem>
                     <ToolbarItem>
-                      <Button variant="plain" aria-label={t('Italic')} onClick={() => insertMarkdown('*')}>
-                        <ItalicIcon />
-                      </Button>
+                      <Tooltip content={t('Italic')}>
+                        <Button variant="plain" aria-label={t('Italic')} onClick={() => insertMarkdown('*')}>
+                          <ItalicIcon />
+                        </Button>
+                      </Tooltip>
                     </ToolbarItem>
                     <ToolbarItem>
-                      <Button variant="plain" aria-label={t('Link')} onClick={() => insertMarkdown('[', '](url)')}>
-                        <LinkIcon />
-                      </Button>
+                      <Tooltip content={t('Link')}>
+                        <Button variant="plain" aria-label={t('Link')} onClick={() => insertMarkdown('[', '](url)')}>
+                          <LinkIcon />
+                        </Button>
+                      </Tooltip>
                     </ToolbarItem>
                     <ToolbarItem>
-                      <Button variant="plain" aria-label={t('List')} onClick={() => insertMarkdown('- ', '')}>
-                        <ListIcon />
-                      </Button>
+                      <Tooltip content={t('List')}>
+                        <Button variant="plain" aria-label={t('List')} onClick={() => insertMarkdown('- ', '')}>
+                          <ListIcon />
+                        </Button>
+                      </Tooltip>
                     </ToolbarItem>
                   </ToolbarGroup>
                 </ToolbarContent>
