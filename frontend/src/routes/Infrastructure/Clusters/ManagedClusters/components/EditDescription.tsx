@@ -21,7 +21,7 @@ import {
   Tooltip,
 } from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
-import { BoldIcon, ItalicIcon, LinkIcon, ListIcon } from '@patternfly/react-icons'
+import { BoldIcon, ItalicIcon, LinkIcon, ListIcon, TrashIcon } from '@patternfly/react-icons'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { getErrorInfo } from '../../../../../components/ErrorPage'
@@ -147,6 +147,18 @@ export function EditDescription(props: Readonly<{ resource?: IResource; close: (
                           <ListIcon />
                         </Button>
                       </Tooltip>
+                    </ToolbarItem>
+                    <ToolbarItem>
+                      <Button
+                        variant="plain"
+                        aria-label={t('Clear')}
+                        onClick={() => {
+                          setDescription('')
+                          textAreaRef.current?.focus()
+                        }}
+                      >
+                        <TrashIcon />
+                      </Button>
                     </ToolbarItem>
                   </ToolbarGroup>
                 </ToolbarContent>
