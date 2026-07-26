@@ -149,16 +149,18 @@ export function EditDescription(props: Readonly<{ resource?: IResource; close: (
                       </Tooltip>
                     </ToolbarItem>
                     <ToolbarItem>
-                      <Button
-                        variant="plain"
-                        aria-label={t('Clear')}
-                        onClick={() => {
-                          setDescription('')
-                          textAreaRef.current?.focus()
-                        }}
-                      >
-                        <TrashIcon />
-                      </Button>
+                      <Tooltip content={t('Clear')}>
+                        <Button
+                          variant="plain"
+                          aria-label={t('Clear')}
+                          onClick={() => {
+                            setDescription('')
+                            textAreaRef.current?.focus()
+                          }}
+                        >
+                          <TrashIcon />
+                        </Button>
+                      </Tooltip>
                     </ToolbarItem>
                   </ToolbarGroup>
                 </ToolbarContent>
