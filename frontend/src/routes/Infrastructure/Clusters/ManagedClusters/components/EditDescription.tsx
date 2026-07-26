@@ -21,16 +21,37 @@ import {
   Tooltip,
 } from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
-import { BoldIcon, ItalicIcon, LinkIcon, ListIcon, TrashIcon } from '@patternfly/react-icons'
+import { BoldIcon, EyeIcon, ItalicIcon, LinkIcon, ListIcon, PencilAltIcon, TrashIcon } from '@patternfly/react-icons'
+import { css } from '@emotion/css'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { getErrorInfo } from '../../../../../components/ErrorPage'
+import { Markdown } from '@redhat-cloud-services/rule-components/Markdown'
+
+const previewContainer = css({
+  position: 'relative',
+})
+
+const previewOverlay = css({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  overflow: 'auto',
+  scrollbarGutter: 'stable',
+  '& > div': {
+    padding: '0.5rem 1rem',
+    whiteSpace: 'pre-wrap',
+  },
+})
 
 const CLUSTER_DESCRIPTION_ANNOTATION = 'console.open-cluster-management.io/description'
 
 export function EditDescription(props: Readonly<{ resource?: IResource; close: () => void }>) {
   const { t } = useTranslation()
   const [description, setDescription] = useState<string>('')
+  const [isPreview, setIsPreview] = useState(false)
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
   const isOpen = props.resource !== undefined
 
@@ -164,19 +185,44 @@ export function EditDescription(props: Readonly<{ resource?: IResource; close: (
                       </Tooltip>
                     </ToolbarItem>
                   </ToolbarGroup>
+                  <ToolbarGroup align={{ default: 'alignEnd' }}>
+                    <ToolbarItem>
+                      <Tooltip content={isPreview ? t('Edit') : t('Preview')}>
+                        <Button
+                          variant="plain"
+                          aria-label={isPreview ? t('Edit') : t('Preview')}
+                          onClick={() => setIsPreview(!isPreview)}
+                        >
+                          {isPreview ? <PencilAltIcon /> : <EyeIcon />}
+                        </Button>
+                      </Tooltip>
+                    </ToolbarItem>
+                  </ToolbarGroup>
                 </ToolbarContent>
               </Toolbar>
 
-              <TextArea
-                ref={textAreaRef}
-                id="description-input"
-                value={description}
-                onChange={(_event, value) => setDescription(value)}
-                rows={10}
-                resizeOrientation="none"
-                placeholder={t('Enter cluster description')}
-                aria-label={t('Description')}
-              />
+              <div className={previewContainer}>
+                <TextArea
+                  ref={textAreaRef}
+                  id="description-input"
+                  value={description}
+                  onChange={(_event, value) => setDescription(value)}
+                  rows={10}
+                  resizeOrientation="none"
+                  placeholder={t('Enter cluster description')}
+                  aria-label={t('Description')}
+                  style={{
+                    visibility: isPreview ? 'hidden' : 'visible',
+                    overflow: 'auto',
+                    scrollbarGutter: 'stable',
+                  }}
+                />
+                {isPreview && (
+                  <div className={previewOverlay}>
+                    <div>{description ? <Markdown template={description} /> : '-'}</div>
+                  </div>
+                )}
+              </div>
             </FormGroup>
             <AcmAlertGroup isInline canClose />
             <ActionGroup>
