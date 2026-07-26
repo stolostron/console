@@ -7,6 +7,22 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { Agent } from 'node:https'
 import { getDefaultAgent, getInsightsAgent } from '../../src/lib/agent'
+import * as serviceAccountTokenModule from '../../src/lib/serviceAccountToken'
+
+// getCACertificate()/getServiceCACertificate() read real files from disk (e.g. the SA-mounted
+// ca.crt / service-ca.crt) before ever consulting the CA_CERT/SERVICE_CA_CERT env var fallbacks, and
+// some CI environments (e.g. tests running inside a real Kubernetes pod) genuinely have those files
+// present, which would otherwise silently override whatever this test tries to configure via env
+// vars. Mocking the module directly keeps this test's CA trust deterministic regardless of the
+// environment's filesystem.
+jest.mock('../../src/lib/serviceAccountToken')
+
+const mockedGetCACertificate = serviceAccountTokenModule.getCACertificate as jest.MockedFunction<
+  typeof serviceAccountTokenModule.getCACertificate
+>
+const mockedGetServiceCACertificate = serviceAccountTokenModule.getServiceCACertificate as jest.MockedFunction<
+  typeof serviceAccountTokenModule.getServiceCACertificate
+>
 
 // Simulates an in-cluster service (e.g. the Insights Operator proxy) whose TLS certificate is
 // signed by a private CA (standing in for OpenShift's service-ca), to verify that getInsightsAgent()
@@ -95,8 +111,8 @@ describe('agent', () => {
       extFile,
     ])
 
-    process.env.SERVICE_CA_CERT = Buffer.from(readFileSync(caCrt, 'utf-8')).toString('base64')
-    process.env.CA_CERT = Buffer.from(readFileSync(otherCaCrt, 'utf-8')).toString('base64')
+    mockedGetServiceCACertificate.mockReturnValue([readFileSync(caCrt, 'utf-8')])
+    mockedGetCACertificate.mockReturnValue([readFileSync(otherCaCrt, 'utf-8')])
 
     server = createServer({ cert: readFileSync(leafCrt), key: readFileSync(leafKey) }, (_req, res) => {
       res.writeHead(200)
@@ -112,8 +128,6 @@ describe('agent', () => {
   })
 
   afterAll(() => {
-    delete process.env.SERVICE_CA_CERT
-    delete process.env.CA_CERT
     rmSync(dir, { recursive: true, force: true })
     return new Promise<void>((resolve) => server.close(() => resolve()))
   })
