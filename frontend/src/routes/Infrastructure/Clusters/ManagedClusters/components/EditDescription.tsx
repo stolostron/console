@@ -21,7 +21,7 @@ import {
 } from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { BoldIcon, ItalicIcon, LinkIcon, ListIcon } from '@patternfly/react-icons'
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { getErrorInfo } from '../../../../../components/ErrorPage'
 
@@ -33,7 +33,7 @@ export function EditDescription(props: { resource?: IResource; displayName?: str
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
   const isOpen = props.resource !== undefined
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (isOpen) {
       const desc = props.resource?.metadata?.annotations?.[CLUSTER_DESCRIPTION_ANNOTATION] ?? ''
       setDescription(desc)
@@ -112,7 +112,7 @@ export function EditDescription(props: { resource?: IResource; displayName?: str
                       </Button>
                     </ToolbarItem>
                     <ToolbarItem>
-                      <Button variant="plain" aria-label={t('Italic')} onClick={() => insertMarkdown('_')}>
+                      <Button variant="plain" aria-label={t('Italic')} onClick={() => insertMarkdown('*')}>
                         <ItalicIcon />
                       </Button>
                     </ToolbarItem>
