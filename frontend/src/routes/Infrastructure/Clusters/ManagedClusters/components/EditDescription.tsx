@@ -135,7 +135,15 @@ export function EditDescription(props: { resource?: IResource; displayName?: str
                     </ToolbarItem>
                     <ToolbarItem>
                       <Tooltip content={t('List')}>
-                        <Button variant="plain" aria-label={t('List')} onClick={() => insertMarkdown('- ', '')}>
+                        <Button
+                          variant="plain"
+                          aria-label={t('List')}
+                          onClick={() => {
+                            const start = textAreaRef.current?.selectionStart ?? 0
+                            const prefix = start === 0 || description[start - 1] === '\n' ? '- ' : '\n- '
+                            insertMarkdown(prefix, '')
+                          }}
+                        >
                           <ListIcon />
                         </Button>
                       </Tooltip>
