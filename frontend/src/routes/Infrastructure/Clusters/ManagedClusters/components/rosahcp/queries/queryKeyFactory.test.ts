@@ -49,6 +49,11 @@ describe('queryKeyFactory', () => {
     expect(key).toEqual([ROSA_HCP_WIZARD_QUERY_KEY, 'test-client-id', 'user-role-arn'])
   })
 
+  test('rosaWizardKeys.openshiftVersions should extend the base key with client id', () => {
+    const key = rosaWizardKeys.openshiftVersions('test-client-id')
+    expect(key).toEqual([ROSA_HCP_WIZARD_QUERY_KEY, 'test-client-id', 'openshift-versions'])
+  })
+
   test('each key factory call should return a new array instance', () => {
     const key1 = rosaWizardKeys.awsInfrastructureAccounts('test-client-id')
     const key2 = rosaWizardKeys.awsInfrastructureAccounts('test-client-id')

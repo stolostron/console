@@ -440,4 +440,76 @@ describe('rosaWizardApi routes', () => {
       expect(res.statusCode).toEqual(401)
     })
   })
+
+  describe('POST /openshift-versions', () => {
+    const versionsPath =
+      "/api/clusters_mgmt/v1/versions/?order=end_of_life_timestamp desc&product=hcp&search=enabled='t' AND (channel_group='stable' OR channel_group='eus' OR channel_group='candidate' OR channel_group='fast' OR channel_group='nightly') AND rosa_enabled='t'&size=-1"
+
+    test('should return OpenShift versions list', async () => {
+      const versionsResponse = {
+        kind: 'VersionList',
+        page: 1,
+        size: 3,
+        total: 3,
+        items: [
+          {
+            id: 'openshift-v4.14.10',
+            kind: 'Version',
+            raw_id: '4.14.10',
+            channel_group: 'stable',
+            rosa_enabled: true,
+            hosted_control_plane_enabled: true,
+            end_of_life_timestamp: '2025-10-31T00:00:00Z',
+          },
+          {
+            id: 'openshift-v4.14.9',
+            kind: 'Version',
+            raw_id: '4.14.9',
+            channel_group: 'stable',
+            rosa_enabled: true,
+            hosted_control_plane_enabled: true,
+            end_of_life_timestamp: '2025-10-31T00:00:00Z',
+          },
+          {
+            id: 'openshift-v4.13.25',
+            kind: 'Version',
+            raw_id: '4.13.25',
+            channel_group: 'eus',
+            rosa_enabled: true,
+            hosted_control_plane_enabled: true,
+            end_of_life_timestamp: '2025-04-17T00:00:00Z',
+          },
+        ],
+      }
+
+      nockAuth()
+      nockSsoToken()
+      nock(API_HOST).get(versionsPath).reply(200, versionsResponse)
+
+      const res = await request('POST', '/openshift-versions', mockPayload)
+      expect(res.statusCode).toEqual(200)
+
+      const body = await parsePipedJsonBody(res)
+      expect(body).toEqual(versionsResponse)
+    })
+
+    test('should return error object when versions API call fails', async () => {
+      nockAuth()
+      nockSsoToken()
+      nock(API_HOST).get(versionsPath).replyWithError('connection timeout')
+
+      const res = await request('POST', '/openshift-versions', mockPayload)
+      expect(res.statusCode).toEqual(200)
+
+      const body = await parsePipedJsonBody<{ error: string }>(res)
+      expect(body).toEqual({ error: expect.stringContaining('connection timeout') as string })
+    })
+
+    test('should return 401 when not authenticated', async () => {
+      nock(process.env.CLUSTER_API_URL).get('/apis').reply(401)
+
+      const res = await request('POST', '/openshift-versions', mockPayload)
+      expect(res.statusCode).toEqual(401)
+    })
+  })
 })

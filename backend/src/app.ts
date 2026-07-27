@@ -47,6 +47,7 @@ import {
   getOCMRoleARN,
   getRoleARNs,
   getUserRole,
+  getWizardVersions,
 } from './routes/rosaWizardApi'
 
 const isProduction = process.env.NODE_ENV === 'production'
@@ -110,6 +111,7 @@ router.post('/cluster-name-check', getClusterNameCheck)
 router.post('/sts-role-arns', getRoleARNs)
 router.post('/sts-ocm-role', getOCMRoleARN)
 router.post('/sts-user-role', getUserRole)
+router.post('/openshift-versions', getWizardVersions)
 router.get('/*', serveHandler)
 
 export async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
