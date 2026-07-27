@@ -41,6 +41,11 @@ function parseContainers(container?: string): string[] {
   return container ? container.split(';').map((item) => item.trim()) : []
 }
 
+/** Imperative handle exposed by PatternFly LogViewer via ref. */
+type LogViewerHandle = {
+  scrollToBottom: () => void
+}
+
 export function LogsModal(props: ILogsModalProps | { open: false }) {
   if (props.open === false) {
     return null
@@ -119,8 +124,8 @@ function TopologyLogsViewer({
 }>) {
   const { t } = useTranslation()
   const localHubName = useLocalHubName()
-  const logViewerRef = useRef<any>()
-  const resourceLogRef = useRef<any>()
+  const logViewerRef = useRef<LogViewerHandle | null>(null)
+  const resourceLogRef = useRef(null)
   const pods = useMemo(() => getPodsFromNode(node), [node])
   const [selectedPodName, setSelectedPodName] = useState(pods[0]?.name ?? '')
   const selectedPod = useMemo(

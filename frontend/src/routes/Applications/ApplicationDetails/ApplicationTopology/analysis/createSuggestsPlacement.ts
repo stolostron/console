@@ -112,7 +112,7 @@ export const createSuggestsPlacement = (
       const currentYaml = jsYaml.dump(placement.spec.clusterSets ?? {}, { indent: 2 }).split('\n')
       const suggestions = [
         {
-          title: t('If specify a clusterSet, make sure it is bound to the gitops operator placement namespace'),
+          title: t('If specifying a ClusterSet, make sure it is bound to the gitops operator placement namespace'),
         },
         { title: t('If you want to deploy to all clusters, remove the clusterSets') },
         { title: t('Current clustersets'), content: currentYaml },

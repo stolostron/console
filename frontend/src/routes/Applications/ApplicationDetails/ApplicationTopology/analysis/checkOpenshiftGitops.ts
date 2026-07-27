@@ -176,14 +176,14 @@ const checkNonRunningArgoCDPods = async (
         }
 
         const alert = createTopologyAlert(
-          t('{{reason}} on {{cluster}} cluster', {
+          t('{{cluster}} {{reason}}', {
             reason,
             cluster: pod.cluster,
           }),
           'red',
           {
             message: t(
-              'The OpenShift GitOps operator is having this issue with the {{podName}} pod. The pod has restarted {{restarts}} times.',
+              'The OpenShift GitOps operator is having this issue with the {{podName}} pod. The pod restart count is {{restarts}}.',
               {
                 podName: pod.name,
                 restarts: Number(pod.restarts ?? 0),

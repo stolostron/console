@@ -215,7 +215,7 @@ const formatClusterListContent = (clusters: string[], t: TFunction): string[] =>
   if (sorted.length <= 3) {
     return sorted
   }
-  return [...sorted.slice(0, 3), t('and {{count}} more', { count: sorted.length - 3 })]
+  return [...sorted.slice(0, 3), ` ${t('and {{count}} more', { count: sorted.length - 3 })}`]
 }
 
 const buildHealthSyncKey = (healthStatus: string | undefined, syncStatus: string | undefined): string => {
@@ -317,7 +317,7 @@ const formatKindList = (kinds: string[], t: TFunction): string => {
     return a.localeCompare(b)
   })
   const displayed = sorted.slice(0, 5).join(', ')
-  const suffix = sorted.length > 5 ? t(' and {{count}} more', { count: sorted.length - 5 }) : ''
+  const suffix = sorted.length > 5 ? ` ${t('and {{count}} more', { count: sorted.length - 5 })}` : ''
   return t('Kinds: {{kinds}}{{suffix}}', { kinds: displayed, suffix })
 }
 
