@@ -414,6 +414,7 @@
   "Add label": "Add label",
   "Add label expression": "Add label expression",
   "Add limit": "Add limit",
+  "Add links and notes your team uses for this cluster. Use Markdown to format text; formatting is applied when you save.": "Add links and notes your team uses for this cluster. Use Markdown to format text; formatting is applied when you save.",
   "Add namespace": "Add namespace",
   "Add new hosts": "Add new hosts",
   "Add node pool": "Add node pool",
