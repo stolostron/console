@@ -326,16 +326,10 @@ export async function getAppSetTopology(
       types.forEach((type) => allApplicationTypes.add(type))
       resources.forEach((r: any) => allResourcesForApp.push({ ...r, cluster: clusterName, isChild: true }))
     })
-    processResources(
-      allResourcesForApp,
-      parentNodeId,
-      appName,
-      appClusterNames,
-      hubClusterName,
-      activeTypes ?? [],
+    processResources(allResourcesForApp, parentNodeId, appName, appClusterNames, hubClusterName, activeTypes ?? [], {
       links,
-      nodes
-    )
+      nodes,
+    })
   })
 
   // Set all resource types in toolbar
@@ -617,12 +611,11 @@ function mergeExpectedWithSearchResults(
  *
  * @param resources - Array of resources to process
  * @param parentId - ID of the parent node to link resources to
+ * @param appName - Application name used to uniquify deployable member IDs
  * @param parentClusterNames - Array of cluster names where resources are deployed
  * @param hubClusterName - Name of the hub cluster
  * @param activeTypes - Active resource types from toolbar filter
- * @param links - Array to add topology links to
- * @param nodes - Array to add topology nodes to
- * @param appName - Application name used to uniquify deployable member IDs
+ * @param topology - Topology links and nodes arrays to mutate
  */
 function processResources(
   resources: ResourceItem[],
@@ -631,9 +624,10 @@ function processResources(
   parentClusterNames: string[],
   hubClusterName: string,
   activeTypes: string[],
-  links: TopologyLink[],
-  nodes: TopologyNode[]
+  topology: { links: TopologyLink[]; nodes: TopologyNode[] }
 ): void {
+  const { links, nodes } = topology
+
   // Use resources as-is when each already has cluster set (e.g. concatenated from multiple clusters)
   const allResources: ResourceItem[] = []
   const resourcesHaveCluster = resources.length > 0 && resources.every((r: any) => r.cluster != null)

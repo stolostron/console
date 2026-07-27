@@ -399,6 +399,9 @@
   font-size: 14px;
   color: var(--pf-v5-global--link--Color);
   cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
 }
 .topologyDetails .link:hover {
   text-decoration: underline;

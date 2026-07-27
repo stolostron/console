@@ -70,7 +70,6 @@ export interface EditArgoApplicationSetProps {
   onSubmitSuccess: (applicationSet: ApplicationSet) => void
   onApplicationSetNotFound: () => void
   isModal?: boolean
-  showWizardInput?: string
 }
 
 export function EditArgoApplicationSet({
@@ -80,7 +79,7 @@ export function EditArgoApplicationSet({
   onSubmitSuccess,
   onApplicationSetNotFound,
   isModal = false,
-}: EditArgoApplicationSetProps) {
+}: Readonly<EditArgoApplicationSetProps>) {
   const { t } = useTranslation()
   const { timeZones } = useTimezones()
   const {

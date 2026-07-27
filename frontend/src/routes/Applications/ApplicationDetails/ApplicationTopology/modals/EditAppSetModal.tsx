@@ -11,7 +11,6 @@ export interface IEditAppSetModalProps {
   close: () => void
   open: boolean
   node: TopologyNode
-  showWizardInput?: string
   onUpdateSuccess?: (nodeId: string) => void
 }
 
@@ -52,12 +51,7 @@ export function EditAppSetModal(props: IEditAppSetModalProps | { open: false }) 
   return <EditAppSetModalContent {...props} />
 }
 
-function EditAppSetModalContent({
-  close,
-  node,
-  showWizardInput,
-  onUpdateSuccess,
-}: Readonly<Omit<IEditAppSetModalProps, 'open'>>) {
+function EditAppSetModalContent({ close, node, onUpdateSuccess }: Readonly<Omit<IEditAppSetModalProps, 'open'>>) {
   const { applicationData } = useApplicationDetailsContext()
   const { name, namespace } = topologyNodeToAppSetParams(node, applicationData?.application)
   const handleClose = useCallback(() => close(), [close])
@@ -105,7 +99,6 @@ function EditAppSetModalContent({
             name={name}
             namespace={namespace}
             isModal={true}
-            showWizardInput={showWizardInput}
             onCancel={handleClose}
             onSubmitSuccess={handleSubmitSuccess}
             onApplicationSetNotFound={handleClose}

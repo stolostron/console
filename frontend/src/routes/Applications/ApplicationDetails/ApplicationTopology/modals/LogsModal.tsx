@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { KeyboardEvent, ReactNode, useEffect, useMemo, useRef, useState } from 'react'
+import { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { SelectOption } from '@patternfly/react-core'
 import { LogViewer } from '@patternfly/react-log-viewer'
@@ -59,22 +59,14 @@ function LogsModalContent({ close, node, processActionLink, hubClusterName }: Re
       }
     }
 
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        processLink()
-      }
-    }
-
     return (
       <div>
         <div className="spacer" />
-        <span
+        <button
+          type="button"
           className="link sectionLabel"
           id="linkForNodeAction"
-          tabIndex={0}
-          role="button"
           onClick={processLink}
-          onKeyDown={handleKeyPress}
           style={{ padding: '10px' }}
         >
           {isLogURL && t('View logs in Search details')}
@@ -82,7 +74,7 @@ function LogsModalContent({ close, node, processActionLink, hubClusterName }: Re
           <svg width="12px" height="12px" style={{ marginLeft: '8px', stroke: '#0066CC' }}>
             <use href="#drawerShapes_carbonLaunch" className="label-icon" />
           </svg>
-        </span>
+        </button>
         <div className="spacer" />
       </div>
     )
@@ -121,10 +113,10 @@ function LogsModalContent({ close, node, processActionLink, hubClusterName }: Re
 function TopologyLogsViewer({
   node,
   renderResourceURLLink,
-}: {
+}: Readonly<{
   node: TopologyNode
   renderResourceURLLink: (resource: { data: ResourceAction }, isLogURL?: boolean) => ReactNode
-}) {
+}>) {
   const { t } = useTranslation()
   const localHubName = useLocalHubName()
   const logViewerRef = useRef<any>()
@@ -328,6 +320,75 @@ function TopologyLogsViewer({
     )
   }
 
+  let logsContent: ReactNode
+  if (logsError) {
+    logsContent = (
+      <>
+        <LogsToolbar
+          logs={logs}
+          name={name}
+          container={container}
+          containers={containers}
+          setContainer={setContainer}
+          cluster={cluster}
+          toggleWrapLines={setWrapLines}
+          wrapLines={wrapLines}
+          toggleFullscreen={toggleFullscreen}
+          isFullscreen={isFullscreen}
+          containerHasPreviousLogs={containerHasPreviousLogs}
+          previousLogs={previousLogs}
+          setPreviousLogs={setPreviousLogs}
+        />
+        <AcmAlert
+          noClose={true}
+          variant={'danger'}
+          isInline={true}
+          title={`${t('Error querying resource logs:')} ${name}`}
+          subtitle={logsError}
+        />
+      </>
+    )
+  } else if (isLoadingLogs) {
+    logsContent = <AcmLoadingPage />
+  } else {
+    logsContent = (
+      <LogViewer
+        ref={logViewerRef}
+        height={'calc(70vh - 200px)'}
+        data={logs}
+        theme="dark"
+        isTextWrapped={wrapLines}
+        toolbar={
+          <LogsToolbar
+            logs={logs}
+            name={name}
+            container={container}
+            containers={containers}
+            setContainer={setContainer}
+            cluster={cluster}
+            toggleWrapLines={setWrapLines}
+            wrapLines={wrapLines}
+            toggleFullscreen={toggleFullscreen}
+            isFullscreen={isFullscreen}
+            containerHasPreviousLogs={containerHasPreviousLogs}
+            previousLogs={previousLogs}
+            setPreviousLogs={setPreviousLogs}
+          />
+        }
+        header={<LogsHeader cluster={cluster} namespace={namespace} linesLength={linesLength} />}
+        scrollToRow={linesLength}
+        onScroll={onScroll}
+        footer={
+          <LogsFooterButton
+            logViewerRef={logViewerRef}
+            showJumpToBottomBtn={showJumpToBottomBtn}
+            setShowJumpToBottomBtn={setShowJumpToBottomBtn}
+          />
+        }
+      />
+    )
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
       {renderResourceURLLink(
@@ -365,69 +426,7 @@ function TopologyLogsViewer({
         })}
       </AcmSelect>
       <div ref={resourceLogRef} style={{ flex: 1, minHeight: 0, marginTop: '0.5rem' }}>
-        {logsError ? (
-          <>
-            <LogsToolbar
-              logs={logs}
-              name={name}
-              container={container}
-              containers={containers}
-              setContainer={setContainer}
-              cluster={cluster}
-              toggleWrapLines={setWrapLines}
-              wrapLines={wrapLines}
-              toggleFullscreen={toggleFullscreen}
-              isFullscreen={isFullscreen}
-              containerHasPreviousLogs={containerHasPreviousLogs}
-              previousLogs={previousLogs}
-              setPreviousLogs={setPreviousLogs}
-            />
-            <AcmAlert
-              noClose={true}
-              variant={'danger'}
-              isInline={true}
-              title={`${t('Error querying resource logs:')} ${name}`}
-              subtitle={logsError}
-            />
-          </>
-        ) : isLoadingLogs ? (
-          <AcmLoadingPage />
-        ) : (
-          <LogViewer
-            ref={logViewerRef}
-            height={'calc(70vh - 200px)'}
-            data={logs}
-            theme="dark"
-            isTextWrapped={wrapLines}
-            toolbar={
-              <LogsToolbar
-                logs={logs}
-                name={name}
-                container={container}
-                containers={containers}
-                setContainer={setContainer}
-                cluster={cluster}
-                toggleWrapLines={setWrapLines}
-                wrapLines={wrapLines}
-                toggleFullscreen={toggleFullscreen}
-                isFullscreen={isFullscreen}
-                containerHasPreviousLogs={containerHasPreviousLogs}
-                previousLogs={previousLogs}
-                setPreviousLogs={setPreviousLogs}
-              />
-            }
-            header={<LogsHeader cluster={cluster} namespace={namespace} linesLength={linesLength} />}
-            scrollToRow={linesLength}
-            onScroll={onScroll}
-            footer={
-              <LogsFooterButton
-                logViewerRef={logViewerRef}
-                showJumpToBottomBtn={showJumpToBottomBtn}
-                setShowJumpToBottomBtn={setShowJumpToBottomBtn}
-              />
-            }
-          />
-        )}
+        {logsContent}
       </div>
     </div>
   )

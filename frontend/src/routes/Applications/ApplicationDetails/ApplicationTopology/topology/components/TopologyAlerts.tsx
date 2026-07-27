@@ -36,20 +36,6 @@ const fadeIn = keyframes`
   }
 `
 
-const fadeOut = keyframes`
-  from {
-    opacity: 1;
-    max-height: 500px;
-  }
-  to {
-    opacity: 0;
-    max-height: 0;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-  }
-`
-
 const containerBase = css`
   position: absolute;
   top: 20px;
@@ -74,10 +60,6 @@ const containerHiddenOverflow = css`
 
 const alertFadeIn = css`
   animation: ${fadeIn} 0.3s ease-out;
-`
-
-const alertFadeOut = css`
-  animation: ${fadeOut} 0.5s ease-out forwards;
 `
 
 const bulletSpacer = css`
@@ -124,7 +106,7 @@ export interface TopologyAlertsProps {
   currentAlertsKey: string
   isAnalyzing?: boolean
   isProcessingSave?: boolean
-  onEditAppSet?: (node: TopologyNode, showWizardInput?: string) => void
+  onEditAppSet?: (node: TopologyNode) => void
   onEditYaml?: (node: TopologyNode, highlightEditorPath?: string) => void
   onViewLogs?: (node: TopologyNode) => void
   onSyncResources?: (node: TopologyNode) => void
@@ -141,11 +123,10 @@ export function TopologyAlerts({
   onViewLogs,
   onSyncResources,
   onLaunchArgo,
-}: TopologyAlertsProps) {
+}: Readonly<TopologyAlertsProps>) {
   const { t } = useTranslation()
   const dismissedIdsRef = useRef<Set<string>>(new Set())
   const [visibleAlerts, setVisibleAlerts] = useState<TopologyAlert[]>([])
-  const [removingIds, setRemovingIds] = useState<Set<string>>(new Set())
   const [newAlertIds, setNewAlertIds] = useState<Set<string>>(new Set())
   const containerRef = useRef<HTMLDivElement>(null)
   const [hasScrollbar, setHasScrollbar] = useState(false)
@@ -177,7 +158,6 @@ export function TopologyAlerts({
   }, [])
 
   const sortedInputAlerts = useMemo(() => sortAlerts(alerts), [alerts])
-  const dismissTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
 
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = []
@@ -235,15 +215,6 @@ export function TopologyAlerts({
   }, [sortedInputAlerts, currentAlertsKey])
 
   useEffect(() => {
-    const dismissTimers = dismissTimersRef.current
-    return () => {
-      dismissTimers.forEach(clearTimeout)
-      dismissTimers.clear()
-      setRemovingIds(new Set())
-    }
-  }, [sortedInputAlerts, currentAlertsKey])
-
-  useEffect(() => {
     const el = containerRef.current
     if (!el) {
       setHasScrollbar(false)
@@ -275,26 +246,11 @@ export function TopologyAlerts({
     }
 
     return () => observer.disconnect()
-  }, [visibleAlerts, newAlertIds, removingIds])
+  }, [visibleAlerts, newAlertIds])
 
   const closeAction = useCallback((alertId: string) => {
-    const existingTimer = dismissTimersRef.current.get(alertId)
-    if (existingTimer) {
-      clearTimeout(existingTimer)
-    }
-
-    setRemovingIds((prev) => new Set(prev).add(alertId))
-    const timer = setTimeout(() => {
-      dismissTimersRef.current.delete(alertId)
-      dismissedIdsRef.current.add(alertId)
-      setVisibleAlerts((prev) => prev.filter((a) => a.id !== alertId))
-      setRemovingIds((prev) => {
-        const next = new Set(prev)
-        next.delete(alertId)
-        return next
-      })
-    }, 500)
-    dismissTimersRef.current.set(alertId, timer)
+    dismissedIdsRef.current.add(alertId)
+    setVisibleAlerts((prev) => prev.filter((a) => a.id !== alertId))
   }, [])
 
   const maxHeight = '66vh'
@@ -345,7 +301,6 @@ export function TopologyAlerts({
       <AlertGroup>
         {visibleAlerts.map((alert) => {
           const alertId = alert.id
-          const isRemoving = removingIds.has(alertId)
           const isNew = newAlertIds.has(alertId)
           const actionLinks = alert.actions?.length ? (
             <Fragment>
@@ -417,7 +372,7 @@ export function TopologyAlerts({
           ) : undefined
 
           return (
-            <div key={alertId} className={isRemoving ? alertFadeOut : isNew ? alertFadeIn : undefined}>
+            <div key={alertId} className={isNew ? alertFadeIn : undefined}>
               <Alert
                 variant={statusToVariant[alert.status] ?? 'warning'}
                 title={alert.title}

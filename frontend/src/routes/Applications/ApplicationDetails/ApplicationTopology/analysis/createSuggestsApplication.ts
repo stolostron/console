@@ -143,305 +143,291 @@ export const createSuggestsApplication = (
     const message = error.firstError.message
     const singleError = { ...filteredError, errors: [error] }
 
-    switch (true) {
-      case isAppPathDoesNotExistMessage(message): {
-        const currentYaml = jsYaml
-          .dump(applicationSet.spec.template?.spec?.sources ?? applicationSet.spec.template?.spec?.source ?? {}, {
-            indent: 2,
-          })
-          .split('\n')
-        const suggestions = [
-          { title: t('Check that the repository path exists for each source') },
-          { title: t('Current sources'), content: currentYaml },
-        ]
-        createTopologyErrorAlert(
-          suggestions,
-          [
-            {
-              label: t('Edit application'),
-              type: TopologyAlertActionType.editAppSet,
-              node,
-            },
-            {
-              label: t('Edit YAML'),
-              type: TopologyAlertActionType.editYaml,
-              node,
-              highlightEditorPath: 'ApplicationSet.spec.template.spec.sources',
-            },
-          ],
-          alerts,
-          singleError,
-          t
-        )
-        break
-      }
-      case isNamespaceNotFoundSyncMessage(message): {
-        const namespace = getNamespaceNotFoundSyncNamespace(message)
-        const conciseMessage = namespace
-          ? t('Sync failed: namespace {{namespace}} not found', { namespace })
-          : t('Sync failed: target namespace not found')
-        const namespaceNotFoundError = {
-          ...singleError,
-          errors: [
-            {
-              ...error,
-              firstError: { ...error.firstError, message: conciseMessage },
-            },
-          ],
-        }
-        const suggestions = [
+    if (isAppPathDoesNotExistMessage(message)) {
+      const currentYaml = jsYaml
+        .dump(applicationSet.spec.template?.spec?.sources ?? applicationSet.spec.template?.spec?.source ?? {}, {
+          indent: 2,
+        })
+        .split('\n')
+      const suggestions = [
+        { title: t('Check that the repository path exists for each source') },
+        { title: t('Current sources'), content: currentYaml },
+      ]
+      createTopologyErrorAlert(
+        suggestions,
+        [
           {
-            title: namespace
-              ? t(
-                  'Resources in this application require namespace {{namespace}}, but it does not exist on the target cluster',
-                  { namespace }
-                )
-              : t('Resources in this application require a namespace that does not exist on the target cluster'),
+            label: t('Edit application'),
+            type: TopologyAlertActionType.editAppSet,
+            node,
           },
           {
-            title: namespace
-              ? t(
-                  'Add a Namespace manifest for {{namespace}} to the application, or create the namespace on the cluster before syncing',
-                  { namespace }
-                )
-              : t('Add a Namespace manifest to the application, or create the namespace on the cluster before syncing'),
+            label: t('Edit YAML'),
+            type: TopologyAlertActionType.editYaml,
+            node,
+            highlightEditorPath: 'ApplicationSet.spec.template.spec.sources',
           },
-        ]
-        createTopologyErrorAlert(
-          suggestions,
-          [
-            {
-              label: t('Edit application'),
-              type: TopologyAlertActionType.editAppSet,
-              node,
-            },
-            {
-              label: t('Edit YAML'),
-              type: TopologyAlertActionType.editYaml,
-              node,
-              highlightEditorPath: 'ApplicationSet.spec.template.spec.sources',
-            },
-            {
-              label: t('Launch Argo editor'),
-              type: TopologyAlertActionType.launchArgo,
-              node,
-            },
-          ],
-          alerts,
-          namespaceNotFoundError,
-          t
-        )
-        break
-      }
-      case isFailedSyncMessage(message): {
-        const currentYaml = jsYaml
-          .dump(applicationSet.spec.template?.spec?.sources ?? applicationSet.spec.template?.spec?.source ?? {}, {
-            indent: 2,
-          })
-          .split('\n')
-        const suggestions = [
-          { title: t('Try syncing resources again') },
-          { title: t('If the problem persists, check the application details in Argo CD') },
-          { title: t('Current sources'), content: currentYaml },
-        ]
-        createTopologyErrorAlert(
-          suggestions,
-          [
-            {
-              label: t('Edit application'),
-              type: TopologyAlertActionType.editAppSet,
-              node,
-            },
-            {
-              label: t('Edit YAML'),
-              type: TopologyAlertActionType.editYaml,
-              node,
-              highlightEditorPath: 'ApplicationSet.spec.template.spec.sources',
-            },
-            {
-              label: t('Sync resources'),
-              type: TopologyAlertActionType.syncResources,
-              node,
-            },
-            {
-              label: t('Launch Argo editor'),
-              type: TopologyAlertActionType.launchArgo,
-              node,
-            },
-          ],
-          alerts,
-          singleError,
-          t
-        )
-        break
-      }
-      case isManifestGenerationRpcUnavailableMessage(message): {
-        const manifestRpcError = {
-          ...singleError,
-          errors: [
-            {
-              ...error,
-              firstError: {
-                ...error.firstError,
-                message: t('Failed to generate manifests: GitOps manifest service unavailable'),
-              },
-            },
-          ],
-        }
-        const suggestions = [
+        ],
+        alerts,
+        singleError,
+        t
+      )
+    } else if (isNamespaceNotFoundSyncMessage(message)) {
+      const namespace = getNamespaceNotFoundSyncNamespace(message)
+      const conciseMessage = namespace
+        ? t('Sync failed: namespace {{namespace}} not found', { namespace })
+        : t('Sync failed: target namespace not found')
+      const namespaceNotFoundError = {
+        ...singleError,
+        errors: [
           {
-            title: t(
-              'Argo CD could not reach the manifest generation service while loading the application target state'
-            ),
+            ...error,
+            firstError: { ...error.firstError, message: conciseMessage },
+          },
+        ],
+      }
+      const suggestions = [
+        {
+          title: namespace
+            ? t(
+                'Resources in this application require namespace {{namespace}}, but it does not exist on the target cluster',
+                { namespace }
+              )
+            : t('Resources in this application require a namespace that does not exist on the target cluster'),
+        },
+        {
+          title: namespace
+            ? t(
+                'Add a Namespace manifest for {{namespace}} to the application, or create the namespace on the cluster before syncing',
+                { namespace }
+              )
+            : t('Add a Namespace manifest to the application, or create the namespace on the cluster before syncing'),
+        },
+      ]
+      createTopologyErrorAlert(
+        suggestions,
+        [
+          {
+            label: t('Edit application'),
+            type: TopologyAlertActionType.editAppSet,
+            node,
           },
           {
-            title: t(
-              'For pull applications, verify the OpenShift GitOps Operator is installed and healthy on the target cluster'
-            ),
+            label: t('Edit YAML'),
+            type: TopologyAlertActionType.editYaml,
+            node,
+            highlightEditorPath: 'ApplicationSet.spec.template.spec.sources',
           },
           {
-            title: t(
-              'Verify managed cluster connectivity and that the GitOps repo-server or config management plugin is running'
-            ),
+            label: t('Launch Argo editor'),
+            type: TopologyAlertActionType.launchArgo,
+            node,
           },
-        ]
-        createTopologyErrorAlert(
-          suggestions,
-          [
-            {
-              label: t('Edit application'),
-              type: TopologyAlertActionType.editAppSet,
-              node,
-            },
-            {
-              label: t('Edit YAML'),
-              type: TopologyAlertActionType.editYaml,
-              node,
-              highlightEditorPath: 'ApplicationSet.spec.template.spec.sources',
-            },
-            {
-              label: t('Sync resources'),
-              type: TopologyAlertActionType.syncResources,
-              node,
-            },
-            {
-              label: t('Launch Argo editor'),
-              type: TopologyAlertActionType.launchArgo,
-              node,
-            },
-          ],
-          alerts,
-          manifestRpcError,
-          t
-        )
-        break
-      }
-      case isForbiddenSyncMessage(message): {
-        const namespace = getForbiddenSyncNamespace(message)
-        const conciseMessage = namespace
-          ? t('Sync failed: insufficient permissions to create resources in {{namespace}}', { namespace })
-          : t('Sync failed: insufficient permissions to create resources')
-        const forbiddenError = {
-          ...singleError,
-          errors: [
-            {
-              ...error,
-              firstError: { ...error.firstError, message: conciseMessage },
-            },
-          ],
-        }
-        const suggestions = [
+        ],
+        alerts,
+        namespaceNotFoundError,
+        t
+      )
+    } else if (isFailedSyncMessage(message)) {
+      const currentYaml = jsYaml
+        .dump(applicationSet.spec.template?.spec?.sources ?? applicationSet.spec.template?.spec?.source ?? {}, {
+          indent: 2,
+        })
+        .split('\n')
+      const suggestions = [
+        { title: t('Try syncing resources again') },
+        { title: t('If the problem persists, check the application details in Argo CD') },
+        { title: t('Current sources'), content: currentYaml },
+      ]
+      createTopologyErrorAlert(
+        suggestions,
+        [
           {
-            title: namespace
-              ? t('Argo CD lacks permission to create resources in namespace {{namespace}}', { namespace })
-              : t('Argo CD lacks permission to create resources in the target namespace'),
+            label: t('Edit application'),
+            type: TopologyAlertActionType.editAppSet,
+            node,
           },
           {
-            title: t('Grant the GitOps controller service account RBAC access to the target namespace'),
+            label: t('Edit YAML'),
+            type: TopologyAlertActionType.editYaml,
+            node,
+            highlightEditorPath: 'ApplicationSet.spec.template.spec.sources',
           },
-        ]
-        createTopologyErrorAlert(
-          suggestions,
-          [
-            ...(node.specs.isAppSetPullModel
-              ? [
-                  {
-                    label: t('View documentation'),
-                    type: TopologyAlertActionType.openUrl,
-                    action: { url: DOC_LINKS.GITOPS_REGISTER },
-                  },
-                ]
-              : []),
-          ],
-          alerts,
-          forbiddenError,
-          t
-        )
-        break
+          {
+            label: t('Sync resources'),
+            type: TopologyAlertActionType.syncResources,
+            node,
+          },
+          {
+            label: t('Launch Argo editor'),
+            type: TopologyAlertActionType.launchArgo,
+            node,
+          },
+        ],
+        alerts,
+        singleError,
+        t
+      )
+    } else if (isManifestGenerationRpcUnavailableMessage(message)) {
+      const manifestRpcError = {
+        ...singleError,
+        errors: [
+          {
+            ...error,
+            firstError: {
+              ...error.firstError,
+              message: t('Failed to generate manifests: GitOps manifest service unavailable'),
+            },
+          },
+        ],
       }
-      case isSourceRequiredMessage(message): {
-        const currentYaml = jsYaml
-          .dump(applicationSet.spec.template?.spec?.sources ?? applicationSet.spec.template?.spec?.source ?? {}, {
-            indent: 2,
-          })
-          .split('\n')
-        const suggestions = [
-          { title: t('Each source must specify path, chart, or ref') },
-          { title: t('Current sources'), content: currentYaml },
-        ]
-        createTopologyErrorAlert(
-          suggestions,
-          [
-            {
-              label: t('Edit application'),
-              type: TopologyAlertActionType.editAppSet,
-              node,
-            },
-            {
-              label: t('Edit YAML'),
-              type: TopologyAlertActionType.editYaml,
-              node,
-              highlightEditorPath: 'ApplicationSet.spec.template.spec.sources',
-            },
-          ],
-          alerts,
-          singleError,
-          t
-        )
-        break
+      const suggestions = [
+        {
+          title: t(
+            'Argo CD could not reach the manifest generation service while loading the application target state'
+          ),
+        },
+        {
+          title: t(
+            'For pull applications, verify the OpenShift GitOps Operator is installed and healthy on the target cluster'
+          ),
+        },
+        {
+          title: t(
+            'Verify managed cluster connectivity and that the GitOps repo-server or config management plugin is running'
+          ),
+        },
+      ]
+      createTopologyErrorAlert(
+        suggestions,
+        [
+          {
+            label: t('Edit application'),
+            type: TopologyAlertActionType.editAppSet,
+            node,
+          },
+          {
+            label: t('Edit YAML'),
+            type: TopologyAlertActionType.editYaml,
+            node,
+            highlightEditorPath: 'ApplicationSet.spec.template.spec.sources',
+          },
+          {
+            label: t('Sync resources'),
+            type: TopologyAlertActionType.syncResources,
+            node,
+          },
+          {
+            label: t('Launch Argo editor'),
+            type: TopologyAlertActionType.launchArgo,
+            node,
+          },
+        ],
+        alerts,
+        manifestRpcError,
+        t
+      )
+    } else if (isForbiddenSyncMessage(message)) {
+      const namespace = getForbiddenSyncNamespace(message)
+      const conciseMessage = namespace
+        ? t('Sync failed: insufficient permissions to create resources in {{namespace}}', { namespace })
+        : t('Sync failed: insufficient permissions to create resources')
+      const forbiddenError = {
+        ...singleError,
+        errors: [
+          {
+            ...error,
+            firstError: { ...error.firstError, message: conciseMessage },
+          },
+        ],
       }
-      default: {
-        const currentYaml = jsYaml.dump(applicationSet.spec.template?.spec?.sources ?? {}, { indent: 2 }).split('\n')
-        const suggestions = [{ title: t('Current sources'), content: currentYaml }]
-        createTopologyErrorAlert(
-          suggestions,
-          [
-            {
-              label: t('Edit application'),
-              type: TopologyAlertActionType.editAppSet,
-              node,
-            },
-            {
-              label: t('Edit YAML'),
-              type: TopologyAlertActionType.editYaml,
-              node,
-              highlightEditorPath: 'ApplicationSet.spec.template.spec.sources',
-            },
-            ...(node.type === 'pod'
-              ? [
-                  {
-                    label: t('Show logs'),
-                    type: TopologyAlertActionType.showLog,
-                    node,
-                  },
-                ]
-              : []),
-          ],
-          alerts,
-          singleError,
-          t
-        )
-      }
+      const suggestions = [
+        {
+          title: namespace
+            ? t('Argo CD lacks permission to create resources in namespace {{namespace}}', { namespace })
+            : t('Argo CD lacks permission to create resources in the target namespace'),
+        },
+        {
+          title: t('Grant the GitOps controller service account RBAC access to the target namespace'),
+        },
+      ]
+      createTopologyErrorAlert(
+        suggestions,
+        [
+          ...(node.specs.isAppSetPullModel
+            ? [
+                {
+                  label: t('View documentation'),
+                  type: TopologyAlertActionType.openUrl,
+                  action: { url: DOC_LINKS.GITOPS_REGISTER },
+                },
+              ]
+            : []),
+        ],
+        alerts,
+        forbiddenError,
+        t
+      )
+    } else if (isSourceRequiredMessage(message)) {
+      const currentYaml = jsYaml
+        .dump(applicationSet.spec.template?.spec?.sources ?? applicationSet.spec.template?.spec?.source ?? {}, {
+          indent: 2,
+        })
+        .split('\n')
+      const suggestions = [
+        { title: t('Each source must specify path, chart, or ref') },
+        { title: t('Current sources'), content: currentYaml },
+      ]
+      createTopologyErrorAlert(
+        suggestions,
+        [
+          {
+            label: t('Edit application'),
+            type: TopologyAlertActionType.editAppSet,
+            node,
+          },
+          {
+            label: t('Edit YAML'),
+            type: TopologyAlertActionType.editYaml,
+            node,
+            highlightEditorPath: 'ApplicationSet.spec.template.spec.sources',
+          },
+        ],
+        alerts,
+        singleError,
+        t
+      )
+    } else {
+      const currentYaml = jsYaml.dump(applicationSet.spec.template?.spec?.sources ?? {}, { indent: 2 }).split('\n')
+      const suggestions = [{ title: t('Current sources'), content: currentYaml }]
+      createTopologyErrorAlert(
+        suggestions,
+        [
+          {
+            label: t('Edit application'),
+            type: TopologyAlertActionType.editAppSet,
+            node,
+          },
+          {
+            label: t('Edit YAML'),
+            type: TopologyAlertActionType.editYaml,
+            node,
+            highlightEditorPath: 'ApplicationSet.spec.template.spec.sources',
+          },
+          ...(node.type === 'pod'
+            ? [
+                {
+                  label: t('Show logs'),
+                  type: TopologyAlertActionType.showLog,
+                  node,
+                },
+              ]
+            : []),
+        ],
+        alerts,
+        singleError,
+        t
+      )
     }
   })
 }

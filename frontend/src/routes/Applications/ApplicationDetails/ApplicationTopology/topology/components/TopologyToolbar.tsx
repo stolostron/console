@@ -72,7 +72,9 @@ export function useToolbarControl(): ToolbarControl {
   )
 }
 
-const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
+const TopologyToolbar: FC<
+  Pick<TopologyProps, 'channelControl' | 'setDrawerContent' | 'elements' | 'hubClusterName' | 'toolbarControl'>
+> = (topologyProps) => {
   const { t } = useTranslation()
   const { channelControl, setDrawerContent, elements, hubClusterName, toolbarControl } = topologyProps
   const [isSearchDisabled, setIsSearchDisabled] = useState<boolean>(false)

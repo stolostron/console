@@ -39,6 +39,15 @@ type StyledNodeProps = {
   WithDragNodeProps &
   WithSelectionProps
 
+const CustomShape: React.FunctionComponent<ShapeProps> = (props) => {
+  const data = props.element.getData() as { specs?: { resourceCount?: number }; status?: string }
+  const isMulti = (data?.specs?.resourceCount ?? 0) > 1
+  const shouldPulse = data?.status === 'danger'
+  return <CustomEllipse {...props} isMulti={isMulti} shouldPulse={shouldPulse} />
+}
+
+const getCustomShape = (): React.FunctionComponent<ShapeProps> => CustomShape
+
 const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
   element,
   onContextMenu,
@@ -72,16 +81,7 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
   }, [data])
 
   const LabelIcon = passedData.labelIcon
-  const isMulti = passedData?.specs?.resourceCount > 1
-  const shouldPulse = data.status === 'danger'
   const { width, height } = element.getDimensions()
-
-  const getCustomShape = (): React.FunctionComponent<ShapeProps> => {
-    const CustomShape: React.FunctionComponent<ShapeProps> = (props) => (
-      <CustomEllipse {...props} isMulti={isMulti} shouldPulse={shouldPulse} />
-    )
-    return CustomShape
-  }
 
   return (
     <DefaultNode

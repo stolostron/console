@@ -30,7 +30,7 @@ export default class CustomEllipseAnchor extends AbstractAnchor {
 
     // If anchor lands between 260 and 270 degrees, back off an extra 8px
     if (angle >= 200 && angle <= 240) {
-      const distance = Math.sqrt(dx * dx + dy * dy)
+      const distance = Math.hypot(dx, dy)
       const scale = (distance + 8) / distance
       return new Point(shiftedCenter.x + dx * scale, shiftedCenter.y + dy * scale)
     }

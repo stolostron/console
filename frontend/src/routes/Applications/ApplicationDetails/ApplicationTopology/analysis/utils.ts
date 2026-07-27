@@ -93,7 +93,7 @@ export interface IResourceCondition {
   type: string
   reason?: string
   message: string
-  status?: 'True' | 'False' | string
+  status?: 'True' | 'False'
 }
 
 /** Determines whether a resource status condition represents an error state. */
@@ -154,24 +154,7 @@ export const extractConditionsErrors = (resources: IResourcesWithStatus[], t: TF
   Object.keys(errorMap).forEach((key) => {
     const errorConditions = errorMap[key]
 
-    if (resources.length === 1) {
-      const firstItem = errorConditions.shift()
-      if (firstItem) {
-        conditionErrors.push({
-          name: firstItem.name,
-          namespace: firstItem.namespace,
-          kind: firstItem.kind,
-          resource: firstItem.resource,
-          errors: [
-            {
-              message: key,
-              reason: firstItem.reason,
-              type: firstItem.type,
-            },
-          ],
-        })
-      }
-    } else if (resources.length === errorConditions.length) {
+    if (resources.length === 1 || resources.length === errorConditions.length) {
       const firstItem = errorConditions.shift()
       if (firstItem) {
         conditionErrors.push({
@@ -302,10 +285,14 @@ export const createTopologyErrorAlert = (
   alerts: TopologyAlert[],
   filteredError: IFilteredConditionError,
   t: TFunction,
-  status: PulseColor = 'red',
-  isMajor: boolean = true,
-  isUnique?: boolean
+  options?: {
+    status?: PulseColor
+    isMajor?: boolean
+    isUnique?: boolean
+  }
 ): void => {
+  const { status = 'red', isMajor = true, isUnique } = options ?? {}
+
   if (filteredError.errors.length === 0) {
     return
   }

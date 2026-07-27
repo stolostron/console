@@ -203,7 +203,7 @@ describe('analysis/utils', () => {
         reason: 'Failed',
       })
 
-      createTopologyErrorAlert([], [], alerts, filteredError, t, 'red', true, true)
+      createTopologyErrorAlert([], [], alerts, filteredError, t, { isUnique: true })
 
       expect(alerts[0].title).toBe('Application Failed my-ns/my-app')
     })

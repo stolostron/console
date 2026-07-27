@@ -254,12 +254,11 @@ export function ApplicationTopologyPageContent() {
   })
 
   const handleEditAppSet = useCallback(
-    (node: TopologyNode, showWizardInput?: string) => {
+    (node: TopologyNode) => {
       setEditAppSetModalProps({
         open: true,
         close: () => setEditAppSetModalProps({ open: false }),
         node,
-        showWizardInput,
         onUpdateSuccess: handleResourceUpdateSuccess,
       })
     },

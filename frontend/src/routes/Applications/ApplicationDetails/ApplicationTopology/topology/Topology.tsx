@@ -66,7 +66,6 @@ export interface TopologyProps {
     clusterDetailsContainerData: ClusterDetailsContainerData
     handleClusterDetailsContainerUpdate: React.Dispatch<React.SetStateAction<ClusterDetailsContainerData>>
   }
-  options?: any
   setDrawerContent: (
     title: string,
     isInline: boolean,
@@ -78,7 +77,6 @@ export interface TopologyProps {
   ) => void
   nodeDetailsProvider?: (node: any, activeFilters: Record<string, any>, t: TFunction, hubClusterName: string) => any
   canUpdateStatuses?: boolean
-  disableRenderConstraint?: boolean
   processActionLink?: (resource: any, toggleLoading: () => void, hubClusterName: string) => void
   hubClusterName: string
   onRefreshResources?: () => void
@@ -89,33 +87,34 @@ export interface TopologyProps {
   onLaunchArgo?: (node: TopologyNode) => void
 }
 
-interface TopologyViewComponentsProps {
+type TopologyContentProps = Omit<TopologyProps, 'onRefreshResources' | 'canUpdateStatuses'> & {
   controller: Controller
-  topologyProps: TopologyProps
 }
 
-export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ controller, topologyProps }) => {
+const TopologyContent: React.FC<TopologyContentProps> = ({
+  controller,
+  processActionLink,
+  argoAppDetailsContainerControl,
+  clusterDetailsContainerControl,
+  setDrawerContent,
+  elements,
+  nodeDetailsProvider,
+  hubClusterName,
+  alerts,
+  currentAlertsKey,
+  isAnalyzing,
+  isProcessingSave,
+  processingSaveStart,
+  onClearProcessingSave,
+  onEditAppSet,
+  onEditYaml,
+  onViewLogs,
+  onSyncResources,
+  onLaunchArgo,
+  channelControl,
+  toolbarControl,
+}) => {
   const { t } = useTranslation()
-  const {
-    processActionLink,
-    argoAppDetailsContainerControl,
-    clusterDetailsContainerControl,
-    setDrawerContent,
-    elements,
-    nodeDetailsProvider,
-    hubClusterName,
-    alerts,
-    currentAlertsKey,
-    isAnalyzing,
-    isProcessingSave,
-    processingSaveStart,
-    onClearProcessingSave,
-    onEditAppSet,
-    onEditYaml,
-    onViewLogs,
-    onSyncResources,
-    onLaunchArgo,
-  } = topologyProps
   const [selectedIds, setSelectedIds] = useState<string[]>()
 
   const hasGraph = controller.hasGraph()
@@ -216,7 +215,18 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
   const showAlerts = (alerts && alerts.length > 0) || isProcessingSave || isAnalyzing
 
   return (
-    <TopologyView controlBar={<TopologyZoomBar />} contextToolbar={<TopologyToolbar {...topologyProps} />}>
+    <TopologyView
+      controlBar={<TopologyZoomBar />}
+      contextToolbar={
+        <TopologyToolbar
+          channelControl={channelControl}
+          setDrawerContent={setDrawerContent}
+          elements={elements}
+          hubClusterName={hubClusterName}
+          toolbarControl={toolbarControl}
+        />
+      }
+    >
       <div
         role="button"
         tabIndex={0}
@@ -247,8 +257,30 @@ export const TopologyViewComponents: React.FC<TopologyViewComponentsProps> = ({ 
   )
 }
 
-export const Topology = (props: TopologyProps) => {
-  const { onRefreshResources } = props
+export const Topology = ({
+  onRefreshResources,
+  elements,
+  canUpdateStatuses,
+  alerts,
+  currentAlertsKey,
+  isAnalyzing,
+  isProcessingSave,
+  processingSaveStart,
+  onClearProcessingSave,
+  channelControl,
+  toolbarControl,
+  argoAppDetailsContainerControl,
+  clusterDetailsContainerControl,
+  setDrawerContent,
+  nodeDetailsProvider,
+  processActionLink,
+  hubClusterName,
+  onEditAppSet,
+  onEditYaml,
+  onViewLogs,
+  onSyncResources,
+  onLaunchArgo,
+}: TopologyProps) => {
   const topologyRefreshValue = useMemo(() => ({ refreshResources: onRefreshResources }), [onRefreshResources])
   const controllerRef = useRef<Controller>()
   let controller = controllerRef.current
@@ -259,7 +291,7 @@ export const Topology = (props: TopologyProps) => {
   }
 
   const nodesKey = JSON.stringify(
-    props.elements.nodes
+    elements.nodes
       .map((node: any) => ({
         id: node.id,
         name: node.name,
@@ -268,10 +300,10 @@ export const Topology = (props: TopologyProps) => {
       .sort((a: any, b: any) => a.id.localeCompare(b.id))
   )
   useEffect(() => {
-    if (props.elements.nodes.length > 0) {
+    if (elements.nodes.length > 0) {
       // this creates the StyledNodes and StyledEdges from the props.elements
       // when called a second time, Nodes and Edges are added removed
-      controller.fromModel(getLayoutModel(props.elements))
+      controller.fromModel(getLayoutModel(elements))
       controller.getGraph()?.layout()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -282,7 +314,7 @@ export const Topology = (props: TopologyProps) => {
       <VisualizationProvider controller={controller}>
         <NodeIcons />
         <NodeStatusIcons />
-        {!props.canUpdateStatuses && (
+        {!canUpdateStatuses && (
           <svg width="0" height="0">
             <symbol className="spinner" viewBox="0 0 40 40" id="nodeStatusIcon_spinner">
               <circle cx="20" cy="20" r="18" fill="white"></circle>
@@ -290,7 +322,29 @@ export const Topology = (props: TopologyProps) => {
             </symbol>
           </svg>
         )}
-        <TopologyViewComponents controller={controller} topologyProps={props} />
+        <TopologyContent
+          controller={controller}
+          elements={elements}
+          alerts={alerts}
+          currentAlertsKey={currentAlertsKey}
+          isAnalyzing={isAnalyzing}
+          isProcessingSave={isProcessingSave}
+          processingSaveStart={processingSaveStart}
+          onClearProcessingSave={onClearProcessingSave}
+          channelControl={channelControl}
+          toolbarControl={toolbarControl}
+          argoAppDetailsContainerControl={argoAppDetailsContainerControl}
+          clusterDetailsContainerControl={clusterDetailsContainerControl}
+          setDrawerContent={setDrawerContent}
+          nodeDetailsProvider={nodeDetailsProvider}
+          processActionLink={processActionLink}
+          hubClusterName={hubClusterName}
+          onEditAppSet={onEditAppSet}
+          onEditYaml={onEditYaml}
+          onViewLogs={onViewLogs}
+          onSyncResources={onSyncResources}
+          onLaunchArgo={onLaunchArgo}
+        />
       </VisualizationProvider>
     </TopologyRefreshContext.Provider>
   )

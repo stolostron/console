@@ -27,63 +27,57 @@ export const createSuggestsAppset = (
     const { message, reason } = error.firstError
     const singleError = { ...filteredError, errors: [error] }
 
-    switch (true) {
-      case isNoClusterDecisionResourcesError(reason, message): {
-        const currentYaml = jsYaml.dump(applicationSet.spec.generators ?? {}, { indent: 2 }).split('\n')
-        const suggestions = [
+    if (isNoClusterDecisionResourcesError(reason, message)) {
+      const currentYaml = jsYaml.dump(applicationSet.spec.generators ?? {}, { indent: 2 }).split('\n')
+      const suggestions = [
+        {
+          title: t(
+            'Make sure the placement referenced in the ApplicationSet generator exists and has cluster decisions'
+          ),
+        },
+        { title: t('Current generators'), content: currentYaml },
+      ]
+      createTopologyErrorAlert(
+        suggestions,
+        [
           {
-            title: t(
-              'Make sure the placement referenced in the ApplicationSet generator exists and has cluster decisions'
-            ),
+            label: t('Edit application'),
+            type: TopologyAlertActionType.editAppSet,
+            node,
           },
-          { title: t('Current generators'), content: currentYaml },
-        ]
-        createTopologyErrorAlert(
-          suggestions,
-          [
-            {
-              label: t('Edit application'),
-              type: TopologyAlertActionType.editAppSet,
-              node,
-            },
-            {
-              label: t('Edit YAML'),
-              type: TopologyAlertActionType.editYaml,
-              node,
-              highlightEditorPath: 'ApplicationSet.spec.generators',
-            },
-          ],
-          alerts,
-          singleError,
-          t
-        )
-        break
-      }
-      default: {
-        const currentYaml = jsYaml
-          .dump(applicationSet.spec.template?.spec?.destination ?? {}, { indent: 2 })
-          .split('\n')
-        const suggestions = [{ title: t('Current destinations'), content: currentYaml }]
-        createTopologyErrorAlert(
-          suggestions,
-          [
-            {
-              label: t('Edit application'),
-              type: TopologyAlertActionType.editAppSet,
-              node,
-            },
-            {
-              label: t('Edit YAML'),
-              type: TopologyAlertActionType.editYaml,
-              node,
-              highlightEditorPath: 'ApplicationSet.spec.template.spec.destination',
-            },
-          ],
-          alerts,
-          singleError,
-          t
-        )
-      }
+          {
+            label: t('Edit YAML'),
+            type: TopologyAlertActionType.editYaml,
+            node,
+            highlightEditorPath: 'ApplicationSet.spec.generators',
+          },
+        ],
+        alerts,
+        singleError,
+        t
+      )
+    } else {
+      const currentYaml = jsYaml.dump(applicationSet.spec.template?.spec?.destination ?? {}, { indent: 2 }).split('\n')
+      const suggestions = [{ title: t('Current destinations'), content: currentYaml }]
+      createTopologyErrorAlert(
+        suggestions,
+        [
+          {
+            label: t('Edit application'),
+            type: TopologyAlertActionType.editAppSet,
+            node,
+          },
+          {
+            label: t('Edit YAML'),
+            type: TopologyAlertActionType.editYaml,
+            node,
+            highlightEditorPath: 'ApplicationSet.spec.template.spec.destination',
+          },
+        ],
+        alerts,
+        singleError,
+        t
+      )
     }
   })
 }
