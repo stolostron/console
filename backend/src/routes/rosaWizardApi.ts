@@ -35,6 +35,18 @@ type ClusterNameCheck = Payload & {
   cluster_name: string
 }
 
+type VPCPayload = Payload & {
+  aws: {
+    account_id: string
+    sts: {
+      role_arn: string
+    }
+  }
+  region: {
+    id: string
+  }
+}
+
 export async function getAwsAccountIds(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   const token = await getAuthenticatedToken(req, res)
   if (token) {
@@ -226,6 +238,48 @@ export async function getClusterNameCheck(req: Http2ServerRequest, res: Http2Ser
 
           res.setHeader('Content-Type', 'application/json')
           res.end(JSON.stringify(accReq))
+        } catch (err) {
+          logger.error(err)
+          respondInternalServerError(req, res)
+        }
+      })
+    } catch (err) {
+      logger.error(err)
+      respondInternalServerError(req, res)
+    }
+  }
+}
+
+export async function getWizardVPCs(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
+  const token = await getAuthenticatedToken(req, res)
+  if (token) {
+    try {
+      let data: string = undefined
+      const chucks: string[] = []
+      req.on('data', (chuck: string) => {
+        chucks.push(chuck)
+      })
+
+      req.on('end', async () => {
+        try {
+          data = chucks.join('')
+          const body = JSON.parse(data) as VPCPayload
+
+          const payload = {
+            aws: body.aws,
+            region: body.region,
+          }
+
+          const accessTokenSSO = await getOcmServiceToken(body.service_account_id, body.service_account_secret)
+
+          const accountPath = `${API_URL}/api/clusters_mgmt/v1/aws_inquiries/vpcs?fetchSecurityGroups=true`
+          const request = await jsonPost(accountPath, payload, accessTokenSSO).catch((err: Error) => {
+            logger.error({ msg: 'Failed to fetch account', error: err.message })
+            return { error: err.message }
+          })
+
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify(request))
         } catch (err) {
           logger.error(err)
           respondInternalServerError(req, res)

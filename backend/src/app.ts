@@ -48,6 +48,7 @@ import {
   getRoleARNs,
   getUserRole,
   getWizardVersions,
+  getWizardVPCs,
 } from './routes/rosaWizardApi'
 
 const isProduction = process.env.NODE_ENV === 'production'
@@ -109,6 +110,7 @@ router.post('/oidc-configs', getWizardOIDCConfigs)
 router.post('/regions', getWizardCloudProviders)
 router.post('/cluster-name-check', getClusterNameCheck)
 router.post('/sts-role-arns', getRoleARNs)
+router.post('/vpcs', getWizardVPCs)
 router.post('/sts-ocm-role', getOCMRoleARN)
 router.post('/sts-user-role', getUserRole)
 router.post('/openshift-versions', getWizardVersions)
