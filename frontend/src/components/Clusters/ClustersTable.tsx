@@ -2,7 +2,7 @@
 
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocalHubName } from '../../hooks/use-local-hub'
-import { useTranslation } from '../../lib/acm-i18next'
+import { useTranslation } from '~/lib/acm-i18next'
 import { HostedClusterK8sResourceWithChannel } from '../../resources/hosted-cluster'
 import { Cluster } from '../../resources/utils'
 import { BatchChannelSelectModal } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/BatchChannelSelectModal'

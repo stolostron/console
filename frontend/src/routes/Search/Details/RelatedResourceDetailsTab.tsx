@@ -85,7 +85,7 @@ export default function RelatedResourceDetailsTab() {
       const tableID = `${kind.toLowerCase()}-${items[0].apigroup ? `${items[0].apigroup}-${items[0].apiversion}` : items[0].apiversion}`
       return (
         <AcmTable
-          aria-label={t('Related resources table')}
+          aria-label={t('Related resources table for {{kind}}', { kind })}
           id={`search-result-${tableID}`}
           items={items}
           emptyState={undefined} // table only shown for kinds with related resources

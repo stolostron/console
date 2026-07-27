@@ -146,7 +146,7 @@ function RenderAccordionItem(
 
       return (
         <AcmTable
-          aria-label={t('Search results table')}
+          aria-label={t('Search results table for {{kind}}', { kind })}
           id={`search-result-${tableID}`}
           items={items}
           emptyState={undefined} // table only shown for kinds with results
