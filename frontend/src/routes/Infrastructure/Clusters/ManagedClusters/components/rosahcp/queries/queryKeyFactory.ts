@@ -26,4 +26,12 @@ export const rosaWizardKeys = {
   ],
   userRoleArn: (client_id: string) => [...rosaWizardKeys.all, client_id, 'user-role-arn'],
   openshiftVersions: (client_id: string) => [...rosaWizardKeys.all, client_id, 'openshift-versions'],
+  vpcs: (client_id: string, awsAccountId?: string, installerRoleArn?: string, region?: string) => [
+    ...rosaWizardKeys.all,
+    client_id,
+    awsAccountId,
+    installerRoleArn,
+    region,
+    'vpc',
+  ],
 }

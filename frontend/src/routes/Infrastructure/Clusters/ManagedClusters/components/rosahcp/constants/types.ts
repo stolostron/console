@@ -53,3 +53,9 @@ export interface OpenshiftVersion {
   wif_enabled: boolean
   end_of_life_timestamp: string
 }
+
+export interface VPCsPayload {
+  account_id: string
+  role_arn: string
+  region: string
+}

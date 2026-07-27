@@ -155,6 +155,55 @@ export interface OpenshiftVersionResponse {
   items: OpenshiftVersion[]
 }
 
+export interface AWSSecurityGroup {
+  id: string
+  name: string
+  red_hat_managed: boolean
+}
+
+export interface AWSSubnets {
+  subnet_id: string
+  name: string
+  red_hat_managed: boolean
+  public: boolean
+  availability_zone: string
+  cidr_block: string
+}
+
+export interface VPC {
+  name: string
+  red_hat_managed: boolean
+  id: string
+  cidr_block: string
+  subnets?: string[]
+  aws_subnets: AWSSubnets[]
+  aws_security_groups?: AWSSecurityGroup[]
+}
+
+export interface VPCsResponse {
+  body: {
+    kind: string
+    page: number
+    size: number
+    total: number
+    items: VPC[]
+  }
+  statusCode: number
+}
+
+// Has to be types to satisfy index signature of Record<string, unknown>
 export type AwsAccountPayload = {
   aws_account_id: string
+}
+
+export type VPCsPayload = {
+  aws: {
+    account_id?: string
+    sts: {
+      role_arn?: string
+    }
+  }
+  region: {
+    id?: string
+  }
 }
