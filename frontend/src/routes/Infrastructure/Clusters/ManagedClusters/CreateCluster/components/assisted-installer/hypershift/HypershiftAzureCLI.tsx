@@ -30,12 +30,12 @@ export BASE_DOMAIN="example.azure.devcluster.openshift.com"
 export RESOURCE_GROUP_NAME="my-resource-group"
 export DNS_ZONE_RG_NAME="my-dns-zone-rg"
 export AZURE_CREDS="./azure-creds.json"
+export WORKLOAD_IDENTITIES_FILE="./workload-identities.json"
+export INFRA_OUTPUT_FILE="./infra-output.json"
 export PULL_SECRET="/path/to/pull-secret.json"
 
 # Derive from hosting cluster infrastructure
-export INFRA_ID="$(oc get infrastructures cluster -o jsonpath='{.status.infrastructureName}')"
-export SUBSCRIPTION_ID="$(jq -r '.subscriptionId' "\${AZURE_CREDS}")"
-export TENANT_ID="$(jq -r '.tenantId' "\${AZURE_CREDS}")"`
+export INFRA_ID="$(oc get infrastructures cluster -o jsonpath='{.status.infrastructureName}')"`
 
   const azureCredsCode = `{
   "subscriptionId": "your-subscription-id",
@@ -44,7 +44,28 @@ export TENANT_ID="$(jq -r '.tenantId' "\${AZURE_CREDS}")"`
   "clientSecret": "your-client-secret"
 }`
 
-  const oidcCode = `export OIDC_STORAGE_ACCOUNT_NAME="youroidcstorageacct"
+const azureDNSCredsCode = `{
+  "subscriptionId": "your-subscription-id",
+  "tenantId": "your-tenant-id",
+  "resourceGroup": "your-resource-group-name",
+  "aadClientId": "your-client-id",
+  "aadClientSecret": "your-client-secret"
+}`
+
+  const externalDnsSecretCode = `oc create secret generic hypershift-operator-external-dns-credentials \\
+  -n <hub-cluster-namespace> \\
+  --from-literal=provider=azure \\
+  --from-literal=domain-filter="<your-dns-zone-name>" \\
+  --from-literal=txt-owner-id="hypershift" \\
+  --from-file=credentials="./azure-dns-creds.json"`
+
+  const getHypershiftPodCode = `oc get pods -n hypershift -w`
+
+  const verifyExternalDnsStatusCode = `oc get deployment external-dns -n hypershift`
+
+  const oidcCode = `export SUBSCRIPTION_ID="$(jq -r '.subscriptionId' "\${AZURE_CREDS}")"
+export TENANT_ID="$(jq -r '.tenantId' "\${AZURE_CREDS}")"
+export OIDC_STORAGE_ACCOUNT_NAME="youroidcstorageacct"
 
 # Ensure cluster resource group exists
 az group create --name "\${RESOURCE_GROUP_NAME}" --location "\${LOCATION}"
@@ -65,9 +86,7 @@ ccoctl azure create-oidc-issuer \\
 
 export OIDC_ISSUER_URL="https://\${OIDC_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/\${OIDC_STORAGE_ACCOUNT_NAME}"`
 
-  const workloadIdentitiesCode = `export WORKLOAD_IDENTITIES_FILE="./workload-identities.json"
-
-hcp create iam azure \\
+  const workloadIdentitiesCode = `hcp create iam azure \\
   --name "\${CLUSTER_NAME}" \\
   --infra-id "\${INFRA_ID}" \\
   --azure-creds "\${AZURE_CREDS}" \\
@@ -85,6 +104,8 @@ hcp create infra azure \\
   --base-domain "\${BASE_DOMAIN}" \\
   --location "\${LOCATION}" \\
   --workload-identities-file "\${WORKLOAD_IDENTITIES_FILE}" \\
+  --assign-identity-roles \\
+  --dns-zone-rg-name "\${DNS_ZONE_RG_NAME}" \\
   --output-file "\${INFRA_OUTPUT_FILE}"`
 
   const createClusterCode = `export DNS_ZONE_NAME="external-dns.\${BASE_DOMAIN}"
@@ -105,7 +126,6 @@ hcp create cluster azure \\
   --sa-token-issuer-private-key-path "\${SA_TOKEN_ISSUER_PRIVATE_KEY_PATH}" \\
   --oidc-issuer-url "\${OIDC_ISSUER_URL}" \\
   --dns-zone-rg-name "\${DNS_ZONE_RG_NAME}" \\
-  --auto-assign-roles \\
   --workload-identities-file "\${WORKLOAD_IDENTITIES_FILE}" \\
   --diagnostics-storage-account-type Managed`
 
@@ -121,7 +141,7 @@ hcp create cluster azure \\
               'Install the Hosted Control Plane CLI (hcp), oc, az, and ccoctl. Authenticate with Azure and OpenShift as needed.'
             )}
           </Content>
-          <Content component={ContentVariants.a} href={DOC_LINKS.HYPERSHIFT_DEPLOY_AZURE} target="_blank">
+          <Content component={ContentVariants.a} href={DOC_LINKS.HYPERSHIFT_DEPLOY_AZURE_PREREQ} target="_blank">
             {t('Follow documentation for more information.')}
           </Content>
         </Fragment>
@@ -156,6 +176,39 @@ hcp create cluster azure \\
       ),
     },
     {
+      title: t('Create Azure external DNS secret'),
+      content: (
+        <Fragment>
+          <Content component={ContentVariants.p}>
+            {t('Create an azure-dns-creds.json file with your Azure service principal credentials.')}
+          </Content>
+          <CodeBlock actions={Actions(azureDNSCredsCode, 'azure-dns-creds-command')}>
+            <CodeBlockCode id="azure-dns-creds-content">{azureDNSCredsCode}</CodeBlockCode>
+          </CodeBlock>
+          <Content component={ContentVariants.p} style={{ marginTop: '1em' }}>
+            {t('Create an external DNS secret in Azure to allow the cluster to resolve external DNS records.')}
+          </Content>
+          <CodeBlock actions={Actions(externalDnsSecretCode, 'external-dns-secret-command')}>
+            <CodeBlockCode id="external-dns-secret-content">{externalDnsSecretCode}</CodeBlockCode>
+          </CodeBlock>
+          <Content component={ContentVariants.h4}>{t('Wait for operator to restart')}</Content>
+          <Content component={ContentVariants.p}>
+            {t(
+              'The hosted control plane add-on controller detects the secret and restarts the operator to enable external DNS. This process typically takes about {{minutes}} minutes.',
+              { minutes: 2 }
+            )}
+          </Content>
+          <CodeBlock actions={Actions(getHypershiftPodCode, 'get-hypershift-pod-command')}>
+            <CodeBlockCode id="get-hypershift-pod-content">{getHypershiftPodCode}</CodeBlockCode>
+          </CodeBlock>
+          <Content component={ContentVariants.h4}>{t('Verify external DNS status')}</Content>
+          <CodeBlock actions={Actions(verifyExternalDnsStatusCode, 'verify-external-dns-status-command')}>
+            <CodeBlockCode id="verify-external-dns-status-content">{verifyExternalDnsStatusCode}</CodeBlockCode>
+          </CodeBlock>
+        </Fragment>
+      ),
+    },
+    {
       title: t('Configure OIDC issuer'),
       content: (
         <Fragment>
@@ -167,6 +220,14 @@ hcp create cluster azure \\
           <CodeBlock actions={Actions(oidcCode, 'oidc-command')}>
             <CodeBlockCode id="oidc-content">{oidcCode}</CodeBlockCode>
           </CodeBlock>
+          <Content
+            component={ContentVariants.a}
+            href={DOC_LINKS.HYPERSHIFT_DEPLOY_AZURE_OIDC}
+            target="_blank"
+            style={{ display: 'block', marginTop: '1em' }}
+          >
+            {t('Follow documentation for more information.')}
+          </Content>
         </Fragment>
       ),
     },
@@ -182,6 +243,14 @@ hcp create cluster azure \\
           <CodeBlock actions={Actions(workloadIdentitiesCode, 'workload-identities-command')}>
             <CodeBlockCode id="workload-identities-content">{workloadIdentitiesCode}</CodeBlockCode>
           </CodeBlock>
+          <Content
+            component={ContentVariants.a}
+            href={DOC_LINKS.HYPERSHIFT_DEPLOY_AZURE_WORKLOAD_IDENTITIES}
+            target="_blank"
+            style={{ display: 'block', marginTop: '1em' }}
+          >
+            {t('Follow documentation for more information.')}
+          </Content>
         </Fragment>
       ),
     },
@@ -197,6 +266,14 @@ hcp create cluster azure \\
           <CodeBlock actions={Actions(infraCode, 'infra-command')}>
             <CodeBlockCode id="infra-content">{infraCode}</CodeBlockCode>
           </CodeBlock>
+          <Content
+            component={ContentVariants.a}
+            href={DOC_LINKS.HYPERSHIFT_DEPLOY_AZURE_INFRASTRUCTURE}
+            target="_blank"
+            style={{ display: 'block', marginTop: '1em' }}
+          >
+            {t('Follow documentation for more information.')}
+          </Content>
         </Fragment>
       ),
     },
