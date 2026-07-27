@@ -35,7 +35,7 @@ import { getArgoResourceStatuses } from './resourceStatusesArgo'
 import { getAppSetResourceStatuses } from './resourceStatusesAppSet'
 import { getSubscriptionResourceStatuses } from './resourceStatusesSubscription'
 import { deepClone, safeGet, safeSet } from '../utils'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { getStateNames } from './NodeDetailsProviderStatuses'
 
 // Constants for node specification paths

@@ -4,11 +4,7 @@
 import LegendView from './LegendView'
 import { render, screen } from '@testing-library/react'
 import { waitForText } from '../../../../../lib/test-util'
-import { TFunction } from 'react-i18next'
-
-const t: TFunction = (s: string): string => {
-  return s
-}
+import { t as t } from '~/lib/test-helpers'
 
 describe('LegendView', () => {
   beforeEach(async () => {

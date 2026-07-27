@@ -428,13 +428,25 @@ describe('ClusterActionDropdown', () => {
     await waitForNock(nockPatch)
   })
 
-  test('update automation template should not be shown for hosted cluster', async () => {
-    const cluster = JSON.parse(JSON.stringify(mockCluster))
-    cluster.isHostedCluster = true
+  test('update automation template should be shown for hosted cluster', async () => {
+    const cluster = JSON.parse(JSON.stringify(mockHostedCluster))
     render(<Component cluster={cluster} />)
     await clickByLabel('Actions')
-    await waitForText('Detach cluster')
-    await waitForNotText('Update automation template')
+    await waitForText('Update automation template')
+  })
+
+  test('Open cluster console action is shown when consoleURL is set', async () => {
+    const cluster: Cluster = { ...mockCluster, consoleURL: 'https://console.example.com' }
+    render(<Component cluster={cluster} />)
+    await clickByLabel('Actions')
+    await waitForText('Open cluster console')
+  })
+
+  test('Open cluster console action is not shown when consoleURL is empty', async () => {
+    const cluster: Cluster = { ...mockCluster, consoleURL: '' }
+    render(<Component cluster={cluster} />)
+    await clickByLabel('Actions')
+    await waitForNotText('Open cluster console')
   })
 })
 

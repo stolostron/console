@@ -205,6 +205,19 @@ npm run test:backend      # Run backend tests only
 npm test -- <pattern>     # Run tests matching a file pattern
 ```
 
+### Playwright Sanity Check
+
+After updating the `@playwright/test` package version, run the sanity check to verify the installation is functional:
+
+```bash
+npx playwright install chromium   # ensure browser binary matches the new version
+npm run playwright:sanity         # run sanity tests
+```
+
+This launches a headless Chromium browser and exercises core Playwright capabilities (rendering, JS evaluation, network interception, selectors). It does **not** require a running application or cluster connection — it is purely a toolchain verification.
+
+> **Note:** This is intentionally excluded from `npm test` since unit tests do not depend on Playwright browser binaries.
+
 ### Linting and Formatting
 
 ```bash

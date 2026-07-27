@@ -7,7 +7,6 @@ import { respondInternalServerError } from '../lib/respond'
 import { getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
 import type { IResource } from '../resources/resource'
-import type { ResourceList } from '../resources/resource-list'
 import { getHubClusterName, getIsHubSelfManaged, getIsObservabilityInstalled, getKubeResources } from './events'
 
 interface AuthenticationResource {
@@ -51,15 +50,11 @@ export async function hub(req: Http2ServerRequest, res: Http2ServerResponse): Pr
     const serviceAccountToken = getServiceAccountToken()
 
     try {
-      const path = process.env.CLUSTER_API_URL + '/apis/apiextensions.k8s.io/v1/customresourcedefinitions'
+      const crdName = 'multiclusterglobalhubs.operator.open-cluster-management.io'
+      const path = process.env.CLUSTER_API_URL + `/apis/apiextensions.k8s.io/v1/customresourcedefinitions/${crdName}`
       const [crdResponse, authentications] = await Promise.all([
-        jsonRequest(path, serviceAccountToken)
-          .then((response: ResourceList<IResource>) => {
-            const mcgh = response.items.find(
-              (crd) => crd.metadata.name === 'multiclusterglobalhubs.operator.open-cluster-management.io'
-            )
-            return { isGlobalHub: mcgh !== undefined }
-          })
+        jsonRequest<IResource>(path, serviceAccountToken)
+          .then((response) => ({ isGlobalHub: response.kind === 'CustomResourceDefinition' }))
           .catch((err: Error) => {
             logger.error({ msg: 'Error getting Multicluster Global Hubs', error: err.message })
             return { isGlobalHub: false }

@@ -16,6 +16,9 @@ spec:
   {{#if releaseImageChannel}}
   channel: {{{releaseImageChannel}}}
   {{/if}}
+  {{#if reconcilePause}}
+  pausedUntil: '{{{reconcilePause}}}'
+  {{/if}}
   etcd:
     managed:
       storage:
@@ -206,6 +209,7 @@ metadata:
   name: '{{{clusterName}}}'
 spec:
   hubAcceptsClient: true
+{{>clusterCurator}}
 {{#if includeKlusterletAddonConfig}}
 ---
 apiVersion: agent.open-cluster-management.io/v1

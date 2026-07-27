@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
 import { Icon, Spinner } from '@patternfly/react-core'
-import { CheckCircleIcon, InProgressIcon } from '@patternfly/react-icons'
+import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { render, screen } from '@testing-library/react'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import { RecoilRoot } from 'recoil'
@@ -10,10 +9,6 @@ import { ClusterImageSetApiVersion, ClusterImageSetKind } from '../../../../../r
 import userEvent from '@testing-library/user-event'
 import { ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
-
-const t = (string: string) => {
-  return string
-}
 
 const mockClusterImageSet0: ClusterImageSetK8sResource = {
   apiVersion: ClusterImageSetApiVersion,
@@ -26,183 +21,64 @@ const mockClusterImageSet0: ClusterImageSetK8sResource = {
   },
 }
 
-const resultPending = {
-  icon: <InProgressIcon />,
-  text: 'Not ready',
-  type: 'pending',
-}
-
-const resultOK = {
-  icon: (
-    <Icon status="success">
-      <CheckCircleIcon />
-    </Icon>
-  ),
-  text: 'Ready',
-  type: 'ok',
-}
-
 describe('NodePoolsProgress getNodePoolStatus no status', () => {
-  it('should call getNodePoolStatus no status', async () => {
-    expect(
-      getNodePoolStatus(
-        {
-          spec: {
-            clusterName: 'myNodePool',
-            replicas: 1,
-            management: { upgradeType: 'InPlace' },
-            platform: { type: 'Agent' },
-            release: {
-              image: 'somerandomimage',
-            },
-          },
-        },
-        t
-      )
-    ).toEqual(resultPending)
+  it('should return pending when no status exists', async () => {
+    const result = getNodePoolStatus({})
+    expect(result.type).toBe('pending')
+    expect(result.isReady).toBe(false)
   })
 })
 
 describe('NodePoolsProgress getNodePoolStatus no conditions', () => {
-  it('should call getNodePoolStatus no conditions', async () => {
-    expect(
-      getNodePoolStatus(
-        {
-          spec: {
-            clusterName: 'myNodePool',
-            replicas: 1,
-            management: { upgradeType: 'InPlace' },
-            platform: { type: 'Agent' },
-            release: {
-              image: 'somerandomimage',
-            },
-          },
-          status: {},
-        },
-        t
-      )
-    ).toEqual(resultPending)
+  it('should return pending when status has no conditions', async () => {
+    const result = getNodePoolStatus({ status: {} })
+    expect(result.type).toBe('pending')
+    expect(result.isReady).toBe(false)
   })
 })
 
 describe('NodePoolsProgress getNodePoolStatus conditions empty array', () => {
-  it('should call getNodePoolStatus empty array', async () => {
-    expect(
-      getNodePoolStatus(
-        {
-          spec: {
-            clusterName: 'myNodePool',
-            replicas: 1,
-            management: { upgradeType: 'InPlace' },
-            platform: { type: 'Agent' },
-            release: {
-              image: 'somerandomimage',
-            },
-          },
-          status: { conditions: [] },
-        },
-        t
-      )
-    ).toEqual(resultPending)
+  it('should return pending when conditions is empty', async () => {
+    const result = getNodePoolStatus({ status: { conditions: [] } })
+    expect(result.type).toBe('pending')
+    expect(result.isReady).toBe(false)
   })
 })
 
 describe('NodePoolsProgress getNodePoolStatus no Ready condition', () => {
-  it('should call getNodePoolStatus no Ready condition', async () => {
-    expect(
-      getNodePoolStatus(
-        {
-          spec: {
-            clusterName: 'myNodePool',
-            replicas: 1,
-            management: { upgradeType: 'InPlace' },
-            platform: { type: 'Agent' },
-            release: {
-              image: 'somerandomimage',
-            },
-          },
-          status: {
-            conditions: [
-              {
-                lastTransitionTime: '2022-08-31T18:55:05Z',
-                observedGeneration: 3,
-                reason: 'AsExpected',
-                message: '',
-                status: 'False',
-                type: 'AutoscalingEnabled',
-              },
-            ],
-          },
-        },
-        t
-      )
-    ).toEqual(resultPending)
+  it('should return pending when no Ready condition exists', async () => {
+    const result = getNodePoolStatus({
+      status: {
+        conditions: [{ reason: 'AsExpected', message: '', status: 'False', type: 'AutoscalingEnabled' }],
+      },
+    })
+    expect(result.type).toBe('pending')
+    expect(result.isReady).toBe(false)
   })
 })
 
 describe('NodePoolsProgress getNodePoolStatus Ready false', () => {
-  it('should call getNodePoolStatus Ready false', async () => {
-    expect(
-      getNodePoolStatus(
-        {
-          spec: {
-            clusterName: 'myNodePool',
-            replicas: 1,
-            management: { upgradeType: 'InPlace' },
-            platform: { type: 'Agent' },
-            release: {
-              image: 'somerandomimage',
-            },
-          },
-          status: {
-            conditions: [
-              {
-                lastTransitionTime: '2022-08-31T18:55:05Z',
-                observedGeneration: 3,
-                reason: 'AsExpected',
-                message: '',
-                status: 'False',
-                type: 'Ready',
-              },
-            ],
-          },
-        },
-        t
-      )
-    ).toEqual(resultPending)
+  it('should return pending when Ready is False', async () => {
+    const result = getNodePoolStatus({
+      status: {
+        conditions: [{ reason: 'AsExpected', message: '', status: 'False', type: 'Ready' }],
+      },
+    })
+    expect(result.type).toBe('pending')
+    expect(result.isReady).toBe(false)
   })
 })
 
 describe('NodePoolsProgress getNodePoolStatus Ready true', () => {
-  it('should call getNodePoolStatus Ready true', async () => {
-    expect(
-      getNodePoolStatus(
-        {
-          spec: {
-            clusterName: 'myNodePool',
-            replicas: 1,
-            management: { upgradeType: 'InPlace' },
-            platform: { type: 'Agent' },
-            release: {
-              image: 'somerandomimage',
-            },
-          },
-          status: {
-            conditions: [
-              {
-                lastTransitionTime: '2022-08-31T18:55:05Z',
-                observedGeneration: 3,
-                reason: 'AsExpected',
-                message: '',
-                status: 'True',
-                type: 'Ready',
-              },
-            ],
-          },
-        },
-        t
-      )
-    ).toEqual(resultOK)
+  it('should return ok when Ready is True', async () => {
+    const result = getNodePoolStatus({
+      status: {
+        conditions: [{ reason: 'AsExpected', message: '', status: 'True', type: 'Ready' }],
+      },
+    })
+    expect(result.type).toBe('ok')
+    expect(result.isReady).toBe(true)
+    expect(result.statusText).toBe('Ready')
   })
 })
 
@@ -257,8 +133,8 @@ describe('NodePoolsProgress getNodePoolsStatus pending', () => {
       },
     },
   ]
-  it('should process nodepools', async () => {
-    expect(getNodePoolsStatus(nps, t)).toEqual(<Spinner size="md" />)
+  it('should return spinner when any nodepool is pending', async () => {
+    expect(getNodePoolsStatus(nps)).toEqual(<Spinner size="md" />)
   })
 })
 
@@ -282,10 +158,64 @@ describe('NodePoolsProgress getNodePoolsStatus ready', () => {
       },
     },
   ]
-  it('should process nodepools', async () => {
-    expect(getNodePoolsStatus(nps, t)).toEqual(
+  it('should return success icon when all nodepools ready', async () => {
+    expect(getNodePoolsStatus(nps)).toEqual(
       <Icon status="success">
         <CheckCircleIcon />
+      </Icon>
+    )
+  })
+})
+
+describe('NodePoolsProgress getNodePoolsStatus error', () => {
+  const nps: any = [
+    {
+      metadata: { name: 'np1', namespace: 'np1' },
+      status: {
+        conditions: [
+          { type: 'Ready', status: 'True', reason: 'AsExpected' },
+          { type: 'ValidReleaseImage', status: 'False', reason: 'InvalidImage', message: 'Bad image' },
+        ],
+      },
+    },
+    {
+      metadata: { name: 'np2', namespace: 'np2' },
+      status: {
+        conditions: [{ type: 'Ready', status: 'True', reason: 'AsExpected' }],
+      },
+    },
+  ]
+  it('should return danger icon when any nodepool has error', async () => {
+    expect(getNodePoolsStatus(nps)).toEqual(
+      <Icon status="danger">
+        <ExclamationCircleIcon />
+      </Icon>
+    )
+  })
+})
+
+describe('NodePoolsProgress getNodePoolsStatus warning', () => {
+  const nps: any = [
+    {
+      metadata: { name: 'np1', namespace: 'np1' },
+      status: {
+        conditions: [
+          { type: 'Ready', status: 'True', reason: 'AsExpected' },
+          { type: 'AllNodesHealthy', status: 'False', reason: 'Unhealthy', message: 'Node unhealthy' },
+        ],
+      },
+    },
+    {
+      metadata: { name: 'np2', namespace: 'np2' },
+      status: {
+        conditions: [{ type: 'Ready', status: 'True', reason: 'AsExpected' }],
+      },
+    },
+  ]
+  it('should return warning icon when any nodepool has warning', async () => {
+    expect(getNodePoolsStatus(nps)).toEqual(
+      <Icon status="warning">
+        <ExclamationTriangleIcon />
       </Icon>
     )
   })

@@ -43,7 +43,6 @@ import { setApplicationDeployStatus } from './NodeDetailsProviderStatuses'
 import { setSubscriptionDeployStatus } from './NodeDetailsProviderStatuses'
 import { setPodDeployStatus } from './NodeDetailsProviderStatuses'
 import { setResourceDeployStatus } from './NodeDetailsProviderStatuses'
-
 import {
   appNoChannelGreen,
   appNoChannelRed,
@@ -76,12 +75,8 @@ import {
   ansibleErrorAllClusters,
   ansibleSuccess,
 } from './computeStatuses.testdata'
-
-import type { ActiveFilters, Translator, DetailItem } from '../types'
-
-const t: Translator = (string: string): string => {
-  return string
-}
+import type { ActiveFilters, DetailItem } from '../types'
+import { t as t } from '~/lib/test-helpers'
 
 // Provide an empty implementation for window.open
 window.open = jest.fn()

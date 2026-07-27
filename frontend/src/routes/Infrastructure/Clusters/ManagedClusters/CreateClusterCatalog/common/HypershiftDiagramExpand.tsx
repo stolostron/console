@@ -2,7 +2,7 @@
 
 import { ExpandableSection } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { DOC_LINKS } from '../../../../../../lib/doc-util'
 import { AcmButton } from '../../../../../../ui-components'
 import { HypershiftDiagram } from './HypershiftDiagram'

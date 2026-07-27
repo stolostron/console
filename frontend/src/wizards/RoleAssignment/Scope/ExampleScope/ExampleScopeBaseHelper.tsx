@@ -2,7 +2,7 @@
 
 import { TreeViewDataItem } from '@patternfly/react-core'
 import { CheckCircleIcon, OutlinedCircleIcon } from '@patternfly/react-icons'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 
 const iconColor = 'green'
 const greyIconColor = '#6a6e73'

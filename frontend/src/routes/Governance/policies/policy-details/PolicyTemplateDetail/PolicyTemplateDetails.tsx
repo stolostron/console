@@ -214,7 +214,7 @@ export function PolicyTemplateDetails() {
 
     addRowsForConstraint(cols, clusterName, apiGroup, kind)
 
-    addRowsForHasVapb(cols, hasVapb, vapb.loading, vapb.vapbItems, apiGroup, clusterName, name)
+    addRowsForHasVapb(cols, hasVapb, vapb.loading, vapb.vapbItems, clusterName)
 
     addRowsForOperatorPolicy(cols, template, kind, t)
 

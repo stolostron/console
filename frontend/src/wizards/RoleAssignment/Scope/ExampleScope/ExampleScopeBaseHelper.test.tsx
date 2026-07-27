@@ -2,10 +2,11 @@
 
 import React from 'react'
 import { render } from '@testing-library/react'
+import type { TFunction } from 'i18next'
+import { t } from '~/lib/test-helpers'
 import { getExampleTitle, getExampleTreeData } from './ExampleScopeBaseHelper'
 
 // Mock translation function
-const mockT = (key: string) => key
 
 describe('ExampleScopeBaseHelper', () => {
   describe('getExampleTitle', () => {
@@ -22,19 +23,19 @@ describe('ExampleScopeBaseHelper', () => {
       [9, 'Example scope: Single cluster set → Partial access'],
       [10, 'Example scope: Multiple cluster sets → Common projects'],
     ])('returns correct title for example index %i', (exampleIndex, expectedTitle) => {
-      const title = getExampleTitle(exampleIndex, mockT)
+      const title = getExampleTitle(exampleIndex, t)
       expect(title).toBe(expectedTitle)
     })
 
     it('returns default title for invalid index', () => {
-      const title = getExampleTitle(99, mockT)
+      const title = getExampleTitle(99, t)
       expect(title).toBe('Example scope')
     })
   })
 
   describe('getExampleTreeData', () => {
     it('returns tree data for example index 0 (full access)', () => {
-      const treeData = getExampleTreeData(0, mockT)
+      const treeData = getExampleTreeData(0, t)
 
       expect(treeData).toHaveLength(3)
       expect(treeData[0].name).toBeDefined()
@@ -43,7 +44,7 @@ describe('ExampleScopeBaseHelper', () => {
     })
 
     it('returns tree data for example index 1 (partial access)', () => {
-      const treeData = getExampleTreeData(1, mockT)
+      const treeData = getExampleTreeData(1, t)
 
       // Single cluster set scenario
       expect(treeData).toHaveLength(1)
@@ -67,7 +68,7 @@ describe('ExampleScopeBaseHelper', () => {
     })
 
     it('returns tree data for example index 2 (single cluster set → multiple clusters → common projects)', () => {
-      const treeData = getExampleTreeData(2, mockT)
+      const treeData = getExampleTreeData(2, t)
 
       expect(treeData).toHaveLength(1)
       expect(treeData[0].id).toBe('case2-cluster-set-1')
@@ -84,7 +85,7 @@ describe('ExampleScopeBaseHelper', () => {
     })
 
     it('returns tree data for example index 3 (multiple cluster sets → full access)', () => {
-      const treeData = getExampleTreeData(3, mockT)
+      const treeData = getExampleTreeData(3, t)
 
       expect(treeData).toHaveLength(2)
       expect(treeData[0].id).toBe('case3-cluster-set-1')
@@ -101,7 +102,7 @@ describe('ExampleScopeBaseHelper', () => {
     })
 
     it('returns tree data for example index 4 (multiple cluster sets → partial access → common projects)', () => {
-      const treeData = getExampleTreeData(4, mockT)
+      const treeData = getExampleTreeData(4, t)
 
       expect(treeData).toHaveLength(2)
       expect(treeData[0].id).toBe('case4-cluster-set-1')
@@ -120,7 +121,7 @@ describe('ExampleScopeBaseHelper', () => {
     })
 
     it('returns tree data for single cluster examples (index 5)', () => {
-      const treeData = getExampleTreeData(5, mockT)
+      const treeData = getExampleTreeData(5, t)
 
       expect(treeData).toHaveLength(1)
       expect(treeData[0].id).toBe('case5-cluster-1')
@@ -134,7 +135,7 @@ describe('ExampleScopeBaseHelper', () => {
     })
 
     it('returns tree data for example index 6 (single cluster → partial access)', () => {
-      const treeData = getExampleTreeData(6, mockT)
+      const treeData = getExampleTreeData(6, t)
 
       expect(treeData).toHaveLength(1)
       expect(treeData[0].id).toBe('case6-cluster-1')
@@ -148,7 +149,7 @@ describe('ExampleScopeBaseHelper', () => {
     })
 
     it('returns tree data for example index 7 (multiple clusters → full access)', () => {
-      const treeData = getExampleTreeData(7, mockT)
+      const treeData = getExampleTreeData(7, t)
 
       expect(treeData).toHaveLength(2)
       expect(treeData[0].id).toBe('case7-cluster-1')
@@ -165,7 +166,7 @@ describe('ExampleScopeBaseHelper', () => {
     })
 
     it('returns tree data for example index 8 (multiple clusters → common projects)', () => {
-      const treeData = getExampleTreeData(8, mockT)
+      const treeData = getExampleTreeData(8, t)
 
       expect(treeData).toHaveLength(2)
       expect(treeData[0].id).toBe('case8-cluster-1')
@@ -181,7 +182,7 @@ describe('ExampleScopeBaseHelper', () => {
     })
 
     it('returns tree data for example index 9 (single cluster set → partial access)', () => {
-      const treeData = getExampleTreeData(9, mockT)
+      const treeData = getExampleTreeData(9, t)
 
       expect(treeData).toHaveLength(1)
       expect(treeData[0].id).toBe('case9-cluster-set-1')
@@ -199,7 +200,7 @@ describe('ExampleScopeBaseHelper', () => {
     })
 
     it('returns tree data for example index 10 (multiple cluster sets → common projects)', () => {
-      const treeData = getExampleTreeData(10, mockT)
+      const treeData = getExampleTreeData(10, t)
 
       expect(treeData).toHaveLength(2)
       expect(treeData[0].id).toBe('case10-cluster-set-1')
@@ -220,12 +221,12 @@ describe('ExampleScopeBaseHelper', () => {
     })
 
     it('returns empty array for invalid index', () => {
-      const treeData = getExampleTreeData(99, mockT)
+      const treeData = getExampleTreeData(99, t)
       expect(treeData).toEqual([])
     })
 
     it('includes icons for all tree items', () => {
-      const treeData = getExampleTreeData(0, mockT)
+      const treeData = getExampleTreeData(0, t)
 
       // Check root level
       expect(treeData[0].icon).toBeDefined()
@@ -242,7 +243,7 @@ describe('ExampleScopeBaseHelper', () => {
     })
 
     it('creates proper tree structure with correct IDs', () => {
-      const treeData = getExampleTreeData(2, mockT)
+      const treeData = getExampleTreeData(2, t)
 
       expect(treeData[0].id).toBe('case2-cluster-set-1')
 
@@ -255,7 +256,7 @@ describe('ExampleScopeBaseHelper', () => {
     })
 
     it('handles translation function correctly', () => {
-      const mockTranslate = jest.fn((key: string) => `translated-${key}`)
+      const mockTranslate = jest.fn((key: string) => `translated-${key}`) as unknown as TFunction
       getExampleTreeData(0, mockTranslate)
 
       expect(mockTranslate).toHaveBeenCalledWith('Cluster set')
@@ -265,7 +266,7 @@ describe('ExampleScopeBaseHelper', () => {
     })
 
     it('renders JSX elements for names correctly', () => {
-      const treeData = getExampleTreeData(0, mockT)
+      const treeData = getExampleTreeData(0, t)
 
       // The name should be a JSX element (either string or <strong> element)
       expect(typeof treeData[0].name === 'string' || React.isValidElement(treeData[0].name)).toBe(true)
@@ -274,7 +275,7 @@ describe('ExampleScopeBaseHelper', () => {
 
   describe('createName helper (indirectly tested)', () => {
     it('creates bold text for checked items', () => {
-      const treeData = getExampleTreeData(0, mockT)
+      const treeData = getExampleTreeData(0, t)
 
       // For full access example, all items should be bold (checked)
       const { container } = render(<div>{treeData[0].name}</div>)
@@ -283,7 +284,7 @@ describe('ExampleScopeBaseHelper', () => {
     })
 
     it('creates normal text for unchecked items', () => {
-      const treeData = getExampleTreeData(1, mockT)
+      const treeData = getExampleTreeData(1, t)
 
       // Find an unchecked item (should exist in partial access example)
       let foundUncheckedItem = false

@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ReactNode } from 'react'
+import type { TFunction } from 'i18next'
 export default function TemplateEditor(props: {
   type?: string
   title?: string
@@ -26,7 +27,7 @@ export default function TemplateEditor(props: {
     resetStatus?: () => void
     backButtonOverride?: () => void
   }
-  i18n?: (key: string, arg: any) => string
+  i18n?: TFunction
   onControlInitialize?: (control: any) => void
   onControlChange?: (control: any) => void
   editorReadOnly?: boolean

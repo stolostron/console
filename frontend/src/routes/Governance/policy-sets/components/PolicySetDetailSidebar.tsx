@@ -11,7 +11,7 @@ import {
   compareNumbers,
   compareStrings,
 } from '../../../../ui-components'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { useCallback, useMemo, useState } from 'react'
 import { Link, generatePath } from 'react-router'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'

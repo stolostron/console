@@ -15,7 +15,7 @@ import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import { get } from 'lodash'
 import { useCallback, useContext, useMemo, useState } from 'react'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { generatePath, useNavigate } from 'react-router'
 import { HighlightSearchText } from '../../components/HighlightSearchText'
 import { useLocalHubName } from '../../hooks/use-local-hub'
@@ -105,14 +105,14 @@ const TABLE_ID = 'applicationTable'
 const filterId = 'type'
 
 export enum AppColumns {
-  'name' = 0,
-  'type',
-  'namespace',
-  'clusters',
-  'health',
-  'synced',
-  'deployed',
-  'created',
+  name = 0,
+  type,
+  namespace,
+  clusters,
+  health,
+  synced,
+  deployed,
+  created,
 }
 
 enum ScoreColumn {
@@ -615,7 +615,7 @@ export default function ApplicationsOverview() {
         sort: 'kind',
         tooltip: (
           <span>
-            {t('Displays the type of the application. ')}
+            {t('Displays the type of the application.')}
             <Content>
               <Content
                 component={ContentVariants.a}

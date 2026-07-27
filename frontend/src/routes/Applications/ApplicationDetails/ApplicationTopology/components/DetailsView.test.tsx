@@ -9,15 +9,11 @@
 // Copyright Contributors to the Open Cluster Management project
 
 import { render, screen } from '@testing-library/react'
+import { t as t } from '~/lib/test-helpers'
 import { waitForText } from '../../../../../lib/test-util'
 import { ArgoAppDetailsContainerData, ClusterDetailsContainerData } from '../ApplicationTopology'
-import { ActiveFilters, MockTranslationFunction, TopologyNodeWithStatus } from '../types'
+import { ActiveFilters, TopologyNodeWithStatus } from '../types'
 import DetailsView from './DetailsView'
-
-const t: MockTranslationFunction = (string: string): string => {
-  return string
-}
-
 class MockViewContainer {
   getBoundingClientRect(): Map<any, any> {
     return new Map()

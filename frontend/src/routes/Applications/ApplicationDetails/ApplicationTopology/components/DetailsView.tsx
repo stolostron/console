@@ -1,26 +1,27 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React, { Component, Fragment, KeyboardEvent, MouseEvent } from 'react'
-import classNames from 'classnames'
-import { Button, Spinner, Tabs, Tab, TabTitleText } from '@patternfly/react-core'
-import { createResourceSearchLink, createResourceURL, getFilteredNode } from '../helpers/diagram-helpers'
-import ClusterDetailsContainer from './ClusterDetailsContainer'
-import ArgoAppDetailsContainer from './ArgoAppDetailsContainer'
-import DetailsTable from './DetailsTable'
-import { LogsContainer } from './LogsContainer'
-import { YAMLContainer } from './YAMLContainer'
+import { Button, Spinner, Tab, TabTitleText, Tabs } from '@patternfly/react-core'
 import {
+  DetailItemExtended,
+  DetailsViewDecoratorProps,
   DetailsViewProps,
   DetailsViewState,
-  DetailsViewDecoratorProps,
-  DetailItemExtended,
   LinkValue,
-  TopologyNodeWithStatus,
-  StatusType,
   ResourceAction,
+  StatusType,
+  TopologyNodeWithStatus,
 } from '../types'
+import React, { Component, Fragment, KeyboardEvent, MouseEvent } from 'react'
+import { createResourceSearchLink, createResourceURL, getFilteredNode } from '../helpers/diagram-helpers'
+
+import ArgoAppDetailsContainer from './ArgoAppDetailsContainer'
+import ClusterDetailsContainer from './ClusterDetailsContainer'
+import DetailsTable from './DetailsTable'
+import { LogsContainer } from './LogsContainer'
+import type { TFunction } from 'i18next'
+import { YAMLContainer } from './YAMLContainer'
+import classNames from 'classnames'
 import { typeToShapeMap } from '../model/NodeDetailsProvider'
-import { TFunction } from 'react-i18next'
 
 /**
  * Decorator component that renders an icon for the details view header
@@ -199,7 +200,14 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
     const searchLink = createResourceSearchLink(currentNode, t)
 
     return (
-      <div className="topologyDetails" style={{ overflow: activeTabKey !== 2 ? 'auto' : 'hidden' }}>
+      <div
+        className="topologyDetails"
+        style={{
+          overflow: activeTabKey !== 2 ? 'auto' : 'hidden',
+          display: activeTabKey === 2 ? 'flex' : undefined,
+          flexDirection: activeTabKey === 2 ? 'column' : undefined,
+        }}
+      >
         <div className="detailsHeader">
           {/* Back button when viewing filtered node details */}
           {filteredNode && (
@@ -233,7 +241,9 @@ class DetailsView extends Component<DetailsViewProps, DetailsViewState> {
         </div>
 
         {/* Content area - either table or tabbed content */}
-        <section style={{ height: activeTabKey !== 2 ? undefined : '100%' }}>
+        <section
+          style={{ flex: activeTabKey === 2 ? '1 1 0' : undefined, minHeight: activeTabKey === 2 ? 0 : undefined }}
+        >
           {isTableView ? this.renderTableContents(currentUpdatedNode!) : this.renderTabContents(currentUpdatedNode!)}
         </section>
       </div>

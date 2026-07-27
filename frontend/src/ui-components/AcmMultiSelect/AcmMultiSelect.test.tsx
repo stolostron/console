@@ -198,6 +198,62 @@ describe('AcmMultiSelect', () => {
     expect(getByText('ACM select')).toBeInTheDocument()
   })
 
+  test('applies padding to TextInputGroup when typeaheadMulti has selected items (ACM-37276)', () => {
+    const TypeaheadMultiSelect = () => {
+      const [value, setValue] = useState<string[] | undefined>(['red', 'green'])
+      return (
+        <AcmMultiSelect
+          id="acm-select-padding"
+          label="ACM select padding"
+          value={value}
+          onChange={setValue}
+          variant={SelectVariant.typeaheadMulti}
+        >
+          <SelectOption key="red" value="red">
+            Red
+          </SelectOption>
+          <SelectOption key="green" value="green">
+            Green
+          </SelectOption>
+        </AcmMultiSelect>
+      )
+    }
+
+    const { container } = render(<TypeaheadMultiSelect />)
+
+    const textInputGroup = container.querySelector('.pf-v6-c-text-input-group')
+    expect(textInputGroup).toBeInTheDocument()
+    expect(textInputGroup).toHaveStyle('padding: 4px')
+  })
+
+  test('does not apply padding to TextInputGroup when typeaheadMulti has no selected items (ACM-37276)', () => {
+    const TypeaheadMultiSelect = () => {
+      const [value, setValue] = useState<string[] | undefined>([])
+      return (
+        <AcmMultiSelect
+          id="acm-select-no-padding"
+          label="ACM select no padding"
+          value={value}
+          onChange={setValue}
+          variant={SelectVariant.typeaheadMulti}
+        >
+          <SelectOption key="red" value="red">
+            Red
+          </SelectOption>
+          <SelectOption key="green" value="green">
+            Green
+          </SelectOption>
+        </AcmMultiSelect>
+      )
+    }
+
+    const { container } = render(<TypeaheadMultiSelect />)
+
+    const textInputGroup = container.querySelector('.pf-v6-c-text-input-group')
+    expect(textInputGroup).toBeInTheDocument()
+    expect(textInputGroup).not.toHaveStyle('padding: 4px')
+  })
+
   test('does not apply maxHeight on MenuToggle for typeaheadMulti variant', () => {
     const TypeaheadMultiSelect = () => {
       const [value, setValue] = useState<string[] | undefined>(['red', 'green'])

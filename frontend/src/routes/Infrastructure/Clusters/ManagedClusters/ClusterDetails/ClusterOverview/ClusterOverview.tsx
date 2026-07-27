@@ -5,9 +5,10 @@ import {
   ClusterDeploymentK8sResource,
   getClusterProperties,
 } from '@openshift-assisted/ui-lib/cim'
-import { AlertVariant, ButtonVariant, PageSection, Popover } from '@patternfly/react-core'
+import { AlertVariant, ButtonVariant, Content, PageSection, Popover } from '@patternfly/react-core'
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { ExternalLinkAltIcon, OutlinedQuestionCircleIcon, PencilAltIcon } from '@patternfly/react-icons'
+import { Markdown } from '@redhat-cloud-services/rule-components/Markdown'
 import { Fragment, useMemo, useState } from 'react'
 import { generatePath, Link } from 'react-router'
 import { getControlPlaneString } from '../../../../../../components/Clusters'
@@ -82,6 +83,7 @@ export function ClusterOverviewPageContent() {
     useClusterDetailsContext()
   const { t } = useTranslation()
   const localHubName = useLocalHubName()
+  const clusterDescriptionAnnotation = 'console.open-cluster-management.io/description'
   const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
   const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
   const [curatorSummaryModalIsOpen, setCuratorSummaryModalIsOpen] = useState<boolean>(false)
@@ -337,6 +339,16 @@ export function ClusterOverviewPageContent() {
       key: t('Placements'),
       value: <PlacementLinkList placementsForCluster={placementsForCluster} />,
     },
+    description: {
+      key: t('Description'),
+      value: cluster?.annotations?.[clusterDescriptionAnnotation] ? (
+        <Content>
+          <Markdown template={cluster.annotations[clusterDescriptionAnnotation]} />
+        </Content>
+      ) : (
+        '-'
+      ),
+    },
   }
 
   const fromClusterPool =
@@ -380,13 +392,13 @@ export function ClusterOverviewPageContent() {
       ? getAIClusterProperties(clusterDeployment, agentClusterInstall)
       : [
           ...clusterClaimedBySetPool,
-          ...(!cluster?.isHypershift &&
-          (cluster?.hasAutomationTemplate ||
-            (cluster && clusterSupportsAction(cluster, ClusterAction.UpdateAutomationTemplate)))
+          ...(cluster?.hasAutomationTemplate ||
+          (cluster && clusterSupportsAction(cluster, ClusterAction.UpdateAutomationTemplate))
             ? [clusterProperties.automationTemplate]
             : []),
         ]),
     clusterProperties.placements,
+    clusterProperties.description,
   ]
 
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -404,11 +416,25 @@ export function ClusterOverviewPageContent() {
 
   let details = <ProgressStepBar />
   if (cluster?.isHypershift) {
-    details = <HypershiftClusterDetails handleModalToggle={handleModalToggle} />
+    // ProgressStepBar shows ClusterCurator install pre/post hook status (pending, running, succeeded,
+    // failed) and log links—the same visibility standalone OCP clusters already have. HypershiftClusterDetails
+    // only covers control plane and node pool progress. ProgressStepBar renders null when not in an install
+    // hook flow, so ready clusters are unaffected. Upgrade hook status is shown in DistributionField.
+    details = (
+      <>
+        <ProgressStepBar />
+        <HypershiftClusterDetails handleModalToggle={handleModalToggle} />
+      </>
+    )
   }
   if (cluster?.provider && [Provider.hostinventory, Provider.nutanix].includes(cluster.provider)) {
     if (cluster.isHypershift) {
-      details = <AIHypershiftClusterDetails />
+      details = (
+        <>
+          <ProgressStepBar />
+          <AIHypershiftClusterDetails />
+        </>
+      )
     } else if (clusterDeployment) {
       // Do not display alert or AIClusterDetails for imported Nutanix clusters (will not have a ClusterDeployment)
       if (!agentClusterInstall) {

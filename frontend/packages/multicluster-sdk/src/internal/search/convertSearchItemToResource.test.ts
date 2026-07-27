@@ -913,6 +913,34 @@ describe('convertSearchItemToResource', () => {
       expect(result.volumeBindingMode).toBe('WaitForFirstConsumer')
     })
 
+    it('should handle StorageClass with string boolean allowVolumeExpansion', () => {
+      const storageClassItem = {
+        ...baseSearchItem,
+        kind: 'StorageClass',
+        apigroup: 'storage.k8s.io',
+        allowVolumeExpansion: 'true',
+        provisioner: 'kubernetes.io/aws-ebs',
+      }
+
+      const result = convert(storageClassItem)
+
+      expect(result.allowVolumeExpansion).toBe(true)
+    })
+
+    it('should handle StorageClass with string boolean allowVolumeExpansion false', () => {
+      const storageClassItem = {
+        ...baseSearchItem,
+        kind: 'StorageClass',
+        apigroup: 'storage.k8s.io',
+        allowVolumeExpansion: 'false',
+        provisioner: 'kubernetes.io/aws-ebs',
+      }
+
+      const result = convert(storageClassItem)
+
+      expect(result.allowVolumeExpansion).toBe(false)
+    })
+
     it('should handle StorageClass with partial fields', () => {
       const storageClassItem = {
         ...baseSearchItem,
@@ -1615,6 +1643,36 @@ describe('convertSearchItemToResource', () => {
       expect(result.spec?.target?.kind).toBe('VirtualMachine')
       expect(result.spec?.target?.name).toBe('restored-vm')
       expect(result.spec?.virtualMachineSnapshotName).toBe('test-snapshot')
+    })
+
+    it('should handle VirtualMachineRestore with string boolean complete true', () => {
+      const restoreItem = {
+        ...baseSearchItem,
+        kind: 'VirtualMachineRestore',
+        apigroup: 'snapshot.kubevirt.io',
+        complete: 'true',
+        targetKind: 'VirtualMachine',
+        targetName: 'restored-vm',
+      }
+
+      const result = convert(restoreItem)
+
+      expect(result.status?.complete).toBe(true)
+    })
+
+    it('should handle VirtualMachineRestore with string boolean complete false', () => {
+      const restoreItem = {
+        ...baseSearchItem,
+        kind: 'VirtualMachineRestore',
+        apigroup: 'snapshot.kubevirt.io',
+        complete: 'false',
+        targetKind: 'VirtualMachine',
+        targetName: 'restoring-vm',
+      }
+
+      const result = convert(restoreItem)
+
+      expect(result.status?.complete).toBe(false)
     })
 
     it('should handle VirtualMachineRestore in progress', () => {

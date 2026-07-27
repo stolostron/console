@@ -27,15 +27,13 @@ const getLayoutModel = (elements: { nodes: any[]; links: any[] }): Model => {
   })
 
   // create links from data
-  const edges = elements.links.map(
-    (d): EdgeModel => ({
-      data: d,
-      source: d.source,
-      target: d.target,
-      id: `${d.source}_${d.target}`,
-      type: 'edge',
-    })
-  )
+  const edges = elements.links.map((d): EdgeModel => ({
+    data: d,
+    source: d.source,
+    target: d.target,
+    id: `${d.source}_${d.target}`,
+    type: 'edge',
+  }))
 
   // create topology model
   const model: Model = {

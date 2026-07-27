@@ -253,7 +253,7 @@ export function UpdateAutomationModal(props: {
             <StackItem>
               <AcmAlert
                 variant="warning"
-                title={t('{{count}} cluster cannot be edited ', { count: nonUpdatableCount })}
+                title={t('{{count}} cluster cannot be edited', { count: nonUpdatableCount })}
                 message={t('automation.template.update.support')}
                 isInline
                 noClose

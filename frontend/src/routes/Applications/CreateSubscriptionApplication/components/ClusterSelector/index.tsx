@@ -21,7 +21,7 @@ import TimesCircleIcon from '@patternfly/react-icons/dist/js/icons/times-circle-
 import HelpIcon from '@patternfly/react-icons/dist/js/icons/help-icon'
 import _ from 'lodash'
 import './style.css'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import Tooltip from '../../../../../components/TemplateEditor/components/Tooltip'
 import { ManagedClusterSet, ManagedClusterSetBindingKind } from '../../../../../resources'
 import { getTemplateValue } from '../../../../Infrastructure/Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
@@ -68,7 +68,7 @@ const ClusterSelector = (props: {
           if (labelNameSet.has(labelName)) {
             exceptions.push({
               row: 1,
-              text: i18n('creation.duplicate.clusterSelector.label', [labelName]),
+              text: i18n('creation.duplicate.clusterSelector.label', { 0: labelName }),
               type: 'error',
               controlId: `labelName-${id}`,
             })

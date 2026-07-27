@@ -33,7 +33,7 @@ export function requestAggregatedStatuses(
     chucks.push(chuck)
   })
   req.on('end', async () => {
-    const body = chucks.join()
+    const body = chucks.join('')
     const { clusters = [] } = JSON.parse(body) as IRequestStatuses
     let items = await getItems()
 

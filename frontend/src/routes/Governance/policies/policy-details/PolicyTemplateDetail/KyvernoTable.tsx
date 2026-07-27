@@ -3,7 +3,7 @@
 import { Flex, FlexItem, Spinner } from '@patternfly/react-core'
 import { ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useEffect, useState } from 'react'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { fleetResourceRequest } from '../../../../../resources/utils/fleet-resource-request'
 import { compareStrings } from '../../../../../ui-components'

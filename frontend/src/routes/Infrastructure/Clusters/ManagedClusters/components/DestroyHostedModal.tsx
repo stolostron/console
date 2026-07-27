@@ -7,7 +7,7 @@ import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import DocPage from '../CreateCluster/components/assisted-installer/hypershift/common/DocPage'
 import { Fragment } from 'react'
 import { Actions, GetOCLogInCommand } from '../CreateCluster/components/assisted-installer/hypershift/common/common'
-import type { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 
 interface DestroyHostedModalProps {
   readonly open: boolean

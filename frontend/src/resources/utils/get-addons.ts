@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { ClusterManagementAddOn, ClusterManagementAddOnDefinition } from '../cluster-management-add-on'
 import { ManagedClusterAddOn } from '../managed-cluster-add-on'
 import { Dictionary } from 'lodash'
@@ -13,10 +13,10 @@ export type Addon = {
 }
 
 export enum AddonStatus {
-  'Available' = 'Available',
-  'Progressing' = 'Progressing',
-  'Degraded' = 'Degraded',
-  'Unknown' = 'Unknown',
+  Available = 'Available',
+  Progressing = 'Progressing',
+  Degraded = 'Degraded',
+  Unknown = 'Unknown',
 }
 
 export type LaunchLink = {

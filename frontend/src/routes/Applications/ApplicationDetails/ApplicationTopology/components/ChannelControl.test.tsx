@@ -10,12 +10,9 @@
 
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { t as t } from '~/lib/test-helpers'
 import ChannelController from './ChannelControl'
-import { MockChannelControlData, MockTranslationFunction, MockSetDrawerContent } from '../types'
-
-const t: MockTranslationFunction = (string: string): string => {
-  return string
-}
+import { MockChannelControlData, MockSetDrawerContent } from '../types'
 
 const channelControllerNoAllChannels: MockChannelControlData = {
   activeChannel: '__ALL__/__ALL__//__ALL__/__ALL__',

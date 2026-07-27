@@ -20,7 +20,7 @@ import type {
   NodeLike,
   ArgoApp,
 } from '../types'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 
 /**
  * ArgoAppDetailsContainer component provides a detailed view of Argo applications
@@ -477,7 +477,7 @@ class ArgoAppDetailsContainer extends Component<ArgoAppDetailsContainerProps, Ar
         <span className="value">
           {t(
             'The health status for application {{0}} is {{1}}. Use the Launch Argo editor action above to view the application details.',
-            [name, status]
+            { 0: name, 1: status }
           )}
         </span>
       </div>

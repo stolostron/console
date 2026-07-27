@@ -23,7 +23,6 @@ i18n
     backend: {
       loadPath: '/multicloud/locales/{{lng}}/{{ns}}.json',
     },
-    compatibilityJSON: 'v3',
     fallbackLng: ['en'], // if language is not supported or string is missing, fallback to English
     keySeparator: false, // this repo will use single level json
     interpolation: {
@@ -32,7 +31,6 @@ i18n
     defaultNS: 'translation', // the default file for strings when using useTranslation, etc
     nsSeparator: '~',
     supportedLngs: supportedLanguages, // only languages from this array will attempt to be loaded
-    simplifyPluralSuffix: true,
   })
 
 export default i18n

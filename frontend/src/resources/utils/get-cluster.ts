@@ -29,7 +29,7 @@ import { getLatest } from './utils'
 import { AddonStatus, mapAddons } from './get-addons'
 import { AgentClusterInstallKind } from '../agent-cluster-install'
 import semver from 'semver'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { ClusterManagementAddOn, DiscoveredCluster, ManagedClusterAddOn } from '../'
 import { HypershiftCloudPlatformType } from './constants'
 import {
@@ -47,35 +47,35 @@ import keyBy from 'lodash/keyBy'
 import { Dictionary } from 'lodash'
 
 export enum ClusterStatus {
-  'pending' = 'pending',
-  'destroying' = 'destroying',
-  'creating' = 'creating',
-  'notstarted' = 'notstarted',
-  'provisionfailed' = 'provisionfailed',
-  'deprovisionfailed' = 'deprovisionfailed',
-  'failed' = 'failed',
-  'detached' = 'detached',
-  'detaching' = 'detaching',
-  'notaccepted' = 'notaccepted',
-  'needsapproval' = 'needsapproval',
-  'pendingimport' = 'pendingimport',
-  'importing' = 'importing',
-  'ready' = 'ready',
-  'offline' = 'offline',
-  'hibernating' = 'hibernating',
-  'stopping' = 'stopping',
-  'resuming' = 'resuming',
-  'degraded' = 'degraded',
-  'unknown' = 'unknown',
-  'prehookjob' = 'prehookjob',
-  'prehookfailed' = 'prehookfailed',
-  'posthookjob' = 'posthookjob',
-  'posthookfailed' = 'posthookfailed',
-  'importfailed' = 'importfailed',
-  'draft' = 'draft',
-  'running' = 'running',
-  'upgradefailed' = 'upgradefailed',
-  'unreachable' = 'unreachable',
+  pending = 'pending',
+  destroying = 'destroying',
+  creating = 'creating',
+  notstarted = 'notstarted',
+  provisionfailed = 'provisionfailed',
+  deprovisionfailed = 'deprovisionfailed',
+  failed = 'failed',
+  detached = 'detached',
+  detaching = 'detaching',
+  notaccepted = 'notaccepted',
+  needsapproval = 'needsapproval',
+  pendingimport = 'pendingimport',
+  importing = 'importing',
+  ready = 'ready',
+  offline = 'offline',
+  hibernating = 'hibernating',
+  stopping = 'stopping',
+  resuming = 'resuming',
+  degraded = 'degraded',
+  unknown = 'unknown',
+  prehookjob = 'prehookjob',
+  prehookfailed = 'prehookfailed',
+  posthookjob = 'posthookjob',
+  posthookfailed = 'posthookfailed',
+  importfailed = 'importfailed',
+  draft = 'draft',
+  running = 'running',
+  upgradefailed = 'upgradefailed',
+  unreachable = 'unreachable',
 }
 
 export const getClusterStatusLabel = (status: ClusterStatus | undefined, t: TFunction) => {
@@ -254,6 +254,7 @@ export type Cluster = {
   microshiftDistribution?: MicroshiftDistributionInfo
   addons?: Addons
   labels?: Record<string, string>
+  annotations?: Record<string, string>
   nodes?: Nodes
   kubeApiServer?: string
   consoleURL?: string
@@ -582,6 +583,7 @@ export function getCluster({
     acmConsoleURL: getACMConsoleURL(acmDistribution.version, consoleURL),
     addons: getAddons(managedClusterAddOns, clusterManagementAddOns),
     labels: managedCluster?.metadata.labels ?? managedClusterInfo?.metadata.labels,
+    annotations: managedCluster?.metadata.annotations ?? managedClusterInfo?.metadata.annotations,
     nodes: getNodes(managedClusterInfo),
     kubeApiServer: getKubeApiServer(clusterDeployment, managedClusterInfo, agentClusterInstall),
     consoleURL: consoleURL,

@@ -41,16 +41,14 @@ export type ResourceAttributes = {
 }
 
 export function createSubjectAccessReview(resourceAttributes: Promise<ResourceAttributes> | ResourceAttributes) {
-  const resources = Promise.resolve(resourceAttributes).then(
-    (resourceAttributes): SelfSubjectAccessReview => ({
-      apiVersion: SelfSubjectAccessReviewApiVersion,
-      kind: SelfSubjectAccessReviewKind,
-      metadata: {},
-      spec: {
-        resourceAttributes,
-      },
-    })
-  )
+  const resources = Promise.resolve(resourceAttributes).then((resourceAttributes): SelfSubjectAccessReview => ({
+    apiVersion: SelfSubjectAccessReviewApiVersion,
+    kind: SelfSubjectAccessReviewKind,
+    metadata: {},
+    spec: {
+      resourceAttributes,
+    },
+  }))
   return createResource<SelfSubjectAccessReview>(resources)
 }
 
@@ -66,16 +64,14 @@ export function createSubjectAccessReviewWithBaseUrl(
   resourceAttributes: Promise<ResourceAttributes> | ResourceAttributes,
   baseUrl: string
 ) {
-  const resources = Promise.resolve(resourceAttributes).then(
-    (resourceAttributes): SelfSubjectAccessReview => ({
-      apiVersion: SelfSubjectAccessReviewApiVersion,
-      kind: SelfSubjectAccessReviewKind,
-      metadata: {},
-      spec: {
-        resourceAttributes,
-      },
-    })
-  )
+  const resources = Promise.resolve(resourceAttributes).then((resourceAttributes): SelfSubjectAccessReview => ({
+    apiVersion: SelfSubjectAccessReviewApiVersion,
+    kind: SelfSubjectAccessReviewKind,
+    metadata: {},
+    spec: {
+      resourceAttributes,
+    },
+  }))
   return createResourceWithBaseUrl<SelfSubjectAccessReview>(resources, baseUrl)
 }
 

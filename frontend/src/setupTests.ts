@@ -257,11 +257,9 @@ i18n
     interpolation: {
       escapeValue: false, // react handles this already
     },
-    compatibilityJSON: 'v3',
     defaultNS: 'translation', // the default file for strings when using useTranslation, etc
     nsSeparator: '~',
     supportedLngs: ['en'], // only languages from this array will attempt to be loaded
-    simplifyPluralSuffix: true,
     lng: 'en',
     fallbackLng: 'en',
     ns: 'translation',

@@ -36,7 +36,7 @@ export function MultipleSourcesSelector(props: MultipleSourcesSelectorProps) {
   return (
     <WizArrayInput
       path="spec.template.spec.sources"
-      placeholder="Add another repository"
+      placeholder={t('creation.app.add.channel')}
       disallowEmpty={editMode === EditMode.Create}
       required
       validation={(value) => {

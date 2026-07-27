@@ -3,7 +3,7 @@
 
 import IPCIDR from 'ip-cidr'
 import { Address4, Address6 } from 'ip-address'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { getControlByID } from '../../../lib/temptifly-utils'
 import { VALID_DNS_NAME_TESTER, validateHttpsURL, validateNoProxy } from '../../../lib/validation'
 
@@ -165,7 +165,7 @@ export const getNumericGTValidator = (t: TFunction, gt: number): Validator => ({
       return regex.test(value) && Number.parseInt(value, 10) > gt
     },
   },
-  notification: t('Value must be integer greater than', [gt]),
+  notification: t('Value must be integer greater than', { 0: gt }),
   required: true,
 })
 

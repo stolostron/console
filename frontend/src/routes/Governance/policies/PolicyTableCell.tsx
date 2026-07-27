@@ -9,7 +9,7 @@ import { PolicyActionDropdown } from '../components/PolicyActionDropdown'
 import { AcmButton } from '../../../ui-components/AcmButton'
 import { AutomationDetailsSidebar } from '../components/AutomationDetailsSidebar'
 import { ButtonVariant } from '@patternfly/react-core'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import AcmTimestamp from '../../../lib/AcmTimestamp'
 import { AcmVisitedLink } from '../../../ui-components'
 

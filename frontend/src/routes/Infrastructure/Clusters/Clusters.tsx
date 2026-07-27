@@ -40,6 +40,7 @@ import PlacementDetailsPage from './Placements/PlacementDetails/PlacementDetails
 import PlacementOverviewPageContent from './Placements/PlacementDetails/PlacementOverview/PlacementOverview'
 import CreatePlacement from './Placements/CreatePlacement/CreatePlacement'
 import { EditPlacement } from './Placements/CreatePlacement/EditPlacement'
+import { PrerequisitesPage } from './ManagedClusters/components/rosahcp/PrerequisitesPage/PrerequisitesPage'
 
 const clustersChildPath = createRoutePathFunction(NavigationPath.clusters)
 
@@ -55,6 +56,7 @@ export default function Clusters() {
       />
       <Route path={clustersChildPath(NavigationPath.createAWSCLI)} element={<HypershiftAWSCLI />} />
       <Route path={clustersChildPath(NavigationPath.createAzureCLI)} element={<HypershiftAzureCLI />} />
+      <Route path={clustersChildPath(NavigationPath.prerequisites)} element={<PrerequisitesPage />} />
       <Route path={clustersChildPath(NavigationPath.createDiscoverHost)} element={<CreateDiscoverHost />} />
       <Route path={clustersChildPath(NavigationPath.createCluster)} element={<CreateClusterPage />} />
       <Route path={clustersChildPath(NavigationPath.importCluster)} element={<ImportClusterPage />} />

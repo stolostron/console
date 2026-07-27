@@ -14,7 +14,7 @@ import { getGroupFromApiVersion, getISOStringTimestamp } from '../../../../resou
 import { getPolicyTempRemediation } from '../../common/util'
 import { ViewDiffApiCall } from '../../components/ViewDiffApiCall'
 import { usePolicyDetailsContext } from './PolicyDetailsPage'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
 
 export interface ResultsTableData {

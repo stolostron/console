@@ -12,6 +12,7 @@ OPERATOR_CHANNEL=${OPERATOR_CHANNEL:-""}
 OPERATOR_SOURCE=${OPERATOR_SOURCE:-"redhat-operators"}
 RH_OFFLINE_TOKEN=${RH_OFFLINE_TOKEN:-""}
 AAP_MODE=${AAP_MODE:-"platform"}  # "platform" (AnsibleAutomationPlatform) or "controller" (AutomationController)
+AAP_SCOPE=${AAP_SCOPE:-"cluster-scoped"}  # "cluster-scoped" (ClusterRole RBAC, AllNamespaces) or "namespace-scoped"
 # Optional platform-mode components (ignored in controller mode):
 #   Hub  = private repo for Ansible collections and execution environments
 #   EDA  = event-driven automation (trigger playbooks from webhooks, alerts, etc.)
@@ -24,6 +25,15 @@ case "$AAP_MODE" in
     platform|controller) ;;
     *)
         echo "ERROR: Invalid AAP_MODE: $AAP_MODE. Expected 'platform' or 'controller'."
+        exit 1
+        ;;
+esac
+
+# Validate AAP_SCOPE
+case "$AAP_SCOPE" in
+    cluster-scoped|namespace-scoped) ;;
+    *)
+        echo "ERROR: Invalid AAP_SCOPE: $AAP_SCOPE. Expected 'cluster-scoped' or 'namespace-scoped'."
         exit 1
         ;;
 esac
@@ -207,9 +217,14 @@ if [ -n "$OPERATOR_CHANNEL" ] && ! echo "$AVAILABLE_CHANNELS" | grep -qx "$OPERA
 fi
 
 if [ -z "$OPERATOR_CHANNEL" ]; then
-    log_info "Detecting available AAP operator channels..."
-    OPERATOR_CHANNEL=$(echo "$AVAILABLE_CHANNELS" | grep '^stable-' | grep -v 'cluster-scoped' \
-        | sort -t. -k2 -n | tail -1)
+    log_info "Detecting available AAP operator channels (scope: $AAP_SCOPE)..."
+    if [ "$AAP_SCOPE" = "cluster-scoped" ]; then
+        OPERATOR_CHANNEL=$(echo "$AVAILABLE_CHANNELS" | grep '^stable-.*cluster-scoped$' \
+            | sort -t. -k2 -n | tail -1)
+    else
+        OPERATOR_CHANNEL=$(echo "$AVAILABLE_CHANNELS" | grep '^stable-' | grep -v 'cluster-scoped' \
+            | sort -t. -k2 -n | tail -1)
+    fi
 
     if [ -z "$OPERATOR_CHANNEL" ]; then
         OPERATOR_CHANNEL=$(echo "$AVAILABLE_CHANNELS" | sort -t. -k2 -n | tail -1)
@@ -219,7 +234,17 @@ if [ -z "$OPERATOR_CHANNEL" ]; then
 fi
 
 # Install AAP Operator
-log_info "Installing AAP Operator via OperatorHub"
+log_info "Installing AAP Operator via OperatorHub (scope: $AAP_SCOPE)"
+if [ "$AAP_SCOPE" = "cluster-scoped" ]; then
+cat <<EOF | oc apply -f -
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: ansible-automation-platform-operator-group
+  namespace: $AAP_NAMESPACE
+spec: {}
+EOF
+else
 cat <<EOF | oc apply -f -
 apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
@@ -229,7 +254,10 @@ metadata:
 spec:
   targetNamespaces:
   - $AAP_NAMESPACE
----
+EOF
+fi
+
+cat <<EOF | oc apply -f -
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
@@ -667,6 +695,7 @@ log_info "AAP Installation Complete!"
 log_info "=================================================="
 echo ""
 log_info "Namespace:        $AAP_NAMESPACE"
+log_info "Scope:            $AAP_SCOPE"
 log_info "Mode:             $AAP_MODE"
 log_info "Platform Name:    $PLATFORM_NAME"
 log_info "URL:              https://${ROUTE_URL}"

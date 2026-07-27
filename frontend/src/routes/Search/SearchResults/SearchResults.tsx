@@ -47,6 +47,7 @@ import RelatedResults from './RelatedResults'
 import { getRowActions, ISearchResult } from './utils'
 
 const resultsWrapper = css({ paddingTop: '0' })
+const noHorizontalPadding = css({ paddingInlineStart: '0', paddingInlineEnd: '0' })
 const relatedExpandableWrapper = css({
   display: 'flex',
   alignItems: 'baseline',
@@ -223,7 +224,7 @@ function SearchResultAccordion(
   }, [data])
 
   return (
-    <PageSection hasBodyWrapper={false} isFilled={false}>
+    <PageSection hasBodyWrapper={false} isFilled={false} className={noHorizontalPadding}>
       <Accordion asDefinitionList={true}>
         {kinds.map((kind: string, idx: number) => {
           const accordionItemKey = `${kind}-${idx}`
@@ -382,7 +383,7 @@ export default function SearchResults(
       />
       <PageSection hasBodyWrapper={false} className={resultsWrapper}>
         <Stack>
-          <PageSection hasBodyWrapper={false} isFilled={false}>
+          <PageSection hasBodyWrapper={false} isFilled={false} className={noHorizontalPadding}>
             <div className={relatedExpandableWrapper}>
               <ExpandableSection
                 onToggle={() => setShowRelatedResources(!showRelatedResources)}

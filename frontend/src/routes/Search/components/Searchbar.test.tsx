@@ -2,6 +2,7 @@
 // Copyright (c) 2022 Red Hat, Inc.
 
 import { MockedProvider } from '@apollo/client/testing'
+import { t as t } from '~/lib/test-helpers'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useMemo, useState } from 'react'
@@ -17,7 +18,6 @@ jest.mock('../SearchResults/utils')
 const toastContextMock: any = {
   addAlert: jest.fn(),
 }
-const t = (key: string) => key
 
 export const BlankSearchbar = () => {
   const [currentQuery, setCurrentQuery] = useState('')

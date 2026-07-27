@@ -369,8 +369,7 @@ export const useAssistedServiceConfigMap = () => {
   return useMemo(
     () =>
       configMaps.find((cm) => cm.metadata.name === 'assisted-service' && cm.metadata.namespace === namespace) as
-        | ConfigMapK8sResource
-        | undefined,
+        ConfigMapK8sResource | undefined,
     [configMaps]
   )
 }

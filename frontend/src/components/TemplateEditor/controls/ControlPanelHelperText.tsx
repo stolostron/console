@@ -2,7 +2,7 @@
 
 import { AcmHelperText } from '~/ui-components/AcmHelperText/AcmHelperText'
 import { useDynamicPropertyValues } from '../helpers/dynamicProperties'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 
 export const ControlPanelHelperText = (props: {
   control: any

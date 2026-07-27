@@ -237,8 +237,8 @@ class ChannelControl extends Component<ChannelControlProps, ChannelControlState>
       const num = channelsLength > 1 ? (channelAllIndex !== -1 ? channelsLength - 1 : channelsLength) : 1
       subscriptionShowInfo =
         (currentChannel as DisplayChannel).chn === '__ALL__/__ALL__//__ALL__/__ALL__'
-          ? this.props.t('({{0}} of {{0}})', [num])
-          : this.props.t('(1 of {{0}})', [num])
+          ? this.props.t('({{0}} of {{0}})', { 0: num })
+          : this.props.t('(1 of {{0}})', { 0: num })
     }
     return subscriptionShowInfo
   }

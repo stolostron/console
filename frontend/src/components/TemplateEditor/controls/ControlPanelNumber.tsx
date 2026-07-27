@@ -3,7 +3,7 @@
 
 import { RefCallback, useCallback } from 'react'
 import ControlPanelFormGroup from './ControlPanelFormGroup'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { ButtonProps, NumberInput } from '@patternfly/react-core'
 
 const ControlPanelNumber = (props: {

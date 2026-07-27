@@ -14,7 +14,7 @@ import {
   useRef,
   useState,
 } from 'react'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { generatePath, Outlet, useLocation, useNavigate, useOutletContext, useParams } from 'react-router'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { RbacDropdown } from '../../../components/Rbac'

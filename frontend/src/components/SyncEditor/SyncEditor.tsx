@@ -157,8 +157,10 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   }
   // ensure cleanup when component unmounts
   useEffect(() => {
-    // hide SyncEditor version of monaco-colors
-    return () => dismountTheme('se')
+    return () => {
+      dismountTheme('se')
+      cancelAnimationFrame(rafId.current)
+    }
   }, [])
 
   function onEditorDidMount(editor: editorTypes.IStandaloneCodeEditor, monaco: Monaco) {
@@ -830,20 +832,15 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     t,
   ])
 
-  useResizeObserver(pageRef, () => {
-    layoutEditor(activeEditor)
-  })
+  const lastLayoutSize = useRef<{ width: number; height: number }>({ width: 0, height: 0 })
+  const lastLayoutEditor = useRef<unknown>(null)
+  const rafId = useRef<number>(0)
 
   const layoutEditor = useCallback(
     (editor: any) => {
       if (pageRef.current && editor) {
-        const rect = pageRef.current.getBoundingClientRect()
-        const { width } = rect
-        let { height } = rect
-
-        if (pageRef.current) {
-          height = window.innerHeight - pageRef.current?.getBoundingClientRect().top
-        }
+        const width = pageRef.current.clientWidth
+        let height = pageRef.current.clientHeight
 
         if (variant === 'toolbar') {
           height -= 36
@@ -851,12 +848,35 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         if (editorHasErrors) {
           height -= 75
         }
+
+        if (width <= 0 || height <= 0) return
+
+        const prev = lastLayoutSize.current
+        const sameEditor = lastLayoutEditor.current === editor
+        if (sameEditor && prev.width === width && prev.height === height) return
+
+        lastLayoutSize.current = { width, height }
+        lastLayoutEditor.current = editor
         editor.layout({ width, height })
         setShowCondensed(width < 500)
       }
     },
     [editorHasErrors, variant]
   )
+
+  useEffect(() => {
+    cancelAnimationFrame(rafId.current)
+    if (activeEditor) {
+      layoutEditor(activeEditor)
+    }
+  }, [activeEditor, layoutEditor])
+
+  useResizeObserver(pageRef, () => {
+    cancelAnimationFrame(rafId.current)
+    rafId.current = requestAnimationFrame(() => {
+      layoutEditor(activeEditor)
+    })
+  })
 
   // if showChanges is true, set activeEditor,activeMonaco to DiffEditor
   // else set the actives to the regular editor/monanco

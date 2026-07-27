@@ -12,6 +12,7 @@
   ],
   "schedule": ["every weekend"],
   "timezone": "America/New_York",
+  "rangeStrategy": "bump",
   "lockFileMaintenance": {
     "enabled": false
   },
@@ -53,6 +54,76 @@
       ],
       "matchUpdateTypes": ["major", "minor"],
       "enabled": false
+    },
+    {
+      "description": "Group all @types/* packages into a single PR",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@types/**"],
+      "groupName": "type definitions",
+      "groupSlug": "types"
+    },
+    {
+      "description": "Group ESLint ecosystem packages into a single PR",
+      "matchManagers": ["npm"],
+      "matchPackageNames": [
+        "eslint",
+        "@eslint/**",
+        "@typescript-eslint/**",
+        "eslint-*"
+      ],
+      "groupName": "eslint packages",
+      "groupSlug": "eslint"
+    },
+    {
+      "description": "Group webpack and build tooling packages into a single PR",
+      "matchManagers": ["npm"],
+      "matchPackageNames": [
+        "webpack",
+        "webpack-*",
+        "*-webpack-plugin",
+        "*-loader",
+        "@svgr/webpack",
+        "@pmmmwh/react-refresh-webpack-plugin",
+        "fork-ts-checker-webpack-plugin",
+        "monaco-editor-webpack-plugin",
+        "mini-css-extract-plugin",
+        "copy-webpack-plugin"
+      ],
+      "groupName": "build tools",
+      "groupSlug": "build-tools"
+    },
+    {
+      "description": "Group Babel packages into a single PR",
+      "matchManagers": ["npm"],
+      "matchPackageNames": ["@babel/**", "babel-*"],
+      "groupName": "babel packages",
+      "groupSlug": "babel"
+    },
+    {
+      "description": "Group test framework packages into a single PR",
+      "matchManagers": ["npm"],
+      "matchPackageNames": [
+        "jest",
+        "jest-*",
+        "@jest/**",
+        "@testing-library/**",
+        "@cypress/**",
+        "cypress",
+        "jest-axe",
+        "nock"
+      ],
+      "groupName": "test frameworks",
+      "groupSlug": "test-frameworks"
+    },
+    {
+      "description": "Group PatternFly packages into a single PR",
+      "matchManagers": ["npm"],
+      "matchPackageNames": [
+        "@patternfly/**",
+        "@patternfly-labs/**"
+      ],
+      "groupName": "patternfly packages",
+      "groupSlug": "patternfly"
     }
   ]
 }

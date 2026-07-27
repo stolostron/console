@@ -8,6 +8,7 @@
 .topologyDetails .detailsHeader {
   position: sticky;
   top: 0px;
+  flex-shrink: 0;
   box-shadow: var(--pf-v5-c-page--section--m-sticky-top--BoxShadow);
   z-index: var(--pf-v5-c-page--section--m-sticky-top--ZIndex);
   background-color: var(--pf-v5-global--BackgroundColor--100);

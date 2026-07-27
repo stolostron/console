@@ -11,10 +11,10 @@ jobs:
             run:
                 working-directory: frontend
         steps:
-            - uses: actions/checkout@v6
+            - uses: actions/checkout@v7
               with:
                   token: ${{ secrets.GH_TOKEN }}
-            - uses: actions/setup-node@v6
+            - uses: actions/setup-node@v7
               with:
                   node-version: '24'
             - run: npx npm-check-updates --doctor --upgrade --target minor --reject $SKIP

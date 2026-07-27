@@ -159,7 +159,7 @@ export function CreateArgoResources(props: ICreateArgoResourcesModalProps) {
   const formData: FormData = {
     title: t('Add Argo Server'),
     description: t(
-      'Argo Server exposes an API and UI for workflows. You can run this in either "hosted" or "local" mode. '
+      'Argo Server exposes an API and UI for workflows. You can run this in either "hosted" or "local" mode.'
     ),
     sections: [
       {

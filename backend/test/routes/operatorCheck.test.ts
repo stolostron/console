@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { request } from '../mock-request'
+import { request, requestMultiChunk } from '../mock-request'
 import { parseResponseJsonBody } from '../../src/lib/body-parser'
 import nock from 'nock'
 
@@ -60,5 +60,21 @@ describe(`operatorCheck Route`, function () {
       .reply(200, subscriptionOperators)
     const res = await request('POST', '/operatorCheck', { operator: 'multicluster-engine' })
     expect(res.statusCode).toEqual(400)
+  })
+
+  it('correctly parses request body received in multiple chunks', async function () {
+    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200, {
+      status: 200,
+    })
+    nock(process.env.CLUSTER_API_URL)
+      .get('/apis/operators.coreos.com/v1alpha1/subscriptions')
+      .reply(200, subscriptionOperators)
+    const res = await requestMultiChunk('POST', '/operatorCheck', { operator: 'openshift-gitops-operator' })
+    expect(res.statusCode).toEqual(200)
+    expect(await parseResponseJsonBody(res)).toEqual({
+      operator: 'openshift-gitops-operator',
+      installed: true,
+      version: 'openshift-gitops-operator.v1.8.2',
+    })
   })
 })

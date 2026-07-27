@@ -81,7 +81,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
           </div>
           <div className="pf-v6-u-color-400" style={{ fontSize: '14px', paddingTop: '8px' }}>
             <Content component="small" style={{ marginBlockEnd: '0px' }}>
-              {t('Create and manage a fleet of clusters with ease using this all clusters view. ')}
+              {t('Create and manage a fleet of clusters with ease using this all clusters view.')}
             </Content>
             <Content component="small">
               {t('To access a single cluster you can select it from the cluster list table.')}

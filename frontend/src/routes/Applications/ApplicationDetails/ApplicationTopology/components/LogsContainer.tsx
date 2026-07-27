@@ -2,7 +2,7 @@
 
 import { PageSection, SelectOption } from '@patternfly/react-core'
 import { ReactNode, useEffect, useState } from 'react'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { useLocalHubName } from '../../../../../hooks/use-local-hub'
 import { fetchRetry, getBackendUrl } from '../../../../../resources/utils'
 import { fleetLogsRequest } from '../../../../../resources/utils/fleet-logs-request'

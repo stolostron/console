@@ -44,7 +44,7 @@ export INFRA_ID="$(oc get infrastructures cluster -o jsonpath='{.status.infrastr
   "clientSecret": "your-client-secret"
 }`
 
-const azureDNSCredsCode = `{
+  const azureDNSCredsCode = `{
   "subscriptionId": "your-subscription-id",
   "tenantId": "your-tenant-id",
   "resourceGroup": "your-resource-group-name",
@@ -138,7 +138,7 @@ hcp create cluster azure \\
         <Fragment>
           <Content component={ContentVariants.p}>
             {t(
-              'Install the Hosted Control Plane CLI (hcp), oc, az, and ccoctl. Authenticate with Azure and OpenShift as needed.'
+              'Install the Hosted Control Plane CLI (hcp), oc, az, jq, and ccoctl. Authenticate with Azure and OpenShift as needed.'
             )}
           </Content>
           <Content component={ContentVariants.a} href={DOC_LINKS.HYPERSHIFT_DEPLOY_AZURE_PREREQ} target="_blank">

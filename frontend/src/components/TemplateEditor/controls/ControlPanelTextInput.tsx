@@ -4,7 +4,7 @@
 import React, { RefCallback, useCallback } from 'react'
 import { TextInput } from '@patternfly/react-core'
 import ControlPanelFormGroup from './ControlPanelFormGroup'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { useDynamicPropertyValues } from '../helpers/dynamicProperties'
 
 const ControlPanelTextInput = (props: {
@@ -36,7 +36,7 @@ const ControlPanelTextInput = (props: {
   // if placeholder missing, create one
   let { placeholder } = control
   if (!placeholder) {
-    placeholder = i18n('creation.ocp.cluster.enter.value', [name ? name.toLowerCase() : ''])
+    placeholder = i18n('creation.ocp.cluster.enter.value', { 0: name ? name.toLowerCase() : '' })
   }
 
   const validated = exception ? 'error' : undefined

@@ -24,24 +24,24 @@ import { createDictionary, inflateApps } from '../../lib/compression'
 import type { IWatchOptions } from '../../resources/watch-options'
 
 export enum AppColumns {
-  'name' = 0,
-  'type',
-  'namespace',
-  'clusters',
-  'health',
-  'synced',
-  'deployed',
-  'created',
+  name = 0,
+  type,
+  namespace,
+  clusters,
+  health,
+  synced,
+  deployed,
+  created,
 }
 
 export enum TransformColumns {
-  'name' = 0,
-  'type',
-  'namespace',
-  'clusters',
-  'statuses',
-  'scores',
-  'created',
+  name = 0,
+  type,
+  namespace,
+  clusters,
+  statuses,
+  scores,
+  created,
 }
 export interface IArgoApplication extends IResource {
   cluster?: string

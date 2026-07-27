@@ -88,11 +88,9 @@ i18n.use(initReactI18next).init({
   interpolation: {
     escapeValue: false,
   },
-  compatibilityJSON: 'v3',
   defaultNS: 'translation',
   nsSeparator: '~',
   supportedLngs: ['en'],
-  simplifyPluralSuffix: true,
   lng: 'en',
   fallbackLng: 'en',
   ns: 'translation',

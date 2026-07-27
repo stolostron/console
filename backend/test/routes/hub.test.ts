@@ -5,21 +5,35 @@ import type { IResource } from '../../src/resources/resource'
 import { cacheResource, resetResourceCache } from '../../src/routes/events'
 import { request } from '../mock-request'
 
+const MCGH_CRD_PATH =
+  '/apis/apiextensions.k8s.io/v1/customresourcedefinitions/multiclusterglobalhubs.operator.open-cluster-management.io'
+
 function mockCrdNock(url: string) {
   const apisScope = nock(url).get('/apis').reply(200, { status: 200 })
   const crdScope = nock(url)
-    .get('/apis/apiextensions.k8s.io/v1/customresourcedefinitions')
+    .get(MCGH_CRD_PATH)
     .reply(200, {
-      items: [
-        {
-          kind: 'CustomResourceDefinition',
-          apiVersion: 'apiextensions.k8s.io/v1',
-          metadata: {
-            name: 'multiclusterglobalhubs.operator.open-cluster-management.io',
-          },
-        },
-      ],
+      kind: 'CustomResourceDefinition',
+      apiVersion: 'apiextensions.k8s.io/v1',
+      metadata: {
+        name: 'multiclusterglobalhubs.operator.open-cluster-management.io',
+      },
     })
+  return { apisScope, crdScope }
+}
+
+function mockCrdNock404(url: string) {
+  const apisScope = nock(url).get('/apis').reply(200, { status: 200 })
+  const crdScope = nock(url).get(MCGH_CRD_PATH).reply(404, {
+    kind: 'Status',
+    apiVersion: 'v1',
+    metadata: {},
+    status: 'Failure',
+    message:
+      'customresourcedefinitions.apiextensions.k8s.io "multiclusterglobalhubs.operator.open-cluster-management.io" not found',
+    reason: 'NotFound',
+    code: 404,
+  })
   return { apisScope, crdScope }
 }
 
@@ -80,6 +94,24 @@ describe('global hub', function () {
           username: { claim: 'email', prefix: { prefixString: 'oidc:' }, prefixPolicy: 'Prefix' },
           groups: { claim: 'groups', prefix: 'oidc:' },
         },
+      },
+    })
+    apisScope.done()
+    crdScope.done()
+  })
+
+  it('should return isGlobalHub false when the multiclusterglobalhub CRD does not exist (404)', async function () {
+    const { apisScope, crdScope } = mockCrdNock404(process.env.CLUSTER_API_URL)
+    const res = await request('GET', '/hub')
+    expect(res.statusCode).toEqual(200)
+    const parsed = await parsePipedJsonBody(res)
+    expect(parsed).toEqual({
+      localHubName: 'local-cluster',
+      isGlobalHub: false,
+      isHubSelfManaged: false,
+      isObservabilityInstalled: false,
+      authentication: {
+        isDirectAuthenticationEnabled: false,
       },
     })
     apisScope.done()

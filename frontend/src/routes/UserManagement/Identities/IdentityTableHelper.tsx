@@ -2,7 +2,7 @@
 import { Radio } from '@patternfly/react-core'
 import { cellWidth } from '@patternfly/react-table'
 import { useMemo } from 'react'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { generatePath, Link } from 'react-router'
 import { HighlightSearchText } from '../../../components/HighlightSearchText'
 import AcmTimestamp from '../../../lib/AcmTimestamp'

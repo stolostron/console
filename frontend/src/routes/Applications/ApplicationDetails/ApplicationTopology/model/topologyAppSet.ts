@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 // Lodash imports removed - using native TypeScript equivalents
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { Placement } from '../../../../../resources/placement'
 import { PlacementDecision } from '../../../../../resources/placement-decision'
 import { getResource, listNamespacedResources } from '../../../../../resources/utils'
@@ -1000,7 +1000,7 @@ const getArgoRouteFromSearch = async (
       }
 
       if (!route) {
-        const errMsg = t('No Argo route found for namespace {0} on cluster {1}', [appNamespace, cluster])
+        const errMsg = t('No Argo route found for namespace {0} on cluster {1}', { 0: appNamespace, 1: cluster })
         console.log(errMsg)
         return
       }

@@ -4,7 +4,7 @@ import { useCallback, useRef, useEffect, useState, useMemo, Dispatch, SetStateAc
 import { FormikProps } from 'formik'
 import { set, isEqual, debounce } from 'lodash'
 
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { Content, SelectOption } from '@patternfly/react-core'
 import { Link } from 'react-router'
 import { NavigationPath } from '../../../../../../../NavigationPath'
@@ -167,10 +167,6 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
   }, [control.disabled, formRef.current])
 
   useEffect(() => {
-    if (formRef?.current && control.active && control.active !== formRef?.current?.values) {
-      formRef?.current?.setValues(control.active, true)
-    }
-
     control.reverse = (
       control: {
         active: FormControl['active']

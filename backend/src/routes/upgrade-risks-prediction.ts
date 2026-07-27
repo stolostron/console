@@ -46,7 +46,7 @@ export async function upgradeRiskPredictions(req: Http2ServerRequest, res: Http2
         chucks.push(chuck)
       })
       req.on('end', async () => {
-        data = chucks.join()
+        data = chucks.join('')
         const body = JSON.parse(data) as UpgradeRiskBody
 
         // acm-operator version in User-Agent header doesn't matter - CCX only uses the 'acm-operator' string to identify the product initiating the req

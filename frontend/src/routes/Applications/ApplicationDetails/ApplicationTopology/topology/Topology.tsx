@@ -27,7 +27,7 @@ import { ArgoAppDetailsContainerData, ClusterDetailsContainerData } from '../App
 import TopologyZoomBar from './components/TopologyZoomBar'
 
 import './css/topology-view.css'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { TopologyRefreshContext } from './contexts/TopologyRefreshContext'
 
 export interface TopologyProps {

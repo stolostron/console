@@ -19,6 +19,7 @@ export enum ClusterAction {
   RemoveAutomationTemplate = 'remove-automation-template',
   DestroyManaged = 'destroy-managed-cluster',
   ImportHosted = 'import-hypershift-cluster',
+  OpenConsole = 'open-console',
 }
 
 function clusterSupportsAutomationTemplateChange(cluster: Cluster) {
@@ -27,11 +28,11 @@ function clusterSupportsAutomationTemplateChange(cluster: Cluster) {
     !!cluster.distribution?.ocp?.version && // is OpenShift
     cluster.labels?.cloud !== 'auto-detect' && // cloud label is set
     cluster.status === ClusterStatus.ready && // cluster is ready
-    (!cluster.distribution?.isManagedOpenShift || // is not managed OpenShift
-      (cluster.distribution?.isManagedOpenShift && !cluster.isHostedCluster && cluster.provider === Provider.azure)) && // is ARO Classic
+    (cluster.isHypershift || // is HCP
+      !cluster.distribution?.isManagedOpenShift || // is not managed OpenShift
+      (!cluster.isHostedCluster && cluster.provider === Provider.azure)) && // is ARO Classic
     !cluster.distribution?.upgradeInfo?.isUpgrading && // is not currently upgrading
-    cluster.provider !== Provider.ibm && // is not ROKS
-    !cluster.isHostedCluster // is not HyperShift
+    cluster.provider !== Provider.ibm // is not ROKS
   )
 }
 
@@ -124,6 +125,8 @@ export function clusterSupportsAction(
       return clusterSupportsAutomationTemplateChange(cluster)
     case ClusterAction.RemoveAutomationTemplate:
       return cluster.hasAutomationTemplate && !cluster.distribution?.upgradeInfo?.isUpgrading // is not currently upgrading
+    case ClusterAction.OpenConsole:
+      return !!cluster.consoleURL
     default:
       return false
   }

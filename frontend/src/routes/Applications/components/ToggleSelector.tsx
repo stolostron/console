@@ -3,7 +3,7 @@
 import { Stack, StackItem, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
 import _ from 'lodash'
 import queryString from 'query-string'
-import { TFunction } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { Link, useNavigate } from 'react-router'
 
 import { DOC_LINKS, ViewDocumentationLink } from '../../../lib/doc-util'
