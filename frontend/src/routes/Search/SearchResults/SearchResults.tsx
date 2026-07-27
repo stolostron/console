@@ -146,6 +146,7 @@ function RenderAccordionItem(
 
       return (
         <AcmTable
+          aria-label={t('Search results table')}
           id={`search-result-${tableID}`}
           items={items}
           emptyState={undefined} // table only shown for kinds with results
@@ -160,7 +161,7 @@ function RenderAccordionItem(
         />
       )
     },
-    [rowActions, searchDefinitions]
+    [rowActions, searchDefinitions, t]
   )
 
   return (

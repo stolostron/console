@@ -262,6 +262,7 @@ export function NodesPoolsTable() {
     <>
       <ScaleClusterAlert />
       <AcmTable<NodeInfo>
+        aria-label={t('Cluster nodes table')}
         items={nodes}
         emptyState={<AcmEmptyState title={t('No nodes found')} message={t('The cluster has no nodes.')} />}
         columns={columns}

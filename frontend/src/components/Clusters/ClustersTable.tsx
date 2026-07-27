@@ -1,16 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
+import { useLocalHubName } from '../../hooks/use-local-hub'
+import { useTranslation } from '../../lib/acm-i18next'
 import { HostedClusterK8sResourceWithChannel } from '../../resources/hosted-cluster'
-import { BulkActionModal, BulkActionModalProps } from '../BulkActionModal'
 import { Cluster } from '../../resources/utils'
-import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
-import { AcmTable, IAcmTableButtonAction } from '../../ui-components'
 import { BatchChannelSelectModal } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/BatchChannelSelectModal'
 import { BatchUpgradeModal } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/BatchUpgradeModal'
 import { RemoveAutomationModal } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/RemoveAutomationModal'
 import { UpdateAutomationModal } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/UpdateAutomationModal'
-import { useLocalHubName } from '../../hooks/use-local-hub'
+import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { AcmTable, IAcmTableButtonAction } from '../../ui-components'
+import { BulkActionModal, BulkActionModalProps } from '../BulkActionModal'
 import { useTableColumns, useTableActions, useAdvancedFilters, useFilters } from './ClustersTableHelper'
 
 interface ClustersTableProps {
@@ -38,6 +39,7 @@ export function ClustersTable({
   tableKey,
   initialSelectedClusters,
 }: ClustersTableProps) {
+  const { t } = useTranslation()
   useEffect(() => {
     sessionStorage.removeItem('DiscoveredClusterDisplayName')
     sessionStorage.removeItem('DiscoveredClusterConsoleURL')
@@ -133,6 +135,7 @@ export function ClustersTable({
         hostedClusters={hostedClustersMap}
       />
       <AcmTable<Cluster>
+        aria-label={t('Clusters table')}
         items={clusters}
         columns={columns}
         keyFn={keyFn}

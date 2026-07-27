@@ -124,6 +124,7 @@ export function RenderItemContent(
 
   return (
     <AcmTable
+      aria-label={t('Related search results table')}
       id={`related-search-result-${relatedKind.toLowerCase()}-${tableIDSuffix}`}
       items={relatedResultItems}
       emptyState={undefined} // table only shown for kinds with related resources

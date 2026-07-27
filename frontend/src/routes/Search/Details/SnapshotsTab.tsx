@@ -168,6 +168,7 @@ export default function SnapshotsTab() {
           ) : null}
           <PageSection hasBodyWrapper={false} isFilled={false}>
             <AcmTable
+              aria-label={t('Virtual machine snapshots table')}
               id={'search-details-vmsnapshots-table'}
               items={snapshotItems}
               emptyState={undefined} // table only shown for kinds with related resources

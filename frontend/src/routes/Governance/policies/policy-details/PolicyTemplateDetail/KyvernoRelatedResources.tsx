@@ -122,6 +122,7 @@ export const KyvernoRelatedResources: FunctionComponent<IKyvernoRelatedResources
         </ToolbarContent>
       </Toolbar>
       <AcmTable
+        aria-label={t('Related resources table')}
         items={classifiedRelatedObjects[selectedId] ?? []}
         emptyState={
           <AcmEmptyState
