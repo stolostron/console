@@ -136,7 +136,7 @@ export const getWizardVersions = (
   signal?: AbortSignal
 ): Promise<OpenshiftVersionResponse> =>
   getWizardData<OpenshiftVersionResponse>(client_id, client_secret, '/openshift-versions', signal)
-  
+
 export const getWizardVPCs = (
   client_id: string,
   client_secret: string,
