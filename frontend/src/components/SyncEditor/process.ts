@@ -6,6 +6,7 @@ import { getMatchingValues, getUidSiblings, crossReference, getPathArray } from 
 import { reconcile } from './reconcile'
 import { ChangeType } from './changes'
 import { Monaco } from '@monaco-editor/react'
+import { prepareResourceForYaml } from './statusDecorations'
 
 export interface ProcessedType {
   parsed: {
@@ -389,24 +390,28 @@ function getMappingItems(
   })
 }
 
-// sort name/namespace to top
+// sort name/namespace to top when present; otherwise preserve prepareResourceForYaml order
 const sort = ['name', 'namespace']
-const sortMapEntries = (a: { key: { value: string } }, b: { key: { value: string } }) => {
-  const ai = sort.indexOf(a.key.value)
-  const bi = sort.indexOf(b.key.value)
-  const aInSort = ai >= 0
-  const bInSort = bi >= 0
-  if (aInSort && bInSort) return ai - bi
-  if (aInSort) return -1
-  if (bInSort) return 1
-  return a.key.value.localeCompare(b.key.value)
-}
 
 export const stringify = (resources: any[]) => {
   const yamls: string[] = []
   resources.forEach((resource: any) => {
     if (!isEmpty(resource)) {
-      let yaml = YAML.stringify(resource, { sortMapEntries })
+      // Reorder status/condition keys (and keep name/namespace first elsewhere).
+      const ordered = prepareResourceForYaml(resource)
+      let yaml = YAML.stringify(ordered, {
+        sortMapEntries: (a: { key: { value: string } }, b: { key: { value: string } }) => {
+          const ai = sort.indexOf(a.key.value)
+          const bi = sort.indexOf(b.key.value)
+          const aInSort = ai >= 0
+          const bInSort = bi >= 0
+          if (aInSort && bInSort) return ai - bi
+          if (aInSort) return -1
+          if (bInSort) return 1
+          // Preserve insertion order from prepareResourceForYaml.
+          return 0
+        },
+      })
       yaml = yaml.replaceAll(/'\d+':(\s|$)\s*/gm, '- ')
       yaml = yaml.replaceAll(/:\s*null$/gm, ':')
       yamls.push(yaml)

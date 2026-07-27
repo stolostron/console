@@ -1,0 +1,38 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
+/* Status condition decorations (ACM-38199) — legible in light and dark modes */
+.statusConditionSuccess {
+  color: #3d7a45 !important;
+}
+
+.statusConditionSuccessEmphasis {
+  color: #1e4d24 !important;
+  font-weight: 600;
+}
+
+.statusConditionFailure {
+  color: #c9190b !important;
+}
+
+.statusConditionFailureEmphasis {
+  color: #8b1008 !important;
+  font-weight: 600;
+}
+
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .statusConditionSuccess {
+  color: #7dcc87 !important;
+}
+
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .statusConditionSuccessEmphasis {
+  color: #b8f0c0 !important;
+  font-weight: 600;
+}
+
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .statusConditionFailure {
+  color: #f5a3a0 !important;
+}
+
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .statusConditionFailureEmphasis {
+  color: #ffd4d2 !important;
+  font-weight: 600;
+}

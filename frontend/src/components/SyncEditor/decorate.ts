@@ -3,6 +3,7 @@ import { get } from 'lodash'
 import { ErrorType } from './validation'
 import { Monaco } from '@monaco-editor/react'
 import { editor as editorTypes, IRange } from 'monaco-editor'
+import { getStatusDecorationsFromMappings, isStatusDecorationClass } from './statusDecorations'
 
 const startCase = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1)
@@ -43,6 +44,9 @@ export const decorate = (
 
   // add protected decorations
   addProtectedDecorations(monaco, protectedRanges, decorations)
+
+  // decorate status conditions / failure indicators (green/red)
+  decorations.push(...getStatusDecorationsFromMappings(monaco, change?.mappings as never))
 
   // add filter row toggle decorations
   addFilteredDecorations(monaco, filteredRows, decorations)
@@ -232,6 +236,7 @@ const filterResourceEditorDecorations = (
     return (
       options?.className?.startsWith('squiggly-') ||
       options?.className === 'syncEditorYamlHighlight' ||
+      isStatusDecorationClass(options?.inlineClassName) ||
       LINE_DECORATION_CLASS_NAMES.includes(lineDecorationClass as (typeof LINE_DECORATION_CLASS_NAMES)[number]) ||
       (!!options?.glyphMarginClassName && (options?.inlineClassName !== 'protectedDecoration' || !hasErrors))
     )
