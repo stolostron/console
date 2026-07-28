@@ -15,7 +15,7 @@ describe(`apiPath Route`, function () {
 
     nock(process.env.CLUSTER_API_URL).get(paths[0]).reply(200, response)
 
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200, {
+    nock(process.env.CLUSTER_API_URL).head('/api').reply(200, {
       status: 200,
       paths: response,
     })

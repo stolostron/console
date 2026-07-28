@@ -23,8 +23,8 @@ function nockCredentialSecret(host: string) {
 }
 
 describe(`ansibletower Route`, function () {
-  it(`should list Ansible TowerJobs`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+  it(`should list Ansible Automation controller Jobs`, async function () {
+    nock(process.env.CLUSTER_API_URL).head('/api').reply(200)
     nockCredentialSecret(TOWER_HOST)
     nock(TOWER_HOST).get(ansiblePaths[0]).reply(200, response)
     const res = await request('POST', '/ansibletower', {
@@ -115,8 +115,8 @@ describe(`ansibletower Route`, function () {
     expect(res.statusCode).toEqual(400)
   })
 
-  it(`when bad things happen to Ansible TowerJobs 1`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+  it(`when bad things happen to Ansible Automation controller Jobs 1`, async function () {
+    nock(process.env.CLUSTER_API_URL).head('/api').reply(200)
     nockCredentialSecret(TOWER_HOST)
     nock(TOWER_HOST).get(ansiblePaths[0]).reply(200, response)
     const res = await request('POST', '/ansibletower', {
@@ -128,8 +128,8 @@ describe(`ansibletower Route`, function () {
     expect(JSON.stringify(await parsePipedJsonBody(res))).toEqual(JSON.stringify({}))
   })
 
-  it(`when bad things happen to Ansible TowerJobs 2`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+  it(`when bad things happen to Ansible Automation controller Jobs 2`, async function () {
+    nock(process.env.CLUSTER_API_URL).head('/api').reply(200)
     nockCredentialSecret(TOWER_HOST)
     nock(TOWER_HOST).get(ansiblePaths[0]).reply(200, response)
     const res = await request('POST', '/ansibletower', {
@@ -140,9 +140,10 @@ describe(`ansibletower Route`, function () {
     expect(JSON.stringify(await parsePipedJsonBody(res))).toEqual(JSON.stringify({}))
   })
 
-  it(`when bad things happen to Ansible TowerJobs 3`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(400)
+  it(`when bad things happen to Ansible Automation controller Jobs 3`, async function () {
+    nock(process.env.CLUSTER_API_URL).head('/api').reply(401)
     const res = await request('POST', '/ansibletower')
+    expect(res.statusCode).toEqual(401)
     expect(JSON.stringify(await parsePipedJsonBody(res))).toEqual(JSON.stringify({}))
   })
 })
