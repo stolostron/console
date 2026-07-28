@@ -190,17 +190,15 @@ describe(`operatorCheck Route`, function () {
       status: 200,
     })
     nock(process.env.CLUSTER_API_URL).get('/apis/operators.coreos.com/v1alpha1/subscriptions').reply(200, { items: [] })
-    nock(process.env.CLUSTER_API_URL)
-      .get('/apis/olm.operatorframework.io/v1/clusterextensions')
-      .reply(404, {
-        kind: 'Status',
-        apiVersion: 'v1',
-        metadata: {},
-        status: 'Failure',
-        message: 'the server could not find the requested resource',
-        reason: 'NotFound',
-        code: 404,
-      })
+    nock(process.env.CLUSTER_API_URL).get('/apis/olm.operatorframework.io/v1/clusterextensions').reply(404, {
+      kind: 'Status',
+      apiVersion: 'v1',
+      metadata: {},
+      status: 'Failure',
+      message: 'the server could not find the requested resource',
+      reason: 'NotFound',
+      code: 404,
+    })
     const res = await request('POST', '/operatorCheck', { operator: 'openshift-gitops-operator' })
     expect(res.statusCode).toEqual(200)
     expect(await parseResponseJsonBody(res)).toEqual({
