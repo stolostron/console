@@ -2563,6 +2563,7 @@
   "Prerequisites": "Prerequisites",
   "Prerequisites and Configuration": "Prerequisites and Configuration",
   "Press space or enter to begin dragging, and use the arrow keys to navigate up or down. Press enter to confirm the drag, or any other key to cancel the drag operation.": "Press space or enter to begin dragging, and use the arrow keys to navigate up or down. Press enter to confirm the drag, or any other key to cancel the drag operation.",
+  "Preview": "Preview",
   "preview.clusterPools": "<bold>Technology Preview</bold>: For more information, <a>view documentation</a> on Cluster pools",
   "Previous change": "Previous change",
   "Previous example": "Previous example",
