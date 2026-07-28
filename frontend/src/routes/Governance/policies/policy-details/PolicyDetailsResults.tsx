@@ -1,6 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Icon, PageSection, Title, Tooltip } from '@patternfly/react-core'
-import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
+import {
+  Alert,
+  AlertVariant,
+  EmptyState,
+  EmptyStateBody,
+  EmptyStateVariant,
+  Icon,
+  PageSection,
+  Title,
+  Tooltip,
+} from '@patternfly/react-core'
+import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon, LockIcon } from '@patternfly/react-icons'
 import { AcmEmptyState, AcmTable, AcmTableStateProvider, compareStrings } from '../../../../ui-components'
 import { ReactNode, useMemo } from 'react'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
@@ -130,6 +140,21 @@ export default function PolicyDetailsResults() {
     })
     return status
   }, [policy, policies])
+
+  // All clusters the root policy reports status for (always visible regardless of RBAC)
+  const allPropagatedClusters = useMemo(
+    () => new Set((policy.status?.status ?? []).map((s) => s.clustername)),
+    [policy.status?.status]
+  )
+
+  // Clusters actually visible in the Results tab (may be a subset for namespace-scoped users)
+  const visibleClusterCount = useMemo(
+    () => new Set(policiesDeployedOnCluster.map((row) => row.cluster)).size,
+    [policiesDeployedOnCluster]
+  )
+
+  const hasNoAccess = allPropagatedClusters.size > 0 && visibleClusterCount === 0
+  const hasPartialAccess = allPropagatedClusters.size > visibleClusterCount && visibleClusterCount > 0
 
   const columns = useMemo(
     () => [
@@ -312,19 +337,49 @@ export default function PolicyDetailsResults() {
     [canCreatePolicy, t]
   )
 
+  const restrictedAccessEmptyState = (
+    <EmptyState headingLevel="h4" titleText={t('Restricted Access')} variant={EmptyStateVariant.lg} icon={LockIcon}>
+      <EmptyStateBody>
+        <p>{t("You don't have permission to view these results.")}</p>
+        <p>
+          {t(
+            'Check the Details tab for a compliance summary, or contact your cluster administrator for additional access.'
+          )}
+        </p>
+      </EmptyStateBody>
+    </EmptyState>
+  )
+
   return (
     <PageSection hasBodyWrapper={false}>
       <Title headingLevel="h3">{t('Clusters')}</Title>
+      {hasPartialAccess && (
+        <Alert
+          variant={AlertVariant.info}
+          isInline
+          title={t('Showing results for {{visible}} of {{total}} clusters.', {
+            visible: visibleClusterCount,
+            total: allPropagatedClusters.size,
+          })}
+          style={{ marginBottom: '1rem' }}
+        >
+          {t("You don't have permission to view results for the remaining clusters.")}
+        </Alert>
+      )}
       <AcmTableStateProvider localStorageKey="grc-status-view">
         <AcmTable<ResultsTableData>
           showExportButton
           exportFilePrefix={`${policy.metadata.name}-${policy.metadata.namespace}`}
           items={policiesDeployedOnCluster}
           emptyState={
-            <AcmEmptyState
-              title={t('No cluster results')}
-              message={t('No clusters are reporting status for this policy.')}
-            />
+            hasNoAccess ? (
+              restrictedAccessEmptyState
+            ) : (
+              <AcmEmptyState
+                title={t('No cluster results')}
+                message={t('No clusters are reporting status for this policy.')}
+              />
+            )
           }
           columns={columns}
           keyFn={(item) => `${item.cluster}.${item.templateName}`}

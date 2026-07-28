@@ -16,7 +16,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { Link, generatePath } from 'react-router-dom-v5-compat'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
-import { NavigationPath } from '../../../../NavigationPath'
+import { NavigationPath, UNKNOWN_NAMESPACE } from '../../../../NavigationPath'
 import { Policy, PolicySet } from '../../../../resources'
 import { exportObjectString } from '../../../../resources/utils'
 import {
@@ -169,7 +169,14 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
           /* istanbul ignore next */
           compareStrings(a, b),
         cell: (cluster: string) => (
-          <a href={`/multicloud/infrastructure/clusters/details/${cluster}/${cluster}/overview`}>{cluster}</a>
+          <Link
+            to={generatePath(NavigationPath.clusterOverview, {
+              name: cluster,
+              namespace: cluster || UNKNOWN_NAMESPACE,
+            })}
+          >
+            {cluster}
+          </Link>
         ),
         exportContent: (cluster: string) => cluster,
       },
