@@ -16,6 +16,8 @@ import {
   OpenshiftVersionResponse,
   VPCsPayload,
   VPCsResponse,
+  MachineTypesResponse,
+  MachineTypesPayload,
 } from '~/resources'
 import { fetchRetry, getBackendUrl } from '~/resources/utils'
 
@@ -144,3 +146,17 @@ export const getWizardVPCs = (
   additionalData?: VPCsPayload
 ): Promise<VPCsResponse> =>
   getWizardData<VPCsResponse, VPCsPayload>(client_id, client_secret, '/vpcs', signal, additionalData)
+
+export const getWizardMachineTypes = (
+  client_id: string,
+  client_secret: string,
+  signal?: AbortSignal,
+  additionalData?: MachineTypesPayload
+): Promise<MachineTypesResponse> =>
+  getWizardData<MachineTypesResponse, MachineTypesPayload>(
+    client_id,
+    client_secret,
+    '/machine-types',
+    signal,
+    additionalData
+  )

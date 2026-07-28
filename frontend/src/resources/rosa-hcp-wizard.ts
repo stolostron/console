@@ -207,3 +207,36 @@ export type VPCsPayload = {
     id?: string
   }
 }
+
+export interface MachineTypeQuantity {
+  value: number
+  unit: string
+}
+
+export interface MachineType {
+  kind?: string
+  id: string
+  href?: string
+  name: string
+  category: string
+  size?: string
+  cpu?: MachineTypeQuantity
+  memory?: MachineTypeQuantity
+  cloud_provider?: { kind?: string; id?: string; href?: string }
+  ccs_only?: boolean
+  generic_name?: string
+}
+
+export interface MachineTypesResponse {
+  kind?: string
+  page?: number
+  size?: number
+  total?: number
+  items?: MachineType[]
+}
+
+export type MachineTypesPayload = {
+  region: string
+  role_arn: string
+  availability_zones: string[]
+}

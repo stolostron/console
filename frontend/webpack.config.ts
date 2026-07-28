@@ -198,6 +198,7 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         '/multicloud/sts-user-role',
         '/multicloud/openshift-versions',
         '/multicloud/vpcs',
+        '/multicloud/machine-types',
       ].map((backendPath) => ({
         path: backendPath,
         target: `https://localhost:${process.env.BACKEND_PORT}`,

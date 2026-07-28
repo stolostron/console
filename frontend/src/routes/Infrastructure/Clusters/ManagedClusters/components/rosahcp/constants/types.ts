@@ -39,6 +39,11 @@ export interface OpenShiftVersionsData {
   releases: DropdownType[]
 }
 
+export type MachineTypesDropdownType = DropdownType & {
+  id: string
+  description: string
+}
+
 export interface OpenshiftVersion {
   available_channels: string[]
   available_upgrades: string[]
