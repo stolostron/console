@@ -95,7 +95,7 @@ describe('EditDescription', () => {
   })
 
   test('shows errors on save failure', async () => {
-    const { getByLabelText, getByRole, getByText } = render(<EditDescription resource={resource} close={() => {}} />)
+    const { getByLabelText, getByRole, findByText } = render(<EditDescription resource={resource} close={() => {}} />)
     const textarea = getByLabelText('Description')
 
     userEvent.clear(textarea)
@@ -116,7 +116,7 @@ describe('EditDescription', () => {
 
     userEvent.click(getByRole('button', { name: /save/i }))
     await waitFor(() => expect(nockScope.isDone()).toBeTruthy())
-    await waitFor(() => expect(getByText('Bad request.')).toBeInTheDocument())
+    expect(await findByText('Bad request.')).toBeInTheDocument()
   })
 
   test('works without existing annotations', () => {
