@@ -5,7 +5,7 @@ import { request } from '../mock-request'
 
 describe('userpreference Route', function () {
   it('should return the userpreference', async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).head('/api').reply(200)
     nock(process.env.CLUSTER_API_URL)
       .post('/apis/authentication.k8s.io/v1/tokenreviews')
       .reply(200, {
@@ -53,7 +53,7 @@ describe('userpreference Route', function () {
         savedSearches: [{ description: '', id: '1678205878189', name: 'testing', searchText: 'kind:Pod' }],
       },
     }
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).head('/api').reply(200)
     nock(process.env.CLUSTER_API_URL)
       .post('/apis/authentication.k8s.io/v1/tokenreviews')
       .reply(200, {
