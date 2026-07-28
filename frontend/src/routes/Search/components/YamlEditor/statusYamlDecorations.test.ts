@@ -6,7 +6,10 @@ import {
   STATUS_SUCCESS_CLASS,
   STATUS_SUCCESS_EMPHASIS_CLASS,
 } from '~/components/SyncEditor/statusDecorations'
-import { getSearchYamlStatusDecorations, registerSearchYamlStatusDecorations } from './statusYamlDecorations'
+import {
+  getSearchYamlStatusDecorations,
+  registerSearchYamlStatusDecorations,
+} from '~/routes/Search/components/YamlEditor/statusYamlDecorations'
 
 jest.mock('monaco-editor', () => ({
   Range: class Range {
@@ -19,11 +22,11 @@ jest.mock('monaco-editor', () => ({
   },
 }))
 
-function createModel(yamlText: string) {
+function createModel(getYamlText: () => string) {
   return {
-    getValue: () => yamlText,
+    getValue: () => getYamlText(),
     getPositionAt: (offset: number) => {
-      const before = yamlText.slice(0, Math.max(0, offset))
+      const before = getYamlText().slice(0, Math.max(0, offset))
       const lines = before.split('\n')
       return { lineNumber: lines.length, column: (lines.at(-1)?.length ?? 0) + 1 }
     },
@@ -32,12 +35,12 @@ function createModel(yamlText: string) {
 
 describe('getSearchYamlStatusDecorations', () => {
   it('returns empty decorations when yaml cannot be parsed', () => {
-    const model = createModel('status: [\n  - broken')
+    const model = createModel(() => 'status: [\n  - broken')
     expect(getSearchYamlStatusDecorations(model as never)).toEqual([])
   })
 
   it('returns empty decorations when status is missing', () => {
-    const model = createModel('apiVersion: v1\nkind: Pod\nmetadata:\n  name: x\n')
+    const model = createModel(() => 'apiVersion: v1\nkind: Pod\nmetadata:\n  name: x\n')
     expect(getSearchYamlStatusDecorations(model as never)).toEqual([])
   })
 
@@ -62,13 +65,30 @@ status:
       reason: Pending
       message: Not yet known
 `
-    const decorations = getSearchYamlStatusDecorations(createModel(yamlText) as never)
+    const decorations = getSearchYamlStatusDecorations(createModel(() => yamlText) as never)
     const classes = decorations.map((d) => d.options.inlineClassName)
-    expect(classes).toContain(STATUS_SUCCESS_CLASS)
-    expect(classes).toContain(STATUS_SUCCESS_EMPHASIS_CLASS)
-    expect(classes).toContain(STATUS_FAILURE_CLASS)
-    expect(classes).toContain(STATUS_FAILURE_EMPHASIS_CLASS)
-    expect(classes.filter((c) => c === STATUS_FAILURE_CLASS).length).toBeGreaterThanOrEqual(2)
+    // Available (block + reason + message) + Degraded (block + reason + message) + unavailableReplicas
+    // Ready/Unknown must not contribute any decorations.
+    expect(decorations).toHaveLength(7)
+    expect(classes.filter((c) => c === STATUS_SUCCESS_CLASS)).toHaveLength(1)
+    expect(classes.filter((c) => c === STATUS_SUCCESS_EMPHASIS_CLASS)).toHaveLength(2)
+    expect(classes.filter((c) => c === STATUS_FAILURE_CLASS)).toHaveLength(2)
+    expect(classes.filter((c) => c === STATUS_FAILURE_EMPHASIS_CLASS)).toHaveLength(2)
+  })
+
+  it('does not decorate Ready with Unknown status', () => {
+    const yamlText = `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo
+status:
+  conditions:
+    - type: Ready
+      status: Unknown
+      reason: Pending
+      message: Not yet known
+`
+    expect(getSearchYamlStatusDecorations(createModel(() => yamlText) as never)).toEqual([])
   })
 
   it('skips unavailableReplicas when zero', () => {
@@ -84,7 +104,7 @@ status:
       reason: MinimumReplicasAvailable
       message: ok
 `
-    const decorations = getSearchYamlStatusDecorations(createModel(yamlText) as never)
+    const decorations = getSearchYamlStatusDecorations(createModel(() => yamlText) as never)
     const classes = decorations.map((d) => d.options.inlineClassName)
     expect(classes).toContain(STATUS_SUCCESS_CLASS)
     // only condition block + reason/message emphasis (no unavailable failure)
@@ -114,7 +134,7 @@ status:
           reason: Completed
           exitCode: 0
 `
-    const decorations = getSearchYamlStatusDecorations(createModel(yamlText) as never)
+    const decorations = getSearchYamlStatusDecorations(createModel(() => yamlText) as never)
     const failureCount = decorations.filter((d) => d.options.inlineClassName === STATUS_FAILURE_CLASS).length
     expect(failureCount).toBe(2)
   })
@@ -122,7 +142,7 @@ status:
 
 describe('registerSearchYamlStatusDecorations', () => {
   it('applies decorations, refreshes on content change, and disposes cleanly', () => {
-    const yamlText = `apiVersion: apps/v1
+    const failureYaml = `apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: demo
@@ -133,10 +153,24 @@ status:
       reason: MinimumReplicasUnavailable
       message: not available
 `
-    const model = createModel(yamlText)
+    const successYaml = `apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo
+status:
+  conditions:
+    - type: Available
+      status: 'True'
+      reason: MinimumReplicasAvailable
+      message: Deployment has minimum availability.
+`
+    let currentYaml = failureYaml
+    const model = createModel(() => currentYaml)
     const contentListeners: Array<() => void> = []
     const disposeListener = jest.fn()
-    const deltaDecorations = jest.fn((_old: string[], next: unknown[]) => next.map((_, i) => `dec-${i}`))
+    const deltaDecorations = jest.fn((_old: string[], next: Array<{ options?: { inlineClassName?: string } }>) =>
+      next.map((_, i) => `dec-${i}`)
+    )
     const editor = {
       getModel: jest.fn(() => model),
       deltaDecorations,
@@ -147,13 +181,18 @@ status:
     }
 
     const dispose = registerSearchYamlStatusDecorations(editor as never)
-    expect(deltaDecorations).toHaveBeenCalled()
     expect(editor.onDidChangeModelContent).toHaveBeenCalled()
     expect(contentListeners).toHaveLength(1)
+    const initialDecorations = deltaDecorations.mock.calls[0][1]
+    expect(initialDecorations.map((d) => d.options?.inlineClassName)).toContain(STATUS_FAILURE_CLASS)
+    expect(initialDecorations.map((d) => d.options?.inlineClassName)).not.toContain(STATUS_SUCCESS_CLASS)
 
     deltaDecorations.mockClear()
+    currentYaml = successYaml
     contentListeners[0]()
-    expect(deltaDecorations).toHaveBeenCalled()
+    const refreshedDecorations = deltaDecorations.mock.calls[0][1]
+    expect(refreshedDecorations.map((d) => d.options?.inlineClassName)).toContain(STATUS_SUCCESS_CLASS)
+    expect(refreshedDecorations.map((d) => d.options?.inlineClassName)).not.toContain(STATUS_FAILURE_CLASS)
 
     dispose()
     expect(disposeListener).toHaveBeenCalled()
