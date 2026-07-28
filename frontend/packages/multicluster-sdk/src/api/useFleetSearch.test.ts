@@ -1,6 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { act, renderHook } from '@testing-library/react-hooks'
-import { useSearchResultItemsQuery } from '../internal/search/search-sdk'
+import {
+  SearchResultItemsQuery,
+  SearchResultItemsQueryVariables,
+  useSearchResultItemsQuery,
+} from '../internal/search/search-sdk'
 import { SearchInput } from '../types/search'
 import { useFleetSearch } from './useFleetSearch'
 import { useFleetSearchSubscription } from './useFleetSearchSubscription'
@@ -20,10 +24,8 @@ jest.mock('./useFleetSearchSubscription', () => ({
   useFleetSearchSubscription: jest.fn(),
 }))
 
-const mockUseSearchResultItemsQuery = useSearchResultItemsQuery as jest.MockedFunction<typeof useSearchResultItemsQuery>
-const mockUseFleetSearchSubscription = useFleetSearchSubscription as jest.MockedFunction<
-  typeof useFleetSearchSubscription
->
+const mockUseSearchResultItemsQuery = jest.mocked(useSearchResultItemsQuery)
+const mockUseFleetSearchSubscription = jest.mocked(useFleetSearchSubscription)
 
 const mockInput: SearchInput = {
   filters: [{ property: 'kind', values: ['Pod'] }],
@@ -44,15 +46,50 @@ const mockSearchResult = {
   searchResult: [{ items: [mockSearchItem] }],
 }
 
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+// Apollo's `refetch()` resolves with an `ApolloQueryResult`, but our hook only
+// ever reads `.data` off of it — so the mock only needs to satisfy that shape,
+// rather than fabricating `loading` / `networkStatus` in every test.
+type RefetchResult = { data: SearchResultItemsQuery }
+type RefetchMock = ReturnType<typeof jest.fn<Promise<RefetchResult>, [Partial<SearchResultItemsQueryVariables>?]>>
+
+// Tests that only assert whether/how many times refetch was called (and don't
+// care about post-refetch state) can use a mock that returns a promise which
+// never resolves.
+function pendingRefetch(): RefetchMock {
+  return jest
+    .fn<Promise<RefetchResult>, [Partial<SearchResultItemsQueryVariables>?]>()
+    .mockReturnValue(new Promise(() => {}))
+}
+
+function makeQueryMock(items: object[], refetch: RefetchMock = pendingRefetch()) {
+  return {
+    data: { searchResult: [{ items }] },
+    loading: false,
+    error: undefined,
+    refetch,
+  } as any
+}
+
+function makeEvent(
+  operation: 'INSERT' | 'UPDATE' | 'DELETE',
+  uid: string,
+  newData: object | null,
+  oldData: object | null = null
+) {
+  return { uid, operation, newData, oldData, timestamp: new Date() } as any
+}
+
+// ── Tests ─────────────────────────────────────────────────────────────────────
+
 describe('useFleetSearch', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-
-    // Default: subscription disabled (no event, not loading, no error)
     mockUseFleetSearchSubscription.mockReturnValue([undefined, false, undefined])
   })
 
-  // ── Basic query behaviour ──────────────────────────────────────────────────
+  // ── Base query behaviour ────────────────────────────────────────────────────
 
   describe('base query', () => {
     it('should return [undefined, false, undefined, refetch] while loading', () => {
@@ -139,7 +176,7 @@ describe('useFleetSearch', () => {
     })
 
     it('should provide a stable refetch callback', () => {
-      const mockRefetch = jest.fn()
+      const mockRefetch = pendingRefetch()
       mockUseSearchResultItemsQuery.mockReturnValue({
         data: mockSearchResult,
         loading: false,
@@ -155,7 +192,7 @@ describe('useFleetSearch', () => {
     })
   })
 
-  // ── Subscription disabled ──────────────────────────────────────────────────
+  // ── Subscription enabled / disabled ────────────────────────────────────────
 
   describe('subscription disabled (default)', () => {
     it('should pass undefined to useFleetSearchSubscription when subscriptionEnabled is false', () => {
@@ -184,8 +221,6 @@ describe('useFleetSearch', () => {
       expect(mockUseFleetSearchSubscription).toHaveBeenCalledWith(undefined)
     })
   })
-
-  // ── Subscription enabled ───────────────────────────────────────────────────
 
   describe('subscription enabled', () => {
     it('should pass input to useFleetSearchSubscription when subscriptionEnabled is true', () => {
@@ -235,277 +270,549 @@ describe('useFleetSearch', () => {
     })
   })
 
-  // ── Subscription event patching ────────────────────────────────────────────
+  // ── Mode: unbounded (no limit / offset) ────────────────────────────────────
 
-  describe('INSERT event', () => {
+  describe('unbounded mode — INSERT', () => {
     it('should append a new resource on INSERT', () => {
       const existingItem = { ...mockSearchItem, name: 'existing-pod', _uid: 'test-cluster/uid-existing' }
       const newItem = { ...mockSearchItem, name: 'new-pod', _uid: 'test-cluster/uid-new' }
-      const insertEvent = {
-        uid: 'test-cluster/uid-new',
-        operation: 'INSERT',
-        newData: newItem,
-        oldData: null,
-        timestamp: new Date(),
-      }
 
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: { searchResult: [{ items: [existingItem] }] },
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-      mockUseFleetSearchSubscription.mockReturnValue([insertEvent as any, false, undefined])
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([existingItem]))
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('INSERT', 'test-cluster/uid-new', newItem),
+        false,
+        undefined,
+      ])
 
       const { result } = renderHook(() => useFleetSearch(mockInput, true))
 
-      const [data] = result.current
-      expect(data).toHaveLength(2)
-      expect(data!.map((r) => r.metadata?.name)).toContain('new-pod')
+      expect(result.current[0]).toHaveLength(2)
+      expect(result.current[0]!.map((r) => r.metadata?.name)).toContain('new-pod')
     })
 
     it('should not duplicate on INSERT if uid already exists', () => {
       const item = { ...mockSearchItem, _uid: 'test-cluster/uid-1' }
-      const insertEvent = {
-        uid: 'test-cluster/uid-1',
-        operation: 'INSERT',
-        newData: item,
-        oldData: null,
-        timestamp: new Date(),
-      }
 
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: { searchResult: [{ items: [item] }] },
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-      mockUseFleetSearchSubscription.mockReturnValue([insertEvent as any, false, undefined])
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([item]))
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('INSERT', 'test-cluster/uid-1', item),
+        false,
+        undefined,
+      ])
 
       const { result } = renderHook(() => useFleetSearch(mockInput, true))
 
-      const [data] = result.current
-      expect(data).toHaveLength(1)
+      expect(result.current[0]).toHaveLength(1)
     })
 
     it('should insert at the correct sorted position when orderBy is set', () => {
       const appleItem = { ...mockSearchItem, name: 'apple', _uid: 'test-cluster/uid-apple' }
       const mangoItem = { ...mockSearchItem, name: 'mango', _uid: 'test-cluster/uid-mango' }
       const figItem = { ...mockSearchItem, name: 'fig', _uid: 'test-cluster/uid-fig' }
-      const insertEvent = {
-        uid: 'test-cluster/uid-fig',
-        operation: 'INSERT',
-        newData: figItem,
-        oldData: null,
-        timestamp: new Date(),
-      }
+      // No limit — unbounded mode even with orderBy
       const inputWithOrderBy: SearchInput = { ...mockInput, orderBy: 'name asc' }
 
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: { searchResult: [{ items: [appleItem, mangoItem] }] },
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-      mockUseFleetSearchSubscription.mockReturnValue([insertEvent as any, false, undefined])
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([appleItem, mangoItem]))
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('INSERT', 'test-cluster/uid-fig', figItem),
+        false,
+        undefined,
+      ])
 
       const { result } = renderHook(() => useFleetSearch(inputWithOrderBy, true))
 
-      const [data] = result.current
-      expect(data).toHaveLength(3)
-      expect(data!.map((r) => r.metadata?.name)).toEqual(['apple', 'fig', 'mango'])
-    })
-
-    it('should drop the last item when an INSERT causes the page to exceed its limit', () => {
-      const appleItem = { ...mockSearchItem, name: 'apple', _uid: 'test-cluster/uid-apple' }
-      const mangoItem = { ...mockSearchItem, name: 'mango', _uid: 'test-cluster/uid-mango' }
-      const figItem = { ...mockSearchItem, name: 'fig', _uid: 'test-cluster/uid-fig' }
-      const insertEvent = {
-        uid: 'test-cluster/uid-fig',
-        operation: 'INSERT',
-        newData: figItem,
-        oldData: null,
-        timestamp: new Date(),
-      }
-      // limit: 2 means at most 2 items should be kept on the page
-      const inputWithLimit: SearchInput = { ...mockInput, limit: 2, orderBy: 'name asc' }
-
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: { searchResult: [{ items: [appleItem, mangoItem] }] },
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-      mockUseFleetSearchSubscription.mockReturnValue([insertEvent as any, false, undefined])
-
-      const { result } = renderHook(() => useFleetSearch(inputWithLimit, true))
-
-      const [data] = result.current
-      // 'fig' sorts between 'apple' and 'mango'; 'mango' is bumped off the page
-      expect(data).toHaveLength(2)
-      expect(data!.map((r) => r.metadata?.name)).toEqual(['apple', 'fig'])
+      expect(result.current[0]).toHaveLength(3)
+      expect(result.current[0]!.map((r) => r.metadata?.name)).toEqual(['apple', 'fig', 'mango'])
     })
   })
 
-  describe('UPDATE event', () => {
-    it('should merge updated fields on UPDATE — e.g. adding a label', () => {
-      const originalItem = { ...mockSearchItem, _uid: 'test-cluster/uid-1' }
-      // Simulate a label being added: label field uses "key=value" format
-      const updatedItem = { ...mockSearchItem, _uid: 'test-cluster/uid-1', label: 'abc=123' }
-      const updateEvent = {
-        uid: 'test-cluster/uid-1',
-        operation: 'UPDATE',
-        newData: updatedItem,
-        oldData: originalItem,
-        timestamp: new Date(),
-      }
-
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: { searchResult: [{ items: [originalItem] }] },
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-      mockUseFleetSearchSubscription.mockReturnValue([updateEvent as any, false, undefined])
-
-      const { result } = renderHook(() => useFleetSearch(mockInput, true))
-
-      const [data] = result.current
-      expect(data).toHaveLength(1)
-      // Name is unchanged (K8s names are immutable)
-      expect(data![0].metadata?.name).toBe('test-pod')
-      // New label should be present after conversion
-      expect(data![0].metadata?.labels).toEqual({ abc: '123' })
-    })
-
-    it('should re-sort the page after an UPDATE when orderBy is set', () => {
-      // Use `status` as the sort field — it can legitimately change (e.g. Pending → Running)
+  describe('unbounded mode — UPDATE', () => {
+    it('should update fields in place on UPDATE without re-sorting', () => {
+      // Use `status` as the sort field — it can legitimately change
       const pendingItem = { ...mockSearchItem, name: 'pod-a', status: 'Pending', _uid: 'test-cluster/uid-a' }
       const runningItem = { ...mockSearchItem, name: 'pod-b', status: 'Running', _uid: 'test-cluster/uid-b' }
-      // pod-a transitions from Pending to Terminated, which sorts after Running
+      // pod-a transitions to Terminated and gains a label; with re-sort it would move to index 1,
+      // but the spec says UPDATE patches in place without re-sorting.
       const updatedItem = { ...pendingItem, status: 'Terminated', label: 'abc=123' }
-      const updateEvent = {
-        uid: 'test-cluster/uid-a',
-        operation: 'UPDATE',
-        newData: updatedItem,
-        oldData: pendingItem,
-        timestamp: new Date(),
-      }
       const inputWithOrderBy: SearchInput = { ...mockInput, orderBy: 'status asc' }
 
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: { searchResult: [{ items: [pendingItem, runningItem] }] },
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-      mockUseFleetSearchSubscription.mockReturnValue([updateEvent as any, false, undefined])
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([pendingItem, runningItem]))
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('UPDATE', 'test-cluster/uid-a', updatedItem, pendingItem),
+        false,
+        undefined,
+      ])
 
       const { result } = renderHook(() => useFleetSearch(inputWithOrderBy, true))
 
-      const [data] = result.current
-      expect(data).toHaveLength(2)
-      // 'Running' < 'Terminated' alphabetically → pod-b sorts first
-      expect(data![0].metadata?.name).toBe('pod-b')
-      expect(data![1].metadata?.name).toBe('pod-a')
-      // Confirm the label was also applied to pod-a
-      expect(data![1].metadata?.labels).toEqual({ abc: '123' })
+      expect(result.current[0]).toHaveLength(2)
+      // pod-a stays at position 0 — no re-sort
+      expect(result.current[0]![0].metadata?.name).toBe('pod-a')
+      expect(result.current[0]![1].metadata?.name).toBe('pod-b')
+      // New label applied
+      expect(result.current[0]![0].metadata?.labels).toEqual({ abc: '123' })
+    })
+
+    it('should merge updated fields on UPDATE — e.g. adding a label', () => {
+      const originalItem = { ...mockSearchItem, _uid: 'test-cluster/uid-1' }
+      const updatedItem = { ...mockSearchItem, _uid: 'test-cluster/uid-1', label: 'abc=123' }
+
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([originalItem]))
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('UPDATE', 'test-cluster/uid-1', updatedItem, originalItem),
+        false,
+        undefined,
+      ])
+
+      const { result } = renderHook(() => useFleetSearch(mockInput, true))
+
+      expect(result.current[0]).toHaveLength(1)
+      expect(result.current[0]![0].metadata?.name).toBe('test-pod')
+      expect(result.current[0]![0].metadata?.labels).toEqual({ abc: '123' })
     })
   })
 
-  describe('DELETE event', () => {
+  describe('unbounded mode — DELETE', () => {
     it('should remove the matching resource on DELETE', () => {
       const item = { ...mockSearchItem, _uid: 'test-cluster/uid-1' }
-      const deleteEvent = {
-        uid: 'test-cluster/uid-1',
-        operation: 'DELETE',
-        newData: null,
-        oldData: item,
-        timestamp: new Date(),
-      }
 
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: { searchResult: [{ items: [item] }] },
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-      mockUseFleetSearchSubscription.mockReturnValue([deleteEvent as any, false, undefined])
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([item]))
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('DELETE', 'test-cluster/uid-1', null, item),
+        false,
+        undefined,
+      ])
 
       const { result } = renderHook(() => useFleetSearch(mockInput, true))
 
-      const [data] = result.current
-      expect(data).toHaveLength(0)
+      expect(result.current[0]).toHaveLength(0)
     })
 
-    it('should be a no-op DELETE when uid does not match any resource', () => {
+    it('should be a no-op on DELETE when uid does not match any resource', () => {
       const item = { ...mockSearchItem, _uid: 'test-cluster/uid-1' }
-      const deleteEvent = {
-        uid: 'uid-nonexistent',
-        operation: 'DELETE',
-        newData: null,
-        oldData: null,
-        timestamp: new Date(),
-      }
 
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: { searchResult: [{ items: [item] }] },
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-      mockUseFleetSearchSubscription.mockReturnValue([deleteEvent as any, false, undefined])
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([item]))
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('DELETE', 'test-cluster/uid-nonexistent', null, null),
+        false,
+        undefined,
+      ])
 
       const { result } = renderHook(() => useFleetSearch(mockInput, true))
 
-      const [data] = result.current
-      expect(data).toHaveLength(1)
+      expect(result.current[0]).toHaveLength(1)
     })
   })
 
-  // ── subscriptionEnabled toggle ────────────────────────────────────────────
+  // ── Mode: paginated-unordered (limit/offset, no orderBy) ───────────────────
+
+  describe('paginated-unordered mode', () => {
+    const paginatedInput: SearchInput = { ...mockInput, limit: 10 }
+
+    it('should trigger a refetch on INSERT', () => {
+      const mockRefetch = pendingRefetch()
+      const existingItem = { ...mockSearchItem, _uid: 'test-cluster/uid-1' }
+      const newItem = { ...mockSearchItem, name: 'new-pod', _uid: 'test-cluster/uid-new' }
+
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([existingItem], mockRefetch))
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('INSERT', 'test-cluster/uid-new', newItem),
+        false,
+        undefined,
+      ])
+
+      renderHook(() => useFleetSearch(paginatedInput, true))
+
+      expect(mockRefetch).toHaveBeenCalledTimes(1)
+    })
+
+    it('should trigger a refetch on DELETE', () => {
+      const mockRefetch = pendingRefetch()
+      const item = { ...mockSearchItem, _uid: 'test-cluster/uid-1' }
+
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([item], mockRefetch))
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('DELETE', 'test-cluster/uid-1', null, item),
+        false,
+        undefined,
+      ])
+
+      renderHook(() => useFleetSearch(paginatedInput, true))
+
+      expect(mockRefetch).toHaveBeenCalledTimes(1)
+    })
+
+    it('should patch in place on UPDATE without refetching', () => {
+      const mockRefetch = pendingRefetch()
+      const originalItem = { ...mockSearchItem, _uid: 'test-cluster/uid-1' }
+      const updatedItem = { ...mockSearchItem, _uid: 'test-cluster/uid-1', label: 'abc=123' }
+
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([originalItem], mockRefetch))
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('UPDATE', 'test-cluster/uid-1', updatedItem, originalItem),
+        false,
+        undefined,
+      ])
+
+      const { result } = renderHook(() => useFleetSearch(paginatedInput, true))
+
+      expect(mockRefetch).not.toHaveBeenCalled()
+      expect(result.current[0]).toHaveLength(1)
+      expect(result.current[0]![0].metadata?.labels).toEqual({ abc: '123' })
+    })
+  })
+
+  // ── Mode: paginated-ordered (limit + orderBy) ───────────────────────────────
+
+  describe('paginated-ordered mode — INSERT', () => {
+    const orderedInput: SearchInput = { ...mockInput, limit: 2, orderBy: 'name asc' }
+    const appleItem = { ...mockSearchItem, name: 'apple', _uid: 'test-cluster/uid-apple' }
+    const mangoItem = { ...mockSearchItem, name: 'mango', _uid: 'test-cluster/uid-mango' }
+
+    it('should trigger a refetch when new item sorts at or before the first item', () => {
+      const mockRefetch = pendingRefetch()
+      // 'aaa' < 'apple' → before first → refetch
+      const newItem = { ...mockSearchItem, name: 'aaa', _uid: 'test-cluster/uid-aaa' }
+
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([appleItem, mangoItem], mockRefetch))
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('INSERT', 'test-cluster/uid-aaa', newItem),
+        false,
+        undefined,
+      ])
+
+      renderHook(() => useFleetSearch(orderedInput, true))
+
+      expect(mockRefetch).toHaveBeenCalledTimes(1)
+    })
+
+    it('should insert locally and drop the last item when new item sorts strictly between first and last', () => {
+      // 'apple' < 'fig' < 'mango' → between → local insert + drop last
+      const figItem = { ...mockSearchItem, name: 'fig', _uid: 'test-cluster/uid-fig' }
+
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([appleItem, mangoItem]))
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('INSERT', 'test-cluster/uid-fig', figItem),
+        false,
+        undefined,
+      ])
+
+      const { result } = renderHook(() => useFleetSearch(orderedInput, true))
+
+      expect(result.current[0]).toHaveLength(2)
+      expect(result.current[0]!.map((r) => r.metadata?.name)).toEqual(['apple', 'fig'])
+    })
+
+    it('should trigger a refetch when new item ties with the last item (server tie-breaking unknown)', () => {
+      const mockRefetch = pendingRefetch()
+      // 'mango' === last item 'mango' → tied → refetch
+      const tiedItem = { ...mockSearchItem, name: 'mango', _uid: 'test-cluster/uid-mango2' }
+
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([appleItem, mangoItem], mockRefetch))
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('INSERT', 'test-cluster/uid-mango2', tiedItem),
+        false,
+        undefined,
+      ])
+
+      renderHook(() => useFleetSearch(orderedInput, true))
+
+      expect(mockRefetch).toHaveBeenCalledTimes(1)
+    })
+
+    it('should ignore an INSERT that sorts after the last item on the page', () => {
+      // 'zebra' > 'mango' → after last → not on this page → ignore
+      const zebraItem = { ...mockSearchItem, name: 'zebra', _uid: 'test-cluster/uid-zebra' }
+
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([appleItem, mangoItem]))
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('INSERT', 'test-cluster/uid-zebra', zebraItem),
+        false,
+        undefined,
+      ])
+
+      const { result } = renderHook(() => useFleetSearch(orderedInput, true))
+
+      // Page is unchanged
+      expect(result.current[0]).toHaveLength(2)
+      expect(result.current[0]!.map((r) => r.metadata?.name)).toEqual(['apple', 'mango'])
+    })
+  })
+
+  describe('paginated-ordered mode — DELETE', () => {
+    const orderedInput: SearchInput = { ...mockInput, limit: 2, orderBy: 'name asc' }
+    const appleItem = { ...mockSearchItem, name: 'apple', _uid: 'test-cluster/uid-apple' }
+    const mangoItem = { ...mockSearchItem, name: 'mango', _uid: 'test-cluster/uid-mango' }
+
+    it('should trigger a refetch when the deleted item is on the current page', () => {
+      const mockRefetch = pendingRefetch()
+
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([appleItem, mangoItem], mockRefetch))
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('DELETE', 'test-cluster/uid-apple', null, appleItem),
+        false,
+        undefined,
+      ])
+
+      renderHook(() => useFleetSearch(orderedInput, true))
+
+      expect(mockRefetch).toHaveBeenCalledTimes(1)
+    })
+
+    it('should trigger a refetch when deleted item was on an earlier page (sorts ≤ last item)', () => {
+      const mockRefetch = pendingRefetch()
+      // 'cherry' is not on this page but sorts before 'mango' — its removal shifts our page
+      const cherryItem = { ...mockSearchItem, name: 'cherry', _uid: 'test-cluster/uid-cherry' }
+
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([appleItem, mangoItem], mockRefetch))
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('DELETE', 'test-cluster/uid-cherry', null, cherryItem),
+        false,
+        undefined,
+      ])
+
+      renderHook(() => useFleetSearch(orderedInput, true))
+
+      expect(mockRefetch).toHaveBeenCalledTimes(1)
+    })
+
+    it('should ignore a DELETE for an item that sorts after the last item on the page', () => {
+      // 'zebra' > 'mango' → on a later page → deletion has no effect on this page
+      const zebraItem = { ...mockSearchItem, name: 'zebra', _uid: 'test-cluster/uid-zebra' }
+
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([appleItem, mangoItem]))
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('DELETE', 'test-cluster/uid-zebra', null, zebraItem),
+        false,
+        undefined,
+      ])
+
+      const { result } = renderHook(() => useFleetSearch(orderedInput, true))
+
+      expect(result.current[0]).toHaveLength(2)
+      expect(result.current[0]!.map((r) => r.metadata?.name)).toEqual(['apple', 'mango'])
+    })
+  })
+
+  describe('paginated-ordered mode — UPDATE', () => {
+    it('should patch in place on UPDATE without refetching', () => {
+      const mockRefetch = pendingRefetch()
+      const orderedInput: SearchInput = { ...mockInput, limit: 2, orderBy: 'name asc' }
+      const item = { ...mockSearchItem, _uid: 'test-cluster/uid-1' }
+      const updatedItem = { ...item, label: 'abc=123' }
+
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([item], mockRefetch))
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('UPDATE', 'test-cluster/uid-1', updatedItem, item),
+        false,
+        undefined,
+      ])
+
+      const { result } = renderHook(() => useFleetSearch(orderedInput, true))
+
+      expect(mockRefetch).not.toHaveBeenCalled()
+      expect(result.current[0]).toHaveLength(1)
+      expect(result.current[0]![0].metadata?.labels).toEqual({ abc: '123' })
+    })
+  })
+
+  // ── Refetch queue ───────────────────────────────────────────────────────────
+
+  describe('refetch queue', () => {
+    it('should queue events during a refetch and apply non-refetch events after refetch completes', async () => {
+      const existingItem = { ...mockSearchItem, name: 'pod-a', _uid: 'test-cluster/uid-a' }
+      // Paginated-unordered: INSERT triggers refetch
+      const paginatedInput: SearchInput = { ...mockInput, limit: 10 }
+
+      // Refetch completion is driven by the Promise `refetch()` returns — capture
+      // the resolver so the test can control exactly when it "completes", after
+      // the queued UPDATE event has already arrived.
+      let resolveRefetch: (value: RefetchResult) => void = () => {}
+      const mockRefetch: RefetchMock = jest.fn(
+        () =>
+          new Promise<RefetchResult>((resolve) => {
+            resolveRefetch = resolve
+          })
+      )
+
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([existingItem], mockRefetch))
+      // INSERT → triggers refetch
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('INSERT', 'test-cluster/uid-b', { ...mockSearchItem, name: 'pod-b', _uid: 'test-cluster/uid-b' }),
+        false,
+        undefined,
+      ])
+
+      const { result, rerender } = renderHook(() => useFleetSearch(paginatedInput, true))
+
+      expect(mockRefetch).toHaveBeenCalledTimes(1)
+
+      // UPDATE arrives while refetch is in flight → should be queued
+      const updateEvent = makeEvent('UPDATE', 'test-cluster/uid-a', { ...existingItem, label: 'abc=123' }, existingItem)
+      mockUseFleetSearchSubscription.mockReturnValue([updateEvent, false, undefined])
+      act(() => {
+        rerender()
+      })
+
+      // Refetch resolves with fresh data (both pods) — note this is delivered
+      // via the Promise, not by changing the mocked hook's return value, since
+      // Apollo may keep the same `data` reference when a result is deeply equal
+      // to what's cached, in which case a `queryData` re-render would never fire.
+      const freshNewItem = { ...mockSearchItem, name: 'pod-b', _uid: 'test-cluster/uid-b' }
+      await act(async () => {
+        resolveRefetch({ data: { searchResult: [{ items: [existingItem, freshNewItem] }] } })
+      })
+
+      // Fresh data (2 items) + queued UPDATE applied → pod-a now has the label
+      expect(result.current[0]).toHaveLength(2)
+      const podA = result.current[0]!.find((r) => r.metadata?.name === 'pod-a')
+      expect(podA?.metadata?.labels).toEqual({ abc: '123' })
+    })
+
+    it('should trigger a second refetch when a queued event requires one', async () => {
+      const existingItem = { ...mockSearchItem, _uid: 'test-cluster/uid-a' }
+      const paginatedInput: SearchInput = { ...mockInput, limit: 10 }
+
+      let resolveFirstRefetch: (value: RefetchResult) => void = () => {}
+      const mockRefetch: RefetchMock = jest
+        .fn<Promise<RefetchResult>, [Partial<SearchResultItemsQueryVariables>?]>()
+        .mockImplementationOnce(
+          () =>
+            new Promise<RefetchResult>((resolve) => {
+              resolveFirstRefetch = resolve
+            })
+        )
+        // The second refetch (triggered by the queued event) is only checked for
+        // call count, so it can stay pending indefinitely.
+        .mockReturnValue(new Promise(() => {}))
+
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([existingItem], mockRefetch))
+      // First INSERT → triggers first refetch
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('INSERT', 'test-cluster/uid-b', { ...mockSearchItem, _uid: 'test-cluster/uid-b' }),
+        false,
+        undefined,
+      ])
+
+      const { rerender } = renderHook(() => useFleetSearch(paginatedInput, true))
+
+      expect(mockRefetch).toHaveBeenCalledTimes(1)
+
+      // Second INSERT arrives while first refetch is in flight → queued
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('INSERT', 'test-cluster/uid-c', { ...mockSearchItem, _uid: 'test-cluster/uid-c' }),
+        false,
+        undefined,
+      ])
+      act(() => {
+        rerender()
+      })
+
+      // First refetch resolves without the queued item — the queued INSERT
+      // (paginated-unordered) still requires a refetch, so a second one is chained.
+      const freshItem = { ...mockSearchItem, name: 'pod-b', _uid: 'test-cluster/uid-b' }
+      await act(async () => {
+        resolveFirstRefetch({ data: { searchResult: [{ items: [existingItem, freshItem] }] } })
+      })
+
+      expect(mockRefetch).toHaveBeenCalledTimes(2)
+    })
+
+    it('reflects a DELETE after refetch even when the resolved data is identical to what was already cached', async () => {
+      // Regression test: page starts with 4 items (below limit=5). An item is
+      // inserted into the last slot purely as a local patch (the base query
+      // never observes it, since no refetch is needed for an in-page insert).
+      // Deleting that item then triggers a refetch whose result is byte-for-byte
+      // identical to what was cached *before* the insert. Because completion is
+      // driven by the Promise from `refetch()` rather than by `queryData`
+      // reference identity, the deletion must still be reflected even if Apollo
+      // would otherwise skip a re-render for "unchanged" data.
+      const a = { ...mockSearchItem, name: 'a', _uid: 'test-cluster/uid-a' }
+      const b = { ...mockSearchItem, name: 'b', _uid: 'test-cluster/uid-b' }
+      const c = { ...mockSearchItem, name: 'c', _uid: 'test-cluster/uid-c' }
+      const d = { ...mockSearchItem, name: 'd', _uid: 'test-cluster/uid-d' }
+      const orderedInput: SearchInput = { ...mockInput, limit: 5, orderBy: 'name asc' }
+
+      let resolveRefetch: (value: RefetchResult) => void = () => {}
+      const mockRefetch: RefetchMock = jest.fn(
+        () =>
+          new Promise<RefetchResult>((resolve) => {
+            resolveRefetch = resolve
+          })
+      )
+
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([a, b, c, d], mockRefetch))
+      // INSERT 'e' — sorts after 'd' (the last item); page has room so it's
+      // applied as a local patch without ever refetching the base query.
+      const eItem = { ...mockSearchItem, name: 'e', _uid: 'test-cluster/uid-e' }
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('INSERT', 'test-cluster/uid-e', eItem),
+        false,
+        undefined,
+      ])
+
+      const { result, rerender } = renderHook(() => useFleetSearch(orderedInput, true))
+
+      expect(result.current[0]!.map((r) => r.metadata?.name)).toEqual(['a', 'b', 'c', 'd', 'e'])
+      expect(mockRefetch).not.toHaveBeenCalled()
+
+      // DELETE 'e' — it's on the page, so a refetch is triggered.
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('DELETE', 'test-cluster/uid-e', null, eItem),
+        false,
+        undefined,
+      ])
+      act(() => {
+        rerender()
+      })
+
+      expect(mockRefetch).toHaveBeenCalledTimes(1)
+
+      // Refetch resolves with the original 4 items — identical to what the base
+      // query already had cached before the insert.
+      await act(async () => {
+        resolveRefetch({ data: { searchResult: [{ items: [a, b, c, d] }] } })
+      })
+
+      expect(result.current[0]!.map((r) => r.metadata?.name)).toEqual(['a', 'b', 'c', 'd'])
+    })
+  })
+
+  // ── subscriptionEnabled toggle ──────────────────────────────────────────────
 
   describe('subscriptionEnabled toggle', () => {
     it('should reset to query data when subscriptionEnabled changes from true to false', () => {
       const item = { ...mockSearchItem, _uid: 'test-cluster/uid-1' }
-      // Provide an INSERT event so local state diverges from query data
-      const insertEvent = {
-        uid: 'test-cluster/uid-new',
-        operation: 'INSERT',
-        newData: { ...mockSearchItem, name: 'extra-pod', _uid: 'test-cluster/uid-new' },
-        oldData: null,
-        timestamp: new Date(),
-      }
 
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: { searchResult: [{ items: [item] }] },
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-      mockUseFleetSearchSubscription.mockReturnValue([insertEvent as any, false, undefined])
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([item]))
+      // INSERT event makes local state diverge
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('INSERT', 'test-cluster/uid-new', {
+          ...mockSearchItem,
+          name: 'extra-pod',
+          _uid: 'test-cluster/uid-new',
+        }),
+        false,
+        undefined,
+      ])
 
       const { result, rerender } = renderHook(
         ({ enabled }: { enabled: boolean }) => useFleetSearch(mockInput, enabled),
         { initialProps: { enabled: true } }
       )
 
-      // With subscription on, we should have 2 items (original + inserted)
       expect(result.current[0]).toHaveLength(2)
 
-      // Disable subscription — subscription hook now returns no event
       mockUseFleetSearchSubscription.mockReturnValue([undefined, false, undefined])
-
       act(() => {
         rerender({ enabled: false })
       })
 
-      // Should reset to the base query data (1 item)
       expect(result.current[0]).toHaveLength(1)
     })
   })
 
-  // ── Pagination passthrough ────────────────────────────────────────────────
+  // ── Pagination passthrough ──────────────────────────────────────────────────
 
   describe('pagination', () => {
     it('should pass limit and offset through to the query unchanged', () => {
