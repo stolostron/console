@@ -16,9 +16,10 @@ import type {
 import { fetchRetry, getBackendUrl, isRequestAbortedError } from '~/resources/utils'
 import { fleetLogsRequest } from '~/resources/utils/fleet-logs-request'
 import { useRecoilValue, useSharedAtoms } from '~/shared-recoil'
-import { AcmAlert, AcmLoadingPage, AcmModal, AcmSelect } from '~/ui-components'
+import { AcmAlert, AcmButton, AcmLoadingPage, AcmModal, AcmSelect } from '~/ui-components'
 import { createResourceURL } from '../helpers/diagram-helpers'
 import type { ResourceAction } from '../types'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 
 export interface ILogsModalProps {
   close: () => void
@@ -67,19 +68,17 @@ function LogsModalContent({ close, node, processActionLink, hubClusterName }: Re
     return (
       <div>
         <div className="spacer" />
-        <button
-          type="button"
-          className="link sectionLabel"
+        <AcmButton
+          variant="link"
+          isInline
           id="linkForNodeAction"
+          icon={<ExternalLinkAltIcon />}
           onClick={processLink}
           style={{ padding: '10px' }}
         >
           {isLogURL && t('View logs in Search details')}
           {!isLogURL && t('View YAML in Search details')}
-          <svg width="12px" height="12px" style={{ marginLeft: '8px', stroke: '#0066CC' }}>
-            <use href="#drawerShapes_carbonLaunch" className="label-icon" />
-          </svg>
-        </button>
+        </AcmButton>
         <div className="spacer" />
       </div>
     )

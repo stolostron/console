@@ -114,8 +114,8 @@ export const createSuggestsPlacement = (
         {
           title: t('If specifying a ClusterSet, make sure it is bound to the gitops operator placement namespace'),
         },
-        { title: t('If you want to deploy to all clusters, remove the clusterSets') },
-        { title: t('Current clustersets'), content: currentYaml },
+        { title: t('If you want to deploy to all clusters, remove the ClusterSets') },
+        { title: t('Current ClusterSets'), content: currentYaml },
       ]
       createTopologyErrorAlert(
         suggestions,

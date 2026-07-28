@@ -176,7 +176,7 @@ const checkNonRunningArgoCDPods = async (
         }
 
         const alert = createTopologyAlert(
-          t('{{cluster}} {{reason}}', {
+          t('{{reason}} on cluster {{cluster}}', {
             reason,
             cluster: pod.cluster,
           }),
