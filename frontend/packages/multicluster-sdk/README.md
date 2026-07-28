@@ -942,7 +942,7 @@ const [resources, loaded, error, refetch] = useFleetSearch(
 ```
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearch.ts#L119)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearch.ts#L246)
 
 ### :gear: useFleetSearchPoll
 
