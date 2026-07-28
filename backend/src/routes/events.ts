@@ -268,6 +268,7 @@ const definitions: IWatchOptions[] = [
   { kind: 'ManagedClusterSet', apiVersion: 'cluster.open-cluster-management.io/v1beta2' },
   { kind: 'ClusterCurator', apiVersion: 'cluster.open-cluster-management.io/v1beta1' },
   { kind: 'Subscription', apiVersion: 'operators.coreos.com/v1alpha1' },
+  { kind: 'ClusterExtension', apiVersion: 'olm.operatorframework.io/v1' },
   { kind: 'DiscoveredCluster', apiVersion: 'discovery.open-cluster-management.io/v1' },
   { kind: 'DiscoveryConfig', apiVersion: 'discovery.open-cluster-management.io/v1' },
   { kind: 'AgentClusterInstall', apiVersion: 'extensions.hive.openshift.io/v1beta1' },

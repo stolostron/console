@@ -1,5 +1,4 @@
 /* Copyright Contributors to the Open Cluster Management project */
-
 import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import get from 'get-value'
 import { jsonRequest } from '../lib/json-request'
@@ -29,6 +28,58 @@ function isOperatorCheckRequest(value: unknown): value is OperatorCheckRequest {
   return false
 }
 
+function getSubscriptionInstall(
+  items: unknown[],
+  operator: SupportedOperator
+): { installed: boolean; version?: string } {
+  const subscription = items.find(
+    (item: unknown) => typeof item === 'object' && get(item, 'spec.name') === operator
+  ) as object | undefined
+  const subscriptionConditions = get(subscription, 'status.conditions') as unknown[]
+  if (
+    Array.isArray(subscriptionConditions) &&
+    subscriptionConditions?.find(
+      (condition: unknown) =>
+        typeof condition === 'object' &&
+        get(condition, 'type') === 'CatalogSourcesUnhealthy' &&
+        get(condition, 'status') === 'False'
+    )
+  ) {
+    return {
+      installed: true,
+      version: get(subscription, 'status.installedCSV') as string | undefined,
+    }
+  }
+  return { installed: false }
+}
+
+function getClusterExtensionInstall(
+  items: unknown[],
+  operator: SupportedOperator
+): { installed: boolean; version?: string } {
+  const clusterExtension = items.find(
+    (item: unknown) => typeof item === 'object' && get(item, 'spec.source.catalog.packageName') === operator
+  ) as object | undefined
+  const conditions = get(clusterExtension, 'status.conditions') as unknown[]
+  if (
+    Array.isArray(conditions) &&
+    conditions.find(
+      (condition: unknown) =>
+        typeof condition === 'object' && get(condition, 'type') === 'Installed' && get(condition, 'status') === 'True'
+    )
+  ) {
+    return {
+      installed: true,
+      version: get(clusterExtension, 'status.install.bundle.version') as string | undefined,
+    }
+  }
+  return { installed: false }
+}
+
+function isResourceList(response: unknown): response is { items: unknown[] } {
+  return typeof response === 'object' && response !== null && 'items' in response && Array.isArray(response.items)
+}
+
 export function operatorCheck(req: Http2ServerRequest, res: Http2ServerResponse): void {
   const errorCatcher = catchInternalServerError(res)
   getAuthenticatedToken(req, res)
@@ -50,40 +101,45 @@ export function operatorCheck(req: Http2ServerRequest, res: Http2ServerResponse)
 
         if (isOperatorCheckRequest(operatorCheckRequest)) {
           const operator = operatorCheckRequest.operator
-          jsonRequest<unknown>(
-            `${process.env.CLUSTER_API_URL}/apis/operators.coreos.com/v1alpha1/subscriptions`,
-            serviceAccountToken
-          )
-            .then((response) => {
+          const clusterApiUrl = process.env.CLUSTER_API_URL
+          jsonRequest<unknown>(`${clusterApiUrl}/apis/operators.coreos.com/v1alpha1/subscriptions`, serviceAccountToken)
+            .then((subscriptionResponse) => {
               let installed = false
-              let version
-              if (typeof response === 'object' && 'items' in response && Array.isArray(response.items)) {
-                const items = response.items as unknown[]
-                const subscription = items.find(
-                  (item: unknown) => typeof item === 'object' && get(item, 'spec.name') === operator
-                ) as object | undefined
-                const subscriptionConditions = get(subscription, 'status.conditions') as unknown[]
-                if (
-                  Array.isArray(subscriptionConditions) &&
-                  subscriptionConditions?.find(
-                    (condition: unknown) =>
-                      typeof condition === 'object' &&
-                      get(condition, 'type') === 'CatalogSourcesUnhealthy' &&
-                      get(condition, 'status') === 'False'
-                  )
-                ) {
-                  installed = true
-                  version = get(subscription, 'status.installedCSV') as string | undefined
-                }
+              let version: string | undefined
+              if (isResourceList(subscriptionResponse)) {
+                ;({ installed, version } = getSubscriptionInstall(subscriptionResponse.items, operator))
               }
 
-              const responsePayload: OperatorCheckResponse = {
-                operator,
-                installed,
-                version,
+              if (installed) {
+                const responsePayload: OperatorCheckResponse = { operator, installed, version }
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify(responsePayload))
+                return
               }
-              res.setHeader('Content-Type', 'application/json')
-              res.end(JSON.stringify(responsePayload))
+
+              return jsonRequest<unknown>(
+                `${clusterApiUrl}/apis/olm.operatorframework.io/v1/clusterextensions`,
+                serviceAccountToken
+              )
+                .then((clusterExtensionResponse) => {
+                  if (isResourceList(clusterExtensionResponse)) {
+                    ;({ installed, version } = getClusterExtensionInstall(clusterExtensionResponse.items, operator))
+                  }
+                  const responsePayload: OperatorCheckResponse = { operator, installed, version }
+                  res.setHeader('Content-Type', 'application/json')
+                  res.end(JSON.stringify(responsePayload))
+                })
+                .catch((err: unknown) => {
+                  // OLMv1 CRD may not exist on older OpenShift versions — treat as not installed
+                  logger.trace({
+                    msg: 'operatorCheck ClusterExtension query failed; treating as not installed',
+                    operator,
+                    err,
+                  })
+                  const responsePayload: OperatorCheckResponse = { operator, installed: false }
+                  res.setHeader('Content-Type', 'application/json')
+                  res.end(JSON.stringify(responsePayload))
+                })
             })
             .catch(errorCatcher)
         } else {

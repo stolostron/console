@@ -21,6 +21,25 @@ const subscriptionOperators = {
   ],
 }
 
+const clusterExtensions = {
+  items: [
+    {
+      metadata: { name: 'ansible-automation-platform' },
+      spec: {
+        namespace: 'ansible-automation-platform',
+        source: {
+          sourceType: 'Catalog',
+          catalog: { packageName: 'ansible-automation-platform-operator' },
+        },
+      },
+      status: {
+        install: { bundle: { version: '2.5.0' } },
+        conditions: [{ type: 'Installed', status: 'True', reason: 'Succeeded' }],
+      },
+    },
+  ],
+}
+
 describe(`operatorCheck Route`, function () {
   it(`returns valid response with version for installed operator`, async function () {
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200, {
@@ -44,10 +63,59 @@ describe(`operatorCheck Route`, function () {
     nock(process.env.CLUSTER_API_URL)
       .get('/apis/operators.coreos.com/v1alpha1/subscriptions')
       .reply(200, subscriptionOperators)
+    nock(process.env.CLUSTER_API_URL)
+      .get('/apis/olm.operatorframework.io/v1/clusterextensions')
+      .reply(200, { items: [] })
     const res = await request('POST', '/operatorCheck', { operator: 'ansible-automation-platform-operator' })
     expect(res.statusCode).toEqual(200)
     expect(await parseResponseJsonBody(res)).toEqual({
       operator: 'ansible-automation-platform-operator',
+      installed: false,
+    })
+  })
+  it(`returns installed via ClusterExtension when Subscription is missing`, async function () {
+    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200, {
+      status: 200,
+    })
+    nock(process.env.CLUSTER_API_URL).get('/apis/operators.coreos.com/v1alpha1/subscriptions').reply(200, { items: [] })
+    nock(process.env.CLUSTER_API_URL)
+      .get('/apis/olm.operatorframework.io/v1/clusterextensions')
+      .reply(200, clusterExtensions)
+    const res = await request('POST', '/operatorCheck', { operator: 'ansible-automation-platform-operator' })
+    expect(res.statusCode).toEqual(200)
+    expect(await parseResponseJsonBody(res)).toEqual({
+      operator: 'ansible-automation-platform-operator',
+      installed: true,
+      version: '2.5.0',
+    })
+  })
+  it(`prefers Subscription when both Subscription and ClusterExtension are present`, async function () {
+    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200, {
+      status: 200,
+    })
+    nock(process.env.CLUSTER_API_URL)
+      .get('/apis/operators.coreos.com/v1alpha1/subscriptions')
+      .reply(200, subscriptionOperators)
+    const res = await request('POST', '/operatorCheck', { operator: 'openshift-gitops-operator' })
+    expect(res.statusCode).toEqual(200)
+    expect(await parseResponseJsonBody(res)).toEqual({
+      operator: 'openshift-gitops-operator',
+      installed: true,
+      version: 'openshift-gitops-operator.v1.8.2',
+    })
+  })
+  it(`returns not installed when ClusterExtension CRD is missing`, async function () {
+    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200, {
+      status: 200,
+    })
+    nock(process.env.CLUSTER_API_URL).get('/apis/operators.coreos.com/v1alpha1/subscriptions').reply(200, { items: [] })
+    nock(process.env.CLUSTER_API_URL)
+      .get('/apis/olm.operatorframework.io/v1/clusterextensions')
+      .replyWithError('getaddrinfo ENOTFOUND')
+    const res = await request('POST', '/operatorCheck', { operator: 'openshift-gitops-operator' })
+    expect(res.statusCode).toEqual(200)
+    expect(await parseResponseJsonBody(res)).toEqual({
+      operator: 'openshift-gitops-operator',
       installed: false,
     })
   })
