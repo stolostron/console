@@ -58,9 +58,9 @@ describe('createSuggestsPlacement', () => {
 
     expect(alerts).toHaveLength(1)
     expect(alerts[0].description?.bullets?.map((bullet) => bullet.title)).toEqual([
-      'If specify a clusterSet, make sure it is bound to the gitops operator placement namespace',
-      'If you want to deploy to all clusters, remove the clusterSets',
-      'Current clustersets',
+      'If specifying a ClusterSet, make sure it is bound to the gitops operator placement namespace',
+      'If you want to deploy to all clusters, remove the ClusterSets',
+      'Current ClusterSets',
     ])
     expect(alerts[0].actions?.[1].highlightEditorPath).toBe('Placement.spec.clusterSets')
   })
