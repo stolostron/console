@@ -4,7 +4,7 @@ import nock from 'nock'
 
 describe(`search Route`, function () {
   it(`uses search-api in the namespace of the MultiClusterHub`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200, {
+    nock(process.env.CLUSTER_API_URL).head('/api').reply(200, {
       status: 200,
     })
     nock(process.env.CLUSTER_API_URL)
@@ -27,7 +27,7 @@ describe(`search Route`, function () {
     //expect(res.statusCode).toEqual(200)
   })
   it(`uses search-api in namespace of pod if no MultiClusterHub`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200, {
+    nock(process.env.CLUSTER_API_URL).head('/api').reply(200, {
       status: 200,
     })
     nock(process.env.CLUSTER_API_URL).get('/apis/operator.open-cluster-management.io/v1/multiclusterhubs').reply(200, {
