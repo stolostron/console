@@ -111,7 +111,7 @@ function clusterExtensionToSubscriptionOperator(clusterExtension: ClusterExtensi
       name: clusterExtension.metadata?.name ?? packageName,
       namespace: clusterExtension.spec?.namespace ?? clusterExtension.metadata?.namespace,
       labels: {
-        ...(clusterExtension.metadata?.labels ?? {}),
+        ...clusterExtension.metadata?.labels,
         [CLUSTER_EXTENSION_SOURCE_LABEL]: 'ClusterExtension',
       },
     },
