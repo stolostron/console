@@ -10,13 +10,14 @@ import {
 } from './atoms'
 import { Curation } from './resources/cluster-curator'
 import {
-  ClusterExtension,
   CLUSTER_EXTENSION_SOURCE_LABEL,
   getClusterExtensionPackageName,
   getClusterExtensionVersion,
   isClusterExtensionInstalled,
 } from './resources/cluster-extension'
-import { SubscriptionOperator, SubscriptionOperatorApiVersion, SubscriptionOperatorKind } from './resources'
+import type { ClusterExtension } from './resources/cluster-extension'
+import { SubscriptionOperatorApiVersion, SubscriptionOperatorKind } from './resources'
+import type { SubscriptionOperator } from './resources'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { GetRecoilValue, selector } from 'recoil'
 import { unpackProviderConnection } from './resources/provider-connection'

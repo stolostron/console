@@ -2,16 +2,13 @@
 import { snapshot_UNSTABLE } from 'recoil'
 import { clusterExtensionsState, subscriptionOperatorsState } from './atoms'
 import {
-  ClusterExtension,
   ClusterExtensionApiVersion,
   ClusterExtensionKind,
   CLUSTER_EXTENSION_SOURCE_LABEL,
 } from './resources/cluster-extension'
-import {
-  SubscriptionOperator,
-  SubscriptionOperatorApiVersion,
-  SubscriptionOperatorKind,
-} from './resources/subscription-operator'
+import type { ClusterExtension } from './resources/cluster-extension'
+import { SubscriptionOperatorApiVersion, SubscriptionOperatorKind } from './resources/subscription-operator'
+import type { SubscriptionOperator } from './resources/subscription-operator'
 import { gitOpsOperatorSubscriptionsValue, kubevirtOperatorSubscriptionsValue } from './selectors'
 
 const healthyGitOpsSubscription: SubscriptionOperator = {

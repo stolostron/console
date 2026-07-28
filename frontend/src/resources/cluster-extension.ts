@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Metadata } from './metadata'
-import { IResource, IResourceDefinition } from './resource'
+import type { Metadata } from './metadata'
+import type { IResource, IResourceDefinition } from './resource'
 
 export const ClusterExtensionApiVersion = 'olm.operatorframework.io/v1'
 export type ClusterExtensionApiVersionType = 'olm.operatorframework.io/v1'

@@ -28,23 +28,32 @@ function isOperatorCheckRequest(value: unknown): value is OperatorCheckRequest {
   return false
 }
 
+function hasCondition(item: object, type: string, status: string): boolean {
+  const conditions = get(item, 'status.conditions') as unknown[]
+  return (
+    Array.isArray(conditions) &&
+    conditions.some(
+      (condition: unknown) =>
+        typeof condition === 'object' &&
+        condition !== null &&
+        get(condition, 'type') === type &&
+        get(condition, 'status') === status
+    )
+  )
+}
+
 function getSubscriptionInstall(
   items: unknown[],
   operator: SupportedOperator
 ): { installed: boolean; version?: string } {
   const subscription = items.find(
-    (item: unknown) => typeof item === 'object' && get(item, 'spec.name') === operator
+    (item: unknown) =>
+      typeof item === 'object' &&
+      item !== null &&
+      get(item, 'spec.name') === operator &&
+      hasCondition(item, 'CatalogSourcesUnhealthy', 'False')
   ) as object | undefined
-  const subscriptionConditions = get(subscription, 'status.conditions') as unknown[]
-  if (
-    Array.isArray(subscriptionConditions) &&
-    subscriptionConditions?.find(
-      (condition: unknown) =>
-        typeof condition === 'object' &&
-        get(condition, 'type') === 'CatalogSourcesUnhealthy' &&
-        get(condition, 'status') === 'False'
-    )
-  ) {
+  if (subscription) {
     return {
       installed: true,
       version: get(subscription, 'status.installedCSV') as string | undefined,
@@ -58,16 +67,13 @@ function getClusterExtensionInstall(
   operator: SupportedOperator
 ): { installed: boolean; version?: string } {
   const clusterExtension = items.find(
-    (item: unknown) => typeof item === 'object' && get(item, 'spec.source.catalog.packageName') === operator
+    (item: unknown) =>
+      typeof item === 'object' &&
+      item !== null &&
+      get(item, 'spec.source.catalog.packageName') === operator &&
+      hasCondition(item, 'Installed', 'True')
   ) as object | undefined
-  const conditions = get(clusterExtension, 'status.conditions') as unknown[]
-  if (
-    Array.isArray(conditions) &&
-    conditions.find(
-      (condition: unknown) =>
-        typeof condition === 'object' && get(condition, 'type') === 'Installed' && get(condition, 'status') === 'True'
-    )
-  ) {
+  if (clusterExtension) {
     return {
       installed: true,
       version: get(clusterExtension, 'status.install.bundle.version') as string | undefined,

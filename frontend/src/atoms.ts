@@ -60,9 +60,9 @@ import {
   Subscription,
   SubscriptionOperator,
   SubscriptionReport,
-  ClusterExtension,
   User,
 } from './resources'
+import type { ClusterExtension } from './resources'
 
 let atomArrayKey = 0
 function AtomArray<T>() {
