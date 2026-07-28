@@ -338,7 +338,11 @@ export default function DetailsOverviewPage() {
     const obsCont = clusterManagementAddons.filter((cma) => cma.metadata.name === 'observability-controller')
     let grafanaLink = obsCont?.[0]?.metadata?.annotations?.['console.open-cluster-management.io/launch-link']
     if (grafanaLink) {
-      grafanaLink = new URL(grafanaLink).origin
+      try {
+        grafanaLink = new URL(grafanaLink).origin
+      } catch {
+        grafanaLink = undefined
+      }
     }
     if (isObservabilityInstalled && resource) {
       const vmDashboard = configMaps.filter(

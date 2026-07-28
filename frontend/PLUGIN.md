@@ -36,6 +36,12 @@ The default OpenShift Console version is the oldest officially supported by the 
 CONSOLE_VERSION=4.21 npm run plugins
 ```
 
+### Troubleshooting: `Failed to construct 'URL': Invalid URL` overlay
+
+Local plugin mode enables OpenShift Console CSP Report-Only. The console CSP detector compares `blockedURI` values with `new URL(...)`, which throws for CSP tokens such as `""`, `inline`, or `eval`. Webpack-dev-server then shows that host error as a full-screen overlay when opening Monaco-heavy pages (Create Policy, Search YAML, etc.).
+
+Plugin webpack filters that runtime error from the overlay (`frontend/plugins/webpack.plugin.base.ts`). If the overlay still appears, restart `npm run plugins`, then in DevTools → Application → Local Storage for `http://localhost:9000` delete the `console/csp_violations` key and hard-refresh.
+
 ## Running against a local development build of OCP Console
 
 If you need to test against a locally-built OpenShift Console (instead of the container image), use:
