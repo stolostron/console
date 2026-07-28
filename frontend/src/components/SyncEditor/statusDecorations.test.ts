@@ -7,6 +7,7 @@ import {
   isNegativePolarityCondition,
   isTerminatedContainerFailure,
   prepareResourceForYaml,
+  prepareResourcesForYaml,
   getStatusDecorationsFromMappings,
   STATUS_FAILURE_CLASS,
   STATUS_SUCCESS_CLASS,
@@ -121,6 +122,24 @@ describe('prepareResourceForYaml', () => {
       'message',
       'lastTransitionTime',
     ])
+  })
+
+  it('prepareResourcesForYaml maps each resource', () => {
+    const prepared = prepareResourcesForYaml([
+      { kind: 'A', metadata: { name: 'a' } },
+      { kind: 'B', metadata: { name: 'b' } },
+    ]) as { kind: string }[]
+    expect(prepared).toHaveLength(2)
+    expect(prepared[0].kind).toBe('A')
+    expect(prepared[1].kind).toBe('B')
+  })
+
+  it('skips dangerous object keys while reordering', () => {
+    const prepared = prepareResourceForYaml(
+      JSON.parse('{"kind":"ConfigMap","metadata":{"name":"cm"},"status":{"__proto__":{"polluted":true},"replicas":1}}')
+    ) as { status: Record<string, unknown> }
+    expect(Object.prototype.hasOwnProperty.call(prepared.status, '__proto__')).toBe(false)
+    expect(prepared.status.replicas).toBe(1)
   })
 })
 
@@ -244,6 +263,53 @@ describe('getStatusDecorationsFromMappings', () => {
     }
     const decorations = getStatusDecorationsFromMappings(monaco, mappings)
     expect(decorations.map((d) => d.options.inlineClassName)).toContain(STATUS_FAILURE_CLASS)
+  })
+
+  it('uses $gv ranges and string condition field values when present', () => {
+    const mappings = {
+      Deployment: [
+        {
+          status: {
+            $gv: { start: { line: 10, column: 1 }, end: { line: 20, col: 40 } },
+            $v: {
+              conditions: {
+                $r: 12,
+                $l: 4,
+                $v: [
+                  {
+                    $gv: { start: { line: 13, col: 3 }, end: { line: 16, column: 20 } },
+                    $v: {
+                      type: 'Available',
+                      status: 'False',
+                      reason: 'MinimumReplicasUnavailable',
+                      message: 'not available',
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      ],
+    }
+    const decorations = getStatusDecorationsFromMappings(monaco, mappings)
+    expect(decorations.length).toBeGreaterThan(0)
+    expect(decorations[0].range.startLineNumber).toBe(13)
+  })
+
+  it('skips mappings without usable ranges', () => {
+    const mappings = {
+      Deployment: [
+        {
+          status: {
+            $v: {
+              unavailableReplicas: { $v: 2 },
+            },
+          },
+        },
+      ],
+    }
+    expect(getStatusDecorationsFromMappings(monaco, mappings)).toEqual([])
   })
 
   it('skips unavailableReplicas when zero', () => {
