@@ -875,7 +875,7 @@ export function VMLaunchLinks(props: Readonly<{ item: any; t: TFunction }>) {
         grafanaLink = undefined
       }
     }
-    if (isObservabilityInstalled) {
+    if (isObservabilityInstalled && grafanaLink) {
       const vmDashboard = configMaps.filter(
         (cm: ConfigMap) => cm.metadata.name === 'grafana-dashboard-acm-openshift-virtualization-single-vm-view'
       )

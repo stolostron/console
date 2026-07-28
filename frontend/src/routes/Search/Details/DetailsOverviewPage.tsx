@@ -344,7 +344,7 @@ export default function DetailsOverviewPage() {
         grafanaLink = undefined
       }
     }
-    if (isObservabilityInstalled && resource) {
+    if (isObservabilityInstalled && resource && grafanaLink) {
       const vmDashboard = configMaps.filter(
         (cm: ConfigMap) => cm.metadata.name === 'grafana-dashboard-acm-openshift-virtualization-single-vm-view'
       )

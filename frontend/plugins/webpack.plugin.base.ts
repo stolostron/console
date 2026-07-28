@@ -144,7 +144,7 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
           // Hide that host-console bug so local plugin pages remain usable.
           runtimeErrors: (error: Error) => {
             const message = error?.message ?? ''
-            if (message.includes("Failed to construct 'URL'") || message.includes('Invalid URL')) {
+            if (message.includes("Failed to construct 'URL'")) {
               return false
             }
             return true
