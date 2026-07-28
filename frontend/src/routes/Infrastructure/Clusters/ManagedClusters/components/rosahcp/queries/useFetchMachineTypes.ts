@@ -3,17 +3,19 @@
 import { useCallback, useState } from 'react'
 import { useSharedReactQuery } from '~/hooks/shared-react-query'
 import { getWizardMachineTypes } from '~/lib/rosa-hcp-api'
-import { MachineTypesResponse } from '~/resources'
+import { MachineType } from '~/resources'
 import { MachineTypesDropdownType, SelectedSecret } from '../constants/types'
 import { rosaWizardKeys } from './queryKeyFactory'
 
-export const buildMachineTypeOptions = (response: MachineTypesResponse): MachineTypesDropdownType[] =>
-  (response.items ?? []).map((machineType) => ({
-    id: machineType.id,
-    value: machineType.id,
-    label: machineType.id,
-    description: machineType.name ?? machineType.generic_name ?? '',
-  }))
+export const buildMachineTypeOptions = (machineTypes: MachineType[]): MachineTypesDropdownType[] =>
+  (machineTypes ?? [])
+    .filter((machineType) => machineType.cloud_provider?.id === 'aws')
+    .map((machineType) => ({
+      id: machineType.id,
+      value: machineType.id,
+      label: machineType.id,
+      description: machineType.name ?? machineType.generic_name ?? '',
+    }))
 
 export type MachineTypesFetchArgs = {
   region: string
@@ -23,34 +25,39 @@ export type MachineTypesFetchArgs = {
 
 export const useFetchMachineTypes = (selectedSecret: SelectedSecret) => {
   const { useQuery } = useSharedReactQuery()
-  const [args, setArgs] = useState<MachineTypesFetchArgs | undefined>()
+  const [machineTypesQueryParams, setMachineTypesQueryParams] = useState<MachineTypesFetchArgs | undefined>()
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: rosaWizardKeys.machineTypes(
       selectedSecret?.client_id,
-      args?.region,
-      args?.role_arn,
-      args?.availability_zones
+      machineTypesQueryParams?.region,
+      machineTypesQueryParams?.role_arn,
+      machineTypesQueryParams?.availability_zones
     ),
     queryFn: async ({ signal }) => {
       const response = await getWizardMachineTypes(selectedSecret.client_id, selectedSecret.client_secret, signal, {
-        region: args?.region as string,
-        role_arn: args?.role_arn as string,
-        availability_zones: args?.availability_zones ?? [],
+        region: machineTypesQueryParams?.region as string,
+        role_arn: machineTypesQueryParams?.role_arn as string,
+        availability_zones: machineTypesQueryParams?.availability_zones ?? [],
       })
-      return buildMachineTypeOptions(response)
+      return response.items ?? []
     },
-    enabled: !!selectedSecret && !!args?.region && !!args?.role_arn,
+    enabled:
+      !!selectedSecret &&
+      !!machineTypesQueryParams?.region &&
+      !!machineTypesQueryParams?.role_arn &&
+      !!machineTypesQueryParams?.availability_zones?.length,
     retry: false,
+    select: buildMachineTypeOptions,
   })
 
-  const fetch = useCallback(async (fetchArgs: MachineTypesFetchArgs): Promise<void> => {
-    setArgs(fetchArgs)
+  const fetch = useCallback(async (queryParams: MachineTypesFetchArgs): Promise<void> => {
+    setMachineTypesQueryParams(queryParams)
   }, [])
 
   return {
     data: data ?? [],
-    isFetching: isLoading,
+    isLoading,
     error: isError ? (error instanceof Error ? error.message : 'Unknown error') : null,
     fetch,
   }

@@ -3,7 +3,7 @@
 import { renderHook, act } from '@testing-library/react-hooks'
 import { buildMachineTypeOptions, useFetchMachineTypes } from './useFetchMachineTypes'
 import { SelectedSecret } from '../constants/types'
-import type { MachineTypesResponse } from '~/resources'
+import type { MachineType } from '~/resources'
 
 const mockUseQuery = jest.fn()
 jest.mock('~/hooks/shared-react-query', () => ({
@@ -29,53 +29,68 @@ const mockFetchArgs = {
 
 describe('buildMachineTypeOptions', () => {
   test('should map machine type items to dropdown options using the OCM-provided name as description', () => {
-    const response: MachineTypesResponse = {
-      items: [
-        {
-          id: 'm5.xlarge',
-          name: 'm5.xlarge - General Purpose',
-          category: 'general_purpose',
-          cpu: { value: 4 },
-          memory: { value: 17179869184 },
-        },
-      ],
-    }
+    const machineTypes: MachineType[] = [
+      {
+        id: 'm5.xlarge',
+        name: 'm5.xlarge - General Purpose',
+        category: 'general_purpose',
+        cpu: { value: 4 },
+        memory: { value: 17179869184 },
+        cloud_provider: { id: 'aws' },
+      },
+    ]
 
-    const result = buildMachineTypeOptions(response)
+    const result = buildMachineTypeOptions(machineTypes)
 
     expect(result).toEqual([
       { id: 'm5.xlarge', value: 'm5.xlarge', label: 'm5.xlarge', description: 'm5.xlarge - General Purpose' },
     ])
   })
 
-  test('should return empty array when items is undefined', () => {
-    const result = buildMachineTypeOptions({} as MachineTypesResponse)
+  test('should return empty array when machineTypes is undefined', () => {
+    const result = buildMachineTypeOptions(undefined as unknown as MachineType[])
     expect(result).toEqual([])
   })
 
-  test('should fall back to generic_name when name is missing', () => {
-    const response: MachineTypesResponse = {
-      items: [
-        {
-          id: 'm5.xlarge',
-          name: undefined as unknown as string,
-          generic_name: 'm5.xlarge',
-          category: 'general_purpose',
-        },
-      ],
-    }
+  test('should filter out machine types that are not for the aws cloud provider', () => {
+    const machineTypes: MachineType[] = [
+      { id: 'm5.xlarge', name: 'm5.xlarge', category: 'general_purpose', cloud_provider: { id: 'aws' } },
+      { id: 'n1-standard-1', name: 'n1-standard-1', category: 'general_purpose', cloud_provider: { id: 'gcp' } },
+      { id: 'no-provider', name: 'no-provider', category: 'general_purpose' },
+    ]
 
-    const result = buildMachineTypeOptions(response)
+    const result = buildMachineTypeOptions(machineTypes)
+
+    expect(result).toEqual([{ id: 'm5.xlarge', value: 'm5.xlarge', label: 'm5.xlarge', description: 'm5.xlarge' }])
+  })
+
+  test('should fall back to generic_name when name is missing', () => {
+    const machineTypes: MachineType[] = [
+      {
+        id: 'm5.xlarge',
+        name: undefined as unknown as string,
+        generic_name: 'm5.xlarge',
+        category: 'general_purpose',
+        cloud_provider: { id: 'aws' },
+      },
+    ]
+
+    const result = buildMachineTypeOptions(machineTypes)
 
     expect(result[0].description).toBe('m5.xlarge')
   })
 
   test('should default description to empty string when name and generic_name are missing', () => {
-    const response: MachineTypesResponse = {
-      items: [{ id: 'm5.xlarge', name: undefined as unknown as string, category: 'general_purpose' }],
-    }
+    const machineTypes: MachineType[] = [
+      {
+        id: 'm5.xlarge',
+        name: undefined as unknown as string,
+        category: 'general_purpose',
+        cloud_provider: { id: 'aws' },
+      },
+    ]
 
-    const result = buildMachineTypeOptions(response)
+    const result = buildMachineTypeOptions(machineTypes)
 
     expect(result[0].description).toBe('')
   })
@@ -123,6 +138,22 @@ describe('useFetchMachineTypes', () => {
     )
   })
 
+  test('should remain disabled when fetch is called without availability zones', () => {
+    mockUseQuery.mockReturnValue({ data: undefined, isLoading: false, isError: false, error: null })
+
+    const { result, rerender } = renderHook(() => useFetchMachineTypes(mockSecret))
+    act(() => {
+      void result.current.fetch({ ...mockFetchArgs, availability_zones: [] })
+    })
+    rerender()
+
+    expect(mockUseQuery).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        enabled: false,
+      })
+    )
+  })
+
   test('should return empty array when data is undefined', () => {
     mockUseQuery.mockReturnValue({ data: undefined, isLoading: false, isError: false, error: null })
 
@@ -140,12 +171,12 @@ describe('useFetchMachineTypes', () => {
     expect(result.current.data).toEqual(mockOptions)
   })
 
-  test('should forward loading state as isFetching', () => {
+  test('should forward loading state as isLoading', () => {
     mockUseQuery.mockReturnValue({ data: undefined, isLoading: true, isError: false, error: null })
 
     const { result } = renderHook(() => useFetchMachineTypes(mockSecret))
 
-    expect(result.current.isFetching).toBe(true)
+    expect(result.current.isLoading).toBe(true)
   })
 
   test('should return error message string when query errors with an Error instance', () => {
@@ -182,12 +213,12 @@ describe('useFetchMachineTypes', () => {
     expect(result.current.fetch).toBe(firstFetch)
   })
 
-  test('should call getWizardMachineTypes with args from fetch inside queryFn', async () => {
+  test('should call getWizardMachineTypes with args from fetch and return raw items from queryFn', async () => {
     const { getWizardMachineTypes } = jest.requireMock('~/lib/rosa-hcp-api') as {
       getWizardMachineTypes: jest.Mock
     }
     getWizardMachineTypes.mockResolvedValue({
-      items: [{ id: 'm5.xlarge', name: 'm5.xlarge', category: 'general_purpose' }],
+      items: [{ id: 'm5.xlarge', name: 'm5.xlarge', category: 'general_purpose', cloud_provider: { id: 'aws' } }],
     })
     mockUseQuery.mockReturnValue({ data: undefined, isLoading: false, isError: false, error: null })
 
@@ -197,16 +228,22 @@ describe('useFetchMachineTypes', () => {
     })
     rerender()
 
-    const queryFn = mockUseQuery.mock.calls[mockUseQuery.mock.calls.length - 1][0].queryFn as (ctx: {
-      signal?: AbortSignal
-    }) => Promise<unknown>
-    const data = await queryFn({ signal: undefined })
+    const lastCallOptions = mockUseQuery.mock.calls[mockUseQuery.mock.calls.length - 1][0] as {
+      queryFn: (ctx: { signal?: AbortSignal }) => Promise<unknown>
+      select: (items: unknown) => unknown
+    }
+    const data = await lastCallOptions.queryFn({ signal: undefined })
 
     expect(getWizardMachineTypes).toHaveBeenCalledWith('test-client-id', 'test-client-secret', undefined, {
       region: 'us-east-1',
       role_arn: 'arn:aws:iam::123456789012:role/Installer',
       availability_zones: ['us-east-1a', 'us-east-1b'],
     })
-    expect(data).toEqual([{ id: 'm5.xlarge', value: 'm5.xlarge', label: 'm5.xlarge', description: 'm5.xlarge' }])
+    expect(data).toEqual([
+      { id: 'm5.xlarge', name: 'm5.xlarge', category: 'general_purpose', cloud_provider: { id: 'aws' } },
+    ])
+    expect(lastCallOptions.select(data)).toEqual([
+      { id: 'm5.xlarge', value: 'm5.xlarge', label: 'm5.xlarge', description: 'm5.xlarge' },
+    ])
   })
 })
