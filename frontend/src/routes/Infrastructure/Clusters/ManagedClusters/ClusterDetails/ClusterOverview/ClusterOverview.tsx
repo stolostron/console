@@ -527,7 +527,6 @@ export function ClusterOverviewPageContent() {
                 }
               : undefined
           }
-          displayName={cluster.displayName}
           close={() => setShowEditDescription(false)}
         />
         {details}

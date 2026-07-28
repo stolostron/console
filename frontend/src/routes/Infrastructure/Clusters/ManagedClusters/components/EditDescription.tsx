@@ -28,7 +28,7 @@ import { getErrorInfo } from '../../../../../components/ErrorPage'
 
 const CLUSTER_DESCRIPTION_ANNOTATION = 'console.open-cluster-management.io/description'
 
-export function EditDescription(props: { resource?: IResource; displayName?: string; close: () => void }) {
+export function EditDescription(props: Readonly<{ resource?: IResource; close: () => void }>) {
   const { t } = useTranslation()
   const [description, setDescription] = useState<string>('')
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
