@@ -208,11 +208,6 @@ export type VPCsPayload = {
   }
 }
 
-export interface MachineTypeQuantity {
-  value: number
-  unit: string
-}
-
 export interface MachineType {
   kind?: string
   id: string
@@ -220,8 +215,8 @@ export interface MachineType {
   name: string
   category: string
   size?: string
-  cpu?: MachineTypeQuantity
-  memory?: MachineTypeQuantity
+  cpu?: { value: number }
+  memory?: { value: number }
   cloud_provider?: { kind?: string; id?: string; href?: string }
   ccs_only?: boolean
   generic_name?: string

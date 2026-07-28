@@ -35,8 +35,8 @@ describe('buildMachineTypeOptions', () => {
           id: 'm5.xlarge',
           name: 'm5.xlarge - General Purpose',
           category: 'general_purpose',
-          cpu: { value: 4, unit: 'vCPU' },
-          memory: { value: 17179869184, unit: 'B' },
+          cpu: { value: 4 },
+          memory: { value: 17179869184 },
         },
       ],
     }
