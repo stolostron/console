@@ -146,15 +146,6 @@ describe('useFetchVPCs', () => {
     expect(mockRefetch).toHaveBeenCalled()
   })
 
-  test('queryFn should return empty array when secret is falsy', async () => {
-    renderHook(() => useFetchVPCs(mockSecret))
-
-    const queryOptions = mockUseQuery.mock.calls[0][0]
-    const result = await queryOptions.queryFn({ signal: new AbortController().signal })
-
-    expect(result).toEqual([])
-  })
-
   test('queryFn should call getWizardVPCs with correct params when all state is set', async () => {
     const vpcsResponse = {
       body: { items: [{ vpc_id: 'vpc-123' }] },

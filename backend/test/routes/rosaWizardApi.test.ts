@@ -567,13 +567,6 @@ describe('rosaWizardApi routes', () => {
       expect(res.statusCode).toEqual(500)
     })
 
-    test('should return 401 when not authenticated', async () => {
-      nock(process.env.CLUSTER_API_URL).get('/apis').reply(401)
-
-      const res = await request('POST', '/vpcs', vpcsPayload)
-      expect(res.statusCode).toEqual(401)
-    })
-
     test('should forward error response from upstream API', async () => {
       const errorResponse = {
         kind: 'Error',

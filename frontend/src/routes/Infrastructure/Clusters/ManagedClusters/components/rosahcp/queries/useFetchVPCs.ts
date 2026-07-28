@@ -17,7 +17,6 @@ export const useFetchVPCs = (selectedSecret: SelectedSecret) => {
     queryKey: rosaWizardKeys.vpcs(selectedSecret.client_id, awsAccountId, installerRoleArn, region),
     queryFn: async ({ signal }) => {
       const secret = secretRef.current
-      if (!secret || !awsAccountId || !installerRoleArn || !region) return []
       const response = await getWizardVPCs(secret.client_id, secret.client_secret, signal, {
         aws: { account_id: awsAccountId, sts: { role_arn: installerRoleArn } },
         region: { id: region },
