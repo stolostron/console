@@ -53,10 +53,11 @@ export function EditDescription(props: Readonly<{ resource?: IResource; close: (
       },
     }
 
+    const trimmedDescription = description.trim()
     const patch = {
       metadata: {
         annotations: {
-          [CLUSTER_DESCRIPTION_ANNOTATION]: description.trim() || null,
+          [CLUSTER_DESCRIPTION_ANNOTATION]: trimmedDescription ? description : null,
         },
       },
     }
