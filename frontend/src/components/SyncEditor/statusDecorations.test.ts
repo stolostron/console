@@ -5,6 +5,7 @@ import {
   compareConditionKeys,
   compareStatusKeys,
   isNegativePolarityCondition,
+  isTerminatedContainerFailure,
   prepareResourceForYaml,
   getStatusDecorationsFromMappings,
   STATUS_FAILURE_CLASS,
@@ -49,6 +50,27 @@ describe('classifyCondition', () => {
 
   it('returns neutral for Unknown', () => {
     expect(classifyCondition({ type: 'Ready', status: 'Unknown' })).toBe('neutral')
+  })
+
+  it('treats Ready False as failure regardless of reason text', () => {
+    expect(classifyCondition({ type: 'Ready', status: 'False', reason: 'SomethingElse' })).toBe('failure')
+  })
+})
+
+describe('isTerminatedContainerFailure', () => {
+  it('flags Error and common failure reasons', () => {
+    expect(isTerminatedContainerFailure({ reason: 'Error', exitCode: 1 })).toBe(true)
+    expect(isTerminatedContainerFailure({ reason: 'OOMKilled', exitCode: 137 })).toBe(true)
+    expect(isTerminatedContainerFailure({ reason: 'ContainerCannotRun' })).toBe(true)
+    expect(isTerminatedContainerFailure({ reason: 'DeadlineExceeded' })).toBe(true)
+  })
+
+  it('flags non-zero exitCode even without Error reason', () => {
+    expect(isTerminatedContainerFailure({ reason: 'Unknown', exitCode: 2 })).toBe(true)
+  })
+
+  it('ignores Completed with exitCode 0', () => {
+    expect(isTerminatedContainerFailure({ reason: 'Completed', exitCode: 0 })).toBe(false)
   })
 })
 
@@ -172,13 +194,56 @@ describe('getStatusDecorationsFromMappings', () => {
       ],
     }
 
-    const decorations = getStatusDecorationsFromMappings(monaco, mappings as never)
+    const decorations = getStatusDecorationsFromMappings(monaco, mappings)
     const classes = decorations.map((d) => d.options.inlineClassName)
     expect(classes).toContain(STATUS_SUCCESS_CLASS)
     expect(classes).toContain(STATUS_SUCCESS_EMPHASIS_CLASS)
     expect(classes).toContain(STATUS_FAILURE_CLASS)
     expect(classes).toContain(STATUS_FAILURE_EMPHASIS_CLASS)
     expect(classes.filter((c) => c === STATUS_FAILURE_CLASS).length).toBeGreaterThanOrEqual(3)
+  })
+
+  it('decorates OOMKilled lastState terminated', () => {
+    const mappings = {
+      Pod: [
+        {
+          status: {
+            $r: 10,
+            $l: 8,
+            $v: {
+              containerStatuses: {
+                $r: 11,
+                $l: 7,
+                $v: [
+                  {
+                    $r: 12,
+                    $l: 6,
+                    $v: {
+                      lastState: {
+                        $r: 13,
+                        $l: 5,
+                        $v: {
+                          terminated: {
+                            $r: 14,
+                            $l: 4,
+                            $v: {
+                              reason: { $r: 15, $l: 1, $v: 'OOMKilled' },
+                              exitCode: { $r: 16, $l: 1, $v: 137 },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      ],
+    }
+    const decorations = getStatusDecorationsFromMappings(monaco, mappings)
+    expect(decorations.map((d) => d.options.inlineClassName)).toContain(STATUS_FAILURE_CLASS)
   })
 
   it('skips unavailableReplicas when zero', () => {
@@ -195,6 +260,6 @@ describe('getStatusDecorationsFromMappings', () => {
         },
       ],
     }
-    expect(getStatusDecorationsFromMappings(monaco, mappings as never)).toEqual([])
+    expect(getStatusDecorationsFromMappings(monaco, mappings)).toEqual([])
   })
 })

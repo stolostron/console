@@ -7,7 +7,7 @@ import * as yaml from 'yaml-ast-parser'
 import { IResource } from '../../../../resources'
 import { getBackendUrl, getRequest, getResource, putRequest, replaceResource } from '../../../../resources/utils'
 import { fleetResourceRequest } from '../../../../resources/utils/fleet-resource-request'
-import { prepareResourceForYaml } from '../../../../components/SyncEditor/statusDecorations'
+import { prepareResourceForYaml } from '~/components/SyncEditor/statusDecorations'
 
 function dumpResourceYaml(resource: unknown): string {
   return jsYaml.dump(prepareResourceForYaml(resource), { indent: 2, sortKeys: false })

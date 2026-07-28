@@ -28,8 +28,8 @@ import { fleetCanUser } from '../../../../resources/utils/fleet-can-user'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { fold, onReload, onSave, registerAutoFold } from './utils'
 import { registerSearchYamlStatusDecorations } from './statusYamlDecorations'
-import { prepareResourceForYaml } from '../../../../components/SyncEditor/statusDecorations'
-import '../../../../components/SyncEditor/statusDecorations.css'
+import { prepareResourceForYaml } from '~/components/SyncEditor/statusDecorations'
+import '~/components/SyncEditor/statusDecorations.css'
 
 /**
  * YAML editor page modeled after the OpenShift console edit-yaml component.
@@ -79,8 +79,11 @@ export default function YAMLEditor(props: {
     // Auto collapse the managedFields section
     registerAutoFold(editor)
 
-    // Color status conditions / failure indicators (ACM-38199)
-    registerSearchYamlStatusDecorations(editor)
+    // Color status conditions / failure indicators (ACM-38199); dispose with the editor
+    const disposeStatusDecorations = registerSearchYamlStatusDecorations(editor)
+    editor.onDidDispose(() => {
+      disposeStatusDecorations()
+    })
 
     // make sure this instance of monaco editor has the ocp console themes
     defineThemes(monaco?.editor)

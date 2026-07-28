@@ -4,12 +4,13 @@ import type * as monaco from 'monaco-editor/esm/vs/editor/editor.api'
 import * as yaml from 'yaml-ast-parser'
 import {
   classifyCondition,
+  isTerminatedContainerFailure,
   STATUS_FAILURE_CLASS,
   STATUS_FAILURE_EMPHASIS_CLASS,
   STATUS_SUCCESS_CLASS,
   STATUS_SUCCESS_EMPHASIS_CLASS,
   type ConditionLike,
-} from '../../../../components/SyncEditor/statusDecorations'
+} from '~/components/SyncEditor/statusDecorations'
 
 type YamlNode = {
   key?: { value?: string; startPosition?: number; endPosition?: number }
@@ -120,7 +121,13 @@ function decorateStatusMap(
       const terminated = mappingField(lastStateMap, 'terminated')
       const terminatedMap = asMap(terminated?.value) ?? terminated
       const reason = mappingField(terminatedMap, 'reason')
-      if (scalarValue(reason?.value ?? reason) === 'Error') {
+      const exitCode = mappingField(terminatedMap, 'exitCode')
+      if (
+        isTerminatedContainerFailure({
+          reason: scalarValue(reason?.value ?? reason),
+          exitCode: scalarValue(exitCode?.value ?? exitCode),
+        })
+      ) {
         pushRangeDecoration(model, decorations, lastState, STATUS_FAILURE_CLASS)
       }
     }

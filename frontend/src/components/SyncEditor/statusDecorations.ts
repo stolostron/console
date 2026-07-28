@@ -60,13 +60,30 @@ export function classifyCondition(condition: ConditionLike): ConditionOutcome {
     return 'success'
   }
 
-  const reasonOrMessage = `${condition.reason ?? ''} ${condition.message ?? ''}`
-  if (/(error|fail)/i.test(reasonOrMessage)) {
-    return 'failure'
-  }
-
   return 'failure'
 }
+
+/**
+ * Whether a container lastState.terminated should be highlighted as failure.
+ * Covers reason: Error (ACM-38199) plus common non-success terminations and non-zero exitCode.
+ */
+export function isTerminatedContainerFailure(terminated: {
+  reason?: unknown
+  exitCode?: unknown
+}): boolean {
+  const reason = typeof terminated.reason === 'string' ? terminated.reason : String(terminated.reason ?? '')
+  if (reason === 'Completed') {
+    return false
+  }
+  const exitCode =
+    typeof terminated.exitCode === 'number' ? terminated.exitCode : Number(terminated.exitCode)
+  if (Number.isFinite(exitCode) && exitCode !== 0) {
+    return true
+  }
+  return /^(Error|OOMKilled|ContainerCannotRun|DeadlineExceeded|Evicted)$/i.test(reason)
+}
+
+const DANGEROUS_OBJECT_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
 
 export function compareConditionKeys(a: string, b: string): number {
   const ai = CONDITION_KEY_ORDER.indexOf(a as (typeof CONDITION_KEY_ORDER)[number])
@@ -111,6 +128,7 @@ function reorderObjectKeys(
 ): Record<string, unknown> {
   const ordered: Record<string, unknown> = {}
   for (const key of Object.keys(obj).sort(compare)) {
+    if (DANGEROUS_OBJECT_KEYS.has(key)) continue
     ordered[key] = obj[key]
   }
   return ordered
@@ -143,6 +161,7 @@ function walkReorder(node: unknown, parentKey: string): unknown {
 
   const walked: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(node)) {
+    if (DANGEROUS_OBJECT_KEYS.has(key)) continue
     walked[key] = walkReorder(value, key)
   }
 
@@ -159,7 +178,8 @@ export function prepareResourcesForYaml(resources: unknown[]): unknown[] {
   return resources.map((resource) => prepareResourceForYaml(resource))
 }
 
-type MappingLeaf = {
+/** SyncEditor YAML mapping leaf (line/range metadata produced by the editor parser). */
+export type StatusMappingLeaf = {
   $k?: string
   $r?: number
   $l?: number
@@ -168,7 +188,7 @@ type MappingLeaf = {
 }
 
 function mappingRange(
-  leaf: MappingLeaf | undefined
+  leaf: StatusMappingLeaf | undefined
 ): { startLine: number; endLine: number; startCol: number; endCol: number } | null {
   if (!leaf) return null
   if (leaf.$gv) {
@@ -194,7 +214,7 @@ function mappingRange(
 function pushDecoration(
   monaco: Monaco,
   decorations: editorTypes.IModelDeltaDecoration[],
-  leaf: MappingLeaf | undefined,
+  leaf: StatusMappingLeaf | undefined,
   className: string
 ) {
   const range = mappingRange(leaf)
@@ -207,8 +227,8 @@ function pushDecoration(
   })
 }
 
-function conditionFieldsFromMapping(conditionMapping: MappingLeaf): ConditionLike {
-  const fields = (conditionMapping.$v ?? {}) as Record<string, MappingLeaf | string>
+function conditionFieldsFromMapping(conditionMapping: StatusMappingLeaf): ConditionLike {
+  const fields = (conditionMapping.$v ?? {}) as Record<string, StatusMappingLeaf | string>
   const read = (key: string): string | undefined => {
     const field = fields[key]
     if (field && typeof field === 'object' && '$v' in field) {
@@ -227,7 +247,7 @@ function conditionFieldsFromMapping(conditionMapping: MappingLeaf): ConditionLik
 
 function decorateConditionMapping(
   monaco: Monaco,
-  conditionMapping: MappingLeaf,
+  conditionMapping: StatusMappingLeaf,
   decorations: editorTypes.IModelDeltaDecoration[]
 ) {
   const outcome = classifyCondition(conditionFieldsFromMapping(conditionMapping))
@@ -238,17 +258,17 @@ function decorateConditionMapping(
 
   pushDecoration(monaco, decorations, conditionMapping, blockClass)
 
-  const fields = (conditionMapping.$v ?? {}) as Record<string, MappingLeaf>
+  const fields = (conditionMapping.$v ?? {}) as Record<string, StatusMappingLeaf>
   pushDecoration(monaco, decorations, fields.reason, emphasisClass)
   pushDecoration(monaco, decorations, fields.message, emphasisClass)
 }
 
 function decorateUnavailableReplicas(
   monaco: Monaco,
-  statusMapping: MappingLeaf,
+  statusMapping: StatusMappingLeaf,
   decorations: editorTypes.IModelDeltaDecoration[]
 ) {
-  const statusFields = (statusMapping.$v ?? {}) as Record<string, MappingLeaf>
+  const statusFields = (statusMapping.$v ?? {}) as Record<string, StatusMappingLeaf>
   const unavailable = statusFields.unavailableReplicas
   if (!unavailable) return
   const value = unavailable.$v
@@ -259,20 +279,24 @@ function decorateUnavailableReplicas(
 
 function decorateLastStateErrors(
   monaco: Monaco,
-  containerStatusesMapping: MappingLeaf | undefined,
+  containerStatusesMapping: StatusMappingLeaf | undefined,
   decorations: editorTypes.IModelDeltaDecoration[]
 ) {
   if (!containerStatusesMapping || !Array.isArray(containerStatusesMapping.$v)) return
-  for (const containerStatus of containerStatusesMapping.$v as MappingLeaf[]) {
-    const fields = (containerStatus.$v ?? {}) as Record<string, MappingLeaf>
+  for (const containerStatus of containerStatusesMapping.$v as StatusMappingLeaf[]) {
+    const fields = (containerStatus.$v ?? {}) as Record<string, StatusMappingLeaf>
     const lastState = fields.lastState
     if (!lastState || !isPlainObject(lastState.$v)) continue
-    const lastStateFields = lastState.$v as Record<string, MappingLeaf>
+    const lastStateFields = lastState.$v as Record<string, StatusMappingLeaf>
     const terminated = lastStateFields.terminated
     if (!terminated || !isPlainObject(terminated.$v)) continue
-    const terminatedFields = terminated.$v as Record<string, MappingLeaf>
-    const reason = terminatedFields.reason?.$v
-    if (reason === 'Error') {
+    const terminatedFields = terminated.$v as Record<string, StatusMappingLeaf>
+    if (
+      isTerminatedContainerFailure({
+        reason: terminatedFields.reason?.$v,
+        exitCode: terminatedFields.exitCode?.$v,
+      })
+    ) {
       pushDecoration(monaco, decorations, lastState, STATUS_FAILURE_CLASS)
     }
   }
@@ -283,7 +307,7 @@ function decorateLastStateErrors(
  */
 export function getStatusDecorationsFromMappings(
   monaco: Monaco,
-  mappings: { [name: string]: MappingLeaf[] } | undefined
+  mappings: { [name: string]: StatusMappingLeaf[] | any[] } | undefined
 ): editorTypes.IModelDeltaDecoration[] {
   const decorations: editorTypes.IModelDeltaDecoration[] = []
   if (!mappings) return decorations
@@ -291,15 +315,15 @@ export function getStatusDecorationsFromMappings(
   for (const resources of Object.values(mappings)) {
     if (!Array.isArray(resources)) continue
     for (const resourceMapping of resources) {
-      const statusMapping = (resourceMapping as Record<string, MappingLeaf>).status
+      const statusMapping = (resourceMapping as Record<string, StatusMappingLeaf>).status
       if (!statusMapping) continue
 
       decorateUnavailableReplicas(monaco, statusMapping, decorations)
 
-      const statusFields = (statusMapping.$v ?? {}) as Record<string, MappingLeaf>
+      const statusFields = (statusMapping.$v ?? {}) as Record<string, StatusMappingLeaf>
       const conditionsMapping = statusFields.conditions
       if (conditionsMapping && Array.isArray(conditionsMapping.$v)) {
-        for (const conditionMapping of conditionsMapping.$v as MappingLeaf[]) {
+        for (const conditionMapping of conditionsMapping.$v as StatusMappingLeaf[]) {
           decorateConditionMapping(monaco, conditionMapping, decorations)
         }
       }

@@ -46,7 +46,7 @@ export const decorate = (
   addProtectedDecorations(monaco, protectedRanges, decorations)
 
   // decorate status conditions / failure indicators (green/red)
-  decorations.push(...getStatusDecorationsFromMappings(monaco, change?.mappings as never))
+  decorations.push(...getStatusDecorationsFromMappings(monaco, change?.mappings))
 
   // add filter row toggle decorations
   addFilteredDecorations(monaco, filteredRows, decorations)
