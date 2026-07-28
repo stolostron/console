@@ -53,7 +53,6 @@ function pushRangeDecoration(
     range: new Range(start.lineNumber, start.column, end.lineNumber, end.column),
     options: {
       inlineClassName: className,
-      description: 'search-yaml-status',
     },
   })
 }
@@ -141,7 +140,7 @@ export function getSearchYamlStatusDecorations(model: monaco.editor.ITextModel):
   }
 
   const statusField = doc?.mappings?.find((m) => m.key?.value === 'status')
-  const statusMap = statusField?.value
+  const statusMap = asMap(statusField?.value)
   if (statusMap) {
     decorateStatusMap(model, statusMap, decorations)
   }

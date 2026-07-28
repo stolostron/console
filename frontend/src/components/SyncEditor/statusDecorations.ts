@@ -168,7 +168,6 @@ type MappingLeaf = {
 }
 
 function mappingRange(
-  monaco: Monaco,
   leaf: MappingLeaf | undefined
 ): { startLine: number; endLine: number; startCol: number; endCol: number } | null {
   if (!leaf) return null
@@ -198,13 +197,12 @@ function pushDecoration(
   leaf: MappingLeaf | undefined,
   className: string
 ) {
-  const range = mappingRange(monaco, leaf)
+  const range = mappingRange(leaf)
   if (!range) return
   decorations.push({
     range: new monaco.Range(range.startLine, range.startCol, range.endLine, range.endCol),
     options: {
       inlineClassName: className,
-      description: 'resource-editor-status',
     },
   })
 }

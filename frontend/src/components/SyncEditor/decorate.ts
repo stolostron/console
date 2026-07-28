@@ -236,7 +236,7 @@ const filterResourceEditorDecorations = (
     return (
       options?.className?.startsWith('squiggly-') ||
       options?.className === 'syncEditorYamlHighlight' ||
-      isStatusDecorationClass(options?.inlineClassName) ||
+      isStatusDecorationClass(options?.inlineClassName ?? undefined) ||
       LINE_DECORATION_CLASS_NAMES.includes(lineDecorationClass as (typeof LINE_DECORATION_CLASS_NAMES)[number]) ||
       (!!options?.glyphMarginClassName && (options?.inlineClassName !== 'protectedDecoration' || !hasErrors))
     )
