@@ -67,16 +67,12 @@ export function classifyCondition(condition: ConditionLike): ConditionOutcome {
  * Whether a container lastState.terminated should be highlighted as failure.
  * Covers reason: Error (ACM-38199) plus common non-success terminations and non-zero exitCode.
  */
-export function isTerminatedContainerFailure(terminated: {
-  reason?: unknown
-  exitCode?: unknown
-}): boolean {
+export function isTerminatedContainerFailure(terminated: { reason?: unknown; exitCode?: unknown }): boolean {
   const reason = typeof terminated.reason === 'string' ? terminated.reason : String(terminated.reason ?? '')
   if (reason === 'Completed') {
     return false
   }
-  const exitCode =
-    typeof terminated.exitCode === 'number' ? terminated.exitCode : Number(terminated.exitCode)
+  const exitCode = typeof terminated.exitCode === 'number' ? terminated.exitCode : Number(terminated.exitCode)
   if (Number.isFinite(exitCode) && exitCode !== 0) {
     return true
   }
