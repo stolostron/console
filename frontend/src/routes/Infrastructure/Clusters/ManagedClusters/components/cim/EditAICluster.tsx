@@ -107,7 +107,7 @@ const EditAICluster: React.FC = () => {
   const [bulkModalProps, setBulkModalProps] = useState<
     BulkActionModalProps<AgentK8sResource | BareMetalHostK8sResource> | { open: false }
   >({ open: false })
-  const onDeleteHost = useOnDeleteHost(setBulkModalProps, [], agentClusterInstall, infraNMStates)
+  const onDeleteHost = useOnDeleteHost(setBulkModalProps, [], agentClusterInstall)
 
   const hostActions = {
     onEditHost: (agent: AgentK8sResource) => {
