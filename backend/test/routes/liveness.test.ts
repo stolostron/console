@@ -9,7 +9,7 @@ describe(`liveness Route`, function () {
     expect(res.statusCode).toEqual(200)
   })
   it(`GET /livenessProbe should return status code 500 if dead`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(401)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(401)
     await apiServerPing()
     const res = await request('GET', '/livenessProbe')
     expect(res.statusCode).toEqual(500)

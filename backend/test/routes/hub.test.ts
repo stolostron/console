@@ -6,7 +6,7 @@ import { cacheResource, resetResourceCache } from '../../src/routes/events'
 import { request } from '../mock-request'
 
 function mockCrdNock(url: string) {
-  const apisScope = nock(url).get('/apis').reply(200, { status: 200 })
+  const apisScope = nock(url).get('/api').reply(200, { status: 200 })
   const crdScope = nock(url)
     .get('/apis/apiextensions.k8s.io/v1/customresourcedefinitions')
     .reply(200, {
