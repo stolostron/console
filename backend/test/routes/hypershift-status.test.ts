@@ -4,7 +4,7 @@ import { parseResponseJsonBody } from '../../src/lib/body-parser'
 import nock from 'nock'
 
 describe('hypershift-status Route', function () {
-  const mockAuth = () => nock(process.env.CLUSTER_API_URL).head('/api').reply(200, { status: 200 })
+  const mockAuth = () => nock(process.env.CLUSTER_API_URL).get('/api').reply(200, { status: 200 })
 
   const mockMCE = (hypershiftEnabled = true, localHostingEnabled = true) =>
     nock(process.env.CLUSTER_API_URL)

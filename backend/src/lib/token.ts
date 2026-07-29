@@ -28,15 +28,14 @@ export function getToken(req: Http2ServerRequest): string | undefined {
   return token
 }
 
-// HEAD /api returns headers only — no response body — so no drain is needed and
-// the payload is ~200 bytes regardless of how many CRDs are registered.
-// Returns the HTTP status so callers can distinguish 401 (invalid token) from
-// 403 (valid token, insufficient permission) and 5xx (transient upstream error).
+// GET /api returns the core API group (~200 bytes) — unlike /apis which grows
+// with every installed CRD. The response body is drained so the socket returns
+// to the keepAlive pool immediately and native memory does not accumulate.
 export async function isAuthenticated(token: string): Promise<number> {
   const response = await fetchRetry(process.env.CLUSTER_API_URL + '/api', {
-    method: 'HEAD',
     headers: { [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${token}` },
   })
+  response.body?.on('error', () => undefined).resume()
   return response.status
 }
 
