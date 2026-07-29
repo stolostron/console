@@ -337,7 +337,7 @@ describe('StatusSummaryCount', () => {
     await act(async () => {
       await waitFor(() => expect(screen.getByTestId('summary-status')).toBeInTheDocument())
 
-      await waitForNotText('Applications')
+      await waitForNotText('Workloads')
 
       await waitForNotText('Policy violations')
 

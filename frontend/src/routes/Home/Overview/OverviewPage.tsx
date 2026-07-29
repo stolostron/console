@@ -358,7 +358,7 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
             }}
             data={clusterProviderSummary}
           />
-          <SummaryStatusCard key={'application-type-summary'} title={t('Application types')} data={appTypeSummary} />
+          <SummaryStatusCard key={'application-type-summary'} title={t('Workload types')} data={appTypeSummary} />
           <SummaryStatusCard key={'policies-status-summary'} title={t('Policies')} data={policySummary} />
           <SummaryClustersCard isPieChart title={t('Cluster version')} data={clusterVersionSummary} />
           <SummaryStatusCard key={'node-summary'} title={t('Nodes')} data={nodeSummary} />

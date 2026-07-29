@@ -93,7 +93,7 @@ export function getRowActions(
   }
   const viewAppTopology = {
     id: 'view-application-topology',
-    title: t('View Application topology'),
+    title: t('View Workload topology'),
     click: (item: any) => {
       const apiversion = encodeURIComponent(`${item?.kind}.${item?.apigroup}`.toLowerCase())
       const path = generatePath(NavigationPath.applicationTopology, { name: item.name, namespace: item.namespace })

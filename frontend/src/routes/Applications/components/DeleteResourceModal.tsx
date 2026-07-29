@@ -98,7 +98,7 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
   const renderConfirmCheckbox = () => {
     const isAppKind = props.appKind === ApplicationKind
     const appTypeMsg = isAppKind
-      ? props.t('Remove Application related resources')
+      ? props.t('Remove Workload related resources')
       : props.t('Remove ApplicationSet related resources')
 
     return (

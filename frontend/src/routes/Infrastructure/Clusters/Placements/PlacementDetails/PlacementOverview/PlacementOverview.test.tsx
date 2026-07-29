@@ -343,7 +343,7 @@ describe('PlacementOverview page', () => {
     render(<OverviewComponent />)
     await waitForText('Used in', true)
     expect(screen.queryByText('Governance')).not.toBeInTheDocument()
-    expect(screen.queryByText('Applications')).not.toBeInTheDocument()
+    expect(screen.queryByText('Workloads')).not.toBeInTheDocument()
     expect(screen.queryByText('System')).not.toBeInTheDocument()
   })
 })

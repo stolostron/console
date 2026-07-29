@@ -151,8 +151,8 @@ describe('TopologyToolbar tests', () => {
       })
       render(<TopologyToolbar {...props} />)
 
-      // Uses getAllByText since "Applications" appears multiple times (label and dropdown)
-      expect(screen.getAllByText(/Applications/).length).toBeGreaterThan(0)
+      // Uses getAllByText since "Workloads" appears multiple times (label and dropdown)
+      expect(screen.getAllByText(/Workloads/).length).toBeGreaterThan(0)
     })
 
     test('renders types filter when types are available', () => {
@@ -301,7 +301,7 @@ describe('TopologyToolbar tests', () => {
       render(<TopologyToolbar {...props} />)
 
       // Click on the applications dropdown toggle
-      const toggle = screen.getByText('All applications')
+      const toggle = screen.getByText('All workloads')
       await userEvent.click(toggle)
 
       await waitFor(() => {

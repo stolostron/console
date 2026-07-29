@@ -205,7 +205,7 @@ const routes: (IRoute | IRouteGroup)[] = [
     ],
   },
   {
-    title: 'Applications',
+    title: 'Workloads',
     type: 'route',
     path: NavigationPath.applications,
     match: MatchType.SubRoutes,

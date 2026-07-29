@@ -114,13 +114,13 @@ const TopologyToolbar: FC<TopologyProps> = (topologyProps) => {
         allLabel: t('All clusters'),
       },
       {
-        key: 'Applications',
-        label: t('Applications'),
+        key: 'Workloads',
+        label: t('Workloads'),
         allItems: toolbarControl.allApplications,
         activeItems: toolbarControl.activeApplications,
         setActive: toolbarControl.setActiveApplications,
-        emptyLabel: t('Applications'),
-        allLabel: t('All applications'),
+        emptyLabel: t('Workloads'),
+        allLabel: t('All workloads'),
       },
       {
         key: 'Types',

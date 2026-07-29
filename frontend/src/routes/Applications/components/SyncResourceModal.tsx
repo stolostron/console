@@ -49,7 +49,7 @@ export function SyncResourceModal(props: ISyncResourceModalProps | { open: false
     })
   }
 
-  const modalTitle = t('Sync application')
+  const modalTitle = t('Sync workload')
   return (
     <AcmModal
       id="remove-resource-modal"
@@ -69,7 +69,7 @@ export function SyncResourceModal(props: ISyncResourceModalProps | { open: false
         </Button>,
       ]}
     >
-      {t('Synchronize application resources with the source repository.')}
+      {t('Synchronize workload resources with the source repository.')}
     </AcmModal>
   )
 }

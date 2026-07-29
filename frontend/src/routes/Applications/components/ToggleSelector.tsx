@@ -55,7 +55,7 @@ export function ToggleSelector(props: IToggleSelectorProps) {
         rowActionResolver={selectedResources.rowActionResolver}
         emptyState={
           <AcmEmptyState
-            message={selectedId === 'subscriptions' ? t('To get started, create an application.') : null}
+            message={selectedId === 'subscriptions' ? t('To get started, create a workload.') : null}
             title={options.find((option) => option.id === selectedId)?.emptyMessage || ''}
             action={
               <Stack>
@@ -67,7 +67,7 @@ export function ToggleSelector(props: IToggleSelectorProps) {
                       component={Link}
                       to={NavigationPath.createApplicationSubscription}
                     >
-                      {t('Create application')}
+                      {t('Create workload')}
                     </AcmButton>
                   </StackItem>
                 )}

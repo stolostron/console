@@ -401,7 +401,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
             tooltip: t('Displays the name of the channel used by the subscription. Click to search for the channel.'),
           },
           {
-            header: t('Applications'),
+            header: t('Workloads'),
             cell: (resource) => {
               const appCount = _.get(resource, 'transformed.appCount')
               if (resource.metadata) {

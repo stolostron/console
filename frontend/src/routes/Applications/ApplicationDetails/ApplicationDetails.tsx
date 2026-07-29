@@ -208,7 +208,7 @@ export default function ApplicationDetailsPage() {
       const selectedApp = applicationData?.application.app
       actions.push({
         id: 'edit-application',
-        text: t('Edit application'),
+        text: t('Edit workload'),
         click: () => {
           if (isAppSet) {
             navigate(
@@ -231,7 +231,7 @@ export default function ApplicationDetailsPage() {
       })
       actions.push({
         id: 'delete-application',
-        text: t('Delete application'),
+        text: t('Delete workload'),
         click: () => {
           const recoilStates = getRecoilStates()
 
@@ -520,7 +520,7 @@ export default function ApplicationDetailsPage() {
       header={
         <AcmPageHeader
           breadcrumb={[
-            { text: t('Applications'), to: NavigationPath.applications },
+            { text: t('Workloads'), to: NavigationPath.applications },
             { text: name, to: '' },
           ]}
           title={name}

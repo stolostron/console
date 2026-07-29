@@ -132,7 +132,7 @@ export default function CreateSubscriptionApplicationPage() {
       header={
         <AcmPageHeader
           title={title}
-          breadcrumb={[{ text: t('Applications'), to: NavigationPath.applications }, { text: title }]}
+          breadcrumb={[{ text: t('Workloads'), to: NavigationPath.applications }, { text: title }]}
           switches={switches}
           actions={portals}
         />

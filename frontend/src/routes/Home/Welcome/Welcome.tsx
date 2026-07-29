@@ -36,7 +36,7 @@ export default function WelcomePage() {
       },
       {
         icon: <ApplicationsIcon />,
-        title: t('Applications'),
+        title: t('Workloads'),
         description: t(
           'Define a business application using open standards and deploy the applications using placement policies that are integrated into existing CI/CD pipelines and governance controls.'
         ),
@@ -79,7 +79,7 @@ export default function WelcomePage() {
       {
         title: t('Cluster landscape'),
         description: t(
-          'Deploy and maintain day two operations of applications distributed across your cluster landscape.'
+          'Deploy and maintain day two operations of workloads distributed across your cluster landscape.'
         ),
       },
       {

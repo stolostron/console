@@ -353,7 +353,7 @@ export default function PlacementOverviewPageContent() {
             )}
             {relatedAppSets.length > 0 && (
               <Card isPlain>
-                <CardTitle>{t('Applications')}</CardTitle>
+                <CardTitle>{t('Workloads')}</CardTitle>
                 <CardBody>
                   <AcmTable<ApplicationSet>
                     items={relatedAppSets}

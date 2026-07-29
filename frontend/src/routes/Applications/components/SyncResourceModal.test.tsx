@@ -59,7 +59,7 @@ const modalProps: ISyncResourceModalProps = {
 describe('Sync Resource Modal', () => {
   it('should render Argo app Helm', async () => {
     const { getByText } = render(<SyncResourceModal {...modalProps} />)
-    expect(getByText('Sync application')).toBeTruthy()
-    expect(getByText('Synchronize application resources with the source repository.')).toBeTruthy()
+    expect(getByText('Sync workload')).toBeTruthy()
+    expect(getByText('Synchronize workload resources with the source repository.')).toBeTruthy()
   })
 })

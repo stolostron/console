@@ -82,7 +82,7 @@ export function SyncArgoCDModal(props: ISyncArgoCDModalProps | { open: false }) 
   }
 
   const isApplicationSet = props.appOrAppSet.appSetApps && props.appOrAppSet.appSetApps.length > 0
-  const modalTitle = t('Initiate sync for ArgoCD application')
+  const modalTitle = t('Initiate sync for ArgoCD workload')
   const modalDescription = isApplicationSet
     ? t('Initiate synchronization of all applications in the ApplicationSet with their source repositories.')
     : t('Initiate synchronization of application resources with the source repository.')

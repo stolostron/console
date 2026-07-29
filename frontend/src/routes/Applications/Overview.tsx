@@ -929,7 +929,7 @@ export default function ApplicationsOverview() {
       if (isResourceTypeOf(resource, ApplicationDefinition)) {
         actions.push({
           id: 'viewApplication',
-          title: t('View application'),
+          title: t('View workload'),
           click: () => {
             navigate({
               pathname: generatePath(NavigationPath.applicationOverview, { name, namespace }),
@@ -939,7 +939,7 @@ export default function ApplicationsOverview() {
         })
         actions.push({
           id: 'editApplication',
-          title: t('Edit application'),
+          title: t('Edit workload'),
           click: () => {
             navigate({
               pathname: generatePath(NavigationPath.editApplicationSubscription, { name, namespace }),
@@ -952,7 +952,7 @@ export default function ApplicationsOverview() {
       if (isResourceTypeOf(resource, ApplicationSetDefinition)) {
         actions.push({
           id: 'viewApplication',
-          title: t('View application'),
+          title: t('View workload'),
           click: () => {
             navigate({
               pathname: generatePath(NavigationPath.applicationOverview, { name, namespace }),
@@ -962,7 +962,7 @@ export default function ApplicationsOverview() {
         })
         actions.push({
           id: 'editApplication',
-          title: t('Edit application'),
+          title: t('Edit workload'),
           click: () => {
             navigate({
               pathname: generatePath(NavigationPath.editApplicationArgo, { name, namespace }),
@@ -977,7 +977,7 @@ export default function ApplicationsOverview() {
         if (!argoAppType.spec?.sources) {
           actions.push({
             id: 'viewApplication',
-            title: t('View application'),
+            title: t('View workload'),
             click: () => {
               navigate({
                 pathname: generatePath(NavigationPath.applicationOverview, { name, namespace }),
@@ -990,7 +990,7 @@ export default function ApplicationsOverview() {
 
       actions.push({
         id: 'searchApplication',
-        title: t('Search application'),
+        title: t('Search workload'),
         click: () => {
           const [apigroup, apiversion] = resource.apiVersion.split('/')
           const isOCPorFluxApp = isOCPAppResource(resource)
@@ -1039,7 +1039,7 @@ export default function ApplicationsOverview() {
       if (isResourceTypeOf(resource, ApplicationDefinition) || isResourceTypeOf(resource, ApplicationSetDefinition)) {
         actions.push({
           id: 'deleteApplication',
-          title: t('Delete application'),
+          title: t('Delete workload'),
           click: () => {
             const appChildResources =
               resource.kind === ApplicationKind
@@ -1137,7 +1137,7 @@ export default function ApplicationsOverview() {
             navigate(NavigationPath.createApplicationSubscription)
           }
         }}
-        text={t('Create application')}
+        text={t('Create workload')}
         dropdownItems={[
           {
             id: 'psuedo.group.label',
@@ -1180,7 +1180,7 @@ export default function ApplicationsOverview() {
   const compareAppTypesLink = useMemo(
     () => (
       <Popover
-        headerContent={t('Compare application types')}
+        headerContent={t('Compare workload types')}
         bodyContent={
           <>
             <div>
@@ -1227,7 +1227,7 @@ export default function ApplicationsOverview() {
         maxWidth="850px"
       >
         <AcmButton variant="link" isInline>
-          {t('Compare application types')}
+          {t('Compare workload types')}
         </AcmButton>
       </Popover>
     ),
@@ -1282,8 +1282,8 @@ export default function ApplicationsOverview() {
           emptyState={
             <AcmEmptyState
               key="appOverviewEmptyState"
-              title={t("You don't have any applications yet")}
-              message={t('To get started, create an application.')}
+              title={t("You don't have any workloads yet")}
+              message={t('To get started, create a workload.')}
               action={emptyStateActions}
             />
           }

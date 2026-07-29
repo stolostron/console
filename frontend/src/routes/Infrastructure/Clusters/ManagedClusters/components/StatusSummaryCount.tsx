@@ -112,7 +112,7 @@ export function StatusSummaryCount() {
                   id: 'applications',
                   count: itemCount,
                   countClick: () => navigate(NavigationPath.applications + `?cluster=${cluster?.name}`),
-                  title: t('summary.applications'),
+                  title: t('summary.workloads'),
                 },
               ]
             : []),

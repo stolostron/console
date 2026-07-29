@@ -142,7 +142,7 @@ export function CreatePushApplicationSet() {
       applicationSets={applicationSets}
       placements={placements}
       breadcrumb={[
-        { text: t('Applications'), to: NavigationPath.applications },
+        { text: t('Workloads'), to: NavigationPath.applications },
         { text: t('Create application set - push model') },
       ]}
       clusters={managedClusters}

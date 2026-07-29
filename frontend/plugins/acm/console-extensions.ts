@@ -102,7 +102,7 @@ const applicationsNavItem: EncodedExtension<HrefNavItem> = {
   properties: {
     perspective: 'acm',
     id: 'acm-applications',
-    name: '%plugin__acm~Applications%',
+    name: '%plugin__acm~Workloads%',
     href: '/multicloud/applications',
     insertBefore: 'mce-credentials',
   },

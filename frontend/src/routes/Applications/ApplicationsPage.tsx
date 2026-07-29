@@ -17,7 +17,7 @@ export default function ApplicationsPage() {
       hasDrawer
       header={
         <AcmPageHeader
-          title={t('Applications')}
+          title={t('Workloads')}
           navigation={
             <AcmSecondaryNav
               navItems={[
