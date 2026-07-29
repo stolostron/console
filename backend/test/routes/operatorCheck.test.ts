@@ -23,7 +23,7 @@ const subscriptionOperators = {
 
 describe(`operatorCheck Route`, function () {
   it(`returns valid response with version for installed operator`, async function () {
-    nock(process.env.CLUSTER_API_URL).head('/api').reply(200, {
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200, {
       status: 200,
     })
     nock(process.env.CLUSTER_API_URL)
@@ -38,7 +38,7 @@ describe(`operatorCheck Route`, function () {
     })
   })
   it(`returns valid response for not-installed operator`, async function () {
-    nock(process.env.CLUSTER_API_URL).head('/api').reply(200, {
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200, {
       status: 200,
     })
     nock(process.env.CLUSTER_API_URL)
@@ -52,7 +52,7 @@ describe(`operatorCheck Route`, function () {
     })
   })
   it(`returns bad request for arbitrary operator`, async function () {
-    nock(process.env.CLUSTER_API_URL).head('/api').reply(200, {
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200, {
       status: 200,
     })
     nock(process.env.CLUSTER_API_URL)
@@ -63,7 +63,7 @@ describe(`operatorCheck Route`, function () {
   })
 
   it('correctly parses request body received in multiple chunks', async function () {
-    nock(process.env.CLUSTER_API_URL).head('/api').reply(200, {
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200, {
       status: 200,
     })
     nock(process.env.CLUSTER_API_URL)

@@ -26,7 +26,7 @@ const mockOrg = {
 }
 
 function nockAuth() {
-  return nock(process.env.CLUSTER_API_URL).head('/api').reply(200)
+  return nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
 }
 
 function nockSsoToken() {
@@ -67,7 +67,7 @@ describe('rosaWizardApi routes', () => {
     })
 
     test('should return 401 when not authenticated', async () => {
-      nock(process.env.CLUSTER_API_URL).head('/api').reply(401)
+      nock(process.env.CLUSTER_API_URL).get('/api').reply(401)
 
       const res = await request('POST', '/aws-account-ids', mockPayload)
       expect(res.statusCode).toEqual(401)
@@ -102,7 +102,7 @@ describe('rosaWizardApi routes', () => {
     })
 
     test('should return 401 when not authenticated', async () => {
-      nock(process.env.CLUSTER_API_URL).head('/api').reply(401)
+      nock(process.env.CLUSTER_API_URL).get('/api').reply(401)
 
       const res = await request('POST', '/aws-billing-accounts', mockPayload)
       expect(res.statusCode).toEqual(401)
@@ -166,7 +166,7 @@ describe('rosaWizardApi routes', () => {
     })
 
     test('should return 401 when not authenticated', async () => {
-      nock(process.env.CLUSTER_API_URL).head('/api').reply(401)
+      nock(process.env.CLUSTER_API_URL).get('/api').reply(401)
 
       const res = await request('POST', '/cluster-name-check', clusterNamePayload)
       expect(res.statusCode).toEqual(401)
@@ -311,7 +311,7 @@ describe('rosaWizardApi routes', () => {
     })
 
     test('should return 401 when not authenticated', async () => {
-      nock(process.env.CLUSTER_API_URL).head('/api').reply(401)
+      nock(process.env.CLUSTER_API_URL).get('/api').reply(401)
 
       const res = await request('POST', '/regions', mockPayload)
       expect(res.statusCode).toEqual(401)
@@ -354,7 +354,7 @@ describe('rosaWizardApi routes', () => {
     })
 
     test('should return 401 when not authenticated', async () => {
-      nock(process.env.CLUSTER_API_URL).head('/api').reply(401)
+      nock(process.env.CLUSTER_API_URL).get('/api').reply(401)
 
       const res = await request('POST', '/sts-role-arns', payloadWithAccount)
       expect(res.statusCode).toEqual(401)
@@ -434,7 +434,7 @@ describe('rosaWizardApi routes', () => {
     })
 
     test('should return 401 when not authenticated', async () => {
-      nock(process.env.CLUSTER_API_URL).head('/api').reply(401)
+      nock(process.env.CLUSTER_API_URL).get('/api').reply(401)
 
       const res = await request('POST', '/sts-user-role', mockPayload)
       expect(res.statusCode).toEqual(401)
@@ -506,7 +506,7 @@ describe('rosaWizardApi routes', () => {
     })
 
     test('should return 401 when not authenticated', async () => {
-      nock(process.env.CLUSTER_API_URL).head('/api').reply(401)
+      nock(process.env.CLUSTER_API_URL).get('/api').reply(401)
 
       const res = await request('POST', '/openshift-versions', mockPayload)
       expect(res.statusCode).toEqual(401)
