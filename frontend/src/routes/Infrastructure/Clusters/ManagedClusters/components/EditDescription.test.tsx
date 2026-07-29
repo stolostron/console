@@ -158,9 +158,7 @@ describe('EditDescription', () => {
   })
 
   test('preview button toggles between edit and preview mode', async () => {
-    const { getByLabelText, queryByLabelText } = render(
-      <EditDescription resource={resource} close={() => {}} />
-    )
+    const { getByLabelText, queryByLabelText } = render(<EditDescription resource={resource} close={() => {}} />)
     const textarea = getByLabelText('Description') as HTMLTextAreaElement
     expect(textarea).toBeVisible()
 
@@ -171,6 +169,30 @@ describe('EditDescription', () => {
     userEvent.click(queryByLabelText('Edit')!)
 
     await waitFor(() => expect(textarea.style.visibility).toBe('visible'))
+  })
+
+  test('resets preview mode when reopened with a different resource', async () => {
+    const otherResource: IResource = {
+      apiVersion: ManagedClusterApiVersion,
+      kind: ManagedClusterKind,
+      metadata: {
+        name: 'other-cluster',
+        annotations: { [CLUSTER_DESCRIPTION_ANNOTATION]: 'Other description' },
+      },
+    }
+
+    const { getByLabelText, rerender } = render(<EditDescription resource={resource} close={() => {}} />)
+    const textarea = getByLabelText('Description') as HTMLTextAreaElement
+
+    userEvent.click(getByLabelText('Preview'))
+    await waitFor(() => expect(textarea.style.visibility).toBe('hidden'))
+
+    rerender(<EditDescription resource={otherResource} close={() => {}} />)
+
+    await waitFor(() => {
+      expect(textarea.value).toBe('Other description')
+      expect(textarea.style.visibility).toBe('visible')
+    })
   })
 
   test('preview shows placeholder when description is empty', async () => {

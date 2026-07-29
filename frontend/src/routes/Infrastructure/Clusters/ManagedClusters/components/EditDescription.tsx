@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { IResource } from '../../../../../resources'
+import type { IResource } from '../../../../../resources'
 import { patchResource } from '../../../../../resources/utils'
 import {
   AcmAlertContext,
@@ -7,8 +7,8 @@ import {
   AcmForm,
   AcmModal,
   AcmSubmit,
-  IAlertContext,
 } from '../../../../../ui-components'
+import type { IAlertContext } from '../../../../../ui-components'
 import {
   ActionGroup,
   Button,
@@ -55,13 +55,16 @@ export function EditDescription(props: Readonly<{ resource?: IResource; close: (
   const textAreaRef = useRef<HTMLTextAreaElement>(null)
   const isOpen = props.resource !== undefined
 
+  const resourceName = props.resource?.metadata?.name
+
   useEffect(() => {
     if (isOpen) {
       const desc = props.resource?.metadata?.annotations?.[CLUSTER_DESCRIPTION_ANNOTATION] ?? ''
       setDescription(desc)
+      setIsPreview(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen])
+  }, [isOpen, resourceName])
 
   const handleSave = (alertContext: IAlertContext) => {
     alertContext.clearAlerts()
