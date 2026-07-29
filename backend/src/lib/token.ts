@@ -35,7 +35,7 @@ export async function isAuthenticated(token: string): Promise<number> {
   const response = await fetchRetry(process.env.CLUSTER_API_URL + '/api', {
     headers: { [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${token}` },
   })
-  void response.body?.on('error', () => undefined).resume()
+  response.body?.on('error', () => undefined).resume()
   return response.status
 }
 
