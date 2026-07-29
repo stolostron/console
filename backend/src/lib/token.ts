@@ -28,10 +28,6 @@ export function getToken(req: Http2ServerRequest): string | undefined {
   return token
 }
 
-
-
-
-
 // GET /api returns the core API group (~200 bytes) — unlike /apis which grows
 // with every installed CRD. The response body is drained so the socket returns
 // to the keepAlive pool immediately and native memory does not accumulate.
