@@ -24,7 +24,7 @@ function nockCredentialSecret(host: string) {
 
 describe(`ansibletower Route`, function () {
   it(`should list Ansible Automation controller Jobs`, async function () {
-    nock(process.env.CLUSTER_API_URL).head('/api').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
     nockCredentialSecret(TOWER_HOST)
     nock(TOWER_HOST).get(ansiblePaths[0]).reply(200, response)
     const res = await request('POST', '/ansibletower', {
@@ -37,7 +37,7 @@ describe(`ansibletower Route`, function () {
   })
 
   it(`should reject body-supplied tower hostname`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
     const res = await request('POST', '/ansibletower', {
       towerHost: TOWER_HOST + ansiblePaths[0],
       token: '12345',
@@ -46,7 +46,7 @@ describe(`ansibletower Route`, function () {
   })
 
   it(`should preserve the query string for paginated requests`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
     nockCredentialSecret(TOWER_HOST)
     nock(TOWER_HOST).get(ansiblePaths[0]).query({ page: '2', page_size: '20' }).reply(200, response)
     const res = await request('POST', '/ansibletower', {
@@ -59,7 +59,7 @@ describe(`ansibletower Route`, function () {
   })
 
   it(`should reject an external absolute URL in ansiblePath`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
     nockCredentialSecret(TOWER_HOST)
     const res = await request('POST', '/ansibletower', {
       secretNamespace: SECRET_NS,
@@ -70,7 +70,7 @@ describe(`ansibletower Route`, function () {
   })
 
   it(`should reject a network-path reference in ansiblePath`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
     nockCredentialSecret(TOWER_HOST)
     const res = await request('POST', '/ansibletower', {
       secretNamespace: SECRET_NS,
@@ -81,7 +81,7 @@ describe(`ansibletower Route`, function () {
   })
 
   it(`should fail closed when caller cannot read the credential secret`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
     nock(process.env.CLUSTER_API_URL)
       .get(`/api/v1/namespaces/${SECRET_NS}/secrets/${SECRET_NAME}`)
       .reply(403, { kind: 'Status', apiVersion: 'v1', status: 'Failure', reason: 'Forbidden', code: 403 })
@@ -94,7 +94,7 @@ describe(`ansibletower Route`, function () {
   })
 
   it(`when bad things happen to Ansible Automation controller Jobs 1`, async function () {
-    nock(process.env.CLUSTER_API_URL).head('/api').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
     nockCredentialSecret(TOWER_HOST)
     nock(TOWER_HOST).get(ansiblePaths[0]).reply(200, response)
     const res = await request('POST', '/ansibletower', {
@@ -107,7 +107,7 @@ describe(`ansibletower Route`, function () {
   })
 
   it(`when bad things happen to Ansible Automation controller Jobs 2`, async function () {
-    nock(process.env.CLUSTER_API_URL).head('/api').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
     nockCredentialSecret(TOWER_HOST)
     nock(TOWER_HOST).get(ansiblePaths[0]).reply(200, response)
     const res = await request('POST', '/ansibletower', {
@@ -119,7 +119,7 @@ describe(`ansibletower Route`, function () {
   })
 
   it(`when bad things happen to Ansible Automation controller Jobs 3`, async function () {
-    nock(process.env.CLUSTER_API_URL).head('/api').reply(401)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(401)
     const res = await request('POST', '/ansibletower')
     expect(res.statusCode).toEqual(401)
     expect(JSON.stringify(await parsePipedJsonBody(res))).toEqual(JSON.stringify({}))
