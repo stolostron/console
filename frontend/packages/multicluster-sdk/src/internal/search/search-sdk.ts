@@ -16,7 +16,25 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean }
   Int: { input: number; output: number }
   Float: { input: number; output: number }
+  Date: { input: any; output: any }
   Map: { input: any; output: any }
+}
+
+/** Event represents a changed resource in the search index. */
+export type Event = {
+  /** New data recorded on the search index. */
+  newData?: Maybe<Scalars['Map']['output']>
+  /** Previous resource data from the search index. */
+  oldData?: Maybe<Scalars['Map']['output']>
+  /** Values: INSERT, UPDATE, or DELETE */
+  operation: Scalars['String']['output']
+  /**
+   * Time the change event is registered in the search index.
+   * Note there's a delay from the time the resource changed in kubernetes.
+   */
+  timestamp: Scalars['Date']['output']
+  /** Kubernetes resource UID. */
+  uid: Scalars['ID']['output']
 }
 
 /** A message is used to communicate conditions detected while executing a query on the server. */
@@ -58,7 +76,7 @@ export type Query = {
   /**
    * Returns all fields from resources currently in the index.
    * Optionally, a query can be included to filter the results.
-   * For example, if we want to only get fields for Pod resources, we can pass a query with the filter `{property: kind, values:['Pod']}`
+   * For example, if we want to only get fields for Pod resources, we can pass in a query with the filter `{property: kind, values:['Pod']}`
    */
   searchSchema?: Maybe<Scalars['Map']['output']>
 }
@@ -94,6 +112,11 @@ export type SearchFilter = {
    * The values available for datetime fields (Ex: `created`, `startedAt`) are `hour`, `day`, `week`, `month` and `year`.
    * Property `kind`, if included in the filter, will be matched using a case-insensitive comparison.
    * For example, `kind:Pod` and `kind:pod` will bring up all pods. This is to maintain compatibility with Search V1.
+   *
+   * Wildcard matching: the `*` character can be used as a wildcard to match any sequence of characters.
+   * For example, a filter with property `name` and value `nginx-*` matches any resource whose name starts with `nginx-`.
+   * Similarly, property `namespace` with value `prod*` matches any namespace starting with `prod`.
+   * Wildcard matches are case-sensitive.
    */
   values: Array<InputMaybe<Scalars['String']['input']>>
 }
@@ -118,6 +141,18 @@ export type SearchInput = {
    * A value of -1 will remove the limit. Use carefully because it may impact the service.
    */
   limit?: InputMaybe<Scalars['Int']['input']>
+  /**
+   * Number of results to skip before returning results.
+   * Used in combination with limit to implement pagination.
+   * **Default is** 0
+   */
+  offset?: InputMaybe<Scalars['Int']['input']>
+  /**
+   * Order results by a property and direction.
+   * Format: "property_name asc" or "property_name desc"
+   * Example: "name desc" or "created asc"
+   */
+  orderBy?: InputMaybe<Scalars['String']['input']>
   /**
    * Filter relationships to the specified kinds.
    * If empty, all relationships will be included.
@@ -152,6 +187,21 @@ export type SearchResult = {
    * For example, if searching for deployments, this will return the related pod resources.
    */
   related?: Maybe<Array<Maybe<SearchRelatedResult>>>
+}
+
+/** Subscriptions implemented by the Search Query API. */
+export type Subscription = {
+  /**
+   * Watch changes to the data in the search index. An event is generated for each change
+   * matching the input filters. User's permissions (RBAC) are applied to each event resource.
+   * Events are generated from the search index and don't match the changes on Kubernetes.
+   */
+  watch?: Maybe<Event>
+}
+
+/** Subscriptions implemented by the Search Query API. */
+export type SubscriptionWatchArgs = {
+  input?: InputMaybe<SearchInput>
 }
 
 export type SearchSchemaQueryVariables = Exact<{
@@ -213,6 +263,20 @@ export type GetMessagesQueryVariables = Exact<{ [key: string]: never }>
 
 export type GetMessagesQuery = {
   messages?: Array<{ id: string; kind?: string | null; description?: string | null } | null> | null
+}
+
+export type SearchSubscriptionSubscriptionVariables = Exact<{
+  input?: InputMaybe<SearchInput>
+}>
+
+export type SearchSubscriptionSubscription = {
+  searchSubscription?: {
+    uid: string
+    operation: string
+    newData?: any | null
+    oldData?: any | null
+    timestamp: any
+  } | null
 }
 
 export const SearchSchemaDocument = gql`
@@ -668,3 +732,42 @@ export type GetMessagesQueryHookResult = ReturnType<typeof useGetMessagesQuery>
 export type GetMessagesLazyQueryHookResult = ReturnType<typeof useGetMessagesLazyQuery>
 export type GetMessagesSuspenseQueryHookResult = ReturnType<typeof useGetMessagesSuspenseQuery>
 export type GetMessagesQueryResult = Apollo.QueryResult<GetMessagesQuery, GetMessagesQueryVariables>
+export const SearchSubscriptionDocument = gql`
+  subscription searchSubscription($input: SearchInput) {
+    searchSubscription: watch(input: $input) {
+      uid
+      operation
+      newData
+      oldData
+      timestamp
+    }
+  }
+`
+
+/**
+ * __useSearchSubscription__
+ *
+ * To run a query within a React component, call `useSearchSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useSearchSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useSearchSubscription({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useSearchSubscription(
+  baseOptions?: Apollo.SubscriptionHookOptions<SearchSubscriptionSubscription, SearchSubscriptionSubscriptionVariables>
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useSubscription<SearchSubscriptionSubscription, SearchSubscriptionSubscriptionVariables>(
+    SearchSubscriptionDocument,
+    options
+  )
+}
+export type SearchSubscriptionSubscriptionHookResult = ReturnType<typeof useSearchSubscription>
+export type SearchSubscriptionSubscriptionResult = Apollo.SubscriptionResult<SearchSubscriptionSubscription>
