@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useSharedReactQuery } from '~/hooks/shared-react-query'
 import { getWizardMachineTypes } from '~/lib/rosa-hcp-api'
 import { MachineType } from '~/resources'
@@ -25,38 +25,34 @@ export type MachineTypesFetchArgs = {
 
 export const useFetchMachineTypes = (selectedSecret: SelectedSecret) => {
   const { useQuery } = useSharedReactQuery()
-  const [machineTypesQueryParams, setMachineTypesQueryParams] = useState<MachineTypesFetchArgs | undefined>()
+  const [region, setRegion] = useState<string | undefined>()
+  const [roleArn, setRoleArn] = useState<string | undefined>()
+  const [availabilityZones, setAvailabilityZones] = useState<string[] | undefined>()
 
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: rosaWizardKeys.machineTypes(
-      selectedSecret?.client_id,
-      machineTypesQueryParams?.region,
-      machineTypesQueryParams?.role_arn,
-      machineTypesQueryParams?.availability_zones
-    ),
+    queryKey: rosaWizardKeys.machineTypes(selectedSecret?.client_id, region, roleArn, availabilityZones),
     queryFn: async ({ signal }) => {
       const response = await getWizardMachineTypes(selectedSecret.client_id, selectedSecret.client_secret, signal, {
-        region: machineTypesQueryParams?.region as string,
-        role_arn: machineTypesQueryParams?.role_arn as string,
-        availability_zones: machineTypesQueryParams?.availability_zones ?? [],
+        region: region as string,
+        role_arn: roleArn as string,
+        availability_zones: availabilityZones ?? [],
       })
-      return response.items ?? []
+      return response
     },
-    enabled:
-      !!selectedSecret &&
-      !!machineTypesQueryParams?.region &&
-      !!machineTypesQueryParams?.role_arn &&
-      !!machineTypesQueryParams?.availability_zones?.length,
+    enabled: !!selectedSecret && !!region && !!roleArn && !!availabilityZones?.length,
     retry: false,
-    select: buildMachineTypeOptions,
   })
 
   const fetch = useCallback(async (queryParams: MachineTypesFetchArgs): Promise<void> => {
-    setMachineTypesQueryParams(queryParams)
+    setRegion(queryParams.region)
+    setRoleArn(queryParams.role_arn)
+    setAvailabilityZones(queryParams.availability_zones)
   }, [])
 
+  const machineTypeOptions = useMemo(() => buildMachineTypeOptions(data?.items ?? []), [data])
+
   return {
-    data: data ?? [],
+    data: machineTypeOptions,
     isLoading,
     error: isError ? (error instanceof Error ? error.message : 'Unknown error') : null,
     fetch,

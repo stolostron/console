@@ -163,12 +163,26 @@ describe('useFetchMachineTypes', () => {
   })
 
   test('should return machine type options when query succeeds', () => {
-    const mockOptions = [{ id: 'm5.xlarge', value: 'm5.xlarge', label: 'm5.xlarge', description: '4 vCPU 16 GiB RAM' }]
-    mockUseQuery.mockReturnValue({ data: mockOptions, isLoading: false, isError: false, error: null })
+    const items = [{ id: 'm5.xlarge', name: 'm5.xlarge', category: 'general_purpose', cloud_provider: { id: 'aws' } }]
+    mockUseQuery.mockReturnValue({ data: { items }, isLoading: false, isError: false, error: null })
 
     const { result } = renderHook(() => useFetchMachineTypes(mockSecret))
 
-    expect(result.current.data).toEqual(mockOptions)
+    expect(result.current.data).toEqual([
+      { id: 'm5.xlarge', value: 'm5.xlarge', label: 'm5.xlarge', description: 'm5.xlarge' },
+    ])
+  })
+
+  test('should return a stable data reference across re-renders when query data is unchanged', () => {
+    const items = [{ id: 'm5.xlarge', name: 'm5.xlarge', category: 'general_purpose', cloud_provider: { id: 'aws' } }]
+    const queryData = { items }
+    mockUseQuery.mockReturnValue({ data: queryData, isLoading: false, isError: false, error: null })
+
+    const { result, rerender } = renderHook(() => useFetchMachineTypes(mockSecret))
+    const firstData = result.current.data
+    rerender()
+
+    expect(result.current.data).toBe(firstData)
   })
 
   test('should forward loading state as isLoading', () => {
@@ -196,7 +210,7 @@ describe('useFetchMachineTypes', () => {
   })
 
   test('should return null error when query is not in error state', () => {
-    mockUseQuery.mockReturnValue({ data: [], isLoading: false, isError: false, error: null })
+    mockUseQuery.mockReturnValue({ data: { items: [] }, isLoading: false, isError: false, error: null })
 
     const { result } = renderHook(() => useFetchMachineTypes(mockSecret))
 
@@ -213,13 +227,14 @@ describe('useFetchMachineTypes', () => {
     expect(result.current.fetch).toBe(firstFetch)
   })
 
-  test('should call getWizardMachineTypes with args from fetch and return raw items from queryFn', async () => {
+  test('should call getWizardMachineTypes with args from fetch and return the raw response from queryFn', async () => {
     const { getWizardMachineTypes } = jest.requireMock('~/lib/rosa-hcp-api') as {
       getWizardMachineTypes: jest.Mock
     }
-    getWizardMachineTypes.mockResolvedValue({
+    const mockResponse = {
       items: [{ id: 'm5.xlarge', name: 'm5.xlarge', category: 'general_purpose', cloud_provider: { id: 'aws' } }],
-    })
+    }
+    getWizardMachineTypes.mockResolvedValue(mockResponse)
     mockUseQuery.mockReturnValue({ data: undefined, isLoading: false, isError: false, error: null })
 
     const { result, rerender } = renderHook(() => useFetchMachineTypes(mockSecret))
@@ -230,7 +245,6 @@ describe('useFetchMachineTypes', () => {
 
     const lastCallOptions = mockUseQuery.mock.calls[mockUseQuery.mock.calls.length - 1][0] as {
       queryFn: (ctx: { signal?: AbortSignal }) => Promise<unknown>
-      select: (items: unknown) => unknown
     }
     const data = await lastCallOptions.queryFn({ signal: undefined })
 
@@ -239,11 +253,6 @@ describe('useFetchMachineTypes', () => {
       role_arn: 'arn:aws:iam::123456789012:role/Installer',
       availability_zones: ['us-east-1a', 'us-east-1b'],
     })
-    expect(data).toEqual([
-      { id: 'm5.xlarge', name: 'm5.xlarge', category: 'general_purpose', cloud_provider: { id: 'aws' } },
-    ])
-    expect(lastCallOptions.select(data)).toEqual([
-      { id: 'm5.xlarge', value: 'm5.xlarge', label: 'm5.xlarge', description: 'm5.xlarge' },
-    ])
+    expect(data).toEqual(mockResponse)
   })
 })
