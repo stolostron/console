@@ -381,7 +381,7 @@ describe('Export from application tables', () => {
 
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [
-        'Name,Namespace,Channel,Applications,Clusters,Time window,Created\n' +
+        'Name,Namespace,Channel,Workloads,Clusters,Time window,Created\n' +
           '"helloworld-simple-subscription-1","helloworld-simple-ns","ggithubcom-app-samples",-,"None",-,"2026-07-30T03:18:48.000Z"\n' +
           '"helloworld-simple-subscription-2","helloworld-simple-ns","ggithubcom-app-samples",-,"None",-,"2026-07-30T03:18:48.000Z"\n' +
           '"helloworld-simple-subscription-3","helloworld-simple-ns","ggithubcom-app-samples","1","1 Remote, 1 Local","Active","2026-07-30T03:18:48.000Z"',

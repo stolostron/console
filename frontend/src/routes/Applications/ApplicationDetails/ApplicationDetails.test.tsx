@@ -373,7 +373,7 @@ describe('Applications Page', () => {
     userEvent.click(screen.getByText('Actions'))
     userEvent.click(
       screen.getByRole('menuitem', {
-        name: /delete application/i,
+        name: /delete workload/i,
       })
     )
     expect(screen.getByText(/permanently delete application application-0\?/i)).toBeTruthy()

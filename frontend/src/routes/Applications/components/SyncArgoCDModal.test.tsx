@@ -54,7 +54,7 @@ describe('SyncArgoCDModal', () => {
       </AcmToastProvider>
     )
 
-    expect(getByText('Initiate sync for ArgoCD application')).toBeTruthy()
+    expect(getByText('Initiate sync for ArgoCD workload')).toBeTruthy()
     expect(getByText('Initiate synchronization of application resources with the source repository.')).toBeTruthy()
     expect(screen.getByRole('button', { name: /synchronize/i })).toBeTruthy()
     expect(screen.getByRole('button', { name: /cancel/i })).toBeTruthy()
@@ -115,7 +115,7 @@ describe('SyncArgoCDModal', () => {
       </AcmToastProvider>
     )
 
-    expect(getByText('Initiate sync for ArgoCD application')).toBeTruthy()
+    expect(getByText('Initiate sync for ArgoCD workload')).toBeTruthy()
     expect(
       getByText('Initiate synchronization of all applications in the ApplicationSet with their source repositories.')
     ).toBeTruthy()

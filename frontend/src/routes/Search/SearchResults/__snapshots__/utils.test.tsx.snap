@@ -10,7 +10,7 @@ exports[`Correctly return empty row Actions for Application 1`] = `
   {
     "click": [Function],
     "id": "view-application-topology",
-    "title": "View Application topology",
+    "title": "View Workload topology",
   },
   {
     "click": [Function],
@@ -62,7 +62,7 @@ exports[`Correctly return row Actions for Application in global search 1`] = `
   {
     "click": [Function],
     "id": "view-application-topology",
-    "title": "View Application topology",
+    "title": "View Workload topology",
   },
   {
     "click": [Function],

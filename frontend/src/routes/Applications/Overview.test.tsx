@@ -250,7 +250,7 @@ describe('Applications Page', () => {
 
     // click delete
     userEvent.click(screen.getAllByRole('button', { name: /actions/i })[1])
-    userEvent.click(screen.getByText(/delete application/i))
+    userEvent.click(screen.getByText(/delete workload/i))
     expect(screen.getByText(/permanently delete applicationset applicationset-0\?/i)).toBeTruthy()
   })
 
@@ -322,7 +322,7 @@ describe('Create application dropdown', () => {
     )
 
     await waitForText('feng-remote-argo8')
-    const createButton = screen.getByRole('button', { name: /create application/i })
+    const createButton = screen.getByRole('button', { name: /create workload/i })
     expect(createButton).toBeDisabled()
   })
 })
