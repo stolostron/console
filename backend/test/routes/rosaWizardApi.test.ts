@@ -512,4 +512,77 @@ describe('rosaWizardApi routes', () => {
       expect(res.statusCode).toEqual(401)
     })
   })
+
+  describe('POST /vpcs', () => {
+    const vpcsPayload = {
+      ...mockPayload,
+      aws: { account_id: '720424066366', sts: { role_arn: 'arn:aws:iam::720424066366:role/Installer' } },
+      region: { id: 'us-east-2' },
+    }
+
+    test('should return VPCs for given AWS account and region', async () => {
+      const vpcsResponse = {
+        kind: 'VPCList',
+        items: [
+          { vpc_id: 'vpc-123', name: 'my-vpc' },
+          { vpc_id: 'vpc-456', name: 'other-vpc' },
+        ],
+      }
+
+      nockAuth()
+      nockSsoToken()
+      nock(API_HOST)
+        .post('/api/clusters_mgmt/v1/aws_inquiries/vpcs?fetchSecurityGroups=true', {
+          aws: vpcsPayload.aws,
+          region: vpcsPayload.region,
+        })
+        .reply(200, vpcsResponse)
+
+      const res = await request('POST', '/vpcs', vpcsPayload)
+      expect(res.statusCode).toEqual(200)
+
+      const body = await parsePipedJsonBody(res)
+      expect(body).toEqual({ statusCode: 200, body: vpcsResponse })
+    })
+
+    test('should return error object when VPCs API call fails', async () => {
+      nockAuth()
+      nockSsoToken()
+      nock(API_HOST)
+        .post('/api/clusters_mgmt/v1/aws_inquiries/vpcs?fetchSecurityGroups=true')
+        .replyWithError('connection refused')
+
+      const res = await request('POST', '/vpcs', vpcsPayload)
+      expect(res.statusCode).toEqual(200)
+
+      const body = await parsePipedJsonBody<{ error: string }>(res)
+      expect(body).toEqual({ error: expect.stringContaining('connection refused') as string })
+    })
+
+    test('should return 500 when SSO token request fails', async () => {
+      nockAuth()
+      nock(SSO_HOST).post(SSO_PATH).replyWithError('SSO unavailable')
+
+      const res = await request('POST', '/vpcs', vpcsPayload)
+      expect(res.statusCode).toEqual(500)
+    })
+
+    test('should forward error response from upstream API', async () => {
+      const errorResponse = {
+        kind: 'Error',
+        id: '400',
+        reason: 'The role ARN is not valid',
+      }
+
+      nockAuth()
+      nockSsoToken()
+      nock(API_HOST).post('/api/clusters_mgmt/v1/aws_inquiries/vpcs?fetchSecurityGroups=true').reply(400, errorResponse)
+
+      const res = await request('POST', '/vpcs', vpcsPayload)
+      expect(res.statusCode).toEqual(200)
+
+      const body = await parsePipedJsonBody(res)
+      expect(body).toEqual({ statusCode: 400, body: errorResponse })
+    })
+  })
 })

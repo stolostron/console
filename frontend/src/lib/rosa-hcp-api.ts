@@ -14,6 +14,8 @@ import {
   WizardBasePayload,
   WizardErrorResponse,
   OpenshiftVersionResponse,
+  VPCsPayload,
+  VPCsResponse,
 } from '~/resources'
 import { fetchRetry, getBackendUrl } from '~/resources/utils'
 
@@ -134,3 +136,11 @@ export const getWizardVersions = (
   signal?: AbortSignal
 ): Promise<OpenshiftVersionResponse> =>
   getWizardData<OpenshiftVersionResponse>(client_id, client_secret, '/openshift-versions', signal)
+
+export const getWizardVPCs = (
+  client_id: string,
+  client_secret: string,
+  signal?: AbortSignal,
+  additionalData?: VPCsPayload
+): Promise<VPCsResponse> =>
+  getWizardData<VPCsResponse, VPCsPayload>(client_id, client_secret, '/vpcs', signal, additionalData)
