@@ -82,6 +82,26 @@ describe('queryKeyFactory', () => {
     expect(key1).not.toEqual(key2)
   })
 
+  test('rosaWizardKeys.machineTypes should extend the base key with region, role arn, and availability zones', () => {
+    const key = rosaWizardKeys.machineTypes('test-client-id', 'us-east-1', 'arn:aws:iam::123:role/Installer', [
+      'us-east-1a',
+      'us-east-1b',
+    ])
+    expect(key).toEqual([
+      ROSA_HCP_WIZARD_QUERY_KEY,
+      'test-client-id',
+      'us-east-1',
+      'arn:aws:iam::123:role/Installer',
+      'us-east-1a,us-east-1b',
+      'machine-types',
+    ])
+  })
+
+  test('rosaWizardKeys.machineTypes should default availability zones to an empty string', () => {
+    const key = rosaWizardKeys.machineTypes('test-client-id')
+    expect(key).toEqual([ROSA_HCP_WIZARD_QUERY_KEY, 'test-client-id', undefined, undefined, '', 'machine-types'])
+  })
+
   test('each key factory call should return a new array instance', () => {
     const key1 = rosaWizardKeys.awsInfrastructureAccounts('test-client-id')
     const key2 = rosaWizardKeys.awsInfrastructureAccounts('test-client-id')

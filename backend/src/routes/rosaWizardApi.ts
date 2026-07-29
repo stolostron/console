@@ -31,6 +31,12 @@ type WithAwsAccount = Payload & {
   aws_account_id: string
 }
 
+type MachineTypesPayload = Payload & {
+  region: string
+  role_arn: string
+  availability_zones: string[]
+}
+
 type ClusterNameCheck = Payload & {
   cluster_name: string
 }
@@ -404,6 +410,50 @@ export async function getUserRole(req: Http2ServerRequest, res: Http2ServerRespo
 
           const accReq = await jsonRequest(userRolesPath, accessTokenSSO).catch((err: Error) => {
             logger.error({ msg: 'Error gettting account info', error: err.message })
+          })
+
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify(accReq))
+        } catch (err) {
+          logger.error(err)
+          respondInternalServerError(req, res)
+        }
+      })
+    } catch (err) {
+      logger.error(err)
+      respondInternalServerError(req, res)
+    }
+  }
+}
+
+export async function getWizardMachineTypes(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
+  const token = await getAuthenticatedToken(req, res)
+  if (token) {
+    try {
+      let data: string = undefined
+      const chucks: string[] = []
+      req.on('data', (chuck: string) => {
+        chucks.push(chuck)
+      })
+
+      req.on('end', async () => {
+        try {
+          data = chucks.join('')
+          const body = JSON.parse(data) as MachineTypesPayload
+
+          const accessTokenSSO = await getOcmServiceToken(body.service_account_id, body.service_account_secret)
+
+          const machineTypesPath = `${API_URL}/api/clusters_mgmt/v1/aws_inquiries/machine_types?size=-1`
+
+          const requestBody = {
+            aws: { sts: { role_arn: body.role_arn } },
+            region: { id: body.region },
+            availability_zones: body.availability_zones ?? [],
+          }
+
+          const accReq = await jsonPost(machineTypesPath, requestBody, accessTokenSSO).catch((err: Error) => {
+            logger.error({ msg: 'Error getting machine types', error: err.message })
+            return { error: err.message }
           })
 
           res.setHeader('Content-Type', 'application/json')

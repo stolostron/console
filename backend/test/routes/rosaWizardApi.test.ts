@@ -585,4 +585,92 @@ describe('rosaWizardApi routes', () => {
       expect(body).toEqual({ statusCode: 400, body: errorResponse })
     })
   })
+
+  describe('POST /machine-types', () => {
+    const machineTypesPayload = {
+      ...mockPayload,
+      region: 'us-east-1',
+      role_arn: 'arn:aws:iam::720424066366:role/Installer',
+      availability_zones: ['us-east-1a', 'us-east-1b'],
+    }
+
+    test('should return machine types for the given region', async () => {
+      const machineTypesResponse = {
+        kind: 'MachineTypeList',
+        page: 1,
+        size: 2,
+        total: 2,
+        items: [
+          {
+            kind: 'MachineType',
+            id: 'm5.xlarge',
+            name: 'm5.xlarge - General Purpose',
+            category: 'general_purpose',
+            cpu: { value: 4, unit: 'vCPU' },
+            memory: { value: 17179869184, unit: 'B' },
+            cloud_provider: { id: 'aws' },
+          },
+          {
+            kind: 'MachineType',
+            id: 'm6a.xlarge',
+            name: 'm6a.xlarge - General Purpose',
+            category: 'general_purpose',
+            cpu: { value: 4, unit: 'vCPU' },
+            memory: { value: 17179869184, unit: 'B' },
+            cloud_provider: { id: 'aws' },
+          },
+        ],
+      }
+
+      nockAuth()
+      nockSsoToken()
+      nock(API_HOST)
+        .post('/api/clusters_mgmt/v1/aws_inquiries/machine_types', {
+          aws: { sts: { role_arn: 'arn:aws:iam::720424066366:role/Installer' } },
+          region: { id: 'us-east-1' },
+          availability_zones: ['us-east-1a', 'us-east-1b'],
+        })
+        .query({ size: '-1' })
+        .reply(200, machineTypesResponse)
+
+      const res = await request('POST', '/machine-types', machineTypesPayload)
+      expect(res.statusCode).toEqual(200)
+
+      const body = await parsePipedJsonBody(res)
+      expect(body).toEqual({ statusCode: 200, body: machineTypesResponse })
+    })
+
+    test('should return error response from OCM API', async () => {
+      const errorResponse = {
+        kind: 'Error',
+        id: '400',
+        reason: 'Invalid region',
+      }
+
+      nockAuth()
+      nockSsoToken()
+      nock(API_HOST).post('/api/clusters_mgmt/v1/aws_inquiries/machine_types').query(true).reply(400, errorResponse)
+
+      const res = await request('POST', '/machine-types', machineTypesPayload)
+      expect(res.statusCode).toEqual(200)
+
+      const body = await parsePipedJsonBody(res)
+      expect(body).toEqual({ statusCode: 400, body: errorResponse })
+    })
+
+    test('should return error object when machine types request fails', async () => {
+      nockAuth()
+      nockSsoToken()
+      nock(API_HOST)
+        .post('/api/clusters_mgmt/v1/aws_inquiries/machine_types')
+        .query(true)
+        .replyWithError('connection refused')
+
+      const res = await request('POST', '/machine-types', machineTypesPayload)
+      expect(res.statusCode).toEqual(200)
+
+      const body = await parsePipedJsonBody<{ error: string }>(res)
+      expect(body).toEqual({ error: expect.stringContaining('connection refused') as string })
+    })
+  })
 })

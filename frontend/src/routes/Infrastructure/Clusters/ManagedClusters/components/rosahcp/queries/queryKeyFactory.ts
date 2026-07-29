@@ -34,4 +34,12 @@ export const rosaWizardKeys = {
     region,
     'vpc',
   ],
+  machineTypes: (client_id: string, region?: string, roleArn?: string, availabilityZones?: string[]) => [
+    ...rosaWizardKeys.all,
+    client_id,
+    region,
+    roleArn,
+    (availabilityZones ?? []).join(','),
+    'machine-types',
+  ],
 }
