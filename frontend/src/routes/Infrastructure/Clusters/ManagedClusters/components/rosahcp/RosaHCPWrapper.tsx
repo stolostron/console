@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { SelectedSecret } from './constants/types'
 import { useCredentialsSecrets } from './hooks/useCredentialsSecrets'
 import { useFetchOrganizationQuota } from './queries/useFetchAwsBillingAccountIds'
@@ -13,7 +13,7 @@ import { useFetchMachineTypes } from './queries/useFetchMachineTypes'
 import { useFetchVPCs } from './queries/useFetchVPCs'
 import { DropdownType, RosaHCPWizard, ROSAHCPWizardData } from '@redhat-cloud-services/nxtcm-rosa-hcp-wizard'
 import { useClusterNameUniquenessCheck } from './queries/useCheckClusterNameUniqueness'
-import { useLocation } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 import { NavigationPath } from '~/NavigationPath'
 import { useTranslation } from '~/lib/acm-i18next'
 import { AcmPage, AcmPageHeader } from '~/ui-components'
@@ -27,12 +27,20 @@ export const RosaHCPWrapper = () => {
   const secret = useCredentialsSecrets()
   const [t] = useTranslation()
 
+  const navigate = useNavigate()
   const location = useLocation()
   const selectedSecretName = (location.state as { selectedSecretName?: string })?.selectedSecretName
-  const selectedSecretObj = useMemo(
-    () => secret.find((s) => s.metadata.name === selectedSecretName) ?? secret[0],
-    [secret, selectedSecretName]
-  )
+  const selectedSecretObj = useMemo(() => {
+    const foundSecret = secret.find((s) => s.metadata.name === selectedSecretName)
+    return foundSecret
+  }, [secret, selectedSecretName])
+
+  useEffect(() => {
+    if (!selectedSecretObj) {
+      navigate(NavigationPath.managedClusters)
+    }
+  }, [selectedSecretObj, navigate])
+
   const selectedSecret = selectedSecretObj?.data as SelectedSecret
 
   const {
@@ -93,91 +101,122 @@ export const RosaHCPWrapper = () => {
 
   const { clusterNameValidation, checkClusterNameUniqueness } = useClusterNameUniquenessCheck(selectedSecret)
 
-  const wizardData: ROSAHCPWizardData = useMemo(() => ({
-    checkClusterNameUniqueness,
-    clusterNameValidation,
-    awsInfrastructureAccounts: {
-      data: transform(awsInfraAccounts),
-      error: awsInfraError instanceof Error ? awsInfraError.message : null,
-      isFetching: isAwsInfraLoading,
-      fetch: async () => {
-        await awsInfraRefetch()
+  const wizardData: ROSAHCPWizardData = useMemo(
+    () => ({
+      checkClusterNameUniqueness,
+      clusterNameValidation,
+      awsInfrastructureAccounts: {
+        data: transform(awsInfraAccounts),
+        error: awsInfraError instanceof Error ? awsInfraError.message : null,
+        isFetching: isAwsInfraLoading,
+        fetch: async () => {
+          await awsInfraRefetch()
+        },
       },
-    },
-    awsBillingAccounts: {
-      data: awsBillingAccounts,
-      error: awsBillingError instanceof Error ? awsBillingError.message : null,
-      isFetching: isAwsBillingLoading,
-      fetch: async () => {
-        await awsBillingRefetch()
+      awsBillingAccounts: {
+        data: awsBillingAccounts,
+        error: awsBillingError instanceof Error ? awsBillingError.message : null,
+        isFetching: isAwsBillingLoading,
+        fetch: async () => {
+          await awsBillingRefetch()
+        },
       },
-    },
-    regions: {
-      data: regions ?? [],
-      error: regionsError,
-      isFetching: isRegionsLoading,
-      fetch: async () => {
-        await regionsRefetch()
+      regions: {
+        data: regions ?? [],
+        error: regionsError,
+        isFetching: isRegionsLoading,
+        fetch: async () => {
+          await regionsRefetch()
+        },
       },
-    },
-    versions: {
-      data: versions ?? { releases: [] },
-      error: versionsError instanceof Error ? versionsError.message : null,
-      isFetching: isVersionsLoading,
-      fetch: async () => {
-        await versionsRefetch()
+      versions: {
+        data: versions ?? { releases: [] },
+        error: versionsError instanceof Error ? versionsError.message : null,
+        isFetching: isVersionsLoading,
+        fetch: async () => {
+          await versionsRefetch()
+        },
       },
-    },
-    machineTypes: {
-      data: machineTypes,
-      error: machineTypesError,
-      isFetching: isMachineTypesLoading,
-      fetch: refetchMachineTypes,
-    },
-    roles: {
-      data: accountRoleARNs,
-      error: roleARNsError,
-      isFetching: isRolesARNsLoading,
-      ocmRoleARN: ocmRole?.arn ?? null,
+      machineTypes: {
+        data: machineTypes,
+        error: machineTypesError,
+        isFetching: isMachineTypesLoading,
+        fetch: refetchMachineTypes,
+      },
+      roles: {
+        data: accountRoleARNs,
+        error: roleARNsError,
+        isFetching: isRolesARNsLoading,
+        ocmRoleARN: ocmRole?.arn ?? null,
+        ocmRoleError,
+        userRoleError,
+        fetch: refetchRolesARNs,
+      },
+      oidcConfig: {
+        data: oidcConfig,
+        error: oidcConfigError,
+        isFetching: isOidcConfigLoading,
+        fetch: refetchOidcConfig,
+      },
+      vpcList: {
+        data: vpcs,
+        error: vpcsError ?? null,
+        isFetching: isVPCsLoading,
+        fetch: refetchVPCs,
+      },
+      // This has to be removed from the wizard package: part of VPC api call
+      subnets: {
+        data: [],
+        error: null,
+        isFetching: false,
+      },
+      // This has to be removed from the wizard package: part of VPC api call
+      securityGroups: {
+        data: [],
+        error: null,
+        isFetching: false,
+      },
+    }),
+    [
+      awsInfraAccounts,
+      isAwsInfraLoading,
+      awsInfraError,
+      awsInfraRefetch,
+      awsBillingAccounts,
+      isAwsBillingLoading,
+      awsBillingError,
+      awsBillingRefetch,
+      regions,
+      isRegionsLoading,
+      regionsError,
+      regionsRefetch,
+      versions,
+      isVersionsLoading,
+      versionsError,
+      versionsRefetch,
+      machineTypes,
+      isMachineTypesLoading,
+      machineTypesError,
+      refetchMachineTypes,
+      accountRoleARNs,
+      isRolesARNsLoading,
+      roleARNsError,
+      ocmRole,
       ocmRoleError,
       userRoleError,
-      fetch: refetchRolesARNs,
-    },
-    oidcConfig: {
-      data: oidcConfig,
-      error: oidcConfigError,
-      isFetching: isOidcConfigLoading,
-      fetch: refetchOidcConfig,
-    },
-    vpcList: {
-      data: vpcs,
-      error: vpcsError ?? null,
-      isFetching: isVPCsLoading,
-      fetch: refetchVPCs,
-    },
-    // This has to be removed from the wizard package: part of VPC api call
-    subnets: {
-      data: [],
-      error: null,
-      isFetching: false,
-    },
-    // This has to be removed from the wizard package: part of VPC api call
-    securityGroups: {
-      data: [],
-      error: null,
-      isFetching: false,
-    },
-  }), [
-    awsInfraAccounts, isAwsInfraLoading, awsInfraError, awsInfraRefetch,
-    awsBillingAccounts, isAwsBillingLoading, awsBillingError, awsBillingRefetch,
-    regions, isRegionsLoading, regionsError, regionsRefetch,
-    versions, isVersionsLoading, versionsError, versionsRefetch,
-    machineTypes, isMachineTypesLoading, machineTypesError, refetchMachineTypes,
-    accountRoleARNs, isRolesARNsLoading, roleARNsError, ocmRole, ocmRoleError, userRoleError, refetchRolesARNs,
-    oidcConfig, isOidcConfigLoading, oidcConfigError, refetchOidcConfig,
-    vpcs, isVPCsLoading, vpcsError, refetchVPCs,
-    clusterNameValidation, checkClusterNameUniqueness,
-  ])
+      refetchRolesARNs,
+      oidcConfig,
+      isOidcConfigLoading,
+      oidcConfigError,
+      refetchOidcConfig,
+      vpcs,
+      isVPCsLoading,
+      vpcsError,
+      refetchVPCs,
+      clusterNameValidation,
+      checkClusterNameUniqueness,
+    ]
+  )
 
   const breadcrumbs = useMemo(() => {
     const newBreadcrumbs = [
@@ -188,6 +227,10 @@ export const RosaHCPWrapper = () => {
     ]
     return newBreadcrumbs
   }, [t])
+
+  if (!selectedSecret) {
+    return null
+  }
 
   return (
     <AcmPage
