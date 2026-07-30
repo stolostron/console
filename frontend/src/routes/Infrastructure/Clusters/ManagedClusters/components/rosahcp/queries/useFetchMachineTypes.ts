@@ -51,7 +51,7 @@ export const useFetchMachineTypes = (selectedSecret: SelectedSecret) => {
     setAvailabilityZones(queryParams.availability_zones)
   }, [])
 
-  const machineTypeOptions = useMemo(() => buildMachineTypeOptions(data?.body.items ?? []), [data])
+  const machineTypeOptions = useMemo(() => buildMachineTypeOptions(data?.body?.items ?? []), [data])
 
   return {
     data: machineTypeOptions,

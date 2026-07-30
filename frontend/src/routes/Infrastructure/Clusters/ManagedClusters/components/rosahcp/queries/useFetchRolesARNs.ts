@@ -34,7 +34,7 @@ const normalizedAWSAccountRole = (arrayOfRoleItems: AccountRoleARN[], prefix: st
 export const normalizeAWSAccountRoles = (accountRoles: RoleARNsResponse): NormalizedAccountRole[] => {
   const normalizedRoles: NormalizedAccountRole[] = []
 
-  accountRoles?.body.items.forEach((accountRole: AccountRole) => {
+  accountRoles?.body?.items.forEach((accountRole: AccountRole) => {
     // Only use accountRoles that have more than 1 arn attached
     // This is to prevent managed policy roles created with an unsupported CLI version
     if (accountRole.items && accountRole.items.length > 1) {

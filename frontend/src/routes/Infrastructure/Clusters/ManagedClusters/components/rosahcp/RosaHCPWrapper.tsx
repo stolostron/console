@@ -93,83 +93,81 @@ export const RosaHCPWrapper = () => {
 
   const { clusterNameValidation, checkClusterNameUniqueness } = useClusterNameUniquenessCheck(selectedSecret)
 
-  const wizardData: ROSAHCPWizardData = useMemo(
-    () => ({
-      checkClusterNameUniqueness,
-      clusterNameValidation,
-      awsInfrastructureAccounts: {
-        data: transform(awsInfraAccounts),
-        error: awsInfraError instanceof Error ? awsInfraError.message : null,
-        isFetching: isAwsInfraLoading,
-        fetch: async () => {
-          await awsInfraRefetch()
-        },
+  const wizardData: ROSAHCPWizardData = useMemo(() => ({
+    checkClusterNameUniqueness,
+    clusterNameValidation,
+    awsInfrastructureAccounts: {
+      data: transform(awsInfraAccounts),
+      error: awsInfraError instanceof Error ? awsInfraError.message : null,
+      isFetching: isAwsInfraLoading,
+      fetch: async () => {
+        await awsInfraRefetch()
       },
-      awsBillingAccounts: {
-        data: awsBillingAccounts,
-        error: awsBillingError instanceof Error ? awsBillingError.message : null,
-        isFetching: isAwsBillingLoading,
-        fetch: async () => {
-          await awsBillingRefetch()
-        },
+    },
+    awsBillingAccounts: {
+      data: awsBillingAccounts,
+      error: awsBillingError instanceof Error ? awsBillingError.message : null,
+      isFetching: isAwsBillingLoading,
+      fetch: async () => {
+        await awsBillingRefetch()
       },
-      regions: {
-        data: regions ?? [],
-        error: regionsError,
-        isFetching: isRegionsLoading,
-        fetch: async () => {
-          await regionsRefetch()
-        },
+    },
+    regions: {
+      data: regions ?? [],
+      error: regionsError,
+      isFetching: isRegionsLoading,
+      fetch: async () => {
+        await regionsRefetch()
       },
-      versions: {
-        data: versions ?? { releases: [] },
-        error: versionsError instanceof Error ? versionsError.message : null,
-        isFetching: isVersionsLoading,
-        fetch: async () => {
-          await versionsRefetch()
-        },
+    },
+    versions: {
+      data: versions ?? { releases: [] },
+      error: versionsError instanceof Error ? versionsError.message : null,
+      isFetching: isVersionsLoading,
+      fetch: async () => {
+        await versionsRefetch()
       },
-      machineTypes: {
-        data: machineTypes,
-        error: machineTypesError,
-        isFetching: isMachineTypesLoading,
-        fetch: refetchMachineTypes,
-      },
-      roles: {
-        data: accountRoleARNs,
-        error: roleARNsError,
-        isFetching: isRolesARNsLoading,
-        ocmRoleARN: ocmRole?.arn ?? null,
-        ocmRoleError,
-        userRoleError,
-        fetch: refetchRolesARNs,
-      },
-      oidcConfig: {
-        data: oidcConfig,
-        error: oidcConfigError,
-        isFetching: isOidcConfigLoading,
-        fetch: refetchOidcConfig,
-      },
-      vpcList: {
-        data: vpcs,
-        error: vpcsError ?? null,
-        isFetching: isVPCsLoading,
-        fetch: refetchVPCs,
-      },
-      // This has to be removed from the wizard package: part of VPC api call
-      subnets: {
-        data: [],
-        error: null,
-        isFetching: false,
-      },
-      // This has to be removed from the wizard package: part of VPC api call
-      securityGroups: {
-        data: [],
-        error: null,
-        isFetching: false,
-      },
-    }),
-  )
+    },
+    machineTypes: {
+      data: machineTypes,
+      error: machineTypesError,
+      isFetching: isMachineTypesLoading,
+      fetch: refetchMachineTypes,
+    },
+    roles: {
+      data: accountRoleARNs,
+      error: roleARNsError,
+      isFetching: isRolesARNsLoading,
+      ocmRoleARN: ocmRole?.arn ?? null,
+      ocmRoleError,
+      userRoleError,
+      fetch: refetchRolesARNs,
+    },
+    oidcConfig: {
+      data: oidcConfig,
+      error: oidcConfigError,
+      isFetching: isOidcConfigLoading,
+      fetch: refetchOidcConfig,
+    },
+    vpcList: {
+      data: vpcs,
+      error: vpcsError ?? null,
+      isFetching: isVPCsLoading,
+      fetch: refetchVPCs,
+    },
+    // This has to be removed from the wizard package: part of VPC api call
+    subnets: {
+      data: [],
+      error: null,
+      isFetching: false,
+    },
+    // This has to be removed from the wizard package: part of VPC api call
+    securityGroups: {
+      data: [],
+      error: null,
+      isFetching: false,
+    },
+  }))
 
   const breadcrumbs = useMemo(() => {
     const newBreadcrumbs = [
@@ -194,7 +192,7 @@ export const RosaHCPWrapper = () => {
       <RosaHCPWizard
         wizardData={wizardData}
         resourceGenerator={resourceGenerator}
-        title="ROSA HCP WIZARD"
+        title=""
         onCancel={() => console.log('CANCELLED')}
         onSubmit={async (yamlString: string) => {
           console.log('SUBMITTED', yamlString)
