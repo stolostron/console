@@ -171,6 +171,26 @@ describe('EditDescription', () => {
     await waitFor(() => expect(textarea.style.visibility).toBe('visible'))
   })
 
+  test('formatting and clear buttons are disabled in preview mode', async () => {
+    const { getByLabelText } = render(<EditDescription resource={resource} close={() => {}} />)
+
+    expect(getByLabelText('Bold')).toBeEnabled()
+    expect(getByLabelText('Italic')).toBeEnabled()
+    expect(getByLabelText('Link')).toBeEnabled()
+    expect(getByLabelText('List')).toBeEnabled()
+    expect(getByLabelText('Clear')).toBeEnabled()
+
+    userEvent.click(getByLabelText('Preview'))
+
+    await waitFor(() => {
+      expect(getByLabelText('Bold')).toBeDisabled()
+      expect(getByLabelText('Italic')).toBeDisabled()
+      expect(getByLabelText('Link')).toBeDisabled()
+      expect(getByLabelText('List')).toBeDisabled()
+      expect(getByLabelText('Clear')).toBeDisabled()
+    })
+  })
+
   test('resets preview mode when reopened with a different resource', async () => {
     const otherResource: IResource = {
       apiVersion: ManagedClusterApiVersion,
