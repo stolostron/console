@@ -47,31 +47,34 @@ const createMockQueryResult = (overrides: Record<string, unknown> = {}) => ({
 describe('normalizeAWSAccountRoles', () => {
   test('should normalize account roles with managed and unmanaged policies', () => {
     const response: RoleARNsResponse = {
-      kind: 'AccountRoleList',
-      aws_account_id: '123456789012',
-      items: [
-        {
-          prefix: 'ManagedOpenShift',
-          kind: 'AccountRole',
-          items: [
-            createAccountRoleARN({
-              type: 'Installer',
-              arn: 'arn:aws:iam::123:role/Installer',
-              managedPolicies: true,
-              hcpManagedPolicies: true,
-            }),
-            createAccountRoleARN({
-              type: 'Support',
-              arn: 'arn:aws:iam::123:role/Support',
-              managedPolicies: true,
-              hcpManagedPolicies: true,
-            }),
-          ],
-        },
-      ],
-      page: 1,
-      size: 1,
-      total: 1,
+      statusCode: 200,
+      body: {
+        kind: 'AccountRoleList',
+        aws_account_id: '123456789012',
+        items: [
+          {
+            prefix: 'ManagedOpenShift',
+            kind: 'AccountRole',
+            items: [
+              createAccountRoleARN({
+                type: 'Installer',
+                arn: 'arn:aws:iam::123:role/Installer',
+                managedPolicies: true,
+                hcpManagedPolicies: true,
+              }),
+              createAccountRoleARN({
+                type: 'Support',
+                arn: 'arn:aws:iam::123:role/Support',
+                managedPolicies: true,
+                hcpManagedPolicies: true,
+              }),
+            ],
+          },
+        ],
+        page: 1,
+        size: 1,
+        total: 1,
+      },
     }
 
     const result = normalizeAWSAccountRoles(response)
@@ -84,18 +87,21 @@ describe('normalizeAWSAccountRoles', () => {
 
   test('should skip account roles with only 1 item', () => {
     const response: RoleARNsResponse = {
-      kind: 'AccountRoleList',
-      aws_account_id: '123456789012',
-      items: [
-        {
-          prefix: 'ManagedOpenShift',
-          kind: 'AccountRole',
-          items: [createAccountRoleARN({ type: 'Installer', arn: 'arn:aws:iam::123:role/Installer' })],
-        },
-      ],
-      page: 1,
-      size: 1,
-      total: 1,
+      statusCode: 200,
+      body: {
+        kind: 'AccountRoleList',
+        aws_account_id: '123456789012',
+        items: [
+          {
+            prefix: 'ManagedOpenShift',
+            kind: 'AccountRole',
+            items: [createAccountRoleARN({ type: 'Installer', arn: 'arn:aws:iam::123:role/Installer' })],
+          },
+        ],
+        page: 1,
+        size: 1,
+        total: 1,
+      },
     }
 
     const result = normalizeAWSAccountRoles(response)
@@ -104,7 +110,7 @@ describe('normalizeAWSAccountRoles', () => {
   })
 
   test('should return empty array when items is undefined', () => {
-    const response = { items: undefined } as unknown as RoleARNsResponse
+    const response = { statusCode: 200, body: { items: undefined } } as unknown as RoleARNsResponse
 
     const result = normalizeAWSAccountRoles(response)
 
@@ -113,12 +119,15 @@ describe('normalizeAWSAccountRoles', () => {
 
   test('should return empty array when items is empty', () => {
     const response: RoleARNsResponse = {
-      kind: 'AccountRoleList',
-      aws_account_id: '123456789012',
-      items: [],
-      page: 0,
-      size: 0,
-      total: 0,
+      statusCode: 200,
+      body: {
+        kind: 'AccountRoleList',
+        aws_account_id: '123456789012',
+        items: [],
+        page: 0,
+        size: 0,
+        total: 0,
+      },
     }
 
     const result = normalizeAWSAccountRoles(response)
@@ -128,31 +137,34 @@ describe('normalizeAWSAccountRoles', () => {
 
   test('should split managed and unmanaged policy arns into separate normalized roles', () => {
     const response: RoleARNsResponse = {
-      kind: 'AccountRoleList',
-      aws_account_id: '123456789012',
-      items: [
-        {
-          prefix: 'ManagedOpenShift',
-          kind: 'AccountRole',
-          items: [
-            createAccountRoleARN({
-              type: 'Installer',
-              arn: 'arn:managed-installer',
-              managedPolicies: true,
-              hcpManagedPolicies: true,
-            }),
-            createAccountRoleARN({
-              type: 'Support',
-              arn: 'arn:unmanaged-support',
-              managedPolicies: false,
-              hcpManagedPolicies: false,
-            }),
-          ],
-        },
-      ],
-      page: 1,
-      size: 1,
-      total: 1,
+      statusCode: 200,
+      body: {
+        kind: 'AccountRoleList',
+        aws_account_id: '123456789012',
+        items: [
+          {
+            prefix: 'ManagedOpenShift',
+            kind: 'AccountRole',
+            items: [
+              createAccountRoleARN({
+                type: 'Installer',
+                arn: 'arn:managed-installer',
+                managedPolicies: true,
+                hcpManagedPolicies: true,
+              }),
+              createAccountRoleARN({
+                type: 'Support',
+                arn: 'arn:unmanaged-support',
+                managedPolicies: false,
+                hcpManagedPolicies: false,
+              }),
+            ],
+          },
+        ],
+        page: 1,
+        size: 1,
+        total: 1,
+      },
     }
 
     const result = normalizeAWSAccountRoles(response)
@@ -164,31 +176,34 @@ describe('normalizeAWSAccountRoles', () => {
 
   test('should preserve roleVersion as version in normalized output', () => {
     const response: RoleARNsResponse = {
-      kind: 'AccountRoleList',
-      aws_account_id: '123456789012',
-      items: [
-        {
-          prefix: 'ManagedOpenShift',
-          kind: 'AccountRole',
-          items: [
-            createAccountRoleARN({
-              type: 'Installer',
-              roleVersion: '4.14',
-              managedPolicies: true,
-              hcpManagedPolicies: true,
-            }),
-            createAccountRoleARN({
-              type: 'Worker',
-              roleVersion: '4.14',
-              managedPolicies: true,
-              hcpManagedPolicies: true,
-            }),
-          ],
-        },
-      ],
-      page: 1,
-      size: 1,
-      total: 1,
+      statusCode: 200,
+      body: {
+        kind: 'AccountRoleList',
+        aws_account_id: '123456789012',
+        items: [
+          {
+            prefix: 'ManagedOpenShift',
+            kind: 'AccountRole',
+            items: [
+              createAccountRoleARN({
+                type: 'Installer',
+                roleVersion: '4.14',
+                managedPolicies: true,
+                hcpManagedPolicies: true,
+              }),
+              createAccountRoleARN({
+                type: 'Worker',
+                roleVersion: '4.14',
+                managedPolicies: true,
+                hcpManagedPolicies: true,
+              }),
+            ],
+          },
+        ],
+        page: 1,
+        size: 1,
+        total: 1,
+      },
     }
 
     const result = normalizeAWSAccountRoles(response)
@@ -198,49 +213,52 @@ describe('normalizeAWSAccountRoles', () => {
 
   test('should handle multiple account role groups', () => {
     const response: RoleARNsResponse = {
-      kind: 'AccountRoleList',
-      aws_account_id: '123456789012',
-      items: [
-        {
-          prefix: 'Prefix-A',
-          kind: 'AccountRole',
-          items: [
-            createAccountRoleARN({
-              type: 'Installer',
-              arn: 'arn:a-installer',
-              managedPolicies: true,
-              hcpManagedPolicies: true,
-            }),
-            createAccountRoleARN({
-              type: 'Support',
-              arn: 'arn:a-support',
-              managedPolicies: true,
-              hcpManagedPolicies: true,
-            }),
-          ],
-        },
-        {
-          prefix: 'Prefix-B',
-          kind: 'AccountRole',
-          items: [
-            createAccountRoleARN({
-              type: 'Installer',
-              arn: 'arn:b-installer',
-              managedPolicies: true,
-              hcpManagedPolicies: true,
-            }),
-            createAccountRoleARN({
-              type: 'Worker',
-              arn: 'arn:b-worker',
-              managedPolicies: true,
-              hcpManagedPolicies: true,
-            }),
-          ],
-        },
-      ],
-      page: 1,
-      size: 2,
-      total: 2,
+      statusCode: 200,
+      body: {
+        kind: 'AccountRoleList',
+        aws_account_id: '123456789012',
+        items: [
+          {
+            prefix: 'Prefix-A',
+            kind: 'AccountRole',
+            items: [
+              createAccountRoleARN({
+                type: 'Installer',
+                arn: 'arn:a-installer',
+                managedPolicies: true,
+                hcpManagedPolicies: true,
+              }),
+              createAccountRoleARN({
+                type: 'Support',
+                arn: 'arn:a-support',
+                managedPolicies: true,
+                hcpManagedPolicies: true,
+              }),
+            ],
+          },
+          {
+            prefix: 'Prefix-B',
+            kind: 'AccountRole',
+            items: [
+              createAccountRoleARN({
+                type: 'Installer',
+                arn: 'arn:b-installer',
+                managedPolicies: true,
+                hcpManagedPolicies: true,
+              }),
+              createAccountRoleARN({
+                type: 'Worker',
+                arn: 'arn:b-worker',
+                managedPolicies: true,
+                hcpManagedPolicies: true,
+              }),
+            ],
+          },
+        ],
+        page: 1,
+        size: 2,
+        total: 2,
+      },
     }
 
     const result = normalizeAWSAccountRoles(response)

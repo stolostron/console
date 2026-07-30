@@ -164,7 +164,7 @@ describe('useFetchMachineTypes', () => {
 
   test('should return machine type options when query succeeds', () => {
     const items = [{ id: 'm5.xlarge', name: 'm5.xlarge', category: 'general_purpose', cloud_provider: { id: 'aws' } }]
-    mockUseQuery.mockReturnValue({ data: { items }, isLoading: false, isError: false, error: null })
+    mockUseQuery.mockReturnValue({ data: { body: { items } }, isLoading: false, isError: false, error: null })
 
     const { result } = renderHook(() => useFetchMachineTypes(mockSecret))
 
