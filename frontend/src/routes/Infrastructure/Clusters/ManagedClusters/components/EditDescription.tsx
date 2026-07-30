@@ -1,13 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import type { IResource } from '../../../../../resources'
 import { patchResource } from '../../../../../resources/utils'
-import {
-  AcmAlertContext,
-  AcmAlertGroup,
-  AcmForm,
-  AcmModal,
-  AcmSubmit,
-} from '../../../../../ui-components'
+import { AcmAlertContext, AcmAlertGroup, AcmForm, AcmModal, AcmSubmit } from '../../../../../ui-components'
 import type { IAlertContext } from '../../../../../ui-components'
 import {
   ActionGroup,
