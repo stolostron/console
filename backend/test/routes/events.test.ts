@@ -336,20 +336,20 @@ describe('events Route', () => {
       expect(getIsObservabilityInstalled()).toBe(initialObsFlag)
     })
 
-    it('should not set observability flag for addon with wrong apiVersion', async () => {
-      const wrongVersionAddon: IResource = {
+    it('should not set observability flag for addon with wrong API group', async () => {
+      const wrongGroupAddon: IResource = {
         kind: 'ManagedClusterAddOn',
-        apiVersion: 'addon.open-cluster-management.io/v1',
+        apiVersion: 'other.group.io/v1alpha1',
         metadata: {
           name: 'observability-controller',
           namespace: 'local-cluster',
-          uid: 'wrong-version-addon-uid',
+          uid: 'wrong-group-addon-uid',
           resourceVersion: '1',
         },
       }
 
       const initialObsFlag = getIsObservabilityInstalled()
-      await cacheResource(wrongVersionAddon)
+      await cacheResource(wrongGroupAddon)
 
       expect(getIsObservabilityInstalled()).toBe(initialObsFlag)
     })
