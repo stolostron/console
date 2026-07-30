@@ -833,10 +833,14 @@ export async function cacheResource(resource: IResource, forwardEventsToClients 
       isHubSelfManaged = true
     }
   }
-  if (resource.kind === 'ManagedClusterAddOn') {
-    if (resource?.metadata?.name === 'observability-controller') {
-      isObservabilityInstalled = true
-    }
+
+  if (
+    resource.kind === 'ManagedClusterAddOn' &&
+    resource.apiVersion.startsWith('addon.open-cluster-management.io/') &&
+    (resource.metadata?.name === 'observability-controller' ||
+      resource.metadata?.name == 'multicluster-observability-addon')
+  ) {
+    isObservabilityInstalled = true
   }
 }
 
