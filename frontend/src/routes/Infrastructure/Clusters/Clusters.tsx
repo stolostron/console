@@ -41,10 +41,17 @@ import PlacementOverviewPageContent from './Placements/PlacementDetails/Placemen
 import CreatePlacement from './Placements/CreatePlacement/CreatePlacement'
 import { EditPlacement } from './Placements/CreatePlacement/EditPlacement'
 import { PrerequisitesPage } from './ManagedClusters/components/rosahcp/PrerequisitesPage/PrerequisitesPage'
+import { RosaHCPWrapper } from './ManagedClusters/components/rosahcp/RosaHCPWrapper'
+import { useRecoilValue, useSharedAtoms } from '~/shared-recoil'
 
 const clustersChildPath = createRoutePathFunction(NavigationPath.clusters)
 
 export default function Clusters() {
+  // Only enable wizard when feature flag is enabled
+  const { settingsState } = useSharedAtoms()
+  const settings = useRecoilValue(settingsState)
+  const rosaHcpWizardFeatureFlag = settings.rosaHcpWizard === 'enabled'
+
   return (
     <Routes>
       <Route path={clustersChildPath(NavigationPath.createBMControlPlane)} element={<CreateControlPlane />} />
@@ -57,6 +64,9 @@ export default function Clusters() {
       <Route path={clustersChildPath(NavigationPath.createAWSCLI)} element={<HypershiftAWSCLI />} />
       <Route path={clustersChildPath(NavigationPath.createAzureCLI)} element={<HypershiftAzureCLI />} />
       <Route path={clustersChildPath(NavigationPath.prerequisites)} element={<PrerequisitesPage />} />
+      {rosaHcpWizardFeatureFlag ? (
+        <Route path={clustersChildPath(NavigationPath.createROSAHCP)} element={<RosaHCPWrapper />} />
+      ) : null}
       <Route path={clustersChildPath(NavigationPath.createDiscoverHost)} element={<CreateDiscoverHost />} />
       <Route path={clustersChildPath(NavigationPath.createCluster)} element={<CreateClusterPage />} />
       <Route path={clustersChildPath(NavigationPath.importCluster)} element={<ImportClusterPage />} />
