@@ -133,21 +133,36 @@ export function EditDescription(props: Readonly<{ resource?: IResource; close: (
                   <ToolbarGroup>
                     <ToolbarItem>
                       <Tooltip content={t('Bold')}>
-                        <Button variant="plain" aria-label={t('Bold')} isDisabled={isPreview} onClick={() => insertMarkdown('**')}>
+                        <Button
+                          variant="plain"
+                          aria-label={t('Bold')}
+                          isDisabled={isPreview}
+                          onClick={() => insertMarkdown('**')}
+                        >
                           <BoldIcon />
                         </Button>
                       </Tooltip>
                     </ToolbarItem>
                     <ToolbarItem>
                       <Tooltip content={t('Italic')}>
-                        <Button variant="plain" aria-label={t('Italic')} isDisabled={isPreview} onClick={() => insertMarkdown('*')}>
+                        <Button
+                          variant="plain"
+                          aria-label={t('Italic')}
+                          isDisabled={isPreview}
+                          onClick={() => insertMarkdown('*')}
+                        >
                           <ItalicIcon />
                         </Button>
                       </Tooltip>
                     </ToolbarItem>
                     <ToolbarItem>
                       <Tooltip content={t('Link')}>
-                        <Button variant="plain" aria-label={t('Link')} isDisabled={isPreview} onClick={() => insertMarkdown('[', '](url)')}>
+                        <Button
+                          variant="plain"
+                          aria-label={t('Link')}
+                          isDisabled={isPreview}
+                          onClick={() => insertMarkdown('[', '](url)')}
+                        >
                           <LinkIcon />
                         </Button>
                       </Tooltip>

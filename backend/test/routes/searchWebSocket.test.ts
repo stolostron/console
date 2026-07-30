@@ -179,6 +179,7 @@ describe('searchWebSocket', () => {
   // ── Error handling ──────────────────────────────────────────────────────────
 
   describe('error handling before upstream connection', () => {
+    /* eslint-disable @typescript-eslint/unbound-method */
     it('sends HTTP 500 and destroys socket when getAuthenticatedToken rejects', async () => {
       const socket = makeMockSocket()
       mockGetAuthToken.mockRejectedValue(new Error('auth failure'))
@@ -225,6 +226,7 @@ describe('searchWebSocket', () => {
       expect(socket.write).toHaveBeenCalledWith(expect.stringContaining('504'))
       expect(socket.destroy).toHaveBeenCalled()
     })
+    /* eslint-enable @typescript-eslint/unbound-method */
   })
 
   // ── Successful upstream connection ──────────────────────────────────────────
