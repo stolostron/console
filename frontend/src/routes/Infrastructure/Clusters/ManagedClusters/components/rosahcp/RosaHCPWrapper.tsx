@@ -167,7 +167,17 @@ export const RosaHCPWrapper = () => {
       error: null,
       isFetching: false,
     },
-  }))
+  }), [
+    awsInfraAccounts, isAwsInfraLoading, awsInfraError, awsInfraRefetch,
+    awsBillingAccounts, isAwsBillingLoading, awsBillingError, awsBillingRefetch,
+    regions, isRegionsLoading, regionsError, regionsRefetch,
+    versions, isVersionsLoading, versionsError, versionsRefetch,
+    machineTypes, isMachineTypesLoading, machineTypesError, refetchMachineTypes,
+    accountRoleARNs, isRolesARNsLoading, roleARNsError, ocmRole, ocmRoleError, userRoleError, refetchRolesARNs,
+    oidcConfig, isOidcConfigLoading, oidcConfigError, refetchOidcConfig,
+    vpcs, isVPCsLoading, vpcsError, refetchVPCs,
+    clusterNameValidation, checkClusterNameUniqueness,
+  ])
 
   const breadcrumbs = useMemo(() => {
     const newBreadcrumbs = [
