@@ -129,6 +129,11 @@
       ],
       "groupName": "patternfly packages",
       "groupSlug": "patternfly"
+    },
+    {
+      "description": "Disable Dockerfile manager — base images use floating :latest tags managed by ART/Konflux",
+      "matchManagers": ["dockerfile"],
+      "enabled": false
     }
   ]
 }
