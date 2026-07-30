@@ -225,7 +225,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
                             'Removes the cluster from the hub without deprovisioning OpenShift or cloud provider resources. Useful for backup, restore, or disaster recovery workflows.'
                           )}
                         >
-                          <Button variant="plain" isInline style={{ padding: 0 }}>
+                          <Button variant="plain" isInline style={{ padding: 0 }} aria-label={t('More info')}>
                             <HelpIcon />
                           </Button>
                         </Popover>
