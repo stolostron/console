@@ -1,17 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
+  Button,
+  Content,
+  ContentVariants,
+  FormHelperText,
+  Popover,
+  SelectOption,
   Skeleton,
   Stack,
   StackItem,
-  Content,
-  ContentVariants,
-  SelectOption,
-  FormHelperText,
-  Popover,
-  Button,
 } from '@patternfly/react-core'
-import { ExternalLinkAltIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
+import { ExclamationTriangleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useEffect, useMemo, useState } from 'react'
 import { BulkActionModal } from '../../../../../components/BulkActionModal'
 import { PrePostTemplatesList } from '../../../../../components/TemplateSummaryModal'
@@ -30,8 +30,8 @@ import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
 import { AcmAlert, AcmButton, AcmEmptyState, AcmSelect } from '../../../../../ui-components'
 import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
 import { ReleaseNotesLink } from './ReleaseNotesLink'
-import { isMinorOrMajorUpgrade } from './utils/version-utils'
 import './style.css'
+import { isMinorOrMajorUpgrade } from './utils/version-utils'
 
 // compare version
 const compareVersion = (a: string, b: string) => {
@@ -239,7 +239,7 @@ export function BatchUpgradeModal(props: {
                     {insightsRiskCount > 0 && (
                       <div>
                         <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
-                          {t('Risks discovered by OpenShift Insights Advisor')}
+                          {t('Risks discovered by Red Hat Lightspeed')}
                         </div>
                         <AcmButton
                           variant={'link'}

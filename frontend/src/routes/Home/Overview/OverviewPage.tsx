@@ -431,14 +431,14 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
               <div>
                 {t('Insights')}
                 <Popover
-                  headerContent={t('Insights data')}
+                  headerContent={t('Red Hat Lightspeed data')}
                   bodyContent={
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                      {t('Red Hat Insights gathers data and uses it to produce actionable recommendations.')}
+                      {t('Red Hat Lightspeed gathers data and uses it to produce actionable recommendations.')}
                       <Button
                         id={'redhat-insights-link'}
                         variant="link"
-                        href={'https://console.redhat.com/openshift/insights'}
+                        href={'https://console.redhat.com/openshift/dashboard'}
                         component="a"
                         target="_blank"
                         rel="noreferrer"
@@ -447,7 +447,7 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
                           marginTop: '0.5rem',
                         }}
                       >
-                        {t('View Red Hat Insights')}
+                        {t('View Red Hat Lightspeed')}
                       </Button>
                     </div>
                   }
