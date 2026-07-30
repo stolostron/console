@@ -67,6 +67,9 @@ let isObservabilityInstalled: boolean = false
 export function getIsObservabilityInstalled() {
   return isObservabilityInstalled
 }
+export function resetIsObservabilityInstalled() {
+  isObservabilityInstalled = false
+}
 
 // because rbac checks are expensive,
 // run them only on the resources requested by the UI
