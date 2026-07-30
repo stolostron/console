@@ -35,7 +35,7 @@ interface StepResultRef {
   outcome: string
 }
 
-interface ProposalResource {
+interface AgenticRunResource {
   apiVersion: string
   kind: string
   metadata: { name?: string; generateName?: string; namespace?: string }
@@ -95,7 +95,7 @@ type ProposalPhase =
   | 'Escalated'
   | 'EmergencyStopped'
 
-// Ported from DerivePhase in lightspeed-agentic-operator/api/v1alpha1/proposal_types.go
+// Ported from DerivePhase in lightspeed-agentic-operator/api/v1alpha1/agenticrun_types.go
 function derivePhase(conditions: KubeCondition[]): ProposalPhase {
   const get = (type: string) => conditions.find((c) => c.type === type)
 
@@ -140,8 +140,8 @@ const TERMINAL_PHASES = new Set<ProposalPhase>([
   'EmergencyStopped',
 ])
 
-function proposalUrl(name?: string): string {
-  const base = `${process.env.CLUSTER_API_URL}/apis/${AGENTIC_API_VERSION}/namespaces/${AGENTIC_NAMESPACE}/proposals`
+function agenticRunUrl(name?: string): string {
+  const base = `${process.env.CLUSTER_API_URL}/apis/${AGENTIC_API_VERSION}/namespaces/${AGENTIC_NAMESPACE}/agenticruns`
   return name ? `${base}/${name}` : base
 }
 
@@ -149,15 +149,15 @@ function analysisResultUrl(name: string): string {
   return `${process.env.CLUSTER_API_URL}/apis/${AGENTIC_API_VERSION}/namespaces/${AGENTIC_NAMESPACE}/analysisresults/${name}`
 }
 
-async function deleteProposal(name: string, token: string): Promise<void> {
+async function deleteAgenticRun(name: string, token: string): Promise<void> {
   try {
-    await fetchRetry(proposalUrl(name), {
+    await fetchRetry(agenticRunUrl(name), {
       method: 'DELETE',
       headers: { [constants.HTTP2_HEADER_AUTHORIZATION]: `Bearer ${token}` },
     })
   } catch (err) {
     logger.warn({
-      msg: 'Failed to clean up Proposal CR',
+      msg: 'Failed to clean up AgenticRun CR',
       name,
       error: err instanceof Error ? err.message : String(err),
     })
@@ -207,11 +207,11 @@ export async function policyAnalysisCreate(req: Http2ServerRequest, res: Http2Se
         const policyJson = JSON.stringify(body.resources, undefined, 2)
         const request = REQUEST_PREFIX + '```json\n' + policyJson + '\n```'
 
-        const createResult = await jsonPost<ProposalResource>(
-          proposalUrl(),
+        const createResult = await jsonPost<AgenticRunResource>(
+          agenticRunUrl(),
           {
             apiVersion: AGENTIC_API_VERSION,
-            kind: 'Proposal',
+            kind: 'AgenticRun',
             metadata: { generateName: 'policy-validation-', namespace: AGENTIC_NAMESPACE },
             spec: {
               request,
@@ -223,7 +223,7 @@ export async function policyAnalysisCreate(req: Http2ServerRequest, res: Http2Se
         )
 
         if (createResult.statusCode < 200 || createResult.statusCode >= 300) {
-          logger.error({ msg: 'Failed to create Proposal CR', statusCode: createResult.statusCode })
+          logger.error({ msg: 'Failed to create AgenticRun CR', statusCode: createResult.statusCode })
           respond(
             res,
             { error: `Failed to create analysis request (HTTP ${createResult.statusCode})` },
@@ -238,7 +238,7 @@ export async function policyAnalysisCreate(req: Http2ServerRequest, res: Http2Se
           return
         }
 
-        logger.info({ msg: 'policy-analysis: proposal created', proposalName })
+        logger.info({ msg: 'policy-analysis: agenticrun created', proposalName })
         respond(res, { proposalName, phase: 'Analyzing' })
       } catch (err) {
         logger.error({ msg: 'Policy analysis create failed', error: err instanceof Error ? err.message : String(err) })
@@ -262,7 +262,7 @@ export async function policyAnalysisStatus(req: Http2ServerRequest, res: Http2Se
   }
 
   try {
-    const proposal = await jsonRequest<ProposalResource>(proposalUrl(name), token)
+    const proposal = await jsonRequest<AgenticRunResource>(agenticRunUrl(name), token)
     const phase = derivePhase(proposal.status?.conditions ?? [])
 
     if (!TERMINAL_PHASES.has(phase)) {
@@ -276,7 +276,7 @@ export async function policyAnalysisStatus(req: Http2ServerRequest, res: Http2Se
         const analysisResult = await jsonRequest<AnalysisResultResource>(analysisResultUrl(resultRefName), token)
         const firstOption = analysisResult.status?.options?.[0]
         const readyToDeploy = firstOption?.components?.readyToDeploy ?? false
-        await deleteProposal(name, token)
+        await deleteAgenticRun(name, token)
         respond(res, {
           phase,
           readyToDeploy,
@@ -288,7 +288,7 @@ export async function policyAnalysisStatus(req: Http2ServerRequest, res: Http2Se
     }
 
     const failedCondition = proposal.status?.conditions?.find((c) => c.status === 'False' && c.message)
-    await deleteProposal(name, token)
+    await deleteAgenticRun(name, token)
     respond(res, {
       phase,
       readyToDeploy: false,
