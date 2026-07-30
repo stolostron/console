@@ -14,6 +14,12 @@ import {
   createWatchEventProcessor,
   listAndWatch,
   stopWatching,
+  canAccess,
+  resetAccessCache,
+  getAccessCache,
+  cleanupAccessCache,
+  ACCESS_CACHE_TTL,
+  ACCESS_CACHE_MAX_TOKENS,
 } from '../../src/routes/events'
 import * as serviceAccountTokenModule from '../../src/lib/serviceAccountToken'
 import type { IArgoApplication, IResource } from '../../src/resources/resource'
@@ -1367,6 +1373,90 @@ describe('events Route', () => {
       const retryTime = secondListTime - startTime
       expect(retryTime).toBeLessThan(5000)
       expect(listCallCount).toBe(1) // Only counting second list call
+    })
+  })
+
+  describe('Access Cache Cleanup', () => {
+    beforeEach(() => {
+      resetAccessCache()
+      jest.clearAllMocks()
+      process.env.CLUSTER_API_URL = 'https://api.test-cluster.com:6443'
+    })
+
+    afterEach(() => {
+      resetAccessCache()
+      delete process.env.CLUSTER_API_URL
+      nock.cleanAll()
+    })
+
+    it('should cache RBAC access check results', async () => {
+      const mockToken = 'test-token-123'
+      const resource = { kind: 'Pod', apiVersion: 'v1', metadata: { namespace: 'default', name: 'test-pod' } }
+
+      nock(process.env.CLUSTER_API_URL || '')
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
+        .reply(200, { status: { allowed: true } })
+
+      const result1 = await canAccess(resource, 'get', mockToken)
+      const result2 = await canAccess(resource, 'get', mockToken)
+
+      expect(result1).toBe(true)
+      expect(result1).toBe(result2)
+    })
+
+    it('should respect TTL and refetch after expiry', async () => {
+      const cache = getAccessCache()
+      const mockToken = 'test-token-ttl'
+
+      cache[mockToken] = {
+        'Secret:default:credentials': { time: Date.now() - ACCESS_CACHE_TTL - 1000, promise: Promise.resolve(true) },
+      }
+
+      nock(process.env.CLUSTER_API_URL || '')
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
+        .reply(200, { status: { allowed: false } })
+
+      const result = await canAccess(
+        { kind: 'Secret', apiVersion: 'v1', metadata: { namespace: 'default', name: 'credentials' } },
+        'get',
+        mockToken
+      )
+      expect(result).toBe(false)
+    })
+
+    it('should remove stale cache entries during cleanup', () => {
+      const cache = getAccessCache()
+      const now = Date.now()
+
+      cache['token1'] = {
+        stale: { time: now - ACCESS_CACHE_TTL - 1000, promise: Promise.resolve(true) },
+        fresh: { time: now - 30000, promise: Promise.resolve(true) },
+      }
+      cache['token2'] = { 'stale-only': { time: now - ACCESS_CACHE_TTL - 5000, promise: Promise.resolve(false) } }
+
+      cleanupAccessCache()
+
+      expect(cache['token1']['stale']).toBeUndefined()
+      expect(cache['token1']['fresh']).toBeDefined()
+      expect(cache['token2']).toBeUndefined()
+    })
+
+    it('should enforce maximum token limit with LRU eviction', () => {
+      const cache = getAccessCache()
+      const now = Date.now()
+      const tokenCount = ACCESS_CACHE_MAX_TOKENS + 100
+
+      for (let i = 0; i < tokenCount; i++) {
+        cache[`token-${i}`] = {
+          'Pod:default:test': { time: now - (i / tokenCount) * 50 * 1000, promise: Promise.resolve(true) },
+        }
+      }
+
+      cleanupAccessCache()
+
+      expect(Object.keys(cache).length).toBe(ACCESS_CACHE_MAX_TOKENS)
+      expect(cache['token-0']).toBeDefined()
+      expect(cache[`token-${tokenCount - 1}`]).toBeUndefined()
     })
   })
 })
