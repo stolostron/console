@@ -24,6 +24,8 @@ export const useFetchOIDCConfigs = (selectedSecret: SelectedSecret) => {
     },
     retry: false,
     enabled: !!selectedSecret && !!awsAccountId,
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000,
   })
   const fetch = useCallback(async (accountId: string): Promise<void> => {
     setAwsAccountId(accountId)
@@ -31,7 +33,7 @@ export const useFetchOIDCConfigs = (selectedSecret: SelectedSecret) => {
 
   return {
     data: data ?? [],
-    isFetching: isLoading,
+    isLoading,
     error: isError ? (error instanceof Error ? error.message : 'Unknown error') : null,
     fetch,
   }

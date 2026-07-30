@@ -41,6 +41,8 @@ export const useFetchMachineTypes = (selectedSecret: SelectedSecret) => {
     },
     enabled: !!selectedSecret && !!region && !!roleArn && !!availabilityZones?.length,
     retry: false,
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000,
   })
 
   const fetch = useCallback(async (queryParams: MachineTypesFetchArgs): Promise<void> => {
@@ -49,7 +51,7 @@ export const useFetchMachineTypes = (selectedSecret: SelectedSecret) => {
     setAvailabilityZones(queryParams.availability_zones)
   }, [])
 
-  const machineTypeOptions = useMemo(() => buildMachineTypeOptions(data?.items ?? []), [data])
+  const machineTypeOptions = useMemo(() => buildMachineTypeOptions(data?.body.items ?? []), [data])
 
   return {
     data: machineTypeOptions,

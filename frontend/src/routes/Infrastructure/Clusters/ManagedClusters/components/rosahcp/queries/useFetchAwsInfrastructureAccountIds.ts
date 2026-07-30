@@ -29,6 +29,8 @@ export const useFetchAwsAccountIDs = (selectedSecret: SelectedSecret) => {
     },
     retry: false,
     enabled: !!selectedSecret,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
   })
   const awsAccountIDs = useMemo(() => {
     if (!data?.items) return []

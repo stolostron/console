@@ -25,6 +25,8 @@ export const useFetchVPCs = (selectedSecret: SelectedSecret) => {
     },
     enabled: !!selectedSecret && !!awsAccountId && !!installerRoleArn && !!region,
     retry: false,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
   })
   const fetch = useCallback(
     async (args: any): Promise<void> => {

@@ -95,6 +95,9 @@ export const useFetchHCPVersions = (secrets: SelectedSecret) => {
       const response = await getWizardVersions(client_id, client_secret, signal)
       return response.items ?? []
     },
+    retry: false,
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000,
     select: transformToVersionsData,
   })
 

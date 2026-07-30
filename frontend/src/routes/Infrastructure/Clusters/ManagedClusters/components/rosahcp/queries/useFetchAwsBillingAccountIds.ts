@@ -38,6 +38,8 @@ export const useFetchOrganizationQuota = (secret: SelectedSecret) => {
     },
     retry: false,
     enabled: !!secret,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
   })
 
   const billingAccounts = getAwsBillingAccountsFromQuota(data?.items)

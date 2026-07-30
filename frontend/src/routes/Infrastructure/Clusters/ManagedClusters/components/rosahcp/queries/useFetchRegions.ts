@@ -28,6 +28,8 @@ export const useFetchRegions = (selectedSecret: SelectedSecret) => {
     },
     enabled: !!selectedSecret,
     retry: false,
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000,
     select: hcpCloudProvidersAndRegions,
   })
 
