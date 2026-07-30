@@ -201,11 +201,11 @@ describe('EditDescription', () => {
       kind: ManagedClusterKind,
       metadata: { name: 'test-cluster' },
     }
-    const { getByLabelText, getByText } = render(<EditDescription resource={emptyResource} close={() => {}} />)
+    const { getByLabelText, findByText } = render(<EditDescription resource={emptyResource} close={() => {}} />)
 
     userEvent.click(getByLabelText('Preview'))
 
-    await waitFor(() => expect(getByText('-')).toBeInTheDocument())
+    expect(await findByText('-')).toBeInTheDocument()
   })
 
   test('cancel button calls close', () => {
