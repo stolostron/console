@@ -519,22 +519,24 @@ describe('getAppSetTopology', () => {
 
     const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
 
-    // CRD should appear exactly once (deduplicated across clusters)
-    const crdNodes = result.nodes.filter(
-      (n) => n.type === 'customresourcedefinition' && n.name === 'widgets.example.com'
-    )
+    // CRD should appear as a single merged node (processMultiples groups by kind)
+    const crdNodes = result.nodes.filter((n) => n.type === 'customresourcedefinition')
     expect(crdNodes).toHaveLength(1)
 
-    // The single CRD node should have both clusters in clustersNames
+    // The merged CRD node should have both clusters in clustersNames
     const crdNode = crdNodes[0]
     expect((crdNode as any).specs.clustersNames).toContain('local-cluster')
     expect((crdNode as any).specs.clustersNames).toContain('managed-cluster-1')
 
-    // Namespaced Deployment should still have separate entries per cluster
-    const deployNodes = result.nodes.filter((n) => n.type === 'deployment' && n.name === 'my-app')
-    expect(deployNodes).toHaveLength(2)
-    const deployIds = deployNodes.map((n) => n.id)
-    expect(deployIds[0]).not.toEqual(deployIds[1])
+    // specs.resources should contain per-cluster entries so the detail panel shows all clusters
+    const crdResources = (crdNode as any).specs.resources as any[]
+    expect(crdResources).toHaveLength(2)
+    expect(crdResources.map((r: any) => r.cluster).sort()).toEqual(['local-cluster', 'managed-cluster-1'])
+
+    // Namespaced Deployment should be merged into a single node across clusters
+    const deployNodes = result.nodes.filter((n) => n.type === 'deployment')
+    expect(deployNodes).toHaveLength(1)
+    expect(deployNodes[0].specs?.resourceCount).toBe(2)
   })
 
   it('should handle ApplicationSet with app status information', async () => {
@@ -1320,7 +1322,7 @@ describe('getAppSetTopology', () => {
 
     // Uniform sources array — only one fleet request needed
     expect(mockFleetResourceRequest).toHaveBeenCalledTimes(1)
-    expect(result.nodes.find((n) => n.type === 'deployment' && n.name === 'multi-src-deploy')).toBeDefined()
+    expect(result.nodes.find((n) => n.type === 'deployment')).toBeDefined()
   })
 
   it('should filter by active applications when provided', async () => {
@@ -1393,5 +1395,282 @@ describe('getAppSetTopology', () => {
     expect(result.nodes).toBeDefined()
     expect(result.links).toBeDefined()
     expect(toolbarWithActiveApps.setAllApplications).toHaveBeenCalled()
+  })
+
+  it('should skip VM-owned ControllerRevision resources and create them as children of VirtualMachine', async () => {
+    const vmUid = 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'
+    mockSearchClient.query.mockResolvedValue({
+      loading: false,
+      networkStatus: 7,
+      data: {
+        searchResult: [
+          {
+            items: [
+              {
+                _uid: 'local-cluster/app-uid-vm',
+                name: 'vm-appset-local-cluster',
+                namespace: 'openshift-gitops',
+                cluster: 'local-cluster',
+                kind: 'Application',
+              },
+            ],
+            related: [
+              {
+                kind: 'VirtualMachine',
+                items: [
+                  {
+                    _uid: `local-cluster/${vmUid}`,
+                    _relatedUids: ['local-cluster/app-uid-vm'],
+                    name: 'my-vm',
+                    namespace: 'vm-ns',
+                    cluster: 'local-cluster',
+                    kind: 'VirtualMachine',
+                    apiversion: 'v1',
+                    apigroup: 'kubevirt.io',
+                  },
+                ],
+              },
+              {
+                kind: 'ControllerRevision',
+                items: [
+                  {
+                    _uid: 'local-cluster/cr-uid-1',
+                    _relatedUids: ['local-cluster/app-uid-vm'],
+                    name: `revision-start-vm-${vmUid}-1`,
+                    namespace: 'vm-ns',
+                    cluster: 'local-cluster',
+                    kind: 'ControllerRevision',
+                    apiversion: 'v1',
+                    apigroup: 'apps',
+                  },
+                  {
+                    _uid: 'local-cluster/cr-uid-2',
+                    _relatedUids: ['local-cluster/app-uid-vm'],
+                    name: `revision-start-vm-${vmUid}-2`,
+                    namespace: 'vm-ns',
+                    cluster: 'local-cluster',
+                    kind: 'ControllerRevision',
+                    apiversion: 'v1',
+                    apigroup: 'apps',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    })
+
+    const application: ApplicationModel = {
+      name: 'vm-appset',
+      namespace: 'openshift-gitops',
+      app: {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'ApplicationSet',
+        metadata: { name: 'vm-appset', namespace: 'openshift-gitops' },
+        spec: {
+          generators: [{ list: { elements: [{ cluster: 'local-cluster' }] } }],
+          template: { spec: { source: { path: 'apps/vm' } } },
+        },
+      },
+      placementDecision: undefined,
+      isArgoApp: false,
+      isAppSet: true,
+      isOCPApp: false,
+      isFluxApp: false,
+      isAppSetPullModel: true,
+      appSetClusters: [{ name: 'local-cluster' }],
+      appSetApps: [{ metadata: { name: 'vm-appset-local-cluster' }, spec: {} }] as any,
+    }
+
+    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
+
+    const vmNode = result.nodes.find((n) => n.type === 'virtualmachine')
+    expect(vmNode).toBeDefined()
+
+    // VM-owned ControllerRevisions should appear as children of the VM, not as standalone nodes
+    const crNodes = result.nodes.filter((n) => n.type === 'controllerrevision')
+    crNodes.forEach((crNode) => {
+      expect((crNode.specs?.parent as any)?.parentType).toBe('virtualmachine')
+    })
+    expect(crNodes.length).toBe(2)
+    expect(crNodes.map((n) => n.name).sort()).toEqual([`revision-start-vm-${vmUid}-1`, `revision-start-vm-${vmUid}-2`])
+  })
+
+  it('should skip VirtualMachineInstance resources that have kubevirt.io/vm label', async () => {
+    mockSearchClient.query.mockResolvedValue({
+      loading: false,
+      networkStatus: 7,
+      data: {
+        searchResult: [
+          {
+            items: [
+              {
+                _uid: 'local-cluster/app-uid-vmi',
+                name: 'vmi-appset-local-cluster',
+                namespace: 'openshift-gitops',
+                cluster: 'local-cluster',
+                kind: 'Application',
+              },
+            ],
+            related: [
+              {
+                kind: 'VirtualMachine',
+                items: [
+                  {
+                    _uid: 'local-cluster/vm-uid-1',
+                    _relatedUids: ['local-cluster/app-uid-vmi'],
+                    name: 'my-vm',
+                    namespace: 'vm-ns',
+                    cluster: 'local-cluster',
+                    kind: 'VirtualMachine',
+                    apiversion: 'v1',
+                    apigroup: 'kubevirt.io',
+                  },
+                ],
+              },
+              {
+                kind: 'VirtualMachineInstance',
+                items: [
+                  {
+                    _uid: 'local-cluster/vmi-uid-1',
+                    _relatedUids: ['local-cluster/app-uid-vmi'],
+                    name: 'my-vm',
+                    namespace: 'vm-ns',
+                    cluster: 'local-cluster',
+                    kind: 'VirtualMachineInstance',
+                    apiversion: 'v1',
+                    apigroup: 'kubevirt.io',
+                    label: 'kubevirt.io/vm=my-vm; other-label=value',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    })
+
+    const application: ApplicationModel = {
+      name: 'vmi-appset',
+      namespace: 'openshift-gitops',
+      app: {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'ApplicationSet',
+        metadata: { name: 'vmi-appset', namespace: 'openshift-gitops' },
+        spec: {
+          generators: [{ list: { elements: [{ cluster: 'local-cluster' }] } }],
+          template: { spec: { source: { path: 'apps/vm' } } },
+        },
+      },
+      placementDecision: undefined,
+      isArgoApp: false,
+      isAppSet: true,
+      isOCPApp: false,
+      isFluxApp: false,
+      isAppSetPullModel: true,
+      appSetClusters: [{ name: 'local-cluster' }],
+      appSetApps: [{ metadata: { name: 'vmi-appset-local-cluster' }, spec: {} }] as any,
+    }
+
+    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
+
+    // The VM-owned VMI should NOT appear as a standalone top-level node
+    const standaloneVmiNodes = result.nodes.filter(
+      (n) => n.type === 'virtualmachineinstance' && (n.specs?.parent as any)?.parentType !== 'virtualmachine'
+    )
+    expect(standaloneVmiNodes).toHaveLength(0)
+
+    // But the VM should exist, and it should have a VMI child created by createVirtualMachineInstance
+    const vmNode = result.nodes.find((n) => n.type === 'virtualmachine')
+    expect(vmNode).toBeDefined()
+    const vmiChildNodes = result.nodes.filter(
+      (n) => n.type === 'virtualmachineinstance' && (n.specs?.parent as any)?.parentType === 'virtualmachine'
+    )
+    expect(vmiChildNodes).toHaveLength(1)
+  })
+
+  it('should keep ControllerRevision resources not owned by a VM as top-level nodes', async () => {
+    mockSearchClient.query.mockResolvedValue({
+      loading: false,
+      networkStatus: 7,
+      data: {
+        searchResult: [
+          {
+            items: [
+              {
+                _uid: 'local-cluster/app-uid-ds',
+                name: 'ds-appset-local-cluster',
+                namespace: 'openshift-gitops',
+                cluster: 'local-cluster',
+                kind: 'Application',
+              },
+            ],
+            related: [
+              {
+                kind: 'DaemonSet',
+                items: [
+                  {
+                    _uid: 'local-cluster/ds-uid-1',
+                    _relatedUids: ['local-cluster/app-uid-ds'],
+                    name: 'my-daemonset',
+                    namespace: 'ds-ns',
+                    cluster: 'local-cluster',
+                    kind: 'DaemonSet',
+                    apiversion: 'v1',
+                    apigroup: 'apps',
+                  },
+                ],
+              },
+              {
+                kind: 'ControllerRevision',
+                items: [
+                  {
+                    _uid: 'local-cluster/cr-uid-normal',
+                    _relatedUids: ['local-cluster/app-uid-ds'],
+                    name: 'my-daemonset-revision-abc123',
+                    namespace: 'ds-ns',
+                    cluster: 'local-cluster',
+                    kind: 'ControllerRevision',
+                    apiversion: 'v1',
+                    apigroup: 'apps',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    })
+
+    const application: ApplicationModel = {
+      name: 'ds-appset',
+      namespace: 'openshift-gitops',
+      app: {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'ApplicationSet',
+        metadata: { name: 'ds-appset', namespace: 'openshift-gitops' },
+        spec: {
+          generators: [{ list: { elements: [{ cluster: 'local-cluster' }] } }],
+          template: { spec: { source: { path: 'apps/ds' } } },
+        },
+      },
+      placementDecision: undefined,
+      isArgoApp: false,
+      isAppSet: true,
+      isOCPApp: false,
+      isFluxApp: false,
+      isAppSetPullModel: true,
+      appSetClusters: [{ name: 'local-cluster' }],
+      appSetApps: [{ metadata: { name: 'ds-appset-local-cluster' }, spec: {} }] as any,
+    }
+
+    const result: ExtendedTopology = await getAppSetTopology(mockToolbarControl, application, 'local-cluster')
+
+    // Non-VM ControllerRevision should still appear as a regular top-level resource node
+    const crNodes = result.nodes.filter(
+      (n) => n.type === 'controllerrevision' && n.name === 'my-daemonset-revision-abc123'
+    )
+    expect(crNodes.length).toBeGreaterThanOrEqual(1)
   })
 })
