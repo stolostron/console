@@ -57,9 +57,10 @@ describe('EditDescription', () => {
 
   test('can clear description', async () => {
     const { getByLabelText, getByRole } = render(<EditDescription resource={resource} close={() => {}} />)
-    const textarea = getByLabelText('Description')
+    const textarea = getByLabelText('Description') as HTMLTextAreaElement
 
-    userEvent.clear(textarea)
+    userEvent.click(getByRole('button', { name: /clear/i }))
+    expect(textarea.value).toBe('')
 
     const nockScope = nockPatch(
       { apiVersion: resource.apiVersion, kind: resource.kind, metadata: { name: resource.metadata!.name } },
@@ -72,7 +73,7 @@ describe('EditDescription', () => {
       }
     )
 
-    getByRole('button', { name: /save/i }).click()
+    userEvent.click(getByRole('button', { name: /save/i }))
     await waitFor(() => expect(nockScope.isDone()).toBeTruthy())
   })
 
@@ -94,7 +95,7 @@ describe('EditDescription', () => {
   })
 
   test('shows errors on save failure', async () => {
-    const { getByLabelText, getByRole } = render(<EditDescription resource={resource} close={() => {}} />)
+    const { getByLabelText, getByRole, findByText } = render(<EditDescription resource={resource} close={() => {}} />)
     const textarea = getByLabelText('Description')
 
     userEvent.clear(textarea)
@@ -109,11 +110,13 @@ describe('EditDescription', () => {
           },
         },
       },
-      mockBadRequestStatus
+      mockBadRequestStatus,
+      400
     )
 
-    getByRole('button', { name: /save/i }).click()
+    userEvent.click(getByRole('button', { name: /save/i }))
     await waitFor(() => expect(nockScope.isDone()).toBeTruthy())
+    expect(await findByText('Bad request.')).toBeInTheDocument()
   })
 
   test('works without existing annotations', () => {
