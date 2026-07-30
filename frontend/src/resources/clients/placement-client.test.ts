@@ -6,7 +6,11 @@ import { GlobalPlacementName, Placement, PlacementApiVersionBeta, PlacementKind 
 import { PlacementDecision } from '../placement-decision'
 import { MatchExpressions } from '../selector'
 import { createResource } from '../utils'
-import { ManagedByConsoleLabel, ManagedByConsoleLabelKey, ManagedByConsoleLabelValue } from './constants'
+import {
+  PlacementManagedBySystemLabel,
+  PlacementManagedBySystemLabelKey,
+  PlacementManagedBySystemLabelValue,
+} from './constants'
 import {
   createForClusters,
   createForClusterSets,
@@ -474,7 +478,7 @@ describe('placement-client', () => {
         metadata: {
           name: 'cluster-sets-cluster-set-1-and-cluster-set-2',
           namespace: MulticlusterRoleAssignmentNamespace,
-          labels: ManagedByConsoleLabel,
+          labels: PlacementManagedBySystemLabel,
         },
         spec: {
           clusterSets,
@@ -559,7 +563,7 @@ describe('placement-client', () => {
       )
     })
 
-    it('should include metadata.labels (ManagedByConsoleLabel)', () => {
+    it('should include metadata.labels (PlacementManagedBySystemLabel)', () => {
       // Arrange
       const clusterSets = ['label-test']
       const mockResult = {
@@ -575,13 +579,13 @@ describe('placement-client', () => {
       expect(createResourceMock).toHaveBeenCalledWith(
         expect.objectContaining({
           metadata: expect.objectContaining({
-            labels: ManagedByConsoleLabel,
+            labels: PlacementManagedBySystemLabel,
           }),
         })
       )
     })
 
-    it('should set managed-by label with OCM key (open-cluster-management.io/managed-by: console) to avoid literal key regression', () => {
+    it('should set placement-managed-by-system label with OCM key (cluster.open-cluster-management.io/placement-managed-by-system: true) to avoid literal key regression', () => {
       const clusterSets = ['regression-label-key']
       createResourceMock.mockReturnValue({
         promise: Promise.resolve({} as Placement),
@@ -589,8 +593,8 @@ describe('placement-client', () => {
       })
       createForClusterSets(clusterSets)
       const placement = createResourceMock.mock.calls[0][0] as Placement
-      expect(placement.metadata?.labels?.[ManagedByConsoleLabelKey]).toBe(ManagedByConsoleLabelValue)
-      expect(placement.metadata?.labels).not.toHaveProperty('ManagedByConsoleLabelKey')
+      expect(placement.metadata?.labels?.[PlacementManagedBySystemLabelKey]).toBe(PlacementManagedBySystemLabelValue)
+      expect(placement.metadata?.labels).not.toHaveProperty('PlacementManagedBySystemLabelKey')
     })
 
     it('should return the IRequestResult from createResource', () => {
@@ -666,7 +670,7 @@ describe('placement-client', () => {
         metadata: {
           name: 'clusters-cluster-1-and-cluster-2',
           namespace: MulticlusterRoleAssignmentNamespace,
-          labels: ManagedByConsoleLabel,
+          labels: PlacementManagedBySystemLabel,
         },
         spec: {
           predicates: [
@@ -836,7 +840,7 @@ describe('placement-client', () => {
       )
     })
 
-    it('should include metadata.labels (ManagedByConsoleLabel)', () => {
+    it('should include metadata.labels (PlacementManagedBySystemLabel)', () => {
       // Arrange
       const clusters = ['label-test']
       const mockResult = {
@@ -852,13 +856,13 @@ describe('placement-client', () => {
       expect(createResourceMock).toHaveBeenCalledWith(
         expect.objectContaining({
           metadata: expect.objectContaining({
-            labels: ManagedByConsoleLabel,
+            labels: PlacementManagedBySystemLabel,
           }),
         })
       )
     })
 
-    it('should set managed-by label with OCM key (open-cluster-management.io/managed-by: console) to avoid literal key regression', () => {
+    it('should set placement-managed-by-system label with OCM key (cluster.open-cluster-management.io/placement-managed-by-system: true) to avoid literal key regression', () => {
       const clusters = ['regression-label-key']
       createResourceMock.mockReturnValue({
         promise: Promise.resolve({} as Placement),
@@ -866,8 +870,8 @@ describe('placement-client', () => {
       })
       createForClusters(clusters)
       const placement = createResourceMock.mock.calls[0][0] as Placement
-      expect(placement.metadata?.labels?.[ManagedByConsoleLabelKey]).toBe(ManagedByConsoleLabelValue)
-      expect(placement.metadata?.labels).not.toHaveProperty('ManagedByConsoleLabelKey')
+      expect(placement.metadata?.labels?.[PlacementManagedBySystemLabelKey]).toBe(PlacementManagedBySystemLabelValue)
+      expect(placement.metadata?.labels).not.toHaveProperty('PlacementManagedBySystemLabelKey')
     })
   })
 
@@ -883,7 +887,7 @@ describe('placement-client', () => {
       })
     })
 
-    // Helper to create a placement with predicates (includes ManagedByConsoleLabel so useFindPlacements returns it)
+    // Helper to create a placement with predicates (includes PlacementManagedBySystemLabel so useFindPlacements returns it)
     const createPlacementWithPredicates = (
       name: string,
       clusterNames: string[],
@@ -891,7 +895,7 @@ describe('placement-client', () => {
     ): Placement => ({
       apiVersion: PlacementApiVersionBeta,
       kind: PlacementKind,
-      metadata: { name, namespace: 'default', labels: ManagedByConsoleLabel },
+      metadata: { name, namespace: 'default', labels: PlacementManagedBySystemLabel },
       spec: {
         predicates: [
           {
@@ -955,7 +959,7 @@ describe('placement-client', () => {
         const placement: Placement = {
           apiVersion: PlacementApiVersionBeta,
           kind: PlacementKind,
-          metadata: { name: 'no-predicates', namespace: 'default', labels: ManagedByConsoleLabel },
+          metadata: { name: 'no-predicates', namespace: 'default', labels: PlacementManagedBySystemLabel },
           spec: {},
         }
         useRecoilValueMock.mockReturnValue([placement, globalPlacement])
@@ -975,7 +979,7 @@ describe('placement-client', () => {
         const placement: Placement = {
           apiVersion: PlacementApiVersionBeta,
           kind: PlacementKind,
-          metadata: { name: 'empty-predicates', namespace: 'default', labels: ManagedByConsoleLabel },
+          metadata: { name: 'empty-predicates', namespace: 'default', labels: PlacementManagedBySystemLabel },
           spec: { predicates: [] },
         }
         useRecoilValueMock.mockReturnValue([placement, globalPlacement])
@@ -995,7 +999,7 @@ describe('placement-client', () => {
         const placement: Placement = {
           apiVersion: PlacementApiVersionBeta,
           kind: PlacementKind,
-          metadata: { name: 'wrong-key', namespace: 'default', labels: ManagedByConsoleLabel },
+          metadata: { name: 'wrong-key', namespace: 'default', labels: PlacementManagedBySystemLabel },
           spec: {
             predicates: [
               {
@@ -1028,7 +1032,7 @@ describe('placement-client', () => {
         const placement: Placement = {
           apiVersion: PlacementApiVersionBeta,
           kind: PlacementKind,
-          metadata: { name: 'mixed-keys', namespace: 'default', labels: ManagedByConsoleLabel },
+          metadata: { name: 'mixed-keys', namespace: 'default', labels: PlacementManagedBySystemLabel },
           spec: {
             predicates: [
               {
@@ -1062,7 +1066,7 @@ describe('placement-client', () => {
         const placement: Placement = {
           apiVersion: PlacementApiVersionBeta,
           kind: PlacementKind,
-          metadata: { name: 'no-label-selector', namespace: 'default', labels: ManagedByConsoleLabel },
+          metadata: { name: 'no-label-selector', namespace: 'default', labels: PlacementManagedBySystemLabel },
           spec: {
             predicates: [
               {
@@ -1088,7 +1092,7 @@ describe('placement-client', () => {
         const placement: Placement = {
           apiVersion: PlacementApiVersionBeta,
           kind: PlacementKind,
-          metadata: { name: 'no-match-expressions', namespace: 'default', labels: ManagedByConsoleLabel },
+          metadata: { name: 'no-match-expressions', namespace: 'default', labels: PlacementManagedBySystemLabel },
           spec: {
             predicates: [
               {
@@ -1116,7 +1120,7 @@ describe('placement-client', () => {
         const placement: Placement = {
           apiVersion: PlacementApiVersionBeta,
           kind: PlacementKind,
-          metadata: { name: 'empty-match-expressions', namespace: 'default', labels: ManagedByConsoleLabel },
+          metadata: { name: 'empty-match-expressions', namespace: 'default', labels: PlacementManagedBySystemLabel },
           spec: {
             predicates: [
               {
@@ -1146,7 +1150,7 @@ describe('placement-client', () => {
         const placement: Placement = {
           apiVersion: PlacementApiVersionBeta,
           kind: PlacementKind,
-          metadata: { name: 'no-values', namespace: 'default', labels: ManagedByConsoleLabel },
+          metadata: { name: 'no-values', namespace: 'default', labels: PlacementManagedBySystemLabel },
           spec: {
             predicates: [
               {
@@ -1176,7 +1180,7 @@ describe('placement-client', () => {
         const placement: Placement = {
           apiVersion: PlacementApiVersionBeta,
           kind: PlacementKind,
-          metadata: { name: 'empty-values', namespace: 'default', labels: ManagedByConsoleLabel },
+          metadata: { name: 'empty-values', namespace: 'default', labels: PlacementManagedBySystemLabel },
           spec: {
             predicates: [
               {
@@ -1206,7 +1210,7 @@ describe('placement-client', () => {
         const placement: Placement = {
           apiVersion: PlacementApiVersionBeta,
           kind: PlacementKind,
-          metadata: { name: 'falsy-values', namespace: 'default', labels: ManagedByConsoleLabel },
+          metadata: { name: 'falsy-values', namespace: 'default', labels: PlacementManagedBySystemLabel },
           spec: {
             predicates: [
               {
@@ -1242,7 +1246,7 @@ describe('placement-client', () => {
         const placement: Placement = {
           apiVersion: PlacementApiVersionBeta,
           kind: PlacementKind,
-          metadata: { name: 'duplicates', namespace: 'default', labels: ManagedByConsoleLabel },
+          metadata: { name: 'duplicates', namespace: 'default', labels: PlacementManagedBySystemLabel },
           spec: {
             predicates: [
               {
@@ -1282,7 +1286,7 @@ describe('placement-client', () => {
         const placement: Placement = {
           apiVersion: PlacementApiVersionBeta,
           kind: PlacementKind,
-          metadata: { name: 'multi-predicates', namespace: 'default', labels: ManagedByConsoleLabel },
+          metadata: { name: 'multi-predicates', namespace: 'default', labels: PlacementManagedBySystemLabel },
           spec: {
             predicates: [
               {
@@ -1387,7 +1391,7 @@ describe('placement-client', () => {
         const placement: Placement = {
           apiVersion: PlacementApiVersionBeta,
           kind: PlacementKind,
-          metadata: { name: 'decision-only-clusters', namespace: 'default', labels: ManagedByConsoleLabel },
+          metadata: { name: 'decision-only-clusters', namespace: 'default', labels: PlacementManagedBySystemLabel },
           spec: {},
         }
         const placementDecision = createPlacementDecision('decision-3', 'decision-only-clusters', [
@@ -1504,8 +1508,8 @@ describe('placement-client', () => {
       })
     })
 
-    describe('labels filter (ManagedByConsoleLabel)', () => {
-      it('should return only placements that have ManagedByConsoleLabel', () => {
+    describe('labels filter (PlacementManagedBySystemLabel)', () => {
+      it('should return only placements that have PlacementManagedBySystemLabel', () => {
         const withLabel = createPlacementWithPredicates('with-label', ['cluster-a'])
         const withoutLabel: Placement = {
           apiVersion: PlacementApiVersionBeta,
@@ -1534,7 +1538,7 @@ describe('placement-client', () => {
         expect(result.current[1].placement.metadata.name).toBe(GlobalPlacementName)
       })
 
-      it('should return empty array when no placements have ManagedByConsoleLabel', () => {
+      it('should return empty array when no placements have PlacementManagedBySystemLabel', () => {
         const placement: Placement = {
           apiVersion: PlacementApiVersionBeta,
           kind: PlacementKind,
