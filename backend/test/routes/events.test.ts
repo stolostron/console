@@ -301,6 +301,23 @@ describe('events Route', () => {
       expect(getIsObservabilityInstalled()).toBe(true)
     })
 
+    it('should set observability flag when caching multicluster-observability-addon', async () => {
+      const observabilityAddon: IResource = {
+        kind: 'ManagedClusterAddOn',
+        apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+        metadata: {
+          name: 'multicluster-observability-addon',
+          namespace: 'local-cluster',
+          uid: 'mco-addon-uid',
+          resourceVersion: '1',
+        },
+      }
+
+      await cacheResource(observabilityAddon)
+
+      expect(getIsObservabilityInstalled()).toBe(true)
+    })
+
     it('should not set observability flag for other addons', async () => {
       const otherAddon: IResource = {
         kind: 'ManagedClusterAddOn',
@@ -315,6 +332,24 @@ describe('events Route', () => {
 
       const initialObsFlag = getIsObservabilityInstalled()
       await cacheResource(otherAddon)
+
+      expect(getIsObservabilityInstalled()).toBe(initialObsFlag)
+    })
+
+    it('should not set observability flag for addon with wrong apiVersion', async () => {
+      const wrongVersionAddon: IResource = {
+        kind: 'ManagedClusterAddOn',
+        apiVersion: 'addon.open-cluster-management.io/v1',
+        metadata: {
+          name: 'observability-controller',
+          namespace: 'local-cluster',
+          uid: 'wrong-version-addon-uid',
+          resourceVersion: '1',
+        },
+      }
+
+      const initialObsFlag = getIsObservabilityInstalled()
+      await cacheResource(wrongVersionAddon)
 
       expect(getIsObservabilityInstalled()).toBe(initialObsFlag)
     })
