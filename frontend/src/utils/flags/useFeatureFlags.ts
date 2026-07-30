@@ -42,8 +42,11 @@ const useFeatureFlags = (setFeatureFlag: SetFeatureFlag) => {
     }
   }, [startPolling, stopPolling, pollingInterval])
 
-  // Set the required provider flag once
+  // Set the required provider flags once.
+  // The previous flag value (MULTICLUSTER_SDK_PROVIDER_1) is also set so that older versions
+  // of the SDK that have not yet upgraded to the new major version continue to work with ACM 5.0.
   useEffect(() => {
+    setFeatureFlag('MULTICLUSTER_SDK_PROVIDER_1', true)
     setFeatureFlag(REQUIRED_PROVIDER_FLAG, true)
   }, [setFeatureFlag])
 }
