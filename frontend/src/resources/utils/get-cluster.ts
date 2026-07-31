@@ -1121,7 +1121,7 @@ export function getKubeApiServer(
   return (
     clusterDeployment?.status?.apiURL ??
     managedClusterInfo?.spec?.masterEndpoint ??
-    // Temporary workaround until https://issues.redhat.com/browse/HIVE-1666
+    // Temporary workaround until https://redhat.atlassian.net/browse/HIVE-1666
     getClusterApiUrlAI(clusterDeployment as ClusterDeploymentK8sResource, agentClusterInstall)
   )
 }
@@ -1158,7 +1158,7 @@ export function getConsoleUrl(
   return (
     clusterDeployment?.status?.webConsoleURL ??
     managedClusterInfo?.status?.consoleURL ??
-    // Temporary workaround until https://issues.redhat.com/browse/HIVE-1666
+    // Temporary workaround until https://redhat.atlassian.net/browse/HIVE-1666
     getConsoleUrlAI(clusterDeployment as ClusterDeploymentK8sResource, agentClusterInstall) ??
     getHypershiftConsoleURL(hostedCluster)
   )
