@@ -88,9 +88,11 @@ export default function PolicyDetailsResults() {
   const location = useLocation()
   const filterPresets = transformBrowserUrlToFilterPresets(location.search)
   const { policy } = usePolicyDetailsContext()
-  const { policiesState } = useSharedAtoms()
+  const { managedClustersState, policiesState } = useSharedAtoms()
   const policies = useRecoilValue(policiesState)
+  const managedClusters = useRecoilValue(managedClustersState)
   const canCreatePolicy = useIsAnyNamespaceAuthorized(rbacCreate(PolicyDefinition))
+  const managedClusterNames = useMemo(() => new Set(managedClusters.map((mc) => mc.metadata.name)), [managedClusters])
 
   const policiesDeployedOnCluster: ResultsTableData[] = useMemo(() => {
     const policyName = policy.metadata.name ?? ''
@@ -137,18 +139,21 @@ export default function PolicyDetailsResults() {
       {
         header: t('Cluster'),
         sort: 'cluster',
-        cell: (item: ResultsTableData) => (
-          <Link
-            to={{
-              pathname: generatePath(NavigationPath.clusterOverview, {
-                name: item.cluster,
-                namespace: item.clusterNamespace || UNKNOWN_NAMESPACE,
-              }),
-            }}
-          >
-            {item.cluster}
-          </Link>
-        ),
+        cell: (item: ResultsTableData) =>
+          managedClusterNames.has(item.cluster) ? (
+            <Link
+              to={{
+                pathname: generatePath(NavigationPath.clusterOverview, {
+                  name: item.cluster,
+                  namespace: item.clusterNamespace || UNKNOWN_NAMESPACE,
+                }),
+              }}
+            >
+              {item.cluster}
+            </Link>
+          ) : (
+            item.cluster
+          ),
         search: (item: ResultsTableData) => item.cluster,
         exportContent: (item: ResultsTableData) => item.cluster,
       },
@@ -310,7 +315,7 @@ export default function PolicyDetailsResults() {
         disableExport: true,
       },
     ],
-    [canCreatePolicy, t]
+    [canCreatePolicy, managedClusterNames, t]
   )
 
   return (
@@ -321,12 +326,7 @@ export default function PolicyDetailsResults() {
           showExportButton
           exportFilePrefix={`${policy.metadata.name}-${policy.metadata.namespace}`}
           items={policiesDeployedOnCluster}
-          emptyState={
-            <AcmEmptyState
-              title={t('No cluster results')}
-              message={t('No clusters are reporting status for this policy.')}
-            />
-          }
+          emptyState={<AcmEmptyState title={t('No results found')} message={t('No results available.')} />}
           columns={columns}
           keyFn={(item) => `${item.cluster}.${item.templateName}`}
           initialSort={

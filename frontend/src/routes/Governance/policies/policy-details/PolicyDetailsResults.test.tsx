@@ -2,7 +2,7 @@
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router-dom-v5-compat'
 import { RecoilRoot } from 'recoil'
-import { policiesState } from '../../../../atoms'
+import { managedClustersState, policiesState } from '../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import {
   waitForText,
@@ -14,8 +14,22 @@ import {
 } from '../../../../lib/test-util'
 import PolicyDetailsResults from './PolicyDetailsResults'
 import { mockPolicy, mockPendingPolicy, mockPolicyBinding } from '../../governance.sharedMocks'
-import { Policy } from '../../../../resources'
+import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind, Policy } from '../../../../resources'
 import { PolicyDetailsContext } from './PolicyDetailsPage'
+
+const mockManagedCluster: ManagedCluster = {
+  apiVersion: ManagedClusterApiVersion,
+  kind: ManagedClusterKind,
+  metadata: { name: 'local-cluster' },
+  spec: { hubAcceptsClient: true },
+  status: {
+    allocatable: { cpu: '', memory: '' },
+    capacity: { cpu: '', memory: '' },
+    clusterClaims: [],
+    conditions: [],
+    version: { kubernetes: '' },
+  },
+}
 
 describe('Policy Details Results', () => {
   beforeEach(async () => {
@@ -28,6 +42,7 @@ describe('Policy Details Results', () => {
       <RecoilRoot
         initializeState={(snapshot) => {
           snapshot.set(policiesState, mockPolicy)
+          snapshot.set(managedClustersState, [mockManagedCluster])
         }}
       >
         <MemoryRouter>
@@ -62,6 +77,7 @@ describe('Policy Details Results', () => {
       <RecoilRoot
         initializeState={(snapshot) => {
           snapshot.set(policiesState, mockPolicyBinding)
+          snapshot.set(managedClustersState, [mockManagedCluster])
         }}
       >
         <MemoryRouter>
@@ -115,6 +131,7 @@ describe('Policy Details Results', () => {
       <RecoilRoot
         initializeState={(snapshot) => {
           snapshot.set(policiesState, [mockRootPolicy, mockReplPolicy])
+          snapshot.set(managedClustersState, [mockManagedCluster])
         }}
       >
         <MemoryRouter>
@@ -148,6 +165,7 @@ describe('Policy results of policy of a hosted cluster', () => {
       <RecoilRoot
         initializeState={(snapshot) => {
           snapshot.set(policiesState, [mockPolicy[0], mockReplicatedPolicyCopy, mockPolicy[2]])
+          snapshot.set(managedClustersState, [mockManagedCluster])
         }}
       >
         <MemoryRouter>
@@ -179,6 +197,7 @@ describe('Policy Details Results with pending status', () => {
       <RecoilRoot
         initializeState={(snapshot) => {
           snapshot.set(policiesState, mockPendingPolicy)
+          snapshot.set(managedClustersState, [mockManagedCluster])
         }}
       >
         <MemoryRouter>
@@ -202,6 +221,59 @@ describe('Policy Details Results with pending status', () => {
   })
 })
 
+describe('Namespace-scoped user without cluster access', () => {
+  beforeEach(async () => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+  })
+  test('Should render cluster names as plain text when managedClustersState is empty', async () => {
+    const context: PolicyDetailsContext = { policy: mockPolicy[0] }
+    const { container } = render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policiesState, mockPolicy)
+          snapshot.set(managedClustersState, [])
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<PolicyDetailsResults />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    await waitForText('Clusters')
+    await waitForText('local-cluster')
+
+    expect(container.querySelector('td[data-label="Cluster"] a')).not.toBeInTheDocument()
+  })
+  test('Should render updated empty-state message when no results are available', async () => {
+    const context: PolicyDetailsContext = { policy: mockPolicy[0] }
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policiesState, [mockPolicy[0]])
+          snapshot.set(managedClustersState, [])
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<PolicyDetailsResults />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    await waitForText('No results found')
+    await waitForText('No results available.')
+  })
+})
+
 describe('Export from policy details results table', () => {
   beforeEach(async () => {
     nockIgnoreRBAC()
@@ -213,6 +285,7 @@ describe('Export from policy details results table', () => {
       <RecoilRoot
         initializeState={(snapshot) => {
           snapshot.set(policiesState, mockPolicy)
+          snapshot.set(managedClustersState, [mockManagedCluster])
         }}
       >
         <MemoryRouter>
@@ -262,6 +335,7 @@ describe('Search prefill from URL query string', () => {
       <RecoilRoot
         initializeState={(snapshot) => {
           snapshot.set(policiesState, mockPolicy)
+          snapshot.set(managedClustersState, [mockManagedCluster])
         }}
       >
         <MemoryRouter initialEntries={['?search=local-cluster']}>
@@ -286,6 +360,7 @@ describe('Search prefill from URL query string', () => {
       <RecoilRoot
         initializeState={(snapshot) => {
           snapshot.set(policiesState, mockPolicy)
+          snapshot.set(managedClustersState, [mockManagedCluster])
         }}
       >
         <MemoryRouter initialEntries={['/']}>
