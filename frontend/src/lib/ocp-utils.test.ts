@@ -169,6 +169,36 @@ describe('useMultiClusterHubConsoleUrl', () => {
     })
   })
 
+  describe('when ACM operator is detected via ClusterExtension', () => {
+    beforeEach(() => {
+      mockUseOperatorCheck.mockReturnValue({
+        operator: SupportedOperator.acm,
+        installed: true,
+        version: '2.15.0',
+        pending: false,
+      })
+      mockUseRecoilValue.mockReturnValue([
+        {
+          metadata: {
+            name: 'advanced-cluster-management',
+            namespace: 'open-cluster-management',
+            labels: {
+              'console.open-cluster-management.io/source': 'ClusterExtension',
+            },
+          },
+          spec: { name: 'advanced-cluster-management' },
+        },
+      ])
+    })
+
+    test('returns ClusterExtension console URL', () => {
+      const { result } = renderHook(() => useMultiClusterHubConsoleUrl())
+      expect(result.current).toBe(
+        '/k8s/cluster/olm.operatorframework.io~v1~ClusterExtension/advanced-cluster-management'
+      )
+    })
+  })
+
   describe('when ACM operator check is pending', () => {
     beforeEach(() => {
       mockUseOperatorCheck.mockReturnValue({

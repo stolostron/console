@@ -107,6 +107,8 @@ import {
   SubscriptionKind,
   SubscriptionOperatorApiVersion,
   SubscriptionOperatorKind,
+  ClusterExtensionApiVersion,
+  ClusterExtensionKind,
   SubscriptionReportApiVersion,
   SubscriptionReportKind,
   UserApiVersion,
@@ -178,6 +180,7 @@ import {
   storageClassState,
   submarinerConfigsState,
   subscriptionOperatorsState,
+  clusterExtensionsState,
   subscriptionReportsState,
   subscriptionsState,
   usersState,
@@ -264,6 +267,7 @@ export function LoadData(props: { children?: ReactNode }) {
   const setStorageClassState = useSetRecoilState(storageClassState)
   const setSubmarinerConfigs = useSetRecoilState(submarinerConfigsState)
   const setSubscriptionOperatorsState = useSetRecoilState(subscriptionOperatorsState)
+  const setClusterExtensionsState = useSetRecoilState(clusterExtensionsState)
   const setSubscriptionReportsState = useSetRecoilState(subscriptionReportsState)
   const setSubscriptionsState = useSetRecoilState(subscriptionsState)
   const setUsers = useSetRecoilState(usersState)
@@ -359,6 +363,7 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(SubmarinerConfigApiVersion, SubmarinerConfigKind, setSubmarinerConfigs)
     addSetter(SubscriptionApiVersion, SubscriptionKind, setSubscriptionsState)
     addSetter(SubscriptionOperatorApiVersion, SubscriptionOperatorKind, setSubscriptionOperatorsState)
+    addSetter(ClusterExtensionApiVersion, ClusterExtensionKind, setClusterExtensionsState)
     addSetter(SubscriptionReportApiVersion, SubscriptionReportKind, setSubscriptionReportsState)
     addSetter(UserApiVersion, GroupKind, setGroups)
     addSetter(UserApiVersion, UserKind, setUsers)
@@ -417,6 +422,7 @@ export function LoadData(props: { children?: ReactNode }) {
     setStorageClassState,
     setSubmarinerConfigs,
     setSubscriptionOperatorsState,
+    setClusterExtensionsState,
     setSubscriptionReportsState,
     setSubscriptionsState,
     setUsers,

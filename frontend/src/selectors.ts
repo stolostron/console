@@ -2,12 +2,22 @@
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import {
   clusterCuratorsState,
+  clusterExtensionsState,
   managedClustersState,
   secretsState,
   settingsState,
   subscriptionOperatorsState,
 } from './atoms'
 import { Curation } from './resources/cluster-curator'
+import {
+  CLUSTER_EXTENSION_SOURCE_LABEL,
+  getClusterExtensionPackageName,
+  getClusterExtensionVersion,
+  isClusterExtensionInstalled,
+} from './resources/cluster-extension'
+import type { ClusterExtension } from './resources/cluster-extension'
+import { SubscriptionOperatorApiVersion, SubscriptionOperatorKind } from './resources'
+import type { SubscriptionOperator } from './resources'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { GetRecoilValue, selector } from 'recoil'
 import { unpackProviderConnection } from './resources/provider-connection'
@@ -91,13 +101,53 @@ export const validClusterCuratorTemplatesValue = selector({
   },
 })
 
-const findInstalledSubscription = (name: string, get: GetRecoilValue) => {
+function clusterExtensionToSubscriptionOperator(clusterExtension: ClusterExtension): SubscriptionOperator {
+  const packageName = getClusterExtensionPackageName(clusterExtension) ?? ''
+  const version = getClusterExtensionVersion(clusterExtension)
+  return {
+    apiVersion: SubscriptionOperatorApiVersion,
+    kind: SubscriptionOperatorKind,
+    metadata: {
+      name: clusterExtension.metadata?.name ?? packageName,
+      namespace: clusterExtension.spec?.namespace ?? clusterExtension.metadata?.namespace,
+      labels: {
+        ...clusterExtension.metadata?.labels,
+        [CLUSTER_EXTENSION_SOURCE_LABEL]: 'ClusterExtension',
+      },
+    },
+    spec: {
+      name: packageName,
+    },
+    status: {
+      installedCSV: version,
+      conditions: [
+        {
+          type: 'CatalogSourcesUnhealthy',
+          status: 'False',
+        },
+      ],
+    },
+  }
+}
+
+const findInstalledSubscription = (name: string, get: GetRecoilValue): SubscriptionOperator[] => {
   const subscriptionOperators = get(subscriptionOperatorsState)
-  return subscriptionOperators.filter(
+  const fromSubscriptions = subscriptionOperators.filter(
     (op) =>
       op.spec.name === name &&
       op?.status?.conditions?.find((c) => c.type === 'CatalogSourcesUnhealthy')?.status === 'False'
   )
+  if (fromSubscriptions.length > 0) {
+    return fromSubscriptions
+  }
+
+  const clusterExtensions = get(clusterExtensionsState)
+  return clusterExtensions
+    .filter(
+      (clusterExtension) =>
+        getClusterExtensionPackageName(clusterExtension) === name && isClusterExtensionInstalled(clusterExtension)
+    )
+    .map(clusterExtensionToSubscriptionOperator)
 }
 
 export const ansibleOperatorSubscriptionsValue = selector({

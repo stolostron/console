@@ -62,6 +62,7 @@ import {
   SubscriptionReport,
   User,
 } from './resources'
+import type { ClusterExtension } from './resources'
 
 let atomArrayKey = 0
 function AtomArray<T>() {
@@ -126,6 +127,7 @@ export const servicesState = AtomArray<Service>()
 export const storageClassState = AtomArray<StorageClassK8sResource>()
 export const submarinerConfigsState = AtomArray<SubmarinerConfig>()
 export const subscriptionOperatorsState = AtomArray<SubscriptionOperator>()
+export const clusterExtensionsState = AtomArray<ClusterExtension>()
 export const subscriptionReportsState = AtomArray<SubscriptionReport>()
 export const subscriptionsState = AtomArray<Subscription>()
 export const usersState = AtomArray<User>()
