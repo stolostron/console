@@ -7,6 +7,7 @@ import { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import pluralize from 'pluralize'
 import { pipeline } from 'node:stream/promises'
 import { Transform } from 'node:stream'
+import { batchPromiseAll } from '../lib/batch-promise-all'
 import { createDictionary, deflateResource, inflateResource } from '../lib/compression'
 import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
@@ -42,10 +43,9 @@ let requests: { cancel: () => void }[] = []
 export async function getKubeResources(kind: string, apiVersion: string) {
   const option = { apiVersion, kind }
   const apiVersionPlural = apiVersionPluralFn(option)
-  return await Promise.all(
-    Object.values(resourceCache[apiVersionPlural] || {}).map((event) => {
-      return event.compressed.then((compressed) => inflateResource(compressed, eventDict))
-    })
+  const entries = Object.values(resourceCache[apiVersionPlural] || {})
+  return batchPromiseAll(entries, (event) =>
+    event.compressed.then((compressed) => inflateResource(compressed, eventDict))
   )
 }
 
@@ -422,7 +422,7 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
     return { size: itemCount }
   }
 
-  await Promise.all(items.map((item) => cacheResource(item)))
+  await batchPromiseAll(items, (item) => cacheResource(item))
 
   // Remove items that are no longer in kubernetes
   const apiVersionPlural = apiVersionPluralFn(options)
@@ -443,7 +443,7 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
       removeResources.push(resource)
     }
   }
-  await Promise.all(removeResources.map((resource) => deleteResource(resource)))
+  await batchPromiseAll(removeResources, (resource) => deleteResource(resource))
 
   return { resourceVersion, size: items.length }
 }
