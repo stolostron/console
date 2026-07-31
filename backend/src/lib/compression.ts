@@ -19,21 +19,30 @@ import { getEventDict } from '../routes/events'
 import { getAppDict, type ICompressedResource, type ITransformedResource } from '../routes/aggregators/applications'
 import { promisify } from 'node:util'
 
+const MAX_RECENTLY_ADDED = 200
+
 type Dictionary = {
   arr: string[]
   map: Record<string, string>
   add: (key: string) => string
   get: (inx: number) => string
   has: (key: string) => string
+  recentlyAdded: string[]
+  snapshotSize: () => number
+  drainRecentlyAdded: () => string[]
 }
 
 export function createDictionary(): Dictionary {
   const arr: string[] = []
   const map: Record<string, string> = {}
+  const recentlyAdded: string[] = []
   const add = (key: string): string => {
     if (!(key in map)) {
       map[key] = `${arr.length}`
       arr.push(key)
+      if (logger.isLevelEnabled('debug') && recentlyAdded.length < MAX_RECENTLY_ADDED) {
+        recentlyAdded.push(key)
+      }
     }
     return map[key]
   }
@@ -43,12 +52,17 @@ export function createDictionary(): Dictionary {
   const has = (key: string) => {
     return map[key]
   }
+  const snapshotSize = () => arr.length
+  const drainRecentlyAdded = () => recentlyAdded.splice(0)
   return {
     arr,
     map,
     add,
     get,
     has,
+    recentlyAdded,
+    snapshotSize,
+    drainRecentlyAdded,
   }
 }
 
@@ -73,6 +87,19 @@ type CompressedResourceType = Record<number, any> | Record<number, any[]> | stri
 
 const NUMBER_MARKER = '#!%'
 const JSON_MARKER = '#!&'
+
+// Detects ISO 8601 timestamps to avoid permanently indexing unique time values.
+// Covers: "2026-05-27T20:18:12Z" (20), "2026-05-27T20:18:12.000Z" (24), "2026-05-27T20:18:12+05:30" (25)
+export function isTimestamp(s: string): boolean {
+  return (
+    (s.length === 20 || s.length === 24 || s.length === 25) &&
+    s[4] === '-' &&
+    s[7] === '-' &&
+    s[10] === 'T' &&
+    s[13] === ':' &&
+    (s.endsWith('Z') || s[19] === '+' || s[19] === '-')
+  )
+}
 
 export class FifoSet<T> {
   private readonly values: T[] = []
@@ -171,6 +198,10 @@ function compressResource(resource: UncompressedResourceType, dictionary: Dictio
         }
       }
       if (resource.length < 32 && !resource.endsWith('=')) {
+        // skip indexing of all timestamps
+        if (isTimestamp(resource)) {
+          return resource
+        }
         // index short strings that aren't a base64
         return dictionary.add(resource)
       }
