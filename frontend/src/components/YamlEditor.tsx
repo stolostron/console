@@ -66,7 +66,7 @@ export default function YAMLEditor(props: {
         editorRef.current?.setSelection(new monaco.Range(managedFieldsStart, 0, managedFieldsEnd, 0))
         editorRef.current
           ?.getAction('editor.fold')
-          .run()
+          ?.run()
           .then(() => {
             if (defaultScrollToLine) {
               editorRef.current?.setSelection(new monaco.Range(0, 0, 0, 0))

@@ -98,11 +98,14 @@ interface ROSAHCPCluster {
   display_name: string
 }
 export interface ClusterNameUniquenessResponse {
-  kind: string
-  page: number
-  size: number
-  total: number
-  items: ROSAHCPCluster[]
+  statusCode: number
+  body: {
+    kind: string
+    page: number
+    size: number
+    total: number
+    items: ROSAHCPCluster[]
+  }
 }
 export interface AccountRoleARN {
   arn: string
@@ -120,12 +123,15 @@ export interface AccountRole {
 }
 
 export interface RoleARNsResponse {
-  kind: string
-  aws_account_id: string
-  items: AccountRole[]
-  page: number
-  size: number
-  total: number
+  statusCode: number
+  body: {
+    kind: string
+    aws_account_id: string
+    items: AccountRole[]
+    page: number
+    size: number
+    total: number
+  }
 }
 
 export interface OCMRoleResponse {
@@ -223,11 +229,14 @@ export interface MachineType {
 }
 
 export interface MachineTypesResponse {
-  kind?: string
-  page?: number
-  size?: number
-  total?: number
-  items?: MachineType[]
+  statusCode: number
+  body: {
+    kind?: string
+    page?: number
+    size?: number
+    total?: number
+    items?: MachineType[]
+  }
 }
 
 export type MachineTypesPayload = {

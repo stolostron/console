@@ -131,6 +131,7 @@ describe('useFetchHCPVersions', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: true,
+      isFetching: true,
       error: null,
       refetch: mockRefetch,
     })
@@ -148,6 +149,7 @@ describe('useFetchHCPVersions', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: true,
+      isFetching: true,
       error: null,
       refetch: mockRefetch,
     })
@@ -164,6 +166,7 @@ describe('useFetchHCPVersions', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: false,
+      isFetching: false,
       error,
       refetch: mockRefetch,
     })
@@ -178,6 +181,7 @@ describe('useFetchHCPVersions', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: false,
+      isFetching: false,
       error: null,
       refetch: mockRefetch,
     })
@@ -191,6 +195,7 @@ describe('useFetchHCPVersions', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: false,
+      isFetching: false,
       error: null,
       refetch: mockRefetch,
     })
@@ -223,6 +228,7 @@ describe('useFetchHCPVersions', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: false,
+      isFetching: false,
       error: null,
       refetch: mockRefetch,
     })
@@ -247,6 +253,7 @@ describe('useFetchHCPVersions', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: false,
+      isFetching: false,
       error: null,
       refetch: mockRefetch,
     })
@@ -270,6 +277,7 @@ describe('useFetchHCPVersions', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: false,
+      isFetching: false,
       error: null,
       refetch: mockRefetch,
     })
@@ -293,6 +301,7 @@ describe('useFetchHCPVersions', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: false,
+      isFetching: false,
       error: null,
       refetch: mockRefetch,
     })
@@ -316,6 +325,7 @@ describe('useFetchHCPVersions', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: false,
+      isFetching: false,
       error: null,
       refetch: mockRefetch,
     })
@@ -345,6 +355,7 @@ describe('useFetchHCPVersions', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: false,
+      isFetching: false,
       error: null,
       refetch: mockRefetch,
     })
@@ -373,6 +384,7 @@ describe('useFetchHCPVersions', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: false,
+      isFetching: false,
       error: null,
       refetch: mockRefetch,
     })

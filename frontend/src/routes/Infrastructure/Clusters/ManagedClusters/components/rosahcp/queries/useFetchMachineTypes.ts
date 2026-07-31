@@ -29,7 +29,7 @@ export const useFetchMachineTypes = (selectedSecret: SelectedSecret) => {
   const [roleArn, setRoleArn] = useState<string | undefined>()
   const [availabilityZones, setAvailabilityZones] = useState<string[] | undefined>()
 
-  const { data, isLoading, isError, error } = useQuery({
+  const { data, isLoading, isFetching, isError, error } = useQuery({
     queryKey: rosaWizardKeys.machineTypes(selectedSecret?.client_id, region, roleArn, availabilityZones),
     queryFn: async ({ signal }) => {
       const response = await getWizardMachineTypes(selectedSecret.client_id, selectedSecret.client_secret, signal, {
@@ -41,6 +41,8 @@ export const useFetchMachineTypes = (selectedSecret: SelectedSecret) => {
     },
     enabled: !!selectedSecret && !!region && !!roleArn && !!availabilityZones?.length,
     retry: false,
+    refetchOnWindowFocus: false,
+    staleTime: 5 * 60 * 1000,
   })
 
   const fetch = useCallback(async (queryParams: MachineTypesFetchArgs): Promise<void> => {
@@ -49,11 +51,11 @@ export const useFetchMachineTypes = (selectedSecret: SelectedSecret) => {
     setAvailabilityZones(queryParams.availability_zones)
   }, [])
 
-  const machineTypeOptions = useMemo(() => buildMachineTypeOptions(data?.items ?? []), [data])
+  const machineTypeOptions = useMemo(() => buildMachineTypeOptions(data?.body?.items ?? []), [data])
 
   return {
     data: machineTypeOptions,
-    isLoading,
+    isLoading: isLoading || isFetching,
     error: isError ? (error instanceof Error ? error.message : 'Unknown error') : null,
     fetch,
   }
