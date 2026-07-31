@@ -8,7 +8,14 @@ This SDK provides extensions and APIs that dynamic plugins can use to leverage m
 
 ## Prerequisites
 
-- Red Hat Advanced Cluster Management for Kubernetes 2.15+
+- Red Hat Advanced Cluster Management for Kubernetes
+
+Version compatibility:
+
+| multicluster SDK | RHACM    | OpenShift Container Platform |
+| ----------------- | -------- | ----------------------------- |
+| 0.x                | >=2.15.0 | >=4.19.0                      |
+| 1.x                | >=5.0.0  | >=4.22.0                      |
 
 ## Installation
 
