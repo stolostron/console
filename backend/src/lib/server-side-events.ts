@@ -4,6 +4,7 @@ import { constants } from 'node:http2'
 import type { Transform } from 'node:stream'
 import { clearInterval } from 'node:timers'
 import type { Zlib } from 'node:zlib'
+import { batchPromiseAll } from './batch-promise-all'
 import { getEncodeStream, inflateEvent } from './compression'
 import { setCookie } from './cookies'
 import { logger } from './logger'
@@ -313,7 +314,7 @@ export class ServerSideEvents {
     // uncompress and split events into packets
     const values = Object.values(this.events)
     const compressed = sizeOf(values)
-    let parts = await Promise.all(values.map((event) => inflateEvent(event)))
+    let parts = await batchPromiseAll(values, (event) => inflateEvent(event))
 
     // mock a large environment
     if (process.env.MOCK_CLUSTERS) {
