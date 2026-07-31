@@ -1,8 +1,42 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ApolloClient, ApolloLink, from, HttpLink, InMemoryCache } from '@apollo/client'
-import { getCookie } from './searchUtils'
+import { ApolloClient, ApolloLink, from, HttpLink, InMemoryCache, split } from '@apollo/client'
+import { GraphQLWsLink } from '@apollo/client/link/subscriptions'
+import { getMainDefinition } from '@apollo/client/utilities'
+import { createClient } from 'graphql-ws'
 import { BACKEND_URL } from '../constants'
+import { getCookie } from './searchUtils'
+
+const httpLink = new HttpLink({
+  uri: () => `${BACKEND_URL}/proxy/search`,
+})
+
+/** WebSocket URL for GraphQL subscriptions (graphql-ws), aligned with {@link httpLink}. */
+function getSearchWebSocketUrl(): string {
+  const httpEndpoint = `${BACKEND_URL}/proxy/search`
+
+  if (httpEndpoint.startsWith('http://')) {
+    return httpEndpoint.replace(/^http/, 'ws')
+  }
+  if (httpEndpoint.startsWith('https://')) {
+    return httpEndpoint.replace(/^https/, 'wss')
+  }
+
+  if (typeof window === 'undefined') {
+    return 'ws://localhost/proxy/search'
+  }
+
+  const url = new URL(httpEndpoint, window.location.origin)
+  url.protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+  return url.href
+}
+
+const wsLink = new GraphQLWsLink(
+  createClient({
+    url: () => getSearchWebSocketUrl(),
+    lazy: true,
+  })
+)
 
 const csrfHeaderLink = new ApolloLink((operation, forward) => {
   const csrfToken = getCookie('csrf-token')
@@ -18,13 +52,20 @@ const csrfHeaderLink = new ApolloLink((operation, forward) => {
   return forward(operation)
 })
 
-const httpLink = new HttpLink({
-  uri: () => `${BACKEND_URL}/proxy/search`,
-})
+const httpChain = from([csrfHeaderLink, httpLink])
+
+const link = split(
+  ({ query }) => {
+    const definition = getMainDefinition(query)
+    return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
+  },
+  wsLink,
+  httpChain
+)
 
 export const searchClient = new ApolloClient({
   connectToDevTools: process.env.NODE_ENV === 'development',
-  link: from([csrfHeaderLink, httpLink]),
+  link,
   cache: new InMemoryCache(),
   credentials: 'same-origin',
 

@@ -16,9 +16,10 @@ type DocPageProps = {
   onCancel?: () => void
   onBack?: () => void
   noMargin?: boolean
+  docLink?: string
 }
 
-const DocPage: React.FC<DocPageProps> = ({ listItems, breadcrumbs, onCancel, onBack, noMargin }) => {
+const DocPage: React.FC<DocPageProps> = ({ listItems, breadcrumbs, onCancel, onBack, noMargin, docLink }) => {
   const { t } = useTranslation()
   return (
     <>
@@ -30,7 +31,7 @@ const DocPage: React.FC<DocPageProps> = ({ listItems, breadcrumbs, onCancel, onB
             <>
               {t('page.header.create-cluster.tooltip')}
               <a
-                href={DOC_LINKS.HYPERSHIFT_DEPLOY_AWS}
+                href={docLink ?? DOC_LINKS.HYPERSHIFT_DEPLOY_AWS}
                 target="_blank"
                 rel="noreferrer"
                 style={{ display: 'block', marginTop: '4px' }}

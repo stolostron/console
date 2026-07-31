@@ -194,7 +194,7 @@
     "redux-thunk": "2.4.2",
     "regenerator-runtime": "^0.14.1",
     "reselect": "^4.1.8",
-    "sass": "1.101.6",
+    "sass": "1.101.7",
     "sass-loader": "13.3.3",
     "simple-git": "^3.36.0",
     "stacktrace-js": "2.0.2",
@@ -212,7 +212,7 @@
     "typescript": "^5.9.3",
     "v8-compile-cache": "2.4.0",
     "vm-browserify": "^1.1.2",
-    "webpack": "^5.108.4",
+    "webpack": "^5.109.0",
     "webpack-bundle-analyzer": "4.10.2",
     "webpack-cli": "4.10.0",
     "webpack-dev-server": "^4.15.2"

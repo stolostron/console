@@ -10,6 +10,9 @@ import {
   getWizardRegions,
   getWizardClusterNameUniqueness,
   getWizardOIDCConfigs,
+  getWizardVersions,
+  getWizardVPCs,
+  getWizardMachineTypes,
 } from './rosa-hcp-api'
 
 const mockFetchRetry = jest.fn()
@@ -328,6 +331,217 @@ describe('rosa-hcp-api', () => {
           url: 'https://localhost:4000/regions',
         })
       )
+    })
+  })
+
+  describe('getWizardVersions', () => {
+    test('should call getWizardData with /openshift-versions path', async () => {
+      mockFetchRetry.mockResolvedValue({ data: { items: [] } })
+
+      await getWizardVersions('client-id', 'client-secret')
+
+      expect(mockFetchRetry).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: 'https://localhost:4000/openshift-versions',
+        })
+      )
+    })
+
+    test('should pass abort signal to the request', async () => {
+      mockFetchRetry.mockResolvedValue({ data: { items: [] } })
+      const controller = new AbortController()
+
+      await getWizardVersions('client-id', 'client-secret', controller.signal)
+
+      expect(mockFetchRetry).toHaveBeenCalledWith(
+        expect.objectContaining({
+          signal: controller.signal,
+        })
+      )
+    })
+
+    test('should return versions list on success', async () => {
+      const versionsResponse = {
+        kind: 'VersionList',
+        items: [
+          {
+            id: 'openshift-v4.14.10',
+            raw_id: '4.14.10',
+            channel_group: 'stable',
+            rosa_enabled: true,
+            hosted_control_plane_enabled: true,
+          },
+          {
+            id: 'openshift-v4.13.25',
+            raw_id: '4.13.25',
+            channel_group: 'eus',
+            rosa_enabled: true,
+            hosted_control_plane_enabled: true,
+          },
+        ],
+      }
+      mockFetchRetry.mockResolvedValue({ data: versionsResponse })
+
+      const result = await getWizardVersions('client-id', 'client-secret')
+
+      expect(result).toEqual(versionsResponse)
+    })
+
+    test('should throw error when response contains Error kind', async () => {
+      mockFetchRetry.mockResolvedValue({
+        data: { kind: 'Error', reason: 'Service account not authorized' },
+      })
+
+      await expect(getWizardVersions('client-id', 'client-secret')).rejects.toThrow('Service account not authorized')
+    })
+  })
+
+  describe('getWizardVPCs', () => {
+    test('should call getWizardData with /vpcs path', async () => {
+      mockFetchRetry.mockResolvedValue({ data: { items: [] } })
+
+      await getWizardVPCs('client-id', 'client-secret')
+
+      expect(mockFetchRetry).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: 'https://localhost:4000/vpcs',
+        })
+      )
+    })
+
+    test('should pass additionalData to the request body', async () => {
+      mockFetchRetry.mockResolvedValue({ data: { items: [] } })
+
+      await getWizardVPCs('client-id', 'client-secret', undefined, {
+        aws: { account_id: '720424066366', sts: { role_arn: 'arn:aws:iam::720424066366:role/Installer' } },
+        region: { id: 'us-east-2' },
+      })
+
+      expect(mockFetchRetry).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: {
+            service_account_id: 'client-id',
+            service_account_secret: 'client-secret',
+            aws: { account_id: '720424066366', sts: { role_arn: 'arn:aws:iam::720424066366:role/Installer' } },
+            region: { id: 'us-east-2' },
+          },
+        })
+      )
+    })
+
+    test('should pass abort signal to the request', async () => {
+      mockFetchRetry.mockResolvedValue({ data: { items: [] } })
+      const controller = new AbortController()
+
+      await getWizardVPCs('client-id', 'client-secret', controller.signal)
+
+      expect(mockFetchRetry).toHaveBeenCalledWith(
+        expect.objectContaining({
+          signal: controller.signal,
+        })
+      )
+    })
+
+    test('should return VPC items on success', async () => {
+      const vpcsResponse = {
+        items: [
+          { vpc_id: 'vpc-123', name: 'my-vpc', subnets: [] },
+          { vpc_id: 'vpc-456', name: 'other-vpc', subnets: [] },
+        ],
+      }
+      mockFetchRetry.mockResolvedValue({ data: vpcsResponse })
+
+      const result = await getWizardVPCs('client-id', 'client-secret')
+
+      expect(result).toEqual(vpcsResponse)
+    })
+
+    test('should throw error when response contains Error kind', async () => {
+      mockFetchRetry.mockResolvedValue({
+        data: { kind: 'Error', reason: 'The role ARN is not valid' },
+      })
+
+      await expect(getWizardVPCs('client-id', 'client-secret')).rejects.toThrow('The role ARN is not valid')
+    })
+
+    test('should throw error when response body contains Error kind', async () => {
+      mockFetchRetry.mockResolvedValue({
+        data: { body: { kind: 'Error', reason: 'Forbidden' } },
+      })
+
+      await expect(getWizardVPCs('client-id', 'client-secret')).rejects.toThrow('Forbidden')
+    })
+  })
+
+  describe('getWizardMachineTypes', () => {
+    test('should call getWizardData with /machine-types path', async () => {
+      mockFetchRetry.mockResolvedValue({ data: { items: [] } })
+
+      await getWizardMachineTypes('client-id', 'client-secret')
+
+      expect(mockFetchRetry).toHaveBeenCalledWith(
+        expect.objectContaining({
+          url: 'https://localhost:4000/machine-types',
+        })
+      )
+    })
+
+    test('should pass additionalData to the request body', async () => {
+      mockFetchRetry.mockResolvedValue({ data: { items: [] } })
+
+      await getWizardMachineTypes('client-id', 'client-secret', undefined, {
+        region: 'us-east-1',
+        role_arn: 'arn:aws:iam::123456789012:role/Installer',
+        availability_zones: ['us-east-1a', 'us-east-1b'],
+      })
+
+      expect(mockFetchRetry).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: {
+            service_account_id: 'client-id',
+            service_account_secret: 'client-secret',
+            region: 'us-east-1',
+            role_arn: 'arn:aws:iam::123456789012:role/Installer',
+            availability_zones: ['us-east-1a', 'us-east-1b'],
+          },
+        })
+      )
+    })
+
+    test('should pass abort signal to the request', async () => {
+      mockFetchRetry.mockResolvedValue({ data: { items: [] } })
+      const controller = new AbortController()
+
+      await getWizardMachineTypes('client-id', 'client-secret', controller.signal)
+
+      expect(mockFetchRetry).toHaveBeenCalledWith(
+        expect.objectContaining({
+          signal: controller.signal,
+        })
+      )
+    })
+
+    test('should return machine types list on success', async () => {
+      const machineTypesResponse = {
+        kind: 'MachineTypeList',
+        items: [
+          { id: 'm5.xlarge', name: 'm5.xlarge - General Purpose', category: 'general_purpose' },
+          { id: 'm6a.xlarge', name: 'm6a.xlarge - General Purpose', category: 'general_purpose' },
+        ],
+      }
+      mockFetchRetry.mockResolvedValue({ data: machineTypesResponse })
+
+      const result = await getWizardMachineTypes('client-id', 'client-secret')
+
+      expect(result).toEqual(machineTypesResponse)
+    })
+
+    test('should throw error when response contains Error kind', async () => {
+      mockFetchRetry.mockResolvedValue({
+        data: { kind: 'Error', reason: 'Invalid region' },
+      })
+
+      await expect(getWizardMachineTypes('client-id', 'client-secret')).rejects.toThrow('Invalid region')
     })
   })
 })

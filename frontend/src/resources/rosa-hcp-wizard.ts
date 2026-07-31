@@ -1,5 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { OpenshiftVersion } from '~/routes/Infrastructure/Clusters/ManagedClusters/components/rosahcp/constants/types'
+
 export interface CloudRegion {
   kind?: string
   id?: string
@@ -145,6 +147,91 @@ export interface UserRoleResponse {
   value: string
 }
 
+export interface OpenshiftVersionResponse {
+  kind: string
+  page: number
+  size: number
+  total: number
+  items: OpenshiftVersion[]
+}
+
+export interface AWSSecurityGroup {
+  id: string
+  name: string
+  red_hat_managed: boolean
+}
+
+export interface AWSSubnets {
+  subnet_id: string
+  name: string
+  red_hat_managed: boolean
+  public: boolean
+  availability_zone: string
+  cidr_block: string
+}
+
+export interface VPC {
+  name: string
+  red_hat_managed: boolean
+  id: string
+  cidr_block: string
+  subnets?: string[]
+  aws_subnets: AWSSubnets[]
+  aws_security_groups?: AWSSecurityGroup[]
+}
+
+export interface VPCsResponse {
+  body: {
+    kind: string
+    page: number
+    size: number
+    total: number
+    items: VPC[]
+  }
+  statusCode: number
+}
+
+// Has to be types to satisfy index signature of Record<string, unknown>
 export type AwsAccountPayload = {
   aws_account_id: string
+}
+
+export type VPCsPayload = {
+  aws: {
+    account_id?: string
+    sts: {
+      role_arn?: string
+    }
+  }
+  region: {
+    id?: string
+  }
+}
+
+export interface MachineType {
+  kind?: string
+  id: string
+  href?: string
+  name: string
+  category: string
+  size?: string
+  cpu?: { value: number }
+  memory?: { value: number }
+  cloud_provider?: { kind?: string; id?: string; href?: string }
+  ccs_only?: boolean
+  generic_name?: string
+}
+
+export interface MachineTypesResponse {
+  kind?: string
+  page?: number
+  size?: number
+  total?: number
+  items?: MachineType[]
+}
+
+export type MachineTypesPayload = {
+  region: string
+  role_arn: string
+  availability_zones: string[]
 }

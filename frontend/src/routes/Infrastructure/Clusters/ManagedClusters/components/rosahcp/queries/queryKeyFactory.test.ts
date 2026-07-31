@@ -49,6 +49,59 @@ describe('queryKeyFactory', () => {
     expect(key).toEqual([ROSA_HCP_WIZARD_QUERY_KEY, 'test-client-id', 'user-role-arn'])
   })
 
+  test('rosaWizardKeys.openshiftVersions should extend the base key with client id', () => {
+    const key = rosaWizardKeys.openshiftVersions('test-client-id')
+    expect(key).toEqual([ROSA_HCP_WIZARD_QUERY_KEY, 'test-client-id', 'openshift-versions'])
+  })
+
+  test('rosaWizardKeys.vpcs should extend the base key with client id, aws account, role arn, and region', () => {
+    const key = rosaWizardKeys.vpcs(
+      'test-client-id',
+      '720424066366',
+      'arn:aws:iam::720424066366:role/Installer',
+      'us-east-2'
+    )
+    expect(key).toEqual([
+      ROSA_HCP_WIZARD_QUERY_KEY,
+      'test-client-id',
+      '720424066366',
+      'arn:aws:iam::720424066366:role/Installer',
+      'us-east-2',
+      'vpc',
+    ])
+  })
+
+  test('rosaWizardKeys.vpcs should include undefined values for optional params', () => {
+    const key = rosaWizardKeys.vpcs('test-client-id')
+    expect(key).toEqual([ROSA_HCP_WIZARD_QUERY_KEY, 'test-client-id', undefined, undefined, undefined, 'vpc'])
+  })
+
+  test('rosaWizardKeys.vpcs should produce different keys for different params', () => {
+    const key1 = rosaWizardKeys.vpcs('test-client-id', 'account-a', 'role-a', 'us-east-1')
+    const key2 = rosaWizardKeys.vpcs('test-client-id', 'account-b', 'role-b', 'eu-west-1')
+    expect(key1).not.toEqual(key2)
+  })
+
+  test('rosaWizardKeys.machineTypes should extend the base key with region, role arn, and availability zones', () => {
+    const key = rosaWizardKeys.machineTypes('test-client-id', 'us-east-1', 'arn:aws:iam::123:role/Installer', [
+      'us-east-1a',
+      'us-east-1b',
+    ])
+    expect(key).toEqual([
+      ROSA_HCP_WIZARD_QUERY_KEY,
+      'test-client-id',
+      'us-east-1',
+      'arn:aws:iam::123:role/Installer',
+      'us-east-1a,us-east-1b',
+      'machine-types',
+    ])
+  })
+
+  test('rosaWizardKeys.machineTypes should default availability zones to an empty string', () => {
+    const key = rosaWizardKeys.machineTypes('test-client-id')
+    expect(key).toEqual([ROSA_HCP_WIZARD_QUERY_KEY, 'test-client-id', undefined, undefined, '', 'machine-types'])
+  })
+
   test('each key factory call should return a new array instance', () => {
     const key1 = rosaWizardKeys.awsInfrastructureAccounts('test-client-id')
     const key2 = rosaWizardKeys.awsInfrastructureAccounts('test-client-id')

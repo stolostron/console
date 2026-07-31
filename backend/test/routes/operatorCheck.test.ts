@@ -42,7 +42,7 @@ const clusterExtensions = {
 
 describe(`operatorCheck Route`, function () {
   it(`returns valid response with version for installed operator`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200, {
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200, {
       status: 200,
     })
     nock(process.env.CLUSTER_API_URL)
@@ -57,7 +57,7 @@ describe(`operatorCheck Route`, function () {
     })
   })
   it(`returns valid response for not-installed operator`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200, {
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200, {
       status: 200,
     })
     nock(process.env.CLUSTER_API_URL)
@@ -74,7 +74,7 @@ describe(`operatorCheck Route`, function () {
     })
   })
   it(`returns installed via ClusterExtension when Subscription is missing`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200, {
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200, {
       status: 200,
     })
     nock(process.env.CLUSTER_API_URL).get('/apis/operators.coreos.com/v1alpha1/subscriptions').reply(200, { items: [] })
@@ -90,7 +90,7 @@ describe(`operatorCheck Route`, function () {
     })
   })
   it(`prefers Subscription when both Subscription and ClusterExtension are present`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200, {
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200, {
       status: 200,
     })
     nock(process.env.CLUSTER_API_URL)
@@ -105,7 +105,7 @@ describe(`operatorCheck Route`, function () {
     })
   })
   it(`returns installed Subscription when an unhealthy package match precedes a healthy one`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200, {
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200, {
       status: 200,
     })
     nock(process.env.CLUSTER_API_URL)
@@ -139,7 +139,7 @@ describe(`operatorCheck Route`, function () {
     })
   })
   it(`returns installed ClusterExtension when an uninstalled package match precedes an installed one`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200, {
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200, {
       status: 200,
     })
     nock(process.env.CLUSTER_API_URL).get('/apis/operators.coreos.com/v1alpha1/subscriptions').reply(200, { items: [] })
@@ -186,7 +186,7 @@ describe(`operatorCheck Route`, function () {
     })
   })
   it(`returns not installed when ClusterExtension CRD is missing`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200, {
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200, {
       status: 200,
     })
     nock(process.env.CLUSTER_API_URL).get('/apis/operators.coreos.com/v1alpha1/subscriptions').reply(200, { items: [] })
@@ -207,7 +207,7 @@ describe(`operatorCheck Route`, function () {
     })
   })
   it(`returns not installed when ClusterExtension query fails`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200, {
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200, {
       status: 200,
     })
     nock(process.env.CLUSTER_API_URL).get('/apis/operators.coreos.com/v1alpha1/subscriptions').reply(200, { items: [] })
@@ -222,7 +222,7 @@ describe(`operatorCheck Route`, function () {
     })
   })
   it(`returns bad request for arbitrary operator`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200, {
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200, {
       status: 200,
     })
     nock(process.env.CLUSTER_API_URL)
@@ -233,7 +233,7 @@ describe(`operatorCheck Route`, function () {
   })
 
   it('correctly parses request body received in multiple chunks', async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200, {
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200, {
       status: 200,
     })
     nock(process.env.CLUSTER_API_URL)
