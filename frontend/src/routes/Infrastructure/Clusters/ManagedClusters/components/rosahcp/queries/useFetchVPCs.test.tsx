@@ -4,8 +4,10 @@ import { renderHook, act } from '@testing-library/react-hooks'
 import { useFetchVPCs } from './useFetchVPCs'
 
 const mockUseQuery = jest.fn()
-jest.mock('@tanstack/react-query', () => ({
-  useQuery: (options: unknown) => mockUseQuery(options),
+jest.mock('~/hooks/shared-react-query', () => ({
+  useSharedReactQuery: () => ({
+    useQuery: (options: unknown) => mockUseQuery(options),
+  }),
 }))
 
 const mockGetWizardVPCs = jest.fn()
@@ -26,6 +28,7 @@ describe('useFetchVPCs', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: false,
+      isFetching: false,
       error: null,
       refetch: mockRefetch,
     })
@@ -65,6 +68,7 @@ describe('useFetchVPCs', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: false,
+      isFetching: false,
       error: null,
       refetch: mockRefetch,
     })
@@ -82,6 +86,7 @@ describe('useFetchVPCs', () => {
     mockUseQuery.mockReturnValue({
       data: { items: vpcs },
       isLoading: false,
+      isFetching: false,
       error: null,
       refetch: mockRefetch,
     })
@@ -95,6 +100,7 @@ describe('useFetchVPCs', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: true,
+      isFetching: true,
       error: null,
       refetch: mockRefetch,
     })
@@ -108,6 +114,7 @@ describe('useFetchVPCs', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: false,
+      isFetching: false,
       error: new Error('The role ARN is not valid'),
       refetch: mockRefetch,
     })
@@ -121,6 +128,7 @@ describe('useFetchVPCs', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: false,
+      isFetching: false,
       error: null,
       refetch: mockRefetch,
     })
@@ -130,9 +138,7 @@ describe('useFetchVPCs', () => {
     expect(result.current.error).toBeNull()
   })
 
-  test('fetch should set state params and call refetch', async () => {
-    mockRefetch.mockResolvedValue({ data: { items: [] } })
-
+  test('fetch should set state params to enable the query', async () => {
     const { result } = renderHook(() => useFetchVPCs(mockSecret))
 
     await act(async () => {
@@ -143,7 +149,16 @@ describe('useFetchVPCs', () => {
       })
     })
 
-    expect(mockRefetch).toHaveBeenCalled()
+    const lastCall = mockUseQuery.mock.calls[mockUseQuery.mock.calls.length - 1][0]
+    expect(lastCall.queryKey).toEqual([
+      'rosa-hcp-wizard-query-key',
+      'test-client-id',
+      '720424066366',
+      'arn:aws:iam::720424066366:role/Installer',
+      'us-east-2',
+      'vpc',
+    ])
+    expect(lastCall.enabled).toBe(true)
   })
 
   test('queryFn should call getWizardVPCs with correct params when all state is set', async () => {

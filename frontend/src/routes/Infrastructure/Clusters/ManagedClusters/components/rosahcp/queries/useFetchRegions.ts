@@ -19,7 +19,7 @@ const hcpCloudProvidersAndRegions = (cloudProvidersResponse: CloudProviderRespon
 
 export const useFetchRegions = (selectedSecret: SelectedSecret) => {
   const { useQuery } = useSharedReactQuery()
-  const { data, isLoading, isError, error, refetch } = useQuery({
+  const { data, isLoading, isFetching, isError, error, refetch } = useQuery({
     queryKey: rosaWizardKeys.regions(selectedSecret?.client_id),
     queryFn: async ({ signal }) => {
       const response = await getWizardRegions(selectedSecret.client_id, selectedSecret.client_secret, signal)
@@ -35,7 +35,7 @@ export const useFetchRegions = (selectedSecret: SelectedSecret) => {
 
   return {
     data,
-    isLoading,
+    isLoading: isLoading || isFetching,
     isError,
     error: isError ? (error instanceof Error ? error.message : 'Unknown error') : null,
     refetch,

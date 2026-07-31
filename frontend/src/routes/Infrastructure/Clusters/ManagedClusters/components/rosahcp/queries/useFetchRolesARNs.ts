@@ -149,7 +149,7 @@ export const useFetchRoleARNs = (selectedSecret: SelectedSecret) => {
     data: Array.isArray(rolesQuery.data?.roles) ? rolesQuery.data.roles : [],
     ocmRole: ocmRoleQuery.data ?? null,
     userRole: userRoleQuery.data ?? null,
-    isLoading: rolesQuery.isLoading || ocmRoleQuery.isLoading,
+    isLoading: rolesQuery.isLoading || ocmRoleQuery.isLoading || rolesQuery.isFetching || ocmRoleQuery.isFetching,
     error: rolesError,
     ocmRoleError: ocmRoleError,
     userRoleError: userRoleError,

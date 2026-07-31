@@ -38,6 +38,7 @@ const createAccountRoleARN = (overrides: Partial<AccountRoleARN> = {}): AccountR
 const createMockQueryResult = (overrides: Record<string, unknown> = {}) => ({
   data: undefined,
   isLoading: false,
+  isFetching: false,
   isError: false,
   error: null,
   refetch: mockRefetch,

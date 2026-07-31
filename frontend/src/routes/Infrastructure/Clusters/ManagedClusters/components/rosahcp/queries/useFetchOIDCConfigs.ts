@@ -8,7 +8,7 @@ import { rosaWizardKeys } from './queryKeyFactory'
 export const useFetchOIDCConfigs = (selectedSecret: SelectedSecret) => {
   const { useQuery } = useSharedReactQuery()
   const [awsAccountId, setAwsAccountId] = useState<string | undefined>()
-  const { data, isLoading, isError, error } = useQuery({
+  const { data, isLoading, isFetching, isError, error, refetch } = useQuery({
     queryKey: rosaWizardKeys.oidcConfigs(selectedSecret.client_id, awsAccountId),
     queryFn: async ({ signal }) => {
       const response = await getWizardOIDCConfigs(selectedSecret.client_id, selectedSecret.client_secret, signal, {
@@ -27,13 +27,20 @@ export const useFetchOIDCConfigs = (selectedSecret: SelectedSecret) => {
     refetchOnWindowFocus: false,
     staleTime: 5 * 60 * 1000,
   })
-  const fetch = useCallback(async (accountId: string): Promise<void> => {
-    setAwsAccountId(accountId)
-  }, [])
+  const fetch = useCallback(
+    async (accountId: string): Promise<void> => {
+      if (accountId === awsAccountId) {
+        refetch()
+      } else {
+        setAwsAccountId(accountId)
+      }
+    },
+    [awsAccountId, refetch]
+  )
 
   return {
     data: data ?? [],
-    isLoading,
+    isLoading: isLoading || isFetching,
     error: isError ? (error instanceof Error ? error.message : 'Unknown error') : null,
     fetch,
   }

@@ -44,5 +44,5 @@ export const useFetchOrganizationQuota = (secret: SelectedSecret) => {
 
   const billingAccounts = getAwsBillingAccountsFromQuota(data?.items)
 
-  return { isLoading, data: billingAccounts, isError, error, isFetching, refetch }
+  return { isLoading: isLoading || isFetching, data: billingAccounts, isError, error, isFetching, refetch }
 }

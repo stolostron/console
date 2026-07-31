@@ -29,7 +29,7 @@ export const useFetchMachineTypes = (selectedSecret: SelectedSecret) => {
   const [roleArn, setRoleArn] = useState<string | undefined>()
   const [availabilityZones, setAvailabilityZones] = useState<string[] | undefined>()
 
-  const { data, isLoading, isError, error } = useQuery({
+  const { data, isLoading, isFetching, isError, error } = useQuery({
     queryKey: rosaWizardKeys.machineTypes(selectedSecret?.client_id, region, roleArn, availabilityZones),
     queryFn: async ({ signal }) => {
       const response = await getWizardMachineTypes(selectedSecret.client_id, selectedSecret.client_secret, signal, {
@@ -55,7 +55,7 @@ export const useFetchMachineTypes = (selectedSecret: SelectedSecret) => {
 
   return {
     data: machineTypeOptions,
-    isLoading,
+    isLoading: isLoading || isFetching,
     error: isError ? (error instanceof Error ? error.message : 'Unknown error') : null,
     fetch,
   }
