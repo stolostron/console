@@ -368,17 +368,6 @@ class ArgoAppDetailsContainer extends Component<ArgoAppDetailsContainerProps, Ar
   }
 
   /**
-   * Handles keyboard navigation for action links
-   * @param resource - The resource to process
-   * @param _event - The keyboard event
-   */
-  handleKeyPress = (resource: ArgoResourceAction, _event: React.KeyboardEvent): void => {
-    if (_event.key === 'Enter') {
-      this.processActionLink(resource)
-    }
-  }
-
-  /**
    * Renders a clickable link for resource actions (Argo editor or YAML view)
    * @param resource - The resource action configuration
    * @param isExternal - Whether this opens in an external window
@@ -387,13 +376,11 @@ class ArgoAppDetailsContainer extends Component<ArgoAppDetailsContainerProps, Ar
    */
   renderURLLink = (resource: ArgoResourceAction, isExternal: boolean, t: TFunction): JSX.Element => {
     return (
-      <span
+      <button
+        type="button"
         className="link sectionLabel"
         id="linkForNodeAction"
-        tabIndex={0}
-        role="button"
         onClick={() => this.processActionLink(resource)}
-        onKeyDown={(event) => this.handleKeyPress(resource, event)}
       >
         {resource.action === 'open_argo_editor' ? t('Launch Argo editor') : t('View resource YAML')}
         {isExternal ? (
@@ -405,7 +392,7 @@ class ArgoAppDetailsContainer extends Component<ArgoAppDetailsContainerProps, Ar
             <use href="#drawerShapes_open-new-tab" className="label-icon" />
           </svg>
         )}
-      </span>
+      </button>
     )
   }
 

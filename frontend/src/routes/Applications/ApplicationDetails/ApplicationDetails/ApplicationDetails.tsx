@@ -60,7 +60,7 @@ import { getApplicationRepos } from '../../Overview'
 import { ApplicationDataType, useApplicationDetailsContext } from '../ApplicationDetails'
 import { DrawerShapes } from '../ApplicationTopology/components/DrawerShapes'
 import { isSearchAvailable } from '../ApplicationTopology/helpers/search-helper'
-import { getDiagramElements } from '../ApplicationTopology/model/topology'
+import { buildDiagramElements } from '../ApplicationTopology/model/topology'
 import { getNestedProperty } from '../ApplicationTopology/utils'
 import { REQUEST_STATUS } from './actions'
 
@@ -474,7 +474,7 @@ function createStatusIcons(applicationData: ApplicationDataType, t: TFunction) {
   const nodeStatuses: INodeStatuses = { green: 0, yellow: 0, red: 0, orange: 0 }
   const canUpdateStatuses = !!statuses
   if (application && appData && topology) {
-    elements = cloneDeep(getDiagramElements(cloneDeep(topology), statuses, canUpdateStatuses, t))
+    elements = cloneDeep(buildDiagramElements(cloneDeep(topology), statuses, canUpdateStatuses, t))
 
     elements.nodes?.forEach((node) => {
       //get pulse for all objects generated from a deployable

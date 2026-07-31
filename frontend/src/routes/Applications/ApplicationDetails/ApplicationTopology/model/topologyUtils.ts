@@ -565,6 +565,21 @@ export function areSourcesUniform<T>(
 }
 
 /**
+ * Determines whether all items share the same ArgoCD destination namespace.
+ * Used with areSourcesUniform to decide if a single fleet request can supply
+ * status.resources for every Application.
+ */
+export function areDestinationNamespacesUniform<T>(
+  items: T[],
+  getDestinationNamespace: (item: T) => string | undefined
+): boolean {
+  if (items.length <= 1) return true
+
+  const firstNamespace = getDestinationNamespace(items[0])
+  return items.every((item) => getDestinationNamespace(item) === firstNamespace)
+}
+
+/**
  * Resolves the target cluster name for an ArgoCD Application from its destination spec.
  *
  * Mirrors the logic in getArgoDestinationCluster (topologyArgo.ts / backend utils.ts):

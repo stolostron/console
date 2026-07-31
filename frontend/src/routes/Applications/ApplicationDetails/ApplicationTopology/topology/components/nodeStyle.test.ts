@@ -83,6 +83,142 @@ describe('nodeStyle tests', () => {
     )
     expect(result.label).toBe('redis')
   })
+
+  test('cluster label uses single cluster name or Multiple Clusters', () => {
+    expect(
+      nodeStyleAPI.getNodeStyle(
+        { uid: 'u', name: 'c', namespace: '', type: 'cluster', specs: { clustersNames: ['only'] } },
+        undefined
+      ).label
+    ).toBe('only')
+    expect(
+      nodeStyleAPI.getNodeStyle(
+        { uid: 'u', name: 'c', namespace: '', type: 'cluster', specs: { clustersNames: ['a', 'b'] } },
+        undefined
+      ).label
+    ).toBe('Multiple Clusters')
+  })
+
+  test('application and applicationset labels', () => {
+    expect(
+      nodeStyleAPI.getNodeStyle(
+        { uid: 'u', name: 'app', namespace: 'ns', type: 'application', specs: { applicationName: 'hello' } },
+        undefined
+      ).label
+    ).toBe('hello')
+    expect(
+      nodeStyleAPI.getNodeStyle({ uid: 'u', name: 'app', namespace: 'ns', type: 'application', specs: {} }, undefined)
+        .label
+    ).toBe('Application')
+    expect(
+      nodeStyleAPI.getNodeStyle(
+        { uid: 'u', name: 'as', namespace: 'ns', type: 'applicationset', specs: { raw: { isChild: true } } },
+        undefined
+      ).label
+    ).toBe('Application Set')
+    expect(
+      nodeStyleAPI.getNodeStyle(
+        { uid: 'u', name: 'as', namespace: 'ns', type: 'applicationset', specs: { isAppSetPullModel: true } },
+        undefined
+      ).label
+    ).toBe('Pull Application Set')
+    expect(
+      nodeStyleAPI.getNodeStyle({ uid: 'u', name: 'as', namespace: 'ns', type: 'applicationset', specs: {} }, undefined)
+        .label
+    ).toBe('Push Application Set')
+  })
+
+  test('placementDecision and default type labels', () => {
+    expect(
+      nodeStyleAPI.getNodeStyle(
+        { uid: 'u', name: 'pd', namespace: 'ns', type: 'placementDecision', specs: {} },
+        undefined
+      ).label
+    ).toBe('Placement Decision')
+    expect(
+      nodeStyleAPI.getNodeStyle({ uid: 'u', name: 'a', namespace: 'ns', type: 'argocd', specs: {} }, undefined).label
+    ).toBe('Argo CD')
+    expect(
+      nodeStyleAPI.getNodeStyle(
+        { uid: 'u', name: 'a', namespace: 'ns', type: undefined as unknown as string, specs: {} },
+        undefined
+      ).label
+    ).toBe('')
+  })
+
+  test('cluster status icons from clusterStatus', () => {
+    expect(
+      nodeStyleAPI.getNodeStyle(
+        {
+          uid: 'u',
+          name: 'c',
+          namespace: '',
+          type: 'cluster',
+          specs: {
+            clusterStatus: {
+              hasWarning: false,
+              hasFailure: true,
+              isDisabled: false,
+              hasViolations: false,
+              isOffline: false,
+            },
+          },
+        },
+        undefined
+      ).status
+    ).toBe('danger')
+    expect(
+      nodeStyleAPI.getNodeStyle(
+        {
+          uid: 'u',
+          name: 'c',
+          namespace: '',
+          type: 'cluster',
+          specs: {
+            clusterStatus: {
+              hasWarning: true,
+              hasFailure: false,
+              isDisabled: true,
+              hasViolations: false,
+              isOffline: false,
+            },
+          },
+        },
+        undefined
+      )
+    ).toEqual(
+      expect.objectContaining({
+        status: 'warning',
+        isDisabled: true,
+      })
+    )
+  })
+
+  test.each([
+    ['none', 'default', undefined],
+    ['red', 'danger', 'failure'],
+    ['yellow', 'warning', 'warning'],
+    ['orange', 'default', 'pending'],
+    ['green', 'success', 'success'],
+    ['spinner', 'default', 'spinner'],
+    ['sync', 'default', 'sync'],
+  ] as const)('pulse %s maps to status %s', (pulse, status, expectedIcon) => {
+    const result = nodeStyleAPI.getNodeStyle(
+      { uid: 'u', name: 'n', namespace: 'ns', type: 'deployment', specs: { pulse } },
+      undefined
+    )
+    expect(result.status).toBe(status)
+    expect(result.statusIcon?.icon).toBe(expectedIcon)
+  })
+
+  test('defaults offset when undefined', () => {
+    const result = nodeStyleAPI.getNodeStyle(
+      { uid: 'u', name: 'n', namespace: 'ns', type: 'service', specs: {} },
+      undefined
+    )
+    expect(result.dx).toBe(0)
+    expect(result.dy).toBe(0)
+  })
 })
 
 const getNodeStyle = {

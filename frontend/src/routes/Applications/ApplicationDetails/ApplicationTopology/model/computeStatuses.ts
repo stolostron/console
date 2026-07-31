@@ -58,7 +58,7 @@ export const pendingCode: StatusCode = 1
 export const failureCode: StatusCode = 0
 
 // Resource state arrays for status classification
-const resGreenStates = ['running', 'bound'] as const
+const resGreenStates = ['running', 'bound', 'deployed'] as const
 export const resErrorStates = [
   'err',
   'off',

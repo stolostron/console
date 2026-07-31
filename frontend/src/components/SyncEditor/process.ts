@@ -2,7 +2,7 @@
 import YAML from 'yaml'
 import { isEmpty, set, unset, get, cloneDeep, has } from 'lodash'
 import { getErrors, validate } from './validation'
-import { getMatchingValues, getUidSiblings, crossReference, getPathArray } from './synchronize'
+import { getMatchingValues, getUidSiblings, getStatusPaths, crossReference, getPathArray } from './synchronize'
 import { reconcile } from './reconcile'
 import { ChangeType } from './changes'
 import { Monaco } from '@monaco-editor/react'
@@ -238,7 +238,8 @@ const process = (
   if (!isEmpty(parsed)) {
     const allImmutables = immutables ? getMatchingValues(immutables, paths) : []
     const uidSiblings = editableUidSiblings ? [] : getUidSiblings(paths, mappings)
-    ;[...allSecrets, ...uidSiblings, ...allImmutables].forEach((value) => {
+    const statusPaths = getStatusPaths(paths)
+    ;[...allSecrets, ...uidSiblings, ...allImmutables, ...statusPaths].forEach((value) => {
       if (value && value.$p) {
         const range = get(mappings, getPathArray(value.$p))
         if (range?.$r) {

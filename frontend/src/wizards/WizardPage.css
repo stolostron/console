@@ -1,3 +1,44 @@
 .no-drawer-transition .pf-v6-c-drawer__panel {
   transition: none;
 }
+
+.wizard-modal-page {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.wizard-modal-section {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+}
+
+.wizard-modal-section .pf-v6-c-drawer {
+  flex: 1;
+  min-height: 0;
+}
+
+.wizard-modal-section .pf-v6-c-drawer__content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.wizard-modal-section .pf-v6-c-drawer__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.wizard-modal-section .pf-v6-c-wizard {
+  flex: 1;
+  min-height: 0;
+}

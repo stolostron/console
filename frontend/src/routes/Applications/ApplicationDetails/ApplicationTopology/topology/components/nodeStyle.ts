@@ -101,7 +101,7 @@ const getStatus = (node: {
 
   // status icon
   let status
-  let statusIcon = statusToIconMap['spinner']
+  let statusIcon: (typeof statusToIconMap)[keyof typeof statusToIconMap] | undefined = statusToIconMap['spinner']
   let disabled = false
   if (type === 'cluster') {
     // determine icon
@@ -122,6 +122,10 @@ const getStatus = (node: {
   const pulse = node.specs?.pulse ?? ''
 
   switch (pulse) {
+    case 'none':
+      status = NodeStatus.default
+      statusIcon = undefined
+      break
     case 'red':
       status = NodeStatus.danger
       statusIcon = statusToIconMap['error']

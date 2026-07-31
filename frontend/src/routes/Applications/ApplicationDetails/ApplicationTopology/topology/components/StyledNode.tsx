@@ -4,7 +4,6 @@ import { Tooltip, TooltipPosition } from '@patternfly/react-core'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { useTopologyRefresh } from '../contexts/TopologyRefreshContext'
 import {
-  Ellipse,
   Decorator,
   DefaultNode,
   TopologyQuadrant,
@@ -24,7 +23,7 @@ const DEFAULT_DECORATOR_RADIUS = 12
 
 import { SVGIconProps } from '@patternfly/react-icons/dist/esm/createIcon'
 
-import MultiEllipse from './MultiEllipse'
+import CustomEllipse from './CustomEllipse'
 
 type StyledNodeProps = {
   element: Node
@@ -39,6 +38,15 @@ type StyledNodeProps = {
   WithCreateConnectorProps &
   WithDragNodeProps &
   WithSelectionProps
+
+const CustomShape: React.FunctionComponent<ShapeProps> = (props) => {
+  const data = props.element.getData() as { specs?: { resourceCount?: number }; status?: string }
+  const isMulti = (data?.specs?.resourceCount ?? 0) > 1
+  const shouldPulse = data?.status === 'danger'
+  return <CustomEllipse {...props} isMulti={isMulti} shouldPulse={shouldPulse} />
+}
+
+const getCustomShape = (): React.FunctionComponent<ShapeProps> => CustomShape
 
 const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
   element,
@@ -74,6 +82,7 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
 
   const LabelIcon = passedData.labelIcon
   const { width, height } = element.getDimensions()
+
   return (
     <DefaultNode
       element={element}
@@ -86,7 +95,7 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
       showStatusDecorator={detailsLevel === ScaleDetailsLevel.high && passedData.showStatusDecorator}
       {...rest}
       {...passedData}
-      getCustomShape={() => (passedData?.specs?.resourceCount > 1 ? MultiEllipse : Ellipse)}
+      getCustomShape={getCustomShape}
       dragging={dragging}
       regrouping={regrouping}
       onContextMenu={data.showContextMenu ? onContextMenu : undefined}
