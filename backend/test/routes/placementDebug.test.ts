@@ -5,7 +5,7 @@ import nock from 'nock'
 const upstreamHost = 'https://cluster-manager-placement.open-cluster-management-hub.svc.cluster.local:9443'
 
 function nockAuth(status = 200) {
-  nock(process.env.CLUSTER_API_URL).get('/apis').reply(status, { status })
+  nock(process.env.CLUSTER_API_URL).get('/api').reply(status, { status })
 }
 
 describe(`placementDebug Route`, function () {

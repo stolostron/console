@@ -9,7 +9,7 @@ describe(`readiness Route`, function () {
     expect(res.statusCode).toEqual(200)
   })
   it(`GET /readinessProbe should return status code 500 if dead`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(401)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(401)
     await apiServerPing()
     const res = await request('GET', '/readinessProbe')
     expect(res.statusCode).toEqual(500)

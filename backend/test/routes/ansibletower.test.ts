@@ -8,7 +8,7 @@ const TOWER_HOST = 'https://ansible-tower.com'
 
 describe(`ansibletower Route`, function () {
   it(`should list Ansible Automation controller Jobs`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
     nock(TOWER_HOST).get(ansiblePaths[0]).reply(200, response)
     const res = await request('POST', '/ansibletower', {
       towerHost: TOWER_HOST + ansiblePaths[0],
@@ -19,7 +19,7 @@ describe(`ansibletower Route`, function () {
   })
 
   it(`when bad things happen to Ansible Automation controller Jobs 1`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
     nock(TOWER_HOST).get(ansiblePaths[0]).reply(200, response)
     const res = await request('POST', '/ansibletower', {
       towerHost: TOWER_HOST + '/badPath',
@@ -30,7 +30,7 @@ describe(`ansibletower Route`, function () {
   })
 
   it(`when bad things happen to Ansible Automation controller Jobs 2`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
     nock(TOWER_HOST).get(ansiblePaths[0]).reply(200, response)
     const res = await request('POST', '/ansibletower', {
       token: '12345',
@@ -39,7 +39,7 @@ describe(`ansibletower Route`, function () {
   })
 
   it(`when bad things happen to Ansible Automation controller Jobs 3`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(400)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(400)
     const res = await request('POST', '/ansibletower')
     expect(JSON.stringify(await parsePipedJsonBody(res))).toEqual(JSON.stringify({}))
   })
