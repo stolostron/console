@@ -185,6 +185,35 @@ describe(`operatorCheck Route`, function () {
       version: '2.5.0',
     })
   })
+  it(`falls back to ClusterExtension when Subscription matches but is unhealthy`, async function () {
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200, {
+      status: 200,
+    })
+    nock(process.env.CLUSTER_API_URL)
+      .get('/apis/operators.coreos.com/v1alpha1/subscriptions')
+      .reply(200, {
+        items: [
+          {
+            metadata: { name: 'ansible-automation-platform-unhealthy' },
+            spec: { name: 'ansible-automation-platform-operator' },
+            status: {
+              installedCSV: 'ansible-automation-platform-operator.v2.4.0',
+              conditions: [{ status: 'True', type: 'CatalogSourcesUnhealthy' }],
+            },
+          },
+        ],
+      })
+    nock(process.env.CLUSTER_API_URL)
+      .get('/apis/olm.operatorframework.io/v1/clusterextensions')
+      .reply(200, clusterExtensions)
+    const res = await request('POST', '/operatorCheck', { operator: 'ansible-automation-platform-operator' })
+    expect(res.statusCode).toEqual(200)
+    expect(await parseResponseJsonBody(res)).toEqual({
+      operator: 'ansible-automation-platform-operator',
+      installed: true,
+      version: '2.5.0',
+    })
+  })
   it(`returns not installed when ClusterExtension CRD is missing`, async function () {
     nock(process.env.CLUSTER_API_URL).get('/api').reply(200, {
       status: 200,
