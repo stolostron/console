@@ -9,6 +9,7 @@ import {
   getHubClusterName,
   getIsHubSelfManaged,
   getIsObservabilityInstalled,
+  resetIsObservabilityInstalled,
   createSplitStream,
   errorToString,
   createWatchEventProcessor,
@@ -167,6 +168,8 @@ describe('events Route', () => {
           delete events[key]
         }
       }
+
+      resetIsObservabilityInstalled()
     })
 
     it('should cache a new resource', async () => {
@@ -301,6 +304,23 @@ describe('events Route', () => {
       expect(getIsObservabilityInstalled()).toBe(true)
     })
 
+    it('should set observability flag when caching multicluster-observability-addon', async () => {
+      const observabilityAddon: IResource = {
+        kind: 'ManagedClusterAddOn',
+        apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+        metadata: {
+          name: 'multicluster-observability-addon',
+          namespace: 'local-cluster',
+          uid: 'mco-addon-uid',
+          resourceVersion: '1',
+        },
+      }
+
+      await cacheResource(observabilityAddon)
+
+      expect(getIsObservabilityInstalled()).toBe(true)
+    })
+
     it('should not set observability flag for other addons', async () => {
       const otherAddon: IResource = {
         kind: 'ManagedClusterAddOn',
@@ -313,10 +333,26 @@ describe('events Route', () => {
         },
       }
 
-      const initialObsFlag = getIsObservabilityInstalled()
       await cacheResource(otherAddon)
 
-      expect(getIsObservabilityInstalled()).toBe(initialObsFlag)
+      expect(getIsObservabilityInstalled()).toBe(false)
+    })
+
+    it('should not set observability flag for addon with wrong API group', async () => {
+      const wrongGroupAddon: IResource = {
+        kind: 'ManagedClusterAddOn',
+        apiVersion: 'other.group.io/v1alpha1',
+        metadata: {
+          name: 'observability-controller',
+          namespace: 'local-cluster',
+          uid: 'wrong-group-addon-uid',
+          resourceVersion: '1',
+        },
+      }
+
+      await cacheResource(wrongGroupAddon)
+
+      expect(getIsObservabilityInstalled()).toBe(false)
     })
 
     it('should avoid race condition when caching same resource concurrently', async () => {
