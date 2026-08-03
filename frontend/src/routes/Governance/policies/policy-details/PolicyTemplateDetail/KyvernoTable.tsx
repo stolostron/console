@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import type { TFunction } from 'i18next'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { fleetResourceRequest } from '../../../../../resources/utils/fleet-resource-request'
-import { compareStrings } from '../../../../../ui-components'
+import { AcmButton, compareStrings } from '../../../../../ui-components'
 import { parseStringMap } from '../../../common/util'
 import { IRelatedObjMessages, IRuleMessage } from './KyvernoRelatedResources'
 
@@ -186,13 +186,18 @@ export const relatedResourceKyvernoColumns = (
       const namespaceArg = namespace ? `&namespace=${namespace}` : ''
       const hubArg = _hubClusterResource ? `&_hubClusterResource=true` : ''
       return (
-        <a
-          target="_blank"
-          rel="noopener noreferrer"
+        <AcmButton
+          variant="link"
+          component="a"
           href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apigroupArg}${apiversion}&name=${name}${namespaceArg}${hubArg}`}
+          target="_blank"
+          rel="noreferrer"
+          isInline
+          icon={<ExternalLinkAltIcon />}
+          iconPosition="right"
         >
-          {item.name} <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
-        </a>
+          {item.name}
+        </AcmButton>
       )
     },
     sort: 'name',

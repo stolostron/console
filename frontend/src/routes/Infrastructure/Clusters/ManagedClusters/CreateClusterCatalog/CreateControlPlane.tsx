@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { CheckIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { CheckIcon } from '@patternfly/react-icons'
 import { CatalogCardItemType, ICatalogCard, PageHeader } from '@stolostron/react-data-view'
 import { useMemo, useState } from 'react'
 import { useIsHypershiftEnabled } from '../../../../../hooks/use-hypershift-enabled'
@@ -9,7 +9,7 @@ import { getTypedCreateClusterPath, HostInventoryInfrastructureType } from '../C
 import { breadcrumbs } from './common/common'
 import { GetControlPlane } from './common/GetControlPlane'
 import useNoAvailableHostsAlert from '../../../../../hooks/use-available-hosts-alert'
-import { DOC_LINKS } from '../../../../../lib/doc-util'
+import { DOC_LINKS, ViewDocumentationLink } from '../../../../../lib/doc-util'
 import { HypershiftDiagramExpand } from './common/HypershiftDiagramExpand'
 import { Icon } from '@patternfly/react-core'
 
@@ -68,11 +68,7 @@ export function CreateControlPlane() {
         alertContent: (() => {
           if (!loaded) return undefined
           if (!isHypershiftEnabled) {
-            return (
-              <a href={DOC_LINKS.HOSTED_ENABLE_FEATURE_AWS} target="_blank" rel="noopener noreferrer">
-                {t('View documentation')} <ExternalLinkAltIcon />
-              </a>
-            )
+            return <ViewDocumentationLink doclink={DOC_LINKS.HOSTED_ENABLE_FEATURE_AWS} topPadding={false} />
           }
           return noAvailableHostsAlert?.content
         })(),

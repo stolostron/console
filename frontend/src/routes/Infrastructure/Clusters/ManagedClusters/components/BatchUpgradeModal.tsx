@@ -247,9 +247,10 @@ export function BatchUpgradeModal(props: {
                           href={`https://console.redhat.com/openshift/insights/advisor/clusters/${clusterID}?active_tab=update_risks`}
                           target="_blank"
                           style={{ padding: 0, fontSize: '14px' }}
+                          icon={<ExternalLinkAltIcon />}
+                          iconPosition="right"
                         >
                           {t('update.table.update.risk.link', { 0: insightsRiskCount })}
-                          <ExternalLinkAltIcon style={{ marginLeft: '8px' }} />
                         </AcmButton>
                       </div>
                     )}
