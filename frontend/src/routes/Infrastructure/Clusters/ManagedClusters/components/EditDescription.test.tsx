@@ -77,10 +77,8 @@ describe('EditDescription', () => {
     await waitFor(() => expect(nockScope.isDone()).toBeTruthy())
   })
 
-  test('formatting buttons insert markdown syntax', async () => {
-    const { getByLabelText, getByLabelText: getByAriaLabel } = render(
-      <EditDescription resource={resource} close={() => {}} />
-    )
+  test('bold button inserts markdown syntax', async () => {
+    const { getByLabelText } = render(<EditDescription resource={resource} close={() => {}} />)
     const textarea = getByLabelText('Description') as HTMLTextAreaElement
 
     userEvent.clear(textarea)
@@ -88,10 +86,155 @@ describe('EditDescription', () => {
 
     textarea.setSelectionRange(0, 4)
 
-    const boldButton = getByAriaLabel('Bold')
-    userEvent.click(boldButton)
+    userEvent.click(getByLabelText('Bold'))
 
     await waitFor(() => expect(textarea.value).toBe('**test**'))
+  })
+
+  test('italic button inserts markdown syntax', async () => {
+    const { getByLabelText } = render(<EditDescription resource={resource} close={() => {}} />)
+    const textarea = getByLabelText('Description') as HTMLTextAreaElement
+
+    userEvent.clear(textarea)
+    userEvent.type(textarea, 'word')
+
+    textarea.setSelectionRange(0, 4)
+
+    userEvent.click(getByLabelText('Italic'))
+
+    await waitFor(() => expect(textarea.value).toBe('*word*'))
+  })
+
+  test('link button inserts markdown link syntax', async () => {
+    const { getByLabelText } = render(<EditDescription resource={resource} close={() => {}} />)
+    const textarea = getByLabelText('Description') as HTMLTextAreaElement
+
+    userEvent.clear(textarea)
+    userEvent.type(textarea, 'click here')
+
+    textarea.setSelectionRange(0, 10)
+
+    userEvent.click(getByLabelText('Link'))
+
+    await waitFor(() => expect(textarea.value).toBe('[click here](url)'))
+  })
+
+  test('list button inserts list marker at start of text', async () => {
+    const { getByLabelText } = render(<EditDescription resource={resource} close={() => {}} />)
+    const textarea = getByLabelText('Description') as HTMLTextAreaElement
+
+    userEvent.clear(textarea)
+
+    textarea.setSelectionRange(0, 0)
+
+    userEvent.click(getByLabelText('List'))
+
+    await waitFor(() => expect(textarea.value).toBe('- '))
+  })
+
+  test('list button inserts newline list marker mid-text', async () => {
+    const { getByLabelText } = render(<EditDescription resource={resource} close={() => {}} />)
+    const textarea = getByLabelText('Description') as HTMLTextAreaElement
+
+    userEvent.clear(textarea)
+    userEvent.type(textarea, 'item')
+
+    textarea.setSelectionRange(4, 4)
+
+    userEvent.click(getByLabelText('List'))
+
+    await waitFor(() => expect(textarea.value).toBe('item\n- '))
+  })
+
+  test('clear button clears the textarea', async () => {
+    const { getByLabelText } = render(<EditDescription resource={resource} close={() => {}} />)
+    const textarea = getByLabelText('Description') as HTMLTextAreaElement
+
+    expect(textarea.value).toBe('Initial description')
+
+    userEvent.click(getByLabelText('Clear'))
+
+    await waitFor(() => expect(textarea.value).toBe(''))
+  })
+
+  test('preview button toggles between edit and preview mode', async () => {
+    const { getByLabelText, queryByLabelText } = render(<EditDescription resource={resource} close={() => {}} />)
+    const textarea = getByLabelText('Description') as HTMLTextAreaElement
+    expect(textarea).toBeVisible()
+
+    userEvent.click(getByLabelText('Preview'))
+
+    await waitFor(() => expect(textarea.style.visibility).toBe('hidden'))
+
+    userEvent.click(queryByLabelText('Edit')!)
+
+    await waitFor(() => expect(textarea.style.visibility).toBe('visible'))
+  })
+
+  test('formatting and clear buttons are disabled in preview mode', async () => {
+    const { getByLabelText } = render(<EditDescription resource={resource} close={() => {}} />)
+
+    expect(getByLabelText('Bold')).toBeEnabled()
+    expect(getByLabelText('Italic')).toBeEnabled()
+    expect(getByLabelText('Link')).toBeEnabled()
+    expect(getByLabelText('List')).toBeEnabled()
+    expect(getByLabelText('Clear')).toBeEnabled()
+
+    userEvent.click(getByLabelText('Preview'))
+
+    await waitFor(() => {
+      expect(getByLabelText('Bold')).toBeDisabled()
+      expect(getByLabelText('Italic')).toBeDisabled()
+      expect(getByLabelText('Link')).toBeDisabled()
+      expect(getByLabelText('List')).toBeDisabled()
+      expect(getByLabelText('Clear')).toBeDisabled()
+    })
+  })
+
+  test('resets preview mode when reopened with a different resource', async () => {
+    const otherResource: IResource = {
+      apiVersion: ManagedClusterApiVersion,
+      kind: ManagedClusterKind,
+      metadata: {
+        name: 'other-cluster',
+        annotations: { [CLUSTER_DESCRIPTION_ANNOTATION]: 'Other description' },
+      },
+    }
+
+    const { getByLabelText, rerender } = render(<EditDescription resource={resource} close={() => {}} />)
+    const textarea = getByLabelText('Description') as HTMLTextAreaElement
+
+    userEvent.click(getByLabelText('Preview'))
+    await waitFor(() => expect(textarea.style.visibility).toBe('hidden'))
+
+    rerender(<EditDescription resource={otherResource} close={() => {}} />)
+
+    await waitFor(() => {
+      expect(textarea.value).toBe('Other description')
+      expect(textarea.style.visibility).toBe('visible')
+    })
+  })
+
+  test('preview shows placeholder when description is empty', async () => {
+    const emptyResource: IResource = {
+      apiVersion: ManagedClusterApiVersion,
+      kind: ManagedClusterKind,
+      metadata: { name: 'test-cluster' },
+    }
+    const { getByLabelText, findByText } = render(<EditDescription resource={emptyResource} close={() => {}} />)
+
+    userEvent.click(getByLabelText('Preview'))
+
+    expect(await findByText('-')).toBeInTheDocument()
+  })
+
+  test('cancel button calls close', () => {
+    const closeFn = jest.fn()
+    const { getByRole } = render(<EditDescription resource={resource} close={closeFn} />)
+
+    getByRole('button', { name: /cancel/i }).click()
+
+    expect(closeFn).toHaveBeenCalled()
   })
 
   test('shows errors on save failure', async () => {

@@ -2610,6 +2610,7 @@
   "preserve.cluster.infrastructure.warning": "The cluster will be removed from management on the hub, but OpenShift and cloud resources will not be deprovisioned, so they will continue to incur charges. You must manually delete the remaining infrastructure when you no longer need it.",
   "preserve.cluster.infrastructure.warning.title": "Cloud charges will continue",
   "Press space or enter to begin dragging, and use the arrow keys to navigate up or down. Press enter to confirm the drag, or any other key to cancel the drag operation.": "Press space or enter to begin dragging, and use the arrow keys to navigate up or down. Press enter to confirm the drag, or any other key to cancel the drag operation.",
+  "Preview": "Preview",
   "preview.clusterPools": "<bold>Technology Preview</bold>: For more information, <a>view documentation</a> on Cluster pools",
   "Previous change": "Previous change",
   "Previous example": "Previous example",
