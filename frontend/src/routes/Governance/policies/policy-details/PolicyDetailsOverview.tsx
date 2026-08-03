@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Button, ButtonVariant, Icon, PageSection } from '@patternfly/react-core'
+import { Button, ButtonVariant, Icon, PageSection, Tooltip } from '@patternfly/react-core'
 import { BellIcon, CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { ReactNode, useCallback, useContext, useMemo, useState } from 'react'
 import { generatePath, Link } from 'react-router'
@@ -51,6 +51,19 @@ export default function PolicyDetailsOverview() {
   const placementDecisions = useRecoilValue(placementDecisionsState)
   const policyAutomations = useRecoilValue(policyAutomationState)
   const policies = usePropagatedPolicies(policy)
+
+  // Clusters whose propagated policy is visible to this user — used to gate cluster violation links.
+  // usePropagatedPolicies already filters to matching copies of this policy, so no secondary filter needed.
+  const visiblePropagatedClusters = useMemo(
+    () =>
+      new Set(
+        policies
+          .map((p) => p.metadata.labels?.['policy.open-cluster-management.io/cluster-name'])
+          .filter((name): name is string => Boolean(name))
+      ),
+    [policies]
+  )
+
   const policyAutomationMatch = policyAutomations.find(
     (pa: PolicyAutomation) => pa.spec.policyRef === policy.metadata.name
   )
@@ -186,17 +199,27 @@ export default function PolicyDetailsOverview() {
               if (status !== 'nostatus') {
                 return (
                   <span key={`${cluster}-link`}>
-                    <Link
-                      to={{
-                        pathname: generatePath(NavigationPath.policyDetailsResults, {
-                          namespace: policy.metadata.namespace!,
-                          name: policy.metadata.name!,
-                        }),
-                        search: `?search=${cluster}`,
-                      }}
-                    >
-                      {cluster}
-                    </Link>
+                    {visiblePropagatedClusters.has(cluster) ? (
+                      <Link
+                        to={{
+                          pathname: generatePath(NavigationPath.policyDetailsResults, {
+                            namespace: policy.metadata.namespace!,
+                            name: policy.metadata.name!,
+                          }),
+                          search: `?search=${cluster}`,
+                        }}
+                      >
+                        {cluster}
+                      </Link>
+                    ) : (
+                      <Tooltip
+                        content={t(
+                          'You need permission to view this cluster. Contact your cluster administrator for role-based access.'
+                        )}
+                      >
+                        <span className="link-disabled">{cluster}</span>
+                      </Tooltip>
+                    )}
                     {index < clustersToShow.length - 1 && ', '}
                   </span>
                 )
@@ -231,7 +254,7 @@ export default function PolicyDetailsOverview() {
       }
       return statusList
     },
-    [policy.metadata.name, policy.metadata.namespace, policy.status?.status, t]
+    [policy.metadata.name, policy.metadata.namespace, policy.status?.status, t, visiblePropagatedClusters]
   )
 
   const { leftItems, rightItems } = useMemo(() => {

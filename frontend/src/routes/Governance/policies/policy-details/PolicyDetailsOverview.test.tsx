@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import {
+  managedClustersState,
   placementBindingsState,
   placementDecisionsState,
   placementsState,
@@ -410,6 +411,114 @@ describe('Policy Details Results', () => {
 
     // Verify "No status" is shown
     await waitForText('No status')
+  })
+
+  test('Should render cluster violation names as links when propagated policy is visible', async () => {
+    // policiesState has the propagated copy for local-cluster → visiblePropagatedClusters = {'local-cluster'}
+    const context: PolicyDetailsContext = { policy: mockPolicy[0] }
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(placementsState, mockPlacements)
+          snapshot.set(policySetsState, [mockPolicySets[0]])
+          snapshot.set(placementBindingsState, mockPlacementBindings)
+          snapshot.set(placementDecisionsState, mockPlacementDecision)
+          snapshot.set(policiesState, [mockPolicy[1]])
+          snapshot.set(managedClustersState, [])
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<PolicyDetailsOverview />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    await waitForText('local-cluster')
+    // cluster name should be a clickable link
+    expect(screen.getByRole('link', { name: 'local-cluster' })).toBeInTheDocument()
+    expect(screen.queryByText('local-cluster')?.closest('.link-disabled')).toBeNull()
+  })
+
+  test('Should render cluster violation names as disabled when no propagated policies are visible', async () => {
+    // policiesState is empty → visiblePropagatedClusters = {} → local-cluster in status.status gets disabled
+    const context: PolicyDetailsContext = { policy: mockPolicy[0] }
+    const { container } = render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(placementsState, mockPlacements)
+          snapshot.set(policySetsState, [mockPolicySets[0]])
+          snapshot.set(placementBindingsState, mockPlacementBindings)
+          snapshot.set(placementDecisionsState, mockPlacementDecision)
+          snapshot.set(policiesState, [])
+          snapshot.set(managedClustersState, [])
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<PolicyDetailsOverview />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    await waitForText('local-cluster')
+    expect(screen.queryByRole('link', { name: 'local-cluster' })).toBeNull()
+    expect(container.querySelector('.link-disabled')).toBeInTheDocument()
+  })
+
+  test('Should render partial access — visible cluster linked, inaccessible cluster disabled', async () => {
+    // Root policy has two clusters; propagated policy for local-cluster is visible, inaccessible-cluster is not
+    const rootPolicyTwoClusters: Policy = {
+      ...mockPolicy[0],
+      status: {
+        compliant: 'NonCompliant',
+        placement: mockPolicy[0].status!.placement!,
+        status: [
+          { clustername: 'local-cluster', clusternamespace: 'local-cluster', compliant: 'NonCompliant' },
+          { clustername: 'inaccessible-cluster', clusternamespace: 'inaccessible-cluster', compliant: 'NonCompliant' },
+        ],
+      },
+    }
+    const context: PolicyDetailsContext = { policy: rootPolicyTwoClusters }
+    const { container } = render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(placementsState, mockPlacements)
+          snapshot.set(policySetsState, [mockPolicySets[0]])
+          snapshot.set(placementBindingsState, mockPlacementBindings)
+          snapshot.set(placementDecisionsState, mockPlacementDecision)
+          // Only local-cluster's propagated policy is visible
+          snapshot.set(policiesState, [mockPolicy[1]])
+          snapshot.set(managedClustersState, [])
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<PolicyDetailsOverview />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    await waitForText('local-cluster')
+    await waitForText('inaccessible-cluster')
+
+    // local-cluster has a visible propagated policy → should be a clickable link
+    expect(screen.getByRole('link', { name: 'local-cluster' })).toBeInTheDocument()
+
+    // inaccessible-cluster has no visible propagated policy → should be link-disabled, not a link
+    expect(screen.queryByRole('link', { name: 'inaccessible-cluster' })).toBeNull()
+    const disabledSpans = container.querySelectorAll('.link-disabled')
+    const disabledTexts = Array.from(disabledSpans).map((s) => s.textContent)
+    expect(disabledTexts).toContain('inaccessible-cluster')
   })
 
   test('Should render placement link with correct URL parameters', async () => {
