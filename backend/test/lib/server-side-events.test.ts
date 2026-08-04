@@ -67,7 +67,7 @@ describe('ServerSideEvents filter-before-inflate (ACM-39327)', () => {
 
   it('does not inflate denied events', async () => {
     const inflateSpy = jest.spyOn(compression, 'inflateEvent')
-    ServerSideEvents.eventFilter = async () => false
+    ServerSideEvents.eventFilter = () => Promise.resolve(false)
 
     const writableStream = new Writable({
       write(_chunk, _encoding, callback) {
@@ -102,8 +102,8 @@ describe('ServerSideEvents filter-before-inflate (ACM-39327)', () => {
   })
 
   it('inflates events only after the filter allows them', async () => {
-    const inflateSpy = jest.spyOn(compression, 'inflateEvent').mockImplementation(async (event) => event)
-    ServerSideEvents.eventFilter = async () => true
+    const inflateSpy = jest.spyOn(compression, 'inflateEvent').mockImplementation((event) => Promise.resolve(event))
+    ServerSideEvents.eventFilter = () => Promise.resolve(true)
 
     const writableStream = new Writable({
       write(_chunk, _encoding, callback) {

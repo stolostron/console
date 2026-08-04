@@ -151,16 +151,16 @@ export class ServerSideEvents {
     }
   }
 
-  private static async sendEvent(clientID: string, event: ServerSideEvent): Promise<void> {
+  private static sendEvent(clientID: string, event: ServerSideEvent): Promise<void> {
     const client = this.clients[clientID]
-    if (!client) return
-    if (client.events && !client.events[event.name]) return
-    if (client.namespaces && !client.namespaces[event.namespace]) return
+    if (!client) return Promise.resolve()
+    if (client.events && !client.events[event.name]) return Promise.resolve()
+    if (client.namespaces && !client.namespaces[event.namespace]) return Promise.resolve()
     // Filter before inflate so denied events never materialize full resource JSON in memory.
     if (this.eventFilter) {
       client.eventQueue.push(
         this.eventFilter(client.token, event)
-          .then(async (shouldSendEvent) => {
+          .then((shouldSendEvent) => {
             if (!shouldSendEvent) return undefined
             return inflateEvent(event)
           })
@@ -170,6 +170,7 @@ export class ServerSideEvents {
       client.eventQueue.push(inflateEvent(event))
     }
     void this.processClient(clientID)
+    return Promise.resolve()
   }
 
   private static async processClient(clientID: string): Promise<void> {
