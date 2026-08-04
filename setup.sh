@@ -132,6 +132,31 @@ EOF
   echo SEARCH_API_URL=$SEARCH_API_URL >> ./backend/.env
 fi
 
+# Create NetworkPolicy to allow access to the search-api service.
+if [[ -n "$INSTALLATION_NAMESPACE" ]]; then
+  oc apply -f - << EOF
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: search-api-localdev-route-access
+  namespace: $INSTALLATION_NAMESPACE
+spec:
+  podSelector:
+    matchLabels:
+      name: search-api
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+      - namespaceSelector:
+          matchLabels:
+            kubernetes.io/metadata.name: openshift-ingress
+      ports:
+      - port: 4010
+        protocol: TCP
+EOF
+fi
+
 # Create route to the placement debug service for local development.
 oc apply -f - << EOF
 apiVersion: route.openshift.io/v1
