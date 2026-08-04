@@ -48,7 +48,7 @@ export interface HostedCluster extends IResource {
     pullSecret: {
       name: string
     }
-    sshKey: {
+    sshKey?: {
       name: string
     }
     networking: {
