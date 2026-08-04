@@ -184,10 +184,7 @@ interface SubjectRulesStatus {
 }
 
 type KindGetAccess =
-  | { type: 'deny-all' }
-  | { type: 'allow-all' }
-  | { type: 'allow-names'; names: Set<string> }
-  | { type: 'incomplete' }
+  { type: 'deny-all' } | { type: 'allow-all' } | { type: 'allow-names'; names: Set<string> } | { type: 'incomplete' }
 
 const subjectRulesCache: Record<string, { time: number; promise: Promise<SubjectRulesStatus> }> = {}
 const kindGetAccessCache: Record<string, { time: number; promise: Promise<KindGetAccess> }> = {}

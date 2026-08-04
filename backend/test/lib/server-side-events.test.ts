@@ -61,7 +61,7 @@ describe('ServerSideEvents filter-before-inflate (ACM-39327)', () => {
   })
 
   afterEach(() => {
-    ServerSideEvents.eventFilter = undefined as unknown as typeof ServerSideEvents.eventFilter
+    ServerSideEvents.eventFilter = undefined
     ServerSideEvents.reset()
   })
 
@@ -78,7 +78,7 @@ describe('ServerSideEvents filter-before-inflate (ACM-39327)', () => {
     clients['deny-client'] = {
       token: 'token',
       writableStream,
-      compressionStream: undefined as unknown as (typeof clients)[string]['compressionStream'],
+      compressionStream: undefined,
       eventQueue: [],
     }
 
@@ -114,7 +114,7 @@ describe('ServerSideEvents filter-before-inflate (ACM-39327)', () => {
     clients['allow-client'] = {
       token: 'token',
       writableStream,
-      compressionStream: undefined as unknown as (typeof clients)[string]['compressionStream'],
+      compressionStream: undefined,
       eventQueue: [],
     }
 
@@ -126,7 +126,11 @@ describe('ServerSideEvents filter-before-inflate (ACM-39327)', () => {
           apiVersion: 'cluster.open-cluster-management.io/v1',
           name: 'cluster-1',
         },
-        object: { kind: 'ManagedCluster', apiVersion: 'v1', metadata: { name: 'cluster-1', namespace: '', resourceVersion: '1' } },
+        object: {
+          kind: 'ManagedCluster',
+          apiVersion: 'v1',
+          metadata: { name: 'cluster-1', namespace: '', resourceVersion: '1' },
+        },
       },
     }
     await ServerSideEvents.pushEvent(event)
