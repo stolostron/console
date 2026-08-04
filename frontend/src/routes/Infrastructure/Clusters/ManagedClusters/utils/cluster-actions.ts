@@ -4,6 +4,7 @@ import { Provider } from '../../../../../ui-components'
 
 export enum ClusterAction {
   EditLabels = 'edit-labels',
+  EditDescription = 'edit-description',
   Upgrade = 'upgrade-cluster',
   SelectChannel = 'select-channel',
   Search = 'search-cluster',
@@ -61,6 +62,7 @@ export function clusterSupportsAction(
   }
   switch (clusterAction) {
     case ClusterAction.EditLabels:
+    case ClusterAction.EditDescription:
       return cluster.isManaged && cluster.status !== ClusterStatus.detaching
     case ClusterAction.Upgrade:
       return (

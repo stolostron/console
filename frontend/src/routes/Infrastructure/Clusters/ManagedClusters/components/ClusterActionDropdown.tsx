@@ -32,6 +32,7 @@ import { BatchChannelSelectModal } from './BatchChannelSelectModal'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 import ScaleUpDialog from './cim/ScaleUpDialog'
 import { EditLabels } from './EditLabels'
+import { EditDescription } from './EditDescription'
 import { StatusField } from './StatusField'
 import { UpdateAutomationModal } from './UpdateAutomationModal'
 import { ClusterAction, clusterDestroyable, clusterSupportsAction } from '../utils/cluster-actions'
@@ -68,6 +69,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
   const agents = useRecoilValue(agentsState)
   const agentMachines = useRecoilValue(agentMachinesState)
   const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
+  const [showEditDescription, setShowEditDescription] = useState<boolean>(false)
   const infraEnvs = useRecoilValue(infraEnvironmentsState)
   const hostedClusters = useRecoilValue(hostedClustersState)
   const localHubName = useLocalHubName()
@@ -237,6 +239,13 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
           id: ClusterAction.EditLabels,
           text: t('managed.editLabels'),
           click: () => setShowEditLabels(true),
+          isAriaDisabled: true,
+          rbac: [rbacPatch(ManagedClusterDefinition, undefined, cluster.name)],
+        },
+        {
+          id: ClusterAction.EditDescription,
+          text: t('Edit description'),
+          click: () => setShowEditDescription(true),
           isAriaDisabled: true,
           rbac: [rbacPatch(ManagedClusterDefinition, undefined, cluster.name)],
         },
@@ -525,6 +534,25 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         }
         displayName={cluster.displayName}
         close={() => setShowEditLabels(false)}
+      />
+      <EditDescription
+        resource={
+          showEditDescription
+            ? {
+                ...ManagedClusterDefinition,
+                metadata: { name: cluster.name, annotations: cluster.annotations },
+              }
+            : undefined
+        }
+        onSave={() =>
+          toastContext.addAlert({
+            title: t('Success'),
+            message: t('Description updated successfully'),
+            type: 'success',
+            autoClose: true,
+          })
+        }
+        close={() => setShowEditDescription(false)}
       />
       <BatchUpgradeModal clusters={[cluster]} open={showUpgradeModal} close={() => setShowUpgradeModal(false)} />
       <BatchChannelSelectModal

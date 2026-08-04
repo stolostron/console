@@ -42,7 +42,7 @@ const previewOverlay = css({
 
 const CLUSTER_DESCRIPTION_ANNOTATION = 'console.open-cluster-management.io/description'
 
-export function EditDescription(props: Readonly<{ resource?: IResource; close: () => void }>) {
+export function EditDescription(props: Readonly<{ resource?: IResource; close: () => void; onSave?: () => void }>) {
   const { t } = useTranslation()
   const [description, setDescription] = useState<string>('')
   const [isPreview, setIsPreview] = useState(false)
@@ -82,6 +82,7 @@ export function EditDescription(props: Readonly<{ resource?: IResource; close: (
 
     return patchResource(resourceToPatch, patch)
       .promise.then(() => {
+        props.onSave?.()
         props.close()
       })
       .catch((err) => {
