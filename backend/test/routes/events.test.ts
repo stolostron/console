@@ -16,11 +16,14 @@ import {
   listAndWatch,
   stopWatching,
   canAccess,
+  canGetResource,
   resetAccessCache,
   getAccessCache,
   cleanupAccessCache,
+  hashAccessToken,
   ACCESS_CACHE_TTL,
   ACCESS_CACHE_MAX_TOKENS,
+  ACCESS_CACHE_MAX_ENTRIES_PER_TOKEN,
 } from '../../src/routes/events'
 import * as serviceAccountTokenModule from '../../src/lib/serviceAccountToken'
 import type { IArgoApplication, IResource } from '../../src/resources/resource'
@@ -1438,14 +1441,38 @@ describe('events Route', () => {
 
       expect(result1).toBe(true)
       expect(result1).toBe(result2)
+      expect(getAccessCache()[hashAccessToken(mockToken)]['get:Pod:default:test-pod']).toBeDefined()
+    })
+
+    it('should use distinct cache keys per verb', async () => {
+      const mockToken = 'test-token-verb'
+      const resource = { kind: 'Pod', apiVersion: 'v1', metadata: { namespace: 'default', name: 'test-pod' } }
+
+      nock(process.env.CLUSTER_API_URL || '')
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
+        .reply(200, { status: { allowed: true } })
+      nock(process.env.CLUSTER_API_URL || '')
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
+        .reply(200, { status: { allowed: false } })
+
+      expect(await canAccess(resource, 'get', mockToken)).toBe(true)
+      expect(await canAccess(resource, 'list', mockToken)).toBe(false)
+
+      const tokenCache = getAccessCache()[hashAccessToken(mockToken)]
+      expect(tokenCache['get:Pod:default:test-pod']).toBeDefined()
+      expect(tokenCache['list:Pod:default:test-pod']).toBeDefined()
     })
 
     it('should respect TTL and refetch after expiry', async () => {
       const cache = getAccessCache()
       const mockToken = 'test-token-ttl'
+      const tokenKey = hashAccessToken(mockToken)
 
-      cache[mockToken] = {
-        'Secret:default:credentials': { time: Date.now() - ACCESS_CACHE_TTL - 1000, promise: Promise.resolve(true) },
+      cache[tokenKey] = {
+        'get:Secret:default:credentials': {
+          time: Date.now() - ACCESS_CACHE_TTL - 1000,
+          promise: Promise.resolve(true),
+        },
       }
 
       nock(process.env.CLUSTER_API_URL || '')
@@ -1493,6 +1520,180 @@ describe('events Route', () => {
       expect(Object.keys(cache).length).toBe(ACCESS_CACHE_MAX_TOKENS)
       expect(cache['token-0']).toBeDefined()
       expect(cache[`token-${tokenCount - 1}`]).toBeUndefined()
+    })
+
+    it('should enforce maximum entries per token', async () => {
+      const mockToken = 'test-token-entry-cap'
+      process.env.CLUSTER_API_URL = 'https://api.test-cluster.com:6443'
+
+      nock(process.env.CLUSTER_API_URL)
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
+        .times(ACCESS_CACHE_MAX_ENTRIES_PER_TOKEN + 50)
+        .reply(200, { status: { allowed: false } })
+
+      for (let i = 0; i < ACCESS_CACHE_MAX_ENTRIES_PER_TOKEN + 50; i++) {
+        await canAccess(
+          { kind: 'Pod', apiVersion: 'v1', metadata: { namespace: 'default', name: `pod-${i}` } },
+          'get',
+          mockToken
+        )
+      }
+
+      const tokenCache = getAccessCache()[hashAccessToken(mockToken)]
+      expect(Object.keys(tokenCache).length).toBeLessThanOrEqual(ACCESS_CACHE_MAX_ENTRIES_PER_TOKEN)
+    })
+  })
+
+  describe('SelfSubjectRulesReview short-circuit', () => {
+    beforeEach(() => {
+      resetAccessCache()
+      jest.clearAllMocks()
+      process.env.CLUSTER_API_URL = 'https://api.test-cluster.com:6443'
+    })
+
+    afterEach(() => {
+      resetAccessCache()
+      delete process.env.CLUSTER_API_URL
+      nock.cleanAll()
+    })
+
+    it('should deny all gets from complete empty rules without per-object SSAR', async () => {
+      nock(process.env.CLUSTER_API_URL || '')
+        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews')
+        .reply(200, { status: { incomplete: false, resourceRules: [] } })
+
+      const ssarScope = nock(process.env.CLUSTER_API_URL || '')
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
+        .reply(200, { status: { allowed: true } })
+
+      const allowed = await canGetResource(
+        {
+          kind: 'ManagedCluster',
+          apiVersion: 'cluster.open-cluster-management.io/v1',
+          metadata: { name: 'cluster-1' },
+        },
+        'none-user-token'
+      )
+      expect(allowed).toBe(false)
+      expect(ssarScope.isDone()).toBe(false)
+    })
+
+    it('should use a single rules review for many gets of the same kind', async () => {
+      let rulesCalls = 0
+      nock(process.env.CLUSTER_API_URL || '')
+        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews')
+        .reply(200, () => {
+          rulesCalls++
+          return { status: { incomplete: false, resourceRules: [] } }
+        })
+
+      const results = await Promise.all(
+        Array.from({ length: 500 }, (_, i) =>
+          canGetResource(
+            {
+              kind: 'ManagedCluster',
+              apiVersion: 'cluster.open-cluster-management.io/v1',
+              metadata: { name: `cluster-${i}` },
+            },
+            'scale-none-token'
+          )
+        )
+      )
+
+      expect(results.every((allowed) => allowed === false)).toBe(true)
+      expect(rulesCalls).toBe(1)
+    })
+
+    it('should allow only named resources from resourceNames rules', async () => {
+      nock(process.env.CLUSTER_API_URL || '')
+        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews')
+        .reply(200, {
+          status: {
+            incomplete: false,
+            resourceRules: [
+              {
+                verbs: ['get'],
+                apiGroups: ['cluster.open-cluster-management.io'],
+                resources: ['managedclusters'],
+                resourceNames: ['allowed-cluster'],
+              },
+            ],
+          },
+        })
+
+      expect(
+        await canGetResource(
+          {
+            kind: 'ManagedCluster',
+            apiVersion: 'cluster.open-cluster-management.io/v1',
+            metadata: { name: 'allowed-cluster' },
+          },
+          'partial-user-token'
+        )
+      ).toBe(true)
+      expect(
+        await canGetResource(
+          {
+            kind: 'ManagedCluster',
+            apiVersion: 'cluster.open-cluster-management.io/v1',
+            metadata: { name: 'other-cluster' },
+          },
+          'partial-user-token'
+        )
+      ).toBe(false)
+    })
+
+    it('should fall back to SSAR when rules review is incomplete with non-empty rules', async () => {
+      nock(process.env.CLUSTER_API_URL || '')
+        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews')
+        .reply(200, {
+          status: {
+            incomplete: true,
+            resourceRules: [
+              {
+                verbs: ['get'],
+                apiGroups: [''],
+                resources: ['pods'],
+              },
+            ],
+          },
+        })
+      nock(process.env.CLUSTER_API_URL || '')
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
+        .reply(200, { status: { allowed: true } })
+
+      expect(
+        await canGetResource(
+          {
+            kind: 'ManagedCluster',
+            apiVersion: 'cluster.open-cluster-management.io/v1',
+            metadata: { name: 'cluster-1' },
+          },
+          'incomplete-user-token'
+        )
+      ).toBe(true)
+    })
+
+    it('should deny-all when rules are empty even if incomplete is true', async () => {
+      nock(process.env.CLUSTER_API_URL || '')
+        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews')
+        .reply(200, { status: { incomplete: true, resourceRules: [] } })
+
+      const ssarScope = nock(process.env.CLUSTER_API_URL || '')
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
+        .reply(200, { status: { allowed: true } })
+
+      expect(
+        await canGetResource(
+          {
+            kind: 'ManagedCluster',
+            apiVersion: 'cluster.open-cluster-management.io/v1',
+            metadata: { name: 'cluster-1' },
+          },
+          'openshift-none-token'
+        )
+      ).toBe(false)
+      expect(ssarScope.isDone()).toBe(false)
     })
   })
 })

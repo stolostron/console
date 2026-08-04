@@ -4,7 +4,6 @@ import { constants } from 'node:http2'
 import type { Transform } from 'node:stream'
 import { clearInterval } from 'node:timers'
 import type { Zlib } from 'node:zlib'
-import { batchPromiseAll } from './batch-promise-all'
 import { getEncodeStream, inflateEvent } from './compression'
 import { setCookie } from './cookies'
 import { logger } from './logger'
@@ -35,6 +34,15 @@ export interface ServerSideEvent<DataT = unknown> {
   namespace?: string
   data?: DataT
 }
+
+/** Lightweight resource identity for RBAC filtering without inflating compressed objects. */
+export interface EventResourceMeta {
+  kind: string
+  apiVersion: string
+  name?: string
+  namespace?: string
+}
+
 export interface WatchEvent {
   type: 'ADDED' | 'DELETED' | 'MODIFIED' | 'EOP'
   object: {
@@ -46,7 +54,27 @@ export interface WatchEvent {
       resourceVersion: string
     }
   }
+  meta?: EventResourceMeta
 }
+
+/** Resolve kind/apiVersion/name/namespace from meta or an already-inflated object. */
+export function getEventResourceMeta(event: ServerSideEvent): EventResourceMeta | undefined {
+  const data = event.data as (WatchEvent & { type?: string }) | undefined
+  if (!data || typeof data !== 'object') return undefined
+  if (data.meta?.kind) return data.meta
+  const object = data.object as WatchEvent['object'] | Buffer | undefined
+  if (object && !Buffer.isBuffer(object) && typeof object === 'object' && object.kind) {
+    return {
+      kind: object.kind,
+      apiVersion: object.apiVersion,
+      name: object.metadata?.name,
+      namespace: object.metadata?.namespace,
+    }
+  }
+  return undefined
+}
+
+const STREAM_SEND_BATCH_SIZE = 50
 
 export interface ServerSideEventClient {
   token: string
@@ -130,15 +158,18 @@ export class ServerSideEvents {
     if (!client) return
     if (client.events && !client.events[event.name]) return
     if (client.namespaces && !client.namespaces[event.namespace]) return
-    event = await inflateEvent(event)
+    // Filter before inflate so denied events never materialize full resource JSON in memory.
     if (this.eventFilter) {
       client.eventQueue.push(
         this.eventFilter(client.token, event)
-          .then((shouldSendEvent) => (shouldSendEvent ? event : undefined))
+          .then(async (shouldSendEvent) => {
+            if (!shouldSendEvent) return undefined
+            return inflateEvent(event)
+          })
           .catch((): undefined => undefined)
       )
     } else {
-      client.eventQueue.push(Promise.resolve(event))
+      client.eventQueue.push(inflateEvent(event))
     }
     void this.processClient(clientID)
   }
@@ -311,10 +342,10 @@ export class ServerSideEvents {
 
     // SORT EVENTS INTO SMALLER PACKETS
     // SO THAT BROWSER PAGE LOADS QUICKER
-    // uncompress and split events into packets
+    // Classify using meta / inflated object identity — do not inflate the whole cache up front.
     const values = Object.values(this.events)
     const compressed = sizeOf(values)
-    let parts = await batchPromiseAll(values, (event) => inflateEvent(event))
+    let parts: ServerSideEvent[] = [...values]
 
     // mock a large environment
     if (process.env.MOCK_CLUSTERS) {
@@ -343,9 +374,9 @@ export class ServerSideEvents {
     const other: ServerSideEvent<unknown>[] = []
     const remainder: ServerSideEvent<unknown>[] = []
     parts.forEach((event) => {
-      const data = event.data as WatchEvent
+      const meta = getEventResourceMeta(event)
       // see frontend/src/components/LoadPluginData.tsx for what pages are fast loaded
-      switch (data.object.kind) {
+      switch (meta?.kind) {
         case 'ManagedCluster':
         case 'HostedCluster':
         case 'ClusterDeployment':
@@ -384,9 +415,9 @@ export class ServerSideEvents {
     // sort events alphabetically so that browser list fills from top to bottom
     const compareFn =
       (propName: 'name' | 'namespace') => (a: ServerSideEvent<unknown>, b: ServerSideEvent<unknown>) => {
-        const adata = a.data as WatchEvent
-        const bdata = b.data as WatchEvent
-        return adata.object.metadata[propName].localeCompare(bdata.object.metadata[propName])
+        const aVal = getEventResourceMeta(a)?.[propName] ?? ''
+        const bVal = getEventResourceMeta(b)?.[propName] ?? ''
+        return aVal.localeCompare(bVal)
       }
     clusters.sort(compareFn('name'))
     infos.sort(compareFn('namespace'))
@@ -424,13 +455,20 @@ export class ServerSideEvents {
       sending.push(...remainder.splice(0, 1978))
     } while (remainder.length)
     sending.push(end)
-    await Promise.all(
-      sending.map((event) => {
-        const promise = this.sendEvent(clientID, event)
-        sentCount++
-        return promise
-      })
-    )
+
+    // Bound concurrency so restricted users do not queue thousands of SSARs/inflates at once.
+    for (let i = 0; i < sending.length; i += STREAM_SEND_BATCH_SIZE) {
+      const batch = sending.slice(i, i + STREAM_SEND_BATCH_SIZE)
+      await Promise.all(
+        batch.map((event) => {
+          sentCount++
+          return this.sendEvent(clientID, event)
+        })
+      )
+      if (i + STREAM_SEND_BATCH_SIZE < sending.length) {
+        await new Promise((resolve) => setImmediate(resolve))
+      }
+    }
     const uncompressed = sizeOf(sending)
 
     logger.info({ msg: 'event stream start', events: sentCount, compression: 100 - (compressed / uncompressed) * 100 })
