@@ -11,7 +11,7 @@ import {
 } from '../placement'
 import { PlacementDecision } from '../placement-decision'
 import { createResource, IRequestResult } from '../utils'
-import { ManagedByConsoleLabel } from './constants'
+import { PlacementManagedBySystemLabel } from './constants'
 import { PlacementClusters } from './model/placement-clusters'
 import { getClustersFromPlacementDecision, useFindPlacementDecisions } from './placement-decision-client'
 
@@ -211,7 +211,7 @@ const doesPlacementDecisionBelongToPlacement = (placementDecision: PlacementDeci
 export const useGetPlacementClusters = (placementNames?: string[]): PlacementClusters[] => {
   const placements = useFindPlacements({
     placementNames,
-    labels: [ManagedByConsoleLabel],
+    labels: [PlacementManagedBySystemLabel],
     includeGlobalPlacement: true,
   })
   const placementDecisions = useFindPlacementDecisions({
@@ -298,7 +298,7 @@ const createPlacement = (
     metadata: {
       name: producePlacementName(nameElements, namePrefix),
       namespace,
-      labels: ManagedByConsoleLabel,
+      labels: PlacementManagedBySystemLabel,
     },
     spec: {
       ...specContent,
