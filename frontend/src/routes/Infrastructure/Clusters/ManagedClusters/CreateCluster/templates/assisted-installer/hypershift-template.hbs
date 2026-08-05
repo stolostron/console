@@ -32,6 +32,9 @@ spec:
       - cidr: 172.31.0.0/16
     {{/if}}
     networkType: {{{hypershift-network.networkType}}}
+  {{#if reconcilePause}}
+  pausedUntil: '{{{reconcilePause}}}'
+  {{/if}}
   {{#if hypershift-network.enableProxy}}
   configuration:
     proxy:
@@ -161,6 +164,8 @@ metadata:
   name: '{{{hypershift.name}}}'
 spec:
   hubAcceptsClient: true
+
+{{>clusterCurator}}
 
 {{#if includeKlusterletAddonConfig}}
 ---
