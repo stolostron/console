@@ -194,49 +194,59 @@ function enforceAccessCacheEntryCap(tokenCache: Record<string, { time: number; p
 
 let accessCacheCleanupTimer: NodeJS.Timeout | undefined
 
+function expireTimedEntries<T extends { time: number }>(cache: Record<string, T>, cutoffTime: number) {
+  for (const key in cache) {
+    if (cache[key].time < cutoffTime) {
+      delete cache[key]
+    }
+  }
+}
+
+/** Prune one token's SSAR entries; returns newest remaining time, or undefined if the token was removed. */
+function pruneAccessCacheToken(
+  token: string,
+  tokenCache: Record<string, { time: number; promise: Promise<boolean> }>,
+  cutoffTime: number
+): number | undefined {
+  let newestTime = 0
+
+  for (const key in tokenCache) {
+    if (tokenCache[key].time < cutoffTime) {
+      delete tokenCache[key]
+    } else if (tokenCache[key].time > newestTime) {
+      newestTime = tokenCache[key].time
+    }
+  }
+
+  if (Object.keys(tokenCache).length === 0) {
+    delete accessCache[token]
+    return undefined
+  }
+
+  enforceAccessCacheEntryCap(tokenCache)
+  return newestTime
+}
+
 export function cleanupAccessCache() {
-  const now = Date.now()
-  const cutoffTime = now - ACCESS_CACHE_TTL
+  const cutoffTime = Date.now() - ACCESS_CACHE_TTL
   const tokenStats: Array<{ token: string; newestTime: number }> = []
 
   for (const token in accessCache) {
-    const tokenCache = accessCache[token]
-    let newestTime = 0
-
-    for (const key in tokenCache) {
-      if (tokenCache[key].time < cutoffTime) {
-        delete tokenCache[key]
-      } else if (tokenCache[key].time > newestTime) {
-        newestTime = tokenCache[key].time
-      }
-    }
-
-    if (Object.keys(tokenCache).length === 0) {
-      delete accessCache[token]
-    } else {
-      enforceAccessCacheEntryCap(tokenCache)
+    const newestTime = pruneAccessCacheToken(token, accessCache[token], cutoffTime)
+    if (newestTime !== undefined) {
       tokenStats.push({ token, newestTime })
     }
   }
 
-  for (const key in subjectRulesCache) {
-    if (subjectRulesCache[key].time < cutoffTime) {
-      delete subjectRulesCache[key]
-    }
-  }
-  for (const key in kindGetAccessCache) {
-    if (kindGetAccessCache[key].time < cutoffTime) {
-      delete kindGetAccessCache[key]
-    }
-  }
+  expireTimedEntries(subjectRulesCache, cutoffTime)
+  expireTimedEntries(kindGetAccessCache, cutoffTime)
 
-  if (tokenStats.length > ACCESS_CACHE_MAX_TOKENS) {
-    tokenStats.sort((a, b) => a.newestTime - b.newestTime)
-    const tokensToRemove = tokenStats.length - ACCESS_CACHE_MAX_TOKENS
+  if (tokenStats.length <= ACCESS_CACHE_MAX_TOKENS) return
 
-    for (let i = 0; i < tokensToRemove; i++) {
-      delete accessCache[tokenStats[i].token]
-    }
+  tokenStats.sort((a, b) => a.newestTime - b.newestTime)
+  const tokensToRemove = tokenStats.length - ACCESS_CACHE_MAX_TOKENS
+  for (let i = 0; i < tokensToRemove; i++) {
+    delete accessCache[tokenStats[i].token]
   }
 }
 
@@ -887,6 +897,28 @@ function getSubjectRules(token: string): Promise<SubjectRulesStatus> {
   return promise
 }
 
+function ruleGrantsKindAccess(
+  rule: SubjectRulesStatus['resourceRules'][number],
+  group: string,
+  resourcePlural: string,
+  accessVerbs: Set<string>
+): { allowAll: true } | { names: string[] } | null {
+  const verbs = rule.verbs ?? []
+  if (!verbs.includes('*') && !verbs.some((verb) => accessVerbs.has(verb))) return null
+
+  const groups = rule.apiGroups ?? []
+  if (!groups.includes('*') && !groups.includes(group)) return null
+
+  const resources = rule.resources ?? []
+  if (!resources.includes('*') && !resources.includes(resourcePlural)) return null
+
+  const resourceNames = rule.resourceNames
+  if (!resourceNames || resourceNames.length === 0 || resourceNames.includes('*')) {
+    return { allowAll: true }
+  }
+  return { names: resourceNames }
+}
+
 function evaluateKindGetAccess(rules: SubjectRulesStatus, kind: string, apiVersion: string): KindGetAccess {
   const group = apiVersion.includes('/') ? apiVersion.split('/')[0] : ''
   const resourcePlural = pluralize(kind.toLowerCase())
@@ -896,41 +928,25 @@ function evaluateKindGetAccess(rules: SubjectRulesStatus, kind: string, apiVersi
   const names = new Set<string>()
 
   for (const rule of rules.resourceRules) {
-    const verbs = rule.verbs ?? []
-    if (!verbs.includes('*') && !verbs.some((verb) => accessVerbs.has(verb))) continue
-
-    const groups = rule.apiGroups ?? []
-    if (!groups.includes('*') && !groups.includes(group)) continue
-
-    const resources = rule.resources ?? []
-    if (!resources.includes('*') && !resources.includes(resourcePlural)) continue
-
-    const resourceNames = rule.resourceNames
-    if (!resourceNames || resourceNames.length === 0 || resourceNames.includes('*')) {
+    const match = ruleGrantsKindAccess(rule, group, resourcePlural, accessVerbs)
+    if (!match) continue
+    if ('allowAll' in match) {
       allowAll = true
       break
     }
-    for (const name of resourceNames) names.add(name)
+    for (const name of match.names) names.add(name)
   }
 
-  switch (true) {
-    case allowAll:
-      return { type: 'allow-all' }
-    case names.size > 0:
-      return { type: 'allow-names', names }
-    // The review request failed; defer to the per-object SSAR fallback.
-    case rules.unavailable === true:
-      return { type: 'incomplete' }
-    // OpenShift often sets incomplete=true even when the user has no bindings and resourceRules
-    // is empty. Treat empty rules as deny-all so we do not fall back to O(N) namespaced SSARs.
-    case rules.resourceRules.length === 0:
-      return { type: 'deny-all' }
-    // Non-empty but incomplete: authorizer may have omitted grants for this kind — fall back.
-    case rules.incomplete:
-      return { type: 'incomplete' }
-    default:
-      return { type: 'deny-all' }
-  }
+  if (allowAll) return { type: 'allow-all' }
+  if (names.size > 0) return { type: 'allow-names', names }
+  // The review request failed; defer to the per-object SSAR fallback.
+  if (rules.unavailable === true) return { type: 'incomplete' }
+  // OpenShift often sets incomplete=true even when the user has no bindings and resourceRules
+  // is empty. Treat empty rules as deny-all so we do not fall back to O(N) namespaced SSARs.
+  if (rules.resourceRules.length === 0) return { type: 'deny-all' }
+  // Non-empty but incomplete: authorizer may have omitted grants for this kind — fall back.
+  if (rules.incomplete) return { type: 'incomplete' }
+  return { type: 'deny-all' }
 }
 
 function resolveKindGetAccess(kind: string, apiVersion: string, token: string): Promise<KindGetAccess> {
@@ -991,7 +1007,7 @@ export function canAccess(
     }
     // Replace in-flight promise with a settled boolean promise to drop large closures.
     const entry = accessCache[tokenKey]?.[key]
-    if (entry && entry.promise === promise) {
+    if (entry?.promise === promise) {
       entry.promise = Promise.resolve(allowed)
     }
     return allowed
