@@ -13,7 +13,8 @@ const CONDITION_KEY_ORDER = ['type', 'status', 'reason', 'message'] as const
 const STATUS_TAIL_KEYS = ['conditions', 'containerStatuses'] as const
 
 /** Condition types where status True means a problem (negative polarity). */
-const NEGATIVE_POLARITY_PATTERN = /(degraded|fail|error|pressure|unhealthy|unavailable|disruption|conflict|stalled)/i
+const NEGATIVE_POLARITY_PATTERN =
+  /(degraded|fail|error|pressure|unhealthy|unavailable|disruption|conflict|stalled|misconfig)/i
 
 export interface ConditionLike {
   type?: string

@@ -41,6 +41,29 @@ describe('classifyCondition', () => {
     expect(classifyCondition({ type: 'Degraded', status: 'False' })).toBe('success')
   })
 
+  it('treats PlacementMisconfigured False as success (configured properly)', () => {
+    expect(isNegativePolarityCondition('PlacementMisconfigured')).toBe(true)
+    expect(
+      classifyCondition({
+        type: 'PlacementMisconfigured',
+        status: 'False',
+        reason: 'Succeedconfigured',
+        message: 'Placement configurations check pass',
+      })
+    ).toBe('success')
+  })
+
+  it('treats PlacementMisconfigured True as failure (misconfigured)', () => {
+    expect(
+      classifyCondition({
+        type: 'PlacementMisconfigured',
+        status: 'True',
+        reason: 'NotConfigured',
+        message: 'Placement configurations check fail',
+      })
+    ).toBe('failure')
+  })
+
   it('treats Progressing True as success', () => {
     expect(classifyCondition({ type: 'Progressing', status: 'True' })).toBe('success')
   })
