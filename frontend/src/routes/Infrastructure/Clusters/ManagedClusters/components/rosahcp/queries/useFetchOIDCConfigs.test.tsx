@@ -79,7 +79,7 @@ describe('useFetchOIDCConfigs', () => {
       })
     )
   })
-  test('should forward loading state as isFetching', () => {
+  test('should forward loading state as isLoading', () => {
     mockUseQuery.mockReturnValue({
       data: undefined,
       isLoading: true,
@@ -87,7 +87,7 @@ describe('useFetchOIDCConfigs', () => {
       error: null,
     })
     const { result } = renderHook(() => useFetchOIDCConfigs(mockSecret))
-    expect(result.current.isFetching).toBe(true)
+    expect(result.current.isLoading).toBe(true)
   })
   test('should return error message string when query errors with an Error instance', () => {
     mockUseQuery.mockReturnValue({

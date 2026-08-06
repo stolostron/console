@@ -1,6 +1,6 @@
 {
   "name": "@stolostron/multicluster-sdk",
-  "version": "0.10.3",
+  "version": "1.0.0",
   "description": "Provides extensions and APIs that dynamic plugins can use to leverage multicluster capabilities provided by Red Hat Advanced Cluster Management.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -38,7 +38,7 @@
     "check-doc:fix": "npm run generate-doc"
   },
   "peerDependencies": {
-    "@openshift-console/dynamic-plugin-sdk": ">=4.22.0",
+    "@openshift-console/dynamic-plugin-sdk": ">=4.22.0-0",
     "react-router": "^7"
   },
   "devDependencies": {
@@ -69,7 +69,9 @@
     "@patternfly/react-core": "^6.6.0",
     "@patternfly/react-styles": "^6.6.0",
     "graphql": "^16.14.2",
-    "react-i18next": "15.6.1",
+    "graphql-ws": "^6.1.1",
+    "react-i18next": "~16.5.8",
+    "react-router": "~7.13.1",
     "react-transition-group": "^4.4.5",
     "react-virtualized": "^9.22.6",
     "zustand": "^4.5.7"

@@ -20,27 +20,33 @@ const mockSecret: SelectedSecret = {
 }
 
 const uniqueNameResponse: ClusterNameUniquenessResponse = {
-  kind: 'ClusterList',
-  page: 1,
-  size: 0,
-  total: 0,
-  items: [],
+  statusCode: 200,
+  body: {
+    kind: 'ClusterList',
+    page: 1,
+    size: 0,
+    total: 0,
+    items: [],
+  },
 }
 
 const takenNameResponse: ClusterNameUniquenessResponse = {
-  kind: 'ClusterList',
-  page: 1,
-  size: 1,
-  total: 1,
-  items: [
-    {
-      kind: 'Cluster',
-      id: 'cluster-123',
-      name: 'taken-cluster',
-      external_id: 'ext-123',
-      display_name: 'taken-cluster',
-    },
-  ],
+  statusCode: 200,
+  body: {
+    kind: 'ClusterList',
+    page: 1,
+    size: 1,
+    total: 1,
+    items: [
+      {
+        kind: 'Cluster',
+        id: 'cluster-123',
+        name: 'taken-cluster',
+        external_id: 'ext-123',
+        display_name: 'taken-cluster',
+      },
+    ],
+  },
 }
 
 describe('useClusterNameUniquenessCheck', () => {

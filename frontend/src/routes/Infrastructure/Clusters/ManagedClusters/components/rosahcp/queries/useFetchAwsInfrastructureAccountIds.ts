@@ -20,7 +20,7 @@ const getAWSIDsFromARNs = (arns: string[]): string[] => {
 
 export const useFetchAwsAccountIDs = (selectedSecret: SelectedSecret) => {
   const { useQuery } = useSharedReactQuery()
-  const { data, isLoading, isError, error, refetch } = useQuery({
+  const { data, isLoading, isFetching, isError, error, refetch } = useQuery({
     queryKey: rosaWizardKeys.awsInfrastructureAccounts(selectedSecret.client_id),
     queryFn: async ({ signal }) => {
       const response = await getWizardAWSAccountIds(selectedSecret.client_id, selectedSecret.client_secret, signal)
@@ -29,6 +29,8 @@ export const useFetchAwsAccountIDs = (selectedSecret: SelectedSecret) => {
     },
     retry: false,
     enabled: !!selectedSecret,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
   })
   const awsAccountIDs = useMemo(() => {
     if (!data?.items) return []
@@ -40,7 +42,7 @@ export const useFetchAwsAccountIDs = (selectedSecret: SelectedSecret) => {
 
   return {
     data: awsAccountIDs,
-    isLoading,
+    isLoading: isLoading || isFetching,
     isError,
     error,
     refetch,

@@ -89,10 +89,10 @@ const parseConditionString = (conditionString: string): Array<{ type: string; st
  * @param mapString - A semicolon-separated string of key-value pairs in "key=value" format
  * @returns An object with the key-value pairs, or undefined if the input falsy or not a string
  */
-const parseMapString = (mapString: string): Record<string, string> | undefined => {
-  if (!mapString || typeof mapString !== 'string') {
-    return undefined
-  }
+const parseMapString = (mapString: string | Record<string, string>): Record<string, string> | undefined => {
+  if (!mapString) return undefined
+  if (typeof mapString === 'object') return mapString as Record<string, string>
+  if (typeof mapString !== 'string') return undefined
   return Object.fromEntries(mapString.split(';').map((pair) => pair.trimStart().split('=')))
 }
 

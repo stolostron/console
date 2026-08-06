@@ -1,0 +1,314 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
+import { CodeBlock, CodeBlockCode, Content, ContentVariants } from '@patternfly/react-core'
+import { ICatalogBreadcrumb } from '@stolostron/react-data-view'
+import { Fragment } from 'react'
+import { useTranslation } from '../../../../../../../../lib/acm-i18next'
+import { DOC_LINKS, ViewDocumentationLink } from '../../../../../../../../lib/doc-util'
+import { NavigationPath, useBackCancelNavigation } from '../../../../../../../../NavigationPath'
+import { Actions, GetOCLogInCommand } from './common/common'
+import DocPage from './common/DocPage'
+
+export function HypershiftAzureCLI() {
+  const { t } = useTranslation()
+  const { back, cancel } = useBackCancelNavigation()
+  const breadcrumbs: ICatalogBreadcrumb[] = [
+    { label: t('Clusters'), to: NavigationPath.clusters },
+    { label: t('Infrastructure'), to: NavigationPath.createCluster },
+    {
+      label: t('Control plane type - {{hcType}}', { hcType: 'Azure' }),
+      to: NavigationPath.createAzureControlPlane,
+    },
+    { label: t('Create cluster') },
+  ]
+
+  const envVarsCode = `# Set environment variables
+export CLUSTER_NAME="my-azure-hcp"
+export CLUSTER_NAMESPACE="clusters"
+export LOCATION="centralus"
+export BASE_DOMAIN="example.azure.devcluster.openshift.com"
+export RESOURCE_GROUP_NAME="my-resource-group"
+export DNS_ZONE_RG_NAME="my-dns-zone-rg"
+export AZURE_CREDS="./azure-creds.json"
+export WORKLOAD_IDENTITIES_FILE="./workload-identities.json"
+export INFRA_OUTPUT_FILE="./infra-output.json"
+export PULL_SECRET="/path/to/pull-secret.json"
+
+# Derive from hosting cluster infrastructure
+export INFRA_ID="$(oc get infrastructures cluster -o jsonpath='{.status.infrastructureName}')"`
+
+  const azureCredsCode = `{
+  "subscriptionId": "your-subscription-id",
+  "tenantId": "your-tenant-id",
+  "clientId": "your-client-id",
+  "clientSecret": "your-client-secret"
+}`
+
+  const azureDNSCredsCode = `{
+  "subscriptionId": "your-subscription-id",
+  "tenantId": "your-tenant-id",
+  "resourceGroup": "your-resource-group-name",
+  "aadClientId": "your-client-id",
+  "aadClientSecret": "your-client-secret"
+}`
+
+  const externalDnsSecretCode = `oc create secret generic hypershift-operator-external-dns-credentials \\
+  -n <hub-cluster-namespace> \\
+  --from-literal=provider=azure \\
+  --from-literal=domain-filter="<your-dns-zone-name>" \\
+  --from-literal=txt-owner-id="hypershift" \\
+  --from-file=credentials="./azure-dns-creds.json"`
+
+  const getHypershiftPodCode = `oc get pods -n hypershift -w`
+
+  const verifyExternalDnsStatusCode = `oc get deployment external-dns -n hypershift`
+
+  const oidcCode = `export SUBSCRIPTION_ID="$(jq -r '.subscriptionId' "\${AZURE_CREDS}")"
+export TENANT_ID="$(jq -r '.tenantId' "\${AZURE_CREDS}")"
+export OIDC_STORAGE_ACCOUNT_NAME="youroidcstorageacct"
+
+# Ensure cluster resource group exists
+az group create --name "\${RESOURCE_GROUP_NAME}" --location "\${LOCATION}"
+
+# Create signing key pair
+ccoctl azure create-key-pair
+export SA_TOKEN_ISSUER_PRIVATE_KEY_PATH="./serviceaccount-signer.private"
+export SA_TOKEN_ISSUER_PUBLIC_KEY_PATH="./serviceaccount-signer.public"
+
+# Create OIDC issuer resources
+ccoctl azure create-oidc-issuer \\
+  --oidc-resource-group-name "\${RESOURCE_GROUP_NAME}" \\
+  --tenant-id "\${TENANT_ID}" \\
+  --region "\${LOCATION}" \\
+  --name "\${OIDC_STORAGE_ACCOUNT_NAME}" \\
+  --subscription-id "\${SUBSCRIPTION_ID}" \\
+  --public-key-file "\${SA_TOKEN_ISSUER_PUBLIC_KEY_PATH}"
+
+export OIDC_ISSUER_URL="https://\${OIDC_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/\${OIDC_STORAGE_ACCOUNT_NAME}"`
+
+  const workloadIdentitiesCode = `hcp create iam azure \\
+  --name "\${CLUSTER_NAME}" \\
+  --infra-id "\${INFRA_ID}" \\
+  --azure-creds "\${AZURE_CREDS}" \\
+  --location "\${LOCATION}" \\
+  --resource-group-name "\${RESOURCE_GROUP_NAME}" \\
+  --oidc-issuer-url "\${OIDC_ISSUER_URL}" \\
+  --output-file "\${WORKLOAD_IDENTITIES_FILE}"`
+
+  const infraCode = `export INFRA_OUTPUT_FILE="./infra-output.json"
+
+hcp create infra azure \\
+  --name "\${CLUSTER_NAME}" \\
+  --infra-id "\${INFRA_ID}" \\
+  --azure-creds "\${AZURE_CREDS}" \\
+  --base-domain "\${BASE_DOMAIN}" \\
+  --location "\${LOCATION}" \\
+  --workload-identities-file "\${WORKLOAD_IDENTITIES_FILE}" \\
+  --assign-identity-roles \\
+  --dns-zone-rg-name "\${DNS_ZONE_RG_NAME}" \\
+  --output-file "\${INFRA_OUTPUT_FILE}"`
+
+  const createClusterCode = `export DNS_ZONE_NAME="external-dns.\${BASE_DOMAIN}"
+export INFRA_ID_FROM_FILE="$(yq -p yaml -r '.infraID' "\${INFRA_OUTPUT_FILE}")"
+
+hcp create cluster azure \\
+  --name "\${CLUSTER_NAME}" \\
+  --namespace "\${CLUSTER_NAMESPACE}" \\
+  --azure-creds "\${AZURE_CREDS}" \\
+  --location "\${LOCATION}" \\
+  --node-pool-replicas 2 \\
+  --base-domain "\${BASE_DOMAIN}" \\
+  --pull-secret "\${PULL_SECRET}" \\
+  --generate-ssh \\
+  --external-dns-domain "\${DNS_ZONE_NAME}" \\
+  --infra-json "\${INFRA_OUTPUT_FILE}" \\
+  --infra-id "\${INFRA_ID_FROM_FILE}" \\
+  --sa-token-issuer-private-key-path "\${SA_TOKEN_ISSUER_PRIVATE_KEY_PATH}" \\
+  --oidc-issuer-url "\${OIDC_ISSUER_URL}" \\
+  --dns-zone-rg-name "\${DNS_ZONE_RG_NAME}" \\
+  --workload-identities-file "\${WORKLOAD_IDENTITIES_FILE}" \\
+  --diagnostics-storage-account-type Managed`
+
+  const helperCommand = `hcp create cluster azure --help`
+
+  const listItems = [
+    {
+      title: t('Prerequisites'),
+      content: (
+        <Fragment>
+          <Content component={ContentVariants.p}>
+            {t(
+              'Install the Hosted Control Plane CLI (hcp), oc, az, jq, and ccoctl. Authenticate with Azure and OpenShift as needed.'
+            )}
+          </Content>
+          <Content component={ContentVariants.a} href={DOC_LINKS.HYPERSHIFT_DEPLOY_AZURE_PREREQ} target="_blank">
+            {t('Follow documentation for more information.')}
+          </Content>
+        </Fragment>
+      ),
+    },
+    {
+      title: t('Prepare environment variables'),
+      content: (
+        <Fragment>
+          <Content component={ContentVariants.p}>
+            {t(
+              'Set the required environment variables for your Azure hosted cluster. Update the values below to match your environment.'
+            )}
+          </Content>
+          <CodeBlock actions={Actions(envVarsCode, 'env-vars-command')}>
+            <CodeBlockCode id="env-vars-content">{envVarsCode}</CodeBlockCode>
+          </CodeBlock>
+        </Fragment>
+      ),
+    },
+    {
+      title: t('Create Azure credentials file'),
+      content: (
+        <Fragment>
+          <Content component={ContentVariants.p}>
+            {t('Create an azure-creds.json file with your Azure service principal credentials.')}
+          </Content>
+          <CodeBlock actions={Actions(azureCredsCode, 'azure-creds-command')}>
+            <CodeBlockCode id="azure-creds-content">{azureCredsCode}</CodeBlockCode>
+          </CodeBlock>
+        </Fragment>
+      ),
+    },
+    {
+      title: t('Create Azure external DNS secret'),
+      content: (
+        <Fragment>
+          <Content component={ContentVariants.p}>
+            {t('Create an azure-dns-creds.json file with your Azure service principal credentials.')}
+          </Content>
+          <CodeBlock actions={Actions(azureDNSCredsCode, 'azure-dns-creds-command')}>
+            <CodeBlockCode id="azure-dns-creds-content">{azureDNSCredsCode}</CodeBlockCode>
+          </CodeBlock>
+          <Content component={ContentVariants.p} style={{ marginTop: '1em' }}>
+            {t('Create an external DNS secret in Azure to allow the cluster to resolve external DNS records.')}
+          </Content>
+          <CodeBlock actions={Actions(externalDnsSecretCode, 'external-dns-secret-command')}>
+            <CodeBlockCode id="external-dns-secret-content">{externalDnsSecretCode}</CodeBlockCode>
+          </CodeBlock>
+          <Content component={ContentVariants.h4}>{t('Wait for operator to restart')}</Content>
+          <Content component={ContentVariants.p}>
+            {t(
+              'The hosted control plane add-on controller detects the secret and restarts the operator to enable external DNS. This process typically takes about {{minutes}} minutes.',
+              { minutes: 2 }
+            )}
+          </Content>
+          <CodeBlock actions={Actions(getHypershiftPodCode, 'get-hypershift-pod-command')}>
+            <CodeBlockCode id="get-hypershift-pod-content">{getHypershiftPodCode}</CodeBlockCode>
+          </CodeBlock>
+          <Content component={ContentVariants.h4}>{t('Verify external DNS status')}</Content>
+          <CodeBlock actions={Actions(verifyExternalDnsStatusCode, 'verify-external-dns-status-command')}>
+            <CodeBlockCode id="verify-external-dns-status-content">{verifyExternalDnsStatusCode}</CodeBlockCode>
+          </CodeBlock>
+        </Fragment>
+      ),
+    },
+    {
+      title: t('Configure OIDC issuer'),
+      content: (
+        <Fragment>
+          <Content component={ContentVariants.p}>
+            {t(
+              'Create the OIDC issuer resources required for workload identity. This creates a signing key pair and configures the OIDC storage account in Azure.'
+            )}
+          </Content>
+          <CodeBlock actions={Actions(oidcCode, 'oidc-command')}>
+            <CodeBlockCode id="oidc-content">{oidcCode}</CodeBlockCode>
+          </CodeBlock>
+          <Content
+            component={ContentVariants.a}
+            href={DOC_LINKS.HYPERSHIFT_DEPLOY_AZURE_OIDC}
+            target="_blank"
+            style={{ display: 'block', marginTop: '1em' }}
+          >
+            {t('Follow documentation for more information.')}
+          </Content>
+        </Fragment>
+      ),
+    },
+    {
+      title: t('Create workload identities'),
+      content: (
+        <Fragment>
+          <Content component={ContentVariants.p}>
+            {t(
+              'Create the Azure workload identities required by the hosted cluster components. The resource group must already exist in Azure.'
+            )}
+          </Content>
+          <CodeBlock actions={Actions(workloadIdentitiesCode, 'workload-identities-command')}>
+            <CodeBlockCode id="workload-identities-content">{workloadIdentitiesCode}</CodeBlockCode>
+          </CodeBlock>
+          <Content
+            component={ContentVariants.a}
+            href={DOC_LINKS.HYPERSHIFT_DEPLOY_AZURE_WORKLOAD_IDENTITIES}
+            target="_blank"
+            style={{ display: 'block', marginTop: '1em' }}
+          >
+            {t('Follow documentation for more information.')}
+          </Content>
+        </Fragment>
+      ),
+    },
+    {
+      title: t('Create Azure infrastructure'),
+      content: (
+        <Fragment>
+          <Content component={ContentVariants.p}>
+            {t(
+              'Create the Azure infrastructure resources required by the hosted cluster, including networking and DNS configuration.'
+            )}
+          </Content>
+          <CodeBlock actions={Actions(infraCode, 'infra-command')}>
+            <CodeBlockCode id="infra-content">{infraCode}</CodeBlockCode>
+          </CodeBlock>
+          <Content
+            component={ContentVariants.a}
+            href={DOC_LINKS.HYPERSHIFT_DEPLOY_AZURE_INFRASTRUCTURE}
+            target="_blank"
+            style={{ display: 'block', marginTop: '1em' }}
+          >
+            {t('Follow documentation for more information.')}
+          </Content>
+        </Fragment>
+      ),
+    },
+    {
+      title: t('Create the Hosted Control Plane'),
+      content: (
+        <Fragment>
+          <Content component={ContentVariants.h4}>{t('Log in to OpenShift Container Platform')}</Content>
+          {GetOCLogInCommand()}
+          <Content component={ContentVariants.h4}>{t('Run command')}</Content>
+          <Content component={ContentVariants.p}>
+            {t('Create the Hosted Control Plane by copying and pasting the following command:')}
+          </Content>
+          <CodeBlock actions={Actions(createClusterCode, 'code-command')}>
+            <CodeBlockCode id="code-content">{createClusterCode}</CodeBlockCode>
+          </CodeBlock>
+          <Content component={ContentVariants.p} style={{ marginTop: '1em' }}>
+            {t('Use the following command to get a list of available parameters: ')}
+          </Content>
+          <CodeBlock actions={Actions(helperCommand, 'helper-command')}>
+            <CodeBlockCode id="helper-command">{helperCommand}</CodeBlockCode>
+          </CodeBlock>
+          <ViewDocumentationLink doclink={DOC_LINKS.HYPERSHIFT_DEPLOY_AZURE} />
+        </Fragment>
+      ),
+    },
+  ]
+
+  return (
+    <DocPage
+      listItems={listItems}
+      breadcrumbs={breadcrumbs}
+      docLink={DOC_LINKS.HYPERSHIFT_DEPLOY_AZURE}
+      onBack={back(NavigationPath.createAzureControlPlane)}
+      onCancel={cancel(NavigationPath.managedClusters)}
+    />
+  )
+}

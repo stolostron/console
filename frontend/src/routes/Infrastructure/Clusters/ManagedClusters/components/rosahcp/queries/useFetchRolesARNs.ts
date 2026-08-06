@@ -34,7 +34,7 @@ const normalizedAWSAccountRole = (arrayOfRoleItems: AccountRoleARN[], prefix: st
 export const normalizeAWSAccountRoles = (accountRoles: RoleARNsResponse): NormalizedAccountRole[] => {
   const normalizedRoles: NormalizedAccountRole[] = []
 
-  ;(accountRoles?.items || []).forEach((accountRole: AccountRole) => {
+  accountRoles?.body?.items?.forEach((accountRole: AccountRole) => {
     // Only use accountRoles that have more than 1 arn attached
     // This is to prevent managed policy roles created with an unsupported CLI version
     if (accountRole.items && accountRole.items.length > 1) {
@@ -83,6 +83,8 @@ export const useFetchRoleARNs = (selectedSecret: SelectedSecret) => {
         },
         enabled: !!selectedSecret && !!awsAccountId,
         retry: false,
+        refetchOnWindowFocus: false,
+        staleTime: 5 * 60 * 1000,
       },
       {
         queryKey: rosaWizardKeys.ocmRoleArn(selectedSecret.client_id, awsAccountId),
@@ -96,6 +98,8 @@ export const useFetchRoleARNs = (selectedSecret: SelectedSecret) => {
         },
         enabled: !!selectedSecret && !!awsAccountId,
         retry: false,
+        refetchOnWindowFocus: false,
+        staleTime: 5 * 60 * 1000,
       },
       {
         queryKey: rosaWizardKeys.userRoleArn(selectedSecret.client_id),
@@ -109,6 +113,8 @@ export const useFetchRoleARNs = (selectedSecret: SelectedSecret) => {
         // They only return a check informing users to create user roles using rosa cli.
         enabled: !!selectedSecret && !!awsAccountId,
         retry: false,
+        refetchOnWindowFocus: false,
+        staleTime: 5 * 60 * 1000,
       },
     ],
   })
@@ -143,7 +149,7 @@ export const useFetchRoleARNs = (selectedSecret: SelectedSecret) => {
     data: Array.isArray(rolesQuery.data?.roles) ? rolesQuery.data.roles : [],
     ocmRole: ocmRoleQuery.data ?? null,
     userRole: userRoleQuery.data ?? null,
-    isLoading: rolesQuery.isLoading || ocmRoleQuery.isLoading,
+    isLoading: rolesQuery.isLoading || ocmRoleQuery.isLoading || rolesQuery.isFetching || ocmRoleQuery.isFetching,
     error: rolesError,
     ocmRoleError: ocmRoleError,
     userRoleError: userRoleError,

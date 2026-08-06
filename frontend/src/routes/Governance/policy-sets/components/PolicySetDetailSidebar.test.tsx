@@ -402,6 +402,68 @@ describe('PolicySets Page with Pending policyset', () => {
     await waitForText(mockPolicy.metadata.name!)
   })
 })
+describe('Namespace-scoped cluster link gating', () => {
+  const policySet: PolicySet = {
+    apiVersion: 'policy.open-cluster-management.io/v1beta1',
+    kind: 'PolicySet',
+    metadata: { name: 'policy-set-with-1-placement-rule', namespace: 'test' },
+    spec: {
+      description: 'Test policy set.',
+      policies: ['policy-set-with-1-placement-rule-policy-1'],
+    },
+    status: {
+      compliant: 'Compliant',
+      placement: [
+        { placementBinding: 'policy-set-with-1-placement-rule', placement: 'policy-set-with-1-placement-rule' },
+      ],
+    },
+  }
+
+  test('Should render cluster name as a link when propagated policy copy is visible', async () => {
+    const { container } = render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policiesState, mockPolicies) // includes propagated copy for local-cluster
+          snapshot.set(managedClustersState, mockManagedClusters)
+          snapshot.set(placementBindingsState, mockPlacementBindings)
+          snapshot.set(placementDecisionsState, mockPlacementDecisions)
+          snapshot.set(placementsState, mockPlacements)
+        }}
+      >
+        <MemoryRouter>
+          <PolicySetDetailSidebar policySet={policySet} />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    await waitForText('local-cluster')
+    expect(container.querySelector('td[data-label="Cluster name"] a')).toBeInTheDocument()
+    expect(container.querySelector('td[data-label="Cluster name"] .link-disabled')).not.toBeInTheDocument()
+  })
+
+  test('Should render cluster name as disabled link when no propagated policy copy is visible', async () => {
+    const { container } = render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policiesState, [mockPolicy]) // only root policy visible — no propagated copies
+          snapshot.set(managedClustersState, [])
+          snapshot.set(placementBindingsState, mockPlacementBindings)
+          snapshot.set(placementDecisionsState, mockPlacementDecisions)
+          snapshot.set(placementsState, mockPlacements)
+        }}
+      >
+        <MemoryRouter>
+          <PolicySetDetailSidebar policySet={policySet} />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    await waitForText('local-cluster')
+    expect(container.querySelector('td[data-label="Cluster name"] a')).not.toBeInTheDocument()
+    expect(container.querySelector('td[data-label="Cluster name"] .link-disabled')).toBeInTheDocument()
+  })
+})
+
 describe('Export from policy details results table', () => {
   test('export button should produce a file for download', async () => {
     const policySet: PolicySet = {

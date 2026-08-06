@@ -13,6 +13,11 @@ import {
   UserRoleResponse,
   WizardBasePayload,
   WizardErrorResponse,
+  OpenshiftVersionResponse,
+  VPCsPayload,
+  VPCsResponse,
+  MachineTypesResponse,
+  MachineTypesPayload,
 } from '~/resources'
 import { fetchRetry, getBackendUrl } from '~/resources/utils'
 
@@ -126,3 +131,32 @@ export const getWizardUserRoleARN = (
   client_secret: string,
   signal?: AbortSignal
 ): Promise<UserRoleResponse> => getWizardData<UserRoleResponse>(client_id, client_secret, '/sts-user-role', signal)
+
+export const getWizardVersions = (
+  client_id: string,
+  client_secret: string,
+  signal?: AbortSignal
+): Promise<OpenshiftVersionResponse> =>
+  getWizardData<OpenshiftVersionResponse>(client_id, client_secret, '/openshift-versions', signal)
+
+export const getWizardVPCs = (
+  client_id: string,
+  client_secret: string,
+  signal?: AbortSignal,
+  additionalData?: VPCsPayload
+): Promise<VPCsResponse> =>
+  getWizardData<VPCsResponse, VPCsPayload>(client_id, client_secret, '/vpcs', signal, additionalData)
+
+export const getWizardMachineTypes = (
+  client_id: string,
+  client_secret: string,
+  signal?: AbortSignal,
+  additionalData?: MachineTypesPayload
+): Promise<MachineTypesResponse> =>
+  getWizardData<MachineTypesResponse, MachineTypesPayload>(
+    client_id,
+    client_secret,
+    '/machine-types',
+    signal,
+    additionalData
+  )

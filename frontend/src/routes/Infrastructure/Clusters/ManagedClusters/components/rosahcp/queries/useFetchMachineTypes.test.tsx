@@ -1,0 +1,258 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
+import { renderHook, act } from '@testing-library/react-hooks'
+import { buildMachineTypeOptions, useFetchMachineTypes } from './useFetchMachineTypes'
+import { SelectedSecret } from '../constants/types'
+import type { MachineType } from '~/resources'
+
+const mockUseQuery = jest.fn()
+jest.mock('~/hooks/shared-react-query', () => ({
+  useSharedReactQuery: () => ({
+    useQuery: mockUseQuery,
+  }),
+}))
+
+jest.mock('~/lib/rosa-hcp-api', () => ({
+  getWizardMachineTypes: jest.fn(),
+}))
+
+const mockSecret: SelectedSecret = {
+  client_id: 'test-client-id',
+  client_secret: 'test-client-secret',
+}
+
+const mockFetchArgs = {
+  region: 'us-east-1',
+  role_arn: 'arn:aws:iam::123456789012:role/Installer',
+  availability_zones: ['us-east-1a', 'us-east-1b'],
+}
+
+describe('buildMachineTypeOptions', () => {
+  test('should map machine type items to dropdown options using the OCM-provided name as description', () => {
+    const machineTypes: MachineType[] = [
+      {
+        id: 'm5.xlarge',
+        name: 'm5.xlarge - General Purpose',
+        category: 'general_purpose',
+        cpu: { value: 4 },
+        memory: { value: 17179869184 },
+        cloud_provider: { id: 'aws' },
+      },
+    ]
+
+    const result = buildMachineTypeOptions(machineTypes)
+
+    expect(result).toEqual([
+      { id: 'm5.xlarge', value: 'm5.xlarge', label: 'm5.xlarge', description: 'm5.xlarge - General Purpose' },
+    ])
+  })
+
+  test('should return empty array when machineTypes is undefined', () => {
+    const result = buildMachineTypeOptions(undefined as unknown as MachineType[])
+    expect(result).toEqual([])
+  })
+
+  test('should filter out machine types that are not for the aws cloud provider', () => {
+    const machineTypes: MachineType[] = [
+      { id: 'm5.xlarge', name: 'm5.xlarge', category: 'general_purpose', cloud_provider: { id: 'aws' } },
+      { id: 'n1-standard-1', name: 'n1-standard-1', category: 'general_purpose', cloud_provider: { id: 'gcp' } },
+      { id: 'no-provider', name: 'no-provider', category: 'general_purpose' },
+    ]
+
+    const result = buildMachineTypeOptions(machineTypes)
+
+    expect(result).toEqual([{ id: 'm5.xlarge', value: 'm5.xlarge', label: 'm5.xlarge', description: 'm5.xlarge' }])
+  })
+
+  test('should fall back to generic_name when name is missing', () => {
+    const machineTypes: MachineType[] = [
+      {
+        id: 'm5.xlarge',
+        name: undefined as unknown as string,
+        generic_name: 'm5.xlarge',
+        category: 'general_purpose',
+        cloud_provider: { id: 'aws' },
+      },
+    ]
+
+    const result = buildMachineTypeOptions(machineTypes)
+
+    expect(result[0].description).toBe('m5.xlarge')
+  })
+
+  test('should default description to empty string when name and generic_name are missing', () => {
+    const machineTypes: MachineType[] = [
+      {
+        id: 'm5.xlarge',
+        name: undefined as unknown as string,
+        category: 'general_purpose',
+        cloud_provider: { id: 'aws' },
+      },
+    ]
+
+    const result = buildMachineTypeOptions(machineTypes)
+
+    expect(result[0].description).toBe('')
+  })
+})
+
+describe('useFetchMachineTypes', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  test('should be disabled until fetch is called', () => {
+    mockUseQuery.mockReturnValue({ data: undefined, isLoading: false, isError: false, error: null })
+
+    renderHook(() => useFetchMachineTypes(mockSecret))
+
+    expect(mockUseQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        queryKey: ['rosa-hcp-wizard-query-key', 'test-client-id', undefined, undefined, '', 'machine-types'],
+        enabled: false,
+      })
+    )
+  })
+
+  test('should enable the query after fetch is called with region and role_arn', () => {
+    mockUseQuery.mockReturnValue({ data: undefined, isLoading: true, isError: false, error: null })
+
+    const { result, rerender } = renderHook(() => useFetchMachineTypes(mockSecret))
+    act(() => {
+      void result.current.fetch(mockFetchArgs)
+    })
+    rerender()
+
+    expect(mockUseQuery).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        queryKey: [
+          'rosa-hcp-wizard-query-key',
+          'test-client-id',
+          'us-east-1',
+          'arn:aws:iam::123456789012:role/Installer',
+          'us-east-1a,us-east-1b',
+          'machine-types',
+        ],
+        enabled: true,
+      })
+    )
+  })
+
+  test('should remain disabled when fetch is called without availability zones', () => {
+    mockUseQuery.mockReturnValue({ data: undefined, isLoading: false, isError: false, error: null })
+
+    const { result, rerender } = renderHook(() => useFetchMachineTypes(mockSecret))
+    act(() => {
+      void result.current.fetch({ ...mockFetchArgs, availability_zones: [] })
+    })
+    rerender()
+
+    expect(mockUseQuery).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        enabled: false,
+      })
+    )
+  })
+
+  test('should return empty array when data is undefined', () => {
+    mockUseQuery.mockReturnValue({ data: undefined, isLoading: false, isError: false, error: null })
+
+    const { result } = renderHook(() => useFetchMachineTypes(mockSecret))
+
+    expect(result.current.data).toEqual([])
+  })
+
+  test('should return machine type options when query succeeds', () => {
+    const items = [{ id: 'm5.xlarge', name: 'm5.xlarge', category: 'general_purpose', cloud_provider: { id: 'aws' } }]
+    mockUseQuery.mockReturnValue({ data: { body: { items } }, isLoading: false, isError: false, error: null })
+
+    const { result } = renderHook(() => useFetchMachineTypes(mockSecret))
+
+    expect(result.current.data).toEqual([
+      { id: 'm5.xlarge', value: 'm5.xlarge', label: 'm5.xlarge', description: 'm5.xlarge' },
+    ])
+  })
+
+  test('should return a stable data reference across re-renders when query data is unchanged', () => {
+    const items = [{ id: 'm5.xlarge', name: 'm5.xlarge', category: 'general_purpose', cloud_provider: { id: 'aws' } }]
+    const queryData = { items }
+    mockUseQuery.mockReturnValue({ data: queryData, isLoading: false, isError: false, error: null })
+
+    const { result, rerender } = renderHook(() => useFetchMachineTypes(mockSecret))
+    const firstData = result.current.data
+    rerender()
+
+    expect(result.current.data).toBe(firstData)
+  })
+
+  test('should forward loading state as isLoading', () => {
+    mockUseQuery.mockReturnValue({ data: undefined, isLoading: true, isError: false, error: null })
+
+    const { result } = renderHook(() => useFetchMachineTypes(mockSecret))
+
+    expect(result.current.isLoading).toBe(true)
+  })
+
+  test('should return error message string when query errors with an Error instance', () => {
+    mockUseQuery.mockReturnValue({ data: undefined, isLoading: false, isError: true, error: new Error('IAM denied') })
+
+    const { result } = renderHook(() => useFetchMachineTypes(mockSecret))
+
+    expect(result.current.error).toBe('IAM denied')
+  })
+
+  test('should return "Unknown error" when query errors with a non-Error value', () => {
+    mockUseQuery.mockReturnValue({ data: undefined, isLoading: false, isError: true, error: 'boom' })
+
+    const { result } = renderHook(() => useFetchMachineTypes(mockSecret))
+
+    expect(result.current.error).toBe('Unknown error')
+  })
+
+  test('should return null error when query is not in error state', () => {
+    mockUseQuery.mockReturnValue({ data: { items: [] }, isLoading: false, isError: false, error: null })
+
+    const { result } = renderHook(() => useFetchMachineTypes(mockSecret))
+
+    expect(result.current.error).toBeNull()
+  })
+
+  test('should expose a stable fetch function reference', () => {
+    mockUseQuery.mockReturnValue({ data: undefined, isLoading: false, isError: false, error: null })
+
+    const { result, rerender } = renderHook(() => useFetchMachineTypes(mockSecret))
+    const firstFetch = result.current.fetch
+    rerender()
+
+    expect(result.current.fetch).toBe(firstFetch)
+  })
+
+  test('should call getWizardMachineTypes with args from fetch and return the raw response from queryFn', async () => {
+    const { getWizardMachineTypes } = jest.requireMock('~/lib/rosa-hcp-api') as {
+      getWizardMachineTypes: jest.Mock
+    }
+    const mockResponse = {
+      items: [{ id: 'm5.xlarge', name: 'm5.xlarge', category: 'general_purpose', cloud_provider: { id: 'aws' } }],
+    }
+    getWizardMachineTypes.mockResolvedValue(mockResponse)
+    mockUseQuery.mockReturnValue({ data: undefined, isLoading: false, isError: false, error: null })
+
+    const { result, rerender } = renderHook(() => useFetchMachineTypes(mockSecret))
+    act(() => {
+      void result.current.fetch(mockFetchArgs)
+    })
+    rerender()
+
+    const lastCallOptions = mockUseQuery.mock.calls[mockUseQuery.mock.calls.length - 1][0] as {
+      queryFn: (ctx: { signal?: AbortSignal }) => Promise<unknown>
+    }
+    const data = await lastCallOptions.queryFn({ signal: undefined })
+
+    expect(getWizardMachineTypes).toHaveBeenCalledWith('test-client-id', 'test-client-secret', undefined, {
+      region: 'us-east-1',
+      role_arn: 'arn:aws:iam::123456789012:role/Installer',
+      availability_zones: ['us-east-1a', 'us-east-1b'],
+    })
+    expect(data).toEqual(mockResponse)
+  })
+})

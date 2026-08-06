@@ -26,7 +26,7 @@ const mockOrg = {
 }
 
 function nockAuth() {
-  return nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+  return nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
 }
 
 function nockSsoToken() {
@@ -67,7 +67,7 @@ describe('rosaWizardApi routes', () => {
     })
 
     test('should return 401 when not authenticated', async () => {
-      nock(process.env.CLUSTER_API_URL).get('/apis').reply(401)
+      nock(process.env.CLUSTER_API_URL).get('/api').reply(401)
 
       const res = await request('POST', '/aws-account-ids', mockPayload)
       expect(res.statusCode).toEqual(401)
@@ -102,7 +102,7 @@ describe('rosaWizardApi routes', () => {
     })
 
     test('should return 401 when not authenticated', async () => {
-      nock(process.env.CLUSTER_API_URL).get('/apis').reply(401)
+      nock(process.env.CLUSTER_API_URL).get('/api').reply(401)
 
       const res = await request('POST', '/aws-billing-accounts', mockPayload)
       expect(res.statusCode).toEqual(401)
@@ -166,7 +166,7 @@ describe('rosaWizardApi routes', () => {
     })
 
     test('should return 401 when not authenticated', async () => {
-      nock(process.env.CLUSTER_API_URL).get('/apis').reply(401)
+      nock(process.env.CLUSTER_API_URL).get('/api').reply(401)
 
       const res = await request('POST', '/cluster-name-check', clusterNamePayload)
       expect(res.statusCode).toEqual(401)
@@ -311,7 +311,7 @@ describe('rosaWizardApi routes', () => {
     })
 
     test('should return 401 when not authenticated', async () => {
-      nock(process.env.CLUSTER_API_URL).get('/apis').reply(401)
+      nock(process.env.CLUSTER_API_URL).get('/api').reply(401)
 
       const res = await request('POST', '/regions', mockPayload)
       expect(res.statusCode).toEqual(401)
@@ -354,7 +354,7 @@ describe('rosaWizardApi routes', () => {
     })
 
     test('should return 401 when not authenticated', async () => {
-      nock(process.env.CLUSTER_API_URL).get('/apis').reply(401)
+      nock(process.env.CLUSTER_API_URL).get('/api').reply(401)
 
       const res = await request('POST', '/sts-role-arns', payloadWithAccount)
       expect(res.statusCode).toEqual(401)
@@ -434,10 +434,243 @@ describe('rosaWizardApi routes', () => {
     })
 
     test('should return 401 when not authenticated', async () => {
-      nock(process.env.CLUSTER_API_URL).get('/apis').reply(401)
+      nock(process.env.CLUSTER_API_URL).get('/api').reply(401)
 
       const res = await request('POST', '/sts-user-role', mockPayload)
       expect(res.statusCode).toEqual(401)
+    })
+  })
+
+  describe('POST /openshift-versions', () => {
+    const versionsPath =
+      "/api/clusters_mgmt/v1/versions/?order=end_of_life_timestamp desc&product=hcp&search=enabled='t' AND (channel_group='stable' OR channel_group='eus' OR channel_group='candidate' OR channel_group='fast' OR channel_group='nightly') AND rosa_enabled='t'&size=-1"
+
+    test('should return OpenShift versions list', async () => {
+      const versionsResponse = {
+        kind: 'VersionList',
+        page: 1,
+        size: 3,
+        total: 3,
+        items: [
+          {
+            id: 'openshift-v4.14.10',
+            kind: 'Version',
+            raw_id: '4.14.10',
+            channel_group: 'stable',
+            rosa_enabled: true,
+            hosted_control_plane_enabled: true,
+            end_of_life_timestamp: '2025-10-31T00:00:00Z',
+          },
+          {
+            id: 'openshift-v4.14.9',
+            kind: 'Version',
+            raw_id: '4.14.9',
+            channel_group: 'stable',
+            rosa_enabled: true,
+            hosted_control_plane_enabled: true,
+            end_of_life_timestamp: '2025-10-31T00:00:00Z',
+          },
+          {
+            id: 'openshift-v4.13.25',
+            kind: 'Version',
+            raw_id: '4.13.25',
+            channel_group: 'eus',
+            rosa_enabled: true,
+            hosted_control_plane_enabled: true,
+            end_of_life_timestamp: '2025-04-17T00:00:00Z',
+          },
+        ],
+      }
+
+      nockAuth()
+      nockSsoToken()
+      nock(API_HOST).get(versionsPath).reply(200, versionsResponse)
+
+      const res = await request('POST', '/openshift-versions', mockPayload)
+      expect(res.statusCode).toEqual(200)
+
+      const body = await parsePipedJsonBody(res)
+      expect(body).toEqual(versionsResponse)
+    })
+
+    test('should return error object when versions API call fails', async () => {
+      nockAuth()
+      nockSsoToken()
+      nock(API_HOST).get(versionsPath).replyWithError('connection timeout')
+
+      const res = await request('POST', '/openshift-versions', mockPayload)
+      expect(res.statusCode).toEqual(200)
+
+      const body = await parsePipedJsonBody<{ error: string }>(res)
+      expect(body).toEqual({ error: expect.stringContaining('connection timeout') as string })
+    })
+
+    test('should return 401 when not authenticated', async () => {
+      nock(process.env.CLUSTER_API_URL).get('/api').reply(401)
+
+      const res = await request('POST', '/openshift-versions', mockPayload)
+      expect(res.statusCode).toEqual(401)
+    })
+  })
+
+  describe('POST /vpcs', () => {
+    const vpcsPayload = {
+      ...mockPayload,
+      aws: { account_id: '720424066366', sts: { role_arn: 'arn:aws:iam::720424066366:role/Installer' } },
+      region: { id: 'us-east-2' },
+    }
+
+    test('should return VPCs for given AWS account and region', async () => {
+      const vpcsResponse = {
+        kind: 'VPCList',
+        items: [
+          { vpc_id: 'vpc-123', name: 'my-vpc' },
+          { vpc_id: 'vpc-456', name: 'other-vpc' },
+        ],
+      }
+
+      nockAuth()
+      nockSsoToken()
+      nock(API_HOST)
+        .post('/api/clusters_mgmt/v1/aws_inquiries/vpcs?fetchSecurityGroups=true', {
+          aws: vpcsPayload.aws,
+          region: vpcsPayload.region,
+        })
+        .reply(200, vpcsResponse)
+
+      const res = await request('POST', '/vpcs', vpcsPayload)
+      expect(res.statusCode).toEqual(200)
+
+      const body = await parsePipedJsonBody(res)
+      expect(body).toEqual({ statusCode: 200, body: vpcsResponse })
+    })
+
+    test('should return error object when VPCs API call fails', async () => {
+      nockAuth()
+      nockSsoToken()
+      nock(API_HOST)
+        .post('/api/clusters_mgmt/v1/aws_inquiries/vpcs?fetchSecurityGroups=true')
+        .replyWithError('connection refused')
+
+      const res = await request('POST', '/vpcs', vpcsPayload)
+      expect(res.statusCode).toEqual(200)
+
+      const body = await parsePipedJsonBody<{ error: string }>(res)
+      expect(body).toEqual({ error: expect.stringContaining('connection refused') as string })
+    })
+
+    test('should return 500 when SSO token request fails', async () => {
+      nockAuth()
+      nock(SSO_HOST).post(SSO_PATH).replyWithError('SSO unavailable')
+
+      const res = await request('POST', '/vpcs', vpcsPayload)
+      expect(res.statusCode).toEqual(500)
+    })
+
+    test('should forward error response from upstream API', async () => {
+      const errorResponse = {
+        kind: 'Error',
+        id: '400',
+        reason: 'The role ARN is not valid',
+      }
+
+      nockAuth()
+      nockSsoToken()
+      nock(API_HOST).post('/api/clusters_mgmt/v1/aws_inquiries/vpcs?fetchSecurityGroups=true').reply(400, errorResponse)
+
+      const res = await request('POST', '/vpcs', vpcsPayload)
+      expect(res.statusCode).toEqual(200)
+
+      const body = await parsePipedJsonBody(res)
+      expect(body).toEqual({ statusCode: 400, body: errorResponse })
+    })
+  })
+
+  describe('POST /machine-types', () => {
+    const machineTypesPayload = {
+      ...mockPayload,
+      region: 'us-east-1',
+      role_arn: 'arn:aws:iam::720424066366:role/Installer',
+      availability_zones: ['us-east-1a', 'us-east-1b'],
+    }
+
+    test('should return machine types for the given region', async () => {
+      const machineTypesResponse = {
+        kind: 'MachineTypeList',
+        page: 1,
+        size: 2,
+        total: 2,
+        items: [
+          {
+            kind: 'MachineType',
+            id: 'm5.xlarge',
+            name: 'm5.xlarge - General Purpose',
+            category: 'general_purpose',
+            cpu: { value: 4, unit: 'vCPU' },
+            memory: { value: 17179869184, unit: 'B' },
+            cloud_provider: { id: 'aws' },
+          },
+          {
+            kind: 'MachineType',
+            id: 'm6a.xlarge',
+            name: 'm6a.xlarge - General Purpose',
+            category: 'general_purpose',
+            cpu: { value: 4, unit: 'vCPU' },
+            memory: { value: 17179869184, unit: 'B' },
+            cloud_provider: { id: 'aws' },
+          },
+        ],
+      }
+
+      nockAuth()
+      nockSsoToken()
+      nock(API_HOST)
+        .post('/api/clusters_mgmt/v1/aws_inquiries/machine_types', {
+          aws: { sts: { role_arn: 'arn:aws:iam::720424066366:role/Installer' } },
+          region: { id: 'us-east-1' },
+          availability_zones: ['us-east-1a', 'us-east-1b'],
+        })
+        .query({ size: '-1' })
+        .reply(200, machineTypesResponse)
+
+      const res = await request('POST', '/machine-types', machineTypesPayload)
+      expect(res.statusCode).toEqual(200)
+
+      const body = await parsePipedJsonBody(res)
+      expect(body).toEqual({ statusCode: 200, body: machineTypesResponse })
+    })
+
+    test('should return error response from OCM API', async () => {
+      const errorResponse = {
+        kind: 'Error',
+        id: '400',
+        reason: 'Invalid region',
+      }
+
+      nockAuth()
+      nockSsoToken()
+      nock(API_HOST).post('/api/clusters_mgmt/v1/aws_inquiries/machine_types').query(true).reply(400, errorResponse)
+
+      const res = await request('POST', '/machine-types', machineTypesPayload)
+      expect(res.statusCode).toEqual(200)
+
+      const body = await parsePipedJsonBody(res)
+      expect(body).toEqual({ statusCode: 400, body: errorResponse })
+    })
+
+    test('should return error object when machine types request fails', async () => {
+      nockAuth()
+      nockSsoToken()
+      nock(API_HOST)
+        .post('/api/clusters_mgmt/v1/aws_inquiries/machine_types')
+        .query(true)
+        .replyWithError('connection refused')
+
+      const res = await request('POST', '/machine-types', machineTypesPayload)
+      expect(res.statusCode).toEqual(200)
+
+      const body = await parsePipedJsonBody<{ error: string }>(res)
+      expect(body).toEqual({ error: expect.stringContaining('connection refused') as string })
     })
   })
 })

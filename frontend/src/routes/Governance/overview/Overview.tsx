@@ -100,7 +100,7 @@ function useSecurityGroupViolations(group: string, policies: Policy[]) {
       if (policy.spec.disabled) continue
       const annotation = policy.metadata.annotations?.[`policy.open-cluster-management.io/${group}`]
       if (!annotation) continue
-      const names = annotation.split(',')
+      const names = annotation.split(',').map((name) => name.trim())
       for (const name of names) {
         let v = clusterViolations[name]
         if (!v) {

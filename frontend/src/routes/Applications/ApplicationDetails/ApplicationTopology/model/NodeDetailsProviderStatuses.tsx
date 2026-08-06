@@ -357,19 +357,6 @@ export const setPodDeployStatus = (
           },
         ])
 
-        clusterDetails.push({
-          type: 'link',
-          value: {
-            label: t('View Pod YAML and Logs'),
-            data: {
-              action: showResourceYaml,
-              cluster: pod.cluster,
-              editLink: createEditLink(pod, hubClusterName),
-            },
-          },
-          indent: true,
-        })
-
         addDetails(clusterDetails, [
           {
             labelValue: t('Restarts'),

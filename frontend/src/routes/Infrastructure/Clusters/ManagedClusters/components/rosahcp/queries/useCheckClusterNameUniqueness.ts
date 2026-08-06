@@ -26,7 +26,7 @@ export function useClusterNameUniquenessCheck(secret: SelectedSecret): {
           cluster_name: name,
           region,
         })
-        const isTaken = response.total > 0
+        const isTaken = response.body.total > 0
         const error = isTaken ? `Cluster name "${name}" already exists. Choose a different name.` : null
         setClusterNameValidation({ error, isFetching: false })
         return error

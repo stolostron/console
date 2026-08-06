@@ -51,6 +51,10 @@ export interface SyncEditorProps extends HTMLProps<HTMLPreElement> {
   highlightEditorPath?: string
   /** Initial wizard resources; when set with variant "toolbar", enables compare-to-default diff view. */
   defaultResources?: unknown
+  /** When set, overrides {@link readShowChangesPreference} for the initial Show changes toggle. */
+  initialShowChanges?: boolean
+  /** When false, the diff view stays inline instead of switching to side-by-side. */
+  renderSideBySide?: boolean
 }
 
 export function SyncEditor(props: SyncEditorProps): JSX.Element {
@@ -73,6 +77,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     onClose,
     highlightEditorPath,
     defaultResources,
+    initialShowChanges,
+    renderSideBySide,
   } = props
   const [editorHighlightPath, setEditorHighlightPath] = useState(() => highlightEditorPath ?? '')
   useEffect(() => {
@@ -141,7 +147,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   const [showCondensed, setShowCondensed] = useState<boolean>(false)
   const [hasUndo, setHasUndo] = useState<boolean>(false)
   const [hasRedo, setHasRedo] = useState<boolean>(false)
-  const [showChanges, setShowChanges] = useState<boolean>(readShowChangesPreference)
+  const [showChanges, setShowChanges] = useState<boolean>(initialShowChanges ?? readShowChangesPreference)
   const [diffEditorInstanceEpoch, setDiffEditorInstanceEpoch] = useState(0)
   const onDiffEditorInstanceChange = useCallback(() => setDiffEditorInstanceEpoch((n) => n + 1), [])
 
@@ -936,6 +942,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           showChanges={showChanges}
           defaultResources={defaultResources}
           mock={mock}
+          renderSideBySide={renderSideBySide}
           onDiffEditorFocusChange={setDiffEditorHasFocus}
           onDiffEditorInstanceChange={onDiffEditorInstanceChange}
           onActiveInstancesChange={syncActiveInstances}

@@ -67,6 +67,9 @@ let isObservabilityInstalled: boolean = false
 export function getIsObservabilityInstalled() {
   return isObservabilityInstalled
 }
+export function resetIsObservabilityInstalled() {
+  isObservabilityInstalled = false
+}
 
 // because rbac checks are expensive,
 // run them only on the resources requested by the UI
@@ -268,6 +271,7 @@ const definitions: IWatchOptions[] = [
   { kind: 'ManagedClusterSet', apiVersion: 'cluster.open-cluster-management.io/v1beta2' },
   { kind: 'ClusterCurator', apiVersion: 'cluster.open-cluster-management.io/v1beta1' },
   { kind: 'Subscription', apiVersion: 'operators.coreos.com/v1alpha1' },
+  { kind: 'ClusterExtension', apiVersion: 'olm.operatorframework.io/v1' },
   { kind: 'DiscoveredCluster', apiVersion: 'discovery.open-cluster-management.io/v1' },
   { kind: 'DiscoveryConfig', apiVersion: 'discovery.open-cluster-management.io/v1' },
   { kind: 'AgentClusterInstall', apiVersion: 'extensions.hive.openshift.io/v1beta1' },
@@ -833,10 +837,14 @@ export async function cacheResource(resource: IResource, forwardEventsToClients 
       isHubSelfManaged = true
     }
   }
-  if (resource.kind === 'ManagedClusterAddOn') {
-    if (resource?.metadata?.name === 'observability-controller') {
-      isObservabilityInstalled = true
-    }
+
+  if (
+    resource.kind === 'ManagedClusterAddOn' &&
+    resource.apiVersion.startsWith('addon.open-cluster-management.io/') &&
+    (resource.metadata?.name === 'observability-controller' ||
+      resource.metadata?.name == 'multicluster-observability-addon')
+  ) {
+    isObservabilityInstalled = true
   }
 }
 

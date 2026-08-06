@@ -29,7 +29,7 @@
 ## Conventions
 
 - This package is published to npm (not private) — maintain semver and public API stability
-- Peer dependency: `@openshift-console/dynamic-plugin-sdk >=1.0.0 || >=4.19.0-prerelease`
+- Peer dependency: `@openshift-console/dynamic-plugin-sdk >=4.22.0-0`
 - Use TSDoc comments on all public exports; the README API section is auto-generated from them
 - Run `npm run check-doc` after changing public APIs to verify docs stay current
 - Tests run with `TZ=UTC` to avoid timezone-dependent failures

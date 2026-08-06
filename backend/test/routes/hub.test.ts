@@ -9,7 +9,7 @@ const MCGH_CRD_PATH =
   '/apis/apiextensions.k8s.io/v1/customresourcedefinitions/multiclusterglobalhubs.operator.open-cluster-management.io'
 
 function mockCrdNock(url: string) {
-  const apisScope = nock(url).get('/apis').reply(200, { status: 200 })
+  const apisScope = nock(url).get('/api').reply(200, { status: 200 })
   const crdScope = nock(url)
     .get(MCGH_CRD_PATH)
     .reply(200, {
@@ -23,7 +23,7 @@ function mockCrdNock(url: string) {
 }
 
 function mockCrdNock404(url: string) {
-  const apisScope = nock(url).get('/apis').reply(200, { status: 200 })
+  const apisScope = nock(url).get('/api').reply(200, { status: 200 })
   const crdScope = nock(url).get(MCGH_CRD_PATH).reply(404, {
     kind: 'Status',
     apiVersion: 'v1',

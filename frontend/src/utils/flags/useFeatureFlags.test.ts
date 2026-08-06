@@ -45,6 +45,7 @@ describe('useFeatureFlags', () => {
 
     // Assert - Should set REQUIRED_PROVIDER_FLAG + all feature flags to false
     expect(setFeatureFlagMock).toHaveBeenCalledWith('MULTICLUSTER_SDK_PROVIDER_1', true)
+    expect(setFeatureFlagMock).toHaveBeenCalledWith('MULTICLUSTER_SDK_PROVIDER_2', true)
     Object.keys(FEATURE_FLAGS).forEach((featureFlag) =>
       expect(setFeatureFlagMock).toHaveBeenCalledWith(featureFlag, false)
     )
@@ -71,6 +72,7 @@ describe('useFeatureFlags', () => {
 
     // Assert - Should set REQUIRED_PROVIDER_FLAG + all feature flags to the enabled state
     expect(setFeatureFlagMock).toHaveBeenCalledWith('MULTICLUSTER_SDK_PROVIDER_1', true)
+    expect(setFeatureFlagMock).toHaveBeenCalledWith('MULTICLUSTER_SDK_PROVIDER_2', true)
     Object.keys(FEATURE_FLAGS).forEach((featureFlag) =>
       expect(setFeatureFlagMock).toHaveBeenCalledWith(featureFlag, enabled)
     )
@@ -117,7 +119,8 @@ describe('useFeatureFlags', () => {
 
     // Assert
     expect(consoleSpy).toHaveBeenCalledWith('Failed to fetch feature flags:', testError)
-    expect(setFeatureFlagMock).toHaveBeenCalledWith('MULTICLUSTER_SDK_PROVIDER_1', true) // Should still set required flag
+    expect(setFeatureFlagMock).toHaveBeenCalledWith('MULTICLUSTER_SDK_PROVIDER_1', true) // Should still set required flags
+    expect(setFeatureFlagMock).toHaveBeenCalledWith('MULTICLUSTER_SDK_PROVIDER_2', true)
 
     consoleSpy.mockRestore()
   })
@@ -136,8 +139,9 @@ describe('useFeatureFlags', () => {
     // Act
     renderHook(() => useFeatureFlags(setFeatureFlagMock))
 
-    // Assert - Should only set the required provider flag, not the feature flags while loading
+    // Assert - Should only set the required provider flags, not the feature flags while loading
     expect(setFeatureFlagMock).toHaveBeenCalledWith('MULTICLUSTER_SDK_PROVIDER_1', true)
+    expect(setFeatureFlagMock).toHaveBeenCalledWith('MULTICLUSTER_SDK_PROVIDER_2', true)
     Object.keys(FEATURE_FLAGS).forEach((featureFlag) =>
       expect(setFeatureFlagMock).not.toHaveBeenCalledWith(featureFlag, expect.anything())
     )

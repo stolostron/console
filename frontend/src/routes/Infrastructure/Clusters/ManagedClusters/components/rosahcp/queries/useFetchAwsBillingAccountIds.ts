@@ -38,9 +38,11 @@ export const useFetchOrganizationQuota = (secret: SelectedSecret) => {
     },
     retry: false,
     enabled: !!secret,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
   })
 
   const billingAccounts = getAwsBillingAccountsFromQuota(data?.items)
 
-  return { isLoading, data: billingAccounts, isError, error, isFetching, refetch }
+  return { isLoading: isLoading || isFetching, data: billingAccounts, isError, error, isFetching, refetch }
 }

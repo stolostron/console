@@ -25,6 +25,11 @@
   ],
   "packageRules": [
     {
+      "description": "Do not bump peerDependencies ranges — they express compatibility, not pinned versions",
+      "matchDepTypes": ["peerDependencies"],
+      "enabled": false
+    },
+    {
       "description": "Restrict npm updates to main branch only",
       "matchManagers": ["npm"],
       "matchBaseBranches": ["!/^main$/"],
@@ -124,6 +129,11 @@
       ],
       "groupName": "patternfly packages",
       "groupSlug": "patternfly"
+    },
+    {
+      "description": "Disable Dockerfile manager — base images use floating :latest tags managed by ART/Konflux",
+      "matchManagers": ["dockerfile"],
+      "enabled": false
     }
   ]
 }

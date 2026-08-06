@@ -91,6 +91,11 @@ export const getUidSiblings = (paths: { [name: string]: any[] }, mappings: { [na
   return uidSiblings
 }
 
+/** Paths whose key contains an array index segment immediately before `.status`. */
+export const getStatusPaths = (paths: { [name: string]: any[] }) => {
+  return getMatchingValues([/\.\d+\.status(\.|$)/], paths)
+}
+
 // for each user edit, update other values where it's referenced
 export const crossReference = (paths: { [name: string]: any }) => {
   // create set of form paths that can't be overriden

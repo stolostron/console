@@ -1,0 +1,260 @@
+/* Copyright Contributors to the Open Cluster Management project */
+import type { IResource } from '../../../../../resources'
+import { patchResource } from '../../../../../resources/utils'
+import { AcmAlertContext, AcmAlertGroup, AcmForm, AcmModal, AcmSubmit } from '../../../../../ui-components'
+import type { IAlertContext } from '../../../../../ui-components'
+import {
+  ActionGroup,
+  Button,
+  FormGroup,
+  TextArea,
+  Toolbar,
+  ToolbarContent,
+  ToolbarGroup,
+  ToolbarItem,
+  Tooltip,
+} from '@patternfly/react-core'
+import { ModalVariant } from '@patternfly/react-core/deprecated'
+import { BoldIcon, EyeIcon, ItalicIcon, LinkIcon, ListIcon, PencilAltIcon, TrashIcon } from '@patternfly/react-icons'
+import { css } from '@emotion/css'
+import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from '../../../../../lib/acm-i18next'
+import { getErrorInfo } from '../../../../../components/ErrorPage'
+import { Markdown } from '@redhat-cloud-services/rule-components/Markdown'
+
+const previewContainer = css({
+  position: 'relative',
+})
+
+const previewOverlay = css({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  overflow: 'auto',
+  scrollbarGutter: 'stable',
+  '& > div': {
+    padding: '0.5rem 1rem',
+    whiteSpace: 'pre-wrap',
+  },
+})
+
+const CLUSTER_DESCRIPTION_ANNOTATION = 'console.open-cluster-management.io/description'
+
+export function EditDescription(props: Readonly<{ resource?: IResource; close: () => void; onSave?: () => void }>) {
+  const { t } = useTranslation()
+  const [description, setDescription] = useState<string>('')
+  const [isPreview, setIsPreview] = useState(false)
+  const textAreaRef = useRef<HTMLTextAreaElement>(null)
+  const isOpen = props.resource !== undefined
+
+  const resourceName = props.resource?.metadata?.name
+
+  useEffect(() => {
+    if (isOpen) {
+      const desc = props.resource?.metadata?.annotations?.[CLUSTER_DESCRIPTION_ANNOTATION] ?? ''
+      setDescription(desc)
+      setIsPreview(false)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, resourceName])
+
+  const handleSave = (alertContext: IAlertContext) => {
+    alertContext.clearAlerts()
+    const resourceToPatch: IResource = {
+      apiVersion: props.resource!.apiVersion,
+      kind: props.resource!.kind,
+      metadata: {
+        name: props.resource!.metadata!.name,
+        namespace: props.resource!.metadata?.namespace,
+      },
+    }
+
+    const trimmedDescription = description.trim()
+    const patch = {
+      metadata: {
+        annotations: {
+          [CLUSTER_DESCRIPTION_ANNOTATION]: trimmedDescription ? description : null,
+        },
+      },
+    }
+
+    return patchResource(resourceToPatch, patch)
+      .promise.then(() => {
+        props.onSave?.()
+        props.close()
+      })
+      .catch((err) => {
+        alertContext.addAlert(getErrorInfo(err, t))
+      })
+  }
+
+  const insertMarkdown = (prefix: string, suffix: string = prefix) => {
+    const textarea = textAreaRef.current
+    if (!textarea) return
+
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+    const selectedText = description.substring(start, end)
+    const beforeText = description.substring(0, start)
+    const afterText = description.substring(end)
+
+    const newText = beforeText + prefix + selectedText + suffix + afterText
+    setDescription(newText)
+
+    // Place cursor between opening and closing markdown markers (e.g., **|** for typing)
+    setTimeout(() => {
+      const scrollPosition = textarea.scrollTop
+      textarea.focus()
+      const newPosition = start + prefix.length + selectedText.length
+      textarea.setSelectionRange(newPosition, newPosition)
+      textarea.scrollTop = scrollPosition
+    }, 0)
+  }
+
+  return (
+    <AcmModal
+      title={t('Edit cluster description')}
+      isOpen={props.resource !== undefined}
+      variant={ModalVariant.medium}
+      onClose={props.close}
+    >
+      <AcmAlertContext.Consumer>
+        {(alertContext) => (
+          <AcmForm style={{ gap: 0 }}>
+            <div style={{ marginBottom: 16 }}>
+              {t(
+                'Add links and notes your team uses for this cluster. Use Markdown to format text; formatting is applied when you save.'
+              )}
+            </div>
+            <FormGroup fieldId="description-input">
+              <Toolbar>
+                <ToolbarContent>
+                  <ToolbarGroup>
+                    <ToolbarItem>
+                      <Tooltip content={t('Bold')}>
+                        <Button
+                          variant="plain"
+                          aria-label={t('Bold')}
+                          isDisabled={isPreview}
+                          onClick={() => insertMarkdown('**')}
+                        >
+                          <BoldIcon />
+                        </Button>
+                      </Tooltip>
+                    </ToolbarItem>
+                    <ToolbarItem>
+                      <Tooltip content={t('Italic')}>
+                        <Button
+                          variant="plain"
+                          aria-label={t('Italic')}
+                          isDisabled={isPreview}
+                          onClick={() => insertMarkdown('*')}
+                        >
+                          <ItalicIcon />
+                        </Button>
+                      </Tooltip>
+                    </ToolbarItem>
+                    <ToolbarItem>
+                      <Tooltip content={t('Link')}>
+                        <Button
+                          variant="plain"
+                          aria-label={t('Link')}
+                          isDisabled={isPreview}
+                          onClick={() => insertMarkdown('[', '](url)')}
+                        >
+                          <LinkIcon />
+                        </Button>
+                      </Tooltip>
+                    </ToolbarItem>
+                    <ToolbarItem>
+                      <Tooltip content={t('List')}>
+                        <Button
+                          variant="plain"
+                          aria-label={t('List')}
+                          isDisabled={isPreview}
+                          onClick={() => {
+                            const start = textAreaRef.current?.selectionStart ?? 0
+                            const prefix = start === 0 || description[start - 1] === '\n' ? '- ' : '\n- '
+                            insertMarkdown(prefix, '')
+                          }}
+                        >
+                          <ListIcon />
+                        </Button>
+                      </Tooltip>
+                    </ToolbarItem>
+                    <ToolbarItem>
+                      <Tooltip content={t('Clear')}>
+                        <Button
+                          variant="plain"
+                          aria-label={t('Clear')}
+                          isDisabled={isPreview}
+                          onClick={() => {
+                            setDescription('')
+                            textAreaRef.current?.focus()
+                          }}
+                        >
+                          <TrashIcon />
+                        </Button>
+                      </Tooltip>
+                    </ToolbarItem>
+                  </ToolbarGroup>
+                  <ToolbarGroup align={{ default: 'alignEnd' }}>
+                    <ToolbarItem>
+                      <Tooltip content={isPreview ? t('Edit') : t('Preview')}>
+                        <Button
+                          variant="plain"
+                          aria-label={isPreview ? t('Edit') : t('Preview')}
+                          onClick={() => setIsPreview(!isPreview)}
+                        >
+                          {isPreview ? <PencilAltIcon /> : <EyeIcon />}
+                        </Button>
+                      </Tooltip>
+                    </ToolbarItem>
+                  </ToolbarGroup>
+                </ToolbarContent>
+              </Toolbar>
+
+              <div className={previewContainer}>
+                <TextArea
+                  ref={textAreaRef}
+                  id="description-input"
+                  value={description}
+                  onChange={(_event, value) => setDescription(value)}
+                  rows={10}
+                  resizeOrientation="none"
+                  placeholder={t('Enter cluster description')}
+                  aria-label={t('Description')}
+                  style={{
+                    visibility: isPreview ? 'hidden' : 'visible',
+                    overflow: 'auto',
+                    scrollbarGutter: 'stable',
+                  }}
+                />
+                {isPreview && (
+                  <div className={previewOverlay}>
+                    <div>{description ? <Markdown template={description} /> : '-'}</div>
+                  </div>
+                )}
+              </div>
+            </FormGroup>
+            <AcmAlertGroup isInline canClose />
+            <ActionGroup>
+              <AcmSubmit
+                id="save-description"
+                variant="primary"
+                onClick={() => handleSave(alertContext)}
+                label={t('save')}
+                processingLabel={t('saving')}
+              />
+              <Button variant="link" onClick={props.close}>
+                {t('cancel')}
+              </Button>
+            </ActionGroup>
+          </AcmForm>
+        )}
+      </AcmAlertContext.Consumer>
+    </AcmModal>
+  )
+}

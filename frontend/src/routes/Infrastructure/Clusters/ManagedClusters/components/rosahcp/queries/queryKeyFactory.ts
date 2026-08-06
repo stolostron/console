@@ -25,4 +25,21 @@ export const rosaWizardKeys = {
     'ocm-role-arn',
   ],
   userRoleArn: (client_id: string) => [...rosaWizardKeys.all, client_id, 'user-role-arn'],
+  openshiftVersions: (client_id: string) => [...rosaWizardKeys.all, client_id, 'openshift-versions'],
+  vpcs: (client_id: string, awsAccountId?: string, installerRoleArn?: string, region?: string) => [
+    ...rosaWizardKeys.all,
+    client_id,
+    awsAccountId,
+    installerRoleArn,
+    region,
+    'vpc',
+  ],
+  machineTypes: (client_id: string, region?: string, roleArn?: string, availabilityZones?: string[]) => [
+    ...rosaWizardKeys.all,
+    client_id,
+    region,
+    roleArn,
+    (availabilityZones ?? []).join(','),
+    'machine-types',
+  ],
 }
