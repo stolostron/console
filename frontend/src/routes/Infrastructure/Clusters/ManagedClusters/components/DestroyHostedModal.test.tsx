@@ -21,9 +21,7 @@ describe('DestroyHostedModal', () => {
     expect(await axe(document.body)).toHaveNoViolations()
   })
 
-  // TODO: Azure axe test skipped due to pre-existing duplicate-id violations
-  // from reused CodeBlockCode id attributes across multiple steps.
-  test.skip('has no accessibility violations (Azure)', async () => {
+  test('has no accessibility violations (Azure)', async () => {
     renderModal(Provider.azure)
     expect(await axe(document.body)).toHaveNoViolations()
   })

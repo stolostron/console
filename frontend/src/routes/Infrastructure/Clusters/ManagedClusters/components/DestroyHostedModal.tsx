@@ -120,14 +120,14 @@ export function DestroyHostedModal(props: DestroyHostedModalProps) {
           <Content component="p">
             {t('Destroy the Hosted Control Plane by copying and pasting the following command:')}
           </Content>
-          <CodeBlock actions={Actions(destroyCode, 'code-command')}>
-            <CodeBlockCode id="destroy-content">{destroyCode}</CodeBlockCode>
+          <CodeBlock actions={Actions(destroyCode, 'destroy-cluster-code')}>
+            <CodeBlockCode id="destroy-cluster-content">{destroyCode}</CodeBlockCode>
           </CodeBlock>
           <Content component="p" style={{ marginTop: '1em' }}>
             {t('Use the following command to get a list of available parameters:')}
           </Content>
-          <CodeBlock actions={Actions(helperCommand, 'helper-command')}>
-            <CodeBlockCode id="helper-command">{helperCommand}</CodeBlockCode>
+          <CodeBlock actions={Actions(helperCommand, 'destroy-cluster-helper')}>
+            <CodeBlockCode id="destroy-cluster-helper-content">{helperCommand}</CodeBlockCode>
           </CodeBlock>
         </Fragment>
       ),
@@ -149,14 +149,14 @@ export function DestroyHostedModal(props: DestroyHostedModalProps) {
             <Content component="p">
               {t('Destroy the infrastructure by copying and pasting the following command:')}
             </Content>
-            <CodeBlock actions={Actions(azureDestroyInfraCode, 'code-command')}>
+            <CodeBlock actions={Actions(azureDestroyInfraCode, 'destroy-infra-code')}>
               <CodeBlockCode id="destroy-infra-content">{azureDestroyInfraCode}</CodeBlockCode>
             </CodeBlock>
             <Content component="p" style={{ marginTop: '1em' }}>
               {t('Use the following command to get a list of available parameters:')}
             </Content>
-            <CodeBlock actions={Actions(azureDestroyInfraHelperCommand, 'helper-command')}>
-              <CodeBlockCode id="helper-command">{azureDestroyInfraHelperCommand}</CodeBlockCode>
+            <CodeBlock actions={Actions(azureDestroyInfraHelperCommand, 'destroy-infra-helper')}>
+              <CodeBlockCode id="destroy-infra-helper-content">{azureDestroyInfraHelperCommand}</CodeBlockCode>
             </CodeBlock>
           </Fragment>
         ),
@@ -178,16 +178,16 @@ export function DestroyHostedModal(props: DestroyHostedModalProps) {
             <Content component="p">
               {t('Destroy the workload identities by copying and pasting the following command:')}
             </Content>
-            <CodeBlock actions={Actions(azureDestroyWorkloadIdentitiesCode, 'code-command')}>
-              <CodeBlockCode id="destroy-workload-identities-content">
-                {azureDestroyWorkloadIdentitiesCode}
-              </CodeBlockCode>
+            <CodeBlock actions={Actions(azureDestroyWorkloadIdentitiesCode, 'destroy-workload-code')}>
+              <CodeBlockCode id="destroy-workload-content">{azureDestroyWorkloadIdentitiesCode}</CodeBlockCode>
             </CodeBlock>
             <Content component="p" style={{ marginTop: '1em' }}>
               {t('Use the following command to get a list of available parameters:')}
             </Content>
-            <CodeBlock actions={Actions(azureDestroyWorkloadIdentitiesHelperCommand, 'helper-command')}>
-              <CodeBlockCode id="helper-command">{azureDestroyWorkloadIdentitiesHelperCommand}</CodeBlockCode>
+            <CodeBlock actions={Actions(azureDestroyWorkloadIdentitiesHelperCommand, 'destroy-workload-helper')}>
+              <CodeBlockCode id="destroy-workload-helper-content">
+                {azureDestroyWorkloadIdentitiesHelperCommand}
+              </CodeBlockCode>
             </CodeBlock>
           </Fragment>
         ),
