@@ -34,6 +34,8 @@ export type HypershiftAgentContextType = {
   setInfraEnvNamespace: (ns: string) => void
   sshPublicKey: string
   setSshPublicKey: (key: string) => void
+  storageClass: string
+  setStorageClass: (storageClass: string) => void
 }
 
 export const HypershiftAgentContext = React.createContext<HypershiftAgentContextType>({
@@ -55,6 +57,8 @@ export const HypershiftAgentContext = React.createContext<HypershiftAgentContext
   setInfraEnvNamespace: noop,
   sshPublicKey: '',
   setSshPublicKey: noop,
+  storageClass: '',
+  setStorageClass: noop,
 })
 
 export const useHypershiftContextValues = (): HypershiftAgentContextType => {
