@@ -34,6 +34,8 @@ export type HypershiftAgentContextType = {
   setInfraEnvNamespace: (ns: string) => void
   sshPublicKey: string
   setSshPublicKey: (key: string) => void
+  storageClass: string
+  setStorageClass: (storageClass: string) => void
 }
 
 export const HypershiftAgentContext = React.createContext<HypershiftAgentContextType>({
@@ -55,6 +57,8 @@ export const HypershiftAgentContext = React.createContext<HypershiftAgentContext
   setInfraEnvNamespace: noop,
   sshPublicKey: '',
   setSshPublicKey: noop,
+  storageClass: '',
+  setStorageClass: noop,
 })
 
 export const useHypershiftContextValues = (): HypershiftAgentContextType => {
@@ -67,6 +71,7 @@ export const useHypershiftContextValues = (): HypershiftAgentContextType => {
   const [controllerAvailabilityPolicy, setControllerAvailabilityPolicy] = React.useState('')
   const [infrastructureAvailabilityPolicy, setInfrastructureAvailabilityPolicy] = React.useState('')
   const [olmCatalogPlacement, setOlmCatalogPlacement] = React.useState('')
+  const [storageClass, setStorageClass] = React.useState('')
 
   return {
     controllerAvailabilityPolicy,
@@ -87,5 +92,7 @@ export const useHypershiftContextValues = (): HypershiftAgentContextType => {
     setInfraEnvNamespace,
     sshPublicKey,
     setSshPublicKey,
+    storageClass,
+    setStorageClass,
   }
 }
