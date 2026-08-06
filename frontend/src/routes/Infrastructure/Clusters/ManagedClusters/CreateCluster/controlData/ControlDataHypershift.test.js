@@ -11,9 +11,9 @@ const handleModalToggle = jest.fn()
 
 describe('Cluster creation control data for Hypershift', () => {
   it('generates correctly', () => {
-    expect(getControlDataHypershift(t, handleModalToggle, <Warning />, true, true)).toMatchSnapshot()
+    expect(getControlDataHypershift(t, handleModalToggle, <Warning />, true)).toMatchSnapshot()
   })
   it('generates correctly for MCE', () => {
-    expect(getControlDataHypershift(t, handleModalToggle, <Warning />, true, false)).toMatchSnapshot()
+    expect(getControlDataHypershift(t, handleModalToggle, <Warning />, false)).toMatchSnapshot()
   })
 })

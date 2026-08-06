@@ -5,13 +5,7 @@ import NetworkForm from '../components/assisted-installer/hypershift/NetworkForm
 import { automationControlData, appendKlusterletAddonConfig, appendWarning } from './ControlDataHelpers'
 import { CreateCredentialModal } from '../../../../../../components/CreateCredentialModal'
 
-export const getControlDataHypershift = (
-  t,
-  handleModalToggle,
-  warning,
-  includeAutomation = true,
-  includeKlusterletAddonConfig = true
-) => {
+export const getControlDataHypershift = (t, handleModalToggle, warning, includeKlusterletAddonConfig = true) => {
   const controlData = [
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  AI form  /////////////////////////////////////
@@ -62,6 +56,7 @@ export const getControlDataHypershift = (
         promptSshPublicKey: false,
       },
     },
+    ...automationControlData(t, true),
     {
       id: 'hypershiftHostsStep',
       type: 'step',
@@ -88,12 +83,11 @@ export const getControlDataHypershift = (
     },
   ]
   appendKlusterletAddonConfig(includeKlusterletAddonConfig, controlData)
+
   if (warning) {
     appendWarning(warning, controlData)
   }
-  if (includeAutomation) {
-    return [...controlData, ...automationControlData(t)]
-  }
+
   return controlData
 }
 

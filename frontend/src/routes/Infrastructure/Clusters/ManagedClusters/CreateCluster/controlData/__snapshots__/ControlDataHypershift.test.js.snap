@@ -53,40 +53,6 @@ exports[`Cluster creation control data for Hypershift generates correctly 1`] = 
     "type": "custom",
   },
   {
-    "disabled": true,
-    "id": "hypershiftHostsStep",
-    "title": "Node pools",
-    "type": "step",
-  },
-  {
-    "component": <HostsForm />,
-    "id": "hypershift-hosts",
-    "providerId": "hypershift",
-    "type": "custom",
-  },
-  {
-    "disabled": true,
-    "id": "hyperhisftNetworkStep",
-    "title": "Networking",
-    "type": "step",
-  },
-  {
-    "component": <NetworkForm />,
-    "id": "hypershift-network",
-    "providerId": "hypershift",
-    "type": "custom",
-  },
-  {
-    "active": true,
-    "id": "includeKlusterletAddonConfig",
-    "type": "hidden",
-  },
-  {
-    "component": <Warning />,
-    "id": "warning",
-    "type": "custom",
-  },
-  {
     "id": "automationStep",
     "title": "Automation",
     "type": "step",
@@ -171,6 +137,40 @@ exports[`Cluster creation control data for Hypershift generates correctly 1`] = 
     "active": "",
     "id": "reconcilePause",
     "type": "hidden",
+  },
+  {
+    "disabled": true,
+    "id": "hypershiftHostsStep",
+    "title": "Node pools",
+    "type": "step",
+  },
+  {
+    "component": <HostsForm />,
+    "id": "hypershift-hosts",
+    "providerId": "hypershift",
+    "type": "custom",
+  },
+  {
+    "disabled": true,
+    "id": "hyperhisftNetworkStep",
+    "title": "Networking",
+    "type": "step",
+  },
+  {
+    "component": <NetworkForm />,
+    "id": "hypershift-network",
+    "providerId": "hypershift",
+    "type": "custom",
+  },
+  {
+    "active": true,
+    "id": "includeKlusterletAddonConfig",
+    "type": "hidden",
+  },
+  {
+    "component": <Warning />,
+    "id": "warning",
+    "type": "custom",
   },
 ]
 `;
@@ -228,40 +228,6 @@ exports[`Cluster creation control data for Hypershift generates correctly for MC
     "type": "custom",
   },
   {
-    "disabled": true,
-    "id": "hypershiftHostsStep",
-    "title": "Node pools",
-    "type": "step",
-  },
-  {
-    "component": <HostsForm />,
-    "id": "hypershift-hosts",
-    "providerId": "hypershift",
-    "type": "custom",
-  },
-  {
-    "disabled": true,
-    "id": "hyperhisftNetworkStep",
-    "title": "Networking",
-    "type": "step",
-  },
-  {
-    "component": <NetworkForm />,
-    "id": "hypershift-network",
-    "providerId": "hypershift",
-    "type": "custom",
-  },
-  {
-    "active": false,
-    "id": "includeKlusterletAddonConfig",
-    "type": "hidden",
-  },
-  {
-    "component": <Warning />,
-    "id": "warning",
-    "type": "custom",
-  },
-  {
     "id": "automationStep",
     "title": "Automation",
     "type": "step",
@@ -346,6 +312,40 @@ exports[`Cluster creation control data for Hypershift generates correctly for MC
     "active": "",
     "id": "reconcilePause",
     "type": "hidden",
+  },
+  {
+    "disabled": true,
+    "id": "hypershiftHostsStep",
+    "title": "Node pools",
+    "type": "step",
+  },
+  {
+    "component": <HostsForm />,
+    "id": "hypershift-hosts",
+    "providerId": "hypershift",
+    "type": "custom",
+  },
+  {
+    "disabled": true,
+    "id": "hyperhisftNetworkStep",
+    "title": "Networking",
+    "type": "step",
+  },
+  {
+    "component": <NetworkForm />,
+    "id": "hypershift-network",
+    "providerId": "hypershift",
+    "type": "custom",
+  },
+  {
+    "active": false,
+    "id": "includeKlusterletAddonConfig",
+    "type": "hidden",
+  },
+  {
+    "component": <Warning />,
+    "id": "warning",
+    "type": "custom",
   },
 ]
 `;
