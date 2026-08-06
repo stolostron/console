@@ -139,6 +139,16 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         overlay: {
           warnings: false,
           errors: true,
+          // OpenShift console CSP dedupe does `new URL(blockedURI)`. Non-URL tokens
+          // ("", "inline", "eval", …) throw TypeError and the webpack overlay hijacks the UI.
+          // Hide that host-console bug so local plugin pages remain usable.
+          runtimeErrors: (error: Error) => {
+            const message = error?.message ?? ''
+            if (message.includes("Failed to construct 'URL'")) {
+              return false
+            }
+            return true
+          },
         },
       },
     },
