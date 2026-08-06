@@ -60,8 +60,8 @@ export const fold = (
     const top = editor.getScrollTop()
     editor.setSelection(new Range(start, 0, end, 0))
     editor
-      .getAction('editor.fold')
-      .run()
+      ?.getAction('editor.fold')
+      ?.run()
       .then(() => {
         if (resetMouseLocation) {
           editor.setSelection(new Range(0, 0, 0, 0))

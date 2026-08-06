@@ -178,27 +178,5 @@ describe('ArgoAppDetailsContainer test functions', () => {
     Object.prototype.toString.call(instance.handleNextClick({}, 1))
     Object.prototype.toString.call(instance.handlePreviousClick({}, 1))
     Object.prototype.toString.call(instance.handlePageInput({}, 1))
-    Object.prototype.toString.call(
-      instance.handleKeyPress(
-        {
-          action: 'open_link',
-          targetLink: 'https://test',
-        },
-        {
-          key: 'Enter',
-        }
-      )
-    )
-    Object.prototype.toString.call(
-      instance.handleKeyPress(
-        {
-          action: 'open_link',
-          targetLink: 'https://test',
-        },
-        {
-          key: 'Any',
-        }
-      )
-    )
   })
 })

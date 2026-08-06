@@ -20,16 +20,6 @@ import { useQuery } from '../../../../../lib/useQuery'
 const mockProcessactionlink = jest.fn()
 const mockDispatchaction = jest.fn()
 const mockHandleerrormsg = jest.fn()
-const mockComputenodestatus = jest.fn()
-const mockGetnodedescription = jest.fn()
-const mockGetnodetitle = jest.fn()
-const mockGetsectiontitles = jest.fn()
-const mockGetnodedetails = jest.fn()
-const mockUpdatenodestatus = jest.fn()
-const mockUpdatenodeicons = jest.fn()
-const mockGetallfilters = jest.fn()
-const mockGetavailablefilters = jest.fn()
-const mockGetsearchfilter = jest.fn()
 const mockSetdrawercontent = jest.fn()
 const mockSetActiveClusters = jest.fn()
 const mockSetAllClusters = jest.fn()
@@ -157,7 +147,6 @@ describe('Topology tests', () => {
 
 const props1: TopologyProps = {
   hubClusterName: 'local-cluster',
-  disableRenderConstraint: true,
   elements: {
     activeChannel: 'test/test-subscription-1//ggithubcom-fxiang1-app-samples-ns/ggithubcom-fxiang1-app-samples',
     channels: [
@@ -1131,163 +1120,6 @@ const props1: TopologyProps = {
     ],
     activeChannel: '__ALL__/__ALL__//__ALL__/__ALL__',
     setActiveChannel: mockDispatchaction,
-  },
-  options: {
-    typeToShapeMap: {
-      application: {
-        shape: 'application',
-        className: 'design',
-        nodeRadius: 30,
-      },
-      applicationset: {
-        shape: 'application',
-        className: 'design',
-        nodeRadius: 30,
-      },
-      cluster: {
-        shape: 'cluster',
-        className: 'container',
-      },
-      clusters: {
-        shape: 'cluster',
-        className: 'container',
-      },
-      ansiblejob: {
-        shape: 'ansiblejob',
-        className: 'container',
-      },
-      configmap: {
-        shape: 'configmap',
-        className: 'container',
-      },
-      container: {
-        shape: 'container',
-        className: 'container',
-      },
-      customresource: {
-        shape: 'customresource',
-        className: 'container',
-      },
-      daemonset: {
-        shape: 'daemonset',
-        className: 'daemonset',
-      },
-      deployable: {
-        shape: 'deployable',
-        className: 'design',
-      },
-      deployment: {
-        shape: 'deployment',
-        className: 'deployment',
-      },
-      deploymentconfig: {
-        shape: 'deploymentconfig',
-        className: 'deployment',
-      },
-      helmrelease: {
-        shape: 'chart',
-        className: 'container',
-      },
-      host: {
-        shape: 'host',
-        className: 'host',
-      },
-      ingress: {
-        shape: 'ingress',
-        className: 'host',
-      },
-      internet: {
-        shape: 'cloud',
-        className: 'internet',
-      },
-      namespace: {
-        shape: 'namespace',
-        className: 'host',
-      },
-      node: {
-        shape: 'node',
-        className: 'host',
-      },
-      other: {
-        shape: 'other',
-        className: 'default',
-      },
-      package: {
-        shape: 'chart',
-        className: 'container',
-      },
-      placement: {
-        shape: 'placement',
-        className: 'design',
-      },
-      placementDecision: {
-        shape: 'placementdecision',
-        className: 'design',
-      },
-      pod: {
-        shape: 'pod',
-        className: 'pod',
-      },
-      policy: {
-        shape: 'policy',
-        className: 'design',
-        nodeRadius: 30,
-      },
-      replicaset: {
-        shape: 'replicaset',
-        className: 'container',
-      },
-      replicationcontroller: {
-        shape: 'replicationcontroller',
-        className: 'container',
-      },
-      route: {
-        shape: 'route',
-        className: 'container',
-      },
-      placements: {
-        shape: 'placements',
-        className: 'design',
-      },
-      secret: {
-        shape: 'secret',
-        className: 'service',
-      },
-      service: {
-        shape: 'service',
-        className: 'service',
-      },
-      statefulset: {
-        shape: 'statefulset',
-        className: 'default',
-      },
-      storageclass: {
-        shape: 'storageclass',
-        className: 'default',
-      },
-      subscription: {
-        shape: 'subscription',
-        className: 'design',
-      },
-      subscriptionblocked: {
-        shape: 'subscriptionblocked',
-        className: 'design',
-      },
-    },
-    diagramOptions: {
-      showLineLabels: true,
-      showGroupTitles: false,
-    },
-    computeNodeStatus: mockComputenodestatus,
-    getNodeDescription: mockGetnodedescription,
-    getNodeTitle: mockGetnodetitle,
-    getSectionTitles: mockGetsectiontitles,
-    getNodeDetails: mockGetnodedetails,
-    updateNodeStatus: mockUpdatenodestatus,
-    updateNodeIcons: mockUpdatenodeicons,
-    getAllFilters: mockGetallfilters,
-    getAvailableFilters: mockGetavailablefilters,
-    getSearchFilter: mockGetsearchfilter,
   },
   setDrawerContent: mockSetdrawercontent,
   toolbarControl: {

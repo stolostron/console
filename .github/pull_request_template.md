@@ -4,7 +4,7 @@
 <!-- Use the exact title from Jira or a brief, clear summary -->
 
 **Ticket Link:**  
-<!-- e.g. https://issues.redhat.com/browse/ACM-12345 -->
+<!-- e.g. https://redhat.atlassian.net/browse/ACM-12345 -->
 
 **Type of Change:**  
 <!-- Select one -->

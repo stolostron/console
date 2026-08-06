@@ -435,6 +435,14 @@ describe('ClusterActionDropdown', () => {
     await waitForText('Update automation template')
   })
 
+  test('Edit description action opens the description modal', async () => {
+    const cluster = JSON.parse(JSON.stringify(mockCluster))
+    render(<Component cluster={cluster} />)
+    await clickByLabel('Actions')
+    await clickByText('Edit description')
+    await waitForText('Edit cluster description')
+  })
+
   test('Open cluster console action is shown when consoleURL is set', async () => {
     const cluster: Cluster = { ...mockCluster, consoleURL: 'https://console.example.com' }
     render(<Component cluster={cluster} />)
@@ -455,7 +463,8 @@ describe('ClusterActionDropdown', () => {
     const cluster = JSON.parse(JSON.stringify(mockCluster))
     render(<Component cluster={cluster} />)
     const rbacNocks: Scope[] = [
-      nockRBAC(await rbacPatchManagedCluster()),
+      nockRBAC(await rbacPatchManagedCluster()), // edit labels
+      nockRBAC(await rbacPatchManagedCluster()), // edit description
       nockRBAC(await rbacPatchClusterDeployment()), // hibernate
       nockRBAC(await rbacDeleteManagedCluster()), // destroy
       nockRBAC(await rbacDeleteClusterDeployment()),
@@ -478,7 +487,8 @@ describe('ClusterActionDropdown', () => {
     cluster.status = ClusterStatus.hibernating
     render(<Component cluster={cluster} />)
     const rbacNocks: Scope[] = [
-      nockRBAC(await rbacPatchManagedCluster()),
+      nockRBAC(await rbacPatchManagedCluster()), // edit labels
+      nockRBAC(await rbacPatchManagedCluster()), // edit description
       nockRBAC(await rbacPatchClusterDeployment()), // resume
       nockRBAC(await rbacDeleteManagedCluster()),
       nockRBAC(await rbacDeleteClusterDeployment()),

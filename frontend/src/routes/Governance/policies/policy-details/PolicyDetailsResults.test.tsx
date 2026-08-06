@@ -226,7 +226,7 @@ describe('Namespace-scoped user without cluster access', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
   })
-  test('Should render cluster names as plain text when managedClustersState is empty', async () => {
+  test('Should render cluster names as disabled links when managedClustersState is empty', async () => {
     const context: PolicyDetailsContext = { policy: mockPolicy[0] }
     const { container } = render(
       <RecoilRoot
@@ -249,8 +249,12 @@ describe('Namespace-scoped user without cluster access', () => {
     await waitForText('local-cluster')
 
     expect(container.querySelector('td[data-label="Cluster"] a')).not.toBeInTheDocument()
+    expect(container.querySelector('td[data-label="Cluster"] .link-disabled')).toBeInTheDocument()
   })
-  test('Should render updated empty-state message when no results are available', async () => {
+
+  test('Should show Restricted Access empty state when policy is propagated but user sees no results', async () => {
+    // Root policy reports local-cluster in status.status, but no propagated policy is visible
+    // (simulates a namespace-scoped user who cannot access the cluster namespace)
     const context: PolicyDetailsContext = { policy: mockPolicy[0] }
     render(
       <RecoilRoot
@@ -269,8 +273,77 @@ describe('Namespace-scoped user without cluster access', () => {
       </RecoilRoot>
     )
 
+    await waitForText('Access permissions needed')
+    await waitForText(
+      'To view these results, ask your cluster administrator for additional access. You can also get a compliance summary in the Details tab.'
+    )
+  })
+
+  test('Should show default empty state when policy has no propagation status', async () => {
+    // Policy has no status.status entries — not propagated anywhere, so no RBAC restriction
+    const rootPolicyNoStatus: Policy = {
+      ...mockPolicy[0],
+      status: { compliant: 'Compliant', placement: [], status: [] },
+    }
+    const context: PolicyDetailsContext = { policy: rootPolicyNoStatus }
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policiesState, [rootPolicyNoStatus])
+          snapshot.set(managedClustersState, [])
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<PolicyDetailsResults />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
     await waitForText('No results found')
     await waitForText('No results available.')
+  })
+
+  test('Should show partial access alert when user can see some but not all cluster results', async () => {
+    // Root policy reports 2 clusters in status.status, but only 1 propagated policy is visible
+    const rootPolicyTwoClusters: Policy = {
+      ...mockPolicy[0],
+      status: {
+        compliant: 'Compliant',
+        placement: mockPolicy[0].status!.placement!,
+        status: [
+          { clustername: 'local-cluster', clusternamespace: 'local-cluster', compliant: 'Compliant' },
+          { clustername: 'cluster-2', clusternamespace: 'cluster-2', compliant: 'Compliant' },
+        ],
+      },
+    }
+    // Only the local-cluster propagated policy is visible (cluster-2 is inaccessible)
+    const context: PolicyDetailsContext = { policy: rootPolicyTwoClusters }
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policiesState, [rootPolicyTwoClusters, mockPolicy[1]])
+          snapshot.set(managedClustersState, [mockManagedCluster])
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<PolicyDetailsResults />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    await waitForText('Clusters')
+    await waitForText('Showing results for 1 of 2 clusters.')
+    await waitForText("You don't have permission to view results for the remaining clusters.")
+    // Results for the visible cluster are still shown
+    await waitForText('local-cluster')
   })
 })
 

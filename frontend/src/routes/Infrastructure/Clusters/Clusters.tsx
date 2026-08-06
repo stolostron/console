@@ -9,7 +9,9 @@ import DiscoveryConfigPage from './DiscoveredClusters/DiscoveryConfig/DiscoveryC
 import ClusterDetailsPage from './ManagedClusters/ClusterDetails/ClusterDetails'
 import EditAICluster from './ManagedClusters/components/cim/EditAICluster'
 import { HypershiftAWSCLI } from './ManagedClusters/CreateCluster/components/assisted-installer/hypershift/HypershiftAWSCLI'
+import { HypershiftAzureCLI } from './ManagedClusters/CreateCluster/components/assisted-installer/hypershift/HypershiftAzureCLI'
 import { CreateAWSControlPlane } from './ManagedClusters/CreateClusterCatalog/CreateAWSControlPlane'
+import { CreateAzureControlPlane } from './ManagedClusters/CreateClusterCatalog/CreateAzureControlPlane'
 import { CreateControlPlane } from './ManagedClusters/CreateClusterCatalog/CreateControlPlane'
 import { CreateDiscoverHost } from './ManagedClusters/CreateClusterCatalog/CreateDiscoverHost'
 import { CreateKubeVirtControlPlane } from './ManagedClusters/CreateClusterCatalog/CreateKubeVirtControlPlane'
@@ -39,20 +41,32 @@ import PlacementOverviewPageContent from './Placements/PlacementDetails/Placemen
 import CreatePlacement from './Placements/CreatePlacement/CreatePlacement'
 import { EditPlacement } from './Placements/CreatePlacement/EditPlacement'
 import { PrerequisitesPage } from './ManagedClusters/components/rosahcp/PrerequisitesPage/PrerequisitesPage'
+import { RosaHCPWrapper } from './ManagedClusters/components/rosahcp/RosaHCPWrapper'
+import { useRecoilValue, useSharedAtoms } from '~/shared-recoil'
 
 const clustersChildPath = createRoutePathFunction(NavigationPath.clusters)
 
 export default function Clusters() {
+  // Only enable wizard when feature flag is enabled
+  const { settingsState } = useSharedAtoms()
+  const settings = useRecoilValue(settingsState)
+  const rosaHcpWizardFeatureFlag = settings.rosaHcpWizard === 'enabled'
+
   return (
     <Routes>
       <Route path={clustersChildPath(NavigationPath.createBMControlPlane)} element={<CreateControlPlane />} />
       <Route path={clustersChildPath(NavigationPath.createAWSControlPlane)} element={<CreateAWSControlPlane />} />
+      <Route path={clustersChildPath(NavigationPath.createAzureControlPlane)} element={<CreateAzureControlPlane />} />
       <Route
         path={clustersChildPath(NavigationPath.createKubeVirtControlPlane)}
         element={<CreateKubeVirtControlPlane />}
       />
       <Route path={clustersChildPath(NavigationPath.createAWSCLI)} element={<HypershiftAWSCLI />} />
+      <Route path={clustersChildPath(NavigationPath.createAzureCLI)} element={<HypershiftAzureCLI />} />
       <Route path={clustersChildPath(NavigationPath.prerequisites)} element={<PrerequisitesPage />} />
+      {rosaHcpWizardFeatureFlag ? (
+        <Route path={clustersChildPath(NavigationPath.createROSAHCP)} element={<RosaHCPWrapper />} />
+      ) : null}
       <Route path={clustersChildPath(NavigationPath.createDiscoverHost)} element={<CreateDiscoverHost />} />
       <Route path={clustersChildPath(NavigationPath.createCluster)} element={<CreateClusterPage />} />
       <Route path={clustersChildPath(NavigationPath.importCluster)} element={<ImportClusterPage />} />

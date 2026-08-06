@@ -1,10 +1,21 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Icon, PageSection, Title, Tooltip } from '@patternfly/react-core'
-import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
+import {
+  Alert,
+  AlertVariant,
+  EmptyState,
+  EmptyStateBody,
+  EmptyStateVariant,
+  Icon,
+  PageSection,
+  Title,
+  Tooltip,
+} from '@patternfly/react-core'
+import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon, LockIcon } from '@patternfly/react-icons'
 import { AcmEmptyState, AcmTable, AcmTableStateProvider, compareStrings } from '../../../../ui-components'
 import { ReactNode, useMemo } from 'react'
 import { Link, generatePath, useLocation } from 'react-router'
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { usePropagatedPolicies } from '../../common/useCustom'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { rbacCreate, useIsAnyNamespaceAuthorized } from '../../../../lib/rbac-util'
 import { transformBrowserUrlToFilterPresets } from '../../../../lib/urlQuery'
@@ -88,20 +99,17 @@ export default function PolicyDetailsResults() {
   const location = useLocation()
   const filterPresets = transformBrowserUrlToFilterPresets(location.search)
   const { policy } = usePolicyDetailsContext()
-  const { managedClustersState, policiesState } = useSharedAtoms()
-  const policies = useRecoilValue(policiesState)
+  const { managedClustersState } = useSharedAtoms()
   const managedClusters = useRecoilValue(managedClustersState)
   const canCreatePolicy = useIsAnyNamespaceAuthorized(rbacCreate(PolicyDefinition))
   const managedClusterNames = useMemo(() => new Set(managedClusters.map((mc) => mc.metadata.name)), [managedClusters])
+  const matchingPolicyResponses = usePropagatedPolicies(policy)
 
   const policiesDeployedOnCluster: ResultsTableData[] = useMemo(() => {
     const policyName = policy.metadata.name ?? ''
     const policyNamespace = policy.metadata.namespace ?? ''
-    const policyResponses: Policy[] = policies.filter(
-      (p: Policy) => p.metadata.name === `${policyNamespace}.${policyName}`
-    )
     const status: ResultsTableData[] = []
-    policyResponses?.forEach((policyResponse: Policy) => {
+    matchingPolicyResponses.forEach((policyResponse: Policy) => {
       const cluster =
         (policyResponse?.metadata?.labels &&
           policyResponse.metadata.labels['policy.open-cluster-management.io/cluster-name']) ??
@@ -132,7 +140,29 @@ export default function PolicyDetailsResults() {
       })
     })
     return status
-  }, [policy, policies])
+  }, [matchingPolicyResponses, policy.metadata.name, policy.metadata.namespace])
+
+  // All clusters the root policy reports status for (always visible regardless of RBAC)
+  const allPropagatedClusters = useMemo(
+    () => new Set((policy.status?.status ?? []).map((s) => s.clustername)),
+    [policy.status?.status]
+  )
+
+  // Clusters with a visible propagated policy copy, intersected with the root policy's cluster list.
+  // Derived from policy labels rather than status.details rows so that a propagated policy with no
+  // detail entries (e.g. not yet evaluated) is still counted as accessible.
+  const visibleClusterCount = useMemo(
+    () =>
+      new Set(
+        matchingPolicyResponses
+          .map((p) => p.metadata.labels?.['policy.open-cluster-management.io/cluster-name'])
+          .filter((name): name is string => !!name && allPropagatedClusters.has(name))
+      ).size,
+    [allPropagatedClusters, matchingPolicyResponses]
+  )
+
+  const hasNoAccess = allPropagatedClusters.size > 0 && visibleClusterCount === 0
+  const hasPartialAccess = allPropagatedClusters.size > visibleClusterCount && visibleClusterCount > 0
 
   const columns = useMemo(
     () => [
@@ -152,7 +182,13 @@ export default function PolicyDetailsResults() {
               {item.cluster}
             </Link>
           ) : (
-            item.cluster
+            <Tooltip
+              content={t(
+                'You need permission to view this cluster. Contact your cluster administrator for role-based access.'
+              )}
+            >
+              <span className="link-disabled">{item.cluster}</span>
+            </Tooltip>
           ),
         search: (item: ResultsTableData) => item.cluster,
         exportContent: (item: ResultsTableData) => item.cluster,
@@ -318,16 +354,50 @@ export default function PolicyDetailsResults() {
     [canCreatePolicy, managedClusterNames, t]
   )
 
+  const restrictedAccessEmptyState = (
+    <EmptyState
+      headingLevel="h4"
+      titleText={t('Access permissions needed')}
+      variant={EmptyStateVariant.lg}
+      icon={LockIcon}
+    >
+      <EmptyStateBody>
+        {t(
+          'To view these results, ask your cluster administrator for additional access. You can also get a compliance summary in the Details tab.'
+        )}
+      </EmptyStateBody>
+    </EmptyState>
+  )
+
   return (
     <PageSection hasBodyWrapper={false}>
       <Title headingLevel="h3">{t('Clusters')}</Title>
+      {hasPartialAccess && (
+        <Alert
+          variant={AlertVariant.info}
+          isInline
+          title={t('Showing results for {{visible}} of {{total}} clusters.', {
+            visible: visibleClusterCount,
+            total: allPropagatedClusters.size,
+          })}
+          style={{ marginBottom: '1rem' }}
+        >
+          {t("You don't have permission to view results for the remaining clusters.")}
+        </Alert>
+      )}
       <AcmTableStateProvider localStorageKey="grc-status-view">
         <AcmTable<ResultsTableData>
           aria-label={t('Policy results table')}
           showExportButton
           exportFilePrefix={`${policy.metadata.name}-${policy.metadata.namespace}`}
           items={policiesDeployedOnCluster}
-          emptyState={<AcmEmptyState title={t('No results found')} message={t('No results available.')} />}
+          emptyState={
+            hasNoAccess ? (
+              restrictedAccessEmptyState
+            ) : (
+              <AcmEmptyState title={t('No results found')} message={t('No results available.')} />
+            )
+          }
           columns={columns}
           keyFn={(item) => `${item.cluster}.${item.templateName}`}
           initialSort={

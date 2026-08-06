@@ -32,6 +32,7 @@ import { BatchChannelSelectModal } from './BatchChannelSelectModal'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
 import ScaleUpDialog from './cim/ScaleUpDialog'
 import { EditLabels } from './EditLabels'
+import { EditDescription } from './EditDescription'
 import { StatusField } from './StatusField'
 import { UpdateAutomationModal } from './UpdateAutomationModal'
 import { ClusterAction, clusterDestroyable, clusterSupportsAction } from '../utils/cluster-actions'
@@ -68,6 +69,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
   const agents = useRecoilValue(agentsState)
   const agentMachines = useRecoilValue(agentMachinesState)
   const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
+  const [showEditDescription, setShowEditDescription] = useState<boolean>(false)
   const infraEnvs = useRecoilValue(infraEnvironmentsState)
   const hostedClusters = useRecoilValue(hostedClustersState)
   const localHubName = useLocalHubName()
@@ -241,6 +243,13 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
           rbac: [rbacPatch(ManagedClusterDefinition, undefined, cluster.name)],
         },
         {
+          id: ClusterAction.EditDescription,
+          text: t('Edit description'),
+          click: () => setShowEditDescription(true),
+          isAriaDisabled: true,
+          rbac: [rbacPatch(ManagedClusterDefinition, undefined, cluster.name)],
+        },
+        {
           id: ClusterAction.Upgrade,
           text: t('managed.update'),
           click: () => (cluster.isHostedCluster ? setShowHypershiftUpgradeModal(true) : setShowUpgradeModal(true)),
@@ -357,7 +366,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
               processing: t('detaching'),
               items: [cluster],
               emptyState: undefined, // there is always 1 item supplied
-              description: t('bulk.message.detach'),
+              description: t('bulk.message.detach.single'),
               columns: modalColumns,
               keyFn: (cluster) => cluster.name as string,
               actionFn: (cluster) => detachCluster(cluster),
@@ -393,7 +402,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
               processing: t('destroying'),
               items: [cluster],
               emptyState: undefined, // there is always 1 item supplied
-              description: t('bulk.message.destroy'),
+              description: t('bulk.message.destroy.single'),
               columns: modalColumns,
               keyFn: (cluster) => cluster.name as string,
               actionFn: (cluster, options) =>
@@ -402,6 +411,7 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
                   ignoreClusterDeploymentNotFound: false,
                   infraEnvs,
                   deletePullSecret: !!options?.deletePullSecret,
+                  preserveOnDelete: !!options?.preserveOnDelete,
                 }),
               close: () => {
                 setModalProps({ open: false })
@@ -411,6 +421,8 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
               confirmText: cluster.displayName,
               isValidError: errorIsNot([ResourceErrorCode.NotFound]),
               enableDeletePullSecret: true,
+              enablePreserveOnDelete: cluster.isHive && !cluster.isHypershift && !cluster.isHostedCluster,
+              actionWhenPreserve: t('Destroy and preserve infrastructure'),
             })
           },
           isAriaDisabled: true,
@@ -522,6 +534,25 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         }
         displayName={cluster.displayName}
         close={() => setShowEditLabels(false)}
+      />
+      <EditDescription
+        resource={
+          showEditDescription
+            ? {
+                ...ManagedClusterDefinition,
+                metadata: { name: cluster.name, annotations: cluster.annotations },
+              }
+            : undefined
+        }
+        onSave={() =>
+          toastContext.addAlert({
+            title: t('Success'),
+            message: t('Description updated successfully'),
+            type: 'success',
+            autoClose: true,
+          })
+        }
+        close={() => setShowEditDescription(false)}
       />
       <BatchUpgradeModal clusters={[cluster]} open={showUpgradeModal} close={() => setShowUpgradeModal(false)} />
       <BatchChannelSelectModal

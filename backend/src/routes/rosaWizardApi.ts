@@ -31,8 +31,26 @@ type WithAwsAccount = Payload & {
   aws_account_id: string
 }
 
+type MachineTypesPayload = Payload & {
+  region: string
+  role_arn: string
+  availability_zones: string[]
+}
+
 type ClusterNameCheck = Payload & {
   cluster_name: string
+}
+
+type VPCPayload = Payload & {
+  aws: {
+    account_id: string
+    sts: {
+      role_arn: string
+    }
+  }
+  region: {
+    id: string
+  }
 }
 
 export async function getAwsAccountIds(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
@@ -238,6 +256,48 @@ export async function getClusterNameCheck(req: Http2ServerRequest, res: Http2Ser
   }
 }
 
+export async function getWizardVPCs(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
+  const token = await getAuthenticatedToken(req, res)
+  if (token) {
+    try {
+      let data: string = undefined
+      const chucks: string[] = []
+      req.on('data', (chuck: string) => {
+        chucks.push(chuck)
+      })
+
+      req.on('end', async () => {
+        try {
+          data = chucks.join('')
+          const body = JSON.parse(data) as VPCPayload
+
+          const payload = {
+            aws: body.aws,
+            region: body.region,
+          }
+
+          const accessTokenSSO = await getOcmServiceToken(body.service_account_id, body.service_account_secret)
+
+          const accountPath = `${API_URL}/api/clusters_mgmt/v1/aws_inquiries/vpcs?fetchSecurityGroups=true`
+          const request = await jsonPost(accountPath, payload, accessTokenSSO).catch((err: Error) => {
+            logger.error({ msg: 'Failed to fetch account', error: err.message })
+            return { error: err.message }
+          })
+
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify(request))
+        } catch (err) {
+          logger.error(err)
+          respondInternalServerError(req, res)
+        }
+      })
+    } catch (err) {
+      logger.error(err)
+      respondInternalServerError(req, res)
+    }
+  }
+}
+
 export async function getRoleARNs(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   const token = await getAuthenticatedToken(req, res)
   if (token) {
@@ -354,6 +414,86 @@ export async function getUserRole(req: Http2ServerRequest, res: Http2ServerRespo
 
           res.setHeader('Content-Type', 'application/json')
           res.end(JSON.stringify(accReq))
+        } catch (err) {
+          logger.error(err)
+          respondInternalServerError(req, res)
+        }
+      })
+    } catch (err) {
+      logger.error(err)
+      respondInternalServerError(req, res)
+    }
+  }
+}
+
+export async function getWizardMachineTypes(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
+  const token = await getAuthenticatedToken(req, res)
+  if (token) {
+    try {
+      let data: string = undefined
+      const chucks: string[] = []
+      req.on('data', (chuck: string) => {
+        chucks.push(chuck)
+      })
+
+      req.on('end', async () => {
+        try {
+          data = chucks.join('')
+          const body = JSON.parse(data) as MachineTypesPayload
+
+          const accessTokenSSO = await getOcmServiceToken(body.service_account_id, body.service_account_secret)
+
+          const machineTypesPath = `${API_URL}/api/clusters_mgmt/v1/aws_inquiries/machine_types?size=-1`
+
+          const requestBody = {
+            aws: { sts: { role_arn: body.role_arn } },
+            region: { id: body.region },
+            availability_zones: body.availability_zones ?? [],
+          }
+
+          const accReq = await jsonPost(machineTypesPath, requestBody, accessTokenSSO).catch((err: Error) => {
+            logger.error({ msg: 'Error getting machine types', error: err.message })
+            return { error: err.message }
+          })
+
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify(accReq))
+        } catch (err) {
+          logger.error(err)
+          respondInternalServerError(req, res)
+        }
+      })
+    } catch (err) {
+      logger.error(err)
+      respondInternalServerError(req, res)
+    }
+  }
+}
+
+export async function getWizardVersions(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
+  const token = await getAuthenticatedToken(req, res)
+  if (token) {
+    try {
+      let data: string = undefined
+      const chucks: string[] = []
+      req.on('data', (chuck: string) => {
+        chucks.push(chuck)
+      })
+
+      req.on('end', async () => {
+        try {
+          data = chucks.join('')
+          const body = JSON.parse(data) as Payload
+          const accessTokenSSO = await getOcmServiceToken(body.service_account_id, body.service_account_secret)
+
+          const versionsPath = `${API_URL}/api/clusters_mgmt/v1/versions/?order=end_of_life_timestamp desc&product=hcp&search=enabled='t' AND (channel_group='stable' OR channel_group='eus' OR channel_group='candidate' OR channel_group='fast' OR channel_group='nightly') AND rosa_enabled='t'&size=-1`
+          const request = await jsonRequest(versionsPath, accessTokenSSO).catch((err: Error) => {
+            logger.error({ msg: 'Failed to fetch versions', error: err.message })
+            return { error: err.message }
+          })
+
+          res.setHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify(request))
         } catch (err) {
           logger.error(err)
           respondInternalServerError(req, res)

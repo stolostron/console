@@ -16,6 +16,7 @@ import type {
   TopologyLink,
   TopologyResourceMap,
   DiagramElements,
+  GetDiagramElementsResult,
   ClusterGroupingState,
   HelmReleasesState,
   ResourceStatuses,
@@ -24,7 +25,8 @@ import type {
   OCPFluxApplicationModel,
 } from '../types'
 import { ToolbarControl } from '../topology/components/TopologyToolbar'
-import { Service } from '../../../../../resources'
+import { Service, type Placement } from '../../../../../resources'
+import { analyzeTopology } from '../analysis/analyzeTopology'
 
 /**
  * Main function to get topology data for different application types.
@@ -97,7 +99,7 @@ export const getTopology = async (
  * @param t - Translation function for internationalization
  * @returns Diagram elements ready for rendering
  */
-export const getDiagramElements = (
+export const buildDiagramElements = (
   topology: Topology,
   resourceStatuses: ResourceStatuses | null,
   canUpdateStatuses: boolean,
@@ -172,6 +174,22 @@ export const getDiagramElements = (
     links: links,
     nodes: nodes,
   }
+}
+
+export const getDiagramElements = (
+  topology: Topology,
+  resourceStatuses: ResourceStatuses | null,
+  canUpdateStatuses: boolean,
+  t: Translator,
+  placements: Placement[] = []
+): GetDiagramElementsResult => {
+  const diagramElements = buildDiagramElements(topology, resourceStatuses, canUpdateStatuses, t)
+
+  const alertsPromise = resourceStatuses
+    ? analyzeTopology(diagramElements.nodes, t, placements, (topology.hubClusterName as string) ?? '')
+    : undefined
+
+  return { diagramElements, alertsPromise }
 }
 
 /**

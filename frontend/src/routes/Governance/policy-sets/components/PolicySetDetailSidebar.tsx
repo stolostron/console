@@ -1,7 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ChartDonut, ChartLabel, ChartLegend } from '@patternfly/react-charts/victory'
-import { Split, SplitItem, Stack, Content, ContentVariants, ToggleGroup, ToggleGroupItem } from '@patternfly/react-core'
+import {
+  Split,
+  SplitItem,
+  Stack,
+  Content,
+  ContentVariants,
+  ToggleGroup,
+  ToggleGroupItem,
+  Tooltip,
+} from '@patternfly/react-core'
 import { TableGridBreakpoint } from '@patternfly/react-table'
 import {
   AcmEmptyState,
@@ -14,9 +23,36 @@ import {
 import type { TFunction } from 'i18next'
 import { useCallback, useMemo, useState } from 'react'
 import { Link, generatePath } from 'react-router'
+
+function ClusterNameCell({
+  cluster,
+  visibleClusterNames,
+  t,
+}: {
+  cluster: string
+  visibleClusterNames: Set<string>
+  t: TFunction
+}) {
+  return visibleClusterNames.has(cluster) ? (
+    <Link
+      to={generatePath(NavigationPath.clusterOverview, {
+        name: cluster,
+        namespace: cluster || UNKNOWN_NAMESPACE,
+      })}
+    >
+      {cluster}
+    </Link>
+  ) : (
+    <Tooltip
+      content={t('You need permission to view this cluster. Contact your cluster administrator for role-based access.')}
+    >
+      <span className="link-disabled">{cluster}</span>
+    </Tooltip>
+  )
+}
 import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
-import { NavigationPath } from '../../../../NavigationPath'
+import { NavigationPath, UNKNOWN_NAMESPACE } from '../../../../NavigationPath'
 import { Policy, PolicySet } from '../../../../resources'
 import { exportObjectString } from '../../../../resources/utils'
 import {
@@ -97,8 +133,10 @@ function renderDonutChart(
 export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
   const { policySet } = props
   const { t } = useTranslation()
-  const { managedClustersState, placementBindingsState, placementDecisionsState, placementsState } = useSharedAtoms()
+  const { managedClustersState, placementBindingsState, placementDecisionsState, placementsState, policiesState } =
+    useSharedAtoms()
   const managedClusters = useRecoilValue(managedClustersState)
+  const propagatedPolicies = useRecoilValue(policiesState)
   const policies = useAddRemediationPolicies()
   const placements = useRecoilValue(placementsState)
   const placementBindings = useRecoilValue(placementBindingsState)
@@ -154,6 +192,21 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
   )
   const clusterPolicyViolationsColumn = usePolicySetClusterPolicyViolationsColumn(clusterViolationSummaryMap)
 
+  const visibleClusterNames = useMemo(() => {
+    const visible = new Set<string>()
+    for (const policy of policySetPolicies) {
+      const ns = policy.metadata.namespace ?? ''
+      const name = policy.metadata.name ?? ''
+      for (const p of propagatedPolicies) {
+        if (p.metadata.name === `${ns}.${name}`) {
+          const clusterName = p.metadata.labels?.['policy.open-cluster-management.io/cluster-name']
+          if (clusterName) visible.add(clusterName)
+        }
+      }
+    }
+    return visible
+  }, [propagatedPolicies, policySetPolicies])
+
   const clusterColumnDefs = useMemo(
     () => [
       {
@@ -163,7 +216,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
           /* istanbul ignore next */
           compareStrings(a, b),
         cell: (cluster: string) => (
-          <a href={`/multicloud/infrastructure/clusters/details/${cluster}/${cluster}/overview`}>{cluster}</a>
+          <ClusterNameCell cluster={cluster} visibleClusterNames={visibleClusterNames} t={t} />
         ),
         exportContent: (cluster: string) => cluster,
       },
@@ -215,7 +268,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
         },
       },
     ],
-    [clusterPolicyViolationsColumn, localHubName, managedClusters, t]
+    [clusterPolicyViolationsColumn, localHubName, visibleClusterNames, managedClusters, t]
   )
 
   const decision = useMemo(

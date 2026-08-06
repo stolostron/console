@@ -102,6 +102,21 @@ All source files must start with the copyright header:
 - **Constants**: `UPPER_SNAKE_CASE` for truly constant values (e.g., `MAX_RETRY_ATTEMPTS`)
 - **Reusable UI components**: Prefix with `Acm` (e.g., `AcmTable`, `AcmButton`) — these live in `frontend/src/ui-components/`
 
+## Commit Standards
+
+Each commit in a pull request should be small, logical, and complete:
+
+- **Small** — One coherent idea per commit. A reviewer can understand the change in isolation.
+- **Logical** — Related changes grouped together, unrelated changes in separate commits.
+- **Complete** — Every commit passes unit tests (`npm test`) and repository checks
+  (`npm run check` — TypeScript, linting, copyright headers, and translation validation)
+  independently.
+- **Tests separate** — Add test cases in their own commits, separate from the implementation they cover.
+- **Clean history** — If reverting a change during development, drop the original commit
+  rather than adding a revert commit. Use interactive rebase to keep the PR history clean
+  before requesting review.
+- **No WIP** — Avoid "WIP", "fixup", or "temp" commits in the final PR. Squash or rebase them before review.
+
 ## Branch Strategy
 
 The same codebase builds images for ACM (`release-*` branches) and MCE (`backplane-*` branches). The build system automatically fast-forwards commits between paired branches. See the "Active Release Branches" section in `README.md` for the current branch chains. Pull requests should target the first branch in each chain, which is `main` for the current release. Never open a PR directly against a `backplane-*` branch. 
