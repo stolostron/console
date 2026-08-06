@@ -47,7 +47,7 @@ function pushRangeDecoration(
   node: YamlNode | undefined,
   className: string
 ) {
-  if (!node || node.startPosition == null || node.endPosition == null) return
+  if (node?.startPosition == null || node?.endPosition == null) return
   const start = model.getPositionAt(node.startPosition)
   const end = model.getPositionAt(node.endPosition)
   decorations.push({
@@ -159,16 +159,16 @@ export function getSearchYamlStatusDecorations(model: monaco.editor.ITextModel):
  * Returns a disposer that clears decorations and removes the content listener.
  */
 export function registerSearchYamlStatusDecorations(editor: monaco.editor.IStandaloneCodeEditor): () => void {
-  let decorationIds: string[] = []
+  const collection = editor.createDecorationsCollection()
   const refresh = () => {
     const model = editor.getModel()
     if (!model) return
-    decorationIds = editor.deltaDecorations(decorationIds, getSearchYamlStatusDecorations(model))
+    collection.set(getSearchYamlStatusDecorations(model))
   }
   refresh()
   const disposable = editor.onDidChangeModelContent(() => refresh())
   return () => {
     disposable.dispose()
-    decorationIds = editor.deltaDecorations(decorationIds, [])
+    collection.clear()
   }
 }

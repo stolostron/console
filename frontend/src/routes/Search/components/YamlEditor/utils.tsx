@@ -66,7 +66,7 @@ export const fold = (
     editor.setSelection(new Range(start, 0, end, 0))
     editor
       .getAction('editor.fold')
-      .run()
+      ?.run()
       .then(() => {
         if (resetMouseLocation) {
           editor.setSelection(new Range(0, 0, 0, 0))

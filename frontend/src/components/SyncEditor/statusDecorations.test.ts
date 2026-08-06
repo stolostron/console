@@ -96,6 +96,11 @@ describe('isTerminatedContainerFailure', () => {
   it('ignores Completed with exitCode 0', () => {
     expect(isTerminatedContainerFailure({ reason: 'Completed', exitCode: 0 })).toBe(false)
   })
+
+  it('ignores non-string reason values', () => {
+    expect(isTerminatedContainerFailure({ reason: { nested: true }, exitCode: 0 })).toBe(false)
+    expect(isTerminatedContainerFailure({ reason: undefined, exitCode: 0 })).toBe(false)
+  })
 })
 
 describe('key ordering', () => {

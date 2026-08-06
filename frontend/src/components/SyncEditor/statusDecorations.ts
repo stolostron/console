@@ -69,7 +69,8 @@ export function classifyCondition(condition: ConditionLike): ConditionOutcome {
  * Covers reason: Error (ACM-38199) plus common non-success terminations and non-zero exitCode.
  */
 export function isTerminatedContainerFailure(terminated: { reason?: unknown; exitCode?: unknown }): boolean {
-  const reason = typeof terminated.reason === 'string' ? terminated.reason : String(terminated.reason ?? '')
+  // Only treat string reasons as meaningful; avoid String(object) → "[object Object]".
+  const reason = typeof terminated.reason === 'string' ? terminated.reason : ''
   if (reason === 'Completed') {
     return false
   }
@@ -146,10 +147,15 @@ export function prepareResourceForYaml(resource: unknown): unknown {
   return walkReorder(resource, 'root')
 }
 
+function arrayChildContext(parentKey: string): string {
+  if (parentKey === 'conditions') return 'conditionItem'
+  if (parentKey === 'containerStatuses') return 'containerStatus'
+  return 'root'
+}
+
 function walkReorder(node: unknown, parentKey: string): unknown {
   if (Array.isArray(node)) {
-    const childContext =
-      parentKey === 'conditions' ? 'conditionItem' : parentKey === 'containerStatuses' ? 'containerStatus' : 'root'
+    const childContext = arrayChildContext(parentKey)
     return node.map((item) => walkReorder(item, childContext))
   }
   if (!isPlainObject(node)) {
@@ -299,6 +305,27 @@ function decorateLastStateErrors(
   }
 }
 
+function decorateResourceStatusMapping(
+  monaco: Monaco,
+  resourceMapping: Record<string, StatusMappingLeaf>,
+  decorations: editorTypes.IModelDeltaDecoration[]
+) {
+  const statusMapping = resourceMapping.status
+  if (!statusMapping) return
+
+  decorateUnavailableReplicas(monaco, statusMapping, decorations)
+
+  const statusFields = (statusMapping.$v ?? {}) as Record<string, StatusMappingLeaf>
+  const conditionsMapping = statusFields.conditions
+  if (conditionsMapping && Array.isArray(conditionsMapping.$v)) {
+    for (const conditionMapping of conditionsMapping.$v as StatusMappingLeaf[]) {
+      decorateConditionMapping(monaco, conditionMapping, decorations)
+    }
+  }
+
+  decorateLastStateErrors(monaco, statusFields.containerStatuses, decorations)
+}
+
 /**
  * Build Monaco decorations for status.conditions / unavailableReplicas / lastState from SyncEditor mappings.
  */
@@ -312,20 +339,7 @@ export function getStatusDecorationsFromMappings(
   for (const resources of Object.values(mappings)) {
     if (!Array.isArray(resources)) continue
     for (const resourceMapping of resources) {
-      const statusMapping = (resourceMapping as Record<string, StatusMappingLeaf>).status
-      if (!statusMapping) continue
-
-      decorateUnavailableReplicas(monaco, statusMapping, decorations)
-
-      const statusFields = (statusMapping.$v ?? {}) as Record<string, StatusMappingLeaf>
-      const conditionsMapping = statusFields.conditions
-      if (conditionsMapping && Array.isArray(conditionsMapping.$v)) {
-        for (const conditionMapping of conditionsMapping.$v as StatusMappingLeaf[]) {
-          decorateConditionMapping(monaco, conditionMapping, decorations)
-        }
-      }
-
-      decorateLastStateErrors(monaco, statusFields.containerStatuses, decorations)
+      decorateResourceStatusMapping(monaco, resourceMapping as Record<string, StatusMappingLeaf>, decorations)
     }
   }
 

@@ -168,12 +168,12 @@ status:
     const model = createModel(() => currentYaml)
     const contentListeners: Array<() => void> = []
     const disposeListener = jest.fn()
-    const deltaDecorations = jest.fn((_old: string[], next: Array<{ options?: { inlineClassName?: string } }>) =>
-      next.map((_, i) => `dec-${i}`)
-    )
+    const set = jest.fn()
+    const clear = jest.fn()
+    const createDecorationsCollection = jest.fn(() => ({ set, clear }))
     const editor = {
       getModel: jest.fn(() => model),
-      deltaDecorations,
+      createDecorationsCollection,
       onDidChangeModelContent: jest.fn((cb: () => void) => {
         contentListeners.push(cb)
         return { dispose: disposeListener }
@@ -183,30 +183,33 @@ status:
     const dispose = registerSearchYamlStatusDecorations(editor as never)
     expect(editor.onDidChangeModelContent).toHaveBeenCalled()
     expect(contentListeners).toHaveLength(1)
-    const initialDecorations = deltaDecorations.mock.calls[0][1]
+    expect(createDecorationsCollection).toHaveBeenCalled()
+    const initialDecorations = set.mock.calls[0][0] as Array<{ options?: { inlineClassName?: string } }>
     expect(initialDecorations.map((d) => d.options?.inlineClassName)).toContain(STATUS_FAILURE_CLASS)
     expect(initialDecorations.map((d) => d.options?.inlineClassName)).not.toContain(STATUS_SUCCESS_CLASS)
 
-    deltaDecorations.mockClear()
+    set.mockClear()
     currentYaml = successYaml
     contentListeners[0]()
-    const refreshedDecorations = deltaDecorations.mock.calls[0][1]
+    const refreshedDecorations = set.mock.calls[0][0] as Array<{ options?: { inlineClassName?: string } }>
     expect(refreshedDecorations.map((d) => d.options?.inlineClassName)).toContain(STATUS_SUCCESS_CLASS)
     expect(refreshedDecorations.map((d) => d.options?.inlineClassName)).not.toContain(STATUS_FAILURE_CLASS)
 
     dispose()
     expect(disposeListener).toHaveBeenCalled()
-    expect(deltaDecorations).toHaveBeenCalledWith(expect.any(Array), [])
+    expect(clear).toHaveBeenCalled()
   })
 
   it('skips refresh when editor has no model', () => {
-    const deltaDecorations = jest.fn()
+    const set = jest.fn()
+    const clear = jest.fn()
+    const createDecorationsCollection = jest.fn(() => ({ set, clear }))
     const editor = {
       getModel: jest.fn(() => null),
-      deltaDecorations,
+      createDecorationsCollection,
       onDidChangeModelContent: jest.fn(() => ({ dispose: jest.fn() })),
     }
     registerSearchYamlStatusDecorations(editor as never)
-    expect(deltaDecorations).not.toHaveBeenCalled()
+    expect(set).not.toHaveBeenCalled()
   })
 })
