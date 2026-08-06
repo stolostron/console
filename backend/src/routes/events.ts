@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint-disable no-constant-condition */
 
+import { createHash } from 'node:crypto'
 import eventStream from 'event-stream'
 import get from 'get-value'
 import got, { CancelError, HTTPError, TimeoutError } from 'got'
@@ -133,6 +134,145 @@ export let resourceCache: ResourceCache = {}
 
 const accessCache: Record<string, Record<string, { time: number; promise: Promise<boolean> }>> = {}
 
+interface SubjectRulesStatus {
+  incomplete: boolean
+  /** True when the SelfSubjectRulesReview request itself failed. */
+  unavailable?: boolean
+  resourceRules: Array<{
+    verbs?: string[]
+    apiGroups?: string[]
+    resources?: string[]
+    resourceNames?: string[]
+  }>
+}
+
+type KindGetAccess =
+  | { type: 'deny-all' }
+  | { type: 'allow-all' }
+  | { type: 'allow-names'; names: Set<string> }
+  | { type: 'incomplete' }
+
+const subjectRulesCache: Record<string, { time: number; promise: Promise<SubjectRulesStatus> }> = {}
+const kindGetAccessCache: Record<string, { time: number; promise: Promise<KindGetAccess> }> = {}
+
+/** Clear all cached RBAC access checks. Used for test isolation. */
+export function resetAccessCache() {
+  for (const key in accessCache) {
+    delete accessCache[key]
+  }
+  for (const key in subjectRulesCache) {
+    delete subjectRulesCache[key]
+  }
+  for (const key in kindGetAccessCache) {
+    delete kindGetAccessCache[key]
+  }
+}
+
+export function getAccessCache() {
+  return accessCache
+}
+
+export const ACCESS_CACHE_TTL = 60 * 1000 // 60 seconds
+export const ACCESS_CACHE_CLEANUP_INTERVAL = 90 * 1000 // 90 seconds
+export const ACCESS_CACHE_MAX_TOKENS = 1000 // Maximum number of token entries to keep
+export const ACCESS_CACHE_MAX_ENTRIES_PER_TOKEN = 2000 // Cap RBAC keys retained per token
+
+/** Hash bearer tokens so the access cache does not retain full JWTs as object keys. */
+export function hashAccessToken(token: string): string {
+  return createHash('sha256').update(token).digest('hex')
+}
+
+function enforceAccessCacheEntryCap(tokenCache: Record<string, { time: number; promise: Promise<boolean> }>) {
+  const keys = Object.keys(tokenCache)
+  if (keys.length <= ACCESS_CACHE_MAX_ENTRIES_PER_TOKEN) return
+  keys.sort((a, b) => tokenCache[a].time - tokenCache[b].time)
+  const toRemove = keys.length - ACCESS_CACHE_MAX_ENTRIES_PER_TOKEN
+  for (let i = 0; i < toRemove; i++) {
+    delete tokenCache[keys[i]]
+  }
+}
+
+let accessCacheCleanupTimer: NodeJS.Timeout | undefined
+
+function expireTimedEntries<T extends { time: number }>(cache: Record<string, T>, cutoffTime: number) {
+  for (const key in cache) {
+    if (cache[key].time < cutoffTime) {
+      delete cache[key]
+    }
+  }
+}
+
+/** Prune one token's SSAR entries; returns newest remaining time, or undefined if the token was removed. */
+function pruneAccessCacheToken(
+  token: string,
+  tokenCache: Record<string, { time: number; promise: Promise<boolean> }>,
+  cutoffTime: number
+): number | undefined {
+  let newestTime = 0
+
+  for (const key in tokenCache) {
+    if (tokenCache[key].time < cutoffTime) {
+      delete tokenCache[key]
+    } else if (tokenCache[key].time > newestTime) {
+      newestTime = tokenCache[key].time
+    }
+  }
+
+  if (Object.keys(tokenCache).length === 0) {
+    delete accessCache[token]
+    return undefined
+  }
+
+  enforceAccessCacheEntryCap(tokenCache)
+  return newestTime
+}
+
+export function cleanupAccessCache() {
+  const cutoffTime = Date.now() - ACCESS_CACHE_TTL
+  const tokenStats: Array<{ token: string; newestTime: number }> = []
+
+  for (const token in accessCache) {
+    const newestTime = pruneAccessCacheToken(token, accessCache[token], cutoffTime)
+    if (newestTime !== undefined) {
+      tokenStats.push({ token, newestTime })
+    }
+  }
+
+  expireTimedEntries(subjectRulesCache, cutoffTime)
+  expireTimedEntries(kindGetAccessCache, cutoffTime)
+
+  if (tokenStats.length <= ACCESS_CACHE_MAX_TOKENS) return
+
+  tokenStats.sort((a, b) => a.newestTime - b.newestTime)
+  const tokensToRemove = tokenStats.length - ACCESS_CACHE_MAX_TOKENS
+  for (let i = 0; i < tokensToRemove; i++) {
+    delete accessCache[tokenStats[i].token]
+  }
+}
+
+function startAccessCacheCleanup() {
+  if (accessCacheCleanupTimer) return
+
+  accessCacheCleanupTimer = setInterval(() => {
+    try {
+      cleanupAccessCache()
+    } catch (err: unknown) {
+      logger.error({ msg: 'accessCache cleanup failed', error: err })
+    }
+  }, ACCESS_CACHE_CLEANUP_INTERVAL)
+
+  accessCacheCleanupTimer.unref()
+  logger.info({ msg: 'accessCache cleanup started', interval: ACCESS_CACHE_CLEANUP_INTERVAL })
+}
+
+function stopAccessCacheCleanup() {
+  if (accessCacheCleanupTimer) {
+    clearInterval(accessCacheCleanupTimer)
+    accessCacheCleanupTimer = undefined
+    logger.info({ msg: 'accessCache cleanup stopped' })
+  }
+}
+
 const definitions: IWatchOptions[] = [
   { kind: 'ClusterManagementAddOn', apiVersion: 'addon.open-cluster-management.io/v1alpha1' },
   { kind: 'ManagedClusterAddOn', apiVersion: 'addon.open-cluster-management.io/v1alpha1' },
@@ -223,6 +363,7 @@ const definitions: IWatchOptions[] = [
 
 export function startWatching(): void {
   ServerSideEvents.eventFilter = eventFilter
+  startAccessCacheCleanup()
 
   for (const definition of definitions) {
     void listAndWatch(definition)
@@ -626,14 +767,25 @@ function eventFilter(token: string, serverSideEvent: ServerSideEvent<ServerSideE
       return Promise.resolve(true)
     case 'ADDED':
     case 'MODIFIED': {
-      const watchEvent = serverSideEvent.data
-      const resource = watchEvent.object
+      const resource = serverSideEvent.data.object
+      if (!resource?.kind || !resource?.apiVersion) {
+        return Promise.resolve(false)
+      }
+      // Fast path: cluster-scoped list (admins / broad ClusterRoles).
       return canListClusterScopedKind(resource, token).then((allowed) => {
         if (allowed) return true
-        return canListNamespacedScopedKind(resource, token).then((allowed) => {
-          if (allowed) return true
-          return canGetResource(resource, token)
-        })
+        // After cluster list is denied, use one SelfSubjectRulesReview per token/kind.
+        // Do NOT fall through to namespaced list SSAR first — that is O(namespaces) and
+        // OOMs/hangs restricted users when MOCK_CLUSTERS (or real inventory) is large.
+        return resolveKindGetAccess(resource.kind, resource.apiVersion, token).then((access) =>
+          applyKindGetAccess(access, resource, token, () =>
+            // Authorizer could not enumerate rules; keep prior namespaced-list then get fallback.
+            canListNamespacedScopedKind(resource, token).then((nsAllowed) => {
+              if (nsAllowed) return true
+              return canAccess(resource, 'get', token)
+            })
+          )
+        )
       })
     }
     default:
@@ -642,11 +794,17 @@ function eventFilter(token: string, serverSideEvent: ServerSideEvent<ServerSideE
   }
 }
 
-function canListClusterScopedKind(resource: IResource, token: string): Promise<boolean> {
+function canListClusterScopedKind(
+  resource: { kind: string; apiVersion: string; metadata?: { name?: string; namespace?: string } },
+  token: string
+): Promise<boolean> {
   return canAccess({ kind: resource.kind, apiVersion: resource.apiVersion }, 'list', token)
 }
 
-function canListNamespacedScopedKind(resource: IResource, token: string): Promise<boolean> {
+function canListNamespacedScopedKind(
+  resource: { kind: string; apiVersion: string; metadata?: { name?: string; namespace?: string } },
+  token: string
+): Promise<boolean> {
   if (!resource.metadata?.namespace) return Promise.resolve(false)
   return canAccess(
     {
@@ -659,8 +817,148 @@ function canListNamespacedScopedKind(resource: IResource, token: string): Promis
   )
 }
 
-function canGetResource(resource: IResource, token: string): Promise<boolean> {
-  return canAccess(resource, 'get', token)
+/** Used by SSE eventFilter after list checks fail; prefers SelfSubjectRulesReview over N SSARs. */
+export function canGetResource(
+  resource: { kind: string; apiVersion: string; metadata?: { name?: string; namespace?: string } },
+  token: string
+): Promise<boolean> {
+  return resolveKindGetAccess(resource.kind, resource.apiVersion, token).then((access) =>
+    applyKindGetAccess(access, resource, token)
+  )
+}
+
+function applyKindGetAccess(
+  access: KindGetAccess,
+  resource: { kind: string; apiVersion: string; metadata?: { name?: string; namespace?: string } },
+  token: string,
+  onIncomplete?: () => Promise<boolean>
+): Promise<boolean> {
+  switch (access.type) {
+    case 'deny-all':
+      return Promise.resolve(false)
+    case 'allow-all':
+      return Promise.resolve(true)
+    case 'allow-names':
+      return Promise.resolve(resource.metadata?.name ? access.names.has(resource.metadata.name) : false)
+    case 'incomplete':
+      return onIncomplete ? onIncomplete() : canAccess(resource, 'get', token)
+  }
+}
+
+/**
+ * One SelfSubjectRulesReview per token (namespace "default").
+ * ClusterRole bindings appear here; avoids an SSRR storm across MOCK_CLUSTERS namespaces.
+ */
+function getSubjectRules(token: string): Promise<SubjectRulesStatus> {
+  const cacheKey = hashAccessToken(token)
+  const existing = subjectRulesCache[cacheKey]
+  if (existing && existing.time > Date.now() - ACCESS_CACHE_TTL) {
+    return existing.promise
+  }
+
+  const promise = jsonPost<{
+    status?: {
+      incomplete?: boolean
+      resourceRules?: SubjectRulesStatus['resourceRules']
+    }
+  }>(
+    process.env.CLUSTER_API_URL + '/apis/authorization.k8s.io/v1/selfsubjectrulesreviews',
+    {
+      apiVersion: 'authorization.k8s.io/v1',
+      kind: 'SelfSubjectRulesReview',
+      metadata: {},
+      // Namespace is required by the API; ClusterRole bindings are included for any namespace.
+      spec: { namespace: 'default' },
+    },
+    token
+  )
+    .then((result) => {
+      // jsonPost resolves on HTTP errors; treat non-2xx as review unavailable (SSAR fallback).
+      if (result.statusCode < 200 || result.statusCode >= 300) {
+        throw new Error(`SelfSubjectRulesReview failed with status ${result.statusCode}`)
+      }
+      return {
+        incomplete: result.body?.status?.incomplete ?? false,
+        resourceRules: result.body?.status?.resourceRules ?? [],
+      }
+    })
+    .catch((err: unknown) => {
+      logger.warn({ msg: 'SelfSubjectRulesReview failed; falling back to per-object SSAR', error: err })
+      // Do not retain a failed review under ACCESS_CACHE_TTL; next call should retry SSRR.
+      delete subjectRulesCache[cacheKey]
+      return {
+        incomplete: true,
+        unavailable: true,
+        resourceRules: [] as SubjectRulesStatus['resourceRules'],
+      }
+    })
+
+  subjectRulesCache[cacheKey] = { time: Date.now(), promise }
+  return promise
+}
+
+function ruleGrantsKindAccess(
+  rule: SubjectRulesStatus['resourceRules'][number],
+  group: string,
+  resourcePlural: string,
+  accessVerbs: Set<string>
+): { allowAll: true } | { names: string[] } | null {
+  const verbs = rule.verbs ?? []
+  if (!verbs.includes('*') && !verbs.some((verb) => accessVerbs.has(verb))) return null
+
+  const groups = rule.apiGroups ?? []
+  if (!groups.includes('*') && !groups.includes(group)) return null
+
+  const resources = rule.resources ?? []
+  if (!resources.includes('*') && !resources.includes(resourcePlural)) return null
+
+  const resourceNames = rule.resourceNames
+  if (!resourceNames || resourceNames.length === 0 || resourceNames.includes('*')) {
+    return { allowAll: true }
+  }
+  return { names: resourceNames }
+}
+
+function evaluateKindGetAccess(rules: SubjectRulesStatus, kind: string, apiVersion: string): KindGetAccess {
+  const group = apiVersion.includes('/') ? apiVersion.split('/')[0] : ''
+  const resourcePlural = pluralize(kind.toLowerCase())
+  const accessVerbs = new Set(['get', 'list', 'watch'])
+
+  let allowAll = false
+  const names = new Set<string>()
+
+  for (const rule of rules.resourceRules) {
+    const match = ruleGrantsKindAccess(rule, group, resourcePlural, accessVerbs)
+    if (!match) continue
+    if ('allowAll' in match) {
+      allowAll = true
+      break
+    }
+    for (const name of match.names) names.add(name)
+  }
+
+  if (allowAll) return { type: 'allow-all' }
+  if (names.size > 0) return { type: 'allow-names', names }
+  // The review request failed; defer to the per-object SSAR fallback.
+  if (rules.unavailable === true) return { type: 'incomplete' }
+  // OpenShift often sets incomplete=true even when the user has no bindings and resourceRules
+  // is empty. Treat empty rules as deny-all so we do not fall back to O(N) namespaced SSARs.
+  if (rules.resourceRules.length === 0) return { type: 'deny-all' }
+  // Non-empty but incomplete: authorizer may have omitted grants for this kind — fall back.
+  if (rules.incomplete) return { type: 'incomplete' }
+  return { type: 'deny-all' }
+}
+
+function resolveKindGetAccess(kind: string, apiVersion: string, token: string): Promise<KindGetAccess> {
+  const cacheKey = `${hashAccessToken(token)}:${kind}:${apiVersion}`
+  const existing = kindGetAccessCache[cacheKey]
+  if (existing && existing.time > Date.now() - ACCESS_CACHE_TTL) {
+    return existing.promise
+  }
+
+  const promise = getSubjectRules(token).then((rules) => evaluateKindGetAccess(rules, kind, apiVersion))
+  kindGetAccessCache[cacheKey] = { time: Date.now(), promise }
+  return promise
 }
 
 export function canAccess(
@@ -668,12 +966,12 @@ export function canAccess(
   verb: 'get' | 'list' | 'create',
   token: string
 ): Promise<boolean> {
-  // TODO make sure old cache items get cleaned up
-
-  const key = `${resource.kind}:${resource.metadata?.namespace}:${resource.metadata?.name}`
-  if (!accessCache[token]) accessCache[token] = {}
-  const existing = accessCache[token][key]
-  if (existing && existing.time > Date.now() - 60 * 1000) {
+  // Cache is cleaned up periodically by cleanupAccessCache() to prevent unbounded memory growth
+  const tokenKey = hashAccessToken(token)
+  const key = `${verb}:${resource.kind}:${resource.metadata?.namespace}:${resource.metadata?.name}`
+  if (!accessCache[tokenKey]) accessCache[tokenKey] = {}
+  const existing = accessCache[tokenKey][key]
+  if (existing && existing.time > Date.now() - ACCESS_CACHE_TTL) {
     return existing.promise
   }
 
@@ -696,29 +994,37 @@ export function canAccess(
     },
     token
   ).then((result) => {
+    const allowed = result.body.status.allowed
     if (process.env.LOG_ACCESS === 'true') {
       logger.debug({
         msg: 'access',
-        allowed: result.body.status.allowed,
+        allowed,
         verb,
         resource: pluralize(resource.kind.toLowerCase()),
         name: resource.metadata?.name,
         namespace: resource.metadata?.namespace,
       })
     }
-    return result.body.status.allowed
+    // Replace in-flight promise with a settled boolean promise to drop large closures.
+    const entry = accessCache[tokenKey]?.[key]
+    if (entry?.promise === promise) {
+      entry.promise = Promise.resolve(allowed)
+    }
+    return allowed
   })
 
-  accessCache[token][key] = {
+  accessCache[tokenKey][key] = {
     time: Date.now(),
     promise,
   }
+  enforceAccessCacheEntryCap(accessCache[tokenKey])
   return promise
 }
 
 let stopping = false
 export function stopWatching(): void {
   stopping = true
+  stopAccessCacheCleanup()
   for (const request of requests) {
     request.cancel()
   }
