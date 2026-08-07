@@ -488,7 +488,13 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
           rbac: destroyRbac,
         },
       ].filter((action) =>
-        clusterSupportsAction(cluster, action.id, isHypershiftUpdateAvailable, isHypershiftChannelSelectable)
+        clusterSupportsAction(
+          cluster,
+          action.id,
+          isHypershiftUpdateAvailable,
+          isHypershiftChannelSelectable,
+          localHubName
+        )
       ),
     [
       t,

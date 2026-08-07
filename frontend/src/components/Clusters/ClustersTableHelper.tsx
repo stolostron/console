@@ -81,7 +81,10 @@ const patchClusterPowerState = (cluster: Cluster, powerState: 'Hibernating' | 'R
     [{ op: 'replace', path: '/spec/powerState', value: powerState }]
   )
 
-export function useClusterNameColumn(areLinksDisplayed: boolean = true): IAcmTableColumn<Cluster> {
+export function useClusterNameColumn(
+  areLinksDisplayed: boolean = true,
+  localHubName?: string
+): IAcmTableColumn<Cluster> {
   const { t } = useTranslation()
   return {
     header: t('table.name'),
@@ -98,7 +101,7 @@ export function useClusterNameColumn(areLinksDisplayed: boolean = true): IAcmTab
           ) : (
             <HighlightSearchText text={cluster.displayName} searchText={search} useFuzzyHighlighting />
           )}
-          {cluster.consoleURL && (
+          {cluster.consoleURL && cluster.name !== localHubName && (
             <Tooltip content={t('cluster.openConsole')}>
               <a
                 href={cluster.consoleURL}
@@ -928,7 +931,7 @@ export function useTableColumns({
 }: UseTableColumnsParams) {
   const { useIsObservabilityInstalled } = useSharedAtoms()
   const isObservabilityInstalled = useIsObservabilityInstalled()
-  const clusterNameColumn = useClusterNameColumn(areLinksDisplayed)
+  const clusterNameColumn = useClusterNameColumn(areLinksDisplayed, localHubName)
   const clusterNameColumnModal = useClusterNameColumnModal(areLinksDisplayed)
   const clusterNamespaceColumn = useClusterNamespaceColumn()
   const clusterStatusColumn = useClusterStatusColumn()

@@ -456,6 +456,13 @@ describe('ClusterActionDropdown', () => {
     await clickByLabel('Actions')
     await waitForNotText('Open cluster console')
   })
+
+  test('Open cluster console action is not shown for hub cluster even when consoleURL is set', async () => {
+    const cluster: Cluster = { ...mockCluster, name: 'local-cluster', consoleURL: 'https://console.example.com' }
+    render(<Component cluster={cluster} />)
+    await clickByLabel('Actions')
+    await waitForNotText('Open cluster console')
+  })
 })
 
 describe('ClusterActionDropdown', () => {

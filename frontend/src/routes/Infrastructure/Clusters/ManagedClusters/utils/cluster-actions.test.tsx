@@ -312,4 +312,14 @@ describe('clusterSupportsAction - OpenConsole', () => {
     const cluster: Cluster = { ...baseCluster, consoleURL: undefined }
     expect(clusterSupportsAction(cluster, ClusterAction.OpenConsole)).toBe(false)
   })
+
+  test('returns false for hub cluster even when consoleURL is set', () => {
+    const cluster: Cluster = { ...baseCluster, name: 'local-cluster', consoleURL: 'https://console.example.com' }
+    expect(clusterSupportsAction(cluster, ClusterAction.OpenConsole, undefined, undefined, 'local-cluster')).toBe(false)
+  })
+
+  test('returns true for non-hub cluster with consoleURL when localHubName is provided', () => {
+    const cluster: Cluster = { ...baseCluster, consoleURL: 'https://console.example.com' }
+    expect(clusterSupportsAction(cluster, ClusterAction.OpenConsole, undefined, undefined, 'local-cluster')).toBe(true)
+  })
 })
