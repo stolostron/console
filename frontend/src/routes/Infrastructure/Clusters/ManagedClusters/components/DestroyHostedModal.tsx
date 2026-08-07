@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Button, CodeBlock, CodeBlockCode, Content, ContentVariants } from '@patternfly/react-core'
+import { Button, CodeBlock, CodeBlockCode, Content, ContentVariants, Icon } from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
+import { ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { AcmModal, Provider } from '../../../../../ui-components'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import DocPage from '../CreateCluster/components/assisted-installer/hypershift/common/DocPage'
@@ -15,6 +16,36 @@ interface DestroyHostedModalProps {
   readonly clusterName: string
   readonly provider?: Provider
 }
+
+const azureDestroyInfraCode = String.raw`# Set environment variables
+export CLUSTER_NAME="example"
+export INFRA_ID="example-infra-id"
+export AZURE_CREDS="/path/to/azure-credentials.json"
+export LOCATION="example-location"
+
+hcp destroy infra azure \
+  --name $CLUSTER_NAME \
+  --infra-id $INFRA_ID \
+  --azure-creds "$AZURE_CREDS" \
+  --location $LOCATION`
+
+const azureDestroyInfraHelperCommand = String.raw`hcp destroy infra azure --help`
+
+const azureDestroyWorkloadIdentitiesCode = String.raw`# Set environment variables
+export CLUSTER_NAME="example"
+export INFRA_ID="example-infra-id"
+export PERSISTENT_RG_NAME="example-persistent-resource-group"
+export AZURE_CREDS="/path/to/azure-credentials.json"
+export WORKLOAD_IDENTITIES_FILE="./workload-identities.json"
+
+hcp destroy iam azure \
+  --name $CLUSTER_NAME \
+  --infra-id $INFRA_ID \
+  --resource-group-name $PERSISTENT_RG_NAME \
+  --azure-creds "$AZURE_CREDS" \
+  --workload-identities-file "$WORKLOAD_IDENTITIES_FILE"`
+
+const azureDestroyWorkloadIdentitiesHelperCommand = String.raw`hcp destroy iam azure --help`
 
 function getDestroyInstructions(t: TFunction, provider?: Provider) {
   switch (provider) {
@@ -89,19 +120,80 @@ export function DestroyHostedModal(props: DestroyHostedModalProps) {
           <Content component="p">
             {t('Destroy the Hosted Control Plane by copying and pasting the following command:')}
           </Content>
-          <CodeBlock actions={Actions(destroyCode, 'code-command')}>
-            <CodeBlockCode id="destroy-content">{destroyCode}</CodeBlockCode>
+          <CodeBlock actions={Actions(destroyCode, 'destroy-cluster-code')}>
+            <CodeBlockCode id="destroy-cluster-content">{destroyCode}</CodeBlockCode>
           </CodeBlock>
           <Content component="p" style={{ marginTop: '1em' }}>
             {t('Use the following command to get a list of available parameters:')}
           </Content>
-          <CodeBlock actions={Actions(helperCommand, 'helper-command')}>
-            <CodeBlockCode id="helper-command">{helperCommand}</CodeBlockCode>
+          <CodeBlock actions={Actions(helperCommand, 'destroy-cluster-helper')}>
+            <CodeBlockCode id="destroy-cluster-helper-content">{helperCommand}</CodeBlockCode>
           </CodeBlock>
         </Fragment>
       ),
     },
   ]
+
+  if (provider === Provider.azure) {
+    listItems.push(
+      {
+        title: t('Destroy the infrastructure'),
+        content: (
+          <Fragment>
+            <Content component="p">
+              <Icon status="warning" isInline>
+                <ExclamationTriangleIcon />
+              </Icon>{' '}
+              <strong>{t('This step can only be completed after the hosted cluster is destroyed.')}</strong>
+            </Content>
+            <Content component="p">
+              {t('Destroy the infrastructure by copying and pasting the following command:')}
+            </Content>
+            <CodeBlock actions={Actions(azureDestroyInfraCode, 'destroy-infra-code')}>
+              <CodeBlockCode id="destroy-infra-content">{azureDestroyInfraCode}</CodeBlockCode>
+            </CodeBlock>
+            <Content component="p" style={{ marginTop: '1em' }}>
+              {t('Use the following command to get a list of available parameters:')}
+            </Content>
+            <CodeBlock actions={Actions(azureDestroyInfraHelperCommand, 'destroy-infra-helper')}>
+              <CodeBlockCode id="destroy-infra-helper-content">{azureDestroyInfraHelperCommand}</CodeBlockCode>
+            </CodeBlock>
+          </Fragment>
+        ),
+      },
+      {
+        title: t('Destroy workload identities (optional)'),
+        content: (
+          <Fragment>
+            <Content component="p">
+              <Icon status="warning" isInline>
+                <ExclamationTriangleIcon />
+              </Icon>{' '}
+              <strong>
+                {t(
+                  'Skip this step if reusing IAM for future clusters. This step can only be completed after the infrastructure is destroyed.'
+                )}
+              </strong>
+            </Content>
+            <Content component="p">
+              {t('Destroy the workload identities by copying and pasting the following command:')}
+            </Content>
+            <CodeBlock actions={Actions(azureDestroyWorkloadIdentitiesCode, 'destroy-workload-code')}>
+              <CodeBlockCode id="destroy-workload-content">{azureDestroyWorkloadIdentitiesCode}</CodeBlockCode>
+            </CodeBlock>
+            <Content component="p" style={{ marginTop: '1em' }}>
+              {t('Use the following command to get a list of available parameters:')}
+            </Content>
+            <CodeBlock actions={Actions(azureDestroyWorkloadIdentitiesHelperCommand, 'destroy-workload-helper')}>
+              <CodeBlockCode id="destroy-workload-helper-content">
+                {azureDestroyWorkloadIdentitiesHelperCommand}
+              </CodeBlockCode>
+            </CodeBlock>
+          </Fragment>
+        ),
+      }
+    )
+  }
 
   return (
     <AcmModal
