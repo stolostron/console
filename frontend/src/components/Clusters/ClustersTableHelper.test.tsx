@@ -362,6 +362,24 @@ describe('ClustersTableHelper', () => {
       expect(screen.queryByRole('link', { name: 'cluster.openConsole' })).not.toBeInTheDocument()
     })
 
+    it('should not render console URL launch icon for hub cluster even when consoleURL is set', () => {
+      const hubCluster = { ...mockCluster, name: 'local-cluster', consoleURL: 'https://console.example.com' }
+      const column = useClusterNameColumn(true, 'local-cluster')
+      renderWithProviders(<TestColumnComponent column={column} cluster={hubCluster} />)
+
+      expect(screen.queryByRole('link', { name: 'cluster.openConsole' })).not.toBeInTheDocument()
+    })
+
+    it('should render console URL launch icon for non-hub cluster when localHubName is provided', () => {
+      const managedCluster = { ...mockCluster, consoleURL: 'https://console.example.com' }
+      const column = useClusterNameColumn(true, 'local-cluster')
+      renderWithProviders(<TestColumnComponent column={column} cluster={managedCluster} />)
+
+      const consoleLink = screen.getByRole('link', { name: 'cluster.openConsole' })
+      expect(consoleLink).toBeInTheDocument()
+      expect(consoleLink).toHaveAttribute('href', 'https://console.example.com')
+    })
+
     it('should render cluster status column', () => {
       const column = useClusterStatusColumn()
       renderWithProviders(<TestColumnComponent column={column} cluster={mockCluster} />)
