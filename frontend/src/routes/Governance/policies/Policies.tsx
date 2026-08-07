@@ -628,6 +628,7 @@ export default function PoliciesPage() {
       {modal !== undefined && modal}
       <BulkActionModal<PolicyTableItem> {...modalProps} />
       <AcmTable<PolicyTableItem>
+        aria-label={t('Policies table')}
         id="policyTable"
         columns={policyColumns}
         keyFn={policyKeyFn}
@@ -989,6 +990,7 @@ export function AddToPolicySetModal(
         )}
         <StackItem>
           <AcmTable<PolicyTableItem>
+            aria-label={t('Select policies table')}
             columns={addPolicyToSetColumns}
             items={props.policyTableItems}
             emptyState={undefined} // only shown when policyTableItems is not empty

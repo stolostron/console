@@ -1076,7 +1076,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
             <div ref={tableDivRef} className={tableDivClass}>
               <Table
                 className={tableClass}
-                aria-label={t('Simple Table')}
+                aria-label={props['aria-label']}
                 borders={!props.noBorders}
                 variant={TableVariant.compact}
                 gridBreakPoint={gridBreakPoint ?? breakpoint}

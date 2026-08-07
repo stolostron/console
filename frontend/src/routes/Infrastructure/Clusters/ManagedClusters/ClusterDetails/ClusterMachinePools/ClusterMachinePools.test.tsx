@@ -48,7 +48,7 @@ describe('ClusterMachinePools', () => {
   it('should be able to manually scale a machine pool', async () => {
     await waitForText(mockMachinePoolManual.metadata.name!)
     await waitForText('nova-default') // Check OpenStack flavor displays as Instance type
-    await clickRowKebabAction(2, 'Scale machine pool')
+    await clickRowKebabAction(2, 'Scale machine pool', 'Machine pools table')
     await clickByLabel('Plus')
     const patchNocks: Scope[] = [
       nockPatch(mockMachinePoolManual, [
@@ -62,7 +62,7 @@ describe('ClusterMachinePools', () => {
     await waitForText(mockMachinePoolManual.metadata.name!)
     await waitForText('m4.xlarge') // Check AWS type displays as Instance type
 
-    await clickRowKebabAction(2, 'Enable autoscale')
+    await clickRowKebabAction(2, 'Enable autoscale', 'Machine pools table')
     await clickByLabel('Plus', 1)
     const patchNocks: Scope[] = [
       nockPatch(mockMachinePoolManual, [
@@ -82,7 +82,7 @@ describe('ClusterMachinePools', () => {
   })
   it('should be able to edit autoscaling for a machine pool', async () => {
     await waitForText(mockMachinePoolAuto.metadata.name!)
-    await clickRowKebabAction(1, 'Edit autoscale')
+    await clickRowKebabAction(1, 'Edit autoscale', 'Machine pools table')
     await clickByLabel('Plus', 1)
     const patchNocks: Scope[] = [
       nockPatch(mockMachinePoolAuto, [
@@ -102,7 +102,7 @@ describe('ClusterMachinePools', () => {
   })
   it('should be able to disable autoscaling for a machine pool', async () => {
     await waitForText(mockMachinePoolAuto.metadata.name!)
-    await clickRowKebabAction(1, 'Disable autoscale')
+    await clickRowKebabAction(1, 'Disable autoscale', 'Machine pools table')
     const patchNocks: Scope[] = [
       nockPatch(mockMachinePoolAuto, [
         { op: 'remove', path: '/spec/autoscaling' },
@@ -121,7 +121,7 @@ describe('ClusterMachinePools', () => {
     await waitForText(mockMachinePoolManual.metadata.name!)
     await waitForText(mockMachinePoolOther.metadata.name!)
     await waitForText('high_performance') // Check RHV vmType displays as Instance type
-    await clickRowKebabAction(1, 'Delete machine pool')
+    await clickRowKebabAction(1, 'Delete machine pool', 'Machine pools table')
     await waitForText('Permanently delete machine pools?')
     await typeByText(
       `Confirm by typing "${mockMachinePoolAuto.metadata.name!}" below:`,

@@ -21,6 +21,7 @@ export function ClusterSettingsTable(props: { addons: Addon[] | undefined }) {
   const { t } = useTranslation()
   return (
     <AcmTable<Addon>
+      aria-label={t('Cluster add-ons table')}
       items={props.addons}
       emptyState={<AcmEmptyState title={t('No add-ons found')} message={t('The cluster has no add-ons.')} />}
       columns={[

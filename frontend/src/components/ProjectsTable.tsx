@@ -181,6 +181,7 @@ export const ProjectsTable = ({
 
   return (
     <AcmTable<ProjectTableData>
+      aria-label={t('Projects table')}
       items={isRoleAssignmentDataLoading ? undefined : projectsData}
       columns={columns}
       keyFn={(project) => `${project.name}-${project.clusters.join(',')}`}

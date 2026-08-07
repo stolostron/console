@@ -91,6 +91,7 @@ export function ClusterPolicySummarySidebar(props: { cluster: ManagedCluster; co
     <div className={body}>
       <div className={sectionSeparator} />
       <AcmTable<ClusterPolicies>
+        aria-label={t('Cluster policies table')}
         showExportButton
         exportFilePrefix="clusterpolicysummary"
         items={clusterPolicies}
