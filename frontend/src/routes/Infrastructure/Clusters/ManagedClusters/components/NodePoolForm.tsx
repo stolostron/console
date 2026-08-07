@@ -32,6 +32,7 @@ import {
   HostedClusterK8sResource,
   OpenshiftVersionOptionType,
 } from '@openshift-assisted/ui-lib/cim'
+import { useTranslation as useAssistedTranslation } from '@openshift-assisted/ui-lib/common'
 import { getHostedClusterVersion, NodePool, NodePoolApiVersion, NodePoolKind } from '../../../../../resources'
 import { compareVersions } from './utils/version-utils'
 import {
@@ -60,6 +61,7 @@ export function NodePoolForm(props: {
   nodepool?: NodePool
 }): JSX.Element {
   const { t } = useTranslation()
+  const { t: assistedT } = useAssistedTranslation()
 
   const [imageOptions, setNodepoolImageOptions] = useState<OpenshiftVersionOptionType[]>()
   const [name, setName] = useState<string>()
@@ -283,7 +285,7 @@ export function NodePoolForm(props: {
   useEffect(() => {
     const ver = getHostedClusterVersion(props.cluster, props.hostedCluster)
     if (ver && selectedImage === undefined && props.clusterImages && props.clusterImages.length > 0) {
-      const availableImages = getOCPVersions(props.clusterImages)
+      const availableImages = getOCPVersions(props.clusterImages, assistedT)
       const filteredImages: any[] = []
       availableImages.forEach((image) => {
         if (
@@ -350,6 +352,7 @@ export function NodePoolForm(props: {
     selectedImage,
     props.cluster,
     props.hostedCluster,
+    assistedT,
   ])
 
   const nodepoolItems: ListItems[] = [

@@ -35,6 +35,7 @@ type FormControl = {
     releaseImage?: string
     sshPublicKey?: string
     userManagedNetworking?: boolean
+    storageClass?: string
   }
   disabled?: VoidFunction
   reverse?: (control: { active: ClusterDetailsValues }, templateObject: any) => void
@@ -54,6 +55,7 @@ const fields: any = {
   baseDnsDomain: { path: 'HostedCluster[0].spec.dns.baseDomain' },
   releaseImage: { path: 'HostedCluster[0].spec.release.image' },
   pullSecret: {},
+  storageClass: { path: 'HostedCluster[0].spec.etcd.managed.storage.persistentVolume.storageClassName' },
 }
 
 const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, controlProps }) => {
@@ -191,9 +193,15 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
       pullSecret: getDefault([controlProps?.stringData?.pullSecret, control.active.pullSecret, '']),
       baseDnsDomain: getDefault([controlProps?.stringData?.baseDomain, control.active.baseDnsDomain, '']),
       sshPublicKey: getDefault([controlProps?.stringData?.['ssh-publickey'], control.active.sshPublicKey, '']),
+      storageClass: getDefault([controlProps?.stringData?.storageClass, control.active.storageClass, '']),
     }
     handleChange(control)
-  }, [controlProps?.metadata.uid, controlProps?.stringData?.pullSecret, controlProps?.stringData?.baseDomain])
+  }, [
+    controlProps?.metadata.uid,
+    controlProps?.stringData?.pullSecret,
+    controlProps?.stringData?.baseDomain,
+    controlProps?.stringData?.storageClass,
+  ])
 
   return clusterImages ? (
     <HostedClusterDetailsStep
