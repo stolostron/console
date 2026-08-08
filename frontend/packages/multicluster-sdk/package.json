@@ -66,8 +66,8 @@
   "prettier": "@stolostron/prettier-config",
   "dependencies": {
     "@apollo/client": "3.14.1",
-    "@patternfly/react-core": "^6.6.0",
-    "@patternfly/react-styles": "^6.6.0",
+    "@patternfly/react-core": "^6.6.1",
+    "@patternfly/react-styles": "^6.6.1",
     "graphql": "^16.14.2",
     "graphql-ws": "^6.1.1",
     "react-i18next": "~16.5.8",
