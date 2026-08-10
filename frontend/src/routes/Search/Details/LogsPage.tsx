@@ -100,7 +100,6 @@ export function LogsToolbar(props: {
 
   const openRawTab = () => {
     const rawWindow = window.open('about:blank')
-    /* istanbul ignore next */
     if (rawWindow) {
       // Pod logs are untrusted spoke-cluster output rendered in the hub admin's
       // browser; write them as a text node so they are never parsed as HTML.
