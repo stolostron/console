@@ -554,8 +554,15 @@ describe('LogsPage', () => {
       setSearchedWordIndexes: () => {},
       setCurrentSearchedItemCount: () => {},
     })
-    window.open = jest.fn()
-    document.write = jest.fn()
+    const mockPre = { textContent: '' } as HTMLPreElement
+    const mockBody = { appendChild: jest.fn() }
+    const mockRawWindow = {
+      document: {
+        createElement: jest.fn().mockReturnValue(mockPre),
+        body: mockBody,
+      },
+    }
+    window.open = jest.fn().mockReturnValue(mockRawWindow)
     const Toolbar = () => {
       const [wrapLines, setWrapLines] = useState<boolean>(false)
       const [container, setContainer] = useState<string>('testContainer')
@@ -596,6 +603,9 @@ describe('LogsPage', () => {
     await waitFor(() => expect(rawBtn).toBeInTheDocument())
     userEvent.click(rawBtn)
     expect(window.open).toHaveBeenCalledWith('about:blank')
+    expect(mockRawWindow.document.createElement).toHaveBeenCalledWith('pre')
+    expect(mockPre.textContent).toBe('testLogs')
+    expect(mockBody.appendChild).toHaveBeenCalledWith(mockPre)
 
     const containerBtn = screen.getByText(/testcontainer/i)
     await waitFor(() => expect(containerBtn).toBeInTheDocument())
