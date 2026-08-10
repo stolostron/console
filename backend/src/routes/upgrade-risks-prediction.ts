@@ -8,6 +8,7 @@ import { getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
 import type { IResource } from '../resources/resource'
 import type { ResourceList } from '../resources/resource-list'
+import { Agent } from 'node:https'
 
 interface Credential {
   auths: {
@@ -65,6 +66,8 @@ export async function upgradeRiskPredictions(req: Http2ServerRequest, res: Http2
           proxyAgent = new HttpsProxyAgent(process.env.HTTPS_PROXY)
         }
 
+        const secureAgent = new Agent({})
+
         // create array of clusterIds with length of 100
         const clusterIds = body.clusterIds.reduce((resultArray: string[][], item, index) => {
           const chunkIndex = Math.floor(index / 100)
@@ -77,10 +80,12 @@ export async function upgradeRiskPredictions(req: Http2ServerRequest, res: Http2
 
         // Create req for each 100 id chunk
         const reqs = clusterIds.map((idChunk: string[]) => {
-          return jsonPost(insightsPath, { clusters: idChunk }, crcToken, userAgent, proxyAgent).catch((err: Error) => {
-            logger.error({ msg: 'Error getting cluster upgrade risk predictions', error: err.message })
-            return { error: err.message }
-          })
+          return jsonPost(insightsPath, { clusters: idChunk }, crcToken, userAgent, proxyAgent ?? secureAgent).catch(
+            (err: Error) => {
+              logger.error({ msg: 'Error getting cluster upgrade risk predictions', error: err.message })
+              return { error: err.message }
+            }
+          )
         })
 
         await Promise.all(reqs).then((results) => {
