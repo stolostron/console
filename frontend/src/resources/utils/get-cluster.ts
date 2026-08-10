@@ -613,7 +613,7 @@ export function getCluster({
       ? {
           agent: !!hostedCluster.spec.platform?.agent,
           nodePools: clusterNodePools,
-          secretNames: [hostedCluster.spec?.sshKey?.name || '', hostedCluster.spec?.pullSecret?.name || ''].filter(
+          secretNames: [hostedCluster.spec?.sshKey?.name, hostedCluster.spec?.pullSecret?.name].filter(
             (name) => !!name
           ),
           hostingNamespace: hostedCluster.metadata?.namespace || '',
