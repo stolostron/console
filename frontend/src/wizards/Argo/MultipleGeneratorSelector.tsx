@@ -451,15 +451,25 @@ export function CrossGeneratorSync(props: CrossGeneratorSyncProps) {
     // fixup destination namespace with current appName unless the user has changed
     // it since the last sync
     const currentDestNamespace = get(appSet, DESTINATION_NAME_PATH_NAMESPACE)
-    const shouldFixDestNamespace =
-      !!appName &&
-      appName !== currentDestNamespace &&
-      (currentDestNamespace === prevGenState.current.lastSetDestinationNamespace ||
-        currentDestNamespace === '' ||
-        !prevGenState.current.lastSetDestinationNamespace)
-    if (shouldFixDestNamespace) {
-      fix(appSet, DESTINATION_NAME_PATH_NAMESPACE, appName)
-      prevGenState.current.lastSetDestinationNamespace = appName
+
+    // In edit mode, preserve the user's existing destination namespace — the
+    // general fixup only applies to create mode. In edit mode, namespace changes
+    // are driven exclusively by generator-type-change logic below.
+    if (editMode === EditMode.Edit) {
+      if (isInitialSync) {
+        prevGenState.current.lastSetDestinationNamespace = currentDestNamespace
+      }
+    } else {
+      const shouldFixDestNamespace =
+        !!appName &&
+        appName !== currentDestNamespace &&
+        (currentDestNamespace === prevGenState.current.lastSetDestinationNamespace ||
+          currentDestNamespace === '' ||
+          !prevGenState.current.lastSetDestinationNamespace)
+      if (shouldFixDestNamespace) {
+        fix(appSet, DESTINATION_NAME_PATH_NAMESPACE, appName)
+        prevGenState.current.lastSetDestinationNamespace = appName
+      }
     }
 
     // Handle git generator
@@ -470,11 +480,15 @@ export function CrossGeneratorSync(props: CrossGeneratorSyncProps) {
         !templateName.includes(PATH_BASENAME)
       ) {
         fix(appSet, TEMPLATE_NAME_PATH, `${appName}-{{name}}-${PATH_BASENAME}`)
-        fix(appSet, DESTINATION_NAME_PATH_NAMESPACE, `${PATH_BASENAME}`)
+        if (editMode !== EditMode.Edit) {
+          fix(appSet, DESTINATION_NAME_PATH_NAMESPACE, `${PATH_BASENAME}`)
+        }
       }
     } else if (!isInitialSync && prevGenState.current.hasGitGen !== hasGitGen) {
-      fix(appSet, DESTINATION_NAME_PATH_NAMESPACE, appName)
-      prevGenState.current.lastSetDestinationNamespace = appName
+      if (editMode !== EditMode.Edit) {
+        fix(appSet, DESTINATION_NAME_PATH_NAMESPACE, appName)
+        prevGenState.current.lastSetDestinationNamespace = appName
+      }
     }
 
     // Handle list generator
