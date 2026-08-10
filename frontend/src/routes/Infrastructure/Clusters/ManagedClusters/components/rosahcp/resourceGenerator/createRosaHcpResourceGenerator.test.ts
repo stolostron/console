@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import * as yaml from 'js-yaml'
+import { ClusterNetwork } from '@redhat-cloud-services/nxtcm-rosa-hcp-wizard'
 import { createRosaHcpResourceGenerator } from './createRosaHcpResourceGenerator'
 
 describe('createRosaHcpResourceGenerator', () => {
@@ -11,7 +12,7 @@ describe('createRosaHcpResourceGenerator', () => {
       cluster_version: '4.17.0',
       region: 'us-east-1',
       billing_account_id: '111111111111',
-      cluster_privacy: 'external',
+      cluster_privacy: ClusterNetwork.external,
       installer_role_arn: 'arn:aws:iam::111111111111:role/my-cluster-Installer-Role',
       support_role_arn: 'arn:aws:iam::111111111111:role/my-cluster-Support-Role',
       worker_role_arn: 'arn:aws:iam::111111111111:role/my-cluster-Worker-Role',
@@ -37,7 +38,7 @@ describe('createRosaHcpResourceGenerator', () => {
     expect(errors).toEqual([])
   })
 
-  it('reports a missing-primary-kind error and schema violations', () => {
+  it('reports a missing-primary-kind error when ROSAControlPlane is absent', () => {
     const generator = createRosaHcpResourceGenerator()
     const errors = generator.validateYaml('kind: ManagedCluster\nmetadata:\n  name: foo\n')
     expect(errors.some((e) => e.message === 'Missing ROSAControlPlane document')).toBe(true)

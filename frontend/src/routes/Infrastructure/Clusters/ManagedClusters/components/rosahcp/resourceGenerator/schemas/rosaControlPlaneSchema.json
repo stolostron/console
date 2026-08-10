@@ -456,11 +456,7 @@
             "kind": {
               "description": "Kind of the identity.",
               "type": "string",
-              "enum": [
-                "AWSClusterControllerIdentity",
-                "AWSClusterRoleIdentity",
-                "AWSClusterStaticIdentity"
-              ]
+              "enum": ["AWSClusterControllerIdentity", "AWSClusterRoleIdentity", "AWSClusterStaticIdentity"]
             },
             "name": {
               "description": "Name of the identity.",
