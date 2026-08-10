@@ -2,13 +2,19 @@
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
+import * as dynamicPluginSdk from '@openshift-console/dynamic-plugin-sdk'
 import { NavigationPath } from '../../../../../../../../NavigationPath'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockList } from '../../../../../../../../lib/nock-util'
 import { normalizeGeneratedOuiaIds, waitForNocks, waitForText } from '../../../../../../../../lib/test-util'
-import { clusterImageSet, mockClusterImageSet } from '../../../CreateCluster.sharedmocks'
+import { clusterImageSet, mockClusterImageSet, mockStorageClass } from '../../../CreateCluster.sharedmocks'
 import { IResource } from '../../../../../../../../resources'
 
 import DetailsForm from './DetailsForm'
+
+jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
+  ...jest.requireActual('@openshift-console/dynamic-plugin-sdk'),
+  useK8sWatchResource: jest.fn(),
+}))
 
 describe('DetailsForm', () => {
   const handleChange = jest.fn()
@@ -40,6 +46,7 @@ describe('DetailsForm', () => {
                       customOpenshiftSelect: null,
                       controlPlaneCount: 3,
                       enableDiskEncryptionOnArbiters: false,
+                      storageClass: '',
                     },
                     step: {
                       title: {
@@ -63,6 +70,7 @@ describe('DetailsForm', () => {
   }
 
   test('it renders', async () => {
+    ;(dynamicPluginSdk.useK8sWatchResource as jest.Mock).mockReturnValue([mockStorageClass, true, null])
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     const initialNocks = [nockList(clusterImageSet as IResource, mockClusterImageSet as IResource[])]

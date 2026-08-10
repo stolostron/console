@@ -464,7 +464,6 @@ export const getDeleteHostAction =
   (
     bareMetalHosts: BareMetalHostK8sResource[],
     agentClusterInstall?: AgentClusterInstallK8sResource,
-    nmStates?: NMStateK8sResource[],
     agent?: AgentK8sResource,
     bareMetalHost?: BareMetalHostK8sResource
   ) =>
@@ -482,11 +481,6 @@ export const getDeleteHostAction =
     }
     if (bmh) {
       resources.push(bmh)
-
-      const bmhNMStates = (nmStates || []).filter(
-        (nm) => nm.metadata?.labels?.[AGENT_BMH_NAME_LABEL_KEY] === bmh?.metadata?.name
-      )
-      resources.push(...bmhNMStates)
     }
 
     if (agentClusterInstall) {
@@ -515,8 +509,7 @@ export const agentNameSortFunc = (
 export const useOnDeleteHost = (
   toggleDialog: (props: BulkActionModalProps<AgentK8sResource | BareMetalHostK8sResource> | { open: false }) => void,
   bareMetalHosts: BareMetalHostK8sResource[],
-  agentClusterInstall?: AgentClusterInstallK8sResource,
-  nmStates?: NMStateK8sResource[]
+  agentClusterInstall?: AgentClusterInstallK8sResource
 ) => {
   const { t } = useTranslation()
 
@@ -543,7 +536,7 @@ export const useOnDeleteHost = (
           },
         ],
         keyFn: (resource: AgentK8sResource | BareMetalHostK8sResource) => resource.metadata?.uid as string,
-        actionFn: getDeleteHostAction(bareMetalHosts, agentClusterInstall, nmStates, agent, bmh),
+        actionFn: getDeleteHostAction(bareMetalHosts, agentClusterInstall, agent, bmh),
         close: () => {
           toggleDialog({ open: false })
         },
@@ -551,7 +544,7 @@ export const useOnDeleteHost = (
         icon: 'warning',
       })
     },
-    [toggleDialog, bareMetalHosts, nmStates]
+    [toggleDialog, bareMetalHosts]
   )
 }
 
@@ -811,22 +804,13 @@ export const onEditNtpSources = (values: any, infraEnv: InfraEnvK8sResource) => 
   return patchResource(infraEnv as IResource, patches).promise as Promise<InfraEnvK8sResource>
 }
 
-export const onMassDeleteHost = (
-  agent?: AgentK8sResource,
-  bmh?: BareMetalHostK8sResource,
-  nmStates: NMStateK8sResource[] = []
-) => {
+export const onMassDeleteHost = (agent?: AgentK8sResource, bmh?: BareMetalHostK8sResource) => {
   const toDelete = []
   if (agent) {
     toDelete.push(agent)
   }
   if (bmh) {
     toDelete.push(bmh)
-
-    const bmhNMStates = (nmStates || []).filter(
-      (nm) => nm.metadata?.labels?.[AGENT_BMH_NAME_LABEL_KEY] === bmh.metadata?.name
-    )
-    toDelete.push(...bmhNMStates)
   }
   return deleteResources(toDelete as IResource[]).promise
 }

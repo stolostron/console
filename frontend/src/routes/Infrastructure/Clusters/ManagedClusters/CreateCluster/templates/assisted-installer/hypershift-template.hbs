@@ -58,6 +58,16 @@ spec:
   infraID: '{{{hypershift.name}}}'
   dns:
     baseDomain: '{{{hypershift.baseDnsDomain}}}'
+  etcd:
+    managed:
+      storage:
+        persistentVolume:
+          size: 8Gi
+          {{#if hypershift.storageClass}}
+          storageClassName: {{{hypershift.storageClass}}}
+          {{/if}}
+        type: PersistentVolume
+    managementType: Managed
   services:
   - service: APIServer
     servicePublishingStrategy:

@@ -5,6 +5,7 @@ import {
   AgentClusterInstallK8sResource,
   ClusterDeploymentK8sResource,
   ClusterImageSetK8sResource,
+  StorageClassK8sResource,
 } from '@openshift-assisted/ui-lib/cim'
 
 export const clusterName = 'test'
@@ -126,3 +127,14 @@ export const clusterImageSet: ClusterImageSetK8sResource = {
   },
 }
 export const mockClusterImageSet = [clusterImageSet]
+
+export const storageClass: StorageClassK8sResource = {
+  apiVersion: 'v1',
+  kind: 'StorageClass',
+  metadata: {
+    name: 'storage-class',
+  },
+  provisioner: 'provisioner',
+  reclaimPolicy: 'reclaimPolicy',
+}
+export const mockStorageClass = [storageClass]
