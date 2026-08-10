@@ -113,7 +113,19 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
             memoryLimit: 8192,
           },
         }),
-      new MonacoWebpackPlugin({ languages: ['yaml'] }),
+      new MonacoWebpackPlugin({
+        languages: ['yaml'],
+        customLanguages: [
+          {
+            label: 'yaml',
+            entry: 'monaco-yaml',
+            worker: {
+              id: 'monaco-yaml/yamlWorker',
+              entry: 'monaco-yaml/yaml.worker',
+            },
+          },
+        ],
+      }),
       isProduction &&
         new CopyPlugin({
           patterns: [{ from: 'public', globOptions: { ignore: ['**/*.html', '**/translation.json'] } }],

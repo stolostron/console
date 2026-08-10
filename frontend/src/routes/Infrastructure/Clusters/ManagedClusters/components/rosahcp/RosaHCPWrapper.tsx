@@ -16,11 +16,15 @@ import { DropdownType, RosaHCPWizard, ROSAHCPWizardData, STEP_IDS } from '@redha
 import { useClusterNameUniquenessCheck } from './queries/useCheckClusterNameUniqueness'
 import { generatePath, useLocation, useNavigate } from 'react-router'
 import { createRosaHcpCluster } from '~/lib/create-rosa-hcp-cluster'
+import * as monaco from 'monaco-editor'
+import { loader } from '@monaco-editor/react'
 import { NavigationPath } from '~/NavigationPath'
 import { useTranslation } from '~/lib/acm-i18next'
 import { AcmPage, AcmPageHeader } from '~/ui-components'
 
 import '@redhat-cloud-services/nxtcm-rosa-hcp-wizard/dist/nxtcm-rosa-hcp-wizard.css'
+
+loader.config({ monaco })
 
 const transform = (awsInfraAccounts: string[]): DropdownType[] =>
   awsInfraAccounts.map((acc) => ({ label: acc, value: acc }))
