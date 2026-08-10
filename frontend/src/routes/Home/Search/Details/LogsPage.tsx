@@ -106,8 +106,13 @@ export function LogsToolbar(props: {
 
   const openRawTab = () => {
     const rawWindow = window.open('about:blank')
-    /* istanbul ignore next */
-    rawWindow?.document.write(`<pre>${logs}</pre>`)
+    if (rawWindow) {
+      // Pod logs are untrusted spoke-cluster output rendered in the hub admin's
+      // browser; write them as a text node so they are never parsed as HTML.
+      const pre = rawWindow.document.createElement('pre')
+      pre.textContent = logs
+      rawWindow.document.body.appendChild(pre)
+    }
   }
 
   const { downloadUrl, downloadFilename } = useMemo(() => {
