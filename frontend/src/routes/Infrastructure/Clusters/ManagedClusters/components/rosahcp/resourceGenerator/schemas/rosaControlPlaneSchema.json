@@ -1,0 +1,752 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "ROSAControlPlane is the Schema for the ROSAControlPlanes API.",
+  "type": "object",
+  "properties": {
+    "apiVersion": {
+      "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values.",
+      "type": "string",
+      "const": "controlplane.cluster.x-k8s.io/v1beta2"
+    },
+    "kind": {
+      "description": "Kind is a string value representing the REST resource this object represents. Cannot be updated.",
+      "type": "string",
+      "const": "ROSAControlPlane"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "spec": {
+      "description": "RosaControlPlaneSpec defines the desired state of ROSAControlPlane.",
+      "type": "object",
+      "required": ["channelGroup", "region", "rosaClusterName", "version", "versionGate"],
+      "properties": {
+        "additionalTags": {
+          "description": "AdditionalTags are user-defined tags to be added on the AWS resources associated with the control plane.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "auditLogRoleARN": {
+          "description": "AuditLogRoleARN defines the role that is used to forward audit logs to AWS CloudWatch. If not set, audit log forwarding is disabled.",
+          "type": "string"
+        },
+        "autoNode": {
+          "description": "autoNode set the autoNode mode and roleARN.",
+          "type": "object",
+          "properties": {
+            "mode": {
+              "description": "mode specifies the mode for the AutoNode. Setting Enable/Disable mode will allows/disallow karpenter AutoNode scaling.",
+              "type": "string",
+              "default": "Disabled",
+              "enum": ["Enabled", "Disabled"]
+            },
+            "roleARN": {
+              "description": "roleARN sets the autoNode role ARN, which includes the IAM policy and cluster-specific role that grant the necessary permissions to the Karpenter controller. The role must be attached with the same OIDC-ID that is used with the ROSA-HCP cluster.",
+              "type": "string",
+              "maxLength": 2048
+            }
+          },
+          "additionalProperties": false
+        },
+        "availabilityZones": {
+          "description": "AvailabilityZones describe AWS AvailabilityZones of the worker nodes. Should match the AvailabilityZones of the provided Subnets. A machinepool will be created for each availabilityZone.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "billingAccount": {
+          "description": "BillingAccount is an optional AWS account to use for billing the subscription fees for ROSA HCP clusters. The cost of running each ROSA HCP cluster will be billed to the infrastructure account in which the cluster is running.",
+          "type": "string",
+          "pattern": "^[0-9]{12}$"
+        },
+        "channelGroup": {
+          "description": "OpenShift version channel group, default is stable.",
+          "type": "string",
+          "default": "stable",
+          "enum": ["stable", "eus", "fast", "candidate", "nightly"]
+        },
+        "cloudWatchlogForwarder": {
+          "description": "cloudWatchlogForwarder set the cloudWatch log forward config for applications and groupVersions.",
+          "type": "object",
+          "properties": {
+            "applications": {
+              "description": "applications list included in the groupLog Ids ex; for groupLog api allowed applications as audit-webhook.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "cloudWatchLogGroupName": {
+              "description": "cloudWatchLogGroupName is the name of the CloudWatch log group.",
+              "type": "string"
+            },
+            "cloudWatchLogRoleArn": {
+              "description": "cloudWatchLogRoleArn is the ARN of the IAM CloudWatch role for log distribution.",
+              "type": "string"
+            },
+            "groupLogIDs": {
+              "description": "groupLogIDs is list of available groupLog Ids ex; api, authentication, controller manager, scheduler.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "clusterRegistryConfig": {
+          "description": "ClusterRegistryConfig represents registry config used with the cluster.",
+          "type": "object",
+          "properties": {
+            "additionalTrustedCAs": {
+              "description": "AdditionalTrustedCAs containing the registry hostname as the key, and the PEM-encoded certificate as the value, for each additional registry CA to trust.",
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "allowedRegistriesForImport": {
+              "description": "AllowedRegistriesForImport limits the container image registries that normal users may import images from.",
+              "type": "array",
+              "items": {
+                "description": "RegistryLocation contains a location of the registry specified by the registry domain name.",
+                "type": "object",
+                "properties": {
+                  "domainName": {
+                    "description": "domainName specifies a domain name for the registry. The domain name might include wildcards, like '*' or '??'. In case the registry uses non-standard (80 or 443) port, the port should be included in the domain name as well.",
+                    "type": "string"
+                  },
+                  "insecure": {
+                    "description": "insecure indicates whether the registry is secure (https) or insecure (http), default is secured.",
+                    "type": "boolean",
+                    "default": false
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "registrySources": {
+              "description": "RegistrySources contains configuration that determines how the container runtime should treat individual registries when accessing images. AllowedRegistries, BlockedRegistries are mutually exclusive.",
+              "type": "object",
+              "properties": {
+                "allowedRegistries": {
+                  "description": "AllowedRegistries are the registries for which image pull and push actions are allowed. To specify all subdomains, add the asterisk (*) wildcard character as a prefix to the domain name. All other registries are blocked.",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "blockedRegistries": {
+                  "description": "BlockedRegistries are the registries for which image pull and push actions are denied. To specify all subdomains, add the asterisk (*) wildcard character as a prefix to the domain name. All other registries are allowed.",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "insecureRegistries": {
+                  "description": "InsecureRegistries are registries which do not have a valid TLS certificate or only support HTTP connections.",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "controlPlaneEndpoint": {
+          "description": "ControlPlaneEndpoint represents the endpoint used to communicate with the control plane.",
+          "type": "object",
+          "required": ["host", "port"],
+          "properties": {
+            "host": {
+              "description": "host is the hostname on which the API server is serving.",
+              "type": "string",
+              "maxLength": 512
+            },
+            "port": {
+              "description": "port is the port on which the API server is serving.",
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          "additionalProperties": false
+        },
+        "credentialsSecretRef": {
+          "description": "CredentialsSecretRef references a secret with necessary credentials to connect to the OCM API. The secret should contain the following data keys: ocmToken, ocmApiUrl (optional, defaults to 'https://api.openshift.com').",
+          "type": "object",
+          "properties": {
+            "name": {
+              "description": "Name of the referent.",
+              "type": "string",
+              "default": ""
+            }
+          },
+          "additionalProperties": false
+        },
+        "defaultMachinePoolSpec": {
+          "description": "DefaultMachinePoolSpec defines the configuration for the default machinepool(s) provisioned as part of the cluster creation. One MachinePool will be created with this configuration per AvailabilityZone.",
+          "type": "object",
+          "properties": {
+            "autoscaling": {
+              "description": "Autoscaling specifies auto scaling behaviour for the default MachinePool. Autoscaling min/max value must be equal or multiple of the availability zones count.",
+              "type": "object",
+              "properties": {
+                "maxReplicas": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "minReplicas": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "additionalProperties": false
+            },
+            "instanceType": {
+              "description": "The instance type to use, for example `r5.xlarge`.",
+              "type": "string"
+            },
+            "volumeSize": {
+              "description": "VolumeSize set the disk volume size for the default workers machine pool in GiB. The default is 300 GiB.",
+              "type": "integer",
+              "minimum": 75,
+              "maximum": 16384
+            }
+          },
+          "additionalProperties": false
+        },
+        "domainPrefix": {
+          "description": "DomainPrefix is an optional prefix added to the cluster's domain name. It must be valid DNS-1035 label consisting of lower case alphanumeric characters or '-', start with an alphabetic character, end with an alphanumeric character and have a max length of 15 characters.",
+          "type": "string",
+          "maxLength": 15,
+          "pattern": "^[a-z]([-a-z0-9]*[a-z0-9])?$"
+        },
+        "enableExternalAuthProviders": {
+          "description": "EnableExternalAuthProviders enables external authentication configuration for the cluster.",
+          "type": "boolean",
+          "default": false
+        },
+        "endpointAccess": {
+          "description": "EndpointAccess specifies the publishing scope of cluster endpoints. The default is Public.",
+          "type": "string",
+          "default": "Public",
+          "enum": ["Public", "Private"]
+        },
+        "etcdEncryptionKMSARN": {
+          "description": "EtcdEncryptionKMSARN is the ARN of the KMS key used to encrypt etcd. The key itself needs to be created out-of-band by the user and tagged with `red-hat:true`.",
+          "type": "string"
+        },
+        "externalAuthProviders": {
+          "description": "ExternalAuthProviders are external OIDC identity providers that can issue tokens for this cluster. Can only be set if enableExternalAuthProviders is set to True. At most one provider can be configured.",
+          "type": "array",
+          "maxItems": 1,
+          "items": {
+            "description": "ExternalAuthProvider is an external OIDC identity provider that can issue tokens for this cluster.",
+            "type": "object",
+            "required": ["issuer", "name"],
+            "properties": {
+              "claimMappings": {
+                "description": "ClaimMappings describes rules on how to transform information from an ID token into a cluster identity.",
+                "type": "object",
+                "properties": {
+                  "groups": {
+                    "description": "Groups is a name of the claim that should be used to construct groups for the cluster identity.",
+                    "type": "object",
+                    "required": ["claim"],
+                    "properties": {
+                      "claim": {
+                        "description": "Claim is a JWT token claim to be used in the mapping.",
+                        "type": "string"
+                      },
+                      "prefix": {
+                        "description": "Prefix is a string to prefix the value from the token in the result of the claim mapping. By default, no prefixing occurs.",
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "username": {
+                    "description": "Username is a name of the claim that should be used to construct usernames for the cluster identity. Default value: 'sub'.",
+                    "type": "object",
+                    "required": ["claim"],
+                    "properties": {
+                      "claim": {
+                        "description": "Claim is a JWT token claim to be used in the mapping.",
+                        "type": "string"
+                      },
+                      "prefix": {
+                        "description": "Prefix is prepended to claim to prevent clashes with existing names.",
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "prefixPolicy": {
+                        "description": "PrefixPolicy specifies how a prefix should apply. By default, claims other than `email` will be prefixed with the issuer URL to prevent naming clashes with other plugins. Set to 'NoPrefix' to disable prefixing.",
+                        "type": "string",
+                        "enum": ["", "NoPrefix", "Prefix"]
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                },
+                "additionalProperties": false
+              },
+              "claimValidationRules": {
+                "description": "ClaimValidationRules are rules that are applied to validate token claims to authenticate users.",
+                "type": "array",
+                "items": {
+                  "description": "TokenClaimValidationRule validates token claims to authenticate users.",
+                  "type": "object",
+                  "required": ["requiredClaim", "type"],
+                  "properties": {
+                    "requiredClaim": {
+                      "description": "RequiredClaim allows configuring a required claim name and its expected value.",
+                      "type": "object",
+                      "required": ["claim", "requiredValue"],
+                      "properties": {
+                        "claim": {
+                          "description": "Claim is a name of a required claim. Only claims with string values are supported.",
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "requiredValue": {
+                          "description": "RequiredValue is the required value for the claim.",
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "type": {
+                      "description": "Type sets the type of the validation rule.",
+                      "type": "string",
+                      "default": "RequiredClaim",
+                      "enum": ["RequiredClaim"]
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "issuer": {
+                "description": "Issuer describes attributes of the OIDC token issuer.",
+                "type": "object",
+                "required": ["audiences", "issuerURL"],
+                "properties": {
+                  "audiences": {
+                    "description": "Audiences is an array of audiences that the token was issued for. Valid tokens must include at least one of these values in their 'aud' claim. Must be set to exactly one value.",
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 10,
+                    "uniqueItems": true,
+                    "items": {
+                      "description": "TokenAudience is the audience that the token was issued for.",
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "issuerCertificateAuthority": {
+                    "description": "CertificateAuthority is a reference to a config map in the configuration namespace. If unset, system trust is used instead.",
+                    "type": "object",
+                    "required": ["name"],
+                    "properties": {
+                      "name": {
+                        "description": "Name is the metadata.name of the referenced object.",
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "issuerURL": {
+                    "description": "URL is the serving URL of the token issuer. Must use the https:// scheme.",
+                    "type": "string",
+                    "pattern": "^https:\\/\\/[^\\s]"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "name": {
+                "description": "Name of the OIDC provider.",
+                "type": "string",
+                "minLength": 1
+              },
+              "oidcClients": {
+                "description": "OIDCClients contains configuration for the platform's clients that need to request tokens from the issuer.",
+                "type": "array",
+                "maxItems": 20,
+                "items": {
+                  "description": "OIDCClientConfig contains configuration for the platform's client that need to request tokens from the issuer.",
+                  "type": "object",
+                  "required": ["clientID", "clientSecret", "componentName", "componentNamespace"],
+                  "properties": {
+                    "clientID": {
+                      "description": "ClientID is the identifier of the OIDC client from the OIDC provider.",
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "clientSecret": {
+                      "description": "ClientSecret refers to a secret that contains the client secret in the `clientSecret` key of the `.data` field.",
+                      "type": "object",
+                      "required": ["name"],
+                      "properties": {
+                        "name": {
+                          "description": "Name is the metadata.name of the referenced object.",
+                          "type": "string"
+                        }
+                      },
+                      "additionalProperties": false
+                    },
+                    "componentName": {
+                      "description": "ComponentName is the name of the component that is supposed to consume this client configuration.",
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
+                    },
+                    "componentNamespace": {
+                      "description": "ComponentNamespace is the namespace of the component that is supposed to consume this client configuration.",
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 63
+                    },
+                    "extraScopes": {
+                      "description": "ExtraScopes is an optional set of scopes to request tokens with.",
+                      "type": "array",
+                      "uniqueItems": true,
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "identityRef": {
+          "description": "IdentityRef is a reference to an identity to be used when reconciling the managed control plane. If no identity is specified, the default identity for this controller will be used.",
+          "type": "object",
+          "required": ["kind", "name"],
+          "properties": {
+            "kind": {
+              "description": "Kind of the identity.",
+              "type": "string",
+              "enum": [
+                "AWSClusterControllerIdentity",
+                "AWSClusterRoleIdentity",
+                "AWSClusterStaticIdentity"
+              ]
+            },
+            "name": {
+              "description": "Name of the identity.",
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        },
+        "installerRoleARN": {
+          "description": "InstallerRoleARN is an AWS IAM role that OpenShift Cluster Manager will assume to create the cluster. Required if RosaRoleConfigRef is not specified.",
+          "type": "string"
+        },
+        "network": {
+          "description": "Network config for the ROSA HCP cluster.",
+          "type": "object",
+          "properties": {
+            "hostPrefix": {
+              "description": "Network host prefix which is defaulted to 23 if not specified.",
+              "type": "integer",
+              "default": 23
+            },
+            "machineCIDR": {
+              "description": "IP addresses block used by OpenShift while installing the cluster, for example '10.0.0.0/16'.",
+              "type": "string",
+              "format": "cidr"
+            },
+            "networkType": {
+              "description": "The CNI network type default is OVNKubernetes.",
+              "type": "string",
+              "default": "OVNKubernetes",
+              "enum": ["OVNKubernetes", "Other"]
+            },
+            "podCIDR": {
+              "description": "IP address block from which to assign pod IP addresses, for example '10.128.0.0/14'.",
+              "type": "string",
+              "format": "cidr"
+            },
+            "serviceCIDR": {
+              "description": "IP address block from which to assign service IP addresses, for example '172.30.0.0/16'.",
+              "type": "string",
+              "format": "cidr"
+            }
+          },
+          "additionalProperties": false
+        },
+        "oidcID": {
+          "description": "The ID of the internal OpenID Connect Provider. Required if RosaRoleConfigRef is not specified.",
+          "type": "string"
+        },
+        "provisionShardID": {
+          "description": "ProvisionShardID defines the shard where ROSA hosted control plane components will be hosted.",
+          "type": "string"
+        },
+        "region": {
+          "description": "The AWS Region the cluster lives in.",
+          "type": "string"
+        },
+        "rolesRef": {
+          "description": "AWS IAM roles used to perform credential requests by the openshift operators. Required if RosaRoleConfigRef is not specified.",
+          "type": "object",
+          "required": [
+            "controlPlaneOperatorARN",
+            "imageRegistryARN",
+            "ingressARN",
+            "kmsProviderARN",
+            "kubeCloudControllerARN",
+            "networkARN",
+            "nodePoolManagementARN",
+            "storageARN"
+          ],
+          "properties": {
+            "controlPlaneOperatorARN": {
+              "description": "ControlPlaneOperatorARN is an ARN value referencing a role appropriate for the Control Plane Operator.",
+              "type": "string"
+            },
+            "imageRegistryARN": {
+              "description": "ImageRegistryARN is an ARN value referencing a role appropriate for the Image Registry Operator.",
+              "type": "string"
+            },
+            "ingressARN": {
+              "description": "IngressARN is an ARN value referencing a role appropriate for the Ingress Operator.",
+              "type": "string"
+            },
+            "kmsProviderARN": {
+              "type": "string"
+            },
+            "kubeCloudControllerARN": {
+              "description": "KubeCloudControllerARN is an ARN value referencing a role appropriate for the KCM/KCC.",
+              "type": "string"
+            },
+            "networkARN": {
+              "description": "NetworkARN is an ARN value referencing a role appropriate for the Network Operator.",
+              "type": "string"
+            },
+            "nodePoolManagementARN": {
+              "description": "NodePoolManagementARN is an ARN value referencing a role appropriate for the CAPI Controller.",
+              "type": "string"
+            },
+            "storageARN": {
+              "description": "StorageARN is an ARN value referencing a role appropriate for the Storage Operator.",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "rosaClusterName": {
+          "description": "Cluster name must be valid DNS-1035 label, so it must consist of lower case alphanumeric characters or '-', start with an alphabetic character, end with an alphanumeric character and have a max length of 54 characters.",
+          "type": "string",
+          "maxLength": 54,
+          "pattern": "^[a-z]([-a-z0-9]*[a-z0-9])?$"
+        },
+        "rosaNetworkRef": {
+          "description": "ROSANetworkRef references ROSANetwork custom resource that contains the networking infrastructure for the ROSA HCP cluster.",
+          "type": "object",
+          "properties": {
+            "name": {
+              "description": "Name of the referent.",
+              "type": "string",
+              "default": ""
+            }
+          },
+          "additionalProperties": false
+        },
+        "rosaRoleConfigRef": {
+          "description": "RosaRoleConfigRef is a reference to a RosaRoleConfig resource that contains account roles, operator roles and OIDC configuration. RosaRoleConfigRef and role fields such as installerRoleARN, supportRoleARN, workerRoleARN, rolesRef and oidcID are mutually exclusive.",
+          "type": "object",
+          "properties": {
+            "name": {
+              "description": "Name of the referent.",
+              "type": "string",
+              "default": ""
+            }
+          },
+          "additionalProperties": false
+        },
+        "s3LogForwarder": {
+          "description": "s3LogForwarder set the AWS S3 log forward config for applications and groupVersions.",
+          "type": "object",
+          "properties": {
+            "applications": {
+              "description": "applications list included in the groupLog Ids ex; for groupLog api allowed applications as audit-webhook.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "groupLogIDs": {
+              "description": "groupLogIDs is list of available groupLog Ids ex; api, authentication, controller manager, scheduler.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "s3ConfigBucketName": {
+              "description": "s3ConfigBucketName is the name of the S3 bucket.",
+              "type": "string"
+            },
+            "s3ConfigBucketPrefix": {
+              "description": "s3ConfigBucketPrefix is the prefix to use for objects stored in the S3 bucket.",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "subnets": {
+          "description": "The Subnet IDs to use when installing the cluster. SubnetIDs should come in pairs; two per availability zone, one private and one public.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "supportRoleARN": {
+          "description": "SupportRoleARN is an AWS IAM role used by Red Hat SREs to enable access to the cluster account in order to provide support. Required if RosaRoleConfigRef is not specified.",
+          "type": "string"
+        },
+        "version": {
+          "description": "OpenShift semantic version, for example '4.14.5'.",
+          "type": "string"
+        },
+        "versionGate": {
+          "description": "VersionGate requires acknowledgment when upgrading ROSA-HCP y-stream versions (e.g., from 4.15 to 4.16). Default is WaitForAcknowledge.",
+          "type": "string",
+          "default": "WaitForAcknowledge",
+          "enum": ["Acknowledge", "WaitForAcknowledge", "AlwaysAcknowledge"]
+        },
+        "workerRoleARN": {
+          "description": "WorkerRoleARN is an AWS IAM role that will be attached to worker instances. Required if RosaRoleConfigRef is not specified.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "status": {
+      "description": "RosaControlPlaneStatus defines the observed state of ROSAControlPlane.",
+      "type": "object",
+      "required": ["ready"],
+      "properties": {
+        "availableUpgrades": {
+          "description": "Available upgrades for the ROSA hosted control plane.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "conditions": {
+          "description": "Conditions specifies the conditions for the managed control plane.",
+          "type": "array",
+          "items": {
+            "description": "Condition defines an observation of a Cluster API resource operational state.",
+            "type": "object",
+            "required": ["lastTransitionTime", "status", "type"],
+            "properties": {
+              "lastTransitionTime": {
+                "description": "lastTransitionTime is the last time the condition transitioned from one status to another.",
+                "type": "string",
+                "format": "date-time"
+              },
+              "message": {
+                "description": "message is a human readable message indicating details about the transition.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 10240
+              },
+              "reason": {
+                "description": "reason is the reason for the condition's last transition in CamelCase.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "severity": {
+                "description": "severity provides an explicit classification of Reason code. The Severity field MUST be set only when Status=False.",
+                "type": "string",
+                "maxLength": 32
+              },
+              "status": {
+                "description": "status of the condition, one of True, False, Unknown.",
+                "type": "string"
+              },
+              "type": {
+                "description": "type of condition in CamelCase or in foo.example.com/CamelCase.",
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "consoleURL": {
+          "description": "ConsoleURL is the url for the openshift console.",
+          "type": "string"
+        },
+        "externalManagedControlPlane": {
+          "description": "ExternalManagedControlPlane indicates to cluster-api that the control plane is managed by an external service such as AKS, EKS, GKE, etc.",
+          "type": "boolean",
+          "default": true
+        },
+        "failureMessage": {
+          "description": "FailureMessage will be set in the event that there is a terminal problem reconciling the state and will be set to a descriptive error message.",
+          "type": "string"
+        },
+        "id": {
+          "description": "ID is the cluster ID given by ROSA.",
+          "type": "string"
+        },
+        "initialized": {
+          "description": "Initialized denotes whether or not the control plane has the uploaded kubernetes config-map.",
+          "type": "boolean"
+        },
+        "oidcEndpointURL": {
+          "description": "OIDCEndpointURL is the endpoint url for the managed OIDC provider.",
+          "type": "string"
+        },
+        "ready": {
+          "description": "Ready denotes that the ROSAControlPlane API Server is ready to receive requests.",
+          "type": "boolean",
+          "default": false
+        },
+        "version": {
+          "description": "OpenShift semantic version, for example '4.14.5'.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
