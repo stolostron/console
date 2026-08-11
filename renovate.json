@@ -7,7 +7,6 @@
     "release-2.15",
     "release-2.14",
     "release-2.13",
-    "release-2.12",
     "release-2.11"
   ],
   "schedule": ["every weekend"],
@@ -33,6 +32,19 @@
       "description": "Restrict npm updates to main branch only",
       "matchManagers": ["npm"],
       "matchBaseBranches": ["!/^main$/"],
+      "enabled": false
+    },
+    {
+      "description": "Restrict GitHub Actions updates to main branch only",
+      "matchManagers": ["github-actions"],
+      "matchBaseBranches": ["!/^main$/"],
+      "enabled": false
+    },
+    {
+      "description": "Only allow major Node.js version updates in GitHub Actions — major version is sufficient",
+      "matchManagers": ["github-actions"],
+      "matchPackageNames": ["node"],
+      "matchUpdateTypes": ["minor", "patch"],
       "enabled": false
     },
     {
