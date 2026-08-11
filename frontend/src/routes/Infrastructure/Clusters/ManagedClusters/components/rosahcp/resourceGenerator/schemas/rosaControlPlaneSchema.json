@@ -39,7 +39,7 @@
     "spec": {
       "description": "RosaControlPlaneSpec defines the desired state of ROSAControlPlane.",
       "type": "object",
-      "required": ["channelGroup", "region", "rosaClusterName", "version", "versionGate"],
+      "required": ["region", "rosaClusterName", "version", "versionGate"],
       "properties": {
         "additionalTags": {
           "description": "AdditionalTags are user-defined tags to be added on the AWS resources associated with the control plane.",
@@ -82,10 +82,14 @@
           "type": "string",
           "pattern": "^[0-9]{12}$"
         },
-        "channelGroup": {
-          "description": "OpenShift version channel group, default is stable.",
+        "channel": {
+          "description": "Channel is the Y-stream OpenShift channel to use for this cluster, for example 'stable-4.16' or 'eus-4.16'. This determines which Y-stream versions are available for upgrades. When not specified, OCM will determine the appropriate channel based on the cluster version. If Channel is set, ChannelGroup will be ignored.",
           "type": "string",
-          "default": "stable",
+          "pattern": "^(stable|eus|fast|candidate|nightly)-[0-9]+\\.[0-9]+$"
+        },
+        "channelGroup": {
+          "description": "OpenShift version channel group. When not specified, OCM will determine the appropriate channel group based on the cluster version. This field will be deprecated in a future release in favor of the Channel field.",
+          "type": "string",
           "enum": ["stable", "eus", "fast", "candidate", "nightly"]
         },
         "cloudWatchlogForwarder": {
@@ -241,6 +245,12 @@
           },
           "additionalProperties": false
         },
+        "deleteProtection": {
+          "description": "DeleteProtection prevents accidental ROSA cluster deletion. When set to 'Enabled', the ROSA cluster cannot be deleted through OCM. Defaults to 'Disabled'.",
+          "type": "string",
+          "default": "Disabled",
+          "enum": ["Enabled", "Disabled"]
+        },
         "domainPrefix": {
           "description": "DomainPrefix is an optional prefix added to the cluster's domain name. It must be valid DNS-1035 label consisting of lower case alphanumeric characters or '-', start with an alphabetic character, end with an alphanumeric character and have a max length of 15 characters.",
           "type": "string",
@@ -261,6 +271,12 @@
         "etcdEncryptionKMSARN": {
           "description": "EtcdEncryptionKMSARN is the ARN of the KMS key used to encrypt etcd. The key itself needs to be created out-of-band by the user and tagged with `red-hat:true`.",
           "type": "string"
+        },
+        "fips": {
+          "description": "FIPS configures FIPS-validated / Modules in Process cryptographic libraries. When set to 'Enabled', the cluster will use FIPS 140-2 validated cryptographic modules. This setting is immutable and cannot be changed after cluster creation. IMPORTANT: When FIPS is enabled, etcdEncryptionKMSARN must be provided.",
+          "type": "string",
+          "default": "Disabled",
+          "enum": ["Enabled", "Disabled"]
         },
         "externalAuthProviders": {
           "description": "ExternalAuthProviders are external OIDC identity providers that can issue tokens for this cluster. Can only be set if enableExternalAuthProviders is set to True. At most one provider can be configured.",
@@ -633,6 +649,13 @@
           "description": "SupportRoleARN is an AWS IAM role used by Red Hat SREs to enable access to the cluster account in order to provide support. Required if RosaRoleConfigRef is not specified.",
           "type": "string"
         },
+        "trustPolicyExternalID": {
+          "description": "TrustPolicyExternalID is an optional STS external ID that OCM will use when assuming the installer and support account roles. When using RosaRoleConfigRef, this field is ignored. When providing role ARNs directly, the user is responsible for including the sts:ExternalId condition in the roles' trust policies.",
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 1224,
+          "pattern": "^[a-zA-Z0-9=,.@:\\/-]+$"
+        },
         "version": {
           "description": "OpenShift semantic version, for example '4.14.5'.",
           "type": "string"
@@ -655,6 +678,13 @@
       "type": "object",
       "required": ["ready"],
       "properties": {
+        "availableChannels": {
+          "description": "Available channels for the ROSA hosted control plane.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "availableUpgrades": {
           "description": "Available upgrades for the ROSA hosted control plane.",
           "type": "array",
