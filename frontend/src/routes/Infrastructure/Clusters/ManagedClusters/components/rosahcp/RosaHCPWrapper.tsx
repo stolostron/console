@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { SelectedSecret } from './constants/types'
 import { useCredentialsSecrets } from './hooks/useCredentialsSecrets'
 import { useFetchOrganizationQuota } from './queries/useFetchAwsBillingAccountIds'
@@ -12,6 +12,7 @@ import { useFetchRoleARNs } from './queries/useFetchRolesARNs'
 import { useFetchMachineTypes } from './queries/useFetchMachineTypes'
 import { useFetchVPCs } from './queries/useFetchVPCs'
 import { createRosaHcpResourceGenerator } from './resourceGenerator/createRosaHcpResourceGenerator'
+import { deriveAvailabilityZones, deriveRolesRef } from './resourceGenerator/enrichFormValues'
 import { DropdownType, RosaHCPWizard, ROSAHCPWizardData, STEP_IDS } from '@redhat-cloud-services/nxtcm-rosa-hcp-wizard'
 import { useClusterNameUniquenessCheck } from './queries/useCheckClusterNameUniqueness'
 import { generatePath, useLocation, useNavigate } from 'react-router'
@@ -96,7 +97,23 @@ export const RosaHCPWrapper = () => {
     fetch: refetchMachineTypes,
   } = useFetchMachineTypes(selectedSecret)
 
-  const resourceGenerator = useMemo(() => createRosaHcpResourceGenerator(), [])
+  const vpcsRef = useRef(vpcs)
+  vpcsRef.current = vpcs
+
+  const resourceGenerator = useMemo(() => {
+    const baseGenerator = createRosaHcpResourceGenerator()
+    return {
+      ...baseGenerator,
+      renderYaml(formValues: Record<string, unknown>) {
+        const enriched = {
+          ...formValues,
+          _availability_zones: deriveAvailabilityZones(formValues, vpcsRef.current),
+          _roles_ref: deriveRolesRef(formValues),
+        }
+        return baseGenerator.renderYaml(enriched as Parameters<typeof baseGenerator.renderYaml>[0])
+      },
+    }
+  }, [])
 
   const [submitError, setSubmitError] = useState<string | boolean>(false)
 
