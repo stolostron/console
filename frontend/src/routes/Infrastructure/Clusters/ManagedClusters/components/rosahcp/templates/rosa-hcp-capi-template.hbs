@@ -31,6 +31,12 @@ spec:
     podCIDR: '{{{cluster.network_pod_cidr}}}'
     hostPrefix: {{stripSlash cluster.network_host_prefix}}
     networkType: OVNKubernetes
+{{#if cluster._availability_zones}}
+  availabilityZones:
+  {{#each cluster._availability_zones}}
+    - '{{{this}}}'
+  {{/each}}
+{{/if}}
 {{#if cluster.machine_pools_subnets}}
   subnets:
   {{#each cluster.machine_pools_subnets}}
@@ -38,6 +44,17 @@ spec:
     - '{{{this.machine_pool_subnet}}}'
     {{/if}}
   {{/each}}
+{{/if}}
+{{#if cluster._roles_ref}}
+  rolesRef:
+    controlPlaneOperatorARN: '{{{cluster._roles_ref.controlPlaneOperatorARN}}}'
+    imageRegistryARN: '{{{cluster._roles_ref.imageRegistryARN}}}'
+    ingressARN: '{{{cluster._roles_ref.ingressARN}}}'
+    kmsProviderARN: '{{{cluster._roles_ref.kmsProviderARN}}}'
+    kubeCloudControllerARN: '{{{cluster._roles_ref.kubeCloudControllerARN}}}'
+    networkARN: '{{{cluster._roles_ref.networkARN}}}'
+    nodePoolManagementARN: '{{{cluster._roles_ref.nodePoolManagementARN}}}'
+    storageARN: '{{{cluster._roles_ref.storageARN}}}'
 {{/if}}
 {{#if cluster.machine_type}}
   defaultMachinePoolSpec:

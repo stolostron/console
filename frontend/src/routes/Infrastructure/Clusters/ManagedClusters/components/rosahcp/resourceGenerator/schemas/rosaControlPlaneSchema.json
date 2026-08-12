@@ -654,7 +654,7 @@
           "type": "string",
           "minLength": 2,
           "maxLength": 1224,
-          "pattern": "^[a-zA-Z0-9=,.@:\\/-]+$"
+          "pattern": "^[a-zA-Z0-9_+=,.@:\\/-]+$"
         },
         "version": {
           "description": "OpenShift semantic version, for example '4.14.5'.",
