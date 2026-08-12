@@ -22,10 +22,6 @@ jest.mock('./common/GitRevisionSelect', () => ({
   GitRevisionSelect: () => null,
 }))
 
-jest.mock('../Placement/PlacementMatchFooter', () => ({
-  PlacementMatchFooter: () => null,
-}))
-
 jest.mock('../Placement/MatchedClustersModal', () => ({
   MatchedClustersModal: () => null,
 }))
