@@ -343,7 +343,7 @@ export function ClusterOverviewPageContent() {
     },
     description: {
       key: t('Description'),
-      value: cluster?.annotations?.[clusterDescriptionAnnotation] ? (
+      value: cluster?.annotations?.[clusterDescriptionAnnotation]?.trim() ? (
         <div style={{ whiteSpace: 'pre-wrap' }}>
           <Markdown template={cluster.annotations[clusterDescriptionAnnotation]} />
         </div>
