@@ -1,11 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
-'use strict'
-
-import IPCIDR from 'ip-cidr'
 import { Address4, Address6 } from 'ip-address'
+import { VALID_DNS_NAME_TESTER, validateHttpsURL, validateNoProxy } from '../../../lib/validation'
+import { containsCidr, parseCidr } from 'cidr-tools'
+
 import { TFunction } from 'react-i18next'
 import { getControlByID } from '../../../lib/temptifly-utils'
-import { VALID_DNS_NAME_TESTER, validateHttpsURL, validateNoProxy } from '../../../lib/validation'
+
+import isCidr from 'is-cidr'
 
 type Tester = {
   test: (value: string) => boolean
@@ -74,10 +75,9 @@ export const getIPValidator = (
         if (subnetControls.length) {
           const controlName = subnetControls[0].name
           const matchedSubnets = subnetControls.filter((subnetControl: any) => {
-            const cidrString = subnetControl.active || ''
-            const cidr = new IPCIDR(cidrString.toString())
+            const cidrString = (subnetControl.active || '').toString()
             // if CIDR is invalid or not yet entered, validation will catch that
-            return !cidr.isValid() || cidr.contains(active)
+            return !isCidr(cidrString) || containsCidr(cidrString, active)
           })
           if (!matchedSubnets.length) {
             return t('creation.ocp.cluster.valid.cidr.membership', {
@@ -107,9 +107,12 @@ export const getIPValidator = (
 export const getCIDRValidator = (t: TFunction): Validator => ({
   tester: {
     test: (value) => {
-      const cidr = new IPCIDR(value)
       // Ensure CIDR is valid and results in more than one address
-      return cidr.isValid() && cidr.start() !== cidr.end()
+      if (!isCidr(value)) {
+        return false
+      }
+      const cidr = parseCidr(value)
+      return cidr.start !== cidr.end
     },
   },
   notification: t('creation.ocp.cluster.valid.cidr'),
