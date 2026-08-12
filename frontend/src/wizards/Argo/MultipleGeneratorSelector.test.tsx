@@ -1,6 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Specifications } from './MultipleGeneratorSelector'
+import { render, waitFor } from '@testing-library/react'
+import { createRef } from 'react'
+import { CrossGeneratorSync, PrevGenState, Specifications } from './MultipleGeneratorSelector'
+import { ItemContext, EditMode, EditModeContext, DataContext } from '@patternfly-labs/react-form-wizard'
 import { klona } from 'klona/json'
 
 // Mock dependencies
@@ -17,6 +20,18 @@ jest.mock('../../lib/acm-i18next', () => ({
 
 jest.mock('./common/GitRevisionSelect', () => ({
   GitRevisionSelect: () => null,
+}))
+
+jest.mock('../Placement/MatchedClustersModal', () => ({
+  MatchedClustersModal: () => null,
+}))
+
+jest.mock('../Placement/usePlacementDebug', () => ({
+  usePlacementDebug: () => ({ isReady: false, matched: [], notMatched: [], totalClusters: 0 }),
+}))
+
+jest.mock('../../hooks/useValidation', () => ({
+  useValidation: () => ({ validateName: () => undefined }),
 }))
 
 describe('Specifications', () => {
@@ -689,6 +704,242 @@ describe('Destination namespace update logic', () => {
     const namespace = hasGitGen ? pathBasename : ''
 
     expect(namespace).toBe('')
+  })
+})
+
+describe('CrossGeneratorSync - destination namespace preservation in edit mode', () => {
+  function renderCrossGeneratorSync(opts: {
+    editMode: EditMode
+    resources: any[]
+    prevGenState?: Partial<PrevGenState>
+  }) {
+    const prevGenState = { current: { hasCDRGen: true, ...opts.prevGenState } as PrevGenState }
+    const generatorPath = createRef<string>() as React.MutableRefObject<string>
+    generatorPath.current = 'spec.generators'
+    const mockUpdate = jest.fn()
+    const onGeneratorStateChange = jest.fn()
+
+    render(
+      <DataContext.Provider value={{ update: mockUpdate }}>
+        <EditModeContext.Provider value={opts.editMode}>
+          <ItemContext.Provider value={opts.resources}>
+            <CrossGeneratorSync
+              prevGenState={prevGenState}
+              onGeneratorStateChange={onGeneratorStateChange}
+              defaultData={opts.resources}
+              generatorPath={generatorPath}
+            />
+          </ItemContext.Provider>
+        </EditModeContext.Provider>
+      </DataContext.Provider>
+    )
+
+    return { prevGenState, mockUpdate, resources: opts.resources }
+  }
+
+  test('should preserve destination namespace in edit mode on initial sync', async () => {
+    const appSet: any = {
+      kind: 'ApplicationSet',
+      metadata: { name: 'my-app', namespace: 'openshift-gitops' },
+      spec: {
+        generators: [
+          {
+            clusterDecisionResource: {
+              configMapRef: 'acm-placement',
+              labelSelector: { matchLabels: {} },
+              requeueAfterSeconds: 180,
+            },
+          },
+        ],
+        template: {
+          metadata: { name: 'my-app-{{name}}' },
+          spec: {
+            destination: { namespace: 'custom-namespace', server: '{{server}}' },
+            project: 'default',
+          },
+        },
+      },
+    }
+    const resources = [
+      appSet,
+      { kind: 'Placement', metadata: { name: 'my-app-placement', namespace: 'openshift-gitops' } },
+    ]
+
+    const { prevGenState } = renderCrossGeneratorSync({
+      editMode: EditMode.Edit,
+      resources,
+    })
+
+    await waitFor(() => {
+      expect(appSet.spec.template.spec.destination.namespace).toBe('custom-namespace')
+      expect(prevGenState.current.lastSetDestinationNamespace).toBe('custom-namespace')
+    })
+  })
+
+  test('should set destination namespace to appName in create mode on initial sync', async () => {
+    const appSet: any = {
+      kind: 'ApplicationSet',
+      metadata: { name: 'my-app', namespace: 'openshift-gitops' },
+      spec: {
+        generators: [
+          {
+            clusterDecisionResource: {
+              configMapRef: 'acm-placement',
+              labelSelector: { matchLabels: {} },
+              requeueAfterSeconds: 180,
+            },
+          },
+        ],
+        template: {
+          metadata: { name: 'my-app-{{name}}' },
+          spec: {
+            destination: { namespace: '', server: '{{server}}' },
+            project: 'default',
+          },
+        },
+      },
+    }
+    const resources = [
+      appSet,
+      { kind: 'Placement', metadata: { name: 'my-app-placement', namespace: 'openshift-gitops' } },
+    ]
+
+    renderCrossGeneratorSync({
+      editMode: EditMode.Create,
+      resources,
+    })
+
+    await waitFor(() => {
+      expect(appSet.spec.template.spec.destination.namespace).toBe('my-app')
+    })
+  })
+
+  test('should preserve destination namespace in edit mode with git generator', async () => {
+    const appSet: any = {
+      kind: 'ApplicationSet',
+      metadata: { name: 'my-app', namespace: 'openshift-gitops' },
+      spec: {
+        generators: [
+          {
+            git: {
+              repoURL: 'https://github.com/test/repo',
+              revision: 'main',
+              directories: [{ path: 'apps' }],
+            },
+          },
+        ],
+        template: {
+          metadata: { name: 'my-app-old' },
+          spec: {
+            destination: { namespace: 'my-custom-ns', server: '{{server}}' },
+            project: 'default',
+          },
+        },
+      },
+    }
+    const resources = [
+      appSet,
+      { kind: 'Placement', metadata: { name: 'my-app-placement', namespace: 'openshift-gitops' } },
+    ]
+
+    renderCrossGeneratorSync({
+      editMode: EditMode.Edit,
+      resources,
+    })
+
+    await waitFor(() => {
+      expect(appSet.spec.template.metadata.name).toBe('my-app-{{name}}-{{path.basename}}')
+      expect(appSet.spec.template.spec.destination.namespace).toBe('my-custom-ns')
+    })
+  })
+
+  test('should not overwrite namespace when user has manually changed it after initial sync', async () => {
+    const appSet: any = {
+      kind: 'ApplicationSet',
+      metadata: { name: 'my-app', namespace: 'openshift-gitops' },
+      spec: {
+        generators: [
+          {
+            clusterDecisionResource: {
+              configMapRef: 'acm-placement',
+              labelSelector: { matchLabels: {} },
+              requeueAfterSeconds: 180,
+            },
+          },
+        ],
+        template: {
+          metadata: { name: 'my-app-{{name}}' },
+          spec: {
+            destination: { namespace: 'user-entered-ns', server: '{{server}}' },
+            project: 'default',
+          },
+        },
+      },
+    }
+    const resources = [
+      appSet,
+      { kind: 'Placement', metadata: { name: 'my-app-placement', namespace: 'openshift-gitops' } },
+    ]
+
+    renderCrossGeneratorSync({
+      editMode: EditMode.Edit,
+      resources,
+      prevGenState: {
+        hasGitGen: false,
+        hasListGen: false,
+        hasCDRGen: true,
+        lastSetDestinationNamespace: 'old-value',
+      },
+    })
+
+    await waitFor(() => {
+      expect(appSet.spec.template.spec.destination.namespace).toBe('user-entered-ns')
+    })
+  })
+
+  test('should preserve helm destination namespace on subsequent renders in edit mode', async () => {
+    const appSet: any = {
+      kind: 'ApplicationSet',
+      metadata: { name: 'my-app', namespace: 'openshift-gitops' },
+      spec: {
+        generators: [
+          {
+            clusterDecisionResource: {
+              configMapRef: 'acm-placement',
+              labelSelector: { matchLabels: {} },
+              requeueAfterSeconds: 300,
+            },
+          },
+        ],
+        template: {
+          metadata: { name: 'my-app-{{name}}' },
+          spec: {
+            destination: { namespace: 'helm-deploy-ns', server: '{{server}}' },
+            project: 'default',
+            sources: [{ chart: 'my-chart', repoURL: 'https://charts.example.com', targetRevision: '1.0.0' }],
+          },
+        },
+      },
+    }
+    const resources = [
+      appSet,
+      { kind: 'Placement', metadata: { name: 'my-app-placement', namespace: 'openshift-gitops' } },
+    ]
+
+    renderCrossGeneratorSync({
+      editMode: EditMode.Edit,
+      resources,
+      prevGenState: {
+        hasGitGen: false,
+        hasListGen: false,
+        hasCDRGen: true,
+        lastSetDestinationNamespace: 'helm-deploy-ns',
+      },
+    })
+
+    await waitFor(() => {
+      expect(appSet.spec.template.spec.destination.namespace).toBe('helm-deploy-ns')
+    })
   })
 })
 

@@ -150,6 +150,7 @@ describe('Policy wizard', () => {
   })
 
   test('can toggle cluster limit checkbox and set number of clusters', async () => {
+    nockIgnorePlacementDebug()
     const { container } = render(<TestPolicyWizard />)
 
     const nameTextbox = screen.getByRole('textbox', { name: /name/i })
