@@ -11,6 +11,8 @@ import {
   createProject,
   IResource,
   ManagedClusterKind,
+  NamespaceApiVersion,
+  NamespaceKind,
   ROSAClusterKind,
   ROSAControlPlaneKind,
   Secret,
@@ -85,6 +87,11 @@ export async function createRosaHcpCluster(
   try {
     // 1. Namespace for the cluster's resources (idempotent - ignore already-exists).
     await ignoreAlreadyExists(createProject(clusterName).promise)
+    createdResources.push({
+      apiVersion: NamespaceApiVersion,
+      kind: NamespaceKind,
+      metadata: { name: clusterName },
+    })
 
     // 2. Cluster-scoped singleton identity CAPA uses to reconcile AWS-backed resources.
     //    Shared across all ROSA HCP clusters on the hub, so never rolled back on failure.

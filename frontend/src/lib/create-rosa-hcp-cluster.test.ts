@@ -12,6 +12,8 @@ import {
   ManagedCluster,
   ManagedClusterApiVersion,
   ManagedClusterKind,
+  NamespaceApiVersion,
+  NamespaceKind,
   ProjectRequestApiVersion,
   ProjectRequestKind,
   ROSACluster,
@@ -87,6 +89,12 @@ const buildYamlString = (resources: unknown[]) => resources.map((resource) => ya
 const expectedProjectRequest = {
   apiVersion: ProjectRequestApiVersion,
   kind: ProjectRequestKind,
+  metadata: { name: clusterName },
+}
+
+const expectedNamespace = {
+  apiVersion: NamespaceApiVersion,
+  kind: NamespaceKind,
   metadata: { name: clusterName },
 }
 
@@ -181,6 +189,21 @@ describe('createRosaHcpCluster', () => {
       nockCreate(controlPlane, undefined, 500),
       nockDelete(rosaCluster),
       nockDelete(expectedCredsSecret),
+      nockDelete(expectedNamespace),
+    ]
+
+    const yamlString = buildYamlString([controlPlane, managedCluster, capiCluster, rosaCluster])
+
+    await expect(createRosaHcpCluster(yamlString, ocmCredentials)).rejects.toThrow()
+    await waitForNocks(nocks)
+  })
+
+  it('rolls back the namespace when the credentials secret creation fails', async () => {
+    const nocks = [
+      nockCreate(expectedProjectRequest),
+      nockCreate(expectedIdentity),
+      nockCreate(expectedCredsSecret, undefined, 500),
+      nockDelete(expectedNamespace),
     ]
 
     const yamlString = buildYamlString([controlPlane, managedCluster, capiCluster, rosaCluster])
