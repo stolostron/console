@@ -55,8 +55,8 @@ function buildCredentialsSecret(clusterName: string, ocmCredentials: RosaHcpOcmC
       },
     },
     stringData: {
-      ocmClientID: ocmCredentials.client_id,
-      ocmClientSecret: ocmCredentials.client_secret,
+      ocmClientID: Buffer.from(ocmCredentials.client_id, 'base64').toString('ascii'),
+      ocmClientSecret: Buffer.from(ocmCredentials.client_secret, 'base64').toString('ascii'),
       ocmApiUrl: ROSA_HCP_DEFAULT_OCM_API_URL,
     },
     type: 'Opaque',

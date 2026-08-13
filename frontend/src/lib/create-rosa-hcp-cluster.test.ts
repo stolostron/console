@@ -32,8 +32,8 @@ import { waitForNocks } from './test-util'
 const clusterName = 'my-rosa-cluster'
 
 const ocmCredentials: RosaHcpOcmCredentials = {
-  client_id: 'client-id-value',
-  client_secret: 'client-secret-value',
+  client_id: Buffer.from('client-id-value').toString('base64'),
+  client_secret: Buffer.from('client-secret-value').toString('base64'),
 }
 
 const controlPlane: ROSAControlPlane = {
@@ -114,8 +114,8 @@ const expectedCredsSecret: Secret = {
     labels: { 'cluster.open-cluster-management.io/backup': 'cluster' },
   },
   stringData: {
-    ocmClientID: ocmCredentials.client_id,
-    ocmClientSecret: ocmCredentials.client_secret,
+    ocmClientID: 'client-id-value',
+    ocmClientSecret: 'client-secret-value',
     ocmApiUrl: ROSA_HCP_DEFAULT_OCM_API_URL,
   },
   type: 'Opaque',
