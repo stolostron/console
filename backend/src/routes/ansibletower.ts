@@ -63,10 +63,20 @@ export function ansibleTower(req: Http2ServerRequest, res: Http2ServerResponse):
               return respondBadRequest(req, res)
             }
 
+            let hostUrl: URL
             let towerUrl: URL
             try {
-              towerUrl = new URL(body.ansiblePath, host)
+              hostUrl = new URL(host)
+              towerUrl = new URL(body.ansiblePath, hostUrl)
             } catch (err) {
+              return respondBadRequest(req, res)
+            }
+
+            // The ansiblePath is caller-supplied and only meant to be a relative
+            // API path. Reject absolute or network-path references that would
+            // point the proxy (and the Secret-derived token) at any origin other
+            // than the host configured in the credential Secret.
+            if (towerUrl.origin !== hostUrl.origin) {
               return respondBadRequest(req, res)
             }
 
