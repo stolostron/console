@@ -44,6 +44,9 @@ spec:
     - '{{{this.machine_pool_subnet}}}'
     {{/if}}
   {{/each}}
+  {{#if cluster.cluster_privacy_public_subnet_id}}
+    - '{{{cluster.cluster_privacy_public_subnet_id}}}'
+  {{/if}}
 {{/if}}
 {{#if cluster._roles_ref}}
   rolesRef:
