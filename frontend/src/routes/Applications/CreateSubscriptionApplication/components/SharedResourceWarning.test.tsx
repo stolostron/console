@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, waitFor } from '@testing-library/react'
 import { axe } from 'jest-axe'
-import { searchClient } from '../../../Search/search-sdk/search-client'
+import { searchClient } from '~/routes/Search/search-sdk/search-client'
 import SharedResourceWarning, { RESOURCE_TYPES } from './SharedResourceWarning'
 
-jest.mock('../../../Search/search-sdk/search-client', () => ({
+jest.mock('~/routes/Search/search-sdk/search-client', () => ({
   searchClient: {
     query: jest.fn(),
   },
