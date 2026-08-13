@@ -45,6 +45,41 @@ describe(`ansibletower Route`, function () {
     expect(res.statusCode).toEqual(400)
   })
 
+  it(`should preserve the query string for paginated requests`, async function () {
+    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nockCredentialSecret(TOWER_HOST)
+    nock(TOWER_HOST).get(ansiblePaths[0]).query({ page: '2', page_size: '20' }).reply(200, response)
+    const res = await request('POST', '/ansibletower', {
+      secretNamespace: SECRET_NS,
+      secretName: SECRET_NAME,
+      ansiblePath: `${ansiblePaths[0]}?page=2&page_size=20`,
+    })
+    expect(res.statusCode).toEqual(200)
+    expect(JSON.stringify(await parsePipedJsonBody(res))).toEqual(JSON.stringify(response))
+  })
+
+  it(`should reject an external absolute URL in ansiblePath`, async function () {
+    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nockCredentialSecret(TOWER_HOST)
+    const res = await request('POST', '/ansibletower', {
+      secretNamespace: SECRET_NS,
+      secretName: SECRET_NAME,
+      ansiblePath: `https://evil.example.com${ansiblePaths[0]}`,
+    })
+    expect(res.statusCode).toEqual(400)
+  })
+
+  it(`should reject a network-path reference in ansiblePath`, async function () {
+    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nockCredentialSecret(TOWER_HOST)
+    const res = await request('POST', '/ansibletower', {
+      secretNamespace: SECRET_NS,
+      secretName: SECRET_NAME,
+      ansiblePath: `//evil.example.com${ansiblePaths[0]}`,
+    })
+    expect(res.statusCode).toEqual(400)
+  })
+
   it(`should fail closed when caller cannot read the credential secret`, async function () {
     nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
     nock(process.env.CLUSTER_API_URL)
