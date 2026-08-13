@@ -5,8 +5,8 @@
 import { ExclamationTriangleIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import PropTypes from 'prop-types'
-import { Fragment, useEffect, useState } from 'react'
-import { useTranslation } from '../../../../lib/acm-i18next'
+import { useEffect, useState } from 'react'
+import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { searchClient } from '../../../Search/search-sdk/search-client'
 import { SearchResultItemsAndRelatedItemsDocument } from '../../../Search/search-sdk/search-sdk'
 import './style.css'
@@ -73,14 +73,6 @@ const getQuery = (resourceType, name, namespace, hubClusterName) => {
     // For subscriptions, check for any affected application resources
     relatedKinds: kind === 'subscription' ? CHILD_RESOURCE_TYPES : ['Application'],
   }
-}
-
-const getWarningSpan = (key) => {
-  return `<span class="warning-font">${key} </span>`
-}
-
-const getCodeSpan = (text) => {
-  return `<span class="code-font">${text}</span>`
 }
 
 const SharedResourceWarning = ({ resourceType, control }) => {
@@ -184,50 +176,38 @@ const SharedResourceWarning = ({ resourceType, control }) => {
       </div>
       <div>
         {!!deployingSubscription && (
-          <Fragment>
-            <p
-              dangerouslySetInnerHTML={{
-                __html: `
-              ${getWarningSpan(t('Warning:'))}
-              ${t(
-                'This application uses a {{0}} resource that is deployed by the subscription {{1}}. Changes to these settings might be reverted when resources are reconciled with the resource repository.',
-                [getCodeSpan(getResourceKind(resourceType)), getCodeSpan(deployingSubscription)]
-              )}
-              `,
-              }}
+          <p>
+            <span className="warning-font">{t('Warning:')}</span>{' '}
+            <Trans
+              i18nKey="This application uses a <code>{{resourceKind}}</code> resource that is deployed by the subscription <code>{{subscriptionName}}</code>. Changes to these settings might be reverted when resources are reconciled with the resource repository."
+              values={{ resourceKind: getResourceKind(resourceType), subscriptionName: deployingSubscription }}
+              components={{ code: <span className="code-font" /> }}
             />
-          </Fragment>
+          </p>
         )}
         {!!siblingApplications.length && (
-          <Fragment>
-            <p
-              dangerouslySetInnerHTML={{
-                __html: `
-              ${getWarningSpan(t('Caution:'))}
-              ${t(
-                'This application uses a shared {{0}} resource. Changes to these settings will also affect the following applications:',
-                [getCodeSpan(getResourceKind(resourceType))]
-              )}
-              `,
-              }}
-            />
+          <>
+            <p>
+              <span className="warning-font">{t('Caution:')}</span>{' '}
+              <Trans
+                i18nKey="This application uses a shared <code>{{resourceKind}}</code> resource. Changes to these settings will also affect the following applications:"
+                values={{ resourceKind: getResourceKind(resourceType) }}
+                components={{ code: <span className="code-font" /> }}
+              />
+            </p>
             <p>{siblingApplications.join(', ')}</p>
-          </Fragment>
+          </>
         )}
         {!!childResources.length && (
-          <Fragment>
-            <p
-              dangerouslySetInnerHTML={{
-                __html: `
-              ${getWarningSpan(t('Caution:'))}
-              ${t(
+          <>
+            <p>
+              <span className="warning-font">{t('Caution:')}</span>{' '}
+              {t(
                 'Changes to these settings might also affect other applications or subscriptions. This subscription deploys the following resources:'
               )}
-              `,
-              }}
-            />
+            </p>
             <p>{childResources.join(', ')}</p>
-          </Fragment>
+          </>
         )}
       </div>
     </div>
