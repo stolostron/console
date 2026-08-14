@@ -1,0 +1,144 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "ManagedCluster is the Schema for the managedclusters API. A ManagedCluster represents a managed cluster in the hub.",
+  "type": "object",
+  "properties": {
+    "apiVersion": {
+      "description": "APIVersion defines the versioned schema of this representation of an object.",
+      "type": "string",
+      "const": "cluster.open-cluster-management.io/v1"
+    },
+    "kind": {
+      "description": "Kind is a string value representing the REST resource this object represents.",
+      "type": "string",
+      "const": "ManagedCluster"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Name is the unique name of this cluster. Must match the cluster name used in ROSAControlPlane.",
+          "type": "string"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "spec": {
+      "description": "ManagedClusterSpec defines the desired state of ManagedCluster.",
+      "type": "object",
+      "properties": {
+        "hubAcceptsClient": {
+          "description": "HubAcceptsClient represents that hub accepts the joining of Klusterlet agent on the managed cluster with the hub. When set to true, the hub can register the cluster and allow it to join.",
+          "type": "boolean"
+        },
+        "leaseDurationSeconds": {
+          "description": "LeaseDurationSeconds is used to coordinate the lease update time of Klusterlet agents on the managed cluster. If its value is zero, the Klusterlet will update its lease every 60 seconds by default.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "managedClusterClientConfigs": {
+          "description": "ManagedClusterClientConfigs hold the apiserver address and CA bundle of the managed cluster.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "caBundle": {
+                "description": "CABundle is the ca bundle to connect to apiserver of the managed cluster.",
+                "type": "string",
+                "format": "byte"
+              },
+              "url": {
+                "description": "URL is the url of apiserver endpoint of the managed cluster.",
+                "type": "string"
+              }
+            }
+          }
+        },
+        "taints": {
+          "description": "Taints is a property of managed cluster that allow the cluster to be repelled from being placed.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["effect", "key"],
+            "properties": {
+              "effect": {
+                "description": "Effect indicates the effect of the taint on placements that do not tolerate the taint.",
+                "type": "string",
+                "enum": ["NoSelect", "PreferNoSelect", "NoSelectIfNew"]
+              },
+              "key": {
+                "description": "Key is the taint key applied to a cluster.",
+                "type": "string"
+              },
+              "timeAdded": {
+                "description": "TimeAdded represents the time at which the taint was added.",
+                "type": "string",
+                "format": "date-time"
+              },
+              "value": {
+                "description": "Value is the taint value corresponding to the taint key.",
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "status": {
+      "description": "ManagedClusterStatus defines the observed state of ManagedCluster.",
+      "type": "object",
+      "properties": {
+        "allocatable": {
+          "description": "Allocatable represents the total allocatable resources on the managed cluster.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "capacity": {
+          "description": "Capacity represents the total resource capacity from all nodeStatuses on the managed cluster.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "conditions": {
+          "description": "Conditions contains the different condition statuses for this work.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "lastTransitionTime": { "type": "string", "format": "date-time" },
+              "message": { "type": "string" },
+              "observedGeneration": { "type": "integer" },
+              "reason": { "type": "string" },
+              "status": { "type": "string" },
+              "type": { "type": "string" }
+            }
+          }
+        },
+        "version": {
+          "description": "Version represents the kubernetes version of the managed cluster.",
+          "type": "object",
+          "properties": {
+            "kubernetes": {
+              "description": "Kubernetes is the kubernetes version of managed cluster.",
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

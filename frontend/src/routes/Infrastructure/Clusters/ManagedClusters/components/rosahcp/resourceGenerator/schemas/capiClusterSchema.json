@@ -1,0 +1,195 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Cluster is the Schema for the clusters API. A Cluster represents a Kubernetes cluster created and managed by Cluster API.",
+  "type": "object",
+  "properties": {
+    "apiVersion": {
+      "description": "APIVersion defines the versioned schema of this representation of an object.",
+      "type": "string",
+      "const": "cluster.x-k8s.io/v1beta1"
+    },
+    "kind": {
+      "description": "Kind is a string value representing the REST resource this object represents.",
+      "type": "string",
+      "const": "Cluster"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Name must match the cluster name used in ROSAControlPlane and ROSACluster.",
+          "type": "string"
+        },
+        "namespace": {
+          "description": "Namespace must match the namespace used in ROSAControlPlane and ROSACluster.",
+          "type": "string"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "spec": {
+      "description": "ClusterSpec defines the desired state of a Cluster.",
+      "type": "object",
+      "properties": {
+        "clusterNetwork": {
+          "description": "Cluster network configuration.",
+          "type": "object",
+          "properties": {
+            "apiServerPort": {
+              "description": "The port on which the API server is listening.",
+              "type": "integer"
+            },
+            "pods": {
+              "description": "The network ranges from which Pod networks are allocated.",
+              "type": "object",
+              "properties": {
+                "cidrBlocks": {
+                  "description": "A list of CIDR blocks.",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "cidr"
+                  }
+                }
+              }
+            },
+            "services": {
+              "description": "The network ranges from which service VIPs are allocated.",
+              "type": "object",
+              "properties": {
+                "cidrBlocks": {
+                  "description": "A list of CIDR blocks.",
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "cidr"
+                  }
+                }
+              }
+            },
+            "serviceDomain": {
+              "description": "Domain name for services.",
+              "type": "string"
+            }
+          }
+        },
+        "controlPlaneEndpoint": {
+          "description": "ControlPlaneEndpoint represents the endpoint used to communicate with the control plane.",
+          "type": "object",
+          "properties": {
+            "host": {
+              "description": "The hostname on which the API server is serving.",
+              "type": "string"
+            },
+            "port": {
+              "description": "The port on which the API server is serving.",
+              "type": "integer"
+            }
+          }
+        },
+        "controlPlaneRef": {
+          "description": "Reference to a ROSAControlPlane object that holds the details for provisioning the control plane for a cluster.",
+          "type": "object",
+          "properties": {
+            "apiVersion": {
+              "type": "string",
+              "const": "controlplane.cluster.x-k8s.io/v1beta2"
+            },
+            "kind": {
+              "type": "string",
+              "const": "ROSAControlPlane"
+            },
+            "name": {
+              "description": "Name of the referent.",
+              "type": "string"
+            },
+            "namespace": {
+              "description": "Namespace of the referent.",
+              "type": "string"
+            }
+          }
+        },
+        "infrastructureRef": {
+          "description": "Reference to a ROSACluster object that holds the details for provisioning the infrastructure for a cluster.",
+          "type": "object",
+          "properties": {
+            "apiVersion": {
+              "type": "string",
+              "const": "infrastructure.cluster.x-k8s.io/v1beta2"
+            },
+            "kind": {
+              "type": "string",
+              "const": "ROSACluster"
+            },
+            "name": {
+              "description": "Name of the referent.",
+              "type": "string"
+            },
+            "namespace": {
+              "description": "Namespace of the referent.",
+              "type": "string"
+            }
+          }
+        },
+        "paused": {
+          "description": "Paused can be used to prevent controllers from processing the Cluster and all its associated objects.",
+          "type": "boolean"
+        },
+        "topology": {
+          "description": "Topology encapsulates the information for the cluster topology.",
+          "type": "object",
+          "properties": {
+            "class": {
+              "description": "The name of the ClusterClass object to create the topology.",
+              "type": "string"
+            },
+            "version": {
+              "description": "The Kubernetes version of the cluster.",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "status": {
+      "description": "ClusterStatus defines the observed state of a Cluster.",
+      "type": "object",
+      "properties": {
+        "conditions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "lastTransitionTime": { "type": "string", "format": "date-time" },
+              "message": { "type": "string" },
+              "reason": { "type": "string" },
+              "severity": { "type": "string" },
+              "status": { "type": "string" },
+              "type": { "type": "string" }
+            }
+          }
+        },
+        "controlPlaneReady": {
+          "description": "ControlPlaneReady defines if the control plane is ready.",
+          "type": "boolean"
+        },
+        "infrastructureReady": {
+          "description": "InfrastructureReady is the state of the infrastructure provider.",
+          "type": "boolean"
+        },
+        "phase": {
+          "description": "Phase represents the current phase of cluster actuation.",
+          "type": "string",
+          "enum": ["Pending", "Provisioning", "Provisioned", "Deleting", "Failed", "Unknown"]
+        }
+      }
+    }
+  }
+}

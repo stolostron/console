@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "ROSACluster is the Schema for the ROSAClusters API. ROSACluster is the infrastructure provider-specific resource for ROSA HCP clusters. Its spec is intentionally minimal as configuration is managed via ROSAControlPlane.",
+  "type": "object",
+  "properties": {
+    "apiVersion": {
+      "description": "APIVersion defines the versioned schema of this representation of an object.",
+      "type": "string",
+      "const": "infrastructure.cluster.x-k8s.io/v1beta2"
+    },
+    "kind": {
+      "description": "Kind is a string value representing the REST resource this object represents.",
+      "type": "string",
+      "const": "ROSACluster"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Name must match the cluster name used in ROSAControlPlane and Cluster.",
+          "type": "string"
+        },
+        "namespace": {
+          "description": "Namespace must match the namespace used in ROSAControlPlane and Cluster.",
+          "type": "string"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "annotations": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "spec": {
+      "description": "ROSAClusterSpec defines the desired state of ROSACluster. Configuration is managed via the associated ROSAControlPlane resource.",
+      "type": "object",
+      "properties": {
+        "controlPlaneEndpoint": {
+          "description": "ControlPlaneEndpoint represents the endpoint used to communicate with the control plane. Populated automatically from the ROSAControlPlane.",
+          "type": "object",
+          "properties": {
+            "host": {
+              "description": "The hostname on which the API server is serving.",
+              "type": "string"
+            },
+            "port": {
+              "description": "The port on which the API server is serving.",
+              "type": "integer"
+            }
+          }
+        }
+      }
+    },
+    "status": {
+      "description": "ROSAClusterStatus defines the observed state of ROSACluster.",
+      "type": "object",
+      "properties": {
+        "conditions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "lastTransitionTime": { "type": "string", "format": "date-time" },
+              "message": { "type": "string" },
+              "reason": { "type": "string" },
+              "severity": { "type": "string" },
+              "status": { "type": "string" },
+              "type": { "type": "string" }
+            }
+          }
+        },
+        "ready": {
+          "description": "Ready is true when the provider resource is ready.",
+          "type": "boolean"
+        },
+        "failureDomains": {
+          "description": "FailureDomains is a list of failure domain objects synced from the infrastructure provider.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "attributes": {
+                "type": "object",
+                "additionalProperties": { "type": "string" }
+              },
+              "controlPlane": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
