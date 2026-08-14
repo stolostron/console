@@ -55,7 +55,8 @@ export function clusterSupportsAction(
   cluster: Cluster,
   clusterAction: ClusterAction,
   isHypershiftUpdatesReady?: boolean,
-  isHypershiftChannelSelectable?: boolean
+  isHypershiftChannelSelectable?: boolean,
+  localHubName?: string
 ): boolean {
   if (!isHypershiftUpdatesReady) {
     isHypershiftUpdatesReady = false
@@ -128,7 +129,7 @@ export function clusterSupportsAction(
     case ClusterAction.RemoveAutomationTemplate:
       return cluster.hasAutomationTemplate && !cluster.distribution?.upgradeInfo?.isUpgrading // is not currently upgrading
     case ClusterAction.OpenConsole:
-      return !!cluster.consoleURL
+      return !!cluster.consoleURL && cluster.name !== localHubName
     default:
       return false
   }
