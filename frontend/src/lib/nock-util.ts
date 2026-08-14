@@ -321,8 +321,9 @@ export function nockRBAC(resourceAttributes: ResourceAttributes, allowed = true)
 }
 
 interface AnsibleCredentialPostBody {
-  towerHost: string
-  token: string
+  secretNamespace: string
+  secretName: string
+  ansiblePath: string
 }
 
 interface GetGitBranchesArgoResponse {
@@ -338,7 +339,7 @@ interface GetGitPathsArgoResponse {
 }
 
 export function nockAnsibleTower(
-  data: AnsibleCredentialPostBody | unknown,
+  data: AnsibleCredentialPostBody,
   response: AnsibleTowerJobTemplateList,
   statusCode = 200
 ) {
@@ -352,7 +353,7 @@ export function nockAnsibleTower(
 }
 
 export function nockAnsibleTowerInventory(
-  data: AnsibleCredentialPostBody | unknown,
+  data: AnsibleCredentialPostBody,
   response: AnsibleTowerInventoryList,
   statusCode = 200
 ) {
@@ -367,7 +368,7 @@ export function nockAnsibleTowerInventory(
     })
 }
 
-export function nockAnsibleTowerError(data: AnsibleCredentialPostBody | unknown, error: string | object) {
+export function nockAnsibleTowerError(data: AnsibleCredentialPostBody, error: string | object) {
   return nocked(process.env.JEST_DEFAULT_HOST as string, {
     encodedQueryParams: true,
   })
