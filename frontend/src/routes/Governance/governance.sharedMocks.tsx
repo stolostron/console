@@ -737,12 +737,14 @@ const secret: Secret = {
 }
 
 export const mockAnsibleCredential = {
-  towerHost: 'https://ansible-tower-web-svc-tower.com/api/controller/v2/job_templates/',
-  token: 'abcd',
+  secretNamespace: 'test',
+  secretName: 'ansible-test-secret',
+  ansiblePath: '/api/controller/v2/job_templates/',
 }
 export const mockAnsibleCredentialWorkflow = {
-  towerHost: 'https://ansible-tower-web-svc-tower.com/api/controller/v2/workflow_job_templates/',
-  token: 'abcd',
+  secretNamespace: 'test',
+  secretName: 'ansible-test-secret',
+  ansiblePath: '/api/controller/v2/workflow_job_templates/',
 }
 
 export const mockTemplateWorkflowList: AnsibleTowerJobTemplateList = {
