@@ -1,6 +1,20 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { ClusterCurator, ClusterCuratorApiVersion, ClusterCuratorKind } from '../cluster-curator'
+import { Namespace, NamespaceApiVersion, NamespaceKind } from '../namespace'
 import {
+  ResourceError,
+  ResourceErrorCode,
+  createResource,
+  createResources,
+  deleteResources,
+  listAnsibleTowerJobs,
+  reconcileResources,
+  updateResources,
+} from './resource-request'
+import { StatusApiVersion, StatusKind } from '../status'
+import {
+  nockAnsibleTower,
   nockCreate,
   nockCreateError,
   nockDelete,
@@ -8,23 +22,9 @@ import {
   nockIgnoreApiPaths,
   nockReplace,
   nockReplaceError,
-  nockAnsibleTower,
 } from '../../lib/nock-util'
+
 import nock from 'nock'
-import { ClusterCurator, ClusterCuratorApiVersion, ClusterCuratorKind } from '../cluster-curator'
-import { Namespace, NamespaceApiVersion, NamespaceKind } from '../namespace'
-import {
-  createResource,
-  createResources,
-  deleteResources,
-  reconcileResources,
-  ResourceError,
-  ResourceErrorCode,
-  updateResources,
-  isAnsibleGatewayURL,
-  listAnsibleTowerJobs,
-} from './resource-request'
-import { StatusApiVersion, StatusKind } from '../status'
 
 export const clusterName = 'test-cluster'
 
@@ -78,17 +78,6 @@ describe('reconcileResources', () => {
   })
 })
 
-describe('isAnsibleGatewayURL', () => {
-  it('returns false for controller URL (name-controller-namespace)', () => {
-    const host = 'https://example-controller-aap.apps.lucas-sno.apps.ocp.rdu.eng.ansible.com'
-    expect(isAnsibleGatewayURL(host)).toBe(false)
-  })
-
-  it('returns true for gateway URL (name-namespace)', () => {
-    const host = 'https://example-aap.apps.lucas-sno.apps.ocp.rdu.eng.ansible.com'
-    expect(isAnsibleGatewayURL(host)).toBe(true)
-  })
-})
 describe('createResource', () => {
   nockIgnoreApiPaths()
   it('catches error creating resource', async () => {
@@ -160,8 +149,7 @@ describe('deleteResources', () => {
 describe('listAnsibleTowerJobs', () => {
   nockIgnoreApiPaths()
 
-  const ansibleHost = 'https://ansible-tower.alpha.internal'
-  const token = 'test-token-12345'
+  const secretRef = { namespace: 'test-ns', name: 'ansible-credential' }
 
   const mockJobTemplateResponse = {
     count: 2,
@@ -184,7 +172,11 @@ describe('listAnsibleTowerJobs', () => {
   it('ACM-30375: fallback to controller paths when gateway paths return 404', async () => {
     // Mock gateway paths returning 404 (AAP 2.4 doesn't have these paths)
     nockAnsibleTower(
-      { towerHost: ansibleHost + '/api/controller/v2/job_templates/', token },
+      {
+        secretNamespace: secretRef.namespace,
+        secretName: secretRef.name,
+        ansiblePath: '/api/controller/v2/job_templates/',
+      },
       {
         kind: StatusKind,
         apiVersion: StatusApiVersion,
@@ -195,7 +187,11 @@ describe('listAnsibleTowerJobs', () => {
       404
     )
     nockAnsibleTower(
-      { towerHost: ansibleHost + '/api/controller/v2/workflow_job_templates/', token },
+      {
+        secretNamespace: secretRef.namespace,
+        secretName: secretRef.name,
+        ansiblePath: '/api/controller/v2/workflow_job_templates/',
+      },
       {
         kind: StatusKind,
         apiVersion: StatusApiVersion,
@@ -208,15 +204,19 @@ describe('listAnsibleTowerJobs', () => {
 
     // Mock controller paths returning success (AAP 2.4 has these paths)
     nockAnsibleTower(
-      { towerHost: ansibleHost + '/api/v2/job_templates/', token },
+      { secretNamespace: secretRef.namespace, secretName: secretRef.name, ansiblePath: '/api/v2/job_templates/' },
       { results: [mockJobTemplateResponse.results[0]] }
     )
     nockAnsibleTower(
-      { towerHost: ansibleHost + '/api/v2/workflow_job_templates/', token },
+      {
+        secretNamespace: secretRef.namespace,
+        secretName: secretRef.name,
+        ansiblePath: '/api/v2/workflow_job_templates/',
+      },
       { results: [mockJobTemplateResponse.results[1]] }
     )
 
-    const result = await listAnsibleTowerJobs(ansibleHost, token).promise
+    const result = await listAnsibleTowerJobs(secretRef).promise
 
     expect(result.results).toHaveLength(2)
     expect(result.results[0].name).toBe('Test Job Template')
@@ -226,11 +226,19 @@ describe('listAnsibleTowerJobs', () => {
   it('returns jobs when gateway paths work (AAP 2.5+)', async () => {
     // Mock gateway paths returning success
     nockAnsibleTower(
-      { towerHost: ansibleHost + '/api/controller/v2/job_templates/', token },
+      {
+        secretNamespace: secretRef.namespace,
+        secretName: secretRef.name,
+        ansiblePath: '/api/controller/v2/job_templates/',
+      },
       { results: [mockJobTemplateResponse.results[0]] }
     )
     nockAnsibleTower(
-      { towerHost: ansibleHost + '/api/controller/v2/workflow_job_templates/', token },
+      {
+        secretNamespace: secretRef.namespace,
+        secretName: secretRef.name,
+        ansiblePath: '/api/controller/v2/workflow_job_templates/',
+      },
       { results: [mockJobTemplateResponse.results[1]] }
     )
 
@@ -238,7 +246,7 @@ describe('listAnsibleTowerJobs', () => {
     // If code regresses and calls these paths, they will return 500 errors causing test failure
     // Using .optionally() so test passes when paths aren't called (expected behavior)
     nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-      .post('/ansibletower', (body: any) => body.towerHost === ansibleHost + '/api/v2/job_templates/')
+      .post('/ansibletower', (body: any) => body.ansiblePath === '/api/v2/job_templates/')
       .optionally()
       .reply(
         500,
@@ -257,7 +265,7 @@ describe('listAnsibleTowerJobs', () => {
       )
 
     nock(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
-      .post('/ansibletower', (body: any) => body.towerHost === ansibleHost + '/api/v2/workflow_job_templates/')
+      .post('/ansibletower', (body: any) => body.ansiblePath === '/api/v2/workflow_job_templates/')
       .optionally()
       .reply(
         500,
@@ -276,7 +284,7 @@ describe('listAnsibleTowerJobs', () => {
         }
       )
 
-    const result = await listAnsibleTowerJobs(ansibleHost, token).promise
+    const result = await listAnsibleTowerJobs(secretRef).promise
 
     expect(result.results).toHaveLength(2)
     expect(result.results[0].name).toBe('Test Job Template')
@@ -286,7 +294,11 @@ describe('listAnsibleTowerJobs', () => {
   it('re-throws non-404 errors (auth, network, etc.)', async () => {
     // Mock gateway paths returning 401 Unauthorized
     nockAnsibleTower(
-      { towerHost: ansibleHost + '/api/controller/v2/job_templates/', token },
+      {
+        secretNamespace: secretRef.namespace,
+        secretName: secretRef.name,
+        ansiblePath: '/api/controller/v2/job_templates/',
+      },
       {
         kind: StatusKind,
         apiVersion: StatusApiVersion,
@@ -298,14 +310,18 @@ describe('listAnsibleTowerJobs', () => {
     )
 
     await expect(async () => {
-      await listAnsibleTowerJobs(ansibleHost, token).promise
+      await listAnsibleTowerJobs(secretRef).promise
     }).rejects.toThrow(ResourceError)
   })
 
   it('throws raw 404 error when all paths return 404 (wrong URL or misconfigured)', async () => {
     // Mock ALL paths returning 404 (wrong base URL, misconfigured Ansible Tower, etc.)
     nockAnsibleTower(
-      { towerHost: ansibleHost + '/api/controller/v2/job_templates/', token },
+      {
+        secretNamespace: secretRef.namespace,
+        secretName: secretRef.name,
+        ansiblePath: '/api/controller/v2/job_templates/',
+      },
       {
         kind: StatusKind,
         apiVersion: StatusApiVersion,
@@ -316,7 +332,11 @@ describe('listAnsibleTowerJobs', () => {
       404
     )
     nockAnsibleTower(
-      { towerHost: ansibleHost + '/api/controller/v2/workflow_job_templates/', token },
+      {
+        secretNamespace: secretRef.namespace,
+        secretName: secretRef.name,
+        ansiblePath: '/api/controller/v2/workflow_job_templates/',
+      },
       {
         kind: StatusKind,
         apiVersion: StatusApiVersion,
@@ -327,7 +347,7 @@ describe('listAnsibleTowerJobs', () => {
       404
     )
     nockAnsibleTower(
-      { towerHost: ansibleHost + '/api/v2/job_templates/', token },
+      { secretNamespace: secretRef.namespace, secretName: secretRef.name, ansiblePath: '/api/v2/job_templates/' },
       {
         kind: StatusKind,
         apiVersion: StatusApiVersion,
@@ -338,7 +358,11 @@ describe('listAnsibleTowerJobs', () => {
       404
     )
     nockAnsibleTower(
-      { towerHost: ansibleHost + '/api/v2/workflow_job_templates/', token },
+      {
+        secretNamespace: secretRef.namespace,
+        secretName: secretRef.name,
+        ansiblePath: '/api/v2/workflow_job_templates/',
+      },
       {
         kind: StatusKind,
         apiVersion: StatusApiVersion,
@@ -349,7 +373,7 @@ describe('listAnsibleTowerJobs', () => {
       404
     )
 
-    const error = await listAnsibleTowerJobs(ansibleHost, token).promise.catch((e) => e)
+    const error = await listAnsibleTowerJobs(secretRef).promise.catch((e) => e)
 
     expect(error).toBeInstanceOf(ResourceError)
     expect(error.code).toBe(ResourceErrorCode.NotFound)
