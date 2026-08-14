@@ -321,8 +321,9 @@ export function nockRBAC(resourceAttributes: ResourceAttributes, allowed = true)
 }
 
 interface AnsibleCredentialPostBody {
-  towerHost: string
-  token: string
+  secretNamespace: string
+  secretName: string
+  ansiblePath: string
 }
 
 interface GetGitBranchesArgoResponse {
