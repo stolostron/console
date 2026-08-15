@@ -36,7 +36,7 @@
     "pluralize": "8.0.0",
     "prom-client": "^14.2.0",
     "raw-body": "2.5.3",
-    "ws": "^8.21.2"
+    "ws": "^8.21.3"
   },
   "devDependencies": {
     "@types/eslint": "9.6.1",
