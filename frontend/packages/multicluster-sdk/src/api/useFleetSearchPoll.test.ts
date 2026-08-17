@@ -641,6 +641,99 @@ describe('useFleetSearchPoll', () => {
   })
 
   describe('skip behavior', () => {
+    it('should skip search when watchOptions is null', () => {
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: undefined,
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      const { result } = renderHook(() => useFleetSearchPoll(null as any))
+
+      const [data, loaded, error, refetch] = result.current
+      expect(data).toBeUndefined()
+      expect(loaded).toBe(true)
+      expect(error).toBeUndefined()
+      expect(typeof refetch).toBe('function')
+
+      expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith({
+        client: 'mock-search-client',
+        skip: true,
+        pollInterval: 30000,
+        variables: {
+          input: [
+            {
+              filters: [],
+              limit: -1,
+            },
+          ],
+        },
+      })
+    })
+
+    it('should skip search when watchOptions is undefined', () => {
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: undefined,
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      const { result } = renderHook(() => useFleetSearchPoll(undefined))
+
+      const [data, loaded, error, refetch] = result.current
+      expect(data).toBeUndefined()
+      expect(loaded).toBe(true)
+      expect(error).toBeUndefined()
+      expect(typeof refetch).toBe('function')
+
+      expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith({
+        client: 'mock-search-client',
+        skip: true,
+        pollInterval: 30000,
+        variables: {
+          input: [
+            {
+              filters: [],
+              limit: -1,
+            },
+          ],
+        },
+      })
+    })
+
+    it('should skip search when watchOptions is {} (kind not specified)', () => {
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: undefined,
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      const { result } = renderHook(() => useFleetSearchPoll({}))
+
+      const [data, loaded, error, refetch] = result.current
+      expect(data).toBeUndefined()
+      expect(loaded).toBe(true)
+      expect(error).toBeUndefined()
+      expect(typeof refetch).toBe('function')
+
+      expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith({
+        client: 'mock-search-client',
+        skip: true,
+        pollInterval: 30000,
+        variables: {
+          input: [
+            {
+              filters: [],
+              limit: -1,
+            },
+          ],
+        },
+      })
+    })
+
     it('should skip search when kind is undefined', () => {
       const watchOptionsWithoutKind = {
         ...mockWatchOptions,
