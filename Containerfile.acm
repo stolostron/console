@@ -27,6 +27,11 @@ COPY ./backend/package-lock.json ./backend/package.json ./
 RUN npm ci --omit=optional --only=production
 
 FROM ${NODE_BASE}
+USER root
+RUN microdnf install -y crypto-policies-scripts && \
+    update-crypto-policies --set DEFAULT:PQ && \
+    microdnf remove -y crypto-policies-scripts && \
+    microdnf clean all
 WORKDIR /app
 ENV NODE_ENV production
 COPY --from=production /app/backend/node_modules ./node_modules
