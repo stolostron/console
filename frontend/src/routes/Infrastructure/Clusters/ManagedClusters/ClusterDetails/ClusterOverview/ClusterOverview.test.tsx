@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import {
@@ -46,6 +46,7 @@ import { ClusterOverviewPageContent } from './ClusterOverview'
 import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import userEvent from '@testing-library/user-event'
 import { AcmToastGroup, AcmToastProvider } from '../../../../../../ui-components'
+import { axe } from 'jest-axe'
 import { ClusterDetailsContext } from '../ClusterDetails'
 
 const kubeConfigSecret: Secret = {
@@ -1001,5 +1002,121 @@ describe('ClusterOverview hypershift hook status', () => {
     await waitForText(mockAWSHypershiftCluster.name)
     await waitForText('Automation template')
     await waitForText('View template')
+  })
+})
+
+describe('ClusterOverview description display', () => {
+  beforeEach(() => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+  })
+
+  it('should display "-" when description annotation is whitespace-only', async () => {
+    nockAggegateRequest('statuses', { clusters: ['test-cluster'] }, { itemCount: 0, filterCounts: undefined })
+    const clusterWithWhitespaceDescription = {
+      ...mockCluster,
+      annotations: {
+        'console.open-cluster-management.io/description': '   ',
+      },
+    }
+    const context: Partial<ClusterDetailsContext> = {
+      cluster: clusterWithWhitespaceDescription,
+      canGetSecret: true,
+    }
+    const { container } = render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policyreportState, [])
+          snapshot.set(managedClustersState, [])
+          snapshot.set(clusterDeploymentsState, [])
+          snapshot.set(managedClusterInfosState, [])
+          snapshot.set(certificateSigningRequestsState, [])
+          snapshot.set(managedClusterAddonsState, {})
+          snapshot.set(clusterManagementAddonsState, [])
+          snapshot.set(clusterClaimsState, [])
+          snapshot.set(clusterCuratorsState, [])
+          snapshot.set(agentClusterInstallsState, [])
+          snapshot.set(agentsState, [])
+          snapshot.set(infraEnvironmentsState, [])
+          snapshot.set(hostedClustersState, [])
+          snapshot.set(nodePoolsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ClusterOverviewPageContent />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    await waitForText(clusterWithWhitespaceDescription.name)
+    const descriptionLabel = screen.getByText('Description')
+    const descriptionGroup = descriptionLabel.closest('[class*="description-list__group"]')
+    expect(descriptionGroup).toBeInTheDocument()
+    expect(within(descriptionGroup as HTMLElement).getByText('-')).toBeInTheDocument()
+    expect(
+      await axe(container, {
+        rules: {
+          'button-name': { enabled: false },
+          'duplicate-id-active': { enabled: false },
+        },
+      })
+    ).toHaveNoViolations()
+  })
+
+  it('should render description when annotation has non-whitespace content', async () => {
+    nockAggegateRequest('statuses', { clusters: ['test-cluster'] }, { itemCount: 0, filterCounts: undefined })
+    const clusterWithDescription = {
+      ...mockCluster,
+      annotations: {
+        'console.open-cluster-management.io/description': 'Production cluster',
+      },
+    }
+    const context: Partial<ClusterDetailsContext> = {
+      cluster: clusterWithDescription,
+      canGetSecret: true,
+    }
+    const { container } = render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policyreportState, [])
+          snapshot.set(managedClustersState, [])
+          snapshot.set(clusterDeploymentsState, [])
+          snapshot.set(managedClusterInfosState, [])
+          snapshot.set(certificateSigningRequestsState, [])
+          snapshot.set(managedClusterAddonsState, {})
+          snapshot.set(clusterManagementAddonsState, [])
+          snapshot.set(clusterClaimsState, [])
+          snapshot.set(clusterCuratorsState, [])
+          snapshot.set(agentClusterInstallsState, [])
+          snapshot.set(agentsState, [])
+          snapshot.set(infraEnvironmentsState, [])
+          snapshot.set(hostedClustersState, [])
+          snapshot.set(nodePoolsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ClusterOverviewPageContent />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    await waitForText(clusterWithDescription.name)
+    await waitForText('Production cluster')
+    expect(
+      await axe(container, {
+        rules: {
+          'button-name': { enabled: false },
+          'duplicate-id-active': { enabled: false },
+        },
+      })
+    ).toHaveNoViolations()
   })
 })
