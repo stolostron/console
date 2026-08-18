@@ -3,139 +3,114 @@ import nock from 'nock'
 import {
   canAccess,
   canGetResource,
-  resetAccessCache,
-  getAccessCache,
-  cleanupAccessCache,
-  hashAccessToken,
-  ACCESS_CACHE_TTL,
-  ACCESS_CACHE_MAX_TOKENS,
-  ACCESS_CACHE_MAX_ENTRIES_PER_TOKEN,
-} from '../../src/routes/events'
+  canListClusterScopedKind,
+  canListNamespacedScopedKind,
+} from '../../src/routes/eventsAccess'
+import { resetAccessCache } from '../../src/routes/eventsCache'
 
-describe('events Route RBAC (ACM-39327)', () => {
-  describe('Access Cache Cleanup', () => {
-    beforeEach(() => {
-      resetAccessCache()
-      process.env.CLUSTER_API_URL = 'https://api.test-cluster.com:6443'
+describe('eventsAccess', () => {
+  const apiUrl = () => process.env.CLUSTER_API_URL || ''
+  const managedCluster = (name: string) => ({
+    kind: 'ManagedCluster',
+    apiVersion: 'cluster.open-cluster-management.io/v1',
+    metadata: { name },
+  })
+  const secret = (namespace: string, name: string) => ({
+    kind: 'Secret',
+    apiVersion: 'v1',
+    metadata: { namespace, name },
+  })
+  const managedClusterInfo = (cluster: string) => ({
+    kind: 'ManagedClusterInfo',
+    apiVersion: 'internal.open-cluster-management.io/v1beta1',
+    metadata: { name: cluster, namespace: cluster },
+  })
+
+  const emptyRules = { incomplete: false, resourceRules: [] as unknown[] }
+  const secretGetInNamespace = {
+    incomplete: false,
+    resourceRules: [{ verbs: ['get'], apiGroups: [''], resources: ['secrets'] }],
+  }
+  const clusterAdminRules = {
+    incomplete: false,
+    resourceRules: [{ verbs: ['*'], apiGroups: ['*'], resources: ['*'] }],
+  }
+
+  function rulesReviewNamespace(body: unknown): string {
+    let parsed = body
+    if (typeof body === 'string') {
+      try {
+        parsed = JSON.parse(body) as unknown
+      } catch {
+        return ''
+      }
+    }
+    return (parsed as { spec?: { namespace?: string } })?.spec?.namespace || ''
+  }
+
+  function nockRulesReview(replyFn: (namespace: string) => { incomplete?: boolean; resourceRules?: unknown[] }) {
+    return nock(apiUrl())
+      .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews')
+      .reply(200, (_uri: string, requestBody: unknown) => ({ status: replyFn(rulesReviewNamespace(requestBody)) }))
+  }
+
+  beforeEach(() => {
+    resetAccessCache()
+    process.env.CLUSTER_API_URL = 'https://api.test-cluster.com:6443'
+  })
+
+  afterEach(() => {
+    resetAccessCache()
+    delete process.env.CLUSTER_API_URL
+    nock.cleanAll()
+  })
+
+  describe('canListClusterScopedKind', () => {
+    it('should issue a cluster-scoped list SSAR', async () => {
+      const resource = managedCluster('cluster-1')
+      const ssarScope = nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', (body: unknown) => {
+          const parsed =
+            typeof body === 'string'
+              ? (JSON.parse(body) as { spec?: { resourceAttributes?: { verb?: string } } })
+              : body
+          return (
+            (parsed as { spec?: { resourceAttributes?: { verb?: string } } })?.spec?.resourceAttributes?.verb === 'list'
+          )
+        })
+        .reply(200, { status: { allowed: true } })
+
+      expect(await canListClusterScopedKind(resource, 'list-token')).toBe(true)
+      expect(ssarScope.isDone()).toBe(true)
     })
+  })
 
-    afterEach(() => {
-      resetAccessCache()
-      delete process.env.CLUSTER_API_URL
-      nock.cleanAll()
-    })
-
-    it('should cache RBAC access check results under hashed token keys', async () => {
-      const mockToken = 'test-token-123'
-      const resource = { kind: 'Pod', apiVersion: 'v1', metadata: { namespace: 'default', name: 'test-pod' } }
-
-      nock(process.env.CLUSTER_API_URL || '')
+  describe('canListNamespacedScopedKind', () => {
+    it('should return false when the resource has no namespace', async () => {
+      const ssarScope = nock(apiUrl())
         .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
         .reply(200, { status: { allowed: true } })
 
-      const result1 = await canAccess(resource, 'get', mockToken)
-      const result2 = await canAccess(resource, 'get', mockToken)
-
-      expect(result1).toBe(true)
-      expect(result1).toBe(result2)
-      expect(getAccessCache()[mockToken]).toBeUndefined()
-      expect(getAccessCache()[hashAccessToken(mockToken)]['get:Pod:default:test-pod']).toBeDefined()
+      expect(await canListNamespacedScopedKind(managedCluster('cluster-1'), 'list-token')).toBe(false)
+      expect(ssarScope.isDone()).toBe(false)
     })
 
-    it('should use distinct cache keys per verb', async () => {
-      const mockToken = 'test-token-verb'
-      const resource = { kind: 'Pod', apiVersion: 'v1', metadata: { namespace: 'default', name: 'test-pod' } }
-
-      nock(process.env.CLUSTER_API_URL || '')
-        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
+    it('should issue a namespaced list SSAR', async () => {
+      const resource = managedClusterInfo('acm39327-mc-01')
+      const ssarScope = nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', (body: unknown) => {
+          const parsed =
+            typeof body === 'string'
+              ? (JSON.parse(body) as { spec?: { resourceAttributes?: { namespace?: string; verb?: string } } })
+              : body
+          const attrs = (parsed as { spec?: { resourceAttributes?: { namespace?: string; verb?: string } } })?.spec
+            ?.resourceAttributes
+          return attrs?.namespace === 'acm39327-mc-01' && attrs?.verb === 'list'
+        })
         .reply(200, { status: { allowed: true } })
-      nock(process.env.CLUSTER_API_URL || '')
-        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
-        .reply(200, { status: { allowed: false } })
 
-      expect(await canAccess(resource, 'get', mockToken)).toBe(true)
-      expect(await canAccess(resource, 'list', mockToken)).toBe(false)
-
-      const tokenCache = getAccessCache()[hashAccessToken(mockToken)]
-      expect(tokenCache['get:Pod:default:test-pod']).toBeDefined()
-      expect(tokenCache['list:Pod:default:test-pod']).toBeDefined()
-    })
-
-    it('should respect TTL and refetch after expiry', async () => {
-      const cache = getAccessCache()
-      const mockToken = 'test-token-ttl'
-      const tokenKey = hashAccessToken(mockToken)
-
-      cache[tokenKey] = {
-        'get:Secret:default:credentials': {
-          time: Date.now() - ACCESS_CACHE_TTL - 1000,
-          promise: Promise.resolve(true),
-        },
-      }
-
-      nock(process.env.CLUSTER_API_URL || '')
-        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
-        .reply(200, { status: { allowed: false } })
-
-      const result = await canAccess(
-        { kind: 'Secret', apiVersion: 'v1', metadata: { namespace: 'default', name: 'credentials' } },
-        'get',
-        mockToken
-      )
-      expect(result).toBe(false)
-    })
-
-    it('should remove stale cache entries during cleanup', () => {
-      const cache = getAccessCache()
-      const now = Date.now()
-
-      cache['token1'] = {
-        stale: { time: now - ACCESS_CACHE_TTL - 1000, promise: Promise.resolve(true) },
-        fresh: { time: now - 30000, promise: Promise.resolve(true) },
-      }
-      cache['token2'] = { 'stale-only': { time: now - ACCESS_CACHE_TTL - 5000, promise: Promise.resolve(false) } }
-
-      cleanupAccessCache()
-
-      expect(cache['token1']['stale']).toBeUndefined()
-      expect(cache['token1']['fresh']).toBeDefined()
-      expect(cache['token2']).toBeUndefined()
-    })
-
-    it('should enforce maximum token limit with LRU eviction', () => {
-      const cache = getAccessCache()
-      const now = Date.now()
-      const tokenCount = ACCESS_CACHE_MAX_TOKENS + 100
-
-      for (let i = 0; i < tokenCount; i++) {
-        cache[`token-${i}`] = {
-          'Pod:default:test': { time: now - (i / tokenCount) * 50 * 1000, promise: Promise.resolve(true) },
-        }
-      }
-
-      cleanupAccessCache()
-
-      expect(Object.keys(cache).length).toBe(ACCESS_CACHE_MAX_TOKENS)
-      expect(cache['token-0']).toBeDefined()
-      expect(cache[`token-${tokenCount - 1}`]).toBeUndefined()
-    })
-
-    it('should enforce maximum entries per token', () => {
-      const cache = getAccessCache()
-      const tokenKey = hashAccessToken('test-token-entry-cap')
-      const now = Date.now()
-      cache[tokenKey] = {}
-
-      for (let i = 0; i < ACCESS_CACHE_MAX_ENTRIES_PER_TOKEN + 50; i++) {
-        cache[tokenKey][`get:Pod:default:pod-${i}`] = {
-          time: now - i,
-          promise: Promise.resolve(false),
-        }
-      }
-
-      cleanupAccessCache()
-
-      expect(Object.keys(cache[tokenKey]).length).toBeLessThanOrEqual(ACCESS_CACHE_MAX_ENTRIES_PER_TOKEN)
+      expect(await canListNamespacedScopedKind(resource, 'list-token')).toBe(true)
+      expect(ssarScope.isDone()).toBe(true)
     })
   })
 
@@ -145,62 +120,6 @@ describe('events Route RBAC (ACM-39327)', () => {
    * namespaced: cache one review per token+namespace, never treat `default` as global allow.
    */
   describe('SelfSubjectRulesReview short-circuit (ACM-39327)', () => {
-    const apiUrl = () => process.env.CLUSTER_API_URL || ''
-    const managedCluster = (name: string) => ({
-      kind: 'ManagedCluster',
-      apiVersion: 'cluster.open-cluster-management.io/v1',
-      metadata: { name },
-    })
-    const secret = (namespace: string, name: string) => ({
-      kind: 'Secret',
-      apiVersion: 'v1',
-      metadata: { namespace, name },
-    })
-    const managedClusterInfo = (cluster: string) => ({
-      kind: 'ManagedClusterInfo',
-      apiVersion: 'internal.open-cluster-management.io/v1beta1',
-      metadata: { name: cluster, namespace: cluster },
-    })
-
-    const emptyRules = { incomplete: false, resourceRules: [] as unknown[] }
-    const secretGetInNamespace = {
-      incomplete: false,
-      resourceRules: [{ verbs: ['get'], apiGroups: [''], resources: ['secrets'] }],
-    }
-    const clusterAdminRules = {
-      incomplete: false,
-      resourceRules: [{ verbs: ['*'], apiGroups: ['*'], resources: ['*'] }],
-    }
-
-    function rulesReviewNamespace(body: unknown): string {
-      let parsed = body
-      if (typeof body === 'string') {
-        try {
-          parsed = JSON.parse(body) as unknown
-        } catch {
-          return ''
-        }
-      }
-      return (parsed as { spec?: { namespace?: string } })?.spec?.namespace || ''
-    }
-
-    function nockRulesReview(replyFn: (namespace: string) => { incomplete?: boolean; resourceRules?: unknown[] }) {
-      return nock(apiUrl())
-        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews')
-        .reply(200, (_uri: string, requestBody: unknown) => ({ status: replyFn(rulesReviewNamespace(requestBody)) }))
-    }
-
-    beforeEach(() => {
-      resetAccessCache()
-      process.env.CLUSTER_API_URL = 'https://api.test-cluster.com:6443'
-    })
-
-    afterEach(() => {
-      resetAccessCache()
-      delete process.env.CLUSTER_API_URL
-      nock.cleanAll()
-    })
-
     it('should deny all gets from complete empty rules without per-object SSAR', async () => {
       nockRulesReview(() => emptyRules)
 
@@ -423,6 +342,26 @@ describe('events Route RBAC (ACM-39327)', () => {
         .reply(200, { status: { allowed: true } })
 
       expect(await canGetResource(managedCluster('cluster-1'), 'ssrr-fail-token')).toBe(true)
+      expect(ssarScope.isDone()).toBe(true)
+    })
+  })
+
+  describe('canAccess', () => {
+    it('should post a SelfSubjectAccessReview for the requested verb and resource', async () => {
+      const resource = secret('default', 'test-secret')
+      const ssarScope = nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', (body: unknown) => {
+          const parsed =
+            typeof body === 'string'
+              ? (JSON.parse(body) as { spec?: { resourceAttributes?: { verb?: string; resource?: string } } })
+              : body
+          const attrs = (parsed as { spec?: { resourceAttributes?: { verb?: string; resource?: string } } })?.spec
+            ?.resourceAttributes
+          return attrs?.verb === 'create' && attrs?.resource === 'secrets'
+        })
+        .reply(200, { status: { allowed: true } })
+
+      expect(await canAccess(resource, 'create', 'create-token')).toBe(true)
       expect(ssarScope.isDone()).toBe(true)
     })
   })
