@@ -33,7 +33,7 @@ function getModelForWatch(watch: FleetWatchK8sResource, models: { [key: string]:
  * but allows you to retrieve data from any cluster managed by Red Hat Advanced Cluster Management.
  *
  * It automatically detects the hub cluster and handles resource watching on both hub
- * and remote clusters using WebSocket connections for real-time updates.
+ * and remote clusters using polling for near-real-time updates.
  *
  * @param initResources - An object where each key represents a resource identifier and each value is a resource watch configuration. Can be null to disable all watches.
  * @param initResources[key].cluster - The managed cluster on which the resource resides; null or undefined for the hub cluster
@@ -43,6 +43,7 @@ function getModelForWatch(watch: FleetWatchK8sResource, models: { [key: string]:
  * @param initResources[key].isList - Whether to watch a list of resources (true) or a single resource (false)
  * @param initResources[key].selector - Label selector to filter resources (e.g., `{ matchLabels: { app: 'myapp' } }`)
  * @param initResources[key].fieldSelector - Field selector to filter resources (e.g., `status.phase=Running`)
+ * @param initResources[key].pollInterval - Optional polling interval in seconds. Defaults to 10. Minimum is 10.
  * @param initResources[key].limit - Maximum number of resources to return (not supported yet)
  * @param initResources[key].namespaced - Whether the resource is namespaced (not supported yet)
  * @param initResources[key].optional - If true, errors will not be thrown when the resource is not found (not supported yet)
@@ -131,7 +132,7 @@ export function useFleetK8sWatchResources<R extends FleetResourcesObject>(
           ])
         }
         for (const [watch, model, path] of watches) {
-          startWatch(watch, model, path)
+          startWatch(watch, model, path, watch.pollInterval)
         }
         return () => {
           for (const [watch, model, path, unsubscribe] of watches) {

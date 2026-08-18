@@ -5,51 +5,16 @@ import {
   isCacheEntryValid,
   isCacheEntryFresh,
   getCacheEntryAge,
-  getSocketMonitoringInterval,
 } from './fleetK8sWatchResourceStore'
-
-// Mock WebSocket
-class MockWebSocket {
-  static CONNECTING = 0
-  static OPEN = 1
-  static CLOSED = 2
-
-  private _readyState = MockWebSocket.CONNECTING
-  url: string
-
-  constructor(url: string) {
-    this.url = url
-    // Simulate immediate connection
-    setTimeout(() => {
-      this._readyState = MockWebSocket.OPEN
-    }, 0)
-  }
-
-  get readyState() {
-    return this._readyState
-  }
-
-  set readyState(value: number) {
-    this._readyState = value
-  }
-
-  close = jest.fn(() => {
-    this._readyState = MockWebSocket.CLOSED
-  })
-}
-
-global.WebSocket = MockWebSocket as any
 
 describe('FleetK8sWatchResourceStore', () => {
   beforeEach(() => {
-    // Clear the store before each test
     useFleetK8sWatchResourceStore.setState({ cache: {} })
     jest.clearAllTimers()
     jest.useRealTimers()
   })
 
   afterEach(() => {
-    // Clear the store after each test
     useFleetK8sWatchResourceStore.setState({ cache: {} })
   })
 
@@ -100,17 +65,35 @@ describe('FleetK8sWatchResourceStore', () => {
     expect(cachedResult?.data).toHaveLength(2)
   })
 
-  it('should manage socket cache', () => {
+  it('should manage poll timer cache', () => {
     const { result } = renderHook(() => useFleetK8sWatchResourceStore())
-    const mockSocket = new WebSocket('wss://example.com')
-    const key = 'test-socket-key'
+    const key = 'test-poll-key'
+    const mockTimer = setInterval(() => {}, 10000)
 
     act(() => {
-      result.current.setSocket(key, mockSocket)
+      result.current.setPollTimer(key, mockTimer)
     })
 
-    const cachedSocket = result.current.cache[key]?.socket
-    expect(cachedSocket).toBe(mockSocket)
+    expect(result.current.cache[key]?.pollTimer).toBe(mockTimer)
+    clearInterval(mockTimer)
+  })
+
+  it('should clear poll timer', () => {
+    const { result } = renderHook(() => useFleetK8sWatchResourceStore())
+    const key = 'test-clear-poll-key'
+    const mockTimer = setInterval(() => {}, 10000)
+
+    act(() => {
+      result.current.setPollTimer(key, mockTimer)
+    })
+
+    expect(result.current.cache[key]?.pollTimer).toBe(mockTimer)
+
+    act(() => {
+      result.current.clearPollTimer(key)
+    })
+
+    expect(result.current.cache[key]?.pollTimer).toBeUndefined()
   })
 
   it('should track ref count correctly', () => {
@@ -138,27 +121,23 @@ describe('FleetK8sWatchResourceStore', () => {
     expect(result.current.getRefCount(key)).toBe(0)
   })
 
-  it('should close socket when ref count reaches zero', () => {
+  it('should clear poll timer when ref count reaches zero', () => {
     const { result } = renderHook(() => useFleetK8sWatchResourceStore())
-    const mockSocket = new WebSocket('wss://example.com')
-    const key = 'socket-close-key'
-
-    // Make socket appear open
-    ;(mockSocket as any).readyState = MockWebSocket.OPEN
+    const key = 'timer-clear-key'
+    const mockTimer = setInterval(() => {}, 10000)
 
     act(() => {
       result.current.incrementRefCount(key)
-      result.current.setSocket(key, mockSocket)
+      result.current.setPollTimer(key, mockTimer)
     })
 
-    expect(result.current.cache[key]?.socket).toBe(mockSocket)
+    expect(result.current.cache[key]?.pollTimer).toBe(mockTimer)
 
     act(() => {
       result.current.decrementRefCount(key)
     })
 
-    expect(mockSocket.close).toHaveBeenCalled()
-    expect(result.current.cache[key]?.socket).toBeUndefined()
+    expect(result.current.cache[key]?.pollTimer).toBeUndefined()
   })
 
   it('should store and retrieve resource version', () => {
@@ -190,7 +169,6 @@ describe('FleetK8sWatchResourceStore', () => {
     const entry1 = useFleetK8sWatchResourceStore.getState().cache[key]
     expect(entry1.timestamp).toBe(initialTime)
 
-    // Advance time
     jest.advanceTimersByTime(5000)
 
     act(() => {
@@ -234,10 +212,22 @@ describe('FleetK8sWatchResourceStore', () => {
     expect(firstAccess?.data).toEqual(testData)
     expect(firstAccess?.loaded).toBe(true)
 
-    // Access again to verify data is consistent
     const secondAccess = result.current.getResult(key)
     expect(secondAccess?.data).toEqual(testData)
     expect(secondAccess?.loaded).toBe(true)
+  })
+
+  it('should set poll status and lastPollAt', () => {
+    const { result } = renderHook(() => useFleetK8sWatchResourceStore())
+    const key = 'poll-status-key'
+
+    act(() => {
+      result.current.incrementRefCount(key)
+      result.current.setPollStatus(key, 'Polling')
+    })
+
+    expect(result.current.cache[key]?.pollStatus).toBe('Polling')
+    expect(result.current.cache[key]?.lastPollAt).toBeDefined()
   })
 })
 
@@ -246,31 +236,32 @@ describe('isCacheEntryValid function', () => {
     jest.useRealTimers()
   })
 
-  it('should return true for entry with active socket', () => {
-    const mockSocket = new WebSocket('wss://example.com')
+  it('should return true for entry with active poll timer', () => {
+    const mockTimer = setInterval(() => {}, 10000)
     const entry = {
-      socket: mockSocket,
+      pollTimer: mockTimer,
       refCount: 1,
-      timestamp: Date.now() - 100000, // Old timestamp
+      timestamp: Date.now() - 100000,
       result: { data: undefined, loaded: false },
     }
 
     expect(isCacheEntryValid(entry)).toBe(true)
+    clearInterval(mockTimer)
   })
 
-  it('should return true for recent entry without socket', () => {
+  it('should return true for recent entry without poll timer', () => {
     const entry = {
       refCount: 0,
-      timestamp: Date.now() - 1000, // 1 second ago
+      timestamp: Date.now() - 1000,
     }
 
     expect(isCacheEntryValid(entry)).toBe(true)
   })
 
-  it('should return false for old entry without socket', () => {
+  it('should return false for old entry without poll timer', () => {
     const entry = {
       refCount: 0,
-      timestamp: Date.now() - 100000, // 100 seconds ago (> 30 second TTL)
+      timestamp: Date.now() - 100000,
     }
 
     expect(isCacheEntryValid(entry)).toBe(false)
@@ -280,27 +271,25 @@ describe('isCacheEntryValid function', () => {
     const testError = new Error('Failed to load resource')
     const entry = {
       refCount: 1,
-      timestamp: Date.now(), // Current timestamp (recent)
+      timestamp: Date.now(),
       result: { data: undefined, loaded: false, loadError: testError },
     }
 
-    // Even though the entry is recent, it should be invalid because it has an error
     expect(isCacheEntryValid(entry)).toBe(false)
   })
 
-  it('should return false for entry with loadError even with active socket', () => {
-    const mockSocket = new WebSocket('wss://example.com')
+  it('should return false for entry with loadError even with active poll timer', () => {
+    const mockTimer = setInterval(() => {}, 10000)
     const testError = new Error('Failed to load resource')
     const entry = {
-      socket: mockSocket,
+      pollTimer: mockTimer,
       refCount: 1,
       timestamp: Date.now(),
       result: { data: [], loaded: true, loadError: testError },
     }
 
-    // Even with an active socket, entry should be invalid if it has an error
-    // This ensures we retry failed requests instead of serving stale errors
     expect(isCacheEntryValid(entry)).toBe(false)
+    clearInterval(mockTimer)
   })
 })
 
@@ -319,7 +308,7 @@ describe('isCacheEntryFresh function', () => {
 
     const entry = {
       refCount: 1,
-      timestamp: now - 5000, // 5 seconds ago
+      timestamp: now - 5000,
     }
 
     expect(isCacheEntryFresh(entry)).toBe(true)
@@ -343,7 +332,7 @@ describe('isCacheEntryFresh function', () => {
 
     const entry = {
       refCount: 1,
-      timestamp: now - getSocketMonitoringInterval(), // Exactly at TTL
+      timestamp: now - 30000,
     }
 
     expect(isCacheEntryFresh(entry)).toBe(false)
@@ -355,7 +344,7 @@ describe('isCacheEntryFresh function', () => {
 
     const entry = {
       refCount: 1,
-      timestamp: now - 60000, // 60 seconds ago
+      timestamp: now - 60000,
     }
 
     expect(isCacheEntryFresh(entry)).toBe(false)
@@ -372,8 +361,7 @@ describe('isCacheEntryFresh function', () => {
 
     expect(isCacheEntryFresh(entry)).toBe(true)
 
-    // Advance time past TTL
-    jest.advanceTimersByTime(getSocketMonitoringInterval() + 1000)
+    jest.advanceTimersByTime(31000)
 
     expect(isCacheEntryFresh(entry)).toBe(false)
   })
@@ -406,7 +394,7 @@ describe('getCacheEntryAge function', () => {
 
     const entry = {
       refCount: 1,
-      timestamp: now - 15000, // 15 seconds ago
+      timestamp: now - 15000,
     }
 
     expect(getCacheEntryAge(entry)).toBe(15000)
@@ -431,20 +419,7 @@ describe('getCacheEntryAge function', () => {
   })
 })
 
-describe('getSocketMonitoringInterval function', () => {
-  it('should return the cache TTL value', () => {
-    // The monitoring interval should match the cache TTL (30 seconds)
-    expect(getSocketMonitoringInterval()).toBe(30000)
-  })
-
-  it('should return a consistent value', () => {
-    const interval1 = getSocketMonitoringInterval()
-    const interval2 = getSocketMonitoringInterval()
-    expect(interval1).toBe(interval2)
-  })
-})
-
-describe('Ref count management with sockets', () => {
+describe('Ref count management with poll timers', () => {
   beforeEach(() => {
     useFleetK8sWatchResourceStore.setState({ cache: {} })
   })
@@ -453,17 +428,15 @@ describe('Ref count management with sockets', () => {
     useFleetK8sWatchResourceStore.setState({ cache: {} })
   })
 
-  it('should not close socket if ref count is still positive', () => {
+  it('should not clear poll timer if ref count is still positive', () => {
     const { result } = renderHook(() => useFleetK8sWatchResourceStore())
-    const mockSocket = new WebSocket('wss://example.com')
+    const mockTimer = setInterval(() => {}, 10000)
     const key = 'multi-ref-key'
-
-    ;(mockSocket as any).readyState = MockWebSocket.OPEN
 
     act(() => {
       result.current.incrementRefCount(key)
       result.current.incrementRefCount(key)
-      result.current.setSocket(key, mockSocket)
+      result.current.setPollTimer(key, mockTimer)
     })
 
     expect(result.current.getRefCount(key)).toBe(2)
@@ -473,8 +446,8 @@ describe('Ref count management with sockets', () => {
     })
 
     expect(result.current.getRefCount(key)).toBe(1)
-    expect(mockSocket.close).not.toHaveBeenCalled()
-    expect(result.current.cache[key]?.socket).toBe(mockSocket)
+    expect(result.current.cache[key]?.pollTimer).toBe(mockTimer)
+    clearInterval(mockTimer)
   })
 
   it('should prevent ref count from going negative', () => {
@@ -485,46 +458,39 @@ describe('Ref count management with sockets', () => {
       result.current.decrementRefCount(key)
     })
 
-    // Should handle gracefully - entry might not exist or ref count should be 0
     const refCount = result.current.getRefCount(key)
     expect(refCount === undefined || refCount === 0).toBe(true)
   })
 
-  it('should handle socket operations with multiple refs', () => {
+  it('should handle poll timer with multiple refs', () => {
     const { result } = renderHook(() => useFleetK8sWatchResourceStore())
-    const mockSocket = new WebSocket('wss://example.com')
-    const key = 'socket-multi-ref'
+    const mockTimer = setInterval(() => {}, 10000)
+    const key = 'timer-multi-ref'
 
-    ;(mockSocket as any).readyState = MockWebSocket.OPEN
-
-    // Simulate multiple hooks using the same socket
     act(() => {
       result.current.incrementRefCount(key)
       result.current.incrementRefCount(key)
       result.current.incrementRefCount(key)
-      result.current.setSocket(key, mockSocket)
+      result.current.setPollTimer(key, mockTimer)
     })
 
     expect(result.current.getRefCount(key)).toBe(3)
-    expect(result.current.cache[key]?.socket).toBe(mockSocket)
+    expect(result.current.cache[key]?.pollTimer).toBe(mockTimer)
 
-    // First hook unmounts
     act(() => {
       result.current.decrementRefCount(key)
     })
-    expect(mockSocket.close).not.toHaveBeenCalled()
+    expect(result.current.cache[key]?.pollTimer).toBe(mockTimer)
 
-    // Second hook unmounts
     act(() => {
       result.current.decrementRefCount(key)
     })
-    expect(mockSocket.close).not.toHaveBeenCalled()
+    expect(result.current.cache[key]?.pollTimer).toBe(mockTimer)
 
-    // Third hook unmounts - socket should close
     act(() => {
       result.current.decrementRefCount(key)
     })
-    expect(mockSocket.close).toHaveBeenCalled()
+    expect(result.current.cache[key]?.pollTimer).toBeUndefined()
   })
 })
 
@@ -555,15 +521,12 @@ describe('Cache timeout and cleanup', () => {
       result.current.decrementRefCount(key)
     })
 
-    // Entry should still exist immediately after ref count reaches zero
     expect(result.current.getResult(key)).toBeDefined()
 
-    // Fast-forward time past TTL + grace period
     act(() => {
-      jest.advanceTimersByTime(41000) // 30s TTL + 10s grace + 1s buffer
+      jest.advanceTimersByTime(41000)
     })
 
-    // Entry should be removed
     expect(result.current.getResult(key)).toBeUndefined()
   })
 
@@ -578,21 +541,18 @@ describe('Cache timeout and cleanup', () => {
     })
 
     act(() => {
-      result.current.decrementRefCount(key) // Schedules removal
+      result.current.decrementRefCount(key)
     })
 
-    // Re-increment before timeout
     act(() => {
       jest.advanceTimersByTime(5000)
       result.current.incrementRefCount(key)
     })
 
-    // Fast-forward past original timeout
     act(() => {
       jest.advanceTimersByTime(40000)
     })
 
-    // Entry should still exist because removal was cancelled
     expect(result.current.getResult(key)).toBeDefined()
   })
 })
@@ -615,52 +575,25 @@ describe('Edge cases and error scenarios', () => {
       }
     })
 
-    // Verify all entries exist
     for (let i = 0; i < 100; i++) {
       const entry = result.current.getResult(`key-${i}`)
       expect((entry?.data as any)?.metadata?.name).toBe(`pod-${i}`)
     }
 
-    // Verify we can still access the data after rapid operations
     expect(result.current.getResult('key-0')).toBeDefined()
     expect(result.current.getResult('key-99')).toBeDefined()
-  })
-
-  it('should handle socket operations with invalid WebSocket states', () => {
-    const { result } = renderHook(() => useFleetK8sWatchResourceStore())
-    const mockSocket = new WebSocket('wss://example.com')
-
-    // Set invalid state
-    ;(mockSocket as any).readyState = 999
-
-    act(() => {
-      result.current.incrementRefCount('invalid-socket')
-      result.current.setSocket('invalid-socket', mockSocket)
-    })
-
-    // Should still store the socket
-    expect(result.current.cache['invalid-socket']?.socket).toBeDefined()
-
-    // Decrement should not crash
-    act(() => {
-      result.current.decrementRefCount('invalid-socket')
-    })
-
-    expect(result.current.cache['invalid-socket']?.socket).toBeUndefined()
   })
 
   it('should handle concurrent updates to same cache key', () => {
     const { result } = renderHook(() => useFleetK8sWatchResourceStore())
     const key = 'concurrent-key'
 
-    // Simulate rapid sequential updates
     act(() => {
       for (let i = 0; i < 10; i++) {
         result.current.setResult(key, { metadata: { name: 'pod' } } as any, true)
       }
     })
 
-    // Should have the last set value
     const finalEntry = result.current.getResult(key)
     expect((finalEntry?.data as any)?.metadata?.name).toBe('pod')
   })
@@ -675,15 +608,12 @@ describe('Edge cases and error scenarios', () => {
 
     expect(result.current.getResourceVersion(key)).toBe('v1')
 
-    // Update result without specifying resource version
     act(() => {
       result.current.setResult(key, { metadata: { name: 'pod-2' } }, true)
     })
 
-    // Resource version should be preserved
     expect(result.current.getResourceVersion(key)).toBe('v1')
 
-    // Update with new resource version
     act(() => {
       result.current.setResult(key, { metadata: { name: 'pod-3' } }, true, undefined, 'v2')
     })
@@ -691,32 +621,9 @@ describe('Edge cases and error scenarios', () => {
     expect(result.current.getResourceVersion(key)).toBe('v2')
   })
 
-  it('should handle setting socket before incrementing ref count', () => {
-    const { result } = renderHook(() => useFleetK8sWatchResourceStore())
-    const mockSocket = new WebSocket('wss://example.com')
-    const key = 'socket-first-key'
-
-    ;(mockSocket as any).readyState = MockWebSocket.OPEN
-
-    // Set socket first
-    act(() => {
-      result.current.setSocket(key, mockSocket)
-    })
-
-    expect(result.current.cache[key]?.socket).toBe(mockSocket)
-
-    // Then increment ref count
-    act(() => {
-      result.current.incrementRefCount(key)
-    })
-
-    expect(result.current.getRefCount(key)).toBe(1)
-  })
-
   it('should handle removing non-existent entry', () => {
     const { result } = renderHook(() => useFleetK8sWatchResourceStore())
 
-    // Should not throw
     act(() => {
       result.current.removeEntry('non-existent-key')
     })
@@ -727,7 +634,6 @@ describe('Edge cases and error scenarios', () => {
   it('should handle touching non-existent entry', () => {
     const { result } = renderHook(() => useFleetK8sWatchResourceStore())
 
-    // Should create an entry with just timestamp
     act(() => {
       result.current.touchEntry('new-touch-key')
     })
@@ -740,38 +646,35 @@ describe('Edge cases and error scenarios', () => {
   it('should handle decrement on non-existent entry gracefully', () => {
     const { result } = renderHook(() => useFleetK8sWatchResourceStore())
 
-    // Should not throw
     act(() => {
       result.current.decrementRefCount('non-existent-ref')
     })
 
-    // Entry should not exist
     expect(result.current.getResult('non-existent-ref')).toBeUndefined()
   })
 
   it('should update result data while preserving other cache entry properties', () => {
     const { result } = renderHook(() => useFleetK8sWatchResourceStore())
-    const mockSocket = new WebSocket('wss://example.com')
+    const mockTimer = setInterval(() => {}, 10000)
     const key = 'preserve-key'
 
     act(() => {
       result.current.incrementRefCount(key)
-      result.current.setSocket(key, mockSocket)
+      result.current.setPollTimer(key, mockTimer)
       result.current.setResult(key, { metadata: { name: 'pod-1' } }, true)
     })
 
-    expect(result.current.cache[key]?.socket).toBe(mockSocket)
+    expect(result.current.cache[key]?.pollTimer).toBe(mockTimer)
     expect(result.current.getRefCount(key)).toBe(1)
 
-    // Update result
     act(() => {
       result.current.setResult(key, { metadata: { name: 'pod-2' } }, true)
     })
 
-    // Socket and ref count should be preserved
-    expect(result.current.cache[key]?.socket).toBe(mockSocket)
+    expect(result.current.cache[key]?.pollTimer).toBe(mockTimer)
     expect(result.current.getRefCount(key)).toBe(1)
     expect((result.current.getResult(key)?.data as any)?.metadata?.name).toBe('pod-2')
+    clearInterval(mockTimer)
   })
 })
 
@@ -784,73 +687,60 @@ describe('Integration scenarios', () => {
     useFleetK8sWatchResourceStore.setState({ cache: {} })
   })
 
-  it('should handle full lifecycle: create, watch, update, unwatch', () => {
+  it('should handle full lifecycle: create, poll, update, stop', () => {
     const { result } = renderHook(() => useFleetK8sWatchResourceStore())
-    const mockSocket = new WebSocket('wss://example.com')
+    const mockTimer = setInterval(() => {}, 10000)
     const key = 'lifecycle-key'
 
-    ;(mockSocket as any).readyState = MockWebSocket.OPEN
-
-    // Component mounts - start watching
     act(() => {
       result.current.incrementRefCount(key)
       result.current.setResult(key, { metadata: { name: 'initial-pod' } }, true)
-      result.current.setSocket(key, mockSocket)
+      result.current.setPollTimer(key, mockTimer)
     })
 
     expect(result.current.getRefCount(key)).toBe(1)
-    expect(result.current.cache[key]?.socket).toBe(mockSocket)
+    expect(result.current.cache[key]?.pollTimer).toBe(mockTimer)
 
-    // Receive updates
     act(() => {
       result.current.setResult(key, { metadata: { name: 'updated-pod' } }, true)
     })
 
     expect((result.current.getResult(key)?.data as any)?.metadata?.name).toBe('updated-pod')
 
-    // Component unmounts - stop watching
     act(() => {
       result.current.decrementRefCount(key)
     })
 
-    expect(mockSocket.close).toHaveBeenCalled()
-    expect(result.current.cache[key]?.socket).toBeUndefined()
+    expect(result.current.cache[key]?.pollTimer).toBeUndefined()
   })
 
   it('should handle multiple components watching same resource', () => {
     const { result } = renderHook(() => useFleetK8sWatchResourceStore())
-    const mockSocket = new WebSocket('wss://example.com')
+    const mockTimer = setInterval(() => {}, 10000)
     const key = 'shared-key'
 
-    ;(mockSocket as any).readyState = MockWebSocket.OPEN
-
-    // Component 1 starts watching
     act(() => {
       result.current.incrementRefCount(key)
       result.current.setResult(key, { metadata: { name: 'shared-pod' } }, true)
-      result.current.setSocket(key, mockSocket)
+      result.current.setPollTimer(key, mockTimer)
     })
 
-    // Component 2 starts watching (reuses socket)
     act(() => {
       result.current.incrementRefCount(key)
     })
 
     expect(result.current.getRefCount(key)).toBe(2)
 
-    // Component 1 unmounts
     act(() => {
       result.current.decrementRefCount(key)
     })
 
-    expect(mockSocket.close).not.toHaveBeenCalled()
-    expect(result.current.cache[key]?.socket).toBe(mockSocket)
+    expect(result.current.cache[key]?.pollTimer).toBe(mockTimer)
 
-    // Component 2 unmounts
     act(() => {
       result.current.decrementRefCount(key)
     })
 
-    expect(mockSocket.close).toHaveBeenCalled()
+    expect(result.current.cache[key]?.pollTimer).toBeUndefined()
   })
 })

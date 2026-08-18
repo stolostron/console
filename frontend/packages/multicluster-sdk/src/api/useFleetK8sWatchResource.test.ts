@@ -162,7 +162,7 @@ describe('useFleetK8sWatchResource', () => {
       expect(mockSubscribe).toHaveBeenCalledWith(initResource, '/api/test/path', expect.any(Function))
 
       // Should call startWatch with correct parameters
-      expect(mockStartWatch).toHaveBeenCalledWith(initResource, mockModel, mockFleetAPIUrl)
+      expect(mockStartWatch).toHaveBeenCalledWith(initResource, mockModel, mockFleetAPIUrl, undefined)
 
       // Should not call useK8sWatchResource with the resource
       expect(mockUseK8sWatchResource).toHaveBeenCalledWith(null)
@@ -201,7 +201,7 @@ describe('useFleetK8sWatchResource', () => {
 
       const { result } = renderHook(() => useFleetK8sWatchResource(singleResourceInit))
 
-      expect(mockStartWatch).toHaveBeenCalledWith(singleResourceInit, mockModel, mockFleetAPIUrl)
+      expect(mockStartWatch).toHaveBeenCalledWith(singleResourceInit, mockModel, mockFleetAPIUrl, undefined)
 
       expect(result.current).toEqual([mockSingleData, true, undefined])
     })
@@ -447,7 +447,7 @@ describe('useFleetK8sWatchResource', () => {
 
       renderHook(() => useFleetK8sWatchResource(initResource))
 
-      expect(mockStartWatch).toHaveBeenCalledWith(initResource, mockModel, mockFleetAPIUrl)
+      expect(mockStartWatch).toHaveBeenCalledWith(initResource, mockModel, mockFleetAPIUrl, undefined)
     })
 
     it('should handle fieldSelector and selector parameters', () => {
@@ -462,7 +462,7 @@ describe('useFleetK8sWatchResource', () => {
 
       renderHook(() => useFleetK8sWatchResource(initResource))
 
-      expect(mockStartWatch).toHaveBeenCalledWith(initResource, mockModel, mockFleetAPIUrl)
+      expect(mockStartWatch).toHaveBeenCalledWith(initResource, mockModel, mockFleetAPIUrl, undefined)
     })
 
     it('should memoize resource to prevent unnecessary re-renders', () => {

@@ -1,15 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { FC, useEffect, useRef, useState } from 'react'
+import { FC, useCallback, useEffect, useRef, useState } from 'react'
 
 // References translations directly from OpenShift console - not from plugins
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { useTranslation } from 'react-i18next'
-import { ResourceEventStream } from '@openshift-console/dynamic-plugin-sdk'
+import { consoleFetchJSON, ResourceEventStream } from '@openshift-console/dynamic-plugin-sdk'
 import { FleetResourceEventStreamProps } from '../types'
 
 import * as _ from 'lodash'
 import { useFleetK8sAPIPath, useHubClusterName } from '../api'
-import { fleetWatch } from '../internal/apiRequests'
+import { buildResourceURL } from '../internal/apiRequests'
 import { EventModel, sortEvents } from '../internal/FleetResourceEventStream/utils'
 import { EventKind, MAX_MESSAGES } from '../internal/FleetResourceEventStream/constants'
 import { EmptyState, PageSection, Spinner } from '@patternfly/react-core'
@@ -19,14 +19,16 @@ import TogglePlay from '../internal/FleetResourceEventStream/TogglePlay'
 import { EventStreamList } from '../internal/FleetResourceEventStream/EventStreamList'
 import EventComponent from '../internal/FleetResourceEventStream/EventComponent'
 
+const EVENT_POLL_INTERVAL = 10 * 1000
+
 /**
- * A multicluster-aware ResourceEventStream component that displays real-time Kubernetes events
+ * A multicluster-aware ResourceEventStream component that displays Kubernetes events
  * for resources on managed clusters. Provides equivalent functionality to the OpenShift console's
  * ResourceEventStream for resources on managed clusters.
  *
- * For managed cluster resources, this component establishes a websocket connection to stream
- * events from the specified cluster. For hub cluster resources or when no cluster is specified,
- * it falls back to the standard OpenShift console ResourceEventStream component.
+ * For managed cluster resources, this component polls events from the specified cluster.
+ * For hub cluster resources or when no cluster is specified, it falls back to the standard
+ * OpenShift console ResourceEventStream component.
  *
  * @see {@link https://github.com/openshift/console/blob/main/frontend/packages/console-dynamic-plugin-sdk/docs/api.md#resourceeventstream} OpenShift Console Dynamic Plugin SDK ResourceEventStream
  *
@@ -66,26 +68,26 @@ import EventComponent from '../internal/FleetResourceEventStream/EventComponent'
  *   }}
  * />
  *
- * @returns {JSX.Element} A rendered event stream component showing real-time Kubernetes events
+ * @returns {JSX.Element} A rendered event stream component showing Kubernetes events
  *
  * @remarks
  * **Behavior:**
- * - When `resource.cluster` is set and differs from hub cluster: Uses fleet websocket connection
+ * - When `resource.cluster` is set and differs from hub cluster: Polls events from the managed cluster
  * - When `resource.cluster` is undefined or equals hub cluster: Falls back to OpenShift console ResourceEventStream
- * - Automatically handles connection lifecycle (open, close, error, reconnect)
+ * - Automatically handles connection lifecycle (poll, error, retry)
  * - Supports both namespaced and cluster-scoped resources
- * - Displays up to 50 most recent events with real-time streaming
- * - Provides play/pause controls for event streaming
+ * - Displays up to 50 most recent events with polling updates
+ * - Provides play/pause controls for event polling
  *
  * **Event Filtering:**
  * Events are filtered by `involvedObject.uid`, `involvedObject.name`, and `involvedObject.kind`
  * to show only events related to the specified resource.
  *
  * **Error Handling:**
- * - Shows loading spinner during initial connection
+ * - Shows loading spinner during initial fetch
  * - Displays error states for connection failures
  * - Shows empty state when no events exist
- * - Automatically attempts reconnection on websocket errors
+ * - Automatically retries on next poll interval
  *
  * @see {@link FleetK8sResourceCommon} for resource type definition
  * @see {@link https://github.com/openshift/console/tree/master/frontend/packages/console-dynamic-plugin-sdk} OpenShift Console Dynamic Plugin SDK
@@ -93,100 +95,52 @@ import EventComponent from '../internal/FleetResourceEventStream/EventComponent'
 
 export const FleetResourceEventStream: FC<FleetResourceEventStreamProps> = ({ resource }) => {
   const [active, setActive] = useState(true)
+  const activeRef = useRef(active)
+  activeRef.current = active
   const [hubCluster] = useHubClusterName()
   const { t } = useTranslation('public')
   const [sortedEvents, setSortedEvents] = useState<EventKind[]>([])
   const [error, setError] = useState<boolean | string>(false)
   const [loading, setLoading] = useState(true)
-  const ws = useRef<WebSocket>()
   const [backendAPIPath, loaded] = useFleetK8sAPIPath(resource?.cluster)
 
   const fieldSelector = `involvedObject.uid=${resource?.metadata?.uid},involvedObject.name=${resource?.metadata?.name},involvedObject.kind=${resource?.kind}`
   const namespace = resource?.metadata?.namespace
 
-  // handle websocket setup and teardown when dependent props change
+  const fetchEvents = useCallback(async () => {
+    if (!activeRef.current || !loaded || !backendAPIPath) return
+
+    const url = buildResourceURL({
+      model: EventModel,
+      cluster: resource.cluster,
+      ns: namespace,
+      queryParams: {
+        fieldSelector,
+      },
+      basePath: backendAPIPath,
+    })
+
+    try {
+      const data = await consoleFetchJSON(url, 'GET')
+      const items = (data?.items ?? []) as EventKind[]
+      setSortedEvents(sortEvents(items).slice(0, MAX_MESSAGES))
+      setError(false)
+      setLoading(false)
+    } catch (err) {
+      setError(true)
+      setLoading(false)
+    }
+  }, [loaded, backendAPIPath, resource.cluster, namespace, fieldSelector])
+
   useEffect(() => {
     if (!resource.cluster || resource.cluster === hubCluster || !loaded) return
 
-    const watchURLOptions = {
-      cluster: resource.cluster,
-      ...(namespace ? { ns: namespace } : {}),
-      ...(fieldSelector
-        ? {
-            fieldSelector,
-          }
-        : {}),
-    }
+    fetchEvents()
+    const timer = setInterval(fetchEvents, EVENT_POLL_INTERVAL)
 
-    if (!ws.current) {
-      // create new WebSocket connection
-      ws.current = fleetWatch(EventModel, watchURLOptions, backendAPIPath as string)
-
-      if (ws.current === undefined) return
-
-      ws.current.onmessage = (message: any) => {
-        if (!active) return
-
-        try {
-          const eventdataParsed = JSON.parse(message.data)
-
-          if (!eventdataParsed) return
-
-          const eventType = eventdataParsed.type
-          const object = eventdataParsed.object as EventKind
-
-          setSortedEvents((currentSortedEvents) => {
-            const topEvents = currentSortedEvents.slice(0, MAX_MESSAGES)
-
-            const uid = object?.metadata?.uid || ''
-
-            const eventAlreadyExists = topEvents.find((e) => e?.metadata?.uid === uid)
-            switch (eventType) {
-              case 'ADDED':
-              case 'MODIFIED':
-                if (
-                  eventAlreadyExists &&
-                  eventAlreadyExists?.count !== undefined &&
-                  object?.count !== undefined &&
-                  eventAlreadyExists.count > object.count
-                ) {
-                  // We already have a more recent version of this message stored, so skip this one
-                  return topEvents
-                }
-
-                return sortEvents([...topEvents, object])
-              case 'DELETED':
-                return topEvents.filter((e) => e?.metadata?.uid !== uid)
-              default:
-                console.error(`UNHANDLED EVENT: ${eventType}`)
-                return topEvents
-            }
-          })
-        } catch (error) {
-          console.error('Error parsing WebSocket message:', error)
-        }
-      }
-
-      ws.current.onopen = () => {
-        setActive(true)
-        setError(false)
-        setLoading(false)
-      }
-
-      ws.current.onclose = (evt: CloseEvent) => {
-        ws.current = undefined
-        setActive(false)
-        if (evt?.wasClean === false) {
-          setError(evt.reason || t('public~Connection did not close cleanly.'))
-        }
-      }
-
-      ws.current.onerror = () => {
-        setActive(false)
-        setError(true)
-      }
-    }
-  }, [namespace, fieldSelector, active, t, resource.cluster, hubCluster, loaded, backendAPIPath])
+    return () => clearInterval(timer)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [namespace, fieldSelector, resource.cluster, hubCluster, loaded, backendAPIPath])
 
   // return early after all hooks are called, otherwise the component will render twice
   if (!resource.cluster || resource.cluster === hubCluster) return <ResourceEventStream resource={resource} />
@@ -232,9 +186,9 @@ export const FleetResourceEventStream: FC<FleetResourceEventStreamProps> = ({ re
     statusBtnTxt = <span>{t('public~Loading events...')}</span>
     sysEventStatus = <Spinner id="spinner" />
   } else if (active) {
-    statusBtnTxt = <span>{t('public~Streaming events...')}</span>
+    statusBtnTxt = <span>{t('public~Polling events...')}</span>
   } else {
-    statusBtnTxt = <span>{t('public~Event stream is paused.')}</span>
+    statusBtnTxt = <span>{t('public~Event polling is paused.')}</span>
   }
 
   const klass = css('co-sysevent-stream__timeline', {

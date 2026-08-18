@@ -12,7 +12,10 @@ import {
 export type Fleet<T> = T & { cluster?: string }
 export type FleetK8sResourceCommon = Fleet<K8sResourceCommon>
 
-export type FleetWatchK8sResource = Fleet<WatchK8sResource>
+export type FleetWatchK8sResource = Fleet<WatchK8sResource> & {
+  /** Polling interval in seconds for fleet watches. Defaults to 10. Minimum is 10. */
+  pollInterval?: number
+}
 export type FleetWatchK8sResources<R extends FleetResourcesObject> = {
   [k in keyof R]: FleetWatchK8sResource
 }
