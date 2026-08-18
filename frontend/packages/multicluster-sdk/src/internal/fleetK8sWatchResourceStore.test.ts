@@ -5,40 +5,13 @@ import {
   isCacheEntryValid,
   isCacheEntryFresh,
   getCacheEntryAge,
-  getSocketMonitoringInterval,
 } from './fleetK8sWatchResourceStore'
 
-// Mock WebSocket
-class MockWebSocket {
-  static CONNECTING = 0
-  static OPEN = 1
-  static CLOSED = 2
-
-  private _readyState = MockWebSocket.CONNECTING
-  url: string
-
-  constructor(url: string) {
-    this.url = url
-    // Simulate immediate connection
-    setTimeout(() => {
-      this._readyState = MockWebSocket.OPEN
-    }, 0)
-  }
-
-  get readyState() {
-    return this._readyState
-  }
-
-  set readyState(value: number) {
-    this._readyState = value
-  }
-
-  close = jest.fn(() => {
-    this._readyState = MockWebSocket.CLOSED
-  })
+const createMockAbortController = () => {
+  const controller = new AbortController()
+  jest.spyOn(controller, 'abort')
+  return controller
 }
-
-global.WebSocket = MockWebSocket as any
 
 describe('FleetK8sWatchResourceStore', () => {
   beforeEach(() => {
@@ -100,17 +73,17 @@ describe('FleetK8sWatchResourceStore', () => {
     expect(cachedResult?.data).toHaveLength(2)
   })
 
-  it('should manage socket cache', () => {
+  it('should manage abort controller cache', () => {
     const { result } = renderHook(() => useFleetK8sWatchResourceStore())
-    const mockSocket = new WebSocket('wss://example.com')
-    const key = 'test-socket-key'
+    const mockController = createMockAbortController()
+    const key = 'test-controller-key'
 
     act(() => {
-      result.current.setSocket(key, mockSocket)
+      result.current.setAbortController(key, mockController)
     })
 
-    const cachedSocket = result.current.cache[key]?.socket
-    expect(cachedSocket).toBe(mockSocket)
+    const cachedController = result.current.cache[key]?.abortController
+    expect(cachedController).toBe(mockController)
   })
 
   it('should track ref count correctly', () => {
@@ -138,27 +111,24 @@ describe('FleetK8sWatchResourceStore', () => {
     expect(result.current.getRefCount(key)).toBe(0)
   })
 
-  it('should close socket when ref count reaches zero', () => {
+  it('should abort controller when ref count reaches zero', () => {
     const { result } = renderHook(() => useFleetK8sWatchResourceStore())
-    const mockSocket = new WebSocket('wss://example.com')
-    const key = 'socket-close-key'
-
-    // Make socket appear open
-    ;(mockSocket as any).readyState = MockWebSocket.OPEN
+    const mockController = createMockAbortController()
+    const key = 'controller-abort-key'
 
     act(() => {
       result.current.incrementRefCount(key)
-      result.current.setSocket(key, mockSocket)
+      result.current.setAbortController(key, mockController)
     })
 
-    expect(result.current.cache[key]?.socket).toBe(mockSocket)
+    expect(result.current.cache[key]?.abortController).toBe(mockController)
 
     act(() => {
       result.current.decrementRefCount(key)
     })
 
-    expect(mockSocket.close).toHaveBeenCalled()
-    expect(result.current.cache[key]?.socket).toBeUndefined()
+    expect(mockController.abort).toHaveBeenCalled()
+    expect(result.current.cache[key]?.abortController).toBeUndefined()
   })
 
   it('should store and retrieve resource version', () => {
@@ -246,10 +216,10 @@ describe('isCacheEntryValid function', () => {
     jest.useRealTimers()
   })
 
-  it('should return true for entry with active socket', () => {
-    const mockSocket = new WebSocket('wss://example.com')
+  it('should return true for entry with active abort controller', () => {
+    const mockController = createMockAbortController()
     const entry = {
-      socket: mockSocket,
+      abortController: mockController,
       refCount: 1,
       timestamp: Date.now() - 100000, // Old timestamp
       result: { data: undefined, loaded: false },
@@ -258,7 +228,7 @@ describe('isCacheEntryValid function', () => {
     expect(isCacheEntryValid(entry)).toBe(true)
   })
 
-  it('should return true for recent entry without socket', () => {
+  it('should return true for recent entry without abort controller', () => {
     const entry = {
       refCount: 0,
       timestamp: Date.now() - 1000, // 1 second ago
@@ -267,7 +237,7 @@ describe('isCacheEntryValid function', () => {
     expect(isCacheEntryValid(entry)).toBe(true)
   })
 
-  it('should return false for old entry without socket', () => {
+  it('should return false for old entry without abort controller', () => {
     const entry = {
       refCount: 0,
       timestamp: Date.now() - 100000, // 100 seconds ago (> 30 second TTL)
@@ -280,26 +250,23 @@ describe('isCacheEntryValid function', () => {
     const testError = new Error('Failed to load resource')
     const entry = {
       refCount: 1,
-      timestamp: Date.now(), // Current timestamp (recent)
+      timestamp: Date.now(),
       result: { data: undefined, loaded: false, loadError: testError },
     }
 
-    // Even though the entry is recent, it should be invalid because it has an error
     expect(isCacheEntryValid(entry)).toBe(false)
   })
 
-  it('should return false for entry with loadError even with active socket', () => {
-    const mockSocket = new WebSocket('wss://example.com')
+  it('should return false for entry with loadError even with active abort controller', () => {
+    const mockController = createMockAbortController()
     const testError = new Error('Failed to load resource')
     const entry = {
-      socket: mockSocket,
+      abortController: mockController,
       refCount: 1,
       timestamp: Date.now(),
       result: { data: [], loaded: true, loadError: testError },
     }
 
-    // Even with an active socket, entry should be invalid if it has an error
-    // This ensures we retry failed requests instead of serving stale errors
     expect(isCacheEntryValid(entry)).toBe(false)
   })
 })
@@ -343,7 +310,7 @@ describe('isCacheEntryFresh function', () => {
 
     const entry = {
       refCount: 1,
-      timestamp: now - getSocketMonitoringInterval(), // Exactly at TTL
+      timestamp: now - 30000, // Exactly at 30s TTL
     }
 
     expect(isCacheEntryFresh(entry)).toBe(false)
@@ -372,8 +339,7 @@ describe('isCacheEntryFresh function', () => {
 
     expect(isCacheEntryFresh(entry)).toBe(true)
 
-    // Advance time past TTL
-    jest.advanceTimersByTime(getSocketMonitoringInterval() + 1000)
+    jest.advanceTimersByTime(31000)
 
     expect(isCacheEntryFresh(entry)).toBe(false)
   })
@@ -431,20 +397,7 @@ describe('getCacheEntryAge function', () => {
   })
 })
 
-describe('getSocketMonitoringInterval function', () => {
-  it('should return the cache TTL value', () => {
-    // The monitoring interval should match the cache TTL (30 seconds)
-    expect(getSocketMonitoringInterval()).toBe(30000)
-  })
-
-  it('should return a consistent value', () => {
-    const interval1 = getSocketMonitoringInterval()
-    const interval2 = getSocketMonitoringInterval()
-    expect(interval1).toBe(interval2)
-  })
-})
-
-describe('Ref count management with sockets', () => {
+describe('Ref count management with abort controllers', () => {
   beforeEach(() => {
     useFleetK8sWatchResourceStore.setState({ cache: {} })
   })
@@ -453,17 +406,15 @@ describe('Ref count management with sockets', () => {
     useFleetK8sWatchResourceStore.setState({ cache: {} })
   })
 
-  it('should not close socket if ref count is still positive', () => {
+  it('should not abort controller if ref count is still positive', () => {
     const { result } = renderHook(() => useFleetK8sWatchResourceStore())
-    const mockSocket = new WebSocket('wss://example.com')
+    const mockController = createMockAbortController()
     const key = 'multi-ref-key'
-
-    ;(mockSocket as any).readyState = MockWebSocket.OPEN
 
     act(() => {
       result.current.incrementRefCount(key)
       result.current.incrementRefCount(key)
-      result.current.setSocket(key, mockSocket)
+      result.current.setAbortController(key, mockController)
     })
 
     expect(result.current.getRefCount(key)).toBe(2)
@@ -473,8 +424,8 @@ describe('Ref count management with sockets', () => {
     })
 
     expect(result.current.getRefCount(key)).toBe(1)
-    expect(mockSocket.close).not.toHaveBeenCalled()
-    expect(result.current.cache[key]?.socket).toBe(mockSocket)
+    expect(mockController.abort).not.toHaveBeenCalled()
+    expect(result.current.cache[key]?.abortController).toBe(mockController)
   })
 
   it('should prevent ref count from going negative', () => {
@@ -490,41 +441,35 @@ describe('Ref count management with sockets', () => {
     expect(refCount === undefined || refCount === 0).toBe(true)
   })
 
-  it('should handle socket operations with multiple refs', () => {
+  it('should handle abort controller with multiple refs', () => {
     const { result } = renderHook(() => useFleetK8sWatchResourceStore())
-    const mockSocket = new WebSocket('wss://example.com')
-    const key = 'socket-multi-ref'
+    const mockController = createMockAbortController()
+    const key = 'controller-multi-ref'
 
-    ;(mockSocket as any).readyState = MockWebSocket.OPEN
-
-    // Simulate multiple hooks using the same socket
     act(() => {
       result.current.incrementRefCount(key)
       result.current.incrementRefCount(key)
       result.current.incrementRefCount(key)
-      result.current.setSocket(key, mockSocket)
+      result.current.setAbortController(key, mockController)
     })
 
     expect(result.current.getRefCount(key)).toBe(3)
-    expect(result.current.cache[key]?.socket).toBe(mockSocket)
+    expect(result.current.cache[key]?.abortController).toBe(mockController)
 
-    // First hook unmounts
     act(() => {
       result.current.decrementRefCount(key)
     })
-    expect(mockSocket.close).not.toHaveBeenCalled()
+    expect(mockController.abort).not.toHaveBeenCalled()
 
-    // Second hook unmounts
     act(() => {
       result.current.decrementRefCount(key)
     })
-    expect(mockSocket.close).not.toHaveBeenCalled()
+    expect(mockController.abort).not.toHaveBeenCalled()
 
-    // Third hook unmounts - socket should close
     act(() => {
       result.current.decrementRefCount(key)
     })
-    expect(mockSocket.close).toHaveBeenCalled()
+    expect(mockController.abort).toHaveBeenCalled()
   })
 })
 
@@ -626,27 +571,22 @@ describe('Edge cases and error scenarios', () => {
     expect(result.current.getResult('key-99')).toBeDefined()
   })
 
-  it('should handle socket operations with invalid WebSocket states', () => {
+  it('should handle abort controller correctly on decrement', () => {
     const { result } = renderHook(() => useFleetK8sWatchResourceStore())
-    const mockSocket = new WebSocket('wss://example.com')
-
-    // Set invalid state
-    ;(mockSocket as any).readyState = 999
+    const mockController = createMockAbortController()
 
     act(() => {
-      result.current.incrementRefCount('invalid-socket')
-      result.current.setSocket('invalid-socket', mockSocket)
+      result.current.incrementRefCount('controller-key')
+      result.current.setAbortController('controller-key', mockController)
     })
 
-    // Should still store the socket
-    expect(result.current.cache['invalid-socket']?.socket).toBeDefined()
+    expect(result.current.cache['controller-key']?.abortController).toBeDefined()
 
-    // Decrement should not crash
     act(() => {
-      result.current.decrementRefCount('invalid-socket')
+      result.current.decrementRefCount('controller-key')
     })
 
-    expect(result.current.cache['invalid-socket']?.socket).toBeUndefined()
+    expect(result.current.cache['controller-key']?.abortController).toBeUndefined()
   })
 
   it('should handle concurrent updates to same cache key', () => {
@@ -691,21 +631,17 @@ describe('Edge cases and error scenarios', () => {
     expect(result.current.getResourceVersion(key)).toBe('v2')
   })
 
-  it('should handle setting socket before incrementing ref count', () => {
+  it('should handle setting abort controller before incrementing ref count', () => {
     const { result } = renderHook(() => useFleetK8sWatchResourceStore())
-    const mockSocket = new WebSocket('wss://example.com')
-    const key = 'socket-first-key'
+    const mockController = createMockAbortController()
+    const key = 'controller-first-key'
 
-    ;(mockSocket as any).readyState = MockWebSocket.OPEN
-
-    // Set socket first
     act(() => {
-      result.current.setSocket(key, mockSocket)
+      result.current.setAbortController(key, mockController)
     })
 
-    expect(result.current.cache[key]?.socket).toBe(mockSocket)
+    expect(result.current.cache[key]?.abortController).toBe(mockController)
 
-    // Then increment ref count
     act(() => {
       result.current.incrementRefCount(key)
     })
@@ -751,25 +687,23 @@ describe('Edge cases and error scenarios', () => {
 
   it('should update result data while preserving other cache entry properties', () => {
     const { result } = renderHook(() => useFleetK8sWatchResourceStore())
-    const mockSocket = new WebSocket('wss://example.com')
+    const mockController = createMockAbortController()
     const key = 'preserve-key'
 
     act(() => {
       result.current.incrementRefCount(key)
-      result.current.setSocket(key, mockSocket)
+      result.current.setAbortController(key, mockController)
       result.current.setResult(key, { metadata: { name: 'pod-1' } }, true)
     })
 
-    expect(result.current.cache[key]?.socket).toBe(mockSocket)
+    expect(result.current.cache[key]?.abortController).toBe(mockController)
     expect(result.current.getRefCount(key)).toBe(1)
 
-    // Update result
     act(() => {
       result.current.setResult(key, { metadata: { name: 'pod-2' } }, true)
     })
 
-    // Socket and ref count should be preserved
-    expect(result.current.cache[key]?.socket).toBe(mockSocket)
+    expect(result.current.cache[key]?.abortController).toBe(mockController)
     expect(result.current.getRefCount(key)).toBe(1)
     expect((result.current.getResult(key)?.data as any)?.metadata?.name).toBe('pod-2')
   })
@@ -786,71 +720,60 @@ describe('Integration scenarios', () => {
 
   it('should handle full lifecycle: create, watch, update, unwatch', () => {
     const { result } = renderHook(() => useFleetK8sWatchResourceStore())
-    const mockSocket = new WebSocket('wss://example.com')
+    const mockController = createMockAbortController()
     const key = 'lifecycle-key'
 
-    ;(mockSocket as any).readyState = MockWebSocket.OPEN
-
-    // Component mounts - start watching
     act(() => {
       result.current.incrementRefCount(key)
       result.current.setResult(key, { metadata: { name: 'initial-pod' } }, true)
-      result.current.setSocket(key, mockSocket)
+      result.current.setAbortController(key, mockController)
     })
 
     expect(result.current.getRefCount(key)).toBe(1)
-    expect(result.current.cache[key]?.socket).toBe(mockSocket)
+    expect(result.current.cache[key]?.abortController).toBe(mockController)
 
-    // Receive updates
     act(() => {
       result.current.setResult(key, { metadata: { name: 'updated-pod' } }, true)
     })
 
     expect((result.current.getResult(key)?.data as any)?.metadata?.name).toBe('updated-pod')
 
-    // Component unmounts - stop watching
     act(() => {
       result.current.decrementRefCount(key)
     })
 
-    expect(mockSocket.close).toHaveBeenCalled()
-    expect(result.current.cache[key]?.socket).toBeUndefined()
+    expect(mockController.abort).toHaveBeenCalled()
+    expect(result.current.cache[key]?.abortController).toBeUndefined()
   })
 
   it('should handle multiple components watching same resource', () => {
     const { result } = renderHook(() => useFleetK8sWatchResourceStore())
-    const mockSocket = new WebSocket('wss://example.com')
+    const mockController = createMockAbortController()
     const key = 'shared-key'
 
-    ;(mockSocket as any).readyState = MockWebSocket.OPEN
-
-    // Component 1 starts watching
     act(() => {
       result.current.incrementRefCount(key)
       result.current.setResult(key, { metadata: { name: 'shared-pod' } }, true)
-      result.current.setSocket(key, mockSocket)
+      result.current.setAbortController(key, mockController)
     })
 
-    // Component 2 starts watching (reuses socket)
     act(() => {
       result.current.incrementRefCount(key)
     })
 
     expect(result.current.getRefCount(key)).toBe(2)
 
-    // Component 1 unmounts
     act(() => {
       result.current.decrementRefCount(key)
     })
 
-    expect(mockSocket.close).not.toHaveBeenCalled()
-    expect(result.current.cache[key]?.socket).toBe(mockSocket)
+    expect(mockController.abort).not.toHaveBeenCalled()
+    expect(result.current.cache[key]?.abortController).toBe(mockController)
 
-    // Component 2 unmounts
     act(() => {
       result.current.decrementRefCount(key)
     })
 
-    expect(mockSocket.close).toHaveBeenCalled()
+    expect(mockController.abort).toHaveBeenCalled()
   })
 })

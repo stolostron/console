@@ -141,6 +141,108 @@ export async function getResourceURLFromOptions<O extends FleetK8sAPIOptions | F
   })
 }
 
+export type WatchErrorGone = { type: 'GONE'; status: 410 }
+
+export type FleetWatchCallbacks = {
+  onEvent: (eventData: { type: string; object: any }) => void
+  onError: (err: any) => void
+  onClose: () => void
+}
+
+function getCookie(name: string): string | undefined {
+  if (typeof document === 'undefined' || !document?.cookie) return undefined
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) {
+    const cookie = parts[parts.length - 1]
+    if (cookie) return cookie.split(';').shift()
+  }
+}
+
+async function processWatchStream(
+  url: string,
+  abortController: AbortController,
+  callbacks: FleetWatchCallbacks
+): Promise<void> {
+  try {
+    const headers: Record<string, string> = {
+      Accept: 'application/json',
+      'Cache-Control': 'no-cache, no-transform',
+    }
+
+    const csrfToken = getCookie('csrf-token')
+    if (csrfToken) {
+      headers['X-CSRFToken'] = csrfToken
+    }
+
+    const response = await fetch(url, {
+      signal: abortController.signal,
+      credentials: 'same-origin',
+      headers,
+    })
+
+    if (response.status === 410) {
+      callbacks.onError({ type: 'GONE', status: 410 } satisfies WatchErrorGone)
+      return
+    }
+
+    if (!response.ok) {
+      callbacks.onError(new Error(`Watch request failed with status ${response.status}`))
+      return
+    }
+    if (!response.body) {
+      callbacks.onError(new Error('Watch response has no body'))
+      return
+    }
+
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+
+    while (true) {
+      const { done, value } = await reader.read()
+      debugger
+      if (done) break
+      buffer += decoder.decode(value, { stream: true })
+      const lines = buffer.split('\n')
+      buffer = lines.pop()!
+
+      for (const line of lines) {
+        const trimmed = line.trim()
+        if (trimmed) {
+          try {
+            const event = JSON.parse(trimmed)
+            debugger
+            if (event.type === 'ERROR' && event.object?.code === 410) {
+              callbacks.onError({ type: 'GONE', status: 410 } satisfies WatchErrorGone)
+              abortController.abort()
+              return
+            }
+            callbacks.onEvent(event)
+          } catch (e) {
+            console.error('Failed to parse watch event:', e)
+          }
+        }
+      }
+    }
+
+    if (buffer.trim()) {
+      try {
+        callbacks.onEvent(JSON.parse(buffer.trim()))
+      } catch {
+        // incomplete data at end of stream
+      }
+    }
+
+    callbacks.onClose()
+  } catch (err) {
+    debugger
+    if (!abortController.signal.aborted) {
+      callbacks.onError(err)
+    }
+  }
+}
+
 export const fleetWatch = (
   model: K8sModel,
   query: {
@@ -151,8 +253,9 @@ export const fleetWatch = (
     fieldSelector?: string
     cluster?: string
   } = {},
-  backendURL: string
-): WebSocket => {
+  backendURL: string,
+  callbacks: FleetWatchCallbacks
+): AbortController => {
   const queryParams: QueryParams = { watch: 'true' }
 
   const { labelSelector } = query
@@ -183,5 +286,7 @@ export const fleetWatch = (
     basePath: backendURL,
   })
 
-  return new WebSocket(requestPath)
+  const abortController = new AbortController()
+  processWatchStream(requestPath, abortController, callbacks)
+  return abortController
 }
