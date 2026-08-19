@@ -71,14 +71,10 @@ describe('eventsAccess', () => {
       typeof body === 'string'
         ? (JSON.parse(body) as { spec?: { resourceAttributes?: Record<string, string | undefined> } })
         : body
-    return (parsed as { spec?: { resourceAttributes?: Record<string, string | undefined> } })?.spec
-      ?.resourceAttributes
+    return (parsed as { spec?: { resourceAttributes?: Record<string, string | undefined> } })?.spec?.resourceAttributes
   }
 
-  function nockSsarGet(
-    matcher: (attrs: Record<string, string | undefined>) => boolean,
-    allowed: boolean
-  ) {
+  function nockSsarGet(matcher: (attrs: Record<string, string | undefined>) => boolean, allowed: boolean) {
     return nock(apiUrl())
       .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', (body: unknown) => {
         const attrs = parseSsarResourceAttributes(body)
