@@ -1,7 +1,7 @@
 # Copyright Contributors to the Open Cluster Management project
 ARG NODE_BASE=registry.redhat.io/ubi9/nodejs-24-minimal:latest
 
-FROM registry.access.redhat.com/ubi9/ubi:latest AS crypto-policy
+FROM registry.redhat.io/ubi9/ubi:latest AS crypto-policy
 RUN update-crypto-policies --set DEFAULT:PQ
 
 FROM ${NODE_BASE} as build-base
