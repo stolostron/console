@@ -1,6 +1,9 @@
 # Copyright Contributors to the Open Cluster Management project
 ARG NODE_BASE=registry.redhat.io/ubi9/nodejs-24-minimal:latest
 
+FROM registry.redhat.io/ubi9/ubi:latest AS crypto-policy
+RUN update-crypto-policies --set DEFAULT:PQ
+
 FROM ${NODE_BASE} as build-base
 USER root
 ENV NPM_CONFIG_IGNORE_SCRIPTS=true
@@ -27,6 +30,7 @@ COPY ./backend/package-lock.json ./backend/package.json ./
 RUN npm ci --omit=optional --only=production
 
 FROM ${NODE_BASE}
+COPY --from=crypto-policy /etc/crypto-policies /etc/crypto-policies
 WORKDIR /app
 ENV NODE_ENV production
 COPY --from=production /app/backend/node_modules ./node_modules
