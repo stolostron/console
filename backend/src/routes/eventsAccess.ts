@@ -18,6 +18,8 @@ export interface SubjectRulesStatus {
   incomplete: boolean
   /** True when the SelfSubjectRulesReview request itself failed. */
   unavailable?: boolean
+  /** Set when an authorizer could not fully enumerate rules; partial lists must not be trusted as complete. */
+  evaluationError?: string
   resourceRules: Array<{
     verbs?: string[]
     apiGroups?: string[]
@@ -34,8 +36,37 @@ export type KindGetAccess =
 
 export type AccessResource = { kind: string; apiVersion: string; metadata?: { name?: string; namespace?: string } }
 
-/** SSRR requires a namespace; ClusterRoleBindings are included in every namespace review. */
+/** SSRR requires a namespace; cluster-scoped kinds are reviewed in this probe namespace only. */
 const CLUSTER_SCOPED_RULES_NAMESPACE = 'default'
+
+/**
+ * Kinds watched by the console that are cluster-scoped in Kubernetes (not inferred from metadata.namespace).
+ * Keep aligned with cluster-scoped entries in backend/src/routes/events.ts definitions.
+ */
+const CLUSTER_SCOPED_KINDS = new Set([
+  'AgentServiceConfig',
+  'CertificateSigningRequest',
+  'ClusterCurator',
+  'ClusterImageSet',
+  'ClusterManagementAddOn',
+  'ClusterVersion',
+  'DiscoveredCluster',
+  'DiscoveryConfig',
+  'Infrastructure',
+  'ManagedCluster',
+  'ManagedClusterSet',
+  'ManagedClusterSetBinding',
+  'MultiClusterEngine',
+  'Namespace',
+  'Placement',
+  'PlacementDecision',
+  'Search',
+  'StorageClass',
+])
+
+function isClusterScopedKind(kind: string): boolean {
+  return CLUSTER_SCOPED_KINDS.has(kind)
+}
 
 const subjectRulesCache = getSubjectRulesCacheStore()
 const kindGetAccessCache = getKindGetAccessCacheStore()
@@ -65,11 +96,10 @@ function resourcePluralName(kind: string): string {
   return pluralize(kind.toLowerCase())
 }
 
-function isNamespacedResource(resource: AccessResource): boolean {
-  return Boolean(resource.metadata?.namespace)
-}
-
 function rulesNamespaceFor(resource: AccessResource): string {
+  if (isClusterScopedKind(resource.kind)) {
+    return CLUSTER_SCOPED_RULES_NAMESPACE
+  }
   return resource.metadata?.namespace || CLUSTER_SCOPED_RULES_NAMESPACE
 }
 
@@ -83,8 +113,8 @@ function rulesNamespaceFor(resource: AccessResource): string {
 export function canGetResource(resource: AccessResource, token: string): Promise<boolean> {
   return resolveKindGetAccess(resource, token).then((access) => {
     // Probe-namespace SSRR cannot distinguish RoleBindings from ClusterRoleBindings.
-    // Confirm unrestricted cluster-scoped grants with SSAR to close the default-ns proxy hole.
-    if (!isNamespacedResource(resource) && access.type === 'allow-all') {
+    // Any non-deny cluster-scoped result must be confirmed with SSAR (not only allow-all/allow-names).
+    if (isClusterScopedKind(resource.kind) && access.type !== 'deny-all') {
       return canAccess(resource, 'get', token)
     }
     return applyKindGetAccess(access, resource, token, () =>
@@ -128,6 +158,7 @@ function getSubjectRules(token: string, namespace: string): Promise<SubjectRules
   const promise = jsonPost<{
     status?: {
       incomplete?: boolean
+      evaluationError?: string
       resourceRules?: SubjectRulesStatus['resourceRules']
     }
   }>(
@@ -147,6 +178,7 @@ function getSubjectRules(token: string, namespace: string): Promise<SubjectRules
       }
       return {
         incomplete: result.body?.status?.incomplete ?? false,
+        evaluationError: result.body?.status?.evaluationError,
         resourceRules: result.body?.status?.resourceRules ?? [],
       }
     })
@@ -189,6 +221,12 @@ function ruleGrantsKindAccess(
 
 function evaluateKindGetAccess(rules: SubjectRulesStatus, group: string, resourcePlural: string): KindGetAccess {
   const accessVerbs = new Set(['get', 'list', 'watch'])
+
+  // Authorizer reported partial rule enumeration; empty rules still deny-all (none-user fast path).
+  if (rules.evaluationError) {
+    if (rules.resourceRules.length === 0) return { type: 'deny-all' }
+    return { type: 'incomplete' }
+  }
 
   let allowAll = false
   const names = new Set<string>()
