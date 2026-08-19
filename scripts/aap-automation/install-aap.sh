@@ -332,6 +332,14 @@ spec:
         PLATFORM_SPEC="$PLATFORM_SPEC
   hub:
     replicas: 1"
+    else
+        # The operator's ansibleautomationplatform role enables Hub whenever the
+        # hub key is absent from spec at all (see determine_if_enabled.yml) -
+        # omitting the key does NOT disable it. hub.disabled: true is the only
+        # way to keep Hub (and its ReadWriteMany PVC) from being provisioned.
+        PLATFORM_SPEC="$PLATFORM_SPEC
+  hub:
+    disabled: true"
     fi
 
     if [ "$ENABLE_EDA" = "true" ]; then
