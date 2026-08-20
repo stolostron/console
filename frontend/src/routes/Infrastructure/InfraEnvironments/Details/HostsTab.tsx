@@ -45,7 +45,7 @@ const HostsTab: React.FC = () => {
   const [bulkModalProps, setBulkModalProps] = useState<
     BulkActionModalProps<AgentK8sResource | BareMetalHostK8sResource> | { open: false }
   >({ open: false })
-  const onDeleteHost = useOnDeleteHost(setBulkModalProps, bareMetalHosts, undefined, infraNMStates)
+  const onDeleteHost = useOnDeleteHost(setBulkModalProps, bareMetalHosts, undefined)
   const onUnbindHost = useOnUnbindHost(setBulkModalProps, undefined, undefined)
 
   const usedHostnames = useMemo(() => getAgentsHostsNames(infraAgents, bareMetalHosts), [bareMetalHosts, infraAgents])
@@ -70,7 +70,6 @@ const HostsTab: React.FC = () => {
                 agentClusterInstalls={agentClusterInstalls}
                 bareMetalHosts={bareMetalHosts}
                 infraEnv={infraEnv}
-                nmStates={infraNMStates}
                 getClusterDeploymentLink={getClusterDeploymentLink}
                 onEditHost={setEditAgent}
                 onApprove={onApproveAgent}

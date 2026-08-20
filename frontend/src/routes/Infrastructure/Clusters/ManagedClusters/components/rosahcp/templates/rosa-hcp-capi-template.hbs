@@ -1,0 +1,119 @@
+apiVersion: controlplane.cluster.x-k8s.io/v1beta2
+kind: ROSAControlPlane
+metadata:
+  name: '{{{cluster.name}}}'
+  namespace: '{{{cluster.name}}}'
+spec:
+  rosaClusterName: '{{{cluster.name}}}'
+  version: '{{{cluster.cluster_version}}}'
+  versionGate: WaitForAcknowledge
+  channelGroup: stable
+  region: '{{{cluster.region}}}'
+{{#if cluster.billing_account_id}}
+  billingAccount: '{{{cluster.billing_account_id}}}'
+{{/if}}
+  endpointAccess: {{#eq cluster.cluster_privacy "external"}}Public{{else}}Private{{/eq}}
+{{#if cluster.installer_role_arn}}
+  installerRoleARN: '{{{cluster.installer_role_arn}}}'
+{{/if}}
+{{#if cluster.support_role_arn}}
+  supportRoleARN: '{{{cluster.support_role_arn}}}'
+{{/if}}
+{{#if cluster.worker_role_arn}}
+  workerRoleARN: '{{{cluster.worker_role_arn}}}'
+{{/if}}
+{{#if cluster.byo_oidc_config_id}}
+  oidcID: '{{{cluster.byo_oidc_config_id}}}'
+{{/if}}
+  network:
+    machineCIDR: '{{{cluster.network_machine_cidr}}}'
+    serviceCIDR: '{{{cluster.network_service_cidr}}}'
+    podCIDR: '{{{cluster.network_pod_cidr}}}'
+    hostPrefix: {{stripSlash cluster.network_host_prefix}}
+    networkType: OVNKubernetes
+{{#if cluster._availability_zones}}
+  availabilityZones:
+  {{#each cluster._availability_zones}}
+    - '{{{this}}}'
+  {{/each}}
+{{/if}}
+{{#if cluster.machine_pools_subnets}}
+  subnets:
+  {{#each cluster.machine_pools_subnets}}
+    {{#if this.machine_pool_subnet}}
+    - '{{{this.machine_pool_subnet}}}'
+    {{/if}}
+  {{/each}}
+  {{#if cluster.cluster_privacy_public_subnet_id}}
+    - '{{{cluster.cluster_privacy_public_subnet_id}}}'
+  {{/if}}
+{{/if}}
+{{#if cluster._roles_ref}}
+  rolesRef:
+    controlPlaneOperatorARN: '{{{cluster._roles_ref.controlPlaneOperatorARN}}}'
+    imageRegistryARN: '{{{cluster._roles_ref.imageRegistryARN}}}'
+    ingressARN: '{{{cluster._roles_ref.ingressARN}}}'
+    kmsProviderARN: '{{{cluster._roles_ref.kmsProviderARN}}}'
+    kubeCloudControllerARN: '{{{cluster._roles_ref.kubeCloudControllerARN}}}'
+    networkARN: '{{{cluster._roles_ref.networkARN}}}'
+    nodePoolManagementARN: '{{{cluster._roles_ref.nodePoolManagementARN}}}'
+    storageARN: '{{{cluster._roles_ref.storageARN}}}'
+{{/if}}
+{{#if cluster.machine_type}}
+  defaultMachinePoolSpec:
+    instanceType: '{{{cluster.machine_type}}}'
+    volumeSize: {{{cluster.compute_root_volume}}}
+  {{#if cluster.autoscaling}}
+    autoscaling:
+      minReplicas: {{{cluster.min_replicas}}}
+      maxReplicas: {{{cluster.max_replicas}}}
+  {{/if}}
+{{/if}}
+{{#if cluster.etcd_encryption}}
+  {{#if cluster.etcd_key_arn}}
+  etcdEncryptionKMSARN: '{{{cluster.etcd_key_arn}}}'
+  {{/if}}
+{{/if}}
+  credentialsSecretRef:
+    name: '{{{cluster.name}}}-creds'
+---
+apiVersion: cluster.open-cluster-management.io/v1
+kind: ManagedCluster
+metadata:
+  name: '{{{cluster.name}}}'
+  labels:
+    cloud: Amazon
+    vendor: OpenShift
+    name: '{{{cluster.name}}}'
+{{#if cluster.region}}
+    region: '{{{cluster.region}}}'
+{{/if}}
+spec:
+  hubAcceptsClient: true
+---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: '{{{cluster.name}}}'
+  namespace: '{{{cluster.name}}}'
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks: ['{{{cluster.network_pod_cidr}}}']
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+    kind: ROSACluster
+    name: '{{{cluster.name}}}'
+    namespace: '{{{cluster.name}}}'
+  controlPlaneRef:
+    apiVersion: controlplane.cluster.x-k8s.io/v1beta2
+    kind: ROSAControlPlane
+    name: '{{{cluster.name}}}'
+    namespace: '{{{cluster.name}}}'
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+kind: ROSACluster
+metadata:
+  name: '{{{cluster.name}}}'
+  namespace: '{{{cluster.name}}}'
+spec: {}

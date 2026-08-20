@@ -252,13 +252,9 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
         props.appSetApps.length > 0 && (
           <div className="remove-app-modal-content">
             <div className="remove-app-modal-content-text">
-              <p
-                dangerouslySetInnerHTML={{
-                  __html: `${props.t(
-                    'The following Argo application(s) deployed by the application set will also be deleted:'
-                  )}`,
-                }}
-              />
+              <p>
+                {props.t('The following Argo application(s) deployed by the application set will also be deleted:')}
+              </p>
             </div>
             <div>
               <ul>

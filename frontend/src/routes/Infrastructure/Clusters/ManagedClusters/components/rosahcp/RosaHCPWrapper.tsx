@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { SelectedSecret } from './constants/types'
 import { useCredentialsSecrets } from './hooks/useCredentialsSecrets'
 import { useFetchOrganizationQuota } from './queries/useFetchAwsBillingAccountIds'
@@ -11,14 +11,21 @@ import { useFetchRegions } from './queries/useFetchRegions'
 import { useFetchRoleARNs } from './queries/useFetchRolesARNs'
 import { useFetchMachineTypes } from './queries/useFetchMachineTypes'
 import { useFetchVPCs } from './queries/useFetchVPCs'
-import { DropdownType, RosaHCPWizard, ROSAHCPWizardData } from '@redhat-cloud-services/nxtcm-rosa-hcp-wizard'
+import { createRosaHcpResourceGenerator } from './resourceGenerator/createRosaHcpResourceGenerator'
+import { deriveAvailabilityZones, deriveRolesRef } from './resourceGenerator/enrichFormValues'
+import { DropdownType, RosaHCPWizard, ROSAHCPWizardData, STEP_IDS } from '@redhat-cloud-services/nxtcm-rosa-hcp-wizard'
 import { useClusterNameUniquenessCheck } from './queries/useCheckClusterNameUniqueness'
-import { useLocation, useNavigate } from 'react-router'
+import { generatePath, useLocation, useNavigate } from 'react-router'
+import { createRosaHcpCluster } from '~/lib/create-rosa-hcp-cluster'
+import * as monaco from 'monaco-editor'
+import { loader } from '@monaco-editor/react'
 import { NavigationPath } from '~/NavigationPath'
 import { useTranslation } from '~/lib/acm-i18next'
 import { AcmPage, AcmPageHeader } from '~/ui-components'
 
 import '@redhat-cloud-services/nxtcm-rosa-hcp-wizard/dist/nxtcm-rosa-hcp-wizard.css'
+
+loader.config({ monaco })
 
 const transform = (awsInfraAccounts: string[]): DropdownType[] =>
   awsInfraAccounts.map((acc) => ({ label: acc, value: acc }))
@@ -90,14 +97,25 @@ export const RosaHCPWrapper = () => {
     fetch: refetchMachineTypes,
   } = useFetchMachineTypes(selectedSecret)
 
-  const resourceGenerator = useMemo(
-    () => ({
-      renderYaml: () => '',
-      validateYaml: () => [],
-      resourceSchemas: [],
-    }),
-    []
-  )
+  const vpcsRef = useRef(vpcs)
+  vpcsRef.current = vpcs
+
+  const resourceGenerator = useMemo(() => {
+    const baseGenerator = createRosaHcpResourceGenerator()
+    return {
+      ...baseGenerator,
+      renderYaml(formValues: Record<string, unknown>) {
+        const enriched = {
+          ...formValues,
+          _availability_zones: deriveAvailabilityZones(formValues, vpcsRef.current),
+          _roles_ref: deriveRolesRef(formValues),
+        }
+        return baseGenerator.renderYaml(enriched as Parameters<typeof baseGenerator.renderYaml>[0])
+      },
+    }
+  }, [])
+
+  const [submitError, setSubmitError] = useState<string | boolean>(false)
 
   const { clusterNameValidation, checkClusterNameUniqueness } = useClusterNameUniquenessCheck(selectedSecret)
 
@@ -246,9 +264,19 @@ export const RosaHCPWrapper = () => {
         wizardData={wizardData}
         resourceGenerator={resourceGenerator}
         title=""
-        onCancel={() => console.log('CANCELLED')}
+        product="acm"
+        config={{ hiddenSteps: [STEP_IDS.CLUSTER_WIDE_PROXY, STEP_IDS.CLUSTER_UPDATES] }}
+        onSubmitError={submitError}
+        onBackToReviewStep={() => setSubmitError(false)}
+        onCancel={() => navigate(NavigationPath.managedClusters)}
         onSubmit={async (yamlString: string) => {
-          console.log('SUBMITTED', yamlString)
+          try {
+            const { clusterName } = await createRosaHcpCluster(yamlString, selectedSecret)
+            navigate(generatePath(NavigationPath.clusterDetails, { name: clusterName, namespace: clusterName }))
+          } catch (err) {
+            setSubmitError(err instanceof Error ? err.message : t('An unexpected error occurred.'))
+            throw err
+          }
         }}
       />
     </AcmPage>

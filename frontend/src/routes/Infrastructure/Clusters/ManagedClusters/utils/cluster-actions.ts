@@ -4,6 +4,7 @@ import { Provider } from '../../../../../ui-components'
 
 export enum ClusterAction {
   EditLabels = 'edit-labels',
+  EditDescription = 'edit-description',
   Upgrade = 'upgrade-cluster',
   SelectChannel = 'select-channel',
   Search = 'search-cluster',
@@ -54,13 +55,15 @@ export function clusterSupportsAction(
   cluster: Cluster,
   clusterAction: ClusterAction,
   isHypershiftUpdatesReady?: boolean,
-  isHypershiftChannelSelectable?: boolean
+  isHypershiftChannelSelectable?: boolean,
+  localHubName?: string
 ): boolean {
   if (!isHypershiftUpdatesReady) {
     isHypershiftUpdatesReady = false
   }
   switch (clusterAction) {
     case ClusterAction.EditLabels:
+    case ClusterAction.EditDescription:
       return cluster.isManaged && cluster.status !== ClusterStatus.detaching
     case ClusterAction.Upgrade:
       return (
@@ -126,7 +129,7 @@ export function clusterSupportsAction(
     case ClusterAction.RemoveAutomationTemplate:
       return cluster.hasAutomationTemplate && !cluster.distribution?.upgradeInfo?.isUpgrading // is not currently upgrading
     case ClusterAction.OpenConsole:
-      return !!cluster.consoleURL
+      return !!cluster.consoleURL && cluster.name !== localHubName
     default:
       return false
   }

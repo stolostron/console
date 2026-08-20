@@ -16,8 +16,13 @@ function renderModal(provider?: Provider, clusterName = 'test-cluster') {
 describe('DestroyHostedModal', () => {
   beforeEach(() => jest.clearAllMocks())
 
-  test('has no accessibility violations', async () => {
+  test('has no accessibility violations (AWS)', async () => {
     renderModal(Provider.aws)
+    expect(await axe(document.body)).toHaveNoViolations()
+  })
+
+  test('has no accessibility violations (Azure)', async () => {
+    renderModal(Provider.azure)
     expect(await axe(document.body)).toHaveNoViolations()
   })
 
@@ -54,10 +59,8 @@ describe('DestroyHostedModal', () => {
   })
 
   describe('Azure provider', () => {
-    test('shows Azure-specific destroy instructions', () => {
+    test('shows Azure-specific destroy cluster instructions', () => {
       const dialog = renderModal(Provider.azure)
-      expect(within(dialog).getByText(/--azure-creds/)).toBeInTheDocument()
-      expect(within(dialog).getByText(/--resource-group-name/)).toBeInTheDocument()
       expect(within(dialog).getByText(/--dns-zone-rg-name/)).toBeInTheDocument()
       expect(within(dialog).getByText('hcp destroy cluster azure --help')).toBeInTheDocument()
     })
@@ -72,6 +75,39 @@ describe('DestroyHostedModal', () => {
       const dialog = renderModal(Provider.azure)
       expect(within(dialog).queryByText(/--sts-creds/)).not.toBeInTheDocument()
       expect(within(dialog).queryByText(/--role-arn/)).not.toBeInTheDocument()
+    })
+
+    test('shows the destroy infrastructure step with warning text', () => {
+      const dialog = renderModal(Provider.azure)
+      expect(within(dialog).getByText('Destroy the infrastructure')).toBeInTheDocument()
+      expect(
+        within(dialog).getByText('This step can only be completed after the hosted cluster is destroyed.')
+      ).toBeInTheDocument()
+    })
+
+    test('shows destroy infrastructure commands', () => {
+      const dialog = renderModal(Provider.azure)
+      expect(within(dialog).getByText(/--location \$LOCATION/)).toBeInTheDocument()
+      expect(within(dialog).getByText('hcp destroy infra azure --help')).toBeInTheDocument()
+    })
+
+    test('shows the destroy workload identities step with warning text', () => {
+      const dialog = renderModal(Provider.azure)
+      expect(within(dialog).getByText(/Destroy workload identities/)).toBeInTheDocument()
+      expect(within(dialog).getByText(/Skip this step if reusing IAM for future clusters/)).toBeInTheDocument()
+    })
+
+    test('shows destroy workload identities commands', () => {
+      const dialog = renderModal(Provider.azure)
+      expect(within(dialog).getByText(/--workload-identities-file/)).toBeInTheDocument()
+      expect(within(dialog).getByText('hcp destroy iam azure --help')).toBeInTheDocument()
+    })
+
+    test('quotes path arguments in shell commands', () => {
+      const dialog = renderModal(Provider.azure)
+      const matches = within(dialog).getAllByText(/--azure-creds "\$AZURE_CREDS"/)
+      expect(matches.length).toBeGreaterThanOrEqual(2)
+      expect(within(dialog).getByText(/--workload-identities-file "\$WORKLOAD_IDENTITIES_FILE"/)).toBeInTheDocument()
     })
   })
 

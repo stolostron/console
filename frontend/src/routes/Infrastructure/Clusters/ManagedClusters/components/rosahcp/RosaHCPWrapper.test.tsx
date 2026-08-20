@@ -64,9 +64,17 @@ jest.mock('@redhat-cloud-services/nxtcm-rosa-hcp-wizard', () => ({
       RosaHCPWizard
     </div>
   )),
+  STEP_IDS: {
+    CLUSTER_WIDE_PROXY: 'cluster-wide-proxy-step',
+    CLUSTER_UPDATES: 'cluster-updates-step',
+  },
 }))
 
 jest.mock('@redhat-cloud-services/nxtcm-rosa-hcp-wizard/dist/nxtcm-rosa-hcp-wizard.css', () => ({}))
+
+jest.mock('~/lib/create-rosa-hcp-cluster', () => ({
+  createRosaHcpCluster: jest.fn(),
+}))
 
 import { useCredentialsSecrets } from './hooks/useCredentialsSecrets'
 import { useFetchAwsAccountIDs } from './queries/useFetchAwsInfrastructureAccountIds'
@@ -79,6 +87,7 @@ import { useFetchVPCs } from './queries/useFetchVPCs'
 import { useFetchHCPVersions } from './queries/useFetchOpenshiftVersions'
 import { useClusterNameUniquenessCheck } from './queries/useCheckClusterNameUniqueness'
 import { RosaHCPWizard } from '@redhat-cloud-services/nxtcm-rosa-hcp-wizard'
+import { createRosaHcpCluster } from '~/lib/create-rosa-hcp-cluster'
 
 const mockUseCredentialsSecrets = useCredentialsSecrets as jest.MockedFunction<typeof useCredentialsSecrets>
 const mockUseFetchAwsAccountIDs = useFetchAwsAccountIDs as jest.Mock
@@ -91,6 +100,7 @@ const mockUseFetchVPCs = useFetchVPCs as jest.Mock
 const mockUseFetchHCPVersions = useFetchHCPVersions as jest.Mock
 const mockUseClusterNameUniquenessCheck = useClusterNameUniquenessCheck as jest.Mock
 const MockRosaHCPWizard = RosaHCPWizard as jest.Mock
+const mockCreateRosaHcpCluster = createRosaHcpCluster as jest.Mock
 
 const mockSecret: Secret = {
   apiVersion: 'v1',
@@ -468,15 +478,73 @@ describe('RosaHCPWrapper', () => {
     expect(wizardProps.wizardData.roles.userRoleError).toBe('User role was not found')
   })
 
-  test('should pass empty title and resource generator to the wizard', () => {
+  test('should pass empty title, product, config and a real resource generator to the wizard', () => {
     renderComponent()
 
     const wizardProps = MockRosaHCPWizard.mock.calls[0][0]
     expect(wizardProps.title).toBe('')
+    expect(wizardProps.product).toBe('acm')
+    expect(wizardProps.config).toEqual({
+      hiddenSteps: ['cluster-wide-proxy-step', 'cluster-updates-step'],
+    })
     expect(wizardProps.resourceGenerator).toBeDefined()
-    expect(wizardProps.resourceGenerator.renderYaml()).toBe('')
-    expect(wizardProps.resourceGenerator.validateYaml()).toEqual([])
-    expect(wizardProps.resourceGenerator.resourceSchemas).toEqual([])
+    expect(typeof wizardProps.resourceGenerator.renderYaml).toBe('function')
+    expect(typeof wizardProps.resourceGenerator.validateYaml).toBe('function')
+    expect(wizardProps.resourceGenerator.resourceSchemas.map((s: { kind: string }) => s.kind)).toEqual([
+      'ROSAControlPlane',
+      'ManagedCluster',
+      'Cluster',
+      'ROSACluster',
+    ])
+  })
+
+  test('should navigate to managed clusters on cancel', () => {
+    renderComponent()
+
+    const wizardProps = MockRosaHCPWizard.mock.calls[0][0]
+    wizardProps.onCancel()
+
+    expect(mockNavigate).toHaveBeenCalledWith('/multicloud/infrastructure/clusters/managed')
+  })
+
+  test('should create the cluster and navigate to cluster details on successful submit', async () => {
+    mockCreateRosaHcpCluster.mockResolvedValue({ clusterName: 'my-cluster' })
+    renderComponent()
+
+    const wizardProps = MockRosaHCPWizard.mock.calls[0][0]
+    await wizardProps.onSubmit('yaml-content')
+
+    expect(mockCreateRosaHcpCluster).toHaveBeenCalledWith('yaml-content', {
+      client_id: 'test-client-id',
+      client_secret: 'test-client-secret',
+    })
+    expect(mockNavigate).toHaveBeenCalledWith('/multicloud/infrastructure/clusters/details/my-cluster/my-cluster')
+  })
+
+  test('should set onSubmitError and rethrow when cluster creation fails', async () => {
+    mockCreateRosaHcpCluster.mockRejectedValue(new Error('creation failed'))
+    renderComponent()
+
+    let wizardProps = MockRosaHCPWizard.mock.calls[0][0]
+    await expect(wizardProps.onSubmit('yaml-content')).rejects.toThrow('creation failed')
+
+    wizardProps = MockRosaHCPWizard.mock.calls[MockRosaHCPWizard.mock.calls.length - 1][0]
+    expect(wizardProps.onSubmitError).toBe('creation failed')
+
+    wizardProps.onBackToReviewStep()
+    wizardProps = MockRosaHCPWizard.mock.calls[MockRosaHCPWizard.mock.calls.length - 1][0]
+    expect(wizardProps.onSubmitError).toBe(false)
+  })
+
+  test('should fall back to the generic unexpected error message for non-Error rejections', async () => {
+    mockCreateRosaHcpCluster.mockRejectedValue('not-an-error-instance')
+    renderComponent()
+
+    const wizardProps = MockRosaHCPWizard.mock.calls[0][0]
+    await expect(wizardProps.onSubmit('yaml-content')).rejects.toBe('not-an-error-instance')
+
+    const latestWizardProps = MockRosaHCPWizard.mock.calls[MockRosaHCPWizard.mock.calls.length - 1][0]
+    expect(latestWizardProps.onSubmitError).toBe('An unexpected error occurred.')
   })
 
   test('should call all hooks with the selected secret data', () => {

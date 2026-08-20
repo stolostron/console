@@ -249,7 +249,7 @@ export function UpdateAutomationModal(props: {
     >
       <AcmForm>
         <Stack hasGutter>
-          {nonUpdatableCount !== 0 && (
+          {!!nonUpdatableCount && (
             <StackItem>
               <AcmAlert
                 variant="warning"

@@ -32,6 +32,9 @@ spec:
       - cidr: 172.31.0.0/16
     {{/if}}
     networkType: {{{hypershift-network.networkType}}}
+  {{#if reconcilePause}}
+  pausedUntil: '{{{reconcilePause}}}'
+  {{/if}}
   {{#if hypershift-network.enableProxy}}
   configuration:
     proxy:
@@ -55,6 +58,16 @@ spec:
   infraID: '{{{hypershift.name}}}'
   dns:
     baseDomain: '{{{hypershift.baseDnsDomain}}}'
+  etcd:
+    managed:
+      storage:
+        persistentVolume:
+          size: 8Gi
+          {{#if hypershift.storageClass}}
+          storageClassName: {{{hypershift.storageClass}}}
+          {{/if}}
+        type: PersistentVolume
+    managementType: Managed
   services:
   - service: APIServer
     servicePublishingStrategy:
@@ -161,6 +174,8 @@ metadata:
   name: '{{{hypershift.name}}}'
 spec:
   hubAcceptsClient: true
+
+{{>clusterCurator}}
 
 {{#if includeKlusterletAddonConfig}}
 ---

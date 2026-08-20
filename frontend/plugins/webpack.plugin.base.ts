@@ -84,7 +84,19 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         'process.env.DEBUG_EVENT_STREAM_IDLE': JSON.stringify(process.env.DEBUG_EVENT_STREAM_IDLE ?? ''),
       }) as unknown as webpack.WebpackPluginInstance,
       new webpack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'], process: 'process' }),
-      new MonacoWebpackPlugin({ languages: ['yaml'] }),
+      new MonacoWebpackPlugin({
+        languages: ['yaml'],
+        customLanguages: [
+          {
+            label: 'yaml',
+            entry: 'monaco-yaml',
+            worker: {
+              id: 'monaco-yaml/yamlWorker',
+              entry: 'monaco-yaml/yaml.worker',
+            },
+          },
+        ],
+      }),
       new MiniCssExtractPlugin({
         filename: '[name].[contenthash:8].css',
         chunkFilename: '[id].[contenthash:8].css',

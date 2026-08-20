@@ -245,7 +245,7 @@ describe('getDeleteHostAction utils', () => {
         role: 'auto-assign',
       },
     }
-    expect(getDeleteHostAction([bmh], undefined, undefined, agent)).toBeDefined()
+    expect(getDeleteHostAction([bmh], undefined, agent)).toBeDefined()
   })
 })
 
