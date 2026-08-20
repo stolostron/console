@@ -4,9 +4,10 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
-import { ansibleJobState, configMapsState } from '../../../../../atoms'
-import { waitForText } from '../../../../../lib/test-util'
+import { ansibleJobState, ansibleWorkflowState, configMapsState } from '../../../../../atoms'
+import { clickByText, waitForText } from '../../../../../lib/test-util'
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
+import { AnsibleJob, AnsibleJobApiVersion, AnsibleJobKind, AnsibleWorkflow, AnsibleWorkflowKind } from '~/resources'
 import { StatusField } from './StatusField'
 
 const cluster: Cluster = {
@@ -86,5 +87,75 @@ describe('ScaleClusterAlert', () => {
     cluster.status = ClusterStatus.unreachable
     rerender(Component({ ...props }))
     await waitForText('Unreachable')
+  })
+})
+
+describe('StatusField ansible hooks', () => {
+  const posthookCluster: Cluster = {
+    ...cluster,
+    status: ClusterStatus.posthookfailed,
+    isHypershift: false,
+  }
+
+  const ansibleJobPrehook: AnsibleJob = {
+    apiVersion: AnsibleJobApiVersion,
+    kind: AnsibleJobKind,
+    metadata: {
+      name: 'prehookjob-a',
+      namespace: 'clusterName',
+      annotations: { jobtype: 'prehook' },
+    },
+    status: {
+      ansibleJobResult: {
+        changed: true,
+        failed: false,
+        status: 'successful',
+        url: '/ansible/prehook',
+        finished: '2021-06-08T16:43:09.023018Z',
+        started: '2021-06-08T16:43:01.853019Z',
+      },
+    },
+  }
+
+  const ansibleWorkflowPosthook: AnsibleWorkflow = {
+    apiVersion: AnsibleJobApiVersion,
+    kind: AnsibleWorkflowKind,
+    metadata: {
+      name: 'posthookjob-wf',
+      namespace: 'clusterName',
+      annotations: { jobtype: 'posthook' },
+    },
+    status: {
+      ansibleWorkflowResult: {
+        changed: false,
+        failed: true,
+        status: 'error',
+        url: '/#/jobs/workflow/post',
+        started: '2021-06-08T16:43:01.853019Z',
+        finished: '2021-06-08T16:43:09.023018Z',
+      },
+    },
+  }
+
+  it('opens the posthook workflow URL from View logs', async () => {
+    window.open = jest.fn()
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(configMapsState, [])
+          snapshot.set(ansibleJobState, [ansibleJobPrehook])
+          snapshot.set(ansibleWorkflowState, [ansibleWorkflowPosthook])
+        }}
+      >
+        <MemoryRouter>
+          <StatusField cluster={posthookCluster} />
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await waitForText('Failed')
+    await clickByText('Failed')
+    await waitForText('View logs')
+    await clickByText('View logs')
+    expect(window.open).toHaveBeenCalledWith('/#/jobs/workflow/post')
   })
 })
