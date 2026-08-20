@@ -1,0 +1,3 @@
+intendedUrl=https://auto-con-aap.apps.emingora-acm-32324.dev09.red-chesterfield.com/#/jobs/workflow/32324-05-upgrade-prehook-failed
+landedUrl=https://auto-con-aap.apps.emingora-acm-32324.dev09.red-chesterfield.com/#/jobs/workflow/32324-05-upgrade-prehook-failed
+banner=window.open → https://auto-con-aap.apps.emingora-acm-32324.dev09.red-chesterfield.com/#/jobs/workflow/32324-05-upgrade-prehook-failed  |  landed → https://auto-con-aap.apps.emingora-acm-32324.dev09.red-chesterfield.com/#/jobs/workflow/32324-05-upgrade-prehook-failed

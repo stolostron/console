@@ -1,0 +1,3 @@
+intendedUrl=https://auto-con-aap.apps.emingora-acm-32324.dev09.red-chesterfield.com/#/jobs/workflow/32324-02-install-prehook-failed-pod-fallback
+landedUrl=https://auto-con-aap.apps.emingora-acm-32324.dev09.red-chesterfield.com/#/jobs/workflow/32324-02-install-prehook-failed-pod-fallback
+banner=window.open → https://auto-con-aap.apps.emingora-acm-32324.dev09.red-chesterfield.com/#/jobs/workflow/32324-02-install-prehook-failed-pod-fallback  |  landed → https://auto-con-aap.apps.emingora-acm-32324.dev09.red-chesterfield.com/#/jobs/workflow/32324-02-install-prehook-failed-pod-fallback

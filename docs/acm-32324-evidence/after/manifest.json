@@ -1,0 +1,105 @@
+{
+  "phase": "after",
+  "capturedAt": "2026-08-20T14:40:56.000Z",
+  "report": [
+    {
+      "id": "01-install-prehook-failed-logs-disabled",
+      "cluster": "acm32324-ph-fail-off",
+      "title": "Install prehook failed, View logs disabled",
+      "expectViewLogs": "disabled",
+      "waitText": "The cluster prehook jobs failed",
+      "viewLogsCount": 2,
+      "viewLogsDisabled": false,
+      "viewLogsEnabled": true,
+      "prehookLinkDisabled": false,
+      "screenshot": "01-install-prehook-failed-logs-disabled-overview.png"
+    },
+    {
+      "id": "02-install-prehook-failed-pod-fallback",
+      "cluster": "acm32324-ph-fail-pod",
+      "title": "Install prehook failed, View logs falls back to hub pod",
+      "expectViewLogs": "enabled-pod",
+      "waitText": "The cluster prehook jobs failed",
+      "viewLogsCount": 2,
+      "viewLogsDisabled": false,
+      "viewLogsEnabled": true,
+      "prehookLinkDisabled": false,
+      "screenshot": "02-install-prehook-failed-pod-fallback-overview.png",
+      "logNavigation": {
+        "clicked": true,
+        "disabled": false,
+        "intendedUrl": "https://auto-con-aap.apps.emingora-acm-32324.dev09.red-chesterfield.com/#/jobs/workflow/32324-02-install-prehook-failed-pod-fallback",
+        "landedUrl": "https://auto-con-aap.apps.emingora-acm-32324.dev09.red-chesterfield.com/#/jobs/workflow/32324-02-install-prehook-failed-pod-fallback",
+        "screenshot": "02-install-prehook-failed-pod-fallback-view-logs-destination.png"
+      }
+    },
+    {
+      "id": "03-install-prehook-running",
+      "cluster": "acm32324-ph-run",
+      "title": "Install prehook in progress",
+      "expectViewLogs": "disabled",
+      "waitText": "In progress",
+      "viewLogsCount": 2,
+      "viewLogsDisabled": false,
+      "viewLogsEnabled": true,
+      "prehookLinkDisabled": false,
+      "screenshot": "03-install-prehook-running-overview.png"
+    },
+    {
+      "id": "04-install-posthook-failed",
+      "cluster": "acm32324-poh-fail",
+      "title": "Install posthook failed",
+      "expectViewLogs": "enabled-pod",
+      "waitText": "The cluster posthook jobs failed",
+      "viewLogsCount": 5,
+      "viewLogsDisabled": true,
+      "viewLogsEnabled": true,
+      "prehookLinkDisabled": true,
+      "posthookLinkDisabled": false,
+      "screenshot": "04-install-posthook-failed-overview.png",
+      "logNavigation": {
+        "clicked": true,
+        "disabled": false,
+        "intendedUrl": "https://auto-con-aap.apps.emingora-acm-32324.dev09.red-chesterfield.com/#/jobs/workflow/32324-04-install-posthook-failed",
+        "landedUrl": "https://auto-con-aap.apps.emingora-acm-32324.dev09.red-chesterfield.com/#/jobs/workflow/32324-04-install-posthook-failed",
+        "screenshot": "04-install-posthook-failed-view-logs-destination.png"
+      }
+    },
+    {
+      "id": "05-upgrade-prehook-failed",
+      "cluster": "acm32324-up-ph-fail",
+      "title": "Upgrade prehook failed (DistributionField)",
+      "expectViewLogs": "disabled",
+      "waitText": "Update prehook",
+      "viewLogsCount": 1,
+      "viewLogsDisabled": false,
+      "viewLogsEnabled": true,
+      "screenshot": "05-upgrade-prehook-failed-overview.png",
+      "logNavigation": {
+        "clicked": true,
+        "disabled": false,
+        "intendedUrl": "https://auto-con-aap.apps.emingora-acm-32324.dev09.red-chesterfield.com/#/jobs/workflow/32324-05-upgrade-prehook-failed",
+        "landedUrl": "https://auto-con-aap.apps.emingora-acm-32324.dev09.red-chesterfield.com/#/jobs/workflow/32324-05-upgrade-prehook-failed",
+        "screenshot": "05-upgrade-prehook-failed-view-logs-destination.png"
+      }
+    },
+    {
+      "id": "06-upgrade-posthook-failed",
+      "cluster": "acm32324-up-poh-fail",
+      "title": "Upgrade posthook failed (DistributionField)",
+      "expectViewLogs": "disabled",
+      "waitText": "Update posthook",
+      "viewLogsCount": 1,
+      "viewLogsDisabled": false,
+      "viewLogsEnabled": true,
+      "screenshot": "06-upgrade-posthook-failed-overview.png",
+      "logNavigation": {
+        "clicked": true,
+        "disabled": false,
+        "intendedUrl": "https://auto-con-aap.apps.emingora-acm-32324.dev09.red-chesterfield.com/#/jobs/workflow/32324-06-upgrade-posthook-failed",
+        "landedUrl": "https://auto-con-aap.apps.emingora-acm-32324.dev09.red-chesterfield.com/#/jobs/workflow/32324-06-upgrade-posthook-failed",
+        "screenshot": "06-upgrade-posthook-failed-view-logs-destination.png"
+      }
+    }
+  ]
+}
