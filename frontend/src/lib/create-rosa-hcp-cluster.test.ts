@@ -26,7 +26,8 @@ import {
   SecretApiVersion,
   SecretKind,
 } from '../resources'
-import { nockCreate, nockDelete, nockIgnoreApiPaths } from './nock-util'
+import nock from 'nock'
+import { nockCreate, nockDelete, nockGet, nockIgnoreApiPaths, nockReplace } from './nock-util'
 import { waitForNocks } from './test-util'
 
 const clusterName = 'my-rosa-cluster'
@@ -210,6 +211,48 @@ describe('createRosaHcpCluster', () => {
 
     await expect(createRosaHcpCluster(yamlString, ocmCredentials)).rejects.toThrow()
     await waitForNocks(nocks)
+  })
+
+  it('replaces resources on retry instead of failing with already-exists', async () => {
+    const existingCredsSecret = {
+      ...expectedCredsSecret,
+      metadata: { ...expectedCredsSecret.metadata, resourceVersion: '1' },
+    } as Secret
+
+    const nocks = [
+      nockCreate(expectedProjectRequest, undefined, 409),
+      nockCreate(expectedIdentity, undefined, 409),
+      nockCreate(expectedCredsSecret, undefined, 409),
+      nockGet(expectedCredsSecret, existingCredsSecret, 200, false),
+      nockReplace(existingCredsSecret),
+      nockCreate(rosaCluster),
+      nockCreate(controlPlane),
+      nockCreate(managedCluster),
+      nockCreate(capiCluster),
+    ]
+
+    const yamlString = buildYamlString([controlPlane, managedCluster, capiCluster, rosaCluster])
+    const result = await createRosaHcpCluster(yamlString, ocmCredentials)
+
+    expect(result).toEqual({ clusterName })
+    await waitForNocks(nocks)
+  })
+
+  it('does not delete a pre-existing namespace during rollback', async () => {
+    const namespaceDeletionScope = nockDelete(expectedNamespace)
+
+    const nocks = [
+      nockCreate(expectedProjectRequest, undefined, 409),
+      nockCreate(expectedIdentity),
+      nockCreate(expectedCredsSecret, undefined, 500),
+    ]
+
+    const yamlString = buildYamlString([controlPlane, managedCluster, capiCluster, rosaCluster])
+    await expect(createRosaHcpCluster(yamlString, ocmCredentials)).rejects.toThrow()
+    await waitForNocks(nocks)
+
+    expect(namespaceDeletionScope.isDone()).toBe(false)
+    nock.cleanAll()
   })
 
   it('throws when the cluster name cannot be determined from the resources', async () => {
