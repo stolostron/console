@@ -1464,6 +1464,29 @@ describe('events Route', () => {
       expect(tokenCache['list:Pod:default:test-pod']).toBeDefined()
     })
 
+    it('should log access checks when LOG_ACCESS is enabled', async () => {
+      const { logger } = await import('../../src/lib/logger')
+      const debugSpy = jest.spyOn(logger, 'debug').mockImplementation(() => {})
+      process.env.LOG_ACCESS = 'true'
+
+      nock(process.env.CLUSTER_API_URL || '')
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
+        .reply(200, { status: { allowed: true } })
+
+      await canAccess(
+        { kind: 'Pod', apiVersion: 'v1', metadata: { namespace: 'default', name: 'logged-pod' } },
+        'get',
+        'log-access-token'
+      )
+
+      expect(debugSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ msg: 'access', allowed: true, verb: 'get', resource: 'pods' })
+      )
+
+      debugSpy.mockRestore()
+      delete process.env.LOG_ACCESS
+    })
+
     it('should respect TTL and refetch after expiry', async () => {
       const cache = getAccessCache()
       const mockToken = 'test-token-ttl'
@@ -1503,6 +1526,37 @@ describe('events Route', () => {
       expect(cache['token1']['stale']).toBeUndefined()
       expect(cache['token1']['fresh']).toBeDefined()
       expect(cache['token2']).toBeUndefined()
+    })
+
+    it('should expire subject rules and kind access caches during cleanup', async () => {
+      let rulesCalls = 0
+      nock(process.env.CLUSTER_API_URL || '')
+        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews')
+        .twice()
+        .reply(200, () => {
+          rulesCalls++
+          return { status: { incomplete: false, resourceRules: [] } }
+        })
+
+      const start = 1_000_000
+      const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(start)
+
+      await canGetResource(
+        { kind: 'ManagedCluster', apiVersion: 'cluster.open-cluster-management.io/v1', metadata: { name: 'c1' } },
+        'cache-expiry-token'
+      )
+
+      nowSpy.mockReturnValue(start + ACCESS_CACHE_TTL + 1)
+      cleanupAccessCache()
+
+      nowSpy.mockReturnValue(start + ACCESS_CACHE_TTL + 2)
+      await canGetResource(
+        { kind: 'ManagedCluster', apiVersion: 'cluster.open-cluster-management.io/v1', metadata: { name: 'c2' } },
+        'cache-expiry-token'
+      )
+
+      nowSpy.mockRestore()
+      expect(rulesCalls).toBe(2)
     })
 
     it('should enforce maximum token limit with LRU eviction', () => {
@@ -1874,6 +1928,145 @@ describe('events Route', () => {
 
       expect(await canGetResource(managedCluster('cluster-1'), 'ssrr-fail-token')).toBe(true)
       expect(ssarScope.isDone()).toBe(true)
+    })
+
+    it('should reuse subject rules cache across kinds in the same namespace', async () => {
+      let rulesCalls = 0
+      nockRulesReview(() => {
+        rulesCalls++
+        return emptyRules
+      })
+
+      await canGetResource(managedCluster('cluster-1'), 'shared-rules-token')
+      await canGetResource(
+        { kind: 'Placement', apiVersion: 'cluster.open-cluster-management.io/v1beta1', metadata: { name: 'p1' } },
+        'shared-rules-token'
+      )
+
+      expect(rulesCalls).toBe(1)
+    })
+
+    it('should deny-all when evaluationError is set with empty resourceRules', async () => {
+      nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews')
+        .reply(200, {
+          status: {
+            incomplete: false,
+            evaluationError: 'authorizer unavailable',
+            resourceRules: [],
+          },
+        })
+
+      const ssarScope = nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
+        .reply(200, { status: { allowed: true } })
+
+      expect(await canGetResource(managedCluster('cluster-1'), 'eval-error-empty-token')).toBe(false)
+      expect(ssarScope.isDone()).toBe(false)
+    })
+
+    it('should deny-all when rules do not grant access to the requested kind', async () => {
+      nockRulesReview(() => ({
+        incomplete: false,
+        resourceRules: [{ verbs: ['get'], apiGroups: [''], resources: ['pods'] }],
+      }))
+
+      const ssarScope = nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
+        .reply(200, { status: { allowed: true } })
+
+      expect(await canGetResource(managedCluster('cluster-1'), 'unrelated-rules-token')).toBe(false)
+      expect(ssarScope.isDone()).toBe(false)
+    })
+
+    it('should fall back to namespaced list SSAR for incomplete namespaced resources', async () => {
+      nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews', (body: unknown) => {
+          return rulesReviewNamespace(body) === 'acm39327-mc-01'
+        })
+        .reply(200, {
+          status: {
+            incomplete: true,
+            resourceRules: [{ verbs: ['get'], apiGroups: [''], resources: ['secrets'] }],
+          },
+        })
+
+      const listScope = nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', (body: unknown) => {
+          const parsed =
+            typeof body === 'string'
+              ? (JSON.parse(body) as { spec?: { resourceAttributes?: { verb?: string; namespace?: string } } })
+              : body
+          const attrs = (parsed as { spec?: { resourceAttributes?: { verb?: string; namespace?: string } } })?.spec
+            ?.resourceAttributes
+          return attrs?.verb === 'list' && attrs?.namespace === 'acm39327-mc-01'
+        })
+        .reply(200, { status: { allowed: true } })
+
+      expect(await canGetResource(managedClusterInfo('acm39327-mc-01'), 'namespaced-incomplete-token')).toBe(true)
+      expect(listScope.isDone()).toBe(true)
+    })
+
+    it('should fall back to get SSAR when namespaced incomplete rules deny list access', async () => {
+      nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews', (body: unknown) => {
+          return rulesReviewNamespace(body) === 'acm39327-mc-01'
+        })
+        .reply(200, {
+          status: {
+            incomplete: true,
+            resourceRules: [{ verbs: ['get'], apiGroups: [''], resources: ['secrets'] }],
+          },
+        })
+
+      nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', (body: unknown) => {
+          const parsed =
+            typeof body === 'string'
+              ? (JSON.parse(body) as { spec?: { resourceAttributes?: { verb?: string; namespace?: string } } })
+              : body
+          const attrs = (parsed as { spec?: { resourceAttributes?: { verb?: string; namespace?: string } } })?.spec
+            ?.resourceAttributes
+          return attrs?.verb === 'list' && attrs?.namespace === 'acm39327-mc-01'
+        })
+        .reply(200, { status: { allowed: false } })
+
+      const getScope = nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', (body: unknown) => {
+          const parsed =
+            typeof body === 'string'
+              ? (JSON.parse(body) as { spec?: { resourceAttributes?: { verb?: string; namespace?: string; name?: string } } })
+              : body
+          const attrs = (parsed as { spec?: { resourceAttributes?: { verb?: string; namespace?: string; name?: string } } })
+            ?.spec?.resourceAttributes
+          return (
+            attrs?.verb === 'get' &&
+            attrs?.namespace === 'acm39327-mc-01' &&
+            attrs?.name === 'acm39327-mc-01'
+          )
+        })
+        .reply(200, { status: { allowed: true } })
+
+      expect(await canGetResource(managedClusterInfo('acm39327-mc-01'), 'namespaced-incomplete-get-token')).toBe(true)
+      expect(getScope.isDone()).toBe(true)
+    })
+
+    it('should deny allow-names when the resource has no name', async () => {
+      nockRulesReview(() => ({
+        incomplete: false,
+        resourceRules: [
+          {
+            verbs: ['get'],
+            apiGroups: [''],
+            resources: ['secrets'],
+            resourceNames: ['named-secret'],
+          },
+        ],
+      }))
+
+      expect(await canGetResource({ kind: 'Secret', apiVersion: 'v1', metadata: { namespace: 'default' } }, 'named-only-token')).toBe(
+        false
+      )
     })
   })
 
