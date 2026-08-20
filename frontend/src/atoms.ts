@@ -19,6 +19,7 @@ import { atom, useRecoilValue } from 'recoil'
 import type { ClaimMappings } from './resources/authentication'
 import {
   AnsibleJob,
+  AnsibleWorkflow,
   Application,
   CertificateSigningRequest,
   Channel,
@@ -82,6 +83,7 @@ export const agentMachinesState = AtomArray<AgentMachineK8sResource>()
 export const agentServiceConfigsState = AtomArray<AgentServiceConfigK8sResource>()
 export const agentsState = AtomArray<AgentK8sResource>()
 export const ansibleJobState = AtomArray<AnsibleJob>()
+export const ansibleWorkflowState = AtomArray<AnsibleWorkflow>()
 export const applicationsState = AtomArray<Application>()
 export const argoCDsState = AtomArray<IResource>()
 export const bareMetalHostsState = AtomArray<BareMetalHostK8sResource>()

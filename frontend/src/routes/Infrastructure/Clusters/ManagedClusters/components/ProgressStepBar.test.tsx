@@ -4,6 +4,8 @@ import {
   AnsibleJob,
   AnsibleJobApiVersion,
   AnsibleJobKind,
+  AnsibleWorkflow,
+  AnsibleWorkflowKind,
   ClusterCurator,
   ClusterCuratorApiVersion,
   ClusterCuratorKind,
@@ -15,7 +17,7 @@ import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { render } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
-import { ansibleJobState, clusterCuratorsState } from '../../../../../atoms'
+import { ansibleJobState, ansibleWorkflowState, clusterCuratorsState } from '../../../../../atoms'
 import { clickByTestId, clickByText, waitForCalled, waitForNocks, waitForText } from '../../../../../lib/test-util'
 import { ClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { ProgressStepBar } from './ProgressStepBar'
@@ -309,6 +311,28 @@ const FailedAnsibleJobPosthook: Pod = {
   },
 }
 
+const ansibleWorkflowPrehook: AnsibleWorkflow = {
+  apiVersion: AnsibleJobApiVersion,
+  kind: AnsibleWorkflowKind,
+  metadata: {
+    name: 'prehookjob-workflow',
+    namespace: 'test-cluster',
+    annotations: {
+      jobtype: 'prehook',
+    },
+  },
+  status: {
+    ansibleWorkflowResult: {
+      changed: false,
+      failed: false,
+      status: 'successful',
+      url: 'https://aap.example.com/#/jobs/workflow/1',
+      started: '2021-06-08T16:43:01.853019Z',
+      finished: '2021-06-08T16:43:09.023018Z',
+    },
+  },
+}
+
 describe('ProgressStepBar', () => {
   test('renders progress bar', async () => {
     const context: Partial<ClusterDetailsContext> = { cluster: mockCluster }
@@ -357,6 +381,30 @@ describe('ProgressStepBar', () => {
     await waitForText('Cluster install')
     await clickByText('View logs')
     await waitForCalled(window.open as jest.Mock)
+  })
+
+  test('workflow URL opens AAP logs', async () => {
+    window.open = jest.fn()
+    const context: Partial<ClusterDetailsContext> = { cluster: mockCluster }
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(clusterCuratorsState, [clusterCurator1])
+          snapshot.set(ansibleJobState, [ansibleJobFailedPrehook])
+          snapshot.set(ansibleWorkflowState, [ansibleWorkflowPrehook])
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ProgressStepBar />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await clickByText('View logs')
+    expect(window.open).toHaveBeenCalledWith('https://aap.example.com/#/jobs/workflow/1')
   })
 
   test('hypershift logs link', async () => {
