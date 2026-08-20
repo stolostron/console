@@ -19,7 +19,6 @@ import { atom, useRecoilValue } from 'recoil'
 import type { ClaimMappings } from './resources/authentication'
 import {
   AnsibleJob,
-  AnsibleWorkflow,
   Application,
   CertificateSigningRequest,
   Channel,
@@ -63,7 +62,7 @@ import {
   SubscriptionReport,
   User,
 } from './resources'
-import type { ClusterExtension } from './resources'
+import type { AnsibleWorkflow, ClusterExtension } from './resources'
 
 let atomArrayKey = 0
 function AtomArray<T>() {
