@@ -657,6 +657,28 @@ export const proxyControlData = (t) => {
   ]
 }
 
+// ACM-39253: automation Secrets are created in the cluster's namespace. Hosted Control Plane
+// clusters (e.g. OpenShift Virtualization) share a namespace, so the Secret name is differentiated
+// by cluster name to avoid collisions. Hive clusters use a namespace per cluster (namespace ===
+// name) and keep the undifferentiated name expected by the Update/Remove automation actions.
+export const secretName = (curation, name, namespace) =>
+  name && namespace && name !== namespace ? `toweraccess-${curation}-${name}` : `toweraccess-${curation}`
+
+// Render-time rewrite of the ClusterCurator spec YAML so each towerAuthSecret matches the current,
+// live cluster name (ACM-39253). Derived from the same name/namespace as the Secret name so the
+// reference and the Secret can never drift, even as the cluster name changes in the editor.
+export const differentiateCuratorSecrets = (specYaml, name, namespace) => {
+  if (!specYaml) return specYaml
+  const parsed = jsYaml.load(specYaml)
+  const curations = ['install', 'upgrade', 'scale', 'destroy']
+  curations.forEach((curation) => {
+    if (parsed?.spec?.[curation]?.towerAuthSecret) {
+      parsed.spec[curation].towerAuthSecret = secretName(curation, name, namespace)
+    }
+  })
+  return jsYaml.dump(parsed)
+}
+
 export const onChangeAutomationTemplate = (control, controlData, isAI) => {
   const clusterCuratorSpec = getControlByID(controlData, 'clusterCuratorSpec')
   const reconcilePause = getControlByID(controlData, 'reconcilePause')
@@ -674,23 +696,21 @@ export const onChangeAutomationTemplate = (control, controlData, isAI) => {
     curations.forEach((curation) => {
       if (clusterCurator?.spec?.[curation]?.towerAuthSecret) {
         // Create copies of each Ansible secret
-        const secretName = `toweraccess-${curation}`
-        const secretControl = getControlByID(controlData, secretName)
+        const secretControl = getControlByID(controlData, `toweraccess-${curation}`)
         const matchingSecret = control.availableSecrets.find(
           (s) =>
             s.metadata.name === clusterCurator.spec[curation].towerAuthSecret &&
             s.metadata.namespace === clusterCuratorTemplate.metadata.namespace
         )
         secretControl.active = _.cloneDeep(matchingSecret)
-        clusterCurator.spec[curation].towerAuthSecret = secretName
+        clusterCurator.spec[curation].towerAuthSecret = `toweraccess-${curation}`
       }
     })
     clusterCuratorSpec.active = jsYaml.dump({ spec: clusterCurator.spec })
   } else {
     // Clear Ansible secrets
     curations.forEach((curation) => {
-      const secretName = `toweraccess-${curation}`
-      const secretControl = getControlByID(controlData, secretName)
+      const secretControl = getControlByID(controlData, `toweraccess-${curation}`)
       secretControl.active = ''
     })
     clusterCuratorSpec.active = ''
@@ -803,7 +823,8 @@ export const architectureData = (t) => {
 export const getName = ({ data }) =>
   data.root.ai?.name ?? data.root.hypershift?.name ?? data.root.clusterName ?? data.root.name
 
-export const getNamespace = ({ data }) => data.root.ai?.name ?? data.root.hypershift?.name ?? data.root.namespace
+export const getNamespace = ({ data }) =>
+  data.root.ai?.name ?? data.root.hypershift?.name ?? data.root.namespace ?? data.root.clusterName ?? data.root.name
 
 const versionRegex = /([\d]{1,5})\.([\d]{1,5})\.([\d]{1,5})/
 function versionGreater(version, x, y) {
