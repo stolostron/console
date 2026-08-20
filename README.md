@@ -34,6 +34,7 @@ The same codebase is used to build images for **Red Hat Advanced Cluster Managem
 
 ```text
 main → release-5.1 → backplane-5.1
+main → release-5.2 → backplane-5.2
 release-5.0 → backplane-5.0
 release-2.17 → backplane-2.17
 release-2.16 → backplane-2.11
