@@ -67,12 +67,7 @@ export const HostedCard = (props: HostedCardProps) => {
                     </Tooltip>
                   </StackItem>
                   <StackItem>
-                    <Button
-                      isDisabled={!areCapiCapaEnabled}
-                      variant="link"
-                      className="create-button"
-                      component={CreateButtonLink}
-                    >
+                    <Button variant="link" className="create-button" component={CreateButtonLink}>
                       {t('View ROSA prerequisites')}
                     </Button>
                   </StackItem>

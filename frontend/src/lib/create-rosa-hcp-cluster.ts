@@ -19,7 +19,14 @@ import {
   SecretApiVersion,
   SecretKind,
 } from '../resources'
-import { createResource, deleteResource, ResourceError, ResourceErrorCode } from '../resources/utils/resource-request'
+import {
+  createResource,
+  deleteResource,
+  getResource,
+  replaceResource,
+  ResourceError,
+  ResourceErrorCode,
+} from '../resources/utils/resource-request'
 
 export interface RosaHcpOcmCredentials {
   client_id: string
@@ -34,12 +41,25 @@ function parseYamlResources(yamlString: string): IResource[] {
   )
 }
 
-async function ignoreAlreadyExists(promise: Promise<unknown>): Promise<void> {
+async function ignoreAlreadyExists(promise: Promise<unknown>): Promise<boolean> {
   try {
     await promise
+    return true
   } catch (err) {
-    if (err instanceof ResourceError && err.code === ResourceErrorCode.Conflict) return
+    if (err instanceof ResourceError && err.code === ResourceErrorCode.Conflict) return false
     throw err
+  }
+}
+
+async function createOrReplace<T extends IResource>(resource: T): Promise<void> {
+  const created = await ignoreAlreadyExists(createResource(resource).promise)
+  if (!created) {
+    const existing = await getResource(resource).promise
+    const merged = {
+      ...resource,
+      metadata: { ...resource.metadata, resourceVersion: existing.metadata?.resourceVersion },
+    }
+    await replaceResource(merged).promise
   }
 }
 
@@ -55,8 +75,8 @@ function buildCredentialsSecret(clusterName: string, ocmCredentials: RosaHcpOcmC
       },
     },
     stringData: {
-      ocmClientID: Buffer.from(ocmCredentials.client_id, 'base64').toString('ascii'),
-      ocmClientSecret: Buffer.from(ocmCredentials.client_secret, 'base64').toString('ascii'),
+      ocmClientID: Buffer.from(ocmCredentials.client_id, 'base64').toString('utf-8'),
+      ocmClientSecret: Buffer.from(ocmCredentials.client_secret, 'base64').toString('utf-8'),
       ocmApiUrl: ROSA_HCP_DEFAULT_OCM_API_URL,
     },
     type: 'Opaque',
@@ -86,12 +106,14 @@ export async function createRosaHcpCluster(
 
   try {
     // 1. Namespace for the cluster's resources (idempotent - ignore already-exists).
-    await ignoreAlreadyExists(createProject(clusterName).promise)
-    createdResources.push({
-      apiVersion: NamespaceApiVersion,
-      kind: NamespaceKind,
-      metadata: { name: clusterName },
-    })
+    const namespaceCreated = await ignoreAlreadyExists(createProject(clusterName).promise)
+    if (namespaceCreated) {
+      createdResources.push({
+        apiVersion: NamespaceApiVersion,
+        kind: NamespaceKind,
+        metadata: { name: clusterName },
+      })
+    }
 
     // 2. Cluster-scoped singleton identity CAPA uses to reconcile AWS-backed resources.
     //    Shared across all ROSA HCP clusters on the hub, so never rolled back on failure.
@@ -105,14 +127,14 @@ export async function createRosaHcpCluster(
 
     // 3. OCM API credentials referenced by ROSAControlPlane.spec.credentialsSecretRef.
     const credentialsSecret = buildCredentialsSecret(clusterName, ocmCredentials)
-    await createResource(credentialsSecret).promise
+    await createOrReplace(credentialsSecret)
     createdResources.push(credentialsSecret)
 
     // 4. Infra + control plane + ACM registration, in dependency order.
     for (const kind of [ROSAClusterKind, ROSAControlPlaneKind, ManagedClusterKind]) {
       const resource = resources.find((r) => r.kind === kind)
       if (!resource) continue
-      await createResource(resource).promise
+      await createOrReplace(resource)
       createdResources.push(resource)
     }
 
@@ -120,7 +142,7 @@ export async function createRosaHcpCluster(
     //    analogous to Hive's ClusterDeployment / Hypershift's HostedCluster being the "trigger".
     const capiCluster = resources.find((r) => r.kind === CapiClusterKind)
     if (capiCluster) {
-      await createResource(capiCluster).promise
+      await createOrReplace(capiCluster)
       createdResources.push(capiCluster)
     }
 
