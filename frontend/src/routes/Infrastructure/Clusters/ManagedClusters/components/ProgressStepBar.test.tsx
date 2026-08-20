@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-  AnsibleJob,
+  type AnsibleJob,
   AnsibleJobApiVersion,
   AnsibleJobKind,
-  AnsibleWorkflow,
+  type AnsibleWorkflow,
   AnsibleWorkflowKind,
   ClusterCurator,
   ClusterCuratorApiVersion,
@@ -15,6 +15,7 @@ import {
 } from '../../../../../resources'
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { render } from '@testing-library/react'
+import { axe } from 'jest-axe'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { ansibleJobState, ansibleWorkflowState, clusterCuratorsState } from '../../../../../atoms'
@@ -386,12 +387,46 @@ describe('ProgressStepBar', () => {
   test('workflow URL opens AAP logs', async () => {
     window.open = jest.fn()
     const context: Partial<ClusterDetailsContext> = { cluster: mockCluster }
-    render(
+    const { container } = render(
       <RecoilRoot
         initializeState={(snapshot) => {
           snapshot.set(clusterCuratorsState, [clusterCurator1])
           snapshot.set(ansibleJobState, [ansibleJobFailedPrehook])
           snapshot.set(ansibleWorkflowState, [ansibleWorkflowPrehook])
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ProgressStepBar />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+    await clickByText('View logs')
+    expect(window.open).toHaveBeenCalledWith('https://aap.example.com/#/jobs/workflow/1')
+    expect(await axe(container)).toHaveNoViolations()
+  })
+
+  test('workflow URL opens AAP logs when cluster name differs from namespace', async () => {
+    window.open = jest.fn()
+    const cluster = { ...mockCluster, namespace: 'clusters' }
+    const curator = {
+      ...clusterCurator1,
+      metadata: { ...clusterCurator1.metadata, namespace: 'clusters' },
+    }
+    const workflow = {
+      ...ansibleWorkflowPrehook,
+      metadata: { ...ansibleWorkflowPrehook.metadata, namespace: 'clusters' },
+    }
+    const context: Partial<ClusterDetailsContext> = { cluster }
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(clusterCuratorsState, [curator])
+          snapshot.set(ansibleJobState, [])
+          snapshot.set(ansibleWorkflowState, [workflow])
         }}
       >
         <MemoryRouter>

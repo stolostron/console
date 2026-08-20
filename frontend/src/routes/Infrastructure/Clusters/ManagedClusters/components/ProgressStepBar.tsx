@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AnsibleHookRun, ClusterCurator, getLatestAnsibleHook, getMostRecentAnsibleJobPod } from '~/resources'
+import { type AnsibleHookRun, ClusterCurator, getLatestAnsibleHook, getMostRecentAnsibleJobPod } from '~/resources'
 import { ClusterStatus } from '../../../../../resources/utils'
 import { getFailedCuratorJobName } from '../../../../../resources/utils/status-conditions'
 import { AcmProgressTracker, getStatusLabel, ProgressTrackerStep, StatusType } from '../../../../../ui-components'
@@ -19,7 +19,9 @@ export function ProgressStepBar() {
   const ansibleJobs = useRecoilValue(ansibleJobState)
   const ansibleWorkflows = useRecoilValue(ansibleWorkflowState)
   const configMaps = useRecoilValue(configMapsState)
-  const latestJobs = getLatestAnsibleHook(ansibleJobs, ansibleWorkflows, cluster.name)
+  const latestJobs = cluster.namespace
+    ? getLatestAnsibleHook(ansibleJobs, ansibleWorkflows, cluster.namespace)
+    : { prehook: undefined, posthook: undefined }
   const curator = curators.find(
     (curator) => curator.metadata.name === cluster.name && curator.metadata.namespace == cluster?.namespace
   )

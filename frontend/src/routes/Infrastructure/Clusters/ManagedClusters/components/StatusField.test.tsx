@@ -2,12 +2,19 @@
 
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { axe } from 'jest-axe'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { ansibleJobState, ansibleWorkflowState, configMapsState } from '../../../../../atoms'
 import { clickByText, waitForText } from '../../../../../lib/test-util'
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
-import { AnsibleJob, AnsibleJobApiVersion, AnsibleJobKind, AnsibleWorkflow, AnsibleWorkflowKind } from '~/resources'
+import {
+  type AnsibleJob,
+  AnsibleJobApiVersion,
+  AnsibleJobKind,
+  type AnsibleWorkflow,
+  AnsibleWorkflowKind,
+} from '~/resources'
 import { StatusField } from './StatusField'
 
 const cluster: Cluster = {
@@ -139,7 +146,7 @@ describe('StatusField ansible hooks', () => {
 
   it('opens the posthook workflow URL from View logs', async () => {
     window.open = jest.fn()
-    render(
+    const { container } = render(
       <RecoilRoot
         initializeState={(snapshot) => {
           snapshot.set(configMapsState, [])
@@ -157,5 +164,6 @@ describe('StatusField ansible hooks', () => {
     await waitForText('View logs')
     await clickByText('View logs')
     expect(window.open).toHaveBeenCalledWith('/#/jobs/workflow/post')
+    expect(await axe(container)).toHaveNoViolations()
   })
 })

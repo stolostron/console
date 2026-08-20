@@ -3,6 +3,7 @@
 import { NodePoolK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { axe } from 'jest-axe'
 import * as nock from 'nock'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
@@ -10,10 +11,10 @@ import { ansibleJobState, ansibleWorkflowState, clusterImageSetsState, nodePools
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '../../../../../lib/nock-util'
 import { clickByText, waitForCalled, waitForNock, waitForNotText, waitForText } from '../../../../../lib/test-util'
 import {
-  AnsibleJob,
+  type AnsibleJob,
   AnsibleJobApiVersion,
   AnsibleJobKind,
-  AnsibleWorkflow,
+  type AnsibleWorkflow,
   AnsibleWorkflowKind,
   ClusterCurator,
   ClusterCuratorApiVersion,
@@ -898,7 +899,7 @@ describe('DistributionField', () => {
   })
 
   it('should open posthook ansible logs, not prehook', async () => {
-    await renderDistributionInfoField(
+    const { container } = await renderDistributionInfoField(
       mockManagedAnsibleFailedPosthookDistributionInfo,
       false,
       false,
@@ -911,6 +912,7 @@ describe('DistributionField', () => {
     await clickByText('Update posthook')
     await clickByText('View logs')
     expect(window.open).toHaveBeenCalledWith('/ansible/posthook-workflow')
+    expect(await axe(container)).toHaveNoViolations()
   })
 })
 

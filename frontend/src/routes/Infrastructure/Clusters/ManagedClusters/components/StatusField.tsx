@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AnsibleHookRun, getLatestAnsibleHook } from '~/resources'
+import { type AnsibleHookRun, getLatestAnsibleHook } from '~/resources'
 import { Cluster, ClusterStatus, getClusterStatusLabel, getClusterStatusType } from '../../../../../resources/utils'
 import { AcmButton, AcmInlineStatus, Provider } from '../../../../../ui-components'
 import { ExternalLinkAltIcon, DownloadIcon } from '@patternfly/react-icons'
@@ -23,7 +23,9 @@ export function StatusField(props: { cluster: Cluster }) {
   const configMaps = useRecoilValue(configMapsState)
   const ansibleJobs = useRecoilValue(ansibleJobState)
   const ansibleWorkflows = useRecoilValue(ansibleWorkflowState)
-  const latestJob = getLatestAnsibleHook(ansibleJobs, ansibleWorkflows, props.cluster?.name!)
+  const latestJob = props.cluster?.namespace
+    ? getLatestAnsibleHook(ansibleJobs, ansibleWorkflows, props.cluster.namespace)
+    : { prehook: undefined, posthook: undefined }
   const agentClusterInstall = useAgentClusterInstall({
     name: props.cluster?.name!,
     namespace: props.cluster?.namespace!,

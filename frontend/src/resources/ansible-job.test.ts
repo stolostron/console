@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import {
-  AnsibleJob,
+  type AnsibleJob,
   AnsibleJobApiVersion,
   AnsibleJobKind,
-  AnsibleWorkflow,
+  type AnsibleWorkflow,
   AnsibleWorkflowKind,
   getLatestAnsibleHook,
 } from './ansible-job'
