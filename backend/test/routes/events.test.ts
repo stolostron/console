@@ -1654,7 +1654,8 @@ describe('events Route', () => {
         typeof body === 'string'
           ? (JSON.parse(body) as { spec?: { resourceAttributes?: Record<string, string | undefined> } })
           : body
-      return (parsed as { spec?: { resourceAttributes?: Record<string, string | undefined> } })?.spec?.resourceAttributes
+      return (parsed as { spec?: { resourceAttributes?: Record<string, string | undefined> } })?.spec
+        ?.resourceAttributes
     }
 
     function nockSsarGet(matcher: (attrs: Record<string, string | undefined>) => boolean, allowed: boolean) {
@@ -2035,15 +2036,14 @@ describe('events Route', () => {
         .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', (body: unknown) => {
           const parsed =
             typeof body === 'string'
-              ? (JSON.parse(body) as { spec?: { resourceAttributes?: { verb?: string; namespace?: string; name?: string } } })
+              ? (JSON.parse(body) as {
+                  spec?: { resourceAttributes?: { verb?: string; namespace?: string; name?: string } }
+                })
               : body
-          const attrs = (parsed as { spec?: { resourceAttributes?: { verb?: string; namespace?: string; name?: string } } })
-            ?.spec?.resourceAttributes
-          return (
-            attrs?.verb === 'get' &&
-            attrs?.namespace === 'acm39327-mc-01' &&
-            attrs?.name === 'acm39327-mc-01'
-          )
+          const attrs = (
+            parsed as { spec?: { resourceAttributes?: { verb?: string; namespace?: string; name?: string } } }
+          )?.spec?.resourceAttributes
+          return attrs?.verb === 'get' && attrs?.namespace === 'acm39327-mc-01' && attrs?.name === 'acm39327-mc-01'
         })
         .reply(200, { status: { allowed: true } })
 
@@ -2064,9 +2064,12 @@ describe('events Route', () => {
         ],
       }))
 
-      expect(await canGetResource({ kind: 'Secret', apiVersion: 'v1', metadata: { namespace: 'default' } }, 'named-only-token')).toBe(
-        false
-      )
+      expect(
+        await canGetResource(
+          { kind: 'Secret', apiVersion: 'v1', metadata: { namespace: 'default' } },
+          'named-only-token'
+        )
+      ).toBe(false)
     })
   })
 
@@ -2113,7 +2116,8 @@ describe('events Route', () => {
         typeof body === 'string'
           ? (JSON.parse(body) as { spec?: { resourceAttributes?: Record<string, string | undefined> } })
           : body
-      return (parsed as { spec?: { resourceAttributes?: Record<string, string | undefined> } })?.spec?.resourceAttributes
+      return (parsed as { spec?: { resourceAttributes?: Record<string, string | undefined> } })?.spec
+        ?.resourceAttributes
     }
 
     function nockSsarGet(matcher: (attrs: Record<string, string | undefined>) => boolean, allowed: boolean) {
