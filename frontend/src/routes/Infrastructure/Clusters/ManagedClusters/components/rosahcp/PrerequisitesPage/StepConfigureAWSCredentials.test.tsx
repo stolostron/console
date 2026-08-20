@@ -9,7 +9,9 @@ describe('StepConfigureAWSCredentials', () => {
     render(<StepConfigureAWSCredentials />)
 
     expect(
-      screen.getByText('Configure AWS credentials for the CAPA controller so it can provision AWS resources.')
+      screen.getByRole('heading', {
+        name: 'Configure AWS credentials for the CAPA controller so it can provision AWS resources.',
+      })
     ).toBeInTheDocument()
   })
 

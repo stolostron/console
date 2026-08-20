@@ -9,9 +9,9 @@ describe('StepEnableClusterAPI', () => {
     render(<StepEnableClusterAPI />)
 
     expect(
-      screen.getByText(
-        'Enable Cluster API (CAPI) and Cluster API Provider AWS (CAPA) in the MultiClusterEngine resource.'
-      )
+      screen.getByRole('heading', {
+        name: 'Enable Cluster API (CAPI) and Cluster API Provider AWS (CAPA) in the MultiClusterEngine resource.',
+      })
     ).toBeInTheDocument()
   })
 
@@ -24,7 +24,7 @@ describe('StepEnableClusterAPI', () => {
   test('should render the edit MCE command', () => {
     render(<StepEnableClusterAPI />)
 
-    expect(screen.getByDisplayValue('oc edit multiclusterengine')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('oc edit multiclusterengine multiclusterengine')).toBeInTheDocument()
   })
 
   test('should render the verify deployments command', () => {

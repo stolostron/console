@@ -9,7 +9,9 @@ describe('StepEnableAutoImport', () => {
     render(<StepEnableAutoImport />)
 
     expect(
-      screen.getByText('Enable auto import so that provisioned clusters are automatically registered with ACM.')
+      screen.getByRole('heading', {
+        name: 'Enable auto import so that provisioned clusters are automatically registered with ACM.',
+      })
     ).toBeInTheDocument()
   })
 
