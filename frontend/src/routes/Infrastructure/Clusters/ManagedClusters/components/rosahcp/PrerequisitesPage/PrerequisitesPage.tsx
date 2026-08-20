@@ -39,6 +39,9 @@ import { WithCLICard } from './WithCLICard'
 import { StepCreateAWSAccountRoles } from './StepCreateAwsAccountRoles'
 import { StepCreateNetwork } from './StepCreateNetwork'
 import { ServiceAccountSteps } from './ServiceAccountSteps'
+import { StepEnableClusterAPI } from './StepEnableClusterAPI'
+import { StepConfigureAWSCredentials } from './StepConfigureAWSCredentials'
+import { StepEnableAutoImport } from './StepEnableAutoImport'
 import ExternalLinkButton from '@patternfly/react-component-groups/dist/dynamic/ExternalLinkButton'
 
 import './Prerequisites.css'
@@ -102,9 +105,50 @@ export const PrerequisitesPage = () => {
     >
       <PageSection hasBodyWrapper={false}>
         <Stack hasGutter>
+          <StackItem>
+            <AcmExpandableSection label={t('Cluster API prerequisites')}>
+              <Card>
+                <CardBody>
+                  <Split className="pf-v6-u-mb-lg">
+                    <SplitItem isFilled>
+                      <Title headingLevel="h2">{t('Enable Cluster API on the hub cluster')}</Title>
+                    </SplitItem>
+                  </Split>
+
+                  <Stack hasGutter>
+                    <StackItem>
+                      <Flex>
+                        <FlexItem>{t('Step 1:')}</FlexItem>
+                        <FlexItem>
+                          <StepEnableClusterAPI />
+                        </FlexItem>
+                      </Flex>
+                    </StackItem>
+                    <StackItem>
+                      <Flex>
+                        <FlexItem>{t('Step 2:')}</FlexItem>
+                        <FlexItem>
+                          <StepConfigureAWSCredentials />
+                        </FlexItem>
+                      </Flex>
+                    </StackItem>
+                    <StackItem>
+                      <Flex>
+                        <FlexItem>{t('Step 3:')}</FlexItem>
+                        <FlexItem>
+                          <StepEnableAutoImport />
+                        </FlexItem>
+                      </Flex>
+                    </StackItem>
+                  </Stack>
+                </CardBody>
+              </Card>
+            </AcmExpandableSection>
+          </StackItem>
+
           {/* ************* Start of RHOCM prerequisites section ************* */}
           <StackItem>
-            <AcmExpandableSection label="Service account prerequisites">
+            <AcmExpandableSection label={t('Service account prerequisites')}>
               <ServiceAccountSteps />
             </AcmExpandableSection>
           </StackItem>
@@ -112,7 +156,7 @@ export const PrerequisitesPage = () => {
           {/* ************ Start of AWS prerequisites section ***************** */}
 
           <StackItem>
-            <AcmExpandableSection label="AWS prerequisites">
+            <AcmExpandableSection label={t('AWS prerequisites')}>
               <Card>
                 <CardTitle>
                   <Title headingLevel="h2">{t('Complete AWS prerequisites')}</Title>
@@ -161,7 +205,7 @@ export const PrerequisitesPage = () => {
           {/* ************ Start of ROSA prerequisites section ***************** */}
 
           <StackItem>
-            <AcmExpandableSection label="ROSA prerequisites">
+            <AcmExpandableSection label={t('ROSA prerequisites')}>
               <Card>
                 <CardBody>
                   <Split className="pf-v6-u-mb-lg">
