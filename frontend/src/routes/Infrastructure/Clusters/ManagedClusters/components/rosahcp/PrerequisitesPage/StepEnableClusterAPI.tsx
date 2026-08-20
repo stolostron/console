@@ -25,7 +25,9 @@ export const StepEnableClusterAPI = () => {
             'Edit the MultiClusterEngine to enable the cluster-api and cluster-api-provider-aws components. Hypershift components must be disabled before enabling these.'
           )}
           {/* eslint-disable-next-line i18next/no-literal-string */}
-          <InstructionCommand className="pf-v6-u-mt-md">oc edit multiclusterengine</InstructionCommand>
+          <InstructionCommand className="pf-v6-u-mt-md">
+            oc edit multiclusterengine multiclusterengine
+          </InstructionCommand>
           <Alert
             variant="info"
             isInline

@@ -26,7 +26,7 @@ import {
   replaceResource,
   ResourceError,
   ResourceErrorCode,
-} from '../resources/utils/resource-request'
+} from '~/resources/utils/resource-request'
 
 export interface RosaHcpOcmCredentials {
   client_id: string
@@ -51,7 +51,7 @@ async function ignoreAlreadyExists(promise: Promise<unknown>): Promise<boolean> 
   }
 }
 
-async function createOrReplace<T extends IResource>(resource: T): Promise<void> {
+async function createOrReplace<T extends IResource>(resource: T): Promise<boolean> {
   const created = await ignoreAlreadyExists(createResource(resource).promise)
   if (!created) {
     const existing = await getResource(resource).promise
@@ -61,6 +61,7 @@ async function createOrReplace<T extends IResource>(resource: T): Promise<void> 
     }
     await replaceResource(merged).promise
   }
+  return created
 }
 
 function buildCredentialsSecret(clusterName: string, ocmCredentials: RosaHcpOcmCredentials): Secret {
@@ -127,23 +128,26 @@ export async function createRosaHcpCluster(
 
     // 3. OCM API credentials referenced by ROSAControlPlane.spec.credentialsSecretRef.
     const credentialsSecret = buildCredentialsSecret(clusterName, ocmCredentials)
-    await createOrReplace(credentialsSecret)
-    createdResources.push(credentialsSecret)
+    if (await createOrReplace(credentialsSecret)) {
+      createdResources.push(credentialsSecret)
+    }
 
     // 4. Infra + control plane + ACM registration, in dependency order.
     for (const kind of [ROSAClusterKind, ROSAControlPlaneKind, ManagedClusterKind]) {
       const resource = resources.find((r) => r.kind === kind)
       if (!resource) continue
-      await createOrReplace(resource)
-      createdResources.push(resource)
+      if (await createOrReplace(resource)) {
+        createdResources.push(resource)
+      }
     }
 
     // 5. Cluster ties the infrastructure and control plane resources together; created last,
     //    analogous to Hive's ClusterDeployment / Hypershift's HostedCluster being the "trigger".
     const capiCluster = resources.find((r) => r.kind === CapiClusterKind)
     if (capiCluster) {
-      await createOrReplace(capiCluster)
-      createdResources.push(capiCluster)
+      if (await createOrReplace(capiCluster)) {
+        createdResources.push(capiCluster)
+      }
     }
 
     return { clusterName }
