@@ -175,6 +175,10 @@ const accessCache: Record<string, Record<string, { time: number; promise: Promis
 
 interface SubjectRulesStatus {
   incomplete: boolean
+  /** True when the SelfSubjectRulesReview request itself failed. */
+  unavailable?: boolean
+  /** Set when an authorizer could not fully enumerate rules; partial lists must not be trusted as complete. */
+  evaluationError?: string
   resourceRules: Array<{
     verbs?: string[]
     apiGroups?: string[]
@@ -185,6 +189,44 @@ interface SubjectRulesStatus {
 
 type KindGetAccess =
   { type: 'deny-all' } | { type: 'allow-all' } | { type: 'allow-names'; names: Set<string> } | { type: 'incomplete' }
+
+type AccessResource = { kind: string; apiVersion: string; metadata?: { name?: string; namespace?: string } }
+
+/** SSRR requires a namespace; cluster-scoped kinds are reviewed in this probe namespace only. */
+const CLUSTER_SCOPED_RULES_NAMESPACE = 'default'
+
+/**
+ * Kinds watched by the console that are cluster-scoped in Kubernetes (not inferred from metadata.namespace).
+ * Keep aligned with cluster-scoped entries in the definitions list below.
+ */
+const CLUSTER_SCOPED_KINDS = new Set([
+  'AgentServiceConfig',
+  'Authentication',
+  'CertificateSigningRequest',
+  'ClusterCurator',
+  'ClusterImageSet',
+  'ClusterManagementAddOn',
+  'ClusterRole',
+  'ClusterVersion',
+  'DiscoveredCluster',
+  'DiscoveryConfig',
+  'Group',
+  'Infrastructure',
+  'ManagedCluster',
+  'ManagedClusterSet',
+  'ManagedClusterSetBinding',
+  'MultiClusterEngine',
+  'Namespace',
+  'Placement',
+  'PlacementDecision',
+  'Search',
+  'StorageClass',
+  'User',
+])
+
+function isClusterScopedKind(kind: string): boolean {
+  return CLUSTER_SCOPED_KINDS.has(kind)
+}
 
 const subjectRulesCache: Record<string, { time: number; promise: Promise<SubjectRulesStatus> }> = {}
 const kindGetAccessCache: Record<string, { time: number; promise: Promise<KindGetAccess> }> = {}
@@ -987,18 +1029,8 @@ function eventFilter(token: string, serverSideEvent: ServerSideEvent<ServerSideE
       // Fast path: cluster-scoped list (admins / broad ClusterRoles).
       return canListClusterScopedKind(resource, token).then((allowed) => {
         if (allowed) return true
-        // After cluster list is denied, use one SelfSubjectRulesReview per token/kind.
-        // Do NOT fall through to namespaced list SSAR first — that is O(namespaces) and
-        // OOMs/hangs restricted users when MOCK_CLUSTERS (or real inventory) is large.
-        return resolveKindGetAccess(resource.kind, resource.apiVersion, token).then((access) =>
-          applyKindGetAccess(access, resource, token, () =>
-            // Authorizer could not enumerate rules; keep prior namespaced-list then get fallback.
-            canListNamespacedScopedKind(resource, token).then((nsAllowed) => {
-              if (nsAllowed) return true
-              return canAccess(resource, 'get', token)
-            })
-          )
-        )
+        // After cluster list is denied, use SelfSubjectRulesReview instead of O(N) SSARs.
+        return canGetResource(resource, token)
       })
     }
     default:
@@ -1007,17 +1039,11 @@ function eventFilter(token: string, serverSideEvent: ServerSideEvent<ServerSideE
   }
 }
 
-function canListClusterScopedKind(
-  resource: { kind: string; apiVersion: string; metadata?: { name?: string; namespace?: string } },
-  token: string
-): Promise<boolean> {
+function canListClusterScopedKind(resource: AccessResource, token: string): Promise<boolean> {
   return canAccess({ kind: resource.kind, apiVersion: resource.apiVersion }, 'list', token)
 }
 
-function canListNamespacedScopedKind(
-  resource: { kind: string; apiVersion: string; metadata?: { name?: string; namespace?: string } },
-  token: string
-): Promise<boolean> {
+function canListNamespacedScopedKind(resource: AccessResource, token: string): Promise<boolean> {
   if (!resource.metadata?.namespace) return Promise.resolve(false)
   return canAccess(
     {
@@ -1030,19 +1056,47 @@ function canListNamespacedScopedKind(
   )
 }
 
-/** Used by SSE eventFilter after list checks fail; prefers SelfSubjectRulesReview over N SSARs. */
-export function canGetResource(
-  resource: { kind: string; apiVersion: string; metadata?: { name?: string; namespace?: string } },
-  token: string
-): Promise<boolean> {
-  return resolveKindGetAccess(resource.kind, resource.apiVersion, token).then((access) =>
-    applyKindGetAccess(access, resource, token)
-  )
+function apiGroupFromVersion(apiVersion: string): string {
+  return apiVersion.includes('/') ? apiVersion.split('/')[0] : ''
+}
+
+function resourcePluralName(kind: string): string {
+  return pluralize(kind.toLowerCase())
+}
+
+function rulesNamespaceFor(resource: AccessResource): string {
+  if (isClusterScopedKind(resource.kind)) {
+    return CLUSTER_SCOPED_RULES_NAMESPACE
+  }
+  return resource.metadata?.namespace || CLUSTER_SCOPED_RULES_NAMESPACE
+}
+
+/**
+ * Used by SSE eventFilter after cluster-scoped list is denied.
+ * Namespaced resources are reviewed in the resource's namespace (cached per token+namespace).
+ * Cluster-scoped resources use a probe-namespace review only as a negative/named-binding cache;
+ * unrestricted grants from that probe are confirmed with SSAR so RoleBindings in `default`
+ * cannot impersonate cluster-scoped access.
+ */
+export function canGetResource(resource: AccessResource, token: string): Promise<boolean> {
+  return resolveKindGetAccess(resource, token).then((access) => {
+    // Probe-namespace SSRR cannot distinguish RoleBindings from ClusterRoleBindings.
+    // Any non-deny cluster-scoped result must be confirmed with SSAR (not only allow-all/allow-names).
+    if (isClusterScopedKind(resource.kind) && access.type !== 'deny-all') {
+      return canAccess(resource, 'get', token)
+    }
+    return applyKindGetAccess(access, resource, token, () =>
+      canListNamespacedScopedKind(resource, token).then((nsAllowed) => {
+        if (nsAllowed) return true
+        return canAccess(resource, 'get', token)
+      })
+    )
+  })
 }
 
 function applyKindGetAccess(
   access: KindGetAccess,
-  resource: { kind: string; apiVersion: string; metadata?: { name?: string; namespace?: string } },
+  resource: AccessResource,
   token: string,
   onIncomplete?: () => Promise<boolean>
 ): Promise<boolean> {
@@ -1059,11 +1113,11 @@ function applyKindGetAccess(
 }
 
 /**
- * One SelfSubjectRulesReview per token (namespace "default").
- * ClusterRole bindings appear here; avoids an SSRR storm across MOCK_CLUSTERS namespaces.
+ * One SelfSubjectRulesReview per token+namespace.
+ * ClusterRoleBindings appear in every namespace; RoleBindings appear only in their namespace.
  */
-function getSubjectRules(token: string): Promise<SubjectRulesStatus> {
-  const cacheKey = hashAccessToken(token)
+function getSubjectRules(token: string, namespace: string): Promise<SubjectRulesStatus> {
+  const cacheKey = `${hashAccessToken(token)}:${namespace}`
   const existing = subjectRulesCache[cacheKey]
   if (existing && existing.time > Date.now() - ACCESS_CACHE_TTL) {
     return existing.promise
@@ -1072,6 +1126,7 @@ function getSubjectRules(token: string): Promise<SubjectRulesStatus> {
   const promise = jsonPost<{
     status?: {
       incomplete?: boolean
+      evaluationError?: string
       resourceRules?: SubjectRulesStatus['resourceRules']
     }
   }>(
@@ -1080,28 +1135,44 @@ function getSubjectRules(token: string): Promise<SubjectRulesStatus> {
       apiVersion: 'authorization.k8s.io/v1',
       kind: 'SelfSubjectRulesReview',
       metadata: {},
-      // Namespace is required by the API; ClusterRole bindings are included for any namespace.
-      spec: { namespace: 'default' },
+      spec: { namespace },
     },
     token
   )
-    .then((result) => ({
-      incomplete: result.body?.status?.incomplete ?? false,
-      resourceRules: result.body?.status?.resourceRules ?? [],
-    }))
+    .then((result) => {
+      // jsonPost resolves on HTTP errors; treat non-2xx as review unavailable (SSAR fallback).
+      if (result.statusCode < 200 || result.statusCode >= 300) {
+        throw new Error(`SelfSubjectRulesReview failed with status ${result.statusCode}`)
+      }
+      return {
+        incomplete: result.body?.status?.incomplete ?? false,
+        evaluationError: result.body?.status?.evaluationError,
+        resourceRules: result.body?.status?.resourceRules ?? [],
+      }
+    })
     .catch((err: unknown) => {
       logger.warn({ msg: 'SelfSubjectRulesReview failed; falling back to per-object SSAR', error: err })
-      return { incomplete: true, resourceRules: [] as SubjectRulesStatus['resourceRules'] }
+      // Do not retain a failed review under ACCESS_CACHE_TTL; next call should retry SSRR.
+      delete subjectRulesCache[cacheKey]
+      return {
+        incomplete: true,
+        unavailable: true,
+        resourceRules: [] as SubjectRulesStatus['resourceRules'],
+      }
     })
 
   subjectRulesCache[cacheKey] = { time: Date.now(), promise }
   return promise
 }
 
-function evaluateKindGetAccess(rules: SubjectRulesStatus, kind: string, apiVersion: string): KindGetAccess {
-  const group = apiVersion.includes('/') ? apiVersion.split('/')[0] : ''
-  const resourcePlural = pluralize(kind.toLowerCase())
+function evaluateKindGetAccess(rules: SubjectRulesStatus, group: string, resourcePlural: string): KindGetAccess {
   const accessVerbs = new Set(['get', 'list', 'watch'])
+
+  // Authorizer reported partial rule enumeration; empty rules still deny-all (none-user fast path).
+  if (rules.evaluationError) {
+    if (rules.resourceRules.length === 0) return { type: 'deny-all' }
+    return { type: 'incomplete' }
+  }
 
   let allowAll = false
   const names = new Set<string>()
@@ -1124,40 +1195,35 @@ function evaluateKindGetAccess(rules: SubjectRulesStatus, kind: string, apiVersi
     for (const name of resourceNames) names.add(name)
   }
 
-  switch (true) {
-    case allowAll:
-      return { type: 'allow-all' }
-    case names.size > 0:
-      return { type: 'allow-names', names }
-    // OpenShift often sets incomplete=true even when the user has no bindings and resourceRules
-    // is empty. Treat empty rules as deny-all so we do not fall back to O(N) namespaced SSARs.
-    case rules.resourceRules.length === 0:
-      return { type: 'deny-all' }
-    // Non-empty but incomplete: authorizer may have omitted grants for this kind — fall back.
-    case rules.incomplete:
-      return { type: 'incomplete' }
-    default:
-      return { type: 'deny-all' }
-  }
+  if (allowAll) return { type: 'allow-all' }
+  if (names.size > 0) return { type: 'allow-names', names }
+  // The review request failed; defer to the per-object SSAR fallback.
+  if (rules.unavailable === true) return { type: 'incomplete' }
+  // OpenShift often sets incomplete=true even when the user has no bindings and resourceRules
+  // is empty. Treat empty rules as deny-all so we do not fall back to O(N) namespaced SSARs.
+  if (rules.resourceRules.length === 0) return { type: 'deny-all' }
+  // Non-empty but incomplete: authorizer may have omitted grants for this kind — fall back.
+  if (rules.incomplete) return { type: 'incomplete' }
+  return { type: 'deny-all' }
 }
 
-function resolveKindGetAccess(kind: string, apiVersion: string, token: string): Promise<KindGetAccess> {
-  const cacheKey = `${hashAccessToken(token)}:${kind}:${apiVersion}`
+function resolveKindGetAccess(resource: AccessResource, token: string): Promise<KindGetAccess> {
+  const group = apiGroupFromVersion(resource.apiVersion)
+  const plural = resourcePluralName(resource.kind)
+  const namespace = rulesNamespaceFor(resource)
+  // Permission checks are by API group, not version; keep cache keys version-free.
+  const cacheKey = `${hashAccessToken(token)}:${namespace}:${group}:${plural}`
   const existing = kindGetAccessCache[cacheKey]
   if (existing && existing.time > Date.now() - ACCESS_CACHE_TTL) {
     return existing.promise
   }
 
-  const promise = getSubjectRules(token).then((rules) => evaluateKindGetAccess(rules, kind, apiVersion))
+  const promise = getSubjectRules(token, namespace).then((rules) => evaluateKindGetAccess(rules, group, plural))
   kindGetAccessCache[cacheKey] = { time: Date.now(), promise }
   return promise
 }
 
-export function canAccess(
-  resource: { kind: string; apiVersion: string; metadata?: { name?: string; namespace?: string } },
-  verb: 'get' | 'list' | 'create',
-  token: string
-): Promise<boolean> {
+export function canAccess(resource: AccessResource, verb: 'get' | 'list' | 'create', token: string): Promise<boolean> {
   // Cache is cleaned up periodically by cleanupAccessCache() to prevent unbounded memory growth
   const tokenKey = hashAccessToken(token)
   const key = `${verb}:${resource.kind}:${resource.metadata?.namespace}:${resource.metadata?.name}`
@@ -1167,6 +1233,7 @@ export function canAccess(
     return existing.promise
   }
 
+  const resourceName = resourcePluralName(resource.kind)
   const promise = jsonPost<{ status: { allowed: boolean } }>(
     process.env.CLUSTER_API_URL + '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
     {
@@ -1175,11 +1242,11 @@ export function canAccess(
       metadata: {},
       spec: {
         resourceAttributes: {
-          group: resource.apiVersion.includes('/') ? resource.apiVersion.split('/')[0] : '',
+          group: apiGroupFromVersion(resource.apiVersion),
           name: resource.metadata?.name,
           namespace:
             resource.metadata?.namespace ?? (resource.kind === 'Namespace' ? resource.metadata?.name : undefined),
-          resource: pluralize(resource.kind.toLowerCase()),
+          resource: resourceName,
           verb,
         },
       },
@@ -1192,7 +1259,7 @@ export function canAccess(
         msg: 'access',
         allowed,
         verb,
-        resource: pluralize(resource.kind.toLowerCase()),
+        resource: resourceName,
         name: resource.metadata?.name,
         namespace: resource.metadata?.namespace,
       })

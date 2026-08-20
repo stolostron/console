@@ -1546,14 +1546,82 @@ describe('events Route', () => {
 
   /**
    * ACM-39327: restricted users must not trigger O(N) SelfSubjectAccessReviews when the SSE
-   * filter falls through after cluster-scoped list is denied. One SelfSubjectRulesReview per
-   * token/kind short-circuits deny-all / allow-names without per-object or per-namespace SSARs.
+   * filter falls through after cluster-scoped list is denied. SelfSubjectRulesReview is
+   * namespaced: cache one review per token+namespace, never treat `default` as global allow.
    */
   describe('SelfSubjectRulesReview short-circuit (ACM-39327)', () => {
+    const apiUrl = () => process.env.CLUSTER_API_URL || ''
     const managedCluster = (name: string) => ({
       kind: 'ManagedCluster',
       apiVersion: 'cluster.open-cluster-management.io/v1',
       metadata: { name },
+    })
+    const secret = (namespace: string, name: string) => ({
+      kind: 'Secret',
+      apiVersion: 'v1',
+      metadata: { namespace, name },
+    })
+    const managedClusterInfo = (cluster: string) => ({
+      kind: 'ManagedClusterInfo',
+      apiVersion: 'internal.open-cluster-management.io/v1beta1',
+      metadata: { name: cluster, namespace: cluster },
+    })
+
+    const emptyRules = { incomplete: false, resourceRules: [] as unknown[] }
+    const secretGetInNamespace = {
+      incomplete: false,
+      resourceRules: [{ verbs: ['get'], apiGroups: [''], resources: ['secrets'] }],
+    }
+    const clusterAdminRules = {
+      incomplete: false,
+      resourceRules: [{ verbs: ['*'], apiGroups: ['*'], resources: ['*'] }],
+    }
+
+    function rulesReviewNamespace(body: unknown): string {
+      let parsed = body
+      if (typeof body === 'string') {
+        try {
+          parsed = JSON.parse(body) as unknown
+        } catch {
+          return ''
+        }
+      }
+      return (parsed as { spec?: { namespace?: string } })?.spec?.namespace || ''
+    }
+
+    function nockRulesReview(replyFn: (namespace: string) => { incomplete?: boolean; resourceRules?: unknown[] }) {
+      return nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews')
+        .reply(200, (_uri: string, requestBody: unknown) => ({ status: replyFn(rulesReviewNamespace(requestBody)) }))
+    }
+
+    function parseSsarResourceAttributes(body: unknown) {
+      const parsed =
+        typeof body === 'string'
+          ? (JSON.parse(body) as { spec?: { resourceAttributes?: Record<string, string | undefined> } })
+          : body
+      return (parsed as { spec?: { resourceAttributes?: Record<string, string | undefined> } })?.spec?.resourceAttributes
+    }
+
+    function nockSsarGet(matcher: (attrs: Record<string, string | undefined>) => boolean, allowed: boolean) {
+      return nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', (body: unknown) => {
+          const attrs = parseSsarResourceAttributes(body)
+          return attrs?.verb === 'get' && matcher(attrs ?? {})
+        })
+        .reply(200, { status: { allowed } })
+    }
+
+    const namedManagedClusterRule = (name: string) => ({
+      incomplete: false,
+      resourceRules: [
+        {
+          verbs: ['get'],
+          apiGroups: ['cluster.open-cluster-management.io'],
+          resources: ['managedclusters'],
+          resourceNames: [name],
+        },
+      ],
     })
 
     beforeEach(() => {
@@ -1569,11 +1637,9 @@ describe('events Route', () => {
     })
 
     it('should deny all gets from complete empty rules without per-object SSAR', async () => {
-      nock(process.env.CLUSTER_API_URL || '')
-        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews')
-        .reply(200, { status: { incomplete: false, resourceRules: [] } })
+      nockRulesReview(() => emptyRules)
 
-      const ssarScope = nock(process.env.CLUSTER_API_URL || '')
+      const ssarScope = nock(apiUrl())
         .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
         .reply(200, { status: { allowed: true } })
 
@@ -1581,16 +1647,14 @@ describe('events Route', () => {
       expect(ssarScope.isDone()).toBe(false)
     })
 
-    it('should use a single rules review for many gets of the same kind', async () => {
+    it('should use a single rules review for many cluster-scoped gets of the same kind', async () => {
       let rulesCalls = 0
-      nock(process.env.CLUSTER_API_URL || '')
-        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews')
-        .reply(200, () => {
-          rulesCalls++
-          return { status: { incomplete: false, resourceRules: [] } }
-        })
+      nockRulesReview(() => {
+        rulesCalls++
+        return emptyRules
+      })
 
-      const ssarScope = nock(process.env.CLUSTER_API_URL || '')
+      const ssarScope = nock(apiUrl())
         .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
         .times(1)
         .reply(200, { status: { allowed: true } })
@@ -1601,18 +1665,15 @@ describe('events Route', () => {
 
       expect(results.every((allowed) => allowed === false)).toBe(true)
       expect(rulesCalls).toBe(1)
-      // Regression guard: must not fall back to per-object SSAR for deny-all.
       expect(ssarScope.isDone()).toBe(false)
     })
 
-    it('should use a single rules review across many namespaces of the same kind', async () => {
+    it('should use a single rules review for many namespaced gets in the same namespace', async () => {
       let rulesCalls = 0
-      nock(process.env.CLUSTER_API_URL || '')
-        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews')
-        .reply(200, () => {
-          rulesCalls++
-          return { status: { incomplete: true, resourceRules: [] } }
-        })
+      nockRulesReview(() => {
+        rulesCalls++
+        return emptyRules
+      })
 
       const results = await Promise.all(
         Array.from({ length: 200 }, (_, i) =>
@@ -1620,9 +1681,9 @@ describe('events Route', () => {
             {
               kind: 'ManagedClusterInfo',
               apiVersion: 'internal.open-cluster-management.io/v1beta1',
-              metadata: { name: `cluster-${i}`, namespace: `cluster-${i}` },
+              metadata: { name: `info-${i}`, namespace: 'acm39327-mc-01' },
             },
-            'namespaced-none-token'
+            'same-ns-none-token'
           )
         )
       )
@@ -1631,84 +1692,385 @@ describe('events Route', () => {
       expect(rulesCalls).toBe(1)
     })
 
-    it('should allow only named resources from resourceNames rules', async () => {
-      nock(process.env.CLUSTER_API_URL || '')
-        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews')
-        .reply(200, {
-          status: {
-            incomplete: false,
-            resourceRules: [
-              {
-                verbs: ['get'],
-                apiGroups: ['cluster.open-cluster-management.io'],
-                resources: ['managedclusters'],
-                resourceNames: ['allowed-cluster'],
-              },
-            ],
-          },
+    it('should issue one rules review per namespace for a none user, without per-object SSAR', async () => {
+      const namespaces = new Set<string>()
+      nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews', (body: unknown) => {
+          namespaces.add(rulesReviewNamespace(body))
+          return true
         })
+        .times(50)
+        .reply(200, { status: emptyRules })
 
-      expect(await canGetResource(managedCluster('allowed-cluster'), 'partial-user-token')).toBe(true)
-      expect(await canGetResource(managedCluster('other-cluster'), 'partial-user-token')).toBe(false)
-    })
-
-    it('should allow all resources when rules grant unrestricted get/list/watch', async () => {
-      nock(process.env.CLUSTER_API_URL || '')
-        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews')
-        .reply(200, {
-          status: {
-            incomplete: false,
-            resourceRules: [
-              {
-                verbs: ['get', 'list', 'watch'],
-                apiGroups: ['cluster.open-cluster-management.io'],
-                resources: ['managedclusters'],
-              },
-            ],
-          },
-        })
-
-      const ssarScope = nock(process.env.CLUSTER_API_URL || '')
-        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
-        .reply(200, { status: { allowed: false } })
-
-      expect(await canGetResource(managedCluster('any-cluster'), 'viewer-token')).toBe(true)
-      expect(ssarScope.isDone()).toBe(false)
-    })
-
-    it('should fall back to SSAR when rules review is incomplete with non-empty rules', async () => {
-      nock(process.env.CLUSTER_API_URL || '')
-        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews')
-        .reply(200, {
-          status: {
-            incomplete: true,
-            resourceRules: [
-              {
-                verbs: ['get'],
-                apiGroups: [''],
-                resources: ['pods'],
-              },
-            ],
-          },
-        })
-      nock(process.env.CLUSTER_API_URL || '')
+      const ssarScope = nock(apiUrl())
         .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
         .reply(200, { status: { allowed: true } })
 
+      const results = await Promise.all(
+        Array.from({ length: 50 }, (_, i) =>
+          canGetResource(managedClusterInfo(`cluster-${i}`), 'namespaced-none-token')
+        )
+      )
+
+      expect(results.every((allowed) => allowed === false)).toBe(true)
+      expect(namespaces.size).toBe(50)
+      expect(ssarScope.isDone()).toBe(false)
+    })
+
+    it('must not treat get secrets in default as access to Credentials in other namespaces', async () => {
+      nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews', (body: unknown) => {
+          return rulesReviewNamespace(body) === 'default'
+        })
+        .reply(200, { status: secretGetInNamespace })
+      nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews', (body: unknown) => {
+          return rulesReviewNamespace(body) !== 'default'
+        })
+        .times(2)
+        .reply(200, { status: emptyRules })
+
+      expect(await canGetResource(secret('default', 'default-cred'), 'user1-token')).toBe(true)
+      expect(await canGetResource(secret('kube-system', 'other-cred'), 'user1-token')).toBe(false)
+      expect(await canGetResource(secret('acm39327-mc-01', 'cluster-cred'), 'user1-token')).toBe(false)
+    })
+
+    it('should allow namespaced cluster resources when the user is admin in that cluster namespace', async () => {
+      nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews', (body: unknown) => {
+          return rulesReviewNamespace(body) === 'acm39327-mc-01'
+        })
+        .reply(200, { status: clusterAdminRules })
+      nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews', (body: unknown) => {
+          return rulesReviewNamespace(body) !== 'acm39327-mc-01'
+        })
+        .times(2)
+        .reply(200, { status: emptyRules })
+
+      expect(await canGetResource(managedClusterInfo('acm39327-mc-01'), 'cluster-admin-token')).toBe(true)
+      expect(await canGetResource(managedClusterInfo('other-cluster'), 'cluster-admin-token')).toBe(false)
+      expect(await canGetResource(managedCluster('acm39327-mc-01'), 'cluster-admin-token')).toBe(false)
+    })
+
+    it('should confirm named cluster-scoped resources with SSAR before allowing access', async () => {
+      nockRulesReview(() => namedManagedClusterRule('allowed-cluster'))
+      const ssarScope = nockSsarGet(
+        (attrs) =>
+          attrs.group === 'cluster.open-cluster-management.io' &&
+          attrs.resource === 'managedclusters' &&
+          attrs.name === 'allowed-cluster',
+        true
+      )
+
+      expect(await canGetResource(managedCluster('allowed-cluster'), 'partial-user-token')).toBe(true)
+      expect(ssarScope.isDone()).toBe(true)
+    })
+
+    it('should deny non-matching names from cluster-scoped allow-names without trusting SSRR alone', async () => {
+      nockRulesReview(() => namedManagedClusterRule('allowed-cluster'))
+      const ssarScope = nockSsarGet(
+        (attrs) =>
+          attrs.group === 'cluster.open-cluster-management.io' &&
+          attrs.resource === 'managedclusters' &&
+          attrs.name === 'other-cluster',
+        false
+      )
+
+      expect(await canGetResource(managedCluster('other-cluster'), 'partial-user-token')).toBe(false)
+      expect(ssarScope.isDone()).toBe(true)
+    })
+
+    it('should allow namespaced resources when rules grant unrestricted get/list/watch in that namespace', async () => {
+      nockRulesReview(() => ({
+        incomplete: false,
+        resourceRules: [{ verbs: ['get', 'list', 'watch'], apiGroups: [''], resources: ['secrets'] }],
+      }))
+
+      const ssarScope = nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
+        .reply(200, { status: { allowed: false } })
+
+      expect(await canGetResource(secret('default', 'any-secret'), 'viewer-token')).toBe(true)
+      expect(ssarScope.isDone()).toBe(false)
+    })
+
+    it('should confirm cluster-scoped allow-all with SSAR so default RoleBindings are not treated as cluster access', async () => {
+      nockRulesReview(() => ({
+        incomplete: false,
+        resourceRules: [
+          {
+            verbs: ['get', 'list', 'watch'],
+            apiGroups: ['cluster.open-cluster-management.io'],
+            resources: ['managedclusters'],
+          },
+        ],
+      }))
+      nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
+        .reply(200, { status: { allowed: false } })
+
+      expect(await canGetResource(managedCluster('any-cluster'), 'default-role-token')).toBe(false)
+    })
+
+    it('should reuse kind access across API versions of the same group', async () => {
+      let rulesCalls = 0
+      nockRulesReview(() => {
+        rulesCalls++
+        return emptyRules
+      })
+
+      expect(
+        await canGetResource(
+          { kind: 'Placement', apiVersion: 'cluster.open-cluster-management.io/v1beta1', metadata: { name: 'p1' } },
+          'version-token'
+        )
+      ).toBe(false)
+      expect(
+        await canGetResource(
+          { kind: 'Placement', apiVersion: 'cluster.open-cluster-management.io/v1alpha1', metadata: { name: 'p2' } },
+          'version-token'
+        )
+      ).toBe(false)
+      expect(rulesCalls).toBe(1)
+    })
+
+    it('should confirm cluster-scoped incomplete rules with SSAR instead of trusting SSRR alone', async () => {
+      nockRulesReview(() => ({
+        incomplete: true,
+        resourceRules: [{ verbs: ['get'], apiGroups: [''], resources: ['pods'] }],
+      }))
+      const ssarScope = nockSsarGet(
+        (attrs) =>
+          attrs.group === 'cluster.open-cluster-management.io' &&
+          attrs.resource === 'managedclusters' &&
+          attrs.name === 'cluster-1',
+        true
+      )
+
       expect(await canGetResource(managedCluster('cluster-1'), 'incomplete-user-token')).toBe(true)
+      expect(ssarScope.isDone()).toBe(true)
     })
 
     it('should deny-all when rules are empty even if incomplete is true (OpenShift none user)', async () => {
-      nock(process.env.CLUSTER_API_URL || '')
-        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews')
-        .reply(200, { status: { incomplete: true, resourceRules: [] } })
+      nockRulesReview(() => ({ incomplete: true, resourceRules: [] }))
 
-      const ssarScope = nock(process.env.CLUSTER_API_URL || '')
+      const ssarScope = nock(apiUrl())
         .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
         .reply(200, { status: { allowed: true } })
 
       expect(await canGetResource(managedCluster('cluster-1'), 'openshift-none-token')).toBe(false)
       expect(ssarScope.isDone()).toBe(false)
+    })
+
+    it('should fall back to SSAR when SelfSubjectRulesReview request fails', async () => {
+      nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews')
+        .reply(500, { message: 'internal error' })
+
+      const ssarScope = nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
+        .reply(200, { status: { allowed: true } })
+
+      expect(await canGetResource(managedCluster('cluster-1'), 'ssrr-fail-token')).toBe(true)
+      expect(ssarScope.isDone()).toBe(true)
+    })
+  })
+
+  describe('cluster-scoped SSRR middle-ground security (ACM-39327)', () => {
+    const apiUrl = () => process.env.CLUSTER_API_URL || ''
+    const managedCluster = (name: string) => ({
+      kind: 'ManagedCluster',
+      apiVersion: 'cluster.open-cluster-management.io/v1',
+      metadata: { name },
+    })
+
+    function rulesReviewNamespace(body: unknown): string {
+      let parsed = body
+      if (typeof body === 'string') {
+        try {
+          parsed = JSON.parse(body) as unknown
+        } catch {
+          return ''
+        }
+      }
+      return (parsed as { spec?: { namespace?: string } })?.spec?.namespace || ''
+    }
+
+    function nockRulesReview(replyFn: (namespace: string) => { incomplete?: boolean; resourceRules?: unknown[] }) {
+      return nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews')
+        .reply(200, (_uri: string, requestBody: unknown) => ({ status: replyFn(rulesReviewNamespace(requestBody)) }))
+    }
+
+    function nockRulesReviewStatus(
+      replyFn: (namespace: string) => {
+        incomplete?: boolean
+        evaluationError?: string
+        resourceRules?: unknown[]
+      }
+    ) {
+      return nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews')
+        .reply(200, (_uri: string, requestBody: unknown) => ({ status: replyFn(rulesReviewNamespace(requestBody)) }))
+    }
+
+    function parseSsarResourceAttributes(body: unknown) {
+      const parsed =
+        typeof body === 'string'
+          ? (JSON.parse(body) as { spec?: { resourceAttributes?: Record<string, string | undefined> } })
+          : body
+      return (parsed as { spec?: { resourceAttributes?: Record<string, string | undefined> } })?.spec?.resourceAttributes
+    }
+
+    function nockSsarGet(matcher: (attrs: Record<string, string | undefined>) => boolean, allowed: boolean) {
+      return nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', (body: unknown) => {
+          const attrs = parseSsarResourceAttributes(body)
+          return attrs?.verb === 'get' && matcher(attrs ?? {})
+        })
+        .reply(200, { status: { allowed } })
+    }
+
+    const namedManagedClusterRule = (name: string) => ({
+      incomplete: false,
+      resourceRules: [
+        {
+          verbs: ['get'],
+          apiGroups: ['cluster.open-cluster-management.io'],
+          resources: ['managedclusters'],
+          resourceNames: [name],
+        },
+      ],
+    })
+
+    beforeEach(() => {
+      resetAccessCache()
+      jest.clearAllMocks()
+      process.env.CLUSTER_API_URL = 'https://api.test-cluster.com:6443'
+    })
+
+    afterEach(() => {
+      resetAccessCache()
+      delete process.env.CLUSTER_API_URL
+      nock.cleanAll()
+    })
+
+    it('should deny allow-names from a default RoleBinding when SSAR get is false', async () => {
+      nockRulesReview(() => namedManagedClusterRule('acm39327-mc-02'))
+      const ssarScope = nockSsarGet(
+        (attrs) =>
+          attrs.group === 'cluster.open-cluster-management.io' &&
+          attrs.resource === 'managedclusters' &&
+          attrs.name === 'acm39327-mc-02',
+        false
+      )
+
+      expect(await canGetResource(managedCluster('acm39327-mc-02'), 'user1-token')).toBe(false)
+      expect(ssarScope.isDone()).toBe(true)
+    })
+
+    it('should allow allow-names only when SSAR get confirms a real ClusterRoleBinding grant', async () => {
+      nockRulesReview(() => namedManagedClusterRule('allowed-cluster'))
+      const ssarScope = nockSsarGet(
+        (attrs) =>
+          attrs.group === 'cluster.open-cluster-management.io' &&
+          attrs.resource === 'managedclusters' &&
+          attrs.name === 'allowed-cluster',
+        true
+      )
+
+      expect(await canGetResource(managedCluster('allowed-cluster'), 'clusterrole-user-token')).toBe(true)
+      expect(ssarScope.isDone()).toBe(true)
+    })
+
+    it('should confirm cluster-scoped allow-all with SSAR and deny when SSAR rejects', async () => {
+      nockRulesReview(() => ({
+        incomplete: false,
+        resourceRules: [
+          {
+            verbs: ['get', 'list', 'watch'],
+            apiGroups: ['cluster.open-cluster-management.io'],
+            resources: ['managedclusters'],
+          },
+        ],
+      }))
+      const ssarScope = nockSsarGet(
+        (attrs) => attrs.group === 'cluster.open-cluster-management.io' && attrs.resource === 'managedclusters',
+        false
+      )
+
+      expect(await canGetResource(managedCluster('any-cluster'), 'default-role-token')).toBe(false)
+      expect(ssarScope.isDone()).toBe(true)
+    })
+
+    it('should not trust allow-names on ManagedCluster when metadata.namespace is set without SSAR confirmation', async () => {
+      nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews', (body: unknown) => {
+          return rulesReviewNamespace(body) === 'default'
+        })
+        .reply(200, { status: namedManagedClusterRule('acm39327-mc-02') })
+      const ssarScope = nockSsarGet(
+        (attrs) =>
+          attrs.group === 'cluster.open-cluster-management.io' &&
+          attrs.resource === 'managedclusters' &&
+          attrs.name === 'acm39327-mc-02',
+        false
+      )
+
+      expect(
+        await canGetResource(
+          {
+            kind: 'ManagedCluster',
+            apiVersion: 'cluster.open-cluster-management.io/v1',
+            metadata: { name: 'acm39327-mc-02', namespace: 'default' },
+          },
+          'user1-token'
+        )
+      ).toBe(false)
+      expect(ssarScope.isDone()).toBe(true)
+    })
+
+    it('should treat SSRR evaluationError as incomplete and confirm cluster-scoped access with SSAR', async () => {
+      nockRulesReviewStatus(() => ({
+        incomplete: false,
+        evaluationError: 'webhook authorizer does not support user rule resolution',
+        resourceRules: [{ verbs: ['get'], apiGroups: [''], resources: ['pods'] }],
+      }))
+      const ssarScope = nockSsarGet(
+        (attrs) =>
+          attrs.group === 'cluster.open-cluster-management.io' &&
+          attrs.resource === 'managedclusters' &&
+          attrs.name === 'cluster-1',
+        true
+      )
+
+      expect(await canGetResource(managedCluster('cluster-1'), 'evaluation-error-token')).toBe(true)
+      expect(ssarScope.isDone()).toBe(true)
+    })
+
+    it('should confirm any non-deny-all cluster-scoped SSRR result with SSAR, not applyKindGetAccess alone', async () => {
+      nockRulesReview(() => ({
+        incomplete: true,
+        resourceRules: [
+          {
+            verbs: ['get'],
+            apiGroups: ['cluster.open-cluster-management.io'],
+            resources: ['managedclusters'],
+            resourceNames: ['cluster-1'],
+          },
+        ],
+      }))
+      const ssarScope = nockSsarGet(
+        (attrs) =>
+          attrs.group === 'cluster.open-cluster-management.io' &&
+          attrs.resource === 'managedclusters' &&
+          attrs.name === 'cluster-1',
+        false
+      )
+
+      expect(await canGetResource(managedCluster('cluster-1'), 'incomplete-named-token')).toBe(false)
+      expect(ssarScope.isDone()).toBe(true)
     })
   })
 })
