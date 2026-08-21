@@ -37,6 +37,7 @@ export function ToggleSelector(props: IToggleSelectorProps) {
     <AcmTableStateProvider localStorageKey="advanced-tables-pagination">
       <DeleteResourceModal {...props.modalProps} />
       <AcmTable<IResource>
+        aria-label={t('Application resources table')}
         showExportButton
         exportFilePrefix={`applicationadvancedconfiguration-${selectedId}`}
         columns={selectedResources.columns}

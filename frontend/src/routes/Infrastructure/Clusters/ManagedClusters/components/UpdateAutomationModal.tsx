@@ -292,6 +292,7 @@ export function UpdateAutomationModal(props: {
           </StackItem>
           <StackItem className={table}>
             <AcmTable<Cluster>
+              aria-label={t('Update automation clusters table')}
               columns={addAutomationTemplateColumns}
               items={updatableClusters}
               emptyState={

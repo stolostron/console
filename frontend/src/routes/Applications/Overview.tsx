@@ -1263,6 +1263,7 @@ export default function ApplicationsOverview() {
       {pluginModal}
       <AcmTableStateProvider localStorageKey={'applications-overview-table-state'}>
         <AcmTable<IApplicationResource>
+          aria-label={t('Applications table')}
           id={TABLE_ID}
           key="data-table"
           columns={columns}

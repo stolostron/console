@@ -118,6 +118,7 @@ export function RemoveNodePoolModal(props: IRemoveNodePoolModalProps | { open: f
           <Fragment>
             <AcmAlert isInline noClose variant="danger" title={t('there.were.errors')} />
             <AcmTable
+              aria-label={t('Remove node pool errors table')}
               items={resourceErrors}
               emptyState={undefined} // only shown when resourceErrors.length > 0
               columns={[
