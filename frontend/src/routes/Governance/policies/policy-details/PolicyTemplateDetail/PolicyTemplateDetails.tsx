@@ -13,6 +13,7 @@ import { useParams } from 'react-router'
 import { NavigationPath } from '../../../../../NavigationPath'
 import {
   AcmAlert,
+  AcmButton,
   AcmDescriptionList,
   AcmLabels,
   AcmTable,
@@ -303,14 +304,18 @@ export function PolicyTemplateDetails() {
           const hubArg = _hubClusterResource ? `&_hubClusterResource=true` : ''
           policyReportLink = (
             <div>
-              <a
-                target="_blank"
-                rel="noopener noreferrer"
+              <AcmButton
+                variant="link"
+                component="a"
                 href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apigroupArg}${apiversion}&name=${name}${namespaceArg}${hubArg}`}
+                target="_blank"
+                rel="noreferrer"
+                isInline
+                icon={<ExternalLinkAltIcon />}
+                iconPosition="right"
               >
                 {t('View report')}
-                <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
-              </a>
+              </AcmButton>
             </div>
           )
         }
@@ -344,13 +349,18 @@ export function PolicyTemplateDetails() {
           if (cluster && kind && apiVersion && name && name != '-') {
             const namespaceArg = namespace ? `&namespace=${namespace}` : ''
             return (
-              <a
-                target="_blank"
-                rel="noopener noreferrer"
+              <AcmButton
+                variant="link"
+                component="a"
                 href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apiVersion}&name=${name}${namespaceArg}`}
+                target="_blank"
+                rel="noreferrer"
+                isInline
+                icon={<ExternalLinkAltIcon />}
+                iconPosition="right"
               >
-                {name} <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
-              </a>
+                {name}
+              </AcmButton>
             )
           }
           return name
@@ -396,13 +406,18 @@ export function PolicyTemplateDetails() {
           const namespaceArg = namespace ? `&namespace=${namespace}` : ''
           const hubArg = _hubClusterResource ? `&_hubClusterResource=true` : ''
           return (
-            <a
-              target="_blank"
-              rel="noopener noreferrer"
+            <AcmButton
+              variant="link"
+              component="a"
               href={`${NavigationPath.resourceYAML}?cluster=${cluster}&kind=${kind}&apiversion=${apigroupArg}${apiversion}&name=${name}${namespaceArg}${hubArg}`}
+              target="_blank"
+              rel="noreferrer"
+              isInline
+              icon={<ExternalLinkAltIcon />}
+              iconPosition="right"
             >
-              {item.name} <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
-            </a>
+              {item.name}
+            </AcmButton>
           )
         },
         sort: 'name',
