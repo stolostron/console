@@ -103,13 +103,19 @@ describe('useFleetK8sWatchResources', () => {
       // Should call startWatch for each resource
       expect(mockStartWatch).toHaveBeenCalledTimes(2)
 
-      // Verify each watch was started with correct parameters (no callback parameter)
-      expect(mockStartWatch).toHaveBeenCalledWith(initResources.pods, podModel, expect.stringContaining(remoteCluster1))
+      // Verify each watch was started with correct parameters
+      expect(mockStartWatch).toHaveBeenCalledWith(
+        initResources.pods,
+        podModel,
+        expect.stringContaining(remoteCluster1),
+        undefined
+      )
 
       expect(mockStartWatch).toHaveBeenCalledWith(
         initResources.deployments,
         deploymentModel,
-        expect.stringContaining(remoteCluster2)
+        expect.stringContaining(remoteCluster2),
+        undefined
       )
 
       // Should not call useK8sWatchResources
@@ -293,12 +299,14 @@ describe('useFleetK8sWatchResources', () => {
       expect(mockStartWatch).toHaveBeenCalledWith(
         initResources.localPods,
         podModel,
-        '/api/kubernetes' // Hub cluster uses standard k8s API path
+        '/api/kubernetes', // Hub cluster uses standard k8s API path
+        undefined
       )
       expect(mockStartWatch).toHaveBeenCalledWith(
         initResources.remotePods,
         podModel,
-        expect.stringContaining(remoteCluster1)
+        expect.stringContaining(remoteCluster1),
+        undefined
       )
 
       // Should return fleet result (not local result) because at least one remote resource exists
@@ -465,9 +473,9 @@ describe('useFleetK8sWatchResources', () => {
       renderHook(() => useFleetK8sWatchResources(initResources))
 
       // Should call startWatch with correct models
-      expect(mockStartWatch).toHaveBeenCalledWith(initResources.pods, podModel, expect.any(String))
+      expect(mockStartWatch).toHaveBeenCalledWith(initResources.pods, podModel, expect.any(String), undefined)
 
-      expect(mockStartWatch).toHaveBeenCalledWith(initResources.deployments, deploymentModel, expect.any(String))
+      expect(mockStartWatch).toHaveBeenCalledWith(initResources.deployments, deploymentModel, expect.any(String), undefined)
     })
 
     it('should handle kind string format', () => {
@@ -499,7 +507,8 @@ describe('useFleetK8sWatchResources', () => {
       expect(mockStartWatch).toHaveBeenCalledWith(
         initResources.custom,
         customModels['custom~v1~CustomResource'],
-        expect.any(String)
+        expect.any(String),
+        undefined
       )
     })
   })

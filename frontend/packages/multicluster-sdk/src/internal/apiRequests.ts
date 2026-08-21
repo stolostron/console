@@ -1,10 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { FleetK8sListOptions, FleetK8sResourceCommon } from '../types'
-import { K8sModel, QueryParams, Selector } from '@openshift-console/dynamic-plugin-sdk'
+import { K8sModel, QueryParams } from '@openshift-console/dynamic-plugin-sdk'
 
 import { BASE_K8S_API_PATH } from '../internal/constants'
 import { getFleetK8sAPIPath } from '../api/getFleetK8sAPIPath'
-import { selectorToString } from './requirements'
 
 export type FleetK8sAPIOptions = {
   model: K8sModel
@@ -139,49 +138,4 @@ export async function getResourceURLFromOptions<O extends FleetK8sAPIOptions | F
     ns: getNamespaceFromOptions(options),
     name: collection ? undefined : getNameFromOptions(options),
   })
-}
-
-export const fleetWatch = (
-  model: K8sModel,
-  query: {
-    labelSelector?: Selector
-    resourceVersion?: string
-    allowWatchBookmarks?: boolean
-    ns?: string
-    fieldSelector?: string
-    cluster?: string
-  } = {},
-  backendURL: string
-): WebSocket => {
-  const queryParams: QueryParams = { watch: 'true' }
-
-  const { labelSelector } = query
-  if (labelSelector) {
-    const encodedSelector = selectorToString(labelSelector)
-    if (encodedSelector) {
-      queryParams.labelSelector = encodedSelector
-    }
-  }
-
-  if (query.fieldSelector) {
-    queryParams.fieldSelector = query.fieldSelector
-  }
-
-  if (query.resourceVersion) {
-    queryParams.resourceVersion = query.resourceVersion
-  }
-
-  if (query.allowWatchBookmarks) {
-    queryParams.allowWatchBookmarks = 'true'
-  }
-
-  const requestPath = buildResourceURL({
-    model,
-    cluster: query.cluster,
-    queryParams,
-    ns: query.ns,
-    basePath: backendURL,
-  })
-
-  return new WebSocket(requestPath)
 }

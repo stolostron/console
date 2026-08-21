@@ -2,7 +2,6 @@
 import {
   FleetK8sAPIOptions,
   buildResourceURL,
-  fleetWatch,
   getClusterFromOptions,
   getNameFromOptions,
   getNamespaceFromOptions,
@@ -14,35 +13,11 @@ import {
 import { FleetK8sResourceCommon } from '../types'
 import { getFleetK8sAPIPath } from '../api/getFleetK8sAPIPath'
 
-// Mock the getFleetK8sAPIPath function
 jest.mock('../api/getFleetK8sAPIPath', () => ({
   getFleetK8sAPIPath: jest.fn(),
 }))
 
 const mockGetFleetK8sAPIPath = getFleetK8sAPIPath as jest.MockedFunction<typeof getFleetK8sAPIPath>
-
-// mock WebSocket
-global.WebSocket = jest.fn(() => ({
-  close: jest.fn(),
-  send: jest.fn(),
-  addEventListener: jest.fn(),
-  removeEventListener: jest.fn(),
-  readyState: 1,
-  url: '',
-  protocol: '',
-  extensions: '',
-  bufferedAmount: 0,
-  onopen: null,
-  onclose: null,
-  onmessage: null,
-  onerror: null,
-  CONNECTING: 0,
-  OPEN: 1,
-  CLOSING: 2,
-  CLOSED: 3,
-  binaryType: 'blob' as BinaryType,
-  dispatchEvent: jest.fn(),
-})) as any
 
 describe('apiRequests', () => {
   const mockModel = {
@@ -61,97 +36,6 @@ describe('apiRequests', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockGetFleetK8sAPIPath.mockResolvedValue('/fake/api/path')
-  })
-
-  describe('fleetWatch', () => {
-    it('should create WebSocket with correct URL', () => {
-      const backendURL = '/proxy'
-      const query = { ns: 'default', cluster: 'cluster1' }
-
-      fleetWatch(mockModel, query, backendURL)
-
-      expect(WebSocket).toHaveBeenCalledWith('/proxy/api/v1/namespaces/default/pods?watch=true')
-    })
-
-    it('should include labelSelector in query params', () => {
-      const backendURL = '/proxy'
-      const query = {
-        ns: 'default',
-        cluster: 'cluster1',
-        labelSelector: { matchLabels: { app: 'test' } },
-      }
-
-      fleetWatch(mockModel, query, backendURL)
-
-      expect(WebSocket).toHaveBeenCalledWith(
-        '/proxy/api/v1/namespaces/default/pods?watch=true&labelSelector=app%3Dtest'
-      )
-    })
-
-    it('should include fieldSelector in query params', () => {
-      const backendURL = '/proxy'
-      const query = {
-        ns: 'default',
-        cluster: 'cluster1',
-        fieldSelector: 'metadata.name=test-pod',
-      }
-
-      fleetWatch(mockModel, query, backendURL)
-
-      expect(WebSocket).toHaveBeenCalledWith(
-        '/proxy/api/v1/namespaces/default/pods?watch=true&fieldSelector=metadata.name%3Dtest-pod'
-      )
-    })
-
-    it('should include resourceVersion in query params', () => {
-      const backendURL = '/proxy'
-      const query = {
-        ns: 'default',
-        cluster: 'cluster1',
-        resourceVersion: '12345',
-      }
-
-      fleetWatch(mockModel, query, backendURL)
-
-      expect(WebSocket).toHaveBeenCalledWith('/proxy/api/v1/namespaces/default/pods?watch=true&resourceVersion=12345')
-    })
-
-    it('should handle cluster-scoped resources', () => {
-      const clusterScopedModel = { ...mockModel, namespaced: false }
-      const backendURL = '/proxy'
-      const query = { cluster: 'cluster1' }
-
-      fleetWatch(clusterScopedModel, query, backendURL)
-
-      expect(WebSocket).toHaveBeenCalledWith('/proxy/api/v1/pods?watch=true')
-    })
-
-    it('should handle resources with names', () => {
-      const backendURL = '/proxy'
-      const query = {
-        ns: 'default',
-        cluster: 'cluster1',
-      }
-
-      // Note: fleetWatch doesn't handle 'name' in query, it's handled by getResourcePath
-      fleetWatch(mockModel, query, backendURL)
-
-      expect(WebSocket).toHaveBeenCalledWith('/proxy/api/v1/namespaces/default/pods?watch=true')
-    })
-
-    it('should handle non-core API groups', () => {
-      const appsModel = {
-        ...mockModel,
-        apiVersion: 'apps/v1',
-        apiGroup: 'apps',
-      }
-      const backendURL = '/proxy'
-      const query = { ns: 'default', cluster: 'cluster1' }
-
-      fleetWatch(appsModel, query, backendURL)
-
-      expect(WebSocket).toHaveBeenCalledWith('/proxy/apis/apps/apps/v1/namespaces/default/pods?watch=true')
-    })
   })
 
   describe('getResourcePath', () => {

@@ -14,7 +14,7 @@ const DEFAULT_POLL_INTERVAL_SECONDS = 30
  *
  * @template T - The type of Kubernetes resource(s) to search for, extending K8sResourceCommon
  *
- * @param watchOptions - Configuration options for the resource watch
+ * @param watchOptions - Configuration options for the resource watch; no search query is performed if this value is null or if `kind` of `groupVersionKind` is not specified
  * @param watchOptions.cluster - The managed cluster on which the resource resides; unspecified to search all clusters
  * @param watchOptions.groupVersionKind - The group, version, and kind of the resource to search for
  * @param watchOptions.limit - Maximum number of results to return (defaults to -1 for no limit)
@@ -79,11 +79,11 @@ const DEFAULT_POLL_INTERVAL_SECONDS = 30
  * - Minimum polling interval is 30 seconds for performance reasons
  */
 export function useFleetSearchPoll<T extends K8sResourceCommon | K8sResourceCommon[]>(
-  watchOptions: FleetWatchK8sResource,
+  watchOptions?: FleetWatchK8sResource,
   advancedSearchFilters?: AdvancedSearchFilter,
   pollInterval?: number | false
 ): [SearchResult<T> | undefined, boolean, Error | undefined, () => void] {
-  const { cluster, groupVersionKind, limit, namespace, namespaced, name, isList } = watchOptions
+  const { cluster, groupVersionKind, limit, namespace, namespaced, name, isList } = watchOptions ?? {}
 
   const { group, version, kind } = groupVersionKind ?? {}
 

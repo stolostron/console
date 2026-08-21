@@ -26,7 +26,7 @@ import {
  * but allows you to retrieve data from any cluster managed by Red Hat Advanced Cluster Management.
  *
  * It automatically detects the hub cluster and handles resource watching on both hub
- * and remote clusters using WebSocket connections for real-time updates.
+ * and remote clusters using polling for near-real-time updates.
  *
  * @param initResource - The resource to watch. Can be null to disable the watch.
  * @param initResource.cluster - The managed cluster on which the resource resides; null or undefined for the hub cluster
@@ -36,6 +36,7 @@ import {
  * @param initResource.isList - Whether to watch a list of resources (true) or a single resource (false)
  * @param initResource.selector - Label selector to filter resources (e.g., `{ matchLabels: { app: 'myapp' } }`)
  * @param initResource.fieldSelector - Field selector to filter resources (e.g., `status.phase=Running`)
+ * @param initResource.pollInterval - Optional polling interval in seconds. Defaults to 10. Minimum is 10.
  * @param initResource.limit - Maximum number of resources to return (not supported yet)
  * @param initResource.namespaced - Whether the resource is namespaced (not supported yet)
  * @param initResource.optional - If true, errors will not be thrown when the resource is not found (not supported yet)
@@ -110,7 +111,7 @@ export function useFleetK8sWatchResource<R extends FleetK8sResourceCommon | Flee
     if (useFleet && !isResourceNull && backendPathLoaded && backendAPIPath && !modelLoading && model) {
       const requestPath = getRequestPathFromResource(memoizedResource, model, backendAPIPath)
       const unsubscribe = subscribe(memoizedResource, requestPath, setFleetResult)
-      startWatch(memoizedResource, model, backendAPIPath)
+      startWatch(memoizedResource, model, backendAPIPath, memoizedResource.pollInterval)
 
       return () => {
         unsubscribe()
