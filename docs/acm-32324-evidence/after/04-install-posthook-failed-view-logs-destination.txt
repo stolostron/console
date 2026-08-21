@@ -1,0 +1,3 @@
+intendedUrl=https://auto-con-aap.apps.emingora-acm-32324.dev09.red-chesterfield.com/#/jobs/workflow/32324-04-install-posthook-failed
+landedUrl=https://auto-con-aap.apps.emingora-acm-32324.dev09.red-chesterfield.com/#/jobs/workflow/32324-04-install-posthook-failed
+banner=window.open → https://auto-con-aap.apps.emingora-acm-32324.dev09.red-chesterfield.com/#/jobs/workflow/32324-04-install-posthook-failed  |  landed → https://auto-con-aap.apps.emingora-acm-32324.dev09.red-chesterfield.com/#/jobs/workflow/32324-04-install-posthook-failed

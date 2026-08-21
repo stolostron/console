@@ -3,16 +3,19 @@
 import { NodePoolK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { axe } from 'jest-axe'
 import * as nock from 'nock'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
-import { ansibleJobState, clusterImageSetsState, nodePoolsState } from '../../../../../atoms'
+import { ansibleJobState, ansibleWorkflowState, clusterImageSetsState, nodePoolsState } from '../../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '../../../../../lib/nock-util'
 import { clickByText, waitForCalled, waitForNock, waitForNotText, waitForText } from '../../../../../lib/test-util'
 import {
-  AnsibleJob,
+  type AnsibleJob,
   AnsibleJobApiVersion,
   AnsibleJobKind,
+  type AnsibleWorkflow,
+  AnsibleWorkflowKind,
   ClusterCurator,
   ClusterCuratorApiVersion,
   ClusterCuratorKind,
@@ -346,6 +349,68 @@ const ansibleJob: AnsibleJob = {
       started: '2021-06-08T16:43:01.853019Z',
     },
   },
+}
+
+const ansibleWorkflowPosthook: AnsibleWorkflow = {
+  apiVersion: AnsibleJobApiVersion,
+  kind: AnsibleWorkflowKind,
+  metadata: {
+    name: 'posthookjob-workflow',
+    namespace: 'clusterName',
+    annotations: {
+      jobtype: 'posthook',
+    },
+  },
+  status: {
+    ansibleWorkflowResult: {
+      changed: false,
+      failed: true,
+      status: 'error',
+      url: '/ansible/posthook-workflow',
+      started: '2021-06-08T16:43:01.853019Z',
+      finished: '2021-06-08T16:43:09.023018Z',
+    },
+  },
+}
+
+const mockManagedAnsibleFailedPosthookDistributionInfo: DistributionInfo = {
+  ocp: {
+    version: '1.2.3',
+    availableUpdates: ['1.2.4', '1.2.5', '1.2.6', '1.2'],
+    desiredVersion: '1.2.3',
+    upgradeFailed: false,
+  },
+  upgradeInfo: {
+    upgradeFailed: false,
+    isUpgrading: false,
+    isReadyUpdates: false,
+    isReadySelectChannels: false,
+    availableUpdates: ['1.2.4', '1.2.6', '1.2.5'],
+    currentVersion: '1.2.3',
+    isUpgradeCuration: true,
+    hooksInProgress: false,
+    hookFailed: true,
+    latestJob: {
+      conditionMessage: 'posthook failed',
+      // Real curator leaves step as prehook when the posthook job failed.
+      step: CuratorCondition.prehook,
+    },
+    prehooks: {
+      failed: false,
+      hasHooks: true,
+      inProgress: false,
+      success: true,
+    },
+    posthooks: {
+      failed: true,
+      hasHooks: true,
+      inProgress: false,
+      success: false,
+    },
+  },
+  k8sVersion: '1.11',
+  displayVersion: 'openshift',
+  isManagedOpenShift: true,
 }
 
 const mockNodepools: NodePoolK8sResource[] = [
@@ -693,7 +758,9 @@ describe('DistributionField', () => {
     data: DistributionInfo,
     allowUpgrade: boolean,
     hasUpgrade = false,
-    clusterCurator?: ClusterCurator
+    clusterCurator?: ClusterCurator,
+    ansibleJobs: AnsibleJob[] = [ansibleJob],
+    ansibleWorkflows: AnsibleWorkflow[] = []
   ) => {
     let nockAction: nock.Scope | undefined = undefined
     let nockAction2: nock.Scope | undefined = undefined
@@ -734,7 +801,12 @@ describe('DistributionField', () => {
       isRegionalHubCluster: false,
     }
     const retResource = render(
-      <RecoilRoot initializeState={(snapshot) => snapshot.set(ansibleJobState, [ansibleJob])}>
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(ansibleJobState, ansibleJobs)
+          snapshot.set(ansibleWorkflowState, ansibleWorkflows)
+        }}
+      >
         <MemoryRouter>
           <DistributionField cluster={mockCluster} clusterCurator={clusterCurator} />
         </MemoryRouter>
@@ -824,6 +896,23 @@ describe('DistributionField', () => {
     await clickByText('Update prehook')
     await clickByText('View logs')
     await waitForCalled(window.open as jest.Mock)
+  })
+
+  it('should open posthook ansible logs, not prehook', async () => {
+    const { container } = await renderDistributionInfoField(
+      mockManagedAnsibleFailedPosthookDistributionInfo,
+      false,
+      false,
+      clusterCuratorUpgradeFailed,
+      [ansibleJob],
+      [ansibleWorkflowPosthook]
+    )
+    window.open = jest.fn()
+    await waitForText('Update posthook')
+    await clickByText('Update posthook')
+    await clickByText('View logs')
+    expect(window.open).toHaveBeenCalledWith('/ansible/posthook-workflow')
+    expect(await axe(container)).toHaveNoViolations()
   })
 })
 
