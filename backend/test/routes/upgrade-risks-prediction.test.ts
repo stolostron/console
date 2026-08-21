@@ -6,7 +6,7 @@ import { getProxyAgent } from '../../src/lib/agent'
 
 describe('Upgrade risks prediction Route', function () {
   it('should return the upgrade risks', async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
     nock(process.env.CLUSTER_API_URL)
       .get('/api/v1/namespaces/openshift-config/secrets')
       .reply(200, {

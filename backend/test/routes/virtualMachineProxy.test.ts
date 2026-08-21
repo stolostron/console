@@ -8,7 +8,7 @@ describe('Virtual Machine actions', function () {
   })
 
   it('should successfully call start action', async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
     nock(process.env.CLUSTER_API_URL)
       .post(
         '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
@@ -55,7 +55,7 @@ describe('Virtual Machine actions', function () {
   })
 
   it('should successfully call pause action', async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
     nock(process.env.CLUSTER_API_URL)
       .post(
         '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
@@ -102,7 +102,7 @@ describe('Virtual Machine actions', function () {
   })
 
   it('should successfully take snapshot action', async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
     nock(process.env.CLUSTER_API_URL)
       .post(
         '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
@@ -173,7 +173,7 @@ describe('Virtual Machine actions', function () {
   })
 
   it('should error on start action request', async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
     nock(process.env.CLUSTER_API_URL)
       .post(
         '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
@@ -218,7 +218,7 @@ describe('Virtual Machine actions', function () {
   })
 
   it('should fail with invalid route and secret', async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
     nock(process.env.CLUSTER_API_URL)
       .post(
         '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
@@ -250,7 +250,7 @@ describe('Virtual Machine actions', function () {
   })
 
   it('should successfully restore a snapshot', async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
     nock(process.env.CLUSTER_API_URL)
       .post(
         '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
@@ -321,7 +321,7 @@ describe('Virtual Machine actions', function () {
   })
 
   it('should successfully get VM', async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
     nock(process.env.CLUSTER_API_URL)
       .post(
         '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
@@ -364,7 +364,7 @@ describe('Virtual Machine actions', function () {
   })
 
   it('should successfully get VM snapshot', async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
     nock(process.env.CLUSTER_API_URL)
       .post(
         '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
@@ -407,7 +407,7 @@ describe('Virtual Machine actions', function () {
   })
 
   it('should successfully delete VM', async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
     nock(process.env.CLUSTER_API_URL)
       .post(
         '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
@@ -455,7 +455,7 @@ describe('Virtual Machine actions', function () {
   })
 
   it('should successfully delete VM Snapshot', async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
     nock(process.env.CLUSTER_API_URL)
       .post(
         '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',

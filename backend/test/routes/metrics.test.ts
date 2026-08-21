@@ -4,7 +4,7 @@ import { request } from '../mock-request'
 
 describe('metrics route', function () {
   it('Should response with successful metrics GET', async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200, {
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200, {
       status: 200,
     })
     nock(process.env.CLUSTER_API_URL)
@@ -25,7 +25,7 @@ describe('metrics route', function () {
   })
 
   it('Should response with successful metrics GET request with page param', async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200, {
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200, {
       status: 200,
     })
     nock(process.env.CLUSTER_API_URL)
