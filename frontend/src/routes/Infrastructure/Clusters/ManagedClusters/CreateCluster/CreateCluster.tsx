@@ -28,8 +28,10 @@ import {
 import {
   append,
   arrayItemHasKey,
+  differentiateCuratorSecrets,
   getName,
   getNamespace,
+  secretName,
   setAvailableConnections,
 } from './controlData/ControlDataHelpers'
 import aiTemplate from './templates/assisted-installer/ai-template.hbs'
@@ -345,6 +347,12 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   Handlebars.registerHelper('append', append)
   Handlebars.registerHelper('getName', getName)
   Handlebars.registerHelper('getNamespace', getNamespace)
+  Handlebars.registerHelper('secretName', (curation, options) =>
+    secretName(curation, getName(options), getNamespace(options))
+  )
+  Handlebars.registerHelper('curatorSpec', (spec, options) =>
+    differentiateCuratorSecrets(spec, getName(options), getNamespace(options))
+  )
   Handlebars.registerHelper('escapeYAML', (value) => jsyaml.dump(Array.isArray(value) ? value[0] : value))
 
   const { canJoinClusterSets } = useCanJoinClusterSets()

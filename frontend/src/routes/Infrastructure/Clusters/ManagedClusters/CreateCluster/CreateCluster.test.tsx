@@ -132,7 +132,7 @@ const mockClusterCuratorInstall: ClusterCurator = {
   kind: ClusterCuratorKind,
   metadata: {
     name: clusterName,
-    namespace: null as unknown as string,
+    namespace: clusterName,
     labels: {
       'open-cluster-management': 'curator',
     },
@@ -183,7 +183,7 @@ const mockProviderConnectionAnsibleCopied: Secret = {
   type: 'Opaque',
   metadata: {
     name: 'toweraccess-install',
-    namespace: null as unknown as string,
+    namespace: clusterName,
     labels: {
       'cluster.open-cluster-management.io/type': 'ans',
       'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ii',
@@ -203,7 +203,7 @@ const mockProviderConnectionAnsibleCopiedUpgrade: Secret = {
   type: 'Opaque',
   metadata: {
     name: 'toweraccess-upgrade',
-    namespace: null as unknown as string,
+    namespace: clusterName,
     labels: {
       'cluster.open-cluster-management.io/type': 'ans',
       'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ii',
@@ -1577,6 +1577,211 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     await waitForText('Creating cluster ...')
 
     // make sure creating
+    await waitForNocks(createNocks)
+  })
+
+  // ACM-39253: a second Hosted Control Plane cluster created in the same namespace must not
+  // collide on the automation (toweraccess) Secret, so the secret name and the ClusterCurator
+  // towerAuthSecret reference are differentiated by cluster name.
+  const upgradeOnlyCurator: ClusterCurator = {
+    apiVersion: ClusterCuratorApiVersion,
+    kind: ClusterCuratorKind,
+    metadata: {
+      name: 'kubevirt-automation',
+      namespace: 'test-ii',
+      labels: {
+        'open-cluster-management': 'curator',
+      },
+    },
+    spec: {
+      upgrade: {
+        posthook: [
+          {
+            name: 'test-posthook-upgrade',
+            extra_vars: {},
+          },
+        ],
+        towerAuthSecret: 'ansible-connection',
+      },
+    },
+  }
+
+  const AutomationComponent = () => {
+    return (
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(configMapsState, [
+            {
+              kind: 'ConfigMap',
+              apiVersion: 'v1',
+              metadata: {
+                name: 'supported-versions',
+                namespace: 'hypershift',
+              },
+              data: {
+                'supported-versions': '{"versions":["4.15","4.14","4.13"]}',
+              },
+            },
+          ])
+          snapshot.set(namespacesState, [
+            {
+              apiVersion: NamespaceApiVersion,
+              kind: NamespaceKind,
+              metadata: { name: 'clusters' },
+            },
+          ])
+          snapshot.set(managedClustersState, [])
+          snapshot.set(managedClusterSetsState, [])
+          snapshot.set(managedClusterInfosState, [
+            {
+              apiVersion: ManagedClusterInfoApiVersion,
+              kind: ManagedClusterInfoKind,
+              metadata: { name: 'local-cluster', namespace: 'local-cluster' },
+              status: {
+                consoleURL: 'https://testCluster.com',
+                conditions: [
+                  {
+                    type: 'ManagedClusterConditionAvailable',
+                    reason: 'ManagedClusterConditionAvailable',
+                    status: 'True',
+                  },
+                  { type: 'ManagedClusterJoined', reason: 'ManagedClusterJoined', status: 'True' },
+                  { type: 'HubAcceptedManagedCluster', reason: 'HubAcceptedManagedCluster', status: 'True' },
+                ],
+                version: '1.17',
+                distributionInfo: {
+                  type: 'ocp',
+                  ocp: {
+                    version: '1.2.3',
+                    availableUpdates: [],
+                    desiredVersion: '1.2.3',
+                    upgradeFailed: false,
+                  },
+                },
+              },
+            },
+          ])
+          snapshot.set(secretsState, [mockKubevirtSecret as Secret, providerConnectionAnsible as Secret])
+          snapshot.set(clusterCuratorsState, [upgradeOnlyCurator])
+          snapshot.set(subscriptionOperatorsState, [subscriptionOperator])
+          snapshot.set(settingsState, { ansibleIntegration: 'enabled' })
+        }}
+      >
+        <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?${CLUSTER_INFRA_TYPE_PARAM}=kubevirt`]}>
+          <Routes>
+            <Route path={NavigationPath.createCluster} element={<CreateClusterPage />} />
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+  }
+
+  test('differentiates the automation toweraccess secret by cluster name for a shared namespace (ACM-39253)', async () => {
+    window.scrollBy = () => {}
+    const initialNocks = [
+      nockList(clusterImageSetKubervirt as IResource, [clusterImageSetKubervirt] as IResource[]),
+      nockList(storageClass as IResource, [storageClass] as IResource[]),
+    ]
+    render(<AutomationComponent />)
+
+    await new Promise((resolve) => setTimeout(resolve, 500))
+
+    await waitForNocks(initialNocks)
+
+    await waitForText('Cluster details', true)
+
+    // step 1 -- cluster details
+    await typeByTestId('clusterName', clusterName)
+    await clickByPlaceholderText('Select or enter a release image')
+    await clickByRole('option', { name: /OpenShift 4\.15\.36/i })
+
+    const inputElement = screen.getByTestId('emanspace')
+    expect(inputElement).toHaveValue('clusters')
+
+    // step 2 -- node pools
+    await clickByText('Next')
+    const nodePoolNameInput = screen.getByTestId('nodePoolName')
+    fireEvent.change(nodePoolNameInput, { target: { value: 'nodepool' } })
+
+    // storage mappings
+    await clickByText('Next')
+    await clickByText('Add storage class mapping')
+    await typeByTestId('infraStorageClassName', 'storage-class1')
+    await typeByTestId('guestStorageClassName', 'guest-storage1')
+    await typeByTestId('storageClassGroup', 'group1')
+    await clickByText('Add volume snapshot class mapping')
+    await typeByTestId('infraVolumeSnapshotClassName', 'snapshot-class1')
+    await typeByTestId('guestVolumeSnapshotClassName', 'guest-snap1')
+    await typeByTestId('volumeSnapshotGroup', 'group1')
+    await clickByText('Next')
+
+    // step -- automation: select the template so the toweraccess secret is copied
+    await waitForText('Automation template')
+    await waitForNotText('Install the operator')
+    await clickByPlaceholderText('Select an automation template')
+    await clickByText('kubevirt-automation')
+    await clickByText('Next')
+
+    const expectedAnsibleSecret: Secret = {
+      apiVersion: 'v1',
+      kind: 'Secret',
+      type: 'Opaque',
+      metadata: {
+        name: 'toweraccess-upgrade-test',
+        namespace: 'clusters',
+        labels: {
+          'cluster.open-cluster-management.io/type': 'ans',
+          'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ii',
+          'cluster.open-cluster-management.io/copiedFromSecretName': 'ansible-connection',
+          'cluster.open-cluster-management.io/backup': 'cluster',
+        },
+      },
+      stringData: {
+        host: 'test',
+        token: 'test',
+      },
+    }
+    const expectedCurator: ClusterCurator = {
+      apiVersion: ClusterCuratorApiVersion,
+      kind: ClusterCuratorKind,
+      metadata: {
+        name: 'test',
+        namespace: 'clusters',
+        labels: {
+          'open-cluster-management': 'curator',
+        },
+      },
+      spec: {
+        upgrade: {
+          posthook: [
+            {
+              name: 'test-posthook-upgrade',
+              extra_vars: {},
+            },
+          ],
+          towerAuthSecret: 'toweraccess-upgrade-test',
+        },
+      },
+    }
+
+    const createNocks = [
+      nockCreate(mockProject, mockProjectResponse),
+      nockCreate(mockClusterProjectKubevirt, mockClusterProjectKubevirtResponse),
+      nockCreate(mockNodePools),
+      nockCreate(managedCluster),
+      nockCreate(mockHostedClusterKubervirt),
+      nockCreate(mockKlusterletAddonConfigKubevirt),
+      nockCreate(mockKubeConfigSecretKubevirt),
+      nockCreate(mockPullSecretKubevirt),
+      nockCreate(mockSSHKeySecret),
+      nockCreate(expectedCurator),
+      nockCreate(expectedAnsibleSecret),
+    ]
+
+    await clickByText('Create')
+
+    await waitForText('Creating cluster ...')
+
     await waitForNocks(createNocks)
   })
 })
