@@ -8,13 +8,26 @@ import { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import pluralize from 'pluralize'
 import { Stream } from 'stream'
 import { promisify } from 'util'
-import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
 import type { ITransformedResource } from '../lib/pagination'
 import { type ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
 import { getCACertificate, getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
 import type { IResource } from '../resources/resource'
+import { canAccess, canGetResource, canListClusterScopedKind, canListNamespacedScopedKind } from './eventsAccess'
+import { startAccessCacheCleanup, stopAccessCacheCleanup } from './eventsCache'
+
+export {
+  ACCESS_CACHE_TTL,
+  ACCESS_CACHE_CLEANUP_INTERVAL,
+  ACCESS_CACHE_MAX_TOKENS,
+  ACCESS_CACHE_MAX_ENTRIES_PER_TOKEN,
+  cleanupAccessCache,
+  getAccessCache,
+  hashAccessToken,
+  resetAccessCache,
+} from './eventsCache'
+export { canAccess, canGetResource } from './eventsAccess'
 
 const { map, split } = eventStream
 const pipeline = promisify(Stream.pipeline)
@@ -131,8 +144,6 @@ export function initResourceCache(cache: ResourceCache) {
 
 export let resourceCache: ResourceCache = {}
 
-const accessCache: Record<string, Record<string, { time: number; promise: Promise<boolean> }>> = {}
-
 const definitions: IWatchOptions[] = [
   { kind: 'ClusterManagementAddOn', apiVersion: 'addon.open-cluster-management.io/v1alpha1' },
   { kind: 'ManagedClusterAddOn', apiVersion: 'addon.open-cluster-management.io/v1alpha1' },
@@ -223,6 +234,7 @@ const definitions: IWatchOptions[] = [
 
 export function startWatching(): void {
   ServerSideEvents.eventFilter = eventFilter
+  startAccessCacheCleanup()
 
   for (const definition of definitions) {
     void listAndWatch(definition)
@@ -626,14 +638,15 @@ function eventFilter(token: string, serverSideEvent: ServerSideEvent<ServerSideE
       return Promise.resolve(true)
     case 'ADDED':
     case 'MODIFIED': {
-      const watchEvent = serverSideEvent.data
-      const resource = watchEvent.object
+      const resource = serverSideEvent.data.object
+      if (!resource?.kind || !resource?.apiVersion) {
+        return Promise.resolve(false)
+      }
+      // Fast path: cluster-scoped list (admins / broad ClusterRoles).
       return canListClusterScopedKind(resource, token).then((allowed) => {
         if (allowed) return true
-        return canListNamespacedScopedKind(resource, token).then((allowed) => {
-          if (allowed) return true
-          return canGetResource(resource, token)
-        })
+        // After cluster list is denied, use SelfSubjectRulesReview instead of O(N) SSARs.
+        return canGetResource(resource, token)
       })
     }
     default:
@@ -642,83 +655,10 @@ function eventFilter(token: string, serverSideEvent: ServerSideEvent<ServerSideE
   }
 }
 
-function canListClusterScopedKind(resource: IResource, token: string): Promise<boolean> {
-  return canAccess({ kind: resource.kind, apiVersion: resource.apiVersion }, 'list', token)
-}
-
-function canListNamespacedScopedKind(resource: IResource, token: string): Promise<boolean> {
-  if (!resource.metadata?.namespace) return Promise.resolve(false)
-  return canAccess(
-    {
-      kind: resource.kind,
-      apiVersion: resource.apiVersion,
-      metadata: { namespace: resource.metadata.namespace },
-    },
-    'list',
-    token
-  )
-}
-
-function canGetResource(resource: IResource, token: string): Promise<boolean> {
-  return canAccess(resource, 'get', token)
-}
-
-export function canAccess(
-  resource: { kind: string; apiVersion: string; metadata?: { name?: string; namespace?: string } },
-  verb: 'get' | 'list' | 'create',
-  token: string
-): Promise<boolean> {
-  // TODO make sure old cache items get cleaned up
-
-  const key = `${resource.kind}:${resource.metadata?.namespace}:${resource.metadata?.name}`
-  if (!accessCache[token]) accessCache[token] = {}
-  const existing = accessCache[token][key]
-  if (existing && existing.time > Date.now() - 60 * 1000) {
-    return existing.promise
-  }
-
-  const promise = jsonPost<{ status: { allowed: boolean } }>(
-    process.env.CLUSTER_API_URL + '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
-    {
-      apiVersion: 'authorization.k8s.io/v1',
-      kind: 'SelfSubjectAccessReview',
-      metadata: {},
-      spec: {
-        resourceAttributes: {
-          group: resource.apiVersion.includes('/') ? resource.apiVersion.split('/')[0] : '',
-          name: resource.metadata?.name,
-          namespace:
-            resource.metadata?.namespace ?? (resource.kind === 'Namespace' ? resource.metadata?.name : undefined),
-          resource: pluralize(resource.kind.toLowerCase()),
-          verb,
-        },
-      },
-    },
-    token
-  ).then((result) => {
-    if (process.env.LOG_ACCESS === 'true') {
-      logger.debug({
-        msg: 'access',
-        allowed: result.body.status.allowed,
-        verb,
-        resource: pluralize(resource.kind.toLowerCase()),
-        name: resource.metadata?.name,
-        namespace: resource.metadata?.namespace,
-      })
-    }
-    return result.body.status.allowed
-  })
-
-  accessCache[token][key] = {
-    time: Date.now(),
-    promise,
-  }
-  return promise
-}
-
 let stopping = false
 export function stopWatching(): void {
   stopping = true
+  stopAccessCacheCleanup()
   for (const request of requests) {
     request.cancel()
   }
