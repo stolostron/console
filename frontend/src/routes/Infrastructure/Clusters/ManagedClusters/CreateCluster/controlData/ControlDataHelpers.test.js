@@ -1,7 +1,7 @@
 // Copyright (c) 2022 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
-import { reverseMultitext } from './ControlDataHelpers'
+import { differentiateCuratorSecrets, reverseMultitext, secretName } from './ControlDataHelpers'
 
 const controlTemplate = {
   tooltip: 'Add the ingress to be created',
@@ -146,5 +146,36 @@ describe('ControlDataHelper', () => {
     expect(control.controlData.length).toEqual(1)
     expect(control.active.multitextEntries[0]).toEqual('')
     expect(control.controlData[0].active).toEqual('')
+  })
+})
+
+describe('automation secret naming (ACM-39253)', () => {
+  it('differentiates by cluster name only when the namespace differs from the name', () => {
+    expect(secretName('install', 'mycluster', 'clusters')).toEqual('toweraccess-install-mycluster')
+    expect(secretName('upgrade', 'mycluster', 'mycluster')).toEqual('toweraccess-upgrade')
+    expect(secretName('scale', 'mycluster', undefined)).toEqual('toweraccess-scale')
+    expect(secretName('destroy', 'mycluster', '')).toEqual('toweraccess-destroy')
+  })
+
+  it('rewrites each ClusterCurator towerAuthSecret to the differentiated Secret name', () => {
+    const specYaml =
+      'spec:\n  install:\n    towerAuthSecret: toweraccess-install\n  upgrade:\n    towerAuthSecret: toweraccess-upgrade\n'
+    const result = differentiateCuratorSecrets(specYaml, 'mycluster', 'clusters')
+    expect(result).toContain('towerAuthSecret: toweraccess-install-mycluster')
+    expect(result).toContain('towerAuthSecret: toweraccess-upgrade-mycluster')
+  })
+
+  it('recomputes from the current cluster name without drift or double-append', () => {
+    const staleYaml = 'spec:\n  install:\n    towerAuthSecret: toweraccess-install-oldname\n'
+    const renamed = differentiateCuratorSecrets(staleYaml, 'newname', 'clusters')
+    expect(renamed).toContain('towerAuthSecret: toweraccess-install-newname')
+    expect(renamed).not.toContain('oldname')
+    const cleared = differentiateCuratorSecrets(staleYaml, 'oldname', '')
+    expect(cleared).toContain('toweraccess-install\n')
+    expect(cleared).not.toContain('oldname')
+  })
+
+  it('returns an empty spec unchanged when no automation template is selected', () => {
+    expect(differentiateCuratorSecrets('', 'mycluster', 'clusters')).toEqual('')
   })
 })
