@@ -668,7 +668,9 @@ export const secretName = (curation, name, namespace) =>
 // live cluster name (ACM-39253). Derived from the same name/namespace as the Secret name so the
 // reference and the Secret can never drift, even as the cluster name changes in the editor.
 export const differentiateCuratorSecrets = (specYaml, name, namespace) => {
-  if (!specYaml) return specYaml
+  if (!specYaml) {
+    return specYaml
+  }
   const parsed = jsYaml.load(specYaml)
   const curations = ['install', 'upgrade', 'scale', 'destroy']
   curations.forEach((curation) => {
