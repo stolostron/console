@@ -14,35 +14,45 @@ import {
 import { FleetK8sResourceCommon } from '../types'
 import { getFleetK8sAPIPath } from '../api/getFleetK8sAPIPath'
 
-// Mock the getFleetK8sAPIPath function
 jest.mock('../api/getFleetK8sAPIPath', () => ({
   getFleetK8sAPIPath: jest.fn(),
 }))
 
 const mockGetFleetK8sAPIPath = getFleetK8sAPIPath as jest.MockedFunction<typeof getFleetK8sAPIPath>
 
-// mock WebSocket
-global.WebSocket = jest.fn(() => ({
-  close: jest.fn(),
-  send: jest.fn(),
-  addEventListener: jest.fn(),
-  removeEventListener: jest.fn(),
-  readyState: 1,
-  url: '',
-  protocol: '',
-  extensions: '',
-  bufferedAmount: 0,
-  onopen: null,
-  onclose: null,
-  onmessage: null,
-  onerror: null,
-  CONNECTING: 0,
-  OPEN: 1,
-  CLOSING: 2,
-  CLOSED: 3,
-  binaryType: 'blob' as BinaryType,
-  dispatchEvent: jest.fn(),
-})) as any
+// jsdom environment may not expose TextDecoder globally
+if (typeof global.TextDecoder === 'undefined') {
+  const { TextDecoder: NodeTextDecoder } = require('util')
+  global.TextDecoder = NodeTextDecoder
+}
+
+const mockFetch = jest.fn()
+global.fetch = mockFetch
+
+function createMockReadableStream(chunks: string[]): ReadableStream<Uint8Array> {
+  const encoder = new TextEncoder()
+  let index = 0
+  return {
+    getReader() {
+      return {
+        read() {
+          if (index < chunks.length) {
+            return Promise.resolve({ done: false, value: encoder.encode(chunks[index++]) })
+          }
+          return Promise.resolve({ done: true, value: undefined })
+        },
+        cancel() {
+          return Promise.resolve()
+        },
+        releaseLock() {},
+      }
+    },
+  } as unknown as ReadableStream<Uint8Array>
+}
+
+function createEmptyMockReadableStream(): ReadableStream<Uint8Array> {
+  return createMockReadableStream([])
+}
 
 describe('apiRequests', () => {
   const mockModel = {
@@ -64,13 +74,29 @@ describe('apiRequests', () => {
   })
 
   describe('fleetWatch', () => {
-    it('should create WebSocket with correct URL', () => {
+    const noopCallbacks = {
+      onEvent: jest.fn(),
+      onError: jest.fn(),
+      onClose: jest.fn(),
+    }
+
+    beforeEach(() => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        body: createEmptyMockReadableStream(),
+      })
+    })
+
+    it('should call fetch with correct URL', () => {
       const backendURL = '/proxy'
       const query = { ns: 'default', cluster: 'cluster1' }
 
-      fleetWatch(mockModel, query, backendURL)
+      fleetWatch(mockModel, query, backendURL, noopCallbacks)
 
-      expect(WebSocket).toHaveBeenCalledWith('/proxy/api/v1/namespaces/default/pods?watch=true')
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/proxy/api/v1/namespaces/default/pods?watch=true',
+        expect.objectContaining({ signal: expect.any(AbortSignal) })
+      )
     })
 
     it('should include labelSelector in query params', () => {
@@ -81,10 +107,11 @@ describe('apiRequests', () => {
         labelSelector: { matchLabels: { app: 'test' } },
       }
 
-      fleetWatch(mockModel, query, backendURL)
+      fleetWatch(mockModel, query, backendURL, noopCallbacks)
 
-      expect(WebSocket).toHaveBeenCalledWith(
-        '/proxy/api/v1/namespaces/default/pods?watch=true&labelSelector=app%3Dtest'
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/proxy/api/v1/namespaces/default/pods?watch=true&labelSelector=app%3Dtest',
+        expect.any(Object)
       )
     })
 
@@ -96,10 +123,11 @@ describe('apiRequests', () => {
         fieldSelector: 'metadata.name=test-pod',
       }
 
-      fleetWatch(mockModel, query, backendURL)
+      fleetWatch(mockModel, query, backendURL, noopCallbacks)
 
-      expect(WebSocket).toHaveBeenCalledWith(
-        '/proxy/api/v1/namespaces/default/pods?watch=true&fieldSelector=metadata.name%3Dtest-pod'
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/proxy/api/v1/namespaces/default/pods?watch=true&fieldSelector=metadata.name%3Dtest-pod',
+        expect.any(Object)
       )
     })
 
@@ -111,9 +139,12 @@ describe('apiRequests', () => {
         resourceVersion: '12345',
       }
 
-      fleetWatch(mockModel, query, backendURL)
+      fleetWatch(mockModel, query, backendURL, noopCallbacks)
 
-      expect(WebSocket).toHaveBeenCalledWith('/proxy/api/v1/namespaces/default/pods?watch=true&resourceVersion=12345')
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/proxy/api/v1/namespaces/default/pods?watch=true&resourceVersion=12345',
+        expect.any(Object)
+      )
     })
 
     it('should handle cluster-scoped resources', () => {
@@ -121,22 +152,18 @@ describe('apiRequests', () => {
       const backendURL = '/proxy'
       const query = { cluster: 'cluster1' }
 
-      fleetWatch(clusterScopedModel, query, backendURL)
+      fleetWatch(clusterScopedModel, query, backendURL, noopCallbacks)
 
-      expect(WebSocket).toHaveBeenCalledWith('/proxy/api/v1/pods?watch=true')
+      expect(mockFetch).toHaveBeenCalledWith('/proxy/api/v1/pods?watch=true', expect.any(Object))
     })
 
-    it('should handle resources with names', () => {
+    it('should return an AbortController', () => {
       const backendURL = '/proxy'
-      const query = {
-        ns: 'default',
-        cluster: 'cluster1',
-      }
+      const query = { ns: 'default', cluster: 'cluster1' }
 
-      // Note: fleetWatch doesn't handle 'name' in query, it's handled by getResourcePath
-      fleetWatch(mockModel, query, backendURL)
+      const result = fleetWatch(mockModel, query, backendURL, noopCallbacks)
 
-      expect(WebSocket).toHaveBeenCalledWith('/proxy/api/v1/namespaces/default/pods?watch=true')
+      expect(result).toBeInstanceOf(AbortController)
     })
 
     it('should handle non-core API groups', () => {
@@ -148,9 +175,130 @@ describe('apiRequests', () => {
       const backendURL = '/proxy'
       const query = { ns: 'default', cluster: 'cluster1' }
 
-      fleetWatch(appsModel, query, backendURL)
+      fleetWatch(appsModel, query, backendURL, noopCallbacks)
 
-      expect(WebSocket).toHaveBeenCalledWith('/proxy/apis/apps/apps/v1/namespaces/default/pods?watch=true')
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/proxy/apis/apps/apps/v1/namespaces/default/pods?watch=true',
+        expect.any(Object)
+      )
+    })
+
+    it('should parse NDJSON events and call onEvent', async () => {
+      const onEvent = jest.fn()
+      const onError = jest.fn()
+      const onClose = jest.fn()
+      const event1 = { type: 'ADDED', object: { metadata: { name: 'pod-1' } } }
+      const event2 = { type: 'MODIFIED', object: { metadata: { name: 'pod-2' } } }
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        body: createMockReadableStream([JSON.stringify(event1) + '\n' + JSON.stringify(event2) + '\n']),
+      })
+
+      fleetWatch(mockModel, { ns: 'default' }, '/proxy', { onEvent, onError, onClose })
+
+      // Flush all microtasks from the async stream processing
+      for (let i = 0; i < 10; i++) {
+        await new Promise((resolve) => resolve(undefined))
+      }
+
+      expect(onError).not.toHaveBeenCalled()
+      expect(onEvent).toHaveBeenCalledWith(event1)
+      expect(onEvent).toHaveBeenCalledWith(event2)
+      expect(onClose).toHaveBeenCalled()
+    })
+
+    it('should call onError with GONE for 410 responses', async () => {
+      const onError = jest.fn()
+
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 410,
+        body: null,
+      })
+
+      fleetWatch(mockModel, { ns: 'default' }, '/proxy', { onEvent: jest.fn(), onError, onClose: jest.fn() })
+
+      for (let i = 0; i < 10; i++) {
+        await new Promise((resolve) => resolve(undefined))
+      }
+
+      expect(onError).toHaveBeenCalledWith({ type: 'GONE', status: 410 })
+    })
+
+    it('should call onError for other non-OK responses', async () => {
+      const onError = jest.fn()
+
+      mockFetch.mockResolvedValue({
+        ok: false,
+        status: 500,
+        body: null,
+      })
+
+      fleetWatch(mockModel, { ns: 'default' }, '/proxy', { onEvent: jest.fn(), onError, onClose: jest.fn() })
+
+      for (let i = 0; i < 10; i++) {
+        await new Promise((resolve) => resolve(undefined))
+      }
+
+      expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringContaining('500') }))
+    })
+
+    it('should handle in-stream 410 Gone ERROR events', async () => {
+      const onEvent = jest.fn()
+      const onError = jest.fn()
+      const onClose = jest.fn()
+      const goneEvent = { type: 'ERROR', object: { kind: 'Status', code: 410, reason: 'Gone' } }
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        body: createMockReadableStream([JSON.stringify(goneEvent) + '\n']),
+      })
+
+      fleetWatch(mockModel, { ns: 'default' }, '/proxy', { onEvent, onError, onClose })
+
+      for (let i = 0; i < 10; i++) {
+        await new Promise((resolve) => resolve(undefined))
+      }
+
+      expect(onEvent).not.toHaveBeenCalled()
+      expect(onError).toHaveBeenCalledWith({ type: 'GONE', status: 410 })
+      expect(onClose).not.toHaveBeenCalled()
+    })
+
+    it('should include CSRF token and cache-control headers', async () => {
+      Object.defineProperty(document, 'cookie', {
+        value: 'csrf-token=test-token-123',
+        writable: true,
+      })
+
+      mockFetch.mockResolvedValue({
+        ok: true,
+        body: createMockReadableStream([]),
+      })
+
+      fleetWatch(mockModel, { ns: 'default' }, '/proxy', {
+        onEvent: jest.fn(),
+        onError: jest.fn(),
+        onClose: jest.fn(),
+      })
+
+      for (let i = 0; i < 10; i++) {
+        await new Promise((resolve) => resolve(undefined))
+      }
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          credentials: 'same-origin',
+          headers: expect.objectContaining({
+            'X-CSRFToken': 'test-token-123',
+            'Cache-Control': 'no-cache, no-transform',
+          }),
+        })
+      )
+
+      Object.defineProperty(document, 'cookie', { value: '', writable: true })
     })
   })
 

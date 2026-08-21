@@ -7,18 +7,20 @@ type Data = FleetK8sResourceCommon | FleetK8sResourceCommon[]
 
 type CacheEntry = {
   result?: FleetWatchK8sResultsObject<Data>
-  socket?: WebSocket
+  abortController?: AbortController
   refCount: number
   timestamp: number
   resourceVersion?: string
   timeout?: NodeJS.Timeout
+  streamStatus?: string
+  streamOpenedAt?: number
 }
 
 const CACHE_TTL = 30 * 1000 // 30 seconds
 const CACHE_REMOVE_GRACE = 10 * 1000 // 10 seconds; wait a bit longer than TTL to remove cache entry so it is not removed between retrieval of initial value and start of watching
 
 export const isCacheEntryValid = (entry: CacheEntry) => {
-  return !entry.result?.loadError && (!!entry.socket || isCacheEntryFresh(entry))
+  return !entry.result?.loadError && (!!entry.abortController || isCacheEntryFresh(entry))
 }
 
 export const isCacheEntryFresh = (entry: CacheEntry) => {
@@ -29,15 +31,14 @@ export const getCacheEntryAge = (entry: CacheEntry) => {
   return Date.now() - entry.timestamp
 }
 
-export const getSocketMonitoringInterval = () => CACHE_TTL
-
 export type FleetK8sWatchResourceStore = {
   // Cache
   cache: Record<string, CacheEntry>
 
   // Actions for cache
   setResult: (key: string, data: Data | undefined, loaded: boolean, loadError?: any, resourceVersion?: string) => void
-  setSocket: (key: string, socket: WebSocket) => void
+  setAbortController: (key: string, abortController: AbortController) => void
+  setStreamStatus: (key: string, status: string) => void
   incrementRefCount: (key: string) => void
   decrementRefCount: (key: string) => void
   touchEntry: (key: string) => void
@@ -70,16 +71,35 @@ export const useFleetK8sWatchResourceStore = create<FleetK8sWatchResourceStore>(
       })
     },
 
-    setSocket: (key, socket) => {
+    setAbortController: (key, abortController) => {
       set((state) => ({
         cache: {
           ...state.cache,
           [key]: {
             ...state.cache[key],
-            socket,
+            abortController,
           },
         },
       }))
+    },
+
+    setStreamStatus: (key, status) => {
+      set((state) => {
+        const entry = state.cache[key]
+        if (!entry) return state
+        const updates: Partial<CacheEntry> = { streamStatus: status }
+        if (status === 'Connecting') {
+          updates.streamOpenedAt = Date.now()
+        } else if (!status.startsWith('Active')) {
+          updates.streamOpenedAt = undefined
+        }
+        return {
+          cache: {
+            ...state.cache,
+            [key]: { ...entry, ...updates },
+          },
+        }
+      })
     },
 
     incrementRefCount: (key) => {
@@ -87,7 +107,6 @@ export const useFleetK8sWatchResourceStore = create<FleetK8sWatchResourceStore>(
         const entry = state.cache[key] || {}
         const { refCount, timeout } = entry
         if (timeout) {
-          // cancel scheduled cache removal
           clearTimeout(timeout)
         }
         return {
@@ -107,10 +126,10 @@ export const useFleetK8sWatchResourceStore = create<FleetK8sWatchResourceStore>(
       set((state) => {
         const entry = state.cache[key]
         if (entry) {
-          const { socket, refCount } = entry
+          const { abortController, refCount } = entry
           const newRefCount = refCount > 0 ? refCount - 1 : 0
-          if (newRefCount === 0 && socket) {
-            socket.close()
+          if (newRefCount === 0 && abortController) {
+            abortController.abort()
           }
           return {
             cache: {
@@ -118,10 +137,10 @@ export const useFleetK8sWatchResourceStore = create<FleetK8sWatchResourceStore>(
               [key]: {
                 ...entry,
                 refCount: newRefCount,
-                socket: newRefCount > 0 ? socket : undefined,
+                abortController: newRefCount > 0 ? abortController : undefined,
                 timeout:
                   newRefCount === 0
-                    ? setTimeout(() => state.removeEntry(key), CACHE_TTL + CACHE_REMOVE_GRACE) // schedule removal of entry
+                    ? setTimeout(() => state.removeEntry(key), CACHE_TTL + CACHE_REMOVE_GRACE)
                     : undefined,
               },
             },

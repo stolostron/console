@@ -93,54 +93,41 @@ import EventComponent from '../internal/FleetResourceEventStream/EventComponent'
 
 export const FleetResourceEventStream: FC<FleetResourceEventStreamProps> = ({ resource }) => {
   const [active, setActive] = useState(true)
+  const activeRef = useRef(active)
+  activeRef.current = active
   const [hubCluster] = useHubClusterName()
   const { t } = useTranslation('public')
   const [sortedEvents, setSortedEvents] = useState<EventKind[]>([])
   const [error, setError] = useState<boolean | string>(false)
   const [loading, setLoading] = useState(true)
-  const ws = useRef<WebSocket>()
+  const abortControllerRef = useRef<AbortController>()
   const [backendAPIPath, loaded] = useFleetK8sAPIPath(resource?.cluster)
 
   const fieldSelector = `involvedObject.uid=${resource?.metadata?.uid},involvedObject.name=${resource?.metadata?.name},involvedObject.kind=${resource?.kind}`
   const namespace = resource?.metadata?.namespace
 
-  // handle websocket setup and teardown when dependent props change
   useEffect(() => {
     if (!resource.cluster || resource.cluster === hubCluster || !loaded) return
 
     const watchURLOptions = {
       cluster: resource.cluster,
       ...(namespace ? { ns: namespace } : {}),
-      ...(fieldSelector
-        ? {
-            fieldSelector,
-          }
-        : {}),
+      ...(fieldSelector ? { fieldSelector } : {}),
     }
 
-    if (!ws.current) {
-      // create new WebSocket connection
-      ws.current = fleetWatch(EventModel, watchURLOptions, backendAPIPath as string)
+    if (!abortControllerRef.current) {
+      abortControllerRef.current = fleetWatch(EventModel, watchURLOptions, backendAPIPath as string, {
+        onEvent: (eventData) => {
+          if (!activeRef.current) return
 
-      if (ws.current === undefined) return
-
-      ws.current.onmessage = (message: any) => {
-        if (!active) return
-
-        try {
-          const eventdataParsed = JSON.parse(message.data)
-
-          if (!eventdataParsed) return
-
-          const eventType = eventdataParsed.type
-          const object = eventdataParsed.object as EventKind
+          const eventType = eventData.type
+          const object = eventData.object as EventKind
 
           setSortedEvents((currentSortedEvents) => {
             const topEvents = currentSortedEvents.slice(0, MAX_MESSAGES)
-
             const uid = object?.metadata?.uid || ''
-
             const eventAlreadyExists = topEvents.find((e) => e?.metadata?.uid === uid)
+
             switch (eventType) {
               case 'ADDED':
               case 'MODIFIED':
@@ -150,10 +137,8 @@ export const FleetResourceEventStream: FC<FleetResourceEventStreamProps> = ({ re
                   object?.count !== undefined &&
                   eventAlreadyExists.count > object.count
                 ) {
-                  // We already have a more recent version of this message stored, so skip this one
                   return topEvents
                 }
-
                 return sortEvents([...topEvents, object])
               case 'DELETED':
                 return topEvents.filter((e) => e?.metadata?.uid !== uid)
@@ -162,31 +147,27 @@ export const FleetResourceEventStream: FC<FleetResourceEventStreamProps> = ({ re
                 return topEvents
             }
           })
-        } catch (error) {
-          console.error('Error parsing WebSocket message:', error)
-        }
-      }
+        },
+        onError: () => {
+          setActive(false)
+          setError(true)
+        },
+        onClose: () => {
+          setActive(false)
+        },
+      })
 
-      ws.current.onopen = () => {
-        setActive(true)
-        setError(false)
-        setLoading(false)
-      }
-
-      ws.current.onclose = (evt: CloseEvent) => {
-        ws.current = undefined
-        setActive(false)
-        if (evt?.wasClean === false) {
-          setError(evt.reason || t('public~Connection did not close cleanly.'))
-        }
-      }
-
-      ws.current.onerror = () => {
-        setActive(false)
-        setError(true)
-      }
+      setActive(true)
+      setError(false)
+      setLoading(false)
     }
-  }, [namespace, fieldSelector, active, t, resource.cluster, hubCluster, loaded, backendAPIPath])
+
+    return () => {
+      abortControllerRef.current?.abort()
+      abortControllerRef.current = undefined
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [namespace, fieldSelector, resource.cluster, hubCluster, loaded, backendAPIPath])
 
   // return early after all hooks are called, otherwise the component will render twice
   if (!resource.cluster || resource.cluster === hubCluster) return <ResourceEventStream resource={resource} />

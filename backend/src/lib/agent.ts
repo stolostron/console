@@ -36,6 +36,20 @@ export function getServiceAgent() {
   return serviceAgent
 }
 
+let streamingAgent: Agent
+export function getStreamingAgent() {
+  if (!streamingAgent) {
+    streamingAgent = new Agent({
+      ca: getCACertificate(() => {
+        streamingAgent = undefined
+      }),
+      keepAlive: true,
+      keepAliveMsecs: 30000,
+    })
+  }
+  return streamingAgent
+}
+
 let proxyAgent: HttpsProxyAgent<string>
 export function getProxyAgent() {
   if (!proxyAgent && process.env.HTTPS_PROXY) {

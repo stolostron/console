@@ -1,18 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { FleetK8sResourceCommon, FleetWatchK8sResource, FleetWatchK8sResultsObject } from '../types'
-import {
-  getCacheEntryAge,
-  getSocketMonitoringInterval,
-  isCacheEntryFresh,
-  isCacheEntryValid,
-  useFleetK8sWatchResourceStore,
-} from './fleetK8sWatchResourceStore'
+import { isCacheEntryValid, useFleetK8sWatchResourceStore } from './fleetK8sWatchResourceStore'
 
 // Type imports
 import { consoleFetchJSON, type K8sModel, type K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk'
 import { selectorToString } from './requirements'
-import { buildResourceURL, fleetWatch } from './apiRequests'
+import { buildResourceURL, fleetWatch, WatchErrorGone } from './apiRequests'
 import { NO_FLEET_AVAILABLE_ERROR } from './constants'
 import { useHubClusterName, useIsFleetAvailable } from '../api'
 import { useCallback } from 'react'
@@ -42,7 +36,11 @@ const handleError = (err: any, requestPath: string, resource: FleetWatchK8sResou
   store.setResult(requestPath, getDefaultData(resource), true, err)
 }
 
-const openFleetWatchSocket = (
+const RECONNECT_DELAY = 5000
+
+const isGoneError = (err: any): err is WatchErrorGone => err?.type === 'GONE' && err?.status === 410
+
+const openFleetWatchStream = (
   requestPath: string,
   resource: FleetWatchK8sResource,
   model: K8sModel,
@@ -53,8 +51,15 @@ const openFleetWatchSocket = (
   const cachedResult = store.getResult(requestPath)
   const resourceVersion = store.getResourceVersion(requestPath)
 
+  const existingEntry = store.cache[requestPath]
+  if (existingEntry?.abortController) {
+    existingEntry.abortController.abort()
+  }
+
+  store.setStreamStatus(requestPath, 'Connecting')
+
   try {
-    const socket = fleetWatch(
+    const abortController = fleetWatch(
       model,
       {
         ns: namespace,
@@ -64,35 +69,59 @@ const openFleetWatchSocket = (
         resourceVersion: isList ? resourceVersion : undefined,
         allowWatchBookmarks: isList,
       },
-      basePath
+      basePath,
+      {
+        onEvent: (eventData) => {
+          store.setStreamStatus(requestPath, 'Active')
+          handleWatchEvent(eventData, requestPath, isList, cluster as string)
+        },
+        onError: (err) => {
+          if (isGoneError(err)) {
+            store.setStreamStatus(requestPath, 'Gone (410) → re-listing')
+            store.setResult(requestPath, cachedResult?.data, true, undefined, '')
+            scheduleReconnect(requestPath, resource, model, basePath, 0, true)
+          } else {
+            const msg = err instanceof Error ? err.message : String(err)
+            store.setStreamStatus(requestPath, `Error: ${msg} → reconnecting in ${RECONNECT_DELAY / 1000}s`)
+            console.error('Watch stream error:', err)
+            store.setResult(requestPath, cachedResult?.data, true, err)
+            scheduleReconnect(requestPath, resource, model, basePath, RECONNECT_DELAY, true)
+          }
+        },
+        onClose: () => {
+          store.setStreamStatus(requestPath, 'Closed → reconnecting')
+          store.touchEntry(requestPath)
+          scheduleReconnect(requestPath, resource, model, basePath, 0, false)
+        },
+      }
     )
-    store.setSocket(requestPath, socket)
-
-    socket.onmessage = (event) => {
-      try {
-        // Handle WebSocket event - this will update the store and notify all subscribers
-        handleWebsocketEvent(event, requestPath, isList, cluster as string)
-      } catch (e) {
-        console.error('Failed to parse WebSocket message', e)
-      }
-    }
-
-    socket.onclose = (event) => {
-      if (event.wasClean) {
-        // assume data is fresh up to this point
-        store.touchEntry(requestPath)
-      } else {
-        console.error('WebSocket did not close cleanly:', event)
-      }
-    }
-
-    socket.onerror = (err) => {
-      console.error('WebSocket error:', err)
-      store.setResult(requestPath, cachedResult?.data, true, err)
-    }
+    store.setAbortController(requestPath, abortController)
   } catch (err) {
     handleError(err, requestPath, resource)
   }
+}
+
+const scheduleReconnect = (
+  requestPath: string,
+  resource: FleetWatchK8sResource,
+  model: K8sModel,
+  basePath: string,
+  delay: number,
+  reload: boolean
+) => {
+  setTimeout(async () => {
+    const store = useFleetK8sWatchResourceStore.getState()
+    const entry = store.cache[requestPath]
+    if (entry && entry.refCount > 0) {
+      if (reload) {
+        if (await loadInitialData(requestPath, resource)) {
+          openFleetWatchStream(requestPath, resource, model, basePath)
+        }
+      } else {
+        openFleetWatchStream(requestPath, resource, model, basePath)
+      }
+    }
+  }, delay)
 }
 
 const loadInitialData = async (requestPath: string, resource: FleetWatchK8sResource) => {
@@ -111,42 +140,6 @@ const loadInitialData = async (requestPath: string, resource: FleetWatchK8sResou
     return false
   }
   return true
-}
-
-const monitorFleetWatchSocket = async (
-  requestPath: string,
-  resource: FleetWatchK8sResource,
-  model: K8sModel,
-  basePath: string
-) => {
-  async function checkFleetWatchSocket(
-    requestPath: string,
-    resource: FleetWatchK8sResource,
-    model: K8sModel,
-    basePath: string
-  ) {
-    const store = useFleetK8sWatchResourceStore.getState()
-    const entry = store.cache[requestPath]
-    if (entry && entry.refCount > 0) {
-      if (isCacheEntryFresh(entry)) {
-        // check again when data is due to expire
-        setTimeout(
-          () => checkFleetWatchSocket(requestPath, resource, model, basePath),
-          getSocketMonitoringInterval() - getCacheEntryAge(entry)
-        )
-      } else {
-        // Socket may have disconnected; reconnect
-        entry.socket?.close()
-        if (await loadInitialData(requestPath, resource)) {
-          // only start watch if initial load succeeds
-          openFleetWatchSocket(requestPath, resource, model, basePath)
-        }
-        // check again after default interval
-        setTimeout(() => checkFleetWatchSocket(requestPath, resource, model, basePath), getSocketMonitoringInterval())
-      }
-    }
-  }
-  setTimeout(() => checkFleetWatchSocket(requestPath, resource, model, basePath), getSocketMonitoringInterval())
 }
 
 export function useGetInitialResult() {
@@ -205,15 +198,11 @@ export const startWatch = async (resource: FleetWatchK8sResource, model: K8sMode
   const store = useFleetK8sWatchResourceStore.getState()
   store.incrementRefCount(requestPath)
 
-  // if we are the first subscriber, we are responsible for getting the initial data and watching for updates
   if (store.getRefCount(requestPath) === 1) {
-    // if there is a cached value that is not expired, we can skip the initial fetch
     const entry = store.cache[requestPath]
     if ((entry && isCacheEntryValid(entry)) || (await loadInitialData(requestPath, resource))) {
-      // only start watch if we have valid cached data or an initial load succeeds
-      openFleetWatchSocket(requestPath, resource, model, basePath)
+      openFleetWatchStream(requestPath, resource, model, basePath)
     }
-    monitorFleetWatchSocket(requestPath, resource, model, basePath)
   }
 }
 
@@ -223,20 +212,19 @@ export const stopWatch = (resource: FleetWatchK8sResource, model: K8sModel, base
   store.decrementRefCount(requestPath)
 }
 
-export const handleWebsocketEvent = <R extends FleetK8sResourceCommon | FleetK8sResourceCommon[]>(
-  event: any,
+export const handleWatchEvent = <R extends FleetK8sResourceCommon | FleetK8sResourceCommon[]>(
+  eventData: { type: string; object: any } | undefined,
   requestPath: string,
   isList: boolean | undefined,
   cluster: string
 ): void => {
-  if (!event) {
-    console.warn('Received undefined event', event)
+  if (!eventData) {
+    console.warn('Received undefined event', eventData)
     return
   }
 
-  const eventDataParsed = JSON.parse(event.data)
-  const eventType = eventDataParsed?.type
-  const object = eventDataParsed?.object
+  const eventType = eventData.type
+  const object = eventData.object
 
   if (!object) return
 
@@ -249,7 +237,6 @@ export const handleWebsocketEvent = <R extends FleetK8sResourceCommon | FleetK8s
     const processedEventData = { cluster, ...(object as K8sResourceCommon) }
 
     if (processedEventData) {
-      // Update the store with the new data - this will notify all subscribers
       store.setResult(requestPath, processedEventData, true)
     }
 
@@ -276,7 +263,7 @@ export const handleWebsocketEvent = <R extends FleetK8sResourceCommon | FleetK8s
     return
   }
   if (!object?.metadata?.uid) {
-    console.warn('Event object does not have a metadata.uid', eventDataParsed)
+    console.warn('Event object does not have a metadata.uid', eventData)
     return
   }
 

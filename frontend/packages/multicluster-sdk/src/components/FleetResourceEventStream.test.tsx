@@ -62,7 +62,8 @@ jest.mock('../internal/FleetResourceEventStream/EventComponent', () =>
   jest.fn(() => <div id="event-component">Event Component</div>)
 )
 
-// create typed mock references
+import type { FleetWatchCallbacks } from '../internal/apiRequests'
+
 const mockFleetWatch = jest.mocked(fleetWatch)
 const mockUseFleetK8sAPIPath = jest.mocked(useFleetK8sAPIPath)
 const mockUseHubClusterName = jest.mocked(useHubClusterName)
@@ -78,34 +79,18 @@ describe('FleetResourceEventStream', () => {
     cluster: 'managed-cluster-1',
   }
 
-  const mockWebSocket = {
-    close: jest.fn(),
-    onmessage: null as any,
-    onopen: null as any,
-    onclose: null as any,
-    onerror: null as any,
-    // add required WebSocket properties
-    binaryType: 'blob' as BinaryType,
-    bufferedAmount: 0,
-    extensions: '',
-    protocol: '',
-    readyState: WebSocket.CONNECTING,
-    url: 'ws://mock-url',
-    send: jest.fn(),
-    addEventListener: jest.fn(),
-    removeEventListener: jest.fn(),
-    dispatchEvent: jest.fn(),
-    CONNECTING: 0,
-    OPEN: 1,
-    CLOSING: 2,
-    CLOSED: 3,
-  } as unknown as WebSocket
+  let capturedCallbacks: FleetWatchCallbacks
+  let mockAbortController: AbortController
 
   beforeEach(() => {
     jest.clearAllMocks()
+    mockAbortController = new AbortController()
     mockUseHubClusterName.mockReturnValue(['hub-cluster', true, undefined])
     mockUseFleetK8sAPIPath.mockReturnValue(['/api/proxy/plugin/mce/console/multicloud', true, undefined])
-    mockFleetWatch.mockReturnValue(mockWebSocket)
+    mockFleetWatch.mockImplementation((_model, _query, _basePath, callbacks) => {
+      capturedCallbacks = callbacks
+      return mockAbortController
+    })
   })
 
   it('should fall back to ResourceEventStream for hub cluster resources', () => {
@@ -126,64 +111,51 @@ describe('FleetResourceEventStream', () => {
     render(<FleetResourceEventStream resource={mockResource} />)
 
     await waitFor(() => {
-      expect(screen.getByText('Loading events...')).toBeInTheDocument()
+      expect(mockFleetWatch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          apiVersion: 'v1',
+          kind: 'Event',
+          plural: 'events',
+        }),
+        expect.objectContaining({
+          cluster: 'managed-cluster-1',
+          ns: 'default',
+          fieldSelector: 'involvedObject.uid=test-uid,involvedObject.name=test-pod,involvedObject.kind=Pod',
+        }),
+        '/api/proxy/plugin/mce/console/multicloud',
+        expect.objectContaining({
+          onEvent: expect.any(Function),
+          onError: expect.any(Function),
+          onClose: expect.any(Function),
+        })
+      )
     })
-
-    expect(mockFleetWatch).toHaveBeenCalledWith(
-      expect.objectContaining({
-        apiVersion: 'v1',
-        kind: 'Event',
-        plural: 'events',
-      }),
-      expect.objectContaining({
-        cluster: 'managed-cluster-1',
-        ns: 'default',
-        fieldSelector: 'involvedObject.uid=test-uid,involvedObject.name=test-pod,involvedObject.kind=Pod',
-      }),
-      '/api/proxy/plugin/mce/console/multicloud'
-    )
   })
 
-  it('should handle websocket onopen event', async () => {
+  it('should show streaming state after connection starts', async () => {
     render(<FleetResourceEventStream resource={mockResource} />)
-
-    await waitFor(() => {
-      expect(mockWebSocket.onopen).toBeDefined()
-    })
-
-    act(() => {
-      mockWebSocket.onopen?.({} as Event)
-    })
 
     await waitFor(() => {
       expect(screen.getByText('Streaming events...')).toBeInTheDocument()
     })
   })
 
-  it('should handle websocket onmessage event', async () => {
+  it('should handle onEvent callback', async () => {
     render(<FleetResourceEventStream resource={mockResource} />)
 
     await waitFor(() => {
-      expect(mockWebSocket.onmessage).toBeDefined()
+      expect(mockFleetWatch).toHaveBeenCalled()
     })
 
-    const mockEvent = {
-      data: JSON.stringify({
+    act(() => {
+      capturedCallbacks.onEvent({
         type: 'ADDED',
         object: {
           metadata: { uid: 'event-uid', name: 'test-event' },
           count: 1,
           lastTimestamp: '2023-01-01T00:00:00Z',
         },
-      }),
-    } as MessageEvent
-
-    act(() => {
-      mockWebSocket.onopen?.({} as Event) // First open the connection
-    })
-
-    act(() => {
-      mockWebSocket.onmessage?.(mockEvent)
+      })
     })
 
     await waitFor(() => {
@@ -191,31 +163,15 @@ describe('FleetResourceEventStream', () => {
     })
   })
 
-  it('should handle websocket error', async () => {
+  it('should handle onError callback', async () => {
     render(<FleetResourceEventStream resource={mockResource} />)
 
     await waitFor(() => {
-      expect(mockWebSocket.onerror).toBeDefined()
+      expect(mockFleetWatch).toHaveBeenCalled()
     })
 
     act(() => {
-      mockWebSocket.onerror?.({} as Event)
-    })
-
-    await waitFor(() => {
-      expect(screen.getByTitle('Error loading events')).toBeInTheDocument()
-    })
-  })
-
-  it('should handle websocket close', async () => {
-    render(<FleetResourceEventStream resource={mockResource} />)
-
-    await waitFor(() => {
-      expect(mockWebSocket.onclose).toBeDefined()
-    })
-
-    act(() => {
-      mockWebSocket.onclose?.({ wasClean: false, reason: 'Connection lost' } as CloseEvent)
+      capturedCallbacks.onError(new Error('Stream failed'))
     })
 
     await waitFor(() => {
@@ -225,10 +181,6 @@ describe('FleetResourceEventStream', () => {
 
   it('should toggle play/pause state', async () => {
     render(<FleetResourceEventStream resource={mockResource} />)
-
-    act(() => {
-      mockWebSocket.onopen?.({} as Event)
-    })
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /pause/i })).toBeInTheDocument()
@@ -246,10 +198,6 @@ describe('FleetResourceEventStream', () => {
 
   it('should show empty state when no events', async () => {
     render(<FleetResourceEventStream resource={mockResource} />)
-
-    act(() => {
-      mockWebSocket.onopen?.({} as Event)
-    })
 
     await waitFor(() => {
       expect(screen.getByTitle('No events')).toBeInTheDocument()
@@ -275,7 +223,8 @@ describe('FleetResourceEventStream', () => {
           cluster: 'managed-cluster-1',
           fieldSelector: 'involvedObject.uid=node-uid,involvedObject.name=test-node,involvedObject.kind=Node',
         }),
-        expect.any(String)
+        expect.any(String),
+        expect.any(Object)
       )
     })
   })
