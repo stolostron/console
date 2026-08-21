@@ -23,7 +23,7 @@
   "dependencies": {
     "abort-controller": "3.0.0",
     "dotenv": "16.0.1",
-    "find-my-way": "^9.1.0",
+    "find-my-way": "^9.7.0",
     "fuse.js": "6.6.2",
     "get-value": "3.0.1",
     "got": "^12.5.3",
@@ -77,7 +77,7 @@
         "ts-jest",
         {
           "useESM": true,
-           "tsconfig": {
+          "tsconfig": {
             "verbatimModuleSyntax": false
           }
         }
