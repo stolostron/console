@@ -35,9 +35,178 @@ export interface SettingsEvent {
   settings: Record<string, string>
 }
 
-type ServerSideEventData = WatchEvent | SettingsEvent | { type: 'START' | 'LOADED' }
+export interface FlappingEvent {
+  type: 'FLAPPING'
+  message: string
+  kind: string
+  namespace: string
+  name: string
+}
+
+type ServerSideEventData = WatchEvent | SettingsEvent | FlappingEvent | { type: 'START' | 'LOADED' | 'EOP' }
 
 let requests: { cancel: () => void }[] = []
+
+/**
+ * Flapping resource throttling
+ *
+ * When a watched kube resource updates erroneously at high frequency (especially Policies),
+ * unbounded cacheResource → ServerSideEvents.pushEvent calls can:
+ * 1) Overwhelm the event processing loop / liveliness probe
+ * 2) Grow client event queues until the pod OOMs
+ *
+ * Detection: if the same kind/namespace/name is modified more than FLAP_THRESHOLD (N) times
+ * within FLAP_WINDOW_MS (M), the resource is considered flapping.
+ * While flapping, browser broadcasts are limited to once every FLAP_COOLDOWN_MS (P).
+ * Only kinds listed in FLAP_THROTTLE_KINDS are subject to this check.
+ *
+ * N is initially 5 times
+ * M is initially 5 seconds
+ * P is initially 1 minute
+ * Kind is initially ['Policy']
+ */
+export const FLAP_THRESHOLD = 5 // N: modifications that trigger flapping detection
+export const FLAP_WINDOW_MS = 5 * 1000 // M: sliding window for counting modifications
+export const FLAP_COOLDOWN_MS = 60 * 1000 // P: min interval between browser updates while flapping
+export const FLAP_THROTTLE_KINDS = ['Policy'] // kinds subject to flapping detection
+
+interface FlapTrackerEntry {
+  timestamps: number[]
+  throttled: boolean
+  lastForwardedAt: number
+  flappingEventID?: number
+  kind: string
+  namespace: string
+  name: string
+}
+
+const flapTracker: Record<string, FlapTrackerEntry> = {}
+
+/** Clear flap tracker state. Used for test isolation. */
+export function resetFlapTracker() {
+  for (const key in flapTracker) {
+    const entry = flapTracker[key]
+    if (entry.flappingEventID) {
+      ServerSideEvents.removeEvent(entry.flappingEventID)
+    }
+    delete flapTracker[key]
+  }
+}
+
+export function getFlapTracker() {
+  return flapTracker
+}
+
+export function resourceFlapKey(
+  resource: Pick<IResource, 'kind'> & { metadata?: { namespace?: string; name?: string } }
+) {
+  return `${resource.kind}/${resource.metadata?.namespace ?? ''}/${resource.metadata?.name ?? ''}`
+}
+
+export function formatFlappingMessage(kind: string, namespace: string, name: string): string {
+  const timesPerMinute = Math.max(1, Math.round(60_000 / FLAP_COOLDOWN_MS))
+  return `${kind} ${namespace} ${name} is flapping, verify this resource is configured correctly. Until corrected, this resource will not update in the UI more then ${timesPerMinute} times per minute`
+}
+
+async function notifyFlapping(entry: FlapTrackerEntry): Promise<void> {
+  const message = formatFlappingMessage(entry.kind, entry.namespace, entry.name)
+  logger.warn({ msg: message, kind: entry.kind, namespace: entry.namespace, name: entry.name })
+  if (entry.flappingEventID) {
+    ServerSideEvents.removeEvent(entry.flappingEventID)
+  }
+  entry.flappingEventID = await ServerSideEvents.pushEvent({
+    data: {
+      type: 'FLAPPING',
+      message,
+      kind: entry.kind,
+      namespace: entry.namespace,
+      name: entry.name,
+    } satisfies FlappingEvent,
+  })
+}
+
+function clearFlappingNotice(entry: FlapTrackerEntry): void {
+  if (entry.flappingEventID) {
+    ServerSideEvents.removeEvent(entry.flappingEventID)
+    entry.flappingEventID = undefined
+  }
+}
+
+/**
+ * Records a modification for flap detection and returns whether this update should be
+ * forwarded to browser clients. Non-throttled kinds always return true.
+ */
+export function shouldForwardResourceUpdate(
+  resource: Pick<IResource, 'kind'> & { metadata?: { namespace?: string; name?: string } },
+  now = Date.now()
+): boolean {
+  if (!FLAP_THROTTLE_KINDS.includes(resource.kind)) {
+    return true
+  }
+
+  const key = resourceFlapKey(resource)
+  const kind = resource.kind
+  const namespace = resource.metadata?.namespace ?? ''
+  const name = resource.metadata?.name ?? ''
+
+  let entry = flapTracker[key]
+  if (!entry) {
+    entry = { timestamps: [], throttled: false, lastForwardedAt: 0, kind, namespace, name }
+    flapTracker[key] = entry
+  }
+
+  entry.timestamps.push(now)
+  entry.timestamps = entry.timestamps.filter((t) => now - t <= FLAP_WINDOW_MS)
+
+  const wasThrottled = entry.throttled
+  entry.throttled = entry.timestamps.length > FLAP_THRESHOLD
+
+  if (entry.throttled && !wasThrottled) {
+    void notifyFlapping(entry)
+  } else if (!entry.throttled && wasThrottled) {
+    clearFlappingNotice(entry)
+  }
+
+  if (!entry.throttled) {
+    entry.lastForwardedAt = now
+    return true
+  }
+
+  // While flapping: allow at most one browser update every FLAP_COOLDOWN_MS
+  if (entry.lastForwardedAt === 0 || now - entry.lastForwardedAt >= FLAP_COOLDOWN_MS) {
+    entry.lastForwardedAt = now
+    return true
+  }
+  return false
+}
+
+/**
+ * When TEST_THROTTLING=true, synthesize rapid Policy updates so flapping throttle can be verified
+ * without a misconfigured cluster resource.
+ */
+function startTestThrottling(): void {
+  if (process.env.TEST_THROTTLING !== 'true') return
+
+  logger.warn({ msg: 'TEST_THROTTLING enabled — synthesizing flapping Policy updates' })
+  let revision = 0
+  const interval = setInterval(() => {
+    revision += 1
+    const resource: IResource = {
+      kind: 'Policy',
+      apiVersion: 'policy.open-cluster-management.io/v1',
+      metadata: {
+        name: 'test-flapping-policy',
+        namespace: 'default',
+        uid: 'test-flapping-policy-uid',
+        resourceVersion: String(revision),
+      },
+    }
+    void cacheResource(resource, true).catch((err: unknown) => {
+      logger.error({ msg: 'TEST_THROTTLING cacheResource failed', error: errorToString(err) })
+    })
+  }, 200)
+  interval.unref()
+}
 
 export async function getKubeResources(kind: string, apiVersion: string) {
   const option = { apiVersion, kind }
@@ -344,6 +513,7 @@ const definitions: IWatchOptions[] = [
 export function startWatching(): void {
   ServerSideEvents.eventFilter = eventFilter
   startAccessCacheCleanup()
+  startTestThrottling()
 
   for (const definition of definitions) {
     void listAndWatch(definition)
@@ -814,21 +984,28 @@ export async function cacheResource(resource: IResource, forwardEventsToClients 
     ) {
       return resource.metadata.resourceVersion
     }
-    const eventID = await existing.eventID
     const latestExisting = cache[uid]
     if (latestExisting === existing) {
-      // if no other cacheResource call updated the cache while we were awaiting, we can replace the cache entry and event
-      if (eventID > 0) ServerSideEvents.removeEvent(eventID)
+      // Decide whether to replace the broadcast event after flapping throttle check below
       break
     }
     // if a deleteResource ran while we were awaiting, we will exit the loop because the resource is no longer existing
     // if another cacheResource call updated the cache while we were awaiting, we will check again if the resourceVersion is the same
     existing = latestExisting
   }
+
+  // Always update the in-memory cache; only throttle browser broadcasts for flapping resources
+  const shouldForward = forwardEventsToClients && shouldForwardResourceUpdate(resource)
+  if (shouldForward && existing) {
+    const eventID = await existing.eventID
+    // if no other cacheResource call updated the cache while we were awaiting, we can replace the cache entry and event
+    if (cache[uid] === existing && eventID > 0) ServerSideEvents.removeEvent(eventID)
+  }
+
   const compressed = deflateResource(resource, eventDict)
-  const eventID = forwardEventsToClients
+  const eventID = shouldForward
     ? compressed.then((compressed) => ServerSideEvents.pushEvent({ data: { type: 'MODIFIED', object: compressed } }))
-    : NO_BROADCAST_EVENT_ID
+    : (existing?.eventID ?? NO_BROADCAST_EVENT_ID)
   cache[uid] = { compressed, eventID }
 
   if (resource.kind === 'ManagedCluster') {
@@ -894,6 +1071,7 @@ function eventFilter(token: string, serverSideEvent: ServerSideEvent<ServerSideE
     case 'EOP':
     case 'LOADED':
     case 'SETTINGS':
+    case 'FLAPPING':
       return Promise.resolve(true)
 
     case 'DELETED':

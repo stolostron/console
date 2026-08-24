@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import get from 'lodash/get'
 import { Fragment, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { Alert, AlertActionCloseButton, AlertGroup } from '@patternfly/react-core'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { SetterOrUpdater, useRecoilValue, useSetRecoilState } from 'recoil'
 import { tokenExpired } from '../logout'
@@ -186,7 +187,9 @@ import {
   usersState,
   vmClusterRolesState,
   WatchEvent,
+  FlappingEvent,
 } from '../atoms'
+import { useTranslation } from '../lib/acm-i18next'
 import { PluginDataContext } from '../lib/PluginDataContext'
 import { useQuery } from '../lib/useQuery'
 import { MultiClusterHubComponent } from '../resources/multi-cluster-hub-component'
@@ -194,9 +197,11 @@ import { ClaimMappings } from '~/resources/authentication'
 import { usePageActivity } from '../lib/usePageActivity'
 
 export function LoadData(props: { children?: ReactNode }) {
+  const { t } = useTranslation()
   const { loadCompleted, setLoadStarted, setLoadCompleted, setIsStreamIdle, setIsReconnecting, mounted } =
     useContext(PluginDataContext)
   const [eventsLoaded, setEventsLoaded] = useState(false)
+  const [flappingAlerts, setFlappingAlerts] = useState<FlappingEvent[]>([])
   const idleTimeoutMs = useEventStreamIdleTimeout()
   const gracePeriodMs = useEventStreamIdleGracePeriod()
   const { isActive } = usePageActivity(idleTimeoutMs, mounted)
@@ -565,6 +570,15 @@ export function LoadData(props: { children?: ReactNode }) {
             case 'SETTINGS':
               setSettings(data.settings)
               break
+            case 'FLAPPING':
+              setFlappingAlerts((alerts) => {
+                const key = `${data.kind}/${data.namespace}/${data.name}`
+                if (alerts.some((a) => `${a.kind}/${a.namespace}/${a.name}` === key)) {
+                  return alerts.map((a) => (`${a.kind}/${a.namespace}/${a.name}` === key ? data : a))
+                }
+                return [...alerts, data]
+              })
+              break
           }
         } catch (err) {
           console.error(err)
@@ -704,7 +718,35 @@ export function LoadData(props: { children?: ReactNode }) {
 
   const children = useMemo(() => <Fragment>{props.children}</Fragment>, [props.children])
 
-  return children
+  return (
+    <Fragment>
+      {flappingAlerts.length > 0 && (
+        <AlertGroup isLiveRegion>
+          {flappingAlerts.map((alert) => {
+            const key = `${alert.kind}/${alert.namespace}/${alert.name}`
+            return (
+              <Alert
+                key={key}
+                variant="warning"
+                title={t('Resource update throttled')}
+                actionClose={
+                  <AlertActionCloseButton
+                    title={t('Close')}
+                    onClose={() => {
+                      setFlappingAlerts((alerts) => alerts.filter((a) => `${a.kind}/${a.namespace}/${a.name}` !== key))
+                    }}
+                  />
+                }
+              >
+                {alert.message}
+              </Alert>
+            )
+          })}
+        </AlertGroup>
+      )}
+      {children}
+    </Fragment>
+  )
 }
 
 function resetCaches(caches: Record<string, Record<string, Record<string, IResource>>>) {
