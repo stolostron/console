@@ -78,6 +78,7 @@ export function WizArrayInput(props: WizArrayInputProps) {
   const onToggle = useCallback(() => setOpen((open: boolean) => !open), [])
 
   const path = props.path
+  const filter = props.filter
 
   const { update } = useData()
   const item = useContext(ItemContext)
@@ -90,8 +91,15 @@ export function WizArrayInput(props: WizArrayInputProps) {
   const addItem = useCallback(
     (newItem: object | object[]) => {
       if (path === null) {
-        ;(item as any[]).push(newItem)
-        setAddedIndex((item as any[]).length - 1)
+        const rawArray = item as any[]
+        rawArray.push(newItem)
+        if (filter && !filter(newItem)) {
+          // The added item won't be rendered at all, so there's no row to expand.
+          setAddedIndex(null)
+        } else {
+          const renderedArray = filter ? rawArray.filter(filter) : rawArray
+          setAddedIndex(renderedArray.length - 1)
+        }
       } else {
         let newArray = values
         let newIndex = newArray.length
@@ -106,7 +114,7 @@ export function WizArrayInput(props: WizArrayInputProps) {
       }
       update()
     },
-    [item, path, setValue, update, values]
+    [filter, item, path, setValue, update, values]
   )
 
   // Clear the added-item marker once it has been used for the initial mount of the
