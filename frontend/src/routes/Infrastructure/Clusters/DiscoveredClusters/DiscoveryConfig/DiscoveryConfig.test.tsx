@@ -156,7 +156,7 @@ describe('Discovery Config page', () => {
         name: 'Red Hat OpenShift version',
       })
       .click()
-    await clickByText('4.22')
+    await clickByText('5.0')
 
     // Select Cluster Types
     screen
@@ -239,7 +239,7 @@ describe('Discovery Config page', () => {
         name: 'Red Hat OpenShift version',
       })
       .click()
-    await clickByText('4.23')
+    await clickByText('5.1')
 
     const replaceNock = nockReplace(discoveryConfigUpdated)
     await clickByText('Save')
