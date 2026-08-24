@@ -2747,6 +2747,7 @@
   "Resource name": "Resource name",
   "Resource nodes": "Resource nodes",
   "Resource type": "Resource type",
+  "Resource update throttled": "Resource update throttled",
   "resource.error": "Failed to load.",
   "resource.labels": "Labels",
   "resource.loading": "Loading...",
