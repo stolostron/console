@@ -185,7 +185,7 @@ export function shouldForwardResourceUpdate(
  * without a misconfigured cluster resource.
  */
 function startTestThrottling(): void {
-  if (process.env.TEST_THROTTLING !== 'true') return
+  if (process.env.NODE_ENV !== 'production' && process.env.TEST_THROTTLING !== 'true') return
 
   logger.warn({ msg: 'TEST_THROTTLING enabled — synthesizing flapping Policy updates' })
   let revision = 0
