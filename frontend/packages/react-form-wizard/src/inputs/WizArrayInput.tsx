@@ -21,6 +21,7 @@ import {
   forwardRef,
   useCallback,
   useContext,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -82,23 +83,39 @@ export function WizArrayInput(props: WizArrayInputProps) {
   const item = useContext(ItemContext)
   const values = wizardArrayItems(props, item)
 
+  // Tracks the index of the item most recently added via addItem, so it can be
+  // rendered expanded even when defaultCollapsed collapses pre-existing rows.
+  const [addedIndex, setAddedIndex] = useState<number | null>(null)
+
   const addItem = useCallback(
     (newItem: object | object[]) => {
       if (path === null) {
         ;(item as any[]).push(newItem)
+        setAddedIndex((item as any[]).length - 1)
       } else {
         let newArray = values
+        let newIndex = newArray.length
         if (Array.isArray(newItem)) {
           newArray = [...newArray, ...newItem]
+          newIndex = newArray.length - newItem.length
         } else {
           newArray.push(newItem as never)
         }
         setValue(newArray)
+        setAddedIndex(newIndex)
       }
       update()
     },
     [item, path, setValue, update, values]
   )
+
+  // Clear the added-item marker once it has been used for the initial mount of the
+  // corresponding ArrayInputItem; later add/remove actions won't re-expand this index.
+  useEffect(() => {
+    if (addedIndex !== null) {
+      setAddedIndex(null)
+    }
+  }, [addedIndex])
 
   if (!values.length && props.disallowEmpty) {
     addItem(props.newValue ?? {})
@@ -195,7 +212,7 @@ export function WizArrayInput(props: WizArrayInputProps) {
                 moveUp={moveUp}
                 moveDown={moveDown}
                 removeItem={removeItem}
-                defaultExpanded={!props.defaultCollapsed}
+                defaultExpanded={index === addedIndex ? true : !props.defaultCollapsed}
                 hideFromReviewStep={props.hideFromReviewStep}
               >
                 {props.children}
