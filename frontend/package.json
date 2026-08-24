@@ -196,7 +196,7 @@
     "redux-thunk": "2.4.2",
     "regenerator-runtime": "^0.14.1",
     "reselect": "^4.1.8",
-    "sass": "1.102.0",
+    "sass": "1.103.1",
     "sass-loader": "13.3.3",
     "simple-git": "^3.36.0",
     "stacktrace-js": "2.0.2",
