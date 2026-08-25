@@ -1,12 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  ClusterCuratorDefinition,
-  IResource,
-  SecretDefinition,
-  ClusterCuratorKind,
-  isAutomationTemplate,
-} from '../../../../../resources'
+import { ClusterCuratorDefinition, IResource, SecretDefinition, isAutomationTemplate } from '../../../../../resources'
 import { Cluster, IRequestResult, ResourceError, deleteResource } from '../../../../../resources/utils'
 import { css } from '@emotion/css'
 import { AcmEmptyState, AcmForm, AcmModal, AcmTable, IAcmTableColumn } from '../../../../../ui-components'
@@ -16,6 +10,7 @@ import { useMemo, useState, JSX } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useSharedAtoms, useRecoilValue, useSharedSelectors } from '../../../../../shared-recoil'
 import { useClusterDistributionColumn, useClusterProviderColumn } from '../../../../../components/Clusters'
+import { automationCuratorNamespace } from '../utils/cluster-actions'
 
 const table = css({
   '& .pf-v6-c-toolbar': {
@@ -41,9 +36,12 @@ export function RemoveAutomationModal(props: {
   const removableClusters = useMemo<Cluster[] | undefined>(
     () =>
       props.clusters &&
-      props.clusters.filter(({ name }) =>
+      props.clusters.filter((cluster) =>
         clusterCurators.find(
-          (cc) => name === cc.metadata.name && name === cc.metadata.namespace && isAutomationTemplate(cc)
+          (cc) =>
+            cluster.name === cc.metadata.name &&
+            automationCuratorNamespace(cluster) === cc.metadata.namespace &&
+            isAutomationTemplate(cc)
         )
       ),
     [props.clusters, clusterCurators]
@@ -68,8 +66,12 @@ export function RemoveAutomationModal(props: {
     // for every cluster that has a curator, get its clusterCurator
     const results: IRequestResult[] = []
     removableClusters?.forEach((cluster) => {
+      // For Hosted Control Plane clusters (e.g. OpenShift Virtualization), the ClusterCurator and
+      // toweraccess-* Secrets live in the cluster's actual (hosted) namespace, which may be shared
+      // by multiple HCP clusters. Hive clusters have their own namespace equal to their name.
+      const curatorNamespace = automationCuratorNamespace(cluster)
       const clusterCurator = clusterCurators.find(
-        ({ metadata }) => cluster.name === metadata.name && cluster.name === metadata.namespace
+        ({ metadata }) => cluster.name === metadata.name && curatorNamespace === metadata.namespace
       )
       if (clusterCurator) {
         // Set up resources to patch/remove
@@ -80,10 +82,11 @@ export function RemoveAutomationModal(props: {
 
         // delete curator
         resources.push({
-          resource: { ...ClusterCuratorDefinition },
+          resource: { ...ClusterCuratorDefinition, metadata: { name: cluster.name, namespace: curatorNamespace } },
         })
 
-        // delete secrets
+        // delete secrets, using the actual Secret name referenced by the curator so the
+        // differentiated name (ACM-39253) used for shared-namespace clusters is respected
         supportedCurations.forEach((curationType) => {
           const curation = clusterCurator.spec?.[curationType]
           if (curation?.towerAuthSecret) {
@@ -91,7 +94,8 @@ export function RemoveAutomationModal(props: {
               ...SecretDefinition,
               type: 'Opaque',
               metadata: {
-                name: `toweraccess-${curationType}`,
+                name: curation.towerAuthSecret,
+                namespace: curatorNamespace,
               },
             }
             resources.push({
@@ -102,15 +106,7 @@ export function RemoveAutomationModal(props: {
 
         // delete resources
         resources.forEach((resource) => {
-          const resourceCopy = {
-            ...resource.resource,
-            metadata: {
-              ...(resource.resource.metadata || {}),
-              ...(resource.resource.kind === ClusterCuratorKind ? { name: cluster.name } : {}), // For curator, override name per cluster
-              namespace: cluster.name, // For curator and secrets, override namespace per cluster
-            },
-          }
-          const result = deleteResource(resourceCopy)
+          const result = deleteResource(resource.resource)
           results.push({
             promise: new Promise((resolve, reject) => {
               result.promise
