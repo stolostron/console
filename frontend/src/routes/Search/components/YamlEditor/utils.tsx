@@ -7,6 +7,11 @@ import * as yaml from 'yaml-ast-parser'
 import { IResource } from '../../../../resources'
 import { getBackendUrl, getRequest, getResource, putRequest, replaceResource } from '../../../../resources/utils'
 import { fleetResourceRequest } from '../../../../resources/utils/fleet-resource-request'
+import { prepareResourceForYaml } from '~/components/SyncEditor/statusDecorations'
+
+function dumpResourceYaml(resource: unknown): string {
+  return jsYaml.dump(prepareResourceForYaml(resource), { indent: 2, sortKeys: false })
+}
 
 // https://github.com/openshift/console/blob/main/frontend/packages/console-shared/src/components/editor/yaml-editor-utils.ts#L14
 const findManagedMetadata = (model: monaco.editor.ITextModel) => {
@@ -111,7 +116,7 @@ export function onReload(
     getRequest<IResource>(url)
       .promise.then((response) => {
         shouldFoldAfterReloadRef.current = true
-        setResourceYaml(jsYaml.dump(response, { indent: 2 }))
+        setResourceYaml(dumpResourceYaml(response))
         setStale(false)
       })
       .catch((err) => {
@@ -126,7 +131,7 @@ export function onReload(
     })
       .promise.then((response: any) => {
         shouldFoldAfterReloadRef.current = true
-        setResourceYaml(jsYaml.dump(response, { indent: 2 }))
+        setResourceYaml(dumpResourceYaml(response))
         setStale(false)
       })
       .catch((err) => {
@@ -145,7 +150,7 @@ export function onReload(
           setUpdateError(`Error getting new resource YAML: ${res.errorMessage}`)
         } else {
           shouldFoldAfterReloadRef.current = true
-          setResourceYaml(jsYaml.dump(res))
+          setResourceYaml(dumpResourceYaml(res))
           setStale(false)
         }
       })

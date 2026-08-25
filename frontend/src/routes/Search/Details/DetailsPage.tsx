@@ -42,7 +42,15 @@ export type SearchDetailsContext = {
 }
 
 export function getResourceParams() {
-  const params = new URLSearchParams(decodeURIComponent(window.location.search))
+  // Prefer a single decode so mistakenly double-encoded queries still parse:
+  // ?cluster%3Dfoo%26kind%3DBar → cluster=foo&kind=Bar
+  let search = window.location.search
+  try {
+    search = decodeURIComponent(search)
+  } catch {
+    // keep raw search if it contains invalid escape sequences
+  }
+  const params = new URLSearchParams(search)
   return {
     cluster: params.get('cluster') ?? '',
     kind: params.get('kind') ?? '',
