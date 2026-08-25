@@ -17,6 +17,43 @@ export const AnsibleJobDefinition: IResourceDefinition = {
   kind: AnsibleJobKind,
 }
 
+export const AnsibleWorkflowKind = 'AnsibleWorkflow'
+export type AnsibleWorkflowKindType = 'AnsibleWorkflow'
+
+export const AnsibleWorkflowDefinition: IResourceDefinition = {
+  apiVersion: AnsibleJobApiVersion,
+  kind: AnsibleWorkflowKind,
+}
+
+export interface AnsibleHookResult {
+  changed?: boolean
+  failed?: boolean
+  status?: string
+  url?: string
+  finished?: string
+  started?: string
+}
+
+export interface AnsibleHookRun {
+  kind: 'AnsibleJob' | 'AnsibleWorkflow'
+  metadata: Metadata
+  result?: AnsibleHookResult
+}
+
+export interface AnsibleWorkflow {
+  apiVersion: AnsibleJobApiVersionType
+  kind: AnsibleWorkflowKindType
+  metadata: Metadata
+  spec?: {
+    extra_vars?: object
+    workflow_template_name?: string
+    connection_secret?: string
+  }
+  status?: {
+    ansibleWorkflowResult?: AnsibleHookResult
+  }
+}
+
 export interface AnsibleJob {
   apiVersion: AnsibleJobApiVersionType
   kind: AnsibleJobKindType
@@ -85,6 +122,80 @@ export function getLatestAnsibleJob(ansibleJobs: AnsibleJob[], namespace: string
   return {
     prehook: prehookJob,
     posthook: posthookJob,
+  }
+}
+
+function isHookType(resource: { metadata: Metadata }, type: 'prehook' | 'posthook'): boolean {
+  const jobtype = resource.metadata.annotations?.jobtype
+  if (jobtype === 'prehook' || jobtype === 'posthook') {
+    return jobtype === type
+  }
+  const name = resource.metadata.name ?? ''
+  if (type === 'prehook') {
+    return name.startsWith('prehookjob-')
+  }
+  return name.startsWith('posthookjob-')
+}
+
+function jobToHookRun(job: AnsibleJob): AnsibleHookRun {
+  return {
+    kind: 'AnsibleJob',
+    metadata: job.metadata,
+    result: job.status?.ansibleJobResult,
+  }
+}
+
+function workflowToHookRun(workflow: AnsibleWorkflow): AnsibleHookRun {
+  return {
+    kind: 'AnsibleWorkflow',
+    metadata: workflow.metadata,
+    result: workflow.status?.ansibleWorkflowResult,
+  }
+}
+
+function latestHookRun(runs: AnsibleHookRun[]): AnsibleHookRun | undefined {
+  const failedUnstarted = runs.filter((run) => run.result?.status === 'error' && run.result?.started === undefined)
+  if (failedUnstarted.length) {
+    return failedUnstarted[0]
+  }
+  return getLatest<AnsibleHookRun>(runs, 'result.started')
+}
+
+function pickHookRun(
+  job: AnsibleHookRun | undefined,
+  workflow: AnsibleHookRun | undefined
+): AnsibleHookRun | undefined {
+  if (workflow?.result?.url) {
+    return workflow
+  }
+  if (job?.result?.url) {
+    return job
+  }
+  if (workflow) {
+    return workflow
+  }
+  return job
+}
+
+export function getLatestAnsibleHook(
+  ansibleJobs: AnsibleJob[],
+  ansibleWorkflows: AnsibleWorkflow[],
+  namespace: string
+): { prehook: AnsibleHookRun | undefined; posthook: AnsibleHookRun | undefined } {
+  const jobs = ansibleJobs.filter((job) => job.metadata.namespace === namespace).map(jobToHookRun)
+  const workflows = ansibleWorkflows
+    .filter((workflow) => workflow.metadata.namespace === namespace)
+    .map(workflowToHookRun)
+
+  return {
+    prehook: pickHookRun(
+      latestHookRun(jobs.filter((run) => isHookType(run, 'prehook'))),
+      latestHookRun(workflows.filter((run) => isHookType(run, 'prehook')))
+    ),
+    posthook: pickHookRun(
+      latestHookRun(jobs.filter((run) => isHookType(run, 'posthook'))),
+      latestHookRun(workflows.filter((run) => isHookType(run, 'posthook')))
+    ),
   }
 }
 
