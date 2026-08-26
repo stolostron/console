@@ -62,7 +62,7 @@ import {
   SubscriptionReport,
   User,
 } from './resources'
-import type { ClusterExtension } from './resources'
+import type { AnsibleWorkflow, ClusterExtension } from './resources'
 
 let atomArrayKey = 0
 function AtomArray<T>() {
@@ -82,6 +82,7 @@ export const agentMachinesState = AtomArray<AgentMachineK8sResource>()
 export const agentServiceConfigsState = AtomArray<AgentServiceConfigK8sResource>()
 export const agentsState = AtomArray<AgentK8sResource>()
 export const ansibleJobState = AtomArray<AnsibleJob>()
+export const ansibleWorkflowState = AtomArray<AnsibleWorkflow>()
 export const applicationsState = AtomArray<Application>()
 export const argoCDsState = AtomArray<IResource>()
 export const bareMetalHostsState = AtomArray<BareMetalHostK8sResource>()

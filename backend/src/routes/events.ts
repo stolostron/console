@@ -292,6 +292,7 @@ const definitions: IWatchOptions[] = [
   { kind: 'PolicySet', apiVersion: 'policy.open-cluster-management.io/v1beta1' },
   { kind: 'SubmarinerConfig', apiVersion: 'submarineraddon.open-cluster-management.io/v1alpha1' },
   { kind: 'AnsibleJob', apiVersion: 'tower.ansible.com/v1alpha1' },
+  { kind: 'AnsibleWorkflow', apiVersion: 'tower.ansible.com/v1alpha1' },
   {
     kind: 'ConfigMap',
     apiVersion: 'v1',
