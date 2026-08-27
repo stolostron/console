@@ -341,7 +341,7 @@ describe('handleWebsocketEvent', () => {
     expect(mockConsoleWarn).toHaveBeenCalledWith('Event object does not have a metadata.uid', expect.any(Object))
   })
 
-  it('should not add duplicate ADDED event for single resources', () => {
+  it('should replace single resource on ADDED event regardless of UID match', () => {
     const mockPod: K8sResourceCommon = {
       apiVersion: 'v1',
       kind: 'Pod',
@@ -361,8 +361,37 @@ describe('handleWebsocketEvent', () => {
     handleWebsocketEvent(event, mockRequestPath, false, mockCluster)
 
     const cachedResult = store.getResult(mockRequestPath)
-    // Should not change since we already have data
     expect(cachedResult?.data).toEqual({ cluster: mockCluster, ...mockPod })
+  })
+
+  it('should replace single resource when recreated with a new UID', () => {
+    const originalPod: K8sResourceCommon = {
+      apiVersion: 'v1',
+      kind: 'Pod',
+      metadata: { name: 'test-pod', uid: 'original-uid', resourceVersion: '100' },
+    }
+
+    const recreatedPod: K8sResourceCommon = {
+      apiVersion: 'v1',
+      kind: 'Pod',
+      metadata: { name: 'test-pod', uid: 'new-uid-after-recreate', resourceVersion: '200' },
+    }
+
+    const store = useFleetK8sWatchResourceStore.getState()
+    store.setResult(mockRequestPath, { cluster: mockCluster, ...originalPod }, true)
+
+    const event = {
+      data: JSON.stringify({
+        type: 'ADDED',
+        object: recreatedPod,
+      }),
+    }
+
+    handleWebsocketEvent(event, mockRequestPath, false, mockCluster)
+
+    const cachedResult = store.getResult(mockRequestPath)
+    // Should replace with the recreated resource even though UID differs
+    expect(cachedResult?.data).toEqual({ cluster: mockCluster, ...recreatedPod })
   })
 
   it('should return early for DELETED event when list data is not present', () => {
