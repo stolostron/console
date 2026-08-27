@@ -63,13 +63,22 @@ export function RemoveAutomationModal(props: {
   const onConfirm = async () => {
     setIsRemoving(true)
 
-    // for every cluster that has a curator, get its clusterCurator
+    // for all clusters selected in the modal:
+    //   - remove its ClusterCurator (which determines what Ansible automation template to run for this cluster)
     const results: IRequestResult[] = []
     removableClusters?.forEach((cluster) => {
-      // For Hosted Control Plane clusters (e.g. OpenShift Virtualization), the ClusterCurator and
-      // toweraccess-* Secrets live in the cluster's actual (hosted) namespace, which may be shared
-      // by multiple HCP clusters. Hive clusters have their own namespace equal to their name.
+      // hive clusters have a namespace that equals its name
+      // hosted clusters also have a hive cluster (namespace===name) but they also have a
+      //    "Hosted cluster namespace" specified when created that will contain other resources related
+      //    to that cluster, including:
+      //    - ClusterCurator: which defines what Ansible automation jobs to run when installing/updating that cluster
+      //    - toweraccess-* Secrets: which contain the credentials for the Ansible Tower server to use when running the automation jobs
+
+      // get the shared namespace from the hosted cluster
+      // this is where the ClusterCurator lives (default is 'clusters')
       const curatorNamespace = automationCuratorNamespace(cluster)
+
+      // find the ClusterCurator for this cluster
       const clusterCurator = clusterCurators.find(
         ({ metadata }) => cluster.name === metadata.name && curatorNamespace === metadata.namespace
       )
