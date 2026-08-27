@@ -355,7 +355,7 @@ describe('isCacheEntryFresh function', () => {
 
     const entry = {
       refCount: 1,
-      timestamp: now - getSocketMonitoringInterval() - 3000, // 3 seconds before TTL
+      timestamp: now - getSocketMonitoringInterval() - 3000, // 3 seconds past the TTL
     }
 
     expect(isCacheEntryFresh(entry)).toBe(false)
