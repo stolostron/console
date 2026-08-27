@@ -111,10 +111,20 @@ export function UpdateAutomationModal(props: {
 
     const results: IRequestResult[] = []
 
+    // for all clusters selected in the modal:
+    //   - add an automation template to a cluster that never had one
+    //        (a cluster can be hosted but not have an Ansible automation template to run)
+    //   - update the automation template for a cluster that already had one
     updatableClusters?.forEach((cluster) => {
-      // For Hosted Control Plane clusters (e.g. OpenShift Virtualization), the ClusterCurator and
-      // toweraccess-* Secrets live in the cluster's actual (hosted) namespace, which may be shared
-      // by multiple HCP clusters. Hive clusters have their own namespace equal to their name.
+      // hive clusters have a namespace that equals its name
+      // hosted clusters also have a hive cluster (namespace===name) but they also have a
+      //    "Hosted cluster namespace" specified when created that will contain other resources related
+      //    to that cluster, including:
+      //    - ClusterCurator: which defines what Ansible automation jobs to run when installing/updating that cluster
+      //    - toweraccess-* Secrets: which contain the credentials for the Ansible Tower server to use when running the automation jobs
+
+      // get the namespace from the hosted cluster
+      // this is where the ClusterCurator lives (default is 'clusters')
       const curatorNamespace = automationCuratorNamespace(cluster)
 
       // Set up resources to patch and/or create
@@ -142,6 +152,8 @@ export function UpdateAutomationModal(props: {
               s.metadata.namespace === selectedCuratorTemplate.metadata.namespace
           )
           if (matchingSecret && matchingSecret.metadata.name && matchingSecret.metadata.namespace) {
+            // because all curators wind up in same "Hosted cluster namespace" (eg 'clusters'), their names must be unique
+            // the cluster name is unique (because of hive) therefore we need to include the cluster name in the secret name
             const secretName = automationSecretName(curationType, cluster)
             const copiedSecret = {
               ...SecretDefinition,
@@ -171,6 +183,8 @@ export function UpdateAutomationModal(props: {
         }
       })
 
+      // now that we have all ClusterCurator and secret names in resources array
+      // patch kube with those resources
       resources.forEach((resource) => {
         const result = patchResource(resource.resource, resource.data)
         let createResult: IRequestResult | undefined = undefined

@@ -27,7 +27,6 @@ function clusterSupportsAutomationTemplateChange(cluster: Cluster) {
   return (
     !!cluster.name && // name is set
     !!cluster.distribution?.ocp?.version && // is OpenShift
-    cluster.hasAutomationTemplate && // has an automation template
     cluster.labels?.cloud !== 'auto-detect' && // cloud label is set
     cluster.status === ClusterStatus.ready && // cluster is ready
     (cluster.isHypershift || // is HCP
