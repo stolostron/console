@@ -1518,9 +1518,10 @@ describe('events Route', () => {
     })
 
     it('should format the flapping warning message using cooldown rate', () => {
+      const windowMinutes = Math.max(1, Math.round(FLAP_WINDOW_MS / 60_000))
       const timesPerMinute = Math.max(1, Math.round(60_000 / FLAP_COOLDOWN_MS))
       expect(formatFlappingMessage('Policy', 'default', 'policy-a')).toBe(
-        `Policy default policy-a is flapping, verify this resource is configured correctly. Until corrected, this resource will not update in the UI more then ${timesPerMinute} times per minute`
+        `Policy policy-a in namespace default has been modified more than ${FLAP_THRESHOLD} times in the last ${windowMinutes} minutes. Verify this resource is configured correctly. Updates are being limited to ${timesPerMinute} times per minute.`
       )
     })
 

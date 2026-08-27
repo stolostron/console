@@ -37,10 +37,12 @@ export interface SettingsEvent {
 
 export interface FlappingEvent {
   type: 'FLAPPING'
-  message: string
   kind: string
   namespace: string
   name: string
+  threshold: number
+  windowMs: number
+  cooldownMs: number
 }
 
 type ServerSideEventData = WatchEvent | SettingsEvent | FlappingEvent | { type: 'START' | 'LOADED' | 'EOP' }
@@ -104,8 +106,9 @@ export function resourceFlapKey(
 }
 
 export function formatFlappingMessage(kind: string, namespace: string, name: string): string {
+  const windowMinutes = Math.max(1, Math.round(FLAP_WINDOW_MS / 60_000))
   const timesPerMinute = Math.max(1, Math.round(60_000 / FLAP_COOLDOWN_MS))
-  return `${kind} ${namespace} ${name} is flapping, verify this resource is configured correctly. Until corrected, this resource will not update in the UI more then ${timesPerMinute} times per minute`
+  return `${kind} ${name} in namespace ${namespace} has been modified more than ${FLAP_THRESHOLD} times in the last ${windowMinutes} minutes. Verify this resource is configured correctly. Updates are being limited to ${timesPerMinute} times per minute.`
 }
 
 async function notifyFlapping(entry: FlapTrackerEntry): Promise<void> {
@@ -117,10 +120,12 @@ async function notifyFlapping(entry: FlapTrackerEntry): Promise<void> {
   entry.flappingEventID = await ServerSideEvents.pushEvent({
     data: {
       type: 'FLAPPING',
-      message,
       kind: entry.kind,
       namespace: entry.namespace,
       name: entry.name,
+      threshold: FLAP_THRESHOLD,
+      windowMs: FLAP_WINDOW_MS,
+      cooldownMs: FLAP_COOLDOWN_MS,
     } satisfies FlappingEvent,
   })
 }
@@ -191,7 +196,7 @@ function startTestThrottling(): void {
   let revision = 0
   const interval = setInterval(() => {
     revision += 1
-    const resource: IResource = {
+    const resource: IResource & { spec: { disabled: boolean } } = {
       kind: 'Policy',
       apiVersion: 'policy.open-cluster-management.io/v1',
       metadata: {
@@ -199,6 +204,9 @@ function startTestThrottling(): void {
         namespace: 'default',
         uid: 'test-flapping-policy-uid',
         resourceVersion: String(revision),
+      },
+      spec: {
+        disabled: false,
       },
     }
     void cacheResource(resource, true).catch((err: unknown) => {

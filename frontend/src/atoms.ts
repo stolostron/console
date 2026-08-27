@@ -205,10 +205,12 @@ export interface SettingsEvent {
 
 export interface FlappingEvent {
   type: 'FLAPPING'
-  message: string
   kind: string
   namespace: string
   name: string
+  threshold: number
+  windowMs: number
+  cooldownMs: number
 }
 
 export type ServerSideEventData = WatchEvent | SettingsEvent | FlappingEvent | { type: 'START' | 'LOADED' | 'EOP' }
