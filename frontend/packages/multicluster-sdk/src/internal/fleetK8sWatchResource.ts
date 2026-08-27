@@ -94,7 +94,8 @@ const openFleetWatchSocket = (
 
     socket.onerror = (err) => {
       console.error('WebSocket error:', err)
-      store.setResult(requestPath, cachedResult?.data, true, err)
+      // Clear resourceVersion on transport errors to avoid resuming from a potentially stale version
+      store.setResult(requestPath, cachedResult?.data, true, err, '')
     }
   } catch (err) {
     handleError(err, requestPath, resource)
@@ -152,6 +153,9 @@ const checkFleetWatchSocket = async (
         scheduleSocketCheck(requestPath, resource, model, basePath, getErrorRetryInterval())
       }
     }
+  } else {
+    // Monitoring chain ending — clear tracked handle so a later watch can start fresh
+    store.clearMonitorTimeout(requestPath)
   }
 }
 
@@ -162,7 +166,9 @@ const scheduleSocketCheck = (
   basePath: string,
   delay: number
 ) => {
-  setTimeout(() => checkFleetWatchSocket(requestPath, resource, model, basePath), delay)
+  const store = useFleetK8sWatchResourceStore.getState()
+  const timeout = setTimeout(() => checkFleetWatchSocket(requestPath, resource, model, basePath), delay)
+  store.setMonitorTimeout(requestPath, timeout)
 }
 
 const monitorFleetWatchSocket = (
@@ -245,7 +251,11 @@ export const startWatch = async (resource: FleetWatchK8sResource, model: K8sMode
         openFleetWatchSocket(requestPath, resource, model, basePath)
       }
     }
-    monitorFleetWatchSocket(requestPath, resource, model, basePath)
+    // Only start a new monitoring chain if one isn't already pending
+    // (an existing chain survives refCount 0→1 transitions and will continue on its own)
+    if (!useFleetK8sWatchResourceStore.getState().cache[requestPath]?.monitorTimeout) {
+      monitorFleetWatchSocket(requestPath, resource, model, basePath)
+    }
   }
 }
 
@@ -295,6 +305,14 @@ export const handleWebsocketEvent = <R extends FleetK8sResourceCommon | FleetK8s
     return true
   }
 
+  if (eventType === 'ERROR') {
+    if (object?.code === 410) {
+      // 410 Gone — watch expired; clear resourceVersion so reconnect starts fresh
+      store.setResult(requestPath, storedData, currentEntry?.loaded ?? true, currentEntry?.loadError, '')
+    }
+    return false
+  }
+
   if (eventType === 'BOOKMARK') {
     // Update resourceVersion and refresh timestamp, but preserve any existing loadError
     // (e.g. a 404 should not be cleared just because the watch connection sent a bookmark)
@@ -315,9 +333,7 @@ export const handleWebsocketEvent = <R extends FleetK8sResourceCommon | FleetK8s
     return false
   }
 
-  const addOrReplaceObject = Array.isArray(storedData)
-    ? storedData.some(uidMatches)
-    : !storedData || uidMatches(storedData)
+  const addOrReplaceObject = Array.isArray(storedData) ? storedData.some(uidMatches) : true
 
   if (addOrReplaceObject) {
     const objectWithCluster = { cluster, ...object }
