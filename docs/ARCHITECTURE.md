@@ -29,12 +29,12 @@ The frontend has two builds. One for the stand alone version and one for the dyn
 
 ## Console Backend
 
-The public listener is a Go process (`backend/`). Routes that have not been migrated yet are reverse-proxied to the Node sidecar (`backend-node/`). The plugin and browser keep talking to the same Service and paths.
+The public listener is a Go process (`backend/`). Hub kube-apiserver passthrough routes (`/api`, `/apis`, `/version`) and other migrated routes are served natively in Go. Routes that have not been migrated yet are reverse-proxied to the Node sidecar (`backend-node/`). The plugin and browser keep talking to the same Service and paths.
 
 The console backend uses a service account to `list` and `watch` kubernetes cluster resources.
 Resource events are streamed to the console frontend.
 RBAC is enforced using the token passed from the console frontend.
 All resources are checked for access using `SubjectAccessReview` calls to the cluster.
 
-The console backend proxies the cluster apiserver `/api` and `/apis` apiserver REST routes.
+The console backend proxies the cluster apiserver `/api` and `/apis` apiserver REST routes from the Go public listener (`backend/internal/k8sproxy`).
 All REST calls use the token passed from the console frontend.

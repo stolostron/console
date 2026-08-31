@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"net/url"
 	"os"
 	"os/signal"
 	"syscall"
@@ -13,6 +14,7 @@ import (
 	"github.com/stolostron/console/backend/internal/auth"
 	"github.com/stolostron/console/backend/internal/config"
 	rbacevents "github.com/stolostron/console/backend/internal/events/rbac"
+	"github.com/stolostron/console/backend/internal/k8sproxy"
 	applog "github.com/stolostron/console/backend/internal/log"
 	"github.com/stolostron/console/backend/internal/server"
 	"k8s.io/client-go/kubernetes"
@@ -60,7 +62,13 @@ func run() error {
 	}
 	rbacHandler := rbacevents.NewHandler(store, rbacevents.NewAPIAuth(restCfg), rbacevents.NewSSARAccess(restCfg))
 
-	handler, err := server.Handler(cfg, server.WithRBACEvents(rbacHandler))
+	clusterURL, err := url.Parse(cfg.ClusterAPIURL)
+	if err != nil {
+		return err
+	}
+	k8sHandler := k8sproxy.New(clusterURL, k8sproxy.TLSConfigFromCA(sa.CACert))
+
+	handler, err := server.Handler(cfg, server.WithRBACEvents(rbacHandler), server.WithK8sProxy(k8sHandler))
 	if err != nil {
 		return err
 	}

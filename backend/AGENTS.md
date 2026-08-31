@@ -18,6 +18,7 @@ Public listener for the ACM/MCE console. During the Node-to-Go migration it owns
 | `cmd/console` | Process entry: load config, require SA token, listen, SIGINT/SIGTERM |
 | `internal/server` | TLS listener, chi mux, `/multicloud` probe aliases |
 | `internal/proxy` | Reverse proxy to `NODE_BACKEND_URL` (original path, including `/multicloud`) |
+| `internal/k8sproxy` | Hub kube-apiserver passthrough for `/api`, `/apis`, `/version` (user Bearer token) |
 | `internal/health` | `/ping`, `/livenessProbe` (Go only), `/readinessProbe` (Go + sidecar `/ping`) |
 | `internal/config` | `.env` + `config/` directory (filename = key) |
 | `internal/auth` | Cookie/Bearer, SA token/CA, TokenReview helper |
@@ -49,10 +50,12 @@ Go backend :4000 (TLS / HTTP/2)
         ├─ GET /livenessProbe, /readinessProbe, /ping
         │    (also /multicloud/…)
         ├─ GET /events/rbac (ClusterRole watch; also /multicloud/events/rbac)
+        ├─ ALL /api, /apis, GET /version → hub kube-apiserver (user token)
+        │    (also /multicloud/…)
         └─ everything else (original URL) ──HTTP/1.1──► Node sidecar :4001
                                                               │
                                                               ▼
-                                                        Hub cluster API
+                                                        Hub cluster API (unmigrated routes)
 ```
 
 `/multicloud` is stripped only when matching Go-owned routes. The proxy forwards the original path so Node can keep stripping it.
