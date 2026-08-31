@@ -152,7 +152,11 @@ describe('Cluster creation control data for KubeVirt', () => {
     const operatorAlert = findControl(controlData, 'kubevirt-operator-alert')
     render(operatorAlert.component)
     expect(screen.getByText('Operator required')).toBeInTheDocument()
-    expect(screen.getByText('OpenShift Virtualization operator is required to create a cluster.')).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        'OpenShift Virtualization operator is required to create a cluster when not using external infrastructure.'
+      )
+    ).toBeInTheDocument()
     const installLink = screen.getByRole('link', { name: /install operator/i })
     expect(installLink).toHaveAttribute(
       'href',

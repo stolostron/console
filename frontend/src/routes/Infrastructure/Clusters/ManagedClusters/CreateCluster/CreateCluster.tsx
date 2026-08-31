@@ -190,10 +190,15 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
         }
         setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
       } else if (control.id === 'kubevirt-operator-alert') {
-        control.hidden = isKubevirtEnabled
+        // the OpenShift Virtualization operator is only needed on the hub when the
+        // selected credential does not delegate to an external infrastructure cluster
+        const usesExternalInfrastructure = !!(
+          selectedConnection?.stringData?.kubeconfig || selectedConnection?.stringData?.externalInfraNamespace
+        )
+        control.hidden = isKubevirtEnabled || usesExternalInfrastructure
       }
     },
-    [providerConnections, setSelectedConnection, newSecret, isKubevirtEnabled]
+    [providerConnections, setSelectedConnection, newSecret, isKubevirtEnabled, selectedConnection]
   )
   const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
   const infraEnvs = useRecoilValue(infraEnvironmentsState)
@@ -226,13 +231,14 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
     </div>
   )
 
-  // If KubeVirt operator is installed/uninstalled toggle the Alert via control data
+  // Toggle the operator Alert when the KubeVirt operator install state changes or the
+  // selected credential (and its external infrastructure setting) changes
   const [kubeVirtOperatorControl, setKubeVirtOperatorControl] = useState<any>()
   useEffect(() => {
     if (kubeVirtOperatorControl) {
       onControlChange(kubeVirtOperatorControl)
     }
-  }, [isKubevirtEnabled, kubeVirtOperatorControl, onControlChange])
+  }, [isKubevirtEnabled, kubeVirtOperatorControl, onControlChange, selectedConnection])
 
   const localCluster = useMemo(() => allClusters.find((cls) => cls.name === localHubName), [allClusters, localHubName])
 
