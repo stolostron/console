@@ -36,7 +36,12 @@ import {
   AcmTable,
   IAcmTableColumn,
 } from '../../../../../ui-components'
-import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
+import {
+  automationCuratorNamespace,
+  automationSecretName,
+  ClusterAction,
+  clusterSupportsAction,
+} from '../utils/cluster-actions'
 
 const select = css({
   '& > div': {
@@ -104,72 +109,84 @@ export function UpdateAutomationModal(props: {
     }
     setIsUpdating(true)
 
-    // Set up resources to patch and/or create
-    const resources: {
-      resource: IResource
-      data: any
-    }[] = []
-
-    const curatorPatch = {
-      spec: cloneDeep(selectedCuratorTemplate.spec),
-    }
-
-    resources.push({
-      resource: { ...ClusterCuratorDefinition },
-      data: curatorPatch,
-    })
-
-    // Collect Ansible secrets for each supported curation type
-    supportedCurations.forEach((curationType) => {
-      const curation = curatorPatch.spec?.[curationType]
-      if (curation?.towerAuthSecret) {
-        const matchingSecret = ansibleCredentials.find(
-          (s) =>
-            s.metadata.name === curatorPatch.spec?.[curationType]?.towerAuthSecret &&
-            s.metadata.namespace === selectedCuratorTemplate.metadata.namespace
-        )
-        if (matchingSecret && matchingSecret.metadata.name && matchingSecret.metadata.namespace) {
-          const secretName = `toweraccess-${curationType}`
-          const copiedSecret = {
-            ...SecretDefinition,
-            type: 'Opaque',
-            metadata: {
-              name: secretName,
-            },
-          }
-          const copiedSecretSpec = {
-            metadata: {
-              labels: {
-                'cluster.open-cluster-management.io/type': 'ans',
-                'cluster.open-cluster-management.io/copiedFromSecretName': matchingSecret.metadata.name,
-                'cluster.open-cluster-management.io/copiedFromNamespace': matchingSecret.metadata.namespace,
-                'cluster.open-cluster-management.io/backup': 'cluster',
-              },
-            },
-            stringData: cloneDeep(matchingSecret.stringData),
-          }
-          curation.towerAuthSecret = secretName
-          resources.push({
-            resource: copiedSecret,
-            data: copiedSecretSpec,
-          })
-        }
-      }
-    })
-
     const results: IRequestResult[] = []
-    updatableClusters?.forEach((cluster) => {
-      resources.forEach((resource) => {
-        const resourceCopy = {
-          ...resource.resource,
-          metadata: {
-            ...(resource.resource.metadata || {}),
-            ...(resource.resource.kind === ClusterCuratorKind ? { name: cluster.name } : {}), // For curator, override name per cluster
-            namespace: cluster.name, // For curator and secrets, override namespace per cluster
-          },
-        }
 
-        const result = patchResource(resourceCopy, resource.data)
+    // for all clusters selected in the modal:
+    //   - add an automation template to a cluster that never had one
+    //        (a cluster can be hosted but not have an Ansible automation template to run)
+    //   - update the automation template for a cluster that already had one
+    updatableClusters?.forEach((cluster) => {
+      // hive clusters have a namespace that equals its name
+      // hosted clusters also have a hive cluster (namespace===name) but they also have a
+      //    "Hosted cluster namespace" specified when created that will contain other resources related
+      //    to that cluster, including:
+      //    - ClusterCurator: which defines what Ansible automation jobs to run when installing/updating that cluster
+      //    - toweraccess-* Secrets: which contain the credentials for the Ansible Tower server to use when running the automation jobs
+
+      // get the namespace from the hosted cluster
+      // this is where the ClusterCurator lives (default is 'clusters')
+      const curatorNamespace = automationCuratorNamespace(cluster)
+
+      // Set up resources to patch and/or create
+      const resources: {
+        resource: IResource
+        data: any
+      }[] = []
+
+      const curatorPatch = {
+        spec: cloneDeep(selectedCuratorTemplate.spec),
+      }
+
+      resources.push({
+        resource: { ...ClusterCuratorDefinition, metadata: { name: cluster.name, namespace: curatorNamespace } },
+        data: curatorPatch,
+      })
+
+      // Collect Ansible secrets for each supported curation type
+      supportedCurations.forEach((curationType) => {
+        const curation = curatorPatch.spec?.[curationType]
+        if (curation?.towerAuthSecret) {
+          const matchingSecret = ansibleCredentials.find(
+            (s) =>
+              s.metadata.name === curation.towerAuthSecret &&
+              s.metadata.namespace === selectedCuratorTemplate.metadata.namespace
+          )
+          if (matchingSecret && matchingSecret.metadata.name && matchingSecret.metadata.namespace) {
+            // because all curators wind up in same "Hosted cluster namespace" (eg 'clusters'), their names must be unique
+            // the cluster name is unique (because of hive) therefore we need to include the cluster name in the secret name
+            const secretName = automationSecretName(curationType, cluster)
+            const copiedSecret = {
+              ...SecretDefinition,
+              type: 'Opaque',
+              metadata: {
+                name: secretName,
+                namespace: curatorNamespace,
+              },
+            }
+            const copiedSecretSpec = {
+              metadata: {
+                labels: {
+                  'cluster.open-cluster-management.io/type': 'ans',
+                  'cluster.open-cluster-management.io/copiedFromSecretName': matchingSecret.metadata.name,
+                  'cluster.open-cluster-management.io/copiedFromNamespace': matchingSecret.metadata.namespace,
+                  'cluster.open-cluster-management.io/backup': 'cluster',
+                },
+              },
+              stringData: cloneDeep(matchingSecret.stringData),
+            }
+            curation.towerAuthSecret = secretName
+            resources.push({
+              resource: copiedSecret,
+              data: copiedSecretSpec,
+            })
+          }
+        }
+      })
+
+      // now that we have all ClusterCurator and secret names in resources array
+      // patch kube with those resources
+      resources.forEach((resource) => {
+        const result = patchResource(resource.resource, resource.data)
         let createResult: IRequestResult | undefined = undefined
 
         results.push({
@@ -181,13 +198,13 @@ export function UpdateAutomationModal(props: {
               .catch((err: ResourceError) => {
                 if (err.code === ResourceErrorCode.NotFound) {
                   const combinedResource = {
-                    ...resourceCopy,
+                    ...resource.resource,
                     ...resource.data,
                     // for Secrets, need to preserve metadata from both resources for name/namespace and labels
-                    metadata: { ...(resource.data.metadata || {}), ...resourceCopy.metadata },
+                    metadata: { ...(resource.data.metadata || {}), ...resource.resource.metadata },
                   }
                   createResult =
-                    resourceCopy.kind === ClusterCuratorKind
+                    resource.resource.kind === ClusterCuratorKind
                       ? createClusterCurator(combinedResource as ClusterCurator)
                       : createResource(combinedResource)
                   createResult.promise.then((data) => resolve(data)).catch((err) => reject(err))

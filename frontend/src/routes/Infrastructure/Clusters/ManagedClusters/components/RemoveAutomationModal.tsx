@@ -1,12 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import {
-  ClusterCuratorDefinition,
-  IResource,
-  SecretDefinition,
-  ClusterCuratorKind,
-  isAutomationTemplate,
-} from '../../../../../resources'
+import { ClusterCuratorDefinition, IResource, SecretDefinition, isAutomationTemplate } from '../../../../../resources'
 import { Cluster, IRequestResult, ResourceError, deleteResource } from '../../../../../resources/utils'
 import { css } from '@emotion/css'
 import { AcmEmptyState, AcmForm, AcmModal, AcmTable, IAcmTableColumn } from '../../../../../ui-components'
@@ -16,6 +10,7 @@ import { useMemo, useState, JSX } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useSharedAtoms, useRecoilValue, useSharedSelectors } from '../../../../../shared-recoil'
 import { useClusterDistributionColumn, useClusterProviderColumn } from '../../../../../components/Clusters'
+import { automationCuratorNamespace } from '../utils/cluster-actions'
 
 const table = css({
   '& .pf-v6-c-toolbar': {
@@ -41,9 +36,12 @@ export function RemoveAutomationModal(props: {
   const removableClusters = useMemo<Cluster[] | undefined>(
     () =>
       props.clusters &&
-      props.clusters.filter(({ name }) =>
+      props.clusters.filter((cluster) =>
         clusterCurators.find(
-          (cc) => name === cc.metadata.name && name === cc.metadata.namespace && isAutomationTemplate(cc)
+          (cc) =>
+            cluster.name === cc.metadata.name &&
+            automationCuratorNamespace(cluster) === cc.metadata.namespace &&
+            isAutomationTemplate(cc)
         )
       ),
     [props.clusters, clusterCurators]
@@ -65,11 +63,24 @@ export function RemoveAutomationModal(props: {
   const onConfirm = async () => {
     setIsRemoving(true)
 
-    // for every cluster that has a curator, get its clusterCurator
+    // for all clusters selected in the modal:
+    //   - remove its ClusterCurator (which determines what Ansible automation template to run for this cluster)
     const results: IRequestResult[] = []
     removableClusters?.forEach((cluster) => {
+      // hive clusters have a namespace that equals its name
+      // hosted clusters also have a hive cluster (namespace===name) but they also have a
+      //    "Hosted cluster namespace" specified when created that will contain other resources related
+      //    to that cluster, including:
+      //    - ClusterCurator: which defines what Ansible automation jobs to run when installing/updating that cluster
+      //    - toweraccess-* Secrets: which contain the credentials for the Ansible Tower server to use when running the automation jobs
+
+      // get the shared namespace from the hosted cluster
+      // this is where the ClusterCurator lives (default is 'clusters')
+      const curatorNamespace = automationCuratorNamespace(cluster)
+
+      // find the ClusterCurator for this cluster
       const clusterCurator = clusterCurators.find(
-        ({ metadata }) => cluster.name === metadata.name && cluster.name === metadata.namespace
+        ({ metadata }) => cluster.name === metadata.name && curatorNamespace === metadata.namespace
       )
       if (clusterCurator) {
         // Set up resources to patch/remove
@@ -80,10 +91,11 @@ export function RemoveAutomationModal(props: {
 
         // delete curator
         resources.push({
-          resource: { ...ClusterCuratorDefinition },
+          resource: { ...ClusterCuratorDefinition, metadata: { name: cluster.name, namespace: curatorNamespace } },
         })
 
-        // delete secrets
+        // delete secrets, using the actual Secret name referenced by the curator so the
+        // differentiated name (ACM-39253) used for shared-namespace clusters is respected
         supportedCurations.forEach((curationType) => {
           const curation = clusterCurator.spec?.[curationType]
           if (curation?.towerAuthSecret) {
@@ -91,7 +103,8 @@ export function RemoveAutomationModal(props: {
               ...SecretDefinition,
               type: 'Opaque',
               metadata: {
-                name: `toweraccess-${curationType}`,
+                name: curation.towerAuthSecret,
+                namespace: curatorNamespace,
               },
             }
             resources.push({
@@ -102,15 +115,7 @@ export function RemoveAutomationModal(props: {
 
         // delete resources
         resources.forEach((resource) => {
-          const resourceCopy = {
-            ...resource.resource,
-            metadata: {
-              ...(resource.resource.metadata || {}),
-              ...(resource.resource.kind === ClusterCuratorKind ? { name: cluster.name } : {}), // For curator, override name per cluster
-              namespace: cluster.name, // For curator and secrets, override namespace per cluster
-            },
-          }
-          const result = deleteResource(resourceCopy)
+          const result = deleteResource(resource.resource)
           results.push({
             promise: new Promise((resolve, reject) => {
               result.promise
