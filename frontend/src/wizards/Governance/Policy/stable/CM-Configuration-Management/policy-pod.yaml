@@ -39,3 +39,5 @@ spec:
                             - ALL
                         privileged: false
                         runAsNonRoot: true
+                        seccompProfile:
+                          type: RuntimeDefault
