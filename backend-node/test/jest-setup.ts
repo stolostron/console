@@ -6,5 +6,8 @@ process.env.LOG_LEVEL = 'silent'
 process.env.CLUSTER_API_URL = 'https://example.com'
 process.env.TOKEN = 'sa-token'
 process.env.PUBLIC_FOLDER = '../frontend/public'
+process.env.ENV_FILE = '../backend/.env'
+process.env.CONFIG_DIR = '../backend/config'
+process.env.CERTS_DIR = '../backend/certs'
 
 iconvLite.encodingExists('foo')

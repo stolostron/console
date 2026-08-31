@@ -368,7 +368,6 @@ export class ServerSideEvents {
         case 'MulticlusterRoleAssignment':
         case 'User':
         case 'Group':
-        case 'ClusterRole':
           rbac.push(event)
           break
         case 'Search':

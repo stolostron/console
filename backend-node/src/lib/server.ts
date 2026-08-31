@@ -9,6 +9,7 @@ import { logger } from './logger'
 import { managedClusterProxy } from '../routes/managedClusterProxy'
 import { readFileSync } from 'node:fs'
 import { searchWebSocket } from '../routes/search'
+import { certFile } from './paths'
 
 let server: Http2Server | undefined
 
@@ -32,8 +33,8 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
   let cert: Buffer | undefined
   let key: Buffer | undefined
   try {
-    cert = readFileSync('certs/tls.crt')
-    key = readFileSync('certs/tls.key')
+    cert = readFileSync(certFile('tls.crt'))
+    key = readFileSync(certFile('tls.key'))
   } catch (err) {
     logger.error({ msg: 'no certs' })
   }

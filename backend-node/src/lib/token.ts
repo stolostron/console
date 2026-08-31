@@ -6,10 +6,10 @@ import { fetchRetry } from '../lib/fetch-retry'
 import { unauthorized } from './respond'
 import { LocalStorage } from 'node-localstorage'
 import type { TLSSocket } from 'node:tls'
+import { certsDir } from './paths'
 
 const { HTTP2_HEADER_AUTHORIZATION } = constants
 
-const LOCAL_STORAGE = './certs'
 const ADMIN_TOKEN = 'admin-token'
 
 export function getToken(req: Http2ServerRequest): string | undefined {
@@ -22,7 +22,7 @@ export function getToken(req: Http2ServerRequest): string | undefined {
   }
   /* istanbul ignore if */
   if (!token && process.env.NODE_ENV === 'development') {
-    const localStorage = new LocalStorage(LOCAL_STORAGE)
+    const localStorage = new LocalStorage(certsDir())
     token = localStorage.getItem(ADMIN_TOKEN)
   }
   return token
@@ -60,7 +60,7 @@ export async function getAuthenticatedToken(
     /* istanbul ignore if */
     if (status === constants.HTTP_STATUS_OK) {
       if (process.env.NODE_ENV === 'development') {
-        const localStorage = new LocalStorage(LOCAL_STORAGE)
+        const localStorage = new LocalStorage(certsDir())
         localStorage.setItem(ADMIN_TOKEN, token)
       }
       return token

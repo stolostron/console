@@ -3,9 +3,10 @@ import { config } from 'dotenv'
 import { cpus, totalmem } from 'node:os'
 import { start, stop } from '../app'
 import { logger } from './logger'
+import { envFilePath } from './paths'
 
 try {
-  config({ path: '.env' })
+  config({ path: envFilePath() })
 } catch (err) {
   // Do Nothing
 }

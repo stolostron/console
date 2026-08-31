@@ -9,6 +9,8 @@ source ./oauth-client-name.sh
 echo > ./backend/.env
 
 echo PORT="${BACKEND_PORT}" >> ./backend/.env
+echo NODE_BACKEND_PORT="${NODE_BACKEND_PORT}" >> ./backend/.env
+echo NODE_BACKEND_URL="https://127.0.0.1:${NODE_BACKEND_PORT}" >> ./backend/.env
 echo NODE_ENV=development >> ./backend/.env
 
 CLUSTER_API_URL=`oc get infrastructure cluster -o jsonpath={.status.apiServerURL}`

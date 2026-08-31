@@ -16,25 +16,25 @@ RUN npm ci --legacy-peer-deps
 RUN npm run build:plugin:mce
 
 FROM build-base as backend
-WORKDIR /app/backend
+WORKDIR /app/backend-node
 # Copy only package.json and package-lock.json so that the docker layer cache only changes if those change
 # This will cause the npm ci to only rerun if the package.json or package-lock.json changes
-COPY ./backend/package.json ./backend/package-lock.json ./
+COPY ./backend-node/package.json ./backend-node/package-lock.json ./
 RUN npm ci --omit=optional
-COPY ./backend .
+COPY ./backend-node .
 RUN npm run build
 
 FROM build-base as production
-WORKDIR /app/backend
-COPY ./backend/package-lock.json ./backend/package.json ./
+WORKDIR /app/backend-node
+COPY ./backend-node/package-lock.json ./backend-node/package.json ./
 RUN npm ci --omit=optional --only=production
 
 FROM ${NODE_BASE}
 COPY --from=crypto-policy /etc/crypto-policies /etc/crypto-policies
 WORKDIR /app
 ENV NODE_ENV production
-COPY --from=production /app/backend/node_modules ./node_modules
-COPY --from=backend /app/backend/backend.mjs ./
+COPY --from=production /app/backend-node/node_modules ./node_modules
+COPY --from=backend /app/backend-node/backend.mjs ./
 COPY --from=dynamic-plugin /app/frontend/plugins/mce/dist ./public/plugin
 USER 1001
 CMD ["node", "backend.mjs"]

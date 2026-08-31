@@ -10,7 +10,7 @@ jobs:
         timeout-minutes: 10
         defaults:
             run:
-                working-directory: backend
+                working-directory: backend-node
         steps:
             - uses: actions/checkout@v7
               with:

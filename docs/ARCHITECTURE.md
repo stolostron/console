@@ -29,6 +29,8 @@ The frontend has two builds. One for the stand alone version and one for the dyn
 
 ## Console Backend
 
+The public listener is a Go process (`backend/`). Routes that have not been migrated yet are reverse-proxied to the Node sidecar (`backend-node/`). The plugin and browser keep talking to the same Service and paths.
+
 The console backend uses a service account to `list` and `watch` kubernetes cluster resources.
 Resource events are streamed to the console frontend.
 RBAC is enforced using the token passed from the console frontend.

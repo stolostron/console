@@ -22,8 +22,10 @@ Go to the [Contributing guide](CONTRIBUTING.md) to learn how to get involved.
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org) 20
-- NPM 8
+- [Node.js](https://nodejs.org) 24 (see [`.nvmrc`](.nvmrc) and [`.tool-versions`](.tool-versions))
+- npm 10+
+- [Go](https://go.dev/dl/) 1.26+ (local Go backend; `npm ci` runs `go mod download` when `go` is on your `PATH`)
+- [openssl](https://www.openssl.org/) CLI (for `npm run generate-certs`)
 - [oc](https://docs.openshift.com/container-platform/latest/cli_reference/openshift_cli/getting-started-cli.html) (OpenShift CLI)
 - [podman](https://podman.io/) or [docker](https://www.docker.com/) (required for `npm run plugins`)
 - [jq](https://stedolan.github.io/jq/download/)
@@ -77,6 +79,8 @@ The recommended way to run the console for development is as OpenShift Console d
     npm ci
     ```
 
+    The root `postinstall` installs `frontend`, `backend-node`, and (when Go is installed) runs `go mod download` in `backend/`. You may see `[backend] ci:backend` in the output — that is expected.
+
 3. Configure environment
 
     You need:
@@ -87,15 +91,23 @@ The recommended way to run the console for development is as OpenShift Console d
     npm run setup
     ```
 
-    This will create a `.env` file in the `backend` directory containing environment variables for the cluster connection.
+    This creates `backend/.env` with cluster connection variables. Some optional routes (for example ACM Observability) may log `NotFound` if the component is not installed on the cluster; local development can continue.
 
-4. Start the console plugins
+4. Generate TLS certificates
+
+    ```sh
+    npm run generate-certs
+    ```
+
+    Writes self-signed certs to `backend/certs/` for the Go backend and Node sidecar. After `oc login` to a different hub, run `npm run setup:hub` instead to regenerate `.env` and certs together.
+
+5. Start the console plugins
 
     ```sh
     npm run plugins
     ```
 
-    This concurrently starts the backend server, the frontend webpack development server (serving both ACM and MCE plugins), and a local OpenShift Console container. The console will be available at **http://localhost:9000**.
+    This concurrently starts the Go backend (reverse-proxying unmigrated routes to a Node sidecar), the frontend webpack development server (serving both ACM and MCE plugins), and a local OpenShift Console container. The console will be available at **http://localhost:9000**.
 
 ### Options
 
@@ -119,8 +131,9 @@ The `npm start` command runs a standalone development console that **does not** 
 
 Use this mode for rapid iteration on features that don't depend on OpenShift Console APIs, but **always verify your work with `npm run plugins` before submitting**.
 
+Complete the [setup steps above](#setup) (`npm ci`, `npm run setup`, `npm run generate-certs`), then:
+
 ```sh
-npm run setup   # if not already done
 npm start
 ```
 
@@ -154,7 +167,8 @@ All ports are customizable via environment variables. The default values are def
 | Port Variable  | Default | Description                                                                         | Used by                         |
 | -------------- | ------- | ----------------------------------------------------------------------------------- | ------------------------------- |
 | FRONTEND_PORT  | 3000    | Port for standalone console (access at https://localhost:FRONTEND_PORT)              | `npm run setup`, `npm start`    |
-| BACKEND_PORT   | 4000    | Port for the backend APIs used by both standalone and plugin modes                  | `npm run setup`, `npm start`, `npm run plugins` |
+| BACKEND_PORT   | 4000    | Port for the Go backend APIs used by both standalone and plugin modes               | `npm run setup`, `npm start`, `npm run plugins` |
+| NODE_BACKEND_PORT | 4001 | Port for the Node sidecar (unmigrated routes; not used by the browser)            | `npm start`, `npm run plugins` |
 | CONSOLE_PORT   | 9000    | Port for OpenShift Console (access at http://localhost:CONSOLE_PORT)                | `npm run setup`, `npm run plugins` |
 | MCE_PORT       | 3001    | Port on which the `mce` dynamic plugin is served to OpenShift Console               | `npm run plugins`               |
 | ACM_PORT       | 3002    | Port on which the `acm` dynamic plugin is served to OpenShift Console               | `npm run plugins`               |
@@ -201,9 +215,10 @@ Enabling this feature will allow the user to create a cluster that only contains
 ### Testing
 
 ```bash
-npm test                  # Run all tests (frontend + backend)
+npm test                  # Run all tests (frontend + Go backend + Node sidecar)
 npm run test:frontend     # Run frontend tests only
-npm run test:backend      # Run backend tests only
+npm run test:backend      # Run Go backend tests only
+npm run test:backend-node # Run Node sidecar tests only
 npm test -- <pattern>     # Run tests matching a file pattern
 ```
 
@@ -265,6 +280,14 @@ It is possible to enable/disable certain features by changing `spec.overrides.co
 
 ## Troubleshooting
 
+### `concurrently: command not found`
+
+`npm start` and `npm run plugins` use `concurrently` from the repo root. Install dependencies first:
+
+```sh
+npm ci
+```
+
 ### Apple Silicon (ARM64) podman crash: `lfstack.push`
 
 When running `npm run plugins` (or `npm run ocp-console`) on a Mac with an Apple Silicon chip, the OpenShift Console container may crash immediately with an error like:
@@ -293,15 +316,19 @@ This is due to wrong node/npm set of versions. See [Prerequisites section](#prer
 
 ### `[start:backend] ERROR:Error reading service account token`
 
-After executing the `npm start` command (either at the root level of the project or at `./backend` folder) an error on `backend` project is produced like
+After executing the `npm start` command an error on the backend is produced like
 
 ```text
-[start:backend] ERROR:Error reading service account token
-[start:backend] ERROR:process exit, code:1
-[start:backend] [nodemon] app crashed - waiting for file changes before starting...
+[go] service account token missing
 ```
 
-`./backend/.env` file is not present or it is wrongly produced. Please follow [Running section guidelines](#running-recommended-openshift-console-plugins).
+or on the sidecar:
+
+```text
+[sidecar] ERROR:Error reading service account token
+```
+
+`./backend/.env` is missing or stale. Run `npm run setup` or `npm run setup:hub` after `oc login`.
 
 ### Certs issues
 
@@ -320,9 +347,9 @@ And if the logs are inspected right after running `npm start` command an error i
 
 The problem is about the certs not being generated properly, `./backend/certs` folder is most probably empty.
 
-The solution is to completely remove `./backend/certs` folder and then execute `npm run ci:backend` at the root level of the project.
+The solution is to remove `./backend/certs` and run `npm run generate-certs` at the repo root (or `npm run setup:hub` after switching clusters).
 
-> Be sure openssl library is installed before running `npm run ci:backend` command.
+> Be sure the openssl CLI is installed before running `npm run generate-certs`.
 
 ## Related Packages
 

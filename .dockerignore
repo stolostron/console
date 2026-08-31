@@ -5,14 +5,18 @@
 /backend/.vscode/
 /backend/certs/
 /backend/coverage/
-/backend/build/
-/backend/node_modules/
-/backend/public/
-/backend/.dockerignore
-/backend/.gitignore
-/backend/.Dockerfile
-/backend/*.md
+/backend/bin/
 /backend/.env
+
+/backend-node/.vscode/
+/backend-node/coverage/
+/backend-node/build/
+/backend-node/node_modules/
+/backend-node/public/
+/backend-node/.dockerignore
+/backend-node/.gitignore
+/backend-node/.Dockerfile
+/backend-node/*.md
 
 /frontend/.vscode/
 /frontend/build/

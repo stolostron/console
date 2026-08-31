@@ -58,16 +58,29 @@ npm test
 
 Make sure your `kubectl` context is set to your target cluster and have Red Hat Advanced Cluster Management installed on the target cluster.
 
+Prerequisites match [README.md](README.md#prerequisites) (Node.js 24, Go 1.26+, openssl, `oc`, and podman/docker for plugin mode).
+
+#### First-time setup
+
+```bash
+npm ci
+npm run setup
+npm run generate-certs
+```
+
+`npm ci` runs a `postinstall` that installs `frontend`, `backend-node`, and (when Go is installed) `go mod download` in `backend/`.
+
+After `oc login` to a different hub, run `npm run setup:hub` to regenerate `backend/.env` and `backend/certs/`.
+
 #### Recommended: Run as OpenShift Console plugins
 
 This is the production deployment model. **Always test in this mode before submitting a PR.**
 
 ```bash
-npm run setup
 npm run plugins
 ```
 
-_WARNING: Running this script will update some parts of the cluster specified in your `KUBECONFIG` context._
+_WARNING: `npm run setup` updates some parts of the cluster specified in your `KUBECONFIG` context._
 
 Access the console at **http://localhost:9000**
 
@@ -76,7 +89,6 @@ Access the console at **http://localhost:9000**
 For rapid iteration on features that don't depend on OpenShift Console integration.
 
 ```bash
-npm run setup
 npm start
 ```
 

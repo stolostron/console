@@ -16,7 +16,8 @@ console/
 │       ├── react-form-wizard/  # @patternfly-labs/react-form-wizard
 │       ├── eslint-config/      # @stolostron/eslint-config
 │       └── prettier-config/    # @stolostron/prettier-config
-├── backend/                  # Node.js ESM proxy server
+├── backend/                  # Go console backend (public listener)
+├── backend-node/             # Node sidecar for routes not yet migrated to Go
 ├── docs/                     # Architecture documentation
 ├── scripts/                  # Build and development scripts
 └── resources/                # Sample K8s YAML fixtures
@@ -25,21 +26,25 @@ console/
 ## Prerequisites
 
 - **Node.js** (version pinned in `.nvmrc` and `.tool-versions`) and **npm**
+- **Go** (1.26+) for the console backend
 - **OpenShift 4.x cluster** with ACM or MCE installed for full functionality
 - **openssl** for certificate generation
 
 ## Setup
 
 ```bash
-npm run setup   # Configure cluster connection (creates backend/.env)
-npm ci          # Install dependencies for frontend and backend
+npm ci                  # installs frontend, backend-node; go mod download when Go is installed
+npm run setup           # writes backend/.env from the current oc context
+npm run generate-certs  # writes backend/certs/ (required for local TLS)
 ```
+
+After `oc login` to a new hub: `npm run setup:hub` (regenerates `.env` and certs).
 
 ## Development Commands
 
 | Command | Purpose |
 |---------|---------|
-| `npm start` | Start frontend + backend in standalone mode |
+| `npm start` | Start frontend + backend in standalone mode (Go live-reloads on `.go` changes) |
 | `npm run plugins` | Run as dynamic plugins with local OCP console (**recommended dev mode**) |
 | `npm test` | Run all tests (frontend + backend) |
 | `npm run check` | Run lint, format, and type checking across the entire project |
@@ -53,9 +58,9 @@ npm ci          # Install dependencies for frontend and backend
 
 Run checks against only one side of the monorepo:
 
-- `npm run test:frontend` / `npm run test:backend`
-- `npm run check:frontend` / `npm run check:backend`
-- `npm run lint:frontend` / `npm run lint:backend`
+- `npm run test:frontend` / `npm run test:backend` / `npm run test:backend-node`
+- `npm run check:frontend` / `npm run check:backend` / `npm run check:backend-node`
+- `npm run lint:frontend` / `npm run lint:backend` / `npm run lint:backend-node`
 
 ### Port Configuration
 
@@ -64,7 +69,8 @@ Ports are customizable via environment variables defined in `port-defaults.sh`:
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `FRONTEND_PORT` | 3000 | Standalone console |
-| `BACKEND_PORT` | 4000 | Backend APIs |
+| `BACKEND_PORT` | 4000 | Backend APIs (Go listener) |
+| `NODE_BACKEND_PORT` | 4001 | Node sidecar (unmigrated routes) |
 | `CONSOLE_PORT` | 9000 | OpenShift console |
 | `MCE_PORT` | 3001 | MCE plugin |
 | `ACM_PORT` | 3002 | ACM plugin |
@@ -79,7 +85,8 @@ Use `npm run plugins` for development; it matches the production deployment mode
 
 ## Code Quality Standards
 
-- TypeScript strict mode in frontend; backend uses `noImplicitAny` but not full strict mode
+- TypeScript strict mode in frontend; `backend-node` uses `noImplicitAny` but not full strict mode
+- Go backend: `gofmt`, `golangci-lint`, and `go test ./...` (`npm run check:backend`)
 - ESLint with `@stolostron/eslint-config` (flat config)
 - Prettier with `@stolostron/prettier-config` (120 char width, no semicolons, single quotes)
 - Husky `commit-msg` hook enforces a `Signed-off-by` line on every commit
@@ -131,6 +138,7 @@ Features can be enabled/disabled via the `console-config` ConfigMap in the insta
 
 ## Troubleshooting
 
-- **Certificate errors** — Remove `backend/certs/` and run `npm run ci:backend` to regenerate
+- **`concurrently: command not found`** — Run `npm ci` at the repo root first
+- **Certificate errors** — Remove `backend/certs/` and run `npm run generate-certs`
 - **Module resolution errors** — Verify Node.js and npm versions match `.nvmrc` / `.tool-versions`; version mismatches break ESM resolution
-- **Missing `.env`** — Run `npm run setup` to generate `backend/.env` with cluster connection details
+- **Missing `.env`** — Run `npm run setup` (or `npm run setup:hub` after `oc login` to a new cluster) to generate `backend/.env`

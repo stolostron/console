@@ -5,6 +5,7 @@ import { join } from 'node:path'
 import type { SettingsEvent } from '../routes/events'
 import { watchFile } from './fileWatch'
 import { logger } from './logger'
+import { configDir } from './paths'
 import { ServerSideEvents } from './server-side-events'
 
 let settingsEventID = 0
@@ -26,10 +27,10 @@ export async function loadConfigSettings(): Promise<string[]> {
   const settings: Record<string, string> = {}
   const readPaths: string[] = []
   try {
-    const filenames = await readdir('./config')
+    const filenames = await readdir(configDir())
     for (const filename of filenames) {
       try {
-        const filePath = join('./config', filename)
+        const filePath = join(configDir(), filename)
         const stats = await stat(filePath)
         if (stats.isDirectory()) continue
         const contents = await readFile(filePath)

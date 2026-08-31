@@ -179,6 +179,7 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         '/multicloud/configure',
         '/multicloud/console-links',
         '/multicloud/events',
+        '/multicloud/events/rbac',
         '/multicloud/hub',
         '/multicloud/upgrade-risks-prediction',
         '/multicloud/login',

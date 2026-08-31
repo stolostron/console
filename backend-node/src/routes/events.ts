@@ -331,11 +331,6 @@ const definitions: IWatchOptions[] = [
   { kind: 'User', apiVersion: 'user.openshift.io/v1' },
   { kind: 'Group', apiVersion: 'user.openshift.io/v1' },
   {
-    kind: 'ClusterRole',
-    apiVersion: 'rbac.authorization.k8s.io/v1',
-    labelSelector: { 'rbac.open-cluster-management.io/filter': 'vm-clusterroles' },
-  },
-  {
     kind: 'Service',
     apiVersion: 'v1',
     fieldSelector: { 'metadata.name': 'cluster-proxy-addon-user', 'metadata.namespace': 'multicluster-engine' },

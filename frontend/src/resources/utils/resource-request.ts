@@ -12,7 +12,7 @@ import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource,
 import { Status, StatusKind } from '../status'
 import { AnsibleTowerInventory, AnsibleTowerInventoryList } from '../ansible-inventory'
 
-// must match ansiblePaths in backend/src/routes/ansibletower.ts
+// must match ansiblePaths in backend-node/src/routes/ansibletower.ts
 const ansibleControllerPaths = ['/api/v2/job_templates/', '/api/v2/workflow_job_templates/']
 // Ansible Automation Platform Operator v2.5 and later only supports the Gateway URL.
 // For Gateway URLs, use the following path prefixes:
