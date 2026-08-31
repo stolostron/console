@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { ClusterCurator } from '../../../../../resources'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -8,7 +9,7 @@ import { RecoilRoot } from 'recoil'
 import { MemoryRouter } from 'react-router'
 import { clusterCuratorsState } from '../../../../../atoms'
 import { nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../lib/nock-util'
-//import { clickByText, waitForNocks, waitForNotText, waitForText } from '../../../../../lib/test-util'
+import { waitForNocks } from '../../../../../lib/test-util'
 
 const mockClose = jest.fn()
 
@@ -54,6 +55,30 @@ describe('RemoveAutomationModal', () => {
     props.open = true
     props.clusters = []
     rerender(<Component {...props} />)
+  })
+
+  // ACM-41796: Hosted Control Plane clusters (e.g. OpenShift Virtualization) share a namespace for
+  // their ClusterCurator/Secrets, distinct from the cluster name. Remove must resolve the curator
+  // in that hosted namespace instead of assuming namespace === cluster.name (the Hive layout).
+  test('should remove automation template for a Hosted Control Plane cluster in a shared namespace', async () => {
+    const hcpProps = { clusters: [mockHostedCluster], open: true, close: mockClose }
+    render(<Component {...hcpProps} />)
+
+    // the HCP cluster must be listed as removable even though its namespace differs from its name
+    await waitFor(() => expect(screen.getByText('hcp-cluster-1')).toBeInTheDocument())
+
+    const nockCurator = nockDelete(deleteHostedClustercurator.req, deleteHostedClustercurator.res)
+    const nockSecretInstall = nockDelete(deleteHostedSecretInstall.req, deleteHostedSecretInstall.res)
+    const nockSecretUpgrade = nockDelete(deleteHostedSecretUpgrade.req, deleteHostedSecretUpgrade.res)
+
+    userEvent.click(
+      screen.getByRole('button', {
+        name: /remove/i,
+      })
+    )
+
+    await waitForNocks([nockCurator, nockSecretInstall, nockSecretUpgrade])
+    await waitFor(() => expect(mockClose).toHaveBeenCalled())
   })
 })
 
@@ -207,7 +232,82 @@ const mockClusterCurators: ClusterCurator[] = [
       },
     },
   },
+  // ACM-41796: a Hosted Control Plane cluster whose ClusterCurator lives in a namespace shared by
+  // other HCP clusters (e.g. 'clusters'), rather than a namespace matching its own name. Its
+  // towerAuthSecret names are differentiated by cluster name, per the ACM-39253 create-time fix.
+  {
+    apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+    kind: 'ClusterCurator',
+    metadata: {
+      name: 'hcp-cluster-1',
+      namespace: 'clusters',
+    },
+    spec: {
+      install: {
+        jobMonitorTimeout: 5,
+        posthook: [],
+        prehook: [
+          {
+            extra_vars: {},
+            name: 'hcp-install-job',
+            type: 'Job',
+          },
+        ],
+        towerAuthSecret: 'toweraccess-install-hcp-cluster-1',
+      },
+      upgrade: {
+        monitorTimeout: 120,
+        posthook: [],
+        prehook: [],
+        towerAuthSecret: 'toweraccess-upgrade-hcp-cluster-1',
+      },
+    },
+  },
 ]
+
+const mockHostedCluster: Cluster = {
+  name: 'hcp-cluster-1',
+  displayName: 'hcp-cluster-1',
+  namespace: 'clusters',
+  uid: 'hcp-cluster-1-uid',
+  status: ClusterStatus.ready,
+  isHive: false,
+  distribution: {
+    k8sVersion: '1.28',
+    ocp: {
+      availableUpdates: [],
+      desiredVersion: '4.15.0',
+      upgradeFailed: false,
+      version: '4.15.0',
+    },
+    displayVersion: 'OpenShift 4.15.0',
+    isManagedOpenShift: false,
+    upgradeInfo: {
+      upgradeFailed: false,
+      isUpgrading: false,
+      isReadyUpdates: false,
+      isReadySelectChannels: false,
+      availableUpdates: [],
+      currentVersion: '4.15.0',
+      desiredVersion: '4.15.0',
+      latestJob: {},
+    },
+  },
+  hasAutomationTemplate: true,
+  hive: {
+    isHibernatable: false,
+    secrets: {},
+  },
+  isManaged: true,
+  isCurator: true,
+  isHostedCluster: true,
+  isSNOCluster: false,
+  owner: {},
+  kubeadmin: '',
+  kubeconfig: '',
+  isHypershift: true,
+  isRegionalHubCluster: false,
+}
 
 const props = {
   clusters: [
@@ -757,6 +857,72 @@ const deleteSecrets2 = {
     status: 'Success',
     details: {
       name: 'toweraccess-install',
+      kind: 'secrets',
+    },
+  },
+}
+
+//---delete 'clustercurators' hcp-cluster-1 in the shared 'clusters' namespace---
+const deleteHostedClustercurator = {
+  req: {
+    apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+    kind: 'clustercurators',
+    metadata: {
+      namespace: 'clusters',
+      name: 'hcp-cluster-1',
+    },
+  },
+  res: {
+    kind: 'Status',
+    apiVersion: 'v1',
+    metadata: {},
+    status: 'Success',
+    details: {
+      name: 'hcp-cluster-1',
+      group: 'cluster.open-cluster-management.io',
+      kind: 'clustercurators',
+    },
+  },
+}
+
+//---delete differentiated 'secrets' for hcp-cluster-1 in the shared 'clusters' namespace---
+const deleteHostedSecretInstall = {
+  req: {
+    apiVersion: 'v1',
+    kind: 'secrets',
+    metadata: {
+      namespace: 'clusters',
+      name: 'toweraccess-install-hcp-cluster-1',
+    },
+  },
+  res: {
+    kind: 'Status',
+    apiVersion: 'v1',
+    metadata: {},
+    status: 'Success',
+    details: {
+      name: 'toweraccess-install-hcp-cluster-1',
+      kind: 'secrets',
+    },
+  },
+}
+
+const deleteHostedSecretUpgrade = {
+  req: {
+    apiVersion: 'v1',
+    kind: 'secrets',
+    metadata: {
+      namespace: 'clusters',
+      name: 'toweraccess-upgrade-hcp-cluster-1',
+    },
+  },
+  res: {
+    kind: 'Status',
+    apiVersion: 'v1',
+    metadata: {},
+    status: 'Success',
+    details: {
+      name: 'toweraccess-upgrade-hcp-cluster-1',
       kind: 'secrets',
     },
   },
