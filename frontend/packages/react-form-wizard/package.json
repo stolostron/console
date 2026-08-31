@@ -56,7 +56,7 @@
     "@babel/preset-react": "^7.29.7",
     "@babel/preset-typescript": "^7.29.7",
     "@cypress/code-coverage": "^3.14.7",
-    "@pmmmwh/react-refresh-webpack-plugin": "^0.6.2",
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.6.3",
     "@react-hook/resize-observer": "1.2.6",
     "@svgr/webpack": "^8.1.0",
     "@types/get-value": "3.0.5",
@@ -85,7 +85,7 @@
     "typescript": "4.9.5",
     "validator": "^13.15.35",
     "watch": "^1.0.2",
-    "webpack": "^5.109.2",
+    "webpack": "^5.110.1",
     "webpack-cli": "4.10.0",
     "webpack-dev-server": "^4.15.2"
   },
