@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { renderHook, act } from '@testing-library/react-hooks'
+import { act, renderHook } from '@testing-library/react-hooks'
 import {
-  useFleetK8sWatchResourceStore,
-  isCacheEntryValid,
-  isCacheEntryFresh,
   getCacheEntryAge,
   getSocketMonitoringInterval,
+  isCacheEntryFresh,
+  isCacheEntryValid,
+  useFleetK8sWatchResourceStore,
 } from './fleetK8sWatchResourceStore'
 
 // Mock WebSocket
@@ -355,7 +355,7 @@ describe('isCacheEntryFresh function', () => {
 
     const entry = {
       refCount: 1,
-      timestamp: now - 60000, // 60 seconds ago
+      timestamp: now - getSocketMonitoringInterval() - 3000, // 3 seconds past the TTL
     }
 
     expect(isCacheEntryFresh(entry)).toBe(false)
@@ -432,11 +432,6 @@ describe('getCacheEntryAge function', () => {
 })
 
 describe('getSocketMonitoringInterval function', () => {
-  it('should return the cache TTL value', () => {
-    // The monitoring interval should match the cache TTL (30 seconds)
-    expect(getSocketMonitoringInterval()).toBe(30000)
-  })
-
   it('should return a consistent value', () => {
     const interval1 = getSocketMonitoringInterval()
     const interval2 = getSocketMonitoringInterval()
@@ -560,7 +555,7 @@ describe('Cache timeout and cleanup', () => {
 
     // Fast-forward time past TTL + grace period
     act(() => {
-      jest.advanceTimersByTime(41000) // 30s TTL + 10s grace + 1s buffer
+      jest.advanceTimersByTime(getSocketMonitoringInterval() + 10000 + 1000) // 65s TTL + 10s grace + 1s buffer
     })
 
     // Entry should be removed
