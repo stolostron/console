@@ -57,7 +57,7 @@
     "@patternfly/react-charts": "^8.6.1",
     "@patternfly/react-code-editor": "^6.6.1",
     "@patternfly/react-core": "^6.6.1",
-    "@patternfly/react-drag-drop": "^6.6.1",
+    "@patternfly/react-drag-drop": "^6.6.2",
     "@patternfly/react-icons": "^6.6.1",
     "@patternfly/react-log-viewer": "^6.5.0",
     "@patternfly/react-styles": "^6.6.1",
