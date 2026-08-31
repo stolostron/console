@@ -60,7 +60,7 @@ jobs:
         run: npm run build
 
       - name: Test publish (dry run)
-        run: npm publish --dry-run
+        run: npm publish --tag v0.10.z --dry-run
 
       - name: Add and commit version update
         uses: EndBug/add-and-commit@v10
@@ -70,6 +70,6 @@ jobs:
           tag: ${{ env.TAG }}
 
       - name: Publish to npm
-        run: npm publish
+        run: npm publish --tag v0.10.z
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
