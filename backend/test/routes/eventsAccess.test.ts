@@ -5,6 +5,7 @@ import {
   canGetResource,
   canListClusterScopedKind,
   canListNamespacedScopedKind,
+  configureClusterScopedKinds,
 } from '../../src/routes/eventsAccess'
 import { resetAccessCache } from '../../src/routes/eventsCache'
 
@@ -97,6 +98,7 @@ describe('eventsAccess', () => {
 
   beforeEach(() => {
     resetAccessCache()
+    configureClusterScopedKinds(['ManagedCluster', 'Namespace', 'StorageClass'])
     process.env.CLUSTER_API_URL = 'https://api.test-cluster.com:6443'
   })
 
@@ -538,6 +540,107 @@ describe('eventsAccess', () => {
 
       expect(await canAccess(resource, 'create', 'create-token')).toBe(true)
       expect(ssarScope.isDone()).toBe(true)
+    })
+
+    it('should not reuse SSAR results across API groups that share a kind name', async () => {
+      const appK8s = {
+        kind: 'Application',
+        apiVersion: 'app.k8s.io/v1beta1',
+        metadata: { namespace: 'ns', name: 'app' },
+      }
+      const argoApp = {
+        kind: 'Application',
+        apiVersion: 'argoproj.io/v1alpha1',
+        metadata: { namespace: 'ns', name: 'app' },
+      }
+
+      nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', (body: unknown) => {
+          return parseSsarResourceAttributes(body)?.group === 'app.k8s.io'
+        })
+        .reply(200, { status: { allowed: true } })
+      nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', (body: unknown) => {
+          return parseSsarResourceAttributes(body)?.group === 'argoproj.io'
+        })
+        .reply(200, { status: { allowed: false } })
+
+      expect(await canAccess(appK8s, 'get', 'group-collision-token')).toBe(true)
+      expect(await canAccess(argoApp, 'get', 'group-collision-token')).toBe(false)
+    })
+  })
+
+  describe('namespaced vs cluster-scoped kind routing (ACM-39327)', () => {
+    const placement = (namespace: string, name: string) => ({
+      kind: 'Placement',
+      apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+      metadata: { namespace, name },
+    })
+    const storageClass = (name: string) => ({
+      kind: 'StorageClass',
+      apiVersion: 'storage.k8s.io/v1',
+      metadata: { name },
+    })
+    const placementAllowAll = {
+      incomplete: false,
+      resourceRules: [
+        {
+          verbs: ['get', 'list', 'watch'],
+          apiGroups: ['cluster.open-cluster-management.io'],
+          resources: ['placements'],
+        },
+      ],
+    }
+
+    it('must not treat Placement allow-all in default as access to other namespaces', async () => {
+      nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews', (body: unknown) => {
+          return rulesReviewNamespace(body) === 'default'
+        })
+        .reply(200, { status: placementAllowAll })
+      nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews', (body: unknown) => {
+          return rulesReviewNamespace(body) === 'other-ns'
+        })
+        .reply(200, { status: emptyRules })
+
+      expect(await canGetResource(placement('default', 'p-default'), 'placement-token')).toBe(true)
+      expect(await canGetResource(placement('other-ns', 'p-other'), 'placement-token')).toBe(false)
+    })
+
+    it('should confirm StorageClass cluster-scoped grants with SSAR', async () => {
+      nockRulesReview(() => ({
+        incomplete: false,
+        resourceRules: [
+          { verbs: ['get', 'list', 'watch'], apiGroups: ['storage.k8s.io'], resources: ['storageclasses'] },
+        ],
+      }))
+      const ssarScope = nockSsarGet(
+        (attrs) => attrs.group === 'storage.k8s.io' && attrs.resource === 'storageclasses',
+        true
+      )
+
+      expect(await canGetResource(storageClass('gp3'), 'storage-class-token')).toBe(true)
+      expect(ssarScope.isDone()).toBe(true)
+    })
+
+    it('should retry SelfSubjectRulesReview after an unavailable review', async () => {
+      nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews')
+        .reply(500, { message: 'internal error' })
+      nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
+        .reply(200, { status: { allowed: false } })
+
+      expect(await canGetResource(managedCluster('cluster-1'), 'ssrr-retry-token')).toBe(false)
+
+      nock(apiUrl()).post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews').reply(200, { status: emptyRules })
+      const ssarScope = nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
+        .reply(200, { status: { allowed: true } })
+
+      expect(await canGetResource(managedCluster('cluster-2'), 'ssrr-retry-token')).toBe(false)
+      expect(ssarScope.isDone()).toBe(false)
     })
   })
 })

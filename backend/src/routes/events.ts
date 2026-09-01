@@ -14,7 +14,13 @@ import { type ServerSideEvent, ServerSideEvents } from '../lib/server-side-event
 import { getCACertificate, getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
 import type { IResource } from '../resources/resource'
-import { canAccess, canGetResource, canListClusterScopedKind, canListNamespacedScopedKind } from './eventsAccess'
+import {
+  canAccess,
+  canGetResource,
+  canListClusterScopedKind,
+  canListNamespacedScopedKind,
+  configureClusterScopedKinds,
+} from './eventsAccess'
 import { startAccessCacheCleanup, stopAccessCacheCleanup } from './eventsCache'
 
 export {
@@ -145,10 +151,10 @@ export function initResourceCache(cache: ResourceCache) {
 export let resourceCache: ResourceCache = {}
 
 const definitions: IWatchOptions[] = [
-  { kind: 'ClusterManagementAddOn', apiVersion: 'addon.open-cluster-management.io/v1alpha1' },
+  { kind: 'ClusterManagementAddOn', apiVersion: 'addon.open-cluster-management.io/v1alpha1', clusterScoped: true },
   { kind: 'ManagedClusterAddOn', apiVersion: 'addon.open-cluster-management.io/v1alpha1' },
   { kind: 'Agent', apiVersion: 'agent-install.openshift.io/v1beta1' },
-  { kind: 'AgentServiceConfig', apiVersion: 'agent-install.openshift.io/v1beta1' },
+  { kind: 'AgentServiceConfig', apiVersion: 'agent-install.openshift.io/v1beta1', clusterScoped: true },
   { kind: 'InfraEnv', apiVersion: 'agent-install.openshift.io/v1beta1' },
   { kind: 'NMStateConfig', apiVersion: 'agent-install.openshift.io/v1beta1' },
   { kind: 'Application', apiVersion: 'app.k8s.io/v1beta1' },
@@ -162,19 +168,20 @@ const definitions: IWatchOptions[] = [
   { kind: 'ApplicationSet', apiVersion: 'argoproj.io/v1alpha1' },
   { kind: 'ArgoCD', apiVersion: 'argoproj.io/v1alpha1' },
   { kind: 'MulticlusterApplicationSetReport', apiVersion: 'apps.open-cluster-management.io/v1alpha1' },
-  { kind: 'Infrastructure', apiVersion: 'config.openshift.io/v1' },
+  { kind: 'Infrastructure', apiVersion: 'config.openshift.io/v1', clusterScoped: true },
   {
     kind: 'CertificateSigningRequest',
     apiVersion: 'certificates.k8s.io/v1',
     labelSelector: { 'open-cluster-management.io/cluster-name': '' },
+    clusterScoped: true,
   },
-  { kind: 'ManagedCluster', apiVersion: 'cluster.open-cluster-management.io/v1' },
+  { kind: 'ManagedCluster', apiVersion: 'cluster.open-cluster-management.io/v1', clusterScoped: true },
   { kind: 'Placement', apiVersion: 'cluster.open-cluster-management.io/v1beta1' },
   { kind: 'Placement', apiVersion: 'cluster.open-cluster-management.io/v1alpha1' },
   { kind: 'PlacementDecision', apiVersion: 'cluster.open-cluster-management.io/v1alpha1' },
   { kind: 'PlacementDecision', apiVersion: 'cluster.open-cluster-management.io/v1beta1' },
   { kind: 'ManagedClusterSetBinding', apiVersion: 'cluster.open-cluster-management.io/v1beta2' },
-  { kind: 'ManagedClusterSet', apiVersion: 'cluster.open-cluster-management.io/v1beta2' },
+  { kind: 'ManagedClusterSet', apiVersion: 'cluster.open-cluster-management.io/v1beta2', clusterScoped: true },
   { kind: 'ClusterCurator', apiVersion: 'cluster.open-cluster-management.io/v1beta1' },
   { kind: 'Subscription', apiVersion: 'operators.coreos.com/v1alpha1' },
   { kind: 'DiscoveredCluster', apiVersion: 'discovery.open-cluster-management.io/v1' },
@@ -182,15 +189,15 @@ const definitions: IWatchOptions[] = [
   { kind: 'AgentClusterInstall', apiVersion: 'extensions.hive.openshift.io/v1beta1' },
   { kind: 'ClusterClaim', apiVersion: 'hive.openshift.io/v1' },
   { kind: 'ClusterDeployment', apiVersion: 'hive.openshift.io/v1' },
-  { kind: 'ClusterImageSet', apiVersion: 'hive.openshift.io/v1' },
+  { kind: 'ClusterImageSet', apiVersion: 'hive.openshift.io/v1', clusterScoped: true },
   { kind: 'ClusterPool', apiVersion: 'hive.openshift.io/v1' },
   { kind: 'ClusterProvision', apiVersion: 'hive.openshift.io/v1' },
   { kind: 'MachinePool', apiVersion: 'hive.openshift.io/v1' },
   { kind: 'ManagedClusterInfo', apiVersion: 'internal.open-cluster-management.io/v1beta1' },
   { kind: 'BareMetalHost', apiVersion: 'metal3.io/v1alpha1' },
-  { kind: 'MultiClusterEngine', apiVersion: 'multicluster.openshift.io/v1' },
-  { kind: 'ClusterVersion', apiVersion: 'config.openshift.io/v1' },
-  { kind: 'StorageClass', apiVersion: 'storage.k8s.io/v1' },
+  { kind: 'MultiClusterEngine', apiVersion: 'multicluster.openshift.io/v1', clusterScoped: true },
+  { kind: 'ClusterVersion', apiVersion: 'config.openshift.io/v1', clusterScoped: true },
+  { kind: 'StorageClass', apiVersion: 'storage.k8s.io/v1', clusterScoped: true },
   { kind: 'PlacementBinding', apiVersion: 'policy.open-cluster-management.io/v1' },
   { kind: 'Policy', apiVersion: 'policy.open-cluster-management.io/v1' },
   { kind: 'PolicyAutomation', apiVersion: 'policy.open-cluster-management.io/v1beta1' },
@@ -208,7 +215,7 @@ const definitions: IWatchOptions[] = [
     fieldSelector: { 'metadata.namespace': 'openshift-config-managed', 'metadata.name': 'console-public' },
   },
   { kind: 'ConfigMap', apiVersion: 'v1', fieldSelector: { 'metadata.name': 'console-search-config' } },
-  { kind: 'Namespace', apiVersion: 'v1' },
+  { kind: 'Namespace', apiVersion: 'v1', clusterScoped: true },
   { kind: 'Secret', apiVersion: 'v1', labelSelector: { 'cluster.open-cluster-management.io/credentials': '' } },
   // **Need to look for creds with: 'cluster.open-cluster-management.io/type': 'ans', for edit scenarios
   { kind: 'Secret', apiVersion: 'v1', labelSelector: { 'cluster.open-cluster-management.io/type': 'ans' } },
@@ -232,6 +239,10 @@ const definitions: IWatchOptions[] = [
   },
 ]
 
+configureClusterScopedKinds(
+  definitions.filter((definition) => definition.clusterScoped).map((definition) => definition.kind)
+)
+
 export function startWatching(): void {
   ServerSideEvents.eventFilter = eventFilter
   startAccessCacheCleanup()
@@ -246,6 +257,12 @@ interface IWatchOptions {
   kind: string
   labelSelector?: Record<string, string>
   fieldSelector?: Record<string, string>
+  /**
+   * True when the Kubernetes resource is cluster-scoped.
+   * Used by SSE RBAC to decide whether SelfSubjectRulesReview should probe `default`
+   * (cluster-scoped) or the resource namespace (namespaced).
+   */
+  clusterScoped?: boolean
 }
 
 // https://kubernetes.io/docs/reference/using-api/api-concepts/

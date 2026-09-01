@@ -171,7 +171,7 @@ export function setTimedCacheEntry<T>(
   cache: Record<string, TimedCacheEntry<unknown>>,
   entry: TimedCacheEntry<T>
 ) {
-  cache[cacheKey] = entry as TimedCacheEntry<unknown>
+  cache[cacheKey] = entry
 }
 
 export function deleteTimedCacheEntry(cacheKey: string, cache: Record<string, TimedCacheEntry<unknown>>) {

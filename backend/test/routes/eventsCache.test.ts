@@ -201,7 +201,7 @@ describe('eventsCache', () => {
       expect(result1).toBe(true)
       expect(result1).toBe(result2)
       expect(getAccessCache()[mockToken]).toBeUndefined()
-      expect(getAccessCache()[hashAccessToken(mockToken)]['get:Pod:default:test-pod']).toBeDefined()
+      expect(getAccessCache()[hashAccessToken(mockToken)]['get::Pod:default:test-pod']).toBeDefined()
     })
 
     it('should use distinct cache keys per verb', async () => {
@@ -219,8 +219,8 @@ describe('eventsCache', () => {
       expect(await canAccess(resource, 'list', mockToken)).toBe(false)
 
       const tokenCache = getAccessCache()[hashAccessToken(mockToken)]
-      expect(tokenCache['get:Pod:default:test-pod']).toBeDefined()
-      expect(tokenCache['list:Pod:default:test-pod']).toBeDefined()
+      expect(tokenCache['get::Pod:default:test-pod']).toBeDefined()
+      expect(tokenCache['list::Pod:default:test-pod']).toBeDefined()
     })
 
     it('should respect TTL and refetch after expiry', async () => {
@@ -229,7 +229,7 @@ describe('eventsCache', () => {
       const tokenKey = hashAccessToken(mockToken)
 
       cache[tokenKey] = {
-        'get:Secret:default:credentials': {
+        'get::Secret:default:credentials': {
           time: Date.now() - ACCESS_CACHE_TTL - 1000,
           promise: Promise.resolve(true),
         },

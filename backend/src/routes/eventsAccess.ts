@@ -29,43 +29,22 @@ export interface SubjectRulesStatus {
 }
 
 export type KindGetAccess =
-  | { type: 'deny-all' }
-  | { type: 'allow-all' }
-  | { type: 'allow-names'; names: Set<string> }
-  | { type: 'incomplete' }
+  { type: 'deny-all' } | { type: 'allow-all' } | { type: 'allow-names'; names: Set<string> } | { type: 'incomplete' }
 
 export type AccessResource = { kind: string; apiVersion: string; metadata?: { name?: string; namespace?: string } }
 
 /** SSRR requires a namespace; cluster-scoped kinds are reviewed in this probe namespace only. */
 const CLUSTER_SCOPED_RULES_NAMESPACE = 'default'
 
-/**
- * Kinds watched by the console that are cluster-scoped in Kubernetes (not inferred from metadata.namespace).
- * Keep aligned with cluster-scoped entries in backend/src/routes/events.ts definitions.
- */
-const CLUSTER_SCOPED_KINDS = new Set([
-  'AgentServiceConfig',
-  'CertificateSigningRequest',
-  'ClusterCurator',
-  'ClusterImageSet',
-  'ClusterManagementAddOn',
-  'ClusterVersion',
-  'DiscoveredCluster',
-  'DiscoveryConfig',
-  'Infrastructure',
-  'ManagedCluster',
-  'ManagedClusterSet',
-  'ManagedClusterSetBinding',
-  'MultiClusterEngine',
-  'Namespace',
-  'Placement',
-  'PlacementDecision',
-  'Search',
-  'StorageClass',
-])
+let clusterScopedKinds = new Set<string>()
 
-function isClusterScopedKind(kind: string): boolean {
-  return CLUSTER_SCOPED_KINDS.has(kind)
+/** Replace the cluster-scoped kind lookup. Derived from watch definitions in events.ts. */
+export function configureClusterScopedKinds(kinds: Iterable<string>): void {
+  clusterScopedKinds = new Set(kinds)
+}
+
+export function isClusterScopedKind(kind: string): boolean {
+  return clusterScopedKinds.has(kind)
 }
 
 const subjectRulesCache = getSubjectRulesCacheStore()
@@ -264,7 +243,11 @@ function resolveKindGetAccess(resource: AccessResource, token: string): Promise<
     return existing.promise
   }
 
-  const promise = getSubjectRules(token, namespace).then((rules) => evaluateKindGetAccess(rules, group, plural))
+  const promise = getSubjectRules(token, namespace).then((rules) => {
+    // Do not retain a decision derived from an unavailable review; allow SSRR retry.
+    if (rules.unavailable) deleteTimedCacheEntry(cacheKey, kindGetAccessCache)
+    return evaluateKindGetAccess(rules, group, plural)
+  })
   setTimedCacheEntry(cacheKey, kindGetAccessCache, { time: Date.now(), promise })
   return promise
 }
@@ -272,7 +255,9 @@ function resolveKindGetAccess(resource: AccessResource, token: string): Promise<
 export function canAccess(resource: AccessResource, verb: 'get' | 'list' | 'create', token: string): Promise<boolean> {
   // Cache is cleaned up periodically by cleanupAccessCache() to prevent unbounded memory growth
   const tokenKey = hashAccessToken(token)
-  const key = `${verb}:${resource.kind}:${resource.metadata?.namespace}:${resource.metadata?.name}`
+  const group = apiGroupFromVersion(resource.apiVersion)
+  // Include API group: Application/Subscription exist in more than one group with different RBAC.
+  const key = `${verb}:${group}:${resource.kind}:${resource.metadata?.namespace}:${resource.metadata?.name}`
   const existing = getSsarCacheEntry(tokenKey, key)
   if (existing) {
     return existing.promise
@@ -287,7 +272,7 @@ export function canAccess(resource: AccessResource, verb: 'get' | 'list' | 'crea
       metadata: {},
       spec: {
         resourceAttributes: {
-          group: apiGroupFromVersion(resource.apiVersion),
+          group,
           name: resource.metadata?.name,
           namespace:
             resource.metadata?.namespace ?? (resource.kind === 'Namespace' ? resource.metadata?.name : undefined),
