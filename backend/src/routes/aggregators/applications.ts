@@ -4,6 +4,7 @@ import { addOCPQueryInputs, addSystemQueryInputs, cacheOCPApplications } from '.
 import { ApplicationSetKind, type IApplicationSet, type IResource, type SearchResult } from '../../resources/resource'
 import type { FilterSelections, ISortBy } from '../../lib/pagination'
 import { logger } from '../../lib/logger'
+import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
 import {
   discoverSystemAppNamespacePrefixes,
   getApplicationsHelper,
@@ -196,7 +197,12 @@ export const promiseTimeout = <T>(promise: Promise<T>, delay: number) => {
 // //////////////////////////////////////////////////////////////////////////////////
 export async function startAggregatingApplications() {
   await discoverSystemAppNamespacePrefixes()
-  void searchLoop()
+  const multiClusterHub = await getMultiClusterHub()
+  if (!multiClusterHub) {
+    logger.info('search aggregation skipped: MultiClusterHub not found')
+    return
+  }
+  await searchLoop()
 }
 
 let stopping = false
