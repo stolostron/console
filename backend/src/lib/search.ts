@@ -63,10 +63,13 @@ export async function getSearchResults(query: IQuery) {
   const requestTimeout = 2 * 60 * 1000
   return new Promise<ISearchResult>((resolve, reject) => {
     let body = ''
-    const id = setTimeout(() => {
-      logger.error(`getSearchResults request timeout`)
-      reject(new Error('request timeout'))
-    }, requestTimeout)
+    let settled = false
+    const finish = (fn: () => void) => {
+      if (settled) return
+      settled = true
+      clearTimeout(id)
+      fn()
+    }
     const req = request(options, (res) => {
       res.on('data', (data) => {
         body += data
@@ -77,23 +80,28 @@ export async function getSearchResults(query: IQuery) {
           const message = typeof result === 'string' ? result : result.message
           if (message) {
             logger.error(`getSearchResults return error ${message}`)
-            reject(new Error(result.message))
+            finish(() => reject(new Error(result.message)))
+            return
           }
-          resolve(result)
+          finish(() => resolve(result))
         } catch (e) {
           // search might be overwhelmed
           // pause before next request
           logger.error(`getSearchResults parse error ${e} ${body}`)
           setTimeout(() => {
-            reject(new Error(body))
+            finish(() => reject(new Error(body)))
           }, requestTimeout)
         }
-        clearTimeout(id)
       })
     })
+    const id = setTimeout(() => {
+      logger.error(`getSearchResults request timeout`)
+      req.destroy()
+      finish(() => reject(new Error('request timeout')))
+    }, requestTimeout)
     req.on('error', (e) => {
       logger.error(`getSearchResults request error ${e.message}`)
-      reject(e)
+      finish(() => reject(e))
     })
     req.write(JSON.stringify(query))
     req.end()
@@ -126,13 +134,13 @@ export async function pingSearchAPI() {
   const options = await getServiceAccountSearchRequestOptions()
   return new Promise<boolean>((resolve, reject) => {
     let body = ''
-    const id = setTimeout(
-      () => {
-        logger.error(`ping searchAPI timeout`)
-        reject(new Error('request timeout'))
-      },
-      4 * 60 * 1000
-    )
+    let settled = false
+    const finish = (fn: () => void) => {
+      if (settled) return
+      settled = true
+      clearTimeout(id)
+      fn()
+    }
     const req = request(options, (res) => {
       res.on('data', (data) => {
         body += data
@@ -141,19 +149,26 @@ export async function pingSearchAPI() {
         try {
           const result = JSON.parse(body) as { data: unknown }
           if (result.data) {
-            resolve(true)
+            finish(() => resolve(true))
           } else {
-            reject(new Error('no data'))
+            finish(() => reject(new Error('no data')))
           }
         } catch (e) {
           logger.error(`pingSearchAPI parse error ${e} ${body}`)
-          reject(new Error(String(e).valueOf()))
+          finish(() => reject(new Error(String(e).valueOf())))
         }
-        clearTimeout(id)
       })
     })
+    const id = setTimeout(
+      () => {
+        logger.error(`ping searchAPI timeout`)
+        req.destroy()
+        finish(() => reject(new Error('request timeout')))
+      },
+      4 * 60 * 1000
+    )
     req.on('error', (e) => {
-      reject(e)
+      finish(() => reject(e))
     })
     req.write(JSON.stringify(ping))
     req.end()
