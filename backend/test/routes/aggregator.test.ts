@@ -1,10 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { parseResponseJsonBody } from '../../src/lib/body-parser'
+import { logger } from '../../src/lib/logger'
 import {
   aggregateLocalApplications,
   aggregateRemoteApplications,
   resetApplicationCache,
   resetAggregatingApplications,
+  startAggregatingApplications,
   stopAggregatingApplications,
   searchLoop,
 } from '../../src/routes/aggregators/applications'
@@ -196,6 +198,86 @@ describe(`aggregator Route`, function () {
     })
     expect(res.statusCode).toEqual(200)
     expect(await parseResponseJsonBody(res)).toEqual(uidata)
+  })
+
+  describe('startAggregatingApplications', () => {
+    function nockMultiClusterEngine() {
+      nock(process.env.CLUSTER_API_URL)
+        .get('/apis/multicluster.openshift.io/v1/multiclusterengines')
+        .reply(200, {
+          items: [
+            {
+              spec: {
+                targetNamespace: 'multicluster-engine',
+              },
+            },
+          ],
+        })
+    }
+
+    function isPingBody(body: { variables?: { input?: { filters?: { values?: string[] }[] }[] } }) {
+      return body.variables?.input?.[0]?.filters?.[1]?.values?.[0] === 'search-api*'
+    }
+
+    it('should skip searchLoop when MultiClusterHub is missing', async function () {
+      nock(process.env.CLUSTER_API_URL)
+        .get('/apis/operator.open-cluster-management.io/v1/multiclusterhubs')
+        .reply(200, {
+          items: [],
+        })
+      nockMultiClusterEngine()
+      const searchScope = nock('https://search-search-api.undefined.svc.cluster.local:4010')
+        .post('/searchapi/graphql')
+        .reply(200, { data: { searchResult: [] } })
+      const infoSpy = jest.spyOn(logger, 'info').mockImplementation(() => undefined)
+
+      await startAggregatingApplications()
+
+      expect(infoSpy).toHaveBeenCalledWith('search aggregation skipped: MultiClusterHub not found')
+      expect(searchScope.isDone()).toBe(false)
+      infoSpy.mockRestore()
+    })
+
+    it('should start searchLoop when MultiClusterHub is present', async function () {
+      nock(process.env.CLUSTER_API_URL)
+        .get('/apis/operator.open-cluster-management.io/v1/multiclusterhubs')
+        .reply(200, {
+          items: [
+            {
+              metadata: {
+                namespace: 'ocm',
+              },
+              status: {
+                currentVersion: '2.5.1',
+              },
+            },
+          ],
+        })
+      nockMultiClusterEngine()
+
+      const pingScope = nock('https://search-search-api.undefined.svc.cluster.local:4010')
+        .post('/searchapi/graphql', isPingBody)
+        .reply(200, {
+          data: {
+            searchResult: [{ items: [{ status: 'Running' }] }],
+          },
+        })
+      nock('https://search-search-api.undefined.svc.cluster.local:4010')
+        .post('/searchapi/graphql')
+        .reply(200, {
+          data: {
+            searchResult: [
+              { items: [], related: [] },
+              { items: [], related: [] },
+              { items: [], related: [] },
+            ],
+          },
+        })
+
+      await startAggregatingApplications()
+
+      expect(pingScope.isDone()).toBe(true)
+    })
   })
 })
 
