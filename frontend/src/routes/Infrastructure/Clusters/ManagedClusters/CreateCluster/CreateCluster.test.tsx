@@ -4403,3 +4403,159 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     await waitForNocks(createNocks)
   })
 })
+
+// ACM-42793: the OpenShift Virtualization operator alert must not be shown when the
+// selected credential uses external infrastructure, since the operator is not required
+// on the hub in that case. When it is shown, it must explain the external infrastructure exception.
+describe('CreateCluster KubeVirt operator alert', () => {
+  const kubevirtSecretWithExternalInfra: Secret = {
+    apiVersion: ProviderConnectionApiVersion,
+    kind: ProviderConnectionKind,
+    type: 'Opaque',
+    metadata: {
+      name: 'kubevirt-with-ei',
+      namespace: 'clusters',
+      labels: {
+        'cluster.open-cluster-management.io/type': 'kubevirt',
+        'cluster.open-cluster-management.io/credentials': '',
+      },
+    },
+    stringData: {
+      pullSecret: '{"pullSecret":"secret"}\n',
+      'ssh-publickey': 'ssh-rsa AAAAB1 fake@email.com',
+      kubeconfig: kubeconfig,
+      externalInfraNamespace: 'kubevirt-namespace',
+    },
+  } as unknown as Secret
+
+  const kubevirtSecretWithoutExternalInfra: Secret = {
+    apiVersion: ProviderConnectionApiVersion,
+    kind: ProviderConnectionKind,
+    type: 'Opaque',
+    metadata: {
+      name: 'kubevirt-no-ei',
+      namespace: 'clusters',
+      labels: {
+        'cluster.open-cluster-management.io/type': 'kubevirt',
+        'cluster.open-cluster-management.io/credentials': '',
+      },
+    },
+    stringData: {
+      pullSecret: '{"pullSecret":"secret"}\n',
+      'ssh-publickey': 'ssh-rsa AAAAB1 fake@email.com',
+    },
+  } as unknown as Secret
+
+  const Component = (props: { secret: Secret }) => {
+    return (
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(configMapsState, [
+            {
+              kind: 'ConfigMap',
+              apiVersion: 'v1',
+              metadata: {
+                name: 'supported-versions',
+                namespace: 'hypershift',
+              },
+              data: {
+                'supported-versions': '{"versions":["4.15","4.14","4.13"]}',
+              },
+            },
+          ])
+          snapshot.set(namespacesState, [
+            {
+              apiVersion: NamespaceApiVersion,
+              kind: NamespaceKind,
+              metadata: { name: 'clusters' },
+            },
+          ])
+          snapshot.set(managedClustersState, [])
+          snapshot.set(managedClusterSetsState, [])
+          snapshot.set(managedClusterInfosState, [
+            {
+              apiVersion: ManagedClusterInfoApiVersion,
+              kind: ManagedClusterInfoKind,
+              metadata: { name: 'local-cluster', namespace: 'local-cluster' },
+              status: {
+                consoleURL: 'https://testCluster.com',
+                conditions: [
+                  {
+                    type: 'ManagedClusterConditionAvailable',
+                    reason: 'ManagedClusterConditionAvailable',
+                    status: 'True',
+                  },
+                  { type: 'ManagedClusterJoined', reason: 'ManagedClusterJoined', status: 'True' },
+                  { type: 'HubAcceptedManagedCluster', reason: 'HubAcceptedManagedCluster', status: 'True' },
+                ],
+                version: '1.17',
+                distributionInfo: {
+                  type: 'ocp',
+                  ocp: {
+                    version: '1.2.3',
+                    availableUpdates: [],
+                    desiredVersion: '1.2.3',
+                    upgradeFailed: false,
+                  },
+                },
+              },
+            },
+          ])
+          snapshot.set(secretsState, [props.secret])
+          // No SubscriptionOperator for kubevirt-hyperconverged: operator is not installed on the hub
+          snapshot.set(subscriptionOperatorsState, [])
+        }}
+      >
+        <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?${CLUSTER_INFRA_TYPE_PARAM}=kubevirt`]}>
+          <Routes>
+            <Route path={NavigationPath.createCluster} element={<CreateClusterPage />} />
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+  }
+
+  beforeEach(() => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+    // operator is not installed on the hub for either scenario
+    nockIgnoreOperatorCheck(true)
+    nockIgnoreClusterVersion()
+  })
+
+  test('hides the operator alert when the selected credential uses external infrastructure, even though the operator is not installed', async () => {
+    const initialNocks = [
+      nockList(clusterImageSetKubervirt as IResource, [clusterImageSetKubervirt] as IResource[]),
+      nockList(storageClass as IResource, [storageClass] as IResource[]),
+    ]
+    render(<Component secret={kubevirtSecretWithExternalInfra} />)
+
+    await waitForNocks(initialNocks)
+    await waitForText('Cluster details', true)
+
+    await waitForNotText('Operator required')
+    expect(
+      screen.queryByText(
+        'OpenShift Virtualization operator is required to create a cluster when not using external infrastructure.'
+      )
+    ).not.toBeInTheDocument()
+  })
+
+  test('shows the operator alert with the external infrastructure exception text when the selected credential does not use external infrastructure', async () => {
+    const initialNocks = [
+      nockList(clusterImageSetKubervirt as IResource, [clusterImageSetKubervirt] as IResource[]),
+      nockList(storageClass as IResource, [storageClass] as IResource[]),
+    ]
+    render(<Component secret={kubevirtSecretWithoutExternalInfra} />)
+
+    await waitForNocks(initialNocks)
+    await waitForText('Cluster details', true)
+
+    await waitForText('Operator required')
+    expect(
+      screen.getByText(
+        'OpenShift Virtualization operator is required to create a cluster when not using external infrastructure.'
+      )
+    ).toBeInTheDocument()
+  })
+})

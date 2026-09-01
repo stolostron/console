@@ -2415,7 +2415,7 @@
   "OpenShift GitOps Operator Missing": "OpenShift GitOps Operator Missing",
   "OpenShift release images unavailable": "OpenShift release images unavailable",
   "OpenShift version": "OpenShift version",
-  "OpenShift Virtualization operator is required to create a cluster.": "OpenShift Virtualization operator is required to create a cluster.",
+  "OpenShift Virtualization operator is required to create a cluster when not using external infrastructure.": "OpenShift Virtualization operator is required to create a cluster when not using external infrastructure.",
   "openshift.cluster.manager": "OpenShift Cluster Manager",
   "OpenStack clouds.yaml": "OpenStack clouds.yaml",
   "Operator": "Operator",
