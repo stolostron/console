@@ -3,6 +3,7 @@
 package server_test
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -10,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/stolostron/console/backend/internal/config"
+	"github.com/stolostron/console/backend/internal/oauth"
 	"github.com/stolostron/console/backend/internal/server"
 )
 
@@ -201,6 +203,81 @@ func TestRBACEventsNotProxied(t *testing.T) {
 	}
 }
 
+func TestOAuthNotProxiedToSidecar(t *testing.T) {
+	var sidecarPaths []string
+	sidecar := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sidecarPaths = append(sidecarPaths, r.URL.Path)
+		w.WriteHeader(http.StatusTeapot)
+	}))
+	defer sidecar.Close()
+
+	oa := oauth.New(oauth.Options{
+		ClientID:    "cid",
+		RedirectURL: "https://localhost:3000/multicloud/login/callback",
+		Discover: func(context.Context) (oauth.Info, error) {
+			return oauth.Info{
+				AuthorizationEndpoint: "https://oauth.example.com/oauth/authorize",
+				TokenEndpoint:         "https://oauth.example.com/oauth/token",
+			}, nil
+		},
+	})
+	cfg := &config.Config{NodeBackendURL: sidecar.URL, CertsDir: t.TempDir()}
+	h, err := server.Handler(cfg, server.WithOAuth(oa), server.WithOAuthLogin())
+	if err != nil {
+		t.Fatal(err)
+	}
+	ts := httptest.NewServer(h)
+	defer ts.Close()
+
+	client := &http.Client{
+		CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse },
+	}
+	for _, path := range []string{"/login", "/multicloud/login"} {
+		sidecarPaths = nil
+		resp, getErr := client.Get(ts.URL + path)
+		if getErr != nil {
+			t.Fatal(getErr)
+		}
+		resp.Body.Close()
+		if len(sidecarPaths) != 0 {
+			t.Fatalf("%s proxied to sidecar: %v", path, sidecarPaths)
+		}
+		if resp.StatusCode != http.StatusFound {
+			t.Fatalf("%s status %d", path, resp.StatusCode)
+		}
+	}
+
+	sidecarPaths = nil
+	resp, err := ts.Client().Get(ts.URL + "/logout")
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	if len(sidecarPaths) != 0 {
+		t.Fatalf("logout proxied: %v", sidecarPaths)
+	}
+	if resp.StatusCode != http.StatusUnauthorized {
+		t.Fatalf("logout status %d", resp.StatusCode)
+	}
+
+	sidecarPaths = nil
+	resp, err = ts.Client().Get(ts.URL + "/configure")
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, _ := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	if len(sidecarPaths) != 0 {
+		t.Fatalf("configure proxied: %v", sidecarPaths)
+	}
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("configure status %d", resp.StatusCode)
+	}
+	if !strings.Contains(string(body), `"token_endpoint":"https://oauth.example.com/oauth/token"`) {
+		t.Fatalf("configure body %s", body)
+	}
+}
+
 func TestStatelessProxiesNotProxiedToSidecar(t *testing.T) {
 	var sidecarPaths []string
 	sidecar := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -309,6 +386,77 @@ func TestStaticNotProxiedToSidecar(t *testing.T) {
 	resp.Body.Close()
 	if len(sidecarPaths) != 1 || sidecarPaths[0] != "/hub" {
 		t.Fatalf("hub sidecar paths %v", sidecarPaths)
+	}
+}
+
+func TestOAuthAbsentProxiesToSidecar(t *testing.T) {
+	var sidecarPaths []string
+	sidecar := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sidecarPaths = append(sidecarPaths, r.URL.Path)
+		w.WriteHeader(http.StatusTeapot)
+	}))
+	defer sidecar.Close()
+
+	cfg := &config.Config{NodeBackendURL: sidecar.URL, CertsDir: t.TempDir()}
+	h, err := server.Handler(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ts := httptest.NewServer(h)
+	defer ts.Close()
+
+	resp, err := ts.Client().Get(ts.URL + "/login")
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	if len(sidecarPaths) != 1 || sidecarPaths[0] != "/login" {
+		t.Fatalf("sidecar paths %v", sidecarPaths)
+	}
+}
+
+func TestConfigureWithoutLoginNotProxied(t *testing.T) {
+	var sidecarPaths []string
+	sidecar := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sidecarPaths = append(sidecarPaths, r.URL.Path)
+		w.WriteHeader(http.StatusTeapot)
+	}))
+	defer sidecar.Close()
+
+	oa := oauth.New(oauth.Options{
+		Discover: func(context.Context) (oauth.Info, error) {
+			return oauth.Info{TokenEndpoint: "https://oauth.example.com/oauth/token"}, nil
+		},
+	})
+	cfg := &config.Config{NodeBackendURL: sidecar.URL, CertsDir: t.TempDir()}
+	h, err := server.Handler(cfg, server.WithOAuth(oa))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ts := httptest.NewServer(h)
+	defer ts.Close()
+
+	resp, err := ts.Client().Get(ts.URL + "/multicloud/configure")
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, _ := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	if len(sidecarPaths) != 0 {
+		t.Fatalf("configure proxied: %v", sidecarPaths)
+	}
+	if resp.StatusCode != http.StatusOK || !strings.Contains(string(body), "oauth.example.com") {
+		t.Fatalf("status %d body %s", resp.StatusCode, body)
+	}
+
+	sidecarPaths = nil
+	resp, err = ts.Client().Get(ts.URL + "/login")
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	if len(sidecarPaths) != 1 || sidecarPaths[0] != "/login" {
+		t.Fatalf("login should still proxy without WithOAuthLogin: %v", sidecarPaths)
 	}
 }
 

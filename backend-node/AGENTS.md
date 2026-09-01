@@ -16,7 +16,7 @@ Node.js ESM proxy server. Sits between the browser and the hub cluster API serve
 | Directory | Purpose |
 |-----------|---------|
 | `src/lib/` | Core server: `main.ts` entry, `server.ts`, auth, cookies, CORS, proxy, search, SSE, logging, config |
-| `src/routes/` | HTTP route handlers: proxy, OAuth, search, events, hub, etc. |
+| `src/routes/` | HTTP route handlers: proxy, search, events, hub, etc. |
 | `src/resources/` | Backend resource watchers and handlers |
 | `test/` | Jest test files |
 | `config/` | Runtime configuration lives in `../backend/config` (Go backend) |
@@ -37,7 +37,7 @@ Run from the `backend-node/` directory, or use the `npm run *:backend-node` vari
 
 ## Architecture
 
-The Go process in `../backend` is the public listener. This Node process is a sidecar for routes not yet migrated.
+The Go process in `../backend` is the public listener. This Node process is a sidecar for routes not yet migrated. OAuth login, logout, and `/configure` discovery are served by Go.
 
 ```text
 Browser / plugin → Go :4000 → Node sidecar (this package) → Hub Cluster API Server

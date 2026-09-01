@@ -20,6 +20,7 @@ import (
 	"github.com/stolostron/console/backend/internal/config"
 	"github.com/stolostron/console/backend/internal/health"
 	applog "github.com/stolostron/console/backend/internal/log"
+	"github.com/stolostron/console/backend/internal/oauth"
 	"github.com/stolostron/console/backend/internal/proxy"
 	"github.com/stolostron/console/backend/internal/static"
 )
@@ -29,6 +30,8 @@ const multicloudPrefix = "/multicloud"
 type handlerOptions struct {
 	rbacEvents    http.Handler
 	k8sProxy      http.Handler
+	oauth         *oauth.Handler
+	oauthLogin    bool
 	mcProxy       http.Handler
 	prometheus    http.Handler
 	observability http.Handler
@@ -53,6 +56,19 @@ func WithK8sProxy(h http.Handler) Option {
 	}
 }
 
+// WithOAuth registers GET /configure (OAuth discovery for logout and Display Token).
+func WithOAuth(h *oauth.Handler) Option {
+	return func(o *handlerOptions) {
+		o.oauth = h
+	}
+}
+
+// WithOAuthLogin registers standalone /login, /login/callback, and /logout (non-production).
+func WithOAuthLogin() Option {
+	return func(o *handlerOptions) {
+		o.oauthLogin = true
+	}
+}
 
 // WithManagedClusterProxy registers /managedclusterproxy/* (HTTP and WebSocket).
 func WithManagedClusterProxy(h http.Handler) Option {
@@ -219,10 +235,25 @@ func Handler(cfg *config.Config, opts ...Option) (http.Handler, error) {
 	if o.k8sProxy != nil {
 		registerK8sProxyRoutes(r, o.k8sProxy)
 	}
+	if o.oauth != nil {
+		registerOAuth(r, "", o.oauth, o.oauthLogin)
+		registerOAuth(r, multicloudPrefix, o.oauth, o.oauthLogin)
+	}
 	registerStatelessProxies(r, o)
 	r.NotFound(notFoundHandler(o.staticH, sidecar))
 	r.MethodNotAllowed(sidecar.ServeHTTP)
 	return r, nil
+}
+
+func registerOAuth(r chi.Router, prefix string, h *oauth.Handler, login bool) {
+	r.Get(prefix+"/configure", h.Configure)
+	if !login {
+		return
+	}
+	r.Get(prefix+"/login", h.Login)
+	r.Get(prefix+"/login/callback", h.Callback)
+	r.Get(prefix+"/logout", h.Logout)
+	r.Get(prefix+"/logout/", h.Logout)
 }
 
 func notFoundHandler(staticH, sidecar http.Handler) http.HandlerFunc {

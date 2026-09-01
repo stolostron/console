@@ -19,6 +19,7 @@ import (
 	rbacevents "github.com/stolostron/console/backend/internal/events/rbac"
 	"github.com/stolostron/console/backend/internal/k8sproxy"
 	applog "github.com/stolostron/console/backend/internal/log"
+	"github.com/stolostron/console/backend/internal/oauth"
 	"github.com/stolostron/console/backend/internal/mcproxy"
 	"github.com/stolostron/console/backend/internal/metricsproxy"
 	"github.com/stolostron/console/backend/internal/server"
@@ -68,8 +69,22 @@ func run() error {
 	}
 	rbacHandler := rbacevents.NewHandler(store, rbacevents.NewAPIAuth(restCfg), rbacevents.NewSSARAccess(restCfg))
 
+	oauthH := oauth.New(oauth.Options{
+		ClientID:      cfg.OAuth2ClientID,
+		ClientSecret:  cfg.OAuth2ClientSecret,
+		RedirectURL:   cfg.OAuth2RedirectURL,
+		FrontendURL:   cfg.FrontendURL,
+		ClusterAPIURL: cfg.ClusterAPIURL,
+		OIDCIssuerURL: cfg.OIDCIssuerURL,
+		Production:    cfg.Production,
+		Client:        auth.HTTPClient(sa.CACert, 0),
+		RESTConfig:    restCfg,
+	})
 	var opts []server.Option
-	opts = append(opts, server.WithRBACEvents(rbacHandler))
+	opts = append(opts, server.WithRBACEvents(rbacHandler), server.WithOAuth(oauthH))
+	if !cfg.Production {
+		opts = append(opts, server.WithOAuthLogin())
+	}
 	clusterURL, err := url.Parse(cfg.ClusterAPIURL)
 	if err != nil {
 		return err

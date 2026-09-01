@@ -72,6 +72,30 @@ func TestLoad_FromEnvFile(t *testing.T) {
 	}
 }
 
+func TestLoad_OAuthEnv(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("ENV_FILE", filepath.Join(dir, ".env"))
+	t.Setenv("OAUTH2_CLIENT_ID", "cid")
+	t.Setenv("OAUTH2_CLIENT_SECRET", "csecret")
+	t.Setenv("OAUTH2_REDIRECT_URL", "https://localhost:3000/multicloud/login/callback")
+	t.Setenv("OIDC_ISSUER_URL", "https://sso.example.com")
+	t.Setenv("FRONTEND_URL", "https://localhost:3000")
+	t.Setenv("NODE_ENV", "production")
+	cfg := config.Load()
+	if cfg.OAuth2ClientID != "cid" || cfg.OAuth2ClientSecret != "csecret" {
+		t.Fatalf("client %q %q", cfg.OAuth2ClientID, cfg.OAuth2ClientSecret)
+	}
+	if cfg.OAuth2RedirectURL != "https://localhost:3000/multicloud/login/callback" {
+		t.Fatalf("redirect %q", cfg.OAuth2RedirectURL)
+	}
+	if cfg.OIDCIssuerURL != "https://sso.example.com" || cfg.FrontendURL != "https://localhost:3000" {
+		t.Fatalf("oidc/frontend %q %q", cfg.OIDCIssuerURL, cfg.FrontendURL)
+	}
+	if !cfg.Production {
+		t.Fatal("expected Production")
+	}
+}
+
 func TestLoad_ProxyEnvVars(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("ENV_FILE", filepath.Join(dir, ".env"))

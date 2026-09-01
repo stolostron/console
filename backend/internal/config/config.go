@@ -34,6 +34,13 @@ type Config struct {
 	ClusterProxyAddonUserRoute string
 	PublicFolder               string
 
+	OAuth2ClientID     string
+	OAuth2ClientSecret string
+	OAuth2RedirectURL  string
+	OIDCIssuerURL      string
+	FrontendURL        string
+	Production         bool
+
 	mu       sync.RWMutex
 	settings map[string]string
 }
@@ -66,6 +73,12 @@ func Load() *Config {
 		ClusterProxyAddonUserHost:  os.Getenv("CLUSTER_PROXY_ADDON_USER_HOST"),
 		ClusterProxyAddonUserRoute: os.Getenv("CLUSTER_PROXY_ADDON_USER_ROUTE"),
 		PublicFolder:               envOr("PUBLIC_FOLDER", "public"),
+		OAuth2ClientID:             os.Getenv("OAUTH2_CLIENT_ID"),
+		OAuth2ClientSecret:         os.Getenv("OAUTH2_CLIENT_SECRET"),
+		OAuth2RedirectURL:          os.Getenv("OAUTH2_REDIRECT_URL"),
+		OIDCIssuerURL:              os.Getenv("OIDC_ISSUER_URL"),
+		FrontendURL:                os.Getenv("FRONTEND_URL"),
+		Production:                 os.Getenv("NODE_ENV") == "production",
 		settings:                   map[string]string{},
 	}
 	_ = cfg.ReloadSettings()

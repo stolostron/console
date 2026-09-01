@@ -5,7 +5,9 @@ package auth
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"net/http"
 	"os"
+	"time"
 )
 
 // TLSConfigFromCA builds a TLS config from a PEM CA bundle.
@@ -32,6 +34,20 @@ func TLSConfigFromCA(caCert []byte, includeSystemRoots bool) *tls.Config {
 	}
 	tlsCfg.RootCAs = pool
 	return tlsCfg
+}
+
+// HTTPClient is an outbound client that trusts system roots and the service-account CA.
+func HTTPClient(ca []byte, timeout time.Duration) *http.Client {
+	if timeout <= 0 {
+		timeout = 30 * time.Second
+	}
+	return &http.Client{
+		Timeout: timeout,
+		Transport: &http.Transport{
+			TLSClientConfig: TLSConfigFromCA(ca, true),
+			Proxy:           http.ProxyFromEnvironment,
+		},
+	}
 }
 
 // ServiceTLSConfig trusts SERVICE_CA_CERT / service-ca.crt. Local development also trusts system roots
