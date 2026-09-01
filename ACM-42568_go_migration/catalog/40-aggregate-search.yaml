@@ -1,0 +1,72 @@
+# Copyright Contributors to the Open Cluster Management project
+cases:
+  - id: aggregate-statuses
+    group: aggregate
+    description: POST /aggregate/statuses application dashboard counts
+    method: POST
+    path: /aggregate/statuses
+    auth: bearer
+    alsoMulticloud: true
+    contentType: application/json
+    timeoutSeconds: 120
+    body:
+      clusters: []
+    expect:
+      status: [200]
+      contentTypeContains: json
+      jsonKeys: [itemCount, filterCounts, systemAppNSPrefixes, loading]
+
+  - id: aggregate-applications
+    group: aggregate
+    description: POST /aggregate/applications paginated list
+    method: POST
+    path: /aggregate/applications
+    auth: bearer
+    alsoMulticloud: true
+    contentType: application/json
+    timeoutSeconds: 120
+    body:
+      page: 1
+      perPage: 10
+    expect:
+      status: [200]
+      contentTypeContains: json
+      jsonKeys: [page, items, processedItemCount, emptyResult, isPreProcessed, request]
+
+  - id: aggregate-unknown
+    group: aggregate
+    description: POST /aggregate/not-a-type is 404
+    method: POST
+    path: /aggregate/not-a-type
+    auth: bearer
+    contentType: application/json
+    body: {}
+    expect:
+      status: [404]
+      bodyEmpty: true
+
+  - id: search-graphql
+    group: search
+    description: POST /proxy/search GraphQL search query
+    method: POST
+    path: /proxy/search
+    auth: bearer
+    alsoMulticloud: true
+    contentType: application/json
+    timeoutSeconds: 20
+    soft: true
+    softStatuses: [401, 403, 404, 500, 502, 503, 504]
+    body:
+      operationName: searchResult
+      variables:
+        input:
+          - filters:
+              - property: kind
+                values: [Pod]
+              - property: name
+                values: [search-api*]
+            limit: 1
+      query: "query searchResult($input: [SearchInput]) {\n  searchResult: search(input: $input) {\n    items\n  }\n}"
+    expect:
+      status: [200, 201]
+      contentTypeContains: json

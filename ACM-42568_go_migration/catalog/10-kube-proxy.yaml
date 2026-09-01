@@ -1,0 +1,196 @@
+# Copyright Contributors to the Open Cluster Management project
+cases:
+  - id: kube-api-versions
+    group: kube-proxy
+    description: GET /api passthrough to kube-apiserver with user token
+    method: GET
+    path: /api
+    auth: bearer
+    alsoMulticloud: true
+    headers:
+      Accept: application/json
+    expect:
+      status: [200]
+      contentTypeContains: json
+      headerPresent: [content-type]
+      jsonKeys: [kind, versions]
+      jsonPathEquals:
+        kind: APIVersions
+
+  - id: kube-apis
+    group: kube-proxy
+    description: GET /apis discovery document
+    method: GET
+    path: /apis
+    auth: bearer
+    alsoMulticloud: true
+    headers:
+      Accept: application/json
+    expect:
+      status: [200]
+      contentTypeContains: json
+      jsonKeys: [kind, groups]
+      jsonPathEquals:
+        kind: APIGroupList
+
+  - id: kube-version
+    group: kube-proxy
+    description: GET /version passthrough
+    method: GET
+    path: /version
+    auth: bearer
+    alsoMulticloud: true
+    headers:
+      Accept: application/json
+    expect:
+      status: [200]
+      contentTypeContains: json
+      jsonKeys: [major, minor, gitVersion]
+
+  - id: kube-version-slash
+    group: kube-proxy
+    description: GET /version/ trailing slash
+    method: GET
+    path: /version/
+    auth: bearer
+    expect:
+      status: [200]
+      contentTypeContains: json
+      jsonKeys: [major, minor, gitVersion]
+
+  - id: kube-namespaces
+    group: kube-proxy
+    description: GET /api/v1/namespaces list
+    method: GET
+    path: /api/v1/namespaces
+    auth: bearer
+    headers:
+      Accept: application/json
+    expect:
+      status: [200]
+      contentTypeContains: json
+      jsonKeys: [kind, items]
+      jsonPathEquals:
+        kind: NamespaceList
+
+  - id: kube-namespace-default
+    group: kube-proxy
+    description: GET namespaced core resource
+    method: GET
+    path: /api/v1/namespaces/default
+    auth: bearer
+    headers:
+      Accept: application/json
+    expect:
+      status: [200]
+      contentTypeContains: json
+      jsonPathEquals:
+        kind: Namespace
+
+  - id: kube-ssar
+    group: kube-proxy
+    description: POST SelfSubjectAccessReview via /apis (frontend RBAC)
+    method: POST
+    path: /apis/authorization.k8s.io/v1/selfsubjectaccessreviews
+    auth: bearer
+    contentType: application/json
+    headers:
+      Accept: application/json
+    body:
+      apiVersion: authorization.k8s.io/v1
+      kind: SelfSubjectAccessReview
+      spec:
+        resourceAttributes:
+          verb: list
+          resource: namespaces
+    expect:
+      status: [200, 201]
+      contentTypeContains: json
+      jsonKeys: [kind, spec, status]
+      jsonPathEquals:
+        kind: SelfSubjectAccessReview
+
+  - id: kube-dry-run-create-cm
+    group: kube-proxy
+    description: POST ConfigMap with dryRun=All (no persist)
+    method: POST
+    path: /api/v1/namespaces/default/configmaps?dryRun=All
+    auth: bearer
+    contentType: application/json
+    headers:
+      Accept: application/json
+    body:
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: acm-42590-contract-dryrun
+        namespace: default
+      data:
+        probe: "true"
+    expect:
+      status: [200, 201]
+      contentTypeContains: json
+      jsonPathEquals:
+        kind: ConfigMap
+
+  - id: kube-merge-patch-dry-run
+    group: kube-proxy
+    description: PATCH merge-patch+json with dryRun=All
+    method: PATCH
+    path: /api/v1/namespaces/default?dryRun=All
+    auth: bearer
+    contentType: application/merge-patch+json
+    headers:
+      Accept: application/json
+    body:
+      metadata:
+        labels:
+          acm-42590-contract: "true"
+    expect:
+      status: [200]
+      contentTypeContains: json
+      jsonPathEquals:
+        kind: Namespace
+
+  - id: kube-json-patch-dry-run
+    group: kube-proxy
+    description: PATCH json-patch+json with dryRun=All
+    method: PATCH
+    path: /api/v1/namespaces/default?dryRun=All
+    auth: bearer
+    contentType: application/json-patch+json
+    headers:
+      Accept: application/json
+    body:
+      - op: add
+        path: /metadata/labels/acm-42590-json-patch
+        value: "true"
+    expect:
+      status: [200, 422]
+      contentTypeContains: json
+
+  - id: kube-label-selector
+    group: kube-proxy
+    description: GET with labelSelector query (frontend listResources)
+    method: GET
+    path: /api/v1/namespaces?labelSelector=kubernetes.io/metadata.name=default
+    auth: bearer
+    headers:
+      Accept: application/json
+    expect:
+      status: [200]
+      jsonPathEquals:
+        kind: NamespaceList
+
+  - id: kube-proxy-header-allowlist
+    group: kube-proxy
+    description: Successful proxy responses include content-type from kube; cookie is not required on the response
+    method: GET
+    path: /api
+    auth: bearer
+    headers:
+      Accept: application/json
+    expect:
+      status: [200]
+      headerPresent: [content-type]
+      headerAbsent: [set-cookie]

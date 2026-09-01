@@ -1,0 +1,232 @@
+# Copyright Contributors to the Open Cluster Management project
+cases:
+  - id: ansibletower-bad-json
+    group: long-tail
+    description: POST /ansibletower invalid JSON is 400
+    method: POST
+    path: /ansibletower
+    auth: bearer
+    alsoMulticloud: true
+    contentType: application/json
+    rawBody: "not-json"
+    expect:
+      status: [400]
+      bodyEmpty: true
+
+  - id: ansibletower-missing-fields
+    group: long-tail
+    description: POST /ansibletower missing allow-listed fields is 400
+    method: POST
+    path: /ansibletower
+    auth: bearer
+    contentType: application/json
+    body:
+      secretName: x
+    expect:
+      status: [400]
+      bodyEmpty: true
+
+  - id: placement-debug
+    group: long-tail
+    description: POST /placement-debug (503 if OCM CA missing; otherwise upstream JSON)
+    method: POST
+    path: /placement-debug
+    auth: bearer
+    alsoMulticloud: true
+    contentType: application/json
+    soft: true
+    softStatuses: [400, 404, 500, 502, 503, 504]
+    body:
+      apiVersion: cluster.open-cluster-management.io/v1beta1
+      kind: Placement
+      metadata:
+        name: acm-42590-contract
+        namespace: default
+      spec:
+        clusterSets:
+          - global
+    expect:
+      status: [200]
+      contentTypeContains: json
+
+  - id: upgrade-risks
+    group: long-tail
+    description: POST /upgrade-risks-prediction with empty cluster id list
+    method: POST
+    path: /upgrade-risks-prediction
+    auth: bearer
+    alsoMulticloud: true
+    contentType: application/json
+    soft: true
+    softStatuses: [400, 401, 403, 404, 500, 502, 503, 504]
+    body:
+      clusterIds: []
+    expect:
+      status: [200]
+      contentTypeContains: json
+
+  - id: rosa-aws-account-ids
+    group: long-tail
+    description: POST /aws-account-ids ROSA wizard (needs OCM SA; soft)
+    method: POST
+    path: /aws-account-ids
+    auth: bearer
+    alsoMulticloud: true
+    contentType: application/json
+    soft: true
+    softStatuses: [400, 401, 403, 404, 500, 502, 503]
+    body:
+      service_account_id: "invalid"
+      service_account_secret: "invalid"
+    expect:
+      status: [200]
+
+  - id: rosa-billing-accounts
+    group: long-tail
+    method: POST
+    path: /aws-billing-accounts
+    auth: bearer
+    contentType: application/json
+    soft: true
+    softStatuses: [400, 401, 403, 404, 500, 502, 503]
+    body:
+      service_account_id: "invalid"
+      service_account_secret: "invalid"
+    expect:
+      status: [200]
+
+  - id: rosa-oidc-configs
+    group: long-tail
+    method: POST
+    path: /oidc-configs
+    auth: bearer
+    contentType: application/json
+    soft: true
+    softStatuses: [400, 401, 403, 404, 500, 502, 503]
+    body:
+      service_account_id: "invalid"
+      service_account_secret: "invalid"
+    expect:
+      status: [200]
+
+  - id: rosa-regions
+    group: long-tail
+    method: POST
+    path: /regions
+    auth: bearer
+    contentType: application/json
+    soft: true
+    softStatuses: [400, 401, 403, 404, 500, 502, 503]
+    body:
+      service_account_id: "invalid"
+      service_account_secret: "invalid"
+    expect:
+      status: [200]
+
+  - id: rosa-cluster-name-check
+    group: long-tail
+    method: POST
+    path: /cluster-name-check
+    auth: bearer
+    contentType: application/json
+    soft: true
+    softStatuses: [400, 401, 403, 404, 500, 502, 503]
+    body:
+      service_account_id: "invalid"
+      service_account_secret: "invalid"
+      cluster_name: acm-42590-contract
+    expect:
+      status: [200]
+
+  - id: rosa-sts-role-arns
+    group: long-tail
+    method: POST
+    path: /sts-role-arns
+    auth: bearer
+    contentType: application/json
+    soft: true
+    softStatuses: [400, 401, 403, 404, 500, 502, 503]
+    body:
+      service_account_id: "invalid"
+      service_account_secret: "invalid"
+    expect:
+      status: [200]
+
+  - id: rosa-vpcs
+    group: long-tail
+    method: POST
+    path: /vpcs
+    auth: bearer
+    contentType: application/json
+    soft: true
+    softStatuses: [400, 401, 403, 404, 500, 502, 503]
+    body:
+      service_account_id: "invalid"
+      service_account_secret: "invalid"
+      aws:
+        account_id: "000000000000"
+        sts:
+          role_arn: "arn:aws:iam::000000000000:role/x"
+      region:
+        id: us-east-1
+    expect:
+      status: [200]
+
+  - id: rosa-sts-ocm-role
+    group: long-tail
+    method: POST
+    path: /sts-ocm-role
+    auth: bearer
+    contentType: application/json
+    soft: true
+    softStatuses: [400, 401, 403, 404, 500, 502, 503]
+    body:
+      service_account_id: "invalid"
+      service_account_secret: "invalid"
+    expect:
+      status: [200]
+
+  - id: rosa-sts-user-role
+    group: long-tail
+    method: POST
+    path: /sts-user-role
+    auth: bearer
+    contentType: application/json
+    soft: true
+    softStatuses: [400, 401, 403, 404, 500, 502, 503]
+    body:
+      service_account_id: "invalid"
+      service_account_secret: "invalid"
+    expect:
+      status: [200]
+
+  - id: rosa-openshift-versions
+    group: long-tail
+    method: POST
+    path: /openshift-versions
+    auth: bearer
+    contentType: application/json
+    soft: true
+    softStatuses: [400, 401, 403, 404, 500, 502, 503]
+    body:
+      service_account_id: "invalid"
+      service_account_secret: "invalid"
+    expect:
+      status: [200]
+
+  - id: rosa-machine-types
+    group: long-tail
+    method: POST
+    path: /machine-types
+    auth: bearer
+    contentType: application/json
+    soft: true
+    softStatuses: [400, 401, 403, 404, 500, 502, 503]
+    body:
+      service_account_id: "invalid"
+      service_account_secret: "invalid"
+      region: us-east-1
+      role_arn: "arn:aws:iam::000000000000:role/x"
+      availability_zones: ["us-east-1a"]
+    expect:
+      status: [200]

@@ -1,0 +1,32 @@
+# Copyright Contributors to the Open Cluster Management project
+cases:
+  - id: search-websocket
+    group: websocket
+    kind: websocket
+    description: WebSocket upgrade /multicloud/proxy/search (Node only registers the prefixed upgrade)
+    method: GET
+    path: /multicloud/proxy/search
+    auth: bearer
+    timeoutSeconds: 20
+    soft: true
+    softStatuses: [401, 403, 404, 500, 502, 503, 504]
+    ws:
+      subprotocol: graphql-transport-ws
+      send:
+        - '{"type":"connection_init","payload":{}}'
+      expectType: connection_ack
+
+  - id: mcp-websocket-watch
+    group: websocket
+    kind: websocket
+    description: WebSocket upgrade /multicloud/managedclusterproxy kube watch
+    method: GET
+    path: /multicloud/managedclusterproxy/local-cluster/api/v1/namespaces?watch=true
+    auth: bearer
+    timeoutSeconds: 15
+    soft: true
+    softStatuses: [401, 403, 404, 500, 502, 503, 504]
+    ws:
+      subprotocol: ""
+      send: []
+      expectUpgrade: true

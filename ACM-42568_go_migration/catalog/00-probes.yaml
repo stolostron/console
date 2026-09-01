@@ -1,0 +1,34 @@
+# Copyright Contributors to the Open Cluster Management project
+cases:
+  - id: ping
+    group: probes
+    description: GET /ping returns 200 with an empty body (no auth)
+    method: GET
+    path: /ping
+    auth: none
+    alsoMulticloud: true
+    expect:
+      status: [200]
+      bodyEmpty: true
+
+  - id: liveness
+    group: probes
+    description: GET /livenessProbe returns 200 with an empty body
+    method: GET
+    path: /livenessProbe
+    auth: none
+    alsoMulticloud: true
+    expect:
+      status: [200]
+      bodyEmpty: true
+
+  - id: readiness
+    group: probes
+    description: GET /readinessProbe returns 200 with an empty body
+    method: GET
+    path: /readinessProbe
+    auth: none
+    alsoMulticloud: true
+    expect:
+      status: [200]
+      bodyEmpty: true

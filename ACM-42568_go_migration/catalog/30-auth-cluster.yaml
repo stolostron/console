@@ -1,0 +1,185 @@
+# Copyright Contributors to the Open Cluster Management project
+cases:
+  - id: authenticated
+    group: auth
+    description: GET /authenticated probes kube GET /api with the user token
+    method: GET
+    path: /authenticated
+    auth: bearer
+    alsoMulticloud: true
+    headers:
+      Accept: application/json
+    expect:
+      status: [200]
+      bodyEmpty: true
+
+  - id: authenticated-cookie
+    group: auth
+    description: GET /authenticated with acm-access-token-cookie
+    method: GET
+    path: /authenticated
+    auth: cookie
+    headers:
+      Accept: application/json
+    expect:
+      status: [200]
+      bodyEmpty: true
+
+  - id: username
+    group: auth
+    description: GET /username TokenReview wrapper
+    method: GET
+    path: /username
+    auth: bearer
+    alsoMulticloud: true
+    expect:
+      status: [200]
+      contentTypeContains: json
+      jsonKeys: [statusCode, body]
+
+  - id: userpreference-get
+    group: auth
+    description: GET /userpreference UserPreference CR (may be null JSON)
+    method: GET
+    path: /userpreference
+    auth: bearer
+    alsoMulticloud: true
+    expect:
+      status: [200]
+      contentTypeContains: json
+
+  - id: configure
+    group: auth
+    description: GET /configure OAuth discovery (dev-only when NODE_ENV is not production)
+    method: GET
+    path: /configure
+    auth: none
+    alsoMulticloud: true
+    expect:
+      status: [200]
+      contentTypeContains: json
+      jsonKeys: [token_endpoint]
+
+  - id: login-redirect
+    group: auth
+    description: GET /login 302 to OAuth authorization_endpoint
+    method: GET
+    path: /login
+    auth: none
+    alsoMulticloud: true
+    expect:
+      status: [302]
+      headerPresent: [location]
+
+  - id: hub
+    group: cluster-info
+    description: GET /hub global-hub and authentication flags
+    method: GET
+    path: /hub
+    auth: bearer
+    alsoMulticloud: true
+    expect:
+      status: [200]
+      contentTypeContains: json
+      jsonKeys: [isGlobalHub, localHubName, isHubSelfManaged, isObservabilityInstalled, authentication]
+
+  - id: cluster-version
+    group: cluster-info
+    description: GET /cluster-version desired OCP version
+    method: GET
+    path: /cluster-version
+    auth: bearer
+    alsoMulticloud: true
+    expect:
+      status: [200]
+      contentTypeContains: json
+
+  - id: hypershift-status
+    group: cluster-info
+    description: GET /hypershift-status?hubName=local-cluster
+    method: GET
+    path: /hypershift-status?hubName=local-cluster
+    auth: bearer
+    alsoMulticloud: true
+    expect:
+      status: [200]
+      contentTypeContains: json
+      jsonKeys: [statusCode, body]
+
+  - id: mch-components
+    group: cluster-info
+    description: GET /multiclusterhub/components
+    method: GET
+    path: /multiclusterhub/components
+    auth: bearer
+    alsoMulticloud: true
+    expect:
+      status: [200]
+      contentTypeContains: json
+
+  - id: mce-components
+    group: cluster-info
+    description: GET /multiclusterengine/components
+    method: GET
+    path: /multiclusterengine/components
+    auth: bearer
+    alsoMulticloud: true
+    expect:
+      status: [200]
+      contentTypeContains: json
+
+  - id: api-paths
+    group: cluster-info
+    description: GET /apiPaths discovery map used by the frontend
+    method: GET
+    path: /apiPaths
+    auth: bearer
+    alsoMulticloud: true
+    timeoutSeconds: 120
+    expect:
+      status: [200]
+      contentTypeContains: json
+      jsonType: object
+
+  - id: operator-check-acm
+    group: cluster-info
+    description: POST /operatorCheck for ACM operator
+    method: POST
+    path: /operatorCheck
+    auth: bearer
+    alsoMulticloud: true
+    contentType: application/json
+    body:
+      operator: advanced-cluster-management
+    expect:
+      status: [200]
+      contentTypeContains: json
+      jsonKeys: [operator, installed]
+      jsonPathEquals:
+        operator: advanced-cluster-management
+
+  - id: operator-check-kubevirt
+    group: cluster-info
+    description: POST /operatorCheck for kubevirt
+    method: POST
+    path: /operatorCheck
+    auth: bearer
+    contentType: application/json
+    body:
+      operator: kubevirt-hyperconverged
+    expect:
+      status: [200]
+      jsonKeys: [operator, installed]
+
+  - id: operator-check-bad-body
+    group: cluster-info
+    description: POST /operatorCheck with unknown operator is 400
+    method: POST
+    path: /operatorCheck
+    auth: bearer
+    contentType: application/json
+    body:
+      operator: not-a-real-operator
+    expect:
+      status: [400]
+      bodyEmpty: true

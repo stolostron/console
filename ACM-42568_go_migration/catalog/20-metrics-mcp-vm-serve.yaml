@@ -1,0 +1,116 @@
+# Copyright Contributors to the Open Cluster Management project
+cases:
+  - id: metrics-prometheus-query
+    group: metrics
+    description: GET /prometheus/query rewritten to Prometheus /api/v1/query
+    method: GET
+    path: /prometheus/query?query=up
+    auth: bearer
+    alsoMulticloud: true
+    soft: true
+    softStatuses: [401, 403, 404, 500, 502, 503, 504]
+    expect:
+      status: [200]
+      contentTypeContains: json
+
+  - id: metrics-observability-query
+    group: metrics
+    description: GET /observability/query rewritten to Observability /api/v1/query
+    method: GET
+    path: /observability/query?query=up
+    auth: bearer
+    alsoMulticloud: true
+    soft: true
+    softStatuses: [401, 403, 404, 500, 502, 503, 504]
+    expect:
+      status: [200]
+      contentTypeContains: json
+
+  - id: metrics-prometheus-query-range
+    group: metrics
+    description: GET /prometheus/query_range as used by useMetricsPoll
+    method: GET
+    path: /prometheus/query_range?query=up&start=0&end=1&step=15
+    auth: bearer
+    soft: true
+    softStatuses: [401, 403, 404, 500, 502, 503, 504]
+    expect:
+      status: [200]
+
+  - id: mcp-hub-namespaces
+    group: managedclusterproxy
+    description: HTTP passthrough to hub via cluster-proxy-addon
+    method: GET
+    path: /managedclusterproxy/local-cluster/api/v1/namespaces
+    auth: bearer
+    alsoMulticloud: true
+    soft: true
+    softStatuses: [401, 403, 404, 500, 502, 503, 504]
+    headers:
+      Accept: application/json
+    expect:
+      status: [200]
+      contentTypeContains: json
+
+  - id: vm-get-missing
+    group: vm
+    description: GET /virtualmachines/get for a missing VM returns JSON (kube Status or null)
+    method: GET
+    path: /virtualmachines/get/local-cluster/acm-42590-missing/default
+    auth: bearer
+    alsoMulticloud: true
+    soft: true
+    softStatuses: [401, 403, 404, 500, 502, 503]
+    expect:
+      status: [200]
+      contentTypeContains: json
+
+  - id: vm-get-snapshot-missing
+    group: vm
+    description: GET /virtualmachinesnapshots/get for a missing snapshot
+    method: GET
+    path: /virtualmachinesnapshots/get/local-cluster/acm-42590-missing/default
+    auth: bearer
+    soft: true
+    softStatuses: [401, 403, 404, 500, 502, 503]
+    expect:
+      status: [200]
+      contentTypeContains: json
+
+  - id: vm-resource-usage
+    group: vm
+    description: GET vmResourceUsage for default namespace on hub
+    method: GET
+    path: /vmResourceUsage/cluster/local-cluster/namespace/default
+    auth: bearer
+    alsoMulticloud: true
+    soft: true
+    softStatuses: [401, 403, 404, 500, 502, 503]
+    expect:
+      status: [200]
+      contentTypeContains: json
+
+  - id: serve-missing-asset
+    group: serve
+    description: Catch-all static handler returns 404 for unknown files
+    method: GET
+    path: /acm-42590-definitely-missing.json
+    auth: none
+    expect:
+      status: [404]
+      bodyEmpty: true
+
+  - id: serve-plugin-manifest
+    group: serve
+    description: plugin-manifest.json when public assets exist (404 in typical local backend)
+    method: GET
+    path: /plugin/plugin-manifest.json
+    auth: none
+    alsoMulticloud: true
+    soft: true
+    softStatuses: [404]
+    expect:
+      status: [200]
+      headerEquals:
+        cache-control: no-cache
+      contentTypeContains: json

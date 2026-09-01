@@ -1,0 +1,31 @@
+# Copyright Contributors to the Open Cluster Management project
+cases:
+  - id: events-sse
+    group: sse
+    kind: sse
+    description: GET /events SSE snapshot START/SETTINGS/EOP/LOADED with RBAC-filtered resources
+    method: GET
+    path: /events
+    auth: both
+    alsoMulticloud: true
+    timeoutSeconds: 120
+    headers:
+      Accept: text/event-stream
+      Accept-Encoding: gzip
+    expect:
+      status: [200]
+      contentTypeContains: text/event-stream
+      headerEquals:
+        cache-control: no-store, no-transform
+      setCookieContains: [watch=]
+      sse:
+        firstType: START
+        lastType: LOADED
+        requireTypes: [START, SETTINGS, EOP, LOADED]
+        objectHasKindApiVersionName: true
+        kindsSubsetOfWatched: true
+        settingsKeys:
+          - LOG_LEVEL
+          - ansibleIntegration
+          - singleNodeOpenshift
+          - globalSearchFeatureFlag

@@ -1,0 +1,132 @@
+# Copyright Contributors to the Open Cluster Management project
+# Use auth: invalid (fake Bearer), not auth: none. In NODE_ENV=development getToken()
+# falls back to certs localStorage admin-token when the request has no cookie/Authorization.
+cases:
+  - id: unauth-api
+    group: negative
+    description: GET /api with an invalid Bearer is 401 kube Status (proxy forwards the token)
+    method: GET
+    path: /api
+    auth: invalid
+    alsoMulticloud: true
+    expect:
+      status: [401]
+      contentTypeContains: json
+      jsonPathEquals:
+        kind: Status
+
+  - id: unauth-apis
+    group: negative
+    method: GET
+    path: /apis
+    auth: invalid
+    expect:
+      status: [401]
+      contentTypeContains: json
+      jsonPathEquals:
+        kind: Status
+
+  - id: unauth-events
+    group: negative
+    method: GET
+    path: /events
+    auth: invalid
+    expect:
+      status: [401]
+      bodyEmpty: true
+
+  - id: unauth-authenticated
+    group: negative
+    method: GET
+    path: /authenticated
+    auth: invalid
+    expect:
+      status: [401]
+      bodyEmpty: true
+
+  - id: unauth-username
+    group: negative
+    method: GET
+    path: /username
+    auth: invalid
+    expect:
+      status: [401]
+      bodyEmpty: true
+
+  - id: unauth-hub
+    group: negative
+    method: GET
+    path: /hub
+    auth: invalid
+    expect:
+      status: [401]
+      bodyEmpty: true
+
+  - id: unauth-search
+    group: negative
+    method: POST
+    path: /proxy/search
+    auth: invalid
+    contentType: application/json
+    body: {}
+    expect:
+      status: [401]
+      bodyEmpty: true
+
+  - id: unauth-aggregate
+    group: negative
+    method: POST
+    path: /aggregate/statuses
+    auth: invalid
+    contentType: application/json
+    body:
+      clusters: []
+    expect:
+      status: [401]
+      bodyEmpty: true
+
+  - id: unauth-mcp
+    group: negative
+    method: GET
+    path: /managedclusterproxy/local-cluster/api/v1/namespaces
+    auth: invalid
+    expect:
+      status: [401]
+      bodyEmpty: true
+
+  - id: unauth-operator-check
+    group: negative
+    method: POST
+    path: /operatorCheck
+    auth: invalid
+    contentType: application/json
+    body:
+      operator: advanced-cluster-management
+    expect:
+      status: [401]
+      bodyEmpty: true
+
+  - id: method-not-found-post-ping
+    group: negative
+    description: POST /ping is not registered (404 from find-my-way)
+    method: POST
+    path: /ping
+    auth: none
+    expect:
+      status: [404]
+      bodyEmpty: true
+
+  - id: cors-options-dev
+    group: negative
+    description: OPTIONS preflight in development returns 200 with CORS headers
+    method: OPTIONS
+    path: /api
+    auth: none
+    alsoMulticloud: true
+    headers:
+      Origin: https://localhost:3000
+      Access-Control-Request-Method: GET
+      Access-Control-Request-Headers: authorization,content-type
+    expect:
+      status: [200]
+      headerPresent: [access-control-allow-origin, access-control-allow-credentials]
