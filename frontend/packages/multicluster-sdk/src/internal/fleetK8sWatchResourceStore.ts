@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { FleetK8sResourceCommon, FleetWatchK8sResultsObject } from '../types'
+
 import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import { FleetK8sResourceCommon, FleetWatchK8sResultsObject } from '../types'
 
 type Data = FleetK8sResourceCommon | FleetK8sResourceCommon[]
 
@@ -11,11 +12,13 @@ type CacheEntry = {
   refCount: number
   timestamp: number
   resourceVersion?: string
-  timeout?: NodeJS.Timeout
+  timeout?: ReturnType<typeof setTimeout>
+  monitorTimeout?: ReturnType<typeof setTimeout>
 }
 
-const CACHE_TTL = 30 * 1000 // 30 seconds
+const CACHE_TTL = 65 * 1000 // 65 seconds - k8s API sends BOOKMARK event about every 60 seconds
 const CACHE_REMOVE_GRACE = 10 * 1000 // 10 seconds; wait a bit longer than TTL to remove cache entry so it is not removed between retrieval of initial value and start of watching
+const ERROR_RETRY_INTERVAL = 15 * 1000 // 15 seconds - shorter retry when in an error state
 
 export const isCacheEntryValid = (entry: CacheEntry) => {
   return !entry.result?.loadError && (!!entry.socket || isCacheEntryFresh(entry))
@@ -30,6 +33,8 @@ export const getCacheEntryAge = (entry: CacheEntry) => {
 }
 
 export const getSocketMonitoringInterval = () => CACHE_TTL
+export const getErrorRetryInterval = () => ERROR_RETRY_INTERVAL
+export const is404Error = (error: any): boolean => error?.code === 404 || error?.response?.status === 404
 
 export type FleetK8sWatchResourceStore = {
   // Cache
@@ -42,6 +47,8 @@ export type FleetK8sWatchResourceStore = {
   decrementRefCount: (key: string) => void
   touchEntry: (key: string) => void
   removeEntry: (key: string) => void
+  setMonitorTimeout: (key: string, timeout: ReturnType<typeof setTimeout>) => void
+  clearMonitorTimeout: (key: string) => void
 
   // Getters for cache
   getResult: (key: string) => FleetWatchK8sResultsObject<Data> | undefined
@@ -106,28 +113,27 @@ export const useFleetK8sWatchResourceStore = create<FleetK8sWatchResourceStore>(
     decrementRefCount: (key) => {
       set((state) => {
         const entry = state.cache[key]
-        if (entry) {
-          const { socket, refCount } = entry
-          const newRefCount = refCount > 0 ? refCount - 1 : 0
-          if (newRefCount === 0 && socket) {
-            socket.close()
-          }
-          return {
-            cache: {
-              ...state.cache,
-              [key]: {
-                ...entry,
-                refCount: newRefCount,
-                socket: newRefCount > 0 ? socket : undefined,
-                timeout:
-                  newRefCount === 0
-                    ? setTimeout(() => state.removeEntry(key), CACHE_TTL + CACHE_REMOVE_GRACE) // schedule removal of entry
-                    : undefined,
-              },
-            },
-          }
+        if (!entry) {
+          return state
         }
-        return state
+        const newRefCount = Math.max(0, entry.refCount - 1)
+        if (newRefCount === 0) {
+          entry.socket?.close()
+        }
+        return {
+          cache: {
+            ...state.cache,
+            [key]: {
+              ...entry,
+              refCount: newRefCount,
+              socket: newRefCount > 0 ? entry.socket : undefined,
+              timeout:
+                newRefCount === 0 && !entry.timeout // if timeout is set, the entry is already scheduled for removal
+                  ? setTimeout(() => state.removeEntry(key), CACHE_TTL + CACHE_REMOVE_GRACE) // schedule removal of entry
+                  : entry.timeout,
+            },
+          },
+        }
       })
     },
 
@@ -145,10 +151,47 @@ export const useFleetK8sWatchResourceStore = create<FleetK8sWatchResourceStore>(
 
     removeEntry: (key) => {
       set((state) => {
-        const { [key]: removed, ...rest } = state.cache
+        const removed = state.cache[key]
+        if (removed?.timeout) {
+          clearTimeout(removed.timeout)
+        }
+        if (removed?.monitorTimeout) {
+          clearTimeout(removed.monitorTimeout)
+        }
+        const { [key]: _removed, ...rest } = state.cache
         return {
           cache: {
             ...rest,
+          },
+        }
+      })
+    },
+
+    setMonitorTimeout: (key, timeout) => {
+      set((state) => {
+        const entry = state.cache[key]
+        if (!entry) return state
+        if (entry.monitorTimeout) {
+          clearTimeout(entry.monitorTimeout)
+        }
+        return {
+          cache: {
+            ...state.cache,
+            [key]: { ...entry, monitorTimeout: timeout },
+          },
+        }
+      })
+    },
+
+    clearMonitorTimeout: (key) => {
+      set((state) => {
+        const entry = state.cache[key]
+        if (!entry?.monitorTimeout) return state
+        clearTimeout(entry.monitorTimeout)
+        return {
+          cache: {
+            ...state.cache,
+            [key]: { ...entry, monitorTimeout: undefined },
           },
         }
       })
