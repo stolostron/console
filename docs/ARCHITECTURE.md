@@ -38,3 +38,5 @@ All resources are checked for access using `SubjectAccessReview` calls to the cl
 
 The console backend proxies the cluster apiserver `/api` and `/apis` apiserver REST routes from the Go public listener (`backend/internal/k8sproxy`).
 All REST calls use the token passed from the console frontend.
+
+Static plugin assets (`plugin-manifest.json`, `plugin-entry.js`, hashed JS/CSS, locales) are served by the Go listener with the same cache headers, CSP, and brotli/gzip content negotiation as the former Node `serve` route.

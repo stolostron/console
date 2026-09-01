@@ -5,7 +5,7 @@ Public listener for the ACM/MCE console. During the Node-to-Go migration it owns
 ## Key Technologies
 
 - **Runtime**: Go 1.26+ (`net/http`; TLS enables HTTP/2 automatically)
-- **Router**: `chi` — probes registered natively; everything else is `NotFound` → reverse proxy
+- **Router**: `chi` — probes and migrated routes registered natively; static GET assets; everything else is `NotFound` → reverse proxy
 - **Proxy**: `httputil.ReverseProxy` (HTTP/1.1 to the sidecar so WebSocket upgrades work; `FlushInterval: -1` for SSE)
 - **Logging**: `log/slog` JSON (`method`, `path`, `status`, `duration`)
 - **Config watch**: `fsnotify` on `config/` (1s debounce)
@@ -23,6 +23,7 @@ Public listener for the ACM/MCE console. During the Node-to-Go migration it owns
 | `internal/config` | `.env` + `config/` directory (filename = key) |
 | `internal/auth` | Cookie/Bearer, SA token/CA, TokenReview helper |
 | `internal/events/rbac` | `GET /events/rbac` SSE: ClusterRole informer (`vm-clusterroles` label) + per-user SSAR |
+| `internal/static` | Plugin and SPA files: cache headers, CSP, brotli/gzip negotiation |
 | `internal/log` | slog JSON helper |
 | `config/` | Runtime settings shared with the Node sidecar |
 | `certs/` | TLS material (`npm run generate-certs` at repo root) |
@@ -52,6 +53,7 @@ Go backend :4000 (TLS / HTTP/2)
         ├─ GET /events/rbac (ClusterRole watch; also /multicloud/events/rbac)
         ├─ ALL /api, /apis, GET /version → hub kube-apiserver (user token)
         │    (also /multicloud/…)
+        ├─ GET static assets (/plugin/*, hashed JS/CSS, locales, index.html)
         └─ everything else (original URL) ──HTTP/1.1──► Node sidecar :4001
                                                               │
                                                               ▼
@@ -65,3 +67,5 @@ Go backend :4000 (TLS / HTTP/2)
 `npm run setup` writes `backend/.env`. The sidecar loads the same file via `ENV_FILE` / `CONFIG_DIR` / `CERTS_DIR`. `godotenv` does not override `PORT`, so the sidecar can listen on `NODE_BACKEND_PORT` while `.env` still has `PORT=4000` for Go.
 
 Go exits 1 at startup if the service-account token is missing (`TOKEN` or `/var/run/secrets/kubernetes.io/serviceaccount/token`).
+
+`PUBLIC_FOLDER` (default `public`) is the on-disk plugin/SPA tree. Production images copy `frontend/plugins/{acm|mce}/dist` to `/app/public/plugin`.

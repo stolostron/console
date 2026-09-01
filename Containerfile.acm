@@ -24,6 +24,14 @@ RUN npm ci --omit=optional
 COPY ./backend-node .
 RUN npm run build
 
+ARG GO_BASE=golang:1.26
+FROM ${GO_BASE} as go-backend
+WORKDIR /src
+COPY ./backend/go.mod ./backend/go.sum ./
+RUN go mod download
+COPY ./backend .
+RUN CGO_ENABLED=0 GOOS=linux go build -o /console ./cmd/console
+
 FROM build-base as production
 WORKDIR /app/backend-node
 COPY ./backend-node/package-lock.json ./backend-node/package.json ./
@@ -33,11 +41,15 @@ FROM ${NODE_BASE}
 COPY --from=crypto-policy /etc/crypto-policies /etc/crypto-policies
 WORKDIR /app
 ENV NODE_ENV production
+ENV PUBLIC_FOLDER=/app/public
 COPY --from=production /app/backend-node/node_modules ./node_modules
 COPY --from=backend /app/backend-node/backend.mjs ./
+COPY --from=go-backend /console ./console
 COPY --from=dynamic-plugin /app/frontend/plugins/acm/dist ./public/plugin
+COPY ./scripts/console-entrypoint.sh ./console-entrypoint.sh
+RUN chmod 755 /app/console-entrypoint.sh /app/console
 USER 1001
-CMD ["node", "backend.mjs"]
+CMD ["/app/console-entrypoint.sh"]
 
 LABEL com.redhat.component="console-container" \
       cpe="cpe:/a:redhat:acm:5.1::el9" \

@@ -17,6 +17,7 @@ import (
 	"github.com/stolostron/console/backend/internal/k8sproxy"
 	applog "github.com/stolostron/console/backend/internal/log"
 	"github.com/stolostron/console/backend/internal/server"
+	"github.com/stolostron/console/backend/internal/static"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -62,13 +63,24 @@ func run() error {
 	}
 	rbacHandler := rbacevents.NewHandler(store, rbacevents.NewAPIAuth(restCfg), rbacevents.NewSSARAccess(restCfg))
 
+	var opts []server.Option
+	opts = append(opts, server.WithRBACEvents(rbacHandler))
 	clusterURL, err := url.Parse(cfg.ClusterAPIURL)
 	if err != nil {
 		return err
 	}
 	k8sHandler := k8sproxy.New(clusterURL, k8sproxy.TLSConfigFromCA(sa.CACert))
+	opts = append(opts, server.WithK8sProxy(k8sHandler))
+	fsys, ok := static.OpenFS(cfg.PublicFolder)
+	if !ok {
+		fsys = static.BundledFS()
+	}
+	opts = append(opts, server.WithStatic(static.New(static.Options{
+		FS:         fsys,
+		Production: os.Getenv("NODE_ENV") == "production",
+	})))
 
-	handler, err := server.Handler(cfg, server.WithRBACEvents(rbacHandler), server.WithK8sProxy(k8sHandler))
+	handler, err := server.Handler(cfg, opts...)
 	if err != nil {
 		return err
 	}
@@ -77,6 +89,7 @@ func run() error {
 		"PORT", cfg.Port,
 		"NODE_BACKEND_URL", cfg.NodeBackendURL,
 		slog.String("CONFIG_DIR", cfg.ConfigDir),
+		slog.String("PUBLIC_FOLDER", cfg.PublicFolder),
 	)
 	return server.ListenAndServe(ctx, cfg, handler)
 }

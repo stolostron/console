@@ -17,7 +17,7 @@ Node.js ESM proxy server. Sits between the browser and the hub cluster API serve
 | Directory | Purpose |
 |-----------|---------|
 | `src/lib/` | Core server: `main.ts` entry, `server.ts`, auth, cookies, CORS, proxy, search, SSE, logging, config |
-| `src/routes/` | HTTP route handlers: proxy, OAuth, search, events, hub, serve, metrics, managed cluster proxy, etc. |
+| `src/routes/` | HTTP route handlers: proxy, OAuth, search, events, hub, metrics, managed cluster proxy, etc. |
 | `src/resources/` | Backend resource watchers and handlers |
 | `test/` | Jest test files |
 | `config/` | Runtime configuration lives in `../backend/config` (Go backend) |
@@ -98,7 +98,6 @@ Optional development/debug variables (not in `.env` by default):
 | `MOCK_CLUSTERS` | Number of mock clusters to generate for testing |
 | `DISABLE_EVENTS` | Set to `true` to disable SSE event streams |
 | `DISABLE_STREAM_COMPRESSION` | Set to `true` to disable SSE compression |
-| `PUBLIC_FOLDER` | Override static file serving path (default `./public`) |
 
 ### Settings (`../backend/config/` directory)
 

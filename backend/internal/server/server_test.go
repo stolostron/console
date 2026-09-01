@@ -201,6 +201,57 @@ func TestRBACEventsNotProxied(t *testing.T) {
 	}
 }
 
+func TestStaticNotProxiedToSidecar(t *testing.T) {
+	var sidecarPaths []string
+	sidecar := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sidecarPaths = append(sidecarPaths, r.URL.Path)
+		w.WriteHeader(http.StatusTeapot)
+	}))
+	defer sidecar.Close()
+
+	staticH := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-Static", r.URL.Path)
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("plugin"))
+	})
+	cfg := &config.Config{NodeBackendURL: sidecar.URL, CertsDir: t.TempDir()}
+	h, err := server.Handler(cfg, server.WithStatic(staticH))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ts := httptest.NewServer(h)
+	defer ts.Close()
+
+	for _, path := range []string{"/plugin/plugin-manifest.json", "/multicloud/plugin/plugin-entry.js", "/index.html", "/"} {
+		sidecarPaths = nil
+		resp, getErr := ts.Client().Get(ts.URL + path)
+		if getErr != nil {
+			t.Fatal(getErr)
+		}
+		body, _ := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if len(sidecarPaths) != 0 {
+			t.Fatalf("%s proxied to sidecar: %v", path, sidecarPaths)
+		}
+		if resp.StatusCode != http.StatusOK {
+			t.Fatalf("%s status %d", path, resp.StatusCode)
+		}
+		if string(body) != "plugin" {
+			t.Fatalf("%s body %s", path, body)
+		}
+	}
+
+	sidecarPaths = nil
+	resp, err := ts.Client().Get(ts.URL + "/hub")
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	if len(sidecarPaths) != 1 || sidecarPaths[0] != "/hub" {
+		t.Fatalf("hub sidecar paths %v", sidecarPaths)
+	}
+}
+
 func TestK8sProxyNotProxiedToSidecar(t *testing.T) {
 	var sidecarPaths []string
 	sidecar := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

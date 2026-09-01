@@ -28,6 +28,7 @@ type Config struct {
 	CACert         string
 	ServiceCACert  string
 	LogLevel       string
+	PublicFolder   string
 
 	mu       sync.RWMutex
 	settings map[string]string
@@ -56,6 +57,7 @@ func Load() *Config {
 		CACert:         os.Getenv("CA_CERT"),
 		ServiceCACert:  os.Getenv("SERVICE_CA_CERT"),
 		LogLevel:       envOr("LOG_LEVEL", "debug"),
+		PublicFolder:   envOr("PUBLIC_FOLDER", "public"),
 		settings:       map[string]string{},
 	}
 	_ = cfg.ReloadSettings()

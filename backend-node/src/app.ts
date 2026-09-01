@@ -25,7 +25,6 @@ import { operatorCheck } from './routes/operatorCheck'
 import { readiness } from './routes/readiness'
 import { search } from './routes/search'
 import { placementDebug } from './routes/placementDebug'
-import { serveHandler } from './routes/serve'
 import { upgradeRiskPredictions } from './routes/upgrade-risks-prediction'
 import { username } from './routes/username'
 import { userpreference } from './routes/userpreference'
@@ -109,7 +108,6 @@ router.post('/sts-ocm-role', getOCMRoleARN)
 router.post('/sts-user-role', getUserRole)
 router.post('/openshift-versions', getWizardVersions)
 router.post('/machine-types', getWizardMachineTypes)
-router.get('/*', serveHandler)
 
 export async function requestHandler(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   if (!isProduction) {

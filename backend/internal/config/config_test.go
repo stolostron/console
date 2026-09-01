@@ -72,6 +72,16 @@ func TestLoad_FromEnvFile(t *testing.T) {
 	}
 }
 
+func TestLoad_PublicFolder(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("ENV_FILE", filepath.Join(dir, ".env"))
+	t.Setenv("PUBLIC_FOLDER", "/app/public")
+	cfg := config.Load()
+	if cfg.PublicFolder != "/app/public" {
+		t.Fatalf("PublicFolder=%q", cfg.PublicFolder)
+	}
+}
+
 func TestWatch_ReloadsOnChange(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "LOG_LEVEL")
