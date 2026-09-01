@@ -39,8 +39,21 @@ func SetServiceAccountDir(dir string) func() {
 
 // ServiceAccount holds the in-cluster (or env-fallback) credentials.
 type ServiceAccount struct {
-	Token  string
-	CACert []byte
+	Token         string
+	CACert        []byte
+	ServiceCACert []byte
+}
+
+// StatusError is an HTTP status from hub token validation (GET /api).
+type StatusError struct {
+	Status int
+}
+
+func (e *StatusError) Error() string {
+	if e == nil {
+		return "status error"
+	}
+	return fmt.Sprintf("token validation status %d", e.Status)
 }
 
 // LoadServiceAccount reads the projected SA files, falling back to TOKEN / CA_CERT.
@@ -57,10 +70,26 @@ func LoadServiceAccount(cfg *config.Config) (ServiceAccount, bool) {
 			}
 		}
 	}
+	serviceCA := readCertFileOrEnv(filepath.Join(serviceAccountBaseDir, "service-ca.crt"), cfg.ServiceCACert)
 	if strings.TrimSpace(token) == "" {
 		return ServiceAccount{}, false
 	}
-	return ServiceAccount{Token: token, CACert: ca}, true
+	return ServiceAccount{Token: token, CACert: ca, ServiceCACert: serviceCA}, true
+}
+
+func readCertFileOrEnv(path, base64Env string) []byte {
+	data, err := os.ReadFile(path)
+	if err == nil && len(data) > 0 {
+		return data
+	}
+	if base64Env == "" {
+		return nil
+	}
+	decoded, decErr := base64.StdEncoding.DecodeString(base64Env)
+	if decErr != nil {
+		return nil
+	}
+	return decoded
 }
 
 func readFileOrDefault(path, fallback string) string {
@@ -144,9 +173,37 @@ func ValidateUserToken(ctx context.Context, base *rest.Config, token string) err
 	}
 	defer func() { _, _ = io.Copy(io.Discard, resp.Body); _ = resp.Body.Close() }()
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("token validation status %d", resp.StatusCode)
+		return &StatusError{Status: resp.StatusCode}
 	}
 	return nil
+}
+
+// RequireToken writes 401 with an empty body when the request has no user token.
+func RequireToken(w http.ResponseWriter, r *http.Request) (string, bool) {
+	token := TokenFromRequest(r)
+	if token == "" {
+		w.WriteHeader(http.StatusUnauthorized)
+		return "", false
+	}
+	return token, true
+}
+
+// AuthenticateRequest extracts the user token and validates it with GET /api (Node getAuthenticatedToken).
+func AuthenticateRequest(ctx context.Context, base *rest.Config, w http.ResponseWriter, r *http.Request) (string, bool) {
+	token, ok := RequireToken(w, r)
+	if !ok {
+		return "", false
+	}
+	if err := ValidateUserToken(ctx, base, token); err != nil {
+		var se *StatusError
+		if errors.As(err, &se) && se.Status != 0 {
+			w.WriteHeader(se.Status)
+			return "", false
+		}
+		w.WriteHeader(http.StatusInternalServerError)
+		return "", false
+	}
+	return token, true
 }
 
 // NewTokenReviewer builds a TokenReview client using the service account.

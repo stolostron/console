@@ -19,6 +19,10 @@ Public listener for the ACM/MCE console. During the Node-to-Go migration it owns
 | `internal/server` | TLS listener, chi mux, `/multicloud` probe aliases |
 | `internal/proxy` | Reverse proxy to `NODE_BACKEND_URL` (original path, including `/multicloud`) |
 | `internal/k8sproxy` | Hub kube-apiserver passthrough for `/api`, `/apis`, `/version` (user Bearer token) |
+| `internal/clusterproxy` | cluster-proxy-addon-user URL discovery (MCE target namespace / env overrides) |
+| `internal/mcproxy` | Managed-cluster reverse proxy (`/managedclusterproxy/*`, including WebSocket) |
+| `internal/metricsproxy` | Prometheus and observability query reverse proxies |
+| `internal/vmproxy` | VirtualMachine GET helpers, actions, and resource-usage aggregation |
 | `internal/health` | `/ping`, `/livenessProbe` (Go only), `/readinessProbe` (Go + sidecar `/ping`) |
 | `internal/config` | `.env` + `config/` directory (filename = key) |
 | `internal/auth` | Cookie/Bearer, SA token/CA, TokenReview helper |
@@ -53,6 +57,10 @@ Go backend :4000 (TLS / HTTP/2)
         ├─ GET /events/rbac (ClusterRole watch; also /multicloud/events/rbac)
         ├─ ALL /api, /apis, GET /version → hub kube-apiserver (user token)
         │    (also /multicloud/…)
+        ├─ ALL /managedclusterproxy/* → cluster-proxy addon (user token; WebSocket)
+        ├─ GET /prometheus/*, /observability/* → metrics backends (user token)
+        ├─ /virtualmachines/*, /virtualmachineinstances/*, /virtualmachinesnapshots/*,
+        │    /virtualmachinerestores, GET /vmResourceUsage/* → managed cluster via addon
         ├─ GET static assets (/plugin/*, hashed JS/CSS, locales, index.html)
         └─ everything else (original URL) ──HTTP/1.1──► Node sidecar :4001
                                                               │
@@ -67,5 +75,7 @@ Go backend :4000 (TLS / HTTP/2)
 `npm run setup` writes `backend/.env`. The sidecar loads the same file via `ENV_FILE` / `CONFIG_DIR` / `CERTS_DIR`. `godotenv` does not override `PORT`, so the sidecar can listen on `NODE_BACKEND_PORT` while `.env` still has `PORT=4000` for Go.
 
 Go exits 1 at startup if the service-account token is missing (`TOKEN` or `/var/run/secrets/kubernetes.io/serviceaccount/token`).
+
+Migrated proxy routes also read `CLUSTER_PROXY_ADDON_USER_HOST` / `CLUSTER_PROXY_ADDON_USER_ROUTE`, `PROMETHEUS_ROUTE`, `OBSERVABILITY_ROUTE`, and `SERVICE_CA_CERT` from the same `.env`.
 
 `PUBLIC_FOLDER` (default `public`) is the on-disk plugin/SPA tree. Production images copy `frontend/plugins/{acm|mce}/dist` to `/app/public/plugin`.

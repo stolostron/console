@@ -29,7 +29,7 @@ The frontend has two builds. One for the stand alone version and one for the dyn
 
 ## Console Backend
 
-The public listener is a Go process (`backend/`). Hub kube-apiserver passthrough routes (`/api`, `/apis`, `/version`) and other migrated routes are served natively in Go. Routes that have not been migrated yet are reverse-proxied to the Node sidecar (`backend-node/`). The plugin and browser keep talking to the same Service and paths.
+The public listener is a Go process (`backend/`). Hub kube-apiserver passthrough routes (`/api`, `/apis`, `/version`), managed-cluster, metrics, and VirtualMachine proxy routes are served natively in Go. Routes that have not been migrated yet are reverse-proxied to the Node sidecar (`backend-node/`). The plugin and browser keep talking to the same Service and paths.
 
 The console backend uses a service account to `list` and `watch` kubernetes cluster resources.
 Resource events are streamed to the console frontend.

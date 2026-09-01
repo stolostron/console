@@ -18,17 +18,21 @@ const debounce = time.Second
 
 // Config is process configuration loaded from env, .env, and the config/ directory.
 type Config struct {
-	Port           string
-	NodeBackendURL string
-	ConfigDir      string
-	CertsDir       string
-	EnvFile        string
-	ClusterAPIURL  string
-	Token          string
-	CACert         string
-	ServiceCACert  string
-	LogLevel       string
-	PublicFolder   string
+	Port                       string
+	NodeBackendURL             string
+	ConfigDir                  string
+	CertsDir                   string
+	EnvFile                    string
+	ClusterAPIURL              string
+	Token                      string
+	CACert                     string
+	ServiceCACert              string
+	LogLevel                   string
+	PrometheusRoute            string
+	ObservabilityRoute         string
+	ClusterProxyAddonUserHost  string
+	ClusterProxyAddonUserRoute string
+	PublicFolder               string
 
 	mu       sync.RWMutex
 	settings map[string]string
@@ -47,18 +51,22 @@ func Load() *Config {
 	_ = godotenv.Load(envFile)
 
 	cfg := &Config{
-		Port:           envOr("PORT", "4000"),
-		NodeBackendURL: envOr("NODE_BACKEND_URL", "https://127.0.0.1:4001"),
-		ConfigDir:      envOr("CONFIG_DIR", "config"),
-		CertsDir:       envOr("CERTS_DIR", "certs"),
-		EnvFile:        envFile,
-		ClusterAPIURL:  os.Getenv("CLUSTER_API_URL"),
-		Token:          os.Getenv("TOKEN"),
-		CACert:         os.Getenv("CA_CERT"),
-		ServiceCACert:  os.Getenv("SERVICE_CA_CERT"),
-		LogLevel:       envOr("LOG_LEVEL", "debug"),
-		PublicFolder:   envOr("PUBLIC_FOLDER", "public"),
-		settings:       map[string]string{},
+		Port:                       envOr("PORT", "4000"),
+		NodeBackendURL:             envOr("NODE_BACKEND_URL", "https://127.0.0.1:4001"),
+		ConfigDir:                  envOr("CONFIG_DIR", "config"),
+		CertsDir:                   envOr("CERTS_DIR", "certs"),
+		EnvFile:                    envFile,
+		ClusterAPIURL:              os.Getenv("CLUSTER_API_URL"),
+		Token:                      os.Getenv("TOKEN"),
+		CACert:                     os.Getenv("CA_CERT"),
+		ServiceCACert:              os.Getenv("SERVICE_CA_CERT"),
+		LogLevel:                   envOr("LOG_LEVEL", "debug"),
+		PrometheusRoute:            os.Getenv("PROMETHEUS_ROUTE"),
+		ObservabilityRoute:         os.Getenv("OBSERVABILITY_ROUTE"),
+		ClusterProxyAddonUserHost:  os.Getenv("CLUSTER_PROXY_ADDON_USER_HOST"),
+		ClusterProxyAddonUserRoute: os.Getenv("CLUSTER_PROXY_ADDON_USER_ROUTE"),
+		PublicFolder:               envOr("PUBLIC_FOLDER", "public"),
+		settings:                   map[string]string{},
 	}
 	_ = cfg.ReloadSettings()
 	return cfg

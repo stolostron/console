@@ -27,9 +27,13 @@ import (
 const multicloudPrefix = "/multicloud"
 
 type handlerOptions struct {
-	rbacEvents http.Handler
-	k8sProxy   http.Handler
-	staticH    http.Handler
+	rbacEvents    http.Handler
+	k8sProxy      http.Handler
+	mcProxy       http.Handler
+	prometheus    http.Handler
+	observability http.Handler
+	vmProxy       http.Handler
+	staticH       http.Handler
 }
 
 // Option configures Handler.
@@ -46,6 +50,35 @@ func WithRBACEvents(h http.Handler) Option {
 func WithK8sProxy(h http.Handler) Option {
 	return func(o *handlerOptions) {
 		o.k8sProxy = h
+	}
+}
+
+
+// WithManagedClusterProxy registers /managedclusterproxy/* (HTTP and WebSocket).
+func WithManagedClusterProxy(h http.Handler) Option {
+	return func(o *handlerOptions) {
+		o.mcProxy = h
+	}
+}
+
+// WithPrometheusProxy registers GET /prometheus/*.
+func WithPrometheusProxy(h http.Handler) Option {
+	return func(o *handlerOptions) {
+		o.prometheus = h
+	}
+}
+
+// WithObservabilityProxy registers GET /observability/*.
+func WithObservabilityProxy(h http.Handler) Option {
+	return func(o *handlerOptions) {
+		o.observability = h
+	}
+}
+
+// WithVMProxy registers VirtualMachine GET helpers, actions, and usage.
+func WithVMProxy(h http.Handler) Option {
+	return func(o *handlerOptions) {
+		o.vmProxy = h
 	}
 }
 
@@ -80,7 +113,55 @@ func isProbe(path string) bool {
 }
 
 func isEventStream(path string) bool {
-	return path == "/events/rbac"
+	switch path {
+	case "/events", "/events/rbac":
+		return true
+	default:
+		return false
+	}
+}
+
+func isWebSocket(r *http.Request) bool {
+	return strings.EqualFold(r.Header.Get("Upgrade"), "websocket")
+}
+
+func registerAliased(r chi.Router, h http.Handler, patterns ...string) {
+	for _, pattern := range patterns {
+		r.Handle(pattern, h)
+		r.Handle(multicloudPrefix+pattern, h)
+	}
+}
+
+func registerAliasedGet(r chi.Router, h http.Handler, patterns ...string) {
+	for _, pattern := range patterns {
+		r.Get(pattern, h.ServeHTTP)
+		r.Get(multicloudPrefix+pattern, h.ServeHTTP)
+	}
+}
+
+func registerStatelessProxies(r chi.Router, o *handlerOptions) {
+	if o.mcProxy != nil {
+		registerAliased(r, o.mcProxy, "/managedclusterproxy/*")
+	}
+	if o.prometheus != nil {
+		registerAliasedGet(r, o.prometheus, "/prometheus/*")
+	}
+	if o.observability != nil {
+		registerAliasedGet(r, o.observability, "/observability/*")
+	}
+	if o.vmProxy != nil {
+		registerAliasedGet(r, o.vmProxy,
+			"/virtualmachines/get/*",
+			"/virtualmachinesnapshots/get/*",
+			"/vmResourceUsage/*",
+		)
+		registerAliased(r, o.vmProxy,
+			"/virtualmachines/*",
+			"/virtualmachineinstances/*",
+			"/virtualmachinesnapshots/*",
+			"/virtualmachinerestores",
+		)
+	}
 }
 
 func registerK8sProxyRoutes(r chi.Router, h http.Handler) {
@@ -138,6 +219,7 @@ func Handler(cfg *config.Config, opts ...Option) (http.Handler, error) {
 	if o.k8sProxy != nil {
 		registerK8sProxyRoutes(r, o.k8sProxy)
 	}
+	registerStatelessProxies(r, o)
 	r.NotFound(notFoundHandler(o.staticH, sidecar))
 	r.MethodNotAllowed(sidecar.ServeHTTP)
 	return r, nil
@@ -160,7 +242,8 @@ func requestLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		stripped := StripMulticloud(r.URL.Path)
 		// Do not wrap SSE: the wrapper can prevent HTTP/2 from flushing events to EventSource.
-		if isProbe(stripped) || isEventStream(stripped) {
+		// Do not wrap WebSocket: ReverseProxy needs the raw Hijacker.
+		if isProbe(stripped) || isEventStream(stripped) || isWebSocket(r) {
 			next.ServeHTTP(w, r)
 			return
 		}

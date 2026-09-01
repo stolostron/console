@@ -11,14 +11,19 @@ import (
 	"os/signal"
 	"syscall"
 
+	"k8s.io/client-go/kubernetes"
+
 	"github.com/stolostron/console/backend/internal/auth"
+	"github.com/stolostron/console/backend/internal/clusterproxy"
 	"github.com/stolostron/console/backend/internal/config"
 	rbacevents "github.com/stolostron/console/backend/internal/events/rbac"
 	"github.com/stolostron/console/backend/internal/k8sproxy"
 	applog "github.com/stolostron/console/backend/internal/log"
+	"github.com/stolostron/console/backend/internal/mcproxy"
+	"github.com/stolostron/console/backend/internal/metricsproxy"
 	"github.com/stolostron/console/backend/internal/server"
 	"github.com/stolostron/console/backend/internal/static"
-	"k8s.io/client-go/kubernetes"
+	"github.com/stolostron/console/backend/internal/vmproxy"
 )
 
 func main() {
@@ -79,6 +84,36 @@ func run() error {
 		FS:         fsys,
 		Production: os.Getenv("NODE_ENV") == "production",
 	})))
+
+	serviceTLS := auth.ServiceTLSConfig(sa)
+	addonResolver := &clusterproxy.Resolver{
+		HostOverride:  cfg.ClusterProxyAddonUserHost,
+		RouteOverride: cfg.ClusterProxyAddonUserRoute,
+		Hub:           restCfg,
+	}
+	promURL, err := metricsproxy.ParseTarget(cfg.PrometheusRoute, metricsproxy.DefaultPrometheusURL)
+	if err != nil {
+		return err
+	}
+	obsURL, err := metricsproxy.ParseTarget(cfg.ObservabilityRoute, metricsproxy.DefaultObservabilityURL)
+	if err != nil {
+		return err
+	}
+	opts = append(opts,
+		server.WithManagedClusterProxy(mcproxy.New(mcproxy.Options{
+			Resolver:   addonResolver,
+			TLSConfig:  serviceTLS,
+			RESTConfig: restCfg,
+		})),
+		server.WithPrometheusProxy(metricsproxy.New(promURL, serviceTLS, "/prometheus")),
+		server.WithObservabilityProxy(metricsproxy.New(obsURL, serviceTLS, "/observability")),
+		server.WithVMProxy(vmproxy.New(vmproxy.Options{
+			Resolver:   addonResolver,
+			TLSConfig:  serviceTLS,
+			RESTConfig: restCfg,
+			SAToken:    sa.Token,
+		})),
+	)
 
 	handler, err := server.Handler(cfg, opts...)
 	if err != nil {

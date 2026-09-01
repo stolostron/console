@@ -201,6 +201,66 @@ func TestRBACEventsNotProxied(t *testing.T) {
 	}
 }
 
+func TestStatelessProxiesNotProxiedToSidecar(t *testing.T) {
+	var sidecarPaths []string
+	sidecar := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sidecarPaths = append(sidecarPaths, r.URL.Path)
+		w.WriteHeader(http.StatusTeapot)
+	}))
+	defer sidecar.Close()
+
+	ok := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-Go", r.URL.Path)
+		w.WriteHeader(http.StatusOK)
+	})
+
+	cfg := &config.Config{NodeBackendURL: sidecar.URL, CertsDir: t.TempDir()}
+	h, err := server.Handler(cfg,
+		server.WithManagedClusterProxy(ok),
+		server.WithPrometheusProxy(ok),
+		server.WithObservabilityProxy(ok),
+		server.WithVMProxy(ok),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ts := httptest.NewServer(h)
+	defer ts.Close()
+
+	paths := []string{
+		"/managedclusterproxy/c1/api/v1/pods",
+		"/multicloud/managedclusterproxy/c1/api",
+		"/prometheus/query",
+		"/multicloud/prometheus/query",
+		"/observability/query",
+		"/multicloud/observability/query",
+		"/virtualmachines/get/c/n/ns",
+		"/multicloud/virtualmachines/start",
+		"/virtualmachineinstances/pause",
+		"/virtualmachinesnapshots/get/c/n/ns",
+		"/virtualmachinerestores",
+		"/vmResourceUsage/cluster/c/namespace/ns",
+	}
+	for _, path := range paths {
+		sidecarPaths = nil
+		req, _ := http.NewRequest(http.MethodGet, ts.URL+path, nil)
+		resp, getErr := ts.Client().Do(req)
+		if getErr != nil {
+			t.Fatal(getErr)
+		}
+		resp.Body.Close()
+		if len(sidecarPaths) != 0 {
+			t.Fatalf("%s was proxied to sidecar: %v", path, sidecarPaths)
+		}
+		if resp.StatusCode != http.StatusOK {
+			t.Fatalf("%s status %d", path, resp.StatusCode)
+		}
+		if resp.Header.Get("X-Go") != path {
+			t.Fatalf("%s X-Go %q", path, resp.Header.Get("X-Go"))
+		}
+	}
+}
+
 func TestStaticNotProxiedToSidecar(t *testing.T) {
 	var sidecarPaths []string
 	sidecar := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -301,7 +361,7 @@ func TestK8sProxyNotProxiedToSidecar(t *testing.T) {
 	}
 }
 
-func TestApiPathsStillProxiedToSidecar(t *testing.T) {
+func TestUnmigratedRoutesStillProxied(t *testing.T) {
 	var capturedPath string
 	sidecar := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		capturedPath = r.URL.Path
@@ -310,19 +370,27 @@ func TestApiPathsStillProxiedToSidecar(t *testing.T) {
 	}))
 	defer sidecar.Close()
 
+	ok := http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		t.Fatal("go handler should not run")
+	})
 	k8s := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		t.Fatal("k8s proxy should not handle /apiPaths")
 	})
 
 	cfg := &config.Config{NodeBackendURL: sidecar.URL, CertsDir: t.TempDir()}
-	h, err := server.Handler(cfg, server.WithK8sProxy(k8s))
+	h, err := server.Handler(cfg,
+		server.WithK8sProxy(k8s),
+		server.WithPrometheusProxy(ok),
+		server.WithManagedClusterProxy(ok),
+		server.WithVMProxy(ok),
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
 	ts := httptest.NewServer(h)
 	defer ts.Close()
 
-	for _, path := range []string{"/apiPaths", "/multicloud/apiPaths"} {
+	for _, path := range []string{"/hub", "/multicloud/search", "/apiPaths", "/multicloud/apiPaths"} {
 		resp, getErr := ts.Client().Get(ts.URL + path)
 		if getErr != nil {
 			t.Fatal(getErr)
@@ -331,15 +399,5 @@ func TestApiPathsStillProxiedToSidecar(t *testing.T) {
 		if capturedPath != path {
 			t.Fatalf("%s sidecar path %q", path, capturedPath)
 		}
-	}
-
-	req, _ := http.NewRequest(http.MethodGet, ts.URL+"/multicloud/hub", nil)
-	resp, err := ts.Client().Do(req)
-	if err != nil {
-		t.Fatal(err)
-	}
-	resp.Body.Close()
-	if capturedPath != "/multicloud/hub" {
-		t.Fatalf("hub sidecar path %q", capturedPath)
 	}
 }

@@ -6,7 +6,6 @@ import { constants, createSecureServer, createServer } from 'node:http2'
 import type { Socket } from 'node:net'
 import type { TLSSocket } from 'node:tls'
 import { logger } from './logger'
-import { managedClusterProxy } from '../routes/managedClusterProxy'
 import { readFileSync } from 'node:fs'
 import { searchWebSocket } from '../routes/search'
 import { certFile } from './paths'
@@ -78,10 +77,6 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
           if (req.url.startsWith('/multicloud/proxy/search')) {
             req.url = req.url.substring(11)
             return searchWebSocket(req, socket, head)
-          }
-          if (req.url.startsWith('/multicloud/managedclusterproxy')) {
-            req.url = req.url.substring(11)
-            return managedClusterProxy(req, socket, head)
           }
         })
         .on('request', (req: Http2ServerRequest, res: Http2ServerResponse) => {

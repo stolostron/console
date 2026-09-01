@@ -65,5 +65,5 @@ describe(`placementDebug Route`, function () {
 
   // Connection errors are handled by the pipeline error callback in placementDebug.ts.
   // The mock-request test infrastructure doesn't reliably capture pipeline-level errors
-  // (same limitation as proxy.ts and metricsProxy.ts, which also omit connection error tests).
+  // (same limitation as proxy.ts, which also omits connection error tests).
 })

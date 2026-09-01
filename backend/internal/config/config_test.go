@@ -72,6 +72,37 @@ func TestLoad_FromEnvFile(t *testing.T) {
 	}
 }
 
+func TestLoad_ProxyEnvVars(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("ENV_FILE", filepath.Join(dir, ".env"))
+	t.Setenv("PORT", "4100")
+	t.Setenv("NODE_BACKEND_URL", "https://127.0.0.1:4101")
+	t.Setenv("PROMETHEUS_ROUTE", "https://prom.example")
+	t.Setenv("OBSERVABILITY_ROUTE", "https://obs.example")
+	t.Setenv("CLUSTER_PROXY_ADDON_USER_HOST", "proxy.example")
+	t.Setenv("CLUSTER_PROXY_ADDON_USER_ROUTE", "https://proxy.example")
+
+	cfg := config.Load()
+	if cfg.Port != "4100" {
+		t.Fatalf("Port=%q", cfg.Port)
+	}
+	if cfg.NodeBackendURL != "https://127.0.0.1:4101" {
+		t.Fatalf("NodeBackendURL=%q", cfg.NodeBackendURL)
+	}
+	if cfg.PrometheusRoute != "https://prom.example" {
+		t.Fatalf("PrometheusRoute=%q", cfg.PrometheusRoute)
+	}
+	if cfg.ObservabilityRoute != "https://obs.example" {
+		t.Fatalf("ObservabilityRoute=%q", cfg.ObservabilityRoute)
+	}
+	if cfg.ClusterProxyAddonUserHost != "proxy.example" {
+		t.Fatalf("ClusterProxyAddonUserHost=%q", cfg.ClusterProxyAddonUserHost)
+	}
+	if cfg.ClusterProxyAddonUserRoute != "https://proxy.example" {
+		t.Fatalf("ClusterProxyAddonUserRoute=%q", cfg.ClusterProxyAddonUserRoute)
+	}
+}
+
 func TestLoad_PublicFolder(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("ENV_FILE", filepath.Join(dir, ".env"))
@@ -79,6 +110,54 @@ func TestLoad_PublicFolder(t *testing.T) {
 	cfg := config.Load()
 	if cfg.PublicFolder != "/app/public" {
 		t.Fatalf("PublicFolder=%q", cfg.PublicFolder)
+	}
+}
+
+func TestReloadSettings_MissingDir(t *testing.T) {
+	cfg := &config.Config{ConfigDir: filepath.Join(t.TempDir(), "missing")}
+	if err := cfg.ReloadSettings(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestReloadSettings_UnsetsRemovedKeys(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "LOG_LEVEL")
+	if err := os.WriteFile(path, []byte("debug"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	cfg := &config.Config{ConfigDir: dir}
+	if err := cfg.ReloadSettings(); err != nil {
+		t.Fatal(err)
+	}
+	if os.Getenv("LOG_LEVEL") != "debug" {
+		t.Fatalf("LOG_LEVEL=%q", os.Getenv("LOG_LEVEL"))
+	}
+	if err := os.Remove(path); err != nil {
+		t.Fatal(err)
+	}
+	if err := cfg.ReloadSettings(); err != nil {
+		t.Fatal(err)
+	}
+	if os.Getenv("LOG_LEVEL") != "" {
+		t.Fatalf("LOG_LEVEL=%q want unset", os.Getenv("LOG_LEVEL"))
+	}
+}
+
+func TestSettings_ReturnsCopy(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "feature-flag")
+	if err := os.WriteFile(path, []byte("on"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	cfg := &config.Config{ConfigDir: dir}
+	if err := cfg.ReloadSettings(); err != nil {
+		t.Fatal(err)
+	}
+	got := cfg.Settings()
+	got["feature-flag"] = "off"
+	if cfg.Settings()["feature-flag"] != "on" {
+		t.Fatalf("settings mutated: %q", cfg.Settings()["feature-flag"])
 	}
 }
 

@@ -85,7 +85,11 @@ func TestLoadServiceAccount_EnvFallback(t *testing.T) {
 	restore := auth.SetServiceAccountDir(dir)
 	defer restore()
 
-	cfg := &config.Config{Token: "env-token", CACert: base64.StdEncoding.EncodeToString([]byte("ca-bytes"))}
+	cfg := &config.Config{
+		Token:         "env-token",
+		CACert:        base64.StdEncoding.EncodeToString([]byte("ca-bytes")),
+		ServiceCACert: base64.StdEncoding.EncodeToString([]byte("svc-ca")),
+	}
 	sa, ok := auth.LoadServiceAccount(cfg)
 	if !ok {
 		t.Fatal("expected token from env")
@@ -96,6 +100,9 @@ func TestLoadServiceAccount_EnvFallback(t *testing.T) {
 	if string(sa.CACert) != "ca-bytes" {
 		t.Fatalf("ca %q", sa.CACert)
 	}
+	if string(sa.ServiceCACert) != "svc-ca" {
+		t.Fatalf("service ca %q", sa.ServiceCACert)
+	}
 }
 
 func TestLoadServiceAccount_FromFiles(t *testing.T) {
@@ -104,6 +111,9 @@ func TestLoadServiceAccount_FromFiles(t *testing.T) {
 		t.Fatal(err)
 	}
 	if err := os.WriteFile(filepath.Join(dir, "ca.crt"), []byte("file-ca"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "service-ca.crt"), []byte("file-svc-ca"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	restore := auth.SetServiceAccountDir(dir)
@@ -119,6 +129,9 @@ func TestLoadServiceAccount_FromFiles(t *testing.T) {
 	}
 	if string(sa.CACert) != "file-ca" {
 		t.Fatalf("ca %q", sa.CACert)
+	}
+	if string(sa.ServiceCACert) != "file-svc-ca" {
+		t.Fatalf("service ca %q", sa.ServiceCACert)
 	}
 }
 
