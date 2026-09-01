@@ -1606,7 +1606,34 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     },
   }
 
-  const AutomationComponent = () => {
+  // ACM-43003: an automation template with an install pre-hook must pause the NodePool
+  // (not just the HostedCluster). Otherwise the NodePool starts deploying nodes before the
+  // pre-hook completes, and ClusterCurator later errors trying to unpause a NodePool that was
+  // never paused in the first place.
+  const installPrehookCurator: ClusterCurator = {
+    apiVersion: ClusterCuratorApiVersion,
+    kind: ClusterCuratorKind,
+    metadata: {
+      name: 'kubevirt-automation-prehook',
+      namespace: 'test-ii',
+      labels: {
+        'open-cluster-management': 'curator',
+      },
+    },
+    spec: {
+      install: {
+        prehook: [
+          {
+            name: 'test-prehook-install',
+            extra_vars: {},
+          },
+        ],
+        towerAuthSecret: 'ansible-connection',
+      },
+    },
+  }
+
+  const AutomationComponent = ({ curator = upgradeOnlyCurator }: { curator?: ClusterCurator }) => {
     return (
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -1662,7 +1689,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
             },
           ])
           snapshot.set(secretsState, [mockKubevirtSecret as Secret, providerConnectionAnsible as Secret])
-          snapshot.set(clusterCuratorsState, [upgradeOnlyCurator])
+          snapshot.set(clusterCuratorsState, [curator])
           snapshot.set(subscriptionOperatorsState, [subscriptionOperator])
           snapshot.set(settingsState, { ansibleIntegration: 'enabled' })
         }}
@@ -1770,6 +1797,131 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
       nockCreate(mockNodePools),
       nockCreate(managedCluster),
       nockCreate(mockHostedClusterKubervirt),
+      nockCreate(mockKlusterletAddonConfigKubevirt),
+      nockCreate(mockKubeConfigSecretKubevirt),
+      nockCreate(mockPullSecretKubevirt),
+      nockCreate(mockSSHKeySecret),
+      nockCreate(expectedCurator),
+      nockCreate(expectedAnsibleSecret),
+    ]
+
+    await clickByText('Create')
+
+    await waitForText('Creating cluster ...')
+
+    await waitForNocks(createNocks)
+  })
+
+  test('pauses the NodePool as well as the HostedCluster when an automation template with an install pre-hook is used (ACM-43003)', async () => {
+    window.scrollBy = () => {}
+    const initialNocks = [
+      nockList(clusterImageSetKubervirt as IResource, [clusterImageSetKubervirt] as IResource[]),
+      nockList(storageClass as IResource, [storageClass] as IResource[]),
+    ]
+    render(<AutomationComponent curator={installPrehookCurator} />)
+
+    await new Promise((resolve) => setTimeout(resolve, 500))
+
+    await waitForNocks(initialNocks)
+
+    await waitForText('Cluster details', true)
+
+    // step 1 -- cluster details
+    await typeByTestId('clusterName', clusterName)
+    await clickByPlaceholderText('Select or enter a release image')
+    await clickByRole('option', { name: /OpenShift 4\.15\.36/i })
+
+    // step 2 -- node pools
+    await clickByText('Next')
+    const nodePoolNameInput = screen.getByTestId('nodePoolName')
+    fireEvent.change(nodePoolNameInput, { target: { value: 'nodepool' } })
+
+    // storage mappings
+    await clickByText('Next')
+    await clickByText('Add storage class mapping')
+    await typeByTestId('infraStorageClassName', 'storage-class1')
+    await typeByTestId('guestStorageClassName', 'guest-storage1')
+    await typeByTestId('storageClassGroup', 'group1')
+    await clickByText('Add volume snapshot class mapping')
+    await typeByTestId('infraVolumeSnapshotClassName', 'snapshot-class1')
+    await typeByTestId('guestVolumeSnapshotClassName', 'guest-snap1')
+    await typeByTestId('volumeSnapshotGroup', 'group1')
+    await clickByText('Next')
+
+    // step -- automation: select a template with an install pre-hook, which should pause
+    // reconciliation until the pre-hook completes
+    await waitForText('Automation template')
+    await waitForNotText('Install the operator')
+    await clickByPlaceholderText('Select an automation template')
+    await clickByText('kubevirt-automation-prehook')
+    await clickByText('Next')
+
+    // both the HostedCluster and the NodePool must be paused, otherwise the NodePool starts
+    // deploying nodes before the pre-hook runs and ClusterCurator later fails to unpause it
+    const expectedHostedCluster = {
+      ...mockHostedClusterKubervirt,
+      spec: {
+        ...mockHostedClusterKubervirt.spec,
+        pausedUntil: 'true',
+      },
+    }
+    const expectedNodePool = {
+      ...mockNodePools,
+      spec: {
+        ...mockNodePools.spec,
+        pausedUntil: 'true',
+      },
+    }
+
+    const expectedAnsibleSecret: Secret = {
+      apiVersion: 'v1',
+      kind: 'Secret',
+      type: 'Opaque',
+      metadata: {
+        name: 'toweraccess-install-test',
+        namespace: 'clusters',
+        labels: {
+          'cluster.open-cluster-management.io/type': 'ans',
+          'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ii',
+          'cluster.open-cluster-management.io/copiedFromSecretName': 'ansible-connection',
+          'cluster.open-cluster-management.io/backup': 'cluster',
+        },
+      },
+      stringData: {
+        host: 'test',
+        token: 'test',
+      },
+    }
+    const expectedCurator: ClusterCurator = {
+      apiVersion: ClusterCuratorApiVersion,
+      kind: ClusterCuratorKind,
+      metadata: {
+        name: 'test',
+        namespace: 'clusters',
+        labels: {
+          'open-cluster-management': 'curator',
+        },
+      },
+      spec: {
+        install: {
+          prehook: [
+            {
+              name: 'test-prehook-install',
+              extra_vars: {},
+            },
+          ],
+          towerAuthSecret: 'toweraccess-install-test',
+        },
+        desiredCuration: 'install',
+      },
+    }
+
+    const createNocks = [
+      nockCreate(mockProject, mockProjectResponse),
+      nockCreate(mockClusterProjectKubevirt, mockClusterProjectKubevirtResponse),
+      nockCreate(expectedNodePool),
+      nockCreate(managedCluster),
+      nockCreate(expectedHostedCluster),
       nockCreate(mockKlusterletAddonConfigKubevirt),
       nockCreate(mockKubeConfigSecretKubevirt),
       nockCreate(mockPullSecretKubevirt),
