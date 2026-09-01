@@ -29,7 +29,10 @@ export interface SubjectRulesStatus {
 }
 
 export type KindGetAccess =
-  { type: 'deny-all' } | { type: 'allow-all' } | { type: 'allow-names'; names: Set<string> } | { type: 'incomplete' }
+  | { type: 'deny-all' }
+  | { type: 'allow-all' }
+  | { type: 'allow-names'; names: Set<string> }
+  | { type: 'incomplete' }
 
 export type AccessResource = { kind: string; apiVersion: string; metadata?: { name?: string; namespace?: string } }
 
