@@ -460,6 +460,52 @@ func TestConfigureWithoutLoginNotProxied(t *testing.T) {
 	}
 }
 
+func TestDevelopmentCORSOptionsPreflight(t *testing.T) {
+	var k8sCalled bool
+	sidecar := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		t.Fatal("sidecar should not be called")
+	}))
+	defer sidecar.Close()
+
+	k8s := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		k8sCalled = true
+		w.WriteHeader(http.StatusOK)
+	})
+
+	cfg := &config.Config{NodeBackendURL: sidecar.URL, CertsDir: t.TempDir()}
+	h, err := server.Handler(cfg, server.WithK8sProxy(k8s))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ts := httptest.NewServer(h)
+	defer ts.Close()
+
+	for _, path := range []string{"/api", "/multicloud/api"} {
+		k8sCalled = false
+		req, _ := http.NewRequest(http.MethodOptions, ts.URL+path, nil)
+		req.Header.Set("Origin", "https://localhost:3000")
+		req.Header.Set("Access-Control-Request-Method", "GET")
+		req.Header.Set("Access-Control-Request-Headers", "authorization,content-type")
+		resp, getErr := ts.Client().Do(req)
+		if getErr != nil {
+			t.Fatal(getErr)
+		}
+		resp.Body.Close()
+		if k8sCalled {
+			t.Fatalf("%s reached k8s proxy", path)
+		}
+		if resp.StatusCode != http.StatusOK {
+			t.Fatalf("%s status %d", path, resp.StatusCode)
+		}
+		if resp.Header.Get("Access-Control-Allow-Origin") != "https://localhost:3000" {
+			t.Fatalf("%s allow-origin %q", path, resp.Header.Get("Access-Control-Allow-Origin"))
+		}
+		if resp.Header.Get("Access-Control-Allow-Credentials") != "true" {
+			t.Fatalf("%s missing allow-credentials", path)
+		}
+	}
+}
+
 func TestK8sProxyNotProxiedToSidecar(t *testing.T) {
 	var sidecarPaths []string
 	sidecar := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -18,6 +18,7 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"github.com/stolostron/console/backend/internal/config"
+	"github.com/stolostron/console/backend/internal/cors"
 	"github.com/stolostron/console/backend/internal/health"
 	applog "github.com/stolostron/console/backend/internal/log"
 	"github.com/stolostron/console/backend/internal/oauth"
@@ -221,6 +222,7 @@ func Handler(cfg *config.Config, opts ...Option) (http.Handler, error) {
 	sidecar := proxy.New(target, sidecarTLS)
 
 	r := chi.NewRouter()
+	r.Use(cors.Middleware(cfg.Production))
 	r.Use(requestLogger)
 	r.Get("/livenessProbe", probes.Liveness)
 	r.Get("/readinessProbe", probes.Readiness)
