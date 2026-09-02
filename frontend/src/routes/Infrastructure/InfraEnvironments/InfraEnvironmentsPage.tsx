@@ -1,42 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import {
+  AGENT_LOCATION_LABEL_KEY,
   AgentK8sResource,
   AgentServiceConfigK8sResource,
-  AGENT_LOCATION_LABEL_KEY,
   CimConfigProgressAlert,
   CimConfigurationModal,
   CimStorageMissingAlert,
+  InfraEnvK8sResource,
+  InfrastructureK8sResource,
   getAgentStatusKey,
   getCurrentClusterVersion,
   getMajorMinorVersion,
-  InfraEnvK8sResource,
-  InfrastructureK8sResource,
   isCIMConfigured,
   isStorageConfigured,
 } from '@openshift-assisted/ui-lib/cim'
-import { K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk'
-import { Button, ButtonVariant, Flex, FlexItem, PageSection, Popover, Stack, StackItem } from '@patternfly/react-core'
-import { CogIcon, InfoCircleIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
-import { fitContent } from '@patternfly/react-table'
-import { t_color_blue_40 as blueInfoColor } from '@patternfly/react-tokens/dist/js/t_color_blue_40'
-import { Dictionary } from 'lodash'
-import get from 'lodash/get'
-import groupBy from 'lodash/groupBy'
-import isMatch from 'lodash/isMatch'
-import { useEffect, useMemo, useState } from 'react'
-import { generatePath, Link, useNavigate } from 'react-router'
-import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
-import { RbacDropdown } from '../../../components/Rbac'
-import { useLocalHubName } from '../../../hooks/use-local-hub'
-import { useTranslation } from '../../../lib/acm-i18next'
-import { useOperatorCatalog } from '../../../lib/operator-catalog-utils'
-import { deleteResources } from '../../../lib/delete-resources'
-import { DOC_LINKS, OCP_DOC, ViewDocumentationLink } from '../../../lib/doc-util'
-import { canUser, rbacDelete } from '../../../lib/rbac-util'
-import { NavigationPath } from '../../../NavigationPath'
-import { IResource } from '../../../resources/resource'
-import { exportObjectString, getISOStringTimestamp, ResourceError } from '../../../resources/utils'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
 import {
   AcmButton,
   AcmEmptyState,
@@ -48,7 +25,31 @@ import {
   AcmTable,
   compareStrings,
 } from '../../../ui-components'
+import { BulkActionModal, BulkActionModalProps } from '../../../components/BulkActionModal'
+import { Button, ButtonVariant, Flex, FlexItem, PageSection, Popover, Stack, StackItem } from '@patternfly/react-core'
+import { CogIcon, InfoCircleIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
+import { DOC_LINKS, OCP_DOC, ViewDocumentationLink } from '../../../lib/doc-util'
+import { Link, generatePath, useNavigate } from 'react-router'
+import { ResourceError, exportObjectString, getISOStringTimestamp } from '../../../resources/utils'
+import { canUser, rbacDelete } from '../../../lib/rbac-util'
+import { useEffect, useMemo, useState } from 'react'
+import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+
+import { Dictionary } from 'lodash'
+import { IResource } from '../../../resources/resource'
+import { K8sResourceCommon } from '@openshift-console/dynamic-plugin-sdk'
+import { NavigationPath } from '../../../NavigationPath'
+import { RbacDropdown } from '../../../components/Rbac'
+import { t_color_blue_40 as blueInfoColor } from '@patternfly/react-tokens/dist/js/t_color_blue_40'
+import { deleteResources } from '../../../lib/delete-resources'
+import { fitContent } from '@patternfly/react-table'
+import get from 'lodash/get'
 import { getDateTimeCell } from '../helpers/table-row-helpers'
+import groupBy from 'lodash/groupBy'
+import isMatch from 'lodash/isMatch'
+import { useLocalHubName } from '../../../hooks/use-local-hub'
+import { useOperatorCatalog } from '../../../lib/operator-catalog-utils'
+import { useTranslation } from '../../../lib/acm-i18next'
 
 // Will change perspective, still in the OCP Console app
 const assistedServiceDeploymentUrl = '/k8s/ns/multicluster-engine/deployments/assisted-service'
@@ -183,9 +184,11 @@ const InfraEnvironmentsPage: React.FC = () => {
             <>
               <span>
                 {
-                  // i18next-parser does not detect nested references in values
-                  // t('hostCount', { count: 0 })
-                  // t('infraEnvCount', { count: 0 })
+                  // hostCount/infraEnvCount are only referenced via $t(...) inside hostInfraEnvCounts'
+                  // value, so i18next-cli can't see them as normal t() calls.
+                  // NOTE: count must be non-zero or it's not recognized as a plural.
+                  // t('hostCount', { count: 1 })
+                  // t('infraEnvCount', { count: 1 })
                   t('hostInfraEnvCounts', {
                     hostCount: agents.length,
                     infraEnvCount: infraEnvs.length,
