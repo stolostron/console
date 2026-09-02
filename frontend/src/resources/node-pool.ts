@@ -185,6 +185,7 @@ export interface NodePool extends IResource {
   metadata: Metadata
   spec: {
     clusterName: string
+    pausedUntil?: string
     management: any
     platform: {
       aws?: {

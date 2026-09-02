@@ -1606,7 +1606,34 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     },
   }
 
-  const AutomationComponent = () => {
+  // ACM-43003: an automation template with an install pre-hook must pause the NodePool
+  // (not just the HostedCluster). Otherwise the NodePool starts deploying nodes before the
+  // pre-hook completes, and ClusterCurator later errors trying to unpause a NodePool that was
+  // never paused in the first place.
+  const installPrehookCurator: ClusterCurator = {
+    apiVersion: ClusterCuratorApiVersion,
+    kind: ClusterCuratorKind,
+    metadata: {
+      name: 'kubevirt-automation-prehook',
+      namespace: 'test-ii',
+      labels: {
+        'open-cluster-management': 'curator',
+      },
+    },
+    spec: {
+      install: {
+        prehook: [
+          {
+            name: 'test-prehook-install',
+            extra_vars: {},
+          },
+        ],
+        towerAuthSecret: 'ansible-connection',
+      },
+    },
+  }
+
+  const AutomationComponent = ({ curator = upgradeOnlyCurator }: { curator?: ClusterCurator }) => {
     return (
       <RecoilRoot
         initializeState={(snapshot) => {
@@ -1662,7 +1689,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
             },
           ])
           snapshot.set(secretsState, [mockKubevirtSecret as Secret, providerConnectionAnsible as Secret])
-          snapshot.set(clusterCuratorsState, [upgradeOnlyCurator])
+          snapshot.set(clusterCuratorsState, [curator])
           snapshot.set(subscriptionOperatorsState, [subscriptionOperator])
           snapshot.set(settingsState, { ansibleIntegration: 'enabled' })
         }}
@@ -1770,6 +1797,131 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
       nockCreate(mockNodePools),
       nockCreate(managedCluster),
       nockCreate(mockHostedClusterKubervirt),
+      nockCreate(mockKlusterletAddonConfigKubevirt),
+      nockCreate(mockKubeConfigSecretKubevirt),
+      nockCreate(mockPullSecretKubevirt),
+      nockCreate(mockSSHKeySecret),
+      nockCreate(expectedCurator),
+      nockCreate(expectedAnsibleSecret),
+    ]
+
+    await clickByText('Create')
+
+    await waitForText('Creating cluster ...')
+
+    await waitForNocks(createNocks)
+  })
+
+  test('pauses the NodePool as well as the HostedCluster when an automation template with an install pre-hook is used (ACM-43003)', async () => {
+    window.scrollBy = () => {}
+    const initialNocks = [
+      nockList(clusterImageSetKubervirt as IResource, [clusterImageSetKubervirt] as IResource[]),
+      nockList(storageClass as IResource, [storageClass] as IResource[]),
+    ]
+    render(<AutomationComponent curator={installPrehookCurator} />)
+
+    await new Promise((resolve) => setTimeout(resolve, 500))
+
+    await waitForNocks(initialNocks)
+
+    await waitForText('Cluster details', true)
+
+    // step 1 -- cluster details
+    await typeByTestId('clusterName', clusterName)
+    await clickByPlaceholderText('Select or enter a release image')
+    await clickByRole('option', { name: /OpenShift 4\.15\.36/i })
+
+    // step 2 -- node pools
+    await clickByText('Next')
+    const nodePoolNameInput = screen.getByTestId('nodePoolName')
+    fireEvent.change(nodePoolNameInput, { target: { value: 'nodepool' } })
+
+    // storage mappings
+    await clickByText('Next')
+    await clickByText('Add storage class mapping')
+    await typeByTestId('infraStorageClassName', 'storage-class1')
+    await typeByTestId('guestStorageClassName', 'guest-storage1')
+    await typeByTestId('storageClassGroup', 'group1')
+    await clickByText('Add volume snapshot class mapping')
+    await typeByTestId('infraVolumeSnapshotClassName', 'snapshot-class1')
+    await typeByTestId('guestVolumeSnapshotClassName', 'guest-snap1')
+    await typeByTestId('volumeSnapshotGroup', 'group1')
+    await clickByText('Next')
+
+    // step -- automation: select a template with an install pre-hook, which should pause
+    // reconciliation until the pre-hook completes
+    await waitForText('Automation template')
+    await waitForNotText('Install the operator')
+    await clickByPlaceholderText('Select an automation template')
+    await clickByText('kubevirt-automation-prehook')
+    await clickByText('Next')
+
+    // both the HostedCluster and the NodePool must be paused, otherwise the NodePool starts
+    // deploying nodes before the pre-hook runs and ClusterCurator later fails to unpause it
+    const expectedHostedCluster = {
+      ...mockHostedClusterKubervirt,
+      spec: {
+        ...mockHostedClusterKubervirt.spec,
+        pausedUntil: 'true',
+      },
+    }
+    const expectedNodePool = {
+      ...mockNodePools,
+      spec: {
+        ...mockNodePools.spec,
+        pausedUntil: 'true',
+      },
+    }
+
+    const expectedAnsibleSecret: Secret = {
+      apiVersion: 'v1',
+      kind: 'Secret',
+      type: 'Opaque',
+      metadata: {
+        name: 'toweraccess-install-test',
+        namespace: 'clusters',
+        labels: {
+          'cluster.open-cluster-management.io/type': 'ans',
+          'cluster.open-cluster-management.io/copiedFromNamespace': 'test-ii',
+          'cluster.open-cluster-management.io/copiedFromSecretName': 'ansible-connection',
+          'cluster.open-cluster-management.io/backup': 'cluster',
+        },
+      },
+      stringData: {
+        host: 'test',
+        token: 'test',
+      },
+    }
+    const expectedCurator: ClusterCurator = {
+      apiVersion: ClusterCuratorApiVersion,
+      kind: ClusterCuratorKind,
+      metadata: {
+        name: 'test',
+        namespace: 'clusters',
+        labels: {
+          'open-cluster-management': 'curator',
+        },
+      },
+      spec: {
+        install: {
+          prehook: [
+            {
+              name: 'test-prehook-install',
+              extra_vars: {},
+            },
+          ],
+          towerAuthSecret: 'toweraccess-install-test',
+        },
+        desiredCuration: 'install',
+      },
+    }
+
+    const createNocks = [
+      nockCreate(mockProject, mockProjectResponse),
+      nockCreate(mockClusterProjectKubevirt, mockClusterProjectKubevirtResponse),
+      nockCreate(expectedNodePool),
+      nockCreate(managedCluster),
+      nockCreate(expectedHostedCluster),
       nockCreate(mockKlusterletAddonConfigKubevirt),
       nockCreate(mockKubeConfigSecretKubevirt),
       nockCreate(mockPullSecretKubevirt),
@@ -4401,5 +4553,161 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
 
     // make sure creating
     await waitForNocks(createNocks)
+  })
+})
+
+// ACM-42793: the OpenShift Virtualization operator alert must not be shown when the
+// selected credential uses external infrastructure, since the operator is not required
+// on the hub in that case. When it is shown, it must explain the external infrastructure exception.
+describe('CreateCluster KubeVirt operator alert', () => {
+  const kubevirtSecretWithExternalInfra: Secret = {
+    apiVersion: ProviderConnectionApiVersion,
+    kind: ProviderConnectionKind,
+    type: 'Opaque',
+    metadata: {
+      name: 'kubevirt-with-ei',
+      namespace: 'clusters',
+      labels: {
+        'cluster.open-cluster-management.io/type': 'kubevirt',
+        'cluster.open-cluster-management.io/credentials': '',
+      },
+    },
+    stringData: {
+      pullSecret: '{"pullSecret":"secret"}\n',
+      'ssh-publickey': 'ssh-rsa AAAAB1 fake@email.com',
+      kubeconfig: kubeconfig,
+      externalInfraNamespace: 'kubevirt-namespace',
+    },
+  } as unknown as Secret
+
+  const kubevirtSecretWithoutExternalInfra: Secret = {
+    apiVersion: ProviderConnectionApiVersion,
+    kind: ProviderConnectionKind,
+    type: 'Opaque',
+    metadata: {
+      name: 'kubevirt-no-ei',
+      namespace: 'clusters',
+      labels: {
+        'cluster.open-cluster-management.io/type': 'kubevirt',
+        'cluster.open-cluster-management.io/credentials': '',
+      },
+    },
+    stringData: {
+      pullSecret: '{"pullSecret":"secret"}\n',
+      'ssh-publickey': 'ssh-rsa AAAAB1 fake@email.com',
+    },
+  } as unknown as Secret
+
+  const Component = (props: { secret: Secret }) => {
+    return (
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(configMapsState, [
+            {
+              kind: 'ConfigMap',
+              apiVersion: 'v1',
+              metadata: {
+                name: 'supported-versions',
+                namespace: 'hypershift',
+              },
+              data: {
+                'supported-versions': '{"versions":["4.15","4.14","4.13"]}',
+              },
+            },
+          ])
+          snapshot.set(namespacesState, [
+            {
+              apiVersion: NamespaceApiVersion,
+              kind: NamespaceKind,
+              metadata: { name: 'clusters' },
+            },
+          ])
+          snapshot.set(managedClustersState, [])
+          snapshot.set(managedClusterSetsState, [])
+          snapshot.set(managedClusterInfosState, [
+            {
+              apiVersion: ManagedClusterInfoApiVersion,
+              kind: ManagedClusterInfoKind,
+              metadata: { name: 'local-cluster', namespace: 'local-cluster' },
+              status: {
+                consoleURL: 'https://testCluster.com',
+                conditions: [
+                  {
+                    type: 'ManagedClusterConditionAvailable',
+                    reason: 'ManagedClusterConditionAvailable',
+                    status: 'True',
+                  },
+                  { type: 'ManagedClusterJoined', reason: 'ManagedClusterJoined', status: 'True' },
+                  { type: 'HubAcceptedManagedCluster', reason: 'HubAcceptedManagedCluster', status: 'True' },
+                ],
+                version: '1.17',
+                distributionInfo: {
+                  type: 'ocp',
+                  ocp: {
+                    version: '1.2.3',
+                    availableUpdates: [],
+                    desiredVersion: '1.2.3',
+                    upgradeFailed: false,
+                  },
+                },
+              },
+            },
+          ])
+          snapshot.set(secretsState, [props.secret])
+          // No SubscriptionOperator for kubevirt-hyperconverged: operator is not installed on the hub
+          snapshot.set(subscriptionOperatorsState, [])
+        }}
+      >
+        <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?${CLUSTER_INFRA_TYPE_PARAM}=kubevirt`]}>
+          <Routes>
+            <Route path={NavigationPath.createCluster} element={<CreateClusterPage />} />
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+  }
+
+  beforeEach(() => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+    // operator is not installed on the hub for either scenario
+    nockIgnoreOperatorCheck(true)
+    nockIgnoreClusterVersion()
+  })
+
+  test('hides the operator alert when the selected credential uses external infrastructure, even though the operator is not installed', async () => {
+    const initialNocks = [
+      nockList(clusterImageSetKubervirt as IResource, [clusterImageSetKubervirt] as IResource[]),
+      nockList(storageClass as IResource, [storageClass] as IResource[]),
+    ]
+    render(<Component secret={kubevirtSecretWithExternalInfra} />)
+
+    await waitForNocks(initialNocks)
+    await waitForText('Cluster details', true)
+
+    await waitForNotText('Operator required')
+    expect(
+      screen.queryByText(
+        'OpenShift Virtualization operator is required to create a cluster when not using external infrastructure.'
+      )
+    ).not.toBeInTheDocument()
+  })
+
+  test('shows the operator alert with the external infrastructure exception text when the selected credential does not use external infrastructure', async () => {
+    const initialNocks = [
+      nockList(clusterImageSetKubervirt as IResource, [clusterImageSetKubervirt] as IResource[]),
+      nockList(storageClass as IResource, [storageClass] as IResource[]),
+    ]
+    render(<Component secret={kubevirtSecretWithoutExternalInfra} />)
+
+    await waitForNocks(initialNocks)
+    await waitForText('Cluster details', true)
+
+    await waitForText('Operator required')
+    expect(
+      screen.getByText(
+        'OpenShift Virtualization operator is required to create a cluster when not using external infrastructure.'
+      )
+    ).toBeInTheDocument()
   })
 })
