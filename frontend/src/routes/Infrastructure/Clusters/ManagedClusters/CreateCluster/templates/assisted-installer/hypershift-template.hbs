@@ -113,6 +113,9 @@ metadata:
   namespace: '{{{this.clusterName}}}'
 spec:
   clusterName: '{{{this.clusterName}}}'
+  {{#if @root.reconcilePause}}
+  pausedUntil: '{{{@root.reconcilePause}}}'
+  {{/if}}
   {{#if this.manualHostSelect}}
   replicas: {{{this.selectedAgentIDs.length}}}
   {{else}}
