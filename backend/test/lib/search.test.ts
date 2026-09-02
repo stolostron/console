@@ -1,5 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import EventEmitter from 'node:events'
+import type { IncomingMessage } from 'node:http'
+import { Readable } from 'node:stream'
 import { jest, describe, it, expect, beforeEach, afterEach } from '@jest/globals'
 import { request } from 'node:https'
 import type { IQuery } from '../../src/routes/aggregators/applications'
@@ -39,22 +41,26 @@ type MockClientRequest = EventEmitter & {
   destroy: jest.Mock
 }
 
+function createMockResponse(body: string): IncomingMessage {
+  return Readable.from([body]) as unknown as IncomingMessage
+}
+
 function createMockClientRequest(onEnd?: () => void, error?: Error): MockClientRequest {
-  const req = new EventEmitter() as MockClientRequest
-  req.write = jest.fn()
-  req.end = jest.fn(() => {
+  const clientRequest = new EventEmitter() as MockClientRequest
+  clientRequest.write = jest.fn()
+  clientRequest.end = jest.fn(() => {
     if (error) {
-      process.nextTick(() => req.emit('error', error))
+      process.nextTick(() => clientRequest.emit('error', error))
       return
     }
     if (onEnd) {
       process.nextTick(onEnd)
     }
   })
-  req.destroy = jest.fn(() => {
-    req.emit('close')
+  clientRequest.destroy = jest.fn(() => {
+    clientRequest.emit('close')
   })
-  return req
+  return clientRequest
 }
 
 const emptySearchQuery: IQuery = {
@@ -96,8 +102,8 @@ describe('search lib', () => {
       await jest.advanceTimersByTimeAsync(4 * 60 * 1000)
       await expectation
 
-      const req = mockRequest.mock.results[0].value as MockClientRequest
-      expect(req.destroy).toHaveBeenCalled()
+      const clientRequest = mockRequest.mock.results[0].value as MockClientRequest
+      expect(clientRequest.destroy).toHaveBeenCalled()
     })
   })
 
@@ -122,8 +128,24 @@ describe('search lib', () => {
       await jest.advanceTimersByTimeAsync(2 * 60 * 1000)
       await expectation
 
-      const req = mockRequest.mock.results[0].value as MockClientRequest
-      expect(req.destroy).toHaveBeenCalled()
+      const clientRequest = mockRequest.mock.results[0].value as MockClientRequest
+      expect(clientRequest.destroy).toHaveBeenCalled()
+    })
+
+    it('rejects with malformed response data without request timeout', async () => {
+      jest.useFakeTimers()
+      mockRequest.mockImplementation((_options, callback) => {
+        const clientRequest = createMockClientRequest()
+        if (typeof callback === 'function') {
+          callback(createMockResponse('not-json'))
+        }
+        return clientRequest as unknown as ReturnType<typeof request>
+      })
+
+      const promise = getSearchResults(emptySearchQuery)
+      const expectation = expect(promise).rejects.toThrow('not-json')
+      await jest.advanceTimersByTimeAsync(2 * 60 * 1000)
+      await expectation
     })
   })
 })
