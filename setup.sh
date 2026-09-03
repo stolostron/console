@@ -188,3 +188,8 @@ echo OBSERVABILITY_ROUTE=$OBSERVABILITY_ROUTE >> ./backend/.env
 
 PROMETHEUS_ROUTE=https://$(oc get route prometheus-k8s -n openshift-monitoring -o="jsonpath={.status.ingress[0].host}")
 echo PROMETHEUS_ROUTE=$PROMETHEUS_ROUTE >> ./backend/.env
+
+if [[ ! -f ./backend/certs/tls.crt || ! -f ./backend/certs/tls.key ]]; then
+	echo "backend/certs missing; generating TLS certs (required for https://localhost:4000 in plugin mode)"
+	npm run generate-certs
+fi

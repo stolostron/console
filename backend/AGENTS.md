@@ -27,6 +27,9 @@ Public listener for the ACM/MCE console. During the Node-to-Go migration it owns
 | `internal/config` | `.env` + `config/` directory (filename = key) |
 | `internal/auth` | Cookie/Bearer, SA token/CA, TokenReview helper, OCM SSO client-credentials token |
 | `internal/oauth` | `/configure` discovery; standalone `/login` `/login/callback` `/logout` (OpenShift OAuth and OIDC) |
+| `internal/user` | `/authenticated`, `/username`, `/userpreference` (TokenReview and UserPreference CR) |
+| `internal/clusterinfo` | `/hub`, `/cluster-version`, `/hypershift-status`, MCH/MCE components, `/operatorCheck`, `/apiPaths` |
+| `internal/cors` | Development CORS middleware (OPTIONS preflight for standalone dev) |
 | `internal/events/rbac` | `GET /events/rbac` SSE: ClusterRole informer (`vm-clusterroles` label) + per-user SSAR |
 | `internal/static` | Plugin and SPA files: cache headers, CSP, brotli/gzip negotiation |
 | `internal/log` | slog JSON helper |
@@ -60,6 +63,9 @@ Go backend :4000 (TLS / HTTP/2)
         │    (also /multicloud/…)
         ├─ GET /configure (OAuth/OIDC token_endpoint discovery)
         ├─ GET /login, /login/callback, /logout (standalone OAuth/OIDC; non-production)
+        ├─ GET /authenticated, /username, /userpreference (user auth and preferences)
+        ├─ GET /hub, /cluster-version, /hypershift-status, /multiclusterhub/components,
+        │    /multiclusterengine/components, GET /apiPaths, POST /operatorCheck
         ├─ ALL /managedclusterproxy/* → cluster-proxy addon (user token; WebSocket)
         ├─ GET /prometheus/*, /observability/* → metrics backends (user token)
         ├─ /virtualmachines/*, /virtualmachineinstances/*, /virtualmachinesnapshots/*,

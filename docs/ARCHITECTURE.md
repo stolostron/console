@@ -41,4 +41,6 @@ All REST calls use the token passed from the console frontend.
 
 Standalone login (`GET /login`, `/login/callback`, `/logout`) is served by the Go listener in non-production. `GET /configure` returns `{ token_endpoint }` from OAuth/OIDC discovery for frontend logout and the Display Token page. The cookie `acm-access-token-cookie` (HttpOnly, Path=/, Secure in production) holds the OpenShift access token or OIDC id_token. Production plugin mode continues to use OpenShift Console authentication.
 
+Auth check, username, user preferences, and cluster-info routes (`/authenticated`, `/username`, `/userpreference`, `/hub`, `/cluster-version`, `/hypershift-status`, `/multiclusterhub/components`, `/multiclusterengine/components`, `/operatorCheck`, `/apiPaths`) are served by the Go listener using client-go with the service-account token for hub reads and per-user GET `/api` validation for auth gating.
+
 Static plugin assets (`plugin-manifest.json`, `plugin-entry.js`, hashed JS/CSS, locales) are served by the Go listener with the same cache headers, CSP, and brotli/gzip content negotiation as the former Node `serve` route.

@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import Router from 'find-my-way'
 import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
-import { authenticated } from './lib/authenticated'
 import { loadSettings } from './lib/config'
 import { stopFileWatches } from './lib/fileWatch'
 import { cors } from './lib/cors'
@@ -13,24 +12,15 @@ import { startServer, stopServer } from './lib/server'
 import { ServerSideEvents } from './lib/server-side-events'
 import { aggregate, startAggregating, stopAggregating } from './routes/aggregator'
 import { ansibleTower } from './routes/ansibletower'
-import { apiPaths } from './routes/apiPaths'
 import { events, startWatching, stopWatching } from './routes/events'
-import { hub } from './routes/hub'
 import { liveness } from './routes/liveness'
-import { multiClusterHubComponents } from './routes/multiClusterHubComponents'
-import { operatorCheck } from './routes/operatorCheck'
 import { readiness } from './routes/readiness'
 import { search } from './routes/search'
 import { placementDebug } from './routes/placementDebug'
 import { upgradeRiskPredictions } from './routes/upgrade-risks-prediction'
-import { username } from './routes/username'
-import { userpreference } from './routes/userpreference'
-import { hypershiftStatus } from './routes/hypershift-status'
-import { clusterVersion } from './routes/clusterVersion'
 import { watchTLSSecurityProfile } from './lib/tlsProfileWatch'
 import { watchPlacementDebugCA } from './lib/placementDebugCAWatch'
 import { invalidatePlacementDebugAgent } from './lib/agent'
-import { multiClusterEngineComponents } from './routes/multiClusterEngineComponents'
 import {
   getAwsAccountIds,
   getAwsBillingAccountIds,
@@ -55,24 +45,14 @@ export const router = Router<Router.HTTPVersion.V2>({ maxParamLength: 500 })
 router.get('/readinessProbe', readiness)
 router.get('/livenessProbe', liveness)
 router.get('/ping', respondOK)
-router.get('/apiPaths', apiPaths)
-router.post('/operatorCheck', operatorCheck)
 if (eventsEnabled) {
   router.get('/events', events)
 }
 router.post('/proxy/search', search)
 router.post('/placement-debug', placementDebug)
-router.get('/authenticated', authenticated)
 router.post('/ansibletower', ansibleTower)
-router.get('/username', username)
-router.all('/userpreference', userpreference)
-router.get('/hub', hub)
-router.get('/hypershift-status', hypershiftStatus)
-router.get('/cluster-version', clusterVersion)
 router.post('/upgrade-risks-prediction', upgradeRiskPredictions)
 router.post('/aggregate/*', aggregate)
-router.get('/multiclusterhub/components', multiClusterHubComponents)
-router.get('/multiclusterengine/components', multiClusterEngineComponents)
 
 // rosa wizard routes
 router.post('/aws-account-ids', getAwsAccountIds)

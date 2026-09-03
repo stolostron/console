@@ -584,7 +584,7 @@ func TestUnmigratedRoutesStillProxied(t *testing.T) {
 	ts := httptest.NewServer(h)
 	defer ts.Close()
 
-	for _, path := range []string{"/hub", "/multicloud/search", "/apiPaths", "/multicloud/apiPaths"} {
+	for _, path := range []string{"/multicloud/proxy/search", "/multicloud/events"} {
 		resp, getErr := ts.Client().Get(ts.URL + path)
 		if getErr != nil {
 			t.Fatal(getErr)
@@ -592,6 +592,63 @@ func TestUnmigratedRoutesStillProxied(t *testing.T) {
 		resp.Body.Close()
 		if capturedPath != path {
 			t.Fatalf("%s sidecar path %q", path, capturedPath)
+		}
+	}
+}
+
+func TestMigratedUserAndClusterInfoNotProxied(t *testing.T) {
+	var sidecarHit bool
+	sidecar := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sidecarHit = true
+		w.WriteHeader(http.StatusTeapot)
+	}))
+	defer sidecar.Close()
+
+	userH := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"route":"user"}`))
+	})
+	clusterH := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"route":"cluster"}`))
+	})
+
+	cfg := &config.Config{NodeBackendURL: sidecar.URL, CertsDir: t.TempDir()}
+	h, err := server.Handler(cfg, server.WithUser(userH), server.WithClusterInfo(clusterH))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ts := httptest.NewServer(h)
+	defer ts.Close()
+
+	for _, path := range []string{
+		"/hub",
+		"/multicloud/hub",
+		"/username",
+		"/multicloud/authenticated",
+		"/apiPaths",
+		"/multicloud/operatorCheck",
+	} {
+		sidecarHit = false
+		method := http.MethodGet
+		if path == "/multicloud/operatorCheck" {
+			method = http.MethodPost
+		}
+		req, _ := http.NewRequest(method, ts.URL+path, strings.NewReader(`{"operator":"advanced-cluster-management"}`))
+		if method == http.MethodPost {
+			req.Header.Set("Content-Type", "application/json")
+		}
+		resp, getErr := ts.Client().Do(req)
+		if getErr != nil {
+			t.Fatal(getErr)
+		}
+		body, _ := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if sidecarHit {
+			t.Fatalf("%s was proxied to sidecar", path)
+		}
+		if resp.StatusCode != http.StatusOK {
+			t.Fatalf("%s status %d body %s", path, resp.StatusCode, body)
 		}
 	}
 }

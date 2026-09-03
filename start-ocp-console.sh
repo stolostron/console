@@ -4,6 +4,7 @@ set -euo pipefail
 
 source ./port-defaults.sh
 source ./oauth-client-name.sh
+./scripts/check-hub-alignment.sh
 source ./backend/.env
 
 CONSOLE_VERSION=${CONSOLE_VERSION:=5.0}

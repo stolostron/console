@@ -115,9 +115,15 @@ func TokenFromRequest(r *http.Request) string {
 	return ""
 }
 
+// TokenReviewResult is the outcome of a TokenReview API call.
+type TokenReviewResult struct {
+	Authenticated bool
+	Username      string
+}
+
 // TokenReviewer validates a bearer token against the hub API.
 type TokenReviewer interface {
-	Review(ctx context.Context, token string) (bool, error)
+	Review(ctx context.Context, token string) (TokenReviewResult, error)
 }
 
 type kubeReviewer struct {
@@ -150,30 +156,39 @@ func UserRESTConfig(base *rest.Config, userToken string) *rest.Config {
 	return c
 }
 
-// ValidateUserToken checks the token the same way the Node sidecar does: GET /api.
-// TokenReview is not used here because console-mce can create TokenReviews for some
-// identities that still fail Review, while GET /api matches /events auth.
-func ValidateUserToken(ctx context.Context, base *rest.Config, token string) error {
+// ValidateUserTokenStatus probes GET /api with the user token and returns the HTTP status.
+func ValidateUserTokenStatus(ctx context.Context, base *rest.Config, token string) (int, error) {
 	if base == nil {
-		return errors.New("rest config is required")
+		return 0, errors.New("rest config is required")
 	}
 	cfg := UserRESTConfig(base, token)
 	httpClient, err := rest.HTTPClientFor(cfg)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	host := strings.TrimRight(cfg.Host, "/")
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, host+"/api", nil)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	defer func() { _, _ = io.Copy(io.Discard, resp.Body); _ = resp.Body.Close() }()
-	if resp.StatusCode != http.StatusOK {
-		return &StatusError{Status: resp.StatusCode}
+	return resp.StatusCode, nil
+}
+
+// ValidateUserToken checks the token the same way the Node sidecar does: GET /api.
+// TokenReview is not used here because console-mce can create TokenReviews for some
+// identities that still fail Review, while GET /api matches /events auth.
+func ValidateUserToken(ctx context.Context, base *rest.Config, token string) error {
+	status, err := ValidateUserTokenStatus(ctx, base, token)
+	if err != nil {
+		return err
+	}
+	if status != http.StatusOK {
+		return &StatusError{Status: status}
 	}
 	return nil
 }
@@ -219,12 +234,16 @@ func NewTokenReviewer(cfg *config.Config, sa ServiceAccount) (TokenReviewer, err
 	return &kubeReviewer{client: client}, nil
 }
 
-func (k *kubeReviewer) Review(ctx context.Context, token string) (bool, error) {
+func (k *kubeReviewer) Review(ctx context.Context, token string) (TokenReviewResult, error) {
 	tr, err := k.client.AuthenticationV1().TokenReviews().Create(ctx, &authv1.TokenReview{
 		Spec: authv1.TokenReviewSpec{Token: token},
 	}, metav1.CreateOptions{})
 	if err != nil {
-		return false, err
+		return TokenReviewResult{}, err
 	}
-	return tr.Status.Authenticated, nil
+	username := tr.Status.User.Username
+	return TokenReviewResult{
+		Authenticated: tr.Status.Authenticated,
+		Username:      username,
+	}, nil
 }

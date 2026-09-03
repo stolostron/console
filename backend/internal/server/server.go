@@ -38,6 +38,8 @@ type handlerOptions struct {
 	observability http.Handler
 	vmProxy       http.Handler
 	staticH       http.Handler
+	user          http.Handler
+	clusterInfo   http.Handler
 }
 
 // Option configures Handler.
@@ -103,6 +105,20 @@ func WithVMProxy(h http.Handler) Option {
 func WithStatic(h http.Handler) Option {
 	return func(o *handlerOptions) {
 		o.staticH = h
+	}
+}
+
+// WithUser registers /authenticated, /username, and /userpreference.
+func WithUser(h http.Handler) Option {
+	return func(o *handlerOptions) {
+		o.user = h
+	}
+}
+
+// WithClusterInfo registers hub, cluster-version, hypershift, MCH/MCE components, operatorCheck, and apiPaths.
+func WithClusterInfo(h http.Handler) Option {
+	return func(o *handlerOptions) {
+		o.clusterInfo = h
 	}
 }
 
@@ -242,6 +258,8 @@ func Handler(cfg *config.Config, opts ...Option) (http.Handler, error) {
 		registerOAuth(r, multicloudPrefix, o.oauth, o.oauthLogin)
 	}
 	registerStatelessProxies(r, o)
+	registerUserRoutes(r, o)
+	registerClusterInfoRoutes(r, o)
 	r.NotFound(notFoundHandler(o.staticH, sidecar))
 	r.MethodNotAllowed(sidecar.ServeHTTP)
 	return r, nil
@@ -256,6 +274,39 @@ func registerOAuth(r chi.Router, prefix string, h *oauth.Handler, login bool) {
 	r.Get(prefix+"/login/callback", h.Callback)
 	r.Get(prefix+"/logout", h.Logout)
 	r.Get(prefix+"/logout/", h.Logout)
+}
+
+func stripPathHandler(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r2 := r.Clone(r.Context())
+		r2.URL.Path = StripMulticloud(r.URL.Path)
+		h.ServeHTTP(w, r2)
+	})
+}
+
+func registerUserRoutes(r chi.Router, o *handlerOptions) {
+	if o.user == nil {
+		return
+	}
+	h := stripPathHandler(o.user)
+	registerAliasedGet(r, h, "/authenticated", "/username")
+	registerAliased(r, h, "/userpreference")
+}
+
+func registerClusterInfoRoutes(r chi.Router, o *handlerOptions) {
+	if o.clusterInfo == nil {
+		return
+	}
+	h := stripPathHandler(o.clusterInfo)
+	registerAliasedGet(r, h,
+		"/hub",
+		"/cluster-version",
+		"/hypershift-status",
+		"/multiclusterhub/components",
+		"/multiclusterengine/components",
+		"/apiPaths",
+	)
+	registerAliased(r, h, "/operatorCheck")
 }
 
 func notFoundHandler(staticH, sidecar http.Handler) http.HandlerFunc {
