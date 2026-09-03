@@ -46,6 +46,8 @@ router.get('/readinessProbe', readiness)
 router.get('/livenessProbe', liveness)
 router.get('/ping', respondOK)
 if (eventsEnabled) {
+  // Public GET /events is served by the Go listener when CONSOLE_INFORMER_CACHE is on (ACM-42598).
+  // This sidecar route remains for dual-run, aggregators, and when the Go cache is disabled.
   router.get('/events', events)
 }
 router.post('/proxy/search', search)

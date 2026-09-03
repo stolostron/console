@@ -129,7 +129,14 @@ func (c *InformerCache) runSpec(ctx context.Context, dyn dynamic.Interface, mapp
 		c.mu.Lock()
 		st.gvr = gvr
 		st.informer = inf
+		sink := c.sink
 		c.mu.Unlock()
+
+		if sink != nil && st.spec.ShouldForward() {
+			if _, err := inf.AddEventHandler(resourceHandler{spec: st.spec, gvr: gvr, sink: sink}); err != nil {
+				applog.Logger().Warn("informer event handler", "kind", st.spec.Kind, "error", err)
+			}
+		}
 
 		go inf.Run(ctx.Done())
 

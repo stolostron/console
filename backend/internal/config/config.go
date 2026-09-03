@@ -44,6 +44,7 @@ type Config struct {
 
 	mu       sync.RWMutex
 	settings map[string]string
+	hooks    []func()
 }
 
 func envOr(key, fallback string) string {
@@ -161,7 +162,24 @@ func (c *Config) ReloadSettings() error {
 		c.LogLevel = lvl
 		applog.SetLevel(lvl)
 	}
+
+	c.mu.RLock()
+	hooks := append([]func(){}, c.hooks...)
+	c.mu.RUnlock()
+	for _, fn := range hooks {
+		fn()
+	}
 	return nil
+}
+
+// OnReload registers fn to run after each successful ReloadSettings (config file watch).
+func (c *Config) OnReload(fn func()) {
+	if c == nil || fn == nil {
+		return
+	}
+	c.mu.Lock()
+	c.hooks = append(c.hooks, fn)
+	c.mu.Unlock()
 }
 
 // Watch reloads settings when files under ConfigDir change. Call cancel to stop.

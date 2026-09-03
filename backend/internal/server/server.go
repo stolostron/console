@@ -40,11 +40,19 @@ type handlerOptions struct {
 	staticH       http.Handler
 	user          http.Handler
 	clusterInfo   http.Handler
+	events        http.Handler
 	debugSnapshot http.Handler
 }
 
 // Option configures Handler.
 type Option func(*handlerOptions)
+
+// WithEvents registers GET /events (and /multicloud/events).
+func WithEvents(h http.Handler) Option {
+	return func(o *handlerOptions) {
+		o.events = h
+	}
+}
 
 // WithRBACEvents registers GET /events/rbac (and /multicloud/events/rbac).
 func WithRBACEvents(h http.Handler) Option {
@@ -258,6 +266,10 @@ func Handler(cfg *config.Config, opts ...Option) (http.Handler, error) {
 		r.Get("/events/rbac", o.rbacEvents.ServeHTTP)
 		r.Get(multicloudPrefix+"/events/rbac", o.rbacEvents.ServeHTTP)
 	}
+	if o.events != nil {
+		r.Get("/events", o.events.ServeHTTP)
+		r.Get(multicloudPrefix+"/events", o.events.ServeHTTP)
+	}
 	if o.k8sProxy != nil {
 		registerK8sProxyRoutes(r, o.k8sProxy)
 	}
@@ -275,29 +287,6 @@ func Handler(cfg *config.Config, opts ...Option) (http.Handler, error) {
 	r.NotFound(notFoundHandler(o.staticH, sidecar))
 	r.MethodNotAllowed(sidecar.ServeHTTP)
 	return r, nil
-}
-
-func registerUserRoutes(r chi.Router, o *handlerOptions) {
-	if o.user == nil {
-		return
-	}
-	registerAliasedGet(r, o.user, "/authenticated", "/username", "/userpreference")
-}
-
-func registerClusterInfoRoutes(r chi.Router, o *handlerOptions) {
-	if o.clusterInfo == nil {
-		return
-	}
-	registerAliasedGet(r, o.clusterInfo,
-		"/hub",
-		"/cluster-version",
-		"/hypershift-status",
-		"/multiclusterhub/components",
-		"/multiclusterengine/components",
-		"/apiPaths",
-	)
-	r.Post("/operatorCheck", o.clusterInfo.ServeHTTP)
-	r.Post(multicloudPrefix+"/operatorCheck", o.clusterInfo.ServeHTTP)
 }
 
 func registerOAuth(r chi.Router, prefix string, h *oauth.Handler, login bool) {

@@ -1,7 +1,8 @@
 // Copyright Contributors to the Open Cluster Management project
 
 // Package informers watches hub resources with client-go (ACM-42597).
-// GET /events remains on the Node sidecar until ACM-42598.
+// GET /events SSE is served by internal/events/hub (ACM-42598). Node startWatching()
+// still runs for aggregators until those routes migrate.
 package informers
 
 import (
@@ -62,6 +63,11 @@ func (s WatchSpec) polled() WatchSpec {
 func (s WatchSpec) cacheOnly() WatchSpec {
 	s.ForwardEventsToClients = false
 	return s
+}
+
+// ShouldForward is true when watch events should be fanned out to GET /events clients.
+func (s WatchSpec) ShouldForward() bool {
+	return s.ForwardEventsToClients && !s.Polled
 }
 
 func pairsToMap(pairs []string) map[string]string {

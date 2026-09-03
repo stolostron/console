@@ -50,6 +50,22 @@ func TestReloadSettings_PromotesKeys(t *testing.T) {
 	}
 }
 
+func TestOnReload_RunsAfterReloadSettings(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "flag"), []byte("on"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	cfg := &config.Config{ConfigDir: dir}
+	var n int
+	cfg.OnReload(func() { n++ })
+	if err := cfg.ReloadSettings(); err != nil {
+		t.Fatal(err)
+	}
+	if n != 1 {
+		t.Fatalf("hooks=%d", n)
+	}
+}
+
 func TestLoad_FromEnvFile(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, ".env")

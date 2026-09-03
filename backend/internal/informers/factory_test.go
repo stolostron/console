@@ -182,6 +182,59 @@ func TestAuthenticationInCacheAndSnapshot(t *testing.T) {
 	if len(snap) != 1 || snap[0].Kind != "Authentication" || snap[0].Name != "cluster" {
 		t.Fatalf("snapshot %+v", snap)
 	}
+	if n := len(c.ListForwarded()); n != 0 {
+		t.Fatalf("cacheOnly must not appear in ListForwarded, got %d", n)
+	}
+}
+
+func TestSinkReceivesModifiedAndSkipsCacheOnly(t *testing.T) {
+	scheme := runtime.NewScheme()
+	nsGVR := schema.GroupVersionResource{Version: "v1", Resource: "namespaces"}
+	authGVR := schema.GroupVersionResource{Group: "config.openshift.io", Version: "v1", Resource: "authentications"}
+	listKinds := map[schema.GroupVersionResource]string{
+		nsGVR:   "NamespaceList",
+		authGVR: "AuthenticationList",
+	}
+	ns := uObj("v1", "Namespace", "", "default", "uid-ns", map[string]any{"resourceVersion": "1"})
+	authn := uObj("config.openshift.io/v1", "Authentication", "", "cluster", "uid-auth", nil)
+	client := fake.NewSimpleDynamicClientWithCustomListKinds(scheme, listKinds, ns, authn)
+	mapper := staticMapper{lists: map[string]*metav1.APIResourceList{
+		"v1": {GroupVersion: "v1", APIResources: []metav1.APIResource{
+			{Name: "namespaces", Kind: "Namespace", Verbs: []string{"list", "watch"}},
+		}},
+		"config.openshift.io/v1": {GroupVersion: "config.openshift.io/v1", APIResources: []metav1.APIResource{
+			{Name: "authentications", Kind: "Authentication", Verbs: []string{"list", "watch"}},
+		}},
+	}}
+	sink := &collectSink{}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	c := New([]WatchSpec{
+		watch("Namespace", "v1"),
+		watch("Authentication", "config.openshift.io/v1").cacheOnly(),
+	})
+	c.SetSink(sink)
+	StartCache(ctx, c, client, mapper)
+	waitSynced(t, c)
+
+	deadline := time.Now().Add(2 * time.Second)
+	for time.Now().Before(deadline) {
+		if len(sink.types()) >= 1 {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	for _, ev := range sink.ev {
+		if ev.Object.GetKind() == "Authentication" {
+			t.Fatal("cacheOnly Authentication must not be forwarded")
+		}
+		if ev.Type != EventModified {
+			t.Fatalf("initial list should be MODIFIED, got %s", ev.Type)
+		}
+	}
+	if len(sink.types()) == 0 {
+		t.Fatal("expected Namespace MODIFIED from initial list")
+	}
 }
 
 func TestManagedFieldsStrippedExceptPolicy(t *testing.T) {

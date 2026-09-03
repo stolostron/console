@@ -406,7 +406,7 @@ func (h *Handler) operatorCheck(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var req operatorCheckRequest
-	if err := json.Unmarshal(body, &req); err != nil || !isSupportedOperator(req.Operator) {
+	if err = json.Unmarshal(body, &req); err != nil || !isSupportedOperator(req.Operator) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}

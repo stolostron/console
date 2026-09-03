@@ -49,21 +49,32 @@ func TestDefaultWatchSpecsMatchEventsTS(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	tsKeys := parseEventsSpecKeys(t, src)
-	if len(tsKeys) != 67 {
-		t.Fatalf("events.ts keys=%d", len(tsKeys))
+	tsSpecs := parseEventsTSSpecs(t, src)
+	if len(tsSpecs) != 67 {
+		t.Fatalf("events.ts keys=%d", len(tsSpecs))
 	}
 	got := map[string]WatchSpec{}
 	for _, s := range DefaultWatchSpecs() {
 		got[s.SpecKey()] = s
 	}
-	for k := range tsKeys {
-		if _, ok := got[k]; !ok {
+	for k, ts := range tsSpecs {
+		goSpec, ok := got[k]
+		if !ok {
 			t.Errorf("missing spec %s", k)
+			continue
+		}
+		if goSpec.Polled != ts.Polled {
+			t.Errorf("%s polled go=%v ts=%v", k, goSpec.Polled, ts.Polled)
+		}
+		if goSpec.ForwardEventsToClients != ts.ForwardEventsToClients {
+			t.Errorf("%s forwardEventsToClients go=%v ts=%v", k, goSpec.ForwardEventsToClients, ts.ForwardEventsToClients)
+		}
+		if goSpec.ShouldForward() != ts.ShouldForward() {
+			t.Errorf("%s shouldForward go=%v ts=%v", k, goSpec.ShouldForward(), ts.ShouldForward())
 		}
 	}
 	for k, s := range got {
-		if _, ok := tsKeys[k]; !ok {
+		if _, ok := tsSpecs[k]; !ok {
 			t.Errorf("extra spec %s (%s %s)", k, s.APIVersion, s.Kind)
 		}
 	}
@@ -98,6 +109,43 @@ func TestWatchSpecDefaultForwardsEvents(t *testing.T) {
 	}
 }
 
+func TestShouldForward(t *testing.T) {
+	cases := []struct {
+		name string
+		spec WatchSpec
+		want bool
+	}{
+		{"default", watch("Namespace", "v1"), true},
+		{"cacheOnly", watch("Authentication", "config.openshift.io/v1").cacheOnly(), false},
+		{"polled", watch("Application", "argoproj.io/v1alpha1").polled(), false},
+		{"polledAndCacheOnly", watch("Secret", "v1").polled().cacheOnly(), false},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := tc.spec.ShouldForward(); got != tc.want {
+				t.Fatalf("ShouldForward()=%v want %v", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestDefaultWatchSpecsShouldForwardCount(t *testing.T) {
+	var forward, skip int
+	for _, s := range DefaultWatchSpecs() {
+		if s.ShouldForward() {
+			forward++
+		} else {
+			skip++
+		}
+	}
+	if forward != 64 {
+		t.Fatalf("forward=%d want 64", forward)
+	}
+	if skip != 3 {
+		t.Fatalf("skip=%d want 3 (2 polled + 1 cacheOnly)", skip)
+	}
+}
+
 func TestSelectorQueryEmpty(t *testing.T) {
 	if SelectorQuery(nil) != "" {
 		t.Fatal("expected empty")
@@ -117,7 +165,7 @@ var (
 	selectorRE   = regexp.MustCompile(`'([^']+)':\s*'([^']*)'`)
 )
 
-func parseEventsSpecKeys(t *testing.T, src []byte) map[string]struct{} {
+func parseEventsTSSpecs(t *testing.T, src []byte) map[string]WatchSpec {
 	t.Helper()
 	s := string(src)
 	marker := "const definitions: IWatchOptions[] = ["
@@ -136,7 +184,7 @@ func parseEventsSpecKeys(t *testing.T, src []byte) map[string]struct{} {
 		lines = append(lines, line)
 	}
 	body = strings.Join(lines, "\n")
-	keys := map[string]struct{}{}
+	specs := map[string]WatchSpec{}
 	depth, objStart, inQ := 0, -1, false
 	for i := 0; i < len(body); i++ {
 		c := body[i]
@@ -156,24 +204,36 @@ func parseEventsSpecKeys(t *testing.T, src []byte) map[string]struct{} {
 		case '}':
 			depth--
 			if depth == 0 && objStart >= 0 {
-				obj := body[objStart : i+1]
-				km := kindRE.FindStringSubmatch(obj)
-				am := apiVersionRE.FindStringSubmatch(obj)
-				labels := map[string]string{}
-				fields := map[string]string{}
-				if j := strings.Index(obj, "labelSelector:"); j >= 0 {
-					labels = parseSel(obj[j:])
-				}
-				if j := strings.Index(obj, "fieldSelector:"); j >= 0 {
-					fields = parseSel(obj[j:])
-				}
-				key := am[1] + "|" + km[1] + "|" + SelectorQuery(labels) + "|" + SelectorQuery(fields)
-				keys[key] = struct{}{}
+				spec := parseTSWatchSpec(body[objStart : i+1])
+				specs[spec.SpecKey()] = spec
 				objStart = -1
 			}
 		}
 	}
-	return keys
+	return specs
+}
+
+func parseTSWatchSpec(obj string) WatchSpec {
+	km := kindRE.FindStringSubmatch(obj)
+	am := apiVersionRE.FindStringSubmatch(obj)
+	spec := WatchSpec{
+		Kind:                   km[1],
+		APIVersion:             am[1],
+		ForwardEventsToClients: true,
+	}
+	if strings.Contains(obj, "isPolled: true") {
+		spec.Polled = true
+	}
+	if strings.Contains(obj, "forwardEventsToClients: false") {
+		spec.ForwardEventsToClients = false
+	}
+	if j := strings.Index(obj, "labelSelector:"); j >= 0 {
+		spec.LabelSelector = parseSel(obj[j:])
+	}
+	if j := strings.Index(obj, "fieldSelector:"); j >= 0 {
+		spec.FieldSelector = parseSel(obj[j:])
+	}
+	return spec
 }
 
 func parseSel(s string) map[string]string {

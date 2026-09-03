@@ -1,9 +1,10 @@
 # To add a new resource
 
-1. Add a watch to `/backend-node/src/routes/events.ts` for the resource.
-2. Add a resource definition in `/fronend/src/resources`.
-3. Add recoil setup for the resource in `/frontend/src/atoms.tsx`.
-4. In `frontend` use the resources by
+1. Add a watch to `/backend-node/src/routes/events.ts` for the resource (still required for Node aggregators / `getKubeResources`).
+2. Add the same watch to `/backend/internal/informers/specs.go` `DefaultWatchSpecs()` so Go `GET /events` and the informer cache include it.
+3. Add a resource definition in `/frontend/src/resources`.
+4. Add recoil setup for the resource in `/frontend/src/atoms.tsx`.
+5. In `frontend` use the resources by
 
     ```
     const namespaces = useRecoilValue(namespacesState)

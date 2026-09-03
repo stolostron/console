@@ -20,6 +20,7 @@ import (
 	"github.com/stolostron/console/backend/internal/clusterinfo"
 	"github.com/stolostron/console/backend/internal/clusterproxy"
 	"github.com/stolostron/console/backend/internal/config"
+	eventshub "github.com/stolostron/console/backend/internal/events/hub"
 	rbacevents "github.com/stolostron/console/backend/internal/events/rbac"
 	"github.com/stolostron/console/backend/internal/informers"
 	"github.com/stolostron/console/backend/internal/k8sproxy"
@@ -88,7 +89,7 @@ func run() error {
 	rbacHandler := rbacevents.NewHandler(store, rbacevents.NewAPIAuth(restCfg), rbacevents.NewSSARAccess(restCfg))
 
 	infCfg := informers.RESTConfig(restCfg)
-	dyn, err := dynamic.NewForConfig(infCfg)
+	infDyn, err := dynamic.NewForConfig(infCfg)
 	if err != nil {
 		return err
 	}
@@ -98,6 +99,14 @@ func run() error {
 	}
 	mapper := discocache.NewMemCacheClient(disco)
 	infCache := informers.New(informers.DefaultWatchSpecs())
+	eventHub := eventshub.New(infCache, cfg.Settings)
+	ssar := eventshub.NewSSARAccess(restCfg)
+	ssar.StartCleanup(ctx)
+	eventsHandler := eventshub.NewHandler(eventHub, eventshub.NewAPIAuth(restCfg), ssar)
+	if cfg.InformerCache {
+		infCache.SetSink(eventHub)
+		cfg.OnReload(eventHub.PublishSettings)
+	}
 
 	oauthH := oauth.New(oauth.Options{
 		ClientID:      cfg.OAuth2ClientID,
@@ -112,6 +121,9 @@ func run() error {
 	})
 	var opts []server.Option
 	opts = append(opts, server.WithRBACEvents(rbacHandler), server.WithOAuth(oauthH))
+	if cfg.InformerCache {
+		opts = append(opts, server.WithEvents(eventsHandler))
+	}
 	if !cfg.Production {
 		opts = append(opts, server.WithOAuthLogin(), server.WithDebugSnapshot(informers.NewSnapshotHandler(infCache, restCfg)))
 	}
@@ -187,7 +199,7 @@ func run() error {
 			applog.Logger().Info("informer cache disabled", "CONSOLE_INFORMER_CACHE", os.Getenv("CONSOLE_INFORMER_CACHE"))
 			return
 		}
-		informers.StartCache(ctx, infCache, dyn, mapper)
+		informers.StartCache(ctx, infCache, infDyn, mapper)
 	})
 }
 

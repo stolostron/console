@@ -203,6 +203,76 @@ func TestRBACEventsNotProxied(t *testing.T) {
 	}
 }
 
+func TestEventsNotProxied(t *testing.T) {
+	var proxied bool
+	sidecar := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		proxied = true
+		w.WriteHeader(http.StatusTeapot)
+	}))
+	defer sidecar.Close()
+
+	events := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("id:1\ndata:{\"type\":\"START\"}\n\n"))
+	})
+	cfg := &config.Config{NodeBackendURL: sidecar.URL, CertsDir: t.TempDir()}
+	h, err := server.Handler(cfg, server.WithEvents(events))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ts := httptest.NewServer(h)
+	defer ts.Close()
+
+	for _, path := range []string{"/events", "/multicloud/events"} {
+		proxied = false
+		resp, getErr := ts.Client().Get(ts.URL + path)
+		if getErr != nil {
+			t.Fatal(getErr)
+		}
+		body, _ := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if proxied {
+			t.Fatalf("%s was proxied to sidecar", path)
+		}
+		if resp.StatusCode != http.StatusOK {
+			t.Fatalf("%s status %d", path, resp.StatusCode)
+		}
+		if !strings.Contains(string(body), `"type":"START"`) {
+			t.Fatalf("%s body %s", path, body)
+		}
+	}
+}
+
+func TestEventsProxiedWithoutWithEvents(t *testing.T) {
+	var captured string
+	sidecar := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		captured = r.URL.Path
+		w.WriteHeader(http.StatusTeapot)
+	}))
+	defer sidecar.Close()
+
+	cfg := &config.Config{NodeBackendURL: sidecar.URL, CertsDir: t.TempDir()}
+	h, err := server.Handler(cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ts := httptest.NewServer(h)
+	defer ts.Close()
+
+	resp, err := ts.Client().Get(ts.URL + "/events")
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	if captured != "/events" {
+		t.Fatalf("sidecar path %q", captured)
+	}
+	if resp.StatusCode != http.StatusTeapot {
+		t.Fatalf("status %d", resp.StatusCode)
+	}
+}
+
 func TestOAuthNotProxiedToSidecar(t *testing.T) {
 	var sidecarPaths []string
 	sidecar := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

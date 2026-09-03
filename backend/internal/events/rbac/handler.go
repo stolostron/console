@@ -75,13 +75,13 @@ func NewHandler(store *Store, authn Authenticator, access AccessChecker) *Handle
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	token := auth.TokenFromRequest(r)
 	if token == "" {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 	ok, err := h.authn.Authenticate(r.Context(), token)
 	if err != nil || !ok {
 		applog.Logger().Warn("rbac events unauthorized", "error", err)
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
 

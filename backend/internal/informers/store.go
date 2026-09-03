@@ -38,6 +38,17 @@ type specRuntime struct {
 type InformerCache struct {
 	mu     sync.RWMutex
 	states []*specRuntime
+	sink   ResourceSink
+}
+
+// SetSink registers the SSE hub (or test collector). Call before StartCache.
+func (c *InformerCache) SetSink(s ResourceSink) {
+	if c == nil {
+		return
+	}
+	c.mu.Lock()
+	c.sink = s
+	c.mu.Unlock()
 }
 
 func newCache(specs []WatchSpec) *InformerCache {
@@ -138,6 +149,47 @@ func (c *InformerCache) ListByKind(apiVersion, kind string) []unstructured.Unstr
 			}
 			seen[key] = struct{}{}
 			out = append(out, *u.DeepCopy())
+		}
+	}
+	return out
+}
+
+// ForwardedObject is a cache entry that GET /events should include in snapshots.
+type ForwardedObject struct {
+	GVR    schema.GroupVersionResource
+	Object unstructured.Unstructured
+}
+
+// ListForwarded returns objects whose WatchSpec fans out to SSE clients.
+func (c *InformerCache) ListForwarded() []ForwardedObject {
+	if c == nil {
+		return nil
+	}
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	var out []ForwardedObject
+	seen := map[string]struct{}{}
+	for _, s := range c.states {
+		if s.informer == nil || !s.spec.ShouldForward() {
+			continue
+		}
+		for _, obj := range s.informer.GetStore().List() {
+			u, ok := asUnstructured(obj)
+			if !ok {
+				continue
+			}
+			key := string(u.GetUID())
+			if key == "" {
+				key = u.GetNamespace() + "/" + u.GetName()
+			}
+			if _, dup := seen[key]; dup {
+				continue
+			}
+			seen[key] = struct{}{}
+			cp := u.DeepCopy()
+			cp.SetAPIVersion(s.spec.APIVersion)
+			cp.SetKind(s.spec.Kind)
+			out = append(out, ForwardedObject{GVR: s.gvr, Object: *cp})
 		}
 	}
 	return out

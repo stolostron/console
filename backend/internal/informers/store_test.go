@@ -117,6 +117,33 @@ func TestListByKindFiltersSpec(t *testing.T) {
 	}
 }
 
+func TestListForwardedSkipsCacheOnlyAndPolled(t *testing.T) {
+	c := newCache([]WatchSpec{
+		watch("Namespace", "v1"),
+		watch("Authentication", "config.openshift.io/v1").cacheOnly(),
+		watch("Application", "argoproj.io/v1alpha1").polled(),
+	})
+	c.states[0].gvr = schema.GroupVersionResource{Version: "v1", Resource: "namespaces"}
+	c.states[0].informer = newTestInformer(t, uObj("v1", "Namespace", "", "default", "uid-ns", nil))
+	c.states[1].gvr = schema.GroupVersionResource{Group: "config.openshift.io", Version: "v1", Resource: "authentications"}
+	c.states[1].informer = newTestInformer(t, uObj("config.openshift.io/v1", "Authentication", "", "cluster", "uid-auth", nil))
+	c.states[2].gvr = schema.GroupVersionResource{Group: "argoproj.io", Version: "v1alpha1", Resource: "applications"}
+	c.states[2].informer = newTestInformer(t, uObj("argoproj.io/v1alpha1", "Application", "ns", "app", "uid-app", nil))
+
+	got := c.ListForwarded()
+	if len(got) != 1 || got[0].Object.GetKind() != "Namespace" || got[0].Object.GetName() != "default" {
+		t.Fatalf("%+v", got)
+	}
+}
+
+func TestSetSinkNilCache(t *testing.T) {
+	var c *InformerCache
+	c.SetSink(nil)
+	if c.ListForwarded() != nil {
+		t.Fatal("nil cache ListForwarded")
+	}
+}
+
 func newTestInformer(t *testing.T, objs ...*unstructured.Unstructured) cache.SharedIndexInformer {
 	t.Helper()
 	lw := &cache.ListWatch{

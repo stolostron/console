@@ -84,6 +84,9 @@ func TestHandlerUnauthorized(t *testing.T) {
 	if rec.Code != http.StatusUnauthorized {
 		t.Fatalf("status %d", rec.Code)
 	}
+	if rec.Body.Len() != 0 {
+		t.Fatalf("body %q", rec.Body.String())
+	}
 
 	h = rbacevents.NewHandler(rbacevents.NewStore(), rbacevents.StaticAuth{OK: false}, rbacevents.AllowAllAccess{})
 	req := httptest.NewRequest(http.MethodGet, "/events/rbac", nil)
@@ -92,6 +95,9 @@ func TestHandlerUnauthorized(t *testing.T) {
 	h.ServeHTTP(rec, req)
 	if rec.Code != http.StatusUnauthorized {
 		t.Fatalf("status %d", rec.Code)
+	}
+	if rec.Body.Len() != 0 {
+		t.Fatalf("body %q", rec.Body.String())
 	}
 }
 
