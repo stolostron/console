@@ -1,0 +1,34 @@
+# golangci-lint configuration
+# https://golangci-lint.run/usage/configuration/
+run:
+  tests: true
+linters:
+  enable:
+    - copyloopvar
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - misspell
+    - revive
+    - staticcheck
+    - unused
+linters-settings:
+  copyloopvar:
+    check-alias: true
+  govet:
+    enable:
+      - shadow
+  misspell:
+    locale: US
+  revive:
+    rules:
+      - name: package-comments
+        disabled: true
+  gci:
+    sections:
+      - standard
+      - default
+      - prefix(github.com/stolostron/console/backend)
+      - blank
+      - dot

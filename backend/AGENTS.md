@@ -1,128 +1,99 @@
-# Backend
+# Backend (Go)
 
-Node.js ESM proxy server. Sits between the browser and the hub cluster API server, handling authentication, RBAC enforcement, resource watching, and API proxying.
+Public listener for the ACM/MCE console. During the Node-to-Go migration it owns TLS, health probes, config, and auth helpers, and reverse-proxies every unmigrated route to the Node sidecar in `../backend-node`.
 
 ## Key Technologies
 
-- **Runtime**: Node.js with native ESM (`"type": "module"`)
-- **Router**: `find-my-way` for HTTP/2 route matching
-- **Proxy**: `node:https` + `pipeline` for main API proxy; `http2-proxy` for managed cluster proxy
-- **Logging**: Pino with structured JSON output (use `pino-zen` for dev formatting)
-- **Metrics**: Prometheus metrics proxied via `metricsProxy` route
-- **HTTP Client**: `got` for outbound requests
-- **WebSocket**: upgrade handler routes to search (bidirectional relay via `ws` with token injection) and managed cluster proxy (via `http2-proxy`)
+- **Runtime**: Go 1.26+ (`net/http`; TLS enables HTTP/2 automatically)
+- **Router**: `chi` — probes and migrated routes registered natively; static GET assets; everything else is `NotFound` → reverse proxy
+- **Proxy**: `httputil.ReverseProxy` (HTTP/1.1 to the sidecar so WebSocket upgrades work; `FlushInterval: -1` for SSE)
+- **Logging**: `log/slog` JSON (`method`, `path`, `status`, `duration`)
+- **Config watch**: `fsnotify` on `config/` (1s debounce)
+- **Auth**: cookie `acm-access-token-cookie` then `Authorization: Bearer`; TokenReview is a library, not a global gate
 
 ## Source Layout
 
-| Directory | Purpose |
-|-----------|---------|
-| `src/lib/` | Core server: `main.ts` entry, `server.ts`, auth, cookies, CORS, proxy, search, SSE, logging, config |
-| `src/routes/` | HTTP route handlers: proxy, OAuth, search, events, hub, serve, metrics, managed cluster proxy, etc. |
-| `src/resources/` | Backend resource watchers and handlers |
-| `test/` | Jest test files |
-| `config/` | Runtime configuration |
-| `certs/` | TLS certificates (auto-generated on `npm install`) |
+| Path | Purpose |
+|------|---------|
+| `cmd/console` | Process entry: load config, require SA token, listen, SIGINT/SIGTERM |
+| `internal/server` | TLS listener, chi mux, `/multicloud` probe aliases |
+| `internal/proxy` | Reverse proxy to `NODE_BACKEND_URL` (original path, including `/multicloud`) |
+| `internal/k8sproxy` | Hub kube-apiserver passthrough for `/api`, `/apis`, `/version` (user Bearer token) |
+| `internal/clusterproxy` | cluster-proxy-addon-user URL discovery (MCE target namespace / env overrides) |
+| `internal/mcproxy` | Managed-cluster reverse proxy (`/managedclusterproxy/*`, including WebSocket) |
+| `internal/metricsproxy` | Prometheus and observability query reverse proxies |
+| `internal/vmproxy` | VirtualMachine GET helpers, actions, and resource-usage aggregation |
+| `internal/health` | `/ping`, `/livenessProbe` (Go only), `/readinessProbe` (Go + sidecar `/ping`) |
+| `internal/config` | `.env` + `config/` directory (filename = key) |
+| `internal/auth` | Cookie/Bearer, SA token/CA, TokenReview helper, OCM SSO client-credentials token |
+| `internal/oauth` | `/configure` discovery; standalone `/login` `/login/callback` `/logout` (OpenShift OAuth and OIDC) |
+| `internal/user` | `/authenticated`, `/username`, `/userpreference` (TokenReview and UserPreference CR) |
+| `internal/clusterinfo` | `/hub`, `/cluster-version`, `/hypershift-status`, MCH/MCE components, `/operatorCheck`, `/apiPaths` |
+| `internal/cors` | Development CORS middleware (OPTIONS preflight for standalone dev) |
+| `internal/events/rbac` | `GET /events/rbac` SSE: ClusterRole informer (`vm-clusterroles` label) + per-user SSAR |
+| `internal/events/hub` | `GET /events` SSE: informer fan-out, snapshot packets, per-user SSAR (60s TTL). DELETED is not RBAC-filtered (bug-compatible with Node). `CONSOLE_INFORMER_CACHE=0` proxies `/events` to Node |
+| `internal/informers` | Hub resource cache (~67 watch specs, dual-run with Node). Dev: `GET /debug/informer-snapshot` |
+| `internal/static` | Plugin and SPA files: cache headers, CSP, brotli/gzip negotiation |
+| `internal/log` | slog JSON helper |
+| `config/` | Runtime settings shared with the Node sidecar |
+| `certs/` | TLS material (`npm run setup` / `npm run ci:backend` create when missing; `npm run generate-certs` to force) |
 
 ## Commands
 
-Run from the `backend/` directory, or use the `npm run *:backend` variants from the repo root.
+From the repo root (preferred), or `cd backend`:
 
 | Command | Purpose |
 |---------|---------|
-| `npm start` | Start dev server with nodemon + inspector |
-| `npm test` | Run Jest tests |
-| `npm run lint` | ESLint check |
-| `npm run tsc` | TypeScript type check |
-| `npm run check` | Run lint + prettier + tsc together |
-| `npm run build` | Production build via tsc + rollup → `backend.mjs` |
-| `npm run clean` | Remove build artifacts |
-| `npm run generate-certs` | Regenerate TLS certificates |
+| `npm start` / `npm run plugins` | Go `:4000` in front of Node sidecar `:4001`. Air rebuilds and restarts Go when `cmd/` or `internal/` change |
+| `npm run test:backend` | `go test ./...` |
+| `npm run lint:backend` | `golangci-lint` (see `backend/.golangci.yml`) |
+| `npm run check:backend` | tests + golangci-lint |
+| `npm run build:backend` | `go build -o bin/console ./cmd/console` |
+| `npm run setup:hub` | `rm -rf backend/.env backend/certs && npm run setup && npm run ci:backend` after `oc login` to a new cluster |
 
 ## Architecture
 
 ```text
-Browser → Backend (HTTP/2 proxy) → Hub Cluster API Server
-                ↓
-          Watches resources via service account
-          Enforces RBAC via user token + SubjectAccessReview
-          Streams events to frontend via SSE
+Browser / OpenShift Console plugin
+        │
+        ▼
+Go backend :4000 (TLS / HTTP/2)
+        ├─ GET /livenessProbe, /readinessProbe, /ping
+        │    (also /multicloud/…)
+        ├─ GET /events (resource watch SSE + per-user SSAR; also /multicloud/events)
+        ├─ GET /events/rbac (ClusterRole watch; also /multicloud/events/rbac)
+        ├─ GET /debug/informer-snapshot (dev only; Go informer cache dump)
+        ├─ SA informers (~67 specs) feed GET /events; Node startWatching() still runs for aggregators
+        ├─ ALL /api, /apis, GET /version → hub kube-apiserver (user token)
+        │    (also /multicloud/…)
+        ├─ GET /configure (OAuth/OIDC token_endpoint discovery)
+        ├─ GET /login, /login/callback, /logout (standalone OAuth/OIDC; non-production)
+        ├─ GET /authenticated, /username, /userpreference (user auth and preferences)
+        ├─ GET /hub, /cluster-version, /hypershift-status, /multiclusterhub/components,
+        │    /multiclusterengine/components, GET /apiPaths, POST /operatorCheck
+        ├─ ALL /managedclusterproxy/* → cluster-proxy addon (user token; WebSocket)
+        ├─ GET /prometheus/*, /observability/* → metrics backends (user token)
+        ├─ /virtualmachines/*, /virtualmachineinstances/*, /virtualmachinesnapshots/*,
+        │    /virtualmachinerestores, GET /vmResourceUsage/* → managed cluster via addon
+        ├─ GET static assets (/plugin/*, hashed JS/CSS, locales, index.html)
+        └─ everything else (original URL) ──HTTP/1.1──► Node sidecar :4001
+                                                              │
+                                                              ▼
+                                                        Hub cluster API (unmigrated routes)
 ```
 
-## Route Handlers
+`/multicloud` is stripped only when matching Go-owned routes. The proxy forwards the original path so Node can keep stripping it.
 
-- Route handler signature: `(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void>`
-- Router uses `maxParamLength: 500` for long Kubernetes resource names
-- URL rewriting: `/multicloud` prefix is stripped before routing in `app.ts` for HTTP and `server.ts` for WebSocket upgrades (e.g., `/multicloud/proxy/search` → `/proxy/search`)
-- Use `pipeline()` from `node:stream` for proxy and streaming operations to ensure proper backpressure and cleanup
-- Use `getEncodeStream()` for SSE compression
+During ACM-42597/42598 the Go process watches the same specs as Node `startWatching()` **after** the public listener is bound. Startup is capped at 8 concurrent list/watch setups; the informer client uses QPS 20 / Burst 40; resync is disabled. Set `CONSOLE_INFORMER_CACHE=0` (or `false`/`off`) to skip Go watches and keep proxying `GET /events` to Node. Node `startWatching()` still runs for aggregators (`getKubeResources`). After informers sync, logs `informer cache memory` with `heapAlloc` — compare that to the sidecar deflate cache, not combined RSS.
 
-## Security
+`GET /events` framing matches Node `server-side-events.ts`: `id:` + `data:` (no space), gzip when `Accept-Encoding` includes gzip, keepalive `:\n\n` every 10s, snapshot `START` → `SETTINGS` → priority packets with `EOP` → `LOADED`, live `MODIFIED`/`DELETED` then `LOADED`. Creates and updates are both `MODIFIED` (not `ADDED`). **DELETED events are broadcast without per-user SSAR** — the same known gap as Node; do not “fix” it in this stream without a follow-up.
 
-- Never log sensitive data (tokens, passwords, credentials)
-- Validate and sanitize all inputs
-- Guard against injection vulnerabilities (command injection, path traversal)
-- Ensure proper authentication and authorization checks on all routes
-- Use `SelfSubjectAccessReview` for permission checks
-- Log at appropriate levels with Pino (error, warn, info, debug) — include relevant context but never sensitive data
+## Shared artifacts
 
-## Configuration
+`npm run setup` writes `backend/.env`. The sidecar loads the same file via `ENV_FILE` / `CONFIG_DIR` / `CERTS_DIR`. `godotenv` does not override `PORT`, so the sidecar can listen on `NODE_BACKEND_PORT` while `.env` still has `PORT=4000` for Go.
 
-### Environment Variables (`.env`)
+Go exits 1 at startup if the service-account token is missing (`TOKEN` or `/var/run/secrets/kubernetes.io/serviceaccount/token`).
 
-Generated by `npm run setup` from the repo root. These are cluster-specific and should not be set manually unless overriding for special cases:
+Migrated proxy routes also read `CLUSTER_PROXY_ADDON_USER_HOST` / `CLUSTER_PROXY_ADDON_USER_ROUTE`, `PROMETHEUS_ROUTE`, `OBSERVABILITY_ROUTE`, and `SERVICE_CA_CERT` from the same `.env`.
 
-| Variable | Purpose |
-|----------|---------|
-| `PORT` | Backend server port (defaults via `port-defaults.sh`) |
-| `NODE_ENV` | `development` or `production` — controls CORS, caching, logging, cert behavior |
-| `CLUSTER_API_URL` | Hub cluster API server URL — used extensively for all K8s API calls |
-| `TOKEN` | Service account token for backend-initiated cluster requests |
-| `CA_CERT` / `SERVICE_CA_CERT` | Cluster CA certificates for TLS verification |
-| `OAUTH2_CLIENT_ID` / `OAUTH2_CLIENT_SECRET` | OAuth client credentials for login flow |
-| `OAUTH2_REDIRECT_URL` | OAuth callback URL |
-| `OIDC_ISSUER_URL` | OIDC issuer URL (when using external OIDC instead of OpenShift OAuth) |
-| `FRONTEND_URL` | Frontend URL for post-login redirect |
-| `SEARCH_API_URL` | Search API route URL |
-| `PLACEMENT_DEBUG_URL` | Placement debug service route URL |
-| `CLUSTER_PROXY_ADDON_USER_HOST` / `CLUSTER_PROXY_ADDON_USER_ROUTE` | Managed cluster proxy endpoint |
-| `OBSERVABILITY_ROUTE` | Observability query proxy route (requires ACM Observability) |
-| `PROMETHEUS_ROUTE` | Prometheus route for metrics proxy |
-
-Optional development/debug variables (not in `.env` by default):
-
-| Variable | Purpose |
-|----------|---------|
-| `HTTPS_PROXY` | HTTP proxy for outbound requests |
-| `DELAY` / `RANDOM_DELAY` | Artificial delay for dev testing (development mode only) |
-| `MOCK_CLUSTERS` | Number of mock clusters to generate for testing |
-| `DISABLE_EVENTS` | Set to `true` to disable SSE event streams |
-| `DISABLE_STREAM_COMPRESSION` | Set to `true` to disable SSE compression |
-| `PUBLIC_FOLDER` | Override static file serving path (default `./public`) |
-
-### Settings (`config/` directory)
-
-Files in `config/` are loaded at startup and watched for dynamic updates. Changes are pushed to the frontend via SSE `SETTINGS` events. Only specific keys are promoted to `process.env`:
-
-- `LOG_*` keys (`LOG_LEVEL`, `LOG_ACCESS`, `LOG_EVENTS`, `LOG_MEMORY`, `LOG_WATCH`) — control logging behavior
-- `APP_SEARCH_*` keys (`APP_SEARCH_INTERVAL`, `APP_SEARCH_LIMIT`) — application search tuning
-- `globalSearchFeatureFlag` — enables federated search endpoint
-- `UPGRADE_RISKS_PREDICTION_URL` — override for upgrade risk prediction service
-
-Other config files (e.g., `singleNodeOpenshift`, `ansibleIntegration`, `awsPrivateWizardStep`) are sent to the frontend as settings but not promoted to backend env vars. The frontend uses these to toggle UI features like single-node cluster creation and Ansible automation options.
-
-### Feature Flags
-
-Feature flags come from two mechanisms:
-- **MultiClusterHub components** — the `/multiclusterhub/components` route exposes MCH component status, used by the frontend to determine which features are installed
-- **Config settings** — files in `config/` act as feature toggles (e.g., `singleNodeOpenshift`, `ansibleIntegration`), pushed to the frontend via SSE and checked with `settings.<flag> === 'enabled'`
-
-## Testing
-
-- Test files are in `test/`
-- Tests should meaningfully cover behavior, not just achieve coverage metrics
-- Properly mock and isolate dependencies
-- Async tests must handle promises correctly
-
-## Environment
-
-The backend requires a `.env` file for cluster connection. Generate it with `npm run setup` from the repo root. Key variables include the cluster API URL, OAuth credentials, and service account token.
+`PUBLIC_FOLDER` (default `public`) is the on-disk plugin/SPA tree. Production images copy `frontend/plugins/{acm|mce}/dist` to `/app/public/plugin`.

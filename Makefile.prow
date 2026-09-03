@@ -9,19 +9,21 @@ install:
 
 .PHONY: build
 build:
-	npm run build
+	npm run build:frontend
+	npm run build:backend-node
 
 .PHONY: check
 check:
-	npm run check
+	npx concurrently --kill-others-on-fail npm:copyright:check npm:check:frontend npm:check:backend npm:check:backend-node -c green,blue,magenta
 
 .PHONY: lint
 lint:
-	npm run lint
+	npx concurrently --kill-others-on-fail npm:lint:frontend npm:lint:backend npm:lint:backend-node -c green,blue
 
 .PHONY: unit-tests
 unit-tests:
 	if [ ! -d "test-output" ]; then \
 		mkdir test-output; \
 	fi
-	npm run test -- --maxWorkers=2
+	npm run test:frontend -- --maxWorkers=2
+	npm run test:backend-node -- --maxWorkers=2

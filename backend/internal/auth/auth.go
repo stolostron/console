@@ -1,0 +1,249 @@
+// Copyright Contributors to the Open Cluster Management project
+
+package auth
+
+import (
+	"context"
+	"encoding/base64"
+	"errors"
+	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+
+	authv1 "k8s.io/api/authentication/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+
+	"github.com/stolostron/console/backend/internal/config"
+)
+
+const (
+	AccessTokenCookie = "acm-access-token-cookie"
+
+	bearerSchemePrefix    = "Bearer " // RFC 6750 Authorization header scheme prefix
+	bearerSchemePrefixLen = len(bearerSchemePrefix)
+)
+
+var serviceAccountBaseDir = "/var/run/secrets/kubernetes.io/serviceaccount"
+
+// SetServiceAccountDir overrides the SA mount path (tests).
+func SetServiceAccountDir(dir string) func() {
+	prev := serviceAccountBaseDir
+	serviceAccountBaseDir = dir
+	return func() { serviceAccountBaseDir = prev }
+}
+
+// ServiceAccount holds the in-cluster (or env-fallback) credentials.
+type ServiceAccount struct {
+	Token         string
+	CACert        []byte
+	ServiceCACert []byte
+}
+
+// StatusError is an HTTP status from hub token validation (GET /api).
+type StatusError struct {
+	Status int
+}
+
+func (e *StatusError) Error() string {
+	if e == nil {
+		return "status error"
+	}
+	return fmt.Sprintf("token validation status %d", e.Status)
+}
+
+// LoadServiceAccount reads the projected SA files, falling back to TOKEN / CA_CERT.
+// If no token is available, ok is false (callers that require a token should exit).
+func LoadServiceAccount(cfg *config.Config) (ServiceAccount, bool) {
+	token := readFileOrDefault(filepath.Join(serviceAccountBaseDir, "token"), cfg.Token)
+	caPath := filepath.Join(serviceAccountBaseDir, "ca.crt")
+	ca, err := os.ReadFile(caPath)
+	if err != nil {
+		if cfg.CACert != "" {
+			decoded, decErr := base64.StdEncoding.DecodeString(cfg.CACert)
+			if decErr == nil {
+				ca = decoded
+			}
+		}
+	}
+	serviceCA := readCertFileOrEnv(filepath.Join(serviceAccountBaseDir, "service-ca.crt"), cfg.ServiceCACert)
+	if strings.TrimSpace(token) == "" {
+		return ServiceAccount{}, false
+	}
+	return ServiceAccount{Token: token, CACert: ca, ServiceCACert: serviceCA}, true
+}
+
+func readCertFileOrEnv(path, base64Env string) []byte {
+	data, err := os.ReadFile(path)
+	if err == nil && len(data) > 0 {
+		return data
+	}
+	if base64Env == "" {
+		return nil
+	}
+	decoded, decErr := base64.StdEncoding.DecodeString(base64Env)
+	if decErr != nil {
+		return nil
+	}
+	return decoded
+}
+
+func readFileOrDefault(path, fallback string) string {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return fallback
+	}
+	return string(data)
+}
+
+// TokenFromRequest returns the user token: cookie first, then Bearer.
+func TokenFromRequest(r *http.Request) string {
+	if r == nil {
+		return ""
+	}
+	if c, err := r.Cookie(AccessTokenCookie); err == nil && c.Value != "" {
+		return c.Value
+	}
+	authz := r.Header.Get("Authorization")
+	if len(authz) > bearerSchemePrefixLen && strings.EqualFold(authz[:bearerSchemePrefixLen], bearerSchemePrefix) {
+		return strings.TrimSpace(authz[bearerSchemePrefixLen:])
+	}
+	return ""
+}
+
+// TokenReviewResult is the outcome of a TokenReview API call.
+type TokenReviewResult struct {
+	Authenticated bool
+	Username      string
+}
+
+// TokenReviewer validates a bearer token against the hub API.
+type TokenReviewer interface {
+	Review(ctx context.Context, token string) (TokenReviewResult, error)
+}
+
+type kubeReviewer struct {
+	client kubernetes.Interface
+}
+
+// RESTConfig builds a client-go rest.Config from the service account.
+func RESTConfig(cfg *config.Config, sa ServiceAccount) (*rest.Config, error) {
+	if cfg.ClusterAPIURL == "" {
+		return nil, errors.New("CLUSTER_API_URL is not set")
+	}
+	restCfg := &rest.Config{
+		Host:        cfg.ClusterAPIURL,
+		BearerToken: sa.Token,
+		TLSClientConfig: rest.TLSClientConfig{
+			CAData: sa.CACert,
+		},
+	}
+	if len(sa.CACert) == 0 {
+		restCfg.TLSClientConfig.Insecure = true
+	}
+	return restCfg, nil
+}
+
+// UserRESTConfig copies base and impersonates the user via Bearer token.
+func UserRESTConfig(base *rest.Config, userToken string) *rest.Config {
+	c := rest.CopyConfig(base)
+	c.BearerToken = userToken
+	c.BearerTokenFile = ""
+	return c
+}
+
+// ValidateUserTokenStatus probes GET /api with the user token and returns the HTTP status.
+func ValidateUserTokenStatus(ctx context.Context, base *rest.Config, token string) (int, error) {
+	if base == nil {
+		return 0, errors.New("rest config is required")
+	}
+	cfg := UserRESTConfig(base, token)
+	httpClient, err := rest.HTTPClientFor(cfg)
+	if err != nil {
+		return 0, err
+	}
+	host := strings.TrimRight(cfg.Host, "/")
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, host+"/api", nil)
+	if err != nil {
+		return 0, err
+	}
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return 0, err
+	}
+	defer func() { _, _ = io.Copy(io.Discard, resp.Body); _ = resp.Body.Close() }()
+	return resp.StatusCode, nil
+}
+
+// ValidateUserToken checks the token the same way the Node sidecar does: GET /api.
+// TokenReview is not used here because console-mce can create TokenReviews for some
+// identities that still fail Review, while GET /api matches /events auth.
+func ValidateUserToken(ctx context.Context, base *rest.Config, token string) error {
+	status, err := ValidateUserTokenStatus(ctx, base, token)
+	if err != nil {
+		return err
+	}
+	if status != http.StatusOK {
+		return &StatusError{Status: status}
+	}
+	return nil
+}
+
+// RequireToken writes 401 with an empty body when the request has no user token.
+func RequireToken(w http.ResponseWriter, r *http.Request) (string, bool) {
+	token := TokenFromRequest(r)
+	if token == "" {
+		w.WriteHeader(http.StatusUnauthorized)
+		return "", false
+	}
+	return token, true
+}
+
+// AuthenticateRequest extracts the user token and validates it with GET /api (Node getAuthenticatedToken).
+func AuthenticateRequest(ctx context.Context, base *rest.Config, w http.ResponseWriter, r *http.Request) (string, bool) {
+	token, ok := RequireToken(w, r)
+	if !ok {
+		return "", false
+	}
+	if err := ValidateUserToken(ctx, base, token); err != nil {
+		var se *StatusError
+		if errors.As(err, &se) && se.Status != 0 {
+			w.WriteHeader(se.Status)
+			return "", false
+		}
+		w.WriteHeader(http.StatusInternalServerError)
+		return "", false
+	}
+	return token, true
+}
+
+// NewTokenReviewer builds a TokenReview client using the service account.
+func NewTokenReviewer(cfg *config.Config, sa ServiceAccount) (TokenReviewer, error) {
+	restCfg, err := RESTConfig(cfg, sa)
+	if err != nil {
+		return nil, err
+	}
+	client, err := kubernetes.NewForConfig(restCfg)
+	if err != nil {
+		return nil, err
+	}
+	return &kubeReviewer{client: client}, nil
+}
+
+func (k *kubeReviewer) Review(ctx context.Context, token string) (TokenReviewResult, error) {
+	tr, err := k.client.AuthenticationV1().TokenReviews().Create(ctx, &authv1.TokenReview{
+		Spec: authv1.TokenReviewSpec{Token: token},
+	}, metav1.CreateOptions{})
+	if err != nil {
+		return TokenReviewResult{}, err
+	}
+	username := tr.Status.User.Username
+	return TokenReviewResult{
+		Authenticated: tr.Status.Authenticated,
+		Username:      username,
+	}, nil
+}

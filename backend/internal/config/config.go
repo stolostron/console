@@ -1,0 +1,233 @@
+// Copyright Contributors to the Open Cluster Management project
+
+package config
+
+import (
+	"os"
+	"path/filepath"
+	"strings"
+	"sync"
+	"time"
+
+	"github.com/fsnotify/fsnotify"
+	"github.com/joho/godotenv"
+	applog "github.com/stolostron/console/backend/internal/log"
+)
+
+const debounce = time.Second
+
+// Config is process configuration loaded from env, .env, and the config/ directory.
+type Config struct {
+	Port                       string
+	NodeBackendURL             string
+	ConfigDir                  string
+	CertsDir                   string
+	EnvFile                    string
+	ClusterAPIURL              string
+	Token                      string
+	CACert                     string
+	ServiceCACert              string
+	LogLevel                   string
+	PrometheusRoute            string
+	ObservabilityRoute         string
+	ClusterProxyAddonUserHost  string
+	ClusterProxyAddonUserRoute string
+	PublicFolder               string
+
+	OAuth2ClientID     string
+	OAuth2ClientSecret string
+	OAuth2RedirectURL  string
+	OIDCIssuerURL      string
+	FrontendURL        string
+	Production         bool
+	InformerCache      bool
+
+	mu       sync.RWMutex
+	settings map[string]string
+	hooks    []func()
+}
+
+func envOr(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return fallback
+}
+
+// envEnabledDefaultOn is true unless the env var is an explicit off value (0/false/off/no).
+func envEnabledDefaultOn(key string) bool {
+	switch strings.ToLower(strings.TrimSpace(os.Getenv(key))) {
+	case "0", "false", "off", "no":
+		return false
+	default:
+		return true
+	}
+}
+
+// Load reads ENV_FILE (if present) then environment variables.
+func Load() *Config {
+	envFile := envOr("ENV_FILE", ".env")
+	_ = godotenv.Load(envFile)
+
+	cfg := &Config{
+		Port:                       envOr("PORT", "4000"),
+		NodeBackendURL:             envOr("NODE_BACKEND_URL", "https://127.0.0.1:4001"),
+		ConfigDir:                  envOr("CONFIG_DIR", "config"),
+		CertsDir:                   envOr("CERTS_DIR", "certs"),
+		EnvFile:                    envFile,
+		ClusterAPIURL:              os.Getenv("CLUSTER_API_URL"),
+		Token:                      os.Getenv("TOKEN"),
+		CACert:                     os.Getenv("CA_CERT"),
+		ServiceCACert:              os.Getenv("SERVICE_CA_CERT"),
+		LogLevel:                   envOr("LOG_LEVEL", "debug"),
+		PrometheusRoute:            os.Getenv("PROMETHEUS_ROUTE"),
+		ObservabilityRoute:         os.Getenv("OBSERVABILITY_ROUTE"),
+		ClusterProxyAddonUserHost:  os.Getenv("CLUSTER_PROXY_ADDON_USER_HOST"),
+		ClusterProxyAddonUserRoute: os.Getenv("CLUSTER_PROXY_ADDON_USER_ROUTE"),
+		PublicFolder:               envOr("PUBLIC_FOLDER", "public"),
+		OAuth2ClientID:             os.Getenv("OAUTH2_CLIENT_ID"),
+		OAuth2ClientSecret:         os.Getenv("OAUTH2_CLIENT_SECRET"),
+		OAuth2RedirectURL:          os.Getenv("OAUTH2_REDIRECT_URL"),
+		OIDCIssuerURL:              os.Getenv("OIDC_ISSUER_URL"),
+		FrontendURL:                os.Getenv("FRONTEND_URL"),
+		Production:                 os.Getenv("NODE_ENV") == "production",
+		InformerCache:              envEnabledDefaultOn("CONSOLE_INFORMER_CACHE"),
+		settings:                   map[string]string{},
+	}
+	_ = cfg.ReloadSettings()
+	return cfg
+}
+
+// Settings returns a copy of filename→contents from the config directory.
+func (c *Config) Settings() map[string]string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	out := make(map[string]string, len(c.settings))
+	for k, v := range c.settings {
+		out[k] = v
+	}
+	return out
+}
+
+// ReloadSettings reads the config directory and promotes selected keys to the process env.
+func (c *Config) ReloadSettings() error {
+	entries, err := os.ReadDir(c.ConfigDir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+
+	next := map[string]string{}
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		path := filepath.Join(c.ConfigDir, entry.Name())
+		data, err := os.ReadFile(path)
+		if err != nil {
+			continue
+		}
+		next[entry.Name()] = string(data)
+	}
+
+	c.mu.Lock()
+	prev := c.settings
+	c.settings = next
+	c.mu.Unlock()
+
+	promote := func(key string) {
+		if val, ok := next[key]; ok {
+			_ = os.Setenv(key, val)
+		} else if _, had := prev[key]; had {
+			_ = os.Unsetenv(key)
+		}
+	}
+
+	for key := range next {
+		if strings.HasPrefix(key, "LOG_") || strings.HasPrefix(key, "APP_SEARCH_") {
+			_ = os.Setenv(key, next[key])
+		}
+	}
+	for key := range prev {
+		if (strings.HasPrefix(key, "LOG_") || strings.HasPrefix(key, "APP_SEARCH_")) && next[key] == "" {
+			_ = os.Unsetenv(key)
+		}
+	}
+	promote("globalSearchFeatureFlag")
+	promote("UPGRADE_RISKS_PREDICTION_URL")
+
+	if lvl, ok := next["LOG_LEVEL"]; ok {
+		c.LogLevel = lvl
+		applog.SetLevel(lvl)
+	}
+
+	c.mu.RLock()
+	hooks := append([]func(){}, c.hooks...)
+	c.mu.RUnlock()
+	for _, fn := range hooks {
+		fn()
+	}
+	return nil
+}
+
+// OnReload registers fn to run after each successful ReloadSettings (config file watch).
+func (c *Config) OnReload(fn func()) {
+	if c == nil || fn == nil {
+		return
+	}
+	c.mu.Lock()
+	c.hooks = append(c.hooks, fn)
+	c.mu.Unlock()
+}
+
+// Watch reloads settings when files under ConfigDir change. Call cancel to stop.
+func (c *Config) Watch() (cancel func(), err error) {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return nil, err
+	}
+	if err := os.MkdirAll(c.ConfigDir, 0o755); err != nil {
+		_ = watcher.Close()
+		return nil, err
+	}
+	if err := watcher.Add(c.ConfigDir); err != nil {
+		_ = watcher.Close()
+		return nil, err
+	}
+
+	done := make(chan struct{})
+	go func() {
+		timer := time.NewTimer(debounce)
+		if !timer.Stop() {
+			<-timer.C
+		}
+		pending := false
+		for {
+			select {
+			case <-done:
+				timer.Stop()
+				_ = watcher.Close()
+				return
+			case ev, ok := <-watcher.Events:
+				if !ok {
+					return
+				}
+				if ev.Op&(fsnotify.Write|fsnotify.Create|fsnotify.Remove|fsnotify.Rename) == 0 {
+					continue
+				}
+				if !pending {
+					pending = true
+					timer.Reset(debounce)
+				}
+			case <-timer.C:
+				pending = false
+				_ = c.ReloadSettings()
+			case <-watcher.Errors:
+			}
+		}
+	}()
+
+	return func() { close(done) }, nil
+}

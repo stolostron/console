@@ -2,6 +2,7 @@
 
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
+import { NavigationPath } from '../NavigationPath'
 import { defaultContext, PluginData, PluginDataContext } from '../lib/PluginDataContext'
 import { PluginContext, defaultPlugin } from '../lib/PluginContext'
 import { LoadPluginData } from './LoadPluginData'
@@ -12,10 +13,14 @@ jest.mock('../lib/acm-i18next', () => ({
   }),
 }))
 
-function renderWithContext(contextOverrides: Partial<PluginData>, children = 'Page Content') {
+function renderWithContext(
+  contextOverrides: Partial<PluginData>,
+  children = 'Page Content',
+  initialPath = '/'
+) {
   const ctx: PluginData = { ...defaultContext, ...contextOverrides }
   return render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={[initialPath]}>
       <PluginContext.Provider value={{ ...defaultPlugin, dataContext: PluginDataContext }}>
         <PluginDataContext.Provider value={ctx}>
           <LoadPluginData>{children}</LoadPluginData>
@@ -30,6 +35,11 @@ describe('LoadPluginData', () => {
     renderWithContext({ loadCompleted: false, loadStarted: false })
     expect(screen.queryByText('Page Content')).not.toBeInTheDocument()
     expect(screen.getByText('Loading')).toBeInTheDocument()
+  })
+
+  it('fast-loads /multicloud when loadStarted without waiting for loadCompleted', () => {
+    renderWithContext({ loadCompleted: false, loadStarted: true }, 'Page Content', NavigationPath.emptyPath + '/multicloud')
+    expect(screen.getByText('Page Content')).toBeInTheDocument()
   })
 
   it('shows children when loadCompleted is true', () => {

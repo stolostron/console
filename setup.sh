@@ -9,6 +9,8 @@ source ./oauth-client-name.sh
 echo > ./backend/.env
 
 echo PORT="${BACKEND_PORT}" >> ./backend/.env
+echo NODE_BACKEND_PORT="${NODE_BACKEND_PORT}" >> ./backend/.env
+echo NODE_BACKEND_URL="https://127.0.0.1:${NODE_BACKEND_PORT}" >> ./backend/.env
 echo NODE_ENV=development >> ./backend/.env
 
 CLUSTER_API_URL=`oc get infrastructure cluster -o jsonpath={.status.apiServerURL}`
@@ -186,3 +188,5 @@ echo OBSERVABILITY_ROUTE=$OBSERVABILITY_ROUTE >> ./backend/.env
 
 PROMETHEUS_ROUTE=https://$(oc get route prometheus-k8s -n openshift-monitoring -o="jsonpath={.status.ingress[0].host}")
 echo PROMETHEUS_ROUTE=$PROMETHEUS_ROUTE >> ./backend/.env
+
+"$(dirname "$0")/scripts/generate-backend-certs.sh" --if-missing

@@ -38,7 +38,7 @@ spec:
   - name: build-source-image
     value: "true"
   - name: prefetch-input
-    value: '[{"path":".","type":"npm"},{"path":"./frontend","type":"npm"},{"path":"./backend","type":"npm"}]'
+    value: '[{"path":".","type":"npm"},{"path":"./frontend","type":"npm"},{"path":"./backend-node","type":"npm"}]'
   - name: send-slack-notification
     value: true
   - name: konflux-application-name
