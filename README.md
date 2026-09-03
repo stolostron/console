@@ -91,15 +91,15 @@ The recommended way to run the console for development is as OpenShift Console d
     npm run setup
     ```
 
-    This creates `backend/.env` with cluster connection variables. Some optional routes (for example ACM Observability) may log `NotFound` if the component is not installed on the cluster; local development can continue.
+    This creates `backend/.env` with cluster connection variables and writes `backend/certs/` when TLS material is missing. Some optional routes (for example ACM Observability) may log `NotFound` if the component is not installed on the cluster; local development can continue.
 
-4. Generate TLS certificates
+    After `oc login` to a different hub, or to reset local config:
 
     ```sh
-    npm run generate-certs
+    rm -rf backend/.env backend/certs/ && npm run setup && npm run ci:backend
     ```
 
-    Writes self-signed certs to `backend/certs/` for the Go backend and Node sidecar. After `oc login` to a different hub, run `npm run setup:hub` instead to regenerate `.env` and certs together.
+    (`npm run setup:hub` runs the same steps with the `rm` included.)
 
 5. Start the console plugins
 
@@ -131,7 +131,7 @@ The `npm start` command runs a standalone development console that **does not** 
 
 Use this mode for rapid iteration on features that don't depend on OpenShift Console APIs, but **always verify your work with `npm run plugins` before submitting**.
 
-Complete the [setup steps above](#setup) (`npm ci`, `npm run setup`, `npm run generate-certs`), then:
+Complete the [setup steps above](#setup) (`npm ci`, `npm run setup`), then:
 
 ```sh
 npm start
@@ -347,9 +347,7 @@ And if the logs are inspected right after running `npm start` command an error i
 
 The problem is about the certs not being generated properly, `./backend/certs` folder is most probably empty.
 
-The solution is to remove `./backend/certs` and run `npm run generate-certs` at the repo root (or `npm run setup:hub` after switching clusters).
-
-> Be sure the openssl CLI is installed before running `npm run generate-certs`.
+The solution is to remove `./backend/certs` and run `npm run setup && npm run ci:backend` (or `npm run setup:hub` after switching clusters). Use `npm run generate-certs` to force regeneration without re-running setup.
 
 ## Related Packages
 

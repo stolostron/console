@@ -20,7 +20,7 @@ Node.js ESM proxy server. Sits between the browser and the hub cluster API serve
 | `src/resources/` | Backend resource watchers and handlers |
 | `test/` | Jest test files |
 | `config/` | Runtime configuration lives in `../backend/config` (Go backend) |
-| `certs/` | TLS certificates live in `../backend/certs` (`npm run generate-certs` at repo root) |
+| `certs/` | TLS certificates live in `../backend/certs` (created by `npm run setup` / `npm run ci:backend` when missing) |
 
 ## Commands
 

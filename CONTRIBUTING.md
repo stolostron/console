@@ -65,12 +65,17 @@ Prerequisites match [README.md](README.md#prerequisites) (Node.js 24, Go 1.26+, 
 ```bash
 npm ci
 npm run setup
-npm run generate-certs
 ```
 
-`npm ci` runs a `postinstall` that installs `frontend`, `backend-node`, and (when Go is installed) `go mod download` in `backend/`.
+`npm ci` runs a `postinstall` that installs `frontend`, `backend-node`, and (when Go is installed) `go mod download` in `backend/`. `npm run setup` writes `backend/.env` and creates `backend/certs/` when missing; `npm run ci:backend` also ensures certs exist.
 
-After `oc login` to a different hub, run `npm run setup:hub` to regenerate `backend/.env` and `backend/certs/`.
+After `oc login` to a different hub:
+
+```bash
+rm -rf backend/.env backend/certs/ && npm run setup && npm run ci:backend
+```
+
+(`npm run setup:hub` runs the same steps with the `rm` included.)
 
 #### Recommended: Run as OpenShift Console plugins
 

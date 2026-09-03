@@ -652,3 +652,41 @@ func TestMigratedUserAndClusterInfoNotProxied(t *testing.T) {
 		}
 	}
 }
+
+func TestDebugSnapshotNotProxied(t *testing.T) {
+	var sidecarHit bool
+	sidecar := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sidecarHit = true
+		w.WriteHeader(http.StatusTeapot)
+	}))
+	defer sidecar.Close()
+
+	dump := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"synced":true,"items":[]}`))
+	})
+	cfg := &config.Config{NodeBackendURL: sidecar.URL, CertsDir: t.TempDir()}
+	h, err := server.Handler(cfg, server.WithDebugSnapshot(dump))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ts := httptest.NewServer(h)
+	defer ts.Close()
+
+	for _, path := range []string{"/debug/informer-snapshot", "/multicloud/debug/informer-snapshot"} {
+		sidecarHit = false
+		resp, getErr := ts.Client().Get(ts.URL + path)
+		if getErr != nil {
+			t.Fatal(getErr)
+		}
+		body, _ := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if sidecarHit {
+			t.Fatalf("%s was proxied to sidecar", path)
+		}
+		if resp.StatusCode != http.StatusOK {
+			t.Fatalf("%s status %d body %s", path, resp.StatusCode, body)
+		}
+	}
+}

@@ -31,10 +31,11 @@ Public listener for the ACM/MCE console. During the Node-to-Go migration it owns
 | `internal/clusterinfo` | `/hub`, `/cluster-version`, `/hypershift-status`, MCH/MCE components, `/operatorCheck`, `/apiPaths` |
 | `internal/cors` | Development CORS middleware (OPTIONS preflight for standalone dev) |
 | `internal/events/rbac` | `GET /events/rbac` SSE: ClusterRole informer (`vm-clusterroles` label) + per-user SSAR |
+| `internal/informers` | Hub resource cache (~67 watch specs, dual-run with Node; `CONSOLE_INFORMER_CACHE=0` disables). Dev: `GET /debug/informer-snapshot`. `GET /events` still sidecar |
 | `internal/static` | Plugin and SPA files: cache headers, CSP, brotli/gzip negotiation |
 | `internal/log` | slog JSON helper |
 | `config/` | Runtime settings shared with the Node sidecar |
-| `certs/` | TLS material (`npm run generate-certs` at repo root) |
+| `certs/` | TLS material (`npm run setup` / `npm run ci:backend` create when missing; `npm run generate-certs` to force) |
 
 ## Commands
 
@@ -47,7 +48,7 @@ From the repo root (preferred), or `cd backend`:
 | `npm run lint:backend` | `golangci-lint` (see `backend/.golangci.yml`) |
 | `npm run check:backend` | tests + golangci-lint |
 | `npm run build:backend` | `go build -o bin/console ./cmd/console` |
-| `npm run setup:hub` | Regenerate `backend/.env` and `backend/certs` after `oc login` to a new cluster |
+| `npm run setup:hub` | `rm -rf backend/.env backend/certs && npm run setup && npm run ci:backend` after `oc login` to a new cluster |
 
 ## Architecture
 
@@ -59,6 +60,8 @@ Go backend :4000 (TLS / HTTP/2)
         ├─ GET /livenessProbe, /readinessProbe, /ping
         │    (also /multicloud/…)
         ├─ GET /events/rbac (ClusterRole watch; also /multicloud/events/rbac)
+        ├─ GET /debug/informer-snapshot (dev only; Go informer cache dump)
+        ├─ SA informers (~67 specs) in process (cache only; SSE still sidecar)
         ├─ ALL /api, /apis, GET /version → hub kube-apiserver (user token)
         │    (also /multicloud/…)
         ├─ GET /configure (OAuth/OIDC token_endpoint discovery)
@@ -78,6 +81,8 @@ Go backend :4000 (TLS / HTTP/2)
 ```
 
 `/multicloud` is stripped only when matching Go-owned routes. The proxy forwards the original path so Node can keep stripping it.
+
+During ACM-42597 the Go process watches the same specs as Node `startWatching()` **after** the public listener is bound. Startup is capped at 8 concurrent list/watch setups; the informer client uses QPS 20 / Burst 40; resync is disabled. Set `CONSOLE_INFORMER_CACHE=0` (or `false`/`off`) to skip Go watches. Node SSE is unchanged. After informers sync, logs `informer cache memory` with `heapAlloc` — compare that to the sidecar deflate cache, not combined RSS.
 
 ## Shared artifacts
 

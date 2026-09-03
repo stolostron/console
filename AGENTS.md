@@ -34,11 +34,16 @@ console/
 
 ```bash
 npm ci                  # installs frontend, backend-node; go mod download when Go is installed
-npm run setup           # writes backend/.env from the current oc context
-npm run generate-certs  # writes backend/certs/ (required for local TLS)
+npm run setup           # writes backend/.env and backend/certs/ from the current oc context
 ```
 
-After `oc login` to a new hub: `npm run setup:hub` (regenerates `.env` and certs).
+After wiping local config or `oc login` to a new hub:
+
+```bash
+rm -rf backend/.env backend/certs/ && npm run setup && npm run ci:backend
+```
+
+(`npm run setup:hub` runs the same steps with the `rm` included.)
 
 ## Development Commands
 
@@ -139,7 +144,7 @@ Features can be enabled/disabled via the `console-config` ConfigMap in the insta
 ## Troubleshooting
 
 - **`concurrently: command not found`** — Run `npm ci` at the repo root first
-- **Certificate errors** — Remove `backend/certs/` and run `npm run generate-certs`
+- **Certificate errors** — Remove `backend/certs/` and run `npm run setup && npm run ci:backend` (or `npm run generate-certs` to force regeneration)
 - **Module resolution errors** — Verify Node.js and npm versions match `.nvmrc` / `.tool-versions`; version mismatches break ESM resolution
 - **Missing `.env`** — Run `npm run setup` (or `npm run setup:hub` after `oc login` to a new cluster) to generate `backend/.env`
 - **Plugin UI redirects to `/dashboards`** — `oc whoami --show-server` must match `CLUSTER_API_URL` in `backend/.env`. After `oc login` to a new hub, run `npm run setup:hub` and restart `npm run plugins`. `start-ocp-console.sh` runs `scripts/check-hub-alignment.sh` to catch this early.

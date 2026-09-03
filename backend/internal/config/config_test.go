@@ -137,6 +137,28 @@ func TestLoad_PublicFolder(t *testing.T) {
 	}
 }
 
+func TestLoad_InformerCacheDefaultOn(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("ENV_FILE", filepath.Join(dir, ".env"))
+	t.Setenv("CONSOLE_INFORMER_CACHE", "")
+	cfg := config.Load()
+	if !cfg.InformerCache {
+		t.Fatal("expected InformerCache on by default")
+	}
+}
+
+func TestLoad_InformerCacheOff(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("ENV_FILE", filepath.Join(dir, ".env"))
+	for _, v := range []string{"0", "false", "off", "NO"} {
+		t.Setenv("CONSOLE_INFORMER_CACHE", v)
+		cfg := config.Load()
+		if cfg.InformerCache {
+			t.Fatalf("CONSOLE_INFORMER_CACHE=%q should disable cache", v)
+		}
+	}
+}
+
 func TestReloadSettings_MissingDir(t *testing.T) {
 	cfg := &config.Config{ConfigDir: filepath.Join(t.TempDir(), "missing")}
 	if err := cfg.ReloadSettings(); err != nil {

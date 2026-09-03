@@ -40,6 +40,7 @@ type Config struct {
 	OIDCIssuerURL      string
 	FrontendURL        string
 	Production         bool
+	InformerCache      bool
 
 	mu       sync.RWMutex
 	settings map[string]string
@@ -50,6 +51,16 @@ func envOr(key, fallback string) string {
 		return v
 	}
 	return fallback
+}
+
+// envEnabledDefaultOn is true unless the env var is an explicit off value (0/false/off/no).
+func envEnabledDefaultOn(key string) bool {
+	switch strings.ToLower(strings.TrimSpace(os.Getenv(key))) {
+	case "0", "false", "off", "no":
+		return false
+	default:
+		return true
+	}
 }
 
 // Load reads ENV_FILE (if present) then environment variables.
@@ -79,6 +90,7 @@ func Load() *Config {
 		OIDCIssuerURL:              os.Getenv("OIDC_ISSUER_URL"),
 		FrontendURL:                os.Getenv("FRONTEND_URL"),
 		Production:                 os.Getenv("NODE_ENV") == "production",
+		InformerCache:              envEnabledDefaultOn("CONSOLE_INFORMER_CACHE"),
 		settings:                   map[string]string{},
 	}
 	_ = cfg.ReloadSettings()

@@ -6,7 +6,7 @@
   "scripts": {
     "postinstall": "concurrently npm:ci:* -c green,blue",
     "ci:frontend": "cd frontend && npm ci",
-    "ci:backend": "if command -v go >/dev/null 2>&1; then cd backend && go mod download; else echo 'Go not installed; skipping go mod download'; fi",
+    "ci:backend": "npm run ensure-certs && if command -v go >/dev/null 2>&1; then cd backend && go mod download; else echo 'Go not installed; skipping go mod download'; fi",
     "ci:backend-node": "cd backend-node && npm ci",
     "start": "concurrently npm:start:backend npm:start:frontend -c green,blue",
     "start:hot": "concurrently npm:start:backend npm:start:frontend:hot -c green,blue",
@@ -72,9 +72,10 @@
     "podman:deploy": "npm run podman:build && podman tag console quay.io/$USER/console:latest && podman push quay.io/$USER/console:latest && ./scripts/patch-deployment.sh latest quay.io/$USER/console",
     "podman:deploy:mce": "npm run podman:build:mce && podman tag console-mce quay.io/$USER/console-mce:latest && podman push quay.io/$USER/console-mce:latest && ./scripts/patch-deployment.sh latest quay.io/$USER/console-mce",
     "playwright:sanity": "npx playwright test --config e2e-template/playwright-sanity.config.ts",
-    "generate-certs": "mkdir -p backend/certs && openssl req -subj '/C=US' -new -newkey rsa:2048 -sha256 -days 365 -nodes -x509 -keyout backend/certs/tls.key -out backend/certs/tls.crt",
+    "ensure-certs": "./scripts/generate-backend-certs.sh --if-missing",
+    "generate-certs": "./scripts/generate-backend-certs.sh",
     "setup": "./setup.sh",
-    "setup:hub": "rm -rf backend/.env backend/certs && npm run setup && npm run generate-certs",
+    "setup:hub": "rm -rf backend/.env backend/certs && npm run setup && npm run ci:backend",
     "prepare": "husky install"
   },
   "devDependencies": {

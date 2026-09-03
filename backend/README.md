@@ -10,16 +10,14 @@ From the repo root:
 
 ```sh
 npm ci               # required once; runs go mod download when Go is installed
-npm run setup        # writes backend/.env from the current oc context
-npm run generate-certs
+npm run setup        # writes backend/.env and backend/certs/ from the current oc context
 npm start            # or npm run plugins
 ```
 
 After `oc login` to a new hub:
 
 ```sh
-npm run setup:hub
-# restart npm start / npm run plugins
+rm -rf backend/.env backend/certs/ && npm run setup && npm run ci:backend
 ```
 
 See [AGENTS.md](AGENTS.md) for layout, architecture, and commands.
