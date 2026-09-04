@@ -78,7 +78,6 @@ exports[`ControlPanelSingleSelect component renders as expected 1`] = `
               >
                 <div
                   aria-labelledby="controlId-label"
-                  autocomplete="off"
                   class="pf-v6-c-text-input-group__main"
                 >
                   <span
@@ -88,6 +87,7 @@ exports[`ControlPanelSingleSelect component renders as expected 1`] = `
                       aria-controls="select-multi-typeahead-listbox"
                       aria-expanded="false"
                       aria-label="Type to filter"
+                      autocomplete="off"
                       class="pf-v6-c-text-input-group__text-input"
                       data-testid="select-controlId"
                       id="controlId"
