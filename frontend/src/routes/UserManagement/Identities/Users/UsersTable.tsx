@@ -66,6 +66,7 @@ const UsersTable = ({
 
   return (
     <AcmTable<User>
+      aria-label={t('Users table')}
       key="users-table"
       filters={filters}
       columns={columns}

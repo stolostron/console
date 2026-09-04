@@ -104,6 +104,7 @@ const RolePermissions = () => {
           {t('Permissions')}
         </Title>
         <AcmTable<Rule>
+          aria-label={t('Role permissions table')}
           id="permissions-table"
           key="permissions-table"
           columns={columns}

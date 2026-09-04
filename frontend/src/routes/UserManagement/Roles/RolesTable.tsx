@@ -60,6 +60,7 @@ const RolesTable = ({
 
   return (
     <AcmTable<Role>
+      aria-label={t('Roles table')}
       key="roles-table"
       filters={filters}
       columns={columns}

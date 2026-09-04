@@ -280,6 +280,7 @@ export function ClusterPolicySidebar(props: { data: PolicyReport }) {
         <Content component={ContentVariants.h4}>{t('Recommendations with remediation')}</Content>
       </Content>
       <AcmTable<PolicyReportResults>
+        aria-label={t('Cluster policy reports table')}
         items={policyReportViolations}
         emptyState={
           <AcmEmptyState

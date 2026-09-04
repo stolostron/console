@@ -56,8 +56,8 @@ export type BulkActionModalProps<T = undefined> = {
   enablePreserveOnDelete?: boolean
   actionWhenPreserve?: string
 } & Required<Pick<AcmTableProps<T>, 'items'>> &
-  Partial<Pick<AcmTableProps<T>, 'columns'>> & // Policy automation and cluster claim deletion modals omit columns prop to avoid showing a table
-  Omit<AcmTableProps<T>, 'columns'>
+  Partial<Pick<AcmTableProps<T>, 'columns' | 'aria-label'>> & // Policy automation and cluster claim deletion modals omit columns prop to avoid showing a table
+  Omit<AcmTableProps<T>, 'columns' | 'aria-label'>
 
 export interface ItemError<T> {
   item: T
@@ -185,6 +185,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
                       autoHidePagination
                       columns={columns}
                       {...tableProps}
+                      aria-label={tableProps['aria-label'] ?? t('Selected items table')}
                     />
                   </AcmTableStateProvider>
                 </StackItem>
@@ -317,6 +318,7 @@ export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { 
                       rowActions={[]}
                       perPageOptions={[]}
                       autoHidePagination
+                      aria-label={t('Action errors table')}
                     />
                   </AcmTableStateProvider>
                 </StackItem>

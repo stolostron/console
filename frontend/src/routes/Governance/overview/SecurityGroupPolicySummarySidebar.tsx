@@ -109,6 +109,7 @@ export function SecurityGroupPolicySummarySidebar(props: {
     <div className={body}>
       <div className={sectionSeparator} />
       <AcmTable<Policy>
+        aria-label={t('Security group policies table')}
         showExportButton
         exportFilePrefix="securitygrouppolicysummary"
         items={secGroupPolicies}

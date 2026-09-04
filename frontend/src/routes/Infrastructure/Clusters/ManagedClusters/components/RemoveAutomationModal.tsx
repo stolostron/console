@@ -180,6 +180,7 @@ export function RemoveAutomationModal(props: {
           </StackItem>
           <StackItem className={table}>
             <AcmTable<Cluster>
+              aria-label={t('Remove automation clusters table')}
               columns={addAutomationTemplateColumns}
               items={removableClusters}
               emptyState={
