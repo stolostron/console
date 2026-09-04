@@ -4,6 +4,7 @@ import { addOCPQueryInputs, addSystemQueryInputs, cacheOCPApplications } from '.
 import { ApplicationSetKind, type IApplicationSet, type IResource, type SearchResult } from '../../resources/resource'
 import type { FilterSelections, ISortBy } from '../../lib/pagination'
 import { logger } from '../../lib/logger'
+import { getMultiClusterHub } from '../../lib/multi-cluster-hub'
 import {
   discoverSystemAppNamespacePrefixes,
   getApplicationsHelper,
@@ -196,12 +197,30 @@ export const promiseTimeout = <T>(promise: Promise<T>, delay: number) => {
 // //////////////////////////////////////////////////////////////////////////////////
 export async function startAggregatingApplications() {
   await discoverSystemAppNamespacePrefixes()
-  void searchLoop()
+  await searchLoop()
 }
 
 let stopping = false
+let cancelPendingWait: (() => void) | undefined
+
+function waitWhileRunning(ms: number): Promise<void> {
+  if (stopping) return Promise.resolve()
+  return new Promise((resolve) => {
+    const timeoutId = setTimeout(() => {
+      cancelPendingWait = undefined
+      resolve()
+    }, ms)
+    cancelPendingWait = () => {
+      clearTimeout(timeoutId)
+      cancelPendingWait = undefined
+      resolve()
+    }
+  })
+}
+
 export function stopAggregatingApplications(): void {
   stopping = true
+  cancelPendingWait?.()
 }
 
 /** Reset aggregation stopping flag. Used for test isolation. */
@@ -353,7 +372,22 @@ export async function addUIData(items: ITransformedResource[]) {
 export async function searchLoop() {
   let pass = 1
   let searchAPIMissing = false
+  let multiClusterHubMissing = false
   while (!stopping) {
+    const multiClusterHub = await getMultiClusterHub(true)
+    if (!multiClusterHub) {
+      if (!multiClusterHubMissing) {
+        logger.info('MultiClusterHub not found; waiting before search aggregation')
+        multiClusterHubMissing = true
+      }
+      await waitWhileRunning(5 * 60 * 1000)
+      continue
+    }
+    if (multiClusterHubMissing) {
+      logger.info('MultiClusterHub found')
+      multiClusterHubMissing = false
+    }
+
     // make sure there's an active search api
     // otherwise there's no point
     let exists
@@ -370,7 +404,7 @@ export async function searchLoop() {
           logger.error('search API missing')
           searchAPIMissing = true
         }
-        await new Promise((r) => setTimeout(r, 5 * 60 * 1000))
+        await waitWhileRunning(5 * 60 * 1000)
       }
     } while (!exists)
     /* istanbul ignore if */
@@ -393,7 +427,7 @@ export async function searchLoop() {
     // process every APP_SEARCH_INTERVAL seconds
     /* istanbul ignore if */
     if (process.env.NODE_ENV !== 'test') {
-      await new Promise((r) => setTimeout(r, pass <= 3 ? 15000 : Number(process.env.APP_SEARCH_INTERVAL) || 60000))
+      await waitWhileRunning(pass <= 3 ? 15000 : Number(process.env.APP_SEARCH_INTERVAL) || 60000)
     } else {
       stopping = true
     }
