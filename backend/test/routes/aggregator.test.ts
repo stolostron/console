@@ -222,7 +222,6 @@ describe(`aggregator Route`, function () {
       expect(infoSpy).toHaveBeenCalledWith('MultiClusterHub not found; waiting before search aggregation')
       expect(searchScope.isDone()).toBe(false)
       stopAggregatingApplications()
-      jest.advanceTimersByTime(5 * 60 * 1000)
       await promise
       infoSpy.mockRestore()
       jest.restoreAllMocks()
