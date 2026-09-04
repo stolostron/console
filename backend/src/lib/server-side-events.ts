@@ -323,13 +323,15 @@ export class ServerSideEvents {
       parts.push(loaded)
     }
 
-    // remove START, SETTINGS and LOADED from events
+    // remove START, SETTINGS, FLAPPING and LOADED from events
     const start = parts.shift()
     const end = parts.pop()
     const inx = parts.findIndex(({ data }) => {
       return (data as { type?: 'SETTINGS' }).type === 'SETTINGS'
     })
     const settings = parts.splice(inx, 1)[0]
+    const flappingEvents = parts.filter(({ data }) => (data as { type?: string }).type === 'FLAPPING')
+    parts = parts.filter(({ data }) => (data as { type?: string }).type !== 'FLAPPING')
 
     // separate resource by kind
     // we want to send the resources that populate the main console pages first
@@ -397,7 +399,7 @@ export class ServerSideEvents {
     // send packets of resources
     // with resources that fill main console pages first
     let sentCount = 0
-    const sending = [start, settings]
+    const sending = [start, settings, ...flappingEvents]
     do {
       sending.push(...clusters.splice(0, 200))
       sending.push(...agents.splice(0, 200))

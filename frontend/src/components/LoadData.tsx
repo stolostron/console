@@ -196,8 +196,15 @@ import { ClaimMappings } from '~/resources/authentication'
 import { usePageActivity } from '../lib/usePageActivity'
 
 export function LoadData(props: { children?: ReactNode }) {
-  const { loadCompleted, setLoadStarted, setLoadCompleted, setIsStreamIdle, setIsReconnecting, mounted } =
-    useContext(PluginDataContext)
+  const {
+    loadCompleted,
+    setLoadStarted,
+    setLoadCompleted,
+    setIsStreamIdle,
+    setIsReconnecting,
+    setFlappingAlerts,
+    mounted,
+  } = useContext(PluginDataContext)
   const [eventsLoaded, setEventsLoaded] = useState(false)
   const idleTimeoutMs = useEventStreamIdleTimeout()
   const gracePeriodMs = useEventStreamIdleGracePeriod()
@@ -570,6 +577,15 @@ export function LoadData(props: { children?: ReactNode }) {
             case 'SETTINGS':
               setSettings(data.settings)
               break
+            case 'FLAPPING':
+              setFlappingAlerts((alerts) => {
+                const key = `${data.kind}/${data.namespace}/${data.name}`
+                if (alerts.some((a) => `${a.kind}/${a.namespace}/${a.name}` === key)) {
+                  return alerts.map((a) => (`${a.kind}/${a.namespace}/${a.name}` === key ? data : a))
+                }
+                return [...alerts, data]
+              })
+              break
           }
         } catch (err) {
           console.error(err)
@@ -604,7 +620,7 @@ export function LoadData(props: { children?: ReactNode }) {
       eventSourceRef.current = undefined
       processIntervalRef.current = undefined
     }
-  }, [caches, mappers, restartKey, setIsReconnecting, setLoadStarted, setSettings, setters])
+  }, [caches, mappers, restartKey, setFlappingAlerts, setIsReconnecting, setLoadStarted, setSettings, setters])
 
   const {
     data: globalHubRes,

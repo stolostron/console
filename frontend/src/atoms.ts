@@ -204,7 +204,17 @@ export interface SettingsEvent {
   settings: Record<string, string>
 }
 
-export type ServerSideEventData = WatchEvent | SettingsEvent | { type: 'START' | 'LOADED' }
+export interface FlappingEvent {
+  type: 'FLAPPING'
+  kind: string
+  namespace: string
+  name: string
+  threshold: number
+  windowMs: number
+  cooldownMs: number
+}
+
+export type ServerSideEventData = WatchEvent | SettingsEvent | FlappingEvent | { type: 'START' | 'LOADED' | 'EOP' }
 
 export function usePolicies() {
   const policies = useRecoilValue(policiesState)
