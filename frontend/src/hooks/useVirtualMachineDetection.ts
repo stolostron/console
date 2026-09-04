@@ -1,7 +1,7 @@
+import { searchClient } from '../routes/Search/search-sdk/search-client'
 /* Copyright Contributors to the Open Cluster Management project */
 import { useMemo } from 'react'
-import { useSearchResultItemsQuery } from '../routes/Search/search-sdk/search-sdk'
-import { searchClient } from '../routes/Search/search-sdk/search-client'
+import { useSearchResultCountQuery } from '../routes/Search/search-sdk/search-sdk'
 
 interface UseVirtualMachineDetectionOptions {
   /** Optional cluster name to scope the search to a specific cluster */
@@ -59,12 +59,12 @@ export function useVirtualMachineDetection(
     return filters
   }, [clusterName])
 
-  // Search for VirtualMachine resources using search items query
+  // Use count query — only need to know if VMs exist, not fetch all items
   const {
     data,
     loading: isLoading,
     error: vmSearchError,
-  } = useSearchResultItemsQuery({
+  } = useSearchResultCountQuery({
     client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
     variables: {
       input: [
@@ -81,10 +81,9 @@ export function useVirtualMachineDetection(
     if (vmSearchError) {
       return false
     }
-
     // Check if we have any VirtualMachine resources in the search results
-    const vmItems = data?.searchResult?.[0]?.items || []
-    return vmItems.length > 0
+    const count = data?.searchResult?.[0]?.count ?? 0
+    return count > 0
   }, [data, vmSearchError])
 
   return {
