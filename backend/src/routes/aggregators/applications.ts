@@ -197,11 +197,6 @@ export const promiseTimeout = <T>(promise: Promise<T>, delay: number) => {
 // //////////////////////////////////////////////////////////////////////////////////
 export async function startAggregatingApplications() {
   await discoverSystemAppNamespacePrefixes()
-  const multiClusterHub = await getMultiClusterHub()
-  if (!multiClusterHub) {
-    logger.info('search aggregation skipped: MultiClusterHub not found')
-    return
-  }
   await searchLoop()
 }
 
@@ -360,7 +355,22 @@ export async function addUIData(items: ITransformedResource[]) {
 export async function searchLoop() {
   let pass = 1
   let searchAPIMissing = false
+  let multiClusterHubMissing = false
   while (!stopping) {
+    const multiClusterHub = await getMultiClusterHub(true)
+    if (!multiClusterHub) {
+      if (!multiClusterHubMissing) {
+        logger.info('MultiClusterHub not found; waiting before search aggregation')
+        multiClusterHubMissing = true
+      }
+      await new Promise((r) => setTimeout(r, 5 * 60 * 1000))
+      continue
+    }
+    if (multiClusterHubMissing) {
+      logger.info('MultiClusterHub found')
+      multiClusterHubMissing = false
+    }
+
     // make sure there's an active search api
     // otherwise there's no point
     let exists
