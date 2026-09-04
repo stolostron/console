@@ -100,19 +100,16 @@ import {
 import Clusters from '../../Clusters'
 import { clusterName, mockMachinePoolAuto, mockMachinePoolManual } from './ClusterDetails.sharedmocks'
 
-// Mock the useVirtualMachineDetection hook
+// Mock KubevirtProviderAlert and useVirtualMachineDetection to avoid complex dependencies
+jest.mock('../../../../../components/KubevirtProviderAlert', () => ({
+  KubevirtProviderAlert: () => null,
+}))
 jest.mock('../../../../../hooks/useVirtualMachineDetection', () => ({
   useVirtualMachineDetection: jest.fn(() => ({
     hasVirtualMachines: false,
     isLoading: false,
     error: undefined,
-    virtualMachines: [],
   })),
-}))
-
-// Mock KubevirtProviderAlert to avoid complex dependencies in error state tests
-jest.mock('../../../../../components/KubevirtProviderAlert', () => ({
-  KubevirtProviderAlert: () => null,
 }))
 
 const mockManagedClusterInfo: ManagedClusterInfo = {
