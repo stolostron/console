@@ -409,7 +409,7 @@ function commonProperties(
 }
 
 function getProviderForItem(item: IExampleData) {
-  const chr = item.last_name.charCodeAt(0)
+  const chr = item.last_name.codePointAt(0) ?? 0
   switch (chr % 8) {
     case 0:
       return Provider.aws
@@ -433,7 +433,7 @@ function getProviderForItem(item: IExampleData) {
 }
 
 function getAcmInlineStatusForItem(item: IExampleData) {
-  const chr = item.last_name.charCodeAt(0)
+  const chr = item.last_name.codePointAt(0) ?? 0
   switch (chr % 6) {
     case 0:
       return <AcmInlineStatus type={StatusType.healthy} status="Healthy" />
