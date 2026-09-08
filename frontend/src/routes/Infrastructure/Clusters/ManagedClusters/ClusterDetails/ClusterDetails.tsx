@@ -7,13 +7,14 @@ import {
   InfraEnvK8sResource,
 } from '@openshift-assisted/ui-lib/cim'
 import keyBy from 'lodash/keyBy'
-import { Fragment, Suspense, useEffect, useMemo, useState } from 'react'
+import { Fragment, Suspense, useContext, useEffect, useMemo, useState } from 'react'
 import { generatePath, Outlet, useMatch, useNavigate, useOutletContext, useParams } from 'react-router-dom-v5-compat'
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { KubevirtProviderAlert } from '../../../../../components/KubevirtProviderAlert'
 import { usePrevious } from '../../../../../components/usePrevious'
 import { useVirtualMachineDetection } from '../../../../../hooks/useVirtualMachineDetection'
 import { useTranslation } from '../../../../../lib/acm-i18next'
+import { PluginContext } from '../../../../../lib/PluginContext'
 import { canUser } from '../../../../../lib/rbac-util'
 import { NavigationPath, UNKNOWN_NAMESPACE } from '../../../../../NavigationPath'
 import {
@@ -60,6 +61,20 @@ export type ClusterDetailsContext = {
   readonly infraEnvAIFlow?: InfraEnvK8sResource
   readonly hostedCluster?: HostedClusterK8sResource
   readonly canGetSecret: boolean
+}
+
+function ClusterKubevirtAlert({ clusterName }: Readonly<{ clusterName: string }>) {
+  const { hasVirtualMachines } = useVirtualMachineDetection({ clusterName })
+
+  if (!hasVirtualMachines) {
+    return null
+  }
+
+  return (
+    <div style={{ marginTop: '1rem', paddingLeft: '1.5rem', paddingRight: '1.5rem' }}>
+      <KubevirtProviderAlert variant="clusterDetails" component="hint" />
+    </div>
+  )
 }
 
 export function showMachinePools(cluster: Cluster) {
@@ -170,8 +185,8 @@ export default function ClusterDetailsPage() {
     }
   }, [namespace])
 
-  // Check for VirtualMachine resources on this specific cluster
-  const { hasVirtualMachines } = useVirtualMachineDetection({ clusterName: name })
+  const { isSearchAvailable } = useContext(PluginContext)
+
   const clusterDetailsContext = useMemo<ClusterDetailsContext>(
     () => ({
       cluster,
@@ -350,11 +365,7 @@ export default function ClusterDetailsPage() {
         />
       }
     >
-      {hasVirtualMachines && (
-        <div style={{ marginTop: '1rem', paddingLeft: '1.5rem', paddingRight: '1.5rem' }}>
-          <KubevirtProviderAlert variant="clusterDetails" component="hint" />
-        </div>
-      )}
+      {isSearchAvailable && <ClusterKubevirtAlert clusterName={name} />}
       <Suspense fallback={<Fragment />}>
         <Outlet context={clusterDetailsContext} />
       </Suspense>

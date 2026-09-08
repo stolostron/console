@@ -7,6 +7,7 @@ import { KubevirtProviderAlert } from '../../../../components/KubevirtProviderAl
 import { Pages, usePageVisitMetricHandler } from '../../../../hooks/console-metrics'
 import { useLocalHubName } from '../../../../hooks/use-local-hub'
 import { useTranslation } from '../../../../lib/acm-i18next'
+import { PluginContext } from '../../../../lib/PluginContext'
 import { canUser } from '../../../../lib/rbac-util'
 import { navigateToBackCancelLocation, NavigationPath } from '../../../../NavigationPath'
 import { ManagedClusterDefinition } from '../../../../resources'
@@ -64,6 +65,7 @@ export default function ManagedClusters() {
 
   usePageContext(clusters.length > 0, PageActions, OnBoardingModalLink)
 
+  const { isSearchAvailable } = useContext(PluginContext)
   const navigate = useNavigate()
   const [canCreateCluster, setCanCreateCluster] = useState<boolean>(false)
   useEffect(() => {
@@ -80,9 +82,11 @@ export default function ManagedClusters() {
         <OnboardingModal open={openOnboardingModal} close={() => onToggle(onBoardingModalID, setOpenOnboardingModal)} />
         <Stack hasGutter={true}>
           <StackItem>
-            <div style={{ marginBottom: '1em' }}>
-              <KubevirtProviderAlert variant="search" component="hint" hideAlertWhenNoVMsExists />
-            </div>
+            {isSearchAvailable && (
+              <div style={{ marginBottom: '1em' }}>
+                <KubevirtProviderAlert variant="search" component="hint" hideAlertWhenNoVMsExists />
+              </div>
+            )}
             <AcmTableStateProvider localStorageKey={'managed-clusters-table-state'}>
               <ClustersTable
                 clusters={clusters}

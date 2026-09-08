@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { getServiceAccountToken } from './serviceAccountToken'
 import { jsonRequest } from './json-request'
 import { logger } from './logger'
-import { getServiceAccountToken } from './serviceAccountToken'
 
 // Type returned by /apis/authentication.k8s.io/v1/tokenreviews
 
@@ -25,7 +25,7 @@ interface MultiClusterHubList {
   items: MultiClusterHub[]
 }
 
-let multiclusterhub: Promise<MultiClusterHub | undefined>
+let multiclusterhub: Promise<MultiClusterHub | undefined> | undefined
 
 /** Clear MultiClusterHub cache. Used for test isolation. */
 export function resetMultiClusterHubCache(): void {
@@ -40,10 +40,10 @@ export async function getMultiClusterHub(noCache?: boolean): Promise<MultiCluste
       serviceAccountToken
     )
       .then((response) => {
-        return response.items && response.items[0] ? response.items[0] : undefined
+        return response.items?.[0] ?? undefined
       })
       .catch((err: Error): undefined => {
-        logger.error({ msg: 'Error getting MultiClusterHub', error: err.message })
+        logger.debug({ msg: 'MultiClusterHub not found', error: err.message })
         return undefined
       })
   }
@@ -52,5 +52,5 @@ export async function getMultiClusterHub(noCache?: boolean): Promise<MultiCluste
 
 export async function getMultiClusterHubComponents(noCache?: boolean): Promise<MultiClusterHubComponent[] | undefined> {
   const multiClusterHub = await getMultiClusterHub(noCache)
-  return multiClusterHub.spec?.overrides?.components
+  return multiClusterHub?.spec?.overrides?.components
 }

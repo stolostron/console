@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { parseResponseJsonBody } from '../../src/lib/body-parser'
+import { logger } from '../../src/lib/logger'
 import {
   aggregateLocalApplications,
   aggregateRemoteApplications,
@@ -14,6 +15,7 @@ import { request } from '../mock-request'
 import nock from 'nock'
 import { discoverSystemAppNamespacePrefixes, resetSystemAppNamespacePrefixes } from '../../src/routes/aggregators/utils'
 import { resetMultiClusterHubCache } from '../../src/lib/multi-cluster-hub'
+import * as multiClusterHub from '../../src/lib/multi-cluster-hub'
 import { resetMultiClusterEngineCache } from '../../src/lib/multi-cluster-engine'
 import { ServerSideEvents } from '../../src/lib/server-side-events'
 import { polledAggregation } from '../../src/routes/aggregator'
@@ -196,6 +198,77 @@ describe(`aggregator Route`, function () {
     })
     expect(res.statusCode).toEqual(200)
     expect(await parseResponseJsonBody(res)).toEqual(uidata)
+  })
+
+  describe('startAggregatingApplications', () => {
+    const pingSearchApiBody =
+      '{"operationName":"searchResult","variables":{"input":[{"filters":[{"property":"kind","values":["Pod"]},{"property":"name","values":["search-api*"]}],"limit":1}]},"query":"query searchResult($input: [SearchInput]) {\\n  searchResult: search(input: $input) {\\n    items\\n  }\\n}"}'
+
+    afterEach(() => {
+      jest.useRealTimers()
+    })
+
+    it('should not ping search API when MultiClusterHub is missing', async function () {
+      jest.useFakeTimers()
+      resetMultiClusterHubCache()
+      jest.spyOn(multiClusterHub, 'getMultiClusterHub').mockResolvedValue(undefined)
+      const searchScope = nock('https://search-search-api.undefined.svc.cluster.local:4010')
+        .post('/searchapi/graphql')
+        .reply(200, { data: { searchResult: [] } })
+      const infoSpy = jest.spyOn(logger, 'info').mockImplementation(() => undefined)
+
+      const promise = searchLoop()
+      await Promise.resolve()
+      expect(infoSpy).toHaveBeenCalledWith('MultiClusterHub not found; waiting before search aggregation')
+      expect(searchScope.isDone()).toBe(false)
+      stopAggregatingApplications()
+      await promise
+      infoSpy.mockRestore()
+      jest.restoreAllMocks()
+    })
+
+    it('should start searchLoop when MultiClusterHub is present', async function () {
+      resetMultiClusterHubCache()
+      nock(process.env.CLUSTER_API_URL)
+        .persist()
+        .get('/apis/operator.open-cluster-management.io/v1/multiclusterhubs')
+        .reply(200, {
+          items: [
+            {
+              metadata: {
+                namespace: 'ocm',
+              },
+              status: {
+                currentVersion: '2.5.1',
+              },
+            },
+          ],
+        })
+
+      const pingScope = nock('https://search-search-api.undefined.svc.cluster.local:4010')
+        .post('/searchapi/graphql', pingSearchApiBody)
+        .reply(200, {
+          data: {
+            searchResult: [{ items: [{ status: 'Running' }] }],
+          },
+        })
+      nock('https://search-search-api.undefined.svc.cluster.local:4010')
+        .persist()
+        .post('/searchapi/graphql')
+        .reply(200, {
+          data: {
+            searchResult: [
+              { items: [], related: [] },
+              { items: [], related: [] },
+              { items: [], related: [] },
+            ],
+          },
+        })
+
+      await searchLoop()
+
+      expect(pingScope.isDone()).toBe(true)
+    })
   })
 })
 
@@ -544,6 +617,20 @@ const responseFiltered = {
 }
 /// to get exact nock request body, put bp at line 303 in /backend/node_modules/nock/lib/intercepted_request_router.js
 function setupNocks(prefixes?: boolean) {
+  if (!prefixes) {
+    nock(process.env.CLUSTER_API_URL)
+      .persist()
+      .get('/apis/operator.open-cluster-management.io/v1/multiclusterhubs')
+      .reply(200, {
+        items: [
+          {
+            metadata: { namespace: 'ocm' },
+            status: { currentVersion: '2.5.1' },
+          },
+        ],
+      })
+  }
+
   //
   // PING SEARCHAPI
   nock('https://search-search-api.undefined.svc.cluster.local:4010')
