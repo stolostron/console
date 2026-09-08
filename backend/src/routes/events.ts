@@ -35,17 +35,7 @@ export interface SettingsEvent {
   settings: Record<string, string>
 }
 
-export interface FlappingEvent {
-  type: 'FLAPPING'
-  kind: string
-  namespace: string
-  name: string
-  threshold: number
-  windowMs: number
-  cooldownMs: number
-}
-
-type ServerSideEventData = WatchEvent | SettingsEvent | FlappingEvent | { type: 'START' | 'LOADED' | 'EOP' }
+type ServerSideEventData = WatchEvent | SettingsEvent | { type: 'START' | 'LOADED' | 'EOP' }
 
 let requests: { cancel: () => void }[] = []
 
@@ -57,29 +47,26 @@ let requests: { cancel: () => void }[] = []
  * 1) Overwhelm the event processing loop / liveliness probe
  * 2) Grow client event queues until the pod OOMs
  *
- * Detection: if the same kind/namespace/name is modified more than FLAP_THRESHOLD (N) times
+ * Detection: if the same namespace/name Policy is modified more than FLAP_THRESHOLD (N) times
  * within FLAP_WINDOW_MS (M), the resource is considered flapping.
- * While flapping, browser broadcasts are limited to once every FLAP_COOLDOWN_MS (P).
- * Only kinds listed in FLAP_THROTTLE_KINDS are subject to this check.
+ * Only Policy resources are subject to this check.
+ * While flapping, the resource is cached/broadcast when flapping is first detected (marked with
+ * `throttled: true`) and then at most once per minute (FLAP_COOLDOWN_MS) while still flapping.
+ * Cache suppression continues for the full cooldown even if the detection window clears before
+ * the minute elapses, so re-entry into flapping does not bypass the interval.
  *
  * N is initially 5 times
  * M is initially 5 seconds
  * P is initially 1 minute
- * Kind is initially ['Policy']
  */
 export const FLAP_THRESHOLD = 5 // N: modifications that trigger flapping detection
 export const FLAP_WINDOW_MS = 5 * 1000 // M: sliding window for counting modifications
-export const FLAP_COOLDOWN_MS = 60 * 1000 // P: min interval between browser updates while flapping
-export const FLAP_THROTTLE_KINDS = ['Policy'] // kinds subject to flapping detection
+export const FLAP_COOLDOWN_MS = 60 * 1000 // P: min interval between cache updates while flapping
 
 interface FlapTrackerEntry {
   timestamps: number[]
   throttled: boolean
-  lastForwardedAt: number
-  flappingEventID?: number
-  kind: string
-  namespace: string
-  name: string
+  lastCachedAt: number
 }
 
 const flapTracker: Record<string, FlapTrackerEntry> = {}
@@ -87,10 +74,6 @@ const flapTracker: Record<string, FlapTrackerEntry> = {}
 /** Clear flap tracker state. Used for test isolation. */
 export function resetFlapTracker() {
   for (const key in flapTracker) {
-    const entry = flapTracker[key]
-    if (entry.flappingEventID) {
-      ServerSideEvents.removeEvent(entry.flappingEventID)
-    }
     delete flapTracker[key]
   }
 }
@@ -111,77 +94,50 @@ export function formatFlappingMessage(kind: string, namespace: string, name: str
   return `${kind} ${name} in namespace ${namespace} has been modified more than ${FLAP_THRESHOLD} times in the last ${windowMinutes} minutes. Verify this resource is configured correctly. Updates are being limited to ${timesPerMinute} times per minute.`
 }
 
-async function notifyFlapping(entry: FlapTrackerEntry): Promise<void> {
-  const message = formatFlappingMessage(entry.kind, entry.namespace, entry.name)
-  logger.warn({ msg: message, kind: entry.kind, namespace: entry.namespace, name: entry.name })
-  if (entry.flappingEventID) {
-    ServerSideEvents.removeEvent(entry.flappingEventID)
-  }
-  entry.flappingEventID = await ServerSideEvents.pushEvent({
-    data: {
-      type: 'FLAPPING',
-      kind: entry.kind,
-      namespace: entry.namespace,
-      name: entry.name,
-      threshold: FLAP_THRESHOLD,
-      windowMs: FLAP_WINDOW_MS,
-      cooldownMs: FLAP_COOLDOWN_MS,
-    } satisfies FlappingEvent,
-  })
-}
-
-function clearFlappingNotice(entry: FlapTrackerEntry): void {
-  if (entry.flappingEventID) {
-    ServerSideEvents.removeEvent(entry.flappingEventID)
-    entry.flappingEventID = undefined
-  }
-}
-
 /**
- * Records a modification for flap detection and returns whether this update should be
- * forwarded to browser clients. Non-throttled kinds always return true.
+ * Records a modification for flap detection on Policy resources and returns whether this
+ * update should be throttled (suppressed). Sets `resource.throttled` to true when flapping
+ * is detected. Non-Policy resources are never throttled.
  */
-export function shouldForwardResourceUpdate(
-  resource: Pick<IResource, 'kind'> & { metadata?: { namespace?: string; name?: string } },
+export function shouldThrottleResource(
+  resource: Pick<IResource, 'kind' | 'throttled'> & { metadata?: { namespace?: string; name?: string } },
   now = Date.now()
 ): boolean {
-  if (!FLAP_THROTTLE_KINDS.includes(resource.kind)) {
-    return true
+  if (resource.kind !== 'Policy') {
+    return false
   }
 
   const key = resourceFlapKey(resource)
-  const kind = resource.kind
-  const namespace = resource.metadata?.namespace ?? ''
-  const name = resource.metadata?.name ?? ''
 
   let entry = flapTracker[key]
   if (!entry) {
-    entry = { timestamps: [], throttled: false, lastForwardedAt: 0, kind, namespace, name }
+    entry = { timestamps: [], throttled: false, lastCachedAt: 0 }
     flapTracker[key] = entry
   }
 
   entry.timestamps.push(now)
   entry.timestamps = entry.timestamps.filter((t) => now - t <= FLAP_WINDOW_MS)
 
-  const wasThrottled = entry.throttled
-  entry.throttled = entry.timestamps.length > FLAP_THRESHOLD
+  const isFlapping = entry.timestamps.length > FLAP_THRESHOLD
+  entry.throttled = isFlapping
 
-  if (entry.throttled && !wasThrottled) {
-    void notifyFlapping(entry)
-  } else if (!entry.throttled && wasThrottled) {
-    clearFlappingNotice(entry)
+  if (isFlapping) {
+    resource.throttled = true
+  } else {
+    delete resource.throttled
   }
 
-  if (!entry.throttled) {
-    entry.lastForwardedAt = now
+  const withinCooldown = entry.lastCachedAt > 0 && now - entry.lastCachedAt < FLAP_COOLDOWN_MS
+  if (withinCooldown) {
     return true
   }
 
-  // While flapping: allow at most one browser update every FLAP_COOLDOWN_MS
-  if (entry.lastForwardedAt === 0 || now - entry.lastForwardedAt >= FLAP_COOLDOWN_MS) {
-    entry.lastForwardedAt = now
-    return true
+  if (isFlapping) {
+    entry.lastCachedAt = now
+    return false
   }
+
+  entry.lastCachedAt = 0
   return false
 }
 
@@ -1002,8 +958,12 @@ export async function cacheResource(resource: IResource, forwardEventsToClients 
     existing = latestExisting
   }
 
-  // Always update the in-memory cache; only throttle browser broadcasts for flapping resources
-  const shouldForward = forwardEventsToClients && shouldForwardResourceUpdate(resource)
+  // Skip caching/broadcasting for throttled updates except the transition update and once per minute.
+  if (shouldThrottleResource(resource)) {
+    return resource.metadata.resourceVersion
+  }
+
+  const shouldForward = forwardEventsToClients
   if (shouldForward && existing) {
     const eventID = await existing.eventID
     // if no other cacheResource call updated the cache while we were awaiting, we can replace the cache entry and event
@@ -1079,7 +1039,6 @@ function eventFilter(token: string, serverSideEvent: ServerSideEvent<ServerSideE
     case 'EOP':
     case 'LOADED':
     case 'SETTINGS':
-    case 'FLAPPING':
       return Promise.resolve(true)
 
     case 'DELETED':

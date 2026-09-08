@@ -21,7 +21,7 @@ import {
   cleanupAccessCache,
   ACCESS_CACHE_TTL,
   ACCESS_CACHE_MAX_TOKENS,
-  shouldForwardResourceUpdate,
+  shouldThrottleResource,
   resetFlapTracker,
   getFlapTracker,
   formatFlappingMessage,
@@ -1525,55 +1525,109 @@ describe('events Route', () => {
       )
     })
 
-    it('should forward non-Policy kinds without throttling', () => {
+    it('should never throttle non-Policy kinds', () => {
       const now = Date.now()
       for (let i = 0; i < FLAP_THRESHOLD + 10; i++) {
         expect(
-          shouldForwardResourceUpdate(
-            { kind: 'ManagedCluster', metadata: { name: 'cluster-a', namespace: '' } },
-            now + i
-          )
-        ).toBe(true)
+          shouldThrottleResource({ kind: 'ManagedCluster', metadata: { name: 'cluster-a', namespace: '' } }, now + i)
+        ).toBe(false)
       }
+    })
+
+    it('should only set throttled on the resource when flapping is detected', () => {
+      const base = Date.now()
+      const policy: { kind: string; metadata: { name: string; namespace: string }; throttled?: boolean } = {
+        kind: 'Policy',
+        metadata: { name: 'policy-a', namespace: 'default' },
+      }
+
+      for (let i = 0; i < FLAP_THRESHOLD; i++) {
+        shouldThrottleResource(policy, base + i)
+        expect(policy.throttled).toBeUndefined()
+      }
+
+      shouldThrottleResource(policy, base + FLAP_THRESHOLD)
+      expect(policy.throttled).toBe(true)
+
+      shouldThrottleResource(policy, base + FLAP_WINDOW_MS + FLAP_THRESHOLD + 10)
+      expect(policy.throttled).toBeUndefined()
     })
 
     it('should throttle Policy updates after more than N modifications within M seconds', () => {
       const base = Date.now()
       const policy = { kind: 'Policy', metadata: { name: 'flappy', namespace: 'default' } }
 
-      let forwarded = 0
-      // Sustained high-frequency updates across the cooldown window.
-      // lastForwardedAt is set near base + (FLAP_THRESHOLD-1)*100, so run past that + cooldown.
-      const end = base + (FLAP_THRESHOLD - 1) * 100 + FLAP_COOLDOWN_MS + 500
+      let notThrottledCount = 0
+      const end = base + (FLAP_THRESHOLD + 5) * 100
       for (let t = base; t <= end; t += 100) {
-        if (shouldForwardResourceUpdate(policy, t)) {
-          forwarded += 1
+        if (!shouldThrottleResource(policy, t)) {
+          notThrottledCount += 1
         }
       }
 
       expect(getFlapTracker()['Policy/default/flappy'].throttled).toBe(true)
-      // First FLAP_THRESHOLD forwards, then at most one more after cooldown while still flapping
-      expect(forwarded).toBe(FLAP_THRESHOLD + 1)
+      // First FLAP_THRESHOLD updates, plus the transition update when flapping is detected.
+      // Further updates within the cooldown interval are throttled.
+      expect(notThrottledCount).toBe(FLAP_THRESHOLD + 1)
     })
 
-    it('should stop throttling when modifications fall back within the detection window', () => {
+    it('should allow caching again after FLAP_COOLDOWN_MS while still throttled', () => {
+      const base = Date.now()
+      const policy = { kind: 'Policy', metadata: { name: 'periodic', namespace: 'default' } }
+
+      for (let i = 0; i <= FLAP_THRESHOLD; i++) {
+        shouldThrottleResource(policy, base + i)
+      }
+      expect(getFlapTracker()['Policy/default/periodic'].throttled).toBe(true)
+
+      expect(shouldThrottleResource(policy, base + FLAP_THRESHOLD + 100)).toBe(true)
+
+      const periodicAt = base + FLAP_THRESHOLD + FLAP_COOLDOWN_MS
+      for (let i = 1; i <= FLAP_THRESHOLD; i++) {
+        shouldThrottleResource(policy, periodicAt - 1000 + i * 100)
+      }
+
+      expect(shouldThrottleResource(policy, periodicAt)).toBe(false)
+    })
+
+    it('should continue suppressing caches after detection window clears until cooldown expires', () => {
+      const base = Date.now()
+      const policy: { kind: string; metadata: { name: string; namespace: string }; throttled?: boolean } = {
+        kind: 'Policy',
+        metadata: { name: 'sticky', namespace: 'default' },
+      }
+
+      for (let i = 0; i <= FLAP_THRESHOLD; i++) {
+        shouldThrottleResource(policy, base + i)
+      }
+
+      const afterWindowClears = base + FLAP_WINDOW_MS + FLAP_THRESHOLD + 10
+      expect(shouldThrottleResource(policy, afterWindowClears)).toBe(true)
+      expect(policy.throttled).toBeUndefined()
+    })
+
+    it('should stop throttling when modifications fall back and cooldown expires', () => {
       const base = Date.now()
       const policy = { kind: 'Policy', metadata: { name: 'recovering', namespace: 'ns1' } }
 
       for (let i = 0; i <= FLAP_THRESHOLD; i++) {
-        shouldForwardResourceUpdate(policy, base + i)
+        shouldThrottleResource(policy, base + i)
       }
       expect(getFlapTracker()['Policy/ns1/recovering'].throttled).toBe(true)
 
-      // Advance far enough that every prior timestamp falls outside the detection window
-      expect(shouldForwardResourceUpdate(policy, base + FLAP_WINDOW_MS + FLAP_THRESHOLD + 10)).toBe(true)
+      const afterCooldown = base + FLAP_THRESHOLD + FLAP_COOLDOWN_MS + 1
+      expect(shouldThrottleResource(policy, afterCooldown)).toBe(false)
       expect(getFlapTracker()['Policy/ns1/recovering'].throttled).toBe(false)
+      expect(getFlapTracker()['Policy/ns1/recovering'].lastCachedAt).toBe(0)
     })
 
-    it('should keep updating cache while suppressing excess browser events for a flapping Policy', async () => {
+    it('should cache at most once per minute while a Policy is flapping', async () => {
       const pushSpy = jest.spyOn(ServerSideEvents, 'pushEvent')
+      const base = 1_000_000_000_000
+      let now = base
+      jest.spyOn(Date, 'now').mockImplementation(() => now)
 
-      for (let i = 1; i <= FLAP_THRESHOLD + 3; i++) {
+      for (let i = 1; i <= FLAP_THRESHOLD + 1; i++) {
         await cacheResource({
           kind: 'Policy',
           apiVersion: 'policy.open-cluster-management.io/v1',
@@ -1584,29 +1638,65 @@ describe('events Route', () => {
             resourceVersion: String(i),
           },
         })
+        now += 100
       }
 
-      // Allow async FLAPPING notify + MODIFIED pushes to settle
+      now += 100
+      await cacheResource({
+        kind: 'Policy',
+        apiVersion: 'policy.open-cluster-management.io/v1',
+        metadata: {
+          name: 'flappy-policy',
+          namespace: 'default',
+          uid: 'flappy-uid',
+          resourceVersion: String(FLAP_THRESHOLD + 2),
+        },
+      })
+
       await new Promise((resolve) => setTimeout(resolve, 0))
       for (const entry of Object.values(getEventCache())) {
         await Promise.all(Object.values(entry).map((e) => e.eventID))
       }
 
-      const modifiedPushes = pushSpy.mock.calls.filter(
+      let modifiedPushes = pushSpy.mock.calls.filter(
         (call) => (call[0].data as { type?: string })?.type === 'MODIFIED'
       )
-      const flappingPushes = pushSpy.mock.calls.filter(
-        (call) => (call[0].data as { type?: string })?.type === 'FLAPPING'
-      )
+      expect(modifiedPushes.length).toBe(FLAP_THRESHOLD + 1)
 
-      // First FLAP_THRESHOLD updates forward; subsequent ones in the window are suppressed
-      expect(modifiedPushes.length).toBe(FLAP_THRESHOLD)
-      expect(flappingPushes.length).toBe(1)
+      const periodicAt = base + FLAP_THRESHOLD * 100 + FLAP_COOLDOWN_MS
+      for (let i = 1; i <= FLAP_THRESHOLD; i++) {
+        shouldThrottleResource(
+          { kind: 'Policy', metadata: { name: 'flappy-policy', namespace: 'default' } },
+          periodicAt - 1000 + i * 100
+        )
+      }
+
+      now = periodicAt
+      await cacheResource({
+        kind: 'Policy',
+        apiVersion: 'policy.open-cluster-management.io/v1',
+        metadata: {
+          name: 'flappy-policy',
+          namespace: 'default',
+          uid: 'flappy-uid',
+          resourceVersion: String(FLAP_THRESHOLD * 2 + 3),
+        },
+      })
+
+      await new Promise((resolve) => setTimeout(resolve, 0))
+      for (const entry of Object.values(getEventCache())) {
+        await Promise.all(Object.values(entry).map((e) => e.eventID))
+      }
+
+      modifiedPushes = pushSpy.mock.calls.filter((call) => (call[0].data as { type?: string })?.type === 'MODIFIED')
+      expect(modifiedPushes.length).toBe(FLAP_THRESHOLD + 2)
 
       const resources = await getKubeResources('Policy', 'policy.open-cluster-management.io/v1')
       expect(resources).toHaveLength(1)
-      expect(resources[0].metadata.resourceVersion).toBe(String(FLAP_THRESHOLD + 3))
+      expect(resources[0].metadata.resourceVersion).toBe(String(FLAP_THRESHOLD * 2 + 3))
+      expect(resources[0].throttled).toBe(true)
 
+      jest.restoreAllMocks()
       pushSpy.mockRestore()
     })
   })

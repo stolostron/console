@@ -125,7 +125,7 @@ export default function PoliciesPage() {
     () => [
       {
         header: t('Name'),
-        cell: handleNameCell,
+        cell: (item) => handleNameCell(item, t),
         sort: 'policy.metadata.name',
         search: 'policy.metadata.name',
         id: 'name',

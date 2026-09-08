@@ -2,7 +2,6 @@
 import { ReactNode, useContext, useEffect } from 'react'
 import { css } from '@emotion/css'
 import { PluginContext } from '../lib/PluginContext'
-import { FlappingAlerts } from './FlappingAlerts'
 import { LostChangesProvider } from './LostChanges'
 import { LoadingPage } from './LoadingPage'
 import { StreamStatusOverlay } from './StreamStatusOverlay'
@@ -84,7 +83,6 @@ export const LoadPluginData = (props: { children?: ReactNode }) => {
     <div className={contentWrapperClass}>
       {isStreamIdle && <StreamStatusOverlay variant="idle" />}
       {isReconnecting && <StreamStatusOverlay variant="reconnecting" />}
-      <FlappingAlerts />
       <LostChangesProvider>{props.children}</LostChangesProvider>
     </div>
   ) : (

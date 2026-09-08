@@ -2,8 +2,6 @@
 import { createContext, useState, useMemo, useCallback, Dispatch, SetStateAction } from 'react'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import * as atoms from '../atoms'
-
-type FlappingEvent = atoms.FlappingEvent
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import * as recoil from 'recoil'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
@@ -26,12 +24,10 @@ export type PluginData = {
   startLoading: boolean
   isStreamIdle: boolean
   isReconnecting: boolean
-  flappingAlerts: FlappingEvent[]
   setLoadCompleted: Dispatch<SetStateAction<boolean>>
   setLoadStarted: Dispatch<SetStateAction<boolean>>
   setIsStreamIdle: Dispatch<SetStateAction<boolean>>
   setIsReconnecting: Dispatch<SetStateAction<boolean>>
-  setFlappingAlerts: Dispatch<SetStateAction<FlappingEvent[]>>
   mounted: boolean
   mount: () => void
   unmount: () => void
@@ -49,12 +45,10 @@ export const defaultContext = {
   startLoading: false,
   isStreamIdle: false,
   isReconnecting: false,
-  flappingAlerts: [],
   setLoadCompleted: () => {},
   setLoadStarted: () => {},
   setIsStreamIdle: () => {},
   setIsReconnecting: () => {},
-  setFlappingAlerts: () => {},
   mounted: false,
   mount: () => {},
   unmount: () => {},
@@ -69,7 +63,6 @@ export const usePluginDataContextValue = () => {
   const [startLoading, setStartLoading] = useState(false)
   const [isStreamIdle, setIsStreamIdle] = useState(false)
   const [isReconnecting, setIsReconnecting] = useState(false)
-  const [flappingAlerts, setFlappingAlerts] = useState<FlappingEvent[]>([])
   const [mountCount, setMountCount] = useState(0)
   const backendUrl = getBackendUrl()
 
@@ -88,29 +81,16 @@ export const usePluginDataContextValue = () => {
       startLoading,
       isStreamIdle,
       isReconnecting,
-      flappingAlerts,
       setLoadCompleted,
       setLoadStarted,
       setIsStreamIdle,
       setIsReconnecting,
-      setFlappingAlerts,
       mounted: mountCount > 0,
       mount,
       unmount,
       load: () => setStartLoading(true),
     }),
-    [
-      backendUrl,
-      loadStarted,
-      loadCompleted,
-      startLoading,
-      isStreamIdle,
-      isReconnecting,
-      flappingAlerts,
-      mountCount,
-      mount,
-      unmount,
-    ]
+    [backendUrl, loadStarted, loadCompleted, startLoading, isStreamIdle, isReconnecting, mountCount, mount, unmount]
   )
   return contextValue
 }
