@@ -1658,9 +1658,7 @@ describe('events Route', () => {
         await Promise.all(Object.values(entry).map((e) => e.eventID))
       }
 
-      let modifiedPushes = pushSpy.mock.calls.filter(
-        (call) => (call[0].data as { type?: string })?.type === 'MODIFIED'
-      )
+      let modifiedPushes = pushSpy.mock.calls.filter((call) => (call[0].data as { type?: string })?.type === 'MODIFIED')
       expect(modifiedPushes.length).toBe(FLAP_THRESHOLD + 1)
 
       const periodicAt = base + FLAP_THRESHOLD * 100 + FLAP_COOLDOWN_MS
