@@ -376,6 +376,7 @@ export interface ClusterInfo {
   name?: string
   namespace?: string
   status?: ClusterStatus
+  consoleURL?: string
   metadata?: {
     name: string
     [key: string]: unknown
