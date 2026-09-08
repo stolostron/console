@@ -7,9 +7,8 @@ export function authenticated(req: Http2ServerRequest, res: Http2ServerResponse)
   const token = getToken(req)
   if (!token) return unauthorized(req, res)
   isAuthenticated(token)
-    .then((response) => {
-      res.writeHead(response.status).end()
-      void response.blob()
+    .then((status) => {
+      res.writeHead(status).end()
     })
     .catch(catchInternalServerError(res))
 }
