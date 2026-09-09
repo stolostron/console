@@ -799,24 +799,45 @@ export const setClusterStatus = (
     clusters = [],
     appClusters = [],
     clustersNames = [],
+    searchClusters = [],
   } = specs as {
     cluster?: ClusterInfo
     targetNamespaces?: Record<string, unknown>
     clusters?: ClusterInfo[]
     appClusters?: string[]
     clustersNames?: string[]
+    searchClusters?: ClusterInfo[]
   }
 
   const clusterArr = cluster ? [cluster] : clusters
   const appClustersList = appClusters.length > 0 ? appClusters : Object.keys(targetNamespaces)
 
+  const searchClusterArr = Array.isArray(searchClusters) ? searchClusters.filter(Boolean) : []
+  if (searchClusterArr.length > 0) {
+    clusterArr.forEach((cls) => {
+      if (!cls.consoleURL) {
+        const clsName = cls.name || cls.metadata?.name || ''
+        const match = searchClusterArr.find(
+          (sc) => typeof sc === 'object' && (sc.name === clsName || sc.metadata?.name === clsName)
+        )
+        if (match?.consoleURL) {
+          cls.consoleURL = match.consoleURL
+        }
+      }
+    })
+  }
+
   // Add Argo app clusters not covered by deployed resource clusters
   appClustersList.forEach((appCls: string) => {
     if (clusters.findIndex((obj: any) => safeGet(obj, 'name') === appCls) === -1) {
+      const searchMatch = searchClusterArr.find(
+        (sc) => typeof sc === 'object' && (sc.name === appCls || sc.metadata?.name === appCls)
+      )
       clusterArr.push({
         name: appCls,
         _clusterNamespace: appCls === hubClusterName ? appCls : '_',
         status: appCls === hubClusterName ? 'ok' : '',
+        consoleURL: searchMatch?.consoleURL,
       })
     }
   })
