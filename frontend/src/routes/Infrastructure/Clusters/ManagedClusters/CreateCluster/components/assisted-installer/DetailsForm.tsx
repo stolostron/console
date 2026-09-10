@@ -167,10 +167,6 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
   }, [control.disabled, formRef.current])
 
   useEffect(() => {
-    if (formRef?.current && control.active && control.active !== formRef?.current?.values) {
-      formRef?.current?.setValues(control.active, true)
-    }
-
     control.reverse = (
       control: {
         active: FormControl['active']
