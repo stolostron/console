@@ -1052,7 +1052,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
       )
     }
     case 'TextArea': {
-      const hideSecretInput = input.value !== '' && input.isSecret === true && !showSecrets
+      const hideSecretInput = input.isSecret === true && !showSecrets
       const { onChange, ...inputProps } = input
       return (
         <InputGroup>
@@ -1060,7 +1060,6 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
             <TextInput
               {...inputProps}
               onChange={(_event, value) => onChange(value)}
-              value={'**************'}
               validated={validated}
               type={'password'}
               readOnlyVariant={isReadOnly ? 'default' : undefined}
