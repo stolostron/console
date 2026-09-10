@@ -71,6 +71,28 @@ describe('AcmSelect', () => {
     expect(getByPlaceholderText('Select one')).toBeInTheDocument()
   })
 
+  test('typeahead variant disables browser autocomplete on the input (ACM-42794)', async () => {
+    const TypeaheadSelect = () => {
+      const [value, setValue] = useState<string>()
+      return (
+        <AcmSelect
+          variant={SelectVariant.typeahead}
+          id="acm-select"
+          label="ACM select"
+          value={value}
+          onChange={setValue}
+          placeholder="Select one"
+        >
+          <SelectOption key="red" value="red">
+            Red
+          </SelectOption>
+        </AcmSelect>
+      )
+    }
+    const { getByPlaceholderText } = render(<TypeaheadSelect />)
+    expect(getByPlaceholderText('Select one')).toHaveAttribute('autocomplete', 'off')
+  })
+
   test('validates required input', async () => {
     const Component = () => {
       const [value, setValue] = useState<string | undefined>(undefined)
