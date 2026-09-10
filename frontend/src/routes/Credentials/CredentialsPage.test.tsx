@@ -184,7 +184,7 @@ describe('provider connections page', () => {
     nockGet(getSecrets1.req, getSecrets1.res) // get 'secrets' in 'provider-connection-namespace' namespace
     render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
     await waitForText(mockProviderConnection1.metadata!.name!)
-    await clickRowKebabAction(1, 'Edit credential')
+    await clickRowKebabAction(1, 'Edit credential', 'Credentials table')
     // Verify the information shows up
     await waitForText('A credential stores the access credentials and configuration information for creating clusters.')
     await waitForText('Basic information')
@@ -194,7 +194,7 @@ describe('provider connections page', () => {
     const deleteNock = nockDelete(mockProviderConnection1)
     render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
     await waitForText(mockProviderConnection1.metadata!.name!)
-    await clickRowKebabAction(1, 'Delete credential')
+    await clickRowKebabAction(1, 'Delete credential', 'Credentials table')
     await typeByText('Confirm by typing "confirm" below:', 'confirm')
     await clickByText('Delete')
     await waitForNock(deleteNock)
@@ -204,7 +204,7 @@ describe('provider connections page', () => {
     const badRequestStatus = nockDelete(mockProviderConnection1, mockBadRequestStatus)
     render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
     await waitForText(mockProviderConnection1.metadata!.name!)
-    await clickRowKebabAction(1, 'Delete credential')
+    await clickRowKebabAction(1, 'Delete credential', 'Credentials table')
     await typeByText('Confirm by typing "confirm" below:', 'confirm')
     await clickByText('Delete')
     await waitForNock(badRequestStatus)
@@ -214,7 +214,7 @@ describe('provider connections page', () => {
   test('should be able to cancel delete a provider connection when using row action menu', async () => {
     render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
     await waitForText(mockProviderConnection1.metadata!.name!)
-    await clickRowKebabAction(1, 'Delete credential')
+    await clickRowKebabAction(1, 'Delete credential', 'Credentials table')
     await clickByText('Cancel')
     await waitForNotText('Cancel')
   })
@@ -222,7 +222,7 @@ describe('provider connections page', () => {
   test('Delete button is disabled in row delete modal until confirm text is entered', async () => {
     render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
     await waitForText(mockProviderConnection1.metadata!.name!)
-    await clickRowKebabAction(1, 'Delete credential')
+    await clickRowKebabAction(1, 'Delete credential', 'Credentials table')
     await waitForText('Confirm by typing "confirm" below:')
     const deleteButton = screen.getByRole('button', { name: /^Delete$/i })
     expect(deleteButton).toBeDisabled()
@@ -231,7 +231,7 @@ describe('provider connections page', () => {
   test('Delete button stays disabled in row delete modal when wrong confirm text is entered', async () => {
     render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
     await waitForText(mockProviderConnection1.metadata!.name!)
-    await clickRowKebabAction(1, 'Delete credential')
+    await clickRowKebabAction(1, 'Delete credential', 'Credentials table')
     await typeByText('Confirm by typing "confirm" below:', 'wrong')
     const deleteButton = screen.getByRole('button', { name: /^Delete$/i })
     expect(deleteButton).toBeDisabled()
@@ -240,7 +240,7 @@ describe('provider connections page', () => {
   test('Delete button is enabled in row delete modal when correct confirm text is entered', async () => {
     render(<TestProviderConnectionsPage providerConnections={[mockProviderConnection1]} />)
     await waitForText(mockProviderConnection1.metadata!.name!)
-    await clickRowKebabAction(1, 'Delete credential')
+    await clickRowKebabAction(1, 'Delete credential', 'Credentials table')
     await typeByText('Confirm by typing "confirm" below:', 'confirm')
     const deleteButton = screen.getByRole('button', { name: /^Delete$/i })
     expect(deleteButton).not.toBeDisabled()
@@ -322,7 +322,7 @@ describe('provider connections page RBAC', () => {
     ]
     render(<TestProviderConnectionsPage providerConnections={mockProviderConnections} />)
     await waitForText(mockProviderConnection1.metadata!.name!)
-    await clickRowActionButton(1)
+    await clickRowActionButton(1, 'Credentials table')
     await waitForNocks(rbacNocks)
   })
 })

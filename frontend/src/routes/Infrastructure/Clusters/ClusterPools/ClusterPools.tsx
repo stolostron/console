@@ -269,6 +269,7 @@ export function ClusterPoolsTable(props: {
       <ScaleClusterPoolModal {...scaleClusterPoolModalProps} />
       <UpdateReleaseImageModal {...updateReleaseImageModalProps} />
       <AcmTable<ClusterPool>
+        aria-label={t('Cluster pools table')}
         items={clusterPools}
         disabledItems={deletingPools}
         showExportButton
@@ -594,6 +595,7 @@ export function ClusterPoolClustersTable(props: { clusters: Cluster[] }) {
   return (
     <div className={table}>
       <AcmTable<Cluster>
+        aria-label={t('Cluster pool clusters table')}
         noBorders
         keyFn={(cluster: Cluster) => cluster.name!}
         key="clusterPoolClustersTable"
@@ -690,6 +692,7 @@ export function ClusterPoolClaimsTable(props: { claims: ClusterClaim[] }) {
     <div className={table}>
       <BulkActionModal<ClusterClaim> {...modalProps} />
       <AcmTable<ClusterClaim>
+        aria-label={t('Cluster claims table')}
         noBorders
         keyFn={(claim: ClusterClaim) => claim.metadata.name!}
         key="clusterPoolClaimsTable"

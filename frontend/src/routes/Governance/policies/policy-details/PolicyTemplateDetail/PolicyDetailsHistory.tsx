@@ -170,6 +170,7 @@ export function PolicyDetailsHistory() {
       <Title headingLevel="h4">{t('Template: {{templateName}}', { templateName })}</Title>
       <AcmTableStateProvider localStorageKey="grc-status-view">
         <AcmTable<HistoryTableData>
+          aria-label={t('Policy history table')}
           showExportButton
           exportFilePrefix={`${policyName}-${policyNamespace}-${clusterName}-${templateName}`}
           items={statusItems}

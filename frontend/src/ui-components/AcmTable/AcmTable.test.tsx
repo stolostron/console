@@ -93,6 +93,7 @@ describe('AcmTable', () => {
     const [items, setItems] = useState<IExampleData[]>(testItems)
     const acmTable = (
       <AcmTable<IExampleData>
+        aria-label="Example table"
         advancedFilters={advancedFilters}
         emptyState={<AcmEmptyState title="No addresses found" message="You do not have any addresses yet" />}
         items={items}
@@ -361,6 +362,7 @@ describe('AcmTable', () => {
     const { container } = render(
       <MemoryRouter>
         <AcmTable<IExampleData>
+          aria-label="Example table"
           emptyState={<AcmEmptyState title="No addresses found" message="You do not have any addresses yet" />}
           showToolbar={false}
           items={exampleData.slice(0, 10)}
@@ -423,6 +425,7 @@ describe('AcmTable', () => {
     const { container } = render(
       <MemoryRouter>
         <AcmTable<IExampleData>
+          aria-label="Example table"
           emptyState={<AcmEmptyState title="No addresses found" message="You do not have any addresses yet" />}
           showToolbar={false}
           items={exampleData.slice(0, 4)}
@@ -943,6 +946,7 @@ describe('AcmTable', () => {
     const { getByTestId } = render(
       <MemoryRouter>
         <AcmTable<IExampleData>
+          aria-label="Example table"
           emptyState={<AcmEmptyState title="No addresses found" message="You do not have any addresses yet" />}
           showToolbar={false}
           items={exampleData.slice(0, 10)}

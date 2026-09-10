@@ -438,6 +438,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
       </Split>
       {type === 'Clusters' ? (
         <AcmTable<string>
+          aria-label={t('Policy set clusters table')}
           showExportButton
           exportFilePrefix={`${policySet.metadata.name}-clusterdetails`}
           items={policySetClusters}
@@ -461,6 +462,7 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
         />
       ) : (
         <AcmTable<Policy>
+          aria-label={t('Policy set policies table')}
           showExportButton
           exportFilePrefix={`${policySet.metadata.name}-policiesdetails`}
           items={policySetPolicies}

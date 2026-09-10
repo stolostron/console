@@ -400,7 +400,7 @@ export async function clickBulkAction(text: string) {
   await clickByText(text)
 }
 
-export async function clickRowActionButton(row: number, table = 'Simple Table') {
+export async function clickRowActionButton(row: number, table: string) {
   await waitForRole('grid', { name: table })
   const grid = screen.getByRole('grid', { name: table })
   const actionButtons = within(grid).getAllByRole('button', { name: 'Actions' })
@@ -459,9 +459,9 @@ export const getMultipleMocks = (obj: unknown, repeat: number) => {
  * Clicks a kebab menu action for a table row (PF5 compatible)
  * @param row Row number (1-based)
  * @param actionText Text of the menu item to click
- * @param table Optional table name, defaults to 'Simple Table'
+ * @param table Accessible name of the table (aria-label)
  */
-export async function clickRowKebabAction(row: number, actionText: string, table = 'Simple Table') {
+export async function clickRowKebabAction(row: number, actionText: string, table: string) {
   //  get table
   await waitForRole('grid', { name: table })
   const grid = screen.getByRole('grid', { name: table })

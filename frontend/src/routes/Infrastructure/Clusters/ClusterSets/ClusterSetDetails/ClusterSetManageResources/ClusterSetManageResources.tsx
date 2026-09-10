@@ -176,6 +176,7 @@ export function ClusterSetManageResourcesContent() {
           />
         </div>
         <AcmTable<Cluster>
+          aria-label={t('Cluster set resources table')}
           items={isLoading ? undefined : availableResources}
           initialSelectedItems={selectedResources}
           onSelect={(resources: Cluster[]) => setSelectedResources(resources)}

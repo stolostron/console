@@ -200,6 +200,7 @@ export function ResourceConditions(props: { conditions: ResourceCondition[] }) {
         </Content>
         {conditions.length ? (
           <AcmTable<ResourceCondition>
+            aria-label={t('Resource conditions table')}
             items={conditions}
             emptyState={undefined} // only shown when there are conditions
             columns={cols}

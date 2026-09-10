@@ -335,6 +335,7 @@ export default function DiscoveredByCluster() {
         )}
       <PageSection hasBodyWrapper={false}>
         <AcmTable<DiscoveredPolicyItem>
+          aria-label={t('Discovered policies by cluster table')}
           id={`${policyKind}ByCluster`}
           columns={cols}
           keyFn={(item) => item.cluster}

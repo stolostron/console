@@ -1019,6 +1019,7 @@ export function HypershiftUpgradeModal(props: {
           <Fragment>
             <AcmAlert isInline noClose variant="danger" title={t('there.were.errors')} />
             <AcmTable
+              aria-label={t('Upgrade errors table')}
               items={patchErrors}
               emptyState={undefined} // only shown when patchErrors.length > 0
               columns={[

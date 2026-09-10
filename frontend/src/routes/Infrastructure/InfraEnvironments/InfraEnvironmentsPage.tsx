@@ -430,6 +430,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
         )}
         <StackItem>
           <AcmTable<InfraEnvK8sResource>
+            aria-label={t('Infrastructure environments table')}
             items={infraEnvs}
             rowActions={[]}
             keyFn={keyFn}

@@ -169,6 +169,7 @@ export function ClusterSetAccessManagement() {
           }}
         />
         <AcmTable<ClusterRoleBinding>
+          aria-label={t('Cluster set access table')}
           items={clusterRoleBindings}
           keyFn={keyFn}
           columns={columns}

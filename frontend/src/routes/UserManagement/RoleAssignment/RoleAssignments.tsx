@@ -347,6 +347,7 @@ const RoleAssignments = ({
   return (
     <>
       <AcmTable<FlattenedRoleAssignment>
+        aria-label={t('Role assignments table')}
         key="role-assignments-table"
         columns={columns}
         keyFn={keyFn}

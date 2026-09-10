@@ -373,6 +373,7 @@ export function DiscoveredResources() {
           <CardBody>
             <AcmTableStateProvider localStorageKey="grc-discovered-resources">
               <AcmTable
+                aria-label={t('Discovered resources table')}
                 items={relatedObjects}
                 emptyState={emptyState}
                 columns={resourceCols}

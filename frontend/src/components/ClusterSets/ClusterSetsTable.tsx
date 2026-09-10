@@ -153,6 +153,7 @@ export const ClusterSetsTable = ({
       <CreateClusterSetModal isOpen={createClusterSetModalOpen} onClose={() => setCreateClusterSetModalOpen(false)} />
       <BulkActionModal {...modalProps} />
       <AcmTable<ManagedClusterSet>
+        aria-label={t('Cluster sets table')}
         items={managedClusterSets}
         disabledItems={disabledResources}
         columns={[

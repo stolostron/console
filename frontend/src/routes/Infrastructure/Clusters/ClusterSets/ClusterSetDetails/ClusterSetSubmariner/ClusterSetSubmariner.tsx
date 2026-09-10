@@ -289,6 +289,7 @@ export function ClusterSetSubmarinerPageContent() {
           </StackItem>
           <StackItem>
             <AcmTable<ManagedClusterAddOn>
+              aria-label={t('Submariner add-ons table')}
               items={submarinerAddons}
               columns={[
                 ...columns,

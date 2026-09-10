@@ -130,6 +130,7 @@ export function CredentialsTable(props: {
     <Fragment>
       <BulkActionModal<Secret> {...modalProps} />
       <AcmTable<Secret>
+        aria-label={t('Credentials table')}
         showExportButton
         exportFilePrefix="credentials"
         emptyState={

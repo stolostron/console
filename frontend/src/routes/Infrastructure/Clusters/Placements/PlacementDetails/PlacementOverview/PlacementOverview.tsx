@@ -342,6 +342,7 @@ export default function PlacementOverviewPageContent() {
                 <CardTitle>{t('Governance')}</CardTitle>
                 <CardBody>
                   <AcmTable<GovernanceResource>
+                    aria-label={t('Placement governance resources table')}
                     items={governanceItems}
                     columns={governanceColumns}
                     keyFn={(item) => item.uid}
@@ -356,6 +357,7 @@ export default function PlacementOverviewPageContent() {
                 <CardTitle>{t('Applications')}</CardTitle>
                 <CardBody>
                   <AcmTable<ApplicationSet>
+                    aria-label={t('Placement application sets table')}
                     items={relatedAppSets}
                     columns={applicationColumns}
                     keyFn={(appSet) => appSet.metadata.uid!}
@@ -370,6 +372,7 @@ export default function PlacementOverviewPageContent() {
                 <CardTitle>{t('System')}</CardTitle>
                 <CardBody>
                   <AcmTable<GitOpsCluster>
+                    aria-label={t('Placement GitOps clusters table')}
                     items={relatedGitOpsClusters}
                     columns={systemColumns}
                     keyFn={(gc) => gc.metadata.uid!}
@@ -384,6 +387,7 @@ export default function PlacementOverviewPageContent() {
         <div className="placement-details-card">
           <AcmExpandableCard title={t('PlacementDecisions')} id="placement-decisions">
             <AcmTable<PlacementDecision>
+              aria-label={t('Placement decisions table')}
               items={placementDecisionsForPlacement}
               columns={placementDecisionColumns}
               keyFn={(pd) => pd.metadata.uid!}
@@ -395,6 +399,7 @@ export default function PlacementOverviewPageContent() {
         <div className="placement-details-card">
           <AcmExpandableCard title={t('Conditions')} id="placement-conditions">
             <AcmTable<PlacementCondition>
+              aria-label={t('Placement conditions table')}
               items={placement.status?.conditions ?? []}
               columns={columns}
               keyFn={(condition) => condition.type}
