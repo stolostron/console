@@ -8,13 +8,14 @@ import { PolicySetList } from '../common/util'
 import { PolicyActionDropdown } from '../components/PolicyActionDropdown'
 import { AcmButton } from '../../../ui-components/AcmButton'
 import { AutomationDetailsSidebar } from '../components/AutomationDetailsSidebar'
-import { ButtonVariant } from '@patternfly/react-core'
+import { ButtonVariant, Flex, FlexItem, Icon, Tooltip } from '@patternfly/react-core'
+import { ClockIcon } from '@patternfly/react-icons'
 import type { TFunction } from 'i18next'
 import AcmTimestamp from '../../../lib/AcmTimestamp'
 import { AcmVisitedLink } from '../../../ui-components'
 
-export function handleNameCell(item: PolicyTableItem) {
-  return (
+export function handleNameCell(item: PolicyTableItem, t: TFunction<string, undefined>) {
+  const nameLink = (
     <AcmVisitedLink
       to={generatePath(NavigationPath.policyDetails, {
         namespace: item.policy.metadata.namespace!,
@@ -26,6 +27,23 @@ export function handleNameCell(item: PolicyTableItem) {
     >
       {item.policy.metadata.name}
     </AcmVisitedLink>
+  )
+
+  if (item.policy.throttled !== true) {
+    return nameLink
+  }
+
+  return (
+    <Flex alignItems={{ default: 'alignItemsCenter' }} spaceItems={{ default: 'spaceItemsXs' }}>
+      <FlexItem>{nameLink}</FlexItem>
+      <FlexItem>
+        <Tooltip content={t('policy.table.throttled.tooltip')}>
+          <Icon status="warning" size="sm" aria-label={t('policy.table.throttled')}>
+            <ClockIcon />
+          </Icon>
+        </Tooltip>
+      </FlexItem>
+    </Flex>
   )
 }
 

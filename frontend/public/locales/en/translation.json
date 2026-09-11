@@ -2638,6 +2638,8 @@
   "policy.table.actions.enforcing": "Enforcing",
   "policy.table.actions.inform": "Inform",
   "policy.table.actions.informing": "Informing",
+  "policy.table.throttled": "Updates throttled",
+  "policy.table.throttled.tooltip": "This policy is updating too frequently. Policy updates are therefore being limited to once per minute. Verify this policy is configured correctly",
   "policy.tableHeader.name": "Policy name",
   "policy.violations_one": "{{count}} policy with violations",
   "policy.violations_other": "{{count}} policies with violations",
