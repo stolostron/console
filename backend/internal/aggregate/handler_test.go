@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -104,6 +105,9 @@ func TestAppSetDataInvalidJSON400(t *testing.T) {
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusBadRequest {
 		t.Fatalf("status %d", resp.StatusCode)
+	}
+	if ct := resp.Header.Get("Content-Type"); !strings.Contains(ct, "json") {
+		t.Fatalf("content-type %q", ct)
 	}
 	var out map[string]string
 	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {

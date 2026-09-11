@@ -32,6 +32,7 @@ import (
 	"github.com/stolostron/console/backend/internal/metricsproxy"
 	"github.com/stolostron/console/backend/internal/oauth"
 	"github.com/stolostron/console/backend/internal/searchapi"
+	"github.com/stolostron/console/backend/internal/searchproxy"
 	"github.com/stolostron/console/backend/internal/server"
 	"github.com/stolostron/console/backend/internal/static"
 	"github.com/stolostron/console/backend/internal/user"
@@ -125,6 +126,18 @@ func run() error {
 	})
 	var opts []server.Option
 	opts = append(opts, server.WithRBACEvents(rbacHandler), server.WithOAuth(oauthH))
+	searchDiscovery := searchapi.Discovery{
+		SearchAPIURL: os.Getenv("SEARCH_API_URL"),
+		Federated:    func() bool { return os.Getenv("globalSearchFeatureFlag") == "enabled" },
+		Namespace:    serviceAccountNamespace(),
+		MCHNamespace: func(reqCtx context.Context) string {
+			ns, nsErr := hubresources.MCHNamespace(reqCtx, dyn)
+			if nsErr != nil {
+				return ""
+			}
+			return ns
+		},
+	}
 	var aggEng *aggregate.Engine
 	if cfg.InformerCache {
 		opts = append(opts, server.WithEvents(eventsHandler))
@@ -135,16 +148,10 @@ func run() error {
 		searchClient := &searchapi.Client{
 			HTTP:         auth.HTTPClient(ca, 0),
 			Token:        sa.Token,
-			SearchAPIURL: os.Getenv("SEARCH_API_URL"),
-			Federated:    func() bool { return os.Getenv("globalSearchFeatureFlag") == "enabled" },
-			Namespace:    serviceAccountNamespace(),
-			MCHNamespace: func(reqCtx context.Context) string {
-				ns, nsErr := hubresources.MCHNamespace(reqCtx, dyn)
-				if nsErr != nil {
-					return ""
-				}
-				return ns
-			},
+			SearchAPIURL: searchDiscovery.SearchAPIURL,
+			Federated:    searchDiscovery.Federated,
+			Namespace:    searchDiscovery.Namespace,
+			MCHNamespace: searchDiscovery.MCHNamespace,
 		}
 		aggEng = aggregate.NewEngine(infCache, searchClient, dyn)
 		aggAccess := aggregate.NewSSARAccess(restCfg)
@@ -206,6 +213,11 @@ func run() error {
 			RESTConfig: restCfg,
 			Dynamic:    dyn,
 			Discovery:  disc,
+		})),
+		server.WithSearchProxy(searchproxy.New(searchproxy.Options{
+			RESTConfig: restCfg,
+			TLSConfig:  serviceTLS,
+			Endpoint:   searchDiscovery.Endpoint,
 		})),
 	)
 

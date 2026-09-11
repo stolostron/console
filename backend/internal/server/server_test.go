@@ -800,3 +800,56 @@ func TestAggregateNotProxied(t *testing.T) {
 		}
 	}
 }
+
+func TestSearchNotProxied(t *testing.T) {
+	var sidecarHit bool
+	sidecar := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sidecarHit = true
+		w.WriteHeader(http.StatusTeapot)
+	}))
+	defer sidecar.Close()
+
+	searchH := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"ok":true}`))
+	})
+	cfg := &config.Config{NodeBackendURL: sidecar.URL, CertsDir: t.TempDir()}
+	h, err := server.Handler(cfg, server.WithSearchProxy(searchH))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ts := httptest.NewServer(h)
+	defer ts.Close()
+
+	for _, path := range []string{"/proxy/search", "/multicloud/proxy/search"} {
+		sidecarHit = false
+		req, _ := http.NewRequest(http.MethodPost, ts.URL+path, strings.NewReader(`{}`))
+		req.Header.Set("Content-Type", "application/json")
+		resp, getErr := ts.Client().Do(req)
+		if getErr != nil {
+			t.Fatal(getErr)
+		}
+		body, _ := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if sidecarHit {
+			t.Fatalf("%s was proxied to sidecar", path)
+		}
+		if resp.StatusCode != http.StatusOK {
+			t.Fatalf("%s status %d body %s", path, resp.StatusCode, body)
+		}
+
+		sidecarHit = false
+		req, _ = http.NewRequest(http.MethodGet, ts.URL+path, nil)
+		req.Header.Set("Upgrade", "websocket")
+		req.Header.Set("Connection", "Upgrade")
+		resp, getErr = ts.Client().Do(req)
+		if getErr != nil {
+			t.Fatal(getErr)
+		}
+		resp.Body.Close()
+		if sidecarHit {
+			t.Fatalf("%s websocket was proxied to sidecar", path)
+		}
+	}
+}

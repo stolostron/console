@@ -42,6 +42,7 @@ type handlerOptions struct {
 	clusterInfo   http.Handler
 	events        http.Handler
 	aggregate     http.Handler
+	searchProxy   http.Handler
 	debugSnapshot http.Handler
 }
 
@@ -59,6 +60,13 @@ func WithEvents(h http.Handler) Option {
 func WithAggregate(h http.Handler) Option {
 	return func(o *handlerOptions) {
 		o.aggregate = h
+	}
+}
+
+// WithSearchProxy registers POST /proxy/search and WebSocket upgrades (also /multicloud/proxy/search).
+func WithSearchProxy(h http.Handler) Option {
+	return func(o *handlerOptions) {
+		o.searchProxy = h
 	}
 }
 
@@ -287,6 +295,9 @@ func Handler(cfg *config.Config, opts ...Option) (http.Handler, error) {
 	}
 	if o.aggregate != nil {
 		registerAliasedPost(r, o.aggregate, "/aggregate/*")
+	}
+	if o.searchProxy != nil {
+		registerAliased(r, o.searchProxy, "/proxy/search")
 	}
 	if o.k8sProxy != nil {
 		registerK8sProxyRoutes(r, o.k8sProxy)

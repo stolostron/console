@@ -14,7 +14,6 @@ import { ansibleTower } from './routes/ansibletower'
 import { events, startWatching, stopWatching } from './routes/events'
 import { liveness } from './routes/liveness'
 import { readiness } from './routes/readiness'
-import { search } from './routes/search'
 import { placementDebug } from './routes/placementDebug'
 import { upgradeRiskPredictions } from './routes/upgrade-risks-prediction'
 import { watchTLSSecurityProfile } from './lib/tlsProfileWatch'
@@ -49,7 +48,6 @@ if (eventsEnabled) {
   // This sidecar route remains for dual-run and when the Go cache is disabled.
   router.get('/events', events)
 }
-router.post('/proxy/search', search)
 router.post('/placement-debug', placementDebug)
 router.post('/ansibletower', ansibleTower)
 router.post('/upgrade-risks-prediction', upgradeRiskPredictions)

@@ -7,7 +7,6 @@ import type { Socket } from 'node:net'
 import type { TLSSocket } from 'node:tls'
 import { logger } from './logger'
 import { readFileSync } from 'node:fs'
-import { searchWebSocket } from '../routes/search'
 import { certFile } from './paths'
 
 let server: Http2Server | undefined
@@ -72,12 +71,6 @@ export function startServer(options: ServerOptions): Promise<Http2Server | undef
             if (socketID < nextSocketID) nextSocketID = socketID
             sockets[socketID] = undefined
           })
-        })
-        .on('upgrade', (req: Http2ServerRequest, socket: TLSSocket, head: Buffer) => {
-          if (req.url.startsWith('/multicloud/proxy/search')) {
-            req.url = req.url.substring(11)
-            return searchWebSocket(req, socket, head)
-          }
         })
         .on('request', (req: Http2ServerRequest, res: Http2ServerResponse) => {
           if (isStopping) {

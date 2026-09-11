@@ -120,14 +120,12 @@ func incStatusCounts(m map[string]map[string]int, id string, item App, index int
 func (h *Handler) appSetData(w http.ResponseWriter, r *http.Request, token string) {
 	var stub map[string]any
 	if err := json.NewDecoder(r.Body).Decode(&stub); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		writeJSON(w, map[string]string{"error": "Invalid request body"})
+		writeJSONStatus(w, http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
 		return
 	}
 	appset, err := h.fetchAppSet(r.Context(), token, stub)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		writeJSON(w, map[string]string{"error": "Failed to fetch resource"})
+		writeJSONStatus(w, http.StatusBadRequest, map[string]string{"error": "Failed to fetch resource"})
 		return
 	}
 	h.Engine.mu.RLock()

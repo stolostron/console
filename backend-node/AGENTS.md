@@ -9,14 +9,14 @@ Node.js ESM proxy server. Sits between the browser and the hub cluster API serve
 - **Proxy**: `node:https` + `pipeline` for main API proxy
 - **Logging**: Pino with structured JSON output (use `pino-zen` for dev formatting)
 - **HTTP Client**: `got` for outbound requests
-- **WebSocket**: upgrade handler routes to search (bidirectional relay via `ws` with token injection)
+- **WebSocket**: Search graphql-ws is served by the Go listener (`backend/internal/searchproxy`)
 
 ## Source Layout
 
 | Directory | Purpose |
 |-----------|---------|
 | `src/lib/` | Core server: `main.ts` entry, `server.ts`, auth, cookies, CORS, proxy, search, SSE, logging, config |
-| `src/routes/` | HTTP route handlers: proxy, search, events, hub, etc. |
+| `src/routes/` | HTTP route handlers: events, ansible, ROSA, placement-debug, remaining long-tail |
 | `src/resources/` | Backend resource watchers and handlers |
 | `test/` | Jest test files |
 | `config/` | Runtime configuration lives in `../backend/config` (Go backend) |
@@ -40,20 +40,19 @@ Run from the `backend-node/` directory, or use the `npm run *:backend-node` vari
 The Go process in `../backend` is the public listener. This Node process is a sidecar for routes not yet migrated. OAuth login, logout, and `/configure` discovery are served by Go.
 
 ```text
-Browser / plugin → Go :4000 (GET /events and POST /aggregate are native Go when CONSOLE_INFORMER_CACHE is on)
+Browser / plugin → Go :4000 (GET /events, POST /aggregate, POST /proxy/search + Search WS)
                  → Node sidecar (this package) → Hub Cluster API Server
                                       ↓
                                 Watches resources via service account (hub.ts / dual-run)
                                 Enforces RBAC via user token + SubjectAccessReview
                                 Sidecar GET /events remains when Go cache is off
-                                POST /proxy/search stays here until ACM-42601
 ```
 
 ## Route Handlers
 
 - Route handler signature: `(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void>`
 - Router uses `maxParamLength: 500` for long Kubernetes resource names
-- URL rewriting: `/multicloud` prefix is stripped before routing in `app.ts` for HTTP and `server.ts` for WebSocket upgrades (e.g., `/multicloud/proxy/search` → `/proxy/search`)
+- URL rewriting: `/multicloud` prefix is stripped before routing in `app.ts`
 - Use `pipeline()` from `node:stream` for proxy and streaming operations to ensure proper backpressure and cleanup
 - Use `getEncodeStream()` for SSE compression
 

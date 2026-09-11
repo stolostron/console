@@ -33,6 +33,21 @@ func TestEndpointDefaultAndFederated(t *testing.T) {
 	}
 }
 
+func TestDiscoveryMCHNamespaceAndDefault(t *testing.T) {
+	d := searchapi.Discovery{
+		MCHNamespace: func(context.Context) string { return "ocm" },
+	}
+	got := d.Endpoint(context.Background())
+	if got != "https://search-search-api.ocm.svc.cluster.local:4010/searchapi/graphql" {
+		t.Fatalf("mch %q", got)
+	}
+	d.MCHNamespace = func(context.Context) string { return "" }
+	got = d.Endpoint(context.Background())
+	if got != "https://search-search-api.open-cluster-management.svc.cluster.local:4010/searchapi/graphql" {
+		t.Fatalf("default ns %q", got)
+	}
+}
+
 func TestSearchAndPing(t *testing.T) {
 	var lastPath string
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

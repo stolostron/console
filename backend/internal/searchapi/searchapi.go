@@ -9,18 +9,14 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 	"time"
 
 	applog "github.com/stolostron/console/backend/internal/log"
 )
 
 const (
-	defaultSearchPort = "4010"
-	graphqlPath       = "/searchapi/graphql"
-	federatedPath     = "/federated"
-	searchTimeout      = 2 * time.Minute
-	pingTimeout        = 4 * time.Minute
+	searchTimeout = 2 * time.Minute
+	pingTimeout   = 4 * time.Minute
 )
 
 // Query is the GraphQL search payload used by application aggregation.
@@ -88,27 +84,19 @@ type Client struct {
 	MCHNamespace func(context.Context) string
 }
 
+// Discovery returns the shared Search API URL resolver (SA client and user proxy).
+func (c *Client) Discovery() Discovery {
+	return Discovery{
+		SearchAPIURL: c.SearchAPIURL,
+		Federated:    c.Federated,
+		Namespace:    c.Namespace,
+		MCHNamespace: c.MCHNamespace,
+	}
+}
+
 // Endpoint is SEARCH_API_URL or the in-cluster search-search-api service.
 func (c *Client) Endpoint(ctx context.Context) string {
-	base := strings.TrimRight(c.SearchAPIURL, "/")
-	if base == "" {
-		ns := ""
-		if c.MCHNamespace != nil {
-			ns = c.MCHNamespace(ctx)
-		}
-		if ns == "" {
-			ns = c.Namespace
-		}
-		if ns == "" {
-			ns = "open-cluster-management"
-		}
-		base = fmt.Sprintf("https://search-search-api.%s.svc.cluster.local:%s", ns, defaultSearchPort)
-	}
-	path := graphqlPath
-	if c.Federated != nil && c.Federated() {
-		path = federatedPath
-	}
-	return base + path
+	return c.Discovery().Endpoint(ctx)
 }
 
 func (c *Client) httpClient(timeout time.Duration) *http.Client {
