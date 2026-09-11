@@ -22,12 +22,14 @@ import {
   ACCESS_CACHE_TTL,
   ACCESS_CACHE_MAX_TOKENS,
   shouldThrottleResource,
+  checkThrottleStatus,
   resetFlapTracker,
   getFlapTracker,
   formatFlappingMessage,
   FLAP_THRESHOLD,
   FLAP_WINDOW_MS,
   FLAP_COOLDOWN_MS,
+  FLAP_SETTLING_MS,
   resetResourceCache,
 } from '../../src/routes/events'
 import * as serviceAccountTokenModule from '../../src/lib/serviceAccountToken'
@@ -1505,6 +1507,16 @@ describe('events Route', () => {
   })
 
   describe('flapping resource throttling', () => {
+    const compliantValues = ['Compliant', 'NonCompliant', 'Pending'] as const
+
+    function policyWithCompliant(name: string, namespace: string, changeIndex: number) {
+      return {
+        kind: 'Policy',
+        metadata: { name, namespace },
+        status: { compliant: compliantValues[changeIndex % compliantValues.length] },
+      }
+    }
+
     beforeEach(() => {
       resetFlapTracker()
       resetResourceCache()
@@ -1525,6 +1537,27 @@ describe('events Route', () => {
       )
     })
 
+    it('should reset flap tracker when policy spec changes', () => {
+      const base = Date.now()
+      const policy = {
+        ...policyWithCompliant('spec-change', 'default', 0),
+        spec: { disabled: false },
+      }
+
+      for (let i = 0; i <= FLAP_THRESHOLD; i++) {
+        shouldThrottleResource({ ...policy, status: { compliant: compliantValues[i % compliantValues.length] } }, base + i)
+      }
+      expect(getFlapTracker()['Policy/default/spec-change'].polling).toBe(true)
+
+      expect(
+        shouldThrottleResource({ ...policy, spec: { disabled: true } }, base + FLAP_THRESHOLD + 1)
+      ).toBe(false)
+      const entry = getFlapTracker()['Policy/default/spec-change']
+      expect(entry.polling).toBeUndefined()
+      expect(entry.throttled).toBeUndefined()
+      expect(entry.lastSpec).toBe('{"disabled":true}')
+    })
+
     it('should never throttle non-Policy kinds', () => {
       const now = Date.now()
       for (let i = 0; i < FLAP_THRESHOLD + 10; i++) {
@@ -1534,38 +1567,38 @@ describe('events Route', () => {
       }
     })
 
-    it('should only set throttled on the resource when flapping is detected', () => {
+    it('should only set throttled on the tracker after settling while polling', async () => {
       const base = Date.now()
-      const policy: { kind: string; metadata: { name: string; namespace: string }; throttled?: boolean } = {
-        kind: 'Policy',
-        metadata: { name: 'policy-a', namespace: 'default' },
+
+      for (let i = 0; i <= FLAP_THRESHOLD; i++) {
+        shouldThrottleResource(policyWithCompliant('policy-a', 'default', i), base + i)
       }
 
-      for (let i = 0; i < FLAP_THRESHOLD; i++) {
-        shouldThrottleResource(policy, base + i)
-        expect(policy.throttled).toBeUndefined()
-      }
+      jest.spyOn(Date, 'now').mockImplementation(() => base + FLAP_THRESHOLD)
+      await checkThrottleStatus()
+      expect(getFlapTracker()['Policy/default/policy-a'].throttled).toBeUndefined()
 
-      shouldThrottleResource(policy, base + FLAP_THRESHOLD)
-      expect(policy.throttled).toBe(true)
+      const afterSettling = base + FLAP_SETTLING_MS + 1
+      shouldThrottleResource(policyWithCompliant('policy-a', 'default', FLAP_THRESHOLD + 1), afterSettling - 1000)
+      jest.spyOn(Date, 'now').mockImplementation(() => afterSettling)
+      await checkThrottleStatus()
+      expect(getFlapTracker()['Policy/default/policy-a'].throttled).toBe(true)
 
-      shouldThrottleResource(policy, base + FLAP_WINDOW_MS + FLAP_THRESHOLD + 10)
-      expect(policy.throttled).toBeUndefined()
+      jest.restoreAllMocks()
     })
 
-    it('should throttle Policy updates after more than N modifications within M seconds', () => {
+    it('should throttle Policy updates after more than N compliant changes within M seconds', () => {
       const base = Date.now()
-      const policy = { kind: 'Policy', metadata: { name: 'flappy', namespace: 'default' } }
 
       let notThrottledCount = 0
       const end = base + (FLAP_THRESHOLD + 5) * 100
-      for (let t = base; t <= end; t += 100) {
-        if (!shouldThrottleResource(policy, t)) {
+      for (let i = 0, t = base; t <= end; t += 100, i++) {
+        if (!shouldThrottleResource(policyWithCompliant('flappy', 'default', i), t)) {
           notThrottledCount += 1
         }
       }
 
-      expect(getFlapTracker()['Policy/default/flappy'].throttled).toBe(true)
+      expect(getFlapTracker()['Policy/default/flappy'].polling).toBe(true)
       // First FLAP_THRESHOLD updates, plus the transition update when flapping is detected.
       // Further updates within the cooldown interval are throttled.
       expect(notThrottledCount).toBe(FLAP_THRESHOLD + 1)
@@ -1573,52 +1606,60 @@ describe('events Route', () => {
 
     it('should allow caching again after FLAP_COOLDOWN_MS while still throttled', () => {
       const base = Date.now()
-      const policy = { kind: 'Policy', metadata: { name: 'periodic', namespace: 'default' } }
 
       for (let i = 0; i <= FLAP_THRESHOLD; i++) {
-        shouldThrottleResource(policy, base + i)
+        shouldThrottleResource(policyWithCompliant('periodic', 'default', i), base + i)
       }
-      expect(getFlapTracker()['Policy/default/periodic'].throttled).toBe(true)
+      expect(getFlapTracker()['Policy/default/periodic'].polling).toBe(true)
 
-      expect(shouldThrottleResource(policy, base + FLAP_THRESHOLD + 100)).toBe(true)
+      expect(
+        shouldThrottleResource(policyWithCompliant('periodic', 'default', FLAP_THRESHOLD), base + FLAP_THRESHOLD + 100)
+      ).toBe(true)
 
       const periodicAt = base + FLAP_THRESHOLD + FLAP_COOLDOWN_MS
       for (let i = 1; i <= FLAP_THRESHOLD; i++) {
-        shouldThrottleResource(policy, periodicAt - 1000 + i * 100)
+        shouldThrottleResource(
+          policyWithCompliant('periodic', 'default', FLAP_THRESHOLD + i),
+          periodicAt - 1000 + i * 100
+        )
       }
 
-      expect(shouldThrottleResource(policy, periodicAt)).toBe(false)
+      expect(shouldThrottleResource(policyWithCompliant('periodic', 'default', FLAP_THRESHOLD * 2 + 1), periodicAt)).toBe(
+        false
+      )
     })
 
     it('should continue suppressing caches after detection window clears until cooldown expires', () => {
       const base = Date.now()
-      const policy: { kind: string; metadata: { name: string; namespace: string }; throttled?: boolean } = {
-        kind: 'Policy',
-        metadata: { name: 'sticky', namespace: 'default' },
-      }
 
       for (let i = 0; i <= FLAP_THRESHOLD; i++) {
-        shouldThrottleResource(policy, base + i)
+        shouldThrottleResource(policyWithCompliant('sticky', 'default', i), base + i)
       }
 
       const afterWindowClears = base + FLAP_WINDOW_MS + FLAP_THRESHOLD + 10
-      expect(shouldThrottleResource(policy, afterWindowClears)).toBe(true)
-      expect(policy.throttled).toBeUndefined()
+      expect(shouldThrottleResource(policyWithCompliant('sticky', 'default', FLAP_THRESHOLD), afterWindowClears)).toBe(
+        true
+      )
+      expect(getFlapTracker()['Policy/default/sticky'].polling).toBe(true)
     })
 
-    it('should stop throttling when modifications fall back and cooldown expires', () => {
+    it('should stop throttling when modifications fall back and cooldown expires', async () => {
       const base = Date.now()
-      const policy = { kind: 'Policy', metadata: { name: 'recovering', namespace: 'ns1' } }
 
       for (let i = 0; i <= FLAP_THRESHOLD; i++) {
-        shouldThrottleResource(policy, base + i)
+        shouldThrottleResource(policyWithCompliant('recovering', 'ns1', i), base + i)
       }
-      expect(getFlapTracker()['Policy/ns1/recovering'].throttled).toBe(true)
+      expect(getFlapTracker()['Policy/ns1/recovering'].polling).toBe(true)
 
       const afterCooldown = base + FLAP_THRESHOLD + FLAP_COOLDOWN_MS + 1
-      expect(shouldThrottleResource(policy, afterCooldown)).toBe(false)
-      expect(getFlapTracker()['Policy/ns1/recovering'].throttled).toBe(false)
+      expect(shouldThrottleResource(policyWithCompliant('recovering', 'ns1', FLAP_THRESHOLD), afterCooldown)).toBe(false)
+
+      jest.spyOn(Date, 'now').mockImplementation(() => afterCooldown + FLAP_COOLDOWN_MS + 1)
+      await checkThrottleStatus()
+      expect(getFlapTracker()['Policy/ns1/recovering'].polling).toBe(false)
+      expect(getFlapTracker()['Policy/ns1/recovering'].throttled).toBeUndefined()
       expect(getFlapTracker()['Policy/ns1/recovering'].lastCachedAt).toBe(0)
+      jest.restoreAllMocks()
     })
 
     it('should cache at most once per minute while a Policy is flapping', async () => {
@@ -1628,7 +1669,7 @@ describe('events Route', () => {
       jest.spyOn(Date, 'now').mockImplementation(() => now)
 
       for (let i = 1; i <= FLAP_THRESHOLD + 1; i++) {
-        await cacheResource({
+        const resource = {
           kind: 'Policy',
           apiVersion: 'policy.open-cluster-management.io/v1',
           metadata: {
@@ -1637,12 +1678,16 @@ describe('events Route', () => {
             uid: 'flappy-uid',
             resourceVersion: String(i),
           },
-        })
+          status: { compliant: compliantValues[i % compliantValues.length] },
+        }
+        if (!shouldThrottleResource(resource)) {
+          await cacheResource(resource)
+        }
         now += 100
       }
 
       now += 100
-      await cacheResource({
+      const throttledResource = {
         kind: 'Policy',
         apiVersion: 'policy.open-cluster-management.io/v1',
         metadata: {
@@ -1651,7 +1696,11 @@ describe('events Route', () => {
           uid: 'flappy-uid',
           resourceVersion: String(FLAP_THRESHOLD + 2),
         },
-      })
+        status: { compliant: compliantValues[(FLAP_THRESHOLD + 2) % compliantValues.length] },
+      }
+      if (!shouldThrottleResource(throttledResource)) {
+        await cacheResource(throttledResource)
+      }
 
       await new Promise((resolve) => setTimeout(resolve, 0))
       for (const entry of Object.values(getEventCache())) {
@@ -1664,13 +1713,13 @@ describe('events Route', () => {
       const periodicAt = base + FLAP_THRESHOLD * 100 + FLAP_COOLDOWN_MS
       for (let i = 1; i <= FLAP_THRESHOLD; i++) {
         shouldThrottleResource(
-          { kind: 'Policy', metadata: { name: 'flappy-policy', namespace: 'default' } },
+          policyWithCompliant('flappy-policy', 'default', FLAP_THRESHOLD + 2 + i),
           periodicAt - 1000 + i * 100
         )
       }
 
       now = periodicAt
-      await cacheResource({
+      const periodicResource = {
         kind: 'Policy',
         apiVersion: 'policy.open-cluster-management.io/v1',
         metadata: {
@@ -1679,7 +1728,11 @@ describe('events Route', () => {
           uid: 'flappy-uid',
           resourceVersion: String(FLAP_THRESHOLD * 2 + 3),
         },
-      })
+        status: { compliant: compliantValues[(FLAP_THRESHOLD * 2 + 3) % compliantValues.length] },
+      }
+      if (!shouldThrottleResource(periodicResource)) {
+        await cacheResource(periodicResource)
+      }
 
       await new Promise((resolve) => setTimeout(resolve, 0))
       for (const entry of Object.values(getEventCache())) {
@@ -1692,7 +1745,7 @@ describe('events Route', () => {
       const resources = await getKubeResources('Policy', 'policy.open-cluster-management.io/v1')
       expect(resources).toHaveLength(1)
       expect(resources[0].metadata.resourceVersion).toBe(String(FLAP_THRESHOLD * 2 + 3))
-      expect(resources[0].throttled).toBe(true)
+      expect(getFlapTracker()['Policy/default/flappy-policy'].polling).toBe(true)
 
       jest.restoreAllMocks()
       pushSpy.mockRestore()
