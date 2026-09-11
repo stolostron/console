@@ -760,3 +760,43 @@ func TestDebugSnapshotNotProxied(t *testing.T) {
 		}
 	}
 }
+
+func TestAggregateNotProxied(t *testing.T) {
+	var sidecarHit bool
+	sidecar := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sidecarHit = true
+		w.WriteHeader(http.StatusTeapot)
+	}))
+	defer sidecar.Close()
+
+	agg := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"ok":true}`))
+	})
+	cfg := &config.Config{NodeBackendURL: sidecar.URL, CertsDir: t.TempDir()}
+	h, err := server.Handler(cfg, server.WithAggregate(agg))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ts := httptest.NewServer(h)
+	defer ts.Close()
+
+	for _, path := range []string{"/aggregate/applications", "/multicloud/aggregate/statuses", "/aggregate/appSetData"} {
+		sidecarHit = false
+		req, _ := http.NewRequest(http.MethodPost, ts.URL+path, strings.NewReader(`{}`))
+		req.Header.Set("Content-Type", "application/json")
+		resp, getErr := ts.Client().Do(req)
+		if getErr != nil {
+			t.Fatal(getErr)
+		}
+		body, _ := io.ReadAll(resp.Body)
+		resp.Body.Close()
+		if sidecarHit {
+			t.Fatalf("%s was proxied to sidecar", path)
+		}
+		if resp.StatusCode != http.StatusOK {
+			t.Fatalf("%s status %d body %s", path, resp.StatusCode, body)
+		}
+	}
+}

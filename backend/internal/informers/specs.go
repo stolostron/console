@@ -1,8 +1,9 @@
 // Copyright Contributors to the Open Cluster Management project
 
 // Package informers watches hub resources with client-go (ACM-42597).
-// GET /events SSE is served by internal/events/hub (ACM-42598). Node startWatching()
-// still runs for aggregators until those routes migrate.
+// GET /events SSE is served by internal/events/hub (ACM-42598).
+// POST /aggregate/* reads this cache (ACM-42600). Node startWatching() still
+// runs so hub.ts can use getKubeResources until ACM-42596 is wired in main.go.
 package informers
 
 import (

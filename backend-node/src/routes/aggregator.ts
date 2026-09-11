@@ -1,4 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
+// POST /aggregate/* is served by the Go listener (ACM-42600).
+// These helpers remain for Search/compression types and Jest unit tests of the TS cache.
 import type { Http2ServerRequest, Http2ServerResponse } from 'node:http2'
 import { notFound, unauthorized } from '../lib/respond'
 import { getAuthenticatedToken } from '../lib/token'

@@ -32,6 +32,8 @@ Public listener for the ACM/MCE console. During the Node-to-Go migration it owns
 | `internal/cors` | Development CORS middleware (OPTIONS preflight for standalone dev) |
 | `internal/events/rbac` | `GET /events/rbac` SSE: ClusterRole informer (`vm-clusterroles` label) + per-user SSAR |
 | `internal/events/hub` | `GET /events` SSE: informer fan-out, snapshot packets, per-user SSAR (60s TTL). DELETED is not RBAC-filtered (bug-compatible with Node). `CONSOLE_INFORMER_CACHE=0` proxies `/events` to Node |
+| `internal/aggregate` | `POST /aggregate/{applications,statuses,appSetData}`: informer cache + Search SA GraphQL, Fuse.js-compatible filter, windowed SSAR. `CONSOLE_INFORMER_CACHE=0` does not register the route |
+| `internal/searchapi` | Search GraphQL client used by the aggregator (`/searchapi/graphql` or `/federated`) |
 | `internal/informers` | Hub resource cache (~67 watch specs, dual-run with Node). Dev: `GET /debug/informer-snapshot` |
 | `internal/static` | Plugin and SPA files: cache headers, CSP, brotli/gzip negotiation |
 | `internal/log` | slog JSON helper |
@@ -62,8 +64,9 @@ Go backend :4000 (TLS / HTTP/2)
         │    (also /multicloud/…)
         ├─ GET /events (resource watch SSE + per-user SSAR; also /multicloud/events)
         ├─ GET /events/rbac (ClusterRole watch; also /multicloud/events/rbac)
+        ├─ POST /aggregate/{applications,statuses,appSetData} (application inventory; also /multicloud/…)
         ├─ GET /debug/informer-snapshot (dev only; Go informer cache dump)
-        ├─ SA informers (~67 specs) feed GET /events; Node startWatching() still runs for aggregators
+        ├─ SA informers (~67 specs) feed GET /events and POST /aggregate; Node startWatching() still runs for hub.ts
         ├─ ALL /api, /apis, GET /version → hub kube-apiserver (user token)
         │    (also /multicloud/…)
         ├─ GET /configure (OAuth/OIDC token_endpoint discovery)
@@ -84,7 +87,9 @@ Go backend :4000 (TLS / HTTP/2)
 
 `/multicloud` is stripped only when matching Go-owned routes. The proxy forwards the original path so Node can keep stripping it.
 
-During ACM-42597/42598 the Go process watches the same specs as Node `startWatching()` **after** the public listener is bound. Startup is capped at 8 concurrent list/watch setups; the informer client uses QPS 20 / Burst 40; resync is disabled. Set `CONSOLE_INFORMER_CACHE=0` (or `false`/`off`) to skip Go watches and keep proxying `GET /events` to Node. Node `startWatching()` still runs for aggregators (`getKubeResources`). After informers sync, logs `informer cache memory` with `heapAlloc` — compare that to the sidecar deflate cache, not combined RSS.
+During ACM-42597/42598 the Go process watches the same specs as Node `startWatching()` **after** the public listener is bound. Startup is capped at 8 concurrent list/watch setups; the informer client uses QPS 20 / Burst 40; resync is disabled. Set `CONSOLE_INFORMER_CACHE=0` (or `false`/`off`) to skip Go watches and keep proxying `GET /events` to Node (and not register `POST /aggregate`). Node `startWatching()` still runs for `hub.ts` (`getKubeResources`). After informers sync, logs `informer cache memory` with `heapAlloc` — compare that to the sidecar deflate cache, not combined RSS.
+
+`POST /aggregate/*` rebuilds ACM/Argo Application rows from `InformerCache.ListByKind` and refreshes remote OCP/Flux/Argo status from Search (15s for the first three passes, then `APP_SEARCH_INTERVAL` or 60s). Pagination uses Fuse.js 6.6.2 options (`ignoreLocation`, threshold 0.3) when there are more than 500 items; `itemCount` in `/aggregate/statuses` is a JSON string. `POST /proxy/search` stays on Node until ACM-42601.
 
 `GET /events` framing matches Node `server-side-events.ts`: `id:` + `data:` (no space), gzip when `Accept-Encoding` includes gzip, keepalive `:\n\n` every 10s, snapshot `START` → `SETTINGS` → priority packets with `EOP` → `LOADED`, live `MODIFIED`/`DELETED` then `LOADED`. Creates and updates are both `MODIFIED` (not `ADDED`). **DELETED events are broadcast without per-user SSAR** — the same known gap as Node; do not “fix” it in this stream without a follow-up.
 

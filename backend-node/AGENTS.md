@@ -40,12 +40,13 @@ Run from the `backend-node/` directory, or use the `npm run *:backend-node` vari
 The Go process in `../backend` is the public listener. This Node process is a sidecar for routes not yet migrated. OAuth login, logout, and `/configure` discovery are served by Go.
 
 ```text
-Browser / plugin → Go :4000 (GET /events is native Go when CONSOLE_INFORMER_CACHE is on)
+Browser / plugin → Go :4000 (GET /events and POST /aggregate are native Go when CONSOLE_INFORMER_CACHE is on)
                  → Node sidecar (this package) → Hub Cluster API Server
                                       ↓
-                                Watches resources via service account (aggregators / dual-run)
+                                Watches resources via service account (hub.ts / dual-run)
                                 Enforces RBAC via user token + SubjectAccessReview
-                                Sidecar GET /events remains for aggregators and when Go cache is off
+                                Sidecar GET /events remains when Go cache is off
+                                POST /proxy/search stays here until ACM-42601
 ```
 
 ## Route Handlers

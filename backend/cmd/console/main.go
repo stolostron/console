@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"k8s.io/client-go/discovery"
@@ -16,18 +17,21 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 
+	"github.com/stolostron/console/backend/internal/aggregate"
 	"github.com/stolostron/console/backend/internal/auth"
 	"github.com/stolostron/console/backend/internal/clusterinfo"
 	"github.com/stolostron/console/backend/internal/clusterproxy"
 	"github.com/stolostron/console/backend/internal/config"
 	eventshub "github.com/stolostron/console/backend/internal/events/hub"
 	rbacevents "github.com/stolostron/console/backend/internal/events/rbac"
+	"github.com/stolostron/console/backend/internal/hubresources"
 	"github.com/stolostron/console/backend/internal/informers"
 	"github.com/stolostron/console/backend/internal/k8sproxy"
 	applog "github.com/stolostron/console/backend/internal/log"
 	"github.com/stolostron/console/backend/internal/mcproxy"
 	"github.com/stolostron/console/backend/internal/metricsproxy"
 	"github.com/stolostron/console/backend/internal/oauth"
+	"github.com/stolostron/console/backend/internal/searchapi"
 	"github.com/stolostron/console/backend/internal/server"
 	"github.com/stolostron/console/backend/internal/static"
 	"github.com/stolostron/console/backend/internal/user"
@@ -121,8 +125,31 @@ func run() error {
 	})
 	var opts []server.Option
 	opts = append(opts, server.WithRBACEvents(rbacHandler), server.WithOAuth(oauthH))
+	var aggEng *aggregate.Engine
 	if cfg.InformerCache {
 		opts = append(opts, server.WithEvents(eventsHandler))
+		ca := sa.ServiceCACert
+		if len(ca) == 0 {
+			ca = sa.CACert
+		}
+		searchClient := &searchapi.Client{
+			HTTP:         auth.HTTPClient(ca, 0),
+			Token:        sa.Token,
+			SearchAPIURL: os.Getenv("SEARCH_API_URL"),
+			Federated:    func() bool { return os.Getenv("globalSearchFeatureFlag") == "enabled" },
+			Namespace:    serviceAccountNamespace(),
+			MCHNamespace: func(reqCtx context.Context) string {
+				ns, nsErr := hubresources.MCHNamespace(reqCtx, dyn)
+				if nsErr != nil {
+					return ""
+				}
+				return ns
+			},
+		}
+		aggEng = aggregate.NewEngine(infCache, searchClient, dyn)
+		aggAccess := aggregate.NewSSARAccess(restCfg)
+		aggAccess.StartCleanup(ctx)
+		opts = append(opts, server.WithAggregate(aggregate.NewHandler(aggEng, restCfg, aggAccess)))
 	}
 	if !cfg.Production {
 		opts = append(opts, server.WithOAuthLogin(), server.WithDebugSnapshot(informers.NewSnapshotHandler(infCache, restCfg)))
@@ -200,7 +227,18 @@ func run() error {
 			return
 		}
 		informers.StartCache(ctx, infCache, infDyn, mapper)
+		if aggEng != nil {
+			aggEng.Start(ctx)
+		}
 	})
+}
+
+func serviceAccountNamespace() string {
+	data, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
+	if err != nil {
+		return strings.TrimSpace(os.Getenv("NAMESPACE"))
+	}
+	return strings.TrimSpace(string(data))
 }
 
 var errMissingToken = errors.New("service account token missing")

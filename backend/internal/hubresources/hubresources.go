@@ -82,3 +82,18 @@ func MCHFineGrainedRBAC(ctx context.Context, client dynamic.Interface) (bool, er
 	}
 	return false, nil
 }
+
+// MCHNamespace returns metadata.namespace of the first MulticlusterHub.
+func MCHNamespace(ctx context.Context, client dynamic.Interface) (string, error) {
+	if client == nil {
+		return "", fmt.Errorf("kubernetes dynamic client is required")
+	}
+	list, err := client.Resource(mchGVR).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return "", err
+	}
+	if len(list.Items) == 0 {
+		return "", nil
+	}
+	return list.Items[0].GetNamespace(), nil
+}

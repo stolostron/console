@@ -10,7 +10,6 @@ import { startLoggingMemory } from './lib/memory'
 import { notFound, respondInternalServerError, respondOK } from './lib/respond'
 import { startServer, stopServer } from './lib/server'
 import { ServerSideEvents } from './lib/server-side-events'
-import { aggregate, startAggregating, stopAggregating } from './routes/aggregator'
 import { ansibleTower } from './routes/ansibletower'
 import { events, startWatching, stopWatching } from './routes/events'
 import { liveness } from './routes/liveness'
@@ -47,14 +46,13 @@ router.get('/livenessProbe', liveness)
 router.get('/ping', respondOK)
 if (eventsEnabled) {
   // Public GET /events is served by the Go listener when CONSOLE_INFORMER_CACHE is on (ACM-42598).
-  // This sidecar route remains for dual-run, aggregators, and when the Go cache is disabled.
+  // This sidecar route remains for dual-run and when the Go cache is disabled.
   router.get('/events', events)
 }
 router.post('/proxy/search', search)
 router.post('/placement-debug', placementDebug)
 router.post('/ansibletower', ansibleTower)
 router.post('/upgrade-risks-prediction', upgradeRiskPredictions)
-router.post('/aggregate/*', aggregate)
 
 // rosa wizard routes
 router.post('/aws-account-ids', getAwsAccountIds)
@@ -101,7 +99,6 @@ export async function start() {
   await loadSettings()
   if (eventsEnabled) {
     startWatching()
-    startAggregating()
   }
   stopPlacementDebugCAWatch = watchPlacementDebugCA(() => {
     invalidatePlacementDebugAgent()
@@ -129,7 +126,6 @@ export async function stop(): Promise<void> {
   stopFileWatches()
   await ServerSideEvents.dispose()
   stopWatching()
-  stopAggregating()
   stopPlacementDebugCAWatch?.()
   stopTLSProfileWatch?.()
   await stopServer()

@@ -15,7 +15,6 @@ import { getCACertificate, getServiceAccountToken } from '../lib/serviceAccountT
 import { getAuthenticatedToken } from '../lib/token'
 import type { IResource } from '../resources/resource'
 import type { IWatchOptions } from '../resources/watch-options'
-import { polledAggregation } from './aggregator'
 import { getAppDict, type ICompressedResource, type ITransformedResource } from './aggregators/applications'
 
 export async function events(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
@@ -412,7 +411,6 @@ async function listKubernetesObjects(serviceAccountToken: string, options: IWatc
       _continue = body.metadata._continue ?? body.metadata.continue
       const pruned = pruneResources(options, body.items)
       if (isPolled) {
-        await polledAggregation(options, pruned, !_continue)
         itemCount += pruned.length
       } else {
         items = items.concat(pruned)

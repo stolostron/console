@@ -41,6 +41,7 @@ type handlerOptions struct {
 	user          http.Handler
 	clusterInfo   http.Handler
 	events        http.Handler
+	aggregate     http.Handler
 	debugSnapshot http.Handler
 }
 
@@ -51,6 +52,13 @@ type Option func(*handlerOptions)
 func WithEvents(h http.Handler) Option {
 	return func(o *handlerOptions) {
 		o.events = h
+	}
+}
+
+// WithAggregate registers POST /aggregate/* (and /multicloud/aggregate/*).
+func WithAggregate(h http.Handler) Option {
+	return func(o *handlerOptions) {
+		o.aggregate = h
 	}
 }
 
@@ -188,6 +196,13 @@ func registerAliasedGet(r chi.Router, h http.Handler, patterns ...string) {
 	}
 }
 
+func registerAliasedPost(r chi.Router, h http.Handler, patterns ...string) {
+	for _, pattern := range patterns {
+		r.Post(pattern, h.ServeHTTP)
+		r.Post(multicloudPrefix+pattern, h.ServeHTTP)
+	}
+}
+
 func registerStatelessProxies(r chi.Router, o *handlerOptions) {
 	if o.mcProxy != nil {
 		registerAliased(r, o.mcProxy, "/managedclusterproxy/*")
@@ -269,6 +284,9 @@ func Handler(cfg *config.Config, opts ...Option) (http.Handler, error) {
 	if o.events != nil {
 		r.Get("/events", o.events.ServeHTTP)
 		r.Get(multicloudPrefix+"/events", o.events.ServeHTTP)
+	}
+	if o.aggregate != nil {
+		registerAliasedPost(r, o.aggregate, "/aggregate/*")
 	}
 	if o.k8sProxy != nil {
 		registerK8sProxyRoutes(r, o.k8sProxy)
