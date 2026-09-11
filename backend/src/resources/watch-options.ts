@@ -16,4 +16,10 @@ export interface IWatchOptions {
    * Defaults to true when omitted.
    */
   forwardEventsToClients?: boolean
+  /**
+   * True when the Kubernetes resource is cluster-scoped.
+   * Used by SSE RBAC to decide whether SelfSubjectRulesReview should probe `default`
+   * (cluster-scoped) or the resource namespace (namespaced).
+   */
+  clusterScoped?: boolean
 }

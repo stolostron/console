@@ -8,15 +8,38 @@ import { pipeline } from 'node:stream/promises'
 import { Transform } from 'node:stream'
 import { batchPromiseAll } from '../lib/batch-promise-all'
 import { createDictionary, deflateResource, inflateResource } from '../lib/compression'
-import { jsonPost } from '../lib/json-request'
 import { logger } from '../lib/logger'
-import { type ServerSideEvent, ServerSideEvents } from '../lib/server-side-events'
+import {
+  type EventResourceMeta,
+  type ServerSideEvent,
+  ServerSideEvents,
+  getEventResourceMeta,
+} from '../lib/server-side-events'
 import { getCACertificate, getServiceAccountToken } from '../lib/serviceAccountToken'
 import { getAuthenticatedToken } from '../lib/token'
 import type { IResource } from '../resources/resource'
 import type { IWatchOptions } from '../resources/watch-options'
 import { polledAggregation } from './aggregator'
 import { getAppDict, type ICompressedResource, type ITransformedResource } from './aggregators/applications'
+import {
+  canAccess,
+  canGetResource,
+  canListClusterScopedKind,
+  canListNamespacedScopedKind,
+  configureClusterScopedKinds,
+} from './eventsAccess'
+import { startAccessCacheCleanup, stopAccessCacheCleanup } from './eventsCache'
+
+export {
+  ACCESS_CACHE_MAX_ENTRIES_PER_TOKEN,
+  ACCESS_CACHE_MAX_TOKENS,
+  ACCESS_CACHE_TTL,
+  cleanupAccessCache,
+  getAccessCache,
+  hashAccessToken,
+  resetAccessCache,
+} from './eventsCache'
+export { canAccess, canGetResource } from './eventsAccess'
 
 export async function events(req: Http2ServerRequest, res: Http2ServerResponse): Promise<void> {
   const token = await getAuthenticatedToken(req, res)
@@ -165,87 +188,11 @@ export function getEventDict() {
   return eventDict
 }
 
-const accessCache: Record<string, Record<string, { time: number; promise: Promise<boolean> }>> = {}
-
-/** Clear all cached RBAC access checks. Used for test isolation. */
-export function resetAccessCache() {
-  for (const key in accessCache) {
-    delete accessCache[key]
-  }
-}
-
-export function getAccessCache() {
-  return accessCache
-}
-
-export const ACCESS_CACHE_TTL = 60 * 1000 // 60 seconds
-export const ACCESS_CACHE_CLEANUP_INTERVAL = 90 * 1000 // 90 seconds
-export const ACCESS_CACHE_MAX_TOKENS = 1000 // Maximum number of token entries to keep
-
-let accessCacheCleanupTimer: NodeJS.Timeout | undefined
-
-export function cleanupAccessCache() {
-  const now = Date.now()
-  const cutoffTime = now - ACCESS_CACHE_TTL
-  const tokenStats: Array<{ token: string; newestTime: number }> = []
-
-  for (const token in accessCache) {
-    const tokenCache = accessCache[token]
-    let newestTime = 0
-
-    for (const key in tokenCache) {
-      if (tokenCache[key].time < cutoffTime) {
-        delete tokenCache[key]
-      } else if (tokenCache[key].time > newestTime) {
-        newestTime = tokenCache[key].time
-      }
-    }
-
-    if (Object.keys(tokenCache).length === 0) {
-      delete accessCache[token]
-    } else {
-      tokenStats.push({ token, newestTime })
-    }
-  }
-
-  if (tokenStats.length > ACCESS_CACHE_MAX_TOKENS) {
-    tokenStats.sort((a, b) => a.newestTime - b.newestTime)
-    const tokensToRemove = tokenStats.length - ACCESS_CACHE_MAX_TOKENS
-
-    for (let i = 0; i < tokensToRemove; i++) {
-      delete accessCache[tokenStats[i].token]
-    }
-  }
-}
-
-function startAccessCacheCleanup() {
-  if (accessCacheCleanupTimer) return
-
-  accessCacheCleanupTimer = setInterval(() => {
-    try {
-      cleanupAccessCache()
-    } catch (err: unknown) {
-      logger.error({ msg: 'accessCache cleanup failed', error: err })
-    }
-  }, ACCESS_CACHE_CLEANUP_INTERVAL)
-
-  accessCacheCleanupTimer.unref()
-  logger.info({ msg: 'accessCache cleanup started', interval: ACCESS_CACHE_CLEANUP_INTERVAL })
-}
-
-function stopAccessCacheCleanup() {
-  if (accessCacheCleanupTimer) {
-    clearInterval(accessCacheCleanupTimer)
-    accessCacheCleanupTimer = undefined
-    logger.info({ msg: 'accessCache cleanup stopped' })
-  }
-}
-
 const definitions: IWatchOptions[] = [
-  { kind: 'ClusterManagementAddOn', apiVersion: 'addon.open-cluster-management.io/v1alpha1' },
+  { kind: 'ClusterManagementAddOn', apiVersion: 'addon.open-cluster-management.io/v1alpha1', clusterScoped: true },
   { kind: 'ManagedClusterAddOn', apiVersion: 'addon.open-cluster-management.io/v1alpha1' },
   { kind: 'Agent', apiVersion: 'agent-install.openshift.io/v1beta1' },
-  { kind: 'AgentServiceConfig', apiVersion: 'agent-install.openshift.io/v1beta1' },
+  { kind: 'AgentServiceConfig', apiVersion: 'agent-install.openshift.io/v1beta1', clusterScoped: true },
   { kind: 'InfraEnv', apiVersion: 'agent-install.openshift.io/v1beta1' },
   { kind: 'NMStateConfig', apiVersion: 'agent-install.openshift.io/v1beta1' },
   { kind: 'Application', apiVersion: 'app.k8s.io/v1beta1' },
@@ -257,35 +204,36 @@ const definitions: IWatchOptions[] = [
   { kind: 'Application', apiVersion: 'argoproj.io/v1alpha1', isPolled: true },
   { kind: 'ApplicationSet', apiVersion: 'argoproj.io/v1alpha1', isPolled: true },
   { kind: 'ArgoCD', apiVersion: 'argoproj.io/v1alpha1' },
-  { kind: 'Authentication', apiVersion: 'config.openshift.io/v1', forwardEventsToClients: false },
-  { kind: 'Infrastructure', apiVersion: 'config.openshift.io/v1' },
+  { kind: 'Authentication', apiVersion: 'config.openshift.io/v1', forwardEventsToClients: false, clusterScoped: true },
+  { kind: 'Infrastructure', apiVersion: 'config.openshift.io/v1', clusterScoped: true },
   {
     kind: 'CertificateSigningRequest',
     apiVersion: 'certificates.k8s.io/v1',
     labelSelector: { 'open-cluster-management.io/cluster-name': '' },
+    clusterScoped: true,
   },
-  { kind: 'ManagedCluster', apiVersion: 'cluster.open-cluster-management.io/v1' },
+  { kind: 'ManagedCluster', apiVersion: 'cluster.open-cluster-management.io/v1', clusterScoped: true },
   { kind: 'Placement', apiVersion: 'cluster.open-cluster-management.io/v1beta1' },
   { kind: 'PlacementDecision', apiVersion: 'cluster.open-cluster-management.io/v1beta1' },
   { kind: 'ManagedClusterSetBinding', apiVersion: 'cluster.open-cluster-management.io/v1beta2' },
-  { kind: 'ManagedClusterSet', apiVersion: 'cluster.open-cluster-management.io/v1beta2' },
+  { kind: 'ManagedClusterSet', apiVersion: 'cluster.open-cluster-management.io/v1beta2', clusterScoped: true },
   { kind: 'ClusterCurator', apiVersion: 'cluster.open-cluster-management.io/v1beta1' },
   { kind: 'Subscription', apiVersion: 'operators.coreos.com/v1alpha1' },
-  { kind: 'ClusterExtension', apiVersion: 'olm.operatorframework.io/v1' },
+  { kind: 'ClusterExtension', apiVersion: 'olm.operatorframework.io/v1', clusterScoped: true },
   { kind: 'DiscoveredCluster', apiVersion: 'discovery.open-cluster-management.io/v1' },
   { kind: 'DiscoveryConfig', apiVersion: 'discovery.open-cluster-management.io/v1' },
   { kind: 'AgentClusterInstall', apiVersion: 'extensions.hive.openshift.io/v1beta1' },
   { kind: 'ClusterClaim', apiVersion: 'hive.openshift.io/v1' },
   { kind: 'ClusterDeployment', apiVersion: 'hive.openshift.io/v1' },
-  { kind: 'ClusterImageSet', apiVersion: 'hive.openshift.io/v1' },
+  { kind: 'ClusterImageSet', apiVersion: 'hive.openshift.io/v1', clusterScoped: true },
   { kind: 'ClusterPool', apiVersion: 'hive.openshift.io/v1' },
   { kind: 'ClusterProvision', apiVersion: 'hive.openshift.io/v1' },
   { kind: 'MachinePool', apiVersion: 'hive.openshift.io/v1' },
   { kind: 'ManagedClusterInfo', apiVersion: 'internal.open-cluster-management.io/v1beta1' },
   { kind: 'BareMetalHost', apiVersion: 'metal3.io/v1alpha1' },
-  { kind: 'MultiClusterEngine', apiVersion: 'multicluster.openshift.io/v1' },
-  { kind: 'ClusterVersion', apiVersion: 'config.openshift.io/v1' },
-  { kind: 'StorageClass', apiVersion: 'storage.k8s.io/v1' },
+  { kind: 'MultiClusterEngine', apiVersion: 'multicluster.openshift.io/v1', clusterScoped: true },
+  { kind: 'ClusterVersion', apiVersion: 'config.openshift.io/v1', clusterScoped: true },
+  { kind: 'StorageClass', apiVersion: 'storage.k8s.io/v1', clusterScoped: true },
   { kind: 'PlacementBinding', apiVersion: 'policy.open-cluster-management.io/v1' },
   { kind: 'Policy', apiVersion: 'policy.open-cluster-management.io/v1' },
   { kind: 'PolicyAutomation', apiVersion: 'policy.open-cluster-management.io/v1beta1' },
@@ -304,7 +252,7 @@ const definitions: IWatchOptions[] = [
     fieldSelector: { 'metadata.namespace': 'openshift-config-managed', 'metadata.name': 'console-public' },
   },
   { kind: 'ConfigMap', apiVersion: 'v1', fieldSelector: { 'metadata.name': 'console-search-config' } },
-  { kind: 'Namespace', apiVersion: 'v1' },
+  { kind: 'Namespace', apiVersion: 'v1', clusterScoped: true },
   { kind: 'Secret', apiVersion: 'v1', labelSelector: { 'cluster.open-cluster-management.io/credentials': '' } },
   // **Need to look for creds with: 'cluster.open-cluster-management.io/type': 'ans', for edit scenarios
   { kind: 'Secret', apiVersion: 'v1', labelSelector: { 'cluster.open-cluster-management.io/type': 'ans' } },
@@ -328,12 +276,13 @@ const definitions: IWatchOptions[] = [
     fieldSelector: { 'metadata.name': 'grafana-dashboard-acm-openshift-virtualization-single-vm-view' },
   },
   { kind: 'MulticlusterRoleAssignment', apiVersion: 'rbac.open-cluster-management.io/v1beta1' },
-  { kind: 'User', apiVersion: 'user.openshift.io/v1' },
-  { kind: 'Group', apiVersion: 'user.openshift.io/v1' },
+  { kind: 'User', apiVersion: 'user.openshift.io/v1', clusterScoped: true },
+  { kind: 'Group', apiVersion: 'user.openshift.io/v1', clusterScoped: true },
   {
     kind: 'ClusterRole',
     apiVersion: 'rbac.authorization.k8s.io/v1',
     labelSelector: { 'rbac.open-cluster-management.io/filter': 'vm-clusterroles' },
+    clusterScoped: true,
   },
   {
     kind: 'Service',
@@ -341,6 +290,10 @@ const definitions: IWatchOptions[] = [
     fieldSelector: { 'metadata.name': 'cluster-proxy-addon-user', 'metadata.namespace': 'multicluster-engine' },
   },
 ]
+
+configureClusterScopedKinds(
+  definitions.filter((definition) => definition.clusterScoped).map((definition) => definition.kind)
+)
 
 export function startWatching(): void {
   ServerSideEvents.eventFilter = eventFilter
@@ -827,8 +780,18 @@ export async function cacheResource(resource: IResource, forwardEventsToClients 
     existing = latestExisting
   }
   const compressed = deflateResource(resource, eventDict)
+  const meta: EventResourceMeta = {
+    kind: resource.kind,
+    apiVersion: resource.apiVersion,
+    name: resource.metadata?.name,
+    namespace: resource.metadata?.namespace,
+  }
   const eventID = forwardEventsToClients
-    ? compressed.then((compressed) => ServerSideEvents.pushEvent({ data: { type: 'MODIFIED', object: compressed } }))
+    ? compressed.then((compressed) =>
+        ServerSideEvents.pushEvent({
+          data: { type: 'MODIFIED', object: compressed, meta },
+        })
+      )
     : NO_BROADCAST_EVENT_ID
   cache[uid] = { compressed, eventID }
 
@@ -871,6 +834,12 @@ async function deleteResource(resource: IResource, forwardEventsToClients = true
           apiVersion: resource.apiVersion,
           metadata: { name: resource.metadata.name, namespace: resource.metadata.namespace },
         },
+        meta: {
+          kind: resource.kind,
+          apiVersion: resource.apiVersion,
+          name: resource.metadata.name,
+          namespace: resource.metadata.namespace,
+        },
       },
     })
     // after deletion has been broadcast to current clients, no need to retain
@@ -904,94 +873,26 @@ function eventFilter(token: string, serverSideEvent: ServerSideEvent<ServerSideE
       return Promise.resolve(true)
     case 'ADDED':
     case 'MODIFIED': {
-      const watchEvent = serverSideEvent.data
-      const resource = watchEvent.object
+      const meta = getEventResourceMeta(serverSideEvent)
+      if (!meta?.kind || !meta.apiVersion) {
+        return Promise.resolve(false)
+      }
+      const resource = {
+        kind: meta.kind,
+        apiVersion: meta.apiVersion,
+        metadata: { name: meta.name, namespace: meta.namespace },
+      }
+      // Fast path: cluster-scoped list (admins / broad ClusterRoles).
       return canListClusterScopedKind(resource, token).then((allowed) => {
         if (allowed) return true
-        return canListNamespacedScopedKind(resource, token).then((allowed) => {
-          if (allowed) return true
-          return canGetResource(resource, token)
-        })
+        // After cluster list is denied, use SelfSubjectRulesReview instead of O(N) SSARs.
+        return canGetResource(resource, token)
       })
     }
     default:
       logger.warn({ msg: 'unhandled server side event data type', serverSideEvent })
       return Promise.resolve(false)
   }
-}
-
-function canListClusterScopedKind(resource: IResource, token: string): Promise<boolean> {
-  return canAccess({ kind: resource.kind, apiVersion: resource.apiVersion }, 'list', token)
-}
-
-function canListNamespacedScopedKind(resource: IResource, token: string): Promise<boolean> {
-  if (!resource.metadata?.namespace) return Promise.resolve(false)
-  return canAccess(
-    {
-      kind: resource.kind,
-      apiVersion: resource.apiVersion,
-      metadata: { namespace: resource.metadata.namespace },
-    },
-    'list',
-    token
-  )
-}
-
-function canGetResource(resource: IResource, token: string): Promise<boolean> {
-  return canAccess(resource, 'get', token)
-}
-
-export function canAccess(
-  resource: { kind: string; apiVersion: string; metadata?: { name?: string; namespace?: string } },
-  verb: 'get' | 'list' | 'create',
-  token: string
-): Promise<boolean> {
-  // Cache is cleaned up periodically by cleanupAccessCache() to prevent unbounded memory growth
-
-  const key = `${resource.kind}:${resource.metadata?.namespace}:${resource.metadata?.name}`
-  if (!accessCache[token]) accessCache[token] = {}
-  const existing = accessCache[token][key]
-  if (existing && existing.time > Date.now() - ACCESS_CACHE_TTL) {
-    return existing.promise
-  }
-
-  const promise = jsonPost<{ status: { allowed: boolean } }>(
-    process.env.CLUSTER_API_URL + '/apis/authorization.k8s.io/v1/selfsubjectaccessreviews',
-    {
-      apiVersion: 'authorization.k8s.io/v1',
-      kind: 'SelfSubjectAccessReview',
-      metadata: {},
-      spec: {
-        resourceAttributes: {
-          group: resource.apiVersion.includes('/') ? resource.apiVersion.split('/')[0] : '',
-          name: resource.metadata?.name,
-          namespace:
-            resource.metadata?.namespace ?? (resource.kind === 'Namespace' ? resource.metadata?.name : undefined),
-          resource: pluralize(resource.kind.toLowerCase()),
-          verb,
-        },
-      },
-    },
-    token
-  ).then((result) => {
-    if (process.env.LOG_ACCESS === 'true') {
-      logger.debug({
-        msg: 'access',
-        allowed: result.body.status.allowed,
-        verb,
-        resource: pluralize(resource.kind.toLowerCase()),
-        name: resource.metadata?.name,
-        namespace: resource.metadata?.namespace,
-      })
-    }
-    return result.body.status.allowed
-  })
-
-  accessCache[token][key] = {
-    time: Date.now(),
-    promise,
-  }
-  return promise
 }
 
 let stopping = false
