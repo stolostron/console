@@ -76,6 +76,7 @@ import {
   TimesCircleIcon,
   TrashIcon,
 } from '@patternfly/react-icons'
+import { css } from '@emotion/css'
 import useResizeObserver from '@react-hook/resize-observer'
 import { Schema } from 'ajv'
 import { Fragment, ReactElement, ReactNode, useCallback, useContext, useRef, useState } from 'react'
@@ -96,6 +97,12 @@ import {
 import { AcmSelectBase, AcmSelectBaseProps, SelectOptionObject, SelectVariant } from './AcmSelectBase'
 import { LostChangesContext, LostChangesPrompt } from './LostChanges'
 import { SyncEditor, ValidationStatus } from './SyncEditor/SyncEditor'
+
+// Masks the characters of a multiline secret TextArea while preserving its real (newline-containing) value.
+const maskedSecretTextArea = css`
+  -webkit-text-security: disc;
+  text-security: disc;
+`
 
 export interface AcmDataFormProps {
   formData: FormData
@@ -1052,29 +1059,22 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
       )
     }
     case 'TextArea': {
-      const hideSecretInput = input.isSecret === true && !showSecrets
+      // Mask secret values with CSS rather than swapping in a single-line password input, so that
+      // multiline secrets (e.g. SSH private keys) keep their line breaks while being edited.
+      const maskSecret = input.isSecret === true && !showSecrets
       const { onChange, ...inputProps } = input
       return (
         <InputGroup>
-          {hideSecretInput ? (
-            <TextInput
-              {...inputProps}
-              onChange={(_event, value) => onChange(value)}
-              validated={validated}
-              type={'password'}
-              readOnlyVariant={isReadOnly ? 'default' : undefined}
-            />
-          ) : (
-            <TextArea
-              {...inputProps}
-              onChange={(_event, value) => onChange(value)}
-              validated={validated}
-              spellCheck="false"
-              resizeOrientation="vertical"
-              autoResize={true}
-              readOnlyVariant={isReadOnly ? 'default' : undefined}
-            />
-          )}
+          <TextArea
+            {...inputProps}
+            onChange={(_event, value) => onChange(value)}
+            validated={validated}
+            spellCheck="false"
+            resizeOrientation="vertical"
+            autoResize={true}
+            readOnlyVariant={isReadOnly ? 'default' : undefined}
+            className={maskSecret ? maskedSecretTextArea : undefined}
+          />
 
           {input.value === '' ? (
             <PasteInputButton setValue={input.onChange} setShowSecrets={setShowSecrets} />
@@ -1530,13 +1530,19 @@ function PasteInputButton(props: { setValue: (value: string) => void; setShowSec
 
 function ClearInputButton(props: { onClick: () => void }) {
   const { onClick } = props
-  return <Button icon={<TimesCircleIcon />} variant="control" onClick={onClick}></Button>
+  const { t } = useTranslation()
+  return <Button aria-label={t('Clear')} icon={<TimesCircleIcon />} variant="control" onClick={onClick}></Button>
 }
 
 function ShowSecretsButton(props: { showSecrets: boolean; setShowSecrets: (value: boolean) => void }) {
   const { showSecrets, setShowSecrets } = props
+  const { t } = useTranslation()
   return (
-    <Button variant="control" onClick={() => setShowSecrets(!showSecrets)}>
+    <Button
+      aria-label={showSecrets ? t('Hide secret') : t('Show secret')}
+      variant="control"
+      onClick={() => setShowSecrets(!showSecrets)}
+    >
       {showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
     </Button>
   )
