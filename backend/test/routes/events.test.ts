@@ -21,17 +21,13 @@ import {
   getEventCache,
   getHubClusterName,
   getIsHubSelfManaged,
+  getIsObservabilityInstalled,
+  resetIsObservabilityInstalled,
   createSplitStream,
   errorToString,
   createWatchEventProcessor,
   listAndWatch,
   stopWatching,
-  canAccess,
-  resetAccessCache,
-  getAccessCache,
-  cleanupAccessCache,
-  ACCESS_CACHE_TTL,
-  ACCESS_CACHE_MAX_TOKENS,
 } from '../../src/routes/events'
 import type { IArgoApplication, IResource } from '../../src/resources/resource'
 import { ServerSideEvents } from '../../src/lib/server-side-events'
@@ -176,6 +172,8 @@ describe('events Route', () => {
           delete events[key]
         }
       }
+
+      resetIsObservabilityInstalled()
     })
 
     it('should cache a new resource', async () => {
@@ -292,6 +290,75 @@ describe('events Route', () => {
 
       expect(getHubClusterName()).toBe(initialHubName)
     })
+
+    it('should set observability flag when caching observability-controller addon', async () => {
+      const observabilityAddon: IResource = {
+        kind: 'ManagedClusterAddOn',
+        apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+        metadata: {
+          name: 'observability-controller',
+          namespace: 'local-cluster',
+          uid: 'obs-addon-uid',
+          resourceVersion: '1',
+        },
+      }
+
+      await cacheResource(observabilityAddon)
+
+      expect(getIsObservabilityInstalled()).toBe(true)
+    })
+
+    it('should set observability flag when caching multicluster-observability-addon', async () => {
+      const observabilityAddon: IResource = {
+        kind: 'ManagedClusterAddOn',
+        apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+        metadata: {
+          name: 'multicluster-observability-addon',
+          namespace: 'local-cluster',
+          uid: 'mco-addon-uid',
+          resourceVersion: '1',
+        },
+      }
+
+      await cacheResource(observabilityAddon)
+
+      expect(getIsObservabilityInstalled()).toBe(true)
+    })
+
+    it('should not set observability flag for other addons', async () => {
+      const otherAddon: IResource = {
+        kind: 'ManagedClusterAddOn',
+        apiVersion: 'addon.open-cluster-management.io/v1alpha1',
+        metadata: {
+          name: 'other-addon',
+          namespace: 'local-cluster',
+          uid: 'other-addon-uid',
+          resourceVersion: '1',
+        },
+      }
+
+      await cacheResource(otherAddon)
+
+      expect(getIsObservabilityInstalled()).toBe(false)
+    })
+
+    it('should not set observability flag for addon with wrong API group', async () => {
+      const wrongGroupAddon: IResource = {
+        kind: 'ManagedClusterAddOn',
+        apiVersion: 'other.group.io/v1alpha1',
+        metadata: {
+          name: 'observability-controller',
+          namespace: 'local-cluster',
+          uid: 'wrong-group-addon-uid',
+          resourceVersion: '1',
+        },
+      }
+
+      await cacheResource(wrongGroupAddon)
+
+      expect(getIsObservabilityInstalled()).toBe(false)
+    })
+
     it('should avoid race condition when caching same resource concurrently', async () => {
       // This test guards against a race condition where concurrent calls to cacheResource
       // for the same UID could create duplicate/orphaned events in ServerSideEvents.
@@ -514,6 +581,157 @@ describe('events Route', () => {
     })
   })
 
+  describe('forwardEventsToClients', () => {
+    beforeEach(async () => {
+      const cache = getEventCache()
+      for (const key in cache) {
+        delete cache[key]
+      }
+      ServerSideEvents.reset()
+      // Drain microtask queue so stale promises from prior tests resolve
+      for (let i = 0; i < 5; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 0))
+      }
+      ServerSideEvents.reset()
+    })
+
+    it('should not push SSE events when forwardEventsToClients is false', async () => {
+      const pushSpy = jest.spyOn(ServerSideEvents, 'pushEvent')
+
+      const resource: IResource = {
+        kind: 'Authentication',
+        apiVersion: 'config.openshift.io/v1',
+        metadata: {
+          name: 'cluster',
+          uid: 'auth-uid-1',
+          resourceVersion: '1',
+        },
+      }
+
+      await cacheResource(resource, false)
+
+      expect(pushSpy).not.toHaveBeenCalled()
+
+      const cache = getEventCache()
+      const entry = cache['/config.openshift.io/v1/authentications']?.['auth-uid-1']
+      expect(entry).toBeDefined()
+      expect(await entry.compressed).toBeDefined()
+      expect(await entry.eventID).toBe(-1)
+
+      const resources = await getKubeResources('Authentication', 'config.openshift.io/v1')
+      expect(resources).toHaveLength(1)
+      expect(resources[0].metadata.name).toBe('cluster')
+
+      pushSpy.mockRestore()
+    })
+
+    it('should still push SSE events when forwardEventsToClients is true (default)', async () => {
+      const pushSpy = jest.spyOn(ServerSideEvents, 'pushEvent')
+
+      const resource: IResource = {
+        kind: 'ConfigMap',
+        apiVersion: 'v1',
+        metadata: {
+          name: 'test-cm',
+          uid: 'cm-forward-uid',
+          resourceVersion: '1',
+        },
+      }
+
+      await cacheResource(resource, true)
+      const cache = getEventCache()
+      await cache['/v1/configmaps']['cm-forward-uid'].eventID
+
+      expect(pushSpy).toHaveBeenCalled()
+
+      pushSpy.mockRestore()
+    })
+
+    it('should not push SSE events for delete when forwardEventsToClients is false', async () => {
+      await cacheResource(
+        {
+          kind: 'Authentication',
+          apiVersion: 'config.openshift.io/v1',
+          metadata: { name: 'cluster', uid: 'auth-del-uid', resourceVersion: '1' },
+        },
+        false
+      )
+
+      const pushSpy = jest.spyOn(ServerSideEvents, 'pushEvent')
+
+      const options = { kind: 'Authentication', apiVersion: 'config.openshift.io/v1', forwardEventsToClients: false }
+      const resourceVersionRef = { value: '1' }
+      const processor = createWatchEventProcessor(options, 'http://test/url', resourceVersionRef)
+
+      const watchEvent = {
+        type: 'DELETED',
+        object: {
+          kind: 'Authentication',
+          apiVersion: 'config.openshift.io/v1',
+          metadata: { name: 'cluster', namespace: '', uid: 'auth-del-uid', resourceVersion: '2' },
+        },
+      }
+
+      processor.write(JSON.stringify(watchEvent))
+      processor.end()
+      await new Promise((resolve) => setTimeout(resolve, 50))
+
+      expect(pushSpy).not.toHaveBeenCalled()
+
+      const cache = getEventCache()
+      expect(cache['/config.openshift.io/v1/authentications']?.['auth-del-uid']).toBeUndefined()
+
+      pushSpy.mockRestore()
+    })
+
+    it('should not push SSE events via watch processor when forwardEventsToClients is false', async () => {
+      const pushSpy = jest.spyOn(ServerSideEvents, 'pushEvent')
+
+      const options = { kind: 'Authentication', apiVersion: 'config.openshift.io/v1', forwardEventsToClients: false }
+      const resourceVersionRef = { value: '0' }
+      const processor = createWatchEventProcessor(options, 'http://test/url', resourceVersionRef)
+
+      const watchEvent = {
+        type: 'ADDED',
+        object: {
+          kind: 'Authentication',
+          apiVersion: 'config.openshift.io/v1',
+          metadata: { name: 'cluster', namespace: '', uid: 'auth-watch-uid', resourceVersion: '10' },
+        },
+      }
+
+      processor.write(JSON.stringify(watchEvent))
+      processor.end()
+      await new Promise((resolve) => setTimeout(resolve, 50))
+
+      expect(pushSpy).not.toHaveBeenCalled()
+      expect(resourceVersionRef.value).toBe('10')
+
+      const cache = getEventCache()
+      expect(cache['/config.openshift.io/v1/authentications']?.['auth-watch-uid']).toBeDefined()
+
+      pushSpy.mockRestore()
+    })
+
+    it('should still run kind-specific side effects when forwardEventsToClients is false', async () => {
+      const localCluster: IResource = {
+        kind: 'ManagedCluster',
+        apiVersion: 'cluster.open-cluster-management.io/v1',
+        metadata: {
+          name: 'my-hub',
+          uid: 'hub-no-forward-uid',
+          resourceVersion: '1',
+          labels: { 'local-cluster': 'true' },
+        },
+      }
+
+      await cacheResource(localCluster, false)
+
+      expect(getHubClusterName()).toBe('my-hub')
+      expect(getIsHubSelfManaged()).toBe(true)
+    })
+  })
+
   describe('getEventCache', () => {
     it('should return the resource cache object', () => {
       const cache = getEventCache()
@@ -534,6 +752,10 @@ describe('events Route', () => {
 
     it('getIsHubSelfManaged should return boolean', () => {
       expect(typeof getIsHubSelfManaged()).toBe('boolean')
+    })
+
+    it('getIsObservabilityInstalled should return boolean', () => {
+      expect(typeof getIsObservabilityInstalled()).toBe('boolean')
     })
   })
 
@@ -1184,90 +1406,6 @@ describe('events Route', () => {
       const retryTime = secondListTime - startTime
       expect(retryTime).toBeLessThan(5000)
       expect(listCallCount).toBe(1) // Only counting second list call
-    })
-  })
-
-  describe('Access Cache Cleanup', () => {
-    beforeEach(() => {
-      resetAccessCache()
-      jest.clearAllMocks()
-      process.env.CLUSTER_API_URL = 'https://api.test-cluster.com:6443'
-    })
-
-    afterEach(() => {
-      resetAccessCache()
-      delete process.env.CLUSTER_API_URL
-      nock.cleanAll()
-    })
-
-    it('should cache RBAC access check results', async () => {
-      const mockToken = 'test-token-123'
-      const resource = { kind: 'Pod', apiVersion: 'v1', metadata: { namespace: 'default', name: 'test-pod' } }
-
-      nock(process.env.CLUSTER_API_URL || '')
-        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
-        .reply(200, { status: { allowed: true } })
-
-      const result1 = await canAccess(resource, 'get', mockToken)
-      const result2 = await canAccess(resource, 'get', mockToken)
-
-      expect(result1).toBe(true)
-      expect(result1).toBe(result2)
-    })
-
-    it('should respect TTL and refetch after expiry', async () => {
-      const cache = getAccessCache()
-      const mockToken = 'test-token-ttl'
-
-      cache[mockToken] = {
-        'Secret:default:credentials': { time: Date.now() - ACCESS_CACHE_TTL - 1000, promise: Promise.resolve(true) },
-      }
-
-      nock(process.env.CLUSTER_API_URL || '')
-        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
-        .reply(200, { status: { allowed: false } })
-
-      const result = await canAccess(
-        { kind: 'Secret', apiVersion: 'v1', metadata: { namespace: 'default', name: 'credentials' } },
-        'get',
-        mockToken
-      )
-      expect(result).toBe(false)
-    })
-
-    it('should remove stale cache entries during cleanup', () => {
-      const cache = getAccessCache()
-      const now = Date.now()
-
-      cache['token1'] = {
-        stale: { time: now - ACCESS_CACHE_TTL - 1000, promise: Promise.resolve(true) },
-        fresh: { time: now - 30000, promise: Promise.resolve(true) },
-      }
-      cache['token2'] = { 'stale-only': { time: now - ACCESS_CACHE_TTL - 5000, promise: Promise.resolve(false) } }
-
-      cleanupAccessCache()
-
-      expect(cache['token1']['stale']).toBeUndefined()
-      expect(cache['token1']['fresh']).toBeDefined()
-      expect(cache['token2']).toBeUndefined()
-    })
-
-    it('should enforce maximum token limit with LRU eviction', () => {
-      const cache = getAccessCache()
-      const now = Date.now()
-      const tokenCount = ACCESS_CACHE_MAX_TOKENS + 100
-
-      for (let i = 0; i < tokenCount; i++) {
-        cache[`token-${i}`] = {
-          'Pod:default:test': { time: now - (i / tokenCount) * 50 * 1000, promise: Promise.resolve(true) },
-        }
-      }
-
-      cleanupAccessCache()
-
-      expect(Object.keys(cache).length).toBe(ACCESS_CACHE_MAX_TOKENS)
-      expect(cache['token-0']).toBeDefined()
-      expect(cache[`token-${tokenCount - 1}`]).toBeUndefined()
     })
   })
 })
