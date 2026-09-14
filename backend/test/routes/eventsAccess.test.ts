@@ -5,7 +5,6 @@ import {
   canGetResource,
   canListClusterScopedKind,
   canListNamespacedScopedKind,
-  configureClusterScopedKinds,
 } from '../../src/routes/eventsAccess'
 import { ACCESS_CACHE_TTL, cleanupAccessCache, resetAccessCache } from '../../src/routes/eventsCache'
 
@@ -98,7 +97,6 @@ describe('eventsAccess', () => {
 
   beforeEach(() => {
     resetAccessCache()
-    configureClusterScopedKinds(['ManagedCluster', 'ClusterExtension', 'Namespace', 'StorageClass'])
     process.env.CLUSTER_API_URL = 'https://api.test-cluster.com:6443'
   })
 

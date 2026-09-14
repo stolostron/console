@@ -14,6 +14,7 @@ import {
   setSsarCacheEntry,
   setTimedCacheEntry,
 } from './eventsCache'
+import { CLUSTER_SCOPED_KINDS } from './eventsDefinitions'
 
 export interface SubjectRulesStatus {
   incomplete: boolean
@@ -37,15 +38,8 @@ export type AccessResource = { kind: string; apiVersion: string; metadata?: { na
 /** SSRR requires a namespace; cluster-scoped kinds are reviewed in this probe namespace only. */
 const CLUSTER_SCOPED_RULES_NAMESPACE = 'default'
 
-let clusterScopedKinds = new Set<string>()
-
-/** Replace the cluster-scoped kind lookup. Derived from watch definitions in events.ts. */
-export function configureClusterScopedKinds(kinds: Iterable<string>): void {
-  clusterScopedKinds = new Set(kinds)
-}
-
 export function isClusterScopedKind(kind: string): boolean {
-  return clusterScopedKinds.has(kind)
+  return CLUSTER_SCOPED_KINDS.has(kind)
 }
 
 const subjectRulesCache = getSubjectRulesCacheStore()
