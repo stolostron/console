@@ -430,6 +430,7 @@ export function PlacementsTable(props: { placements: Placement[]; emptyState: Re
     <AcmTableStateProvider localStorageKey="advanced-tables-pagination">
       <DeletePlacementModal {...modalProps} />
       <AcmTable<Placement>
+        aria-label={t('Placements table')}
         items={props.placements}
         columns={columns}
         showExportButton

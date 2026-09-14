@@ -15,6 +15,7 @@ import {
   AgentServiceConfigKindVersion,
   AnsibleJobApiVersion,
   AnsibleJobKind,
+  AnsibleWorkflowKind,
   ApplicationApiVersion,
   ApplicationKind,
   BareMetalHostApiVersion,
@@ -124,6 +125,7 @@ import {
   agentServiceConfigsState,
   agentsState,
   ansibleJobState,
+  ansibleWorkflowState,
   applicationsState,
   argoCDsState,
   bareMetalHostsState,
@@ -213,6 +215,7 @@ export function LoadData(props: { children?: ReactNode }) {
   const setAgents = useSetRecoilState(agentsState)
   const setAgentServiceConfigs = useSetRecoilState(agentServiceConfigsState)
   const setAnsibleJobs = useSetRecoilState(ansibleJobState)
+  const setAnsibleWorkflows = useSetRecoilState(ansibleWorkflowState)
   const setApplicationsState = useSetRecoilState(applicationsState)
   const setArgoCDsState = useSetRecoilState(argoCDsState)
   const setBareMetalHosts = useSetRecoilState(bareMetalHostsState)
@@ -318,6 +321,7 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(AgentMachineApiVersion, AgentMachineKind, setAgentMachinesState)
     addSetter(AgentServiceConfigKindVersion, AgentServiceConfigKind, setAgentServiceConfigs)
     addSetter(AnsibleJobApiVersion, AnsibleJobKind, setAnsibleJobs)
+    addSetter(AnsibleJobApiVersion, AnsibleWorkflowKind, setAnsibleWorkflows)
     addSetter(ApplicationApiVersion, ApplicationKind, setApplicationsState)
     addSetter(BareMetalHostApiVersion, BareMetalHostKind, setBareMetalHosts)
     addSetter(CertificateSigningRequestApiVersion, CertificateSigningRequestKind, setCertificateSigningRequests)
@@ -375,6 +379,7 @@ export function LoadData(props: { children?: ReactNode }) {
     setAgents,
     setAgentServiceConfigs,
     setAnsibleJobs,
+    setAnsibleWorkflows,
     setApplicationsState,
     setArgoCDsState,
     setBareMetalHosts,

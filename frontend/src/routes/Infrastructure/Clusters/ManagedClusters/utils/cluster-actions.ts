@@ -37,6 +37,22 @@ function clusterSupportsAutomationTemplateChange(cluster: Cluster) {
   )
 }
 
+// ACM-39253 differentiates the create-time toweraccess-* Secret name by cluster name for clusters
+// that share a namespace for their ClusterCurator (e.g. Hosted Control Plane clusters such as
+// OpenShift Virtualization). ACM-41796: the Update/Remove automation template actions must resolve
+// the same namespace and Secret name, rather than assuming a Hive-style layout where the cluster
+// has its own namespace equal to its name.
+export function automationCuratorNamespace(cluster: Cluster): string {
+  return cluster.namespace || cluster.name
+}
+
+export function automationSecretName(curationType: string, cluster: Cluster): string {
+  const namespace = automationCuratorNamespace(cluster)
+  return cluster.name && namespace !== cluster.name
+    ? `toweraccess-${curationType}-${cluster.name}`
+    : `toweraccess-${curationType}`
+}
+
 export function clusterDestroyable(cluster: Cluster) {
   if (cluster.isHive) {
     // hive clusters can be destroyed

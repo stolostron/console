@@ -73,7 +73,6 @@ exports[`ControlPanelMultiSelect component renders as expected 1`] = `
               class="pf-v6-c-text-input-group pf-m-plain"
             >
               <div
-                autocomplete="off"
                 class="pf-v6-c-text-input-group__main"
               >
                 <span
@@ -83,6 +82,7 @@ exports[`ControlPanelMultiSelect component renders as expected 1`] = `
                     aria-controls="select-multi-typeahead-listbox"
                     aria-expanded="false"
                     aria-label="Options menu"
+                    autocomplete="off"
                     class="pf-v6-c-text-input-group__text-input"
                     data-testid="multi-controlId"
                     placeholder="None"

@@ -387,6 +387,7 @@ export default function PolicyDetailsResults() {
       )}
       <AcmTableStateProvider localStorageKey="grc-status-view">
         <AcmTable<ResultsTableData>
+          aria-label={t('Policy results table')}
           showExportButton
           exportFilePrefix={`${policy.metadata.name}-${policy.metadata.namespace}`}
           items={policiesDeployedOnCluster}

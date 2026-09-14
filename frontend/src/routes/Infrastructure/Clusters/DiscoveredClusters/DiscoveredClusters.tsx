@@ -366,6 +366,7 @@ export function DiscoveredClustersTable(props: {
   return (
     <Fragment>
       <AcmTable<DiscoveredCluster>
+        aria-label={t('Discovered clusters table')}
         items={props.discoveredClusters}
         columns={discoveredClusterCols}
         keyFn={dckeyFn}

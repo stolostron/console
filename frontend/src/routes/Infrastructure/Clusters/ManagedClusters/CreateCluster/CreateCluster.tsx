@@ -28,8 +28,10 @@ import {
 import {
   append,
   arrayItemHasKey,
+  differentiateCuratorSecrets,
   getName,
   getNamespace,
+  secretName,
   setAvailableConnections,
 } from './controlData/ControlDataHelpers'
 import aiTemplate from './templates/assisted-installer/ai-template.hbs'
@@ -188,10 +190,15 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
         }
         setSelectedConnection(providerConnections.find((provider) => control.active === provider.metadata.name))
       } else if (control.id === 'kubevirt-operator-alert') {
-        control.hidden = isKubevirtEnabled
+        // the OpenShift Virtualization operator is only needed on the hub when the
+        // selected credential does not delegate to an external infrastructure cluster
+        const usesExternalInfrastructure = !!(
+          selectedConnection?.stringData?.kubeconfig || selectedConnection?.stringData?.externalInfraNamespace
+        )
+        control.hidden = isKubevirtEnabled || usesExternalInfrastructure
       }
     },
-    [providerConnections, setSelectedConnection, newSecret, isKubevirtEnabled]
+    [providerConnections, setSelectedConnection, newSecret, isKubevirtEnabled, selectedConnection]
   )
   const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
   const infraEnvs = useRecoilValue(infraEnvironmentsState)
@@ -224,13 +231,14 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
     </div>
   )
 
-  // If KubeVirt operator is installed/uninstalled toggle the Alert via control data
+  // Toggle the operator Alert when the KubeVirt operator install state changes or the
+  // selected credential (and its external infrastructure setting) changes
   const [kubeVirtOperatorControl, setKubeVirtOperatorControl] = useState<any>()
   useEffect(() => {
     if (kubeVirtOperatorControl) {
       onControlChange(kubeVirtOperatorControl)
     }
-  }, [isKubevirtEnabled, kubeVirtOperatorControl, onControlChange])
+  }, [isKubevirtEnabled, kubeVirtOperatorControl, onControlChange, selectedConnection])
 
   const localCluster = useMemo(() => allClusters.find((cls) => cls.name === localHubName), [allClusters, localHubName])
 
@@ -345,6 +353,12 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   Handlebars.registerHelper('append', append)
   Handlebars.registerHelper('getName', getName)
   Handlebars.registerHelper('getNamespace', getNamespace)
+  Handlebars.registerHelper('secretName', (curation, options) =>
+    secretName(curation, getName(options), getNamespace(options))
+  )
+  Handlebars.registerHelper('curatorSpec', (spec, options) =>
+    differentiateCuratorSecrets(spec, getName(options), getNamespace(options))
+  )
   Handlebars.registerHelper('escapeYAML', (value) => jsyaml.dump(Array.isArray(value) ? value[0] : value))
 
   const { canJoinClusterSets } = useCanJoinClusterSets()

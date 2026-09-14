@@ -221,6 +221,7 @@ export function AutomationDetailsSidebar(props: {
         </DescriptionList>
       </Stack>
       <AcmTable<JobTableData>
+        aria-label={t('Automation jobs table')}
         key="ansible-job-history"
         items={jobItems}
         emptyState={<AcmEmptyState title="No Ansible jobs found" message="You do not have any Ansible jobs yet." />}

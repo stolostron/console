@@ -423,6 +423,7 @@ const NodePoolsTable = ({ nodePools, clusterImages }: NodePoolsTableProps): JSX.
       <Stack hasGutter>
         <StackItem style={{ width: npTableWidth }}>
           <AcmTable<NodePool>
+            aria-label={t('Node pools table')}
             key="nodepool-table"
             columns={columns}
             keyFn={keyFn}

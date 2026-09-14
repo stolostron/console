@@ -66,6 +66,7 @@ const GroupsTable = ({
 
   return (
     <AcmTable<Group>
+      aria-label={t('Groups table')}
       key="groups-table"
       filters={filters}
       columns={columns}

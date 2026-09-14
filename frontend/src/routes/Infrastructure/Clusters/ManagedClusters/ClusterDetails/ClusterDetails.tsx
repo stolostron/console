@@ -124,7 +124,9 @@ export default function ClusterDetailsPage() {
       cc.spec?.namespace === clusterDeployment?.metadata?.namespace
   )
 
-  const clusterCurator = clusterCurators.find((cc) => cc.metadata?.namespace === namespace)
+  const clusterCurator = clusterCurators.find(
+    (cc) => cc.metadata?.namespace === namespace && cc.metadata?.name === name
+  )
 
   const agentClusterInstall = agentClusterInstalls.find(
     (aci) =>

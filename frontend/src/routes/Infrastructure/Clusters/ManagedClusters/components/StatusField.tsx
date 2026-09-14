@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { AnsibleJob, getLatestAnsibleJob } from '../../../../../resources'
+import { type AnsibleHookRun, getLatestAnsibleHook } from '~/resources'
 import { Cluster, ClusterStatus, getClusterStatusLabel, getClusterStatusType } from '../../../../../resources/utils'
 import { AcmButton, AcmInlineStatus, Provider } from '../../../../../ui-components'
 import { ExternalLinkAltIcon, DownloadIcon } from '@patternfly/react-icons'
@@ -19,10 +19,13 @@ import { DOC_LINKS } from '../../../../../lib/doc-util'
 export function StatusField(props: { cluster: Cluster }) {
   const { t } = useTranslation()
   const location = useLocation()
-  const { ansibleJobState, configMapsState, clusterCuratorsState } = useSharedAtoms()
+  const { ansibleJobState, ansibleWorkflowState, configMapsState, clusterCuratorsState } = useSharedAtoms()
   const configMaps = useRecoilValue(configMapsState)
   const ansibleJobs = useRecoilValue(ansibleJobState)
-  const latestJob = getLatestAnsibleJob(ansibleJobs, props.cluster?.name!)
+  const ansibleWorkflows = useRecoilValue(ansibleWorkflowState)
+  const latestJob = props.cluster?.namespace
+    ? getLatestAnsibleHook(ansibleJobs, ansibleWorkflows, props.cluster.namespace)
+    : { prehook: undefined, posthook: undefined }
   const agentClusterInstall = useAgentClusterInstall({
     name: props.cluster?.name!,
     namespace: props.cluster?.namespace!,
@@ -44,11 +47,12 @@ export function StatusField(props: { cluster: Cluster }) {
   let Action = () => <></>
   let header = ''
 
-  const launchToLogs = (hookJob: AnsibleJob | undefined) => {
-    if (hookJob?.status?.ansibleJobResult.status === 'error' && jobPodsStillAvailable(curator)) {
+  const launchToLogs = (hookRun: AnsibleHookRun | undefined) => {
+    if (hookRun?.result?.url) {
+      return window.open(hookRun.result.url)
+    }
+    if (hookRun?.result?.status === 'error' && jobPodsStillAvailable(curator)) {
       return launchJobLogs(curator)
-    } else {
-      return window.open(latestJob.prehook?.status?.ansibleJobResult.url)
     }
   }
 

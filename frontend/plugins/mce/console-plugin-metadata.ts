@@ -8,7 +8,7 @@ import { ConsolePluginBuildMetadata } from '@openshift-console/dynamic-plugin-sd
  */
 export const pluginMetadata: ConsolePluginBuildMetadata = {
   name: 'mce',
-  version: '5.0.0',
+  version: '5.1.0',
   displayName: 'Red Hat Multicluster Engine for Kubernetes',
   description: 'Integrates Multicluster Engine functionality into the OpenShift Container Platform web console',
   exposedModules: {

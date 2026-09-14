@@ -225,6 +225,7 @@ export function MachinePoolsTable() {
       <BulkActionModal<MachinePool> {...modalProps} />
       <ScaleMachinePoolModal {...scaleMachinePool} onClose={() => setScaleMachinePool(undefined)} />
       <AcmTable<MachinePool>
+        aria-label={t('Machine pools table')}
         items={machinePools}
         columns={columns}
         keyFn={keyFn}

@@ -81,6 +81,7 @@ const GroupUsers = () => {
   return (
     <PageSection hasBodyWrapper={false}>
       <AcmTable<User>
+        aria-label={t('Group users table')}
         key="group-users-table"
         columns={columns}
         filters={filters}

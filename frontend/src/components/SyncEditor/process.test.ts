@@ -94,6 +94,42 @@ describe('stringify', () => {
     ])
     expect(yaml).toMatch(/- name: c1/)
   })
+
+  it('orders status keys and condition keys per ACM-38199', () => {
+    const yaml = stringify([
+      {
+        apiVersion: 'apps/v1',
+        kind: 'Deployment',
+        metadata: { name: 'd' },
+        status: {
+          conditions: [
+            {
+              message: 'ok',
+              type: 'Available',
+              reason: 'MinimumReplicasAvailable',
+              status: 'True',
+            },
+          ],
+          replicas: 1,
+          unavailableReplicas: 0,
+        },
+      },
+    ])
+    const statusIdx = yaml.indexOf('status:')
+    const replicasIdx = yaml.indexOf('replicas:', statusIdx)
+    const conditionsIdx = yaml.indexOf('conditions:', statusIdx)
+    expect(replicasIdx).toBeGreaterThan(statusIdx)
+    expect(conditionsIdx).toBeGreaterThan(replicasIdx)
+    const typeIdx = yaml.indexOf('type: Available')
+    const statusFieldIdx =
+      yaml.indexOf('status: "True"') >= 0 ? yaml.indexOf('status: "True"') : yaml.indexOf('status: True')
+    const reasonIdx = yaml.indexOf('reason: MinimumReplicasAvailable')
+    const messageIdx = yaml.indexOf('message: ok')
+    expect(typeIdx).toBeGreaterThan(conditionsIdx)
+    expect(statusFieldIdx).toBeGreaterThan(typeIdx)
+    expect(reasonIdx).toBeGreaterThan(statusFieldIdx)
+    expect(messageIdx).toBeGreaterThan(reasonIdx)
+  })
 })
 
 describe('normalize', () => {

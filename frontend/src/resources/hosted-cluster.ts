@@ -31,6 +31,7 @@ export interface HostedCluster extends IResource {
   }
   spec?: {
     channel?: string
+    pausedUntil?: string
     etcd: {
       managed: {
         storage: {

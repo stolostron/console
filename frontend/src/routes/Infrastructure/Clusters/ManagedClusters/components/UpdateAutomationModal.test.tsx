@@ -256,10 +256,13 @@ const mockClusterRoks: Cluster = {
   isRegionalHubCluster: false,
 }
 
+// ACM-41796: Hosted Control Plane clusters (e.g. OpenShift Virtualization) place their
+// ClusterCurator/toweraccess-* Secrets in a shared hosted namespace, distinct from the cluster
+// name (unlike Hive clusters, which use a namespace equal to their own name).
 const mockClusterHosted: Cluster = {
   name: 'cluster-5-hosted',
   displayName: 'cluster-5-hosted',
-  namespace: 'cluster-5-hosted',
+  namespace: 'clusters',
   uid: 'cluster-5-hosted',
   status: ClusterStatus.ready,
   isHive: false,
@@ -378,16 +381,17 @@ const clusterCuratorHosted = {
   kind: ClusterCuratorDefinition.kind,
   metadata: {
     name: 'cluster-5-hosted',
-    namespace: 'cluster-5-hosted',
+    namespace: 'clusters',
   },
 }
 
+// differentiated per ACM-39253/ACM-41796 since the cluster name differs from the shared namespace
 const mockSecretHosted = {
   apiVersion: ProviderConnectionApiVersion,
   kind: ProviderConnectionKind,
   metadata: {
-    namespace: 'cluster-5-hosted',
-    name: 'toweraccess-install',
+    namespace: 'clusters',
+    name: 'toweraccess-install-cluster-5-hosted',
   },
 }
 
@@ -401,6 +405,21 @@ const clusterCuratorPatch = {
         },
       ],
       towerAuthSecret: mockSecret.metadata.name,
+    },
+  },
+}
+
+// the hosted cluster's ClusterCurator must reference the differentiated Secret name
+const clusterCuratorPatchHosted = {
+  spec: {
+    install: {
+      prehook: [
+        {
+          name: 'test-prehook-install',
+          extra_vars: {},
+        },
+      ],
+      towerAuthSecret: mockSecretHosted.metadata.name,
     },
   },
 }
@@ -472,7 +491,7 @@ describe('UpdateAutomationModal', () => {
     const mockSecretUpdate = nockPatch(mockSecret, secretPatch)
     const mockCuratorUpdate = nockPatch(clusterCuratorReady1, clusterCuratorPatch)
     const mockSecretHostedUpdate = nockPatch(mockSecretHosted, secretPatch)
-    const mockCuratorHostedUpdate = nockPatch(clusterCuratorHosted, clusterCuratorPatch)
+    const mockCuratorHostedUpdate = nockPatch(clusterCuratorHosted, clusterCuratorPatchHosted)
     render(<Component />)
     // select dropdown
     await waitForText('Select a template', false)

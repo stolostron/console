@@ -460,6 +460,7 @@ export function PolicyTemplateDetails() {
                 <KyvernoRelatedResources {...{ name, namespace, template, relatedObjects, violationColumn }} />
               ) : (
                 <AcmTable
+                  aria-label={t('Related resources table')}
                   items={relatedObjects}
                   emptyState={emptyState}
                   columns={isVAPB || isGatekeeperMutation ? paramRefVAPBColumns : relatedResourceColumns}

@@ -34,7 +34,8 @@ The same codebase is used to build images for **Red Hat Advanced Cluster Managem
 
 ```text
 main → release-5.1 → backplane-5.1
-main → release-5.0 → backplane-5.0
+main → release-5.2 → backplane-5.2
+release-5.0 → backplane-5.0
 release-2.17 → backplane-2.17
 release-2.16 → backplane-2.11
 release-2.15 → backplane-2.10
@@ -50,7 +51,8 @@ A number of the core NPM package dependencies are published from other repositor
 
 | console branch                           | patternfly-labs/react-form-wizard | stolostron/react-data-view |
 | ---------------------------------------- | --------------------------------- | -------------------------- |
-| main<br/>release-5.0<br/>backplane-5.0<br/>release-5.1<br/>backplane-5.1 | N/A                               | main                       |
+| main<br/>release-5.1<br/>backplane-5.1   | N/A                               | main                       |
+| release-5.0<br/>backplane-5.0            | N/A                               | v3.10.z                    |
 | release-2.17<br/>backplane-2.17          | N/A                               | v3.4.z                     |
 | release-2.16<br/>backplane-2.11          | N/A                               | v2.6.z                     |
 | release-2.15<br/>backplane-2.10          | no longer used, now integrated    | v2.5.z                     |
