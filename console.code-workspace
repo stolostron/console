@@ -7,9 +7,6 @@
             "path": "backend"
         },
         {
-            "path": "backend-node"
-        },
-        {
             "name": "cursor-config",
             "path": ".cursor"
         }

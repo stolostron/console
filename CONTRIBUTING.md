@@ -67,7 +67,7 @@ npm ci
 npm run setup
 ```
 
-`npm ci` runs a `postinstall` that installs `frontend`, `backend-node`, and (when Go is installed) `go mod download` in `backend/`. `npm run setup` writes `backend/.env` and creates `backend/certs/` when missing; `npm run ci:backend` also ensures certs exist.
+`npm ci` runs a `postinstall` that installs `frontend` and (when Go is installed) `go mod download` in `backend/`. `npm run setup` writes `backend/.env` and creates `backend/certs/` when missing; `npm run ci:backend` also ensures certs exist.
 
 After `oc login` to a different hub:
 

@@ -79,9 +79,9 @@ func BundledFS() fs.FS {
 }
 
 // IsStaticPath reports whether a path (already stripped of /multicloud) should be
-// served as a static file rather than reverse-proxied to the Node sidecar.
+// served as a static file rather than returning 404.
 // Bare paths other than / are not treated as SPA fallback so API routes like /hub
-// still reach the sidecar.
+// are not claimed as static files.
 func IsStaticPath(stripped string) bool {
 	urlPath := strings.TrimSuffix(stripped, "/")
 	if urlPath == "" || urlPath == "/" || urlPath == "/index.html" {

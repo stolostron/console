@@ -120,7 +120,6 @@ func TestLoad_ProxyEnvVars(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("ENV_FILE", filepath.Join(dir, ".env"))
 	t.Setenv("PORT", "4100")
-	t.Setenv("NODE_BACKEND_URL", "https://127.0.0.1:4101")
 	t.Setenv("PROMETHEUS_ROUTE", "https://prom.example")
 	t.Setenv("OBSERVABILITY_ROUTE", "https://obs.example")
 	t.Setenv("CLUSTER_PROXY_ADDON_USER_HOST", "proxy.example")
@@ -129,9 +128,6 @@ func TestLoad_ProxyEnvVars(t *testing.T) {
 	cfg := config.Load()
 	if cfg.Port != "4100" {
 		t.Fatalf("Port=%q", cfg.Port)
-	}
-	if cfg.NodeBackendURL != "https://127.0.0.1:4101" {
-		t.Fatalf("NodeBackendURL=%q", cfg.NodeBackendURL)
 	}
 	if cfg.PrometheusRoute != "https://prom.example" {
 		t.Fatalf("PrometheusRoute=%q", cfg.PrometheusRoute)
@@ -154,28 +150,6 @@ func TestLoad_PublicFolder(t *testing.T) {
 	cfg := config.Load()
 	if cfg.PublicFolder != "/app/public" {
 		t.Fatalf("PublicFolder=%q", cfg.PublicFolder)
-	}
-}
-
-func TestLoad_InformerCacheDefaultOn(t *testing.T) {
-	dir := t.TempDir()
-	t.Setenv("ENV_FILE", filepath.Join(dir, ".env"))
-	t.Setenv("CONSOLE_INFORMER_CACHE", "")
-	cfg := config.Load()
-	if !cfg.InformerCache {
-		t.Fatal("expected InformerCache on by default")
-	}
-}
-
-func TestLoad_InformerCacheOff(t *testing.T) {
-	dir := t.TempDir()
-	t.Setenv("ENV_FILE", filepath.Join(dir, ".env"))
-	for _, v := range []string{"0", "false", "off", "NO"} {
-		t.Setenv("CONSOLE_INFORMER_CACHE", v)
-		cfg := config.Load()
-		if cfg.InformerCache {
-			t.Fatalf("CONSOLE_INFORMER_CACHE=%q should disable cache", v)
-		}
 	}
 }
 

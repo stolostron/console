@@ -2,8 +2,7 @@
 
 // Package informers watches hub resources with client-go (ACM-42597).
 // GET /events SSE is served by internal/events/hub (ACM-42598).
-// POST /aggregate/* reads this cache (ACM-42600). Node startWatching() still
-// runs so hub.ts can use getKubeResources until ACM-42596 is wired in main.go.
+// POST /aggregate/* reads this cache (ACM-42600).
 package informers
 
 import (
@@ -79,7 +78,7 @@ func pairsToMap(pairs []string) map[string]string {
 	return m
 }
 
-// DefaultWatchSpecs is the port of backend-node/src/routes/events.ts `definitions`.
+// DefaultWatchSpecs is the source of truth for hub list/watch specs (GET /events, POST /aggregate).
 func DefaultWatchSpecs() []WatchSpec {
 	return []WatchSpec{
 		watch("ClusterManagementAddOn", "addon.open-cluster-management.io/v1alpha1"),

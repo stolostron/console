@@ -2,7 +2,7 @@
 
 # Console backend (Go)
 
-This directory is the ACM/MCE console backend. During the Node-to-Go migration it fronts a Node sidecar (`../backend-node`) and reverse-proxies unmigrated routes.
+This directory is the ACM/MCE console backend. It is the only backend process: TLS, health probes, hub watches, and every public HTTP route.
 
 ## Local development
 
@@ -22,4 +22,4 @@ rm -rf backend/.env backend/certs/ && npm run setup && npm run ci:backend
 
 See [AGENTS.md](AGENTS.md) for layout, architecture, and commands.
 
-Go listens on `BACKEND_PORT` (default 4000). The Node sidecar listens on `NODE_BACKEND_PORT` (default 4001).
+Go listens on `BACKEND_PORT` (default 4000).

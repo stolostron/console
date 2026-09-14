@@ -19,7 +19,6 @@ const debounce = time.Second
 // Config is process configuration loaded from env, .env, and the config/ directory.
 type Config struct {
 	Port                       string
-	NodeBackendURL             string
 	ConfigDir                  string
 	CertsDir                   string
 	EnvFile                    string
@@ -40,7 +39,6 @@ type Config struct {
 	OIDCIssuerURL      string
 	FrontendURL        string
 	Production         bool
-	InformerCache      bool
 
 	mu       sync.RWMutex
 	settings map[string]string
@@ -54,16 +52,6 @@ func envOr(key, fallback string) string {
 	return fallback
 }
 
-// envEnabledDefaultOn is true unless the env var is an explicit off value (0/false/off/no).
-func envEnabledDefaultOn(key string) bool {
-	switch strings.ToLower(strings.TrimSpace(os.Getenv(key))) {
-	case "0", "false", "off", "no":
-		return false
-	default:
-		return true
-	}
-}
-
 // Load reads ENV_FILE (if present) then environment variables.
 func Load() *Config {
 	envFile := envOr("ENV_FILE", ".env")
@@ -71,7 +59,6 @@ func Load() *Config {
 
 	cfg := &Config{
 		Port:                       envOr("PORT", "4000"),
-		NodeBackendURL:             envOr("NODE_BACKEND_URL", "https://127.0.0.1:4001"),
 		ConfigDir:                  envOr("CONFIG_DIR", "config"),
 		CertsDir:                   envOr("CERTS_DIR", "certs"),
 		EnvFile:                    envFile,
@@ -91,7 +78,7 @@ func Load() *Config {
 		OIDCIssuerURL:              os.Getenv("OIDC_ISSUER_URL"),
 		FrontendURL:                os.Getenv("FRONTEND_URL"),
 		Production:                 os.Getenv("NODE_ENV") == "production",
-		InformerCache:              envEnabledDefaultOn("CONSOLE_INFORMER_CACHE"),
+		DisableEvents:              os.Getenv("DISABLE_EVENTS"),
 		settings:                   map[string]string{},
 	}
 	_ = cfg.ReloadSettings()

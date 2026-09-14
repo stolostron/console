@@ -218,6 +218,5 @@ func (c *InformerCache) logHeap(msg string) {
 		"heapAlloc", ms.HeapAlloc,
 		"heapInuse", ms.HeapInuse,
 		"items", c.itemCount(),
-		"note", "compare Go heapAlloc of this process after sync to Node deflate cache size, not combined dual-run RSS",
 	)
 }

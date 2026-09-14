@@ -112,10 +112,8 @@ func run() error {
 	ssar := eventshub.NewSSARAccess(restCfg)
 	ssar.StartCleanup(ctx)
 	eventsHandler := eventshub.NewHandler(eventHub, eventshub.NewAPIAuth(restCfg), ssar)
-	if cfg.InformerCache {
-		infCache.SetSink(eventHub)
-		cfg.OnReload(eventHub.PublishSettings)
-	}
+	infCache.SetSink(eventHub)
+	cfg.OnReload(eventHub.PublishSettings)
 
 	oauthH := oauth.New(oauth.Options{
 		ClientID:      cfg.OAuth2ClientID,
@@ -142,26 +140,23 @@ func run() error {
 			return ns
 		},
 	}
-	var aggEng *aggregate.Engine
-	if cfg.InformerCache {
-		opts = append(opts, server.WithEvents(eventsHandler))
-		ca := sa.ServiceCACert
-		if len(ca) == 0 {
-			ca = sa.CACert
-		}
-		searchClient := &searchapi.Client{
-			HTTP:         auth.HTTPClient(ca, 0),
-			Token:        sa.Token,
-			SearchAPIURL: searchDiscovery.SearchAPIURL,
-			Federated:    searchDiscovery.Federated,
-			Namespace:    searchDiscovery.Namespace,
-			MCHNamespace: searchDiscovery.MCHNamespace,
-		}
-		aggEng = aggregate.NewEngine(infCache, searchClient, dyn)
-		aggAccess := aggregate.NewSSARAccess(restCfg)
-		aggAccess.StartCleanup(ctx)
-		opts = append(opts, server.WithAggregate(aggregate.NewHandler(aggEng, restCfg, aggAccess)))
+	opts = append(opts, server.WithEvents(eventsHandler))
+	ca := sa.ServiceCACert
+	if len(ca) == 0 {
+		ca = sa.CACert
 	}
+	searchClient := &searchapi.Client{
+		HTTP:         auth.HTTPClient(ca, 0),
+		Token:        sa.Token,
+		SearchAPIURL: searchDiscovery.SearchAPIURL,
+		Federated:    searchDiscovery.Federated,
+		Namespace:    searchDiscovery.Namespace,
+		MCHNamespace: searchDiscovery.MCHNamespace,
+	}
+	aggEng := aggregate.NewEngine(infCache, searchClient, dyn)
+	aggAccess := aggregate.NewSSARAccess(restCfg)
+	aggAccess.StartCleanup(ctx)
+	opts = append(opts, server.WithAggregate(aggregate.NewHandler(aggEng, restCfg, aggAccess)))
 	if !cfg.Production {
 		opts = append(opts, server.WithOAuthLogin(), server.WithDebugSnapshot(informers.NewSnapshotHandler(infCache, restCfg)))
 	}
@@ -254,20 +249,17 @@ func run() error {
 
 	applog.Logger().Info("process start",
 		"PORT", cfg.Port,
-		"NODE_BACKEND_URL", cfg.NodeBackendURL,
-		"informerCache", cfg.InformerCache,
+		"disableEvents", cfg.DisableEvents,
 		slog.String("CONFIG_DIR", cfg.ConfigDir),
 		slog.String("PUBLIC_FOLDER", cfg.PublicFolder),
 	)
 	return server.ListenAndServe(ctx, cfg, handler, func() {
-		if !cfg.InformerCache {
-			applog.Logger().Info("informer cache disabled", "CONSOLE_INFORMER_CACHE", os.Getenv("CONSOLE_INFORMER_CACHE"))
+		if !cfg.DisableEvents {
+			applog.Logger().Info("disable events", "DISABLE_EVENTS", os.Getenv("DISABLE_EVENTS"))
 			return
 		}
 		informers.StartCache(ctx, infCache, infDyn, mapper)
-		if aggEng != nil {
-			aggEng.Start(ctx)
-		}
+		aggEng.Start(ctx)
 	})
 }
 

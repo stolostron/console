@@ -5,11 +5,9 @@ package server
 import (
 	"bufio"
 	"context"
-	"crypto/tls"
 	"errors"
 	"net"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -22,7 +20,6 @@ import (
 	"github.com/stolostron/console/backend/internal/health"
 	applog "github.com/stolostron/console/backend/internal/log"
 	"github.com/stolostron/console/backend/internal/oauth"
-	"github.com/stolostron/console/backend/internal/proxy"
 	"github.com/stolostron/console/backend/internal/static"
 )
 
@@ -285,28 +282,13 @@ func registerK8sProxyRoutes(r chi.Router, h http.Handler) {
 	}
 }
 
-// TLSConfigForSidecar is for the loopback Node sidecar. Local generate-certs
-// writes a self-signed cert with no SAN, so hostname verification cannot succeed.
-func TLSConfigForSidecar(_ *config.Config) *tls.Config {
-	return &tls.Config{
-		InsecureSkipVerify: true, //nolint:gosec // loopback sidecar; cert has no SAN
-		MinVersion:         tls.VersionTLS12,
-	}
-}
-
-// Handler builds the public mux: probes and migrated routes on Go, everything else to the sidecar.
+// Handler builds the public mux: probes, migrated routes, and static assets.
 func Handler(cfg *config.Config, opts ...Option) (http.Handler, error) {
 	o := &handlerOptions{}
 	for _, opt := range opts {
 		opt(o)
 	}
-	target, err := url.Parse(cfg.NodeBackendURL)
-	if err != nil {
-		return nil, err
-	}
-	sidecarTLS := TLSConfigForSidecar(cfg)
-	probes := health.New(target, sidecarTLS)
-	sidecar := proxy.New(target, sidecarTLS)
+	probes := health.New()
 
 	r := chi.NewRouter()
 	r.Use(cors.Middleware(cfg.Production))
@@ -369,8 +351,10 @@ func Handler(cfg *config.Config, opts ...Option) (http.Handler, error) {
 		r.Get("/debug/informer-snapshot", o.debugSnapshot.ServeHTTP)
 		r.Get(multicloudPrefix+"/debug/informer-snapshot", o.debugSnapshot.ServeHTTP)
 	}
-	r.NotFound(notFoundHandler(o.staticH, sidecar))
-	r.MethodNotAllowed(sidecar.ServeHTTP)
+	r.NotFound(notFoundHandler(o.staticH))
+	r.MethodNotAllowed(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	})
 	return r, nil
 }
 
@@ -418,7 +402,7 @@ func registerClusterInfoRoutes(r chi.Router, o *handlerOptions) {
 	registerAliased(r, h, "/operatorCheck")
 }
 
-func notFoundHandler(staticH, sidecar http.Handler) http.HandlerFunc {
+func notFoundHandler(staticH http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		stripped := StripMulticloud(r.URL.Path)
 		if staticH != nil && r.Method == http.MethodGet && static.IsStaticPath(stripped) {
@@ -427,7 +411,7 @@ func notFoundHandler(staticH, sidecar http.Handler) http.HandlerFunc {
 			staticH.ServeHTTP(w, r2)
 			return
 		}
-		sidecar.ServeHTTP(w, r)
+		w.WriteHeader(http.StatusNotFound)
 	}
 }
 
@@ -435,7 +419,7 @@ func requestLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		stripped := StripMulticloud(r.URL.Path)
 		// Do not wrap SSE: the wrapper can prevent HTTP/2 from flushing events to EventSource.
-		// Do not wrap WebSocket: ReverseProxy needs the raw Hijacker.
+		// Do not wrap WebSocket: hijacked upgrades need the raw ResponseWriter.
 		if isProbe(stripped) || isEventStream(stripped) || isWebSocket(r) {
 			next.ServeHTTP(w, r)
 			return

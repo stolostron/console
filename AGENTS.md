@@ -17,7 +17,6 @@ console/
 │       ├── eslint-config/      # @stolostron/eslint-config
 │       └── prettier-config/    # @stolostron/prettier-config
 ├── backend/                  # Go console backend (public listener)
-├── backend-node/             # Node sidecar for routes not yet migrated to Go
 ├── docs/                     # Architecture documentation
 ├── scripts/                  # Build and development scripts
 └── resources/                # Sample K8s YAML fixtures
@@ -33,7 +32,7 @@ console/
 ## Setup
 
 ```bash
-npm ci                  # installs frontend, backend-node; go mod download when Go is installed
+npm ci                  # installs frontend; go mod download when Go is installed
 npm run setup           # writes backend/.env and backend/certs/ from the current oc context
 ```
 
@@ -63,9 +62,9 @@ rm -rf backend/.env backend/certs/ && npm run setup && npm run ci:backend
 
 Run checks against only one side of the monorepo:
 
-- `npm run test:frontend` / `npm run test:backend` / `npm run test:backend-node`
-- `npm run check:frontend` / `npm run check:backend` / `npm run check:backend-node`
-- `npm run lint:frontend` / `npm run lint:backend` / `npm run lint:backend-node`
+- `npm run test:frontend` / `npm run test:backend`
+- `npm run check:frontend` / `npm run check:backend`
+- `npm run lint:frontend` / `npm run lint:backend`
 
 ### Port Configuration
 
@@ -75,7 +74,6 @@ Ports are customizable via environment variables defined in `port-defaults.sh`:
 |----------|---------|---------|
 | `FRONTEND_PORT` | 3000 | Standalone console |
 | `BACKEND_PORT` | 4000 | Backend APIs (Go listener) |
-| `NODE_BACKEND_PORT` | 4001 | Node sidecar (unmigrated routes) |
 | `CONSOLE_PORT` | 9000 | OpenShift console |
 | `MCE_PORT` | 3001 | MCE plugin |
 | `ACM_PORT` | 3002 | ACM plugin |
@@ -90,7 +88,7 @@ Use `npm run plugins` for development; it matches the production deployment mode
 
 ## Code Quality Standards
 
-- TypeScript strict mode in frontend; `backend-node` uses `noImplicitAny` but not full strict mode
+- TypeScript strict mode in frontend
 - Go backend: `gofmt`, `golangci-lint`, and `go test ./...` (`npm run check:backend`)
 - ESLint with `@stolostron/eslint-config` (flat config)
 - Prettier with `@stolostron/prettier-config` (120 char width, no semicolons, single quotes)
@@ -148,4 +146,4 @@ Features can be enabled/disabled via the `console-config` ConfigMap in the insta
 - **Module resolution errors** — Verify Node.js and npm versions match `.nvmrc` / `.tool-versions`; version mismatches break ESM resolution
 - **Missing `.env`** — Run `npm run setup` (or `npm run setup:hub` after `oc login` to a new cluster) to generate `backend/.env`
 - **Plugin UI redirects to `/dashboards`** — `oc whoami --show-server` must match `CLUSTER_API_URL` in `backend/.env`. After `oc login` to a new hub, run `npm run setup:hub` and restart `npm run plugins`. `start-ocp-console.sh` runs `scripts/check-hub-alignment.sh` to catch this early.
-- **Console `tls: first record does not look like a TLS handshake`** — `backend/certs/` is missing or backends were started before certs existed. Run `npm run generate-certs` and restart `npm run plugins` (both Go and Node sidecar read certs only at startup).
+- **Console `tls: first record does not look like a TLS handshake`** — `backend/certs/` is missing or the backend was started before certs existed. Run `npm run generate-certs` and restart `npm run plugins` (the Go listener reads certs only at startup).

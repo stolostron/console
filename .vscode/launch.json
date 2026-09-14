@@ -37,24 +37,6 @@
       "program": "${workspaceFolder}/frontend/node_modules/.bin/jest"
     },
     {
-      "type": "node",
-      "name": "vscode-jest-tests.v2.backend-node",
-      "request": "launch",
-      "args": [
-        "--runInBand",
-        "--watchAll=false",
-        "--coverage=false",
-        "--testNamePattern",
-        "${jest.testNamePattern}",
-        "--runTestsByPath",
-        "${jest.testFile}"
-      ],
-      "cwd": "${workspaceFolder}/backend-node",
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "program": "${workspaceFolder}/backend-node/node_modules/.bin/jest"
-    },
-    {
       "name": "Go backend",
       "type": "go",
       "request": "launch",
@@ -62,8 +44,7 @@
       "program": "${workspaceFolder}/backend/cmd/console",
       "cwd": "${workspaceFolder}/backend",
       "env": {
-        "PORT": "4000",
-        "NODE_BACKEND_URL": "https://127.0.0.1:4001"
+        "PORT": "4000"
       }
     }
   ]

@@ -79,7 +79,7 @@ The recommended way to run the console for development is as OpenShift Console d
     npm ci
     ```
 
-    The root `postinstall` installs `frontend`, `backend-node`, and (when Go is installed) runs `go mod download` in `backend/`. You may see `[backend] ci:backend` in the output — that is expected.
+    The root `postinstall` installs `frontend` and (when Go is installed) runs `go mod download` in `backend/`. You may see `[backend] ci:backend` in the output — that is expected.
 
 3. Configure environment
 
@@ -107,7 +107,7 @@ The recommended way to run the console for development is as OpenShift Console d
     npm run plugins
     ```
 
-    This concurrently starts the Go backend (reverse-proxying unmigrated routes to a Node sidecar), the frontend webpack development server (serving both ACM and MCE plugins), and a local OpenShift Console container. The console will be available at **http://localhost:9000**.
+    This concurrently starts the Go backend, the frontend webpack development server (serving both ACM and MCE plugins), and a local OpenShift Console container. The console will be available at **http://localhost:9000**.
 
 ### Options
 
@@ -168,7 +168,6 @@ All ports are customizable via environment variables. The default values are def
 | -------------- | ------- | ----------------------------------------------------------------------------------- | ------------------------------- |
 | FRONTEND_PORT  | 3000    | Port for standalone console (access at https://localhost:FRONTEND_PORT)              | `npm run setup`, `npm start`    |
 | BACKEND_PORT   | 4000    | Port for the Go backend APIs used by both standalone and plugin modes               | `npm run setup`, `npm start`, `npm run plugins` |
-| NODE_BACKEND_PORT | 4001 | Port for the Node sidecar (unmigrated routes; not used by the browser)            | `npm start`, `npm run plugins` |
 | CONSOLE_PORT   | 9000    | Port for OpenShift Console (access at http://localhost:CONSOLE_PORT)                | `npm run setup`, `npm run plugins` |
 | MCE_PORT       | 3001    | Port on which the `mce` dynamic plugin is served to OpenShift Console               | `npm run plugins`               |
 | ACM_PORT       | 3002    | Port on which the `acm` dynamic plugin is served to OpenShift Console               | `npm run plugins`               |
@@ -215,10 +214,9 @@ Enabling this feature will allow the user to create a cluster that only contains
 ### Testing
 
 ```bash
-npm test                  # Run all tests (frontend + Go backend + Node sidecar)
+npm test                  # Run all tests (frontend + Go backend)
 npm run test:frontend     # Run frontend tests only
 npm run test:backend      # Run Go backend tests only
-npm run test:backend-node # Run Node sidecar tests only
 npm test -- <pattern>     # Run tests matching a file pattern
 ```
 
@@ -320,12 +318,6 @@ After executing the `npm start` command an error on the backend is produced like
 
 ```text
 [go] service account token missing
-```
-
-or on the sidecar:
-
-```text
-[sidecar] ERROR:Error reading service account token
 ```
 
 `./backend/.env` is missing or stale. Run `npm run setup` or `npm run setup:hub` after `oc login`.

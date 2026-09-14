@@ -58,7 +58,7 @@ listener serves plain HTTP and the console logs:
   http: proxy error: tls: first record does not look like a TLS handshake
 
 Fix: npm run generate-certs
-Then restart npm run plugins (Go and the Node sidecar read certs only at startup).
+Then restart npm run plugins (the Go listener reads certs only at startup).
 EOF
 	exit 1
 fi

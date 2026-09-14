@@ -179,7 +179,7 @@ func ValidateUserTokenStatus(ctx context.Context, base *rest.Config, token strin
 	return resp.StatusCode, nil
 }
 
-// ValidateUserToken checks the token the same way the Node sidecar does: GET /api.
+// ValidateUserToken checks the token the same way GET /api does.
 // TokenReview is not used here because console-mce can create TokenReviews for some
 // identities that still fail Review, while GET /api matches /events auth.
 func ValidateUserToken(ctx context.Context, base *rest.Config, token string) error {

@@ -6,9 +6,8 @@ import (
 	"net/http"
 )
 
-// Comment to be removed as a part of the backend-node decommissioning, see ACM-42603
-// Middleware mirrors backend-node/src/lib/cors.ts: reflect Origin and answer OPTIONS.
-// with 200 in non-production so standalone dev (webpack on :3000/:3001/:3002) can call :4000.
+// Middleware reflects Origin and answers OPTIONS with 200 in non-production so
+// standalone dev (webpack on :3000/:3001/:3002) can call :4000.
 func Middleware(production bool) func(http.Handler) http.Handler {
 	if production {
 		return func(next http.Handler) http.Handler { return next }
