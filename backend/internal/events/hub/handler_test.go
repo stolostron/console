@@ -206,6 +206,8 @@ func (denyAccess) Allow(_ context.Context, _ string, ev Event) (bool, error) {
 	return true, nil
 }
 
+func (denyAccess) Prefetch(context.Context, string, []Event) {}
+
 func TestHandlerLiveModifiedThenLoaded(t *testing.T) {
 	hub := New(nil, nil)
 	h := NewHandler(hub, StaticAuth{OK: true}, AllowAllAccess{})

@@ -27,6 +27,7 @@ type Engine struct {
 
 	mu                sync.RWMutex
 	cache             map[string]*cacheBucket
+	listCache         map[string][]map[string]any
 	appSetAppsMap     map[string][]map[string]any
 	pulledAppSetMap   map[string][]map[string]any
 	tempPulled        map[string][]map[string]any
@@ -178,7 +179,7 @@ func (e *Engine) searchLoop(ctx context.Context) {
 func (e *Engine) applications() []App {
 	e.mu.Lock()
 	defer e.mu.Unlock()
-	e.rebuildLocalLocked()
+	e.withListCache(e.rebuildSubscriptionLocked)
 	items := getApplicationsHelper(e.cache, cacheKeys)
 	if items == nil {
 		return []App{}
@@ -186,39 +187,51 @@ func (e *Engine) applications() []App {
 	return items
 }
 
-func (e *Engine) rebuildLocalLocked() {
+func (e *Engine) withListCache(fn func()) {
+	e.listCache = map[string][]map[string]any{}
+	defer func() { e.listCache = nil }()
+	fn()
+}
+
+func (e *Engine) rebuildSubscriptionLocked() {
 	subs := e.listKind("app.k8s.io/v1beta1", "Application")
 	e.cache[cacheSubscription].Resources = e.transform(subs, map[string]StatusMap{}, false, nil, nil, nil)
 	e.cache[cacheSubscription].ResourceUIDMap = nil
 	e.cache[cacheSubscription].ResourceMap = nil
+}
 
-	clusters := e.clusters()
-	hub := e.hubClusterName()
-	var local *Cluster
-	for i := range clusters {
-		if clusters[i].Name == hub {
-			c := clusters[i]
-			local = &c
-			break
+func (e *Engine) rebuildLocalLocked() {
+	e.withListCache(func() {
+		e.rebuildSubscriptionLocked()
+
+		clusters := e.clusters()
+		hub := e.hubClusterName()
+		var local *Cluster
+		for i := range clusters {
+			if clusters[i].Name == hub {
+				c := clusters[i]
+				local = &c
+				break
+			}
 		}
-	}
-	e.ocpArgoFilter = map[string]struct{}{}
-	temp := map[string][]map[string]any{}
-	argoItems := e.listKind("argoproj.io/v1alpha1", "Application")
-	filtered := filterArgoApps(argoItems, clusters, e.ocpArgoFilter, temp, hub)
-	e.appSetAppsMap = temp
-	uidMap := map[string]App{}
-	e.transform(filtered, e.lastArgoStatus, false, local, clusters, uidMap)
-	e.cache[cacheLocalArgo].Resources = nil
-	e.cache[cacheLocalArgo].ResourceUIDMap = uidMap
-	e.cache[cacheLocalArgo].ResourceMap = nil
+		e.ocpArgoFilter = map[string]struct{}{}
+		temp := map[string][]map[string]any{}
+		argoItems := e.listKind("argoproj.io/v1alpha1", "Application")
+		filtered := filterArgoApps(argoItems, clusters, e.ocpArgoFilter, temp, hub)
+		e.appSetAppsMap = temp
+		uidMap := map[string]App{}
+		e.transform(filtered, e.lastArgoStatus, false, local, clusters, uidMap)
+		e.cache[cacheLocalArgo].Resources = nil
+		e.cache[cacheLocalArgo].ResourceUIDMap = uidMap
+		e.cache[cacheLocalArgo].ResourceMap = nil
 
-	appsets := e.listKind("argoproj.io/v1alpha1", "ApplicationSet")
-	asetMap := map[string]App{}
-	e.transform(appsets, e.lastArgoStatus, false, local, clusters, asetMap)
-	e.cache[cacheAppSet].Resources = nil
-	e.cache[cacheAppSet].ResourceUIDMap = asetMap
-	e.cache[cacheAppSet].ResourceMap = nil
+		appsets := e.listKind("argoproj.io/v1alpha1", "ApplicationSet")
+		asetMap := map[string]App{}
+		e.transform(appsets, e.lastArgoStatus, false, local, clusters, asetMap)
+		e.cache[cacheAppSet].Resources = nil
+		e.cache[cacheAppSet].ResourceUIDMap = asetMap
+		e.cache[cacheAppSet].ResourceMap = nil
+	})
 }
 
 func (e *Engine) aggregateRemote(ctx context.Context, pass int) error {

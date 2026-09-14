@@ -8,18 +8,21 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync"
+	"time"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 
 	"github.com/stolostron/console/backend/internal/auth"
 	"github.com/stolostron/console/backend/internal/hubresources"
+	"github.com/stolostron/console/backend/internal/informers"
 	applog "github.com/stolostron/console/backend/internal/log"
 )
 
@@ -61,11 +64,25 @@ const (
 	OperatorKubeVirt SupportedOperator = "kubevirt-hyperconverged"
 )
 
+const (
+	globalHubCRDCacheTTL = 30 * time.Second
+	hubFlagsCacheTTL     = 10 * time.Second
+)
+
 // Options configure cluster-info route handlers.
 type Options struct {
 	RESTConfig *rest.Config
 	Dynamic    dynamic.Interface
 	Discovery  discovery.DiscoveryInterface
+	Cache      *informers.InformerCache
+}
+
+type hubFlags struct {
+	isGlobalHub              bool
+	localHubName             string
+	isHubSelfManaged         bool
+	isObservabilityInstalled bool
+	authentication           map[string]interface{}
 }
 
 // Handler serves hub, cluster-version, hypershift-status, MCH/MCE components, operatorCheck, and apiPaths.
@@ -73,6 +90,15 @@ type Handler struct {
 	base      *rest.Config
 	dynamic   dynamic.Interface
 	discovery discovery.DiscoveryInterface
+	cache     *informers.InformerCache
+
+	globalHubMu    sync.Mutex
+	globalHubUntil time.Time
+	globalHubValue bool
+
+	hubFlagsMu    sync.RWMutex
+	hubFlagsUntil time.Time
+	hubFlagsValue hubFlags
 }
 
 // New builds a cluster-info routes handler.
@@ -81,6 +107,7 @@ func New(opts Options) *Handler {
 		base:      opts.RESTConfig,
 		dynamic:   opts.Dynamic,
 		discovery: opts.Discovery,
+		cache:     opts.Cache,
 	}
 }
 
@@ -110,26 +137,111 @@ func (h *Handler) hub(w http.ResponseWriter, r *http.Request) {
 	if _, ok := auth.AuthenticateRequest(r.Context(), h.base, w, r); !ok {
 		return
 	}
-	ctx := r.Context()
+	flags := h.hubFlags(r.Context())
+	resp := map[string]interface{}{
+		"isGlobalHub":              flags.isGlobalHub,
+		"localHubName":             flags.localHubName,
+		"isHubSelfManaged":         flags.isHubSelfManaged,
+		"isObservabilityInstalled": flags.isObservabilityInstalled,
+		"authentication":           flags.authentication,
+	}
+	w.Header().Set("Content-Type", "application/json")
+	_ = json.NewEncoder(w).Encode(resp)
+}
 
-	isGlobalHub := false
-	crd, err := h.dynamic.Resource(crdGVR).Get(ctx,
-		"multiclusterglobalhubs.operator.open-cluster-management.io", metav1.GetOptions{})
-	if err == nil {
-		kind, _, _ := unstructured.NestedString(crd.Object, "kind")
-		if kind == "CustomResourceDefinition" {
-			isGlobalHub = true
-		}
-	} else if !apierrors.IsNotFound(err) {
-		applog.Logger().Error("get global hub CRD failed", "error", err)
+func (h *Handler) hubFlags(ctx context.Context) hubFlags {
+	now := time.Now()
+	h.hubFlagsMu.RLock()
+	if now.Before(h.hubFlagsUntil) {
+		flags := h.hubFlagsValue
+		h.hubFlagsMu.RUnlock()
+		return flags
+	}
+	h.hubFlagsMu.RUnlock()
+
+	flags := h.loadHubFlags(ctx)
+	h.hubFlagsMu.Lock()
+	h.hubFlagsValue = flags
+	h.hubFlagsUntil = now.Add(hubFlagsCacheTTL)
+	h.hubFlagsMu.Unlock()
+	return flags
+}
+
+func (h *Handler) loadHubFlags(ctx context.Context) hubFlags {
+	if flags, ok := h.hubFlagsFromCache(ctx); ok {
+		return flags
+	}
+	return h.hubFlagsLive(ctx)
+}
+
+func (h *Handler) hubFlagsFromCache(ctx context.Context) (hubFlags, bool) {
+	if h.cache == nil || !h.cache.HasSynced() {
+		return hubFlags{}, false
 	}
 
 	localHubName := "local-cluster"
 	isHubSelfManaged := false
-	mcList, err := h.dynamic.Resource(managedClusterGVR).List(ctx, metav1.ListOptions{})
-	if err != nil {
-		applog.Logger().Error("list managedclusters failed", "error", err)
-	} else {
+	for _, mc := range h.cache.ListByKind("cluster.open-cluster-management.io/v1", "ManagedCluster") {
+		if mc.GetLabels()["local-cluster"] == "true" {
+			if name := mc.GetName(); name != "" {
+				localHubName = name
+			}
+			isHubSelfManaged = true
+			break
+		}
+	}
+
+	isObservabilityInstalled := false
+	for _, addon := range h.cache.ListByKind("addon.open-cluster-management.io/v1alpha1", "ManagedClusterAddOn") {
+		if addon.GetNamespace() != localHubName {
+			continue
+		}
+		name := addon.GetName()
+		if name == "observability-controller" || name == "multicluster-observability-addon" {
+			isObservabilityInstalled = true
+			break
+		}
+	}
+
+	authentication := buildAuthentication(nil)
+	for _, authObj := range h.cache.ListByKind("config.openshift.io/v1", "Authentication") {
+		if authObj.GetName() == "cluster" {
+			authentication = buildAuthentication(authObj.Object)
+			break
+		}
+	}
+
+	return hubFlags{
+		isGlobalHub:              h.isGlobalHubCached(ctx),
+		localHubName:             localHubName,
+		isHubSelfManaged:         isHubSelfManaged,
+		isObservabilityInstalled: isObservabilityInstalled,
+		authentication:           authentication,
+	}, true
+}
+
+func (h *Handler) hubFlagsLive(ctx context.Context) hubFlags {
+	var (
+		isGlobalHub              bool
+		localHubName             = "local-cluster"
+		isHubSelfManaged         bool
+		isObservabilityInstalled bool
+		authentication           = buildAuthentication(nil)
+	)
+
+	var wg sync.WaitGroup
+	wg.Add(3)
+	go func() {
+		isGlobalHub = h.isGlobalHubCached(ctx)
+		wg.Done()
+	}()
+	go func() {
+		mcList, err := h.dynamic.Resource(managedClusterGVR).List(ctx, metav1.ListOptions{})
+		if err != nil {
+			applog.Logger().Error("list managedclusters failed", "error", err)
+			wg.Done()
+			return
+		}
 		for _, item := range mcList.Items {
 			labels, _, _ := unstructured.NestedStringMap(item.Object, "metadata", "labels")
 			if labels["local-cluster"] == "true" {
@@ -141,9 +253,19 @@ func (h *Handler) hub(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 		}
-	}
+		wg.Done()
+	}()
+	go func() {
+		authObj, err := h.dynamic.Resource(authenticationGVR).Get(ctx, "cluster", metav1.GetOptions{})
+		if err == nil {
+			authentication = buildAuthentication(authObj.Object)
+		} else if !apierrors.IsNotFound(err) {
+			applog.Logger().Error("get authentication cluster failed", "error", err)
+		}
+		wg.Done()
+	}()
+	wg.Wait()
 
-	isObservabilityInstalled := false
 	addonList, err := h.dynamic.Resource(managedClusterAddOnGVR).Namespace(localHubName).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		applog.Logger().Error("list managedclusteraddons failed", "error", err)
@@ -157,23 +279,42 @@ func (h *Handler) hub(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	authObj, err := h.dynamic.Resource(authenticationGVR).Get(ctx, "cluster", metav1.GetOptions{})
-	authentication := buildAuthentication(nil)
+	return hubFlags{
+		isGlobalHub:              isGlobalHub,
+		localHubName:             localHubName,
+		isHubSelfManaged:         isHubSelfManaged,
+		isObservabilityInstalled: isObservabilityInstalled,
+		authentication:           authentication,
+	}
+}
+
+func (h *Handler) isGlobalHubCached(ctx context.Context) bool {
+	now := time.Now()
+	h.globalHubMu.Lock()
+	if now.Before(h.globalHubUntil) {
+		value := h.globalHubValue
+		h.globalHubMu.Unlock()
+		return value
+	}
+	h.globalHubMu.Unlock()
+
+	isGlobalHub := false
+	crd, err := h.dynamic.Resource(crdGVR).Get(ctx,
+		"multiclusterglobalhubs.operator.open-cluster-management.io", metav1.GetOptions{})
 	if err == nil {
-		authentication = buildAuthentication(authObj.Object)
+		kind, _, _ := unstructured.NestedString(crd.Object, "kind")
+		if kind == "CustomResourceDefinition" {
+			isGlobalHub = true
+		}
 	} else if !apierrors.IsNotFound(err) {
-		applog.Logger().Error("get authentication cluster failed", "error", err)
+		applog.Logger().Error("get global hub CRD failed", "error", err)
 	}
 
-	resp := map[string]interface{}{
-		"isGlobalHub":              isGlobalHub,
-		"localHubName":             localHubName,
-		"isHubSelfManaged":         isHubSelfManaged,
-		"isObservabilityInstalled": isObservabilityInstalled,
-		"authentication":           authentication,
-	}
-	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(resp)
+	h.globalHubMu.Lock()
+	h.globalHubValue = isGlobalHub
+	h.globalHubUntil = now.Add(globalHubCRDCacheTTL)
+	h.globalHubMu.Unlock()
+	return isGlobalHub
 }
 
 func buildAuthentication(obj map[string]interface{}) map[string]interface{} {
@@ -233,8 +374,12 @@ func (h *Handler) clusterVersion(w http.ResponseWriter, r *http.Request) {
 	if _, ok := auth.AuthenticateRequest(r.Context(), h.base, w, r); !ok {
 		return
 	}
-	obj, err := h.dynamic.Resource(clusterVersionGVR).Get(r.Context(), "version", metav1.GetOptions{})
 	w.Header().Set("Content-Type", "application/json")
+	if obj, ok := h.clusterVersionFromCache(); ok {
+		_ = json.NewEncoder(w).Encode(clusterVersionPayload(obj))
+		return
+	}
+	obj, err := h.dynamic.Resource(clusterVersionGVR).Get(r.Context(), "version", metav1.GetOptions{})
 	if err != nil {
 		applog.Logger().Error("get clusterversion failed", "error", err)
 		_ = json.NewEncoder(w).Encode(map[string]string{
@@ -242,12 +387,33 @@ func (h *Handler) clusterVersion(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	version, _, _ := unstructured.NestedString(obj.Object, "status", "desired", "version")
+	_ = json.NewEncoder(w).Encode(clusterVersionPayload(obj))
+}
+
+func (h *Handler) clusterVersionFromCache() (*unstructured.Unstructured, bool) {
+	if h.cache == nil || !h.cache.HasSynced() {
+		return nil, false
+	}
+	items := h.cache.ListByKind("config.openshift.io/v1", "ClusterVersion")
+	for i := range items {
+		if items[i].GetName() == "version" {
+			obj := items[i]
+			return &obj, true
+		}
+	}
+	return nil, false
+}
+
+func clusterVersionPayload(obj *unstructured.Unstructured) map[string]interface{} {
 	payload := map[string]interface{}{}
+	if obj == nil {
+		return payload
+	}
+	version, _, _ := unstructured.NestedString(obj.Object, "status", "desired", "version")
 	if version != "" {
 		payload["version"] = version
 	}
-	_ = json.NewEncoder(w).Encode(payload)
+	return payload
 }
 
 func (h *Handler) hypershiftStatus(w http.ResponseWriter, r *http.Request) {
@@ -260,17 +426,15 @@ func (h *Handler) hypershiftStatus(w http.ResponseWriter, r *http.Request) {
 		hubName = "local-cluster"
 	}
 
+	if components, addon, ok := h.hypershiftFromCache(hubName); ok {
+		writeHypershiftStatus(w, processHypershiftStatus(components, addon))
+		return
+	}
+
 	components, err := hubresources.MCEComponents(ctx, h.dynamic)
 	if err != nil {
 		if isMissingAPI(err) {
-			enabled := processHypershiftStatus(nil, nil)
-			w.Header().Set("Content-Type", "application/json")
-			_ = json.NewEncoder(w).Encode(map[string]interface{}{
-				"statusCode": http.StatusOK,
-				"body": map[string]bool{
-					"isHypershiftEnabled": enabled,
-				},
-			})
+			writeHypershiftStatus(w, processHypershiftStatus(nil, nil))
 			return
 		}
 		applog.Logger().Error("hypershift status mce components failed", "error", err)
@@ -287,7 +451,10 @@ func (h *Handler) hypershiftStatus(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	enabled := processHypershiftStatus(components, addon)
+	writeHypershiftStatus(w, processHypershiftStatus(components, addon))
+}
+
+func writeHypershiftStatus(w http.ResponseWriter, enabled bool) {
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(map[string]interface{}{
 		"statusCode": http.StatusOK,
@@ -295,6 +462,30 @@ func (h *Handler) hypershiftStatus(w http.ResponseWriter, r *http.Request) {
 			"isHypershiftEnabled": enabled,
 		},
 	})
+}
+
+func (h *Handler) hypershiftFromCache(hubName string) ([]hubresources.Component, *unstructured.Unstructured, bool) {
+	if h.cache == nil || !h.cache.HasSynced() {
+		return nil, nil, false
+	}
+	var components []hubresources.Component
+	mces := h.cache.ListByKind("multicluster.openshift.io/v1", "MultiClusterEngine")
+	if len(mces) > 0 {
+		parsed, err := hubresources.ParseComponents(mces[0].Object)
+		if err != nil {
+			return nil, nil, false
+		}
+		components = parsed
+	}
+	var addon *unstructured.Unstructured
+	for _, item := range h.cache.ListByKind("addon.open-cluster-management.io/v1alpha1", "ManagedClusterAddOn") {
+		if item.GetNamespace() == hubName && item.GetName() == "hypershift-addon" {
+			cp := item
+			addon = &cp
+			break
+		}
+	}
+	return components, addon, true
 }
 
 func processHypershiftStatus(components []hubresources.Component, addon *unstructured.Unstructured) bool {
@@ -355,6 +546,10 @@ func (h *Handler) mchComponents(w http.ResponseWriter, r *http.Request) {
 	if _, ok := auth.AuthenticateRequest(r.Context(), h.base, w, r); !ok {
 		return
 	}
+	if components, ok := h.mchComponentsFromCache(); ok {
+		writeJSON(w, components)
+		return
+	}
 	components, err := hubresources.MCHComponents(r.Context(), h.dynamic)
 	if err != nil {
 		if isMissingAPI(err) {
@@ -368,8 +563,27 @@ func (h *Handler) mchComponents(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, components)
 }
 
+func (h *Handler) mchComponentsFromCache() ([]hubresources.Component, bool) {
+	if h.cache == nil || !h.cache.HasSynced() {
+		return nil, false
+	}
+	items := h.cache.ListByKind("operator.open-cluster-management.io/v1", "MultiClusterHub")
+	if len(items) == 0 {
+		return nil, true
+	}
+	components, err := hubresources.ParseComponents(items[0].Object)
+	if err != nil {
+		return nil, false
+	}
+	return components, true
+}
+
 func (h *Handler) mceComponents(w http.ResponseWriter, r *http.Request) {
 	if _, ok := auth.AuthenticateRequest(r.Context(), h.base, w, r); !ok {
+		return
+	}
+	if components, ok := h.mceComponentsFromCache(); ok {
+		writeJSON(w, components)
 		return
 	}
 	components, err := hubresources.MCEComponents(r.Context(), h.dynamic)
@@ -383,6 +597,21 @@ func (h *Handler) mceComponents(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, components)
+}
+
+func (h *Handler) mceComponentsFromCache() ([]hubresources.Component, bool) {
+	if h.cache == nil || !h.cache.HasSynced() {
+		return nil, false
+	}
+	items := h.cache.ListByKind("multicluster.openshift.io/v1", "MultiClusterEngine")
+	if len(items) == 0 {
+		return nil, true
+	}
+	components, err := hubresources.ParseComponents(items[0].Object)
+	if err != nil {
+		return nil, false
+	}
+	return components, true
 }
 
 type operatorCheckRequest struct {

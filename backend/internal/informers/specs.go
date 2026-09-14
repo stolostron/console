@@ -97,6 +97,7 @@ func DefaultWatchSpecs() []WatchSpec {
 		watch("ApplicationSet", "argoproj.io/v1alpha1").polled(),
 		watch("ArgoCD", "argoproj.io/v1alpha1"),
 		watch("Authentication", "config.openshift.io/v1").cacheOnly(),
+		watch("MultiClusterHub", "operator.open-cluster-management.io/v1").cacheOnly(),
 		watch("Infrastructure", "config.openshift.io/v1"),
 		watch("CertificateSigningRequest", "certificates.k8s.io/v1").labels("open-cluster-management.io/cluster-name", ""),
 		watch("ManagedCluster", "cluster.open-cluster-management.io/v1"),

@@ -20,8 +20,9 @@ import (
 )
 
 const (
-	accessCacheTTL     = 60 * time.Second
-	accessCleanupEvery = 90 * time.Second
+	accessCacheTTL      = 60 * time.Second
+	accessCleanupEvery  = 90 * time.Second
+	prefetchConcurrency = 32
 )
 
 var accessCacheMaxTokens = 1000
@@ -29,6 +30,7 @@ var accessCacheMaxTokens = 1000
 // AccessChecker decides whether a user may receive an SSE event.
 type AccessChecker interface {
 	Allow(ctx context.Context, token string, ev Event) (bool, error)
+	Prefetch(ctx context.Context, token string, events []Event)
 }
 
 // AllowAllAccess is for tests.
@@ -37,6 +39,8 @@ type AllowAllAccess struct{}
 func (AllowAllAccess) Allow(context.Context, string, Event) (bool, error) {
 	return true, nil
 }
+
+func (AllowAllAccess) Prefetch(context.Context, string, []Event) {}
 
 type ssarKey struct {
 	kind, namespace, name string
@@ -47,9 +51,28 @@ type cacheEntry struct {
 	expiry  time.Time
 }
 
+type inflight struct {
+	done    chan struct{}
+	allowed bool
+	err     error
+}
+
 type tokenState struct {
-	last    time.Time
-	entries map[ssarKey]cacheEntry
+	last       time.Time
+	entries    map[ssarKey]cacheEntry
+	flight     map[ssarKey]*inflight
+	client     kubernetes.Interface
+	clientErr  error
+	clientWait chan struct{}
+}
+
+type prefetchJob struct {
+	key       ssarKey
+	group     string
+	resource  string
+	verb      string
+	name      string
+	namespace string
 }
 
 // SSARAccess ports Node eventFilter / canAccess (list cluster → list namespaced → get).
@@ -62,7 +85,10 @@ type SSARAccess struct {
 
 func NewSSARAccess(base *rest.Config) *SSARAccess {
 	return NewSSARAccessWithClient(func(userToken string) (kubernetes.Interface, error) {
-		return kubernetes.NewForConfig(auth.UserRESTConfig(base, userToken))
+		cfg := auth.UserRESTConfig(base, userToken)
+		cfg.QPS = 50
+		cfg.Burst = 100
+		return kubernetes.NewForConfig(cfg)
 	})
 }
 
@@ -123,6 +149,53 @@ func (a *SSARAccess) Allow(ctx context.Context, token string, ev Event) (bool, e
 	}
 }
 
+// Prefetch warms cluster-scoped list SSARs for distinct kinds so snapshot writes hit cache.
+func (a *SSARAccess) Prefetch(ctx context.Context, token string, events []Event) {
+	if a == nil || token == "" || len(events) == 0 {
+		return
+	}
+	jobs := map[ssarKey]prefetchJob{}
+	for _, ev := range events {
+		if ev.Type != TypeModified && ev.Type != "ADDED" {
+			continue
+		}
+		kind, apiVersion, _, _ := objectMeta(ev)
+		resource := resourceName(ev)
+		if kind == "" || resource == "" {
+			continue
+		}
+		key := ssarKey{kind: kind}
+		if _, ok := jobs[key]; ok {
+			continue
+		}
+		jobs[key] = prefetchJob{
+			key:      key,
+			group:    apiGroup(apiVersion),
+			resource: resource,
+			verb:     "list",
+		}
+	}
+	if len(jobs) == 0 {
+		return
+	}
+	sem := make(chan struct{}, prefetchConcurrency)
+	var wg sync.WaitGroup
+	for _, job := range jobs {
+		wg.Add(1)
+		go func(j prefetchJob) {
+			defer wg.Done()
+			select {
+			case <-ctx.Done():
+				return
+			case sem <- struct{}{}:
+			}
+			defer func() { <-sem }()
+			_, _ = a.ssar(ctx, token, j.key, j.group, j.resource, j.verb, j.name, j.namespace)
+		}(job)
+	}
+	wg.Wait()
+}
+
 func (a *SSARAccess) canSee(ctx context.Context, token string, ev Event) (bool, error) {
 	kind, apiVersion, name, namespace := objectMeta(ev)
 	resource := resourceName(ev)
@@ -158,22 +231,85 @@ func ssarNamespace(kind, name, namespace string) string {
 	return namespace
 }
 
+func (a *SSARAccess) ensureTokenLocked(th string) *tokenState {
+	st := a.byToken[th]
+	if st == nil {
+		st = &tokenState{
+			entries: map[ssarKey]cacheEntry{},
+			flight:  map[ssarKey]*inflight{},
+		}
+		a.byToken[th] = st
+	}
+	if st.entries == nil {
+		st.entries = map[ssarKey]cacheEntry{}
+	}
+	if st.flight == nil {
+		st.flight = map[ssarKey]*inflight{}
+	}
+	return st
+}
+
+func (a *SSARAccess) clientFor(token, th string) (kubernetes.Interface, error) {
+	a.mu.Lock()
+	st := a.ensureTokenLocked(th)
+	if st.client != nil || st.clientErr != nil {
+		c, err := st.client, st.clientErr
+		a.mu.Unlock()
+		return c, err
+	}
+	if st.clientWait != nil {
+		wait := st.clientWait
+		a.mu.Unlock()
+		<-wait
+		a.mu.Lock()
+		st = a.ensureTokenLocked(th)
+		c, err := st.client, st.clientErr
+		a.mu.Unlock()
+		return c, err
+	}
+	st.clientWait = make(chan struct{})
+	wait := st.clientWait
+	a.mu.Unlock()
+
+	client, err := a.newClient(token)
+
+	a.mu.Lock()
+	st = a.ensureTokenLocked(th)
+	st.client = client
+	st.clientErr = err
+	close(wait)
+	st.clientWait = nil
+	a.mu.Unlock()
+	return client, err
+}
+
 func (a *SSARAccess) ssar(ctx context.Context, token string, key ssarKey, group, resource, verb, name, namespace string) (bool, error) {
 	now := time.Now()
 	th := hashToken(token)
 	a.mu.Lock()
-	if st, ok := a.byToken[th]; ok {
-		if e, hit := st.entries[key]; hit && e.expiry.After(now) {
-			st.last = now
-			allowed := e.allowed
-			a.mu.Unlock()
-			return allowed, nil
+	st := a.ensureTokenLocked(th)
+	st.last = now
+	if e, hit := st.entries[key]; hit && e.expiry.After(now) {
+		allowed := e.allowed
+		a.mu.Unlock()
+		return allowed, nil
+	}
+	if f, ok := st.flight[key]; ok {
+		a.mu.Unlock()
+		select {
+		case <-f.done:
+			return f.allowed, f.err
+		case <-ctx.Done():
+			return false, ctx.Err()
 		}
 	}
+	f := &inflight{done: make(chan struct{})}
+	st.flight[key] = f
 	a.mu.Unlock()
 
-	client, err := a.newClient(token)
+	client, err := a.clientFor(token, th)
 	if err != nil {
+		a.finishFlight(th, key, f, false, err, false)
 		return false, err
 	}
 	review, err := client.AuthorizationV1().SelfSubjectAccessReviews().Create(ctx, &authzv1.SelfSubjectAccessReview{
@@ -188,19 +324,27 @@ func (a *SSARAccess) ssar(ctx context.Context, token string, key ssarKey, group,
 		},
 	}, metav1.CreateOptions{})
 	if err != nil {
+		a.finishFlight(th, key, f, false, err, false)
 		return false, err
 	}
 	allowed := review.Status.Allowed
-	a.mu.Lock()
-	st := a.byToken[th]
-	if st == nil {
-		st = &tokenState{entries: map[ssarKey]cacheEntry{}}
-		a.byToken[th] = st
-	}
-	st.last = now
-	st.entries[key] = cacheEntry{allowed: allowed, expiry: now.Add(accessCacheTTL)}
-	a.mu.Unlock()
+	a.finishFlight(th, key, f, allowed, nil, true)
 	return allowed, nil
+}
+
+func (a *SSARAccess) finishFlight(th string, key ssarKey, f *inflight, allowed bool, err error, cache bool) {
+	f.allowed = allowed
+	f.err = err
+	a.mu.Lock()
+	if st := a.byToken[th]; st != nil {
+		delete(st.flight, key)
+		st.last = time.Now()
+		if cache && err == nil {
+			st.entries[key] = cacheEntry{allowed: allowed, expiry: time.Now().Add(accessCacheTTL)}
+		}
+	}
+	a.mu.Unlock()
+	close(f.done)
 }
 
 func (a *SSARAccess) StartCleanup(ctx context.Context) {
@@ -230,7 +374,7 @@ func (a *SSARAccess) cleanup(now time.Time) {
 				delete(st.entries, k)
 			}
 		}
-		if len(st.entries) == 0 {
+		if len(st.entries) == 0 && len(st.flight) == 0 {
 			delete(a.byToken, th)
 		}
 	}

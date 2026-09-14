@@ -8,7 +8,10 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"testing"
+
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	"github.com/stolostron/console/backend/internal/searchapi"
 )
@@ -91,5 +94,75 @@ func TestPushModelQueryFromAppSet(t *testing.T) {
 	}
 	if len(q.Variables.Input) != 1 {
 		t.Fatalf("query %+v", q)
+	}
+}
+
+type countingLister struct {
+	inner MapLister
+	mu    sync.Mutex
+	n     map[string]int
+}
+
+func (c *countingLister) ListByKind(apiVersion, kind string) []unstructured.Unstructured {
+	c.mu.Lock()
+	if c.n == nil {
+		c.n = map[string]int{}
+	}
+	c.n[apiVersion+"|"+kind]++
+	c.mu.Unlock()
+	return c.inner.ListByKind(apiVersion, kind)
+}
+
+func (c *countingLister) count(key string) int {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.n[key]
+}
+
+func TestApplicationsRebuildsOnlySubscriptions(t *testing.T) {
+	cl := &countingLister{inner: MapLister{
+		"app.k8s.io/v1beta1|Application": {
+			uObj("app.k8s.io/v1beta1", "Application", "sub-app", "ns", nil),
+		},
+		"argoproj.io/v1alpha1|Application": {
+			uObj("argoproj.io/v1alpha1", "Application", "argo-app", "argocd", nil),
+		},
+		"cluster.open-cluster-management.io/v1|ManagedCluster": {localCluster()},
+	}}
+	e := NewEngine(cl, nil, nil)
+	e.cache[cacheLocalArgo].Resources = []App{
+		{Object: map[string]any{"metadata": map[string]any{"name": "cached-argo"}}},
+	}
+	apps := e.applications()
+	if cl.count("argoproj.io/v1alpha1|Application") != 0 {
+		t.Fatalf("listed local argo %d", cl.count("argoproj.io/v1alpha1|Application"))
+	}
+	if cl.count("app.k8s.io/v1beta1|Application") != 1 {
+		t.Fatalf("listed subscription apps %d", cl.count("app.k8s.io/v1beta1|Application"))
+	}
+	found := false
+	for _, a := range apps {
+		if metaName(a.Object) == "cached-argo" {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatalf("expected cached argo in %+v", apps)
+	}
+}
+
+func TestRebuildLocalMemoizesListKind(t *testing.T) {
+	cl := &countingLister{inner: MapLister{
+		"app.k8s.io/v1beta1|Application":                       {},
+		"argoproj.io/v1alpha1|Application":                     {},
+		"argoproj.io/v1alpha1|ApplicationSet":                  {},
+		"cluster.open-cluster-management.io/v1|ManagedCluster": {localCluster()},
+	}}
+	e := NewEngine(cl, nil, nil)
+	e.mu.Lock()
+	e.rebuildLocalLocked()
+	e.mu.Unlock()
+	if got := cl.count("cluster.open-cluster-management.io/v1|ManagedCluster"); got != 1 {
+		t.Fatalf("ManagedCluster lists %d want 1", got)
 	}
 }

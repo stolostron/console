@@ -218,6 +218,7 @@ func run() error {
 			RESTConfig: restCfg,
 			Dynamic:    dyn,
 			Discovery:  disc,
+			Cache:      infCache,
 		})),
 		server.WithSearchProxy(searchproxy.New(searchproxy.Options{
 			RESTConfig: restCfg,

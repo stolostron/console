@@ -10,6 +10,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -25,6 +26,7 @@ const (
 	chunkSize          = 100
 	pullSecretName     = "pull-secret"
 	configNamespace    = "openshift-config"
+	crcTokenTTL        = 60 * time.Second
 )
 
 type requestBody struct {
@@ -58,6 +60,10 @@ type Handler struct {
 	Kube       kubernetes.Interface
 	Client     *http.Client
 	Endpoint   func() string
+
+	crcMu     sync.Mutex
+	cachedCRC string
+	crcExpiry time.Time
 }
 
 // New returns an Insights upgrade-risks handler.
@@ -106,7 +112,6 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if !h.authenticate(w, r) {
 		return
 	}
-	crcToken := h.crcToken(r.Context())
 	raw, err := io.ReadAll(r.Body)
 	if err != nil {
 		applog.Logger().Error("upgrade-risks-prediction", "error", err)
@@ -120,6 +125,12 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	chunks := chunkIDs(body.ClusterIDs, chunkSize)
+	if len(chunks) == 0 {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte("[]\n"))
+		return
+	}
+	crcToken := h.crcToken(r.Context())
 	results := make([]any, len(chunks))
 	var wg sync.WaitGroup
 	for i, ids := range chunks {
@@ -143,29 +154,43 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) crcToken(ctx context.Context) string {
+	h.crcMu.Lock()
+	if time.Now().Before(h.crcExpiry) {
+		tok := h.cachedCRC
+		h.crcMu.Unlock()
+		return tok
+	}
+	h.crcMu.Unlock()
+
+	tok := h.loadCRCToken(ctx)
+	if tok == "" {
+		return ""
+	}
+	h.crcMu.Lock()
+	h.cachedCRC = tok
+	h.crcExpiry = time.Now().Add(crcTokenTTL)
+	h.crcMu.Unlock()
+	return tok
+}
+
+func (h *Handler) loadCRCToken(ctx context.Context) string {
 	if h.Kube == nil {
 		return ""
 	}
-	list, err := h.Kube.CoreV1().Secrets(configNamespace).List(ctx, metav1.ListOptions{})
+	secret, err := h.Kube.CoreV1().Secrets(configNamespace).Get(ctx, pullSecretName, metav1.GetOptions{})
 	if err != nil {
 		applog.Logger().Error("Error getting pull-secret in namespace openshift-config", "error", err)
 		return ""
 	}
-	for i := range list.Items {
-		if list.Items[i].Name != pullSecretName {
-			continue
-		}
-		raw := list.Items[i].Data[".dockerconfigjson"]
-		if len(raw) == 0 {
-			return ""
-		}
-		var cred pullAuth
-		if err = json.Unmarshal(raw, &cred); err != nil {
-			return ""
-		}
-		return cred.Auths["cloud.openshift.com"].Auth
+	raw := secret.Data[".dockerconfigjson"]
+	if len(raw) == 0 {
+		return ""
 	}
-	return ""
+	var cred pullAuth
+	if err = json.Unmarshal(raw, &cred); err != nil {
+		return ""
+	}
+	return cred.Auths["cloud.openshift.com"].Auth
 }
 
 func (h *Handler) postChunk(ctx context.Context, crcToken string, ids []string) (postResult, error) {

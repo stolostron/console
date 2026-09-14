@@ -8,6 +8,7 @@ import (
 	"sync/atomic"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/tools/cache"
 )
@@ -186,10 +187,13 @@ func (c *InformerCache) ListForwarded() []ForwardedObject {
 				continue
 			}
 			seen[key] = struct{}{}
-			cp := u.DeepCopy()
-			cp.SetAPIVersion(s.spec.APIVersion)
-			cp.SetKind(s.spec.Kind)
-			out = append(out, ForwardedObject{GVR: s.gvr, Object: *cp})
+			obj := unstructured.Unstructured{}
+			if u.Object != nil {
+				obj.Object = runtime.DeepCopyJSON(u.Object)
+			}
+			obj.SetAPIVersion(s.spec.APIVersion)
+			obj.SetKind(s.spec.Kind)
+			out = append(out, ForwardedObject{GVR: s.gvr, Object: obj})
 		}
 	}
 	return out

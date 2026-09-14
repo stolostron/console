@@ -128,6 +128,91 @@ func TestEmptyClusterIDs(t *testing.T) {
 	}
 }
 
+func TestEmptyClusterIDsSkipsKube(t *testing.T) {
+	kube := fake.NewSimpleClientset()
+	h := New(Options{Authn: authOK, Kube: kube, Client: http.DefaultClient})
+	req := httptest.NewRequest(http.MethodPost, "/upgrade-risks-prediction", strings.NewReader(`{"clusterIds":[]}`))
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status %d %s", rec.Code, rec.Body.String())
+	}
+	if acts := kube.Actions(); len(acts) != 0 {
+		t.Fatalf("kube actions %v", acts)
+	}
+}
+
+func pullSecretKube() *fake.Clientset {
+	docker := []byte(`{"auths":{"cloud.openshift.com":{"auth":"crc-token"}}}`)
+	return fake.NewSimpleClientset(&corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{Name: "pull-secret", Namespace: "openshift-config"},
+		Data:       map[string][]byte{".dockerconfigjson": docker},
+	})
+}
+
+func TestPullSecretGetNotList(t *testing.T) {
+	insights := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(`{}`))
+	}))
+	defer insights.Close()
+	kube := pullSecretKube()
+	h := New(Options{
+		Authn:    authOK,
+		Kube:     kube,
+		Client:   insights.Client(),
+		Endpoint: func() string { return insights.URL },
+	})
+	req := httptest.NewRequest(http.MethodPost, "/upgrade-risks-prediction", strings.NewReader(`{"clusterIds":["id-1"]}`))
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status %d %s", rec.Code, rec.Body.String())
+	}
+	var gets, lists int
+	for _, a := range kube.Actions() {
+		switch a.GetVerb() {
+		case "get":
+			gets++
+		case "list":
+			lists++
+		}
+	}
+	if gets != 1 || lists != 0 {
+		t.Fatalf("gets %d lists %d actions %v", gets, lists, kube.Actions())
+	}
+}
+
+func TestCRCTokenCached(t *testing.T) {
+	insights := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(`{}`))
+	}))
+	defer insights.Close()
+	kube := pullSecretKube()
+	h := New(Options{
+		Authn:    authOK,
+		Kube:     kube,
+		Client:   insights.Client(),
+		Endpoint: func() string { return insights.URL },
+	})
+	for i := 0; i < 2; i++ {
+		req := httptest.NewRequest(http.MethodPost, "/upgrade-risks-prediction", strings.NewReader(`{"clusterIds":["id-1"]}`))
+		rec := httptest.NewRecorder()
+		h.ServeHTTP(rec, req)
+		if rec.Code != http.StatusOK {
+			t.Fatalf("status %d %s", rec.Code, rec.Body.String())
+		}
+	}
+	var gets int
+	for _, a := range kube.Actions() {
+		if a.GetVerb() == "get" {
+			gets++
+		}
+	}
+	if gets != 1 {
+		t.Fatalf("gets %d want 1 actions %v", gets, kube.Actions())
+	}
+}
+
 func TestChunkIDs(t *testing.T) {
 	got := chunkIDs([]string{"a", "b", "c"}, 2)
 	if len(got) != 2 || len(got[0]) != 2 || len(got[1]) != 1 {

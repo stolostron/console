@@ -25,10 +25,19 @@ func (e *Engine) listKind(apiVersion, kind string) []map[string]any {
 	if e == nil || e.Lister == nil {
 		return nil
 	}
+	key := apiVersion + "|" + kind
+	if e.listCache != nil {
+		if items, ok := e.listCache[key]; ok {
+			return items
+		}
+	}
 	items := e.Lister.ListByKind(apiVersion, kind)
 	out := make([]map[string]any, 0, len(items))
 	for i := range items {
-		out = append(out, items[i].DeepCopy().Object)
+		out = append(out, items[i].Object)
+	}
+	if e.listCache != nil {
+		e.listCache[key] = out
 	}
 	return out
 }

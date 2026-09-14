@@ -29,7 +29,7 @@ func MCHComponents(ctx context.Context, client dynamic.Interface) ([]Component, 
 	if len(list.Items) == 0 {
 		return nil, nil
 	}
-	return parseComponents(list.Items[0].Object)
+	return ParseComponents(list.Items[0].Object)
 }
 
 // MCEComponents returns spec.overrides.components from the first MultiClusterEngine.
@@ -44,10 +44,11 @@ func MCEComponents(ctx context.Context, client dynamic.Interface) ([]Component, 
 	if len(list.Items) == 0 {
 		return nil, nil
 	}
-	return parseComponents(list.Items[0].Object)
+	return ParseComponents(list.Items[0].Object)
 }
 
-func parseComponents(obj map[string]interface{}) ([]Component, error) {
+// ParseComponents reads spec.overrides.components from an MCH or MCE object.
+func ParseComponents(obj map[string]interface{}) ([]Component, error) {
 	raw, found, err := unstructured.NestedSlice(obj, "spec", "overrides", "components")
 	if err != nil {
 		return nil, err
