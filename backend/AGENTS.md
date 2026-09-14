@@ -35,6 +35,10 @@ Public listener for the ACM/MCE console. During the Node-to-Go migration it owns
 | `internal/aggregate` | `POST /aggregate/{applications,statuses,appSetData}`: informer cache + Search SA GraphQL, Fuse.js-compatible filter, windowed SSAR. `CONSOLE_INFORMER_CACHE=0` does not register the route |
 | `internal/searchapi` | Search GraphQL client used by the aggregator (`/searchapi/graphql` or `/federated`) |
 | `internal/searchproxy` | `POST /proxy/search` and graphql-ws relay to search-api with the **user** token (`connection_init` Authorization injection) |
+| `internal/rosa` | ROSA HCP wizard POSTs to `sso.redhat.com` + `api.openshift.com` (OCM service-account token) |
+| `internal/ansibletower` | `POST /ansibletower`: user-token Secret GET, AAP path allowlist, TLS skip-verify |
+| `internal/placementdebug` | `POST /placement-debug` reverse proxy + independent watch of OCM CA ConfigMap |
+| `internal/upgraderisks` | `POST /upgrade-risks-prediction`: SA list `pull-secret`, chunked Insights POSTs |
 | `internal/informers` | Hub resource cache (~67 watch specs, dual-run with Node). Dev: `GET /debug/informer-snapshot` |
 | `internal/static` | Plugin and SPA files: cache headers, CSP, brotli/gzip negotiation |
 | `internal/log` | slog JSON helper |
@@ -67,6 +71,8 @@ Go backend :4000 (TLS / HTTP/2)
         ├─ GET /events/rbac (ClusterRole watch; also /multicloud/events/rbac)
         ├─ POST /aggregate/{applications,statuses,appSetData} (application inventory; also /multicloud/…)
         ├─ POST /proxy/search and WebSocket graphql-ws (user token; also /multicloud/proxy/search)
+        ├─ POST ROSA wizard (/aws-account-ids, /regions, /vpcs, …) → OCM
+        ├─ POST /ansibletower, /placement-debug, /upgrade-risks-prediction
         ├─ GET /debug/informer-snapshot (dev only; Go informer cache dump)
         ├─ SA informers (~67 specs) feed GET /events and POST /aggregate; Node startWatching() still runs for hub.ts
         ├─ ALL /api, /apis, GET /version → hub kube-apiserver (user token)
@@ -95,6 +101,8 @@ During ACM-42597/42598 the Go process watches the same specs as Node `startWatch
 
 `POST /proxy/search` and the Search WebSocket are served by Go (`backend/internal/searchproxy`). Auth is GET `/api`. GraphQL POST injects the user Bearer token and forwards the Node header allowlist (`accept`, `accept-encoding`, `content-encoding`, `content-length`, `content-type`). The graphql-ws relay opens `wss` to the same Search URL, sends `Authorization` on the upgrade, and rewrites the first `connection_init` payload with `Authorization: Bearer <token>`. Upstream connect timeout 60s → 504; connect failure → 502. Discovery matches the aggregator: `SEARCH_API_URL` or `search-search-api.<mch-ns>.svc.cluster.local:4010` plus `/searchapi/graphql` (or `/federated` when `globalSearchFeatureFlag=enabled`).
 
+Long-tail HTTP is always registered in Go (not gated on `CONSOLE_INFORMER_CACHE`). Auth is GET `/api` (401 empty body). ROSA wizard POSTs exchange OCM client credentials at SSO then call `api.openshift.com`. `POST /ansibletower` reads the credential Secret with the **user** token, allow-lists AAP pathnames, and GETs the tower with `InsecureSkipVerify`. `POST /placement-debug` reverse-proxies to `PLACEMENT_DEBUG_URL` (or the in-cluster placement service) with the OCM CA ConfigMap `open-cluster-management-hub/ca-bundle-configmap`; missing CA → 503. `POST /upgrade-risks-prediction` lists `openshift-config` secrets with the **SA**, extracts `pull-secret` `cloud.openshift.com` auth, and POSTs Insights in chunks of 100 (`UPGRADE_RISKS_PREDICTION_URL` or console.redhat.com). The Node sidecar still serves `GET /events` when the Go cache is off, plus leftover aggregators/`startWatching` until ACM-42603.
+
 `GET /events` framing matches Node `server-side-events.ts`: `id:` + `data:` (no space), gzip when `Accept-Encoding` includes gzip, keepalive `:\n\n` every 10s, snapshot `START` → `SETTINGS` → priority packets with `EOP` → `LOADED`, live `MODIFIED`/`DELETED` then `LOADED`. Creates and updates are both `MODIFIED` (not `ADDED`). **DELETED events are broadcast without per-user SSAR** — the same known gap as Node; do not “fix” it in this stream without a follow-up.
 
 ## Shared artifacts
@@ -103,6 +111,6 @@ During ACM-42597/42598 the Go process watches the same specs as Node `startWatch
 
 Go exits 1 at startup if the service-account token is missing (`TOKEN` or `/var/run/secrets/kubernetes.io/serviceaccount/token`).
 
-Migrated proxy routes also read `CLUSTER_PROXY_ADDON_USER_HOST` / `CLUSTER_PROXY_ADDON_USER_ROUTE`, `PROMETHEUS_ROUTE`, `OBSERVABILITY_ROUTE`, and `SERVICE_CA_CERT` from the same `.env`.
+Migrated proxy routes also read `CLUSTER_PROXY_ADDON_USER_HOST` / `CLUSTER_PROXY_ADDON_USER_ROUTE`, `PROMETHEUS_ROUTE`, `OBSERVABILITY_ROUTE`, `SERVICE_CA_CERT`, `PLACEMENT_DEBUG_URL`, and `UPGRADE_RISKS_PREDICTION_URL` from the same `.env` / `config/` directory.
 
 `PUBLIC_FOLDER` (default `public`) is the on-disk plugin/SPA tree. Production images copy `frontend/plugins/{acm|mce}/dist` to `/app/public/plugin`.

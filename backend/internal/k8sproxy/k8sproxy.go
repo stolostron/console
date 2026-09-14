@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/stolostron/console/backend/internal/auth"
+	"github.com/stolostron/console/backend/internal/outbound"
 	"github.com/stolostron/console/backend/internal/server"
 )
 
@@ -50,11 +51,7 @@ func TLSConfigFromCA(caCert []byte) *tls.Config {
 
 // New returns a handler that proxies hub K8s API requests (/api, /apis, /version) with the user's token.
 func New(clusterURL *url.URL, tlsConfig *tls.Config) http.Handler {
-	transport := &http.Transport{
-		TLSClientConfig:       tlsConfig,
-		ForceAttemptHTTP2:     true,
-		ResponseHeaderTimeout: 0,
-	}
+	transport := outbound.Transport(tlsConfig, true)
 	rp := &httputil.ReverseProxy{
 		Rewrite: func(pr *httputil.ProxyRequest) {
 			token := auth.TokenFromRequest(pr.In)

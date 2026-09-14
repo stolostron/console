@@ -15,6 +15,7 @@ import (
 
 	"github.com/stolostron/console/backend/internal/auth"
 	"github.com/stolostron/console/backend/internal/clusterproxy"
+	"github.com/stolostron/console/backend/internal/outbound"
 	applog "github.com/stolostron/console/backend/internal/log"
 	"github.com/stolostron/console/backend/internal/server"
 )
@@ -30,11 +31,7 @@ type Options struct {
 
 // New proxies /managedclusterproxy/<cluster>/<apiPath> to the cluster-proxy addon.
 func New(opts Options) http.Handler {
-	transport := &http.Transport{
-		TLSClientConfig:       opts.TLSConfig,
-		ForceAttemptHTTP2:     false, // HTTP/1.1 so WebSocket upgrades work
-		ResponseHeaderTimeout: 0,
-	}
+	transport := outbound.Transport(opts.TLSConfig, false) // HTTP/1.1 so WebSocket upgrades work
 	rp := &httputil.ReverseProxy{
 		Rewrite: func(pr *httputil.ProxyRequest) {
 			target, err := opts.Resolver.ProxyURL(pr.In.Context())

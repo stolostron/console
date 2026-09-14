@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/stolostron/console/backend/internal/outbound"
 )
 
 // TLSConfigFromCA builds a TLS config from a PEM CA bundle.
@@ -42,11 +44,8 @@ func HTTPClient(ca []byte, timeout time.Duration) *http.Client {
 		timeout = 30 * time.Second
 	}
 	return &http.Client{
-		Timeout: timeout,
-		Transport: &http.Transport{
-			TLSClientConfig: TLSConfigFromCA(ca, true),
-			Proxy:           http.ProxyFromEnvironment,
-		},
+		Timeout:   timeout,
+		Transport: outbound.Transport(TLSConfigFromCA(ca, true), true),
 	}
 }
 

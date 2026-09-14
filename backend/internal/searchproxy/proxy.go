@@ -15,6 +15,7 @@ import (
 	"k8s.io/client-go/rest"
 
 	"github.com/stolostron/console/backend/internal/auth"
+	"github.com/stolostron/console/backend/internal/outbound"
 	applog "github.com/stolostron/console/backend/internal/log"
 )
 
@@ -77,11 +78,7 @@ func New(opts Options) *Handler {
 }
 
 func (h *Handler) transport() http.RoundTripper {
-	return &http.Transport{
-		TLSClientConfig:       h.TLSConfig,
-		ForceAttemptHTTP2:     false,
-		ResponseHeaderTimeout: 0,
-	}
+	return outbound.Transport(h.TLSConfig, false)
 }
 
 func proxyError(w http.ResponseWriter, _ *http.Request, err error) {

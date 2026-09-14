@@ -10,6 +10,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
@@ -17,6 +18,7 @@ import (
 
 	"github.com/stolostron/console/backend/internal/auth"
 	"github.com/stolostron/console/backend/internal/clusterproxy"
+	"github.com/stolostron/console/backend/internal/outbound"
 	applog "github.com/stolostron/console/backend/internal/log"
 	"github.com/stolostron/console/backend/internal/server"
 )
@@ -50,10 +52,8 @@ func New(opts Options) *Handler {
 		}
 	}
 	h.addonClient = &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig:   opts.TLSConfig,
-			ForceAttemptHTTP2: false,
-		},
+		Timeout:   30 * time.Second,
+		Transport: outbound.Transport(opts.TLSConfig, false),
 	}
 	return h
 }

@@ -18,6 +18,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/stolostron/console/backend/internal/aggregate"
+	"github.com/stolostron/console/backend/internal/ansibletower"
 	"github.com/stolostron/console/backend/internal/auth"
 	"github.com/stolostron/console/backend/internal/clusterinfo"
 	"github.com/stolostron/console/backend/internal/clusterproxy"
@@ -31,10 +32,13 @@ import (
 	"github.com/stolostron/console/backend/internal/mcproxy"
 	"github.com/stolostron/console/backend/internal/metricsproxy"
 	"github.com/stolostron/console/backend/internal/oauth"
+	"github.com/stolostron/console/backend/internal/placementdebug"
+	"github.com/stolostron/console/backend/internal/rosa"
 	"github.com/stolostron/console/backend/internal/searchapi"
 	"github.com/stolostron/console/backend/internal/searchproxy"
 	"github.com/stolostron/console/backend/internal/server"
 	"github.com/stolostron/console/backend/internal/static"
+	"github.com/stolostron/console/backend/internal/upgraderisks"
 	"github.com/stolostron/console/backend/internal/user"
 	"github.com/stolostron/console/backend/internal/vmproxy"
 )
@@ -177,6 +181,12 @@ func run() error {
 	})))
 
 	serviceTLS := auth.ServiceTLSConfig(sa)
+	insightsCA := sa.ServiceCACert
+	if len(insightsCA) == 0 {
+		insightsCA = sa.CACert
+	}
+	placementCA := &placementdebug.CAWatch{Kube: kube}
+	placementCA.Start(ctx)
 	addonResolver := &clusterproxy.Resolver{
 		HostOverride:  cfg.ClusterProxyAddonUserHost,
 		RouteOverride: cfg.ClusterProxyAddonUserRoute,
@@ -218,6 +228,22 @@ func run() error {
 			RESTConfig: restCfg,
 			TLSConfig:  serviceTLS,
 			Endpoint:   searchDiscovery.Endpoint,
+		})),
+		server.WithRosa(rosa.New(rosa.Options{
+			RESTConfig: restCfg,
+			Client:     auth.HTTPClient(nil, 0),
+		})),
+		server.WithAnsibleTower(ansibletower.New(ansibletower.Options{
+			RESTConfig: restCfg,
+		})),
+		server.WithPlacementDebug(placementdebug.New(placementdebug.Options{
+			RESTConfig: restCfg,
+			GetCA:      placementCA.Get,
+		})),
+		server.WithUpgradeRisks(upgraderisks.New(upgraderisks.Options{
+			RESTConfig: restCfg,
+			Kube:       kube,
+			Client:     auth.HTTPClient(insightsCA, 0),
 		})),
 	)
 

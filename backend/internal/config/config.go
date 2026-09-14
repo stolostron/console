@@ -157,6 +157,7 @@ func (c *Config) ReloadSettings() error {
 	}
 	promote("globalSearchFeatureFlag")
 	promote("UPGRADE_RISKS_PREDICTION_URL")
+	promote("PLACEMENT_DEBUG_URL")
 
 	if lvl, ok := next["LOG_LEVEL"]; ok {
 		c.LogLevel = lvl

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/stolostron/console/backend/internal/auth"
+	"github.com/stolostron/console/backend/internal/outbound"
 	"github.com/stolostron/console/backend/internal/server"
 )
 
@@ -37,11 +38,7 @@ const (
 
 // New returns a ReverseProxy that rewrites /prometheus or /observability to /api/v1 on target.
 func New(target *url.URL, tlsConfig *tls.Config, prefix string) http.Handler {
-	transport := &http.Transport{
-		TLSClientConfig:       tlsConfig,
-		ForceAttemptHTTP2:     true,
-		ResponseHeaderTimeout: 0,
-	}
+	transport := outbound.Transport(tlsConfig, true)
 	rp := &httputil.ReverseProxy{
 		Rewrite: func(pr *httputil.ProxyRequest) {
 			token := auth.TokenFromRequest(pr.In)

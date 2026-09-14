@@ -12,6 +12,7 @@ import (
 
 	"github.com/stolostron/console/backend/internal/config"
 	"github.com/stolostron/console/backend/internal/oauth"
+	"github.com/stolostron/console/backend/internal/rosa"
 	"github.com/stolostron/console/backend/internal/server"
 )
 
@@ -850,6 +851,56 @@ func TestSearchNotProxied(t *testing.T) {
 		resp.Body.Close()
 		if sidecarHit {
 			t.Fatalf("%s websocket was proxied to sidecar", path)
+		}
+	}
+}
+
+func TestLongTailNotProxied(t *testing.T) {
+	var sidecarHit bool
+	sidecar := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sidecarHit = true
+		w.WriteHeader(http.StatusTeapot)
+	}))
+	defer sidecar.Close()
+
+	ok := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+	cfg := &config.Config{NodeBackendURL: sidecar.URL, CertsDir: t.TempDir()}
+	h, err := server.Handler(cfg,
+		server.WithRosa(ok),
+		server.WithAnsibleTower(ok),
+		server.WithPlacementDebug(ok),
+		server.WithUpgradeRisks(ok),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ts := httptest.NewServer(h)
+	defer ts.Close()
+
+	paths := []string{
+		"/ansibletower", "/multicloud/ansibletower",
+		"/placement-debug", "/multicloud/placement-debug",
+		"/upgrade-risks-prediction", "/multicloud/upgrade-risks-prediction",
+	}
+	for _, p := range rosa.Routes {
+		paths = append(paths, p, "/multicloud"+p)
+	}
+	for _, path := range paths {
+		sidecarHit = false
+		req, _ := http.NewRequest(http.MethodPost, ts.URL+path, strings.NewReader(`{}`))
+		req.Header.Set("Content-Type", "application/json")
+		resp, getErr := ts.Client().Do(req)
+		if getErr != nil {
+			t.Fatal(getErr)
+		}
+		resp.Body.Close()
+		if sidecarHit {
+			t.Fatalf("%s was proxied to sidecar", path)
+		}
+		if resp.StatusCode != http.StatusOK {
+			t.Fatalf("%s status %d", path, resp.StatusCode)
 		}
 	}
 }

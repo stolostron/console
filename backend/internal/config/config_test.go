@@ -22,6 +22,7 @@ func TestReloadSettings_PromotesKeys(t *testing.T) {
 	write("APP_SEARCH_LIMIT", "50")
 	write("globalSearchFeatureFlag", "enabled")
 	write("UPGRADE_RISKS_PREDICTION_URL", "https://example.invalid")
+	write("PLACEMENT_DEBUG_URL", "https://placement.example/debug/placements/")
 	write("ansibleIntegration", "available")
 
 	t.Setenv("LOG_LEVEL", "")
@@ -40,6 +41,9 @@ func TestReloadSettings_PromotesKeys(t *testing.T) {
 	}
 	if os.Getenv("UPGRADE_RISKS_PREDICTION_URL") != "https://example.invalid" {
 		t.Fatalf("upgrade url=%q", os.Getenv("UPGRADE_RISKS_PREDICTION_URL"))
+	}
+	if os.Getenv("PLACEMENT_DEBUG_URL") != "https://placement.example/debug/placements/" {
+		t.Fatalf("placement url=%q", os.Getenv("PLACEMENT_DEBUG_URL"))
 	}
 	if os.Getenv("ansibleIntegration") != "" {
 		t.Fatal("ansibleIntegration must not be promoted to env")

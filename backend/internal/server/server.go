@@ -29,21 +29,25 @@ import (
 const multicloudPrefix = "/multicloud"
 
 type handlerOptions struct {
-	rbacEvents    http.Handler
-	k8sProxy      http.Handler
-	oauth         *oauth.Handler
-	oauthLogin    bool
-	mcProxy       http.Handler
-	prometheus    http.Handler
-	observability http.Handler
-	vmProxy       http.Handler
-	staticH       http.Handler
-	user          http.Handler
-	clusterInfo   http.Handler
-	events        http.Handler
-	aggregate     http.Handler
-	searchProxy   http.Handler
-	debugSnapshot http.Handler
+	rbacEvents     http.Handler
+	k8sProxy       http.Handler
+	oauth          *oauth.Handler
+	oauthLogin     bool
+	mcProxy        http.Handler
+	prometheus     http.Handler
+	observability  http.Handler
+	vmProxy        http.Handler
+	staticH        http.Handler
+	user           http.Handler
+	clusterInfo    http.Handler
+	events         http.Handler
+	aggregate      http.Handler
+	searchProxy    http.Handler
+	debugSnapshot  http.Handler
+	rosa           http.Handler
+	ansibleTower   http.Handler
+	placementDebug http.Handler
+	upgradeRisks   http.Handler
 }
 
 // Option configures Handler.
@@ -67,6 +71,34 @@ func WithAggregate(h http.Handler) Option {
 func WithSearchProxy(h http.Handler) Option {
 	return func(o *handlerOptions) {
 		o.searchProxy = h
+	}
+}
+
+// WithRosa registers the ROSA wizard POST routes (also /multicloud/...).
+func WithRosa(h http.Handler) Option {
+	return func(o *handlerOptions) {
+		o.rosa = h
+	}
+}
+
+// WithAnsibleTower registers POST /ansibletower (also /multicloud/ansibletower).
+func WithAnsibleTower(h http.Handler) Option {
+	return func(o *handlerOptions) {
+		o.ansibleTower = h
+	}
+}
+
+// WithPlacementDebug registers POST /placement-debug (also /multicloud/placement-debug).
+func WithPlacementDebug(h http.Handler) Option {
+	return func(o *handlerOptions) {
+		o.placementDebug = h
+	}
+}
+
+// WithUpgradeRisks registers POST /upgrade-risks-prediction (also /multicloud/upgrade-risks-prediction).
+func WithUpgradeRisks(h http.Handler) Option {
+	return func(o *handlerOptions) {
+		o.upgradeRisks = h
 	}
 }
 
@@ -298,6 +330,30 @@ func Handler(cfg *config.Config, opts ...Option) (http.Handler, error) {
 	}
 	if o.searchProxy != nil {
 		registerAliased(r, o.searchProxy, "/proxy/search")
+	}
+	if o.rosa != nil {
+		registerAliasedPost(r, o.rosa,
+			"/aws-account-ids",
+			"/aws-billing-accounts",
+			"/oidc-configs",
+			"/regions",
+			"/cluster-name-check",
+			"/sts-role-arns",
+			"/vpcs",
+			"/sts-ocm-role",
+			"/sts-user-role",
+			"/openshift-versions",
+			"/machine-types",
+		)
+	}
+	if o.ansibleTower != nil {
+		registerAliasedPost(r, o.ansibleTower, "/ansibletower")
+	}
+	if o.placementDebug != nil {
+		registerAliasedPost(r, o.placementDebug, "/placement-debug")
+	}
+	if o.upgradeRisks != nil {
+		registerAliasedPost(r, o.upgradeRisks, "/upgrade-risks-prediction")
 	}
 	if o.k8sProxy != nil {
 		registerK8sProxyRoutes(r, o.k8sProxy)
