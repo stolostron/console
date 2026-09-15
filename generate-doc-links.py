@@ -9,7 +9,7 @@ Prerequisites:
 - playwright library (pip install playwright) (playwright install)
 
 Usage:
-  ./generate-doc-links.py [--compare] [--old-version VERSION] [--old-ocp-version VERSION]
+  ./generate-doc-links.py [--compare] [--previous-acm-version VERSION] [--previous-ocp-version VERSION]
 
 This script will extract the DOC_LINKS constants from the doc-util.tsx file
 and save them to an Excel file named doc-links.xlsx.
@@ -370,16 +370,16 @@ def main() -> None:
         help="Enable screenshot comparison and similarity scores.",
     )
     parser.add_argument(
-        "--old-version",
+        "--previous-acm-version",
         type=str,
         default=None,
-        help="Override the old ACM doc version (doc_version_minus1) instead of calculating it by decrementing the current version.",
+        help="Override the previous ACM doc version (doc_version_minus1) instead of calculating it by decrementing the current version.",
     )
     parser.add_argument(
-        "--old-ocp-version",
+        "--previous-ocp-version",
         type=str,
         default=None,
-        help="Override the old OCP doc version (ocp_doc_version_minus1) instead of calculating it by decrementing the current version.",
+        help="Override the previous OCP doc version (ocp_doc_version_minus1) instead of calculating it by decrementing the current version.",
     )
     args = parser.parse_args()
     enable_compare = args.compare
@@ -398,9 +398,9 @@ def main() -> None:
         ocp_doc_home_template,
         ocp_doc_base_template,
     ) = read_doc_paths(doc_text)
-    if args.old_version:
-        doc_version_minus1 = args.old_version
-        print(f"Using provided old version: {doc_version_minus1}")
+    if args.previous_acm_version:
+        doc_version_minus1 = args.previous_acm_version
+        print(f"Using provided previous version: {doc_version_minus1}")
     else:
         doc_version_minus1 = decrement_version(doc_version)
     doc_home_minus1 = resolve_template(
@@ -427,9 +427,9 @@ def main() -> None:
     ocp_doc_staging_base_path = (
         OCP_DOC_STAGING_BASE_TEMPLATE.format(OCP_DOC_VERSION=ocp_doc_version) if ocp_doc_version else ""
     )
-    if args.old_ocp_version:
-        ocp_doc_version_minus1 = args.old_ocp_version
-        print(f"Using provided old OCP version: {ocp_doc_version_minus1}")
+    if args.previous_ocp_version:
+        ocp_doc_version_minus1 = args.previous_ocp_version
+        print(f"Using provided previous OCP version: {ocp_doc_version_minus1}")
     else:
         ocp_doc_version_minus1 = decrement_version(ocp_doc_version)
     ocp_doc_home_minus1 = resolve_template(
