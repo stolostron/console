@@ -9,7 +9,7 @@ Prerequisites:
 - playwright library (pip install playwright) (playwright install)
 
 Usage:
-  ./generate-doc-links.py [--compare]
+  ./generate-doc-links.py [--compare] [--old-version VERSION] [--old-ocp-version VERSION]
 
 This script will extract the DOC_LINKS constants from the doc-util.tsx file
 and save them to an Excel file named doc-links.xlsx.
@@ -369,6 +369,18 @@ def main() -> None:
         action="store_true",
         help="Enable screenshot comparison and similarity scores.",
     )
+    parser.add_argument(
+        "--old-version",
+        type=str,
+        default=None,
+        help="Override the old ACM doc version (doc_version_minus1) instead of calculating it by decrementing the current version.",
+    )
+    parser.add_argument(
+        "--old-ocp-version",
+        type=str,
+        default=None,
+        help="Override the old OCP doc version (ocp_doc_version_minus1) instead of calculating it by decrementing the current version.",
+    )
     args = parser.parse_args()
     enable_compare = args.compare
 
@@ -386,7 +398,11 @@ def main() -> None:
         ocp_doc_home_template,
         ocp_doc_base_template,
     ) = read_doc_paths(doc_text)
-    doc_version_minus1 = decrement_version(doc_version)
+    if args.old_version:
+        doc_version_minus1 = args.old_version
+        print(f"Using provided old version: {doc_version_minus1}")
+    else:
+        doc_version_minus1 = decrement_version(doc_version)
     doc_home_minus1 = resolve_template(
         doc_home_template,
         {"DOC_VERSION": doc_version_minus1},
@@ -411,7 +427,11 @@ def main() -> None:
     ocp_doc_staging_base_path = (
         OCP_DOC_STAGING_BASE_TEMPLATE.format(OCP_DOC_VERSION=ocp_doc_version) if ocp_doc_version else ""
     )
-    ocp_doc_version_minus1 = decrement_version(ocp_doc_version)
+    if args.old_ocp_version:
+        ocp_doc_version_minus1 = args.old_ocp_version
+        print(f"Using provided old OCP version: {ocp_doc_version_minus1}")
+    else:
+        ocp_doc_version_minus1 = decrement_version(ocp_doc_version)
     ocp_doc_home_minus1 = resolve_template(
         ocp_doc_home_template,
         {"OCP_DOC_VERSION": ocp_doc_version_minus1},
