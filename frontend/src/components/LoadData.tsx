@@ -562,10 +562,6 @@ export function LoadData(props: { children?: ReactNode }) {
               }
               setEventsLoaded(true)
               break
-            case 'THROTTLED':
-              // TODO: setThrottled(data.resources)
-              console.log('THROTTLED', data.resources)
-              break
             case 'SETTINGS':
               setSettings(data.settings)
               break

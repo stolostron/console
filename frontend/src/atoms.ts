@@ -203,16 +203,7 @@ export interface SettingsEvent {
   settings: Record<string, string>
 }
 
-export interface ThrottledEvent {
-  type: 'THROTTLED'
-  resources: {
-    kind: string
-    namespace: string
-    name: string
-  }[]
-}
-
-export type ServerSideEventData = WatchEvent | SettingsEvent | ThrottledEvent | { type: 'START' | 'LOADED' | 'EOP' }
+export type ServerSideEventData = WatchEvent | SettingsEvent | { type: 'START' | 'LOADED' }
 
 export function usePolicies() {
   const policies = useRecoilValue(policiesState)

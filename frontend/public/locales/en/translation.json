@@ -2603,7 +2603,7 @@
   "policy.table.actions.inform": "Inform",
   "policy.table.actions.informing": "Informing",
   "policy.table.throttled": "Updates throttled",
-  "policy.table.throttled.tooltip": "This policy is updating too frequently. Policy updates are therefore being limited to once per minute. Verify this policy is configured correctly",
+  "policy.table.throttled.tooltip": "This policy's compliance is changing too frequently. See Policy Conflicts panel in Overview",
   "policy.tableHeader.name": "Policy name",
   "policy.violations_one": "{{count}} policy with violations",
   "policy.violations_other": "{{count}} policies with violations",
