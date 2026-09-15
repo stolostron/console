@@ -1557,7 +1557,10 @@ describe('events Route', () => {
       throttlePolicyAt('spec-change', 'default', base + FLAP_SETTLING_MS + FLAP_THRESHOLD + 1)
 
       expect(
-        shouldThrottleResource({ ...policy, spec: { disabled: true } } as IResource, base + FLAP_SETTLING_MS + FLAP_THRESHOLD + 2)
+        shouldThrottleResource(
+          { ...policy, spec: { disabled: true } } as IResource,
+          base + FLAP_SETTLING_MS + FLAP_THRESHOLD + 2
+        )
       ).toBe(false)
       const entry = getFlapTracker()['Policy/default/spec-change']
       expect(entry.throttled).toBeUndefined()
@@ -1609,16 +1612,13 @@ describe('events Route', () => {
       throttlePolicyAt('periodic', 'default', throttledAt)
 
       expect(
-        shouldThrottleResource(
-          policyWithCompliant('periodic', 'default', FLAP_THRESHOLD + 2),
-          throttledAt + 100
-        )
+        shouldThrottleResource(policyWithCompliant('periodic', 'default', FLAP_THRESHOLD + 2), throttledAt + 100)
       ).toBe(true)
 
       const periodicAt = throttledAt + FLAP_COOLDOWN_MS
-      expect(
-        shouldThrottleResource(policyWithCompliant('periodic', 'default', FLAP_THRESHOLD + 3), periodicAt)
-      ).toBe(false)
+      expect(shouldThrottleResource(policyWithCompliant('periodic', 'default', FLAP_THRESHOLD + 3), periodicAt)).toBe(
+        false
+      )
     })
 
     it('should continue suppressing caches after detection window clears until cooldown expires', () => {
