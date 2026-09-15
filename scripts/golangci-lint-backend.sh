@@ -3,7 +3,7 @@
 
 set -euo pipefail
 
-readonly GOLANGCI_LINT_VERSION=v1.64.8
+readonly GOLANGCI_LINT_VERSION=v2.9.0
 readonly ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 if ! command -v go >/dev/null 2>&1; then
@@ -11,10 +11,7 @@ if ! command -v go >/dev/null 2>&1; then
 	exit 0
 fi
 
-if ! command -v golangci-lint >/dev/null 2>&1; then
-	go install "github.com/golangci/golangci-lint/cmd/golangci-lint@${GOLANGCI_LINT_VERSION}"
-fi
-
-export PATH="$(go env GOPATH)/bin:${PATH}"
 cd "${ROOT_DIR}/backend"
-golangci-lint run "$@"
+# Build with the active Go toolchain so analysis matches go.mod (avoids a stale
+# pre-installed golangci-lint binary compiled with an older Go release).
+go run "github.com/golangci/golangci-lint/v2/cmd/golangci-lint@${GOLANGCI_LINT_VERSION}" run "$@"

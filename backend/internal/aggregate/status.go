@@ -162,7 +162,7 @@ func computeDeployedPodStatuses(related []mapKind, appStatusesMap map[string]Sta
 	podMap := createResourceMap(related, "Pod")
 	for appKey, clusterMap := range appStatusesMap {
 		for clusterKey, appStatuses := range clusterMap {
-			if !(appStatuses.Health.Counts[scoreHealthy] > 0 && appStatuses.Synced.Counts[scoreHealthy] > 0) && !ignoreHealthCheck {
+			if (appStatuses.Health.Counts[scoreHealthy] <= 0 || appStatuses.Synced.Counts[scoreHealthy] <= 0) && !ignoreHealthCheck {
 				continue
 			}
 			id := ids[statusIDKey(appKey, clusterKey)]

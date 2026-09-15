@@ -51,19 +51,19 @@ func convertBytesToGibibytes(bytes float64) float64 {
 func toMillicores(cpuRequest string) (float64, error) {
 	trimmed := strings.TrimSpace(cpuRequest)
 	if trimmed == "" {
-		return 0, fmt.Errorf("Invalid input: cpuRequest must be a non-empty string.")
+		return 0, fmt.Errorf("invalid input: cpuRequest must be a non-empty string")
 	}
 	if strings.HasSuffix(trimmed, "m") {
 		numericPart := trimmed[:len(trimmed)-1]
 		millicores, err := strconv.Atoi(numericPart)
 		if err != nil || strconv.Itoa(millicores) != numericPart {
-			return 0, fmt.Errorf("Invalid millicore value: %q. The part before \"m\" must be an integer.", cpuRequest)
+			return 0, fmt.Errorf("invalid millicore value: %q, the part before \"m\" must be an integer", cpuRequest)
 		}
 		return float64(millicores), nil
 	}
 	coreValue, err := strconv.ParseFloat(trimmed, 64)
 	if err != nil {
-		return 0, fmt.Errorf("Invalid core value: %q. Must be a number or end with 'm'.", cpuRequest)
+		return 0, fmt.Errorf("invalid core value: %q, must be a number or end with 'm'", cpuRequest)
 	}
 	return coreValue * 1000, nil
 }
@@ -73,11 +73,11 @@ var memoryRE = regexp.MustCompile(`^(\d+(\.\d+)?)\s*([A-Za-z]+)?$`)
 func toMebibytes(memoryRequest string) (float64, error) {
 	trimmed := strings.TrimSpace(memoryRequest)
 	if trimmed == "" {
-		return 0, fmt.Errorf("Invalid input: memoryRequest must be a non-empty string.")
+		return 0, fmt.Errorf("invalid input: memoryRequest must be a non-empty string")
 	}
 	match := memoryRE.FindStringSubmatch(trimmed)
 	if match == nil {
-		return 0, fmt.Errorf("Invalid memory format: %q. Expected a number followed by an optional unit.", memoryRequest)
+		return 0, fmt.Errorf("invalid memory format: %q, expected a number followed by an optional unit", memoryRequest)
 	}
 	numericValue, err := strconv.ParseFloat(match[1], 64)
 	if err != nil {
@@ -105,7 +105,7 @@ func toMebibytes(memoryRequest string) (float64, error) {
 	case multipliers[unit] != 0:
 		bytes = numericValue * multipliers[unit]
 	default:
-		return 0, fmt.Errorf("Invalid memory unit: %q.", unit)
+		return 0, fmt.Errorf("invalid memory unit: %q", unit)
 	}
 	return bytes / (1024 * 1024), nil
 }

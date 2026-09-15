@@ -13,11 +13,7 @@ jest.mock('../lib/acm-i18next', () => ({
   }),
 }))
 
-function renderWithContext(
-  contextOverrides: Partial<PluginData>,
-  children = 'Page Content',
-  initialPath = '/'
-) {
+function renderWithContext(contextOverrides: Partial<PluginData>, children = 'Page Content', initialPath = '/') {
   const ctx: PluginData = { ...defaultContext, ...contextOverrides }
   return render(
     <MemoryRouter initialEntries={[initialPath]}>
@@ -38,7 +34,11 @@ describe('LoadPluginData', () => {
   })
 
   it('fast-loads /multicloud when loadStarted without waiting for loadCompleted', () => {
-    renderWithContext({ loadCompleted: false, loadStarted: true }, 'Page Content', NavigationPath.emptyPath + '/multicloud')
+    renderWithContext(
+      { loadCompleted: false, loadStarted: true },
+      'Page Content',
+      NavigationPath.emptyPath + '/multicloud'
+    )
     expect(screen.getByText('Page Content')).toBeInTheDocument()
   })
 

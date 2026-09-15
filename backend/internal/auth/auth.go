@@ -143,7 +143,7 @@ func RESTConfig(cfg *config.Config, sa ServiceAccount) (*rest.Config, error) {
 		},
 	}
 	if len(sa.CACert) == 0 {
-		restCfg.TLSClientConfig.Insecure = true
+		restCfg.Insecure = true
 	}
 	return restCfg, nil
 }

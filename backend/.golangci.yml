@@ -1,34 +1,50 @@
+# Copyright Contributors to the Open Cluster Management project
+#
 # golangci-lint configuration
 # https://golangci-lint.run/usage/configuration/
+version: "2"
 run:
   tests: true
 linters:
   enable:
     - copyloopvar
-    - errcheck
-    - gosimple
-    - govet
-    - ineffassign
     - misspell
     - revive
-    - staticcheck
-    - unused
-linters-settings:
-  copyloopvar:
-    check-alias: true
-  govet:
-    enable:
-      - shadow
-  misspell:
-    locale: US
-  revive:
-    rules:
-      - name: package-comments
-        disabled: true
-  gci:
-    sections:
-      - standard
-      - default
-      - prefix(github.com/stolostron/console/backend)
-      - blank
-      - dot
+  settings:
+    copyloopvar:
+      check-alias: true
+    govet:
+      enable:
+        - shadow
+    misspell:
+      locale: US
+    revive:
+      rules:
+        - name: package-comments
+          disabled: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(github.com/stolostron/console/backend)
+        - blank
+        - dot
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
