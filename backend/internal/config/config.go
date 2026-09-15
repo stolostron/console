@@ -39,6 +39,7 @@ type Config struct {
 	OIDCIssuerURL      string
 	FrontendURL        string
 	Production         bool
+	DisableEvents      bool
 
 	mu       sync.RWMutex
 	settings map[string]string
@@ -78,7 +79,7 @@ func Load() *Config {
 		OIDCIssuerURL:              os.Getenv("OIDC_ISSUER_URL"),
 		FrontendURL:                os.Getenv("FRONTEND_URL"),
 		Production:                 os.Getenv("NODE_ENV") == "production",
-		DisableEvents:              os.Getenv("DISABLE_EVENTS"),
+		DisableEvents:              envOr("DISABLE_EVENTS", "false") == "true",
 		settings:                   map[string]string{},
 	}
 	_ = cfg.ReloadSettings()

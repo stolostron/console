@@ -255,7 +255,7 @@ func run() error {
 		slog.String("PUBLIC_FOLDER", cfg.PublicFolder),
 	)
 	return server.ListenAndServe(ctx, cfg, handler, func() {
-		if !cfg.DisableEvents {
+		if cfg.DisableEvents {
 			applog.Logger().Info("disable events", "DISABLE_EVENTS", os.Getenv("DISABLE_EVENTS"))
 			return
 		}
