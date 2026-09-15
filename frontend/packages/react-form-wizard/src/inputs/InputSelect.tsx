@@ -225,10 +225,10 @@ export const InputSelect = ({
           onClick={onInputClick}
           onChange={onTextInputChange}
           onKeyDown={onInputKeyDown}
-          autoComplete="off"
           innerRef={textInputRef}
           placeholder={placeholder}
           isExpanded={open}
+          inputProps={{ autoComplete: 'off' }}
           style={isMultiSelect && Array.isArray(value) && value.length > 0 ? { overflow: 'auto' } : undefined}
         >
           {Array.isArray(value) && (

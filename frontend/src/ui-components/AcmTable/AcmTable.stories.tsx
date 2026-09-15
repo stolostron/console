@@ -91,6 +91,7 @@ export function TableStory(args: Record<string, unknown>) {
   const [items, setItems] = useState<IExampleData[]>(exampleData.slice(0, 105))
   return (
     <AcmTable<IExampleData>
+      aria-label="Example table"
       emptyState={<TableEmptyState {...args} />}
       items={items}
       columns={columns}
@@ -107,6 +108,7 @@ export function TableExpandable(args: Record<string, unknown>) {
       <AcmPageContent id="table">
         <PageSection hasBodyWrapper={false}>
           <AcmTable<IExampleData>
+            aria-label="Example table"
             emptyState={<TableEmptyState {...args} />}
             items={items}
             columns={columns}
@@ -126,6 +128,7 @@ export function TableExpandable(args: Record<string, unknown>) {
                             <Content component={ContentVariants.h3}>Favorite Colors</Content>
                           </Content>
                           <AcmTable<IExampleSubData>
+                            aria-label="Example sub table"
                             resultView={{
                               loading: false,
                               page: 1,
@@ -195,6 +198,7 @@ function TableFilteredStory(args: Record<string, unknown>) {
   const [items, setItems] = useState<IExampleData[]>(exampleData.slice(0, 105))
   return (
     <AcmTable<IExampleData>
+      aria-label="Example table"
       emptyState={<TableEmptyState {...args} />}
       items={items}
       columns={columns}
@@ -250,6 +254,7 @@ function TableEmptyStory(args: Record<string, unknown>) {
   const props = commonProperties(args, setItems, items)
   return (
     <AcmTable<IExampleData>
+      aria-label="Example table"
       emptyState={<TableEmptyState {...args} />}
       items={[]}
       columns={columns}
@@ -277,6 +282,7 @@ function TableLoadingStory(args: Record<string, unknown>) {
   const props = commonProperties(args, setItems, items)
   return (
     <AcmTable<IExampleData>
+      aria-label="Example table"
       emptyState={<TableEmptyState {...args} />}
       items={undefined}
       columns={columns}

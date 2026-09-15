@@ -232,6 +232,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
   } = props
 
   const resolvedInputProps = {
+    autoComplete: 'off',
     ...inputProps,
     ...(id && { id }),
   }
@@ -722,7 +723,6 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
               commitTypeaheadInput(event.currentTarget.value)
             }
           }}
-          autoComplete="off"
           innerRef={textInputRef}
           placeholder={placeholder}
           inputId={id}
