@@ -15,7 +15,6 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/discovery"
 	discoveryfake "k8s.io/client-go/discovery/fake"
 	dynamicfake "k8s.io/client-go/dynamic/fake"
 	"k8s.io/client-go/rest"
@@ -24,19 +23,6 @@ import (
 	"github.com/stolostron/console/backend/internal/clusterinfo"
 	"github.com/stolostron/console/backend/internal/informers"
 )
-
-// partialFailDiscovery wraps FakeDiscovery so that ServerGroupsAndResources
-// returns the configured resources alongside an ErrGroupDiscoveryFailed error,
-// simulating clusters where some API groups are unavailable.
-type partialFailDiscovery struct {
-	discoveryfake.FakeDiscovery
-	failGroups map[schema.GroupVersion]error
-}
-
-func (d *partialFailDiscovery) ServerGroupsAndResources() ([]*metav1.APIGroup, []*metav1.APIResourceList, error) {
-	groups, lists, _ := d.FakeDiscovery.ServerGroupsAndResources()
-	return groups, lists, &discovery.ErrGroupDiscoveryFailed{Groups: d.failGroups}
-}
 
 func apiProbeServer(t *testing.T) (*httptest.Server, *rest.Config) {
 	t.Helper()

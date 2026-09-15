@@ -341,7 +341,6 @@ func TestStartCacheNil(t *testing.T) {
 
 type staleMapper struct {
 	invalidated atomic.Bool
-	lists       map[string]*metav1.APIResourceList
 }
 
 func (m *staleMapper) ServerResourcesForGroupVersion(gv string) (*metav1.APIResourceList, error) {
