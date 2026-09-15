@@ -87,7 +87,7 @@ export const submarinerConfigDefault: SubmarinerConfigDefaults = {
   nattEnable: true,
   cableDriver: CableDriver.libreswan,
   gateways: 1,
-  awsInstanceType: 'c5d.large',
+  awsInstanceType: 'm5.xlarge',
   azureInstanceType: 'Standard_F4s_v2',
   openStackInstanceType: 'PnTAE.CPU_4_Memory_8192_Disk_50',
   loadBalancerEnable: false,
