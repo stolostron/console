@@ -12,7 +12,7 @@ import {
   ClusterCuratorApiVersion,
   ClusterCuratorDefinition,
   getClusterImageSetVersion,
-  getLatestAnsibleJob,
+  getLatestAnsibleHook,
   getVersionFromReleaseString,
   HostedClusterDefinition,
   NodePool,
@@ -42,8 +42,10 @@ export function DistributionField(props: {
   const toggle = () => toggleOpen(!open)
   const [showChannelSelectModal, setShowChannelSelectModal] = useState<boolean>(false)
   const [channelSelectionPending, setChannelSelectionPending] = useState<boolean>(false)
-  const { ansibleJobState, clusterImageSetsState, agentMachinesState, agentsState } = useSharedAtoms()
+  const { ansibleJobState, ansibleWorkflowState, clusterImageSetsState, agentMachinesState, agentsState } =
+    useSharedAtoms()
   const ansibleJobs = useRecoilValue(ansibleJobState)
+  const ansibleWorkflows = useRecoilValue(ansibleWorkflowState)
   const agents = useRecoilValue(agentsState)
   const agentMachines = useRecoilValue(agentMachinesState)
   const clusterImageSets = useRecoilValue(clusterImageSetsState)
@@ -166,10 +168,9 @@ export function DistributionField(props: {
     return <>{version ? `${microshiftText} ${version}` : '-'}</>
   }
 
-  const latestAnsibleJob =
-    props.cluster?.namespace && ansibleJobs
-      ? getLatestAnsibleJob(ansibleJobs, props.cluster?.namespace)
-      : { prehook: undefined, posthook: undefined }
+  const latestAnsibleJob = props.cluster?.namespace
+    ? getLatestAnsibleHook(ansibleJobs, ansibleWorkflows, props.cluster.namespace)
+    : { prehook: undefined, posthook: undefined }
 
   if (!props.cluster?.distribution) {
     // For HostedClusters without channel, show the warning even without distribution
@@ -215,14 +216,18 @@ export function DistributionField(props: {
         ? t('update.ansible.posthook')
         : t('update.ansible.prehook')
 
-    const jobUrl =
-      props.cluster?.distribution?.upgradeInfo?.latestJob?.step === CuratorCondition.posthook
-        ? latestAnsibleJob.posthook?.status?.ansibleJobResult?.url
-        : latestAnsibleJob.prehook?.status?.ansibleJobResult?.url
+    const hookFailed = !!props.cluster?.distribution?.upgradeInfo?.hookFailed
+    const prehookFailed = !!props.cluster?.distribution?.upgradeInfo?.prehooks?.failed
+    const isPosthook =
+      hookFailed && !prehookFailed
+        ? true
+        : props.cluster?.distribution?.upgradeInfo?.latestJob?.step === CuratorCondition.posthook
+
+    const jobUrl = isPosthook ? latestAnsibleJob.posthook?.result?.url : latestAnsibleJob.prehook?.result?.url
 
     const footerContent: ReactNode = (
       <AcmButton
-        onClick={() => window.open(latestAnsibleJob.prehook?.status?.ansibleJobResult?.url)}
+        onClick={() => jobUrl && window.open(jobUrl)}
         variant="link"
         size="sm"
         isInline

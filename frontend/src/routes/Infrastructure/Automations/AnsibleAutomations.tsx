@@ -72,6 +72,7 @@ function AnsibleJobTemplateTable() {
       <BulkActionModal<ClusterCurator> {...bulkModalProps} />
       <DropdownActionModal<ClusterCurator> {...dropdownModalProps} />
       <AcmTable<ClusterCurator>
+        aria-label={t('Ansible automations table')}
         items={templatedCurators}
         columns={[
           {

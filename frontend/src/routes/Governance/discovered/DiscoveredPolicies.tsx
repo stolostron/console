@@ -303,6 +303,7 @@ export default function DiscoveredPolicies() {
   return (
     <PageSection hasBodyWrapper={false}>
       <AcmTable<DiscoveredPolicyTableItem>
+        aria-label={t('Discovered policies table')}
         id="discoveredPolicyTable"
         columns={discoveredPoliciesCols}
         keyFn={(item) => item.id}

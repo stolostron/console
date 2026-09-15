@@ -3,7 +3,9 @@
 import { FleetK8sResourceCommon, FleetWatchK8sResource, FleetWatchK8sResultsObject } from '../types'
 import {
   getCacheEntryAge,
+  getErrorRetryInterval,
   getSocketMonitoringInterval,
+  is404Error,
   isCacheEntryFresh,
   isCacheEntryValid,
   useFleetK8sWatchResourceStore,
@@ -61,8 +63,8 @@ const openFleetWatchSocket = (
         cluster,
         fieldSelector: name ? `metadata.name=${name}` : undefined,
         labelSelector: selector || undefined,
-        resourceVersion: isList ? resourceVersion : undefined,
-        allowWatchBookmarks: isList,
+        resourceVersion,
+        allowWatchBookmarks: true,
       },
       basePath
     )
@@ -71,7 +73,11 @@ const openFleetWatchSocket = (
     socket.onmessage = (event) => {
       try {
         // Handle WebSocket event - this will update the store and notify all subscribers
-        handleWebsocketEvent(event, requestPath, isList, cluster as string)
+        const shouldRefresh = handleWebsocketEvent(event, requestPath, isList, cluster as string)
+        if (shouldRefresh) {
+          // Single resource was deleted — confirm 404 via GET but keep socket open
+          loadInitialData(requestPath, resource)
+        }
       } catch (e) {
         console.error('Failed to parse WebSocket message', e)
       }
@@ -88,7 +94,8 @@ const openFleetWatchSocket = (
 
     socket.onerror = (err) => {
       console.error('WebSocket error:', err)
-      store.setResult(requestPath, cachedResult?.data, true, err)
+      // Clear resourceVersion on transport errors to avoid resuming from a potentially stale version
+      store.setResult(requestPath, cachedResult?.data, true, err, '')
     }
   } catch (err) {
     handleError(err, requestPath, resource)
@@ -104,7 +111,7 @@ const loadInitialData = async (requestPath: string, resource: FleetWatchK8sResou
     const processedData = isList
       ? (data as { items: K8sResourceCommon[] }).items.map((i) => ({ cluster, ...i }))
       : { cluster, ...(data as K8sResourceCommon) }
-    const resourceVersion = isList ? (data as K8sResourceCommon)?.metadata?.resourceVersion : undefined
+    const resourceVersion = (data as K8sResourceCommon)?.metadata?.resourceVersion
     store.setResult(requestPath, processedData, true, undefined, resourceVersion)
   } catch (err) {
     handleError(err, requestPath, resource)
@@ -113,40 +120,64 @@ const loadInitialData = async (requestPath: string, resource: FleetWatchK8sResou
   return true
 }
 
-const monitorFleetWatchSocket = async (
+const checkFleetWatchSocket = async (
   requestPath: string,
   resource: FleetWatchK8sResource,
   model: K8sModel,
   basePath: string
 ) => {
-  async function checkFleetWatchSocket(
-    requestPath: string,
-    resource: FleetWatchK8sResource,
-    model: K8sModel,
-    basePath: string
-  ) {
-    const store = useFleetK8sWatchResourceStore.getState()
-    const entry = store.cache[requestPath]
-    if (entry && entry.refCount > 0) {
-      if (isCacheEntryFresh(entry)) {
-        // check again when data is due to expire
-        setTimeout(
-          () => checkFleetWatchSocket(requestPath, resource, model, basePath),
-          getSocketMonitoringInterval() - getCacheEntryAge(entry)
-        )
+  const store = useFleetK8sWatchResourceStore.getState()
+  const entry = store.cache[requestPath]
+  if (entry && entry.refCount > 0) {
+    const hasLiveSocket = !!entry.socket && entry.socket.readyState <= WebSocket.OPEN
+
+    if (hasLiveSocket && isCacheEntryFresh(entry)) {
+      // Socket is alive and receiving bookmarks — schedule next check at normal interval.
+      scheduleSocketCheck(
+        requestPath,
+        resource,
+        model,
+        basePath,
+        getSocketMonitoringInterval() - getCacheEntryAge(entry)
+      )
+    } else {
+      // Socket may have disconnected or we have a non-404 error; reconnect
+      entry.socket?.close()
+      const initialDataLoaded = await loadInitialData(requestPath, resource)
+      const freshState = useFleetK8sWatchResourceStore.getState()
+      if (initialDataLoaded || (!resource.isList && is404Error(freshState.cache[requestPath]?.result?.loadError))) {
+        openFleetWatchSocket(requestPath, resource, model, basePath)
+        scheduleSocketCheck(requestPath, resource, model, basePath, getSocketMonitoringInterval())
       } else {
-        // Socket may have disconnected; reconnect
-        entry.socket?.close()
-        if (await loadInitialData(requestPath, resource)) {
-          // only start watch if initial load succeeds
-          openFleetWatchSocket(requestPath, resource, model, basePath)
-        }
-        // check again after default interval
-        setTimeout(() => checkFleetWatchSocket(requestPath, resource, model, basePath), getSocketMonitoringInterval())
+        // non-404 error — retry sooner
+        scheduleSocketCheck(requestPath, resource, model, basePath, getErrorRetryInterval())
       }
     }
+  } else {
+    // Monitoring chain ending — clear tracked handle so a later watch can start fresh
+    store.clearMonitorTimeout(requestPath)
   }
-  setTimeout(() => checkFleetWatchSocket(requestPath, resource, model, basePath), getSocketMonitoringInterval())
+}
+
+const scheduleSocketCheck = (
+  requestPath: string,
+  resource: FleetWatchK8sResource,
+  model: K8sModel,
+  basePath: string,
+  delay: number
+) => {
+  const store = useFleetK8sWatchResourceStore.getState()
+  const timeout = setTimeout(() => checkFleetWatchSocket(requestPath, resource, model, basePath), delay)
+  store.setMonitorTimeout(requestPath, timeout)
+}
+
+const monitorFleetWatchSocket = (
+  requestPath: string,
+  resource: FleetWatchK8sResource,
+  model: K8sModel,
+  basePath: string
+) => {
+  scheduleSocketCheck(requestPath, resource, model, basePath, getSocketMonitoringInterval())
 }
 
 export function useGetInitialResult() {
@@ -205,15 +236,26 @@ export const startWatch = async (resource: FleetWatchK8sResource, model: K8sMode
   const store = useFleetK8sWatchResourceStore.getState()
   store.incrementRefCount(requestPath)
 
-  // if we are the first subscriber, we are responsible for getting the initial data and watching for updates
+  // If we are the first subscriber, we are responsible for getting the initial data and watching for updates
   if (store.getRefCount(requestPath) === 1) {
-    // if there is a cached value that is not expired, we can skip the initial fetch
     const entry = store.cache[requestPath]
-    if ((entry && isCacheEntryValid(entry)) || (await loadInitialData(requestPath, resource))) {
-      // only start watch if we have valid cached data or an initial load succeeds
+    if (entry && isCacheEntryValid(entry)) {
+      // Cached value is not expired — skip the initial fetch
       openFleetWatchSocket(requestPath, resource, model, basePath)
+    } else {
+      const loadSuccess = await loadInitialData(requestPath, resource)
+      // For non-list: open socket even on 404 (resource may be created later via ADDED event)
+      // For list or non-404 errors: only open socket on success
+      const freshState = useFleetK8sWatchResourceStore.getState()
+      if (loadSuccess || (!resource.isList && is404Error(freshState.cache[requestPath]?.result?.loadError))) {
+        openFleetWatchSocket(requestPath, resource, model, basePath)
+      }
     }
-    monitorFleetWatchSocket(requestPath, resource, model, basePath)
+    // Only start a new monitoring chain if one isn't already pending
+    // (an existing chain survives refCount 0→1 transitions and will continue on its own)
+    if (!useFleetK8sWatchResourceStore.getState().cache[requestPath]?.monitorTimeout) {
+      monitorFleetWatchSocket(requestPath, resource, model, basePath)
+    }
   }
 }
 
@@ -228,68 +270,83 @@ export const handleWebsocketEvent = <R extends FleetK8sResourceCommon | FleetK8s
   requestPath: string,
   isList: boolean | undefined,
   cluster: string
-): void => {
+): boolean => {
   if (!event) {
     console.warn('Received undefined event', event)
-    return
+    return false
   }
 
   const eventDataParsed = JSON.parse(event.data)
   const eventType = eventDataParsed?.type
   const object = eventDataParsed?.object
 
-  if (!object) return
+  if (!object) return false
 
   const store = useFleetK8sWatchResourceStore.getState()
 
-  if (!isList) {
-    const currentEntry = store.getResult(requestPath)
-    if (eventType === 'ADDED' && currentEntry?.data) return
-
-    const processedEventData = { cluster, ...(object as K8sResourceCommon) }
-
-    if (processedEventData) {
-      // Update the store with the new data - this will notify all subscribers
-      store.setResult(requestPath, processedEventData, true)
-    }
-
-    return
-  }
-
   const currentEntry = store.getResult(requestPath)
-  const storedData = currentEntry?.data as K8sResourceCommon[]
-  if (!storedData) {
-    return
+  const storedData = currentEntry?.data
+  if (isList && !storedData) {
+    return false
   }
+
+  const uidMatches = (i: FleetK8sResourceCommon | undefined) => i?.metadata?.uid === object?.metadata?.uid
 
   if (eventType === 'DELETED') {
-    const updatedData = storedData.filter((i) => i.metadata?.uid !== object?.metadata?.uid)
-    store.setResult(requestPath, updatedData, true)
-    return
+    if (Array.isArray(storedData)) {
+      store.setResult(
+        requestPath,
+        storedData.filter((i) => !uidMatches(i)),
+        true
+      )
+      return false
+    }
+    // Signal caller to do a GET to confirm 404 (socket stays open)
+    return true
+  }
+
+  if (eventType === 'ERROR') {
+    if (object?.code === 410) {
+      // 410 Gone — watch expired; clear resourceVersion so reconnect starts fresh
+      store.setResult(requestPath, storedData, currentEntry?.loaded ?? true, currentEntry?.loadError, '')
+    }
+    return false
   }
 
   if (eventType === 'BOOKMARK') {
-    store.setResult(requestPath, storedData, true, undefined, object?.metadata?.resourceVersion)
+    // Update resourceVersion and refresh timestamp, but preserve any existing loadError
+    // (e.g. a 404 should not be cleared just because the watch connection sent a bookmark)
+    store.setResult(
+      requestPath,
+      storedData,
+      currentEntry?.loaded ?? true,
+      currentEntry?.loadError,
+      object?.metadata?.resourceVersion
+    )
   }
 
   if (eventType !== 'ADDED' && eventType !== 'MODIFIED') {
-    return
+    return false
   }
   if (!object?.metadata?.uid) {
     console.warn('Event object does not have a metadata.uid', eventDataParsed)
-    return
+    return false
   }
 
-  const objectExists = storedData.some((i) => i.metadata?.uid === object?.metadata?.uid)
+  const addOrReplaceObject = Array.isArray(storedData) ? storedData.some(uidMatches) : true
 
-  if (objectExists && eventType === 'MODIFIED') {
-    const updatedData = storedData.map((i) => (i.metadata?.uid === object?.metadata?.uid ? { cluster, ...object } : i))
+  if (addOrReplaceObject) {
+    const objectWithCluster = { cluster, ...object }
+    const updatedData = Array.isArray(storedData)
+      ? storedData.map((i) => (uidMatches(i) ? objectWithCluster : i))
+      : objectWithCluster
     store.setResult(requestPath, updatedData, true)
-    return
+    return false
   }
 
-  if (!objectExists) {
+  if (!addOrReplaceObject && Array.isArray(storedData)) {
     const updatedData = [...storedData, { cluster, ...(object as K8sResourceCommon) }] as R
     store.setResult(requestPath, updatedData, true)
   }
+  return false
 }

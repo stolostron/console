@@ -158,7 +158,7 @@ describe('getModelDecorations', () => {
     expect(getModelDecorations(editor, false)).toHaveLength(1)
   })
 
-  it('keeps squiggly, yaml highlight, line decorations, and glyph margin except protected when no errors', () => {
+  it('keeps squiggly, yaml highlight, status decorations, line decorations, and glyph margin except protected when no errors', () => {
     const decorations = [
       { range, options: { className: 'squiggly-error' } },
       { range, options: { className: 'syncEditorYamlHighlight' } },
@@ -166,13 +166,14 @@ describe('getModelDecorations', () => {
       { range, options: { className: 'customLineDecoration' } },
       { range, options: { glyphMarginClassName: 'errorDecoration', inlineClassName: 'other' } },
       { range, options: { inlineClassName: 'protectedDecoration' } },
+      { range, options: { inlineClassName: 'statusConditionSuccess' } },
     ]
     const editor = {
       getModel: () => ({
         getAllDecorations: () => decorations,
       }),
     } as unknown as editorTypes.IStandaloneCodeEditor
-    expect(getModelDecorations(editor, false)).toHaveLength(5)
+    expect(getModelDecorations(editor, false)).toHaveLength(6)
   })
 
   it('does not match standalone protected inline (filter requires squiggly, lines, highlight, or glyph rule)', () => {

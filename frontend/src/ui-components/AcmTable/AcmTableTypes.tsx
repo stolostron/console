@@ -183,6 +183,7 @@ export type CurrentFilters<S> = {
 }
 
 export type AcmTableProps<T> = {
+  'aria-label': string
   addSubRows?: (item: T) => IRow[] | undefined
   additionalToolbarItems?: ReactNode
   advancedFilters?: ITableAdvancedFilter<T>[]

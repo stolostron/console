@@ -42,7 +42,7 @@ const config: Config.InitialOptions = {
     '\\.(css|less|scss)$': '<rootDir>/jest-raw-loader.js',
   },
   transformIgnorePatterns: [
-    'node_modules/(?!d3*|internmap|robust-predicates|react-monaco-editor|@openshift-assisted|lodash-es|@patternfly/react-tokens|@patternfly/react-icons|@patternfly/react-user-feedback|@patternfly/react-icons|@patternfly-labs/react-form-wizard|@juggle/resize-observer|@react-hook/*|uuid|@openshift-console/dynamic-plugin-sdk*|screenfull|cidr-tools|cidr-regex|is-cidr|ip-bigint)',
+    'node_modules/(?!d3*|internmap|robust-predicates|react-monaco-editor|@openshift-assisted|lodash-es|@patternfly/react-tokens|@patternfly/react-icons|@patternfly/react-user-feedback|@patternfly/react-icons|@patternfly-labs/react-form-wizard|@juggle/resize-observer|@react-hook/*|uuid|@openshift-console/dynamic-plugin-sdk*|screenfull|cidr-tools|cidr-regex|is-cidr|ip-bigint|sanitize-html|htmlparser2|dom-serializer|domhandler|domutils|domelementtype|entities)',
   ],
   testPathIgnorePatterns: ['^.+\\.(fixtures?)\\.tsx?$'],
   modulePathIgnorePatterns: ['<rootDir>/plugins'],

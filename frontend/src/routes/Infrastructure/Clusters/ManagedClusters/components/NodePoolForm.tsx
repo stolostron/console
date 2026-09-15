@@ -562,6 +562,7 @@ export function NodePoolForm(props: {
         <Fragment>
           <AcmAlert isInline noClose variant="danger" title={t('there.were.errors')} />
           <AcmTable
+            aria-label={t('Node pool errors table')}
             items={resourceErrors}
             emptyState={undefined} // only shown when resourceErrors.length > 0
             columns={[

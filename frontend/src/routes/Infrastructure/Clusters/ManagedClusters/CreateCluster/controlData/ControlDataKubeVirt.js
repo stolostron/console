@@ -33,7 +33,9 @@ const OperatorAlert = ({ localCluster, t }) => {
     <Alert style={{ marginBottom: '1rem' }} isInline variant={'danger'} title={t('Operator required')}>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         <span style={{ margin: '0.5rem 0' }}>
-          {t('OpenShift Virtualization operator is required to create a cluster.')}
+          {t(
+            'OpenShift Virtualization operator is required to create a cluster when not using external infrastructure.'
+          )}
         </span>
         <AcmButton
           variant="link"

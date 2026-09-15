@@ -149,6 +149,9 @@ spec:
   arch: amd64
   clusterName: '{{{@root.clusterName}}}'
   replicas: {{{this.nodePoolReplica}}}
+  {{#if @root.reconcilePause}}
+  pausedUntil: '{{{@root.reconcilePause}}}'
+  {{/if}}
   management:
     autoRepair: {{#if this.nodePoolAutoRepair}}{{{this.nodePoolAutoRepair}}}{{else}}false{{/if}}
     upgradeType: Replace

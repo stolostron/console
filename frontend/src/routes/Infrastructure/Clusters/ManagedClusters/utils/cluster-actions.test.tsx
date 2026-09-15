@@ -2,7 +2,13 @@
 
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { Provider } from '../../../../../ui-components'
-import { ClusterAction, clusterDestroyable, clusterSupportsAction } from './cluster-actions'
+import {
+  automationCuratorNamespace,
+  automationSecretName,
+  ClusterAction,
+  clusterDestroyable,
+  clusterSupportsAction,
+} from './cluster-actions'
 
 describe('ClusterDestroyable', () => {
   test('hive clusters should return true', () => {
@@ -226,7 +232,7 @@ describe('clusterSupportsAction UpdateAutomationTemplate', () => {
     labels: { cloud: 'aws' },
     kubeApiServer: '',
     consoleURL: '',
-    hasAutomationTemplate: false,
+    hasAutomationTemplate: true,
     hive: { isHibernatable: false, secrets: {} },
     isHive: false,
     isManaged: true,
@@ -255,6 +261,36 @@ describe('clusterSupportsAction UpdateAutomationTemplate', () => {
       }
       expect(clusterSupportsAction(hcpCluster, ClusterAction.UpdateAutomationTemplate)).toBe(true)
     })
+  })
+})
+
+// ACM-41796: Update/Remove automation template actions must resolve the ClusterCurator's real
+// namespace and Secret name for Hosted Control Plane clusters, which share a namespace instead of
+// using a Hive-style namespace-per-cluster layout.
+describe('automation namespace/secret naming (ACM-39253/ACM-41796)', () => {
+  test('automationCuratorNamespace falls back to the cluster name when namespace is unset (Hive-style)', () => {
+    expect(automationCuratorNamespace({ name: 'mycluster' } as Cluster)).toEqual('mycluster')
+    expect(automationCuratorNamespace({ name: 'mycluster', namespace: 'mycluster' } as Cluster)).toEqual('mycluster')
+  })
+
+  test('automationCuratorNamespace resolves the shared hosted namespace for HCP clusters', () => {
+    expect(automationCuratorNamespace({ name: 'hcp-cluster-1', namespace: 'clusters' } as Cluster)).toEqual('clusters')
+  })
+
+  test('automationSecretName is undifferentiated when the namespace matches the cluster name', () => {
+    expect(automationSecretName('install', { name: 'mycluster', namespace: 'mycluster' } as Cluster)).toEqual(
+      'toweraccess-install'
+    )
+    expect(automationSecretName('upgrade', { name: 'mycluster' } as Cluster)).toEqual('toweraccess-upgrade')
+  })
+
+  test('automationSecretName is differentiated by cluster name when the namespace is shared', () => {
+    expect(automationSecretName('install', { name: 'hcp-cluster-1', namespace: 'clusters' } as Cluster)).toEqual(
+      'toweraccess-install-hcp-cluster-1'
+    )
+    expect(automationSecretName('destroy', { name: 'hcp-cluster-2', namespace: 'clusters' } as Cluster)).toEqual(
+      'toweraccess-destroy-hcp-cluster-2'
+    )
   })
 })
 
