@@ -4,6 +4,7 @@ package informers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -336,6 +337,38 @@ func TestStartCacheNil(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	StartCache(ctx, nil, nil, nil)
+}
+
+type staleMapper struct {
+	invalidated atomic.Bool
+	lists       map[string]*metav1.APIResourceList
+}
+
+func (m *staleMapper) ServerResourcesForGroupVersion(gv string) (*metav1.APIResourceList, error) {
+	return nil, fmt.Errorf("stale GroupVersion discovery: %s", gv)
+}
+
+func (m *staleMapper) Invalidate() {
+	m.invalidated.Store(true)
+}
+
+func TestStaleDiscoveryCacheInvalidatedOnRetry(t *testing.T) {
+	mapper := &staleMapper{}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	c := StartSpecs(ctx, nil, mapper, []WatchSpec{watch("Namespace", "v1")})
+	_ = c
+
+	deadline := time.Now().Add(2 * time.Second)
+	for time.Now().Before(deadline) {
+		if mapper.invalidated.Load() {
+			cancel()
+			return
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	cancel()
+	t.Fatal("expected mapper.Invalidate() to be called on stale discovery error")
 }
 
 func TestStartConcurrencyLimitsLists(t *testing.T) {

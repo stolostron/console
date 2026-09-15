@@ -746,9 +746,13 @@ func (h *Handler) apiPaths(w http.ResponseWriter, r *http.Request) {
 	}
 	_, lists, err := h.discovery.ServerGroupsAndResources()
 	if err != nil {
-		applog.Logger().Error("apiPaths discovery failed", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		if discovery.IsGroupDiscoveryFailedError(err) {
+			applog.Logger().Warn("apiPaths: some API groups unavailable, returning partial results", "error", err)
+		} else {
+			applog.Logger().Error("apiPaths discovery failed", "error", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 	}
 	result := make(map[string]map[string]apiResourceMeta)
 	for _, list := range lists {

@@ -106,6 +106,9 @@ func (c *InformerCache) runSpec(ctx context.Context, dyn dynamic.Interface, mapp
 				applog.Logger().Warn("informer GVR resolve failed; retrying",
 					"kind", st.spec.Kind, "apiVersion", st.spec.APIVersion, "error", err)
 			}
+			if inv, ok := mapper.(CacheInvalidator); ok {
+				inv.Invalidate()
+			}
 			if !waitRetry(ctx) {
 				return
 			}

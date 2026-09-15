@@ -17,6 +17,13 @@ type ResourceMapper interface {
 	ServerResourcesForGroupVersion(groupVersion string) (*metav1.APIResourceList, error)
 }
 
+// CacheInvalidator is optionally implemented by a ResourceMapper whose
+// results are cached (e.g. k8s.io/client-go/discovery/cached/memory).
+// Calling Invalidate forces the next lookup to fetch fresh data from the API server.
+type CacheInvalidator interface {
+	Invalidate()
+}
+
 var errKindNotFound = errors.New("kind not found for apiVersion")
 
 // ResolveGVR maps apiVersion and kind using server discovery (not naive pluralize).
