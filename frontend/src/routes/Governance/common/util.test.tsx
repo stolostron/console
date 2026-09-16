@@ -1,10 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 'use strict'
 
-import { hasInformOnlyPolicies, getPolicyRemediation, resolveExternalStatus, parseStringMap } from './util'
+import { hasInformOnlyPolicies, getPolicyRemediation, resolveExternalStatus, parseStringMap, preserveWhitespace, returnCSVSafeString } from './util'
 import { PolicyTableItem } from '../policies/Policies'
 import { Policy, PolicyTemplate, REMEDIATION_ACTION } from '../../../resources'
 import { cloneDeep } from 'lodash'
+import { render } from '@testing-library/react'
 
 describe('Test resolveExternalStatus', () => {
   const mockPolicyWithManagers = (managers: string[]): Policy => {
@@ -899,5 +900,26 @@ describe('Test parseStringValue', () => {
         'cluster-namespace': 'managed3',
       })
     )
+  })
+})
+
+describe('ACM-32500: UI description text should match CSV export for multiline descriptions', () => {
+  const descriptionFromApi =
+    'Policy is placed on hub or managed clusters with label acm-virt-config=acm-dr-virt-config-file-name.\nCreates a velero Schedule for all virtualmachines.kubevirt.io resources with a cluster.open-cluster-management.io/backup-vm label.'
+
+  test('preserveWhitespace textContent should equal CSV export value', () => {
+    const formatted = preserveWhitespace(descriptionFromApi)
+    const { container } = render(<>{formatted}</>)
+    const uiText = container.textContent
+
+    const csvRaw = returnCSVSafeString(descriptionFromApi)
+    const csvText = csvRaw.slice(1, -1).replace(/""/g, '"')
+
+    expect(uiText).toEqual(csvText)
+  })
+
+  test('preserveWhitespace returns undefined for empty input', () => {
+    expect(preserveWhitespace(undefined)).toBeUndefined()
+    expect(preserveWhitespace('')).toBeUndefined()
   })
 })
