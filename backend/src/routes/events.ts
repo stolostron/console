@@ -80,11 +80,6 @@ export function getIsHubSelfManaged() {
   return isHubSelfManaged
 }
 
-let isObservabilityInstalled: boolean = false
-export function getIsObservabilityInstalled() {
-  return isObservabilityInstalled
-}
-
 // because rbac checks are expensive,
 // run them only on the resources requested by the UI
 export async function getAuthorizedResources(
