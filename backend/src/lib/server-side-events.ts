@@ -369,7 +369,6 @@ export class ServerSideEvents {
     const agents: ServerSideEvent<unknown>[] = []
     const infos: ServerSideEvent<unknown>[] = []
     const addons: ServerSideEvent<unknown>[] = []
-    const rbac: ServerSideEvent<unknown>[] = []
     const other: ServerSideEvent<unknown>[] = []
     const remainder: ServerSideEvent<unknown>[] = []
     parts.forEach((event) => {
@@ -395,14 +394,9 @@ export class ServerSideEvents {
         case 'ManagedClusterAddOn':
           addons.push(event)
           break
-        case 'MulticlusterRoleAssignment':
-        case 'User':
-        case 'Group':
-        case 'ClusterRole':
-          rbac.push(event)
-          break
         case 'Search':
         case 'Secret':
+        case 'ClusterPermission':
           other.push(event)
           break
         default:
@@ -422,7 +416,6 @@ export class ServerSideEvents {
     infos.sort(compareFn('namespace'))
     policies.sort(compareFn('name'))
     addons.sort(compareFn('namespace'))
-    rbac.sort(compareFn('name'))
 
     // send packets of resources
     // with resources that fill main console pages first
@@ -434,20 +427,11 @@ export class ServerSideEvents {
       sending.push(...infos.splice(0, 200))
       sending.push(...policies.splice(0, 200))
       sending.push(...addons.splice(0, 400))
-      sending.push(...rbac.splice(0, 200))
       sending.push(...other.splice(0, 100))
 
       // EOP tells browser (LoadData) to process and recoil resources that have been sent so far
       sending.push({ id: '999999', data: { type: 'EOP' } }) // END OF PACKET
-    } while (
-      clusters.length ||
-      policies.length ||
-      addons.length ||
-      infos.length ||
-      agents.length ||
-      rbac.length ||
-      other.length
-    )
+    } while (clusters.length || policies.length || addons.length || infos.length || agents.length)
 
     // send the remaining resources
     do {
