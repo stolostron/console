@@ -163,13 +163,6 @@ export function getEventCache() {
   return resourceCache
 }
 
-/** Clear all cached resources. Used for test isolation. */
-export function resetResourceCache() {
-  for (const key in resourceCache) {
-    delete resourceCache[key]
-  }
-}
-
 const eventDict = createDictionary()
 export function getEventDict() {
   return eventDict
