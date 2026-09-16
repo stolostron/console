@@ -33,12 +33,8 @@ describe('LoadPluginData', () => {
     expect(screen.getByText('Loading')).toBeInTheDocument()
   })
 
-  it('fast-loads /multicloud when loadStarted without waiting for loadCompleted', () => {
-    renderWithContext(
-      { loadCompleted: false, loadStarted: true },
-      'Page Content',
-      NavigationPath.emptyPath + '/multicloud'
-    )
+  it('fast-loads /multicloud/home when loadStarted without waiting for loadCompleted', () => {
+    renderWithContext({ loadCompleted: false, loadStarted: true }, 'Page Content', NavigationPath.home)
     expect(screen.getByText('Page Content')).toBeInTheDocument()
   })
 
