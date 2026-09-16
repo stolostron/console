@@ -468,7 +468,7 @@
   "Allow privilege escalation": "권한 에스컬레이션 허용",
   "Allow privileged container": "권한있는 컨테이너 허용",
   "Allowed Cluster Service Versions": "허용되는 클러스터 서비스 버전",
-  "Allows your application to be placed on clusters with specific taints. Example: To deploy on GPU clusters, add a toleration with key=gpu, operator=Equal, value=nvidia, effect=NoSelect": "애플리케이션을 특정 테인트가 있는 클러스터에 배치할 수 있도록 합니다. 예시: GPU 클러스터에 배포하려면 key=gpu, operator=Equal, value=nvidia, effect=NoSelect인 허용 조건을 추가",
+  "Allows your application to be placed on clusters with specific taints. Example: To deploy on GPU clusters, add a toleration with key=gpu, operator=Equal, value=nvidia, effect=NoSelect": "애플리케이션을 특정 테인트가 있는 클러스터에 배치할 수 있도록 합니다. 예시: GPU 클러스터에 배포하려면 키=gpu, operator=동일, 값=nvidia, 효과=NoSelect인 허용 조건을 추가",
   "Already enforcing": "이미 강제 실행",
   "Already informing": "이미 알림 중",
   "Amazon Web Services": "Amazon Web Services",
