@@ -21,7 +21,6 @@ import {
   getEventCache,
   getHubClusterName,
   getIsHubSelfManaged,
-  getIsObservabilityInstalled,
   createSplitStream,
   errorToString,
   createWatchEventProcessor,
@@ -171,7 +170,6 @@ describe('events Route', () => {
           delete events[key]
         }
       }
-
     })
 
     it('should cache a new resource', async () => {
@@ -287,58 +285,6 @@ describe('events Route', () => {
       await cacheResource(remoteCluster)
 
       expect(getHubClusterName()).toBe(initialHubName)
-    })
-
-    it('should set observability flag when caching observability-controller addon', async () => {
-      const observabilityAddon: IResource = {
-        kind: 'ManagedClusterAddOn',
-        apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-        metadata: {
-          name: 'observability-controller',
-          namespace: 'local-cluster',
-          uid: 'obs-addon-uid',
-          resourceVersion: '1',
-        },
-      }
-
-      await cacheResource(observabilityAddon)
-
-      expect(getIsObservabilityInstalled()).toBe(true)
-    })
-
-    it('should set observability flag when caching multicluster-observability-addon', async () => {
-      const observabilityAddon: IResource = {
-        kind: 'ManagedClusterAddOn',
-        apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-        metadata: {
-          name: 'multicluster-observability-addon',
-          namespace: 'local-cluster',
-          uid: 'mco-addon-uid',
-          resourceVersion: '1',
-        },
-      }
-
-      await cacheResource(observabilityAddon)
-
-      expect(getIsObservabilityInstalled()).toBe(true)
-    })
-
-    it('should not set observability flag for other addons', async () => {
-      const otherAddon: IResource = {
-        kind: 'ManagedClusterAddOn',
-        apiVersion: 'addon.open-cluster-management.io/v1alpha1',
-        metadata: {
-          name: 'other-addon',
-          namespace: 'local-cluster',
-          uid: 'other-addon-uid',
-          resourceVersion: '1',
-        },
-      }
-
-      const initialObsFlag = getIsObservabilityInstalled()
-      await cacheResource(otherAddon)
-
-      expect(getIsObservabilityInstalled()).toBe(initialObsFlag)
     })
 
     it('should avoid race condition when caching same resource concurrently', async () => {
@@ -583,10 +529,6 @@ describe('events Route', () => {
 
     it('getIsHubSelfManaged should return boolean', () => {
       expect(typeof getIsHubSelfManaged()).toBe('boolean')
-    })
-
-    it('getIsObservabilityInstalled should return boolean', () => {
-      expect(typeof getIsObservabilityInstalled()).toBe('boolean')
     })
   })
 
