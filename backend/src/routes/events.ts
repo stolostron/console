@@ -71,11 +71,6 @@ export function getHubClusterName() {
   return hubClusterName
 }
 
-/** Reset hub cluster name to default. Used for test isolation. */
-export function resetHubClusterName() {
-  hubClusterName = 'local-cluster'
-}
-
 let isHubSelfManaged: boolean = false
 export function getIsHubSelfManaged() {
   return isHubSelfManaged
