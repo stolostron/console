@@ -161,7 +161,6 @@ describe('events Route', () => {
           delete events[key]
         }
       }
-
     })
 
     it('should cache a new resource', async () => {
