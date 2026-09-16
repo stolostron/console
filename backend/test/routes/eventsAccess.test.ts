@@ -278,32 +278,24 @@ describe('eventsAccess', () => {
       expect(await canGetResource(managedCluster('acm39327-mc-01'), 'cluster-admin-token')).toBe(false)
     })
 
-    it('should confirm named cluster-scoped resources with SSAR before allowing access', async () => {
+    it('should allow named resources from SSRR allow-names without SSAR', async () => {
       nockRulesReview(() => namedManagedClusterRule('allowed-cluster'))
-      const ssarScope = nockSsarGet(
-        (attrs) =>
-          attrs.group === 'cluster.open-cluster-management.io' &&
-          attrs.resource === 'managedclusters' &&
-          attrs.name === 'allowed-cluster',
-        true
-      )
+      const ssarScope = nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
+        .reply(200, { status: { allowed: true } })
 
       expect(await canGetResource(managedCluster('allowed-cluster'), 'partial-user-token')).toBe(true)
-      expect(ssarScope.isDone()).toBe(true)
+      expect(ssarScope.isDone()).toBe(false)
     })
 
-    it('should deny non-matching names from cluster-scoped allow-names without trusting SSRR alone', async () => {
+    it('should deny non-matching names from SSRR allow-names', async () => {
       nockRulesReview(() => namedManagedClusterRule('allowed-cluster'))
-      const ssarScope = nockSsarGet(
-        (attrs) =>
-          attrs.group === 'cluster.open-cluster-management.io' &&
-          attrs.resource === 'managedclusters' &&
-          attrs.name === 'other-cluster',
-        false
-      )
+      const ssarScope = nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
+        .reply(200, { status: { allowed: true } })
 
       expect(await canGetResource(managedCluster('other-cluster'), 'partial-user-token')).toBe(false)
-      expect(ssarScope.isDone()).toBe(true)
+      expect(ssarScope.isDone()).toBe(false)
     })
 
     it('should allow namespaced resources when rules grant unrestricted get/list/watch in that namespace', async () => {
@@ -320,7 +312,7 @@ describe('eventsAccess', () => {
       expect(ssarScope.isDone()).toBe(false)
     })
 
-    it('should confirm cluster-scoped allow-all with SSAR so default RoleBindings are not treated as cluster access', async () => {
+    it('should allow allow-all from SSRR in the probe namespace without SSAR', async () => {
       nockRulesReview(() => ({
         incomplete: false,
         resourceRules: [
@@ -331,11 +323,12 @@ describe('eventsAccess', () => {
           },
         ],
       }))
-      nock(apiUrl())
+      const ssarScope = nock(apiUrl())
         .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
         .reply(200, { status: { allowed: false } })
 
-      expect(await canGetResource(managedCluster('any-cluster'), 'default-role-token')).toBe(false)
+      expect(await canGetResource(managedCluster('any-cluster'), 'default-role-token')).toBe(true)
+      expect(ssarScope.isDone()).toBe(false)
     })
 
     it('should reuse kind access across API versions of the same group', async () => {
@@ -423,12 +416,8 @@ describe('eventsAccess', () => {
     })
   })
 
-  /**
-   * TDD: middle-ground security — SSRR deny-all short-circuit only; any non-deny cluster-scoped
-   * result must be confirmed with SSAR. Implementation pending in eventsAccess.ts.
-   */
-  describe('cluster-scoped SSRR middle-ground security (TDD)', () => {
-    it('should deny allow-names from a default RoleBinding when SSAR get is false (Kevin)', async () => {
+  describe('SSRR allow-all and allow-names without cluster-scoped SSAR confirmation', () => {
+    it('should trust allow-names from a default RoleBinding without SSAR (Kevin)', async () => {
       nockRulesReview(() => namedManagedClusterRule('acm39327-mc-02'))
       const ssarScope = nockSsarGet(
         (attrs) =>
@@ -438,11 +427,11 @@ describe('eventsAccess', () => {
         false
       )
 
-      expect(await canGetResource(managedCluster('acm39327-mc-02'), 'user1-token')).toBe(false)
-      expect(ssarScope.isDone()).toBe(true)
+      expect(await canGetResource(managedCluster('acm39327-mc-02'), 'user1-token')).toBe(true)
+      expect(ssarScope.isDone()).toBe(false)
     })
 
-    it('should allow allow-names only when SSAR get confirms a real ClusterRoleBinding grant', async () => {
+    it('should allow allow-names from SSRR without SSAR confirmation', async () => {
       nockRulesReview(() => namedManagedClusterRule('allowed-cluster'))
       const ssarScope = nockSsarGet(
         (attrs) =>
@@ -453,10 +442,10 @@ describe('eventsAccess', () => {
       )
 
       expect(await canGetResource(managedCluster('allowed-cluster'), 'clusterrole-user-token')).toBe(true)
-      expect(ssarScope.isDone()).toBe(true)
+      expect(ssarScope.isDone()).toBe(false)
     })
 
-    it('should confirm cluster-scoped allow-all with SSAR and deny when SSAR rejects', async () => {
+    it('should allow allow-all from SSRR without SSAR confirmation', async () => {
       nockRulesReview(() => ({
         incomplete: false,
         resourceRules: [
@@ -472,11 +461,11 @@ describe('eventsAccess', () => {
         false
       )
 
-      expect(await canGetResource(managedCluster('any-cluster'), 'default-role-token')).toBe(false)
-      expect(ssarScope.isDone()).toBe(true)
+      expect(await canGetResource(managedCluster('any-cluster'), 'default-role-token')).toBe(true)
+      expect(ssarScope.isDone()).toBe(false)
     })
 
-    it('should not trust allow-names on ManagedCluster when metadata.namespace is set without SSAR confirmation', async () => {
+    it('should trust allow-names on ManagedCluster when metadata.namespace matches the SSRR namespace', async () => {
       nock(apiUrl())
         .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews', (body: unknown) => {
           return rulesReviewNamespace(body) === 'default'
@@ -499,11 +488,11 @@ describe('eventsAccess', () => {
           },
           'user1-token'
         )
-      ).toBe(false)
-      expect(ssarScope.isDone()).toBe(true)
+      ).toBe(true)
+      expect(ssarScope.isDone()).toBe(false)
     })
 
-    it('should treat SSRR evaluationError as incomplete and confirm cluster-scoped access with SSAR', async () => {
+    it('should treat SSRR evaluationError as incomplete and confirm access with SSAR', async () => {
       nockRulesReviewStatus(() => ({
         incomplete: false,
         evaluationError: 'webhook authorizer does not support user rule resolution',
@@ -521,7 +510,7 @@ describe('eventsAccess', () => {
       expect(ssarScope.isDone()).toBe(true)
     })
 
-    it('should confirm any non-deny-all cluster-scoped SSRR result with SSAR, not applyKindGetAccess alone', async () => {
+    it('should apply allow-names from incomplete SSRR without SSAR when names match', async () => {
       nockRulesReview(() => ({
         incomplete: true,
         resourceRules: [
@@ -541,8 +530,8 @@ describe('eventsAccess', () => {
         false
       )
 
-      expect(await canGetResource(managedCluster('cluster-1'), 'incomplete-named-token')).toBe(false)
-      expect(ssarScope.isDone()).toBe(true)
+      expect(await canGetResource(managedCluster('cluster-1'), 'incomplete-named-token')).toBe(true)
+      expect(ssarScope.isDone()).toBe(false)
     })
   })
 
@@ -654,7 +643,7 @@ describe('eventsAccess', () => {
       expect(await canGetResource(placement('other-ns', 'p-other'), 'placement-token')).toBe(false)
     })
 
-    it('should confirm StorageClass cluster-scoped grants with SSAR', async () => {
+    it('should allow StorageClass grants from SSRR allow-all without SSAR', async () => {
       nockRulesReview(() => ({
         incomplete: false,
         resourceRules: [
@@ -671,7 +660,7 @@ describe('eventsAccess', () => {
       )
 
       expect(await canGetResource(storageClass('sc-1'), 'storage-class-token')).toBe(true)
-      expect(ssarScope.isDone()).toBe(true)
+      expect(ssarScope.isDone()).toBe(false)
     })
 
     it('should retry SelfSubjectRulesReview after an unavailable review', async () => {
