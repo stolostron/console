@@ -641,7 +641,7 @@ export async function cacheResource(resource: IResource) {
     const latestExisting = cache[uid]
     if (latestExisting === existing) {
       // if no other cacheResource call updated the cache while we were awaiting, we can replace the cache entry and event
-      if (eventID > 0) ServerSideEvents.removeEvent(eventID)
+      ServerSideEvents.removeEvent(eventID)
       break
     }
     // if a deleteResource ran while we were awaiting, we will exit the loop because the resource is no longer existing
@@ -675,7 +675,7 @@ export async function cacheResource(resource: IResource) {
     (resource.metadata?.name === 'observability-controller' ||
       resource.metadata?.name == 'multicluster-observability-addon')
   ) {
-    isObservabilityInstalled = true
+      isObservabilityInstalled = true
   }
 }
 
@@ -687,10 +687,7 @@ async function deleteResource(resource: IResource) {
   const uid = resource.metadata.uid
 
   const existing = cache[uid]
-  if (existing) {
-    const eventID = await existing.eventID
-    if (eventID > 0) ServerSideEvents.removeEvent(eventID)
-  }
+  if (existing) ServerSideEvents.removeEvent(await existing.eventID)
 
   const deletedID = await ServerSideEvents.pushEvent({
     data: {
