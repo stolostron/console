@@ -67,12 +67,13 @@ export const FLAP_THRESHOLD = Number(process.env.FLAP_THRESHOLD) || 5 // N: upda
 export const FLAP_WINDOW_MS = Number(process.env.FLAP_WINDOW_MS) || 60 * 1000 // M: sliding window for counting calls
 export const FLAP_COOLDOWN_MS = Number(process.env.FLAP_COOLDOWN_MS) || 60 * 1000 // P: min interval between allowed updates; silence to exit
 export const FLAP_SETTLING_MS = Number(process.env.FLAP_SETTLING_MS) || 60 * 1000 // S: grace period before marking resource.throttled
+const FLAP_TRACKER_TTL_MS = 12 * 60 * 60 * 1000 // drop tracker entry 12h after resource first seen (emerged)
 const THROTTLING_CHECK_INTERVAL = Number(process.env.THROTTLING_CHECK_INTERVAL) || 60 * 1000
 
 interface FlapTrackerEntry {
   timestamps: number[]
   lastCachedAt: number
-  settling: number
+  emerged: number
   throttled?: boolean
   lastSpec?: string
   resource?: string
@@ -127,7 +128,7 @@ export function shouldThrottleResource(resource: IResource, now = Date.now()): b
     entry = {
       timestamps: [],
       lastCachedAt: 0,
-      settling: now,
+      emerged: now,
     }
     flapTracker[key] = entry
   }
@@ -146,7 +147,7 @@ export function shouldThrottleResource(resource: IResource, now = Date.now()): b
     if (entry.timestamps.length > FLAP_THRESHOLD) {
       // when a resource is first created, it might flap at first
       // so allow a settling time before actually throttling
-      if (now - entry.settling > FLAP_SETTLING_MS) {
+      if (now - entry.emerged > FLAP_SETTLING_MS) {
         if (!entry.throttled) {
           logger.warn({
             msg: formatFlappingMessage(
@@ -186,8 +187,15 @@ export function shouldThrottleResource(resource: IResource, now = Date.now()): b
 let monitoringThrottledTimer: NodeJS.Timeout | undefined
 
 export async function checkThrottleStatus(now = Date.now()): Promise<void> {
-  const throttledEntries = Object.values(flapTracker).filter((e) => e.throttled)
-  for (const entry of throttledEntries) {
+  for (const key of Object.keys(flapTracker)) {
+    const entry = flapTracker[key]
+    if (now - entry.emerged > FLAP_TRACKER_TTL_MS) {
+      delete flapTracker[key]
+      continue
+    }
+    if (!entry.throttled) {
+      continue
+    }
     if (entry.timestamps.length > 0) {
       const lastCall = entry.timestamps[entry.timestamps.length - 1]
       if (now - lastCall > FLAP_COOLDOWN_MS) {
