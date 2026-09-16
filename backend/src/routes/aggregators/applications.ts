@@ -10,13 +10,13 @@ import { addArgoQueryInputs, cacheArgoApplications } from './applicationsArgo'
 import { getGiganticApps } from '../../lib/gigantic'
 
 export enum AppColumns {
-  'name' = 0,
-  'type',
-  'namespace',
-  'clusters',
-  'repo',
-  'timeWindow',
-  'created',
+  name = 0,
+  type,
+  namespace,
+  clusters,
+  repo,
+  timeWindow,
+  created,
 }
 export interface IArgoApplication extends IResource {
   cluster?: string
