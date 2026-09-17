@@ -909,10 +909,7 @@ describe('ACM-32500: returnCSVSafeString preserves newlines in CSV export', () =
 
   test('returnCSVSafeString preserves newlines', () => {
     const csvRaw = returnCSVSafeString(descriptionFromApi)
-    const unquoted = csvRaw.slice(1, -1).replace(/""/g, '"')
-
-    expect(unquoted).toContain('\n')
-    expect(unquoted).toEqual(descriptionFromApi)
+    expect(csvRaw).toBe(`"${descriptionFromApi}"`)
   })
 
   test('returnCSVSafeString escapes double quotes', () => {
@@ -920,6 +917,15 @@ describe('ACM-32500: returnCSVSafeString preserves newlines in CSV export', () =
     const result = returnCSVSafeString(stringWithQuotes)
 
     expect(result).toBe('"Description with ""quoted"" text"')
+  })
+
+  test('returnCSVSafeString preserves newlines and escapes quotes', () => {
+    const multilineWithQuotes = 'Line "1"\nLine "2"'
+    const csvRaw = returnCSVSafeString(multilineWithQuotes)
+    const unquoted = csvRaw.slice(1, -1).replace(/""/g, '"')
+
+    expect(unquoted).toEqual(multilineWithQuotes)
+    expect(csvRaw).toBe('"Line ""1""\nLine ""2"""')
   })
 
   test('returnCSVSafeString handles number input', () => {
