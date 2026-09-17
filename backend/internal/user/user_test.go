@@ -5,6 +5,7 @@ package user_test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -14,6 +15,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic/fake"
 	"k8s.io/client-go/rest"
+	ktesting "k8s.io/client-go/testing"
 
 	"github.com/stolostron/console/backend/internal/auth"
 	"github.com/stolostron/console/backend/internal/user"
@@ -153,5 +155,101 @@ func TestUserPreferenceGet_Existing(t *testing.T) {
 	}
 	if got["kind"] != "UserPreference" {
 		t.Fatalf("got %#v", got)
+	}
+}
+
+func userPrefClient(objs ...runtime.Object) *fake.FakeDynamicClient {
+	return fake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), map[schema.GroupVersionResource]string{
+		{Group: "console.open-cluster-management.io", Version: "v1", Resource: "userpreferences"}: "UserPreferenceList",
+	}, objs...)
+}
+
+func TestUserPreferenceEmptyUsername500(t *testing.T) {
+	_, base := apiProbeServer(t)
+	h := user.New(user.Options{
+		RESTConfig: base,
+		Reviewer:   stubReviewer{result: auth.TokenReviewResult{Authenticated: true}},
+		Dynamic:    userPrefClient(),
+	})
+	req := httptest.NewRequest(http.MethodGet, "/userpreference", nil)
+	req.Header.Set("Authorization", "Bearer good")
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusInternalServerError {
+		t.Fatalf("status %d", rec.Code)
+	}
+	if rec.Body.String() != "null" {
+		t.Fatalf("body %q", rec.Body.String())
+	}
+}
+
+func TestUserPreferenceUnauthenticatedUsername401(t *testing.T) {
+	_, base := apiProbeServer(t)
+	h := user.New(user.Options{
+		RESTConfig: base,
+		Reviewer:   stubReviewer{result: auth.TokenReviewResult{Authenticated: false}},
+		Dynamic:    userPrefClient(),
+	})
+	req := httptest.NewRequest(http.MethodGet, "/userpreference", nil)
+	req.Header.Set("Authorization", "Bearer good")
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("status %d", rec.Code)
+	}
+	if rec.Body.String() != "null" {
+		t.Fatalf("body %q", rec.Body.String())
+	}
+}
+
+func TestUserPreferenceGet_APIError500(t *testing.T) {
+	_, base := apiProbeServer(t)
+	client := userPrefClient()
+	client.PrependReactor("get", "userpreferences", func(ktesting.Action) (bool, runtime.Object, error) {
+		return true, nil, fmt.Errorf("boom")
+	})
+	h := user.New(user.Options{
+		RESTConfig: base,
+		Reviewer: stubReviewer{result: auth.TokenReviewResult{
+			Authenticated: true,
+			Username:      "kube:admin",
+		}},
+		Dynamic: client,
+	})
+	req := httptest.NewRequest(http.MethodGet, "/userpreference", nil)
+	req.Header.Set("Authorization", "Bearer good")
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusInternalServerError {
+		t.Fatalf("status %d", rec.Code)
+	}
+	if rec.Body.String() != "null" {
+		t.Fatalf("body %q", rec.Body.String())
+	}
+}
+
+func TestUserPreferencePost_CreateError500(t *testing.T) {
+	_, base := apiProbeServer(t)
+	client := userPrefClient()
+	client.PrependReactor("create", "userpreferences", func(ktesting.Action) (bool, runtime.Object, error) {
+		return true, nil, fmt.Errorf("denied")
+	})
+	h := user.New(user.Options{
+		RESTConfig: base,
+		Reviewer: stubReviewer{result: auth.TokenReviewResult{
+			Authenticated: true,
+			Username:      "kube:admin",
+		}},
+		Dynamic: client,
+	})
+	req := httptest.NewRequest(http.MethodPost, "/userpreference", nil)
+	req.Header.Set("Authorization", "Bearer good")
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusInternalServerError {
+		t.Fatalf("status %d", rec.Code)
+	}
+	if rec.Body.String() != "null" {
+		t.Fatalf("body %q", rec.Body.String())
 	}
 }

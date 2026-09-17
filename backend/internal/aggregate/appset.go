@@ -108,7 +108,7 @@ func incStatusCounts(m map[string]map[string]int, id string, item App, index int
 		m[id] = inner
 	}
 	typ := item.Transform.Type
-	if (index == colHealth || index == colSynced) && (typ == kindAppSet || typ == kindArgo) {
+	if (index == colHealth || index == colSynced || index == colDeployed) && (typ == kindAppSet || typ == kindArgo) {
 		if len(item.Transform.Statuses) == 0 {
 			return
 		}

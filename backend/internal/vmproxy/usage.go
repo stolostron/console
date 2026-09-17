@@ -5,9 +5,11 @@ package vmproxy
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"math"
 	"net/http"
+	"net/url"
 	"strings"
 
 	applog "github.com/stolostron/console/backend/internal/log"
@@ -121,9 +123,11 @@ func parseUsagePath(path string) (cluster, namespace string, ok bool) {
 }
 
 func (h *Handler) aggregateUsage(ctx context.Context, base, cluster, namespace, token string) (*usageResponse, error) {
-	label := "kubevirt.io=virt-launcher"
-	metricsURL := base + "/" + cluster + "/apis/metrics.k8s.io/v1beta1/namespaces/" + namespace + "/pods?labelSelector=" + label
-	podsURL := base + "/" + cluster + "/api/v1/namespaces/" + namespace + "/pods?labelSelector=" + label
+	query := "?" + url.Values{"labelSelector": {"kubevirt.io=virt-launcher"}}.Encode()
+	c := url.PathEscape(cluster)
+	ns := url.PathEscape(namespace)
+	metricsURL := base + "/" + c + "/apis/metrics.k8s.io/v1beta1/namespaces/" + ns + "/pods" + query
+	podsURL := base + "/" + c + "/api/v1/namespaces/" + ns + "/pods" + query
 
 	var metrics podMetricsList
 	var pods podListType
@@ -182,7 +186,7 @@ func (h *Handler) singleVmiUsage(ctx context.Context, base, cluster, namespace, 
 		podMem += convertKibibytesToMebibytes(c.Usage.Memory)
 	}
 
-	fsURL := base + "/" + cluster + "/apis/subresources.kubevirt.io/v1/namespaces/" + namespace + "/virtualmachineinstances/" + vmiName + "/filesystemlist"
+	fsURL := base + "/" + url.PathEscape(cluster) + "/apis/subresources.kubevirt.io/v1/namespaces/" + url.PathEscape(namespace) + "/virtualmachineinstances/" + url.PathEscape(vmiName) + "/filesystemlist"
 	var fs filesystemType
 	if err := h.getJSON(ctx, fsURL, token, &fs); err != nil {
 		return nil, err
@@ -230,6 +234,9 @@ func (h *Handler) getJSON(ctx context.Context, rawURL, token string, dest any) e
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
+	}
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return fmt.Errorf("upstream returned status %d", resp.StatusCode)
 	}
 	return json.Unmarshal(body, dest)
 }

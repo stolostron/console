@@ -31,7 +31,7 @@ type Query struct {
 // Input is one Search API input block.
 type Input struct {
 	Filters      []Filter `json:"filters"`
-	RelatedKinds []string  `json:"relatedKinds,omitempty"`
+	RelatedKinds []string `json:"relatedKinds,omitempty"`
 	Limit        int      `json:"limit"`
 }
 
@@ -128,6 +128,9 @@ func (c *Client) post(ctx context.Context, timeout time.Duration, body any) (*Re
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
+	}
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return nil, fmt.Errorf("upstream returned status %d", resp.StatusCode)
 	}
 	var out Response
 	if err := json.Unmarshal(data, &out); err != nil {

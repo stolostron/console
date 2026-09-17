@@ -134,6 +134,17 @@ func TestListForwardedSkipsCacheOnlyAndPolled(t *testing.T) {
 	if len(got) != 1 || got[0].Object.GetKind() != "Namespace" || got[0].Object.GetName() != "default" {
 		t.Fatalf("%+v", got)
 	}
+
+	refs := c.ListForwardedRefs()
+	if len(refs) != 1 || refs[0].Kind != "Namespace" || refs[0].Object == nil {
+		t.Fatalf("refs %+v", refs)
+	}
+	refs[0].Object.Object["mutated"] = true
+	copied := refs[0].Copy()
+	refs[0].Object.Object["mutated"] = "again"
+	if copied.Object.Object["mutated"] != true {
+		t.Fatal("Copy must DeepCopyJSON")
+	}
 }
 
 func TestSetSinkNilCache(t *testing.T) {

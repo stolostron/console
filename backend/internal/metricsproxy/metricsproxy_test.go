@@ -28,8 +28,9 @@ func newTestHandler(t *testing.T, prefix string, upstream http.Handler) http.Han
 }
 
 func TestUnauthorizedWithoutToken(t *testing.T) {
+	var called bool
 	h := newTestHandler(t, "/prometheus", http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
-		t.Fatal("upstream should not be called")
+		called = true
 	}))
 	ts := httptest.NewServer(h)
 	t.Cleanup(ts.Close)
@@ -41,6 +42,9 @@ func TestUnauthorizedWithoutToken(t *testing.T) {
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusUnauthorized {
 		t.Fatalf("status %d", resp.StatusCode)
+	}
+	if called {
+		t.Fatal("upstream should not be called")
 	}
 }
 
@@ -108,6 +112,27 @@ func TestObservabilityRewritesToAPIV1(t *testing.T) {
 	}
 	resp.Body.Close()
 	if capturedPath != "/api/v1/query_range" {
+		t.Fatalf("path %q", capturedPath)
+	}
+}
+
+func TestPrometheusReplacesOnlyFirstPrefix(t *testing.T) {
+	var capturedPath string
+	h := newTestHandler(t, "/prometheus", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		capturedPath = r.URL.Path
+		w.WriteHeader(http.StatusOK)
+	}))
+	ts := httptest.NewServer(h)
+	t.Cleanup(ts.Close)
+
+	req, _ := http.NewRequest(http.MethodGet, ts.URL+"/prometheus/prometheus/query", nil)
+	req.Header.Set("Authorization", "Bearer t")
+	resp, err := ts.Client().Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	if capturedPath != "/api/v1/prometheus/query" {
 		t.Fatalf("path %q", capturedPath)
 	}
 }

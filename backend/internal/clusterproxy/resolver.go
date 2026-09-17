@@ -96,27 +96,30 @@ func (r *Resolver) namespace(ctx context.Context) string {
 	if r.haveCache {
 		return r.cachedNS
 	}
-	ns := r.fetchNamespace(ctx)
+	ns, ok := r.fetchNamespace(ctx)
+	if !ok {
+		return DefaultNamespace
+	}
 	r.cachedNS = ns
 	r.haveCache = true
 	return ns
 }
 
-func (r *Resolver) fetchNamespace(ctx context.Context) string {
+func (r *Resolver) fetchNamespace(ctx context.Context) (string, bool) {
 	dc, err := r.dynamicClient()
 	if err != nil {
 		applog.Logger().Error("mce dynamic client", "error", err)
-		return DefaultNamespace
+		return DefaultNamespace, false
 	}
 	ns, err := hubresources.MCETargetNamespace(ctx, dc)
 	if err != nil {
 		applog.Logger().Error("Error getting MultiClusterEngine", "error", err)
-		return DefaultNamespace
+		return DefaultNamespace, false
 	}
 	if ns == "" {
-		return DefaultNamespace
+		return DefaultNamespace, true
 	}
-	return ns
+	return ns, true
 }
 
 func (r *Resolver) dynamicClient() (dynamic.Interface, error) {

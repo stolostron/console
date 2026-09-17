@@ -89,7 +89,10 @@ export function useWatchEventStream({
         console.log('EventSource', 'error', 'readyState', evtSource?.readyState)
         if (streamStoppedRef.current) return
         if (evtSource?.readyState === EventSource.CLOSED) {
+          if (reconnectTimer) return
           reconnectTimer = setTimeout(() => {
+            reconnectTimer = undefined
+            if (streamStoppedRef.current) return
             startWatch()
           }, 1000)
         }

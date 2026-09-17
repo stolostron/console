@@ -293,7 +293,11 @@ func TestSnapshotHandlerJSON(t *testing.T) {
 	c := StartSpecs(ctx, client, mapper, []WatchSpec{watch("Namespace", "v1")})
 	waitSynced(t, c)
 
-	h := NewSnapshotHandler(c, nil)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer srv.Close()
+	h := NewSnapshotHandler(c, &rest.Config{Host: srv.URL})
 	req := httptest.NewRequest(http.MethodGet, "/debug/informer-snapshot", nil)
 	req.Header.Set("Authorization", "Bearer test-token")
 	rec := httptest.NewRecorder()

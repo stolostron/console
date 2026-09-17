@@ -205,6 +205,9 @@ func TestGzipFallbackWhenNoBrotliAccepted(t *testing.T) {
 	if resp.Header.Get("Content-Encoding") != "gzip" {
 		t.Fatalf("encoding %q", resp.Header.Get("Content-Encoding"))
 	}
+	if resp.Header.Get("Vary") != "Accept-Encoding" {
+		t.Fatalf("vary %q", resp.Header.Get("Vary"))
+	}
 	zr, err := gzip.NewReader(resp.Body)
 	if err != nil {
 		t.Fatal(err)
@@ -223,6 +226,9 @@ func TestUncompressedWhenNoAcceptEncoding(t *testing.T) {
 	body, _ := io.ReadAll(resp.Body)
 	if resp.Header.Get("Content-Encoding") != "" {
 		t.Fatalf("encoding %q", resp.Header.Get("Content-Encoding"))
+	}
+	if resp.Header.Get("Vary") != "Accept-Encoding" {
+		t.Fatalf("vary %q", resp.Header.Get("Vary"))
 	}
 	if string(body) != "window.app=1" {
 		t.Fatalf("body %q", body)

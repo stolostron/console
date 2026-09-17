@@ -38,10 +38,10 @@ func TestPostsChunksAndWrapsJSON(t *testing.T) {
 		bodies         []string
 	)
 	insights := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mu.Lock()
 		gotUA = r.Header.Get("User-Agent")
 		gotAuth = r.Header.Get("Authorization")
 		b, _ := io.ReadAll(r.Body)
-		mu.Lock()
 		bodies = append(bodies, string(b))
 		mu.Unlock()
 		w.Header().Set("Content-Type", "application/json")
@@ -71,11 +71,14 @@ func TestPostsChunksAndWrapsJSON(t *testing.T) {
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status %d %s", rec.Code, rec.Body.String())
 	}
-	if gotUA != userAgent {
-		t.Fatalf("ua %q", gotUA)
+	mu.Lock()
+	ua, auth := gotUA, gotAuth
+	mu.Unlock()
+	if ua != userAgent {
+		t.Fatalf("ua %q", ua)
 	}
-	if gotAuth != "Bearer crc-token" {
-		t.Fatalf("auth %q", gotAuth)
+	if auth != "Bearer crc-token" {
+		t.Fatalf("auth %q", auth)
 	}
 	mu.Lock()
 	n := len(bodies)
@@ -220,5 +223,15 @@ func TestChunkIDs(t *testing.T) {
 	}
 	if chunkIDs(nil, 100) != nil {
 		t.Fatal("expected nil")
+	}
+}
+
+func TestMalformedJSON400(t *testing.T) {
+	h := New(Options{Authn: authOK, Client: http.DefaultClient})
+	req := httptest.NewRequest(http.MethodPost, "/upgrade-risks-prediction", strings.NewReader(`{`))
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("status %d", rec.Code)
 	}
 }

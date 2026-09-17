@@ -43,7 +43,7 @@ func New(target *url.URL, tlsConfig *tls.Config, prefix string) http.Handler {
 		Rewrite: func(pr *httputil.ProxyRequest) {
 			token := auth.TokenFromRequest(pr.In)
 			stripped := server.StripMulticloud(pr.In.URL.Path)
-			stripped = strings.ReplaceAll(stripped, prefix, "/api/v1")
+			stripped = strings.Replace(stripped, prefix, "/api/v1", 1)
 			pr.SetURL(target)
 			pr.Out.URL.Path = stripped
 			pr.Out.URL.RawQuery = pr.In.URL.RawQuery

@@ -29,6 +29,17 @@ func TestSnapshotHandlerNoToken(t *testing.T) {
 	}
 }
 
+func TestSnapshotHandlerNilBase(t *testing.T) {
+	h := NewSnapshotHandler(newCache(nil), nil)
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, "/debug/informer-snapshot", nil)
+	req.Header.Set("Authorization", "Bearer test")
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusInternalServerError {
+		t.Fatalf("status %d", rec.Code)
+	}
+}
+
 func TestSnapshotHandlerTokenValidationFails(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusUnauthorized)
@@ -58,7 +69,12 @@ func TestSnapshotHandlerExcludePolled(t *testing.T) {
 	c.states[1].informer = newTestInformer(t, uObj("argoproj.io/v1alpha1", "Application", "ns", "app", "uid-app", nil))
 	c.states[1].synced.Store(true)
 
-	h := NewSnapshotHandler(c, nil)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer srv.Close()
+
+	h := NewSnapshotHandler(c, &rest.Config{Host: srv.URL})
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, "/debug/informer-snapshot?excludePolled=true", nil)
 	req.Header.Set("Authorization", "Bearer test")

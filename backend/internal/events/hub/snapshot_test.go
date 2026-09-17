@@ -3,6 +3,7 @@
 package hub
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -94,5 +95,68 @@ func TestSnapshotEventsShape(t *testing.T) {
 	}
 	if got[2].Type != TypeEOP {
 		t.Fatalf("empty snapshot should EOP before LOADED, got %v", typesOf(got))
+	}
+}
+
+type kindAccess struct {
+	allow string
+}
+
+func (k kindAccess) Allow(_ context.Context, _ string, ev Event) (bool, error) {
+	if ev.Type != TypeModified {
+		return true, nil
+	}
+	kind, _ := ev.Object["kind"].(string)
+	return kind == k.allow, nil
+}
+
+func (kindAccess) Prefetch(context.Context, string, []Event) {}
+
+func TestAuthorizeRefsCopiesOnlyAllowed(t *testing.T) {
+	allowedObj := &unstructured.Unstructured{Object: map[string]any{
+		"apiVersion": "v1", "kind": "ConfigMap",
+		"metadata": map[string]any{"name": "ok", "namespace": "ns"},
+		"data":     map[string]any{"k": "v"},
+	}}
+	deniedObj := &unstructured.Unstructured{Object: map[string]any{
+		"apiVersion": "v1", "kind": "Secret",
+		"metadata": map[string]any{"name": "no", "namespace": "ns"},
+	}}
+	refs := []informers.ForwardedRef{
+		{GVR: schema.GroupVersionResource{Version: "v1", Resource: "configmaps"}, APIVersion: "v1", Kind: "ConfigMap", Name: "ok", Namespace: "ns", Object: allowedObj},
+		{GVR: schema.GroupVersionResource{Version: "v1", Resource: "secrets"}, APIVersion: "v1", Kind: "Secret", Name: "no", Namespace: "ns", Object: deniedObj},
+	}
+
+	var copies int
+	prev := copyRef
+	copyRef = func(ref informers.ForwardedRef) informers.ForwardedObject {
+		copies++
+		return ref.Copy()
+	}
+	t.Cleanup(func() { copyRef = prev })
+
+	got := authorizeRefs(context.Background(), "tok", kindAccess{allow: "ConfigMap"}, refs)
+	if copies != 1 {
+		t.Fatalf("copies %d want 1", copies)
+	}
+	if len(got) != 1 || got[0].Object.GetName() != "ok" {
+		t.Fatalf("%+v", got)
+	}
+	allowedObj.Object["data"] = map[string]any{"k": "mutated"}
+	data, _ := got[0].Object.Object["data"].(map[string]any)
+	if data["k"] != "v" {
+		t.Fatalf("allowed object was not deep-copied: %+v", data)
+	}
+}
+
+func TestAuthorizeRefsSkipsSSARError(t *testing.T) {
+	refs := []informers.ForwardedRef{{
+		GVR:        schema.GroupVersionResource{Version: "v1", Resource: "secrets"},
+		APIVersion: "v1", Kind: "Secret", Name: "s", Namespace: "ns",
+		Object: &unstructured.Unstructured{Object: map[string]any{"kind": "Secret"}},
+	}}
+	got := authorizeRefs(context.Background(), "tok", errAccess{}, refs)
+	if len(got) != 0 {
+		t.Fatalf("ssar error must skip copy, got %+v", got)
 	}
 }

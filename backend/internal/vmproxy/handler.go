@@ -18,8 +18,8 @@ import (
 
 	"github.com/stolostron/console/backend/internal/auth"
 	"github.com/stolostron/console/backend/internal/clusterproxy"
-	"github.com/stolostron/console/backend/internal/outbound"
 	applog "github.com/stolostron/console/backend/internal/log"
+	"github.com/stolostron/console/backend/internal/outbound"
 	"github.com/stolostron/console/backend/internal/server"
 )
 
@@ -129,15 +129,20 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, token, path str
 		return
 	}
 	addonPath := kubeVirtAPI(path, body.VMName, body.VMNamespace, action)
+	if addonPath == "" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
 	url := base + "/" + body.ManagedCluster + addonPath
 
 	if !h.fineGrainedRBAC(r.Context()) {
 		if h.canCreateMCA(r.Context(), token, body.ManagedCluster) {
-			if actor, ok := h.vmActorToken(r.Context(), body.ManagedCluster); ok {
-				token = actor
-			} else {
-				token = ""
+			actor, ok := h.vmActorToken(r.Context(), body.ManagedCluster)
+			if !ok {
+				w.WriteHeader(http.StatusInternalServerError)
+				return
 			}
+			token = actor
 		}
 	}
 

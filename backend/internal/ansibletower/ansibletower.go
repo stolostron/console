@@ -17,8 +17,8 @@ import (
 	"k8s.io/client-go/rest"
 
 	"github.com/stolostron/console/backend/internal/auth"
-	"github.com/stolostron/console/backend/internal/outbound"
 	applog "github.com/stolostron/console/backend/internal/log"
+	"github.com/stolostron/console/backend/internal/outbound"
 )
 
 // Paths is the AAP pathname allowlist (must match frontend ansiblePaths).
@@ -73,7 +73,7 @@ func New(opts Options) *Handler {
 	}
 	if h.Tower == nil {
 		h.Tower = &http.Client{
-			Timeout: 30 * time.Second,
+			Timeout:   30 * time.Second,
 			Transport: outbound.Transport(&tls.Config{InsecureSkipVerify: true}, true), //nolint:gosec // Node rejectUnauthorized: false
 		}
 	}
@@ -159,6 +159,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer func() { _, _ = io.Copy(io.Discard, resp.Body); _ = resp.Body.Close() }()
 	for k, vs := range resp.Header {
+		if skipHopByHopHeader(k) {
+			continue
+		}
 		for _, v := range vs {
 			w.Header().Add(k, v)
 		}
@@ -191,4 +194,14 @@ func allowedPath(path string) bool {
 		}
 	}
 	return false
+}
+
+func skipHopByHopHeader(name string) bool {
+	switch http.CanonicalHeaderKey(name) {
+	case "Connection", "Keep-Alive", "Proxy-Authenticate", "Proxy-Authorization",
+		"Te", "Trailers", "Transfer-Encoding", "Upgrade", "Content-Length":
+		return true
+	default:
+		return false
+	}
 }

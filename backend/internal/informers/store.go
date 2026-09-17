@@ -161,14 +161,35 @@ type ForwardedObject struct {
 	Object unstructured.Unstructured
 }
 
-// ListForwarded returns objects whose WatchSpec fans out to SSE clients.
-func (c *InformerCache) ListForwarded() []ForwardedObject {
+// ForwardedRef is a store pointer plus identity for RBAC before DeepCopyJSON.
+type ForwardedRef struct {
+	GVR        schema.GroupVersionResource
+	APIVersion string
+	Kind       string
+	Name       string
+	Namespace  string
+	Object     *unstructured.Unstructured
+}
+
+// Copy deep-copies the store object for SSE encoding.
+func (r ForwardedRef) Copy() ForwardedObject {
+	obj := unstructured.Unstructured{}
+	if r.Object != nil && r.Object.Object != nil {
+		obj.Object = runtime.DeepCopyJSON(r.Object.Object)
+	}
+	obj.SetAPIVersion(r.APIVersion)
+	obj.SetKind(r.Kind)
+	return ForwardedObject{GVR: r.GVR, Object: obj}
+}
+
+// ListForwardedRefs lists forwarded objects without DeepCopyJSON.
+func (c *InformerCache) ListForwardedRefs() []ForwardedRef {
 	if c == nil {
 		return nil
 	}
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	var out []ForwardedObject
+	var out []ForwardedRef
 	seen := map[string]struct{}{}
 	for _, s := range c.states {
 		if s.informer == nil || !s.spec.ShouldForward() {
@@ -187,14 +208,28 @@ func (c *InformerCache) ListForwarded() []ForwardedObject {
 				continue
 			}
 			seen[key] = struct{}{}
-			obj := unstructured.Unstructured{}
-			if u.Object != nil {
-				obj.Object = runtime.DeepCopyJSON(u.Object)
-			}
-			obj.SetAPIVersion(s.spec.APIVersion)
-			obj.SetKind(s.spec.Kind)
-			out = append(out, ForwardedObject{GVR: s.gvr, Object: obj})
+			out = append(out, ForwardedRef{
+				GVR:        s.gvr,
+				APIVersion: s.spec.APIVersion,
+				Kind:       s.spec.Kind,
+				Name:       u.GetName(),
+				Namespace:  u.GetNamespace(),
+				Object:     u,
+			})
 		}
+	}
+	return out
+}
+
+// ListForwarded returns objects whose WatchSpec fans out to SSE clients.
+func (c *InformerCache) ListForwarded() []ForwardedObject {
+	refs := c.ListForwardedRefs()
+	if refs == nil {
+		return nil
+	}
+	out := make([]ForwardedObject, len(refs))
+	for i, ref := range refs {
+		out[i] = ref.Copy()
 	}
 	return out
 }

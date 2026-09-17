@@ -130,6 +130,11 @@ func (h *Handler) userpreference(w http.ResponseWriter, r *http.Request) {
 	name := preferenceName(result.Username)
 	if name == "" {
 		applog.Logger().Error("userpreference missing username", "method", r.Method)
+		status := http.StatusInternalServerError
+		if !result.Authenticated {
+			status = http.StatusUnauthorized
+		}
+		writeJSONNull(w, status)
 		return
 	}
 
@@ -146,6 +151,7 @@ func (h *Handler) userpreference(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			applog.Logger().Error("get userpreference failed", "error", getErr)
+			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte("null"))
 			return
 		}
@@ -179,6 +185,7 @@ func (h *Handler) userpreference(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		if createErr != nil {
 			applog.Logger().Error("create userpreference failed", "error", createErr)
+			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte("null"))
 			return
 		}
@@ -194,6 +201,7 @@ func (h *Handler) userpreference(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		if patchErr != nil {
 			applog.Logger().Error("patch userpreference failed", "error", patchErr)
+			w.WriteHeader(http.StatusInternalServerError)
 			_, _ = w.Write([]byte("null"))
 			return
 		}
@@ -206,4 +214,10 @@ func preferenceName(username string) string {
 		return ""
 	}
 	return sanitizeUsername.ReplaceAllString(strings.ToLower(username), "-")
+}
+
+func writeJSONNull(w http.ResponseWriter, status int) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	_, _ = w.Write([]byte("null"))
 }

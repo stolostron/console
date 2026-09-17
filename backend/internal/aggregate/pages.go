@@ -71,11 +71,11 @@ func (e *Engine) nextAppPageChunk(chunks *[]pageChunk, remoteKey string) *pageCh
 				for _, ch := range *chunks {
 					b.ResourceMap[joinKeys(ch.Keys)] = []App{}
 				}
-				reverse := map[byte][]App{}
-				for key, list := range b.ResourceMap {
+				reverse := map[byte]string{}
+				for key := range b.ResourceMap {
 					for _, k := range splitComma(key) {
 						if k != "" {
-							reverse[k[0]] = list
+							reverse[k[0]] = key
 						}
 					}
 				}
@@ -84,7 +84,11 @@ func (e *Engine) nextAppPageChunk(chunks *[]pageChunk, remoteKey string) *pageCh
 						continue
 					}
 					ch := app.Transform.Name[0]
-					reverse[ch] = append(reverse[ch], app)
+					key, ok := reverse[ch]
+					if !ok {
+						continue
+					}
+					b.ResourceMap[key] = append(b.ResourceMap[key], app)
 				}
 			}
 		} else if b.Resources != nil {

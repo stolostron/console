@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strings"
 
@@ -320,7 +321,9 @@ func (h *Handler) oidcConfigs(w http.ResponseWriter, r *http.Request, body []byt
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	rawURL := h.APIURL + "/api/clusters_mgmt/v1/oidc_configs?search=aws.account_id=" + p.AWSAccountID + " or aws.account_id=''"
+	q := url.Values{}
+	q.Set("search", "aws.account_id="+p.AWSAccountID+" or aws.account_id=''")
+	rawURL := h.APIURL + "/api/clusters_mgmt/v1/oidc_configs?" + q.Encode()
 	out, err := h.getJSON(r.Context(), tok, rawURL)
 	if err != nil {
 		applog.Logger().Error("rosa oidc-configs", "error", err)
