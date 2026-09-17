@@ -349,4 +349,4 @@ The [Multicluster SDK for OpenShift Console](frontend/packages/multicluster-sdk/
 
 For complete documentation and usage examples, see the [Multicluster SDK README](frontend/packages/multicluster-sdk/README.md).
 
-[![npm version](https://img.shields.io/npm/v/@stolostron/multicluster-sdk.svg?style=flat-square)](https://www.npmjs.com/package/@stolostron/multicluster-sdk)
+[![npm version](https://img.shields.io/npm/v/@stolostron/multicluster-sdk.svg?style=flat-square)](https://www.npmjs.com/package/@stolostron/multicluster-sdk).
