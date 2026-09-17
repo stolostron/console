@@ -8,6 +8,7 @@ import {
   parseStringMap,
   policyHasDeletePruneBehavior,
 } from './util'
+import { returnCSVSafeString } from '../../../resources/utils'
 import { PolicyTableItem } from '../policies/Policies'
 import { Policy, PolicyTemplate, REMEDIATION_ACTION } from '../../../resources'
 import { cloneDeep } from 'lodash'
@@ -1026,5 +1027,34 @@ describe('Test policyHasDeletePruneBehavior', () => {
     const policy = cloneDeep(basePolicy)
     delete policy.spec['policy-templates']
     expect(policyHasDeletePruneBehavior(policy)).toBe(false)
+  })
+})
+
+describe('ACM-32500: returnCSVSafeString preserves newlines in CSV export', () => {
+  const descriptionFromApi =
+    'Policy is placed on hub or managed clusters with label acm-virt-config=acm-dr-virt-config-file-name.\nCreates a velero Schedule for all virtualmachines.kubevirt.io resources with a cluster.open-cluster-management.io/backup-vm label.'
+
+  test('returnCSVSafeString preserves newlines', () => {
+    const csvRaw = returnCSVSafeString(descriptionFromApi)
+    const unquoted = csvRaw.slice(1, -1).replace(/""/g, '"')
+
+    expect(unquoted).toContain('\n')
+    expect(unquoted).toEqual(descriptionFromApi)
+  })
+
+  test('returnCSVSafeString escapes double quotes', () => {
+    const stringWithQuotes = 'Description with "quoted" text'
+    const result = returnCSVSafeString(stringWithQuotes)
+
+    expect(result).toBe('"Description with ""quoted"" text"')
+  })
+
+  test('returnCSVSafeString handles number input', () => {
+    expect(returnCSVSafeString(42)).toBe('"42"')
+  })
+
+  test('returnCSVSafeString handles non-string/non-number ReactNode', () => {
+    expect(returnCSVSafeString(null)).toBe('"-"')
+    expect(returnCSVSafeString(undefined)).toBe('"-"')
   })
 })
