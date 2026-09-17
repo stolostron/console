@@ -1,7 +1,7 @@
 # Copyright Contributors to the Open Cluster Management project
 ARG NODE_BASE=registry.redhat.io/ubi9/nodejs-24-minimal:latest
 ARG RUNTIME_BASE=registry.redhat.io/ubi9/ubi-minimal:latest
-ARG GO_BASE=brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_9_1.26
+ARG GO_BASE=registry.redhat.io/openshift/golang-builder:golang-builder-v1.26-rhel9
 
 FROM registry.redhat.io/ubi9/ubi:latest AS crypto-policy
 RUN update-crypto-policies --set DEFAULT:PQ
