@@ -17,7 +17,7 @@ import type { IResource } from '../../src/resources/resource'
 describe(`aggregator Route`, function () {
   it(`should page Unfiltered Applications`, async function () {
     resetApplicationCache()
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
 
     // initialize events
     await Promise.all(resources.map((resource) => cacheResource(resource)))
@@ -63,7 +63,7 @@ describe(`aggregator Route`, function () {
   })
   it(`should page Filtered Applications`, async function () {
     resetApplicationCache()
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
 
     // initialize events
     await Promise.all(resources.map((resource) => cacheResource(resource)))
@@ -93,7 +93,7 @@ describe(`aggregator Route`, function () {
   })
   it(`should return application  counts`, async function () {
     resetApplicationCache()
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
 
     // initialize events
     await Promise.all(resources.map((resource) => cacheResource(resource)))
@@ -114,9 +114,9 @@ describe(`aggregator Route`, function () {
     expect(res.statusCode).toEqual(200)
     expect(await parseResponseJsonBody(res)).toEqual(responseCount)
   })
-  it(`should return ui data`, async function () {
+  it(`should return appset data`, async function () {
     resetApplicationCache()
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
 
     // initialize events
     resources.forEach((resource) => cacheResource(resource))
