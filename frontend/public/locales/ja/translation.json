@@ -468,7 +468,7 @@
   "Allow privilege escalation": "権限昇格の許可",
   "Allow privileged container": "特権付きコンテナーの許可",
   "Allowed Cluster Service Versions": "許可されるクラスターサービスバージョン",
-  "Allows your application to be placed on clusters with specific taints. Example: To deploy on GPU clusters, add a toleration with key=gpu, operator=Equal, value=nvidia, effect=NoSelect": "特定の taint を持つクラスターにアプリケーションを配置できるようにします。例:GPU クラスターにデプロイするには、key=gpu, operator=Equal, value=nvidia, effect=NoSelect の toleration を追加します",
+  "Allows your application to be placed on clusters with specific taints. Example: To deploy on GPU clusters, add a toleration with key=gpu, operator=Equal, value=nvidia, effect=NoSelect": "特定の taint を持つクラスターにアプリケーションを配置できるようにします。例:GPU クラスターにデプロイするには、キー=gpu, operator=等しい, 値=nvidia, 結果=NoSelect の toleration を追加します",
   "Already enforcing": "すでに実施中",
   "Already informing": "すでに情報提供中",
   "Amazon Web Services": "Amazon Web Services",
