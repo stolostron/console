@@ -35,12 +35,14 @@ func (h *SnapshotHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	if h.Base != nil {
-		if err := auth.ValidateUserToken(r.Context(), h.Base, token); err != nil {
-			applog.Logger().Warn("informer snapshot unauthorized", "error", err)
-			w.WriteHeader(http.StatusUnauthorized)
-			return
-		}
+	if h.Base == nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	if err := auth.ValidateUserToken(r.Context(), h.Base, token); err != nil {
+		applog.Logger().Warn("informer snapshot unauthorized", "error", err)
+		w.WriteHeader(http.StatusUnauthorized)
+		return
 	}
 	doc := SnapshotDoc{
 		Synced: h.Cache.HasSynced(),

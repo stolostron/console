@@ -5,9 +5,11 @@ package hub
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -21,12 +23,57 @@ import (
 	"github.com/stolostron/console/backend/internal/informers"
 )
 
-func waitBody(t *testing.T, rec *httptest.ResponseRecorder, cancel context.CancelFunc, substr string) string {
+type concurrentRecorder struct {
+	mu  sync.Mutex
+	rec *httptest.ResponseRecorder
+}
+
+func newConcurrentRecorder() *concurrentRecorder {
+	return &concurrentRecorder{rec: httptest.NewRecorder()}
+}
+
+func (c *concurrentRecorder) Header() http.Header {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.rec.Header()
+}
+
+func (c *concurrentRecorder) Write(b []byte) (int, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.rec.Write(b)
+}
+
+func (c *concurrentRecorder) WriteHeader(code int) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.rec.WriteHeader(code)
+}
+
+func (c *concurrentRecorder) Flush() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.rec.Flush()
+}
+
+func (c *concurrentRecorder) Code() int {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.rec.Code
+}
+
+func (c *concurrentRecorder) BodyString() string {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.rec.Body.String()
+}
+
+func waitBody(t *testing.T, rec *concurrentRecorder, cancel context.CancelFunc, substr string) string {
 	t.Helper()
 	deadline := time.Now().Add(2 * time.Second)
 	var body string
 	for time.Now().Before(deadline) {
-		body = rec.Body.String()
+		body = rec.BodyString()
 		if strings.Contains(body, substr) {
 			break
 		}
@@ -98,7 +145,7 @@ func TestHandlerSnapshotSSE(t *testing.T) {
 	reqCtx, cancel := context.WithCancel(context.Background())
 	req := httptest.NewRequest(http.MethodGet, "/events", nil).WithContext(reqCtx)
 	req.AddCookie(&http.Cookie{Name: auth.AccessTokenCookie, Value: "user-token"})
-	rec := httptest.NewRecorder()
+	rec := newConcurrentRecorder()
 	done := make(chan struct{})
 	go func() {
 		h.ServeHTTP(rec, req)
@@ -107,8 +154,8 @@ func TestHandlerSnapshotSSE(t *testing.T) {
 	body := waitBody(t, rec, cancel, `"type":"LOADED"`)
 	<-done
 
-	if rec.Code != http.StatusOK {
-		t.Fatalf("status %d", rec.Code)
+	if rec.Code() != http.StatusOK {
+		t.Fatalf("status %d", rec.Code())
 	}
 	if ct := rec.Header().Get("Content-Type"); !strings.Contains(ct, "text/event-stream") {
 		t.Fatalf("content-type %s", ct)
@@ -175,7 +222,7 @@ func TestHandlerSSARDenyOmitsResource(t *testing.T) {
 	reqCtx, cancel := context.WithCancel(context.Background())
 	req := httptest.NewRequest(http.MethodGet, "/events", nil).WithContext(reqCtx)
 	req.Header.Set("Authorization", "Bearer user")
-	rec := httptest.NewRecorder()
+	rec := newConcurrentRecorder()
 	done := make(chan struct{})
 	go func() {
 		h.ServeHTTP(rec, req)
@@ -192,8 +239,8 @@ func TestHandlerSSARDenyOmitsResource(t *testing.T) {
 	time.Sleep(50 * time.Millisecond)
 	cancel()
 	<-done
-	if strings.Contains(rec.Body.String(), "creds") {
-		t.Fatalf("denied resource leaked: %s", rec.Body.String())
+	if strings.Contains(rec.BodyString(), "creds") {
+		t.Fatalf("denied resource leaked: %s", rec.BodyString())
 	}
 }
 
@@ -208,13 +255,24 @@ func (denyAccess) Allow(_ context.Context, _ string, ev Event) (bool, error) {
 
 func (denyAccess) Prefetch(context.Context, string, []Event) {}
 
+type errAccess struct{}
+
+func (errAccess) Allow(_ context.Context, _ string, ev Event) (bool, error) {
+	if ev.Type == TypeModified {
+		return false, errors.New("ssar down")
+	}
+	return true, nil
+}
+
+func (errAccess) Prefetch(context.Context, string, []Event) {}
+
 func TestHandlerLiveModifiedThenLoaded(t *testing.T) {
 	hub := New(nil, nil)
 	h := NewHandler(hub, StaticAuth{OK: true}, AllowAllAccess{})
 	reqCtx, cancel := context.WithCancel(context.Background())
 	req := httptest.NewRequest(http.MethodGet, "/events", nil).WithContext(reqCtx)
 	req.Header.Set("Authorization", "Bearer user")
-	rec := httptest.NewRecorder()
+	rec := newConcurrentRecorder()
 	done := make(chan struct{})
 	go func() {
 		h.ServeHTTP(rec, req)
@@ -231,7 +289,7 @@ func TestHandlerLiveModifiedThenLoaded(t *testing.T) {
 	deadline := time.Now().Add(2 * time.Second)
 	var body string
 	for time.Now().Before(deadline) {
-		body = rec.Body.String()
+		body = rec.BodyString()
 		if strings.Contains(body, `"type":"DELETED"`) && strings.Count(body, `"type":"LOADED"`) >= 2 {
 			break
 		}

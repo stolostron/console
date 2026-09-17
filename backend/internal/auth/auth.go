@@ -19,6 +19,7 @@ import (
 	"k8s.io/client-go/rest"
 
 	"github.com/stolostron/console/backend/internal/config"
+	applog "github.com/stolostron/console/backend/internal/log"
 )
 
 const (
@@ -143,6 +144,7 @@ func RESTConfig(cfg *config.Config, sa ServiceAccount) (*rest.Config, error) {
 		},
 	}
 	if len(sa.CACert) == 0 {
+		applog.Logger().Warn("no CA certificate available; disabling hub API certificate verification")
 		restCfg.Insecure = true
 	}
 	return restCfg, nil

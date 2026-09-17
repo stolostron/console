@@ -82,6 +82,40 @@ func TestProxiesAllowlistedPath(t *testing.T) {
 	}
 }
 
+func TestSkipsHopByHopHeaders(t *testing.T) {
+	tower := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Connection", "keep-alive")
+		w.Header().Set("Keep-Alive", "timeout=5")
+		w.Header().Set("X-Job-Id", "7")
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"count":0}`))
+	}))
+	defer tower.Close()
+	kube := fake.NewSimpleClientset(&corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{Name: "tower-cred", Namespace: "app-team"},
+		Data:       map[string][]byte{"host": []byte(tower.URL), "token": []byte("12345")},
+	})
+	h := New(Options{
+		Authn:       authOK,
+		KubeForUser: func(string) (kubernetes.Interface, error) { return kube, nil },
+		Tower:       tower.Client(),
+	})
+	rec := post(h, map[string]string{
+		"secretNamespace": "app-team",
+		"secretName":      "tower-cred",
+		"ansiblePath":     Paths[0],
+	})
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status %d body %s", rec.Code, rec.Body.String())
+	}
+	if rec.Header().Get("Connection") == "keep-alive" || rec.Header().Get("Keep-Alive") != "" {
+		t.Fatalf("hop-by-hop headers forwarded: %v", rec.Header())
+	}
+	if rec.Header().Get("X-Job-Id") != "7" {
+		t.Fatalf("missing allowlisted header %v", rec.Header())
+	}
+}
+
 func TestRejectsAbsoluteURL(t *testing.T) {
 	tower := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		t.Error("should not reach tower")

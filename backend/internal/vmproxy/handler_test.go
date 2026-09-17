@@ -300,6 +300,46 @@ func TestFineGrainedUsesUserToken(t *testing.T) {
 	}
 }
 
+func TestUnknownAction404(t *testing.T) {
+	var called bool
+	h := newVMHandler(t, http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		called = true
+	}), nil)
+	resp := doJSON(t, h, http.MethodPut, "/virtualmachines/not-a-verb", map[string]string{
+		"managedCluster": "testCluster",
+		"vmName":         "vmName",
+		"vmNamespace":    "vmNamespace",
+	})
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusNotFound {
+		t.Fatalf("status %d", resp.StatusCode)
+	}
+	if called {
+		t.Fatal("upstream should not be called")
+	}
+}
+
+func TestMissingVMActor500(t *testing.T) {
+	var called bool
+	kube := fake.NewSimpleClientset()
+	allowMCA(kube, true)
+	h := newVMHandler(t, http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		called = true
+	}), kube)
+	resp := doJSON(t, h, http.MethodPut, "/virtualmachines/start", map[string]string{
+		"managedCluster": "testCluster",
+		"vmName":         "vmName",
+		"vmNamespace":    "vmNamespace",
+	})
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusInternalServerError {
+		t.Fatalf("status %d", resp.StatusCode)
+	}
+	if called {
+		t.Fatal("unauthenticated addon request must not be sent")
+	}
+}
+
 func TestUsageMissingParams(t *testing.T) {
 	h := newVMHandler(t, http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}), nil)
 	resp := doJSON(t, h, http.MethodGet, "/vmResourceUsage/cluster//namespace/vmNamespace", nil)

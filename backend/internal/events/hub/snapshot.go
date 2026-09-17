@@ -3,9 +3,11 @@
 package hub
 
 import (
+	"context"
 	"sort"
 
 	"github.com/stolostron/console/backend/internal/informers"
+	applog "github.com/stolostron/console/backend/internal/log"
 )
 
 func modifiedEvent(o informers.ForwardedObject) Event {
@@ -97,11 +99,72 @@ func (h *Hub) snapshotEvents() []Event {
 	if h.cache != nil {
 		objs = h.cache.ListForwarded()
 	}
+	return snapshotFromObjects(h.settings(), objs)
+}
+
+func snapshotFromObjects(settings map[string]string, objs []informers.ForwardedObject) []Event {
 	out := []Event{
 		{Type: TypeStart},
-		{Type: TypeSettings, Settings: h.settings()},
+		{Type: TypeSettings, Settings: settings},
 	}
 	out = append(out, packetize(objs)...)
 	out = append(out, Event{Type: TypeLoaded})
 	return out
+}
+
+func metaEvent(ref informers.ForwardedRef) Event {
+	meta := map[string]any{"name": ref.Name}
+	if ref.Namespace != "" {
+		meta["namespace"] = ref.Namespace
+	}
+	return Event{
+		Type: TypeModified,
+		GVR:  ref.GVR,
+		Object: map[string]any{
+			"apiVersion": ref.APIVersion,
+			"kind":       ref.Kind,
+			"metadata":   meta,
+		},
+	}
+}
+
+var copyRef = func(ref informers.ForwardedRef) informers.ForwardedObject {
+	return ref.Copy()
+}
+
+func authorizeRefs(ctx context.Context, token string, access AccessChecker, refs []informers.ForwardedRef) []informers.ForwardedObject {
+	if access == nil {
+		access = AllowAllAccess{}
+	}
+	prefetch := make([]Event, 0, len(refs))
+	for _, ref := range refs {
+		prefetch = append(prefetch, metaEvent(ref))
+	}
+	access.Prefetch(ctx, token, prefetch)
+
+	allowed := make([]informers.ForwardedObject, 0, len(refs))
+	for _, ref := range refs {
+		ok, err := access.Allow(ctx, token, metaEvent(ref))
+		if err != nil {
+			applog.Logger().Warn("events ssar failed", "error", err)
+			continue
+		}
+		if !ok {
+			continue
+		}
+		allowed = append(allowed, copyRef(ref))
+	}
+	return allowed
+}
+
+func (h *Handler) authorizedSnapshot(ctx context.Context, token string) []Event {
+	var refs []informers.ForwardedRef
+	if h.hub != nil && h.hub.cache != nil {
+		refs = h.hub.cache.ListForwardedRefs()
+	}
+	settings := map[string]string{}
+	if h.hub != nil {
+		settings = h.hub.settings()
+	}
+	return snapshotFromObjects(settings, authorizeRefs(ctx, token, h.access, refs))
 }

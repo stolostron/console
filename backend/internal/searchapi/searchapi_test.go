@@ -56,7 +56,7 @@ func TestSearchAndPing(t *testing.T) {
 		var payload map[string]any
 		_ = json.Unmarshal(body, &payload)
 		w.Header().Set("Content-Type", "application/json")
-		if payload["query"] == searchapi.NewQuery().Query || r.URL.Path != "" {
+		if q, _ := payload["query"].(string); q == searchapi.NewQuery().Query {
 			_, _ = w.Write([]byte(`{"data":{"searchResult":[{"items":[{"name":"a"}],"related":[]}]}}`))
 			return
 		}
@@ -94,6 +94,19 @@ func TestSearchMessageError(t *testing.T) {
 	c := &searchapi.Client{HTTP: ts.Client(), SearchAPIURL: ts.URL}
 	_, err := c.Search(context.Background(), searchapi.NewQuery())
 	if err == nil || err.Error() != "boom" {
+		t.Fatalf("err %v", err)
+	}
+}
+
+func TestSearchNon2xx(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = w.Write([]byte(`{"data":{"searchResult":[{"items":[{"name":"a"}]}]}}`))
+	}))
+	defer ts.Close()
+	c := &searchapi.Client{HTTP: ts.Client(), SearchAPIURL: ts.URL}
+	_, err := c.Search(context.Background(), searchapi.NewQuery())
+	if err == nil || err.Error() != "upstream returned status 500" {
 		t.Fatalf("err %v", err)
 	}
 }

@@ -71,17 +71,12 @@ func (h *Handler) vmActorToken(ctx context.Context, namespace string) (string, b
 	if h.saKube == nil {
 		return "", false
 	}
-	list, err := h.saKube.CoreV1().Secrets(namespace).List(ctx, metav1.ListOptions{})
+	secret, err := h.saKube.CoreV1().Secrets(namespace).Get(ctx, "vm-actor", metav1.GetOptions{})
 	if err != nil {
-		applog.Logger().Error("Error getting secret in namespace "+namespace, "error", err)
+		applog.Logger().Error("error getting vm-actor secret", "namespace", namespace, "error", err)
 		return "", false
 	}
-	for i := range list.Items {
-		if list.Items[i].Name == "vm-actor" {
-			return string(list.Items[i].Data["token"]), true
-		}
-	}
-	return "", false
+	return string(secret.Data["token"]), true
 }
 
 func (h *Handler) userKube(token string) (kubernetes.Interface, error) {

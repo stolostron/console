@@ -28,8 +28,9 @@ func newTestHandler(t *testing.T, upstream http.Handler) (*httptest.Server, http
 }
 
 func TestUnauthorizedWithoutToken(t *testing.T) {
-	_, h := newTestHandler(t, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		t.Fatal("upstream should not be called")
+	var called bool
+	_, h := newTestHandler(t, http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		called = true
 	}))
 	ts := httptest.NewServer(h)
 	t.Cleanup(ts.Close)
@@ -45,6 +46,9 @@ func TestUnauthorizedWithoutToken(t *testing.T) {
 	body, _ := io.ReadAll(resp.Body)
 	if len(body) != 0 {
 		t.Fatalf("expected empty body, got %q", body)
+	}
+	if called {
+		t.Fatal("upstream should not be called")
 	}
 }
 

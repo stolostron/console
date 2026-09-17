@@ -121,7 +121,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var body requestBody
 	if err = json.Unmarshal(raw, &body); err != nil {
 		applog.Logger().Error("upgrade-risks-prediction", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	chunks := chunkIDs(body.ClusterIDs, chunkSize)

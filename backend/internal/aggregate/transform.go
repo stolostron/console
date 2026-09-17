@@ -2,7 +2,10 @@
 
 package aggregate
 
-import "strings"
+import (
+	"sort"
+	"strings"
+)
 
 func getApplicationType(obj map[string]any, prefixes []string) string {
 	api := apiVersionOf(obj)
@@ -349,12 +352,7 @@ func sortApplications(index int, desc bool, items []App) []App {
 			return out[i].Transform.Scores[index] > out[j].Transform.Scores[index]
 		}
 	}
-	// insertion sort matching a stable-ish order
-	for i := 1; i < len(out); i++ {
-		for j := i; j > 0 && less(j, j-1); j-- {
-			out[j], out[j-1] = out[j-1], out[j]
-		}
-	}
+	sort.SliceStable(out, less)
 	if desc {
 		for i, k := 0, len(out)-1; i < k; i, k = i+1, k-1 {
 			out[i], out[k] = out[k], out[i]

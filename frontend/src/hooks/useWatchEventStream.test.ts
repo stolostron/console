@@ -125,4 +125,16 @@ describe('useWatchEventStream', () => {
     })
     expect(fake.sources).toHaveLength(1)
   })
+
+  it('does not schedule a second reconnect while one is pending', () => {
+    renderStream('/events', false)
+    act(() => {
+      fake.sources[0].triggerError()
+      fake.sources[0].triggerError()
+    })
+    act(() => {
+      jest.advanceTimersByTime(1000)
+    })
+    expect(fake.sources).toHaveLength(2)
+  })
 })

@@ -56,6 +56,37 @@ func TestSSARListClusterThenNamespaced(t *testing.T) {
 	}
 }
 
+func TestSSARCacheIncludesAPIGroup(t *testing.T) {
+	var groups []string
+	client := fake.NewSimpleClientset()
+	client.PrependReactor("create", "selfsubjectaccessreviews", func(action ktesting.Action) (bool, runtime.Object, error) {
+		create := action.(ktesting.CreateAction)
+		review := create.GetObject().(*authzv1.SelfSubjectAccessReview)
+		groups = append(groups, review.Spec.ResourceAttributes.Group)
+		return true, &authzv1.SelfSubjectAccessReview{
+			Status: authzv1.SubjectAccessReviewStatus{Allowed: true},
+		}, nil
+	})
+	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
+	items := []App{
+		{Object: map[string]any{
+			"kind": "Application", "apiVersion": "app.k8s.io/v1beta1",
+			"metadata": map[string]any{"name": "a", "namespace": "ns"},
+		}},
+		{Object: map[string]any{
+			"kind": "Application", "apiVersion": "argoproj.io/v1alpha1",
+			"metadata": map[string]any{"name": "a", "namespace": "ns"},
+		}},
+	}
+	got := a.Authorized(context.Background(), "tok", items, 0, 2)
+	if len(got) != 2 {
+		t.Fatalf("authorized %d groups %v", len(got), groups)
+	}
+	if len(groups) != 2 || groups[0] != "app.k8s.io" || groups[1] != "argoproj.io" {
+		t.Fatalf("ssar groups %v", groups)
+	}
+}
+
 func TestSSARRemoteManagedClusterView(t *testing.T) {
 	client := fake.NewSimpleClientset()
 	client.PrependReactor("create", "selfsubjectaccessreviews", func(action ktesting.Action) (bool, runtime.Object, error) {

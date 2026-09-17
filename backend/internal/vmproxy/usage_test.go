@@ -16,10 +16,10 @@ import (
 
 func TestParseUsagePath(t *testing.T) {
 	cases := []struct {
-		path            string
-		cluster         string
-		namespace       string
-		ok              bool
+		path      string
+		cluster   string
+		namespace string
+		ok        bool
 	}{
 		{"/vmResourceUsage/cluster/c1/namespace/ns1", "c1", "ns1", true},
 		{"/vmResourceUsage/cluster/c1/namespace/ns1/", "c1", "ns1", true},
@@ -73,6 +73,20 @@ func TestAggregateUsage_SkipsUnmatchedPods(t *testing.T) {
 	}
 	if got.VmisUsage[0].VmiName != "centos" {
 		t.Fatalf("vmi %q", got.VmisUsage[0].VmiName)
+	}
+}
+
+func TestGetJSON_RejectsNon2xx(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusForbidden)
+		_, _ = w.Write([]byte(`{"items":[]}`))
+	}))
+	t.Cleanup(ts.Close)
+	h := New(Options{})
+	h.addonClient = ts.Client()
+	var list podListType
+	if err := h.getJSON(context.Background(), ts.URL, "token", &list); err == nil {
+		t.Fatal("expected error")
 	}
 }
 

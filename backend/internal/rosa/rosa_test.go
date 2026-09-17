@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 
@@ -175,6 +176,30 @@ func TestOpenshiftVersionsQuery(t *testing.T) {
 	}
 	if !strings.Contains(gotQuery, "product=hcp") || !strings.Contains(gotQuery, "rosa_enabled=") {
 		t.Fatalf("query %q", gotQuery)
+	}
+}
+
+func TestOIDCConfigsEscapesAccountID(t *testing.T) {
+	var gotQuery string
+	h, _ := testHandler(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/api/clusters_mgmt/v1/oidc_configs" {
+			gotQuery = r.URL.RawQuery
+			_, _ = w.Write([]byte(`{"items":[]}`))
+			return
+		}
+		http.NotFound(w, r)
+	}))
+	rec := post(h, "/oidc-configs", map[string]string{
+		"service_account_id":     b64("id"),
+		"service_account_secret": b64("secret"),
+		"aws_account_id":         "a b&c",
+	})
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status %d %s", rec.Code, rec.Body.String())
+	}
+	want := url.Values{"search": {"aws.account_id=a b&c or aws.account_id=''"}}.Encode()
+	if gotQuery != want {
+		t.Fatalf("query %q want %q", gotQuery, want)
 	}
 }
 

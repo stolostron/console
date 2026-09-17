@@ -46,7 +46,7 @@ func (AllowAll) Authorized(_ context.Context, _ string, items []App, start, stop
 }
 
 type ssarKey struct {
-	kind, namespace, name, verb string
+	group, kind, namespace, name, verb string
 }
 
 type cacheEntry struct {
@@ -150,7 +150,8 @@ func (a *SSARAccess) canAccessRemote(ctx context.Context, token string, clusters
 
 func (a *SSARAccess) ssar(ctx context.Context, token string, obj map[string]any, verb, name, namespace string) (bool, error) {
 	kind := kindOf(obj)
-	key := ssarKey{kind: kind, namespace: namespace, name: name, verb: verb}
+	group := apiGroup(apiVersionOf(obj))
+	key := ssarKey{group: group, kind: kind, namespace: namespace, name: name, verb: verb}
 	now := time.Now()
 	th := hashToken(token)
 	a.mu.Lock()
@@ -171,7 +172,7 @@ func (a *SSARAccess) ssar(ctx context.Context, token string, obj map[string]any,
 	review, err := client.AuthorizationV1().SelfSubjectAccessReviews().Create(ctx, &authzv1.SelfSubjectAccessReview{
 		Spec: authzv1.SelfSubjectAccessReviewSpec{
 			ResourceAttributes: &authzv1.ResourceAttributes{
-				Group:     apiGroup(apiVersionOf(obj)),
+				Group:     group,
 				Resource:  resourcePlural(kind),
 				Verb:      verb,
 				Name:      name,

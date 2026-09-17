@@ -81,6 +81,22 @@ func TestNamespaceFallbackOnError(t *testing.T) {
 	}
 }
 
+func TestNamespaceErrorDoesNotCache(t *testing.T) {
+	r := &clusterproxy.Resolver{}
+	host, _ := r.HostPort(context.Background())
+	if host != clusterproxy.ServiceHost(clusterproxy.DefaultNamespace) {
+		t.Fatalf("got %s", host)
+	}
+	dc := fake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), map[schema.GroupVersionResource]string{
+		{Group: "multicluster.openshift.io", Version: "v1", Resource: "multiclusterengines"}: "MultiClusterEngineList",
+	}, mceObject("later-ns"))
+	r.Dynamic = dc
+	host2, _ := r.HostPort(context.Background())
+	if host2 != clusterproxy.ServiceHost("later-ns") {
+		t.Fatalf("error path cached default: %s", host2)
+	}
+}
+
 func TestTargetURL(t *testing.T) {
 	u, err := clusterproxy.TargetURL("addon.example.com", "443")
 	if err != nil {

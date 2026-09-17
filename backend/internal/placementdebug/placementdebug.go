@@ -15,8 +15,8 @@ import (
 	"k8s.io/client-go/rest"
 
 	"github.com/stolostron/console/backend/internal/auth"
-	"github.com/stolostron/console/backend/internal/outbound"
 	applog "github.com/stolostron/console/backend/internal/log"
+	"github.com/stolostron/console/backend/internal/outbound"
 )
 
 const defaultPlacementDebugURL = "https://cluster-manager-placement.open-cluster-management-hub.svc.cluster.local:9443/debug/placements/"
@@ -51,9 +51,10 @@ type Handler struct {
 	GetCA      func() []byte
 	Endpoint   func() string
 
-	mu    sync.Mutex
-	proxy *httputil.ReverseProxy
-	ca    string
+	mu     sync.Mutex
+	proxy  *httputil.ReverseProxy
+	ca     string
+	target string
 }
 
 // New returns a placement-debug proxy handler.
@@ -97,9 +98,10 @@ func (h *Handler) caPEM() []byte {
 
 func (h *Handler) reverseProxy(target *url.URL, ca []byte) *httputil.ReverseProxy {
 	pem := string(ca)
+	key := target.String()
 	h.mu.Lock()
 	defer h.mu.Unlock()
-	if h.proxy != nil && h.ca == pem {
+	if h.proxy != nil && h.ca == pem && h.target == key {
 		return h.proxy
 	}
 	tlsCfg := &tls.Config{MinVersion: tls.VersionTLS12, RootCAs: nil}
@@ -138,11 +140,12 @@ func (h *Handler) reverseProxy(target *url.URL, ca []byte) *httputil.ReverseProx
 			applog.Logger().Error("placement debug upstream error", "error", err)
 			w.WriteHeader(http.StatusInternalServerError)
 		},
-		Transport: outbound.Transport(tlsCfg, false),
+		Transport:     outbound.Transport(tlsCfg, false),
 		FlushInterval: -1 * time.Millisecond,
 	}
 	h.proxy = rp
 	h.ca = pem
+	h.target = key
 	return rp
 }
 

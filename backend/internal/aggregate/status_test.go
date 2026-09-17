@@ -50,10 +50,20 @@ func TestStatusEntryJSONArray(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if string(raw) != `[[2,0,0,0,0],[]]` && string(raw) != `[[2,0,0,0,0],null]` {
-		// messages is empty slice → []
-		if string(raw)[:2] != "[[" {
-			t.Fatalf("%s", raw)
-		}
+	if string(raw) != `[[2,0,0,0,0],[]]` {
+		t.Fatalf("%s", raw)
+	}
+}
+
+func TestIncStatusCountsDeployed(t *testing.T) {
+	counts := map[string]map[string]int{"podStatuses": {}}
+	appset := App{Transform: Transform{
+		Type:     kindAppSet,
+		Scores:   Scores{colDeployed: 0},
+		Statuses: StatusMap{"c": emptyClusterStatuses()},
+	}}
+	incStatusCounts(counts, "podStatuses", appset, colDeployed)
+	if counts["podStatuses"]["Deployed"] != 1 {
+		t.Fatalf("%+v", counts)
 	}
 }
