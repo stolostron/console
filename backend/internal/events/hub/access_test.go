@@ -45,10 +45,28 @@ func TestAllowControlAndDeleted(t *testing.T) {
 	}
 }
 
+func incompletePodRules() authzv1.SubjectRulesReviewStatus {
+	return authzv1.SubjectRulesReviewStatus{
+		Incomplete: true,
+		ResourceRules: []authzv1.ResourceRule{{
+			Verbs:     []string{"get"},
+			APIGroups: []string{""},
+			Resources: []string{"pods"},
+		}},
+	}
+}
+
+func attachIncompleteRules(client *fake.Clientset) {
+	client.PrependReactor("create", "selfsubjectrulesreviews", func(action ktesting.Action) (bool, runtime.Object, error) {
+		return true, &authzv1.SelfSubjectRulesReview{Status: incompletePodRules()}, nil
+	})
+}
+
 func TestSSARCascadeListThenGetNamespace(t *testing.T) {
 	var verbs []string
 	var namespaces []string
 	client := fake.NewSimpleClientset()
+	attachIncompleteRules(client)
 	client.PrependReactor("create", "selfsubjectaccessreviews", func(action ktesting.Action) (bool, runtime.Object, error) {
 		create := action.(ktesting.CreateAction)
 		review := create.GetObject().(*authzv1.SelfSubjectAccessReview)
@@ -78,6 +96,7 @@ func TestSSARNamespacedListThenGet(t *testing.T) {
 	var namespaces []string
 	var names []string
 	client := fake.NewSimpleClientset()
+	attachIncompleteRules(client)
 	client.PrependReactor("create", "selfsubjectaccessreviews", func(action ktesting.Action) (bool, runtime.Object, error) {
 		create := action.(ktesting.CreateAction)
 		review := create.GetObject().(*authzv1.SelfSubjectAccessReview)
@@ -298,5 +317,53 @@ func TestAllowUnknownTypeDenied(t *testing.T) {
 	ok, err := a.Allow(context.Background(), "tok", Event{Type: "NOPE"})
 	if err != nil || ok {
 		t.Fatalf("ok=%v err=%v", ok, err)
+	}
+}
+
+func TestSSARPerTokenEntryCap(t *testing.T) {
+	orig := accessCacheMaxEntriesPerToken
+	accessCacheMaxEntriesPerToken = 3
+	t.Cleanup(func() { accessCacheMaxEntriesPerToken = orig })
+
+	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) {
+		return fake.NewSimpleClientset(), nil
+	})
+	th := hashToken("cap-token")
+	a.mu.Lock()
+	st := a.ensureTokenLocked(th)
+	now := time.Now().Add(time.Hour)
+	for i := 0; i < 5; i++ {
+		st.entries[ssarKey{name: string(rune('a' + i))}] = cacheEntry{
+			allowed: false,
+			expiry:  now.Add(time.Duration(i) * time.Second),
+		}
+	}
+	st.enforceEntryCap()
+	n := len(st.entries)
+	a.mu.Unlock()
+	if n != 3 {
+		t.Fatalf("entries %d want 3", n)
+	}
+}
+
+func TestAccessCacheHashesToken(t *testing.T) {
+	client := fake.NewSimpleClientset()
+	client.PrependReactor("create", "selfsubjectaccessreviews", func(action ktesting.Action) (bool, runtime.Object, error) {
+		return true, &authzv1.SelfSubjectAccessReview{
+			Status: authzv1.SubjectAccessReviewStatus{Allowed: true},
+		}, nil
+	})
+	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
+	const raw = "raw-jwt-token"
+	if _, err := a.Allow(context.Background(), raw, modifiedNS("default")); err != nil {
+		t.Fatal(err)
+	}
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	if _, ok := a.byToken[raw]; ok {
+		t.Fatal("raw token must not be a cache key")
+	}
+	if _, ok := a.byToken[hashToken(raw)]; !ok {
+		t.Fatal("expected hashed token key")
 	}
 }
