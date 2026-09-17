@@ -39,7 +39,8 @@ func TestWatchSpecBuilders(t *testing.T) {
 		labels("cluster.open-cluster-management.io/type", "ans").
 		fields("metadata.name", "auto-import-secret").
 		polled().
-		cacheOnly()
+		cacheOnly().
+		cluster()
 	if s.LabelSelector["cluster.open-cluster-management.io/type"] != "ans" {
 		t.Fatal("labels")
 	}
@@ -48,6 +49,9 @@ func TestWatchSpecBuilders(t *testing.T) {
 	}
 	if !s.Polled || s.ForwardEventsToClients {
 		t.Fatal("polled/cacheOnly")
+	}
+	if !s.ClusterScoped {
+		t.Fatal("cluster")
 	}
 	key := s.SpecKey()
 	want := "v1|Secret|cluster.open-cluster-management.io/type=ans|metadata.name=auto-import-secret"
@@ -110,5 +114,33 @@ func TestSelectorQueryOrder(t *testing.T) {
 	got := SelectorQuery(map[string]string{"metadata.namespace": "mce", "metadata.name": "svc"})
 	if got != "metadata.name=svc,metadata.namespace=mce" {
 		t.Fatal(got)
+	}
+}
+
+func TestClusterScopedKindsMatchNode(t *testing.T) {
+	var n int
+	for _, spec := range DefaultWatchSpecs() {
+		if spec.ClusterScoped {
+			n++
+		}
+	}
+	if n != 15 {
+		t.Fatalf("cluster-scoped specs=%d want 15", n)
+	}
+	for _, kind := range []string{
+		"ManagedCluster", "Namespace", "StorageClass", "User", "Group",
+		"ClusterManagementAddOn", "AgentServiceConfig", "Authentication",
+		"Infrastructure", "CertificateSigningRequest", "ManagedClusterSet",
+		"ClusterExtension", "ClusterImageSet", "MultiClusterEngine", "ClusterVersion",
+	} {
+		if !IsClusterScopedKind(kind) {
+			t.Fatalf("%s should be cluster-scoped", kind)
+		}
+	}
+	if IsClusterScopedKind("Secret") || IsClusterScopedKind("Placement") || IsClusterScopedKind("ManagedClusterInfo") {
+		t.Fatal("namespaced kinds must not be cluster-scoped")
+	}
+	if IsClusterScopedKind("ClusterRole") {
+		t.Fatal("ClusterRole is served by /events/rbac, not DefaultWatchSpecs")
 	}
 }

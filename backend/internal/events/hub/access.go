@@ -17,6 +17,7 @@ import (
 	"k8s.io/client-go/rest"
 
 	"github.com/stolostron/console/backend/internal/auth"
+	"github.com/stolostron/console/backend/internal/informers"
 )
 
 const (
@@ -25,7 +26,10 @@ const (
 	prefetchConcurrency = 32
 )
 
-var accessCacheMaxTokens = 1000
+var (
+	accessCacheMaxTokens          = 1000
+	accessCacheMaxEntriesPerToken = 2000
+)
 
 // AccessChecker decides whether a user may receive an SSE event.
 type AccessChecker interface {
@@ -43,7 +47,7 @@ func (AllowAllAccess) Allow(context.Context, string, Event) (bool, error) {
 func (AllowAllAccess) Prefetch(context.Context, string, []Event) {}
 
 type ssarKey struct {
-	kind, namespace, name string
+	verb, group, kind, namespace, name string
 }
 
 type cacheEntry struct {
@@ -58,12 +62,15 @@ type inflight struct {
 }
 
 type tokenState struct {
-	last       time.Time
-	entries    map[ssarKey]cacheEntry
-	flight     map[ssarKey]*inflight
-	client     kubernetes.Interface
-	clientErr  error
-	clientWait chan struct{}
+	last        time.Time
+	entries     map[ssarKey]cacheEntry
+	flight      map[ssarKey]*inflight
+	rules       map[string]timedRules
+	rulesFlight map[string]*rulesInflight
+	kindAccess  map[kindAccessKey]timedKindAccess
+	client      kubernetes.Interface
+	clientErr   error
+	clientWait  chan struct{}
 }
 
 type prefetchJob struct {
@@ -75,9 +82,10 @@ type prefetchJob struct {
 	namespace string
 }
 
-// SSARAccess ports Node eventFilter / canAccess (list cluster → list namespaced → get).
+// SSARAccess ports Node eventFilter / canGetResource (list cluster → SelfSubjectRulesReview → SSAR fallback).
 type SSARAccess struct {
-	newClient func(userToken string) (kubernetes.Interface, error)
+	newClient       func(userToken string) (kubernetes.Interface, error)
+	isClusterScoped func(kind string) bool
 
 	mu      sync.Mutex
 	byToken map[string]*tokenState
@@ -94,8 +102,9 @@ func NewSSARAccess(base *rest.Config) *SSARAccess {
 
 func NewSSARAccessWithClient(newClient func(userToken string) (kubernetes.Interface, error)) *SSARAccess {
 	return &SSARAccess{
-		byToken:   map[string]*tokenState{},
-		newClient: newClient,
+		byToken:         map[string]*tokenState{},
+		newClient:       newClient,
+		isClusterScoped: informers.IsClusterScopedKind,
 	}
 }
 
@@ -164,13 +173,14 @@ func (a *SSARAccess) Prefetch(ctx context.Context, token string, events []Event)
 		if kind == "" || resource == "" {
 			continue
 		}
-		key := ssarKey{kind: kind}
+		group := apiGroup(apiVersion)
+		key := ssarKey{verb: "list", group: group, kind: kind}
 		if _, ok := jobs[key]; ok {
 			continue
 		}
 		jobs[key] = prefetchJob{
 			key:      key,
-			group:    apiGroup(apiVersion),
+			group:    group,
 			resource: resource,
 			verb:     "list",
 		}
@@ -204,24 +214,14 @@ func (a *SSARAccess) canSee(ctx context.Context, token string, ev Event) (bool, 
 	}
 	group := apiGroup(apiVersion)
 
-	allowed, err := a.ssar(ctx, token, ssarKey{kind: kind}, group, resource, "list", "", "")
+	allowed, err := a.ssarListCluster(ctx, token, group, resource, kind)
 	if err != nil {
 		return false, err
 	}
 	if allowed {
 		return true, nil
 	}
-	if namespace == "" {
-		return a.ssar(ctx, token, ssarKey{kind: kind, name: name}, group, resource, "get", name, ssarNamespace(kind, name, namespace))
-	}
-	allowed, err = a.ssar(ctx, token, ssarKey{kind: kind, namespace: namespace}, group, resource, "list", "", namespace)
-	if err != nil {
-		return false, err
-	}
-	if allowed {
-		return true, nil
-	}
-	return a.ssar(ctx, token, ssarKey{kind: kind, namespace: namespace, name: name}, group, resource, "get", name, ssarNamespace(kind, name, namespace))
+	return a.canGetResource(ctx, token, group, resource, kind, name, namespace)
 }
 
 func ssarNamespace(kind, name, namespace string) string {
@@ -231,12 +231,44 @@ func ssarNamespace(kind, name, namespace string) string {
 	return namespace
 }
 
+func (a *SSARAccess) ssarListCluster(ctx context.Context, token, group, resource, kind string) (bool, error) {
+	key := ssarKey{verb: "list", group: group, kind: kind}
+	return a.ssar(ctx, token, key, group, resource, "list", "", "")
+}
+
+func (a *SSARAccess) ssarListNamespaced(ctx context.Context, token, group, resource, kind, namespace string) (bool, error) {
+	key := ssarKey{verb: "list", group: group, kind: kind, namespace: namespace}
+	return a.ssar(ctx, token, key, group, resource, "list", "", namespace)
+}
+
+func (a *SSARAccess) ssarGet(ctx context.Context, token, group, resource, kind, name, namespace string) (bool, error) {
+	key := ssarKey{verb: "get", group: group, kind: kind, namespace: namespace, name: name}
+	return a.ssar(ctx, token, key, group, resource, "get", name, ssarNamespace(kind, name, namespace))
+}
+
+func (a *SSARAccess) incompleteFallback(ctx context.Context, token, group, resource, kind, name, namespace string) (bool, error) {
+	if namespace == "" {
+		return a.ssarGet(ctx, token, group, resource, kind, name, namespace)
+	}
+	allowed, err := a.ssarListNamespaced(ctx, token, group, resource, kind, namespace)
+	if err != nil {
+		return false, err
+	}
+	if allowed {
+		return true, nil
+	}
+	return a.ssarGet(ctx, token, group, resource, kind, name, namespace)
+}
+
 func (a *SSARAccess) ensureTokenLocked(th string) *tokenState {
 	st := a.byToken[th]
 	if st == nil {
 		st = &tokenState{
-			entries: map[ssarKey]cacheEntry{},
-			flight:  map[ssarKey]*inflight{},
+			entries:     map[ssarKey]cacheEntry{},
+			flight:      map[ssarKey]*inflight{},
+			rules:       map[string]timedRules{},
+			rulesFlight: map[string]*rulesInflight{},
+			kindAccess:  map[kindAccessKey]timedKindAccess{},
 		}
 		a.byToken[th] = st
 	}
@@ -245,6 +277,15 @@ func (a *SSARAccess) ensureTokenLocked(th string) *tokenState {
 	}
 	if st.flight == nil {
 		st.flight = map[ssarKey]*inflight{}
+	}
+	if st.rules == nil {
+		st.rules = map[string]timedRules{}
+	}
+	if st.rulesFlight == nil {
+		st.rulesFlight = map[string]*rulesInflight{}
+	}
+	if st.kindAccess == nil {
+		st.kindAccess = map[kindAccessKey]timedKindAccess{}
 	}
 	return st
 }
@@ -341,10 +382,35 @@ func (a *SSARAccess) finishFlight(th string, key ssarKey, f *inflight, allowed b
 		st.last = time.Now()
 		if cache && err == nil {
 			st.entries[key] = cacheEntry{allowed: allowed, expiry: time.Now().Add(accessCacheTTL)}
+			st.enforceEntryCap()
 		}
 	}
 	a.mu.Unlock()
 	close(f.done)
+}
+
+func (st *tokenState) enforceEntryCap() {
+	if len(st.entries) <= accessCacheMaxEntriesPerToken {
+		return
+	}
+	type pair struct {
+		key ssarKey
+		exp time.Time
+	}
+	all := make([]pair, 0, len(st.entries))
+	for k, e := range st.entries {
+		all = append(all, pair{k, e.expiry})
+	}
+	sort.Slice(all, func(i, j int) bool { return all[i].exp.Before(all[j].exp) })
+	extra := len(all) - accessCacheMaxEntriesPerToken
+	for i := 0; i < extra; i++ {
+		delete(st.entries, all[i].key)
+	}
+}
+
+func (st *tokenState) empty() bool {
+	return len(st.entries) == 0 && len(st.flight) == 0 &&
+		len(st.rules) == 0 && len(st.rulesFlight) == 0 && len(st.kindAccess) == 0
 }
 
 func (a *SSARAccess) StartCleanup(ctx context.Context) {
@@ -374,7 +440,18 @@ func (a *SSARAccess) cleanup(now time.Time) {
 				delete(st.entries, k)
 			}
 		}
-		if len(st.entries) == 0 && len(st.flight) == 0 {
+		st.enforceEntryCap()
+		for ns, e := range st.rules {
+			if !e.expiry.After(now) {
+				delete(st.rules, ns)
+			}
+		}
+		for k, e := range st.kindAccess {
+			if !e.expiry.After(now) {
+				delete(st.kindAccess, k)
+			}
+		}
+		if st.empty() {
 			delete(a.byToken, th)
 		}
 	}
