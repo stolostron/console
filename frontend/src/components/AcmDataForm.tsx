@@ -311,7 +311,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
           {showFormErrors &&
             mode === 'form' &&
             (editorValidationStatus === ValidationStatus.failure || formHasErrors(t, formData)) && (
-              <PageSection hasBodyWrapper={false} style={{ paddingTop: 0 }}>
+              <PageSection hasBodyWrapper={false}>
                 {renderErrors(true, formHasRequiredErrors(formData))}
               </PageSection>
             )}
