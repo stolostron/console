@@ -7,7 +7,8 @@ import StackTrace from 'stacktrace-js'
 //import { inspect } from 'util'
 import path from 'path'
 
-const hashCode = (str: string) => str.split('').reduce((s, c) => (Math.imul(31, s) + c.charCodeAt(0)) | 0, 0)
+const hashCode = (str: string) =>
+  str.split('').reduce((s, c) => Math.trunc(Math.imul(31, s) + (c.codePointAt(0) ?? 0)), 0)
 const defaultFilters = ['managedFields', 'finalizers', 'creationTimestamp', 'resourceVersion', 'generation', 'uid']
 const getSnapshot = (obj: any, unfiltered: boolean, customFilters?: string[] | undefined, max?: number) => {
   interface IProto {
