@@ -65,7 +65,7 @@ describe('LoadDataAbstract', () => {
         <LoadDataAbstract path="/events/rbac" />
       </Wrapper>
     )
-    await waitFor(() => expect(fake.sources.length).toBe(1))
+    await waitFor(() => expect(fake.sources).toHaveLength(1))
 
     mockIsActive = false
     rerender(
@@ -87,7 +87,7 @@ describe('LoadDataAbstract', () => {
         <LoadDataAbstract path="/events" driveAppLifecycle />
       </Wrapper>
     )
-    await waitFor(() => expect(fake.sources.length).toBe(1))
+    await waitFor(() => expect(fake.sources).toHaveLength(1))
 
     mockIsActive = false
     rerender(
@@ -110,7 +110,7 @@ describe('LoadDataAbstract', () => {
         />
       </Wrapper>
     )
-    await waitFor(() => expect(fake.sources.length).toBe(1))
+    await waitFor(() => expect(fake.sources).toHaveLength(1))
 
     const object = {
       kind: 'ClusterRole',

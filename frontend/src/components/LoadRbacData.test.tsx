@@ -80,7 +80,7 @@ describe('LoadRbacData', () => {
       </Wrapper>
     )
 
-    await waitFor(() => expect(fake.sources.length).toBe(1))
+    await waitFor(() => expect(fake.sources).toHaveLength(1))
     expect(fake.sources[0].url).toBe('/events/rbac')
     expect(fake.sources[0].withCredentials).toBe(true)
 
@@ -106,7 +106,7 @@ describe('LoadRbacData', () => {
         </>
       </Wrapper>
     )
-    await waitFor(() => expect(fake.sources.length).toBe(1))
+    await waitFor(() => expect(fake.sources).toHaveLength(1))
     act(() => {
       fake.sources[0].emit({ type: 'ADDED', object: sampleRole })
       fake.sources[0].emit({ type: 'EOP' })
@@ -128,7 +128,7 @@ describe('LoadRbacData', () => {
         <LoadRbacData />
       </Wrapper>
     )
-    await waitFor(() => expect(fake.sources.length).toBe(1))
+    await waitFor(() => expect(fake.sources).toHaveLength(1))
     mockIsActive = false
     rerender(
       <Wrapper ctx={ctx}>

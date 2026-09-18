@@ -418,28 +418,12 @@ export function LoadEventsData() {
   const applyWatchEvents = useCallback(
     (watchEvents: WatchEvent[]) => {
       const resourceTypeMap = groupWatchEventsByKind(watchEvents)
+      const skipAtomUpdate = isReconnectingRef.current
       for (const groupVersion in resourceTypeMap) {
         for (const kind in resourceTypeMap[groupVersion]) {
           const kindEvents = resourceTypeMap[groupVersion]?.[kind]
           if (!kindEvents) continue
-          const setter = setters[groupVersion]?.[kind]
-          if (setter) {
-            const cache = caches[groupVersion]?.[kind]
-            if (cache) {
-              applyWatchEventsToCache(cache, kindEvents)
-              if (!isReconnectingRef.current) {
-                setter(Object.values(cache))
-              }
-            }
-          } else {
-            const mapper = mappers[groupVersion]?.[kind]
-            if (mapper) {
-              updateMapperCache(mapper, groupVersion, kind, kindEvents)
-              if (!isReconnectingRef.current) {
-                mapper.setter({ ...mapper.mcaches[groupVersion]?.[kind] })
-              }
-            }
-          }
+          applyWatchEventsForKind(setters, caches, mappers, groupVersion, kind, kindEvents, skipAtomUpdate)
         }
       }
     },
@@ -566,17 +550,14 @@ export function LoadEventsData() {
         headers: { accept: 'application/json' },
       })
         .then((res) => {
-          switch (res.status) {
-            case 200:
-              break
-            default:
-              /* istanbul ignore if */
-              if (process.env.NODE_ENV === 'development' && res.status === 504) {
-                window.location.reload()
-              } else {
-                tokenExpired()
-              }
-              break
+          if (res.status === 200) {
+            return
+          }
+          /* istanbul ignore if */
+          if (process.env.NODE_ENV === 'development' && res.status === 504) {
+            window.location.reload()
+          } else {
+            tokenExpired()
           }
         })
         .catch(() => {
@@ -603,6 +584,43 @@ export function LoadEventsData() {
       onLoaded={onLoaded}
     />
   )
+}
+
+function applyWatchEventsForKind(
+  setters: Record<string, Record<string, SetterOrUpdater<any[]>>>,
+  caches: Record<string, Record<string, Record<string, IResource>>>,
+  mappers: Record<
+    string,
+    Record<
+      string,
+      {
+        setter: SetterOrUpdater<Record<string, any[]>>
+        mcaches: Record<string, Record<string, Record<string, IResource[]>>>
+        keyBy: string[]
+      }
+    >
+  >,
+  groupVersion: string,
+  kind: string,
+  kindEvents: WatchEvent[],
+  skipAtomUpdate: boolean
+) {
+  const setter = setters[groupVersion]?.[kind]
+  if (setter) {
+    const cache = caches[groupVersion]?.[kind]
+    if (!cache) return
+    applyWatchEventsToCache(cache, kindEvents)
+    if (!skipAtomUpdate) {
+      setter(Object.values(cache))
+    }
+    return
+  }
+  const mapper = mappers[groupVersion]?.[kind]
+  if (!mapper) return
+  updateMapperCache(mapper, groupVersion, kind, kindEvents)
+  if (!skipAtomUpdate) {
+    mapper.setter({ ...mapper.mcaches[groupVersion]?.[kind] })
+  }
 }
 
 function resetCaches(caches: Record<string, Record<string, Record<string, IResource>>>) {

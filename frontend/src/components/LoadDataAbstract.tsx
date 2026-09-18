@@ -117,37 +117,47 @@ export function LoadDataAbstract(props: LoadDataAbstractProps) {
     }
   }, [])
 
-  useEffect(() => {
-    if (!isActive && wasActiveRef.current) {
-      wasActiveRef.current = false
+  const onBecameInactive = useCallback(() => {
+    wasActiveRef.current = false
+    if (driveAppLifecycle) {
+      setIsStreamIdle(true)
+    }
+    if (gracePeriodMs <= 0) {
+      stopStream()
+      return
+    }
+    graceTimerRef.current = setTimeout(stopStream, gracePeriodMs)
+  }, [driveAppLifecycle, gracePeriodMs, setIsStreamIdle, stopStream])
+
+  const onBecameActive = useCallback(() => {
+    wasActiveRef.current = true
+    if (graceTimerRef.current) {
+      clearTimeout(graceTimerRef.current)
+      graceTimerRef.current = undefined
+    }
+    if (!streamStoppedRef.current) {
       if (driveAppLifecycle) {
-        setIsStreamIdle(true)
-      }
-      if (gracePeriodMs <= 0) {
-        stopStream()
-      } else {
-        graceTimerRef.current = setTimeout(stopStream, gracePeriodMs)
-      }
-    } else if (isActive && !wasActiveRef.current) {
-      wasActiveRef.current = true
-      if (graceTimerRef.current) {
-        clearTimeout(graceTimerRef.current)
-        graceTimerRef.current = undefined
-      }
-      if (streamStoppedRef.current) {
-        streamStoppedRef.current = false
-        isReconnectingRef.current = true
-        if (driveAppLifecycle) {
-          setIsStreamIdle(false)
-          setIsReconnecting(true)
-        }
-        handleReset()
-        setRestartKey((k) => k + 1)
-      } else if (driveAppLifecycle) {
         setIsStreamIdle(false)
       }
+      return
     }
-  }, [driveAppLifecycle, gracePeriodMs, handleReset, isActive, setIsReconnecting, setIsStreamIdle, stopStream])
+    streamStoppedRef.current = false
+    isReconnectingRef.current = true
+    if (driveAppLifecycle) {
+      setIsStreamIdle(false)
+      setIsReconnecting(true)
+    }
+    handleReset()
+    setRestartKey((k) => k + 1)
+  }, [driveAppLifecycle, handleReset, setIsReconnecting, setIsStreamIdle])
+
+  useEffect(() => {
+    if (!isActive && wasActiveRef.current) {
+      onBecameInactive()
+    } else if (isActive && !wasActiveRef.current) {
+      onBecameActive()
+    }
+  }, [isActive, onBecameActive, onBecameInactive])
 
   const onLoaded = useCallback(() => {
     const isReconnecting = isReconnectingRef.current
