@@ -1,33 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import nock from 'nock'
-
-// release-2.15 eventsDefinitions omits clusterScoped metadata; eventsAccess cluster-scoped
-// RBAC is tested here with the kinds ACM-44889 classifies as cluster-scoped.
-jest.mock('../../src/routes/eventsDefinitions', () => {
-  const actual = jest.requireActual<typeof import('../../src/routes/eventsDefinitions')>(
-    '../../src/routes/eventsDefinitions'
-  )
-  return {
-    ...actual,
-    CLUSTER_SCOPED_KINDS: new Set([
-      'ClusterManagementAddOn',
-      'AgentServiceConfig',
-      'Infrastructure',
-      'CertificateSigningRequest',
-      'ManagedCluster',
-      'ManagedClusterSet',
-      'ClusterImageSet',
-      'MultiClusterEngine',
-      'ClusterVersion',
-      'StorageClass',
-      'Namespace',
-      'User',
-      'Group',
-      'ClusterRole',
-    ]),
-  }
-})
-
 import {
   canAccess,
   canGetResource,
