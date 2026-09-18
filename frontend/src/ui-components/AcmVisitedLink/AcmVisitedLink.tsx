@@ -14,7 +14,7 @@ const visitedLinkClass = css`
 const visitedLinksKey = 'visited-links'
 
 /**
- * A wrapper around react-router-dom-v5-compat Link component
+ * A wrapper around react-router Link component
  * that provides visited link styling support.
  */
 export function AcmVisitedLink({ to, ...props }: LinkProps) {
