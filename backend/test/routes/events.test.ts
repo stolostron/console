@@ -1639,6 +1639,11 @@ describe('events Route', () => {
 
       const afterCooldown = throttledAt + FLAP_COOLDOWN_MS + 1
       await checkThrottleStatus(afterCooldown)
+      // cacheResource does not await pushEvent; drain so it cannot leak into the next test
+      await new Promise((resolve) => setTimeout(resolve, 0))
+      for (const entry of Object.values(getEventCache())) {
+        await Promise.all(Object.values(entry).map((e) => e.eventID))
+      }
       expect(getFlapTracker()['Policy/ns1/recovering'].throttled).toBe(false)
       expect(getFlapTracker()['Policy/ns1/recovering'].lastCachedAt).toBe(0)
     })
@@ -1676,8 +1681,8 @@ describe('events Route', () => {
         await Promise.all(Object.values(entry).map((e) => e.eventID))
       }
 
-      let modifiedPushes = pushSpy.mock.calls.filter((call) => (call[0].data as { type?: string })?.type === 'MODIFIED')
-      const pushesAfterFlapping = modifiedPushes.length
+      // Count only the cooldown-windowed update below (ignore any prior/async MODIFIED noise)
+      pushSpy.mockClear()
 
       const periodicAt = throttledAt + FLAP_COOLDOWN_MS
       const periodicResource = makeResource()
@@ -1690,8 +1695,10 @@ describe('events Route', () => {
         await Promise.all(Object.values(entry).map((e) => e.eventID))
       }
 
-      modifiedPushes = pushSpy.mock.calls.filter((call) => (call[0].data as { type?: string })?.type === 'MODIFIED')
-      expect(modifiedPushes.length).toBe(pushesAfterFlapping + 1)
+      const modifiedPushes = pushSpy.mock.calls.filter(
+        (call) => (call[0].data as { type?: string })?.type === 'MODIFIED'
+      )
+      expect(modifiedPushes.length).toBe(1)
 
       const resources = await getKubeResources('Policy', policyApiVersion)
       expect(resources).toHaveLength(1)
