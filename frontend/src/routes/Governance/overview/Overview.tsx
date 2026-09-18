@@ -17,7 +17,7 @@ import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from 
 import { generatePath } from 'react-router'
 import { Fragment, useCallback, useContext, useMemo, useState } from 'react'
 import { AcmMasonry } from '../../../components/AcmMasonry'
-import { useTranslation } from '../../../lib/acm-i18next'
+import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { rbacCreate, useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
 import { ManagedCluster, Policy, PolicyDefinition } from '../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
@@ -410,7 +410,9 @@ function ClustersCard() {
 }
 
 const policyConflictsPopoverBody = (t: TFunction) => (
-  <span style={{ whiteSpace: 'pre-wrap' }}>{t('policy.overview.conflicts.tooltip')}</span>
+  <span style={{ whiteSpace: 'pre-wrap' }}>
+    <Trans t={t} i18nKey="policy.overview.conflicts.tooltip" />
+  </span>
 )
 
 function PolicyConflictsCard() {
