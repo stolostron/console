@@ -39,4 +39,19 @@
 
 .pf-topology-node-action-decorator-hit {
   pointer-events: all;
+  outline: none;
+}
+
+.pf-topology-node-action-decorator-hit:focus-visible {
+  outline: 2px solid var(--pf-t--global--border--color--clicked, #0066cc);
+  outline-offset: 2px;
+}
+
+/* Keep actions in the DOM for keyboard focus; reveal on hover or focus. */
+.pf-topology-node-action-decorators--hidden {
+  opacity: 0;
+}
+
+.pf-topology-node-action-decorators--hidden .pf-topology-node-action-decorator-hit {
+  pointer-events: none;
 }

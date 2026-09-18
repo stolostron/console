@@ -77,7 +77,9 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
   const data = element.getData()
   const [hover, hoverRef] = useHover<SVGEllipseElement>()
   const [decoratorHover, setDecoratorHover] = React.useState(false)
+  const [decoratorFocused, setDecoratorFocused] = React.useState(false)
   const isNodeHovered = hover || decoratorHover
+  const showNodeActions = isNodeHovered || decoratorFocused
   const combinedNodeRef = useCombineRefs<SVGEllipseElement>(
     hoverRef,
     (dragNodeRef ?? null) as React.Ref<SVGEllipseElement>
@@ -126,11 +128,12 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
       labelIcon={LabelIcon && <LabelIcon noVerticalAlign />}
       attachments={
         detailsLevel !== ScaleDetailsLevel.low &&
-        renderDecorators(element, passedData, getShapeDecoratorCenter, refreshResources, t, isNodeHovered, {
+        renderDecorators(element, passedData, getShapeDecoratorCenter, refreshResources, t, showNodeActions, {
           onViewLogs,
           onEditYaml,
           onEditApplications,
           setDecoratorHover,
+          setDecoratorFocused,
         })
       }
     >
@@ -156,12 +159,13 @@ const renderDecorators = (
   },
   refreshResources?: () => void,
   translate?: (key: string) => string,
-  isHovered?: boolean,
+  showNodeActions?: boolean,
   nodeActions?: {
     onViewLogs?: (node: TopologyNode) => void
     onEditYaml?: (node: TopologyNode) => void
     onEditApplications?: (node: TopologyNode) => void
     setDecoratorHover?: (hovered: boolean) => void
+    setDecoratorFocused?: (focused: boolean) => void
   }
 ): React.ReactNode => {
   const { statusIcon, specs } = data
@@ -181,17 +185,17 @@ const renderDecorators = (
           translate
         )}
       {specs?.resourceCount > 1 && renderCountDecorator(element, specs?.resourceCount)}
-      {isHovered &&
-        renderNodeActionDecorators(
-          element,
-          getShapeDecoratorCenter,
-          translate,
-          topologyNode,
-          showLogs,
-          showEditYaml,
-          showAppPicker,
-          nodeActions
-        )}
+      {renderNodeActionDecorators(
+        element,
+        getShapeDecoratorCenter,
+        translate,
+        topologyNode,
+        showLogs,
+        showEditYaml,
+        showAppPicker,
+        showNodeActions,
+        nodeActions
+      )}
     </>
   )
 }
@@ -242,17 +246,20 @@ const renderNodeActionDecorators = (
   showLogs?: boolean,
   showEditYaml?: boolean,
   showAppPicker?: boolean,
+  visible?: boolean,
   nodeActions?: {
     onViewLogs?: (node: TopologyNode) => void
     onEditYaml?: (node: TopologyNode) => void
     onEditApplications?: (node: TopologyNode) => void
     setDecoratorHover?: (hovered: boolean) => void
+    setDecoratorFocused?: (focused: boolean) => void
   }
 ): React.ReactNode => {
   if (!topologyNode) {
     return null
   }
   const setDecoratorHover = nodeActions?.setDecoratorHover
+  const setDecoratorFocused = nodeActions?.setDecoratorFocused
   const decorators: React.ReactNode[] = []
   if (showLogs && nodeActions?.onViewLogs) {
     decorators.push(
@@ -293,7 +300,24 @@ const renderNodeActionDecorators = (
       )
     )
   }
-  return <>{decorators}</>
+  if (decorators.length === 0) {
+    return null
+  }
+  return (
+    <g
+      className={`pf-topology-node-action-decorators${visible ? '' : ' pf-topology-node-action-decorators--hidden'}`}
+      onFocusCapture={() => setDecoratorFocused?.(true)}
+      onBlurCapture={(event: React.FocusEvent<SVGGElement>) => {
+        const related = event.relatedTarget as Element | null
+        if (!related || !event.currentTarget.contains(related)) {
+          setDecoratorFocused?.(false)
+          setDecoratorHover?.(false)
+        }
+      }}
+    >
+      {decorators}
+    </g>
+  )
 }
 
 const ActionIconDecorator: React.FunctionComponent<{
@@ -306,8 +330,17 @@ const ActionIconDecorator: React.FunctionComponent<{
 }> = ({ x, y, icon, ariaLabel, onClick, setDecoratorHover }) => {
   const decoratorRef = React.useRef<SVGGElement>(null)
 
+  const activate = (event: React.SyntheticEvent) => {
+    event.stopPropagation()
+    event.preventDefault()
+    onClick()
+  }
+
   const pointerIsolationProps = {
     className: 'pf-topology-node-action-decorator-hit',
+    role: 'button' as const,
+    tabIndex: 0,
+    'aria-label': ariaLabel,
     onMouseEnter: (event: React.MouseEvent) => {
       stopDecoratorPointerEvent(event)
       setDecoratorHover?.(true)
@@ -322,11 +355,19 @@ const ActionIconDecorator: React.FunctionComponent<{
     onPointerDown: stopDecoratorPointerEvent,
     onPointerUp: stopDecoratorPointerEvent,
     onPointerMove: stopDecoratorPointerEvent,
-    onClick: stopDecoratorPointerEvent,
+    onClick: (event: React.MouseEvent) => {
+      stopDecoratorPointerEvent(event)
+      onClick()
+    },
+    onKeyDown: (event: React.KeyboardEvent) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        activate(event)
+      }
+    },
   }
 
   const decorator = (
-    <g {...pointerIsolationProps}>
+    <g {...pointerIsolationProps} ref={decoratorRef}>
       <Decorator
         x={x}
         y={y}
@@ -334,12 +375,6 @@ const ActionIconDecorator: React.FunctionComponent<{
         showBackground
         icon={icon}
         className="pf-topology-node-action-decorator"
-        onClick={(e) => {
-          e.stopPropagation()
-          onClick()
-        }}
-        ariaLabel={ariaLabel}
-        innerRef={decoratorRef}
       />
     </g>
   )
@@ -372,6 +407,7 @@ const renderActionDecorator = (
     : getDefaultShapeDecoratorCenter(quadrant, element)
   return (
     <ActionIconDecorator
+      key={ariaLabel}
       x={x}
       y={y}
       icon={icon}

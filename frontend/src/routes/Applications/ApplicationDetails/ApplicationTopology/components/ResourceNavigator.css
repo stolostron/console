@@ -57,7 +57,9 @@
 
 :root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .resource-navigator.pf-v6-c-nav .pf-v6-c-nav__link.pf-m-current,
 :root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .resource-navigator.pf-v6-c-nav .pf-v6-c-nav__link.pf-m-current:hover,
-:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .resource-navigator.pf-v6-c-nav .resource-navigator__item-row.pf-m-current,
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark)
+  .resource-navigator.pf-v6-c-nav
+  .resource-navigator__item-row.pf-m-current,
 :root:where(.pf-v5-theme-dark, .pf-v6-theme-dark)
   .resource-navigator.pf-v6-c-nav
   .resource-navigator__item--selected
@@ -93,11 +95,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: color-mix(
-    in srgb,
-    var(--pf-t--global--background--color--primary--default) 75%,
-    transparent
-  );
+  background-color: color-mix(in srgb, var(--pf-t--global--background--color--primary--default) 75%, transparent);
 }
 
 .resource-navigator-panel-body {
