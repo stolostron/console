@@ -2,6 +2,8 @@
 
 const mockUseHover = jest.fn()
 const mockDefaultNode = jest.fn()
+const mockOnViewLogs = jest.fn()
+const mockOnEditYaml = jest.fn()
 
 jest.mock('@patternfly/react-topology', () => ({
   Decorator: jest.fn(({ x, y, radius, icon }) => (
@@ -32,12 +34,20 @@ jest.mock('@patternfly/react-topology', () => ({
   getDefaultShapeDecoratorCenter: jest.fn(() => ({ x: 10, y: 10 })),
   observer: jest.fn((component) => component),
   useHover: mockUseHover,
+  useCombineRefs: jest.fn((...refs: unknown[]) => refs[0]),
 }))
 
 jest.mock('./CustomEllipse', () => jest.fn(() => null))
 
+jest.mock('../contexts/TopologyRefreshContext', () => ({
+  useTopologyRefresh: () => ({
+    onViewLogs: mockOnViewLogs,
+    onEditYaml: mockOnEditYaml,
+  }),
+}))
+
 import * as React from 'react'
-import { render } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import StyledNode from './StyledNode'
 import { Node } from '@patternfly/react-topology'
 import CustomEllipse from './CustomEllipse'
@@ -65,6 +75,48 @@ describe('StyledNode tests', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockUseHover.mockReturnValue([false])
+  })
+
+  describe('node action keyboard accessibility', () => {
+    test('keeps action controls mounted when not hovered', () => {
+      mockUseHover.mockReturnValue([false])
+      const element = createMockElement({ data: { type: 'pod', name: 'test-pod' } })
+      render(<StyledNode element={element} />)
+
+      const logsAction = screen.getByRole('button', { name: 'Logs' })
+      const editAction = screen.getByRole('button', { name: 'Edit YAML' })
+      expect(logsAction).toBeInTheDocument()
+      expect(editAction).toBeInTheDocument()
+      expect(logsAction.closest('.pf-topology-node-action-decorators')).toHaveClass(
+        'pf-topology-node-action-decorators--hidden'
+      )
+    })
+
+    test('reveals action controls on focus and activates with Enter', () => {
+      mockUseHover.mockReturnValue([false])
+      const element = createMockElement({ data: { type: 'pod', name: 'test-pod' } })
+      render(<StyledNode element={element} />)
+
+      const logsAction = screen.getByRole('button', { name: 'Logs' })
+      fireEvent.focus(logsAction)
+      expect(logsAction.closest('.pf-topology-node-action-decorators')).not.toHaveClass(
+        'pf-topology-node-action-decorators--hidden'
+      )
+
+      fireEvent.keyDown(logsAction, { key: 'Enter' })
+      expect(mockOnViewLogs).toHaveBeenCalledWith(expect.objectContaining({ type: 'pod', name: 'test-pod' }))
+    })
+
+    test('activates edit action with Space', () => {
+      mockUseHover.mockReturnValue([false])
+      const element = createMockElement({ data: { type: 'pod', name: 'test-pod' } })
+      render(<StyledNode element={element} />)
+
+      const editAction = screen.getByRole('button', { name: 'Edit YAML' })
+      fireEvent.focus(editAction)
+      fireEvent.keyDown(editAction, { key: ' ' })
+      expect(mockOnEditYaml).toHaveBeenCalledWith(expect.objectContaining({ type: 'pod', name: 'test-pod' }))
+    })
   })
 
   describe('rendering', () => {
