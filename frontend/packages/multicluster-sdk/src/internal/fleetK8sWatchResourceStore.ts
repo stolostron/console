@@ -10,6 +10,7 @@ type CacheEntry = {
   result?: FleetWatchK8sResultsObject<Data>
   socket?: WebSocket
   refCount: number
+  generation?: number
   timestamp: number
   resourceVersion?: string
   timeout?: ReturnType<typeof setTimeout>
@@ -43,6 +44,7 @@ export type FleetK8sWatchResourceStore = {
   // Actions for cache
   setResult: (key: string, data: Data | undefined, loaded: boolean, loadError?: any, resourceVersion?: string) => void
   setSocket: (key: string, socket: WebSocket) => void
+  beginGeneration: (key: string) => number
   incrementRefCount: (key: string) => void
   decrementRefCount: (key: string) => void
   touchEntry: (key: string) => void
@@ -89,6 +91,24 @@ export const useFleetK8sWatchResourceStore = create<FleetK8sWatchResourceStore>(
       }))
     },
 
+    beginGeneration: (key) => {
+      let generation = 0
+      set((state) => {
+        const entry = state.cache[key]
+        generation = (entry?.generation ?? 0) + 1
+        return {
+          cache: {
+            ...state.cache,
+            [key]: {
+              ...entry,
+              generation,
+            },
+          },
+        }
+      })
+      return generation
+    },
+
     incrementRefCount: (key) => {
       set((state) => {
         const entry = state.cache[key] || {}
@@ -126,6 +146,7 @@ export const useFleetK8sWatchResourceStore = create<FleetK8sWatchResourceStore>(
             [key]: {
               ...entry,
               refCount: newRefCount,
+              generation: newRefCount === 0 ? (entry.generation ?? 0) + 1 : entry.generation,
               socket: newRefCount > 0 ? entry.socket : undefined,
               timeout:
                 newRefCount === 0 && !entry.timeout // if timeout is set, the entry is already scheduled for removal
