@@ -8,15 +8,8 @@ import type { TopologyAlert } from './analyzeTopology'
 import type { AnalyzeTopologyHealthResult } from './analyzeTopologyHealth'
 import { createTopologyAlert, TopologyAlertActionType } from './utils'
 
-const MAX_PULL_CLUSTER_FETCHES = 3
 const GITOPS_NAMESPACE = 'openshift-gitops'
 const ARGOCD_NAME = 'openshift-gitops'
-const GITOPS_OPERATOR_SUBSCRIPTION = {
-  apiVersion: 'operators.coreos.com/v1alpha1',
-  kind: 'Subscription',
-  name: 'openshift-gitops-operator',
-  namespace: 'openshift-gitops-operator',
-}
 
 /**
  * Analyzes OpenShift GitOps operator availability and GitOpsCluster condition errors.
@@ -29,13 +22,9 @@ export const checkOpenshiftGitops = async (
   alerts: TopologyAlert[],
   t: TFunction
 ): Promise<boolean> => {
-  const { isAppSetPullModel, unhealthyClusterSet } = health
+  const { unhealthyClusterSet } = health
   const placement = nodes.find((node) => node.type === 'placement')
   let hasGitopsIssues = false
-
-  if (isAppSetPullModel) {
-    await verifyPullClusterGitOps(appSet, [...unhealthyClusterSet], alerts, t)
-  }
 
   /////////////////////////////////////////////
   // ArgoCD instance and related pods on unhealthy clusters
@@ -202,40 +191,4 @@ const checkNonRunningArgoCDPods = async (
   )
 
   return hasGitopsIssues
-}
-
-const verifyPullClusterGitOps = async (
-  appSet: TopologyNode,
-  appSetClusters: string[],
-  alerts: TopologyAlert[],
-  t: TFunction
-): Promise<void> => {
-  const clustersToVerify = appSetClusters.slice(0, MAX_PULL_CLUSTER_FETCHES)
-  await Promise.all(
-    clustersToVerify.map(async (clusterName) => {
-      try {
-        const response = await fleetResourceRequest('GET', clusterName, GITOPS_OPERATOR_SUBSCRIPTION)
-        if ('errorMessage' in response) {
-          const alert = createTopologyAlert(t('OpenShift GitOps Operator Missing'), 'red', {
-            message: t('Cannot find OpenShift GitOps Operator on {{clusterName}}', { clusterName }),
-            bullets: [
-              {
-                title: t(
-                  'For pulled applications, make sure the OpenShift GitOps Operator is installed on {{clusterName}}',
-                  { clusterName }
-                ),
-                content: [],
-              },
-            ],
-          })
-          if (!alerts.some((existingAlert) => existingAlert.id === alert.id)) {
-            alerts.push(alert)
-          }
-          appSet.specs.pulse = 'red'
-        }
-      } catch {
-        // Ignore unreachable clusters during operator verification.
-      }
-    })
-  )
 }
