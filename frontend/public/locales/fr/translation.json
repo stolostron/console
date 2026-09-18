@@ -492,7 +492,7 @@
   "Allow privilege escalation": "Autoriser l’élévation de privilèges",
   "Allow privileged container": "Autoriser le conteneur privilégié",
   "Allowed Cluster Service Versions": "Versions de service de cluster autorisées",
-  "Allows your application to be placed on clusters with specific taints. Example: To deploy on GPU clusters, add a toleration with key=gpu, operator=Equal, value=nvidia, effect=NoSelect": "Permet de placer votre application sur des clusters présentant des contaminations spécifiques. Exemple : Pour déployer sur des clusters GPU, ajoutez une tolérance avec key=gpu, operator=Equal, value=nvidia, effect=NoSelect",
+  "Allows your application to be placed on clusters with specific taints. Example: To deploy on GPU clusters, add a toleration with key=gpu, operator=Equal, value=nvidia, effect=NoSelect": "Permet de placer votre application sur des clusters présentant des contaminations spécifiques. Exemple : Pour déployer sur des clusters GPU, ajoutez une tolérance avec clé=gpu, opérateur=égal, valeur=nvidia, effet=NoSelect",
   "Already enforcing": "Déjà appliqué",
   "Already informing": "Déjà informé",
   "Amazon Web Services": "Amazon Web Services",
