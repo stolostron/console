@@ -2627,7 +2627,7 @@
   "policy.modal.warning.pruneParameter": "Some policies have the Prune parameter set.",
   "policy.modal.warning.pruneParameter.deleteMessage": "Deleting this policy might delete some related objects on the managed cluster(s).",
   "policy.modal.warning.pruneParameter.disableMessage": "Disabling this policy might delete some related objects on the managed cluster(s).",
-  "policy.overview.conflicts.tooltip": "The policies in this list are changing their compliances too rapidly. This can happen if:\n\n• A user policy has a defect.\n\n• Two or more policies are trying to enforce different values for the same resource.\n\nUntil this is resolved, these policy will only be visually updated here once per minute.",
+  "policy.overview.conflicts.tooltip": "The policies in this list are changing their compliances too rapidly. This can happen if:\n\n• A user policy has a defect.\n\n• Two or more policies are trying to enforce different values for the same resource.\n\nUntil this is resolved, these policis will only be visually updated here once per minute.",
   "policy.table.actionGroup.status": "Status",
   "policy.table.actionGroup.status.disabled": "Disabled",
   "policy.table.actionGroup.status.enabled": "Enabled",
