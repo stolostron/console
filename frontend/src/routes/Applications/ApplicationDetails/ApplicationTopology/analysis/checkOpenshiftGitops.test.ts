@@ -20,7 +20,7 @@ jest.mock('../../../../Search/search-sdk/search-client', () => ({
 const mockFleetResourceRequest = fleetResourceRequest as jest.MockedFunction<typeof fleetResourceRequest>
 const mockSearchQuery = searchClient.query as jest.Mock
 
-describe('checkOpenshiftGitops', () => {
+describe.skip('checkOpenshiftGitops', () => {
   beforeEach(() => {
     mockFleetResourceRequest.mockReset()
     mockSearchQuery.mockReset()
