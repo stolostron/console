@@ -311,9 +311,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
           {showFormErrors &&
             mode === 'form' &&
             (editorValidationStatus === ValidationStatus.failure || formHasErrors(t, formData)) && (
-              <PageSection hasBodyWrapper={false}>
-                {renderErrors(true, formHasRequiredErrors(formData))}
-              </PageSection>
+              <PageSection hasBodyWrapper={false}>{renderErrors(true, formHasRequiredErrors(formData))}</PageSection>
             )}
           <div style={{ height: `calc(100% - ${headerHeight}px)` }}>{drawerContent()}</div>
         </>
