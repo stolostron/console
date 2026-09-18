@@ -1,5 +1,7 @@
 # Copyright Contributors to the Open Cluster Management project
 ARG NODE_BASE=registry.redhat.io/ubi9/nodejs-24-minimal:latest
+ARG RUNTIME_BASE=registry.redhat.io/ubi9/ubi-minimal:latest
+ARG GO_BASE=brew.registry.redhat.io/rh-osbs/openshift-golang-builder:rhel_9_1.26
 
 FROM registry.redhat.io/ubi9/ubi:latest AS crypto-policy
 RUN update-crypto-policies --set DEFAULT:PQ
@@ -11,33 +13,28 @@ ENV NPM_CONFIG_IGNORE_SCRIPTS=true
 FROM build-base as dynamic-plugin
 WORKDIR /app/frontend
 COPY ./frontend .
-# Optimization of copying only package.json and package-lock.json does not work because of workspace packages 
+# Optimization of copying only package.json and package-lock.json does not work because of workspace packages
 RUN npm ci --legacy-peer-deps
 RUN npm run build:plugin:acm
 
-FROM build-base as backend
-WORKDIR /app/backend
-# Copy only package.json and package-lock.json so that the docker layer cache only changes if those change
-# This will cause the npm ci to only rerun if the package.json or package-lock.json changes
-COPY ./backend/package.json ./backend/package-lock.json ./
-RUN npm ci --omit=optional
+FROM ${GO_BASE} as go-backend
+WORKDIR /src
+COPY ./backend/go.mod ./backend/go.sum ./
+RUN go mod download
 COPY ./backend .
-RUN npm run build
+RUN CGO_ENABLED=0 GOOS=linux go build -mod=mod -o /console ./cmd/console
 
-FROM build-base as production
-WORKDIR /app/backend
-COPY ./backend/package-lock.json ./backend/package.json ./
-RUN npm ci --omit=optional --only=production
-
-FROM ${NODE_BASE}
+FROM ${RUNTIME_BASE}
 COPY --from=crypto-policy /etc/crypto-policies /etc/crypto-policies
 WORKDIR /app
 ENV NODE_ENV production
-COPY --from=production /app/backend/node_modules ./node_modules
-COPY --from=backend /app/backend/backend.mjs ./
+ENV PUBLIC_FOLDER=/app/public
+COPY --from=go-backend /console ./console
 COPY --from=dynamic-plugin /app/frontend/plugins/acm/dist ./public/plugin
+COPY ./scripts/console-entrypoint.sh ./console-entrypoint.sh
+RUN chmod 755 /app/console-entrypoint.sh /app/console
 USER 1001
-CMD ["node", "backend.mjs"]
+CMD ["/app/console-entrypoint.sh"]
 
 LABEL com.redhat.component="console-container" \
       cpe="cpe:/a:redhat:acm:5.1::el9" \

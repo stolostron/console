@@ -1,0 +1,20 @@
+# Live reload for the Go console backend (dev only).
+# https://github.com/air-verse/air
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  cmd = "go build -o ./tmp/console ./cmd/console"
+  bin = "./tmp/console"
+  entrypoint = ["./tmp/console"]
+  include_dir = ["cmd", "internal"]
+  include_ext = ["go"]
+  exclude_dir = ["tmp", "bin", "config", "certs", "src", "test", "vendor"]
+  exclude_regex = ["_test\\.go"]
+  delay = 500
+  send_interrupt = true
+  kill_delay = "3s"
+  stop_on_error = false
+
+[misc]
+  clean_on_exit = true
