@@ -774,6 +774,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
       style={{ width: 'auto' }}
       spellCheck={false}
       isOpen={isOpen}
+      isScrollable
       toggle={(toggleRef: React.Ref<MenuToggleElement>) => {
         return renderMenuToggle(toggleRef)
       }}
