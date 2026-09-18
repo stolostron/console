@@ -87,7 +87,7 @@ export const definitions: IWatchOptions[] = [
     apiVersion: 'v1',
     fieldSelector: { 'metadata.name': 'grafana-dashboard-acm-openshift-virtualization-single-vm-view' },
   },
-  { kind: 'MulticlusterRoleAssignment', apiVersion: 'rbac.open-cluster-management.io/v1beta1' },
+  { kind: 'MulticlusterRoleAssignment', apiVersion: 'rbac.open-cluster-management.io/v1alpha1' },
   { kind: 'User', apiVersion: 'user.openshift.io/v1', clusterScoped: true },
   { kind: 'Group', apiVersion: 'user.openshift.io/v1', clusterScoped: true },
   {
@@ -95,11 +95,6 @@ export const definitions: IWatchOptions[] = [
     apiVersion: 'rbac.authorization.k8s.io/v1',
     labelSelector: { 'rbac.open-cluster-management.io/filter': 'vm-clusterroles' },
     clusterScoped: true,
-  },
-  {
-    kind: 'Service',
-    apiVersion: 'v1',
-    fieldSelector: { 'metadata.name': 'cluster-proxy-addon-user', 'metadata.namespace': 'multicluster-engine' },
   },
 ]
 
