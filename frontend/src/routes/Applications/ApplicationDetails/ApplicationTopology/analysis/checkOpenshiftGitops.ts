@@ -34,6 +34,7 @@ export const checkOpenshiftGitops = async (
   let hasGitopsIssues = false
 
   if (isAppSetPullModel) {
+    // TODO: use a backend api to determine if a cluster has gitops
     // await verifyPullClusterGitOps(appSet, [...unhealthyClusterSet], alerts, t)
   }
 
