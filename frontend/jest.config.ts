@@ -22,7 +22,6 @@ const config: Config.InitialOptions = {
     '@openshift-assisted/ui-lib/cim': '<rootDir>/node_modules/@openshift-assisted/ui-lib/build/cjs/cim',
     '@openshift-assisted/locales/([a-z]{2,3}/translation.json)':
       '<rootDir>/node_modules/@openshift-assisted/locales/lib/$1/translation.json',
-    '^react-router-dom-v5-compat$': '<rootDir>/node_modules/react-router',
   },
   watchAll: false,
   slowTestThreshold: 30,
