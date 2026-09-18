@@ -32,6 +32,7 @@ jest.mock('@patternfly/react-topology', () => ({
   getDefaultShapeDecoratorCenter: jest.fn(() => ({ x: 10, y: 10 })),
   observer: jest.fn((component) => component),
   useHover: mockUseHover,
+  useCombineRefs: jest.fn((...refs: unknown[]) => refs[0]),
 }))
 
 jest.mock('./CustomEllipse', () => jest.fn(() => null))

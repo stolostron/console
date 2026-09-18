@@ -31,3 +31,12 @@
   color: blue !important;
   fill: blue !important;
 }
+
+.pf-topology-node-action-decorator {
+  cursor: pointer;
+  pointer-events: all;
+}
+
+.pf-topology-node-action-decorator-hit {
+  pointer-events: all;
+}

@@ -82,6 +82,7 @@ export interface TopologyProps {
   onRefreshResources?: () => void
   onEditAppSet?: (node: TopologyNode) => void
   onEditYaml?: (node: TopologyNode, highlightEditorPath?: string) => void
+  onEditApplications?: (node: TopologyNode) => void
   onViewLogs?: (node: TopologyNode) => void
   onSyncResources?: (node: TopologyNode) => void
   onLaunchArgo?: (node: TopologyNode) => void
@@ -277,11 +278,20 @@ export const Topology = ({
   hubClusterName,
   onEditAppSet,
   onEditYaml,
+  onEditApplications,
   onViewLogs,
   onSyncResources,
   onLaunchArgo,
 }: TopologyProps) => {
-  const topologyRefreshValue = useMemo(() => ({ refreshResources: onRefreshResources }), [onRefreshResources])
+  const topologyRefreshValue = useMemo(
+    () => ({
+      refreshResources: onRefreshResources,
+      onViewLogs,
+      onEditYaml,
+      onEditApplications,
+    }),
+    [onRefreshResources, onViewLogs, onEditYaml, onEditApplications]
+  )
   const controllerRef = useRef<Controller>()
   let controller = controllerRef.current
   if (!controller) {

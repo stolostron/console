@@ -100,6 +100,7 @@ export async function getAppSetTopology(
       appSetClusters,
       appStatusByNameMap,
       isAppSetPullModel,
+      showApplicationPicker: appSetApps.length > 1,
     },
   }
   nodes.push(appSetNode)
@@ -288,6 +289,7 @@ export async function getAppSetTopology(
         uid: parentNodeId,
         specs: {
           isDesign: false,
+          useArgoApplicationIcon: true,
           clustersNames: clusterNames,
           ...(appClusterNames.length > 1 && {
             resources: appClusterNames,

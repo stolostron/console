@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { EditorValidationStatus } from '@patternfly-labs/react-form-wizard'
-import { ActionList, ActionListGroup, ActionListItem, Alert, AlertGroup, Button } from '@patternfly/react-core'
+import { ActionList, ActionListGroup, ActionListItem, Alert, AlertGroup, Button, Spinner } from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
 import cloneDeep from 'lodash/cloneDeep'
 import jsYaml from 'js-yaml'
-import { useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { SyncEditor, ValidationStatus } from '~/components/SyncEditor/SyncEditor'
 import { useTranslation } from '~/lib/acm-i18next'
 import { PluginContext } from '~/lib/PluginContext'
@@ -16,7 +16,17 @@ import { fleetCanUser } from '~/resources/utils/fleet-can-user'
 import { fleetResourceRequest } from '~/resources/utils/fleet-resource-request'
 import { onReload, onSave } from '~/routes/Search/components/YamlEditor/utils'
 import { useRecoilValue, useSharedAtoms } from '~/shared-recoil'
-import { AcmAlert, AcmLoadingPage, AcmModal } from '~/ui-components'
+import { AcmAlert, AcmModal } from '~/ui-components'
+import { TopologyModalNavigatorLayout } from '../components/TopologyModalNavigatorLayout'
+import '../components/ResourceNavigator.css'
+import {
+  buildNavigatorGroups,
+  findInitialNavigatorSelection,
+  flattenNavigatorGroups,
+  navigatorItemCount,
+  topologyNodeToApplicationEditNode,
+  type ResourceNavigatorItem,
+} from '../helpers/resourceNavigatorHelpers'
 
 const typesWithoutDefaultName = new Set(['replicaset', 'pod', 'replicationcontroller', 'controllerrevision'])
 
@@ -26,6 +36,7 @@ export interface IEditYamlModalProps {
   node: TopologyNode
   hubClusterName: string
   highlightEditorPath?: string
+  navigatorMode?: 'edit' | 'application'
   onUpdateSuccess?: (nodeId: string) => void
 }
 
@@ -42,10 +53,40 @@ function EditYamlModalContent({
   node: topologyNode,
   hubClusterName,
   highlightEditorPath,
+  navigatorMode = 'edit',
   onUpdateSuccess,
 }: Readonly<Omit<IEditYamlModalProps, 'open'>>) {
+  const navigatorGroups = useMemo(
+    () => buildNavigatorGroups(topologyNode, navigatorMode === 'application' ? 'application' : 'edit'),
+    [topologyNode, navigatorMode]
+  )
+  const navigatorItems = useMemo(() => flattenNavigatorGroups(navigatorGroups), [navigatorGroups])
+  const showNavigator = navigatorItemCount(topologyNode, navigatorMode === 'application' ? 'application' : 'edit') > 1
+  const initialSelection = useMemo(() => findInitialNavigatorSelection(navigatorItems), [navigatorItems])
+  const [selectedItemId, setSelectedItemId] = useState<string | undefined>(initialSelection?.id)
+
+  useEffect(() => {
+    setSelectedItemId(initialSelection?.id)
+  }, [initialSelection?.id, topologyNode.id])
+
+  const selectedItem = navigatorItems.find((item) => item.id === selectedItemId) ?? initialSelection
+
+  const activeNode = useMemo(() => {
+    if (!showNavigator || !selectedItem) {
+      return topologyNode
+    }
+    if (navigatorMode === 'application' && selectedItem.application) {
+      return topologyNodeToApplicationEditNode(topologyNode, selectedItem.application)
+    }
+    return selectedItem.filteredNode ?? topologyNode
+  }, [navigatorMode, selectedItem, showNavigator, topologyNode])
+
+  const handleNavigatorSelect = useCallback((item: ResourceNavigatorItem) => {
+    setSelectedItemId(item.id)
+  }, [])
+
   const { t } = useTranslation()
-  const node = topologyNode as any
+  const node = activeNode as any
   const {
     multiclusterApi: { useFleetK8sWatchResource },
   } = useContext(PluginContext)
@@ -92,14 +133,14 @@ function EditYamlModalContent({
 
   const isHubClusterResource = (cluster === hubClusterName || isDesign) && !remoteArgoCluster
   const capitalizedKind = kind ? kind.charAt(0).toUpperCase() + kind.slice(1) : ''
-  const editorTitle = [
+  const editorTitleBase = [
     capitalizedKind,
     kind === 'applicationset' || kind === 'placement' || kind === 'placementdecision' ? undefined : cluster,
     namespace,
-    name,
-  ]
-    .filter(Boolean)
-    .join(' > ')
+  ].filter(Boolean)
+  const editorTitle = showNavigator
+    ? editorTitleBase.join(' > ')
+    : [...editorTitleBase, name].filter(Boolean).join(' > ')
 
   const [resource, setResource] = useState<any>(undefined)
   const [defaultItem, setDefaultItem] = useState<any>(undefined)
@@ -143,6 +184,11 @@ function EditYamlModalContent({
 
   useEffect(() => {
     let isComponentMounted = true
+    setResource(undefined)
+    setResources([])
+    setDefaultItem(undefined)
+    setResourceError({ message: '', stack: '' })
+
     const loadResource =
       (type === 'applicationset' || type === 'placement') && node?.specs?.raw
         ? Promise.resolve(node.specs.raw)
@@ -166,7 +212,7 @@ function EditYamlModalContent({
     return () => {
       isComponentMounted = false
     }
-  }, [fetchResource, node?.specs?.raw, type])
+  }, [fetchResource, node?.specs?.raw, type, activeNode.uid, activeNode.id])
 
   const watchedResource = Array.isArray(resourceUpdate) ? resourceUpdate[0] : resourceUpdate
   useEffect(() => {
@@ -183,10 +229,10 @@ function EditYamlModalContent({
 
   useEffect(() => {
     if (updateSuccess) {
-      onUpdateSuccess?.(topologyNode.id ?? '')
+      onUpdateSuccess?.(activeNode.id ?? '')
       close()
     }
-  }, [updateSuccess, close, onUpdateSuccess, topologyNode.id])
+  }, [updateSuccess, close, onUpdateSuccess, activeNode.id])
 
   useEffect(() => {
     const resourceForRbac = {
@@ -258,33 +304,7 @@ function EditYamlModalContent({
     )
   }, [apiVersion, cluster, isFineGrainedRbacEnabled, isHubClusterResource, kind, name, namespace, setResourceYaml])
 
-  if (!resource && resourceError.message === '') {
-    return (
-      <AcmModal
-        id="edit-yaml-modal"
-        isOpen={true}
-        title={t('Edit YAML')}
-        aria-label={t('Edit YAML')}
-        showClose={true}
-        onClose={close}
-        variant={ModalVariant.large}
-        position="top"
-        hasNoBodyWrapper
-      >
-        <div
-          style={{
-            height: '70vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            paddingTop: 'var(--pf-t--global--spacer--sm)',
-          }}
-        >
-          <AcmLoadingPage />
-        </div>
-      </AcmModal>
-    )
-  }
+  const isLoadingResource = !resource && resourceError.message === ''
 
   return (
     <AcmModal
@@ -303,146 +323,167 @@ function EditYamlModalContent({
           display: 'flex',
           flexDirection: 'column',
           height: '70vh',
+          minHeight: 0,
+          overflow: 'hidden',
           paddingTop: 'var(--pf-t--global--spacer--sm)',
           paddingLeft: 'var(--pf-t--global--spacer--lg)',
           paddingRight: 'var(--pf-t--global--spacer--lg)',
         }}
       >
-        <div style={{ flexGrow: 1, minHeight: 0, position: 'relative' }}>
-          {resourceError.message !== '' && (
-            <AcmAlert
-              noClose={true}
-              variant={'danger'}
-              isInline={true}
-              title={`${t('Error querying for resource:')} ${name}`}
-              subtitle={resourceError.message}
-            />
-          )}
-          {resources.length > 0 && (
-            <div
-              style={{
-                height: '100%',
-                opacity: isReloading ? 0.3 : 1,
-                pointerEvents: isReloading ? 'none' : 'auto',
-              }}
-            >
-              <SyncEditor
-                editorTitle={editorTitle}
-                variant="toolbar"
-                resources={resources}
-                defaultResources={defaultItem}
-                filters={['*.metadata.managedFields']}
-                highlightEditorPath={highlightEditorPath}
-                initialShowChanges={true}
-                renderSideBySide={false}
-                onEditorChange={(changes, resetDefaultSnapshot): void => {
-                  update(changes, resetDefaultSnapshot)
-                }}
-                onStatusChange={(editorStatus: ValidationStatus): void => {
-                  setEditorValidationStatus(editorStatus as unknown as EditorValidationStatus)
-                }}
-              />
-            </div>
-          )}
-        </div>
-        <div
-          className="yaml-editor__buttons"
-          style={{
-            paddingBottom: 'var(--pf-t--global--spacer--lg)',
+        <TopologyModalNavigatorLayout
+          showNavigator={showNavigator}
+          navigatorProps={{
+            groups: navigatorGroups,
+            selectedItemId,
+            onSelectItem: handleNavigatorSelect,
           }}
         >
-          {(updateSuccess || updateError || stale) && (
-            <AlertGroup style={{ paddingBottom: '1rem' }}>
-              {updateSuccess && (
-                <Alert
-                  id="editor-action-update-alert"
-                  isInline
-                  variant="success"
-                  title={t('{{name}} has been updated.', { name })}
+          <div style={{ flexGrow: 1, minHeight: 0, position: 'relative' }}>
+            {(isLoadingResource || isReloading) && (
+              <div className="resource-modal-yaml-editor__loading-overlay" aria-busy="true">
+                <Spinner size="lg" aria-label={t('Loading')} />
+              </div>
+            )}
+            {resourceError.message !== '' && (
+              <AcmAlert
+                noClose={true}
+                variant={'danger'}
+                isInline={true}
+                title={`${t('Error querying for resource:')} ${name}`}
+                subtitle={resourceError.message}
+              />
+            )}
+            {resources.length > 0 && (
+              <div
+                style={{
+                  height: '100%',
+                  opacity: isLoadingResource || isReloading ? 0.3 : 1,
+                  pointerEvents: isLoadingResource || isReloading ? 'none' : 'auto',
+                }}
+              >
+                <SyncEditor
+                  editorTitle={editorTitle}
+                  variant="toolbar"
+                  resources={resources}
+                  defaultResources={defaultItem}
+                  filters={['*.metadata.managedFields']}
+                  highlightEditorPath={highlightEditorPath}
+                  initialShowChanges={true}
+                  renderSideBySide={false}
+                  onEditorChange={(changes, resetDefaultSnapshot): void => {
+                    update(changes, resetDefaultSnapshot)
+                  }}
+                  onStatusChange={(editorStatus: ValidationStatus): void => {
+                    setEditorValidationStatus(editorStatus as unknown as EditorValidationStatus)
+                  }}
                 />
-              )}
-              {updateError !== '' && (
-                <Alert
-                  id="editor-action-error-alert"
-                  isInline
-                  variant="danger"
-                  title={t('Error occurred while updating resource: {{name}}', { name })}
-                >
-                  {updateError}
-                </Alert>
-              )}
-              {stale && (
-                <Alert
-                  id="editor-action-stale-alert"
-                  isInline
-                  variant="info"
-                  title={t('This object has been updated.')}
-                >
-                  {t('Click reload to see the new version.')}
-                </Alert>
-              )}
-            </AlertGroup>
-          )}
-          <ActionList
+              </div>
+            )}
+          </div>
+          <div
+            className="yaml-editor__buttons"
             style={{
-              justifyContent: 'space-between',
-              paddingTop: '1rem',
+              paddingBottom: 'var(--pf-t--global--spacer--lg)',
             }}
           >
-            <ActionListGroup>
-              <ActionListItem>
-                <Button
-                  variant="primary"
-                  id="update-resource-button"
-                  isDisabled={
-                    readOnly ||
-                    resources.length === 0 ||
-                    resourceError.message !== '' ||
-                    isReloading ||
-                    editorValidationStatus === EditorValidationStatus.failure ||
-                    editorValidationStatus === EditorValidationStatus.pending
-                  }
-                  onClick={() => {
-                    setUpdateError('')
-                    setUpdateSuccess(false)
-                    onSave(
-                      cluster,
-                      kind,
-                      apiVersion,
-                      name,
-                      namespace,
-                      jsYaml.dump(resources[0], { indent: 2 }),
-                      isHubClusterResource,
-                      setResourceYaml,
-                      setUpdateError,
-                      setUpdateSuccess,
-                      setStale,
-                      isFineGrainedRbacEnabled,
-                      shouldFoldAfterReloadRef
-                    )
-                  }}
-                >
-                  {t('Save')}
-                </Button>
-              </ActionListItem>
-              <ActionListItem>
-                <Button variant="secondary" id="reload-resource-button" isDisabled={isReloading} onClick={handleReload}>
-                  {t('Reload')}
-                </Button>
-              </ActionListItem>
-              <ActionListItem>
-                <Button
-                  variant="secondary"
-                  id="cancel-resource-button"
-                  data-test="cancel-resource-button"
-                  onClick={close}
-                >
-                  {t('Cancel')}
-                </Button>
-              </ActionListItem>
-            </ActionListGroup>
-          </ActionList>
-        </div>
+            {(updateSuccess || updateError || stale) && (
+              <AlertGroup style={{ paddingBottom: '1rem' }}>
+                {updateSuccess && (
+                  <Alert
+                    id="editor-action-update-alert"
+                    isInline
+                    variant="success"
+                    title={t('{{name}} has been updated.', { name })}
+                  />
+                )}
+                {updateError !== '' && (
+                  <Alert
+                    id="editor-action-error-alert"
+                    isInline
+                    variant="danger"
+                    title={t('Error occurred while updating resource: {{name}}', { name })}
+                  >
+                    {updateError}
+                  </Alert>
+                )}
+                {stale && (
+                  <Alert
+                    id="editor-action-stale-alert"
+                    isInline
+                    variant="info"
+                    title={t('This object has been updated.')}
+                  >
+                    {t('Click reload to see the new version.')}
+                  </Alert>
+                )}
+              </AlertGroup>
+            )}
+            <ActionList
+              style={{
+                justifyContent: 'space-between',
+                paddingTop: '1rem',
+              }}
+            >
+              <ActionListGroup>
+                <ActionListItem>
+                  <Button
+                    variant="primary"
+                    id="update-resource-button"
+                    isDisabled={
+                      readOnly ||
+                      resources.length === 0 ||
+                      resourceError.message !== '' ||
+                      isReloading ||
+                      editorValidationStatus === EditorValidationStatus.failure ||
+                      editorValidationStatus === EditorValidationStatus.pending
+                    }
+                    onClick={() => {
+                      setUpdateError('')
+                      setUpdateSuccess(false)
+                      onSave(
+                        cluster,
+                        kind,
+                        apiVersion,
+                        name,
+                        namespace,
+                        jsYaml.dump(resources[0], { indent: 2 }),
+                        isHubClusterResource,
+                        setResourceYaml,
+                        setUpdateError,
+                        setUpdateSuccess,
+                        setStale,
+                        isFineGrainedRbacEnabled,
+                        shouldFoldAfterReloadRef
+                      )
+                    }}
+                  >
+                    {t('Save')}
+                  </Button>
+                </ActionListItem>
+                <ActionListItem>
+                  <Button
+                    variant="secondary"
+                    id="reload-resource-button"
+                    isDisabled={isReloading}
+                    onClick={handleReload}
+                  >
+                    {t('Reload')}
+                  </Button>
+                </ActionListItem>
+                <ActionListItem>
+                  <Button
+                    variant="secondary"
+                    id="cancel-resource-button"
+                    data-test="cancel-resource-button"
+                    onClick={close}
+                  >
+                    {t('Cancel')}
+                  </Button>
+                </ActionListItem>
+              </ActionListGroup>
+            </ActionList>
+          </div>
+        </TopologyModalNavigatorLayout>
       </div>
     </AcmModal>
   )

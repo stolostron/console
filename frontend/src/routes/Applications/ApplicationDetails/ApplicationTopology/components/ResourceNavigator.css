@@ -1,0 +1,110 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
+.resource-navigator__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.resource-navigator.pf-v6-c-nav > .pf-v6-c-nav__list,
+.resource-navigator.pf-v6-c-nav .pf-v6-c-nav__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.resource-navigator .pf-v6-c-nav__subnav {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-block-start: 0;
+}
+
+.resource-navigator .pf-v6-c-nav__item,
+.resource-navigator .pf-v6-c-nav__link {
+  cursor: pointer;
+}
+
+.resource-navigator__item-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.resource-navigator__status-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+/* Higher specificity than PF .pf-v6-c-nav so selected bg is not reset by theme CSS load order.
+   NavItem with element children clones pf-m-current onto the child (our item-row span). */
+.resource-navigator.pf-v6-c-nav {
+  --pf-v6-c-nav__link--m-current--BackgroundColor: #cce3f5;
+}
+
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .resource-navigator.pf-v6-c-nav {
+  --pf-v6-c-nav__link--m-current--BackgroundColor: #1f4b7a;
+}
+
+.resource-navigator.pf-v6-c-nav .pf-v6-c-nav__link.pf-m-current,
+.resource-navigator.pf-v6-c-nav .pf-v6-c-nav__link.pf-m-current:hover,
+.resource-navigator.pf-v6-c-nav .resource-navigator__item-row.pf-m-current,
+.resource-navigator.pf-v6-c-nav .resource-navigator__item--selected > .pf-v6-c-nav__link {
+  color: var(--pf-t--global--text--color--regular);
+  background-color: #cce3f5;
+}
+
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .resource-navigator.pf-v6-c-nav .pf-v6-c-nav__link.pf-m-current,
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .resource-navigator.pf-v6-c-nav .pf-v6-c-nav__link.pf-m-current:hover,
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .resource-navigator.pf-v6-c-nav .resource-navigator__item-row.pf-m-current,
+:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark)
+  .resource-navigator.pf-v6-c-nav
+  .resource-navigator__item--selected
+  > .pf-v6-c-nav__link {
+  background-color: #1f4b7a;
+}
+
+.resource-modal-navigator-drawer {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+}
+
+/* Gap between resizer (panel end) and YAML editor; padding alone is overridden by PF drawer body rules */
+.resource-modal-navigator-drawer.pf-v6-c-drawer > .pf-v6-c-drawer__main {
+  --pf-v6-c-drawer__main--Gap: 5px;
+}
+
+.resource-modal-navigator-drawer.pf-v6-c-drawer > .pf-v6-c-drawer__main > .pf-v6-c-drawer__content {
+  --pf-v6-c-drawer__content__body--PaddingInlineStart: 5px;
+}
+
+.resource-modal-navigator-panel,
+.resource-modal-navigator-panel .pf-v6-c-drawer__panel-main {
+  height: 100%;
+  min-height: 0;
+}
+
+.resource-modal-yaml-editor__loading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: color-mix(
+    in srgb,
+    var(--pf-t--global--background--color--primary--default) 75%,
+    transparent
+  );
+}
+
+.resource-navigator-panel-body {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  box-sizing: border-box;
+  padding-right: var(--pf-t--global--spacer--sm);
+}
