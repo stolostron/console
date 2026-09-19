@@ -71,6 +71,33 @@ describe('AcmSelect', () => {
     expect(getByPlaceholderText('Select one')).toBeInTheDocument()
   })
 
+  test('select menu is scrollable so long option lists do not overflow (ACM-44806)', async () => {
+    const ManyOptionsSelect = () => {
+      const [value, setValue] = useState<string>()
+      const options = Array.from({ length: 40 }, (_, index) => `namespace-${index}`)
+      return (
+        <AcmSelect id="acm-select" label="ACM select" value={value} onChange={setValue} placeholder="Select one">
+          {options.map((option) => (
+            <SelectOption key={option} value={option}>
+              {option}
+            </SelectOption>
+          ))}
+        </AcmSelect>
+      )
+    }
+
+    render(<ManyOptionsSelect />)
+    await userEvent.click(
+      screen.getByRole('combobox', {
+        name: 'ACM select',
+      })
+    )
+    await waitFor(() => expect(screen.getByText('namespace-0')).toBeVisible())
+    const menu = document.querySelector('.pf-v6-c-menu')
+    expect(menu).toBeInTheDocument()
+    expect(menu).toHaveClass('pf-m-scrollable')
+  })
+
   test('typeahead variant disables browser autocomplete on the input (ACM-42794)', async () => {
     const TypeaheadSelect = () => {
       const [value, setValue] = useState<string>()
