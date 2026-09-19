@@ -17,3 +17,11 @@
   flex: 1;
   min-height: 0;
 }
+
+/*
+ * Form-mode error banner is a PageSection (section), not a div, so it misses the
+ * 24px gutter applied above. Match header/form inset without changing vertical rhythm.
+ */
+.add-argo-server-modal.pf-v6-c-modal-box > .pf-v6-c-page__main-section {
+  margin-inline: var(--pf-v6-c-modal-box__body--PaddingInlineStart);
+}
