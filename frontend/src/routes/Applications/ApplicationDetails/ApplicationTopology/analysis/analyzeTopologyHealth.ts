@@ -157,8 +157,24 @@ export const analyzeTopologyHealth = (
   }
 }
 
+/** Sync/health keys that are expected while an ApplicationSet is still creating. */
+const GRACE_PERIOD_SUPPRESSIBLE_KEYS = new Set(['OutOfSync', 'Progressing'])
+
+/**
+ * True when every token in a health/sync key is only OutOfSync or Progressing
+ * (no Degraded, Missing, Unknown, etc.).
+ */
+export const isGracePeriodSuppressibleIssue = (healthSyncKey: string): boolean => {
+  if (!healthSyncKey) {
+    return false
+  }
+  return healthSyncKey.split('/').every((token) => GRACE_PERIOD_SUPPRESSIBLE_KEYS.has(token))
+}
+
 /**
  * Creates consolidated health/sync alerts for unhealthy ApplicationSet resources.
+ * While `specs.isCreating` is true (5-minute creation grace period), OutOfSync/Progressing-only
+ * issues show a Progressing info alert instead of an unsynced-resources warning.
  */
 export const createSuggestsHealth = (
   appSet: TopologyNode,
@@ -177,6 +193,23 @@ export const createSuggestsHealth = (
   // create alert for unhealthy/unsynced deployments
   /////////////////////////////////////////////
   if (syncAlerts.length > 0) {
+    const isCreating = Boolean(appSet.specs.isCreating)
+    const hasNonSyncError = syncAlerts.some((entry) => !isGracePeriodSuppressibleIssue(entry.healthSyncKey))
+
+    // During creation grace period, suppress OutOfSync/Progressing-only warnings
+    if (isCreating && !hasNonSyncError) {
+      const title = t('Progressing...')
+      const progressingAlert: TopologyAlert = {
+        id: `${title}::`,
+        status: 'orange',
+        title,
+      }
+      if (!alerts.some((existingAlert) => existingAlert.id === progressingAlert.id)) {
+        alerts.push(progressingAlert)
+      }
+      return
+    }
+
     const healthSyncKeys = [...new Set(syncAlerts.map((entry) => entry.healthSyncKey))]
     setPartialUnhealthyDeploymentNodePulses(deploymentNodes, appsetClusters)
     pushSyncAlert(
