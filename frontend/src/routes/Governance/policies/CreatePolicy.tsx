@@ -7,7 +7,7 @@ import {
   useHighlightEditorPath,
   useItem,
 } from '@patternfly-labs/react-form-wizard'
-import { useContext, useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { generatePath, useNavigate } from 'react-router'
 import { LostChangesContext } from '../../../components/LostChanges'
 import { SyncEditor, ValidationStatus } from '../../../components/SyncEditor/SyncEditor'
@@ -82,17 +82,23 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
   const { cancelForm, submitForm } = useContext(LostChangesContext)
   const [createdPolicy, setCreatedPolicy] = useState<IResource>()
   const [isSaving, setIsSaving] = useState(false)
+  // Guard against duplicate success toasts when the effect re-runs (e.g. policies updates)
+  // before setCreatedPolicy(undefined) commits.
+  const toastedPolicyKeyRef = useRef<string>()
 
   // Before move to PolicyDetailPage,
   // Wait until "policies" are updated
   useEffect(() => {
     if (createdPolicy) {
+      const policyKey = `${createdPolicy.metadata?.namespace}/${createdPolicy.metadata?.name}`
       const foundPolicy = policies.find(
         (policy: Policy) =>
           policy.metadata.namespace === createdPolicy.metadata?.namespace &&
           policy.metadata.name === createdPolicy.metadata?.name
       )
-      if (foundPolicy) {
+      if (foundPolicy && toastedPolicyKeyRef.current !== policyKey) {
+        toastedPolicyKeyRef.current = policyKey
+        setCreatedPolicy(undefined)
         toast.addAlert({
           title: t('Policy created'),
           message: t('{{name}} was successfully created.', {
@@ -109,7 +115,6 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
         )
         setIsSaving(false)
         submitForm()
-        setCreatedPolicy(undefined)
       }
     }
   }, [policies, createdPolicy, navigate, toast, t, submitForm])
