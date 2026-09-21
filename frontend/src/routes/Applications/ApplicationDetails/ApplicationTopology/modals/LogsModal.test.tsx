@@ -27,9 +27,13 @@ jest.mock('~/resources/utils/fleet-logs-request', () => ({
   fleetLogsRequest: (...args: unknown[]) => mockFleetLogsRequest(...args),
 }))
 
-jest.mock('../helpers/diagram-helpers', () => ({
-  createResourceURL: () => mockCreateResourceURL(),
-}))
+jest.mock('../helpers/diagram-helpers', () => {
+  const actual = jest.requireActual('../helpers/diagram-helpers') as typeof import('../helpers/diagram-helpers')
+  return {
+    ...actual,
+    createResourceURL: () => mockCreateResourceURL(),
+  }
+})
 
 jest.mock('@patternfly/react-log-viewer', () => ({
   LogViewer: ({
@@ -163,7 +167,9 @@ describe('LogsModal', () => {
     const { container, close } = renderLogsModal()
     expect(screen.getByText('Logs')).toBeInTheDocument()
     expect(screen.getByText('View logs in Search details')).toBeInTheDocument()
-    expect(screen.getByText('Select pod')).toBeInTheDocument()
+    // Multiple pods use ResourceNavigator instead of the Select pod dropdown
+    expect(screen.getByText('pod-a')).toBeInTheDocument()
+    expect(screen.getByText('pod-b')).toBeInTheDocument()
 
     await waitFor(() => expect(mockFetchRetry).toHaveBeenCalled())
     expect(await screen.findByText('hub log line')).toBeInTheDocument()
@@ -193,12 +199,17 @@ describe('LogsModal', () => {
     renderLogsModal()
     await screen.findByText('hub log line')
 
-    await userEvent.click(screen.getByText('pod-a'))
-    const podB = await screen.findByText('pod-b')
-    await userEvent.click(podB)
+    await userEvent.click(screen.getByText('pod-b'))
 
     await waitFor(() => expect(mockFleetLogsRequest).toHaveBeenCalled())
     expect(await screen.findByText('fleet log line')).toBeInTheDocument()
+    expect(mockFleetLogsRequest).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cluster: 'managed-1',
+        podName: 'pod-b',
+        container: 'worker',
+      })
+    )
   })
 
   it('shows fetch errors from hub logs', async () => {
