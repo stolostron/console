@@ -83,6 +83,34 @@ describe('createSuggestsHealth', () => {
     expect(appSet.specs.isCreatingProgressing).toBe(true)
   })
 
+  it('clears isCreatingProgressing when there are no sync issues left', () => {
+    const alerts: TopologyAlert[] = []
+    const appSet = createAppSetNode({
+      specs: {
+        isCreating: true,
+        appSetApps: syncedAppSetApps('Healthy', 'Synced'),
+      },
+    })
+    const deployment = createDeploymentNode(
+      [
+        {
+          kind: 'Deployment',
+          name: 'nginx',
+          cluster: CLUSTER_NAME,
+          status: 'Synced',
+          health: { status: 'Healthy' },
+        },
+      ],
+      1
+    )
+    const health = analyzeTopologyHealth(appSet, [deployment])
+
+    createSuggestsHealth(appSet, [deployment], health, alerts, t)
+
+    expect(alerts).toEqual([])
+    expect(appSet.specs.isCreatingProgressing).toBe(false)
+  })
+
   it('still shows unsynced warning after creation grace period ends', () => {
     const alerts: TopologyAlert[] = []
     const appSet = createAppSetNode({

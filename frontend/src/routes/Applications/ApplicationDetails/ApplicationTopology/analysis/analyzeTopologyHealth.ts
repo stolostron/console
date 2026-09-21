@@ -175,7 +175,7 @@ export const isGracePeriodSuppressibleIssue = (healthSyncKey: string): boolean =
  * Creates consolidated health/sync alerts for unhealthy ApplicationSet resources.
  * While `specs.isCreating` is true (5-minute creation grace period), OutOfSync/Progressing-only
  * issues are suppressed and `specs.isCreatingProgressing` is set so TopologyAlerts can show
- * the Progressing info overlay until creation ends or a non-sync error appears.
+ * the Progressing info overlay until those issues clear, creation ends, or a non-sync error appears.
  */
 export const createSuggestsHealth = (
   appSet: TopologyNode,
@@ -187,8 +187,8 @@ export const createSuggestsHealth = (
   const { syncAlerts, appsetClusters, isAppSetPullModel } = health
   const isCreating = Boolean(appSet.specs.isCreating)
   const hasNonSyncError = syncAlerts.some((entry) => !isGracePeriodSuppressibleIssue(entry.healthSyncKey))
-  // Drive TopologyAlerts Progressing overlay: show while creating and no real health errors
-  appSet.specs.isCreatingProgressing = isCreating && !hasNonSyncError
+  // Show Progressing only while creating and there are suppressible sync issues to hide
+  appSet.specs.isCreatingProgressing = isCreating && !hasNonSyncError && syncAlerts.length > 0
 
   if (!health.shouldContinue) {
     return
