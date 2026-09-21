@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { nockSearch } from '../../../../../lib/nock-util'
-import { getAppSetTopology, openArgoCDURL, openRouteURL } from './topologyAppSet'
+import { getAppSetAppsFirstSeenAt, getAppSetTopology, openArgoCDURL, openRouteURL } from './topologyAppSet'
 import i18next, { TFunction } from 'i18next'
 import type { ApplicationModel, ExtendedTopology } from '../types'
 import type { ToolbarControl } from '../topology/components/TopologyToolbar'
@@ -140,6 +140,28 @@ describe('openRouteURL', () => {
     const routeObject = {}
     openRouteURL(routeObject, toggleLoading, 'local-cluster')
     expect(toggleLoading).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('getAppSetAppsFirstSeenAt', () => {
+  it('records the current time the first time apps are seen and reuses it on later calls', () => {
+    const cache = new Map<string, number>()
+    const firstCallTime = 1_000
+    expect(getAppSetAppsFirstSeenAt('ns/name', true, cache, firstCallTime)).toBe(firstCallTime)
+    expect(getAppSetAppsFirstSeenAt('ns/name', true, cache, firstCallTime + 60_000)).toBe(firstCallTime)
+  })
+
+  it('returns undefined and clears the cache entry while there are no apps', () => {
+    const cache = new Map<string, number>([['ns/name', 1_000]])
+    expect(getAppSetAppsFirstSeenAt('ns/name', false, cache, 2_000)).toBeUndefined()
+    expect(cache.has('ns/name')).toBe(false)
+  })
+
+  it('restarts the timer if apps disappear and reappear', () => {
+    const cache = new Map<string, number>()
+    expect(getAppSetAppsFirstSeenAt('ns/name', true, cache, 1_000)).toBe(1_000)
+    getAppSetAppsFirstSeenAt('ns/name', false, cache, 2_000)
+    expect(getAppSetAppsFirstSeenAt('ns/name', true, cache, 3_000)).toBe(3_000)
   })
 })
 

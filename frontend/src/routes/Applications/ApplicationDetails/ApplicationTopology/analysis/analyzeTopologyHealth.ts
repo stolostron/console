@@ -157,25 +157,25 @@ export const analyzeTopologyHealth = (
   }
 }
 
-/** Sync/health keys that are expected while an ApplicationSet is still creating. */
-const GRACE_PERIOD_SUPPRESSIBLE_KEYS = new Set(['OutOfSync', 'Progressing'])
+/** Window after ApplicationSet apps first appear during which bad-sync issues keep the Progressing overlay. */
+export const APP_SET_APPS_SYNC_GRACE_PERIOD_MS = 60 * 1000
 
 /**
- * True when every token in a health/sync key is only OutOfSync or Progressing
- * (no Degraded, Missing, Unknown, etc.).
+ * True while a bad-sync issue has persisted for no more than `APP_SET_APPS_SYNC_GRACE_PERIOD_MS`
+ * since the ApplicationSet's apps first appeared (`specs.appSetAppsFirstSeenAt`, set by
+ * {@link getAppSetTopology}). Undefined/missing timestamps are treated as outside the grace period.
  */
-export const isGracePeriodSuppressibleIssue = (healthSyncKey: string): boolean => {
-  if (!healthSyncKey) {
-    return false
-  }
-  return healthSyncKey.split('/').every((token) => GRACE_PERIOD_SUPPRESSIBLE_KEYS.has(token))
-}
+export const isWithinAppsSyncGracePeriod = (appsFirstSeenAt: number | undefined, now: number = Date.now()): boolean =>
+  appsFirstSeenAt !== undefined && now - appsFirstSeenAt <= APP_SET_APPS_SYNC_GRACE_PERIOD_MS
 
 /**
  * Creates consolidated health/sync alerts for unhealthy ApplicationSet resources.
- * While `specs.isCreating` is true (5-minute creation grace period), OutOfSync/Progressing-only
- * issues are suppressed and `specs.isCreatingProgressing` is set so TopologyAlerts can show
- * the Progressing info overlay until those issues clear, creation ends, or a non-sync error appears.
+ *
+ * The Topology Alerts Progressing overlay (`specs.isCreatingProgressing`) shows until:
+ * 1. `specs.appSetApps` has at least one entry, and
+ * 2. there is no bad-sync alert, or the bad-sync alert has existed for no more than 1 minute
+ *    since the apps first appeared.
+ * Bad-sync alerts are suppressed for as long as the Progressing overlay is shown for them.
  */
 export const createSuggestsHealth = (
   appSet: TopologyNode,
@@ -185,10 +185,14 @@ export const createSuggestsHealth = (
   t: TFunction
 ): void => {
   const { syncAlerts, appsetClusters, isAppSetPullModel } = health
-  const isCreating = Boolean(appSet.specs.isCreating)
-  const hasNonSyncError = syncAlerts.some((entry) => !isGracePeriodSuppressibleIssue(entry.healthSyncKey))
-  // Show Progressing only while creating and there are suppressible sync issues to hide
-  appSet.specs.isCreatingProgressing = isCreating && !hasNonSyncError && syncAlerts.length > 0
+  const appSetApps = (appSet.specs.appSetApps as unknown[] | undefined) ?? []
+  const hasApps = appSetApps.length !== 0
+  const appsFirstSeenAt = appSet.specs.appSetAppsFirstSeenAt as number | undefined
+  const hasBadSync = syncAlerts.length > 0
+  const withinSyncGracePeriod = hasBadSync && isWithinAppsSyncGracePeriod(appsFirstSeenAt)
+  // Progressing overlay: apps haven't appeared yet, or bad sync is still within its grace window
+  const suppressBadSync = !hasApps || withinSyncGracePeriod
+  appSet.specs.isCreatingProgressing = suppressBadSync
 
   if (!health.shouldContinue) {
     return
@@ -198,8 +202,7 @@ export const createSuggestsHealth = (
   // create alert for unhealthy/unsynced deployments
   /////////////////////////////////////////////
   if (syncAlerts.length > 0) {
-    // During creation grace period, suppress OutOfSync/Progressing-only warnings
-    if (isCreating && !hasNonSyncError) {
+    if (suppressBadSync) {
       return
     }
 

@@ -217,8 +217,7 @@ const TopologyContent: React.FC<TopologyContentProps> = ({
     return () => clearTimeout(timer)
   }, [isProcessingSave, processingSaveStart, onClearProcessingSave])
 
-  const showAlerts =
-    (alerts && alerts.length > 0) || isProcessingSave || isAnalyzing || isCreatingProgressing
+  const showAlerts = (alerts && alerts.length > 0) || isProcessingSave || isAnalyzing || isCreatingProgressing
 
   return (
     <TopologyView
