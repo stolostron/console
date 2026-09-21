@@ -16,6 +16,7 @@ import nock from 'nock'
 import { discoverSystemAppNamespacePrefixes, resetSystemAppNamespacePrefixes } from '../../src/routes/aggregators/utils'
 import { resetMultiClusterHubCache } from '../../src/lib/multi-cluster-hub'
 import * as multiClusterHub from '../../src/lib/multi-cluster-hub'
+import * as search from '../../src/lib/search'
 import { resetMultiClusterEngineCache } from '../../src/lib/multi-cluster-engine'
 import { ServerSideEvents } from '../../src/lib/server-side-events'
 import { polledAggregation } from '../../src/routes/aggregator'
@@ -224,6 +225,43 @@ describe(`aggregator Route`, function () {
       stopAggregatingApplications()
       await promise
       infoSpy.mockRestore()
+      jest.restoreAllMocks()
+    })
+
+    it('should stop search API retry loop when aggregation is stopped', async function () {
+      jest.useFakeTimers()
+      resetMultiClusterHubCache()
+      jest.spyOn(multiClusterHub, 'getMultiClusterHub').mockResolvedValue({
+        metadata: { namespace: 'ocm' },
+        status: { currentVersion: '2.5.1' },
+      })
+
+      let rejectPing!: (error: Error) => void
+      const pingSpy = jest.spyOn(search, 'pingSearchAPI').mockImplementation(
+        () =>
+          new Promise<boolean>((_resolve, reject) => {
+            rejectPing = reject
+          })
+      )
+      const errorSpy = jest.spyOn(logger, 'error').mockImplementation(() => undefined)
+
+      const promise = searchLoop()
+      await Promise.resolve()
+
+      expect(pingSpy).toHaveBeenCalledTimes(1)
+
+      rejectPing(new Error('search unavailable'))
+      await Promise.resolve()
+      await Promise.resolve()
+
+      expect(errorSpy).toHaveBeenCalledWith('search API missing')
+
+      stopAggregatingApplications()
+      await promise
+
+      // Regression: without checking !stopping, the loop would ping again after the wait cancels
+      expect(pingSpy).toHaveBeenCalledTimes(1)
+
       jest.restoreAllMocks()
     })
 
@@ -640,7 +678,7 @@ function setupNocks(prefixes?: boolean) {
         ],
       })
   }
-  
+
   //
   // PING SEARCHAPI
   nock('https://search-search-api.undefined.svc.cluster.local:4010')
