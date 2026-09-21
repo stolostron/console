@@ -91,6 +91,7 @@ export async function getAppSetTopology(
       isDesign: true,
       raw: application.app,
       isCreating,
+      isCreatingProgressing: isCreating,
       allClusters: {
         isLocal: allClusterNames.includes(hubClusterName),
         remoteCount: allClusterNames.includes(hubClusterName) ? allClusterNames.length - 1 : allClusterNames.length,

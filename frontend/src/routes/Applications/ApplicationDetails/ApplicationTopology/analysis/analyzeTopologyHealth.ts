@@ -174,7 +174,8 @@ export const isGracePeriodSuppressibleIssue = (healthSyncKey: string): boolean =
 /**
  * Creates consolidated health/sync alerts for unhealthy ApplicationSet resources.
  * While `specs.isCreating` is true (5-minute creation grace period), OutOfSync/Progressing-only
- * issues show a Progressing info alert instead of an unsynced-resources warning.
+ * issues are suppressed and `specs.isCreatingProgressing` is set so TopologyAlerts can show
+ * the Progressing info overlay until creation ends or a non-sync error appears.
  */
 export const createSuggestsHealth = (
   appSet: TopologyNode,
@@ -183,30 +184,22 @@ export const createSuggestsHealth = (
   alerts: TopologyAlert[],
   t: TFunction
 ): void => {
+  const { syncAlerts, appsetClusters, isAppSetPullModel } = health
+  const isCreating = Boolean(appSet.specs.isCreating)
+  const hasNonSyncError = syncAlerts.some((entry) => !isGracePeriodSuppressibleIssue(entry.healthSyncKey))
+  // Drive TopologyAlerts Progressing overlay: show while creating and no real health errors
+  appSet.specs.isCreatingProgressing = isCreating && !hasNonSyncError
+
   if (!health.shouldContinue) {
     return
   }
-
-  const { syncAlerts, appsetClusters, isAppSetPullModel } = health
 
   /////////////////////////////////////////////
   // create alert for unhealthy/unsynced deployments
   /////////////////////////////////////////////
   if (syncAlerts.length > 0) {
-    const isCreating = Boolean(appSet.specs.isCreating)
-    const hasNonSyncError = syncAlerts.some((entry) => !isGracePeriodSuppressibleIssue(entry.healthSyncKey))
-
     // During creation grace period, suppress OutOfSync/Progressing-only warnings
     if (isCreating && !hasNonSyncError) {
-      const title = t('Progressing...')
-      const progressingAlert: TopologyAlert = {
-        id: `${title}::`,
-        status: 'orange',
-        title,
-      }
-      if (!alerts.some((existingAlert) => existingAlert.id === progressingAlert.id)) {
-        alerts.push(progressingAlert)
-      }
       return
     }
 

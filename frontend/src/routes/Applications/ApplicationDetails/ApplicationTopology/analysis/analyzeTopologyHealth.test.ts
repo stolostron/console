@@ -66,7 +66,7 @@ describe('createSuggestsHealth', () => {
     },
   ]
 
-  it('shows Progressing instead of unsynced warning while ApplicationSet is creating (ACM-46011)', () => {
+  it('suppresses unsynced warning and sets isCreatingProgressing while ApplicationSet is creating (ACM-46011)', () => {
     const alerts: TopologyAlert[] = []
     const appSet = createAppSetNode({
       specs: {
@@ -79,10 +79,8 @@ describe('createSuggestsHealth', () => {
 
     createSuggestsHealth(appSet, [deployment], health, alerts, t)
 
-    expect(alerts).toHaveLength(1)
-    expect(alerts[0].title).toBe('Progressing...')
-    expect(alerts[0].status).toBe('orange')
-    expect(alerts[0].description).toBeUndefined()
+    expect(alerts).toEqual([])
+    expect(appSet.specs.isCreatingProgressing).toBe(true)
   })
 
   it('still shows unsynced warning after creation grace period ends', () => {
@@ -101,6 +99,7 @@ describe('createSuggestsHealth', () => {
     expect(alerts).toHaveLength(1)
     expect(alerts[0].title).toBe('Some resources are not healthy or synced on these clusters')
     expect(alerts[0].description?.message).toBe('Status: OutOfSync')
+    expect(appSet.specs.isCreatingProgressing).toBe(false)
   })
 
   it('shows real health errors even while ApplicationSet is creating', () => {
@@ -120,5 +119,6 @@ describe('createSuggestsHealth', () => {
     expect(alerts[0].title).toBe('Some resources are not healthy or synced on these clusters')
     expect(alerts[0].description?.message).toBe('Status: OutOfSync/Degraded')
     expect(alerts[0].status).toBe('red')
+    expect(appSet.specs.isCreatingProgressing).toBe(false)
   })
 })

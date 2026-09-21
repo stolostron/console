@@ -172,6 +172,10 @@ const TopologyContent: React.FC<TopologyContentProps> = ({
   const alertsKeyAtProcessingStartRef = useRef<string>()
   const prevIsProcessingSaveRef = useRef(false)
 
+  const isCreatingProgressing = elements.nodes.some(
+    (node: TopologyNode) => node.type === 'applicationset' && Boolean(node.specs?.isCreatingProgressing)
+  )
+
   useEffect(() => {
     if (isProcessingSave && !prevIsProcessingSaveRef.current) {
       alertsKeyAtProcessingStartRef.current = alertsTitlesKey
@@ -213,7 +217,8 @@ const TopologyContent: React.FC<TopologyContentProps> = ({
     return () => clearTimeout(timer)
   }, [isProcessingSave, processingSaveStart, onClearProcessingSave])
 
-  const showAlerts = (alerts && alerts.length > 0) || isProcessingSave || isAnalyzing
+  const showAlerts =
+    (alerts && alerts.length > 0) || isProcessingSave || isAnalyzing || isCreatingProgressing
 
   return (
     <TopologyView
@@ -245,6 +250,7 @@ const TopologyContent: React.FC<TopologyContentProps> = ({
             currentAlertsKey={currentAlertsKey ?? '[]'}
             isAnalyzing={isAnalyzing}
             isProcessingSave={isProcessingSave}
+            isCreatingProgressing={isCreatingProgressing}
             onEditAppSet={onEditAppSet}
             onEditYaml={onEditYaml}
             onViewLogs={onViewLogs}
