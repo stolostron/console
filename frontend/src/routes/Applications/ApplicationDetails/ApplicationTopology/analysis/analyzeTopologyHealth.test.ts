@@ -1,10 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { t } from '~/lib/test-helpers'
-import {
-  analyzeTopologyHealth,
-  createSuggestsHealth,
-  isGracePeriodSuppressibleIssue,
-} from './analyzeTopologyHealth'
+import { analyzeTopologyHealth, createSuggestsHealth, isGracePeriodSuppressibleIssue } from './analyzeTopologyHealth'
 import type { TopologyAlert } from './utils'
 import {
   APPSET_NAME,
