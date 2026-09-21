@@ -76,7 +76,7 @@ describe('useVirtualMachineDetection', () => {
     expect(result.current.error).toBeUndefined()
   })
 
-  it('should return hasVirtualMachines as false when related data is missing', () => {
+  it('should return hasVirtualMachines as false when count is null', () => {
     mockUseSearchResultCountQuery.mockReturnValue({
       data: {
         searchResult: [{ count: null }],
