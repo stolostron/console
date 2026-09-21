@@ -38,9 +38,7 @@ describe('AcmSelectBase', () => {
       const { container } = render(<SingleSelect onSelect={onSelect} />)
 
       // MenuToggle uses role=combobox on a button; known PatternFly pattern flagged by axe
-      expect(
-        await axe(container, { rules: { 'aria-allowed-role': { enabled: false } } })
-      ).toHaveNoViolations()
+      expect(await axe(container, { rules: { 'aria-allowed-role': { enabled: false } } })).toHaveNoViolations()
 
       userEvent.click(screen.getByRole('combobox', { name: /select a color/i }))
       await waitFor(() => expect(screen.getByRole('option', { name: /red/i })).toBeVisible())
