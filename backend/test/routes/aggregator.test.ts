@@ -640,6 +640,7 @@ function setupNocks(prefixes?: boolean) {
         ],
       })
   }
+  
   //
   // PING SEARCHAPI
   nock('https://search-search-api.undefined.svc.cluster.local:4010')

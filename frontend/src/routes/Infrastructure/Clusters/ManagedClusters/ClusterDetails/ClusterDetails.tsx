@@ -188,6 +188,7 @@ export default function ClusterDetailsPage() {
   }, [namespace])
 
   const { isSearchAvailable } = useContext(PluginContext)
+  
   const clusterDetailsContext = useMemo<ClusterDetailsContext>(
     () => ({
       cluster,
