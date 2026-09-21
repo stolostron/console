@@ -68,6 +68,55 @@ describe('nodeStyle tests', () => {
     expect(result.label).toBe('manifests')
   })
 
+  test('git node truncates long Go template path at 20 characters', () => {
+    const result = nodeStyleAPI.getNodeStyle(
+      {
+        uid: 'u',
+        name: 'repo',
+        namespace: 'ns',
+        type: 'git',
+        specs: {
+          resources: [{ path: '{{.path.basename}}/deploy' }],
+        },
+      },
+      undefined
+    )
+    expect(result.label).toBe('{{.path.basename}}/d…')
+    expect(result.label.length).toBe(21)
+  })
+
+  test('git node does not truncate label at exactly 20 characters', () => {
+    const result = nodeStyleAPI.getNodeStyle(
+      {
+        uid: 'u',
+        name: 'repo',
+        namespace: 'ns',
+        type: 'git',
+        specs: {
+          resources: [{ path: '12345678901234567890' }],
+        },
+      },
+      undefined
+    )
+    expect(result.label).toBe('12345678901234567890')
+  })
+
+  test('git node truncates joined multi-resource label over 20 characters', () => {
+    const result = nodeStyleAPI.getNodeStyle(
+      {
+        uid: 'u',
+        name: 'repo',
+        namespace: 'ns',
+        type: 'git',
+        specs: {
+          resources: [{ path: 'apps/frontend' }, { path: 'apps/backend' }],
+        },
+      },
+      undefined
+    )
+    expect(result.label).toBe('apps/frontend, apps/…')
+  })
+
   test('chart node uses same label rules as git', () => {
     const result = nodeStyleAPI.getNodeStyle(
       {
