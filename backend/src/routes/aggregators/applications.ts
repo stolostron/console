@@ -406,7 +406,8 @@ export async function searchLoop() {
         }
         await waitWhileRunning(5 * 60 * 1000)
       }
-    } while (!exists)
+    } while (!exists && !stopping)
+    if (stopping) break
     /* istanbul ignore if */
     if (searchAPIMissing) {
       logger.info('search API found')
