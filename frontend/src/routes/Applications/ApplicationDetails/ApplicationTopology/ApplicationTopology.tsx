@@ -273,6 +273,21 @@ export function ApplicationTopologyPageContent() {
         node,
         hubClusterName,
         highlightEditorPath,
+        navigatorMode: 'edit',
+        onUpdateSuccess: handleResourceUpdateSuccess,
+      })
+    },
+    [hubClusterName, handleResourceUpdateSuccess]
+  )
+
+  const handleEditApplications = useCallback(
+    (node: TopologyNode) => {
+      setEditYamlModalProps({
+        open: true,
+        close: () => setEditYamlModalProps({ open: false }),
+        node,
+        hubClusterName,
+        navigatorMode: 'application',
         onUpdateSuccess: handleResourceUpdateSuccess,
       })
     },
@@ -357,6 +372,7 @@ export function ApplicationTopologyPageContent() {
         onRefreshResources={refreshResources}
         onEditAppSet={handleEditAppSet}
         onEditYaml={handleEditYaml}
+        onEditApplications={handleEditApplications}
         onViewLogs={handleViewLogs}
         onSyncResources={handleSyncResources}
         onLaunchArgo={handleLaunchArgo}

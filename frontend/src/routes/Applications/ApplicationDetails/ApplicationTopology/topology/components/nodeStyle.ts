@@ -25,7 +25,7 @@ export const getNodeStyle = (
   const label = getLabel(type, specs)
   const { status, statusIcon, isDisabled } = getStatus(d)
   /* istanbul ignore next */
-  const shape = typeToIconMap[type]?.shape || 'customresource'
+  const shape = specs?.useArgoApplicationIcon === true ? 'argocdapp' : typeToIconMap[type]?.shape || 'customresource'
 
   /* istanbul ignore next */
   const { dx, dy } = offset || { dx: 0, dy: 0 }

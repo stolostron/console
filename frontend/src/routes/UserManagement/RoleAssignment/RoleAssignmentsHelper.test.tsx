@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-// Mock react-router-dom-v5-compat
+// Mock react-router
 jest.mock('react-router', () => ({
   ...jest.requireActual('react-router'),
   generatePath: jest.fn((path: string, params: Record<string, string>) => {

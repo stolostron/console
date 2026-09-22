@@ -468,7 +468,7 @@
   "Allow privilege escalation": "允许权限升级",
   "Allow privileged container": "允许特权容器",
   "Allowed Cluster Service Versions": "允许的集群服务版本",
-  "Allows your application to be placed on clusters with specific taints. Example: To deploy on GPU clusters, add a toleration with key=gpu, operator=Equal, value=nvidia, effect=NoSelect": "允许您的应用程序放置到具有特定污点的集群中。示例： 要在 GPU 集群上部署，添加带有 key=gpu, operator=Equal, value=nvidia, effect=NoSelect 的容限",
+  "Allows your application to be placed on clusters with specific taints. Example: To deploy on GPU clusters, add a toleration with key=gpu, operator=Equal, value=nvidia, effect=NoSelect": "允许您的应用程序放置到具有特定污点的集群中。示例： 要在 GPU 集群上部署，添加带有 键=gpu, operator=等于, 值=nvidia, 影响=NoSelect 的容限",
   "Already enforcing": "已强制执行",
   "Already informing": "已通知",
   "Amazon Web Services": "Amazon Web Services",

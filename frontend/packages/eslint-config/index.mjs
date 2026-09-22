@@ -119,6 +119,15 @@ export default [
                 'Please use hooks from ./src/hooks/shared-react-query for ACM/MCE dynamic plugins common QueryClientProvider',
               name: '@tanstack/react-query',
             },
+            {
+              message: 'Import from react-router instead of react-router-dom, react-router-dom is removed in React Router v8',
+              name: 'react-router-dom',
+            },
+            {
+              message:
+                'Import from react-router instead of react-router-dom-v5-compat, react-router-dom-v5-compat is incompatible with React Router v8',
+              name: 'react-router-dom-v5-compat',
+            },
           ],
           patterns: [
             {

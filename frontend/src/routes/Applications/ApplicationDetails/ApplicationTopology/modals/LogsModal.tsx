@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { SelectOption } from '@patternfly/react-core'
 import { LogViewer } from '@patternfly/react-log-viewer'
@@ -8,11 +8,7 @@ import screenfull from 'screenfull'
 import { useLocalHubName } from '~/hooks/use-local-hub'
 import { Trans, useTranslation } from '~/lib/acm-i18next'
 import { LogsFooterButton, LogsHeader, LogsToolbar } from '~/routes/Search/Details/LogsPage'
-import type {
-  PodInfo,
-  ResourceMap,
-  TopologyNode,
-} from '~/routes/Applications/ApplicationDetails/ApplicationTopology/types'
+import type { PodInfo, TopologyNode } from '~/routes/Applications/ApplicationDetails/ApplicationTopology/types'
 import { fetchRetry, getBackendUrl, isRequestAbortedError } from '~/resources/utils'
 import { fleetLogsRequest } from '~/resources/utils/fleet-logs-request'
 import { useRecoilValue, useSharedAtoms } from '~/shared-recoil'
@@ -20,6 +16,15 @@ import { AcmAlert, AcmButton, AcmLoadingPage, AcmModal, AcmSelect } from '~/ui-c
 import { createResourceURL } from '../helpers/diagram-helpers'
 import type { ResourceAction } from '../types'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { TopologyModalNavigatorLayout } from '../components/TopologyModalNavigatorLayout'
+import {
+  buildPodNavigatorGroups,
+  findInitialNavigatorSelection,
+  flattenNavigatorGroups,
+  getAllPodsFromNode,
+  navigatorItemCount,
+  type ResourceNavigatorItem,
+} from '../helpers/resourceNavigatorHelpers'
 
 export interface ILogsModalProps {
   close: () => void
@@ -30,12 +35,7 @@ export interface ILogsModalProps {
 }
 
 function getPodsFromNode(node: TopologyNode): PodInfo[] {
-  const podModel = node?.specs?.podModel as ResourceMap | undefined
-  if (!podModel || Object.keys(podModel).length === 0) {
-    return []
-  }
-  const firstKey = Object.keys(podModel)[0]
-  return podModel[firstKey] ?? []
+  return getAllPodsFromNode(node)
 }
 
 function parseContainers(container?: string): string[] {
@@ -57,6 +57,22 @@ export function LogsModal(props: ILogsModalProps | { open: false }) {
 
 function LogsModalContent({ close, node, processActionLink, hubClusterName }: Readonly<Omit<ILogsModalProps, 'open'>>) {
   const { t } = useTranslation()
+  const navigatorGroups = useMemo(() => buildPodNavigatorGroups(node), [node])
+  const navigatorItems = useMemo(() => flattenNavigatorGroups(navigatorGroups), [navigatorGroups])
+  const showNavigator = navigatorItemCount(node, 'logs') > 1
+  const initialSelection = useMemo(() => findInitialNavigatorSelection(navigatorItems), [navigatorItems])
+  const [selectedItemId, setSelectedItemId] = useState<string | undefined>(initialSelection?.id)
+
+  useEffect(() => {
+    setSelectedItemId(initialSelection?.id)
+  }, [initialSelection?.id, node.id])
+
+  const selectedItem = navigatorItems.find((item) => item.id === selectedItemId) ?? initialSelection
+  const activeNode = selectedItem?.filteredNode ?? node
+
+  const handleNavigatorSelect = useCallback((item: ResourceNavigatorItem) => {
+    setSelectedItemId(item.id)
+  }, [])
 
   const renderResourceURLLink = (resource: { data: ResourceAction }, isLogURL = false) => {
     const processLink = () => {
@@ -101,14 +117,29 @@ function LogsModalContent({ close, node, processActionLink, hubClusterName }: Re
           display: 'flex',
           flexDirection: 'column',
           height: '70vh',
-          overflow: 'auto',
+          minHeight: 0,
+          overflow: 'hidden',
           paddingTop: 'var(--pf-t--global--spacer--sm)',
           paddingLeft: 'var(--pf-t--global--spacer--lg)',
           paddingRight: 'var(--pf-t--global--spacer--lg)',
           paddingBottom: 'var(--pf-t--global--spacer--lg)',
         }}
       >
-        <TopologyLogsViewer node={node} renderResourceURLLink={renderResourceURLLink} />
+        <TopologyModalNavigatorLayout
+          showNavigator={showNavigator}
+          navigatorProps={{
+            groups: navigatorGroups,
+            selectedItemId,
+            onSelectItem: handleNavigatorSelect,
+          }}
+        >
+          <TopologyLogsViewer
+            key={selectedItemId ?? node.id}
+            node={activeNode}
+            renderResourceURLLink={renderResourceURLLink}
+            showPodSelect={!showNavigator}
+          />
+        </TopologyModalNavigatorLayout>
       </div>
     </AcmModal>
   )
@@ -117,9 +148,11 @@ function LogsModalContent({ close, node, processActionLink, hubClusterName }: Re
 function TopologyLogsViewer({
   node,
   renderResourceURLLink,
+  showPodSelect = true,
 }: Readonly<{
   node: TopologyNode
   renderResourceURLLink: (resource: { data: ResourceAction }, isLogURL?: boolean) => ReactNode
+  showPodSelect?: boolean
 }>) {
   const { t } = useTranslation()
   const localHubName = useLocalHubName()
@@ -174,6 +207,27 @@ function TopologyLogsViewer({
       setSelectedPodName(pods[0]?.name ?? '')
     }
   }, [pods, selectedPodName])
+
+  // Keep pod + container in sync when the filtered node changes (ResourceNavigator selection).
+  useEffect(() => {
+    if (showPodSelect || pods.length === 0) {
+      return
+    }
+    const nextPod = pods[0]
+    const nextName = nextPod.name ?? ''
+    setSelectedPodName(nextName)
+    const nextContainers = parseContainers(nextPod.container as string | undefined)
+    const storageKey = `${nextName}-${nextPod.cluster}-container`
+    const stored = sessionStorage.getItem(storageKey)
+    const nextContainer = stored && nextContainers.includes(stored) ? stored : (nextContainers[0] ?? '')
+    setContainer(nextContainer)
+    if (nextContainer) {
+      sessionStorage.setItem(storageKey, nextContainer)
+    }
+    setPreviousLogs(false)
+    setLogs('')
+    setLogsError(undefined)
+  }, [showPodSelect, node.name, node.namespace, node.cluster, pods])
 
   useEffect(() => {
     if (containers.length > 0 && sessionStorage.getItem(`${name}-${cluster}-container`) === null) {
@@ -407,28 +461,32 @@ function TopologyLogsViewer({
         },
         true
       )}
-      <span style={{ display: 'block', paddingLeft: '0.5rem', fontSize: '1rem' }}>{t('Select pod')}</span>
-      <AcmSelect
-        id={'pod-select'}
-        label={''}
-        value={selectedPodName}
-        isRequired={true}
-        onChange={(value) => {
-          const pod = pods.find((item) => item.name === value)
-          const podContainers = parseContainers(pod?.container as string | undefined)
-          setSelectedPodName(value as string)
-          setPreviousLogs(false)
-          setContainer(podContainers[0] ?? '')
-        }}
-      >
-        {pods.map((pod) => {
-          return (
-            <SelectOption key={pod.name} value={pod.name}>
-              {pod.name}
-            </SelectOption>
-          )
-        })}
-      </AcmSelect>
+      {showPodSelect && pods.length > 1 && (
+        <>
+          <span style={{ display: 'block', paddingLeft: '0.5rem', fontSize: '1rem' }}>{t('Select pod')}</span>
+          <AcmSelect
+            id={'pod-select'}
+            label={''}
+            value={selectedPodName}
+            isRequired={true}
+            onChange={(value) => {
+              const pod = pods.find((item) => item.name === value)
+              const podContainers = parseContainers(pod?.container as string | undefined)
+              setSelectedPodName(value as string)
+              setPreviousLogs(false)
+              setContainer(podContainers[0] ?? '')
+            }}
+          >
+            {pods.map((pod) => {
+              return (
+                <SelectOption key={pod.name} value={pod.name}>
+                  {pod.name}
+                </SelectOption>
+              )
+            })}
+          </AcmSelect>
+        </>
+      )}
       <div ref={resourceLogRef} style={{ flex: 1, minHeight: 0, marginTop: '0.5rem' }}>
         {logsContent}
       </div>
