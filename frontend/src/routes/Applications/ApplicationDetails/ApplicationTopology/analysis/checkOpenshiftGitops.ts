@@ -34,7 +34,8 @@ export const checkOpenshiftGitops = async (
   let hasGitopsIssues = false
 
   if (isAppSetPullModel) {
-    await verifyPullClusterGitOps(appSet, [...unhealthyClusterSet], alerts, t)
+    // TODO: use a backend api to determine if a cluster has gitops
+    // await verifyPullClusterGitOps(appSet, [...unhealthyClusterSet], alerts, t)
   }
 
   /////////////////////////////////////////////
@@ -204,7 +205,7 @@ const checkNonRunningArgoCDPods = async (
   return hasGitopsIssues
 }
 
-const verifyPullClusterGitOps = async (
+export const verifyPullClusterGitOps = async (
   appSet: TopologyNode,
   appSetClusters: string[],
   alerts: TopologyAlert[],
