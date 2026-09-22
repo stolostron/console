@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { css } from '@emotion/css'
+import useResizeObserver from '@react-hook/resize-observer'
 import { Markdown } from '@redhat-cloud-services/rule-components/Markdown'
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { AcmButton } from '../../../../../ui-components'
 
@@ -25,13 +26,22 @@ export function ExpandableDescription(props: { description: string; maxLines?: n
   const [isTruncatable, setIsTruncatable] = useState(false)
   const contentRef = useRef<HTMLDivElement>(null)
 
-  useLayoutEffect(() => {
+  const updateTruncatable = useCallback(() => {
     const element = contentRef.current
     if (!element || isExpanded) {
       return
     }
     setIsTruncatable(element.scrollHeight > element.clientHeight + 1)
-  }, [props.description, isExpanded, maxLines])
+  }, [isExpanded])
+
+  useLayoutEffect(() => {
+    updateTruncatable()
+  }, [props.description, maxLines, updateTruncatable])
+
+  // Recalculate when the container reflows (narrower width, text zoom, etc.)
+  useResizeObserver(contentRef, () => {
+    requestAnimationFrame(updateTruncatable)
+  })
 
   return (
     <div>

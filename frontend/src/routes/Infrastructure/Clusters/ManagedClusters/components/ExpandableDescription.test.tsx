@@ -1,11 +1,26 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { ExpandableDescription } from './ExpandableDescription'
 
+jest.mock('@react-hook/resize-observer')
+
+import useResizeObserver from '@react-hook/resize-observer'
+const mockUseResizeObserver = jest.mocked(useResizeObserver)
+
 describe('ExpandableDescription', () => {
+  let resizeCallback: (() => void) | undefined
+
+  beforeEach(() => {
+    resizeCallback = undefined
+    mockUseResizeObserver.mockImplementation((_target, callback) => {
+      resizeCallback = callback as () => void
+      return {} as ResizeObserver
+    })
+  })
+
   afterEach(() => {
     jest.restoreAllMocks()
   })
@@ -36,5 +51,20 @@ describe('ExpandableDescription', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Show less' }))
     expect(screen.getByRole('button', { name: 'Show more' })).toBeInTheDocument()
     expect(await axe(container)).toHaveNoViolations()
+  })
+
+  it('recalculates truncatable state when the container resizes', async () => {
+    const scrollHeightSpy = jest.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockReturnValue(40)
+    jest.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(40)
+
+    render(<ExpandableDescription description="Resize-sensitive description" />)
+    expect(screen.queryByRole('button', { name: 'Show more' })).not.toBeInTheDocument()
+
+    scrollHeightSpy.mockReturnValue(200)
+    resizeCallback?.()
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Show more' })).toBeInTheDocument()
+    })
   })
 })
