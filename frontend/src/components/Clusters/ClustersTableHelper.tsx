@@ -67,6 +67,7 @@ import {
 import { SearchOperator } from '../../ui-components/AcmSearchInput'
 import { BulkActionModalProps, errorIsNot } from '../BulkActionModal'
 import { HighlightSearchText } from '../HighlightSearchText'
+import { DEFAULT_MAX_VISIBLE_LABELS, getOverflowLabelKeys } from './labelCollapse'
 
 const patchClusterPowerState = (cluster: Cluster, powerState: 'Hibernating' | 'Running') =>
   patchResource(
@@ -358,7 +359,7 @@ export function useClusterLabelsColumn(isLarge: boolean, hubClusterName: string 
     cell: (cluster) => {
       if (cluster.labels) {
         const labelKeys = Object.keys(cluster.labels)
-        const collapse =
+        const preferCollapse =
           [
             'cloud',
             'clusterID',
@@ -374,14 +375,10 @@ export function useClusterLabelsColumn(isLarge: boolean, hubClusterName: string 
           }) ?? []
         labelKeys.forEach((label) => {
           if (label.includes('open-cluster-management.io')) {
-            collapse.push(label)
+            preferCollapse.push(label)
           }
         })
-        const visibleLabels = labelKeys.filter((key) => !collapse.includes(key))
-        const maxVisibleLabels = 5
-        if (visibleLabels.length > maxVisibleLabels) {
-          collapse.push(...visibleLabels.slice(maxVisibleLabels))
-        }
+        const collapse = getOverflowLabelKeys(labelKeys, preferCollapse, DEFAULT_MAX_VISIBLE_LABELS)
         return (
           <AcmLabels
             labels={cluster.labels}

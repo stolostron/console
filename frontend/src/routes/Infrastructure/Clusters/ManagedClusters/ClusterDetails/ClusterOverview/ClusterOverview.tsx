@@ -8,7 +8,6 @@ import {
 import { AlertVariant, ButtonVariant, PageSection, Popover } from '@patternfly/react-core'
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { ExternalLinkAltIcon, OutlinedQuestionCircleIcon, PencilAltIcon } from '@patternfly/react-icons'
-import { Markdown } from '@redhat-cloud-services/rule-components/Markdown'
 import { Fragment, useMemo, useState } from 'react'
 import { generatePath, Link } from 'react-router'
 import { getControlPlaneString } from '../../../../../../components/Clusters'
@@ -47,8 +46,10 @@ import AIClusterDetails from '../../components/cim/AIClusterDetails'
 import AIHypershiftClusterDetails from '../../components/cim/AIHypershiftClusterDetails'
 import { ClusterStatusMessageAlert } from '../../components/ClusterStatusMessageAlert'
 import { DistributionField } from '../../components/DistributionField'
+import { getCollapsedLabelKeys } from '../../../../../../components/Clusters/labelCollapse'
 import { EditDescription } from '../../components/EditDescription'
 import { EditLabels } from '../../components/EditLabels'
+import { ExpandableDescription } from '../../components/ExpandableDescription'
 import { HiveNotification } from '../../components/HiveNotification'
 import HypershiftClusterDetails from '../../components/HypershiftClusterDetails'
 import { HypershiftImportCommand } from '../../components/HypershiftImportCommand'
@@ -242,7 +243,7 @@ export function ClusterOverviewPageContent() {
     },
     labels: {
       key: t('table.labels'),
-      value: cluster?.labels && <AcmLabels labels={cluster?.labels} />,
+      value: cluster?.labels && <AcmLabels labels={cluster.labels} collapse={getCollapsedLabelKeys(cluster.labels)} />,
       keyAction: cluster?.isManaged && (
         <RbacButton
           onClick={() => setShowEditLabels(true)}
@@ -344,9 +345,7 @@ export function ClusterOverviewPageContent() {
     description: {
       key: t('Description'),
       value: cluster?.annotations?.[clusterDescriptionAnnotation]?.trim() ? (
-        <div style={{ whiteSpace: 'pre-wrap' }}>
-          <Markdown template={cluster.annotations[clusterDescriptionAnnotation]} />
-        </div>
+        <ExpandableDescription description={cluster.annotations[clusterDescriptionAnnotation]} />
       ) : (
         '-'
       ),
