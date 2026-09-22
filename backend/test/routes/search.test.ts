@@ -28,12 +28,17 @@ jest.mock('../../src/lib/agent', () => ({
   getServiceAgent: jest.fn(() => ({})),
 }))
 
-jest.mock('../../src/lib/logger', () => ({
-  logger: {
-    error: jest.fn(),
-    info: jest.fn(),
-  },
-}))
+jest.mock('../../src/lib/logger', () => {
+  const actual = jest.requireActual<typeof import('../../src/lib/logger')>('../../src/lib/logger')
+  return {
+    ...actual,
+    logger: {
+      ...actual.logger,
+      error: jest.fn(),
+      info: jest.fn(),
+    },
+  }
+})
 
 const mockRequest = httpsRequest as jest.MockedFunction<typeof httpsRequest>
 
