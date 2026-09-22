@@ -53,7 +53,7 @@ const ControlPanelComboBox = (props) => {
           ? control.availableMap[typedValue]
           : typedValue
 
-      if (control.lastActive !== mappedValue) {
+      if (control.lastActive !== mappedValue || control.active !== mappedValue) {
         control.active = mappedValue
         control.lastActive = mappedValue
         handleControlChange()

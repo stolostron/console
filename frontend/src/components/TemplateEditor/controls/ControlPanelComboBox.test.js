@@ -134,6 +134,52 @@ describe('ControlPanelComboBox component', () => {
     })
   })
 
+  it('clears committed value when the user backspaces the input to empty (ACM-43041)', async () => {
+    const handleChange = jest.fn()
+    const control = {
+      ...propsPlain.control,
+      active: 'Opensdfsddfsdf',
+      lastActive: 'Opensdfsddfsdf',
+      userData: ['Opensdfsddfsdf'],
+      available: [],
+      availableMap: {},
+    }
+    render(<ControlPanelComboBox {...propsPlain} control={control} handleControlChange={handleChange} />)
+
+    const input = screen.getByTestId('masterType')
+    expect(input).toHaveValue('Opensdfsddfsdf')
+
+    userEvent.clear(input)
+
+    await waitFor(() => {
+      expect(input).toHaveValue('')
+      expect(control.active).toBe('')
+      expect(handleChange).toHaveBeenCalled()
+    })
+  })
+
+  it('clears a pre-existing option when the user backspaces the input to empty (ACM-43041)', async () => {
+    const handleChange = jest.fn()
+    const control = {
+      ...propsPlain.control,
+      active: 'm5.xlarge',
+      lastActive: 'm5.xlarge',
+    }
+    render(<ControlPanelComboBox {...propsPlain} control={control} handleControlChange={handleChange} />)
+
+    const input = screen.getByTestId('masterType')
+    // Display shows the full option label for the short active value
+    expect(input).toHaveValue('m5.xlarge - 4 vCPU, 16 GiB RAM - General Purpose')
+
+    userEvent.clear(input)
+
+    await waitFor(() => {
+      expect(input).toHaveValue('')
+      expect(control.active).toBe('')
+      expect(handleChange).toHaveBeenCalled()
+    })
+  })
+
   it('removes duplicates from available list', async () => {
     const propsWithDuplicates = {
       ...propsPlain,

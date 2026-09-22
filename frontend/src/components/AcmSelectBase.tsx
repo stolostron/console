@@ -298,6 +298,18 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
     setFilterValue(value)
 
     resetActiveAndFocusedItem()
+
+    // Clear the committed selection when the user deletes all characters (ACM-43041).
+    // Without this, an empty input falls back to displaying/re-committing the prior selection.
+    if (value === '' && selectedItem) {
+      if (onClear) {
+        onClear()
+      } else if (onTypeaheadInputCommit) {
+        onTypeaheadInputCommit('')
+      } else if (variant === SelectVariant.typeahead) {
+        onSelect?.('')
+      }
+    }
   }
 
   const commitTypeaheadInput = useCallback(
@@ -700,8 +712,10 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
   }
 
   function renderMultipleTextInput(): ReactNode {
+    // When closed with an empty input, show the selected option's label.
+    // When open, keep an empty input empty so backspacing can clear the selection (ACM-43041).
     const value =
-      inputValue === selectedItem || inputValue === ''
+      inputValue === selectedItem || (inputValue === '' && !isOpen)
         ? initialFilteredOptions.find((option) => option.value === selectedItem)?.children
         : inputValue
     return (
