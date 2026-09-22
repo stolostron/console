@@ -3,7 +3,7 @@
 import { consoleFetchJSON, type K8sModel } from '@openshift-console/dynamic-plugin-sdk'
 import type { FleetWatchK8sResource } from '../types'
 import { buildResourceURL, fleetWatch } from './apiRequests'
-import { startWatch } from './fleetK8sWatchResource'
+import { startWatch, stopWatch } from './fleetK8sWatchResource'
 import { useFleetK8sWatchResourceStore } from './fleetK8sWatchResourceStore'
 
 jest.mock('./apiRequests', () => ({
@@ -186,5 +186,54 @@ describe('fleetK8sWatchResource expired watch recovery', () => {
       metadata: { resourceVersion: '200' },
       uid: 'replacement',
     })
+  })
+
+  it('starts monitoring when another subscriber joins during the initial load', async () => {
+    const socket = new TestWebSocket('watch-1')
+    let resolveInitialLoad: (value: unknown) => void = () => {}
+    const initialLoad = new Promise<unknown>((resolve) => {
+      resolveInitialLoad = resolve
+    })
+    mockConsoleFetchJSON.mockReturnValueOnce(initialLoad)
+    mockFleetWatch.mockReturnValue(socket)
+
+    const firstWatch = startWatch(resource, model, basePath)
+    await startWatch(resource, model, basePath)
+
+    expect(useFleetK8sWatchResourceStore.getState().getRefCount(requestPath)).toBe(2)
+    expect(useFleetK8sWatchResourceStore.getState().cache[requestPath]?.monitorTimeout).toBeUndefined()
+
+    resolveInitialLoad({ items: [], metadata: { resourceVersion: '100' } })
+    await firstWatch
+
+    expect(useFleetK8sWatchResourceStore.getState().cache[requestPath]?.monitorTimeout).toBeDefined()
+  })
+
+  it('keeps generations monotonic when an entry is removed during an initial load', async () => {
+    let resolveFirstLoad: (value: unknown) => void = () => {}
+    let resolveSecondLoad: (value: unknown) => void = () => {}
+    const firstLoad = new Promise<unknown>((resolve) => {
+      resolveFirstLoad = resolve
+    })
+    const secondLoad = new Promise<unknown>((resolve) => {
+      resolveSecondLoad = resolve
+    })
+    const socket = new TestWebSocket('watch-1')
+    mockConsoleFetchJSON.mockReturnValueOnce(firstLoad).mockReturnValueOnce(secondLoad)
+    mockFleetWatch.mockReturnValue(socket)
+
+    const firstWatch = startWatch(resource, model, basePath)
+    stopWatch(resource, model, basePath)
+    useFleetK8sWatchResourceStore.getState().removeEntry(requestPath)
+
+    const secondWatch = startWatch(resource, model, basePath)
+    resolveFirstLoad({ items: [], metadata: { resourceVersion: '100' } })
+    await firstWatch
+
+    resolveSecondLoad({ items: [], metadata: { resourceVersion: '200' } })
+    await secondWatch
+
+    expect(useFleetK8sWatchResourceStore.getState().getResourceVersion(requestPath)).toBe('200')
+    expect(mockFleetWatch).toHaveBeenCalledTimes(1)
   })
 })
