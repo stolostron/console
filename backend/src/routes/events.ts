@@ -53,9 +53,191 @@ export interface SettingsEvent {
   settings: Record<string, string>
 }
 
-type ServerSideEventData = WatchEvent | SettingsEvent | { type: 'START' | 'LOADED' }
+type ServerSideEventData = WatchEvent | SettingsEvent | { type: 'START' | 'LOADED' | 'EOP' }
 
 let requests: { cancel: () => void }[] = []
+
+/**
+ * Policy flap throttling: limits cache/SSE churn when Policies update too often.
+ * More than FLAP_THRESHOLD updates in FLAP_WINDOW_MS (after FLAP_SETTLING_MS) sets `throttled` and
+ * allows at most one cached update per FLAP_COOLDOWN_MS. Throttle clears on spec change or after P
+ * with no updates (see startMonitoringThrottled). Overridable via FLAP_* / THROTTLING_CHECK_INTERVAL env vars.
+ */
+export const FLAP_THRESHOLD = Number(process.env.FLAP_THRESHOLD) || 5 // N: updates within M that trigger throttling
+export const FLAP_WINDOW_MS = Number(process.env.FLAP_WINDOW_MS) || 60 * 1000 // M: sliding window for counting calls
+export const FLAP_COOLDOWN_MS = Number(process.env.FLAP_COOLDOWN_MS) || 60 * 1000 // P: min interval between allowed updates; silence to exit
+export const FLAP_SETTLING_MS = Number(process.env.FLAP_SETTLING_MS) || 60 * 1000 // S: grace period before marking resource.throttled
+const FLAP_TRACKER_TTL_MS = 12 * 60 * 60 * 1000 // drop tracker entry 12h after resource first seen (emerged)
+const THROTTLING_CHECK_INTERVAL = Number(process.env.THROTTLING_CHECK_INTERVAL) || 60 * 1000
+
+interface FlapTrackerEntry {
+  timestamps: number[]
+  lastCachedAt: number
+  emerged: number
+  throttled?: boolean
+  lastSpec?: string
+  resource?: string
+}
+
+const flapTracker: Record<string, FlapTrackerEntry> = {}
+
+/** Clear flap tracker state. Used for test isolation. */
+export function resetFlapTracker(): void {
+  for (const key in flapTracker) {
+    delete flapTracker[key]
+  }
+}
+
+export function getFlapTracker() {
+  return flapTracker
+}
+
+export function resourceFlapKey(
+  resource: Pick<IResource, 'kind'> & { metadata?: { namespace?: string; name?: string } }
+) {
+  return `${resource.kind}/${resource.metadata?.namespace ?? ''}/${resource.metadata?.name ?? ''}`
+}
+
+function resourceSpecKey(resource: IResource): string {
+  return JSON.stringify(get(resource, 'spec') ?? {})
+}
+
+export function formatFlappingMessage(kind: string, namespace: string, name: string): string {
+  const windowMinutes = Math.max(1, Math.round(FLAP_WINDOW_MS / 60_000))
+  const timesPerMinute = Math.max(1, Math.round(60_000 / FLAP_COOLDOWN_MS))
+  return `${kind} ${name} in namespace ${namespace} has been modified more than ${FLAP_THRESHOLD} times in the last ${windowMinutes} minutes. Verify this resource is configured correctly. Updates are being limited to ${timesPerMinute} times per minute.`
+}
+
+export function formatFlappingRecoveredMessage(kind: string, namespace: string, name: string): string {
+  return `${kind} ${name} in namespace ${namespace} is no longer being throttled; policy updates will resume normally.`
+}
+
+//
+// If a watched resource has too many updates pre minute
+// put it into a polling mode where it just allows one update per minute
+//
+export function shouldThrottleResource(resource: IResource, now = Date.now()): boolean {
+  if (resource.kind !== 'Policy') {
+    return false
+  }
+
+  // every resource is tracked
+  const key = resourceFlapKey(resource)
+  let entry = flapTracker[key]
+  if (!entry) {
+    entry = {
+      timestamps: [],
+      lastCachedAt: 0,
+      emerged: now,
+    }
+    flapTracker[key] = entry
+  }
+
+  // if resource's spec has changed, immediately remove from polling mode
+  const specKey = resourceSpecKey(resource)
+  if (entry.lastSpec !== undefined && entry.lastSpec !== specKey) {
+    delete entry.resource
+    delete entry.throttled
+    delete entry.lastSpec
+    return false
+  } else {
+    // else determine if resource is flapping if it updates more then FLAP_THRESHOLD in FLAP_WINDOW_MS ms
+    entry.timestamps.push(now)
+    entry.timestamps = entry.timestamps.filter((t) => now - t <= FLAP_WINDOW_MS)
+    if (entry.timestamps.length > FLAP_THRESHOLD) {
+      // when a resource is first created, it might flap at first
+      // so allow a settling time before actually throttling
+      if (now - entry.emerged > FLAP_SETTLING_MS) {
+        if (!entry.throttled) {
+          logger.warn({
+            msg: formatFlappingMessage(
+              resource.kind,
+              resource.metadata?.namespace ?? '',
+              resource.metadata?.name ?? ''
+            ),
+          })
+        }
+        entry.resource = JSON.stringify(resource)
+        resource.throttled = true
+        entry.throttled = true
+      }
+    }
+  }
+  entry.lastSpec = specKey
+
+  // if resource is in polling mode, allow one update per cooldown interval; suppress all others while polling.
+  if (entry.throttled) {
+    // Allow one update per cooldown interval; suppress all others while polling.
+    if (entry.lastCachedAt === 0 || now - entry.lastCachedAt >= FLAP_COOLDOWN_MS) {
+      entry.lastCachedAt = now
+    } else {
+      return true
+    }
+  } else {
+    entry.lastCachedAt = 0
+  }
+
+  return false
+}
+
+//
+// Periodically check resources that are throttled to
+// see if they are still flapping and if not, reset
+//
+let monitoringThrottledTimer: NodeJS.Timeout | undefined
+
+export async function checkThrottleStatus(now = Date.now()): Promise<void> {
+  for (const key of Object.keys(flapTracker)) {
+    const entry = flapTracker[key]
+    if (now - entry.emerged > FLAP_TRACKER_TTL_MS) {
+      delete flapTracker[key]
+      continue
+    }
+    if (!entry.throttled) {
+      continue
+    }
+    if (entry.timestamps.length > 0) {
+      const lastCall = entry.timestamps[entry.timestamps.length - 1]
+      if (now - lastCall > FLAP_COOLDOWN_MS) {
+        const resource = entry.resource ? (JSON.parse(entry.resource) as IResource) : undefined
+        if (resource) {
+          await cacheResource(resource, true)
+          logger.warn({
+            msg: formatFlappingRecoveredMessage(
+              resource.kind,
+              resource.metadata?.namespace ?? '',
+              resource.metadata?.name ?? ''
+            ),
+          })
+        }
+        delete entry.resource
+        entry.throttled = false
+        entry.lastCachedAt = 0
+      }
+    }
+  }
+}
+
+function startMonitoringThrottled(): void {
+  if (monitoringThrottledTimer) return
+
+  monitoringThrottledTimer = setInterval(() => {
+    void checkThrottleStatus().catch((err: unknown) => {
+      logger.error({ msg: 'throttling check failed', error: err })
+    })
+  }, THROTTLING_CHECK_INTERVAL)
+
+  monitoringThrottledTimer.unref()
+  logger.info({ msg: 'throttling check started', interval: THROTTLING_CHECK_INTERVAL })
+}
+
+function stopMonitoringThrottled(): void {
+  if (monitoringThrottledTimer) {
+    clearInterval(monitoringThrottledTimer)
+    monitoringThrottledTimer = undefined
+    logger.info({ msg: 'monitoring throttled stopped' })
+  }
+}
 
 export async function getKubeResources(kind: string, apiVersion: string) {
   const option = { apiVersion, kind }
@@ -186,6 +368,7 @@ export function getEventDict() {
 export function startWatching(): void {
   ServerSideEvents.eventFilter = eventFilter
   startAccessCacheCleanup()
+  startMonitoringThrottled()
 
   for (const definition of definitions) {
     void listAndWatch(definition)
@@ -411,6 +594,14 @@ export function createWatchEventProcessor(options: IWatchOptions, url: string, r
           throw err
         }
         pruneResources(options, [watchEvent.object])
+        // Track flapping Policy updates but skip caching/broadcasting suppressed events.
+        if (
+          (watchEvent.type === 'ADDED' || watchEvent.type === 'MODIFIED') &&
+          shouldThrottleResource(watchEvent.object)
+        ) {
+          callback()
+          return
+        }
         switch (watchEvent.type) {
           case 'ADDED':
           case 'MODIFIED':
@@ -787,6 +978,7 @@ let stopping = false
 export function stopWatching(): void {
   stopping = true
   stopAccessCacheCleanup()
+  stopMonitoringThrottled()
   for (const request of requests) {
     request.cancel()
   }

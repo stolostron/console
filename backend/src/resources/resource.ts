@@ -43,6 +43,7 @@ interface OwnerReference {
 export interface IResource {
   kind: string
   apiVersion: string
+  throttled?: boolean
   metadata?: {
     name: string
     namespace?: string

@@ -7,18 +7,24 @@ import {
   CardTitle,
   ExpandableSection,
   Icon,
+  List,
+  ListItem,
   PageSection,
+  Popover,
+  PopoverPosition,
   Stack,
+  StackItem,
   Tooltip,
 } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
+import { generatePath } from 'react-router'
 import { Fragment, useCallback, useContext, useMemo, useState } from 'react'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { rbacCreate, useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
 import { ManagedCluster, Policy, PolicyDefinition } from '../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
-import { AcmDrawerContext, compareStrings } from '../../../ui-components'
+import { AcmDrawerContext, AcmVisitedLink, compareStrings } from '../../../ui-components'
 import {
   GovernanceCreatePolicyEmptyState,
   GovernanceManagePoliciesEmptyState,
@@ -26,7 +32,15 @@ import {
 import { ClusterPolicySummarySidebar } from './ClusterPolicySummarySidebar'
 import { useClusterViolationSummaryMap } from './ClusterViolationSummary'
 import { PolicySetViolationsCard } from './PolicySetViolationSummary'
-import { PolicyViolationsCard, usePolicyViolationSummary, ViolationSummary } from './PolicyViolationSummary'
+import {
+  PolicyViolationsCard,
+  usePolicyClusterViolationSummaryMap,
+  usePolicyViolationSummary,
+  ViolationSummary,
+} from './PolicyViolationSummary'
+import { useAddRemediationPolicies } from '../common/useCustom'
+import { NavigationPath } from '../../../NavigationPath'
+import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
 import { SecurityGroupPolicySummarySidebar } from './SecurityGroupPolicySummarySidebar'
 import keyBy from 'lodash/keyBy'
 import type { TFunction } from 'i18next'
@@ -73,6 +87,7 @@ export default function GovernanceOverview() {
           <AcmMasonry minSize={415} maxColumns={3}>
             <PolicySetViolationsCard />
             <PolicyViolationsCard policyViolationSummary={policyViolationSummary} />
+            <PolicyConflictsCard />
             <ClustersCard />
             <SecurityGroupCard key="standards" title={t('Standards')} group="standards" policies={policies} />
             <SecurityGroupCard key="categories" title={t('Categories')} group="categories" policies={policies} />
@@ -390,6 +405,103 @@ function ClustersCard() {
             onToggleCom,
             isExpandedCom
           )}
+        </CardBody>
+      </Card>
+    </div>
+  )
+}
+
+const policyConflictsPopoverBody = (t: TFunction) => (
+  <Stack hasGutter>
+    <StackItem>
+      {t('The policies in this list are changing their compliances too rapidly. This can happen if:')}
+    </StackItem>
+    <StackItem>
+      <List>
+        <ListItem>{t('A user policy has a defect.')}</ListItem>
+        <ListItem>{t('Two or more policies are trying to enforce different values for the same resource.')}</ListItem>
+      </List>
+    </StackItem>
+    <StackItem>
+      {t('Until this is resolved, these policies will only be visually updated here once per minute.')}
+    </StackItem>
+  </Stack>
+)
+
+function PolicyConflictsCard() {
+  const { t } = useTranslation()
+  const policies = useAddRemediationPolicies()
+  const throttledPolicies = useMemo(
+    () =>
+      policies
+        .filter((policy) => policy.throttled === true)
+        .sort((a, b) => compareStrings(a.metadata.name, b.metadata.name)),
+    [policies]
+  )
+  const policyClusterViolationSummaryMap = usePolicyClusterViolationSummaryMap(throttledPolicies)
+
+  // if (throttledPolicies.length === 0) {
+  //   return null
+  // }
+
+  return (
+    <div>
+      <Card>
+        <CardTitle>
+          <span style={{ display: 'inline-flex', alignItems: 'center', columnGap: 8 }}>
+            {t('Policy conflicts')}
+            <Popover
+              bodyContent={policyConflictsPopoverBody(t)}
+              position={PopoverPosition.top}
+              enableFlip
+              flipBehavior={['right', 'right-start', 'right-end']}
+            >
+              <Button variant={ButtonVariant.plain} isInline aria-label={t('Policy conflicts')}>
+                <Icon status="warning">
+                  <ExclamationTriangleIcon />
+                </Icon>
+              </Button>
+            </Popover>
+          </span>
+        </CardTitle>
+        <CardBody>
+          <div className="card-body-grid" style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 16 }}>
+            {throttledPolicies.map((policy) => {
+              const key = `${policy.metadata.namespace}.${policy.metadata.name}`
+              const clusterViolationSummary = policyClusterViolationSummaryMap[policy.metadata.uid ?? '']
+              const policyDetailsPath = generatePath(NavigationPath.policyDetails, {
+                namespace: policy.metadata.namespace!,
+                name: policy.metadata.name!,
+              })
+              const policyResultsPath = generatePath(NavigationPath.policyDetailsResults, {
+                namespace: policy.metadata.namespace ?? '',
+                name: policy.metadata.name ?? '',
+              })
+              return (
+                <Fragment key={key}>
+                  <AcmVisitedLink to={policyDetailsPath} state={{ from: NavigationPath.governance }}>
+                    {policy.metadata.name}
+                  </AcmVisitedLink>
+                  {clusterViolationSummary.compliant ||
+                  clusterViolationSummary.noncompliant ||
+                  clusterViolationSummary.pending ||
+                  clusterViolationSummary.unknown ? (
+                    <ClusterPolicyViolationIcons2
+                      compliant={clusterViolationSummary.compliant}
+                      compliantHref={`${policyResultsPath}?sort=-1`}
+                      noncompliant={clusterViolationSummary.noncompliant}
+                      violationHref={`${policyResultsPath}?sort=1`}
+                      pending={clusterViolationSummary.pending}
+                      pendingHref={`${policyResultsPath}?sort=1`}
+                      unknown={clusterViolationSummary.unknown}
+                    />
+                  ) : (
+                    <span>-</span>
+                  )}
+                </Fragment>
+              )
+            })}
+          </div>
         </CardBody>
       </Card>
     </div>

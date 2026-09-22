@@ -42,6 +42,7 @@ export interface Policy {
   }
   // This not from API, this will be added at console
   remediationResult?: REMEDIATION_ACTION | string
+  throttled?: boolean
 }
 
 export interface PolicyTemplate {

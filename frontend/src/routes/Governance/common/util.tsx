@@ -473,6 +473,11 @@ export function getPolicyRemediation(policy: Policy | undefined, propagatedPolic
   if (!policy) {
     return ''
   }
+  if (propagatedPolicies.some((propaPolicy) => propaPolicy.throttled === true)) {
+    policy.throttled = true
+  } else {
+    delete policy.throttled
+  }
   const templates = policy.spec['policy-templates']
   let rootRA = policy.spec.remediationAction || ''
   let remediationAggregation = ''
