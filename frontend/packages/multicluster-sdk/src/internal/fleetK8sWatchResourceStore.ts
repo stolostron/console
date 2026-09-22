@@ -40,6 +40,7 @@ export const is404Error = (error: any): boolean => error?.code === 404 || error?
 export type FleetK8sWatchResourceStore = {
   // Cache
   cache: Record<string, CacheEntry>
+  generationCounter: number
 
   // Actions for cache
   setResult: (key: string, data: Data | undefined, loaded: boolean, loadError?: any, resourceVersion?: string) => void
@@ -61,6 +62,7 @@ export type FleetK8sWatchResourceStore = {
 export const useFleetK8sWatchResourceStore = create<FleetK8sWatchResourceStore>()(
   subscribeWithSelector((set, get) => ({
     cache: {},
+    generationCounter: 0,
 
     setResult: (key, data, loaded, loadError, resourceVersion) => {
       set((state) => {
@@ -95,8 +97,9 @@ export const useFleetK8sWatchResourceStore = create<FleetK8sWatchResourceStore>(
       let generation = 0
       set((state) => {
         const entry = state.cache[key]
-        generation = (entry?.generation ?? 0) + 1
+        generation = state.generationCounter + 1
         return {
+          generationCounter: generation,
           cache: {
             ...state.cache,
             [key]: {
@@ -140,13 +143,20 @@ export const useFleetK8sWatchResourceStore = create<FleetK8sWatchResourceStore>(
         if (newRefCount === 0) {
           entry.socket?.close()
         }
+        let generationCounter = state.generationCounter
+        let generation = entry.generation
+        if (newRefCount === 0) {
+          generation = generationCounter + 1
+          generationCounter = generation
+        }
         return {
+          generationCounter,
           cache: {
             ...state.cache,
             [key]: {
               ...entry,
               refCount: newRefCount,
-              generation: newRefCount === 0 ? (entry.generation ?? 0) + 1 : entry.generation,
+              generation,
               socket: newRefCount > 0 ? entry.socket : undefined,
               timeout:
                 newRefCount === 0 && !entry.timeout // if timeout is set, the entry is already scheduled for removal

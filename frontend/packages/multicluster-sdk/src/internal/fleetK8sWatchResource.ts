@@ -319,7 +319,7 @@ export const startWatch = async (resource: FleetWatchK8sResource, model: K8sMode
       }
     }
     const currentEntry = useFleetK8sWatchResourceStore.getState().cache[requestPath]
-    if (currentEntry?.refCount !== 1 || currentEntry.generation !== generation) return
+    if (!currentEntry || currentEntry.refCount <= 0 || currentEntry.generation !== generation) return
     // Only start a new monitoring chain if one isn't already pending
     // (an existing chain survives refCount 0→1 transitions and will continue on its own)
     if (!useFleetK8sWatchResourceStore.getState().cache[requestPath]?.monitorTimeout) {
