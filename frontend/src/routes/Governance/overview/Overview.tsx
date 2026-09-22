@@ -24,7 +24,7 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { rbacCreate, useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
 import { ManagedCluster, Policy, PolicyDefinition } from '../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
-import { AcmDrawerContext, compareStrings } from '../../../ui-components'
+import { AcmDrawerContext, AcmVisitedLink, compareStrings } from '../../../ui-components'
 import {
   GovernanceCreatePolicyEmptyState,
   GovernanceManagePoliciesEmptyState,
@@ -40,7 +40,6 @@ import {
 } from './PolicyViolationSummary'
 import { useAddRemediationPolicies } from '../common/useCustom'
 import { NavigationPath } from '../../../NavigationPath'
-import { AcmVisitedLink } from '../../../ui-components'
 import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolations'
 import { SecurityGroupPolicySummarySidebar } from './SecurityGroupPolicySummarySidebar'
 import keyBy from 'lodash/keyBy'
