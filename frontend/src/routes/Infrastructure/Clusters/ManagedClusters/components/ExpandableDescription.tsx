@@ -19,7 +19,7 @@ const descriptionClamped = css({
   overflow: 'hidden',
 })
 
-export function ExpandableDescription(props: { description: string; maxLines?: number }) {
+export function ExpandableDescription(props: Readonly<{ description: string; maxLines?: number }>) {
   const { t } = useTranslation()
   const maxLines = props.maxLines ?? DEFAULT_MAX_DESCRIPTION_LINES
   const [isExpanded, setIsExpanded] = useState(false)
@@ -43,11 +43,13 @@ export function ExpandableDescription(props: { description: string; maxLines?: n
     requestAnimationFrame(updateTruncatable)
   })
 
+  const contentClassName = isExpanded ? descriptionContent : `${descriptionContent} ${descriptionClamped}`
+
   return (
     <div>
       <div
         ref={contentRef}
-        className={`${descriptionContent}${!isExpanded ? ` ${descriptionClamped}` : ''}`}
+        className={contentClassName}
         style={!isExpanded ? { WebkitLineClamp: maxLines } : undefined}
       >
         <Markdown template={props.description} />
