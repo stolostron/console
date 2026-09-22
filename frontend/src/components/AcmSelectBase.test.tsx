@@ -527,5 +527,7 @@ describe('AcmSelectBase', () => {
 })
 
 function getTypeaheadInput(id: string) {
-  return screen.getByTestId(id)
+  const input = document.getElementById(id)
+  if (!input) throw new Error(`Typeahead input not found: ${id}`)
+  return input
 }
