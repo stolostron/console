@@ -106,6 +106,8 @@ export interface TopologyAlertsProps {
   currentAlertsKey: string
   isAnalyzing?: boolean
   isProcessingSave?: boolean
+  /** ApplicationSet creation grace period with no non-sync errors — show Progressing overlay. */
+  isCreatingProgressing?: boolean
   onEditAppSet?: (node: TopologyNode) => void
   onEditYaml?: (node: TopologyNode, highlightEditorPath?: string) => void
   onViewLogs?: (node: TopologyNode) => void
@@ -118,6 +120,7 @@ export function TopologyAlerts({
   currentAlertsKey,
   isAnalyzing,
   isProcessingSave,
+  isCreatingProgressing,
   onEditAppSet,
   onEditYaml,
   onViewLogs,
@@ -133,15 +136,17 @@ export function TopologyAlerts({
   const [processingAlertDismissed, setProcessingAlertDismissed] = useState(false)
   const [analyzingAlertDismissed, setAnalyzingAlertDismissed] = useState(false)
 
+  const showProgressingOverlay = Boolean(isProcessingSave || isCreatingProgressing)
+
   useEffect(() => {
     dismissedIdsRef.current = new Set()
   }, [currentAlertsKey])
 
   useEffect(() => {
-    if (!isProcessingSave) {
+    if (!showProgressingOverlay) {
       setProcessingAlertDismissed(false)
     }
-  }, [isProcessingSave])
+  }, [showProgressingOverlay])
 
   useEffect(() => {
     if (!isAnalyzing) {
@@ -256,7 +261,7 @@ export function TopologyAlerts({
   const maxHeight = '66vh'
   const isFadingIn = newAlertIds.size > 0
 
-  if (isProcessingSave && !processingAlertDismissed) {
+  if (showProgressingOverlay && !processingAlertDismissed) {
     return (
       <div ref={containerRef} className={`${containerBase} ${containerScrollable}`} style={{ maxHeight }}>
         <AlertGroup>

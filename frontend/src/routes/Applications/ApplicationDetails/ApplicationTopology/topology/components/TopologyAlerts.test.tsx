@@ -46,6 +46,11 @@ describe('TopologyAlerts', () => {
     expect(screen.getByText('Progressing...')).toBeInTheDocument()
   })
 
+  it('renders the processing overlay while ApplicationSet is creating (ACM-46011)', () => {
+    render(<TopologyAlerts alerts={[]} currentAlertsKey="" isCreatingProgressing />)
+    expect(screen.getByText('Progressing...')).toBeInTheDocument()
+  })
+
   it('renders the analyzing overlay', () => {
     render(<TopologyAlerts alerts={[]} currentAlertsKey="" isAnalyzing />)
     expect(screen.getByText('Analyzing...')).toBeInTheDocument()

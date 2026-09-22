@@ -157,8 +157,25 @@ export const analyzeTopologyHealth = (
   }
 }
 
+/** Window after ApplicationSet apps first appear during which bad-sync issues keep the Progressing overlay. */
+export const APP_SET_APPS_SYNC_GRACE_PERIOD_MS = 60 * 1000
+
+/**
+ * True while a bad-sync issue has persisted for no more than `APP_SET_APPS_SYNC_GRACE_PERIOD_MS`
+ * since the ApplicationSet's apps first appeared (`specs.appSetAppsFirstSeenAt`, set by
+ * {@link getAppSetTopology}). Undefined/missing timestamps are treated as outside the grace period.
+ */
+export const isWithinAppsSyncGracePeriod = (appsFirstSeenAt: number | undefined, now: number = Date.now()): boolean =>
+  appsFirstSeenAt !== undefined && now - appsFirstSeenAt <= APP_SET_APPS_SYNC_GRACE_PERIOD_MS
+
 /**
  * Creates consolidated health/sync alerts for unhealthy ApplicationSet resources.
+ *
+ * The Topology Alerts Progressing overlay (`specs.isCreatingProgressing`) shows until:
+ * 1. `specs.appSetApps` has at least one entry, and
+ * 2. there is no bad-sync alert, or the bad-sync alert has existed for no more than 1 minute
+ *    since the apps first appeared.
+ * Bad-sync alerts are suppressed for as long as the Progressing overlay is shown for them.
  */
 export const createSuggestsHealth = (
   appSet: TopologyNode,
@@ -167,16 +184,28 @@ export const createSuggestsHealth = (
   alerts: TopologyAlert[],
   t: TFunction
 ): void => {
+  const { syncAlerts, appsetClusters, isAppSetPullModel } = health
+  const appSetApps = (appSet.specs.appSetApps as unknown[] | undefined) ?? []
+  const hasApps = appSetApps.length !== 0
+  const appsFirstSeenAt = appSet.specs.appSetAppsFirstSeenAt as number | undefined
+  const hasBadSync = syncAlerts.length > 0
+  const withinSyncGracePeriod = hasBadSync && isWithinAppsSyncGracePeriod(appsFirstSeenAt)
+  // Progressing overlay: apps haven't appeared yet, or bad sync is still within its grace window
+  const suppressBadSync = !hasApps || withinSyncGracePeriod
+  appSet.specs.isCreatingProgressing = suppressBadSync
+
   if (!health.shouldContinue) {
     return
   }
-
-  const { syncAlerts, appsetClusters, isAppSetPullModel } = health
 
   /////////////////////////////////////////////
   // create alert for unhealthy/unsynced deployments
   /////////////////////////////////////////////
   if (syncAlerts.length > 0) {
+    if (suppressBadSync) {
+      return
+    }
+
     const healthSyncKeys = [...new Set(syncAlerts.map((entry) => entry.healthSyncKey))]
     setPartialUnhealthyDeploymentNodePulses(deploymentNodes, appsetClusters)
     pushSyncAlert(
