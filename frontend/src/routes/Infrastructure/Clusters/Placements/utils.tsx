@@ -67,13 +67,7 @@ export function PlacementLinkList(props: { placementsForCluster: Placement[] }) 
         </Link>
       ))}
       {renderShowMoreBtn && (
-        <Label
-          color={'blue'}
-          style={{ width: 'fit-content' }}
-          isCompact
-          variant={'outline'}
-          onClick={() => setShowMore(!showMore)}
-        >
+        <Label style={{ width: 'fit-content' }} variant="overflow" onClick={() => setShowMore(!showMore)}>
           {showMore
             ? t('Show less')
             : t('{{count}} more', { count: placementsForCluster.length - MAX_LINK_DISPLAY_COUNT })}
@@ -110,13 +104,7 @@ export function ClusterLinkList(props: { clusterNames: string[] }) {
         </Link>
       ))}
       {renderShowMoreBtn && (
-        <Label
-          color={'blue'}
-          style={{ width: 'fit-content' }}
-          isCompact
-          variant={'outline'}
-          onClick={() => setShowMore(!showMore)}
-        >
+        <Label style={{ width: 'fit-content' }} variant="overflow" onClick={() => setShowMore(!showMore)}>
           {showMore ? t('Show less') : t('{{count}} more', { count: clusterNames.length - MAX_LINK_DISPLAY_COUNT })}
         </Label>
       )}
@@ -150,13 +138,7 @@ export function ClusterSetLinkList(props: { clusterSets: string[] }) {
         </Link>
       ))}
       {renderShowMoreBtn && (
-        <Label
-          color={'blue'}
-          style={{ width: 'fit-content' }}
-          isCompact
-          variant={'outline'}
-          onClick={() => setShowMore(!showMore)}
-        >
+        <Label style={{ width: 'fit-content' }} variant="overflow" onClick={() => setShowMore(!showMore)}>
           {showMore ? t('Show less') : t('{{count}} more', { count: clusterSets.length - MAX_LINK_DISPLAY_COUNT })}
         </Label>
       )}
