@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { DEFAULT_MAX_VISIBLE_LABELS, getCollapsedLabelKeys } from './clusterOverviewLabels'
+import { DEFAULT_MAX_VISIBLE_LABELS, getCollapsedLabelKeys, getOverflowLabelKeys } from './labelCollapse'
 
 describe('getCollapsedLabelKeys', () => {
   it('returns empty array when label count is within the max', () => {
@@ -31,5 +31,15 @@ describe('getCollapsedLabelKeys', () => {
   it('respects a custom maxVisible value', () => {
     const labels = { a: '1', b: '2', c: '3' }
     expect(getCollapsedLabelKeys(labels, 2)).toEqual(['c'])
+  })
+})
+
+describe('getOverflowLabelKeys', () => {
+  it('returns only preferCollapse when visible keys fit within maxVisible', () => {
+    expect(getOverflowLabelKeys(['a', 'b', 'c', 'd'], ['a'], 3)).toEqual(['a'])
+  })
+
+  it('appends overflow keys after preferCollapse when visible keys exceed maxVisible', () => {
+    expect(getOverflowLabelKeys(['sys', 'a', 'b', 'c', 'd', 'e'], ['sys'], 3)).toEqual(['sys', 'd', 'e'])
   })
 })
