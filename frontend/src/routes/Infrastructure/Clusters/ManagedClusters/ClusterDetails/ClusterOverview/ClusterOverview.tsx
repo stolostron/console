@@ -243,9 +243,7 @@ export function ClusterOverviewPageContent() {
     },
     labels: {
       key: t('table.labels'),
-      value: cluster?.labels && (
-        <AcmLabels labels={cluster.labels} collapse={getCollapsedLabelKeys(cluster.labels)} />
-      ),
+      value: cluster?.labels && <AcmLabels labels={cluster.labels} collapse={getCollapsedLabelKeys(cluster.labels)} />,
       keyAction: cluster?.isManaged && (
         <RbacButton
           onClick={() => setShowEditLabels(true)}
