@@ -7,17 +7,20 @@ import {
   CardTitle,
   ExpandableSection,
   Icon,
+  List,
+  ListItem,
   PageSection,
   Popover,
   PopoverPosition,
   Stack,
+  StackItem,
   Tooltip,
 } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { generatePath } from 'react-router'
 import { Fragment, useCallback, useContext, useMemo, useState } from 'react'
 import { AcmMasonry } from '../../../components/AcmMasonry'
-import { Trans, useTranslation } from '../../../lib/acm-i18next'
+import { useTranslation } from '../../../lib/acm-i18next'
 import { rbacCreate, useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
 import { ManagedCluster, Policy, PolicyDefinition } from '../../../resources'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
@@ -410,9 +413,20 @@ function ClustersCard() {
 }
 
 const policyConflictsPopoverBody = (t: TFunction) => (
-  <span style={{ whiteSpace: 'pre-wrap' }}>
-    <Trans t={t} i18nKey="policy.overview.conflicts.tooltip" />
-  </span>
+  <Stack hasGutter>
+    <StackItem>
+      {t('The policies in this list are changing their compliances too rapidly. This can happen if:')}
+    </StackItem>
+    <StackItem>
+      <List>
+        <ListItem>{t('A user policy has a defect.')}</ListItem>
+        <ListItem>{t('Two or more policies are trying to enforce different values for the same resource.')}</ListItem>
+      </List>
+    </StackItem>
+    <StackItem>
+      {t('Until this is resolved, these policies will only be visually updated here once per minute.')}
+    </StackItem>
+  </Stack>
 )
 
 function PolicyConflictsCard() {
@@ -427,9 +441,9 @@ function PolicyConflictsCard() {
   )
   const policyClusterViolationSummaryMap = usePolicyClusterViolationSummaryMap(throttledPolicies)
 
-  if (throttledPolicies.length === 0) {
-    return null
-  }
+  // if (throttledPolicies.length === 0) {
+  //   return null
+  // }
 
   return (
     <div>
