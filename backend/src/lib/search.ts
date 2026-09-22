@@ -29,6 +29,22 @@ export type ISearchResult = {
   message?: string
 }
 
+type RequestSettlement = {
+  settled: boolean
+  requestTimeoutId: NodeJS.Timeout | undefined
+}
+
+type FinishFn = (fn: () => void) => void
+
+function createFinish(settlement: RequestSettlement): FinishFn {
+  return (fn: () => void) => {
+    if (settlement.settled) return
+    settlement.settled = true
+    clearTimeout(settlement.requestTimeoutId)
+    fn()
+  }
+}
+
 function collectResponseBody(res: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
     let body = ''
@@ -42,6 +58,60 @@ function collectResponseBody(res: IncomingMessage): Promise<string> {
       .then(() => resolve(body))
       .catch(reject)
   })
+}
+
+function parseSearchResult(
+  body: string,
+  finish: FinishFn,
+  resolve: (result: ISearchResult) => void,
+  reject: (error: Error) => void
+) {
+  try {
+    const result = JSON.parse(body) as ISearchResult
+    const message = typeof result === 'string' ? result : result.message
+    if (message) {
+      logger.error(`getSearchResults return error ${message}`)
+      finish(() => reject(new Error(result.message)))
+      return
+    }
+    finish(() => resolve(result))
+  } catch (e) {
+    // search might be overwhelmed — pause before next request
+    logger.error(`getSearchResults parse error ${e} ${body}`)
+    throw e
+  }
+}
+
+function scheduleDelayedReject(
+  body: string,
+  delayMs: number,
+  settlement: RequestSettlement,
+  finish: FinishFn,
+  reject: (error: Error) => void
+) {
+  clearTimeout(settlement.requestTimeoutId)
+  settlement.requestTimeoutId = setTimeout(() => {
+    finish(() => reject(new Error(body)))
+  }, delayMs)
+}
+
+function parsePingResult(
+  body: string,
+  finish: FinishFn,
+  resolve: (value: boolean) => void,
+  reject: (error: Error) => void
+) {
+  try {
+    const result = JSON.parse(body) as { data: unknown }
+    if (result.data) {
+      finish(() => resolve(true))
+    } else {
+      finish(() => reject(new Error('no data')))
+    }
+  } catch (e) {
+    logger.error(`pingSearchAPI parse error ${e} ${body}`)
+    finish(() => reject(new Error(String(e).valueOf())))
+  }
 }
 
 export async function getServiceAccountSearchRequestOptions() {
@@ -81,41 +151,22 @@ export async function getSearchResults(query: IQuery) {
   const options = await getServiceAccountSearchRequestOptions()
   const requestTimeout = 2 * 60 * 1000
   return new Promise<ISearchResult>((resolve, reject) => {
-    let settled = false
-    const timeout = { requestTimeoutId: undefined as NodeJS.Timeout | undefined }
-    const finish = (fn: () => void) => {
-      if (settled) return
-      settled = true
-      clearTimeout(timeout.requestTimeoutId)
-      fn()
-    }
+    const settlement: RequestSettlement = { settled: false, requestTimeoutId: undefined }
+    const finish = createFinish(settlement)
     const clientRequest = request(options, (res) => {
       void collectResponseBody(res)
         .then((body) => {
           try {
-            const result = JSON.parse(body) as ISearchResult
-            const message = typeof result === 'string' ? result : result.message
-            if (message) {
-              logger.error(`getSearchResults return error ${message}`)
-              finish(() => reject(new Error(result.message)))
-              return
-            }
-            finish(() => resolve(result))
-          } catch (e) {
-            // search might be overwhelmed
-            // pause before next request
-            logger.error(`getSearchResults parse error ${e} ${body}`)
-            clearTimeout(timeout.requestTimeoutId)
-            setTimeout(() => {
-              finish(() => reject(new Error(body)))
-            }, requestTimeout)
+            parseSearchResult(body, finish, resolve, reject)
+          } catch {
+            scheduleDelayedReject(body, requestTimeout, settlement, finish, reject)
           }
         })
         .catch((e: Error) => {
           finish(() => reject(e))
         })
     })
-    timeout.requestTimeoutId = setTimeout(() => {
+    settlement.requestTimeoutId = setTimeout(() => {
       logger.error(`getSearchResults request timeout`)
       clientRequest.destroy()
       finish(() => reject(new Error('request timeout')))
@@ -154,34 +205,18 @@ const ping = {
 export async function pingSearchAPI() {
   const options = await getServiceAccountSearchRequestOptions()
   return new Promise<boolean>((resolve, reject) => {
-    let settled = false
-    const timeout = { requestTimeoutId: undefined as NodeJS.Timeout | undefined }
-    const finish = (fn: () => void) => {
-      if (settled) return
-      settled = true
-      clearTimeout(timeout.requestTimeoutId)
-      fn()
-    }
+    const settlement: RequestSettlement = { settled: false, requestTimeoutId: undefined }
+    const finish = createFinish(settlement)
     const clientRequest = request(options, (res) => {
       void collectResponseBody(res)
         .then((body) => {
-          try {
-            const result = JSON.parse(body) as { data: unknown }
-            if (result.data) {
-              finish(() => resolve(true))
-            } else {
-              finish(() => reject(new Error('no data')))
-            }
-          } catch (e) {
-            logger.error(`pingSearchAPI parse error ${e} ${body}`)
-            finish(() => reject(new Error(String(e).valueOf())))
-          }
+          parsePingResult(body, finish, resolve, reject)
         })
         .catch((e: Error) => {
           finish(() => reject(e))
         })
     })
-    timeout.requestTimeoutId = setTimeout(
+    settlement.requestTimeoutId = setTimeout(
       () => {
         logger.error(`ping searchAPI timeout`)
         clientRequest.destroy()
