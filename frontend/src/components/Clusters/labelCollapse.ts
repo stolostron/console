@@ -12,11 +12,12 @@ export function getOverflowLabelKeys(
   preferCollapse: string[] = [],
   maxVisible: number = DEFAULT_MAX_VISIBLE_LABELS
 ): string[] {
-  const visibleKeys = keys.filter((key) => !preferCollapse.includes(key))
+  const preferredKeys = [...new Set(preferCollapse)]
+  const visibleKeys = keys.filter((key) => !preferredKeys.includes(key))
   if (visibleKeys.length <= maxVisible) {
-    return preferCollapse
+    return preferredKeys
   }
-  return [...preferCollapse, ...visibleKeys.slice(maxVisible)]
+  return [...preferredKeys, ...visibleKeys.slice(maxVisible)]
 }
 
 /**

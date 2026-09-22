@@ -42,4 +42,8 @@ describe('getOverflowLabelKeys', () => {
   it('appends overflow keys after preferCollapse when visible keys exceed maxVisible', () => {
     expect(getOverflowLabelKeys(['sys', 'a', 'b', 'c', 'd', 'e'], ['sys'], 3)).toEqual(['sys', 'd', 'e'])
   })
+
+  it('deduplicates preferCollapse keys so collapse counts stay accurate', () => {
+    expect(getOverflowLabelKeys(['cloud', 'a', 'b', 'c', 'd'], ['cloud', 'cloud'], 3)).toEqual(['cloud', 'd'])
+  })
 })
