@@ -10,6 +10,7 @@ type CacheEntry = {
   result?: FleetWatchK8sResultsObject<Data>
   socket?: WebSocket
   refCount: number
+  generation?: number
   timestamp: number
   resourceVersion?: string
   timeout?: ReturnType<typeof setTimeout>
@@ -39,10 +40,12 @@ export const is404Error = (error: any): boolean => error?.code === 404 || error?
 export type FleetK8sWatchResourceStore = {
   // Cache
   cache: Record<string, CacheEntry>
+  generationCounter: number
 
   // Actions for cache
   setResult: (key: string, data: Data | undefined, loaded: boolean, loadError?: any, resourceVersion?: string) => void
   setSocket: (key: string, socket: WebSocket) => void
+  beginGeneration: (key: string) => number
   incrementRefCount: (key: string) => void
   decrementRefCount: (key: string) => void
   touchEntry: (key: string) => void
@@ -59,6 +62,7 @@ export type FleetK8sWatchResourceStore = {
 export const useFleetK8sWatchResourceStore = create<FleetK8sWatchResourceStore>()(
   subscribeWithSelector((set, get) => ({
     cache: {},
+    generationCounter: 0,
 
     setResult: (key, data, loaded, loadError, resourceVersion) => {
       set((state) => {
@@ -87,6 +91,25 @@ export const useFleetK8sWatchResourceStore = create<FleetK8sWatchResourceStore>(
           },
         },
       }))
+    },
+
+    beginGeneration: (key) => {
+      let generation = 0
+      set((state) => {
+        const entry = state.cache[key]
+        generation = state.generationCounter + 1
+        return {
+          generationCounter: generation,
+          cache: {
+            ...state.cache,
+            [key]: {
+              ...entry,
+              generation,
+            },
+          },
+        }
+      })
+      return generation
     },
 
     incrementRefCount: (key) => {
@@ -120,12 +143,20 @@ export const useFleetK8sWatchResourceStore = create<FleetK8sWatchResourceStore>(
         if (newRefCount === 0) {
           entry.socket?.close()
         }
+        let generationCounter = state.generationCounter
+        let generation = entry.generation
+        if (newRefCount === 0) {
+          generation = generationCounter + 1
+          generationCounter = generation
+        }
         return {
+          generationCounter,
           cache: {
             ...state.cache,
             [key]: {
               ...entry,
               refCount: newRefCount,
+              generation,
               socket: newRefCount > 0 ? entry.socket : undefined,
               timeout:
                 newRefCount === 0 && !entry.timeout // if timeout is set, the entry is already scheduled for removal
