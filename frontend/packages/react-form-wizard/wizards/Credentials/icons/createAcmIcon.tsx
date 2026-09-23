@@ -5,7 +5,7 @@ export interface IconDefinition {
   name?: string
   width: number
   height: number
-  svgPath: JSX.Element
+  svgPath: React.JSX.Element
   xOffset?: number
   yOffset?: number
 }

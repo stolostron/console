@@ -24,7 +24,7 @@ import {
   LockIcon,
   RedhatIcon,
 } from '@patternfly/react-icons'
-import { ReactNode } from 'react'
+import { ReactNode, type JSX } from 'react'
 import { BrowserRouter, Link, useLocation, useNavigate } from 'react-router'
 import { AnsibleExample } from './Ansible/AnsibleExample'
 import { ApplicationExample } from './Application/ApplicationExample'

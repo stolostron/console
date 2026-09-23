@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Button, Popover } from '@patternfly/react-core'
 import { HelpIcon } from '@patternfly/react-icons'
-import { Fragment, ReactNode } from 'react'
+import { Fragment, ReactNode, type JSX } from 'react'
 import { useStringContext } from '../contexts/StringContext'
 
 export function LabelHelp(props: { id: string; labelHelp?: ReactNode; labelHelpTitle?: string }): JSX.Element {
