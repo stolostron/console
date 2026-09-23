@@ -6,10 +6,13 @@
 }
 
 .sy-c-code-editor__title {
-  flex: 0 1 auto;
+  flex: 1 1 auto;
   min-width: 0;
   padding: 0 12px 0 0;
   line-height: var(--pf-v6-global--LineHeight--md, 1.5);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sync-editor__container {
@@ -67,21 +70,21 @@
 /* Title + controls share one typographic baseline in the code editor header. */
 .sync-editor__container .sy-toolbar-row {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: baseline;
   justify-content: space-between;
   width: 100%;
   column-gap: var(--pf-t--global--spacer--md);
-  row-gap: var(--pf-t--global--spacer--xs);
+  /* Keep Copy/Close reachable when the button group is wider than the pane. */
+  overflow-x: auto;
 }
 
 /* Toolbar: baseline-aligned controls; separators stretch the full row height. */
 .sync-editor__container .sy-toolbar-buttons {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: stretch;
-  flex: 1 1 auto;
-  min-width: 0;
+  flex: 0 0 auto;
   justify-content: flex-end;
 }
 
@@ -108,7 +111,7 @@
 /* Compare controls: diff nav, checkbox label, and separators on one baseline. */
 .sync-editor__container .sy-toolbar-compare-group {
   display: inline-flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: stretch;
   column-gap: 0;
 }
