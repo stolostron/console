@@ -3,7 +3,7 @@ import { consoleFetch } from '@openshift-console/dynamic-plugin-sdk'
 import { useEffect, useRef } from 'react'
 
 export const useSafeFetch = () => {
-  const controller = useRef<AbortController>()
+  const controller = useRef<AbortController>(undefined)
   useEffect(() => {
     controller.current = new AbortController()
     return () => controller.current?.abort()
