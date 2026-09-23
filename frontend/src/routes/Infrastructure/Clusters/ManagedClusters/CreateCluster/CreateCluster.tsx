@@ -132,7 +132,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   const providerConnections = useRecoilValue(providerConnectionsValue)
   const ansibleCredentials = useRecoilValue(ansibleCredentialsValue)
   const { isACMAvailable } = useContext(PluginContext)
-  const templateEditorRef = useRef<null>()
+  const templateEditorRef = useRef<null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newSecret, setNewSecret] = useState<Secret>()
   const localHubName = useLocalHubName()

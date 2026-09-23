@@ -44,8 +44,7 @@ import {
   ResourceError,
   resultsSettled,
 } from '../../../../../resources/utils'
-import { Fragment, useEffect, useState } from 'react'
-
+import { Fragment, useEffect, useState, type JSX } from 'react'
 export type ListItems = {
   key: string
   value?: string | number | React.ReactNode

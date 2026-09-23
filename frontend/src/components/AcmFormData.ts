@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 
 import { AlertProps } from '@patternfly/react-core'
-import { ReactNode } from 'react'
+import { ReactNode, type JSX } from 'react'
 
 export interface FormData {
   title: string

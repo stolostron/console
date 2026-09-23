@@ -28,6 +28,7 @@ import {
   useImperativeHandle,
   useMemo,
   useState,
+  type JSX,
 } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { useTranslation } from '../../lib/acm-i18next'

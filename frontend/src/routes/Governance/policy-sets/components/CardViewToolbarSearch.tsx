@@ -12,7 +12,7 @@ import {
   TextInputGroupUtilities,
 } from '@patternfly/react-core'
 import { SearchIcon, TimesIcon } from '@patternfly/react-icons/dist/js/icons'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type JSX } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { AcmChip, AcmChipGroup } from '../../../../ui-components'

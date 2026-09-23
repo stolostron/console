@@ -6,7 +6,7 @@ import {
   ExclamationTriangleIcon,
   ExternalLinkAltIcon,
 } from '@patternfly/react-icons'
-import { ReactNode, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useEffect, useMemo, useState, type JSX } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 
 import { useParams } from 'react-router'
