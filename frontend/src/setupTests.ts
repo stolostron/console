@@ -9,6 +9,7 @@ import 'jest-axe/extend-expect'
 import get from 'lodash/get'
 import { diff } from 'jest-diff'
 import nock from 'nock'
+import ResizeObserverPolyfill from 'resize-observer-polyfill'
 import 'regenerator-runtime/runtime'
 
 import { initReactI18next } from 'react-i18next'
@@ -34,6 +35,8 @@ global.fetch = jest.fn((input, reqInit) => {
       : input
   return fetchMock(newInput, reqInit)
 })
+
+global.ResizeObserver = ResizeObserverPolyfill
 
 global.EventSource = class EventSource {
   static readonly CONNECTING = 0 as const
