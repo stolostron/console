@@ -461,8 +461,7 @@ export default function LogsPage() {
       <div ref={resourceLogRef} style={{ height: '100%' }}>
         <LogViewer
           ref={logViewerRef}
-          // height={'100%'}
-          height={'450px'}
+          height={isFullscreen ? '100%' : '450px'}
           data={logs}
           theme="dark"
           isTextWrapped={wrapLines}
