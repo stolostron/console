@@ -75,6 +75,8 @@
   justify-content: space-between;
   width: 100%;
   column-gap: var(--pf-t--global--spacer--md);
+  /* Keep Copy/Close reachable when the button group is wider than the pane. */
+  overflow-x: auto;
 }
 
 /* Toolbar: baseline-aligned controls; separators stretch the full row height. */

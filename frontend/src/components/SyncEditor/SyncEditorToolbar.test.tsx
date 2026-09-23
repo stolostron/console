@@ -126,6 +126,7 @@ describe('SyncEditorToolbar', () => {
       expect(css).toMatch(/\.sy-c-code-editor__title\s*\{[^}]*white-space:\s*nowrap/s)
       expect(css).toMatch(/\.sy-c-code-editor__title\s*\{[^}]*min-width:\s*0/s)
       expect(css).toMatch(/\.sy-toolbar-row\s*\{[^}]*flex-wrap:\s*nowrap/s)
+      expect(css).toMatch(/\.sy-toolbar-row\s*\{[^}]*overflow-x:\s*auto/s)
       expect(css).toMatch(/\.sy-toolbar-buttons\s*\{[^}]*flex-wrap:\s*nowrap/s)
       expect(css).toMatch(/\.sy-toolbar-buttons\s*\{[^}]*flex:\s*0\s+0\s+auto/s)
     })
