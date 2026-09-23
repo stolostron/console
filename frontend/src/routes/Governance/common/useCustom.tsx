@@ -18,7 +18,7 @@ export function useAddRemediationPolicies() {
         (p: Policy) => p.metadata.name === `${policyNamespace}.${policyName}`
       )
       const result = cloneDeep(p)
-      result.remediationResult = getPolicyRemediation(p, matchedPropagated)
+      result.remediationResult = getPolicyRemediation(result, matchedPropagated)
       return result
     })
     return resultPolicies

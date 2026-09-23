@@ -1120,3 +1120,80 @@ describe('ClusterOverview description display', () => {
     ).toHaveNoViolations()
   })
 })
+
+describe('ClusterOverview labels truncation', () => {
+  beforeEach(() => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+  })
+
+  it('collapses labels beyond 5 with N more and Show less', async () => {
+    nockAggegateRequest('statuses', { clusters: ['test-cluster'] }, { itemCount: 0, filterCounts: undefined })
+    const clusterWithManyLabels = {
+      ...mockCluster,
+      labels: {
+        alpha: '1',
+        beta: '2',
+        gamma: '3',
+        delta: '4',
+        epsilon: '5',
+        zeta: '6',
+        eta: '7',
+      },
+    }
+    const context: Partial<ClusterDetailsContext> = {
+      cluster: clusterWithManyLabels,
+      canGetSecret: true,
+    }
+    const { container } = render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(policyreportState, [])
+          snapshot.set(managedClustersState, [])
+          snapshot.set(clusterDeploymentsState, [])
+          snapshot.set(managedClusterInfosState, [])
+          snapshot.set(certificateSigningRequestsState, [])
+          snapshot.set(managedClusterAddonsState, {})
+          snapshot.set(clusterManagementAddonsState, [])
+          snapshot.set(clusterClaimsState, [])
+          snapshot.set(clusterCuratorsState, [])
+          snapshot.set(agentClusterInstallsState, [])
+          snapshot.set(agentsState, [])
+          snapshot.set(infraEnvironmentsState, [])
+          snapshot.set(hostedClustersState, [])
+          snapshot.set(nodePoolsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<ClusterOverviewPageContent />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    await waitForText(clusterWithManyLabels.name)
+    await waitForText('alpha=1')
+    expect(screen.getByText('2 more')).toBeInTheDocument()
+    expect(screen.queryByText('zeta=6')).not.toBeInTheDocument()
+
+    await userEvent.click(screen.getByText('2 more'))
+    await waitForText('zeta=6')
+    await waitForText('eta=7')
+    expect(screen.getByText('Show less')).toBeInTheDocument()
+
+    await userEvent.click(screen.getByText('Show less'))
+    expect(screen.getByText('2 more')).toBeInTheDocument()
+
+    expect(
+      await axe(container, {
+        rules: {
+          'button-name': { enabled: false },
+          'duplicate-id-active': { enabled: false },
+        },
+      })
+    ).toHaveNoViolations()
+  })
+})

@@ -41,6 +41,34 @@ import {
 const APP_SET_CREATION_GRACE_PERIOD_MS = 5 * 60 * 1000
 
 /**
+ * Module-level cache tracking, per ApplicationSet, the first time `appSetApps` was seen
+ * non-empty. There is no server-side timestamp for this transition, so the client records it
+ * locally the first time it observes apps present; the entry is cleared if apps disappear again.
+ * Exposed for tests, which should pass their own cache instance rather than relying on this one.
+ */
+const appSetAppsFirstSeenAtCache = new Map<string, number>()
+
+/**
+ * Returns (recording on first call) the timestamp when `appSetApps` first became non-empty for
+ * the ApplicationSet identified by `cacheKey`. Returns `undefined` while there are still no apps.
+ */
+export const getAppSetAppsFirstSeenAt = (
+  cacheKey: string,
+  hasApps: boolean,
+  cache: Map<string, number> = appSetAppsFirstSeenAtCache,
+  now: number = Date.now()
+): number | undefined => {
+  if (!hasApps) {
+    cache.delete(cacheKey)
+    return undefined
+  }
+  if (!cache.has(cacheKey)) {
+    cache.set(cacheKey, now)
+  }
+  return cache.get(cacheKey)
+}
+
+/**
  * Generates topology data for ApplicationSet applications
  * Creates nodes and links representing the application structure including:
  * - ApplicationSet node
@@ -76,6 +104,7 @@ export async function getAppSetTopology(
   const creationTimestamp = application.app?.metadata?.creationTimestamp
   const createdAt = creationTimestamp ? new Date(creationTimestamp).getTime() : NaN
   const isCreating = Number.isFinite(createdAt) && Date.now() - createdAt < APP_SET_CREATION_GRACE_PERIOD_MS
+  const appSetAppsFirstSeenAt = getAppSetAppsFirstSeenAt(`${namespace}/${name}`, appSetApps.length !== 0)
 
   /////////////////////////////////////////////
   ////  APPLICATION SET NODE /////////////////
@@ -97,6 +126,7 @@ export async function getAppSetTopology(
       },
       clusterNames: allClusterNames,
       appSetApps,
+      appSetAppsFirstSeenAt,
       appSetClusters,
       appStatusByNameMap,
       isAppSetPullModel,

@@ -1,4 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { readFileSync } from 'fs'
+import { join } from 'path'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { RecoilRoot } from 'recoil'
@@ -72,6 +74,33 @@ describe('CreateArgoResources', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+  })
+
+  describe('validation banner (ACM-45137)', () => {
+    it('shows the required-fields banner in a PageSection without paddingTop override', async () => {
+      // Mirror ArgoWizard Modal structure so the modal CSS selector applies in the DOM tree
+      const { container } = render(
+        <div className="add-argo-server-modal pf-v6-c-modal-box">
+          <TestCreateArgoResources mockHandleModalToggle={mockHandleModalToggle} mockAddAlert={mockAddAlert} />
+        </div>
+      )
+
+      await userEvent.click(screen.getByRole('button', { name: /^Add$/i }))
+
+      const alert = await screen.findByText('You must fill out all required fields before you can proceed.')
+      const pageSection = alert.closest('section.pf-v6-c-page__main-section')
+      expect(pageSection).toBeInTheDocument()
+      expect(pageSection).toBe(
+        container.querySelector('.add-argo-server-modal.pf-v6-c-modal-box > .pf-v6-c-page__main-section')
+      )
+      expect((pageSection as HTMLElement).style.paddingTop).toBe('')
+    })
+
+    it('defines modal horizontal gutter for the form-mode error PageSection', () => {
+      const css = readFileSync(join(__dirname, 'CreateArgoResources.css'), 'utf8')
+      expect(css).toContain('.add-argo-server-modal.pf-v6-c-modal-box > .pf-v6-c-page__main-section')
+      expect(css).toMatch(/margin-inline:\s*var\(--pf-v6-c-modal-box__body--PaddingInlineStart\)/)
+    })
   })
 
   describe('submit function', () => {
