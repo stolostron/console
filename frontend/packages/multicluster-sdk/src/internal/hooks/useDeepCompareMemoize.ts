@@ -10,7 +10,7 @@ import { isEqual } from 'lodash'
  * @returns A tuple containing the memoized value and a boolean indicating if the value has changed
  */
 export const useDeepCompareMemoize = <T = any>(value: T, stringify?: boolean): [T | undefined, boolean] => {
-  const ref = React.useRef<T>()
+  const ref = React.useRef<T>(undefined)
 
   if (stringify ? JSON.stringify(value) !== JSON.stringify(ref.current) : !isEqual(value, ref.current)) {
     ref.current = value

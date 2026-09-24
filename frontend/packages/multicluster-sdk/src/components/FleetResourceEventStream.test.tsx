@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import '@testing-library/jest-dom'
 import { render, screen, waitFor } from '@testing-library/react'
-import { act } from 'react-dom/test-utils'
+import { act } from 'react'
 import { FleetResourceEventStream } from './FleetResourceEventStream'
 import { useFleetK8sAPIPath, useHubClusterName } from '../api'
 import { fleetWatch } from '../internal/apiRequests'
