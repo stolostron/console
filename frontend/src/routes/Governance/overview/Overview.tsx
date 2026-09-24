@@ -440,9 +440,9 @@ function PolicyConflictsCard() {
   )
   const policyClusterViolationSummaryMap = usePolicyClusterViolationSummaryMap(throttledPolicies)
 
-  // if (throttledPolicies.length === 0) {
-  //   return null
-  // }
+  if (throttledPolicies.length === 0) {
+    return null
+  }
 
   return (
     <div>
