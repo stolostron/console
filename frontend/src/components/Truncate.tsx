@@ -93,10 +93,9 @@ const createTooltipContent = (children: React.ReactNode, content: string, isLink
       return (
         <>
           {children.map((child, index) => {
-            if (React.isValidElement(child)) {
+            if (React.isValidElement<{ children?: React.ReactNode }>(child)) {
               // Use existing key or generate stable key based on content
-              const stableKey =
-                child.key || `tooltip-child-${index}-${String((child.props as any)?.children || '').slice(0, 10)}`
+              const stableKey = child.key || `tooltip-child-${index}-${String(child.props.children || '').slice(0, 10)}`
               return React.cloneElement(createStyledTooltipElement(child), { key: stableKey })
             }
             return child
@@ -116,10 +115,10 @@ const createTooltipContent = (children: React.ReactNode, content: string, isLink
       return (
         <>
           {childrenArray.map((child, index) => {
-            if (React.isValidElement(child)) {
+            if (React.isValidElement<{ children?: React.ReactNode }>(child)) {
               // Use existing key or generate stable key based on content
               const stableKey =
-                child.key || `tooltip-fragment-${index}-${String(child.props?.children || '').slice(0, 10)}`
+                child.key || `tooltip-fragment-${index}-${String(child.props.children || '').slice(0, 10)}`
               return React.cloneElement(createStyledTooltipElement(child), { key: stableKey })
             }
             return child
