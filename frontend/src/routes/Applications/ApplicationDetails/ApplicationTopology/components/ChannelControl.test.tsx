@@ -12,7 +12,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { t as t } from '~/lib/test-helpers'
 import ChannelController from './ChannelControl'
 import { MockChannelControlData, MockSetDrawerContent } from '../types'
-import { clickElement, typeElement } from '~/lib/test-util'
+import { clickElement, pressEnter } from '~/lib/test-util'
 
 const channelControllerNoAllChannels: MockChannelControlData = {
   activeChannel: '__ALL__/__ALL__//__ALL__/__ALL__',
@@ -113,20 +113,25 @@ describe('ChannelController components 2. 2', () => {
   })
 
   it('ChannelController components 2 2', async () => {
-    await clickElement(container.querySelector(`button[aria-label="Go to first page"]`)!)
-    await typeElement(container.querySelector(`button[aria-label="Go to first page"]`)!, '{enter}')
+    const firstPageButton = container.querySelector<HTMLElement>(`button[aria-label="Go to first page"]`)!
+    await clickElement(firstPageButton)
+    await pressEnter(firstPageButton)
 
-    await clickElement(container.querySelector(`button[aria-label="Go to previous page"]`)!)
-    await typeElement(container.querySelector(`button[aria-label="Go to previous page"]`)!, '{enter}')
+    const previousPageButton = container.querySelector<HTMLElement>(`button[aria-label="Go to previous page"]`)!
+    await clickElement(previousPageButton)
+    await pressEnter(previousPageButton)
 
-    await clickElement(container.querySelector(`button[aria-label="Go to next page"]`)!)
-    await typeElement(container.querySelector(`button[aria-label="Go to next page"]`)!, '{enter}')
+    const nextPageButton = container.querySelector<HTMLElement>(`button[aria-label="Go to next page"]`)!
+    await clickElement(nextPageButton)
+    await pressEnter(nextPageButton)
 
-    await clickElement(container.querySelector(`button[aria-label="Go to last page"]`)!)
-    await typeElement(container.querySelector(`button[aria-label="Go to last page"]`)!, '{enter}')
+    const lastPageButton = container.querySelector<HTMLElement>(`button[aria-label="Go to last page"]`)!
+    await clickElement(lastPageButton)
+    await pressEnter(lastPageButton)
 
-    await clickElement(container.querySelector(`.pf-v6-c-form-control`)!)
-    await typeElement(container.querySelector(`.pf-v6-c-form-control`)!, '{enter}')
+    const pageNumberInput = container.querySelector<HTMLElement>(`.pf-v6-c-form-control`)!
+    await clickElement(pageNumberInput)
+    await pressEnter(pageNumberInput)
   })
 })
 

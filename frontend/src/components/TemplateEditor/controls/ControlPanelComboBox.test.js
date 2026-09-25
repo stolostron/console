@@ -5,7 +5,7 @@ import React from 'react'
 import ControlPanelComboBox from './ControlPanelComboBox'
 import { render, waitFor, screen } from '@testing-library/react'
 import i18n from 'i18next'
-import { clickElement, typeElement } from '~/lib/test-util'
+import { clearElement, clickElement, typeElement } from '~/lib/test-util'
 
 const t = i18n.t.bind(i18n)
 
@@ -134,7 +134,7 @@ describe('ControlPanelComboBox component', () => {
     })
   })
 
-  it('clears committed value when the user backspaces the input to empty (ACM-43041)', async () => {
+  it('clears committed value when the input is cleared (ACM-43041)', async () => {
     const handleChange = jest.fn()
     const control = {
       ...propsPlain.control,
@@ -144,41 +144,45 @@ describe('ControlPanelComboBox component', () => {
       available: [],
       availableMap: {},
     }
-    render(<ControlPanelComboBox {...propsPlain} control={control} handleControlChange={handleChange} />)
+    const { rerender } = render(
+      <ControlPanelComboBox {...propsPlain} control={control} handleControlChange={handleChange} />
+    )
 
     const input = screen.getByTestId('masterType')
     expect(input).toHaveValue('Opensdfsddfsdf')
 
-    await clickElement(input)
-    await typeElement(input, '{Backspace}', { skipClick: true })
+    await clearElement(input)
+    await waitFor(() => expect(handleChange).toHaveBeenCalled())
+    rerender(<ControlPanelComboBox {...propsPlain} control={control} handleControlChange={handleChange} />)
 
     await waitFor(() => {
-      expect(input).toHaveValue('')
+      expect(screen.getByTestId('masterType')).toHaveValue('')
       expect(control.active).toBe('')
-      expect(handleChange).toHaveBeenCalled()
     })
   })
 
-  it('clears a pre-existing option when the user backspaces the input to empty (ACM-43041)', async () => {
+  it('clears a pre-existing option when the input is cleared (ACM-43041)', async () => {
     const handleChange = jest.fn()
     const control = {
       ...propsPlain.control,
       active: 'm5.xlarge',
       lastActive: 'm5.xlarge',
     }
-    render(<ControlPanelComboBox {...propsPlain} control={control} handleControlChange={handleChange} />)
+    const { rerender } = render(
+      <ControlPanelComboBox {...propsPlain} control={control} handleControlChange={handleChange} />
+    )
 
     const input = screen.getByTestId('masterType')
     // Display shows the full option label for the short active value
     expect(input).toHaveValue('m5.xlarge - 4 vCPU, 16 GiB RAM - General Purpose')
 
-    await clickElement(input)
-    await typeElement(input, '{Backspace}', { skipClick: true })
+    await clearElement(input)
+    await waitFor(() => expect(handleChange).toHaveBeenCalled())
+    rerender(<ControlPanelComboBox {...propsPlain} control={control} handleControlChange={handleChange} />)
 
     await waitFor(() => {
-      expect(input).toHaveValue('')
+      expect(screen.getByTestId('masterType')).toHaveValue('')
       expect(control.active).toBe('')
-      expect(handleChange).toHaveBeenCalled()
     })
   })
 

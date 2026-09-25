@@ -22,7 +22,7 @@ export async function clickElement(...args: Parameters<typeof userEvent.click>) 
   await userEvent.click(...args)
 }
 
-export async function clickElementWithFakeTimers(...args: Parameters<typeof userEvent.click>) {
+export async function clickElementWithFakeTimers(element: Parameters<typeof userEvent.click>[0]) {
   const clipboardDescriptor = Object.getOwnPropertyDescriptor(navigator, 'clipboard')
   const user = userEvent.setup({ advanceTimers: (delay) => jest.advanceTimersByTime(delay) })
   if (clipboardDescriptor) {
@@ -30,11 +30,16 @@ export async function clickElementWithFakeTimers(...args: Parameters<typeof user
   } else {
     Reflect.deleteProperty(navigator, 'clipboard')
   }
-  await user.click(...args)
+  await user.click(element)
 }
 
 export async function typeElement(...args: Parameters<typeof userEvent.type>) {
   await userEvent.type(...args)
+}
+
+export async function pressEnter(element: HTMLElement) {
+  element.focus()
+  await userEvent.keyboard('{Enter}')
 }
 
 export function replaceTextAtSelection(element: HTMLInputElement | HTMLTextAreaElement, text: string) {
