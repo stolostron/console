@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { REQUIRED_PROVIDER_FLAG } from './constants'
 import { useIsFleetAvailable } from './useIsFleetAvailable'
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 
 let useFlagResult: boolean | undefined = undefined
 

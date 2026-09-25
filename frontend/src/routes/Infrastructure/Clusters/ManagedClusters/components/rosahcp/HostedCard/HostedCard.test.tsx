@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { multiClusterEnginesState } from '../../../../../../../atoms'
 import { HostedCard } from './HostedCard'
+import { clickElement } from '~/lib/test-util'
 
 describe('HostedCard', () => {
   const mockSetIsModalOpen = jest.fn()
@@ -69,7 +69,7 @@ describe('HostedCard', () => {
     render(<Component areCapiCapaEnabled={true} isHypershiftEnabled={true} />)
 
     const deployButton = screen.getByRole('button', { name: 'Deploy with web interface' })
-    await userEvent.click(deployButton)
+    await clickElement(deployButton)
 
     expect(mockSetIsModalOpen).toHaveBeenCalledWith(true)
   })
@@ -78,7 +78,7 @@ describe('HostedCard', () => {
     render(<Component areCapiCapaEnabled={true} isHypershiftEnabled={true} />)
 
     const cliButton = screen.getByRole('button', { name: 'Deploy with CLI' })
-    await userEvent.click(cliButton)
+    await clickElement(cliButton)
 
     expect(mockWithCliClick).toHaveBeenCalled()
   })

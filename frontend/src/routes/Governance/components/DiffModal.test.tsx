@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
-import { waitForNotText, waitForText } from '../../../lib/test-util'
-import userEvent from '@testing-library/user-event'
+import { waitForNotText, waitForText, clickElement } from '~/lib/test-util'
 import { DiffModal } from './DiffModal'
 
 describe('DiffModal components test', () => {
@@ -36,7 +35,7 @@ describe('DiffModal components test', () => {
 
     await waitForText('View diff')
     const viewDiffLink = screen.getByText('View diff')
-    userEvent.click(viewDiffLink)
+    await clickElement(viewDiffLink)
     await waitForText('Difference for the Namespace ns-1')
 
     const modal = screen.getByRole('dialog')

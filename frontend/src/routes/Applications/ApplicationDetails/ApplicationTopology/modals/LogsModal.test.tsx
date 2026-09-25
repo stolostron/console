@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { RecoilRoot } from 'recoil'
 import { axe } from 'jest-axe'
 import type { TopologyNode } from '~/routes/Applications/ApplicationDetails/ApplicationTopology/types'
@@ -89,6 +88,7 @@ jest.mock('screenfull', () => {
 })
 
 import screenfull from 'screenfull'
+import { clickElement } from '~/lib/test-util'
 
 type MockScreenfull = typeof screenfull & {
   __reset: () => void
@@ -216,7 +216,7 @@ describe('LogsModal', () => {
     expect(await screen.findByText('hub log line')).toBeInTheDocument()
     expect(await axe(container)).toHaveNoViolations()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Close' }))
+    await clickElement(screen.getByRole('button', { name: 'Close' }))
     expect(close).toHaveBeenCalled()
   })
 
@@ -224,7 +224,7 @@ describe('LogsModal', () => {
     const { processActionLink } = renderLogsModal()
     await screen.findByText('hub log line')
 
-    await userEvent.click(screen.getByRole('button', { name: 'View logs in Search details' }))
+    await clickElement(screen.getByRole('button', { name: 'View logs in Search details' }))
     expect(processActionLink).toHaveBeenCalledWith(
       expect.objectContaining({
         action: 'open_link',
@@ -240,7 +240,7 @@ describe('LogsModal', () => {
     renderLogsModal()
     await screen.findByText('hub log line')
 
-    await userEvent.click(screen.getByText('pod-b'))
+    await clickElement(screen.getByText('pod-b'))
 
     await waitFor(() => expect(mockFleetLogsRequest).toHaveBeenCalled())
     expect(await screen.findByText('fleet log line')).toBeInTheDocument()
@@ -292,7 +292,7 @@ describe('LogsModal', () => {
     expect(logViewer).toHaveAttribute('data-height', 'calc(70vh - 200px)')
     expect(logViewer.parentElement).toHaveStyle({ flex: '1', minHeight: '0' })
 
-    await userEvent.click(screen.getByRole('button', { name: 'Expand' }))
+    await clickElement(screen.getByRole('button', { name: 'Expand' }))
 
     await waitFor(() => {
       expect(mockScreenfull.toggle).toHaveBeenCalled()

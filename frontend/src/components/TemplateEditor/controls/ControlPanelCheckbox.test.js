@@ -4,9 +4,9 @@
 import React from 'react'
 import ControlPanelCheckbox from './ControlPanelCheckbox'
 import { render } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 
 import i18n from 'i18next'
+import { clickElement } from '~/lib/test-util'
 
 const t = i18n.t.bind(i18n)
 
@@ -22,7 +22,7 @@ export const control = {
 const fn = jest.fn()
 
 describe('ControlPanelCheckbox component', () => {
-  it('renders as expected', () => {
+  it('renders as expected', async () => {
     const Component = () => {
       return <ControlPanelCheckbox key={'key'} control={control} controlId={'controlId'} handleChange={fn} i18n={t} />
     }
@@ -30,12 +30,12 @@ describe('ControlPanelCheckbox component', () => {
     const { getByTestId, asFragment, rerender } = render(<Component />)
     expect(asFragment()).toMatchSnapshot()
 
-    userEvent.click(getByTestId('controlId'))
+    await clickElement(getByTestId('controlId'))
     expect(control.active).toBe(true)
 
     control.active = 'true'
     rerender(<Component />)
-    userEvent.click(getByTestId('controlId'))
+    await clickElement(getByTestId('controlId'))
     expect(control.active).toBe(false)
   })
 })

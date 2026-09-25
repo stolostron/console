@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { act, render, waitFor } from '@testing-library/react'
+import { clickElement } from '~/lib/test-util'
 import { axe } from 'jest-axe'
 import { Fragment } from 'react'
 import { AcmButton } from '../AcmButton/AcmButton'
@@ -232,12 +233,10 @@ describe('AcmToast', () => {
     })
     await waitFor(() => expect(queryAllByText('Warning')).toHaveLength(1), { timeout: 1000 })
 
-    await act(async () => {
-      expect(queryAllByText('Expiring')).toHaveLength(0)
-      getByText('Add Expiring').click()
-      await waitFor(() => expect(queryAllByText('Expiring')).toHaveLength(1))
-      await waitFor(() => expect(queryAllByText('Expiring')).toHaveLength(0), { timeout: 10000 })
-    })
+    expect(queryAllByText('Expiring')).toHaveLength(0)
+    await clickElement(getByText('Add Expiring'))
+    await waitFor(() => expect(queryAllByText('Expiring')).toHaveLength(1))
+    await waitFor(() => expect(queryAllByText('Expiring')).toHaveLength(0), { timeout: 10000 })
 
     expect(await axe(container)).toHaveNoViolations()
 

@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { CreatePreAuthorizedIdentity } from './CreatePreAuthorizedIdentity'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { ClaimMappings } from '~/resources/authentication'
+import { clickElement } from '~/lib/test-util'
 
 jest.mock('../../lib/acm-i18next', () => ({
   useTranslation: () => ({
@@ -139,7 +139,7 @@ describe('CreatePreAuthorizedIdentity', () => {
     render(<CreatePreAuthorizedIdentity {...defaultProps} />)
 
     const successButton = screen.getByRole('button', { name: 'Save user' })
-    await userEvent.click(successButton)
+    await clickElement(successButton)
 
     expect(defaultProps.onSuccess).toHaveBeenCalledWith(
       expect.objectContaining({ metadata: { name: 'created-user', uid: 'uid-1' } })
@@ -154,7 +154,7 @@ describe('CreatePreAuthorizedIdentity', () => {
     render(<CreatePreAuthorizedIdentity {...defaultProps} subjectKind="Group" />)
 
     const successButton = screen.getByRole('button', { name: 'Save group' })
-    await userEvent.click(successButton)
+    await clickElement(successButton)
 
     expect(defaultProps.onSuccess).toHaveBeenCalledWith(
       expect.objectContaining({ metadata: { name: 'created-group', uid: 'uid-2' } })
@@ -169,7 +169,7 @@ describe('CreatePreAuthorizedIdentity', () => {
     render(<CreatePreAuthorizedIdentity {...defaultProps} />)
 
     const errorButton = screen.getByRole('button', { name: 'Trigger error' })
-    await userEvent.click(errorButton)
+    await clickElement(errorButton)
 
     expect(defaultProps.onClose).not.toHaveBeenCalled()
     expect(defaultProps.onSuccess).not.toHaveBeenCalled()

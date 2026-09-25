@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { ClusterStatus } from '../../../../resources/utils'
 import { DeleteExternalResourceModal } from './DeleteExternalResourceModal'
+import { clickElement } from '~/lib/test-util'
 
 window.open = jest.fn()
 
-test('renders DeleteExternalResourceModal correctly', () => {
+test('renders DeleteExternalResourceModal correctly', async () => {
   const { getByText } = render(
     <DeleteExternalResourceModal
       open={true}
@@ -49,7 +49,7 @@ test('renders DeleteExternalResourceModal correctly', () => {
   // verify click launch button
   const launchButton = getByText('Launch to cluster')
   expect(launchButton).toBeTruthy()
-  userEvent.click(launchButton)
+  await clickElement(launchButton)
   expect(window.open).toHaveBeenCalledWith(
     'https://leaf-hub.com/multicloud/search/resources?cluster%3Dtest-cluster%26kind%3DPod%26namespace%3Dtest-ns%26name%3DtestPod',
     '_blank'

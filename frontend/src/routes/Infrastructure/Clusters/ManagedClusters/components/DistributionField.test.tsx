@@ -2,14 +2,13 @@
 
 import { NodePoolK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import * as nock from 'nock'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { ansibleJobState, ansibleWorkflowState, clusterImageSetsState, nodePoolsState } from '../../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '../../../../../lib/nock-util'
-import { clickByText, waitForCalled, waitForNock, waitForNotText, waitForText } from '../../../../../lib/test-util'
+import { clickByText, waitForCalled, waitForNock, waitForNotText, waitForText, clickElement } from '~/lib/test-util'
 import {
   type AnsibleJob,
   AnsibleJobApiVersion,
@@ -1455,7 +1454,7 @@ describe('DistributionField hypershift clusters', () => {
       false
     )
 
-    await userEvent.click(screen.getByRole('button', { name: /updating to 4\.11\.22/i }))
+    await clickElement(screen.getByRole('button', { name: /updating to 4\.11\.22/i }))
     await waitFor(() => expect(getByText(/updating hypershift-cluster1 to openshift 4\.11\.22\./i)).toBeInTheDocument())
     expect(queryAllByText(/updating to 4\.11\.22/i).length).toBe(1)
     expect(queryByRole('progressbar')).toBeTruthy()

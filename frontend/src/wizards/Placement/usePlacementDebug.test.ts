@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { renderHook, act } from '@testing-library/react-hooks'
+import { renderHook, act } from '@testing-library/react'
 import { usePlacementDebug, clearPlacementDebugCache, placementHasIncompleteEntries } from './usePlacementDebug'
 import { IPlacement } from '../common/resources/IPlacement'
 import { postPlacementDebug } from '../../resources/placement-debug'

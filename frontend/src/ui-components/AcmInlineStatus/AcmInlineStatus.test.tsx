@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { configureAxe } from 'jest-axe'
 
 import { AcmInlineStatus, StatusType } from './AcmInlineStatus'
+import { clickElement } from '~/lib/test-util'
 const axe = configureAxe({
   rules: {
     'aria-progressbar-name': { enabled: false },
@@ -32,7 +32,7 @@ describe('AcmInlineStatus', () => {
       />
     )
     expect(getByText('foobar')).toBeInTheDocument()
-    userEvent.click(getByText('foobar'))
+    await clickElement(getByText('foobar'))
     await waitFor(() => expect(getByText('Header')).toBeInTheDocument())
   })
 })

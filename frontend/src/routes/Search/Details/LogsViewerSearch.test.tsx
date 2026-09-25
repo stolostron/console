@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2023 Red Hat, Inc.
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import React, { useState } from 'react'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreRBAC } from '../../../lib/nock-util'
 import { LogViewerSearch, searchForKeyword } from './LogsViewerSearch'
+import { typeElement, clickElement } from '~/lib/test-util'
 
 describe('LogsViewerSearch', () => {
   beforeEach(async () => {
@@ -59,22 +59,22 @@ describe('LogsViewerSearch', () => {
     // Should find and type in searchbar
     const searchbar = screen.getByRole('textbox', { name: /search input/i })
     await waitFor(() => expect(searchbar).toBeInTheDocument())
-    userEvent.type(searchbar, 'second')
+    await typeElement(searchbar, 'second')
 
     // should click previous
     const previousBtn = screen.getByRole('button', { name: /previous/i })
     await waitFor(() => expect(previousBtn).toBeInTheDocument())
-    userEvent.click(previousBtn)
+    await clickElement(previousBtn)
 
     // should click next
     const nextBtn = screen.getByRole('button', { name: /next/i })
     await waitFor(() => expect(nextBtn).toBeInTheDocument())
-    userEvent.click(nextBtn)
+    await clickElement(nextBtn)
 
     // should click clear
     const clearBtn = screen.getByRole('button', { name: /reset/i })
     await waitFor(() => expect(clearBtn).toBeInTheDocument())
-    userEvent.click(clearBtn)
+    await clickElement(clearBtn)
   })
 
   it('should correctly return LogViewerSearch searchForKeyword fn with match', async () => {

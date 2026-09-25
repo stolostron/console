@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import {
@@ -12,7 +11,7 @@ import {
   policySetsState,
 } from '../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
-import { waitForText } from '../../../../lib/test-util'
+import { waitForText, clickElement } from '~/lib/test-util'
 import PolicyDetailsOverview from './PolicyDetailsOverview'
 
 import {
@@ -215,7 +214,7 @@ describe('Policy Details Results', () => {
     expect(showMoreButton).toBeInTheDocument()
 
     // Click to expand
-    await userEvent.click(showMoreButton)
+    await clickElement(showMoreButton)
 
     // Should now show all 5 clusters (initially visible ones should remain)
     await waitFor(() => {

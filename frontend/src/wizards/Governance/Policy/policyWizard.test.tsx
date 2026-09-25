@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import {
   mockClusterSet,
   mockClusterSetBinding,
@@ -13,7 +12,7 @@ import { IResource } from '@patternfly-labs/react-form-wizard'
 import { ReactNode } from 'react'
 import { BrowserRouter as Router } from 'react-router'
 import { RecoilRoot } from 'recoil'
-import { waitForText } from '../../../lib/test-util'
+import { waitForText, typeElement, clickElement } from '~/lib/test-util'
 import { Policy } from '../../../resources'
 import { WizardSyncEditor } from '../../../routes/Governance/policies/CreatePolicy'
 import { isExistingTemplateName, PolicyWizard } from './PolicyWizard'
@@ -133,17 +132,17 @@ describe('Policy wizard', () => {
     const { container } = render(<TestPolicyWizard />)
 
     const nameTextbox = screen.getByRole('textbox', { name: /name/i })
-    userEvent.type(nameTextbox, 'test-policy')
-    screen.getByPlaceholderText(/select namespace/i).click()
-    screen.getByRole('option', { name: /argo-server-1/i }).click()
+    await typeElement(nameTextbox, 'test-policy')
+    await clickElement(screen.getByPlaceholderText(/select namespace/i))
+    await clickElement(screen.getByRole('option', { name: /argo-server-1/i }))
 
-    screen.getByRole('button', { name: /placement/i }).click()
-    screen.getByRole('button', { name: /new placement/i }).click()
+    await clickElement(screen.getByRole('button', { name: /placement/i }))
+    await clickElement(screen.getByRole('button', { name: /new placement/i }))
     await waitFor(() => screen.getByPlaceholderText(/select the cluster sets/i))
     const placementName = container.querySelector('#name-form-group #name')?.getAttribute('value')
     expect(placementName).toEqual('test-policy-placement')
 
-    screen.getByPlaceholderText(/select the cluster sets/i).click()
+    await clickElement(screen.getByPlaceholderText(/select the cluster sets/i))
     expect(screen.getByRole('button', { name: /Add cluster set/i })).not.toBeNull()
 
     expect(screen.getByRole('option', { name: /cluster-set-01/i })).not.toBeNull()
@@ -153,12 +152,12 @@ describe('Policy wizard', () => {
     const { container } = render(<TestPolicyWizard />)
 
     const nameTextbox = screen.getByRole('textbox', { name: /name/i })
-    userEvent.type(nameTextbox, 'test-policy')
-    screen.getByPlaceholderText(/select namespace/i).click()
-    screen.getByRole('option', { name: /argo-server-1/i }).click()
+    await typeElement(nameTextbox, 'test-policy')
+    await clickElement(screen.getByPlaceholderText(/select namespace/i))
+    await clickElement(screen.getByRole('option', { name: /argo-server-1/i }))
 
-    screen.getByRole('button', { name: /placement/i }).click()
-    screen.getByRole('button', { name: /new placement/i }).click()
+    await clickElement(screen.getByRole('button', { name: /placement/i }))
+    await clickElement(screen.getByRole('button', { name: /new placement/i }))
     await waitFor(() => screen.getByPlaceholderText(/select the cluster sets/i))
 
     // Find the checkbox for limiting clusters
@@ -171,7 +170,7 @@ describe('Policy wizard', () => {
     expect(container.querySelector('#spec-numberofclusters')).toBeNull()
 
     // Click the checkbox to enable cluster limit
-    userEvent.click(limitCheckbox)
+    await clickElement(limitCheckbox)
 
     // After checking, the checkbox should be checked and number input should appear
     let numberInput: HTMLInputElement
@@ -195,7 +194,7 @@ describe('Policy wizard', () => {
     })
 
     // Uncheck the checkbox to disable cluster limit
-    userEvent.click(limitCheckbox)
+    await clickElement(limitCheckbox)
 
     // After unchecking, the number input should disappear
     await waitFor(() => {
@@ -204,7 +203,7 @@ describe('Policy wizard', () => {
     })
 
     // Check again to verify the value persists (or resets to 1 if it was undefined)
-    userEvent.click(limitCheckbox)
+    await clickElement(limitCheckbox)
     await waitFor(() => {
       const numberInputAgain = container.querySelector('#spec-numberofclusters input') as HTMLInputElement
       expect(numberInputAgain).not.toBeNull()
@@ -215,7 +214,7 @@ describe('Policy wizard', () => {
 
   test('policy template customization is disabled for Gatekeeper policy', async () => {
     const { container } = render(<TestPolicyWizardGK />)
-    screen.getByRole('button', { name: /policy templates/i }).click()
+    await clickElement(screen.getByRole('button', { name: /policy templates/i }))
 
     await waitForText('Gatekeeper policy templates must be customized using the YAML editor.', true)
     expect(container.querySelector('#objectdefinition-spec-severity-form-group')).toBeNull()
@@ -224,7 +223,7 @@ describe('Policy wizard', () => {
 
   test('single namespace mode of OperatorPolicy', async () => {
     const { container } = render(<TestPolicyWizardOperatorPolicy />)
-    screen.getByRole('button', { name: /policy templates/i }).click()
+    await clickElement(screen.getByRole('button', { name: /policy templates/i }))
 
     // Wait for the policy wizard to load.
     await waitForText('An Operator policy creates operators on managed clusters.', true)
@@ -233,15 +232,15 @@ describe('Policy wizard', () => {
     // target namespaces when in single namespace mode.
     const singleNSRadio = container.querySelector('#operator-single-namespace')
     expect(singleNSRadio).toBeTruthy()
-    userEvent.click(singleNSRadio as Element)
+    await clickElement(singleNSRadio as Element)
 
     const nsInput = container.querySelector('#objectdefinition-spec-subscription-namespace')
-    userEvent.type(nsInput as Element, 'my-namespace')
+    await typeElement(nsInput as Element, 'my-namespace')
 
     // Open the YAML editor.
     const yamlCheckBox = screen.getByRole('switch', { name: /yaml/i }) as HTMLInputElement
     if (!yamlCheckBox.checked) {
-      userEvent.click(yamlCheckBox)
+      await clickElement(yamlCheckBox)
     }
 
     const input = screen.getByRole('textbox', {
@@ -255,7 +254,7 @@ describe('Policy wizard', () => {
     // Setting all namespaces should wipe the operator group
     const allNSRadio = container.querySelector('#operator-all-namespaces')
     expect(allNSRadio).toBeTruthy()
-    userEvent.click(allNSRadio as Element)
+    await clickElement(allNSRadio as Element)
 
     await waitFor(() => {
       expect(input).toHaveTextContent('subscription: namespace: my-namespace')
@@ -265,22 +264,22 @@ describe('Policy wizard', () => {
 
   test('all namespace mode of OperatorPolicy', async () => {
     const { container } = render(<TestPolicyWizardOperatorPolicy />)
-    screen.getByRole('button', { name: /policy templates/i }).click()
+    await clickElement(screen.getByRole('button', { name: /policy templates/i }))
 
     // Wait for the policy wizard to load.
     await waitForText('An Operator policy creates operators on managed clusters.', true)
 
     const allNSRadio = container.querySelector('#operator-all-namespaces')
     expect(allNSRadio).toBeTruthy()
-    userEvent.click(allNSRadio as Element)
+    await clickElement(allNSRadio as Element)
 
     const nsInput = container.querySelector('#objectdefinition-spec-subscription-namespace')
-    userEvent.type(nsInput as Element, 'my-namespace')
+    await typeElement(nsInput as Element, 'my-namespace')
 
     // Open the YAML editor.
     const yamlCheckBox = screen.getByRole('switch', { name: /yaml/i }) as HTMLInputElement
     if (!yamlCheckBox.checked) {
-      userEvent.click(yamlCheckBox)
+      await clickElement(yamlCheckBox)
     }
 
     await waitFor(() => {
@@ -302,17 +301,17 @@ describe('Policy wizard', () => {
     render(<TestPolicyWizard yamlEditor={() => <WizardSyncEditor />} />)
 
     const nameTextbox = screen.getByRole('textbox', { name: /name/i })
-    userEvent.type(nameTextbox, 'test-policy')
-    screen.getByPlaceholderText(/select namespace/i).click()
-    screen.getByRole('option', { name: /argo-server-1/i }).click()
+    await typeElement(nameTextbox, 'test-policy')
+    await clickElement(screen.getByPlaceholderText(/select namespace/i))
+    await clickElement(screen.getByRole('option', { name: /argo-server-1/i }))
 
-    screen.getByRole('button', { name: /placement/i }).click()
-    screen.getByRole('button', { name: /new placement/i }).click()
+    await clickElement(screen.getByRole('button', { name: /placement/i }))
+    await clickElement(screen.getByRole('button', { name: /new placement/i }))
     await waitFor(() => screen.getByPlaceholderText(/select the cluster sets/i))
 
     const yamlCheckBox = screen.getByRole('switch', { name: /yaml/i }) as HTMLInputElement
     if (!yamlCheckBox.checked) {
-      userEvent.click(yamlCheckBox)
+      await clickElement(yamlCheckBox)
     }
 
     await waitFor(() => {
@@ -321,7 +320,7 @@ describe('Policy wizard', () => {
     })
 
     const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
-    const yamlContent = input.textContent ?? ''
+    const yamlContent = input.value
     expect(yamlContent).toContain('key: cluster.open-cluster-management.io/unreachable')
     expect(yamlContent).toContain('key: cluster.open-cluster-management.io/unavailable')
     expect(yamlContent).toContain('operator: Exists')
@@ -334,23 +333,23 @@ describe('Policy wizard', () => {
     render(<TestPolicyWizard yamlEditor={() => <WizardSyncEditor />} />)
 
     const nameTextbox = screen.getByRole('textbox', { name: /name/i })
-    userEvent.type(nameTextbox, 'test-policy')
-    screen.getByPlaceholderText(/select namespace/i).click()
-    screen.getByRole('option', { name: /argo-server-1/i }).click()
+    await typeElement(nameTextbox, 'test-policy')
+    await clickElement(screen.getByPlaceholderText(/select namespace/i))
+    await clickElement(screen.getByRole('option', { name: /argo-server-1/i }))
 
-    screen.getByRole('button', { name: /placement/i }).click()
-    screen.getByRole('button', { name: /new placement/i }).click()
+    await clickElement(screen.getByRole('button', { name: /placement/i }))
+    await clickElement(screen.getByRole('button', { name: /new placement/i }))
     await waitFor(() => screen.getByPlaceholderText(/select the cluster sets/i))
 
-    screen.getByRole('button', { name: /existing placement/i }).click()
+    await clickElement(screen.getByRole('button', { name: /existing placement/i }))
     await waitFor(() => screen.getByPlaceholderText(/select the placement/i))
 
-    screen.getByRole('button', { name: /new placement/i }).click()
+    await clickElement(screen.getByRole('button', { name: /new placement/i }))
     await waitFor(() => screen.getByPlaceholderText(/select the cluster sets/i))
 
     const yamlCheckBox = screen.getByRole('switch', { name: /yaml/i }) as HTMLInputElement
     if (!yamlCheckBox.checked) {
-      userEvent.click(yamlCheckBox)
+      await clickElement(yamlCheckBox)
     }
 
     await waitFor(() => {
@@ -359,7 +358,7 @@ describe('Policy wizard', () => {
     })
 
     const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
-    const yamlContent = input.textContent ?? ''
+    const yamlContent = input.value
     expect(yamlContent).toContain('key: cluster.open-cluster-management.io/unreachable')
     expect(yamlContent).toContain('key: cluster.open-cluster-management.io/unavailable')
     expect(yamlContent).toContain('operator: Exists')

@@ -4,8 +4,15 @@ jest.mock('./discoveredPoliciesWorker.factory')
 import * as useFetchPolicies from './useFetchPolicies'
 import DiscoveredPolicies from './DiscoveredPolicies'
 import { getSourceFilterOptions } from './details/common'
-import { fireEvent, render, screen } from '@testing-library/react'
-import { waitForText, waitForNotText, getCSVExportSpies, getCSVDownloadLink } from '../../../lib/test-util'
+import { render, screen } from '@testing-library/react'
+import {
+  clickElement,
+  getCSVDownloadLink,
+  getCSVExportSpies,
+  hoverElement,
+  waitForNotText,
+  waitForText,
+} from '~/lib/test-util'
 import { MemoryRouter } from 'react-router'
 import { ApolloError } from '@apollo/client'
 
@@ -209,28 +216,28 @@ describe('useFetchPolicies custom hook', () => {
     await waitForText('Local')
 
     // tooltip test
-    fireEvent.mouseEnter(screen.getByText('p-name'))
+    await hoverElement(screen.getByText('p-name'))
     await waitForText('Namespace: p-ns')
     await waitForText('Name: p-name')
 
     // Test the kind filter
     await waitForText('Filter')
-    screen.getAllByRole('button', { name: 'Filter' })[0].click()
-    screen.getByRole('checkbox', { name: 'Gatekeeper constraint 1' }).click()
+    await clickElement(screen.getAllByRole('button', { name: 'Filter' })[0])
+    await clickElement(screen.getByRole('checkbox', { name: 'Gatekeeper constraint 1' }))
 
     await waitForNotText('check-policy-reports')
     await waitForText('ns-must-have-gk')
 
     // Unset the filter so the state doesn't carry over
-    screen.getByRole('checkbox', { name: 'Gatekeeper constraint 1' }).click()
+    await clickElement(screen.getByRole('checkbox', { name: 'Gatekeeper constraint 1' }))
 
     // click = button in label filter
-    screen.getByTestId('acm-table-filter-select-Label').click()
-    screen
-      .getAllByRole('button', {
+    await clickElement(screen.getByTestId('acm-table-filter-select-Label'))
+    await clickElement(
+      screen.getAllByRole('button', {
         name: /=/i,
       })[0]
-      .click()
+    )
   })
 
   test('Should render error page', async () => {
@@ -508,7 +515,7 @@ describe('useFetchPolicies custom hook', () => {
     // Validate filter
     await waitForText('Filter')
 
-    screen.getByRole('button', { name: 'Filter' }).click()
+    await clickElement(screen.getByRole('button', { name: 'Filter' }))
     screen.getByRole('checkbox', { name: 'ValidatingAdmissionPolicyBinding 1' })
     screen.getByRole('checkbox', {
       name: 'audit 1',
@@ -673,11 +680,11 @@ describe('useFetchPolicies custom hook', () => {
     // Validate filter
     await waitForText('Filter')
 
-    screen.getByRole('button', { name: 'Filter' }).click()
-    screen.getByRole('checkbox', { name: 'Kyverno Policy 1' }).click()
-    screen.getByRole('checkbox', { name: 'Kyverno ClusterPolicy 1' }).click()
+    await clickElement(screen.getByRole('button', { name: 'Filter' }))
+    await clickElement(screen.getByRole('checkbox', { name: 'Kyverno Policy 1' }))
+    await clickElement(screen.getByRole('checkbox', { name: 'Kyverno ClusterPolicy 1' }))
   })
-  test('export button should produce a file for download', () => {
+  test('export button should produce a file for download', async () => {
     render(
       <MemoryRouter>
         <DiscoveredPolicies />
@@ -687,8 +694,8 @@ describe('useFetchPolicies custom hook', () => {
     window.URL.revokeObjectURL = jest.fn()
     const { blobConstructorSpy, createElementSpy } = getCSVExportSpies()
 
-    screen.getByTestId('export-search-result').click()
-    screen.getByText('Export all to CSV').click()
+    await clickElement(screen.getByTestId('export-search-result'))
+    await clickElement(screen.getByText('Export all to CSV'))
 
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [

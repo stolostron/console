@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 import { useFleetSearchSubscription } from './useFleetSearchSubscription'
 import { useSearchSubscription } from '../internal/search/search-sdk'
 import { SearchInput } from '../types/search'

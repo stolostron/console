@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { AcmCountCardSection } from './AcmCountCardSection'
+import { clickElement } from '~/lib/test-util'
 
 const cards = [
   {
@@ -38,12 +38,12 @@ describe('AcmCountCardSection', () => {
     const { getByTestId, getByText } = render(<Component />)
     expect(getByTestId('status')).toBeInTheDocument()
 
-    userEvent.click(getByText('6'))
+    await clickElement(getByText('6'))
     expect(cards[0].countClick).toHaveBeenCalled()
     expect(getByText('0 nodes inactive')).toBeInTheDocument()
-    userEvent.click(getByText('0'))
+    await clickElement(getByText('0'))
     expect(cards[1].countClick).not.toHaveBeenCalled()
-    userEvent.click(getByText('Go to Policies'))
+    await clickElement(getByText('Go to Policies'))
     expect(cards[2].onLinkClick).toHaveBeenCalled()
   })
   test('has zero accessibility defects', async () => {

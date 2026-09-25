@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { RosaHCPWrapper } from './RosaHCPWrapper'
 import type { Secret } from '~/resources'
@@ -526,12 +526,14 @@ describe('RosaHCPWrapper', () => {
     renderComponent()
 
     let wizardProps = MockRosaHCPWizard.mock.calls[0][0]
-    await expect(wizardProps.onSubmit('yaml-content')).rejects.toThrow('creation failed')
+    await act(async () => {
+      await expect(wizardProps.onSubmit('yaml-content')).rejects.toThrow('creation failed')
+    })
 
     wizardProps = MockRosaHCPWizard.mock.calls[MockRosaHCPWizard.mock.calls.length - 1][0]
     expect(wizardProps.onSubmitError).toBe('creation failed')
 
-    wizardProps.onBackToReviewStep()
+    act(() => wizardProps.onBackToReviewStep())
     wizardProps = MockRosaHCPWizard.mock.calls[MockRosaHCPWizard.mock.calls.length - 1][0]
     expect(wizardProps.onSubmitError).toBe(false)
   })
@@ -541,7 +543,9 @@ describe('RosaHCPWrapper', () => {
     renderComponent()
 
     const wizardProps = MockRosaHCPWizard.mock.calls[0][0]
-    await expect(wizardProps.onSubmit('yaml-content')).rejects.toBe('not-an-error-instance')
+    await act(async () => {
+      await expect(wizardProps.onSubmit('yaml-content')).rejects.toBe('not-an-error-instance')
+    })
 
     const latestWizardProps = MockRosaHCPWizard.mock.calls[MockRosaHCPWizard.mock.calls.length - 1][0]
     expect(latestWizardProps.onSubmitError).toBe('An unexpected error occurred.')

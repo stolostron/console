@@ -4,6 +4,7 @@ import { render } from '@testing-library/react'
 import { axe } from 'jest-axe'
 
 import { AcmLabels } from './AcmLabels'
+import { clickElement } from '~/lib/test-util'
 
 describe('AcmLabels', () => {
   test('renders empty with undefined', () => {
@@ -36,23 +37,23 @@ describe('AcmLabels', () => {
     const { container } = render(<AcmLabels labels={['foo=bar', 'cluster=management']} />)
     expect(await axe(container)).toHaveNoViolations()
   })
-  test('renders with collapsed labels', () => {
+  test('renders with collapsed labels', async () => {
     const { getByText } = render(
       <AcmLabels labels={{ foo: 'bar', cluster: 'management', empty: '' }} collapse={['cluster', 'empty']} />
     )
     expect(getByText('foo=bar')).toBeInTheDocument()
-    getByText('2 more').click()
+    await clickElement(getByText('2 more'))
     expect(getByText('cluster=management')).toBeInstanceOf(HTMLSpanElement)
     expect(getByText('empty')).toBeInTheDocument()
-    getByText('Show less').click()
+    await clickElement(getByText('Show less'))
     expect(getByText('2 more')).toBeInTheDocument()
   })
-  test('renders with empty text', () => {
+  test('renders with empty text', async () => {
     const { getByText } = render(
       <AcmLabels labels={{ cluster: 'management' }} collapse={['cluster']} allCollapsedText="EMPTY" />
     )
     expect(getByText('EMPTY')).toBeInTheDocument()
-    getByText('EMPTY').click()
+    await clickElement(getByText('EMPTY'))
     expect(getByText('cluster=management')).toBeInstanceOf(HTMLSpanElement)
   })
 })

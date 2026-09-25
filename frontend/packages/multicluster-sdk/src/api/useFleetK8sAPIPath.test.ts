@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 import { useFleetK8sAPIPath } from './useFleetK8sAPIPath'
 import { BACKEND_URL, BASE_K8S_API_PATH, MANAGED_CLUSTER_API_PATH } from '../internal/constants'
 

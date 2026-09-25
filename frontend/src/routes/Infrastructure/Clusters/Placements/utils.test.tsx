@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { PlacementDecision, PlacementDecisionApiVersion, PlacementDecisionKind } from '~/resources/placement-decision'
@@ -12,6 +11,7 @@ import {
   ClusterLinkList,
   ClusterSetLinkList,
 } from './utils'
+import { clickElement } from '~/lib/test-util'
 
 const placementUidAlpha = 'uid-placement-alpha'
 const placementWithUid: Placement = {
@@ -257,7 +257,7 @@ describe('Placement utils', () => {
     )
 
     // find and click show more button
-    await userEvent.click(screen.getByRole('button', { name: /1 more/i }))
+    await clickElement(screen.getByRole('button', { name: /1 more/i }))
 
     expect(screen.getByText('placement-4')).toBeInTheDocument()
   })
@@ -300,7 +300,7 @@ describe('Placement utils', () => {
       expect(screen.getByText('c3')).toBeInTheDocument()
       expect(screen.queryByText('c4')).not.toBeInTheDocument()
 
-      await userEvent.click(screen.getByRole('button', { name: /2 more/i }))
+      await clickElement(screen.getByRole('button', { name: /2 more/i }))
 
       expect(screen.getByText('c4,')).toBeInTheDocument()
       expect(screen.getByText('c5')).toBeInTheDocument()
@@ -315,10 +315,10 @@ describe('Placement utils', () => {
         </RecoilRoot>
       )
 
-      await userEvent.click(screen.getByRole('button', { name: /1 more/i }))
+      await clickElement(screen.getByRole('button', { name: /1 more/i }))
       expect(screen.getByText('c4')).toBeInTheDocument()
 
-      await userEvent.click(screen.getByRole('button', { name: /show less/i }))
+      await clickElement(screen.getByRole('button', { name: /show less/i }))
       expect(screen.queryByText('c4')).not.toBeInTheDocument()
     })
   })
@@ -362,7 +362,7 @@ describe('Placement utils', () => {
       expect(screen.getByText('s3')).toBeInTheDocument()
       expect(screen.queryByText('s4')).not.toBeInTheDocument()
 
-      await userEvent.click(screen.getByRole('button', { name: /2 more/i }))
+      await clickElement(screen.getByRole('button', { name: /2 more/i }))
 
       expect(screen.getByText('s4,')).toBeInTheDocument()
       expect(screen.getByText('s5')).toBeInTheDocument()
@@ -377,10 +377,10 @@ describe('Placement utils', () => {
         </RecoilRoot>
       )
 
-      await userEvent.click(screen.getByRole('button', { name: /1 more/i }))
+      await clickElement(screen.getByRole('button', { name: /1 more/i }))
       expect(screen.getByText('s4')).toBeInTheDocument()
 
-      await userEvent.click(screen.getByRole('button', { name: /show less/i }))
+      await clickElement(screen.getByRole('button', { name: /show less/i }))
       expect(screen.queryByText('s4')).not.toBeInTheDocument()
     })
   })

@@ -2,7 +2,7 @@
 import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
-import { clickByTestId, isCardEnabled, waitForNocks } from '../../../../../lib/test-util'
+import { clickByTestId, isCardEnabled, waitForNocks, clickElement } from '~/lib/test-util'
 import { nockIgnoreApiPaths } from '../../../../../lib/nock-util'
 import { nockHypershiftStatus } from '../../../../../lib/nock-hypershift-status'
 import { NavigationPath } from '../../../../../NavigationPath'
@@ -20,7 +20,6 @@ import {
   mockMultiClusterEngine,
   mockMultiClusterEngineWithHypershiftDisabled,
 } from './sharedMocks'
-import userEvent from '@testing-library/user-event'
 
 describe('CreateControlPlane', () => {
   beforeEach(() => {
@@ -121,8 +120,8 @@ describe('CreateControlPlane', () => {
     )
     await waitForNocks([hypershiftStatusNock])
 
-    userEvent.click(getByText('Learn more about control plane types'))
+    await clickElement(getByText('Learn more about control plane types'))
     expect(getByText('Compare control plane types')).toBeTruthy()
-    userEvent.click(getByText('Compare control plane types'))
+    await clickElement(getByText('Compare control plane types'))
   })
 })

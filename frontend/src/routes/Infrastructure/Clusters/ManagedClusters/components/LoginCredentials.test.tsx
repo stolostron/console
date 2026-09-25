@@ -2,9 +2,8 @@
 
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { mockBadRequestStatus, nockGet, nockIgnoreApiPaths } from '../../../../../lib/nock-util'
-import { waitForNock, waitForNocks, waitForNotText } from '../../../../../lib/test-util'
+import { waitForNock, waitForNocks, waitForNotText, clickElement } from '~/lib/test-util'
 import { ClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { LoginCredentials } from './LoginCredentials'
 import { MemoryRouter, Routes, Route, Outlet } from 'react-router'
@@ -94,7 +93,7 @@ describe('LoginCredentials', () => {
     await waitFor(() => screen.getByText('Reveal credentials'))
 
     expect(screen.getByTestId('login-credentials')).toBeInTheDocument()
-    userEvent.click(screen.getByTestId('login-credentials'))
+    await clickElement(screen.getByTestId('login-credentials'))
 
     await waitFor(() => screen.getByText('Loading credentials'))
     await waitForNotText('Loading credentials')
@@ -103,7 +102,7 @@ describe('LoginCredentials', () => {
     await waitFor(() => screen.getByText('Hide credentials'))
 
     expect(screen.getByTestId('login-credentials')).toBeInTheDocument()
-    userEvent.click(screen.getByTestId('login-credentials'))
+    await clickElement(screen.getByTestId('login-credentials'))
 
     await waitFor(() => screen.getByText('Reveal credentials'))
   })
@@ -121,7 +120,7 @@ describe('LoginCredentials', () => {
     )
     expect(screen.getByTestId('login-credentials')).toBeInTheDocument()
     await waitFor(() => screen.getByText('Reveal credentials'))
-    userEvent.click(screen.getByTestId('login-credentials'))
+    await clickElement(screen.getByTestId('login-credentials'))
     expect(screen.getByText('Reveal credentials')).toBeInTheDocument()
   })
   test('renders as a hyphen when secret name is not set', () => {
@@ -151,7 +150,7 @@ describe('LoginCredentials', () => {
     )
     expect(screen.getByTestId('login-credentials')).toBeInTheDocument()
     await waitFor(() => screen.getByText('Reveal credentials'))
-    userEvent.click(screen.getByTestId('login-credentials'))
+    await clickElement(screen.getByTestId('login-credentials'))
     await waitFor(() => screen.getByText('Loading credentials'))
     await waitForNocks([nock])
     await waitFor(() => screen.getByText('Failed'))

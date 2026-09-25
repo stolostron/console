@@ -4,6 +4,7 @@ import React from 'react'
 import { FlattenedRoleAssignment } from '../../../resources/clients/model/flattened-role-assignment'
 import { MulticlusterRoleAssignment, RoleAssignmentStatus } from '../../../resources/multicluster-role-assignment'
 import { RoleAssignmentStatusComponent, type RoleAssignmentCallbackReason } from './RoleAssignmentStatusComponent'
+import { clickElement } from '~/lib/test-util'
 
 jest.mock('../../../lib/acm-i18next', () => ({
   useTranslation: () => ({
@@ -206,7 +207,7 @@ describe('RoleAssignmentStatusComponent', () => {
     expect(screen.getByText('Detailed error message here')).toBeInTheDocument()
   })
 
-  it('toggles expandable section on Show more/Show less click', () => {
+  it('toggles expandable section on Show more/Show less click', async () => {
     render(
       <RoleAssignmentStatusComponent
         roleAssignment={createBaseRoleAssignment({
@@ -219,7 +220,7 @@ describe('RoleAssignmentStatusComponent', () => {
       />
     )
     const showMore = screen.getByText('Show more')
-    showMore.click()
+    await clickElement(showMore)
     expect(screen.getByText('Show less')).toBeInTheDocument()
   })
 

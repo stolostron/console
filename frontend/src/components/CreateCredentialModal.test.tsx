@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { CreateCredentialModal } from './CreateCredentialModal'
+import { clickElement } from '~/lib/test-util'
 
 describe('CreateCredentialModal', () => {
   test('renders with default button text', () => {
@@ -34,7 +34,7 @@ describe('CreateCredentialModal', () => {
     const button = screen.getByRole('button', { name: 'Add credential' })
 
     // clicks the button
-    await userEvent.click(button)
+    await clickElement(button)
 
     // verifies that handleModalToggle was called
     expect(mockHandleModalToggle).toHaveBeenCalledTimes(1)

@@ -1,6 +1,6 @@
 /* eslint-disable jest/no-conditional-expect */
 /* Copyright Contributors to the Open Cluster Management project */
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 import * as req from '../../resources/utils/resource-request'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { MulticlusterRoleAssignment, MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assignment'

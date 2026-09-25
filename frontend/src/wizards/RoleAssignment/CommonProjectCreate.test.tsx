@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import * as FleetResourceRequest from '../../resources/utils/fleet-resource-request'
 import type { Cluster } from '../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
 import { AcmToastContext } from '../../ui-components'
 import { CommonProjectCreate } from './CommonProjectCreate'
+import { clickElement } from '~/lib/test-util'
 
 // Mock the dependencies
 jest.mock('../../resources/utils/fleet-resource-request')
@@ -108,7 +108,7 @@ describe('CommonProjectCreate', () => {
     )
 
     const cancelButton = screen.getByText('Cancel')
-    await userEvent.click(cancelButton)
+    await clickElement(cancelButton)
 
     expect(mockOnCancel).toHaveBeenCalledTimes(1)
   })
@@ -126,7 +126,7 @@ describe('CommonProjectCreate', () => {
     )
 
     const submitButton = screen.getByText('Submit')
-    await userEvent.click(submitButton)
+    await clickElement(submitButton)
 
     await waitFor(() => {
       expect(mockFleetResourceRequestCreate).toHaveBeenCalledTimes(2)
@@ -181,7 +181,7 @@ describe('CommonProjectCreate', () => {
     )
 
     const submitButton = screen.getByText('Submit')
-    await userEvent.click(submitButton)
+    await clickElement(submitButton)
 
     await waitFor(() => {
       // Success toast for cluster-1
@@ -217,7 +217,7 @@ describe('CommonProjectCreate', () => {
       )
 
       const submitButton = screen.getByText('Submit')
-      await userEvent.click(submitButton)
+      await clickElement(submitButton)
 
       await waitFor(() => {
         expect(mockOnSuccess).toHaveBeenCalledTimes(1)
@@ -237,7 +237,7 @@ describe('CommonProjectCreate', () => {
       )
 
       const submitButton = screen.getByText('Submit Custom')
-      await userEvent.click(submitButton)
+      await clickElement(submitButton)
 
       await waitFor(() => {
         expect(mockOnSuccess).toHaveBeenCalledTimes(1)
@@ -253,7 +253,7 @@ describe('CommonProjectCreate', () => {
       )
 
       const submitButton = screen.getByText('Submit')
-      await userEvent.click(submitButton)
+      await clickElement(submitButton)
 
       await waitFor(() => {
         expect(mockFleetResourceRequestCreate).not.toHaveBeenCalled()
@@ -283,7 +283,7 @@ describe('CommonProjectCreate', () => {
     )
 
     const submitButton = screen.getByText('Submit')
-    await userEvent.click(submitButton)
+    await clickElement(submitButton)
 
     await waitFor(() => {
       expect(mockAddAlert).toHaveBeenCalledWith({
@@ -315,7 +315,7 @@ describe('CommonProjectCreate', () => {
     )
 
     const submitButton = screen.getByText('Submit')
-    await userEvent.click(submitButton)
+    await clickElement(submitButton)
 
     await waitFor(() => {
       expect(mockAddAlert).toHaveBeenCalledWith({
@@ -346,7 +346,7 @@ describe('CommonProjectCreate', () => {
     )
 
     const submitButton = screen.getByText('Submit')
-    await userEvent.click(submitButton)
+    await clickElement(submitButton)
 
     await waitFor(() => {
       expect(mockOnError).toHaveBeenCalled()
@@ -377,7 +377,7 @@ describe('CommonProjectCreate', () => {
     )
 
     const submitButton = screen.getByText('Submit')
-    await userEvent.click(submitButton)
+    await clickElement(submitButton)
 
     await waitFor(() => {
       // Success toast for cluster-1
@@ -420,7 +420,7 @@ describe('CommonProjectCreate', () => {
       )
 
       const submitButton = screen.getByText('Submit')
-      await userEvent.click(submitButton)
+      await clickElement(submitButton)
 
       await waitFor(() => {
         expect(screen.getByText('Creating common projects')).toBeInTheDocument()
@@ -450,7 +450,7 @@ describe('CommonProjectCreate', () => {
       )
 
       const submitButton = screen.getByText('Submit')
-      await userEvent.click(submitButton)
+      await clickElement(submitButton)
 
       await waitFor(() => {
         expect(screen.getByText('Creating common projects')).toBeInTheDocument()
@@ -480,7 +480,7 @@ describe('CommonProjectCreate', () => {
       )
 
       const submitButton = screen.getByText('Submit')
-      await userEvent.click(submitButton)
+      await clickElement(submitButton)
 
       // Progress bar should appear when requests start
       await waitFor(() => {
@@ -519,7 +519,7 @@ describe('CommonProjectCreate', () => {
       )
 
       const submitButton = screen.getByText('Submit')
-      await userEvent.click(submitButton)
+      await clickElement(submitButton)
 
       await waitFor(() => {
         expect(screen.getByText('Creating common projects')).toBeInTheDocument()
@@ -555,7 +555,7 @@ describe('CommonProjectCreate', () => {
       )
 
       const submitButton = screen.getByText('Submit')
-      await userEvent.click(submitButton)
+      await clickElement(submitButton)
 
       await waitFor(() => {
         expect(screen.getByText('Creating common projects')).toBeInTheDocument()

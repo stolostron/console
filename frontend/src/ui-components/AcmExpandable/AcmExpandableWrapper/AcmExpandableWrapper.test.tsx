@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { AcmCountCard } from '../../AcmCountCard/AcmCountCard'
 import { AcmExpandableWrapper } from '../AcmExpandableWrapper/AcmExpandableWrapper'
+import { clickElement } from '~/lib/test-util'
 
 describe('AcmExpandableWrapper', () => {
   const savedSearchWrapper = () => (
@@ -114,10 +114,10 @@ describe('AcmExpandableWrapper', () => {
     expect(container.querySelector('.pf-v6-c-button')).not.toBeInTheDocument()
   })
 
-  test('toggles showAll button', () => {
+  test('toggles showAll button', async () => {
     const { getByRole, getByText } = render(collapsedSavedSearchWrapper())
     expect(getByText('Show all (2)')).toBeInTheDocument()
-    userEvent.click(getByRole('button'))
+    await clickElement(getByRole('button'))
     expect(getByText('Show less')).toBeInTheDocument()
   })
 

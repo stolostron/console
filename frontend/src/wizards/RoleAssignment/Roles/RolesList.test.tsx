@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { RolesList } from './RolesList'
+import { clickElement } from '~/lib/test-util'
 
 // Mock the translation hook
 jest.mock('../../../lib/acm-i18next', () => ({
@@ -90,7 +90,7 @@ describe('RolesList', () => {
     render(<RolesList onRadioSelect={mockOnRadioSelect} selectedRole="" />)
 
     const adminRadio = screen.getByLabelText('Select role admin')
-    await userEvent.click(adminRadio)
+    await clickElement(adminRadio)
 
     expect(mockOnRadioSelect).toHaveBeenCalledWith('admin')
   })
@@ -111,7 +111,7 @@ describe('RolesList', () => {
 
     // Simulate radio selection through the mock
     const viewerRadio = screen.getByLabelText('Select role viewer')
-    await userEvent.click(viewerRadio)
+    await clickElement(viewerRadio)
 
     expect(mockOnRadioSelect).toHaveBeenCalledWith('viewer')
   })

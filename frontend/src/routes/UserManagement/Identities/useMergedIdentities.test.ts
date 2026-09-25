@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
 import { Group, User } from '../../../resources/rbac'
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'

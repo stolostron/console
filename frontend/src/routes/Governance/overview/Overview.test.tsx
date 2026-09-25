@@ -15,9 +15,9 @@ import {
 } from '../governance.sharedMocks'
 import GovernanceOverview, { SecurityGroupViolations } from './Overview'
 import { SecurityGroupPolicySummarySidebar } from './SecurityGroupPolicySummarySidebar'
-import userEvent from '@testing-library/user-event'
 import { defaultContext, PluginDataContext } from '../../../lib/PluginDataContext'
 import { Policy, PolicyApiVersion, PolicyKind } from '../../../resources'
+import { clickElement } from '~/lib/test-util'
 
 describe('Overview Page', () => {
   beforeEach(async () => nockIgnoreApiPaths())
@@ -135,12 +135,12 @@ describe('Overview Page', () => {
       </PluginDataContext.Provider>
     )
 
-    userEvent.click(screen.getByText(/show 2 more/i))
+    await clickElement(screen.getByText(/show 2 more/i))
 
     expect(queryByText(/show 2 more/i)).not.toBeInTheDocument()
-    userEvent.click(screen.getByText(/show 4 more/i))
+    await clickElement(screen.getByText(/show 4 more/i))
     expect(queryByText(/show 4 more/i)).not.toBeInTheDocument()
-    userEvent.click(screen.getByText(/show 85 more/i))
+    await clickElement(screen.getByText(/show 85 more/i))
     expect(queryByText(/show 85 more/i)).not.toBeInTheDocument()
   })
 

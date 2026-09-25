@@ -2,12 +2,11 @@
 
 import { ClusterImageSetK8sResource, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { namespacesState } from '../../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../lib/nock-util'
-import { waitForText } from '../../../../../lib/test-util'
+import { waitForText, clickElement } from '~/lib/test-util'
 import {
   ClusterImageSetApiVersion,
   ClusterImageSetKind,
@@ -848,17 +847,17 @@ describe('NodePoolsTable', () => {
         timeout: 5000,
       }
     )
-    userEvent.click(screen.getByTestId('addNodepool'))
+    await clickElement(screen.getByTestId('addNodepool'))
     expect(screen.queryAllByText('Node pool name').length).toBe(1)
     await waitForText('Cancel')
-    userEvent.click(screen.getByTestId('cancel-nodepool-form'))
-    userEvent.click(screen.getAllByLabelText('Actions')[0])
-    userEvent.click(screen.getByText('Manage node pool'))
-    expect(screen.queryAllByText('Manage node pool').length).toBe(1)
-    userEvent.click(screen.getByTestId('cancel-nodepool-form'))
-    userEvent.click(screen.getAllByLabelText('Actions')[0])
-    userEvent.click(screen.getByText('Remove node pool'))
-    userEvent.click(screen.getByText('Cancel'))
+    await clickElement(screen.getByTestId('cancel-nodepool-form'))
+    await clickElement(screen.getAllByLabelText('Actions')[0])
+    await clickElement(screen.getByText('Manage node pool'))
+    expect(screen.getByRole('dialog', { name: 'Manage node pool' })).toBeInTheDocument()
+    await clickElement(screen.getByTestId('cancel-nodepool-form'))
+    await clickElement(screen.getAllByLabelText('Actions')[0])
+    await clickElement(screen.getByText('Remove node pool'))
+    await clickElement(screen.getByText('Cancel'))
   })
 })
 

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import React from 'react'
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 import { useQuerySearchDisabledManagedClusters } from './search'
 import * as utils from '../resources/utils'
 import * as useLocalHub from '../hooks/use-local-hub'

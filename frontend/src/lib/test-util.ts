@@ -4,6 +4,7 @@ import {
   act,
   ByRoleMatcher,
   ByRoleOptions,
+  fireEvent,
   Matcher,
   screen,
   SelectorMatcherOptions,
@@ -16,6 +17,56 @@ import { Scope } from 'nock/types'
 export const waitTimeout = 5 * 1000
 
 const waitForOptions = { timeout: waitTimeout }
+
+export async function clickElement(...args: Parameters<typeof userEvent.click>) {
+  await userEvent.click(...args)
+}
+
+export async function clickElementWithFakeTimers(...args: Parameters<typeof userEvent.click>) {
+  const clipboardDescriptor = Object.getOwnPropertyDescriptor(navigator, 'clipboard')
+  const user = userEvent.setup({ advanceTimers: (delay) => jest.advanceTimersByTime(delay) })
+  if (clipboardDescriptor) {
+    Object.defineProperty(navigator, 'clipboard', clipboardDescriptor)
+  } else {
+    Reflect.deleteProperty(navigator, 'clipboard')
+  }
+  await user.click(...args)
+}
+
+export async function typeElement(...args: Parameters<typeof userEvent.type>) {
+  await userEvent.type(...args)
+}
+
+export function replaceTextAtSelection(element: HTMLInputElement | HTMLTextAreaElement, text: string) {
+  const { selectionStart, selectionEnd, value } = element
+  if (selectionStart === null || selectionEnd === null) {
+    throw new Error('replaceTextAtSelection requires an input or textarea with a text selection')
+  }
+  const updatedValue = `${value.slice(0, selectionStart)}${text}${value.slice(selectionEnd)}`
+  fireEvent.change(element, { target: { value: updatedValue } })
+  const cursorPosition = selectionStart + text.length
+  element.setSelectionRange(cursorPosition, cursorPosition)
+}
+
+export async function clearElement(...args: Parameters<typeof userEvent.clear>) {
+  await userEvent.clear(...args)
+}
+
+export async function hoverElement(...args: Parameters<typeof userEvent.hover>) {
+  await userEvent.hover(...args)
+}
+
+export async function unhoverElement(...args: Parameters<typeof userEvent.unhover>) {
+  await userEvent.unhover(...args)
+}
+
+export async function selectOptionsElement(...args: Parameters<typeof userEvent.selectOptions>) {
+  await userEvent.selectOptions(...args)
+}
+
+export async function tab(...args: Parameters<typeof userEvent.tab>) {
+  await userEvent.tab(...args)
+}
 
 // By Text
 
@@ -102,7 +153,7 @@ export async function clickByText(text: string, index?: number) {
         ).not.toEqual('true'),
       waitForOptions
     )
-    userEvent.click(screen.getAllByText(text)[index])
+    await userEvent.click(screen.getAllByText(text)[index])
   } else {
     // wait for rbac to enable the button associated with this text
     await waitFor(
@@ -112,25 +163,25 @@ export async function clickByText(text: string, index?: number) {
         ).not.toEqual('true'),
       waitForOptions
     )
-    userEvent.click(screen.getByText(text))
+    await userEvent.click(screen.getByText(text))
   }
 }
 
 export async function clickByTitle(title: string, index?: number) {
   await waitForInputByTitle(title, index)
   if (index !== undefined) {
-    userEvent.click(screen.getAllByTitle(title)[index])
+    await userEvent.click(screen.getAllByTitle(title)[index])
   } else {
-    userEvent.click(screen.getByTitle(title))
+    await userEvent.click(screen.getByTitle(title))
   }
 }
 
 export async function typeByText(text: string, type: string, index?: number) {
   await waitForInputByText(text, index)
   if (index !== undefined) {
-    userEvent.type(screen.getAllByText(text)[index], type)
+    await userEvent.type(screen.getAllByText(text)[index], type)
   } else {
-    userEvent.type(screen.getByText(text), type)
+    await userEvent.type(screen.getByText(text), type)
   }
 }
 
@@ -138,17 +189,17 @@ export async function typeByText(text: string, type: string, index?: number) {
 
 export async function typeByPlaceholderText(text: string, type: string, index?: number) {
   if (index !== undefined) {
-    userEvent.type(screen.getAllByPlaceholderText(text)[index], type)
+    await userEvent.type(screen.getAllByPlaceholderText(text)[index], type)
   } else {
-    userEvent.type(screen.getByPlaceholderText(text), type)
+    await userEvent.type(screen.getByPlaceholderText(text), type)
   }
 }
 
 export async function clickByPlaceholderText(text: string, index?: number) {
   if (index !== undefined) {
-    userEvent.click(screen.getAllByPlaceholderText(text)[index])
+    await userEvent.click(screen.getAllByPlaceholderText(text)[index])
   } else {
-    userEvent.click(screen.getByPlaceholderText(text))
+    await userEvent.click(screen.getByPlaceholderText(text))
   }
 }
 
@@ -191,16 +242,16 @@ export async function waitForInputByRole(role: ByRoleMatcher, options?: ByRoleOp
 export async function clickByRole(role: ByRoleMatcher, options?: ByRoleOptions, index?: number) {
   await waitForInputByRole(role, options, index)
   if (index !== undefined) {
-    userEvent.click(screen.getAllByRole(role, options)[index])
+    await userEvent.click(screen.getAllByRole(role, options)[index])
   } else {
-    userEvent.click(screen.getByRole(role, options))
+    await userEvent.click(screen.getByRole(role, options))
   }
 }
 
 export async function typeByRole(type: string, role: ByRoleMatcher, options?: ByRoleOptions, index?: number) {
   await waitForInputByRole(role, options, index)
   const input = index !== undefined ? screen.getAllByRole(role, options)[index] : screen.getByRole(role, options)
-  typeUsingPaste(input, type)
+  await typeUsingPaste(input, type)
 }
 
 // By TestId
@@ -241,33 +292,31 @@ export async function waitForInputByTestId(text: string, index?: number) {
 export async function clickByTestId(text: string, index?: number) {
   await waitForInputByTestId(text, index)
   if (index !== undefined) {
-    userEvent.click(screen.getAllByTestId(text)[index])
+    await userEvent.click(screen.getAllByTestId(text)[index])
   } else {
-    userEvent.click(screen.getByTestId(text))
+    await userEvent.click(screen.getByTestId(text))
   }
 }
 
 export async function typeByTestId(id: string, type: string, index?: number) {
   await waitForInputByTestId(id, index)
   const input = index !== undefined ? screen.getAllByTestId(id)[index] : screen.getByTestId(id)
-  typeUsingPaste(input, type)
+  await typeUsingPaste(input, type)
 }
 
 export async function pasteByTestId(id: string, type: string, index?: number) {
   await waitForInputByTestId(id, index)
-  if (index !== undefined) {
-    userEvent.paste(screen.getAllByTestId(id)[index], type)
-  } else {
-    userEvent.paste(screen.getByTestId(id), type)
-  }
+  const input = index !== undefined ? screen.getAllByTestId(id)[index] : screen.getByTestId(id)
+  await userEvent.click(input)
+  await userEvent.paste(type)
 }
 
 export async function clearByTestId(id: string, index?: number) {
   await waitForInputByTestId(id, index)
   if (index !== undefined) {
-    userEvent.clear(screen.getAllByTestId(id)[index])
+    await userEvent.clear(screen.getAllByTestId(id)[index])
   } else {
-    userEvent.clear(screen.getByTestId(id))
+    await userEvent.clear(screen.getByTestId(id))
   }
 }
 
@@ -309,24 +358,24 @@ export async function waitForInputByLabelText(text: string, index?: number) {
 export async function clickByLabel(text: string, index?: number) {
   await waitForInputByLabelText(text, index)
   if (index !== undefined) {
-    userEvent.click(screen.getAllByLabelText(text)[index])
+    await userEvent.click(screen.getAllByLabelText(text)[index])
   } else {
-    userEvent.click(screen.getByLabelText(text))
+    await userEvent.click(screen.getByLabelText(text))
   }
 }
 
 export async function typeByLabel(text: string, type: string, index?: number) {
   await waitForInputByLabelText(text, index)
   const input = index !== undefined ? screen.getAllByLabelText(text)[index] : screen.getByLabelText(text)
-  typeUsingPaste(input, type)
+  await typeUsingPaste(input, type)
 }
 
 export async function typeUsingPaste(input: HTMLElement, type: string) {
   if (type.endsWith('{enter}')) {
-    userEvent.type(input, type)
+    await userEvent.type(input, type)
   } else {
-    userEvent.click(input)
-    userEvent.paste(input, type)
+    await userEvent.click(input)
+    await userEvent.paste(type)
   }
 }
 
@@ -476,7 +525,7 @@ export async function clickRowKebabAction(row: number, actionText: string, table
   const kebabButton = within(targetRow).getByRole('button', { name: 'Actions' })
 
   // click to open the menu
-  userEvent.click(kebabButton)
+  await userEvent.click(kebabButton)
 
   // wait for the menu to appear, then find the action item by text and click it
   await clickByRole('menuitem', { name: actionText })
@@ -488,7 +537,7 @@ export async function clickRowKebabAction(row: number, actionText: string, table
 export async function clickDropdownAction(actionText: string, buttonLabel = 'Actions') {
   // Find and click the actions button
   const actionsButton = screen.getByRole('button', { name: buttonLabel })
-  userEvent.click(actionsButton)
+  await userEvent.click(actionsButton)
 
   // Wait for and click the menu item
   await waitFor(() => screen.getByText(actionText))

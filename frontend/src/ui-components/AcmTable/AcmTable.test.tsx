@@ -3,7 +3,6 @@
 import { ButtonVariant, ToggleGroup, ToggleGroupItem, TooltipPosition } from '@patternfly/react-core'
 import { fitContent, SortByDirection, TableGridBreakpoint } from '@patternfly/react-table'
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { configureAxe } from 'jest-axe'
 import { useState } from 'react'
 import { AcmDropdown } from '../AcmDropdown/AcmDropdown'
@@ -14,7 +13,7 @@ import { AcmTableProps, ExportableIRow, ITableAdvancedFilter } from './AcmTableT
 
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { handleStandardComparison } from '../../lib/search-utils'
-import { getCSVDownloadLink, getCSVExportSpies } from '../../lib/test-util'
+import { getCSVDownloadLink, getCSVExportSpies, clickElement, typeElement } from '~/lib/test-util'
 import { exportObjectString, returnCSVSafeString } from '../../resources/utils'
 import { SearchOperator } from '../AcmSearchInput'
 import { exampleData } from './AcmTable.stories'
@@ -488,56 +487,56 @@ describe('AcmTable', () => {
     expect(getByText('1 selected')).toBeInTheDocument()
   })
 
-  test('can support table actions with single selection', () => {
+  test('can support table actions with single selection', async () => {
     const { getByText, getAllByRole, queryAllByText } = render(<Table useTableActions={true} />)
-    userEvent.click(getAllByRole('checkbox')[1])
+    await clickElement(getAllByRole('checkbox')[1])
     expect(getByText('1 selected')).toBeInTheDocument()
-    userEvent.click(getAllByRole('checkbox')[1])
+    await clickElement(getAllByRole('checkbox')[1])
     expect(queryAllByText('1 selected')).toHaveLength(0)
-    userEvent.click(getAllByRole('checkbox')[1])
+    await clickElement(getAllByRole('checkbox')[1])
     expect(getByText('1 selected')).toBeInTheDocument()
-    getByText('Actions').click()
-    userEvent.click(getByText('Delete'))
+    await clickElement(getByText('Actions'))
+    await clickElement(getByText('Delete'))
     expect(bulkDeleteAction).toHaveBeenCalledWith(defaultSortedItems.slice(0, 1))
   })
 
   test('can support table actions with multiple selections', async () => {
     const { getByLabelText, getByText, getAllByRole, queryAllByText } = render(<Table useTableActions={true} />)
 
-    userEvent.click(getByLabelText('Select'))
+    await clickElement(getByLabelText('Select'))
     await waitFor(() => expect(getByText(/Select page/i)).toBeInTheDocument())
-    userEvent.click(getByText(/Select page/i))
+    await clickElement(getByText(/Select page/i))
     expect(getByText('10 selected')).toBeInTheDocument()
 
-    userEvent.click(getByLabelText('Select'))
+    await clickElement(getByLabelText('Select'))
     await waitFor(() => expect(getByText(/Select all/i)).toBeInTheDocument())
-    userEvent.click(getByText(/Select all/i))
+    await clickElement(getByText(/Select all/i))
     expect(getByText('105 selected')).toBeInTheDocument()
 
-    userEvent.click(getByLabelText('Select'))
+    await clickElement(getByLabelText('Select'))
     await waitFor(() => expect(getByText(/Select none/i)).toBeInTheDocument())
-    userEvent.click(getByText(/Select none/i))
+    await clickElement(getByText(/Select none/i))
     expect(queryAllByText('105 selected')).toHaveLength(0)
 
-    userEvent.click(getAllByRole('checkbox')[0]) // Select all by checkbox
+    await clickElement(getAllByRole('checkbox')[0]) // Select all by checkbox
     expect(getByText('105 selected')).toBeInTheDocument()
 
-    userEvent.click(getAllByRole('checkbox')[0]) // Select none by checkbox
+    await clickElement(getAllByRole('checkbox')[0]) // Select none by checkbox
     expect(queryAllByText('105 selected')).toHaveLength(0)
 
-    userEvent.click(getAllByRole('checkbox')[0]) // Select all by checkbox
+    await clickElement(getAllByRole('checkbox')[0]) // Select all by checkbox
     expect(getByText('105 selected')).toBeInTheDocument()
 
-    userEvent.click(getAllByRole('checkbox')[0]) // Select none by checkbox
-    userEvent.click(getAllByRole('checkbox')[1])
-    userEvent.click(getAllByRole('checkbox')[2])
+    await clickElement(getAllByRole('checkbox')[0]) // Select none by checkbox
+    await clickElement(getAllByRole('checkbox')[1])
+    await clickElement(getAllByRole('checkbox')[2])
     expect(getByText('2 selected')).toBeInTheDocument()
 
-    getByText('Actions').click()
+    await clickElement(getByText('Actions'))
     const statusOption = getByText('Status')
     expect(statusOption).toBeInTheDocument()
 
-    userEvent.click(getByText('Delete'))
+    await clickElement(getByText('Delete'))
     // First arg to bulkDeleteAction is an array with the items in any order
     expect(bulkDeleteAction.mock.calls[0][0]).toHaveLength(2)
     expect(bulkDeleteAction.mock.calls[0][0]).toContain(defaultSortedItems[0])
@@ -549,8 +548,8 @@ describe('AcmTable', () => {
     const { getByLabelText, getByText, getAllByRole } = render(<Table useTableActions={true} onSelect={onSelectMock} />)
 
     // First select some items
-    userEvent.click(getAllByRole('checkbox')[1])
-    userEvent.click(getAllByRole('checkbox')[2])
+    await clickElement(getAllByRole('checkbox')[1])
+    await clickElement(getAllByRole('checkbox')[2])
     expect(getByText('2 selected')).toBeInTheDocument()
     expect(onSelectMock).toHaveBeenLastCalledWith(
       expect.arrayContaining([defaultSortedItems[0], defaultSortedItems[1]])
@@ -560,58 +559,58 @@ describe('AcmTable', () => {
     onSelectMock.mockClear()
 
     // Click "Select none" from dropdown
-    userEvent.click(getByLabelText('Select'))
+    await clickElement(getByLabelText('Select'))
     await waitFor(() => expect(getByText(/Select none/i)).toBeInTheDocument())
-    userEvent.click(getByText(/Select none/i))
+    await clickElement(getByText(/Select none/i))
 
     // Verify onSelect was called with an empty array
     expect(onSelectMock).toHaveBeenCalledWith([])
   })
 
-  test('can support table button actions', () => {
+  test('can support table button actions', async () => {
     const { getByText } = render(<Table useTableActions={true} />)
     expect(getByText('Primary action')).toBeInTheDocument()
     expect(getByText('Secondary action')).toBeInTheDocument()
-    userEvent.click(getByText('Primary action'))
+    await clickElement(getByText('Primary action'))
     expect(primaryTableActionFunction).toHaveBeenCalled()
-    userEvent.click(getByText('Secondary action'))
+    await clickElement(getByText('Secondary action'))
     expect(secondaryTableActionFunction).toHaveBeenCalled()
   })
 
   test('can support table row actions', async () => {
     const { getAllByLabelText, getByRole, getByText } = render(<Table />)
     expect(getAllByLabelText('Actions')).toHaveLength(10)
-    userEvent.click(getAllByLabelText('Actions')[0])
+    await clickElement(getAllByLabelText('Actions')[0])
     await waitFor(() => expect(getByRole('menu')).toBeVisible())
     expect(getByText('Delete item')).toBeVisible()
-    userEvent.click(getByText('Delete item'))
+    await clickElement(getByText('Delete item'))
     expect(deleteAction).toHaveBeenCalled()
   })
   test('can support disabled table row actions', async () => {
     const { getAllByLabelText, getByRole, getByText } = render(<Table />)
     expect(getAllByLabelText('Actions')).toHaveLength(10)
-    userEvent.click(getAllByLabelText('Actions')[0])
+    await clickElement(getAllByLabelText('Actions')[0])
     await waitFor(() => expect(getByRole('menu')).toBeVisible())
     expect(getByText('Disabled item')).toBeVisible()
-    userEvent.click(getByText('Disabled item'))
+    await clickElement(getByText('Disabled item'))
     expect(deleteAction).not.toHaveBeenCalled()
   })
   test('can support disabled table row actions with tooltips', async () => {
     const { getAllByLabelText, getByRole, getByText } = render(<Table />)
     expect(getAllByLabelText('Actions')).toHaveLength(10)
-    userEvent.click(getAllByLabelText('Actions')[1])
+    await clickElement(getAllByLabelText('Actions')[1])
     await waitFor(() => expect(getByRole('menu')).toBeVisible())
     expect(getByText('Disabled delete item')).toBeVisible()
-    userEvent.click(getByText('Disabled delete item'))
+    await clickElement(getByText('Disabled delete item'))
     expect(deleteAction).not.toHaveBeenCalled()
   })
   test('can support table row actions with tooltips', async () => {
     const { getAllByLabelText, getByRole, getByText } = render(<Table />)
     expect(getAllByLabelText('Actions')).toHaveLength(10)
-    userEvent.click(getAllByLabelText('Actions')[0])
+    await clickElement(getAllByLabelText('Actions')[0])
     await waitFor(() => expect(getByRole('menu')).toBeVisible())
     expect(getByText('Tooltipped delete item')).toBeVisible()
-    userEvent.click(getByText('Tooltipped delete item'))
+    await clickElement(getByText('Tooltipped delete item'))
     expect(deleteAction).toHaveBeenCalled()
   })
   test('can customize search placeholder', () => {
@@ -622,25 +621,25 @@ describe('AcmTable', () => {
       customPlaceholder
     )
   })
-  test('can be searched', () => {
+  test('can be searched', async () => {
     const { getByPlaceholderText, queryByText, getByLabelText, getByText, container } = render(<Table />)
 
     // verify manually deleting search, resets table with first column sorting
-    userEvent.type(getByPlaceholderText(placeholderString), 'B{backspace}')
+    await typeElement(getByPlaceholderText(placeholderString), 'B{backspace}')
     expect(container.querySelector('tbody tr:first-of-type [data-label="First Name"]')).toHaveTextContent('Abran')
 
     // sort by non-default column (UID)
-    userEvent.click(getByText('UID'))
+    await clickElement(getByText('UID'))
     expect(container.querySelector('tbody tr:first-of-type [data-label="UID"]')).toHaveTextContent('1')
 
     // search for 'Female'
     expect(getByPlaceholderText(placeholderString)).toBeInTheDocument()
-    userEvent.type(getByPlaceholderText(placeholderString), 'Female')
+    await typeElement(getByPlaceholderText(placeholderString), 'Female')
     expect(queryByText('57 / 105')).toBeVisible()
 
     // clear filter
     expect(getByLabelText('Reset')).toBeVisible()
-    userEvent.click(getByLabelText('Reset'))
+    await clickElement(getByLabelText('Reset'))
     expect(queryByText('57 / 105')).toBeNull()
 
     // verify previous sort column (UID) maintained
@@ -648,19 +647,19 @@ describe('AcmTable', () => {
 
     // search for '.net'
     expect(getByPlaceholderText(placeholderString)).toBeInTheDocument()
-    userEvent.type(getByPlaceholderText(placeholderString), '.net')
+    await typeElement(getByPlaceholderText(placeholderString), '.net')
     expect(queryByText('25 / 105')).toBeVisible()
 
     // verify last sort order ignored
     expect(container.querySelector('tbody tr:first-of-type [data-label="UID"]')).toHaveTextContent('51')
 
     // change sort during filter (Last Name)
-    userEvent.click(getByText('Last Name'))
+    await clickElement(getByText('Last Name'))
     expect(container.querySelector('tbody tr:first-of-type [data-label="Last Name"]')).toHaveTextContent('Barnham')
 
     // clear filter
     expect(getByLabelText('Reset')).toBeVisible()
-    userEvent.click(getByLabelText('Reset'))
+    await clickElement(getByLabelText('Reset'))
     expect(queryByText('25 / 105')).toBeNull()
 
     // verify sort order set during filter (Last Name) persists
@@ -668,92 +667,90 @@ describe('AcmTable', () => {
 
     // search for '.net'
     expect(getByPlaceholderText(placeholderString)).toBeInTheDocument()
-    userEvent.type(getByPlaceholderText(placeholderString), '.net')
+    await typeElement(getByPlaceholderText(placeholderString), '.net')
     expect(queryByText('25 / 105')).toBeVisible()
 
     // verify last sort order ignored
     expect(container.querySelector('tbody tr:first-of-type [data-label="UID"]')).toHaveTextContent('51')
 
     // change sort during filter (Last Name)
-    userEvent.click(getByText('Last Name'))
+    await clickElement(getByText('Last Name'))
     expect(container.querySelector('tbody tr:first-of-type [data-label="Last Name"]')).toHaveTextContent('Barnham')
 
     // clear filter by backspacing
-    userEvent.type(getByPlaceholderText(placeholderString), '{backspace}{backspace}{backspace}{backspace}')
+    await typeElement(getByPlaceholderText(placeholderString), '{backspace}{backspace}{backspace}{backspace}')
     expect(queryByText('25 / 105')).toBeNull()
 
     // verify sort order set during filter (Last Name) persists
     expect(container.querySelector('tbody tr:first-of-type [data-label="Last Name"]')).toHaveTextContent('Arthur')
   })
 
-  test('can be searched with advanced filter dropdown', () => {
+  test('can be searched with advanced filter dropdown', async () => {
     const { getByLabelText, getByText, queryByText, getByRole } = render(<Table advancedFilters={advancedFilters} />)
 
     expect(getByLabelText('Open advanced search')).toBeInTheDocument()
 
-    userEvent.click(getByLabelText('Open advanced search'))
-    userEvent.click(getByText('Select a column'))
+    await clickElement(getByLabelText('Open advanced search'))
+    await clickElement(getByText('Select a column'))
     expect(getByRole('option', { name: 'gender' })).toBeInTheDocument()
-    userEvent.click(getByText('gender'))
+    await clickElement(getByText('gender'))
 
-    userEvent.click(getByText('Select an operator'))
+    await clickElement(getByText('Select an operator'))
     expect(getByText('=')).toBeInTheDocument()
-    userEvent.click(getByText('='))
+    await clickElement(getByText('='))
 
-    userEvent.type(getByRole('textbox', { name: 'Value' }), 'Female')
+    await typeElement(getByRole('textbox', { name: 'Value' }), 'Female')
     expect(queryByText('57 / 57')).toBeInTheDocument()
   })
 
-  test('can be search with advanced filter fuzzy search', () => {
-    const { getByLabelText, queryByText, getAllByDisplayValue, getByTestId } = render(
-      <Table advancedFilters={advancedFilters} />
-    )
+  test('can be search with advanced filter fuzzy search', async () => {
+    const { getByLabelText, queryByText, getByTestId } = render(<Table advancedFilters={advancedFilters} />)
 
-    userEvent.click(getByLabelText('Open advanced search'))
+    await clickElement(getByLabelText('Open advanced search'))
     expect(getByTestId('fuzzy-search-input')).toBeInTheDocument()
-    userEvent.type(getByTestId('fuzzy-search-input'), 'Horatia')
+    await typeElement(getByTestId('fuzzy-search-input'), 'Horatia')
 
     expect(getByLabelText('Open advanced search')).toBeInTheDocument()
-    userEvent.click(getByLabelText('Open advanced search'))
+    await clickElement(getByLabelText('Open advanced search'))
 
-    expect(getAllByDisplayValue('Horatia')).toHaveLength(1)
+    expect(getByLabelText('Search input')).toHaveValue('Horatia')
     expect(queryByText('1 / 105')).toBeInTheDocument()
   })
 
-  const sortTest = () => {
+  const sortTest = async () => {
     const { getByText, container } = render(<Table />)
 
     // sort by string
     expect(container.querySelector('tbody tr:first-of-type [data-label="First Name"]')).toHaveTextContent('Abran')
-    userEvent.click(getByText('Gender'))
+    await clickElement(getByText('Gender'))
     expect(container.querySelector('tbody tr:first-of-type [data-label="Gender"]')).toHaveTextContent('Female')
-    userEvent.click(getByText('Gender'))
+    await clickElement(getByText('Gender'))
     expect(container.querySelector('tbody tr:first-of-type [data-label="Gender"]')).toHaveTextContent('Non-binary')
     // sort by number
-    userEvent.click(getByText('UID'))
+    await clickElement(getByText('UID'))
     expect(container.querySelector('tbody tr:first-of-type [data-label="First Name"]')).toHaveTextContent('Bogart')
-    userEvent.click(getByText('UID'))
+    await clickElement(getByText('UID'))
     expect(container.querySelector('tbody tr:first-of-type [data-label="First Name"]')).toHaveTextContent('Leroy')
 
     // sort with function
-    userEvent.click(getByText('IP Address'))
+    await clickElement(getByText('IP Address'))
     expect(sortFunction).toHaveBeenCalled()
   }
 
-  test('can be sorted', () => {
-    sortTest()
+  test('can be sorted', async () => {
+    await sortTest()
   })
-  test('can be sorted by initialSort property', () => {
+  test('can be sorted by initialSort property', async () => {
     // initially sort by UID
     const { getByText, container } = render(<Table initialSort={{ direction: 'asc', index: 5 }} />)
     expect(container.querySelector('tbody tr:first-of-type [data-label="UID"]')).toHaveTextContent('1')
 
     // verify clicking UID switches the direction
-    userEvent.click(getByText('UID'))
+    await clickElement(getByText('UID'))
     expect(container.querySelector('tbody tr:first-of-type [data-label="UID"]')).toHaveTextContent('105')
 
     // verify clicking on other headers still works
-    userEvent.click(getByText('First Name'))
+    await clickElement(getByText('First Name'))
     expect(container.querySelector('tbody tr:first-of-type [data-label="First Name"]')).toHaveTextContent('Abran')
   })
   test('page size can be updated', async () => {
@@ -765,35 +762,35 @@ describe('AcmTable', () => {
     expect(getAllByLabelText('items per page').length).toBeGreaterThan(0)
 
     // Switch to 50 items per page
-    userEvent.click(getAllByLabelText('items per page')[0])
+    await clickElement(getAllByLabelText('items per page')[0])
     await waitFor(() => expect(getByText('50 per page')).toBeVisible())
-    userEvent.click(getByText('50 per page'))
+    await clickElement(getByText('50 per page'))
     expect(container.querySelectorAll('tbody tr')).toHaveLength(50)
 
     // Go to page 2
-    userEvent.click(getAllByLabelText('Go to next page')[0])
+    await clickElement(getAllByLabelText('Go to next page')[0])
     expect(getAllByLabelText('Current page')[0]).toHaveValue(2)
 
     // Switch to 10 items per page; verify automatic move to page 6
-    userEvent.click(getAllByLabelText('items per page')[0])
+    await clickElement(getAllByLabelText('items per page')[0])
     await waitFor(() => expect(getByText('10 per page')).toBeVisible())
-    userEvent.click(getByText('10 per page'))
+    await clickElement(getByText('10 per page'))
     expect(container.querySelectorAll('tbody tr')).toHaveLength(10)
     expect(getByLabelText('Current page')).toHaveValue(6)
   })
-  test('can show paginated results', () => {
+  test('can show paginated results', async () => {
     const { getAllByLabelText } = render(<Table />)
     expect(getAllByLabelText('Go to next page').length).toBeGreaterThan(0)
-    userEvent.click(getAllByLabelText('Go to next page')[0])
+    await clickElement(getAllByLabelText('Go to next page')[0])
     expect(getAllByLabelText('Current page')[0]).toHaveValue(2)
   })
-  test('should show the empty state when filtered results', () => {
+  test('should show the empty state when filtered results', async () => {
     const { getByPlaceholderText, queryByText, getByText } = render(<Table />)
     expect(queryByText('No results found')).toBeNull()
     expect(getByPlaceholderText(placeholderString)).toBeInTheDocument()
-    userEvent.type(getByPlaceholderText(placeholderString), 'NOSEARCHRESULTS')
+    await typeElement(getByPlaceholderText(placeholderString), 'NOSEARCHRESULTS')
     expect(queryByText('No results found')).toBeVisible()
-    getByText('Clear all filters').click()
+    await clickElement(getByText('Clear all filters'))
     expect(queryByText('No results found')).toBeNull()
   })
   test('can provide ouia attributes on table rows', () => {
@@ -888,7 +885,7 @@ describe('AcmTable', () => {
     const { queryByText } = render(<Table items={[]} useExtraToolbarControls={true} />)
     expect(queryByText('No addresses found')).toBeVisible()
   })
-  test('can render as a controlled component', () => {
+  test('can render as a controlled component', async () => {
     const setPage = jest.fn()
     const setSearch = jest.fn()
     const setSort = jest.fn()
@@ -909,12 +906,12 @@ describe('AcmTable', () => {
     expect(container.querySelector('tbody:last-of-type [data-label="First Name"]')).toHaveTextContent('Alyce')
 
     expect(getByLabelText('Reset')).toBeVisible()
-    userEvent.click(getByLabelText('Reset'))
+    await clickElement(getByLabelText('Reset'))
     expect(setSearch).toHaveBeenCalled()
     expect(setSort).toHaveBeenCalled()
     setSort.mockClear()
 
-    userEvent.click(getByText('UID'))
+    await clickElement(getByText('UID'))
     expect(setSort).toHaveBeenCalled()
   })
   test('shows loading', async () => {
@@ -922,20 +919,20 @@ describe('AcmTable', () => {
     expect(screen.getAllByRole('progressbar')).toBeTruthy()
     expect(queryByText('View 1')).toBeVisible()
   })
-  test('can have sort updated when all items filtered', () => {
+  test('can have sort updated when all items filtered', async () => {
     const { getByPlaceholderText, queryByText, getByLabelText, getByText, container } = render(<Table />)
 
     // search for 'ABSOLUTELYZEROMATCHES'
     expect(getByPlaceholderText(placeholderString)).toBeInTheDocument()
-    userEvent.type(getByPlaceholderText(placeholderString), 'ABSOLUTELYZEROMATCHES')
+    await typeElement(getByPlaceholderText(placeholderString), 'ABSOLUTELYZEROMATCHES')
     expect(queryByText('0 / 105')).toBeVisible()
 
     // change sort during filter (Last Name)
-    userEvent.click(getByText('Last Name'))
+    await clickElement(getByText('Last Name'))
 
     // clear filter
     expect(getByLabelText('Reset')).toBeVisible()
-    userEvent.click(getByLabelText('Reset'))
+    await clickElement(getByLabelText('Reset'))
     expect(queryByText('0 / 105')).toBeNull()
 
     // verify sort selection sticks
@@ -1018,7 +1015,7 @@ describe('AcmTable', () => {
         />
       </MemoryRouter>
     )
-    userEvent.click(getByTestId('expandable-toggle0'))
+    await clickElement(getByTestId('expandable-toggle0'))
     expect(getByTestId('expanded')).toBeInTheDocument()
   })
 
@@ -1047,19 +1044,19 @@ describe('AcmTable', () => {
 
     // Table renders
     expect(getByText('Filter')).toBeInTheDocument()
-    userEvent.click(getByText('Filter'))
+    await clickElement(getByText('Filter'))
     expect(getByTestId('gender-male')).toBeInTheDocument()
 
     // Filtering works
-    userEvent.click(getByTestId('gender-male'))
+    await clickElement(getByTestId('gender-male'))
     expect(container.querySelectorAll('.pf-v6-c-label-group__list-item')).toHaveLength(1)
-    userEvent.click(getByTestId('gender-female'))
+    await clickElement(getByTestId('gender-female'))
     expect(container.querySelectorAll('.pf-v6-c-label-group__list-item')).toHaveLength(2)
 
     // Unselect current options
-    userEvent.click(getByTestId('gender-female'))
+    await clickElement(getByTestId('gender-female'))
     expect(container.querySelectorAll('.pf-v6-c-label-group__list-item')).toHaveLength(1)
-    userEvent.click(getByTestId('gender-male'))
+    await clickElement(getByTestId('gender-male'))
     expect(container.querySelectorAll('.pf-v6-c-label-group__list-item')).toHaveLength(0)
   })
 
@@ -1103,17 +1100,17 @@ describe('AcmTable', () => {
 
     // Test deleting label group
     expect(getByText('Filter')).toBeInTheDocument()
-    userEvent.click(getByText('Filter'))
-    userEvent.click(getByTestId('gender-male'))
-    userEvent.click(getByTestId('gender-female'))
-    userEvent.click(getByLabelText('Close label group'))
+    await clickElement(getByText('Filter'))
+    await clickElement(getByTestId('gender-male'))
+    await clickElement(getByTestId('gender-female'))
+    await clickElement(getByLabelText('Close label group'))
     expect(container.querySelectorAll('.pf-v6-c-label-group__list-item')).toHaveLength(0)
 
     // test deleting single label
     expect(getByText('Filter')).toBeInTheDocument()
-    userEvent.click(getByText('Filter'))
-    userEvent.click(getByTestId('gender-male'))
-    userEvent.click(getByTestId('gender-female'))
+    await clickElement(getByText('Filter'))
+    await clickElement(getByTestId('gender-male'))
+    await clickElement(getByTestId('gender-female'))
     const labelItems = container.querySelectorAll('.pf-v6-c-label-group__list-item')
     expect(labelItems.length).toBe(2)
     // Find close buttons within label items - PatternFly uses button elements with TimesIcon
@@ -1121,16 +1118,16 @@ describe('AcmTable', () => {
     expect(closeButtons.length).toBe(2)
     expect(closeButtons[0]).toBeTruthy()
     expect(closeButtons[1]).toBeTruthy()
-    userEvent.click(closeButtons[1]!)
+    await clickElement(closeButtons[1]!)
     expect(container.querySelectorAll('.pf-v6-c-label-group__list-item')).toHaveLength(1)
-    userEvent.click(closeButtons[0]!)
+    await clickElement(closeButtons[0]!)
     expect(container.querySelectorAll('.pf-v6-c-label-group__list-item')).toHaveLength(0)
 
     // test deleting all selected filters
     expect(getByText('Filter')).toBeInTheDocument()
-    userEvent.click(getByText('Filter'))
-    userEvent.click(getByTestId('gender-male'))
-    userEvent.click(getAllByText('Clear all filters')[0])
+    await clickElement(getByText('Filter'))
+    await clickElement(getByTestId('gender-male'))
+    await clickElement(getAllByText('Clear all filters')[0])
     expect(container.querySelectorAll('.pf-v6-c-label-group__list-item')).toHaveLength(0)
   })
 
@@ -1167,11 +1164,11 @@ describe('AcmTable', () => {
 
     // Test deleting label group
     expect(getByText('Cluster')).toBeInTheDocument()
-    userEvent.click(getByText('Cluster'))
-    userEvent.click(getByTestId('cluster-cluster21'))
-    userEvent.click(getByTestId('cluster-cluster31'))
+    await clickElement(getByText('Cluster'))
+    await clickElement(getByTestId('cluster-cluster21'))
+    await clickElement(getByTestId('cluster-cluster31'))
     expect(container.querySelectorAll('.pf-v6-c-label-group__list-item')).toHaveLength(2)
-    userEvent.click(getByLabelText('Close label group'))
+    await clickElement(getByLabelText('Close label group'))
     expect(container.querySelectorAll('.pf-v6-c-label-group__list-item')).toHaveLength(0)
   })
 
@@ -1192,26 +1189,26 @@ describe('AcmTable', () => {
         ]}
       />
     )
-    userEvent.click(getByText('Filter'))
+    await clickElement(getByText('Filter'))
     await waitFor(() => {
       const scrollableMenu = document.querySelector('.pf-m-scrollable')
       expect(scrollableMenu).toBeInTheDocument()
     })
   })
 
-  test('renders with customTableAction', () => {
+  test('renders with customTableAction', async () => {
     const { container, getByRole } = render(
       <Table useCustomTableAction={true} useTableActions={false} useRowActions={false} />
     )
     expect(container.querySelector('table')).toBeInTheDocument()
     expect(getByRole('button', { name: 'Create' })).toBeVisible()
-    userEvent.click(getByRole('button', { name: 'Create' }))
+    await clickElement(getByRole('button', { name: 'Create' }))
   })
 
-  test('renders with export button', () => {
+  test('renders with export button', async () => {
     const { getByTestId, getByText, container } = render(<Table showExportButton />)
     expect(container.querySelector('#export-search-result')).toBeInTheDocument()
-    userEvent.click(getByTestId('export-search-result'))
+    await clickElement(getByTestId('export-search-result'))
     expect(getByText('Export all to CSV')).toBeInTheDocument()
   })
 
@@ -1220,7 +1217,7 @@ describe('AcmTable', () => {
     expect(exportContent).toEqual("'Ready':'true','Hibernating':'false'")
   })
 
-  test('export button should produce a file for download', () => {
+  test('export button should produce a file for download', async () => {
     const addSubRowsCallback = () => {
       return [
         {
@@ -1247,10 +1244,10 @@ describe('AcmTable', () => {
     window.URL.revokeObjectURL = jest.fn()
 
     expect(container.querySelector('#export-search-result')).toBeInTheDocument()
-    userEvent.click(getByTestId('export-search-result'))
-    userEvent.click(getByText('Export all to CSV'))
+    await clickElement(getByTestId('export-search-result'))
+    await clickElement(getByText('Export all to CSV'))
 
-    userEvent.click(getByTestId('export-search-result'))
+    await clickElement(getByTestId('export-search-result'))
     const arrayTest = [
       'First Name,Last Name,EMail,Gender,IP Address,UID,Clusters,Status Labels\n' + "-,-,-,-,-,-,-,\"'Ready':'true'\"",
     ]

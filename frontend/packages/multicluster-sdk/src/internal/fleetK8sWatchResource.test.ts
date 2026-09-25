@@ -13,7 +13,7 @@ import { handleWebsocketEvent, startWatch, stopWatch, subscribe, useGetInitialRe
 
 import type { FleetWatchK8sResource } from '../types'
 import { NO_FLEET_AVAILABLE_ERROR } from './constants'
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 
 // Mock console methods
 const originalConsoleWarn = console.warn

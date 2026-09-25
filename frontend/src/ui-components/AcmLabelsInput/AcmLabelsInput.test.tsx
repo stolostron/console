@@ -2,9 +2,9 @@
 
 import { useState } from 'react'
 import { render } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { AcmAnsibleTagsInput, AcmKubernetesLabelsInput } from './AcmLabelsInput'
+import { clickElement, typeElement } from '~/lib/test-util'
 
 describe('AcmLabelsInput', () => {
   const LabelsInputKeyPairs = () => {
@@ -19,7 +19,7 @@ describe('AcmLabelsInput', () => {
     const { getByText, getByTestId } = render(<LabelsInputKeyPairs />)
     expect(getByTestId('label-input-button')).toBeVisible()
 
-    userEvent.click(getByTestId('label-input-button'))
+    await clickElement(getByTestId('label-input-button'))
     expect(getByText('Label input')).toBeInTheDocument()
     expect(getByTestId('label-input')).toBeInstanceOf(HTMLInputElement)
   })
@@ -27,32 +27,32 @@ describe('AcmLabelsInput', () => {
     const { queryByText, getByTestId, getByText } = render(<LabelsInputKeyPairs />)
     const labels = ['foo=bar', 'coffee=bean']
 
-    userEvent.click(getByTestId('label-input-button'))
+    await clickElement(getByTestId('label-input-button'))
 
     // add labels
-    labels.forEach((label) => {
-      userEvent.type(getByTestId('label-input'), `${label}{enter}`)
+    for (const label of labels) {
+      await typeElement(getByTestId('label-input'), `${label}{enter}`)
       expect(getByText(label)).toBeVisible()
       expect(queryByText(label)).toBeInstanceOf(HTMLSpanElement)
-    })
+    }
 
     // delete labels
-    labels.forEach((label) => {
-      userEvent.click(getByTestId(`remove-${label.split('=')[0]}`))
+    for (const label of labels) {
+      await clickElement(getByTestId(`remove-${label.split('=')[0]}`))
       expect(queryByText(label)).toBeNull()
-    })
+    }
   })
   test('can add labels with comma', async () => {
     const { queryByText, getByTestId } = render(<LabelsInputKeyPairs />)
-    userEvent.click(getByTestId('label-input-button'))
-    userEvent.type(getByTestId('label-input'), 'label1,')
+    await clickElement(getByTestId('label-input-button'))
+    await typeElement(getByTestId('label-input'), 'label1,')
     expect(queryByText('label1')).toBeVisible()
     expect(queryByText('label1')).toBeInstanceOf(HTMLSpanElement)
   })
   test('can add labels with space', async () => {
     const { queryByText, getByTestId } = render(<LabelsInputKeyPairs />)
-    userEvent.click(getByTestId('label-input-button'))
-    userEvent.type(getByTestId('label-input'), 'label1 ')
+    await clickElement(getByTestId('label-input-button'))
+    await typeElement(getByTestId('label-input'), 'label1 ')
     expect(queryByText('label1')).toBeVisible()
     expect(queryByText('label1')).toBeInstanceOf(HTMLSpanElement)
   })
@@ -60,34 +60,34 @@ describe('AcmLabelsInput', () => {
     const { queryByText, queryAllByText, getByTestId } = render(<LabelsInputKeyPairs />)
     const labels = ['foo=bar', 'foo=bar']
 
-    userEvent.click(getByTestId('label-input-button'))
+    await clickElement(getByTestId('label-input-button'))
 
-    labels.forEach((label) => {
-      userEvent.type(getByTestId('label-input'), `${label}{enter}`)
+    for (const label of labels) {
+      await typeElement(getByTestId('label-input'), `${label}{enter}`)
       expect(queryByText(label)).toBeVisible()
       expect(queryByText(label)).toBeInstanceOf(HTMLSpanElement)
-    })
+    }
     expect(queryAllByText('foo=bar')).toHaveLength(1)
   })
   test('input can be exited by escape', async () => {
     const { queryByText, getByTestId } = render(<LabelsInputKeyPairs />)
     const commands = ['{esc}']
 
-    userEvent.click(getByTestId('label-input-button'))
+    await clickElement(getByTestId('label-input-button'))
 
     // verify escape and enter exit input behavior
-    commands.forEach((cmd) => {
-      userEvent.type(getByTestId('label-input'), cmd)
+    for (const cmd of commands) {
+      await typeElement(getByTestId('label-input'), cmd)
       expect(queryByText('label=null')).toBeNull()
-    })
+    }
   })
-  test('can delete labels with keyboard controls', () => {
+  test('can delete labels with keyboard controls', async () => {
     const { queryByText, getByTestId } = render(<LabelsInputKeyPairs />)
 
-    userEvent.click(getByTestId('label-input-button'))
-    userEvent.type(getByTestId('label-input'), 'foo=bar{enter}')
+    await clickElement(getByTestId('label-input-button'))
+    await typeElement(getByTestId('label-input'), 'foo=bar{enter}')
     expect(queryByText('foo=bar')).toBeVisible()
-    userEvent.type(getByTestId('label-input'), '{backspace}{enter}')
+    await typeElement(getByTestId('label-input'), '{backspace}{enter}')
     expect(queryByText('foo=bar')).toBeNull()
   })
 
@@ -95,10 +95,10 @@ describe('AcmLabelsInput', () => {
     const { getByTestId, container } = render(<LabelsInputKeyPairs />)
     expect(await axe(container)).toHaveNoViolations()
 
-    userEvent.click(getByTestId('label-input-button'))
+    await clickElement(getByTestId('label-input-button'))
     expect(await axe(container)).toHaveNoViolations()
 
-    userEvent.type(getByTestId('label-input'), 'foo=bar{enter}')
+    await typeElement(getByTestId('label-input'), 'foo=bar{enter}')
     expect(await axe(container)).toHaveNoViolations()
   })
 
@@ -115,35 +115,35 @@ describe('AcmLabelsInput', () => {
     const { queryByText, getByTestId, getByText } = render(<LabelsInputStrings />)
     const labels = ['foobar', 'coffeebean']
 
-    userEvent.click(getByTestId('label-input-button'))
+    await clickElement(getByTestId('label-input-button'))
 
     // add labels
-    labels.forEach((label) => {
-      userEvent.type(getByTestId('label-input'), `${label}{enter}`)
+    for (const label of labels) {
+      await typeElement(getByTestId('label-input'), `${label}{enter}`)
       expect(getByText(label)).toBeVisible()
       expect(queryByText(label)).toBeInstanceOf(HTMLSpanElement)
-    })
+    }
 
     // delete labels
-    labels.forEach((label) => {
-      userEvent.click(getByTestId(`remove-${label.split('=')[0]}`))
+    for (const label of labels) {
+      await clickElement(getByTestId(`remove-${label.split('=')[0]}`))
       expect(queryByText(label)).toBeNull()
 
       expect(getByTestId('label-input-button')).toBeVisible()
-    })
+    }
   })
   test('allows for string tags with spaces to be added', async () => {
     const { queryByText, getByTestId, getByText } = render(<LabelsInputStrings />)
     const labels = ['foo bar', 'coffee bean']
 
-    userEvent.click(getByTestId('label-input-button'))
+    await clickElement(getByTestId('label-input-button'))
 
     // add labels
-    labels.forEach((label) => {
-      userEvent.type(getByTestId('label-input'), `${label}{enter}`)
+    for (const label of labels) {
+      await typeElement(getByTestId('label-input'), `${label}{enter}`)
       expect(getByText(label)).toBeVisible()
       expect(queryByText(label)).toBeInstanceOf(HTMLSpanElement)
-    })
+    }
   })
 
   test('hides component when hidden prop is true', () => {

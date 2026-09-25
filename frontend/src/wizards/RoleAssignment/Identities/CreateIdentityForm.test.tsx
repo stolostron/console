@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { CreateIdentityForm } from './CreateIdentityForm'
 
 jest.mock('../../../resources/rbac', () => ({
@@ -19,6 +18,7 @@ jest.mock('../../../lib/acm-i18next', () => ({
 }))
 
 import { createGroup, createUser } from '../../../resources/rbac'
+import { typeElement, clickElement } from '~/lib/test-util'
 
 const mockCreateUser = createUser as jest.MockedFunction<typeof createUser>
 const mockCreateGroup = createGroup as jest.MockedFunction<typeof createGroup>
@@ -74,10 +74,10 @@ describe('CreateIdentityForm', () => {
     render(<CreateIdentityForm {...defaultProps} />)
 
     const input = screen.getByTestId('identity-identifier')
-    await userEvent.type(input, 'test.user@example.com')
+    await typeElement(input, 'test.user@example.com')
 
     const submitButton = screen.getByRole('button', { name: 'Save user' })
-    await userEvent.click(submitButton)
+    await clickElement(submitButton)
 
     await waitFor(() => {
       expect(mockCreateUser).toHaveBeenCalledWith({ metadata: { name: 'test.user@example.com' } })
@@ -92,10 +92,10 @@ describe('CreateIdentityForm', () => {
     render(<CreateIdentityForm {...defaultProps} subjectKind="Group" saveButtonText="Save group" />)
 
     const input = screen.getByTestId('identity-identifier')
-    await userEvent.type(input, 'my-group')
+    await typeElement(input, 'my-group')
 
     const submitButton = screen.getByRole('button', { name: 'Save group' })
-    await userEvent.click(submitButton)
+    await clickElement(submitButton)
 
     await waitFor(() => {
       expect(mockCreateGroup).toHaveBeenCalledWith({ metadata: { name: 'my-group' }, users: [] })
@@ -110,24 +110,24 @@ describe('CreateIdentityForm', () => {
     render(<CreateIdentityForm {...defaultProps} />)
 
     const cancelButton = screen.getByRole('button', { name: 'Cancel' })
-    await userEvent.click(cancelButton)
+    await clickElement(cancelButton)
 
     expect(defaultProps.onCancel).toHaveBeenCalledTimes(1)
   })
 
   it('calls onError when createUser rejects', async () => {
-    mockCreateUser.mockReturnValue({
+    mockCreateUser.mockImplementation(() => ({
       promise: Promise.reject(new Error('fail')),
       abort: jest.fn(),
-    })
+    }))
 
     render(<CreateIdentityForm {...defaultProps} />)
 
     const input = screen.getByTestId('identity-identifier')
-    await userEvent.type(input, 'test.user')
+    await typeElement(input, 'test.user')
 
     const submitButton = screen.getByRole('button', { name: 'Save user' })
-    await userEvent.click(submitButton)
+    await clickElement(submitButton)
 
     await waitFor(() => {
       expect(defaultProps.onError).toHaveBeenCalledWith('test.user')
@@ -139,7 +139,7 @@ describe('CreateIdentityForm', () => {
     render(<CreateIdentityForm {...defaultProps} />)
 
     const submitButton = screen.getByRole('button', { name: 'Save user' })
-    await userEvent.click(submitButton)
+    await clickElement(submitButton)
 
     expect(mockCreateUser).not.toHaveBeenCalled()
   })
@@ -148,10 +148,10 @@ describe('CreateIdentityForm', () => {
     render(<CreateIdentityForm {...defaultProps} />)
 
     const input = screen.getByTestId('identity-identifier')
-    await userEvent.type(input, '  test.user  ')
+    await typeElement(input, '  test.user  ')
 
     const submitButton = screen.getByRole('button', { name: 'Save user' })
-    await userEvent.click(submitButton)
+    await clickElement(submitButton)
 
     await waitFor(() => {
       expect(mockCreateUser).toHaveBeenCalledWith({ metadata: { name: 'test.user' } })

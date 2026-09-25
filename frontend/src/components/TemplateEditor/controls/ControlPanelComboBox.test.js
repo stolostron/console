@@ -4,8 +4,8 @@
 import React from 'react'
 import ControlPanelComboBox from './ControlPanelComboBox'
 import { render, waitFor, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import i18n from 'i18next'
+import { clickElement, typeElement } from '~/lib/test-util'
 
 const t = i18n.t.bind(i18n)
 
@@ -76,7 +76,7 @@ describe('ControlPanelComboBox component', () => {
     render(<ControlPanelComboBox {...propsPlain} />)
 
     const toggle = screen.getByRole('button', { name: /menu toggle/i })
-    userEvent.click(toggle)
+    await clickElement(toggle)
 
     await waitFor(() => {
       expect(screen.getByText(/m5\.large - 2 vCPU, 8 GiB RAM - General Purpose/i)).toBeInTheDocument()
@@ -89,11 +89,11 @@ describe('ControlPanelComboBox component', () => {
     render(<ControlPanelComboBox {...propsPlain} handleControlChange={handleChange} />)
 
     const toggle = screen.getByRole('button', { name: /menu toggle/i })
-    userEvent.click(toggle)
+    await clickElement(toggle)
 
-    await waitFor(() => {
+    await waitFor(async () => {
       const option = screen.getByText('m5.2xlarge - 8 vCPU, 32 GiB RAM - General Purpose')
-      userEvent.click(option)
+      await clickElement(option)
     })
 
     await waitFor(() => {
@@ -105,7 +105,7 @@ describe('ControlPanelComboBox component', () => {
     render(<ControlPanelComboBox {...propsPlain} />)
 
     const toggle = screen.getByRole('button', { name: /menu toggle/i })
-    userEvent.click(toggle)
+    await clickElement(toggle)
 
     await waitFor(() => {
       const options = screen.getAllByRole('option')
@@ -114,7 +114,7 @@ describe('ControlPanelComboBox component', () => {
 
     const inputs = screen.getAllByRole('combobox')
     const input = inputs.find((el) => el.type === 'text') || inputs[0]
-    userEvent.type(input, '256')
+    await typeElement(input, '256')
 
     await waitFor(() => {
       const options = screen.getAllByRole('option')
@@ -127,7 +127,7 @@ describe('ControlPanelComboBox component', () => {
     render(<ControlPanelComboBox {...propsPlain} handleControlChange={handleChange} />)
 
     const clearButton = screen.getByRole('button', { name: /clear/i })
-    userEvent.click(clearButton)
+    await clickElement(clearButton)
 
     await waitFor(() => {
       expect(handleChange).toHaveBeenCalled()
@@ -149,7 +149,8 @@ describe('ControlPanelComboBox component', () => {
     const input = screen.getByTestId('masterType')
     expect(input).toHaveValue('Opensdfsddfsdf')
 
-    userEvent.clear(input)
+    await clickElement(input)
+    await typeElement(input, '{Backspace}', { skipClick: true })
 
     await waitFor(() => {
       expect(input).toHaveValue('')
@@ -171,7 +172,8 @@ describe('ControlPanelComboBox component', () => {
     // Display shows the full option label for the short active value
     expect(input).toHaveValue('m5.xlarge - 4 vCPU, 16 GiB RAM - General Purpose')
 
-    userEvent.clear(input)
+    await clickElement(input)
+    await typeElement(input, '{Backspace}', { skipClick: true })
 
     await waitFor(() => {
       expect(input).toHaveValue('')
@@ -196,7 +198,7 @@ describe('ControlPanelComboBox component', () => {
     render(<ControlPanelComboBox {...propsWithDuplicates} />)
 
     const toggle = screen.getByRole('button', { name: /menu toggle/i })
-    userEvent.click(toggle)
+    await clickElement(toggle)
 
     await waitFor(() => {
       const options = screen.getAllByRole('option')
@@ -251,7 +253,7 @@ describe('ControlPanelComboBox component', () => {
     )
 
     const input = screen.getByTestId('githubPath')
-    userEvent.type(input, 'test-path{enter}')
+    await typeElement(input, 'test-path{enter}')
 
     await waitFor(() => {
       expect(control.active).toBe('test-path')
@@ -268,11 +270,11 @@ describe('ControlPanelComboBox component', () => {
     render(<ControlPanelComboBox {...propsPlain} control={control} handleControlChange={handleChange} />)
 
     const toggle = screen.getByRole('button', { name: /menu toggle/i })
-    userEvent.click(toggle)
+    await clickElement(toggle)
 
-    await waitFor(() => {
+    await waitFor(async () => {
       const option = screen.getByText('m5.2xlarge - 8 vCPU, 32 GiB RAM - General Purpose')
-      userEvent.click(option)
+      await clickElement(option)
     })
 
     await waitFor(() => {
@@ -289,7 +291,7 @@ describe('ControlPanelComboBox component', () => {
     render(<ControlPanelComboBox {...propsPlain} control={control} />)
 
     const toggle = screen.getByRole('button', { name: /menu toggle/i })
-    userEvent.click(toggle)
+    await clickElement(toggle)
 
     await waitFor(() => {
       const option = screen.getByText('m5.xlarge - 4 vCPU, 16 GiB RAM - General Purpose')
@@ -301,7 +303,7 @@ describe('ControlPanelComboBox component', () => {
     render(<ControlPanelComboBox {...propsMulti} />)
 
     const toggle = screen.getByRole('button', { name: /menu toggle/i })
-    userEvent.click(toggle)
+    await clickElement(toggle)
 
     await waitFor(() => {
       expect(screen.getByText('test-placement-1')).toBeInTheDocument()
@@ -317,7 +319,7 @@ describe('ControlPanelComboBox component', () => {
     render(<ControlPanelComboBox {...propsMulti} handleControlChange={handleChange} />)
 
     const toggle = screen.getByRole('button', { name: /menu toggle/i })
-    userEvent.click(toggle)
+    await clickElement(toggle)
 
     await waitFor(() => {
       const options = screen.getAllByRole('option')
@@ -325,7 +327,7 @@ describe('ControlPanelComboBox component', () => {
     })
 
     const options = screen.getAllByRole('option')
-    userEvent.click(options[0])
+    await clickElement(options[0])
 
     await waitFor(() => {
       expect(handleChange).toHaveBeenCalled()

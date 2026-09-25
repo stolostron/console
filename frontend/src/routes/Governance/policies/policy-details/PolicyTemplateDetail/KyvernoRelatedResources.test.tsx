@@ -4,6 +4,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { KyvernoRelatedResources } from './KyvernoRelatedResources'
 import { MemoryRouter } from 'react-router'
 import * as KyvernoTable from './KyvernoTable'
+import { clickElement } from '~/lib/test-util'
 
 describe('Kyverno Related Resources table Test', () => {
   beforeEach(() => {
@@ -510,11 +511,11 @@ describe('Kyverno Related Resources table Test', () => {
     })
 
     // Generate
-    screen
-      .getByRole('button', {
+    await clickElement(
+      screen.getByRole('button', {
         name: 'Generate',
       })
-      .click()
+    )
     screen.getByRole('link', {
       name: 'zk-kafka-address',
     })
@@ -532,11 +533,11 @@ describe('Kyverno Related Resources table Test', () => {
     })
 
     // Generate match resources
-    screen
-      .getByRole('button', {
+    await clickElement(
+      screen.getByRole('button', {
         name: 'Generate match resources',
       })
-      .click()
+    )
     screen.getByRole('link', {
       name: 'test2',
     })

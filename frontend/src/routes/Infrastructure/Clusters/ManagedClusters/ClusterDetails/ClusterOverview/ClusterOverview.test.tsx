@@ -20,7 +20,7 @@ import {
   policyreportState,
 } from '../../../../../../atoms'
 import { nockAggegateRequest, nockGet, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../../lib/nock-util'
-import { clickByText, waitForNocks, waitForText } from '../../../../../../lib/test-util'
+import { clickByText, waitForNocks, waitForText, clickElement } from '~/lib/test-util'
 import {
   ClusterCurator,
   ClusterCuratorApiVersion,
@@ -44,7 +44,6 @@ import {
 } from '../ClusterDetails.sharedmocks'
 import { ClusterOverviewPageContent } from './ClusterOverview'
 import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
-import userEvent from '@testing-library/user-event'
 import { AcmToastGroup, AcmToastProvider } from '../../../../../../ui-components'
 import { axe } from 'jest-axe'
 import { ClusterDetailsContext } from '../ClusterDetails'
@@ -796,7 +795,7 @@ describe('ClusterOverview with AWS hypershift cluster', () => {
       </RecoilRoot>
     )
 
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /import cluster/i,
       })
@@ -1179,12 +1178,12 @@ describe('ClusterOverview labels truncation', () => {
     expect(screen.getByText('2 more')).toBeInTheDocument()
     expect(screen.queryByText('zeta=6')).not.toBeInTheDocument()
 
-    await userEvent.click(screen.getByText('2 more'))
+    await clickElement(screen.getByText('2 more'))
     await waitForText('zeta=6')
     await waitForText('eta=7')
     expect(screen.getByText('Show less')).toBeInTheDocument()
 
-    await userEvent.click(screen.getByText('Show less'))
+    await clickElement(screen.getByText('Show less'))
     expect(screen.getByText('2 more')).toBeInTheDocument()
 
     expect(

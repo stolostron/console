@@ -6,7 +6,7 @@ import { render, screen, within } from '@testing-library/react'
 import { generatePath, MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { channelsState, helmReleaseState, subscriptionsState } from '../../../../atoms'
-import { waitForNotText, waitForText } from '../../../../lib/test-util'
+import { waitForNotText, waitForText, clickElement } from '~/lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { matchesSelectedLabels } from '../../utils/label-utils'
 import DiscoveredByCluster from './DiscoveredByCluster'
@@ -323,69 +323,57 @@ describe('DiscoveredByCluster', () => {
 
       // Test some filters
       await waitForText('Filter')
-      screen.getByRole('button', { name: 'Filter' }).click()
-
+      await clickElement(screen.getByRole('button', { name: 'Filter' }))
       const deploymentAvailableFilter = screen.getByRole('heading', { name: 'Deployment available' }).parentElement!
 
-      within(deploymentAvailableFilter).getByRole('checkbox', { name: 'yes 1' }).click()
-
+      await clickElement(within(deploymentAvailableFilter).getByRole('checkbox', { name: 'yes 1' }))
       await waitForText('managed2')
       await waitForNotText('managed3')
 
-      within(deploymentAvailableFilter).getByRole('checkbox', { name: 'yes 1' }).click()
-      within(deploymentAvailableFilter).getByRole('checkbox', { name: 'no 1' }).click()
-
+      await clickElement(within(deploymentAvailableFilter).getByRole('checkbox', { name: 'yes 1' }))
+      await clickElement(within(deploymentAvailableFilter).getByRole('checkbox', { name: 'no 1' }))
       await waitForText('managed3')
       await waitForNotText('managed2')
 
-      within(deploymentAvailableFilter).getByRole('checkbox', { name: 'no 1' }).click()
-
+      await clickElement(within(deploymentAvailableFilter).getByRole('checkbox', { name: 'no 1' }))
       const upgradeAvailableFilter = screen.getByRole('heading', { name: 'Update available' }).parentElement!
 
-      within(upgradeAvailableFilter).getByRole('checkbox', { name: 'yes 1' }).click()
-
+      await clickElement(within(upgradeAvailableFilter).getByRole('checkbox', { name: 'yes 1' }))
       await waitForText('managed2')
       await waitForNotText('managed3')
 
-      within(upgradeAvailableFilter).getByRole('checkbox', { name: 'yes 1' }).click()
-      within(upgradeAvailableFilter).getByRole('checkbox', { name: 'no 1' }).click()
-
+      await clickElement(within(upgradeAvailableFilter).getByRole('checkbox', { name: 'yes 1' }))
+      await clickElement(within(upgradeAvailableFilter).getByRole('checkbox', { name: 'no 1' }))
       await waitForText('managed3')
       await waitForNotText('managed2')
 
-      within(upgradeAvailableFilter).getByRole('checkbox', { name: 'no 1' }).click()
-
-      screen.getByRole('checkbox', { name: 'Managed externally 2' }).click()
+      await clickElement(within(upgradeAvailableFilter).getByRole('checkbox', { name: 'no 1' }))
+      await clickElement(screen.getByRole('checkbox', { name: 'Managed externally 2' }))
       await waitForText('managed2')
       await waitForText('managed3')
 
-      screen.getByRole('checkbox', { name: 'Managed externally 2' }).click()
-
-      screen.getByRole('checkbox', { name: 'Low 1' }).click()
-
+      await clickElement(screen.getByRole('checkbox', { name: 'Managed externally 2' }))
+      await clickElement(screen.getByRole('checkbox', { name: 'Low 1' }))
       await waitForText('managed2')
       await waitForNotText('managed3')
 
-      screen.getByRole('checkbox', { name: 'Low 1' }).click()
-
-      screen.getByRole('checkbox', { name: 'High 1' }).click()
+      await clickElement(screen.getByRole('checkbox', { name: 'Low 1' }))
+      await clickElement(screen.getByRole('checkbox', { name: 'High 1' }))
       await waitForNotText('managed2')
       await waitForText('managed3')
 
-      screen.getByRole('checkbox', { name: 'High 1' }).click()
-
-      screen.getByRole('checkbox', { name: 'enforce 1' }).click()
+      await clickElement(screen.getByRole('checkbox', { name: 'High 1' }))
+      await clickElement(screen.getByRole('checkbox', { name: 'enforce 1' }))
       await waitForNotText('managed3')
       await waitForText('managed2')
 
-      screen.getByRole('checkbox', { name: 'enforce 1' }).click()
-      screen.getByRole('checkbox', { name: 'inform 1' }).click()
-
+      await clickElement(screen.getByRole('checkbox', { name: 'enforce 1' }))
+      await clickElement(screen.getByRole('checkbox', { name: 'inform 1' }))
       await waitForNotText('managed2')
       await waitForText('managed3')
 
       // Unset the filter so the state doesn't carry over
-      screen.getByRole('checkbox', { name: 'inform 1' }).click()
+      await clickElement(screen.getByRole('checkbox', { name: 'inform 1' }))
     },
     480 * 1000
   )

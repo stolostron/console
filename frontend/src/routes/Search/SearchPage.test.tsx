@@ -4,13 +4,12 @@
 
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { GraphQLError } from 'graphql'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { configMapsState, isGlobalHubState, Settings, settingsState } from '../../atoms'
 import { nockIgnoreOperatorCheck, nockRequest } from '../../lib/nock-util'
-import { wait, waitForNocks } from '../../lib/test-util'
+import { wait, waitForNocks, clickElement, typeElement } from '~/lib/test-util'
 import { ConfigMap } from '../../resources'
 import { UserPreference } from '../../resources/userpreference'
 import { SearchCompleteDocument, SearchResultItemsDocument, SearchSchemaDocument } from './search-sdk/search-sdk'
@@ -287,11 +286,11 @@ describe('SearchPage', () => {
 
     const searchbar = screen.getByLabelText('Search input')
     expect(searchbar).toBeTruthy()
-    userEvent.click(searchbar)
-    userEvent.type(searchbar, 'kind ')
+    await clickElement(searchbar)
+    await typeElement(searchbar, 'kind ')
     expect(screen.queryByText('kind:')).toBeTruthy()
     expect(screen.getByLabelText('Search input')).toBeTruthy()
-    userEvent.type(searchbar, 'Deployment ')
+    await typeElement(searchbar, 'Deployment ')
 
     // check searchbar updated properly
     await waitFor(() => expect(screen.queryByText('kind:Deployment')).toBeTruthy())

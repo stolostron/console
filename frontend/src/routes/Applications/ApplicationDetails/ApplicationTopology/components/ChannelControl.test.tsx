@@ -9,10 +9,10 @@
 // Copyright Contributors to the Open Cluster Management project
 
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { t as t } from '~/lib/test-helpers'
 import ChannelController from './ChannelControl'
 import { MockChannelControlData, MockSetDrawerContent } from '../types'
+import { clickElement, typeElement } from '~/lib/test-util'
 
 const channelControllerNoAllChannels: MockChannelControlData = {
   activeChannel: '__ALL__/__ALL__//__ALL__/__ALL__',
@@ -112,21 +112,21 @@ describe('ChannelController components 2. 2', () => {
     await waitFor(() => container.querySelector(`button[id="comboChannel"]`))
   })
 
-  it('ChannelController components 2 2', () => {
-    userEvent.click(container.querySelector(`button[aria-label="Go to first page"]`)!)
-    userEvent.type(container.querySelector(`button[aria-label="Go to first page"]`)!, '{enter}')
+  it('ChannelController components 2 2', async () => {
+    await clickElement(container.querySelector(`button[aria-label="Go to first page"]`)!)
+    await typeElement(container.querySelector(`button[aria-label="Go to first page"]`)!, '{enter}')
 
-    userEvent.click(container.querySelector(`button[aria-label="Go to previous page"]`)!)
-    userEvent.type(container.querySelector(`button[aria-label="Go to previous page"]`)!, '{enter}')
+    await clickElement(container.querySelector(`button[aria-label="Go to previous page"]`)!)
+    await typeElement(container.querySelector(`button[aria-label="Go to previous page"]`)!, '{enter}')
 
-    userEvent.click(container.querySelector(`button[aria-label="Go to next page"]`)!)
-    userEvent.type(container.querySelector(`button[aria-label="Go to next page"]`)!, '{enter}')
+    await clickElement(container.querySelector(`button[aria-label="Go to next page"]`)!)
+    await typeElement(container.querySelector(`button[aria-label="Go to next page"]`)!, '{enter}')
 
-    userEvent.click(container.querySelector(`button[aria-label="Go to last page"]`)!)
-    userEvent.type(container.querySelector(`button[aria-label="Go to last page"]`)!, '{enter}')
+    await clickElement(container.querySelector(`button[aria-label="Go to last page"]`)!)
+    await typeElement(container.querySelector(`button[aria-label="Go to last page"]`)!, '{enter}')
 
-    userEvent.click(container.querySelector(`.pf-v6-c-form-control`)!)
-    userEvent.type(container.querySelector(`.pf-v6-c-form-control`)!, '{enter}')
+    await clickElement(container.querySelector(`.pf-v6-c-form-control`)!)
+    await typeElement(container.querySelector(`.pf-v6-c-form-control`)!, '{enter}')
   })
 })
 
@@ -142,10 +142,12 @@ describe('ChannelController components 3', () => {
     await waitFor(() => container.querySelector(`button[id="comboChannel"]`))
   })
 
-  it('ChannelController components 3', () => {
-    userEvent.click(screen.getByText(/blue-nginx-subscription/i))
-    userEvent.click(screen.getByText(/ingress-nginx-subscription-blue/i))
-    expect(screen.getByText(/ingress-nginx-subscription-blue/i)).toBeTruthy()
+  it('ChannelController components 3', async () => {
+    await clickElement(screen.getByText(/blue-nginx-subscription/i))
+    await clickElement(screen.getByText(/ingress-nginx-subscription-blue/i))
+    await waitFor(() =>
+      expect(container.querySelector('#comboChannel')).toHaveTextContent('ingress-nginx-subscription-blue')
+    )
   })
 })
 
@@ -161,9 +163,11 @@ describe('ChannelController components 4', () => {
     await waitFor(() => container.querySelector(`button[id="comboChannel"]`))
   })
 
-  it('ChannelController components 4', () => {
-    userEvent.click(screen.getByText(/helloworld-demo-subscription-1/i))
-    userEvent.click(screen.getByText(/helloworld-demo-subscription-2/i))
-    expect(screen.getByText(/helloworld-demo-subscription-2/i)).toBeTruthy()
+  it('ChannelController components 4', async () => {
+    await clickElement(screen.getByText(/helloworld-demo-subscription-1/i))
+    await clickElement(screen.getByText(/helloworld-demo-subscription-2/i))
+    await waitFor(() =>
+      expect(container.querySelector('#comboChannel')).toHaveTextContent('helloworld-demo-subscription-2')
+    )
   })
 })

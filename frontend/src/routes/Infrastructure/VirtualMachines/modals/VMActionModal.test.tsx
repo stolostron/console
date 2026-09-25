@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { RecoilRoot } from 'recoil'
 import { isFineGrainedRbacEnabledState } from '../../../../atoms'
 import { fleetResourceRequest } from '../../../../resources/utils/fleet-resource-request'
 import { fetchRetry } from '../../../../resources/utils/resource-request'
 import { VMActionModal } from './VMActionModal'
+import { clickElement } from '~/lib/test-util'
 
 jest.mock('../../../../resources/utils/resource-request', () => ({
   getRequest: jest.fn((url) => {
@@ -84,7 +84,7 @@ describe('VMActionModal', () => {
     // verify click launch button
     const confirmButton = getByTestId('vm-modal-confirm')
     expect(confirmButton).toBeTruthy()
-    userEvent.click(confirmButton)
+    await clickElement(confirmButton)
 
     expect(fetchRetry).toHaveBeenCalledWith({
       data: {
@@ -133,7 +133,7 @@ describe('VMActionModal', () => {
     // verify click launch button
     const confirmButton = getByTestId('vm-modal-confirm')
     expect(confirmButton).toBeTruthy()
-    userEvent.click(confirmButton)
+    await clickElement(confirmButton)
 
     expect(fetchRetry).toHaveBeenCalledWith({
       data: {
@@ -182,7 +182,7 @@ describe('VMActionModal', () => {
     // verify click launch button
     const confirmButton = getByTestId('vm-modal-confirm')
     expect(confirmButton).toBeTruthy()
-    userEvent.click(confirmButton)
+    await clickElement(confirmButton)
 
     expect(fetchRetry).toHaveBeenCalledWith({
       data: {
@@ -237,7 +237,7 @@ describe('VMActionModal', () => {
     // verify click launch button
     const confirmButton = getByTestId('vm-modal-confirm')
     expect(confirmButton).toBeTruthy()
-    userEvent.click(confirmButton)
+    await clickElement(confirmButton)
 
     expect(fetchRetry).toHaveBeenCalledWith({
       data: {
@@ -309,7 +309,7 @@ describe('VMActionModal', () => {
     // verify click launch button
     const confirmButton = getByTestId('vm-modal-confirm')
     expect(confirmButton).toBeTruthy()
-    userEvent.click(confirmButton)
+    await clickElement(confirmButton)
 
     expect(fetchRetry).toThrow()
   })
@@ -342,7 +342,7 @@ describe('VMActionModal', () => {
     // verify click launch button
     const confirmButton = getByTestId('vm-modal-confirm')
     expect(confirmButton).toBeTruthy()
-    userEvent.click(confirmButton)
+    await clickElement(confirmButton)
 
     expect(fetchRetry).toThrow()
   })
@@ -396,7 +396,7 @@ describe('VMActionModal', () => {
       return button
     })
     expect(confirmButton).toBeTruthy()
-    userEvent.click(confirmButton)
+    await clickElement(confirmButton)
 
     expect(fetchRetry).toHaveBeenCalledWith({
       data: {

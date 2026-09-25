@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { render } from '@testing-library/react'
 import { AcmSearchInput, SearchableColumn, SearchConstraint, SearchOperator } from '../AcmSearchInput'
 import { axe } from 'jest-axe'
-import userEvent from '@testing-library/user-event'
+import { clickElement } from '~/lib/test-util'
 
 describe('AcmSearchInput', () => {
   const columns: SearchableColumn[] = [
@@ -44,32 +44,32 @@ describe('AcmSearchInput', () => {
     expect(getByLabelText('Open advanced search')).toBeInTheDocument()
   })
 
-  test('popper renders', () => {
+  test('popper renders', async () => {
     const { getByLabelText, getByText } = render(<AcmSearchInputComponent />)
     expect(getByLabelText('Open advanced search')).toBeInTheDocument()
-    userEvent.click(getByLabelText('Open advanced search'))
-    userEvent.click(getByText('Fuzzy search'))
+    await clickElement(getByLabelText('Open advanced search'))
+    await clickElement(getByText('Fuzzy search'))
   })
 
-  test('can add search constraints', () => {
+  test('can add search constraints', async () => {
     const { getByLabelText, getByText, getAllByText } = render(<AcmSearchInputComponent />)
     expect(getByLabelText('Open advanced search')).toBeInTheDocument()
-    userEvent.click(getByLabelText('Open advanced search'))
+    await clickElement(getByLabelText('Open advanced search'))
     expect(getByText('Add a search constraint')).toBeInTheDocument()
-    userEvent.click(getByText('Add a search constraint'))
+    await clickElement(getByText('Add a search constraint'))
     expect(getAllByText('Column')).toHaveLength(2)
   })
 
-  test('can add search constraint with operator', () => {
+  test('can add search constraint with operator', async () => {
     const { getByLabelText, getByText, getAllByText } = render(<AcmSearchInputComponent />)
     expect(getByLabelText('Open advanced search')).toBeInTheDocument()
-    userEvent.click(getByLabelText('Open advanced search'))
+    await clickElement(getByLabelText('Open advanced search'))
     expect(getAllByText('Column')).toHaveLength(1)
 
-    userEvent.click(getByText('Select a column'))
-    userEvent.click(getByText('distribution'))
+    await clickElement(getByText('Select a column'))
+    await clickElement(getByText('distribution'))
 
-    userEvent.click(getByText('Select an operator'))
+    await clickElement(getByText('Select an operator'))
     expect(getByText('=')).toBeInTheDocument()
     expect(getByText('!=')).toBeInTheDocument()
     expect(getByText('>')).toBeInTheDocument()
