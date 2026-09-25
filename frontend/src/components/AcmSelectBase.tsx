@@ -156,7 +156,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
       })
     } else if (children.length > 0) {
       initialFilteredOptions = children.map((child) => {
-        const props = (child as React.ReactElement).props
+        const props = (child as ReactElement<SelectOptionProps>).props
         const { value, children, description } = props
         return {
           value: value ?? '',
@@ -605,15 +605,16 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
   const renderSinglePlaceholder = () => {
     if (selections) {
       const item = Children.toArray(props.children).find(
-        (child) =>
-          (child as React.ReactElement).props.value &&
-          (child as React.ReactElement).props.value.toString() === selections!.toString()
-      ) as any
+        (child): child is ReactElement<SelectOptionProps> =>
+          isValidElement<SelectOptionProps>(child) &&
+          child.props.value &&
+          child.props.value.toString() === selections.toString()
+      )
       if (item) {
-        if (item?.props.children) {
+        if (item.props.children) {
           return item.props.children
         }
-        return item.props.value.toString()
+        return item.props.value?.toString()
       }
     }
     return placeholder

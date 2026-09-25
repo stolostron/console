@@ -109,7 +109,7 @@ export function AcmDrawer(props: AcmDrawerProps) {
 // Override the override
 const overrideDrawerBodyHeight = css({ '.pf-v6-c-drawer__body': { height: 'unset' } })
 
-function AcmDrawerPanelContent(props: AcmDrawerProps & { drawerRef: React.RefObject<HTMLDivElement> }) {
+function AcmDrawerPanelContent(props: AcmDrawerProps & { drawerRef: React.RefObject<HTMLDivElement | null> }) {
   const alertContext = useContext(AcmAlertContext)
   useEffect(() => {
     if (props.isExpanded === undefined || props.isExpanded === false) {

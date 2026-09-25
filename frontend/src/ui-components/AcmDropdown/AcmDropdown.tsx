@@ -20,7 +20,7 @@ import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'r
 import { EllipsisVIcon } from '@patternfly/react-icons'
 import { t } from 'i18next'
 
-type Props = Omit<MenuProps, 'children' | 'onSelect'>
+type Props = Omit<MenuProps, 'children' | 'onSelect' | 'onToggle'>
 
 export type AcmDropdownProps = Props & {
   dropdownItems: AcmDropdownItems[]
