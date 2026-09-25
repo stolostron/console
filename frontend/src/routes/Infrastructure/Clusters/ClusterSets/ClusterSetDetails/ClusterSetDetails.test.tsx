@@ -41,7 +41,8 @@ import {
   waitForNotText,
   waitForTestId,
   waitForText,
-} from '../../../../../lib/test-util'
+  clickElement,
+} from '~/lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import {
   ClusterRoleBinding,
@@ -78,7 +79,6 @@ import {
 } from '../../ManagedClusters/ManagedClusters.sharedmocks'
 import ClusterSetDetails from './ClusterSetDetails'
 import Clusters from '../../Clusters'
-import userEvent from '@testing-library/user-event'
 
 const clusterSetCluster: ManagedCluster = mockManagedClusters.find(
   (mc: ManagedCluster) => mc.metadata.labels?.[managedClusterSetLabel] === mockManagedClusterSet.metadata.name!
@@ -1916,7 +1916,7 @@ describe('ClusterSetDetails page', () => {
     await clickByText('User management', 0)
     await waitForNocks([nock])
     await waitForText('mock-user')
-    userEvent.click(screen.getByRole('checkbox', { name: /select row 0/i }))
+    await clickElement(screen.getByRole('checkbox', { name: /select row 0/i }))
     await clickByLabel('Actions', 1)
     await clickByText('Remove')
     await waitForText('Remove users or groups?')

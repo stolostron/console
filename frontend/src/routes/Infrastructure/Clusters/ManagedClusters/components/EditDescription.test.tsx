@@ -2,10 +2,10 @@
 
 import { IResource, ManagedClusterApiVersion, ManagedClusterKind } from '../../../../../resources'
 import { render, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { mockBadRequestStatus, nockIgnoreApiPaths, nockPatch } from '../../../../../lib/nock-util'
 import { EditDescription } from './EditDescription'
 import { axe } from 'jest-axe'
+import { clearElement, typeElement, clickElement } from '~/lib/test-util'
 
 const CLUSTER_DESCRIPTION_ANNOTATION = 'console.open-cluster-management.io/description'
 
@@ -37,8 +37,8 @@ describe('EditDescription', () => {
     const { getByLabelText, getByRole } = render(<EditDescription resource={resource} close={() => {}} />)
     const textarea = getByLabelText('Description')
 
-    userEvent.clear(textarea)
-    userEvent.type(textarea, 'Updated description text')
+    await clearElement(textarea)
+    await typeElement(textarea, 'Updated description text')
 
     const nockScope = nockPatch(
       { apiVersion: resource.apiVersion, kind: resource.kind, metadata: { name: resource.metadata!.name } },
@@ -59,7 +59,7 @@ describe('EditDescription', () => {
     const { getByLabelText, getByRole } = render(<EditDescription resource={resource} close={() => {}} />)
     const textarea = getByLabelText('Description') as HTMLTextAreaElement
 
-    userEvent.click(getByRole('button', { name: /clear/i }))
+    await clickElement(getByRole('button', { name: /clear/i }))
     expect(textarea.value).toBe('')
 
     const nockScope = nockPatch(
@@ -73,7 +73,7 @@ describe('EditDescription', () => {
       }
     )
 
-    userEvent.click(getByRole('button', { name: /save/i }))
+    await clickElement(getByRole('button', { name: /save/i }))
     await waitFor(() => expect(nockScope.isDone()).toBeTruthy())
   })
 
@@ -81,12 +81,12 @@ describe('EditDescription', () => {
     const { getByLabelText } = render(<EditDescription resource={resource} close={() => {}} />)
     const textarea = getByLabelText('Description') as HTMLTextAreaElement
 
-    userEvent.clear(textarea)
-    userEvent.type(textarea, 'test')
+    await clearElement(textarea)
+    await typeElement(textarea, 'test')
 
     textarea.setSelectionRange(0, 4)
 
-    userEvent.click(getByLabelText('Bold'))
+    await clickElement(getByLabelText('Bold'))
 
     await waitFor(() => expect(textarea.value).toBe('**test**'))
   })
@@ -95,12 +95,12 @@ describe('EditDescription', () => {
     const { getByLabelText } = render(<EditDescription resource={resource} close={() => {}} />)
     const textarea = getByLabelText('Description') as HTMLTextAreaElement
 
-    userEvent.clear(textarea)
-    userEvent.type(textarea, 'word')
+    await clearElement(textarea)
+    await typeElement(textarea, 'word')
 
     textarea.setSelectionRange(0, 4)
 
-    userEvent.click(getByLabelText('Italic'))
+    await clickElement(getByLabelText('Italic'))
 
     await waitFor(() => expect(textarea.value).toBe('*word*'))
   })
@@ -109,12 +109,12 @@ describe('EditDescription', () => {
     const { getByLabelText } = render(<EditDescription resource={resource} close={() => {}} />)
     const textarea = getByLabelText('Description') as HTMLTextAreaElement
 
-    userEvent.clear(textarea)
-    userEvent.type(textarea, 'click here')
+    await clearElement(textarea)
+    await typeElement(textarea, 'click here')
 
     textarea.setSelectionRange(0, 10)
 
-    userEvent.click(getByLabelText('Link'))
+    await clickElement(getByLabelText('Link'))
 
     await waitFor(() => expect(textarea.value).toBe('[click here](url)'))
   })
@@ -123,11 +123,11 @@ describe('EditDescription', () => {
     const { getByLabelText } = render(<EditDescription resource={resource} close={() => {}} />)
     const textarea = getByLabelText('Description') as HTMLTextAreaElement
 
-    userEvent.clear(textarea)
+    await clearElement(textarea)
 
     textarea.setSelectionRange(0, 0)
 
-    userEvent.click(getByLabelText('List'))
+    await clickElement(getByLabelText('List'))
 
     await waitFor(() => expect(textarea.value).toBe('- '))
   })
@@ -136,12 +136,12 @@ describe('EditDescription', () => {
     const { getByLabelText } = render(<EditDescription resource={resource} close={() => {}} />)
     const textarea = getByLabelText('Description') as HTMLTextAreaElement
 
-    userEvent.clear(textarea)
-    userEvent.type(textarea, 'item')
+    await clearElement(textarea)
+    await typeElement(textarea, 'item')
 
     textarea.setSelectionRange(4, 4)
 
-    userEvent.click(getByLabelText('List'))
+    await clickElement(getByLabelText('List'))
 
     await waitFor(() => expect(textarea.value).toBe('item\n- '))
   })
@@ -152,7 +152,7 @@ describe('EditDescription', () => {
 
     expect(textarea.value).toBe('Initial description')
 
-    userEvent.click(getByLabelText('Clear'))
+    await clickElement(getByLabelText('Clear'))
 
     await waitFor(() => expect(textarea.value).toBe(''))
   })
@@ -162,11 +162,11 @@ describe('EditDescription', () => {
     const textarea = getByLabelText('Description') as HTMLTextAreaElement
     expect(textarea).toBeVisible()
 
-    userEvent.click(getByLabelText('Preview'))
+    await clickElement(getByLabelText('Preview'))
 
     await waitFor(() => expect(textarea.style.visibility).toBe('hidden'))
 
-    userEvent.click(queryByLabelText('Edit')!)
+    await clickElement(queryByLabelText('Edit')!)
 
     await waitFor(() => expect(textarea.style.visibility).toBe('visible'))
   })
@@ -180,7 +180,7 @@ describe('EditDescription', () => {
     expect(getByLabelText('List')).toBeEnabled()
     expect(getByLabelText('Clear')).toBeEnabled()
 
-    userEvent.click(getByLabelText('Preview'))
+    await clickElement(getByLabelText('Preview'))
 
     await waitFor(() => {
       expect(getByLabelText('Bold')).toBeDisabled()
@@ -204,7 +204,7 @@ describe('EditDescription', () => {
     const { getByLabelText, rerender } = render(<EditDescription resource={resource} close={() => {}} />)
     const textarea = getByLabelText('Description') as HTMLTextAreaElement
 
-    userEvent.click(getByLabelText('Preview'))
+    await clickElement(getByLabelText('Preview'))
     await waitFor(() => expect(textarea.style.visibility).toBe('hidden'))
 
     rerender(<EditDescription resource={otherResource} close={() => {}} />)
@@ -223,7 +223,7 @@ describe('EditDescription', () => {
     }
     const { getByLabelText, findByText } = render(<EditDescription resource={emptyResource} close={() => {}} />)
 
-    userEvent.click(getByLabelText('Preview'))
+    await clickElement(getByLabelText('Preview'))
 
     expect(await findByText('-')).toBeInTheDocument()
   })
@@ -241,8 +241,8 @@ describe('EditDescription', () => {
     const { getByLabelText, getByRole, findByText } = render(<EditDescription resource={resource} close={() => {}} />)
     const textarea = getByLabelText('Description')
 
-    userEvent.clear(textarea)
-    userEvent.type(textarea, 'New description')
+    await clearElement(textarea)
+    await typeElement(textarea, 'New description')
 
     const nockScope = nockPatch(
       { apiVersion: resource.apiVersion, kind: resource.kind, metadata: { name: resource.metadata!.name } },
@@ -257,7 +257,7 @@ describe('EditDescription', () => {
       400
     )
 
-    userEvent.click(getByRole('button', { name: /save/i }))
+    await clickElement(getByRole('button', { name: /save/i }))
     await waitFor(() => expect(nockScope.isDone()).toBeTruthy())
     expect(await findByText('Bad request.')).toBeInTheDocument()
   })

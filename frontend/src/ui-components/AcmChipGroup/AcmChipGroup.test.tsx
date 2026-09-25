@@ -3,12 +3,13 @@
 import { render } from '@testing-library/react'
 import { axe } from 'jest-axe'
 import { ExampleChipGroup } from './AcmChipGroup.stories'
+import { clickElement } from '~/lib/test-util'
 
 describe('AcmChipGroup', () => {
-  test('renders', () => {
+  test('renders', async () => {
     const { getByRole } = render(<ExampleChipGroup />)
     expect(getByRole('button', { name: '4 more' })).toBeInTheDocument()
-    getByRole('button', { name: '4 more' }).click()
+    await clickElement(getByRole('button', { name: '4 more' }))
     expect(getByRole('button', { name: 'Show less' })).toBeInstanceOf(HTMLButtonElement)
   })
   test('has zero accessibility defects', async () => {

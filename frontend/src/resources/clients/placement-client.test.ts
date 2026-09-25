@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assignment'
 import { GlobalPlacementName, Placement, PlacementApiVersionBeta, PlacementKind } from '../placement'
@@ -1687,7 +1687,7 @@ describe('placement-client', () => {
           }),
         })
       )
-      expect(expected.length).toBe(63)
+      expect(expected).toHaveLength(63)
     })
 
     it('should return hash-based name when suggestedName length is greater than 63', () => {
@@ -1705,7 +1705,7 @@ describe('placement-client', () => {
 
       // Assert
       const placementCall = createResourceMock.mock.calls[0][0] as Placement
-      expect(placementCall.metadata.name!.length).toBe(63)
+      expect(placementCall.metadata.name!).toHaveLength(63)
       expect(placementCall.metadata.name!).toMatch(/^clusters-[a-f0-9]+$/)
       expect(placementCall.metadata.name!).not.toContain(longClusterName)
     })
@@ -1965,7 +1965,7 @@ describe('placement-client', () => {
           }),
         })
       )
-      expect(expected.length).toBe(63)
+      expect(expected).toHaveLength(63)
     })
 
     it('should return hash-based name when suggestedName length is greater than 63', () => {
@@ -1980,7 +1980,7 @@ describe('placement-client', () => {
       createForClusterSets(clusterSets)
 
       const placementCall = createResourceMock.mock.calls[0][0] as Placement
-      expect(placementCall.metadata.name!.length).toBe(63)
+      expect(placementCall.metadata.name!).toHaveLength(63)
       expect(placementCall.metadata.name!).toMatch(/^cluster-sets-[a-f0-9]+$/)
       expect(placementCall.metadata.name!).not.toContain(longName)
     })

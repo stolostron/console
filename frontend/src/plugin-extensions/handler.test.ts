@@ -8,7 +8,7 @@ import {
   VirtualMachineListColumn,
 } from './extensions'
 import { useAcmExtension } from './handler'
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 
 let mockExtensions: (
   ApplicationAction | VirtualMachineAction | ApplicationListColumn | VirtualMachineListColumn | OverviewTab

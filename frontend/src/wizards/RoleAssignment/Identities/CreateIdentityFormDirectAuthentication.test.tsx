@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { CreateIdentityFormDirectAuthentication } from './CreateIdentityFormDirectAuthentication'
 import { ClaimMappings } from '~/resources/authentication'
+import { typeElement, clickElement } from '~/lib/test-util'
 
 jest.mock('../../../lib/acm-i18next', () => ({
   useTranslation: () => ({
@@ -42,10 +42,10 @@ describe('CreateIdentityFormDirectAuthentication', () => {
     render(<CreateIdentityFormDirectAuthentication {...defaultProps} />)
 
     const input = screen.getByTestId('identity-identifier')
-    await userEvent.type(input, 'oidc:test@example.com')
+    await typeElement(input, 'oidc:test@example.com')
 
     const submitButton = screen.getByRole('button', { name: 'Save' })
-    await userEvent.click(submitButton)
+    await clickElement(submitButton)
 
     await waitFor(() => {
       expect(defaultProps.onSuccess).toHaveBeenCalledWith(
@@ -62,10 +62,10 @@ describe('CreateIdentityFormDirectAuthentication', () => {
     render(<CreateIdentityFormDirectAuthentication {...defaultProps} subjectKind="Group" />)
 
     const input = screen.getByTestId('identity-identifier')
-    await userEvent.type(input, 'oidc:my-group')
+    await typeElement(input, 'oidc:my-group')
 
     const submitButton = screen.getByRole('button', { name: 'Save' })
-    await userEvent.click(submitButton)
+    await clickElement(submitButton)
 
     await waitFor(() => {
       expect(defaultProps.onSuccess).toHaveBeenCalledWith(
@@ -87,10 +87,10 @@ describe('CreateIdentityFormDirectAuthentication', () => {
     render(<CreateIdentityFormDirectAuthentication {...defaultProps} claimMappings={claimMappings} />)
 
     const input = screen.getByTestId('identity-identifier')
-    await userEvent.type(input, 'no-prefix-user')
+    await typeElement(input, 'no-prefix-user')
 
     const submitButton = screen.getByRole('button', { name: 'Save' })
-    await userEvent.click(submitButton)
+    await clickElement(submitButton)
 
     await waitFor(() => {
       expect(defaultProps.onSuccess).toHaveBeenCalledWith(
@@ -109,10 +109,10 @@ describe('CreateIdentityFormDirectAuthentication', () => {
     render(<CreateIdentityFormDirectAuthentication {...defaultProps} claimMappings={claimMappings} />)
 
     const input = screen.getByTestId('identity-identifier')
-    await userEvent.type(input, 'oidc:user@example.com')
+    await typeElement(input, 'oidc:user@example.com')
 
     const submitButton = screen.getByRole('button', { name: 'Save' })
-    await userEvent.click(submitButton)
+    await clickElement(submitButton)
 
     await waitFor(() => {
       expect(defaultProps.onSuccess).toHaveBeenCalledTimes(1)
@@ -129,10 +129,10 @@ describe('CreateIdentityFormDirectAuthentication', () => {
     )
 
     const input = screen.getByTestId('identity-identifier')
-    await userEvent.type(input, 'no-prefix-group')
+    await typeElement(input, 'no-prefix-group')
 
     const submitButton = screen.getByRole('button', { name: 'Save' })
-    await userEvent.click(submitButton)
+    await clickElement(submitButton)
 
     await waitFor(() => {
       expect(defaultProps.onSuccess).toHaveBeenCalledWith(
@@ -153,10 +153,10 @@ describe('CreateIdentityFormDirectAuthentication', () => {
     )
 
     const input = screen.getByTestId('identity-identifier')
-    await userEvent.type(input, 'oidc:admin-group')
+    await typeElement(input, 'oidc:admin-group')
 
     const submitButton = screen.getByRole('button', { name: 'Save' })
-    await userEvent.click(submitButton)
+    await clickElement(submitButton)
 
     await waitFor(() => {
       expect(defaultProps.onSuccess).toHaveBeenCalledTimes(1)
@@ -167,7 +167,7 @@ describe('CreateIdentityFormDirectAuthentication', () => {
     render(<CreateIdentityFormDirectAuthentication {...defaultProps} />)
 
     const cancelButton = screen.getByRole('button', { name: 'Cancel' })
-    await userEvent.click(cancelButton)
+    await clickElement(cancelButton)
 
     expect(defaultProps.onCancel).toHaveBeenCalledTimes(1)
   })
@@ -178,10 +178,10 @@ describe('CreateIdentityFormDirectAuthentication', () => {
     render(<CreateIdentityFormDirectAuthentication {...defaultProps} validation={customValidation} />)
 
     const input = screen.getByTestId('identity-identifier')
-    await userEvent.type(input, 'test')
+    await typeElement(input, 'test')
 
     const submitButton = screen.getByRole('button', { name: 'Save' })
-    await userEvent.click(submitButton)
+    await clickElement(submitButton)
 
     expect(defaultProps.onSuccess).not.toHaveBeenCalled()
   })
@@ -223,8 +223,8 @@ describe('CreateIdentityFormDirectAuthentication', () => {
     it('should generate a valid uuid for a created User', async () => {
       render(<CreateIdentityFormDirectAuthentication {...defaultProps} />)
 
-      await userEvent.type(screen.getByTestId('identity-identifier'), 'test-user')
-      await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+      await typeElement(screen.getByTestId('identity-identifier'), 'test-user')
+      await clickElement(screen.getByRole('button', { name: 'Save' }))
 
       await waitFor(() => {
         expect(defaultProps.onSuccess).toHaveBeenCalledTimes(1)
@@ -238,8 +238,8 @@ describe('CreateIdentityFormDirectAuthentication', () => {
     it('should generate a valid uuid for a created Group', async () => {
       render(<CreateIdentityFormDirectAuthentication {...defaultProps} subjectKind="Group" />)
 
-      await userEvent.type(screen.getByTestId('identity-identifier'), 'test-group')
-      await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+      await typeElement(screen.getByTestId('identity-identifier'), 'test-group')
+      await clickElement(screen.getByRole('button', { name: 'Save' }))
 
       await waitFor(() => {
         expect(defaultProps.onSuccess).toHaveBeenCalledTimes(1)
@@ -255,14 +255,14 @@ describe('CreateIdentityFormDirectAuthentication', () => {
       const onSuccess2 = jest.fn()
 
       const { unmount } = render(<CreateIdentityFormDirectAuthentication {...defaultProps} onSuccess={onSuccess1} />)
-      await userEvent.type(screen.getByTestId('identity-identifier'), 'user-one')
-      await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+      await typeElement(screen.getByTestId('identity-identifier'), 'user-one')
+      await clickElement(screen.getByRole('button', { name: 'Save' }))
       await waitFor(() => expect(onSuccess1).toHaveBeenCalledTimes(1))
       unmount()
 
       render(<CreateIdentityFormDirectAuthentication {...defaultProps} onSuccess={onSuccess2} />)
-      await userEvent.type(screen.getByTestId('identity-identifier'), 'user-two')
-      await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+      await typeElement(screen.getByTestId('identity-identifier'), 'user-two')
+      await clickElement(screen.getByRole('button', { name: 'Save' }))
       await waitFor(() => expect(onSuccess2).toHaveBeenCalledTimes(1))
 
       const uid1 = onSuccess1.mock.calls[0][0].metadata.uid

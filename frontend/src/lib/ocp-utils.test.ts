@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 import { launchToOCP, useMultiClusterHubConsoleUrl } from './ocp-utils'
 import { useSharedSelectors, useRecoilValue } from '../shared-recoil'
 import { useOperatorCheck, SupportedOperator } from './operatorCheck'

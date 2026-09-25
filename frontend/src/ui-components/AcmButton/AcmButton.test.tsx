@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { AcmButton } from './AcmButton'
+import { tab, hoverElement, unhoverElement } from '~/lib/test-util'
 
 describe('AcmButton', () => {
   test('renders', () => {
@@ -17,11 +17,11 @@ describe('AcmButton', () => {
         Button Label
       </AcmButton>
     )
-    userEvent.tab()
-    userEvent.hover(getByText('Button Label'))
+    await tab()
+    await hoverElement(getByText('Button Label'))
     expect(getByText('Button Label').parentElement).toHaveFocus()
     await waitFor(() => expect(screen.getByRole('tooltip')).toBeInTheDocument())
-    userEvent.unhover(getByText('Button Label'))
+    await unhoverElement(getByText('Button Label'))
     await waitFor(() => expect(screen.queryByRole('tooltip')).not.toBeInTheDocument())
     await new Promise((resolve) => setTimeout(resolve, 0))
   })

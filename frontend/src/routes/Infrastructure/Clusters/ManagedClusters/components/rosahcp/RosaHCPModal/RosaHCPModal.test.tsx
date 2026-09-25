@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { secretsState } from '../../../../../../../atoms'
 import { Secret } from '../../../../../../../resources'
 import { RosaHCPModal } from './RosaHCPModal'
+import { clickElement } from '~/lib/test-util'
 
 const mockRhocmSecret: Secret = {
   apiVersion: 'v1',
@@ -77,7 +77,7 @@ describe('RosaHCPModal', () => {
     render(<Component />)
 
     const cancelButton = screen.getByRole('button', { name: 'Cancel' })
-    await userEvent.click(cancelButton)
+    await clickElement(cancelButton)
 
     expect(mockClose).toHaveBeenCalled()
   })

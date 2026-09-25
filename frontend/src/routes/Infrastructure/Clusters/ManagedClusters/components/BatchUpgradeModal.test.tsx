@@ -1,11 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { act } from 'react-dom/test-utils'
 import { RecoilRoot } from 'recoil'
 import { nockCreate, nockIgnoreApiPaths, nockPatch, nockUpgradeRiskRequest } from '../../../../../lib/nock-util'
-import { waitForNocks } from '../../../../../lib/test-util'
+import { waitForNocks, clickElement } from '~/lib/test-util'
 import { ClusterCuratorDefinition } from '../../../../../resources'
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
@@ -374,14 +372,12 @@ describe('BatchUpgradeModal', () => {
     const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('2.2.6'), undefined, 404)
     const mockNockUpgrade2backup = nockCreate({ ...clusterCuratorReady2, ...getPatchUpdate('2.2.6') })
     expect(getByText('Update')).toBeTruthy()
-    userEvent.click(getByText('Update'))
-    await act(async () => {
-      await waitFor(() => expect(mockNockUpgrade1.isDone()).toBeTruthy())
-      await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
-      await waitFor(() => expect(mockNockUpgrade2backup.isDone()).toBeTruthy())
-      await waitFor(() => expect(queryByText('Updating')).toBeFalsy())
-      await waitFor(() => expect(isClosed).toBe(true))
-    })
+    await clickElement(getByText('Update'))
+    await waitFor(() => expect(mockNockUpgrade1.isDone()).toBeTruthy())
+    await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
+    await waitFor(() => expect(mockNockUpgrade2backup.isDone()).toBeTruthy())
+    await waitFor(() => expect(queryByText('Updating')).toBeFalsy())
+    await waitFor(() => expect(isClosed).toBe(true))
 
     expect(isClosed).toBe(true)
   })
@@ -403,19 +399,17 @@ describe('BatchUpgradeModal', () => {
     const mockNockUpgrade1 = nockPatch(clusterCuratorReady1, getPatchUpdate('1.2.9'))
     const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('2.2.6'))
     expect(getByText('Update')).toBeTruthy()
-    userEvent.click(getByText('Update'))
-    await act(async () => {
-      await waitFor(() => expect(queryByText('Updating')).toBeTruthy())
-      userEvent.click(getByText('Updating')) // do additional click. make sure not calling update again
-      userEvent.click(getByText('Updating'))
-      await waitFor(() => expect(mockNockUpgrade1.isDone()).toBeTruthy())
-      await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
-      await waitFor(() => expect(queryByText('Updating')).toBeFalsy(), { timeout: 5000 })
-      await waitFor(() => expect(isClosed).toBe(true))
-    })
+    await clickElement(getByText('Update'))
+    await waitFor(() => expect(queryByText('Updating')).toBeTruthy())
+    await clickElement(getByText('Updating')) // do additional click. make sure not calling update again
+    await clickElement(getByText('Updating'))
+    await waitFor(() => expect(mockNockUpgrade1.isDone()).toBeTruthy())
+    await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
+    await waitFor(() => expect(queryByText('Updating')).toBeFalsy(), { timeout: 5000 })
+    await waitFor(() => expect(isClosed).toBe(true))
   })
 
-  it('should close modal if click cancel', () => {
+  it('should close modal if click cancel', async () => {
     let isClosed = false
     const { getByText } = render(
       <RecoilRoot>
@@ -430,7 +424,7 @@ describe('BatchUpgradeModal', () => {
         </MemoryRouter>
       </RecoilRoot>
     )
-    userEvent.click(getByText('Cancel'))
+    await clickElement(getByText('Cancel'))
     expect(isClosed).toBe(true)
   })
   it('should show alert when failed; keep failed rows in table with error messages', async () => {
@@ -447,7 +441,7 @@ describe('BatchUpgradeModal', () => {
     expect(queryByText('cluster-1-ready1')).toBeTruthy()
     expect(queryByText('cluster-2-ready2')).toBeTruthy()
     expect(getByText('Update')).toBeTruthy()
-    userEvent.click(getByText('Update'))
+    await clickElement(getByText('Update'))
     await waitFor(() => expect(queryByText('Updating')).toBeTruthy())
     await waitFor(() => expect(mockNockUpgrade1.isDone()).toBeTruthy())
     await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
@@ -611,9 +605,9 @@ describe('BatchUpgradeModal', () => {
 
       // Change to patch version (4.13.50)
       const versionDropdown = getByText('4.15.0')
-      userEvent.click(versionDropdown)
+      await clickElement(versionDropdown)
       const patchVersion = getByText('4.13.50')
-      userEvent.click(patchVersion)
+      await clickElement(patchVersion)
 
       // Banner should NOT appear for patch upgrade
       await waitFor(() => {
@@ -698,9 +692,9 @@ describe('BatchUpgradeModal', () => {
 
       // Change to patch version (4.13.50)
       const versionDropdown = getByText('4.15.0')
-      userEvent.click(versionDropdown)
+      await clickElement(versionDropdown)
       const patchVersion = getByText('4.13.50')
-      userEvent.click(patchVersion)
+      await clickElement(patchVersion)
 
       // Should show "No risks found" for patch upgrade (operator risk not counted)
       await waitFor(() => {
@@ -784,10 +778,10 @@ describe('BatchUpgradeModal', () => {
       await waitForNocks([getUpgradeRisksPredictionsNock])
 
       // Click on risk link to open popover - find link that contains "1" and "risk"
-      await waitFor(() => {
+      await waitFor(async () => {
         const riskLink = queryByText(/.*1.*risk.*/i)
         expect(riskLink).toBeTruthy()
-        userEvent.click(riskLink!)
+        await clickElement(riskLink!)
       })
 
       // Should show operator risk in popover

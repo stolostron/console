@@ -2,13 +2,12 @@
 jest.mock('../discoveredPoliciesWorker.factory')
 
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { generatePath, MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { v4 as uuidv4 } from 'uuid'
 import { channelsState, helmReleaseState, subscriptionsState } from '../../../../atoms'
 import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC, nockManagedClusterView } from '../../../../lib/nock-util'
-import { waitForNocks, waitForText } from '../../../../lib/test-util'
+import { waitForNocks, waitForText, hoverElement } from '~/lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { DiscoveredDetailsContext } from './DiscoveredPolicyDetailsPage'
 import { DiscoveredResources } from './DiscoveredResources'
@@ -1028,7 +1027,7 @@ test('Should render DiscoveredResources for Gatekeeper with tooltip when showing
   expect(row2links).toHaveLength(2)
 
   // Verify tooltip appears because we're showing limited results (2 of 10)
-  userEvent.hover(screen.getByRole('button', { name: 'More info' }))
+  await hoverElement(screen.getByRole('button', { name: 'More info' }))
   await waitFor(() => expect(screen.getByRole('tooltip')).toHaveTextContent('Showing 2 resource(s)'))
 })
 

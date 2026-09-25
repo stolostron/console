@@ -7,10 +7,10 @@ jest.mock('../../../resources/utils', () => ({
 }))
 
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { SyncArgoCDModal, ISyncArgoCDModalProps } from './SyncArgoCDModal'
 import { AcmToastGroup, AcmToastProvider } from '../../../ui-components'
 import { patchResource } from '../../../resources/utils'
+import { clickElement } from '~/lib/test-util'
 
 describe('SyncArgoCDModal', () => {
   beforeEach(() => {
@@ -165,7 +165,7 @@ describe('SyncArgoCDModal', () => {
     )
 
     const synchronizeButton = screen.getByRole('button', { name: /synchronize/i })
-    userEvent.click(synchronizeButton)
+    await clickElement(synchronizeButton)
 
     await waitFor(() => {
       expect(patchResource).toHaveBeenCalledTimes(1)
@@ -245,7 +245,7 @@ describe('SyncArgoCDModal', () => {
     )
 
     const synchronizeButton = screen.getByRole('button', { name: /synchronize/i })
-    userEvent.click(synchronizeButton)
+    await clickElement(synchronizeButton)
 
     await waitFor(() => {
       // Should patch both apps in the ApplicationSet
@@ -263,9 +263,9 @@ describe('SyncArgoCDModal', () => {
 
   it('should handle sync failure with error toast', async () => {
     const mockError = new Error('Sync failed')
-    ;(patchResource as jest.Mock).mockReturnValueOnce({
+    ;(patchResource as jest.Mock).mockImplementationOnce(() => ({
       promise: Promise.reject(mockError),
-    })
+    }))
 
     const mockApp = {
       metadata: {
@@ -305,7 +305,7 @@ describe('SyncArgoCDModal', () => {
     )
 
     const synchronizeButton = screen.getByRole('button', { name: /synchronize/i })
-    userEvent.click(synchronizeButton)
+    await clickElement(synchronizeButton)
 
     await waitFor(() => {
       expect(screen.getByText('Failed to initiate sync')).toBeInTheDocument()
@@ -363,7 +363,7 @@ describe('SyncArgoCDModal', () => {
     expect(synchronizeButton).not.toBeDisabled()
     expect(cancelButton).not.toBeDisabled()
 
-    userEvent.click(synchronizeButton)
+    await clickElement(synchronizeButton)
 
     // Buttons should be disabled during sync
     await waitFor(() => {
@@ -372,7 +372,7 @@ describe('SyncArgoCDModal', () => {
     })
   })
 
-  it('should call close function when cancel button is clicked', () => {
+  it('should call close function when cancel button is clicked', async () => {
     const mockApp = {
       metadata: {
         name: 'test-app',
@@ -406,7 +406,7 @@ describe('SyncArgoCDModal', () => {
     )
 
     const cancelButton = screen.getByRole('button', { name: /cancel/i })
-    userEvent.click(cancelButton)
+    await clickElement(cancelButton)
 
     expect(closeMock).toHaveBeenCalled()
   })

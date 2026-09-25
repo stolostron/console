@@ -4,7 +4,6 @@ import { readFileSync } from 'fs'
 import { join } from 'path'
 import { createRef, type ReactNode } from 'react'
 import { act, render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import type { editor as editorTypes } from 'monaco-editor'
 
@@ -15,6 +14,7 @@ import {
   readShowChangesPreference,
   type SyncEditorToolbarProps,
 } from './SyncEditorToolbar'
+import { clickElement, clickElementWithFakeTimers } from '~/lib/test-util'
 
 /** CodeEditorControl requires CodeEditorContext; stub it as a plain button for unit tests. */
 jest.mock('@patternfly/react-code-editor', () => ({
@@ -151,11 +151,11 @@ describe('SyncEditorToolbar', () => {
       expect(screen.getByRole('button', { name: /find/i })).toBeInTheDocument()
     })
 
-    it('persists show changes preference and invokes setShowChanges', () => {
+    it('persists show changes preference and invokes setShowChanges', async () => {
       const setShowChanges = jest.fn()
       renderToolbar({ showCompareButton: true, setShowChanges })
 
-      userEvent.click(screen.getByRole('checkbox', { name: /show changes/i }))
+      await clickElement(screen.getByRole('checkbox', { name: /show changes/i }))
 
       expect(setShowChanges).toHaveBeenCalledWith(true)
       expect(localStorage.getItem(SYNC_EDITOR_SHOW_CHANGES_STORAGE_KEY)).toBe('true')
@@ -175,28 +175,28 @@ describe('SyncEditorToolbar', () => {
       expect(screen.getByRole('button', { name: /next change/i })).toBeInTheDocument()
     })
 
-    it('invokes undo, redo, and find on the active editor', () => {
+    it('invokes undo, redo, and find on the active editor', async () => {
       const editor = createMockEditor()
       renderToolbar({ editor })
 
-      userEvent.click(screen.getByRole('button', { name: /undo/i }))
-      userEvent.click(screen.getByRole('button', { name: /redo/i }))
-      userEvent.click(screen.getByRole('button', { name: /find/i }))
+      await clickElement(screen.getByRole('button', { name: /undo/i }))
+      await clickElement(screen.getByRole('button', { name: /redo/i }))
+      await clickElement(screen.getByRole('button', { name: /find/i }))
 
       expect(editor.trigger).toHaveBeenCalledWith('source', 'undo', undefined)
       expect(editor.trigger).toHaveBeenCalledWith('source', 'redo', undefined)
       expect(editor.trigger).toHaveBeenCalledWith('source', 'actions.find', undefined)
     })
 
-    it('toggles secrets visibility', () => {
+    it('toggles secrets visibility', async () => {
       const setShowSecrets = jest.fn()
       renderToolbar({ secrets: ['password'], setShowSecrets })
 
-      userEvent.click(screen.getByRole('button', { name: /show secrets/i }))
+      await clickElement(screen.getByRole('button', { name: /show secrets/i }))
       expect(setShowSecrets).toHaveBeenCalledWith(true)
     })
 
-    it('copies editor content and resets the copy hint after a delay', () => {
+    it('copies editor content and resets the copy hint after a delay', async () => {
       jest.useFakeTimers()
       try {
         const setCopyHint = jest.fn()
@@ -211,7 +211,7 @@ describe('SyncEditorToolbar', () => {
           defaultCopy: 'Copy',
         })
 
-        userEvent.click(screen.getByRole('button', { name: /copy to clipboard/i }))
+        await clickElementWithFakeTimers(screen.getByRole('button', { name: /copy to clipboard/i }))
 
         expect(writeText).toHaveBeenCalledWith('kind: Pod')
         expect(setCopyHint).toHaveBeenCalledWith('All copied')
@@ -225,7 +225,7 @@ describe('SyncEditorToolbar', () => {
       }
     })
 
-    it('copies from the diff modified editor when show changes is on', () => {
+    it('copies from the diff modified editor when show changes is on', async () => {
       const writeText = jest.fn().mockResolvedValue(undefined)
       Object.assign(navigator, { clipboard: { writeText } })
 
@@ -255,15 +255,15 @@ describe('SyncEditorToolbar', () => {
         lastUnredactedYaml: 'original',
       })
 
-      userEvent.click(screen.getByRole('button', { name: /copy to clipboard/i }))
+      await clickElement(screen.getByRole('button', { name: /copy to clipboard/i }))
       expect(writeText).toHaveBeenCalledWith('modified: true')
     })
 
-    it('invokes onClose when the close control is present', () => {
+    it('invokes onClose when the close control is present', async () => {
       const onClose = jest.fn()
       renderToolbar({ onClose })
 
-      userEvent.click(screen.getByRole('button', { name: /close/i }))
+      await clickElement(screen.getByRole('button', { name: /close/i }))
       expect(onClose).toHaveBeenCalled()
     })
   })

@@ -28,11 +28,11 @@ import {
   waitForNocks,
   waitForNotText,
   waitForText,
-} from '../../../../../lib/test-util'
+  clickElement,
+} from '~/lib/test-util'
 import { ClusterActionDropdown } from './ClusterActionDropdown'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { clusterImageSetsState } from '../../../../../atoms'
-import userEvent from '@testing-library/user-event'
 
 const mockCluster: Cluster = {
   name: 'test-cluster',
@@ -528,7 +528,7 @@ describe('ClusterActionDropdown hostedcluster', () => {
   })
   test('render with hostedcluster', async () => {
     expect(screen.getByRole('button')).toBeTruthy()
-    userEvent.click(screen.getByRole('button'))
+    await clickElement(screen.getByRole('button'))
     expect(screen.getByText('Destroy cluster')).toBeTruthy()
   })
 })

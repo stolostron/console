@@ -10,6 +10,7 @@ import {
   nockIgnoreClusterVersion,
   nockPatch,
 } from '../../../lib/nock-util'
+import { clickElement } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { EditPolicyAutomation } from './EditPolicyAutomation'
 import {
@@ -65,11 +66,11 @@ describe('Edit Policy Automation', () => {
     expect(screen.getByPlaceholderText(/select the ansible job/i)).toHaveValue('test-job-pre-install')
 
     // modify ansible job and schedule
-    screen.getByPlaceholderText(/select the ansible job/i).click()
-    screen.getByRole('option', { name: 'test-job-post-install' }).click()
-    screen.getByPlaceholderText(/select the schedule/i).click()
-    screen.getByRole('option', { name: 'Disabled' }).click()
-    screen.getByRole('button', { name: 'Next' }).click()
+    await clickElement(screen.getByPlaceholderText(/select the ansible job/i))
+    await clickElement(screen.getByRole('option', { name: 'test-job-post-install' }))
+    await clickElement(screen.getByPlaceholderText(/select the schedule/i))
+    await clickElement(screen.getByRole('option', { name: 'Disabled' }))
+    await clickElement(screen.getByRole('button', { name: 'Next' }))
 
     //  review
 
@@ -89,7 +90,7 @@ describe('Edit Policy Automation', () => {
         { op: 'replace', path: '/spec/mode', value: 'disabled' },
       ]),
     ]
-    screen.getByRole('button', { name: 'Submit' }).click()
+    await clickElement(screen.getByRole('button', { name: 'Submit' }))
     await waitForNocks(mockPolicyAutomationUpdate)
   })
 
@@ -97,6 +98,6 @@ describe('Edit Policy Automation', () => {
     nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
     nockAnsibleTower(mockAnsibleCredentialWorkflow, mockTemplateList)
     render(<EditPolicyAutomationTest subscriptions={[mockSubscriptionOperator]} />)
-    screen.getByRole('button', { name: 'Cancel' }).click()
+    await clickElement(screen.getByRole('button', { name: 'Cancel' }))
   })
 })

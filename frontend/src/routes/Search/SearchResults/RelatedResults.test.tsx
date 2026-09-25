@@ -4,13 +4,12 @@
 
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { GraphQLError } from 'graphql'
 import { useState } from 'react'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { Settings, settingsState } from '../../../atoms'
-import { wait } from '../../../lib/test-util'
+import { wait, clickElement } from '~/lib/test-util'
 import { SearchResultRelatedCountDocument } from '../search-sdk/search-sdk'
 import RelatedResults from './RelatedResults'
 
@@ -153,7 +152,7 @@ describe('RelatedResults', () => {
     expect(secretTile).toHaveAttribute('aria-expanded', 'false')
 
     // selected the secret related tile
-    userEvent.click(secretTile)
+    await clickElement(secretTile)
 
     // Check to see if the selection was successful
     await waitFor(() => expect(secretTile).toHaveAttribute('aria-expanded', 'true'))

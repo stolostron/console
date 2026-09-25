@@ -255,7 +255,7 @@ describe('applications aggregateRemoteApplications', () => {
       }
 
       const filtered = filterApplications(filters, items)
-      expect(filtered.length).toBe(1)
+      expect(filtered).toHaveLength(1)
       expect(filtered[0].transform[AppColumns.type][0]).toBe('subscription')
     })
 
@@ -304,7 +304,7 @@ describe('applications aggregateRemoteApplications', () => {
       }
 
       const filtered = filterApplications(filters, items)
-      expect(filtered.length).toBe(1)
+      expect(filtered).toHaveLength(1)
       expect(filtered[0].transform[AppColumns.clusters]).toContain('cluster2')
     })
   })

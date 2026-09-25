@@ -3,7 +3,6 @@
 import { MockedProvider } from '@apollo/client/testing'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import {
@@ -27,7 +26,7 @@ import {
   nockSearch,
   nockUpgradeRiskRequest,
 } from '../../../lib/nock-util'
-import { waitForNocks } from '../../../lib/test-util'
+import { waitForNocks, clickElement } from '~/lib/test-util'
 import { ManagedClusterInfo, UserPreference } from '../../../resources'
 import {
   mockApplications,
@@ -338,17 +337,17 @@ it('should toggle card sections correctly', async () => {
   // toggle insights section
   const insightsToggle = container.querySelector('#insights-section-toggle')
   expect(insightsToggle).toBeTruthy()
-  userEvent.click(insightsToggle as Element)
+  await clickElement(insightsToggle as Element)
 
   // toggle cluster health section
   const clusterToggle = container.querySelector('#cluster-section-toggle')
   expect(clusterToggle).toBeTruthy()
-  userEvent.click(clusterToggle as Element)
+  await clickElement(clusterToggle as Element)
 
   // toggle your view section
   const savedSearchToggle = container.querySelector('#saved-search-section-toggle')
   expect(savedSearchToggle).toBeTruthy()
-  userEvent.click(savedSearchToggle as Element)
+  await clickElement(savedSearchToggle as Element)
 
   expect(window.localStorage.setItem).toHaveBeenCalledWith('insights-section-toggle', 'false')
   expect(window.localStorage.setItem).toHaveBeenCalledWith('cluster-section-toggle', 'false')
@@ -462,21 +461,21 @@ it('should show AngleUpIcon when section is expanded and AngleDownIcon when coll
   })
 
   // Collapse the Insights section — toggle must switch to AngleDownIcon (↓)
-  await userEvent.click(screen.getByRole('button', { name: 'Toggle Insights section' }))
+  await clickElement(screen.getByRole('button', { name: 'Toggle Insights section' }))
 
   await waitFor(() => {
     expect(getToggleIconPath(container, 'insights-section-toggle')).toBe(ANGLE_DOWN_PATH)
   })
 
   // Collapse the Cluster health section — toggle must switch to AngleDownIcon (↓)
-  await userEvent.click(screen.getByRole('button', { name: 'Toggle Cluster health section' }))
+  await clickElement(screen.getByRole('button', { name: 'Toggle Cluster health section' }))
 
   await waitFor(() => {
     expect(getToggleIconPath(container, 'cluster-section-toggle')).toBe(ANGLE_DOWN_PATH)
   })
 
   // Collapse the Your view section — toggle must switch to AngleDownIcon (↓)
-  await userEvent.click(screen.getByRole('button', { name: 'Toggle Your view section' }))
+  await clickElement(screen.getByRole('button', { name: 'Toggle Your view section' }))
 
   await waitFor(() => {
     expect(getToggleIconPath(container, 'saved-search-section-toggle')).toBe(ANGLE_DOWN_PATH)

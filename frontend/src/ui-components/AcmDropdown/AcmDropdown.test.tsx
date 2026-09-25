@@ -2,9 +2,9 @@
 
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { render, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { AcmDropdown, AcmDropdownItems } from './AcmDropdown'
+import { clickElement, hoverElement } from '~/lib/test-util'
 
 type ComponentProps = {
   isDisabled?: boolean
@@ -48,14 +48,14 @@ describe('AcmDropdown', () => {
     const { getByTestId, container } = render(<Component />)
     expect(getByTestId('dropdown')).toBeInTheDocument()
     expect(await axe(container)).toHaveNoViolations()
-    userEvent.click(getByTestId('dropdown'))
+    await clickElement(getByTestId('dropdown'))
     await waitFor(() => expect(getByTestId('install-config')).toBeInTheDocument())
     expect(await axe(container)).toHaveNoViolations()
     // userEvent.hover(getByTestId('forbidden'))
     // await waitFor(() => expect(getByRole('tooltip')).toBeInTheDocument())
-    userEvent.click(getByTestId('install-config'))
+    await clickElement(getByTestId('install-config'))
     expect(onSelect).toHaveBeenCalled()
-    userEvent.hover(getByTestId('dropdown'))
+    await hoverElement(getByTestId('dropdown'))
     expect(onHover).toHaveBeenCalled()
     await new Promise((resolve) => setTimeout(resolve, 0))
   })
@@ -63,7 +63,7 @@ describe('AcmDropdown', () => {
     const { getByTestId, container } = render(<Component isKebab={true} onToggle={() => null} />)
     expect(getByTestId('dropdown')).toBeInTheDocument()
     expect(await axe(container)).toHaveNoViolations()
-    userEvent.click(getByTestId('dropdown'))
+    await clickElement(getByTestId('dropdown'))
     await waitFor(() => expect(getByTestId('install-config')).toBeInTheDocument())
     await new Promise((resolve) => setTimeout(resolve, 0))
   })
@@ -72,7 +72,7 @@ describe('AcmDropdown', () => {
       <Component isDisabled={true} tooltip="Tooltip text" isKebab={true} onToggle={() => null} />
     )
     expect(getByTestId('dropdown')).toBeInTheDocument()
-    userEvent.click(getByTestId('dropdown'))
+    await clickElement(getByTestId('dropdown'))
     expect(queryByTestId('install-config')).toBeNull()
     await new Promise((resolve) => setTimeout(resolve, 0))
   })
@@ -81,7 +81,7 @@ describe('AcmDropdown', () => {
       <Component isDisabled={false} tooltip="Tooltip text" isPrimary={true} />
     )
     expect(getByTestId('dropdown')).toBeInTheDocument()
-    userEvent.click(getByTestId('dropdown'))
+    await clickElement(getByTestId('dropdown'))
     expect(queryByTestId('install-config')).toBeInTheDocument()
     await new Promise((resolve) => setTimeout(resolve, 0))
   })
@@ -91,7 +91,7 @@ describe('AcmDropdown', () => {
       <Component isDisabled={false} tooltip="Tooltip text" isPrimary={true} onToggle={() => null} />
     )
     expect(getByTestId('dropdown')).toBeInTheDocument()
-    userEvent.click(getByTestId('dropdown'))
+    await clickElement(getByTestId('dropdown'))
     expect(queryByTestId('install-config')).toBeInTheDocument()
     await new Promise((resolve) => setTimeout(resolve, 0))
   })
@@ -101,14 +101,14 @@ describe('AcmDropdown', () => {
       <Component isDisabled={true} tooltip="Tooltip text" isPrimary={true} onToggle={() => null} />
     )
     expect(getByTestId('dropdown')).toBeInTheDocument()
-    userEvent.click(getByTestId('dropdown'))
+    await clickElement(getByTestId('dropdown'))
     expect(queryByTestId('install-config')).toBeNull()
     await new Promise((resolve) => setTimeout(resolve, 0))
   })
 
   test('renders target="_blank" items with rel="noopener noreferrer"', async () => {
     const { getByTestId } = render(<Component />)
-    userEvent.click(getByTestId('dropdown'))
+    await clickElement(getByTestId('dropdown'))
     await waitFor(() => expect(getByTestId('external-link')).toBeInTheDocument())
     const externalLink = getByTestId('external-link')
     const anchor = externalLink.closest('a')
@@ -120,7 +120,7 @@ describe('AcmDropdown', () => {
 
   test('renders items with href as anchor tags', async () => {
     const { getByTestId } = render(<Component />)
-    userEvent.click(getByTestId('dropdown'))
+    await clickElement(getByTestId('dropdown'))
     await waitFor(() => expect(getByTestId('link item')).toBeInTheDocument())
     const linkItem = getByTestId('link item')
     const anchor = linkItem.closest('a')

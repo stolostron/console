@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { CommonProjectsEmptyState } from './CommonProjectsEmptyState'
+import { clickElement, hoverElement } from '~/lib/test-util'
 
 // Mock the translation hook
 jest.mock('../../lib/acm-i18next', () => ({
@@ -57,7 +57,7 @@ describe('CommonProjectsEmptyState', () => {
     render(<CommonProjectsEmptyState onCreateCommonProject={mockOnCreateCommonProject} />)
 
     const button = screen.getByRole('button', { name: 'Create common project' })
-    await userEvent.click(button)
+    await clickElement(button)
 
     expect(mockOnCreateCommonProject).toHaveBeenCalledTimes(1)
   })
@@ -151,7 +151,7 @@ describe('CommonProjectsEmptyState', () => {
       )
 
       const button = screen.getByRole('button', { name: 'Create common project' })
-      await userEvent.hover(button)
+      await hoverElement(button)
 
       await waitFor(() => {
         expect(screen.getByRole('tooltip')).toHaveTextContent(disabledReason)
@@ -162,7 +162,7 @@ describe('CommonProjectsEmptyState', () => {
       render(<CommonProjectsEmptyState onCreateCommonProject={mockOnCreateCommonProject} />)
 
       const button = screen.getByRole('button', { name: 'Create common project' })
-      await userEvent.hover(button)
+      await hoverElement(button)
 
       expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
     })

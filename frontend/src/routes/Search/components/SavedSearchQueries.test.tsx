@@ -3,12 +3,11 @@
 // Copyright Contributors to the Open Cluster Management project
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { Settings, settingsState } from '../../../atoms'
 import { nockSearch } from '../../../lib/nock-util'
-import { wait, waitForNocks } from '../../../lib/test-util'
+import { wait, waitForNocks, clickElement } from '~/lib/test-util'
 import { SearchResultCountDocument } from '../search-sdk/search-sdk'
 import SavedSearchQueries from './SavedSearchQueries'
 
@@ -343,16 +342,16 @@ describe('SavedSearchQueries Page', () => {
       name: /actions/i,
     })
     expect(savedActionBtn[0]).toBeTruthy()
-    userEvent.click(savedActionBtn[0])
+    await clickElement(savedActionBtn[0])
 
     // click export
     const savedActionItemBtns = screen.getAllByRole('menuitem')
     expect(savedActionItemBtns[2]).toBeTruthy()
-    userEvent.click(savedActionItemBtns[2])
+    await clickElement(savedActionItemBtns[2])
 
     await waitForNocks([savedSearch])
     // hide saved search menu
-    userEvent.click(savedActionBtn[0])
+    await clickElement(savedActionBtn[0])
     expect(savedActionItemBtns[2]).not.toBeVisible()
 
     // open action menu for suggested search
@@ -360,12 +359,12 @@ describe('SavedSearchQueries Page', () => {
       name: /actions/i,
     })
     expect(suggestedActionBtn[1]).toBeTruthy()
-    userEvent.click(suggestedActionBtn[1])
+    await clickElement(suggestedActionBtn[1])
 
     // click export
     const suggestedActionItemBtns = screen.getAllByRole('menuitem')
     expect(suggestedActionItemBtns[1]).toBeTruthy()
-    userEvent.click(suggestedActionItemBtns[1])
+    await clickElement(suggestedActionItemBtns[1])
 
     await waitForNocks([suggestedSearch])
   })

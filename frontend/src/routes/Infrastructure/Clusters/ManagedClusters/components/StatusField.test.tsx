@@ -1,12 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { ansibleJobState, ansibleWorkflowState, configMapsState } from '../../../../../atoms'
-import { clickByText, waitForText } from '../../../../../lib/test-util'
+import { clickByText, waitForText, clickElement } from '~/lib/test-util'
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import {
   type AnsibleJob,
@@ -88,9 +87,9 @@ describe('ScaleClusterAlert', () => {
     const { rerender } = render(Component(props))
     cluster.status = ClusterStatus.creating
     await waitForText('Creating')
-    userEvent.click(screen.getByText('Creating'))
+    await clickElement(screen.getByText('Creating'))
     await waitForText('View logs')
-    userEvent.click(screen.getByText('View logs'))
+    await clickElement(screen.getByText('View logs'))
     cluster.status = ClusterStatus.unreachable
     rerender(Component({ ...props }))
     await waitForText('Unreachable')

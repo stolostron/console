@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 import { GlobalPlacementName, GroupKind, UserKind } from '../../resources'
 import { RoleAssignmentWizardFormData } from './types'
 import { usePreselectedData } from './usePreselectedData'

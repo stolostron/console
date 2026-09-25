@@ -32,7 +32,7 @@ describe('truncate-middle', () => {
     describe('truncates in the middle by default', () => {
       test('should truncate a long string in the middle', () => {
         const result = truncateMiddle('this-is-a-very-long-string-that-needs-truncation', { length: 20 })
-        expect(result.length).toBe(20)
+        expect(result).toHaveLength(20)
         expect(result).toContain('\u2026') // ellipsis
         expect(result.startsWith('this-is-a')).toBe(true)
         expect(result.endsWith('uncation')).toBe(true)
@@ -40,7 +40,7 @@ describe('truncate-middle', () => {
 
       test('should truncate with default length of 20', () => {
         const result = truncateMiddle('abcdefghijklmnopqrstuvwxyz-1234567890')
-        expect(result.length).toBe(20)
+        expect(result).toHaveLength(20)
       })
 
       test('should handle even split when length allows', () => {
@@ -58,7 +58,7 @@ describe('truncate-middle', () => {
           length: 20,
           truncateEnd: true,
         })
-        expect(result.length).toBe(20)
+        expect(result).toHaveLength(20)
         expect(result).toBe('this-is-a-very-long\u2026')
       })
 
@@ -79,14 +79,14 @@ describe('truncate-middle', () => {
           omission: '...',
         })
         expect(result).toContain('...')
-        expect(result.length).toBe(20)
+        expect(result).toHaveLength(20)
       })
 
       test('should use custom minTruncateChars', () => {
         // String of 25 chars, length of 20, minTruncateChars of 10
         // 25 > 20 + 10 = false, so should NOT truncate
         const input = 'this-is-25-characters!!!'
-        expect(input.length).toBe(24)
+        expect(input).toHaveLength(24)
         const result = truncateMiddle(input, { length: 20, minTruncateChars: 10 })
         expect(result).toBe(input)
       })
@@ -95,9 +95,9 @@ describe('truncate-middle', () => {
         // String of 35 chars, length of 20, minTruncateChars of 10
         // 35 > 20 + 10 = true, so should truncate
         const input = 'this-is-a-35-character-string!!!!'
-        expect(input.length).toBe(33)
+        expect(input).toHaveLength(33)
         const result = truncateMiddle(input, { length: 20, minTruncateChars: 10 })
-        expect(result.length).toBe(20)
+        expect(result).toHaveLength(20)
       })
     })
 
@@ -126,7 +126,7 @@ describe('truncate-middle', () => {
 
       test('should handle strings with unicode characters', () => {
         const result = truncateMiddle('日本語テキストがとても長い場合', { length: 10 })
-        expect(result.length).toBe(10)
+        expect(result).toHaveLength(10)
         expect(result).toContain('\u2026')
       })
     })
@@ -160,8 +160,8 @@ describe('truncate-middle', () => {
       // So threshold is 23 characters (text.length > length + minTruncateChars)
       const str23 = 'abcdefghijklmnopqrstuvw' // exactly 23 chars
       const str24 = 'abcdefghijklmnopqrstuvwx' // exactly 24 chars
-      expect(str23.length).toBe(23)
-      expect(str24.length).toBe(24)
+      expect(str23).toHaveLength(23)
+      expect(str24).toHaveLength(24)
       expect(shouldTruncate(str23)).toBe(false) // 23 is not > 23
       expect(shouldTruncate(str24)).toBe(true) // 24 > 23
     })

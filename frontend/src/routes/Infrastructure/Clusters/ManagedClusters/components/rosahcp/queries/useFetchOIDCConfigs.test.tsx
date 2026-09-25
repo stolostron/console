@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { renderHook, act } from '@testing-library/react-hooks'
+import { renderHook, act } from '@testing-library/react'
 import { useFetchOIDCConfigs } from './useFetchOIDCConfigs'
 import { SelectedSecret } from '../constants/types'
 const mockUseQuery = jest.fn()

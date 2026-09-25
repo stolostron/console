@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import {
   mockClusterSet,
   mockClusterSetBinding,
@@ -13,6 +12,7 @@ import { IResource } from '@patternfly-labs/react-form-wizard'
 import { BrowserRouter as Router } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { nockIgnorePlacementDebug } from '../../../lib/nock-util'
+import { clickElement, typeElement } from '~/lib/test-util'
 
 function TestPolicySetWizard() {
   return (
@@ -46,17 +46,17 @@ describe('PolicySetWizard wizard', () => {
     // set details step scope so we do not match the placement name (same placeholder and id="name").
     const nameTextbox = container.querySelector('#details-step #name-form-group input#name')
     expect(nameTextbox).toBeInstanceOf(HTMLInputElement)
-    userEvent.type(nameTextbox as HTMLInputElement, 'test-policy')
-    screen.getByPlaceholderText(/select the namespace/i).click()
-    screen.getByRole('option', { name: /argo-server-1/i }).click()
+    await typeElement(nameTextbox as HTMLInputElement, 'test-policy')
+    await clickElement(screen.getByPlaceholderText(/select the namespace/i))
+    await clickElement(screen.getByRole('option', { name: /argo-server-1/i }))
 
-    screen.getByRole('button', { name: /placement/i }).click()
-    screen.getByRole('button', { name: /new placement/i }).click()
+    await clickElement(screen.getByRole('button', { name: /placement/i }))
+    await clickElement(screen.getByRole('button', { name: /new placement/i }))
     await waitFor(() => screen.getByPlaceholderText(/select the cluster sets/i))
     const placementName = container.querySelector('#name-form-group #name')?.getAttribute('value')
     expect(placementName).toEqual('test-policy-placement')
 
-    screen.getByPlaceholderText(/select the cluster sets/i).click()
+    await clickElement(screen.getByPlaceholderText(/select the cluster sets/i))
     expect(screen.getByRole('button', { name: /Add cluster set/i })).not.toBeNull()
 
     expect(screen.getByRole('option', { name: /cluster-set-01/i })).not.toBeNull()

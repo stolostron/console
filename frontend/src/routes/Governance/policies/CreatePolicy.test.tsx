@@ -11,7 +11,15 @@ import {
   managedClusterSetsState,
 } from '../../../atoms'
 import { nockCreate, nockIgnoreApiPaths, nockIgnorePlacementDebug, nockIgnoreRBAC } from '../../../lib/nock-util'
-import { clickByText, waitForNocks, waitForNotText, waitForText } from '../../../lib/test-util'
+import {
+  clickByText,
+  clickElement,
+  clearElement,
+  waitForNocks,
+  waitForNotText,
+  waitForText,
+  typeElement,
+} from '~/lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { CreatePolicy } from './CreatePolicy'
 import {
@@ -24,7 +32,6 @@ import {
   mockPolicy,
 } from '../governance.sharedMocks'
 import { IResource, Placement, PlacementBinding } from '../../../resources'
-import userEvent from '@testing-library/user-event'
 
 function TestCreatePolicyPage(props: { initialResources?: IResource[] }) {
   return (
@@ -64,46 +71,43 @@ describe('Create Policy Page', () => {
     await new Promise((resolve) => setTimeout(resolve, 500))
 
     // step 1 -- name, description, and namespace
-    userEvent.type(screen.getByRole('textbox', { name: 'Name' }), 'policy1')
-    userEvent.type(screen.getByRole('textbox', { name: 'Description' }), 'Test policy description')
-    userEvent.type(screen.getByPlaceholderText('Select namespace'), 'test')
-    screen.getByRole('option', { name: 'test' }).click()
-    screen.getByRole('button', { name: 'Next' }).click()
-
+    await typeElement(screen.getByRole('textbox', { name: 'Name' }), 'policy1')
+    await typeElement(screen.getByRole('textbox', { name: 'Description' }), 'Test policy description')
+    await typeElement(screen.getByPlaceholderText('Select namespace'), 'test')
+    await clickElement(screen.getByRole('option', { name: 'test' }))
+    await clickElement(screen.getByRole('button', { name: 'Next' }))
     // step 2 -- policy templates
 
     await waitForText('Templates')
-    screen.getAllByRole('button', { name: 'Add policy template' })[0].click()
-    screen.getByText('Namespace must exist').click()
+    await clickElement(screen.getAllByRole('button', { name: 'Add policy template' })[0])
+    await clickElement(screen.getByText('Namespace must exist'))
     const configNameInput = screen.getByRole('textbox', { name: /name name/i })
-    userEvent.type(configNameInput, '{selectall}test-policy-namespace')
-    screen.getByRole('radio', { name: 'Delete If Created' }).click()
-    userEvent.type(container.querySelector('#objectdefinition-spec-object-templates input')!, 'test')
-    screen.getByRole('button', { name: 'Next' }).click()
-
+    await clearElement(configNameInput)
+    await typeElement(configNameInput, 'test-policy-namespace')
+    await clickElement(screen.getByRole('radio', { name: 'Delete If Created' }))
+    await typeElement(container.querySelector('#objectdefinition-spec-object-templates input')!, 'test')
+    await clickElement(screen.getByRole('button', { name: 'Next' }))
     // step 3 -- placement
 
     await waitForText('How do you want to select clusters?')
     // check existing placements
-    screen.getByRole('button', { name: 'Existing placement' }).click()
-    screen.getByRole('button', { name: /menu toggle/i }).click()
+    await clickElement(screen.getByRole('button', { name: 'Existing placement' }))
+    await clickElement(screen.getByRole('button', { name: /menu toggle/i }))
     // Verify that the existing placement can be selected
-    screen.getByRole('option', { name: /policy-set-with-1-placement/i }).click()
+    await clickElement(screen.getByRole('option', { name: /policy-set-with-1-placement/i }))
     expect(screen.getByPlaceholderText('Select the placement')).toHaveValue('policy-set-with-1-placement')
 
     // new placement
-    screen.getByRole('button', { name: 'New placement' }).click()
-    screen.getAllByRole('button', { name: /action/i })[0].click()
-    screen.getByPlaceholderText(/select the label/i).click()
-    screen.getByRole('option', { name: /cloud/i }).click()
-    screen.getByPlaceholderText(/select the values/i).click()
-    screen.getByRole('option', { name: /amazon/i }).click()
-    screen.getByRole('button', { name: 'Next' }).click()
-
+    await clickElement(screen.getByRole('button', { name: 'New placement' }))
+    await clickElement(screen.getAllByRole('button', { name: /action/i })[0])
+    await clickElement(screen.getByPlaceholderText(/select the label/i))
+    await clickElement(screen.getByRole('option', { name: /cloud/i }))
+    await clickElement(screen.getByPlaceholderText(/select the values/i))
+    await clickElement(screen.getByRole('option', { name: /amazon/i }))
+    await clickElement(screen.getByRole('button', { name: 'Next' }))
     // step 4 -- Policy annotations
 
-    screen.getByRole('button', { name: 'Next' }).click()
-
+    await clickElement(screen.getByRole('button', { name: 'Next' }))
     // step 5 -- Review and Submit
 
     expect(screen.getByRole('heading', { name: /details/i })).toBeInTheDocument()
@@ -180,7 +184,7 @@ describe('Create Policy Page', () => {
       nockCreate(mockPlacementBinding),
     ]
 
-    screen.getByRole('button', { name: 'Submit' }).click()
+    await clickElement(screen.getByRole('button', { name: 'Submit' }))
     await waitForNocks(policyNock)
     await waitForNocks(placementNock)
     await waitForNocks(placementBindingNock)
@@ -191,11 +195,10 @@ describe('Create Policy Page', () => {
     render(<TestCreatePolicyPage initialResources={[mockPolicy[2], mockPlacementBindings[0]]} />)
 
     await new Promise((resolve) => setTimeout(resolve, 500))
-    screen.getByRole('button', { name: 'Next' }).click()
-    screen.getByRole('button', { name: 'Next' }).click()
-
+    await clickElement(screen.getByRole('button', { name: 'Next' }))
+    await clickElement(screen.getByRole('button', { name: 'Next' }))
     await waitForText('How do you want to select clusters?')
-    screen.getByRole('button', { name: 'Existing placement' }).click()
+    await clickElement(screen.getByRole('button', { name: 'Existing placement' }))
     screen.getByPlaceholderText(/select the placement/i)
   })
 
@@ -226,7 +229,8 @@ describe('Create Policy Page', () => {
     await new Promise((resolve) => setTimeout(resolve, 500))
 
     expect(screen.getByRole('textbox', { name: 'Name' })).not.toHaveAttribute('readonly')
-    userEvent.type(screen.getByRole('textbox', { name: 'Name' }), '{selectall}policy2')
+    await clearElement(screen.getByRole('textbox', { name: 'Name' }))
+    await typeElement(screen.getByRole('textbox', { name: 'Name' }), 'policy2')
     expect(screen.getByRole('textbox', { name: 'Name' })).toHaveAttribute('value', 'policy2')
   })
 })

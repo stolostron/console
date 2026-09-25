@@ -12,13 +12,12 @@ import {
 } from '../../../../../resources'
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { UpdateAutomationModal } from './UpdateAutomationModal'
 import { RecoilRoot } from 'recoil'
 import { MemoryRouter } from 'react-router'
 import { clusterCuratorsState, secretsState } from '../../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, /*nockCreate,*/ nockPatch } from '../../../../../lib/nock-util'
-import { clickByText, waitForNocks, waitForNotText, waitForText } from '../../../../../lib/test-util'
+import { clickByText, waitForNocks, waitForNotText, waitForText, clickElement } from '~/lib/test-util'
 import { Provider } from '../../../../../ui-components/AcmProvider'
 
 const mockClusterNoAvailable: Cluster = {
@@ -501,7 +500,7 @@ describe('UpdateAutomationModal', () => {
 
     const submitButton = screen.getByText('Save')
     expect(submitButton).toBeTruthy()
-    userEvent.click(submitButton)
+    await clickElement(submitButton)
 
     await waitForNocks([mockCuratorUpdate, mockSecretUpdate, mockCuratorHostedUpdate, mockSecretHostedUpdate])
   })

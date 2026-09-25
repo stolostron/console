@@ -1,11 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreApiPaths } from '../../lib/nock-util'
-import { clickByTestId } from '../../lib/test-util'
+import { clickByTestId, clickElement } from '~/lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
 import { CreateCredentialsPage } from './CreateCredentials'
 
@@ -72,7 +71,7 @@ describe('CreateCredentialsPage', () => {
 
   test('can click cancel', async () => {
     render(<Component />)
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /cancel/i,
       })
@@ -80,7 +79,7 @@ describe('CreateCredentialsPage', () => {
   })
   test('can click back', async () => {
     render(<Component />)
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /back/i,
       })

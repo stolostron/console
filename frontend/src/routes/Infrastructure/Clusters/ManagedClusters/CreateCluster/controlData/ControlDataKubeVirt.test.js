@@ -168,7 +168,7 @@ describe('Cluster creation control data for KubeVirt', () => {
     const controlData = getControlDataKubeVirt(t, handleModalToggle, null, {}, [])
     const operatorAlert = findControl(controlData, 'kubevirt-operator-alert')
     render(operatorAlert.component)
-    const installLink = screen.getByRole('link', { name: /install operator/i })
+    const installLink = screen.getByText('Install operator').closest('a')
     expect(installLink).toHaveAttribute('href', '')
   })
 

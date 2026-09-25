@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { PluginContext, defaultPlugin } from '~/lib/PluginContext'
 import type { TopologyNode } from '~/routes/Applications/ApplicationDetails/ApplicationTopology/types'
 import { EditYamlModal } from './EditYamlModal'
+import { clickElement } from '~/lib/test-util'
 
 const mockGetResource = jest.fn()
 const mockFleetResourceRequest = jest.fn()
@@ -136,7 +136,7 @@ describe('EditYamlModal', () => {
     expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Reload' })).toBeInTheDocument()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+    await clickElement(screen.getByRole('button', { name: 'Cancel' }))
     expect(close).toHaveBeenCalled()
   })
 
@@ -179,14 +179,14 @@ describe('EditYamlModal', () => {
   it('calls onSave when Save is clicked', async () => {
     renderModal()
     expect(await screen.findByTestId('sync-editor')).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+    await clickElement(screen.getByRole('button', { name: 'Save' }))
     expect(mockOnSave).toHaveBeenCalled()
   })
 
   it('calls onReload when Reload is clicked', async () => {
     renderModal()
     expect(await screen.findByTestId('sync-editor')).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Reload' }))
+    await clickElement(screen.getByRole('button', { name: 'Reload' }))
     expect(mockOnReload).toHaveBeenCalled()
   })
 
@@ -198,7 +198,7 @@ describe('EditYamlModal', () => {
     )
     const { close, onUpdateSuccess } = renderModal()
     expect(await screen.findByTestId('sync-editor')).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+    await clickElement(screen.getByRole('button', { name: 'Save' }))
     await waitFor(() => expect(onUpdateSuccess).toHaveBeenCalledWith('node-1'))
     expect(close).toHaveBeenCalled()
   })

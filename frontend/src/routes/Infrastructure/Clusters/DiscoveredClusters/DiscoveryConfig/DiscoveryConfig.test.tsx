@@ -13,7 +13,7 @@ import {
   nockDelete,
   nockIgnoreApiPaths,
 } from '../../../../../lib/nock-util'
-import { clickByText, waitForNocks, waitForText } from '../../../../../lib/test-util'
+import { clickByText, waitForNocks, waitForText, clickElement } from '~/lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import DiscoveredClustersPage from '../DiscoveredClusters'
 import DiscoveryConfigPage from './DiscoveryConfig'
@@ -27,7 +27,6 @@ import {
   discoveryConfigUpdateSelfSubjectAccessRequest,
   discoveryConfigUpdateSelfSubjectAccessResponse,
 } from '../DiscoveryComponents/test-utils'
-import userEvent from '@testing-library/user-event'
 
 function TestAddDiscoveryConfigPage() {
   return (
@@ -85,26 +84,25 @@ describe('Discovery Config page', () => {
       discoveryConfigCreateSelfSubjectAccessResponse
     )
     render(<TestAddDiscoveryConfigPage />)
-    waitForNocks([discoveryConfigCreateNock])
-    screen
-      .getByRole('combobox', {
+    await clickElement(
+      screen.getByRole('combobox', {
         name: 'Credential',
       })
-      .click()
-    userEvent.click(screen.getByText(/add credential/i))
+    )
+    await clickElement(screen.getByText(/add credential/i))
     await waitForText('Enter the basic credentials information')
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /cancel/i,
       })
     )
 
     // Select Credential
-    screen
-      .getByRole('combobox', {
+    await clickElement(
+      screen.getByRole('combobox', {
         name: 'Credential',
       })
-      .click()
+    )
     await clickByText(mockRHOCMSecrets[0].metadata.namespace! + '/' + mockRHOCMSecrets[0].metadata.name!)
 
     // Wait for the RBAC check to complete
@@ -132,64 +130,64 @@ describe('Discovery Config page', () => {
     render(<TestAddDiscoveryConfigPage />)
 
     // Select Credential
-    screen
-      .getByRole('combobox', {
+    await clickElement(
+      screen.getByRole('combobox', {
         name: 'Credential',
       })
-      .click()
+    )
     await clickByText(mockRHOCMSecrets[0].metadata.namespace! + '/' + mockRHOCMSecrets[0].metadata.name!)
 
     await waitForNocks([discoveryConfigCreateNock])
 
     // Select LastActive
-    screen
-      .getByRole('combobox', {
+    await clickElement(
+      screen.getByRole('combobox', {
         name: /Last active/i,
       })
-      .click()
+    )
     await waitForText('14 days')
     await clickByText('14 days')
 
     // Select Version
-    screen
-      .getByRole('combobox', {
+    await clickElement(
+      screen.getByRole('combobox', {
         name: 'Red Hat OpenShift version',
       })
-      .click()
+    )
     await clickByText('5.0')
 
     // Select Cluster Types
-    screen
-      .getByRole('combobox', {
+    await clickElement(
+      screen.getByRole('combobox', {
         name: /Cluster types/i,
       })
-      .click()
+    )
 
-    screen
-      .getByRole('checkbox', {
+    await clickElement(
+      screen.getByRole('checkbox', {
         name: /rosa classic/i,
       })
-      .click()
-    screen
-      .getByRole('checkbox', {
+    )
+    await clickElement(
+      screen.getByRole('checkbox', {
         name: /openshift container platform/i,
       })
-      .click()
+    )
 
     // Select Infrastructure Providers
-    screen.getByText(/select infrastructure providers/i).click()
+    await clickElement(screen.getByText(/select infrastructure providers/i))
 
-    screen
-      .getByRole('checkbox', {
+    await clickElement(
+      screen.getByRole('checkbox', {
         name: /amazon web services/i,
       })
-      .click()
+    )
 
-    screen
-      .getByRole('checkbox', {
+    await clickElement(
+      screen.getByRole('checkbox', {
         name: /microsoft azure/i,
       })
-      .click()
+    )
 
     // Submit form
     const createDiscoveryConfigNock = nockCreate(discoveryConfig, discoveryConfig)
@@ -212,11 +210,11 @@ describe('Discovery Config page', () => {
     await waitForNocks(nocks)
 
     // Select Namespace
-    screen
-      .getByRole('combobox', {
+    await clickElement(
+      screen.getByRole('combobox', {
         name: 'Namespace',
       })
-      .click()
+    )
     await clickByText(discoveryConfig.metadata.namespace!)
 
     await waitForNocks([discoveryConfigUpdateNock])
@@ -227,18 +225,18 @@ describe('Discovery Config page', () => {
     await waitForText(mockRHOCMSecrets[0].metadata.namespace + '/' + mockRHOCMSecrets[0].metadata.name!)
 
     // Change form
-    screen
-      .getByRole('combobox', {
+    await clickElement(
+      screen.getByRole('combobox', {
         name: /Last active/i,
       })
-      .click()
+    )
     await clickByText('30 days')
 
-    screen
-      .getByRole('combobox', {
+    await clickElement(
+      screen.getByRole('combobox', {
         name: 'Red Hat OpenShift version',
       })
-      .click()
+    )
     await clickByText('5.1')
 
     const replaceNock = nockReplace(discoveryConfigUpdated)
@@ -256,11 +254,11 @@ describe('Discovery Config page', () => {
     await waitForNocks(nocks)
 
     // Select Namespace
-    screen
-      .getByRole('combobox', {
+    await clickElement(
+      screen.getByRole('combobox', {
         name: 'Namespace',
       })
-      .click()
+    )
     await clickByText(discoveryConfig.metadata.namespace!)
 
     // Ensure Form is prepopulated
@@ -273,7 +271,7 @@ describe('Discovery Config page', () => {
     await waitForText('Delete discovery settings')
 
     const deleteButtons = screen.getAllByRole('button', { name: /delete/i })
-    await userEvent.click(deleteButtons[deleteButtons.length - 1])
+    await clickElement(deleteButtons[deleteButtons.length - 1])
 
     await waitFor(() => expect(deleteNock.isDone()).toBeTruthy())
 

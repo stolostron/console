@@ -2,11 +2,11 @@
 'use strict'
 
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { BrowserRouter as Router } from 'react-router'
 import TemplateEditor from './TemplateEditor'
 // loads mocked monaco from __mocks__
 import MonacoEditor from 'react-monaco-editor'
+import { clickElement, typeElement } from '~/lib/test-util'
 
 // eslint-disable-next-line no-redeclare
 class ResizeObserver {
@@ -69,22 +69,22 @@ describe('TemplateEditor component', () => {
     const { rerender } = render(<Component {...props} />)
 
     // fill in form
-    userEvent.type(
+    await typeElement(
       screen.getByRole('textbox', {
         name: /creation\.app\.name/i,
       }),
       'test'
     )
-    userEvent.type(
+    await typeElement(
       screen.getByRole('combobox', {
         name: /creation.app.namespace/i,
       }),
       'testing'
     )
-    userEvent.click(screen.getByText(/channel\.type\.git/i))
-    userEvent.type(screen.getByTestId('githubURL'), 'https://github.com/fxiang1/app-samples')
-    userEvent.type(screen.getByTestId('githubPath'), 'ansible')
-    userEvent.click(
+    await clickElement(screen.getByText(/channel\.type\.git/i))
+    await typeElement(screen.getByTestId('githubURL'), 'https://github.com/fxiang1/app-samples')
+    await typeElement(screen.getByTestId('githubPath'), 'ansible')
+    await clickElement(
       screen.getByRole('radio', {
         name: /creation\.app\.settings\.localclusters/i,
       })
@@ -93,7 +93,7 @@ describe('TemplateEditor component', () => {
     updatedControl.forceUpdate()
 
     // add a group
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /creation\.app\.add\.channel/i,
       })
@@ -101,12 +101,12 @@ describe('TemplateEditor component', () => {
     window.dispatchEvent(new Event('beforeunload'))
 
     // cancel/create
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /button\.cancel/i,
       })
     )
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /button\.create/i,
       })
@@ -160,13 +160,13 @@ describe('TemplateEditor component', () => {
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
     //undo
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /editor\.bar\.undo/i,
       })
     )
     //redo
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /editor\.bar\.redo/i,
       })
@@ -193,12 +193,12 @@ describe('TemplateEditor component', () => {
     })
 
     // next/previous
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /editor\.bar\.next/i,
       })
     )
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /editor\.bar\.previous/i,
       })
@@ -210,24 +210,24 @@ describe('TemplateEditor component', () => {
       navigator.clipboard = {}
     }
     navigator.clipboard.writeText = jest.fn()
-    userEvent.click(screen.getByRole('button', { name: /copy to clipboard/i }))
+    await clickElement(screen.getByRole('button', { name: /copy to clipboard/i }))
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith(editor.value)
 
     // secrets
-    userEvent.click(
+    await clickElement(
       screen.getByRole('checkbox', {
         name: /show-secrets/i,
       })
     )
 
     // press reset
-    userEvent.click(screen.getByText(/editor\.bar\.reset/i))
+    await clickElement(screen.getByText(/editor\.bar\.reset/i))
 
     // close
     const btn = screen.getByRole('button', {
       name: /editor\.bar\.close/i,
     })
-    userEvent.click(btn)
+    await clickElement(btn)
     expect(btn).not.toBeInTheDocument()
   })
 

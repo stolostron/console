@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { ExpandableDescription } from './ExpandableDescription'
 
 jest.mock('@react-hook/resize-observer')
 
 import useResizeObserver from '@react-hook/resize-observer'
+import { clickElement } from '~/lib/test-util'
 const mockUseResizeObserver = jest.mocked(useResizeObserver)
 
 describe('ExpandableDescription', () => {
@@ -46,9 +46,9 @@ describe('ExpandableDescription', () => {
 
     const showMore = screen.getByRole('button', { name: 'Show more' })
     expect(showMore).toBeInTheDocument()
-    await userEvent.click(showMore)
+    await clickElement(showMore)
     expect(screen.getByRole('button', { name: 'Show less' })).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Show less' }))
+    await clickElement(screen.getByRole('button', { name: 'Show less' }))
     expect(screen.getByRole('button', { name: 'Show more' })).toBeInTheDocument()
     expect(await axe(container)).toHaveNoViolations()
   })

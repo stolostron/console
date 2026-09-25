@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Fragment, useContext } from 'react'
+import { Fragment, useContext, useEffect } from 'react'
 import { MemoryRouter } from 'react-router'
 import { render, waitFor } from '@testing-library/react'
 import { axe } from 'jest-axe'
@@ -156,8 +156,10 @@ describe('AcmPageContent', () => {
 
   test('AcmPageContent renders alerts', async () => {
     function Content() {
-      const alertContext = useContext(AcmAlertContext)
-      alertContext.addAlert({ title: 'Alert title' })
+      const addAlert = useContext(AcmAlertContext).addAlert
+      useEffect(() => {
+        addAlert({ title: 'Alert title' })
+      }, [addAlert])
       return <Fragment />
     }
 
@@ -168,6 +170,6 @@ describe('AcmPageContent', () => {
         </AcmPageContent>
       </AcmPage>
     )
-    waitFor(() => expect(getByText('Alert title')).toBeInTheDocument())
+    await waitFor(() => expect(getByText('Alert title')).toBeInTheDocument())
   })
 })

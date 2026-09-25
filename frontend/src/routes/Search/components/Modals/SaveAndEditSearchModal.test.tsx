@@ -3,7 +3,6 @@
 // Copyright Contributors to the Open Cluster Management project
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { RecoilRoot } from 'recoil'
 import {
   nockIgnoreApiPaths,
@@ -11,7 +10,7 @@ import {
   nockPatchRequest,
   nockPostRequest,
 } from '../../../../lib/nock-util'
-import { wait, waitForNocks } from '../../../../lib/test-util'
+import { wait, waitForNocks, typeElement, clickElement } from '~/lib/test-util'
 import { UserPreference } from '../../../../resources/userpreference'
 import { SaveAndEditSearchModal } from './SaveAndEditSearchModal'
 
@@ -88,14 +87,14 @@ describe('SaveAndEditSearchModal', () => {
 
     // Enter saved search information
     const searchNameField = screen.getByTestId('add-query-name')
-    userEvent.type(searchNameField, 'testSearch1')
+    await typeElement(searchNameField, 'testSearch1')
     const searchDescField = screen.getByTestId('add-query-desc')
-    userEvent.type(searchDescField, 'testSearch1Desc')
+    await typeElement(searchDescField, 'testSearch1Desc')
 
     // find the button and simulate a click
     const saveButton = screen.getByText('Save')
     expect(saveButton).toBeTruthy()
-    userEvent.click(saveButton)
+    await clickElement(saveButton)
 
     // Wait for UserPreference GET mock
     await waitForNocks([createUserPreferenceNock])
@@ -135,14 +134,14 @@ describe('SaveAndEditSearchModal', () => {
 
     // Enter saved search information
     const searchNameField = screen.getByTestId('add-query-name')
-    userEvent.type(searchNameField, '-edit')
+    await typeElement(searchNameField, '-edit')
     const searchDescField = screen.getByTestId('add-query-desc')
-    userEvent.type(searchDescField, '-edit')
+    await typeElement(searchDescField, '-edit')
 
     // find the button and simulate a click
     const saveButton = screen.getByText('Save')
     expect(saveButton).toBeTruthy()
-    userEvent.click(saveButton)
+    await clickElement(saveButton)
 
     // Wait for UserPreference GET mock
     await waitForNocks([patchUserPreferenceNock])

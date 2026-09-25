@@ -4,7 +4,7 @@ jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
   useK8sWatchResource: jest.fn(),
 }))
 
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 import { useK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
 import { useFleetClusterSets } from './useFleetClusterSets'
 

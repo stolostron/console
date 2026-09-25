@@ -68,7 +68,7 @@ describe('networking patch utils', () => {
       enableProxy: false,
       editProxy: false,
     })
-    expect(patches.length).toBe(4)
+    expect(patches).toHaveLength(4)
   })
 
   it('creates patches for clusterNetworks array', () => {
@@ -221,7 +221,7 @@ describe('networking patch utils', () => {
       apiVip: '10.10.10.10',
       ingressVip: '10.10.10.10',
     })
-    expect(patches.length).toBe(4)
+    expect(patches).toHaveLength(4)
   })
 })
 

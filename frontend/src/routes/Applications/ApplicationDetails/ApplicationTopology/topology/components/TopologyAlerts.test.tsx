@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, act } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import type { TopologyNode } from '../../types'
 import { TopologyAlertActionType, type TopologyAlert } from '../../analysis/utils'
 import { TopologyAlerts } from './TopologyAlerts'
+import { clickElementWithFakeTimers } from '~/lib/test-util'
 
 jest.mock('~/lib/acm-i18next', () => ({
   useTranslation: () => ({
@@ -141,11 +141,11 @@ describe('TopologyAlerts', () => {
       jest.advanceTimersByTime(150)
     })
 
-    await userEvent.click(screen.getByText('Edit application'))
-    await userEvent.click(screen.getByText('Edit YAML'))
-    await userEvent.click(screen.getByText('Sync resources'))
-    await userEvent.click(screen.getByText('Launch Argo editor'))
-    await userEvent.click(screen.getByText('Show logs'))
+    await clickElementWithFakeTimers(screen.getByText('Edit application'))
+    await clickElementWithFakeTimers(screen.getByText('Edit YAML'))
+    await clickElementWithFakeTimers(screen.getByText('Sync resources'))
+    await clickElementWithFakeTimers(screen.getByText('Launch Argo editor'))
+    await clickElementWithFakeTimers(screen.getByText('Show logs'))
 
     expect(onEditAppSet).toHaveBeenCalledWith(node)
     expect(onEditYaml).toHaveBeenCalledWith(node, 'ApplicationSet.spec.generators')
@@ -162,7 +162,7 @@ describe('TopologyAlerts', () => {
     })
 
     const closeButton = screen.getByRole('button', { name: /close/i })
-    await userEvent.click(closeButton)
+    await clickElementWithFakeTimers(closeButton)
 
     expect(screen.queryByText('Alert title')).not.toBeInTheDocument()
   })
@@ -175,7 +175,7 @@ describe('TopologyAlerts', () => {
       jest.advanceTimersByTime(150)
     })
 
-    await userEvent.click(screen.getByRole('button', { name: /close/i }))
+    await clickElementWithFakeTimers(screen.getByRole('button', { name: /close/i }))
 
     expect(screen.queryByText('Shared alert')).not.toBeInTheDocument()
 

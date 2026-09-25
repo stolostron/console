@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { renderHook, act } from '@testing-library/react-hooks'
+import { renderHook, act } from '@testing-library/react'
 import { useClusterNameUniquenessCheck } from './useCheckClusterNameUniqueness'
 import { getWizardClusterNameUniqueness } from '~/lib/rosa-hcp-api'
 import type { SelectedSecret } from '../constants/types'

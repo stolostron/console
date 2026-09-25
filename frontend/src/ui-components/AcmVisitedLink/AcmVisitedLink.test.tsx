@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { MemoryRouter } from 'react-router'
 import { AcmVisitedLink } from './AcmVisitedLink'
+import { clickElement } from '~/lib/test-util'
 
 const visitedLinksKey = 'visited-links'
 
@@ -70,7 +70,7 @@ describe('AcmVisitedLink', () => {
         <AcmVisitedLink to="/clusters">Clusters</AcmVisitedLink>
       </MemoryRouter>
     )
-    await userEvent.click(screen.getByRole('link'))
+    await clickElement(screen.getByRole('link'))
 
     const stored = localStorage.getItem(visitedLinksKey)
     expect(stored).not.toBeNull()
@@ -87,7 +87,7 @@ describe('AcmVisitedLink', () => {
         <AcmVisitedLink to="/clusters">Clusters</AcmVisitedLink>
       </MemoryRouter>
     )
-    await userEvent.click(screen.getByRole('link'))
+    await clickElement(screen.getByRole('link'))
 
     const stored = localStorage.getItem(visitedLinksKey)
     const parsed = JSON.parse(stored!)
@@ -105,7 +105,7 @@ describe('AcmVisitedLink', () => {
         <AcmVisitedLink to="/clusters">Clusters</AcmVisitedLink>
       </MemoryRouter>
     )
-    await userEvent.click(screen.getByRole('link'))
+    await clickElement(screen.getByRole('link'))
 
     const stored = localStorage.getItem(visitedLinksKey)
     const parsed = JSON.parse(stored!)
@@ -123,7 +123,7 @@ describe('AcmVisitedLink', () => {
         </AcmVisitedLink>
       </MemoryRouter>
     )
-    await userEvent.click(screen.getByRole('link'))
+    await clickElement(screen.getByRole('link'))
 
     expect(mockOnClick).toHaveBeenCalledTimes(1)
   })
@@ -154,7 +154,7 @@ describe('AcmVisitedLink', () => {
       </MemoryRouter>
     )
     // Click should not throw
-    await userEvent.click(screen.getByRole('link'))
+    await clickElement(screen.getByRole('link'))
 
     // Should have stored the new link
     const stored = localStorage.getItem(visitedLinksKey)
@@ -167,7 +167,7 @@ describe('AcmVisitedLink', () => {
         <AcmVisitedLink to={{ pathname: '/applications' }}>Applications</AcmVisitedLink>
       </MemoryRouter>
     )
-    await userEvent.click(screen.getByRole('link'))
+    await clickElement(screen.getByRole('link'))
 
     const stored = localStorage.getItem(visitedLinksKey)
     const parsed = JSON.parse(stored!)

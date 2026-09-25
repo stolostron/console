@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { argoCDsState, managedClusterSetsState, namespacesState, subscriptionOperatorsState } from '../../atoms'
@@ -13,14 +12,14 @@ import {
   nockIgnoreOperatorCheck,
   nockIgnorePlacementDebug,
 } from '../../lib/nock-util'
-import { createClusterVersionMock } from '../../lib/test-util'
+import { createClusterVersionMock, typeElement, clickElement } from '~/lib/test-util'
 
 const mockUseClusterVersion = createClusterVersionMock()
 jest.mock('../../hooks/use-cluster-version', () => ({
   useClusterVersion: () => mockUseClusterVersion(),
 }))
 
-import { clickByRole, clickByText, typeByRole, waitForNocks, waitForText } from '../../lib/test-util'
+import { clickByRole, clickByText, typeByRole, waitForNocks, waitForText } from '~/lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
 import {
   GitOpsClusterApiVersion,
@@ -140,7 +139,7 @@ describe('ArgoWizard tests', () => {
     //=====================================================================
     //                      general page
     //=====================================================================
-    userEvent.type(
+    await typeElement(
       screen.getByRole('textbox', {
         name: /name/i,
       }),
@@ -169,7 +168,7 @@ describe('ArgoWizard tests', () => {
     await typeByRole(url, 'combobox', { name: /Enter or select a Git URL/i })
 
     const appBranchNocks = [nockArgoGitBranches(url, { branchList: [{ name: 'main' }] })]
-    userEvent.click(
+    await clickElement(
       screen.getByRole('option', {
         name: /https:\/\/github\.com\/fxiang1\/app-samples/i,
       })
@@ -256,7 +255,7 @@ describe('ArgoWizard tests', () => {
       //=====================================================================
       //                      general page
       //=====================================================================
-      userEvent.type(
+      await typeElement(
         screen.getByRole('textbox', {
           name: /name/i,
         }),
@@ -282,7 +281,7 @@ describe('ArgoWizard tests', () => {
       await typeByRole(url, 'combobox', { name: /Enter or select a Git URL/i })
 
       const appBranchNocks = [nockArgoGitBranches(url, { branchList: [{ name: 'main' }] })]
-      userEvent.click(
+      await clickElement(
         screen.getByRole('option', {
           name: /https:\/\/github\.com\/fxiang1\/app-samples/i,
         })
@@ -377,19 +376,19 @@ describe('ArgoWizard tests', () => {
     //=====================================================================
     //                      general page
     //=====================================================================
-    userEvent.type(
+    await typeElement(
       screen.getByRole('textbox', {
         name: /name/i,
       }),
       'testapp'
     )
-    userEvent.click(screen.getByPlaceholderText(/select the argo server/i))
-    userEvent.click(
+    await clickElement(screen.getByPlaceholderText(/select the argo server/i))
+    await clickElement(
       screen.getByRole('option', {
         name: /http:\/\/argoserver\.com/i,
       })
     )
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /next/i,
       })
@@ -398,7 +397,7 @@ describe('ArgoWizard tests', () => {
     //=====================================================================
     //                      generators page - skip with defaults
     //=====================================================================
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /next/i,
       })
@@ -407,42 +406,42 @@ describe('ArgoWizard tests', () => {
     //=====================================================================
     //                      repository page
     //=====================================================================
-    userEvent.click(screen.getByText(/use a helm repository/i))
+    await clickElement(screen.getByText(/use a helm repository/i))
     await typeByRole('https://github.com/fxiang1/app-samples', 'combobox', { name: /enter or select a helm url/i })
-    userEvent.click(
+    await clickElement(
       screen.getByRole('option', {
         name: /https:\/\/github\.com\/fxiang1\/app-samples/i,
       })
     )
-    userEvent.type(
+    await typeElement(
       screen.getByRole('textbox', {
         name: /chart name/i,
       }),
       'chart'
     )
-    userEvent.type(
+    await typeElement(
       screen.getByRole('textbox', {
         name: /package version/i,
       }),
       '1.0.0'
     )
-    userEvent.type(screen.getByPlaceholderText(/enter the destination namespace/i), 'default')
+    await typeElement(screen.getByPlaceholderText(/enter the destination namespace/i), 'default')
 
     //=====================================================================
     //                      placement page
     //=====================================================================
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /placement/i,
       })
     )
-    userEvent.click(screen.getByText(/existing placement/i))
-    userEvent.click(
+    await clickElement(screen.getByText(/existing placement/i))
+    await clickElement(
       screen.getByRole('button', {
         name: /menu toggle/i,
       })
     )
-    userEvent.click(
+    await clickElement(
       screen.getByRole('option', {
         name: /placement1/i,
       })
@@ -451,13 +450,13 @@ describe('ArgoWizard tests', () => {
     //=====================================================================
     //                      review page
     //=====================================================================
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /review/i,
       })
     )
 
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /submit/i,
       })
@@ -479,7 +478,7 @@ describe('ArgoWizard tests', () => {
     //=====================================================================
     //                      general page
     //=====================================================================
-    userEvent.type(
+    await typeElement(
       screen.getByRole('textbox', {
         name: /name/i,
       }),
@@ -505,7 +504,7 @@ describe('ArgoWizard tests', () => {
     await typeByRole(url, 'combobox', { name: /Enter or select a Git URL/i })
 
     const appBranchNocks = [nockArgoGitBranches(url, { branchList: [{ name: 'main' }] })]
-    userEvent.click(
+    await clickElement(
       screen.getByRole('option', {
         name: /https:\/\/github\.com\/fxiang1\/app-samples/i,
       })
@@ -558,7 +557,7 @@ describe('ArgoWizard tests', () => {
       render(<TestArgoWizardWithGitGeneratorAppSets applicationSets={[mockAppSetWithGitGenerator]} />)
 
       // Navigate to general page
-      userEvent.type(screen.getByRole('textbox', { name: /name/i }), 'testapp')
+      await typeElement(screen.getByRole('textbox', { name: /name/i }), 'testapp')
       await clickByRole('combobox', { name: 'Select the Argo server' })
       await clickByRole('option', { name: /http:\/\/argoserver\.com/i })
       await clickByText('Next')
@@ -569,7 +568,7 @@ describe('ArgoWizard tests', () => {
 
       // Verify git generator URL options are populated from applicationSets
       const urlCombobox = screen.getByRole('combobox', { name: /Enter or select a Git URL/i })
-      userEvent.click(urlCombobox)
+      await clickElement(urlCombobox)
 
       // Should see the URL from mockAppSetWithGitGenerator
       await waitForText('https://github.com/example/repo1')
@@ -581,7 +580,7 @@ describe('ArgoWizard tests', () => {
       render(<TestArgoWizardWithGitGeneratorAppSets applicationSets={[mockAppSetWithMatrixGitGenerator]} />)
 
       // Navigate to general page
-      userEvent.type(screen.getByRole('textbox', { name: /name/i }), 'testapp')
+      await typeElement(screen.getByRole('textbox', { name: /name/i }), 'testapp')
       await clickByRole('combobox', { name: 'Select the Argo server' })
       await clickByRole('option', { name: /http:\/\/argoserver\.com/i })
       await clickByText('Next')
@@ -592,7 +591,7 @@ describe('ArgoWizard tests', () => {
 
       // Verify git generator URL options are populated from matrix generator
       const urlCombobox = screen.getByRole('combobox', { name: /Enter or select a Git URL/i })
-      userEvent.click(urlCombobox)
+      await clickElement(urlCombobox)
 
       // Should see the URL from mockAppSetWithMatrixGitGenerator
       await waitForText('https://github.com/example/repo2')
@@ -609,7 +608,7 @@ describe('ArgoWizard tests', () => {
       )
 
       // Navigate to general page
-      userEvent.type(screen.getByRole('textbox', { name: /name/i }), 'testapp')
+      await typeElement(screen.getByRole('textbox', { name: /name/i }), 'testapp')
       await clickByRole('combobox', { name: 'Select the Argo server' })
       await clickByRole('option', { name: /http:\/\/argoserver\.com/i })
       await clickByText('Next')
@@ -620,12 +619,12 @@ describe('ArgoWizard tests', () => {
 
       // Verify git generator URL options are populated (duplicates should be removed)
       const urlCombobox = screen.getByRole('combobox', { name: /Enter or select a Git URL/i })
-      userEvent.click(urlCombobox)
+      await clickElement(urlCombobox)
 
       // Should see the URL only once (deduplication via Set)
       const options = screen.getAllByRole('option')
       const repo1Options = options.filter((opt) => opt.textContent?.includes('https://github.com/example/repo1'))
-      expect(repo1Options.length).toBe(1)
+      expect(repo1Options).toHaveLength(1)
     })
 
     test('combines git info from multiple applicationSets', async () => {
@@ -638,7 +637,7 @@ describe('ArgoWizard tests', () => {
       )
 
       // Navigate to general page
-      userEvent.type(screen.getByRole('textbox', { name: /name/i }), 'testapp')
+      await typeElement(screen.getByRole('textbox', { name: /name/i }), 'testapp')
       await clickByRole('combobox', { name: 'Select the Argo server' })
       await clickByRole('option', { name: /http:\/\/argoserver\.com/i })
       await clickByText('Next')
@@ -649,7 +648,7 @@ describe('ArgoWizard tests', () => {
 
       // Verify both URLs are available
       const urlCombobox = screen.getByRole('combobox', { name: /Enter or select a Git URL/i })
-      userEvent.click(urlCombobox)
+      await clickElement(urlCombobox)
 
       // Should see URLs from both applicationSets
       await waitForText('https://github.com/example/repo1')
