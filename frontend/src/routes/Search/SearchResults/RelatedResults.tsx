@@ -10,6 +10,7 @@ import {
   StackItem,
 } from '@patternfly/react-core'
 import _ from 'lodash'
+import type * as React from 'react'
 import { Fragment, useCallback, useContext, useMemo, useState, type JSX } from 'react'
 import { useNavigate } from 'react-router'
 import { useTranslation } from '../../../lib/acm-i18next'

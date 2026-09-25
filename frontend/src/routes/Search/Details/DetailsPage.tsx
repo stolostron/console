@@ -10,6 +10,7 @@ import {
   MenuToggleElement,
   Tooltip,
 } from '@patternfly/react-core'
+import type * as React from 'react'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState, type JSX } from 'react'
 import { Outlet, useLocation, useNavigate, useOutletContext } from 'react-router'
 import { useTranslation } from '../../../lib/acm-i18next'
