@@ -98,7 +98,7 @@ export const FleetResourceEventStream: FC<FleetResourceEventStreamProps> = ({ re
   const [sortedEvents, setSortedEvents] = useState<EventKind[]>([])
   const [error, setError] = useState<boolean | string>(false)
   const [loading, setLoading] = useState(true)
-  const ws = useRef<WebSocket>()
+  const ws = useRef<WebSocket>(undefined)
   const [backendAPIPath, loaded] = useFleetK8sAPIPath(resource?.cluster)
 
   const fieldSelector = `involvedObject.uid=${resource?.metadata?.uid},involvedObject.name=${resource?.metadata?.name},involvedObject.kind=${resource?.kind}`

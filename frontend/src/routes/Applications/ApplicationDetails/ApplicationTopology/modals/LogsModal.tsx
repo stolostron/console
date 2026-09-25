@@ -412,7 +412,7 @@ function TopologyLogsViewer({
     logsContent = (
       <LogViewer
         ref={logViewerRef}
-        height={'calc(70vh - 200px)'}
+        height={isFullscreen ? '100%' : 'calc(70vh - 200px)'}
         data={logs}
         theme="dark"
         isTextWrapped={wrapLines}
@@ -487,7 +487,14 @@ function TopologyLogsViewer({
           </AcmSelect>
         </>
       )}
-      <div ref={resourceLogRef} style={{ flex: 1, minHeight: 0, marginTop: '0.5rem' }}>
+      <div
+        ref={resourceLogRef}
+        style={
+          isFullscreen
+            ? { height: '100%', display: 'flex', flexDirection: 'column' }
+            : { flex: 1, minHeight: 0, marginTop: '0.5rem' }
+        }
+      >
         {logsContent}
       </div>
     </div>

@@ -13,12 +13,11 @@ import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '..
 import { SearchDetailsContext } from './DetailsPage'
 import LogsPage, { LogsFooterButton, LogsHeader, LogsToolbar } from './LogsPage'
 
-// TODO why does the react-log-viewer not work with testing-library render...
 jest.mock('@patternfly/react-log-viewer', () => ({
   __esModule: true,
-  LogViewer: () => {
+  LogViewer: ({ height }: { height?: string }) => {
     return (
-      <div>
+      <div id="log-viewer" data-height={height}>
         <div>
           <p>{'Cluster:'}</p>
           {'testCluster'}
@@ -36,11 +35,48 @@ jest.mock('@patternfly/react-log-viewer', () => ({
   },
 }))
 
-jest.mock('screenfull', () => ({
-  isEnabled: true,
-  on: () => {},
-  off: () => {},
-}))
+jest.mock('screenfull', () => {
+  const state = {
+    isFullscreen: false,
+    changeHandler: undefined as (() => void) | undefined,
+  }
+  return {
+    isEnabled: true,
+    get isFullscreen() {
+      return state.isFullscreen
+    },
+    set isFullscreen(value: boolean) {
+      state.isFullscreen = value
+    },
+    on: jest.fn((event: string, handler: () => void) => {
+      if (event === 'change') {
+        state.changeHandler = handler
+      }
+    }),
+    off: jest.fn(),
+    toggle: jest.fn(() => {
+      state.isFullscreen = !state.isFullscreen
+      state.changeHandler?.()
+    }),
+    __reset() {
+      state.isFullscreen = false
+      state.changeHandler = undefined
+    },
+    __setFullscreen(value: boolean) {
+      state.isFullscreen = value
+      state.changeHandler?.()
+    },
+  }
+})
+
+import screenfull from 'screenfull'
+
+type MockScreenfull = typeof screenfull & {
+  __reset: () => void
+  __setFullscreen: (value: boolean) => void
+}
+
+const mockScreenfull = screenfull as MockScreenfull
 
 URL.createObjectURL = jest.fn(() => '/test/url')
 
@@ -369,6 +405,8 @@ describe('LogsPage', () => {
   beforeEach(async () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
+    mockScreenfull.__reset()
+    jest.clearAllMocks()
   })
 
   it('should correctly render resource error if pod is no longer found', async () => {
@@ -527,6 +565,34 @@ describe('LogsPage', () => {
     await waitFor(() => expect(screen.getByText('testCluster')).toBeInTheDocument())
     await waitFor(() => expect(screen.getByText('testNamespace')).toBeInTheDocument())
     await waitFor(() => expect(screen.getByText('testLogs')).toBeInTheDocument())
+  })
+
+  it('should expand LogViewer to full height when entering fullscreen (ACM-45133)', async () => {
+    const localClusterLogs = nockOff(
+      '/api/v1/namespaces/testNamespace/pods/testName/log?container=testContainer&tailLines=1000',
+      'testLogs',
+      200
+    )
+
+    render(
+      <RecoilRoot>
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={localClusterSearchDetailsContext} />}>
+              <Route path="*" element={<LogsPage />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    await waitForNocks([localClusterLogs])
+    await waitFor(() => expect(screen.getByText('testLogs')).toBeInTheDocument())
+    expect(screen.getByTestId('log-viewer')).toHaveAttribute('data-height', '450px')
+
+    mockScreenfull.__setFullscreen(true)
+
+    await waitFor(() => expect(screen.getByTestId('log-viewer')).toHaveAttribute('data-height', '100%'))
   })
 
   it('should render logs toolbar & click wrap lines and raw buttons', async () => {
