@@ -10,8 +10,7 @@ import {
   MenuToggleElement,
   Tooltip,
 } from '@patternfly/react-core'
-import type * as React from 'react'
-import { Fragment, useCallback, useContext, useEffect, useMemo, useState, type JSX } from 'react'
+import { Fragment, useCallback, useContext, useEffect, useMemo, useState, type JSX, type Ref } from 'react'
 import { Outlet, useLocation, useNavigate, useOutletContext } from 'react-router'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PluginContext } from '../../../lib/PluginContext'
@@ -477,7 +476,7 @@ export default function DetailsPage() {
                 onSelect={() => setResourceActionsOpen(false)}
                 onOpenChange={setResourceActionsOpen}
                 popperProps={{ position: 'right' }}
-                toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                toggle={(toggleRef: Ref<MenuToggleElement>) => (
                   <MenuToggle
                     ref={toggleRef}
                     onClick={() => setResourceActionsOpen(!resourceActionsOpen)}
