@@ -114,19 +114,15 @@ describe('ChannelController components 2. 2', () => {
 
   it('ChannelController components 2 2', async () => {
     const firstPageButton = container.querySelector<HTMLElement>(`button[aria-label="Go to first page"]`)!
-    await clickElement(firstPageButton)
     await pressEnter(firstPageButton)
 
     const previousPageButton = container.querySelector<HTMLElement>(`button[aria-label="Go to previous page"]`)!
-    await clickElement(previousPageButton)
     await pressEnter(previousPageButton)
 
     const nextPageButton = container.querySelector<HTMLElement>(`button[aria-label="Go to next page"]`)!
-    await clickElement(nextPageButton)
     await pressEnter(nextPageButton)
 
     const lastPageButton = container.querySelector<HTMLElement>(`button[aria-label="Go to last page"]`)!
-    await clickElement(lastPageButton)
     await pressEnter(lastPageButton)
 
     const pageNumberInput = container.querySelector<HTMLElement>(`.pf-v6-c-form-control`)!
