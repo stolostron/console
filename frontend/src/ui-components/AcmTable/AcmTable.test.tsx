@@ -1112,10 +1112,10 @@ describe('AcmTable', () => {
     await clickElement(getByTestId('gender-male'))
     await clickElement(getByTestId('gender-female'))
     const labelItems = container.querySelectorAll('.pf-v6-c-label-group__list-item')
-    expect(labelItems.length).toBe(2)
+    expect(labelItems).toHaveLength(2)
     // Find close buttons within label items - PatternFly uses button elements with TimesIcon
     const closeButtons = Array.from(labelItems).map((item) => item.querySelector('button'))
-    expect(closeButtons.length).toBe(2)
+    expect(closeButtons).toHaveLength(2)
     expect(closeButtons[0]).toBeTruthy()
     expect(closeButtons[1]).toBeTruthy()
     await clickElement(closeButtons[1]!)

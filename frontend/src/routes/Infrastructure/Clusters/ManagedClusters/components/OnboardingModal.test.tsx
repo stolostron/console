@@ -34,9 +34,9 @@ describe('OnboardingModal open', () => {
       'data-ouia-component-id',
       'clustersOnboardingModal'
     )
-    expect(screen.queryAllByText('Import an existing cluster').length).toBe(1)
-    expect(screen.queryAllByText('Connect your cloud provider').length).toBe(1)
-    expect(screen.queryAllByText('Discover hosts to create host inventory').length).toBe(1)
+    expect(screen.queryAllByText('Import an existing cluster')).toHaveLength(1)
+    expect(screen.queryAllByText('Connect your cloud provider')).toHaveLength(1)
+    expect(screen.queryAllByText('Discover hosts to create host inventory')).toHaveLength(1)
 
     await clickByText('Want to learn more?')
     const consoleSpy = jest.spyOn(console, 'log')
@@ -64,9 +64,9 @@ describe('OnboardingModal closed', () => {
   })
 
   it('should render OnboardingModal', async () => {
-    expect(screen.queryAllByText('Import an existing cluster').length).toBe(0)
-    expect(screen.queryAllByText('Connect your cloud provider').length).toBe(0)
-    expect(screen.queryAllByText('Discover hosts to create host inventory').length).toBe(0)
+    expect(screen.queryAllByText('Import an existing cluster')).toHaveLength(0)
+    expect(screen.queryAllByText('Connect your cloud provider')).toHaveLength(0)
+    expect(screen.queryAllByText('Discover hosts to create host inventory')).toHaveLength(0)
   })
 })
 

@@ -374,7 +374,7 @@ describe('Policy Details Results', () => {
 
     // Look for the description list structure and verify no placement links exist
     const placementLinks = container.querySelectorAll('a[href*="kind=Placement"]')
-    expect(placementLinks.length).toBe(0)
+    expect(placementLinks).toHaveLength(0)
   })
 
   test('Should handle policy with no cluster status', async () => {

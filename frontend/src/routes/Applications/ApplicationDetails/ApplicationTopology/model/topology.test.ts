@@ -554,7 +554,7 @@ describe('topology', () => {
 
       processNodeData(clusterNode, resourceMap, isClusterGrouped, hasHelmReleases, mockTopology)
 
-      expect(Object.keys(resourceMap).length).toBe(0)
+      expect(Object.keys(resourceMap)).toHaveLength(0)
     })
 
     it('should include channel in key name when present', () => {

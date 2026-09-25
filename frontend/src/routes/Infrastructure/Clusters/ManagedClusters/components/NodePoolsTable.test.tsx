@@ -848,7 +848,7 @@ describe('NodePoolsTable', () => {
       }
     )
     await clickElement(screen.getByTestId('addNodepool'))
-    expect(screen.queryAllByText('Node pool name').length).toBe(1)
+    expect(screen.queryAllByText('Node pool name')).toHaveLength(1)
     await waitForText('Cancel')
     await clickElement(screen.getByTestId('cancel-nodepool-form'))
     await clickElement(screen.getAllByLabelText('Actions')[0])
@@ -1132,8 +1132,8 @@ describe('NodePoolsTable - Azure', () => {
 
   it('should render Azure HC', async () => {
     await waitForText(nodePools[0].metadata.name)
-    expect(screen.getAllByText('Disk storage account type').length).toBe(1)
-    expect(screen.getAllByText('VM size').length).toBe(1)
+    expect(screen.getAllByText('Disk storage account type')).toHaveLength(1)
+    expect(screen.getAllByText('VM size')).toHaveLength(1)
   })
 })
 
@@ -1193,7 +1193,7 @@ describe('NodePoolsTable - PowerVS', () => {
 
   it('should render PowerVS HC', async () => {
     await waitForText(nodePools[0].metadata.name)
-    expect(screen.getAllByText('Processor type').length).toBe(1)
-    expect(screen.getAllByText('System type').length).toBe(1)
+    expect(screen.getAllByText('Processor type')).toHaveLength(1)
+    expect(screen.getAllByText('System type')).toHaveLength(1)
   })
 })

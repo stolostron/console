@@ -822,7 +822,7 @@ describe('DistributionField', () => {
 
   it('should not show upgrade button when no available upgrades', async () => {
     const { queryAllByText } = await renderDistributionInfoField(mockDistributionInfoWithoutUpgrades, true)
-    expect(queryAllByText('Update available').length).toBe(0)
+    expect(queryAllByText('Update available')).toHaveLength(0)
   })
 
   it('should disable the upgrade button when the user lacks permissions', async () => {
@@ -856,7 +856,7 @@ describe('DistributionField', () => {
       true
     )
     await waitFor(() => expect(getAllByText('Update available')).toBeTruthy())
-    expect(queryAllByText('Update failing').length).toBe(0)
+    expect(queryAllByText('Update failing')).toHaveLength(0)
   })
 
   it('should show failed when posthook is never reached', async () => {
@@ -868,7 +868,7 @@ describe('DistributionField', () => {
 
   it('should not show upgrade button for managed OpenShift', async () => {
     const { queryAllByText } = await renderDistributionInfoField(mockManagedOpenShiftDistributionInfo, true)
-    expect(queryAllByText('Update available').length).toBe(0)
+    expect(queryAllByText('Update available')).toHaveLength(0)
   })
 
   it('should display ansible hook status', async () => {
@@ -1074,7 +1074,7 @@ describe('DistributionField hypershift clusters', () => {
       undefined,
       undefined
     )
-    expect(queryAllByText('Update available').length).toBe(1)
+    expect(queryAllByText('Update available')).toHaveLength(1)
   })
 
   it('should render distribution info for hypershift, only nodepool has updates', async () => {
@@ -1132,7 +1132,7 @@ describe('DistributionField hypershift clusters', () => {
       undefined,
       false
     )
-    expect(queryAllByText('Update available').length).toBe(1)
+    expect(queryAllByText('Update available')).toHaveLength(1)
   })
 
   it('should render distribution info for hypershift, nodepools tables', async () => {
@@ -1236,7 +1236,7 @@ describe('DistributionField hypershift clusters', () => {
       false,
       'nodepool'
     )
-    expect(queryAllByText('Update available').length).toBe(1)
+    expect(queryAllByText('Update available')).toHaveLength(1)
   })
 
   it('should render distribution info for hypershift, no cluster', async () => {
@@ -1293,7 +1293,7 @@ describe('DistributionField hypershift clusters', () => {
       undefined,
       false
     )
-    expect(queryAllByText('Update available').length).toBe(0)
+    expect(queryAllByText('Update available')).toHaveLength(0)
   })
 
   it('Should show HCP updating, managed clusters page', async () => {
@@ -1308,7 +1308,7 @@ describe('DistributionField hypershift clusters', () => {
       'managedclusterpage'
     )
 
-    expect(queryAllByText(/updating to 4\.11\.22/i).length).toBe(1)
+    expect(queryAllByText(/updating to 4\.11\.22/i)).toHaveLength(1)
     expect(queryByRole('progressbar')).toBeTruthy()
   })
 
@@ -1324,7 +1324,7 @@ describe('DistributionField hypershift clusters', () => {
       'hostedcluster'
     )
 
-    expect(queryAllByText(/updating to 4\.11\.22/i).length).toBe(1)
+    expect(queryAllByText(/updating to 4\.11\.22/i)).toHaveLength(1)
     expect(queryByRole('progressbar')).toBeTruthy()
   })
 
@@ -1379,7 +1379,7 @@ describe('DistributionField hypershift clusters', () => {
       'nodepool'
     )
 
-    expect(queryAllByText(/updating to 4\.11\.22/i).length).toBe(0)
+    expect(queryAllByText(/updating to 4\.11\.22/i)).toHaveLength(0)
     expect(queryByRole('progressbar')).toBeFalsy()
   })
 
@@ -1439,7 +1439,7 @@ describe('DistributionField hypershift clusters', () => {
       false
     )
 
-    expect(queryAllByText(/updating cluster/i).length).toBe(1)
+    expect(queryAllByText(/updating cluster/i)).toHaveLength(1)
     expect(queryByRole('progressbar')).toBeTruthy()
   })
 
@@ -1456,7 +1456,7 @@ describe('DistributionField hypershift clusters', () => {
 
     await clickElement(screen.getByRole('button', { name: /updating to 4\.11\.22/i }))
     await waitFor(() => expect(getByText(/updating hypershift-cluster1 to openshift 4\.11\.22\./i)).toBeInTheDocument())
-    expect(queryAllByText(/updating to 4\.11\.22/i).length).toBe(1)
+    expect(queryAllByText(/updating to 4\.11\.22/i)).toHaveLength(1)
     expect(queryByRole('progressbar')).toBeTruthy()
   })
 
@@ -1563,9 +1563,9 @@ describe('DistributionField hypershift clusters', () => {
     )
 
     // Should display the nodepool version instead of cluster version
-    expect(queryAllByText('OpenShift 4.10.15').length).toBe(1)
+    expect(queryAllByText('OpenShift 4.10.15')).toHaveLength(1)
     // Should show upgrade available since nodepool version (4.10.15) < cluster version (4.11.12)
-    expect(queryAllByText('Update available').length).toBe(1)
+    expect(queryAllByText('Update available')).toHaveLength(1)
   })
 
   it('should not show upgrade available when nodepool version equals cluster version', async () => {
@@ -1671,9 +1671,9 @@ describe('DistributionField hypershift clusters', () => {
     )
 
     // Should display the nodepool version
-    expect(queryAllByText('OpenShift 4.11.12').length).toBe(1)
+    expect(queryAllByText('OpenShift 4.11.12')).toHaveLength(1)
     // Should not show upgrade available since nodepool version equals cluster version
-    expect(queryAllByText('Update available').length).toBe(0)
+    expect(queryAllByText('Update available')).toHaveLength(0)
   })
 
   it('should detect update available when minor version requires numeric comparison (4.9 vs 4.10)', async () => {
@@ -1764,9 +1764,9 @@ describe('DistributionField hypershift clusters', () => {
       'nodepool'
     )
 
-    expect(queryAllByText('OpenShift 4.9.5').length).toBe(1)
+    expect(queryAllByText('OpenShift 4.9.5')).toHaveLength(1)
     // String comparison "4.9.5" < "4.10.0" is false lexicographically, but numerically 4.9 < 4.10
-    expect(queryAllByText('Update available').length).toBe(1)
+    expect(queryAllByText('Update available')).toHaveLength(1)
   })
 
   // Channel warning tests for HostedClusters
@@ -1837,7 +1837,7 @@ describe('DistributionField hypershift clusters', () => {
         false,
         'managedclusterpage'
       )
-      expect(queryAllByText('Select channel').length).toBe(1)
+      expect(queryAllByText('Select channel')).toHaveLength(1)
     })
 
     it('should show update status only (no channel warning) when HostedCluster is updating', async () => {
@@ -1856,9 +1856,9 @@ describe('DistributionField hypershift clusters', () => {
         'managedclusterpage'
       )
       // Should NOT show channel warning when upgrading
-      expect(queryAllByText('Select channel').length).toBe(0)
+      expect(queryAllByText('Select channel')).toHaveLength(0)
       // Should show upgrade progress
-      expect(queryAllByText(/updating to 4\.11\.22/i).length).toBe(1)
+      expect(queryAllByText(/updating to 4\.11\.22/i)).toHaveLength(1)
       expect(queryByRole('progressbar')).toBeTruthy()
     })
 
@@ -1873,7 +1873,7 @@ describe('DistributionField hypershift clusters', () => {
         false,
         'managedclusterpage'
       )
-      expect(queryAllByText('Select channel').length).toBe(0)
+      expect(queryAllByText('Select channel')).toHaveLength(0)
     })
 
     it('should not show channel warning for non-hypershift clusters', async () => {
@@ -1893,7 +1893,7 @@ describe('DistributionField hypershift clusters', () => {
         false,
         'managedclusterpage'
       )
-      expect(queryAllByText('Select channel').length).toBe(0)
+      expect(queryAllByText('Select channel')).toHaveLength(0)
     })
   })
 })

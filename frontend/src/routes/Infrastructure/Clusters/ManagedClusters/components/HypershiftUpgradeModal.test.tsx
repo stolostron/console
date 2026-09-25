@@ -1639,7 +1639,7 @@ describe('HypershiftUpgradeModal', () => {
       undefined,
       undefined
     )
-    expect(queryAllByText('hypershift-cluster1').length).toBe(1)
+    expect(queryAllByText('hypershift-cluster1')).toHaveLength(1)
   })
 
   it('should render upgrade modal control plane higher patch version', async () => {
@@ -1653,7 +1653,7 @@ describe('HypershiftUpgradeModal', () => {
       true,
       true
     )
-    expect(queryAllByText('hypershift-cluster1').length).toBe(1)
+    expect(queryAllByText('hypershift-cluster1')).toHaveLength(1)
     expect(screen.getByTestId('controlplane-checkbox')).toBeTruthy()
     await clickElement(screen.getByTestId('controlplane-checkbox'))
   })
@@ -1667,7 +1667,7 @@ describe('HypershiftUpgradeModal', () => {
       undefined,
       undefined
     )
-    expect(queryAllByText('hypershift-cluster1').length).toBe(1)
+    expect(queryAllByText('hypershift-cluster1')).toHaveLength(1)
   })
 
   it('should render upgrade modal no available updates and no distribution', async () => {
@@ -1679,7 +1679,7 @@ describe('HypershiftUpgradeModal', () => {
       undefined,
       undefined
     )
-    expect(queryAllByText('hypershift-cluster1').length).toBe(1)
+    expect(queryAllByText('hypershift-cluster1')).toHaveLength(1)
   })
 
   it('should render upgrade modal no available updates and no ocp', async () => {
@@ -1691,7 +1691,7 @@ describe('HypershiftUpgradeModal', () => {
       undefined,
       undefined
     )
-    expect(queryAllByText('hypershift-cluster1').length).toBe(1)
+    expect(queryAllByText('hypershift-cluster1')).toHaveLength(1)
   })
 
   it('should render upgrade modal no available updates same version', async () => {
@@ -1703,7 +1703,7 @@ describe('HypershiftUpgradeModal', () => {
       undefined,
       undefined
     )
-    expect(queryAllByText('hypershift-cluster1').length).toBe(1)
+    expect(queryAllByText('hypershift-cluster1')).toHaveLength(1)
   })
 
   it('should render upgrade modal updates greater than n-2', async () => {
@@ -1715,7 +1715,7 @@ describe('HypershiftUpgradeModal', () => {
       undefined,
       undefined
     )
-    expect(queryAllByText('hypershift-cluster1').length).toBe(1)
+    expect(queryAllByText('hypershift-cluster1')).toHaveLength(1)
   })
 
   it('should render upgrade modal nodepool no status', async () => {
@@ -1727,7 +1727,7 @@ describe('HypershiftUpgradeModal', () => {
       undefined,
       undefined
     )
-    expect(queryAllByText('hypershift-cluster1').length).toBe(1)
+    expect(queryAllByText('hypershift-cluster1')).toHaveLength(1)
   })
 
   it('should render upgrade modal closed', async () => {
@@ -1740,7 +1740,7 @@ describe('HypershiftUpgradeModal', () => {
       undefined,
       false
     )
-    expect(queryAllByText('hypershift-cluster1').length).toBe(0)
+    expect(queryAllByText('hypershift-cluster1')).toHaveLength(0)
   })
 
   it('should render upgrade modal control plane unchecked', async () => {
@@ -1752,7 +1752,7 @@ describe('HypershiftUpgradeModal', () => {
       undefined,
       undefined
     )
-    expect(queryAllByText('hypershift-cluster1').length).toBe(1)
+    expect(queryAllByText('hypershift-cluster1')).toHaveLength(1)
     expect(screen.getByTestId('controlplane-checkbox')).toBeTruthy()
     await clickElement(screen.getByTestId('controlplane-checkbox'))
     expect(screen.getByTestId('nodepoolgroup-checkbox')).toBeDisabled()
@@ -1769,7 +1769,7 @@ describe('HypershiftUpgradeModal', () => {
       undefined,
       undefined
     )
-    expect(queryAllByText('hypershift-cluster1').length).toBe(1)
+    expect(queryAllByText('hypershift-cluster1')).toHaveLength(1)
 
     // Test nodepool group checkbox
     expect(screen.getByTestId('nodepoolgroup-checkbox')).toBeTruthy()
@@ -1792,7 +1792,7 @@ describe('HypershiftUpgradeModal', () => {
       undefined,
       undefined
     )
-    expect(queryAllByText('hypershift-cluster1').length).toBe(1)
+    expect(queryAllByText('hypershift-cluster1')).toHaveLength(1)
 
     // Test nodepool group expand button
     expect(getNodepoolGroupToggle()).toBeTruthy()
@@ -1815,7 +1815,7 @@ describe('HypershiftUpgradeModal', () => {
       undefined,
       undefined
     )
-    expect(queryAllByText('hypershift-cluster1').length).toBe(1)
+    expect(queryAllByText('hypershift-cluster1')).toHaveLength(1)
 
     // Test version selection in control plane dropdown
     expect(screen.getByTestId('controlplane-version-dropdown-label')).toBeTruthy()
@@ -1824,7 +1824,7 @@ describe('HypershiftUpgradeModal', () => {
     await clickElement(queryAllByText('5.0.12')[0])
     await clickElement(getByText('4.12.0'))
 
-    expect(queryAllByText('4.12.0').length).toBe(3)
+    expect(queryAllByText('4.12.0')).toHaveLength(3)
   })
 
   it('should render upgrade modal for BM', async () => {
@@ -1836,7 +1836,7 @@ describe('HypershiftUpgradeModal', () => {
       [mockAgentMachine0],
       mockHostedCluster0
     )
-    expect(queryAllByText('feng-test').length).toBe(1)
+    expect(queryAllByText('feng-test')).toHaveLength(1)
 
     // Test BM nodepool group toggle - with ClusterCurator, we have a nodepool group
     expect(getNodepoolGroupToggle()).toBeTruthy()
@@ -2083,7 +2083,7 @@ describe('HypershiftUpgradeModal - SupportVersion', () => {
       undefined,
       undefined
     )
-    expect(queryAllByText('hypershift-cluster1').length).toBe(1)
+    expect(queryAllByText('hypershift-cluster1')).toHaveLength(1)
   })
 })
 

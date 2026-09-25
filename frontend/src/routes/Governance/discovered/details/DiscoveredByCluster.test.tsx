@@ -960,19 +960,19 @@ describe('DiscoveredByCluster', () => {
     // Test env=prod filter - should match only cluster-prod
     const envProdFilter = ['env=prod']
     const envProdResults = policies.filter((policy) => matchesSelectedLabels(envProdFilter, policy))
-    expect(envProdResults.length).toBe(1)
+    expect(envProdResults).toHaveLength(1)
     expect(envProdResults[0].cluster).toBe('cluster-prod')
 
     // Test team=backend filter - should match cluster-prod and cluster-staging
     const teamBackendFilter = ['team=backend']
     const teamBackendResults = policies.filter((policy) => matchesSelectedLabels(teamBackendFilter, policy))
-    expect(teamBackendResults.length).toBe(2)
+    expect(teamBackendResults).toHaveLength(2)
     expect(teamBackendResults.map((p) => p.cluster).sort()).toEqual(['cluster-prod', 'cluster-staging'].sort())
 
     // Test env=dev filter - should match only cluster-dev
     const envDevFilter = ['env=dev']
     const envDevResults = policies.filter((policy) => matchesSelectedLabels(envDevFilter, policy))
-    expect(envDevResults.length).toBe(1)
+    expect(envDevResults).toHaveLength(1)
     expect(envDevResults[0].cluster).toBe('cluster-dev')
   })
 
@@ -1094,7 +1094,7 @@ describe('DiscoveredByCluster', () => {
     const filter1 = ['env=prod', 'team!=backend']
     const result1 = policies.filter((policy) => matchesSelectedLabels(filter1, policy))
 
-    expect(result1.length).toBe(1)
+    expect(result1).toHaveLength(1)
     expect(result1[0].cluster).toBe('cluster-prod-frontend')
 
     // Scenario 2: Filter with only team!=backend
@@ -1102,7 +1102,7 @@ describe('DiscoveredByCluster', () => {
     const filter2 = ['team!=backend']
     const result2 = policies.filter((policy) => matchesSelectedLabels(filter2, policy))
 
-    expect(result2.length).toBe(1)
+    expect(result2).toHaveLength(1)
     expect(result2[0].cluster).toBe('cluster-prod-frontend')
   })
 

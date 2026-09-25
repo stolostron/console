@@ -260,7 +260,7 @@ describe('HypershiftKubconfigDownload', () => {
     }
     const nocks = [nockGet(mockSecret)]
     const { queryAllByText, getByText } = await renderHypershiftKubconfigDownload(mockHostedCluster, fetchSecret)
-    expect(queryAllByText('Download kubeconfig').length).toBe(1)
+    expect(queryAllByText('Download kubeconfig')).toHaveLength(1)
     await clickElement(getByText('Download kubeconfig'))
     await new Promise((resolve) => setTimeout(resolve, 100))
     await waitForNocks(nocks)
@@ -268,7 +268,7 @@ describe('HypershiftKubconfigDownload', () => {
 
   it('should render download kubeconfig - no hostedcluster', async () => {
     const { queryAllByText, getByText } = await renderHypershiftKubconfigDownload(undefined, fetchSecret)
-    expect(queryAllByText('Download kubeconfig').length).toBe(1)
+    expect(queryAllByText('Download kubeconfig')).toHaveLength(1)
     await clickElement(getByText('Download kubeconfig'))
   })
 
@@ -375,7 +375,7 @@ describe('HypershiftKubconfigDownload', () => {
     }
 
     const { queryAllByText, getByText } = await renderHypershiftKubconfigDownload(mockHostedCluster, fetchSecret)
-    expect(queryAllByText('Download kubeconfig').length).toBe(1)
+    expect(queryAllByText('Download kubeconfig')).toHaveLength(1)
     await clickElement(getByText('Download kubeconfig'))
   })
 
@@ -605,7 +605,7 @@ describe('HypershiftKubconfigDownload', () => {
     }
 
     const { queryAllByText, getByText } = await renderHypershiftKubconfigDownload(mockHostedCluster, fetchSecret)
-    expect(queryAllByText('Download kubeconfig').length).toBe(1)
+    expect(queryAllByText('Download kubeconfig')).toHaveLength(1)
     await clickElement(getByText('Download kubeconfig'))
   })
 
@@ -834,7 +834,7 @@ describe('HypershiftKubconfigDownload', () => {
     }
 
     const { queryAllByText, getByText } = await renderHypershiftKubconfigDownload(mockHostedCluster, fetchSecret)
-    expect(queryAllByText('Download kubeconfig').length).toBe(1)
+    expect(queryAllByText('Download kubeconfig')).toHaveLength(1)
     await clickElement(getByText('Download kubeconfig'))
   })
 })

@@ -624,7 +624,7 @@ describe('ArgoWizard tests', () => {
       // Should see the URL only once (deduplication via Set)
       const options = screen.getAllByRole('option')
       const repo1Options = options.filter((opt) => opt.textContent?.includes('https://github.com/example/repo1'))
-      expect(repo1Options.length).toBe(1)
+      expect(repo1Options).toHaveLength(1)
     })
 
     test('combines git info from multiple applicationSets', async () => {
