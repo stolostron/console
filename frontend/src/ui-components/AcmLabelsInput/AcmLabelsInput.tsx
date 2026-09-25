@@ -31,7 +31,7 @@ export function AcmLabelsInput<T = unknown>(props: AcmLabelsInputProps<T>) {
   const inputRef: React.MutableRefObject<HTMLInputElement | null> = useRef(null)
 
   const { values, addLabel, removeLabel, getLabelKey, getLabelContent, allowSpaces } = props
-  const escapeRef = useRef<HTMLInputElement>()
+  const escapeRef = useRef<HTMLInputElement>(undefined)
 
   if (props.hidden) {
     return null

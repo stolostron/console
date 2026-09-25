@@ -12,7 +12,7 @@ import {
 } from '../../../../../resources/utils'
 import { AcmAlert, AcmEmptyState, AcmSelect } from '../../../../../ui-components'
 import { AlertVariant, Content, ContentVariants, SelectOption } from '@patternfly/react-core'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type JSX } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { BulkActionModal } from '../../../../../components/BulkActionModal'
 import './style.css'

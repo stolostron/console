@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import type { JSX } from 'react'
 import { get } from 'lodash'
 import queryString from 'query-string'
 import type { TFunction } from 'i18next'

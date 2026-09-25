@@ -14,7 +14,7 @@ import {
   Skeleton,
 } from '@patternfly/react-core'
 import { AngleDownIcon, AngleUpIcon, ExternalLinkAltIcon, HelpIcon } from '@patternfly/react-icons'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, type JSX } from 'react'
 import { AcmDynamicGrid } from '../../../components/AcmDynamicGrid'
 import { KubevirtProviderAlert } from '../../../components/KubevirtProviderAlert'
 import { useVirtualMachineDetection } from '../../../hooks/useVirtualMachineDetection'

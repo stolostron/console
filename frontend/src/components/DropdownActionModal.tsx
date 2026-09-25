@@ -3,7 +3,7 @@
 import { AcmAlert, AcmForm, AcmFormProvider, AcmModal, AcmSelect, AcmSubmit } from '../ui-components'
 import { ActionGroup, Button, ButtonVariant, SelectOption } from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useState, type JSX } from 'react'
 import { useTranslation } from '../lib/acm-i18next'
 import { IRequestResult } from '../resources/utils'
 

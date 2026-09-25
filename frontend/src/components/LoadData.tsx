@@ -205,9 +205,9 @@ export function LoadData(props: { children?: ReactNode }) {
   const wasActiveRef = useRef(true)
   const isReconnectingRef = useRef(false)
   const streamStoppedRef = useRef(false)
-  const graceTimerRef = useRef<ReturnType<typeof setTimeout>>()
-  const eventSourceRef = useRef<EventSource>()
-  const processIntervalRef = useRef<ReturnType<typeof setInterval>>()
+  const graceTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const eventSourceRef = useRef<EventSource>(undefined)
+  const processIntervalRef = useRef<ReturnType<typeof setInterval>>(undefined)
   const [restartKey, setRestartKey] = useState(0)
 
   const setAgentClusterInstalls = useSetRecoilState(agentClusterInstallsState)

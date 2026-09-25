@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ReactNode, type RefObject } from 'react'
+import { ReactNode, type RefObject, type JSX } from 'react'
 import { CodeEditorControl } from '@patternfly/react-code-editor'
 import {
   RedoIcon,

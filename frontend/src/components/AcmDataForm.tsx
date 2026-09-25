@@ -78,7 +78,7 @@ import {
 } from '@patternfly/react-icons'
 import useResizeObserver from '@react-hook/resize-observer'
 import { Schema } from 'ajv'
-import { Fragment, ReactElement, ReactNode, useCallback, useContext, useRef, useState } from 'react'
+import { Fragment, ReactElement, ReactNode, useCallback, useContext, useRef, useState, type JSX } from 'react'
 import type { TFunction } from 'i18next'
 import YAML from 'yaml'
 import { useTranslation } from '../lib/acm-i18next'

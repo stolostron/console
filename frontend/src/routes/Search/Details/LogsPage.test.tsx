@@ -737,7 +737,7 @@ describe('LogsPage', () => {
 
   it('should render footer correctly', async () => {
     const Footer = () => {
-      const logViewerRef = useRef<any>()
+      const logViewerRef = useRef<any>(undefined)
       const [showJumpToBottomBtn, setShowJumpToBottomBtn] = useState<boolean>(true)
       return (
         <RecoilRoot>

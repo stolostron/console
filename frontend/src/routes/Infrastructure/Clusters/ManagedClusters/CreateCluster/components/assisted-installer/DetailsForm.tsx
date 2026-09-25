@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useCallback, useRef, useEffect, useState, useMemo, Dispatch, SetStateAction } from 'react'
+import { useCallback, useRef, useEffect, useState, useMemo, type Dispatch, type FC, type SetStateAction } from 'react'
 import { FormikProps } from 'formik'
 import { set, isEqual, debounce } from 'lodash'
 
@@ -23,7 +23,6 @@ import {
   LoadingState,
   labelsToArray,
 } from '@openshift-assisted/ui-lib/cim'
-import React from 'react'
 import { FieldName } from './types'
 import { getFieldLabels, getPlatformLabel, PlatformType } from './hypershift/utils'
 import { getFirstAgentServiceConfig } from '../../../../../InfraEnvironments/InfraEnvironmentsPage'
@@ -116,7 +115,7 @@ export const getExtensionAfter = ({
   ),
 })
 
-const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, controlProps }) => {
+const DetailsForm: FC<DetailsFormProps> = ({ control, handleChange, controlProps }) => {
   const { clusterDeploymentsState, clusterImageSetsState, agentServiceConfigsState } = useSharedAtoms()
   const clusterDeployments = useRecoilValue(clusterDeploymentsState)
   const clusterImageSets = useRecoilValue(clusterImageSetsState)
@@ -130,7 +129,7 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
   const [managedClusterSet, setManagedClusterSet] = useState<string | undefined>()
   const [additionalLabels, setAdditionaLabels] = useState<Record<string, string> | undefined>({})
 
-  const fields: any = React.useMemo(
+  const fields: any = useMemo(
     () => ({
       name: { path: 'ClusterDeployment[0].metadata.name' },
       baseDnsDomain: { path: 'ClusterDeployment[0].spec.baseDomain' },

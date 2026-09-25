@@ -7,7 +7,7 @@ import {
   ExternalLinkAltIcon,
   HelpIcon,
 } from '@patternfly/react-icons'
-import { ReactNode, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useEffect, useMemo, useState, type JSX } from 'react'
 import { generatePath, Link } from 'react-router'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'

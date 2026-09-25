@@ -13,6 +13,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type JSX,
 } from 'react'
 import type { TFunction } from 'i18next'
 import { generatePath, Outlet, useLocation, useNavigate, useOutletContext, useParams } from 'react-router'
@@ -129,7 +130,7 @@ export default function ApplicationDetailsPage() {
   const { dataContext } = useContext(PluginContext)
   const { backendUrl } = useContext(dataContext)
 
-  const lastRefreshRef = useRef<any>()
+  const lastRefreshRef = useRef<any>(undefined)
   const refreshRequestIdRef = useRef(0)
   const refreshApplicationResourcesRef = useRef<() => Promise<void>>(async () => {})
   const navigate = useNavigate()

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React, { Component, KeyboardEvent, SyntheticEvent } from 'react'
+import React, { Component, KeyboardEvent, SyntheticEvent, type JSX } from 'react'
 import {
   Pagination,
   Accordion,

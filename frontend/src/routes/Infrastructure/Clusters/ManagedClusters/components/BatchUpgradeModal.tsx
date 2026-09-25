@@ -12,7 +12,7 @@ import {
   StackItem,
 } from '@patternfly/react-core'
 import { ExclamationTriangleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type JSX } from 'react'
 import { BulkActionModal } from '../../../../../components/BulkActionModal'
 import { PrePostTemplatesList } from '../../../../../components/TemplateSummaryModal'
 import { useTranslation } from '../../../../../lib/acm-i18next'
