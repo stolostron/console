@@ -177,9 +177,8 @@ func (e *Engine) searchLoop(ctx context.Context) {
 }
 
 func (e *Engine) applications() []App {
-	e.mu.Lock()
-	defer e.mu.Unlock()
-	e.withListCache(e.rebuildSubscriptionLocked)
+	e.mu.RLock()
+	defer e.mu.RUnlock()
 	items := getApplicationsHelper(e.cache, cacheKeys)
 	if items == nil {
 		return []App{}

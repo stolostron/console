@@ -25,6 +25,9 @@ func testHandler(t *testing.T, lister Lister) *Handler {
 	eng := NewEngine(lister, nil, nil)
 	zero := 0
 	eng.PreLimit = &zero
+	eng.mu.Lock()
+	eng.rebuildLocalLocked()
+	eng.mu.Unlock()
 	h := NewHandler(eng, nil, AllowAll{})
 	h.Authn = testAuthOK
 	return h

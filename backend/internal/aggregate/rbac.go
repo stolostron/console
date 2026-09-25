@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"sort"
 	"sync"
 	"time"
@@ -55,8 +56,11 @@ type cacheEntry struct {
 }
 
 type tokenState struct {
-	last    time.Time
-	entries map[ssarKey]cacheEntry
+	last       time.Time
+	entries    map[ssarKey]cacheEntry
+	client     kubernetes.Interface
+	clientErr  error
+	clientWait chan struct{}
 }
 
 // SSARAccess ports Node getAuthorizedResources / canAccess.
@@ -148,6 +152,51 @@ func (a *SSARAccess) canAccessRemote(ctx context.Context, token string, clusters
 	return false, nil
 }
 
+func (a *SSARAccess) clientFor(token, th string) (kubernetes.Interface, error) {
+	a.mu.Lock()
+	st := a.byToken[th]
+	if st == nil {
+		st = &tokenState{entries: map[ssarKey]cacheEntry{}}
+		a.byToken[th] = st
+	}
+	if st.client != nil || st.clientErr != nil {
+		c, err := st.client, st.clientErr
+		a.mu.Unlock()
+		return c, err
+	}
+	if st.clientWait != nil {
+		wait := st.clientWait
+		a.mu.Unlock()
+		<-wait
+		a.mu.Lock()
+		st = a.byToken[th]
+		if st == nil {
+			a.mu.Unlock()
+			return nil, errors.New("token state evicted during client creation")
+		}
+		c, err := st.client, st.clientErr
+		a.mu.Unlock()
+		return c, err
+	}
+	st.clientWait = make(chan struct{})
+	a.mu.Unlock()
+
+	client, err := a.newClient(token)
+
+	a.mu.Lock()
+	st = a.byToken[th]
+	if st == nil {
+		st = &tokenState{entries: map[ssarKey]cacheEntry{}}
+		a.byToken[th] = st
+	}
+	st.client = client
+	st.clientErr = err
+	close(st.clientWait)
+	st.clientWait = nil
+	a.mu.Unlock()
+	return client, err
+}
+
 func (a *SSARAccess) ssar(ctx context.Context, token string, obj map[string]any, verb, name, namespace string) (bool, error) {
 	kind := kindOf(obj)
 	group := apiGroup(apiVersionOf(obj))
@@ -165,7 +214,7 @@ func (a *SSARAccess) ssar(ctx context.Context, token string, obj map[string]any,
 	}
 	a.mu.Unlock()
 
-	client, err := a.newClient(token)
+	client, err := a.clientFor(token, th)
 	if err != nil {
 		return false, err
 	}

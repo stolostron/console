@@ -138,6 +138,7 @@ func DefaultWatchSpecs() []WatchSpec {
 		watch("Secret", "v1").fields("metadata.name", "auto-import-secret"),
 		watch("Secret", "v1").labels("argocd.argoproj.io/secret-type", "repository"),
 		watch("PolicyReport", "wgpolicyk8s.io/v1alpha2"),
+		watch("ClusterRole", "rbac.authorization.k8s.io/v1").labels("rbac.open-cluster-management.io/filter", "vm-clusterroles"),
 		watch("HostedCluster", "hypershift.openshift.io/v1beta1"),
 		watch("NodePool", "hypershift.openshift.io/v1beta1"),
 		watch("AgentMachine", "capi-provider.agent-install.openshift.io/v1alpha1"),

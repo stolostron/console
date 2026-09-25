@@ -93,6 +93,9 @@ func TestPaginationPerPageAllAndBreakpoint(t *testing.T) {
 	eng := NewEngine(lister, nil, nil)
 	limit := 500
 	eng.PreLimit = &limit
+	eng.mu.Lock()
+	eng.rebuildLocalLocked()
+	eng.mu.Unlock()
 	h2 := NewHandler(eng, nil, AllowAll{})
 	h2.Authn = testAuthOK
 	resp2 := postAggregate(t, h2, "/aggregate/applications", RequestListView{Page: 1, PerPage: 10, Search: "zzz"})

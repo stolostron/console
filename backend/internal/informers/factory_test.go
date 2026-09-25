@@ -374,6 +374,32 @@ func TestStaleDiscoveryCacheInvalidatedOnRetry(t *testing.T) {
 	t.Fatal("expected mapper.Invalidate() to be called on stale discovery error")
 }
 
+type unavailableMapper struct {
+	invalidated atomic.Bool
+}
+
+func (m *unavailableMapper) ServerResourcesForGroupVersion(string) (*metav1.APIResourceList, error) {
+	return nil, apierrors.NewNotFound(schema.GroupResource{Group: "tower.ansible.com", Resource: "ansiblejobs"}, "")
+}
+
+func (m *unavailableMapper) Invalidate() {
+	m.invalidated.Store(true)
+}
+
+func TestUnavailableCRDDoesNotInvalidateCache(t *testing.T) {
+	mapper := &unavailableMapper{}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	_ = StartSpecs(ctx, nil, mapper, []WatchSpec{watch("AnsibleJob", "tower.ansible.com/v1alpha1")})
+
+	time.Sleep(200 * time.Millisecond)
+	cancel()
+
+	if mapper.invalidated.Load() {
+		t.Fatal("Invalidate() should not be called for unavailable CRDs")
+	}
+}
+
 func TestStartConcurrencyLimitsLists(t *testing.T) {
 	orig := startConcurrency
 	startConcurrency = 2

@@ -8,8 +8,8 @@ import (
 
 func TestDefaultWatchSpecsCount(t *testing.T) {
 	specs := DefaultWatchSpecs()
-	if len(specs) != 68 {
-		t.Fatalf("got %d specs, want 68", len(specs))
+	if len(specs) != 69 {
+		t.Fatalf("got %d specs, want 69", len(specs))
 	}
 	var polled, cacheOnly, withSel int
 	for _, s := range specs {
@@ -29,8 +29,8 @@ func TestDefaultWatchSpecsCount(t *testing.T) {
 	if cacheOnly != 2 {
 		t.Fatalf("cacheOnly=%d want 2 (Authentication, MultiClusterHub)", cacheOnly)
 	}
-	if withSel != 12 {
-		t.Fatalf("selector specs=%d want 12", withSel)
+	if withSel != 13 {
+		t.Fatalf("selector specs=%d want 13", withSel)
 	}
 }
 
@@ -92,8 +92,8 @@ func TestDefaultWatchSpecsShouldForwardCount(t *testing.T) {
 			skip++
 		}
 	}
-	if forward != 64 {
-		t.Fatalf("forward=%d want 64", forward)
+	if forward != 65 {
+		t.Fatalf("forward=%d want 65", forward)
 	}
 	if skip != 4 {
 		t.Fatalf("skip=%d want 4 (2 polled + 2 cacheOnly)", skip)

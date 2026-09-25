@@ -4,6 +4,7 @@ package rbac
 
 import (
 	"context"
+	"sort"
 	"sync"
 	"time"
 
@@ -16,7 +17,11 @@ import (
 	"github.com/stolostron/console/backend/internal/auth"
 )
 
-const accessCacheTTL = 60 * time.Second
+const (
+	accessCacheTTL     = 60 * time.Second
+	accessCleanupEvery = 90 * time.Second
+	accessCacheMaxSize = 5000
+)
 
 // AccessChecker decides whether a user token may see a ClusterRole.
 type AccessChecker interface {
@@ -108,4 +113,50 @@ func (a *SSARAccess) ssar(ctx context.Context, userToken, verb, name string) (bo
 	a.cache[key] = cacheEntry{allowed: allowed, expiry: now.Add(accessCacheTTL)}
 	a.mu.Unlock()
 	return allowed, nil
+}
+
+// StartCleanup expires SSAR cache entries periodically.
+func (a *SSARAccess) StartCleanup(ctx context.Context) {
+	if a == nil {
+		return
+	}
+	go func() {
+		tick := time.NewTicker(accessCleanupEvery)
+		defer tick.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-tick.C:
+				a.cleanup(time.Now())
+			}
+		}
+	}()
+}
+
+func (a *SSARAccess) cleanup(now time.Time) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	for k, e := range a.cache {
+		if !e.expiry.After(now) {
+			delete(a.cache, k)
+		}
+	}
+	if len(a.cache) <= accessCacheMaxSize {
+		return
+	}
+	// Evict oldest entries when the cache exceeds the size limit.
+	type pair struct {
+		key    cacheKey
+		expiry time.Time
+	}
+	all := make([]pair, 0, len(a.cache))
+	for k, e := range a.cache {
+		all = append(all, pair{k, e.expiry})
+	}
+	sort.Slice(all, func(i, j int) bool { return all[i].expiry.Before(all[j].expiry) })
+	extra := len(all) - accessCacheMaxSize
+	for i := 0; i < extra; i++ {
+		delete(a.cache, all[i].key)
+	}
 }

@@ -95,7 +95,9 @@ func run() error {
 	if err = rbacevents.StartInformer(ctx, kube, store); err != nil {
 		return err
 	}
-	rbacHandler := rbacevents.NewHandler(store, rbacevents.NewAPIAuth(restCfg), rbacevents.NewSSARAccess(restCfg))
+	rbacSSAR := rbacevents.NewSSARAccess(restCfg)
+	rbacSSAR.StartCleanup(ctx)
+	rbacHandler := rbacevents.NewHandler(store, rbacevents.NewAPIAuth(restCfg), rbacSSAR)
 
 	infCfg := informers.RESTConfig(restCfg)
 	infDyn, err := dynamic.NewForConfig(infCfg)

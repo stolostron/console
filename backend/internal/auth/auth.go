@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	authv1 "k8s.io/api/authentication/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -158,22 +159,49 @@ func UserRESTConfig(base *rest.Config, userToken string) *rest.Config {
 	return c
 }
 
+// tokenValidationClient caches the HTTP client used by ValidateUserTokenStatus
+// so that a new transport (with its TLS session state and connection pool) is not
+// allocated on every request.
+var (
+	tokenClientMu   sync.Mutex
+	tokenClientHost string
+	tokenClient     *http.Client
+)
+
+func tokenValidationClient(base *rest.Config) (*http.Client, string, error) {
+	tokenClientMu.Lock()
+	defer tokenClientMu.Unlock()
+	host := strings.TrimRight(base.Host, "/")
+	if tokenClient != nil && tokenClientHost == host {
+		return tokenClient, host, nil
+	}
+	cfg := rest.CopyConfig(base)
+	cfg.BearerToken = ""
+	cfg.BearerTokenFile = ""
+	c, err := rest.HTTPClientFor(cfg)
+	if err != nil {
+		return nil, "", err
+	}
+	tokenClient = c
+	tokenClientHost = host
+	return c, host, nil
+}
+
 // ValidateUserTokenStatus probes GET /api with the user token and returns the HTTP status.
 func ValidateUserTokenStatus(ctx context.Context, base *rest.Config, token string) (int, error) {
 	if base == nil {
 		return 0, errors.New("rest config is required")
 	}
-	cfg := UserRESTConfig(base, token)
-	httpClient, err := rest.HTTPClientFor(cfg)
+	client, host, err := tokenValidationClient(base)
 	if err != nil {
 		return 0, err
 	}
-	host := strings.TrimRight(cfg.Host, "/")
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, host+"/api", nil)
 	if err != nil {
 		return 0, err
 	}
-	resp, err := httpClient.Do(req)
+	req.Header.Set("Authorization", bearerSchemePrefix+token)
+	resp, err := client.Do(req)
 	if err != nil {
 		return 0, err
 	}

@@ -119,7 +119,7 @@ func (c *countingLister) count(key string) int {
 	return c.n[key]
 }
 
-func TestApplicationsRebuildsOnlySubscriptions(t *testing.T) {
+func TestApplicationsReadOnly(t *testing.T) {
 	cl := &countingLister{inner: MapLister{
 		"app.k8s.io/v1beta1|Application": {
 			uObj("app.k8s.io/v1beta1", "Application", "sub-app", "ns", nil),
@@ -130,15 +130,21 @@ func TestApplicationsRebuildsOnlySubscriptions(t *testing.T) {
 		"cluster.open-cluster-management.io/v1|ManagedCluster": {localCluster()},
 	}}
 	e := NewEngine(cl, nil, nil)
+	e.mu.Lock()
+	e.rebuildLocalLocked()
+	e.mu.Unlock()
+	cl.mu.Lock()
+	cl.n = map[string]int{}
+	cl.mu.Unlock()
 	e.cache[cacheLocalArgo].Resources = []App{
 		{Object: map[string]any{"metadata": map[string]any{"name": "cached-argo"}}},
 	}
 	apps := e.applications()
 	if cl.count("argoproj.io/v1alpha1|Application") != 0 {
-		t.Fatalf("listed local argo %d", cl.count("argoproj.io/v1alpha1|Application"))
+		t.Fatalf("applications() should not list anything, got argo %d", cl.count("argoproj.io/v1alpha1|Application"))
 	}
-	if cl.count("app.k8s.io/v1beta1|Application") != 1 {
-		t.Fatalf("listed subscription apps %d", cl.count("app.k8s.io/v1beta1|Application"))
+	if cl.count("app.k8s.io/v1beta1|Application") != 0 {
+		t.Fatalf("applications() should not list anything, got subscription %d", cl.count("app.k8s.io/v1beta1|Application"))
 	}
 	found := false
 	for _, a := range apps {

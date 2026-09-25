@@ -259,6 +259,7 @@ func placementFromAppSet(obj map[string]any) string {
 }
 
 func (e *Engine) createArgoStatusMap(search searchapi.ResultBucket, clusters []Cluster) map[string]StatusMap {
+	e.appStatusByName = map[string]map[string]AppHealthSync{}
 	out := map[string]StatusMap{}
 	ids := map[string]*statusIDs{}
 	sorted := make([]string, 0, len(clusters))
