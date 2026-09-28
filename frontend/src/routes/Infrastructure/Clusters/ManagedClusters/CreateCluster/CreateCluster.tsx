@@ -47,7 +47,7 @@ import { Warning, WarningContext, WarningContextType } from './Warning'
 
 import jsyaml from 'js-yaml'
 import { useProjects } from '../../../../../hooks/useProjects'
-import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms, useSharedSelectors } from '../../../../../shared-atoms'
 import { CredentialsForm } from '../../../../Credentials/CredentialsForm'
 import {
   ClusterInfrastructureType,
@@ -128,9 +128,9 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
     providerConnectionsValue,
     validClusterCuratorTemplatesValue,
   } = useSharedSelectors()
-  const secrets = useRecoilValue(secretsState)
-  const providerConnections = useRecoilValue(providerConnectionsValue)
-  const ansibleCredentials = useRecoilValue(ansibleCredentialsValue)
+  const secrets = useSharedValue(secretsState)
+  const providerConnections = useSharedValue(providerConnectionsValue)
+  const ansibleCredentials = useSharedValue(ansibleCredentialsValue)
   const { isACMAvailable } = useContext(PluginContext)
   const templateEditorRef = useRef<null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -139,7 +139,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
   const { projects } = useProjects()
 
   const { configMapsState } = useSharedAtoms()
-  const configMaps = useRecoilValue(configMapsState)
+  const configMaps = useSharedValue(configMapsState)
   const hypershiftSupportedVersions = useMemo(
     () =>
       JSON.parse(
@@ -167,11 +167,11 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
 
   const hostsBreadCrumb = { text: t('Hosts'), to: NavigationPath.createDiscoverHost }
 
-  const settings = useRecoilValue(settingsState)
-  const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
-  const managedClusters = useRecoilValue(managedClustersState)
-  const namespaces = useRecoilValue(namespacesState)
-  const validCuratorTemplates = useRecoilValue(validClusterCuratorTemplatesValue)
+  const settings = useSharedValue(settingsState)
+  const supportedCurations = useSharedValue(clusterCuratorSupportedCurationsValue)
+  const managedClusters = useSharedValue(managedClustersState)
+  const namespaces = useSharedValue(namespacesState)
+  const validCuratorTemplates = useSharedValue(validClusterCuratorTemplatesValue)
 
   // use common operator check to determine if Openshift Virtualization is installed
   const kubevirtOperator = useOperatorCheck(SupportedOperator.kubevirt, kubevirtOperatorSubscriptionsValue)
@@ -200,8 +200,8 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
     },
     [providerConnections, setSelectedConnection, newSecret, isKubevirtEnabled, selectedConnection]
   )
-  const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
-  const infraEnvs = useRecoilValue(infraEnvironmentsState)
+  const agentClusterInstalls = useSharedValue(agentClusterInstallsState)
+  const infraEnvs = useSharedValue(infraEnvironmentsState)
   const [warning, setWarning] = useState<WarningContextType>()
   const hypershiftValues = useHypershiftContextValues()
 

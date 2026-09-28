@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, generatePath } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { configMapsState, secretsState, subscriptionOperatorsState } from '../../../atoms'
 import {
   nockIgnoreRBAC,
@@ -33,11 +33,11 @@ function CreatePolicyAutomationTest(props: { subscriptions?: SubscriptionOperato
     name: mockPolicy[0].metadata.name!,
   })
   return (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(secretsState, [mockSecret])
-        snapshot.set(configMapsState, props.configMaps || [])
-        snapshot.set(subscriptionOperatorsState, props.subscriptions || [])
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(secretsState, [mockSecret])
+        store.set(configMapsState, props.configMaps || [])
+        store.set(subscriptionOperatorsState, props.subscriptions || [])
       }}
     >
       <MemoryRouter initialEntries={[actualPath]}>
@@ -45,7 +45,7 @@ function CreatePolicyAutomationTest(props: { subscriptions?: SubscriptionOperato
           <Route path={NavigationPath.createPolicyAutomation} element={<CreatePolicyAutomation />} />
         </Routes>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

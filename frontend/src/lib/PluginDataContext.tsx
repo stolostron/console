@@ -1,9 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { createContext, useState, useMemo, useCallback, Dispatch, SetStateAction } from 'react'
+
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
+import { createStore } from 'jotai'
+import type { Store } from 'jotai/vanilla/store'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import * as atoms from '../atoms'
-// eslint-disable-next-line @typescript-eslint/no-restricted-imports
-import * as recoil from 'recoil'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import * as selectors from '../selectors'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
@@ -14,7 +16,7 @@ import { getBackendUrl } from '../resources/utils'
 // loadStarted -- means at least one packet has been sent from backend; /events sends resouces in packets to the browser can start populating list
 // loadCompleted -- means all packets have been sent; is a page doesn't get any data from packets it can show LoadingPage until this is sent
 export type PluginData = {
-  recoil: typeof recoil
+  store: Store
   atoms: typeof atoms
   selectors: typeof selectors
   reactQuery: typeof reactQuery
@@ -35,7 +37,7 @@ export type PluginData = {
 }
 
 export const defaultContext = {
-  recoil,
+  store: createStore(),
   atoms,
   selectors,
   reactQuery,
@@ -58,6 +60,7 @@ export const defaultContext = {
 export const PluginDataContext = createContext<PluginData>(defaultContext)
 
 export const usePluginDataContextValue = () => {
+  const [store] = useState(() => createStore())
   const [loadStarted, setLoadStarted] = useState(process.env.NODE_ENV === 'test')
   const [loadCompleted, setLoadCompleted] = useState(process.env.NODE_ENV === 'test')
   const [startLoading, setStartLoading] = useState(false)
@@ -71,7 +74,7 @@ export const usePluginDataContextValue = () => {
 
   const contextValue = useMemo(
     () => ({
-      recoil,
+      store,
       atoms,
       selectors,
       backendUrl,
@@ -90,7 +93,18 @@ export const usePluginDataContextValue = () => {
       unmount,
       load: () => setStartLoading(true),
     }),
-    [backendUrl, loadStarted, loadCompleted, startLoading, isStreamIdle, isReconnecting, mountCount, mount, unmount]
+    [
+      store,
+      backendUrl,
+      loadStarted,
+      loadCompleted,
+      startLoading,
+      isStreamIdle,
+      isReconnecting,
+      mountCount,
+      mount,
+      unmount,
+    ]
   )
   return contextValue
 }

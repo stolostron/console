@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useSharedSelectors, useRecoilValue } from '../shared-recoil'
+import { useSharedSelectors, useSharedValue } from '../shared-atoms'
 import { useOperatorCheck, SupportedOperator } from './operatorCheck'
 import { CLUSTER_EXTENSION_SOURCE_LABEL } from '../resources/cluster-extension'
 
@@ -35,7 +35,7 @@ export function checkOCPVersion(switcherExists: (arg0: boolean) => void) {
 
 export function useMultiClusterHubConsoleUrl(resourceName = 'multiclusterhub', view: 'yaml' | 'details' = 'yaml') {
   const { acmOperatorSubscriptionsValue } = useSharedSelectors()
-  const acmOperatorSubscriptions = useRecoilValue(acmOperatorSubscriptionsValue)
+  const acmOperatorSubscriptions = useSharedValue(acmOperatorSubscriptionsValue)
   const acmOperator = useOperatorCheck(SupportedOperator.acm, acmOperatorSubscriptionsValue)
 
   if (!acmOperator.installed || !acmOperatorSubscriptions.length) {

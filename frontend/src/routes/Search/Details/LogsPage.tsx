@@ -5,7 +5,7 @@ import { css } from '@emotion/css'
 import { Button, Checkbox, PageSection, SelectOption, Tooltip } from '@patternfly/react-core'
 import { CompressIcon, DownloadIcon, ExpandIcon, OutlinedWindowRestoreIcon } from '@patternfly/react-icons'
 import { LogViewer } from '@patternfly/react-log-viewer'
-import { Dispatch, MutableRefObject, ReactNode, SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
+import { Dispatch, ReactNode, RefObject, SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate, useLocation } from 'react-router'
 import screenfull from 'screenfull'
 import { AcmSelectBase, SelectOptionObject, SelectVariant } from '../../../components/AcmSelectBase'
@@ -13,7 +13,7 @@ import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { fetchRetry, getBackendUrl } from '../../../resources/utils'
 import { fleetLogsRequest } from '../../../resources/utils/fleet-logs-request'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import { AcmAlert, AcmLoadingPage } from '../../../ui-components'
 import { useSearchDetailsContext } from './DetailsPage'
 import { LogViewerSearch } from './LogsViewerSearch'
@@ -253,7 +253,7 @@ export function LogsHeader(props: { cluster: string; namespace: string; linesLen
 }
 
 export function LogsFooterButton(props: {
-  logViewerRef: MutableRefObject<any>
+  logViewerRef: RefObject<any>
   showJumpToBottomBtn: boolean
   setShowJumpToBottomBtn: Dispatch<SetStateAction<boolean>>
 }) {
@@ -289,7 +289,7 @@ export default function LogsPage() {
   const [previousLogs, setPreviousLogs] = useState(false)
   const [containerHasPreviousLogs, setContainerHasPreviousLogs] = useState(false)
   const { managedClustersState } = useSharedAtoms()
-  const managedClusters = useRecoilValue(managedClustersState)
+  const managedClusters = useSharedValue(managedClustersState)
 
   useEffect(() => {
     if (containers.length > 0 && sessionStorage.getItem(`${name}-${cluster}-container`) === null) {

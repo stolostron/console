@@ -3,7 +3,7 @@
 import { render, screen } from '@testing-library/react'
 import { axe } from 'jest-axe'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { ansibleJobState, ansibleWorkflowState, configMapsState } from '../../../../../atoms'
 import { clickByText, waitForText, clickElement } from '~/lib/test-util'
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
@@ -71,16 +71,16 @@ const cluster: Cluster = {
 describe('ScaleClusterAlert', () => {
   it('does not render without MachinePools', async () => {
     const Component = (props: { cluster: Cluster }) => (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(configMapsState, [])
-          snapshot.set(ansibleJobState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(configMapsState, [])
+          store.set(ansibleJobState, [])
         }}
       >
         <MemoryRouter>
           <StatusField {...props} />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     const props = { cluster }
@@ -146,17 +146,17 @@ describe('StatusField ansible hooks', () => {
   it('opens the posthook workflow URL from View logs', async () => {
     window.open = jest.fn()
     const { container } = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(configMapsState, [])
-          snapshot.set(ansibleJobState, [ansibleJobPrehook])
-          snapshot.set(ansibleWorkflowState, [ansibleWorkflowPosthook])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(configMapsState, [])
+          store.set(ansibleJobState, [ansibleJobPrehook])
+          store.set(ansibleWorkflowState, [ansibleWorkflowPosthook])
         }}
       >
         <MemoryRouter>
           <StatusField cluster={posthookCluster} />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('Failed')
     await clickByText('Failed')

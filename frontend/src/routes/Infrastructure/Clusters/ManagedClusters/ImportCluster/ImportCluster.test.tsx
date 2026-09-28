@@ -35,7 +35,8 @@ import {
 } from '../../../../../resources'
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot, useSetRecoilState } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
+import { useSetSharedValue } from '~/shared-atoms'
 import {
   clusterCuratorsState,
   discoveredClusterState,
@@ -685,12 +686,12 @@ jest.mock('react-router', () => {
 describe('ImportCluster', () => {
   function Component(props: { subscriptions?: SubscriptionOperator[] }) {
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
-          snapshot.set(clusterCuratorsState, mockClusterCurators)
-          snapshot.set(secretsState, [providerConnectionAnsible as Secret])
-          snapshot.set(subscriptionOperatorsState, props.subscriptions || [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterSetsState, [mockManagedClusterSet])
+          store.set(clusterCuratorsState, mockClusterCurators)
+          store.set(secretsState, [providerConnectionAnsible as Secret])
+          store.set(subscriptionOperatorsState, props.subscriptions || [])
         }}
       >
         <AcmToastProvider>
@@ -701,7 +702,7 @@ describe('ImportCluster', () => {
             </Routes>
           </MemoryRouter>
         </AcmToastProvider>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 
@@ -823,12 +824,12 @@ describe('ImportCluster', () => {
     const clusterCuratorNock = nockCreate(mockClusterCurator)
 
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
-          snapshot.set(clusterCuratorsState, mockClusterCurators)
-          snapshot.set(secretsState, [providerConnectionAnsible as Secret])
-          snapshot.set(subscriptionOperatorsState, [subscriptionOperator])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterSetsState, [mockManagedClusterSet])
+          store.set(clusterCuratorsState, mockClusterCurators)
+          store.set(secretsState, [providerConnectionAnsible as Secret])
+          store.set(subscriptionOperatorsState, [subscriptionOperator])
         }}
       >
         <AcmToastProvider>
@@ -839,7 +840,7 @@ describe('ImportCluster', () => {
             </Routes>
           </MemoryRouter>
         </AcmToastProvider>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await typeByTestId('clusterName', 'foobar')
@@ -1027,13 +1028,13 @@ describe('Import Discovered Cluster', () => {
   window.sessionStorage.setItem('DiscoveredClusterConsoleURL', 'https://test-cluster.com')
   const Component = () => {
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
-          snapshot.set(secretsState, [mockCRHCredential, mockOCMConnection])
-          snapshot.set(discoveryConfigState, [mockDiscoveryConfig])
-          snapshot.set(discoveredClusterState, mockDiscoveredClusters)
-          snapshot.set(namespacesState, mockNamepaces)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterSetsState, [mockManagedClusterSet])
+          store.set(secretsState, [mockCRHCredential, mockOCMConnection])
+          store.set(discoveryConfigState, [mockDiscoveryConfig])
+          store.set(discoveredClusterState, mockDiscoveredClusters)
+          store.set(namespacesState, mockNamepaces)
         }}
       >
         <MemoryRouter>
@@ -1042,7 +1043,7 @@ describe('Import Discovered Cluster', () => {
             <Route path={NavigationPath.importCluster} element={<ImportClusterPage />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
   test('create discovered cluster', async () => {
@@ -1114,13 +1115,13 @@ describe('Import Discovered Cluster with import credentials', () => {
 
     // Custom Component for this test
     const Component = () => (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
-          snapshot.set(secretsState, [mockCRHCredential1, mockOCMConnection1])
-          snapshot.set(discoveryConfigState, [mockDiscoveryConfig])
-          snapshot.set(discoveredClusterState, mockDiscoveredClusters)
-          snapshot.set(namespacesState, mockNamepaces)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterSetsState, [mockManagedClusterSet])
+          store.set(secretsState, [mockCRHCredential1, mockOCMConnection1])
+          store.set(discoveryConfigState, [mockDiscoveryConfig])
+          store.set(discoveredClusterState, mockDiscoveredClusters)
+          store.set(namespacesState, mockNamepaces)
         }}
       >
         <MemoryRouter>
@@ -1129,7 +1130,7 @@ describe('Import Discovered Cluster with import credentials', () => {
             <Route path={NavigationPath.importCluster} element={<ImportClusterPage />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     const { getAllByText, getAllByLabelText, getByDisplayValue } = render(<Component />) // Render the custom component
@@ -1169,13 +1170,13 @@ describe('Import Discovered Cluster with import credentials', () => {
     window.sessionStorage.setItem('DiscoveredClusterConsoleURL', 'https://test-cluster-serviceaccount.com')
 
     const Component = () => (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
-          snapshot.set(secretsState, [mockCRHCredential2, mockOCMConnection2])
-          snapshot.set(discoveryConfigState, [mockDiscoveryConfig])
-          snapshot.set(discoveredClusterState, mockDiscoveredClusters)
-          snapshot.set(namespacesState, mockNamepaces)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterSetsState, [mockManagedClusterSet])
+          store.set(secretsState, [mockCRHCredential2, mockOCMConnection2])
+          store.set(discoveryConfigState, [mockDiscoveryConfig])
+          store.set(discoveredClusterState, mockDiscoveredClusters)
+          store.set(namespacesState, mockNamepaces)
         }}
       >
         <MemoryRouter>
@@ -1184,7 +1185,7 @@ describe('Import Discovered Cluster with import credentials', () => {
             <Route path={NavigationPath.importCluster} element={<ImportClusterPage />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     const { getAllByText, getAllByLabelText, getByDisplayValue } = render(<Component />) // Render the custom component
@@ -1226,27 +1227,27 @@ describe('Import cluster RHOCM mode', () => {
     nockIgnoreApiPaths()
     nockIgnoreOperatorCheck()
   })
-  const RecoilCaptureSecretsSetter = ({ setSetSecrets, children }: PropsWithChildren<{ setSetSecrets: jest.Mock }>) => {
-    const setSecrets = useSetRecoilState(secretsState)
+  const StateCaptureSecretsSetter = ({ setSetSecrets, children }: PropsWithChildren<{ setSetSecrets: jest.Mock }>) => {
+    const setSecrets = useSetSharedValue(secretsState)
     useEffect(() => {
       setSetSecrets(setSecrets)
     }, [setSetSecrets, setSecrets])
     return <>{children}</>
   }
   const Component = ({ secrets, setSetSecrets }: { secrets: Secret[]; setSetSecrets: jest.Mock }) => (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(secretsState, secrets)
-        snapshot.set(namespacesState, mockNamepaces)
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(secretsState, secrets)
+        store.set(namespacesState, mockNamepaces)
       }}
     >
-      <RecoilCaptureSecretsSetter setSetSecrets={setSetSecrets} />
+      <StateCaptureSecretsSetter setSetSecrets={setSetSecrets} />
       <MemoryRouter>
         <Routes>
           <Route path="/" element={<ImportClusterPage />} />
         </Routes>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   it('responds to changes in available RHOCM credentials', async () => {
     const setSetSecrets = jest.fn()

@@ -6,7 +6,7 @@ import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Group, User } from '../../../../resources/rbac'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../../../ui-components'
 import { useMergedGroups } from '../useMergedIdentities'
 
@@ -32,8 +32,8 @@ const GroupPage = () => {
 
   const group = useCurrentGroup()
   const { usersState, isDirectAuthenticationEnabledState } = useSharedAtoms()
-  const users = useRecoilValue(usersState)
-  const isDirectAuth = useRecoilValue(isDirectAuthenticationEnabledState)
+  const users = useSharedValue(usersState)
+  const isDirectAuth = useSharedValue(isDirectAuthenticationEnabledState)
 
   const groupDetailsContext = useMemo<GroupDetailsContext>(
     () => ({

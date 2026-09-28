@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import HostsForm, { getControlSummary } from './HostsForm'
 import { render } from '@testing-library/react'
 import i18next from 'i18next'
@@ -28,7 +28,7 @@ describe('HostForm', () => {
   const t = i18next.t.bind(i18next)
   const Component = () => {
     return (
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <HostsForm
             control={{
@@ -43,7 +43,7 @@ describe('HostForm', () => {
             handleChange={handleChange}
           />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 

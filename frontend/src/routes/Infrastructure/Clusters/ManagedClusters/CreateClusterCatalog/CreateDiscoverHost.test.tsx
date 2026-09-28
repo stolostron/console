@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 
 import { NavigationPath } from '../../../../../NavigationPath'
 import { CreateDiscoverHost } from './CreateDiscoverHost'
@@ -19,10 +19,10 @@ describe('CreateDiscoverHost', () => {
     agentsMock?: AgentK8sResource[]
   }) => {
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(infraEnvironmentsState, infraEnvsMock || [])
-          snapshot.set(agentsState, agentsMock || [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(infraEnvironmentsState, infraEnvsMock || [])
+          store.set(agentsState, agentsMock || [])
         }}
       >
         <MemoryRouter initialEntries={[NavigationPath.createDiscoverHost]}>
@@ -30,7 +30,7 @@ describe('CreateDiscoverHost', () => {
             <Route path={NavigationPath.createDiscoverHost} element={<CreateDiscoverHost />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 

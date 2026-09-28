@@ -19,7 +19,7 @@ import {
 } from '../../../../../resources'
 import { HostedClusterK8sResourceWithChannel } from '../../../../../resources/hosted-cluster'
 import { Cluster, ClusterStatus, CuratorCondition } from '../../../../../resources/utils'
-import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../../shared-atoms'
 import { AcmButton, AcmInlineStatus, Provider, StatusType } from '../../../../../ui-components'
 import { getSearchLink } from '../../../../Applications/helpers/resource-helper'
 import { useAgentClusterInstall } from '../CreateCluster/components/assisted-installer/utils'
@@ -44,11 +44,11 @@ export function DistributionField(props: {
   const [channelSelectionPending, setChannelSelectionPending] = useState<boolean>(false)
   const { ansibleJobState, ansibleWorkflowState, clusterImageSetsState, agentMachinesState, agentsState } =
     useSharedAtoms()
-  const ansibleJobs = useRecoilValue(ansibleJobState)
-  const ansibleWorkflows = useRecoilValue(ansibleWorkflowState)
-  const agents = useRecoilValue(agentsState)
-  const agentMachines = useRecoilValue(agentMachinesState)
-  const clusterImageSets = useRecoilValue(clusterImageSetsState)
+  const ansibleJobs = useSharedValue(ansibleJobState)
+  const ansibleWorkflows = useSharedValue(ansibleWorkflowState)
+  const agents = useSharedValue(agentsState)
+  const agentMachines = useSharedValue(agentMachinesState)
+  const clusterImageSets = useSharedValue(clusterImageSetsState)
   const agentClusterInstall = useAgentClusterInstall({
     name: props.cluster?.name,
     namespace: props.cluster?.namespace,

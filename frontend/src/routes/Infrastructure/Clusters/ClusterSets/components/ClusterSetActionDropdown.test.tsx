@@ -9,7 +9,7 @@ import {
   NamespaceKind,
 } from '../../../../../resources'
 import { render, screen } from '@testing-library/react'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { managedClusterSetBindingsState, namespacesState } from '../../../../../atoms'
 import { nockCreate, nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import { mockManagedClusterSet } from '../../../../../lib/test-metadata'
@@ -378,16 +378,16 @@ const createSelfsubjectaccessreviews10 = {
 }
 
 const Component = () => (
-  <RecoilRoot
-    initializeState={(snapshot) => {
-      snapshot.set(namespacesState, [firstNamespace, secondNamespace, thirdNamespace])
-      snapshot.set(managedClusterSetBindingsState, [firstNamespaceBinding])
+  <StateProvider
+    initializeStore={(store) => {
+      store.set(namespacesState, [firstNamespace, secondNamespace, thirdNamespace])
+      store.set(managedClusterSetBindingsState, [firstNamespaceBinding])
     }}
   >
     <MemoryRouter>
       <ClusterSetActionDropdown managedClusterSet={mockManagedClusterSet} isKebab={false} />
     </MemoryRouter>
-  </RecoilRoot>
+  </StateProvider>
 )
 
 describe('ClusterSetActionDropdown', () => {

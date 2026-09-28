@@ -3,7 +3,7 @@
 // Copyright Contributors to the Open Cluster Management project
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import {
   nockIgnoreApiPaths,
   nockIgnoreOperatorCheck,
@@ -66,7 +66,7 @@ describe('SaveAndEditSearchModal', () => {
       },
     ])
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MockedProvider addTypename={false}>
           <SaveAndEditSearchModal
             savedSearch={{
@@ -82,7 +82,7 @@ describe('SaveAndEditSearchModal', () => {
             setUserPreference={() => {}}
           />
         </MockedProvider>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Enter saved search information
@@ -106,7 +106,7 @@ describe('SaveAndEditSearchModal', () => {
   it('should Update UserPreference with a successful response', async () => {
     const patchUserPreferenceNock = nockPatchRequest('/userpreference', mockUserPreferencePatch)
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MockedProvider addTypename={false}>
           <SaveAndEditSearchModal
             savedSearch={{
@@ -129,7 +129,7 @@ describe('SaveAndEditSearchModal', () => {
             setUserPreference={() => {}}
           />
         </MockedProvider>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Enter saved search information

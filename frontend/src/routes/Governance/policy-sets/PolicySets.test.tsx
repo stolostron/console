@@ -2,7 +2,7 @@
 
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { policySetsState } from '../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { clickElement, waitForText } from '../../../lib/test-util'
@@ -17,15 +17,15 @@ describe('PolicySets Page', () => {
   })
   test('shows empty page when no policy sets', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policySetsState, mockEmptyPolicySet)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policySetsState, mockEmptyPolicySet)
         }}
       >
         <MemoryRouter>
           <PolicySetsPage />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText("You don't have any policy sets yet")
@@ -33,15 +33,15 @@ describe('PolicySets Page', () => {
 
   test('renders page with filters and policy sets', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policySetsState, mockPolicySets)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policySetsState, mockPolicySets)
         }}
       >
         <MemoryRouter>
           <PolicySetsPage />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // should show all items initially
@@ -66,15 +66,15 @@ describe('PolicySets Page', () => {
 
   test('filters by no violations from url params', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policySetsState, mockPolicySets)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policySetsState, mockPolicySets)
         }}
       >
         <MemoryRouter initialEntries={['/multicloud/governance/policy-sets?violations=no-violation']}>
           <PolicySetsPage />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // should only show no violations filter
@@ -102,15 +102,15 @@ describe('PolicySets Page', () => {
       },
     ]
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policySetsState, twoPolicySetsWithDistinctNames)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policySetsState, twoPolicySetsWithDistinctNames)
         }}
       >
         <MemoryRouter>
           <PolicySetsPage />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('policy-set-a')
     await waitForText('policy-set-b')

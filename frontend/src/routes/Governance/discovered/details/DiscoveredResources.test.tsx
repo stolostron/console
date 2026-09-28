@@ -3,7 +3,7 @@ jest.mock('../discoveredPoliciesWorker.factory')
 
 import { render, screen, waitFor } from '@testing-library/react'
 import { generatePath, MemoryRouter, Outlet, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { v4 as uuidv4 } from 'uuid'
 import { channelsState, helmReleaseState, subscriptionsState } from '../../../../atoms'
 import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC, nockManagedClusterView } from '../../../../lib/nock-util'
@@ -90,11 +90,11 @@ describe('DiscoveredResources', () => {
       err: undefined,
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(channelsState, [])
-          snapshot.set(helmReleaseState, [])
-          snapshot.set(subscriptionsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(channelsState, [])
+          store.set(helmReleaseState, [])
+          store.set(subscriptionsState, [])
         }}
       >
         <MemoryRouter
@@ -113,7 +113,7 @@ describe('DiscoveredResources', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText('Related resources')
@@ -152,11 +152,11 @@ describe('DiscoveredResources', () => {
       err: undefined,
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(channelsState, [])
-          snapshot.set(helmReleaseState, [])
-          snapshot.set(subscriptionsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(channelsState, [])
+          store.set(helmReleaseState, [])
+          store.set(subscriptionsState, [])
         }}
       >
         <MemoryRouter
@@ -175,7 +175,7 @@ describe('DiscoveredResources', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText('Related resources')
@@ -390,11 +390,11 @@ describe('DiscoveredResources', () => {
     mockUuidV4.mockReturnValue(MOCKED_UUID_1)
     const mcvNocks = nockManagedClusterView(MOCKED_UUID_1, 'local-cluster', scope, status)
     const { container } = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(channelsState, [])
-          snapshot.set(helmReleaseState, [])
-          snapshot.set(subscriptionsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(channelsState, [])
+          store.set(helmReleaseState, [])
+          store.set(subscriptionsState, [])
         }}
       >
         <MemoryRouter
@@ -413,7 +413,7 @@ describe('DiscoveredResources', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForNocks([canUserCreateMCVNock, ...mcvNocks])
 
@@ -563,11 +563,11 @@ describe('DiscoveredResources', () => {
     mockUuidV4.mockReturnValue(MOCKED_UUID_1)
     const mcvNocks = nockManagedClusterView(MOCKED_UUID_1, 'local-cluster', certScope, certStatus)
     const { container } = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(channelsState, [])
-          snapshot.set(helmReleaseState, [])
-          snapshot.set(subscriptionsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(channelsState, [])
+          store.set(helmReleaseState, [])
+          store.set(subscriptionsState, [])
         }}
       >
         <MemoryRouter
@@ -586,7 +586,7 @@ describe('DiscoveredResources', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForNocks([canUserCreateMCVNock, ...mcvNocks])
     await waitForText('Related resources')
@@ -828,11 +828,11 @@ describe('DiscoveredResources', () => {
     const mcvNocks1 = nockManagedClusterView(MOCKED_UUID_1, 'local-cluster', scope1, status1)
     const mcvNocks2 = nockManagedClusterView(MOCKED_UUID_2, 'local-cluster', scope2, status2)
     const { container } = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(channelsState, [])
-          snapshot.set(helmReleaseState, [])
-          snapshot.set(subscriptionsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(channelsState, [])
+          store.set(helmReleaseState, [])
+          store.set(subscriptionsState, [])
         }}
       >
         <MemoryRouter
@@ -851,7 +851,7 @@ describe('DiscoveredResources', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForNocks([...mcvNocks1, ...mcvNocks2])
     await waitForText('Related resources')
@@ -976,11 +976,11 @@ test('Should render DiscoveredResources for Gatekeeper with tooltip when showing
   mockUuidV4.mockReturnValue(MOCKED_UUID_1)
   const mcvNocks = nockManagedClusterView(MOCKED_UUID_1, 'local-cluster', gkScope, gkStatus)
   const { container } = render(
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(channelsState, [])
-        snapshot.set(helmReleaseState, [])
-        snapshot.set(subscriptionsState, [])
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(channelsState, [])
+        store.set(helmReleaseState, [])
+        store.set(subscriptionsState, [])
       }}
     >
       <MemoryRouter
@@ -999,7 +999,7 @@ test('Should render DiscoveredResources for Gatekeeper with tooltip when showing
           </Route>
         </Routes>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 
   await waitForNocks(mcvNocks)
@@ -1132,8 +1132,8 @@ test('Should NOT render tooltip when showing all Gatekeeper results', async () =
   mockUuidV4.mockReturnValue(MOCKED_UUID_1)
   const mcvNocks = nockManagedClusterView(MOCKED_UUID_1, 'local-cluster', gkScope, gkStatus)
   render(
-    <RecoilRoot
-      initializeState={(s) => {
+    <StateProvider
+      initializeStore={(s) => {
         s.set(channelsState, [])
         s.set(helmReleaseState, [])
         s.set(subscriptionsState, [])
@@ -1155,7 +1155,7 @@ test('Should NOT render tooltip when showing all Gatekeeper results', async () =
           </Route>
         </Routes>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 
   await waitForNocks(mcvNocks)

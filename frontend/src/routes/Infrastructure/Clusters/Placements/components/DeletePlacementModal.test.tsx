@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen, waitFor } from '@testing-library/react'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { DeletePlacementModal, IDeletePlacementModalProps } from './DeletePlacementModal'
 import { Placement, PlacementApiVersionBeta, PlacementKind } from '../../../../../resources/placement'
 import { ApplicationSet, ApplicationSetApiVersion, ApplicationSetKind } from '../../../../../resources/application-set'
@@ -99,9 +99,9 @@ function renderModal(overrides: Partial<IDeletePlacementModalProps> = {}) {
   }
   return {
     ...render(
-      <RecoilRoot>
+      <StateProvider>
         <DeletePlacementModal {...defaultProps} />
-      </RecoilRoot>
+      </StateProvider>
     ),
     props: defaultProps,
   }
@@ -116,9 +116,9 @@ describe('DeletePlacementModal', () => {
 
   test('renders nothing when open is false', () => {
     render(
-      <RecoilRoot>
+      <StateProvider>
         <DeletePlacementModal open={false} />
-      </RecoilRoot>
+      </StateProvider>
     )
     expect(screen.queryByText(/permanently delete/i)).not.toBeInTheDocument()
   })

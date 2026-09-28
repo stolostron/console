@@ -2,11 +2,11 @@
 
 import { renderHook } from '@testing-library/react'
 import { launchToOCP, useMultiClusterHubConsoleUrl } from './ocp-utils'
-import { useSharedSelectors, useRecoilValue } from '../shared-recoil'
+import { useSharedSelectors, useSharedValue } from '../shared-atoms'
 import { useOperatorCheck, SupportedOperator } from './operatorCheck'
 
 // Mock the dependencies
-jest.mock('../shared-recoil')
+jest.mock('../shared-atoms')
 jest.mock('./operatorCheck')
 
 describe('launchToOCP', () => {
@@ -34,7 +34,7 @@ describe('launchToOCP', () => {
 describe('useMultiClusterHubConsoleUrl', () => {
   const mockUseSharedSelectors = useSharedSelectors as jest.MockedFunction<typeof useSharedSelectors>
   const mockUseOperatorCheck = useOperatorCheck as jest.MockedFunction<typeof useOperatorCheck>
-  const mockUseRecoilValue = useRecoilValue as jest.MockedFunction<typeof useRecoilValue>
+  const mockUseSharedValue = useSharedValue as jest.MockedFunction<typeof useSharedValue>
 
   const mockSubscription = {
     metadata: {
@@ -53,7 +53,7 @@ describe('useMultiClusterHubConsoleUrl', () => {
     } as any)
 
     // Mock the subscription data
-    mockUseRecoilValue.mockReturnValue([mockSubscription])
+    mockUseSharedValue.mockReturnValue([mockSubscription])
   })
 
   describe('when ACM operator is installed and has version', () => {
@@ -103,7 +103,7 @@ describe('useMultiClusterHubConsoleUrl', () => {
 
     test('returns URL with custom namespace from subscription', () => {
       // Mock a subscription with custom namespace
-      mockUseRecoilValue.mockReturnValue([
+      mockUseSharedValue.mockReturnValue([
         {
           ...mockSubscription,
           metadata: { ...mockSubscription.metadata, namespace: 'custom-acm-namespace' },
@@ -118,7 +118,7 @@ describe('useMultiClusterHubConsoleUrl', () => {
 
     test('falls back to default namespace when subscription has no namespace', () => {
       // Mock a subscription without namespace
-      mockUseRecoilValue.mockReturnValue([
+      mockUseSharedValue.mockReturnValue([
         {
           ...mockSubscription,
           metadata: { ...mockSubscription.metadata, namespace: undefined },
@@ -177,7 +177,7 @@ describe('useMultiClusterHubConsoleUrl', () => {
         version: '2.15.0',
         pending: false,
       })
-      mockUseRecoilValue.mockReturnValue([
+      mockUseSharedValue.mockReturnValue([
         {
           metadata: {
             name: 'advanced-cluster-management',
@@ -223,7 +223,7 @@ describe('useMultiClusterHubConsoleUrl', () => {
         version: 'advanced-cluster-management.v2.15.0',
         pending: false,
       })
-      mockUseRecoilValue.mockReturnValue([]) // Empty subscription array
+      mockUseSharedValue.mockReturnValue([]) // Empty subscription array
     })
 
     test('returns null when no subscriptions', () => {

@@ -11,7 +11,7 @@ import {
 import { SyncEditor, ValidationStatus } from '~/components/SyncEditor/SyncEditor'
 import { useTranslation } from '~/lib/acm-i18next'
 import schema from './schema.json'
-import { useSharedAtoms, useRecoilValue } from '~/shared-recoil'
+import { useSharedAtoms, useSharedValue } from '~/shared-atoms'
 import { useContext, useEffect, useState } from 'react'
 import { AcmToastContext } from '~/ui-components'
 import { generatePath, useParams, useNavigate } from 'react-router'
@@ -71,12 +71,12 @@ export function EditPlacement() {
     managedClusterSetBindingsState,
     managedClustersState,
   } = useSharedAtoms()
-  const namespaces = useRecoilValue(namespacesState)
-  const placements = useRecoilValue(placementsState)
+  const namespaces = useSharedValue(namespacesState)
+  const placements = useSharedValue(placementsState)
   const [existingResources, setExistingResources] = useState<IResource[]>()
-  const clusterSets = useRecoilValue(managedClusterSetsState)
-  const clusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
-  const clusters = useRecoilValue(managedClustersState)
+  const clusterSets = useSharedValue(managedClusterSetsState)
+  const clusterSetBindings = useSharedValue(managedClusterSetBindingsState)
+  const clusters = useSharedValue(managedClustersState)
   const availableNamespaces = namespaces.map((namespace) => namespace.metadata.name).filter(isType)
 
   useEffect(() => {

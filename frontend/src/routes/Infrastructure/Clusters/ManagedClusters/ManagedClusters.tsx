@@ -11,7 +11,7 @@ import { canUser } from '../../../../lib/rbac-util'
 import { navigateToBackCancelLocation, NavigationPath } from '../../../../NavigationPath'
 import { ManagedClusterDefinition } from '../../../../resources'
 import { addonPathKey, addonTextKey } from '../../../../resources/utils'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 import {
   AcmAlertContext,
   AcmEmptyState,
@@ -126,7 +126,7 @@ export default function ManagedClusters() {
 
 const PageActions = () => {
   const { clusterManagementAddonsState } = useSharedAtoms()
-  const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
+  const clusterManagementAddons = useSharedValue(clusterManagementAddonsState)
   const addons = clusterManagementAddons.filter(
     (cma) => cma.metadata.annotations?.[addonTextKey] && cma.metadata.annotations?.[addonPathKey]
   )

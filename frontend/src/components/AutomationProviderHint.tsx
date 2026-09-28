@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useRecoilValue, useSharedSelectors } from '../shared-recoil'
+import { useSharedValue, useSharedSelectors } from '../shared-atoms'
 import { useTranslation } from '../lib/acm-i18next'
 import { coerce, gte } from 'semver'
 import { OperatorAlert } from './OperatorAlert'
@@ -24,8 +24,8 @@ export function AutomationProviderHint(props: {
   const { ansibleOperatorSubscriptionsValue, clusterCuratorSupportedCurationsValue, clusterCuratorTemplatesValue } =
     useSharedSelectors()
   const ansibleOperator = useOperatorCheck(SupportedOperator.ansible, ansibleOperatorSubscriptionsValue)
-  const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
-  const clusterCuratorTemplates = useRecoilValue(clusterCuratorTemplatesValue)
+  const supportedCurations = useSharedValue(clusterCuratorSupportedCurationsValue)
+  const clusterCuratorTemplates = useSharedValue(clusterCuratorTemplatesValue)
 
   const workflowJobTemplatesInUse = clusterCuratorTemplates.some((template) =>
     supportedCurations.some((curation) =>

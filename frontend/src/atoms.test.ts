@@ -2,18 +2,18 @@
 
 import { renderHook } from '@testing-library/react'
 import React, { ReactNode } from 'react'
-import { MutableSnapshot, RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { settingsState, useEventStreamIdleTimeout, useEventStreamIdleGracePeriod } from './atoms'
 
 function wrapper(settings: Record<string, string> = {}) {
   return function Wrapper({ children }: { children: ReactNode }) {
     return React.createElement(
-      RecoilRoot,
+      StateProvider,
       {
-        initializeState: (snapshot: MutableSnapshot) => {
-          snapshot.set(settingsState, settings)
+        initializeStore: (store) => {
+          store.set(settingsState, settings)
         },
-      } as React.ComponentProps<typeof RecoilRoot>,
+      },
       children
     )
   }

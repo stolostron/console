@@ -16,7 +16,7 @@ import {
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { render, screen } from '@testing-library/react'
 import { Scope } from 'nock/types'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { MemoryRouter } from 'react-router'
 import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC, nockPatch, nockRBAC } from '../../../../../lib/nock-util'
 import { rbacCreate, rbacDelete, rbacPatch } from '../../../../../lib/rbac-util'
@@ -346,11 +346,11 @@ function nockPatchClusterDeployment(op: 'replace' | 'add' | 'remove', path: stri
 }
 
 const Component = (props: { cluster: Cluster }) => (
-  <RecoilRoot>
+  <StateProvider>
     <MemoryRouter initialEntries={[NavigationPath.clusterDetails]}>
       <ClusterActionDropdown cluster={props.cluster} isKebab={true} />
     </MemoryRouter>
-  </RecoilRoot>
+  </StateProvider>
 )
 
 describe('ClusterActionDropdown', () => {
@@ -466,6 +466,10 @@ describe('ClusterActionDropdown', () => {
 })
 
 describe('ClusterActionDropdown', () => {
+  beforeEach(() => {
+    nockIgnoreApiPaths()
+  })
+
   test("disables menu items based on the user's permissions for ready cluster", async () => {
     const cluster = JSON.parse(JSON.stringify(mockCluster))
     render(<Component cluster={cluster} />)
@@ -476,6 +480,7 @@ describe('ClusterActionDropdown', () => {
       nockRBAC(await rbacDeleteManagedCluster()), // destroy
       nockRBAC(await rbacDeleteClusterDeployment()),
       nockRBAC(await rbacDeleteManagedCluster()), //detach
+      nockRBAC(await rbacDeleteManagedCluster()), // repeated delete permission check
       // update automation template
       nockRBAC(await rbacPatchClusterCurator()),
       nockRBAC(await rbacCreateClusterCurator()),
@@ -499,6 +504,7 @@ describe('ClusterActionDropdown', () => {
       nockRBAC(await rbacPatchClusterDeployment()), // resume
       nockRBAC(await rbacDeleteManagedCluster()),
       nockRBAC(await rbacDeleteClusterDeployment()),
+      nockRBAC(await rbacDeleteManagedCluster()), // repeated delete permission check
       //delete automation template
       nockRBAC(await rbacDeleteClusterCurator()),
       nockRBAC(await rbacDeleteSecret()),
@@ -513,15 +519,15 @@ describe('ClusterActionDropdown hostedcluster', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(clusterImageSetsState, clusterImageSets)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(clusterImageSetsState, clusterImageSets)
         }}
       >
         <MemoryRouter initialEntries={[NavigationPath.clusterDetails]}>
           <ClusterActionDropdown cluster={mockHostedCluster} isKebab={false} />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText('Actions', true)

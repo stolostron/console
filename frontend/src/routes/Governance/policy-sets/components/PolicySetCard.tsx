@@ -24,7 +24,7 @@ import { useTranslation } from '../../../../lib/acm-i18next'
 import { deletePolicySet } from '../../../../lib/delete-policyset'
 import { NavigationPath } from '../../../../NavigationPath'
 import { PolicySet } from '../../../../resources'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 import { AcmDrawerContext, AcmDrawerProps } from '../../../../ui-components'
 import { PolicySetDetailSidebar } from '../components/PolicySetDetailSidebar'
 import { PolicyCardDropdown } from './PolicyCardDropdown'
@@ -34,8 +34,8 @@ function PolicySetDrawerTitle(props: { policySet: PolicySet }) {
   const { policySet } = props
   const { t } = useTranslation()
   const { placementBindingsState, placementsState } = useSharedAtoms()
-  const placements = useRecoilValue(placementsState)
-  const placementBindings = useRecoilValue(placementBindingsState)
+  const placements = useSharedValue(placementsState)
+  const placementBindings = useSharedValue(placementBindingsState)
 
   const policySetPlacements = useMemo(
     () => getPlacementsForResource(policySet, placementBindings, placements),
@@ -284,8 +284,8 @@ function DeletePolicySetModal(props: {
   const [deletePlacements, setDeletePlacements] = useState(true)
   const [deletePlacementBindings, setDeletePlacementBindings] = useState(true)
   const { placementBindingsState, placementsState } = useSharedAtoms()
-  const placements = useRecoilValue(placementsState)
-  const placementBindings = useRecoilValue(placementBindingsState)
+  const placements = useSharedValue(placementsState)
+  const placementBindings = useSharedValue(placementBindingsState)
   const [isDeleting, setIsDeleting] = useState(false)
   const [error, setError] = useState('')
   const onConfirm = useCallback(async () => {

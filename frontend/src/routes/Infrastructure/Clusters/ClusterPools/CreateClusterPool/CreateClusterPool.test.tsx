@@ -22,7 +22,7 @@ import {
 } from '../../../../../resources'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { managedClusterSetsState, namespacesState, secretsState, Settings, settingsState } from '../../../../../atoms'
 import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC, nockList, nockReplace } from '../../../../../lib/nock-util'
 import {
@@ -252,12 +252,12 @@ const settings: Settings = {
 describe('CreateClusterPool AWS', () => {
   const Component = () => {
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterSetsState, [])
-          snapshot.set(namespacesState, mockNamespaces)
-          snapshot.set(secretsState, [providerConnection as Secret])
-          snapshot.set(settingsState, settings)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterSetsState, [])
+          store.set(namespacesState, mockNamespaces)
+          store.set(secretsState, [providerConnection as Secret])
+          store.set(settingsState, settings)
         }}
       >
         <MemoryRouter initialEntries={[`${NavigationPath.createClusterPool}?${CLUSTER_POOL_INFRA_TYPE_PARAM}=AWS`]}>
@@ -265,7 +265,7 @@ describe('CreateClusterPool AWS', () => {
             <Route path={NavigationPath.createClusterPool} element={<CreateClusterPoolPage />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 

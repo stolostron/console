@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { ClusterRole } from '../../../resources/rbac'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import { AcmEmptyState, AcmTable, compareStrings } from '../../../ui-components'
 import { Role, rolesTableColumns, useFilters } from './RolesTableHelper'
 
@@ -21,7 +21,7 @@ const RolesTable = ({
 }: RolesTableProps) => {
   const { t } = useTranslation()
   const { vmClusterRolesState } = useSharedAtoms()
-  const clusterRoles = useRecoilValue(vmClusterRolesState)
+  const clusterRoles = useSharedValue(vmClusterRolesState)
   const [selectedRole, setSelectedRole] = useState<string | undefined>(initialSelectedRole)
 
   useEffect(() => setSelectedRole(initialSelectedRole), [initialSelectedRole])

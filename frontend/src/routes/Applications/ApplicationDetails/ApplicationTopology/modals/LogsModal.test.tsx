@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen, waitFor } from '@testing-library/react'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { axe } from 'jest-axe'
 import type { TopologyNode } from '~/routes/Applications/ApplicationDetails/ApplicationTopology/types'
 import { LogsModal } from './LogsModal'
@@ -169,9 +169,9 @@ const podNode: TopologyNode = {
 function renderLogsModal(node: TopologyNode = podNode, processActionLink = jest.fn()) {
   const close = jest.fn()
   const result = render(
-    <RecoilRoot>
+    <StateProvider>
       <LogsModal open close={close} node={node} hubClusterName="local-cluster" processActionLink={processActionLink} />
-    </RecoilRoot>
+    </StateProvider>
   )
   return { ...result, close, processActionLink }
 }

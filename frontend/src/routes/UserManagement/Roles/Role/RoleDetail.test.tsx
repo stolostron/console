@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { RoleDetail } from './RoleDetail'
 import { ClusterRole } from '../../../../resources/rbac'
 import { useCurrentRole } from '../RolesPage'
@@ -32,11 +32,11 @@ const mockUseCurrentRole = useCurrentRole as jest.MockedFunction<typeof useCurre
 
 function Component() {
   return (
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <RoleDetail />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

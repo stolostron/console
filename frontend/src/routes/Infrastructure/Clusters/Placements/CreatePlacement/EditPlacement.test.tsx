@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor } from '@testing-library/react'
 import { generatePath, MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import {
   namespacesState,
   managedClusterSetsState,
@@ -126,13 +126,13 @@ function TestEditPlacementPage({
   const initialEntry = searchParams ? `${editPlacementPath}?${searchParams}` : editPlacementPath
 
   return (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(namespacesState, [mockNamespace])
-        snapshot.set(managedClusterSetsState, [mockClusterSet] as any)
-        snapshot.set(managedClusterSetBindingsState, [mockClusterSetBinding] as any)
-        snapshot.set(managedClustersState, [mockCluster] as any)
-        snapshot.set(placementsState, existingPlacements)
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(namespacesState, [mockNamespace])
+        store.set(managedClusterSetsState, [mockClusterSet] as any)
+        store.set(managedClusterSetBindingsState, [mockClusterSetBinding] as any)
+        store.set(managedClustersState, [mockCluster] as any)
+        store.set(placementsState, existingPlacements)
       }}
     >
       <AcmToastContext.Provider value={createMockToastContext(mockAddAlert)}>
@@ -149,7 +149,7 @@ function TestEditPlacementPage({
           </MemoryRouter>
         </LostChangesContext.Provider>
       </AcmToastContext.Provider>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

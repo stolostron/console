@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor, within } from '@testing-library/react'
 import { generatePath, MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { v4 as uuidv4 } from 'uuid'
 import { managedClusterAddonsState } from '../../../../../atoms'
 import { nockCreate, nockIgnoreApiPaths, nockIgnoreRBAC, nockManagedClusterView } from '../../../../../lib/nock-util'
@@ -524,9 +524,9 @@ describe('Policy Template Details Page', () => {
     mockUuidV4.mockReturnValue(MOCKED_UUID_1)
     const mcvNocks = nockManagedClusterView(MOCKED_UUID_1, 'test-cluster', configPolicyScope, configPolicyStatus)
     const { container } = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, {})
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterAddonsState, {})
         }}
       >
         <MemoryRouter initialEntries={[path]}>
@@ -537,7 +537,7 @@ describe('Policy Template Details Page', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     // Wait for delete resource requests to finish
     await waitForNocks([canUserCreateMCVNock, ...mcvNocks])
@@ -631,9 +631,9 @@ describe('Policy Template Details Page', () => {
     const mcvNocks = nockManagedClusterView(MOCKED_UUID_1, hostingClusterName, hostedScope, hostedStatus)
 
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, mockManagedClusterAddOn)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterAddonsState, mockManagedClusterAddOn)
         }}
       >
         <MemoryRouter initialEntries={[path]}>
@@ -644,7 +644,7 @@ describe('Policy Template Details Page', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Wait for the get resource requests to finish
@@ -762,9 +762,9 @@ describe('Policy Template Details Page', () => {
     const mcvNocks = nockManagedClusterView(MOCKED_UUID_1, 'test-cluster', gkScope, gkStatus)
 
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, {})
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterAddonsState, {})
         }}
       >
         <MemoryRouter initialEntries={[path]}>
@@ -775,7 +775,7 @@ describe('Policy Template Details Page', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Wait for the get resource requests to finish
@@ -845,9 +845,9 @@ describe('Policy Template Details Page', () => {
     const mcvNocks = nockManagedClusterView(MOCKED_UUID_1, 'local-cluster', oppolScope, oppolStatus)
 
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, {})
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterAddonsState, {})
         }}
       >
         <MemoryRouter initialEntries={[path]}>
@@ -858,7 +858,7 @@ describe('Policy Template Details Page', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Wait for the get resource requests to finish
@@ -1008,9 +1008,9 @@ describe('Policy Template Details Page', () => {
     const mcvNocks = nockManagedClusterView(MOCKED_UUID_1, 'local-cluster', oppolScope, modifiedOppolStatus)
 
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, {})
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterAddonsState, {})
         }}
       >
         <MemoryRouter initialEntries={[path]}>
@@ -1021,7 +1021,7 @@ describe('Policy Template Details Page', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Wait for the get resource requests to finish
@@ -1067,9 +1067,9 @@ describe('Policy Template Details Page', () => {
     const canUserCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
 
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, {})
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterAddonsState, {})
         }}
       >
         <MemoryRouter initialEntries={[path]}>
@@ -1080,7 +1080,7 @@ describe('Policy Template Details Page', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Wait for the get resource requests to finish
@@ -1118,9 +1118,9 @@ describe('Policy Template Details Page', () => {
     const canUserCreateMCVNock = nockCreate(getCanUserCreateMCVReq, getCanUserCreateMCVRes)
 
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, {})
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterAddonsState, {})
         }}
       >
         <MemoryRouter initialEntries={[path]}>
@@ -1131,7 +1131,7 @@ describe('Policy Template Details Page', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Wait for the get resource requests to finish
@@ -1155,9 +1155,9 @@ describe('Policy Template Details Page', () => {
       'policy.open-cluster-management.io/v1/IamPolicy/limit-cluster-admins'
 
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, {})
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterAddonsState, {})
         }}
       >
         <MemoryRouter initialEntries={[path]}>
@@ -1168,7 +1168,7 @@ describe('Policy Template Details Page', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText('IamPolicy is no longer supported')
@@ -1182,9 +1182,9 @@ describe('Policy Template Details Page', () => {
     const mcvNocks = nockManagedClusterView(MOCKED_UUID_1, 'test-cluster', discoveredScope, configPolicyStatus)
 
     const { container } = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, {})
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterAddonsState, {})
         }}
       >
         <MemoryRouter
@@ -1206,7 +1206,7 @@ describe('Policy Template Details Page', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Wait for delete resource requests to finish
@@ -1254,9 +1254,9 @@ describe('Policy Template Details Page', () => {
     const mcvNocks = nockManagedClusterView(MOCKED_UUID_1, 'test-cluster', vapbScope, vapbStatus)
 
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, {})
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterAddonsState, {})
         }}
       >
         <MemoryRouter
@@ -1278,7 +1278,7 @@ describe('Policy Template Details Page', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Wait for delete resource requests to finish
@@ -1507,9 +1507,9 @@ describe('Policy Template Details Page', () => {
 
     nockIgnoreRBAC()
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, {})
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterAddonsState, {})
         }}
       >
         <MemoryRouter
@@ -1531,7 +1531,7 @@ describe('Policy Template Details Page', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Wait for resource requests to finish
@@ -1681,9 +1681,9 @@ describe('Policy Template Details Page', () => {
 
     nockIgnoreRBAC()
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, {})
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterAddonsState, {})
         }}
       >
         <MemoryRouter
@@ -1705,7 +1705,7 @@ describe('Policy Template Details Page', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForNocks(mcvNocks)
@@ -1779,9 +1779,9 @@ describe('Policy Template Details Page', () => {
 
     nockIgnoreRBAC()
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, {})
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterAddonsState, {})
         }}
       >
         <MemoryRouter
@@ -1803,7 +1803,7 @@ describe('Policy Template Details Page', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForNocks(mcvNocks)
@@ -1897,9 +1897,9 @@ describe('Policy Template Details Page', () => {
 
     nockIgnoreRBAC()
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, {})
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterAddonsState, {})
         }}
       >
         <MemoryRouter
@@ -1921,7 +1921,7 @@ describe('Policy Template Details Page', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForNocks(mcvNocks)
@@ -2086,9 +2086,9 @@ describe('Policy Template Details Page', () => {
 
     // load the page:
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, {})
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterAddonsState, {})
         }}
       >
         <MemoryRouter
@@ -2110,7 +2110,7 @@ describe('Policy Template Details Page', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Wait for delete resource requests to finish
@@ -2180,9 +2180,9 @@ describe('useFetchVapb hook coverage', () => {
     nockIgnoreRBAC()
 
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, {})
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterAddonsState, {})
         }}
       >
         <MemoryRouter
@@ -2203,7 +2203,7 @@ describe('useFetchVapb hook coverage', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForNocks(mcvNocks)
@@ -2249,9 +2249,9 @@ describe('useFetchVapb hook coverage', () => {
     nockIgnoreRBAC()
 
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, {})
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterAddonsState, {})
         }}
       >
         <MemoryRouter
@@ -2272,7 +2272,7 @@ describe('useFetchVapb hook coverage', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForNocks(mcvNocks)
@@ -2318,9 +2318,9 @@ describe('useFetchVapb hook coverage', () => {
     const mcvNocks = nockManagedClusterView(MOCKED_UUID_1, 'test-cluster', gkScope, gkStatus)
 
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, {})
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterAddonsState, {})
         }}
       >
         <MemoryRouter
@@ -2335,7 +2335,7 @@ describe('useFetchVapb hook coverage', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForNocks([canUserCreateMCVNock, ...mcvNocks])

@@ -12,7 +12,7 @@ import { IResource, PolicySetKind } from '../../../resources'
 import { PathParam, useNavigate, useParams } from 'react-router'
 import { getPlacementBindingsForResource, getPlacementsForResource } from '../common/util'
 import { useContext, useEffect, useMemo, useState } from 'react'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 
 import { AcmToastContext } from '../../../ui-components'
 import { LoadingPage } from '../../../components/LoadingPage'
@@ -72,13 +72,13 @@ export function EditPolicySet() {
     usePolicies,
   } = useSharedAtoms()
   const policies = usePolicies()
-  const policySets = useRecoilValue(policySetsState)
-  const namespaces = useRecoilValue(namespacesState)
-  const placements = useRecoilValue(placementsState)
-  const managedClusters = useRecoilValue(managedClustersState)
-  const placementBindings = useRecoilValue(placementBindingsState)
-  const clusterSets = useRecoilValue(managedClusterSetsState)
-  const clusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
+  const policySets = useSharedValue(policySetsState)
+  const namespaces = useSharedValue(namespacesState)
+  const placements = useSharedValue(placementsState)
+  const managedClusters = useSharedValue(managedClustersState)
+  const placementBindings = useSharedValue(placementBindingsState)
+  const clusterSets = useSharedValue(managedClusterSetsState)
+  const clusterSetBindings = useSharedValue(managedClusterSetBindingsState)
   const namespaceNames = useMemo(
     () => namespaces.map((namespace) => namespace.metadata.name ?? '').sort(localeCompare),
     [namespaces]

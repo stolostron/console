@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import type { Meta, StoryObj } from '@storybook/react'
-import { RecoilRoot } from 'recoil' // eslint-disable-line @typescript-eslint/no-restricted-imports
+import { StateProvider } from '~/lib/state-provider'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import {
   ansibleJobState,
@@ -88,25 +88,25 @@ const readyNodePool: NodePool = {
   },
 }
 
-const RecoilDecorator = (Story: React.ComponentType) => (
-  <RecoilRoot
-    initializeState={({ set }) => {
-      set(ansibleJobState, [])
-      set(clusterImageSetsState, [])
-      set(agentMachinesState, [])
-      set(agentsState, [])
-      set(agentClusterInstallsState, [])
+const StateDecorator = (Story: React.ComponentType) => (
+  <StateProvider
+    initializeStore={(store) => {
+      store.set(ansibleJobState, [])
+      store.set(clusterImageSetsState, [])
+      store.set(agentMachinesState, [])
+      store.set(agentsState, [])
+      store.set(agentClusterInstallsState, [])
     }}
   >
     <Story />
-  </RecoilRoot>
+  </StateProvider>
 )
 
 const meta: Meta<typeof DistributionField> = {
   title: 'Infrastructure/Clusters/ManagedClusters/DistributionField',
   component: DistributionField,
   parameters: { layout: 'padded' },
-  decorators: [RecoilDecorator],
+  decorators: [StateDecorator],
 }
 
 export default meta

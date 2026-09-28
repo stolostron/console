@@ -4,7 +4,7 @@ import { ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import {
   clusterCuratorsState,
   configMapsState,
@@ -810,18 +810,18 @@ const storageClass = {
 describe('CreateCluster AWS', () => {
   const Component = (props: { subscriptions?: SubscriptionOperator[] }) => {
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClustersState, [])
-          snapshot.set(managedClusterSetsState, [])
-          snapshot.set(secretsState, [providerConnectionAnsible as Secret, providerConnectionAws as Secret])
-          snapshot.set(clusterCuratorsState, mockClusterCurators)
-          snapshot.set(settingsState, {
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClustersState, [])
+          store.set(managedClusterSetsState, [])
+          store.set(secretsState, [providerConnectionAnsible as Secret, providerConnectionAws as Secret])
+          store.set(clusterCuratorsState, mockClusterCurators)
+          store.set(settingsState, {
             ansibleIntegration: 'enabled',
             singleNodeOpenshift: 'enabled',
             awsPrivateWizardStep: 'enabled',
           })
-          snapshot.set(subscriptionOperatorsState, props.subscriptions || [])
+          store.set(subscriptionOperatorsState, props.subscriptions || [])
         }}
       >
         <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?${CLUSTER_INFRA_TYPE_PARAM}=AWS`]}>
@@ -829,7 +829,7 @@ describe('CreateCluster AWS', () => {
             <Route path={NavigationPath.createCluster} element={<CreateClusterPage />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 
@@ -1124,13 +1124,13 @@ describe('CreateCluster AWS', () => {
 describe('CreateCluster on premise', () => {
   const Component = () => {
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClustersState, [])
-          snapshot.set(managedClusterSetsState, [])
-          snapshot.set(secretsState, [providerConnectionAnsible as Secret, providerConnectionAws as Secret])
-          snapshot.set(clusterCuratorsState, mockClusterCurators)
-          snapshot.set(settingsState, {
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClustersState, [])
+          store.set(managedClusterSetsState, [])
+          store.set(secretsState, [providerConnectionAnsible as Secret, providerConnectionAws as Secret])
+          store.set(clusterCuratorsState, mockClusterCurators)
+          store.set(settingsState, {
             ansibleIntegration: 'enabled',
             singleNodeOpenshift: 'enabled',
             awsPrivateWizardStep: 'enabled',
@@ -1142,7 +1142,7 @@ describe('CreateCluster on premise', () => {
             <Route path={NavigationPath.createCluster} element={<CreateClusterPage />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 
@@ -1430,9 +1430,9 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
 
   const Component = () => {
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(configMapsState, [
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(configMapsState, [
             {
               kind: 'ConfigMap',
               apiVersion: 'v1',
@@ -1445,16 +1445,16 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               },
             },
           ])
-          snapshot.set(namespacesState, [
+          store.set(namespacesState, [
             {
               apiVersion: NamespaceApiVersion,
               kind: NamespaceKind,
               metadata: { name: 'clusters' },
             },
           ])
-          snapshot.set(managedClustersState, [])
-          snapshot.set(managedClusterSetsState, [])
-          snapshot.set(managedClusterInfosState, [
+          store.set(managedClustersState, [])
+          store.set(managedClusterSetsState, [])
+          store.set(managedClusterInfosState, [
             {
               apiVersion: ManagedClusterInfoApiVersion,
               kind: ManagedClusterInfoKind,
@@ -1483,7 +1483,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               },
             },
           ])
-          snapshot.set(secretsState, [mockKubevirtSecret as Secret])
+          store.set(secretsState, [mockKubevirtSecret as Secret])
         }}
       >
         <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?${CLUSTER_INFRA_TYPE_PARAM}=kubevirt`]}>
@@ -1491,7 +1491,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
             <Route path={NavigationPath.createCluster} element={<CreateClusterPage />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 
@@ -1637,9 +1637,9 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
 
   const AutomationComponent = ({ curator = upgradeOnlyCurator }: { curator?: ClusterCurator }) => {
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(configMapsState, [
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(configMapsState, [
             {
               kind: 'ConfigMap',
               apiVersion: 'v1',
@@ -1652,16 +1652,16 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               },
             },
           ])
-          snapshot.set(namespacesState, [
+          store.set(namespacesState, [
             {
               apiVersion: NamespaceApiVersion,
               kind: NamespaceKind,
               metadata: { name: 'clusters' },
             },
           ])
-          snapshot.set(managedClustersState, [])
-          snapshot.set(managedClusterSetsState, [])
-          snapshot.set(managedClusterInfosState, [
+          store.set(managedClustersState, [])
+          store.set(managedClusterSetsState, [])
+          store.set(managedClusterInfosState, [
             {
               apiVersion: ManagedClusterInfoApiVersion,
               kind: ManagedClusterInfoKind,
@@ -1690,10 +1690,10 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               },
             },
           ])
-          snapshot.set(secretsState, [mockKubevirtSecret as Secret, providerConnectionAnsible as Secret])
-          snapshot.set(clusterCuratorsState, [curator])
-          snapshot.set(subscriptionOperatorsState, [subscriptionOperator])
-          snapshot.set(settingsState, { ansibleIntegration: 'enabled' })
+          store.set(secretsState, [mockKubevirtSecret as Secret, providerConnectionAnsible as Secret])
+          store.set(clusterCuratorsState, [curator])
+          store.set(subscriptionOperatorsState, [subscriptionOperator])
+          store.set(settingsState, { ansibleIntegration: 'enabled' })
         }}
       >
         <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?${CLUSTER_INFRA_TYPE_PARAM}=kubevirt`]}>
@@ -1701,7 +1701,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
             <Route path={NavigationPath.createCluster} element={<CreateClusterPage />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 
@@ -2045,9 +2045,9 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
 
   const Component = () => {
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(configMapsState, [
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(configMapsState, [
             {
               kind: 'ConfigMap',
               apiVersion: 'v1',
@@ -2060,16 +2060,16 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               },
             },
           ])
-          snapshot.set(namespacesState, [
+          store.set(namespacesState, [
             {
               apiVersion: NamespaceApiVersion,
               kind: NamespaceKind,
               metadata: { name: 'clusters' },
             },
           ])
-          snapshot.set(managedClustersState, [])
-          snapshot.set(managedClusterSetsState, [])
-          snapshot.set(managedClusterInfosState, [
+          store.set(managedClustersState, [])
+          store.set(managedClusterSetsState, [])
+          store.set(managedClusterInfosState, [
             {
               apiVersion: ManagedClusterInfoApiVersion,
               kind: ManagedClusterInfoKind,
@@ -2098,7 +2098,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               },
             },
           ])
-          snapshot.set(secretsState, [mockKubevirtSecret as Secret])
+          store.set(secretsState, [mockKubevirtSecret as Secret])
         }}
       >
         <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?${CLUSTER_INFRA_TYPE_PARAM}=kubevirt`]}>
@@ -2106,7 +2106,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
             <Route path={NavigationPath.createCluster} element={<CreateClusterPage />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 
@@ -2742,9 +2742,9 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
   }
   const Component = () => {
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(configMapsState, [
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(configMapsState, [
             {
               kind: 'ConfigMap',
               apiVersion: 'v1',
@@ -2757,16 +2757,16 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               },
             },
           ])
-          snapshot.set(namespacesState, [
+          store.set(namespacesState, [
             {
               apiVersion: NamespaceApiVersion,
               kind: NamespaceKind,
               metadata: { name: 'new-ns' },
             },
           ])
-          snapshot.set(managedClustersState, [])
-          snapshot.set(managedClusterSetsState, [])
-          snapshot.set(managedClusterInfosState, [
+          store.set(managedClustersState, [])
+          store.set(managedClusterSetsState, [])
+          store.set(managedClusterInfosState, [
             {
               apiVersion: ManagedClusterInfoApiVersion,
               kind: ManagedClusterInfoKind,
@@ -2795,7 +2795,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               },
             },
           ])
-          snapshot.set(secretsState, [
+          store.set(secretsState, [
             {
               apiVersion: ProviderConnectionApiVersion,
               kind: ProviderConnectionKind,
@@ -2816,7 +2816,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               type: 'kubernetes.io/dockerconfigjson',
             } as Secret,
           ])
-          snapshot.set(clusterCuratorsState, mockClusterCurators)
+          store.set(clusterCuratorsState, mockClusterCurators)
         }}
       >
         <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?${CLUSTER_INFRA_TYPE_PARAM}=kubevirt`]}>
@@ -2824,7 +2824,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
             <Route path={NavigationPath.createCluster} element={<CreateClusterPage />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 
@@ -3234,9 +3234,9 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
 
   const Component = () => {
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(configMapsState, [
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(configMapsState, [
             {
               kind: 'ConfigMap',
               apiVersion: 'v1',
@@ -3249,16 +3249,16 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               },
             },
           ])
-          snapshot.set(namespacesState, [
+          store.set(namespacesState, [
             {
               apiVersion: NamespaceApiVersion,
               kind: NamespaceKind,
               metadata: { name: 'test-ns' },
             },
           ])
-          snapshot.set(managedClustersState, [])
-          snapshot.set(managedClusterSetsState, [])
-          snapshot.set(managedClusterInfosState, [
+          store.set(managedClustersState, [])
+          store.set(managedClusterSetsState, [])
+          store.set(managedClusterInfosState, [
             {
               apiVersion: ManagedClusterInfoApiVersion,
               kind: ManagedClusterInfoKind,
@@ -3287,7 +3287,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               },
             },
           ])
-          snapshot.set(secretsState, [
+          store.set(secretsState, [
             {
               apiVersion: ProviderConnectionApiVersion,
               kind: ProviderConnectionKind,
@@ -3305,7 +3305,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               type: 'kubernetes.io/dockerconfigjson',
             } as Secret,
           ])
-          snapshot.set(clusterCuratorsState, mockClusterCurators)
+          store.set(clusterCuratorsState, mockClusterCurators)
         }}
       >
         <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?${CLUSTER_INFRA_TYPE_PARAM}=kubevirt`]}>
@@ -3313,7 +3313,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
             <Route path={NavigationPath.createCluster} element={<CreateClusterPage />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 
@@ -3725,9 +3725,9 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
 
   const Component = () => {
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(configMapsState, [
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(configMapsState, [
             {
               kind: 'ConfigMap',
               apiVersion: 'v1',
@@ -3740,16 +3740,16 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               },
             },
           ])
-          snapshot.set(namespacesState, [
+          store.set(namespacesState, [
             {
               apiVersion: NamespaceApiVersion,
               kind: NamespaceKind,
               metadata: { name: 'test-ns' },
             },
           ])
-          snapshot.set(managedClustersState, [])
-          snapshot.set(managedClusterSetsState, [])
-          snapshot.set(managedClusterInfosState, [
+          store.set(managedClustersState, [])
+          store.set(managedClusterSetsState, [])
+          store.set(managedClusterInfosState, [
             {
               apiVersion: ManagedClusterInfoApiVersion,
               kind: ManagedClusterInfoKind,
@@ -3778,7 +3778,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               },
             },
           ])
-          snapshot.set(secretsState, [
+          store.set(secretsState, [
             {
               apiVersion: ProviderConnectionApiVersion,
               kind: ProviderConnectionKind,
@@ -3796,7 +3796,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               type: 'kubernetes.io/dockerconfigjson',
             } as Secret,
           ])
-          snapshot.set(clusterCuratorsState, mockClusterCurators)
+          store.set(clusterCuratorsState, mockClusterCurators)
         }}
       >
         <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?${CLUSTER_INFRA_TYPE_PARAM}=kubevirt`]}>
@@ -3804,7 +3804,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
             <Route path={NavigationPath.createCluster} element={<CreateClusterPage />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 
@@ -4281,9 +4281,9 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
 
   const Component = () => {
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(configMapsState, [
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(configMapsState, [
             {
               kind: 'ConfigMap',
               apiVersion: 'v1',
@@ -4296,16 +4296,16 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               },
             },
           ])
-          snapshot.set(namespacesState, [
+          store.set(namespacesState, [
             {
               apiVersion: NamespaceApiVersion,
               kind: NamespaceKind,
               metadata: { name: 'test-ns' },
             },
           ])
-          snapshot.set(managedClustersState, [])
-          snapshot.set(managedClusterSetsState, [])
-          snapshot.set(managedClusterInfosState, [
+          store.set(managedClustersState, [])
+          store.set(managedClusterSetsState, [])
+          store.set(managedClusterInfosState, [
             {
               apiVersion: ManagedClusterInfoApiVersion,
               kind: ManagedClusterInfoKind,
@@ -4334,7 +4334,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               },
             },
           ])
-          snapshot.set(secretsState, [
+          store.set(secretsState, [
             {
               apiVersion: ProviderConnectionApiVersion,
               kind: ProviderConnectionKind,
@@ -4352,7 +4352,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
               type: 'kubernetes.io/dockerconfigjson',
             } as Secret,
           ])
-          snapshot.set(clusterCuratorsState, mockClusterCurators)
+          store.set(clusterCuratorsState, mockClusterCurators)
         }}
       >
         <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?${CLUSTER_INFRA_TYPE_PARAM}=kubevirt`]}>
@@ -4360,7 +4360,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
             <Route path={NavigationPath.createCluster} element={<CreateClusterPage />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 
@@ -4608,9 +4608,9 @@ describe('CreateCluster KubeVirt operator alert', () => {
 
   const Component = (props: { secret: Secret }) => {
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(configMapsState, [
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(configMapsState, [
             {
               kind: 'ConfigMap',
               apiVersion: 'v1',
@@ -4623,16 +4623,16 @@ describe('CreateCluster KubeVirt operator alert', () => {
               },
             },
           ])
-          snapshot.set(namespacesState, [
+          store.set(namespacesState, [
             {
               apiVersion: NamespaceApiVersion,
               kind: NamespaceKind,
               metadata: { name: 'clusters' },
             },
           ])
-          snapshot.set(managedClustersState, [])
-          snapshot.set(managedClusterSetsState, [])
-          snapshot.set(managedClusterInfosState, [
+          store.set(managedClustersState, [])
+          store.set(managedClusterSetsState, [])
+          store.set(managedClusterInfosState, [
             {
               apiVersion: ManagedClusterInfoApiVersion,
               kind: ManagedClusterInfoKind,
@@ -4661,9 +4661,9 @@ describe('CreateCluster KubeVirt operator alert', () => {
               },
             },
           ])
-          snapshot.set(secretsState, [props.secret])
+          store.set(secretsState, [props.secret])
           // No SubscriptionOperator for kubevirt-hyperconverged: operator is not installed on the hub
-          snapshot.set(subscriptionOperatorsState, [])
+          store.set(subscriptionOperatorsState, [])
         }}
       >
         <MemoryRouter initialEntries={[`${NavigationPath.createCluster}?${CLUSTER_INFRA_TYPE_PARAM}=kubevirt`]}>
@@ -4671,7 +4671,7 @@ describe('CreateCluster KubeVirt operator alert', () => {
             <Route path={NavigationPath.createCluster} element={<CreateClusterPage />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 

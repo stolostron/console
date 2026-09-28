@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import {
   policiesState,
   namespacesState,
@@ -35,14 +35,14 @@ import { IResource, Placement, PlacementBinding } from '../../../resources'
 
 function TestCreatePolicyPage(props: { initialResources?: IResource[] }) {
   return (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(policiesState, mockPolicy)
-        snapshot.set(namespacesState, mockNamespaces)
-        snapshot.set(managedClustersState, mockManagedClusters)
-        snapshot.set(placementsState, mockPlacements)
-        snapshot.set(managedClusterSetsState, [mockClusterSet])
-        snapshot.set(managedClusterSetBindingsState, [mockClusterSetBinding])
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(policiesState, mockPolicy)
+        store.set(namespacesState, mockNamespaces)
+        store.set(managedClustersState, mockManagedClusters)
+        store.set(placementsState, mockPlacements)
+        store.set(managedClusterSetsState, [mockClusterSet])
+        store.set(managedClusterSetBindingsState, [mockClusterSetBinding])
       }}
     >
       <MemoryRouter initialEntries={[`${NavigationPath.createPolicy}`]}>
@@ -53,7 +53,7 @@ function TestCreatePolicyPage(props: { initialResources?: IResource[] }) {
           />
         </Routes>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

@@ -2,7 +2,7 @@
 
 import { Cluster, mapClusters } from '../../../../../resources/utils'
 import { useMemo } from 'react'
-import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
+import { useSharedAtoms, useSharedValue } from '../../../../../shared-atoms'
 
 /**
  * Hook to retrieve aggregated list of all clusters
@@ -24,18 +24,18 @@ export function useAllClusters(excludeUnclaimed?: boolean) {
     discoveredClusterState,
   } = useSharedAtoms()
 
-  const managedClusters = useRecoilValue(managedClustersState)
-  const clusterDeployments = useRecoilValue(clusterDeploymentsState)
-  const managedClusterInfos = useRecoilValue(managedClusterInfosState)
-  const certificateSigningRequests = useRecoilValue(certificateSigningRequestsState)
-  const managedClusterAddOns = useRecoilValue(managedClusterAddonsState)
-  const clusterManagementAddOns = useRecoilValue(clusterManagementAddonsState)
-  const clusterClaims = useRecoilValue(clusterClaimsState)
-  const clusterCurators = useRecoilValue(clusterCuratorsState)
-  const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
-  const hostedClusters = useRecoilValue(hostedClustersState)
-  const nodePools = useRecoilValue(nodePoolsState)
-  const discoveredClusters = useRecoilValue(discoveredClusterState)
+  const managedClusters = useSharedValue(managedClustersState)
+  const clusterDeployments = useSharedValue(clusterDeploymentsState)
+  const managedClusterInfos = useSharedValue(managedClusterInfosState)
+  const certificateSigningRequests = useSharedValue(certificateSigningRequestsState)
+  const managedClusterAddOns = useSharedValue(managedClusterAddonsState)
+  const clusterManagementAddOns = useSharedValue(clusterManagementAddonsState)
+  const clusterClaims = useSharedValue(clusterClaimsState)
+  const clusterCurators = useSharedValue(clusterCuratorsState)
+  const agentClusterInstalls = useSharedValue(agentClusterInstallsState)
+  const hostedClusters = useSharedValue(hostedClustersState)
+  const nodePools = useSharedValue(nodePoolsState)
+  const discoveredClusters = useSharedValue(discoveredClusterState)
 
   const clusters = useMemo(
     () =>

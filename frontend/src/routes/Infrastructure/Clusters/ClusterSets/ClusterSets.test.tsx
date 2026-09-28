@@ -3,7 +3,7 @@
 import { render } from '@testing-library/react'
 import { screen } from '@testing-library/dom'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import {
   certificateSigningRequestsState,
   clusterDeploymentsState,
@@ -36,13 +36,13 @@ import { NavigationPath } from '../../../../NavigationPath'
 import Clusters from '../Clusters'
 
 const Component = () => (
-  <RecoilRoot
-    initializeState={(snapshot) => {
-      snapshot.set(managedClusterSetsState, [mockManagedClusterSet, mockGlobalClusterSet])
-      snapshot.set(clusterDeploymentsState, mockClusterDeployments)
-      snapshot.set(managedClusterInfosState, mockManagedClusterInfos)
-      snapshot.set(managedClustersState, mockManagedClusters)
-      snapshot.set(certificateSigningRequestsState, [])
+  <StateProvider
+    initializeStore={(store) => {
+      store.set(managedClusterSetsState, [mockManagedClusterSet, mockGlobalClusterSet])
+      store.set(clusterDeploymentsState, mockClusterDeployments)
+      store.set(managedClusterInfosState, mockManagedClusterInfos)
+      store.set(managedClustersState, mockManagedClusters)
+      store.set(certificateSigningRequestsState, [])
     }}
   >
     <MemoryRouter initialEntries={[NavigationPath.clusterSets]}>
@@ -50,7 +50,7 @@ const Component = () => (
         <Route path={`${NavigationPath.clusters}/*`} element={<Clusters />} />
       </Routes>
     </MemoryRouter>
-  </RecoilRoot>
+  </StateProvider>
 )
 
 describe('ClusterSets page', () => {

@@ -2,7 +2,7 @@
 
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { RolePermissions } from './RolePermissions'
 import { ClusterRole } from '../../../../resources/rbac'
 import { useCurrentRole } from '../RolesPage'
@@ -112,13 +112,13 @@ const mockRoleWithoutPermissions: ClusterRole = {
 }
 
 const Component = ({ roleId = 'test-role-with-permissions' }: { roleId?: string } = {}) => (
-  <RecoilRoot>
+  <StateProvider>
     <MemoryRouter initialEntries={[`/roles/${roleId}/permissions`]}>
       <Routes>
         <Route path="/roles/:id/permissions" element={<RolePermissions />} />
       </Routes>
     </MemoryRouter>
-  </RecoilRoot>
+  </StateProvider>
 )
 
 describe('RolePermissions', () => {

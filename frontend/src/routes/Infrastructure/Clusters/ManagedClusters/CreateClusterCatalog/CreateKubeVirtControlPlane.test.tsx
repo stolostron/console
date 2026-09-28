@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { managedClusterAddonsState, multiClusterEnginesState } from '../../../../../atoms'
 import { nockIgnoreApiPaths } from '../../../../../lib/nock-util'
 import { nockHypershiftStatus } from '../../../../../lib/nock-hypershift-status'
@@ -20,10 +20,10 @@ describe('CreateKubeVirtControlPlane', () => {
   })
   const Component = ({ enableHypershift = true }: { enableHypershift?: boolean }) => {
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, mockManagedClusterAddOn)
-          snapshot.set(multiClusterEnginesState, [
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterAddonsState, mockManagedClusterAddOn)
+          store.set(multiClusterEnginesState, [
             enableHypershift ? mockMultiClusterEngine : mockMultiClusterEngineWithHypershiftDisabled,
           ])
         }}
@@ -33,7 +33,7 @@ describe('CreateKubeVirtControlPlane', () => {
             <Route path={NavigationPath.createKubeVirtControlPlane} element={<CreateKubeVirtControlPlane />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 

@@ -33,7 +33,7 @@ import { Link, generatePath, useNavigate } from 'react-router'
 import { ResourceError, exportObjectString, getISOStringTimestamp } from '../../../resources/utils'
 import { canUser, rbacDelete } from '../../../lib/rbac-util'
 import { useEffect, useMemo, useState } from 'react'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 
 import { Dictionary } from 'lodash'
 import { IResource } from '../../../resources/resource'
@@ -146,11 +146,11 @@ const deleteInfraEnv = (
 const InfraEnvironmentsPage: React.FC = () => {
   const { agentsState, infraEnvironmentsState, infrastructuresState, agentServiceConfigsState, storageClassState } =
     useSharedAtoms()
-  const infraEnvs = useRecoilValue(infraEnvironmentsState)
-  const agents = useRecoilValue(agentsState)
-  const infrastructures = useRecoilValue(infrastructuresState)
-  const agentServiceConfigs = useRecoilValue(agentServiceConfigsState)
-  const storageClasses = useRecoilValue(storageClassState)
+  const infraEnvs = useSharedValue(infraEnvironmentsState)
+  const agents = useSharedValue(agentsState)
+  const infrastructures = useSharedValue(infrastructuresState)
+  const agentServiceConfigs = useSharedValue(agentServiceConfigsState)
+  const storageClasses = useSharedValue(storageClassState)
 
   const [canUserAgentServiceConfig, setCanUserAgentServiceConfig] = useState(false)
   const [isCimConfigurationModalOpen, setIsCimConfigurationModalOpen] = useState(false)
@@ -264,7 +264,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
     })
 
   const { clusterVersionState } = useSharedAtoms()
-  const clusterVersions = useRecoilValue(clusterVersionState)
+  const clusterVersions = useSharedValue(clusterVersionState)
   const localHubName = useLocalHubName()
 
   const [modalProps, setModalProps] = useState<BulkActionModalProps<InfraEnvK8sResource> | { open: false }>({

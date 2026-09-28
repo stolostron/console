@@ -2,7 +2,7 @@
 import { render } from '@testing-library/react'
 import { configureAxe } from 'jest-axe'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { nockGet, nockIgnoreApiPaths } from '../../../../../../../../lib/nock-util'
 import { mockOpenShiftConsoleConfigMap } from '../../../../../../../../lib/test-metadata'
 import { waitForNocks, waitForTestId, waitForText } from '../../../../../../../../lib/test-util'
@@ -19,13 +19,13 @@ const axe = configureAxe({
 describe('HypershiftAzureCLI', () => {
   const Component = () => {
     return (
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter initialEntries={[NavigationPath.createAzureCLI]}>
           <Routes>
             <Route path={NavigationPath.createAzureCLI} element={<HypershiftAzureCLI />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 

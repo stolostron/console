@@ -2,7 +2,7 @@
 
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { clickByText, waitForText } from '../../../../../lib/test-util'
 import { PolicyReport } from '../../../../../resources'
 import { ClusterPolicySidebar } from './ClusterPolicySidebar'
@@ -94,11 +94,11 @@ const mockPolicyReports: PolicyReport = {
 
 describe('ClusterPolicySidebar', () => {
   const Component = () => (
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <ClusterPolicySidebar data={mockPolicyReports} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   test('renders', async () => {
     render(<Component />)

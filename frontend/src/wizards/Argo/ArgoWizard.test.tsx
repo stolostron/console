@@ -2,7 +2,7 @@
 
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { argoCDsState, managedClusterSetsState, namespacesState, subscriptionOperatorsState } from '../../atoms'
 import {
   nockArgoGitBranches,
@@ -50,12 +50,12 @@ const mockNamespaces: Namespace[] = ['openshift-gitops'].map((name) => ({
 
 function TestArgoWizard() {
   return (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(subscriptionOperatorsState, gitOpsOperators)
-        snapshot.set(managedClusterSetsState, mockClusterSets)
-        snapshot.set(argoCDsState, [mockArgoCD])
-        snapshot.set(namespacesState, mockNamespaces)
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(subscriptionOperatorsState, gitOpsOperators)
+        store.set(managedClusterSetsState, mockClusterSets)
+        store.set(argoCDsState, [mockArgoCD])
+        store.set(namespacesState, mockNamespaces)
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.createApplicationArgo]}>
@@ -63,18 +63,18 @@ function TestArgoWizard() {
           <Route path={NavigationPath.createApplicationArgo} element={<ArgoWizard {...props} />} />
         </Routes>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 
 function TestArgoWizardPullModel() {
   return (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(subscriptionOperatorsState, gitOpsOperators)
-        snapshot.set(managedClusterSetsState, mockClusterSets)
-        snapshot.set(argoCDsState, [mockArgoCD])
-        snapshot.set(namespacesState, mockNamespaces)
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(subscriptionOperatorsState, gitOpsOperators)
+        store.set(managedClusterSetsState, mockClusterSets)
+        store.set(argoCDsState, [mockArgoCD])
+        store.set(namespacesState, mockNamespaces)
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.createApplicationArgo]}>
@@ -82,18 +82,18 @@ function TestArgoWizardPullModel() {
           <Route path={NavigationPath.createApplicationArgo} element={<ArgoWizard {...props} isPullModel={true} />} />
         </Routes>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 
 function TestArgoWizardWithGitGeneratorAppSets(testProps: Partial<ArgoWizardProps> = {}) {
   return (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(subscriptionOperatorsState, gitOpsOperators)
-        snapshot.set(managedClusterSetsState, mockClusterSets)
-        snapshot.set(argoCDsState, [mockArgoCD])
-        snapshot.set(namespacesState, mockNamespaces)
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(subscriptionOperatorsState, gitOpsOperators)
+        store.set(managedClusterSetsState, mockClusterSets)
+        store.set(argoCDsState, [mockArgoCD])
+        store.set(namespacesState, mockNamespaces)
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.createApplicationArgo]}>
@@ -101,7 +101,7 @@ function TestArgoWizardWithGitGeneratorAppSets(testProps: Partial<ArgoWizardProp
           <Route path={NavigationPath.createApplicationArgo} element={<ArgoWizard {...props} {...testProps} />} />
         </Routes>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 
@@ -114,13 +114,13 @@ describe('ArgoWizard tests', () => {
     nockIgnoreOperatorCheck(true)
     nockIgnorePlacementDebug()
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter initialEntries={[NavigationPath.createApplicationArgo]}>
           <Routes>
             <Route path={NavigationPath.createApplicationArgo} element={<ArgoWizard {...props} />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('OpenShift GitOps Operator is required to create ApplicationSets.')
     await waitForText('Install the operator')

@@ -3,7 +3,7 @@
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import { ClusterDestroy } from './ClusterDestroy'
 import { Provider } from '../../../../../ui-components'
@@ -121,26 +121,26 @@ const mockDetachCluster: Cluster = {
 describe('ClusterDestroy', () => {
   test('renders the destroying state', async () => {
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route path="*" element={<ClusterDestroy isLoading={true} cluster={mockDestroyCluster} />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     expect(screen.getByText('test-cluster is being destroyed')).toBeInTheDocument()
     expect(screen.getAllByText('View logs')[1]).toBeInTheDocument()
   })
   test('renders the detaching state', async () => {
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route path="*" element={<ClusterDestroy isLoading={true} cluster={mockDetachCluster} />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     expect(screen.getByText('is being detached')).toBeInTheDocument()
     expect(screen.queryByText('View logs')).toBeNull()
@@ -149,13 +149,13 @@ describe('ClusterDestroy', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route path="*" element={<ClusterDestroy isLoading={false} cluster={mockDetachCluster} />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     expect(screen.getByText('was successfully detached')).toBeInTheDocument()
   })
@@ -163,13 +163,13 @@ describe('ClusterDestroy', () => {
   describe('AI', () => {
     test('renders the destroying state without logs btn', async () => {
       render(
-        <RecoilRoot>
+        <StateProvider>
           <MemoryRouter>
             <Routes>
               <Route path="*" element={<ClusterDestroy isLoading={true} cluster={mockDestroyAICluster} />} />
             </Routes>
           </MemoryRouter>
-        </RecoilRoot>
+        </StateProvider>
       )
       expect(screen.getByText('test-ai-cluster is being destroyed')).toBeInTheDocument()
       expect(screen.queryByText('ai:Download Installation Logs')).not.toBeInTheDocument()
@@ -184,7 +184,7 @@ describe('ClusterDestroy', () => {
         },
       }
       render(
-        <RecoilRoot>
+        <StateProvider>
           <MemoryRouter>
             <Routes>
               <Route
@@ -199,7 +199,7 @@ describe('ClusterDestroy', () => {
               />
             </Routes>
           </MemoryRouter>
-        </RecoilRoot>
+        </StateProvider>
       )
       expect(screen.getByText('test-ai-cluster is being destroyed')).toBeInTheDocument()
       expect(screen.queryByText('ai:Download Installation Logs')).toBeInTheDocument()

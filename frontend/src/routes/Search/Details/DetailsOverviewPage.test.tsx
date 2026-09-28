@@ -3,7 +3,7 @@
 
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import DetailsOverviewPage, {
   LablesGroup,
@@ -21,7 +21,7 @@ describe('DetailsOverviewPage', () => {
 
   it('Should correctly return ResourceSearchLink', async () => {
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <ResourceSearchLink
             cluster={'test-cluster'}
@@ -31,7 +31,7 @@ describe('DetailsOverviewPage', () => {
             namespace={'test-namespace'}
           />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Test that the component has rendered correctly with data
@@ -40,11 +40,11 @@ describe('DetailsOverviewPage', () => {
 
   it('Should correctly return empty LablesGroup', async () => {
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <LablesGroup labels={{}} />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Test that the component has rendered correctly with data
@@ -53,11 +53,11 @@ describe('DetailsOverviewPage', () => {
 
   it('Should correctly return LablesGroup', async () => {
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <LablesGroup labels={{ test: 'test1', region: 'east' }} />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Test that the component has rendered correctly with data
@@ -67,11 +67,11 @@ describe('DetailsOverviewPage', () => {
 
   it('Should correctly return empty OwnerReferences', async () => {
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <OwnerReferences namespace={'test-ns'} cluster={'test-cluster'} />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Test that the component has rendered correctly with data
@@ -80,7 +80,7 @@ describe('DetailsOverviewPage', () => {
 
   it('Should correctly return OwnerReferences', async () => {
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <OwnerReferences
             ownerReferences={[
@@ -94,7 +94,7 @@ describe('DetailsOverviewPage', () => {
             cluster={'test-cluster'}
           />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Test that the component has rendered correctly with data
@@ -103,11 +103,11 @@ describe('DetailsOverviewPage', () => {
 
   it('Should correctly return empty ResourceConditions', async () => {
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <ResourceConditions conditions={[]} />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Test that the component has rendered correctly with data
@@ -116,7 +116,7 @@ describe('DetailsOverviewPage', () => {
 
   it('Should correctly return ResourceConditions', async () => {
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <ResourceConditions
             conditions={[
@@ -134,7 +134,7 @@ describe('DetailsOverviewPage', () => {
             ]}
           />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Test that the component has rendered correctly with data
@@ -161,7 +161,7 @@ describe('DetailsOverviewPage', () => {
       resourceError: '',
     }
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
@@ -169,7 +169,7 @@ describe('DetailsOverviewPage', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Test that the component has rendered correctly with data
@@ -192,7 +192,7 @@ describe('DetailsOverviewPage', () => {
       resourceError: 'Error getting resource',
     }
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
@@ -200,7 +200,7 @@ describe('DetailsOverviewPage', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Test that the component has rendered correctly with data
@@ -277,7 +277,7 @@ describe('DetailsOverviewPage', () => {
       resourceError: '',
     }
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
@@ -285,7 +285,7 @@ describe('DetailsOverviewPage', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Test that the component has rendered correctly with data

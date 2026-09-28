@@ -15,7 +15,7 @@ import {
 } from '@openshift-assisted/ui-lib/cim'
 import { useMemo } from 'react'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
-import { atom, useRecoilValue } from 'recoil'
+import { atom, useAtomValue } from 'jotai'
 import type { ClaimMappings } from './resources/authentication'
 import {
   AnsibleJob,
@@ -64,12 +64,11 @@ import {
 } from './resources'
 import type { AnsibleWorkflow, ClusterExtension } from './resources'
 
-let atomArrayKey = 0
 function AtomArray<T>() {
-  return atom<T[]>({ key: (++atomArrayKey).toString(), default: [] })
+  return atom<T[]>([])
 }
 function AtomMap<T>() {
-  return atom<Record<string, T[]>>({ key: (++atomArrayKey).toString(), default: {} })
+  return atom<Record<string, T[]>>({})
 }
 
 // throttle events delay
@@ -134,37 +133,19 @@ export const subscriptionsState = AtomArray<Subscription>()
 export const usersState = AtomArray<User>()
 export const vmClusterRolesState = AtomArray<ClusterRole>()
 
-export const settingsState = atom<Settings>({ key: 'settings', default: {} })
+export const settingsState = atom<Settings>({})
 
-export const isGlobalHubState = atom<boolean>({
-  key: 'isGlobalHub',
-  default: false,
-})
+export const isGlobalHubState = atom<boolean>(false)
 
-export const isFineGrainedRbacEnabledState = atom<boolean>({
-  key: 'isFineGrainedRbacEnabled',
-  default: false,
-})
+export const isFineGrainedRbacEnabledState = atom<boolean>(false)
 
-export const localHubNameState = atom<string>({
-  key: 'localHubName',
-  default: 'local-cluster',
-})
+export const localHubNameState = atom<string>('local-cluster')
 
-export const isHubSelfManagedState = atom<boolean | undefined>({
-  key: 'isHubSelfManaged',
-  default: undefined,
-})
+export const isHubSelfManagedState = atom<boolean | undefined>(undefined)
 
-export const isDirectAuthenticationEnabledState = atom<boolean>({
-  key: 'isDirectAuthenticationEnabled',
-  default: false,
-})
+export const isDirectAuthenticationEnabledState = atom<boolean>(false)
 
-export const claimMappingsState = atom<ClaimMappings | undefined>({
-  key: 'claimMappings',
-  default: undefined,
-})
+export const claimMappingsState = atom<ClaimMappings | undefined>(undefined)
 
 export interface Settings {
   LOG_LEVEL?: string
@@ -207,7 +188,7 @@ export interface SettingsEvent {
 export type ServerSideEventData = WatchEvent | SettingsEvent | { type: 'START' | 'LOADED' }
 
 export function usePolicies() {
-  const policies = useRecoilValue(policiesState)
+  const policies = useAtomValue(policiesState)
   return useMemo(
     () => policies.filter((policy) => !policy.metadata.labels?.['policy.open-cluster-management.io/root-policy']),
     [policies]
@@ -215,7 +196,7 @@ export function usePolicies() {
 }
 
 export function useIsObservabilityInstalled() {
-  const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
+  const clusterManagementAddons = useAtomValue(clusterManagementAddonsState)
   return useMemo(() => {
     return clusterManagementAddons.filter((cma) => cma.metadata.name === 'observability-controller').length > 0
   }, [clusterManagementAddons])
@@ -224,7 +205,7 @@ export function useIsObservabilityInstalled() {
 const DEFAULT_EVENT_STREAM_IDLE_TIMEOUT_MINUTES = 30
 
 export function useEventStreamIdleTimeout(): number {
-  const settings = useRecoilValue(settingsState)
+  const settings = useAtomValue(settingsState)
   return useMemo(() => {
     const raw = settings.EVENT_STREAM_IDLE_TIMEOUT
     if (raw === undefined || raw === '') return DEFAULT_EVENT_STREAM_IDLE_TIMEOUT_MINUTES * 60 * 1000
@@ -238,7 +219,7 @@ export function useEventStreamIdleTimeout(): number {
 const DEFAULT_EVENT_STREAM_IDLE_GRACE_PERIOD_MINUTES = 2
 
 export function useEventStreamIdleGracePeriod(): number {
-  const settings = useRecoilValue(settingsState)
+  const settings = useAtomValue(settingsState)
   return useMemo(() => {
     const raw = settings.EVENT_STREAM_IDLE_GRACE_PERIOD
     if (raw === undefined || raw === '') return DEFAULT_EVENT_STREAM_IDLE_GRACE_PERIOD_MINUTES * 60 * 1000
@@ -250,32 +231,32 @@ export function useEventStreamIdleGracePeriod(): number {
 }
 
 export function useSavedSearchLimit() {
-  const settings = useRecoilValue(settingsState)
+  const settings = useAtomValue(settingsState)
   return useMemo(() => Number.parseInt(settings.SAVED_SEARCH_LIMIT ?? '10'), [settings])
 }
 
 export function useSearchResultLimit() {
-  const settings = useRecoilValue(settingsState)
+  const settings = useAtomValue(settingsState)
   return useMemo(() => Number.parseInt(settings.SEARCH_RESULT_LIMIT ?? '1000'), [settings])
 }
 
 export function useSearchAutocompleteLimit() {
-  const settings = useRecoilValue(settingsState)
+  const settings = useAtomValue(settingsState)
   return useMemo(() => Number.parseInt(settings.SEARCH_AUTOCOMPLETE_LIMIT ?? '10000'), [settings])
 }
 
 export function useAppArgoSearchResultLimit() {
-  const settings = useRecoilValue(settingsState)
+  const settings = useAtomValue(settingsState)
   return useMemo(() => Number.parseInt(settings.APP_ARGO_SEARCH_RESULT_LIMIT ?? '1000'), [settings])
 }
 
 export function useAppOCPSearchResultLimit() {
-  const settings = useRecoilValue(settingsState)
+  const settings = useAtomValue(settingsState)
   return useMemo(() => Number.parseInt(settings.APP_OCP_SEARCH_RESULT_LIMIT ?? '1000'), [settings])
 }
 
 export function useVirtualMachineActionsEnabled() {
-  const settings = useRecoilValue(settingsState)
+  const settings = useAtomValue(settingsState)
   return useMemo(
     // default actions to enabled
     () => {

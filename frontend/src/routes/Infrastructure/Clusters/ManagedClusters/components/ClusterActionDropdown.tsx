@@ -39,7 +39,7 @@ import { ClusterAction, clusterDestroyable, clusterSupportsAction } from '../uti
 import { RemoveAutomationModal } from './RemoveAutomationModal'
 import { DestroyHostedModal } from './DestroyHostedModal'
 import { deleteHypershiftCluster } from '../../../../../lib/delete-hypershift-cluster'
-import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../../shared-atoms'
 import { importHostedControlPlaneCluster } from './HypershiftImportCommand'
 import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { HostedClusterK8sResourceWithChannel } from '../../../../../resources/hosted-cluster'
@@ -66,12 +66,12 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
     open: false,
   })
   const { hostedClustersState, infraEnvironmentsState, agentMachinesState, agentsState } = useSharedAtoms()
-  const agents = useRecoilValue(agentsState)
-  const agentMachines = useRecoilValue(agentMachinesState)
+  const agents = useSharedValue(agentsState)
+  const agentMachines = useSharedValue(agentMachinesState)
   const [showEditLabels, setShowEditLabels] = useState<boolean>(false)
   const [showEditDescription, setShowEditDescription] = useState<boolean>(false)
-  const infraEnvs = useRecoilValue(infraEnvironmentsState)
-  const hostedClusters = useRecoilValue(hostedClustersState)
+  const infraEnvs = useSharedValue(infraEnvironmentsState)
+  const hostedClusters = useSharedValue(hostedClustersState)
   const localHubName = useLocalHubName()
 
   const { cluster } = props

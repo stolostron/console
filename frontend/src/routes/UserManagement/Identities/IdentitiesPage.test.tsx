@@ -1,16 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import IdentitiesPage from './IdentitiesPage'
 
 function Component() {
   return (
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter initialEntries={['/multicloud/user-management/identities/users']}>
         <IdentitiesPage />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 
@@ -45,11 +45,11 @@ describe('IdentitiesPage', () => {
     },
   ])('should highlight $activeTab tab when route is $route', async ({ route, activeTab, inactiveTab }) => {
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter initialEntries={[route]}>
           <IdentitiesPage />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitFor(() => {

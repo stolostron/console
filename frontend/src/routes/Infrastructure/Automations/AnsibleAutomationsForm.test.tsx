@@ -18,7 +18,7 @@ import { ResourceErrorCode } from '../../../resources/utils'
 import { Provider } from '../../../ui-components'
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { clusterCuratorsState, namespacesState, secretsState, subscriptionOperatorsState } from '../../../atoms'
 import {
   nockAnsibleTower,
@@ -79,12 +79,12 @@ const mockSecret: Secret = {
 
 function AddAnsibleTemplateTest(props: { subscriptions?: SubscriptionOperator[] }) {
   return (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(namespacesState, mockNamespaces)
-        snapshot.set(secretsState, [mockSecret])
-        snapshot.set(clusterCuratorsState, [mockClusterCurator])
-        snapshot.set(subscriptionOperatorsState, props.subscriptions || [])
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(namespacesState, mockNamespaces)
+        store.set(secretsState, [mockSecret])
+        store.set(clusterCuratorsState, [mockClusterCurator])
+        store.set(subscriptionOperatorsState, props.subscriptions || [])
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.addAnsibleAutomation]}>
@@ -92,7 +92,7 @@ function AddAnsibleTemplateTest(props: { subscriptions?: SubscriptionOperator[] 
           <Route path={NavigationPath.addAnsibleAutomation} element={<AnsibleAutomationsFormPage />} />
         </Routes>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

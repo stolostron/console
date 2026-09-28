@@ -26,7 +26,7 @@ import {
 } from '../../../../../../resources'
 import { HostedClusterK8sResourceWithChannel } from '../../../../../../resources/hosted-cluster'
 import { ClusterStatus } from '../../../../../../resources/utils'
-import { useRecoilValue, useSharedAtoms } from '../../../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../../../shared-atoms'
 import {
   AcmAlert,
   AcmButton,
@@ -92,8 +92,8 @@ export function ClusterOverviewPageContent() {
   const [curatorSummaryModalIsOpen, setCuratorSummaryModalIsOpen] = useState<boolean>(false)
   const { projects } = useProjects()
   const { placementsState, placementDecisionsState } = useSharedAtoms()
-  const placements = useRecoilValue(placementsState)
-  const placementDecisions = useRecoilValue(placementDecisionsState)
+  const placements = useSharedValue(placementsState)
+  const placementDecisions = useSharedValue(placementDecisionsState)
   const placementsForCluster = useMemo(() => {
     return getPlacementsForCluster(cluster.name, placements, placementDecisions)
   }, [cluster, placements, placementDecisions])

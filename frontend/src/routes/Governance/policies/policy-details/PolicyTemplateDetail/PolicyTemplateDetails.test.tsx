@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { PolicyTemplateDetails } from './PolicyTemplateDetails'
 import { TemplateDetailsContext } from './PolicyTemplateDetailsPage'
 import { waitForText } from '../../../../../lib/test-util'
@@ -53,7 +53,7 @@ describe('PolicyTemplateDetails - Labels', () => {
     }
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
@@ -61,7 +61,7 @@ describe('PolicyTemplateDetails - Labels', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Verify Labels field header
@@ -102,7 +102,7 @@ describe('PolicyTemplateDetails - Labels', () => {
     }
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
@@ -110,7 +110,7 @@ describe('PolicyTemplateDetails - Labels', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Verify Labels field is present
@@ -147,7 +147,7 @@ describe('PolicyTemplateDetails - Labels', () => {
     }
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
@@ -155,7 +155,7 @@ describe('PolicyTemplateDetails - Labels', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Verify Labels field is present
@@ -193,7 +193,7 @@ describe('PolicyTemplateDetails - Labels', () => {
     }
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
@@ -201,7 +201,7 @@ describe('PolicyTemplateDetails - Labels', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Verify Labels field exists
@@ -242,7 +242,7 @@ describe('PolicyTemplateDetails - Labels', () => {
     }
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
@@ -250,7 +250,7 @@ describe('PolicyTemplateDetails - Labels', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Verify Labels field exists
@@ -271,7 +271,7 @@ describe('PolicyTemplateDetails - Labels', () => {
     }
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
@@ -279,7 +279,7 @@ describe('PolicyTemplateDetails - Labels', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Should render without crashing
@@ -327,7 +327,7 @@ describe('PolicyTemplateDetails - Labels', () => {
     }
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
@@ -335,7 +335,7 @@ describe('PolicyTemplateDetails - Labels', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Verify Labels field exists
@@ -372,7 +372,7 @@ describe('PolicyTemplateDetails - Labels', () => {
     }
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
@@ -380,7 +380,7 @@ describe('PolicyTemplateDetails - Labels', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Verify Labels field exists

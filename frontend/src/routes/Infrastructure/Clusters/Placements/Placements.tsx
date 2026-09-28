@@ -2,7 +2,7 @@
 
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { Placement, PlacementDefinition, PlacementKind } from '../../../../resources/placement'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 import {
   AcmButton,
   AcmEmptyState,
@@ -47,7 +47,7 @@ import { ClusterSetLinkList } from './utils'
 export default function PlacementsPage() {
   const { t } = useTranslation()
   const { placementsState } = useSharedAtoms()
-  const placements = useRecoilValue(placementsState)
+  const placements = useSharedValue(placementsState)
   const navigate = useNavigate()
 
   return (
@@ -165,10 +165,10 @@ export function PlacementsTable(props: { placements: Placement[]; emptyState: Re
   const { t } = useTranslation()
   const filtersDisplayLimit = 3
   const { placementBindingsState, policiesState, gitOpsClustersState, policySetsState } = useSharedAtoms()
-  const placementBindings = useRecoilValue(placementBindingsState)
-  const policies = useRecoilValue(policiesState)
-  const gitOpsClusters = useRecoilValue(gitOpsClustersState)
-  const policySets = useRecoilValue(policySetsState)
+  const placementBindings = useSharedValue(placementBindingsState)
+  const policies = useSharedValue(policiesState)
+  const gitOpsClusters = useSharedValue(gitOpsClustersState)
+  const policySets = useSharedValue(policySetsState)
   const [canCreatePlacement, setCanCreatePlacement] = useState<boolean>(false)
 
   useEffect(() => {

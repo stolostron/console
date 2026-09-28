@@ -25,7 +25,7 @@ import { PluginContext } from '../../../../lib/PluginContext'
 import { canUser } from '../../../../lib/rbac-util'
 import { getGroupFromApiVersion } from '../../../../resources/utils'
 import { fleetCanUser } from '../../../../resources/utils/fleet-can-user'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 import { fold, onReload, onSave, registerAutoFold } from './utils'
 import { registerSearchYamlStatusDecorations } from './statusYamlDecorations'
 import { prepareResourceForYaml } from '~/components/SyncEditor/statusDecorations'
@@ -56,7 +56,7 @@ export default function YAMLEditor(props: {
   const [stale, setStale] = useState(false)
   const [readOnly, setReadOnly] = useState(true)
   const { isFineGrainedRbacEnabledState } = useSharedAtoms()
-  const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
+  const isFineGrainedRbacEnabled = useSharedValue(isFineGrainedRbacEnabledState)
   const { apiGroup, version } = getGroupFromApiVersion(apiVersion)
   const [resourceUpdate, watchLoaded, watchError] = useFleetK8sWatchResource({
     groupVersionKind: { group: apiGroup, version, kind },

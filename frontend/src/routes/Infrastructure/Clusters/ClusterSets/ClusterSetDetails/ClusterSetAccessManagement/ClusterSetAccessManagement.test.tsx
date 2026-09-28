@@ -3,7 +3,7 @@
 import { render, waitFor } from '@testing-library/react'
 import { screen, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, generatePath } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { NavigationPath } from '../../../../../../NavigationPath'
 import { clickByText, waitForNocks, waitForTestId, waitForText, clickElement } from '~/lib/test-util'
 
@@ -104,9 +104,9 @@ const mockClusterRoleBinding2: ClusterRoleBinding = {
 }
 
 const Component = (props: { isGlobal?: boolean }) => (
-  <RecoilRoot
-    initializeState={(snapshot) => {
-      snapshot.set(managedClusterSetsState, [props.isGlobal ? mockGlobalManagedClusterSet : mockManagedClusterSet])
+  <StateProvider
+    initializeStore={(store) => {
+      store.set(managedClusterSetsState, [props.isGlobal ? mockGlobalManagedClusterSet : mockManagedClusterSet])
     }}
   >
     <MemoryRouter
@@ -120,7 +120,7 @@ const Component = (props: { isGlobal?: boolean }) => (
         <Route path={`${NavigationPath.clusters}/*`} element={<Clusters />} />
       </Routes>
     </MemoryRouter>
-  </RecoilRoot>
+  </StateProvider>
 )
 
 describe('Cluster Sets User management', () => {

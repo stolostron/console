@@ -4,7 +4,7 @@ import { MockedProvider } from '@apollo/client/testing'
 import { render, waitFor } from '@testing-library/react'
 import { GraphQLError } from 'graphql'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { Settings, settingsState } from '../../../../atoms'
 import { nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { SavedSearch } from '../../../../resources'
@@ -150,9 +150,9 @@ const errorMock = [
 describe('SavedSearchesCard', () => {
   test('Renders valid SavedSearchesCard with no saved searches', async () => {
     const { getByText } = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(settingsState, mockSettings)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(settingsState, mockSettings)
         }}
       >
         <MemoryRouter>
@@ -160,7 +160,7 @@ describe('SavedSearchesCard', () => {
             <SavedSearchesCard isUserPreferenceLoading={false} savedSearches={[]} />
           </MockedProvider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Check header strings
@@ -175,9 +175,9 @@ describe('SavedSearchesCard', () => {
 
   test('Renders correctly with saved search count', async () => {
     const { getByText } = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(settingsState, mockSettings)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(settingsState, mockSettings)
         }}
       >
         <MemoryRouter>
@@ -185,7 +185,7 @@ describe('SavedSearchesCard', () => {
             <SavedSearchesCard isUserPreferenceLoading={false} savedSearches={savedSearches} />
           </MockedProvider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Check header strings
@@ -205,9 +205,9 @@ describe('SavedSearchesCard', () => {
   test('Renders error correctly when search is disabled', async () => {
     nockIgnoreApiPaths()
     const { getByText } = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(settingsState, mockSettings)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(settingsState, mockSettings)
         }}
       >
         <MemoryRouter>
@@ -215,7 +215,7 @@ describe('SavedSearchesCard', () => {
             <SavedSearchesCard isUserPreferenceLoading={false} savedSearches={savedSearches} />
           </MockedProvider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Check header strings

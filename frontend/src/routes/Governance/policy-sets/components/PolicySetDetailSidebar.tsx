@@ -50,7 +50,7 @@ function ClusterNameCell({
     </Tooltip>
   )
 }
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath, UNKNOWN_NAMESPACE } from '../../../../NavigationPath'
 import { Policy, PolicySet } from '../../../../resources'
@@ -135,12 +135,12 @@ export function PolicySetDetailSidebar(props: { policySet: PolicySet }) {
   const { t } = useTranslation()
   const { managedClustersState, placementBindingsState, placementDecisionsState, placementsState, policiesState } =
     useSharedAtoms()
-  const managedClusters = useRecoilValue(managedClustersState)
-  const propagatedPolicies = useRecoilValue(policiesState)
+  const managedClusters = useSharedValue(managedClustersState)
+  const propagatedPolicies = useSharedValue(policiesState)
   const policies = useAddRemediationPolicies()
-  const placements = useRecoilValue(placementsState)
-  const placementBindings = useRecoilValue(placementBindingsState)
-  const placementDecisions = useRecoilValue(placementDecisionsState)
+  const placements = useSharedValue(placementsState)
+  const placementBindings = useSharedValue(placementBindingsState)
+  const placementDecisions = useSharedValue(placementDecisionsState)
   const localHubName = useLocalHubName()
   const [type, setType] = useState<'Clusters' | 'Policies'>('Clusters')
   const selectType = (type: 'Clusters' | 'Policies') => {

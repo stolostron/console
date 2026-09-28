@@ -6,7 +6,7 @@ import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
 import { GraphQLError } from 'graphql'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { Settings, settingsState } from '../../../atoms'
 import { wait, clickElement } from '~/lib/test-util'
 import {
@@ -44,9 +44,9 @@ const acmExtension: AcmExtension = {
 describe('SearchResults Page', () => {
   it('should render page in loading state', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(settingsState, mockSettings)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(settingsState, mockSettings)
         }}
       >
         <MemoryRouter>
@@ -60,7 +60,7 @@ describe('SearchResults Page', () => {
             />
           </MockedProvider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     // Test the loading state while apollo query finishes
     expect(screen.getByText('Loading')).toBeInTheDocument()
@@ -115,9 +115,9 @@ describe('SearchResults Page', () => {
       },
     ]
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(settingsState, mockSettings)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(settingsState, mockSettings)
         }}
       >
         <MemoryRouter>
@@ -153,7 +153,7 @@ describe('SearchResults Page', () => {
             />
           </MockedProvider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     // This wait pauses till apollo query is returning data
     await wait()
@@ -341,9 +341,9 @@ describe('SearchResults Page', () => {
       },
     ]
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(settingsState, mockSettings)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(settingsState, mockSettings)
         }}
       >
         <MemoryRouter>
@@ -407,7 +407,7 @@ describe('SearchResults Page', () => {
             />
           </MockedProvider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     // This wait pauses till apollo query is returning data
     await wait()
@@ -611,9 +611,9 @@ describe('SearchResults Page', () => {
       },
     ]
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(settingsState, mockSettings)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(settingsState, mockSettings)
         }}
       >
         <MemoryRouter>
@@ -649,7 +649,7 @@ describe('SearchResults Page', () => {
             />
           </MockedProvider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     // This wait pauses till apollo query is returning data
     await wait()
@@ -734,9 +734,9 @@ describe('SearchResults Page', () => {
       },
     ]
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(settingsState, mockSettings)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(settingsState, mockSettings)
         }}
       >
         <MemoryRouter>
@@ -750,7 +750,7 @@ describe('SearchResults Page', () => {
             />
           </MockedProvider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     // This wait pauses till apollo query is returning data
     await wait()
@@ -807,9 +807,9 @@ describe('SearchResults Page', () => {
       },
     ]
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(settingsState, { VIRTUAL_MACHINE_ACTIONS: 'enabled' })
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(settingsState, { VIRTUAL_MACHINE_ACTIONS: 'enabled' })
         }}
       >
         <MemoryRouter>
@@ -850,7 +850,7 @@ describe('SearchResults Page', () => {
             </PluginContext.Provider>
           </MockedProvider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     // This wait pauses till apollo query is returning data
     await wait()

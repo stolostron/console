@@ -6,7 +6,7 @@ import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 
 import { useNavigate } from 'react-router'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { SavedSearch, UserPreference } from '../../../resources/userpreference'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import { AcmCountCard, AcmExpandableWrapper, AcmToastContext } from '../../../ui-components'
 import { convertStringToQuery, setFederatedErrorAlert } from '../search-helper'
 import { searchClient } from '../search-sdk/search-client'
@@ -42,8 +42,8 @@ export default function SavedSearchQueries(props: {
   const { useSearchResultLimit, isGlobalHubState, settingsState } = useSharedAtoms()
   const searchResultLimit = useSearchResultLimit()
   const searchDefinitions = useSearchDefinitions()
-  const isGlobalHub = useRecoilValue(isGlobalHubState)
-  const settings = useRecoilValue(settingsState)
+  const isGlobalHub = useSharedValue(isGlobalHubState)
+  const settings = useSharedValue(settingsState)
   const [editSavedSearch, setEditSavedSearch] = useState<SavedSearch | undefined>(undefined)
   const [shareSearch, setShareSearch] = useState<SavedSearch | undefined>(undefined)
   const [deleteSearch, setDeleteSearch] = useState<SavedSearch | undefined>(undefined)

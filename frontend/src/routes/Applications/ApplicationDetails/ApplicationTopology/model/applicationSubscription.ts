@@ -13,7 +13,7 @@ import type {
   SubscriptionDecisionsMap,
   SubscriptionHooksMap,
   SubscriptionPlacementsMap,
-  RecoilStates,
+  SharedStates,
 } from '../types'
 import { deepClone } from '../utils'
 
@@ -30,7 +30,7 @@ export const addSubscriptionChannels = async (
   model: SubscriptionApplicationModel,
   app: IResource,
   selectedChannel: string | undefined,
-  recoilStates: RecoilStates
+  sharedStates: SharedStates
 ): Promise<SubscriptionApplicationModel> => {
   // get subscriptions to channels (pipelines)
   const subscriptionNames = getSubscriptionAnnotations(app) as string[]
@@ -40,7 +40,7 @@ export const addSubscriptionChannels = async (
       return !isLocalSubscription(subscriptionName, subscriptionNames)
     })
     const subscriptions = deepClone(
-      getResources(filteredSubscriptions, (recoilStates.subscriptions || []) as Subscription[])
+      getResources(filteredSubscriptions, (sharedStates.subscriptions || []) as Subscription[])
     )
     subscriptions.sort((a, b) => {
       const aName = String(a?.metadata?.name ?? '')
@@ -73,7 +73,7 @@ export const addSubscriptionChannels = async (
       model.subscriptions
     )
     selectedSubscriptions.forEach((subscription) => {
-      const report = (recoilStates.subscriptionReports as SubscriptionReport[] | undefined)?.find((report) => {
+      const report = (sharedStates.subscriptionReports as SubscriptionReport[] | undefined)?.find((report) => {
         return (
           (report?.metadata as any)?.namespace === (subscription?.metadata as any)?.namespace &&
           (report?.metadata as any)?.name === (subscription?.metadata as any)?.name
@@ -90,12 +90,12 @@ export const addSubscriptionChannels = async (
     getAppDecisions(
       decisionsMap,
       model.allClusters,
-      recoilStates.placementDecisions as unknown as PlacementDecisionKind[]
+      sharedStates.placementDecisions as unknown as PlacementDecisionKind[]
     )
-    getAppPlacements(placementsMap, (recoilStates.placements as Placement[]) || [])
+    getAppPlacements(placementsMap, (sharedStates.placements as Placement[]) || [])
 
     // get all channels
-    getAllAppChannels(model.allChannels, subscriptions, (recoilStates.channels as unknown as ChannelKind[]) || [])
+    getAllAppChannels(model.allChannels, subscriptions, (sharedStates.channels as unknown as ChannelKind[]) || [])
 
     getAppChannels(channelsMap, model.allChannels)
   }

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { MemoryRouter, Route, Routes } from 'react-router'
 
 import { NavigationPath } from '../../../../../../NavigationPath'
@@ -47,14 +47,14 @@ jest.mock('react-router', () => {
 
 const Component = () => {
   return (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(clusterImageSetsState, [mockClusterImageSet])
-        snapshot.set(agentsState, mockAgents)
-        snapshot.set(configMapsState, [mockConfigMapAI])
-        snapshot.set(clusterDeploymentsState, [mockClusterDeploymentAI as ClusterDeployment])
-        snapshot.set(agentClusterInstallsState, [mockAgentClusterInstall])
-        snapshot.set(infraEnvironmentsState, [mockInfraEnv1])
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(clusterImageSetsState, [mockClusterImageSet])
+        store.set(agentsState, mockAgents)
+        store.set(configMapsState, [mockConfigMapAI])
+        store.set(clusterDeploymentsState, [mockClusterDeploymentAI as ClusterDeployment])
+        store.set(agentClusterInstallsState, [mockAgentClusterInstall])
+        store.set(infraEnvironmentsState, [mockInfraEnv1])
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.editCluster]}>
@@ -62,7 +62,7 @@ const Component = () => {
           <Route path={NavigationPath.editCluster} element={<EditAICluster />} />
         </Routes>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

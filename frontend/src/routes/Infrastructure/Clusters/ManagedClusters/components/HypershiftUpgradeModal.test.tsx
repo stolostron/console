@@ -7,7 +7,7 @@ import {
   NodePoolK8sResource,
 } from '@openshift-assisted/ui-lib/cim'
 import { act, render, screen } from '@testing-library/react'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { configMapsState } from '../../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockPatch } from '../../../../../lib/nock-util'
 import { ConfigMap, NodePool } from '../../../../../resources'
@@ -1595,7 +1595,7 @@ describe('HypershiftUpgradeModal', () => {
 
     const retResource = !includeSupportedVersion
       ? render(
-          <RecoilRoot>
+          <StateProvider>
             <HypershiftUpgradeModal
               controlPlane={controlPlane}
               nodepools={nodepools}
@@ -1606,12 +1606,12 @@ describe('HypershiftUpgradeModal', () => {
               agentMachines={agentMachines}
               hostedCluster={hostedCluster}
             />
-          </RecoilRoot>
+          </StateProvider>
         )
       : render(
-          <RecoilRoot
-            initializeState={(snapshot) => {
-              snapshot.set(configMapsState, mockConfigMaps)
+          <StateProvider
+            initializeStore={(store) => {
+              store.set(configMapsState, mockConfigMaps)
             }}
           >
             <HypershiftUpgradeModal
@@ -1624,7 +1624,7 @@ describe('HypershiftUpgradeModal', () => {
               agentMachines={agentMachines}
               hostedCluster={hostedCluster}
             />
-          </RecoilRoot>
+          </StateProvider>
         )
 
     return retResource
@@ -2041,9 +2041,9 @@ describe('HypershiftUpgradeModal - SupportVersion', () => {
     nockIgnoreRBAC()
 
     const retResource = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(configMapsState, [
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(configMapsState, [
             {
               kind: 'ConfigMap',
               apiVersion: 'v1',
@@ -2068,7 +2068,7 @@ describe('HypershiftUpgradeModal - SupportVersion', () => {
           agentMachines={agentMachines}
           hostedCluster={hostedCluster}
         />
-      </RecoilRoot>
+      </StateProvider>
     )
 
     return retResource
@@ -2099,9 +2099,9 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
 
     const retResource = configMaps
       ? render(
-          <RecoilRoot
-            initializeState={(snapshot) => {
-              snapshot.set(configMapsState, configMaps)
+          <StateProvider
+            initializeStore={(store) => {
+              store.set(configMapsState, configMaps)
             }}
           >
             <HypershiftUpgradeModal
@@ -2111,10 +2111,10 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
               close={() => {}}
               availableUpdates={availableUpdates}
             />
-          </RecoilRoot>
+          </StateProvider>
         )
       : render(
-          <RecoilRoot>
+          <StateProvider>
             <HypershiftUpgradeModal
               controlPlane={controlPlane}
               nodepools={nodepools}
@@ -2122,7 +2122,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
               close={() => {}}
               availableUpdates={availableUpdates}
             />
-          </RecoilRoot>
+          </StateProvider>
         )
 
     return retResource

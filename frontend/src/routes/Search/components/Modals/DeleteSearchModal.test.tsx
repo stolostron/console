@@ -3,7 +3,7 @@
 // Copyright Contributors to the Open Cluster Management project
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { nockIgnoreApiPaths, nockPatchRequest } from '../../../../lib/nock-util'
 import { wait, waitForNocks, clickElement } from '~/lib/test-util'
 import { UserPreference } from '../../../../resources/userpreference'
@@ -38,7 +38,7 @@ describe('DeleteSearchModal', () => {
   it('should call the delete request with a successful response', async () => {
     const getUserPreferenceNock = nockPatchRequest('/userpreference', mockUserPreference)
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MockedProvider addTypename={false}>
           <DeleteSearchModal
             searchToDelete={{
@@ -52,7 +52,7 @@ describe('DeleteSearchModal', () => {
             setUserPreference={() => {}}
           />
         </MockedProvider>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // find the button and simulate a click

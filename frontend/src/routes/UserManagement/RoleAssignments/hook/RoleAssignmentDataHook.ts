@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useQuery } from '../../../../lib/useQuery'
 import { listGroups, listUsers } from '../../../../resources'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 import { compareStrings } from '../../../../ui-components/AcmTable/AcmTable'
 import { useClusterNamespaceMap } from '../../../../utils/useClusterNamespaceMap'
 import { searchClient } from '../../../Search/search-sdk/search-client'
@@ -106,10 +106,10 @@ const useRoleAssignmentData = (): RoleAssignmentHookReturnType => {
   const [isClusterSetLoading, setIsClusterSetLoading] = useState(true)
 
   const { managedClusterSetsState } = useSharedAtoms()
-  const managedClusterSets = useRecoilValue(managedClusterSetsState)
+  const managedClusterSets = useSharedValue(managedClusterSetsState)
 
   const { managedClustersState } = useSharedAtoms()
-  const allManagedClusters = useRecoilValue(managedClustersState)
+  const allManagedClusters = useSharedValue(managedClustersState)
 
   const clusters = useMemo(() => {
     const manualClusters: Cluster[] = []

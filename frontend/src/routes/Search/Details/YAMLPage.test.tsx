@@ -2,7 +2,7 @@
 import { useFleetK8sWatchResource } from '@stolostron/multicluster-sdk'
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { SearchDetailsContext } from './DetailsPage'
 import YAMLPage from './YAMLPage'
@@ -38,7 +38,7 @@ describe('YAMLPage', () => {
       apiversion: 'v1',
     }
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
@@ -46,7 +46,7 @@ describe('YAMLPage', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Test that the component has rendered correctly with editor header
@@ -64,7 +64,7 @@ describe('YAMLPage', () => {
       apiversion: 'v1',
     }
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
@@ -72,7 +72,7 @@ describe('YAMLPage', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Test that the component has rendered correctly with editor header

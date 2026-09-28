@@ -4,7 +4,7 @@ jest.mock('../discoveredPoliciesWorker.factory')
 import { ApolloError } from '@apollo/client'
 import { render, screen } from '@testing-library/react'
 import { generatePath, MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { channelsState, helmReleaseState, subscriptionsState } from '../../../../atoms'
 import { waitForText } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -74,11 +74,11 @@ describe('DiscoveredPolicyDetailsPage', () => {
     })
 
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(channelsState, [])
-          snapshot.set(helmReleaseState, [])
-          snapshot.set(subscriptionsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(channelsState, [])
+          store.set(helmReleaseState, [])
+          store.set(subscriptionsState, [])
         }}
       >
         <MemoryRouter
@@ -95,7 +95,7 @@ describe('DiscoveredPolicyDetailsPage', () => {
             <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredPolicyDetailsPage />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText('Discovered policies')
@@ -114,11 +114,11 @@ describe('DiscoveredPolicyDetailsPage', () => {
       labelData: undefined,
     })
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(channelsState, [])
-          snapshot.set(helmReleaseState, [])
-          snapshot.set(subscriptionsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(channelsState, [])
+          store.set(helmReleaseState, [])
+          store.set(subscriptionsState, [])
         }}
       >
         <MemoryRouter
@@ -135,7 +135,7 @@ describe('DiscoveredPolicyDetailsPage', () => {
             <Route path={NavigationPath.discoveredByCluster} element={<DiscoveredPolicyDetailsPage />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText('Back to discovered policies')

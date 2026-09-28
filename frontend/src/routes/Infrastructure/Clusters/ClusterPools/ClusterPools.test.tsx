@@ -16,7 +16,7 @@ import { Cluster, ClusterStatus } from '../../../../resources/utils'
 import { render, screen } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { clusterClaimsState, clusterImageSetsState, clusterPoolsState } from '../../../../atoms'
 import {
   nockCreate,
@@ -408,17 +408,17 @@ describe('ClusterPools page', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(clusterPoolsState, [mockClusterPool, mockClusterPoolPending, mockClusterPoolStandbyOnly])
-          snapshot.set(clusterImageSetsState, [mockClusterImageSet])
-          snapshot.set(clusterClaimsState, [mockClusterClaim, mockClusterClaimPending, mockClusterClaimStandbyOnly])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(clusterPoolsState, [mockClusterPool, mockClusterPoolPending, mockClusterPoolStandbyOnly])
+          store.set(clusterImageSetsState, [mockClusterImageSet])
+          store.set(clusterClaimsState, [mockClusterClaim, mockClusterClaimPending, mockClusterClaimStandbyOnly])
         }}
       >
         <MemoryRouter>
           <ClusterPoolsPage />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   })
   test('shows correct available clusters count', async () => {
@@ -548,11 +548,11 @@ describe('Export from clusterpool table', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <ClusterPoolsTable clusterPools={[mockClusterPool]} clusters={[mockCluster]} emptyState={''} />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     window.URL.createObjectURL = jest.fn()
     window.URL.revokeObjectURL = jest.fn()
@@ -578,11 +578,11 @@ describe('Destroy ClusterPool with claimed clusters', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <ClusterPoolsTable clusterPools={[mockClusterPool]} clusters={[mockCluster]} emptyState={''} />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   })
 

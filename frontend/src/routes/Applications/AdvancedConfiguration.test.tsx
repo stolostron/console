@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import {
   applicationsState,
   channelsState,
@@ -243,21 +243,21 @@ const mockClusters = [hubCluster]
 function TestAdvancedConfigurationPage(props: { defaultToggleOption?: ApplicationToggleOptions }) {
   const defaultToggle = props.defaultToggleOption
   return (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(subscriptionsState, mockSubscriptions)
-        snapshot.set(namespacesState, mockNamespaces)
-        snapshot.set(channelsState, mockChannels)
-        snapshot.set(placementDecisionsState, placementDecisions)
-        snapshot.set(applicationsState, mockApplications)
-        snapshot.set(placementsState, placements)
-        snapshot.set(managedClustersState, mockClusters)
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(subscriptionsState, mockSubscriptions)
+        store.set(namespacesState, mockNamespaces)
+        store.set(channelsState, mockChannels)
+        store.set(placementDecisionsState, placementDecisions)
+        store.set(applicationsState, mockApplications)
+        store.set(placementsState, placements)
+        store.set(managedClustersState, mockClusters)
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.advancedConfiguration]}>
         <AdvancedConfiguration defaultToggleOption={defaultToggle} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 
@@ -271,11 +271,11 @@ describe('advanced configuration page', () => {
 
   test('should render deprecation Alert', async () => {
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter initialEntries={[NavigationPath.advancedConfiguration]}>
           <AdvancedConfiguration />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await screen.getByText(
       /placements are managed from the tab of the page\. select > > \. you can also view placement details directly within individual applications or policies\./i

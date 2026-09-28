@@ -2,16 +2,16 @@
 
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { ServiceAccounts } from './ServiceAccounts'
 
 function Component() {
   return (
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <ServiceAccounts />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

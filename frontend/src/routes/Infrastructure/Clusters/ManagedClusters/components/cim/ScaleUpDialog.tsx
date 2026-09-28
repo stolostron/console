@@ -8,7 +8,7 @@ import {
   onChangeBMHHostname,
   onEditHostRole,
 } from '../../CreateCluster/components/assisted-installer/utils'
-import { useSharedAtoms, useRecoilValue } from '../../../../../../shared-recoil'
+import { useSharedAtoms, useSharedValue } from '../../../../../../shared-atoms'
 import { IResource } from '../../../../../../resources'
 import { AgentK8sResource, ScaleUpModal } from '@openshift-assisted/ui-lib/cim'
 
@@ -20,9 +20,9 @@ type ScaleUpDialogProps = {
 
 const ScaleUpDialog = ({ isOpen, closeDialog, clusterName }: ScaleUpDialogProps) => {
   const { agentsState, agentClusterInstallsState, bareMetalHostsState } = useSharedAtoms()
-  const agents = useRecoilValue(agentsState)
-  const bareMetalHosts = useRecoilValue(bareMetalHostsState)
-  const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
+  const agents = useSharedValue(agentsState)
+  const bareMetalHosts = useSharedValue(bareMetalHostsState)
+  const agentClusterInstalls = useSharedValue(agentClusterInstallsState)
   const clusterDeployment = useClusterDeployment({ name: clusterName, namespace: clusterName })
 
   const agentClusterInstall = agentClusterInstalls.find(

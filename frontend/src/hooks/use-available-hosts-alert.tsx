@@ -3,7 +3,7 @@
 import React from 'react'
 import { getAgentsForSelection } from '@openshift-assisted/ui-lib/cim'
 
-import { useRecoilValue, useSharedAtoms } from '../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../shared-atoms'
 import { Trans, useTranslation } from '../lib/acm-i18next'
 import { NavigationPath } from '../NavigationPath'
 
@@ -12,8 +12,8 @@ const useNoAvailableHostsAlert = (
 ): { title: string; content: React.ReactNode } | undefined => {
   const { t } = useTranslation()
   const { agentsState, infraEnvironmentsState } = useSharedAtoms()
-  const agents = useRecoilValue(agentsState)
-  const infraEnvs = useRecoilValue(infraEnvironmentsState)
+  const agents = useSharedValue(agentsState)
+  const infraEnvs = useSharedValue(infraEnvironmentsState)
 
   const alert = React.useMemo(() => {
     const availableAgnets = getAgentsForSelection(agents)
