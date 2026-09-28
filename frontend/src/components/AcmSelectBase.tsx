@@ -208,7 +208,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
 
   const [focusedItemIndex, setFocusedItemIndex] = useState<number | null>(null)
   const [activeItemId, setActiveItemId] = useState<string | null>(null)
-  const menuRef = useRef<HTMLDivElement>(undefined)
+  const menuRef = useRef<HTMLDivElement>(null)
   const textInputRef = useRef<HTMLInputElement>(undefined)
   const skipBlurCommitRef = useRef(false)
   const {
@@ -293,7 +293,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
     resetActiveAndFocusedItem()
   }, [resetActiveAndFocusedItem, variant])
 
-  const onTextInputChange = (_event: React.FormEvent<HTMLInputElement>, value: string) => {
+  const onTextInputChange = (_event: React.SyntheticEvent<HTMLInputElement>, value: string) => {
     setInputValue(value)
     setFilterValue(value)
 
@@ -606,9 +606,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
     if (selections) {
       const item = Children.toArray(props.children).find(
         (child): child is ReactElement<SelectOptionProps> =>
-          isValidElement<SelectOptionProps>(child) &&
-          child.props.value &&
-          child.props.value.toString() === selections.toString()
+          isValidElement<SelectOptionProps>(child) && child.props.value?.toString() === selections.toString()
       )
       if (item) {
         if (item.props.children) {
@@ -800,7 +798,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
         appendTo:
           menuAppendTo && menuAppendTo !== 'parent' ? (menuAppendTo as HTMLElement | (() => HTMLElement)) : 'inline',
       }}
-      innerRef={menuRef as React.MutableRefObject<any>}
+      innerRef={menuRef}
     >
       {renderSelectList()}
       {footer && <MenuFooter>{footer}</MenuFooter>}
