@@ -4,9 +4,9 @@
 import React from 'react'
 import ControlPanelTextArea from './ControlPanelTextArea'
 import { render } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 
 import i18n from 'i18next'
+import { typeElement } from '~/lib/test-util'
 
 const t = i18n.t.bind(i18n)
 
@@ -20,7 +20,7 @@ export const control = {
 const fn = jest.fn()
 
 describe('ControlPanelTextArea component', () => {
-  it('renders as expected', () => {
+  it('renders as expected', async () => {
     const Component = () => {
       return <ControlPanelTextArea key={'key'} control={control} controlId={'controlId'} handleChange={fn} i18n={t} />
     }
@@ -28,7 +28,7 @@ describe('ControlPanelTextArea component', () => {
     const { getByTestId, asFragment, rerender } = render(<Component />)
     expect(asFragment()).toMatchSnapshot()
 
-    userEvent.type(getByTestId('controlId'), 'n')
+    await typeElement(getByTestId('controlId'), 'n')
     expect(control.active[0]).toBe('n')
 
     control.name = ''

@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Matcher, render, screen, SelectorMatcherOptions, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import i18next from 'i18next'
 import { ResourceLabels } from './ResourceLabels'
+import { clickElement } from '~/lib/test-util'
 
 const t = i18next.t.bind(i18next)
 
@@ -104,15 +104,15 @@ describe('ResourceLabels', () => {
     expect(getByText('Git')).toBeTruthy()
     expect(getByText('Helm')).toBeTruthy()
     expect(getByText('Object storage')).toBeTruthy()
-    userEvent.click(screen.getByText('Git'))
+    await clickElement(screen.getByText('Git'))
     await waitFor(() => expect(screen.getByText('https://13.com')).toBeTruthy())
     await waitFor(() => expect(getByTextMultiElement('Branch:', 'main', getByText)).toBeTruthy())
     await waitFor(() => expect(getByTextMultiElement('Path:', 'sadaf', getByText)).toBeTruthy())
-    userEvent.click(screen.getByText('Helm'))
+    await clickElement(screen.getByText('Helm'))
     await waitFor(() => expect(screen.getByText('https://14.com')).toBeTruthy())
     await waitFor(() => expect(getByTextMultiElement('Chart name:', 'testchart', getByText)).toBeTruthy())
     await waitFor(() => expect(getByTextMultiElement('Package version:', '0.1.0', getByText)).toBeTruthy())
-    userEvent.click(screen.getByText('Object storage'))
+    await clickElement(screen.getByText('Object storage'))
     await waitFor(() => expect(screen.getByText('https://15.com')).toBeTruthy())
     await waitFor(() => expect(getByTextMultiElement('Subfolder:', '/test', getByText)).toBeTruthy())
   })
@@ -122,7 +122,7 @@ describe('ResourceLabels', () => {
       <ResourceLabels appRepos={argoGitRepo!} showSubscriptionAttributes={true} isArgoApp={true} translation={t} />
     )
     expect(getByText('Git')).toBeTruthy()
-    userEvent.click(screen.getByText('Git'))
+    await clickElement(screen.getByText('Git'))
     await waitFor(() => expect(screen.getByText('https://test.com')).toBeTruthy())
     await waitFor(() => expect(getByTextMultiElement('Path:', 'helloworld', getByText)).toBeTruthy())
     await waitFor(() => expect(getByTextMultiElement('Revision:', 'sd', getByText)).toBeTruthy())
@@ -133,7 +133,7 @@ describe('ResourceLabels', () => {
       <ResourceLabels appRepos={argoHelmRepo!} showSubscriptionAttributes={true} isArgoApp={true} translation={t} />
     )
     expect(getByText('Helm')).toBeTruthy()
-    userEvent.click(screen.getByText('Helm'))
+    await clickElement(screen.getByText('Helm'))
     await waitFor(() => expect(screen.getByText('https://test.com')).toBeTruthy())
     await waitFor(() => expect(getByTextMultiElement('Chart name:', 'sd', getByText)).toBeTruthy())
     await waitFor(() => expect(getByTextMultiElement('Revision:', 'dsf', getByText)).toBeTruthy())
@@ -146,21 +146,21 @@ describe('ResourceLabels', () => {
     expect(getByText('Git (2)')).toBeTruthy()
     expect(getByText('Helm (2)')).toBeTruthy()
     expect(getByText('Object storage (2)')).toBeTruthy()
-    userEvent.click(screen.getByText('Git (2)'))
+    await clickElement(screen.getByText('Git (2)'))
     await waitFor(() => expect(screen.getByText('https://16.com')).toBeTruthy())
     await waitFor(() => expect(getByTextMultiElement('Branch:', 'branch1', getByText)).toBeTruthy())
     await waitFor(() => expect(getByTextMultiElement('Path:', 'foo', getByText)).toBeTruthy())
     await waitFor(() => expect(screen.getByText('https://165.com')).toBeTruthy())
     await waitFor(() => expect(getByTextMultiElement('Branch:', 'branch2', getByText)).toBeTruthy())
     await waitFor(() => expect(getByTextMultiElement('Path:', 'bar', getByText)).toBeTruthy())
-    userEvent.click(screen.getByText('Helm (2)'))
+    await clickElement(screen.getByText('Helm (2)'))
     await waitFor(() => expect(screen.getByText('https://17.com')).toBeTruthy())
     await waitFor(() => expect(getByTextMultiElement('Chart name:', 'abcde', getByText)).toBeTruthy())
     await waitFor(() => expect(getByTextMultiElement('Package version:', '0.2.0', getByText)).toBeTruthy())
     await waitFor(() => expect(screen.getByText('https://175.com')).toBeTruthy())
     await waitFor(() => expect(getByTextMultiElement('Chart name:', 'chrome', getByText)).toBeTruthy())
     await waitFor(() => expect(getByTextMultiElement('Package version:', '0.3.0', getByText)).toBeTruthy())
-    userEvent.click(screen.getByText('Object storage (2)'))
+    await clickElement(screen.getByText('Object storage (2)'))
     await waitFor(() => expect(screen.getByText('https://18.com')).toBeTruthy())
     await waitFor(() => expect(getByTextMultiElement('Subfolder:', '/test', getByText)).toBeTruthy())
     await waitFor(() => expect(screen.getByText('https://185.com')).toBeTruthy())

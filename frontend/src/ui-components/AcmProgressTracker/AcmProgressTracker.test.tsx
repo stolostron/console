@@ -4,7 +4,7 @@ import { render } from '@testing-library/react'
 import { configureAxe } from 'jest-axe'
 import { AcmProgressTracker } from './AcmProgressTracker'
 import { AcmInlineStatus, StatusType } from '../AcmInlineStatus/AcmInlineStatus'
-import userEvent from '@testing-library/user-event'
+import { clickElement } from '~/lib/test-util'
 
 const axe = configureAxe({
   rules: {
@@ -63,9 +63,9 @@ describe('AcmProgressTracker', () => {
     expect(getByText('Cluster install')).toBeInTheDocument()
     expect(getByText('Klusterlet install')).toBeInTheDocument()
     expect(getByText('Post-creation jobs')).toBeInTheDocument()
-    userEvent.click(getByText('View logs'))
+    await clickElement(getByText('View logs'))
     expect(window.open).toHaveBeenCalledWith('/ansible/url')
-    userEvent.click(getByText('Learn more'))
+    await clickElement(getByText('Learn more'))
     expect(window.open).toHaveBeenCalledWith('/ansible/url/docs')
   })
   test('renders stacked status', async () => {
@@ -86,7 +86,7 @@ describe('AcmProgressTracker', () => {
         }}
       />
     )
-    userEvent.click(getByText('Installing'))
+    await clickElement(getByText('Installing'))
     expect(await axe(container)).toHaveNoViolations()
   })
   test('has zero accessibility defects in stacked status', async () => {

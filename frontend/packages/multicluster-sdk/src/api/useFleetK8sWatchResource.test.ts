@@ -25,7 +25,7 @@ jest.mock('../internal/fleetK8sWatchResource', () => ({
   subscribe: jest.fn(),
 }))
 
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 import { useK8sModel, useK8sWatchResource } from '@openshift-console/dynamic-plugin-sdk'
 import { useFleetK8sAPIPath } from './useFleetK8sAPIPath'
 import { useIsFleetAvailable } from './useIsFleetAvailable'

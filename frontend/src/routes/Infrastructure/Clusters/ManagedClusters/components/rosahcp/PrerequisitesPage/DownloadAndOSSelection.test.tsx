@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import DownloadAndOSSelection from './DownloadAndOSSelection'
+import { selectOptionsElement, clickElement } from '~/lib/test-util'
 
 describe('DownloadAndOSSelection', () => {
   test('should render the OS dropdown', () => {
@@ -30,7 +30,7 @@ describe('DownloadAndOSSelection', () => {
     render(<DownloadAndOSSelection />)
 
     const select = screen.getByLabelText('Select operating system')
-    await userEvent.selectOptions(select, 'windows')
+    await selectOptionsElement(select, 'windows')
 
     const downloadLink = screen.getByText('Download the ROSA CLI').closest('a')
     expect(downloadLink).toHaveAttribute('href', expect.stringContaining('rosa-windows.zip'))
@@ -41,7 +41,7 @@ describe('DownloadAndOSSelection', () => {
     render(<DownloadAndOSSelection onDownloadClick={mockOnDownloadClick} />)
 
     const downloadButton = screen.getByText('Download the ROSA CLI')
-    await userEvent.click(downloadButton)
+    await clickElement(downloadButton)
 
     expect(mockOnDownloadClick).toHaveBeenCalledWith(expect.stringContaining('rosa-'), expect.any(String))
   })

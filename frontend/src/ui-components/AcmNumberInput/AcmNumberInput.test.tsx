@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { fireEvent, render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { useState } from 'react'
 import { AcmForm, AcmSubmit } from '../AcmForm/AcmForm'
 import { AcmNumberInput } from './AcmNumberInput'
 import { I18nextProvider } from 'react-i18next'
 import i18n from '../../lib/i18n'
+import { clickElement } from '~/lib/test-util'
 
 describe('AcmNumberInput', () => {
   const NumberInput = () => <AcmNumberInput label="Number input" id="number-input" value={5} onChange={() => null} />
@@ -41,7 +41,7 @@ describe('AcmNumberInput', () => {
     }
     const { getByText, getByTestId, queryByText } = render(<Component />)
     expect(queryByText('Required')).toBeNull()
-    getByText('Submit').click()
+    await clickElement(getByText('Submit'))
     expect(getByTestId('input-helper')).toBeInTheDocument()
     expect(getByTestId('input-helper')).toContainHTML('Required')
   })
@@ -68,12 +68,12 @@ describe('AcmNumberInput', () => {
     }
 
     const { getByText, getByTestId, getByLabelText, queryByText } = render(<Component />)
-    userEvent.click(getByLabelText('Minus'))
-    getByText('Submit').click()
+    await clickElement(getByLabelText('Minus'))
+    await clickElement(getByText('Submit'))
     expect(getByTestId('input-helper')).toBeInTheDocument()
     expect(getByTestId('input-helper')).toContainHTML('Must be positive')
-    userEvent.click(getByLabelText('Plus'))
-    userEvent.click(getByLabelText('Plus'))
+    await clickElement(getByLabelText('Plus'))
+    await clickElement(getByLabelText('Plus'))
     expect(queryByText('Must be positive')).toBeNull()
   })
 

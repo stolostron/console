@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { renderHook, act } from '@testing-library/react-hooks'
+import { renderHook, act } from '@testing-library/react'
 import { buildMachineTypeOptions, useFetchMachineTypes } from './useFetchMachineTypes'
 import { SelectedSecret } from '../constants/types'
 import type { MachineType } from '~/resources'

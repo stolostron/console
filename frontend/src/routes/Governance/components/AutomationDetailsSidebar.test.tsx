@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { RecoilRoot } from 'recoil'
 import { MemoryRouter } from 'react-router'
 import { AutomationDetailsSidebar } from './AutomationDetailsSidebar'
 import { AnsibleJob, Policy, PolicyAutomation, Secret } from '../../../resources'
 import { enableMapSet } from 'immer'
 import React from 'react'
+import { clickElement } from '~/lib/test-util'
 
 // Enable immer for Sets
 enableMapSet()
@@ -278,7 +278,7 @@ describe('AutomationDetailsSidebar', () => {
       </RecoilRoot>
     )
 
-    userEvent.click(screen.getByText('Edit'))
+    await clickElement(screen.getByText('Edit'))
 
     // Check that navigate was called with the right path
     expect(mockNavigate).toHaveBeenCalled()
@@ -298,7 +298,7 @@ describe('AutomationDetailsSidebar', () => {
       </RecoilRoot>
     )
 
-    userEvent.click(screen.getByText('Cancel'))
+    await clickElement(screen.getByText('Cancel'))
 
     expect(mockOnClose).toHaveBeenCalledTimes(1)
   })

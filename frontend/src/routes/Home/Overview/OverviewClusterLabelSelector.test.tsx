@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { RecoilRoot } from 'recoil'
 import {
@@ -17,6 +16,7 @@ import {
   mockClusterManagementAddons,
   mockManagedClusterAddons,
 } from './sharedmocks'
+import { clickElement } from '~/lib/test-util'
 
 describe('OverviewClusterLabelSelector', () => {
   const RenderOverviewClusterLabelSelector = () => {
@@ -61,15 +61,15 @@ describe('OverviewClusterLabelSelector', () => {
     const { getAllByText } = render(<RenderOverviewClusterLabelSelector />)
 
     // pick the label key - cloud
-    userEvent.click(screen.getByPlaceholderText('Select cluster label'))
+    await clickElement(screen.getByPlaceholderText('Select cluster label'))
     await waitFor(() => expect(screen.getByRole('option', { name: 'cloud' })).toBeTruthy())
-    userEvent.click(screen.getByRole('option', { name: 'cloud' }))
+    await clickElement(screen.getByRole('option', { name: 'cloud' }))
 
     // pick the label value - Amazon
     await waitFor(() => expect(screen.getByPlaceholderText('Select label value')).toBeTruthy())
-    userEvent.click(screen.getByPlaceholderText('Select label value'))
+    await clickElement(screen.getByPlaceholderText('Select label value'))
     await waitFor(() => expect(screen.getByText('Amazon')).toBeTruthy())
-    userEvent.click(screen.getByText('Amazon'))
+    await clickElement(screen.getByText('Amazon'))
 
     // Validate chips
     await waitFor(() => expect(getAllByText('cloud')[0]).toBeTruthy())
@@ -91,7 +91,7 @@ describe('OverviewClusterLabelSelector', () => {
         })
       ).toBeTruthy()
     )
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /close dev/i,
       })
@@ -116,7 +116,7 @@ describe('OverviewClusterLabelSelector', () => {
         })
       ).toBeTruthy()
     )
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /close label group env/i,
       })
@@ -141,7 +141,7 @@ describe('OverviewClusterLabelSelector', () => {
         })
       ).toBeTruthy()
     )
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /clear all labels/i,
       })

@@ -15,10 +15,10 @@ const lastEditorLayout = (
     lastEditorLayout: { current: jest.Mock | null }
   }
 ).lastEditorLayout
-import userEvent from '@testing-library/user-event'
 import get from 'lodash/get'
 import set from 'lodash/set'
 import cloneDeep from 'lodash/cloneDeep'
+import { typeElement, replaceTextAtSelection, clickElement } from '~/lib/test-util'
 //import util from 'util'
 
 const mockOneditorchangeCreate = jest.fn()
@@ -131,7 +131,7 @@ describe('SyncEditor component', () => {
     const text = 'kind:'
     const i = input.value.indexOf(text) + text.length - 1
     input.setSelectionRange(i, i + 1)
-    userEvent.type(input, 'abc')
+    replaceTextAtSelection(input, 'abc')
     await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
     decorators = JSON.parse(input.dataset['decorators'] || '')
     //console.log(util.inspect(decorators, { depth: null }))
@@ -191,7 +191,7 @@ describe('SyncEditor component', () => {
     let text = 'disabled: true'
     let i = input.value.indexOf(text) + text.length - 4
     input.setSelectionRange(i, i + 4)
-    userEvent.type(input, 'false')
+    replaceTextAtSelection(input, 'false')
     await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
     expect(clone.onEditorChange).toHaveBeenCalledTimes(1)
     expect(get(onEditorChange.mock.calls, '0.0.resources.0.spec.disabled')).toBeFalsy()
@@ -206,7 +206,7 @@ describe('SyncEditor component', () => {
     text = 'local-cluster'
     i = input.value.indexOf(text)
     input.setSelectionRange(i, i + text.length)
-    userEvent.type(input, 'newthing')
+    replaceTextAtSelection(input, 'newthing')
     await new Promise((resolve) => setTimeout(resolve, 2500)) // wait for debounce
 
     // make sure first user edit is still there
@@ -223,7 +223,14 @@ describe('SyncEditor component', () => {
       )
     ).toBe('newthing')
     const decorators = JSON.parse(input.dataset['decorators'] || '')
-    expect(decorators).toEqual(protectedDecorators)
+    expect(decorators).toEqual(expect.arrayContaining(protectedDecorators))
+    expect(decorators).toContainEqual(
+      expect.objectContaining({
+        options: expect.objectContaining({
+          after: expect.objectContaining({ content: '  # local-cluster' }),
+        }),
+      })
+    )
   })
 
   it('editor toolbar', async () => {
@@ -244,13 +251,13 @@ describe('SyncEditor component', () => {
     let text = 'disabled: true'
     let i = input.value.indexOf(text) + text.length - 4
     input.setSelectionRange(i, i + 4)
-    userEvent.type(input, 'false')
+    replaceTextAtSelection(input, 'false')
     await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
     expect(clone.onEditorChange).toHaveBeenCalledTimes(1)
     expect(get(onEditorChange.mock.calls, '0.0.resources.spec.disabled')).toBeFalsy()
 
     // >>>UNDO--make sure 'disabled: true' is true again
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /undo/i,
       })
@@ -259,7 +266,7 @@ describe('SyncEditor component', () => {
     expect(clone.onEditorChange).toHaveBeenCalledTimes(1)
 
     // // >>>REDO--make sure 'disabled: true' is false again
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /redo/i,
       })
@@ -276,7 +283,7 @@ describe('SyncEditor component', () => {
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 500))
     })
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /show secrets/i,
       })
@@ -289,7 +296,7 @@ describe('SyncEditor component', () => {
         writeText: jest.fn().mockImplementation(() => Promise.resolve()),
       },
     })
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /copy to clipboard/i,
       })
@@ -352,7 +359,7 @@ describe('SyncEditor component', () => {
     const text = 'disabled: true'
     const i = input.value.indexOf(text) + text.length - 4
     input.setSelectionRange(i, i + 4)
-    userEvent.type(input, 'false')
+    replaceTextAtSelection(input, 'false')
     await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
     expect(clone.onEditorChange).toHaveBeenCalledTimes(1)
     expect(get(onEditorChange.mock.calls, '0.0.resources.spec.disabled')).toBeFalsy()
@@ -414,7 +421,7 @@ describe('SyncEditor component', () => {
       const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
       await waitFor(() => expect(input).not.toHaveValue(''))
       onStatusChange.mockClear()
-      userEvent.type(input, 'x')
+      await typeElement(input, 'x')
       expect(onStatusChange).toHaveBeenCalledWith(ValidationStatus.pending)
     })
 
@@ -424,7 +431,7 @@ describe('SyncEditor component', () => {
       set(clone, 'resources.0.spec.disabled', false)
       render(<SyncEditor {...clone} />)
       await waitFor(() => screen.getByRole('textbox', { name: /monaco/i }))
-      userEvent.click(screen.getByRole('checkbox', { name: /show changes/i }))
+      await clickElement(screen.getByRole('checkbox', { name: /show changes/i }))
       await waitFor(() => expect(screen.getByRole('textbox', { name: /monaco-diff/i })).toBeInTheDocument())
     })
 
@@ -435,7 +442,7 @@ describe('SyncEditor component', () => {
       const input = screen.getByRole('textbox', { name: /monaco/i }) as HTMLTextAreaElement
       await waitFor(() => expect(input).not.toHaveValue(''))
       input.blur()
-      userEvent.click(screen.getByRole('checkbox', { name: /show changes/i }))
+      await clickElement(screen.getByRole('checkbox', { name: /show changes/i }))
       await waitFor(() => screen.getByRole('textbox', { name: /monaco-diff/i }))
       set(clone, 'resources.0.metadata.annotations', { test: 'compare' })
       rerender(<SyncEditor {...clone} />)
@@ -450,8 +457,8 @@ describe('SyncEditor component', () => {
       render(<SyncEditor {...clone} />)
       await waitFor(() => screen.getByRole('textbox', { name: /monaco-diff/i }))
       await waitFor(() => expect(lastDiffNavigator.current).not.toBeNull())
-      userEvent.click(screen.getByRole('button', { name: /previous change/i }))
-      userEvent.click(screen.getByRole('button', { name: /next change/i }))
+      await clickElement(screen.getByRole('button', { name: /previous change/i }))
+      await clickElement(screen.getByRole('button', { name: /next change/i }))
       expect(lastDiffNavigator.current?.previous).toHaveBeenCalledTimes(1)
       expect(lastDiffNavigator.current?.next).toHaveBeenCalledTimes(1)
     })
@@ -535,7 +542,7 @@ describe('SyncEditor component', () => {
       const originalLayoutMock = lastEditorLayout.current!
       expect(originalLayoutMock).toHaveBeenCalledWith({ width: 800, height: 564 })
       await act(async () => {
-        userEvent.click(screen.getByRole('checkbox', { name: /show changes/i }))
+        await clickElement(screen.getByRole('checkbox', { name: /show changes/i }))
       })
       await waitFor(() => expect(screen.getByRole('textbox', { name: /monaco-diff/i })).toBeInTheDocument())
       expect(lastEditorLayout.current).not.toBe(originalLayoutMock)

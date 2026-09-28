@@ -3,13 +3,12 @@
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { ClusterCurator } from '../../../../../resources'
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { RemoveAutomationModal } from './RemoveAutomationModal'
 import { RecoilRoot } from 'recoil'
 import { MemoryRouter } from 'react-router'
 import { clusterCuratorsState } from '../../../../../atoms'
 import { nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../lib/nock-util'
-import { waitForNocks } from '../../../../../lib/test-util'
+import { waitForNocks, clickElement } from '~/lib/test-util'
 
 const mockClose = jest.fn()
 
@@ -43,7 +42,7 @@ describe('RemoveAutomationModal', () => {
     nockDelete(deleteSecrets2.req, deleteSecrets2.res) // delete 'secrets' in 'local-cluster' namespace
 
     // click remove
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /remove/i,
       })
@@ -71,7 +70,7 @@ describe('RemoveAutomationModal', () => {
     const nockSecretInstall = nockDelete(deleteHostedSecretInstall.req, deleteHostedSecretInstall.res)
     const nockSecretUpgrade = nockDelete(deleteHostedSecretUpgrade.req, deleteHostedSecretUpgrade.res)
 
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /remove/i,
       })

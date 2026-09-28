@@ -60,7 +60,7 @@ import {
   ValidationProvider,
 } from './contexts/ValidationProvider'
 import { ReviewStep } from './review/ReviewStep'
-import { Step } from './Step'
+import { Step, StepProps } from './Step'
 
 export interface WizardProps {
   wizardStrings?: WizardStrings
@@ -179,7 +179,7 @@ type WizardFooterProps = {
   onSubmit: WizardSubmit
   submitButtonText?: string
   submittingButtonText?: string
-  steps: ReactElement[]
+  steps: ReactElement<StepProps>[]
   isLoading?: boolean
 }
 
@@ -223,7 +223,10 @@ function WizardInternal({
   const { reviewLabel, stepsAriaLabel, contentAriaLabel } = useStringContext()
   const resolvedReviewStorageKey = reviewStorageKey ?? defaultReviewStorageKeyFromId(id ?? '')
   const stepComponents = useMemo(
-    () => Children.toArray(children).filter((child) => isValidElement(child) && child.type === Step) as ReactElement[],
+    () =>
+      Children.toArray(children).filter(
+        (child) => isValidElement(child) && child.type === Step
+      ) as ReactElement<StepProps>[],
     [children]
   )
 
@@ -479,7 +482,7 @@ function MyFooter(props: WizardFooterProps) {
   )
 }
 
-function RenderHiddenSteps(props: { stepComponents: ReactElement[] }) {
+function RenderHiddenSteps(props: { stepComponents: ReactElement<StepProps>[] }) {
   const { activeStep } = useWizardContext()
   return (
     <DisplayModeContext.Provider value={DisplayMode.StepsHidden}>

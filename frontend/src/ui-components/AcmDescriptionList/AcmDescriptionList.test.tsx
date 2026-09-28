@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { AcmDescriptionList, ListItems } from './AcmDescriptionList'
+import { clickElement } from '~/lib/test-util'
 
 describe('AcmDescriptionList', () => {
   const leftItems = [
@@ -19,22 +19,22 @@ describe('AcmDescriptionList', () => {
   const DescriptionList = (props: { leftItems: ListItems[]; rightItems?: ListItems[]; id?: string }) => (
     <AcmDescriptionList title="Details" leftItems={props.leftItems} rightItems={props.rightItems} id={props.id} />
   )
-  test('renders', () => {
+  test('renders', async () => {
     const { queryByText, getByRole } = render(
       <DescriptionList leftItems={leftItems} rightItems={rightItems} id="test1" />
     )
     expect(queryByText('Details')).toBeInTheDocument()
     expect(queryByText('Name')).toBeInTheDocument()
     expect(queryByText('Namespace')).toBeInTheDocument()
-    userEvent.click(getByRole('button'))
+    await clickElement(getByRole('button'))
     expect(queryByText('Name')).toBeNull()
   })
-  test('renders if only given left items', () => {
+  test('renders if only given left items', async () => {
     const { queryByText, getByRole } = render(<DescriptionList leftItems={allItems} id="test2" />)
     expect(queryByText('Details')).toBeInTheDocument()
     expect(queryByText('Name')).toBeInTheDocument()
     expect(queryByText('Namespace')).toBeInTheDocument()
-    userEvent.click(getByRole('button'))
+    await clickElement(getByRole('button'))
     expect(queryByText('Name')).toBeNull()
   })
   test('has zero accessibility defects', async () => {

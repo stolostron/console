@@ -18,7 +18,7 @@ import {
 } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { generatePath } from 'react-router'
-import { Fragment, useCallback, useContext, useMemo, useState } from 'react'
+import { Fragment, useCallback, useContext, useMemo, useState, type JSX } from 'react'
 import { AcmMasonry } from '../../../components/AcmMasonry'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { rbacCreate, useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
@@ -44,7 +44,6 @@ import { ClusterPolicyViolationIcons2 } from '../components/ClusterPolicyViolati
 import { SecurityGroupPolicySummarySidebar } from './SecurityGroupPolicySummarySidebar'
 import keyBy from 'lodash/keyBy'
 import type { TFunction } from 'i18next'
-import { JSX } from 'react/jsx-runtime'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { PluginContext } from '../../../lib/PluginContext'
 

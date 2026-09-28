@@ -14,7 +14,7 @@ import {
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import { get } from 'lodash'
-import { useCallback, useContext, useMemo, useState } from 'react'
+import { useCallback, useContext, useMemo, useState, type JSX } from 'react'
 import type { TFunction } from 'i18next'
 import { generatePath, useNavigate } from 'react-router'
 import { HighlightSearchText } from '../../components/HighlightSearchText'

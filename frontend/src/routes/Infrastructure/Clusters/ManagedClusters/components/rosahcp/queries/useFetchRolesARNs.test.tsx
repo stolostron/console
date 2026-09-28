@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 import { useFetchRoleARNs, normalizeAWSAccountRoles } from './useFetchRolesARNs'
 import { SelectedSecret } from '../constants/types'
 import type { RoleARNsResponse, AccountRoleARN } from '~/resources'

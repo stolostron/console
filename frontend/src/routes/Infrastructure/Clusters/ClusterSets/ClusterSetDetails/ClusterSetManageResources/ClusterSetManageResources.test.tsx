@@ -369,9 +369,7 @@ describe('ClusterSetManageClusters', () => {
     await waitForText('No change')
     await waitForText('Transferred')
 
-    await clickByText('Save')
-
-    await waitForNocks([
+    const patchNocks = [
       // remove cluster
       nockPatchManagedCluster(mockManagedClusterRemove.metadata.name!, 'remove'),
       nockPatchClusterDeployment(mockClusterDeploymentRemove.metadata.name!, 'remove'),
@@ -391,7 +389,10 @@ describe('ClusterSetManageClusters', () => {
         'replace',
         mockManagedClusterSet.metadata.name!
       ),
-    ])
+    ]
+    await clickByText('Save')
+
+    await waitForNocks(patchNocks)
 
     await waitForTestId('redirected')
   })

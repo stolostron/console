@@ -2,12 +2,12 @@
 
 import { ButtonVariant } from '@patternfly/react-core'
 import { render, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { useState } from 'react'
 import { AcmAlertGroup, AcmAlertProvider } from '../AcmAlert/AcmAlert'
 import { AcmTextInput } from '../AcmTextInput/AcmTextInput'
 import { AcmForm, AcmSubmit } from './AcmForm'
+import { typeElement } from '~/lib/test-util'
 
 describe('AcmForm', () => {
   test('renders', () => {
@@ -63,7 +63,7 @@ describe('AcmForm', () => {
     await waitFor(() => expect(getByText('Submit').parentElement).toHaveAttribute('disabled'))
     expect(getByTestId('input')).toHaveAttribute('aria-invalid', 'true')
 
-    userEvent.type(getByTestId('input'), 'Hello')
+    await typeElement(getByTestId('input'), 'Hello')
 
     expect(getByTestId('input')).toHaveAttribute('aria-invalid', 'false')
     expect(getByText('Submit')).not.toHaveAttribute('disabled')

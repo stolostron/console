@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { AgentK8sResource, AgentServiceConfigK8sResource, InfraEnvK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
@@ -13,7 +12,8 @@ import {
   getCSVExportSpies,
   waitForTestId,
   waitForText,
-} from '../../../lib/test-util'
+  clickElement,
+} from '~/lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import InfraEnvironmentsPage, {
   getFirstAgentServiceConfig,
@@ -108,11 +108,11 @@ describe('Infrastructure Environments page', () => {
     await waitForText(infraEnvName, true)
 
     // select mass-delete action
-    userEvent.click(getAllByRole('checkbox')[0])
-    getByText('Actions').click()
+    await clickElement(getAllByRole('checkbox')[0])
+    await clickElement(getByText('Actions'))
     getByText('Delete infrastructure environments')
     expect(getByText('Delete infrastructure environments')).not.toHaveAttribute('disabled')
-    userEvent.click(getByText('Delete infrastructure environments'))
+    await clickElement(getByText('Delete infrastructure environments'))
   })
 })
 
@@ -158,8 +158,8 @@ describe('Export from host inventory table', () => {
 
     const { blobConstructorSpy, createElementSpy } = getCSVExportSpies()
 
-    userEvent.click(getByLabelText('export-search-result'))
-    userEvent.click(getByText('Export all to CSV'))
+    await clickElement(getByLabelText('export-search-result'))
+    await clickElement(getByText('Export all to CSV'))
 
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [
@@ -188,7 +188,7 @@ describe('InfraEnvironmentsPage - Version-specific URLs', () => {
     it('should use /catalog path for storage operator link on OCP 4.21', async () => {
       render(<Component />)
       await waitForText('Host inventory', true)
-      userEvent.click(screen.getByRole('button', { name: /install storage operator/i }))
+      await clickElement(screen.getByRole('button', { name: /install storage operator/i }))
       expect(mockNavigate).toHaveBeenCalledWith('/catalog/ns/multicluster-engine?category=storage')
     })
   })
@@ -208,7 +208,7 @@ describe('InfraEnvironmentsPage - Version-specific URLs', () => {
     it('should use /operatorhub path for storage operator link on OCP 4.19', async () => {
       render(<Component />)
       await waitForText('Host inventory', true)
-      userEvent.click(screen.getByRole('button', { name: /install storage operator/i }))
+      await clickElement(screen.getByRole('button', { name: /install storage operator/i }))
       expect(mockNavigate).toHaveBeenCalledWith('/operatorhub/ns/multicluster-engine?category=Storage')
     })
   })

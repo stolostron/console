@@ -2,10 +2,10 @@
 
 import { SelectGroup, SelectOption } from '@patternfly/react-core'
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { useState } from 'react'
 import { AcmSelectBase, SelectVariant } from './AcmSelectBase'
+import { clickElement, typeElement, tab, clearElement } from '~/lib/test-util'
 
 describe('AcmSelectBase', () => {
   describe('single variant', () => {
@@ -40,9 +40,9 @@ describe('AcmSelectBase', () => {
       // MenuToggle uses role=combobox on a button; known PatternFly pattern flagged by axe
       expect(await axe(container, { rules: { 'aria-allowed-role': { enabled: false } } })).toHaveNoViolations()
 
-      userEvent.click(screen.getByRole('combobox', { name: /select a color/i }))
+      await clickElement(screen.getByRole('combobox', { name: /select a color/i }))
       await waitFor(() => expect(screen.getByRole('option', { name: /red/i })).toBeVisible())
-      userEvent.click(screen.getByRole('option', { name: /red/i }))
+      await clickElement(screen.getByRole('option', { name: /red/i }))
 
       await waitFor(() => expect(onSelect).toHaveBeenCalledWith('red'))
     })
@@ -56,13 +56,13 @@ describe('AcmSelectBase', () => {
       const onClear = jest.fn()
       render(<SingleSelect selections="red" onClear={onClear} />)
 
-      userEvent.click(screen.getByRole('button', { name: /clear input value/i }))
+      await clickElement(screen.getByRole('button', { name: /clear input value/i }))
       await waitFor(() => expect(onClear).toHaveBeenCalled())
     })
 
     it('opens the menu when the toggle is clicked', async () => {
       render(<SingleSelect />)
-      userEvent.click(screen.getByRole('combobox', { name: /select a color/i }))
+      await clickElement(screen.getByRole('combobox', { name: /select a color/i }))
       await waitFor(() => expect(screen.getByRole('option', { name: /red/i })).toBeVisible())
     })
 
@@ -100,9 +100,9 @@ describe('AcmSelectBase', () => {
         />
       )
 
-      userEvent.click(getTypeaheadInput('options-select'))
+      await clickElement(getTypeaheadInput('options-select'))
       await waitFor(() => expect(screen.getByText('Alpha')).toBeVisible())
-      userEvent.click(screen.getByText('Alpha'))
+      await clickElement(screen.getByText('Alpha'))
 
       await waitFor(() => expect(onSelect).toHaveBeenCalledWith('alpha'))
     })
@@ -118,7 +118,7 @@ describe('AcmSelectBase', () => {
         />
       )
 
-      userEvent.click(getTypeaheadInput('empty-typeahead'))
+      await clickElement(getTypeaheadInput('empty-typeahead'))
       await waitFor(() => expect(screen.getByText(/no results found/i)).toBeInTheDocument())
     })
 
@@ -137,7 +137,7 @@ describe('AcmSelectBase', () => {
         </AcmSelectBase>
       )
 
-      userEvent.type(getTypeaheadInput('creatable-select'), 'custom-value')
+      await typeElement(getTypeaheadInput('creatable-select'), 'custom-value')
       await waitFor(() => expect(screen.getByText(/create new custom-value/i)).toBeVisible())
     })
 
@@ -155,7 +155,7 @@ describe('AcmSelectBase', () => {
         </AcmSelectBase>
       )
 
-      userEvent.type(getTypeaheadInput('filter-select'), 'zzzz')
+      await typeElement(getTypeaheadInput('filter-select'), 'zzzz')
       await waitFor(() => expect(screen.getByText(/no results found for zzzz/i)).toBeVisible())
     })
 
@@ -175,7 +175,7 @@ describe('AcmSelectBase', () => {
         </AcmSelectBase>
       )
 
-      userEvent.type(getTypeaheadInput('commit-select'), 'custom{enter}')
+      await typeElement(getTypeaheadInput('commit-select'), 'custom{enter}')
       await waitFor(() => expect(onTypeaheadInputCommit).toHaveBeenCalledWith('custom'))
     })
 
@@ -196,8 +196,8 @@ describe('AcmSelectBase', () => {
       )
 
       const input = getTypeaheadInput('blur-select')
-      userEvent.type(input, 'blurred')
-      userEvent.tab()
+      await typeElement(input, 'blurred')
+      await tab()
 
       await waitFor(() => expect(onTypeaheadInputCommit).toHaveBeenCalledWith('blurred'))
     })
@@ -217,7 +217,7 @@ describe('AcmSelectBase', () => {
         </AcmSelectBase>
       )
 
-      userEvent.clear(getTypeaheadInput('clear-select'))
+      await clearElement(getTypeaheadInput('clear-select'))
       await waitFor(() => expect(onSelect).toHaveBeenCalledWith(''))
     })
 
@@ -235,7 +235,7 @@ describe('AcmSelectBase', () => {
         </AcmSelectBase>
       )
 
-      userEvent.clear(getTypeaheadInput('clear-commit-select'))
+      await clearElement(getTypeaheadInput('clear-commit-select'))
       await waitFor(() => expect(onTypeaheadInputCommit).toHaveBeenCalledWith(''))
     })
 
@@ -253,7 +253,7 @@ describe('AcmSelectBase', () => {
         </AcmSelectBase>
       )
 
-      userEvent.click(screen.getByRole('button', { name: /clear input value/i }))
+      await clickElement(screen.getByRole('button', { name: /clear input value/i }))
       await waitFor(() => expect(onSelect).toHaveBeenCalledWith(''))
     })
 
@@ -274,10 +274,10 @@ describe('AcmSelectBase', () => {
       )
 
       const input = getTypeaheadInput('arrow-select')
-      userEvent.click(input)
+      await clickElement(input)
       await waitFor(() => expect(screen.getByRole('option', { name: /red/i })).toBeVisible())
       // First ArrowDown focuses the first option; Enter selects it
-      userEvent.type(input, '{arrowdown}{enter}')
+      await typeElement(input, '{arrowdown}{enter}')
 
       await waitFor(() => expect(onSelect).toHaveBeenCalledWith('red'))
     })
@@ -296,10 +296,10 @@ describe('AcmSelectBase', () => {
       )
 
       const input = getTypeaheadInput('toggle-select')
-      userEvent.click(input)
+      await clickElement(input)
       await waitFor(() => expect(screen.getByRole('option', { name: /red/i })).toBeVisible())
 
-      userEvent.click(input)
+      await clickElement(input)
       await waitFor(() => expect(screen.queryByRole('option', { name: /red/i })).not.toBeInTheDocument())
     })
 
@@ -326,7 +326,7 @@ describe('AcmSelectBase', () => {
         </AcmSelectBase>
       )
 
-      userEvent.click(getTypeaheadInput('footer-select'))
+      await clickElement(getTypeaheadInput('footer-select'))
       await waitFor(() => expect(screen.getByText('Footer content')).toBeVisible())
     })
 
@@ -376,7 +376,7 @@ describe('AcmSelectBase', () => {
         </AcmSelectBase>
       )
 
-      userEvent.clear(getTypeaheadInput('onclear-select'))
+      await clearElement(getTypeaheadInput('onclear-select'))
       await waitFor(() => expect(onClear).toHaveBeenCalled())
     })
 
@@ -397,10 +397,10 @@ describe('AcmSelectBase', () => {
       )
 
       const input = getTypeaheadInput('arrowup-select')
-      userEvent.click(input)
+      await clickElement(input)
       await waitFor(() => expect(screen.getByRole('option', { name: /red/i })).toBeVisible())
       // ArrowUp with no focus jumps to the last option
-      userEvent.type(input, '{arrowup}{enter}')
+      await typeElement(input, '{arrowup}{enter}')
       await waitFor(() => expect(onSelect).toHaveBeenCalledWith('green'))
     })
 
@@ -419,7 +419,7 @@ describe('AcmSelectBase', () => {
         </AcmSelectBase>
       )
 
-      userEvent.click(screen.getByRole('button', { name: /clear input value/i }))
+      await clickElement(screen.getByRole('button', { name: /clear input value/i }))
       await waitFor(() => expect(onClear).toHaveBeenCalled())
     })
   })
@@ -452,9 +452,9 @@ describe('AcmSelectBase', () => {
       }
 
       render(<CheckboxSelect />)
-      userEvent.click(screen.getByRole('combobox', { name: /checkbox select/i }))
+      await clickElement(screen.getByRole('combobox', { name: /checkbox select/i }))
       await waitFor(() => expect(screen.getByRole('checkbox', { name: /red/i })).toBeInTheDocument())
-      userEvent.click(screen.getByRole('checkbox', { name: /red/i }))
+      await clickElement(screen.getByRole('checkbox', { name: /red/i }))
       await waitFor(() => expect(onSelect).toHaveBeenCalledWith('red'))
     })
   })
@@ -480,7 +480,7 @@ describe('AcmSelectBase', () => {
       expect(screen.getByText('Green')).toBeInTheDocument()
 
       const closeButtons = screen.getAllByRole('button', { name: /close/i })
-      userEvent.click(closeButtons[0])
+      await clickElement(closeButtons[0])
       await waitFor(() => expect(onSelect).toHaveBeenCalled())
     })
 
@@ -518,9 +518,9 @@ describe('AcmSelectBase', () => {
         </AcmSelectBase>
       )
 
-      userEvent.click(getTypeaheadInput('typeahead-checkbox'))
+      await clickElement(getTypeaheadInput('typeahead-checkbox'))
       await waitFor(() => expect(screen.getByText('Green')).toBeVisible())
-      userEvent.click(screen.getByText('Green'))
+      await clickElement(screen.getByText('Green'))
       await waitFor(() => expect(onSelect).toHaveBeenCalledWith('green'))
     })
   })

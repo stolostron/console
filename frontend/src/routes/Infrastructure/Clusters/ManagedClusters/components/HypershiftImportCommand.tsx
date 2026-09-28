@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { AlertVariant, List, ListComponent, ListItem, OrderType, Stack, StackItem } from '@patternfly/react-core'
 import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
-import * as React from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import {
   getSecret,
@@ -20,7 +20,6 @@ import { CopyCommandButton, useImportCommand } from './ImportCommand'
 import { LoginCredential } from './LoginCredentials'
 import { getErrorInfo } from '../../../../../components/ErrorPage'
 import type { TFunction } from 'i18next'
-import { useContext } from 'react'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { useLocalHubName } from '../../../../../hooks/use-local-hub'
@@ -99,10 +98,10 @@ export const HypershiftImportCommand = (props: { selectedHostedClusterResource: 
   const { isACMAvailable } = useContext(PluginContext)
   const localHubName = useLocalHubName()
 
-  const [credentials, setCredentials] = React.useState<LoginCredential>()
+  const [credentials, setCredentials] = useState<LoginCredential>()
   const name = cluster?.kubeadmin
   const namespace = cluster?.namespace
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchCredentials = async () => {
       if (name && namespace) {
         const secret = await getSecret({ name, namespace }).promise

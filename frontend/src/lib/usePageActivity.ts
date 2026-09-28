@@ -30,7 +30,7 @@ export function usePageActivity(timeoutMs: number = 0, pageMounted = true) {
   const disabled = timeoutMs <= 0
   const [isActive, setIsActive] = useState(true)
   const [deadline, setDeadline] = useState<number | null>(null)
-  const timerRef = useRef<ReturnType<typeof setTimeout>>()
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
   const isActiveRef = useRef(true)
   const pageMountedRef = useRef(pageMounted)
 

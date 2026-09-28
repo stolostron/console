@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { AcmCountCard } from './AcmCountCard'
+import { clickElement } from '~/lib/test-util'
 
 describe('AcmCountCard', () => {
   const shareAction = jest.fn()
@@ -86,14 +86,14 @@ describe('AcmCountCard', () => {
   test('has zero accessibility defects', async () => {
     const { container, getAllByLabelText } = render(<SuggestedSearchCardWithActions />)
     expect(await axe(container)).toHaveNoViolations()
-    userEvent.click(getAllByLabelText('Actions')[0])
+    await clickElement(getAllByLabelText('Actions')[0])
     expect(await axe(container)).toHaveNoViolations()
   })
 
-  test('validates ACM Suggested Search Card renders and is clickable', () => {
+  test('validates ACM Suggested Search Card renders and is clickable', async () => {
     const { getByTestId } = render(<SuggestedSearchCardWithActions />)
     expect(getByTestId('ACM Suggested Search Card')).toBeInTheDocument()
-    userEvent.click(getByTestId('ACM Suggested Search Card'))
+    await clickElement(getByTestId('ACM Suggested Search Card'))
     expect(cardAction).toHaveBeenCalled()
   })
 
@@ -115,11 +115,11 @@ describe('AcmCountCard', () => {
   test('supports single menu action', async () => {
     const { getAllByLabelText, getByText } = render(<SuggestedSearchCardWithActions />)
     expect(getAllByLabelText('Actions')).toHaveLength(1)
-    userEvent.click(getAllByLabelText('Actions')[0])
+    await clickElement(getAllByLabelText('Actions')[0])
     await waitFor(() => {
       expect(getByText('Share')).toBeVisible()
     })
-    userEvent.click(getByText('Share'))
+    await clickElement(getByText('Share'))
     expect(shareAction).toHaveBeenCalled()
   })
 
@@ -147,7 +147,7 @@ describe('AcmCountCard', () => {
   test('has zero accessibility defects', async () => {
     const { container, getAllByLabelText } = render(<SavedSearchCard />)
     expect(await axe(container)).toHaveNoViolations()
-    userEvent.click(getAllByLabelText('Actions')[0])
+    await clickElement(getAllByLabelText('Actions')[0])
     expect(await axe(container)).toHaveNoViolations()
   })
 

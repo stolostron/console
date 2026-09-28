@@ -74,6 +74,15 @@ function getLabel(type: string | undefined, specs: any) {
   }
 }
 
+const MAX_LABEL_LENGTH = 20
+
+function truncateLabel(label: string): string {
+  if (label.length > MAX_LABEL_LENGTH) {
+    return label.slice(0, MAX_LABEL_LENGTH) + '…'
+  }
+  return label
+}
+
 function getGitOrChartNodeLabel(specs: { resources?: unknown } | undefined) {
   const resources = specs?.resources
   if (!Array.isArray(resources) || resources.length === 0) {
@@ -87,7 +96,10 @@ function getGitOrChartNodeLabel(specs: { resources?: unknown } | undefined) {
       parts.push(String(value))
     }
   }
-  return parts.length > 0 ? parts.join(', ') : 'Repo'
+  if (parts.length === 0) {
+    return 'Repo'
+  }
+  return truncateLabel(parts.join(', '))
 }
 
 const getStatus = (node: {

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React, { Component, Fragment, KeyboardEvent } from 'react'
+import React, { Component, Fragment, KeyboardEvent, type JSX } from 'react'
 import classNames from 'classnames'
 import { Button, Spinner, Toolbar, ToolbarContent, ToolbarGroup, ToolbarItem, Tooltip } from '@patternfly/react-core'
 import { OutlinedListAltIcon, PencilAltIcon } from '@patternfly/react-icons'

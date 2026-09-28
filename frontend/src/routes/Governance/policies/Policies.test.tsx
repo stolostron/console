@@ -10,7 +10,7 @@ import {
   policySetsState,
 } from '../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
-import { getCSVDownloadLink, getCSVExportSpies, waitForText } from '../../../lib/test-util'
+import { clickElement, getCSVDownloadLink, getCSVExportSpies, waitForText } from '~/lib/test-util'
 import { Placement, PlacementBinding } from '../../../resources'
 import PoliciesPage, { AddToPolicySetModal, DeletePolicyModal, PolicyTableItem } from './Policies'
 import {
@@ -61,14 +61,13 @@ describe('Policies Page', () => {
     await waitForText(mockPolicy[0].metadata.name!)
 
     // Sorting
-    screen.getByRole('button', { name: 'Cluster violations' }).click()
-    screen.getByRole('button', { name: 'Namespace' }).click()
-    screen.getByRole('button', { name: 'Name' }).click()
-
+    await clickElement(screen.getByRole('button', { name: 'Cluster violations' }))
+    await clickElement(screen.getByRole('button', { name: 'Namespace' }))
+    await clickElement(screen.getByRole('button', { name: 'Name' }))
     // Verify annotation dropdown
-    screen.getAllByRole('button', { name: /details/i })[0].click()
+    await clickElement(screen.getAllByRole('button', { name: /details/i })[0])
     await waitForText('Add')
-    screen.getAllByRole('button', { name: /details/i })[1].click()
+    await clickElement(screen.getAllByRole('button', { name: /details/i })[1])
     await waitForText('Test policy description')
   })
 
@@ -97,20 +96,18 @@ describe('Policies Page', () => {
     await screen.getAllByRole('button', { name: 'Actions' })
 
     // Add a non-default column
-    screen.getByRole('button', { name: /columns-management/i }).click()
-    await waitForText('Manage columns')
-    screen.getByTestId('checkbox-status').click()
-    screen.getByRole('button', { name: /save/i }).click()
-
+    await clickElement(screen.getByRole('button', { name: /columns-management/i }))
+    await waitForText('Manage columns', true)
+    await clickElement(screen.getByTestId('checkbox-status'))
+    await clickElement(screen.getByRole('button', { name: /save/i }))
     expect(screen.getByRole('columnheader', { name: /Status/ })).toBeInTheDocument()
 
-    screen.getByRole('button', { name: /columns-management/i }).click()
-    await waitForText('Manage columns')
-    screen.getByRole('button', { name: /restore defaults/i }).click()
+    await clickElement(screen.getByRole('button', { name: /columns-management/i }))
+    await waitForText('Manage columns', true)
+    await clickElement(screen.getByRole('button', { name: /restore defaults/i }))
     // Verify that the Status column was unchecked.
     expect(screen.getByTestId('checkbox-status')).not.toBeChecked()
-    screen.getByRole('button', { name: /save/i }).click()
-
+    await clickElement(screen.getByRole('button', { name: /save/i }))
     // Verify that the Status column is no longer present
     expect(screen.queryByRole('columnheader', { name: /Status/ })).not.toBeInTheDocument()
   })
@@ -129,13 +126,12 @@ describe('Policies Page', () => {
       </RecoilRoot>
     )
     // Add the automation column
-    screen.getByRole('button', { name: /columns-management/i }).click()
-    await waitForText('Manage columns')
-    screen.getByTestId('checkbox-automation').click()
-    screen.getByRole('button', { name: /save/i }).click()
+    await clickElement(screen.getByRole('button', { name: /columns-management/i }))
+    await waitForText('Manage columns', true)
+    await clickElement(screen.getByTestId('checkbox-automation'))
+    await clickElement(screen.getByRole('button', { name: /save/i }))
     expect(screen.getByRole('columnheader', { name: /Automation/i })).toBeInTheDocument()
-    screen.getByRole('button', { name: 'Automation' }).click()
-
+    await clickElement(screen.getByRole('button', { name: 'Automation' }))
     expect(screen.getByRole('columnheader', { name: /Automation/i })).toHaveAttribute('aria-sort', 'ascending')
 
     // 'policy-set-with-1-placement-policy'
@@ -164,13 +160,12 @@ describe('Policies Page', () => {
       </RecoilRoot>
     )
     // Add the status column
-    screen.getByRole('button', { name: /columns-management/i }).click()
-    await waitForText('Manage columns')
-    screen.getByTestId('checkbox-status').click()
-    screen.getByRole('button', { name: /save/i }).click()
+    await clickElement(screen.getByRole('button', { name: /columns-management/i }))
+    await waitForText('Manage columns', true)
+    await clickElement(screen.getByTestId('checkbox-status'))
+    await clickElement(screen.getByRole('button', { name: /save/i }))
     expect(screen.getByRole('columnheader', { name: /Status/i })).toBeInTheDocument()
-    screen.getByRole('button', { name: /Status/i }).click()
-
+    await clickElement(screen.getByRole('button', { name: /Status/i }))
     expect(screen.getByRole('columnheader', { name: /Status/i })).toHaveAttribute('aria-sort', 'ascending')
 
     const enabled = screen.getByText('Enabled')
@@ -194,8 +189,7 @@ describe('Policies Page', () => {
       </RecoilRoot>
     )
     expect(screen.getByRole('columnheader', { name: /Source/i })).toBeInTheDocument()
-    screen.getByRole('button', { name: /Source/i }).click()
-
+    await clickElement(screen.getByRole('button', { name: /Source/i }))
     expect(screen.getByRole('columnheader', { name: /Source/i })).toHaveAttribute('aria-sort', 'ascending')
 
     const local = screen.getByText('Local')
@@ -254,7 +248,7 @@ describe('Policies Page', () => {
     )
     await waitForText('enforce (overridden)')
     await waitForText('Filter')
-    screen.getByRole('button', { name: 'Filter' }).click()
+    await clickElement(screen.getByRole('button', { name: 'Filter' }))
     await waitForText('Enforce')
     const enforceDiv = screen.getByText('Enforce').closest('div')
     within(enforceDiv!).getByText('1')
@@ -285,13 +279,13 @@ describe('Add Policy to policy set', () => {
         </MemoryRouter>
       </RecoilRoot>
     )
-    screen
-      .getByRole('combobox', {
+    await clickElement(
+      screen.getByRole('combobox', {
         name: 'Select a policy set',
       })
-      .click()
-    screen.getByRole('option', { name: 'policy-set-with-1-placement' }).click()
-    screen.getByRole('button', { name: 'Add' }).click()
+    )
+    await clickElement(screen.getByRole('option', { name: 'policy-set-with-1-placement' }))
+    await clickElement(screen.getByRole('button', { name: 'Add' }))
     await new Promise((resolve) => setTimeout(resolve, 500))
     expect(isClosed).toBe(true)
   })
@@ -469,9 +463,8 @@ describe('Export from policy table', () => {
 
     const { blobConstructorSpy, createElementSpy } = getCSVExportSpies()
 
-    screen.getByLabelText('export-search-result').click()
-    screen.getByText('Export all to CSV').click()
-
+    await clickElement(screen.getByLabelText('export-search-result'))
+    await clickElement(screen.getByText('Export all to CSV'))
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [
         'Name,Namespace,Status,Remediation,Policy set,Cluster violations,Source,Automation,Created,Description,Standards,Controls,Categories\n' +

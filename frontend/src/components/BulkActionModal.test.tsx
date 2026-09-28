@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen, waitFor, act } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { BulkActionModal } from './BulkActionModal'
+import { clickElement, clickElementWithFakeTimers } from '~/lib/test-util'
 
 function makeRequestResult<T = unknown>(impl: () => Promise<T>) {
   const abort = jest.fn()
@@ -38,7 +38,7 @@ describe('BulkActionModal - actionOneByOne loop', () => {
         />
       )
 
-      await userEvent.click(screen.getByRole('button', { name: /delete/i }))
+      await clickElementWithFakeTimers(screen.getByRole('button', { name: /delete/i }))
 
       // First call starts immediately
       expect(actionFn).toHaveBeenCalledTimes(1)
@@ -90,7 +90,7 @@ describe('BulkActionModal - actionOneByOne loop', () => {
       />
     )
 
-    await userEvent.click(screen.getByRole('button', { name: /delete/i }))
+    await clickElement(screen.getByRole('button', { name: /delete/i }))
     await waitFor(() => expect(actionFn).toHaveBeenCalledTimes(items.length))
     // Error path renders an inline alert with "there were errors" text
     expect(await screen.findByText(/there were errors/i)).toBeInTheDocument()

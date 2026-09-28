@@ -3,7 +3,7 @@ jest.mock('./discoveredPoliciesWorker.factory')
 
 import { waitFor } from '@testing-library/react'
 import { useFetchPolicies } from './useFetchPolicies'
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 import { RecoilRoot } from 'recoil'
 import { useSearchResultItemsAndRelatedItemsQuery } from '../../Search/search-sdk/search-sdk'
 

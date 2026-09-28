@@ -84,7 +84,7 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
   const [isSaving, setIsSaving] = useState(false)
   // Guard against duplicate success toasts when the effect re-runs (e.g. policies updates)
   // before setCreatedPolicy(undefined) commits.
-  const toastedPolicyKeyRef = useRef<string>()
+  const toastedPolicyKeyRef = useRef<string>(undefined)
 
   // Before move to PolicyDetailPage,
   // Wait until "policies" are updated

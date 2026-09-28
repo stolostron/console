@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { RecoilRoot } from 'recoil'
 import { DeletePlacementModal, IDeletePlacementModalProps } from './DeletePlacementModal'
 import { Placement, PlacementApiVersionBeta, PlacementKind } from '../../../../../resources/placement'
@@ -10,6 +9,7 @@ import { Policy, PolicyApiVersion, PolicyKind } from '../../../../../resources/p
 import { PolicySet, PolicySetApiVersion, PolicySetKind } from '../../../../../resources/policy-set'
 import { GitOpsCluster, GitOpsClusterApiVersion, GitOpsClusterKind } from '../../../../../resources/gitops-cluster'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../lib/nock-util'
+import { clickElement } from '~/lib/test-util'
 
 const mockDeleteApplication = jest.fn()
 jest.mock('../../../../../lib/delete-application', () => ({
@@ -186,30 +186,30 @@ describe('DeletePlacementModal', () => {
   test('calls deleteApplication and closes on successful delete', async () => {
     mockDeleteApplication.mockReturnValue({ promise: Promise.resolve(undefined) })
     const { props } = renderModal()
-    await userEvent.click(screen.getByText('Delete'))
+    await clickElement(screen.getByText('Delete'))
     await waitFor(() => expect(mockDeleteApplication).toHaveBeenCalledWith(mockPlacement, [], undefined))
     await waitFor(() => expect(props.close).toHaveBeenCalled())
   })
 
   test('shows error alert on delete failure', async () => {
-    mockDeleteApplication.mockReturnValue({ promise: Promise.reject(new Error('Network error')) })
+    mockDeleteApplication.mockImplementation(() => ({ promise: Promise.reject(new Error('Network error')) }))
     const { props } = renderModal()
-    await userEvent.click(screen.getByText('Delete'))
+    await clickElement(screen.getByText('Delete'))
     await waitFor(() => expect(screen.getByText('Network error')).toBeInTheDocument())
     expect(screen.getByText('Failed to delete placement')).toBeInTheDocument()
     expect(props.close).not.toHaveBeenCalled()
   })
 
   test('shows string error on delete failure with non-Error', async () => {
-    mockDeleteApplication.mockReturnValue({ promise: Promise.reject('something went wrong') })
+    mockDeleteApplication.mockImplementation(() => ({ promise: Promise.reject('something went wrong') }))
     renderModal()
-    await userEvent.click(screen.getByText('Delete'))
+    await clickElement(screen.getByText('Delete'))
     await waitFor(() => expect(screen.getByText('something went wrong')).toBeInTheDocument())
   })
 
   test('calls close on Cancel click', async () => {
     const { props } = renderModal()
-    await userEvent.click(screen.getByText('Cancel'))
+    await clickElement(screen.getByText('Cancel'))
     expect(props.close).toHaveBeenCalled()
   })
 

@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 import { useVirtualMachineDetection } from './useVirtualMachineDetection'
 import { useSearchResultCountQuery } from '../routes/Search/search-sdk/search-sdk'
 

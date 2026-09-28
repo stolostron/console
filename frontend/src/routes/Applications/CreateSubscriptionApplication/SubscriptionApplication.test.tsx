@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { Scope } from 'nock/types'
 import { generatePath, MemoryRouter, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
@@ -22,7 +21,9 @@ import {
   waitForNock,
   waitForNocks,
   waitForText,
-} from '../../../lib/test-util'
+  clickElement,
+  typeElement,
+} from '~/lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import {
   Application,
@@ -416,7 +417,7 @@ const mockSecrets = [mockAnsibleSecret, mockCopiedFromSecret]
 describe('Create Subscription Application page', () => {
   const clickGitCard = async (container: HTMLElement) => {
     await waitFor(() => expect(container.querySelector('#git')).toBeTruthy())
-    userEvent.click(container.querySelector('#git') as HTMLElement)
+    await clickElement(container.querySelector('#git') as HTMLElement)
   }
 
   const commitComboBoxByTestId = async (id: string, value: string) => {
@@ -460,7 +461,7 @@ describe('Create Subscription Application page', () => {
     await waitForNocks(initialNocks)
     await waitForText('Create application', true)
     const cancelButton = screen.getByRole('button', { name: /cancel/i })
-    userEvent.click(cancelButton)
+    await clickElement(cancelButton)
     expect(window.location.pathname).toEqual('/')
   })
 
@@ -495,35 +496,34 @@ describe('Create Subscription Application page', () => {
     // create placement
     await waitForText('Select an existing placement configuration', true)
     fireEvent.click(screen.getByLabelText(/deploy application resources on clusters with all specified labels/i))
-    userEvent.click(screen.getByPlaceholderText(/select the cluster sets/i))
-    userEvent.click(
+    await clickElement(screen.getByPlaceholderText(/select the cluster sets/i))
+    await clickElement(
       screen.getByRole('option', {
         name: /global/i,
       })
     )
 
     // enter labels
-    userEvent.click(screen.getByText(/select the label/i))
-    userEvent.click(
+    await clickElement(screen.getByText(/select the label/i))
+    await clickElement(
       screen.getByRole('option', {
         name: /name/i,
       })
     )
-    userEvent.click(screen.getByText(/equals any of/i))
-    userEvent.click(
+    await clickElement(screen.getByText(/equals any of/i))
+    await clickElement(
       screen.getByRole('option', {
         name: /equals any of/i,
       })
     )
-    userEvent.click(screen.getByText(/select the values/i))
-    userEvent.click(
+    await clickElement(screen.getByText(/select the values/i))
+    await clickElement(
       screen.getByRole('checkbox', {
         name: /local-cluster/i,
       })
     )
 
-    await clickByTestId('create-button-portal-id-btn')
-    await waitForNocks([
+    const createNocks = [
       nockCreate(nockApplication, undefined, 201, { dryRun: 'All' }),
       nockCreate(mockChannel, undefined, 201, { dryRun: 'All' }),
       nockCreate(mockSubscriptionWithPlacement, undefined, 201, { dryRun: 'All' }),
@@ -534,7 +534,9 @@ describe('Create Subscription Application page', () => {
       nockCreate(mockCreatePlacement, undefined, 201),
       nockCreate(mockSubscriptionWithPlacement, undefined, 201),
       nockCreate(nockCreateManagedclustersetbindings, undefined, 201),
-    ])
+    ]
+    await clickByTestId('create-button-portal-id-btn')
+    await waitForNocks(createNocks)
   })
 
   test('create a git subscription app using an existing placement', async () => {
@@ -567,57 +569,54 @@ describe('Create Subscription Application page', () => {
 
     const ansibleSecretName = screen.getByPlaceholderText(/select an existing secret from the list./i)
 
-    userEvent.click(ansibleSecretName)
-    userEvent.type(ansibleSecretName, mockAnsibleSecret.metadata.name!)
+    await clickElement(ansibleSecretName)
+    await typeElement(ansibleSecretName, mockAnsibleSecret.metadata.name!)
 
     // select an existing placement
-    userEvent.click(
-      screen.getByRole('radio', {
-        name: /select an existing placement configuration/i,
-      })
-    )
+    await clickElement(screen.getByLabelText(/deploy application resources on clusters with all specified labels/i))
+    await clickElement(screen.getByRole('radio', { name: /select an existing placement configuration/i }))
 
     const placementSelect = await screen.findByPlaceholderText(/select an existing placement configuration/i)
-    userEvent.click(placementSelect)
+    await clickElement(placementSelect)
     await clickByText(mockPlacement.metadata.name!)
 
     // open and close the credential modal
 
     const dropdownButton = screen.getByPlaceholderText(/select an existing secret from the list\./i)
-    userEvent.click(dropdownButton)
-    userEvent.click(screen.getByText(/add credential/i))
+    await clickElement(dropdownButton)
+    await clickElement(screen.getByText(/add credential/i))
 
     // fill modal form
-    userEvent.type(
+    await typeElement(
       screen.getByRole('textbox', {
         name: /credential name/i,
       }),
       nockAnsibleSecret.metadata.name!
     )
 
-    userEvent.click(screen.getByPlaceholderText(/select a namespace for the credential/i))
-    userEvent.click(
+    await clickElement(screen.getByPlaceholderText(/select a namespace for the credential/i))
+    await clickElement(
       screen.getByRole('option', {
         name: /namespace-0/i,
       })
     )
 
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /next/i,
       })
     )
 
-    userEvent.type(
+    await typeElement(
       screen.getByRole('textbox', {
         name: /Ansible Automation controller host/i,
       }),
       'https://invalid.com'
     )
 
-    userEvent.type(screen.getByPlaceholderText(/enter the Ansible Automation controller token/i), 'token')
+    await typeElement(screen.getByPlaceholderText(/enter the Ansible Automation controller token/i), 'token')
 
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /next/i,
       })
@@ -625,22 +624,24 @@ describe('Create Subscription Application page', () => {
 
     // click add
 
-    userEvent.click(
+    const createCredentialNock = nockCreate(nockAnsibleSecret)
+    await clickElement(
       screen.getByRole('button', {
         name: /add/i,
       })
     )
-    await waitForNock(nockCreate(nockAnsibleSecret))
+    await waitForNock(createCredentialNock)
 
-    await clickByTestId('create-button-portal-id-btn')
-    await waitForNocks([
+    const createNocks = [
       nockCreate(nockApplication, undefined, 201, { dryRun: 'All' }),
       nockCreate(mockChannel, undefined, 201, { dryRun: 'All' }),
       nockCreate(mockSubscription, undefined, 201, { dryRun: 'All' }),
       nockCreate(nockApplication, undefined, 201),
       nockCreate(mockChannel, undefined, 201),
       nockCreate(mockSubscription, undefined, 201),
-    ])
+    ]
+    await clickByTestId('create-button-portal-id-btn')
+    await waitForNocks(createNocks)
   })
 
   test('edit a git subscription application', async () => {
@@ -707,7 +708,14 @@ describe('Create Subscription Application page', () => {
 
     await waitForText('Select an existing placement configuration')
     await new Promise((resolve) => setTimeout(resolve, 500))
-    screen.getByPlaceholderText(/select an existing placement configuration/i).click()
+    await clickElement(screen.getByLabelText(/deploy application resources on clusters with all specified labels/i))
+    await clickElement(
+      screen.getByRole('radio', {
+        name: /select an existing placement configuration/i,
+      })
+    )
+    const placementSelect = await screen.findByPlaceholderText(/select an existing placement configuration/i)
+    await clickElement(placementSelect)
     await clickByText(mockPlacement.metadata.name!)
     const patchNocks: Scope[] = [
       nockPatch(mockSubscriptionPlacement, [
@@ -721,7 +729,7 @@ describe('Create Subscription Application page', () => {
       nockPatch(mockApplication0, [{ op: 'remove', path: '/metadata/creationTimestamp' }]),
     ]
     //update the resources
-    userEvent.click(screen.getByRole('button', { name: /update/i }))
+    await clickElement(screen.getByRole('button', { name: /update/i }))
     await waitForNocks(patchNocks)
   })
 })

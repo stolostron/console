@@ -6,7 +6,7 @@ import { ButtonProps, Content, ContentVariants, Icon, Label, Popover } from '@pa
 import { CheckCircleIcon, ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
 import _ from 'lodash'
 import queryString from 'query-string'
-import { useMemo } from 'react'
+import { useMemo, type JSX } from 'react'
 import type { TFunction } from 'i18next'
 import { generatePath, Link } from 'react-router'
 import { useTranslation } from '../../lib/acm-i18next'

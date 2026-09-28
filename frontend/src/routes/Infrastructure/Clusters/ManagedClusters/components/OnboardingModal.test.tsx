@@ -1,11 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { DOC_HOME } from '../../../../../lib/doc-util'
 import { defaultPlugin, PluginContext } from '../../../../../lib/PluginContext'
-import { clickByText, createClusterVersionMock, waitForText } from '../../../../../lib/test-util'
+import { clickByText, createClusterVersionMock, waitForText, clickElement } from '~/lib/test-util'
 import { OnboardingModal } from './OnboardingModal'
 
 const mockUseClusterVersion = createClusterVersionMock()
@@ -35,9 +34,9 @@ describe('OnboardingModal open', () => {
       'data-ouia-component-id',
       'clustersOnboardingModal'
     )
-    expect(screen.queryAllByText('Import an existing cluster').length).toBe(1)
-    expect(screen.queryAllByText('Connect your cloud provider').length).toBe(1)
-    expect(screen.queryAllByText('Discover hosts to create host inventory').length).toBe(1)
+    expect(screen.queryAllByText('Import an existing cluster')).toHaveLength(1)
+    expect(screen.queryAllByText('Connect your cloud provider')).toHaveLength(1)
+    expect(screen.queryAllByText('Discover hosts to create host inventory')).toHaveLength(1)
 
     await clickByText('Want to learn more?')
     const consoleSpy = jest.spyOn(console, 'log')
@@ -46,7 +45,7 @@ describe('OnboardingModal open', () => {
     await clickByText('Get started with on-premise host inventory')
     expect(consoleSpy).toHaveBeenCalledWith('clicked!')
 
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /learn more about red hat advanced cluster management for kubernetes/i,
       })
@@ -65,9 +64,9 @@ describe('OnboardingModal closed', () => {
   })
 
   it('should render OnboardingModal', async () => {
-    expect(screen.queryAllByText('Import an existing cluster').length).toBe(0)
-    expect(screen.queryAllByText('Connect your cloud provider').length).toBe(0)
-    expect(screen.queryAllByText('Discover hosts to create host inventory').length).toBe(0)
+    expect(screen.queryAllByText('Import an existing cluster')).toHaveLength(0)
+    expect(screen.queryAllByText('Connect your cloud provider')).toHaveLength(0)
+    expect(screen.queryAllByText('Discover hosts to create host inventory')).toHaveLength(0)
   })
 })
 
@@ -88,7 +87,7 @@ describe('OnboardingModal - Version-specific URLs', () => {
       const button = screen.getByRole('button', {
         name: /learn more about red hat advanced cluster management for kubernetes/i,
       })
-      userEvent.click(button)
+      await clickElement(button)
 
       expect(window.open).toHaveBeenCalledWith(
         '/catalog/all-namespaces?selectedId=advanced-cluster-management-redhat-operators-openshift-marketplace'
@@ -120,7 +119,7 @@ describe('OnboardingModal - Version-specific URLs', () => {
       const button = screen.getByRole('button', {
         name: /learn more about red hat advanced cluster management for kubernetes/i,
       })
-      userEvent.click(button)
+      await clickElement(button)
 
       expect(window.open).toHaveBeenCalledWith(
         '/operatorhub/all-namespaces?details-item=advanced-cluster-management-redhat-operators-openshift-marketplace'

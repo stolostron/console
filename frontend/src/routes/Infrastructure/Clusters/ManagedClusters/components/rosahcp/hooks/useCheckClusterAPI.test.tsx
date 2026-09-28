@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { renderHook, act } from '@testing-library/react-hooks'
+import { renderHook, waitFor } from '@testing-library/react'
 import nock from 'nock'
 import { useCheckClusterAPI } from './useCheckClusterAPI'
 
@@ -17,11 +17,9 @@ describe('useCheckClusterAPI', () => {
 
   test('should return isCapiEnabled true when cluster-api component is enabled', async () => {
     nockMceComponents([{ name: 'cluster-api', enabled: true }])
-    const { result, waitForNextUpdate } = renderHook(() => useCheckClusterAPI())
+    const { result } = renderHook(() => useCheckClusterAPI())
 
-    await act(async () => {
-      await waitForNextUpdate()
-    })
+    await waitFor(() => expect(result.current.loaded).toBe(true))
 
     expect(result.current.isCapiEnabled).toBe(true)
     expect(result.current.isCapaEnabled).toBe(false)
@@ -29,11 +27,9 @@ describe('useCheckClusterAPI', () => {
 
   test('should return isCapaEnabled true when cluster-api-provider-aws component is enabled', async () => {
     nockMceComponents([{ name: 'cluster-api-provider-aws', enabled: true }])
-    const { result, waitForNextUpdate } = renderHook(() => useCheckClusterAPI())
+    const { result } = renderHook(() => useCheckClusterAPI())
 
-    await act(async () => {
-      await waitForNextUpdate()
-    })
+    await waitFor(() => expect(result.current.loaded).toBe(true))
 
     expect(result.current.isCapiEnabled).toBe(false)
     expect(result.current.isCapaEnabled).toBe(true)
@@ -41,11 +37,9 @@ describe('useCheckClusterAPI', () => {
 
   test('should return both false when no components are enabled', async () => {
     nockMceComponents([])
-    const { result, waitForNextUpdate } = renderHook(() => useCheckClusterAPI())
+    const { result } = renderHook(() => useCheckClusterAPI())
 
-    await act(async () => {
-      await waitForNextUpdate()
-    })
+    await waitFor(() => expect(result.current.loaded).toBe(true))
 
     expect(result.current.isCapiEnabled).toBe(false)
     expect(result.current.isCapaEnabled).toBe(false)
@@ -56,11 +50,9 @@ describe('useCheckClusterAPI', () => {
       { name: 'cluster-api', enabled: true },
       { name: 'cluster-api-provider-aws', enabled: true },
     ])
-    const { result, waitForNextUpdate } = renderHook(() => useCheckClusterAPI())
+    const { result } = renderHook(() => useCheckClusterAPI())
 
-    await act(async () => {
-      await waitForNextUpdate()
-    })
+    await waitFor(() => expect(result.current.loaded).toBe(true))
 
     expect(result.current.isCapiEnabled).toBe(true)
     expect(result.current.isCapaEnabled).toBe(true)
@@ -71,11 +63,9 @@ describe('useCheckClusterAPI', () => {
       { name: 'cluster-api', enabled: false },
       { name: 'cluster-api-provider-aws', enabled: false },
     ])
-    const { result, waitForNextUpdate } = renderHook(() => useCheckClusterAPI())
+    const { result } = renderHook(() => useCheckClusterAPI())
 
-    await act(async () => {
-      await waitForNextUpdate()
-    })
+    await waitFor(() => expect(result.current.loaded).toBe(true))
 
     expect(result.current.isCapiEnabled).toBe(false)
     expect(result.current.isCapaEnabled).toBe(false)

@@ -2,11 +2,11 @@
 
 import { SelectOption } from '@patternfly/react-core'
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { SelectVariant } from '../../components/AcmSelectBase'
 import { AcmForm, AcmSubmit } from '../AcmForm/AcmForm'
 import { AcmSelect } from './AcmSelect'
+import { clickElement, typeElement } from '~/lib/test-util'
 
 describe('AcmSelect', () => {
   const Select = () => {
@@ -26,23 +26,23 @@ describe('AcmSelect', () => {
   test('can apply and clear selections', async () => {
     const { queryByText } = render(<Select />)
     expect(queryByText('Select one')).toBeVisible()
-    screen
-      .getByRole('combobox', {
+    await clickElement(
+      screen.getByRole('combobox', {
         name: 'ACM select',
       })
-      .click()
+    )
     await waitFor(() => expect(screen.getByText(/red/i)).toBeVisible())
-    screen
-      .getByRole('option', {
+    await clickElement(
+      screen.getByRole('option', {
         name: /red/i,
       })
-      .click()
+    )
     await waitFor(() => expect(screen.getByText(/red/i)).toBeVisible())
-    screen
-      .getByRole('button', {
+    await clickElement(
+      screen.getByRole('button', {
         name: /clear input value/i,
       })
-      .click()
+    )
     expect(queryByText('Red')).toBeNull()
   })
 
@@ -87,7 +87,7 @@ describe('AcmSelect', () => {
     }
 
     render(<ManyOptionsSelect />)
-    await userEvent.click(
+    await clickElement(
       screen.getByRole('combobox', {
         name: 'ACM select',
       })
@@ -135,14 +135,14 @@ describe('AcmSelect', () => {
     }
     const { getByText, getByTestId, getAllByRole } = render(<Component />)
     expect(getByTestId('input-label')).not.toContainHTML('pf-m-error')
-    getByText('Submit').click()
+    await clickElement(getByText('Submit'))
     expect(getByTestId('input-label')).toContainHTML('pf-m-error')
-    screen
-      .getByRole('combobox', {
+    await clickElement(
+      screen.getByRole('combobox', {
         name: 'label',
       })
-      .click()
-    getAllByRole('option')[0].click()
+    )
+    await clickElement(getAllByRole('option')[0])
     expect(getByTestId('input-label')).not.toContainHTML('pf-m-error')
   })
 
@@ -161,14 +161,14 @@ describe('AcmSelect', () => {
     }
     const { getByText, getByTestId, getAllByRole } = render(<Component />)
     expect(getByTestId('input-label')).not.toContainHTML('pf-m-error')
-    getByText('Submit').click()
+    await clickElement(getByText('Submit'))
     expect(getByTestId('input-label')).toContainHTML('pf-m-error')
-    screen
-      .getByRole('combobox', {
+    await clickElement(
+      screen.getByRole('combobox', {
         name: 'label',
       })
-      .click()
-    getAllByRole('option')[0].click()
+    )
+    await clickElement(getAllByRole('option')[0])
     expect(getByTestId('input-label')).not.toContainHTML('pf-m-error')
   })
 
@@ -191,7 +191,7 @@ describe('AcmSelect', () => {
       )
     }
     const { getByText } = render(<Component />)
-    getByText('Submit').click()
+    await clickElement(getByText('Submit'))
     expect(mockFn).toHaveBeenCalled()
   })
 
@@ -257,11 +257,11 @@ describe('AcmSelect', () => {
       const { getByPlaceholderText, getAllByRole } = render(<TypeaheadMultiSelectWithMock />)
 
       // Act
-      userEvent.type(getByPlaceholderText('Select one'), 'Yellow')
+      await typeElement(getByPlaceholderText('Select one'), 'Yellow')
 
       // Assert
       await waitFor(() => expect(screen.getByText(/create new yellow/i)).toBeVisible())
-      getAllByRole('option')[0].click()
+      await clickElement(getAllByRole('option')[0])
       await waitFor(() => {
         expect(onChangeMock).toHaveBeenCalledWith('Yellow')
       })

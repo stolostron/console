@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Label } from '@patternfly/react-core'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type JSX } from 'react'
 import type { TFunction } from 'i18next'
 import { Link, NavigateFunction, To } from 'react-router'
 import { LostChangesContext } from '../../../components/LostChanges'

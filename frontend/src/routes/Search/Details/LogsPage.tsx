@@ -275,8 +275,8 @@ export default function LogsPage() {
   const { kind, resource, resourceError, containers, cluster, namespace, name, isHubClusterResource } =
     useSearchDetailsContext()
   const { search } = useLocation()
-  const logViewerRef = useRef<any>()
-  const resourceLogRef = useRef<any>()
+  const logViewerRef = useRef<any>(undefined)
+  const resourceLogRef = useRef<any>(undefined)
   const { t } = useTranslation()
   const [isLoadingLogs, setIsLoadingLogs] = useState<boolean>(false)
   const [logs, setLogs] = useState<string>('')

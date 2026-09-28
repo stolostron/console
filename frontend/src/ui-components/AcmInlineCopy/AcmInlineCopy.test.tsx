@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, act } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { AcmInlineCopy } from './AcmInlineCopy'
+import { clickElement } from '~/lib/test-util'
 
 document.execCommand = jest.fn()
 
@@ -13,7 +13,7 @@ describe('AcmInlineCopy', () => {
     expect(getByTestId('copy')).toBeInTheDocument()
     await act(async () => {
       expect(await axe(container)).toHaveNoViolations()
-      await userEvent.click(getByTestId('copy'))
+      await clickElement(getByTestId('copy'))
       await expect(document.execCommand).toHaveBeenCalled()
       await new Promise((resolve) => setTimeout(resolve, 0))
     })
@@ -26,7 +26,7 @@ describe('AcmInlineCopy', () => {
     expect(getByText('Non-copy text')).toBeInTheDocument()
     await act(async () => {
       expect(await axe(container)).toHaveNoViolations()
-      await userEvent.click(getByTestId('copy'))
+      await clickElement(getByTestId('copy'))
       await expect(document.execCommand).toHaveBeenCalled()
       await new Promise((resolve) => setTimeout(resolve, 0))
     })

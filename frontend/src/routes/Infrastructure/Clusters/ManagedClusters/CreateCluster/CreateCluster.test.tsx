@@ -26,6 +26,7 @@ import {
 } from '../../../../../lib/nock-util'
 import { defaultPlugin, PluginContext } from '../../../../../lib/PluginContext'
 import {
+  clickElement,
   clickByRole,
   clickByPlaceholderText,
   clickByTestId,
@@ -34,10 +35,12 @@ import {
   typeByPlaceholderText,
   typeByTestId,
   typeByText,
+  clearByTestId,
   waitForNocks,
   waitForNotText,
   waitForText,
-} from '../../../../../lib/test-util'
+  typeElement,
+} from '~/lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import {
   ClusterCurator,
@@ -82,7 +85,6 @@ import {
   mockClusterDeploymentAI,
   mockClusterImageSet,
 } from './CreateCluster.sharedmocks'
-import userEvent from '@testing-library/user-event'
 
 //const awsProjectNamespace = 'test-aws-namespace'
 
@@ -865,7 +867,7 @@ describe('CreateCluster AWS', () => {
     await clickByText('Next')
 
     // step 4 -- proxy
-    screen.getByRole('checkbox', { name: /use proxy/i }).click()
+    await clickElement(screen.getByRole('checkbox', { name: /use proxy/i }))
     await clickByText('Next')
 
     // step 5 - AWS private configuration
@@ -883,11 +885,11 @@ describe('CreateCluster AWS', () => {
     await waitForText(mockClusterCurators[0].spec!.upgrade!.posthook![0].name!)
 
     // clear template
-    screen
-      .getByRole('button', {
+    await clickElement(
+      screen.getByRole('button', {
         name: /clear input value/i,
       })
-      .click()
+    )
     await waitForNotText('View test')
     await clickByText('Next')
 
@@ -944,7 +946,7 @@ describe('CreateCluster AWS', () => {
     await clickByText('Next')
 
     // step 4 -- proxy
-    screen.getByRole('checkbox', { name: /use proxy/i }).click()
+    await clickElement(screen.getByRole('checkbox', { name: /use proxy/i }))
     await clickByText('Next')
 
     // step 5 -- AWS private configuration
@@ -1012,7 +1014,7 @@ describe('CreateCluster AWS', () => {
     await clickByText('Next')
 
     // step 4 -- proxy
-    screen.getByRole('checkbox', { name: /use proxy/i }).click()
+    await clickElement(screen.getByRole('checkbox', { name: /use proxy/i }))
     await clickByText('Next')
 
     // step 5 -- AWS private configuration
@@ -1085,7 +1087,7 @@ describe('CreateCluster AWS', () => {
     await clickByText('Next')
 
     // step 4 -- proxy
-    screen.getByRole('checkbox', { name: /use proxy/i }).click()
+    await clickElement(screen.getByRole('checkbox', { name: /use proxy/i }))
     await clickByText('Next')
 
     // step 5 -- AWS private configuration
@@ -2339,6 +2341,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     expect(inputField).toHaveValue('clusters')
 
     await clickByTestId('emanspace')
+    await clearByTestId('emanspace')
     await typeByTestId('emanspace', 'new-hns')
     fireEvent.keyDown(screen.getByTestId('emanspace'), { key: 'Enter', code: 'Enter' })
 
@@ -2884,23 +2887,24 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     expect(inputField).toHaveValue('clusters')
 
     await clickByTestId('emanspace')
+    await clearByTestId('emanspace')
     await typeByTestId('emanspace', 'new-ns')
     fireEvent.keyDown(screen.getByTestId('emanspace'), { key: 'Enter', code: 'Enter' })
 
     await typeByTestId('additionalLabels', 'myLabelKey=myValue')
     await clickByPlaceholderText('kubevirt-with-ei')
-    screen
-      .getByRole('combobox', {
+    await clickElement(
+      screen.getByRole('combobox', {
         name: 'Infrastructure provider credential',
       })
-      .click()
+    )
     await clickByText('Add credential')
     await typeByTestId('credentialsName', 'kubevirt-with-ei')
-    screen
-      .getByRole('combobox', {
+    await clickElement(
+      screen.getByRole('combobox', {
         name: /namespace/i,
       })
-      .click()
+    )
     await clickByText('new-ns')
     await clickByText('Next', 1)
     await clickByTestId('isExternalInfra')
@@ -2910,10 +2914,11 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     await pasteByTestId('pullSecret', pullSecret)
     await pasteByTestId('ssh-publickey', 'ssh-rsa AAAAB1 fake@email.com')
     await clickByText('Next', 1)
+    const createCredentialNock = nockCreate(expectedKubevirtCredential)
     await clickByText('Add')
 
     // wait for kubevirt credential creation
-    await waitForNocks([nockCreate(expectedKubevirtCredential)])
+    await waitForNocks([createCredentialNock])
 
     // transition to NodePools
     await clickByText('Next')
@@ -3390,21 +3395,22 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     await clickByPlaceholderText('kubevirt-no-ei')
     await clickByText('Add credential')
     await typeByTestId('credentialsName', 'kubevirt-noei')
-    screen
-      .getByRole('combobox', {
+    await clickElement(
+      screen.getByRole('combobox', {
         name: 'Namespace',
       })
-      .click()
+    )
     await clickByText('test-ns')
     await clickByText('Next', 1)
     await clickByText('Next', 1)
     await pasteByTestId('pullSecret', pullSecret)
     await pasteByTestId('ssh-publickey', 'ssh-rsa AAAAB1 fake@email.com')
     await clickByText('Next', 1)
+    const createCredentialNock = nockCreate(expectedKubevirtCredentialWithNoEI)
     await clickByText('Add')
 
     // wait for kubevirt credential creation
-    await waitForNocks([nockCreate(expectedKubevirtCredentialWithNoEI)])
+    await waitForNocks([createCredentialNock])
 
     // transition to NodePools
     await clickByText('Next')
@@ -3888,7 +3894,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
 
     // Simulate hitting Enter key
     const inputField = screen.getByTestId('emanspace')
-    userEvent.type(inputField, 'test{enter}')
+    await typeElement(inputField, 'test{enter}')
 
     // Check if the input field has the correct value
     expect(inputField).toHaveValue('test')
@@ -3899,28 +3905,29 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     })
 
     fireEvent.click(clearButton)
-    userEvent.type(inputField, 'test-namespace{enter}')
+    await typeElement(inputField, 'test-namespace{enter}')
 
     await typeByTestId('additionalLabels', 'myLabelKey=myValue')
 
     await clickByPlaceholderText('kubevirt-no-ei')
     await clickByText('Add credential')
     await typeByTestId('credentialsName', 'kubevirt-noei')
-    screen
-      .getByRole('combobox', {
+    await clickElement(
+      screen.getByRole('combobox', {
         name: 'Namespace',
       })
-      .click()
+    )
     await clickByText('test-ns')
     await clickByText('Next', 1)
     await clickByText('Next', 1)
     await pasteByTestId('pullSecret', pullSecret)
     await pasteByTestId('ssh-publickey', 'ssh-rsa AAAAB1 fake@email.com')
     await clickByText('Next', 1)
+    const createCredentialNock = nockCreate(expectedKubevirtCredentialWithNoEI)
     await clickByText('Add')
 
     // wait for kubevirt credential creation
-    await waitForNocks([nockCreate(expectedKubevirtCredentialWithNoEI)])
+    await waitForNocks([createCredentialNock])
 
     // transition to NodePools
     await clickByText('Next')
@@ -4446,7 +4453,7 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
 
     // Simulate hitting Enter key
     const inputField = screen.getByTestId('emanspace')
-    userEvent.type(inputField, 'test{enter}')
+    await typeElement(inputField, 'test{enter}')
 
     // Check if the input field has the correct value
     expect(inputField).toHaveValue('test')
@@ -4457,28 +4464,29 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     })
 
     fireEvent.click(clearButton)
-    userEvent.type(inputField, 'test-namespace{enter}')
+    await typeElement(inputField, 'test-namespace{enter}')
 
     await typeByTestId('additionalLabels', 'myLabelKey=myValue')
 
     await clickByPlaceholderText('kubevirt-no-ei')
     await clickByText('Add credential')
     await typeByTestId('credentialsName', 'kubevirt-noei')
-    screen
-      .getByRole('combobox', {
+    await clickElement(
+      screen.getByRole('combobox', {
         name: 'Namespace',
       })
-      .click()
+    )
     await clickByText('test-ns')
     await clickByText('Next', 1)
     await clickByText('Next', 1)
     await pasteByTestId('pullSecret', pullSecret)
     await pasteByTestId('ssh-publickey', 'ssh-rsa AAAAB1 fake@email.com')
     await clickByText('Next', 1)
+    const createCredentialNock = nockCreate(expectedKubevirtCredentialWithNoEI)
     await clickByText('Add')
 
     // wait for kubevirt credential creation
-    await waitForNocks([nockCreate(expectedKubevirtCredentialWithNoEI)])
+    await waitForNocks([createCredentialNock])
 
     // transition to NodePools step 2 -- node pools
     // add node pool1

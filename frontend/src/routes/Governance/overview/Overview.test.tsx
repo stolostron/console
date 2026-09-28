@@ -15,9 +15,9 @@ import {
 } from '../governance.sharedMocks'
 import GovernanceOverview, { SecurityGroupViolations } from './Overview'
 import { SecurityGroupPolicySummarySidebar } from './SecurityGroupPolicySummarySidebar'
-import userEvent from '@testing-library/user-event'
 import { defaultContext, PluginDataContext } from '../../../lib/PluginDataContext'
 import { Policy, PolicyApiVersion, PolicyKind } from '../../../resources'
+import { clickElement } from '~/lib/test-util'
 
 describe('Overview Page', () => {
   beforeEach(async () => nockIgnoreApiPaths())
@@ -41,7 +41,7 @@ describe('Overview Page', () => {
       </PluginDataContext.Provider>
     )
 
-    expect(queryAllByText('Create policy').length).toBe(1)
+    expect(queryAllByText('Create policy')).toHaveLength(1)
   })
 
   test('Should render empty Overview page with manage policies button correctly', async () => {
@@ -63,7 +63,7 @@ describe('Overview Page', () => {
         </RecoilRoot>
       </PluginDataContext.Provider>
     )
-    expect(queryAllByText('Manage policies').length).toBe(2)
+    expect(queryAllByText('Manage policies')).toHaveLength(2)
   })
 
   test('Should render Overview page correctly', async () => {
@@ -135,12 +135,12 @@ describe('Overview Page', () => {
       </PluginDataContext.Provider>
     )
 
-    userEvent.click(screen.getByText(/show 2 more/i))
+    await clickElement(screen.getByText(/show 2 more/i))
 
     expect(queryByText(/show 2 more/i)).not.toBeInTheDocument()
-    userEvent.click(screen.getByText(/show 4 more/i))
+    await clickElement(screen.getByText(/show 4 more/i))
     expect(queryByText(/show 4 more/i)).not.toBeInTheDocument()
-    userEvent.click(screen.getByText(/show 85 more/i))
+    await clickElement(screen.getByText(/show 85 more/i))
     expect(queryByText(/show 85 more/i)).not.toBeInTheDocument()
   })
 
@@ -212,8 +212,8 @@ describe('Overview Page', () => {
 
     // Before the fix this rendered two separate rows/spans for the same logical
     // standard (one from the untrimmed " NIST SP 800-53" split token).
-    expect(screen.getAllByText('NIST SP 800-53').length).toBe(1)
-    expect(screen.getAllByText('PCI-DSS 4.0').length).toBe(1)
+    expect(screen.getAllByText('NIST SP 800-53')).toHaveLength(1)
+    expect(screen.getAllByText('PCI-DSS 4.0')).toHaveLength(1)
   })
 
   test('SecurityGroupPolicySummarySidebar should match policies by trimmed annotation value', async () => {

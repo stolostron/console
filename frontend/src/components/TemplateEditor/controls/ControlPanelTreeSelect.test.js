@@ -4,8 +4,8 @@
 import React from 'react'
 import ControlPanelTreeSelect from './ControlPanelTreeSelect'
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import i18n from 'i18next'
+import { clickElement, tab, typeElement } from '~/lib/test-util'
 
 const t = i18n.t.bind(i18n)
 
@@ -82,13 +82,13 @@ describe('ControlPanelTreeSelect component', () => {
     })
     // // select item
     expect(input).toHaveValue('c2-standard-4 - 4 vCPU, 16 GiB RAM - Compute Optimized')
-    userEvent.click(input)
-    userEvent.click(
+    await clickElement(input)
+    await clickElement(
       screen.getByRole('button', {
         name: /memory optimized/i,
       })
     )
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /m2-ultramem-4164 - 416 vcpu, 11,776 gib ram - memory optimized/i,
       })
@@ -96,7 +96,7 @@ describe('ControlPanelTreeSelect component', () => {
     expect(input).toHaveValue('m2-ultramem-4164  # 416 vCPU, 11,776 GiB RAM - Memory Optimized')
 
     // clear
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /clear selected item/i,
       })
@@ -104,18 +104,18 @@ describe('ControlPanelTreeSelect component', () => {
     expect(input).toHaveValue('')
 
     // enter new item
-    userEvent.click(input)
-    userEvent.type(input, 'hello{enter}')
+    await clickElement(input)
+    await typeElement(input, 'hello{enter}')
     expect(propz.handleChange).toHaveBeenCalledWith({ selectedItem: 'hello' })
     propz.control.active = 'hello'
     rerender(<ControlPanelTreeSelect {...propz} />)
     expect(input).toHaveValue('hello')
 
     // key events
-    userEvent.click(input)
-    userEvent.tab()
-    userEvent.click(input)
-    userEvent.type(input, '{esc}')
+    await clickElement(input)
+    await tab()
+    await clickElement(input)
+    await typeElement(input, '{Escape}')
     expect(input).toHaveValue('')
   })
 
@@ -126,8 +126,8 @@ describe('ControlPanelTreeSelect component', () => {
       name: /Instance type/i,
     })
     // search
-    userEvent.type(input, 'm2-ultramem-4164')
-    userEvent.click(
+    await typeElement(input, 'm2-ultramem-4164')
+    await clickElement(
       screen.getByRole('button', {
         name: /m2-ultramem-4164 - 416 vcpu, 11,776 gib ram - memory optimized/i,
       })

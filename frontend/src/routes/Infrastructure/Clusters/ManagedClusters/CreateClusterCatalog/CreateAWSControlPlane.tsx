@@ -21,7 +21,6 @@ import { useCheckClusterAPI } from '../components/rosahcp/hooks/useCheckClusterA
 import { HostedCard } from '../components/rosahcp/HostedCard/HostedCard'
 import { RosaHCPModal } from '../components/rosahcp/RosaHCPModal/RosaHCPModal'
 import { Secret } from '~/resources'
-import React from 'react'
 import { useRecoilValue, useSharedAtoms } from '~/shared-recoil'
 import { DOC_LINKS } from '~/lib/doc-util'
 
@@ -42,7 +41,7 @@ export function CreateAWSControlPlane() {
   const rosaHcpWizardFeatureFlag = settings.rosaHcpWizard === 'enabled'
 
   const areCapiCapaEnabled = isCapaEnabled && isCapiEnabled
-  const [selectedSecret, setSelectedSecret] = React.useState<Secret[] | undefined>(undefined)
+  const [selectedSecret, setSelectedSecret] = useState<Secret[] | undefined>(undefined)
 
   const onDiagramToggle = (isExpanded: boolean) => {
     if (!isMouseOverControlPlaneLink) {

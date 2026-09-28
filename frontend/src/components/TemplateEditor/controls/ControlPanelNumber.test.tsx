@@ -2,17 +2,17 @@
 'use strict'
 
 import { cleanup, render } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import ControlPanelNumber from './ControlPanelNumber'
 
 import i18n from 'i18next'
+import { typeElement, clickElement } from '~/lib/test-util'
 
 const t = i18n.t.bind(i18n)
 const fn = jest.fn()
 
 describe('ControlPanelNumber component', () => {
   afterEach(cleanup)
-  it('renders as expected', () => {
+  it('renders as expected', async () => {
     const control: {
       name: string
       tooltip: string
@@ -45,18 +45,18 @@ describe('ControlPanelNumber component', () => {
     const { getByTestId, asFragment, rerender } = render(<Component />)
     expect(asFragment()).toMatchSnapshot()
 
-    userEvent.type(getByTestId('controlId'), '3')
+    await typeElement(getByTestId('controlId'), '3')
     expect(control.active).toBe('3')
-    userEvent.click(getByTestId('up-controlId'))
+    await clickElement(getByTestId('up-controlId'))
     expect(control.active).toBe('4')
     control.active = '0'
     control.exception = 'error'
     rerender(<Component />)
     expect(asFragment()).toMatchSnapshot()
-    userEvent.click(getByTestId('down-controlId'))
+    await clickElement(getByTestId('down-controlId'))
     expect(control.active).toBe('0')
   })
-  it('renders as expected with min int value', () => {
+  it('renders as expected with min int value', async () => {
     const control: {
       name: string
       tooltip: string
@@ -89,11 +89,11 @@ describe('ControlPanelNumber component', () => {
     }
     const { getByTestId } = render(<Component />)
 
-    userEvent.type(getByTestId('controlId-min'), '2')
+    await typeElement(getByTestId('controlId-min'), '2')
     expect(control.active).toBe('2')
-    userEvent.click(getByTestId('down-controlId-min'))
+    await clickElement(getByTestId('down-controlId-min'))
     expect(control.active).toBe('1')
-    userEvent.click(getByTestId('down-controlId-min'))
+    await clickElement(getByTestId('down-controlId-min'))
     expect(control.active).toBe('1')
   })
 })

@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import {
   ManagedClusterSetBinding,

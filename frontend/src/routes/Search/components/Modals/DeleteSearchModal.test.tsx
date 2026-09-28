@@ -3,10 +3,9 @@
 // Copyright Contributors to the Open Cluster Management project
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { RecoilRoot } from 'recoil'
 import { nockIgnoreApiPaths, nockPatchRequest } from '../../../../lib/nock-util'
-import { wait, waitForNocks } from '../../../../lib/test-util'
+import { wait, waitForNocks, clickElement } from '~/lib/test-util'
 import { UserPreference } from '../../../../resources/userpreference'
 import { DeleteSearchModal } from './DeleteSearchModal'
 
@@ -59,7 +58,7 @@ describe('DeleteSearchModal', () => {
     // find the button and simulate a click
     const submitButton = screen.getByText('Delete')
     expect(submitButton).toBeTruthy()
-    userEvent.click(submitButton)
+    await clickElement(submitButton)
 
     // Wait for UserPreference GET mock
     await waitForNocks([getUserPreferenceNock])

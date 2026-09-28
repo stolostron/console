@@ -10,7 +10,16 @@ import {
   StackItem,
 } from '@patternfly/react-core'
 import _ from 'lodash'
-import { Fragment, useCallback, useContext, useMemo, useState } from 'react'
+import {
+  Fragment,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+  type Dispatch,
+  type JSX,
+  type SetStateAction,
+} from 'react'
 import { useNavigate } from 'react-router'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PluginContext } from '../../../lib/PluginContext'
@@ -30,11 +39,11 @@ export function RenderItemContent(
   props: Readonly<{
     currentQuery: string
     relatedKind: string
-    setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>
-    setDeleteExternalResource: React.Dispatch<React.SetStateAction<IDeleteExternalResourceModalProps>>
-    setVMAction: React.Dispatch<React.SetStateAction<IVMActionModalProps>>
+    setDeleteResource: Dispatch<SetStateAction<IDeleteModalProps>>
+    setDeleteExternalResource: Dispatch<SetStateAction<IDeleteExternalResourceModalProps>>
+    setVMAction: Dispatch<SetStateAction<IVMActionModalProps>>
     hasFederatedError: boolean
-    setPluginModal: React.Dispatch<React.SetStateAction<JSX.Element | undefined>>
+    setPluginModal: Dispatch<SetStateAction<JSX.Element | undefined>>
   }>
 ) {
   const {
@@ -140,10 +149,10 @@ export default function RelatedResults(
   props: Readonly<{
     currentQuery: string
     selectedRelatedKinds: string[]
-    setSelectedRelatedKinds: React.Dispatch<React.SetStateAction<string[]>>
-    setDeleteResource: React.Dispatch<React.SetStateAction<IDeleteModalProps>>
-    setDeleteExternalResource: React.Dispatch<React.SetStateAction<IDeleteExternalResourceModalProps>>
-    setVMAction: React.Dispatch<React.SetStateAction<IVMActionModalProps>>
+    setSelectedRelatedKinds: Dispatch<SetStateAction<string[]>>
+    setDeleteResource: Dispatch<SetStateAction<IDeleteModalProps>>
+    setDeleteExternalResource: Dispatch<SetStateAction<IDeleteExternalResourceModalProps>>
+    setVMAction: Dispatch<SetStateAction<IVMActionModalProps>>
   }>
 ) {
   const {

@@ -151,8 +151,8 @@ export function Searchbar(props: Readonly<SearchbarProps>) {
   const savedSearchLimit = useSavedSearchLimit()
 
   /** refs used to detect when clicks occur inside vs outside of the textInputGroup and menu popper */
-  const menuRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLDivElement>
-  const textInputGroupRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLDivElement>
+  const menuRef = useRef<HTMLDivElement>(undefined) as React.MutableRefObject<HTMLDivElement>
+  const textInputGroupRef = useRef<HTMLDivElement>(undefined) as React.MutableRefObject<HTMLDivElement>
 
   // rerender component with new props after initial load
   useEffect(() => {

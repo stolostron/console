@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook, waitFor } from '@testing-library/react'
 import * as internal from '../internal/cachedHubConfiguration'
 import { useIsFleetObservabilityInstalled } from './useIsFleetObservabilityInstalled'
 import { useIsFleetAvailable } from './useIsFleetAvailable'
@@ -41,9 +41,9 @@ describe('useFleetObservabilityInstalled', () => {
     void (internal.getCachedHubConfiguration as jest.Mock).mockReturnValue(undefined)
     const fetchMock = jest.spyOn(internal, 'fetchHubConfiguration').mockResolvedValue(observabilityInstalled)
     mockUseIsFleetAvailable.mockReturnValue(true)
-    const { result, waitForNextUpdate } = renderHook(() => useIsFleetObservabilityInstalled())
+    const { result } = renderHook(() => useIsFleetObservabilityInstalled())
     expect(result.current).toEqual([undefined, false, undefined])
-    await waitForNextUpdate()
+    await waitFor(() => expect(result.current).toEqual([true, true, undefined]))
     expect(fetchMock).toHaveBeenCalled()
     expect(result.current).toEqual([true, true, undefined])
   })

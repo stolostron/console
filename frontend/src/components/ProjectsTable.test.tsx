@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import i18next from 'i18next'
 import { I18nextProvider } from 'react-i18next'
@@ -9,6 +8,7 @@ import type { RoleAssignmentHookType } from '../routes/UserManagement/RoleAssign
 import { PluginContext, defaultPlugin } from '../lib/PluginContext'
 import { PluginDataContext, defaultContext as pluginDataDefaultContext } from '../lib/PluginDataContext'
 import { AcmTableStateProvider } from '../ui-components'
+import { clickElement } from '~/lib/test-util'
 
 const baseRoleAssignmentData: RoleAssignmentHookType = {
   users: [],
@@ -92,7 +92,7 @@ describe('ProjectsTable', () => {
 
     // Act
     const checkboxes = await screen.findAllByRole('checkbox')
-    await userEvent.click(checkboxes[1])
+    await clickElement(checkboxes[1])
 
     // Assert
     await waitFor(() => {

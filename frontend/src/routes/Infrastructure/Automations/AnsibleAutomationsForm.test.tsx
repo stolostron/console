@@ -17,7 +17,6 @@ import {
 import { ResourceErrorCode } from '../../../resources/utils'
 import { Provider } from '../../../ui-components'
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { clusterCuratorsState, namespacesState, secretsState, subscriptionOperatorsState } from '../../../atoms'
@@ -40,7 +39,9 @@ import {
   waitForNotText,
   waitForTestId,
   waitForText,
-} from '../../../lib/test-util'
+  clickElement,
+  replaceTextAtSelection,
+} from '~/lib/test-util'
 
 const mockUseClusterVersion = createClusterVersionMock()
 jest.mock('../../../hooks/use-cluster-version', () => ({
@@ -267,30 +268,30 @@ describe('add automation template page', () => {
 
     // open yaml and use yaml to change stuff
     await waitFor(() => screen.getByRole('switch', { name: /yaml/i }))
-    userEvent.click(screen.getByRole('switch', { name: /yaml/i }))
+    await clickElement(screen.getByRole('switch', { name: /yaml/i }))
     const input = screen.getByRole('textbox', {
       name: /monaco/i,
     }) as HTMLTextAreaElement
     await waitFor(() => expect(input).not.toHaveValue(''))
-    const changeYaml = (path: string, text: string) => {
+    const changeYaml = async (path: string, text: string) => {
       const i = input.value.indexOf(path) + path.length
       input.setSelectionRange(i, i)
-      userEvent.type(input, text)
+      replaceTextAtSelection(input, text)
     }
 
     // cause some errors
     const saved = input.value
-    changeYaml('towerAuthSecret: ', 'x') // change secret to xansible-test-secret -->error!!
-    changeYaml('name: ', 'y') // change job to ytest-job-pre-install-ii -->error!!
-    changeYaml('type: ', 'z') // change type to zJob -->error!!
+    await changeYaml('towerAuthSecret: ', 'x') // change secret to xansible-test-secret -->error!!
+    await changeYaml('name: ', 'y') // change job to ytest-job-pre-install-ii -->error!!
+    await changeYaml('type: ', 'z') // change type to zJob -->error!!
     await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
     // undo
     input.select()
-    userEvent.type(input, saved)
+    replaceTextAtSelection(input, saved)
     await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
 
     // close yaml
-    userEvent.click(screen.getByRole('switch', { name: /yaml/i }))
+    await clickElement(screen.getByRole('switch', { name: /yaml/i }))
     await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
 
     await clickByText('Next')

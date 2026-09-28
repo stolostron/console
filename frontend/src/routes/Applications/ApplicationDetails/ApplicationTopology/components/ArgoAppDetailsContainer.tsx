@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import React, { Component } from 'react'
+import React, { Component, type JSX } from 'react'
 import {
   Pagination,
   Accordion,

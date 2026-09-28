@@ -2,10 +2,10 @@
 
 import { Tooltip } from '@patternfly/react-core'
 import { render } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import RedHatIcon from '../AcmIcons/RedHatIcon'
 import { AcmLaunchLink } from './AcmLaunchLink'
+import { clickElement } from '~/lib/test-util'
 
 describe('AcmLaunchLink', () => {
   test('renders a link when only one link is provided', async () => {
@@ -141,7 +141,7 @@ describe('AcmLaunchLink', () => {
       />
     )
     expect(getByTestId('addon-launch-links')).toBeInTheDocument()
-    userEvent.click(getByTestId('addon-launch-links'))
+    await clickElement(getByTestId('addon-launch-links'))
     expect(getByTestId('grafana')).toBeInTheDocument()
     expect(getByTestId('logs')).toBeInTheDocument()
     expect(await axe(container)).toHaveNoViolations()

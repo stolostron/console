@@ -208,8 +208,8 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
 
   const [focusedItemIndex, setFocusedItemIndex] = useState<number | null>(null)
   const [activeItemId, setActiveItemId] = useState<string | null>(null)
-  const menuRef = useRef<HTMLDivElement>()
-  const textInputRef = useRef<HTMLInputElement>()
+  const menuRef = useRef<HTMLDivElement>(undefined)
+  const textInputRef = useRef<HTMLInputElement>(undefined)
   const skipBlurCommitRef = useRef(false)
   const {
     value,

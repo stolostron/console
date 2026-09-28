@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { WithWizardCard } from './WithWizardCard'
+import { clickElement } from '~/lib/test-util'
 
 describe('WithWizardCard', () => {
   const mockSetModalIsOpen = jest.fn()
@@ -36,7 +36,7 @@ describe('WithWizardCard', () => {
     render(<WithWizardCard setModalIsOpen={mockSetModalIsOpen} />)
 
     const button = screen.getByRole('button', { name: 'Deploy with web interface' })
-    await userEvent.click(button)
+    await clickElement(button)
 
     expect(mockSetModalIsOpen).toHaveBeenCalledWith(true)
   })

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook, waitFor } from '@testing-library/react'
 import { Namespace, NamespaceDefinition, ResourceAttributes } from '../resources'
 import { nockIgnoreApiPaths, nockRBAC } from './nock-util'
 import {
@@ -173,13 +173,13 @@ describe('useIsAnyNamespaceAuthorized', () => {
     ]
 
     // Render the hook with the first resourceAttributes object
-    const { rerender, waitForNextUpdate } = renderHook(
+    const { result, rerender } = renderHook(
       ({ attrs }: { attrs: ResourceAttributes }) => useIsAnyNamespaceAuthorized(Promise.resolve(attrs)),
       { initialProps: { attrs: resourceAttributes1 } }
     )
 
     // Wait for the initial network requests to complete
-    await waitForNextUpdate()
+    await waitFor(() => expect(result.current).toBe(true))
     await waitForNocks(nocks)
 
     // Create a NEW object with the SAME values (different object reference)
@@ -222,11 +222,11 @@ describe('useIsAnyNamespaceAuthorized', () => {
 
     // The hook callback creates a new Promise on each render, simulating
     // a common pattern where Promise.resolve({...}) is called inline
-    const { rerender, waitForNextUpdate } = renderHook(() =>
+    const { result, rerender } = renderHook(() =>
       useIsAnyNamespaceAuthorized(Promise.resolve({ ...resourceAttributes }))
     )
 
-    await waitForNextUpdate()
+    await waitFor(() => expect(result.current).toBe(true))
     await waitForNocks(nocks)
 
     // Rerender multiple times - each creates a new Promise object

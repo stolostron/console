@@ -169,7 +169,7 @@ const TopologyContent: React.FC<TopologyContentProps> = ({
   }, [setDrawerContent])
 
   const alertsTitlesKey = useMemo(() => getAlertsTitlesKey(alerts), [alerts])
-  const alertsKeyAtProcessingStartRef = useRef<string>()
+  const alertsKeyAtProcessingStartRef = useRef<string>(undefined)
   const prevIsProcessingSaveRef = useRef(false)
 
   const isCreatingProgressing = elements.nodes.some(
@@ -297,7 +297,7 @@ export const Topology = ({
     }),
     [onRefreshResources, onViewLogs, onEditYaml, onEditApplications]
   )
-  const controllerRef = useRef<Controller>()
+  const controllerRef = useRef<Controller>(undefined)
   let controller = controllerRef.current
   if (!controller) {
     controller = controllerRef.current = new Visualization()

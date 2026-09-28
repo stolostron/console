@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { act, render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { RecoilRoot } from 'recoil'
 import { MemoryRouter } from 'react-router'
 import { RoleAssignmentWizardModalWrapper } from './RoleAssignmentWizardModalWrapper'
@@ -67,6 +66,7 @@ jest.mock('../../../wizards/RoleAssignment/roleAssignmentWizardHelper', () => ({
 }))
 
 import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { clickElement } from '~/lib/test-util'
 
 jest.mock('../../../shared-recoil', () => ({
   useRecoilValue: jest.fn(),
@@ -142,7 +142,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       )
 
       const submitButton = screen.getByText('Submit Wizard')
-      userEvent.click(submitButton)
+      await clickElement(submitButton)
 
       await waitFor(() => expect(mockToastContext.addAlert).toHaveBeenCalled())
 
@@ -227,7 +227,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
   })
 
   describe('Wizard Behavior', () => {
-    it('should call close when cancel is clicked', () => {
+    it('should call close when cancel is clicked', async () => {
       render(
         <TestWrapper>
           <RoleAssignmentWizardModalWrapper close={mockClose} isOpen />
@@ -235,7 +235,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       )
 
       const cancelButton = screen.getByText('Cancel')
-      userEvent.click(cancelButton)
+      await clickElement(cancelButton)
 
       expect(mockClose).toHaveBeenCalled()
     })

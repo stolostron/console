@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import i18next from 'i18next'
 import { useState } from 'react'
 import { MemoryRouter } from 'react-router'
 import { FormData } from './AcmFormData'
 import { AcmDataFormPage, generalValidationMessage, requiredValidationMessage } from './AcmDataForm'
+import { clickElement } from '~/lib/test-util'
 
 const t = i18next.t.bind(i18next)
 
@@ -68,7 +68,7 @@ describe('ACMDataForm', () => {
     test('shows required-field banner in a PageSection without paddingTop override', async () => {
       render(<TestFormPage />)
 
-      await userEvent.click(screen.getByRole('button', { name: /^Submit$/i }))
+      await clickElement(screen.getByRole('button', { name: /^Submit$/i }))
 
       const alert = await screen.findByText('You must fill out all required fields before you can proceed.')
       const pageSection = alert.closest('section.pf-v6-c-page__main-section')

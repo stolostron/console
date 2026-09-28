@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { HTMLProps, ReactNode, useRef, useEffect, useState, useCallback, useMemo } from 'react'
+import { HTMLProps, ReactNode, useRef, useEffect, useState, useCallback, useMemo, type JSX } from 'react'
 import useResizeObserver from '@react-hook/resize-observer'
 import { CodeEditor, Language } from '@patternfly/react-code-editor'
 import { debounce, isEqual, cloneDeep } from 'lodash'
@@ -158,7 +158,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   }, [showChanges, defaultResources, mock])
 
   // compile schema(s) just once
-  const validationRef = useRef<unknown>()
+  const validationRef = useRef<unknown>(undefined)
   if (schema && !validationRef.current) {
     validationRef.current = compileAjvSchemas(schema)
   }

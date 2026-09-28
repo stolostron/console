@@ -2,11 +2,10 @@
 
 import { render, waitFor } from '@testing-library/react'
 import { screen, within } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, generatePath } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { NavigationPath } from '../../../../../../NavigationPath'
-import { clickByText, waitForNocks, waitForTestId, waitForText } from '../../../../../../lib/test-util'
+import { clickByText, waitForNocks, waitForTestId, waitForText, clickElement } from '~/lib/test-util'
 
 import { mockGlobalManagedClusterSet, mockManagedClusterSet } from '../../../../../../lib/test-metadata'
 import { ClusterRoleBinding, ClusterRoleBindingKind, Group, RbacApiVersion, User } from '../../../../../../resources'
@@ -145,7 +144,7 @@ describe('Cluster Sets User management', () => {
 
   const verifyModalContent = async (expectedText: string) => {
     const button = screen.getByRole('button', { name: 'View users in group' })
-    userEvent.click(button)
+    await clickElement(button)
     const modal = await waitFor(() => screen.getByRole('dialog'))
 
     expect(screen.getByLabelText('Close')).toBeInTheDocument()

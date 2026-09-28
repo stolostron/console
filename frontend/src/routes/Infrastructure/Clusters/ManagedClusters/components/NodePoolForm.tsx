@@ -44,12 +44,11 @@ import {
   ResourceError,
   resultsSettled,
 } from '../../../../../resources/utils'
-import { Fragment, useEffect, useState } from 'react'
-
+import { Fragment, useEffect, useState, type FormEvent, type JSX, type ReactNode } from 'react'
 export type ListItems = {
   key: string
-  value?: string | number | React.ReactNode
-  edit?: React.ReactNode
+  value?: string | number | ReactNode
+  edit?: ReactNode
 }
 
 export function NodePoolForm(props: {
@@ -129,7 +128,7 @@ export function NodePoolForm(props: {
           label={t('Number of nodes')}
           id="nodepool-replicas"
           value={replicas}
-          onChange={(e: React.FormEvent<HTMLInputElement>) => {
+          onChange={(e: FormEvent<HTMLInputElement>) => {
             const newReplicas = Number((e.target as HTMLInputElement).value)
             if (newReplicas < 0) {
               setReplicas(0)
@@ -189,7 +188,7 @@ export function NodePoolForm(props: {
           id="nodepool-rootvolumesize"
           label={t('Root volume size')}
           labelHelp={t('The root volume size for the node pool.')}
-          onChange={(e: React.FormEvent<HTMLInputElement>) =>
+          onChange={(e: FormEvent<HTMLInputElement>) =>
             setAwsRootVolumeSize(Number((e.target as HTMLInputElement).value))
           }
           required
